@@ -5,13 +5,13 @@ use systems::{
         acs_controller::{ACSCActiveComputer, AirConditioningStateManager, Pack, ZoneController},
         trim_air_drive_device::TaddShared,
         ventilation_control_module::VcmShared,
-        AdirsToAirCondInterface, AirConditioningOverheadShared, CabinFansSignal, DuctTemperature,
-        OverheadFlowSelector, PackFlow, ZoneType,
+        AdirsToAirCondInterface, AirConditioningOverheadShared, BulkHeaterSignal, CabinFansSignal,
+        DuctTemperature, OverheadFlowSelector, PackFlow, ZoneType,
     },
     integrated_modular_avionics::core_processing_input_output_module::CoreProcessingInputOutputModule,
     shared::{
-        CabinAltitude, CabinSimulation, ControllerSignal, EngineCorrectedN1, EngineStartState,
-        LgciuWeightOnWheels, PackFlowValveState, PneumaticBleed,
+        CabinAltitude, CabinSimulation, CargoDoorLocked, ControllerSignal, EngineCorrectedN1,
+        EngineStartState, LgciuWeightOnWheels, PackFlowValveState, PneumaticBleed,
     },
     simulation::{
         InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
@@ -24,6 +24,7 @@ use uom::si::{
     length::foot,
     mass_rate::kilogram_per_second,
     ratio::{percent, ratio},
+    thermodynamic_temperature::degree_celsius,
 };
 
 pub(super) struct CoreProcessingInputOutputModuleB {
@@ -41,7 +42,7 @@ impl CoreProcessingInputOutputModuleB {
             cpiom_are_active: [false; 4],
             ags_app: AirGenerationSystemApplication::new(context),
             tcs_app: TemperatureControlSystemApplication::new(context, cabin_zones),
-            vcs_app: VentilationControlSystemApplication::new(),
+            vcs_app: VentilationControlSystemApplication::new(context),
             // cabin_pressure_control_system_app: CabinPressureControllSystemApplication::new(),
             // avionics_ventilation_system_app: AvionicsVentilationSystemApplication::new(),
         }
@@ -53,6 +54,7 @@ impl CoreProcessingInputOutputModuleB {
         adirs: &impl AdirsToAirCondInterface,
         acs_overhead: &impl AirConditioningOverheadShared,
         cabin_temperature: &impl CabinSimulation,
+        cargo_door_open: &impl CargoDoorLocked,
         cpiom_b: [&CoreProcessingInputOutputModule; 4],
         engines: &[&impl EngineCorrectedN1],
         lgciu: [&impl LgciuWeightOnWheels; 2],
@@ -82,8 +84,15 @@ impl CoreProcessingInputOutputModuleB {
                 pressurization,
                 local_controllers,
             );
-            self.vcs_app
-                .update(acs_overhead, local_controllers, &self.ags_app);
+            self.vcs_app.update(
+                acs_overhead,
+                self.cpiom_are_active[1] || self.cpiom_are_active[3],
+                cabin_temperature,
+                cargo_door_open,
+                lgciu,
+                local_controllers,
+                &self.ags_app,
+            );
         }
     }
 
@@ -92,6 +101,10 @@ impl CoreProcessingInputOutputModuleB {
     }
 
     pub(super) fn hp_recirculation_fans_signal(&self) -> &impl ControllerSignal<CabinFansSignal> {
+        &self.vcs_app
+    }
+
+    pub(super) fn bulk_heater_on_signal(&self) -> &impl ControllerSignal<BulkHeaterSignal> {
         &self.vcs_app
     }
 }
@@ -386,11 +399,11 @@ impl TemperatureControlSystemApplication {
         let hot_air_ids: Vec<Vec<String>> = vec![
             [1, 2]
                 .iter()
-                .map(|id| format!("HOT_AIR_VALVE_{}_IS_ENABLED", id))
+                .map(|id| format!("COND_HOT_AIR_VALVE_{}_IS_ENABLED", id))
                 .collect(),
             [1, 2]
                 .iter()
-                .map(|id| format!("HOT_AIR_VALVE_{}_IS_OPEN", id))
+                .map(|id| format!("COND_HOT_AIR_VALVE_{}_IS_OPEN", id))
                 .collect(),
         ];
 
@@ -469,8 +482,13 @@ impl SimulationElement for TemperatureControlSystemApplication {
 }
 
 struct VentilationControlSystemApplication {
+    bulk_isolation_valve_id: VariableIdentifier,
+
+    bulk_control_is_powered: bool,
+    bulk_isolation_valve_is_open: bool,
     hp_cabin_fans_are_enabled: bool,
     hp_cabin_fans_flow_demand: MassRate,
+    should_switch_on_bulk_heater: bool,
 }
 
 impl VentilationControlSystemApplication {
@@ -478,24 +496,44 @@ impl VentilationControlSystemApplication {
     const TOTAL_MIXED_AIR_DEMAND: f64 = 5.1183; // kg/s
     const NUMBER_OF_FANS: f64 = 4.;
 
-    fn new() -> Self {
+    fn new(context: &mut InitContext) -> Self {
         Self {
+            bulk_isolation_valve_id: context
+                .get_identifier("VENT_BULK_ISOLATION_VALVE_OPEN".to_owned()),
+
+            bulk_control_is_powered: false,
+            bulk_isolation_valve_is_open: false,
             hp_cabin_fans_are_enabled: false,
             hp_cabin_fans_flow_demand: MassRate::default(),
+            should_switch_on_bulk_heater: false,
         }
     }
 
     fn update(
         &mut self,
         acs_overhead: &impl AirConditioningOverheadShared,
-        hp_cabin_fans_are_enabled: &impl VcmShared,
+        bulk_control_is_powered: bool,
+        cabin_temperature: &impl CabinSimulation,
+        cargo_door_open: &impl CargoDoorLocked,
+        lgciu: [&impl LgciuWeightOnWheels; 2],
+        vcm_shared: &impl VcmShared,
         pack_flow_demand: &impl PackFlow,
     ) {
-        self.hp_cabin_fans_are_enabled = hp_cabin_fans_are_enabled.hp_cabin_fans_are_enabled();
+        self.bulk_control_is_powered = bulk_control_is_powered;
+        self.bulk_isolation_valve_is_open =
+            self.bulk_control_is_powered && vcm_shared.bulk_isolation_valves_open_allowed();
+        self.hp_cabin_fans_are_enabled = vcm_shared.hp_cabin_fans_are_enabled();
         // The recirculation airflow demand is linked to the fresh airflow demand in order to keep the total airflow constant
         self.hp_cabin_fans_flow_demand = self.recirculation_flow_determination(
             acs_overhead,
             pack_flow_demand.pack_flow_demand(Pack(1)) + pack_flow_demand.pack_flow_demand(Pack(2)),
+        );
+        self.should_switch_on_bulk_heater = self.bulk_heater_on_determination(
+            acs_overhead,
+            cabin_temperature,
+            cargo_door_open,
+            lgciu,
+            vcm_shared,
         );
     }
 
@@ -510,16 +548,58 @@ impl VentilationControlSystemApplication {
                 - pack_flow_demand.get::<kilogram_per_second>(),
         )
     }
+
+    fn bulk_heater_on_determination(
+        &self,
+        acs_overhead: &impl AirConditioningOverheadShared,
+        cabin_temperature: &impl CabinSimulation,
+        cargo_door_open: &impl CargoDoorLocked,
+        lgciu: [&impl LgciuWeightOnWheels; 2],
+        vcm_shared: &impl VcmShared,
+    ) -> bool {
+        let bulk_heater_on_allowed = vcm_shared.bulk_duct_heater_is_on()
+            && (lgciu.iter().all(|a| a.left_and_right_gear_compressed(true))
+                && cargo_door_open.aft_cargo_door_locked());
+        let temperature_difference = cabin_temperature.cabin_temperature()[ZoneType::Cargo(2).id()]
+            .get::<degree_celsius>()
+            - acs_overhead
+                .selected_cargo_temperature(ZoneType::Cargo(2))
+                .get::<degree_celsius>();
+        (temperature_difference < -1.
+            || (self.should_switch_on_bulk_heater && temperature_difference < 1.))
+            && bulk_heater_on_allowed
+    }
 }
 
 impl ControllerSignal<CabinFansSignal> for VentilationControlSystemApplication {
     fn signal(&self) -> Option<CabinFansSignal> {
-        if self.hp_cabin_fans_are_enabled {
+        if !self.bulk_control_is_powered {
+            None
+        } else if self.hp_cabin_fans_are_enabled {
             Some(CabinFansSignal::On(Some(
                 self.hp_cabin_fans_flow_demand / Self::NUMBER_OF_FANS,
             )))
         } else {
             None
         }
+    }
+}
+
+impl ControllerSignal<BulkHeaterSignal> for VentilationControlSystemApplication {
+    fn signal(&self) -> Option<BulkHeaterSignal> {
+        if self.should_switch_on_bulk_heater {
+            Some(BulkHeaterSignal::On)
+        } else {
+            Some(BulkHeaterSignal::Off)
+        }
+    }
+}
+
+impl SimulationElement for VentilationControlSystemApplication {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(
+            &self.bulk_isolation_valve_id,
+            self.bulk_isolation_valve_is_open,
+        );
     }
 }

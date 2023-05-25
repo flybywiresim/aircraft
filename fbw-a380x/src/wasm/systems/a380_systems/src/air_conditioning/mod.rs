@@ -7,10 +7,10 @@ use systems::{
         pressure_valve::{OutflowValve, SafetyValve},
         trim_air_drive_device::{TaddShared, TrimAirDriveDevice},
         ventilation_control_module::{VcmId, VcmShared, VentilationControlModule},
-        AdirsToAirCondInterface, Air, AirConditioningOverheadShared, AirConditioningPack, CabinFan,
-        DuctTemperature, MixerUnit, OutflowValveSignal, OutletAir, OverheadFlowSelector, PackFlow,
-        PackFlowControllers, PressurizationConstants, PressurizationOverheadShared, TrimAirSystem,
-        ZoneType,
+        AdirsToAirCondInterface, Air, AirConditioningOverheadShared, AirConditioningPack,
+        AirHeater, CabinFan, DuctTemperature, MixerUnit, OutflowValveSignal, OutletAir,
+        OverheadFlowSelector, PackFlow, PackFlowControllers, PackFlowValveSignal,
+        PressurizationConstants, PressurizationOverheadShared, TrimAirSystem, ZoneType,
     },
     overhead::{
         AutoManFaultPushButton, NormalOnPushButton, OnOffFaultPushButton, OnOffPushButton,
@@ -19,9 +19,9 @@ use systems::{
     pneumatic::PneumaticContainer,
     shared::{
         random_number, update_iterator::MaxStepLoop, CabinAltitude, CabinSimulation,
-        ControllerSignal, ElectricalBusType, EngineBleedPushbutton, EngineCorrectedN1,
-        EngineFirePushButtons, EngineStartState, LgciuWeightOnWheels, PackFlowValveState,
-        PneumaticBleed,
+        CargoDoorLocked, ControllerSignal, ElectricalBusType, EngineBleedPushbutton,
+        EngineCorrectedN1, EngineFirePushButtons, EngineStartState, LgciuWeightOnWheels,
+        PackFlowValveState, PneumaticBleed,
     },
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -91,6 +91,7 @@ impl A380AirConditioning {
         &mut self,
         context: &UpdateContext,
         adirs: &impl AdirsToAirCondInterface,
+        cargo_door_open: &impl CargoDoorLocked,
         cpiom_b: &impl CoreProcessingInputOutputModuleShared,
         engines: [&impl EngineCorrectedN1; 4],
         engine_fire_push_buttons: &impl EngineFirePushButtons,
@@ -110,6 +111,7 @@ impl A380AirConditioning {
             self.a380_air_conditioning_system
                 .air_conditioning_overhead(),
             &self.a380_cabin,
+            cargo_door_open,
             cpiom,
             &engines,
             lgciu,
@@ -309,6 +311,7 @@ pub(super) struct A380AirConditioningSystem {
     vcm: [VentilationControlModule; 2],
 
     cabin_fans: [CabinFan; 4],
+    cargo_air_heater: AirHeater,
     mixer_unit: MixerUnit<18>,
     // Temporary structure until packs are simulated
     packs: [AirConditioningPack; 2],
@@ -339,8 +342,8 @@ impl A380AirConditioningSystem {
                 ),
             ],
             tadd: TrimAirDriveDevice::new(vec![
-                ElectricalBusType::AlternatingCurrent(2), // 403XP
-                ElectricalBusType::AlternatingCurrent(4), // 117XP
+                ElectricalBusType::AlternatingCurrent(2), // 117XP
+                ElectricalBusType::AlternatingCurrent(4), // 206XP
             ]),
             vcm: [
                 VentilationControlModule::new(
@@ -377,6 +380,7 @@ impl A380AirConditioningSystem {
                     ElectricalBusType::AlternatingCurrent(2),
                 ), // Right Hand - 200XP4
             ],
+            cargo_air_heater: AirHeater::new(ElectricalBusType::AlternatingCurrent(2)), // 200XP4
             mixer_unit: MixerUnit::new(cabin_zones),
             packs: [AirConditioningPack::new(), AirConditioningPack::new()],
             trim_air_system: TrimAirSystem::new(context, cabin_zones),
@@ -443,6 +447,20 @@ impl A380AirConditioningSystem {
         self.trim_air_system
             .update(context, &self.mixer_unit, &self.tadd);
 
+        // For the bulk cargo, air flows from the LD and is warmed up by an electric heater
+        self.cargo_air_heater.update(
+            cabin_simulation,
+            &self.trim_air_system,
+            cpiom_b.bulk_heater_on_signal(),
+        );
+
+        println!(
+            "Bulk duct temp: {}",
+            self.cargo_air_heater
+                .outlet_air()
+                .temperature()
+                .get::<degree_celsius>()
+        );
         self.air_conditioning_overhead
             .set_pack_pushbutton_fault(self.pack_fault_determination());
     }
@@ -503,7 +521,10 @@ impl PackFlowControllers for A380AirConditioningSystem {
 
 impl DuctTemperature for A380AirConditioningSystem {
     fn duct_temperature(&self) -> Vec<ThermodynamicTemperature> {
-        self.trim_air_system.duct_temperature()
+        // The bulk cargo zone of the A380 is fed with recirculated air only
+        let mut duct_temp_vec = self.trim_air_system.duct_temperature();
+        duct_temp_vec[ZoneType::Cargo(2).id()] = self.cargo_air_heater.outlet_air().temperature();
+        duct_temp_vec
     }
 }
 
@@ -531,6 +552,16 @@ impl VcmShared for A380AirConditioningSystem {
             .iter()
             .all(|module| module.hp_cabin_fans_are_enabled())
     }
+    fn bulk_duct_heater_is_on(&self) -> bool {
+        // The Aft VCM controls the bulk ventilation and heating
+        self.vcm[1].bulk_duct_heater_is_on()
+    }
+    fn bulk_extraction_fan_is_on(&self) -> bool {
+        self.vcm[1].bulk_extraction_fan_is_on()
+    }
+    fn bulk_isolation_valves_open_allowed(&self) -> bool {
+        self.vcm[1].bulk_isolation_valves_open_allowed()
+    }
 }
 
 impl SimulationElement for A380AirConditioningSystem {
@@ -541,6 +572,7 @@ impl SimulationElement for A380AirConditioningSystem {
 
         self.trim_air_system.accept(visitor);
         accept_iterable!(self.cabin_fans, visitor);
+        self.cargo_air_heater.accept(visitor);
 
         self.air_conditioning_overhead.accept(visitor);
 
@@ -625,6 +657,16 @@ impl AirConditioningOverheadShared for A380AirConditioningSystemOverhead {
         ThermodynamicTemperature::new::<degree_celsius>(knob.value() * 0.04 + 18.)
     }
 
+    fn selected_cargo_temperature(&self, zone_id: ZoneType) -> ThermodynamicTemperature {
+        let knob = if matches!(zone_id, ZoneType::Cargo(1)) {
+            &self.cargo_temperature_regulators[0]
+        } else {
+            &self.cargo_temperature_regulators[1]
+        };
+        // Map from knob range 0-300 to 5-25 degrees C
+        ThermodynamicTemperature::new::<degree_celsius>(knob.value() * 0.0667 + 5.)
+    }
+
     fn pack_pushbuttons_state(&self) -> Vec<bool> {
         self.pack_pbs.iter().map(|pack| pack.is_on()).collect()
     }
@@ -639,6 +681,14 @@ impl AirConditioningOverheadShared for A380AirConditioningSystemOverhead {
 
     fn flow_selector_position(&self) -> OverheadFlowSelector {
         self.flow_selector
+    }
+
+    fn bulk_isolation_valve_is_on(&self) -> bool {
+        self.isol_valves_pbs[1].is_on()
+    }
+
+    fn bulk_cargo_heater_is_on(&self) -> bool {
+        self.cargo_heater_pb.is_on()
     }
 }
 
@@ -1496,6 +1546,28 @@ mod tests {
         }
     }
 
+    struct TestDsms {
+        aft_cargo_door_open: bool,
+    }
+    impl TestDsms {
+        fn new() -> Self {
+            Self {
+                aft_cargo_door_open: false,
+            }
+        }
+        fn open_aft_cargo_door(&mut self, open: bool) {
+            self.aft_cargo_door_open = open;
+        }
+    }
+    impl CargoDoorLocked for TestDsms {
+        fn aft_cargo_door_locked(&self) -> bool {
+            !self.aft_cargo_door_open
+        }
+        fn fwd_cargo_door_locked(&self) -> bool {
+            true
+        }
+    }
+
     struct TestLgciu {
         compressed: bool,
     }
@@ -1539,6 +1611,7 @@ mod tests {
         a380_cabin_air: A380AirConditioning,
         adcn: TestAdcn,
         adirs: TestAdirs,
+        dsms: TestDsms,
         engine_1: TestEngine,
         engine_2: TestEngine,
         engine_3: TestEngine,
@@ -1579,6 +1652,7 @@ mod tests {
                 a380_cabin_air: A380AirConditioning::new(context),
                 adcn: TestAdcn::new(context),
                 adirs: TestAdirs::new(),
+                dsms: TestDsms::new(),
                 engine_1: TestEngine::new(Ratio::default()),
                 engine_2: TestEngine::new(Ratio::default()),
                 engine_3: TestEngine::new(Ratio::default()),
@@ -1783,6 +1857,7 @@ mod tests {
             self.a380_cabin_air.update(
                 context,
                 &self.adirs,
+                &self.dsms,
                 &self.adcn,
                 [
                     &self.engine_1,

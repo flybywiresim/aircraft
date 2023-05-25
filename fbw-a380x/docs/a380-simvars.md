@@ -113,6 +113,18 @@
         - CKPT
         - CABIN
 
+- A32NX_COND_HOT_AIR_VALVE_{id}_IS_ENABLED
+    - Bool
+    - True if the hot air valve {1 or 2} is enabled
+
+- A32NX_COND_HOT_AIR_VALVE_{id}_IS_OPEN
+    - Bool
+    - True if the hot air valve {1 or 2} is open
+
+- A32NX_VENT_BULK_ISOLATION_VALVE_OPEN
+    - Bool
+    - True when the the isolation valves of the bulk cargo compartment are open
+
 - A32NX_OVHD_COND_HOT_AIR_{index}_PB_IS_ON
     - Bool
     - True if the hot air pushbutton {1 or 2} is pressed in the on position (no white light)

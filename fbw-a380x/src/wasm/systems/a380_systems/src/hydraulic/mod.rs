@@ -51,7 +51,7 @@ use systems::{
     overhead::{AutoOffFaultPushButton, AutoOnFaultPushButton},
     shared::{
         interpolation, random_from_range, update_iterator::MaxStepLoop, AdirsDiscreteOutputs,
-        AirbusElectricPumpId, AirbusEngineDrivenPumpId, DelayedFalseLogicGate,
+        AirbusElectricPumpId, AirbusEngineDrivenPumpId, CargoDoorLocked, DelayedFalseLogicGate,
         DelayedPulseTrueLogicGate, DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses,
         EngineFirePushButtons, GearWheel, HydraulicColor, LandingGearHandle, LgciuInterface,
         LgciuWeightOnWheels, ReservoirAirPressure, SectionPressure,
@@ -2800,6 +2800,14 @@ impl A380Hydraulic {
 
     pub fn gear_system(&self) -> &impl GearSystemSensors {
         &self.gear_system
+    }
+}
+impl CargoDoorLocked for A380Hydraulic {
+    fn fwd_cargo_door_locked(&self) -> bool {
+        self.forward_cargo_door.is_locked()
+    }
+    fn aft_cargo_door_locked(&self) -> bool {
+        self.aft_cargo_door.is_locked()
     }
 }
 impl SimulationElement for A380Hydraulic {

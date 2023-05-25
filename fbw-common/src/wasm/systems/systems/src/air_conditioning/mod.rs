@@ -93,6 +93,11 @@ impl CabinFansSignal {
     }
 }
 
+pub enum BulkHeaterSignal {
+    On,
+    Off,
+}
+
 pub trait OutletAir {
     fn outlet_air(&self) -> Air;
 }
@@ -106,10 +111,19 @@ pub trait AdirsToAirCondInterface {
 
 pub trait AirConditioningOverheadShared {
     fn selected_cabin_temperature(&self, zone_id: usize) -> ThermodynamicTemperature;
+    fn selected_cargo_temperature(&self, _zone_id: ZoneType) -> ThermodynamicTemperature {
+        ThermodynamicTemperature::new::<degree_celsius>(15.)
+    }
     fn pack_pushbuttons_state(&self) -> Vec<bool>;
     fn hot_air_pushbutton_is_on(&self, hot_air_id: usize) -> bool;
     fn cabin_fans_is_on(&self) -> bool;
     fn flow_selector_position(&self) -> OverheadFlowSelector;
+    fn bulk_isolation_valve_is_on(&self) -> bool {
+        false
+    }
+    fn bulk_cargo_heater_is_on(&self) -> bool {
+        false
+    }
 }
 
 pub trait PressurizationOverheadShared {
@@ -129,7 +143,7 @@ pub enum ZoneType {
 }
 
 impl ZoneType {
-    fn id(&self) -> usize {
+    pub fn id(&self) -> usize {
         match self {
             ZoneType::Cockpit => 0,
             ZoneType::Cabin(number) => {
@@ -747,6 +761,84 @@ impl OutletAir for TrimAirValve {
 impl SimulationElement for TrimAirValve {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.trim_air_valve_id, self.trim_air_valve_open_amount());
+    }
+}
+
+pub struct AirHeater {
+    is_on: bool,
+    outlet_air: Air,
+
+    is_powered: bool,
+    powered_by: ElectricalBusType,
+}
+
+impl AirHeater {
+    const OUTPUT_POWER: f64 = 400.; // Watt
+    const NOMINAL_FLOW_RATE: f64 = 161.; // Cubic meter / hour
+
+    pub fn new(powered_by: ElectricalBusType) -> Self {
+        Self {
+            is_on: false,
+            outlet_air: Air::new(),
+
+            is_powered: false,
+            powered_by,
+        }
+    }
+
+    pub fn update(
+        &mut self,
+        cabin_simulation: &impl CabinSimulation,
+        inlet: &impl OutletAir,
+        controller: &impl ControllerSignal<BulkHeaterSignal>,
+    ) {
+        self.outlet_air
+            .set_pressure(cabin_simulation.cabin_pressure());
+
+        // We set the flow rate equal to the other zones for simplicity. Minimal error incurred.
+        self.outlet_air
+            .set_flow_rate(inlet.outlet_air().flow_rate());
+        // TODO: This should come only from the lower deck. The error will be minimal by taking the whole average.
+        self.outlet_air
+            .set_temperature(cabin_simulation.cabin_temperature().iter().average());
+        if !self.is_powered || !matches!(controller.signal(), Some(BulkHeaterSignal::On)) {
+            self.is_on = false;
+        } else {
+            self.is_on = true;
+            let heater_flow_rate = self.mass_flow_calculation();
+
+            self.outlet_air
+                .set_temperature(self.heater_work_temperature_calculation(heater_flow_rate));
+        }
+    }
+
+    fn mass_flow_calculation(&self) -> MassRate {
+        let mass_flow: f64 = (self.outlet_air.pressure().get::<pascal>() * Self::NOMINAL_FLOW_RATE
+            / 3600.)
+            / (Air::R * self.outlet_air.temperature().get::<kelvin>());
+        MassRate::new::<kilogram_per_second>(mass_flow)
+    }
+
+    fn heater_work_temperature_calculation(
+        &self,
+        heater_flow_rate: MassRate,
+    ) -> ThermodynamicTemperature {
+        let outlet_temperature = ((Self::OUTPUT_POWER / 1000.)
+            / (heater_flow_rate.get::<kilogram_per_second>() * Air::SPECIFIC_HEAT_CAPACITY_VOLUME))
+            + self.outlet_air.temperature().get::<degree_celsius>();
+        ThermodynamicTemperature::new::<degree_celsius>(outlet_temperature)
+    }
+}
+
+impl OutletAir for AirHeater {
+    fn outlet_air(&self) -> Air {
+        self.outlet_air
+    }
+}
+
+impl SimulationElement for AirHeater {
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        self.is_powered = buses.is_powered(self.powered_by);
     }
 }
 
