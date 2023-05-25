@@ -137,6 +137,10 @@ pub trait LgciuInterface:
 {
 }
 
+pub trait ReverserPosition {
+    fn reverser_position(&self) -> Ratio;
+}
+
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 #[repr(usize)]
 pub enum LgciuId {

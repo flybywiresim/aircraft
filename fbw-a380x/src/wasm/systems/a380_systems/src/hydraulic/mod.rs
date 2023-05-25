@@ -6593,7 +6593,7 @@ mod tests {
                 test::TestElectricitySource, ElectricalBus, Electricity, ElectricitySource,
                 ExternalPowerSource,
             },
-            engine::{leap_engine::LeapEngine, EngineFireOverheadPanel},
+            engine::{trent_engine::TrentEngine, EngineFireOverheadPanel},
             failures::FailureType,
             hydraulic::cargo_doors::{DoorControlState, HydraulicDoorController},
             landing_gear::{GearSystemState, LandingGear, LandingGearControlInterfaceUnitSet},
@@ -6699,10 +6699,10 @@ mod tests {
         }
         struct A380HydraulicsTestAircraft {
             pneumatics: A380TestPneumatics,
-            engine_1: LeapEngine,
-            engine_2: LeapEngine,
-            engine_3: LeapEngine,
-            engine_4: LeapEngine,
+            engine_1: TrentEngine,
+            engine_2: TrentEngine,
+            engine_3: TrentEngine,
+            engine_4: TrentEngine,
             hydraulics: A380Hydraulic,
             overhead: A380HydraulicOverheadPanel,
             autobrake_panel: AutobrakePanel,
@@ -6742,10 +6742,10 @@ mod tests {
             fn new(context: &mut InitContext) -> Self {
                 Self {
                     pneumatics: A380TestPneumatics::new(),
-                    engine_1: LeapEngine::new(context, 1),
-                    engine_2: LeapEngine::new(context, 2),
-                    engine_3: LeapEngine::new(context, 3),
-                    engine_4: LeapEngine::new(context, 4),
+                    engine_1: TrentEngine::new(context, 1),
+                    engine_2: TrentEngine::new(context, 2),
+                    engine_3: TrentEngine::new(context, 3),
+                    engine_4: TrentEngine::new(context, 4),
                     hydraulics: A380Hydraulic::new(context),
                     overhead: A380HydraulicOverheadPanel::new(context),
                     autobrake_panel: AutobrakePanel::new(context),
@@ -7381,6 +7381,7 @@ mod tests {
             fn start_eng1(mut self, n2: Ratio) -> Self {
                 self.write_by_name("GENERAL ENG STARTER ACTIVE:1", true);
                 self.write_by_name("ENGINE_N2:1", n2);
+                self.write_by_name("ENGINE_N3:1", n2);
 
                 self
             }
@@ -7388,6 +7389,7 @@ mod tests {
             fn start_eng2(mut self, n2: Ratio) -> Self {
                 self.write_by_name("GENERAL ENG STARTER ACTIVE:2", true);
                 self.write_by_name("ENGINE_N2:2", n2);
+                self.write_by_name("ENGINE_N3:2", n2);
 
                 self
             }
@@ -7395,6 +7397,7 @@ mod tests {
             fn start_eng3(mut self, n2: Ratio) -> Self {
                 self.write_by_name("GENERAL ENG STARTER ACTIVE:3", true);
                 self.write_by_name("ENGINE_N2:3", n2);
+                self.write_by_name("ENGINE_N3:3", n2);
 
                 self
             }
@@ -7402,6 +7405,7 @@ mod tests {
             fn start_eng4(mut self, n2: Ratio) -> Self {
                 self.write_by_name("GENERAL ENG STARTER ACTIVE:4", true);
                 self.write_by_name("ENGINE_N2:4", n2);
+                self.write_by_name("ENGINE_N3:4", n2);
 
                 self
             }
@@ -7409,6 +7413,7 @@ mod tests {
             fn stop_eng1(mut self) -> Self {
                 self.write_by_name("GENERAL ENG STARTER ACTIVE:1", false);
                 self.write_by_name("ENGINE_N2:1", 0.);
+                self.write_by_name("ENGINE_N3:1", 0.);
 
                 self
             }
@@ -7416,6 +7421,7 @@ mod tests {
             fn _stopping_eng1(mut self) -> Self {
                 self.write_by_name("GENERAL ENG STARTER ACTIVE:1", false);
                 self.write_by_name("ENGINE_N2:1", 25.);
+                self.write_by_name("ENGINE_N3:1", 25.);
 
                 self
             }
@@ -7423,6 +7429,7 @@ mod tests {
             fn stop_eng2(mut self) -> Self {
                 self.write_by_name("GENERAL ENG STARTER ACTIVE:2", false);
                 self.write_by_name("ENGINE_N2:2", 0.);
+                self.write_by_name("ENGINE_N3:2", 0.);
 
                 self
             }
@@ -7430,20 +7437,23 @@ mod tests {
             fn _stopping_eng2(mut self) -> Self {
                 self.write_by_name("GENERAL ENG STARTER ACTIVE:2", false);
                 self.write_by_name("ENGINE_N2:2", 25.);
+                self.write_by_name("ENGINE_N3:2", 25.);
 
                 self
             }
 
             fn stop_eng3(mut self) -> Self {
                 self.write_by_name("GENERAL ENG STARTER ACTIVE:3", false);
-                self.write_by_name("ENGINE_N2:2", 0.);
+                self.write_by_name("ENGINE_N2:3", 0.);
+                self.write_by_name("ENGINE_N3:3", 0.);
 
                 self
             }
 
             fn stop_eng4(mut self) -> Self {
                 self.write_by_name("GENERAL ENG STARTER ACTIVE:4", false);
-                self.write_by_name("ENGINE_N2:2", 0.);
+                self.write_by_name("ENGINE_N2:4", 0.);
+                self.write_by_name("ENGINE_N3:4", 0.);
 
                 self
             }
