@@ -171,6 +171,8 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("AIRSPEED MACH", "Mach", 0)?
     .provides_aircraft_variable("AIRSPEED TRUE", "Knots", 0)?
     .provides_aircraft_variable("AMBIENT DENSITY", "Slugs per cubic feet", 0)?
+    .provides_aircraft_variable("AMBIENT IN CLOUD", "Bool", 0)?
+    .provides_aircraft_variable("AMBIENT PRECIP RATE", "millimeters of water", 0)?
     .provides_aircraft_variable("AMBIENT PRESSURE", "inHg", 0)?
     .provides_aircraft_variable("AMBIENT TEMPERATURE", "celsius", 0)?
     .provides_aircraft_variable("AMBIENT WIND DIRECTION", "Degrees", 0)?

@@ -72,6 +72,8 @@ use engine_pump_disc::EnginePumpDisconnectionClutch;
 #[cfg(test)]
 use systems::hydraulic::PressureSwitchState;
 
+const AC_EHA_BUS: ElectricalBusType = ElectricalBusType::AlternatingCurrentNamed("247XP");
+
 struct A380TiltingGearsFactory {}
 impl A380TiltingGearsFactory {
     fn new_a380_body_gear(context: &mut InitContext, is_left: bool) -> TiltingGear {
@@ -345,10 +347,10 @@ impl A380AileronFactory {
     const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 3500000.;
     const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 10.;
 
-    //TODO should be ACEss 1
+    // 427XP - AC ESS
     const MIDDLE_PANEL_EHA_BUS: ElectricalBusType = ElectricalBusType::AlternatingCurrentEssential;
-    //TODO should be ACEss 2
-    const INWARD_PANEL_EHA_BUS: ElectricalBusType = ElectricalBusType::AlternatingCurrentEssential;
+    // 247XP - AC EHA
+    const INWARD_PANEL_EHA_BUS: ElectricalBusType = AC_EHA_BUS;
 
     fn a380_aileron_actuator(
         context: &mut InitContext,
@@ -528,7 +530,7 @@ impl A380SpoilerFactory {
 
     const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 20.;
 
-    //TODO should be ACEss 1
+    // 427XP - AC ESS
     const SPOILER_6_EBHA_BUS: ElectricalBusType = ElectricalBusType::AlternatingCurrentEssential;
 
     fn a380_spoiler_actuator(
@@ -679,18 +681,16 @@ impl A380ElevatorFactory {
     const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 15000000.;
     const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 5.;
 
-    //TODO should be ACEss 2
-    const LEFT_OUTWARD_PANEL_EHA_BUS: ElectricalBusType =
-        ElectricalBusType::AlternatingCurrentEssential;
-    //TODO should be ACEss 1
+    // 247XP - AC EHA
+    const LEFT_OUTWARD_PANEL_EHA_BUS: ElectricalBusType = AC_EHA_BUS;
+    // 427XP - AC ESS
     const RIGHT_OUTWARD_PANEL_EHA_BUS: ElectricalBusType =
         ElectricalBusType::AlternatingCurrentEssential;
-    //TODO should be ACEss 1
+    // 427XP - AC ESS
     const LEFT_INWARD_PANEL_EHA_BUS: ElectricalBusType =
         ElectricalBusType::AlternatingCurrentEssential;
-    //TODO should be ACEss 2
-    const RIGHT_INWARD_PANEL_EHA_BUS: ElectricalBusType =
-        ElectricalBusType::AlternatingCurrentEssential;
+    // 247XP - AC EHA
+    const RIGHT_INWARD_PANEL_EHA_BUS: ElectricalBusType = AC_EHA_BUS;
 
     fn a380_elevator_actuator(
         context: &mut InitContext,
@@ -862,15 +862,13 @@ impl A380RudderFactory {
     const MAX_DAMPING_CONSTANT_FOR_SLOW_DAMPING: f64 = 1000000.;
     const MAX_FLOW_PRECISION_PER_ACTUATOR_PERCENT: f64 = 10.;
 
-    //TODO should be ACEss 2
+    // 427XP - AC ESS
     const UPPER_AND_LOWER_PANEL_UPPER_EBHA_BUS: ElectricalBusType =
         ElectricalBusType::AlternatingCurrentEssential;
-    //TODO should be ACEss 1
-    const UPPER_PANEL_LOWER_EBHA_BUS: ElectricalBusType =
-        ElectricalBusType::AlternatingCurrentEssential;
-    //TODO should be ACEss 2
-    const LOWER_PANEL_LOWER_EBHA_BUS: ElectricalBusType =
-        ElectricalBusType::AlternatingCurrentEssential;
+    // 247XP - ACEHA
+    const UPPER_PANEL_LOWER_EBHA_BUS: ElectricalBusType = AC_EHA_BUS;
+    // 100XP1 - AC 1
+    const LOWER_PANEL_LOWER_EBHA_BUS: ElectricalBusType = ElectricalBusType::AlternatingCurrent(1);
 
     fn a380_rudder_actuator(
         context: &mut InitContext,
@@ -1615,10 +1613,14 @@ impl A380Hydraulic {
     const YELLOW_ELEC_PUMP_CONTROL_POWER_BUS: ElectricalBusType =
         ElectricalBusType::DirectCurrent(1);
 
-    const A_ELEC_PUMP_SUPPLY_POWER_BUS: ElectricalBusType =
+    const GREEN_A_ELEC_PUMP_SUPPLY_POWER_BUS: ElectricalBusType =
         ElectricalBusType::AlternatingCurrent(1);
-    const B_ELEC_PUMP_SUPPLY_POWER_BUS: ElectricalBusType =
+    const GREEN_B_ELEC_PUMP_SUPPLY_POWER_BUS: ElectricalBusType =
         ElectricalBusType::AlternatingCurrent(2);
+    const YELLOW_A_ELEC_PUMP_SUPPLY_POWER_BUS: ElectricalBusType =
+        ElectricalBusType::AlternatingCurrent(3);
+    const YELLOW_B_ELEC_PUMP_SUPPLY_POWER_BUS: ElectricalBusType =
+        ElectricalBusType::AlternatingCurrent(4);
 
     const EDP_CONTROL_POWER_BUS1: ElectricalBusType = ElectricalBusType::DirectCurrentEssential;
 
@@ -1743,7 +1745,7 @@ impl A380Hydraulic {
             yellow_electric_pump_a: ElectricPump::new(
                 context,
                 AirbusElectricPumpId::YellowA,
-                Self::A_ELEC_PUMP_SUPPLY_POWER_BUS,
+                Self::YELLOW_A_ELEC_PUMP_SUPPLY_POWER_BUS,
                 ElectricCurrent::new::<ampere>(Self::ELECTRIC_PUMP_MAX_CURRENT_AMPERE),
                 PumpCharacteristics::a380_electric_pump(),
             ),
@@ -1756,7 +1758,7 @@ impl A380Hydraulic {
             yellow_electric_pump_b: ElectricPump::new(
                 context,
                 AirbusElectricPumpId::YellowB,
-                Self::B_ELEC_PUMP_SUPPLY_POWER_BUS,
+                Self::YELLOW_B_ELEC_PUMP_SUPPLY_POWER_BUS,
                 ElectricCurrent::new::<ampere>(Self::ELECTRIC_PUMP_MAX_CURRENT_AMPERE),
                 PumpCharacteristics::a380_electric_pump(),
             ),
@@ -1769,7 +1771,7 @@ impl A380Hydraulic {
             green_electric_pump_a: ElectricPump::new(
                 context,
                 AirbusElectricPumpId::GreenA,
-                Self::A_ELEC_PUMP_SUPPLY_POWER_BUS,
+                Self::GREEN_A_ELEC_PUMP_SUPPLY_POWER_BUS,
                 ElectricCurrent::new::<ampere>(Self::ELECTRIC_PUMP_MAX_CURRENT_AMPERE),
                 PumpCharacteristics::a380_electric_pump(),
             ),
@@ -1782,7 +1784,7 @@ impl A380Hydraulic {
             green_electric_pump_b: ElectricPump::new(
                 context,
                 AirbusElectricPumpId::GreenB,
-                Self::B_ELEC_PUMP_SUPPLY_POWER_BUS,
+                Self::GREEN_B_ELEC_PUMP_SUPPLY_POWER_BUS,
                 ElectricCurrent::new::<ampere>(Self::ELECTRIC_PUMP_MAX_CURRENT_AMPERE),
                 PumpCharacteristics::a380_electric_pump(),
             ),
@@ -1901,8 +1903,10 @@ impl A380Hydraulic {
             ),
 
             epump_auto_logic: A380ElectricPumpAutoLogic::new(
-                Self::A_ELEC_PUMP_SUPPLY_POWER_BUS,
-                Self::B_ELEC_PUMP_SUPPLY_POWER_BUS,
+                Self::GREEN_A_ELEC_PUMP_SUPPLY_POWER_BUS,
+                Self::GREEN_B_ELEC_PUMP_SUPPLY_POWER_BUS,
+                Self::YELLOW_A_ELEC_PUMP_SUPPLY_POWER_BUS,
+                Self::YELLOW_B_ELEC_PUMP_SUPPLY_POWER_BUS,
             ),
 
             tilting_gears: A380TiltingGearsFactory::new_a380_tilt_assembly(context),
@@ -3350,11 +3354,15 @@ struct A380ElectricPumpAutoLogic {
     is_required_for_body_steering_operation: DelayedFalseLogicGate,
     body_steering_in_operation_previous: bool,
 
-    a_pumps_powered_by: ElectricalBusType,
-    b_pumps_powered_by: ElectricalBusType,
+    green_a_pump_powered_by: ElectricalBusType,
+    green_b_pump_powered_by: ElectricalBusType,
+    yellow_a_pump_powered_by: ElectricalBusType,
+    yellow_b_pump_powered_by: ElectricalBusType,
 
-    a_pumps_bus_powered: bool,
-    b_pumps_bus_powered: bool,
+    green_a_pump_bus_powered: bool,
+    green_b_pump_bus_powered: bool,
+    yellow_a_pump_bus_powered: bool,
+    yellow_b_pump_bus_powered: bool,
 }
 impl A380ElectricPumpAutoLogic {
     const DURATION_OF_PUMP_ACTIVATION_AFTER_CARGO_DOOR_OPERATION: Duration =
@@ -3362,7 +3370,12 @@ impl A380ElectricPumpAutoLogic {
 
     const DURATION_OF_PUMP_ACTIVATION_AFTER_BODY_STEERING_OPERATION: Duration =
         Duration::from_secs(5);
-    fn new(a_pumps_powered_by: ElectricalBusType, b_pumps_powered_by: ElectricalBusType) -> Self {
+    fn new(
+        green_a_pump_powered_by: ElectricalBusType,
+        green_b_pump_powered_by: ElectricalBusType,
+        yellow_a_pump_powered_by: ElectricalBusType,
+        yellow_b_pump_powered_by: ElectricalBusType,
+    ) -> Self {
         Self {
             green_pump_a_selected: random_from_range(0., 1.) < 0.5,
             yellow_pump_a_selected: random_from_range(0., 1.) < 0.5,
@@ -3377,11 +3390,15 @@ impl A380ElectricPumpAutoLogic {
             ),
             body_steering_in_operation_previous: false,
 
-            a_pumps_powered_by,
-            b_pumps_powered_by,
+            green_a_pump_powered_by,
+            green_b_pump_powered_by,
+            yellow_a_pump_powered_by,
+            yellow_b_pump_powered_by,
 
-            a_pumps_bus_powered: false,
-            b_pumps_bus_powered: false,
+            green_a_pump_bus_powered: false,
+            green_b_pump_bus_powered: false,
+            yellow_a_pump_bus_powered: false,
+            yellow_b_pump_bus_powered: false,
         }
     }
 
@@ -3441,10 +3458,16 @@ impl A380ElectricPumpAutoLogic {
         }
 
         // If a pump selected but no AC to power it and B would have power : get back on B
-        if self.green_pump_a_selected && !self.a_pumps_bus_powered && self.b_pumps_bus_powered {
+        if self.green_pump_a_selected
+            && !self.green_a_pump_bus_powered
+            && self.green_b_pump_bus_powered
+        {
             self.green_pump_a_selected = false;
         }
-        if self.yellow_pump_a_selected && !self.a_pumps_bus_powered && self.b_pumps_bus_powered {
+        if self.yellow_pump_a_selected
+            && !self.yellow_a_pump_bus_powered
+            && self.yellow_b_pump_bus_powered
+        {
             self.yellow_pump_a_selected = false;
         }
 
@@ -3463,30 +3486,42 @@ impl A380ElectricPumpAutoLogic {
         let yellow_operation_required = self.is_required_for_body_steering_operation.output();
         match pump_id {
             A380ElectricPumpId::GreenA => {
-                self.a_pumps_bus_powered && green_operation_required && self.green_pump_a_selected
+                self.green_a_pump_bus_powered
+                    && green_operation_required
+                    && self.green_pump_a_selected
             }
             A380ElectricPumpId::GreenB => {
-                self.b_pumps_bus_powered && green_operation_required && !self.green_pump_a_selected
+                self.green_b_pump_bus_powered
+                    && green_operation_required
+                    && !self.green_pump_a_selected
             }
             A380ElectricPumpId::YellowA => {
-                self.a_pumps_bus_powered && yellow_operation_required && self.yellow_pump_a_selected
+                self.yellow_a_pump_bus_powered
+                    && yellow_operation_required
+                    && self.yellow_pump_a_selected
             }
             A380ElectricPumpId::YellowB => {
-                self.b_pumps_bus_powered
+                self.yellow_b_pump_bus_powered
                     && yellow_operation_required
                     && !self.yellow_pump_a_selected
             }
             A380ElectricPumpId::GreenAuxiliary => {
                 // Only allow AUX if no AC. This is actually a manual pump using external electric/pneumatic wrench
-                green_operation_required && !self.a_pumps_bus_powered && !self.b_pumps_bus_powered
+                green_operation_required
+                    && !self.green_a_pump_bus_powered
+                    && !self.green_b_pump_bus_powered
+                    && !self.yellow_a_pump_bus_powered
+                    && !self.yellow_b_pump_bus_powered
             }
         }
     }
 }
 impl SimulationElement for A380ElectricPumpAutoLogic {
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
-        self.a_pumps_bus_powered = buses.is_powered(self.a_pumps_powered_by);
-        self.b_pumps_bus_powered = buses.is_powered(self.b_pumps_powered_by);
+        self.green_a_pump_bus_powered = buses.is_powered(self.green_a_pump_powered_by);
+        self.green_b_pump_bus_powered = buses.is_powered(self.green_b_pump_powered_by);
+        self.yellow_a_pump_bus_powered = buses.is_powered(self.yellow_a_pump_powered_by);
+        self.yellow_b_pump_bus_powered = buses.is_powered(self.yellow_b_pump_powered_by);
     }
 }
 
@@ -6720,6 +6755,9 @@ mod tests {
             ac_ess_bus: ElectricalBus,
             ac_1_bus: ElectricalBus,
             ac_2_bus: ElectricalBus,
+            ac_3_bus: ElectricalBus,
+            ac_4_bus: ElectricalBus,
+            ac_eha_bus: ElectricalBus,
             dc_1_bus: ElectricalBus,
             dc_2_bus: ElectricalBus,
             dc_ess_bus: ElectricalBus,
@@ -6732,6 +6770,9 @@ mod tests {
             is_ac_ess_powered: bool,
             is_ac_1_powered: bool,
             is_ac_2_powered: bool,
+            is_ac_3_powered: bool,
+            is_ac_4_powered: bool,
+            is_ac_eha_powered: bool,
             is_dc_1_powered: bool,
             is_dc_2_powered: bool,
             is_dc_ess_powered: bool,
@@ -6777,6 +6818,9 @@ mod tests {
                     ),
                     ac_1_bus: ElectricalBus::new(context, ElectricalBusType::AlternatingCurrent(1)),
                     ac_2_bus: ElectricalBus::new(context, ElectricalBusType::AlternatingCurrent(2)),
+                    ac_3_bus: ElectricalBus::new(context, ElectricalBusType::AlternatingCurrent(3)),
+                    ac_4_bus: ElectricalBus::new(context, ElectricalBusType::AlternatingCurrent(4)),
+                    ac_eha_bus: ElectricalBus::new(context, AC_EHA_BUS),
                     dc_1_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrent(1)),
                     dc_2_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrent(2)),
                     dc_ess_bus: ElectricalBus::new(
@@ -6796,6 +6840,9 @@ mod tests {
                     is_ac_ess_powered: true,
                     is_ac_1_powered: true,
                     is_ac_2_powered: true,
+                    is_ac_3_powered: true,
+                    is_ac_4_powered: true,
+                    is_ac_eha_powered: true,
                     is_dc_1_powered: true,
                     is_dc_2_powered: true,
                     is_dc_ess_powered: true,
@@ -6894,6 +6941,14 @@ mod tests {
                 self.is_ac_2_powered = bus_is_alive;
             }
 
+            fn set_ac_bus_3_is_powered(&mut self, bus_is_alive: bool) {
+                self.is_ac_3_powered = bus_is_alive;
+            }
+
+            fn set_ac_bus_4_is_powered(&mut self, bus_is_alive: bool) {
+                self.is_ac_4_powered = bus_is_alive;
+            }
+
             fn _set_dc_ground_service_is_powered(&mut self, bus_is_alive: bool) {
                 self.is_dc_ground_service_powered = bus_is_alive;
             }
@@ -6912,6 +6967,10 @@ mod tests {
 
             fn set_ac_ess_is_powered(&mut self, bus_is_alive: bool) {
                 self.is_ac_ess_powered = bus_is_alive;
+            }
+
+            fn set_ac_eha_is_powered(&mut self, bus_is_alive: bool) {
+                self.is_ac_eha_powered = bus_is_alive;
             }
 
             fn _set_dc_ess_is_powered(&mut self, bus_is_alive: bool) {
@@ -6935,6 +6994,18 @@ mod tests {
 
                 if self.is_ac_2_powered {
                     electricity.flow(&self.powered_source_ac, &self.ac_2_bus);
+                }
+
+                if self.is_ac_3_powered {
+                    electricity.flow(&self.powered_source_ac, &self.ac_3_bus);
+                }
+
+                if self.is_ac_4_powered {
+                    electricity.flow(&self.powered_source_ac, &self.ac_4_bus);
+                }
+
+                if self.is_ac_eha_powered {
+                    electricity.flow(&self.powered_source_ac, &self.ac_eha_bus);
                 }
 
                 if self.is_ac_ground_service_powered {
@@ -7598,6 +7669,16 @@ mod tests {
                 self
             }
 
+            fn ac_bus_3_lost(mut self) -> Self {
+                self.command(|a| a.set_ac_bus_3_is_powered(false));
+                self
+            }
+
+            fn ac_bus_4_lost(mut self) -> Self {
+                self.command(|a| a.set_ac_bus_4_is_powered(false));
+                self
+            }
+
             fn _dc_ground_service_lost(mut self) -> Self {
                 self.command(|a| a._set_dc_ground_service_is_powered(false));
                 self
@@ -7640,6 +7721,16 @@ mod tests {
 
             fn ac_ess_active(mut self) -> Self {
                 self.command(|a| a.set_ac_ess_is_powered(true));
+                self
+            }
+
+            fn ac_eha_lost(mut self) -> Self {
+                self.command(|a| a.set_ac_eha_is_powered(false));
+                self
+            }
+
+            fn ac_eha_active(mut self) -> Self {
+                self.command(|a| a.set_ac_eha_is_powered(true));
                 self
             }
 
@@ -8618,7 +8709,7 @@ mod tests {
                 .on_the_ground()
                 .set_cold_dark_inputs()
                 .reset_all_aileron_commands()
-                .ac_ess_lost()
+                .ac_eha_lost()
                 .set_aileron_panel_neutral(
                     ActuatorSide::Left,
                     AileronPanelPosition::Inward,
@@ -8638,7 +8729,7 @@ mod tests {
 
             test_bed = test_bed
                 .reset_all_aileron_commands()
-                .ac_ess_active()
+                .ac_eha_active()
                 .set_aileron_panel_neutral(
                     ActuatorSide::Left,
                     AileronPanelPosition::Inward,
@@ -8667,7 +8758,7 @@ mod tests {
                 .on_the_ground()
                 .set_cold_dark_inputs()
                 .reset_all_aileron_commands()
-                .ac_ess_lost()
+                .ac_eha_lost()
                 .set_aileron_panel_neutral(
                     ActuatorSide::Right,
                     AileronPanelPosition::Inward,
@@ -8687,7 +8778,7 @@ mod tests {
 
             test_bed = test_bed
                 .reset_all_aileron_commands()
-                .ac_ess_active()
+                .ac_eha_active()
                 .set_aileron_panel_neutral(
                     ActuatorSide::Right,
                     AileronPanelPosition::Inward,
@@ -9853,14 +9944,14 @@ mod tests {
             assert!(test_bed.is_yellow_pressure_switch_pressurised());
 
             test_bed = test_bed
-                .ac_bus_2_lost()
+                .ac_bus_4_lost()
                 .run_waiting_for(Duration::from_secs(25));
 
-            // Yellow A epump still working as plugged on AC1
+            // Yellow A epump still working as plugged on AC3
             assert!(test_bed.is_yellow_pressure_switch_pressurised());
 
             test_bed = test_bed
-                .ac_bus_1_lost()
+                .ac_bus_3_lost()
                 .run_waiting_for(Duration::from_secs(25));
 
             // Yellow epump has stopped
@@ -9883,14 +9974,14 @@ mod tests {
             assert!(test_bed.is_yellow_pressure_switch_pressurised());
 
             test_bed = test_bed
-                .ac_bus_1_lost()
+                .ac_bus_3_lost()
                 .run_waiting_for(Duration::from_secs(25));
 
-            // Yellow B epump still working as plugged on AC2
+            // Yellow B epump still working as plugged on AC4
             assert!(test_bed.is_yellow_pressure_switch_pressurised());
 
             test_bed = test_bed
-                .ac_bus_2_lost()
+                .ac_bus_4_lost()
                 .run_waiting_for(Duration::from_secs(25));
 
             // Yellow epump has stopped
@@ -10465,6 +10556,8 @@ mod tests {
                 .set_cold_dark_inputs()
                 .ac_bus_1_lost()
                 .ac_bus_2_lost()
+                .ac_bus_3_lost()
+                .ac_bus_4_lost()
                 .run_one_tick();
 
             // Waiting for 5s pressure should not rise due to no pump avail
