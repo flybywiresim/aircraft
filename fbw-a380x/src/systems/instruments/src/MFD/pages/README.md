@@ -5,48 +5,80 @@ This directory contains the different pages for the A380's MFD. List for pages i
 ## Status and description of components
 Status legend:
 ✅ Feature complete
-🟨 In progress
+2️⃣ Phase 2 in progress: Data
+1️⃣ Phase 1 in progress: Layout
 🟥 Not yet started
 
 ### FMS
-| Status      | URI |
-| ------------- | ------------- |
-| 🟥 | fms/\*/f-pln |
-| 🟨 | fms/\*/perf |
-| 🟥 | fms/\*/fuel-load |
-| 🟥 | fms/\*/wind |
-| 🟥 | fms/\*/init |
+| Status      | URI | Sprint/Prio |
+| ------------- | ------------- | ------------- |
+| 🟥 | fms/\*/init | 1 |
+| 🟥 | fms/\*/fuel-load | 1 |
+| 1️⃣ | fms/\*/perf | 1 |
 |  |  |
-| 🟥 | fms/position/navaids |
+| 🟥 | fms/\*/f-pln | 1 |
+| 🟥 | fms/\*/f-pln/rte-sel | 1 |
+| 🟥 | fms/\*/f-pln/departure | 1 |
+| 🟥 | fms/\*/f-pln/arrival | 1 |
+| 🟥 | fms/\*/f-pln/airways | 1 |
+| 🟥 | fms/\*/f-pln/direct-to | 1 |
+| 🟥 | fms/\*/f-pln/hold | 1 |
+| 🟥 | fms/\*/f-pln/duplicate-names | 1 |
+| 🟥 | fms/\*/f-pln/vert-rev | 2 |
+| 🟥 | fms/\*/f-pln/offset | 3 |
+| 🟥 | fms/\*/f-pln/fix-info | 3 |
+| 🟥 | fms/\*/f-pln/alternate | 3 |
+| 🟥 | fms/\*/f-pln/closest-airports | 3 |
+| 🟥 | fms/\*/f-pln/cpny-wind-data-req | 3 |
+| 🟥 | fms/\*/wind | 3 |
+| 🟥 | fms/\*/f-pln/cpny-f-pln-req | 9 |
+| 🟥 | fms/\*/f-pln/cpny-to-data-req | 9 |
+| 🟥 | fms/\*/f-pln/cpny-to-data-recv | 9 |
+| 🟥 | fms/\*/f-pln/equi-time-point | 9 |
+| 🟥 | fms/\*/f-pln/ll-xing-time-mkr | 9 |
 |  |  |
-| 🟥 | fms/sec/index |
+| 🟥 | fms/position/irs | 1 |
+| 🟥 | fms/position/monitor | 2 |
+| 🟥 | fms/position/gps | 2 |
+| 🟥 | fms/position/navaids | 2 |
+| 🟥 | fms/position/report | 3 |
 |  |  |
-| 🟥 | fms/data/route |
+| 🟥 | fms/sec/index | 3 |
+|  |  |
+| 🟥 | fms/data/airport | 2 |
+| 🟥 | fms/data/navaid | 2 |
+| 🟥 | fms/data/status | 2 |
+| 🟥 | fms/data/waypoint | 2 |
+| 🟥 | fms/data/printer | 3 |
+| 🟥 | fms/data/route | 3 |
+|  |  |
+| 🟥 | fms/data/msg-list | 1 |
+
 \* (active | sec1 | sec2 | sec3)
 
 ### ATCCOM
 
-| Status      | URI |
-| ------------- | ------------- |
-| 🟥 | atccom/connect |
-| 🟥 | atccom/request |
-| 🟥 | atccom/report-modify |
-| 🟥 | atccom/msg-record |
-| 🟥 | atccom/d-atis |
-| 🟥 | atccom/d-atis/list |
-| 🟥 | atccom/emer |
+| Status      | URI | Sprint/Prio |
+| ------------- | ------------- | ------------- |
+| 🟥 | atccom/connect | 6 |
+| 🟥 | atccom/request | 6 |
+| 🟥 | atccom/report-modify | 6 |
+| 🟥 | atccom/msg-record | 6 |
+| 🟥 | atccom/d-atis | 6 |
+| 🟥 | atccom/d-atis/list | 6 |
+| 🟥 | atccom/emer | 6 |
 
 ### SURV
 
-| Status      | URI |
-| ------------- | ------------- |
-| 🟥 | surv/controls |
-| 🟥 | surv/status-switching |
+| Status      | URI | Sprint/Prio |
+| ------------- | ------------- | ------------- |
+| 🟥 | surv/controls | 4 |
+| 🟥 | surv/status-switching | 4 |
 
 ### FCU BKUP
 
-| Status      | URI |
-| ------------- | ------------- |
-| 🟥 | fcubkup |
+| Status      | URI | Sprint/Prio |
+| ------------- | ------------- | ------------- |
+| 🟥 | fcubkup | 5 |
 
 ## Known issues / improvements
