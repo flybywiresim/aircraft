@@ -190,7 +190,7 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                 </div>
                                 <div style="margin-right: 15px; margin-top: 15px;">
                                     <DropdownMenu
-                                        values={ArraySubject.create(['ON', 'OFF'])}
+                                        values={ArraySubject.create(['ON', 'OFF/APU'])}
                                         selectedIndex={this.selectedPacksIndex}
                                         idPrefix="packsDropdown"
                                         onChangeCallback={(val) => this.selectedPacksIndex.set(val)}
@@ -198,7 +198,7 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                 </div>
                                 <div style="margin-top: 15px;">
                                     <DropdownMenu
-                                        values={ArraySubject.create(['ON', 'OFF'])}
+                                        values={ArraySubject.create(['OFF', 'NAI', 'WAI', 'NAI+WAI'])}
                                         selectedIndex={this.selectedAntiIceIndex}
                                         idPrefix="antiIceDropdown"
                                         onChangeCallback={(val) => this.selectedAntiIceIndex.set(val)}

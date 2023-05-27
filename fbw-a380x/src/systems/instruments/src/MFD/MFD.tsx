@@ -42,6 +42,8 @@ export class MfdComponent extends DisplayComponent<MfdProps> {
 
     private displayPowered = Subject.create(false);
 
+    private activeFmsSource = Subject.create<'FMS 1' | 'FMS 2' | 'FMS 1-C' | 'FMS 2-C'>('FMS 1');
+
     private activeUri = Subject.create<ActiveUriInformation>({
         uri: 'fms/active/init',
         sys: 'fms',
@@ -71,6 +73,8 @@ export class MfdComponent extends DisplayComponent<MfdProps> {
         super.onAfterRender(node);
 
         const isCaptainSide = getDisplayIndex() === 1;
+
+        this.activeFmsSource.set(isCaptainSide ? 'FMS 1' : 'FMS 2');
 
         const sub = this.props.bus.getSubscriber<ClockEvents & MfdSimvars>();
 
@@ -124,7 +128,7 @@ export class MfdComponent extends DisplayComponent<MfdProps> {
         // Different systems use different navigation bars
         switch (uriParts[0]) {
         case 'fms':
-            this.activeHeader = <FmsHeader bus={this.props.bus} activeUri={this.activeUri} navigateTo={(uri) => this.navigateTo(uri)} />;
+            this.activeHeader = <FmsHeader bus={this.props.bus} activeFmsSource={this.activeFmsSource} activeUri={this.activeUri} navigateTo={(uri) => this.navigateTo(uri)} />;
             break;
         case 'atccom':
             this.activeHeader = <div />;
@@ -137,7 +141,7 @@ export class MfdComponent extends DisplayComponent<MfdProps> {
             break;
 
         default:
-            this.activeHeader = <FmsHeader bus={this.props.bus} activeUri={this.activeUri} navigateTo={(uri) => this.navigateTo(uri)} />;
+            this.activeHeader = <FmsHeader bus={this.props.bus} activeFmsSource={this.activeFmsSource} activeUri={this.activeUri} navigateTo={(uri) => this.navigateTo(uri)} />;
             break;
         }
 

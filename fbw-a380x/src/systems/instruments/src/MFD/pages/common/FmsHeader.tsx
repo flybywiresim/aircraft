@@ -1,11 +1,16 @@
-import { ArraySubject, DisplayComponent, FSComponent, Subject, Subscription, VNode } from '@microsoft/msfs-sdk';
+import { ArraySubject, DisplayComponent, FSComponent, Subject, Subscribable, Subscription, VNode } from '@microsoft/msfs-sdk';
 import { MfdComponentProps } from 'instruments/src/MFD/MFD';
 import { DropdownMenu } from 'instruments/src/MFD/pages/common/DropdownMenu';
 import { PageSelectorDropdownMenu } from 'instruments/src/MFD/pages/common/PageSelectorDropdownMenu';
 
-export class FmsHeader extends DisplayComponent<MfdComponentProps> {
+interface MfdFmsHeaderProps extends MfdComponentProps {
+    activeFmsSource: Subscribable<'FMS 1' | 'FMS 2' | 'FMS 1-C' | 'FMS 2-C'>;
+}
+export class FmsHeader extends DisplayComponent<MfdFmsHeaderProps> {
     // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
     private subs = [] as Subscription[];
+
+    private availableSystems = ArraySubject.create([this.props.activeFmsSource.get(), 'ATCCOM', 'SURV', 'FCU BKUP']);
 
     private sysSelectorSelectedIndex = Subject.create(0);
 
@@ -42,6 +47,11 @@ export class FmsHeader extends DisplayComponent<MfdComponentProps> {
 
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
+
+        this.subs.push(this.props.activeFmsSource.sub((val) => {
+            this.availableSystems.removeAt(0);
+            this.availableSystems.insert(val, 0);
+        }, true));
 
         this.subs.push(this.props.activeUri.sub((val) => {
             switch (val.sys) {
@@ -82,7 +92,7 @@ export class FmsHeader extends DisplayComponent<MfdComponentProps> {
             <>
                 <div style="display: flex; flex-direction: row;">
                     <DropdownMenu
-                        values={ArraySubject.create(['FMS 1', 'ATCCOM', 'SURV', 'FCU BKUP'])}
+                        values={this.availableSystems}
                         selectedIndex={this.sysSelectorSelectedIndex}
                         idPrefix="sysSelectorDropdown"
                         onChangeCallback={(val) => this.changeSystem(val)}
