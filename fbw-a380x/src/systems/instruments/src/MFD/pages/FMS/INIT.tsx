@@ -50,7 +50,7 @@ export class MfdFmsActiveInit extends DisplayComponent<MfdFmsActiveInitProps> {
     render(): VNode {
         return (
             <>
-                <ActivePageTitleBar activePage={this.activePageTitle} tmpyIsActive={Subject.create(false)} />
+                <ActivePageTitleBar activePage={this.activePageTitle} offset={Subject.create('')} eoIsActive={Subject.create(false)} tmpyIsActive={Subject.create(false)} />
                 {/* begin page content */}
                 <div class="MFDPageContainer" />
                 {/* end page content */}

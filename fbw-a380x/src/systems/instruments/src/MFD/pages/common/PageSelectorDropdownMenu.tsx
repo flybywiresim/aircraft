@@ -36,7 +36,11 @@ export class PageSelectorDropdownMenu extends DisplayComponent<PageSelectorDropd
         });
 
         this.dropdownSelectorRef.instance.addEventListener('click', () => {
-            this.dropdownIsOpened.set(!this.dropdownIsOpened.get());
+            if (this.props.menuItems.length > 1) {
+                this.dropdownIsOpened.set(!this.dropdownIsOpened.get());
+            } else if (this.props.menuItems.length === 1) {
+                this.props.menuItems[0].action();
+            }
         });
 
         this.subs.push(this.dropdownIsOpened.sub((val) => {
@@ -70,11 +74,13 @@ export class PageSelectorDropdownMenu extends DisplayComponent<PageSelectorDropd
                         </span>
                     </div>
                     <div style="display: flex;">
-                        <span style="padding: 8px;">
-                            <svg height="15" width="15">
-                                <polygon points="0,0 15,0 7.5,15" style="fill: white" />
-                            </svg>
-                        </span>
+                        {this.props.menuItems.length > 1 && (
+                            <span style="padding: 8px;">
+                                <svg height="15" width="15">
+                                    <polygon points="0,0 15,0 7.5,15" style="fill: white" />
+                                </svg>
+                            </span>
+                        )}
                     </div>
                 </div>
                 <div ref={this.dropdownMenuRef} class="MFDDropdownMenu" style={`display: ${this.dropdownIsOpened.get() ? 'block' : 'none'}`}>

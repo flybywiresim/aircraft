@@ -3,10 +3,10 @@ import { MfdComponentProps } from 'instruments/src/MFD/MFD';
 import { DropdownMenu } from 'instruments/src/MFD/pages/common/DropdownMenu';
 import { PageSelectorDropdownMenu } from 'instruments/src/MFD/pages/common/PageSelectorDropdownMenu';
 
-interface MfdFmsHeaderProps extends MfdComponentProps {
+interface MfdAtccomHeaderProps extends MfdComponentProps {
     activeFmsSource: Subscribable<'FMS 1' | 'FMS 2' | 'FMS 1-C' | 'FMS 2-C'>;
 }
-export class FmsHeader extends DisplayComponent<MfdFmsHeaderProps> {
+export class AtccomHeader extends DisplayComponent<MfdAtccomHeaderProps> {
     // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
     private subs = [] as Subscription[];
 
@@ -14,13 +14,17 @@ export class FmsHeader extends DisplayComponent<MfdFmsHeaderProps> {
 
     private sysSelectorSelectedIndex = Subject.create(0);
 
-    private activeIsSelected = Subject.create(false);
+    private connectIsSelected = Subject.create(false);
 
-    private positionIsSelected = Subject.create(false);
+    private requestIsSelected = Subject.create(false);
 
-    private secIndexIsSelected = Subject.create(false);
+    private reportModifyIsSelected = Subject.create(false);
 
-    private dataIsSelected = Subject.create(false);
+    private msgRecordIsSelected = Subject.create(false);
+
+    private atisIsSelected = Subject.create(false);
+
+    private emerIsSelected = Subject.create(false);
 
     public changeSystem(selectedSysIndex: number) {
         this.sysSelectorSelectedIndex.set(selectedSysIndex);
@@ -73,10 +77,12 @@ export class FmsHeader extends DisplayComponent<MfdFmsHeaderProps> {
                 break;
             }
 
-            this.activeIsSelected.set(val.category === 'active');
-            this.positionIsSelected.set(val.category === 'position');
-            this.secIndexIsSelected.set(val.category === 'sec' || val.category === 'sec1' || val.category === 'sec2' || val.category === 'sec3');
-            this.dataIsSelected.set(val.category === 'data');
+            this.connectIsSelected.set(val.category === 'connect');
+            this.requestIsSelected.set(val.category === 'request');
+            this.reportModifyIsSelected.set(val.category === 'report-modify');
+            this.msgRecordIsSelected.set(val.category === 'msg-record');
+            this.atisIsSelected.set(val.category === 'atis');
+            this.emerIsSelected.set(val.category === 'emer');
         }, true));
     }
 
@@ -102,50 +108,52 @@ export class FmsHeader extends DisplayComponent<MfdFmsHeaderProps> {
                 </div>
                 <div style="display: flex; flex-direction: row;">
                     <PageSelectorDropdownMenu
-                        isActive={this.activeIsSelected}
-                        label="ACTIVE"
+                        isActive={this.connectIsSelected}
+                        label="CONNECT"
                         menuItems={[
-                            { label: 'F-PLN', action: () => this.props.navigateTo('fms/active/f-pln') },
-                            { label: 'PERF', action: () => this.props.navigateTo('fms/active/perf') },
-                            { label: 'FUEL&LOAD', action: () => this.props.navigateTo('fms/active/fuel-load') },
-                            { label: 'WIND', action: () => this.props.navigateTo('fms/active/wind') },
-                            { label: 'INIT', action: () => this.props.navigateTo('fms/active/init') }]}
-                        idPrefix="pageSelectorActive"
+                            { label: 'NOTIFICATION', action: () => this.props.navigateTo('atccom/connect/notification') },
+                            { label: 'CONNECTION STATUS', action: () => this.props.navigateTo('atccom/connect/conn-status') },
+                            { label: 'MAX UPLINK DELAY', action: () => this.props.navigateTo('atccom/connect/max-uplink-delay') }]}
+                        idPrefix="pageSelectorConnect"
                         containerStyle="flex: 1"
                     />
                     <PageSelectorDropdownMenu
-                        isActive={this.positionIsSelected}
-                        label="POSITION"
-                        menuItems={[
-                            { label: 'MONITOR', action: () => this.props.navigateTo('fms/position/monitor') },
-                            { label: 'REPORT', action: () => this.props.navigateTo('fms/position/report') },
-                            { label: 'NAVAIDS', action: () => this.props.navigateTo('fms/position/navaids') },
-                            { label: 'IRS', action: () => this.props.navigateTo('fms/position/irs') },
-                            { label: 'GPS', action: () => this.props.navigateTo('fms/position/gps') }]}
-                        idPrefix="pageSelectorPosition"
+                        isActive={this.requestIsSelected}
+                        label="REQUEST"
+                        menuItems={[{ label: '', action: () => this.props.navigateTo('atccom/request') }]}
+                        idPrefix="pageSelectorRequest"
                         containerStyle="flex: 1"
                     />
                     <PageSelectorDropdownMenu
-                        isActive={this.secIndexIsSelected}
-                        label="SEC INDEX"
+                        isActive={this.reportModifyIsSelected}
+                        label="REPORTY & MODIFY"
                         menuItems={[
-                            { label: 'SEC 1', action: () => this.props.navigateTo('fms/sec1/init') },
-                            { label: 'SEC 2', action: () => this.props.navigateTo('fms/sec2/init') },
-                            { label: 'SEC 3', action: () => this.props.navigateTo('fms/sec3/init') }]}
-                        idPrefix="pageSelectorSecIndex"
+                            { label: 'POSITION', action: () => this.props.navigateTo('atccom/report-modify/position') },
+                            { label: 'MODIFY', action: () => this.props.navigateTo('atccom/report-modify/modify') },
+                            { label: 'OTHER REPORTS', action: () => this.props.navigateTo('atccom/report-modify/other-reports') },
+                        ]}
+                        idPrefix="pageSelectorReportModify"
                         containerStyle="flex: 1"
                     />
                     <PageSelectorDropdownMenu
-                        isActive={this.dataIsSelected}
-                        label="DATA"
-                        menuItems={[
-                            { label: 'STATUS', action: () => this.props.navigateTo('fms/data/status') },
-                            { label: 'WAYPOINT', action: () => this.props.navigateTo('fms/data/waypoint') },
-                            { label: 'NAVAID', action: () => this.props.navigateTo('fms/data/navaid') },
-                            { label: 'ROUTE', action: () => this.props.navigateTo('fms/data/route') },
-                            { label: 'AIRPORT', action: () => this.props.navigateTo('fms/data/airport') },
-                            { label: 'PRINTER', action: () => this.props.navigateTo('fms/data/printer') }]}
-                        idPrefix="pageSelectorData"
+                        isActive={this.msgRecordIsSelected}
+                        label="MSG RECORD"
+                        menuItems={[{ label: '', action: () => this.props.navigateTo('atccom/msg-record') }]}
+                        idPrefix="pageSelectorMsgRecord"
+                        containerStyle="flex: 1"
+                    />
+                    <PageSelectorDropdownMenu
+                        isActive={this.atisIsSelected}
+                        label="ATIS"
+                        menuItems={[{ label: '', action: () => this.props.navigateTo('atccom/atis') }]}
+                        idPrefix="pageSelectorAtis"
+                        containerStyle="flex: 1"
+                    />
+                    <PageSelectorDropdownMenu
+                        isActive={this.emerIsSelected}
+                        label="EMER"
+                        menuItems={[{ label: '', action: () => this.props.navigateTo('atccom/emer') }]}
+                        idPrefix="pageSelectorEmer"
                         containerStyle="flex: 1"
                     />
                 </div>

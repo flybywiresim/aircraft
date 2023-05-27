@@ -10,6 +10,9 @@ import { MfdFmsActivePerf } from 'instruments/src/MFD/pages/FMS/PERF';
 import { MfdFmsActiveInit } from 'instruments/src/MFD/pages/FMS/INIT';
 
 import { MfdNotFound } from 'instruments/src/MFD/pages/FMS/NOT_FOUND';
+import { FcuBkupHeader } from 'instruments/src/MFD/pages/common/FcuBkupHeader';
+import { SurvHeader } from 'instruments/src/MFD/pages/common/SurvHeader';
+import { AtccomHeader } from 'instruments/src/MFD/pages/common/AtccomHeader';
 import { MfdSimvars } from './shared/MFDSimvarPublisher';
 import { DisplayUnit } from '../MsfsAvionicsCommon/displayUnit';
 
@@ -100,6 +103,7 @@ export class MfdComponent extends DisplayComponent<MfdProps> {
      * In theory, one can use anything after a third slash for intra-page deep linking: fms/active/f-pln/dep could link to the F-PLN's departure page.
      */
     private navigateTo(uri: string) {
+        console.info(`Navigate to ${uri}`);
         const uriParts = uri.split('/');
         this.activeUri.set({
             uri,
@@ -131,13 +135,13 @@ export class MfdComponent extends DisplayComponent<MfdProps> {
             this.activeHeader = <FmsHeader bus={this.props.bus} activeFmsSource={this.activeFmsSource} activeUri={this.activeUri} navigateTo={(uri) => this.navigateTo(uri)} />;
             break;
         case 'atccom':
-            this.activeHeader = <div />;
+            this.activeHeader = <AtccomHeader bus={this.props.bus} activeFmsSource={this.activeFmsSource} activeUri={this.activeUri} navigateTo={(uri) => this.navigateTo(uri)} />;
             break;
         case 'surv':
-            this.activeHeader = <div />;
+            this.activeHeader = <SurvHeader bus={this.props.bus} activeFmsSource={this.activeFmsSource} activeUri={this.activeUri} navigateTo={(uri) => this.navigateTo(uri)} />;
             break;
         case 'fcubkup':
-            this.activeHeader = <div />;
+            this.activeHeader = <FcuBkupHeader bus={this.props.bus} activeFmsSource={this.activeFmsSource} activeUri={this.activeUri} navigateTo={(uri) => this.navigateTo(uri)} />;
             break;
 
         default:
