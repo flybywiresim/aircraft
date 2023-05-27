@@ -6,6 +6,7 @@ interface RadioButtonGroupProps extends ComponentProps {
     selectedIndex: Subscribable<number>;
     idPrefix: string;
     onChangeCallback: (newSelectedIndex: number) => void;
+    additionalVerticalSpacing?: number;
 }
 export class RadioButtonGroup extends DisplayComponent<RadioButtonGroupProps> {
     // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
@@ -46,7 +47,11 @@ export class RadioButtonGroup extends DisplayComponent<RadioButtonGroupProps> {
         return (
             <form>
                 {this.props.values.getArray().map((el, idx) => (
-                    <label class="MFDRadioButton" htmlFor={`${this.props.idPrefix}_${idx}`}>
+                    <label
+                        class="MFDRadioButton"
+                        htmlFor={`${this.props.idPrefix}_${idx}`}
+                        style={this.props.additionalVerticalSpacing ? `margin-top: ${this.props.additionalVerticalSpacing}px;` : ''}
+                    >
                         <input type="radio" name="entityType" id={`${this.props.idPrefix}_${idx}`} />
                         <span>{el}</span>
                     </label>

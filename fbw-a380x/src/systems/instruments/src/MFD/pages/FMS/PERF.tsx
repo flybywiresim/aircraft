@@ -20,20 +20,81 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
     // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
     private subs = [] as Subscription[];
 
+    // Subjects
+
     private activePageTitle = Subject.create<string>('');
 
     private flightPhasesSelectedPageIndex = Subject.create(0);
 
     private selectedThrustSettingIndex = Subject.create(0);
 
+    private selectedDeratedIndex = Subject.create(0);
+
     private selectedFlapsIndex = Subject.create(0);
 
-    private selectedPacksIndex = Subject.create(0);
+    private selectedPacksIndex = Subject.create(1);
 
     private selectedAntiIceIndex = Subject.create(0);
 
+    // Refs
+    private flexInputRef = FSComponent.createRef<HTMLDivElement>();
+
+    private deratedInputRef = FSComponent.createRef<HTMLDivElement>();
+
+    private noiseFieldsRefs = [FSComponent.createRef<HTMLDivElement>(),
+        FSComponent.createRef<HTMLDivElement>(),
+        FSComponent.createRef<HTMLDivElement>(),
+        FSComponent.createRef<HTMLDivElement>(),
+        FSComponent.createRef<HTMLDivElement>()];
+
+    private noiseButtonRef = FSComponent.createRef<HTMLDivElement>();
+
+    private noiseEndLabelRef = FSComponent.createRef<HTMLSpanElement>();
+
+    private noiseEndInputRef = FSComponent.createRef<HTMLDivElement>();
+
+    private thrustSettingChanged(newIndex: number) {
+        this.selectedThrustSettingIndex.set(newIndex);
+
+        if (newIndex === 1) {
+            // FLEX
+            this.flexInputRef.instance.style.visibility = 'visible';
+            this.deratedInputRef.instance.style.visibility = 'hidden';
+        } else if (newIndex === 2) {
+            // DERATED
+            this.flexInputRef.instance.style.visibility = 'hidden';
+            this.deratedInputRef.instance.style.visibility = 'visible';
+        } else {
+            // FLEX
+            this.flexInputRef.instance.style.visibility = 'hidden';
+            this.deratedInputRef.instance.style.visibility = 'hidden';
+        }
+    }
+
+    private showNoiseFields(visible: boolean) {
+        if (visible === true) {
+            this.noiseButtonRef.instance.style.display = 'none';
+            this.noiseEndLabelRef.instance.style.display = 'flex';
+            this.noiseEndInputRef.instance.style.display = 'flex';
+            this.noiseFieldsRefs.forEach((el) => {
+                el.instance.style.visibility = 'visible';
+            });
+        } else {
+            this.noiseButtonRef.instance.style.display = 'flex';
+            this.noiseEndLabelRef.instance.style.display = 'none';
+            this.noiseEndInputRef.instance.style.display = 'none';
+            this.noiseFieldsRefs.forEach((el) => {
+                el.instance.style.visibility = 'hidden';
+            });
+        }
+    }
+
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
+
+        // Initialized hidden/visible states
+        this.thrustSettingChanged(0);
+        this.showNoiseFields(false);
 
         this.subs.push(this.props.activeUri.sub((val) => {
             switch (val.category) {
@@ -138,7 +199,7 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                     </div>
                                     <div class="MFDLabelValueContainer">
                                         <span class="MFDLabel spacingRight">F</span>
-                                        <span class="MFDGreenValue">169</span>
+                                        <span class="MFDGreenValue">216</span>
                                         <span class="MFDUnitLabel trailingUnit">KT</span>
                                     </div>
                                     <div class="MFDLabelValueContainer">
@@ -160,15 +221,30 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                         <span class="MFDUnitLabel trailingUnit">KT</span>
                                     </div>
                                 </div>
-                                <div style="flex: 4; display: flex; flex-direction: column; justify-items: center; justify-content: center; ">
+                                <div style="flex: 3; display: flex; flex-direction: column; justify-items: center; justify-content: center; ">
                                     <span style="width: 175px; display: inline; margin-left: 15px;">
                                         <RadioButtonGroup
                                             values={ArraySubject.create(['TOGA', 'FLEX', 'DERATED'])}
                                             selectedIndex={this.selectedThrustSettingIndex}
                                             idPrefix="thrustSettingRadio"
-                                            onChangeCallback={(num) => this.selectedThrustSettingIndex.set(num)}
+                                            onChangeCallback={(num) => this.thrustSettingChanged(num)}
+                                            additionalVerticalSpacing={15}
                                         />
                                     </span>
+                                </div>
+                                <div style="flex: 1; display: flex; flex-direction: column; justify-items: center; justify-content: center; ">
+                                    <div class="MFDLabelValueContainer" style="margin-top: 60px;" ref={this.flexInputRef}>
+                                        <NumberInput value={Subject.create(undefined)} emptyValueString="---" unitTrailing={Subject.create('°C')} />
+                                    </div>
+                                    <div style="margin-top: 0px" ref={this.deratedInputRef}>
+                                        <DropdownMenu
+                                            values={ArraySubject.create(['D01', 'D02', 'D03', 'D04'])}
+                                            selectedIndex={this.selectedDeratedIndex}
+                                            idPrefix="deratedDropdown"
+                                            onChangeCallback={(val) => this.selectedDeratedIndex.set(val)}
+                                            containerStyle="width: 100px;"
+                                        />
+                                    </div>
                                 </div>
                             </div>
                             <div style="display: grid; grid-template-columns: 17% 20% 30% 30%; margin-top: 20px;">
@@ -178,7 +254,7 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                 <div><span class="MFDLabel">ANTI ICE</span></div>
                                 <div style="margin-top: 15px;">
                                     <DropdownMenu
-                                        values={ArraySubject.create(['-', '1', '2', '3'])}
+                                        values={ArraySubject.create(['1', '2', '3'])}
                                         selectedIndex={this.selectedFlapsIndex}
                                         idPrefix="flapDropdown"
                                         onChangeCallback={(val) => this.selectedFlapsIndex.set(val)}
@@ -190,7 +266,7 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                 </div>
                                 <div style="margin-right: 15px; margin-top: 15px;">
                                     <DropdownMenu
-                                        values={ArraySubject.create(['ON', 'OFF/APU'])}
+                                        values={ArraySubject.create(['OFF/APU', 'ON'])}
                                         selectedIndex={this.selectedPacksIndex}
                                         idPrefix="packsDropdown"
                                         onChangeCallback={(val) => this.selectedPacksIndex.set(val)}
@@ -198,15 +274,17 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                 </div>
                                 <div style="margin-top: 15px;">
                                     <DropdownMenu
-                                        values={ArraySubject.create(['OFF', 'NAI', 'WAI', 'NAI+WAI'])}
+                                        values={ArraySubject.create(['OFF', 'ENG ONLY', 'ENG + WING'])}
                                         selectedIndex={this.selectedAntiIceIndex}
                                         idPrefix="antiIceDropdown"
                                         onChangeCallback={(val) => this.selectedAntiIceIndex.set(val)}
                                     />
                                 </div>
                             </div>
-                            <div style="display: grid; grid-template-columns: auto auto; margin: 30px 60px 30px 0px; width: 45%;">
-                                <div style="display: flex; justify-content: flex-end; align-items: center; margin-right: 15px; margin-bottom: 15px;"><span class="MFDLabel">THR RED</span></div>
+                            <div style="display: grid; grid-template-columns: auto auto auto auto auto; grid-auto-rows: 50px; margin: 30px 60px 30px 0px; height: 150px;">
+                                <div style="display: flex; justify-content: flex-end; align-items: center; margin-right: 15px; margin-bottom: 15px; width: 125px;">
+                                    <span class="MFDLabel">THR RED</span>
+                                </div>
                                 <div style="margin-bottom: 15px;">
                                     <NumberInput
                                         value={Subject.create(3000)}
@@ -215,21 +293,82 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                         containerStyle="width: 150px; justify-content: flex-end;"
                                     />
                                 </div>
-                                <div style="display: flex; justify-content: flex-end; align-items: center; margin-right: 15px; margin-bottom: 15px;"><span class="MFDLabel">ACCEL</span></div>
+                                <div>
+                                    <div ref={this.noiseFieldsRefs[0]} style="display: flex; justify-content: flex-end; align-items: center; margin-right: 15px; margin-bottom: 15px;">
+                                        <svg fill="#ffffff" height="35px" width="35px" viewBox="0 0 60 60">
+                                            <polygon points="0,28 50,28 50,20 60,30 50,40 50,32 0,32" />
+                                        </svg>
+                                        <span class="MFDLabel" style="width: 40px; margin-left: 10px; text-align: right">N1</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div ref={this.noiseFieldsRefs[1]} style="margin-bottom: 15px;">
+                                        <NumberInput
+                                            value={Subject.create(82)}
+                                            emptyValueString="--"
+                                            unitTrailing={Subject.create('%')}
+                                            containerStyle="width: 110px; justify-content: flex-end;"
+                                        />
+                                    </div>
+                                </div>
+                                <div style="grid-row-start: span 2;">
+                                    <div ref={this.noiseFieldsRefs[2]} style=" display: flex; justify-content: center; align-items: center;">
+                                        <Button onClick={() => this.showNoiseFields(false)}>
+                                            CANCEL
+                                            <br />
+                                            NOISE
+                                        </Button>
+                                    </div>
+                                </div>
+                                <div style="display: flex; justify-content: flex-end; align-items: center; margin-right: 15px; margin-bottom: 15px; width: 125px;">
+                                    <span class="MFDLabel">ACCEL</span>
+                                </div>
                                 <div style="margin-bottom: 15px;">
                                     <NumberInput
-                                        value={Subject.create(800)}
+                                        value={Subject.create(1300)}
                                         emptyValueString="----"
                                         unitTrailing={Subject.create('FT')}
                                         containerStyle="width: 150px; justify-content: flex-end;"
                                     />
                                 </div>
-                                <div />
-                                <div style="display: flex; flex: 1;">
-                                    <Button onClick={() => console.log('NOISE')}>
-                                        NOISE
-                                    </Button>
+                                <div>
+                                    <div ref={this.noiseFieldsRefs[3]} style="display: flex; justify-content: flex-end; align-items: center; margin-right: 15px; margin-bottom: 15px;">
+                                        <svg fill="#ffffff" height="35px" width="35px" viewBox="0 0 60 60">
+                                            <polygon points="0,28 50,28 50,20 60,30 50,40 50,32 0,32" />
+                                        </svg>
+                                        <span class="MFDLabel" style="width: 40px; margin-left: 10px; text-align: right">SPD</span>
+                                    </div>
                                 </div>
+                                <div>
+                                    <div ref={this.noiseFieldsRefs[4]} style="margin-bottom: 15px;">
+                                        <NumberInput
+                                            value={Subject.create(214)}
+                                            emptyValueString="---"
+                                            unitTrailing={Subject.create('KT')}
+                                            containerStyle="width: 110px; justify-content: flex-end;"
+                                        />
+                                    </div>
+                                </div>
+                                <div style="display: flex; justify-content: flex-end; align-items: center; margin-right: 15px; margin-bottom: 15px; width: 125px;">
+                                    <span ref={this.noiseEndLabelRef} class="MFDLabel">NOISE END</span>
+                                </div>
+                                <div>
+                                    <div ref={this.noiseButtonRef} style="display: flex;">
+                                        <Button onClick={() => this.showNoiseFields(true)}>
+                                            NOISE
+                                        </Button>
+                                    </div>
+                                    <div ref={this.noiseEndInputRef}>
+                                        <NumberInput
+                                            value={Subject.create(800)}
+                                            emptyValueString="----"
+                                            unitTrailing={Subject.create('FT')}
+                                            containerStyle="width: 150px; justify-content: flex-end;"
+                                        />
+                                    </div>
+                                </div>
+                                <div />
+                                <div />
                             </div>
                             <div style="flex-grow: 1;" />
                             {/* fill space vertically */}

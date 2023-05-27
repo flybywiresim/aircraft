@@ -13,7 +13,9 @@ export class Button extends DisplayComponent<ButtonProps> {
     private buttonRef = FSComponent.createRef<HTMLSpanElement>();
 
     clickHandler(): void {
-        if (this.props.disabled !== undefined && this.props.disabled.get() === false) {
+        if (this.props.disabled === undefined) {
+            this.props.onClick();
+        } else if (this.props.disabled.get() === false) {
             this.props.onClick();
         }
     }

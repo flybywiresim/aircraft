@@ -50,7 +50,16 @@ export class NumberInput extends DisplayComponent<NumberInputProps> {
         return (
             <div ref={this.topRef} class="MFDNumberInputContainer" style={this.props.containerStyle}>
                 <span class="MFDUnitLabel leadingUnit">{this.props.unitLeading}</span>
-                <input ref={this.textInputRef} type="text" class="MFDNumberInputTextInput" maxlength="4" placeholder={this.props.emptyValueString} size="4" pattern="[0-9]+" />
+                <input
+                    ref={this.textInputRef}
+                    type="text"
+                    class="MFDNumberInputTextInput"
+                    maxlength="4"
+                    placeholder={this.props.emptyValueString}
+                    size={this.props.emptyValueString.length}
+                    pattern="[0-9]+"
+                    value={this.props.value.get() ? this.props.value : ''}
+                />
                 <span class="MFDUnitLabel trailingUnit">{this.props.unitTrailing}</span>
             </div>
         );
