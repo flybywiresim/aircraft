@@ -1,10 +1,9 @@
-// Copyright (c) 2021-2022 FlyByWire Simulations
-// Copyright (c) 2021-2022 Synaptic Simulations
+// Copyright (c) 2021-2023 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { FlightPlanManager } from '@fmgc/wtsdk';
 import { UpdateThrottler } from '@shared/UpdateThrottler';
+import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { FmgcComponent } from './FmgcComponent';
 
 export class ReadySignal implements FmgcComponent {
@@ -12,7 +11,7 @@ export class ReadySignal implements FmgcComponent {
 
     private updateThrottler = new UpdateThrottler(1000);
 
-    init(baseInstrument: BaseInstrument, _flightPlanManager: FlightPlanManager): void {
+    init(baseInstrument: BaseInstrument, _flightPlanService: FlightPlanService): void {
         this.baseInstrument = baseInstrument;
     }
 

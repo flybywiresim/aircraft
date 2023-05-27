@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { normaliseApproachName } from '@shared/flightplan';
+import { ApproachUtils } from '@shared/ApproachUtils';
 import { FlightPlanService } from './flightplanning/new/FlightPlanService';
 import { NavigationDatabase, NavigationDatabaseBackend } from './NavigationDatabase';
 import { FlightPlanManager } from './flightplanning/FlightPlanManager';
@@ -17,14 +17,13 @@ import { RawDataMapper } from './flightplanning/RawDataMapper';
 import { Navigation, SelectedNavaidMode, SelectedNavaidType } from './navigation/Navigation';
 import { WaypointFactory } from './flightplanning/new/waypoints/WaypointFactory';
 import { WaypointEntryUtils } from './flightplanning/new/WaypointEntryUtils';
-import { Navigation } from './navigation/Navigation';
 import { FlightPlanIndex } from './flightplanning/new/FlightPlanManager';
 import { NavigationDatabaseService } from './flightplanning/new/NavigationDatabaseService';
 import { SimBriefUplinkAdapter } from './flightplanning/new/uplink/SimBriefUplinkAdapter';
 import { ApproachUtils } from '@shared/ApproachUtils';
 
-function initFmgcLoop(baseInstrument: BaseInstrument, flightPlanManager: FlightPlanManager): void {
-    initComponents(baseInstrument, flightPlanManager);
+function initFmgcLoop(baseInstrument: BaseInstrument, flightPlanService: FlightPlanService): void {
+    initComponents(baseInstrument, flightPlanService);
 }
 
 function updateFmgcLoop(deltaTime: number): void {
@@ -55,6 +54,5 @@ export {
     SelectedNavaidType,
     WaypointFactory,
     WaypointEntryUtils,
-    normaliseApproachName,
     SimBriefUplinkAdapter,
 };
