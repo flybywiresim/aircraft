@@ -10,6 +10,7 @@ import { TdReached } from '@fmgc/components/fms-messages/TdReached';
 import { FMMessage, FMMessageTriggers } from '@shared/FmMessages';
 import { StepAhead } from '@fmgc/components/fms-messages/StepAhead';
 import { StepDeleted } from '@fmgc/components/fms-messages/StepDeleted';
+import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { FmgcComponent } from '../FmgcComponent';
 import { GpsPrimary } from './GpsPrimary';
 import { GpsPrimaryLost } from './GpsPrimaryLost';
@@ -57,12 +58,12 @@ export class FmsMessages implements FmgcComponent {
         new StepDeleted(),
     ];
 
-    init(baseInstrument: BaseInstrument): void {
+    init(baseInstrument: BaseInstrument, flightPlanService: FlightPlanService): void {
         this.baseInstrument = baseInstrument;
 
         for (const selector of this.messageSelectors) {
             if (selector.init) {
-                selector.init(this.baseInstrument);
+                selector.init(this.baseInstrument, flightPlanService);
             }
         }
     }
@@ -201,7 +202,7 @@ export interface FMMessageSelector {
 
     efisSide?: 'L' | 'R';
 
-    init?(baseInstrument: BaseInstrument): void;
+    init?(baseInstrument: BaseInstrument, flightPlanService: FlightPlanService): void;
 
     /**
      * Optionally triggers a message when there isn't any other system or Redux update triggering it.

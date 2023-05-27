@@ -12,13 +12,13 @@ export class StepAhead implements FMMessageSelector {
 
     private guidanceController: GuidanceController;
 
-    private flightPlanService: typeof FlightPlanService;
+    private flightPlanService: FlightPlanService;
 
     private lastState = false;
 
-    init(baseInstrument: BaseInstrument): void {
+    init(baseInstrument: BaseInstrument, flightPlanService: FlightPlanService): void {
         this.guidanceController = baseInstrument.guidanceController;
-        this.flightPlanService = FlightPlanService;
+        this.flightPlanService = flightPlanService;
     }
 
     process(_: number): FMMessageUpdate {

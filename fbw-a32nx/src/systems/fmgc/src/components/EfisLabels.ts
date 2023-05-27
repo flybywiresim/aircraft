@@ -1,10 +1,9 @@
-// Copyright (c) 2021-2022 FlyByWire Simulations
-// Copyright (c) 2021-2022 Synaptic Simulations
+// Copyright (c) 2021-2023 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { FlightPlanManager } from '@fmgc/wtsdk';
 import { FlightLevel } from 'msfs-navdata';
+import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { FmgcComponent } from './FmgcComponent';
 
 export class EfisLabels implements FmgcComponent {
@@ -12,10 +11,7 @@ export class EfisLabels implements FmgcComponent {
 
     private lastTransitionLevel: FlightLevel;
 
-    private flightPlanManager: FlightPlanManager;
-
-    init(_baseInstrument: BaseInstrument, flightPlanManager: FlightPlanManager): void {
-        this.flightPlanManager = flightPlanManager;
+    init(_baseInstrument: BaseInstrument, _flightPlanService: FlightPlanService): void {
     }
 
     update(_deltaTime: number): void {
