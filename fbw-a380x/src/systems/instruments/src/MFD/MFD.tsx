@@ -168,7 +168,7 @@ export class MfdComponent extends DisplayComponent<MfdProps> {
                 <div class="mfd-main" ref={this.topRef}>
                     <div ref={this.activeHeaderRef} />
                     <div ref={this.activePageRef} class="MFDNavigatorContainer" />
-                    <MouseCursor ref={this.mouseCursorRef} />
+                    <MouseCursor side={Subject.create('CPT')} ref={this.mouseCursorRef} />
                 </div>
             </DisplayUnit>
         );

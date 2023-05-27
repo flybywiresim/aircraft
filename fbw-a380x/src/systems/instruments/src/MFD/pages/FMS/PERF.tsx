@@ -179,7 +179,7 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                         selectedTabTextColor="white"
                     >
                         <TopTabNavigatorPage>
-                            <div style="height: 100%; flex: 1; display: flex; justify-content: space-between;">
+                            <div style="height: 100%; flex: 1; display: flex; justify-content: space-between; border-bottom: 1px solid lightgrey;">
                                 <div class="MFDLabelValueContainer" style="padding: 15px;">
                                     <span class="MFDLabel spacingRight">RWY</span>
                                     <span class="MFDGreenValue">14L</span>
@@ -189,7 +189,7 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                     <NumberInput value={Subject.create(undefined)} emptyValueString="----" unitTrailing={Subject.create('M')} />
                                 </div>
                             </div>
-                            <div style="display: flex; flex-direction: row;">
+                            <div style="display: flex; flex-direction: row; border-bottom: 1px solid lightgrey; padding-bottom: 10px;">
                                 <div style="flex: 5; display: grid; grid-template-columns: auto auto;
                                 justify-content: space-between; border-right: 1px solid lightgrey; padding-top: 10px; margin-top: 5px; padding-right: 20px"
                                 >
@@ -247,9 +247,10 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                     </div>
                                 </div>
                             </div>
-                            <div style="display: grid; grid-template-columns: 17% 20% 30% 30%; margin-top: 20px;">
+                            <div style="display: grid; grid-template-columns: 17% 19% 1% 30% 30%; margin-top: 10px; padding-bottom: 15px; border-bottom: 1px solid lightgrey;">
                                 <div><span class="MFDLabel">FLAPS</span></div>
                                 <div><span class="MFDLabel">THS FOR</span></div>
+                                <div style="grid-row-start: span 2; border-left: 1px solid lightgrey;" />
                                 <div><span class="MFDLabel">PACKS</span></div>
                                 <div><span class="MFDLabel">ANTI ICE</span></div>
                                 <div style="margin-top: 15px;">
@@ -261,7 +262,7 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                         containerStyle="width: 75px;"
                                     />
                                 </div>
-                                <div style="width: 120px; margin-right: 15px; margin-top: 15px;">
+                                <div style="width: 120px; margin-top: 15px; background-color: yellow; justify-self: center; align-self: center;">
                                     <NumberInput value={Subject.create(39.0)} emptyValueString="--.-" unitTrailing={Subject.create('%')} />
                                 </div>
                                 <div style="margin-right: 15px; margin-top: 15px;">
@@ -281,7 +282,7 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                     />
                                 </div>
                             </div>
-                            <div style="display: grid; grid-template-columns: auto auto auto auto auto; grid-auto-rows: 50px; margin: 30px 60px 30px 0px; height: 150px;">
+                            <div style="display: grid; grid-template-columns: auto auto auto auto auto; grid-auto-rows: 50px; margin: 20px 60px 30px 0px; height: 150px;">
                                 <div style="display: flex; justify-content: flex-end; align-items: center; margin-right: 15px; margin-bottom: 15px; width: 125px;">
                                     <span class="MFDLabel">THR RED</span>
                                 </div>
@@ -372,14 +373,14 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                             </div>
                             <div style="flex-grow: 1;" />
                             {/* fill space vertically */}
-                            <div style="margin: 20px 2px 3px 2px; display: flex; flex-direction: row; margin-top: 50px;">
+                            <div style="margin: 10px 2px 3px 2px; display: flex; flex-direction: row;justify-content: space-between; padding-top: 10px; border-top: 1px solid lightgrey;">
                                 <div class="MFDLabelValueContainer">
                                     <span class="MFDLabel spacingRight">TRANS</span>
                                     <NumberInput
                                         value={Subject.create(5000)}
                                         emptyValueString="----"
                                         unitTrailing={Subject.create('FT')}
-                                        containerStyle="width: 170px; justify-content: flex-end;"
+                                        containerStyle="width: 150px; justify-content: flex-end;"
                                     />
                                 </div>
                                 <div class="MFDLabelValueContainer">
@@ -390,6 +391,13 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                         unitTrailing={Subject.create('FT')}
                                         containerStyle="width: 150px; justify-content: flex-end;"
                                     />
+                                </div>
+                                <div>
+                                    <Button onClick={() => console.log('CPNY T.O REQUEST')} containerStyle="padding-left: 30px; padding-right: 30px">
+                                        CPNY T.O
+                                        <br />
+                                        REQUEST
+                                    </Button>
                                 </div>
                             </div>
                         </TopTabNavigatorPage>
