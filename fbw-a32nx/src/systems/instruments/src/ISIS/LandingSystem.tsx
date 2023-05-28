@@ -1,11 +1,15 @@
 import React from 'react';
 
 import { useInteractionSimVar, useSimVar } from '@instruments/common/simVars';
+import { LagFilter } from 'instruments/src/ISIS/ISISUtils';
 
 type DeviationIndicatorProps = {
     deviation: number,
     available: boolean
 }
+
+const locLagfilter = new LagFilter(1.5);
+const gsLagfilter = new LagFilter(1.5);
 
 const DeviationIndicator: React.FC<DeviationIndicatorProps> = ({ deviation, available }) => {
     const maxDeviation = 1.778; // the maximum position the diamond can be while still fully inside scale
@@ -30,10 +34,10 @@ const DeviationIndicator: React.FC<DeviationIndicatorProps> = ({ deviation, avai
     );
 };
 export const LandingSystem: React.FC = () => {
-    const [gsDeviation] = useSimVar('L:A32NX_RADIO_RECEIVER_GS_DEVIATION', 'number');
-    const [gsAvailable] = useSimVar('L:A32NX_RADIO_RECEIVER_GS_IS_VALID', 'number');
-    const [lsDeviation] = useSimVar('L:A32NX_RADIO_RECEIVER_LOC_DEVIATION', 'number');
-    const [lsAvailable] = useSimVar('L:A32NX_RADIO_RECEIVER_LOC_IS_VALID', 'number');
+    const [gsDeviation] = useSimVar('L:A32NX_RADIO_RECEIVER_GS_DEVIATION', 'number', 50);
+    const [gsAvailable] = useSimVar('L:A32NX_RADIO_RECEIVER_GS_IS_VALID', 'number', 50);
+    const [lsDeviation] = useSimVar('L:A32NX_RADIO_RECEIVER_LOC_DEVIATION', 'number', 50);
+    const [lsAvailable] = useSimVar('L:A32NX_RADIO_RECEIVER_LOC_IS_VALID', 'number', 50);
 
     const [lsActive] = useInteractionSimVar('L:A32NX_ISIS_LS_ACTIVE', 'Boolean', 'H:A32NX_ISIS_LS_PRESSED');
 
@@ -41,10 +45,10 @@ export const LandingSystem: React.FC = () => {
         lsActive && (
             <g id="LandingSystem">
                 <g transform="translate(156 380)">
-                    <DeviationIndicator deviation={lsDeviation / 2} available={lsAvailable} />
+                    <DeviationIndicator deviation={locLagfilter.step(lsDeviation / 2, 50 / 1000)} available={lsAvailable} />
                 </g>
                 <g transform="translate(356 166) rotate(90 0 0)">
-                    <DeviationIndicator deviation={gsDeviation} available={gsAvailable} />
+                    <DeviationIndicator deviation={gsLagfilter.step(gsDeviation, 50 / 1000)} available={gsAvailable} />
                 </g>
             </g>
         )
