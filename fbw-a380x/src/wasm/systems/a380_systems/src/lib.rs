@@ -6,6 +6,7 @@ mod control_display_system;
 mod electrical;
 mod fuel;
 pub mod hydraulic;
+mod icing;
 mod navigation;
 mod pneumatic;
 mod power_consumption;
@@ -22,28 +23,30 @@ use electrical::{
     APU_START_MOTOR_BUS_TYPE,
 };
 use hydraulic::{A380Hydraulic, A380HydraulicOverheadPanel};
+use icing::Icing;
 use navigation::A380RadioAltimeters;
 use power_consumption::A380PowerConsumption;
-use systems::{
-    accept_iterable, enhanced_gpwc::EnhancedGroundProximityWarningComputer, simulation::InitContext,
-};
 use uom::si::{f64::Length, length::nautical_mile};
 
 use systems::{
+    accept_iterable,
     apu::{
         Aps3200ApuGenerator, Aps3200StartMotor, AuxiliaryPowerUnit, AuxiliaryPowerUnitFactory,
         AuxiliaryPowerUnitFireOverheadPanel, AuxiliaryPowerUnitOverheadPanel,
     },
     electrical::{Electricity, ElectricitySource, ExternalPowerSource},
     engine::engine_wing_flex::EnginesFlexiblePhysics,
-    engine::{leap_engine::LeapEngine, EngineFireOverheadPanel},
+    engine::{trent_engine::TrentEngine, EngineFireOverheadPanel},
+    enhanced_gpwc::EnhancedGroundProximityWarningComputer,
     hydraulic::brake_circuit::AutobrakePanel,
     landing_gear::{LandingGear, LandingGearControlInterfaceUnitSet},
     navigation::adirs::{
         AirDataInertialReferenceSystem, AirDataInertialReferenceSystemOverheadPanel,
     },
     shared::ElectricalBusType,
-    simulation::{Aircraft, SimulationElement, SimulationElementVisitor, UpdateContext},
+    simulation::{
+        Aircraft, InitContext, SimulationElement, SimulationElementVisitor, UpdateContext,
+    },
     structural_flex::elevator_flex::FlexibleElevators,
 };
 
@@ -60,10 +63,10 @@ pub struct A380 {
     electrical_overhead: A380ElectricalOverheadPanel,
     emergency_electrical_overhead: A380EmergencyElectricalOverheadPanel,
     fuel: A380Fuel,
-    engine_1: LeapEngine,
-    engine_2: LeapEngine,
-    engine_3: LeapEngine,
-    engine_4: LeapEngine,
+    engine_1: TrentEngine,
+    engine_2: TrentEngine,
+    engine_3: TrentEngine,
+    engine_4: TrentEngine,
     engine_fire_overhead: EngineFireOverheadPanel<4>,
     electrical: A380Electrical,
     power_consumption: A380PowerConsumption,
@@ -79,6 +82,7 @@ pub struct A380 {
     elevators_flex_physics: FlexibleElevators,
     cds: A380ControlDisplaySystem,
     egpwc: EnhancedGroundProximityWarningComputer,
+    icing_simulation: Icing,
 }
 impl A380 {
     pub fn new(context: &mut InitContext) -> A380 {
@@ -100,10 +104,10 @@ impl A380 {
             electrical_overhead: A380ElectricalOverheadPanel::new(context),
             emergency_electrical_overhead: A380EmergencyElectricalOverheadPanel::new(context),
             fuel: A380Fuel::new(context),
-            engine_1: LeapEngine::new(context, 1),
-            engine_2: LeapEngine::new(context, 2),
-            engine_3: LeapEngine::new(context, 3),
-            engine_4: LeapEngine::new(context, 4),
+            engine_1: TrentEngine::new(context, 1),
+            engine_2: TrentEngine::new(context, 2),
+            engine_3: TrentEngine::new(context, 3),
+            engine_4: TrentEngine::new(context, 4),
             engine_fire_overhead: EngineFireOverheadPanel::new(context),
             electrical: A380Electrical::new(context),
             power_consumption: A380PowerConsumption::new(context),
@@ -136,6 +140,8 @@ impl A380 {
                 ],
                 1,
             ),
+
+            icing_simulation: Icing::new(context),
         }
     }
 }
@@ -269,7 +275,7 @@ impl Aircraft for A380 {
         );
         self.cds.update();
 
-        self.egpwc.update(&self.adirs, self.lgcius.lgciu1());
+        self.icing_simulation.update(context);
     }
 }
 impl SimulationElement for A380 {
@@ -305,6 +311,7 @@ impl SimulationElement for A380 {
         self.engines_flex_physics.accept(visitor);
         self.cds.accept(visitor);
         self.egpwc.accept(visitor);
+        self.icing_simulation.accept(visitor);
 
         visitor.visit(self);
     }
