@@ -32,6 +32,9 @@ export const PagesContainer = () => {
     const [ecamFCTLTimer, setEcamFCTLTimer] = useState(20);
     const [mainEngineStarterOffTimer, setMainEngineStarterOffTimer] = useState(-1);
     const [apuAboveThresholdTimer, setApuAboveThresholdTimer] = useState(-1);
+    const [stsPressedTimer, setStsPressedTimer] = useState(-1);
+    const [stsPrevPage, setStsPrevPage] = useState(-1);
+    const [normalStatusLine] = useSimVar(`L:A32NX_STATUS_LEFT_LINE_8`, 'number', 100);
     const apuRpm = useArinc429Var('L:A32NX_APU_N', 100);
 
     const baroCorrectedAltitude1 = useArinc429Var('L:A32NX_ADIRS_ADR_1_BARO_CORRECTED_ALTITUDE_1', 300);
@@ -69,6 +72,23 @@ export const PagesContainer = () => {
         }
     };
 
+    const checkStsPage = (deltaTime) => {
+        const isStatusPageEmpty = normalStatusLine === 1;
+        if (isStatusPageEmpty) {
+            if(stsPressedTimer > 0) {
+                setStsPressedTimer((prev) => prev - deltaTime / 1000);
+                setPageWhenUnselected(11);
+            } else {
+                if(currentPage === 11) {
+                    SimVar.SetSimVarValue(`L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX`, "number", stsPrevPage);
+                }
+            }
+        } else if(currentPage === 11) {
+            setPageWhenUnselected(11);
+            setStsPressedTimer(3)
+        }
+    };
+
     const updateCallback = (deltaTime) => {
         if (ecamAllButtonPushed && !prevEcamAllButtonState) { // button press
             setPage((prev) => (prev + 1) % 12);
@@ -82,6 +102,9 @@ export const PagesContainer = () => {
         } else if (!ecamAllButtonPushed && prevEcamAllButtonState) { // button release
             clearInterval(ecamCycleInterval);
         } else if (!ecamAllButtonPushed) {
+            if(currentPage !== 11) {
+                setStsPrevPage(currentPage);
+            }
             const newPage = page;
             if (newPage !== -1) {
                 setCurrentPage(newPage);
@@ -160,6 +183,11 @@ export const PagesContainer = () => {
                 setPageWhenUnselected(8);
                 break;
             }
+
+            if (newPage === 11 && currentPage !== newPage) {
+                setStsPressedTimer(3)
+            }
+            checkStsPage(deltaTime);
 
             if (failPage !== -1) {
                 setPageWhenUnselected(failPage);
