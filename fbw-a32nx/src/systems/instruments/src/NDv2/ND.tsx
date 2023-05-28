@@ -3,6 +3,8 @@ import { SimVarString } from '@shared/simvar';
 import { EfisNdMode, EfisNdRangeValue, EfisSide, rangeSettings } from '@shared/NavigationDisplay';
 import { DmcEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 import { clampAngle } from 'msfs-geo';
+import { ArincEventBus } from 'instruments/src/MsfsAvionicsCommon/ArincEventBus';
+import { CrossTrackError } from 'instruments/src/NDv2/shared/CrossTrackError';
 import { DisplayUnit } from '../MsfsAvionicsCommon/displayUnit';
 import { AdirsSimVars } from '../MsfsAvionicsCommon/SimVarTypes';
 import { NDSimvars } from './NDSimvarPublisher';
@@ -38,7 +40,7 @@ export const getDisplayIndex = () => {
 };
 
 export interface NDProps {
-    bus: EventBus,
+    bus: ArincEventBus,
 
     side: EfisSide,
 }
@@ -51,6 +53,8 @@ export class NDComponent extends DisplayComponent<NDProps> {
     private displayPowered = Subject.create(false);
 
     private readonly pposLatWord = Arinc429RegisterSubject.createEmpty()
+
+    private readonly pposLonWord = Arinc429RegisterSubject.createEmpty()
 
     private readonly isUsingTrackUpMode = Subject.create(false);
 
@@ -146,6 +150,10 @@ export class NDComponent extends DisplayComponent<NDProps> {
             this.pposLatWord.setWord(value);
         });
 
+        sub.on('longitude').whenChanged().handle((value) => {
+            this.pposLonWord.setWord(value);
+        });
+
         this.headingWord.setConsumer(sub.on('heading'));
 
         this.trackWord.setConsumer(sub.on('track'));
@@ -165,6 +173,10 @@ export class NDComponent extends DisplayComponent<NDProps> {
             this.props.bus.getPublisher<NDControlEvents>().pub('set_map_recomputing', recomputing);
         });
     }
+
+    private readonly mapFlagShown = MappedSubject.create(([headingWord, latWord, longWord]) => {
+        return !headingWord.isNormalOperation() || !latWord.isNormalOperation() || !longWord.isNormalOperation();
+    }, this.headingWord, this.pposLatWord, this.pposLonWord);
 
     private handleNewMapPage(mode: EfisNdMode) {
         if (mode === this.currentPageMode.get()) {
@@ -327,6 +339,8 @@ export class NDComponent extends DisplayComponent<NDProps> {
 
                     <TcasWxrMessages bus={this.props.bus} mode={this.currentPageMode} />
                     <FmMessages bus={this.props.bus} mode={this.currentPageMode} />
+                    <CrossTrackError bus={this.props.bus} x={390} y={646} isPlanMode={Subject.create(false)} isNormalOperation={this.mapFlagShown.map((it) => !it)} />
+
                 </svg>
             </DisplayUnit>
         );
@@ -673,14 +687,14 @@ class ToWaypointIndicator extends DisplayComponent<ToWaypointIndicatorProps> {
 
             this.largeDistanceNumberRef.instance.textContent = Math.round(value).toString();
         } else {
-            const integerPart = Math.trunc(value);
-            const decimalPart = (value - integerPart).toFixed(1).toString()[2];
-
             this.distanceSmallContainerVisible.set(true);
             this.distanceLargeContainerVisible.set(false);
 
-            this.smallDistanceIntegerPartRef.instance.textContent = integerPart.toString();
-            this.smallDistanceDecimalPartRef.instance.textContent = decimalPart;
+            const distanceFixed = value.toFixed(1);
+            const [distanceIntegralPart, distanceDecimalPart] = distanceFixed.split('.');
+
+            this.smallDistanceIntegerPartRef.instance.textContent = distanceIntegralPart.toString();
+            this.smallDistanceDecimalPartRef.instance.textContent = distanceDecimalPart;
         }
     }
 

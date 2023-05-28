@@ -1,4 +1,4 @@
-import { Clock, FSComponent, HEventPublisher,Subject } from '@microsoft/msfs-sdk';
+import { Clock, FSComponent, HEventPublisher, Subject } from '@microsoft/msfs-sdk';
 import { DmcPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 import { FmsDataPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
 import { getDisplayIndex, PFDComponent } from './PFD';

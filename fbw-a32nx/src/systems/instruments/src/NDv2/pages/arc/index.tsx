@@ -1,13 +1,13 @@
-import { FSComponent, ComponentProps, ConsumerSubject, EventBus, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import { FSComponent, ComponentProps, ConsumerSubject, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { Arinc429WordData } from '@shared/arinc429';
 import { EfisNdMode, rangeSettings } from '@shared/NavigationDisplay';
 import { LsCourseBug } from 'instruments/src/NDv2/pages/arc/LsCourseBug';
+import { ArincEventBus } from 'instruments/src/MsfsAvionicsCommon/ArincEventBus';
 import { ArcModeUnderlay } from './ArcModeUnderlay';
 import { SelectedHeadingBug } from './SelectedHeadingBug';
 import { getSmallestAngle } from '../../../PFD/PFDUtils';
 import { Flag } from '../../shared/Flag';
 import { NDPage } from '../NDPage';
-import { CrossTrackError } from '../../shared/CrossTrackError';
 import { RadioNeedle } from '../../shared/RadioNeedle';
 import { NDControlEvents } from '../../NDControlEvents';
 import { AdirsSimVars } from '../../../MsfsAvionicsCommon/SimVarTypes';
@@ -15,7 +15,7 @@ import { EcpSimVars } from '../../../MsfsAvionicsCommon/providers/EcpBusSimVarPu
 import { Arinc429RegisterSubject } from '../../../MsfsAvionicsCommon/Arinc429RegisterSubject';
 
 export interface ArcModePageProps extends ComponentProps {
-    bus: EventBus,
+    bus: ArincEventBus,
     headingWord: Subscribable<Arinc429WordData>,
     trueHeadingWord: Subscribable<Arinc429WordData>,
     trackWord: Subscribable<Arinc429WordData>,
@@ -225,7 +225,6 @@ export class ArcModePage extends NDPage<ArcModePageProps> {
 
                 <Flag visible={this.mapFlagShown} x={384} y={320.6} class="Red FontLarge">MAP NOT AVAIL</Flag>
 
-                <CrossTrackError bus={this.props.bus} x={390} y={646} isPlanMode={Subject.create(false)} isNormalOperation={this.mapFlagShown.map((it) => !it)} />
             </g>
         );
     }

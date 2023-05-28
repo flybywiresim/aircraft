@@ -1,4 +1,4 @@
-import { FSComponent, DisplayComponent, EventBus, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import { FSComponent, DisplayComponent, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { DmcEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 import { ArincEventBus } from 'instruments/src/MsfsAvionicsCommon/ArincEventBus';
 import { NDSimvars } from '../../NDSimvarPublisher';
