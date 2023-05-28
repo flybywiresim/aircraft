@@ -93,10 +93,6 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
 
     private lastFrameTimestamp: number = 0;
 
-    private terrainImage = new Image();
-
-    private lastTerrainVisualisationVersion = 0;
-
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
 

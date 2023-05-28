@@ -361,7 +361,7 @@ class SpeedIndicator extends DisplayComponent<{ bus: EventBus }> {
 
         const sub = this.props.bus.getSubscriber<AdirsSimVars>();
 
-        sub.on('groundSpeed').whenChanged().handle((value) => this.groundSpeedRegister.setWord(value));
+        sub.on('groundSpeed').atFrequency(2).handle((value) => this.groundSpeedRegister.setWord(value));
 
         this.groundSpeedRegister.sub((data) => {
             const element = this.groundSpeedRef.instance;
@@ -369,7 +369,7 @@ class SpeedIndicator extends DisplayComponent<{ bus: EventBus }> {
             element.textContent = data.isNormalOperation() ? Math.round(data.value).toString() : '';
         }, true);
 
-        sub.on('trueAirSpeed').whenChanged().handle((value) => this.trueAirSpeedRegister.setWord(value));
+        sub.on('trueAirSpeed').atFrequency(2).handle((value) => this.trueAirSpeedRegister.setWord(value));
 
         this.trueAirSpeedRegister.sub((data) => {
             const element = this.trueAirSpeedRef.instance;
