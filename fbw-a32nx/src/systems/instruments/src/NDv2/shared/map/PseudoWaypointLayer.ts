@@ -75,7 +75,7 @@ export class PseudoWaypointLayer implements MapLayer<NdSymbol> {
         context.stroke();
         context.closePath();
 
-        PaintUtils.paintText(true, context, x, y + 3, centerSymbol, color);
+        PaintUtils.paintText(true, context, x - 5.5, y + 6.5, centerSymbol, color);
     }
 
     private paintSpeedChange(context: CanvasRenderingContext2D, x: number, y: number) {
