@@ -9,6 +9,12 @@
 
 1. [FMS] Implement vertical navigation functions - @BlueberryKing (BlueberryKing)
 1. [EFB] Added pause at T/D function - @2hwk (2Cas#1022)
+1. [FMS] Add a default RNP of 0.3 for RNP AR procedure legs - @tracernz (Mike)
+1. [EFB] Fixed Simbridge failing to connect if remote setting is enabled then disabled - @DevonDF (Devon#9451)
+1. [SD] Corrected fuel transfer valve amber logic - @tracernz (Mike)
+1. [FMS] TO SPEEDS TOO LOW uses FQI fuel quantity after engine start to avoid spurious warnings - @tracernz (Mike)
+1. [ND] Fix ROSE VOR/LS conditions and ILS course - @tracernz (Mike)
+1. [HYD] Added hydraulic reverser actuators - @Crocket63 (crocket)
 
 ## 0.10.0
 
@@ -130,6 +136,11 @@
 1. [HYD] Adjusted low speed pumps efficiency / cargo doors refactor - @Crocket63 (crocket)
 1. [ECAM/SD] Limit PRESS page gauges to correct range - @tracernz (Mike)
 1. [FMGC/PFD] Implemented FMGC exposure of the Minimums to the PFD - @MikioDK (Yekouri#1836)
+1. [FMS] Implement vertical navigation functions - @BlueberryKing (BlueberryKing)
+1. [EFB] Added pause at T/D function - @2hwk (2Cas#1022)
+1. [LIGHTS] Fixed trim decal emissive and floods - @FinalLightNL (FinalLight#2113)
+1. [FLIGHTMODEL/FUEL] Fix outer tank transfer behaviour - @donstim (donbikes#4084)
+
 
 ## 0.9.0
 
