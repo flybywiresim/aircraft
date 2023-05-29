@@ -1843,14 +1843,12 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - 2 - f/o's side FMGC (currently not written)
     - | Bit |     Description     |
       |:---:|:-------------------:|
-      | 11  | VOR 1 tuning status |
-      | 12  | VOR 2 tuning status |
-      | 13  | ADF 1 tuning status |
-      | 14  | ADF 2 tuning status |
-      | 15  | MMR 1 tuning status |
-      | 16  | MMR 2 tuning status |
-    - Bit 0 -> Automatically tuned
-    - Bit 1 -> Manually tuned
+      | 11  | VOR 1 manually tuned |
+      | 12  | VOR 2 manually tuned |
+      | 13  | ADF 1 manually tuned |
+      | 14  | ADF 2 manually tuned |
+      | 15  | MMR 1 manually tuned |
+      | 16  | MMR 2 manually tuned |
 
 - L:A32NX_FM{number}_EO_ACC_ALT
     - ARINC429<number> (feet MSL)
