@@ -226,3 +226,8 @@ rect.shadow {
   background: $display-background;
   fill: rgb(4,4,5);
 }
+
+path.rounded {
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}

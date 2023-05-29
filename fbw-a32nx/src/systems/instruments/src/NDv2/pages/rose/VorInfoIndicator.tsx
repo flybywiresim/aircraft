@@ -18,7 +18,7 @@ export class VorInfoIndicator extends DisplayComponent<VorInfoIndicatorProps> {
 
     private readonly vorCourse = Subject.create(-1);
 
-    private readonly vorAvailable = Subject.create(false);
+    // private readonly vorAvailable = Subject.create(false);
 
     private readonly fm1Healthy = Subject.create(false);
 
@@ -65,9 +65,9 @@ export class VorInfoIndicator extends DisplayComponent<VorInfoIndicatorProps> {
             this.vorCourse.set(value);
         });
 
-        subs.on(`nav${this.props.index}Available`).whenChanged().handle((value) => {
+        /*      subs.on(`nav${this.props.index}Available`).whenChanged().handle((value) => {
             this.vorAvailable.set(value);
-        });
+        }); */
 
         subs.on('fm.1.healthy_discrete').whenChanged().handle((healthy) => this.fm1Healthy.set(healthy));
 
@@ -90,7 +90,7 @@ export class VorInfoIndicator extends DisplayComponent<VorInfoIndicatorProps> {
         }, true);
 
         this.vorCourse.sub((course) => {
-            this.courseTextSub.set(course > 0 ? Math.round(course).toString().padStart(3, '0') : '---');
+            this.courseTextSub.set(this.vorFrequency.get() > 0 ? Math.round(course).toString().padStart(3, '0') : '---');
         }, true);
     }
 
@@ -104,7 +104,7 @@ export class VorInfoIndicator extends DisplayComponent<VorInfoIndicatorProps> {
                     {this.props.index.toString()}
                 </text>
 
-                <g visibility={this.vorAvailable.map(this.visibilityFn)} class="White" text-anchor="end">
+                <g class="White" text-anchor="end">
                     <text x={-40} y={0} font-size={25}>
                         {this.frequencyIntTextSub}
                     </text>

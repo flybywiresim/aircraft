@@ -111,12 +111,12 @@ interface IlsCaptureOverlayProps extends ComponentProps {
 class IlsCaptureOverlay extends DisplayComponent<IlsCaptureOverlayProps> {
         // we can't tell if the course is valid from the MSFS radio, so at least check that the frequency is
         private readonly pointerVisibilitySub = MappedSubject.create(([ilsFrequency]) => {
-            return ilsFrequency >= 108 && ilsFrequency <= 112;
+            return (ilsFrequency >= 108 && ilsFrequency <= 112) ? 'inherit' : 'hidden';
         }, this.props.ilsFrequency);
 
-        private readonly visible = MappedSubject.create(([heading, available]) => {
-            return heading.isNormalOperation() && available;
-        }, this.props.heading, this.props.available);
+        private readonly visible = MappedSubject.create(([heading]) => {
+            return heading.isNormalOperation();
+        }, this.props.heading);
 
         private readonly rotation = MappedSubject.create(([heading, course]) => {
             if (heading.isNormalOperation()) {
@@ -159,30 +159,30 @@ class IlsCaptureOverlay extends DisplayComponent<IlsCaptureOverlayProps> {
                             d="M352,256 L416,256 M384,134 L384,294 M384,474 L384,634"
                             class="rounded shadow"
                             id="ils-course-pointer-shadow"
-                            strokeWidth={4.5}
+                            stroke-width={4.5}
                         />
                         <path
                             d="M352,256 L416,256 M384,134 L384,294 M384,474 L384,634"
                             class="rounded Magenta"
                             id="ils-course-pointer"
-                            strokeWidth={4}
+                            stroke-width={4}
                         />
                     </g>
 
-                    <g visibility={this.props.available.map((a) => (a ? 'visible' : 'hidden'))}>
+                    <g visibility={this.props.available.map((a) => (a ? 'inherit' : 'hidden'))}>
                         <path
                             d="M384,304 L384,464"
                             class="rounded shadow"
                             transform={this.deviation.map((cdiPx) => `translate(${cdiPx}, 0)`)}
                             id="ils-deviation-shadow"
-                            strokeWidth={4.5}
+                            stroke-width={4.5}
                         />
                         <path
                             d="M384,304 L384,464"
                             class="rounded Magenta"
                             transform={this.deviation.map((cdiPx) => `translate(${cdiPx}, 0)`)}
                             id="ils-deviation"
-                            strokeWidth={4}
+                            stroke-width={4}
                         />
                     </g>
 

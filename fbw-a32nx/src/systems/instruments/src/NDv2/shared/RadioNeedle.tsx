@@ -150,8 +150,8 @@ class VorNeedle extends DisplayComponent<SingleNeedleProps> {
         sub.on(`nav${this.props.index}RelativeBearing`).whenChanged().handle((value) => this.rawRelativeBearing.set(value));
         sub.on(`nav${this.props.index}Available`).whenChanged().handle((value) => this.radioAvailable.set(!!value));
 
-        sub.on(`nav${this.props.index}StationDeclination`).handle((v) => this.stationDeclination.set(v));
-        sub.on(`nav${this.props.index}Location`).handle((v) => this.stationLatitude.set(v.lat));
+        sub.on(`nav${this.props.index}StationDeclination`).whenChanged().handle((v) => this.stationDeclination.set(v));
+        sub.on(`nav${this.props.index}Location`).whenChanged().handle((v) => this.stationLatitude.set(v.lat));
 
         sub.on('trueRefActive').whenChanged().handle((v) => this.trueRefActive.set(!!v));
 

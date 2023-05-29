@@ -92,6 +92,7 @@ export class VorBusPublisher extends SimVarPublisher<VorSimVars> {
             ['nav2StationDeclination', { name: 'NAV MAGVAR:2', type: SimVarValueType.Degree }],
             ['nav2Location', { name: 'NAV VOR LATLONALT:2', type: SimVarValueType.LLA }],
 
+            ['nav3Ident', { name: 'NAV IDENT:3', type: SimVarValueType.String }],
             ['nav3Frequency', { name: 'NAV ACTIVE FREQUENCY:3', type: SimVarValueType.MHz }],
             ['nav3HasDme', { name: 'NAV HAS DME:3', type: SimVarValueType.Bool }],
             ['nav3DmeDistance', { name: 'NAV DME:3', type: SimVarValueType.NM }],
@@ -103,6 +104,7 @@ export class VorBusPublisher extends SimVarPublisher<VorSimVars> {
             ['nav3StationDeclination', { name: 'NAV MAGVAR:3', type: SimVarValueType.Degree }],
             ['nav3Location', { name: 'NAV VOR LATLONALT:3', type: SimVarValueType.LLA }],
 
+            ['nav4Ident', { name: 'NAV IDENT:4', type: SimVarValueType.String }],
             ['nav4Frequency', { name: 'NAV ACTIVE FREQUENCY:4', type: SimVarValueType.MHz }],
             ['nav4HasDme', { name: 'NAV HAS DME:4', type: SimVarValueType.Bool }],
             ['nav4DmeDistance', { name: 'NAV DME:4', type: SimVarValueType.NM }],

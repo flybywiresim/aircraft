@@ -340,7 +340,7 @@ export class NDComponent extends DisplayComponent<NDProps> {
 
                     <TcasWxrMessages bus={this.props.bus} mode={this.currentPageMode} />
                     <FmMessages bus={this.props.bus} mode={this.currentPageMode} />
-                    <CrossTrackError bus={this.props.bus} x={390} y={646} isPlanMode={Subject.create(false)} isNormalOperation={this.mapFlagShown.map((it) => !it)} />
+                    <CrossTrackError bus={this.props.bus} currentPageMode={this.currentPageMode} isNormalOperation={this.mapFlagShown.map((it) => !it)} />
 
                 </svg>
             </DisplayUnit>

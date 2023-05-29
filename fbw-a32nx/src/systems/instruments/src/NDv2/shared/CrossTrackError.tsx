@@ -1,11 +1,10 @@
 import { FSComponent, DisplayComponent, Subject, Subscribable, VNode, EventBus, MappedSubject } from '@microsoft/msfs-sdk';
+import { EfisNdMode } from '@shared/NavigationDisplay';
 import { FmsVars } from '../../MsfsAvionicsCommon/providers/FmsDataPublisher';
 
 export interface CrossTrackErrorProps {
     bus: EventBus,
-    x: number,
-    y: number,
-    isPlanMode: Subscribable<boolean>,
+    currentPageMode: Subscribable<EfisNdMode>,
     isNormalOperation: Subscribable<boolean>, // TODO replace with ARINC429 word
 }
 
@@ -14,11 +13,30 @@ export class CrossTrackError extends DisplayComponent<CrossTrackErrorProps> {
 
     private readonly crossTrackX = Subject.create(0);
 
+    private readonly xValueInitial = this.props.currentPageMode.map((p) => {
+        return p === EfisNdMode.PLAN ? 44 : 390;
+    });
+
+    private readonly yValueInitial = this.props.currentPageMode.map((p) => {
+        switch (p) {
+        case EfisNdMode.ARC:
+            return 646;
+        case EfisNdMode.PLAN:
+            return 690;
+        case EfisNdMode.ROSE_NAV:
+            return 407;
+        default:
+            return 0;
+        }
+    });
+
     private readonly crossTrackAnchor = Subject.create('');
 
     private rnp = 0;
 
-    private readonly crossTrackVisibility = this.props.isNormalOperation.map((it) => (it ? 'inherit' : 'hidden'));
+    private readonly crossTrackVisibility =
+        MappedSubject.create(([isNormalOperation, currentPageMode]) => ((isNormalOperation && (currentPageMode === EfisNdMode.ARC || currentPageMode === EfisNdMode.PLAN || currentPageMode === EfisNdMode.ROSE_NAV)) ? 'inherit' : 'hidden'),
+            this.props.isNormalOperation, this.props.currentPageMode);
 
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
@@ -26,7 +44,7 @@ export class CrossTrackError extends DisplayComponent<CrossTrackErrorProps> {
         const sub = this.props.bus.getSubscriber<FmsVars>();
 
         sub.on('crossTrackError').atFrequency(2).handle((crossTrackError) => {
-            const x = this.props.x;
+            const x = this.xValueInitial.get();
 
             let crossTrackText = '';
             let crossTrackAnchor = 'start';
@@ -64,9 +82,10 @@ export class CrossTrackError extends DisplayComponent<CrossTrackErrorProps> {
     render(): VNode | null {
         return (
             <text
-                x={MappedSubject.create(([isPlanMode, crossTrackX]) => (isPlanMode ? this.props.x : crossTrackX), this.props.isPlanMode, this.crossTrackX)}
-                y={this.props.y}
-                text-anchor={MappedSubject.create(([isPlanMode, crossTrackAnchor]) => (isPlanMode ? 'start' : crossTrackAnchor), this.props.isPlanMode, this.crossTrackAnchor)}
+                x={MappedSubject.create(([currentPageMode, crossTrackX]) => (currentPageMode === EfisNdMode.PLAN ? this.props.x : crossTrackX), this.props.currentPageMode, this.crossTrackX)}
+                y={this.yValueInitial}
+                text-anchor={MappedSubject.create(([currentPageMode, crossTrackAnchor]) => (currentPageMode === EfisNdMode.PLAN ? 'start' : crossTrackAnchor),
+                    this.props.currentPageMode, this.crossTrackAnchor)}
                 class="shadow Green FontSmall"
                 visibility={this.crossTrackVisibility}
             >

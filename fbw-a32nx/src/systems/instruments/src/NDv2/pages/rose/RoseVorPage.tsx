@@ -89,7 +89,7 @@ export class RoseVorPage extends RoseMode<RoseVorProps> {
 
                 <VorCaptureOverlay
                     index={this.props.index}
-                    heading={this.headingWord}
+                    heading={this.props.headingWord}
                     course={this.courseSub}
                     courseDeviation={this.courseDeviationSub}
                     vorAvailable={this.vorAvailableSub}
@@ -112,9 +112,9 @@ interface VorCaptureOverlayProps extends ComponentProps {
 }
 
 class VorCaptureOverlay extends DisplayComponent<VorCaptureOverlayProps> {
-    private readonly visible = MappedSubject.create(([heading, vorAvailable]) => {
-        return heading.isNormalOperation() && vorAvailable;
-    }, this.props.heading, this.props.vorAvailable);
+    private readonly visible = MappedSubject.create(([heading]) => {
+        return heading.isNormalOperation();
+    }, this.props.heading);
 
     private readonly rotation = MappedSubject.create(([heading, course]) => {
         if (heading.isNormalOperation()) {
@@ -129,7 +129,20 @@ class VorCaptureOverlay extends DisplayComponent<VorCaptureOverlayProps> {
         }
 
         return 'White';
-    }, this.props.heading)
+    }, this.props.heading);
+
+    /*     useEffect(() => {
+        let cdiDegrees: number;
+        if (Math.abs(courseDeviation) <= 90) {
+            cdiDegrees = courseDeviation;
+            setToward(true);
+        } else {
+            cdiDegrees = Math.sign(courseDeviation) * -Avionics.Utils.diffAngle(180, Math.abs(courseDeviation));
+            setToward(false);
+        }
+        setCdiPx(Math.min(12, Math.max(-12, cdiDegrees)) * 74 / 5);
+    }, [courseDeviation.toFixed(2)]);
+ */
 
     private readonly cdiPx = Subject.create(12);
 
@@ -142,6 +155,21 @@ class VorCaptureOverlay extends DisplayComponent<VorCaptureOverlayProps> {
     private readonly deviationTransform = MappedSubject.create(([cdiPx]) => {
         return `translate(${cdiPx}, 0)`;
     }, this.cdiPx)
+
+    onAfterRender(node: VNode): void {
+        super.onAfterRender(node);
+        this.props.courseDeviation.sub((courseDeviation) => {
+            let cdiDegrees: number;
+            if (Math.abs(courseDeviation) <= 90) {
+                cdiDegrees = courseDeviation;
+                this.toward.set(true);
+            } else {
+                cdiDegrees = Math.sign(courseDeviation) * -Avionics.Utils.diffAngle(180, Math.abs(courseDeviation));
+                this.toward.set(false);
+            }
+            this.cdiPx.set(Math.min(12, Math.max(-12, cdiDegrees)) * 74 / 5);
+        });
+    }
 
     render(): VNode | null {
         return (

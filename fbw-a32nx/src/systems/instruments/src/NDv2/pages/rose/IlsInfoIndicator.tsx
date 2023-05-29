@@ -1,4 +1,6 @@
 import { FSComponent, DisplayComponent, VNode, Subject, EventBus, ConsumerSubject, MappedSubject } from '@microsoft/msfs-sdk';
+import { FMBusEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FMBusPublisher';
+import { Arinc429RegisterSubject } from 'instruments/src/MsfsAvionicsCommon/Arinc429RegisterSubject';
 import { Layer } from '../../../MsfsAvionicsCommon/Layer';
 import { VorSimVars } from '../../../MsfsAvionicsCommon/providers/VorBusPublisher';
 
@@ -12,9 +14,15 @@ export class IlsInfoIndicator extends DisplayComponent<IlsInfoIndicatorProps> {
 
     private readonly ilsFrequency = ConsumerSubject.create(null, -1);
 
-    private readonly locAvailable = ConsumerSubject.create(null, false);
-
     private readonly ilsCourse = ConsumerSubject.create(null, -1);
+
+    private readonly fm1Healthy = Subject.create(false);
+
+    private readonly fm2Healthy = Subject.create(false);
+
+    private readonly fm1NavTuningWord = Arinc429RegisterSubject.createEmpty();
+
+    private readonly fm2NavTuningWord = Arinc429RegisterSubject.createEmpty();
 
     private readonly ilsFrequencyValid = Subject.create(false);
 
@@ -26,12 +34,24 @@ export class IlsInfoIndicator extends DisplayComponent<IlsInfoIndicatorProps> {
 
     private readonly courseTextSub = Subject.create('');
 
-    private readonly tuningModeTextSub = Subject.create('');
+    private readonly tuningMode = MappedSubject.create(([fm1Healthy, fm2Healthy, fm1NavTuningWord, fm2NavTuningWord]) => {
+        const bitIndex = 14 + this.props.index;
+
+        if ((!fm1Healthy && !fm2Healthy) || (!fm1NavTuningWord.isNormalOperation() && !fm2NavTuningWord.isNormalOperation())) {
+            return 'R';
+        }
+
+        if (fm1NavTuningWord.bitValueOr(bitIndex, false) || fm2NavTuningWord.bitValueOr(bitIndex, false)) {
+            return 'M';
+        }
+
+        return '';
+    }, this.fm1Healthy, this.fm2Healthy, this.fm1NavTuningWord, this.fm2NavTuningWord);
 
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
 
-        const subs = this.props.bus.getSubscriber<VorSimVars>();
+        const subs = this.props.bus.getSubscriber<VorSimVars & FMBusEvents>();
 
         // TODO select correct MMR
         // Fixed now??
@@ -46,6 +66,14 @@ export class IlsInfoIndicator extends DisplayComponent<IlsInfoIndicatorProps> {
         this.ilsFrequency.sub((freq) => this.ilsFrequencyValid.set(freq >= 108 && freq <= 112), true);
         this.ilsFrequencyValid.sub((valid) => this.ilsCourseValid.set(valid), true);
 
+        subs.on('fm.1.healthy_discrete').whenChanged().handle((healthy) => this.fm1Healthy.set(healthy));
+
+        subs.on('fm.2.healthy_discrete').whenChanged().handle((healthy) => this.fm2Healthy.set(healthy));
+
+        subs.on('fm.1.tuning_discrete_word').whenChanged().handle((word) => this.fm1NavTuningWord.setWord(word));
+
+        subs.on('fm.2.tuning_discrete_word').whenChanged().handle((word) => this.fm2NavTuningWord.setWord(word));
+
         MappedSubject.create(([freq, valid]) => {
             if (valid) {
                 const [int, dec] = freq.toFixed(2).split('.', 2);
@@ -59,7 +87,7 @@ export class IlsInfoIndicator extends DisplayComponent<IlsInfoIndicatorProps> {
         }, this.ilsFrequency, this.ilsFrequencyValid);
 
         this.ilsCourse.sub((course) => {
-            this.courseTextSub.set(course > 0 ? Math.round(course).toString().padStart(3, '0') : '---');
+            this.courseTextSub.set(this.ilsFrequency.get() > 0 ? Math.round(course).toString().padStart(3, '0') : '---');
         }, true);
     }
 
@@ -73,8 +101,8 @@ export class IlsInfoIndicator extends DisplayComponent<IlsInfoIndicatorProps> {
                     {this.props.index.toString()}
                 </text>
 
-                <g visibility={this.locAvailable.map(this.visibilityFn)}>
-                    <text x={0} y={0} font-size={25} class="White" text-anchor="end">
+                <g>
+                    <text x={0} y={0} font-size={25} class="Magenta" text-anchor="end">
                         {this.frequencyIntTextSub}
                         <tspan font-size={20}>
                             .
@@ -90,8 +118,8 @@ export class IlsInfoIndicator extends DisplayComponent<IlsInfoIndicatorProps> {
                 </text>
 
                 <g visibility={this.ilsFrequency.map((v) => v > 0).map(this.visibilityFn)}>
-                    <text x={-80} y={58} font-size={20} class="Magenta" text-anchor="end" text-decoration="underline">
-                        {this.tuningModeTextSub}
+                    <text x={-80} y={58} font-size={20} class="White" text-anchor="end" text-decoration="underline">
+                        {this.tuningMode}
                     </text>
                 </g>
 
