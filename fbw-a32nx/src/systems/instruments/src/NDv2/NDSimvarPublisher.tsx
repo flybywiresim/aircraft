@@ -12,14 +12,6 @@ export type NDSimvars = AdirsSimVars & SwitchingPanelVSimVars & {
     elecFo: boolean;
     potentiometerCaptain: number;
     potentiometerFo: number;
-    toWptIdent0Captain: number;
-    toWptIdent1Captain: number;
-    toWptBearingCaptain: Degrees;
-    toWptTrueBearingCaptain: Degrees,
-    toWptDistanceCaptain: Degrees;
-    toWptEtaCaptain: Seconds;
-    apprMessage0Captain: number;
-    apprMessage1Captain: number;
     ilsCourse: number;
     selectedWaypointLat: Degrees;
     selectedWaypointLong: Degrees;
@@ -34,7 +26,6 @@ export enum NDVars {
     elecFo = 'L:A32NX_ELEC_AC_2_BUS_IS_POWERED',
     potentiometerCaptain = 'LIGHT POTENTIOMETER:89',
     potentiometerFo = 'LIGHT POTENTIOMETER:91',
-
     ilsCourse = 'L:A32NX_FM_LS_COURSE',
     selectedWaypointLat = 'L:A32NX_SELECTED_WAYPOINT_LAT',
     selectedWaypointLong = 'L:A32NX_SELECTED_WAYPOINT_LONG',

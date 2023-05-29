@@ -75,6 +75,7 @@ export class VorBusPublisher extends SimVarPublisher<VorSimVars> {
             ['nav1Obs', { name: 'NAV OBS:1', type: SimVarValueType.Degree }],
             ['nav1Localizer', { name: 'NAV LOCALIZER:1', type: SimVarValueType.Degree }],
             ['nav1RadialError', { name: 'NAV RADIAL ERROR:1', type: SimVarValueType.Degree }],
+            // This is fine at the moment. The database does not have the necessary information to implement proper logic.
             ['nav1Available', { name: 'NAV HAS NAV:1', type: SimVarValueType.Bool }],
             ['nav1StationDeclination', { name: 'NAV MAGVAR:1', type: SimVarValueType.Degree }],
             ['nav1Location', { name: 'NAV VOR LATLONALT:1', type: SimVarValueType.LLA }],

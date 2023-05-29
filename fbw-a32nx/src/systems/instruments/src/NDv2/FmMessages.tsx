@@ -44,7 +44,12 @@ export class FmMessages extends DisplayComponent<FmMessagesProps> {
     }
 
     private handleNewMessageFlags(messageFlags: number) {
-        const newActiveMessages = this.activeMessages.getArray().slice();
+        // const newActiveMessages = this.activeMessages.getArray().slice();
+
+        const newActiveMessages = Object.values(FMMessageTypes)
+            .filter(({ ndFlag }) => ((ndFlag ?? 0) & messageFlags) > 0)
+            .sort((a, b) => (b.ndPriority ?? 0) - (a.ndPriority ?? 0));
+
         // the list must be ordered by priority, and LIFO for equal priority
         for (const message of Object.values(FMMessageTypes)) {
             if (((message.ndFlag ?? 0) & messageFlags) > 0) {

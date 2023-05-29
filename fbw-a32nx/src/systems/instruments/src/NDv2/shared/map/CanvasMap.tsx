@@ -170,7 +170,7 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
             this.handleNewTraffic(data);
         });
 
-        sub.on('realTime').whenChangedBy(8).handle((value) => {
+        sub.on('simTime').whenChangedBy(8).handle((value) => {
             this.handleFrame(value - this.lastFrameTimestamp);
 
             this.lastFrameTimestamp = value;
