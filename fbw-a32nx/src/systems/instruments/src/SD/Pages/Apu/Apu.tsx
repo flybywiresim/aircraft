@@ -136,6 +136,7 @@ const ApuGen = ({ x, y } : ComponentPositionProps) => {
 };
 
 const ApuBleed = ({ x, y } : ComponentPositionProps) => {
+    const apuN = useArinc429Var('L:A32NX_APU_N', 100);
     const [apuBleedPbOn] = useSimVar('L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON', 'Bool', 1000);
     const [apuBleedPbOnConfirmed, setApuBleedPbOnConfirmed] = useState(false);
     const [apuBleedOpen] = useSimVar('L:A32NX_APU_BLEED_AIR_VALVE_OPEN', 'Bool', 1000);
@@ -168,9 +169,9 @@ const ApuBleed = ({ x, y } : ComponentPositionProps) => {
                 <text
                     x={44}
                     y={48}
-                    className={`FontLarger Right ${adir1ModeSelectorKnob === 1 ? 'Green' : 'Amber'}`}
+                    className={`FontLarger Right ${apuN.isNormalOperation() && adir1ModeSelectorKnob === 1 ? 'Green' : 'Amber'}`}
                 >
-                    {adir1ModeSelectorKnob === 1 ? displayedBleedPressure : 'XX'}
+                    {apuN.isNormalOperation() && adir1ModeSelectorKnob === 1 ? displayedBleedPressure : 'XX'}
                 </text>
                 <text x={90} y={48} className="Cyan FontNormal Right">PSI</text>
 
