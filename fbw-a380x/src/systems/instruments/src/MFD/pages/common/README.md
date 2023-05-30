@@ -18,9 +18,9 @@ Status legend:
 | ✅ | Footer | Footer with "MSG LIST" button |
 | 🟥 | FcuButton | Button for FCU BKUP page, mimicing the look of the MCP buttons (LOC, ALT, ...) |
 | ✅ | FmsHeader | Header (system selector + page navigator) for FMS system |
-| 🟥 | AtccomHeader | Header (system selector + page navigator) for ATCCOM system |
-| 🟥 | SurvHeader | Header (system selector + page navigator) for SURV system |
-| 🟥 | FcuBkupHeader | Header (system selector + page navigator) for FCU BKUP system |
+| ✅ | AtccomHeader | Header (system selector + page navigator) for ATCCOM system |
+| ✅ | SurvHeader | Header (system selector + page navigator) for SURV system |
+| ✅ | FcuBkupHeader | Header (system selector + page navigator) for FCU BKUP system |
 | 🟨 | IconButton | Button consisting of just an icon (e.g. F-PLN up/down) |
 | 🟨 | MouseCursor | Custom mouse cursor for MFD |
 | 🟨 | NumberInput | Number input field |

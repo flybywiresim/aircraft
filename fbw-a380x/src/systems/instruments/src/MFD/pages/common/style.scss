@@ -27,6 +27,10 @@ $display-mfd-dark-grey: #3c3c3c;
   font-family: "Ecam", monospace;
 }
 
+.MFDLabel.green {
+  color: $display-green;
+}
+
 .MFDLabel.bigger {
   font-size: 24px;
 }

@@ -1,0 +1,9 @@
+﻿@import "../../../MsfsAvionicsCommon/definitions";
+
+.spdTableCell {
+  border-bottom: 1px solid lightgrey;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 15px;
+}
