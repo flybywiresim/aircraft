@@ -34,6 +34,7 @@ export class CrossTrackError extends DisplayComponent<CrossTrackErrorProps> {
 
     private rnp = 0;
 
+    /* eslint-disable max-len */
     private readonly crossTrackVisibility =
         MappedSubject.create(([isNormalOperation, currentPageMode]) => ((isNormalOperation && (currentPageMode === EfisNdMode.ARC || currentPageMode === EfisNdMode.PLAN || currentPageMode === EfisNdMode.ROSE_NAV)) ? 'inherit' : 'hidden'),
             this.props.isNormalOperation, this.props.currentPageMode);
