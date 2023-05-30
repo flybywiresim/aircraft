@@ -12,6 +12,7 @@ use crate::{
 };
 
 use uom::si::{
+    angle::degree,
     f64::*,
     mass::kilogram,
     pressure::{pascal, psi},
@@ -311,6 +312,7 @@ impl ControllerSignal<TargetPressureTemperatureSignal> for EngineCompressionCham
 }
 impl EngineCompressionChamberController {
     const HEAT_CAPACITY_RATIO: f64 = 1.4; // Adiabatic index of dry air
+    const COMPRESSOR_EFFICIENCY: f64 = 0.99;
 
     pub fn new(
         n1_contribution_factor: f64,
@@ -331,23 +333,32 @@ impl EngineCompressionChamberController {
         context: &UpdateContext,
         engine: &(impl EngineCorrectedN1 + EngineCorrectedN2),
     ) {
-        let n1 = engine.corrected_n1().get::<ratio>();
-        let n2 = engine.corrected_n2().get::<ratio>();
+        let lp_cpr = 1. + self.n1_contribution_factor * engine.corrected_n1().get::<ratio>();
+        let hp_cpr = 1. + self.n2_contribution_factor * engine.corrected_n2().get::<ratio>();
+        let compression_ratio = lp_cpr * hp_cpr;
+        let exponent = Self::HEAT_CAPACITY_RATIO / (Self::HEAT_CAPACITY_RATIO - 1.);
 
-        let corrected_mach = f64::from(context.mach_number())
-            + self.n1_contribution_factor * n1
-            + self.n2_contribution_factor * n2;
+        let inlet_temperature_ratio =
+            1. + (Self::HEAT_CAPACITY_RATIO - 1.) * f64::from(context.mach_number()).powi(2) / 2.;
 
-        // Static pressure + compressionfactor * dynamic pressure
-        // Dynamic pressure from here: https://en.wikipedia.org/wiki/Mach_number
-        let total_pressure = (1.
-            + (self.compression_factor * Self::HEAT_CAPACITY_RATIO * corrected_mach.powi(2)) / 2.)
-            * context.ambient_pressure();
+        // T1
+        let inlet_temperature = context.ambient_temperature() * inlet_temperature_ratio;
+        // println!(
+        //     "inlet_temperature: {}",
+        //     inlet_temperature.get::<degree_celsius>()
+        // );
+        let inlet_pressure = context.ambient_pressure() * inlet_temperature_ratio.powf(exponent);
 
-        self.target_temperature = context.ambient_temperature()
-            * (context.ambient_pressure().get::<pascal>() / total_pressure.get::<pascal>())
-                .powf(1. / Self::HEAT_CAPACITY_RATIO - 1.);
-        self.target_pressure = total_pressure;
+        self.target_pressure = inlet_pressure * compression_ratio;
+        // println!("factor: {}", (compression_ratio.powf(1. / exponent) - 1.));
+        self.target_temperature =
+            inlet_temperature * compression_ratio.powf(1. / exponent) / Self::COMPRESSOR_EFFICIENCY;
+
+        // println!("target_pressure: {}", self.target_pressure.get::<psi>());
+        // println!(
+        //     "target_temperature: {}",
+        //     self.target_temperature.get::<degree_celsius>()
+        // );
     }
 }
 

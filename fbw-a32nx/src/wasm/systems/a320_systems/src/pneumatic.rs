@@ -978,11 +978,11 @@ impl EngineBleedAirSystem {
                 "PNEU_ENG_{}_DIFFERENTIAL_TRANSDUCER_PRESSURE",
                 number
             )),
-            fan_compression_chamber_controller: EngineCompressionChamberController::new(1., 0., 2.),
+            fan_compression_chamber_controller: EngineCompressionChamberController::new(4., 1., 2.),
             intermediate_pressure_compression_chamber_controller:
-                EngineCompressionChamberController::new(2.3, 0., 3.5), // Maximum IP bleed pressure output should be about 150 psig
+                EngineCompressionChamberController::new(4., 2.5, 3.5), // Maximum IP bleed pressure output should be about 150 psig
             high_pressure_compression_chamber_controller: EngineCompressionChamberController::new(
-                3., 1.8, 3., // Maximum IP bleed pressure output should be about 660 psig
+                4., 8., 3., // Maximum HP bleed pressure output should be about 660 psig
             ),
             fan_compression_chamber: CompressionChamber::new(Volume::new::<cubic_meter>(1.)),
             intermediate_pressure_compression_chamber: CompressionChamber::new(Volume::new::<
@@ -1492,7 +1492,7 @@ impl PackComplex {
             pack_flow_valve_flow_rate_id: context
                 .get_identifier(format!("PNEU_PACK_{}_FLOW_VALVE_FLOW_RATE", engine_number)),
             pack_container: PneumaticPipe::new(
-                Volume::new::<cubic_meter>(2.),
+                Volume::new::<cubic_meter>(1.),
                 Pressure::new::<psi>(14.7),
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
@@ -2652,15 +2652,17 @@ pub mod tests {
     #[test]
     #[ignore]
     fn full_graphing_test() {
-        let alt = Length::new::<foot>(0.);
+        let alt = Length::new::<foot>(37000.);
+        let ambient_pressure = InternationalStandardAtmosphere::pressure_at_altitude(alt);
 
         let mut test_bed = test_bed_with()
-            .eng1_n1(0.3)
+            .eng1_n1(0.84)
             .and_eng1_n2_based_on_n1()
-            .eng2_n1(0.3)
+            .eng2_n1(0.84)
             .and_eng2_n2_based_on_n1()
             .in_isa_atmosphere(alt)
             .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Auto)
+            .mach_number(MachNumber(0.78))
             .both_packs_auto();
 
         let mut time_points = Vec::new();
@@ -2694,7 +2696,7 @@ pub mod tests {
         // 8s * 1000 steps / 16 ms = 500 steps
         let n1_profile_timesteps: [f64; 2] = [set_toga_thrust_at_step as f64, 2750.];
         // let n1_profile: [f64; 2] = [0.2, 0.87];
-        let n1_profile: [f64; 2] = [0.2, 0.5];
+        let n1_profile: [f64; 2] = [0.2, 0.87];
 
         for i in 1..num_steps {
             time_points.push((i * update_step_ms) as f64);
@@ -2708,15 +2710,21 @@ pub mod tests {
             //         .and_eng2_n2_based_on_n1()
             // }
 
-            high_pressures.push(test_bed.hp_pressure(1).get::<psi>());
-            intermediate_pressures.push(test_bed.ip_pressure(1).get::<psi>());
-            transfer_pressures.push(test_bed.transfer_pressure(1).get::<psi>());
-            regulated_pressures.push(test_bed.regulated_pressure(1).get::<psi>());
-            precooler_inlet_pressures.push(test_bed.precooler_inlet_pressure(1).get::<psi>());
-            precooler_outlet_pressures.push(test_bed.precooler_outlet_pressure(1).get::<psi>());
-            precooler_supply_pressures.push(test_bed.precooler_supply_pressure(1).get::<psi>());
-            engine_starter_container_pressures
-                .push(test_bed.engine_starter_container_pressure(1).get::<psi>());
+            high_pressures.push((test_bed.hp_pressure(1) - ambient_pressure).get::<psi>());
+            intermediate_pressures.push((test_bed.ip_pressure(1) - ambient_pressure).get::<psi>());
+            transfer_pressures
+                .push((test_bed.transfer_pressure(1) - ambient_pressure).get::<psi>());
+            regulated_pressures
+                .push((test_bed.regulated_pressure(1) - ambient_pressure).get::<psi>());
+            precooler_inlet_pressures
+                .push((test_bed.precooler_inlet_pressure(1) - ambient_pressure).get::<psi>());
+            precooler_outlet_pressures
+                .push((test_bed.precooler_outlet_pressure(1) - ambient_pressure).get::<psi>());
+            precooler_supply_pressures
+                .push((test_bed.precooler_supply_pressure(1) - ambient_pressure).get::<psi>());
+            engine_starter_container_pressures.push(
+                (test_bed.engine_starter_container_pressure(1) - ambient_pressure).get::<psi>(),
+            );
 
             intermediate_pressure_compressor_temperatures
                 .push(test_bed.ip_temperature(1).get::<degree_celsius>());
@@ -2789,9 +2797,25 @@ pub mod tests {
             test_bed.run_with_delta(Duration::from_millis(update_step_ms));
         }
 
-        assert!(test_bed.hp_valve_is_powered(1));
-        assert!(test_bed.pr_valve_is_powered(1));
-        assert!(test_bed.fan_air_valve_is_powered(1));
+        println!(
+            "Final IP pressure: {:.2} psig",
+            (test_bed.ip_pressure(1) - ambient_pressure).get::<psi>()
+        );
+
+        println!(
+            "Final regulated pressure: {:.2} psig",
+            test_bed
+                .regulated_pressure_transducer_signal(1)
+                .unwrap()
+                .get::<psi>()
+        );
+        println!(
+            "Final outlet temperature: {:.2} °C",
+            test_bed
+                .bleed_temperature_sensor_temperature(1)
+                .unwrap()
+                .get::<degree_celsius>()
+        );
 
         // If anyone is wondering, I am using python to plot pressure curves. This will be removed once the model is complete.
         let data = vec![
