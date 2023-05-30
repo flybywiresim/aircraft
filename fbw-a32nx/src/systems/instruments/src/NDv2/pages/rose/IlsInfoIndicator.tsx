@@ -114,7 +114,7 @@ export class IlsInfoIndicator extends DisplayComponent<IlsInfoIndicatorProps> {
                 <text x={-56} y={30} font-size={25} class="White" text-anchor="end">CRS</text>
                 <text x={20} y={30} font-size={25} text-anchor="end">
                     <tspan class="Magenta">{this.courseTextSub}</tspan>
-                    <tspan class="Magenta">&deg;</tspan>
+                    <tspan class="Cyan">&deg;</tspan>
                 </text>
 
                 <g visibility={this.ilsFrequency.map((v) => v > 0).map(this.visibilityFn)}>
