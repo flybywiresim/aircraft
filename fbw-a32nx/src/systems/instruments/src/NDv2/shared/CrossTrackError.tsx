@@ -83,7 +83,7 @@ export class CrossTrackError extends DisplayComponent<CrossTrackErrorProps> {
     render(): VNode | null {
         return (
             <text
-                x={MappedSubject.create(([currentPageMode, crossTrackX]) => (currentPageMode === EfisNdMode.PLAN ? this.props.x : crossTrackX), this.props.currentPageMode, this.crossTrackX)}
+                x={MappedSubject.create(([currentPageMode, crossTrackX, xValueInitial]) => (currentPageMode === EfisNdMode.PLAN ? xValueInitial : crossTrackX), this.props.currentPageMode, this.crossTrackX, this.xValueInitial)}
                 y={this.yValueInitial}
                 text-anchor={MappedSubject.create(([currentPageMode, crossTrackAnchor]) => (currentPageMode === EfisNdMode.PLAN ? 'start' : crossTrackAnchor),
                     this.props.currentPageMode, this.crossTrackAnchor)}

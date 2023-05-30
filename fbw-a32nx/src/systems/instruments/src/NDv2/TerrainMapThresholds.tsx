@@ -10,11 +10,11 @@ export class TerrainMapThresholds extends DisplayComponent<TerrainMapThresholdsP
 
     private readonly maxElevationSub = ConsumerSubject.create(this.sub.on('egpwc.maxElevation'), -1);
 
-    private readonly maxElevationModeSub = ConsumerSubject.create(this.sub.on('egpwc.maxElevationMode'), -1);
+    private readonly maxElevationModeSub = ConsumerSubject.create(this.sub.on('egpwc.maxElevationMode'), 0);
 
     private readonly minElevationSub = ConsumerSubject.create(this.sub.on('egpwc.minElevation'), -1);
 
-    private readonly minElevationModeSub = ConsumerSubject.create(this.sub.on('egpwc.minElevationMode'), -1);
+    private readonly minElevationModeSub = ConsumerSubject.create(this.sub.on('egpwc.minElevationMode'), 0);
 
     private readonly shown = MappedSubject.create(([min, nax]) => min >= 0 && nax >= 0, this.minElevationSub, this.maxElevationSub);
 
