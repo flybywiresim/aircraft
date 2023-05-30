@@ -55,6 +55,8 @@ export class MfdComponent extends DisplayComponent<MfdProps> {
         extra: '',
     });
 
+    private navigationStack: string[] = [];
+
     private mouseCursorRef = FSComponent.createRef<MouseCursor>();
 
     private topRef = FSComponent.createRef<HTMLDivElement>();
@@ -97,6 +99,17 @@ export class MfdComponent extends DisplayComponent<MfdProps> {
         this.navigateTo('fms/active/init');
     }
 
+    public parseUri(uri: string) : ActiveUriInformation {
+        const uriParts = uri.split('/');
+        return {
+            uri,
+            sys: uriParts[0],
+            category: uriParts[1],
+            page: uriParts[2],
+            extra: uriParts.slice(3).join('/'),
+        };
+    }
+
     /**
      * Navigate to MFD page.
      * @param uri The URI to navigate to. Format: sys/category/page, e.g. fms/active/init represents ACTIVE/INIT page from the FMS.
@@ -104,14 +117,9 @@ export class MfdComponent extends DisplayComponent<MfdProps> {
      */
     private navigateTo(uri: string) {
         console.info(`Navigate to ${uri}`);
-        const uriParts = uri.split('/');
-        this.activeUri.set({
-            uri,
-            sys: uriParts[0],
-            category: uriParts[1],
-            page: uriParts[2],
-            extra: uriParts.slice(3).join('/'),
-        });
+        this.navigationStack.push(uri);
+        const parsedUri = this.parseUri(uri);
+        this.activeUri.set(parsedUri);
 
         // Remove and destroy old header
         while (this.activeHeaderRef.getOrDefault().firstChild) {
@@ -130,7 +138,7 @@ export class MfdComponent extends DisplayComponent<MfdProps> {
         }
 
         // Different systems use different navigation bars
-        switch (uriParts[0]) {
+        switch (parsedUri.sys) {
         case 'fms':
             this.activeHeader = <FmsHeader bus={this.props.bus} activeFmsSource={this.activeFmsSource} activeUri={this.activeUri} navigateTo={(uri) => this.navigateTo(uri)} />;
             break;
@@ -150,7 +158,7 @@ export class MfdComponent extends DisplayComponent<MfdProps> {
         }
 
         // Mapping from URL to page component
-        switch (`${uriParts[0]}/${uriParts[1]}/${uriParts[2]}`) {
+        switch (`${parsedUri.sys}/${parsedUri.category}/${parsedUri.page}`) {
         case 'fms/active/perf':
             this.activePage = <MfdFmsActivePerf bus={this.props.bus} activeUri={this.activeUri} navigateTo={(uri) => this.navigateTo(uri)} />;
             break;
