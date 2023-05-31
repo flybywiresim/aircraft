@@ -107,6 +107,10 @@ class VorInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2, visible: S
         this.props.mode,
     );
 
+    private readonly visibilitySub = MappedSubject.create(
+        ([logicallyVisible, ndMode]) => ((logicallyVisible && ndMode !== EfisNdMode.PLAN) ? 'inherit' : 'hidden'), this.props.visible, this.props.mode,
+    );
+
     private readonly x = this.props.index === 1 ? 37 : 668
 
     onAfterRender(node: VNode) {
@@ -137,7 +141,7 @@ class VorInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2, visible: S
 
     render(): VNode | null {
         return (
-            <g visibility={this.props.visible.map((v) => (v ? 'inherit' : 'hidden'))}>
+            <g visibility={this.visibilitySub}>
                 <path
                     d={this.props.index === 1 ? this.VOR_1_NEEDLE : this.VOR_2_NEEDLE}
                     stroke-width={2}

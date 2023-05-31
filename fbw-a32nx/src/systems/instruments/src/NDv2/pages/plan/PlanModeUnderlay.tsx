@@ -8,10 +8,13 @@ export class PlanModeUnderlay extends DisplayComponent<PlanModeUnderlayProps> {
     render(): VNode | null {
         return (
             <>
-                <clipPath id="plan-mode-map-clip">
-                    <polygon points="45,112 140,112 280,56 488,56 628,112 723,112 723,720 114,720 114,633 45,633" />
-                </clipPath>
-                <g stroke-width={3}>
+                <defs>
+                    <clipPath id="plan-mode-map-clip">
+                        <polygon points="45,112 140,112 280,56 488,56 628,112 723,112 723,720 114,720 114,633 45,633" />
+                    </clipPath>
+                </defs>
+
+                <g stroke-width={3} clip-path="url(#plan-mode-map-clip)">
                     <circle cx={384} cy={384} r={250} class="White" />
 
                     <path d="M259,384a125,125 0 1,0 250,0a125,125 0 1,0 -250,0" stroke-dasharray="14 13" class="White" />
