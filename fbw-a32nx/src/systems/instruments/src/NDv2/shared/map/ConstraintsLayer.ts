@@ -7,8 +7,9 @@ export class ConstraintsLayer implements MapLayer<NdSymbol> {
     data: NdSymbol[] = [];
 
     paintShadowLayer(context: CanvasRenderingContext2D, mapWidth: number, mapHeight: number, mapParameters: MapParameters) {
+        // TODO revise this logic, maybe efis constraints should be it's own thing?
         for (const symbol of this.data) {
-            if (!symbol.constraints) {
+            if (!symbol.constraints || !(symbol.type & NdSymbolTypeFlags.Constraint)) {
                 continue;
             }
 
@@ -26,7 +27,9 @@ export class ConstraintsLayer implements MapLayer<NdSymbol> {
             const rx = x + mapWidth / 2;
             const ry = y + mapHeight / 2;
 
-            this.paintConstraintCircle(true, context, rx, ry, symbol);
+            if (symbol.type & NdSymbolTypeFlags.Constraint) {
+                this.paintConstraintCircle(true, context, rx, ry, symbol);
+            }
 
             if (symbol.constraints) {
                 this.paintSymbolConstraints(context, rx, ry, symbol);

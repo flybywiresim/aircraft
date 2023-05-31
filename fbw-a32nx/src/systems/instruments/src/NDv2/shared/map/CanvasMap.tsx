@@ -216,7 +216,7 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
 
         this.fixInfoLayer.data = fixInfoSymbols;
 
-        const constraints = this.symbols.filter((it) => it.type & NdSymbolTypeFlags.Constraint);
+        const constraints = this.symbols.filter((it) => it.type & (NdSymbolTypeFlags.Constraint) || it.constraints);
 
         this.constraintsLayer.data = constraints;
 
