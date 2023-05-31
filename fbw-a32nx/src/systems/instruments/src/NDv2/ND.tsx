@@ -320,7 +320,6 @@ export class NDComponent extends DisplayComponent<NDProps> {
 
                     <TerrainMapThresholds bus={this.props.bus} />
 
-                    {/* FIXME Should not be on PLAN mode */}
                     <RadioNavInfo bus={this.props.bus} index={1} mode={this.currentPageMode} />
                     <RadioNavInfo bus={this.props.bus} index={2} mode={this.currentPageMode} />
                 </svg>
