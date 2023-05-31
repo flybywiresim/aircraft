@@ -133,11 +133,9 @@ class VorInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2, visible: S
         sub.on('trueRefActive').whenChanged().handle((v) => this.trueRefActive.set(!!v));
 
         this.identReceived.sub((v) => {
-            console.log('BRUH', v);
             if (v) {
                 // the morse code is sent 3 times in a 30 second period, depending on when you pick up the signal you could be lucky or unlucky
-                //  this.identTimer.schedule(() => this.identVisible.set(true), 5000 + Math.random() * 10000);
-                this.identVisible.set(true);
+                this.identTimer.schedule(() => this.identVisible.set(true), 5000 + Math.random() * 10000);
             } else {
                 this.identTimer.clear();
                 this.identVisible.set(false);
