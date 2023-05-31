@@ -140,20 +140,60 @@ export class MfdComponent extends DisplayComponent<MfdProps> {
         // Different systems use different navigation bars
         switch (parsedUri.sys) {
         case 'fms':
-            this.activeHeader = <FmsHeader bus={this.props.bus} activeFmsSource={this.activeFmsSource} activeUri={this.activeUri} navigateTo={(uri) => this.navigateTo(uri)} />;
+            this.activeHeader = (
+                <FmsHeader
+                    bus={this.props.bus}
+                    callsign={Subject.create('FBW123')}
+                    activeFmsSource={this.activeFmsSource}
+                    activeUri={this.activeUri}
+                    navigateTo={(uri) => this.navigateTo(uri)}
+                />
+            );
             break;
         case 'atccom':
-            this.activeHeader = <AtccomHeader bus={this.props.bus} activeFmsSource={this.activeFmsSource} activeUri={this.activeUri} navigateTo={(uri) => this.navigateTo(uri)} />;
+            this.activeHeader = (
+                <AtccomHeader
+                    bus={this.props.bus}
+                    callsign={Subject.create('FBW123')}
+                    activeFmsSource={this.activeFmsSource}
+                    activeUri={this.activeUri}
+                    navigateTo={(uri) => this.navigateTo(uri)}
+                />
+            );
             break;
         case 'surv':
-            this.activeHeader = <SurvHeader bus={this.props.bus} activeFmsSource={this.activeFmsSource} activeUri={this.activeUri} navigateTo={(uri) => this.navigateTo(uri)} />;
+            this.activeHeader = (
+                <SurvHeader
+                    bus={this.props.bus}
+                    callsign={Subject.create('FBW123')}
+                    activeFmsSource={this.activeFmsSource}
+                    activeUri={this.activeUri}
+                    navigateTo={(uri) => this.navigateTo(uri)}
+                />
+            );
             break;
         case 'fcubkup':
-            this.activeHeader = <FcuBkupHeader bus={this.props.bus} activeFmsSource={this.activeFmsSource} activeUri={this.activeUri} navigateTo={(uri) => this.navigateTo(uri)} />;
+            this.activeHeader = (
+                <FcuBkupHeader
+                    bus={this.props.bus}
+                    callsign={Subject.create('FBW123')}
+                    activeFmsSource={this.activeFmsSource}
+                    activeUri={this.activeUri}
+                    navigateTo={(uri) => this.navigateTo(uri)}
+                />
+            );
             break;
 
         default:
-            this.activeHeader = <FmsHeader bus={this.props.bus} activeFmsSource={this.activeFmsSource} activeUri={this.activeUri} navigateTo={(uri) => this.navigateTo(uri)} />;
+            this.activeHeader = (
+                <FmsHeader
+                    bus={this.props.bus}
+                    callsign={Subject.create('FBW123')}
+                    activeFmsSource={this.activeFmsSource}
+                    activeUri={this.activeUri}
+                    navigateTo={(uri) => this.navigateTo(uri)}
+                />
+            );
             break;
         }
 

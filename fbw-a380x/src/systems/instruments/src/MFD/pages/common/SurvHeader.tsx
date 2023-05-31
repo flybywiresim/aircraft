@@ -5,6 +5,7 @@ import { PageSelectorDropdownMenu } from 'instruments/src/MFD/pages/common/PageS
 
 interface MfdSurvHeaderProps extends MfdComponentProps {
     activeFmsSource: Subscribable<'FMS 1' | 'FMS 2' | 'FMS 1-C' | 'FMS 2-C'>;
+    callsign: Subscribable<string>;
 }
 export class SurvHeader extends DisplayComponent<MfdSurvHeaderProps> {
     // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
@@ -84,7 +85,7 @@ export class SurvHeader extends DisplayComponent<MfdSurvHeaderProps> {
     render(): VNode {
         return (
             <>
-                <div style="display: flex; flex-direction: row;">
+                <div style="display: flex; flex-direction: row; justify-content: space-between;">
                     <DropdownMenu
                         values={this.availableSystems}
                         selectedIndex={this.sysSelectorSelectedIndex}
@@ -93,6 +94,7 @@ export class SurvHeader extends DisplayComponent<MfdSurvHeaderProps> {
                         containerStyle="width: 25%;"
                         alignLabels="left"
                     />
+                    <span class="MFDLabel" style="width: 25%; text-align: left; padding: 8px 10px 0px 10px;">{this.props.callsign}</span>
                 </div>
                 <div style="display: flex; flex-direction: row; width: 100%">
                     <PageSelectorDropdownMenu
