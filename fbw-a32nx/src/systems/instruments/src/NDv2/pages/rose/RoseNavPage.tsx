@@ -1,5 +1,6 @@
-import { ConsumerSubject, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+import { ConsumerSubject, FSComponent, MappedSubject, Subject, VNode } from '@microsoft/msfs-sdk';
 import { EfisNdMode, rangeSettings } from '@shared/NavigationDisplay';
+import { Flag } from '../../shared/Flag';
 import { RoseMode } from './RoseMode';
 import { RoseModeUnderlay } from './RoseModeUnderlay';
 import { Arinc429RegisterSubject } from '../../../MsfsAvionicsCommon/Arinc429RegisterSubject';
@@ -14,6 +15,10 @@ export class RoseNavPage extends RoseMode {
     private readonly pposLonWord = Arinc429RegisterSubject.createEmpty();
 
     private readonly mapRangeSub = ConsumerSubject.create(this.props.bus.getSubscriber<EcpSimVars>().on('ndRangeSetting').whenChanged(), -1);
+
+    private readonly mapFlagShown = MappedSubject.create(([headingWord, latWord, longWord]) => {
+        return !headingWord.isNormalOperation() || !latWord.isNormalOperation() || !longWord.isNormalOperation();
+    }, this.props.headingWord, this.pposLatWord, this.pposLonWord);
 
     isVisible = Subject.create(false);
 
@@ -133,6 +138,9 @@ export class RoseNavPage extends RoseMode {
                     mode={EfisNdMode.ROSE_NAV}
                     centreHeight={384}
                 />
+
+                <Flag visible={this.mapFlagShown} x={384} y={320.6} class="Red FontLarge">MAP NOT AVAIL</Flag>
+
             </g>
         );
     }
