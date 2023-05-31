@@ -1,11 +1,12 @@
-import { FSComponent, DisplayComponent, EventBus, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import { FSComponent, DisplayComponent, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { DmcEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
+import { ArincEventBus } from 'instruments/src/MsfsAvionicsCommon/ArincEventBus';
 import { NDSimvars } from '../../NDSimvarPublisher';
 import { getSmallestAngle } from '../../../PFD/PFDUtils';
 import { Arinc429ConsumerSubject } from '../../../MsfsAvionicsCommon/Arinc429ConsumerSubject';
 
 export interface LsCourseBugProps {
-    bus: EventBus,
+    bus: ArincEventBus,
     rotationOffset: Subscribable<number>,
 }
 
@@ -31,9 +32,11 @@ export class LsCourseBug extends DisplayComponent<LsCourseBugProps> {
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<DmcEvents & NDSimvars>();
+        const sub = this.props.bus.getArincSubscriber<DmcEvents & NDSimvars>();
 
-        this.headingWord.setConsumer(sub.on('heading'));
+        this.headingWord.setConsumer(sub.on('heading').withArinc429Precision(2));
+
+        this.headingWord.sub((_h) => this.handleDisplay());
 
         sub.on('ilsCourse').whenChanged().handle((v) => {
             this.ilsCourse.set(v);
