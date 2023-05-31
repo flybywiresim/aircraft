@@ -65,10 +65,14 @@ class VorInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2, visible: S
     private readonly dashedDme = MappedSubject.create(([hasDme, dmeDistance]) => !hasDme || dmeDistance <= 0, this.hasDmeSub, this.dmeDistanceSub);
 
     private readonly identReceived = MappedSubject.create(
-        ([dmeDist, hasNav, ident]) => (dmeDist > 0 || hasNav) && ident,
+        // TODO hasDme added from master ND (KBA is weird)
+        ([dmeDist, hasNav, ident, hasDme]) => {
+            return (dmeDist > 0 || hasNav || hasDme) && ident;
+        },
         this.dmeDistanceSub,
         this.availableSub,
         this.identSub,
+        this.hasDmeSub,
     );
 
     private readonly identVisible = Subject.create(false);
@@ -129,9 +133,11 @@ class VorInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2, visible: S
         sub.on('trueRefActive').whenChanged().handle((v) => this.trueRefActive.set(!!v));
 
         this.identReceived.sub((v) => {
+            console.log('BRUH', v);
             if (v) {
                 // the morse code is sent 3 times in a 30 second period, depending on when you pick up the signal you could be lucky or unlucky
-                this.identTimer.schedule(() => this.identVisible.set(true), 5000 + Math.random() * 10000);
+                //  this.identTimer.schedule(() => this.identVisible.set(true), 5000 + Math.random() * 10000);
+                this.identVisible.set(true);
             } else {
                 this.identTimer.clear();
                 this.identVisible.set(false);
@@ -244,8 +250,7 @@ class AdfInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2, visible: S
                     stroke-linecap="round"
                 />
                 <text x={this.x} y={692} font-size={24} class="Green">
-                    ADF
-                    {this.props.index}
+                    {`ADF${this.props.index}`}
                 </text>
 
                 <text visibility={this.identVisibility} x={this.x} y={722} font-size={24} class="Green">{this.adfIdent}</text>

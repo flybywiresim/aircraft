@@ -55,12 +55,12 @@ export interface VorSimVars {
 
     adf1Ident: string,
     adf1ActiveFrequency: number,
-    adf1Valid: boolean,
+    adf1SignalStrength: number,
     adf1Radial: number
 
     adf2Ident: string,
     adf2ActiveFrequency: number,
-    adf2Valid: boolean,
+    adf2SignalStrength: number,
     adf2Radial: number,
 }
 
@@ -122,12 +122,12 @@ export class VorBusPublisher extends SimVarPublisher<VorSimVars> {
 
             ['adf1Ident', { name: 'ADF IDENT:1', type: SimVarValueType.String }],
             ['adf1ActiveFrequency', { name: 'ADF ACTIVE FREQUENCY:1', type: SimVarValueType.KHz }],
-            ['adf1Valid', { name: 'ADF SIGNAL:1', type: SimVarValueType.Bool }],
+            ['adf1SignalStrength', { name: 'ADF SIGNAL:1', type: SimVarValueType.Number }],
             ['adf1Radial', { name: 'ADF RADIAL:1', type: SimVarValueType.Degree }],
 
             ['adf2Ident', { name: 'ADF IDENT:2', type: SimVarValueType.String }],
             ['adf2ActiveFrequency', { name: 'ADF ACTIVE FREQUENCY:2', type: SimVarValueType.KHz }],
-            ['adf2Valid', { name: 'ADF SIGNAL:2', type: SimVarValueType.Bool }],
+            ['adf2SignalStrength', { name: 'ADF SIGNAL:2', type: SimVarValueType.Number }],
             ['adf2Radial', { name: 'ADF RADIAL:2', type: SimVarValueType.Degree }],
         ]), bus);
     }
