@@ -1,5 +1,6 @@
-import { FSComponent, DisplayComponent, VNode, Subject, EventBus, MappedSubject } from '@microsoft/msfs-sdk';
-import { DmcEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
+import { FSComponent, DisplayComponent, VNode, Subject, EventBus, MappedSubject, Subscribable } from '@microsoft/msfs-sdk';
+import { EfisNdMode } from '@shared/NavigationDisplay';
+import { DmcEvents } from '../../MsfsAvionicsCommon/providers/DmcPublisher';
 import { Layer } from '../../MsfsAvionicsCommon/Layer';
 import { AdirsSimVars } from '../../MsfsAvionicsCommon/SimVarTypes';
 import { NDControlEvents } from '../NDControlEvents';
@@ -9,7 +10,7 @@ import { LubberLine } from '../pages/arc/LubberLine';
 const PLANE_X_OFFSET = -41;
 const PLANE_Y_OFFSET = 0;
 
-export class Airplane extends DisplayComponent<{ bus: EventBus }> {
+export class Airplane extends DisplayComponent<{ bus: EventBus, ndMode: Subscribable<EfisNdMode> }> {
     private readonly headingWord = Arinc429ConsumerSubject.create(null);
 
     private readonly headingWordValid = this.headingWord.map((it) => it.isNormalOperation());
@@ -82,7 +83,7 @@ export class Airplane extends DisplayComponent<{ bus: EventBus }> {
                     />
                 </Layer>
 
-                <LubberLine bus={this.props.bus} visible={this.planeVisibility} rotation={this.rotation} />
+                <LubberLine bus={this.props.bus} visible={this.props.ndMode.map((m) => m !== EfisNdMode.PLAN)} rotation={this.rotation} />
             </>
         );
     }

@@ -333,7 +333,7 @@ export class NDComponent extends DisplayComponent<NDProps> {
 
                 {/* ND Vector graphics - top layer */}
                 <svg class="nd-svg nd-top-layer" viewBox="0 0 768 768" style="transform: rotateX(0deg);">
-                    <Airplane bus={this.props.bus} />
+                    <Airplane bus={this.props.bus} ndMode={this.currentPageMode} />
 
                     <Chrono bus={this.props.bus} />
 
