@@ -296,7 +296,7 @@ export class NDComponent extends DisplayComponent<NDProps> {
                     <WindIndicator bus={this.props.bus} />
                     <SpeedIndicator bus={this.props.bus} />
                     <ToWaypointIndicator bus={this.props.bus} isNormalOperation={this.pposLatWord.map((it) => it.isNormalOperation())} />
-                    <TopMessages bus={this.props.bus} />
+                    <TopMessages bus={this.props.bus} ndMode={this.currentPageMode} />
 
                     <Flag visible={Subject.create(false)} x={350} y={84} class="Amber FontSmall">
                         DISPLAY SYSTEM VERSION
@@ -474,7 +474,7 @@ class GridTrack extends DisplayComponent<GridTrackProps> {
     }
 }
 
-class TopMessages extends DisplayComponent<{ bus: EventBus }> {
+class TopMessages extends DisplayComponent<{ bus: EventBus, ndMode: Subscribable<EfisNdMode> }> {
     private readonly sub = this.props.bus.getSubscriber<ClockEvents & DmcEvents & NDSimvars & FmsVars>();
 
     private readonly trueRefActive = Subject.create(false);
@@ -493,6 +493,8 @@ class TopMessages extends DisplayComponent<{ bus: EventBus }> {
 
     private readonly approachMessageValue = Subject.create('');
 
+    private readonly isPlanMode = this.props.ndMode.map((mode) => mode === EfisNdMode.PLAN);
+
     private readonly gridTrack = MappedSubject.create(
         ([lat, lon, trueTrack]) => clampAngle(Math.round(trueTrack.value - Math.sign(lat.value) * lon.value)),
         this.pposLatWord,
@@ -500,13 +502,19 @@ class TopMessages extends DisplayComponent<{ bus: EventBus }> {
         this.trueTrackWord,
     )
 
-    private gridTrackVisible = MappedSubject.create(
+    private readonly trueRefVisible = MappedSubject.create(
+        ([isTrueRef, isPlanMode]) => isTrueRef && !isPlanMode,
+        this.trueRefActive,
+        this.isPlanMode,
+    );
+
+    private readonly gridTrackVisible = MappedSubject.create(
         ([lat, lon, trueTrack, apprMsg, trueRef]) => trueRef && apprMsg.length === 0 && lon.isNormalOperation() && trueTrack.isNormalOperation() && Math.abs(lat.valueOr(0)) > 65,
         this.pposLatWord,
         this.pposLonWord,
         this.trueTrackWord,
         this.approachMessageValue,
-        this.trueRefActive,
+        this.trueRefVisible,
     )
 
     private readonly trueFlagX = MappedSubject.create(
@@ -562,7 +570,7 @@ class TopMessages extends DisplayComponent<{ bus: EventBus }> {
                 <Layer x={384} y={28}>
                     <text class="Green FontMedium MiddleAlign">{this.approachMessageValue}</text>
                 </Layer>
-                <TrueFlag x={this.trueFlagX} y={this.trueFlagY} class="Cyan FontSmallest" boxed={this.trueFlagBoxed} visible={this.trueRefActive} />
+                <TrueFlag x={this.trueFlagX} y={this.trueFlagY} class="Cyan FontSmallest" boxed={this.trueFlagBoxed} visible={this.trueRefVisible} />
                 <GridTrack x={Subject.create(384)} y={this.trueFlagY} visible={this.gridTrackVisible} gridTrack={this.gridTrack} />
             </>
         );
