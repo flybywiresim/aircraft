@@ -19,6 +19,12 @@ export class Airplane extends DisplayComponent<{ bus: EventBus, ndMode: Subscrib
 
     private readonly planeVisibility = MappedSubject.create(([headingValid, showPlane]) => headingValid && showPlane, this.headingWordValid, this.showPlane);
 
+    private readonly lubberVisibility = MappedSubject.create(
+        ([planeVisibility, ndMode]) => ndMode !== EfisNdMode.PLAN && planeVisibility,
+        this.planeVisibility,
+        this.props.ndMode,
+    );
+
     private readonly circleVisibility = MappedSubject.create(([headingValid, showPlane]) => !headingValid && showPlane, this.headingWordValid, this.showPlane);
 
     private readonly x = Subject.create(0);
@@ -83,7 +89,7 @@ export class Airplane extends DisplayComponent<{ bus: EventBus, ndMode: Subscrib
                     />
                 </Layer>
 
-                <LubberLine bus={this.props.bus} visible={this.props.ndMode.map((m) => m !== EfisNdMode.PLAN)} rotation={this.rotation} />
+                <LubberLine bus={this.props.bus} visible={this.lubberVisibility} rotation={this.rotation} />
             </>
         );
     }
