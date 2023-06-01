@@ -28,6 +28,8 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
 
     private flightPhasesSelectedPageIndex = Subject.create(0);
 
+    private costIndex = Subject.create<number | undefined>(69);
+
     private transAlt = Subject.create(13000);
 
     private thrRedAlt = Subject.create<number | undefined>(1080);
@@ -122,8 +124,6 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
     private toNoiseEndInputRef = FSComponent.createRef<HTMLDivElement>();
 
     // CLB page subjects, refs and methods
-    private clbCostIndex = Subject.create<number | undefined>(undefined);
-
     private clbDeratedClbSelectedIndex = Subject.create(0);
 
     private clbPredictionsReference = Subject.create<number | undefined>(undefined);
@@ -147,6 +147,9 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
     private clbNoiseEndInputRef = FSComponent.createRef<HTMLDivElement>();
 
     // CRZ page subjects, refs and methods
+    private crzPreSelSpdTarget = Subject.create<number | undefined>(undefined);
+
+    private crzPreSelMachTarget = Subject.create<number | undefined>(undefined);
 
     // DES page subjects, refs and methods
 
@@ -244,6 +247,7 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                         selectedTabTextColor="white"
                     >
                         <TopTabNavigatorPage>
+                            {/* T.O */}
                             <div style="height: 100%; flex: 1; display: flex; justify-content: space-between; border-bottom: 1px solid lightgrey;">
                                 <div class="MFDLabelValueContainer" style="padding: 15px;">
                                     <span class="MFDLabel spacingRight">RWY</span>
@@ -467,10 +471,11 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                             </div>
                         </TopTabNavigatorPage>
                         <TopTabNavigatorPage>
+                            {/* CLB */}
                             <div style="display: flex; justify-content: space-between;">
                                 <div class="MFDLabelValueContainer" style="padding: 15px; margin-bottom: 15px;">
                                     <span class="MFDLabel spacingRight">CI</span>
-                                    <NumberInput emptyValueString="--" value={this.clbCostIndex} />
+                                    <NumberInput emptyValueString="--" value={this.costIndex} />
                                 </div>
                                 <div class="MFDLabelValueContainer">
                                     <span class="MFDLabel spacingRight">DERATED CLB</span>
@@ -497,7 +502,7 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                     <div class="MFDLabel">PRED TO </div>
                                     <NumberInput emptyValueString="---" value={this.clbPredictionsReference} containerStyle="width: 100px; margin-left: 15px;" />
                                 </div>
-                                <div class="spdTableCell" style="border-right: 1px solid lightgrey; justify-content: flex-end;">
+                                <div class="spdPreselManagedTableCell" style="border-right: 1px solid lightgrey; justify-content: flex-end;">
                                     <div class="MFDLabel">PRESEL</div>
                                 </div>
                                 <div class="spdTableCell">
@@ -505,7 +510,7 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                 </div>
                                 <div class="spdTableCell" />
                                 <div class="spdTableCell" />
-                                <div class="spdTableCell" style="border-right: 1px solid lightgrey; justify-content: flex-end;">
+                                <div class="spdPreselManagedTableCell" style="border-right: 1px solid lightgrey; justify-content: flex-end;">
                                     <div class="MFDLabel green">MANAGED</div>
                                 </div>
                                 <div class="spdTableCell">
@@ -634,13 +639,13 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                             </div>
                             <div style="flex-grow: 1;" />
                             {/* fill space vertically */}
-                            <div style="margin: 10px 2px 3px 2px; display: flex; flex-direction: row; justify-content: flex-end; padding-top: 10px;">
+                            <div style="margin: 5px 2px 3px 2px; display: flex; flex-direction: row; justify-content: flex-end; align-items: center;">
                                 <div ref={this.clbNoiseButtonRef} style="display: flex;">
                                     <Button onClick={() => this.showNoiseFields(true)}>
                                         NOISE
                                     </Button>
                                 </div>
-                                <div class="MFDLabelValueContainer">
+                                <div class="MFDLabelValueContainer" style="margin-left: 50px;">
                                     <span class="MFDLabel spacingRight">TRANS</span>
                                     <NumberInput
                                         value={this.transAlt}
@@ -657,15 +662,132 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                             </div>
                         </TopTabNavigatorPage>
                         <TopTabNavigatorPage>
-                            <span style="color: white; font-size: 60px;">CRZ</span>
+                            {/* CRZ */}
+                            <div style="display: flex; justify-content: space-between;">
+                                <div class="MFDLabelValueContainer" style="padding: 15px;">
+                                    <span class="MFDLabel spacingRight">CI</span>
+                                    <NumberInput emptyValueString="--" value={this.costIndex} />
+                                </div>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 20% 13% 22% 45%">
+                                <div class="spdTableCell" style="border-right: 1px solid lightgrey;">
+                                    <div class="MFDLabel">MODE</div>
+                                </div>
+                                <div class="spdTableCell">
+                                    <div class="MFDLabel">MACH</div>
+                                </div>
+                                <div class="spdTableCell">
+                                    <div class="MFDLabel">SPD</div>
+                                </div>
+                                <div class="spdTableCell" style="display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                                    <div style="display: flex; flex-direction: row; justify-content: center; align-items: center;">
+                                        <div class="MFDLabel spacingRight">AT</div>
+                                        <div class="MFDGreenValue bigger">TOKMA</div>
+                                    </div>
+                                    <div style="display: flex; flex-direction: row; justify-content: center; align-items: center;">
+                                        <div class="MFDLabel spacingRight">STEP TO</div>
+                                        <div class="MFDLabelValueContainer">
+                                            <span class="MFDUnitLabel leadingUnit">FL</span>
+                                            <span class="MFDGreenValue bigger">360</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="spdPreselManagedTableCell" style="border-right: 1px solid lightgrey; justify-content: flex-end;">
+                                    <div class="MFDLabel">PRESEL</div>
+                                </div>
+                                <div class="spdTableCell">
+                                    <NumberInput emptyValueString=".--" value={this.crzPreSelMachTarget} />
+                                </div>
+                                <div class="spdTableCell">
+                                    <NumberInput emptyValueString="---" value={this.crzPreSelSpdTarget} unitTrailing={Subject.create('KT')} />
+                                </div>
+                                <div class="spdTableCell" />
+                                <div class="spdPreselManagedTableCell" style="border-right: 1px solid lightgrey; justify-content: flex-end;">
+                                    <div class="MFDLabel green">MANAGED</div>
+                                </div>
+                                <div class="spdTableCell">
+                                    <span class="MFDGreenValue">.82</span>
+                                </div>
+                                <div class="spdTableCell">
+                                    <div class="MFDLabelValueContainer">
+                                        <span class="MFDGreenValue">---</span>
+                                        <span class="MFDUnitLabel trailingUnit"> </span>
+                                    </div>
+                                </div>
+                                <div class="spdTableCell">
+                                    <span class="MFDGreenValue">00:45   298</span>
+                                    <span class="MFDUnitLabel trailingUnit">NM</span>
+                                </div>
+                                <div class="spdTableCell" style="border-right: 1px solid lightgrey; justify-content: flex-end; padding: 5px 15px 5px 15px;">
+                                    <div class="MFDLabel">ECON</div>
+                                </div>
+                                <div class="spdTableCell" style="padding: 5px 15px 5px 15px;">
+                                    <span class="MFDGreenValue">.82</span>
+                                </div>
+                                <div class="spdTableCell" style="padding: 5px 15px 5px 15px;">
+                                    <div class="MFDLabelValueContainer">
+                                        <span class="MFDGreenValue">314</span>
+                                        <span class="MFDUnitLabel trailingUnit">KT</span>
+                                    </div>
+                                </div>
+                                <div class="spdTableCell" style="padding: 5px 15px 5px 15px;" />
+                                <div class="spdTableCell" style="border-right: 1px solid lightgrey; border-bottom: none; justify-content: flex-end; padding: 5px;">
+                                    <div class="MFDLabel">LRC</div>
+                                </div>
+                                <div class="spdTableCell" style="border-bottom: none; padding: 5px;">
+                                    <span class="MFDGreenValue">.84</span>
+                                </div>
+                                <div class="spdTableCell" style="border-bottom: none; padding: 5px;">
+                                    <div class="MFDLabelValueContainer">
+                                        <span class="MFDGreenValue">---</span>
+                                        <span class="MFDUnitLabel trailingUnit"> </span>
+                                    </div>
+                                </div>
+                                <div />
+                                <div class="spdTableCell" style="border-right: 1px solid lightgrey; border-bottom: none; justify-content: flex-end; padding: 5px;">
+                                    <div class="MFDLabel">MAX TURB</div>
+                                </div>
+                                <div class="spdTableCell" style="border-bottom: none; padding: 5px;">
+                                    <span class="MFDGreenValue">.85</span>
+                                </div>
+                                <div class="spdTableCell" style="border-bottom: none; padding: 5px;">
+                                    <div class="MFDLabelValueContainer">
+                                        <span class="MFDGreenValue">---</span>
+                                        <span class="MFDUnitLabel trailingUnit"> </span>
+                                    </div>
+                                </div>
+                                <div />
+                            </div>
+                            <div style="flex-grow: 1;" />
+                            {/* fill space vertically */}
+                            <div style="margin: 10px 2px 3px 2px; display: flex; flex-direction: row; justify-content: space-between; align-items: center; padding-top: 10px;">
+                                <span class="MFDLabel bigger">DEST</span>
+                                <span class="MFDLabel green bigger">LFPG</span>
+                                <span class="MFDLabel green bigger">06:38</span>
+                                <div class="MFDLabelValueContainer">
+                                    <span class="MFDGreenValue">15.3</span>
+                                    <span class="MFDUnitLabel trailingUnit">T</span>
+                                </div>
+                                <div style="display: flex; flex-direction: row;">
+                                    <Button onClick={() => console.log('CMS')} containerStyle="margin-right: 10px;">
+                                        CMS
+                                    </Button>
+                                    <Button onClick={() => this.props.navigateTo('fms/active/f-pln/vert-rev')}>
+                                        STEP ALTs
+                                    </Button>
+                                </div>
+                            </div>
                         </TopTabNavigatorPage>
                         <TopTabNavigatorPage>
+                            {/* DES */}
                             <span style="color: white; font-size: 60px;">DES</span>
                         </TopTabNavigatorPage>
                         <TopTabNavigatorPage>
+                            {/* APPR */}
                             <span style="color: white; font-size: 60px;">APPR</span>
                         </TopTabNavigatorPage>
                         <TopTabNavigatorPage>
+                            {/* GA */}
                             <span style="color: white; font-size: 60px;">GA</span>
                         </TopTabNavigatorPage>
                     </TopTabNavigator>

@@ -5,5 +5,13 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 15px;
+  padding: 10px;
+}
+
+.spdPreselManagedTableCell {
+  border-bottom: 1px solid lightgrey;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px 10px 20px 10px;
 }
