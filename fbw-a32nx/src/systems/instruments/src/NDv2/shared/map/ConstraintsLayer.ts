@@ -30,10 +30,6 @@ export class ConstraintsLayer implements MapLayer<NdSymbol> {
             if (symbol.type & NdSymbolTypeFlags.Constraint) {
                 this.paintConstraintCircle(true, context, rx, ry, symbol);
             }
-
-            if (symbol.constraints) {
-                this.paintSymbolConstraints(context, rx, ry, symbol);
-            }
         }
     }
 
@@ -54,15 +50,5 @@ export class ConstraintsLayer implements MapLayer<NdSymbol> {
         context.ellipse(x, y, 14, 14, 0, 0, Math.PI * 2);
         context.stroke();
         context.closePath();
-    }
-
-    private paintSymbolConstraints(context: CanvasRenderingContext2D, x: number, y: number, symbol: NdSymbol) {
-        context.fillStyle = '#ff94ff';
-
-        for (let i = 0; i < symbol.constraints.length; i++) {
-            const line = symbol.constraints[i];
-
-            PaintUtils.paintText(true, context, x + 13, y + 35 + (18 * i), line, '#ff94ff');
-        }
     }
 }
