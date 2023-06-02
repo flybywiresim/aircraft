@@ -200,7 +200,7 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
         this.symbols.length = 0;
         this.symbols.push(...symbols);
 
-        const waypoints = this.symbols.filter((it) => BitFlags.isAny(it.type,
+        const waypoints = this.symbols.filter((it) => it.constraints || (BitFlags.isAny(it.type,
             NdSymbolTypeFlags.Waypoint
             | NdSymbolTypeFlags.FlightPlan
             | NdSymbolTypeFlags.FixInfo
@@ -208,7 +208,7 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
             | NdSymbolTypeFlags.Vor
             | NdSymbolTypeFlags.Dme
             | NdSymbolTypeFlags.Ndb
-            | NdSymbolTypeFlags.Airport) && !(it.type & NdSymbolTypeFlags.Runway));
+            | NdSymbolTypeFlags.Airport) && !(it.type & NdSymbolTypeFlags.Runway)));
 
         this.waypointLayer.data = waypoints;
 
@@ -216,7 +216,7 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
 
         this.fixInfoLayer.data = fixInfoSymbols;
 
-        const constraints = this.symbols.filter((it) => it.type & (NdSymbolTypeFlags.Constraint) || it.constraints);
+        const constraints = this.symbols.filter((it) => it.type & (NdSymbolTypeFlags.Constraint));
 
         this.constraintsLayer.data = constraints;
 
@@ -316,6 +316,9 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
         }
         context.resetTransform();
 
+        this.constraintsLayer.paintShadowLayer(context, size, size, this.mapParams);
+        this.constraintsLayer.paintColorLayer(context, size, size, this.mapParams);
+
         for (const key in this.vectors) {
             if (this.vectors[key].length > 0) {
                 context.beginPath();
@@ -325,9 +328,8 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
                 context.stroke();
             }
         }
-
-        this.constraintsLayer.paintShadowLayer(context, size, size, this.mapParams);
-        this.constraintsLayer.paintColorLayer(context, size, size, this.mapParams);
+        // reset line dash
+        context.setLineDash(NO_DASHES);
 
         this.waypointLayer.paintShadowLayer(context, size, size, this.mapParams);
         this.waypointLayer.paintColorLayer(context, size, size, this.mapParams);

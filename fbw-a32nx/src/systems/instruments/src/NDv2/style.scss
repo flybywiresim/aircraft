@@ -208,6 +208,12 @@ tspan.Red,
   fill-rule: evenodd;
 }
 
+text.shadow {
+  stroke: $display-background;
+  stroke-width: 1px;
+  paint-order: stroke;
+}
+
 circle.shadow,
 line.shadow,
 path.shadow,

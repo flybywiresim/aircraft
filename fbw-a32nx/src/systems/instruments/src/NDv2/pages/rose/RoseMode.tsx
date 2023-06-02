@@ -1,11 +1,12 @@
-import { FSComponent, ComponentProps, Subscribable, Subject, EventBus } from '@microsoft/msfs-sdk';
+import { FSComponent, ComponentProps, Subscribable, Subject } from '@microsoft/msfs-sdk';
 import { Arinc429WordData } from '@shared/arinc429';
 import { EfisNdRangeValue } from '@shared/NavigationDisplay';
+import { ArincEventBus } from 'instruments/src/MsfsAvionicsCommon/ArincEventBus';
 import { NDPage } from '../NDPage';
 import { NDControlEvents } from '../../NDControlEvents';
 
 export interface RoseModeProps extends ComponentProps {
-    bus: EventBus,
+    bus: ArincEventBus,
     rangeValue: Subscribable<EfisNdRangeValue>,
     headingWord: Subscribable<Arinc429WordData>,
     trueHeadingWord: Subscribable<Arinc429WordData>,

@@ -1,13 +1,14 @@
 import { ConsumerSubject, FSComponent, MappedSubject, Subject, VNode } from '@microsoft/msfs-sdk';
 import { EfisNdMode, rangeSettings } from '@shared/NavigationDisplay';
 import { FcuSimVars } from 'instruments/src/MsfsAvionicsCommon/providers/FcuBusPublisher';
+import { LsCourseBug } from 'instruments/src/NDv2/pages/arc/LsCourseBug';
+import { getSmallestAngle } from 'instruments/src/PFD/PFDUtils';
 import { Flag } from '../../shared/Flag';
 import { RoseMode } from './RoseMode';
 import { RoseModeUnderlay } from './RoseModeUnderlay';
 import { Arinc429RegisterSubject } from '../../../MsfsAvionicsCommon/Arinc429RegisterSubject';
 import { AdirsSimVars } from '../../../MsfsAvionicsCommon/SimVarTypes';
 import { NDControlEvents } from '../../NDControlEvents';
-import { RadioNeedle } from '../../shared/RadioNeedle';
 
 export class RoseNavPage extends RoseMode {
     private readonly pposLatWord = Arinc429RegisterSubject.createEmpty();
@@ -19,6 +20,16 @@ export class RoseNavPage extends RoseMode {
     private readonly mapFlagShown = MappedSubject.create(([headingWord, latWord, longWord]) => {
         return !headingWord.isNormalOperation() || !latWord.isNormalOperation() || !longWord.isNormalOperation();
     }, this.props.headingWord, this.pposLatWord, this.pposLonWord);
+
+    private readonly planeRotation = MappedSubject.create(([isUsingTrackUpMode, headingWord, trackWord]) => {
+        if (isUsingTrackUpMode) {
+            if (headingWord.isNormalOperation() && trackWord.isNormalOperation()) {
+                return getSmallestAngle(headingWord.value, trackWord.value);
+            }
+        }
+
+        return 0;
+    }, this.props.isUsingTrackUpMode, this.props.headingWord, this.props.trackWord);
 
     isVisible = Subject.create(false);
 
@@ -32,7 +43,7 @@ export class RoseNavPage extends RoseMode {
             }
         });
 
-        const sub = this.props.bus.getSubscriber<AdirsSimVars & FcuSimVars>();
+        const sub = this.props.bus.getArincSubscriber<AdirsSimVars & FcuSimVars>();
 
         sub.on('latitude').whenChanged().handle((v) => this.pposLatWord.setWord(v));
         sub.on('longitude').whenChanged().handle((v) => this.pposLonWord.setWord(v));
@@ -120,23 +131,9 @@ export class RoseNavPage extends RoseMode {
                     visible={this.isVisible}
                 />
 
-                <RadioNeedle
+                <LsCourseBug
                     bus={this.props.bus}
-                    headingWord={this.props.headingWord}
-                    trackWord={this.props.trackWord}
-                    isUsingTrackUpMode={this.props.isUsingTrackUpMode}
-                    index={1}
-                    mode={EfisNdMode.ROSE_NAV}
-                    centreHeight={384}
-                />
-                <RadioNeedle
-                    bus={this.props.bus}
-                    headingWord={this.props.headingWord}
-                    trackWord={this.props.trackWord}
-                    isUsingTrackUpMode={this.props.isUsingTrackUpMode}
-                    index={2}
-                    mode={EfisNdMode.ROSE_NAV}
-                    centreHeight={384}
+                    rotationOffset={this.planeRotation}
                 />
 
                 <Flag visible={this.mapFlagShown} x={384} y={320.6} class="Red FontLarge">MAP NOT AVAIL</Flag>

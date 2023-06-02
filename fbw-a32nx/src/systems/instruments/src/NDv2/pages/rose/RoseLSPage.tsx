@@ -1,5 +1,4 @@
 import { ComponentProps, DisplayComponent, FSComponent, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import { EfisNdMode } from '@shared/NavigationDisplay';
 import { Arinc429WordData } from '@shared/arinc429';
 import { DmcEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 import { VorSimVars } from 'instruments/src/MsfsAvionicsCommon/providers/VorBusPublisher';
@@ -9,7 +8,6 @@ import { RoseModeUnderlay } from './RoseModeUnderlay';
 import { NDControlEvents } from '../../NDControlEvents';
 import { IlsInfoIndicator } from './IlsInfoIndicator';
 import { GlideSlope } from './Glideslope';
-import { RadioNeedle } from '../../shared/RadioNeedle';
 
 export interface RoseLsProps extends RoseModeProps {
     index: 1 | 2,
@@ -39,8 +37,6 @@ export class RoseLSPage extends RoseMode<RoseLsProps> {
 
         const index: 3 | 4 = this.props.index + 2 as (3|4);
 
-        // this.headingWord.setConsumer(sub.on('heading'));
-
         sub.on(`nav${index}Obs`).whenChanged().handle((v) => this.courseSub.set(v));
 
         sub.on(`nav${index}RadialError`).whenChanged().handle((v) => this.courseDeviationSub.set(v));
@@ -67,26 +63,6 @@ export class RoseLSPage extends RoseMode<RoseLsProps> {
                     visible={this.isVisible}
                 />
 
-                <RadioNeedle
-                    bus={this.props.bus}
-                    headingWord={this.props.headingWord}
-                    trackWord={this.props.trackWord}
-                    isUsingTrackUpMode={this.props.isUsingTrackUpMode}
-                    index={1}
-                    mode={EfisNdMode.ROSE_NAV}
-                    centreHeight={384}
-                />
-                <RadioNeedle
-                    bus={this.props.bus}
-                    headingWord={this.props.headingWord}
-                    trackWord={this.props.trackWord}
-                    isUsingTrackUpMode={this.props.isUsingTrackUpMode}
-                    index={2}
-                    mode={EfisNdMode.ROSE_NAV}
-                    centreHeight={384}
-                />
-
-                {/* FIXME LOC indications */}
                 <IlsCaptureOverlay
                     heading={this.props.headingWord}
                     course={this.courseSub}

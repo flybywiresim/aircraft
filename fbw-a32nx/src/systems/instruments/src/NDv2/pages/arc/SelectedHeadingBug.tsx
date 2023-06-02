@@ -1,6 +1,7 @@
 import { FSComponent, DisplayComponent, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { DmcEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 import { ArincEventBus } from 'instruments/src/MsfsAvionicsCommon/ArincEventBus';
+import { EfisNdMode } from '@shared/NavigationDisplay';
 import { NDSimvars } from '../../NDSimvarPublisher';
 import { getSmallestAngle } from '../../../PFD/PFDUtils';
 import { Arinc429ConsumerSubject } from '../../../MsfsAvionicsCommon/Arinc429ConsumerSubject';
@@ -8,6 +9,7 @@ import { Arinc429ConsumerSubject } from '../../../MsfsAvionicsCommon/Arinc429Con
 export interface SelectedHeadingBugProps {
     bus: ArincEventBus,
     rotationOffset: Subscribable<number>,
+    mode: Subscribable<EfisNdMode>,
 }
 
 export class SelectedHeadingBug extends DisplayComponent<SelectedHeadingBugProps> {
@@ -18,7 +20,7 @@ export class SelectedHeadingBug extends DisplayComponent<SelectedHeadingBugProps
     private readonly selected = Subject.create(0);
 
     // eslint-disable-next-line
-    private readonly bugShown = MappedSubject.create(([headingWord, selected, diff]) => {
+    private readonly bugShown = MappedSubject.create(([headingWord, selected, diff, mode]) => {
         if (!headingWord.isNormalOperation()) {
             return false;
         }
@@ -27,11 +29,11 @@ export class SelectedHeadingBug extends DisplayComponent<SelectedHeadingBugProps
             return false;
         }
 
-        return diff <= 40;
-    }, this.headingWord, this.selected, this.diffSubject);
+        return diff <= 48 && mode !== EfisNdMode.PLAN;
+    }, this.headingWord, this.selected, this.diffSubject, this.props.mode);
 
     // eslint-disable-next-line
-    private readonly textShown = MappedSubject.create(([headingWord, selected, diff]) => {
+    private readonly textShown = MappedSubject.create(([headingWord, selected, diff, mode]) => {
         if (!headingWord.isNormalOperation()) {
             return false;
         }
@@ -40,8 +42,12 @@ export class SelectedHeadingBug extends DisplayComponent<SelectedHeadingBugProps
             return false;
         }
 
-        return Math.abs(diff) > 40;
-    }, this.headingWord, this.selected, this.diffSubject);
+        return Math.abs(diff) > 48 && mode !== EfisNdMode.PLAN;
+    }, this.headingWord, this.selected, this.diffSubject, this.props.mode);
+
+    private readonly transformSubject = MappedSubject.create(([diff, ndMode]) => {
+        return `rotate(${diff} 384 ${ndMode === EfisNdMode.ARC ? 620 : 384})`;
+    }, this.diffSubject, this.props.mode);
 
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
@@ -73,7 +79,7 @@ export class SelectedHeadingBug extends DisplayComponent<SelectedHeadingBugProps
             <>
                 <g
                     visibility={this.bugShown.map((v) => (v ? 'inherit' : 'hidden'))}
-                    transform={this.diffSubject.map((diff) => `rotate(${diff} 384 620)`)}
+                    transform={this.transformSubject}
                 >
                     <path
                         d="M382,126 L370,99 L398,99 L386,126"

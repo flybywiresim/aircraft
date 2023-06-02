@@ -49,6 +49,20 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
             } else {
                 this.paintWaypoint(true, context, rx, ry, symbol);
             }
+
+            if (symbol.constraints) {
+                this.paintSymbolConstraints(context, rx, ry, symbol);
+            }
+        }
+    }
+
+    private paintSymbolConstraints(context: CanvasRenderingContext2D, x: number, y: number, symbol: NdSymbol) {
+        context.fillStyle = '#ff94ff';
+
+        for (let i = 0; i < symbol.constraints.length; i++) {
+            const line = symbol.constraints[i];
+
+            PaintUtils.paintText(true, context, x + 13, y + 35 + (18 * i), line, '#ff94ff');
         }
     }
 
@@ -65,7 +79,9 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
     private paintNavaid(isColorLayer: boolean, context: CanvasRenderingContext2D, x: number, y: number, symbol: NdSymbol) {
         let mainColor;
         if (isColorLayer) {
-            if (symbol.type & NdSymbolTypeFlags.Tuned) {
+            if (symbol.type & NdSymbolTypeFlags.ActiveLegTermination) {
+                mainColor = '#fff';
+            } else if (symbol.type & NdSymbolTypeFlags.Tuned) {
                 mainColor = '#0ff';
             } else {
                 mainColor = '#ff94ff';
@@ -104,7 +120,7 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
 
         context.font = '21px Ecam';
 
-        PaintUtils.paintText(isColorLayer, context, x + 13, y + 17, symbol.ident, '#ff94ff');
+        PaintUtils.paintText(isColorLayer, context, x + 15, y + 17, symbol.ident, '#ff94ff');
     }
 
     private paintFlightPlanWaypoint(isColorLayer: boolean, context: CanvasRenderingContext2D, x: number, y: number, symbol: NdSymbol) {
@@ -114,7 +130,7 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
 
         context.font = '21px Ecam';
 
-        PaintUtils.paintText(isColorLayer, context, x + 13, y + 17, symbol.ident, mainColor);
+        PaintUtils.paintText(isColorLayer, context, x + 15, y + 17, symbol.ident, mainColor);
     }
 
     private paintAirportShape(context: CanvasRenderingContext2D, x: number, y: number, color: string, lineWidth: number) {

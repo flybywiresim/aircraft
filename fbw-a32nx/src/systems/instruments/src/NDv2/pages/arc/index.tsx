@@ -5,11 +5,9 @@ import { LsCourseBug } from 'instruments/src/NDv2/pages/arc/LsCourseBug';
 import { ArincEventBus } from 'instruments/src/MsfsAvionicsCommon/ArincEventBus';
 import { FcuSimVars } from 'instruments/src/MsfsAvionicsCommon/providers/FcuBusPublisher';
 import { ArcModeUnderlay } from './ArcModeUnderlay';
-import { SelectedHeadingBug } from './SelectedHeadingBug';
 import { getSmallestAngle } from '../../../PFD/PFDUtils';
 import { Flag } from '../../shared/Flag';
 import { NDPage } from '../NDPage';
-import { RadioNeedle } from '../../shared/RadioNeedle';
 import { NDControlEvents } from '../../NDControlEvents';
 import { AdirsSimVars } from '../../../MsfsAvionicsCommon/SimVarTypes';
 import { Arinc429RegisterSubject } from '../../../MsfsAvionicsCommon/Arinc429RegisterSubject';
@@ -192,33 +190,7 @@ export class ArcModePage extends NDPage<ArcModePageProps> {
                     ringRotation={this.ringRotation}
                 />
 
-                <g clip-path="url(#arc-mode-map-clip)">
-                    <RadioNeedle
-                        bus={this.props.bus}
-                        headingWord={this.props.headingWord}
-                        trackWord={this.props.trackWord}
-                        isUsingTrackUpMode={this.props.isUsingTrackUpMode}
-                        index={1}
-                        mode={EfisNdMode.ARC}
-                        centreHeight={620}
-                    />
-                    <RadioNeedle
-                        bus={this.props.bus}
-                        headingWord={this.props.headingWord}
-                        trackWord={this.props.trackWord}
-                        isUsingTrackUpMode={this.props.isUsingTrackUpMode}
-                        index={2}
-                        mode={EfisNdMode.ARC}
-                        centreHeight={620}
-                    />
-                </g>
-
                 <LsCourseBug
-                    bus={this.props.bus}
-                    rotationOffset={this.planeRotation}
-                />
-
-                <SelectedHeadingBug
                     bus={this.props.bus}
                     rotationOffset={this.planeRotation}
                 />

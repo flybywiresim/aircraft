@@ -14,8 +14,7 @@ export interface RadioNeedleProps {
     trackWord: Subscribable<Arinc429WordData>,
     isUsingTrackUpMode: Subscribable<boolean>,
     index: 1 | 2,
-    mode: EfisNdMode,
-    centreHeight: number,
+    mode: Subscribable<EfisNdMode>,
 }
 
 export class RadioNeedle extends DisplayComponent<RadioNeedleProps> {
@@ -63,7 +62,6 @@ export class RadioNeedle extends DisplayComponent<RadioNeedleProps> {
                     trackCorrection={this.trackCorrection}
                     index={this.props.index}
                     mode={this.props.mode}
-                    centreHeight={this.props.centreHeight}
                 />
                 <AdfNeedle
                     bus={this.props.bus}
@@ -73,7 +71,6 @@ export class RadioNeedle extends DisplayComponent<RadioNeedleProps> {
                     trackCorrection={this.trackCorrection}
                     index={this.props.index}
                     mode={this.props.mode}
-                    centreHeight={this.props.centreHeight}
                 />
             </>
         );
@@ -87,8 +84,7 @@ export interface SingleNeedleProps {
     trackWord: Subscribable<Arinc429WordData>,
     trackCorrection: Subscribable<number>,
     index: 1 | 2,
-    mode: EfisNdMode,
-    centreHeight: number,
+    mode: Subscribable<EfisNdMode>,
 }
 
 class VorNeedle extends DisplayComponent<SingleNeedleProps> {
@@ -117,15 +113,15 @@ class VorNeedle extends DisplayComponent<SingleNeedleProps> {
     private readonly trueRefActive = Subject.create(false);
 
     // eslint-disable-next-line arrow-body-style
-    private readonly availableSub = MappedSubject.create(([shown, radioAvailable, heading, track]) => {
+    private readonly availableSub = MappedSubject.create(([shown, radioAvailable, heading, track, mode]) => {
         // TODO in the future we will get the radio values via ARINC429 so this will no longer be needed
-        return shown && radioAvailable && heading.isNormalOperation() && track.isNormalOperation();
-    }, this.props.shown, this.radioAvailable, this.props.headingWord, this.props.trackWord);
+        return shown && radioAvailable && heading.isNormalOperation() && track.isNormalOperation() && mode !== EfisNdMode.PLAN;
+    }, this.props.shown, this.radioAvailable, this.props.headingWord, this.props.trackWord, this.props.mode);
 
     // eslint-disable-next-line arrow-body-style
-    private readonly rotationSub = MappedSubject.create(([relativeBearing, trackCorrection]) => {
-        return `rotate(${relativeBearing + trackCorrection} 384 ${this.props.centreHeight})`;
-    }, this.filteredRelativeBearing, this.props.trackCorrection);
+    private readonly rotationSub = MappedSubject.create(([relativeBearing, trackCorrection, ndMode]) => {
+        return `rotate(${relativeBearing + trackCorrection} 384 ${ndMode === EfisNdMode.ARC ? 620 : 384})`;
+    }, this.filteredRelativeBearing, this.props.trackCorrection, this.props.mode);
 
     private readonly needlePaths = Subject.create(['', '']);
 
@@ -136,10 +132,11 @@ class VorNeedle extends DisplayComponent<SingleNeedleProps> {
     );
 
     private readonly stationCorrected = MappedSubject.create(
-        ([trueRef, stationTrueRef, available]) => trueRef !== stationTrueRef && available && this.props.mode !== EfisNdMode.ROSE_VOR && this.props.mode !== EfisNdMode.ROSE_ILS,
+        ([trueRef, stationTrueRef, available, ndMode]) => trueRef !== stationTrueRef && available && ndMode !== EfisNdMode.ROSE_VOR && ndMode !== EfisNdMode.ROSE_ILS,
         this.trueRefActive,
         this.stationTrueRef,
         this.availableSub,
+        this.props.mode,
     );
 
     onAfterRender(node: VNode) {
@@ -168,18 +165,19 @@ class VorNeedle extends DisplayComponent<SingleNeedleProps> {
             this.filteredRelativeBearing.set(bearing % 360);
         });
 
-        switch (this.props.mode) {
-        case EfisNdMode.ARC:
-            this.needlePaths.set(this.ARC_MODE_PATHS);
-            break;
-        case EfisNdMode.ROSE_ILS:
-        case EfisNdMode.ROSE_VOR:
-        case EfisNdMode.ROSE_NAV:
-            this.needlePaths.set(this.ROSE_MODE_PATHS);
-            break;
-        default:
-            throw new Error(`[VorNeedle] Invalid ND mode: ${this.props.mode}`);
-        }
+        this.props.mode.sub((mode) => {
+            switch (mode) {
+            case EfisNdMode.ARC:
+                this.needlePaths.set(this.ARC_MODE_PATHS);
+                break;
+            case EfisNdMode.ROSE_ILS:
+            case EfisNdMode.ROSE_VOR:
+            case EfisNdMode.ROSE_NAV:
+                this.needlePaths.set(this.ROSE_MODE_PATHS);
+                break;
+            default:
+            }
+        }, true);
     }
 
     render(): VNode | null {
@@ -219,15 +217,15 @@ class AdfNeedle extends DisplayComponent<SingleNeedleProps> {
     private readonly radioAvailable = Subject.create(false);
 
     // eslint-disable-next-line arrow-body-style
-    private readonly availableSub = MappedSubject.create(([shown, radioAvailable, heading]) => {
+    private readonly availableSub = MappedSubject.create(([shown, radioAvailable, heading, mode]) => {
         // TODO in the future we will get the radio values via ARINC429 so this will no longer be needed
-        return shown && radioAvailable && heading.isNormalOperation();
-    }, this.props.shown, this.radioAvailable, this.props.headingWord);
+        return shown && radioAvailable && heading.isNormalOperation() && mode !== EfisNdMode.PLAN;
+    }, this.props.shown, this.radioAvailable, this.props.headingWord, this.props.mode);
 
     // eslint-disable-next-line arrow-body-style
-    private readonly rotationSub = MappedSubject.create(([relativeBearing]) => {
-        return `rotate(${relativeBearing} 384 ${this.props.centreHeight})`;
-    }, this.relativeBearing);
+    private readonly rotationSub = MappedSubject.create(([relativeBearing, ndMode]) => {
+        return `rotate(${relativeBearing} 384 ${ndMode === EfisNdMode.ARC ? 620 : 384})`;
+    }, this.relativeBearing, this.props.mode);
 
     private readonly needlePaths = Subject.create(['', '']);
 
@@ -239,18 +237,19 @@ class AdfNeedle extends DisplayComponent<SingleNeedleProps> {
         sub.on(`adf${this.props.index}Radial`).whenChanged().handle((value) => this.relativeBearing.set(value));
         sub.on(`adf${this.props.index}SignalStrength`).whenChangedBy(1).handle((value) => this.radioAvailable.set(value > 0));
 
-        switch (this.props.mode) {
-        case EfisNdMode.ARC:
-            this.needlePaths.set(this.ARC_MODE_PATHS);
-            break;
-        case EfisNdMode.ROSE_ILS:
-        case EfisNdMode.ROSE_VOR:
-        case EfisNdMode.ROSE_NAV:
-            this.needlePaths.set(this.ROSE_MODE_PATHS);
-            break;
-        default:
-            throw new Error(`[VorNeedle] Invalid ND mode: ${this.props.mode}`);
-        }
+        this.props.mode.sub((mode) => {
+            switch (mode) {
+            case EfisNdMode.ARC:
+                this.needlePaths.set(this.ARC_MODE_PATHS);
+                break;
+            case EfisNdMode.ROSE_ILS:
+            case EfisNdMode.ROSE_VOR:
+            case EfisNdMode.ROSE_NAV:
+                this.needlePaths.set(this.ROSE_MODE_PATHS);
+                break;
+            default:
+            }
+        });
     }
 
     render(): VNode | null {
