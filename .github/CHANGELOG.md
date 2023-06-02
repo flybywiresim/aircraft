@@ -8,7 +8,7 @@
 # 0.10.1
 
 1. [FMS] TO SPEEDS TOO LOW uses FQI fuel quantity after engine start to avoid spurious warnings - @tracernz (Mike)
-
+1. [EIS] Added > character to the font - @KiloEchoVictor (Kevin)
 
 ## 0.10.0
 
