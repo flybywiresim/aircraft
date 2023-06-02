@@ -19,11 +19,11 @@ use uom::si::{
     ratio::{percent, ratio},
 };
 
-// Bool signifies failure - future work this can be different types of failure
-#[derive(Clone, Copy)]
-enum OperatingChannel {
-    FDACChannelOne(bool),
-    FDACChannelTwo(bool),
+// Future work this can be different types of failure. Dead code for now since `Fault` is never constructed
+#[allow(dead_code)]
+enum OperatingChannelFault {
+    NoFault,
+    Fault,
 }
 
 #[derive(Debug)]
@@ -38,20 +38,27 @@ enum FcvFault {
     PositionDisagree,
     //More to be added
 }
+enum OperatingChannel {
+    FDACChannelOne(OperatingChannelFault),
+    FDACChannelTwo(OperatingChannelFault),
+}
 
 impl OperatingChannel {
     fn has_fault(&self) -> bool {
-        matches!(self, OperatingChannel::FDACChannelOne(true))
-            || matches!(self, OperatingChannel::FDACChannelTwo(true))
+        matches!(
+            self,
+            OperatingChannel::FDACChannelOne(OperatingChannelFault::Fault)
+                | OperatingChannel::FDACChannelTwo(OperatingChannelFault::Fault)
+        )
     }
 
-    fn switch(self) -> Self {
+    fn switch(&mut self) -> Self {
         // At the moment switching channels always clears the fault in the second channel
         // TODO: This needs to be improved so we can have dual channel failures
         if matches!(self, OperatingChannel::FDACChannelOne(_)) {
-            OperatingChannel::FDACChannelTwo(false)
+            OperatingChannel::FDACChannelTwo(OperatingChannelFault::NoFault)
         } else {
-            OperatingChannel::FDACChannelOne(false)
+            OperatingChannel::FDACChannelOne(OperatingChannelFault::NoFault)
         }
     }
 }
@@ -68,7 +75,7 @@ pub struct FullDigitalAGUController<const ENGINES: usize> {
 impl<const ENGINES: usize> FullDigitalAGUController<ENGINES> {
     pub fn new(fdac_id: usize, powered_by: Vec<ElectricalBusType>) -> Self {
         Self {
-            active_channel: OperatingChannel::FDACChannelOne(false),
+            active_channel: OperatingChannel::FDACChannelOne(OperatingChannelFault::NoFault),
             flow_control: FDACFlowControl::new(fdac_id),
             // agu_control
             powered_by,
@@ -91,9 +98,10 @@ impl<const ENGINES: usize> FullDigitalAGUController<ENGINES> {
     ) {
         self.fault_determination();
 
-        if !matches!(self.fault, Some(FdacFault::PowerLoss))
-            && !matches!(self.fault, Some(FdacFault::BothChannelsFault))
-        {
+        if !matches!(
+            self.fault,
+            Some(FdacFault::PowerLoss) | Some(FdacFault::BothChannelsFault)
+        ) {
             self.flow_control.update(
                 context,
                 acs_overhead,
@@ -182,47 +190,28 @@ impl<const ENGINES: usize> FDACFlowControl<ENGINES> {
         pneumatic_overhead: &impl EngineBleedPushbutton<ENGINES>,
         pressurization_overhead: &impl PressurizationOverheadShared,
     ) {
-        let fcv_id: [usize; 2] = [1, 2]
-            .iter_mut()
-            .map(|i| *i + ((self.fdac_id == 2) as usize * 2))
-            .collect::<Vec<usize>>()
-            .try_into()
-            .unwrap_or_else(|v: Vec<usize>| {
-                panic!("Expected a Vec of length {} but it was {}", 2, v.len())
-            });
+        let fcv_id = [1, 2].map(|i| i + ((self.fdac_id == 2) as usize * 2));
 
-        self.fcv_open_allowed = fcv_id
-            .iter()
-            .map(|id| {
-                self.fcv_open_allowed_determination(
-                    acs_overhead,
-                    any_door_open,
-                    engine_fire_push_buttons,
-                    *id,
-                    pressurization_overhead,
-                    pneumatic,
-                )
-            })
-            .collect::<Vec<bool>>()
-            .try_into()
-            .unwrap_or_else(|v: Vec<bool>| {
-                panic!(
-                    "Expected a Vec of length {} but it was {}",
-                    self.fcv_open_allowed.len(),
-                    v.len()
-                )
-            });
+        self.fcv_open_allowed = fcv_id.map(|id| {
+            self.fcv_open_allowed_determination(
+                acs_overhead,
+                any_door_open,
+                engine_fire_push_buttons,
+                id,
+                pressurization_overhead,
+                pneumatic,
+            )
+        });
 
         self.should_open_fcv = fcv_id
             .iter()
-            .zip([0, 1])
-            .map(|(fcv, id)| {
-                self.fcv_open_allowed[id]
-                    && self.can_move_fcv(engines, *fcv, pneumatic, pneumatic_overhead)
+            .zip(self.fcv_open_allowed)
+            .map(|(&fcv, fcv_open_allowed)| {
+                fcv_open_allowed && self.can_move_fcv(engines, fcv, pneumatic, pneumatic_overhead)
             })
-            .collect::<Vec<bool>>()
+            .collect::<Vec<_>>()
             .try_into()
-            .unwrap_or_else(|v: Vec<bool>| {
+            .unwrap_or_else(|v: Vec<_>| {
                 panic!(
                     "Expected a Vec of length {} but it was {}",
                     self.should_open_fcv.len(),
@@ -256,10 +245,7 @@ impl<const ENGINES: usize> FDACFlowControl<ENGINES> {
         pressurization_overhead: &impl PressurizationOverheadShared,
         pneumatic: &(impl PneumaticBleed + EngineStartState),
     ) -> bool {
-        let onside_engine_numbers = [
-            1 + (self.fdac_id == 2) as usize * 2,
-            2 + (self.fdac_id == 2) as usize * 2,
-        ];
+        let onside_engine_numbers = [1, 2].map(|i| i + ((self.fdac_id == 2) as usize * 2));
         // The pack flow valve closes when:
         // The associated PACK pbs is set to off
         !(!acs_overhead.pack_pushbuttons_state()[self.fdac_id - 1]
@@ -297,7 +283,7 @@ impl<const ENGINES: usize> FDACFlowControl<ENGINES> {
                 && pneumatic_overhead
                     .engine_bleed_pushbuttons_are_auto()
                     .iter()
-                    .any(|pb| pb == &true)
+                    .any(|pb| *pb)
                 && pneumatic.engine_crossbleed_is_on()))
             || pneumatic.apu_bleed_is_on()
     }

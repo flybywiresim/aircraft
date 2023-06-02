@@ -11,7 +11,6 @@ use systems::{
         PackFlowControllers, PackFlowValveSignal, PressurizationConstants,
         PressurizationOverheadShared, TrimAirSystem, ZoneType,
     },
-    integrated_modular_avionics::core_processing_input_output_module::CoreProcessingInputOutputModule,
     overhead::{
         AutoManFaultPushButton, NormalOnPushButton, OnOffFaultPushButton, OnOffPushButton,
         SpringLoadedSwitch, ValueKnob,
@@ -101,14 +100,8 @@ impl A380AirConditioning {
     ) {
         self.pressurization_updater.update(context);
 
-        let cpiom = ["B1", "B2", "B3", "B4"]
-            .iter()
-            .map(|name| cpiom_b.core_processing_input_output_module(name))
-            .collect::<Vec<&CoreProcessingInputOutputModule>>()
-            .try_into()
-            .unwrap_or_else(|v: Vec<&CoreProcessingInputOutputModule>| {
-                panic!("Expected a Vec of length {} but it was {}", 4, v.len())
-            });
+        let cpiom =
+            ["B1", "B2", "B3", "B4"].map(|name| cpiom_b.core_processing_input_output_module(name));
 
         self.cpiom_b.update(
             context,
@@ -181,10 +174,10 @@ impl A380AirConditioning {
     }
 
     pub(crate) fn fcv_to_pack_id(fcv_id: usize) -> usize {
-        if fcv_id == 1 || fcv_id == 2 {
-            0
-        } else {
-            1
+        match fcv_id {
+            1 | 2 => 0,
+            3 | 4 => 1,
+            _ => panic!("Invalid fcv_id!"),
         }
     }
 }
@@ -911,6 +904,7 @@ mod tests {
     use ntest::assert_about_eq;
     use systems::{
         electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
+        integrated_modular_avionics::core_processing_input_output_module::CoreProcessingInputOutputModule,
         overhead::AutoOffFaultPushButton,
         pneumatic::{
             valve::{DefaultValve, ElectroPneumaticValve, PneumaticExhaust},

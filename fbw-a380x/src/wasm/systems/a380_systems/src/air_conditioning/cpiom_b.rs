@@ -56,18 +56,7 @@ impl CoreProcessingInputOutputModuleB {
         pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
         pressurization: &impl CabinAltitude,
     ) {
-        self.cpiom_are_active = cpiom_b
-            .iter()
-            .map(|cpiom| cpiom.is_available())
-            .collect::<Vec<bool>>()
-            .try_into()
-            .unwrap_or_else(|v: Vec<bool>| {
-                panic!(
-                    "Expected a Vec of length {} but it was {}",
-                    self.cpiom_are_active.len(),
-                    v.len()
-                )
-            });
+        self.cpiom_are_active = cpiom_b.map(|cpiom| cpiom.is_available());
 
         // We check if any CPIOM B is available to run the applications
         if self.cpiom_are_active.iter().any(|&cpiom| cpiom) {
@@ -146,15 +135,11 @@ impl AirGenerationSystemApplication {
     }
 
     fn pack_flow_id(context: &mut InitContext) -> [VariableIdentifier; 4] {
-        let pack_flow_id: Vec<String> = (1..=4)
-            .map(|fcv| format!("COND_PACK_FLOW_{}", fcv))
-            .collect();
-        pack_flow_id
-            .iter()
-            .map(|st| context.get_identifier(st.clone()))
-            .collect::<Vec<VariableIdentifier>>()
+        (1..=4)
+            .map(|fcv| context.get_identifier(format!("COND_PACK_FLOW_{}", fcv)))
+            .collect::<Vec<_>>()
             .try_into()
-            .unwrap_or_else(|v: Vec<VariableIdentifier>| {
+            .unwrap_or_else(|v: Vec<_>| {
                 panic!("Expected a Vec of length {} but it was {}", 4, v.len())
             })
     }
@@ -176,24 +161,24 @@ impl AirGenerationSystemApplication {
             .aircraft_state
             .update(context, ground_speed, engines, lgciu);
 
-        self.flow_demand_ratio = [
-            self.flow_demand_determination(&self.aircraft_state, acs_overhead, Pack(1), pneumatic),
-            self.flow_demand_determination(&self.aircraft_state, acs_overhead, Pack(2), pneumatic),
-        ];
-        self.pack_flow_demand = [
+        self.flow_demand_ratio = [1, 2].map(|pack_id| {
+            self.flow_demand_determination(
+                &self.aircraft_state,
+                acs_overhead,
+                Pack(pack_id),
+                pneumatic,
+            )
+        });
+
+        self.pack_flow_demand = [1, 2].map(|pack_id| {
             self.absolute_flow_calculation(
                 acs_overhead,
                 number_of_passengers,
-                Pack(1),
+                Pack(pack_id),
                 pressurization,
-            ),
-            self.absolute_flow_calculation(
-                acs_overhead,
-                number_of_passengers,
-                Pack(2),
-                pressurization,
-            ),
-        ];
+            )
+        });
+
         self.update_timer(context, pneumatic);
         self.flow_ratio = self.actual_flow_percentage_calculation(pneumatic, pressurization);
     }
@@ -235,8 +220,8 @@ impl AirGenerationSystemApplication {
                 intermediate_flow.max(Ratio::new::<percent>(Self::APU_SUPPLY_FLOW_LIMIT));
         }
         // Single pack operation determination
-        if (pneumatic.pack_flow_valve_is_open(pack.into()))
-            != (pneumatic.pack_flow_valve_is_open(3 - usize::from(pack)))
+        if pneumatic.pack_flow_valve_is_open(pack.into())
+            != pneumatic.pack_flow_valve_is_open(3 - usize::from(pack))
         {
             intermediate_flow =
                 intermediate_flow.max(Ratio::new::<percent>(Self::ONE_PACK_FLOW_LIMIT));
@@ -294,30 +279,14 @@ impl AirGenerationSystemApplication {
                 * Self::A320_T0_A380_FLOW_CONVERSION_FACTOR,
         );
 
-        let actual_flow = [
-            pneumatic.pack_flow_valve_air_flow(1),
-            pneumatic.pack_flow_valve_air_flow(2),
-            pneumatic.pack_flow_valve_air_flow(3),
-            pneumatic.pack_flow_valve_air_flow(4),
-        ];
-
-        actual_flow
-            .iter()
-            .map(|&actual| {
-                Ratio::new::<ratio>(
-                    actual.get::<kilogram_per_second>()
-                        / baseline_flow.get::<kilogram_per_second>(),
-                )
-            })
-            .collect::<Vec<Ratio>>()
-            .try_into()
-            .unwrap_or_else(|v: Vec<Ratio>| {
-                panic!(
-                    "Expected a Vec of length {} but it was {}",
-                    actual_flow.len(),
-                    v.len()
-                )
-            })
+        [1, 2, 3, 4].map(|pfv_id| {
+            Ratio::new::<ratio>(
+                pneumatic
+                    .pack_flow_valve_air_flow(pfv_id)
+                    .get::<kilogram_per_second>()
+                    / baseline_flow.get::<kilogram_per_second>(),
+            )
+        })
     }
 
     fn update_timer(&mut self, context: &UpdateContext, pneumatic: &impl PackFlowValveState) {

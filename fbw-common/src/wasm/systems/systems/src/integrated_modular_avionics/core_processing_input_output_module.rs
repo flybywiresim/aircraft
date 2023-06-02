@@ -28,7 +28,7 @@ impl CoreProcessingInputOutputModule {
     }
 
     pub fn name(&self) -> &str {
-        self.name.as_str()
+        &self.name
     }
 
     pub fn is_available(&self) -> bool {
