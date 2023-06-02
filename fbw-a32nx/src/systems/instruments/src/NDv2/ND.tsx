@@ -7,6 +7,9 @@ import { ArincEventBus } from 'instruments/src/MsfsAvionicsCommon/ArincEventBus'
 import { CrossTrackError } from 'instruments/src/NDv2/shared/CrossTrackError';
 import { FmsVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
 import { FcuSimVars } from 'instruments/src/MsfsAvionicsCommon/providers/FcuBusPublisher';
+import { RadioNeedle } from 'instruments/src/NDv2/shared/RadioNeedle';
+import { getSmallestAngle } from 'instruments/src/PFD/PFDUtils';
+import { SelectedHeadingBug } from 'instruments/src/NDv2/pages/arc/SelectedHeadingBug';
 import { DisplayUnit } from '../MsfsAvionicsCommon/displayUnit';
 import { AdirsSimVars } from '../MsfsAvionicsCommon/SimVarTypes';
 import { NDSimvars } from './NDSimvarPublisher';
@@ -179,6 +182,17 @@ export class NDComponent extends DisplayComponent<NDProps> {
         return !headingWord.isNormalOperation() || !latWord.isNormalOperation() || !longWord.isNormalOperation();
     }, this.headingWord, this.pposLatWord, this.pposLonWord);
 
+    private readonly planeRotation = MappedSubject.create(([isUsingTrackUpMode, headingWord, trackWord]) => {
+        if (isUsingTrackUpMode) {
+            if (headingWord.isNormalOperation() && trackWord.isNormalOperation()) {
+                // FIXME move that file to MsfsAvionicsCommon or another shared folder
+                return getSmallestAngle(headingWord.value, trackWord.value);
+            }
+        }
+
+        return 0;
+    }, this.isUsingTrackUpMode, this.headingWord, this.trackWord);
+
     private handleNewMapPage(mode: EfisNdMode) {
         if (mode === this.currentPageMode.get()) {
             return;
@@ -290,6 +304,12 @@ export class NDComponent extends DisplayComponent<NDProps> {
                         aircraftTrueHeading={this.trueHeadingWord}
                     />
 
+                    <SelectedHeadingBug
+                        bus={this.props.bus}
+                        rotationOffset={this.planeRotation}
+                        mode={this.currentPageMode}
+                    />
+
                     <TrackLine bus={this.props.bus} isUsingTrackUpMode={this.isUsingTrackUpMode} />
                     <TrackBug bus={this.props.bus} isUsingTrackUpMode={this.isUsingTrackUpMode} />
 
@@ -340,6 +360,23 @@ export class NDComponent extends DisplayComponent<NDProps> {
                     <TcasWxrMessages bus={this.props.bus} mode={this.currentPageMode} />
                     <FmMessages bus={this.props.bus} mode={this.currentPageMode} />
                     <CrossTrackError bus={this.props.bus} currentPageMode={this.currentPageMode} isNormalOperation={this.mapFlagShown.map((it) => !it)} />
+
+                    <RadioNeedle
+                        bus={this.props.bus}
+                        headingWord={this.headingWord}
+                        trackWord={this.trackWord}
+                        isUsingTrackUpMode={this.isUsingTrackUpMode}
+                        index={1}
+                        mode={this.currentPageMode}
+                    />
+                    <RadioNeedle
+                        bus={this.props.bus}
+                        headingWord={this.headingWord}
+                        trackWord={this.trackWord}
+                        isUsingTrackUpMode={this.isUsingTrackUpMode}
+                        index={2}
+                        mode={this.currentPageMode}
+                    />
 
                 </svg>
             </DisplayUnit>
@@ -540,7 +577,7 @@ class TopMessages extends DisplayComponent<{ bus: EventBus, ndMode: Subscribable
             this.needApprMessageUpdate = true;
         });
 
-        this.sub.on('toWptIdent1').whenChanged().handle((value) => {
+        this.sub.on('apprMessage1').whenChanged().handle((value) => {
             this.apprMessage1 = value;
             this.needApprMessageUpdate = true;
         });
@@ -568,7 +605,8 @@ class TopMessages extends DisplayComponent<{ bus: EventBus, ndMode: Subscribable
         return (
             <>
                 <Layer x={384} y={28}>
-                    <text class="Green FontMedium MiddleAlign">{this.approachMessageValue}</text>
+                    {/* TODO verify */}
+                    <text class="Green FontSmall MiddleAlign">{this.approachMessageValue}</text>
                 </Layer>
                 <TrueFlag x={this.trueFlagX} y={this.trueFlagY} class="Cyan FontSmallest" boxed={this.trueFlagBoxed} visible={this.trueRefVisible} />
                 <GridTrack x={Subject.create(384)} y={this.trueFlagY} visible={this.gridTrackVisible} gridTrack={this.gridTrack} />
