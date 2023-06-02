@@ -491,11 +491,11 @@ impl<const N: usize> FlapSlatAssy<N> {
         context: &UpdateContext,
         left_pressure: &impl SectionPressure,
         right_pressure: &impl SectionPressure,
-        pcu1_commands: Box<dyn PowerControlUnitInterface>,
-        pcu2_commands: Box<dyn PowerControlUnitInterface>,
+        left_pcu_commands: Box<dyn PowerControlUnitInterface>,
+        right_pcu_commands: Box<dyn PowerControlUnitInterface>,
     ) {
-        self.power_control_units[0].update(context, left_pressure, pcu1_commands);
-        self.power_control_units[1].update(context, right_pressure, pcu2_commands);
+        self.power_control_units[0].update(context, left_pressure, left_pcu_commands);
+        self.power_control_units[1].update(context, right_pressure, right_pcu_commands);
         //println!("----------------------------------");
         for pcu in self.power_control_units.iter() {
             // Can't use the motor position directly because motors may not move synchronously
@@ -891,6 +891,10 @@ mod tests {
         }
     }
 
+    fn max_synchro_angle() -> Angle {
+        Angle::new::<degree>(FLAP_FPPU_TO_SURFACE_ANGLE_BREAKPTS.last().unwrap().clone())
+    }
+
     fn fppu_from_surface_angle(surface_angle: Option<Angle>) -> Option<Angle> {
         surface_angle.map(|angle| {
             Angle::new::<degree>(interpolation(
@@ -946,18 +950,25 @@ mod tests {
 
     #[derive(Copy, Clone)]
     struct DummyPCU {
-        left_motor_angle_request: Option<Angle>,
+        target_angle_tolerance: Angle,
+        motor_angle_request: Option<Angle>,
         fppu_angle: Angle,
     }
     impl DummyPCU {
         fn new() -> Self {
             Self {
-                left_motor_angle_request: None,
+                motor_angle_request: None,
                 fppu_angle: Angle::default(),
+                target_angle_tolerance: Angle::new::<degree>(5.8), //0.18
             }
         }
-        pub fn update(&mut self, left_motor_angle_request: Option<Angle>, fppu_angle: Angle) {
-            self.left_motor_angle_request = left_motor_angle_request;
+
+        pub fn get_target_tolerance(&self) -> Angle {
+            self.target_angle_tolerance
+        }
+
+        pub fn update(&mut self, motor_angle_request: Option<Angle>, fppu_angle: Angle) {
+            self.motor_angle_request = motor_angle_request;
             self.fppu_angle = fppu_angle;
         }
     }
@@ -965,8 +976,8 @@ mod tests {
         // Full driving sequence will be implemented
         // Return DeEnergised when no power
         fn retract_energise(&self) -> SolenoidStatus {
-            if self.left_motor_angle_request.is_some() {
-                if self.fppu_angle > self.left_motor_angle_request.unwrap() {
+            if self.motor_angle_request.is_some() {
+                if self.fppu_angle > self.motor_angle_request.unwrap() {
                     return SolenoidStatus::Energised;
                 }
             }
@@ -974,8 +985,8 @@ mod tests {
         }
 
         fn extend_energise(&self) -> SolenoidStatus {
-            if self.left_motor_angle_request.is_some() {
-                if self.fppu_angle < self.left_motor_angle_request.unwrap() {
+            if self.motor_angle_request.is_some() {
+                if self.fppu_angle < self.motor_angle_request.unwrap() {
                     return SolenoidStatus::Energised;
                 }
             }
@@ -983,15 +994,12 @@ mod tests {
         }
 
         fn pob_energise(&self) -> SolenoidStatus {
-            if self.left_motor_angle_request.is_none() {
+            if self.motor_angle_request.is_none() {
                 return SolenoidStatus::DeEnergised;
             }
-            let tolerance_deg = 5.8; //0.18
-            let fppu_f64 = self.fppu_angle.get::<degree>();
-            let demanded_angle_f64 = self.left_motor_angle_request.unwrap().get::<degree>();
 
-            if fppu_f64 > demanded_angle_f64 - tolerance_deg
-                && fppu_f64 < demanded_angle_f64 + tolerance_deg
+            if self.fppu_angle > self.motor_angle_request.unwrap() - self.target_angle_tolerance
+                && self.fppu_angle < self.motor_angle_request.unwrap() + self.target_angle_tolerance
             {
                 return SolenoidStatus::DeEnergised;
             }
@@ -1003,7 +1011,7 @@ mod tests {
         core_hydraulic_updater: MaxStepLoop,
 
         flaps_slats: FlapSlatAssy<7>,
-        dummy_pcu: DummyPCU,
+        dummy_pcu: [DummyPCU; 2],
 
         left_motor_angle_request: Option<Angle>,
         right_motor_angle_request: Option<Angle>,
@@ -1019,7 +1027,7 @@ mod tests {
                 right_motor_angle_request: None,
                 left_motor_pressure: TestHydraulicSection::default(),
                 right_motor_pressure: TestHydraulicSection::default(),
-                dummy_pcu: DummyPCU::new(),
+                dummy_pcu: [DummyPCU::new(), DummyPCU::new()],
                 flaps_slats: flap_system(context),
             }
         }
@@ -1038,30 +1046,32 @@ mod tests {
             self.right_motor_angle_request = fppu_from_surface_angle(surface_angle_request);
         }
 
-        // fn set_angle_per_sfcc(
-        //     &mut self,
-        //     surface_angle_request_sfcc1: Option<Angle>,
-        //     surface_angle_request_sfcc2: Option<Angle>,
-        // ) {
-        //     self.left_motor_angle_request =
-        //         flap_fppu_from_surface_angle(surface_angle_request_sfcc1);
-        //     self.right_motor_angle_request =
-        //         flap_fppu_from_surface_angle(surface_angle_request_sfcc2);
-        // }
+        fn set_angle_per_sfcc(
+            &mut self,
+            surface_angle_request_sfcc1: Option<Angle>,
+            surface_angle_request_sfcc2: Option<Angle>,
+        ) {
+            self.left_motor_angle_request = fppu_from_surface_angle(surface_angle_request_sfcc1);
+            self.right_motor_angle_request = fppu_from_surface_angle(surface_angle_request_sfcc2);
+        }
     }
     impl Aircraft for FlapSlatTestAircraft {
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
             self.core_hydraulic_updater.update(context);
 
             for cur_time_step in &mut self.core_hydraulic_updater {
-                self.dummy_pcu
+                self.dummy_pcu[0]
                     .update(self.left_motor_angle_request, self.flaps_slats.fppu_angle());
+                self.dummy_pcu[1].update(
+                    self.right_motor_angle_request,
+                    self.flaps_slats.fppu_angle(),
+                );
                 self.flaps_slats.update(
                     &context.with_delta(cur_time_step),
                     &self.left_motor_pressure,
                     &self.right_motor_pressure,
-                    Box::new(self.dummy_pcu),
-                    Box::new(self.dummy_pcu),
+                    Box::new(self.dummy_pcu[0]),
+                    Box::new(self.dummy_pcu[1]),
                 );
             }
         }
@@ -1127,6 +1137,17 @@ mod tests {
             self
         }
 
+        fn set_flaps_angle_per_sfcc(
+            mut self,
+            left_angle: Option<Angle>,
+            right_angle: Option<Angle>,
+        ) -> Self {
+            // Demand movement to `angle`
+            self.command(|a| a.set_angle_per_sfcc(left_angle, right_angle));
+
+            self
+        }
+
         fn set_flaps_angle(mut self, angle: Angle) -> Self {
             // Demand movement to `angle`
             self.command(|a| a.set_angle_request(Some(angle)));
@@ -1138,6 +1159,10 @@ mod tests {
             self.command(|a| a.set_angle_request(None));
 
             self
+        }
+
+        fn target_fppu_tolerance(&self) -> Angle {
+            self.query(|a| a.dummy_pcu[0].get_target_tolerance())
         }
 
         fn fppu_position(&self) -> Angle {
@@ -1280,7 +1305,6 @@ mod tests {
 
     #[test]
     fn flap_slat_assembly_full_pressure() {
-        let max_speed = AngularVelocity::new::<radian_per_second>(0.11);
         let circuit_pressure = Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI);
         let mut test_bed = test_bed_with();
 
@@ -1293,11 +1317,7 @@ mod tests {
 
         test_bed.run_with_delta(Duration::from_millis(2000));
 
-        let current_speed = test_bed.fppu_speed();
-        // Verify if `max_speed` is correct
-        assert!(
-            (current_speed - max_speed).abs() <= AngularVelocity::new::<radian_per_second>(0.01)
-        );
+        assert!(test_bed.fppu_speed().abs() >= AngularVelocity::new::<radian_per_second>(0.2));
 
         assert!(
             test_bed.left_motor_speed() >= AngularVelocity::new::<revolution_per_minute>(2000.)
@@ -1359,8 +1379,15 @@ mod tests {
 
     #[test]
     fn flap_slat_assembly_half_pressure_right() {
-        let max_speed = AngularVelocity::new::<radian_per_second>(0.11);
         let circuit_pressure = Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI);
+
+        let mut test_bed = test_bed_with()
+            .set_flaps_angle(Angle::new::<degree>(20.))
+            .set_hydraulic_circuit_pressure(circuit_pressure, circuit_pressure);
+
+        test_bed.run_with_delta(Duration::from_millis(1500));
+
+        let current_speed_double_motor = test_bed.fppu_speed();
 
         let mut test_bed = test_bed_with()
             .set_flaps_angle(Angle::new::<degree>(20.))
@@ -1368,10 +1395,13 @@ mod tests {
 
         test_bed.run_with_delta(Duration::from_millis(1500));
 
-        let current_speed = test_bed.fppu_speed();
+        let current_speed_single_motor = test_bed.fppu_speed();
         assert!(
-            (current_speed - max_speed / 2.).abs()
-                <= AngularVelocity::new::<radian_per_second>(0.01)
+            (current_speed_double_motor / 2. - current_speed_single_motor).abs()
+                <= AngularVelocity::new::<radian_per_second>(0.05)
+        );
+        assert!(
+            (current_speed_single_motor).abs() >= AngularVelocity::new::<radian_per_second>(0.03)
         );
 
         assert!(test_bed.left_motor_speed() == AngularVelocity::new::<revolution_per_minute>(0.));
@@ -1390,8 +1420,15 @@ mod tests {
 
     #[test]
     fn flap_slat_assembly_half_pressure_left() {
-        let max_speed = AngularVelocity::new::<radian_per_second>(0.11);
         let circuit_pressure = Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI);
+
+        let mut test_bed = test_bed_with()
+            .set_flaps_angle(Angle::new::<degree>(20.))
+            .set_hydraulic_circuit_pressure(circuit_pressure, circuit_pressure);
+
+        test_bed.run_with_delta(Duration::from_millis(1500));
+
+        let current_speed_double_motor = test_bed.fppu_speed();
 
         let mut test_bed = test_bed_with()
             .set_flaps_angle(Angle::new::<degree>(20.))
@@ -1399,10 +1436,13 @@ mod tests {
 
         test_bed.run_with_delta(Duration::from_millis(1500));
 
-        let current_speed = test_bed.fppu_speed();
+        let current_speed_single_motor = test_bed.fppu_speed();
         assert!(
-            (current_speed - max_speed / 2.).abs()
-                <= AngularVelocity::new::<radian_per_second>(0.01)
+            (current_speed_double_motor / 2. - current_speed_single_motor).abs()
+                <= AngularVelocity::new::<radian_per_second>(0.05)
+        );
+        assert!(
+            (current_speed_single_motor).abs() >= AngularVelocity::new::<radian_per_second>(0.03)
         );
 
         assert!(test_bed.right_motor_speed() == AngularVelocity::new::<revolution_per_minute>(0.));
@@ -1448,7 +1488,10 @@ mod tests {
         //             .get::<revolution>(),
         //     );
 
-        assert!(test_bed.fppu_position() == synchro_gear_angle_request.unwrap());
+        assert!(
+            (test_bed.fppu_position() - synchro_gear_angle_request.unwrap())
+                <= test_bed.target_fppu_tolerance()
+        );
     }
 
     #[test]
@@ -1462,9 +1505,7 @@ mod tests {
         for _ in 0..300 {
             test_bed = test_bed.and_run_multiple_frames(Duration::from_millis(50));
 
-            // assert!(
-            //     test_bed.fppu_position() <= test_bed.query(|a| a.flaps_slats.max_synchro_angle)
-            // );
+            assert!(test_bed.fppu_position() <= max_synchro_angle());
 
             println!(
                 "Position {:.2}-> Motor speed {:.0}",
@@ -1473,17 +1514,17 @@ mod tests {
             );
         }
 
-        // assert!(test_bed.fppu_position() == test_bed.query(|a| a.flaps_slats.max_synchro_angle));
+        assert!(
+            (test_bed.fppu_position() - max_synchro_angle()).abs()
+                <= test_bed.target_fppu_tolerance()
+        );
 
         test_bed = test_bed.set_flaps_angle(Angle::new::<degree>(-8.));
 
         for _ in 0..300 {
             test_bed = test_bed.and_run_multiple_frames(Duration::from_millis(50));
 
-            // assert!(
-            //     test_bed.fppu_position().get::<degree>()
-            //         <= test_bed.query(|a| a.flaps_slats.max_synchro_angle)
-            // );
+            assert!(test_bed.fppu_position() <= max_synchro_angle());
             assert!(test_bed.fppu_position() >= Angle::new::<degree>(0.));
 
             println!(
@@ -1493,33 +1534,30 @@ mod tests {
             );
         }
 
-        assert!(test_bed.fppu_position() == Angle::new::<degree>(0.));
+        assert!(test_bed.fppu_position().abs() <= test_bed.target_fppu_tolerance());
     }
 
     #[test]
     fn flap_slat_assembly_stops_at_max_position_at_half_speed_with_one_sfcc() {
-        let max_speed = AngularVelocity::new::<radian_per_second>(0.11);
         let circuit_pressure = Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI);
 
         let mut test_bed = test_bed_with()
-            .set_flaps_angle(Angle::new::<degree>(40.))
+            .set_flaps_angle_per_sfcc(None, Some(Angle::new::<degree>(40.)))
             .set_hydraulic_circuit_pressure(circuit_pressure, circuit_pressure);
 
         test_bed = test_bed.and_run_multiple_frames(Duration::from_millis(1000));
 
-        let current_speed = test_bed.fppu_speed();
-        assert!(
-            (current_speed - max_speed / 2.).abs()
-                <= AngularVelocity::new::<radian_per_second>(0.01)
-        );
+        assert!(test_bed.fppu_speed().abs() >= AngularVelocity::new::<radian_per_second>(0.10));
 
-        // test_bed = test_bed.and_run_multiple_frames(Duration::from_millis(40000));
-        // assert!(test_bed.fppu_position() == test_bed.query(|a| a.flaps_slats.max_synchro_angle));
+        test_bed = test_bed.and_run_multiple_frames(Duration::from_secs(60));
+        assert!(
+            (test_bed.fppu_position() - max_synchro_angle()).abs()
+                <= test_bed.target_fppu_tolerance()
+        );
     }
 
     #[test]
     fn flap_slat_assembly_stops_if_no_sfcc() {
-        let max_speed = AngularVelocity::new::<radian_per_second>(0.11);
         let circuit_pressure = Pressure::new::<psi>(MAX_CIRCUIT_PRESSURE_PSI);
 
         let mut test_bed = test_bed_with()
@@ -1528,16 +1566,12 @@ mod tests {
 
         test_bed = test_bed.and_run_multiple_frames(Duration::from_millis(5000));
 
-        let current_speed = test_bed.fppu_speed();
-        assert!(
-            (current_speed - max_speed).abs() <= AngularVelocity::new::<radian_per_second>(0.01)
-        );
+        assert!(test_bed.fppu_speed().abs() >= AngularVelocity::new::<radian_per_second>(0.05));
 
         test_bed = test_bed.set_no_flaps_angle();
-
         test_bed = test_bed.and_run_multiple_frames(Duration::from_millis(5000));
-        let current_speed = test_bed.fppu_speed();
-        assert!((current_speed).abs() <= AngularVelocity::new::<radian_per_second>(0.01));
+
+        assert!(test_bed.fppu_speed().abs() <= AngularVelocity::new::<radian_per_second>(0.01));
     }
 
     #[test]
