@@ -361,22 +361,25 @@ export class NDComponent extends DisplayComponent<NDProps> {
                     <FmMessages bus={this.props.bus} mode={this.currentPageMode} />
                     <CrossTrackError bus={this.props.bus} currentPageMode={this.currentPageMode} isNormalOperation={this.mapFlagShown.map((it) => !it)} />
 
-                    <RadioNeedle
-                        bus={this.props.bus}
-                        headingWord={this.headingWord}
-                        trackWord={this.trackWord}
-                        isUsingTrackUpMode={this.isUsingTrackUpMode}
-                        index={1}
-                        mode={this.currentPageMode}
-                    />
-                    <RadioNeedle
-                        bus={this.props.bus}
-                        headingWord={this.headingWord}
-                        trackWord={this.trackWord}
-                        isUsingTrackUpMode={this.isUsingTrackUpMode}
-                        index={2}
-                        mode={this.currentPageMode}
-                    />
+                    <g id="radio_needles" clip-path={this.currentPageMode.map((m) => (m === EfisNdMode.ARC ? 'url(#arc-mode-map-clip)' : 'url(#rose-mode-map-clip)'))}>
+
+                        <RadioNeedle
+                            bus={this.props.bus}
+                            headingWord={this.headingWord}
+                            trackWord={this.trackWord}
+                            isUsingTrackUpMode={this.isUsingTrackUpMode}
+                            index={1}
+                            mode={this.currentPageMode}
+                        />
+                        <RadioNeedle
+                            bus={this.props.bus}
+                            headingWord={this.headingWord}
+                            trackWord={this.trackWord}
+                            isUsingTrackUpMode={this.isUsingTrackUpMode}
+                            index={2}
+                            mode={this.currentPageMode}
+                        />
+                    </g>
 
                 </svg>
             </DisplayUnit>
