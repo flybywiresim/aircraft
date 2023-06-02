@@ -333,15 +333,15 @@ impl A380AirConditioningSystem {
                 FullDigitalAGUController::new(
                     1,
                     vec![
-                        ElectricalBusType::DirectCurrentEssential, // 403XP
-                        ElectricalBusType::AlternatingCurrent(1),  // 117XP
+                        ElectricalBusType::AlternatingCurrentEssential, // 403XP
+                        ElectricalBusType::AlternatingCurrent(2),       // 117XP
                     ],
                 ),
                 FullDigitalAGUController::new(
                     2,
                     vec![
-                        ElectricalBusType::DirectCurrentEssential, // 403XP
-                        ElectricalBusType::AlternatingCurrent(2),  // 204XP
+                        ElectricalBusType::AlternatingCurrentEssential, // 403XP
+                        ElectricalBusType::AlternatingCurrent(4),       // 204XP
                     ],
                 ),
             ],
@@ -1475,13 +1475,17 @@ mod tests {
         lgciu1: TestLgciu,
         lgciu2: TestLgciu,
         powered_dc_source_1: TestElectricitySource,
+        powered_ac_source_ess: TestElectricitySource,
         powered_ac_source_1: TestElectricitySource,
         powered_dc_source_2: TestElectricitySource,
         powered_ac_source_2: TestElectricitySource,
+        powered_ac_source_4: TestElectricitySource,
         dc_1_bus: ElectricalBus,
         ac_1_bus: ElectricalBus,
         dc_2_bus: ElectricalBus,
         ac_2_bus: ElectricalBus,
+        ac_4_bus: ElectricalBus,
+        ac_ess_bus: ElectricalBus,
         dc_ess_bus: ElectricalBus,
         dc_bat_bus: ElectricalBus,
     }
@@ -1513,6 +1517,10 @@ mod tests {
                     context,
                     PotentialOrigin::Battery(1),
                 ),
+                powered_ac_source_ess: TestElectricitySource::powered(
+                    context,
+                    PotentialOrigin::EmergencyGenerator,
+                ),
                 powered_ac_source_1: TestElectricitySource::powered(
                     context,
                     PotentialOrigin::EngineGenerator(1),
@@ -1523,12 +1531,21 @@ mod tests {
                 ),
                 powered_ac_source_2: TestElectricitySource::powered(
                     context,
+                    PotentialOrigin::EngineGenerator(4),
+                ),
+                powered_ac_source_4: TestElectricitySource::powered(
+                    context,
                     PotentialOrigin::EngineGenerator(2),
                 ),
                 dc_1_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrent(1)),
                 ac_1_bus: ElectricalBus::new(context, ElectricalBusType::AlternatingCurrent(1)),
                 dc_2_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrent(2)),
                 ac_2_bus: ElectricalBus::new(context, ElectricalBusType::AlternatingCurrent(2)),
+                ac_4_bus: ElectricalBus::new(context, ElectricalBusType::AlternatingCurrent(4)),
+                ac_ess_bus: ElectricalBus::new(
+                    context,
+                    ElectricalBusType::AlternatingCurrentEssential,
+                ),
                 dc_ess_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrentEssential),
                 dc_bat_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrentBattery),
             };
@@ -1577,20 +1594,12 @@ mod tests {
             self.set_pressure_based_on_vs(distance);
         }
 
-        fn unpower_dc_ess_bus(&mut self) {
-            self.powered_dc_source_1.unpower();
+        fn unpower_ac_ess_bus(&mut self) {
+            self.powered_ac_source_ess.unpower();
         }
 
-        fn power_dc_ess_bus(&mut self) {
-            self.powered_dc_source_1.power();
-        }
-
-        fn unpower_ac_1_bus(&mut self) {
-            self.powered_ac_source_1.unpower();
-        }
-
-        fn power_ac_1_bus(&mut self) {
-            self.powered_ac_source_1.power();
+        fn power_ac_ess_bus(&mut self) {
+            self.powered_ac_source_ess.power();
         }
 
         fn unpower_ac_2_bus(&mut self) {
@@ -1599,6 +1608,14 @@ mod tests {
 
         fn power_ac_2_bus(&mut self) {
             self.powered_ac_source_2.power();
+        }
+
+        fn unpower_ac_4_bus(&mut self) {
+            self.powered_ac_source_4.unpower();
+        }
+
+        fn power_ac_4_bus(&mut self) {
+            self.powered_ac_source_4.power();
         }
 
         fn set_pressure_based_on_vs(&mut self, alt_diff: Length) {
@@ -1630,10 +1647,14 @@ mod tests {
             electricity.supplied_by(&self.powered_ac_source_1);
             electricity.supplied_by(&self.powered_dc_source_2);
             electricity.supplied_by(&self.powered_ac_source_2);
+            electricity.supplied_by(&self.powered_ac_source_4);
+            electricity.supplied_by(&self.powered_ac_source_ess);
             electricity.flow(&self.powered_dc_source_1, &self.dc_1_bus);
             electricity.flow(&self.powered_ac_source_1, &self.ac_1_bus);
             electricity.flow(&self.powered_dc_source_2, &self.dc_2_bus);
             electricity.flow(&self.powered_ac_source_2, &self.ac_2_bus);
+            electricity.flow(&self.powered_ac_source_4, &self.ac_4_bus);
+            electricity.flow(&self.powered_ac_source_ess, &self.ac_ess_bus);
             electricity.flow(&self.powered_dc_source_1, &self.dc_ess_bus);
             electricity.flow(&self.powered_dc_source_1, &self.dc_bat_bus);
         }
@@ -1857,23 +1878,13 @@ mod tests {
             self
         }
 
-        fn unpowered_dc_ess_bus(mut self) -> Self {
-            self.command(|a| a.unpower_dc_ess_bus());
+        fn unpowered_ac_ess_bus(mut self) -> Self {
+            self.command(|a| a.unpower_ac_ess_bus());
             self
         }
 
-        fn powered_dc_ess_bus(mut self) -> Self {
-            self.command(|a| a.power_dc_ess_bus());
-            self
-        }
-
-        fn unpowered_ac_1_bus(mut self) -> Self {
-            self.command(|a| a.unpower_ac_1_bus());
-            self
-        }
-
-        fn powered_ac_1_bus(mut self) -> Self {
-            self.command(|a| a.power_ac_1_bus());
+        fn powered_ac_ess_bus(mut self) -> Self {
+            self.command(|a| a.power_ac_ess_bus());
             self
         }
 
@@ -1884,6 +1895,16 @@ mod tests {
 
         fn powered_ac_2_bus(mut self) -> Self {
             self.command(|a| a.power_ac_2_bus());
+            self
+        }
+
+        fn unpowered_ac_4_bus(mut self) -> Self {
+            self.command(|a| a.unpower_ac_4_bus());
+            self
+        }
+
+        fn powered_ac_4_bus(mut self) -> Self {
+            self.command(|a| a.power_ac_4_bus());
             self
         }
 
@@ -3479,8 +3500,9 @@ mod tests {
                 assert!(test_bed.pack_flow() > MassRate::default());
 
                 test_bed = test_bed
-                    .unpowered_ac_1_bus()
+                    .unpowered_ac_ess_bus()
                     .unpowered_ac_2_bus()
+                    .unpowered_ac_4_bus()
                     .command_ditching_pb_on()
                     .iterate(4);
 
@@ -3499,7 +3521,8 @@ mod tests {
                 assert!(test_bed.all_pack_flow_valves_are_open());
 
                 test_bed = test_bed
-                    .unpowered_ac_1_bus()
+                    .unpowered_ac_ess_bus()
+                    .unpowered_ac_2_bus()
                     .command_ditching_pb_on()
                     .iterate(4);
 
@@ -3518,37 +3541,6 @@ mod tests {
             }
 
             #[test]
-            fn unpowering_ac_or_dc_unpowers_system() {
-                let mut test_bed = test_bed()
-                    .with()
-                    .command_packs_on_off(true)
-                    .and()
-                    .engines_idle()
-                    .iterate(4);
-
-                assert!(test_bed.pack_flow() > MassRate::default());
-
-                test_bed = test_bed
-                    .unpowered_dc_ess_bus()
-                    .unpowered_ac_2_bus()
-                    .command_ditching_pb_on()
-                    .iterate(4);
-
-                assert!(test_bed.pack_flow() > MassRate::default());
-
-                test_bed = test_bed
-                    .powered_dc_ess_bus()
-                    .unpowered_ac_1_bus()
-                    .powered_ac_2_bus()
-                    .iterate(4);
-
-                assert!(test_bed.pack_flow() > MassRate::default());
-
-                test_bed = test_bed.powered_ac_1_bus().powered_dc_ess_bus().iterate(4);
-                assert_eq!(test_bed.pack_flow(), MassRate::default());
-            }
-
-            #[test]
             fn pack_flow_controller_signals_resets_after_power_reset() {
                 let mut test_bed = test_bed()
                     .with()
@@ -3559,18 +3551,18 @@ mod tests {
                 assert!(test_bed.pack_flow() > MassRate::default());
 
                 test_bed = test_bed
-                    .unpowered_dc_ess_bus()
-                    .unpowered_ac_1_bus()
+                    .unpowered_ac_ess_bus()
                     .unpowered_ac_2_bus()
+                    .unpowered_ac_4_bus()
                     .command_ditching_pb_on()
                     .iterate(4);
 
                 assert!(test_bed.pack_flow() > MassRate::default());
 
                 test_bed = test_bed
-                    .powered_dc_ess_bus()
-                    .powered_ac_1_bus()
+                    .powered_ac_ess_bus()
                     .powered_ac_2_bus()
+                    .powered_ac_4_bus()
                     .iterate(4);
                 assert_eq!(test_bed.pack_flow(), MassRate::default());
             }

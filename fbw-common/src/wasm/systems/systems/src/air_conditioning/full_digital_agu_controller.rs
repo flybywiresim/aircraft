@@ -155,7 +155,7 @@ impl<const ENGINES: usize> PackFlowControllers for FullDigitalAGUController<ENGI
 
 impl<const ENGINES: usize> SimulationElement for FullDigitalAGUController<ENGINES> {
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
-        self.is_powered = self.powered_by.iter().all(|&p| buses.is_powered(p));
+        self.is_powered = self.powered_by.iter().any(|&p| buses.is_powered(p));
     }
 }
 
