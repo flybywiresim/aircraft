@@ -237,7 +237,7 @@ class AdfNeedle extends DisplayComponent<SingleNeedleProps> {
         const sub = this.props.bus.getSubscriber<VorSimVars>();
 
         sub.on(`adf${this.props.index}Radial`).whenChanged().handle((value) => this.relativeBearing.set(value));
-        sub.on(`adf${this.props.index}Valid`).whenChanged().handle((value) => this.radioAvailable.set(value > 0));
+        sub.on(`adf${this.props.index}SignalStrength`).whenChangedBy(1).handle((value) => this.radioAvailable.set(value > 0));
 
         switch (this.props.mode) {
         case EfisNdMode.ARC:

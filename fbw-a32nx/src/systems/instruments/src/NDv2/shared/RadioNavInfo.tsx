@@ -217,7 +217,7 @@ class AdfInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2, visible: S
 
     private readonly adfFrequency = Subject.create(-1);
 
-    private readonly adfAvailable = Subject.create(true);
+    private readonly adfAvailable = Subject.create(false);
 
     private readonly identVisibility = this.adfAvailable.map((it) => (it ? 'inherit' : 'hidden'));
 
@@ -234,7 +234,7 @@ class AdfInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2, visible: S
 
         subs.on(`adf${this.props.index}Ident`).whenChanged().handle((value) => this.adfIdent.set(value));
         subs.on(`adf${this.props.index}ActiveFrequency`).whenChanged().handle((value) => this.adfFrequency.set(value));
-        subs.on(`adf${this.props.index}Valid`).whenChanged().handle((value) => this.adfAvailable.set(value));
+        subs.on(`adf${this.props.index}SignalStrength`).whenChangedBy(1).handle((value) => this.adfAvailable.set(value > 0));
     }
 
     render(): VNode | null {
