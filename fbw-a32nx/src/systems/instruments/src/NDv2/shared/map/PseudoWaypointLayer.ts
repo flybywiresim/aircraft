@@ -70,7 +70,7 @@ export class PseudoWaypointLayer implements MapLayer<NdSymbol> {
                 context.translate(384, 620);
                 context.rotate(rotate * Math.PI / 180);
 
-                this.paintPseudoWaypoint(true, context, 0, -dy, symbol, mapParameters, rotate);
+                this.paintPseudoWaypoint(true, context, 0, -dy, symbol, mapParameters);
             } else {
                 const [x, y] = mapParameters.coordinatesToXYy(symbol.location);
                 const rx = x + mapWidth / 2;
@@ -82,7 +82,7 @@ export class PseudoWaypointLayer implements MapLayer<NdSymbol> {
         this.lastUpdateTime = Date.now();
     }
 
-    private paintPseudoWaypoint(isColorLayer: boolean, context: CanvasRenderingContext2D, x: number, y: number, symbol: NdSymbol, mapParameters: MapParameters, rotate?: number) {
+    private paintPseudoWaypoint(isColorLayer: boolean, context: CanvasRenderingContext2D, x: number, y: number, symbol: NdSymbol, mapParameters: MapParameters) {
         const color = isColorLayer ? typeFlagToColor(symbol.type) : '#000';
         context.strokeStyle = color;
 
