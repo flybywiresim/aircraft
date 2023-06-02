@@ -1,6 +1,7 @@
-import { FSComponent, DisplayComponent, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import { FSComponent, DisplayComponent, MappedSubject, Subject, Subscribable, VNode, ConsumerSubject } from '@microsoft/msfs-sdk';
 import { DmcEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 import { ArincEventBus } from 'instruments/src/MsfsAvionicsCommon/ArincEventBus';
+import { FcuSimVars } from 'instruments/src/MsfsAvionicsCommon/providers/FcuBusPublisher';
 import { NDSimvars } from '../../NDSimvarPublisher';
 import { getSmallestAngle } from '../../../PFD/PFDUtils';
 import { Arinc429ConsumerSubject } from '../../../MsfsAvionicsCommon/Arinc429ConsumerSubject';
@@ -13,42 +14,52 @@ export interface LsCourseBugProps {
 export class LsCourseBug extends DisplayComponent<LsCourseBugProps> {
     private readonly diffSubject = Subject.create(0);
 
-    private readonly headingWord = Arinc429ConsumerSubject.create(null);
+    private readonly headingWord = Arinc429ConsumerSubject.create(null).pause();
 
-    private readonly ilsCourse = Subject.create(0);
+    private readonly lsCourse = ConsumerSubject.create(null, 0).pause();
 
-    private readonly bugShown = MappedSubject.create(([headingWord, lsCourse, diff]) => {
-        if (!headingWord.isNormalOperation()) {
-            return false;
-        }
+    private readonly efisLsActive = ConsumerSubject.create(null, false);
 
-        if (lsCourse < 0 || Math.abs(diff) > 48) {
-            return false;
-        }
-
-        return true;
-    }, this.headingWord, this.ilsCourse, this.diffSubject);
+    private readonly bugShown = MappedSubject.create(
+        ([headingWord, lsCourse, diff, efisLsActive]) => efisLsActive && headingWord.isNormalOperation() && lsCourse >= 0 && Math.abs(diff) <= 48,
+        this.headingWord,
+        this.lsCourse,
+        this.diffSubject,
+        this.efisLsActive,
+    );
 
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getArincSubscriber<DmcEvents & NDSimvars>();
+        const sub = this.props.bus.getArincSubscriber<DmcEvents & FcuSimVars & NDSimvars>();
 
         this.headingWord.setConsumer(sub.on('heading').withArinc429Precision(2));
 
         this.headingWord.sub((_h) => this.handleDisplay());
 
-        sub.on('ilsCourse').whenChanged().handle((v) => {
-            this.ilsCourse.set(v);
-            this.handleDisplay();
+        this.lsCourse.sub(this.handleDisplay.bind(this));
+
+        this.lsCourse.setConsumer(sub.on('ilsCourse'));
+
+        this.efisLsActive.sub((ls) => {
+            if (ls) {
+                this.headingWord.resume();
+                this.lsCourse.resume();
+                this.handleDisplay();
+            } else {
+                this.headingWord.pause();
+                this.lsCourse.pause();
+            }
         });
+
+        this.efisLsActive.setConsumer(sub.on('efisLsActive'));
     }
 
     private handleDisplay() {
         const headingValid = this.headingWord.get().isNormalOperation();
 
         if (headingValid) {
-            const diff = getSmallestAngle(this.ilsCourse.get(), this.headingWord.get().value);
+            const diff = getSmallestAngle(this.lsCourse.get(), this.headingWord.get().value);
 
             this.diffSubject.set(diff + this.props.rotationOffset.get());
         }

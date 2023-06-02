@@ -7,6 +7,8 @@ export interface FcuSimVars {
     option: EfisOption,
     navaidMode1: NavAidMode,
     navaidMode2: NavAidMode,
+    /** State of the LS pushbutton on the EFIS control panel. */
+    efisLsActive: boolean,
 }
 
 export class FcuBusPublisher extends SimVarPublisher<FcuSimVars> {
@@ -17,6 +19,7 @@ export class FcuBusPublisher extends SimVarPublisher<FcuSimVars> {
             ['option', { name: `L:A32NX_EFIS_${efisSide}_OPTION`, type: SimVarValueType.Enum }],
             ['navaidMode1', { name: `L:A32NX_EFIS_${efisSide}_NAVAID_1_MODE`, type: SimVarValueType.Enum }],
             ['navaidMode2', { name: `L:A32NX_EFIS_${efisSide}_NAVAID_2_MODE`, type: SimVarValueType.Enum }],
+            ['efisLsActive', { name: `L:BTN_LS_${efisSide === 'L' ? 1 : 2}_FILTER_ACTIVE`, type: SimVarValueType.Bool }],
         ]), bus);
     }
 }
