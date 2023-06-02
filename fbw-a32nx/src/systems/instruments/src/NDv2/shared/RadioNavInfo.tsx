@@ -3,7 +3,7 @@ import { VorSimVars } from 'instruments/src/MsfsAvionicsCommon/providers/VorBusP
 import { EfisNdMode, NavAidMode } from '@shared/NavigationDisplay';
 import { DmcEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 import { Layer } from 'instruments/src/MsfsAvionicsCommon/Layer';
-import { EcpSimVars } from '../../MsfsAvionicsCommon/providers/EcpBusSimVarPublisher';
+import { FcuSimVars } from 'instruments/src/MsfsAvionicsCommon/providers/FcuBusPublisher';
 import { Arinc429RegisterSubject } from '../../MsfsAvionicsCommon/Arinc429RegisterSubject';
 import { FMBusEvents } from '../../MsfsAvionicsCommon/providers/FMBusPublisher';
 
@@ -15,7 +15,7 @@ export class RadioNavInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<EcpSimVars>();
+        const sub = this.props.bus.getSubscriber<FcuSimVars>();
 
         sub.on(`navaidMode${this.props.index}`).whenChanged().handle((value) => {
             if (value === NavAidMode.VOR) {

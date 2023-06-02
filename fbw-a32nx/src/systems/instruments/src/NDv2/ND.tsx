@@ -6,6 +6,7 @@ import { clampAngle } from 'msfs-geo';
 import { ArincEventBus } from 'instruments/src/MsfsAvionicsCommon/ArincEventBus';
 import { CrossTrackError } from 'instruments/src/NDv2/shared/CrossTrackError';
 import { FmsVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
+import { FcuSimVars } from 'instruments/src/MsfsAvionicsCommon/providers/FcuBusPublisher';
 import { DisplayUnit } from '../MsfsAvionicsCommon/displayUnit';
 import { AdirsSimVars } from '../MsfsAvionicsCommon/SimVarTypes';
 import { NDSimvars } from './NDSimvarPublisher';
@@ -14,7 +15,6 @@ import { Layer } from '../MsfsAvionicsCommon/Layer';
 import { FmMessages } from './FmMessages';
 import { Flag, FlagProps } from './shared/Flag';
 import { CanvasMap } from './shared/map/CanvasMap';
-import { EcpSimVars } from '../MsfsAvionicsCommon/providers/EcpBusSimVarPublisher';
 import { NDPage } from './pages/NDPage';
 import { PlanModePage } from './pages/plan';
 import { RadioNavInfo } from './shared/RadioNavInfo';
@@ -129,7 +129,7 @@ export class NDComponent extends DisplayComponent<NDProps> {
         this.currentPageInstance.isVisible.set(true);
         this.currentPageInstance.onShow();
 
-        const sub = this.props.bus.getSubscriber<ClockEvents & DmcEvents & EcpSimVars & NDControlEvents & NDSimvars>();
+        const sub = this.props.bus.getSubscriber<ClockEvents & DmcEvents & FcuSimVars & NDControlEvents & NDSimvars>();
 
         sub.on(isCaptainSide ? 'potentiometerCaptain' : 'potentiometerFo').whenChanged().handle((value) => {
             this.displayBrightness.set(value);
@@ -583,7 +583,7 @@ interface ToWaypointIndicatorProps {
 }
 
 class ToWaypointIndicator extends DisplayComponent<ToWaypointIndicatorProps> {
-    private readonly sub = this.props.bus.getSubscriber<ClockEvents & DmcEvents & EcpSimVars & NDSimvars & FmsVars>();
+    private readonly sub = this.props.bus.getSubscriber<ClockEvents & DmcEvents & FcuSimVars & NDSimvars & FmsVars>();
 
     private readonly trueRefActive = ConsumerSubject.create(null, false);
 

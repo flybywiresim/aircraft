@@ -3,6 +3,7 @@ import { Arinc429WordData } from '@shared/arinc429';
 import { EfisNdMode, rangeSettings } from '@shared/NavigationDisplay';
 import { LsCourseBug } from 'instruments/src/NDv2/pages/arc/LsCourseBug';
 import { ArincEventBus } from 'instruments/src/MsfsAvionicsCommon/ArincEventBus';
+import { FcuSimVars } from 'instruments/src/MsfsAvionicsCommon/providers/FcuBusPublisher';
 import { ArcModeUnderlay } from './ArcModeUnderlay';
 import { SelectedHeadingBug } from './SelectedHeadingBug';
 import { getSmallestAngle } from '../../../PFD/PFDUtils';
@@ -11,7 +12,6 @@ import { NDPage } from '../NDPage';
 import { RadioNeedle } from '../../shared/RadioNeedle';
 import { NDControlEvents } from '../../NDControlEvents';
 import { AdirsSimVars } from '../../../MsfsAvionicsCommon/SimVarTypes';
-import { EcpSimVars } from '../../../MsfsAvionicsCommon/providers/EcpBusSimVarPublisher';
 import { Arinc429RegisterSubject } from '../../../MsfsAvionicsCommon/Arinc429RegisterSubject';
 
 export interface ArcModePageProps extends ComponentProps {
@@ -32,7 +32,7 @@ export class ArcModePage extends NDPage<ArcModePageProps> {
 
     private readonly pposLonWord = Arinc429RegisterSubject.createEmpty();
 
-    private readonly mapRangeSub = ConsumerSubject.create(this.props.bus.getSubscriber<EcpSimVars>().on('ndRangeSetting').whenChanged(), -1);
+    private readonly mapRangeSub = ConsumerSubject.create(this.props.bus.getSubscriber<FcuSimVars>().on('ndRangeSetting').whenChanged(), -1);
 
     private readonly ringAvailable = MappedSubject.create(([isUsingTrackUpMode, headingWord, trackWord]) => {
         if (isUsingTrackUpMode) {
@@ -72,7 +72,7 @@ export class ArcModePage extends NDPage<ArcModePageProps> {
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<AdirsSimVars & EcpSimVars>();
+        const sub = this.props.bus.getSubscriber<AdirsSimVars & FcuSimVars>();
 
         sub.on('latitude').whenChanged().handle((v) => this.pposLatWord.setWord(v));
         sub.on('longitude').whenChanged().handle((v) => this.pposLonWord.setWord(v));

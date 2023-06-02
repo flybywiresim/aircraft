@@ -3,7 +3,7 @@ import { Arinc429WordData } from '@shared/arinc429';
 import { rangeSettings } from '@shared/NavigationDisplay';
 import { MathUtils } from '@shared/MathUtils';
 import { TcasSimVars } from 'instruments/src/MsfsAvionicsCommon/providers/TcasBusPublisher';
-import { EcpSimVars } from 'instruments/src/MsfsAvionicsCommon/providers/EcpBusSimVarPublisher';
+import { FcuSimVars } from 'instruments/src/MsfsAvionicsCommon/providers/FcuBusPublisher';
 
 export interface RoseModeOverlayProps {
     bus: EventBus,
@@ -43,7 +43,7 @@ export class RoseModeUnderlay extends DisplayComponent<RoseModeOverlayProps> {
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<EcpSimVars & TcasSimVars>();
+        const sub = this.props.bus.getSubscriber<FcuSimVars & TcasSimVars>();
 
         sub.on('ndRangeSetting').whenChanged().handle((value) => {
             this.rangeValue.set(rangeSettings[value]);

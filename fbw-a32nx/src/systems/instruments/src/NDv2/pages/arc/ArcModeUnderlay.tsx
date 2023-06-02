@@ -2,7 +2,7 @@
 import { DisplayComponent, EventBus, FSComponent, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { MathUtils } from '@shared/MathUtils';
 import { rangeSettings } from '@shared/NavigationDisplay';
-import { EcpSimVars } from 'instruments/src/MsfsAvionicsCommon/providers/EcpBusSimVarPublisher';
+import { FcuSimVars } from 'instruments/src/MsfsAvionicsCommon/providers/FcuBusPublisher';
 import { TcasSimVars } from 'instruments/src/MsfsAvionicsCommon/providers/TcasBusPublisher';
 
 export interface ArcModeOverlayProps {
@@ -25,7 +25,7 @@ export class ArcModeUnderlay extends DisplayComponent<ArcModeOverlayProps> {
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<EcpSimVars & TcasSimVars>();
+        const sub = this.props.bus.getSubscriber<FcuSimVars & TcasSimVars>();
 
         sub.on('ndRangeSetting').whenChanged().handle((value) => {
             this.rangeValue.set(rangeSettings[value]);

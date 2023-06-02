@@ -1,11 +1,11 @@
 import { ConsumerSubject, FSComponent, MappedSubject, Subject, VNode } from '@microsoft/msfs-sdk';
 import { EfisNdMode, rangeSettings } from '@shared/NavigationDisplay';
+import { FcuSimVars } from 'instruments/src/MsfsAvionicsCommon/providers/FcuBusPublisher';
 import { Flag } from '../../shared/Flag';
 import { RoseMode } from './RoseMode';
 import { RoseModeUnderlay } from './RoseModeUnderlay';
 import { Arinc429RegisterSubject } from '../../../MsfsAvionicsCommon/Arinc429RegisterSubject';
 import { AdirsSimVars } from '../../../MsfsAvionicsCommon/SimVarTypes';
-import { EcpSimVars } from '../../../MsfsAvionicsCommon/providers/EcpBusSimVarPublisher';
 import { NDControlEvents } from '../../NDControlEvents';
 import { RadioNeedle } from '../../shared/RadioNeedle';
 
@@ -14,7 +14,7 @@ export class RoseNavPage extends RoseMode {
 
     private readonly pposLonWord = Arinc429RegisterSubject.createEmpty();
 
-    private readonly mapRangeSub = ConsumerSubject.create(this.props.bus.getSubscriber<EcpSimVars>().on('ndRangeSetting').whenChanged(), -1);
+    private readonly mapRangeSub = ConsumerSubject.create(this.props.bus.getSubscriber<FcuSimVars>().on('ndRangeSetting').whenChanged(), -1);
 
     private readonly mapFlagShown = MappedSubject.create(([headingWord, latWord, longWord]) => {
         return !headingWord.isNormalOperation() || !latWord.isNormalOperation() || !longWord.isNormalOperation();
@@ -32,7 +32,7 @@ export class RoseNavPage extends RoseMode {
             }
         });
 
-        const sub = this.props.bus.getSubscriber<AdirsSimVars & EcpSimVars>();
+        const sub = this.props.bus.getSubscriber<AdirsSimVars & FcuSimVars>();
 
         sub.on('latitude').whenChanged().handle((v) => this.pposLatWord.setWord(v));
         sub.on('longitude').whenChanged().handle((v) => this.pposLonWord.setWord(v));

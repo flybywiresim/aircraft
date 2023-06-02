@@ -1,12 +1,12 @@
 import { FSComponent, ComponentProps, Subscribable, VNode, Subject, EventBus, ConsumerSubject } from '@microsoft/msfs-sdk';
 import { Arinc429Register, Arinc429WordData } from '@shared/arinc429';
 import { EfisNdMode, rangeSettings } from '@shared/NavigationDisplay';
+import { FcuSimVars } from 'instruments/src/MsfsAvionicsCommon/providers/FcuBusPublisher';
 import { PlanModeUnderlay } from './PlanModeUnderlay';
 import { MapParameters } from '../../../ND/utils/MapParameters';
 import { NDPage } from '../NDPage';
 import { NDControlEvents } from '../../NDControlEvents';
 import { NDSimvars } from '../../NDSimvarPublisher';
-import { EcpSimVars } from '../../../MsfsAvionicsCommon/providers/EcpBusSimVarPublisher';
 import { AdirsSimVars } from '../../../MsfsAvionicsCommon/SimVarTypes';
 
 export interface PlanModePageProps extends ComponentProps {
@@ -39,7 +39,7 @@ export class PlanModePage extends NDPage<PlanModePageProps> {
 
     private readonly selectedWaypointLongSub = ConsumerSubject.create(this.subs.on('selectedWaypointLong').whenChanged(), -1);
 
-    private readonly mapRangeSub = ConsumerSubject.create(this.props.bus.getSubscriber<EcpSimVars>().on('ndRangeSetting').whenChanged(), -1);
+    private readonly mapRangeSub = ConsumerSubject.create(this.props.bus.getSubscriber<FcuSimVars>().on('ndRangeSetting').whenChanged(), -1);
 
     private readonly mapParams = new MapParameters();
 

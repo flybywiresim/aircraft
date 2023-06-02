@@ -5,7 +5,7 @@ import type { PathVector } from '@fmgc/guidance/lnav/PathVector';
 import { Coordinates, distanceTo } from 'msfs-geo';
 import { TaRaIntrusion } from '@tcas/lib/TcasConstants';
 import { MathUtils } from '@shared/MathUtils';
-import { EcpSimVars } from 'instruments/src/MsfsAvionicsCommon/providers/EcpBusSimVarPublisher';
+import { FcuSimVars } from 'instruments/src/MsfsAvionicsCommon/providers/FcuBusPublisher';
 import { FmsSymbolsData } from '../../FmsSymbolsPublisher';
 import { MapParameters } from '../../../ND/utils/MapParameters';
 import { NDSimvars } from '../../NDSimvarPublisher';
@@ -96,7 +96,7 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<NDControlEvents & EcpSimVars>();
+        const sub = this.props.bus.getSubscriber<NDControlEvents & FcuSimVars>();
 
         sub.on('set_show_map').handle((show) => this.mapVisible.set(show));
         sub.on('set_map_recomputing').handle((show) => this.mapRecomputing.set(show));

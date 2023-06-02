@@ -4,7 +4,7 @@ import { Arinc429WordData } from '@shared/arinc429';
 import { getSmallestAngle } from 'instruments/src/PFD/PFDUtils';
 import { DmcEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 import { diffAngle } from 'msfs-geo';
-import { EcpSimVars } from '../../MsfsAvionicsCommon/providers/EcpBusSimVarPublisher';
+import { FcuSimVars } from 'instruments/src/MsfsAvionicsCommon/providers/FcuBusPublisher';
 import { VorSimVars } from '../../MsfsAvionicsCommon/providers/VorBusPublisher';
 import { AdirsSimVars } from '../../MsfsAvionicsCommon/SimVarTypes';
 
@@ -36,7 +36,7 @@ export class RadioNeedle extends DisplayComponent<RadioNeedleProps> {
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<EcpSimVars>();
+        const sub = this.props.bus.getSubscriber<FcuSimVars>();
 
         sub.on(`navaidMode${this.props.index}`).whenChanged().handle((mode) => {
             if (mode === NavAidMode.VOR) {
@@ -145,7 +145,7 @@ class VorNeedle extends DisplayComponent<SingleNeedleProps> {
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<AdirsSimVars & ClockEvents & DmcEvents & EcpSimVars & VorSimVars>();
+        const sub = this.props.bus.getSubscriber<AdirsSimVars & ClockEvents & DmcEvents & FcuSimVars & VorSimVars>();
 
         sub.on(`nav${this.props.index}RelativeBearing`).whenChanged().handle((value) => this.rawRelativeBearing.set(value));
         sub.on(`nav${this.props.index}Available`).whenChanged().handle((value) => this.radioAvailable.set(!!value));
