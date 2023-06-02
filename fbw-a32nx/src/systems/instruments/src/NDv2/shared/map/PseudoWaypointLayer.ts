@@ -1,4 +1,10 @@
 import { NdSymbol, NdSymbolTypeFlags } from '@shared/NavigationDisplay';
+import { EventBus } from '@microsoft/msfs-sdk';
+import { NDSimvars } from 'instruments/src/NDv2/NDSimvarPublisher';
+import { Arinc429ConsumerSubject } from 'instruments/src/MsfsAvionicsCommon/Arinc429ConsumerSubject';
+import { Arinc429Register } from '@shared/arinc429';
+import { DmcEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
+import { MathUtils } from '@shared/MathUtils';
 import { MapLayer } from './MapLayer';
 import { MapParameters } from '../../../ND/utils/MapParameters';
 import { PaintUtils } from './PaintUtils';
@@ -16,27 +22,68 @@ const COURSE_REVERSAL_ARC_PATH_RIGHT = new Path2D('M 0, 0 a 21, 21 0 0  1 42, 0'
 export class PseudoWaypointLayer implements MapLayer<NdSymbol> {
     data: NdSymbol[] = [];
 
+    private lastUpdateTime = Date.now();
+
+    private groundSpeed= Arinc429Register.empty();
+
+    private headingWord = Arinc429ConsumerSubject.create(null);
+
+    private trackWord = Arinc429ConsumerSubject.create(null);
+
+    constructor(readonly bus: EventBus) {
+        const sub = this.bus.getSubscriber<NDSimvars & DmcEvents>();
+
+        sub.on('groundSpeed').handle((s) => this.groundSpeed.set(s));
+
+        this.headingWord.setConsumer(sub.on('heading'));
+
+        this.trackWord.setConsumer(sub.on('track'));
+    }
+
     paintShadowLayer(context: CanvasRenderingContext2D, mapWidth: number, mapHeight: number, mapParameters: MapParameters) {
         for (const symbol of this.data) {
-            const [x, y] = mapParameters.coordinatesToXYy(symbol.location);
-            const rx = x + mapWidth / 2;
-            const ry = y + mapHeight / 2;
+            // We only want to place the symbol on the track line if it does not have a location on the flight plan.
+            if (symbol.distanceFromAirplane && !symbol.location) {
+                const dy = (symbol.distanceFromAirplane - this.groundSpeed.value * (Date.now() - this.lastUpdateTime) / 1000 / 60 / 60) * mapParameters.nmToPx;
+                const rotate = MathUtils.diffAngle(this.headingWord.get().value, this.trackWord.get().value);
+                context.translate(384, 620);
+                context.rotate(rotate * Math.PI / 180);
 
-            this.paintPseudoWaypoint(false, context, rx, ry, symbol, mapParameters);
+                this.paintPseudoWaypoint(false, context, 0, 620 - dy, symbol, mapParameters, rotate);
+            } else {
+                const [x, y] = mapParameters.coordinatesToXYy(symbol.location);
+                const rx = x + mapWidth / 2;
+                const ry = y + mapHeight / 2;
+
+                this.paintPseudoWaypoint(false, context, rx, ry, symbol, mapParameters);
+            }
+            this.lastUpdateTime = Date.now();
         }
     }
 
     paintColorLayer(context: CanvasRenderingContext2D, mapWidth: number, mapHeight: number, mapParameters: MapParameters) {
         for (const symbol of this.data) {
-            const [x, y] = mapParameters.coordinatesToXYy(symbol.location);
-            const rx = x + mapWidth / 2;
-            const ry = y + mapHeight / 2;
+            // We only want to place the symbol on the track line if it does not have a location on the flight plan.
+            if (symbol.distanceFromAirplane && !symbol.location) {
+                const dy = (symbol.distanceFromAirplane - this.groundSpeed.value * (Date.now() - this.lastUpdateTime) / 1000 / 60 / 60) * mapParameters.nmToPx;
+                const rotate = MathUtils.diffAngle(this.headingWord.get().value, this.trackWord.get().value);
+                context.translate(384, 620);
+                context.rotate(rotate * Math.PI / 180);
 
-            this.paintPseudoWaypoint(true, context, rx, ry, symbol, mapParameters);
+                // context.translate(0, -620 + y);
+                this.paintPseudoWaypoint(true, context, 0, 620 - dy, symbol, mapParameters, rotate);
+            } else {
+                const [x, y] = mapParameters.coordinatesToXYy(symbol.location);
+                const rx = x + mapWidth / 2;
+                const ry = y + mapHeight / 2;
+
+                this.paintPseudoWaypoint(true, context, rx, ry, symbol, mapParameters);
+            }
         }
+        this.lastUpdateTime = Date.now();
     }
 
-    private paintPseudoWaypoint(isColorLayer: boolean, context: CanvasRenderingContext2D, x: number, y: number, symbol: NdSymbol, mapParameters: MapParameters) {
+    private paintPseudoWaypoint(isColorLayer: boolean, context: CanvasRenderingContext2D, x: number, y: number, symbol: NdSymbol, mapParameters: MapParameters, rotate?: number) {
         const color = isColorLayer ? typeFlagToColor(symbol.type) : '#000';
         context.strokeStyle = color;
 

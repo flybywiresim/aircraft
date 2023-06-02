@@ -1,13 +1,11 @@
 import { NdSymbol, NdSymbolTypeFlags } from '@shared/NavigationDisplay';
 import { MapLayer } from './MapLayer';
 import { MapParameters } from '../../../ND/utils/MapParameters';
-import { PaintUtils } from './PaintUtils';
 
 export class ConstraintsLayer implements MapLayer<NdSymbol> {
     data: NdSymbol[] = [];
 
     paintShadowLayer(context: CanvasRenderingContext2D, mapWidth: number, mapHeight: number, mapParameters: MapParameters) {
-        // TODO revise this logic, maybe efis constraints should be it's own thing?
         for (const symbol of this.data) {
             if (!symbol.constraints || !(symbol.type & NdSymbolTypeFlags.Constraint)) {
                 continue;

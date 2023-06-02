@@ -87,7 +87,7 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
 
     private readonly runwayLayer = new RunwayLayer();
 
-    private readonly pwpLayer = new PseudoWaypointLayer();
+    private readonly pwpLayer = new PseudoWaypointLayer(this.props.bus);
 
     private readonly trafficLayer = new TrafficLayer(this);
 
