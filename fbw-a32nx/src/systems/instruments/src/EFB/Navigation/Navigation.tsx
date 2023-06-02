@@ -17,7 +17,7 @@ import { ReactZoomPanPinchRef, TransformComponent, TransformWrapper } from 'reac
 import { t } from '../translation';
 import { TooltipWrapper } from '../UtilComponents/TooltipWrapper';
 // import { DrawableCanvas } from '../UtilComponents/DrawableCanvas';
-import { useNavigraph } from '../ChartsApi/Navigraph';
+import { useNavigraph } from '../Apis/Navigraph/Navigraph';
 import { SimpleInput } from '../UtilComponents/Form/SimpleInput/SimpleInput';
 import { useAppDispatch, useAppSelector } from '../Store/store';
 import {

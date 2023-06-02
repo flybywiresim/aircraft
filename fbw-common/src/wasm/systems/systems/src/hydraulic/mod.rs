@@ -44,6 +44,7 @@ pub mod linear_actuator;
 pub mod nose_steering;
 pub mod pumps;
 pub mod pushback;
+pub mod reverser;
 pub mod rudder_control;
 pub mod trimmable_horizontal_stabilizer;
 
@@ -982,6 +983,7 @@ impl HydraulicCircuit {
     const AUXILIARY_TO_SYSTEM_SECTION_SIZE_RATIO: f64 = 0.5;
 
     const SYSTEM_SECTION_STATIC_LEAK_GAL_P_S: f64 = 0.03;
+    const AUX_SECTION_STATIC_LEAK_GAL_P_S: f64 = 0.001;
 
     const FLUID_BULK_MODULUS_PASCAL: f64 = 1450000000.0;
 
@@ -1091,7 +1093,7 @@ impl HydraulicCircuit {
                     id,
                     "AUXILIARY",
                     1,
-                    VolumeRate::new::<gallon_per_second>(Self::SYSTEM_SECTION_STATIC_LEAK_GAL_P_S),
+                    VolumeRate::new::<gallon_per_second>(Self::AUX_SECTION_STATIC_LEAK_GAL_P_S),
                     system_section_volume
                         * Self::AUXILIARY_TO_SYSTEM_SECTION_SIZE_RATIO
                         * priming_volume,
@@ -2449,6 +2451,10 @@ pub trait PumpController {
     fn max_displacement_restriction(&self) -> Ratio {
         Ratio::new::<ratio>(1.)
     }
+
+    fn is_input_shaft_connected(&self) -> bool {
+        true
+    }
 }
 
 pub struct Pump {
@@ -2760,6 +2766,8 @@ impl EngineDrivenPump {
 
     const MIN_SPEED_TO_REPORT_HEATING_RPM: f64 = 200.;
 
+    const SPEED_SPOOLDOWN_WHEN_DECLUTCHED_RPM_PER_S: f64 = 800.;
+
     pub fn new(
         context: &mut InitContext,
         id: AirbusEngineDrivenPumpId,
@@ -2800,11 +2808,15 @@ impl EngineDrivenPump {
                     > Self::MIN_SPEED_TO_REPORT_HEATING_RPM,
         );
 
-        self.speed = if !self.is_damaged() {
+        self.speed = if !self.is_damaged() && controller.is_input_shaft_connected() {
             pump_speed
         } else {
-            AngularVelocity::default()
+            self.speed
+                - AngularVelocity::new::<revolution_per_minute>(
+                    Self::SPEED_SPOOLDOWN_WHEN_DECLUTCHED_RPM_PER_S,
+                )
         };
+        self.speed = self.speed.max(AngularVelocity::default());
 
         self.pump
             .update(context, section, reservoir, self.speed, controller);
@@ -3039,6 +3051,184 @@ impl SimulationElement for RamAirTurbine {
 }
 impl HeatingElement for RamAirTurbine {}
 impl HeatingPressureSource for RamAirTurbine {}
+
+pub struct ManualPump {
+    pump: Pump,
+    speed: AngularVelocity,
+    max_speed: AngularVelocity,
+}
+impl ManualPump {
+    const SPOOL_RATE_RPM_S: f64 = 1000.;
+
+    pub fn new(pump_characteristics: PumpCharacteristics) -> Self {
+        let max_speed = pump_characteristics.regulated_speed();
+        Self {
+            pump: Pump::new(pump_characteristics),
+            speed: AngularVelocity::default(),
+            max_speed,
+        }
+    }
+
+    pub fn update<T: PumpController>(
+        &mut self,
+        context: &UpdateContext,
+        section: &impl SectionPressure,
+        reservoir: &Reservoir,
+        controller: &T,
+    ) {
+        self.speed =
+            AngularVelocity::new::<revolution_per_minute>(if controller.should_pressurise() {
+                (self.speed.get::<revolution_per_minute>()
+                    + (Self::SPOOL_RATE_RPM_S * context.delta_as_secs_f64()))
+                .max(0.)
+                .min(self.max_speed.get::<revolution_per_minute>())
+            } else {
+                (self.speed.get::<revolution_per_minute>()
+                    - (Self::SPOOL_RATE_RPM_S * context.delta_as_secs_f64()))
+                .max(0.)
+                .min(self.max_speed.get::<revolution_per_minute>())
+            });
+
+        self.pump
+            .update(context, section, reservoir, self.speed, controller);
+    }
+
+    pub fn cavitation_efficiency(&self) -> Ratio {
+        self.pump.cavitation_efficiency()
+    }
+
+    pub fn flow(&self) -> VolumeRate {
+        self.pump.flow()
+    }
+
+    pub fn speed(&self) -> AngularVelocity {
+        self.pump.speed
+    }
+}
+impl PressureSource for ManualPump {
+    fn delta_vol_max(&self) -> Volume {
+        self.pump.delta_vol_max()
+    }
+
+    fn update_after_pressure_regulation(
+        &mut self,
+        context: &UpdateContext,
+        volume_required: Volume,
+        reservoir: &mut Reservoir,
+        is_pump_connected_to_reservoir: bool,
+    ) {
+        self.pump.update_after_pressure_regulation(
+            context,
+            volume_required,
+            reservoir,
+            is_pump_connected_to_reservoir,
+        );
+    }
+
+    fn flow(&self) -> VolumeRate {
+        self.pump.flow()
+    }
+
+    fn displacement(&self) -> Volume {
+        self.pump.displacement()
+    }
+}
+impl HeatingElement for ManualPump {}
+impl HeatingPressureSource for ManualPump {}
+
+#[derive(PartialEq, Clone, Copy)]
+enum HydraulicValveType {
+    ClosedWhenOff,
+    _OpenedWhenOff,
+    Mechanical,
+}
+
+struct HydraulicValve {
+    position: LowPassFilter<Ratio>,
+    is_powered: bool,
+    powered_by: Option<Vec<ElectricalBusType>>,
+    valve_type: HydraulicValveType,
+
+    pressure_input: Pressure,
+    pressure_output: Pressure,
+}
+impl HydraulicValve {
+    const POSITION_RESPONSE_TIME_CONSTANT: Duration = Duration::from_millis(150);
+    const MIN_POSITION_FOR_ZERO_PRESSURE_RATIO: f64 = 0.02;
+
+    fn new(valve_type: HydraulicValveType, powered_by: Option<Vec<ElectricalBusType>>) -> Self {
+        Self {
+            position: LowPassFilter::<Ratio>::new(Self::POSITION_RESPONSE_TIME_CONSTANT),
+            is_powered: false,
+            powered_by,
+            valve_type,
+            pressure_input: Pressure::default(),
+            pressure_output: Pressure::default(),
+        }
+    }
+
+    fn update(
+        &mut self,
+        context: &UpdateContext,
+        commanded_open: bool,
+        current_pressure_input: Pressure,
+    ) {
+        let commanded_position = self.actual_target_position_from_valve_type(commanded_open);
+
+        self.position.update(context.delta(), commanded_position);
+
+        self.pressure_input = current_pressure_input;
+        self.update_output_pressure();
+    }
+
+    fn actual_target_position_from_valve_type(&self, commanded_open: bool) -> Ratio {
+        match self.valve_type {
+            HydraulicValveType::_OpenedWhenOff => {
+                if !commanded_open && self.is_powered {
+                    Ratio::new::<ratio>(0.)
+                } else {
+                    Ratio::new::<ratio>(1.)
+                }
+            }
+            HydraulicValveType::ClosedWhenOff => {
+                if commanded_open && self.is_powered {
+                    Ratio::new::<ratio>(1.)
+                } else {
+                    Ratio::new::<ratio>(0.)
+                }
+            }
+            HydraulicValveType::Mechanical => {
+                if commanded_open {
+                    Ratio::new::<ratio>(1.)
+                } else {
+                    Ratio::new::<ratio>(0.)
+                }
+            }
+        }
+    }
+
+    fn update_output_pressure(&mut self) {
+        self.pressure_output =
+            if self.position.output().get::<ratio>() > Self::MIN_POSITION_FOR_ZERO_PRESSURE_RATIO {
+                self.pressure_input
+                    * (self.position.output().sqrt() * 1.4)
+                        .min(Ratio::new::<ratio>(1.).max(Ratio::new::<ratio>(0.)))
+            } else {
+                Pressure::default()
+            }
+    }
+
+    fn pressure_output(&self) -> Pressure {
+        self.pressure_output
+    }
+}
+impl SimulationElement for HydraulicValve {
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        if let Some(powered_by_element) = &self.powered_by {
+            self.is_powered = buses.any_is_powered(powered_by_element);
+        }
+    }
+}
 
 #[cfg(test)]
 mod tests {

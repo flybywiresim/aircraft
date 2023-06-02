@@ -36,6 +36,7 @@ export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting,
     const [lsDisplayed] = useSimVar(`L:BTN_LS_${side === 'L' ? 1 : 2}_FILTER_ACTIVE`, 'bool'); // TODO rename simvar
     const [fmaLatMode] = useSimVar('L:A32NX_FMA_LATERAL_MODE', 'enum', 200);
     const [armedLateralBitmask] = useSimVar('L:A32NX_FMA_LATERAL_ARMED', 'enum', 200);
+    const [groundSpeed] = useSimVar('GPS GROUND SPEED', 'Meters per second', 200);
 
     const heading = Number(MathUtils.fastToFixed((trueRef ? trueHeading.value : magHeading.value), 2));
     const track = Number(MathUtils.fastToFixed((trueRef ? trueTrack.value : magTrack.value), 2));
@@ -75,7 +76,7 @@ export const RoseMode: FC<RoseModeProps> = ({ symbols, adirsAlign, rangeSetting,
 
                             { ((fmaLatMode === LateralMode.NONE || fmaLatMode === LateralMode.HDG || fmaLatMode === LateralMode.TRACK)
                                 && !isArmed(armedLateralBitmask, ArmedLateralMode.NAV)) && (
-                                <TrackLine x={384} y={384} heading={heading} track={track} />
+                                <TrackLine x={384} y={384} heading={heading} track={track} mapParams={mapParams} groundSpeed={groundSpeed} symbols={symbols} ndRange={rangeSetting} />
                             )}
                         </g>
                     )}
@@ -553,6 +554,7 @@ const VorCaptureOverlay: React.FC<{
 }> = ({ heading, side }) => {
     const index = side === 'L' ? 1 : 2;
     const [course] = useSimVar(`NAV OBS:${index}`, 'degrees');
+    const [vorFrequency] = useSimVar(`NAV ACTIVE FREQUENCY:${index}`, 'megahertz');
     const [courseDeviation] = useSimVar(`NAV RADIAL ERROR:${index}`, 'degrees', 20);
     const [available] = useSimVar(`NAV HAS NAV:${index}`, 'number');
     const [toward, setToward] = useState(true);
@@ -570,6 +572,9 @@ const VorCaptureOverlay: React.FC<{
         setCdiPx(Math.min(12, Math.max(-12, cdiDegrees)) * 74 / 5);
     }, [courseDeviation.toFixed(2)]);
 
+    // we can't tell if the course is valid from the MSFS radio, so at least check that the frequency is
+    const vorCourseValid = vorFrequency > 0;
+
     // FIXME vor bearing - heading when course invalid
     return (
         <g transform={`rotate(${course - heading} 384 384)`} stroke="white" strokeWidth={3} fill="none">
@@ -579,18 +584,22 @@ const VorCaptureOverlay: React.FC<{
                 <circle cx={458} cy={384} r={5} />
                 <circle cx={532} cy={384} r={5} />
             </g>
-            <path
-                d="M352,256 L416,256 M384,134 L384,294 M384,474 L384,634"
-                className="rounded shadow"
-                id="vor-course-pointer-shadow"
-                strokeWidth={4.5}
-            />
-            <path
-                d="M352,256 L416,256 M384,134 L384,294 M384,474 L384,634"
-                className="rounded Cyan"
-                id="vor-course-pointer"
-                strokeWidth={4}
-            />
+            { vorCourseValid && (
+                <>
+                    <path
+                        d="M352,256 L416,256 M384,134 L384,294 M384,474 L384,634"
+                        className="rounded shadow"
+                        id="vor-course-pointer-shadow"
+                        strokeWidth={4.5}
+                    />
+                    <path
+                        d="M352,256 L416,256 M384,134 L384,294 M384,474 L384,634"
+                        className="rounded Cyan"
+                        id="vor-course-pointer"
+                        strokeWidth={4}
+                    />
+                </>
+            )}
             { available
                 && (
                     <>
@@ -634,7 +643,8 @@ const IlsCaptureOverlay: React.FC<{
     side: EfisSide,
 }> = memo(({ heading, side }) => {
     const index = side === 'L' ? 2 : 1;
-    const [course] = useSimVar(`NAV LOCALIZER:${index + 2}`, 'degrees');
+    const [course] = useSimVar(`NAV OBS:${index + 2}`, 'degrees');
+    const [ilsFrequency] = useSimVar(`NAV ACTIVE FREQUENCY:${index + 2}`, 'megahertz');
     // FIXME this shit needs to be per-MMR
     const [courseDeviation] = useSimVar('L:A32NX_RADIO_RECEIVER_LOC_DEVIATION', 'number', 20);
     const [available] = useSimVar('L:A32NX_RADIO_RECEIVER_LOC_IS_VALID', 'number');
@@ -646,6 +656,9 @@ const IlsCaptureOverlay: React.FC<{
         setCdiPx(dots * 74);
     }, [courseDeviation.toFixed(2)]);
 
+    // we can't tell if the course is valid from the MSFS radio, so at least check that the frequency is
+    const ilsCourseValid = ilsFrequency >= 108 && ilsFrequency <= 112;
+
     return (
         <g transform={`rotate(${course - heading} 384 384)`} stroke="white" strokeWidth={3} fill="none">
             <g id="ils-deviation-scale">
@@ -654,18 +667,22 @@ const IlsCaptureOverlay: React.FC<{
                 <circle cx={458} cy={384} r={5} />
                 <circle cx={532} cy={384} r={5} />
             </g>
-            <path
-                d="M352,256 L416,256 M384,134 L384,294 M384,474 L384,634"
-                className="rounded shadow"
-                id="ils-course-pointer-shadow"
-                strokeWidth={4.5}
-            />
-            <path
-                d="M352,256 L416,256 M384,134 L384,294 M384,474 L384,634"
-                className="rounded Magenta"
-                id="ils-course-pointer"
-                strokeWidth={4}
-            />
+            { ilsCourseValid && (
+                <>
+                    <path
+                        d="M352,256 L416,256 M384,134 L384,294 M384,474 L384,634"
+                        className="rounded shadow"
+                        id="ils-course-pointer-shadow"
+                        strokeWidth={4.5}
+                    />
+                    <path
+                        d="M352,256 L416,256 M384,134 L384,294 M384,474 L384,634"
+                        className="rounded Magenta"
+                        id="ils-course-pointer"
+                        strokeWidth={4}
+                    />
+                </>
+            )}
             { available
                 && (
                     <>
@@ -773,7 +790,6 @@ const VorInfo: FC<{side: EfisSide}> = memo(({ side }) => {
     const [vorIdent] = useSimVar(`NAV IDENT:${index}`, 'string');
     const [vorFrequency] = useSimVar(`NAV ACTIVE FREQUENCY:${index}`, 'megahertz');
     const [vorCourse] = useSimVar(`NAV OBS:${index}`, 'degrees');
-    const [vorAvailable] = useSimVar(`NAV HAS NAV:${index}`, 'boolean');
     const [fm1Healthy] = useSimVar('L:A32NX_FM1_HEALTHY_DISCRETE', 'boolean');
     const [fm2Healthy] = useSimVar('L:A32NX_FM2_HEALTHY_DISCRETE', 'boolean');
     const fm1NavDiscrete = useArinc429Var('L:A32NX_FM1_NAV_DISCRETE');
@@ -793,24 +809,26 @@ const VorInfo: FC<{side: EfisSide}> = memo(({ side }) => {
         }
     }, [fm1Healthy, fm1NavDiscrete.value, fm1NavDiscrete.ssm, fm2Healthy, fm2NavDiscrete.value, fm2NavDiscrete.ssm]);
 
+    const vorFrequencyValid = vorFrequency > 0;
+    // we can't tell if the course is valid from the MSFS radio, so at least check that the frequency is
+    const vorCourseValid = vorFrequencyValid;
+
     return (
         <Layer x={748} y={28}>
             <text x={-102} y={0} fontSize={25} className="White" textAnchor="end">
                 VOR
                 {index}
             </text>
-            { vorAvailable && (
-                <text x={0} y={0} fontSize={25} className="White" textAnchor="end">
-                    {freqInt}
-                    <tspan fontSize={20}>
-                        .
-                        {freqDecimal}
-                    </tspan>
-                </text>
-            ) }
+            <text x={0} y={0} fontSize={25} className="White" textAnchor="end">
+                {vorFrequencyValid ? freqInt : '---'}
+                <tspan fontSize={20}>
+                    .
+                    {vorFrequencyValid ? freqDecimal : '--'}
+                </tspan>
+            </text>
             <text x={-56} y={30} fontSize={25} className="White" textAnchor="end">CRS</text>
             <text x={20} y={30} fontSize={25} className="Cyan" textAnchor="end">
-                {vorCourse > 0 ? (`${Math.round(vorCourse)}`).padStart(3, '0') : '---'}
+                {vorCourseValid ? (`${Math.round(vorCourse)}`).padStart(3, '0') : '---'}
                 &deg;
             </text>
             <text x={-80} y={58} fontSize={20} className="White" textAnchor="end" textDecoration="underline">{tuningMode}</text>
@@ -824,9 +842,7 @@ const IlsInfo: FC<{side: EfisSide}> = memo(({ side }) => {
 
     const [ilsIdent] = useSimVar(`NAV IDENT:${index + 2}`, 'string');
     const [ilsFrequency] = useSimVar(`NAV ACTIVE FREQUENCY:${index + 2}`, 'megahertz');
-    const [ilsCourse] = useSimVar(`NAV LOCALIZER:${index + 2}`, 'degrees');
-    // FIXME this shit needs to be per-MMR
-    const [locAvailable] = useSimVar('L:A32NX_RADIO_RECEIVER_LOC_IS_VALID', 'number');
+    const [ilsCourse] = useSimVar(`NAV OBS:${index + 2}`, 'degrees');
     const [fm1Healthy] = useSimVar('L:A32NX_FM1_HEALTHY_DISCRETE', 'boolean');
     const [fm2Healthy] = useSimVar('L:A32NX_FM2_HEALTHY_DISCRETE', 'boolean');
     const fm1NavDiscrete = useArinc429Var('L:A32NX_FM1_NAV_DISCRETE');
@@ -846,24 +862,26 @@ const IlsInfo: FC<{side: EfisSide}> = memo(({ side }) => {
         }
     }, [fm1Healthy, fm1NavDiscrete.value, fm1NavDiscrete.ssm, fm2Healthy, fm2NavDiscrete.value, fm2NavDiscrete.ssm]);
 
+    const ilsFrequencyValid = ilsFrequency >= 108 && ilsFrequency <= 112;
+    // we can't tell if the course is valid from the MSFS radio, so at least check that the frequency is
+    const ilsCourseValid = ilsFrequencyValid;
+
     return (
         <Layer x={748} y={28}>
             <text x={-102} y={0} fontSize={25} className="White" textAnchor="end">
                 ILS
                 {index}
             </text>
-            { locAvailable && (
-                <text x={0} y={0} fontSize={25} className="Magenta" textAnchor="end">
-                    {freqInt}
-                    <tspan fontSize={20}>
-                        .
-                        {freqDecimal}
-                    </tspan>
-                </text>
-            ) }
+            <text x={0} y={0} fontSize={25} className="Magenta" textAnchor="end">
+                {ilsFrequencyValid ? freqInt : '---'}
+                <tspan fontSize={20}>
+                    .
+                    {ilsFrequencyValid ? freqDecimal : '--'}
+                </tspan>
+            </text>
             <text x={-56} y={30} fontSize={25} className="White" textAnchor="end">CRS</text>
             <text x={20} y={30} fontSize={25} className="Magenta" textAnchor="end">
-                {locAvailable ? (`${Math.round(ilsCourse)}`).padStart(3, '0') : '---'}
+                {ilsCourseValid ? (`${Math.round(ilsCourse)}`).padStart(3, '0') : '---'}
                 &deg;
             </text>
             <text x={-80} y={58} fontSize={20} className="White" textAnchor="end" textDecoration="underline">{tuningMode}</text>

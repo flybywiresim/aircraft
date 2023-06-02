@@ -289,9 +289,7 @@ export class DirectToFixTransition extends Transition {
         const straightDistance = distanceTo(this.lineStartPoint, this.lineEndPoint);
 
         if (this.hasArc) {
-            const circumference = 2 * Math.PI * this.radius;
-
-            return straightDistance + (circumference / 360 * this.arcSweepAngle);
+            return straightDistance + arcLength(this.radius, this.arcSweepAngle);
         }
 
         return straightDistance;

@@ -3,6 +3,7 @@ use uom::si::{
     acceleration::meter_per_second_squared,
     angle::radian,
     f64::*,
+    length::millimeter,
     mass_density::kilogram_per_cubic_meter,
     pressure::inch_of_mercury,
     time::second,
@@ -163,6 +164,10 @@ pub struct UpdateContext {
     incidence_alpha_id: VariableIdentifier,
     plane_height_id: VariableIdentifier,
     latitude_id: VariableIdentifier,
+    total_weight_id: VariableIdentifier,
+    total_yaw_inertia_id: VariableIdentifier,
+    precipitation_rate_id: VariableIdentifier,
+    in_cloud_id: VariableIdentifier,
 
     delta: Delta,
     simulation_time: f64,
@@ -189,10 +194,20 @@ pub struct UpdateContext {
     alpha: Angle,
     plane_height_over_ground: Length,
     latitude: Angle,
+
+    total_weight: Mass,
+    total_yaw_inertia_slug_foot_squared: f64,
+
+    // From msfs in millimeters
+    precipitation_rate: Length,
+
+    in_cloud: bool,
 }
 impl UpdateContext {
     pub(crate) const IS_READY_KEY: &'static str = "IS_READY";
     pub(crate) const AMBIENT_DENSITY_KEY: &'static str = "AMBIENT DENSITY";
+    pub(crate) const IN_CLOUD_KEY: &'static str = "AMBIENT IN CLOUD";
+    pub(crate) const AMBIENT_PRECIP_RATE_KEY: &'static str = "AMBIENT PRECIP RATE";
     pub(crate) const AMBIENT_TEMPERATURE_KEY: &'static str = "AMBIENT TEMPERATURE";
     pub(crate) const INDICATED_AIRSPEED_KEY: &'static str = "AIRSPEED INDICATED";
     pub(crate) const TRUE_AIRSPEED_KEY: &'static str = "AIRSPEED TRUE";
@@ -217,10 +232,15 @@ impl UpdateContext {
     pub(crate) const INCIDENCE_ALPHA_KEY: &'static str = "INCIDENCE ALPHA";
     pub(crate) const ALT_ABOVE_GROUND_KEY: &'static str = "PLANE ALT ABOVE GROUND";
     pub(crate) const LATITUDE_KEY: &'static str = "PLANE LATITUDE";
+    pub(crate) const TOTAL_WEIGHT_KEY: &'static str = "TOTAL WEIGHT";
+    pub(crate) const TOTAL_YAW_INERTIA: &'static str = "TOTAL WEIGHT YAW MOI";
 
     // Plane accelerations can become crazy with msfs collision handling.
     // Having such filtering limits high frequencies transients in accelerations used for physics
     const PLANE_ACCELERATION_FILTERING_TIME_CONSTANT: Duration = Duration::from_millis(400);
+
+    // No UOM unit available for inertia
+    const SLUG_FOOT_SQUARED_TO_KG_METER_SQUARED_CONVERSION: f64 = 1.3558179619;
 
     #[deprecated(
         note = "Do not create UpdateContext directly. Instead use the SimulationTestBed or your own custom test bed."
@@ -275,6 +295,10 @@ impl UpdateContext {
             incidence_alpha_id: context.get_identifier(Self::INCIDENCE_ALPHA_KEY.to_owned()),
             plane_height_id: context.get_identifier(Self::ALT_ABOVE_GROUND_KEY.to_owned()),
             latitude_id: context.get_identifier(Self::LATITUDE_KEY.to_owned()),
+            total_weight_id: context.get_identifier(Self::TOTAL_WEIGHT_KEY.to_owned()),
+            total_yaw_inertia_id: context.get_identifier(Self::TOTAL_YAW_INERTIA.to_owned()),
+            precipitation_rate_id: context.get_identifier(Self::AMBIENT_PRECIP_RATE_KEY.to_owned()),
+            in_cloud_id: context.get_identifier(Self::IN_CLOUD_KEY.to_owned()),
 
             delta: delta.into(),
             simulation_time,
@@ -320,6 +344,10 @@ impl UpdateContext {
             alpha,
             plane_height_over_ground: Length::default(),
             latitude,
+            total_weight: Mass::default(),
+            total_yaw_inertia_slug_foot_squared: 10.,
+            precipitation_rate: Length::default(),
+            in_cloud: false,
         }
     }
 
@@ -351,6 +379,10 @@ impl UpdateContext {
             incidence_alpha_id: context.get_identifier("INCIDENCE ALPHA".to_owned()),
             plane_height_id: context.get_identifier("PLANE ALT ABOVE GROUND".to_owned()),
             latitude_id: context.get_identifier("PLANE LATITUDE".to_owned()),
+            total_weight_id: context.get_identifier("TOTAL WEIGHT".to_owned()),
+            total_yaw_inertia_id: context.get_identifier("TOTAL WEIGHT YAW MOI".to_owned()),
+            precipitation_rate_id: context.get_identifier("AMBIENT PRECIP RATE".to_owned()),
+            in_cloud_id: context.get_identifier("AMBIENT IN CLOUD".to_owned()),
 
             delta: Default::default(),
             simulation_time: Default::default(),
@@ -388,11 +420,15 @@ impl UpdateContext {
             ),
             attitude: Default::default(),
             mach_number: Default::default(),
-            air_density: MassDensity::new::<kilogram_per_cubic_meter>(1.22),
+            air_density: MassDensity::default(),
             true_heading: Default::default(),
             alpha: Default::default(),
             plane_height_over_ground: Length::default(),
             latitude: Default::default(),
+            total_weight: Mass::default(),
+            total_yaw_inertia_slug_foot_squared: 1.,
+            precipitation_rate: Length::default(),
+            in_cloud: false,
         }
     }
 
@@ -452,6 +488,15 @@ impl UpdateContext {
         self.plane_height_over_ground = reader.read(&self.plane_height_id);
 
         self.latitude = reader.read(&self.latitude_id);
+
+        self.total_weight = reader.read(&self.total_weight_id);
+
+        self.total_yaw_inertia_slug_foot_squared = reader.read(&self.total_yaw_inertia_id);
+
+        let precipitation_height_millimeter = reader.read(&self.precipitation_rate_id);
+        self.precipitation_rate = Length::new::<millimeter>(precipitation_height_millimeter);
+
+        self.in_cloud = reader.read(&self.in_cloud_id);
 
         self.update_relative_wind();
 
@@ -576,6 +621,14 @@ impl UpdateContext {
         self.is_on_ground
     }
 
+    pub fn is_in_cloud(&self) -> bool {
+        self.in_cloud
+    }
+
+    pub fn precipitation_rate(&self) -> Length {
+        self.precipitation_rate
+    }
+
     pub fn long_accel(&self) -> Acceleration {
         self.local_acceleration.long_accel()
     }
@@ -641,6 +694,15 @@ impl UpdateContext {
 
     pub fn plane_height_over_ground(&self) -> Length {
         self.plane_height_over_ground
+    }
+
+    pub fn total_weight(&self) -> Mass {
+        self.total_weight
+    }
+
+    pub fn total_yaw_inertia_kg_m2(&self) -> f64 {
+        self.total_yaw_inertia_slug_foot_squared
+            * Self::SLUG_FOOT_SQUARED_TO_KG_METER_SQUARED_CONVERSION
     }
 }
 

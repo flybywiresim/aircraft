@@ -1,5 +1,6 @@
 use crate::{
-    electrical::{ElectricalElement, ElectricitySource, Potential},
+    apu::ApuGenerator,
+    electrical::{ElectricalElement, Potential},
     hydraulic::flap_slat::SolenoidStatus,
     pneumatic::{EngineModeSelector, EngineState, PneumaticValveSignal},
     simulation::UpdateContext,
@@ -38,10 +39,9 @@ pub trait ReservoirAirPressure {
     fn yellow_reservoir_pressure(&self) -> Pressure;
 }
 
-pub trait AuxiliaryPowerUnitElectrical:
-    ControllerSignal<ContactorSignal> + ApuAvailable + ElectricalElement + ElectricitySource
-{
-    fn output_within_normal_parameters(&self) -> bool;
+pub trait AuxiliaryPowerUnitElectrical: ControllerSignal<ContactorSignal> + ApuAvailable {
+    type Generator: ApuGenerator;
+    fn generator(&self, number: usize) -> &Self::Generator;
 }
 
 pub trait ApuAvailable {
@@ -305,6 +305,10 @@ pub trait LgciuInterface:
 {
 }
 
+pub trait ReverserPosition {
+    fn reverser_position(&self) -> Ratio;
+}
+
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 #[repr(usize)]
 pub enum LgciuId {
@@ -488,6 +492,7 @@ pub enum AirbusElectricPumpId {
     Green,
     Blue,
     Yellow,
+    GreenAux,
 }
 impl Display for AirbusElectricPumpId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -499,6 +504,7 @@ impl Display for AirbusElectricPumpId {
             AirbusElectricPumpId::Green => write!(f, "GREEN"),
             AirbusElectricPumpId::Blue => write!(f, "BLUE"),
             AirbusElectricPumpId::Yellow => write!(f, "YELLOW"),
+            AirbusElectricPumpId::GreenAux => write!(f, "GREEN_AUX"),
         }
     }
 }
@@ -512,12 +518,14 @@ pub enum ElectricalBusType {
     AlternatingCurrentEssentialShed,
     AlternatingCurrentStaticInverter,
     AlternatingCurrentGndFltService,
+    AlternatingCurrentNamed(&'static str),
     DirectCurrent(u8),
     DirectCurrentEssential,
     DirectCurrentEssentialShed,
     DirectCurrentBattery,
     DirectCurrentHot(u8),
     DirectCurrentGndFltService,
+    DirectCurrentNamed(&'static str),
 
     /// A sub bus is a subsection of a larger bus. An example of
     /// a sub bus is the A320's 202PP, which is a sub bus of DC BUS 2 (2PP).
@@ -541,12 +549,14 @@ impl Display for ElectricalBusType {
             ElectricalBusType::AlternatingCurrentEssentialShed => write!(f, "AC_ESS_SHED"),
             ElectricalBusType::AlternatingCurrentStaticInverter => write!(f, "AC_STAT_INV"),
             ElectricalBusType::AlternatingCurrentGndFltService => write!(f, "AC_GND_FLT_SVC"),
+            ElectricalBusType::AlternatingCurrentNamed(name) => write!(f, "{}", name),
             ElectricalBusType::DirectCurrent(number) => write!(f, "DC_{}", number),
             ElectricalBusType::DirectCurrentEssential => write!(f, "DC_ESS"),
             ElectricalBusType::DirectCurrentEssentialShed => write!(f, "DC_ESS_SHED"),
             ElectricalBusType::DirectCurrentBattery => write!(f, "DC_BAT"),
             ElectricalBusType::DirectCurrentHot(number) => write!(f, "DC_HOT_{}", number),
             ElectricalBusType::DirectCurrentGndFltService => write!(f, "DC_GND_FLT_SVC"),
+            ElectricalBusType::DirectCurrentNamed(name) => write!(f, "{}", name),
             ElectricalBusType::Sub(name) => write!(f, "SUB_{}", name),
         }
     }
@@ -769,6 +779,26 @@ impl DelayedFalseLogicGate {
 
     pub fn output(&self) -> bool {
         self.expression_result || self.delay > self.false_duration
+    }
+}
+
+/// The latched logic gate latches the true result of a given expression.
+/// As soon as the output is true it stays true until it is reset.
+#[derive(Default)]
+pub struct LatchedTrueLogicGate {
+    expression_result: bool,
+}
+impl LatchedTrueLogicGate {
+    pub fn update(&mut self, expression_result: bool) {
+        self.expression_result = self.expression_result || expression_result;
+    }
+
+    pub fn reset(&mut self) {
+        self.expression_result = false;
+    }
+
+    pub fn output(&self) -> bool {
+        self.expression_result
     }
 }
 
