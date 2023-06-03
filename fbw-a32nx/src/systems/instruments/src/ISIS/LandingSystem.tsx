@@ -12,24 +12,33 @@ const locLagfilter = new LagFilter(1.5);
 const gsLagfilter = new LagFilter(1.5);
 
 const DeviationIndicator: React.FC<DeviationIndicatorProps> = ({ deviation, available }) => {
-    const maxDeviation = 1.778; // the maximum position the diamond can be while still fully inside scale
+    const dots = deviation / 0.4;
 
-    const dots = Math.sign(deviation) * Math.min(Math.abs(deviation / 0.4), maxDeviation);
+    const belowMinimum = dots < -2;
+    const aboveMaximum = dots > 2;
 
     return (
         <>
             <rect x={0} y={0} width={200} height={20} fill="black" />
-            <circle className="StrokeWhite NoFill" cx={10} cy={10} r={7} />
-            <circle className="StrokeWhite NoFill" cx={55} cy={10} r={7} />
-            <line x1={100} x2={100} y1={2} y2={18} strokeWidth={4} stroke="white" />
-            <circle className="StrokeWhite NoFill" cx={145} cy={10} r={7} />
-            <circle className="StrokeWhite NoFill" cx={190} cy={10} r={7} />
-            { available
-            && (// assumes 0.4 deg of deviation per dot and 45px distance between dots
-                <g transform={`translate(${(dots * 45).toFixed(5)} 0)`}>
-                    <path className="FillMagenta" d="M80,10 L100,2 L120,10 L100,18z" />
+            <circle className="StrokeWhite NoFill" cx={17} cy={10} r={3} />
+            <circle className="StrokeWhite NoFill" cx={58.5} cy={10} r={3} />
+            <circle className="StrokeWhite NoFill" cx={141.5} cy={10} r={3} />
+            <circle className="StrokeWhite NoFill" cx={183} cy={10} r={3} />
+            { available && !(aboveMaximum || belowMinimum)
+            && (// assumes 0.4 deg of deviation per dot and 41.5px distance between dots
+                <g transform={`translate(${(dots * 41.5).toFixed(5)} 0)`}>
+                    <path className="FillMagenta" d="M 84.88 10 v 0.8 l 9.45 6.7 h 11.34 l 9.45 -6.7 v -1.6 l -9.45 -6.7 h -11.34 l -9.45 6.7 z" />
                 </g>
             )}
+            { belowMinimum
+            && (
+                <path className="FillMagenta" d="M 1 10 v 0.8 l 9.45 6.7 h 5.67 v-15 h -5.67 l -9.45 6.7 z" />
+            )}
+            { aboveMaximum
+            && (
+                <path className="FillMagenta" d="M 199 10 v 0.8 l -9.45 6.7 h -5.67 v-15 h 5.67 l 9.45 6.7 z" />
+            )}
+            <line x1={100} x2={100} y1={2.5} y2={17.5} strokeWidth={5} stroke="yellow" />
         </>
     );
 };
@@ -47,7 +56,7 @@ export const LandingSystem: React.FC = () => {
                 <g transform="translate(156 380)">
                     <DeviationIndicator deviation={locLagfilter.step(lsDeviation / 2, 50 / 1000)} available={lsAvailable} />
                 </g>
-                <g transform="translate(356 166) rotate(90 0 0)">
+                <g transform="translate(343 171) rotate(90 0 0)">
                     <DeviationIndicator deviation={gsLagfilter.step(gsDeviation, 50 / 1000)} available={gsAvailable} />
                 </g>
             </g>
