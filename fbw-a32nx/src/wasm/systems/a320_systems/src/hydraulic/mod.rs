@@ -125,12 +125,8 @@ impl A320FlapFactory {
     }
 
     fn new_flaps_linkage(context: &mut InitContext) -> FlapSlatLinkage<2> {
-        let max_position = Angle::new::<degree>(
-            Self::FLAP_FPPU_TO_SURFACE_ANGLE_DEGREES
-                .last()
-                .unwrap()
-                .clone(),
-        );
+        let max_position =
+            Angle::new::<degree>(*Self::FLAP_FPPU_TO_SURFACE_ANGLE_DEGREES.last().unwrap());
 
         let left_group =
             A320FlapFactory::new_a320_flap_group(context, ActuatorSide::Left, max_position);
@@ -195,12 +191,8 @@ impl A320SlatFactory {
     }
 
     fn new_slats_linkage(context: &mut InitContext) -> FlapSlatLinkage<5> {
-        let max_position = Angle::new::<degree>(
-            Self::SLAT_FPPU_TO_SURFACE_ANGLE_DEGREES
-                .last()
-                .unwrap()
-                .clone(),
-        );
+        let max_position =
+            Angle::new::<degree>(*Self::SLAT_FPPU_TO_SURFACE_ANGLE_DEGREES.last().unwrap());
 
         let left_group =
             A320SlatFactory::new_a320_slat_group(context, ActuatorSide::Left, max_position);

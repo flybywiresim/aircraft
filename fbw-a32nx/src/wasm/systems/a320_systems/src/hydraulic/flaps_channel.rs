@@ -293,25 +293,25 @@ impl FlapsChannel {
             // they are fully explicit
             (Some(cas1), _) if cas1 > self.kts_100 && cas1 < self.kts_210 => {
                 // println!("GO 11");
-                self.auto_command_angle = self.auto_command_angle
+                // self.auto_command_angle = self.auto_command_angle
             }
             (_, Some(cas2)) if cas2 > self.kts_100 && cas2 < self.kts_210 => {
                 // println!("GO 12");
-                self.auto_command_angle = self.auto_command_angle
+                // self.auto_command_angle = self.auto_command_angle
             }
             (Some(cas1), Some(cas2))
                 if (cas1 <= self.kts_100 && cas2 >= self.kts_210)
                     || (cas1 >= self.kts_210 && cas2 <= self.kts_100) =>
             {
                 // println!("GO 13");
-                self.auto_command_angle = self.auto_command_angle
+                // self.auto_command_angle = self.auto_command_angle
             }
             (None, None) if !self.flap_auto_command_active => {
                 self.auto_command_angle = self.conf1f_flaps
             }
             (None, None) if self.flap_auto_command_active => {
                 // println!("GO 14");
-                self.auto_command_angle = self.auto_command_angle
+                // self.auto_command_angle = self.auto_command_angle
             }
             // If this panic is reached, it means a condition has been forgotten!
             (_, _) => panic!(
@@ -348,7 +348,7 @@ impl FlapsChannel {
             return self.auto_command_angle;
         }
 
-        return calulated_angle;
+        calulated_angle
     }
 
     pub fn powerup_reset(
@@ -448,7 +448,7 @@ impl FlapsChannel {
                 // If this panic is reached, it means a condition has been forgotten!
                 (_, _) => {
                     // println!("START 8");
-                    self.auto_command_angle = self.auto_command_angle // Should it be conf1 or conf1f?
+                    // self.auto_command_angle = self.auto_command_angle // Should it be conf1 or conf1f?
                 }
             }
             self.flap_auto_command_active = true;
@@ -511,7 +511,7 @@ impl FlapsChannel {
             return true;
         }
 
-        return false;
+        false
     }
 
     pub fn get_bit_29_component_status_word(&self) -> bool {
@@ -528,11 +528,11 @@ impl FlapsChannel {
                 return false;
             }
         }
-        return false;
+        false
     }
 
     pub fn get_bit_28_component_status_word(&self, cas: Option<Velocity>) -> bool {
-        return self.flap_auto_command_active && cas.is_none();
+        self.flap_auto_command_active && cas.is_none()
     }
 }
 impl PowerControlUnitInterface for FlapsChannel {
@@ -545,7 +545,7 @@ impl PowerControlUnitInterface for FlapsChannel {
         ) {
             return SolenoidStatus::Energised;
         }
-        return SolenoidStatus::DeEnergised;
+        SolenoidStatus::DeEnergised
     }
 
     fn extend_energise(&self) -> SolenoidStatus {
@@ -555,7 +555,7 @@ impl PowerControlUnitInterface for FlapsChannel {
         ) {
             return SolenoidStatus::Energised;
         }
-        return SolenoidStatus::DeEnergised;
+        SolenoidStatus::DeEnergised
     }
 
     fn pob_energise(&self) -> SolenoidStatus {
@@ -565,7 +565,7 @@ impl PowerControlUnitInterface for FlapsChannel {
         ) {
             return SolenoidStatus::DeEnergised;
         }
-        return SolenoidStatus::Energised;
+        SolenoidStatus::Energised
     }
 }
 impl SimulationElement for FlapsChannel {

@@ -81,7 +81,7 @@ pub trait EmergencyGeneratorPower {
     fn generated_power(&self) -> Power;
 }
 
-#[derive(PartialEq, Clone, Copy)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum ActuatorSide {
     Left,
     Right,
@@ -125,19 +125,19 @@ pub trait SfccChannel {
     ) -> FlapsConf;
 }
 
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum ChannelCommand {
     Extend,
     Retract,
 }
 
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum ChannelCommandMode {
     Normal,
     Slow,
 }
 
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum PCUState {
     Idle,
     Starting,
@@ -160,7 +160,7 @@ impl From<u8> for PCUState {
     }
 }
 
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum SFCCChannel {
     FlapChannel,
     SlatChannel,
@@ -168,7 +168,7 @@ pub enum SFCCChannel {
 
 // There is one more state called Misadjust. It happens when the position detected
 // goes from 0 to FULL (or viceversa) with no intermediate steps
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum CSUPosition {
     Conf0 = 0,
     Conf1,
@@ -180,14 +180,14 @@ pub enum CSUPosition {
 }
 impl CSUPosition {
     pub fn is_valid(value: CSUPosition) -> bool {
-        match value {
-            CSUPosition::Conf0 => true,
-            CSUPosition::Conf1 => true,
-            CSUPosition::Conf2 => true,
-            CSUPosition::Conf3 => true,
-            CSUPosition::ConfFull => true,
-            _ => false,
-        }
+        matches!(
+            value,
+            CSUPosition::Conf0
+                | CSUPosition::Conf1
+                | CSUPosition::Conf2
+                | CSUPosition::Conf3
+                | CSUPosition::ConfFull
+        )
     }
 }
 impl From<u8> for CSUPosition {
@@ -218,7 +218,7 @@ impl From<u8> for CSUPosition {
     }
 }
 
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum FlapsConf {
     Conf0,
     Conf1,

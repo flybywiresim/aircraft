@@ -123,7 +123,7 @@ impl SlatsChannel {
             }
             Some(_) if flaps_handle.current_position() == CSUPosition::OutOfDetent => {
                 // println!("S3");
-                self.slat_alpha_lock_engaged = self.slat_alpha_lock_engaged;
+                // self.slat_alpha_lock_engaged = self.slat_alpha_lock_engaged;
             }
             Some(aoa)
                 if aoa < self.slat_lock_low_aoa
@@ -186,7 +186,7 @@ impl SlatsChannel {
             }
             Some(_) if flaps_handle.current_position() == CSUPosition::OutOfDetent => {
                 // println!("S10");
-                self.slat_baulk_engaged = self.slat_baulk_engaged;
+                // self.slat_baulk_engaged = self.slat_baulk_engaged;
             }
             Some(cas)
                 if cas > self.slat_lock_high_cas
@@ -299,7 +299,7 @@ impl PowerControlUnitInterface for SlatsChannel {
         ) {
             return SolenoidStatus::Energised;
         }
-        return SolenoidStatus::DeEnergised;
+        SolenoidStatus::DeEnergised
     }
 
     fn extend_energise(&self) -> SolenoidStatus {
@@ -309,7 +309,7 @@ impl PowerControlUnitInterface for SlatsChannel {
         ) {
             return SolenoidStatus::Energised;
         }
-        return SolenoidStatus::DeEnergised;
+        SolenoidStatus::DeEnergised
     }
 
     fn pob_energise(&self) -> SolenoidStatus {
@@ -319,7 +319,7 @@ impl PowerControlUnitInterface for SlatsChannel {
         ) {
             return SolenoidStatus::DeEnergised;
         }
-        return SolenoidStatus::Energised;
+        SolenoidStatus::Energised
     }
 }
 impl SimulationElement for SlatsChannel {

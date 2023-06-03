@@ -118,12 +118,8 @@ impl A380FlapFactory {
     }
 
     fn new_flaps_linkage(context: &mut InitContext) -> FlapSlatLinkage<2> {
-        let max_position = Angle::new::<degree>(
-            Self::FLAP_FPPU_TO_SURFACE_ANGLE_DEGREES
-                .last()
-                .unwrap()
-                .clone(),
-        );
+        let max_position =
+            Angle::new::<degree>(*Self::FLAP_FPPU_TO_SURFACE_ANGLE_DEGREES.last().unwrap());
 
         let left_group =
             A380FlapFactory::new_a380_flap_group(context, ActuatorSide::Left, max_position);
@@ -188,12 +184,8 @@ impl A380SlatFactory {
     }
 
     fn new_slats_linkage(context: &mut InitContext) -> FlapSlatLinkage<5> {
-        let max_position = Angle::new::<degree>(
-            Self::SLAT_FPPU_TO_SURFACE_ANGLE_DEGREES
-                .last()
-                .unwrap()
-                .clone(),
-        );
+        let max_position =
+            Angle::new::<degree>(*Self::SLAT_FPPU_TO_SURFACE_ANGLE_DEGREES.last().unwrap());
 
         let left_group =
             A380SlatFactory::new_a380_slat_group(context, ActuatorSide::Left, max_position);

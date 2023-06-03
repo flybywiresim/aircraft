@@ -122,7 +122,7 @@ impl SlatFlapControlComputer {
             slat_actual_position_word: Self::empty_arinc_word(0.),
             flap_actual_position_word: Self::empty_arinc_word(0.),
 
-            powered_by: powered_by,
+            powered_by,
             consumed_power: Power::new::<watt>(Self::MAX_POWER_CONSUMPTION_WATT),
             is_powered: false,
             recovered_power: false,
@@ -174,7 +174,7 @@ impl SlatFlapControlComputer {
             return FlapsConf::Conf1;
         }
 
-        return flaps_conf_temp;
+        flaps_conf_temp
     }
 
     fn update_cas(&mut self, adiru: &impl AirDataSource) {
@@ -290,7 +290,7 @@ impl SlatFlapControlComputer {
     }
 
     fn empty_arinc_word<T: Copy>(value: T) -> Arinc429Word<T> {
-        return Arinc429Word::new(value, SignStatus::NoComputedData);
+        Arinc429Word::new(value, SignStatus::NoComputedData)
     }
 
     fn update_slat_flap_component_status_word(&self) -> Arinc429Word<u32> {
@@ -470,23 +470,23 @@ impl SlatFlapControlComputer {
     }
 
     fn get_slat_flap_system_status_word(&self) -> Arinc429Word<u32> {
-        return self.slat_flap_system_status_word;
+        self.slat_flap_system_status_word
     }
 
     fn get_slat_flap_component_status_word(&self) -> Arinc429Word<u32> {
-        return self.slat_flap_component_status_word;
+        self.slat_flap_component_status_word
     }
 
     fn get_slat_flap_actual_position_word(&self) -> Arinc429Word<u32> {
-        return self.slat_flap_actual_position_word;
+        self.slat_flap_actual_position_word
     }
 
     fn get_slat_actual_position_word(&self) -> Arinc429Word<f64> {
-        return self.slat_actual_position_word;
+        self.slat_actual_position_word
     }
 
     fn get_flap_actual_position_word(&self) -> Arinc429Word<f64> {
-        return self.flap_actual_position_word;
+        self.flap_actual_position_word
     }
 }
 
@@ -503,7 +503,7 @@ impl SlatFlapLane for SlatFlapControlComputer {
         if !is_demanded_position_reached {
             return Some(self.flap_channel.get_flap_demanded_angle());
         }
-        return None;
+        None
     }
     fn signal_slats_demanded_angle(&self) -> Option<Angle> {
         let is_demanded_position_reached = SlatFlapControlComputerMisc::in_target_range(
@@ -513,7 +513,7 @@ impl SlatFlapLane for SlatFlapControlComputer {
         if !is_demanded_position_reached {
             return Some(self.slat_channel.get_slat_demanded_angle());
         }
-        return None;
+        None
     }
 }
 
@@ -623,10 +623,10 @@ impl SlatFlapComplex {
         n: usize,
         id: SFCCChannel,
     ) -> Box<dyn PowerControlUnitInterface> {
-        return match id {
+        match id {
             SFCCChannel::FlapChannel => Box::new(self.sfcc[n].flap_channel),
             SFCCChannel::SlatChannel => Box::new(self.sfcc[n].slat_channel),
-        };
+        }
     }
 }
 impl SimulationElement for SlatFlapComplex {

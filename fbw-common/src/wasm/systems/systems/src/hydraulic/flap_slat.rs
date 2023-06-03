@@ -110,7 +110,7 @@ impl HydraulicMotor {
         pob_status: BrakeStatus,
     ) -> AngularVelocity {
         match pob_status {
-            BrakeStatus::Locked => return AngularVelocity::default(),
+            BrakeStatus::Locked => AngularVelocity::default(),
             BrakeStatus::Unlocked => {
                 let correction_factor = self.motor_volumetric_efficiency.get::<ratio>();
                 let displacement = self.motor_displacement.get::<cubic_inch>();
@@ -119,9 +119,9 @@ impl HydraulicMotor {
                     .min(self.max_flow)
                     .get::<gallon_per_minute>();
                 // 231 is to obtain speed in rpm. Check link above
-                return AngularVelocity::new::<revolution_per_minute>(
+                AngularVelocity::new::<revolution_per_minute>(
                     correction_factor * flow * 231. / displacement,
-                );
+                )
             }
         }
     }
@@ -149,12 +149,12 @@ impl HydraulicMotor {
             (SolenoidStatus::Energised, SolenoidStatus::Energised) => {
                 // Should never be here, yet!
                 //println!("retract_solenoid and extend_solenoid energised!");
-                self.position = self.position;
+                // self.position = self.position;
                 self.speed = AngularVelocity::default();
             }
             (SolenoidStatus::DeEnergised, SolenoidStatus::DeEnergised) => {
                 //println!("retract_solenoid and extend_solenoid de-energised!");
-                self.position = self.position;
+                // self.position = self.position;
                 self.speed = AngularVelocity::default();
             }
         }
@@ -188,7 +188,7 @@ impl HydraulicMotor {
     }
 }
 
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum BrakeStatus {
     Locked,   // Nothing moving, brakes are holding the motor
     Unlocked, // Hyd motor is free to rotate
@@ -225,7 +225,7 @@ impl PressureOffBrake {
     }
 }
 
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum SolenoidStatus {
     // Should it be Ratio instead?
     Energised,
@@ -896,7 +896,7 @@ mod tests {
     }
 
     fn max_synchro_angle() -> Angle {
-        Angle::new::<degree>(FLAP_FPPU_TO_SURFACE_ANGLE_BREAKPTS.last().unwrap().clone())
+        Angle::new::<degree>(*FLAP_FPPU_TO_SURFACE_ANGLE_BREAKPTS.last().unwrap())
     }
 
     fn fppu_from_surface_angle(surface_angle: Option<Angle>) -> Option<Angle> {
@@ -980,21 +980,21 @@ mod tests {
         // Full driving sequence will be implemented
         // Return DeEnergised when no power
         fn retract_energise(&self) -> SolenoidStatus {
-            if self.motor_angle_request.is_some() {
-                if self.fppu_angle > self.motor_angle_request.unwrap() {
-                    return SolenoidStatus::Energised;
-                }
+            if self.motor_angle_request.is_some()
+                && self.fppu_angle > self.motor_angle_request.unwrap()
+            {
+                return SolenoidStatus::Energised;
             }
-            return SolenoidStatus::DeEnergised;
+            SolenoidStatus::DeEnergised
         }
 
         fn extend_energise(&self) -> SolenoidStatus {
-            if self.motor_angle_request.is_some() {
-                if self.fppu_angle < self.motor_angle_request.unwrap() {
-                    return SolenoidStatus::Energised;
-                }
+            if self.motor_angle_request.is_some()
+                && self.fppu_angle < self.motor_angle_request.unwrap()
+            {
+                return SolenoidStatus::Energised;
             }
-            return SolenoidStatus::DeEnergised;
+            SolenoidStatus::DeEnergised
         }
 
         fn pob_energise(&self) -> SolenoidStatus {
@@ -1007,7 +1007,7 @@ mod tests {
             {
                 return SolenoidStatus::DeEnergised;
             }
-            return SolenoidStatus::Energised;
+            SolenoidStatus::Energised
         }
     }
 
@@ -1104,13 +1104,11 @@ mod tests {
     }
     impl FlapSlatTestBed {
         fn new() -> Self {
-            let test_bed = Self {
+            Self {
                 test_bed: SimulationTestBed::<FlapSlatTestAircraft>::new(|context| {
                     FlapSlatTestAircraft::new(context)
                 }),
-            };
-
-            test_bed
+            }
         }
 
         // fn and_run(mut self) -> Self {
