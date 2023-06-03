@@ -89,6 +89,8 @@ export class Arinc429Word implements Arinc429WordData {
 }
 
 export class Arinc429Register implements Arinc429WordData {
+    word = 0;
+
     u32View = new Uint32Array(1);
 
     f32View = new Float32Array(this.u32View.buffer);
@@ -106,6 +108,7 @@ export class Arinc429Register implements Arinc429WordData {
     }
 
     set(word: number) {
+        this.word = word;
         this.u32View[0] = (word & 0xffffffff) >>> 0;
         this.ssm = (Math.trunc(word / 2 ** 32) & 0b11) as Arinc429SignStatusMatrix;
         this.value = this.f32View[0];

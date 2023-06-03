@@ -10,8 +10,10 @@ use crate::simulation::{InitContext, VariableIdentifier};
 
 pub struct LeapEngine {
     corrected_n1_id: VariableIdentifier,
-    corrected_n1: Ratio,
     corrected_n2_id: VariableIdentifier,
+    thrust_id: VariableIdentifier,
+
+    corrected_n1: Ratio,
     corrected_n2: Ratio,
 
     uncorrected_n2_id: VariableIdentifier,
@@ -20,6 +22,8 @@ pub struct LeapEngine {
     n2_speed: AngularVelocity,
     hydraulic_pump_output_speed: AngularVelocity,
     oil_pressure: Pressure,
+
+    net_thrust: Mass,
 }
 impl LeapEngine {
     // According to the Type Certificate Data Sheet of LEAP 1A26
@@ -36,14 +40,19 @@ impl LeapEngine {
     pub fn new(context: &mut InitContext, number: usize) -> LeapEngine {
         LeapEngine {
             corrected_n1_id: context.get_identifier(format!("TURB ENG CORRECTED N1:{}", number)),
-            corrected_n1: Ratio::new::<percent>(0.),
             corrected_n2_id: context.get_identifier(format!("TURB ENG CORRECTED N2:{}", number)),
-            corrected_n2: Ratio::new::<percent>(0.),
             uncorrected_n2_id: context.get_identifier(format!("ENGINE_N2:{}", number)),
+            thrust_id: context.get_identifier(format!("TURB ENG JET THRUST:{}", number)),
+
+            corrected_n1: Ratio::new::<percent>(0.),
+            corrected_n2: Ratio::new::<percent>(0.),
+
             uncorrected_n2: Ratio::new::<percent>(0.),
             n2_speed: AngularVelocity::new::<revolution_per_minute>(0.),
             hydraulic_pump_output_speed: AngularVelocity::new::<revolution_per_minute>(0.),
             oil_pressure: Pressure::new::<psi>(0.),
+
+            net_thrust: Mass::default(),
         }
     }
 
@@ -64,6 +73,7 @@ impl SimulationElement for LeapEngine {
         self.corrected_n1 = reader.read(&self.corrected_n1_id);
         self.corrected_n2 = reader.read(&self.corrected_n2_id);
         self.uncorrected_n2 = reader.read(&self.uncorrected_n2_id);
+        self.net_thrust = reader.read(&self.thrust_id);
         self.update_parameters();
     }
 }
@@ -94,5 +104,9 @@ impl Engine for LeapEngine {
     fn is_above_minimum_idle(&self) -> bool {
         self.uncorrected_n2
             >= Ratio::new::<percent>(LeapEngine::MIN_IDLE_N2_UNCORRECTED_THRESHOLD_PERCENT)
+    }
+
+    fn net_thrust(&self) -> Mass {
+        self.net_thrust
     }
 }

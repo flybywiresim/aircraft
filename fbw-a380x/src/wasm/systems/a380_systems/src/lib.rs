@@ -6,6 +6,7 @@ mod control_display_system;
 mod electrical;
 mod fuel;
 pub mod hydraulic;
+mod icing;
 mod navigation;
 mod pneumatic;
 mod power_consumption;
@@ -22,27 +23,30 @@ use electrical::{
     APU_START_MOTOR_BUS_TYPE,
 };
 use hydraulic::{A380Hydraulic, A380HydraulicOverheadPanel};
+use icing::Icing;
 use navigation::A380RadioAltimeters;
 use power_consumption::A380PowerConsumption;
-use systems::enhanced_gpwc::EnhancedGroundProximityWarningComputer;
-use systems::simulation::InitContext;
 use uom::si::{f64::Length, length::nautical_mile};
 
 use systems::{
+    accept_iterable,
     apu::{
         Aps3200ApuGenerator, Aps3200StartMotor, AuxiliaryPowerUnit, AuxiliaryPowerUnitFactory,
         AuxiliaryPowerUnitFireOverheadPanel, AuxiliaryPowerUnitOverheadPanel,
     },
     electrical::{Electricity, ElectricitySource, ExternalPowerSource},
     engine::engine_wing_flex::EnginesFlexiblePhysics,
-    engine::{leap_engine::LeapEngine, EngineFireOverheadPanel},
+    engine::{trent_engine::TrentEngine, EngineFireOverheadPanel},
+    enhanced_gpwc::EnhancedGroundProximityWarningComputer,
     hydraulic::brake_circuit::AutobrakePanel,
     landing_gear::{LandingGear, LandingGearControlInterfaceUnitSet},
     navigation::adirs::{
         AirDataInertialReferenceSystem, AirDataInertialReferenceSystemOverheadPanel,
     },
     shared::ElectricalBusType,
-    simulation::{Aircraft, SimulationElement, SimulationElementVisitor, UpdateContext},
+    simulation::{
+        Aircraft, InitContext, SimulationElement, SimulationElementVisitor, UpdateContext,
+    },
     structural_flex::elevator_flex::FlexibleElevators,
 };
 
@@ -51,7 +55,7 @@ pub struct A380 {
     adirs: AirDataInertialReferenceSystem,
     adirs_overhead: AirDataInertialReferenceSystemOverheadPanel,
     air_conditioning: A380AirConditioning,
-    apu: AuxiliaryPowerUnit<Aps3200ApuGenerator, Aps3200StartMotor>,
+    apu: AuxiliaryPowerUnit<Aps3200ApuGenerator, Aps3200StartMotor, 2>,
     apu_fire_overhead: AuxiliaryPowerUnitFireOverheadPanel,
     apu_overhead: AuxiliaryPowerUnitOverheadPanel,
     pneumatic_overhead: A380PneumaticOverheadPanel,
@@ -59,14 +63,14 @@ pub struct A380 {
     electrical_overhead: A380ElectricalOverheadPanel,
     emergency_electrical_overhead: A380EmergencyElectricalOverheadPanel,
     fuel: A380Fuel,
-    engine_1: LeapEngine,
-    engine_2: LeapEngine,
-    engine_3: LeapEngine,
-    engine_4: LeapEngine,
+    engine_1: TrentEngine,
+    engine_2: TrentEngine,
+    engine_3: TrentEngine,
+    engine_4: TrentEngine,
     engine_fire_overhead: EngineFireOverheadPanel<4>,
     electrical: A380Electrical,
     power_consumption: A380PowerConsumption,
-    ext_pwr: ExternalPowerSource,
+    ext_pwrs: [ExternalPowerSource; 4],
     lgcius: LandingGearControlInterfaceUnitSet,
     hydraulic: A380Hydraulic,
     hydraulic_overhead: A380HydraulicOverheadPanel,
@@ -78,6 +82,7 @@ pub struct A380 {
     elevators_flex_physics: FlexibleElevators,
     cds: A380ControlDisplaySystem,
     egpwc: EnhancedGroundProximityWarningComputer,
+    icing_simulation: Icing,
 }
 impl A380 {
     pub fn new(context: &mut InitContext) -> A380 {
@@ -86,12 +91,11 @@ impl A380 {
             adirs: AirDataInertialReferenceSystem::new(context),
             adirs_overhead: AirDataInertialReferenceSystemOverheadPanel::new(context),
             air_conditioning: A380AirConditioning::new(context),
-            apu: AuxiliaryPowerUnitFactory::new_aps3200(
+            apu: AuxiliaryPowerUnitFactory::new_pw980(
                 context,
-                1,
                 APU_START_MOTOR_BUS_TYPE,
-                ElectricalBusType::DirectCurrentBattery,
-                ElectricalBusType::DirectCurrentBattery,
+                ElectricalBusType::DirectCurrentEssential,
+                ElectricalBusType::DirectCurrentEssential,
             ),
             apu_fire_overhead: AuxiliaryPowerUnitFireOverheadPanel::new(context),
             apu_overhead: AuxiliaryPowerUnitOverheadPanel::new(context),
@@ -100,14 +104,14 @@ impl A380 {
             electrical_overhead: A380ElectricalOverheadPanel::new(context),
             emergency_electrical_overhead: A380EmergencyElectricalOverheadPanel::new(context),
             fuel: A380Fuel::new(context),
-            engine_1: LeapEngine::new(context, 1),
-            engine_2: LeapEngine::new(context, 2),
-            engine_3: LeapEngine::new(context, 3),
-            engine_4: LeapEngine::new(context, 4),
+            engine_1: TrentEngine::new(context, 1),
+            engine_2: TrentEngine::new(context, 2),
+            engine_3: TrentEngine::new(context, 3),
+            engine_4: TrentEngine::new(context, 4),
             engine_fire_overhead: EngineFireOverheadPanel::new(context),
             electrical: A380Electrical::new(context),
             power_consumption: A380PowerConsumption::new(context),
-            ext_pwr: ExternalPowerSource::new(context),
+            ext_pwrs: [1, 2, 3, 4].map(|i| ExternalPowerSource::new(context, i)),
             lgcius: LandingGearControlInterfaceUnitSet::new(
                 context,
                 ElectricalBusType::DirectCurrentEssential,
@@ -136,6 +140,8 @@ impl A380 {
                 ],
                 1,
             ),
+
+            icing_simulation: Icing::new(context),
         }
     }
 }
@@ -153,9 +159,10 @@ impl Aircraft for A380 {
             // This will be replaced when integrating the whole electrical system.
             // For now we use the same logic as found in the JavaScript code; ignoring whether or not
             // the engine generators are supplying electricity.
-            self.electrical_overhead.apu_generator_is_on()
-                && !(self.electrical_overhead.external_power_is_on()
-                    && self.electrical_overhead.external_power_is_available()),
+            (self.electrical_overhead.apu_generator_is_on(1)
+                || self.electrical_overhead.apu_generator_is_on(2))
+                && !(self.electrical_overhead.external_power_is_on(1)
+                    && self.electrical_overhead.external_power_is_available(1)),
             self.pneumatic.apu_bleed_air_valve(),
             self.fuel.left_inner_tank_has_fuel_remaining(),
         );
@@ -163,14 +170,19 @@ impl Aircraft for A380 {
         self.electrical.update(
             context,
             electricity,
-            &self.ext_pwr,
+            &self.ext_pwrs,
             &self.electrical_overhead,
             &self.emergency_electrical_overhead,
             &mut self.apu,
-            &self.apu_overhead,
             &self.engine_fire_overhead,
-            [&self.engine_1, &self.engine_2],
+            [
+                &self.engine_1,
+                &self.engine_2,
+                &self.engine_3,
+                &self.engine_4,
+            ],
             self.lgcius.lgciu1(),
+            &self.adirs,
         );
 
         self.electrical_overhead
@@ -188,7 +200,7 @@ impl Aircraft for A380 {
             context,
             &self.landing_gear,
             self.hydraulic.gear_system(),
-            self.ext_pwr.output_potential().is_powered(),
+            self.ext_pwrs[0].output_potential().is_powered(),
         );
 
         self.radio_altimeters.update(context);
@@ -264,7 +276,7 @@ impl Aircraft for A380 {
         );
         self.cds.update();
 
-        self.egpwc.update(&self.adirs, self.lgcius.lgciu1());
+        self.icing_simulation.update(context);
     }
 }
 impl SimulationElement for A380 {
@@ -288,7 +300,7 @@ impl SimulationElement for A380 {
         self.engine_fire_overhead.accept(visitor);
         self.electrical.accept(visitor);
         self.power_consumption.accept(visitor);
-        self.ext_pwr.accept(visitor);
+        accept_iterable!(self.ext_pwrs, visitor);
         self.lgcius.accept(visitor);
         self.radio_altimeters.accept(visitor);
         self.autobrake_panel.accept(visitor);
@@ -300,6 +312,7 @@ impl SimulationElement for A380 {
         self.engines_flex_physics.accept(visitor);
         self.cds.accept(visitor);
         self.egpwc.accept(visitor);
+        self.icing_simulation.accept(visitor);
 
         visitor.visit(self);
     }
