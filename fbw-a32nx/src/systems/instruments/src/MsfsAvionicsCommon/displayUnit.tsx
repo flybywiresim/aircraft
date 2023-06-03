@@ -6,7 +6,10 @@ import { DisplayVars } from './SimVarTypes';
 import './common.scss';
 
 export const getDisplayIndex = () => {
-    const url = document.querySelectorAll('vcockpit-panel > *')[0].getAttribute('url');
+    const url = Array.from(document.querySelectorAll('vcockpit-panel > *'))
+        .find((it) => it.tagName.toLowerCase() !== 'wasm-instrument')
+        .getAttribute('url');
+
     return url ? parseInt(url.substring(url.length - 1), 10) : 0;
 };
 
