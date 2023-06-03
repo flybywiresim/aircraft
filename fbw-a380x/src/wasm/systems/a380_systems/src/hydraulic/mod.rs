@@ -91,7 +91,7 @@ impl A380FlapFactory {
     const DRIVE_LEVER_GEAR_RATIO: f64 = 314.98;
     // Flaps related
     const FLAP_FPPU_TO_SURFACE_ANGLE_BREAKPTS: [f64; 12] = [
-        0., 35.66, 69.32, 89.7, 105.29, 120.22, 145.51, 168.35, 189.87, 210.69, 231.25, 251.97,
+        0., 35.66, 69.32, 89.7, 105.29, 120.22, 145.51, 168.35, 189.87, 210.69, 231.23, 251.97,
     ];
     const FLAP_FPPU_TO_SURFACE_ANGLE_DEGREES: [f64; 12] =
         [0., 0., 2.5, 5., 7.5, 10., 15., 20., 25., 30., 35., 40.];

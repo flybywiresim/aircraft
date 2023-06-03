@@ -118,6 +118,7 @@ impl HydraulicMotor {
                     .get_max_flow()
                     .min(self.max_flow)
                     .get::<gallon_per_minute>();
+                // 231 is to obtain speed in rpm. Check link above
                 return AngularVelocity::new::<revolution_per_minute>(
                     correction_factor * flow * 231. / displacement,
                 );
@@ -486,6 +487,9 @@ impl<const N: usize> FlapSlatAssy<N> {
         self.fppu_speed.abs().get::<degree_per_second>() > Self::SYSTEM_JAM_SPEED_DEGREE_PER_SECOND
     }
 
+    // In theory there is one PCU per system (one for flaps, one for slats)
+    // containing two motors and two valve blocks each connected to a single SFCC.
+    // For ease of object management, I have split left_pcu and right_pcu
     pub fn update(
         &mut self,
         context: &UpdateContext,
@@ -859,7 +863,7 @@ mod tests {
     const MAX_CIRCUIT_PRESSURE_PSI: f64 = 3000.;
 
     const FLAP_FPPU_TO_SURFACE_ANGLE_BREAKPTS: [f64; 12] = [
-        0., 35.66, 69.32, 89.7, 105.29, 120.22, 145.51, 168.35, 189.87, 210.69, 231.25, 251.97,
+        0., 35.66, 69.32, 89.7, 105.29, 120.22, 145.51, 168.35, 189.87, 210.69, 231.23, 251.97,
     ];
     const FLAP_FPPU_TO_SURFACE_ANGLE_DEGREES: [f64; 12] =
         [0., 0., 2.5, 5., 7.5, 10., 15., 20., 25., 30., 35., 40.];
