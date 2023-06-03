@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import {
     ConsumerSubject,
     DisplayComponent,
@@ -39,7 +43,7 @@ export class OancMovingModeOverlay extends DisplayComponent<OancMapOverlayProps>
             <svg
                 class="oanc-svg"
                 viewBox={`0 0 ${OANC_RENDER_WIDTH * 2} ${OANC_RENDER_HEIGHT * 2}`}
-                style="position: absolute; width: 1536px; height: 1536px; left: -384px; top: -384px; z-index: 1000; pointer-events: none;"
+                style="position: absolute; width: 1536px; height: 1536px; left: -384px; top: -384px; pointer-events: none; z-index: 99;"
             >
                 <RoseModeUnderlay
                     bus={this.props.bus}
@@ -86,7 +90,7 @@ export class OancStaticModeOverlay extends DisplayComponent<OancMapOverlayProps>
             <svg
                 class="oanc-svg"
                 viewBox={`0 0 ${OANC_RENDER_WIDTH * 2} ${OANC_RENDER_HEIGHT * 2}`}
-                style="position: absolute; width: 1536px; height: 1536px; left: -384px; top: -384px; z-index: 1000; pointer-events: none;"
+                style="position: absolute; width: 1536px; height: 1536px; left: -384px; top: -384px; pointer-events: none;"
             >
                 <RoseModeUnderlay
                     bus={this.props.bus}

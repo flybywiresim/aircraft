@@ -1,3 +1,22 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
+import { MathUtils } from '@shared/MathUtils';
+import { clampAngle } from 'msfs-geo';
+
+export function midPoint(x1: number, y1: number, x2: number, y2: number): [number, number] {
+    return [x1 + (x2 - x1) / 2, y1 + (y2 - y1) / 2];
+}
+
+export function pointDistance(x1: number, y1: number, x2: number, y2: number): number {
+    return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+}
+
+export function pointAngle(x1: number, y1: number, x2: number, y2: number): number {
+    return clampAngle(Math.atan2(y2 - y1, x2 - x1) * MathUtils.RADIANS_TO_DEGREES);
+}
+
 // Code adapted from https://www.jeffreythompson.org/collision-detection/line-rect.php
 
 export function intersectLineWithRectangle(x1: number, y1: number, x2: number, y2: number, rx: number, ry: number, rw: number, rh: number): [number, number][] {

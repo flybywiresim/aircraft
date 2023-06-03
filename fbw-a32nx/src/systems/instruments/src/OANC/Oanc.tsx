@@ -1,9 +1,33 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import {
-    ArraySubject, ComponentProps, ConsumerSubject, DebounceTimer, DisplayComponent, EventBus, FSComponent, MappedSubject,
-    Subject, SubscribableArrayEventType, VNode,
+    ComponentProps,
+    ConsumerSubject,
+    DebounceTimer,
+    DisplayComponent,
+    EventBus,
+    FSComponent,
+    MappedSubject,
+    Subject,
+    SubscribableArrayEventType,
+    VNode,
 } from '@microsoft/msfs-sdk';
-import { BBox, bbox, centroid, Feature, featureCollection, FeatureCollection, Geometry, LineString, Point, Polygon, Position } from '@turf/turf';
-import { clampAngle, Coordinates } from 'msfs-geo';
+import {
+    BBox,
+    bbox,
+    centroid,
+    Feature,
+    featureCollection,
+    FeatureCollection,
+    Geometry,
+    LineString,
+    Point,
+    Polygon,
+    Position,
+} from '@turf/turf';
+import { bearingTo, clampAngle, Coordinates, distanceTo } from 'msfs-geo';
 import { MathUtils } from '@shared/MathUtils';
 import { reciprocal } from '@fmgc/guidance/lnav/CommonGeometry';
 import { EfisNdMode } from '@shared/NavigationDisplay';
@@ -14,6 +38,8 @@ import { OancMovingModeOverlay, OancStaticModeOverlay } from './OancMovingModeOv
 import { FcuSimVars } from '../MsfsAvionicsCommon/providers/FcuBusSimVarPublisher';
 import { OancAircraftIcon } from './OancAircraftIcon';
 import { OancLabelManager } from './OancLabelManager';
+import { OancPositionComputer } from './OancPositionComputer';
+import { Layer } from '../MsfsAvionicsCommon/Layer';
 
 export const OANC_RENDER_WIDTH = 768;
 export const OANC_RENDER_HEIGHT = 768;
@@ -28,6 +54,7 @@ const LABEL_FEATURE_TYPES = [
     FeatureType.Taxiway,
     FeatureType.VerticalPolygonObject,
     FeatureType.Centerline,
+    FeatureType.ParkingStandLocation,
 ];
 
 const LABEL_POLYGON_STRUCTURE_TYPES = [
@@ -66,7 +93,7 @@ export interface Label {
     style: LabelStyle
     position: Position,
     rotation: number | undefined,
-    associatedFeature: Feature,
+    associatedFeature: Feature<Geometry, AmdbProperties>,
 }
 
 export interface OancProps extends ComponentProps {
@@ -76,9 +103,15 @@ export interface OancProps extends ComponentProps {
 export class Oanc extends DisplayComponent<OancProps> {
     private readonly waitScreenRef = FSComponent.createRef<HTMLDivElement>();
 
-    private readonly animationContainerRef = FSComponent.createRef<HTMLDivElement>();
+    private readonly animationContainerRef = [
+        FSComponent.createRef<HTMLDivElement>(),
+        FSComponent.createRef<HTMLDivElement>(),
+    ];
 
-    private readonly panContainerRef = FSComponent.createRef<HTMLDivElement>();
+    private readonly panContainerRef = [
+        FSComponent.createRef<HTMLDivElement>(),
+        FSComponent.createRef<HTMLDivElement>(),
+    ];
 
     private readonly layerCanvasRefs = [
         FSComponent.createRef<HTMLCanvasElement>(),
@@ -108,7 +141,9 @@ export class Oanc extends DisplayComponent<OancProps> {
 
     private readonly zoomOutButtonRef = FSComponent.createRef<HTMLButtonElement>();
 
-    private data: AmdbFeatureCollection | undefined;
+    private readonly positionTextRef = FSComponent.createRef<HTMLSpanElement>();
+
+    public data: AmdbFeatureCollection | undefined;
 
     private dataBbox: BBox | undefined;
 
@@ -121,6 +156,10 @@ export class Oanc extends DisplayComponent<OancProps> {
     private readonly dataAirportIcao = Subject.create('');
 
     private readonly dataAirportIata = Subject.create('');
+
+    private readonly positionString = Subject.create('');
+
+    private readonly positionVisible = Subject.create(false);
 
     private readonly airportInfoLine1 = this.dataAirportName.map((it) => it.toUpperCase());
 
@@ -138,6 +177,8 @@ export class Oanc extends DisplayComponent<OancProps> {
 
     private labelManager = new OancLabelManager(this);
 
+    private positionComputer = new OancPositionComputer(this);
+
     private showLabels = true;
 
     public doneDrawing = false;
@@ -154,9 +195,9 @@ export class Oanc extends DisplayComponent<OancProps> {
 
     private readonly isMapPanned = MappedSubject.create(([panX, panY]) => panX !== 0 || panY !== 0, this.panOffsetX, this.panOffsetY);
 
-    private modeAnimationOffsetX = Subject.create(0);
+    public modeAnimationOffsetX = Subject.create(0);
 
-    private modeAnimationOffsetY = Subject.create(0);
+    public modeAnimationOffsetY = Subject.create(0);
 
     private modeAnimationMapNorthUp = Subject.create(false);
 
@@ -175,6 +216,8 @@ export class Oanc extends DisplayComponent<OancProps> {
     private readonly viewBbox: BBox = [0, 0, 0, 0];
 
     public readonly ppos: Coordinates = { lat: 0, long: 0 };
+
+    public readonly projectedPpos: Position = [0, 0];
 
     private readonly planeTrueHeading = Subject.create(0);
 
@@ -258,14 +301,18 @@ export class Oanc extends DisplayComponent<OancProps> {
         }, true);
 
         MappedSubject.create(this.panOffsetX, this.panOffsetY).sub(([x, y]) => {
-            this.panContainerRef.instance.style.transform = `translate(${x}px, ${y}px)`;
+            this.panContainerRef[0].instance.style.transform = `translate(${x}px, ${y}px)`;
+            this.panContainerRef[1].instance.style.transform = `translate(${x}px, ${y}px)`;
 
             this.labelManager.reflowLabels();
         });
 
-        MappedSubject.create(this.modeAnimationOffsetX, this.modeAnimationOffsetY, this.modeAnimationMapNorthUp).sub(([x, y]) => {
-            this.animationContainerRef.instance.style.transform = `translate(${x}px, ${y}px)`;
-        });
+        MappedSubject.create(([x, y]) => {
+            this.animationContainerRef[0].instance.style.transform = `translate(${x}px, ${y}px)`;
+            this.animationContainerRef[1].instance.style.transform = `translate(${x}px, ${y}px)`;
+        }, this.modeAnimationOffsetX, this.modeAnimationOffsetY);
+
+        this.positionVisible.sub((visible) => this.positionTextRef.instance.style.visibility = visible ? 'inherit' : 'hidden');
     }
 
     private async loadAirportMap(icao: string) {
@@ -294,7 +341,7 @@ export class Oanc extends DisplayComponent<OancProps> {
         this.dataBbox = bbox(airportMap);
 
         this.dataAirportName.set(referencePoint.properties.name);
-        this.dataAirportIcao.set('ESMS');
+        this.dataAirportIcao.set(icao);
         this.dataAirportIata.set(referencePoint.properties.iata);
 
         this.dataCenterCoordinates = { lat: refPointLat, long: refPointLong };
@@ -321,40 +368,20 @@ export class Oanc extends DisplayComponent<OancProps> {
     }
 
     private sortDataIntoLayers(data: FeatureCollection<Geometry, AmdbProperties>) {
-        this.layerFeatures[0].features.push(
-            ...data.features.filter((it) => it.properties.feattype === FeatureType.Taxiway),
-            ...data.features.filter((it) => it.properties.feattype === FeatureType.ServiceRoad),
-            ...data.features.filter((it) => it.properties.feattype === FeatureType.TaxiwayShoulder),
-        );
-        this.layerFeatures[1].features.push(
-            ...data.features.filter((it) => it.properties.feattype === FeatureType.ApronElement),
-            ...data.features.filter((it) => it.properties.feattype === FeatureType.ParkingStandArea),
-            ...data.features.filter((it) => it.properties.feattype === FeatureType.VerticalPolygonObject && it.properties.plysttyp === PolygonStructureType.TerminalBuilding),
-        );
-        this.layerFeatures[2].features.push(
-            ...data.features.filter((it) => it.properties.feattype === FeatureType.RunwayElement),
-            ...data.features.filter((it) => it.properties.feattype === FeatureType.RunwayShoulder),
-            ...data.features.filter((it) => it.properties.feattype === FeatureType.Blastpad),
-            ...data.features.filter((it) => it.properties.feattype === FeatureType.RunwayIntersection),
-            ...data.features.filter((it) => it.properties.feattype === FeatureType.RunwayMarking),
-        );
-        this.layerFeatures[3].features.push(
-            ...data.features.filter((it) => it.properties.feattype === FeatureType.TaxiwayGuidanceLine),
-            ...data.features.filter((it) => it.properties.feattype === FeatureType.ExitLine),
-            ...data.features.filter((it) => it.properties.feattype === FeatureType.TaxiwayHoldingPosition),
-        );
-        this.layerFeatures[4].features.push(
-            ...data.features.filter((it) => it.properties.feattype === FeatureType.TaxiwayGuidanceLine),
-            ...data.features.filter((it) => it.properties.feattype === FeatureType.ExitLine),
-        );
-        this.layerFeatures[5].features.push(
-            ...data.features.filter((it) => it.properties.feattype === FeatureType.RunwayElement),
-            ...data.features.filter((it) => it.properties.feattype === FeatureType.RunwayIntersection),
-            ...data.features.filter((it) => it.properties.feattype === FeatureType.RunwayDisplacedArea),
-        );
-        this.layerFeatures[6].features.push(
-            ...data.features.filter((it) => it.properties.feattype === FeatureType.StandGuidanceTaxiline),
-        );
+        for (let i = 0; i < this.layerFeatures.length; i++) {
+            const layer = this.layerFeatures[i];
+
+            const layerFeatureTypes = STYLE_DATA[i].reduce((acc, rule) => [...acc, ...rule.forFeatureTypes], [] as FeatureType[]);
+            const layerPolygonStructureTypes = STYLE_DATA[i].reduce((acc, rule) => [...acc, ...(rule.forPolygonStructureTypes ?? [])], [] as PolygonStructureType[]);
+            const layerData = data.features.filter((it) => {
+                if (it.properties.feattype === FeatureType.VerticalPolygonObject) {
+                    return layerFeatureTypes.includes(FeatureType.VerticalPolygonObject) && layerPolygonStructureTypes.includes(it.properties.plysttyp);
+                }
+                return layerFeatureTypes.includes(it.properties.feattype);
+            });
+
+            layer.features.push(...layerData);
+        }
     }
 
     private generateAllLabels(data: FeatureCollection<Geometry, AmdbProperties>) {
@@ -415,7 +442,7 @@ export class Oanc extends DisplayComponent<OancProps> {
                 const runwayLineBearing = clampAngle(-Math.atan2(runwayLineStart[0] - runwayLineEnd[0], runwayLineStart[1] - runwayLineEnd[1]) * MathUtils.RADIANS_TO_DEGREES + 90);
 
                 const label1: Label = {
-                    text: `${designators[1]}L`,
+                    text: `${designators[1]}`,
                     style: LabelStyle.RunwayEnd,
                     position: runwayLineStart,
                     rotation: reciprocal(runwayLineBearing),
@@ -423,7 +450,7 @@ export class Oanc extends DisplayComponent<OancProps> {
                 };
 
                 const label2: Label = {
-                    text: `${designators[0]}R`,
+                    text: `${designators[0]}`,
                     style: LabelStyle.RunwayEnd,
                     position: runwayLineEnd,
                     rotation: runwayLineBearing,
@@ -443,10 +470,31 @@ export class Oanc extends DisplayComponent<OancProps> {
                 this.labelManager.visibleLabels.insert(label2);
                 this.labelManager.visibleLabels.insert(label3);
             } else {
-                const text = feature.properties.idlin ?? feature.properties.ident ?? undefined;
+                const text = feature.properties.idlin ?? feature.properties.idstd ?? feature.properties.ident ?? undefined;
+
+                if (feature.properties.feattype === FeatureType.ParkingStandLocation && text !== undefined && text.includes('_')) {
+                    continue;
+                }
 
                 if (text !== undefined) {
-                    const style = feature.properties.feattype === FeatureType.VerticalPolygonObject ? LabelStyle.TerminalBuilding : LabelStyle.Taxiway;
+                    let style: LabelStyle.TerminalBuilding | LabelStyle.Taxiway;
+                    switch (feature.properties.feattype) {
+                    case FeatureType.VerticalPolygonObject:
+                        style = LabelStyle.TerminalBuilding;
+                        break;
+                    case FeatureType.ParkingStandLocation:
+                        style = LabelStyle.TerminalBuilding;
+                        break;
+                    default:
+                        style = LabelStyle.Taxiway;
+                        break;
+                    }
+
+                    const existing = this.labelManager.labels.find((it) => it.text === text);
+
+                    if (feature.properties.feattype === FeatureType.ParkingStandLocation && existing && feature.properties.termref === existing.associatedFeature.properties.termref) {
+                        continue;
+                    }
 
                     const label = {
                         text: text.toUpperCase(),
@@ -469,6 +517,18 @@ export class Oanc extends DisplayComponent<OancProps> {
 
     private lastTime = 0;
 
+    private projectCoordinates(coordinates: Coordinates): [number, number] {
+        const bearing = bearingTo(this.dataCenterCoordinates, coordinates);
+        const distance = distanceTo(this.dataCenterCoordinates, coordinates);
+
+        const xNm = distance * Math.cos(bearing * MathUtils.DEGREES_TO_RADIANS);
+        const yNm = distance * Math.sin(bearing * MathUtils.DEGREES_TO_RADIANS);
+
+        const nmToPx = 1_000 / 0.539957;
+
+        return [xNm * nmToPx, yNm * nmToPx];
+    }
+
     public Update() {
         const now = Date.now();
         const deltaTime = (now - this.lastTime) / 1_000;
@@ -481,6 +541,15 @@ export class Oanc extends DisplayComponent<OancProps> {
 
         if (!this.data) {
             return;
+        }
+
+        const position = this.positionComputer.computePosition();
+
+        if (position) {
+            this.positionVisible.set(true);
+            this.positionString.set(position);
+        } else {
+            this.positionVisible.set(false);
         }
 
         const mapTargetHeading = this.modeAnimationMapNorthUp.get() ? 0 : this.planeTrueHeading.get();
@@ -512,6 +581,10 @@ export class Oanc extends DisplayComponent<OancProps> {
 
         // eslint-disable-next-line prefer-const
         let [offsetX, offsetY] = this.mapParams.coordinatesToXYy(this.ppos);
+
+        const [projectedX, projectedY] = this.projectCoordinates(this.ppos);
+        this.projectedPpos[0] = projectedX;
+        this.projectedPpos[1] = projectedY;
 
         // TODO figure out how to not need this
         offsetY *= -1;
@@ -551,6 +624,8 @@ export class Oanc extends DisplayComponent<OancProps> {
             this.doneDrawing = true;
 
             this.waitScreenRef.instance.style.visibility = 'hidden';
+
+            this.labelManager.reflowLabels();
 
             return;
         }
@@ -649,7 +724,7 @@ export class Oanc extends DisplayComponent<OancProps> {
 
     render(): VNode | null {
         return (
-            <div class="oanc-container">
+            <div class="oanc-container" style={`width: ${OANC_RENDER_WIDTH}px; height: ${OANC_RENDER_HEIGHT}px; overflow: hidden`}>
                 <div ref={this.waitScreenRef} class="oanc-waiting-screen">
                     PLEASE WAIT
                 </div>
@@ -689,8 +764,8 @@ export class Oanc extends DisplayComponent<OancProps> {
                     </defs>
                 </svg>
 
-                <div ref={this.animationContainerRef} style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}>
-                    <div ref={this.panContainerRef} style="position: absolute;">
+                <div ref={this.animationContainerRef[0]} style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}>
+                    <div ref={this.panContainerRef[0]} style="position: absolute;">
                         <div ref={this.layerCanvasScaleContainerRefs[0]} style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}>
                             <canvas ref={this.layerCanvasRefs[0]} width={this.canvasWidth} height={this.canvasHeight} />
                         </div>
@@ -712,6 +787,15 @@ export class Oanc extends DisplayComponent<OancProps> {
                         <div ref={this.layerCanvasScaleContainerRefs[6]} style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear;`}>
                             <canvas ref={this.layerCanvasRefs[6]} width={this.canvasWidth} height={this.canvasHeight} />
                         </div>
+
+                        <OancAircraftIcon x={this.aircraftX} y={this.aircraftY} rotation={this.aircraftRotation} />
+                    </div>
+                </div>
+
+                <div ref={this.labelContainerRef} style={`position: absolute; width: ${OANC_RENDER_WIDTH}px; height: ${OANC_RENDER_HEIGHT}px;`} />
+
+                <div ref={this.animationContainerRef[1]} style={`position: absolute; transition: transform ${ZOOM_TRANSITION_TIME_MS}ms linear; pointer-events: none;`}>
+                    <div ref={this.panContainerRef[1]} style="position: absolute;">
                         <OancMovingModeOverlay
                             bus={this.props.bus}
                             oansRange={this.zoomLevelIndex.map((it) => ZOOM_LEVELS[it])}
@@ -719,20 +803,36 @@ export class Oanc extends DisplayComponent<OancProps> {
                             rotation={this.interpolatedMapHeading}
                             isMapPanned={this.isMapPanned}
                         />
-
-                        <OancAircraftIcon x={this.aircraftX} y={this.aircraftY} rotation={this.aircraftRotation} />
                     </div>
                 </div>
 
-                <div ref={this.labelContainerRef} style={`position: absolute; width: ${OANC_RENDER_WIDTH}px; height: ${OANC_RENDER_HEIGHT}px; pointer-events: auto;`} />
+                <div ref={this.cursorSurfaceRef} style={`position: absolute; width: ${OANC_RENDER_WIDTH}px; height: ${OANC_RENDER_HEIGHT}px; pointer-events: none;`} />
 
                 <div
-                    style={`position: absolute; width: ${OANC_RENDER_WIDTH}px; height: ${OANC_RENDER_HEIGHT}px; z-index: 99; pointer-events: none`}
+                    style={`position: absolute; width: ${OANC_RENDER_WIDTH}px; height: ${OANC_RENDER_HEIGHT}px; pointer-events: none`}
                 >
                     <div class="oanc-top-mask" />
-                    <div class="oanc-bottom-mask" />
-                    {/* <span class="oanc-airport-info" id="oanc-airport-info-line1">{this.airportInfoLine1}</span> */}
-                    {/* <span class="oanc-airport-info" id="oanc-airport-info-line2">{this.airportInfoLine2}</span> */}
+                    <div class="oanc-bottom-mask">
+                        <span ref={this.positionTextRef} class="oanc-position">{this.positionString}</span>
+                    </div>
+
+                    {/* TODO this is rendered by ND */}
+                    <span class="oanc-speed-info" id="oanc-speed-info-line1">
+                        <span id="oanc-speed-info-1">GS</span>
+                        <span id="oanc-speed-info-2">0</span>
+                        <span id="oanc-speed-info-3">TAS</span>
+                        <span id="oanc-speed-info-4">---</span>
+                    </span>
+
+                    {/* TODO this is rendered by ND */}
+                    <span class="oanc-wind-info">
+                        <span id="oanc-wind-info-1">---</span>
+                        <span id="oanc-wind-info-2">/</span>
+                        <span id="oanc-wind-info-3">---</span>
+                    </span>
+
+                    <span class="oanc-airport-info" id="oanc-airport-info-line1">{this.airportInfoLine1}</span>
+                    <span class="oanc-airport-info" id="oanc-airport-info-line2">{this.airportInfoLine2}</span>
 
                     {/* <button ref={this.zoomInButtonRef} type="button" class="oanc-button">+</button> */}
                     {/* <button ref={this.zoomOutButtonRef} type="button" class="oanc-button">-</button> */}
@@ -745,8 +845,6 @@ export class Oanc extends DisplayComponent<OancProps> {
                     rotation={this.interpolatedMapHeading}
                     isMapPanned={this.isMapPanned}
                 />
-
-                <div ref={this.cursorSurfaceRef} style={`position: absolute; width: ${OANC_RENDER_WIDTH}px; height: ${OANC_RENDER_HEIGHT}px;`} />
             </div>
         );
     }
