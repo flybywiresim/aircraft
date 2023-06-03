@@ -2,6 +2,7 @@ import { FSComponent, DisplayComponent, MappedSubject, Subject, Subscribable, VN
 import { DmcEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 import { ArincEventBus } from 'instruments/src/MsfsAvionicsCommon/ArincEventBus';
 import { FcuSimVars } from 'instruments/src/MsfsAvionicsCommon/providers/FcuBusPublisher';
+import { EfisNdMode } from '@shared/NavigationDisplay';
 import { NDSimvars } from '../../NDSimvarPublisher';
 import { getSmallestAngle } from '../../../PFD/PFDUtils';
 import { Arinc429ConsumerSubject } from '../../../MsfsAvionicsCommon/Arinc429ConsumerSubject';
@@ -9,6 +10,7 @@ import { Arinc429ConsumerSubject } from '../../../MsfsAvionicsCommon/Arinc429Con
 export interface LsCourseBugProps {
     bus: ArincEventBus,
     rotationOffset: Subscribable<number>,
+    mode: Subscribable<EfisNdMode>,
 }
 
 export class LsCourseBug extends DisplayComponent<LsCourseBugProps> {
@@ -27,6 +29,10 @@ export class LsCourseBug extends DisplayComponent<LsCourseBugProps> {
         this.diffSubject,
         this.efisLsActive,
     );
+
+    private readonly transformSubject = MappedSubject.create(([diff, ndMode]) => {
+        return `rotate(${diff} 384 ${ndMode === EfisNdMode.ARC ? 620 : 384})`;
+    }, this.diffSubject, this.props.mode);
 
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
@@ -70,7 +76,7 @@ export class LsCourseBug extends DisplayComponent<LsCourseBugProps> {
             <>
                 <g
                     visibility={this.bugShown.map((v) => (v ? '' : 'hidden'))}
-                    transform={this.diffSubject.map((diff) => `rotate(${diff} 384 620)`)}
+                    transform={this.transformSubject}
                 >
                     <line x1={376} y1={114} x2={392} y2={114} class="rounded shadow" stroke-width={2.5} />
                     <line x1={384} y1={122} x2={384} y2={74} class="rounded shadow" stroke-width={2.5} />

@@ -49,7 +49,7 @@ export class PseudoWaypointLayer implements MapLayer<NdSymbol> {
                 context.translate(384, 620);
                 context.rotate(rotate * Math.PI / 180);
 
-                this.paintPseudoWaypoint(false, context, 0, -dy, symbol, mapParameters, rotate);
+                this.paintPseudoWaypoint(false, context, 0, -dy, symbol, mapParameters);
             } else {
                 const [x, y] = mapParameters.coordinatesToXYy(symbol.location);
                 const rx = x + mapWidth / 2;

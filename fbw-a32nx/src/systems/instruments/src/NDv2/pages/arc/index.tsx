@@ -193,6 +193,7 @@ export class ArcModePage extends NDPage<ArcModePageProps> {
                 <LsCourseBug
                     bus={this.props.bus}
                     rotationOffset={this.planeRotation}
+                    mode={Subject.create(EfisNdMode.ARC)}
                 />
 
                 <Flag visible={this.mapFlagShown} x={384} y={320.6} class="Red FontLarge">MAP NOT AVAIL</Flag>

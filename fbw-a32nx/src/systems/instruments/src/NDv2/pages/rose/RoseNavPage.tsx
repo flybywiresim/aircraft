@@ -134,6 +134,7 @@ export class RoseNavPage extends RoseMode {
                 <LsCourseBug
                     bus={this.props.bus}
                     rotationOffset={this.planeRotation}
+                    mode={Subject.create(EfisNdMode.ROSE_NAV)}
                 />
 
                 <Flag visible={this.mapFlagShown} x={384} y={320.6} class="Red FontLarge">MAP NOT AVAIL</Flag>
