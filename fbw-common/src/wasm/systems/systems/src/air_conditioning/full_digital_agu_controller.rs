@@ -52,14 +52,14 @@ impl OperatingChannel {
         )
     }
 
-    fn switch(&mut self) -> Self {
+    fn switch(&mut self) {
         // At the moment switching channels always clears the fault in the second channel
         // TODO: This needs to be improved so we can have dual channel failures
-        if matches!(self, OperatingChannel::FDACChannelOne(_)) {
+        *self = if matches!(self, OperatingChannel::FDACChannelOne(_)) {
             OperatingChannel::FDACChannelTwo(OperatingChannelFault::NoFault)
         } else {
             OperatingChannel::FDACChannelOne(OperatingChannelFault::NoFault)
-        }
+        };
     }
 }
 
