@@ -1275,11 +1275,8 @@ impl PackComplex {
         from: &mut impl PneumaticContainer,
         pack_flow_valve_signals: &impl PackFlowControllers,
     ) {
-        self.pack_flow_valve.update_open_amount(
-            pack_flow_valve_signals
-                .pack_flow_controller(self.engine_number)
-                .as_ref(),
-        );
+        self.pack_flow_valve
+            .update_open_amount(pack_flow_valve_signals.pack_flow_controller(self.engine_number));
 
         self.pack_flow_valve
             .update_move_fluid(context, from, &mut self.pack_container);
@@ -1411,9 +1408,7 @@ impl SimulationElement for CrossBleedValve {
 #[cfg(test)]
 mod tests {
     use systems::{
-        air_conditioning::{
-            AdirsToAirCondInterface, PackFlowControllers, PackFlowValveSignal, ZoneType,
-        },
+        air_conditioning::{AdirsToAirCondInterface, PackFlowControllers, ZoneType},
         electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
         engine::leap_engine::LeapEngine,
         failures::FailureType,
@@ -1493,10 +1488,10 @@ mod tests {
         }
     }
     impl PackFlowControllers for TestAirConditioning {
-        fn pack_flow_controller(
-            &self,
-            pack_id: usize,
-        ) -> Box<dyn ControllerSignal<PackFlowValveSignal>> {
+        type PackFlowControllerSignal =
+            <A320AirConditioningSystem as PackFlowControllers>::PackFlowControllerSignal;
+
+        fn pack_flow_controller(&self, pack_id: usize) -> &Self::PackFlowControllerSignal {
             self.a320_air_conditioning_system
                 .pack_flow_controller(pack_id)
         }

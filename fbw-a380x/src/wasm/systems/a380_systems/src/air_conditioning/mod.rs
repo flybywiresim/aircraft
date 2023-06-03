@@ -8,8 +8,8 @@ use systems::{
         pressure_valve::{OutflowValve, SafetyValve},
         AdirsToAirCondInterface, Air, AirConditioningOverheadShared, AirConditioningPack, CabinFan,
         DuctTemperature, MixerUnit, OutflowValveSignal, OutletAir, OverheadFlowSelector, PackFlow,
-        PackFlowControllers, PackFlowValveSignal, PressurizationConstants,
-        PressurizationOverheadShared, TrimAirSystem, ZoneType,
+        PackFlowControllers, PressurizationConstants, PressurizationOverheadShared, TrimAirSystem,
+        ZoneType,
     },
     overhead::{
         AutoManFaultPushButton, NormalOnPushButton, OnOffFaultPushButton, OnOffPushButton,
@@ -183,10 +183,10 @@ impl A380AirConditioning {
 }
 
 impl PackFlowControllers for A380AirConditioning {
-    fn pack_flow_controller(
-        &self,
-        fcv_id: usize,
-    ) -> Box<dyn ControllerSignal<PackFlowValveSignal>> {
+    type PackFlowControllerSignal =
+        <A380AirConditioningSystem as PackFlowControllers>::PackFlowControllerSignal;
+
+    fn pack_flow_controller(&self, fcv_id: usize) -> &Self::PackFlowControllerSignal {
         self.a380_air_conditioning_system
             .pack_flow_controller(fcv_id)
     }
@@ -302,7 +302,7 @@ impl SimulationElement for A380Cabin {
     }
 }
 
-struct A380AirConditioningSystem {
+pub(super) struct A380AirConditioningSystem {
     acsc: AirConditioningSystemController<18, 4>,
     fdac: [FullDigitalAGUController<4>; 2],
     cabin_fans: [CabinFan; 2],
@@ -441,10 +441,10 @@ impl A380AirConditioningSystem {
 }
 
 impl PackFlowControllers for A380AirConditioningSystem {
-    fn pack_flow_controller(
-        &self,
-        fcv_id: usize,
-    ) -> Box<dyn ControllerSignal<PackFlowValveSignal>> {
+    type PackFlowControllerSignal =
+        <FullDigitalAGUController<4> as PackFlowControllers>::PackFlowControllerSignal;
+
+    fn pack_flow_controller(&self, fcv_id: usize) -> &Self::PackFlowControllerSignal {
         self.fdac[(fcv_id > 2) as usize].pack_flow_controller(fcv_id)
     }
 }
@@ -1326,14 +1326,12 @@ mod tests {
         ) {
             self.left_pack_flow_valve.update_open_amount(
                 pack_flow_valve_signals
-                    .pack_flow_controller(1 + ((self.pack_number == 2) as usize * 2))
-                    .as_ref(),
+                    .pack_flow_controller(1 + ((self.pack_number == 2) as usize * 2)),
             );
 
             self.right_pack_flow_valve.update_open_amount(
                 pack_flow_valve_signals
-                    .pack_flow_controller(2 + ((self.pack_number == 2) as usize * 2))
-                    .as_ref(),
+                    .pack_flow_controller(2 + ((self.pack_number == 2) as usize * 2)),
             );
 
             self.left_pack_flow_valve

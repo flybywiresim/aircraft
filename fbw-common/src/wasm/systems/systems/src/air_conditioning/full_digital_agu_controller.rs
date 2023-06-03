@@ -145,10 +145,9 @@ impl<const ENGINES: usize> PackFlow for FullDigitalAGUController<ENGINES> {
 }
 
 impl<const ENGINES: usize> PackFlowControllers for FullDigitalAGUController<ENGINES> {
-    fn pack_flow_controller(
-        &self,
-        fcv_id: usize,
-    ) -> Box<dyn ControllerSignal<PackFlowValveSignal>> {
+    type PackFlowControllerSignal = PackFlowController<ENGINES>;
+
+    fn pack_flow_controller(&self, fcv_id: usize) -> &Self::PackFlowControllerSignal {
         self.flow_control.pack_flow_controller(fcv_id)
     }
 }
@@ -303,13 +302,10 @@ impl<const ENGINES: usize> PackFlow for FDACFlowControl<ENGINES> {
 }
 
 impl<const ENGINES: usize> PackFlowControllers for FDACFlowControl<ENGINES> {
-    fn pack_flow_controller(
-        &self,
-        fcv_id: usize,
-    ) -> Box<dyn ControllerSignal<PackFlowValveSignal>> {
-        Box::new(
-            self.flow_control_valves_controller[fcv_id - 1 - ((self.fdac_id == 2) as usize * 2)],
-        )
+    type PackFlowControllerSignal = PackFlowController<ENGINES>;
+
+    fn pack_flow_controller(&self, fcv_id: usize) -> &Self::PackFlowControllerSignal {
+        &self.flow_control_valves_controller[fcv_id - 1 - ((self.fdac_id == 2) as usize * 2)]
     }
 }
 

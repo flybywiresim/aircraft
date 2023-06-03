@@ -1224,14 +1224,12 @@ impl PackComplex {
     ) {
         self.left_pack_flow_valve.update_open_amount(
             pack_flow_valve_signals
-                .pack_flow_controller(1 + ((self.pack_number == 2) as usize * 2))
-                .as_ref(),
+                .pack_flow_controller(1 + ((self.pack_number == 2) as usize * 2)),
         );
 
         self.right_pack_flow_valve.update_open_amount(
             pack_flow_valve_signals
-                .pack_flow_controller(2 + ((self.pack_number == 2) as usize * 2))
-                .as_ref(),
+                .pack_flow_controller(2 + ((self.pack_number == 2) as usize * 2)),
         );
 
         self.left_pack_flow_valve
@@ -1408,7 +1406,7 @@ mod tests {
     use ntest::assert_about_eq;
     use rstest::rstest;
     use systems::{
-        air_conditioning::{AdirsToAirCondInterface, PackFlowControllers, PackFlowValveSignal},
+        air_conditioning::{AdirsToAirCondInterface, PackFlowControllers},
         electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
         engine::leap_engine::LeapEngine,
         failures::FailureType,
@@ -1482,10 +1480,10 @@ mod tests {
         }
     }
     impl PackFlowControllers for TestAirConditioning {
-        fn pack_flow_controller(
-            &self,
-            fcv_id: usize,
-        ) -> Box<dyn ControllerSignal<PackFlowValveSignal>> {
+        type PackFlowControllerSignal =
+            <A380AirConditioning as PackFlowControllers>::PackFlowControllerSignal;
+
+        fn pack_flow_controller(&self, fcv_id: usize) -> &Self::PackFlowControllerSignal {
             self.air_conditioning.pack_flow_controller(fcv_id)
         }
     }

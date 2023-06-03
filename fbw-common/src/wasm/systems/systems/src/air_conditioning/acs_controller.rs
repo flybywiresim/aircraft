@@ -193,11 +193,10 @@ impl<const ZONES: usize, const ENGINES: usize> PackFlow
 impl<const ZONES: usize, const ENGINES: usize> PackFlowControllers
     for AirConditioningSystemController<ZONES, ENGINES>
 {
-    fn pack_flow_controller(
-        &self,
-        pack_id: usize,
-    ) -> Box<dyn ControllerSignal<PackFlowValveSignal>> {
-        Box::new(self.pack_flow_controller[pack_id - 1])
+    type PackFlowControllerSignal = PackFlowController<ENGINES>;
+
+    fn pack_flow_controller(&self, pack_id: usize) -> &Self::PackFlowControllerSignal {
+        &self.pack_flow_controller[pack_id - 1]
     }
 }
 
@@ -1654,9 +1653,7 @@ mod acs_controller_tests {
             pack_flow_valve_signals: &impl PackFlowControllers,
         ) {
             self.pack_flow_valve.update_open_amount(
-                pack_flow_valve_signals
-                    .pack_flow_controller(self.engine_number)
-                    .as_ref(),
+                pack_flow_valve_signals.pack_flow_controller(self.engine_number),
             );
             self.pack_flow_valve
                 .update_move_fluid(context, from, &mut self.pack_container);

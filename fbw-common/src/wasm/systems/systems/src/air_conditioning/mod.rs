@@ -51,10 +51,8 @@ pub trait PackFlow {
 }
 
 pub trait PackFlowControllers {
-    fn pack_flow_controller(
-        &self,
-        pack_id: usize,
-    ) -> Box<dyn ControllerSignal<PackFlowValveSignal>>;
+    type PackFlowControllerSignal: ControllerSignal<PackFlowValveSignal>;
+    fn pack_flow_controller(&self, pack_id: usize) -> &Self::PackFlowControllerSignal;
 }
 
 pub struct PackFlowValveSignal {

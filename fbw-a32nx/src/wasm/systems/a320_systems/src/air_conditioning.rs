@@ -7,8 +7,8 @@ use systems::{
         pressure_valve::{OutflowValve, SafetyValve},
         AdirsToAirCondInterface, Air, AirConditioningOverheadShared, AirConditioningPack, CabinFan,
         DuctTemperature, MixerUnit, OutflowValveSignal, OutletAir, OverheadFlowSelector,
-        PackFlowControllers, PackFlowValveSignal, PressurizationConstants,
-        PressurizationOverheadShared, TrimAirSystem, ZoneType,
+        PackFlowControllers, PressurizationConstants, PressurizationOverheadShared, TrimAirSystem,
+        ZoneType,
     },
     overhead::{
         AutoManFaultPushButton, NormalOnPushButton, OnOffFaultPushButton, OnOffPushButton,
@@ -125,10 +125,10 @@ impl A320AirConditioning {
 }
 
 impl PackFlowControllers for A320AirConditioning {
-    fn pack_flow_controller(
-        &self,
-        pack_id: usize,
-    ) -> Box<dyn ControllerSignal<PackFlowValveSignal>> {
+    type PackFlowControllerSignal =
+        <A320AirConditioningSystem as PackFlowControllers>::PackFlowControllerSignal;
+
+    fn pack_flow_controller(&self, pack_id: usize) -> &Self::PackFlowControllerSignal {
         self.a320_air_conditioning_system
             .pack_flow_controller(pack_id)
     }
@@ -337,10 +337,10 @@ impl A320AirConditioningSystem {
 }
 
 impl PackFlowControllers for A320AirConditioningSystem {
-    fn pack_flow_controller(
-        &self,
-        pack_id: usize,
-    ) -> Box<dyn ControllerSignal<PackFlowValveSignal>> {
+    type PackFlowControllerSignal =
+        <AirConditioningSystemController<3, 2> as PackFlowControllers>::PackFlowControllerSignal;
+
+    fn pack_flow_controller(&self, pack_id: usize) -> &Self::PackFlowControllerSignal {
         self.acsc.pack_flow_controller(pack_id)
     }
 }
@@ -1114,9 +1114,7 @@ mod tests {
             pack_flow_valve_signals: &impl PackFlowControllers,
         ) {
             self.pack_flow_valve.update_open_amount(
-                pack_flow_valve_signals
-                    .pack_flow_controller(self.engine_number)
-                    .as_ref(),
+                pack_flow_valve_signals.pack_flow_controller(self.engine_number),
             );
             self.pack_flow_valve
                 .update_move_fluid(context, from, &mut self.pack_container);
