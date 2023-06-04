@@ -21,8 +21,8 @@ const Tick = React.memo<TickProps>(({ offset, airspeed }) => {
 
 const SpeedtapeArrow = React.memo(() => (
     <g id="SpeedtapeArrow">
-        <rect className="FillBackground" x={108} y={250} width={34} height={40} />
-        <path className="FillYellow" d="M 108 270 l 34 -20 v 40 l -34 -20" />
+        <rect className="FillBackground" x={121.054} y={250.008} width={23.324} height={35.4025} />
+        <path className="FillYellow" d="M 141.712 284.994 v -31.654 l -19.992 16.66 z" />
     </g>
 ));
 

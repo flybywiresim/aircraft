@@ -19,26 +19,27 @@ const DeviationIndicator: React.FC<DeviationIndicatorProps> = ({ deviation, avai
 
     return (
         <>
-            <rect x={0} y={0} width={176.6} height={20} fill="black" />
-            <circle className="StrokeWhite NoFill" cx={15.011} cy={10} r={3} />
-            <circle className="StrokeWhite NoFill" cx={51.655} cy={10} r={3} />
-            <circle className="StrokeWhite NoFill" cx={124.944} cy={10} r={3} />
-            <circle className="StrokeWhite NoFill" cx={161.588} cy={10} r={3} />
-            { available && !(aboveMaximum || belowMinimum)
-            && (// assumes 0.4 deg of deviation per dot and 36.644px distance between dots
-                <g transform={`translate(${(dots * 36.644).toFixed(5)} 0)`}>
+            <rect x={0} y={0} width={178.26} height={19.992} fill="black" />
+            <circle className="LSCircle NoFill" cx={14.161} cy={10.4125} r={2.9155} />
+            <circle className="LSCircle NoFill" cx={51.646} cy={10.4125} r={2.9155} />
+            <circle className="LSCircle NoFill" cx={126.616} cy={10.4125} r={2.9155} />
+            <circle className="LSCircle NoFill" cx={164.101} cy={10.4125} r={2.9155} />
+            { available && (!(aboveMaximum || belowMinimum)
+            && (// assumes 0.4 deg of deviation per dot and 37.485px distance between dots
+                <g transform={`translate(${(dots * 37.485).toFixed(5)} 0)`}>
                     <path className="FillMagenta" d="M 74.95 10 v 0.8 l 8.3443 6.7 h 10.0132 l 8.3443 -6.7 v -1.6 l -8.3443 -6.7 h -10.0132 l -8.3443 6.7 z" />
                 </g>
-            )}
-            { belowMinimum
+            )
+            || belowMinimum
             && (
                 <path className="FillMagenta" d="M 0.883 10 v 0.8 l 8.3443 6.7 h 5.0066 v -15 h -5.0066 l -8.3443 6.7 z" />
-            )}
-            { aboveMaximum
+            )
+             || aboveMaximum
             && (
                 <path className="FillMagenta" d="M 175.72 10 v 0.8 l -8.3443 6.7 h -5.0066 v -15 h 5.0066 l 8.3443 6.7 z" />
+            )
             )}
-            <line x1={88.3} x2={88.3} y1={2.5} y2={17.5} strokeWidth={5} stroke="yellow" />
+            <line x1={89.131} x2={89.131} y1={3.332} y2={16.66} strokeWidth={5} stroke="yellow" />
         </>
     );
 };
@@ -53,10 +54,10 @@ export const LandingSystem: React.FC = () => {
     return (
         lsActive && (
             <g id="LandingSystem">
-                <g transform="translate(167.7 380)">
+                <g transform="translate(167.7 376.62)">
                     <DeviationIndicator deviation={lsDeviation / 2} available={lsAvailable} />
                 </g>
-                <g transform="translate(343 182.7) rotate(90 0 0)">
+                <g transform="translate(339.3 180.04) rotate(90 0 0)">
                     <DeviationIndicator deviation={gsDeviation} available={gsAvailable} />
                 </g>
             </g>

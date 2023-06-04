@@ -51,6 +51,11 @@
   font-size: 36px;
 }
 
+.FontTens {
+  font-size: 28;
+  letter-spacing: 2.5;
+}
+
 .MiddleAlign {
   text-align: center;
   text-anchor: middle;
@@ -69,12 +74,18 @@
   fill: $display-yellow;
 }
 
+.LSCircle {
+  stroke: $display-white;
+  stroke-width: 3.332px;
+}
+
 .StrokeWhite {
   stroke: $display-white;
 }
 
 .StrokeYellow {
   stroke: $display-yellow;
+  stroke-width: 3.332px;
 }
 
 .StrokeCyan {
