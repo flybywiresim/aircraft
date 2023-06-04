@@ -57,7 +57,7 @@ export const PagesContainer = () => {
     const [apuAboveThresholdTimer, setApuAboveThresholdTimer] = useState(-1);
     const [stsPressedTimer, setStsPressedTimer] = useState(-1);
     const [stsPrevPage, setStsPrevPage] = useState(-1);
-    const [normalStatusLine] = useSimVar(`L:A32NX_STATUS_LEFT_LINE_8`, 'number', 100);
+    const [normalStatusLine] = useSimVar('L:A32NX_STATUS_LEFT_LINE_8', 'number', 100);
     const apuRpm = useArinc429Var('L:A32NX_APU_N', 100);
 
     const baroCorrectedAltitude1 = useArinc429Var('L:A32NX_ADIRS_ADR_1_BARO_CORRECTED_ALTITUDE_1', 300);
@@ -98,20 +98,20 @@ export const PagesContainer = () => {
     const checkStsPage = (deltaTime) => {
         const isStatusPageEmpty = normalStatusLine === 1;
 
-        if(currentPage !== SdPages.Status) {
-            return
+        if (currentPage !== SdPages.Status) {
+            return;
         }
 
         if (isStatusPageEmpty) {
-            if(stsPressedTimer > 0) {
+            if (stsPressedTimer > 0) {
                 setStsPressedTimer((prev) => prev - deltaTime / 1000);
                 setPageWhenUnselected(SdPages.Status);
             } else {
-                SimVar.SetSimVarValue(`L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX`, "number", stsPrevPage);
+                SimVar.SetSimVarValue('L:A32NX_ECAM_SD_CURRENT_PAGE_INDEX', 'number', stsPrevPage);
             }
         } else {
             setPageWhenUnselected(SdPages.Status);
-            setStsPressedTimer(STS_DISPLAY_TIMER_DURATION)
+            setStsPressedTimer(STS_DISPLAY_TIMER_DURATION);
         }
     };
 
@@ -128,7 +128,7 @@ export const PagesContainer = () => {
         } else if (!ecamAllButtonPushed && prevEcamAllButtonState) { // button release
             clearInterval(ecamCycleInterval);
         } else if (!ecamAllButtonPushed) {
-            if(currentPage !== SdPages.Status) {
+            if (currentPage !== SdPages.Status) {
                 setStsPrevPage(currentPage);
             }
             const newPage = page;
@@ -211,7 +211,7 @@ export const PagesContainer = () => {
             }
 
             if (newPage === SdPages.Status && currentPage !== newPage) {
-                setStsPressedTimer(STS_DISPLAY_TIMER_DURATION)
+                setStsPressedTimer(STS_DISPLAY_TIMER_DURATION);
             }
             checkStsPage(deltaTime);
 
