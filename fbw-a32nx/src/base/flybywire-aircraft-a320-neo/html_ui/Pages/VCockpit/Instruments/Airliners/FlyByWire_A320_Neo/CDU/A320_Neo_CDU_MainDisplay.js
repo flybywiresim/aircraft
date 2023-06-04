@@ -39,6 +39,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 fm2: false,
             }
         };
+        this.leftBrightness = 0;
+        this.rightBrightness = 0;
         this.onLeftInput = [];
         this.onRightInput = [];
         this.leftInputDelay = [];
@@ -174,7 +176,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 rdy: false,
                 blank: false,
                 fm2: false,
-            }
+            },
+            display_brightness: 0,
+            integral_brightness: 0,
         };
 
     }
@@ -404,6 +408,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     updateMCDU() {
         this.updateAnnunciators();
 
+        this.updateBrightness();
+
         this.updateInitBFuelPred();
     }
 
@@ -438,6 +444,26 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         const rightAnnuncPower = SimVar.GetSimVarValue("L:A32NX_ELEC_AC_2_BUS_IS_POWERED", "bool");
         this.updateAnnunciatorsForSide("right", lightTest, rightAnnuncPower, forceWrite);
     }
+
+    updateBrightness() {
+        const left = SimVar.GetSimVarValue("L:A32NX_MCDU_L_BRIGHTNESS", "number") / 8;
+        const right = SimVar.GetSimVarValue("L:A32NX_MCDU_R_BRIGHTNESS", "number") / 8;
+
+        let updateNeeded = false;
+
+        if (left !== this.leftBrightness) {
+            this.leftBrightness = left;
+            updateNeeded = true;
+        }
+
+        if (right !== this.rightBrightness) {
+            this.rightBrightness = right;
+            updateNeeded = true;
+        }
+
+        if (updateNeeded) {
+            this.sendUpdate();
+        }
     }
 
     /**
@@ -1350,6 +1376,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
         const mcdu1Powered = SimVar.GetSimVarValue("L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED", "bool");
         const mcdu2Powered = SimVar.GetSimVarValue("L:A32NX_ELEC_AC_2_BUS_IS_POWERED", "bool");
+        const integralLightsPowered = SimVar.GetSimVarValue("L:A32NX_ELEC_AC_1_BUS_IS_POWERED", "bool");
 
         let screenState;
         if (mcdu1Powered || mcdu2Powered) {
@@ -1373,18 +1400,20 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 titleLeft: `{small}${this._titleLeft}{end}`,
                 page: this._pageCount > 0 ? `{small}${this._pageCurrent}/${this._pageCount}{end}` : '',
                 arrows: this._arrows,
+                integral_brightness: integralLightsPowered ? SimVar.GetSimVarValue("A:LIGHT POTENTIOMETER:85", "percent over 100") : 0,
             };
         }
 
         if (mcdu1Powered) {
             left = Object.assign({}, screenState);
             left.annunciators = this.annunciators.left;
+            left.display_brightness = SimVar.GetSimVarValue("L:A32NX_MCDU_L_BRIGHTNESS", "number") / 8;
         }
 
         if (mcdu2Powered) {
             right = Object.assign({}, screenState);
             right.annunciators = this.annunciators.right;
-
+            right.display_brightness = SimVar.GetSimVarValue("L:A32NX_MCDU_R_BRIGHTNESS", "number") / 8;
         }
 
         const content = {right, left};
