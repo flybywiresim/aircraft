@@ -16,6 +16,7 @@
 1. [ND] Fix ROSE VOR/LS conditions and ILS course - @tracernz (Mike)
 1. [HYD] Added hydraulic reverser actuators - @Crocket63 (crocket)
 1. [SD] Added a display duration of 3s for STS page - @pluce
+1. [EIS] Added > character to the font - @KiloEchoVictor (Kevin)
 
 ## 0.10.0
 
@@ -1277,3 +1278,4 @@
 1. [DCDU] Fixed MSG- and MSG+ button labels - @tyler58546 (tyler58546)
 1. [ISIS] Fixed issue where ISIS was allowing a bug to be set while in the OFF state - Patrick Macken (@Pat M on
    Discord)
+1. [EFB] Restructured APIs and made Navigraph Auth a reusable component - @MicahBCode (Mischa Binder)

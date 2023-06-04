@@ -1836,6 +1836,20 @@ In the variables below, {number} should be replaced with one item in the set: { 
       | 17  | Takeoff speeds too low            |
       | 18  | Takeoff speeds not inserted       |
 
+- L:A32NX_FM{number}_NAV_DISCRETE
+    - Arinc429<Discrete>
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC (currently not written)
+    - | Bit |     Description     |
+      |:---:|:-------------------:|
+      | 11  | VOR 1 manually tuned |
+      | 12  | VOR 2 manually tuned |
+      | 13  | ADF 1 manually tuned |
+      | 14  | ADF 2 manually tuned |
+      | 15  | MMR 1 manually tuned |
+      | 16  | MMR 2 manually tuned |
+
 - L:A32NX_FM{number}_EO_ACC_ALT
     - ARINC429<number> (feet MSL)
     - The engine out acceleration altitude
