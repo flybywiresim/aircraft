@@ -18,6 +18,7 @@
 1. [EIS] Added > character to the font - @KiloEchoVictor (Kevin)
 1. [MCDU] The remote MCDU protocol now sends the annunciator light state - @tracernz (Mike)
 1. [MCDU] The remote MCDU protocol now sends the display and integral light brightness - @tracernz (Mike)
+1. [MCDU] The remote MCDU protocol now supports the BRT/DIM keys - @tracernz (Mike)
 
 ## 0.10.0
 

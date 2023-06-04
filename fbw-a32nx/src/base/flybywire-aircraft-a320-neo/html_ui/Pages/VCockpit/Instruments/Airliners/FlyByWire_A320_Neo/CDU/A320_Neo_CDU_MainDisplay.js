@@ -2,6 +2,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     constructor() {
         super(...arguments);
 
+        this.MIN_BRIGHTNESS = 0.5
+        this.MAX_BRIGHTNESS = 8
+
         this.minPageUpdateThrottler = new UpdateThrottler(100);
         this.mcduServerConnectUpdateThrottler = new UpdateThrottler(1000);
         this.powerCheckUpdateThrottler = new UpdateThrottler(500);
@@ -446,8 +449,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
 
     updateBrightness() {
-        const left = SimVar.GetSimVarValue("L:A32NX_MCDU_L_BRIGHTNESS", "number") / 8;
-        const right = SimVar.GetSimVarValue("L:A32NX_MCDU_R_BRIGHTNESS", "number") / 8;
+        const left = SimVar.GetSimVarValue("L:A32NX_MCDU_L_BRIGHTNESS", "number");
+        const right = SimVar.GetSimVarValue("L:A32NX_MCDU_R_BRIGHTNESS", "number");
 
         let updateNeeded = false;
 
@@ -1195,9 +1198,12 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             return;
         }
 
-        if (_event.indexOf("1_BTN_") !== -1 || _event.indexOf("2_BTN_") !== -1 || _event.indexOf("BTN_") !== -1) {
+        const isLeftMcduEvent = _event.indexOf("1_BTN_") !== -1;
+        const isRightMcduEvent = _event.indexOf("2_BTN_") !== -1;
+
+        if (isLeftMcduEvent || isRightMcduEvent || _event.indexOf("BTN_") !== -1) {
             const input = _event.replace("1_BTN_", "").replace("2_BTN_", "").replace("BTN_", "");
-            if (this._keypad.onKeyPress(input)) {
+            if (this._keypad.onKeyPress(input, isRightMcduEvent ? 'R' : 'L')) {
                 return;
             }
 
@@ -1233,6 +1239,16 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 }
             }, fncActionDelay());
         }, 100);
+    }
+
+    /**
+     * Handle brightness key events
+     * @param {'L' | 'R'} side
+     * @param {-1 | 1} sign
+     */
+    onBrightnessKey(side, sign) {
+        const oldBrightness = side === "R" ? this.rightBrightness : this.leftBrightness;
+        SimVar.SetSimVarValue(`L:A32NX_MCDU_${side}_BRIGHTNESS`, "number", Math.max(this.MIN_BRIGHTNESS, Math.min(this.MAX_BRIGHTNESS, oldBrightness + sign * 0.2 * oldBrightness)));
     }
 
     /* END OF MCDU EVENTS */
@@ -1407,13 +1423,13 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         if (mcdu1Powered) {
             left = Object.assign({}, screenState);
             left.annunciators = this.annunciators.left;
-            left.display_brightness = SimVar.GetSimVarValue("L:A32NX_MCDU_L_BRIGHTNESS", "number") / 8;
+            left.display_brightness = this.leftBrightness / this.MAX_BRIGHTNESS;
         }
 
         if (mcdu2Powered) {
             right = Object.assign({}, screenState);
             right.annunciators = this.annunciators.right;
-            right.display_brightness = SimVar.GetSimVarValue("L:A32NX_MCDU_R_BRIGHTNESS", "number") / 8;
+            right.display_brightness = this.rightBrightness / this.MAX_BRIGHTNESS;
         }
 
         const content = {right, left};
