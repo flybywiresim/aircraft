@@ -14,7 +14,7 @@ const TensDigits: ElementFunction = (value, offset, color) => {
     }
 
     return (
-        <text transform={`translate(0 ${offset})`} className={`FontLarge Text${color}`} x="21" y="40">{text}</text>
+        <text transform={`translate(0 ${offset})`} className={`FontTens Text${color}`} x="21" y="40">{text}</text>
     );
 };
 
