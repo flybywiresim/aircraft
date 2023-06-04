@@ -16,6 +16,7 @@
 1. [ND] Fix ROSE VOR/LS conditions and ILS course - @tracernz (Mike)
 1. [HYD] Added hydraulic reverser actuators - @Crocket63 (crocket)
 1. [EIS] Added > character to the font - @KiloEchoVictor (Kevin)
+1. [MCDU] The remote MCDU protocol now sends the annunciator light state - @tracernz (Mike)
 
 ## 0.10.0
 

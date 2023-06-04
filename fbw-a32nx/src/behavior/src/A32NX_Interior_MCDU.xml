@@ -489,7 +489,6 @@
             </UseTemplate>
             <UseTemplate Name="FBW_MCDU_ANNUNCIATOR_Template">
                 <BASE_NAME>BLANK</BASE_NAME>
-                <ANNUNC_LIT>0</ANNUNC_LIT>
             </UseTemplate>
             <UseTemplate Name="FBW_MCDU_ANNUNCIATOR_Template">
                 <BASE_NAME>FM2</BASE_NAME>
@@ -510,9 +509,8 @@
                 <EMISSIVE_CODE type="rnp" return="number">
                     let lit = #ANNUNC_LIT, boolean#;
                     let annSwitch = (L:A32NX_OVHD_INTLT_ANN, number);
-                    alias dc2Powered = (L:A32NX_ELEC_DC_2_BUS_IS_POWERED, bool);
-                    let brightness = if annSwitch == 2 { 0.1 } else { 1 };
-                    let emissive = if (((annSwitch == 0) and dc2Powered) or lit) {
+                    let emissive = if lit {
+                        let brightness = if annSwitch == 2 { 0.1 } else { 1 };
                         brightness
                     } else {
                         0
