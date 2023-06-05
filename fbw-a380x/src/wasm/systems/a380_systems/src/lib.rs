@@ -6,6 +6,7 @@ mod control_display_system;
 mod electrical;
 mod fuel;
 pub mod hydraulic;
+mod icing;
 mod navigation;
 mod pneumatic;
 mod power_consumption;
@@ -24,20 +25,20 @@ use electrical::{
     APU_START_MOTOR_BUS_TYPE,
 };
 use hydraulic::{A380Hydraulic, A380HydraulicOverheadPanel};
+use icing::Icing;
 use navigation::A380RadioAltimeters;
 use power_consumption::A380PowerConsumption;
-use systems::{
-    accept_iterable, enhanced_gpwc::EnhancedGroundProximityWarningComputer, simulation::InitContext,
-};
 use uom::si::{f64::Length, length::nautical_mile};
 
 use systems::{
+    accept_iterable,
     apu::{
         Aps3200ApuGenerator, Aps3200StartMotor, AuxiliaryPowerUnit, AuxiliaryPowerUnitFactory,
         AuxiliaryPowerUnitFireOverheadPanel, AuxiliaryPowerUnitOverheadPanel,
     },
     electrical::{Electricity, ElectricitySource, ExternalPowerSource},
     engine::{trent_engine::TrentEngine, EngineFireOverheadPanel},
+    enhanced_gpwc::EnhancedGroundProximityWarningComputer,
     hydraulic::brake_circuit::AutobrakePanel,
     landing_gear::{LandingGear, LandingGearControlInterfaceUnitSet},
     navigation::adirs::{
@@ -77,6 +78,7 @@ pub struct A380 {
     radio_altimeters: A380RadioAltimeters,
     cds: A380ControlDisplaySystem,
     egpwc: EnhancedGroundProximityWarningComputer,
+    icing_simulation: Icing,
     structural_flex: A380StructuralFlex,
 }
 impl A380 {
@@ -133,6 +135,8 @@ impl A380 {
                 ],
                 1,
             ),
+
+            icing_simulation: Icing::new(context),
             structural_flex: A380StructuralFlex::new(context),
         }
     }
@@ -268,6 +272,9 @@ impl Aircraft for A380 {
             ],
             self.hydraulic.up_down_rudder_aero_torques(),
         );
+        self.cds.update();
+
+        self.icing_simulation.update(context);
     }
 }
 impl SimulationElement for A380 {
@@ -301,6 +308,7 @@ impl SimulationElement for A380 {
         self.pneumatic.accept(visitor);
         self.cds.accept(visitor);
         self.egpwc.accept(visitor);
+        self.icing_simulation.accept(visitor);
         self.structural_flex.accept(visitor);
 
         visitor.visit(self);
