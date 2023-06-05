@@ -92,7 +92,10 @@ export default class NavigraphClient {
     public userName = '';
 
     public static get hasSufficientEnv() {
-        return !(NavigraphClient.clientSecret === undefined || NavigraphClient.clientId === undefined);
+        if (NavigraphClient.clientSecret === undefined || NavigraphClient.clientId === undefined) {
+            return false;
+        }
+        return !(NavigraphClient.clientSecret === '' || NavigraphClient.clientId === '');
     }
 
     constructor() {

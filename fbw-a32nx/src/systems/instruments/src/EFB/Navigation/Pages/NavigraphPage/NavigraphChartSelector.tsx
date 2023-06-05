@@ -13,7 +13,7 @@ import {
     addPinnedChart,
 } from '../../../Store/features/navigationPage';
 import { navigationTabs } from '../../Navigation';
-import { NavigraphChart } from '../../../ChartsApi/Navigraph';
+import { NavigraphChart } from '../../../Apis/Navigraph/Navigraph';
 
 interface NavigraphChartSelectorProps {
     selectedTab: OrganizedChart;
