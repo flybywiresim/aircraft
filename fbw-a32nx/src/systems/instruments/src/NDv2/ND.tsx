@@ -422,9 +422,9 @@ class SpeedIndicator extends DisplayComponent<{ bus: EventBus }> {
         return (
             <Layer x={2} y={25}>
                 <text x={0} y={0} class="White FontSmallest">GS</text>
-                <text ref={this.groundSpeedRef} x={89} y={0} class="Green FontIntermediate EndAlign" />
+                <text ref={this.groundSpeedRef} x={89} y={0} class="Green FontSmall EndAlign" />
                 <text x={95} y={0} class="White FontSmallest">TAS</text>
-                <text ref={this.trueAirSpeedRef} x={201} y={0} class="Green FontIntermediate EndAlign" />
+                <text ref={this.trueAirSpeedRef} x={201} y={0} class="Green FontSmall EndAlign" />
             </Layer>
         );
     }
@@ -777,20 +777,20 @@ class ToWaypointIndicator extends DisplayComponent<ToWaypointIndicatorProps> {
         return (
             <Layer x={690} y={25} visible={this.visibleSub}>
                 {/* This is always visible */}
-                <text x={-13} y={0} class="White FontIntermediate EndAlign">{this.toWptIdentValue}</text>
+                <text x={-13} y={0} class="White FontSmall EndAlign">{this.toWptIdentValue}</text>
 
                 <g visibility={this.bearingContainerVisible.map(this.visibilityFn)}>
-                    <text x={54} y={0} class="Green FontIntermediate EndAlign">{this.bearingText}</text>
-                    <text x={73} y={2} class="Cyan FontIntermediate EndAlign" visibility={this.trueRefActive.map(this.inverseVisibilityFn)}>&deg;</text>
+                    <text x={54} y={0} class="Green FontSmall EndAlign">{this.bearingText}</text>
+                    <text x={73} y={2} class="Cyan FontSmall EndAlign" visibility={this.trueRefActive.map(this.inverseVisibilityFn)}>&deg;</text>
                     <text x={71} y={-3} class="Cyan FontSmallest EndAlign" visibility={this.trueRefActive.map(this.visibilityFn)}>T</text>
                 </g>
 
                 <g visibility={this.distanceLargeContainerVisible.map(this.visibilityFn)}>
-                    <text ref={this.largeDistanceNumberRef} x={39} y={32} class="Green FontIntermediate EndAlign" />
+                    <text ref={this.largeDistanceNumberRef} x={39} y={32} class="Green FontSmall EndAlign" />
                 </g>
 
                 <g visibility={this.distanceSmallContainerVisible.map(this.visibilityFn)}>
-                    <text ref={this.smallDistanceIntegerPartRef} x={6} y={32} class="Green FontIntermediate EndAlign" />
+                    <text ref={this.smallDistanceIntegerPartRef} x={6} y={32} class="Green FontSmall EndAlign" />
                     <text x={3} y={32} class="Green FontSmallest StartAlign">.</text>
                     <text ref={this.smallDistanceDecimalPartRef} x={20} y={32} class="Green FontSmallest StartAlign" />
                 </g>
@@ -799,7 +799,7 @@ class ToWaypointIndicator extends DisplayComponent<ToWaypointIndicatorProps> {
                     NM
                 </text>
 
-                <text x={72} y={66} class="Green FontIntermediate EndAlign">{this.etaValue}</text>
+                <text x={72} y={66} class="Green FontSmall EndAlign">{this.etaValue}</text>
             </Layer>
         );
     }
