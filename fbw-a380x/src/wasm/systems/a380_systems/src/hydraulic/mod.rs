@@ -738,15 +738,15 @@ impl A380ElevatorFactory {
     /// Builds an aileron control surface body for A380-800
     fn a380_elevator_body(
         init_drooped_down: bool,
-        is_outter: bool,
+        is_outer: bool,
     ) -> LinearActuatedRigidBodyOnHingeAxis {
-        let size = if is_outter {
+        let size = if is_outer {
             Vector3::new(9., 0.405, 2.23)
         } else {
             Vector3::new(5., 0.405, 2.49)
         };
 
-        let mass = if is_outter {
+        let mass = if is_outer {
             Mass::new::<kilogram>(243.)
         } else {
             Mass::new::<kilogram>(189.)
@@ -786,9 +786,9 @@ impl A380ElevatorFactory {
         context: &mut InitContext,
         init_drooped_down: bool,
         powered_by: Option<ElectricalBusType>,
-        is_outter: bool,
+        is_outer: bool,
     ) -> HydraulicLinearActuatorAssembly<2> {
-        let elevator_body = Self::a380_elevator_body(init_drooped_down, is_outter);
+        let elevator_body = Self::a380_elevator_body(init_drooped_down, is_outer);
 
         let elevator_actuator_outboard =
             Self::a380_elevator_actuator(context, &elevator_body, None);
@@ -834,10 +834,10 @@ impl A380ElevatorFactory {
         )
     }
 
-    fn new_a380_elevator_aero_model(is_outter: bool) -> AerodynamicModel {
-        let body = Self::a380_elevator_body(true, is_outter);
+    fn new_a380_elevator_aero_model(is_outer: bool) -> AerodynamicModel {
+        let body = Self::a380_elevator_body(true, is_outer);
 
-        let area_coeff = if is_outter {
+        let area_coeff = if is_outer {
             Ratio::new::<ratio>(0.723)
         } else {
             Ratio::new::<ratio>(0.822)
@@ -2007,11 +2007,11 @@ impl A380Hydraulic {
     }
 
     pub fn left_elevator_aero_torques(&self) -> (Torque, Torque) {
-        self.left_elevator.aerodynamic_torques_outter_inner()
+        self.left_elevator.aerodynamic_torques_outer_inner()
     }
 
     pub fn right_elevator_aero_torques(&self) -> (Torque, Torque) {
-        self.right_elevator.aerodynamic_torques_outter_inner()
+        self.right_elevator.aerodynamic_torques_outer_inner()
     }
 
     pub fn up_down_rudder_aero_torques(&self) -> (Torque, Torque) {
@@ -6031,7 +6031,7 @@ impl AileronAssembly {
         outward_hydraulic_assembly: HydraulicLinearActuatorAssembly<2>,
         middle_hydraulic_assembly: HydraulicLinearActuatorAssembly<2>,
         inward_hydraulic_assembly: HydraulicLinearActuatorAssembly<2>,
-        aerodynamic_model_outter: AerodynamicModel,
+        aerodynamic_model_outer: AerodynamicModel,
         aerodynamic_model_middle: AerodynamicModel,
         aerodynamic_model_inner: AerodynamicModel,
     ) -> Self {
@@ -6067,7 +6067,7 @@ impl AileronAssembly {
             },
             positions: [Ratio::new::<ratio>(0.); 3],
             aerodynamic_models: [
-                aerodynamic_model_outter,
+                aerodynamic_model_outer,
                 aerodynamic_model_middle,
                 aerodynamic_model_inner,
             ],
@@ -6136,7 +6136,7 @@ impl ElevatorAssembly {
         id: ActuatorSide,
         outward_hydraulic_assembly: HydraulicLinearActuatorAssembly<2>,
         inward_hydraulic_assembly: HydraulicLinearActuatorAssembly<2>,
-        aerodynamic_model_outter: AerodynamicModel,
+        aerodynamic_model_outer: AerodynamicModel,
         aerodynamic_model_inner: AerodynamicModel,
     ) -> Self {
         Self {
@@ -6159,7 +6159,7 @@ impl ElevatorAssembly {
             },
 
             positions: [Ratio::new::<ratio>(0.); 2],
-            aerodynamic_models: [aerodynamic_model_outter, aerodynamic_model_inner],
+            aerodynamic_models: [aerodynamic_model_outer, aerodynamic_model_inner],
         }
     }
 
@@ -6196,8 +6196,8 @@ impl ElevatorAssembly {
         }
     }
 
-    // Returns aerodynamic torques for (outter,inner) control surfaces
-    fn aerodynamic_torques_outter_inner(&self) -> (Torque, Torque) {
+    // Returns aerodynamic torques for (outer,inner) control surfaces
+    fn aerodynamic_torques_outer_inner(&self) -> (Torque, Torque) {
         (
             self.hydraulic_assemblies[0].aerodynamic_torque(),
             self.hydraulic_assemblies[1].aerodynamic_torque(),

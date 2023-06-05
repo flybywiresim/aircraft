@@ -505,12 +505,12 @@ enum A380fuelTanks {
     LeftFeed2,
     LeftMid,
     LeftFeed1,
-    LeftOutter,
+    LeftOuter,
     RightInner,
     RightFeed3,
     RightMid,
     RightFeed4,
-    RightOutter,
+    RightOuter,
 }
 impl fmt::Display for A380fuelTanks {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -519,12 +519,12 @@ impl fmt::Display for A380fuelTanks {
             A380fuelTanks::LeftFeed2 => write!(f, "FUELSYSTEM TANK QUANTITY:5"),
             A380fuelTanks::LeftMid => write!(f, "FUELSYSTEM TANK QUANTITY:3"),
             A380fuelTanks::LeftFeed1 => write!(f, "FUELSYSTEM TANK QUANTITY:2"),
-            A380fuelTanks::LeftOutter => write!(f, "FUELSYSTEM TANK QUANTITY:1"),
+            A380fuelTanks::LeftOuter => write!(f, "FUELSYSTEM TANK QUANTITY:1"),
             A380fuelTanks::RightInner => write!(f, "FUELSYSTEM TANK QUANTITY:7"),
             A380fuelTanks::RightFeed3 => write!(f, "FUELSYSTEM TANK QUANTITY:6"),
             A380fuelTanks::RightMid => write!(f, "FUELSYSTEM TANK QUANTITY:8"),
             A380fuelTanks::RightFeed4 => write!(f, "FUELSYSTEM TANK QUANTITY:9"),
-            A380fuelTanks::RightOutter => write!(f, "FUELSYSTEM TANK QUANTITY:10"),
+            A380fuelTanks::RightOuter => write!(f, "FUELSYSTEM TANK QUANTITY:10"),
         }
     }
 }
@@ -554,13 +554,13 @@ impl WingMassA380 {
             left_tank_2_id: context.get_identifier(A380fuelTanks::LeftFeed2.to_string()),
             left_tank_3_id: context.get_identifier(A380fuelTanks::LeftMid.to_string()),
             left_tank_4_id: context.get_identifier(A380fuelTanks::LeftFeed1.to_string()),
-            left_tank_5_id: context.get_identifier(A380fuelTanks::LeftOutter.to_string()),
+            left_tank_5_id: context.get_identifier(A380fuelTanks::LeftOuter.to_string()),
 
             right_tank_1_id: context.get_identifier(A380fuelTanks::RightInner.to_string()),
             right_tank_2_id: context.get_identifier(A380fuelTanks::RightFeed3.to_string()),
             right_tank_3_id: context.get_identifier(A380fuelTanks::RightMid.to_string()),
             right_tank_4_id: context.get_identifier(A380fuelTanks::RightFeed4.to_string()),
-            right_tank_5_id: context.get_identifier(A380fuelTanks::RightOutter.to_string()),
+            right_tank_5_id: context.get_identifier(A380fuelTanks::RightOuter.to_string()),
 
             left_tank_volumes: [Volume::default(); 5],
             right_tank_volumes: [Volume::default(); 5],
@@ -1392,7 +1392,7 @@ mod tests {
                 Volume::new::<liter>(25000.),
             );
             self.write_by_name(
-                A380fuelTanks::LeftOutter.to_string().as_str(),
+                A380fuelTanks::LeftOuter.to_string().as_str(),
                 Volume::new::<liter>(9000.),
             );
 
@@ -1413,7 +1413,7 @@ mod tests {
                 Volume::new::<liter>(25000.),
             );
             self.write_by_name(
-                A380fuelTanks::RightOutter.to_string().as_str(),
+                A380fuelTanks::RightOuter.to_string().as_str(),
                 Volume::new::<liter>(9000.),
             );
 
@@ -1786,7 +1786,7 @@ mod tests {
                 <= 0.1
         );
 
-        test_bed.write_by_name(A380fuelTanks::LeftOutter.to_string().as_str(), 1000.);
+        test_bed.write_by_name(A380fuelTanks::LeftOuter.to_string().as_str(), 1000.);
 
         test_bed.run_with_delta(Duration::from_secs(1));
 
@@ -1797,7 +1797,7 @@ mod tests {
         node4_mass = test_bed.query(|a| a.wing_flex.flex_physics[0].nodes[4].fuel_mass);
 
         println!(
-            "FUELMASSES after fueling left outter: {:.0}/{:.0}/{:.0}/{:.0}/{:.0}",
+            "FUELMASSES after fueling left outer: {:.0}/{:.0}/{:.0}/{:.0}/{:.0}",
             node0_mass.get::<kilogram>(),
             node1_mass.get::<kilogram>(),
             node2_mass.get::<kilogram>(),

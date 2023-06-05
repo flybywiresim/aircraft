@@ -171,7 +171,7 @@ impl ElevatorFlexPhysics {
     fn update(
         &mut self,
         context: &UpdateContext,
-        outter_inner_elevator_aero_torques: (Torque, Torque),
+        outer_inner_elevator_aero_torques: (Torque, Torque),
         surface_vibration_acceleration: Acceleration,
     ) {
         self.wobble_physics.update(
@@ -185,7 +185,7 @@ impl ElevatorFlexPhysics {
             Vector3::new(0., 3.4, -28.2),
         );
 
-        self.update_animation_position(outter_inner_elevator_aero_torques);
+        self.update_animation_position(outer_inner_elevator_aero_torques);
     }
 
     fn update_animation_position(&mut self, elevator_aero_torques: (Torque, Torque)) {
@@ -267,7 +267,7 @@ impl FlexibleElevators {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        outter_inner_elevator_aero_torques: [(Torque, Torque); 2],
+        outer_inner_elevator_aero_torques: [(Torque, Torque); 2],
         up_down_rudder_aero_torques: (Torque, Torque),
         surface_vibration_acceleration: Acceleration,
     ) {
@@ -277,7 +277,7 @@ impl FlexibleElevators {
             for (idx, elevator_flex) in &mut self.elevators_flex.iter_mut().enumerate() {
                 elevator_flex.update(
                     &context.with_delta(cur_time_step),
-                    outter_inner_elevator_aero_torques[idx],
+                    outer_inner_elevator_aero_torques[idx],
                     surface_vibration_acceleration,
                 );
             }
@@ -314,7 +314,7 @@ mod tests {
     struct EngineFlexTestAircraft {
         elevators_flex: FlexibleElevators,
 
-        outter_elevator_aero_torque: Torque,
+        outer_elevator_aero_torque: Torque,
         inner_elevator_aero_torque: Torque,
 
         down_rudder_aero_torque: Torque,
@@ -325,7 +325,7 @@ mod tests {
             Self {
                 elevators_flex: FlexibleElevators::new(context),
 
-                outter_elevator_aero_torque: Torque::default(),
+                outer_elevator_aero_torque: Torque::default(),
                 inner_elevator_aero_torque: Torque::default(),
                 down_rudder_aero_torque: Torque::default(),
                 up_rudder_aero_torque: Torque::default(),
@@ -337,11 +337,11 @@ mod tests {
                 context,
                 [
                     (
-                        self.outter_elevator_aero_torque,
+                        self.outer_elevator_aero_torque,
                         self.inner_elevator_aero_torque,
                     ),
                     (
-                        self.outter_elevator_aero_torque,
+                        self.outer_elevator_aero_torque,
                         self.inner_elevator_aero_torque,
                     ),
                 ],

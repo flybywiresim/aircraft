@@ -45,7 +45,9 @@ use systems::{
         AirDataInertialReferenceSystem, AirDataInertialReferenceSystemOverheadPanel,
     },
     shared::ElectricalBusType,
-    simulation::{Aircraft, SimulationElement, SimulationElementVisitor, UpdateContext},
+    simulation::{
+        Aircraft, InitContext, SimulationElement, SimulationElementVisitor, UpdateContext,
+    },
 };
 
 pub struct A380 {

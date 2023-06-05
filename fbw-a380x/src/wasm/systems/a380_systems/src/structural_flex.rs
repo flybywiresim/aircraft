@@ -37,12 +37,12 @@ impl A380StructuralFlex {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        outter_inner_elevator_aero_torques: [(Torque, Torque); 2],
+        outer_inner_elevator_aero_torques: [(Torque, Torque); 2],
         up_down_rudder_aero_torques: (Torque, Torque),
     ) {
         self.elevators_flex_physics.update(
             context,
-            outter_inner_elevator_aero_torques,
+            outer_inner_elevator_aero_torques,
             up_down_rudder_aero_torques,
             self.surface_vibrations.surface_vibration_acceleration(),
         );
