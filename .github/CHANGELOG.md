@@ -10,6 +10,11 @@
 1. [FMS] TO SPEEDS TOO LOW uses FQI fuel quantity after engine start to avoid spurious warnings - @tracernz (Mike)
 1. [EIS] Added > character to the font - @KiloEchoVictor (Kevin)
 1. [ND] Fix ROSE VOR/LS conditions and ILS course - @tracernz (Mike)
+1. [FMGC]: no vapp addition without wind entry @tracernz (Mike)
+1. [FLIGHTMODEL/FUEL] Update of fuel system (center tank transfer and crossfeed) - @donstim (donbikes#4084), @tracernz (Mike), @Taz5150 (TazX [Z+2]#0405)
+1. [EFB] Optimized/fixed strobe handling in aircraft presets @frankkopp (Frank Kopp)
+1. [ATSU] Hoppie Telex with \n now can be received @Maximilian-Reuter (Chaoz#3065)
+1. [LIGHTS] Fixed trim decal emissive and floods - @FinalLightNL (FinalLight#2113)
 
 ## 0.10.0
 
