@@ -126,7 +126,7 @@ $display-mfd-dark-grey: #3c3c3c;
   font-size: 26px;
   color: $display-cyan;
   font-family: "Ecam", monospace;
-  margin: 6px 10px 6px 10px;
+  margin: 4px 10px 4px 10px;
   display: block;
 }
 
@@ -385,7 +385,7 @@ $display-mfd-dark-grey: #3c3c3c;
   flex-direction: row;
   justify-items: center;
   align-items: baseline;
-  padding: 4px;
+  padding: 4px 2px;
   background-color: $display-background;
   border: 2px inset $display-light-grey;
 }
@@ -399,11 +399,42 @@ $display-mfd-dark-grey: #3c3c3c;
   border: none;
   font-family: "Ecam", monospace;
   font-size: 25px;
-  text-align: right;
+  text-align: center;
   vertical-align: center;
   color: $display-cyan;
-  padding: 0px 5px;
-  caret-shape: block; // not yet supported
+  padding: 0px;
+}
+
+.MFDNumberInputTextInput.validating {
+  color: $display-light-grey;
+}
+
+.MFDNumberInputTextInput.mandatory {
+  color: $display-amber;
+}
+
+.MFDNumberInputTextInput.valueSelected {
+  background-color: $display-cyan;
+  color: $display-background;
+}
+
+.MFDInputFieldCaret {
+  animation: blinking 1s step-start infinite;
+  height: 24px;
+  width: 15px;
+  background-color: $display-cyan;
+  color: $display-background;
+  font-family: "Ecam", monospace;
+  font-size: 25px;
+  text-align: center;
+  vertical-align: center;
+}
+
+@keyframes blinking {
+  50% {
+    background-color: $display-background;
+    color: $display-cyan;
+  }
 }
 
 .MFDMouseCursor {
