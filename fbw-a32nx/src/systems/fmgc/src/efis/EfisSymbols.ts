@@ -383,7 +383,7 @@ export class EfisSymbols {
                         if (!isSelectedVerticalModeActive && shouldShowConstraintCircleInPhase(flightPhase, wp)) {
                             type |= NdSymbolTypeFlags.Constraint;
 
-                            const predictionAtWaypoint = waypointPredictions.get(i);
+                            const predictionAtWaypoint = waypointPredictions?.get(i);
                             if (predictionAtWaypoint?.isAltitudeConstraintMet) {
                                 type |= NdSymbolTypeFlags.MagentaColor;
                             } else if (predictionAtWaypoint) {
