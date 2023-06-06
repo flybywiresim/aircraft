@@ -236,13 +236,15 @@
                 <BLURRED_NODE_ID>PROP_BLURRED_RIGHT</BLURRED_NODE_ID>
                 <BLURRED_SPINNER_NODE_ID>PROP_BLURRED_CONE_RIGHT</BLURRED_SPINNER_NODE_ID>
             </UseTemplate>
-            <UseTemplate Name="FBW_ENGINE_Turbine_ReverseThrust_Template">
-                <ID>1</ID>
+            <UseTemplate Name="ASOBO_GT_Anim">
                 <ANIM_NAME>thrust_rev_1</ANIM_NAME>
+                <ANIM_CODE>(L:A32NX_REVERSER_1_POSITION) 100 *</ANIM_CODE>
+                <ANIM_LENGTH>100</ANIM_LENGTH>
             </UseTemplate>
-            <UseTemplate Name="FBW_ENGINE_Turbine_ReverseThrust_Template">
-                <ID>2</ID>
+            <UseTemplate Name="ASOBO_GT_Anim">
                 <ANIM_NAME>thrust_rev_2</ANIM_NAME>
+                <ANIM_CODE>(L:A32NX_REVERSER_2_POSITION) 100 *</ANIM_CODE>
+                <ANIM_LENGTH>100</ANIM_LENGTH>
             </UseTemplate>
         </Component>
         <Component ID="INTERACTIVE_POINTS">
@@ -456,7 +458,6 @@
 		</Component>
         <Component ID="FX_CONTRAIL_QUAD">
             <OverrideTemplateParameters>
-                <FX_CODE>(A:CONTRAILS CONDITIONS MET:1, Keyframe) 0 &gt;</FX_CODE>
                 <FX_OFFSET_X>0</FX_OFFSET_X>
                 <FX_OFFSET_Y>0</FX_OFFSET_Y>
                 <FX_OFFSET_Z>0</FX_OFFSET_Z>
@@ -465,16 +466,17 @@
             </OverrideTemplateParameters>
             <Component ID="FX_CONTRAIL_QUAD_LEFT_IN" Node="fx_exhaust_left">
                 <UseTemplate Name="ASOBO_GT_FX">
+                    <FX_CODE>(A:CONTRAILS CONDITIONS MET:1, Bool) (L:A32NX_ENGINE_N2:1, Number) 25 &gt; and</FX_CODE>
                 </UseTemplate>
             </Component>
             <Component ID="FX_CONTRAIL_QUAD_LEFT_OUT" Node="fx_exhaust_right">
                 <UseTemplate Name="ASOBO_GT_FX">
+                    <FX_CODE>(A:CONTRAILS CONDITIONS MET:1, Bool) (L:A32NX_ENGINE_N2:2, Number) 25 &gt; and</FX_CODE>
                 </UseTemplate>
             </Component>
         </Component>
         <Component ID="FX_CONTRAIL_RIBBON">
             <OverrideTemplateParameters>
-                <FX_CODE>(A:CONTRAILS CONDITIONS MET:1, Keyframe) 0 &gt;</FX_CODE>
                 <FX_OFFSET_X>0</FX_OFFSET_X>
                 <FX_OFFSET_Y>0</FX_OFFSET_Y>
                 <FX_OFFSET_Z>0</FX_OFFSET_Z>
@@ -483,10 +485,12 @@
             </OverrideTemplateParameters>
             <Component ID="FX_CONTRAIL_RIBBON_LEFT_OUT" Node="fx_exhaust_left">
                 <UseTemplate Name="ASOBO_GT_FX">
+                    <FX_CODE>(A:CONTRAILS CONDITIONS MET:1, Bool) (L:A32NX_ENGINE_N2:1, Number) 25 &gt; and</FX_CODE>
                 </UseTemplate>
             </Component>
             <Component ID="FX_CONTRAIL_RIBBON_RIGHT_OUT" Node="fx_exhaust_right">
                 <UseTemplate Name="ASOBO_GT_FX">
+                    <FX_CODE>(A:CONTRAILS CONDITIONS MET:1, Bool) (L:A32NX_ENGINE_N2:2, Number) 25 &gt; and</FX_CODE>
                 </UseTemplate>
             </Component>
         </Component>

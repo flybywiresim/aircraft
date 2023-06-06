@@ -3,6 +3,7 @@ use super::{
     A320ElectricalOverheadPanel, A320EmergencyElectricalOverheadPanel,
 };
 use std::time::Duration;
+use systems::apu::ApuGenerator;
 use systems::simulation::InitContext;
 use systems::{
     electrical::{
@@ -380,7 +381,7 @@ impl A320MainPowerSources {
             .update(context, engines[1], overhead, engine_fire_push_buttons);
         electricity.supplied_by(&self.engine_2_gen);
 
-        electricity.supplied_by(apu);
+        electricity.supplied_by(apu.generator(1));
         electricity.supplied_by(ext_pwr);
 
         let gen_1_provides_power = overhead.generator_is_on(1)
@@ -396,7 +397,7 @@ impl A320MainPowerSources {
             && ext_pwr.output_within_normal_parameters()
             && !both_engine_gens_provide_power;
         let apu_gen_provides_power = overhead.apu_generator_is_on()
-            && apu.output_within_normal_parameters()
+            && apu.generator(1).output_within_normal_parameters()
             && !ext_pwr_provides_power
             && !both_engine_gens_provide_power;
 
@@ -417,7 +418,7 @@ impl A320MainPowerSources {
                     || (apu_or_ext_pwr_provides_power && !gen_2_provides_power)),
         );
 
-        electricity.flow(apu, &self.apu_gen_contactor);
+        electricity.flow(apu.generator(1), &self.apu_gen_contactor);
         electricity.flow(ext_pwr, &self.ext_pwr_contactor);
 
         electricity.flow(&self.engine_1_gen, &self.engine_generator_contactors[0]);

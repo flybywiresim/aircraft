@@ -2,6 +2,5 @@
 <!-- SPDX-License-Identifier: GPL-3.0 -->
 
 <ModelBehaviors>
-    <Include RelativeFile="../generated/A32NX_Exterior_Engines.xml"/>
     <Include RelativeFile="../generated/A32NX_Windshield.xml"/>
 </ModelBehaviors>

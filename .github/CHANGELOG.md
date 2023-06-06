@@ -12,6 +12,11 @@
 1. [FMS] Add a default RNP of 0.3 for RNP AR procedure legs - @tracernz (Mike)
 1. [EFB] Fixed Simbridge failing to connect if remote setting is enabled then disabled - @DevonDF (Devon#9451)
 1. [SD] Corrected fuel transfer valve amber logic - @tracernz (Mike)
+1. [FMS] TO SPEEDS TOO LOW uses FQI fuel quantity after engine start to avoid spurious warnings - @tracernz (Mike)
+1. [ND] Fix ROSE VOR/LS conditions and ILS course - @tracernz (Mike)
+1. [HYD] Added hydraulic reverser actuators - @Crocket63 (crocket)
+1. [EIS] Added > character to the font - @KiloEchoVictor (Kevin)
+1. [ND] Mask the map below the TCAS/WXR and FM messages - @tracernz (Mike)
 1. [RA] Realistic RA model based on a probe mesh implementation - @Taz5150 (TazX [Z+2]#0405)
 
 ## 0.10.0
@@ -138,6 +143,7 @@
 1. [EFB] Added pause at T/D function - @2hwk (2Cas#1022)
 1. [LIGHTS] Fixed trim decal emissive and floods - @FinalLightNL (FinalLight#2113)
 1. [FLIGHTMODEL/FUEL] Fix outer tank transfer behaviour - @donstim (donbikes#4084)
+
 
 ## 0.9.0
 
@@ -1273,3 +1279,4 @@
 1. [DCDU] Fixed MSG- and MSG+ button labels - @tyler58546 (tyler58546)
 1. [ISIS] Fixed issue where ISIS was allowing a bug to be set while in the OFF state - Patrick Macken (@Pat M on
    Discord)
+1. [EFB] Restructured APIs and made Navigraph Auth a reusable component - @MicahBCode (Mischa Binder)
