@@ -300,7 +300,7 @@ pub struct EngineCompressionChamberController {
     target_temperature: ThermodynamicTemperature,
     n1_contribution_factor: f64,
     n2_contribution_factor: f64,
-    compression_factor: f64,
+    compression_factor: f64, // TODO: This is now useless, should be removed
 }
 impl ControllerSignal<TargetPressureTemperatureSignal> for EngineCompressionChamberController {
     fn signal(&self) -> Option<TargetPressureTemperatureSignal> {
@@ -312,7 +312,8 @@ impl ControllerSignal<TargetPressureTemperatureSignal> for EngineCompressionCham
 }
 impl EngineCompressionChamberController {
     const HEAT_CAPACITY_RATIO: f64 = 1.4; // Adiabatic index of dry air
-    const COMPRESSOR_EFFICIENCY: f64 = 0.99;
+    const INTAKE_EFFICIENCY: f64 = 0.93;
+    const COMPRESSOR_EFFICIENCY: f64 = 0.87;
 
     pub fn new(
         n1_contribution_factor: f64,
@@ -335,30 +336,19 @@ impl EngineCompressionChamberController {
     ) {
         let lp_cpr = 1. + self.n1_contribution_factor * engine.corrected_n1().get::<ratio>();
         let hp_cpr = 1. + self.n2_contribution_factor * engine.corrected_n2().get::<ratio>();
-        let compression_ratio = lp_cpr * hp_cpr;
+        let compression_ratio = (lp_cpr * hp_cpr).max(1.);
         let exponent = Self::HEAT_CAPACITY_RATIO / (Self::HEAT_CAPACITY_RATIO - 1.);
 
-        let inlet_temperature_ratio =
-            1. + (Self::HEAT_CAPACITY_RATIO - 1.) * f64::from(context.mach_number()).powi(2) / 2.;
+        let relative_ram_rise =
+            (Self::HEAT_CAPACITY_RATIO - 1.) * f64::from(context.mach_number()).powi(2) / 2.;
 
-        // T1
-        let inlet_temperature = context.ambient_temperature() * inlet_temperature_ratio;
-        // println!(
-        //     "inlet_temperature: {}",
-        //     inlet_temperature.get::<degree_celsius>()
-        // );
-        let inlet_pressure = context.ambient_pressure() * inlet_temperature_ratio.powf(exponent);
+        let inlet_pressure = context.ambient_pressure()
+            * (1. + Self::INTAKE_EFFICIENCY * relative_ram_rise).powf(exponent);
+        let inlet_temperature = context.ambient_temperature() * (1. + relative_ram_rise);
 
-        self.target_pressure = inlet_pressure * compression_ratio;
-        // println!("factor: {}", (compression_ratio.powf(1. / exponent) - 1.));
-        self.target_temperature =
-            inlet_temperature * compression_ratio.powf(1. / exponent) / Self::COMPRESSOR_EFFICIENCY;
-
-        // println!("target_pressure: {}", self.target_pressure.get::<psi>());
-        // println!(
-        //     "target_temperature: {}",
-        //     self.target_temperature.get::<degree_celsius>()
-        // );
+        self.target_temperature = inlet_temperature
+            * (1. + (compression_ratio.powf(1. / exponent) - 1.) / Self::COMPRESSOR_EFFICIENCY);
+        self.target_pressure = compression_ratio * inlet_pressure;
     }
 }
 

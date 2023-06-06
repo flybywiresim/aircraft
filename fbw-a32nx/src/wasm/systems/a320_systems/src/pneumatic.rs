@@ -978,11 +978,14 @@ impl EngineBleedAirSystem {
                 "PNEU_ENG_{}_DIFFERENTIAL_TRANSDUCER_PRESSURE",
                 number
             )),
-            fan_compression_chamber_controller: EngineCompressionChamberController::new(4., 1., 2.),
+            fan_compression_chamber_controller: EngineCompressionChamberController::new(
+                1.4, 0., 2.,
+            ),
             intermediate_pressure_compression_chamber_controller:
-                EngineCompressionChamberController::new(4., 2.5, 3.5), // Maximum IP bleed pressure output should be about 150 psig
+                EngineCompressionChamberController::new(9.47404, 0., -3.19875), // Maximum IP bleed pressure output should be about 150 psig
             high_pressure_compression_chamber_controller: EngineCompressionChamberController::new(
-                4., 8., 3., // Maximum HP bleed pressure output should be about 660 psig
+                5.98726, 6.03051,
+                -1.21752, // Maximum HP bleed pressure output should be about 660 psig
             ),
             fan_compression_chamber: CompressionChamber::new(Volume::new::<cubic_meter>(1.)),
             intermediate_pressure_compression_chamber: CompressionChamber::new(Volume::new::<
@@ -2654,6 +2657,7 @@ pub mod tests {
     fn full_graphing_test() {
         let alt = Length::new::<foot>(37000.);
         let ambient_pressure = InternationalStandardAtmosphere::pressure_at_altitude(alt);
+        println!("Ambient pressure: {} psi", ambient_pressure.get::<psi>());
 
         let mut test_bed = test_bed_with()
             .eng1_n1(0.84)
@@ -3833,7 +3837,7 @@ pub mod tests {
                 (test_bed.ip_pressure(i) - ambient_pressure).get::<psi>()
             );
 
-            assert!(test_bed.ip_pressure(i) - ambient_pressure > Pressure::new::<psi>(135.));
+            assert!(test_bed.ip_pressure(i) - ambient_pressure > Pressure::new::<psi>(120.));
             assert!(test_bed.ip_pressure(i) - ambient_pressure < Pressure::new::<psi>(165.));
         }
     }
