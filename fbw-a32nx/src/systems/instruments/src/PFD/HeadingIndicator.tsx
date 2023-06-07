@@ -1,5 +1,5 @@
 import { DisplayComponent, FSComponent, HEvent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import { DisplayManagementComputerEvents } from 'instruments/src/PFD/shared/DisplayManagementComputer';
+import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import { HorizontalTape } from './HorizontalTape';
 import { getSmallestAngle } from './PFDUtils';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
@@ -61,7 +61,7 @@ export class HeadingOfftape extends DisplayComponent<{ bus: ArincEventBus, faile
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getArincSubscriber<DisplayManagementComputerEvents & PFDSimvars & Arinc429Values & HEvent>();
+        const sub = this.props.bus.getArincSubscriber<DmcLogicEvents & PFDSimvars & Arinc429Values & HEvent>();
 
         sub.on('heading').withArinc429Precision(2).handle((word) => {
             this.heading.set(word.value);
@@ -207,7 +207,7 @@ class GroundTrackBug extends DisplayComponent<GroundTrackBugProps> {
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<DisplayManagementComputerEvents>();
+        const sub = this.props.bus.getSubscriber<DmcLogicEvents>();
 
         sub.on('track').handle((groundTrack) => {
             if (groundTrack.isNormalOperation()) {
@@ -356,7 +356,7 @@ class TrueFlag extends DisplayComponent<TrueFlagProps> {
 
     /** @inheritdoc */
     onAfterRender(node: VNode): void {
-        this.props.bus.getSubscriber<DisplayManagementComputerEvents>().on('trueRefActive').whenChanged().handle((v) => this.trueRefActive.set(v));
+        this.props.bus.getSubscriber<DmcLogicEvents>().on('trueRefActive').whenChanged().handle((v) => this.trueRefActive.set(v));
         // FIXME this should be 127-11 from FWC
         this.props.bus.getSubscriber<PFDSimvars>().on('slatPosLeft').withPrecision(0.25).handle((v) => this.slatsExtended.set(v > 0.4));
 

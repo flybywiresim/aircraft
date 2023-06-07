@@ -21,8 +21,8 @@ export type EwdSimvars = {
     engine1FF: number;
     engine1N1: number;
     engine1N2: number;
-    engine1Reverse: boolean;
-    engine1ReverseNozzle: number;
+    engine1ReverserTransit: boolean;
+    engine1ReverserDeployed: boolean;
     engine1State: number;
     engine2AntiIce: boolean;
     engine2EGT: number;
@@ -30,8 +30,8 @@ export type EwdSimvars = {
     engine2FF: number;
     engine2N1: number;
     engine2N2: number;
-    engine2Reverse: boolean;
-    engine2ReverseNozzle: number;
+    engine2ReverserTransit: boolean;
+    engine2ReverserDeployed: boolean;
     engine2State: number;
     wingAntiIce: boolean;
     apuBleedPressure: number;
@@ -84,8 +84,8 @@ export enum EwdVars {
     engine1FF = 'L:A32NX_ENGINE_FF:1',
     engine1N1 = 'L:A32NX_ENGINE_N1:1',
     engine1N2 = 'L:A32NX_ENGINE_N2:1',
-    engine1Reverse = 'L:A32NX_AUTOTHRUST_REVERSE:1',
-    engine1ReverseNozzle = 'A:TURB ENG REVERSE NOZZLE PERCENT:1',
+    engine1ReverserTransit = 'L:A32NX_REVERSER_1_DEPLOYING',
+    engine1ReverserDeployed = 'L:A32NX_REVERSER_1_DEPLOYED',
     engine1State = 'L:A32NX_ENGINE_STATE:1',
     engine2AntiIce = 'L:XMLVAR_Momentary_PUSH_OVHD_ANTIICE_ENG2_Pressed',
     engine2EGT = 'L:A32NX_ENGINE_EGT:2',
@@ -93,8 +93,8 @@ export enum EwdVars {
     engine2FF = 'L:A32NX_ENGINE_FF:2',
     engine2N1 = 'L:A32NX_ENGINE_N1:2',
     engine2N2 = 'L:A32NX_ENGINE_N2:2',
-    engine2Reverse = 'L:A32NX_AUTOTHRUST_REVERSE:2',
-    engine2ReverseNozzle = 'A:TURB ENG REVERSE NOZZLE PERCENT:2',
+    engine2ReverserTransit = 'L:A32NX_REVERSER_2_DEPLOYING',
+    engine2ReverserDeployed = 'L:A32NX_REVERSER_2_DEPLOYED',
     engine2State = 'L:A32NX_ENGINE_STATE:2',
     wingAntiIce = 'L:A32NX_PNEU_WING_ANTI_ICE_SYSTEM_SELECTED',
     apuBleedPressure = 'L:APU_BLEED_PRESSURE',
@@ -148,8 +148,8 @@ export class EwdSimvarPublisher extends SimVarPublisher<EwdSimvars> {
         ['engine1FF', { name: EwdVars.engine1FF, type: SimVarValueType.Number }],
         ['engine1N1', { name: EwdVars.engine1N1, type: SimVarValueType.Number }],
         ['engine1N2', { name: EwdVars.engine1N2, type: SimVarValueType.Number }],
-        ['engine1Reverse', { name: EwdVars.engine1Reverse, type: SimVarValueType.Bool }],
-        ['engine1ReverseNozzle', { name: EwdVars.engine1ReverseNozzle, type: SimVarValueType.Number }],
+        ['engine1ReverserTransit', { name: EwdVars.engine1ReverserTransit, type: SimVarValueType.Bool }],
+        ['engine1ReverserDeployed', { name: EwdVars.engine1ReverserDeployed, type: SimVarValueType.Bool }],
         ['engine1State', { name: EwdVars.engine1State, type: SimVarValueType.Enum }],
         ['engine2AntiIce', { name: EwdVars.engine2AntiIce, type: SimVarValueType.Bool }],
         ['engine2EGT', { name: EwdVars.engine2EGT, type: SimVarValueType.Number }],
@@ -157,8 +157,8 @@ export class EwdSimvarPublisher extends SimVarPublisher<EwdSimvars> {
         ['engine2FF', { name: EwdVars.engine2FF, type: SimVarValueType.Number }],
         ['engine2N1', { name: EwdVars.engine2N1, type: SimVarValueType.Number }],
         ['engine2N2', { name: EwdVars.engine2N2, type: SimVarValueType.Number }],
-        ['engine2Reverse', { name: EwdVars.engine2Reverse, type: SimVarValueType.Bool }],
-        ['engine2ReverseNozzle', { name: EwdVars.engine2ReverseNozzle, type: SimVarValueType.Number }],
+        ['engine2ReverserTransit', { name: EwdVars.engine2ReverserTransit, type: SimVarValueType.Bool }],
+        ['engine2ReverserDeployed', { name: EwdVars.engine2ReverserDeployed, type: SimVarValueType.Bool }],
         ['engine2State', { name: EwdVars.engine2State, type: SimVarValueType.Enum }],
         ['wingAntiIce', { name: EwdVars.wingAntiIce, type: SimVarValueType.Bool }],
         ['apuBleedPressure', { name: EwdVars.apuBleedPressure, type: SimVarValueType.PSI }],

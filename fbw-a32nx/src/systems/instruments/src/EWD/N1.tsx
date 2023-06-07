@@ -26,9 +26,9 @@ export class AvailRev extends DisplayComponent<AvailRevProps> {
 
     private idleN1: number = 0;
 
-    private reverse: boolean = false;
+    private reverserInTransit: boolean = false;
 
-    private reverseNozzle: number = 0;
+    private reverserDeployed: boolean = false;
 
     private state: number = 0;
 
@@ -49,12 +49,12 @@ export class AvailRev extends DisplayComponent<AvailRevProps> {
             this.idleN1 = n1;
         });
 
-        sub.on(`engine${this.props.engine}Reverse`).whenChanged().handle((rev) => {
-            this.reverse = rev;
+        sub.on(`engine${this.props.engine}ReverserTransit`).whenChanged().handle((rev) => {
+            this.reverserInTransit = rev;
         });
 
-        sub.on(`engine${this.props.engine}ReverseNozzle`).whenChanged().handle((rev) => {
-            this.reverseNozzle = rev;
+        sub.on(`engine${this.props.engine}ReverserDeployed`).whenChanged().handle((rev) => {
+            this.reverserDeployed = rev;
         });
 
         sub.on(`engine${this.props.engine}State`).whenChanged().handle((state) => {
@@ -63,12 +63,12 @@ export class AvailRev extends DisplayComponent<AvailRevProps> {
 
         sub.on('realTime').handle((_t) => {
             const availVisible = this.n1 > Math.floor(this.idleN1) && this.state === 2;
-            const isVisible = (availVisible || this.reverse) || !this.fadec;
-            const revReady = this.fadec && Math.round(this.reverseNozzle * 100) > 5;
+            const isVisible = (availVisible || this.reverserInTransit || this.reverserDeployed) || !this.fadec;
+            const revReady = this.fadec && this.reverserDeployed;
 
             this.visibility.set(isVisible ? 'visible' : 'hidden');
             this.availVisible.set(availVisible ? 'visible' : 'hidden');
-            this.revVisible.set((this.reverse && !availVisible) || !this.fadec ? 'visible' : 'hidden');
+            this.revVisible.set(((this.reverserInTransit || this.reverserDeployed) && !availVisible) || !this.fadec ? 'visible' : 'hidden');
             this.revText.set(this.fadec ? 'REV' : 'XX');
             this.revClass.set(revReady ? 'Huge Center Green' : 'Huge Center Amber');
         });

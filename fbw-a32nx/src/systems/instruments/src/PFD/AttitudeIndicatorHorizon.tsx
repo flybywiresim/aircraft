@@ -1,7 +1,7 @@
-import { ClockEvents, DisplayComponent, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import { Arinc429Register, Arinc429Word } from '@shared/arinc429';
+import { ClockEvents, DisplayComponent, FSComponent, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import { Arinc429Word } from '@shared/arinc429';
 
-import { DisplayManagementComputerEvents } from 'instruments/src/PFD/shared/DisplayManagementComputer';
+import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import {
     calculateHorizonOffsetFromPitch,
     calculateVerticalOffsetFromRoll,
@@ -13,6 +13,7 @@ import { Arinc429Values } from './shared/ArincValueProvider';
 import { HorizontalTape } from './HorizontalTape';
 import { getDisplayIndex } from './PFD';
 import { ArincEventBus } from '../MsfsAvionicsCommon/ArincEventBus';
+import { Arinc429ConsumerSubject } from '../MsfsAvionicsCommon/Arinc429ConsumerSubject';
 
 const DisplayRange = 35;
 const DistanceSpacing = 15;
@@ -21,22 +22,26 @@ const ValueSpacing = 10;
 class HeadingBug extends DisplayComponent<{ bus: ArincEventBus, isCaptainSide: boolean, yOffset: Subscribable<number> }> {
     private isActive = false;
 
-    private selectedHeading = 0;
+    private selectedHeading = Subject.create(0);;
 
-    private heading = 0;
+    private heading = Arinc429ConsumerSubject.create(null);
 
     private horizonHeadingBug = FSComponent.createRef<SVGGElement>();
 
-    private yOffset = 0;
+    private readonly headingBugSubject = MappedSubject.create(([heading, selectedHeading, yOffset]) => {
+        if (this.isActive) {
+            this.calculateAndSetOffset(selectedHeading, heading.value, yOffset);
+        }
+    }, this.heading, this.selectedHeading, this.props.yOffset)
 
-    private calculateAndSetOffset() {
-        const headingDelta = getSmallestAngle(this.selectedHeading, this.heading);
+    private calculateAndSetOffset(selectedHeading: number, heading: number, yOffset) {
+        const headingDelta = getSmallestAngle(selectedHeading, heading);
 
         const offset = headingDelta * DistanceSpacing / ValueSpacing;
 
         if (Math.abs(offset) <= DisplayRange + 10) {
             this.horizonHeadingBug.instance.classList.remove('HiddenElement');
-            this.horizonHeadingBug.instance.style.transform = `translate3d(${offset}px, ${this.yOffset}px, 0px)`;
+            this.horizonHeadingBug.instance.style.transform = `translate3d(${offset}px, ${yOffset}px, 0px)`;
         } else {
             this.horizonHeadingBug.instance.classList.add('HiddenElement');
         }
@@ -45,20 +50,12 @@ class HeadingBug extends DisplayComponent<{ bus: ArincEventBus, isCaptainSide: b
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<DisplayManagementComputerEvents & PFDSimvars & Arinc429Values>();
+        const sub = this.props.bus.getArincSubscriber<DmcLogicEvents & PFDSimvars & Arinc429Values>();
+
+        this.heading.setConsumer(sub.on('heading').withArinc429Precision(2));
 
         sub.on('selectedHeading').whenChanged().handle((s) => {
-            this.selectedHeading = s;
-            if (this.isActive) {
-                this.calculateAndSetOffset();
-            }
-        });
-
-        sub.on('heading').handle((h) => {
-            this.heading = h.value;
-            if (this.isActive && h.isNormalOperation()) {
-                this.calculateAndSetOffset();
-            }
+            this.selectedHeading.set(s);
         });
 
         sub.on(this.props.isCaptainSide ? 'fd1Active' : 'fd2Active').whenChanged().handle((fd) => {
@@ -67,13 +64,6 @@ class HeadingBug extends DisplayComponent<{ bus: ArincEventBus, isCaptainSide: b
                 this.horizonHeadingBug.instance.classList.remove('HiddenElement');
             } else {
                 this.horizonHeadingBug.instance.classList.add('HiddenElement');
-            }
-        });
-
-        this.props.yOffset.sub((yOffset) => {
-            this.yOffset = yOffset;
-            if (this.isActive) {
-                this.calculateAndSetOffset();
             }
         });
     }
@@ -116,22 +106,26 @@ export class Horizon extends DisplayComponent<HorizonProps> {
         const apfd = this.props.bus.getArincSubscriber<Arinc429Values>();
 
         apfd.on('pitchAr').withArinc429Precision(3).handle((pitch) => {
+            const multiplier = 1000;
+            const currentValueAtPrecision = Math.round(pitch.value * multiplier) / multiplier;
             if (pitch.isNormalOperation()) {
                 this.pitchGroupRef.instance.style.display = 'block';
 
-                this.pitchGroupRef.instance.style.transform = `translate3d(0px, ${calculateHorizonOffsetFromPitch(pitch.value)}px, 0px)`;
+                this.pitchGroupRef.instance.style.transform = `translate3d(0px, ${calculateHorizonOffsetFromPitch(currentValueAtPrecision)}px, 0px)`;
             } else {
                 this.pitchGroupRef.instance.style.display = 'none';
             }
-            const yOffset = Math.max(Math.min(calculateHorizonOffsetFromPitch(pitch.value), 31.563), -31.563);
+            const yOffset = Math.max(Math.min(calculateHorizonOffsetFromPitch(currentValueAtPrecision), 31.563), -31.563);
             this.yOffset.set(yOffset);
         });
 
         apfd.on('rollAr').withArinc429Precision(2).handle((roll) => {
+            const multiplier = 100;
+            const currentValueAtPrecision = Math.round(roll.value * multiplier) / multiplier;
             if (roll.isNormalOperation()) {
                 this.rollGroupRef.instance.style.display = 'block';
 
-                this.rollGroupRef.instance.setAttribute('transform', `rotate(${-roll.value} 68.814 80.730)`);
+                this.rollGroupRef.instance.setAttribute('transform', `rotate(${-currentValueAtPrecision} 68.814 80.730)`);
             } else {
                 this.rollGroupRef.instance.style.display = 'none';
             }
@@ -271,7 +265,7 @@ class TailstrikeIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values & ClockEvents>();
+        const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & ClockEvents>();
 
         sub.on('chosenRa').handle((ra) => {
             this.tailStrikeConditions.altitude = ra;
@@ -287,7 +281,7 @@ class TailstrikeIndicator extends DisplayComponent<{ bus: ArincEventBus }> {
             this.needsUpdate = true;
         });
 
-        sub.on('speedAr').withArinc429Precision(2).handle((speed) => {
+        sub.on('speedAr').whenChanged().handle((speed) => {
             this.tailStrikeConditions.speed = speed.value;
             this.needsUpdate = true;
         });
@@ -457,6 +451,10 @@ interface SideslipIndicatorProps {
 class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
     private latAccFilter = new LagFilter(0.5);
 
+    private estimatedBetaFilter = new LagFilter(2);
+
+    private betaTargetFilter = new LagFilter(2);
+
     private classNameSub = Subject.create('Yellow');
 
     private filteredLatAccSub = Subject.create(0);
@@ -528,7 +526,8 @@ class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
 
     private determineSlideSlip() {
         const multiplier = 100;
-        const verticalOffset = calculateVerticalOffsetFromRoll(this.roll.value);
+        const currentValueAtPrecision = Math.round(this.roll.value * multiplier) / multiplier;
+        const verticalOffset = calculateVerticalOffsetFromRoll(currentValueAtPrecision);
         let offset = 0;
 
         let betaTargetActive = false;

@@ -1,5 +1,6 @@
 import { DisplayComponent, FSComponent, NodeReference, VNode, Subscribable } from '@microsoft/msfs-sdk';
-import { DisplayManagementComputerEvents } from 'instruments/src/PFD/shared/DisplayManagementComputer';
+import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
+import { Arinc429Values } from './shared/ArincValueProvider';
 import { ArincEventBus } from '../MsfsAvionicsCommon/ArincEventBus';
 
 interface HorizontalTapeProps {
@@ -119,7 +120,7 @@ export class HorizontalTape extends DisplayComponent<HorizontalTapeProps> {
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const pf = this.props.bus.getArincSubscriber<DisplayManagementComputerEvents>();
+        const pf = this.props.bus.getArincSubscriber<Arinc429Values & DmcLogicEvents>();
 
         this.props.yOffset?.sub((yOffset) => {
             this.yOffset = yOffset;
