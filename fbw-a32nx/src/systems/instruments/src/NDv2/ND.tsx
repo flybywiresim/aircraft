@@ -421,10 +421,10 @@ class SpeedIndicator extends DisplayComponent<{ bus: EventBus }> {
     render(): VNode | null {
         return (
             <Layer x={2} y={25}>
-                <text x={0} y={0} class="White FontSmallest">GS</text>
-                <text ref={this.groundSpeedRef} x={89} y={0} class="Green FontSmall EndAlign" />
-                <text x={95} y={0} class="White FontSmallest">TAS</text>
-                <text ref={this.trueAirSpeedRef} x={201} y={0} class="Green FontSmall EndAlign" />
+                <text x={0} y={0} class="White FontTiny">GS</text>
+                <text ref={this.groundSpeedRef} x={80} y={0} class="Green FontSmall EndAlign" />
+                <text x={95} y={0} class="White FontTiny">TAS</text>
+                <text ref={this.trueAirSpeedRef} x={190} y={0} class="Green FontSmall EndAlign" />
             </Layer>
         );
     }
