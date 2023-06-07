@@ -440,7 +440,9 @@ struct EngineStarterValveController {
 impl ControllerSignal<EngineStarterValveSignal> for EngineStarterValveController {
     fn signal(&self) -> Option<EngineStarterValveSignal> {
         match self.engine_state {
-            EngineState::Starting => Some(EngineStarterValveSignal::new_open()),
+            EngineState::Starting | EngineState::Restarting => {
+                Some(EngineStarterValveSignal::new_open())
+            }
             _ => Some(EngineStarterValveSignal::new_closed()),
         }
     }
@@ -1041,11 +1043,11 @@ impl EngineBleedAirSystem {
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
             engine_starter_container: PneumaticPipe::new(
-                Volume::new::<cubic_meter>(0.5),
+                Volume::new::<cubic_meter>(0.1),
                 Pressure::new::<psi>(14.7),
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
-            engine_starter_exhaust: PneumaticExhaust::new(3e-2, 3e-2, Pressure::new::<psi>(0.)),
+            engine_starter_exhaust: PneumaticExhaust::new(1., 1., Pressure::new::<psi>(0.)),
             engine_starter_valve: DefaultValve::new_closed(),
             precooler: Precooler::new(180. * 2.),
             transfer_pressure_transducer: PressureTransducer::new(powered_by),
@@ -2410,6 +2412,7 @@ pub mod tests {
             self
         }
 
+        /// For test cases where APU bleed is supposed to be on, call `set_bleed_air_running()`
         fn set_apu_bleed_air_pb(mut self, is_on: bool) -> Self {
             self.write_by_name("OVHD_APU_BLEED_PB_IS_ON", is_on);
 
@@ -2660,9 +2663,9 @@ pub mod tests {
         println!("Ambient pressure: {} psi", ambient_pressure.get::<psi>());
 
         let mut test_bed = test_bed_with()
-            .eng1_n1(0.84)
+            .eng1_n1(0.87)
             .and_eng1_n2_based_on_n1()
-            .eng2_n1(0.84)
+            .eng2_n1(0.87)
             .and_eng2_n2_based_on_n1()
             .in_isa_atmosphere(alt)
             .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Auto)
@@ -3094,6 +3097,75 @@ pub mod tests {
 
         assert!(test_bed.es_valve_is_open(1));
         assert!(test_bed.es_valve_is_open(2));
+    }
+
+    #[test]
+    fn apu_bleed_engine_start() {
+        let mut test_bed = test_bed_with()
+            .start_eng1()
+            .stop_eng2()
+            .set_bleed_air_running()
+            .and_stabilize();
+
+        assert!(test_bed.apu_bleed_valve_is_open());
+
+        assert!(test_bed.es_valve_is_open(1));
+        assert!(!test_bed.es_valve_is_open(2));
+
+        assert!(
+            test_bed.regulated_pressure_transducer_signal(1).unwrap() > Pressure::new::<psi>(21.),
+        );
+
+        test_bed = test_bed.idle_eng1().start_eng2().and_stabilize();
+
+        assert!(!test_bed.es_valve_is_open(1));
+        assert!(test_bed.es_valve_is_open(2));
+
+        assert!(
+            test_bed.regulated_pressure_transducer_signal(2).unwrap() > Pressure::new::<psi>(21.),
+        );
+    }
+
+    #[test]
+    fn cross_bleed_engine_start() {
+        let mut test_bed = test_bed_with()
+            .start_eng1()
+            .idle_eng2()
+            .set_engine_bleed_push_button_off(1)
+            .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Open)
+            .and_stabilize();
+
+        // APU bleed should not be on
+        assert!(!test_bed.apu_bleed_valve_is_open());
+
+        assert!(test_bed.es_valve_is_open(1));
+        assert!(!test_bed.es_valve_is_open(2));
+
+        println!(
+            "Precooler inlet pressure #1: {:.2} psig",
+            test_bed
+                .regulated_pressure_transducer_signal(1)
+                .unwrap()
+                .get::<psi>()
+        );
+
+        assert!(
+            test_bed.regulated_pressure_transducer_signal(1).unwrap() > Pressure::new::<psi>(21.),
+        );
+
+        test_bed = test_bed
+            .idle_eng1()
+            .start_eng2()
+            .set_engine_bleed_push_button_off(2)
+            .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Open)
+            .and_stabilize();
+
+        assert!(!test_bed.es_valve_is_open(1));
+        assert!(test_bed.es_valve_is_open(2));
+
+        assert!(
+            test_bed.regulated_pressure_transducer_signal(2).unwrap() > Pressure::new::<psi>(21.),
+        );
     }
 
     #[test]

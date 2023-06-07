@@ -4,6 +4,7 @@ class A32NX_APU {
     }
     init() {
         console.log('A32NX_APU init');
+        SimVar.SetSimVarValue("K:ENGINE_BLEED_AIR_SOURCE_TOGGLE", "number", 0);
         this.lastAPUBleedState = -1;
     }
     update(_deltaTime) {
