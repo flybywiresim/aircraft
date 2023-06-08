@@ -20,18 +20,15 @@ pub fn engines(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
             ],
             Box::new(move |_, values| {
                 let starter_pressure_psi = values[0];
-                let is_bleed_air_active = to_bool(values[1]);
+                let is_sim_bleed_air_active = to_bool(values[1]);
 
-                println!(
-                    "Engine #{} starter pressure: {} psi, bleed air active: {}",
-                    engine_number, starter_pressure_psi, is_bleed_air_active
-                );
-
-                if starter_pressure_psi > 30. && !is_bleed_air_active {
-                    toggle_engine_starter_valve(engine_number);
+                if starter_pressure_psi > 35. && !is_sim_bleed_air_active {
+                    // 35 psia is about 20.3 psig at sealevel
+                    toggle_sim_engine_bleed_air(engine_number);
                     println!("Opening bleed starter valve")
-                } else if starter_pressure_psi < 20. && is_bleed_air_active {
-                    toggle_engine_starter_valve(engine_number);
+                } else if starter_pressure_psi < 25. && is_sim_bleed_air_active {
+                    // 25 psia is about 10.3 psig at sealevel
+                    toggle_sim_engine_bleed_air(engine_number);
                     println!("Closing bleed starter valve")
                 }
             }),
@@ -41,7 +38,7 @@ pub fn engines(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn toggle_engine_starter_valve(engine_number: usize) {
+fn toggle_sim_engine_bleed_air(engine_number: usize) {
     execute_calculator_code::<()>(&format!(
         "{} (>K:ENGINE_BLEED_AIR_SOURCE_TOGGLE)",
         engine_number

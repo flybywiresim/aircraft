@@ -1047,7 +1047,7 @@ impl EngineBleedAirSystem {
                 Pressure::new::<psi>(14.7),
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
-            engine_starter_exhaust: PneumaticExhaust::new(1., 1., Pressure::new::<psi>(0.)),
+            engine_starter_exhaust: PneumaticExhaust::new(3., 3., Pressure::new::<psi>(0.)),
             engine_starter_valve: DefaultValve::new_closed(),
             precooler: Precooler::new(180. * 2.),
             transfer_pressure_transducer: PressureTransducer::new(powered_by),
@@ -1121,11 +1121,13 @@ impl EngineBleedAirSystem {
             &mut self.precooler_supply_pipe,
             &mut self.precooler_outlet_pipe,
         );
-        self.engine_starter_valve.update_move_fluid(
-            context,
-            &mut self.precooler_inlet_pipe,
-            &mut self.engine_starter_container,
-        );
+        self.engine_starter_valve
+            .update_move_fluid_with_transfer_speed(
+                context,
+                &mut self.precooler_inlet_pipe,
+                &mut self.engine_starter_container,
+                10.,
+            );
         self.engine_starter_exhaust
             .update_move_fluid(context, &mut self.engine_starter_container);
 
@@ -2094,6 +2096,10 @@ pub mod tests {
             self
         }
 
+        fn run_multiple_frames(&mut self, duration: Duration) {
+            self.test_bed.run_multiple_frames(duration);
+        }
+
         fn mach_number(mut self, mach: MachNumber) -> Self {
             self.write_by_name("AIRSPEED MACH", mach);
 
@@ -2406,6 +2412,12 @@ pub mod tests {
             self
         }
 
+        fn set_engine_bleed_push_button_auto(mut self, number: usize) -> Self {
+            self.write_by_name(&format!("OVHD_PNEU_ENG_{}_BLEED_PB_IS_AUTO", number), true);
+
+            self
+        }
+
         fn set_apu_bleed_valve_signal(mut self, signal: ApuBleedAirValveSignal) -> Self {
             self.command(|a| a.apu.set_bleed_air_valve_signal(signal));
 
@@ -2420,7 +2432,7 @@ pub mod tests {
         }
 
         fn set_bleed_air_running(mut self) -> Self {
-            self.command(|a| a.apu.set_bleed_air_pressure(Pressure::new::<psi>(42.)));
+            self.command(|a| a.apu.set_bleed_air_pressure(Pressure::new::<psi>(50.)));
             self.command(|a| {
                 a.apu
                     .set_bleed_air_temperature(ThermodynamicTemperature::new::<degree_celsius>(
@@ -3113,6 +3125,7 @@ pub mod tests {
         assert!(!test_bed.es_valve_is_open(2));
 
         assert!(
+            // 21 psi because that's where the ECAM indication turns amber, which we don't want in normal ops
             test_bed.regulated_pressure_transducer_signal(1).unwrap() > Pressure::new::<psi>(21.),
         );
 
@@ -3122,6 +3135,7 @@ pub mod tests {
         assert!(test_bed.es_valve_is_open(2));
 
         assert!(
+            // 21 psi because that's where the ECAM indication turns amber, which we don't want in normal ops
             test_bed.regulated_pressure_transducer_signal(2).unwrap() > Pressure::new::<psi>(21.),
         );
     }
@@ -3132,6 +3146,7 @@ pub mod tests {
             .start_eng1()
             .idle_eng2()
             .set_engine_bleed_push_button_off(1)
+            .set_engine_bleed_push_button_auto(2)
             .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Open)
             .and_stabilize();
 
@@ -3156,12 +3171,21 @@ pub mod tests {
         test_bed = test_bed
             .idle_eng1()
             .start_eng2()
+            .set_engine_bleed_push_button_auto(1)
             .set_engine_bleed_push_button_off(2)
             .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Open)
             .and_stabilize();
 
         assert!(!test_bed.es_valve_is_open(1));
         assert!(test_bed.es_valve_is_open(2));
+
+        println!(
+            "Precooler inlet pressure #2: {:.2} psig",
+            test_bed
+                .regulated_pressure_transducer_signal(2)
+                .unwrap()
+                .get::<psi>()
+        );
 
         assert!(
             test_bed.regulated_pressure_transducer_signal(2).unwrap() > Pressure::new::<psi>(21.),
@@ -4134,6 +4158,64 @@ pub mod tests {
 
         assert!(test_bed.hp_valve_is_open(1));
         assert!(test_bed.hp_valve_is_open(2));
+    }
+
+    #[test]
+    fn precooler_inlet_pressure_drop_starter_valve_open() {
+        let mut test_bed = test_bed_with()
+            .stop_eng1()
+            .stop_eng2()
+            .set_bleed_air_running()
+            .and_stabilize();
+
+        // Create some pressure in both precooler inlets
+        assert!(
+            test_bed.regulated_pressure_transducer_signal(1).unwrap() > Pressure::new::<psi>(24.)
+        );
+        assert!(
+            test_bed.regulated_pressure_transducer_signal(2).unwrap() > Pressure::new::<psi>(24.)
+        );
+
+        assert!(!test_bed.pr_valve_is_open(1));
+        assert!(!test_bed.pr_valve_is_open(2));
+
+        test_bed = test_bed
+            .set_apu_bleed_valve_signal(ApuBleedAirValveSignal::new_closed())
+            .set_apu_bleed_air_pb(false);
+        test_bed.run_multiple_frames(Duration::from_secs(1));
+
+        // At this point, the air should be trapped between the bleed valve and the precooler
+        assert!(!test_bed.apu_bleed_valve_is_open());
+        assert!(!test_bed.pack_flow_valve_is_open(1));
+        assert!(!test_bed.pack_flow_valve_is_open(2));
+
+        // Make sure bleed pressure does not drop significantly
+        test_bed.run_multiple_frames(Duration::from_secs(20));
+
+        assert!(
+            test_bed.regulated_pressure_transducer_signal(1).unwrap() > Pressure::new::<psi>(20.)
+        );
+        assert!(
+            test_bed.regulated_pressure_transducer_signal(2).unwrap() > Pressure::new::<psi>(20.)
+        );
+
+        // This will open the starter valve
+        test_bed = test_bed.start_eng2().and_stabilize();
+
+        // Check starter valve has opened
+        assert!(test_bed.es_valve_is_open(2));
+        // Check pressure has dropped below 5 psig as air escaped through the starter valve
+
+        println!(
+            "Precooler inlet pressure #2: {:.2} psig",
+            test_bed
+                .regulated_pressure_transducer_signal(2)
+                .unwrap()
+                .get::<psi>()
+        );
+        assert!(
+            test_bed.regulated_pressure_transducer_signal(2).unwrap() < Pressure::new::<psi>(10.)
+        );
     }
 
     mod wing_anti_ice {
