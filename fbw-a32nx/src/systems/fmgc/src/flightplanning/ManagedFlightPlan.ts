@@ -1903,7 +1903,7 @@ export class ManagedFlightPlan {
      * @returns true if a reduction occured
      */
     public reconcileThrustReductionWithConstraints(): boolean {
-        const lowestClimbConstraint = this.lowestClimbConstraint();
+        const lowestClimbConstraint = ManagedFlightPlan.round(this.lowestClimbConstraint(), 10);
         if (isFinite(lowestClimbConstraint) && this.thrustReductionAltitude > lowestClimbConstraint) {
             this.thrustReductionAltitudeDefault = this.thrustReductionAltitudeDefault !== undefined ? Math.min(this.thrustReductionAltitudeDefault, lowestClimbConstraint) : undefined;
             this.thrustReductionAltitudePilot = this.thrustReductionAltitudePilot !== undefined ? Math.min(this.thrustReductionAltitudePilot, lowestClimbConstraint) : undefined;
@@ -1918,7 +1918,7 @@ export class ManagedFlightPlan {
      * @returns true if a reduction occured
      */
     public reconcileAccelerationWithConstraints(): boolean {
-        const lowestClimbConstraint = this.lowestClimbConstraint();
+        const lowestClimbConstraint = ManagedFlightPlan.round(this.lowestClimbConstraint(), 10);
         if (isFinite(lowestClimbConstraint) && this.accelerationAltitude > lowestClimbConstraint) {
             this.accelerationAltitudeDefault = this.accelerationAltitudeDefault !== undefined ? Math.min(this.accelerationAltitudeDefault, lowestClimbConstraint) : undefined;
             this.accelerationAltitudePilot = this.accelerationAltitudePilot !== undefined ? Math.min(this.accelerationAltitudePilot, lowestClimbConstraint) : undefined;
