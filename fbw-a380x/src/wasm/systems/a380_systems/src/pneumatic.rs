@@ -389,6 +389,10 @@ impl PackFlowValveState for A380Pneumatic {
             self.packs[id].left_pack_flow_valve_air_flow()
         }
     }
+    fn pack_flow_valve_inlet_pressure(&self, pack_id: usize) -> Option<Pressure> {
+        // TODO: Need to make this use both PACK valves
+        self.packs[pack_id].left_pack_flow_valve_inlet_pressure()
+    }
 }
 impl SimulationElement for A380Pneumatic {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
@@ -1185,6 +1189,8 @@ pub struct PackComplex {
     exhaust: PneumaticExhaust,
     left_pack_flow_valve: ElectroPneumaticValve,
     right_pack_flow_valve: ElectroPneumaticValve,
+    left_inlet_pressure_sensor: PressureTransducer,
+    right_inlet_pressure_sensor: PressureTransducer,
 }
 impl PackComplex {
     fn new(context: &mut InitContext, pack_number: usize) -> Self {
@@ -1211,6 +1217,12 @@ impl PackComplex {
             ),
             right_pack_flow_valve: ElectroPneumaticValve::new(
                 ElectricalBusType::DirectCurrentEssential,
+            ),
+            left_inlet_pressure_sensor: PressureTransducer::new(
+                ElectricalBusType::DirectCurrentEssentialShed, // TODO: This is almost definitely not correct, just copied from the A320
+            ),
+            right_inlet_pressure_sensor: PressureTransducer::new(
+                ElectricalBusType::DirectCurrentEssentialShed, // TODO: This is almost definitely not correct, just copied from the A320
             ),
         }
     }
@@ -1260,6 +1272,15 @@ impl PackComplex {
     fn right_pack_flow_valve_air_flow(&self) -> MassRate {
         self.right_pack_flow_valve.fluid_flow()
     }
+
+    fn left_pack_flow_valve_inlet_pressure(&self) -> Option<Pressure> {
+        self.left_inlet_pressure_sensor.signal()
+    }
+
+    #[cfg(test)]
+    fn right_pack_flow_valve_inlet_pressure(&self) -> Option<Pressure> {
+        self.right_inlet_pressure_sensor.signal()
+    }
 }
 impl PneumaticContainer for PackComplex {
     fn pressure(&self) -> Pressure {
@@ -1299,6 +1320,9 @@ impl SimulationElement for PackComplex {
     {
         self.left_pack_flow_valve.accept(visitor);
         self.right_pack_flow_valve.accept(visitor);
+
+        self.left_inlet_pressure_sensor.accept(visitor);
+        self.right_inlet_pressure_sensor.accept(visitor);
 
         visitor.visit(self);
     }

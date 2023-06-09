@@ -771,6 +771,7 @@ mod tests {
         pneumatic::{
             valve::{DefaultValve, PneumaticExhaust},
             ControllablePneumaticValve, EngineModeSelector, EngineState, PneumaticPipe, Precooler,
+            PressureTransducer,
         },
         shared::{
             arinc429::{Arinc429Word, SignStatus},
@@ -988,6 +989,9 @@ mod tests {
         fn pack_flow_valve_air_flow(&self, pack_id: usize) -> MassRate {
             self.packs[pack_id - 1].pack_flow_valve_air_flow()
         }
+        fn pack_flow_valve_inlet_pressure(&self, pack_id: usize) -> Option<Pressure> {
+            self.packs[pack_id].pack_flow_valve_inlet_pressure(pack_id)
+        }
     }
     impl SimulationElement for TestPneumatic {
         fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
@@ -1094,6 +1098,7 @@ mod tests {
         pack_container: PneumaticPipe,
         exhaust: PneumaticExhaust,
         pack_flow_valve: DefaultValve,
+        pack_inlet_pressure_sensor: PressureTransducer,
     }
     impl TestPneumaticPackComplex {
         fn new(engine_number: usize) -> Self {
@@ -1106,6 +1111,9 @@ mod tests {
                 ),
                 exhaust: PneumaticExhaust::new(0.3, 0.3, Pressure::new::<psi>(0.)),
                 pack_flow_valve: DefaultValve::new_closed(),
+                pack_inlet_pressure_sensor: PressureTransducer::new(
+                    ElectricalBusType::DirectCurrentEssentialShed,
+                ),
             }
         }
         fn update(
@@ -1127,6 +1135,9 @@ mod tests {
         }
         fn pack_flow_valve_air_flow(&self) -> MassRate {
             self.pack_flow_valve.fluid_flow()
+        }
+        fn pack_flow_valve_inlet_pressure(&self, pack_id: usize) -> Option<Pressure> {
+            self.pack_inlet_pressure_sensor.signal()
         }
     }
     impl PneumaticContainer for TestPneumaticPackComplex {
@@ -1158,6 +1169,13 @@ mod tests {
 
         fn update_temperature(&mut self, temperature: TemperatureInterval) {
             self.pack_container.update_temperature(temperature);
+        }
+    }
+    impl SimulationElement for TestPneumaticPackComplex {
+        fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
+            self.pack_inlet_pressure_sensor.accept(visitor);
+
+            visitor.visit(self);
         }
     }
 

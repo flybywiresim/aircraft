@@ -390,6 +390,9 @@ impl PackFlowValveState for A320Pneumatic {
     fn pack_flow_valve_air_flow(&self, pack_id: usize) -> MassRate {
         self.packs[pack_id - 1].pack_flow_valve_air_flow()
     }
+    fn pack_flow_valve_inlet_pressure(&self, pack_id: usize) -> Option<Pressure> {
+        self.packs[pack_id].pack_flow_valve_inlet_pressure()
+    }
 }
 impl SimulationElement for A320Pneumatic {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
@@ -1047,7 +1050,7 @@ impl EngineBleedAirSystem {
                 Pressure::new::<psi>(14.7),
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
-            engine_starter_exhaust: PneumaticExhaust::new(3., 3., Pressure::new::<psi>(0.)),
+            engine_starter_exhaust: PneumaticExhaust::new(5., 5., Pressure::new::<psi>(0.)),
             engine_starter_valve: DefaultValve::new_closed(),
             precooler: Precooler::new(180. * 2.),
             transfer_pressure_transducer: PressureTransducer::new(powered_by),
@@ -1490,6 +1493,7 @@ pub struct PackComplex {
     pack_container: PneumaticPipe,
     exhaust: PneumaticExhaust,
     pack_flow_valve: DefaultValve,
+    pack_inlet_pressure_sensor: PressureTransducer,
 }
 impl PackComplex {
     fn new(context: &mut InitContext, engine_number: usize) -> Self {
@@ -1505,6 +1509,9 @@ impl PackComplex {
             ),
             exhaust: PneumaticExhaust::new(0.3, 0.3, Pressure::new::<psi>(0.)),
             pack_flow_valve: DefaultValve::new_closed(),
+            pack_inlet_pressure_sensor: PressureTransducer::new(
+                ElectricalBusType::DirectCurrentEssentialShed, // TODO: Check this
+            ),
         }
     }
 
@@ -1518,8 +1525,11 @@ impl PackComplex {
         from: &mut impl PneumaticContainer,
         pack_flow_valve_signals: &impl PackFlowControllers,
     ) {
-        self.pack_flow_valve
-            .update_open_amount(pack_flow_valve_signals.pack_flow_controller(self.engine_number));
+        self.pack_inlet_pressure_sensor.update(context, from);
+
+        self.pack_flow_valve.update_open_amount(
+            pack_flow_valve_signals.pack_flow_controller(self.engine_number),
+        );
 
         self.pack_flow_valve
             .update_move_fluid(context, from, &mut self.pack_container);
@@ -1534,6 +1544,10 @@ impl PackComplex {
 
     fn pack_flow_valve_air_flow(&self) -> MassRate {
         self.pack_flow_valve.fluid_flow()
+    }
+
+    fn pack_flow_valve_inlet_pressure(&self) -> Option<Pressure> {
+        self.pack_inlet_pressure_sensor.signal()
     }
 }
 impl PneumaticContainer for PackComplex {
@@ -1568,6 +1582,15 @@ impl PneumaticContainer for PackComplex {
     }
 }
 impl SimulationElement for PackComplex {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T)
+    where
+        Self: Sized,
+    {
+        self.pack_inlet_pressure_sensor.accept(visitor);
+
+        visitor.visit(self);
+    }
+
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.pack_flow_valve_id, self.pack_flow_valve_is_open());
         writer.write(
@@ -4166,6 +4189,8 @@ pub mod tests {
             .stop_eng1()
             .stop_eng2()
             .set_bleed_air_running()
+            .set_pack_flow_pb_is_auto(1, false)
+            .set_pack_flow_pb_is_auto(2, false)
             .and_stabilize();
 
         // Create some pressure in both precooler inlets

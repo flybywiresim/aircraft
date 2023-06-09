@@ -909,6 +909,7 @@ mod tests {
         pneumatic::{
             valve::{DefaultValve, ElectroPneumaticValve, PneumaticExhaust},
             ControllablePneumaticValve, EngineModeSelector, EngineState, PneumaticPipe, Precooler,
+            PressureTransducer,
         },
         shared::{
             arinc429::{Arinc429Word, SignStatus},
@@ -1111,7 +1112,7 @@ mod tests {
         engine_bleed: [TestEngineBleed; 2],
         cross_bleed_valve: DefaultValve,
         fadec: TestFadec,
-        pub packs: [TestPneumaticPackComplex; 2],
+        packs: [TestPneumaticPackComplex; 2],
     }
 
     impl TestPneumatic {
@@ -1190,6 +1191,9 @@ mod tests {
             } else {
                 self.packs[id].left_pack_flow_valve_air_flow()
             }
+        }
+        fn pack_flow_valve_inlet_pressure(&self, pack_id: usize) -> Option<Pressure> {
+            self.packs[pack_id].pack_flow_valve_inlet_pressure()
         }
     }
     impl SimulationElement for TestPneumatic {
@@ -1299,6 +1303,7 @@ mod tests {
         exhaust: PneumaticExhaust,
         left_pack_flow_valve: ElectroPneumaticValve,
         right_pack_flow_valve: ElectroPneumaticValve,
+        pack_inlet_pressure_sensor: PressureTransducer,
     }
     impl TestPneumaticPackComplex {
         fn new(pack_number: usize) -> Self {
@@ -1315,6 +1320,9 @@ mod tests {
                 ),
                 right_pack_flow_valve: ElectroPneumaticValve::new(
                     ElectricalBusType::DirectCurrentEssential,
+                ),
+                pack_inlet_pressure_sensor: PressureTransducer::new(
+                    ElectricalBusType::DirectCurrentEssentialShed,
                 ),
             }
         }
@@ -1355,6 +1363,9 @@ mod tests {
         fn right_pack_flow_valve_air_flow(&self) -> MassRate {
             self.right_pack_flow_valve.fluid_flow()
         }
+        fn pack_flow_valve_inlet_pressure(&self) -> Option<Pressure> {
+            self.pack_inlet_pressure_sensor.signal()
+        }
     }
     impl PneumaticContainer for TestPneumaticPackComplex {
         fn pressure(&self) -> Pressure {
@@ -1391,6 +1402,7 @@ mod tests {
         fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
             self.left_pack_flow_valve.accept(visitor);
             self.right_pack_flow_valve.accept(visitor);
+            self.pack_inlet_pressure_sensor.accept(visitor);
 
             visitor.visit(self);
         }
