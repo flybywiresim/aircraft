@@ -377,7 +377,6 @@ impl A380AirConditioningSystem {
             engines,
             engine_fire_push_buttons,
             pneumatic,
-            pneumatic_overhead,
             pressurization,
             pressurization_overhead,
             lgciu,
@@ -1408,29 +1407,6 @@ mod tests {
         }
     }
 
-    struct TestPneumaticOverhead {
-        engine_1_bleed: AutoOffFaultPushButton,
-        engine_2_bleed: AutoOffFaultPushButton,
-    }
-    impl TestPneumaticOverhead {
-        fn new(context: &mut InitContext) -> Self {
-            Self {
-                engine_1_bleed: AutoOffFaultPushButton::new_auto(context, "PNEU_ENG_1_BLEED"),
-                engine_2_bleed: AutoOffFaultPushButton::new_auto(context, "PNEU_ENG_2_BLEED"),
-            }
-        }
-    }
-    impl EngineBleedPushbutton<4> for TestPneumaticOverhead {
-        fn engine_bleed_pushbuttons_are_auto(&self) -> [bool; 4] {
-            [
-                self.engine_1_bleed.is_auto(),
-                self.engine_2_bleed.is_auto(),
-                self.engine_1_bleed.is_auto(),
-                self.engine_2_bleed.is_auto(),
-            ]
-        }
-    }
-
     struct TestLgciu {
         compressed: bool,
     }
@@ -1480,7 +1456,6 @@ mod tests {
         engine_4: TestEngine,
         engine_fire_push_buttons: TestEngineFirePushButtons,
         pneumatic: TestPneumatic,
-        pneumatic_overhead: TestPneumaticOverhead,
         pressurization_overhead: A380PressurizationOverheadPanel,
         lgciu1: TestLgciu,
         lgciu2: TestLgciu,
@@ -1519,7 +1494,6 @@ mod tests {
                 engine_4: TestEngine::new(Ratio::default()),
                 engine_fire_push_buttons: TestEngineFirePushButtons::new(),
                 pneumatic: TestPneumatic::new(context),
-                pneumatic_overhead: TestPneumaticOverhead::new(context),
                 pressurization_overhead: A380PressurizationOverheadPanel::new(context),
                 lgciu1: TestLgciu::new(false),
                 lgciu2: TestLgciu::new(false),
@@ -1686,7 +1660,6 @@ mod tests {
                 ],
                 &self.engine_fire_push_buttons,
                 &self.pneumatic,
-                &self.pneumatic_overhead,
                 &self.pressurization_overhead,
                 [&self.lgciu1, &self.lgciu2],
             );

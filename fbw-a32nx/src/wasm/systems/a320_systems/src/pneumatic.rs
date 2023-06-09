@@ -983,14 +983,13 @@ impl EngineBleedAirSystem {
                 "PNEU_ENG_{}_DIFFERENTIAL_TRANSDUCER_PRESSURE",
                 number
             )),
-            fan_compression_chamber_controller: EngineCompressionChamberController::new(
-                1.4, 0., 2.,
-            ),
+            fan_compression_chamber_controller: EngineCompressionChamberController::new(1.4, 0.),
+            // Maximum IP bleed pressure output should be about 150 psig
             intermediate_pressure_compression_chamber_controller:
-                EngineCompressionChamberController::new(9.47404, 0., -3.19875), // Maximum IP bleed pressure output should be about 150 psig
+                EngineCompressionChamberController::new(9.47404, 0.),
+            // Maximum HP bleed pressure output should be about 660 psig
             high_pressure_compression_chamber_controller: EngineCompressionChamberController::new(
                 5.98726, 6.03051,
-                -1.21752, // Maximum HP bleed pressure output should be about 660 psig
             ),
             fan_compression_chamber: CompressionChamber::new(Volume::new::<cubic_meter>(1.)),
             intermediate_pressure_compression_chamber: CompressionChamber::new(Volume::new::<
@@ -1688,9 +1687,9 @@ pub mod tests {
             arinc429::{Arinc429Word, SignStatus},
             interpolation, ApuBleedAirValveSignal, CabinAltitude, CabinSimulation,
             ControllerSignal, ElectricalBusType, ElectricalBuses, EmergencyElectricalState,
-            EngineBleedPushbutton, EngineCorrectedN1, EngineFirePushButtons, EngineStartState,
-            HydraulicColor, InternationalStandardAtmosphere, LgciuWeightOnWheels, MachNumber,
-            PackFlowValveState, PneumaticBleed, PneumaticValve, PotentialOrigin,
+            EngineCorrectedN1, EngineFirePushButtons, EngineStartState, HydraulicColor,
+            InternationalStandardAtmosphere, LgciuWeightOnWheels, MachNumber, PackFlowValveState,
+            PneumaticBleed, PneumaticValve, PotentialOrigin,
         },
         simulation::{
             test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
@@ -1737,7 +1736,6 @@ pub mod tests {
             engines: [&impl EngineCorrectedN1; 2],
             engine_fire_push_buttons: &impl EngineFirePushButtons,
             pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
-            pneumatic_overhead: &impl EngineBleedPushbutton<2>,
             lgciu: [&impl LgciuWeightOnWheels; 2],
         ) {
             self.a320_air_conditioning_system.update(
@@ -1747,7 +1745,6 @@ pub mod tests {
                 engines,
                 engine_fire_push_buttons,
                 pneumatic,
-                pneumatic_overhead,
                 &self.pressurization,
                 &self.pressurization_overhead,
                 lgciu,
@@ -2061,7 +2058,6 @@ pub mod tests {
                 [&self.engine_1, &self.engine_2],
                 &self.fire_pushbuttons,
                 &self.pneumatic,
-                &self.pneumatic_overhead_panel,
                 [&self.lgciu; 2],
             )
         }
@@ -3711,6 +3707,9 @@ pub mod tests {
         assert!(test_bed.pr_valve_is_powered(1));
         assert!(test_bed.pr_valve_is_powered(2));
 
+        assert!(test_bed.fan_air_valve_is_powered(1));
+        assert!(test_bed.fan_air_valve_is_powered(2));
+
         test_bed = test_bed.set_dc_ess_shed_bus_power(false).and_run();
 
         assert!(!test_bed.hp_valve_is_powered(1));
@@ -3726,6 +3725,9 @@ pub mod tests {
 
         assert!(!test_bed.pr_valve_is_powered(1));
         assert!(!test_bed.pr_valve_is_powered(2));
+
+        assert!(!test_bed.fan_air_valve_is_powered(1));
+        assert!(!test_bed.fan_air_valve_is_powered(2));
     }
 
     #[test]

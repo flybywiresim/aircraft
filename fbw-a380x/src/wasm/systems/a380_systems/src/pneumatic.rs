@@ -755,11 +755,11 @@ impl EngineBleedAirSystem {
                 "PNEU_ENG_{}_DIFFERENTIAL_TRANSDUCER_PRESSURE",
                 number
             )),
-            fan_compression_chamber_controller: EngineCompressionChamberController::new(1., 0., 2.),
+            fan_compression_chamber_controller: EngineCompressionChamberController::new(1., 0.),
             intermediate_pressure_compression_chamber_controller:
-                EngineCompressionChamberController::new(3., 0., 4.),
+                EngineCompressionChamberController::new(3., 0.),
             high_pressure_compression_chamber_controller: EngineCompressionChamberController::new(
-                3., 2., 4.,
+                3., 2.,
             ),
             fan_compression_chamber: CompressionChamber::new(Volume::new::<cubic_meter>(1.)),
             intermediate_pressure_compression_chamber: CompressionChamber::new(Volume::new::<
@@ -1487,7 +1487,6 @@ mod tests {
             engines: [&impl EngineCorrectedN1; 4],
             engine_fire_push_buttons: &impl EngineFirePushButtons,
             pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
-            pneumatic_overhead: &impl EngineBleedPushbutton<4>,
             lgciu: [&impl LgciuWeightOnWheels; 2],
         ) {
             self.air_conditioning.update(
@@ -1497,7 +1496,6 @@ mod tests {
                 engines,
                 engine_fire_push_buttons,
                 pneumatic,
-                pneumatic_overhead,
                 &self.pressurization_overhead,
                 lgciu,
             );
@@ -1802,7 +1800,6 @@ mod tests {
                 ],
                 &self.fire_pushbuttons,
                 &self.pneumatic,
-                &self.pneumatic_overhead_panel,
                 [&self.lgciu; 2],
             )
         }
@@ -2273,6 +2270,16 @@ mod tests {
 
         fn right_pack_flow_valve_flow(&self, pack_number: usize) -> MassRate {
             self.query(|a| a.pneumatic.packs[pack_number - 1].right_pack_flow_valve_air_flow())
+        }
+
+        fn left_pack_flow_valve_inlet_pressure(&self, pack_number: usize) -> Option<Pressure> {
+            self.query(|a| a.pneumatic.packs[pack_number - 1].left_pack_flow_valve_inlet_pressure())
+        }
+
+        fn right_pack_flow_valve_inlet_pressure(&self, pack_number: usize) -> Option<Pressure> {
+            self.query(|a| {
+                a.pneumatic.packs[pack_number - 1].right_pack_flow_valve_inlet_pressure()
+            })
         }
 
         fn pack_pressure(&self, pack_number: usize) -> Pressure {

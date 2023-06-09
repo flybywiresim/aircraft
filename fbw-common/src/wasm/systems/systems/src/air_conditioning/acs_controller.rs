@@ -2,9 +2,8 @@ use crate::{
     pneumatic::{EngineModeSelector, EngineState, PneumaticValveSignal},
     shared::{
         pid::PidController, CabinAltitude, CabinSimulation, ControllerSignal, DelayedTrueLogicGate,
-        ElectricalBusType, ElectricalBuses, EngineBleedPushbutton, EngineCorrectedN1,
-        EngineFirePushButtons, EngineStartState, LgciuWeightOnWheels, PackFlowValveState,
-        PneumaticBleed,
+        ElectricalBusType, ElectricalBuses, EngineCorrectedN1, EngineFirePushButtons,
+        EngineStartState, LgciuWeightOnWheels, PackFlowValveState, PneumaticBleed,
     },
     simulation::{
         InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
@@ -86,7 +85,6 @@ impl<const ZONES: usize, const ENGINES: usize> AirConditioningSystemController<Z
         engines: [&impl EngineCorrectedN1; ENGINES],
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
-        pneumatic_overhead: &impl EngineBleedPushbutton<ENGINES>,
         pressurization: &impl CabinAltitude,
         pressurization_overhead: &impl PressurizationOverheadShared,
         lgciu: [&impl LgciuWeightOnWheels; 2],
@@ -104,10 +102,8 @@ impl<const ZONES: usize, const ENGINES: usize> AirConditioningSystemController<Z
                 context,
                 &self.aircraft_state,
                 acs_overhead,
-                engines,
                 engine_fire_push_buttons,
                 pneumatic,
-                pneumatic_overhead,
                 pressurization,
                 pressurization_overhead,
                 operation_mode,
@@ -726,10 +722,8 @@ impl<const ENGINES: usize> PackFlowController<ENGINES> {
         context: &UpdateContext,
         aircraft_state: &AirConditioningStateManager,
         acs_overhead: &impl AirConditioningOverheadShared,
-        engines: [&impl EngineCorrectedN1; ENGINES],
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
-        pneumatic_overhead: &impl EngineBleedPushbutton<ENGINES>,
         pressurization: &impl CabinAltitude,
         pressurization_overhead: &impl PressurizationOverheadShared,
         operation_mode: ACSCActiveComputer,
@@ -1098,8 +1092,8 @@ mod acs_controller_tests {
         },
         electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
         overhead::{
-            AutoManFaultPushButton, AutoOffFaultPushButton, NormalOnPushButton,
-            OnOffFaultPushButton, SpringLoadedSwitch, ValueKnob,
+            AutoManFaultPushButton, NormalOnPushButton, OnOffFaultPushButton, SpringLoadedSwitch,
+            ValueKnob,
         },
         pneumatic::{
             valve::{DefaultValve, PneumaticExhaust},
@@ -1108,7 +1102,7 @@ mod acs_controller_tests {
         },
         shared::{
             arinc429::{Arinc429Word, SignStatus},
-            AverageExt, EngineBleedPushbutton, PneumaticValve, PotentialOrigin,
+            AverageExt, PneumaticValve, PotentialOrigin,
         },
         simulation::{
             test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
@@ -1329,35 +1323,6 @@ mod acs_controller_tests {
     impl EngineFirePushButtons for TestEngineFirePushButtons {
         fn is_released(&self, engine_number: usize) -> bool {
             self.is_released[engine_number - 1]
-        }
-    }
-
-    struct TestPneumaticOverhead {
-        engine_1_bleed: AutoOffFaultPushButton,
-        engine_2_bleed: AutoOffFaultPushButton,
-    }
-
-    impl TestPneumaticOverhead {
-        fn new(context: &mut InitContext) -> Self {
-            Self {
-                engine_1_bleed: AutoOffFaultPushButton::new_auto(context, "PNEU_ENG_1_BLEED"),
-                engine_2_bleed: AutoOffFaultPushButton::new_auto(context, "PNEU_ENG_2_BLEED"),
-            }
-        }
-    }
-
-    impl EngineBleedPushbutton<2> for TestPneumaticOverhead {
-        fn engine_bleed_pushbuttons_are_auto(&self) -> [bool; 2] {
-            [self.engine_1_bleed.is_auto(), self.engine_2_bleed.is_auto()]
-        }
-    }
-
-    impl SimulationElement for TestPneumaticOverhead {
-        fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-            self.engine_1_bleed.accept(visitor);
-            self.engine_2_bleed.accept(visitor);
-
-            visitor.visit(self);
         }
     }
 
@@ -1871,7 +1836,6 @@ mod acs_controller_tests {
         number_of_passengers: u8,
         packs: [AirConditioningPack; 2],
         pneumatic: TestPneumatic,
-        pneumatic_overhead: TestPneumaticOverhead,
         pressurization: TestPressurization,
         pressurization_overhead: TestPressurizationOverheadPanel,
         lgciu1: TestLgciu,
@@ -1915,7 +1879,6 @@ mod acs_controller_tests {
                 number_of_passengers: 0,
                 packs: [AirConditioningPack::new(), AirConditioningPack::new()],
                 pneumatic: TestPneumatic::new(context),
-                pneumatic_overhead: TestPneumaticOverhead::new(context),
                 pressurization: TestPressurization::new(),
                 pressurization_overhead: TestPressurizationOverheadPanel::new(context),
                 lgciu1: TestLgciu::new(false),
@@ -2046,7 +2009,6 @@ mod acs_controller_tests {
                 [&self.engine_1, &self.engine_2],
                 &self.engine_fire_push_buttons,
                 &self.pneumatic,
-                &self.pneumatic_overhead,
                 &self.pressurization,
                 &self.pressurization_overhead,
                 [&self.lgciu1, &self.lgciu2],

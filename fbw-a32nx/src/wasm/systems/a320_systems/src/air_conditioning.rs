@@ -18,9 +18,8 @@ use systems::{
     pneumatic::PneumaticContainer,
     shared::{
         random_number, update_iterator::MaxStepLoop, AverageExt, CabinAltitude, CabinSimulation,
-        ControllerSignal, ElectricalBusType, EngineBleedPushbutton, EngineCorrectedN1,
-        EngineFirePushButtons, EngineStartState, LgciuWeightOnWheels, PackFlowValveState,
-        PneumaticBleed,
+        ControllerSignal, ElectricalBusType, EngineCorrectedN1, EngineFirePushButtons,
+        EngineStartState, LgciuWeightOnWheels, PackFlowValveState, PneumaticBleed,
     },
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -68,7 +67,6 @@ impl A320AirConditioning {
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         number_of_passengers: &impl NumberOfPassengers,
         pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
-        pneumatic_overhead: &impl EngineBleedPushbutton<2>,
         pressurization_overhead: &A320PressurizationOverheadPanel,
         lgciu: [&impl LgciuWeightOnWheels; 2],
     ) {
@@ -81,7 +79,6 @@ impl A320AirConditioning {
             engines,
             engine_fire_push_buttons,
             pneumatic,
-            pneumatic_overhead,
             &self.a320_pressurization_system,
             pressurization_overhead,
             lgciu,
@@ -282,7 +279,6 @@ impl A320AirConditioningSystem {
         engines: [&impl EngineCorrectedN1; 2],
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
-        pneumatic_overhead: &impl EngineBleedPushbutton<2>,
         pressurization: &impl CabinAltitude,
         pressurization_overhead: &A320PressurizationOverheadPanel,
         lgciu: [&impl LgciuWeightOnWheels; 2],
@@ -295,7 +291,6 @@ impl A320AirConditioningSystem {
             engines,
             engine_fire_push_buttons,
             pneumatic,
-            pneumatic_overhead,
             pressurization,
             pressurization_overhead,
             lgciu,
@@ -767,7 +762,6 @@ mod tests {
     use ntest::assert_about_eq;
     use systems::{
         electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
-        overhead::AutoOffFaultPushButton,
         pneumatic::{
             valve::{DefaultValve, PneumaticExhaust},
             ControllablePneumaticValve, EngineModeSelector, EngineState, PneumaticPipe, Precooler,
@@ -990,7 +984,7 @@ mod tests {
             self.packs[pack_id - 1].pack_flow_valve_air_flow()
         }
         fn pack_flow_valve_inlet_pressure(&self, pack_id: usize) -> Option<Pressure> {
-            self.packs[pack_id].pack_flow_valve_inlet_pressure(pack_id)
+            self.packs[pack_id].pack_flow_valve_inlet_pressure()
         }
     }
     impl SimulationElement for TestPneumatic {
@@ -1136,7 +1130,7 @@ mod tests {
         fn pack_flow_valve_air_flow(&self) -> MassRate {
             self.pack_flow_valve.fluid_flow()
         }
-        fn pack_flow_valve_inlet_pressure(&self, pack_id: usize) -> Option<Pressure> {
+        fn pack_flow_valve_inlet_pressure(&self) -> Option<Pressure> {
             self.pack_inlet_pressure_sensor.signal()
         }
     }
@@ -1176,24 +1170,6 @@ mod tests {
             self.pack_inlet_pressure_sensor.accept(visitor);
 
             visitor.visit(self);
-        }
-    }
-
-    struct TestPneumaticOverhead {
-        engine_1_bleed: AutoOffFaultPushButton,
-        engine_2_bleed: AutoOffFaultPushButton,
-    }
-    impl TestPneumaticOverhead {
-        fn new(context: &mut InitContext) -> Self {
-            Self {
-                engine_1_bleed: AutoOffFaultPushButton::new_auto(context, "PNEU_ENG_1_BLEED"),
-                engine_2_bleed: AutoOffFaultPushButton::new_auto(context, "PNEU_ENG_2_BLEED"),
-            }
-        }
-    }
-    impl EngineBleedPushbutton<2> for TestPneumaticOverhead {
-        fn engine_bleed_pushbuttons_are_auto(&self) -> [bool; 2] {
-            [self.engine_1_bleed.is_auto(), self.engine_2_bleed.is_auto()]
         }
     }
 
@@ -1244,7 +1220,6 @@ mod tests {
         engine_fire_push_buttons: TestEngineFirePushButtons,
         payload: TestPayload,
         pneumatic: TestPneumatic,
-        pneumatic_overhead: TestPneumaticOverhead,
         pressurization_overhead: A320PressurizationOverheadPanel,
         lgciu1: TestLgciu,
         lgciu2: TestLgciu,
@@ -1277,7 +1252,6 @@ mod tests {
                 engine_fire_push_buttons: TestEngineFirePushButtons::new(),
                 payload: TestPayload {},
                 pneumatic: TestPneumatic::new(context),
-                pneumatic_overhead: TestPneumaticOverhead::new(context),
                 pressurization_overhead: A320PressurizationOverheadPanel::new(context),
                 lgciu1: TestLgciu::new(false),
                 lgciu2: TestLgciu::new(false),
@@ -1377,7 +1351,6 @@ mod tests {
                 &self.engine_fire_push_buttons,
                 &self.payload,
                 &self.pneumatic,
-                &self.pneumatic_overhead,
                 &self.pressurization_overhead,
                 [&self.lgciu1, &self.lgciu2],
             );

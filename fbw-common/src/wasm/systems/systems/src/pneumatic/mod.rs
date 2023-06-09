@@ -12,7 +12,6 @@ use crate::{
 };
 
 use uom::si::{
-    angle::degree,
     f64::*,
     mass::kilogram,
     pressure::{pascal, psi},
@@ -300,7 +299,6 @@ pub struct EngineCompressionChamberController {
     target_temperature: ThermodynamicTemperature,
     n1_contribution_factor: f64,
     n2_contribution_factor: f64,
-    compression_factor: f64, // TODO: This is now useless, should be removed
 }
 impl ControllerSignal<TargetPressureTemperatureSignal> for EngineCompressionChamberController {
     fn signal(&self) -> Option<TargetPressureTemperatureSignal> {
@@ -315,17 +313,12 @@ impl EngineCompressionChamberController {
     const INTAKE_EFFICIENCY: f64 = 0.93;
     const COMPRESSOR_EFFICIENCY: f64 = 0.87;
 
-    pub fn new(
-        n1_contribution_factor: f64,
-        n2_contribution_factor: f64,
-        compression_factor: f64,
-    ) -> Self {
+    pub fn new(n1_contribution_factor: f64, n2_contribution_factor: f64) -> Self {
         Self {
             target_pressure: Pressure::default(),
             target_temperature: ThermodynamicTemperature::default(),
             n1_contribution_factor,
             n2_contribution_factor,
-            compression_factor,
         }
     }
 
@@ -1102,8 +1095,7 @@ mod tests {
 
     #[test]
     fn engine_compression_chamber_signal_n1_dependence() {
-        let mut compression_chamber_controller =
-            EngineCompressionChamberController::new(1., 0., 1.);
+        let mut compression_chamber_controller = EngineCompressionChamberController::new(1., 0.);
         let engine = TestEngine::new(Ratio::new::<ratio>(0.2), Ratio::new::<ratio>(0.));
 
         let context = context(Duration::from_millis(1000), Length::new::<foot>(0.));
@@ -1123,8 +1115,7 @@ mod tests {
 
     #[test]
     fn engine_compression_chamber_signal_n2_dependence() {
-        let mut compression_chamber_controller =
-            EngineCompressionChamberController::new(0., 1., 1.);
+        let mut compression_chamber_controller = EngineCompressionChamberController::new(0., 1.);
         let engine = TestEngine::new(Ratio::new::<ratio>(0.), Ratio::new::<ratio>(0.2));
 
         let context = context(Duration::from_millis(1000), Length::new::<foot>(0.));
@@ -1145,8 +1136,7 @@ mod tests {
     #[test]
     fn engine_compression_chamber_pressure_cold_and_dark() {
         let engine = TestEngine::cold_dark();
-        let mut compression_chamber_controller =
-            EngineCompressionChamberController::new(0.5, 0.5, 2.);
+        let mut compression_chamber_controller = EngineCompressionChamberController::new(0.5, 0.5);
         let context = context(Duration::from_millis(1000), Length::new::<foot>(0.));
 
         compression_chamber_controller.update(&context, &engine);
@@ -1163,8 +1153,7 @@ mod tests {
     #[test]
     fn engine_compression_chamber_pressure_toga() {
         let engine = TestEngine::toga();
-        let mut compression_chamber_controller =
-            EngineCompressionChamberController::new(1., 1., 1.);
+        let mut compression_chamber_controller = EngineCompressionChamberController::new(1., 1.);
         let context = context(Duration::from_millis(1000), Length::new::<foot>(0.));
 
         compression_chamber_controller.update(&context, &engine);
@@ -1181,8 +1170,7 @@ mod tests {
     #[test]
     fn engine_compression_chamber_pressure_idle() {
         let engine = TestEngine::idle();
-        let mut compression_chamber_controller =
-            EngineCompressionChamberController::new(1., 1., 1.);
+        let mut compression_chamber_controller = EngineCompressionChamberController::new(1., 1.);
         let context = context(Duration::from_millis(1000), Length::new::<foot>(0.));
 
         compression_chamber_controller.update(&context, &engine);
@@ -1199,8 +1187,7 @@ mod tests {
     #[test]
     fn engine_compression_chamber_stabilises() {
         let engine = TestEngine::toga();
-        let mut compression_chamber_controller =
-            EngineCompressionChamberController::new(1., 1., 1.);
+        let mut compression_chamber_controller = EngineCompressionChamberController::new(1., 1.);
         let mut compression_chamber = CompressionChamber::new(Volume::new::<cubic_meter>(1.));
         let context = context(Duration::from_millis(1000), Length::new::<foot>(0.));
 
