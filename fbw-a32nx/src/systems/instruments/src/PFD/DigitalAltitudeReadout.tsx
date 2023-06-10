@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { ConsumerSubject, DisplayComponent, FSComponent, MappedSubject, NodeReference, Subject, Subscribable, Subscription, VNode } from '@microsoft/msfs-sdk';
+import { ConsumerSubject, DisplayComponent, FSComponent, MappedSubject, NodeReference, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { Arinc429RegisterSubject } from 'instruments/src/MsfsAvionicsCommon/Arinc429RegisterSubject';
 import { SimplaneBaroMode, SimplaneValues } from 'instruments/src/PFD/shared/SimplaneValueProvider';
 import { Arinc429Values } from './shared/ArincValueProvider';
@@ -89,10 +89,6 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
         this.altitude,
     );
 
-    private baroAltSub?: Subscription;
-
-    private pressureAltSub?: Subscription;
-
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
@@ -140,18 +136,8 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
         });
 
         sub.on('fmMdaRaw').handle(this.mda.setWord.bind(this.mda));
-        this.baroAltSub = sub.on('baroCorrectedAltitude').handle(this.altitude.setWord.bind(this.altitude), true);
-        this.pressureAltSub = sub.on('pressureAltitude').handle(this.altitude.setWord.bind(this.altitude), true);
-
-        this.baroMode.sub((mode) => {
-            if (mode === 'STD') {
-                this.baroAltSub?.pause();
-                this.pressureAltSub?.resume();
-            } else {
-                this.pressureAltSub?.pause();
-                this.baroAltSub?.resume();
-            }
-        }, true);
+        // FIXME once the ADR has the proper baro alt implementation this will need filtered altitude with source selection
+        sub.on('baroCorrectedAltitude').handle(this.altitude.setWord.bind(this.altitude));
 
         this.baroMode.setConsumer(sub.on('baroMode'));
     }
