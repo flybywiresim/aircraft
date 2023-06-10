@@ -2,8 +2,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     constructor() {
         super(...arguments);
 
-        this.MIN_BRIGHTNESS = 0.5
-        this.MAX_BRIGHTNESS = 8
+        this.MIN_BRIGHTNESS = 0.5;
+        this.MAX_BRIGHTNESS = 8;
 
         this.minPageUpdateThrottler = new UpdateThrottler(100);
         this.mcduServerConnectUpdateThrottler = new UpdateThrottler(1000);
