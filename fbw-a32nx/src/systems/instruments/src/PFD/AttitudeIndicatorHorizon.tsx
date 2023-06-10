@@ -5,6 +5,7 @@
 import { ClockEvents, DisplayComponent, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { Arinc429Register, Arinc429Word } from '@flybywiresim/fbw-sdk';
 
+import { Arinc429RegisterSubject } from 'instruments/src/MsfsAvionicsCommon/Arinc429RegisterSubject';
 import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import {
     calculateHorizonOffsetFromPitch,
@@ -326,7 +327,7 @@ class RadioAltAndDH extends DisplayComponent<{ bus: ArincEventBus, filteredRadio
 
     private roll = new Arinc429Word(0);
 
-    private dh = new Arinc429Word(0);
+    private readonly dh = Arinc429RegisterSubject.createEmpty();
 
     private filteredRadioAltitude = 0;
 
@@ -357,10 +358,6 @@ class RadioAltAndDH extends DisplayComponent<{ bus: ArincEventBus, filteredRadio
             this.roll = roll;
         });
 
-        sub.on('dhAr').withArinc429Precision(0).handle((dh) => {
-            this.dh = dh;
-        });
-
         sub.on('transAlt').whenChanged().handle((ta) => {
             this.transAlt = ta;
         });
@@ -387,7 +384,8 @@ class RadioAltAndDH extends DisplayComponent<{ bus: ArincEventBus, filteredRadio
                 const chosenTransalt = this.fmgcFlightPhase <= 3 ? this.transAlt : this.transAltAppr;
                 const belowTransitionAltitude = chosenTransalt !== 0 && (!this.altitude.isNoComputedData() && !this.altitude.isNoComputedData()) && this.altitude.value < chosenTransalt;
                 let size = 'FontLarge';
-                const DHValid = this.dh.value >= 0 && (!this.dh.isNoComputedData() && !this.dh.isFailureWarning());
+                const dh = this.dh.get();
+                const DHValid = dh.value >= 0 && (!dh.isNoComputedData() && !dh.isFailureWarning());
 
                 let text = '';
                 let color = 'Amber';
@@ -395,7 +393,7 @@ class RadioAltAndDH extends DisplayComponent<{ bus: ArincEventBus, filteredRadio
                 if (raHasData) {
                     if (raFailed) {
                         if (raValue < 2500) {
-                            if (raValue > 400 || (raValue > this.dh.value + 100 && DHValid)) {
+                            if (raValue > 400 || (raValue > dh.value + 100 && DHValid)) {
                                 color = 'Green';
                             }
                             if (raValue < 400) {
@@ -405,7 +403,7 @@ class RadioAltAndDH extends DisplayComponent<{ bus: ArincEventBus, filteredRadio
                                 text = Math.round(raValue).toString();
                             } else if (raValue <= 50) {
                                 text = (Math.round(raValue / 5) * 5).toString();
-                            } else if (raValue > 50 || (raValue > this.dh.value + 100 && DHValid)) {
+                            } else if (raValue > 50 || (raValue > dh.value + 100 && DHValid)) {
                                 text = (Math.round(raValue / 10) * 10).toString();
                             }
                         }
@@ -416,7 +414,7 @@ class RadioAltAndDH extends DisplayComponent<{ bus: ArincEventBus, filteredRadio
                 }
 
                 this.daRaGroup.instance.style.transform = `translate3d(0px, ${-verticalOffset}px, 0px)`;
-                if (raFailed && DHValid && raValue <= this.dh.value) {
+                if (raFailed && DHValid && raValue <= dh.value) {
                     this.attDhText.instance.style.visibility = 'visible';
                 } else {
                     this.attDhText.instance.style.visibility = 'hidden';
@@ -437,6 +435,8 @@ class RadioAltAndDH extends DisplayComponent<{ bus: ArincEventBus, filteredRadio
                 this.radioAlt.instance.style.visibility = 'visible';
             }
         });
+
+        sub.on('fmDhRaw').handle(this.dh.setWord.bind(this.dh));
     }
 
     render(): VNode {

@@ -22,6 +22,7 @@
 1. [MCDU] The remote MCDU protocol now sends the annunciator light state - @tracernz (Mike)
 1. [MCDU] The remote MCDU protocol now sends the display and integral light brightness - @tracernz (Mike)
 1. [MCDU] The remote MCDU protocol now supports the BRT/DIM keys - @tracernz (Mike)
+1. [PFD] Corrected the NO DH logic in the FMS and PFD - @tracernz (Mike)
 
 ## 0.10.0
 
