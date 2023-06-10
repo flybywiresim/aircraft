@@ -60,7 +60,8 @@ class HeadingBug extends DisplayComponent<{ bus: ArincEventBus, isCaptainSide: b
         });
 
         sub.on('heading').handle((h) => {
-            this.heading.set(h);
+            this.heading.value = h.value;
+            this.heading.ssm = h.ssm;
             if (this.isActive) {
                 this.calculateAndSetOffset();
             }
