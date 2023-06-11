@@ -180,8 +180,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 blank: false,
                 fm2: false,
             },
-            display_brightness: 0,
-            integral_brightness: 0,
+            displayBrightness: 0,
+            integralBrightness: 0,
         };
 
     }
@@ -1416,20 +1416,20 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 titleLeft: `{small}${this._titleLeft}{end}`,
                 page: this._pageCount > 0 ? `{small}${this._pageCurrent}/${this._pageCount}{end}` : '',
                 arrows: this._arrows,
-                integral_brightness: integralLightsPowered ? SimVar.GetSimVarValue("A:LIGHT POTENTIOMETER:85", "percent over 100") : 0,
+                integralBrightness: integralLightsPowered ? SimVar.GetSimVarValue("A:LIGHT POTENTIOMETER:85", "percent over 100") : 0,
             };
         }
 
         if (mcdu1Powered) {
             left = Object.assign({}, screenState);
             left.annunciators = this.annunciators.left;
-            left.display_brightness = this.leftBrightness / this.MAX_BRIGHTNESS;
+            left.displayBrightness = this.leftBrightness / this.MAX_BRIGHTNESS;
         }
 
         if (mcdu2Powered) {
             right = Object.assign({}, screenState);
             right.annunciators = this.annunciators.right;
-            right.display_brightness = this.rightBrightness / this.MAX_BRIGHTNESS;
+            right.displayBrightness = this.rightBrightness / this.MAX_BRIGHTNESS;
         }
 
         const content = {right, left};
