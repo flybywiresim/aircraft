@@ -1,5 +1,9 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import React, { useEffect, useRef, useState } from 'react';
-import { BitFlags } from '@shared/bitFlags';
+import { BitFlags } from '@flybywiresim/fbw-sdk';
 import * as ReactDOMServer from 'react-dom/server';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { CanvasConst, SeatConstants, SeatInfo, PaxStationInfo, TYPE, RowInfo } from './Constants';

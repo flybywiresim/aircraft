@@ -1,6 +1,10 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 /* eslint-disable function-paren-newline */
 import { useUpdate } from '@instruments/common/hooks';
-import { BitFlags, SeatFlags } from '@shared/bitFlags';
+import { BitFlags, SeatFlags } from '@flybywiresim/fbw-sdk';
 import { useCallback, useRef, useState } from 'react';
 
 export const useBitFlags = (

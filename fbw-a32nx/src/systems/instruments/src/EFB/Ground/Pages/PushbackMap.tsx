@@ -5,7 +5,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { ZoomIn, ZoomOut } from 'react-bootstrap-icons';
-import { MathUtils } from '@shared/MathUtils';
+import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { IconPlane } from '@tabler/icons';
 import { Coordinates } from 'msfs-geo';
 import { computeDestinationPoint, getGreatCircleBearing } from 'geolib';

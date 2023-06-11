@@ -1,8 +1,11 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { Phase, PreFlightPhase, TakeOffPhase, ClimbPhase, CruisePhase, DescentPhase, ApproachPhase, GoAroundPhase, DonePhase } from '@fmgc/flightphase/Phase';
-import { Arinc429Word } from '@shared/arinc429';
+import { Arinc429Word, ConfirmationNode } from '@flybywiresim/fbw-sdk';
 import { VerticalMode } from '@shared/autopilot';
 import { FmgcFlightPhase, isAllEngineOn, isAnEngineOn, isOnGround, isReady, isSlewActive } from '@shared/flightphase';
-import { ConfirmationNode } from '@shared/logic';
 
 function canInitiateDes(distanceToDestination: number): boolean {
     const fl = Math.round(Simplane.getAltitude() / 100);

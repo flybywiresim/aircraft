@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 /* eslint-disable max-len */
 /*
  * A32NX
@@ -18,7 +22,7 @@
  */
 
 import React, { FC, useState } from 'react';
-import { Units } from '@shared/units';
+import { Units } from '@flybywiresim/fbw-sdk';
 import { toast } from 'react-toastify';
 import { Calculator, CloudArrowDown, Trash } from 'react-bootstrap-icons';
 import { usePersistentProperty } from '@instruments/common/persistence';

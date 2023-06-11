@@ -1,10 +1,14 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 /* eslint-disable camelcase */
 import { useSimVar } from '@instruments/common/simVars';
 import React, { FC, useState, memo, useEffect } from 'react';
 import { Layer } from '@instruments/common/utils';
 import { TCAS_CONST as TCAS, TaRaIntrusion, TaRaIndex } from '@tcas/lib/TcasConstants';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
-import { MathUtils } from '@shared/MathUtils';
+import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { EfisNdMode, NdTraffic } from '@shared/NavigationDisplay';
 import { usePersistentProperty } from '@instruments/common/persistence';
 import { useFlowSyncEvent } from '@instruments/common/hooks';

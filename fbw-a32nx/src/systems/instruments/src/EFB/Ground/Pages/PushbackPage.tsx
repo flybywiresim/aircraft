@@ -18,7 +18,7 @@ import {
     TruckFlatbed,
 } from 'react-bootstrap-icons';
 import Slider from 'rc-slider';
-import { MathUtils } from '@shared/MathUtils';
+import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { toast } from 'react-toastify';
 import { usePersistentNumberProperty } from '@instruments/common/persistence';
 import { t } from '../../translation';

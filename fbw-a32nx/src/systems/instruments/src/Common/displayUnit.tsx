@@ -1,5 +1,9 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import React, { useEffect, useRef, useState } from 'react';
-import { NXDataStore } from '@shared/persistence';
+import { NXDataStore } from '@flybywiresim/fbw-sdk';
 import { getSupplier } from '@instruments/common/utils';
 
 import { useSimVar } from './simVars';

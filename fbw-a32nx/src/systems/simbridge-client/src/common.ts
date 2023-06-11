@@ -1,4 +1,8 @@
-import { NXDataStore } from '@shared/persistence';
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
+import { NXDataStore } from '@flybywiresim/fbw-sdk';
 
 export const getSimBridgeIp = (): string => (NXDataStore.get('CONFIG_SIMBRIDGE_REMOTE', 'local') === 'local' ? 'localhost' : NXDataStore.get('CONFIG_SIMBRIDGE_IP', 'localhost'));
 

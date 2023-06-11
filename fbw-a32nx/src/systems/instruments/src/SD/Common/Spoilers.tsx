@@ -1,6 +1,10 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import React from 'react';
 import { useArinc429Var } from '@instruments/common/arinc429';
-import { Arinc429Word } from '@shared/arinc429';
+import { Arinc429Word } from '@flybywiresim/fbw-sdk';
 import { ComponentPositionProps } from './ComponentPositionProps';
 import { ComponentSidePositionProps } from './ComponentSidePositionProps';
 import { SvgGroup } from './SvgGroup';

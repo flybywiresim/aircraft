@@ -1,4 +1,8 @@
-import { Arinc429Word } from '@shared/arinc429';
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
+import { Arinc429Word } from '@flybywiresim/fbw-sdk';
 import { useSimVar } from './simVars';
 
 export const useArinc429Var = (

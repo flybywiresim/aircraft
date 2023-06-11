@@ -2,7 +2,7 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { AtcMessageButtonBusMessages } from '@datalink/atc';
-import { Arinc429Word, Arinc429SignStatusMatrix } from '@shared/arinc429';
+import { Arinc429Word, Arinc429SignStatusMatrix } from '@flybywiresim/fbw-sdk';
 import { EventBus, EventSubscriber, Publisher, SimVarDefinition, SimVarPublisher, SimVarValueType } from '@microsoft/msfs-sdk';
 import { ClockDataBusTypes, FmgcDataBusTypes, FwcDataBusTypes, RmpDataBusTypes } from '../databus';
 

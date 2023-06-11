@@ -1,6 +1,12 @@
-// do not use @fmgc shortcut - breaks units tests with jest
-// noinspection ES6PreferShortImport
-import { TurnDirection } from '../../fmgc/src/types/fstypes/FSEnums';
+/**
+ * This comes from fstypes/FSEnums, TODO change this when we have @microsoft/msfs-types
+ */
+declare enum TurnDirection {
+    Unknown = 0,
+    Left = 1,
+    Right = 2,
+    Either = 3,
+}
 
 export class MathUtils {
    static DEGREES_TO_RADIANS = Math.PI / 180;

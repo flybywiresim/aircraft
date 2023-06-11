@@ -1,8 +1,11 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import React, { useEffect, useState } from 'react';
 import { Layer } from '@instruments/common/utils';
 import { EfisSide } from '@shared/NavigationDisplay';
-import { Arinc429Word } from '@shared/arinc429';
-import { SimVarString } from '@shared/simvar';
+import { Arinc429Word, SimVarString } from '@flybywiresim/fbw-sdk';
 import { useSimVar } from '@instruments/common/simVars';
 
 type TopMessagesProps = {

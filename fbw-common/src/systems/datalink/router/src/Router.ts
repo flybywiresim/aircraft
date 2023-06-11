@@ -15,7 +15,7 @@ import {
     WeatherMessage,
     FreetextMessage,
 } from '@datalink/common';
-import { NXDataStore } from '@shared/persistence';
+import { NXDataStore } from '@flybywiresim/fbw-sdk';
 import { EventBus } from '@microsoft/msfs-sdk';
 import { Vdl } from './vhf/VDL';
 import { HoppieConnector } from './webinterfaces/HoppieConnector';

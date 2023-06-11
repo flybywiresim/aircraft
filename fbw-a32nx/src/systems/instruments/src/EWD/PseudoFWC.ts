@@ -1,8 +1,11 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { Subject, Subscribable, MappedSubject, DebounceTimer } from '@microsoft/msfs-sdk';
 
-import { Arinc429Register, Arinc429Word } from '@shared/arinc429';
+import { Arinc429Register, Arinc429Word, NXDataStore } from '@flybywiresim/fbw-sdk';
 import { NXLogicClockNode, NXLogicConfirmNode, NXLogicMemoryNode, NXLogicPulseNode, NXLogicTriggeredMonostableNode } from '@instruments/common/NXLogic';
-import { NXDataStore } from '@shared/persistence';
 import { VerticalMode } from '@shared/autopilot';
 
 export function xor(a: boolean, b: boolean): boolean {
