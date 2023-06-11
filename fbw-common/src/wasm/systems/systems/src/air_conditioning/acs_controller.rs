@@ -56,7 +56,7 @@ impl<const ZONES: usize, const ENGINES: usize> AirConditioningSystemController<Z
     ) -> Self {
         let zone_controller = cabin_zone_ids
             .iter()
-            .map(ZoneController::new)
+            .map(|zone| ZoneController::new(*zone))
             .collect::<Vec<ZoneController>>();
         Self {
             aircraft_state: AirConditioningStateManager::new(),
@@ -468,7 +468,7 @@ impl AirConditioningState<EndLanding> {
 transition!(EndLanding, OnGround);
 
 pub struct ZoneController {
-    zone_id: usize,
+    zone_id: ZoneType,
     duct_demand_temperature: ThermodynamicTemperature,
     zone_selected_temperature: ThermodynamicTemperature,
     pid_controller: PidController,
@@ -484,13 +484,16 @@ impl ZoneController {
     const LOWER_DUCT_TEMP_TRIGGER_LOW_CELSIUS: f64 = 26.; // C
     const LOWER_DUCT_TEMP_LIMIT_LOW_KELVIN: f64 = 275.15; // K
     const LOWER_DUCT_TEMP_LIMIT_HIGH_KELVIN: f64 = 281.15; // K
+    const CARGO_DUCT_TEMP_LIMIT_LOW_KELVIN: f64 = 275.15; // K
+    const CARGO_DUCT_TEMP_LIMIT_HIGH_KELVIN: f64 = 343.15; // K
     const SETPOINT_TEMP_KELVIN: f64 = 297.15; // K
+    const CARGO_SETPOINT_TEMP_KELVIN: f64 = 288.15; // K
     const KI_DUCT_DEMAND_CABIN: f64 = 0.05;
     const KI_DUCT_DEMAND_COCKPIT: f64 = 0.04;
     const KP_DUCT_DEMAND_CABIN: f64 = 3.5;
     const KP_DUCT_DEMAND_COCKPIT: f64 = 2.;
 
-    pub fn new(zone_type: &ZoneType) -> Self {
+    pub fn new(zone_type: ZoneType) -> Self {
         let pid_controller = match zone_type {
             ZoneType::Cockpit => {
                 PidController::new(
@@ -503,7 +506,7 @@ impl ZoneController {
                     1., // Output gain
                 )
             }
-            ZoneType::Cabin(_) | &ZoneType::Cargo(_) => PidController::new(
+            ZoneType::Cabin(_) => PidController::new(
                 Self::KP_DUCT_DEMAND_CABIN,
                 Self::KI_DUCT_DEMAND_CABIN,
                 0.,
@@ -512,9 +515,18 @@ impl ZoneController {
                 Self::SETPOINT_TEMP_KELVIN,
                 1.,
             ),
+            ZoneType::Cargo(_) => PidController::new(
+                Self::KP_DUCT_DEMAND_CABIN,
+                Self::KI_DUCT_DEMAND_CABIN,
+                0.,
+                Self::CARGO_DUCT_TEMP_LIMIT_HIGH_KELVIN,
+                Self::CARGO_DUCT_TEMP_LIMIT_LOW_KELVIN,
+                Self::CARGO_SETPOINT_TEMP_KELVIN,
+                1.,
+            ),
         };
         Self {
-            zone_id: zone_type.id(),
+            zone_id: zone_type,
             duct_demand_temperature: ThermodynamicTemperature::new::<degree_celsius>(24.),
             zone_selected_temperature: ThermodynamicTemperature::new::<degree_celsius>(24.),
             pid_controller,
@@ -534,18 +546,22 @@ impl ZoneController {
             // If the Zone controller is working on secondary power, the zones are controlled to
             // 24 degrees by the secondary computer
             ThermodynamicTemperature::new::<degree_celsius>(24.)
+        } else if matches!(self.zone_id, ZoneType::Cargo(1)) {
+            acs_overhead.selected_cargo_temperature(self.zone_id)
         } else {
-            acs_overhead.selected_cabin_temperature(self.zone_id)
+            acs_overhead.selected_cabin_temperature(self.zone_id.id())
         };
         self.duct_demand_temperature = if matches!(operation_mode, ACSCActiveComputer::None) {
             // If unpowered or failed, the pack controller would take over and deliver a fixed 20deg
             // for the cockpit and 10 for the cabin
             // Simulated here until packs are modelled
-            ThermodynamicTemperature::new::<degree_celsius>(if self.zone_id == 0 {
-                20.
-            } else {
-                10.
-            })
+            ThermodynamicTemperature::new::<degree_celsius>(
+                if matches!(self.zone_id, ZoneType::Cockpit) {
+                    20.
+                } else {
+                    10.
+                },
+            )
         } else {
             self.calculate_duct_temp_demand(context, pressurization, zone_measured_temperature)
         };
@@ -1095,8 +1111,8 @@ mod acs_controller_tests {
     use super::*;
     use crate::{
         air_conditioning::{
-            cabin_air::CabinAirSimulation, Air, AirConditioningPack, CabinFan, MixerUnit,
-            OutletAir, PressurizationConstants,
+            cabin_air::CabinAirSimulation, ventilation_control_module::VcmShared, Air,
+            AirConditioningPack, CabinFan, MixerUnit, OutletAir, PressurizationConstants,
         },
         electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
         overhead::{
@@ -1748,6 +1764,8 @@ mod acs_controller_tests {
         }
     }
 
+    impl VcmShared for TestAirConditioningSystem {}
+
     struct TestCabinAirSimulation {
         cabin_air_simulation: CabinAirSimulation<TestConstants, 2>,
         test_cabin_temperature: Option<Vec<ThermodynamicTemperature>>,
@@ -1767,7 +1785,7 @@ mod acs_controller_tests {
         fn update(
             &mut self,
             context: &UpdateContext,
-            air_conditioning_system: &(impl OutletAir + DuctTemperature),
+            air_conditioning_system: &(impl OutletAir + DuctTemperature + VcmShared),
             outflow_valve_open_amount: Ratio,
             safety_valve_open_amount: Ratio,
             lgciu_gear_compressed: bool,

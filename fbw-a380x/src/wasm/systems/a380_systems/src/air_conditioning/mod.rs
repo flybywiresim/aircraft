@@ -9,8 +9,8 @@ use systems::{
         ventilation_control_module::{VcmId, VcmShared, VentilationControlModule},
         AdirsToAirCondInterface, Air, AirConditioningOverheadShared, AirConditioningPack,
         AirHeater, CabinFan, DuctTemperature, MixerUnit, OutflowValveSignal, OutletAir,
-        OverheadFlowSelector, PackFlow, PackFlowControllers, PackFlowValveSignal,
-        PressurizationConstants, PressurizationOverheadShared, TrimAirSystem, ZoneType,
+        OverheadFlowSelector, PackFlow, PackFlowControllers, PressurizationConstants,
+        PressurizationOverheadShared, TrimAirSystem, ZoneType,
     },
     overhead::{
         AutoManFaultPushButton, NormalOnPushButton, OnOffFaultPushButton, OnOffPushButton,
@@ -237,7 +237,7 @@ impl A380Cabin {
     fn update(
         &mut self,
         context: &UpdateContext,
-        air_conditioning_system: &(impl OutletAir + DuctTemperature),
+        air_conditioning_system: &(impl OutletAir + DuctTemperature + VcmShared),
         lgciu: [&impl LgciuWeightOnWheels; 2],
         pressurization: &A320PressurizationSystem,
     ) {
@@ -454,13 +454,13 @@ impl A380AirConditioningSystem {
             cpiom_b.bulk_heater_on_signal(),
         );
 
-        println!(
-            "Bulk duct temp: {}",
-            self.cargo_air_heater
-                .outlet_air()
-                .temperature()
-                .get::<degree_celsius>()
-        );
+        // println!(
+        //     "Bulk duct temp: {}",
+        //     self.cargo_air_heater
+        //         .outlet_air()
+        //         .temperature()
+        //         .get::<degree_celsius>()
+        // );
         self.air_conditioning_overhead
             .set_pack_pushbutton_fault(self.pack_fault_determination());
     }
@@ -521,7 +521,7 @@ impl PackFlowControllers for A380AirConditioningSystem {
 
 impl DuctTemperature for A380AirConditioningSystem {
     fn duct_temperature(&self) -> Vec<ThermodynamicTemperature> {
-        // The bulk cargo zone of the A380 is fed with recirculated air only
+        // The bulk cargo zone of the A380 is fed with recirculated air through the heater
         let mut duct_temp_vec = self.trim_air_system.duct_temperature();
         duct_temp_vec[ZoneType::Cargo(2).id()] = self.cargo_air_heater.outlet_air().temperature();
         duct_temp_vec
@@ -552,9 +552,16 @@ impl VcmShared for A380AirConditioningSystem {
             .iter()
             .all(|module| module.hp_cabin_fans_are_enabled())
     }
-    fn bulk_duct_heater_is_on(&self) -> bool {
+    fn fwd_extraction_fan_is_on(&self) -> bool {
+        // The Fwd VCM controls the forward ventilation
+        self.vcm[0].fwd_extraction_fan_is_on()
+    }
+    fn fwd_isolation_valves_open_allowed(&self) -> bool {
+        self.vcm[0].fwd_isolation_valves_open_allowed()
+    }
+    fn bulk_duct_heater_on_allowed(&self) -> bool {
         // The Aft VCM controls the bulk ventilation and heating
-        self.vcm[1].bulk_duct_heater_is_on()
+        self.vcm[1].bulk_duct_heater_on_allowed()
     }
     fn bulk_extraction_fan_is_on(&self) -> bool {
         self.vcm[1].bulk_extraction_fan_is_on()
@@ -630,8 +637,8 @@ impl A380AirConditioningSystemOverhead {
                 OnOffFaultPushButton::new_on(context, "CARGO_AIR_ISOL_VALVES_BULK"),
             ],
             cargo_temperature_regulators: [
-                ValueKnob::new_with_value(context, "CARGO_AIR_FWD_SELECTOR", 15.),
-                ValueKnob::new_with_value(context, "CARGO_AIR_BULK_SELECTOR", 15.),
+                ValueKnob::new_with_value(context, "CARGO_AIR_FWD_SELECTOR", 150.),
+                ValueKnob::new_with_value(context, "CARGO_AIR_BULK_SELECTOR", 150.),
             ],
             cargo_heater_pb: OnOffFaultPushButton::new_on(context, "CARGO_AIR_HEATER"),
         }
@@ -681,6 +688,10 @@ impl AirConditioningOverheadShared for A380AirConditioningSystemOverhead {
 
     fn flow_selector_position(&self) -> OverheadFlowSelector {
         self.flow_selector
+    }
+
+    fn fwd_cargo_isolation_valve_is_on(&self) -> bool {
+        self.isol_valves_pbs[0].is_on()
     }
 
     fn bulk_isolation_valve_is_on(&self) -> bool {
@@ -1784,10 +1795,6 @@ mod tests {
             self.powered_ac_source_1.unpower();
         }
 
-        fn power_ac_1_bus(&mut self) {
-            self.powered_ac_source_1.power();
-        }
-
         fn unpower_ac_2_bus(&mut self) {
             self.powered_ac_source_2.unpower();
         }
@@ -2111,11 +2118,6 @@ mod tests {
             self
         }
 
-        fn powered_ac_1_bus(mut self) -> Self {
-            self.command(|a| a.power_ac_1_bus());
-            self
-        }
-
         fn unpowered_ac_2_bus(mut self) -> Self {
             self.command(|a| a.unpower_ac_2_bus());
             self
@@ -2226,6 +2228,21 @@ mod tests {
             self
         }
 
+        fn command_fwd_isolation_valves_pb_on(mut self, on_off: bool) -> Self {
+            self.write_by_name("OVHD_CARGO_AIR_ISOL_VALVES_FWD_PB_IS_ON", on_off);
+            self
+        }
+
+        fn command_bulk_isolation_valves_pb_on(mut self, on_off: bool) -> Self {
+            self.write_by_name("OVHD_CARGO_AIR_ISOL_VALVES_BULK_PB_IS_ON", on_off);
+            self
+        }
+
+        fn command_bulk_heater_pb_on(mut self, on_off: bool) -> Self {
+            self.write_by_name("OVHD_CARGO_AIR_HEATER_PB_IS_ON", on_off);
+            self
+        }
+
         fn command_selected_temperature(mut self, temperature: ThermodynamicTemperature) -> Self {
             let knob_value: f64 = (temperature.get::<degree_celsius>() - 18.) / 0.04;
             self.write_by_name("OVHD_COND_CKPT_SELECTOR_KNOB", knob_value);
@@ -2242,6 +2259,16 @@ mod tests {
             self
         }
 
+        fn command_cargo_selected_temperature(
+            mut self,
+            temperature: ThermodynamicTemperature,
+        ) -> Self {
+            let knob_value: f64 = (temperature.get::<degree_celsius>() - 5.) / 0.0667;
+            self.write_by_name("OVHD_CARGO_AIR_FWD_SELECTOR_KNOB", knob_value);
+            self.write_by_name("OVHD_CARGO_AIR_BULK_SELECTOR_KNOB", knob_value);
+            self
+        }
+
         fn command_man_vs_switch_position(mut self, position: usize) -> Self {
             if position == 0 {
                 self.write_by_name("OVHD_PRESS_MAN_VS_CTL_SWITCH", 0);
@@ -2255,6 +2282,13 @@ mod tests {
 
         fn command_open_door(mut self) -> Self {
             self.write_by_name("INTERACTIVE POINT OPEN:0", Ratio::new::<percent>(100.));
+            self
+        }
+
+        fn command_open_aft_cargo_door(mut self, open: bool) -> Self {
+            self.command(|a| {
+                a.dsms.open_aft_cargo_door(open);
+            });
             self
         }
 
@@ -2419,6 +2453,14 @@ mod tests {
             self.read_by_name("COND_MAIN_DECK_1_TEMP")
         }
 
+        fn fwd_cargo_measured_temperature(&mut self) -> ThermodynamicTemperature {
+            self.read_by_name("COND_CARGO_FWD_TEMP")
+        }
+
+        fn bulk_cargo_measured_temperature(&mut self) -> ThermodynamicTemperature {
+            self.read_by_name("COND_CARGO_BULK_TEMP")
+        }
+
         fn is_mode_sel_pb_auto(&mut self) -> bool {
             self.read_by_name("OVHD_PRESS_MODE_SEL_PB_IS_AUTO")
         }
@@ -2486,6 +2528,47 @@ mod tests {
                 a.a380_cabin_air.a380_air_conditioning_system.vcm[0].hp_cabin_fans_are_enabled()
                     && a.a380_cabin_air.a380_air_conditioning_system.vcm[1]
                         .hp_cabin_fans_are_enabled()
+            })
+        }
+
+        fn fwd_extraction_fan_is_on(&self) -> bool {
+            self.query(|a| {
+                a.a380_cabin_air.a380_air_conditioning_system.vcm[0].fwd_extraction_fan_is_on()
+            })
+        }
+
+        fn fwd_isolation_valves_are_open(&self) -> bool {
+            self.query(|a| {
+                a.a380_cabin_air.a380_air_conditioning_system.vcm[0]
+                    .fwd_isolation_valves_open_allowed()
+            })
+        }
+
+        fn bulk_extraction_fan_is_on(&self) -> bool {
+            self.query(|a| {
+                a.a380_cabin_air.a380_air_conditioning_system.vcm[1].bulk_extraction_fan_is_on()
+            })
+        }
+
+        fn bulk_isolation_valves_are_open(&self) -> bool {
+            self.query(|a| {
+                a.a380_cabin_air.a380_air_conditioning_system.vcm[1]
+                    .bulk_isolation_valves_open_allowed()
+            })
+        }
+
+        fn bulk_duct_heater_on_allowed(&self) -> bool {
+            self.query(|a| {
+                a.a380_cabin_air.a380_air_conditioning_system.vcm[1].bulk_duct_heater_on_allowed()
+            })
+        }
+
+        fn bulk_duct_heater_is_on(&self) -> bool {
+            self.query(|a| {
+                a.a380_cabin_air
+                    .a380_air_conditioning_system
+                    .cargo_air_heater
+                    .is_on()
             })
         }
 
@@ -4093,7 +4176,7 @@ mod tests {
                     .command_selected_temperature(ThermodynamicTemperature::new::<degree_celsius>(
                         24.,
                     ))
-                    .iterate(1000);
+                    .iterate(100);
 
                 let initial_temperature = test_bed.duct_temperature()[1];
 
@@ -4429,10 +4512,6 @@ mod tests {
                 test_bed.command_pack_flow_selector_position(3);
                 test_bed = test_bed.iterate(50);
 
-                println!(
-                    "Pack flow: {}",
-                    test_bed.pack_flow().get::<kilogram_per_second>()
-                );
                 assert!(
                     (test_bed.mixer_unit_outlet_air().flow_rate()
                         - (MassRate::new::<kilogram_per_second>(5.1183) * 1.2))
@@ -4651,6 +4730,279 @@ mod tests {
                         - test_bed.measured_temperature().get::<degree_celsius>())
                     .abs()
                         < 1.
+                );
+            }
+        }
+
+        mod cargo_ventilation_tests {
+            use super::*;
+
+            #[test]
+            fn all_fans_and_isolation_valves_start_disabled() {
+                let test_bed = test_bed();
+
+                assert!(!test_bed.fwd_extraction_fan_is_on());
+                assert!(!test_bed.fwd_isolation_valves_are_open());
+                assert!(!test_bed.bulk_extraction_fan_is_on());
+                assert!(!test_bed.bulk_isolation_valves_are_open());
+                assert!(!test_bed.bulk_duct_heater_is_on());
+            }
+
+            #[test]
+            fn fwd_isolation_and_fans_are_on_when_conditions_met() {
+                let test_bed = test_bed()
+                    .command_fwd_isolation_valves_pb_on(true)
+                    .iterate(5);
+
+                assert!(test_bed.fwd_extraction_fan_is_on());
+                assert!(test_bed.fwd_isolation_valves_are_open());
+            }
+
+            #[test]
+            fn fwd_isolation_and_fans_are_off_when_conditions_not_met() {
+                let mut test_bed = test_bed()
+                    .command_fwd_isolation_valves_pb_on(false)
+                    .iterate(5);
+
+                assert!(!test_bed.fwd_extraction_fan_is_on());
+                assert!(!test_bed.fwd_isolation_valves_are_open());
+
+                test_bed = test_bed
+                    .command_fwd_isolation_valves_pb_on(true)
+                    .command_ditching_pb_on()
+                    .iterate(5);
+
+                assert!(!test_bed.fwd_extraction_fan_is_on());
+                assert!(!test_bed.fwd_isolation_valves_are_open());
+            }
+
+            #[test]
+            fn bulk_isolation_and_fans_are_on_when_conditions_met() {
+                let test_bed = test_bed()
+                    .command_bulk_isolation_valves_pb_on(true)
+                    .iterate(5);
+
+                assert!(test_bed.bulk_extraction_fan_is_on());
+                assert!(test_bed.bulk_isolation_valves_are_open());
+            }
+
+            #[test]
+            fn bulk_isolation_and_fans_are_off_when_conditions_not_met() {
+                let mut test_bed = test_bed()
+                    .command_bulk_isolation_valves_pb_on(false)
+                    .iterate(5);
+
+                assert!(!test_bed.bulk_extraction_fan_is_on());
+                assert!(!test_bed.bulk_isolation_valves_are_open());
+
+                test_bed = test_bed
+                    .command_bulk_isolation_valves_pb_on(true)
+                    .command_ditching_pb_on()
+                    .iterate(5);
+
+                assert!(!test_bed.bulk_extraction_fan_is_on());
+                assert!(!test_bed.bulk_isolation_valves_are_open());
+            }
+
+            #[test]
+            fn bulk_heater_allowed_on_when_conditions_met() {
+                let mut test_bed = test_bed()
+                    .command_bulk_isolation_valves_pb_on(true)
+                    .command_bulk_heater_pb_on(true)
+                    .iterate(5);
+
+                assert!(test_bed.bulk_duct_heater_on_allowed());
+
+                test_bed = test_bed.command_bulk_heater_pb_on(false).iterate(5);
+
+                assert!(!test_bed.bulk_duct_heater_on_allowed());
+            }
+
+            #[test]
+            fn bulk_heater_turns_on_when_conditions_met() {
+                let mut test_bed = test_bed()
+                    .and_run()
+                    .command_measured_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+                        10.,
+                    ))
+                    .iterate(5);
+
+                assert!(test_bed.bulk_duct_heater_is_on());
+
+                test_bed = test_bed
+                    .command_measured_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+                        15.5,
+                    ))
+                    .iterate(5);
+
+                assert!(test_bed.bulk_duct_heater_is_on());
+
+                test_bed = test_bed
+                    .command_measured_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+                        17.,
+                    ))
+                    .iterate(5);
+
+                assert!(!test_bed.bulk_duct_heater_is_on());
+            }
+
+            #[test]
+            fn bulk_heater_switches_off_when_on_ground_and_door_open() {
+                let mut test_bed = test_bed()
+                    .on_ground()
+                    .command_open_aft_cargo_door(true)
+                    .command_measured_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+                        10.,
+                    ))
+                    .iterate(5);
+
+                assert!(!test_bed.bulk_duct_heater_is_on());
+
+                test_bed = test_bed
+                    .command_open_aft_cargo_door(false)
+                    .command_measured_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+                        10.,
+                    ))
+                    .iterate(5);
+
+                assert!(test_bed.bulk_duct_heater_is_on());
+            }
+
+            #[test]
+            fn bulk_heater_warms_up_the_zone() {
+                let mut test_bed = test_bed()
+                    .on_ground()
+                    .ambient_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(-30.))
+                    .command_measured_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+                        5.,
+                    ))
+                    .command_cargo_selected_temperature(ThermodynamicTemperature::new::<
+                        degree_celsius,
+                    >(20.))
+                    .command_bulk_heater_pb_on(false)
+                    .iterate(100);
+
+                assert!(!test_bed.bulk_duct_heater_is_on());
+                assert!(test_bed.measured_temperature().get::<degree_celsius>() > 15.);
+                assert!(
+                    test_bed
+                        .bulk_cargo_measured_temperature()
+                        .get::<degree_celsius>()
+                        < 15.
+                );
+
+                test_bed = test_bed.command_bulk_heater_pb_on(true).iterate(200);
+
+                assert!(test_bed.bulk_duct_heater_is_on());
+                assert!(test_bed.measured_temperature().get::<degree_celsius>() > 15.);
+                assert!(
+                    test_bed
+                        .bulk_cargo_measured_temperature()
+                        .get::<degree_celsius>()
+                        > 15.
+                );
+            }
+
+            #[test]
+            fn bulk_heater_stops_when_temperature_achieved() {
+                let mut test_bed = test_bed()
+                    .on_ground()
+                    .ambient_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(0.))
+                    .command_measured_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+                        5.,
+                    ))
+                    .command_cargo_selected_temperature(ThermodynamicTemperature::new::<
+                        degree_celsius,
+                    >(20.))
+                    .command_bulk_heater_pb_on(true)
+                    .iterate(500);
+
+                assert!(!test_bed.bulk_duct_heater_is_on());
+                assert!(test_bed.measured_temperature().get::<degree_celsius>() > 15.);
+                assert!(
+                    (test_bed
+                        .bulk_cargo_measured_temperature()
+                        .get::<degree_celsius>()
+                        - 20.)
+                        .abs()
+                        < 2.
+                );
+            }
+
+            #[test]
+            fn fwd_cargo_uses_tav_to_warm_up_zone() {
+                let mut test_bed = test_bed()
+                    .on_ground()
+                    .ambient_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(-30.))
+                    .command_measured_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+                        5.,
+                    ))
+                    .command_cargo_selected_temperature(ThermodynamicTemperature::new::<
+                        degree_celsius,
+                    >(15.))
+                    .iterate(500);
+
+                assert!(test_bed.measured_temperature().get::<degree_celsius>() > 20.);
+                assert!(
+                    test_bed
+                        .fwd_cargo_measured_temperature()
+                        .get::<degree_celsius>()
+                        < 20.
+                );
+            }
+
+            #[test]
+            fn fwd_cargo_lowers_pack_outlet_to_cool_zone() {
+                let mut test_bed = test_bed()
+                    .on_ground()
+                    .ambient_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(-30.))
+                    .command_measured_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+                        5.,
+                    ))
+                    .command_cargo_selected_temperature(ThermodynamicTemperature::new::<
+                        degree_celsius,
+                    >(10.))
+                    .iterate(500);
+
+                assert!(test_bed.measured_temperature().get::<degree_celsius>() > 20.);
+                assert!(
+                    (test_bed
+                        .fwd_cargo_measured_temperature()
+                        .get::<degree_celsius>()
+                        - 10.)
+                        .abs()
+                        < 2.
+                );
+            }
+
+            #[test]
+            fn air_stops_when_isol_valves_closed() {
+                let mut test_bed = test_bed()
+                    .on_ground()
+                    .ambient_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(0.))
+                    .command_measured_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+                        5.,
+                    ))
+                    .command_cargo_selected_temperature(ThermodynamicTemperature::new::<
+                        degree_celsius,
+                    >(20.))
+                    .command_bulk_isolation_valves_pb_on(false)
+                    .command_fwd_isolation_valves_pb_on(false)
+                    .iterate(500);
+
+                assert!(!test_bed.bulk_duct_heater_is_on());
+                assert!(test_bed.measured_temperature().get::<degree_celsius>() > 15.);
+                assert!(
+                    test_bed
+                        .bulk_cargo_measured_temperature()
+                        .get::<degree_celsius>()
+                        < 15.
+                );
+                assert!(
+                    test_bed
+                        .fwd_cargo_measured_temperature()
+                        .get::<degree_celsius>()
+                        < 15.
                 );
             }
         }

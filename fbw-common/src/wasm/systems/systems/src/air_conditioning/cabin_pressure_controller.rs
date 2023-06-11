@@ -1030,6 +1030,7 @@ transition!(ClimbInternal, Abort);
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::air_conditioning::ventilation_control_module::VcmShared;
     use crate::shared::ElectricalBusType;
     use crate::simulation::{Aircraft, InitContext, SimulationElement, SimulationElementVisitor};
     use crate::{
@@ -1131,6 +1132,8 @@ mod tests {
             outlet_air
         }
     }
+
+    impl VcmShared for TestAirConditioningSystem {}
 
     struct TestEngine {
         corrected_n1: Ratio,

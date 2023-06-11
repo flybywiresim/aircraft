@@ -377,7 +377,7 @@ impl TemperatureControlSystemApplication {
             // } else {
             //     continue;
             // }
-            zone_controllers_vec.push(ZoneController::new(zone))
+            zone_controllers_vec.push(ZoneController::new(*zone))
         }
         let zone_controllers =
             zone_controllers_vec
@@ -431,6 +431,7 @@ impl TemperatureControlSystemApplication {
         trim_air_drive_device: &impl TaddShared,
     ) {
         // ACSCActive computer is only relevant to the A320 so we set it as Primary here to maintain commonality
+        // TODO: Add &ACSCActiveComputer::None when not powered
         for (index, zone) in self.zone_controllers.iter_mut().enumerate() {
             zone.update(
                 context,
@@ -557,14 +558,23 @@ impl VentilationControlSystemApplication {
         lgciu: [&impl LgciuWeightOnWheels; 2],
         vcm_shared: &impl VcmShared,
     ) -> bool {
-        let bulk_heater_on_allowed = vcm_shared.bulk_duct_heater_is_on()
-            && (lgciu.iter().all(|a| a.left_and_right_gear_compressed(true))
-                && cargo_door_open.aft_cargo_door_locked());
+        let bulk_heater_on_allowed = (cargo_door_open.aft_cargo_door_locked()
+            || !lgciu.iter().all(|a| a.left_and_right_gear_compressed(true)))
+            && vcm_shared.bulk_duct_heater_on_allowed();
         let temperature_difference = cabin_temperature.cabin_temperature()[ZoneType::Cargo(2).id()]
             .get::<degree_celsius>()
             - acs_overhead
                 .selected_cargo_temperature(ZoneType::Cargo(2))
                 .get::<degree_celsius>();
+        // println!(
+        //     "Bulk heater on allowed: {}, Temp difference: {}, aft cargo door locked: {}, vcm on allowed: {}, second half evaluation: {}",
+        //     bulk_heater_on_allowed,
+        //     temperature_difference,
+        //     cargo_door_open.aft_cargo_door_locked(),
+        //     vcm_shared.bulk_duct_heater_on_allowed(),
+        //     !(lgciu.iter().all(|a| a.left_and_right_gear_compressed(true))
+        //         && !cargo_door_open.aft_cargo_door_locked())
+        // );
         (temperature_difference < -1.
             || (self.should_switch_on_bulk_heater && temperature_difference < 1.))
             && bulk_heater_on_allowed

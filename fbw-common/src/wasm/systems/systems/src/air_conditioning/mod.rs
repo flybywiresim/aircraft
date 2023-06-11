@@ -118,6 +118,9 @@ pub trait AirConditioningOverheadShared {
     fn hot_air_pushbutton_is_on(&self, hot_air_id: usize) -> bool;
     fn cabin_fans_is_on(&self) -> bool;
     fn flow_selector_position(&self) -> OverheadFlowSelector;
+    fn fwd_cargo_isolation_valve_is_on(&self) -> bool {
+        false
+    }
     fn bulk_isolation_valve_is_on(&self) -> bool {
         false
     }
@@ -715,7 +718,7 @@ impl TrimAirValve {
                 .get_identifier(format!("COND_{}_TRIM_AIR_VALVE_POSITION", zone_id)),
             trim_air_valve: DefaultValve::new_closed(),
             trim_air_container: PneumaticPipe::new(
-                Volume::new::<cubic_meter>(0.03), // Based on references
+                Volume::new::<cubic_meter>(0.2), // Based on references
                 Pressure::new::<psi>(14.7 + Self::PRESSURE_DIFFERENCE_WITH_CABIN_PSI),
                 ThermodynamicTemperature::new::<degree_celsius>(24.),
             ),
@@ -827,6 +830,10 @@ impl AirHeater {
             / (heater_flow_rate.get::<kilogram_per_second>() * Air::SPECIFIC_HEAT_CAPACITY_VOLUME))
             + self.outlet_air.temperature().get::<degree_celsius>();
         ThermodynamicTemperature::new::<degree_celsius>(outlet_temperature)
+    }
+
+    pub fn is_on(&self) -> bool {
+        self.is_on
     }
 }
 

@@ -1,4 +1,7 @@
-use super::{Air, DuctTemperature, OutletAir, PressurizationConstants, ZoneType};
+use super::{
+    ventilation_control_module::VcmShared, Air, DuctTemperature, OutletAir,
+    PressurizationConstants, ZoneType,
+};
 use crate::{
     shared::{AverageExt, CabinSimulation},
     simulation::{
@@ -34,6 +37,7 @@ pub struct CabinAirSimulation<C, const ZONES: usize> {
     air_in: Air,
     air_out: Air,
     internal_air: Air,
+    cargo_air_in: Air,
 
     cabin_zones: [CabinZone<C>; ZONES],
 
@@ -55,6 +59,7 @@ impl<C: PressurizationConstants, const ZONES: usize> CabinAirSimulation<C, ZONES
             air_in: Air::new(),
             air_out: Air::new(),
             internal_air: Air::new(),
+            cargo_air_in: Air::new(),
 
             cabin_zones: cabin_zone_ids
                 .iter()
@@ -72,7 +77,7 @@ impl<C: PressurizationConstants, const ZONES: usize> CabinAirSimulation<C, ZONES
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        air_conditioning_system: &(impl OutletAir + DuctTemperature),
+        air_conditioning_system: &(impl OutletAir + DuctTemperature + VcmShared),
         outflow_valve_open_amount: Ratio,
         safety_valve_open_amount: Ratio,
         lgciu_gear_compressed: bool,
@@ -99,14 +104,20 @@ impl<C: PressurizationConstants, const ZONES: usize> CabinAirSimulation<C, ZONES
         self.air_in
             .set_temperature(air_conditioning_system.outlet_air().temperature());
 
+        // Set flow in properties for cargo bays
+        self.cargo_air_in.set_pressure(self.internal_air.pressure());
+        self.cargo_air_in
+            .set_temperature(self.internal_air.temperature());
+
         // Calculate zone temperatures
-        let flow_rate_per_cubic_meter = self.flow_rate_per_cubic_meter();
+        // let mut flow_rate_per_cubic_meter = self.flow_rate_per_cubic_meter();
+        let flow_rate_per_cubic_meter = self.flow_rate_determination(air_conditioning_system);
 
         for zone in self.cabin_zones.iter_mut() {
             zone.update(
                 context,
                 air_conditioning_system,
-                flow_rate_per_cubic_meter,
+                flow_rate_per_cubic_meter[zone.zone_id().id()],
                 self.internal_air.pressure(),
                 passengers[zone.zone_id().id()],
                 number_of_open_doors,
@@ -196,13 +207,26 @@ impl<C: PressurizationConstants, const ZONES: usize> CabinAirSimulation<C, ZONES
                         .cabin_zones
                         .iter()
                         .any(|zone| matches!(&zone.zone_id(), &ZoneType::Cargo(1)))
-                        as usize as f64
-                + C::BULK_CARGO_ZONE_VOLUME_CUBIC_METER
-                    * self
-                        .cabin_zones
-                        .iter()
-                        .any(|zone| matches!(&zone.zone_id(), &ZoneType::Cargo(2)))
                         as usize as f64)
+        // The bulk cargo is fed with air from the cabin
+    }
+
+    fn flow_rate_determination(&self, vcm_shared: &impl VcmShared) -> Vec<MassRate> {
+        let mut flow_rate_per_cubic_meter = Vec::new();
+        for zone in self.cabin_zones.iter() {
+            flow_rate_per_cubic_meter.push(
+                if matches!(zone.zone_id(), ZoneType::Cargo(1))
+                    && !vcm_shared.fwd_extraction_fan_is_on()
+                    || matches!(zone.zone_id(), ZoneType::Cargo(2))
+                        && !vcm_shared.bulk_extraction_fan_is_on()
+                {
+                    MassRate::default()
+                } else {
+                    self.flow_rate_per_cubic_meter()
+                },
+            )
+        }
+        flow_rate_per_cubic_meter
     }
 
     fn calculate_cabin_flow_in(&self, context: &UpdateContext, flow_in: MassRate) -> MassRate {
@@ -433,9 +457,10 @@ impl<C: PressurizationConstants> CabinZone<C> {
             cabin_pressure,
         );
 
-        // if self.zone_id.id() == 1 {
+        // if self.zone_id.id() == 1 || self.zone_id.id() == 16 || self.zone_id.id() == 17 {
         //     println!(
-        //         "Duct temp: {}, flow rate: {}, zone temp: {}",
+        //         "ZONE: {}, Duct temp: {}, flow rate: {}, zone temp: {}",
+        //         self.zone_id.id(),
         //         air_in.temperature().get::<degree_celsius>(),
         //         air_in.flow_rate().get::<kilogram_per_second>(),
         //         self.zone_air_temperature().get::<degree_celsius>()
@@ -765,6 +790,8 @@ mod cabin_air_tests {
             outlet_air
         }
     }
+
+    impl VcmShared for TestAirConditioningSystem {}
 
     struct TestConstants;
 

@@ -5,6 +5,7 @@ use systems::{
         cabin_air::CabinAirSimulation,
         cabin_pressure_controller::CabinPressureController,
         pressure_valve::{OutflowValve, SafetyValve},
+        ventilation_control_module::VcmShared,
         AdirsToAirCondInterface, Air, AirConditioningOverheadShared, AirConditioningPack, CabinFan,
         DuctTemperature, MixerUnit, OutflowValveSignal, OutletAir, OverheadFlowSelector,
         PackFlowControllers, PressurizationConstants, PressurizationOverheadShared, TrimAirSystem,
@@ -176,7 +177,7 @@ impl A320Cabin {
     fn update(
         &mut self,
         context: &UpdateContext,
-        air_conditioning_system: &(impl OutletAir + DuctTemperature),
+        air_conditioning_system: &(impl OutletAir + DuctTemperature + VcmShared),
         lgciu: [&impl LgciuWeightOnWheels; 2],
         number_of_passengers: &impl NumberOfPassengers,
         pressurization: &A320PressurizationSystem,
@@ -370,6 +371,9 @@ impl OutletAir for A320AirConditioningSystem {
         // TODO: This should use self.trim_air_system.outlet_air()
     }
 }
+
+// This is not used in the A320
+impl VcmShared for A320AirConditioningSystem {}
 
 impl SimulationElement for A320AirConditioningSystem {
     fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
