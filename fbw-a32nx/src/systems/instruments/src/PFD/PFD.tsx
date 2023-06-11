@@ -1,6 +1,6 @@
 import { A320Failure, FailuresConsumer } from '@failures';
 import { ClockEvents, ComponentProps, DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
-import { Arinc429Register, Arinc429Word } from '@shared/arinc429';
+import { Arinc429Word } from '@shared/arinc429';
 import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import { LagFilter } from './PFDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
