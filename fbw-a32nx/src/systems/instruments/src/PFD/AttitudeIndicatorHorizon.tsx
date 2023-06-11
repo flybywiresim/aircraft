@@ -1,4 +1,4 @@
-import { ClockEvents, DisplayComponent, FSComponent, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import { ClockEvents, ConsumerSubject, DisplayComponent, FSComponent, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { Arinc429Word } from '@shared/arinc429';
 
 import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
@@ -22,9 +22,13 @@ const ValueSpacing = 10;
 class HeadingBug extends DisplayComponent<{ bus: ArincEventBus, isCaptainSide: boolean, yOffset: Subscribable<number> }> {
     private isActive = false;
 
-    private selectedHeading = Subject.create(0);;
+    private selectedHeading = Subject.create(0);
 
     private heading = Arinc429ConsumerSubject.create(null);
+
+    private attitude = Arinc429ConsumerSubject.create(null);
+
+    private fdActive = ConsumerSubject.create(null, true);
 
     private horizonHeadingBug = FSComponent.createRef<SVGGElement>();
 
@@ -33,6 +37,13 @@ class HeadingBug extends DisplayComponent<{ bus: ArincEventBus, isCaptainSide: b
             this.calculateAndSetOffset(selectedHeading, heading.value, yOffset);
         }
     }, this.heading, this.selectedHeading, this.props.yOffset)
+
+    private readonly visibilitySub = MappedSubject.create(([heading, attitude, fdActive]) => {
+        if (!fdActive && attitude.isNormalOperation() && heading.isNormalOperation()) {
+            return true;
+        }
+        return false;
+    }, this.heading, this.attitude, this.fdActive);
 
     private calculateAndSetOffset(selectedHeading: number, heading: number, yOffset) {
         const headingDelta = getSmallestAngle(selectedHeading, heading);
@@ -58,6 +69,8 @@ class HeadingBug extends DisplayComponent<{ bus: ArincEventBus, isCaptainSide: b
             this.selectedHeading.set(s);
         });
 
+        this.attitude.setConsumer(sub.on('pitchAr').whenArinc429SsmChanged());
+
         sub.on(this.props.isCaptainSide ? 'fd1Active' : 'fd2Active').whenChanged().handle((fd) => {
             this.isActive = !fd;
             if (this.isActive) {
@@ -70,7 +83,7 @@ class HeadingBug extends DisplayComponent<{ bus: ArincEventBus, isCaptainSide: b
 
     render(): VNode {
         return (
-            <g ref={this.horizonHeadingBug} id="HorizonHeadingBug">
+            <g ref={this.horizonHeadingBug} id="HorizonHeadingBug" visibility={this.visibilitySub.map((v) => (v ? 'hidden' : 'inherit'))}>
                 <path class="ThickOutline" d="m68.906 80.823v-9.0213" />
                 <path class="ThickStroke Cyan" d="m68.906 80.823v-9.0213" />
             </g>
@@ -106,32 +119,28 @@ export class Horizon extends DisplayComponent<HorizonProps> {
         const apfd = this.props.bus.getArincSubscriber<Arinc429Values>();
 
         apfd.on('pitchAr').withArinc429Precision(3).handle((pitch) => {
-            const multiplier = 1000;
-            const currentValueAtPrecision = Math.round(pitch.value * multiplier) / multiplier;
             if (pitch.isNormalOperation()) {
                 this.pitchGroupRef.instance.style.display = 'block';
 
-                this.pitchGroupRef.instance.style.transform = `translate3d(0px, ${calculateHorizonOffsetFromPitch(currentValueAtPrecision)}px, 0px)`;
+                this.pitchGroupRef.instance.style.transform = `translate3d(0px, ${calculateHorizonOffsetFromPitch(pitch.value)}px, 0px)`;
             } else {
                 this.pitchGroupRef.instance.style.display = 'none';
             }
-            const yOffset = Math.max(Math.min(calculateHorizonOffsetFromPitch(currentValueAtPrecision), 31.563), -31.563);
+            const yOffset = Math.max(Math.min(calculateHorizonOffsetFromPitch(pitch.value), 31.563), -31.563);
             this.yOffset.set(yOffset);
         });
 
         apfd.on('rollAr').withArinc429Precision(2).handle((roll) => {
-            const multiplier = 100;
-            const currentValueAtPrecision = Math.round(roll.value * multiplier) / multiplier;
             if (roll.isNormalOperation()) {
                 this.rollGroupRef.instance.style.display = 'block';
 
-                this.rollGroupRef.instance.setAttribute('transform', `rotate(${-currentValueAtPrecision} 68.814 80.730)`);
+                this.rollGroupRef.instance.setAttribute('transform', `rotate(${-roll.value} 68.814 80.730)`);
             } else {
                 this.rollGroupRef.instance.style.display = 'none';
             }
         });
 
-        apfd.on('fcdcDiscreteWord1').handle((fcdcWord1) => {
+        apfd.on('fcdcDiscreteWord1').whenArinc429SsmChanged().handle((fcdcWord1) => {
             const isNormalLawActive = fcdcWord1.getBitValue(11) && !fcdcWord1.isFailureWarning();
 
             this.pitchProtSymbolLower.instance.style.display = isNormalLawActive ? 'block' : 'none';
