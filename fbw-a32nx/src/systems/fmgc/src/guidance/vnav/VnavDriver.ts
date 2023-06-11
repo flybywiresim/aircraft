@@ -4,7 +4,7 @@
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
 import { FlightPlanManager } from '@fmgc/flightplanning/FlightPlanManager';
-import { VerticalMode, LateralMode } from '@shared/autopilot';
+import { VerticalMode, LateralMode, isArmed, ArmedLateralMode } from '@shared/autopilot';
 import { VerticalProfileComputationParameters, VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vnav/VerticalProfileComputationParameters';
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 import { McduSpeedProfile, ManagedSpeedType } from '@fmgc/guidance/vnav/climb/SpeedProfile';
@@ -159,6 +159,13 @@ export class VnavDriver implements GuidanceComponent {
             || fcuLateralMode === LateralMode.LOC_CPT
             || fcuLateralMode === LateralMode.LOC_TRACK
             || fcuLateralMode === LateralMode.RWY;
+    }
+
+    isLatAutoControlArmedWithIntercept(): boolean {
+        const { fcuArmedLateralMode } = this.computationParametersObserver.get();
+
+        // FIXME: Figure out if intercept exists
+        return isArmed(fcuArmedLateralMode, ArmedLateralMode.NAV);
     }
 
     isSelectedVerticalModeActive(): boolean {

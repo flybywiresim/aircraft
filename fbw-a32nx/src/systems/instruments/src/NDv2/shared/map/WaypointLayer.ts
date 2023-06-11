@@ -172,7 +172,7 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
         context.moveTo(0, -15);
         context.lineTo(0, 15);
         context.moveTo(-15, 0);
-        context.lineTo(0, 0);
+        context.lineTo(15, 0);
         context.closePath();
         context.stroke();
         context.resetTransform();
