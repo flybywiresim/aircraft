@@ -458,7 +458,6 @@
 		</Component>
         <Component ID="FX_CONTRAIL_QUAD">
             <OverrideTemplateParameters>
-                <FX_CODE>(A:CONTRAILS CONDITIONS MET:1, Keyframe) 0 &gt;</FX_CODE>
                 <FX_OFFSET_X>0</FX_OFFSET_X>
                 <FX_OFFSET_Y>0</FX_OFFSET_Y>
                 <FX_OFFSET_Z>0</FX_OFFSET_Z>
@@ -467,16 +466,17 @@
             </OverrideTemplateParameters>
             <Component ID="FX_CONTRAIL_QUAD_LEFT_IN" Node="fx_exhaust_left">
                 <UseTemplate Name="ASOBO_GT_FX">
+                    <FX_CODE>(A:CONTRAILS CONDITIONS MET:1, Bool) (L:A32NX_ENGINE_N2:1, Number) 25 &gt; and</FX_CODE>
                 </UseTemplate>
             </Component>
             <Component ID="FX_CONTRAIL_QUAD_LEFT_OUT" Node="fx_exhaust_right">
                 <UseTemplate Name="ASOBO_GT_FX">
+                    <FX_CODE>(A:CONTRAILS CONDITIONS MET:1, Bool) (L:A32NX_ENGINE_N2:2, Number) 25 &gt; and</FX_CODE>
                 </UseTemplate>
             </Component>
         </Component>
         <Component ID="FX_CONTRAIL_RIBBON">
             <OverrideTemplateParameters>
-                <FX_CODE>(A:CONTRAILS CONDITIONS MET:1, Keyframe) 0 &gt;</FX_CODE>
                 <FX_OFFSET_X>0</FX_OFFSET_X>
                 <FX_OFFSET_Y>0</FX_OFFSET_Y>
                 <FX_OFFSET_Z>0</FX_OFFSET_Z>
@@ -485,10 +485,12 @@
             </OverrideTemplateParameters>
             <Component ID="FX_CONTRAIL_RIBBON_LEFT_OUT" Node="fx_exhaust_left">
                 <UseTemplate Name="ASOBO_GT_FX">
+                    <FX_CODE>(A:CONTRAILS CONDITIONS MET:1, Bool) (L:A32NX_ENGINE_N2:1, Number) 25 &gt; and</FX_CODE>
                 </UseTemplate>
             </Component>
             <Component ID="FX_CONTRAIL_RIBBON_RIGHT_OUT" Node="fx_exhaust_right">
                 <UseTemplate Name="ASOBO_GT_FX">
+                    <FX_CODE>(A:CONTRAILS CONDITIONS MET:1, Bool) (L:A32NX_ENGINE_N2:2, Number) 25 &gt; and</FX_CODE>
                 </UseTemplate>
             </Component>
         </Component>
