@@ -15,7 +15,17 @@ import './Bleed.scss';
 
 export const BleedPage: FC = () => {
     const sdacDatum = true;
-    const [xbleedAirValveOpen] = useSimVar('L:A32NX_PNEU_XBLEED_VALVE_OPEN', 'bool', 500);
+    const [xbleedAirValveFullyOpen] = useSimVar('L:A32NX_PNEU_XBLEED_VALVE_FULLY_OPEN', 'bool', 500);
+    const [xbleedAirValveFullyClosed] = useSimVar('L:A32NX_PNEU_XBLEED_VALVE_FULLY_CLOSED', 'bool', 500);
+    const xbleedAirValveInTransit = !xbleedAirValveFullyOpen && !xbleedAirValveFullyClosed;
+    const xbleedAirValveFullyOpenAndClosed = xbleedAirValveFullyOpen && xbleedAirValveFullyClosed;
+    let xbleedAirValvePosition: 'V' |'H' | 'D' = 'D';
+    if (xbleedAirValveFullyOpen) {
+        xbleedAirValvePosition = 'H';
+    } else if (xbleedAirValveFullyClosed) {
+        xbleedAirValvePosition = 'V';
+    }
+
     const [engine1PRValveOpen] = useSimVar('L:A32NX_PNEU_ENG_1_PR_VALVE_OPEN', 'bool', 500);
     const [engine2PRValveOpen] = useSimVar('L:A32NX_PNEU_ENG_2_PR_VALVE_OPEN', 'bool', 500);
     const [apuBleedAirValveOpen] = useSimVar('L:A32NX_APU_BLEED_AIR_VALVE_OPEN', 'bool', 500);
@@ -25,9 +35,9 @@ export const BleedPage: FC = () => {
     const [packFlowValve2Open] = useSimVar('L:A32NX_COND_PACK_FLOW_VALVE_2_IS_OPEN', 'bool', 500);
     const [ramAirToggle] = useSimVar('L:A32NX_AIRCOND_RAMAIR_TOGGLE', 'bool', 500);
 
-    const leftVerticalDuctColour = (!xbleedAirValveOpen && (!apuBleedAirValveOpen || (!apuMasterSwitchOn && !apuIsAvailable)) && !engine1PRValveOpen) && sdacDatum ? 'Amber' : 'Green';
-    const leftHorizontalDuct = !xbleedAirValveOpen && (!apuBleedAirValveOpen || (!apuMasterSwitchOn && !apuIsAvailable)) ? 'Hide' : 'GreenLine';
-    const rightVerticalDuctColour = (!xbleedAirValveOpen && !engine2PRValveOpen) && sdacDatum ? 'Amber' : 'Green';
+    const leftVerticalDuctColour = (xbleedAirValveFullyClosed && (!apuBleedAirValveOpen || (!apuMasterSwitchOn && !apuIsAvailable)) && !engine1PRValveOpen) && sdacDatum ? 'Amber' : 'Green';
+    const leftHorizontalDuct = xbleedAirValveFullyClosed && (!apuBleedAirValveOpen || (!apuMasterSwitchOn && !apuIsAvailable)) ? 'Hide' : 'GreenLine';
+    const rightVerticalDuctColour = (xbleedAirValveFullyClosed && !engine2PRValveOpen) && sdacDatum ? 'Amber' : 'Green';
     const indicationBleedUsers = !packFlowValve1Open && !packFlowValve2Open && ramAirToggle === 0 ? 'Amber' : 'Green';
 
     const [left1LandingGear] = useSimVar('L:A32NX_LGCIU_1_LEFT_GEAR_COMPRESSED', 'bool', 1000);
@@ -58,12 +68,18 @@ export const BleedPage: FC = () => {
 
             {/* Cross Bleed Duct  */}
             <g id="cross-bleed">
-                <path className={`${leftVerticalDuctColour}Line`} d={`M ${135},${227} l 0,82`} />
-                329
-                <path className={leftHorizontalDuct} d={`M ${135},${267} l 165,0`} />
-                <path className={xbleedAirValveOpen === 1 ? 'GreenLine' : 'Hide'} d={`M ${300},${267} l 40,0`} />
-                <path className={xbleedAirValveOpen === 1 ? 'GreenLine' : 'Hide'} d="M 370,267 l 94,0" />
-                <Valve x={355} y={267} radius={15} css="GreenLine" position={xbleedAirValveOpen === 1 ? 'H' : 'V'} sdacDatum={sdacDatum} />
+                <path className={`${leftVerticalDuctColour}Line`} d="M 135, 227 l 0,82" />
+                <path className={leftHorizontalDuct} d="M 135,267 l 165,0" />
+                <path className={!xbleedAirValveFullyClosed ? 'GreenLine' : 'Hide'} d={`M ${300},${267} l 40,0`} />
+                <path className={!xbleedAirValveFullyClosed ? 'GreenLine' : 'Hide'} d="M 370,267 l 94,0" />
+                <Valve
+                    x={355}
+                    y={267}
+                    radius={15}
+                    css={xbleedAirValveInTransit ? 'AmberLine' : 'GreenLine'}
+                    position={xbleedAirValvePosition}
+                    sdacDatum={sdacDatum || xbleedAirValveFullyOpenAndClosed}
+                />
                 <path className={`${rightVerticalDuctColour}Line`} d={`M ${464},${227} l 0,82`} />
             </g>
 

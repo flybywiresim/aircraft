@@ -2871,8 +2871,12 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - 1
         - 2
 
-- A32NX_PNEU_XBLEED_VALVE_OPEN:
-    - Indicates whether the cross bleed air valve is open
+- A32NX_PNEU_XBLEED_VALVE_FULLY_OPEN:
+    - Indicates whether the cross bleed air valve is fully open
+    - Bool
+
+- A32NX_PNEU_XBLEED_VALVE_FULLY_CLOSED:
+    - Indicates whether the cross bleed air valve is fully closed
     - Bool
 
 - A32NX_PNEU_PACK_{number}_FLOW_VALVE_FLOW_RATE:

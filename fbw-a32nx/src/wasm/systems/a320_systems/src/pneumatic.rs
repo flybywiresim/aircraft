@@ -1,4 +1,4 @@
-use std::{f64::consts::PI, time::Duration};
+use std::time::Duration;
 
 use uom::si::{
     f64::*,
@@ -107,7 +107,8 @@ valve_signal_implementation!(PackFlowValveSignal);
 pub struct A320Pneumatic {
     physics_updater: MaxStepLoop,
 
-    cross_bleed_valve_open_id: VariableIdentifier,
+    cross_bleed_valve_fully_open_id: VariableIdentifier,
+    cross_bleed_valve_fully_closed_id: VariableIdentifier,
     apu_bleed_air_valve_open_id: VariableIdentifier,
     bleed_monitoring_computers: [BleedMonitoringComputer; 2],
     engine_systems: [EngineBleedAirSystem; 2],
@@ -140,7 +141,10 @@ impl A320Pneumatic {
     pub fn new(context: &mut InitContext) -> Self {
         Self {
             physics_updater: MaxStepLoop::new(Self::PNEUMATIC_SIM_MAX_TIME_STEP),
-            cross_bleed_valve_open_id: context.get_identifier("PNEU_XBLEED_VALVE_OPEN".to_owned()),
+            cross_bleed_valve_fully_open_id: context
+                .get_identifier("PNEU_XBLEED_VALVE_FULLY_OPEN".to_owned()),
+            cross_bleed_valve_fully_closed_id: context
+                .get_identifier("PNEU_XBLEED_VALVE_FULLY_CLOSED".to_owned()),
             apu_bleed_air_valve_open_id: context
                 .get_identifier("APU_BLEED_AIR_VALVE_OPEN".to_owned()),
             bleed_monitoring_computers: [
@@ -160,7 +164,7 @@ impl A320Pneumatic {
                 ),
                 EngineBleedAirSystem::new(context, 2, ElectricalBusType::DirectCurrent(2)),
             ],
-            cross_bleed_valve: CrossBleedValve::new(),
+            cross_bleed_valve: CrossBleedValve::new(Ratio::new::<ratio>(0.4)),
             fadec: FullAuthorityDigitalEngineControl::new(context),
             engine_starter_valve_controllers: [
                 EngineStarterValveController::new(1),
@@ -413,8 +417,12 @@ impl SimulationElement for A320Pneumatic {
 
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(
-            &self.cross_bleed_valve_open_id,
-            self.cross_bleed_valve.is_open(),
+            &self.cross_bleed_valve_fully_open_id,
+            self.cross_bleed_valve.is_fully_open(),
+        );
+        writer.write(
+            &self.cross_bleed_valve_fully_closed_id,
+            self.cross_bleed_valve.is_fully_closed(),
         );
         writer.write(
             &self.apu_bleed_air_valve_open_id,
@@ -697,7 +705,7 @@ impl BleedMonitoringComputerChannel {
         // Should come from EIU I think
         self.intermediate_compressor_pressure =
             sensors.intermediate_pressure() - context.ambient_pressure();
-        self.transfer_pressure = sensors.transfer_pressure();
+        self.transfer_pressure = sensors.transfer_pressure() - context.ambient_pressure();
 
         self.pressure_regulating_valve_pid.change_setpoint(
             if fadec.is_single_vs_dual_bleed_config() {
@@ -846,6 +854,7 @@ impl ControllerSignal<SolenoidSignal> for BleedMonitoringComputerChannel {
 }
 impl ControllerSignal<PressureRegulatingValveSignal> for BleedMonitoringComputerChannel {
     fn signal(&self) -> Option<PressureRegulatingValveSignal> {
+        // TODO: The pressure condition should be pneumatically simulated
         if self.transfer_pressure < Pressure::new::<psi>(15.) || self.should_command_prv_closed() {
             Some(PressureRegulatingValveSignal::new_closed())
         } else {
@@ -1605,16 +1614,18 @@ pub struct CrossBleedValve {
     connector: PneumaticContainerConnector,
     is_powered_for_manual_control: bool,
     is_powered_for_automatic_control: bool,
+    target_open_amount: Ratio,
+    valve_speed: Ratio,
 }
 impl CrossBleedValve {
-    const SPRING_CHARACTERISTIC: f64 = 1.;
-
-    pub fn new() -> Self {
+    pub fn new(valve_speed: Ratio) -> Self {
         Self {
-            open_amount: Ratio::new::<ratio>(0.),
+            open_amount: Ratio::default(),
             connector: PneumaticContainerConnector::new(),
             is_powered_for_manual_control: false,
             is_powered_for_automatic_control: false,
+            target_open_amount: Ratio::default(),
+            valve_speed,
         }
     }
 
@@ -1624,24 +1635,17 @@ impl CrossBleedValve {
         container_one: &mut impl PneumaticContainer,
         container_two: &mut impl PneumaticContainer,
     ) {
-        if !self.is_powered_for_manual_control && !self.is_powered_for_automatic_control {
-            self.set_open_amount_from_pressure_difference(
-                container_one.pressure() - container_two.pressure(),
-            )
-        }
+        self.open_amount = if self.target_open_amount > self.open_amount {
+            self.target_open_amount
+                .min(self.open_amount + context.delta_as_secs_f64() * self.valve_speed)
+        } else {
+            self.target_open_amount
+                .max(self.open_amount - context.delta_as_secs_f64() * self.valve_speed)
+        };
 
         self.connector
             .with_transfer_speed_factor(self.open_amount)
             .update_move_fluid(context, container_one, container_two);
-    }
-
-    fn set_open_amount_from_pressure_difference(&mut self, pressure_difference: Pressure) {
-        self.open_amount = Ratio::new::<ratio>(
-            2. / PI
-                * (pressure_difference.get::<psi>() * Self::SPRING_CHARACTERISTIC)
-                    .atan()
-                    .max(0.),
-        );
     }
 
     fn update_open_amount(&mut self, controller: &impl ControllerSignal<CrossBleedValveSignal>) {
@@ -1651,14 +1655,25 @@ impl CrossBleedValve {
                 || signal.signal_type == CrossBleedValveSignalType::Automatic
                     && self.is_powered_for_automatic_control
             {
-                self.open_amount = signal.target_open_amount()
+                self.target_open_amount = signal.target_open_amount()
             }
         }
+
+        // If neither of the motors is powered, there is a braking system to hold the valve in place,
+        // so we don't do anything here
+    }
+
+    fn is_fully_closed(&self) -> bool {
+        self.open_amount.get::<ratio>() < 1e-4
+    }
+
+    fn is_fully_open(&self) -> bool {
+        self.open_amount.get::<ratio>() > 1. - 1e-4
     }
 }
 impl PneumaticValve for CrossBleedValve {
     fn is_open(&self) -> bool {
-        self.open_amount.get::<ratio>() > 0.
+        !self.is_fully_closed()
     }
 }
 impl SimulationElement for CrossBleedValve {
@@ -3329,7 +3344,8 @@ pub mod tests {
         assert!(test_bed.contains_variable_with_name("OVHD_PNEU_ENG_1_BLEED_PB_IS_AUTO"));
         assert!(test_bed.contains_variable_with_name("OVHD_PNEU_ENG_2_BLEED_PB_IS_AUTO"));
 
-        assert!(test_bed.contains_variable_with_name("PNEU_XBLEED_VALVE_OPEN"));
+        assert!(test_bed.contains_variable_with_name("PNEU_XBLEED_VALVE_FULLY_OPEN"));
+        assert!(test_bed.contains_variable_with_name("PNEU_XBLEED_VALVE_FULLY_CLOSED"));
 
         assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_LOW_TEMPERATURE"));
         assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_LOW_TEMPERATURE"));
