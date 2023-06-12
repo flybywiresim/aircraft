@@ -388,6 +388,8 @@ $display-mfd-dark-grey: #3c3c3c;
   padding: 4px 2px;
   background-color: $display-background;
   border: 2px inset $display-light-grey;
+  overflow: hidden;
+  height: 37px;
 }
 
 .MFDNumberInputContainer:hover {

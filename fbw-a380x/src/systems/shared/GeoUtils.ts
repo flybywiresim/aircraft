@@ -1,4 +1,4 @@
-﻿//  Copyright (c) 2022 FlyByWire Simulations
+//  Copyright (c) 2022 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 function decimalToDms(deg: number, lng: boolean) {
     // converts decimal degrees to degrees minutes seconds

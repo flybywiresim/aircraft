@@ -1,7 +1,7 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 
 import { DropdownMenu } from 'instruments/src/MFD/pages/common/DropdownMenu';
-import { NumberInputField } from 'instruments/src/MFD/pages/common/NumberInputField';
+import { InputField } from 'instruments/src/MFD/pages/common/InputField';
 import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MFD/pages/common/TopTabNavigator';
 
 import { ArraySubject, DisplayComponent, FSComponent, Subject, Subscription, VNode } from '@microsoft/msfs-sdk';
@@ -13,6 +13,16 @@ import { MfdComponentProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 
 import './perf.scss';
+import {
+    AltitudeFormat,
+    CostIndexFormat,
+    FlightLevelFormat,
+    LengthFormat,
+    PercentageFormat,
+    SpeedKnotsFormat,
+    SpeedMachFormat,
+    TemperatureFormat,
+} from 'instruments/src/MFD/pages/common/DataEntryFormats';
 
 interface MfdFmsActivePerfProps extends MfdComponentProps {
 }
@@ -24,39 +34,23 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
     // Subjects
     private crzFl = Subject.create<number>(350);
 
-    private crzFlIsValidating = Subject.create(false);
-
     private activePageTitle = Subject.create<string>('');
 
     private flightPhasesSelectedPageIndex = Subject.create(0);
 
     private costIndex = Subject.create<number>(69);
 
-    private costIndexIsValidating = Subject.create(false);
-
     private transAlt = Subject.create(13000);
-
-    private transAltIsValidating = Subject.create(false);
 
     private thrRedAlt = Subject.create<number>(1080);
 
-    private thrRedAltIsValidating = Subject.create(false);
-
     private accelAlt = Subject.create<number>(1080);
-
-    private accelAltIsValidating = Subject.create(false);
 
     private noiseEndAlt = Subject.create<number>(800);
 
-    private noiseEndAltIsValidating = Subject.create(false);
-
     private noiseN1 = Subject.create<number>(undefined);
 
-    private noiseN1IsValidating = Subject.create(false);
-
     private noiseSpd = Subject.create<number>(undefined);
-
-    private noiseSpdIsValidating = Subject.create(false);
 
     private showNoiseFields(visible: boolean) { // TODO for all phases
         if (visible === true) {
@@ -101,25 +95,15 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
     // TO page subjects, refs and methods
     private toShift = Subject.create<number>(undefined);
 
-    private toShiftIsValidating = Subject.create(false);
-
     private toV1 = Subject.create<number>(undefined);
-
-    private toV1IsValidating = Subject.create(false);
 
     private toVR = Subject.create<number>(undefined);
 
-    private toVRIsValidating = Subject.create(false);
-
     private toV2 = Subject.create<number>(undefined);
-
-    private toV2IsValidating = Subject.create(false);
 
     private toSelectedThrustSettingIndex = Subject.create(0);
 
     private toFlexTemp = Subject.create<number>(undefined);
-
-    private toFlexTempIsValidating = Subject.create(false);
 
     private toSelectedDeratedIndex = Subject.create(0);
 
@@ -127,15 +111,11 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
 
     private toThsFor = Subject.create<number>(undefined);
 
-    private toThsForIsValidating = Subject.create(false);
-
     private toSelectedPacksIndex = Subject.create(1);
 
     private toSelectedAntiIceIndex = Subject.create(0);
 
     private eoAccelAlt = Subject.create(13000);
-
-    private eoAccelAltIsValidating = Subject.create(false);
 
     private toFlexInputRef = FSComponent.createRef<HTMLDivElement>();
 
@@ -176,11 +156,7 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
 
     private clbPredictionsReference = Subject.create<number | undefined>(undefined);
 
-    private clbPredictionsReferenceIsValidating = Subject.create(false);
-
     private clbPreSelSpdTarget = Subject.create<number | undefined>(undefined);
-
-    private clbPreSelSpdTargetIsValidating = Subject.create(false);
 
     private clbNoiseFieldsRefs = [FSComponent.createRef<HTMLDivElement>(),
         FSComponent.createRef<HTMLDivElement>(),
@@ -201,29 +177,13 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
     // CRZ page subjects, refs and methods
     private crzPreSelSpdTarget = Subject.create<number | undefined>(230);
 
-    private crzPreSelSpdTargetIsValidating = Subject.create<boolean>(false);
-
     private crzPreSelMachTarget = Subject.create<number | undefined>(0.59);
-
-    private crzPreSelMachTargetIsValidating = Subject.create<boolean>(false);
 
     // DES page subjects, refs and methods
 
     // APPR page subjects, refs and methods
 
     // GA page subjects, refs and methods
-
-    private async validateAndUpdateNumberInputField(valueSubject: Subject<number>, isValidatingSubject: Subject<boolean>, newValue: string) {
-        isValidatingSubject.set(true);
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        isValidatingSubject.set(false);
-
-        if (Number.isNaN(Number(newValue)) === false) {
-            valueSubject.set(Number(newValue));
-        } else {
-            valueSubject.set(undefined);
-        }
-    }
 
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
@@ -295,13 +255,10 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                     <div style="margin: 15px; display: flex; justify-content: space-between;">
                         <div class="MFDLabelValueContainer">
                             <span class="MFDLabel spacingRight">CRZ</span>
-                            <NumberInputField
-                                type="genericInteger"
+                            <InputField<number>
+                                dataEntryFormat={new FlightLevelFormat()}
                                 isMandatory={false}
                                 value={this.crzFl}
-                                isValidating={this.crzFlIsValidating}
-                                unitLeading={Subject.create('FL')}
-                                submitCallback={(val) => this.validateAndUpdateNumberInputField(this.crzFl, this.crzFlIsValidating, val)}
                             />
                         </div>
                         <div class="MFDLabelValueContainer">
@@ -330,13 +287,10 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                 </div>
                                 <div class="MFDLabelValueContainer">
                                     <span class="MFDLabel spacingRight">T.O SHIFT</span>
-                                    <NumberInputField
-                                        type="altitude"
+                                    <InputField<number>
+                                        dataEntryFormat={new LengthFormat()}
                                         isMandatory={false}
                                         value={this.toShift}
-                                        isValidating={this.toShiftIsValidating}
-                                        unitTrailing={Subject.create('M')}
-                                        submitCallback={(val) => this.validateAndUpdateNumberInputField(this.toShift, this.toShiftIsValidating, val)}
                                     />
                                 </div>
                             </div>
@@ -346,13 +300,10 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                 >
                                     <div class="MFDLabelValueContainer">
                                         <span class="MFDLabel spacingRight">V1</span>
-                                        <NumberInputField
-                                            type="genericInteger"
+                                        <InputField<number>
+                                            dataEntryFormat={new SpeedKnotsFormat()}
                                             isMandatory
                                             value={this.toV1}
-                                            isValidating={this.toV1IsValidating}
-                                            unitTrailing={Subject.create('KT')}
-                                            submitCallback={(val) => this.validateAndUpdateNumberInputField(this.toV1, this.toV1IsValidating, val)}
                                         />
                                     </div>
                                     <div class="MFDLabelValueContainer">
@@ -362,13 +313,10 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                     </div>
                                     <div class="MFDLabelValueContainer">
                                         <span class="MFDLabel spacingRight">VR</span>
-                                        <NumberInputField
-                                            type="genericInteger"
+                                        <InputField<number>
+                                            dataEntryFormat={new SpeedKnotsFormat()}
                                             isMandatory
                                             value={this.toVR}
-                                            isValidating={this.toVRIsValidating}
-                                            unitTrailing={Subject.create('KT')}
-                                            submitCallback={(val) => this.validateAndUpdateNumberInputField(this.toVR, this.toVRIsValidating, val)}
                                         />
                                     </div>
                                     <div class="MFDLabelValueContainer">
@@ -378,17 +326,16 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                     </div>
                                     <div class="MFDLabelValueContainer">
                                         <span class="MFDLabel spacingRight">V2</span>
-                                        <NumberInputField
-                                            type="genericInteger"
+                                        <InputField<number>
+                                            dataEntryFormat={new SpeedKnotsFormat()}
                                             isMandatory
                                             value={this.toV2}
-                                            isValidating={this.toV2IsValidating}
-                                            unitTrailing={Subject.create('KT')}
-                                            submitCallback={(val) => this.validateAndUpdateNumberInputField(this.toV2, this.toV2IsValidating, val)}
                                         />
                                     </div>
                                     <div class="MFDLabelValueContainer">
-                                        <span class="MFDLabel spacingRight">O</span>
+                                        <span style="margin-right: 15px; justify-content: center;">
+                                            <svg width="13" height="13" viewBox="0 0 13 13"><circle cx="6" cy="6" r="5" stroke="#00ff00" stroke-width="2" /></svg>
+                                        </span>
                                         <span class="MFDGreenValue">246</span>
                                         <span class="MFDUnitLabel trailingUnit">KT</span>
                                     </div>
@@ -406,13 +353,10 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                 </div>
                                 <div style="flex: 1; display: flex; flex-direction: column; justify-items: center; justify-content: center; ">
                                     <div class="MFDLabelValueContainer" style="margin-top: 60px;" ref={this.toFlexInputRef}>
-                                        <NumberInputField
-                                            type="genericInteger"
+                                        <InputField<number>
+                                            dataEntryFormat={new TemperatureFormat()}
                                             isMandatory={false}
                                             value={this.toFlexTemp}
-                                            isValidating={this.toFlexTempIsValidating}
-                                            unitTrailing={Subject.create('°C')}
-                                            submitCallback={(val) => this.validateAndUpdateNumberInputField(this.toFlexTemp, this.toFlexTempIsValidating, val)}
                                         />
                                     </div>
                                     <div style="margin-top: 0px" ref={this.toDeratedInputRef}>
@@ -442,13 +386,10 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                     />
                                 </div>
                                 <div style="width: 120px; margin-top: 15px; background-color: yellow; justify-self: center; align-self: center;">
-                                    <NumberInputField
-                                        type="percentage"
+                                    <InputField<number>
+                                        dataEntryFormat={new PercentageFormat()}
                                         isMandatory
                                         value={this.toThsFor}
-                                        isValidating={this.toThsForIsValidating}
-                                        unitTrailing={Subject.create('%')}
-                                        submitCallback={(val) => this.validateAndUpdateNumberInputField(this.toThsFor, this.toThsForIsValidating, val)}
                                     />
                                 </div>
                                 <div style="margin-right: 15px; margin-top: 15px;">
@@ -473,13 +414,10 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                     <span class="MFDLabel">THR RED</span>
                                 </div>
                                 <div style="margin-bottom: 15px;">
-                                    <NumberInputField
-                                        type="altitude"
+                                    <InputField<number>
+                                        dataEntryFormat={new AltitudeFormat()}
                                         isMandatory={false}
                                         value={this.thrRedAlt}
-                                        isValidating={this.thrRedAltIsValidating}
-                                        unitTrailing={Subject.create('FT')}
-                                        submitCallback={(val) => this.validateAndUpdateNumberInputField(this.thrRedAlt, this.thrRedAltIsValidating, val)}
                                         containerStyle="width: 150px; justify-content: flex-end;"
                                     />
                                 </div>
@@ -493,13 +431,10 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                 </div>
                                 <div>
                                     <div ref={this.toNoiseFieldsRefs[1]} style="margin-bottom: 15px;">
-                                        <NumberInputField
-                                            type="percentage"
+                                        <InputField<number>
+                                            dataEntryFormat={new PercentageFormat()}
                                             isMandatory={false}
                                             value={this.noiseN1}
-                                            isValidating={this.noiseN1IsValidating}
-                                            unitTrailing={Subject.create('%')}
-                                            submitCallback={(val) => this.validateAndUpdateNumberInputField(this.noiseN1, this.noiseN1IsValidating, val)}
                                             containerStyle="width: 110px; justify-content: flex-end;"
                                         />
                                     </div>
@@ -517,13 +452,10 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                     <span class="MFDLabel">ACCEL</span>
                                 </div>
                                 <div style="margin-bottom: 15px;">
-                                    <NumberInputField
-                                        type="altitude"
+                                    <InputField<number>
+                                        dataEntryFormat={new AltitudeFormat()}
                                         isMandatory={false}
                                         value={this.accelAlt}
-                                        isValidating={this.accelAltIsValidating}
-                                        unitTrailing={Subject.create('FT')}
-                                        submitCallback={(val) => this.validateAndUpdateNumberInputField(this.accelAlt, this.accelAltIsValidating, val)}
                                         containerStyle="width: 150px; justify-content: flex-end;"
                                     />
                                 </div>
@@ -537,13 +469,10 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                 </div>
                                 <div>
                                     <div ref={this.toNoiseFieldsRefs[4]} style="margin-bottom: 15px;">
-                                        <NumberInputField
-                                            type="genericInteger"
+                                        <InputField<number>
+                                            dataEntryFormat={new SpeedKnotsFormat()}
                                             isMandatory={false}
                                             value={this.noiseSpd}
-                                            isValidating={this.noiseSpdIsValidating}
-                                            unitTrailing={Subject.create('KT')}
-                                            submitCallback={(val) => this.validateAndUpdateNumberInputField(this.noiseSpd, this.noiseSpdIsValidating, val)}
                                             containerStyle="width: 110px; justify-content: flex-end;"
                                         />
                                     </div>
@@ -558,13 +487,10 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                         </Button>
                                     </div>
                                     <div ref={this.toNoiseEndInputRef}>
-                                        <NumberInputField
-                                            type="altitude"
+                                        <InputField<number>
+                                            dataEntryFormat={new AltitudeFormat()}
                                             isMandatory={false}
                                             value={this.noiseEndAlt}
-                                            isValidating={this.noiseEndAltIsValidating}
-                                            unitTrailing={Subject.create('FT')}
-                                            submitCallback={(val) => this.validateAndUpdateNumberInputField(this.noiseEndAlt, this.noiseEndAltIsValidating, val)}
                                             containerStyle="width: 150px; justify-content: flex-end;"
                                         />
                                     </div>
@@ -577,25 +503,19 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                             <div style="margin: 10px 2px 3px 2px; display: flex; flex-direction: row;justify-content: space-between; padding-top: 10px; border-top: 1px solid lightgrey;">
                                 <div class="MFDLabelValueContainer">
                                     <span class="MFDLabel spacingRight">TRANS</span>
-                                    <NumberInputField
-                                        type="altitude"
+                                    <InputField<number>
+                                        dataEntryFormat={new AltitudeFormat()}
                                         isMandatory={false}
                                         value={this.transAlt}
-                                        isValidating={this.transAltIsValidating}
-                                        unitTrailing={Subject.create('FT')}
-                                        submitCallback={(val) => this.validateAndUpdateNumberInputField(this.transAlt, this.transAltIsValidating, val)}
                                         containerStyle="width: 150px; justify-content: flex-end;"
                                     />
                                 </div>
                                 <div class="MFDLabelValueContainer">
                                     <span class="MFDLabel spacingRight">EO ACCEL</span>
-                                    <NumberInputField
-                                        type="altitude"
+                                    <InputField<number>
+                                        dataEntryFormat={new AltitudeFormat()}
                                         isMandatory={false}
                                         value={this.eoAccelAlt}
-                                        isValidating={this.eoAccelAltIsValidating}
-                                        unitTrailing={Subject.create('FT')}
-                                        submitCallback={(val) => this.validateAndUpdateNumberInputField(this.eoAccelAlt, this.eoAccelAltIsValidating, val)}
                                         containerStyle="width: 150px; justify-content: flex-end;"
                                     />
                                 </div>
@@ -613,12 +533,10 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                             <div style="display: flex; justify-content: space-between;">
                                 <div class="MFDLabelValueContainer" style="padding: 15px; margin-bottom: 15px;">
                                     <span class="MFDLabel spacingRight">CI</span>
-                                    <NumberInputField
-                                        type="genericInteger"
+                                    <InputField<number>
+                                        dataEntryFormat={new CostIndexFormat()}
                                         isMandatory={false}
                                         value={this.costIndex}
-                                        isValidating={this.costIndexIsValidating}
-                                        submitCallback={(val) => this.validateAndUpdateNumberInputField(this.costIndex, this.costIndexIsValidating, val)}
                                     />
                                 </div>
                                 <div class="MFDLabelValueContainer">
@@ -644,12 +562,10 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                 </div>
                                 <div class="spdTableCell" style="flex-direction: row; justify-content: center; align-items: center;">
                                     <div class="MFDLabel">PRED TO </div>
-                                    <NumberInputField
-                                        type="altitude"
+                                    <InputField<number>
+                                        dataEntryFormat={new AltitudeFormat()}
                                         isMandatory={false}
                                         value={this.clbPredictionsReference}
-                                        isValidating={this.clbPredictionsReferenceIsValidating}
-                                        submitCallback={(val) => this.validateAndUpdateNumberInputField(this.clbPredictionsReference, this.clbPredictionsReferenceIsValidating, val)}
                                         containerStyle="width: 100px; margin-left: 15px;"
                                     />
                                 </div>
@@ -657,13 +573,10 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                     <div class="MFDLabel">PRESEL</div>
                                 </div>
                                 <div class="spdTableCell">
-                                    <NumberInputField
-                                        type="genericInteger"
+                                    <InputField<number>
+                                        dataEntryFormat={new SpeedKnotsFormat()}
                                         isMandatory={false}
                                         value={this.clbPreSelSpdTarget}
-                                        isValidating={this.clbPreSelSpdTargetIsValidating}
-                                        unitTrailing={Subject.create('KT')}
-                                        submitCallback={(val) => this.validateAndUpdateNumberInputField(this.clbPreSelSpdTarget, this.clbPreSelSpdTargetIsValidating, val)}
                                     />
                                 </div>
                                 <div class="spdTableCell" />
@@ -704,13 +617,10 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                     <span class="MFDLabel">THR RED</span>
                                 </div>
                                 <div style="margin-bottom: 15px;">
-                                    <NumberInputField
-                                        type="altitude"
+                                    <InputField<number>
+                                        dataEntryFormat={new AltitudeFormat()}
                                         isMandatory={false}
                                         value={this.thrRedAlt}
-                                        isValidating={this.thrRedAltIsValidating}
-                                        unitTrailing={Subject.create('FT')}
-                                        submitCallback={(val) => this.validateAndUpdateNumberInputField(this.thrRedAlt, this.thrRedAltIsValidating, val)}
                                         containerStyle="width: 150px; justify-content: flex-end;"
                                     />
                                 </div>
@@ -724,13 +634,10 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                 </div>
                                 <div>
                                     <div ref={this.clbNoiseFieldsRefs[1]} style="margin-bottom: 15px;">
-                                        <NumberInputField
-                                            type="percentage"
+                                        <InputField<number>
+                                            dataEntryFormat={new PercentageFormat()}
                                             isMandatory={false}
                                             value={this.noiseN1}
-                                            isValidating={this.noiseN1IsValidating}
-                                            unitTrailing={Subject.create('%')}
-                                            submitCallback={(val) => this.validateAndUpdateNumberInputField(this.noiseN1, this.noiseN1IsValidating, val)}
                                             containerStyle="width: 110px; justify-content: flex-end;"
                                         />
                                     </div>
@@ -748,13 +655,10 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                     <span class="MFDLabel">ACCEL</span>
                                 </div>
                                 <div style="margin-bottom: 15px;">
-                                    <NumberInputField
-                                        type="altitude"
+                                    <InputField<number>
+                                        dataEntryFormat={new AltitudeFormat()}
                                         isMandatory={false}
                                         value={this.accelAlt}
-                                        isValidating={this.accelAltIsValidating}
-                                        unitTrailing={Subject.create('FT')}
-                                        submitCallback={(val) => this.validateAndUpdateNumberInputField(this.accelAlt, this.accelAltIsValidating, val)}
                                         containerStyle="width: 150px; justify-content: flex-end;"
                                     />
                                 </div>
@@ -768,13 +672,10 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                 </div>
                                 <div>
                                     <div ref={this.clbNoiseFieldsRefs[4]} style="margin-bottom: 15px;">
-                                        <NumberInputField
-                                            type="genericInteger"
+                                        <InputField<number>
+                                            dataEntryFormat={new SpeedKnotsFormat()}
                                             isMandatory={false}
                                             value={this.noiseSpd}
-                                            isValidating={this.noiseSpdIsValidating}
-                                            unitTrailing={Subject.create('KT')}
-                                            submitCallback={(val) => this.validateAndUpdateNumberInputField(this.noiseSpd, this.noiseSpdIsValidating, val)}
                                             containerStyle="width: 110px; justify-content: flex-end;"
                                         />
                                     </div>
@@ -797,13 +698,10 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                         </div>
                                     </div>
                                     <div ref={this.clbNoiseEndInputRef}>
-                                        <NumberInputField
-                                            type="altitude"
+                                        <InputField<number>
+                                            dataEntryFormat={new AltitudeFormat()}
                                             isMandatory={false}
                                             value={this.noiseEndAlt}
-                                            isValidating={this.noiseEndAltIsValidating}
-                                            unitTrailing={Subject.create('FT')}
-                                            submitCallback={(val) => this.validateAndUpdateNumberInputField(this.noiseEndAlt, this.noiseEndAltIsValidating, val)}
                                             containerStyle="width: 150px; justify-content: flex-end;"
                                         />
                                     </div>
@@ -820,13 +718,10 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                 </div>
                                 <div class="MFDLabelValueContainer" style="margin-left: 50px;">
                                     <span class="MFDLabel spacingRight">TRANS</span>
-                                    <NumberInputField
-                                        type="altitude"
+                                    <InputField<number>
+                                        dataEntryFormat={new AltitudeFormat()}
                                         isMandatory={false}
                                         value={this.transAlt}
-                                        isValidating={this.transAltIsValidating}
-                                        unitTrailing={Subject.create('FT')}
-                                        submitCallback={(val) => this.validateAndUpdateNumberInputField(this.transAlt, this.transAltIsValidating, val)}
                                         containerStyle="width: 150px; justify-content: flex-end;"
                                     />
                                 </div>
@@ -842,12 +737,10 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                             <div style="display: flex; justify-content: space-between;">
                                 <div class="MFDLabelValueContainer" style="padding: 15px;">
                                     <span class="MFDLabel spacingRight">CI</span>
-                                    <NumberInputField
-                                        type="genericInteger"
+                                    <InputField<number>
+                                        dataEntryFormat={new CostIndexFormat()}
                                         isMandatory={false}
                                         value={this.costIndex}
-                                        isValidating={this.costIndexIsValidating}
-                                        submitCallback={(val) => this.validateAndUpdateNumberInputField(this.costIndex, this.costIndexIsValidating, val)}
                                     />
                                 </div>
                             </div>
@@ -878,22 +771,17 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                     <div class="MFDLabel">PRESEL</div>
                                 </div>
                                 <div class="spdTableCell">
-                                    <NumberInputField
-                                        type="mach"
+                                    <InputField<number>
+                                        dataEntryFormat={new SpeedMachFormat()}
                                         isMandatory={false}
-                                        isValidating={this.crzPreSelMachTargetIsValidating}
                                         value={this.crzPreSelMachTarget}
-                                        submitCallback={(val) => this.validateAndUpdateNumberInputField(this.crzPreSelMachTarget, this.crzPreSelMachTargetIsValidating, val)}
                                     />
                                 </div>
                                 <div class="spdTableCell">
-                                    <NumberInputField
-                                        type="genericInteger"
+                                    <InputField<number>
+                                        dataEntryFormat={new SpeedKnotsFormat()}
                                         isMandatory={false}
-                                        isValidating={this.crzPreSelSpdTargetIsValidating}
                                         value={this.crzPreSelSpdTarget}
-                                        unitTrailing={Subject.create('KT')}
-                                        submitCallback={(val) => this.validateAndUpdateNumberInputField(this.crzPreSelSpdTarget, this.crzPreSelSpdTargetIsValidating, val)}
                                     />
                                 </div>
                                 <div class="spdTableCell" />
