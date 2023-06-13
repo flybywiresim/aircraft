@@ -15,6 +15,7 @@ import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 import './perf.scss';
 import {
     AltitudeFormat,
+    AltitudeOrFlightLevelFormat,
     CostIndexFormat,
     FlightLevelFormat,
     LengthFormat,
@@ -22,7 +23,9 @@ import {
     SpeedKnotsFormat,
     SpeedMachFormat,
     TemperatureFormat,
+    VerticalSpeedFormat,
 } from 'instruments/src/MFD/pages/common/DataEntryFormats';
+import { Mmo, Vmo, maxCertifiedAlt } from 'shared/constants';
 
 interface MfdFmsActivePerfProps extends MfdComponentProps {
 }
@@ -32,7 +35,7 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
     private subs = [] as Subscription[];
 
     // Subjects
-    private crzFl = Subject.create<number>(350);
+    private crzFl = Subject.create<number>(35000);
 
     private activePageTitle = Subject.create<string>('');
 
@@ -40,7 +43,7 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
 
     private costIndex = Subject.create<number>(69);
 
-    private transAlt = Subject.create(13000);
+    private transAlt = Subject.create(5000);
 
     private thrRedAlt = Subject.create<number>(1080);
 
@@ -48,9 +51,9 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
 
     private noiseEndAlt = Subject.create<number>(800);
 
-    private noiseN1 = Subject.create<number>(undefined);
+    private noiseN1 = Subject.create<number>(null);
 
-    private noiseSpd = Subject.create<number>(undefined);
+    private noiseSpd = Subject.create<number>(null);
 
     private showNoiseFields(visible: boolean) { // TODO for all phases
         if (visible === true) {
@@ -93,23 +96,23 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
     }
 
     // TO page subjects, refs and methods
-    private toShift = Subject.create<number>(undefined);
+    private toShift = Subject.create<number>(null);
 
-    private toV1 = Subject.create<number>(undefined);
+    private toV1 = Subject.create<number>(null);
 
-    private toVR = Subject.create<number>(undefined);
+    private toVR = Subject.create<number>(null);
 
-    private toV2 = Subject.create<number>(undefined);
+    private toV2 = Subject.create<number>(null);
 
     private toSelectedThrustSettingIndex = Subject.create(0);
 
-    private toFlexTemp = Subject.create<number>(undefined);
+    private toFlexTemp = Subject.create<number>(null);
 
     private toSelectedDeratedIndex = Subject.create(0);
 
     private toSelectedFlapsIndex = Subject.create(0);
 
-    private toThsFor = Subject.create<number>(undefined);
+    private toThsFor = Subject.create<number>(null);
 
     private toSelectedPacksIndex = Subject.create(1);
 
@@ -154,9 +157,9 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
     // CLB page subjects, refs and methods
     private clbDeratedClbSelectedIndex = Subject.create(0);
 
-    private clbPredictionsReference = Subject.create<number | undefined>(undefined);
+    private clbPredictionsReference = Subject.create<number >(null);
 
-    private clbPreSelSpdTarget = Subject.create<number | undefined>(undefined);
+    private clbPreSelSpdTarget = Subject.create<number >(null);
 
     private clbNoiseFieldsRefs = [FSComponent.createRef<HTMLDivElement>(),
         FSComponent.createRef<HTMLDivElement>(),
@@ -175,11 +178,20 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
     private clbNoiseEndInputRef = FSComponent.createRef<HTMLDivElement>();
 
     // CRZ page subjects, refs and methods
-    private crzPreSelSpdTarget = Subject.create<number | undefined>(230);
+    private crzPreSelSpdTarget = Subject.create<number>(230);
 
-    private crzPreSelMachTarget = Subject.create<number | undefined>(0.59);
+    private crzPreSelMachTarget = Subject.create<number>(0.59);
 
     // DES page subjects, refs and methods
+    private desCabinDesRate = Subject.create<number>(-850);
+
+    private desManagedSpdTarget = Subject.create<number>(276);
+
+    private desManagedMachTarget = Subject.create<number>(0.84);
+
+    private desPredictionsReference = Subject.create<number>(null);
+
+    private desTransFl = Subject.create<number>(5000);
 
     // APPR page subjects, refs and methods
 
@@ -256,7 +268,7 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                         <div class="MFDLabelValueContainer">
                             <span class="MFDLabel spacingRight">CRZ</span>
                             <InputField<number>
-                                dataEntryFormat={new FlightLevelFormat()}
+                                dataEntryFormat={new FlightLevelFormat(Subject.create(100), Subject.create(maxCertifiedAlt))}
                                 isMandatory={false}
                                 value={this.crzFl}
                             />
@@ -288,7 +300,7 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                 <div class="MFDLabelValueContainer">
                                     <span class="MFDLabel spacingRight">T.O SHIFT</span>
                                     <InputField<number>
-                                        dataEntryFormat={new LengthFormat()}
+                                        dataEntryFormat={new LengthFormat(Subject.create(1), Subject.create(4000))} // TODO replace 4000 with length of RWY
                                         isMandatory={false}
                                         value={this.toShift}
                                     />
@@ -301,7 +313,7 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                     <div class="MFDLabelValueContainer">
                                         <span class="MFDLabel spacingRight">V1</span>
                                         <InputField<number>
-                                            dataEntryFormat={new SpeedKnotsFormat()}
+                                            dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
                                             isMandatory
                                             value={this.toV1}
                                         />
@@ -314,7 +326,7 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                     <div class="MFDLabelValueContainer">
                                         <span class="MFDLabel spacingRight">VR</span>
                                         <InputField<number>
-                                            dataEntryFormat={new SpeedKnotsFormat()}
+                                            dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
                                             isMandatory
                                             value={this.toVR}
                                         />
@@ -327,7 +339,7 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                     <div class="MFDLabelValueContainer">
                                         <span class="MFDLabel spacingRight">V2</span>
                                         <InputField<number>
-                                            dataEntryFormat={new SpeedKnotsFormat()}
+                                            dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
                                             isMandatory
                                             value={this.toV2}
                                         />
@@ -354,7 +366,7 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                 <div style="flex: 1; display: flex; flex-direction: column; justify-items: center; justify-content: center; ">
                                     <div class="MFDLabelValueContainer" style="margin-top: 60px;" ref={this.toFlexInputRef}>
                                         <InputField<number>
-                                            dataEntryFormat={new TemperatureFormat()}
+                                            dataEntryFormat={new TemperatureFormat(Subject.create(0), Subject.create(99))}
                                             isMandatory={false}
                                             value={this.toFlexTemp}
                                         />
@@ -387,7 +399,7 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                 </div>
                                 <div style="width: 120px; margin-top: 15px; background-color: yellow; justify-self: center; align-self: center;">
                                     <InputField<number>
-                                        dataEntryFormat={new PercentageFormat()}
+                                        dataEntryFormat={new PercentageFormat(Subject.create(0), Subject.create(99.9))}
                                         isMandatory
                                         value={this.toThsFor}
                                     />
@@ -415,7 +427,7 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                 </div>
                                 <div style="margin-bottom: 15px;">
                                     <InputField<number>
-                                        dataEntryFormat={new AltitudeFormat()}
+                                        dataEntryFormat={new AltitudeOrFlightLevelFormat(Subject.create(false), Subject.create(400), Subject.create(maxCertifiedAlt))}
                                         isMandatory={false}
                                         value={this.thrRedAlt}
                                         containerStyle="width: 150px; justify-content: flex-end;"
@@ -432,7 +444,7 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                 <div>
                                     <div ref={this.toNoiseFieldsRefs[1]} style="margin-bottom: 15px;">
                                         <InputField<number>
-                                            dataEntryFormat={new PercentageFormat()}
+                                            dataEntryFormat={new PercentageFormat(Subject.create(40), Subject.create(110))}
                                             isMandatory={false}
                                             value={this.noiseN1}
                                             containerStyle="width: 110px; justify-content: flex-end;"
@@ -453,7 +465,7 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                 </div>
                                 <div style="margin-bottom: 15px;">
                                     <InputField<number>
-                                        dataEntryFormat={new AltitudeFormat()}
+                                        dataEntryFormat={new AltitudeOrFlightLevelFormat(Subject.create(false), Subject.create(400), Subject.create(maxCertifiedAlt))}
                                         isMandatory={false}
                                         value={this.accelAlt}
                                         containerStyle="width: 150px; justify-content: flex-end;"
@@ -470,7 +482,7 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                 <div>
                                     <div ref={this.toNoiseFieldsRefs[4]} style="margin-bottom: 15px;">
                                         <InputField<number>
-                                            dataEntryFormat={new SpeedKnotsFormat()}
+                                            dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
                                             isMandatory={false}
                                             value={this.noiseSpd}
                                             containerStyle="width: 110px; justify-content: flex-end;"
@@ -488,7 +500,7 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                     </div>
                                     <div ref={this.toNoiseEndInputRef}>
                                         <InputField<number>
-                                            dataEntryFormat={new AltitudeFormat()}
+                                            dataEntryFormat={new AltitudeOrFlightLevelFormat(Subject.create(false), Subject.create(400), Subject.create(maxCertifiedAlt))}
                                             isMandatory={false}
                                             value={this.noiseEndAlt}
                                             containerStyle="width: 150px; justify-content: flex-end;"
@@ -504,7 +516,7 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                 <div class="MFDLabelValueContainer">
                                     <span class="MFDLabel spacingRight">TRANS</span>
                                     <InputField<number>
-                                        dataEntryFormat={new AltitudeFormat()}
+                                        dataEntryFormat={new AltitudeFormat(Subject.create(1), Subject.create(maxCertifiedAlt))}
                                         isMandatory={false}
                                         value={this.transAlt}
                                         containerStyle="width: 150px; justify-content: flex-end;"
@@ -513,7 +525,7 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                 <div class="MFDLabelValueContainer">
                                     <span class="MFDLabel spacingRight">EO ACCEL</span>
                                     <InputField<number>
-                                        dataEntryFormat={new AltitudeFormat()}
+                                        dataEntryFormat={new AltitudeOrFlightLevelFormat(Subject.create(false), Subject.create(400), Subject.create(maxCertifiedAlt))}
                                         isMandatory={false}
                                         value={this.eoAccelAlt}
                                         containerStyle="width: 150px; justify-content: flex-end;"
@@ -537,6 +549,7 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                         dataEntryFormat={new CostIndexFormat()}
                                         isMandatory={false}
                                         value={this.costIndex}
+                                        containerStyle="width: 75px; justify-content: center;"
                                     />
                                 </div>
                                 <div class="MFDLabelValueContainer">
@@ -563,10 +576,10 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                 <div class="spdTableCell" style="flex-direction: row; justify-content: center; align-items: center;">
                                     <div class="MFDLabel">PRED TO </div>
                                     <InputField<number>
-                                        dataEntryFormat={new AltitudeFormat()}
+                                        dataEntryFormat={new AltitudeOrFlightLevelFormat(Subject.create(false), Subject.create(0), Subject.create(maxCertifiedAlt))}
                                         isMandatory={false}
                                         value={this.clbPredictionsReference}
-                                        containerStyle="width: 100px; margin-left: 15px;"
+                                        containerStyle="width: 150px; margin-left: 15px;"
                                     />
                                 </div>
                                 <div class="spdPreselManagedTableCell" style="border-right: 1px solid lightgrey; justify-content: flex-end;">
@@ -574,7 +587,7 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                 </div>
                                 <div class="spdTableCell">
                                     <InputField<number>
-                                        dataEntryFormat={new SpeedKnotsFormat()}
+                                        dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
                                         isMandatory={false}
                                         value={this.clbPreSelSpdTarget}
                                     />
@@ -618,7 +631,7 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                 </div>
                                 <div style="margin-bottom: 15px;">
                                     <InputField<number>
-                                        dataEntryFormat={new AltitudeFormat()}
+                                        dataEntryFormat={new AltitudeOrFlightLevelFormat(Subject.create(false), Subject.create(400), Subject.create(maxCertifiedAlt))}
                                         isMandatory={false}
                                         value={this.thrRedAlt}
                                         containerStyle="width: 150px; justify-content: flex-end;"
@@ -635,7 +648,7 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                 <div>
                                     <div ref={this.clbNoiseFieldsRefs[1]} style="margin-bottom: 15px;">
                                         <InputField<number>
-                                            dataEntryFormat={new PercentageFormat()}
+                                            dataEntryFormat={new PercentageFormat(Subject.create(40), Subject.create(110))}
                                             isMandatory={false}
                                             value={this.noiseN1}
                                             containerStyle="width: 110px; justify-content: flex-end;"
@@ -656,7 +669,7 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                 </div>
                                 <div style="margin-bottom: 15px;">
                                     <InputField<number>
-                                        dataEntryFormat={new AltitudeFormat()}
+                                        dataEntryFormat={new AltitudeOrFlightLevelFormat(Subject.create(false), Subject.create(400), Subject.create(maxCertifiedAlt))}
                                         isMandatory={false}
                                         value={this.accelAlt}
                                         containerStyle="width: 150px; justify-content: flex-end;"
@@ -673,7 +686,7 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                 <div>
                                     <div ref={this.clbNoiseFieldsRefs[4]} style="margin-bottom: 15px;">
                                         <InputField<number>
-                                            dataEntryFormat={new SpeedKnotsFormat()}
+                                            dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
                                             isMandatory={false}
                                             value={this.noiseSpd}
                                             containerStyle="width: 110px; justify-content: flex-end;"
@@ -699,7 +712,7 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                     </div>
                                     <div ref={this.clbNoiseEndInputRef}>
                                         <InputField<number>
-                                            dataEntryFormat={new AltitudeFormat()}
+                                            dataEntryFormat={new AltitudeOrFlightLevelFormat(Subject.create(false), Subject.create(400), Subject.create(maxCertifiedAlt))}
                                             isMandatory={false}
                                             value={this.noiseEndAlt}
                                             containerStyle="width: 150px; justify-content: flex-end;"
@@ -719,7 +732,7 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                 <div class="MFDLabelValueContainer" style="margin-left: 50px;">
                                     <span class="MFDLabel spacingRight">TRANS</span>
                                     <InputField<number>
-                                        dataEntryFormat={new AltitudeFormat()}
+                                        dataEntryFormat={new AltitudeFormat(Subject.create(1), Subject.create(maxCertifiedAlt))}
                                         isMandatory={false}
                                         value={this.transAlt}
                                         containerStyle="width: 150px; justify-content: flex-end;"
@@ -741,6 +754,7 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                         dataEntryFormat={new CostIndexFormat()}
                                         isMandatory={false}
                                         value={this.costIndex}
+                                        containerStyle="width: 75px; justify-content: center;"
                                     />
                                 </div>
                             </div>
@@ -772,14 +786,14 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                 </div>
                                 <div class="spdTableCell">
                                     <InputField<number>
-                                        dataEntryFormat={new SpeedMachFormat()}
+                                        dataEntryFormat={new SpeedMachFormat(Subject.create(0.1), Subject.create(Mmo))}
                                         isMandatory={false}
                                         value={this.crzPreSelMachTarget}
                                     />
                                 </div>
                                 <div class="spdTableCell">
                                     <InputField<number>
-                                        dataEntryFormat={new SpeedKnotsFormat()}
+                                        dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
                                         isMandatory={false}
                                         value={this.crzPreSelSpdTarget}
                                     />
@@ -863,7 +877,90 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                         </TopTabNavigatorPage>
                         <TopTabNavigatorPage>
                             {/* DES */}
-                            <span style="color: white; font-size: 60px;">DES</span>
+                            <div style="display: flex; justify-content: space-between;">
+                                <div class="MFDLabelValueContainer" style="padding: 15px;">
+                                    <span class="MFDLabel spacingRight">CI</span>
+                                    <InputField<number>
+                                        dataEntryFormat={new CostIndexFormat()}
+                                        isMandatory={false}
+                                        value={this.costIndex}
+                                        containerStyle="width: 75px; justify-content: center;"
+                                    />
+                                </div>
+                                <div class="MFDLabelValueContainer" style="padding: 15px;">
+                                    <span class="MFDLabel spacingRight">DES CABIN RATE</span>
+                                    <InputField<number>
+                                        dataEntryFormat={new VerticalSpeedFormat(Subject.create(-999), Subject.create(-100))}
+                                        isMandatory={false}
+                                        value={this.desCabinDesRate}
+                                        containerStyle="width: 175px; justify-content: center;"
+                                    />
+                                </div>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 20% 13% 22% 45%">
+                                <div class="spdTableCell" style="border-right: 1px solid lightgrey;">
+                                    <div class="MFDLabel">MODE</div>
+                                </div>
+                                <div class="spdTableCell">
+                                    <div class="MFDLabel">MACH</div>
+                                </div>
+                                <div class="spdTableCell">
+                                    <div class="MFDLabel">SPD</div>
+                                </div>
+                                <div class="spdTableCell" style="flex-direction: row; justify-content: center; align-items: center;">
+                                    <div class="MFDLabel">PRED TO </div>
+                                    <InputField<number>
+                                        dataEntryFormat={new AltitudeOrFlightLevelFormat(Subject.create(false), Subject.create(0), Subject.create(maxCertifiedAlt))}
+                                        isMandatory={false}
+                                        value={this.clbPredictionsReference}
+                                        containerStyle="width: 150px; margin-left: 15px;"
+                                    />
+                                </div>
+                                <div class="spdPreselManagedTableCell" style="border-right: 1px solid lightgrey; justify-content: flex-end;">
+                                    <div class="MFDLabel green biggest">MANAGED</div>
+                                </div>
+                                <div class="spdTableCell">
+                                    <InputField<number>
+                                        dataEntryFormat={new SpeedMachFormat(Subject.create(0.1), Subject.create(Mmo))}
+                                        isMandatory={false}
+                                        value={this.desManagedMachTarget}
+                                    />
+                                </div>
+                                <div class="spdTableCell">
+                                    <InputField<number>
+                                        dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
+                                        isMandatory={false}
+                                        value={this.desManagedSpdTarget}
+                                    />
+                                </div>
+                                <div class="spdTableCell">
+                                    <span class="MFDGreenValue">--:--   ----</span>
+                                </div>
+                                <div class="spdPreselManagedTableCell" style="border-right: 1px solid lightgrey; justify-content: flex-end; height: 100px;" />
+                                <div class="spdTableCell" />
+                                <div class="spdTableCell" />
+                                <div class="spdTableCell" />
+                                <div class="spdTableCell" style="border-right: 1px solid lightgrey; border-bottom: none; justify-content: flex-end; height: 75px;" />
+                                <div class="spdTableCell" style="border-bottom: none; padding: 5px;" />
+                                <div class="spdTableCell" style="border-bottom: none; padding: 5px;" />
+                                <div class="spdTableCell" style="border-bottom: none; padding: 5px;" />
+                            </div>
+                            <div style="flex-grow: 1;" />
+                            {/* fill space vertically */}
+                            <div style="margin: 10px 2px 3px 2px; display: flex; flex-direction: row; justify-content: space-between; align-items: center; padding-top: 10px;">
+                                <span class="MFDLabel bigger">DEST</span>
+                                <span class="MFDLabel green bigger">LFPG</span>
+                                <span class="MFDLabel green bigger">06:38</span>
+                                <div class="MFDLabelValueContainer">
+                                    <span class="MFDGreenValue">15.3</span>
+                                    <span class="MFDUnitLabel trailingUnit">T</span>
+                                </div>
+                                <div style="display: flex; flex-direction: row;">
+                                    <Button onClick={() => this.props.navigateTo('fms/active/f-pln/vert-rev')}>
+                                        SPD CSTR
+                                    </Button>
+                                </div>
+                            </div>
                         </TopTabNavigatorPage>
                         <TopTabNavigatorPage>
                             {/* APPR */}
