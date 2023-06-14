@@ -2,9 +2,11 @@ use std::time::Duration;
 
 use uom::si::{
     f64::*,
+    length::foot,
     pressure::psi,
     ratio::ratio,
     thermodynamic_temperature::degree_celsius,
+    velocity::foot_per_minute,
     volume::{cubic_meter, gallon},
 };
 
@@ -26,8 +28,8 @@ use systems::{
         pid::PidController, update_iterator::MaxStepLoop, ControllerSignal, DelayedTrueLogicGate,
         ElectricalBusType, ElectricalBuses, EngineBleedPushbutton, EngineCorrectedN1,
         EngineCorrectedN2, EngineFirePushButtons, EngineStartState, HydraulicColor,
-        LgciuWeightOnWheels, PackFlowValveState, PneumaticBleed, PneumaticValve,
-        ReservoirAirPressure,
+        LatchedTrueLogicGate, LgciuWeightOnWheels, PackFlowValveState, PneumaticBleed,
+        PneumaticValve, ReservoirAirPressure,
     },
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -518,7 +520,7 @@ impl BleedMonitoringComputer {
         self.main_channel.update(
             context,
             &sensors[self.main_channel_engine_number - 1],
-            engine_fire_push_buttons.is_released(self.main_channel_engine_number),
+            engine_fire_push_buttons,
             apu_bleed_valve,
             cross_bleed_valve,
             overhead_panel,
@@ -529,7 +531,7 @@ impl BleedMonitoringComputer {
         self.backup_channel.update(
             context,
             &sensors[self.backup_channel_engine_number - 1],
-            engine_fire_push_buttons.is_released(self.backup_channel_engine_number),
+            engine_fire_push_buttons,
             apu_bleed_valve,
             cross_bleed_valve,
             overhead_panel,
@@ -619,19 +621,18 @@ struct BleedMonitoringComputerChannel {
     pressure_regulating_valve_is_closed: bool,
     intermediate_compressor_pressure: Pressure,
     transfer_pressure: Pressure,
-    engine_starter_valve_is_open: bool,
-    is_engine_bleed_pushbutton_auto: bool,
-    is_engine_fire_pushbutton_released: bool,
     is_apu_bleed_valve_open: bool,
-    is_apu_bleed_on: bool,
     pressure_regulating_valve_pid: PidController,
     fan_air_valve_pid: PidController,
     cross_bleed_valve_selector: CrossBleedValveSelectorMode,
-    cross_bleed_valve_is_open: bool,
     should_use_ip_vs_hp_valve: bool,
     overheat_monitor: BleedOverheatMonitor,
     overpressure_monitor: BleedOverpressureMonitor,
     has_low_bleed_temperature: bool,
+    is_in_dual_bleed_config: bool,
+    flight_phase_loop: FlightPhaseLoop,
+    low_temperature_regulation_active: DelayedTrueLogicGate,
+    should_command_onside_prv_closed: bool,
 
     low_temperature_id: VariableIdentifier,
     overheat_id: VariableIdentifier,
@@ -650,6 +651,9 @@ impl BleedMonitoringComputerChannel {
     const SINGLE_BLEED_WAI_OFF_HP_IP_SWITCHING_THRESHOLDS: [f64; 2] = [40.4, 48.2];
     const SINGLE_BLEED_WAI_ON_HP_IP_SWITCHING_THRESHOLDS: [f64; 2] = [47.5, 60.5];
 
+    const HIGH_TEMPERATURE_REGULATION_SETPOINT: f64 = 200.;
+    const LOW_TEMPERATURE_REGULATION_THRESHOLD: f64 = 160.;
+
     fn new(
         context: &mut InitContext,
         engine_number: usize,
@@ -661,11 +665,7 @@ impl BleedMonitoringComputerChannel {
             pressure_regulating_valve_is_closed: false,
             intermediate_compressor_pressure: Pressure::default(),
             transfer_pressure: Pressure::new::<psi>(14.7),
-            engine_starter_valve_is_open: false,
-            is_engine_bleed_pushbutton_auto: true,
-            is_engine_fire_pushbutton_released: false,
             is_apu_bleed_valve_open: false,
-            is_apu_bleed_on: false,
             pressure_regulating_valve_pid: PidController::new(
                 0.05,
                 0.01,
@@ -677,12 +677,14 @@ impl BleedMonitoringComputerChannel {
             ),
             fan_air_valve_pid: PidController::new(-0.005, -0.001, 0., 0., 1., 200., 1.),
             cross_bleed_valve_selector: CrossBleedValveSelectorMode::Auto,
-            cross_bleed_valve_is_open: false,
             should_use_ip_vs_hp_valve: false,
             overheat_monitor: BleedOverheatMonitor::new(),
             overpressure_monitor: BleedOverpressureMonitor::new(),
             has_low_bleed_temperature: false,
-
+            flight_phase_loop: FlightPhaseLoop::new(),
+            low_temperature_regulation_active: DelayedTrueLogicGate::new(Duration::from_secs(20)),
+            should_command_onside_prv_closed: false,
+            is_in_dual_bleed_config: false,
             low_temperature_id: context
                 .get_identifier(format!("PNEU_ENG_{}_LOW_TEMPERATURE", engine_number)),
             overheat_id: context.get_identifier(format!("PNEU_ENG_{}_OVERHEAT", engine_number)),
@@ -695,27 +697,49 @@ impl BleedMonitoringComputerChannel {
         &mut self,
         context: &UpdateContext,
         sensors: &EngineBleedAirSystem,
-        is_engine_fire_pushbutton_released: bool,
+        engine_fire_pushbuttons: &impl EngineFirePushButtons,
         apu_bleed_valve: &impl PneumaticValve,
         cross_bleed_valve: &impl PneumaticValve,
         overhead_panel: &A320PneumaticOverheadPanel,
         fadec: &FullAuthorityDigitalEngineControl,
         wing_anti_ice: &impl WingAntiIceValves,
     ) {
+        // READ IN SENSORS
+
         // Should come from EIU I think
         self.intermediate_compressor_pressure =
             sensors.intermediate_pressure() - context.ambient_pressure();
         self.transfer_pressure = sensors.transfer_pressure() - context.ambient_pressure();
 
-        self.pressure_regulating_valve_pid.change_setpoint(
-            if fadec.is_single_vs_dual_bleed_config() {
-                Self::PRESSURE_REGULATING_VALVE_SINGLE_BLEED_CONFIG_TARGET_PSI
-            } else {
-                Self::PRESSURE_REGULATING_VALVE_DUAL_BLEED_CONFIG_TARGET_PSI
-            },
-        );
+        self.is_apu_bleed_valve_open = apu_bleed_valve.is_open();
+        self.cross_bleed_valve_selector = overhead_panel.cross_bleed_mode();
 
         self.pressure_regulating_valve_is_closed = !sensors.pressure_regulating_valve_is_open();
+
+        // UPDATE STATE
+
+        self.flight_phase_loop.update(context);
+        self.update_dual_vs_single_bleed_operation(
+            sensors,
+            overhead_panel,
+            engine_fire_pushbuttons,
+            cross_bleed_valve,
+            fadec,
+        );
+        self.update_low_temperature_regulation(context, wing_anti_ice);
+
+        // UPDATE SETPOINTS
+
+        self.fan_air_valve_pid
+            .change_setpoint(self.determine_temperature_setpoint());
+
+        self.pressure_regulating_valve_pid
+            .change_setpoint(if self.is_in_dual_bleed_config {
+                Self::PRESSURE_REGULATING_VALVE_DUAL_BLEED_CONFIG_TARGET_PSI
+            } else {
+                Self::PRESSURE_REGULATING_VALVE_SINGLE_BLEED_CONFIG_TARGET_PSI
+            });
+
         self.update_low_temperature(context, sensors, wing_anti_ice);
 
         if let Some(regulated_pressure_signal) = sensors.regulated_pressure_transducer_pressure() {
@@ -753,23 +777,11 @@ impl BleedMonitoringComputerChannel {
                 && hysteresis(
                     self.should_use_ip_vs_hp_valve,
                     self.get_switching_thresholds(
-                        fadec.is_single_vs_dual_bleed_config(),
+                        !self.is_in_dual_bleed_config,
                         !wing_anti_ice.is_wai_valve_closed(self.engine_number - 1),
                     ),
                     self.intermediate_compressor_pressure.get::<psi>(),
                 ));
-
-        self.engine_starter_valve_is_open = sensors.engine_starter_valve_is_open();
-
-        self.is_engine_bleed_pushbutton_auto =
-            overhead_panel.engine_bleed_pb_is_auto(self.engine_number);
-        self.is_engine_fire_pushbutton_released = is_engine_fire_pushbutton_released;
-
-        self.is_apu_bleed_valve_open = apu_bleed_valve.is_open();
-        self.is_apu_bleed_on = overhead_panel.apu_bleed_is_on();
-
-        self.cross_bleed_valve_selector = overhead_panel.cross_bleed_mode();
-        self.cross_bleed_valve_is_open = cross_bleed_valve.is_open();
     }
 
     fn update_low_temperature(
@@ -806,19 +818,31 @@ impl BleedMonitoringComputerChannel {
         }
     }
 
-    fn should_close_pressure_regulating_valve_because_apu_bleed_is_on(&self) -> bool {
-        self.is_apu_bleed_on
+    fn should_close_pressure_regulating_valve_because_apu_bleed_is_on(
+        &self,
+        engine_number: usize,
+        overhead_panel: &A320PneumaticOverheadPanel,
+        cross_bleed_valve: &impl PneumaticValve,
+    ) -> bool {
+        overhead_panel.apu_bleed_is_on()
             && self.is_apu_bleed_valve_open
-            && (self.engine_number == 1 || self.cross_bleed_valve_is_open)
+            && (engine_number == 1 || cross_bleed_valve.is_open())
     }
 
-    fn should_command_prv_closed(&self) -> bool {
-        !self.is_engine_bleed_pushbutton_auto
-            || self.is_engine_fire_pushbutton_released
-            || self.should_close_pressure_regulating_valve_because_apu_bleed_is_on()
-            || self.engine_starter_valve_is_open
-            || self.overpressure_monitor.has_overpressure()
-            || self.overheat_monitor.has_overheat()
+    fn should_command_prv_closed(
+        &self,
+        engine_number: usize,
+        overhead_panel: &A320PneumaticOverheadPanel,
+        engine_fire_pushbuttons: &impl EngineFirePushButtons,
+        cross_bleed_valve: &impl PneumaticValve,
+    ) -> bool {
+        !overhead_panel.engine_bleed_pb_is_auto(engine_number)
+            || engine_fire_pushbuttons.is_released(engine_number)
+            || self.should_close_pressure_regulating_valve_because_apu_bleed_is_on(
+                engine_number,
+                overhead_panel,
+                cross_bleed_valve,
+            )
     }
 
     fn get_switching_thresholds(&self, is_single_vs_dual_bleed: bool, is_wai_on: bool) -> [f64; 2] {
@@ -841,11 +865,65 @@ impl BleedMonitoringComputerChannel {
     fn has_overheat(&self) -> bool {
         self.overheat_monitor.has_overheat()
     }
+
+    fn determine_temperature_setpoint(&self) -> f64 {
+        if self.low_temperature_regulation_active.output() {
+            Self::LOW_TEMPERATURE_REGULATION_THRESHOLD
+        } else {
+            Self::HIGH_TEMPERATURE_REGULATION_SETPOINT
+        }
+    }
+
+    fn update_dual_vs_single_bleed_operation(
+        &mut self,
+        sensors: &EngineBleedAirSystem,
+        overhead_panel: &A320PneumaticOverheadPanel,
+        engine_fire_pushbuttons: &impl EngineFirePushButtons,
+        cross_bleed_valve: &impl PneumaticValve,
+        fadec: &FullAuthorityDigitalEngineControl,
+    ) {
+        self.should_command_onside_prv_closed = self.should_command_prv_closed(
+            self.engine_number,
+            overhead_panel,
+            engine_fire_pushbuttons,
+            cross_bleed_valve,
+        ) || sensors.engine_starter_valve_is_open()
+            || self.overpressure_monitor.has_overpressure()
+            || self.overheat_monitor.has_overheat();
+
+        let should_command_offside_prv_closed = self.should_command_prv_closed(
+            self.engine_number % 2 + 1,
+            overhead_panel,
+            engine_fire_pushbuttons,
+            cross_bleed_valve,
+        );
+
+        self.is_in_dual_bleed_config = !fadec.is_single_vs_dual_bleed_config()
+            && !self.should_command_onside_prv_closed
+            && !should_command_offside_prv_closed;
+    }
+
+    fn update_low_temperature_regulation(
+        &mut self,
+        context: &UpdateContext,
+        wing_anti_ice: &impl WingAntiIceValves,
+    ) {
+        let both_bleed_sources_active = self.is_in_dual_bleed_config;
+        let wai_is_off = wing_anti_ice.is_wai_valve_closed(self.engine_number - 1);
+
+        self.low_temperature_regulation_active.update(
+            context,
+            wai_is_off
+                && both_bleed_sources_active
+                && (self.flight_phase_loop.is_climb_active()
+                    || self.flight_phase_loop.is_hold_active()),
+        )
+    }
 }
 impl ControllerSignal<SolenoidSignal> for BleedMonitoringComputerChannel {
     fn signal(&self) -> Option<SolenoidSignal> {
         Some(
-            match self.should_command_prv_closed() || self.should_use_ip_vs_hp_valve {
+            match self.should_command_onside_prv_closed || self.should_use_ip_vs_hp_valve {
                 true => SolenoidSignal::deenergized(),
                 false => SolenoidSignal::energized(),
             },
@@ -855,7 +933,9 @@ impl ControllerSignal<SolenoidSignal> for BleedMonitoringComputerChannel {
 impl ControllerSignal<PressureRegulatingValveSignal> for BleedMonitoringComputerChannel {
     fn signal(&self) -> Option<PressureRegulatingValveSignal> {
         // TODO: The pressure condition should be pneumatically simulated
-        if self.transfer_pressure < Pressure::new::<psi>(15.) || self.should_command_prv_closed() {
+        if self.transfer_pressure < Pressure::new::<psi>(15.)
+            || self.should_command_onside_prv_closed
+        {
             Some(PressureRegulatingValveSignal::new_closed())
         } else {
             Some(PressureRegulatingValveSignal::new(Ratio::new::<ratio>(
@@ -866,9 +946,15 @@ impl ControllerSignal<PressureRegulatingValveSignal> for BleedMonitoringComputer
 }
 impl ControllerSignal<FanAirValveSignal> for BleedMonitoringComputerChannel {
     fn signal(&self) -> Option<FanAirValveSignal> {
-        Some(FanAirValveSignal::new(Ratio::new::<ratio>(
-            self.fan_air_valve_pid.output(),
-        )))
+        if self.transfer_pressure < Pressure::new::<psi>(15.)
+            || self.should_command_onside_prv_closed
+        {
+            Some(FanAirValveSignal::new_closed())
+        } else {
+            Some(FanAirValveSignal::new(Ratio::new::<ratio>(
+                self.fan_air_valve_pid.output(),
+            )))
+        }
     }
 }
 impl ControllerSignal<CrossBleedValveSignal> for BleedMonitoringComputerChannel {
@@ -1682,6 +1768,59 @@ impl SimulationElement for CrossBleedValve {
             buses.is_powered(ElectricalBusType::DirectCurrentEssentialShed);
         self.is_powered_for_automatic_control =
             buses.is_powered(ElectricalBusType::DirectCurrent(2));
+    }
+}
+
+struct FlightPhaseLoop {
+    is_climb_active: bool,
+    is_hold_active: bool,
+
+    vertical_speed_greater_140: DelayedTrueLogicGate,
+    vertical_speed_less_80: DelayedTrueLogicGate,
+    vertical_speed_within_140: DelayedTrueLogicGate,
+}
+impl FlightPhaseLoop {
+    pub fn new() -> Self {
+        Self {
+            is_climb_active: false,
+            is_hold_active: false,
+
+            vertical_speed_greater_140: DelayedTrueLogicGate::new(Duration::from_secs(10)),
+            vertical_speed_less_80: DelayedTrueLogicGate::new(Duration::from_secs(10)),
+            vertical_speed_within_140: DelayedTrueLogicGate::new(Duration::from_secs(10)),
+        }
+    }
+
+    pub fn update(&mut self, context: &UpdateContext) {
+        // TODO: Use correct signals here
+        let is_on_ground = context.is_on_ground();
+        let altitude_selected = context.pressure_altitude();
+        let vertical_speed = context.vertical_speed();
+
+        self.vertical_speed_greater_140
+            .update(context, vertical_speed.get::<foot_per_minute>() >= 140.);
+        self.vertical_speed_less_80
+            .update(context, vertical_speed.get::<foot_per_minute>() < 80.);
+        self.vertical_speed_within_140.update(
+            context,
+            vertical_speed.get::<foot_per_minute>().abs() <= 140.,
+        );
+
+        self.is_climb_active = self.is_climb_active
+            && !(is_on_ground || self.vertical_speed_less_80.output())
+            || (!self.is_climb_active && !is_on_ground && self.vertical_speed_greater_140.output());
+
+        self.is_hold_active = !is_on_ground
+            && altitude_selected.get::<foot>() < 25000.
+            && self.vertical_speed_within_140.output();
+    }
+
+    pub fn is_climb_active(&self) -> bool {
+        self.is_climb_active
+    }
+
+    pub fn is_hold_active(&self) -> bool {
+        self.is_hold_active
     }
 }
 
