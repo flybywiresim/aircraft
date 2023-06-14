@@ -9,7 +9,7 @@ export const ArtificialHorizon: React.FC = () => {
     const [pitch] = useSimVar('PLANE PITCH DEGREES', 'degrees', 200);
     const [roll] = useSimVar('PLANE BANK DEGREES', 'degrees', 200);
 
-    const pitchDegPixels = 7.4;
+    const pitchDegPixels = 6.7;
 
     const pitchShift = -pitch * pitchDegPixels;
 
@@ -23,10 +23,13 @@ export const ArtificialHorizon: React.FC = () => {
                         <PitchScale pitchDegPixels={pitchDegPixels} />
                     </g>
                     <RollIndex />
-                    <rect x={-256} y={400} width={1024} height={396} className="earth" />
+                    <rect x={-256} y={388} width={1024} height={396} className="earth" />
                 </g>
                 <RollScale />
-                <path id="Mask" className="mask" d="M 0 0 h 512 v 512 h -512 z M 108 120.5 c 50 -30 246 -30 296 0 v 271 c -50 30 -246 30 -296 0 z" />
+                {// <path id="Mask" className="mask" d="M 0 0 h 512 v 512 h -512 z M 108 120.5 c 50 -30 246 -30 296 0 v 271 c -50 30 -246 30 -296 0 z" />
+                }
+                <path id="Mask" className="mask" d="M 0 0 v 123.5 h 122.1 c 43.9 -23.5 217.9 -25.5 271.4 0 h 118.5 v -123.5 z M 122.1 123.5 v 266 h -122.1 v -266 M 512 513 v -123.5 h -118.5 c -43.9 23.5 -217.9 25.5 -271.4 0 h -122.1 v 123.5 z M 512 389.5 v -266 h -118.5 v 266 M 122.1 120.5 h 271.4" />
+
             </g>
         </Att10sFlag>
     );

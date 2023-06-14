@@ -20,7 +20,7 @@ export const ArtificialHorizonDisplay: React.FC<ArtificialHorizonDisplayProps> =
     const [mda] = useSimVar('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet');
 
     return (
-        <g id="ArtificialHorizonDisplay">
+        <g id="ArtificialHorizonDisplay" className="ArtificialHorizon">
             <ArtificialHorizon />
             <AirspeedIndicator indicatedAirspeed={indicatedAirspeed} bugs={bugs.filter(({ isActive, type }) => isActive && type === BugType.SPD)} />
             <AltitudeIndicator altitude={Math.floor(alt)} mda={mda} bugs={bugs.filter(({ isActive, type }) => isActive && type === BugType.ALT)} />

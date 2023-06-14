@@ -12,13 +12,16 @@
   position: absolute;
   width: 512px;
   height: 512px;
-  stroke-width: 3px;
+  stroke-width: 2px;
 
   background: $display-background;
 
   font-family: "Ecam", monospace !important;
 }
-
+.ArtificialHorizon{
+  transform:  scale(1.1) translate(-30px, -30px);
+  stroke-width: 3.332px;
+}
 .sky {
   fill: #0698ff;
 }
@@ -53,7 +56,7 @@
 
 .FontTens {
   font-size: 28;
-  letter-spacing: 2.5;
+  letter-spacing: 3.1px;
 }
 
 .MiddleAlign {
@@ -76,20 +79,36 @@
 
 .LSCircle {
   stroke: $display-white;
-  stroke-width: 3.332px;
 }
 
 .StrokeWhite {
   stroke: $display-white;
 }
 
-.StrokeYellow {
-  stroke: $display-yellow;
-  stroke-width: 3.332px;
+.StrokeWhiteMed {
+  stroke: $display-white;
+  stroke-width: 4px;
 }
 
+.StrokeWhiteBig {
+  stroke: $display-white;
+  stroke-width: 5px;
+}
+
+.StrokeYellow {
+  stroke: $display-yellow;
+}
+
+.StrokeYellowBig {
+  stroke: $display-yellow;
+  stroke-width: 5px;
+}
 .StrokeCyan {
   stroke: $display-cyan;
+}
+.StrokeCyanBig {
+  stroke: $display-cyan;
+  stroke-width: 5px;
 }
 
 .StrokeRed {

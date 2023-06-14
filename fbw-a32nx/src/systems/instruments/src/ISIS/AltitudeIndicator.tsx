@@ -8,12 +8,13 @@ type TickProps = { offset: number, altitude: number }
 
 const Tick = React.memo<TickProps>(({ altitude, offset }) => {
     const shouldShowText = altitude % 500 === 0;
-    const tickLength = shouldShowText ? 5 : 20;
+    const tickLength = shouldShowText ? 5 : 19;
+    const stroke = shouldShowText ? 'StrokeWhiteBig' : 'StrokeWhite';
 
     return (
         <g transform={`translate(0 ${offset})`}>
-            <path className="StrokeWhite" d={`M0,${158} h${tickLength}`} />
-            {shouldShowText && <text x={5} y={158 + 12} className="TextWhite FontMedium">{Math.abs(altitude).toString().padStart(5, '0').slice(0, 3)}</text>}
+            <path className={stroke} d={`M0,${158} h${tickLength}`} />
+            {shouldShowText && <text x={7} y={158 + 12} className="TextWhite FontMedium">{Math.abs(altitude).toString().padStart(5, '0').slice(0, 3)}</text>}
         </g>
     );
 });
@@ -47,11 +48,11 @@ export const AltitudeIndicator: React.FC<AltitudeIndicatorProps> = ({ altitude, 
 
     return (
         <g id="AltitudeIndicator">
-            <svg x={404} y={112} width={108} height={296} viewBox="0 0 108 296">
+            <svg x={395} y={112} width={108} height={296} viewBox="0 0 108 296">
                 <VerticalTape
                     displayRange={1000}
                     valueSpacing={100}
-                    distanceSpacing={20}
+                    distanceSpacing={21.5}
                     graduationElementFunction={(altitude: number, offset: number) => <Tick altitude={altitude} offset={offset} />}
                     bugs={bugs}
                     bugElementFunction={(bug: Bug, offset: number) => <BugElement bug={bug} offset={offset} />}

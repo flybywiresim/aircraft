@@ -9,20 +9,20 @@ const Tick = React.memo<TickProps>(({ offset, airspeed }) => {
         return null;
     }
 
-    const tickLength = airspeed % 20 === 10 ? 20 : 10;
+    const tickLength = airspeed % 20 === 10 ? 13.5 : 5;
 
     return (
         <g transform={`translate(0 ${offset})`}>
-            {airspeed % 20 === 0 && <text x={95} textAnchor="end" y={158 + 12} className="TextWhite FontMedium">{airspeed}</text>}
-            <path stroke="white" d={`M${108 - tickLength},158 h${tickLength}`} />
+            {airspeed % 20 === 0 && <text x={104} textAnchor="end" y={158 + 12} className="TextWhite FontMedium">{airspeed}</text>}
+            <path className="StrokeWhiteMed" d={`M${108 - tickLength},158 h${tickLength}`} />
         </g>
     );
 });
 
 const SpeedtapeArrow = React.memo(() => (
     <g id="SpeedtapeArrow">
-        <rect className="FillBackground" x={121.054} y={250.008} width={23.324} height={35.4025} />
-        <path className="FillYellow" d="M 141.712 284.994 v -31.654 l -19.992 16.66 z" />
+        <rect className="FillBackground" x={121.887} y={250.841} width={23.324} height={35.4025} />
+        <path className="FillYellow" d="M 143.545 285.827 v -31.654 l -19.992 15.827 z" />
     </g>
 ));
 
@@ -41,11 +41,11 @@ type AirspeedIndicatorProps = {
 
 export const AirspeedIndicator: React.FC<AirspeedIndicatorProps> = ({ indicatedAirspeed, bugs }) => (
     <g id="AirspeedIndicator">
-        <svg x={0} y={112} width={108} height={296} viewBox="0 0 108 296">
+        <svg x={12} y={112} width={108} height={296} viewBox="0 0 108 296">
             <VerticalTape
-                displayRange={42}
+                displayRange={55}
                 valueSpacing={5}
-                distanceSpacing={16}
+                distanceSpacing={16.5}
                 graduationElementFunction={(elementValue: number, offset: number) => <Tick offset={offset} airspeed={elementValue} />}
                 bugs={bugs}
                 bugElementFunction={(bug: Bug, offset: number) => <BugElement offset={offset} />}

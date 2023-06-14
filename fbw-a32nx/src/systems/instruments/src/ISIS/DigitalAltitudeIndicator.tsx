@@ -14,7 +14,7 @@ const TensDigits: ElementFunction = (value, offset, color) => {
     }
 
     return (
-        <text transform={`translate(0 ${offset})`} className={`FontTens Text${color}`} x="21" y="40">{text}</text>
+        <text transform={`translate(0 ${offset})`} className={`FontTens Text${color}`} x="24" y="40">{text}</text>
     );
 };
 
@@ -29,7 +29,7 @@ const HundredsDigit: ElementFunction = (value, offset, color) => {
     }
 
     return (
-        <text transform={`translate(0 ${offset})`} className={`FontLargest Text${color}`} x="72" y="32">{text}</text>
+        <text transform={`translate(0 ${offset})`} className={`FontLargest Text${color}`} x="73.5" y="32">{text}</text>
     );
 };
 
@@ -42,7 +42,7 @@ const ThousandsDigit: ElementFunction = (value, offset, color) => {
     }
 
     return (
-        <text transform={`translate(0 ${offset})`} className={`FontLargest Text${color}`} x="45" y="32">{text}</text>
+        <text transform={`translate(0 ${offset})`} className={`FontLargest Text${color}`} x="48" y="32">{text}</text>
     );
 };
 
@@ -55,7 +55,7 @@ const TenThousandsDigit: ElementFunction = (value, offset, color) => {
     }
 
     return (
-        <text transform={`translate(0 ${offset})`} className={`FontLargest Text${color}`} x="19" y="32">{text}</text>
+        <text transform={`translate(0 ${offset})`} className={`FontLargest Text${color}`} x="22" y="32">{text}</text>
     );
 };
 
@@ -144,7 +144,7 @@ export const DigitalAltitudeIndicator: React.FC<DigitalAltitudeIndicatorProps> =
 
     return (
         <g>
-            <path d=" M 460.918 243.344 h -46.648 v 8.33 h -74.97 v 36.652 h 74.97 v 8.33 h 46.648" className="FillBackground" />
+            <path d="M 466.749 243.344 h -49.147 v 8.33 h -76.636 v 36.652 h 76.636 v 8.33 h 49.147" className="FillBackground" />
             <svg x={325} y={252} color={color} width="100" height="37" viewBox="0 0 100 37">
                 <Drum
                     displayRange={1}
@@ -188,14 +188,14 @@ export const DigitalAltitudeIndicator: React.FC<DigitalAltitudeIndicatorProps> =
                 />
             </svg>
             <path
-                d=" M 460.918 243.344 h -46.648 v 8.33 h -74.97 v 36.652 h 74.97 v 8.33 h 46.648"
-                className={`NoFill ${isAltitudeInBugRange ? 'StrokeCyan' : 'StrokeYellow'}`}
+                d="M 466.749 243.344 h -49.147 v 8.33 h -76.636 v 36.652 h 76.636 v 8.33 h 49.147"
+                className={`NoFill ${isAltitudeInBugRange ? 'StrokeCyanBig' : 'StrokeYellowBig'}`}
             />
             {isNegative && (
-                <g id="NegativeAltitudeText" className="TextWhite FontLarge">
-                    <text x="350" y="240">N</text>
-                    <text x="350" y="280">E</text>
-                    <text x="350" y="320">G</text>
+                <g id="NegativeAltitudeText" className="TextWhite FontLargest">
+                    <text x="343" y="243">N</text>
+                    <text x="343" y="284">E</text>
+                    <text x="343" y="325">G</text>
                 </g>
             )}
         </g>
