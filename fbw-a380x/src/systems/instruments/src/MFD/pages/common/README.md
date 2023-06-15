@@ -4,7 +4,7 @@ This directory contains common user interface elements for building the A380's M
 
 ## Status and description of components
 Status legend:
-✅ Feature complete
+✅ MVP complete
 🟨 In progress
 🟥 Not yet started
 
@@ -22,8 +22,8 @@ Status legend:
 | ✅ | SurvHeader | Header (system selector + page navigator) for SURV system |
 | ✅ | FcuBkupHeader | Header (system selector + page navigator) for FCU BKUP system |
 | 🟨 | IconButton | Button consisting of just an icon (e.g. F-PLN up/down) |
-| 🟨 | MouseCursor | Custom mouse cursor for MFD |
-| 🟨 | NumberInput | Number input field |
+| ✅ | MouseCursor | Custom mouse cursor for MFD |
+| ✅ | InputField | Number input field |
 | ✅ | PageSelectorDropdownMenu | Page selector buttons incl. dropdown menu |
 | ✅ | RadioButtonGroup | Generic radio buttons |
 | 🟥 | SurvButton | Button for SURV page, activating/deactivating systems |

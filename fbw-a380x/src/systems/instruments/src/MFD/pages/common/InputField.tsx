@@ -1,4 +1,4 @@
-import { ComponentProps, DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+import { ComponentProps, DisplayComponent, FSComponent, Subject, Subscribable, Subscription, VNode } from '@microsoft/msfs-sdk';
 import './style.scss';
 import { DataEntryFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 
@@ -8,11 +8,15 @@ export const emptyMandatoryCharacter = (selected: boolean) => `<svg width="16" h
 interface InputFieldProps<T> extends ComponentProps {
     dataEntryFormat: DataEntryFormat<T>;
     isMandatory: boolean;
-    value: Subject<T>;
+    value: Subscribable<T>;
+    onChangeCallback: (newValue: T) => void;
     containerStyle?: string;
 }
 
 export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
+    // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
+    private subs = [] as Subscription[];
+
     private topRef = FSComponent.createRef<HTMLDivElement>();
 
     private spanningDivRef = FSComponent.createRef<HTMLDivElement>();
@@ -110,7 +114,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
     private onBlur() {
         this.isFocused.set(false);
         this.textInputRef.getOrDefault().classList.remove('valueSelected');
-        this.spanningDivRef.getOrDefault().style.justifyContent = 'center';
+        this.spanningDivRef.getOrDefault().style.justifyContent = 'flex-end';
         this.caretRef.getOrDefault().style.display = 'none';
         this.updateDisplayElement();
 
@@ -136,7 +140,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
         await new Promise((resolve) => setTimeout(resolve, 500));
         this.modifiedFieldValue.set(null);
         const newValue = await this.props.dataEntryFormat.parse(input);
-        this.props.value.set(newValue);
+        this.props.onChangeCallback(newValue);
         this.isValidating.set(false);
     }
 
@@ -144,30 +148,29 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
         super.onAfterRender(node);
 
         // Aspect ratio for font: 2:3 WxH
-        this.spanningDivRef.instance.style.minWidth = `${this.props.dataEntryFormat.maxDigits * 25.0 / 1.5}px`;
-        // this.textInputRef.instance.style.width = `${this.props.displayFormat.maxDigits * 25.0 / 1.5}px`;
+        this.spanningDivRef.instance.style.minWidth = `${Math.round(this.props.dataEntryFormat.maxDigits * 25.0 / 1.5)}px`;
 
         // Hide caret
         this.caretRef.instance.style.display = 'none';
         this.caretRef.instance.innerText = '';
 
-        this.props.value.sub(() => this.onNewValue(), true);
-        this.modifiedFieldValue.sub(() => this.updateDisplayElement());
-        this.isValidating.sub((val) => {
+        this.subs.push(this.props.value.sub(() => this.onNewValue(), true));
+        this.subs.push(this.modifiedFieldValue.sub(() => this.updateDisplayElement()));
+        this.subs.push(this.isValidating.sub((val) => {
             if (val === true) {
                 this.textInputRef.getOrDefault().classList.add('validating');
             } else {
                 this.textInputRef.getOrDefault().classList.remove('validating');
             }
-        });
+        }));
 
-        this.props.dataEntryFormat.unitLeading.sub((val: string) => {
+        this.subs.push(this.props.dataEntryFormat.unitLeading.sub((val: string) => {
             this.leadingUnitRef.getOrDefault().innerText = val;
-        });
+        }));
 
-        this.props.dataEntryFormat.unitTrailing.sub((val: string) => {
+        this.subs.push(this.props.dataEntryFormat.unitTrailing.sub((val: string) => {
             this.trailingUnitRef.getOrDefault().innerText = val;
-        });
+        }));
 
         this.textInputRef.instance.addEventListener('keypress', (ev) => this.onKeyPress(ev));
         this.textInputRef.instance.addEventListener('keydown', (ev) => this.onKeyDown(ev));
@@ -183,7 +186,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
         return (
             <div ref={this.topRef} class="MFDNumberInputContainer" style={this.props.containerStyle}>
                 <span ref={this.leadingUnitRef} class="MFDUnitLabel leadingUnit" style="align-self: center;">{this.props.dataEntryFormat.unitLeading.get()}</span>
-                <div ref={this.spanningDivRef} style="display: flex; flex-direction: row; justify-content: center;">
+                <div ref={this.spanningDivRef} style="display: flex; flex-direction: row; justify-content: flex-end;">
                     <span
                         ref={this.textInputRef}
                         // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex

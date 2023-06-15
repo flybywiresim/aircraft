@@ -17,6 +17,8 @@ export class PageSelectorDropdownMenu extends DisplayComponent<PageSelectorDropd
     // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
     private subs = [] as Subscription[];
 
+    private topRef = FSComponent.createRef<HTMLDivElement>();
+
     private dropdownSelectorRef = FSComponent.createRef<HTMLDivElement>();
 
     private dropdownSelectorLabelRef = FSComponent.createRef<HTMLSpanElement>();
@@ -33,6 +35,13 @@ export class PageSelectorDropdownMenu extends DisplayComponent<PageSelectorDropd
                 val.action();
                 this.dropdownIsOpened.set(false);
             });
+        });
+
+        // Close dropdown menu if clicked outside
+        document.getElementById('MFD_CONTENT').addEventListener('click', (e) => {
+            if (!this.topRef.getOrDefault().contains(e.target as Node) && this.dropdownIsOpened.get() === true) {
+                this.dropdownIsOpened.set(false);
+            }
         });
 
         this.dropdownSelectorRef.instance.addEventListener('click', () => {
@@ -66,7 +75,7 @@ export class PageSelectorDropdownMenu extends DisplayComponent<PageSelectorDropd
 
     render(): VNode {
         return (
-            <div class="MFDDropdownContainer" style={this.props.containerStyle}>
+            <div class="MFDDropdownContainer" ref={this.topRef} style={this.props.containerStyle}>
                 <div class="MFDPageSelectorOuter" ref={this.dropdownSelectorRef}>
                     <div style="display: flex; flex: 8; justify-content: center; hover:background-color: cyan;">
                         <span class="MFDPageSelectorLabel" ref={this.dropdownSelectorLabelRef}>

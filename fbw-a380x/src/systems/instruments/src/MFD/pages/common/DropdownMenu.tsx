@@ -16,6 +16,8 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
 
     private label = Subject.create('NOT SET');
 
+    private topRef = FSComponent.createRef<HTMLDivElement>();
+
     private dropdownSelectorRef = FSComponent.createRef<HTMLDivElement>();
 
     private dropdownSelectorLabelRef = FSComponent.createRef<HTMLSpanElement>();
@@ -52,6 +54,13 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
             this.dropdownIsOpened.set(!this.dropdownIsOpened.get());
         });
 
+        // Close dropdown menu if clicked outside
+        document.getElementById('MFD_CONTENT').addEventListener('click', (e) => {
+            if (!this.topRef.getOrDefault().contains(e.target as Node) && this.dropdownIsOpened.get() === true) {
+                this.dropdownIsOpened.set(false);
+            }
+        });
+
         this.subs.push(this.dropdownIsOpened.sub((val) => {
             this.dropdownMenuRef.instance.style.display = val ? 'block' : 'none';
             this.dropdownSelectorLabelRef.instance.classList.toggle('opened');
@@ -67,7 +76,7 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
 
     render(): VNode {
         return (
-            <div class="MFDDropdownContainer" style={this.props.containerStyle}>
+            <div class="MFDDropdownContainer" ref={this.topRef} style={this.props.containerStyle}>
                 <div ref={this.dropdownSelectorRef} class="MFDDropdownOuter">
                     <div class="MFDDropdownInner" style={`justify-content: ${this.props.alignLabels === 'left' ? 'flex-start' : 'center'};`}>
                         <span ref={this.dropdownSelectorLabelRef} class="MFDDropdownLabel">

@@ -125,7 +125,7 @@ export class MfdComponent extends DisplayComponent<MfdProps> {
         while (this.activeHeaderRef.getOrDefault().firstChild) {
             this.activeHeaderRef.getOrDefault().removeChild(this.activeHeaderRef.getOrDefault().firstChild);
         }
-        if (this.activeHeader && this.activeHeader.instance instanceof DisplayComponent<MfdComponentProps>) {
+        if (this.activeHeader && this.activeHeader.instance instanceof DisplayComponent) {
             this.activeHeader.instance.destroy();
         }
 
@@ -133,7 +133,7 @@ export class MfdComponent extends DisplayComponent<MfdProps> {
         while (this.activePageRef.getOrDefault().firstChild) {
             this.activePageRef.getOrDefault().removeChild(this.activePageRef.getOrDefault().firstChild);
         }
-        if (this.activePage && this.activePage.instance instanceof DisplayComponent<MfdComponentProps>) {
+        if (this.activePage && this.activePage.instance instanceof DisplayComponent) {
             this.activePage.instance.destroy();
         }
 

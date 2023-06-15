@@ -4,7 +4,7 @@ This directory contains the different pages for the A380's MFD. List for pages i
 
 ## Status and description of components
 Status legend:
-✅ Feature complete
+✅ MVP complete
 2️⃣ Phase 2 in progress: Data
 1️⃣ Phase 1 in progress: Layout
 🟥 Not yet started
@@ -12,9 +12,9 @@ Status legend:
 ### FMS
 | Status      | URI | Sprint/Prio |
 | ------------- | ------------- | ------------- |
-| 🟥 | fms/\*/init | 1 |
+| 1️⃣ | fms/\*/init | 1 |
 | 🟥 | fms/\*/fuel-load | 1 |
-| 1️⃣ | fms/\*/perf | 1 |
+| 2️⃣ | fms/\*/perf | 1 |
 |  |  |
 | 🟥 | fms/\*/f-pln | 1 |
 | 🟥 | fms/\*/f-pln/rte-sel | 1 |
