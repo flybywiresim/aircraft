@@ -55,6 +55,7 @@ private:
 				
 			// Subscribe to the repeating 4-second timer event
 			SimConnect_SubscribeToSystemEvent(hSimConnect, EVENT_4S_TIMER, "4sec");
+			SimConnect_SubscribeToSystemEvent(hSimConnect, EVENT_PAUSED, "Pause");
 
 			//  set the id for the freeze events so this client has full control of probe objects
 			SimConnect_MapClientEventToSimEvent(hSimConnect, EVENT_FREEZE_LATLONG, "FREEZE_LATITUDE_LONGITUDE_SET");

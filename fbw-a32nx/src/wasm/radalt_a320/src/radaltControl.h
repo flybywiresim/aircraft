@@ -24,6 +24,7 @@ double rxActual = 0.0;
 
 // Static
 static bool radarActive = false;
+static bool simPaused = false;
 
 // Constants
 constexpr int MAX_AI = 15;
@@ -102,6 +103,7 @@ struct ProbeInfo
 
 static enum EVENT_ID {
 	EVENT_4S_TIMER,
+	EVENT_PAUSED,
 	EVENT_RADAR_ON,
 	EVENT_RADAR_OFF,
 	EVENT_FREEZE_LATLONG,
@@ -210,7 +212,6 @@ void createProbeMesh(int probeIndex)
 	SIMCONNECT_DATA_INITPOSITION initPosition;
 	HRESULT hr;
 
-	srand(time(0));
 	devState = simVars->getDeveloperState();
 
 	ProbeStruct probeResult = distanceAndBearing(userPosition, probeIndex, preSample, probeBest);
@@ -227,10 +228,7 @@ void createProbeMesh(int probeIndex)
 	initPosition.OnGround = 1;
 	initPosition.Airspeed = 0;
 
-	if (devState == 3.0)
-		hr = SimConnect_AICreateSimulatedObject(hSimConnect, "ralt_probe", initPosition, (UINT)REQUEST_PROBE_CREATE + probeIndex);
-	else
-		hr = SimConnect_AICreateSimulatedObject(hSimConnect, "triangleWithoutIndices", initPosition, (UINT)REQUEST_PROBE_CREATE + probeIndex);
+	hr = SimConnect_AICreateSimulatedObject(hSimConnect, "triangleWithoutIndices", initPosition, (UINT)REQUEST_PROBE_CREATE + probeIndex);
 
 }
 
@@ -287,8 +285,7 @@ void removeProbes() {
 	for (int i = 0; i < MAX_AI; i++) {
 		removeProbeMesh(i);
 	}
-	simVars->setRadioAltitude1(99999);
-	simVars->setRadioAltitude2(99999);
+	simVars->setRadioAltitude(99999);
 	simVars->setProbeZero(0);
 
 	radarActive = false;
@@ -475,6 +472,10 @@ void CALLBACK RadaltDispatchProc(SIMCONNECT_RECV* pData, DWORD cbData, void* pCo
 
 		switch (evt->uEventID)
 		{
+		case EVENT_PAUSED:
+			simPaused = evt->dwData;
+			if (debug) std::cout << "RADALT: [EVENT_PAUSED] = " << simPaused << std::endl;
+			break;
 		case EVENT_4S_TIMER:
 			if (devState == 0) {
 				double acBusState = simVars->getAcBusState1() + simVars->getAcBusState2();
@@ -533,25 +534,17 @@ void CALLBACK RadaltDispatchProc(SIMCONNECT_RECV* pData, DWORD cbData, void* pCo
 			probePosition.pitch = pS->pitch;            // ground distance
 			probePosition.heading = pS->heading;        // ground bearing
 
-			updateProbeMesh(probeIndex, preSample, probeBest);
-			readProbeData(probeIndex, probePosition);
+			if (simPaused == false) {
+				updateProbeMesh(probeIndex, preSample, probeBest);
+				readProbeData(probeIndex, probePosition);
+			}
 
 			if (probeIndex == MAX_AI - 1) {
 				if (preSample == 0) {
-					if (radioAltitude <= 75)
-						radioAltitude = radioAltitude + (-15.0 + rand() % 31) / 10;
-					else if (radioAltitude > 75 && radioAltitude < 99999)
-						radioAltitude = radioAltitude * (1.0 + (-2.0 + rand() % 5) / 100);
-
-					if (simVars->getAcBusState1() == 1)
-						simVars->setRadioAltitude1(radioAltitude);
+					if (simVars->getAcBusState1() == 1 || simVars->getAcBusState2() == 1)
+						simVars->setRadioAltitude(radioAltitude);
 					else
-						simVars->setRadioAltitude1(99999);
-
-					if (simVars->getAcBusState2() == 0 || radioAltitude == 99999)
-						simVars->setRadioAltitude2(99999);
-					else
-						simVars->setRadioAltitude2(radioAltitude * (99 + rand() % 2)/100);
+						simVars->setRadioAltitude(99999);
 					
 					if (debug) {
 						std::cout << "RADALT: Probe# (" << probeBest <<
