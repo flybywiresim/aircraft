@@ -1,12 +1,13 @@
 use crate::shared::{
-    AirbusElectricPumpId, AirbusEngineDrivenPumpId, GearActuatorId, HydraulicColor, LgciuId,
-    ProximityDetectorId,
+    AirbusElectricPumpId, AirbusEngineDrivenPumpId, ElectricalBusType, GearActuatorId,
+    HydraulicColor, LgciuId, ProximityDetectorId,
 };
 use crate::simulation::SimulationElement;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum FailureType {
     TransformerRectifier(usize),
+    ElectricalBus(ElectricalBusType),
     ReservoirLeak(HydraulicColor),
     ReservoirAirLeak(HydraulicColor),
     ReservoirReturnLeak(HydraulicColor),
