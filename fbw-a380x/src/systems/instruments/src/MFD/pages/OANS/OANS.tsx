@@ -11,12 +11,15 @@ import { ContextMenu } from 'instruments/src/MFD/pages/common/ContextMenu';
 
 import { ArraySubject, ComponentProps, DisplayComponent, EventBus, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 
+import { MouseCursor } from 'instruments/src/MFD/pages/common/MouseCursor';
 import { DropdownMenu } from 'instruments/src/MFD/pages/common/DropdownMenu';
 import { RadioButtonGroup } from 'instruments/src/MFD/pages/common/RadioButtonGroup';
-import { NumberInput } from 'instruments/src/MFD/pages/common/NumberInput';
+import { InputField } from 'instruments/src/MFD/pages/common/InputField';
+import { LengthFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 
 export interface OANSProps extends ComponentProps {
     bus: EventBus;
+    instrument: BaseInstrument;
 }
 
 export enum EntityTypes {
@@ -32,7 +35,15 @@ declare type MousePosition = {
 }
 
 export class OANS extends DisplayComponent<OANSProps> {
+    private topRef = FSComponent.createRef<HTMLDivElement>();
+
+    private mouseCursorRef = FSComponent.createRef<MouseCursor>();
+
     private availableEntityTypes = Object.values(EntityTypes).filter((v) => typeof v === 'string') as string[];
+
+    private thresholdShift = Subject.create<number>(null);
+
+    private endShift = Subject.create<number>(null);
 
     private selectedEntityType = Subject.create<EntityTypes>(EntityTypes.RWY);
 
@@ -109,8 +120,17 @@ export class OANS extends DisplayComponent<OANSProps> {
         document.getElementById('MapDataMain').style.display = 'flex';
     }
 
+    // Necessary to enable mouse interaction
+    get isInteractive(): boolean {
+        return true;
+    }
+
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
+
+        this.topRef.instance.addEventListener('mousemove', (ev) => {
+            this.mouseCursorRef.instance.updatePosition(ev.clientX, ev.clientY);
+        });
 
         this.mapRef.instance.addEventListener('contextmenu', (e) => {
             // Not firing right now, use double click
@@ -132,7 +152,7 @@ export class OANS extends DisplayComponent<OANSProps> {
 
     render(): VNode {
         return (
-            <div class="mfd-main">
+            <div class="mfd-main" ref={this.topRef}>
                 {/* begin header */}
                 <div style="display: flex; flex-direction: row; justify-content: space-between">
                     <div style="display: flex; flex-direction: column">
@@ -169,7 +189,6 @@ export class OANS extends DisplayComponent<OANSProps> {
                         tabBarSlantedEdgeAngle={30}
                         selectedTabTextColor="cyan"
                         additionalRightSpace={50}
-                        pageChangeCallback={(index) => this.oansMenuSelectedPageIndex.set(index)}
                     >
                         <TopTabNavigatorPage>
                             <div style="flex: 1; display: flex; flex-direction: row; height: 100%;">
@@ -178,14 +197,13 @@ export class OANS extends DisplayComponent<OANSProps> {
                                         values={this.availableEntityList}
                                         selectedIndex={this.selectedEntityIndex}
                                         idPrefix="123"
-                                        onChangeCallback={(i) => this.selectedEntityIndex.set(i)}
+                                        onModified={(i) => this.selectedEntityIndex.set(i)}
                                     />
                                     <div style="padding-top: 20px; margin-top: 2px; border-right: 2px solid lightgrey; height: 100%;">
                                         <RadioButtonGroup
                                             values={ArraySubject.create(this.availableEntityTypes)}
                                             selectedIndex={this.selectedEntityType}
                                             idPrefix="entityTypesRadio"
-                                            onChangeCallback={(num) => this.selectedEntityType.set(num)}
                                         />
                                     </div>
                                 </div>
@@ -200,9 +218,17 @@ export class OANS extends DisplayComponent<OANSProps> {
                                         <div style="display: flex; flex-direction: column;">
                                             <div style="display: grid; grid-template-columns: 1fr auto; grid-template-rows: 50px 50px; align-items: center;">
                                                 <span class="MFDLabel spacingRight bigger" style="justify-self: flex-end">THRESHOLD SHIFT</span>
-                                                <NumberInput emptyValueString="----" value={Subject.create(0)} unitTrailing={Subject.create('M')} />
+                                                <InputField<number>
+                                                    dataEntryFormat={new LengthFormat(Subject.create(0), Subject.create(4000))}
+                                                    value={this.thresholdShift}
+                                                    isMandatory={false}
+                                                />
                                                 <span class="MFDLabel spacingRight bigger" style="justify-self: flex-end">END SHIFT</span>
-                                                <NumberInput emptyValueString="----" value={Subject.create(0)} unitTrailing={Subject.create('M')} />
+                                                <InputField<number>
+                                                    dataEntryFormat={new LengthFormat(Subject.create(0), Subject.create(4000))}
+                                                    value={this.endShift}
+                                                    isMandatory={false}
+                                                />
                                             </div>
                                             <div style="display: flex; flex-direction: row; justify-content: center; margin-top: 10px;">
                                                 <Button
@@ -247,14 +273,13 @@ export class OANS extends DisplayComponent<OANSProps> {
                                         values={this.airportList}
                                         selectedIndex={this.selectedAirportIndex}
                                         idPrefix="airportDropdown"
-                                        onChangeCallback={(i) => this.selectedAirportIndex.set(i)}
+                                        onModified={(i) => this.selectedAirportIndex.set(i)}
                                     />
                                     <div style="padding-top: 20px; margin-top: 2px; height: 100%;">
                                         <RadioButtonGroup
                                             values={ArraySubject.create(['ICAO', 'IATA', 'CITY NAME'])}
                                             selectedIndex={this.selectedAirportSearchFilter}
                                             idPrefix="airportSearchFilterRadio"
-                                            onChangeCallback={(num) => this.selectedAirportSearchFilter.set(num)}
                                         />
                                     </div>
                                 </div>
@@ -311,6 +336,7 @@ export class OANS extends DisplayComponent<OANSProps> {
                         </TopTabNavigatorPage>
                     </TopTabNavigator>
                 </div>
+                <MouseCursor side={Subject.create('CPT')} ref={this.mouseCursorRef} />
             </div>
         );
     }

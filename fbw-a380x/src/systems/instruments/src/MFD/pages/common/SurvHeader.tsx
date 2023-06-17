@@ -90,7 +90,7 @@ export class SurvHeader extends DisplayComponent<MfdSurvHeaderProps> {
                         values={this.availableSystems}
                         selectedIndex={this.sysSelectorSelectedIndex}
                         idPrefix="sysSelectorDropdown"
-                        onChangeCallback={(val) => this.changeSystem(val)}
+                        onModified={(val) => this.changeSystem(val)}
                         containerStyle="width: 25%;"
                         alignLabels="left"
                     />

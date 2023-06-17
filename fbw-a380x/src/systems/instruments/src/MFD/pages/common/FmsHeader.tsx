@@ -96,7 +96,7 @@ export class FmsHeader extends DisplayComponent<MfdFmsHeaderProps> {
                         values={this.availableSystems}
                         selectedIndex={this.sysSelectorSelectedIndex}
                         idPrefix="sysSelectorDropdown"
-                        onChangeCallback={(val) => this.changeSystem(val)}
+                        onModified={(val) => this.changeSystem(val)}
                         containerStyle="width: 25%;"
                         alignLabels="left"
                     />

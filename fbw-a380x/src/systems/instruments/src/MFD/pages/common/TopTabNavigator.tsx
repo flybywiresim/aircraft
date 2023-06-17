@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
-import { ComponentProps, DisplayComponent, FSComponent, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import { ComponentProps, DisplayComponent, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import './style.scss';
 
 interface TopTabElementProps extends ComponentProps {
@@ -82,7 +82,7 @@ export class TopTabNavigatorPage extends DisplayComponent<TopTabNavigatorPagePro
 
 interface TopTabNavigatorProps {
     pageTitles: Subscribable<string[]>;
-    selectedPageIndex: Subscribable<number>;
+    selectedPageIndex: Subject<number>;
     selectedTabTextColor?: string;
     tabBarHeight?: number; // in pixels
     tabBarSlantedEdgeAngle?: number; // in degrees, vertical line equals 0°
@@ -111,6 +111,14 @@ export class TopTabNavigator extends DisplayComponent<TopTabNavigatorProps> {
         });
     }
 
+    onPageChange(newIndex: number): void {
+        if (this.props.pageChangeCallback) {
+            this.props.pageChangeCallback(newIndex);
+        } else {
+            this.props.selectedPageIndex.set(newIndex);
+        }
+    }
+
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
@@ -136,7 +144,7 @@ export class TopTabNavigator extends DisplayComponent<TopTabNavigatorProps> {
                     height={this.props.tabBarHeight || 36}
                     slantedEdgeAngle={this.props.tabBarSlantedEdgeAngle || 10}
                     selectedTextColor={this.props.selectedTabTextColor || 'white'}
-                    onClick={() => this.props.pageChangeCallback(index)}
+                    onClick={() => this.onPageChange(index)}
                 />, this.navigatorBarRef.instance);
             });
 
@@ -162,7 +170,7 @@ export class TopTabNavigator extends DisplayComponent<TopTabNavigatorProps> {
                                 height={this.props.tabBarHeight || 36}
                                 slantedEdgeAngle={this.props.tabBarSlantedEdgeAngle || 10}
                                 selectedTextColor={this.props.selectedTabTextColor || 'white'}
-                                onClick={() => this.props.pageChangeCallback(index)}
+                                onClick={() => this.onPageChange(index)}
                             />
                         ))
                     }

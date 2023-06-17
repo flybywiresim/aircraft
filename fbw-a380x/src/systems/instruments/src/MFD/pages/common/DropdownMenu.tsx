@@ -1,11 +1,15 @@
-import { ComponentProps, DisplayComponent, FSComponent, Subject, Subscribable, SubscribableArray, Subscription, VNode } from '@microsoft/msfs-sdk';
+import { ComponentProps, DisplayComponent, FSComponent, Subject, SubscribableArray, Subscription, VNode } from '@microsoft/msfs-sdk';
 import './style.scss';
 
 interface DropdownMenuProps extends ComponentProps {
     values: SubscribableArray<string>;
-    selectedIndex: Subscribable<number>;
+    selectedIndex: Subject<number>;
     idPrefix: string;
-    onChangeCallback(newSelectedIndex: number): void;
+    /**
+     *
+     * If defined, this component does not update the selectedIndex prop, but rather calls this method.
+     */
+    onModified?: (newSelectedIndex: number) => void;
     containerStyle?: string;
     alignLabels?: 'left' | 'center';
 }
@@ -37,7 +41,11 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
 
         this.props.values.getArray().forEach((val, i) => {
             document.getElementById(`${this.props.idPrefix}_${i}`).addEventListener('click', () => {
-                this.props.onChangeCallback(i);
+                if (this.props.onModified) {
+                    this.props.onModified(i);
+                } else {
+                    this.props.selectedIndex.set(i);
+                }
                 this.dropdownIsOpened.set(false);
             });
         });
@@ -65,6 +73,8 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
             this.dropdownMenuRef.instance.style.display = val ? 'block' : 'none';
             this.dropdownSelectorLabelRef.instance.classList.toggle('opened');
         }));
+
+        // TODO add mouse wheel and key events
     }
 
     public destroy(): void {

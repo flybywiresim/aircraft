@@ -1,11 +1,11 @@
-import { ComponentProps, DisplayComponent, FSComponent, Subscribable, SubscribableArray, Subscription, VNode } from '@microsoft/msfs-sdk';
+import { ComponentProps, DisplayComponent, FSComponent, Subject, SubscribableArray, Subscription, VNode } from '@microsoft/msfs-sdk';
 import './style.scss';
 
 interface RadioButtonGroupProps extends ComponentProps {
     values: SubscribableArray<string>;
-    selectedIndex: Subscribable<number>;
+    selectedIndex: Subject<number>;
     idPrefix: string;
-    onChangeCallback: (newSelectedIndex: number) => void;
+    onModified?: (newSelectedIndex: number) => void;
     additionalVerticalSpacing?: number;
 }
 export class RadioButtonGroup extends DisplayComponent<RadioButtonGroupProps> {
@@ -16,7 +16,13 @@ export class RadioButtonGroup extends DisplayComponent<RadioButtonGroupProps> {
         super.onAfterRender(node);
 
         for (let i = 0; i < this.props.values.length; i++) {
-            document.getElementById(`${this.props.idPrefix}_${i}`).addEventListener('change', () => this.props.onChangeCallback(i));
+            document.getElementById(`${this.props.idPrefix}_${i}`).addEventListener('change', () => {
+                if (this.props.onModified) {
+                    this.props.onModified(i);
+                } else {
+                    this.props.selectedIndex.set(i);
+                }
+            });
 
             if (i === this.props.selectedIndex.get()) {
                 document.getElementById(`${this.props.idPrefix}_${i}`).setAttribute('checked', 'checked');
