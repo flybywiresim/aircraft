@@ -6,6 +6,7 @@ use crate::simulation::SimulationElement;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum FailureType {
+    Generator(usize),
     TransformerRectifier(usize),
     ElectricalBus(ElectricalBusType),
     ReservoirLeak(HydraulicColor),

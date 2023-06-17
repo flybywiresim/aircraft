@@ -7,6 +7,8 @@ export const A320Failure = Object.freeze({
     TransformerRectifier1: 24000,
     TransformerRectifier2: 24001,
     TransformerRectifierEssential: 24002,
+    Generator1: 24020,
+    Generator2: 24021,
     AlternatingCurrent1: 24100,
     AlternatingCurrent2: 24101,
     AlternatingCurrentEssential: 24102,
