@@ -1,7 +1,7 @@
 /**
  * This comes from fstypes/FSEnums, TODO change this when we have @microsoft/msfs-types
  */
-declare enum TurnDirection {
+enum TurnDirection {
     Unknown = 0,
     Left = 1,
     Right = 2,
