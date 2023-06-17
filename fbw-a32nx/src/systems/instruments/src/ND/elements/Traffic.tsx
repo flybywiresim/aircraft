@@ -3,13 +3,11 @@
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable camelcase */
-import { useSimVar, useFlowSyncEvent, MathUtils } from '@flybywiresim/fbw-sdk';
+import { useSimVar, useFlowSyncEvent, MathUtils, Layer, usePersistentProperty } from '@flybywiresim/fbw-sdk';
 import React, { FC, useState, memo, useEffect } from 'react';
-import { Layer } from '@flybywiresim/fbw-sdk';
 import { TCAS_CONST as TCAS, TaRaIntrusion, TaRaIndex } from '@tcas/lib/TcasConstants';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { EfisNdMode, NdTraffic } from '@shared/NavigationDisplay';
-import { usePersistentProperty } from '@flybywiresim/fbw-sdk';
 import { MapParameters } from '../utils/MapParameters';
 
 export type TcasProps = {

@@ -7,10 +7,8 @@
 /* eslint-disable no-useless-constructor */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-console */
-import { UpdateThrottler } from '@flybywiresim/fbw-sdk';
-import { MathUtils, Arinc429Word, GenericDataListenerSync, NXDataStore } from '@flybywiresim/fbw-sdk';
+import { MathUtils, Arinc429Word, GenericDataListenerSync, NXDataStore, UpdateThrottler, LocalSimVar } from '@flybywiresim/fbw-sdk';
 import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
-import { LocalSimVar } from '@flybywiresim/fbw-sdk';
 import { TcasComponent } from '../lib/TcasComponent';
 import {
     TCAS_CONST as TCAS, JS_NPCPlane,
