@@ -5,8 +5,7 @@
 import React, { FC } from 'react';
 import { IconPlane } from '@tabler/icons';
 import { Box, LightningFill, PeopleFill, Rulers, Speedometer2 } from 'react-bootstrap-icons';
-import { useSimVar } from '@instruments/common/simVars';
-import { Units } from '@flybywiresim/fbw-sdk';
+import { useSimVar, Units } from '@flybywiresim/fbw-sdk';
 import { t } from '../../translation';
 import { NoseOutline } from '../../Assets/NoseOutline';
 

@@ -1,7 +1,7 @@
 // Copyright (c) 2022 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { ColorCode } from '../../Common/metarTypes';
+import { ColorCode } from '@flybywiresim/fbw-sdk';
 import { parseMetar } from './parseMetar';
 
 describe('parseMetar', () => {

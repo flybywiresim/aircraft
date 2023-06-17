@@ -6,10 +6,8 @@
 import React, { useState } from 'react';
 import { round } from 'lodash';
 import { CloudArrowDown, PlayFill, StopCircleFill } from 'react-bootstrap-icons';
-import { useSimVar } from '@instruments/common/simVars';
-import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
+import { useSimVar, Units, usePersistentNumberProperty, usePersistentProperty } from '@flybywiresim/fbw-sdk';
 import Slider from 'rc-slider';
-import { Units } from '@flybywiresim/fbw-sdk';
 import { t } from '../../translation';
 import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
 import { isSimbriefDataLoaded } from '../../Store/features/simBrief';

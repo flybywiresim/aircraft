@@ -1,8 +1,11 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import './style.scss';
 import React, { useCallback, useRef, useState } from 'react';
 import { render } from '@instruments/common/index';
-import { useSimVar } from '@instruments/common/simVars';
-import { useUpdate } from '@instruments/common/hooks';
+import { useSimVar, useUpdate } from '@flybywiresim/fbw-sdk';
 
 const BASE_DELAY_MS = 1_000;
 const DIGIT_REFRESH_INTERVAL_MS = 130;

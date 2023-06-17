@@ -6,8 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { MemoryRouter as Router } from 'react-router-dom';
 import { customAlphabet } from 'nanoid';
-import { NXDataStore } from '@flybywiresim/fbw-sdk';
-import { usePersistentProperty } from '@instruments/common/persistence';
+import { NXDataStore, usePersistentProperty } from '@flybywiresim/fbw-sdk';
 import { Provider } from 'react-redux';
 import { render } from '@instruments/common/index';
 import { ErrorBoundary } from 'react-error-boundary';

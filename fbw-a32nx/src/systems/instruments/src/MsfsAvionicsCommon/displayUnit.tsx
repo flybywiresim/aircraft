@@ -4,7 +4,7 @@
 
 import { FSComponent, ClockEvents, DisplayComponent, EventBus, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { NXDataStore } from '@flybywiresim/fbw-sdk';
-// import { getSupplier } from '@instruments/common/utils';
+// import { getSupplier } from '@flybywiresim/fbw-sdk';
 import { DisplayVars } from './SimVarTypes';
 
 import './common.scss';

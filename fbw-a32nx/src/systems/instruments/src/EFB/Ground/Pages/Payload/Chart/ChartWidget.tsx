@@ -2,9 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { usePersistentProperty } from '@instruments/common/persistence';
-import { useSimVar } from '@instruments/common/simVars';
-import { Units } from '@flybywiresim/fbw-sdk';
+import { usePersistentProperty, useSimVar, Units } from '@flybywiresim/fbw-sdk';
 import React, { useEffect, useRef, useState } from 'react';
 import { CanvasConst, PerformanceEnvelope, ChartLimits } from './Constants';
 

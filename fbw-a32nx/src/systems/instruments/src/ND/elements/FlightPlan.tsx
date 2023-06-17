@@ -2,9 +2,7 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import React, { FC, memo } from 'react';
-import { MathUtils } from '@flybywiresim/fbw-sdk';
-import { Layer } from '@instruments/common/utils';
-import { useSimVar } from '@instruments/common/simVars';
+import { MathUtils, useSimVar, Layer } from '@flybywiresim/fbw-sdk';
 import { TFLeg } from '@fmgc/guidance/lnav/legs/TF';
 import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
 import { EfisSide, EfisVectorsGroup, NdSymbol, NdSymbolTypeFlags } from '@shared/NavigationDisplay';

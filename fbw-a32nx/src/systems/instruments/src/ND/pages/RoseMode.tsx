@@ -3,12 +3,9 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { FC, memo, useEffect, useState } from 'react';
-import { useSimVar } from '@instruments/common/simVars';
-import { Layer, getSmallestAngle } from '@instruments/common/utils';
-import { MathUtils } from '@flybywiresim/fbw-sdk';
+import { useSimVar, MathUtils, useArinc429Var, Layer, getSmallestAngle } from '@flybywiresim/fbw-sdk';
 import { EfisNdMode, EfisSide, NdSymbol } from '@shared/NavigationDisplay';
 import { ArmedLateralMode, isArmed, LateralMode } from '@shared/autopilot';
-import { useArinc429Var } from '@instruments/common/arinc429';
 import { TopMessages } from '../elements/TopMessages';
 import { ToWaypointIndicator } from '../elements/ToWaypointIndicator';
 import { FlightPlan } from '../elements/FlightPlan';

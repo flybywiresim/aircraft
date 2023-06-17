@@ -3,9 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { FC } from 'react';
-import { Layer } from '@instruments/common/utils';
-import { useArinc429Var } from '@instruments/common/arinc429';
-import { Arinc429Word } from '@flybywiresim/fbw-sdk';
+import { Layer, useArinc429Var, Arinc429Word } from '@flybywiresim/fbw-sdk';
 import { AdirsTasDrivenIndicatorProps } from '../index';
 
 const mod = (x: number, n: number) => x - Math.floor(x / n) * n;

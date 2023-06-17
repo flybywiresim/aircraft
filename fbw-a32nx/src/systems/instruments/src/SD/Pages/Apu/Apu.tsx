@@ -1,6 +1,9 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import React, { useEffect, useState } from 'react';
-import { useArinc429Var } from '@instruments/common/arinc429';
-import { useSimVar } from '@instruments/common/simVars';
+import { useArinc429Var, useSimVar } from '@flybywiresim/fbw-sdk';
 import { GaugeComponent, GaugeMarkerComponent } from '@instruments/common/gauges';
 import { PageTitle } from '../../Common/PageTitle';
 import { EcamPage } from '../../Common/EcamPage';

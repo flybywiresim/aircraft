@@ -7,7 +7,6 @@ import { ExtrasSimVarPublisher } from 'extras-host/modules/common/ExtrasSimVarPu
 import { PushbuttonCheck } from 'extras-host/modules/pushbutton_check/PushbuttonCheck';
 import { KeyInterceptor } from './modules/key_interceptor/KeyInterceptor';
 import { VersionCheck } from './modules/version_check/VersionCheck';
-import './style.scss';
 
 /**
  * This is the main class for the extras-host instrument.
