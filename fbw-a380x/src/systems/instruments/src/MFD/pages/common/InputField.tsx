@@ -1,4 +1,4 @@
-import { ComponentProps, DisplayComponent, FSComponent, Subject, Subscribable, Subscription, VNode } from '@microsoft/msfs-sdk';
+import { ComponentProps, DisplayComponent, FSComponent, Subject, Subscription, VNode } from '@microsoft/msfs-sdk';
 import './style.scss';
 import { DataEntryFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 
@@ -8,11 +8,17 @@ export const emptyMandatoryCharacter = (selected: boolean) => `<svg width="16" h
 interface InputFieldProps<T> extends ComponentProps {
     dataEntryFormat: DataEntryFormat<T>;
     isMandatory: boolean;
-    value: Subscribable<T>;
-    onChangeCallback: (newValue: T) => void;
+    value: Subject<T>;
+    /**
+     * If defined, this component does not update the value prop, but rather calls this method.
+     */
+    onModified?: (newValue: T) => void;
     containerStyle?: string;
 }
 
+/**
+     * Input field for text or numbers
+     */
 export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
     // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
     private subs = [] as Subscription[];
@@ -25,9 +31,9 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
 
     private caretRef = FSComponent.createRef<HTMLSpanElement>();
 
-    private leadingUnitRef = FSComponent.createRef<HTMLSpanElement>();
+    private leadingUnit = Subject.create<string>(undefined);
 
-    private trailingUnitRef = FSComponent.createRef<HTMLSpanElement>();
+    private trailingUnit = Subject.create<string>(undefined);
 
     private modifiedFieldValue = Subject.create<string>(null);
 
@@ -52,7 +58,10 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
             if (!this.props.value.get()) {
                 this.populatePlaceholders();
             } else {
-                this.textInputRef.getOrDefault().innerText = this.props.dataEntryFormat.format(this.props.value.get());
+                const [formatted, leadingUnit, trailingUnit] = this.props.dataEntryFormat.format(this.props.value.get());
+                this.textInputRef.getOrDefault().innerText = formatted;
+                this.leadingUnit.set(leadingUnit);
+                this.trailingUnit.set(trailingUnit);
             }
         } else { // Else, render modifiedFieldValue
             const numDigits = this.props.dataEntryFormat.maxDigits;
@@ -79,7 +88,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
     }
 
     private onKeyPress(ev: KeyboardEvent) {
-        // Un-select the numbers
+        // Un-select the text
         this.textInputRef.getOrDefault().classList.remove('valueSelected');
         // ev.key is undefined, so we have to use the deprecated keyCode here
         const key = String.fromCharCode(ev.keyCode);
@@ -127,11 +136,14 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
     }
 
     private populatePlaceholders() {
-        const placeholder = this.props.dataEntryFormat.placeholder;
+        const [formatted, unitLeading, unitTrailing] = this.props.dataEntryFormat.format(null);
+        this.leadingUnit.set(unitLeading);
+        this.trailingUnit.set(unitTrailing);
+
         if (this.props.isMandatory === true) {
-            this.textInputRef.getOrDefault().innerHTML = placeholder.replace(/-/gi, emptyMandatoryCharacter(this.isFocused.get()));
+            this.textInputRef.getOrDefault().innerHTML = formatted.replace(/-/gi, emptyMandatoryCharacter(this.isFocused.get()));
         } else {
-            this.textInputRef.getOrDefault().innerText = placeholder;
+            this.textInputRef.getOrDefault().innerText = formatted;
         }
     }
 
@@ -140,7 +152,13 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
         await new Promise((resolve) => setTimeout(resolve, 500));
         this.modifiedFieldValue.set(null);
         const newValue = await this.props.dataEntryFormat.parse(input);
-        this.props.onChangeCallback(newValue);
+
+        if (this.props.onModified) {
+            this.props.onModified(newValue);
+        } else {
+            this.props.value.set(newValue);
+        }
+
         this.isValidating.set(false);
     }
 
@@ -164,13 +182,9 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
             }
         }));
 
-        this.subs.push(this.props.dataEntryFormat.unitLeading.sub((val: string) => {
-            this.leadingUnitRef.getOrDefault().innerText = val;
-        }));
-
-        this.subs.push(this.props.dataEntryFormat.unitTrailing.sub((val: string) => {
-            this.trailingUnitRef.getOrDefault().innerText = val;
-        }));
+        if (this.props.dataEntryFormat.reFormatTrigger) {
+            this.subs.push(this.props.dataEntryFormat.reFormatTrigger.sub(() => this.updateDisplayElement()));
+        }
 
         this.textInputRef.instance.addEventListener('keypress', (ev) => this.onKeyPress(ev));
         this.textInputRef.instance.addEventListener('keydown', (ev) => this.onKeyDown(ev));
@@ -185,7 +199,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
     render(): VNode {
         return (
             <div ref={this.topRef} class="MFDNumberInputContainer" style={this.props.containerStyle}>
-                <span ref={this.leadingUnitRef} class="MFDUnitLabel leadingUnit" style="align-self: center;">{this.props.dataEntryFormat.unitLeading.get()}</span>
+                <span class="MFDUnitLabel leadingUnit" style="align-self: center;">{this.leadingUnit}</span>
                 <div ref={this.spanningDivRef} style="display: flex; flex-direction: row; justify-content: flex-end;">
                     <span
                         ref={this.textInputRef}
@@ -197,7 +211,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
                     </span>
                     <span ref={this.caretRef} class="MFDInputFieldCaret" />
                 </div>
-                <span ref={this.trailingUnitRef} class="MFDUnitLabel trailingUnit" style="align-self: center;">{this.props.dataEntryFormat.unitTrailing.get()}</span>
+                <span class="MFDUnitLabel trailingUnit" style="align-self: center;">{this.trailingUnit}</span>
             </div>
         );
     }

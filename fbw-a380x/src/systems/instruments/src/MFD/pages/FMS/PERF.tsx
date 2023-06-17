@@ -17,6 +17,7 @@ import {
     AltitudeFormat,
     AltitudeOrFlightLevelFormat,
     CostIndexFormat,
+    DescentRateFormat,
     FlightLevelFormat,
     LengthFormat,
     PercentageFormat,
@@ -24,7 +25,6 @@ import {
     SpeedKnotsFormat,
     SpeedMachFormat,
     TemperatureFormat,
-    VerticalSpeedFormat,
     WindDirectionFormat,
     WindSpeedFormat,
 } from 'instruments/src/MFD/pages/common/DataEntryFormats';
@@ -276,10 +276,6 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
         super.destroy();
     }
 
-    private onInputFieldChange(data: Subject<number>, newVal: number) {
-        data.set(newVal);
-    }
-
     render(): VNode {
         return (
             <>
@@ -293,7 +289,6 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                 dataEntryFormat={new FlightLevelFormat(Subject.create(100), Subject.create(maxCertifiedAlt))}
                                 isMandatory={false}
                                 value={this.crzFl}
-                                onChangeCallback={(val) => this.onInputFieldChange(this.crzFl, val)}
                             />
                         </div>
                         <div class="MFDLabelValueContainer">
@@ -326,7 +321,6 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                         dataEntryFormat={new LengthFormat(Subject.create(1), Subject.create(4000))} // TODO replace 4000 with length of RWY
                                         isMandatory={false}
                                         value={this.toShift}
-                                        onChangeCallback={(val) => this.onInputFieldChange(this.toShift, val)}
                                     />
                                 </div>
                             </div>
@@ -340,7 +334,6 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                             dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
                                             isMandatory
                                             value={this.toV1}
-                                            onChangeCallback={(val) => this.onInputFieldChange(this.toV1, val)}
                                         />
                                     </div>
                                     <div class="MFDLabelValueContainer">
@@ -354,7 +347,6 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                             dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
                                             isMandatory
                                             value={this.toVR}
-                                            onChangeCallback={(val) => this.onInputFieldChange(this.toVR, val)}
                                         />
                                     </div>
                                     <div class="MFDLabelValueContainer">
@@ -368,7 +360,6 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                             dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
                                             isMandatory
                                             value={this.toV2}
-                                            onChangeCallback={(val) => this.onInputFieldChange(this.toV2, val)}
                                         />
                                     </div>
                                     <div class="MFDLabelValueContainer">
@@ -383,9 +374,9 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                     <span style="width: 175px; display: inline; margin-left: 15px;">
                                         <RadioButtonGroup
                                             values={ArraySubject.create(['TOGA', 'FLEX', 'DERATED'])}
+                                            onModified={(val) => this.toThrustSettingChanged(val)}
                                             selectedIndex={this.toSelectedThrustSettingIndex}
                                             idPrefix="thrustSettingRadio"
-                                            onChangeCallback={(num) => this.toThrustSettingChanged(num)}
                                             additionalVerticalSpacing={15}
                                         />
                                     </span>
@@ -396,15 +387,14 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                             dataEntryFormat={new TemperatureFormat(Subject.create(0), Subject.create(99))}
                                             isMandatory={false}
                                             value={this.toFlexTemp}
-                                            onChangeCallback={(val) => this.onInputFieldChange(this.toFlexTemp, val)}
                                         />
                                     </div>
                                     <div style="margin-top: 0px" ref={this.toDeratedInputRef}>
                                         <DropdownMenu
                                             values={ArraySubject.create(['D01', 'D02', 'D03', 'D04'])}
                                             selectedIndex={this.toSelectedDeratedIndex}
+                                            onModified={(val) => console.log(val)}
                                             idPrefix="deratedDropdown"
-                                            onChangeCallback={(val) => this.toSelectedDeratedIndex.set(val)}
                                             containerStyle="width: 100px;"
                                         />
                                     </div>
@@ -421,7 +411,6 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                         values={ArraySubject.create(['1', '2', '3'])}
                                         selectedIndex={this.toSelectedFlapsIndex}
                                         idPrefix="flapDropdown"
-                                        onChangeCallback={(val) => this.toSelectedFlapsIndex.set(val)}
                                         containerStyle="width: 75px;"
                                     />
                                 </div>
@@ -430,7 +419,6 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                         dataEntryFormat={new PercentageFormat(Subject.create(0), Subject.create(99.9))}
                                         isMandatory
                                         value={this.toThsFor}
-                                        onChangeCallback={(val) => this.onInputFieldChange(this.toThsFor, val)}
                                     />
                                 </div>
                                 <div style="margin-right: 15px; margin-top: 15px;">
@@ -438,7 +426,6 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                         values={ArraySubject.create(['OFF/APU', 'ON'])}
                                         selectedIndex={this.toSelectedPacksIndex}
                                         idPrefix="packsDropdown"
-                                        onChangeCallback={(val) => this.toSelectedPacksIndex.set(val)}
                                     />
                                 </div>
                                 <div style="margin-top: 15px;">
@@ -446,7 +433,6 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                         values={ArraySubject.create(['OFF', 'ENG ONLY', 'ENG + WING'])}
                                         selectedIndex={this.toSelectedAntiIceIndex}
                                         idPrefix="antiIceDropdown"
-                                        onChangeCallback={(val) => this.toSelectedAntiIceIndex.set(val)}
                                     />
                                 </div>
                             </div>
@@ -456,10 +442,9 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                 </div>
                                 <div style="margin-bottom: 15px;">
                                     <InputField<number>
-                                        dataEntryFormat={new AltitudeOrFlightLevelFormat(Subject.create(400), Subject.create(maxCertifiedAlt))}
+                                        dataEntryFormat={new AltitudeOrFlightLevelFormat(Subject.create(400), Subject.create(maxCertifiedAlt), this.transAlt)}
                                         isMandatory={false}
                                         value={this.thrRedAlt}
-                                        onChangeCallback={(val) => this.onInputFieldChange(this.thrRedAlt, val)}
                                         containerStyle="width: 150px; justify-content: flex-end;"
                                     />
                                 </div>
@@ -477,7 +462,6 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                             dataEntryFormat={new PercentageFormat(Subject.create(40), Subject.create(110))}
                                             isMandatory={false}
                                             value={this.noiseN1}
-                                            onChangeCallback={(val) => this.onInputFieldChange(this.noiseN1, val)}
                                             containerStyle="width: 110px; justify-content: flex-end;"
                                         />
                                     </div>
@@ -496,10 +480,9 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                 </div>
                                 <div style="margin-bottom: 15px;">
                                     <InputField<number>
-                                        dataEntryFormat={new AltitudeOrFlightLevelFormat(Subject.create(400), Subject.create(maxCertifiedAlt))}
+                                        dataEntryFormat={new AltitudeOrFlightLevelFormat(Subject.create(400), Subject.create(maxCertifiedAlt), this.transAlt)}
                                         isMandatory={false}
                                         value={this.accelAlt}
-                                        onChangeCallback={(val) => this.onInputFieldChange(this.accelAlt, val)}
                                         containerStyle="width: 150px; justify-content: flex-end;"
                                     />
                                 </div>
@@ -517,7 +500,6 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                             dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
                                             isMandatory={false}
                                             value={this.noiseSpd}
-                                            onChangeCallback={(val) => this.onInputFieldChange(this.noiseSpd, val)}
                                             containerStyle="width: 110px; justify-content: flex-end;"
                                         />
                                     </div>
@@ -533,10 +515,9 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                     </div>
                                     <div ref={this.toNoiseEndInputRef}>
                                         <InputField<number>
-                                            dataEntryFormat={new AltitudeOrFlightLevelFormat(Subject.create(400), Subject.create(maxCertifiedAlt))}
+                                            dataEntryFormat={new AltitudeOrFlightLevelFormat(Subject.create(400), Subject.create(maxCertifiedAlt), this.transAlt)}
                                             isMandatory={false}
                                             value={this.noiseEndAlt}
-                                            onChangeCallback={(val) => this.onInputFieldChange(this.noiseEndAlt, val)}
                                             containerStyle="width: 150px; justify-content: flex-end;"
                                         />
                                     </div>
@@ -553,17 +534,15 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                         dataEntryFormat={new AltitudeFormat(Subject.create(1), Subject.create(maxCertifiedAlt))}
                                         isMandatory={false}
                                         value={this.transAlt}
-                                        onChangeCallback={(val) => this.onInputFieldChange(this.transAlt, val)}
                                         containerStyle="width: 150px; justify-content: flex-end;"
                                     />
                                 </div>
                                 <div class="MFDLabelValueContainer">
                                     <span class="MFDLabel spacingRight">EO ACCEL</span>
                                     <InputField<number>
-                                        dataEntryFormat={new AltitudeOrFlightLevelFormat(Subject.create(400), Subject.create(maxCertifiedAlt))}
+                                        dataEntryFormat={new AltitudeOrFlightLevelFormat(Subject.create(400), Subject.create(maxCertifiedAlt), this.transAlt)}
                                         isMandatory={false}
                                         value={this.eoAccelAlt}
-                                        onChangeCallback={(val) => this.onInputFieldChange(this.eoAccelAlt, val)}
                                         containerStyle="width: 150px; justify-content: flex-end;"
                                     />
                                 </div>
@@ -585,7 +564,6 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                         dataEntryFormat={new CostIndexFormat()}
                                         isMandatory={false}
                                         value={this.costIndex}
-                                        onChangeCallback={(val) => this.onInputFieldChange(this.costIndex, val)}
                                         containerStyle="width: 75px; justify-content: center;"
                                     />
                                 </div>
@@ -595,7 +573,6 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                         values={ArraySubject.create(['NONE', '01', '02', '03', '04', '05'])}
                                         selectedIndex={this.clbDeratedClbSelectedIndex}
                                         idPrefix="deratedClbDropdown"
-                                        onChangeCallback={(val) => this.clbDeratedClbSelectedIndex.set(val)}
                                         containerStyle="width: 125px;"
                                     />
                                 </div>
@@ -613,10 +590,9 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                 <div class="spdTableCell" style="flex-direction: row; justify-content: center; align-items: center;">
                                     <div class="MFDLabel">PRED TO </div>
                                     <InputField<number>
-                                        dataEntryFormat={new AltitudeOrFlightLevelFormat(Subject.create(0), Subject.create(maxCertifiedAlt))}
+                                        dataEntryFormat={new AltitudeOrFlightLevelFormat(Subject.create(0), Subject.create(maxCertifiedAlt), this.transAlt)}
                                         isMandatory={false}
                                         value={this.clbPredictionsReference}
-                                        onChangeCallback={(val) => this.onInputFieldChange(this.clbPredictionsReference, val)}
                                         containerStyle="width: 150px; margin-left: 15px;"
                                     />
                                 </div>
@@ -628,7 +604,6 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                         dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
                                         isMandatory={false}
                                         value={this.clbPreSelSpdTarget}
-                                        onChangeCallback={(val) => this.onInputFieldChange(this.clbPreSelSpdTarget, val)}
                                     />
                                 </div>
                                 <div class="spdTableCell" />
@@ -670,10 +645,9 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                 </div>
                                 <div style="margin-bottom: 15px;">
                                     <InputField<number>
-                                        dataEntryFormat={new AltitudeOrFlightLevelFormat(Subject.create(400), Subject.create(maxCertifiedAlt))}
+                                        dataEntryFormat={new AltitudeOrFlightLevelFormat(Subject.create(400), Subject.create(maxCertifiedAlt), this.transAlt)}
                                         isMandatory={false}
                                         value={this.thrRedAlt}
-                                        onChangeCallback={(val) => this.onInputFieldChange(this.thrRedAlt, val)}
                                         containerStyle="width: 150px; justify-content: flex-end;"
                                     />
                                 </div>
@@ -691,7 +665,6 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                             dataEntryFormat={new PercentageFormat(Subject.create(40), Subject.create(110))}
                                             isMandatory={false}
                                             value={this.noiseN1}
-                                            onChangeCallback={(val) => this.onInputFieldChange(this.noiseN1, val)}
                                             containerStyle="width: 110px; justify-content: flex-end;"
                                         />
                                     </div>
@@ -710,10 +683,9 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                 </div>
                                 <div style="margin-bottom: 15px;">
                                     <InputField<number>
-                                        dataEntryFormat={new AltitudeOrFlightLevelFormat(Subject.create(400), Subject.create(maxCertifiedAlt))}
+                                        dataEntryFormat={new AltitudeOrFlightLevelFormat(Subject.create(400), Subject.create(maxCertifiedAlt), this.transAlt)}
                                         isMandatory={false}
                                         value={this.accelAlt}
-                                        onChangeCallback={(val) => this.onInputFieldChange(this.accelAlt, val)}
                                         containerStyle="width: 150px; justify-content: flex-end;"
                                     />
                                 </div>
@@ -731,7 +703,6 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                             dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
                                             isMandatory={false}
                                             value={this.noiseSpd}
-                                            onChangeCallback={(val) => this.onInputFieldChange(this.noiseSpd, val)}
                                             containerStyle="width: 110px; justify-content: flex-end;"
                                         />
                                     </div>
@@ -755,10 +726,9 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                     </div>
                                     <div ref={this.clbNoiseEndInputRef}>
                                         <InputField<number>
-                                            dataEntryFormat={new AltitudeOrFlightLevelFormat(Subject.create(400), Subject.create(maxCertifiedAlt))}
+                                            dataEntryFormat={new AltitudeOrFlightLevelFormat(Subject.create(400), Subject.create(maxCertifiedAlt), this.transAlt)}
                                             isMandatory={false}
                                             value={this.noiseEndAlt}
-                                            onChangeCallback={(val) => this.onInputFieldChange(this.noiseEndAlt, val)}
                                             containerStyle="width: 150px; justify-content: flex-end;"
                                         />
                                     </div>
@@ -778,7 +748,6 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                         dataEntryFormat={new AltitudeFormat(Subject.create(1), Subject.create(maxCertifiedAlt))}
                                         isMandatory={false}
                                         value={this.transAlt}
-                                        onChangeCallback={(val) => this.onInputFieldChange(this.transAlt, val)}
                                         containerStyle="width: 150px; justify-content: flex-end;"
                                     />
                                 </div>
@@ -798,7 +767,6 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                         dataEntryFormat={new CostIndexFormat()}
                                         isMandatory={false}
                                         value={this.costIndex}
-                                        onChangeCallback={(val) => this.onInputFieldChange(this.costIndex, val)}
                                         containerStyle="width: 75px; justify-content: center;"
                                     />
                                 </div>
@@ -834,7 +802,6 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                         dataEntryFormat={new SpeedMachFormat(Subject.create(0.1), Subject.create(Mmo))}
                                         isMandatory={false}
                                         value={this.crzPreSelMachTarget}
-                                        onChangeCallback={(val) => this.onInputFieldChange(this.crzPreSelMachTarget, val)}
                                     />
                                 </div>
                                 <div class="spdTableCell">
@@ -842,7 +809,6 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                         dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
                                         isMandatory={false}
                                         value={this.crzPreSelSpdTarget}
-                                        onChangeCallback={(val) => this.onInputFieldChange(this.crzPreSelSpdTarget, val)}
                                     />
                                 </div>
                                 <div class="spdTableCell" />
@@ -931,17 +897,15 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                         dataEntryFormat={new CostIndexFormat()}
                                         isMandatory={false}
                                         value={this.costIndex}
-                                        onChangeCallback={(val) => this.onInputFieldChange(this.costIndex, val)}
                                         containerStyle="width: 75px; justify-content: center;"
                                     />
                                 </div>
                                 <div class="MFDLabelValueContainer" style="padding: 15px;">
                                     <span class="MFDLabel spacingRight">DES CABIN RATE</span>
                                     <InputField<number>
-                                        dataEntryFormat={new VerticalSpeedFormat(Subject.create(-999), Subject.create(-100))}
+                                        dataEntryFormat={new DescentRateFormat(Subject.create(-999), Subject.create(-100))}
                                         isMandatory={false}
                                         value={this.desCabinDesRate}
-                                        onChangeCallback={(val) => this.onInputFieldChange(this.desCabinDesRate, val)}
                                         containerStyle="width: 175px; justify-content: center;"
                                     />
                                 </div>
@@ -959,10 +923,9 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                 <div class="spdTableCell" style="flex-direction: row; justify-content: center; align-items: center;">
                                     <div class="MFDLabel">PRED TO </div>
                                     <InputField<number>
-                                        dataEntryFormat={new AltitudeOrFlightLevelFormat(Subject.create(0), Subject.create(maxCertifiedAlt))}
+                                        dataEntryFormat={new AltitudeOrFlightLevelFormat(Subject.create(0), Subject.create(maxCertifiedAlt), this.transFl)}
                                         isMandatory={false}
                                         value={this.desPredictionsReference}
-                                        onChangeCallback={(val) => this.onInputFieldChange(this.desPredictionsReference, val)}
                                         containerStyle="width: 150px; margin-left: 15px;"
                                     />
                                 </div>
@@ -974,7 +937,6 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                         dataEntryFormat={new SpeedMachFormat(Subject.create(0.1), Subject.create(Mmo))}
                                         isMandatory={false}
                                         value={this.desManagedMachTarget}
-                                        onChangeCallback={(val) => this.onInputFieldChange(this.desManagedMachTarget, val)}
                                     />
                                 </div>
                                 <div class="spdTableCell">
@@ -982,7 +944,6 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                         dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
                                         isMandatory={false}
                                         value={this.desManagedSpdTarget}
-                                        onChangeCallback={(val) => this.onInputFieldChange(this.desManagedSpdTarget, val)}
                                     />
                                 </div>
                                 <div class="spdTableCell">
@@ -1041,13 +1002,11 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                                     dataEntryFormat={new WindDirectionFormat()}
                                                     isMandatory={false}
                                                     value={this.apprMag}
-                                                    onChangeCallback={(val) => this.onInputFieldChange(this.apprMag, val)}
                                                 />
                                                 <InputField<number>
                                                     dataEntryFormat={new WindSpeedFormat()}
                                                     isMandatory={false}
                                                     value={this.apprWind}
-                                                    onChangeCallback={(val) => this.onInputFieldChange(this.apprWind, val)}
                                                     containerStyle="margin-left: 10px;"
                                                 />
                                             </div>
@@ -1068,7 +1027,6 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                                 dataEntryFormat={new TemperatureFormat(Subject.create(-99), Subject.create(99))}
                                                 isMandatory={false}
                                                 value={this.apprOat}
-                                                onChangeCallback={(val) => this.onInputFieldChange(this.apprOat, val)}
                                                 containerStyle="width: 125px; justify-content: flex-end;"
                                             />
                                         </div>
@@ -1078,7 +1036,6 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                                 dataEntryFormat={new QnhFormat()}
                                                 isMandatory={false}
                                                 value={this.apprQnh}
-                                                onChangeCallback={(val) => this.onInputFieldChange(this.apprQnh, val)}
                                                 containerStyle="width: 125px; justify-content: flex-end;"
                                             />
                                         </div>
@@ -1098,7 +1055,6 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                                 dataEntryFormat={new AltitudeFormat(Subject.create(0), Subject.create(maxCertifiedAlt))}
                                                 isMandatory={false}
                                                 value={this.apprMinimumBaro}
-                                                onChangeCallback={(val) => this.onInputFieldChange(this.apprMinimumBaro, val)}
                                                 containerStyle="width: 125px;"
                                             />
                                         </div>
@@ -1108,7 +1064,6 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                                 dataEntryFormat={new AltitudeFormat(Subject.create(0), Subject.create(maxCertifiedAlt))}
                                                 isMandatory={false}
                                                 value={this.apprMinimumRadio}
-                                                onChangeCallback={(val) => this.onInputFieldChange(this.apprMinimumRadio, val)}
                                                 containerStyle="width: 125px;"
                                             />
                                         </div>
@@ -1145,7 +1100,6 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                             values={ArraySubject.create(['CONF 3', 'FULL'])}
                                             selectedIndex={this.apprSelectedFlapsIndex}
                                             idPrefix="thrustSettingRadio"
-                                            onChangeCallback={(num) => this.apprSelectedFlapsIndex.set(num)}
                                             additionalVerticalSpacing={15}
                                         />
                                         <div class="MFDLabelValueContainer" style="margin-top: 10px;">
@@ -1161,7 +1115,6 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                                 dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
                                                 isMandatory={false}
                                                 value={this.apprVapp}
-                                                onChangeCallback={(val) => this.onInputFieldChange(this.apprVapp, val)}
                                             />
                                         </div>
                                     </div>
@@ -1176,7 +1129,6 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                         dataEntryFormat={new FlightLevelFormat(Subject.create(1), Subject.create(maxCertifiedAlt))}
                                         isMandatory={false}
                                         value={this.transFl}
-                                        onChangeCallback={(val) => this.onInputFieldChange(this.transFl, val)}
                                         containerStyle="width: 110px; justify-content: flex-start;"
                                     />
                                 </div>
@@ -1214,10 +1166,9 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                     </div>
                                     <div style="margin-bottom: 15px;">
                                         <InputField<number>
-                                            dataEntryFormat={new AltitudeOrFlightLevelFormat(Subject.create(400), Subject.create(maxCertifiedAlt))}
+                                            dataEntryFormat={new AltitudeOrFlightLevelFormat(Subject.create(400), Subject.create(maxCertifiedAlt), this.transAlt)}
                                             isMandatory={false}
                                             value={this.thrRedAlt}
-                                            onChangeCallback={(val) => this.onInputFieldChange(this.thrRedAlt, val)}
                                             containerStyle="width: 150px; justify-content: flex-end;"
                                         />
                                     </div>
@@ -1228,10 +1179,9 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                     </div>
                                     <div style="margin-bottom: 15px;">
                                         <InputField<number>
-                                            dataEntryFormat={new AltitudeOrFlightLevelFormat(Subject.create(400), Subject.create(maxCertifiedAlt))}
+                                            dataEntryFormat={new AltitudeOrFlightLevelFormat(Subject.create(400), Subject.create(maxCertifiedAlt), this.transAlt)}
                                             isMandatory={false}
                                             value={this.accelAlt}
-                                            onChangeCallback={(val) => this.onInputFieldChange(this.accelAlt, val)}
                                             containerStyle="width: 150px; justify-content: flex-end;"
                                         />
                                     </div>
@@ -1240,10 +1190,9 @@ export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
                                     </div>
                                     <div style="margin-bottom: 15px;">
                                         <InputField<number>
-                                            dataEntryFormat={new AltitudeOrFlightLevelFormat(Subject.create(400), Subject.create(maxCertifiedAlt))}
+                                            dataEntryFormat={new AltitudeOrFlightLevelFormat(Subject.create(400), Subject.create(maxCertifiedAlt), this.transAlt)}
                                             isMandatory={false}
                                             value={this.eoAccelAlt}
-                                            onChangeCallback={(val) => this.onInputFieldChange(this.eoAccelAlt, val)}
                                             containerStyle="width: 150px; justify-content: flex-end;"
                                         />
                                     </div>
