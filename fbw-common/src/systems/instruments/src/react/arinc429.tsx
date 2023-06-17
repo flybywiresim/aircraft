@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Arinc429Word } from '@flybywiresim/fbw-sdk';
+import { Arinc429Word } from '../../../shared/src/index';
 import { useSimVar } from './simVars';
 
 export const useArinc429Var = (

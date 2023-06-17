@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React from 'react';
-import { GenericDataListenerSync } from '@flybywiresim/fbw-sdk';
-import { getRootElement } from './defaults';
+import { GenericDataListenerSync } from '../../../shared/src/GenericDataListenerSync';
+import { getRootElement } from '../defaults';
 
 export const useUpdate = (handler: (deltaTime: number) => void) => {
     // Logic based on https://usehooks.com/useEventListener/
