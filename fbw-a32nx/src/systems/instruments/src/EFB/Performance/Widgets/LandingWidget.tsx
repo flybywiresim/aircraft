@@ -6,6 +6,10 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 /* eslint-disable max-len */
 /*
  * A32NX
@@ -26,7 +30,7 @@
  */
 
 import React, { FC, useState } from 'react';
-import { Units, MetarParserType, useSimVar, usePersistentProperty } from '@flybywiresim/fbw-sdk';
+import { Units, MetarParserType, useSimVar, usePersistentProperty, parseMetar } from '@flybywiresim/fbw-sdk';
 import { toast } from 'react-toastify';
 import { Calculator, CloudArrowDown, Trash } from 'react-bootstrap-icons';
 import { t } from '../../translation';
@@ -36,7 +40,6 @@ import { LandingCalculator, LandingFlapsConfig, LandingRunwayConditions } from '
 import RunwayVisualizationWidget, { LabelType } from './RunwayVisualizationWidget';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { SelectInput } from '../../UtilComponents/Form/SelectInput/SelectInput';
-import { parseMetar } from '../../Utils/parseMetar';
 import { useAppDispatch, useAppSelector } from '../../Store/store';
 import { clearLandingValues, initialState, setLandingValues } from '../../Store/features/performance';
 

@@ -1,7 +1,7 @@
 // Copyright (c) 2022 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { ColorCode, MetarParserType, Visibility, Wind } from '@flybywiresim/fbw-sdk';
+import { ColorCode, MetarParserType, Visibility, Wind } from '../../instruments/src/metarTypes';
 
 /**
  * Convert METAR string into structured object.

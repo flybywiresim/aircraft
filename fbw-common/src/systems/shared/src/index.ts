@@ -8,6 +8,7 @@ export * from './GenericDataListenerSync';
 export * from './logic';
 export * from './MathUtils';
 export * from './notification';
+export * from './parseMetar';
 export * from './persistence';
 export * from './popup';
 export * from './RunwayUtils';
