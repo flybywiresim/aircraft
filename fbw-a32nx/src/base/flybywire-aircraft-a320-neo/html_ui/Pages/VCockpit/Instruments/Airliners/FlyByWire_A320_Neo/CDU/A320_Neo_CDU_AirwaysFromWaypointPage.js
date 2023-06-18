@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 class A320_Neo_CDU_AirwaysFromWaypointPage {
     static ShowPage(mcdu, reviseIndex, pendingAirway, lastIndex) {
         mcdu.clearDisplay();
@@ -52,13 +56,17 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
 
                     mcdu.onLeftInput[i] = async (value, scratchpadCallback) => {
                         if (value.length > 0) {
-                            const elements = mcdu.flightPlanService.activeOrTemporary.pendingAirways.elements;
+                            const plan = mcdu.flightPlanService.activeOrTemporary;
+
+                            const elements = plan.pendingAirways.elements;
                             const tailElement = elements[elements.length - 1];
 
-                            const airway = await this._getAirway(mcdu, prevFpIndex, tailElement ? tailElement.airway : undefined, value).catch(console.error);
+                            const lastFix = tailElement ? tailElement.to : plan.legElementAt(prevFpIndex).terminationWaypoint();
+
+                            const airway = await this._getAirway(mcdu, prevFpIndex, tailElement ? tailElement.airway : undefined, lastFix, value).catch(console.error);
 
                             if (airway) {
-                                const result = mcdu.flightPlanService.activeOrTemporary.pendingAirways.thenAirway(airway);
+                                const result = plan.pendingAirways.thenAirway(airway);
 
                                 A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(mcdu, reviseIndex, airway, result ? 1 : -1);
                             } else {
@@ -90,14 +98,18 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                         subRows[i + 1] = ["\xa0VIA", ""];
 
                         mcdu.onLeftInput[i + 1] = async (value, scratchpadCallback) => {
+                            const plan = mcdu.flightPlanService.activeOrTemporary;
+
                             if (value.length > 0) {
-                                const elements = mcdu.flightPlanService.activeOrTemporary.pendingAirways.elements;
+                                const elements = plan.pendingAirways.elements;
                                 const tailElement = elements[elements.length - 1];
 
-                                const airway = await this._getAirway(mcdu, prevFpIndex, tailElement ? tailElement.airway : undefined, value).catch(console.error);
+                                const lastFix = tailElement ? tailElement.to : plan.legElementAt(prevFpIndex).terminationWaypoint();
+
+                                const airway = await this._getAirway(mcdu, prevFpIndex, tailElement ? tailElement.airway : undefined, lastFix, value).catch(console.error);
 
                                 if (airway) {
-                                    const result = mcdu.flightPlanService.activeOrTemporary.pendingAirways.thenAirway(airway);
+                                    const result = plan.pendingAirways.thenAirway(airway);
 
                                     A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(mcdu, reviseIndex, airway, lastIndex, result ? 1 : -1);
                                 } else {
@@ -145,17 +157,16 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
 
     /**
      * @param {import('msfs-navdata').Airway} lastAirway
+     * @param {import('msfs-navdata').Fix} lastFix
      *
      * @returns {Promise<import('msfs-navdata').Airway>}
      */
-    static async _getAirway(mcdu, fromFpIndex, lastAirway, value) {
-        const lastWaypoint = mcdu.flightPlanService.activeOrTemporary.legElementAt(fromFpIndex);
+    static async _getAirway(mcdu, fromFpIndex, lastAirway, lastFix, value) {
+        const airways = await mcdu.navigationDatabase.searchAirway(value, lastFix);
 
-        const airways = await mcdu.navigationDatabase.searchAirway(value);
-
-        let matchingAirway = airways.find((it) => it.fixes.some((fix) => fix.ident === lastWaypoint.ident));
+        let matchingAirway = lastFix && airways.find((it) => it.fixes.some((fix) => fix.ident === lastFix.ident));
         if (!matchingAirway && lastAirway) {
-            matchingAirway = airways.find((it) => it.fixes.some((fix) => lastAirway.fixes.some((lastFix) => lastFix.databaseId === fix.databaseId)));
+            matchingAirway = airways.find((it) => it.fixes.some((fix) => lastAirway.fixes.some((endFix) => endFix.databaseId === fix.databaseId)));
         }
 
         return matchingAirway;
