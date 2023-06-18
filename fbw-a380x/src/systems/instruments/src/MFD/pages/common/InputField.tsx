@@ -1,4 +1,4 @@
-import { ComponentProps, DisplayComponent, FSComponent, Subject, Subscription, VNode } from '@microsoft/msfs-sdk';
+import { ComponentProps, DisplayComponent, FSComponent, Subject, Subscribable, Subscription, VNode } from '@microsoft/msfs-sdk';
 import './style.scss';
 import { DataEntryFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 
@@ -7,7 +7,8 @@ export const emptyMandatoryCharacter = (selected: boolean) => `<svg width="16" h
 
 interface InputFieldProps<T> extends ComponentProps {
     dataEntryFormat: DataEntryFormat<T>;
-    isMandatory: boolean;
+    isMandatory: Subscribable<boolean>;
+    isDisabled?: Subscribable<boolean>; // TODO add
     value: Subject<T>;
     /**
      * If defined, this component does not update the value prop, but rather calls this method.
@@ -23,8 +24,6 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
     // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
     private subs = [] as Subscription[];
 
-    private topRef = FSComponent.createRef<HTMLDivElement>();
-
     private spanningDivRef = FSComponent.createRef<HTMLDivElement>();
 
     private textInputRef = FSComponent.createRef<HTMLSpanElement>();
@@ -35,6 +34,10 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
 
     private trailingUnit = Subject.create<string>(undefined);
 
+    private leadingUnitRef = FSComponent.createRef<HTMLSpanElement>();
+
+    private trailingUnitRef = FSComponent.createRef<HTMLSpanElement>();
+
     private modifiedFieldValue = Subject.create<string>(null);
 
     private isFocused = Subject.create(false);
@@ -43,9 +46,9 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
 
     private onNewValue() {
         // If currently editing, blur field
+        this.textInputRef.getOrDefault().blur();
         // Reset modifiedFieldValue
         if (this.modifiedFieldValue.get() !== null) {
-            this.textInputRef.getOrDefault().blur();
             this.modifiedFieldValue.set(null);
         } else {
             this.updateDisplayElement();
@@ -78,7 +81,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
     private onKeyDown(ev: KeyboardEvent) {
         if (ev.keyCode === KeyCode.KEY_BACK_SPACE) {
             if (this.modifiedFieldValue.get() === null) {
-                this.modifiedFieldValue.set('0');
+                this.modifiedFieldValue.set(null);
             } else if (this.modifiedFieldValue.get().length === 0) {
                 // Do nothing
             } else {
@@ -91,7 +94,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
         // Un-select the text
         this.textInputRef.getOrDefault().classList.remove('valueSelected');
         // ev.key is undefined, so we have to use the deprecated keyCode here
-        const key = String.fromCharCode(ev.keyCode);
+        const key = String.fromCharCode(ev.keyCode).toUpperCase();
 
         if (ev.keyCode !== KeyCode.KEY_ENTER) {
             if (this.modifiedFieldValue.get() === null) {
@@ -103,35 +106,38 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
                 this.caretRef.getOrDefault().style.display = 'inline';
             }
         } else {
+            ev.preventDefault();
             // Enter was pressed
-            this.caretRef.getOrDefault().style.display = 'none';
+            // this.caretRef.getOrDefault().style.display = 'none';
             this.textInputRef.getOrDefault().blur();
         }
     }
 
     private onFocus() {
-        this.isFocused.set(true);
-        this.textInputRef.getOrDefault().classList.add('valueSelected');
-        if (this.props.isMandatory === true) {
-            this.textInputRef.getOrDefault().classList.remove('mandatory');
+        if (this.isValidating.get() === false) {
+            this.isFocused.set(true);
+            this.textInputRef.getOrDefault().classList.add('valueSelected');
+            if (this.props.isMandatory.get() === true) {
+                this.textInputRef.getOrDefault().classList.remove('mandatory');
+            }
+            this.modifiedFieldValue.set(null);
+            this.spanningDivRef.getOrDefault().style.justifyContent = 'flex-start';
+            this.updateDisplayElement();
         }
-        this.modifiedFieldValue.set(null);
-        this.spanningDivRef.getOrDefault().style.justifyContent = 'flex-start';
-        this.updateDisplayElement();
     }
 
-    private onBlur() {
+    private async onBlur() {
         this.isFocused.set(false);
         this.textInputRef.getOrDefault().classList.remove('valueSelected');
         this.spanningDivRef.getOrDefault().style.justifyContent = 'flex-end';
         this.caretRef.getOrDefault().style.display = 'none';
         this.updateDisplayElement();
 
-        if (!this.modifiedFieldValue.get() && this.props.value.get()) {
+        if (this.modifiedFieldValue.get() === null && this.props.value.get() !== null) {
             // Enter is pressed after no modification
-            this.validateAndUpdate(this.props.value.get().toString());
+            await this.validateAndUpdate(this.props.value.get().toString());
         } else {
-            this.validateAndUpdate(this.modifiedFieldValue.get());
+            await this.validateAndUpdate(this.modifiedFieldValue.get());
         }
     }
 
@@ -140,7 +146,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
         this.leadingUnit.set(unitLeading);
         this.trailingUnit.set(unitTrailing);
 
-        if (this.props.isMandatory === true) {
+        if (this.props.isMandatory.get() === true) {
             this.textInputRef.getOrDefault().innerHTML = formatted.replace(/-/gi, emptyMandatoryCharacter(this.isFocused.get()));
         } else {
             this.textInputRef.getOrDefault().innerText = formatted;
@@ -181,6 +187,14 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
                 this.textInputRef.getOrDefault().classList.remove('validating');
             }
         }));
+        this.subs.push(this.props.isMandatory.sub((val) => {
+            if (val === true) {
+                this.textInputRef.getOrDefault().classList.add('mandatory');
+            } else {
+                this.textInputRef.getOrDefault().classList.remove('mandatory');
+            }
+            this.updateDisplayElement();
+        }));
 
         if (this.props.dataEntryFormat.reFormatTrigger) {
             this.subs.push(this.props.dataEntryFormat.reFormatTrigger.sub(() => this.updateDisplayElement()));
@@ -191,27 +205,33 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
         this.textInputRef.instance.addEventListener('focus', () => this.onFocus());
         this.textInputRef.instance.addEventListener('blur', () => this.onBlur());
 
-        this.topRef.instance.addEventListener('click', () => {
+        this.spanningDivRef.instance.addEventListener('click', () => {
+            this.textInputRef.instance.focus();
+        });
+        this.leadingUnitRef.instance.addEventListener('click', () => {
+            this.textInputRef.instance.focus();
+        });
+        this.trailingUnitRef.instance.addEventListener('click', () => {
             this.textInputRef.instance.focus();
         });
     }
 
     render(): VNode {
         return (
-            <div ref={this.topRef} class="MFDNumberInputContainer" style={this.props.containerStyle}>
-                <span class="MFDUnitLabel leadingUnit" style="align-self: center;">{this.leadingUnit}</span>
+            <div class="MFDNumberInputContainer" style={this.props.containerStyle}>
+                <span ref={this.leadingUnitRef} class="MFDUnitLabel leadingUnit" style="align-self: center;">{this.leadingUnit}</span>
                 <div ref={this.spanningDivRef} style="display: flex; flex-direction: row; justify-content: flex-end;">
                     <span
                         ref={this.textInputRef}
                         // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
-                        tabIndex={0}
-                        class={`MFDNumberInputTextInput${this.props.isMandatory ? ' mandatory' : ''}`}
+                        tabIndex={-1}
+                        class={`MFDNumberInputTextInput${this.props.isMandatory.get() ? ' mandatory' : ''}`}
                     >
                         .
                     </span>
                     <span ref={this.caretRef} class="MFDInputFieldCaret" />
                 </div>
-                <span class="MFDUnitLabel trailingUnit" style="align-self: center;">{this.trailingUnit}</span>
+                <span ref={this.trailingUnitRef} class="MFDUnitLabel trailingUnit" style="align-self: center;">{this.trailingUnit}</span>
             </div>
         );
     }

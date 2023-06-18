@@ -12,8 +12,8 @@ Status legend:
 ### FMS
 | Status      | URI | Sprint/Prio |
 | ------------- | ------------- | ------------- |
-| 1️⃣ | fms/\*/init | 1 |
-| 🟥 | fms/\*/fuel-load | 1 |
+| 2️⃣ | fms/\*/init | 1 |
+| 1️⃣ | fms/\*/fuel-load | 1 |
 | 2️⃣ | fms/\*/perf | 1 |
 |  |  |
 | 🟥 | fms/\*/f-pln | 1 |

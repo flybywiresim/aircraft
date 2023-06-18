@@ -2,6 +2,7 @@ import { ComponentProps, DisplayComponent, FSComponent, Subscribable, Subscripti
 import './style.scss';
 
 interface ButtonProps extends ComponentProps {
+    // dropdownMenu: void; // TODO add, see CPNY F-PLN REQUEST on INIT
     disabled?: Subscribable<boolean>;
     containerStyle?: string;
     onClick: () => void;
