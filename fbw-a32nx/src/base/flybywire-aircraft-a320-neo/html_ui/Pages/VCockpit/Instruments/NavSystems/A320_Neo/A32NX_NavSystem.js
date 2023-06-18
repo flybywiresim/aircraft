@@ -63,10 +63,8 @@ class NavSystem extends BaseInstrument {
 
             this.currNavigationDatabaseService = Fmgc.NavigationDatabaseService;
 
-            NXDataStore.getAndSubscribe('FBW_NAVDB_BACKEND', (key, value) => {
-                this.navigationDatabase = new Fmgc.NavigationDatabase(parseInt(value));
-                this.currNavigationDatabaseService.activeDatabase = this.navigationDatabase;
-            }, Fmgc.NavigationDatabaseBackend.Msfs.toString());
+            this.navigationDatabase = new Fmgc.NavigationDatabase(Fmgc.NavigationDatabaseBackend.Msfs);
+            this.currNavigationDatabaseService.activeDatabase = this.navigationDatabase;
         }
     }
     get flightPhaseManager() {
