@@ -67,6 +67,8 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
         (24_021, FailureType::Generator(2)),
         (24_022, FailureType::Generator(3)),
         (24_023, FailureType::Generator(4)),
+        (24_030, FailureType::ApuGenerator(1)),
+        (24_031, FailureType::ApuGenerator(2)),
         (
             24_100,
             FailureType::ElectricalBus(ElectricalBusType::AlternatingCurrent(1)),

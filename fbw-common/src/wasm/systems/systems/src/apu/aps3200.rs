@@ -11,6 +11,7 @@ use crate::{
         ElectricalStateWriter, ElectricitySource, Potential, ProvideFrequency, ProvideLoad,
         ProvidePotential,
     },
+    failures::{Failure, FailureType},
     shared::{
         calculate_towards_target_temperature, random_number, ConsumePower, ControllerSignal,
         ElectricalBusType, ElectricalBuses, PotentialOrigin, PowerConsumptionReport,
@@ -567,6 +568,7 @@ pub struct Aps3200ApuGenerator {
     output_potential: ElectricPotential,
     load: Ratio,
     is_emergency_shutdown: bool,
+    failure: Failure,
 }
 impl Aps3200ApuGenerator {
     pub(super) const APU_GEN_POWERED_N: f64 = 84.;
@@ -581,6 +583,7 @@ impl Aps3200ApuGenerator {
             output_frequency: Frequency::new::<hertz>(0.),
             load: Ratio::new::<percent>(0.),
             is_emergency_shutdown: false,
+            failure: Failure::new(FailureType::ApuGenerator(number)),
         }
     }
 
@@ -675,6 +678,11 @@ impl ElectricitySource for Aps3200ApuGenerator {
     }
 }
 impl SimulationElement for Aps3200ApuGenerator {
+    fn accept<T: crate::simulation::SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.failure.accept(visitor);
+        visitor.visit(self);
+    }
+
     fn write(&self, writer: &mut SimulatorWriter) {
         self.writer.write_alternating_with_load(self, writer);
     }

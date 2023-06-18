@@ -19,6 +19,7 @@ const createOrchestrator = () => new FailuresOrchestrator('A32NX', [
     [24, A320Failure.TransformerRectifierEssential, 'ESS TR'],
     [24, A320Failure.Generator1, 'Generator 1'],
     [24, A320Failure.Generator2, 'Generator 2'],
+    [24, A320Failure.ApuGenerator1, 'APU Generator'],
     [24, A320Failure.AlternatingCurrent1, 'AC 1'],
     [24, A320Failure.AlternatingCurrent2, 'AC 2'],
     [24, A320Failure.AlternatingCurrentEssential, 'AC ESS'],
