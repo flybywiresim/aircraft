@@ -1931,7 +1931,12 @@ mod acs_controller_tests {
                 lgciu1: TestLgciu::new(false),
                 lgciu2: TestLgciu::new(false),
                 cabin_air_simulation: TestCabinAirSimulation::new(context),
-                trim_air_system: TrimAirSystem::new(context, &cabin_zones),
+                trim_air_system: TrimAirSystem::new(
+                    context,
+                    &cabin_zones,
+                    Volume::new::<cubic_meter>(4.),
+                    Volume::new::<cubic_meter>(0.03),
+                ),
                 powered_dc_source_1: TestElectricitySource::powered(
                     context,
                     PotentialOrigin::Battery(1),

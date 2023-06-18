@@ -26,7 +26,6 @@ use uom::si::{
     pressure::{hectopascal, pascal, psi},
     ratio::percent,
     thermodynamic_temperature::{degree_celsius, kelvin},
-    volume::cubic_meter,
     volume_rate::cubic_meter_per_second,
 };
 
@@ -556,7 +555,12 @@ pub struct TrimAirSystem<const ZONES: usize, const ENGINES: usize> {
 }
 
 impl<const ZONES: usize, const ENGINES: usize> TrimAirSystem<ZONES, ENGINES> {
-    pub fn new(context: &mut InitContext, cabin_zone_ids: &[ZoneType; ZONES]) -> Self {
+    pub fn new(
+        context: &mut InitContext,
+        cabin_zone_ids: &[ZoneType; ZONES],
+        pack_mixer_container_volume: Volume,
+        trim_air_valve_container_volume: Volume,
+    ) -> Self {
         let duct_temperature_id = cabin_zone_ids
             .iter()
             .map(|id| context.get_identifier(format!("COND_{}_DUCT_TEMP", id)))
@@ -568,7 +572,7 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystem<ZONES, ENGINES> {
 
         let trim_air_valves = cabin_zone_ids
             .iter()
-            .map(|id| TrimAirValve::new(context, id))
+            .map(|id| TrimAirValve::new(context, trim_air_valve_container_volume, id))
             .collect::<Vec<TrimAirValve>>()
             .try_into()
             .unwrap_or_else(|v: Vec<TrimAirValve>| {
@@ -579,7 +583,7 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystem<ZONES, ENGINES> {
             duct_temperature_id,
             trim_air_valves,
             pack_mixer_container: PneumaticPipe::new(
-                Volume::new::<cubic_meter>(7.),
+                pack_mixer_container_volume,
                 Pressure::new::<psi>(14.7),
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
@@ -712,13 +716,17 @@ struct TrimAirValve {
 impl TrimAirValve {
     const PRESSURE_DIFFERENCE_WITH_CABIN_PSI: f64 = 4.0611; // PSI;
 
-    fn new(context: &mut InitContext, zone_id: &ZoneType) -> Self {
+    fn new(
+        context: &mut InitContext,
+        trim_air_valve_container_volume: Volume,
+        zone_id: &ZoneType,
+    ) -> Self {
         Self {
             trim_air_valve_id: context
                 .get_identifier(format!("COND_{}_TRIM_AIR_VALVE_POSITION", zone_id)),
             trim_air_valve: DefaultValve::new_closed(),
             trim_air_container: PneumaticPipe::new(
-                Volume::new::<cubic_meter>(0.2), // Based on references
+                trim_air_valve_container_volume,
                 Pressure::new::<psi>(14.7 + Self::PRESSURE_DIFFERENCE_WITH_CABIN_PSI),
                 ThermodynamicTemperature::new::<degree_celsius>(24.),
             ),

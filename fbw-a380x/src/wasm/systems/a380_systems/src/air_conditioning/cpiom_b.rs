@@ -379,7 +379,7 @@ impl TemperatureControlSystemApplication {
             [1, 2].map(|id| format!("COND_HOT_AIR_VALVE_{}_IS_ENABLED", id)),
             [1, 2].map(|id| format!("COND_HOT_AIR_VALVE_{}_IS_OPEN", id)),
         ]
-        .map(|id_vec| id_vec.map(|st| context.get_identifier(st.clone())))
+        .map(|id_vec| id_vec.map(|st| context.get_identifier(st)))
     }
 
     fn update(
