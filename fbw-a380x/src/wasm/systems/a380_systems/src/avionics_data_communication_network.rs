@@ -15,6 +15,10 @@ use fxhash::FxHashMap;
 use std::collections::VecDeque;
 use std::vec::Vec;
 
+pub(crate) trait CoreProcessingInputOutputModuleShared {
+    fn core_processing_input_output_module(&self, cpiom: &str) -> &CoreProcessingInputOutputModule;
+}
+
 struct RoutingTableEntry {
     routing_id_1: VariableIdentifier,
     routing_id_2: VariableIdentifier,
@@ -398,6 +402,16 @@ impl A380AvionicsDataCommunicationNetwork {
         }
 
         self.publish_routing_table = update_network_a | update_network_b;
+    }
+}
+
+impl CoreProcessingInputOutputModuleShared for A380AvionicsDataCommunicationNetwork {
+    fn core_processing_input_output_module(&self, cpiom: &str) -> &CoreProcessingInputOutputModule {
+        // If the string is not found this will panic
+        self.cpio_modules
+            .iter()
+            .find(|&module| module.name() == cpiom)
+            .unwrap()
     }
 }
 

@@ -44,7 +44,7 @@ pub trait PneumaticValveSignal {
 }
 
 pub trait ControllablePneumaticValve: PneumaticValve {
-    fn update_open_amount<T: PneumaticValveSignal, U: ControllerSignal<T>>(
+    fn update_open_amount<T: PneumaticValveSignal, U: ControllerSignal<T> + ?Sized>(
         &mut self,
         controller: &U,
     );
