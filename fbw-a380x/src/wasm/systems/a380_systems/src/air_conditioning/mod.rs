@@ -1447,7 +1447,7 @@ mod tests {
                     Pressure::new::<psi>(14.7),
                     ThermodynamicTemperature::new::<degree_celsius>(15.),
                 ),
-                exhaust: PneumaticExhaust::new(0.3, 0.3, Pressure::new::<psi>(0.)),
+                exhaust: PneumaticExhaust::new(0.3, 0.3, Pressure::default()),
                 left_pack_flow_valve: ElectroPneumaticValve::new(
                     ElectricalBusType::DirectCurrentEssential,
                 ),

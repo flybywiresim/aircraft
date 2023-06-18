@@ -79,18 +79,20 @@ impl VentilationControlModule {
             && acs_overhead.cabin_fans_is_on()
             && !pressurization_overhead.ditching_is_on();
 
-        if matches!(self.id, VcmId::Aft) {
-            self.bvcs.update(
-                self.active_channel.has_fault(),
-                acs_overhead,
-                pressurization_overhead,
-            );
-        } else {
-            self.fcvcs.update(
-                self.active_channel.has_fault(),
-                acs_overhead,
-                pressurization_overhead,
-            )
+        if !self.active_channel.has_fault() {
+            if matches!(self.id, VcmId::Aft) {
+                self.bvcs.update(
+                    self.active_channel.has_fault(),
+                    acs_overhead,
+                    pressurization_overhead,
+                );
+            } else {
+                self.fcvcs.update(
+                    self.active_channel.has_fault(),
+                    acs_overhead,
+                    pressurization_overhead,
+                )
+            }
         }
     }
 

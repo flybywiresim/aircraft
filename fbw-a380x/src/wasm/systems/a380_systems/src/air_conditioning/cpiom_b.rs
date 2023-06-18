@@ -81,6 +81,7 @@ impl CoreProcessingInputOutputModuleB {
                 context,
                 acs_overhead,
                 cabin_temperature,
+                self.cpiom_are_active.iter().any(|c| *c),
                 pressurization,
                 local_controllers,
             );
@@ -177,13 +178,7 @@ impl AirGenerationSystemApplication {
     }
 
     fn pack_flow_id(context: &mut InitContext) -> [VariableIdentifier; 4] {
-        (1..=4)
-            .map(|fcv| context.get_identifier(format!("COND_PACK_FLOW_{}", fcv)))
-            .collect::<Vec<_>>()
-            .try_into()
-            .unwrap_or_else(|v: Vec<_>| {
-                panic!("Expected a Vec of length {} but it was {}", 4, v.len())
-            })
+        [1, 2, 3, 4].map(|fcv| context.get_identifier(format!("COND_PACK_FLOW_{}", fcv)))
     }
 
     fn update(
@@ -369,57 +364,22 @@ struct TemperatureControlSystemApplication {
 }
 impl TemperatureControlSystemApplication {
     fn new(context: &mut InitContext, cabin_zones: &[ZoneType; 18]) -> Self {
-        let mut zone_controllers_vec: Vec<ZoneController> = Vec::new();
-        for zone in cabin_zones {
-            // TODO: Figure out what happens with cargo zones
-            // if matches!(zone, ZoneType::Cockpit) || matches!(zone, ZoneType::Cabin(_)) {
-            //     zone_controllers_vec.push(ZoneController::new(zone))
-            // } else {
-            //     continue;
-            // }
-            zone_controllers_vec.push(ZoneController::new(*zone))
-        }
-        let zone_controllers =
-            zone_controllers_vec
-                .try_into()
-                .unwrap_or_else(|v: Vec<ZoneController>| {
-                    panic!("Expected a Vec of length {} but it was {}", 18, v.len())
-                });
         let hot_air_variable_identifiers = Self::hot_air_id_init(context);
         Self {
             hot_air_is_enabled_id: hot_air_variable_identifiers[0],
             hot_air_is_open_id: hot_air_variable_identifiers[1],
-            zone_controllers,
+            zone_controllers: cabin_zones.map(ZoneController::new),
             hot_air_is_enabled: [false; 2],
             hot_air_is_open: [false; 2],
         }
     }
 
-    fn hot_air_id_init(context: &mut InitContext) -> Vec<[VariableIdentifier; 2]> {
-        let hot_air_ids: Vec<Vec<String>> = vec![
-            [1, 2]
-                .iter()
-                .map(|id| format!("COND_HOT_AIR_VALVE_{}_IS_ENABLED", id))
-                .collect(),
-            [1, 2]
-                .iter()
-                .map(|id| format!("COND_HOT_AIR_VALVE_{}_IS_OPEN", id))
-                .collect(),
-        ];
-
-        hot_air_ids
-            .iter()
-            .map(|id_vec| {
-                id_vec
-                    .iter()
-                    .map(|st| context.get_identifier(st.clone()))
-                    .collect::<Vec<VariableIdentifier>>()
-                    .try_into()
-                    .unwrap_or_else(|v: Vec<VariableIdentifier>| {
-                        panic!("Expected a Vec of length {} but it was {}", 2, v.len())
-                    })
-            })
-            .collect()
+    fn hot_air_id_init(context: &mut InitContext) -> [[VariableIdentifier; 2]; 2] {
+        [
+            [1, 2].map(|id| format!("COND_HOT_AIR_VALVE_{}_IS_ENABLED", id)),
+            [1, 2].map(|id| format!("COND_HOT_AIR_VALVE_{}_IS_OPEN", id)),
+        ]
+        .map(|id_vec| id_vec.map(|st| context.get_identifier(st.clone())))
     }
 
     fn update(
@@ -427,18 +387,24 @@ impl TemperatureControlSystemApplication {
         context: &UpdateContext,
         acs_overhead: &impl AirConditioningOverheadShared,
         cabin_temperature: &impl CabinSimulation,
+        cpiom_b_powered: bool,
         pressurization: &impl CabinAltitude,
         trim_air_drive_device: &impl TaddShared,
     ) {
-        // ACSCActive computer is only relevant to the A320 so we set it as Primary here to maintain commonality
-        // TODO: Add &ACSCActiveComputer::None when not powered
+        // ACSCActive computer is only relevant to the A320 but we use it here to signify CPIOM B being powered
+        let active_computer = if cpiom_b_powered {
+            ACSCActiveComputer::Primary
+        } else {
+            ACSCActiveComputer::None
+        };
+
         for (index, zone) in self.zone_controllers.iter_mut().enumerate() {
             zone.update(
                 context,
                 acs_overhead,
                 cabin_temperature.cabin_temperature()[index],
                 pressurization,
-                &ACSCActiveComputer::Primary,
+                &active_computer,
             );
         }
 
@@ -566,15 +532,6 @@ impl VentilationControlSystemApplication {
             - acs_overhead
                 .selected_cargo_temperature(ZoneType::Cargo(2))
                 .get::<degree_celsius>();
-        // println!(
-        //     "Bulk heater on allowed: {}, Temp difference: {}, aft cargo door locked: {}, vcm on allowed: {}, second half evaluation: {}",
-        //     bulk_heater_on_allowed,
-        //     temperature_difference,
-        //     cargo_door_open.aft_cargo_door_locked(),
-        //     vcm_shared.bulk_duct_heater_on_allowed(),
-        //     !(lgciu.iter().all(|a| a.left_and_right_gear_compressed(true))
-        //         && !cargo_door_open.aft_cargo_door_locked())
-        // );
         (temperature_difference < -1.
             || (self.should_switch_on_bulk_heater && temperature_difference < 1.))
             && bulk_heater_on_allowed
@@ -597,7 +554,7 @@ impl ControllerSignal<CabinFansSignal> for VentilationControlSystemApplication {
 
 impl ControllerSignal<BulkHeaterSignal> for VentilationControlSystemApplication {
     fn signal(&self) -> Option<BulkHeaterSignal> {
-        if self.should_switch_on_bulk_heater {
+        if self.should_switch_on_bulk_heater && self.bulk_control_is_powered {
             Some(BulkHeaterSignal::On)
         } else {
             Some(BulkHeaterSignal::Off)

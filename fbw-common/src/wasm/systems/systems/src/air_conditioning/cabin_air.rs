@@ -124,14 +124,6 @@ impl<C: PressurizationConstants, const ZONES: usize> CabinAirSimulation<C, ZONES
             );
         }
 
-        // println!(
-        //     "Flow rate: {}, zone 1 temp: {}",
-        //     flow_rate_per_cubic_meter.get::<kilogram_per_second>(),
-        //     self.cabin_zones[1]
-        //         .zone_air_temperature()
-        //         .get::<degree_celsius>()
-        // );
-
         let average_temperature: ThermodynamicTemperature = self
             .cabin_zones
             .iter()
@@ -456,16 +448,6 @@ impl<C: PressurizationConstants> CabinZone<C> {
             number_of_open_doors,
             cabin_pressure,
         );
-
-        // if self.zone_id.id() == 1 || self.zone_id.id() == 16 || self.zone_id.id() == 17 {
-        //     println!(
-        //         "ZONE: {}, Duct temp: {}, flow rate: {}, zone temp: {}",
-        //         self.zone_id.id(),
-        //         air_in.temperature().get::<degree_celsius>(),
-        //         air_in.flow_rate().get::<kilogram_per_second>(),
-        //         self.zone_air_temperature().get::<degree_celsius>()
-        //     );
-        // }
     }
 
     fn zone_id(&self) -> ZoneType {

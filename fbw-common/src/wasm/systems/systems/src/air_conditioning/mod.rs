@@ -241,7 +241,7 @@ pub trait CabinPressure {
     fn cabin_pressure(&self) -> Pressure;
 }
 
-// Future work this can be different types of failure. Dead code for now since `Fault` is never constructed
+// Future work this can be different types of failure.
 enum OperatingChannelFault {
     NoFault,
     Fault,

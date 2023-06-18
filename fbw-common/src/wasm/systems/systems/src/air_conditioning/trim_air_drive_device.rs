@@ -60,45 +60,23 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirDriveDevice<ZONES, ENGINES
     ) {
         self.fault_determination();
 
-        self.hot_air_is_enabled = [1, 2]
-            .iter()
-            .map(|id| {
-                self.trim_air_pressure_regulating_valve_status_determination(
-                    acs_overhead,
-                    should_close_taprv[id - 1],
-                    *id,
-                )
-            })
-            .collect::<Vec<bool>>()
-            .try_into()
-            .unwrap_or_else(|v: Vec<bool>| {
-                panic!(
-                    "Expected a Vec of length {} but it was {}",
-                    self.hot_air_is_enabled.len(),
-                    v.len()
-                )
-            });
+        self.hot_air_is_enabled = [1, 2].map(|id| {
+            self.trim_air_pressure_regulating_valve_status_determination(
+                acs_overhead,
+                should_close_taprv[id - 1],
+                id,
+            )
+        });
 
-        self.should_open_taprv = [1, 2]
-            .iter()
-            .map(|id| {
-                self.trim_air_pressure_regulating_valve_is_open_determination(
-                    self.hot_air_is_enabled[id - 1],
-                    engines,
-                    pneumatic,
-                    pneumatic_overhead,
-                    *id,
-                )
-            })
-            .collect::<Vec<bool>>()
-            .try_into()
-            .unwrap_or_else(|v: Vec<bool>| {
-                panic!(
-                    "Expected a Vec of length {} but it was {}",
-                    self.should_open_taprv.len(),
-                    v.len()
-                )
-            });
+        self.should_open_taprv = [1, 2].map(|id| {
+            self.trim_air_pressure_regulating_valve_is_open_determination(
+                self.hot_air_is_enabled[id - 1],
+                engines,
+                pneumatic,
+                pneumatic_overhead,
+                id,
+            )
+        });
 
         if !matches!(self.fault, Some(TaddFault::BothChannelsFault))
             && !self.active_channel.has_fault()
