@@ -53,8 +53,8 @@ export class UpperDisplay extends DisplayComponent<UpperDisplayProps> {
                     <N2 bus={this.props.bus} engine={2} x={493} y={0} />
                     <text class="Large Center" x={386} y={33}>N2</text>
                     <text class="Medium Center Cyan" x={385} y={53}>%</text>
-                    <line class="Separator" x1={311} y1={37} x2={343} y2={28} strokeLinecap="round" />
-                    <line class="Separator" x1={424} y1={28} x2={456} y2={37} strokeLinecap="round" />
+                    <line class="Separator" x1={311} y1={37} x2={343} y2={28} />
+                    <line class="Separator" x1={424} y1={28} x2={456} y2={37} />
                 </Layer>
 
                 <Layer x={0} y={380}>
@@ -65,8 +65,8 @@ export class UpperDisplay extends DisplayComponent<UpperDisplayProps> {
                         {this.usingMetric.map((m) => (m ? 'KG' : 'LBS'))}
                         /H
                     </text>
-                    <line class="Separator" x1={311} y1={-11} x2={343} y2={-20} strokeLinecap="round" />
-                    <line class="Separator" x1={424} y1={-20} x2={456} y2={-11} strokeLinecap="round" />
+                    <line class="Separator" x1={311} y1={-11} x2={343} y2={-20} />
+                    <line class="Separator" x1={424} y1={-20} x2={456} y2={-11} />
                 </Layer>
 
                 <FOB bus={this.props.bus} x={40} y={490} metric={this.usingMetric} />
