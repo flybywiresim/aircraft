@@ -12,17 +12,29 @@ import {
     WeatherMessage,
     RmpDataBusTypes,
     Conversion,
+    FlightPlanMessage,
+    NotamMessage,
+    FlightPerformanceMessage,
+    AtsuMessage,
+    FlightWeightsMessage,
+    FlightFuelMessage,
 } from '@datalink/common';
 import { Arinc429Word } from '@shared/arinc429';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { EventBus, EventSubscriber, Publisher } from '@microsoft/msfs-sdk';
-import { AtcAocRouterMessages, FmsRouterMessages } from './databus';
+import { AtcAocRouterMessages, DatalinkRouterMessages, RouterAtcAocMessages, RouterDatalinkMessages } from './databus';
+import { NXApiConnector } from './webinterfaces/NXApiConnector';
 
 export type RouterDigitalInputCallbacks = {
     sendFreetextMessage: (message: FreetextMessage, force: boolean) => Promise<AtsuStatusCodes>;
     sendCpdlcMessage: (message: CpdlcMessage, force: boolean) => Promise<AtsuStatusCodes>;
     sendDclMessage: (message: DclMessage, force: boolean) => Promise<AtsuStatusCodes>;
     sendOclMessage: (message: OclMessage, force: boolean) => Promise<AtsuStatusCodes>;
+    requestFlightPlan: (requestSent: () => void) => Promise<[AtsuStatusCodes, FlightPlanMessage]>;
+    requestNotams: (requestSent: () => void) => Promise<[AtsuStatusCodes, NotamMessage[]]>;
+    requestPerformance: (requestSent: () => void) => Promise<[AtsuStatusCodes, FlightPerformanceMessage]>;
+    requestFuel: (requestSent: () => void) => Promise<[AtsuStatusCodes, FlightFuelMessage]>;
+    requestWeights: (requestSent: () => void) => Promise<[AtsuStatusCodes, FlightWeightsMessage]>;
     requestAtis: (icao: string, type: AtisType, requestSent: () => void) => Promise<[AtsuStatusCodes, WeatherMessage]>;
     requestWeather: (icaos: string[], metar: boolean, requestSent: () => void) => Promise<[AtsuStatusCodes, WeatherMessage]>;
     connect: (callsign: string) => Promise<AtsuStatusCodes>;
@@ -31,9 +43,9 @@ export type RouterDigitalInputCallbacks = {
 }
 
 export class DigitalInputs {
-    private subscriber: EventSubscriber<AtcAocRouterMessages & FmgcDataBusTypes & FmsRouterMessages & RmpDataBusTypes> = null;
+    private subscriber: EventSubscriber<AtcAocRouterMessages & FmgcDataBusTypes & DatalinkRouterMessages & RmpDataBusTypes> = null;
 
-    private publisher: Publisher<AtcAocRouterMessages & FmsRouterMessages>;
+    private publisher: Publisher<RouterDatalinkMessages & RouterAtcAocMessages>;
 
     private poweredUp: boolean = false;
 
@@ -42,6 +54,11 @@ export class DigitalInputs {
         sendCpdlcMessage: null,
         sendDclMessage: null,
         sendOclMessage: null,
+        requestFlightPlan: null,
+        requestNotams: null,
+        requestPerformance: null,
+        requestFuel: null,
+        requestWeights: null,
         requestAtis: null,
         requestWeather: null,
         connect: null,
@@ -66,46 +83,73 @@ export class DigitalInputs {
     }
 
     public initialize(): void {
-        this.subscriber = this.bus.getSubscriber<AtcAocRouterMessages & FmgcDataBusTypes & FmsRouterMessages & RmpDataBusTypes>();
-        this.publisher = this.bus.getPublisher<AtcAocRouterMessages & FmsRouterMessages>();
+        this.subscriber = this.bus.getSubscriber<AtcAocRouterMessages & FmgcDataBusTypes & DatalinkRouterMessages & RmpDataBusTypes>();
+        this.publisher = this.bus.getPublisher<RouterDatalinkMessages & RouterAtcAocMessages>();
+    }
+
+    private sendMessage<Type extends AtsuMessage>(requestId: number, message: Type, force: boolean, sendFunction: (Type, boolean) => Promise<AtsuStatusCodes>): void {
+        if (sendFunction !== null) {
+            sendFunction(Conversion.messageDataToMessage(message) as FreetextMessage, force).then((status) => {
+                this.publisher.pub('routerSendMessageResponse', { requestId, status }, this.synchronizedAoc, false);
+            });
+        } else {
+            this.publisher.pub('routerSendMessageResponse', { requestId, status: AtsuStatusCodes.ComFailed }, this.synchronizedAoc, false);
+        }
+    }
+
+    private requestData(
+        requestId: number,
+        publisherName: 'routerReceivedFlightplan' | 'routerReceivedNotams' | 'routerReceivedPerformance' | 'routerReceivedFuel' | 'routerReceivedWeights',
+        requestFunction: (requestSent: () => void) => Promise<[AtsuStatusCodes, any]>,
+    ): void {
+        if (requestFunction !== null) {
+            requestFunction(() => this.publisher.pub('routerRequestSent', requestId, this.synchronizedAoc, false)).then((response) => {
+                this.publisher.pub(publisherName, { requestId, response }, this.synchronizedAoc, false);
+            });
+        } else {
+            this.publisher.pub(publisherName, { requestId, response: [AtsuStatusCodes.ComFailed, null] }, this.synchronizedAoc, false);
+        }
+    }
+
+    private requestWeatherData(icaos: string[], metar: boolean, requestId: number): void {
+        if (this.callbacks.requestWeather !== null) {
+            const synchronized = this.synchronizedAoc || this.synchronizedAtc;
+            this.callbacks.requestWeather(icaos, metar, () => this.publisher.pub('routerRequestSent', requestId, synchronized, false)).then((response) => {
+                this.publisher.pub('routerReceivedWeather', { requestId, response }, synchronized, false);
+            });
+        } else {
+            this.publisher.pub('routerReceivedWeather', { requestId, response: [AtsuStatusCodes.ComFailed, null] }, this.synchronizedAtc, false);
+        }
     }
 
     public connectedCallback(): void {
+        this.subscriber.on('routerUpdateFromTo').handle((data) => NXApiConnector.updateFromTo(data.from, data.to));
         this.subscriber.on('routerSendFreetextMessage').handle(async (request) => {
-            if (this.callbacks.sendFreetextMessage !== null) {
-                this.callbacks.sendFreetextMessage(Conversion.messageDataToMessage(request.message) as FreetextMessage, request.force).then((status) => {
-                    this.publisher.pub('routerSendMessageResponse', { requestId: request.requestId, status }, this.synchronizedAoc, false);
-                });
-            } else {
-                this.publisher.pub('routerSendMessageResponse', { requestId: request.requestId, status: AtsuStatusCodes.ComFailed }, this.synchronizedAoc, false);
-            }
+            this.sendMessage(request.requestId, request.message, request.force, this.callbacks.sendFreetextMessage);
         });
         this.subscriber.on('routerSendCpdlcMessage').handle(async (request) => {
-            if (this.callbacks.sendCpdlcMessage !== null) {
-                this.callbacks.sendCpdlcMessage(Conversion.messageDataToMessage(request.message) as CpdlcMessage, request.force).then((status) => {
-                    this.publisher.pub('routerSendMessageResponse', { requestId: request.requestId, status }, this.synchronizedAtc, false);
-                });
-            } else {
-                this.publisher.pub('routerSendMessageResponse', { requestId: request.requestId, status: AtsuStatusCodes.ComFailed }, this.synchronizedAtc, false);
-            }
+            this.sendMessage(request.requestId, request.message, request.force, this.callbacks.sendCpdlcMessage);
         });
         this.subscriber.on('routerSendDclMessage').handle(async (request) => {
-            if (this.callbacks.sendDclMessage !== null) {
-                this.callbacks.sendDclMessage(Conversion.messageDataToMessage(request.message) as DclMessage, request.force).then((status) => {
-                    this.publisher.pub('routerSendMessageResponse', { requestId: request.requestId, status }, this.synchronizedAtc, false);
-                });
-            } else {
-                this.publisher.pub('routerSendMessageResponse', { requestId: request.requestId, status: AtsuStatusCodes.ComFailed }, this.synchronizedAtc, false);
-            }
+            this.sendMessage(request.requestId, request.message, request.force, this.callbacks.sendDclMessage);
         });
         this.subscriber.on('routerSendOclMessage').handle(async (request) => {
-            if (this.callbacks.sendOclMessage !== null) {
-                this.callbacks.sendOclMessage(Conversion.messageDataToMessage(request.message) as OclMessage, request.force).then((status) => {
-                    this.publisher.pub('routerSendMessageResponse', { requestId: request.requestId, status }, this.synchronizedAtc, false);
-                });
-            } else {
-                this.publisher.pub('routerSendMessageResponse', { requestId: request.requestId, status: AtsuStatusCodes.ComFailed }, this.synchronizedAtc, false);
-            }
+            this.sendMessage(request.requestId, request.message, request.force, this.callbacks.sendOclMessage);
+        });
+        this.subscriber.on('routerRequestFlightplan').handle(async (request) => {
+            this.requestData(request.requestId, 'routerReceivedFlightplan', this.callbacks.requestFlightPlan);
+        });
+        this.subscriber.on('routerRequestNotams').handle(async (request) => {
+            this.requestData(request.requestId, 'routerReceivedNotams', this.callbacks.requestNotams);
+        });
+        this.subscriber.on('routerRequestPerformance').handle(async (request) => {
+            this.requestData(request.requestId, 'routerReceivedPerformance', this.callbacks.requestPerformance);
+        });
+        this.subscriber.on('routerRequestFuel').handle(async (request) => {
+            this.requestData(request.requestId, 'routerReceivedFuel', this.callbacks.requestFuel);
+        });
+        this.subscriber.on('routerRequestWeights').handle(async (request) => {
+            this.requestData(request.requestId, 'routerReceivedWeights', this.callbacks.requestWeights);
         });
         this.subscriber.on('routerRequestAtis').handle(async (request) => {
             if (this.callbacks.requestAtis !== null) {
@@ -118,24 +162,10 @@ export class DigitalInputs {
             }
         });
         this.subscriber.on('routerRequestMetar').handle(async (request) => {
-            if (this.callbacks.requestAtis !== null) {
-                const synchronized = this.synchronizedAoc || this.synchronizedAtc;
-                this.callbacks.requestWeather(request.icaos, true, () => this.publisher.pub('routerRequestSent', request.requestId, synchronized, false)).then((response) => {
-                    this.publisher.pub('routerReceivedWeather', { requestId: request.requestId, response }, synchronized, false);
-                });
-            } else {
-                this.publisher.pub('routerReceivedWeather', { requestId: request.requestId, response: [AtsuStatusCodes.ComFailed, null] }, this.synchronizedAtc, false);
-            }
+            this.requestWeatherData(request.icaos, true, request.requestId);
         });
         this.subscriber.on('routerRequestTaf').handle(async (request) => {
-            if (this.callbacks.requestAtis !== null) {
-                const synchronized = this.synchronizedAoc || this.synchronizedAtc;
-                this.callbacks.requestWeather(request.icaos, false, () => this.publisher.pub('routerRequestSent', request.requestId, synchronized, false)).then((response) => {
-                    this.publisher.pub('routerReceivedWeather', { requestId: request.requestId, response }, synchronized, false);
-                });
-            } else {
-                this.publisher.pub('routerReceivedWeather', { requestId: request.requestId, response: [AtsuStatusCodes.ComFailed, null] }, this.synchronizedAtc, false);
-            }
+            this.requestWeatherData(request.icaos, false, request.requestId);
         });
         this.subscriber.on('routerConnect').handle(async (data) => {
             if (this.callbacks.connect !== null) {

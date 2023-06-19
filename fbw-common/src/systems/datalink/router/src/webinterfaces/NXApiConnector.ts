@@ -34,14 +34,16 @@ export class NXApiConnector {
 
     private static updateCounter: number = 0;
 
+    private static fromIcao: string = '';
+
+    private static toIcao: string = '';
+
     private static createAircraftStatus(): AircraftStatus | undefined {
         const lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
         const long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
         const alt = SimVar.GetSimVarValue('PLANE ALTITUDE', 'feet');
         const heading = SimVar.GetSimVarValue('PLANE HEADING DEGREES TRUE', 'degree');
         const acType = SimVar.GetSimVarValue('TITLE', 'string');
-        const origin = NXDataStore.get('PLAN_ORIGIN', '');
-        const destination = NXDataStore.get('PLAN_DESTINATION', '');
         const freetext = NXDataStore.get('CONFIG_ONLINE_FEATURES_STATUS', 'DISABLED') === 'ENABLED';
 
         return {
@@ -51,8 +53,8 @@ export class NXApiConnector {
             },
             trueAltitude: alt,
             heading,
-            origin,
-            destination,
+            origin: NXApiConnector.fromIcao,
+            destination: NXApiConnector.toIcao,
             freetextEnabled: freetext,
             flight: NXApiConnector.flightNumber,
             aircraftType: acType,
@@ -101,6 +103,11 @@ export class NXApiConnector {
 
     public static isConnected(): boolean {
         return NXApiConnector.connected;
+    }
+
+    public static updateFromTo(from: string, to: string): void {
+        NXApiConnector.fromIcao = from;
+        NXApiConnector.toIcao = to;
     }
 
     public static async sendTelexMessage(message: FreetextMessage): Promise<AtsuStatusCodes> {

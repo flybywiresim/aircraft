@@ -1,8 +1,8 @@
 //  Copyright (c) 2023 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { AocFmsMessages } from '@datalink/aoc';
-import { AtcFmsMessages } from '@datalink/atc';
+import { AocDatalinkMessages } from '@datalink/aoc';
+import { AtcDatalinkMessages } from '@datalink/atc';
 import {
     AtisMessage,
     AtsuMessage,
@@ -64,7 +64,7 @@ export class MessageStorage {
         this.deleteMessageFromQueue(uid, this.aocUplinkMessages);
     }
 
-    constructor(private readonly subscriber: EventSubscriber<AtcFmsMessages & AocFmsMessages & AocFmsMessages>) {
+    constructor(private readonly subscriber: EventSubscriber<AtcDatalinkMessages & AocDatalinkMessages>) {
         this.subscriber.on('atcAtisReports').handle((reports) => {
             this.atisReports = new Map();
 

@@ -9,17 +9,22 @@ import {
     AtsuMessage,
     AtsuMessageNetwork,
     AtsuMessageType,
-    AtisMessage,
     MetarMessage,
     TafMessage,
     WeatherMessage,
     FreetextMessage,
+    FlightPlanMessage,
+    NotamMessage,
+    FlightPerformanceMessage,
+    FlightFuelMessage,
+    FlightWeightsMessage,
 } from '@datalink/common';
 import { NXDataStore } from '@shared/persistence';
 import { EventBus } from '@microsoft/msfs-sdk';
 import { Vdl } from './vhf/VDL';
 import { HoppieConnector } from './webinterfaces/HoppieConnector';
 import { NXApiConnector } from './webinterfaces/NXApiConnector';
+import { SimbriefConnector } from './webinterfaces/SimbriefConnector';
 import { DigitalInputs } from './DigitalInputs';
 import { DigitalOutputs } from './DigitalOutputs';
 
@@ -93,6 +98,17 @@ export class Router {
         }
     }
 
+    private async handleRequest<Type extends AtsuMessage>(dataReceiver: () => Promise<Type>, sentCallback: () => void): Promise<[AtsuStatusCodes, Type]> {
+        if (this.communicationInterface === ActiveCommunicationInterface.None || !this.poweredUp) {
+            return new Promise((resolve, _reject) => resolve([AtsuStatusCodes.ComFailed, null]));
+        }
+
+        return dataReceiver().then((message) => {
+            if (message === null) return [AtsuStatusCodes.ComFailed, null];
+            return this.simulateResponse(message, sentCallback).then(() => [AtsuStatusCodes.Ok, message]);
+        });
+    }
+
     constructor(private readonly bus: EventBus, synchronizedAtc: boolean, synchronizedAoc: boolean) {
         HoppieConnector.activateHoppie();
 
@@ -106,16 +122,42 @@ export class Router {
         this.digitalInputs.addDataCallback('sendCpdlcMessage', (message, force) => this.sendMessage(message, force));
         this.digitalInputs.addDataCallback('sendDclMessage', (message, force) => this.sendMessage(message, force));
         this.digitalInputs.addDataCallback('sendOclMessage', (message, force) => this.sendMessage(message, force));
-        this.digitalInputs.addDataCallback('requestAtis', async (icao, type, requestSent): Promise<[AtsuStatusCodes, WeatherMessage]> => {
+        this.digitalInputs.addDataCallback(
+            'requestFlightPlan',
+            (requestSent): Promise<[AtsuStatusCodes, FlightPlanMessage]> => this.handleRequest(SimbriefConnector.receiveFlightplan, requestSent),
+        );
+        this.digitalInputs.addDataCallback('requestNotams', (requestSent): Promise<[AtsuStatusCodes, NotamMessage[]]> => {
             if (this.communicationInterface === ActiveCommunicationInterface.None || !this.poweredUp) {
-                return [AtsuStatusCodes.ComFailed, null];
+                return new Promise((resolve, _reject) => resolve([AtsuStatusCodes.ComFailed, null]));
             }
 
-            const message = new AtisMessage();
-            return NXApiConnector.receiveAtis(icao, type, message)
-                .then(() => this.simulateWeatherRequestResponse([AtsuStatusCodes.Ok, message], requestSent))
-                .catch((_err) => [AtsuStatusCodes.ComFailed, null]);
+            return SimbriefConnector.receiveNotams()
+                .then((notams) => {
+                    const promises = [];
+                    notams.forEach((notam, index) => {
+                        if (index === 0) {
+                            promises.push(this.simulateResponse(notam, requestSent));
+                        } else {
+                            promises.push(this.simulateResponse(notam, () => {}));
+                        }
+                    });
+
+                    return Promise.all(promises)
+                        .then((messages) => [AtsuStatusCodes.Ok, messages]);
+                });
         });
+        this.digitalInputs.addDataCallback(
+            'requestPerformance',
+            (requestSent): Promise<[AtsuStatusCodes, FlightPerformanceMessage]> => this.handleRequest(SimbriefConnector.receivePerformance, requestSent),
+        );
+        this.digitalInputs.addDataCallback(
+            'requestFuel',
+            (requestSent): Promise<[AtsuStatusCodes, FlightFuelMessage]> => this.handleRequest(SimbriefConnector.receiveFuel, requestSent),
+        );
+        this.digitalInputs.addDataCallback(
+            'requestWeights',
+            (requestSent): Promise<[AtsuStatusCodes, FlightWeightsMessage]> => this.handleRequest(SimbriefConnector.receiveWeights, requestSent),
+        );
         this.digitalInputs.addDataCallback('requestWeather', async (icaos, metar, requestSent) => this.receiveWeather(metar, icaos, requestSent));
     }
 
@@ -239,7 +281,7 @@ export class Router {
         return retval;
     }
 
-    private async simulateWeatherRequestResponse(data: [AtsuStatusCodes, WeatherMessage], sentCallback: () => void): Promise<[AtsuStatusCodes, WeatherMessage]> {
+    private async simulateResponse<Type extends AtsuMessage>(data: Type, sentCallback: () => void): Promise<Type> {
         return new Promise((resolve, _reject) => {
             // simulate the request transmission
             const requestTimeout = this.vdl.enqueueOutboundPacket();
@@ -258,7 +300,7 @@ export class Router {
                     this.removeTransmissionTimeout(timeout);
 
                     // simulate the response transmission
-                    const responseTimeout = this.vdl.enqueueInboundMessage(data[1]);
+                    const responseTimeout = this.vdl.enqueueInboundMessage(data);
                     timeout = setTimeout(() => {
                         this.vdl.dequeueInboundMessage(responseTimeout);
                         this.removeTransmissionTimeout(timeout);
@@ -288,7 +330,8 @@ export class Router {
             message = new TafMessage();
         }
 
-        return this.receiveWeatherData(requestMetar, icaos, 0, message).then((code) => this.simulateWeatherRequestResponse([code, message], requestSent));
+        return this.receiveWeatherData(requestMetar, icaos, 0, message)
+            .then((code) => this.simulateResponse(message, requestSent).then(() => [code, message]));
     }
 
     private async isStationAvailable(callsign: string): Promise<AtsuStatusCodes> {

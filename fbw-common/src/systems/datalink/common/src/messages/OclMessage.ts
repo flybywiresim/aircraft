@@ -29,7 +29,7 @@ export class OclMessage extends CpdlcMessage {
         this.CloseAutomatically = false;
     }
 
-    public serialize(format: AtsuMessageSerializationFormat) {
+    public serialize(format: AtsuMessageSerializationFormat): string {
         let oclMessage = `OCEANIC REQUEST\n${this.Callsign} \n`;
         oclMessage += `ENTRY POINT:${this.EntryPoint}\nAT:${this.EntryTime} \n`;
         oclMessage += `REQ:${this.RequestedMach} ${this.RequestedFlightlevel}`;

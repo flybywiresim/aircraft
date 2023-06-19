@@ -10,26 +10,36 @@ import {
     SimVarSources,
     WeatherMessage,
 } from '@datalink/common';
-import { AtcAocRouterMessages } from '@datalink/router';
+import { AtcAocRouterMessages, RouterAtcAocMessages } from '@datalink/router';
 import { EventBus, EventSubscriber, Publisher } from '@microsoft/msfs-sdk';
-import { AocFmsMessages } from './databus/FmsBus';
+import { AocDatalinkMessages } from './databus/DatalinkBus';
 
 export class DigitalOutputs {
     private requestId: number = 0;
 
-    private subscriber: EventSubscriber<AtcAocRouterMessages> = null;
+    private subscriber: EventSubscriber<RouterAtcAocMessages> = null;
 
-    private publisher: Publisher<AtcAocRouterMessages & AocFmsMessages> = null;
+    private publisher: Publisher<AtcAocRouterMessages & AocDatalinkMessages> = null;
 
     private sendMessageCallbacks: ((requestId: number, code: AtsuStatusCodes) => boolean)[] = [];
 
     private requestSentCallbacks: ((requestId: number) => boolean)[] = [];
 
-    private weatherResponseCallbacks: ((requestId: number, response: [AtsuStatusCodes, WeatherMessage]) => boolean)[] = [];
+    private routerResponseCallbacks: ((requestId: number, response: [AtsuStatusCodes, any]) => boolean)[] = [];
+
+    private handleRouterResponse<Type>(response: { requestId: number; response: [AtsuStatusCodes, Type] }): void {
+        this.routerResponseCallbacks.every((callback, index) => {
+            if (callback(response.requestId, response.response)) {
+                this.routerResponseCallbacks.splice(index, 1);
+                return false;
+            }
+            return true;
+        });
+    }
 
     constructor(private readonly bus: EventBus, private readonly synchronizedRouter: boolean) {
-        this.subscriber = this.bus.getSubscriber<AtcAocRouterMessages>();
-        this.publisher = this.bus.getPublisher<AtcAocRouterMessages & AocFmsMessages>();
+        this.subscriber = this.bus.getSubscriber<RouterAtcAocMessages>();
+        this.publisher = this.bus.getPublisher<AtcAocRouterMessages & AocDatalinkMessages>();
 
         this.subscriber.on('routerSendMessageResponse').handle((response) => {
             this.sendMessageCallbacks.every((callback, index) => {
@@ -51,15 +61,12 @@ export class DigitalOutputs {
             });
         });
 
-        this.subscriber.on('routerReceivedWeather').handle((response) => {
-            this.weatherResponseCallbacks.every((callback, index) => {
-                if (callback(response.requestId, response.response)) {
-                    this.weatherResponseCallbacks.splice(index, 1);
-                    return false;
-                }
-                return true;
-            });
-        });
+        this.subscriber.on('routerReceivedWeather').handle((response) => this.handleRouterResponse(response));
+        this.subscriber.on('routerReceivedFlightplan').handle((response) => this.handleRouterResponse(response));
+        this.subscriber.on('routerReceivedNotams').handle((response) => this.handleRouterResponse(response));
+        this.subscriber.on('routerReceivedPerformance').handle((response) => this.handleRouterResponse(response));
+        this.subscriber.on('routerReceivedFuel').handle((response) => this.handleRouterResponse(response));
+        this.subscriber.on('routerReceivedWeights').handle((response) => this.handleRouterResponse(response));
     }
 
     public powerDown(): void {
@@ -77,6 +84,24 @@ export class DigitalOutputs {
         });
     }
 
+    public async receiveOfpData<Type extends AtsuMessage>(
+        requestName: 'routerRequestFlightplan' | 'routerRequestNotams' | 'routerRequestPerformance' | 'routerRequestFuel' | 'routerRequestWeights',
+        sentCallback: () => void,
+    ): Promise<[AtsuStatusCodes, Type]> {
+        return new Promise<[AtsuStatusCodes, Type]>((resolve, _reject) => {
+            const requestId = this.requestId++;
+            this.publisher.pub(requestName, { requestId }, this.synchronizedRouter, false);
+            this.requestSentCallbacks.push((id: number) => {
+                if (id === requestId) sentCallback();
+                return id === requestId;
+            });
+            this.routerResponseCallbacks.push((id, response) => {
+                if (id === requestId) resolve(response);
+                return requestId === id;
+            });
+        });
+    }
+
     public async receiveAtis(icao: string, type: AtisType, sentCallback: () => void): Promise<[AtsuStatusCodes, WeatherMessage]> {
         return new Promise<[AtsuStatusCodes, WeatherMessage]>((resolve, _reject) => {
             const requestId = this.requestId++;
@@ -85,7 +110,7 @@ export class DigitalOutputs {
                 if (id === requestId) sentCallback();
                 return id === requestId;
             });
-            this.weatherResponseCallbacks.push((id, response) => {
+            this.routerResponseCallbacks.push((id, response) => {
                 if (id === requestId) resolve(response);
                 return requestId === id;
             });
@@ -100,7 +125,7 @@ export class DigitalOutputs {
                 if (id === requestId) sentCallback();
                 return id === requestId;
             });
-            this.weatherResponseCallbacks.push((id, response) => {
+            this.routerResponseCallbacks.push((id, response) => {
                 if (id === requestId) resolve(response);
                 return requestId === id;
             });
@@ -115,7 +140,7 @@ export class DigitalOutputs {
                 if (id === requestId) sentCallback();
                 return id === requestId;
             });
-            this.weatherResponseCallbacks.push((id, response) => {
+            this.routerResponseCallbacks.push((id, response) => {
                 if (id === requestId) resolve(response);
                 return requestId === id;
             });

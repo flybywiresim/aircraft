@@ -18,11 +18,16 @@ export enum AtsuMessageType {
     METAR = 1,
     TAF = 2,
     ATIS = 3,
-    AOC = 4,
-    CPDLC = 5,
-    DCL = 6,
-    OCL = 7,
-    ATC = 8
+    FlightPlan = 4,
+    NOTAM = 5,
+    OperationsPerformance = 6,
+    OperationsFuel = 7,
+    OperationsWeights = 8,
+    AOC = 9,
+    CPDLC = 10,
+    DCL = 11,
+    OCL = 12,
+    ATC = 13
 }
 
 export enum AtsuMessageComStatus {
@@ -63,7 +68,7 @@ export class AtsuMessage {
 
     public Message = '';
 
-    public serialize(_format: AtsuMessageSerializationFormat) : string {
+    public serialize(_format: AtsuMessageSerializationFormat): string {
         throw new Error('No valid implementation');
     }
 

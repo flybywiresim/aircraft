@@ -17,7 +17,7 @@ import { FmgcFlightPhase } from '@shared/flightphase';
 import { EventBus, EventSubscriber, Publisher } from '@microsoft/msfs-sdk';
 import { AtcMessageButtonBusMessages } from './databus/AtcMessageButtonBus';
 import { ClockDataBusTypes } from '../../common/src/databus/ClockBus';
-import { AtcFmsMessages, FmsAtcMessages, FmsRouteData } from './databus/FmsBus';
+import { AtcDatalinkMessages, DatalinkAtcMessages, FmsRouteData } from './databus/DatalinkBus';
 
 export type AtcDigitalInputCallbacks = {
     receivedFreetextMessage: (message: FreetextMessage) => void;
@@ -47,12 +47,12 @@ export class DigitalInputs {
         AtcMessageButtonBusMessages &
         ClockDataBusTypes &
         FmgcDataBusTypes &
-        FmsAtcMessages &
+        DatalinkAtcMessages &
         RmpDataBusTypes &
         RouterAtcAocMessages
     > = null;
 
-    private publisher: Publisher<AtcFmsMessages>;
+    private publisher: Publisher<AtcDatalinkMessages>;
 
     private poweredUp: boolean = false;
 
@@ -175,17 +175,17 @@ export class DigitalInputs {
             AtcMessageButtonBusMessages &
             ClockDataBusTypes &
             FmgcDataBusTypes &
-            FmsAtcMessages &
+            DatalinkAtcMessages &
             RmpDataBusTypes &
             RouterAtcAocMessages
         >();
-        this.publisher = this.bus.getPublisher<AtcFmsMessages>();
+        this.publisher = this.bus.getPublisher<AtcDatalinkMessages>();
     }
 
     private async requestWithStatusResponse<T>(value: T, requestId: number, callback: (value: T) => Promise<AtsuStatusCodes>): Promise<void> {
         if (callback !== null) {
-            callback(value).then((code) => {
-                this.publisher.pub('atcRequestAtsuStatusCode', { requestId, code }, true, false);
+            callback(value).then((status) => {
+                this.publisher.pub('atcRequestAtsuStatusCode', { requestId, status }, true, false);
             });
         }
     }
@@ -353,8 +353,8 @@ export class DigitalInputs {
         this.subscriber.on('atcLogon').handle((data) => this.requestWithStatusResponse(data.station, data.requestId, this.callbacks.atcLogon));
         this.subscriber.on('atcLogoff').handle((data) => {
             if (this.callbacks.atcLogoff !== null) {
-                this.callbacks.atcLogoff().then((code) => {
-                    this.publisher.pub('atcRequestAtsuStatusCode', { requestId: data, code }, true, false);
+                this.callbacks.atcLogoff().then((status) => {
+                    this.publisher.pub('atcRequestAtsuStatusCode', { requestId: data, status }, true, false);
                 });
             }
         });
@@ -365,7 +365,7 @@ export class DigitalInputs {
         this.subscriber.on('atcToggleAutomaticPositionReport').handle((data) => this.requestWithoutParameter(data, this.callbacks.toggleAutomaticPositionReport));
         this.subscriber.on('atcRequestAtis').handle((data) => {
             if (this.callbacks.requestAtis !== null) {
-                this.callbacks.requestAtis(data.icao, data.type).then((code) => this.publisher.pub('atcRequestAtsuStatusCode', { code, requestId: data.requestId }, true, false));
+                this.callbacks.requestAtis(data.icao, data.type).then((status) => this.publisher.pub('atcRequestAtsuStatusCode', { status, requestId: data.requestId }, true, false));
             }
         });
         this.subscriber.on('atcRequestPositionReport').handle((data) => {

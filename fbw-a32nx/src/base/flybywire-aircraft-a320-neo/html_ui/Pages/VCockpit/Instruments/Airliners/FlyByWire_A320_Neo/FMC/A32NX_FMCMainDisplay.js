@@ -499,7 +499,7 @@ class FMCMainDisplay extends BaseAirliners {
         }
 
         // ATSU data
-        this.atsu = new AtsuFmsClient.FmsClient(this, this.flightPlanManager, this.flightPhaseManager);
+        this.atsu = new AtsuDatalinkClient.DatalinkClient(this, this.flightPlanManager, this.flightPhaseManager);
 
         // Reset SimVars
         SimVar.SetSimVarValue("L:A32NX_SPEEDS_MANAGED_PFD", "knots", 0);
