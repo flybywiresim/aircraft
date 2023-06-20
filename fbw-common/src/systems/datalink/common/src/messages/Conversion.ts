@@ -8,6 +8,8 @@ import { DclMessage } from './DclMessage';
 import { FreetextMessage } from './FreetextMessage';
 import { MetarMessage } from './MetarMessage';
 import { OclMessage } from './OclMessage';
+import { OutOffOnInMessage } from './OutOffOnInMessage';
+import { SensorsMessage } from './SensorsMessage';
 import { TafMessage } from './TafMessage';
 
 export class Conversion {
@@ -27,6 +29,10 @@ export class Conversion {
             return OclMessage.deserialize(data as OclMessage);
         case AtsuMessageType.TAF:
             return TafMessage.deserialize(data as TafMessage);
+        case AtsuMessageType.Sensors:
+            return SensorsMessage.deserialize(data as SensorsMessage);
+        case AtsuMessageType.OOOI:
+            return OutOffOnInMessage.deserialize(data as OutOffOnInMessage);
         default:
             return null;
         }

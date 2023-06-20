@@ -7,9 +7,16 @@ import {
     AtsuMessage,
     FreetextMessage,
     WeatherMessage,
+    FlightPlanMessage,
+    NotamMessage,
+    FlightPerformanceMessage,
+    FlightFuelMessage,
+    FlightWeightsMessage,
+    OutOffOnInMessage,
+    SensorsMessage,
 } from '@datalink/common';
 
-export interface AocFmsMessages {
+export interface AocDatalinkMessages {
     aocResetData: boolean;
 
     aocRequestSentToGround: number;
@@ -18,18 +25,34 @@ export interface AocFmsMessages {
     aocSystemStatus: AtsuStatusCodes;
     aocTransmissionResponse: { requestId: number; status: AtsuStatusCodes };
 
+    aocReceivedFlightPlan: { requestId: number; data: FlightPlanMessage };
+    aocReceivedNotams: { requestId: number; data: NotamMessage[] };
+    aocReceivedPerformance: { requestId: number; data: FlightPerformanceMessage };
+    aocReceivedFuel: { requestId: number; data: FlightFuelMessage };
+    aocReceivedWeights: { requestId: number; data: FlightWeightsMessage };
     aocResynchronizeWeatherMessage: WeatherMessage;
     aocResynchronizeFreetextMessage: FreetextMessage;
+    aocResynchronizeOooiMessages: OutOffOnInMessage[];
+    aocResynchronizeSensorsMessage: SensorsMessage;
+
     aocPrintMessage: AtsuMessage;
     aocDeleteMessage: number;
 }
 
-export interface FmsAocMessages {
+export interface DatalinkAocMessages {
     aocSendFreetextMessage: { message: FreetextMessage; requestId: number };
+
     aocRequestAtis: { icao: string; type: AtisType; requestId: number };
     aocRequestWeather: { icaos: string[]; requestMetar: boolean; requestId: number };
+    aocRequestFlightPlan: number;
+    aocRequestNotams: number;
+    aocRequestPerformance: number;
+    aocRequestFuel: number;
+    aocRequestWeights: number;
+
     aocRegisterWeatherMessages: WeatherMessage[];
     aocRegisterFreetextMessages: FreetextMessage[];
+
     aocMessageRead: number;
     aocRemoveMessage: number;
 }

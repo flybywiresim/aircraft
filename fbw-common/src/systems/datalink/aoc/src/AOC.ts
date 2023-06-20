@@ -12,12 +12,19 @@ import {
 import { EventBus } from '@microsoft/msfs-sdk';
 import { DigitalInputs } from './DigitalInputs';
 import { DigitalOutputs } from './DigitalOutputs';
+import { OperationalFlightPlan, OutOffOnIn, Sensors } from './components';
 
 /**
  * Defines the AOC
  */
 export class Aoc {
     private poweredUp: boolean = false;
+
+    private sensors: Sensors = null;
+
+    private oooiSystem: OutOffOnIn = null;
+
+    private ofpSystem: OperationalFlightPlan = null;
 
     private messageCounter: number = 0;
 
@@ -34,6 +41,9 @@ export class Aoc {
     constructor(private bus: EventBus, synchronizedRouter: boolean) {
         this.digitalInputs = new DigitalInputs(this.bus);
         this.digitalOutputs = new DigitalOutputs(this.bus, synchronizedRouter);
+        this.sensors = new Sensors(this.digitalInputs, this.digitalOutputs);
+        this.oooiSystem = new OutOffOnIn(this.digitalInputs, this.sensors, this.digitalOutputs);
+        this.ofpSystem = new OperationalFlightPlan(this.digitalInputs, this.oooiSystem, this.digitalOutputs);
 
         this.digitalInputs.addDataCallback('sendFreetextMessage', (message) => this.sendMessage(message));
         this.digitalInputs.addDataCallback('requestAtis', (icao, type, sentCallback) => this.receiveAtis(icao, type, sentCallback));
@@ -54,15 +64,29 @@ export class Aoc {
 
     public powerUp(): void {
         this.digitalInputs.powerUp();
+        this.ofpSystem.powerUp();
+        this.sensors.powerUp();
+        this.oooiSystem.powerUp();
         this.poweredUp = true;
     }
 
     public powerDown(): void {
         this.digitalOutputs.powerDown();
         this.digitalInputs.powerDown();
+        this.sensors.powerDown();
+        this.oooiSystem.powerDown();
+        this.ofpSystem.powerDown();
         this.messageQueueUplink = [];
         this.messageQueueDownlink = [];
         this.poweredUp = false;
+    }
+
+    public update(): void {
+        if (this.poweredUp) {
+            this.oooiSystem.update(this.ofpSystem.currentFlightPlan());
+            this.sensors.update(this.oooiSystem);
+            this.ofpSystem.update();
+        }
     }
 
     public initialize(): void {
@@ -76,7 +100,7 @@ export class Aoc {
 
     private async sendMessage(message: AtsuMessage): Promise<AtsuStatusCodes> {
         if (this.poweredUp) {
-            return this.digitalOutputs.sendMessage(message, false).then((code) => {
+            return this.digitalOutputs.sendFreetextMessage(message, false).then((code) => {
                 if (code === AtsuStatusCodes.Ok) this.insertMessages([message]);
                 return code;
             });

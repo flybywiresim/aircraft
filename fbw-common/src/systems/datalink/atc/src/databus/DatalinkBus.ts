@@ -21,13 +21,13 @@ export interface FmsRouteData {
     destination: Waypoint;
 }
 
-export interface AtcFmsMessages {
+export interface AtcDatalinkMessages {
     // data management control
     atcResetData: boolean;
 
     // responses from ATSU to FMS for requests
     atcGenericRequestResponse: number;
-    atcRequestAtsuStatusCode: { requestId: number; code: AtsuStatusCodes };
+    atcRequestAtsuStatusCode: { requestId: number; status: AtsuStatusCodes };
     atcPositionReport: { requestId: number; data: PositionReportData };
 
     // requests from ATSU to FMS
@@ -50,7 +50,7 @@ export interface AtcFmsMessages {
     atcDeleteMessage: number;
 }
 
-export interface FmsAtcMessages {
+export interface DatalinkAtcMessages {
     // flight plan synchronizations from FMS to ATC
     atcRouteData: FmsRouteData;
 

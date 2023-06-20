@@ -39,12 +39,12 @@ export default new TaskOfTasks("all", [
                     ]
                 ),
                 new ExecTask(
-                    'fmsclient',
-                    'npm run build-a32nx:atsu-fms-client',
+                    'datalinkclient',
+                    'npm run build-a32nx:atsu-datalink-client',
                     [
                         'fbw-a32nx/src/systems/atsu/common',
-                        'fbw-a32nx/src/systems/atsu/fmsclient',
-                        'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/fbw-a32nx/atsu/fmsclient.js'
+                        'fbw-a32nx/src/systems/atsu/datalinkclient',
+                        'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/fbw-a32nx/atsu/datalinkclient.js'
                     ]
                 ),
             ]),

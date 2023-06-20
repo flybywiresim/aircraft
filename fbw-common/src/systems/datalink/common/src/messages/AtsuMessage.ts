@@ -1,7 +1,7 @@
 //  Copyright (c) 2022 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { AtsuTimestamp } from './AtsuTimestamp';
+import { AtsuTimestamp } from '../types/AtsuTimestamp';
 
 export enum AtsuMessageNetwork {
     Hoppie,
@@ -18,11 +18,18 @@ export enum AtsuMessageType {
     METAR = 1,
     TAF = 2,
     ATIS = 3,
-    AOC = 4,
-    CPDLC = 5,
-    DCL = 6,
-    OCL = 7,
-    ATC = 8
+    FlightPlan = 4,
+    NOTAM = 5,
+    OperationsPerformance = 6,
+    OperationsFuel = 7,
+    OperationsWeights = 8,
+    OOOI = 9,
+    Sensors = 10,
+    AOC = 11,
+    CPDLC = 20,
+    DCL = 21,
+    OCL = 22,
+    ATC = 33
 }
 
 export enum AtsuMessageComStatus {
@@ -63,7 +70,7 @@ export class AtsuMessage {
 
     public Message = '';
 
-    public serialize(_format: AtsuMessageSerializationFormat) : string {
+    public serialize(_format: AtsuMessageSerializationFormat): string {
         throw new Error('No valid implementation');
     }
 

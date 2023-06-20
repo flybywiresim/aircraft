@@ -2,4 +2,4 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 export * from './AtcAocBus';
-export * from './FmsBus';
+export * from './DatalinkBus';

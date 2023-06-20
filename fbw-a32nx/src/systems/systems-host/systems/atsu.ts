@@ -1,9 +1,9 @@
 import { Atc } from '@datalink/atc';
 import { Aoc } from '@datalink/aoc';
-import { SimVarHandling } from '@datalink/common';
 import { Router } from '@datalink/router';
 import { EventBus, EventSubscriber } from '@microsoft/msfs-sdk';
 import { PowerSupplyBusTypes } from 'systems-host/systems/powersupply';
+import { SimVarHandling } from './atsu/SimVarHandling';
 
 export class AtsuSystem {
     private readonly simVarHandling: SimVarHandling;
@@ -50,5 +50,6 @@ export class AtsuSystem {
     public update(): void {
         this.simVarHandling.update();
         this.router.update();
+        this.aoc.update();
     }
 }

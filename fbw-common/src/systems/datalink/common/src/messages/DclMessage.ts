@@ -29,7 +29,7 @@ export class DclMessage extends CpdlcMessage {
         this.CloseAutomatically = false;
     }
 
-    public serialize(format: AtsuMessageSerializationFormat) {
+    public serialize(format: AtsuMessageSerializationFormat): string {
         let dclMessage = '';
         if (format === AtsuMessageSerializationFormat.Network) {
             dclMessage = 'REQUEST PREDEP CLEARANCE \n';

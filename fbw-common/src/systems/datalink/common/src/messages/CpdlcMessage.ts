@@ -1,7 +1,7 @@
 //  Copyright (c) 2021 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
-import { AtsuTimestamp } from './AtsuTimestamp';
+import { AtsuTimestamp } from '../types/AtsuTimestamp';
 import { AtsuMessageNetwork, AtsuMessageType, AtsuMessageDirection, AtsuMessageSerializationFormat, AtsuMessage } from './AtsuMessage';
 import { CpdlcMessageElement, CpdlcMessagesDownlink, CpdlcMessagesUplink } from './CpdlcMessageElements';
 import { wordWrap } from '../components/Convert';
@@ -99,7 +99,7 @@ export class CpdlcMessage extends AtsuMessage {
             && this.Response.Content[0]?.TypeId !== 'UM4' && this.Response.Content[0]?.TypeId !== 'UM5';
     }
 
-    public serialize(format: AtsuMessageSerializationFormat) {
+    public serialize(format: AtsuMessageSerializationFormat): string {
         const lineLength = format === AtsuMessageSerializationFormat.Mailbox ? 30 : 25;
         const lines: string[] = [];
         let message: string = '';

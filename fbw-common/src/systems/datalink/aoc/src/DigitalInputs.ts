@@ -8,13 +8,21 @@ import {
     AtsuStatusCodes,
     Clock,
     ClockDataBusTypes,
+    FlightFuelMessage,
+    FlightPerformanceMessage,
+    FlightPlanMessage,
+    FlightWeightsMessage,
     FreetextMessage,
     FwcDataBusTypes,
+    NotamMessage,
     WeatherMessage,
+    SensorsBusTypes,
+    FmgcDataBusTypes,
 } from '@datalink/common';
 import { RouterAtcAocMessages } from '@datalink/router';
 import { EventBus, EventSubscriber, Publisher } from '@microsoft/msfs-sdk';
-import { AocFmsMessages, FmsAocMessages } from './databus/FmsBus';
+import { Arinc429Word } from '@shared/arinc429';
+import { AocDatalinkMessages, DatalinkAocMessages } from './databus/DatalinkBus';
 
 export type AocDigitalInputCallbacks = {
     receivedFreetextMessage: (message: FreetextMessage) => void;
@@ -22,9 +30,21 @@ export type AocDigitalInputCallbacks = {
     sendFreetextMessage: (message: FreetextMessage) => Promise<AtsuStatusCodes>;
     requestAtis: (icao: string, type: AtisType, sentCallback: () => void) => Promise<[AtsuStatusCodes, WeatherMessage]>;
     requestWeather: (icaos: string[], requestMetar: boolean, sentCallback: () => void) => Promise<[AtsuStatusCodes, WeatherMessage]>;
+    requestFlightplan: (sentRequest: () => void) => Promise<[AtsuStatusCodes, FlightPlanMessage]>;
+    requestNotams: (sentRequest: () => void) => Promise<[AtsuStatusCodes, NotamMessage[]]>;
+    requestPerformance: (sentRequest: () => void) => Promise<[AtsuStatusCodes, FlightPerformanceMessage]>;
+    requestFuel: (sentRequest: () => void) => Promise<[AtsuStatusCodes, FlightFuelMessage]>;
+    requestWeights: (sentRequest: () => void) => Promise<[AtsuStatusCodes, FlightWeightsMessage]>;
     registerMessages: (messages: AtsuMessage[]) => void;
     messageRead: (messageId: number) => void;
     removeMessage: (messageId: number) => void;
+    noseGearCompressed: (compressed: boolean) => void;
+    parkingBrakeSet: (set: boolean) => void;
+    currentLatitude: (lat: Arinc429Word) => void;
+    currentLongitude: (long: Arinc429Word) => void;
+    currentAltitude: (alt: Arinc429Word) => void;
+    groundSpeed: (speed: Arinc429Word) => void;
+    fuelOnBoard: (fob: number) => void;
 }
 
 export class DigitalInputs {
@@ -34,14 +54,34 @@ export class DigitalInputs {
         sendFreetextMessage: null,
         requestAtis: null,
         requestWeather: null,
+        requestFlightplan: null,
+        requestNotams: null,
+        requestPerformance: null,
+        requestFuel: null,
+        requestWeights: null,
         registerMessages: null,
         messageRead: null,
         removeMessage: null,
+        noseGearCompressed: null,
+        parkingBrakeSet: null,
+        currentLatitude: null,
+        currentLongitude: null,
+        currentAltitude: null,
+        groundSpeed: null,
+        fuelOnBoard: null,
     };
 
-    private subscriber: EventSubscriber<AtcAocMessages & ClockDataBusTypes & FmsAocMessages & FwcDataBusTypes & RouterAtcAocMessages> = null;
+    private subscriber: EventSubscriber<
+        AtcAocMessages &
+        ClockDataBusTypes &
+        DatalinkAocMessages &
+        FmgcDataBusTypes &
+        FwcDataBusTypes &
+        RouterAtcAocMessages &
+        SensorsBusTypes
+    > = null;
 
-    private publisher: Publisher<AocFmsMessages> = null;
+    private publisher: Publisher<AocDatalinkMessages> = null;
 
     private poweredUp: boolean = false;
 
@@ -58,9 +98,29 @@ export class DigitalInputs {
         this.resetData();
     }
 
+    private requestOfpData(
+        publisherName: 'aocReceivedFlightPlan' | 'aocReceivedNotams' | 'aocReceivedPerformance' | 'aocReceivedFuel' | 'aocReceivedWeights',
+        requestId: number,
+        callback: (sentRequest: () => void) => Promise<[AtsuStatusCodes, any]>,
+    ): void {
+        if (callback !== null) {
+            callback(() => this.publisher.pub('aocRequestSentToGround', requestId, true, false)).then((response) => {
+                this.publisher.pub(publisherName, { requestId, data: response }, true, false);
+            });
+        }
+    }
+
     public initialize(): void {
-        this.subscriber = this.bus.getSubscriber<AtcAocMessages & ClockDataBusTypes & FmsAocMessages & FwcDataBusTypes & RouterAtcAocMessages>();
-        this.publisher = this.bus.getPublisher<AocFmsMessages>();
+        this.subscriber = this.bus.getSubscriber<
+            AtcAocMessages &
+            ClockDataBusTypes &
+            DatalinkAocMessages &
+            FmgcDataBusTypes &
+            FwcDataBusTypes &
+            RouterAtcAocMessages &
+            SensorsBusTypes
+        >();
+        this.publisher = this.bus.getPublisher<AocDatalinkMessages>();
 
         this.subscriber.on('utcYear').handle((year: number) => {
             if (this.poweredUp) this.UtcClock.year = year;
@@ -103,6 +163,21 @@ export class DigitalInputs {
                 });
             }
         });
+        this.subscriber.on('aocRequestFlightPlan').handle((requestId) => {
+            this.requestOfpData('aocReceivedFlightPlan', requestId, this.callbacks.requestFlightplan);
+        });
+        this.subscriber.on('aocRequestNotams').handle((requestId) => {
+            this.requestOfpData('aocReceivedNotams', requestId, this.callbacks.requestNotams);
+        });
+        this.subscriber.on('aocRequestPerformance').handle((requestId) => {
+            this.requestOfpData('aocReceivedPerformance', requestId, this.callbacks.requestPerformance);
+        });
+        this.subscriber.on('aocRequestFuel').handle((requestId) => {
+            this.requestOfpData('aocReceivedFuel', requestId, this.callbacks.requestFuel);
+        });
+        this.subscriber.on('aocRequestWeights').handle((requestId) => {
+            this.requestOfpData('aocReceivedWeights', requestId, this.callbacks.requestWeights);
+        });
         this.subscriber.on('aocRequestAtis').handle((data) => {
             if (this.callbacks.requestAtis !== null) {
                 this.callbacks.requestAtis(data.icao, data.type, () => this.publisher.pub('aocRequestSentToGround', data.requestId, true, false)).then((response) => {
@@ -135,6 +210,41 @@ export class DigitalInputs {
         this.subscriber.on('aocRemoveMessage').handle((messageId) => {
             if (this.callbacks.removeMessage !== null) {
                 this.callbacks.removeMessage(messageId);
+            }
+        });
+        this.subscriber.on('noseGearCompressed').handle((compressed) => {
+            if (this.callbacks.noseGearCompressed !== null) {
+                this.callbacks.noseGearCompressed(compressed);
+            }
+        });
+        this.subscriber.on('parkingBrakeSet').handle((set) => {
+            if (this.callbacks.parkingBrakeSet !== null) {
+                this.callbacks.parkingBrakeSet(set);
+            }
+        });
+        this.subscriber.on('presentPositionLatitude').handle((lat) => {
+            if (this.callbacks.currentLatitude !== null) {
+                this.callbacks.currentLatitude(lat);
+            }
+        });
+        this.subscriber.on('presentPositionLongitude').handle((long) => {
+            if (this.callbacks.currentLongitude !== null) {
+                this.callbacks.currentLongitude(long);
+            }
+        });
+        this.subscriber.on('presentAltitude').handle((altitude) => {
+            if (this.callbacks.currentAltitude !== null) {
+                this.callbacks.currentAltitude(altitude);
+            }
+        });
+        this.subscriber.on('groundSpeed').handle((speed) => {
+            if (this.callbacks.groundSpeed !== null) {
+                this.callbacks.groundSpeed(speed);
+            }
+        });
+        this.subscriber.on('fuelOnBoard').handle((fob) => {
+            if (this.callbacks.fuelOnBoard !== null) {
+                this.callbacks.fuelOnBoard(fob);
             }
         });
     }
