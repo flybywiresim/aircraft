@@ -421,10 +421,10 @@ class SpeedIndicator extends DisplayComponent<{ bus: EventBus }> {
     render(): VNode | null {
         return (
             <Layer x={2} y={25}>
-                <text x={0} y={0} class="White FontTiny">GS</text>
-                <text ref={this.groundSpeedRef} x={80} y={0} class="Green FontSmall EndAlign" />
-                <text x={95} y={0} class="White FontTiny">TAS</text>
-                <text ref={this.trueAirSpeedRef} x={190} y={0} class="Green FontSmall EndAlign" />
+                <text x={0} y={0} class="White FontSmallest">GS</text>
+                <text ref={this.groundSpeedRef} x={80} y={0} class="Green FontIntermediate EndAlign" />
+                <text x={95} y={0} class="White FontSmallest">TAS</text>
+                <text ref={this.trueAirSpeedRef} x={190} y={0} class="Green FontIntermediate EndAlign" />
             </Layer>
         );
     }
@@ -609,7 +609,7 @@ class TopMessages extends DisplayComponent<{ bus: EventBus, ndMode: Subscribable
             <>
                 <Layer x={384} y={28}>
                     {/* TODO verify */}
-                    <text class="Green FontSmall MiddleAlign">{this.approachMessageValue}</text>
+                    <text class="Green FontIntermediate MiddleAlign">{this.approachMessageValue}</text>
                 </Layer>
                 <TrueFlag x={this.trueFlagX} y={this.trueFlagY} class="Cyan FontSmallest" boxed={this.trueFlagBoxed} visible={this.trueRefVisible} />
                 <GridTrack x={Subject.create(384)} y={this.trueFlagY} visible={this.gridTrackVisible} gridTrack={this.gridTrack} />
@@ -777,20 +777,20 @@ class ToWaypointIndicator extends DisplayComponent<ToWaypointIndicatorProps> {
         return (
             <Layer x={690} y={25} visible={this.visibleSub}>
                 {/* This is always visible */}
-                <text x={-13} y={0} class="White FontSmall EndAlign">{this.toWptIdentValue}</text>
+                <text x={-13} y={0} class="White FontIntermediate EndAlign">{this.toWptIdentValue}</text>
 
                 <g visibility={this.bearingContainerVisible.map(this.visibilityFn)}>
-                    <text x={54} y={0} class="Green FontSmall EndAlign">{this.bearingText}</text>
-                    <text x={73} y={2} class="Cyan FontSmall EndAlign" visibility={this.trueRefActive.map(this.inverseVisibilityFn)}>&deg;</text>
-                    <text x={71} y={-3} class="Cyan FontSmallest EndAlign" visibility={this.trueRefActive.map(this.visibilityFn)}>T</text>
+                    <text x={54} y={0} class="Green FontIntermediate EndAlign">{this.bearingText}</text>
+                    <text x={73} y={2} class="Cyan FontIntermediate EndAlign" visibility={this.trueRefActive.map(this.inverseVisibilityFn)}>&deg;</text>
+                    <text x={71} y={-3} class="Cyan FontIntermediate EndAlign" visibility={this.trueRefActive.map(this.visibilityFn)}>T</text>
                 </g>
 
                 <g visibility={this.distanceLargeContainerVisible.map(this.visibilityFn)}>
-                    <text ref={this.largeDistanceNumberRef} x={39} y={32} class="Green FontSmall EndAlign" />
+                    <text ref={this.largeDistanceNumberRef} x={39} y={32} class="Green FontIntermediate EndAlign" />
                 </g>
 
                 <g visibility={this.distanceSmallContainerVisible.map(this.visibilityFn)}>
-                    <text ref={this.smallDistanceIntegerPartRef} x={6} y={32} class="Green FontSmall EndAlign" />
+                    <text ref={this.smallDistanceIntegerPartRef} x={6} y={32} class="Green FontIntermediate EndAlign" />
                     <text x={3} y={32} class="Green FontSmallest StartAlign">.</text>
                     <text ref={this.smallDistanceDecimalPartRef} x={20} y={32} class="Green FontSmallest StartAlign" />
                 </g>
@@ -799,7 +799,7 @@ class ToWaypointIndicator extends DisplayComponent<ToWaypointIndicatorProps> {
                     NM
                 </text>
 
-                <text x={72} y={66} class="Green FontSmall EndAlign">{this.etaValue}</text>
+                <text x={72} y={66} class="Green FontIntermediate EndAlign">{this.etaValue}</text>
             </Layer>
         );
     }
