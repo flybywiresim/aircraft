@@ -114,9 +114,10 @@ animation: pulsingS 1s step-end infinite;
     }
 
     .Separator {
-      stroke: $display-light-grey;
+      stroke: $display-grey;
       stroke-width: 4;
       fill: none;
+      stroke-linecap: round;
     }
 
     .AmberLine {
@@ -213,8 +214,7 @@ animation: pulsingS 1s step-end infinite;
 
     .LightGreyBox {
         stroke: none;
-        fill: $display-light-grey;
-        opacity: 0.2
+        fill: $display-grey;
     }
 
     .SlatsSmallWhite, .FlapsSmallWhite {
