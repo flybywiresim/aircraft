@@ -7,15 +7,17 @@
 const esbuild = require('esbuild');
 const path = require('path');
 
+require('dotenv').config();
+
 const rootDir = path.join(__dirname, '..', '..', '..');
-const outFile = '../out/flybywire-aircraft-a320-neo/html_ui/JS/fbw-a32nx/sentry-client/sentry-client.js';
+const outFile = 'out/flybywire-aircraft-a320-neo/html_ui/JS/fbw-a32nx/sentry-client/sentry-client.js';
 
 const isProductionBuild = process.env.A32NX_PRODUCTION_BUILD === '1';
 
 esbuild.build({
     absWorkingDir: __dirname,
 
-    define: { DEBUG: 'false' },
+    define: { 'DEBUG': 'false', 'process.env.SENTRY_DSN': `'${process.env.SENTRY_DSN}'` },
 
     entryPoints: ['src/index.ts'],
     bundle: true,
@@ -25,9 +27,8 @@ esbuild.build({
     outfile: path.join(rootDir, outFile),
 
     format: 'iife',
-    globalName: 'AtsuFmsClient',
 
-    sourcemap: isProductionBuild ? undefined : 'linked',
+    sourcemap: isProductionBuild ? 'linked' : undefined,
 
     // Target approximate CoherentGT WebKit version
     target: 'safari11',

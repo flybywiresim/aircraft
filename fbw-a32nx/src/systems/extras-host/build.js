@@ -8,7 +8,7 @@ const esbuild = require('esbuild');
 const path = require('path');
 
 const rootDir = path.join(__dirname, '..', '..', '..');
-const outFile = '../out/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/ExtrasHost';
+const outFile = 'out/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/ExtrasHost';
 
 const isProductionBuild = process.env.A32NX_PRODUCTION_BUILD === '1';
 
@@ -25,9 +25,8 @@ esbuild.build({
     outdir: path.join(rootDir, outFile),
 
     format: 'iife',
-    globalName: 'AtsuFmsClient',
 
-    sourcemap: isProductionBuild ? undefined : 'linked',
+    sourcemap: isProductionBuild ? 'linked' : undefined,
 
     // Target approximate CoherentGT WebKit version
     target: 'safari11',
