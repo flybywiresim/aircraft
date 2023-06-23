@@ -114,9 +114,9 @@ export const StatusArea = () => {
         <div id="StatusArea">
             <svg viewBox="0 0 600 150" xmlns="http://www.w3.org/2000/svg">
                 <g>
-                    <path className="sd-status-line" d="M 0   40 h 600" />
-                    <path className="sd-status-line" d="M 200 40 v 125" />
-                    <path className="sd-status-line" d="M 400 40 v 125" />
+                    <path className="sd-status-line" d="M 4   40 h 592" />
+                    <path className="sd-status-line" d="M 200 40 v 75" />
+                    <path className="sd-status-line" d="M 400 40 v 75" />
 
                     {/* Temperatures */}
 
