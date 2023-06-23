@@ -7,6 +7,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    #outputs:
+    # output1: ${{ steps.create_release.outputs.releaseId }}
     env:
       A32NX_PRODUCTION_BUILD: 1
       A32NX_INSTRUMENTS_BUILD_WORKERS: 2
@@ -41,20 +43,31 @@ jobs:
           cd ../..
       - name: Create Release
         id: create_release
-        uses: actions/create-release@v1
+
+        run: |
+          gh api
+            --method POST
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            /repos/flybywiresim/a32nx/releases \
+          -f tag_name=${{ github.ref }} \
+          -f target_commitish=${{ github.ref }} \
+          -f name=${{ github.ref }} \
+          -F draft=false \
+          -F prerelease=true \
+          -F generate_release_notes=false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: ${{ github.ref }}
-          draft: false
-          prerelease: true
       - name: Upload release asset
+        run: |
+          release_id = gh api --method GET /repos/flybywiresim/a32nx/releases/${{ github.ref }}
+          gh api \
+            --method POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            --hostname HOSTNAME \
+            /repos/OWNER/REPO/releases/$release_id/assets?name=${{ env.RELEASE_ZIP_NAME }} \
+            -f '@./${{ env.BUILD_DIR_NAME }}/${{ env.RELEASE_ZIP_NAME }}'
         uses: actions/upload-release-asset@v1.0.2
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./${{ env.BUILD_DIR_NAME }}/${{ env.RELEASE_ZIP_NAME }}
-          asset_name: ${{ env.RELEASE_ZIP_NAME }}
-          asset_content_type: application/zip

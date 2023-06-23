@@ -13,7 +13,7 @@ jobs:
     if: github.event.pull_request.draft == false
     steps:
       - name: Checkout source
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: install
         run: ./scripts/dev-env/run.sh ./scripts/setup.sh
       - name: npm run lint
@@ -26,7 +26,7 @@ jobs:
     if: github.event.pull_request.draft == false
     steps:
       - name: Checkout source
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: test-rust.sh
         run: |
           ./scripts/dev-env/run.sh scripts/test-rust.sh
@@ -35,7 +35,7 @@ jobs:
     if: github.event.pull_request.draft == false
     steps:
       - name: Checkout source
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: npm install
         run: ./scripts/dev-env/run.sh ./scripts/setup.sh
       - name: npm test
@@ -48,7 +48,7 @@ jobs:
       A32NX_INSTRUMENTS_BUILD_WORKERS: 2
     steps:
       - name: Checkout source
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Create .env file
         run: |
           echo A32NX_PRODUCTION_BUILD=1 >> fbw-a32nx/.env
@@ -73,7 +73,7 @@ jobs:
           cp ./fbw-a32nx/out/build-modules/modules.json ./fbw-a32nx/out/flybywire-aircraft-a320-neo/install.json
           ./scripts/dev-env/run.sh node ./scripts/install-source_a32nx.js
       - name: Upload PR artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         if: github.event.pull_request.auto_merge == false
         with:
           name: A32NX

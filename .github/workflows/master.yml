@@ -20,7 +20,7 @@ jobs:
       BUILD_DIR_NAME: master
     steps:
       - name: Checkout source
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Set BUILT_DATE_TIME
         run: echo "BUILT_DATE_TIME=$(date -u -Iseconds)" >> $GITHUB_ENV
       - name: Create .env file
@@ -54,35 +54,35 @@ jobs:
           CDN_BUCKET_DESTINATION: addons/a32nx/master
         run: |
           ./scripts/cf-cdn.sh $CDN_BUCKET_DESTINATION ./fbw-a32nx/out/build-modules
-      - name: Delete old GitHub Pre-Release assets
-        uses: mknejp/delete-release-assets@v1
-        with:
-          token: ${{ github.token }}
-          tag: ${{ env.MASTER_PRE_RELEASE_TAG }}
-          assets: "*"
-          fail-if-no-assets: false
-      - name: Upload aircraft package to GitHub Pre-Release Assets
-        uses: actions/upload-release-asset@v1.0.2
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ env.MASTER_PRE_RELEASE_ID }}/assets{?name,label}
-          asset_path: ./${{ env.BUILD_DIR_NAME }}/${{ env.MASTER_ZIP_NAME }}
-          asset_name: ${{ env.MASTER_ZIP_NAME }}
-          asset_content_type: application/zip
-      - name: Upload fragments to GitHub Pre-Release Assets
-        uses: dwenegar/upload-release-assets@v1
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          release_id: ${{ env.MASTER_PRE_RELEASE_ID }}
-          assets_path: ./fbw-a32nx/out/build-modules
-      - name: Update GitHub Pre-Release Body
-        run: |
-          curl --request PATCH \
-            --url 'https://api.github.com/repos/${{ github.repository }}/releases/${{ env.MASTER_PRE_RELEASE_ID }}' \
-            --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
-            --header 'Content-Type: application/json' \
-            --data-raw '{
-              "body": "This pre-release has its asset updated on every commit to the master branch\nLast updated on ${{ env.BUILT_DATE_TIME }} from commit ${{ github.sha }}\nThis link will always point to the latest master build: https://github.com/${{ github.repository }}/releases/download/${{ env.MASTER_PRE_RELEASE_TAG }}/${{ env.MASTER_ZIP_NAME }}"
-            }'
+    #  - name: Delete old GitHub Pre-Release assets
+    #    uses: mknejp/delete-release-assets@v1
+    #    with:
+    #      token: ${{ github.token }}
+    #      tag: ${{ env.MASTER_PRE_RELEASE_TAG }}
+    #      assets: "*"
+    #      fail-if-no-assets: false
+    #  - name: Upload aircraft package to GitHub Pre-Release Assets
+    #    uses: actions/upload-release-asset@v1.0.2
+    #    env:
+    #      GITHUB_TOKEN: ${{ github.token }}
+    #    with:
+    #      upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ env.MASTER_PRE_RELEASE_ID }}/assets{?name,label}
+    #      asset_path: ./${{ env.BUILD_DIR_NAME }}/${{ env.MASTER_ZIP_NAME }}
+    #      asset_name: ${{ env.MASTER_ZIP_NAME }}
+    #      asset_content_type: application/zip
+    #  - name: Upload fragments to GitHub Pre-Release Assets
+    #    uses: dwenegar/upload-release-assets@v1
+    #    env:
+    #      GITHUB_TOKEN: ${{ github.token }}
+    #    with:
+    #      release_id: ${{ env.MASTER_PRE_RELEASE_ID }}
+    #      assets_path: ./fbw-a32nx/out/build-modules
+    #  - name: Update GitHub Pre-Release Body
+    #    run: |
+    #      curl --request PATCH \
+    #        --url 'https://api.github.com/repos/${{ github.repository }}/releases/${{ env.MASTER_PRE_RELEASE_ID }}' \
+    #        --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
+    #        --header 'Content-Type: application/json' \
+    #        --data-raw '{
+    #          "body": "This pre-release has its asset updated on every commit to the master branch\nLast updated on ${{ env.BUILT_DATE_TIME }} from commit ${{ github.sha }}\nThis link will always point to the latest master build: https://github.com/${{ github.repository }}/releases/download/${{ env.MASTER_PRE_RELEASE_TAG }}/${{ env.MASTER_ZIP_NAME }}"
+    #        }'
