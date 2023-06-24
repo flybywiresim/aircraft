@@ -18,7 +18,7 @@ export type NotificationParams = {
  * PopUp utility class to create a pop-up UI element
  *
  * Usage:
- * import { PopUp } from '@shared/popup';
+ * import { PopUp } from '@flybywiresim/fbw-sdk';
  * ...
  * const popup = new PopUp();
  * popup.showPopUp("CRITICAL SETTING CHANGED", "Your message here", "small", yesFunc, noFunc);

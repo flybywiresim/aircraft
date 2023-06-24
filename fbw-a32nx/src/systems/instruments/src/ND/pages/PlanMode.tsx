@@ -1,8 +1,11 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import React, { FC, memo, useEffect, useState } from 'react';
-import { useSimVar } from '@instruments/common/simVars';
+import { useSimVar, useArinc429Var } from '@flybywiresim/fbw-sdk';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { EfisSide, NdSymbol } from '@shared/NavigationDisplay';
-import { useArinc429Var } from '@instruments/common/arinc429';
 import { CrossTrack } from '../elements/CrossTrack';
 import { ToWaypointIndicator } from '../elements/ToWaypointIndicator';
 import { FlightPlan } from '../elements/FlightPlan';

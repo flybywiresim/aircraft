@@ -2,7 +2,7 @@
 
 #main-apu {
     .Box {
-        stroke: $display-light-grey;
+        stroke: $display-grey;
         fill: none;
         stroke-width: 2.5px;
     }
@@ -71,7 +71,7 @@
         }
 
         &.Grey {
-            stroke: $display-light-grey;
+            stroke: $display-grey;
         }
 
         &.Amber {

@@ -13,7 +13,7 @@ import {
     RmpDataBusTypes,
     Conversion,
 } from '@datalink/common';
-import { Arinc429Word } from '@shared/arinc429';
+import { Arinc429Word } from '@flybywiresim/fbw-sdk';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { EventBus, EventSubscriber, Publisher } from '@microsoft/msfs-sdk';
 import { AtcAocRouterMessages, FmsRouterMessages } from './databus';

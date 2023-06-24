@@ -2,12 +2,11 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { EventBus, HEventPublisher } from '@microsoft/msfs-sdk';
-import { NotificationManager } from '@shared/notification';
+import { NotificationManager } from '@flybywiresim/fbw-sdk';
 import { ExtrasSimVarPublisher } from 'extras-host/modules/common/ExtrasSimVarPublisher';
 import { PushbuttonCheck } from 'extras-host/modules/pushbutton_check/PushbuttonCheck';
 import { KeyInterceptor } from './modules/key_interceptor/KeyInterceptor';
 import { VersionCheck } from './modules/version_check/VersionCheck';
-import './style.scss';
 
 /**
  * This is the main class for the extras-host instrument.

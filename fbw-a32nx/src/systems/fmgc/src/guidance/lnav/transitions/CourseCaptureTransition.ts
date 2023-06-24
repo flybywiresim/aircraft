@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { MathUtils } from '@shared/MathUtils';
+import { MathUtils, Constants } from '@flybywiresim/fbw-sdk';
 import { CALeg } from '@fmgc/guidance/lnav/legs/CA';
 import { DFLeg } from '@fmgc/guidance/lnav/legs/DF';
 import { HALeg, HFLeg, HMLeg } from '@fmgc/guidance/lnav/legs/HX';
@@ -13,7 +13,6 @@ import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
 import { Transition } from '@fmgc/guidance/lnav/Transition';
 import { GuidanceParameters } from '@fmgc/guidance/ControlLaws';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
-import { Constants } from '@shared/Constants';
 import { Geo } from '@fmgc/utils/Geo';
 import { PathVector, PathVectorType } from '@fmgc/guidance/lnav/PathVector';
 import { TurnDirection } from '@fmgc/types/fstypes/FSEnums';
