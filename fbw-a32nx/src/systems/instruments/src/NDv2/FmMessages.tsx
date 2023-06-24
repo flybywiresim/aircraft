@@ -91,7 +91,7 @@ export class FmMessages extends DisplayComponent<FmMessagesProps> {
                     stroke="none"
                 />
 
-                <rect ref={this.boxRef} x={0} y={0} width={440} height={27} class="White BackgroundFill" stroke-width={1.75} />
+                <rect ref={this.boxRef} x={0} y={0} width={440} height={27} class="Grey BackgroundFill" stroke-width={1.75} />
 
                 { /* the text message is offset from centre on the real one...
                  guess by the width of the multiple message arrow... */ }

@@ -386,7 +386,7 @@ export class NavaidTuner {
         for (const [i, mmr] of this.mmrTuningStatus.entries()) {
             const autoFacility = this.landingSystemSelectionManager.selectedIls ?? undefined;
             const autoCourse = this.landingSystemSelectionManager.selectedLocCourse;
-            if (!mmr.manual && mmr.facility?.icao !== autoFacility?.icao && autoCourse !== null) {
+            if (!mmr.manual && mmr.facility?.icao !== autoFacility?.icao && (autoCourse !== null || autoFacility === undefined)) {
                 mmr.databaseCourse = autoCourse;
                 mmr.databaseBackcourse = this.landingSystemSelectionManager.selectedApprBackcourse;
                 mmr.course = mmr.databaseCourse;
