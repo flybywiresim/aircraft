@@ -272,7 +272,10 @@ impl A320AirConditioningSystem {
                 ElectricalBusType::AlternatingCurrent(1),
             ); 2],
             mixer_unit: MixerUnit::new(cabin_zones),
-            packs: [AirConditioningPack::new(), AirConditioningPack::new()],
+            packs: [
+                AirConditioningPack::new(context, 1),
+                AirConditioningPack::new(context, 2),
+            ],
             trim_air_system: TrimAirSystem::new(
                 context,
                 cabin_zones,
@@ -385,6 +388,7 @@ impl SimulationElement for A320AirConditioningSystem {
         self.acsc.accept(visitor);
         self.trim_air_system.accept(visitor);
         accept_iterable!(self.cabin_fans, visitor);
+        accept_iterable!(self.packs, visitor);
 
         self.air_conditioning_overhead.accept(visitor);
 

@@ -136,6 +136,7 @@ impl SimulationElement for CoreProcessingInputOutputModuleB {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.ags_app.accept(visitor);
         self.tcs_app.accept(visitor);
+        self.vcs_app.accept(visitor);
 
         visitor.visit(self);
     }
@@ -144,12 +145,14 @@ impl SimulationElement for CoreProcessingInputOutputModuleB {
 /// Determines the pack flow demand and sends it to the FDAC for actuation of the valves
 struct AirGenerationSystemApplication {
     pack_flow_id: [VariableIdentifier; 4],
+    pack_operational_id: [VariableIdentifier; 2],
 
     aircraft_state: AirConditioningStateManager,
     fcv_timer_open: [Duration; 2], // One for each pack
     flow_demand_ratio: [Ratio; 2], // One for each pack
     flow_ratio: [Ratio; 4],        // One for each FCV
     pack_flow_demand: [MassRate; 2],
+    pack_operating: [bool; 2], // One for each pack
 }
 
 impl AirGenerationSystemApplication {
@@ -168,12 +171,15 @@ impl AirGenerationSystemApplication {
     fn new(context: &mut InitContext) -> Self {
         Self {
             pack_flow_id: Self::pack_flow_id(context),
+            pack_operational_id: [1, 2]
+                .map(|pack| context.get_identifier(format!("COND_PACK_{}_IS_OPERATING", pack))),
 
             aircraft_state: AirConditioningStateManager::new(),
             fcv_timer_open: [Duration::from_secs(0); 2],
             flow_demand_ratio: [Ratio::default(); 2],
             flow_ratio: [Ratio::default(); 4],
             pack_flow_demand: [MassRate::default(); 2],
+            pack_operating: [false; 2],
         }
     }
 
@@ -218,6 +224,12 @@ impl AirGenerationSystemApplication {
 
         self.update_timer(context, pneumatic);
         self.flow_ratio = self.actual_flow_percentage_calculation(pneumatic, pressurization);
+
+        self.pack_operating = [[0, 1], [2, 3]].map(|flow_id| {
+            flow_id
+                .iter()
+                .any(|&f| self.flow_ratio[f] > Ratio::default())
+        });
     }
 
     fn ground_speed(&self, adirs: &impl AdirsToAirCondInterface) -> Option<Velocity> {
@@ -347,6 +359,10 @@ impl PackFlow for AirGenerationSystemApplication {
 
 impl SimulationElement for AirGenerationSystemApplication {
     fn write(&self, writer: &mut SimulatorWriter) {
+        self.pack_operational_id
+            .iter()
+            .zip(self.pack_operating)
+            .for_each(|(id, operating)| writer.write(id, operating));
         self.pack_flow_id
             .iter()
             .zip(self.flow_ratio)
@@ -449,9 +465,16 @@ impl SimulationElement for TemperatureControlSystemApplication {
 }
 
 struct VentilationControlSystemApplication {
+    fwd_extraction_fan_id: VariableIdentifier,
+    fwd_isolation_valve_id: VariableIdentifier,
+    bulk_extraction_fan_id: VariableIdentifier,
     bulk_isolation_valve_id: VariableIdentifier,
+    primary_fans_enabled_id: VariableIdentifier,
 
+    fwd_extraction_fan_is_on: bool,
+    fwd_isolation_valve_is_open: bool,
     bulk_control_is_powered: bool,
+    bulk_extraction_fan_is_on: bool,
     bulk_isolation_valve_is_open: bool,
     hp_cabin_fans_are_enabled: bool,
     hp_cabin_fans_flow_demand: MassRate,
@@ -465,10 +488,19 @@ impl VentilationControlSystemApplication {
 
     fn new(context: &mut InitContext) -> Self {
         Self {
+            fwd_extraction_fan_id: context.get_identifier("VENT_FWD_EXTRACTION_FAN_ON".to_owned()),
+            fwd_isolation_valve_id: context
+                .get_identifier("VENT_FWD_ISOLATION_VALVE_OPEN".to_owned()),
+            bulk_extraction_fan_id: context
+                .get_identifier("VENT_BULK_EXTRACTION_FAN_ON".to_owned()),
             bulk_isolation_valve_id: context
                 .get_identifier("VENT_BULK_ISOLATION_VALVE_OPEN".to_owned()),
+            primary_fans_enabled_id: context.get_identifier("VENT_PRIMARY_FANS_ENABLED".to_owned()),
 
+            fwd_extraction_fan_is_on: false,
+            fwd_isolation_valve_is_open: false,
             bulk_control_is_powered: false,
+            bulk_extraction_fan_is_on: false,
             bulk_isolation_valve_is_open: false,
             hp_cabin_fans_are_enabled: false,
             hp_cabin_fans_flow_demand: MassRate::default(),
@@ -486,7 +518,10 @@ impl VentilationControlSystemApplication {
         vcm_shared: &impl VcmShared,
         pack_flow_demand: &impl PackFlow,
     ) {
+        self.fwd_extraction_fan_is_on = vcm_shared.fwd_extraction_fan_is_on();
+        self.fwd_isolation_valve_is_open = vcm_shared.fwd_isolation_valves_open_allowed();
         self.bulk_control_is_powered = bulk_control_is_powered;
+        self.bulk_extraction_fan_is_on = vcm_shared.bulk_extraction_fan_is_on();
         self.bulk_isolation_valve_is_open =
             self.bulk_control_is_powered && vcm_shared.bulk_isolation_valves_open_allowed();
         self.hp_cabin_fans_are_enabled = vcm_shared.hp_cabin_fans_are_enabled();
@@ -564,9 +599,19 @@ impl ControllerSignal<BulkHeaterSignal> for VentilationControlSystemApplication 
 
 impl SimulationElement for VentilationControlSystemApplication {
     fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.fwd_extraction_fan_id, self.fwd_extraction_fan_is_on);
+        writer.write(
+            &self.fwd_isolation_valve_id,
+            self.fwd_isolation_valve_is_open,
+        );
+        writer.write(&self.bulk_extraction_fan_id, self.bulk_extraction_fan_is_on);
         writer.write(
             &self.bulk_isolation_valve_id,
             self.bulk_isolation_valve_is_open,
+        );
+        writer.write(
+            &self.primary_fans_enabled_id,
+            self.hp_cabin_fans_are_enabled,
         );
     }
 }

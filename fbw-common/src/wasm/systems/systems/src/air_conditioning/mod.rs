@@ -246,14 +246,24 @@ enum OperatingChannelFault {
     Fault,
 }
 
+#[derive(Clone, Copy)]
 enum Channel {
     ChannelOne,
     ChannelTwo,
 }
 
+impl From<Channel> for usize {
+    fn from(value: Channel) -> Self {
+        match value {
+            Channel::ChannelOne => 1,
+            Channel::ChannelTwo => 2,
+        }
+    }
+}
+
 struct OperatingChannel {
     // Channel ID is not read anywhere right now but it will be when failures are implemented
-    _channel_id: Channel,
+    channel_id: Channel,
     powered_by: ElectricalBusType,
     is_powered: bool,
     fault: OperatingChannelFault,
@@ -269,7 +279,7 @@ impl OperatingChannel {
             }
         };
         Self {
-            _channel_id: channel_id,
+            channel_id: channel_id,
             powered_by,
             is_powered: false,
             fault: OperatingChannelFault::NoFault,
@@ -278,6 +288,10 @@ impl OperatingChannel {
 
     fn has_fault(&self) -> bool {
         matches!(self.fault, OperatingChannelFault::Fault)
+    }
+
+    fn id(&self) -> Channel {
+        self.channel_id
     }
 }
 
@@ -510,12 +524,17 @@ impl<const ZONES: usize> OutletAir for MixerUnitOutlet<ZONES> {
 
 /// Temporary struct until packs are fully simulated
 pub struct AirConditioningPack {
+    pack_outlet_temperature_id: VariableIdentifier,
+
     outlet_air: Air,
 }
 
 impl AirConditioningPack {
-    pub fn new() -> Self {
+    pub fn new(context: &mut InitContext, id: u8) -> Self {
         Self {
+            pack_outlet_temperature_id: context
+                .get_identifier(format!("COND_PACK_{}_OUTLET_TEMPERATURE", id)),
+
             outlet_air: Air::new(),
         }
     }
@@ -539,9 +558,12 @@ impl OutletAir for AirConditioningPack {
     }
 }
 
-impl Default for AirConditioningPack {
-    fn default() -> Self {
-        Self::new()
+impl SimulationElement for AirConditioningPack {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(
+            &self.pack_outlet_temperature_id,
+            self.outlet_air().temperature().get::<degree_celsius>(),
+        );
     }
 }
 
@@ -616,21 +638,6 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystem<ZONES, ENGINES> {
         self.outlet_air.set_flow_rate(total_flow);
         self.outlet_air
             .set_pressure(self.trim_air_outlet_pressure());
-        // println!(
-        //     "TAV open amount: {}, tav outlet air temp: {}, tav outlet flow: {} tav mixer outlet: {}",
-        //     self.trim_air_valves[1]
-        //         .trim_air_valve_open_amount()
-        //         .get::<percent>(),
-        //     self.trim_air_valves[1]
-        //         .outlet_air()
-        //         .temperature()
-        //         .get::<degree_celsius>(),
-        //     self.trim_air_valves[1].outlet_air().flow_rate().get::<kilogram_per_second>(),
-        //     self.trim_air_mixers[1]
-        //         .outlet_air()
-        //         .temperature()
-        //         .get::<degree_celsius>()
-        // );
     }
 
     pub fn mix_packs_air_update(&mut self, pack_container: &mut [impl PneumaticContainer; 2]) {

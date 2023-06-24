@@ -72,8 +72,8 @@ impl A380AirConditioning {
             ZoneType::Cabin(25), // UPPER_DECK_5
             ZoneType::Cabin(26), // UPPER_DECK_6
             ZoneType::Cabin(27), // UPPER_DECK_7
-            ZoneType::Cargo(1),  // FWD
-            ZoneType::Cargo(2),  // BULK
+            ZoneType::Cargo(1),  // CARGO_FWD
+            ZoneType::Cargo(2),  // CARGO_BULK
         ];
 
         Self {
@@ -341,12 +341,16 @@ impl A380AirConditioningSystem {
                     ],
                 ),
             ],
-            tadd: TrimAirDriveDevice::new(vec![
-                ElectricalBusType::AlternatingCurrent(2), // 117XP
-                ElectricalBusType::AlternatingCurrent(4), // 206XP
-            ]),
+            tadd: TrimAirDriveDevice::new(
+                context,
+                vec![
+                    ElectricalBusType::AlternatingCurrent(2), // 117XP
+                    ElectricalBusType::AlternatingCurrent(4), // 206XP
+                ],
+            ),
             vcm: [
                 VentilationControlModule::new(
+                    context,
                     VcmId::Fwd,
                     vec![
                         ElectricalBusType::DirectCurrent(1),       // 411PP
@@ -354,6 +358,7 @@ impl A380AirConditioningSystem {
                     ],
                 ),
                 VentilationControlModule::new(
+                    context,
                     VcmId::Aft,
                     vec![
                         ElectricalBusType::DirectCurrent(2),       // 214PP
@@ -382,7 +387,10 @@ impl A380AirConditioningSystem {
             ],
             cargo_air_heater: AirHeater::new(ElectricalBusType::AlternatingCurrent(2)), // 200XP4
             mixer_unit: MixerUnit::new(cabin_zones),
-            packs: [AirConditioningPack::new(), AirConditioningPack::new()],
+            packs: [
+                AirConditioningPack::new(context, 1),
+                AirConditioningPack::new(context, 2),
+            ],
             trim_air_system: TrimAirSystem::new(
                 context,
                 cabin_zones,
@@ -459,13 +467,6 @@ impl A380AirConditioningSystem {
             cpiom_b.bulk_heater_on_signal(),
         );
 
-        // println!(
-        //     "Bulk duct temp: {}",
-        //     self.cargo_air_heater
-        //         .outlet_air()
-        //         .temperature()
-        //         .get::<degree_celsius>()
-        // );
         self.air_conditioning_overhead
             .set_pack_pushbutton_fault(self.pack_fault_determination());
     }
@@ -584,6 +585,7 @@ impl SimulationElement for A380AirConditioningSystem {
 
         self.trim_air_system.accept(visitor);
         accept_iterable!(self.cabin_fans, visitor);
+        accept_iterable!(self.packs, visitor);
         self.cargo_air_heater.accept(visitor);
 
         self.air_conditioning_overhead.accept(visitor);

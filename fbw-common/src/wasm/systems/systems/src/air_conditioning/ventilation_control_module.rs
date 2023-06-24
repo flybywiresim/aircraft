@@ -1,6 +1,11 @@
+use std::fmt::Display;
+
 use crate::{
     shared::{ControllerSignal, ElectricalBusType},
-    simulation::{SimulationElement, SimulationElementVisitor},
+    simulation::{
+        InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter,
+        VariableIdentifier, Write,
+    },
 };
 
 use super::{
@@ -17,6 +22,15 @@ enum VcmFault {
 pub enum VcmId {
     Fwd,
     Aft,
+}
+
+impl Display for VcmId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            VcmId::Fwd => write!(f, "FWD"),
+            VcmId::Aft => write!(f, "AFT"),
+        }
+    }
 }
 
 pub trait VcmShared {
@@ -41,6 +55,8 @@ pub trait VcmShared {
 }
 
 pub struct VentilationControlModule {
+    vcm_channel_failure_id: VariableIdentifier,
+
     id: VcmId,
     active_channel: OperatingChannel,
     stand_by_channel: OperatingChannel,
@@ -54,8 +70,11 @@ pub struct VentilationControlModule {
 }
 
 impl VentilationControlModule {
-    pub fn new(id: VcmId, powered_by: Vec<ElectricalBusType>) -> Self {
+    pub fn new(context: &mut InitContext, id: VcmId, powered_by: Vec<ElectricalBusType>) -> Self {
         Self {
+            vcm_channel_failure_id: context
+                .get_identifier(format!("VENT_{}_VCM_CHANNEL_FAILURE", id)),
+
             id,
             active_channel: OperatingChannel::new(1, powered_by[0]),
             stand_by_channel: OperatingChannel::new(2, powered_by[1]),
@@ -157,6 +176,15 @@ impl ControllerSignal<CabinFansSignal> for VentilationControlModule {
 }
 
 impl SimulationElement for VentilationControlModule {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        let failure_count = match self.fault {
+            None => 0,
+            Some(VcmFault::OneChannelFault) => self.stand_by_channel.id().into(),
+            Some(VcmFault::BothChannelsFault) => 3,
+        };
+        writer.write(&self.vcm_channel_failure_id, failure_count);
+    }
+
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.active_channel.accept(visitor);
         self.stand_by_channel.accept(visitor);

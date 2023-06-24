@@ -3,7 +3,10 @@ use crate::{
         ElectricalBusType, EngineBleedPushbutton, EngineCorrectedN1, EngineStartState,
         PackFlowValveState, PneumaticBleed,
     },
-    simulation::{SimulationElement, SimulationElementVisitor, UpdateContext},
+    simulation::{
+        InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
+        VariableIdentifier, Write,
+    },
 };
 
 use super::{
@@ -25,6 +28,8 @@ pub trait TaddShared {
 }
 
 pub struct TrimAirDriveDevice<const ZONES: usize, const ENGINES: usize> {
+    tadd_channel_failure_id: VariableIdentifier,
+
     active_channel: OperatingChannel,
     stand_by_channel: OperatingChannel,
     hot_air_is_enabled: [bool; 2],
@@ -35,8 +40,10 @@ pub struct TrimAirDriveDevice<const ZONES: usize, const ENGINES: usize> {
 }
 
 impl<const ZONES: usize, const ENGINES: usize> TrimAirDriveDevice<ZONES, ENGINES> {
-    pub fn new(powered_by: Vec<ElectricalBusType>) -> Self {
+    pub fn new(context: &mut InitContext, powered_by: Vec<ElectricalBusType>) -> Self {
         Self {
+            tadd_channel_failure_id: context.get_identifier("COND_TADD_CHANNEL_FAILURE".to_owned()),
+
             active_channel: OperatingChannel::new(1, powered_by[0]),
             stand_by_channel: OperatingChannel::new(2, powered_by[1]),
             hot_air_is_enabled: [false; 2],
@@ -179,6 +186,15 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirControllers
 impl<const ZONES: usize, const ENGINES: usize> SimulationElement
     for TrimAirDriveDevice<ZONES, ENGINES>
 {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        let failure_count = match self.fault {
+            None => 0,
+            Some(TaddFault::OneChannelFault) => self.stand_by_channel.id().into(),
+            Some(TaddFault::BothChannelsFault) => 3,
+        };
+        writer.write(&self.tadd_channel_failure_id, failure_count);
+    }
+
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.active_channel.accept(visitor);
         self.stand_by_channel.accept(visitor);

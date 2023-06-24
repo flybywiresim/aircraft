@@ -1923,7 +1923,10 @@ mod acs_controller_tests {
                 engine_fire_push_buttons: TestEngineFirePushButtons::new(),
                 mixer_unit: MixerUnit::new(&cabin_zones),
                 number_of_passengers: 0,
-                packs: [AirConditioningPack::new(), AirConditioningPack::new()],
+                packs: [
+                    AirConditioningPack::new(context, 1),
+                    AirConditioningPack::new(context, 2),
+                ],
                 pneumatic: TestPneumatic::new(context),
                 pneumatic_overhead: TestPneumaticOverhead::new(context),
                 pressurization: TestPressurization::new(),
