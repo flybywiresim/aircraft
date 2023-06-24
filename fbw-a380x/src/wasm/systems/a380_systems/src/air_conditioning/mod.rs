@@ -484,6 +484,7 @@ impl A380AirConditioningSystem {
         cpiom_b: &CoreProcessingInputOutputModuleB,
     ) {
         // The VCM FWD controls all LH recirculation fans and the VCM AFT controls all RH recirculation.
+        // The signal to update the fans comes from the CPIOM when the selector is in AUTO and from the VCM in the other positions
         for (id, fan) in self.cabin_fans.iter_mut().enumerate() {
             if cpiom_b.hp_recirculation_fans_signal().signal().is_some() {
                 fan.update(cabin_simulation, cpiom_b.hp_recirculation_fans_signal());
@@ -500,7 +501,7 @@ impl A380AirConditioningSystem {
                         cabin_simulation,
                         self.vcm
                             .iter()
-                            .find(|module| matches!(module.id(), VcmId::Fwd))
+                            .find(|module| matches!(module.id(), VcmId::Aft))
                             .expect("The Ventilation Control Module failed to find the required module for the recirculation fans"),
                     )
             }
@@ -527,7 +528,7 @@ impl PackFlowControllers for A380AirConditioningSystem {
 
 impl DuctTemperature for A380AirConditioningSystem {
     fn duct_temperature(&self) -> Vec<ThermodynamicTemperature> {
-        // The bulk cargo zone of the A380 is fed with recirculated air through the heater
+        // The bulk cargo zone of the A380 is fed with recirculated air from the cabin flowing through the heater
         let mut duct_temp_vec = self.trim_air_system.duct_temperature();
         duct_temp_vec[ZoneType::Cargo(2).id()] = self.cargo_air_heater.outlet_air().temperature();
         duct_temp_vec
