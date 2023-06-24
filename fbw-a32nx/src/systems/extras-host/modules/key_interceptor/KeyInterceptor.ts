@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { EventBus, KeyEvents, KeyEventManager } from '@microsoft/msfs-sdk';
-import { NotificationManager, NotificationType } from '@shared/notification';
-import { PopUpDialog } from '@shared/popup';
+import { NotificationManager, NotificationType, PopUpDialog } from '@flybywiresim/fbw-sdk';
 import { AircraftPresetsList } from '../common/AircraftPresetsList';
 
 /**

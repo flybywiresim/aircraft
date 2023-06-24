@@ -1,5 +1,9 @@
-import { Arinc429Word } from '@shared/arinc429';
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { LateralMode } from '@shared/autopilot';
+import { Arinc429Word } from '@flybywiresim/fbw-sdk';
 import { FmgcComponent } from './FmgcComponent';
 
 // Note the logic for this is different on A330/350/380

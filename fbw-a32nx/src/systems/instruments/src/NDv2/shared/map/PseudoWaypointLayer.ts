@@ -1,10 +1,13 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { NdSymbol, NdSymbolTypeFlags } from '@shared/NavigationDisplay';
 import { EventBus } from '@microsoft/msfs-sdk';
 import { NDSimvars } from 'instruments/src/NDv2/NDSimvarPublisher';
 import { Arinc429ConsumerSubject } from 'instruments/src/MsfsAvionicsCommon/Arinc429ConsumerSubject';
-import { Arinc429Register } from '@shared/arinc429';
+import { Arinc429Register, MathUtils } from '@flybywiresim/fbw-sdk';
 import { DmcEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
-import { MathUtils } from '@shared/MathUtils';
 import { MapLayer } from './MapLayer';
 import { MapParameters } from '../../../ND/utils/MapParameters';
 import { PaintUtils } from './PaintUtils';

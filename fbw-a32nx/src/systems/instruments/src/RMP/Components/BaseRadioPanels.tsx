@@ -1,6 +1,9 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import React, { useState } from 'react';
-import { useSimVar, useInteractionSimVar } from '@instruments/common/simVars';
-import { useInteractionEvent } from '@instruments/common/hooks';
+import { useSimVar, useInteractionSimVar, useInteractionEvent } from '@flybywiresim/fbw-sdk';
 import { TransceiverType } from './StandbyFrequency';
 import { VhfRadioPanel } from './VhfRadioPanel';
 import { NavRadioPanel } from './NavRadioPanel';

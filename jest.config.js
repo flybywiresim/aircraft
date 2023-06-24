@@ -14,5 +14,8 @@ module.exports = {
                 ignoreCodes: ['TS151001'],
             }
         }
+    },
+    moduleNameMapper: {
+        '@flybywiresim/fbw-sdk' : '<rootDir>/fbw-common/src/systems/index.ts',
     }
 };
