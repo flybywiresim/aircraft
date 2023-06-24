@@ -8,7 +8,7 @@ import { EfisSide, EfisVectorsGroup } from '@shared/NavigationDisplay';
 import { PathVector, pathVectorLength, pathVectorValid } from '@fmgc/guidance/lnav/PathVector';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { ArmedLateralMode, isArmed, LateralMode } from '@shared/autopilot';
-import { GenericDataListenerSync } from '@shared/GenericDataListenerSync';
+import { GenericDataListenerSync } from '@flybywiresim/fbw-sdk';
 
 const UPDATE_TIMER = 2_500;
 

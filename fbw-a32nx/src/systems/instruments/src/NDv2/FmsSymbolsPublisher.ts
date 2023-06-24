@@ -1,7 +1,11 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { BasePublisher, EventBus } from '@microsoft/msfs-sdk';
 import { EfisSide, NdSymbol, NdTraffic } from '@shared/NavigationDisplay';
 import { PathVector } from '@fmgc/guidance/lnav/PathVector';
-import { GenericDataListenerSync } from '@shared/GenericDataListenerSync';
+import { GenericDataListenerSync } from '@flybywiresim/fbw-sdk';
 
 export interface FmsSymbolsData {
     symbols: NdSymbol[],

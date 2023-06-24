@@ -1,7 +1,10 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import React from 'react';
-import { Layer } from '@instruments/common/utils';
+import { Layer, useSimVar } from '@flybywiresim/fbw-sdk';
 import { ControlLaw } from '@fmgc/guidance/ControlLaws';
-import { useSimVar } from '@instruments/common/simVars';
 import { useCurrentFlightPlan } from '@instruments/common/flightplan';
 
 export const DebugInfo: React.FC = () => {

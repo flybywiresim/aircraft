@@ -1,6 +1,9 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import React, { useEffect, useRef, useState } from 'react';
-import { useInteractionSimVar, useSimVar } from '@instruments/common/simVars';
-import { useInteractionEvent } from '@instruments/common/hooks';
+import { useInteractionSimVar, useSimVar, useInteractionEvent } from '@flybywiresim/fbw-sdk';
 import { render } from '../Common';
 import { ISISDisplayUnit } from './ISISDisplayUnit';
 import { ArtificialHorizonDisplay } from './ArtificialHorizonDisplay';

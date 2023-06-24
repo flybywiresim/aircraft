@@ -1,7 +1,10 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import React, { useCallback, useRef } from 'react';
+import { RateMultiplierKnob, UpdateValueCallback, useInteractionEvent } from '@flybywiresim/fbw-sdk';
 import { RadioPanelDisplay } from './RadioPanelDisplay';
-import { useInteractionEvent } from '../../Common/hooks';
-import { RateMultiplierKnob, UpdateValueCallback } from '../../Common/RateMultiplierKnob';
 
 interface Props {
     /**

@@ -1,4 +1,8 @@
-import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
+import { usePersistentNumberProperty, usePersistentProperty } from '@flybywiresim/fbw-sdk';
 import React, { useState } from 'react';
 import { t } from '../../translation';
 import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';

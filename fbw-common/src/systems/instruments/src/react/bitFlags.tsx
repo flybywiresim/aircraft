@@ -1,7 +1,7 @@
 /* eslint-disable function-paren-newline */
-import { useUpdate } from '@instruments/common/hooks';
-import { BitFlags, SeatFlags } from '@shared/bitFlags';
 import { useCallback, useRef, useState } from 'react';
+import { BitFlags, SeatFlags } from 'shared/src/bitFlags';
+import { useUpdate } from './hooks';
 
 export const useBitFlags = (
     name: string,

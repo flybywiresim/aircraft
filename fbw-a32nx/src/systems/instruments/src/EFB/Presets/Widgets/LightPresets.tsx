@@ -3,9 +3,8 @@
 
 /* eslint-disable max-len */
 import React, { useEffect, useState } from 'react';
-import { useSimVar } from '@instruments/common/simVars';
+import { useSimVar, usePersistentNumberProperty, usePersistentProperty } from '@flybywiresim/fbw-sdk';
 import { toast } from 'react-toastify';
-import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
 import { SelectInput } from '../../UtilComponents/Form/SelectInput/SelectInput';
 import { t } from '../../translation';

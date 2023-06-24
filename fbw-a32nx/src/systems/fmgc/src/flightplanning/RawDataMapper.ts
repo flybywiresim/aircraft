@@ -23,7 +23,7 @@
  */
 
 import { FixTypeFlags, LegType } from '@fmgc/types/fstypes/FSEnums';
-import { ApproachUtils } from '@shared/ApproachUtils';
+import { ApproachUtils } from '@flybywiresim/fbw-sdk';
 
 /**
  * A class for mapping raw facility data to WayPoints.
@@ -58,14 +58,14 @@ export class RawDataMapper {
 
             info.approaches.forEach((approach) => {
                 approach.name = ApproachUtils.shortApproachName(approach);
-                approach.longName = ApproachUtils.longApproachName(approach)
+                approach.longName = ApproachUtils.longApproachName(approach);
             });
 
             info.approaches.forEach((approach) => {
                 approach.transitions.forEach((trans) => {
                     // if the trans name is empty (in some 3pd navdata), fill it with the IAF name
                     if (trans.name.trim().length === 0) {
-                        trans.name = WayPoint.formatIdentFromIcao(trans.legs[0].fixIcao)
+                        trans.name = WayPoint.formatIdentFromIcao(trans.legs[0].fixIcao);
                     }
 
                     // Fix up navigraph approach transitions which hide IAPs inside other transitions rather

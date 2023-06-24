@@ -1,9 +1,13 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { useInterval } from '@flybywiresim/react-components';
 import React, { useEffect, useState } from 'react';
 import { CloudArrowDown, ShieldLock } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import QRCode from 'qrcode.react';
-import { usePersistentProperty } from '@instruments/common/persistence';
+import { usePersistentProperty } from '@flybywiresim/fbw-sdk';
 import { t } from '../../../translation';
 import NavigraphClient, { useNavigraph } from '../Navigraph';
 
@@ -28,7 +32,7 @@ const Loading = () => {
     return (
         <div className="flex flex-col justify-center items-center">
             <div
-                className="flex justify-center items-center rounded-md bg-theme-secondary"
+                className="flex justify-center items-center bg-theme-secondary rounded-md"
                 style={{ width: '400px', height: '400px' }}
             >
                 <CloudArrowDown className="animate-bounce" size={40} />
@@ -82,7 +86,7 @@ export const NavigraphAuthUI = () => {
     }, []);
 
     return (
-        <div className="flex overflow-x-hidden justify-center items-center p-6 w-full rounded-lg h-content-section-reduced bg-theme-accent">
+        <div className="flex overflow-x-hidden justify-center items-center p-6 w-full h-content-section-reduced bg-theme-accent rounded-lg">
             <div className="flex flex-col justify-center items-center">
                 <ShieldLock className="mr-2" size={40} />
 
@@ -99,7 +103,7 @@ export const NavigraphAuthUI = () => {
                 </p>
 
                 <h1
-                    className="flex items-center px-4 mt-4 h-16 text-4xl font-bold tracking-wider rounded-md border-2 bg-theme-secondary border-theme-highlight"
+                    className="flex items-center px-4 mt-4 h-16 text-4xl font-bold tracking-wider bg-theme-secondary rounded-md border-2 border-theme-highlight"
                     style={{ minWidth: '200px' }}
                 >
                     {displayAuthCode}
@@ -142,7 +146,7 @@ export const NavigraphAuthUIWrapper = (props) => {
                 </>
             )
             : (
-                <div className="flex overflow-x-hidden justify-center items-center mr-4 w-full rounded-lg h-content-section-reduced bh-theme-secondard">
+                <div className="flex overflow-x-hidden justify-center items-center mr-4 w-full h-content-section-reduced rounded-lg bh-theme-secondard">
                     <p className="pt-6 mb-6 text-3xl">Insufficient .env file</p>
                 </div>
             )

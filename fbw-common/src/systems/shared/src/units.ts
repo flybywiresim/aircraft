@@ -1,4 +1,4 @@
-import { NXDataStore } from './persistence';
+import { NXDataStore } from '@flybywiresim/fbw-sdk';
 
 // SI base units
 export type Celsius = number; // derived unit
