@@ -279,7 +279,7 @@ impl OperatingChannel {
             }
         };
         Self {
-            channel_id: channel_id,
+            channel_id,
             powered_by,
             is_powered: false,
             fault: OperatingChannelFault::NoFault,

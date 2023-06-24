@@ -374,15 +374,15 @@ impl A380AirConditioningSystem {
                 ), // Left Hand - 100XP1
                 CabinFan::new(
                     VolumeRate::new::<liter_per_second>(Self::CAB_FAN_DESIGN_FLOW_RATE_L_S),
-                    ElectricalBusType::AlternatingCurrent(1),
+                    ElectricalBusType::AlternatingCurrent(2),
                 ), // Left Hand - 100XP2
                 CabinFan::new(
                     VolumeRate::new::<liter_per_second>(Self::CAB_FAN_DESIGN_FLOW_RATE_L_S),
-                    ElectricalBusType::AlternatingCurrent(2),
+                    ElectricalBusType::AlternatingCurrent(3),
                 ), // Right Hand - 200XP3
                 CabinFan::new(
                     VolumeRate::new::<liter_per_second>(Self::CAB_FAN_DESIGN_FLOW_RATE_L_S),
-                    ElectricalBusType::AlternatingCurrent(2),
+                    ElectricalBusType::AlternatingCurrent(4),
                 ), // Right Hand - 200XP4
             ],
             cargo_air_heater: AirHeater::new(ElectricalBusType::AlternatingCurrent(2)), // 200XP4
@@ -1646,11 +1646,13 @@ mod tests {
         powered_ac_source_1: TestElectricitySource,
         powered_dc_source_2: TestElectricitySource,
         powered_ac_source_2: TestElectricitySource,
+        powered_ac_source_3: TestElectricitySource,
         powered_ac_source_4: TestElectricitySource,
         dc_1_bus: ElectricalBus,
         ac_1_bus: ElectricalBus,
         dc_2_bus: ElectricalBus,
         ac_2_bus: ElectricalBus,
+        ac_3_bus: ElectricalBus,
         ac_4_bus: ElectricalBus,
         ac_ess_bus: ElectricalBus,
         dc_ess_bus: ElectricalBus,
@@ -1703,7 +1705,11 @@ mod tests {
                 ),
                 powered_ac_source_2: TestElectricitySource::powered(
                     context,
-                    PotentialOrigin::EngineGenerator(4),
+                    PotentialOrigin::EngineGenerator(2),
+                ),
+                powered_ac_source_3: TestElectricitySource::powered(
+                    context,
+                    PotentialOrigin::EngineGenerator(3),
                 ),
                 powered_ac_source_4: TestElectricitySource::powered(
                     context,
@@ -1713,6 +1719,7 @@ mod tests {
                 ac_1_bus: ElectricalBus::new(context, ElectricalBusType::AlternatingCurrent(1)),
                 dc_2_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrent(2)),
                 ac_2_bus: ElectricalBus::new(context, ElectricalBusType::AlternatingCurrent(2)),
+                ac_3_bus: ElectricalBus::new(context, ElectricalBusType::AlternatingCurrent(3)),
                 ac_4_bus: ElectricalBus::new(context, ElectricalBusType::AlternatingCurrent(4)),
                 ac_ess_bus: ElectricalBus::new(
                     context,
@@ -1810,6 +1817,10 @@ mod tests {
             self.powered_ac_source_2.power();
         }
 
+        fn unpower_ac_3_bus(&mut self) {
+            self.powered_ac_source_3.unpower();
+        }
+
         fn power_ac_4_bus(&mut self) {
             self.powered_ac_source_4.power();
         }
@@ -1848,6 +1859,7 @@ mod tests {
             electricity.supplied_by(&self.powered_dc_source_2);
             electricity.supplied_by(&self.powered_dc_source_ess);
             electricity.supplied_by(&self.powered_ac_source_2);
+            electricity.supplied_by(&self.powered_ac_source_3);
             electricity.supplied_by(&self.powered_ac_source_4);
             electricity.supplied_by(&self.powered_ac_source_ess);
             electricity.supplied_by(&self.powered_dc_source_ess);
@@ -1855,6 +1867,7 @@ mod tests {
             electricity.flow(&self.powered_ac_source_1, &self.ac_1_bus);
             electricity.flow(&self.powered_dc_source_2, &self.dc_2_bus);
             electricity.flow(&self.powered_ac_source_2, &self.ac_2_bus);
+            electricity.flow(&self.powered_ac_source_3, &self.ac_3_bus);
             electricity.flow(&self.powered_ac_source_4, &self.ac_4_bus);
             electricity.flow(&self.powered_ac_source_ess, &self.ac_ess_bus);
             electricity.flow(&self.powered_dc_source_ess, &self.dc_ess_bus);
@@ -2120,6 +2133,16 @@ mod tests {
             self
         }
 
+        fn powered_ac_2_bus(mut self) -> Self {
+            self.command(|a| a.power_ac_2_bus());
+            self
+        }
+
+        fn powered_ac_4_bus(mut self) -> Self {
+            self.command(|a| a.power_ac_4_bus());
+            self
+        }
+
         fn unpowered_ac_1_bus(mut self) -> Self {
             self.command(|a| a.unpower_ac_1_bus());
             self
@@ -2130,18 +2153,13 @@ mod tests {
             self
         }
 
-        fn powered_ac_2_bus(mut self) -> Self {
-            self.command(|a| a.power_ac_2_bus());
+        fn unpowered_ac_3_bus(mut self) -> Self {
+            self.command(|a| a.unpower_ac_3_bus());
             self
         }
 
         fn unpowered_ac_4_bus(mut self) -> Self {
             self.command(|a| a.unpower_ac_4_bus());
-            self
-        }
-
-        fn powered_ac_4_bus(mut self) -> Self {
-            self.command(|a| a.power_ac_4_bus());
             self
         }
 
@@ -4607,6 +4625,8 @@ mod tests {
                 test_bed = test_bed
                     .unpowered_ac_1_bus()
                     .unpowered_ac_2_bus()
+                    .unpowered_ac_3_bus()
+                    .unpowered_ac_4_bus()
                     .iterate(50);
 
                 assert!(
