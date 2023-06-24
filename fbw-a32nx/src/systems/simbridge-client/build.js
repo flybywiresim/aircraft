@@ -25,7 +25,7 @@ esbuild.build({
     outfile: path.join(rootDir, outFile),
 
     format: 'iife',
-    globalName: 'SimBridgeClient'
+    globalName: 'SimBridgeClient',
 
     sourcemap: isProductionBuild ? 'linked' : undefined,
 
