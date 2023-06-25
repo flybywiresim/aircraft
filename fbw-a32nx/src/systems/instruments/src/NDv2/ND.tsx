@@ -256,7 +256,7 @@ export class NDComponent extends DisplayComponent<NDProps> {
         }
 
         if (this.currentPageMode.get() !== EfisNdMode.ROSE_ILS && this.currentPageMode.get() !== EfisNdMode.ROSE_VOR
-             && !this.rangeChangeInProgress && !this.mapFlagShown.get()) {
+             && !this.rangeChangeInProgress.get() && !this.mapFlagShown.get()) {
             this.pageChangeInProgress.set(true);
             this.pageChangeInvalidationTimeout = window.setTimeout(() => {
                 this.pageChangeInProgress.set(false);
