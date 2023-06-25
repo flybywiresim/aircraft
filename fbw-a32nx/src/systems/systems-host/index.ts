@@ -1,6 +1,9 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { EventBus, HEventPublisher } from '@microsoft/msfs-sdk';
 import { AtsuSystem } from './systems/atsu';
-import './style.scss';
 import { PowerSupplyBusses } from './systems/powersupply';
 
 class SystemsHost extends BaseInstrument {

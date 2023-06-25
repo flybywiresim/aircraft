@@ -1,6 +1,10 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import React from 'react';
+import { useSimVar } from '@flybywiresim/fbw-sdk';
 import { SvgGroup } from '../../Common/SvgGroup';
-import { useSimVar } from '../../../Common/simVars';
 import Valve from './Valve';
 
 import '../../Common/CommonStyles.scss';

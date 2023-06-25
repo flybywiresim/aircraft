@@ -1,11 +1,10 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import './StatusArea.scss';
 import React, { useEffect, useState } from 'react';
-import { useGlobalVar, useSimVar } from '@instruments/common/simVars';
-import { getSupplier } from '@instruments/common/utils';
-import { useArinc429Var } from '@instruments/common/arinc429';
-import { NXLogicConfirmNode, NXLogicMemoryNode } from '@instruments/common/NXLogic';
-import { useUpdate } from '@instruments/common/hooks';
-import { NXUnits } from '@instruments/common/NXUnits';
+import { useGlobalVar, useSimVar, useArinc429Var, NXLogicConfirmNode, NXLogicMemoryNode, NXUnits, useUpdate, getSupplier } from '@flybywiresim/fbw-sdk';
 import { Text } from '../Text/Text';
 
 export const StatusArea = () => {
