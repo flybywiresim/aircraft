@@ -239,10 +239,15 @@ export class NDComponent extends DisplayComponent<NDProps> {
             window.clearTimeout(this.rangeChangeInvalidationTimeout);
         }
 
-        this.rangeChangeInProgress.set(true);
-        this.rangeChangeInvalidationTimeout = window.setTimeout(() => {
-            this.rangeChangeInProgress.set(false);
-        }, (Math.random() * PAGE_GENERATION_RANDOM_DELAY) + PAGE_GENERATION_BASE_DELAY);
+        if (this.currentPageMode.get() !== EfisNdMode.ROSE_ILS
+            && this.currentPageMode.get() !== EfisNdMode.ROSE_VOR && !this.mapFlagShown.get()) {
+            // Range has priority over mode change
+            this.pageChangeInProgress.set(false);
+            this.rangeChangeInProgress.set(true);
+            this.rangeChangeInvalidationTimeout = window.setTimeout(() => {
+                this.rangeChangeInProgress.set(false);
+            }, (Math.random() * PAGE_GENERATION_RANDOM_DELAY) + PAGE_GENERATION_BASE_DELAY);
+        }
     }
 
     private invalidatePage() {
@@ -250,10 +255,13 @@ export class NDComponent extends DisplayComponent<NDProps> {
             window.clearTimeout(this.pageChangeInvalidationTimeout);
         }
 
-        this.pageChangeInProgress.set(true);
-        this.pageChangeInvalidationTimeout = window.setTimeout(() => {
-            this.pageChangeInProgress.set(false);
-        }, (Math.random() * PAGE_GENERATION_RANDOM_DELAY) + PAGE_GENERATION_BASE_DELAY);
+        if (this.currentPageMode.get() !== EfisNdMode.ROSE_ILS && this.currentPageMode.get() !== EfisNdMode.ROSE_VOR
+             && !this.rangeChangeInProgress && !this.mapFlagShown.get()) {
+            this.pageChangeInProgress.set(true);
+            this.pageChangeInvalidationTimeout = window.setTimeout(() => {
+                this.pageChangeInProgress.set(false);
+            }, (Math.random() * PAGE_GENERATION_RANDOM_DELAY) + PAGE_GENERATION_BASE_DELAY);
+        }
     }
 
     render(): VNode | null {
