@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { Common } from '@fmgc/guidance/vnav/common';
 import { PseudoWaypointFlightPlanInfo } from '@fmgc/guidance/PseudoWaypoint';
 import {
@@ -8,7 +12,7 @@ import {
     VerticalCheckpoint,
     VerticalCheckpointReason,
 } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
-import { MathUtils } from '@shared/MathUtils';
+import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 
 export interface PerfClbToAltPrediction {

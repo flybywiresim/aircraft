@@ -1,8 +1,10 @@
 use super::{
     A380AlternatingCurrentElectricalSystem, A380DirectCurrentElectricalSystem,
-    A380ElectricalOverheadPanel, A380EmergencyElectricalOverheadPanel,
+    A380ElectricalOverheadPanel,
 };
-use std::time::Duration;
+use systems::accept_iterable;
+use systems::apu::ApuGenerator;
+use systems::electrical::ElectricalElement;
 use systems::simulation::InitContext;
 use systems::{
     electrical::{
@@ -10,61 +12,58 @@ use systems::{
         EmergencyGenerator, EngineGenerator, ExternalPowerSource, TransformerRectifier,
     },
     shared::{
-        AuxiliaryPowerUnitElectrical, DelayedTrueLogicGate, ElectricalBusType, EngineCorrectedN2,
-        EngineFirePushButtons,
+        AuxiliaryPowerUnitElectrical, ElectricalBusType, EngineCorrectedN2, EngineFirePushButtons,
     },
     simulation::{SimulationElement, SimulationElementVisitor, UpdateContext},
 };
-use uom::si::{f64::*, velocity::knot};
 
 pub(super) struct A380AlternatingCurrentElectrical {
     main_power_sources: A380MainPowerSources,
     ac_ess_feed_contactors: A380AcEssFeedContactors,
-    ac_bus_1: ElectricalBus,
-    ac_bus_2: ElectricalBus,
+    ac_buses: [ElectricalBus; 4],
     ac_ess_bus: ElectricalBus,
-    ac_ess_shed_bus: ElectricalBus,
-    ac_ess_shed_contactor: Contactor,
-    tr_1: TransformerRectifier,
-    tr_2: TransformerRectifier,
-    ac_bus_2_to_tr_2_contactor: Contactor,
-    tr_ess: TransformerRectifier,
-    ac_ess_to_tr_ess_contactor: Contactor,
-    emergency_gen_contactor: Contactor,
-    static_inv_to_ac_ess_bus_contactor: Contactor,
-    ac_stat_inv_bus: ElectricalBus,
+    ac_emer_bus: ElectricalBus,
+    ac_eha_bus: ElectricalBus,
     ac_gnd_flt_service_bus: ElectricalBus,
+    // This is actually a 2-way switch but we simulate this with 2 contactors
+    ac_emer_contactor: [Contactor; 2],
+    eha_contactors: [Contactor; 2],
+    tr_apu: TransformerRectifier,
+    emergency_gen_contactor: Contactor,
     ext_pwr_to_ac_gnd_flt_service_bus_and_tr_2_contactor: Contactor,
+    ac_bus_3_to_tr_2_contactor: Contactor,
 }
 impl A380AlternatingCurrentElectrical {
     pub fn new(context: &mut InitContext) -> Self {
         A380AlternatingCurrentElectrical {
             main_power_sources: A380MainPowerSources::new(context),
             ac_ess_feed_contactors: A380AcEssFeedContactors::new(context),
-            ac_bus_1: ElectricalBus::new(context, ElectricalBusType::AlternatingCurrent(1)),
-            ac_bus_2: ElectricalBus::new(context, ElectricalBusType::AlternatingCurrent(2)),
-            ac_ess_bus: ElectricalBus::new(context, ElectricalBusType::AlternatingCurrentEssential),
-            ac_ess_shed_bus: ElectricalBus::new(
+            ac_buses: [1, 2, 3, 4]
+                .map(|i| ElectricalBus::new(context, ElectricalBusType::AlternatingCurrent(i))),
+            // TODO: 400XP is actually AC ESS but for now we misuse AC ESS SCHED for it
+            ac_ess_bus: ElectricalBus::new(
                 context,
                 ElectricalBusType::AlternatingCurrentEssentialShed,
             ),
-            ac_ess_shed_contactor: Contactor::new(context, "8XH"),
-            tr_1: TransformerRectifier::new(context, 1),
-            tr_2: TransformerRectifier::new(context, 2),
-            ac_bus_2_to_tr_2_contactor: Contactor::new(context, "14PU"),
-            tr_ess: TransformerRectifier::new(context, 3),
-            ac_ess_to_tr_ess_contactor: Contactor::new(context, "15XE1"),
-            emergency_gen_contactor: Contactor::new(context, "2XE"),
-            static_inv_to_ac_ess_bus_contactor: Contactor::new(context, "15XE2"),
-            ac_stat_inv_bus: ElectricalBus::new(
+            // TODO: 491XP is actually AC EMER/AC ESS
+            ac_emer_bus: ElectricalBus::new(
                 context,
-                ElectricalBusType::AlternatingCurrentStaticInverter,
+                ElectricalBusType::AlternatingCurrentEssential,
+            ),
+            ac_eha_bus: ElectricalBus::new(
+                context,
+                ElectricalBusType::AlternatingCurrentNamed("247XP"),
             ),
             ac_gnd_flt_service_bus: ElectricalBus::new(
                 context,
                 ElectricalBusType::AlternatingCurrentGndFltService,
             ),
-            ext_pwr_to_ac_gnd_flt_service_bus_and_tr_2_contactor: Contactor::new(context, "12XN"),
+            ac_emer_contactor: [1, 2].map(|i| Contactor::new(context, &format!("3XB.{i}"))),
+            eha_contactors: ["911XN", "911XH"].map(|id| Contactor::new(context, id)),
+            tr_apu: TransformerRectifier::new(context, 4),
+            emergency_gen_contactor: Contactor::new(context, "5XE"),
+            ext_pwr_to_ac_gnd_flt_service_bus_and_tr_2_contactor: Contactor::new(context, "991PU6"),
+            ac_bus_3_to_tr_2_contactor: Contactor::new(context, "991PU2"),
         }
     }
 
@@ -72,135 +71,102 @@ impl A380AlternatingCurrentElectrical {
         &mut self,
         context: &UpdateContext,
         electricity: &mut Electricity,
-        ext_pwr: &ExternalPowerSource,
+        ext_pwrs: &[ExternalPowerSource; 4],
         overhead: &A380ElectricalOverheadPanel,
-        emergency_overhead: &A380EmergencyElectricalOverheadPanel,
         apu: &impl AuxiliaryPowerUnitElectrical,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
-        engines: [&impl EngineCorrectedN2; 2],
+        engines: [&impl EngineCorrectedN2; 4],
     ) {
         self.main_power_sources.update(
             context,
             electricity,
-            ext_pwr,
+            ext_pwrs,
             overhead,
-            emergency_overhead,
             apu,
             engine_fire_push_buttons,
             engines,
         );
 
         self.main_power_sources
-            .power_ac_bus_1(electricity, &self.ac_bus_1);
-        self.main_power_sources
-            .power_ac_bus_2(electricity, &self.ac_bus_2);
+            .power_ac_buses(electricity, &self.ac_buses);
     }
 
     pub fn update(
         &mut self,
-        context: &UpdateContext,
         electricity: &mut Electricity,
-        ext_pwr: &ExternalPowerSource,
         overhead: &A380ElectricalOverheadPanel,
+        ext_pwr: &ExternalPowerSource,
         emergency_generator: &EmergencyGenerator,
     ) {
-        self.ac_bus_2_to_tr_2_contactor
-            .close_when(electricity.is_powered(&self.ac_bus_2) && !self.tr_2.has_failed());
-        electricity.flow(&self.ac_bus_2, &self.ac_bus_2_to_tr_2_contactor);
+        self.ac_ess_feed_contactors.update(
+            electricity,
+            &self.ac_buses[0],
+            &self.ac_buses[3],
+            overhead,
+        );
 
+        self.ac_ess_feed_contactors
+            .power_400xp(electricity, &self.ac_ess_bus);
+
+        electricity.flow(&self.ac_buses[3], &self.tr_apu);
+        electricity.transform_in(&self.tr_apu);
+
+        let emergency_configuration = !self.any_non_essential_bus_powered(electricity)
+            && emergency_generator.output_within_normal_parameters();
+
+        self.emergency_gen_contactor
+            .close_when(emergency_configuration);
+        electricity.supplied_by(emergency_generator);
+        electricity.flow(emergency_generator, &self.emergency_gen_contactor);
+        electricity.flow(&self.emergency_gen_contactor, &self.ac_ess_bus);
+        electricity.flow(&self.ac_ess_bus, &self.ac_emer_contactor[0]);
+
+        self.eha_contactors[0].close_when(self.ac_bus_powered(electricity, 3));
+        electricity.flow(&self.ac_buses[2], &self.eha_contactors[0]);
+
+        // TODO: Check behavior and architecture of ground service bus
         // On the real aircraft there is a button inside the galley which is taken into
         // account when determining whether to close this contactor or not.
         // As we're not building a galley simulator, for now we assume the button is ON.
         self.ext_pwr_to_ac_gnd_flt_service_bus_and_tr_2_contactor
             .close_when(
-                !electricity.is_powered(&self.ac_bus_2)
-                    && !self.tr_2.has_failed()
+                !self.ac_buses.iter().any(|b| electricity.is_powered(b))
                     && electricity.is_powered(ext_pwr),
             );
+        self.ac_bus_3_to_tr_2_contactor
+            .close_when(electricity.is_powered(&self.ac_buses[2]));
+
         electricity.flow(
             ext_pwr,
             &self.ext_pwr_to_ac_gnd_flt_service_bus_and_tr_2_contactor,
         );
-
-        electricity.flow(
-            &self.ac_bus_2_to_tr_2_contactor,
-            &self.ac_gnd_flt_service_bus,
-        );
+        electricity.flow(&self.ac_bus_3_to_tr_2_contactor, &self.ac_buses[2]);
         electricity.flow(
             &self.ext_pwr_to_ac_gnd_flt_service_bus_and_tr_2_contactor,
             &self.ac_gnd_flt_service_bus,
         );
-
-        electricity.flow(&self.ac_bus_1, &self.tr_1);
-        electricity.transform_in(&self.tr_1);
-
-        electricity.flow(&self.ac_bus_2_to_tr_2_contactor, &self.tr_2);
-        electricity.flow(
-            &self.ext_pwr_to_ac_gnd_flt_service_bus_and_tr_2_contactor,
-            &self.tr_2,
-        );
-        electricity.transform_in(&self.tr_2);
-
-        self.ac_ess_feed_contactors.update(
-            context,
-            electricity,
-            &self.ac_bus_1,
-            &self.ac_bus_2,
-            overhead,
-        );
-
-        self.ac_ess_feed_contactors
-            .power_ac_ess_bus(electricity, &self.ac_ess_bus);
-
-        self.emergency_gen_contactor.close_when(
-            !self.any_non_essential_bus_powered(electricity)
-                && emergency_generator.output_within_normal_parameters(),
-        );
-        electricity.supplied_by(emergency_generator);
-        electricity.flow(emergency_generator, &self.emergency_gen_contactor);
-
-        self.ac_ess_to_tr_ess_contactor.close_when(
-            (!self.tr_1_and_2_available(electricity)
-                && self.ac_ess_feed_contactors.provides_power(electricity))
-                || electricity.is_powered(&self.emergency_gen_contactor),
-        );
-        electricity.flow(&self.ac_ess_bus, &self.ac_ess_to_tr_ess_contactor);
-        electricity.flow(
-            &self.emergency_gen_contactor,
-            &self.ac_ess_to_tr_ess_contactor,
-        );
-
-        electricity.flow(&self.ac_ess_to_tr_ess_contactor, &self.ac_ess_bus);
-
-        electricity.flow(&self.ac_ess_bus, &self.ac_ess_shed_contactor);
-
-        electricity.flow(&self.ac_ess_to_tr_ess_contactor, &self.tr_ess);
-        electricity.flow(&self.emergency_gen_contactor, &self.tr_ess);
-        electricity.transform_in(&self.tr_ess);
 
         self.update_shedding(emergency_generator, electricity);
     }
 
     pub fn update_after_direct_current(
         &mut self,
-        context: &UpdateContext,
         electricity: &mut Electricity,
-        emergency_generator: &EmergencyGenerator,
         dc_state: &impl A380DirectCurrentElectricalSystem,
+        tefo_condition: bool,
     ) {
-        electricity.flow(dc_state.static_inverter(), &self.ac_stat_inv_bus);
+        electricity.flow(dc_state.static_inverter(), &self.ac_emer_contactor[1]);
+        electricity.flow(&self.ac_emer_contactor[1], &self.ac_emer_bus);
 
-        self.static_inv_to_ac_ess_bus_contactor
-            .close_when(self.should_close_15xe2_contactor(
-                context,
-                electricity,
-                emergency_generator,
-            ));
-        electricity.flow(
-            dc_state.static_inverter(),
-            &self.static_inv_to_ac_ess_bus_contactor,
+        // TODO: check what engine burst reconfiguration (relay 34CD) means -> only then it should close when AC 3 is lost
+        self.eha_contactors[1].close_when(
+            dc_state.dc_ess_powered(electricity)
+                && (tefo_condition || !self.ac_bus_powered(electricity, 3)),
         );
-        electricity.flow(&self.static_inv_to_ac_ess_bus_contactor, &self.ac_ess_bus);
+        electricity.flow(&self.ac_ess_bus, &self.eha_contactors[1]);
+        for contactor in &self.eha_contactors {
+            electricity.flow(contactor, &self.ac_eha_bus);
+        }
     }
 
     fn update_shedding(
@@ -208,66 +174,32 @@ impl A380AlternatingCurrentElectrical {
         emergency_generator: &EmergencyGenerator,
         electricity: &mut Electricity,
     ) {
-        let ac_bus_or_emergency_gen_provides_power = electricity.is_powered(&self.ac_bus_1)
-            || electricity.is_powered(&self.ac_bus_2)
+        let ac_bus_or_emergency_gen_provides_power = self
+            .ac_buses
+            .iter()
+            .map(|bus| electricity.is_powered(bus))
+            .any(|v| v)
             || electricity.is_powered(emergency_generator);
-        self.ac_ess_shed_contactor
-            .close_when(ac_bus_or_emergency_gen_provides_power);
+        self.ac_emer_contactor[0].close_when(ac_bus_or_emergency_gen_provides_power);
+        self.ac_emer_contactor[1].close_when(!ac_bus_or_emergency_gen_provides_power);
 
-        electricity.flow(&self.ac_ess_shed_contactor, &self.ac_ess_shed_bus);
+        electricity.flow(&self.ac_emer_contactor[0], &self.ac_emer_bus);
     }
 
-    /// Whether or not AC BUS 1 and AC BUS 2 are powered by a single engine
-    /// generator exclusively. Also returns true when one of the buses is
-    /// unpowered and the other bus is powered by an engine generator.
-    pub fn main_ac_buses_powered_by_single_engine_generator_only(
-        &self,
-        electricity: &Electricity,
-    ) -> bool {
-        let ac_bus_1_potential = electricity.output_of(&self.ac_bus_1);
-        let ac_bus_2_potential = electricity.output_of(&self.ac_bus_2);
-
-        (ac_bus_1_potential.is_unpowered()
-            && ac_bus_2_potential.is_only_powered_by_single_engine_generator())
-            || (ac_bus_2_potential.is_unpowered()
-                && ac_bus_1_potential.is_only_powered_by_single_engine_generator())
-            || (ac_bus_1_potential.is_only_powered_by_single_engine_generator()
-                && ac_bus_1_potential.is_powered_by_same_single_source(ac_bus_2_potential))
-    }
-
-    /// Whether or not AC BUS 1 and AC BUS 2 are powered by the APU generator
-    /// exclusively. Also returns true when one of the buses is unpowered and
-    /// the other bus is powered by the APU generator.
-    pub fn main_ac_buses_powered_by_apu_generator_only(&self, electricity: &Electricity) -> bool {
-        let ac_bus_1_potential = electricity.output_of(&self.ac_bus_1);
-        let ac_bus_2_potential = electricity.output_of(&self.ac_bus_2);
-
-        (ac_bus_1_potential.is_unpowered() && ac_bus_2_potential.is_only_powered_by_apu())
-            || (ac_bus_2_potential.is_unpowered() && ac_bus_1_potential.is_only_powered_by_apu())
-            || (ac_bus_1_potential.is_only_powered_by_apu()
-                && ac_bus_2_potential.is_only_powered_by_apu())
-    }
-
-    /// Determines if 15XE2 should be closed. 15XE2 is the contactor which connects
-    /// the static inverter to the AC ESS BUS.
-    fn should_close_15xe2_contactor(
-        &self,
-        context: &UpdateContext,
-        electricity: &Electricity,
-        emergency_generator: &EmergencyGenerator,
-    ) -> bool {
-        !self.any_non_essential_bus_powered(electricity)
-            && !electricity.is_powered(emergency_generator)
-            && context.indicated_airspeed() >= Velocity::new::<knot>(50.)
-    }
-
-    pub fn debug_assert_invariants(&self) {
-        debug_assert!(self.static_inverter_or_emergency_gen_powers_ac_ess_bus());
-    }
-
-    fn static_inverter_or_emergency_gen_powers_ac_ess_bus(&self) -> bool {
-        !(self.static_inv_to_ac_ess_bus_contactor.is_closed()
-            && self.ac_ess_to_tr_ess_contactor.is_closed())
+    pub fn main_ac_buses_powered_by_two_generators_only(&self, electricity: &Electricity) -> bool {
+        (0..4)
+            .map(|i| {
+                let ac_output = electricity.output_of(&self.ac_buses[i]);
+                let bus_not_powered_by_own_gen =
+                    self.ac_buses.iter().enumerate().any(|(j, bus)| {
+                        j != i
+                            && ac_output
+                                .is_powered_by_same_single_source(electricity.output_of(bus))
+                    });
+                bus_not_powered_by_own_gen as u32
+            })
+            .sum::<u32>()
+            <= 2
     }
 
     pub fn gen_contactor_open(&self, number: usize) -> bool {
@@ -283,81 +215,176 @@ impl A380AlternatingCurrentElectrical {
     }
 }
 impl A380AlternatingCurrentElectricalSystem for A380AlternatingCurrentElectrical {
-    fn ac_bus_2_powered(&self, electricity: &Electricity) -> bool {
-        electricity.is_powered(&self.ac_bus_2)
+    fn ac_bus_powered(&self, electricity: &Electricity, number: usize) -> bool {
+        electricity.is_powered(&self.ac_buses[number - 1])
     }
 
-    fn tr_1_and_2_available(&self, electricity: &Electricity) -> bool {
-        electricity.is_powered(&self.tr_1) && electricity.is_powered(&self.tr_2)
+    fn ac_ess_bus_powered(&self, electricity: &Electricity) -> bool {
+        electricity.is_powered(&self.ac_ess_bus)
     }
 
-    fn tr_1(&self) -> &TransformerRectifier {
-        &self.tr_1
+    fn tr_apu(&self) -> &TransformerRectifier {
+        &self.tr_apu
     }
 
-    fn tr_2(&self) -> &TransformerRectifier {
-        &self.tr_2
+    fn tr_2_powered_by_ac_bus(&self) -> bool {
+        self.ac_bus_3_to_tr_2_contactor.is_closed()
     }
 
-    fn tr_ess(&self) -> &TransformerRectifier {
-        &self.tr_ess
+    fn power_tr_1(&self, electricity: &mut Electricity, tr: &impl ElectricalElement) {
+        electricity.flow(&self.ac_buses[1], tr);
+    }
+
+    fn power_tr_2(&self, electricity: &mut Electricity, tr: &impl ElectricalElement) {
+        electricity.flow(&self.ac_bus_3_to_tr_2_contactor, tr);
+        electricity.flow(
+            &self.ext_pwr_to_ac_gnd_flt_service_bus_and_tr_2_contactor,
+            tr,
+        );
+    }
+
+    fn power_tr_ess(&self, electricity: &mut Electricity, tr: &impl ElectricalElement) {
+        electricity.flow(&self.ac_ess_bus, tr);
     }
 }
 impl AlternatingCurrentElectricalSystem for A380AlternatingCurrentElectrical {
     fn any_non_essential_bus_powered(&self, electricity: &Electricity) -> bool {
-        electricity.is_powered(&self.ac_bus_1) || electricity.is_powered(&self.ac_bus_2)
+        self.ac_buses
+            .iter()
+            .map(|bus| electricity.is_powered(bus))
+            .any(|v| v)
     }
 }
 impl SimulationElement for A380AlternatingCurrentElectrical {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.main_power_sources.accept(visitor);
         self.ac_ess_feed_contactors.accept(visitor);
-        self.tr_1.accept(visitor);
-        self.tr_2.accept(visitor);
-        self.ac_bus_2_to_tr_2_contactor.accept(visitor);
-        self.tr_ess.accept(visitor);
+        self.tr_apu.accept(visitor);
 
-        self.ac_ess_shed_contactor.accept(visitor);
-        self.ac_ess_to_tr_ess_contactor.accept(visitor);
+        accept_iterable!(self.ac_emer_contactor, visitor);
+        accept_iterable!(self.eha_contactors, visitor);
         self.emergency_gen_contactor.accept(visitor);
-        self.static_inv_to_ac_ess_bus_contactor.accept(visitor);
 
-        self.ac_bus_1.accept(visitor);
-        self.ac_bus_2.accept(visitor);
+        accept_iterable!(self.ac_buses, visitor);
         self.ac_ess_bus.accept(visitor);
-        self.ac_ess_shed_bus.accept(visitor);
-        self.ac_stat_inv_bus.accept(visitor);
-
-        self.ac_gnd_flt_service_bus.accept(visitor);
-        self.ext_pwr_to_ac_gnd_flt_service_bus_and_tr_2_contactor
-            .accept(visitor);
+        self.ac_emer_bus.accept(visitor);
+        self.ac_eha_bus.accept(visitor);
 
         visitor.visit(self);
     }
 }
 
 struct A380MainPowerSources {
-    engine_1_gen: EngineGenerator,
-    engine_2_gen: EngineGenerator,
-    engine_generator_contactors: [Contactor; 2],
-    bus_tie_1_contactor: Contactor,
-    bus_tie_2_contactor: Contactor,
-    apu_gen_contactor: Contactor,
-    ext_pwr_contactor: Contactor,
+    engine_gens: [EngineGenerator; 4],
+    engine_generator_contactors: [Contactor; 4],
+    bus_tie_contactors: [Contactor; 6],
+    // FCOM: BTC7
+    system_isolation_contactor: Contactor,
+    apu_gen_contactors: [Contactor; 2],
+    ext_pwr_contactors: [Contactor; 4],
 }
 impl A380MainPowerSources {
+    // AC power priorities:
+    // 1. Engine generator of same bus
+    // 2. External power of same bus
+    // 3. APU gen on same side
+    // 4. APU gen on other side
+    // 5. Engine generator of other engine on same side
+    // 6. External power of other bus on same side
+    // 7. Engine generator of opposite side
+    // 8. External power of opposite side
+    const POWER_SOURCE_PRIORITIES: [[Option<ACBusPowerSource>; 4]; 8] = [
+        [Some(ACBusPowerSource::Generator); 4],
+        [Some(ACBusPowerSource::ExternalPower); 4],
+        [
+            Some(ACBusPowerSource::APUGenerator(1)),
+            Some(ACBusPowerSource::APUGenerator(1)),
+            Some(ACBusPowerSource::APUGenerator(2)),
+            Some(ACBusPowerSource::APUGenerator(2)),
+        ],
+        [
+            Some(ACBusPowerSource::APUGenerator(2)),
+            Some(ACBusPowerSource::APUGenerator(2)),
+            Some(ACBusPowerSource::APUGenerator(1)),
+            Some(ACBusPowerSource::APUGenerator(1)),
+        ],
+        [
+            Some(ACBusPowerSource::ACBus(2)),
+            Some(ACBusPowerSource::ACBus(1)),
+            Some(ACBusPowerSource::ACBus(4)),
+            Some(ACBusPowerSource::ACBus(3)),
+        ],
+        [
+            Some(ACBusPowerSource::ACBus(2)),
+            Some(ACBusPowerSource::ACBus(1)),
+            Some(ACBusPowerSource::ACBus(4)),
+            Some(ACBusPowerSource::ACBus(3)),
+        ],
+        [
+            Some(ACBusPowerSource::ACBus(4)),
+            Some(ACBusPowerSource::ACBus(3)),
+            Some(ACBusPowerSource::ACBus(2)),
+            Some(ACBusPowerSource::ACBus(1)),
+        ],
+        [
+            Some(ACBusPowerSource::ACBus(4)),
+            Some(ACBusPowerSource::ACBus(3)),
+            Some(ACBusPowerSource::ACBus(2)),
+            Some(ACBusPowerSource::ACBus(1)),
+        ],
+    ];
+    const SPECIAL_POWER_SOURCE_PRIORITIES: [[Option<ACBusPowerSource>; 4]; 8] = [
+        [Some(ACBusPowerSource::Generator); 4],
+        [Some(ACBusPowerSource::ExternalPower); 4],
+        [
+            Some(ACBusPowerSource::APUGenerator(1)),
+            Some(ACBusPowerSource::ACBus(1)),
+            Some(ACBusPowerSource::ACBus(4)),
+            Some(ACBusPowerSource::APUGenerator(2)),
+        ],
+        [
+            Some(ACBusPowerSource::ACBus(2)),
+            Some(ACBusPowerSource::ACBus(1)),
+            Some(ACBusPowerSource::ACBus(4)),
+            Some(ACBusPowerSource::ACBus(3)),
+        ],
+        [
+            Some(ACBusPowerSource::ACBus(2)),
+            Some(ACBusPowerSource::APUGenerator(1)),
+            Some(ACBusPowerSource::APUGenerator(2)),
+            Some(ACBusPowerSource::ACBus(3)),
+        ],
+        [
+            Some(ACBusPowerSource::APUGenerator(2)),
+            Some(ACBusPowerSource::ACBus(3)),
+            Some(ACBusPowerSource::ACBus(2)),
+            Some(ACBusPowerSource::APUGenerator(1)),
+        ],
+        [
+            None,
+            Some(ACBusPowerSource::ACBus(3)),
+            Some(ACBusPowerSource::ACBus(2)),
+            None,
+        ],
+        [
+            None,
+            Some(ACBusPowerSource::APUGenerator(2)),
+            Some(ACBusPowerSource::APUGenerator(1)),
+            None,
+        ],
+    ];
+
     fn new(context: &mut InitContext) -> Self {
         A380MainPowerSources {
-            engine_1_gen: EngineGenerator::new(context, 1),
-            engine_2_gen: EngineGenerator::new(context, 2),
-            engine_generator_contactors: [
-                Contactor::new(context, "9XU1"),
-                Contactor::new(context, "9XU2"),
-            ],
-            bus_tie_1_contactor: Contactor::new(context, "11XU1"),
-            bus_tie_2_contactor: Contactor::new(context, "11XU2"),
-            apu_gen_contactor: Contactor::new(context, "3XS"),
-            ext_pwr_contactor: Contactor::new(context, "3XG"),
+            engine_gens: [1, 2, 3, 4].map(|i| EngineGenerator::new(context, i)),
+            engine_generator_contactors: [1, 2, 3, 4]
+                .map(|id| Contactor::new(context, &format!("990XU{id}"))),
+            bus_tie_contactors: [1, 2, 3, 4, 5, 6]
+                .map(|id| Contactor::new(context, &format!("980XU{id}"))),
+            system_isolation_contactor: Contactor::new(context, "900XU"),
+            apu_gen_contactors: [1, 2].map(|id| Contactor::new(context, &format!("990XS{id}"))),
+            ext_pwr_contactors: [1, 2, 3, 4]
+                .map(|id| Contactor::new(context, &format!("990XG{id}"))),
         }
     }
 
@@ -365,88 +392,220 @@ impl A380MainPowerSources {
         &mut self,
         context: &UpdateContext,
         electricity: &mut Electricity,
-        ext_pwr: &ExternalPowerSource,
+        ext_pwrs: &[ExternalPowerSource; 4],
         overhead: &A380ElectricalOverheadPanel,
-        emergency_overhead: &A380EmergencyElectricalOverheadPanel,
         apu: &impl AuxiliaryPowerUnitElectrical,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
-        engines: [&impl EngineCorrectedN2; 2],
+        engines: [&impl EngineCorrectedN2; 4],
     ) {
-        self.engine_1_gen
-            .update(context, engines[0], overhead, engine_fire_push_buttons);
-        electricity.supplied_by(&self.engine_1_gen);
+        for (gen, engine) in self.engine_gens.iter_mut().zip(engines) {
+            gen.update(context, engine, overhead, engine_fire_push_buttons);
+            electricity.supplied_by(gen);
+        }
 
-        self.engine_2_gen
-            .update(context, engines[1], overhead, engine_fire_push_buttons);
-        electricity.supplied_by(&self.engine_2_gen);
+        for i in 1..=2 {
+            electricity.supplied_by(apu.generator(i));
+        }
 
-        electricity.supplied_by(apu);
-        electricity.supplied_by(ext_pwr);
+        for ext_pwr in ext_pwrs {
+            electricity.supplied_by(ext_pwr);
+        }
 
-        let gen_1_provides_power = overhead.generator_is_on(1)
-            && emergency_overhead.generator_1_line_is_on()
-            && !engine_fire_push_buttons.is_released(1)
-            && self.engine_1_gen.output_within_normal_parameters();
-        let gen_2_provides_power = overhead.generator_is_on(2)
-            && !engine_fire_push_buttons.is_released(2)
-            && self.engine_2_gen.output_within_normal_parameters();
-        let only_one_engine_gen_is_powered = gen_1_provides_power ^ gen_2_provides_power;
-        let both_engine_gens_provide_power = gen_1_provides_power && gen_2_provides_power;
-        let ext_pwr_provides_power = overhead.external_power_is_on()
-            && ext_pwr.output_within_normal_parameters()
-            && !both_engine_gens_provide_power;
-        let apu_gen_provides_power = overhead.apu_generator_is_on()
-            && apu.output_within_normal_parameters()
-            && !ext_pwr_provides_power
-            && !both_engine_gens_provide_power;
+        let powered_by = self.calc_ac_sources(context, ext_pwrs, overhead, apu);
 
-        self.engine_generator_contactors[0].close_when(gen_1_provides_power);
-        self.engine_generator_contactors[1].close_when(gen_2_provides_power);
-        self.apu_gen_contactor.close_when(apu_gen_provides_power);
-        self.ext_pwr_contactor.close_when(ext_pwr_provides_power);
+        // Configure contactors
+        for (i, (&power_source, (gen_contactor, ext_pwr_contactor))) in powered_by
+            .iter()
+            .zip(
+                self.engine_generator_contactors
+                    .iter_mut()
+                    .zip(&mut self.ext_pwr_contactors),
+            )
+            .enumerate()
+        {
+            let bus_number = i + 1;
+            gen_contactor.close_when(matches!(power_source, Some(ACBusPowerSource::Generator)));
+            ext_pwr_contactor.close_when(matches!(
+                power_source,
+                Some(ACBusPowerSource::ExternalPower)
+            ));
+            let bus_not_self_powered = !matches!(
+                power_source,
+                Some(ACBusPowerSource::Generator) | Some(ACBusPowerSource::ExternalPower) | None
+            );
 
-        let apu_or_ext_pwr_provides_power = ext_pwr_provides_power || apu_gen_provides_power;
-        self.bus_tie_1_contactor.close_when(
-            overhead.bus_tie_is_auto()
-                && ((only_one_engine_gen_is_powered && !apu_or_ext_pwr_provides_power)
-                    || (apu_or_ext_pwr_provides_power && !gen_1_provides_power)),
-        );
-        self.bus_tie_2_contactor.close_when(
-            overhead.bus_tie_is_auto()
-                && ((only_one_engine_gen_is_powered && !apu_or_ext_pwr_provides_power)
-                    || (apu_or_ext_pwr_provides_power && !gen_2_provides_power)),
-        );
+            if bus_number == 1 || bus_number == 4 {
+                let other_bus_is_powered_by_bus = powered_by
+                    .iter()
+                    .enumerate()
+                    .filter(|(pi, _)| *pi != i)
+                    .any(|(_, pb)| matches!(*pb, Some(ACBusPowerSource::ACBus(n)) if n == bus_number));
 
-        electricity.flow(apu, &self.apu_gen_contactor);
-        electricity.flow(ext_pwr, &self.ext_pwr_contactor);
+                self.bus_tie_contactors[i]
+                    .close_when(bus_not_self_powered || other_bus_is_powered_by_bus);
+            } else {
+                let opposite_bus_number = i % 2 + 2;
+                let powered_by_opposite_bus = matches!(
+                    power_source,
+                    Some(ACBusPowerSource::ACBus(n)) if n == opposite_bus_number
+                );
+                let other_bus_is_powered_by_bus = [powered_by[0], powered_by[3]]
+                    .iter()
+                    .any(|pb| matches!(*pb, Some(ACBusPowerSource::ACBus(n)) if n == bus_number));
+                let opposite_bus_powered_by_bus = matches!(
+                    powered_by[opposite_bus_number - 1],
+                    Some(ACBusPowerSource::ACBus(n))if n ==  bus_number
+                );
 
-        electricity.flow(&self.engine_1_gen, &self.engine_generator_contactors[0]);
-        electricity.flow(
-            &self.engine_generator_contactors[0],
-            &self.bus_tie_1_contactor,
-        );
-        electricity.flow(&self.apu_gen_contactor, &self.bus_tie_1_contactor);
-        electricity.flow(&self.ext_pwr_contactor, &self.bus_tie_1_contactor);
+                self.bus_tie_contactors[i].close_when(
+                    bus_not_self_powered && !powered_by_opposite_bus || other_bus_is_powered_by_bus,
+                );
+                self.bus_tie_contactors[i + 3].close_when(
+                    overhead.bus_tie_is_auto()
+                        && (bus_not_self_powered && powered_by_opposite_bus
+                            || opposite_bus_powered_by_bus),
+                );
+            }
+        }
 
-        electricity.flow(&self.engine_2_gen, &self.engine_generator_contactors[1]);
-        electricity.flow(
-            &self.engine_generator_contactors[1],
-            &self.bus_tie_2_contactor,
-        );
-        electricity.flow(&self.apu_gen_contactor, &self.bus_tie_2_contactor);
-        electricity.flow(&self.ext_pwr_contactor, &self.bus_tie_2_contactor);
+        for (i, contactor) in self.apu_gen_contactors.iter_mut().enumerate() {
+            let apu_gen = i + 1;
+            contactor.close_when(
+                powered_by.iter().any(
+                    |pb| matches!(*pb, Some(ACBusPowerSource::APUGenerator(n)) if n == apu_gen),
+                ),
+            );
+            electricity.flow(apu.generator(apu_gen), contactor);
+        }
+        let close_isolation_contactor = overhead.bus_tie_is_auto()
+            && (powered_by[..2]
+                .iter()
+                .any(|pb| matches!(*pb, Some(ACBusPowerSource::APUGenerator(2))))
+                || powered_by[2..]
+                    .iter()
+                    .any(|pb| matches!(*pb, Some(ACBusPowerSource::APUGenerator(1))))
+                || matches!(powered_by[0], Some(ACBusPowerSource::ACBus(4)))
+                || matches!(powered_by[3], Some(ACBusPowerSource::ACBus(1))));
+        self.system_isolation_contactor
+            .close_when(close_isolation_contactor);
 
-        electricity.flow(&self.bus_tie_1_contactor, &self.bus_tie_2_contactor);
+        for (contactor, ext_pwr) in self.ext_pwr_contactors.iter().zip(ext_pwrs) {
+            electricity.flow(ext_pwr, contactor);
+        }
+
+        for (gen, contactor) in self
+            .engine_gens
+            .iter()
+            .zip(&self.engine_generator_contactors)
+        {
+            electricity.flow(gen, contactor);
+        }
+
+        for (apu_contactor, contactors) in self
+            .apu_gen_contactors
+            .iter()
+            .zip(self.bus_tie_contactors.chunks_exact(2))
+        {
+            electricity.flow(apu_contactor, &self.system_isolation_contactor);
+            electricity.flow(&contactors[0], &contactors[1]);
+            for contactor in contactors {
+                electricity.flow(apu_contactor, contactor);
+                electricity.flow(&self.system_isolation_contactor, contactor);
+            }
+        }
+
+        electricity.flow(&self.bus_tie_contactors[4], &self.bus_tie_contactors[5]);
     }
 
-    fn power_ac_bus_1(&self, electricity: &mut Electricity, bus: &ElectricalBus) {
-        electricity.flow(&self.engine_generator_contactors[0], bus);
-        electricity.flow(&self.bus_tie_1_contactor, bus);
+    fn power_ac_buses(&self, electricity: &mut Electricity, buses: &[ElectricalBus; 4]) {
+        // First "power" contactors
+        for (i, (bus_tie, bus)) in self.bus_tie_contactors.iter().zip(buses).enumerate() {
+            electricity.flow(&self.engine_generator_contactors[i], bus);
+            electricity.flow(&self.ext_pwr_contactors[i], bus);
+            electricity.flow(bus_tie, bus);
+        }
+        electricity.flow(&self.bus_tie_contactors[4], &buses[1]);
+        electricity.flow(&self.bus_tie_contactors[5], &buses[2]);
     }
 
-    fn power_ac_bus_2(&self, electricity: &mut Electricity, bus: &ElectricalBus) {
-        electricity.flow(&self.engine_generator_contactors[1], bus);
-        electricity.flow(&self.bus_tie_2_contactor, bus);
+    fn calc_ac_sources(
+        &self,
+        context: &UpdateContext,
+        ext_pwrs: &[ExternalPowerSource; 4],
+        overhead: &A380ElectricalOverheadPanel,
+        apu: &impl AuxiliaryPowerUnitElectrical,
+    ) -> [Option<ACBusPowerSource>; 4] {
+        // TODO: check who decides if only one APU generator is available and where it gets the info of in flight
+        let apu_gen_available = [1, 2].map(|id| {
+            overhead.apu_generator_is_on(id) && apu.generator(id).output_within_normal_parameters()
+        });
+        let apu_gen_available = [
+            apu_gen_available[0],
+            apu_gen_available[1] && (context.is_on_ground() || !apu_gen_available[0]),
+        ];
+
+        let gen_available: Vec<_> = self
+            .engine_gens
+            .iter()
+            .map(|gen| gen.output_within_normal_parameters())
+            .collect();
+        let ext_pwr_available: Vec<_> = ext_pwrs
+            .iter()
+            .enumerate()
+            .map(|(i, ext_pwr)| {
+                overhead.external_power_is_on(i + 1) && ext_pwr.output_within_normal_parameters()
+            })
+            .collect();
+
+        let priority_table = if ext_pwr_available.iter().all(|v| !v)
+            && gen_available.iter().filter(|&a| *a).count() == 1
+            && apu_gen_available.iter().filter(|&a| *a).count() == 1
+            && !(gen_available[0] && apu_gen_available[0]
+                || gen_available[3] && apu_gen_available[1])
+        {
+            &Self::SPECIAL_POWER_SOURCE_PRIORITIES
+        } else {
+            &Self::POWER_SOURCE_PRIORITIES
+        };
+
+        let mut powered_by = [None; 4];
+        let mut can_power_other_bus = [false; 4];
+        let mut apu_gen_supplying_count = [0; 2];
+        for row in priority_table {
+            let mut new_apu_gen_supplying_count = apu_gen_supplying_count;
+            for (i, &source) in row.iter().enumerate() {
+                if powered_by[i].is_none() {
+                    let power_valid = match source {
+                        Some(ACBusPowerSource::Generator) => gen_available[i],
+                        Some(ACBusPowerSource::ExternalPower) => ext_pwr_available[i],
+                        Some(ACBusPowerSource::APUGenerator(i)) => {
+                            apu_gen_available[i - 1] && apu_gen_supplying_count[i - 1] < 2
+                        }
+                        Some(ACBusPowerSource::ACBus(i)) => can_power_other_bus[i - 1],
+                        None => false,
+                    };
+                    if power_valid {
+                        powered_by[i] = source;
+                        can_power_other_bus[i] = matches!(
+                            source,
+                            Some(ACBusPowerSource::Generator)
+                                | Some(ACBusPowerSource::ExternalPower)
+                        );
+                        if let Some(ACBusPowerSource::ACBus(i)) = source {
+                            can_power_other_bus[i - 1] = false;
+                        }
+                        if let Some(ACBusPowerSource::APUGenerator(i)) = source {
+                            new_apu_gen_supplying_count[i - 1] += 1;
+                        }
+                    }
+                }
+            }
+            if powered_by.iter().all(|p| p.is_some()) {
+                break;
+            }
+            apu_gen_supplying_count = new_apu_gen_supplying_count;
+        }
+        powered_by
     }
 
     pub fn gen_contactor_open(&self, number: usize) -> bool {
@@ -455,74 +614,62 @@ impl A380MainPowerSources {
 }
 impl SimulationElement for A380MainPowerSources {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.engine_1_gen.accept(visitor);
-        self.engine_2_gen.accept(visitor);
-        self.engine_generator_contactors
-            .iter_mut()
-            .for_each(|contactor| {
-                contactor.accept(visitor);
-            });
-        self.bus_tie_1_contactor.accept(visitor);
-        self.bus_tie_2_contactor.accept(visitor);
-        self.apu_gen_contactor.accept(visitor);
-        self.ext_pwr_contactor.accept(visitor);
+        accept_iterable!(self.engine_gens, visitor);
+        accept_iterable!(self.engine_generator_contactors, visitor);
+        accept_iterable!(self.bus_tie_contactors, visitor);
+        accept_iterable!(self.apu_gen_contactors, visitor);
+        accept_iterable!(self.ext_pwr_contactors, visitor);
+        self.system_isolation_contactor.accept(visitor);
 
         visitor.visit(self);
     }
 }
 
+#[derive(Clone, Copy)]
+enum ACBusPowerSource {
+    Generator,
+    ExternalPower,
+    APUGenerator(usize),
+    ACBus(usize),
+}
+
 pub(super) struct A380AcEssFeedContactors {
     ac_ess_feed_contactor_1: Contactor,
     ac_ess_feed_contactor_2: Contactor,
-    ac_ess_feed_contactor_delay_logic_gate: DelayedTrueLogicGate,
 }
 impl A380AcEssFeedContactors {
-    pub const AC_ESS_FEED_TO_AC_BUS_2_DELAY_IN_SECONDS: Duration = Duration::from_secs(3);
-
     fn new(context: &mut InitContext) -> Self {
         A380AcEssFeedContactors {
             ac_ess_feed_contactor_1: Contactor::new(context, "3XC1"),
             ac_ess_feed_contactor_2: Contactor::new(context, "3XC2"),
-            ac_ess_feed_contactor_delay_logic_gate: DelayedTrueLogicGate::new(
-                A380AcEssFeedContactors::AC_ESS_FEED_TO_AC_BUS_2_DELAY_IN_SECONDS,
-            ),
         }
     }
 
     fn update(
         &mut self,
-        context: &UpdateContext,
         electricity: &mut Electricity,
         ac_bus_1: &ElectricalBus,
-        ac_bus_2: &ElectricalBus,
+        ac_bus_4: &ElectricalBus,
         overhead: &A380ElectricalOverheadPanel,
     ) {
-        self.ac_ess_feed_contactor_delay_logic_gate
-            .update(context, !electricity.is_powered(ac_bus_1));
+        let ac_bus_1_powered = electricity.is_powered(ac_bus_1);
 
         self.ac_ess_feed_contactor_1.close_when(
             electricity.is_powered(ac_bus_1)
-                && (!self.ac_ess_feed_contactor_delay_logic_gate.output()
-                    && overhead.ac_ess_feed_is_normal()),
+                && (ac_bus_1_powered && overhead.ac_ess_feed_is_normal()),
         );
         self.ac_ess_feed_contactor_2.close_when(
-            electricity.is_powered(ac_bus_2)
-                && (self.ac_ess_feed_contactor_delay_logic_gate.output()
-                    || overhead.ac_ess_feed_is_altn()),
+            electricity.is_powered(ac_bus_4)
+                && (!ac_bus_1_powered || overhead.ac_ess_feed_is_altn()),
         );
 
         electricity.flow(ac_bus_1, &self.ac_ess_feed_contactor_1);
-        electricity.flow(ac_bus_2, &self.ac_ess_feed_contactor_2);
+        electricity.flow(ac_bus_4, &self.ac_ess_feed_contactor_2);
     }
 
-    fn power_ac_ess_bus(&self, electricity: &mut Electricity, ac_ess_bus: &ElectricalBus) {
-        electricity.flow(&self.ac_ess_feed_contactor_1, ac_ess_bus);
-        electricity.flow(&self.ac_ess_feed_contactor_2, ac_ess_bus);
-    }
-
-    fn provides_power(&self, electricity: &Electricity) -> bool {
-        electricity.is_powered(&self.ac_ess_feed_contactor_1)
-            || electricity.is_powered(&self.ac_ess_feed_contactor_2)
+    fn power_400xp(&self, electricity: &mut Electricity, bus_400xp: &ElectricalBus) {
+        electricity.flow(&self.ac_ess_feed_contactor_1, bus_400xp);
+        electricity.flow(&self.ac_ess_feed_contactor_2, bus_400xp);
     }
 }
 impl SimulationElement for A380AcEssFeedContactors {

@@ -9,8 +9,9 @@ export interface LayerProps extends ComponentProps {
 export class Layer extends DisplayComponent<LayerProps> {
     render(): VNode | null {
         const { x, y } = this.props;
+        const ref = this.props.ref ?? FSComponent.createRef();
 
-        let value;
+        let value: Subscribable<string> | string;
         if (typeof x !== 'number' && typeof y !== 'number') {
             value = MappedSubject.create(([x, y]) => `translate(${x}, ${y})`, x, y);
         } else if (typeof x !== 'number' || typeof y !== 'number') {
@@ -20,7 +21,7 @@ export class Layer extends DisplayComponent<LayerProps> {
         }
 
         return (
-            <g ref={this.props.ref} transform={value} visibility={this.props.visible?.map((v) => (v ? 'inherit' : 'hidden')) ?? 'inherit'}>
+            <g ref={ref} transform={value} visibility={this.props.visible?.map((v) => (v ? 'inherit' : 'hidden')) ?? 'inherit'}>
                 {this.props.children}
             </g>
         );

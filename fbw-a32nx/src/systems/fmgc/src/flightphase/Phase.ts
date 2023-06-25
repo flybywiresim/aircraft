@@ -1,8 +1,10 @@
-import { Arinc429Word } from '@shared/arinc429';
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
+import { Arinc429Word, ConfirmationNode, NXDataStore } from '@flybywiresim/fbw-sdk';
 import { VerticalMode } from '@shared/autopilot';
 import { FmgcFlightPhase, getAutopilotVerticalMode, isAllEngineOn, isAnEngineOn, isOnGround, conditionTakeOff } from '@shared/flightphase';
-import { ConfirmationNode } from '@shared/logic';
-import { NXDataStore } from '@shared/persistence';
 
 export abstract class Phase {
     // eslint-disable-next-line no-empty-function

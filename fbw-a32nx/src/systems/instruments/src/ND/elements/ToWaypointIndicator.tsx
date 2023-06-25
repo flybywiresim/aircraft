@@ -1,8 +1,10 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import React, { FC, memo, useEffect, useState } from 'react';
-import { Layer } from '@instruments/common/utils';
+import { Layer, useSimVar, SimVarString } from '@flybywiresim/fbw-sdk';
 import { EfisSide } from '@shared/NavigationDisplay';
-import { useSimVar } from '@instruments/common/simVars';
-import { SimVarString } from '@shared/simvar';
 
 export type ToWaypointIndicatorProps = {
     side: EfisSide,
