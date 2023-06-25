@@ -529,7 +529,7 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
 }
 
 interface AltimeterIndicatorProps {
-    altitude: Subscribable<Number>,
+    altitude: Subscribable<number>,
     bus: ArincEventBus,
 }
 
