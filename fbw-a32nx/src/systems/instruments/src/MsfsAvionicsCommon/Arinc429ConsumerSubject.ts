@@ -1,5 +1,9 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { Consumer, ConsumerSubject } from '@microsoft/msfs-sdk';
-import { Arinc429Register, Arinc429WordData } from '@shared/arinc429';
+import { Arinc429Register, Arinc429WordData } from '@flybywiresim/fbw-sdk';
 
 export const Arinc429EqualityFunc = (a: Arinc429WordData, b: Arinc429WordData) => a.value === b.value && a.ssm === b.ssm;
 

@@ -1,5 +1,9 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { MetarParserType } from '@instruments/common/metarTypes';
+import { MetarParserType } from '@flybywiresim/fbw-sdk';
 
 /**
  * DashboardState holds any preservable states on the Dashboard Widgets and its

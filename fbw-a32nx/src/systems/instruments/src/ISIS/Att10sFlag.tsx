@@ -1,5 +1,9 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import React, { useRef, useState } from 'react';
-import { useInteractionEvent, useUpdate } from '@instruments/common/hooks';
+import { useInteractionEvent, useUpdate } from '@flybywiresim/fbw-sdk';
 
 export const Att10sFlag: React.FC = ({ children }) => {
     const timeToReset = 10;
