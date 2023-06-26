@@ -337,11 +337,6 @@ impl<const N: usize> OverpressureValve<N> {
             .with_transfer_speed_factor(self.open_amount)
             .update_move_fluid(context, upstream, downstream);
     }
-
-    #[cfg(test)]
-    fn open_amount(&self) -> Ratio {
-        self.open_amount
-    }
 }
 impl<const N: usize> FullyOpen for OverpressureValve<N> {
     fn is_fully_open(&self) -> bool {

@@ -28,8 +28,8 @@ use systems::{
         pid::PidController, update_iterator::MaxStepLoop, ControllerSignal, DelayedTrueLogicGate,
         ElectricalBusType, ElectricalBuses, EngineBleedPushbutton, EngineCorrectedN1,
         EngineCorrectedN2, EngineFirePushButtons, EngineStartState, HydraulicColor,
-        LatchedTrueLogicGate, LgciuWeightOnWheels, PackFlowValveState, PneumaticBleed,
-        PneumaticValve, ReservoirAirPressure,
+        LgciuWeightOnWheels, PackFlowValveState, PneumaticBleed, PneumaticValve,
+        ReservoirAirPressure,
     },
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -919,6 +919,11 @@ impl BleedMonitoringComputerChannel {
                     || self.flight_phase_loop.is_hold_active()),
         )
     }
+
+    #[cfg(test)]
+    fn is_in_low_temperature_regulation(&self) -> bool {
+        self.low_temperature_regulation_active.output()
+    }
 }
 impl ControllerSignal<SolenoidSignal> for BleedMonitoringComputerChannel {
     fn signal(&self) -> Option<SolenoidSignal> {
@@ -1806,9 +1811,9 @@ impl FlightPhaseLoop {
             vertical_speed.get::<foot_per_minute>().abs() <= 140.,
         );
 
-        self.is_climb_active = self.is_climb_active
-            && !(is_on_ground || self.vertical_speed_less_80.output())
-            || (!self.is_climb_active && !is_on_ground && self.vertical_speed_greater_140.output());
+        self.is_climb_active = (self.vertical_speed_greater_140.output() || self.is_climb_active)
+            && (!self.vertical_speed_less_80.output() || !self.is_climb_active)
+            && !is_on_ground;
 
         self.is_hold_active = !is_on_ground
             && altitude_selected.get::<foot>() < 25000.
@@ -1854,8 +1859,13 @@ pub mod tests {
     use std::{fs, fs::File, time::Duration};
 
     use uom::si::{
-        f64::*, length::foot, mass_rate::kilogram_per_second, pressure::psi, ratio::ratio,
-        thermodynamic_temperature::degree_celsius, velocity::knot,
+        f64::*,
+        length::foot,
+        mass_rate::kilogram_per_second,
+        pressure::psi,
+        ratio::ratio,
+        thermodynamic_temperature::degree_celsius,
+        velocity::{foot_per_minute, knot},
     };
 
     use crate::air_conditioning::{A320AirConditioningSystem, A320PressurizationOverheadPanel};
@@ -2710,6 +2720,14 @@ pub mod tests {
             self.query(|a| a.pneumatic.fadec.is_single_vs_dual_bleed_config())
         }
 
+        fn bmc_in_low_temperature_regulation(&self, bmc_number: usize) -> bool {
+            self.query(|a| {
+                a.pneumatic.bleed_monitoring_computers[bmc_number - 1]
+                    .main_channel
+                    .is_in_low_temperature_regulation()
+            })
+        }
+
         fn pack_flow_valve_flow(&self, engine_number: usize) -> MassRate {
             self.query(|a| {
                 a.pneumatic.packs[engine_number - 1]
@@ -2843,18 +2861,18 @@ pub mod tests {
     #[test]
     #[ignore]
     fn full_graphing_test() {
-        let alt = Length::new::<foot>(37000.);
+        let alt = Length::new::<foot>(10000.);
         let ambient_pressure = InternationalStandardAtmosphere::pressure_at_altitude(alt);
         println!("Ambient pressure: {} psi", ambient_pressure.get::<psi>());
 
         let mut test_bed = test_bed_with()
-            .eng1_n1(0.87)
+            .eng1_n1(0.8)
             .and_eng1_n2_based_on_n1()
-            .eng2_n1(0.87)
+            .eng2_n1(0.8)
             .and_eng2_n2_based_on_n1()
             .in_isa_atmosphere(alt)
             .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Auto)
-            .mach_number(MachNumber(0.78))
+            .mach_number(MachNumber(0.5))
             .both_packs_auto();
 
         let mut time_points = Vec::new();
@@ -4398,6 +4416,65 @@ pub mod tests {
         assert!(
             test_bed.regulated_pressure_transducer_signal(2).unwrap() < Pressure::new::<psi>(10.)
         );
+    }
+
+    #[test]
+    fn bmc_climb_phase_detection() {
+        let mut test_bed = test_bed_with()
+            .eng1_n1(0.8)
+            .and_eng1_n2_based_on_n1()
+            .eng2_n1(0.8)
+            .and_eng2_n2_based_on_n1();
+
+        test_bed.set_on_ground(false);
+        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(500.));
+        test_bed.run_multiple_frames(Duration::from_secs(5));
+        // >25000 ft, so we don't trigger the HOLD phase
+        test_bed.set_pressure_altitude(Length::new::<foot>(26000.));
+
+        // Should not be in climb phase yet
+        assert!(!test_bed.bmc_in_low_temperature_regulation(1));
+        assert!(!test_bed.bmc_in_low_temperature_regulation(2));
+
+        // Enter climb phase
+        test_bed.run_multiple_frames(Duration::from_secs(30));
+
+        assert!(test_bed.bmc_in_low_temperature_regulation(1));
+        assert!(test_bed.bmc_in_low_temperature_regulation(2));
+
+        // No longer in climb phase if VS < 140 for 10s or more
+        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(0.));
+        test_bed.run_multiple_frames(Duration::from_secs(15));
+
+        assert!(!test_bed.bmc_in_low_temperature_regulation(1));
+        assert!(!test_bed.bmc_in_low_temperature_regulation(2));
+    }
+
+    #[test]
+    fn bmc_hold_phase_detection() {
+        let mut test_bed = test_bed_with()
+            .eng1_n1(0.7)
+            .and_eng1_n2_based_on_n1()
+            .eng2_n1(0.7)
+            .and_eng2_n2_based_on_n1();
+
+        test_bed.set_on_ground(false);
+        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(0.));
+        test_bed.set_pressure_altitude(Length::new::<foot>(20000.));
+
+        // Should be in hold phase
+        test_bed.run_multiple_frames(Duration::from_secs(60));
+
+        assert!(test_bed.bmc_in_low_temperature_regulation(1));
+        assert!(test_bed.bmc_in_low_temperature_regulation(2));
+
+        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-500.));
+
+        // Should no longer be in hold phase
+        test_bed.run_multiple_frames(Duration::from_secs(1));
+
+        assert!(!test_bed.bmc_in_low_temperature_regulation(1));
+        assert!(!test_bed.bmc_in_low_temperature_regulation(2));
     }
 
     mod wing_anti_ice {
