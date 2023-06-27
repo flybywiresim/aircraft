@@ -1,6 +1,9 @@
 // One can rightfully argue that this constant shouldn't be located in @flybywiresim/failures.
 // Once we create an A320 specific package, such as @flybywiresim/a320, we can move it there.
 export const A320Failure = Object.freeze({
+    CabinFan1Failure: 21000,
+    CabinFan2Failure: 21001,
+
     Fac1Failure: 22000,
     Fac2Failure: 22001,
     TransformerRectifier1: 24000,

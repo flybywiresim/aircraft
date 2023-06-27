@@ -264,7 +264,10 @@ impl A320AirConditioningSystem {
                     ElectricalBusType::AlternatingCurrent(2),
                 ],
             ),
-            cabin_fans: [CabinFan::new(ElectricalBusType::AlternatingCurrent(1)); 2],
+            cabin_fans: [
+                CabinFan::new(context, 1, ElectricalBusType::AlternatingCurrent(1)),
+                CabinFan::new(context, 2, ElectricalBusType::AlternatingCurrent(2)),
+            ],
             mixer_unit: MixerUnit::new(cabin_zones),
             packs: [AirConditioningPack::new(), AirConditioningPack::new()],
             trim_air_system: TrimAirSystem::new(context, cabin_zones),

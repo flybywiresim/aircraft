@@ -1886,7 +1886,10 @@ mod acs_controller_tests {
                 acs_overhead: TestAcsOverhead::new(context),
                 adirs: TestAdirs::new(),
                 air_conditioning_system: TestAirConditioningSystem::new(),
-                cabin_fans: [CabinFan::new(ElectricalBusType::AlternatingCurrent(1)); 2],
+                cabin_fans: [
+                    CabinFan::new(context, 1, ElectricalBusType::AlternatingCurrent(1)),
+                    CabinFan::new(context, 2, ElectricalBusType::AlternatingCurrent(2)),
+                ],
                 engine_1: TestEngine::new(Ratio::default()),
                 engine_2: TestEngine::new(Ratio::default()),
                 engine_fire_push_buttons: TestEngineFirePushButtons::new(),
@@ -2392,6 +2395,10 @@ mod acs_controller_tests {
 
         fn pack_2_has_fault(&mut self) -> bool {
             self.read_by_name("OVHD_COND_PACK_2_PB_HAS_FAULT")
+        }
+
+        fn cabin_fan_has_fault(&mut self, fan_id: usize) -> bool {
+            self.read_by_name(format!("VENT_CABIN_FAN_{}_HAS_FAULT", fan_id).as_str())
         }
 
         fn trim_air_system_controller_is_enabled(&self) -> bool {
@@ -3404,6 +3411,8 @@ mod acs_controller_tests {
     }
 
     mod mixer_unit_tests {
+        use crate::failures::FailureType;
+
         use super::*;
 
         #[test]
@@ -3587,12 +3596,43 @@ mod acs_controller_tests {
                     > MassRate::new::<kilogram_per_second>(0.1)
             );
 
-            test_bed = test_bed.unpowered_ac_1_bus().iterate(50);
+            test_bed = test_bed
+                .unpowered_ac_1_bus()
+                .unpowered_ac_2_bus()
+                .iterate(50);
 
             assert!(
                 (test_bed.mixer_unit_outlet_air().flow_rate() - test_bed.pack_flow())
                     < MassRate::new::<kilogram_per_second>(0.1)
             )
+        }
+
+        #[test]
+        fn cabin_fans_dont_work_with_fault() {
+            let mut test_bed = test_bed()
+                .with()
+                .cab_fans_pb_on(true)
+                .and()
+                .both_packs_on()
+                .and()
+                .engine_idle()
+                .iterate(50);
+
+            assert!(
+                (test_bed.mixer_unit_outlet_air().flow_rate() - test_bed.pack_flow())
+                    > MassRate::new::<kilogram_per_second>(0.1)
+            );
+
+            test_bed.fail(FailureType::CabinFan(1));
+            test_bed.fail(FailureType::CabinFan(2));
+            test_bed = test_bed.iterate(50);
+
+            assert!(
+                (test_bed.mixer_unit_outlet_air().flow_rate() - test_bed.pack_flow())
+                    < MassRate::new::<kilogram_per_second>(0.1)
+            );
+            assert!(test_bed.cabin_fan_has_fault(1));
+            assert!(test_bed.cabin_fan_has_fault(2));
         }
     }
 

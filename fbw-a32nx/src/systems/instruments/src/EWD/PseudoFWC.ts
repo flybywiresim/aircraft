@@ -92,7 +92,7 @@ export class PseudoFWC {
         this.fireActive,
     );
 
-    /* PRESSURIZATION */
+    /* 21 - AIR CONDITIONING AND PRESSURIZATION */
 
     private readonly apuBleedValveOpen = Subject.create(false);
 
@@ -103,6 +103,10 @@ export class PseudoFWC {
     private readonly cabAltSetResetState1 = Subject.create(false);
 
     private readonly cabAltSetResetState2 = Subject.create(false);
+
+    private readonly cabFanHasFault1 = Subject.create(false);
+
+    private readonly cabFanHasFault2 = Subject.create(false);
 
     private readonly excessPressure = Subject.create(false);
 
@@ -1023,8 +1027,13 @@ export class PseudoFWC {
         this.ac2BusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_AC_2_BUS_IS_POWERED', 'bool'));
         this.acESSBusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED', 'bool'));
 
-        /* AIR CONDITIONING */
+        /* 21 - AIR CONDITIONING AND PRESSURIZATION */
 
+        /* CABIN FANS */
+        this.cabFanHasFault1.set(SimVar.GetSimVarValue('L:A32NX_VENT_CABIN_FAN_1_HAS_FAULT', 'bool'));
+        this.cabFanHasFault2.set(SimVar.GetSimVarValue('L:A32NX_VENT_CABIN_FAN_2_HAS_FAULT', 'bool'));
+
+        /* BLEED AND PACKS */
         const crossfeed = SimVar.GetSimVarValue('L:A32NX_PNEU_XBLEED_VALVE_OPEN', 'bool');
         const eng1Bleed = SimVar.GetSimVarValue('A:BLEED AIR ENGINE:1', 'bool');
         const eng1BleedPbFault = SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_1_BLEED_PB_HAS_FAULT', 'bool');
@@ -1035,6 +1044,7 @@ export class PseudoFWC {
         const pack1On = SimVar.GetSimVarValue('L:A32NX_OVHD_COND_PACK_1_PB_IS_ON', 'bool');
         const pack2On = SimVar.GetSimVarValue('L:A32NX_OVHD_COND_PACK_2_PB_IS_ON', 'bool');
 
+        /* CABIN PRESSURE */
         this.excessPressure.set(SimVar.GetSimVarValue('L:A32NX_PRESS_EXCESS_CAB_ALT', 'bool'));
         this.cabAltSetResetState1.set(
             this.cabAltSetReset1.write(pressureAltitude > 10000 && this.excessPressure.get(), this.excessPressure.get() && [3, 10].includes(this.fwcFlightPhase.get())),
@@ -2129,6 +2139,16 @@ export class PseudoFWC {
             memoInhibit: () => false,
             failure: 3,
             sysPage: -1,
+            side: 'LEFT',
+        },
+        2100140: { // L+R CAB FAN FAULT
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: MappedSubject.create(([cabFanHasFault1, cabFanHasFault2]) => cabFanHasFault1 && cabFanHasFault2, this.cabFanHasFault1, this.cabFanHasFault2),
+            whichCodeToReturn: () => [0, 1],
+            codesToReturn: ['210014001', '210014002'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: 7,
             side: 'LEFT',
         },
         2131221: { // EXCESS CAB ALT

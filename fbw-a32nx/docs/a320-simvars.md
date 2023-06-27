@@ -2716,6 +2716,13 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - 1
         - 2
 
+- A32NX_VENT_CABIN_FAN_{id}_HAS_FAULT
+    - Bool
+    - True if the corresponding cabin fan is on and operating normally
+    - {number}
+        - 1
+        - 2
+
 ## Pneumatic
 
 - A32NX_PNEU_ENG_{number}_IP_PRESSURE:

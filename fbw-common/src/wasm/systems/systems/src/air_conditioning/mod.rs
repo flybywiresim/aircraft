@@ -3,6 +3,7 @@ use self::acs_controller::{
 };
 
 use crate::{
+    failures::{Failure, FailureType},
     pneumatic::{
         valve::{DefaultValve, PneumaticExhaust},
         ControllablePneumaticValve, PneumaticContainer, PneumaticPipe, PneumaticValveSignal,
@@ -224,14 +225,16 @@ pub trait PressurizationConstants {
     const LOW_DIFFERENTIAL_PRESSURE_WARNING: f64;
 }
 
-#[derive(Clone, Copy)]
 /// A320neo fan part number: VD3900-03
 pub struct CabinFan {
+    cabin_fan_fault_id: VariableIdentifier,
+
     is_on: bool,
     outlet_air: Air,
 
     is_powered: bool,
     powered_by: ElectricalBusType,
+    failure: Failure,
 }
 
 impl CabinFan {
@@ -239,13 +242,16 @@ impl CabinFan {
     const PRESSURE_RISE_HPA: f64 = 22.; // hPa
     const FAN_EFFICIENCY: f64 = 0.75; // Ratio - so output matches AMM numbers
 
-    pub fn new(powered_by: ElectricalBusType) -> Self {
+    pub fn new(context: &mut InitContext, id: u8, powered_by: ElectricalBusType) -> Self {
         Self {
+            cabin_fan_fault_id: context.get_identifier(format!("VENT_CABIN_FAN_{}_HAS_FAULT", id)),
+
             is_on: false,
             outlet_air: Air::new(),
 
             is_powered: false,
             powered_by,
+            failure: Failure::new(FailureType::CabinFan(id as usize)),
         }
     }
 
@@ -259,7 +265,10 @@ impl CabinFan {
         self.outlet_air
             .set_temperature(cabin_simulation.cabin_temperature().iter().average());
 
-        if !self.is_powered || !matches!(controller.signal(), Some(CabinFansSignal::On)) {
+        if !self.is_powered
+            || self.failure.is_active()
+            || !matches!(controller.signal(), Some(CabinFansSignal::On))
+        {
             self.is_on = false;
             self.outlet_air
                 .set_pressure(cabin_simulation.cabin_pressure());
@@ -290,6 +299,15 @@ impl OutletAir for CabinFan {
 }
 
 impl SimulationElement for CabinFan {
+    fn accept<T: crate::simulation::SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.failure.accept(visitor);
+        visitor.visit(self);
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.cabin_fan_fault_id, self.failure.is_active());
+    }
+
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
         self.is_powered = buses.is_powered(self.powered_by);
     }
