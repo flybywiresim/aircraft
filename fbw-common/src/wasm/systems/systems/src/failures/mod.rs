@@ -9,6 +9,7 @@ pub enum FailureType {
     Generator(usize),
     ApuGenerator(usize),
     TransformerRectifier(usize),
+    StaticInverter,
     ElectricalBus(ElectricalBusType),
     ReservoirLeak(HydraulicColor),
     ReservoirAirLeak(HydraulicColor),
