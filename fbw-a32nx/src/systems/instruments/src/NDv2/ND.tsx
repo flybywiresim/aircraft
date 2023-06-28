@@ -182,9 +182,9 @@ export class NDComponent extends DisplayComponent<NDProps> {
         });
     }
 
-    private readonly mapFlagShown = MappedSubject.create(([headingWord, latWord, longWord]) => {
-        return !headingWord.isNormalOperation() || !latWord.isNormalOperation() || !longWord.isNormalOperation();
-    }, this.headingWord, this.pposLatWord, this.pposLonWord);
+    private readonly mapFlagShown = MappedSubject.create(([headingWord, latWord, longWord, currentPageMode]) => {
+        return (!headingWord.isNormalOperation() || !latWord.isNormalOperation() || !longWord.isNormalOperation()) && currentPageMode !== EfisNdMode.PLAN;
+    }, this.headingWord, this.pposLatWord, this.pposLonWord, this.currentPageMode);
 
     private readonly planeRotation = MappedSubject.create(([isUsingTrackUpMode, headingWord, trackWord]) => {
         if (isUsingTrackUpMode) {
