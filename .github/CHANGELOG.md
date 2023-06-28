@@ -18,6 +18,7 @@
 1. [EIS] Added > character to the font - @KiloEchoVictor (Kevin)
 1. [ND] Mask the map below the TCAS/WXR and FM messages - @tracernz (Mike)
 1. [FMS] Improved robustness of ILS selection - @tracernz (Mike)
+1. [FLIGHTMODEL] Fix outer to inner tank transfer valve closure - @donstim (donbikes)
 
 ## 0.10.0
 
