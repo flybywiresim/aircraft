@@ -119,7 +119,6 @@ pub struct SolenoidValve<const N: usize> {
     characteristics: PneumaticValveCharacteristics<N>,
     solenoid: Solenoid,
     open_amount: Ratio,
-    valve_speed: f64,
 }
 impl<const N: usize> SolenoidValve<N> {
     pub fn new(
@@ -131,7 +130,6 @@ impl<const N: usize> SolenoidValve<N> {
             characteristics,
             solenoid: Solenoid::new(powered_by),
             open_amount: Ratio::default(),
-            valve_speed: 0.25,
         }
     }
 
@@ -162,8 +160,10 @@ impl<const N: usize> SolenoidValve<N> {
                     + context.delta_as_secs_f64() * self.characteristics.valve_speed,
             )
         } else {
-            target_open_amount
-                .max(current_open_amount - context.delta_as_secs_f64() * self.valve_speed)
+            target_open_amount.max(
+                current_open_amount
+                    - context.delta_as_secs_f64() * self.characteristics.valve_speed,
+            )
         });
 
         self.connector
