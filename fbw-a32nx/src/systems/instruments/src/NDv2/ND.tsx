@@ -247,6 +247,8 @@ export class NDComponent extends DisplayComponent<NDProps> {
             this.rangeChangeInvalidationTimeout = window.setTimeout(() => {
                 this.rangeChangeInProgress.set(false);
             }, (Math.random() * PAGE_GENERATION_RANDOM_DELAY) + PAGE_GENERATION_BASE_DELAY);
+        } else {
+            this.rangeChangeInProgress.set(false);
         }
     }
 
@@ -261,6 +263,8 @@ export class NDComponent extends DisplayComponent<NDProps> {
             this.pageChangeInvalidationTimeout = window.setTimeout(() => {
                 this.pageChangeInProgress.set(false);
             }, (Math.random() * PAGE_GENERATION_RANDOM_DELAY) + PAGE_GENERATION_BASE_DELAY);
+        } else {
+            this.pageChangeInProgress.set(false);
         }
     }
 
