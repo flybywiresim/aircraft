@@ -1487,6 +1487,7 @@ mod tests {
             engines: [&impl EngineCorrectedN1; 4],
             engine_fire_push_buttons: &impl EngineFirePushButtons,
             pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
+            pneumatic_overhead: &impl EngineBleedPushbutton<4>,
             lgciu: [&impl LgciuWeightOnWheels; 2],
         ) {
             self.air_conditioning.update(
@@ -1496,6 +1497,7 @@ mod tests {
                 engines,
                 engine_fire_push_buttons,
                 pneumatic,
+                pneumatic_overhead,
                 &self.pressurization_overhead,
                 lgciu,
             );
@@ -1800,6 +1802,7 @@ mod tests {
                 ],
                 &self.fire_pushbuttons,
                 &self.pneumatic,
+                &self.pneumatic_overhead_panel,
                 [&self.lgciu; 2],
             )
         }
