@@ -6,6 +6,7 @@ interface TopTabElementProps extends ComponentProps {
     title: string;
     isSelected: boolean;
     selectedTextColor: string;
+    isActiveFlightPhase: boolean;
     height: number; // height of tab bar element
     slantedEdgeAngle: number; // in degrees
     onClick: () => void;
@@ -16,10 +17,20 @@ class TopTabElement extends DisplayComponent<TopTabElementProps> {
 
     private divRef = FSComponent.createRef<HTMLDivElement>();
 
+    private textRef = FSComponent.createRef<HTMLSpanElement>();
+
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
         this.divRef.instance.addEventListener('click', this.props.onClick);
+
+        if (this.props.isActiveFlightPhase === true) {
+            this.textRef.getOrDefault().style.color = '#00ff00';
+        } else if (this.props.isSelected === true) {
+            this.textRef.getOrDefault().style.color = this.props.selectedTextColor;
+        } else {
+            this.textRef.getOrDefault().style.color = 'white;';
+        }
     }
 
     render(): VNode {
@@ -34,8 +45,10 @@ class TopTabElement extends DisplayComponent<TopTabElementProps> {
                     {this.props.isSelected === false && <line x1="0" y1={this.props.height - 1} x2={this.triangleWidth} y2={this.props.height - 1} style="stroke: lightgrey; stroke-width:2" />}
                 </svg>
                 <span
+                    ref={this.textRef}
                     class={`MFDTopTabNavigatorBarElementLabel${this.props.isSelected === true ? ' active' : ''}`}
-                    style={`font-size: ${Math.floor(this.props.height * 0.55)}px; color: ${this.props.isSelected ? this.props.selectedTextColor : 'white'}`}
+                    // eslint-disable-next-line max-len
+                    style={`font-size: ${Math.floor(this.props.height * 0.55)}px;`}
                 >
                     {this.props.title}
                 </span>
@@ -87,6 +100,7 @@ interface TopTabNavigatorProps {
     tabBarHeight?: number; // in pixels
     tabBarSlantedEdgeAngle?: number; // in degrees, vertical line equals 0°
     additionalRightSpace?: number; // in pixels
+    activeFlightPhase?: Subscribable<number>; // special handling for PERF pages, mark tab from active flight phase with green text color
     pageChangeCallback?: (index: number) => void;
 }
 
@@ -119,43 +133,56 @@ export class TopTabNavigator extends DisplayComponent<TopTabNavigatorProps> {
         }
     }
 
+    populateElements(node: VNode, selectedTab: number): void {
+        // Clear children nodes of top navigation bar
+        while (this.navigatorBarRef.instance.firstChild) {
+            this.navigatorBarRef.instance.removeChild(this.navigatorBarRef.instance.firstChild);
+        }
+
+        // Re-set visibility for pages
+        const nodes = FSComponent.createChildNodes(node, this.props.children);
+        nodes.forEach((page, index) => {
+            if (page.instance instanceof TopTabNavigatorPage) {
+                page.instance.setVisibility(index === selectedTab);
+            }
+        });
+
+        // Re-populate top navigation bar
+        this.props.pageTitles.get().forEach((pageTitle, index) => {
+            let isActiveFlightPhase = false;
+            if (this.props.activeFlightPhase) {
+                // PERF pages: Color tabs based on flight phase
+                isActiveFlightPhase = (this.props.activeFlightPhase.get() === (index + 1));
+            }
+
+            FSComponent.render(<TopTabElement
+                title={pageTitle}
+                isSelected={(selectedTab === index)}
+                height={this.props.tabBarHeight || 36}
+                slantedEdgeAngle={this.props.tabBarSlantedEdgeAngle || 10}
+                selectedTextColor={this.props.selectedTabTextColor || 'white'}
+                onClick={() => this.onPageChange(index)}
+                isActiveFlightPhase={isActiveFlightPhase}
+            />, this.navigatorBarRef.instance);
+        });
+
+        // Add space at end, if any
+        if (this.props.additionalRightSpace && this.props.additionalRightSpace > 0) {
+            const div = document.createElement('div');
+            div.style.width = `${this.props.additionalRightSpace}px`;
+            div.style.borderBottom = '2px solid lightgray';
+            this.navigatorBarRef.instance.appendChild(div);
+        }
+    }
+
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
         this.props.selectedPageIndex.sub((value) => {
-            // Clear children nodes of top navigation bar
-            while (this.navigatorBarRef.instance.firstChild) {
-                this.navigatorBarRef.instance.removeChild(this.navigatorBarRef.instance.firstChild);
-            }
+            this.populateElements(node, value);
+        }, true);
 
-            // Re-set visibility for pages
-            const nodes = FSComponent.createChildNodes(node, this.props.children);
-            nodes.forEach((page, index) => {
-                if (page.instance instanceof TopTabNavigatorPage) {
-                    page.instance.setVisibility(index === value);
-                }
-            });
-
-            // Re-populate top navigation bar
-            this.props.pageTitles.get().forEach((pageTitle, index) => {
-                FSComponent.render(<TopTabElement
-                    title={pageTitle}
-                    isSelected={(value === index)}
-                    height={this.props.tabBarHeight || 36}
-                    slantedEdgeAngle={this.props.tabBarSlantedEdgeAngle || 10}
-                    selectedTextColor={this.props.selectedTabTextColor || 'white'}
-                    onClick={() => this.onPageChange(index)}
-                />, this.navigatorBarRef.instance);
-            });
-
-            // Add space at end, if any
-            if (this.props.additionalRightSpace && this.props.additionalRightSpace > 0) {
-                const div = document.createElement('div');
-                div.style.width = `${this.props.additionalRightSpace}px`;
-                div.style.borderBottom = '2px solid lightgray';
-                this.navigatorBarRef.instance.appendChild(div);
-            }
-        });
+        this.props.activeFlightPhase.sub(() => this.populateElements(node, this.props.selectedPageIndex.get()));
     }
 
     render(): VNode {
@@ -171,6 +198,7 @@ export class TopTabNavigator extends DisplayComponent<TopTabNavigatorProps> {
                                 slantedEdgeAngle={this.props.tabBarSlantedEdgeAngle || 10}
                                 selectedTextColor={this.props.selectedTabTextColor || 'white'}
                                 onClick={() => this.onPageChange(index)}
+                                isActiveFlightPhase={false}
                             />
                         ))
                     }

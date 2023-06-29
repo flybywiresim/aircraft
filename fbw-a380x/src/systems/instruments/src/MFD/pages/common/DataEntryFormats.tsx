@@ -76,7 +76,7 @@ export class SpeedMachFormat implements DataEntryFormat<number> {
     }
 }
 
-// Assumption: All values between 0 and 430 are FL, above are FT (TODO check corner cases)
+// Assumption: All values between 0 and 430 are FL, above are FT
 export class AltitudeOrFlightLevelFormat implements DataEntryFormat<number> {
     public placeholder = '-----';
 
@@ -178,9 +178,12 @@ export class FlightLevelFormat implements DataEntryFormat<number> {
     }
 
     public async parse(input: string) {
-        const nbr = Number(input);
-        if (Number.isNaN(nbr) === false && nbr <= (this.maxValue / 100) && nbr >= (this.minValue / 100)) {
-            return nbr * 100; // Convert FL to feet
+        let nbr = Number(input);
+        if (nbr < 430) {
+            nbr = Number(input) * 100; // Convert FL to feet, still need to handle this because value is stored as number
+        }
+        if (Number.isNaN(nbr) === false && nbr <= (this.maxValue) && nbr >= (this.minValue)) {
+            return nbr;
         }
         return null;
     }

@@ -221,18 +221,18 @@ export class OANS extends DisplayComponent<OANSProps> {
                                                 <InputField<number>
                                                     dataEntryFormat={new LengthFormat(Subject.create(0), Subject.create(4000))}
                                                     value={this.thresholdShift}
-                                                    isMandatory={false}
+                                                    mandatory={Subject.create(false)}
                                                 />
                                                 <span class="MFDLabel spacingRight bigger" style="justify-self: flex-end">END SHIFT</span>
                                                 <InputField<number>
                                                     dataEntryFormat={new LengthFormat(Subject.create(0), Subject.create(4000))}
                                                     value={this.endShift}
-                                                    isMandatory={false}
+                                                    mandatory={Subject.create(false)}
                                                 />
                                             </div>
                                             <div style="display: flex; flex-direction: row; justify-content: center; margin-top: 10px;">
                                                 <Button
-                                                    containerStyle="padding: 7px 15px 5px 15px;"
+                                                    buttonStyle="padding: 7px 15px 5px 15px;"
                                                     onClick={() => this.hideLdgShiftPanel()}
                                                 >
                                                     RETURN
@@ -243,14 +243,14 @@ export class OANS extends DisplayComponent<OANSProps> {
                                 </div>
                                 <div id="MapDataMain" style="display: flex; flex: 3; flex-direction: column; margin: 5px 20px 5px 20px;">
                                     <div style="display: flex; flex-direction: row; justify-content: space-between; margin: 10px;">
-                                        <Button onClick={() => console.log('ADD CROSS')} containerStyle="flex: 1">ADD CROSS</Button>
-                                        <Button onClick={() => console.log('ADD FLAG')} containerStyle="flex: 1; margin-left: 10px; margin-right: 10px">ADD FLAG</Button>
-                                        <Button onClick={() => this.showLdgShiftPanel()} containerStyle="flex: 1">LDG SHIFT</Button>
+                                        <Button onClick={() => console.log('ADD CROSS')} buttonStyle="flex: 1">ADD CROSS</Button>
+                                        <Button onClick={() => console.log('ADD FLAG')} buttonStyle="flex: 1; margin-left: 10px; margin-right: 10px">ADD FLAG</Button>
+                                        <Button onClick={() => this.showLdgShiftPanel()} buttonStyle="flex: 1">LDG SHIFT</Button>
                                     </div>
                                     <div style="display: flex; flex-direction: row; justify-content: center; margin: 10px; ">
                                         <Button
                                             onClick={() => console.log(`CENTER MAP ON ${this.availableEntityList.get(this.selectedEntityIndex.get())}`)}
-                                            containerStyle="width: 65%"
+                                            buttonStyle="width: 65%"
                                         >
                                             {`CENTER MAP ON ${this.availableEntityList.get(this.selectedEntityIndex.get())}`}
                                         </Button>
@@ -292,7 +292,7 @@ export class OANS extends DisplayComponent<OANSProps> {
                                     <div style="display: flex; flex-direction: row; justify-content: center; margin: 10px; ">
                                         <Button
                                             onClick={() => console.log('DISPLAY AIRPORT')}
-                                            containerStyle="width: 75%"
+                                            buttonStyle="width: 75%"
                                         >
                                             DISPLAY AIRPORT
                                         </Button>
@@ -317,7 +317,7 @@ export class OANS extends DisplayComponent<OANSProps> {
                                     <span class="MFDGreenValue bigger">7MAR-3APR</span>
                                 </div>
                                 <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
-                                    <Button onClick={() => console.log('SWAP')} containerStyle="padding: 20px 30px 20px 30px;">SWAP</Button>
+                                    <Button onClick={() => console.log('SWAP')} buttonStyle="padding: 20px 30px 20px 30px;">SWAP</Button>
                                 </div>
                                 <div style="flex: 3; display: flex; flex-direction: column; align-items: center;">
                                     <span class="MFDLabel" style="margin-bottom: 10px;">SECOND DATABASE</span>

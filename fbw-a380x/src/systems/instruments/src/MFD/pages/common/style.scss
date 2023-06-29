@@ -74,12 +74,17 @@ $display-mfd-dark-grey: #3c3c3c;
   justify-content: center;
 }
 
+.MFDButton.opened {
+  background-color: $display-dark-grey;
+  border: 2px inset $display-light-grey;
+}
+
 .MFDButton:hover {
   border-color: $display-cyan;
 }
 
 .MFDButton.disabled {
-  color: $display-light-grey;
+  color: grey;
 }
 
 .MFDButton.disabled:hover {
@@ -393,6 +398,10 @@ $display-mfd-dark-grey: #3c3c3c;
   height: 37px;
 }
 
+.MFDNumberInputContainer.disabled {
+  background-color: $display-mfd-dark-grey;
+}
+
 .MFDNumberInputContainer:hover {
   border: 2px inset $display-cyan;
 }
@@ -409,6 +418,11 @@ $display-mfd-dark-grey: #3c3c3c;
 }
 
 .MFDNumberInputTextInput.validating {
+  color: $display-light-grey;
+}
+
+.MFDNumberInputTextInput.disabled {
+  background-color: $display-mfd-dark-grey;
   color: $display-light-grey;
 }
 

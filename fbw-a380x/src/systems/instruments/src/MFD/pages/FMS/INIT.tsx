@@ -8,7 +8,7 @@ import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 import { InputField } from 'instruments/src/MFD/pages/common/InputField';
 import { AirportFormat, CostIndexFormat, CrzTempFormat, FlightLevelFormat, LongAlphanumericFormat, TripWindFormat, TropoFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { Button } from 'instruments/src/MFD/pages/common/Button';
-import { maxCertifiedAlt } from 'shared/constants';
+import { defaultTropopauseAlt, maxCertifiedAlt } from 'shared/constants';
 
 interface MfdFmsActiveInitProps extends MfdComponentProps {
 }
@@ -27,6 +27,8 @@ export class MfdFmsActiveInit extends DisplayComponent<MfdFmsActiveInitProps> {
 
     private altnIcao = Subject.create<string>(null);
 
+    private altnDisabled = Subject.create(true);
+
     private cpnyRte = Subject.create<string>(null);
 
     private altnRte = Subject.create<string>(null);
@@ -35,13 +37,21 @@ export class MfdFmsActiveInit extends DisplayComponent<MfdFmsActiveInitProps> {
 
     private crzTemp = Subject.create<number>(null);
 
+    private crzTempIsDisabled = Subject.create(true);
+
     private costIndex = Subject.create<number>(null);
 
-    private tropoAlt = Subject.create<number>(null);
+    private costIndexDisabled = Subject.create(true);
+
+    private tropoAlt = Subject.create<number>(defaultTropopauseAlt);
 
     private tripWind = Subject.create<number>(null);
 
+    private tripWindDisabled = Subject.create(true);
+
     private cpnyRteMandatory = Subject.create(true);
+
+    private departureButtonDisabled = Subject.create(true);
 
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
@@ -68,8 +78,31 @@ export class MfdFmsActiveInit extends DisplayComponent<MfdFmsActiveInitProps> {
         }, true));
 
         // Check if CPNY RTE is mandatory
-        this.subs.push(this.fromIcao.sub((val) => this.cpnyRteMandatory.set(!val || !this.toIcao.get())));
-        this.subs.push(this.toIcao.sub((val) => this.cpnyRteMandatory.set(!this.fromIcao.get() || !val)));
+        this.subs.push(this.fromIcao.sub(() => this.fromToChanged(), true));
+        this.subs.push(this.toIcao.sub(() => this.fromToChanged(), true));
+        this.subs.push(this.crzFl.sub((val) => this.crzTempIsDisabled.set(!val), true));
+    }
+
+    private fromToChanged() {
+        this.cpnyRteMandatory.set(!this.fromIcao.get() || !this.toIcao.get());
+        this.altnDisabled.set(!this.fromIcao.get() || !this.toIcao.get());
+        this.costIndexDisabled.set(!this.fromIcao.get() || !this.toIcao.get());
+        this.tripWindDisabled.set(!this.fromIcao.get() || !this.toIcao.get());
+        this.departureButtonDisabled.set(!this.fromIcao.get());
+
+        if (this.fromIcao.get() && this.toIcao.get()) {
+            if (!this.altnIcao.get()) {
+                this.altnIcao.set('NONE');
+            }
+
+            if (!this.cpnyRte.get()) {
+                this.cpnyRte.set('NONE');
+            }
+
+            if (!this.altnRte.get()) {
+                this.altnRte.set('NONE');
+            }
+        }
     }
 
     public destroy(): void {
@@ -89,86 +122,111 @@ export class MfdFmsActiveInit extends DisplayComponent<MfdFmsActiveInitProps> {
                         <div class="MFDLabel" style="width: 150px; text-align: right; padding-right: 5px;">FLT NBR</div>
                         <InputField<string>
                             dataEntryFormat={new LongAlphanumericFormat()}
-                            isMandatory={Subject.create(true)}
+                            mandatory={Subject.create(true)}
                             value={this.fltNbr}
                             containerStyle="width: 200px; margin-right: 5px;"
+                            alignText="center"
                         />
-                        <Button onClick={() => this.props.navigateTo('fms/data/status')} containerStyle="margin-right: 10px; width: 200px;">ACFT STATUS</Button>
+                        <Button onClick={() => this.props.navigateTo('fms/data/status')} buttonStyle="margin-right: 10px; width: 200px;">ACFT STATUS</Button>
                         <div style="flex-grow: 1" />
-                        <Button onClick={() => console.log('CPNY F-PLN REQUEST')} containerStyle="width: 175px;">
-                            CPNY F-PLN
+                        <Button
+                            onClick={() => console.log('CPNY F-PLN REQUEST')}
+                            buttonStyle="width: 175px;"
+                            idPrefix="fplnreq"
+                            menuItems={[
+                                { label: 'INSERT*', action: () => console.log('INSERT') },
+                                { label: 'CLEAR*', action: () => console.log('CLEAR') }]}
+                        >
+                            RECEIVED
                             <br />
-                            REQUEST
+                            CPNY F-PLN
                         </Button>
                     </div>
                     <div style="display: flex; flex-direction: row; align-items: center; margin-top: 10px; margin-bottom: 10px;">
                         <div class="MFDLabel" style="width: 150px; text-align: right; padding-right: 5px;">FROM</div>
                         <InputField<string>
                             dataEntryFormat={new AirportFormat()}
-                            isMandatory={Subject.create(true)}
+                            mandatory={Subject.create(true)}
+                            canBeCleared={Subject.create(false)}
                             value={this.fromIcao}
+                            alignText="center"
                         />
                         <div class="MFDLabel" style="margin: 0px 10px 0px 10px;">TO</div>
                         <InputField<string>
                             dataEntryFormat={new AirportFormat()}
-                            isMandatory={Subject.create(true)}
+                            mandatory={Subject.create(true)}
+                            canBeCleared={Subject.create(false)}
                             value={this.toIcao}
+                            alignText="center"
                         />
                         <div class="MFDLabel" style="margin: 0px 10px 0px 10px;">ALTN</div>
                         <InputField<string>
                             dataEntryFormat={new AirportFormat()}
-                            isMandatory={Subject.create(true)}
+                            mandatory={Subject.create(true)}
+                            disabled={this.altnDisabled}
                             value={this.altnIcao}
+                            alignText="center"
                         />
                     </div>
                     <div style="display: flex; flex-direction: row; align-items: center; margin-top: 5px;">
                         <div class="MFDLabel" style="width: 150px; text-align: right; padding-right: 5px;">CPNY RTE</div>
                         <InputField<string>
                             dataEntryFormat={new LongAlphanumericFormat()}
-                            isMandatory={this.cpnyRteMandatory}
+                            mandatory={this.cpnyRteMandatory}
+                            canBeCleared={Subject.create(false)}
                             value={this.cpnyRte}
                             containerStyle="width: 200px; margin-right: 5px;"
+                            alignText="center"
                         />
-                        <Button onClick={() => console.log('RTE SEL')} containerStyle="margin-right: 10px; width: 200px;">RTE SEL</Button>
+                        <Button onClick={() => console.log('RTE SEL')} buttonStyle="margin-right: 10px; width: 200px;">RTE SEL</Button>
                     </div>
                     <div style="display: flex; flex-direction: row; align-items: center; margin-top: 5px; border-bottom: 1px solid lightgrey; margin-bottom: 25px; padding-bottom: 25px;">
                         <div class="MFDLabel" style="width: 150px; text-align: right; padding-right: 5px;">ALTN RTE</div>
                         <InputField<string>
                             dataEntryFormat={new LongAlphanumericFormat()}
-                            isMandatory={Subject.create(true)}
+                            mandatory={Subject.create(false)}
+                            disabled={this.altnDisabled}
+                            canBeCleared={Subject.create(false)}
                             value={this.altnRte}
                             containerStyle="width: 200px; margin-right: 5px;"
+                            alignText="center"
                         />
-                        <Button onClick={() => console.log('ALTN RTE SEL')} containerStyle="margin-right: 10px; width: 200px;">ALTN RTE SEL</Button>
+                        <Button disabled={this.altnDisabled} onClick={() => console.log('ALTN RTE SEL')} buttonStyle="margin-right: 10px; width: 200px;">ALTN RTE SEL</Button>
                     </div>
                     <div style="display: flex; flex-direction: row; align-items: center; margin-top: 5px;">
                         <div class="MFDLabel" style="width: 150px; text-align: right; padding-right: 5px;">CRZ FL</div>
                         <InputField<number>
                             dataEntryFormat={new FlightLevelFormat(Subject.create(100), Subject.create(maxCertifiedAlt))}
-                            isMandatory={Subject.create(true)}
+                            mandatory={Subject.create(true)}
+                            disabled={this.altnDisabled}
+                            canBeCleared={Subject.create(false)}
                             value={this.crzFl}
                             containerStyle="margin-right: 25px;"
                         />
                         <div class="MFDLabel" style="text-align: right; padding-right: 5px;">CRZ TEMP</div>
                         <InputField<number>
                             dataEntryFormat={new CrzTempFormat()}
-                            isMandatory={Subject.create(false)}
+                            mandatory={Subject.create(false)}
+                            disabled={this.crzTempIsDisabled}
                             value={this.crzTemp}
                             containerStyle="width: 110px; justify-content: flex-end;"
+                            alignText="center"
                         />
                     </div>
                     <div style="display: flex; flex-direction: row; align-items: center; margin-top: 10px;">
                         <div class="MFDLabel" style="width: 150px; text-align: right; padding-right: 5px;">CI</div>
                         <InputField<number>
                             dataEntryFormat={new CostIndexFormat()}
-                            isMandatory={Subject.create(true)}
+                            mandatory={Subject.create(true)}
+                            disabled={this.costIndexDisabled}
                             value={this.costIndex}
                             containerStyle="width: 70px; margin-right: 90px; justify-content: center;"
+                            alignText="center"
                         />
                         <div class="MFDLabel" style="text-align: right; padding-right: 5px;">TROPO</div>
                         <InputField<number>
                             dataEntryFormat={new TropoFormat()}
-                            isMandatory={Subject.create(false)}
+                            mandatory={Subject.create(false)}
                             value={this.tropoAlt}
                         />
                     </div>
@@ -176,45 +234,48 @@ export class MfdFmsActiveInit extends DisplayComponent<MfdFmsActiveInitProps> {
                         <div class="MFDLabel" style="width: 150px; text-align: right; padding-right: 5px; margin-top: 90px;">TRIP WIND</div>
                         <InputField<number>
                             dataEntryFormat={new TripWindFormat()}
-                            isMandatory={Subject.create(false)}
+                            mandatory={Subject.create(false)}
+                            disabled={this.tripWindDisabled}
                             value={this.tripWind}
                             containerStyle="width: 125px; margin-right: 80px; margin-top: 90px;"
+                            alignText="center"
                         />
-                        <Button onClick={() => console.log('WIND')} containerStyle="margin-right: 10px; margin-top: 90px;">WIND</Button>
+                        <Button onClick={() => console.log('WIND')} buttonStyle="margin-right: 10px; margin-top: 90px;">WIND</Button>
                         <div style="flex-grow: 1" />
-                        <Button onClick={() => console.log('CPNY WIND REQUEST')} containerStyle="margin-right: 10px; justify-self: flex-end; width: 175px;">
+                        <Button onClick={() => console.log('CPNY WIND REQUEST')} buttonStyle="margin-right: 10px; justify-self: flex-end; width: 175px;">
                             CPNY WIND
                             <br />
                             REQUEST
                         </Button>
                     </div>
-                    <Button onClick={() => this.props.navigateTo('fms/position/irs')} containerStyle="width: 160px; margin-left: 150px; margin-bottom: 10px;">IRS</Button>
+                    <Button onClick={() => this.props.navigateTo('fms/position/irs')} buttonStyle="width: 160px; margin-left: 150px; margin-bottom: 10px;">IRS</Button>
                     <div style="display: flex; flex-direction: row;">
                         <Button
+                            disabled={this.departureButtonDisabled}
                             onClick={() => this.props.navigateTo(`fms/${this.props.activeUri.get().category}/f-pln/departure`)}
-                            containerStyle="width: 160px; margin-left: 150px; margin-bottom: 10px;"
+                            buttonStyle="width: 160px; margin-left: 150px; margin-bottom: 10px;"
                         >
                             DEPARTURE
                         </Button>
-                        <Button onClick={() => this.props.navigateTo('fms/data/route')} containerStyle="margin-left: 50px; margin-bottom: 10px;">RTE SUMMARY</Button>
+                        <Button onClick={() => this.props.navigateTo('fms/data/route')} buttonStyle="margin-left: 50px; margin-bottom: 10px;">RTE SUMMARY</Button>
                     </div>
-                    <Button onClick={() => this.props.navigateTo('fms/position/navaids')} containerStyle="width: 160px; margin-left: 150px; margin-bottom: 10px;">NAVAIDS</Button>
+                    <Button onClick={() => this.props.navigateTo('fms/position/navaids')} buttonStyle="width: 160px; margin-left: 150px; margin-bottom: 10px;">NAVAIDS</Button>
                     <Button
                         onClick={() => this.props.navigateTo(`fms/${this.props.activeUri.get().category}/fuel-load`)}
-                        containerStyle="width: 160px; margin-left: 150px; margin-bottom: 10px;"
+                        buttonStyle="width: 160px; margin-left: 150px; margin-bottom: 10px;"
                     >
                         FUEL&LOAD
                     </Button>
                     <div style="display: flex; flex-direction: row;">
                         <Button
                             onClick={() => this.props.navigateTo(`fms/${this.props.activeUri.get().category}/perf/to`)}
-                            containerStyle="width: 160px; margin-left: 150px; margin-bottom: 10px; height: 40px;"
+                            buttonStyle="width: 160px; margin-left: 150px; margin-bottom: 10px; height: 40px;"
                         >
                             T.O. PERF
                         </Button>
                         <div style="flex-grow: 1" />
-                        <Button onClick={() => console.log('CPNY WIND REQUEST')} containerStyle="margin-right: 10px; justify-self: flex-end; width: 175px;">
-                            CPNY WIND
+                        <Button onClick={() => console.log('CPNY T.O. REQUEST')} buttonStyle="margin-right: 10px; justify-self: flex-end; width: 175px;">
+                            CPNY T.O.
                             <br />
                             REQUEST
                         </Button>

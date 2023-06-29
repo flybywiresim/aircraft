@@ -87,3 +87,8 @@ Status legend:
 | 🟥 | fcubkup/efis | 5 |
 
 ## Known issues / improvements
+
+
+## (Open) questions
+| Page / component | Question | Answer |
+| Input field | Is it possible to input illegal characters into the input fields before validation? I.e. when selecting an altitude field, and pressing „A“ on the KCCU, does it actually display „A“ in the field? | - |
