@@ -110,6 +110,12 @@ export class PseudoFWC {
 
     private readonly excessPressure = Subject.create(false);
 
+    private readonly hotAirEnabled = Subject.create(false);
+
+    private readonly hotAirOpen = Subject.create(false);
+
+    private readonly hotAirPbOn = Subject.create(false);
+
     private readonly packOffBleedAvailable1 = new NXLogicConfirmNode(5, false);
 
     private readonly packOffBleedAvailable2 = new NXLogicConfirmNode(5, false);
@@ -1029,11 +1035,13 @@ export class PseudoFWC {
 
         /* 21 - AIR CONDITIONING AND PRESSURIZATION */
 
-        /* CABIN FANS */
         this.cabFanHasFault1.set(SimVar.GetSimVarValue('L:A32NX_VENT_CABIN_FAN_1_HAS_FAULT', 'bool'));
         this.cabFanHasFault2.set(SimVar.GetSimVarValue('L:A32NX_VENT_CABIN_FAN_2_HAS_FAULT', 'bool'));
 
-        /* BLEED AND PACKS */
+        this.hotAirEnabled.set(SimVar.GetSimVarValue('L:A32NX_HOT_AIR_VALVE_IS_ENABLED', 'bool'));
+        this.hotAirOpen.set(SimVar.GetSimVarValue('L:A32NX_HOT_AIR_VALVE_IS_OPEN', 'bool'));
+        this.hotAirPbOn.set(SimVar.GetSimVarValue('L:A32NX_OVHD_COND_HOT_AIR_PB_IS_ON', 'bool'));
+
         const crossfeed = SimVar.GetSimVarValue('L:A32NX_PNEU_XBLEED_VALVE_OPEN', 'bool');
         const eng1Bleed = SimVar.GetSimVarValue('A:BLEED AIR ENGINE:1', 'bool');
         const eng1BleedPbFault = SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_1_BLEED_PB_HAS_FAULT', 'bool');
@@ -1044,7 +1052,6 @@ export class PseudoFWC {
         const pack1On = SimVar.GetSimVarValue('L:A32NX_OVHD_COND_PACK_1_PB_IS_ON', 'bool');
         const pack2On = SimVar.GetSimVarValue('L:A32NX_OVHD_COND_PACK_2_PB_IS_ON', 'bool');
 
-        /* CABIN PRESSURE */
         this.excessPressure.set(SimVar.GetSimVarValue('L:A32NX_PRESS_EXCESS_CAB_ALT', 'bool'));
         this.cabAltSetResetState1.set(
             this.cabAltSetReset1.write(pressureAltitude > 10000 && this.excessPressure.get(), this.excessPressure.get() && [3, 10].includes(this.fwcFlightPhase.get())),
@@ -2146,6 +2153,19 @@ export class PseudoFWC {
             simVarIsActive: MappedSubject.create(([cabFanHasFault1, cabFanHasFault2]) => cabFanHasFault1 && cabFanHasFault2, this.cabFanHasFault1, this.cabFanHasFault2),
             whichCodeToReturn: () => [0, 1],
             codesToReturn: ['210014001', '210014002'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: 7,
+            side: 'LEFT',
+        },
+        2100150: { // HOT AIR FAULT
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: MappedSubject.create(([hotAirEnabled, hotAirOpen]) => hotAirEnabled !== hotAirOpen, this.hotAirEnabled, this.hotAirOpen),
+            whichCodeToReturn: () => [0,
+                this.hotAirPbOn.get() ? 1 : null,
+                this.hotAirPbOn.get() ? 2 : null,
+                3, 4, 5], // Fixme: Add check, 2-5 only returned if duct overheat
+            codesToReturn: ['210015001', '210015002', '210015003', '210015004', '210015005'],
             memoInhibit: () => false,
             failure: 2,
             sysPage: 7,

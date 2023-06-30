@@ -63,6 +63,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .with_failures(vec![
         (21_000, FailureType::CabinFan(1)),
         (21_001, FailureType::CabinFan(2)),
+        (21_002, FailureType::HotAir(1)),
         (24_000, FailureType::TransformerRectifier(1)),
         (24_001, FailureType::TransformerRectifier(2)),
         (24_002, FailureType::TransformerRectifier(3)),

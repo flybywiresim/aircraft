@@ -2718,7 +2718,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 - A32NX_VENT_CABIN_FAN_{id}_HAS_FAULT
     - Bool
-    - True if the corresponding cabin fan is on and operating normally
+    - True if the corresponding cabin fan is faulted and not operating
     - {number}
         - 1
         - 2

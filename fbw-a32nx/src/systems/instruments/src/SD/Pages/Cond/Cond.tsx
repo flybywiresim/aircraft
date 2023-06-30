@@ -27,6 +27,7 @@ export const CondPage = () => {
 
     const [hotAirOpen] = useSimVar('L:A32NX_HOT_AIR_VALVE_IS_OPEN', 'bool', 1000);
     const [hotAirEnabled] = useSimVar('L:A32NX_HOT_AIR_VALVE_IS_ENABLED', 'bool', 1000);
+    const [hotAirPb] = useSimVar('L:A32NX_OVHD_COND_HOT_AIR_PB_IS_ON', 'bool', 1000);
 
     const [cabFanHasFault1] = useSimVar('L:A32NX_VENT_CABIN_FAN_1_HAS_FAULT', 'bool', 1000);
     const [cabFanHasFault2] = useSimVar('L:A32NX_VENT_CABIN_FAN_2_HAS_FAULT', 'bool', 1000);
@@ -64,9 +65,9 @@ export const CondPage = () => {
                     <tspan x="706" y="306" style={{ letterSpacing: '1px' }}>HOT</tspan>
                     <tspan x="706" y="336" style={{ letterSpacing: '2px' }}>AIR</tspan>
                 </text>
-                <Valve x={650} y={312} radius={21} position={hotAirOpen ? 'H' : 'V'} css={hotAirEnabled ? 'GreenLine' : 'AmberLine'} sdacDatum />
-                <line className={hotAirEnabled ? 'GreenLine' : 'AmberLine'} x1="195" y1="312" x2="627" y2="312" />
-                <line className={hotAirEnabled ? 'GreenLine' : 'AmberLine'} x1="672" y1="312" x2="696" y2="312" />
+                <Valve x={650} y={312} radius={21} position={hotAirOpen ? 'H' : 'V'} css={((hotAirOpen !== hotAirEnabled) || !hotAirPb) ? 'AmberLine' : 'GreenLine'} sdacDatum />
+                <line className={((hotAirOpen !== hotAirEnabled) || !hotAirPb) ? 'AmberLine' : 'GreenLine'} x1="195" y1="312" x2="627" y2="312" />
+                <line className={((hotAirOpen !== hotAirEnabled) || !hotAirPb) ? 'AmberLine' : 'GreenLine'} x1="672" y1="312" x2="696" y2="312" />
             </g>
         </svg>
     );

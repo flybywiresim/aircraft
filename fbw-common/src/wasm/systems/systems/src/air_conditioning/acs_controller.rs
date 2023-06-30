@@ -1,4 +1,5 @@
 use crate::{
+    failures::{Failure, FailureType},
     pneumatic::{EngineModeSelector, EngineState, PneumaticValveSignal},
     shared::{
         pid::PidController, CabinAltitude, CabinSimulation, ControllerSignal, ElectricalBusType,
@@ -891,13 +892,13 @@ impl<const ENGINES: usize> SimulationElement for PackFlowController<ENGINES> {
     }
 }
 
-#[derive(Clone, Copy)]
 struct TrimAirSystemController<const ZONES: usize, const ENGINES: usize> {
     hot_air_is_enabled_id: VariableIdentifier,
     hot_air_is_open_id: VariableIdentifier,
 
     is_enabled: bool,
     is_open: bool,
+    failure: Failure,
     trim_air_valve_controllers: [TrimAirValveController; ZONES],
 }
 
@@ -910,6 +911,7 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystemController<ZONES, EN
             is_enabled: false,
             is_open: false,
             trim_air_valve_controllers: [TrimAirValveController::new(); ZONES],
+            failure: Failure::new(FailureType::HotAir(1)), // Only one hot air valve in the A320
         }
     }
 
@@ -923,18 +925,25 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystemController<ZONES, EN
         pneumatic: &impl PackFlowValveState,
         trim_air_system: &TrimAirSystem<ZONES, ENGINES>,
     ) {
-        self.is_enabled = self
-            .trim_air_pressure_regulating_valve_status_determination(acs_overhead, operation_mode);
-
-        self.is_open = self.trim_air_pressure_regulating_valve_is_open_determination(
+        // When there is a failure the overhead button (or any other condition)
+        // will not open or close the trim air pressure regulating valve
+        // If the valve was open before the failure, it will stay open
+        self.is_enabled = self.trim_air_pressure_regulating_valve_status_determination(
+            acs_overhead,
+            operation_mode,
             pack_flow_controller,
             pneumatic,
-        ) && self.is_enabled;
+        );
+
+        // When a failure is active the TAPRV will be unresponsive - it will stay in the same state as it was
+        if !self.failure.is_active() {
+            self.is_open = self.is_enabled;
+        }
 
         for (id, tav_controller) in self.trim_air_valve_controllers.iter_mut().enumerate() {
             tav_controller.update(
                 context,
-                self.is_enabled && self.is_open,
+                self.is_open,
                 trim_air_system.duct_temperature()[id],
                 duct_demand_temperature[id],
             )
@@ -945,20 +954,16 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystemController<ZONES, EN
         &self,
         acs_overhead: &impl AirConditioningOverheadShared,
         operation_mode: ACSCActiveComputer,
-    ) -> bool {
-        // TODO: Add overheat protection
-        // TODO: If more than one TAV fails, the system should be off
-        acs_overhead.hot_air_pushbutton_is_on() && operation_mode == ACSCActiveComputer::Primary
-    }
-
-    fn trim_air_pressure_regulating_valve_is_open_determination(
-        &self,
         pack_flow_controller: &[PackFlowController<ENGINES>; 2],
         pneumatic: &impl PackFlowValveState,
     ) -> bool {
-        !pack_flow_controller
-            .iter()
-            .any(|pack| pack.pack_start_condition_determination(pneumatic))
+        // TODO: Add overheat protection
+        // TODO: If more than one TAV fails, the system should be off
+        acs_overhead.hot_air_pushbutton_is_on()
+            && operation_mode == ACSCActiveComputer::Primary
+            && !pack_flow_controller
+                .iter()
+                .any(|pack| pack.pack_start_condition_determination(pneumatic))
             && ((pneumatic.pack_flow_valve_is_open(1)) || (pneumatic.pack_flow_valve_is_open(2)))
     }
 
@@ -981,6 +986,11 @@ impl<const ZONES: usize, const ENGINES: usize> SimulationElement
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.hot_air_is_enabled_id, self.is_enabled());
         writer.write(&self.hot_air_is_open_id, self.is_open());
+    }
+
+    fn accept<T: crate::simulation::SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.failure.accept(visitor);
+        visitor.visit(self);
     }
 }
 
@@ -3674,6 +3684,28 @@ mod acs_controller_tests {
 
             // If both zones get the temperature raised at the same time the packs deliver hotter air and the
             // effect of hot air valves is negligible
+            assert!((test_bed.trim_air_system_outlet_air(1).flow_rate()) > MassRate::default());
+            assert!(
+                (test_bed.trim_air_system_outlet_air(1).temperature())
+                    > ThermodynamicTemperature::new::<degree_celsius>(25.)
+            );
+        }
+
+        #[test]
+        fn trim_air_pressure_regulating_valve_is_unresponsive_when_failed() {
+            let mut test_bed = test_bed()
+                .with()
+                .hot_air_pb_on(true)
+                .and()
+                .engine_idle()
+                .command_fwd_selected_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+                    30.,
+                ))
+                .iterate(400);
+
+            test_bed.fail(FailureType::HotAir(1));
+            test_bed = test_bed.hot_air_pb_on(false).iterate(100);
+
             assert!((test_bed.trim_air_system_outlet_air(1).flow_rate()) > MassRate::default());
             assert!(
                 (test_bed.trim_air_system_outlet_air(1).temperature())

@@ -3,6 +3,7 @@
 export const A320Failure = Object.freeze({
     CabinFan1Failure: 21000,
     CabinFan2Failure: 21001,
+    HotAir: 21002,
 
     Fac1Failure: 22000,
     Fac2Failure: 22001,
