@@ -10,6 +10,7 @@ interface InputFieldProps<T> extends ComponentProps {
     mandatory?: Subscribable<boolean>;
     disabled?: Subscribable<boolean>;
     canBeCleared?: Subscribable<boolean>;
+    computedByFms?: Subscribable<boolean>;
     value: Subject<T>;
     /**
      * If defined, this component does not update the value prop, but rather calls this method.
@@ -190,6 +191,9 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
         if (this.props.canBeCleared === undefined) {
             this.props.canBeCleared = Subject.create(true);
         }
+        if (this.props.computedByFms === undefined) {
+            this.props.computedByFms = Subject.create(false);
+        }
         if (this.props.alignText === undefined) {
             this.props.alignText = 'flex-end';
         }
@@ -243,6 +247,14 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
             this.updateDisplayElement();
         }, true));
 
+        this.subs.push(this.props.computedByFms.sub((val) => {
+            if (val === true) {
+                this.textInputRef.getOrDefault().classList.add('computedByFms');
+            } else {
+                this.textInputRef.getOrDefault().classList.remove('computedByFms');
+            }
+        }, true));
+
         if (this.props.dataEntryFormat.reFormatTrigger) {
             this.subs.push(this.props.dataEntryFormat.reFormatTrigger.sub(() => this.updateDisplayElement()));
         }
@@ -267,7 +279,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
         return (
             <div ref={this.topRef} class="MFDNumberInputContainer" style={this.props.containerStyle}>
                 <span ref={this.leadingUnitRef} class="MFDUnitLabel leadingUnit" style="align-self: center;">{this.leadingUnit}</span>
-                <div ref={this.spanningDivRef} style={`display: flex; flex: 1; flex-direction: row; justify-content: ${this.props.alignText};`}>
+                <div ref={this.spanningDivRef} style={`display: flex; flex: 1; flex-direction: row; align-self: center; align-items: center; justify-content: ${this.props.alignText};`}>
                     <span
                         ref={this.textInputRef}
                         // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex

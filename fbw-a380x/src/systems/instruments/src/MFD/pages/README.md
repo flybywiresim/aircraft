@@ -92,3 +92,4 @@ Status legend:
 ## (Open) questions
 | Page / component | Question | Answer |
 | Input field | Is it possible to input illegal characters into the input fields before validation? I.e. when selecting an altitude field, and pressing „A“ on the KCCU, does it actually display „A“ in the field? | - |
+| Confirmation dialog | When triggering a confirmation dialog (e.g. by selecting a derated thrust, or trying to ACTIVATE APPR), are the other fields and buttons outside the dialog still clickable? Are there images available for the ACTIVATE APPR confirmation dialog? Specifically its location. | - |

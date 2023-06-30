@@ -12,12 +12,12 @@ Status legend:
 | Status      | Component class name | Description |
 | ------------- | ------------- | ------------- |
 | ✅ | ActivePageTitleBar | Display title of currently active page at the top of the screen |
-| 🟨 | Button | Generic button, with optional dropdown menu |
+| ✅ | Button | Generic button, with optional dropdown menu |
 | ✅ | ContextMenu | Context menu, e.g. for F-PLN page or OANS in ND |
-| 🟥 | Dialog | (Confirmation) dialog, e.g. for confirming ACTIVATE APPR |
+| ✅ | ConfirmationDialog | Confirmation dialog, e.g. for confirming ACTIVATE APPR or selected derated thrust |
 | ✅ | DropdownMenu | Generic dropdown menu |
 | ✅ | Footer | Footer with "MSG LIST" button |
-| 🟥 | FcuButton | Button for FCU BKUP page, mimicing the look of the MCP buttons (LOC, ALT, ...) |
+| 🟥 | FcuButton | Button for FCU BKUP page, mimicking the look of the MCP buttons (LOC, ALT, ...) |
 | ✅ | FmsHeader | Header (system selector + page navigator) for FMS system |
 | ✅ | AtccomHeader | Header (system selector + page navigator) for ATCCOM system |
 | ✅ | SurvHeader | Header (system selector + page navigator) for SURV system |

@@ -411,8 +411,6 @@ $display-mfd-dark-grey: #3c3c3c;
   border: none;
   font-family: "Ecam", monospace;
   font-size: 25px;
-  text-align: center;
-  vertical-align: center;
   color: $display-cyan;
   padding: 0px;
 }
@@ -433,6 +431,10 @@ $display-mfd-dark-grey: #3c3c3c;
 .MFDNumberInputTextInput.valueSelected {
   background-color: $display-cyan;
   color: $display-background;
+}
+
+.MFDNumberInputTextInput.computedByFms {
+  font-size: 21px;
 }
 
 .MFDInputFieldCaret {
@@ -460,4 +462,14 @@ $display-mfd-dark-grey: #3c3c3c;
   height: 80px;
   position: absolute;
   z-index: 999;
+}
+
+.MFDDialog {
+  z-index: 10;
+  overflow: auto;
+  position: absolute;
+  background-color: #040404;
+  border: 2px outset lightgray;
+  padding: 5px;
+  margin: 5px;
 }

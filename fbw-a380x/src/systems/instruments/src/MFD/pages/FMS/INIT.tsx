@@ -8,7 +8,7 @@ import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 import { InputField } from 'instruments/src/MFD/pages/common/InputField';
 import { AirportFormat, CostIndexFormat, CrzTempFormat, FlightLevelFormat, LongAlphanumericFormat, TripWindFormat, TropoFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { Button } from 'instruments/src/MFD/pages/common/Button';
-import { defaultTropopauseAlt, maxCertifiedAlt } from 'shared/constants';
+import { defaultTropopauseAlt, maxCertifiedAlt } from 'shared/PerformanceConstants';
 
 interface MfdFmsActiveInitProps extends MfdComponentProps {
 }

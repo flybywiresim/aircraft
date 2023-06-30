@@ -1,5 +1,5 @@
 import { Subject, Subscribable } from '@microsoft/msfs-sdk';
-import { Mmo, maxCertifiedAlt } from 'shared/constants';
+import { Mmo, maxCertifiedAlt } from 'shared/PerformanceConstants';
 
 type FieldFormatTuple = [value: string, unitLeading: string, unitTrailing: string];
 export interface DataEntryFormat<T> {
@@ -630,4 +630,4 @@ export class LongAlphanumericFormat implements DataEntryFormat<string> {
     }
 }
 
-// TODO add coordinate types
+// TODO add coordinate types, use decimalToDms from fbw-common/datalink

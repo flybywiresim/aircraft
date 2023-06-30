@@ -17,6 +17,7 @@
       "@datalink/router": ["../../../fbw-common/src/systems/datalink/router/src/index.ts"],
       "@shared/*": ["./shared/src/*"],
       "@typings/*": ["../../../fbw-common/src/typings/*"],
+      "@flybywiresim/fbw-sdk": ["../../../fbw-common/src/systems/index.ts"]
     }
   },
 }

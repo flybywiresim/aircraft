@@ -23,12 +23,6 @@ export class RadioButtonGroup extends DisplayComponent<RadioButtonGroupProps> {
                     this.props.selectedIndex.set(i);
                 }
             });
-
-            if (i === this.props.selectedIndex.get()) {
-                document.getElementById(`${this.props.idPrefix}_${i}`).setAttribute('checked', 'checked');
-            } else {
-                document.getElementById(`${this.props.idPrefix}_${i}`).removeAttribute('checked');
-            }
         }
 
         this.subs.push(this.props.selectedIndex.sub((val) => {
@@ -39,7 +33,7 @@ export class RadioButtonGroup extends DisplayComponent<RadioButtonGroupProps> {
                     document.getElementById(`${this.props.idPrefix}_${i}`).removeAttribute('checked');
                 }
             }
-        }));
+        }, true));
     }
 
     public destroy(): void {
