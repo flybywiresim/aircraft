@@ -1,5 +1,5 @@
 import { DisplayComponent, FSComponent, HEvent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import { DisplayManagementComputerEvents } from 'instruments/src/PFD/shared/DisplayManagementComputer';
+import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import { HorizontalTape } from './HorizontalTape';
 import { getSmallestAngle } from './PFDUtils';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
@@ -61,12 +61,12 @@ export class HeadingOfftape extends DisplayComponent<{ bus: ArincEventBus, faile
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<DisplayManagementComputerEvents & PFDSimvars & Arinc429Values & HEvent>();
+        const sub = this.props.bus.getSubscriber<DmcLogicEvents & PFDSimvars & Arinc429Values & HEvent>();
 
-        sub.on('heading').handle((h) => {
-            this.heading.set(h.value);
+        sub.on('heading').handle((word) => {
+            this.heading.set(word.value);
 
-            if (h.isNormalOperation()) {
+            if (word.isNormalOperation()) {
                 this.normalRef.instance.style.visibility = 'visible';
                 this.abnormalRef.instance.style.visibility = 'hidden';
             } else {
@@ -207,16 +207,16 @@ class GroundTrackBug extends DisplayComponent<GroundTrackBugProps> {
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<DisplayManagementComputerEvents>();
+        const sub = this.props.bus.getSubscriber<DmcLogicEvents>();
 
         sub.on('track').handle((groundTrack) => {
-            //  if (groundTrack.isNormalOperation()) {
-            const offset = getSmallestAngle(groundTrack.value, this.props.heading.get()) * DistanceSpacing / ValueSpacing;
-            this.trackIndicator.instance.style.display = 'inline';
-            this.trackIndicator.instance.style.transform = `translate3d(${offset}px, 0px, 0px)`;
-            //   } else {
-            //       this.trackIndicator.instance.style.display = 'none';
-            //   }
+            if (groundTrack.isNormalOperation()) {
+                const offset = getSmallestAngle(groundTrack.value, this.props.heading.get()) * DistanceSpacing / ValueSpacing;
+                this.trackIndicator.instance.style.display = 'inline';
+                this.trackIndicator.instance.style.transform = `translate3d(${offset}px, 0px, 0px)`;
+            } else {
+                this.trackIndicator.instance.style.display = 'none';
+            }
         });
     }
 
@@ -356,7 +356,7 @@ class TrueFlag extends DisplayComponent<TrueFlagProps> {
 
     /** @inheritdoc */
     onAfterRender(node: VNode): void {
-        this.props.bus.getSubscriber<DisplayManagementComputerEvents>().on('trueRefActive').whenChanged().handle((v) => this.trueRefActive.set(v));
+        this.props.bus.getSubscriber<DmcLogicEvents>().on('trueRefActive').whenChanged().handle((v) => this.trueRefActive.set(v));
         // FIXME this should be 127-11 from FWC
         this.props.bus.getSubscriber<PFDSimvars>().on('slatPosLeft').withPrecision(0.25).handle((v) => this.slatsExtended.set(v > 0.4));
 

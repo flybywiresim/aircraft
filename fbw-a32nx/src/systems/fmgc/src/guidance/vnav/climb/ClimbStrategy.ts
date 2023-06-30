@@ -1,9 +1,13 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vnav/VerticalProfileComputationParameters';
 import { DEFAULT_AIRCRAFT_CONFIG, DescentStrategy } from '@fmgc/guidance/vnav/descent/DescentStrategy';
 import { WindComponent } from '@fmgc/guidance/vnav/wind';
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 import { AircraftConfiguration } from '@fmgc/guidance/vnav/descent/ApproachPathBuilder';
-import { MathUtils } from '@shared/MathUtils';
+import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { UnitType } from '@microsoft/msfs-sdk';
 import { EngineModel } from '../EngineModel';
 import { Predictions, StepResults } from '../Predictions';

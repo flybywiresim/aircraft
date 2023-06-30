@@ -1,9 +1,12 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import React, { FC, memo, useCallback, useState } from 'react';
-import { Layer } from '@instruments/common/utils';
+import { Layer, useFlowSyncEvent } from '@flybywiresim/fbw-sdk';
 import { DebugPointColour, PathVector, PathVectorType } from '@fmgc/guidance/lnav/PathVector';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { EfisSide, EfisVectorsGroup } from '@shared/NavigationDisplay';
-import { useFlowSyncEvent } from '@instruments/common/hooks';
 import { MapParameters } from '../utils/MapParameters';
 
 export interface FlightPlanVectorsProps {

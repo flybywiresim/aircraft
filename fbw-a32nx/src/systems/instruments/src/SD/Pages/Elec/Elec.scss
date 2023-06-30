@@ -3,13 +3,13 @@
 
 #main-elec {
   .Box {
-    stroke: #EEEEEE;
+    stroke: $display-grey;
     fill: none;
     stroke-width: 2.5px;
   }
 
   path {
-    stroke: #EEEEEE;
+    stroke: $display-white;
     stroke-width: 2.25px;
     stroke-linecap: square;
     stroke-linejoin: miter;
@@ -24,11 +24,11 @@
   }
 
   rect.Bus {
-      fill: #636363;
+      fill: $display-grey;
   }
 
   text {
-    fill: #EEEEEE;
+    fill: $display-white;
     font-size: 19px;
 
     &.ExtraLarge {

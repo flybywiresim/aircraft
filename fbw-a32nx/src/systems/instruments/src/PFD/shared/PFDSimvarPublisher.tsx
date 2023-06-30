@@ -145,7 +145,6 @@ export type PFDSimvars = AdirsSimVars & SwitchingPanelVSimVars & {
     fac2EstimatedBetaRaw: number;
     fac1BetaTargetRaw: number;
     fac2BetaTargetRaw: number;
-    trueRefPushbutton: number;
     irMaintWordRaw: number;
     slatPosLeft: number;
     fm1NavDiscrete: number;
@@ -291,7 +290,6 @@ export enum PFDVars {
     fac2EstimatedBetaRaw = 'L:A32NX_FAC_2_ESTIMATED_SIDESLIP',
     fac1BetaTargetRaw = 'L:A32NX_FAC_1_SIDESLIP_TARGET',
     fac2BetaTargetRaw = 'L:A32NX_FAC_2_SIDESLIP_TARGET',
-    trueRefPushbutton = 'L:A32NX_PUSH_TRUE_REF',
     irMaintWordRaw = 'L:A32NX_ADIRS_IR_1_MAINT_WORD',
     trueHeadingRaw = 'L:A32NX_ADIRS_IR_1_TRUE_HEADING',
     trueTrackRaw = 'L:A32NX_ADIRS_IR_1_TRUE_TRACK',
@@ -442,7 +440,6 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
         ['fac2EstimatedBetaRaw', { name: PFDVars.fac2EstimatedBetaRaw, type: SimVarValueType.Number }],
         ['fac1BetaTargetRaw', { name: PFDVars.fac1BetaTargetRaw, type: SimVarValueType.Number }],
         ['fac2BetaTargetRaw', { name: PFDVars.fac2BetaTargetRaw, type: SimVarValueType.Number }],
-        ['trueRefPushbutton', { name: PFDVars.trueRefPushbutton, type: SimVarValueType.Bool }],
         ['irMaintWordRaw', { name: PFDVars.irMaintWordRaw, type: SimVarValueType.Number }],
         ['slatPosLeft', { name: PFDVars.slatPosLeft, type: SimVarValueType.Number }],
         ['fm1NavDiscrete', { name: PFDVars.fm1NavDiscrete, type: SimVarValueType.Number }],

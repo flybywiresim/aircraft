@@ -1,6 +1,6 @@
 {
   "name": "a32nx",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "edition": "development",
   "scripts": {
     "====== A320 =================": "==========================================",
@@ -16,14 +16,14 @@
 
     "build-a32nx:atsu-common": "node fbw-a32nx/src/systems/atsu/common/build.js",
     "build-a32nx:atsu-fms-client": "node fbw-a32nx/src/systems/atsu/fmsclient/build.js",
-    "build-a32nx:extras-host": "cd fbw-a32nx/src/systems/extras-host && rollup -c",
+    "build-a32nx:extras-host": "node fbw-a32nx/src/systems/extras-host/build.js",
     "build-a32nx:failures": "rollup -c fbw-a32nx/src/systems/failures/rollup.config.js",
-    "build-a32nx:fmgc": "rollup -c fbw-a32nx/src/systems/fmgc/rollup.config.js",
+    "build-a32nx:fmgc": "node fbw-a32nx/src/systems/fmgc/build.js",
     "build-a32nx:instruments": "mach build --config fbw-a32nx/mach.config.js --work-in-config-dir",
-    "build-a32nx:sentry-client": "rollup -c fbw-a32nx/src/systems/sentry-client/rollup.config.js",
-    "build-a32nx:simbridge-client": "rollup -c fbw-a32nx/src/systems/simbridge-client/rollup.config.js",
-    "build-a32nx:systems-host": "cd fbw-a32nx/src/systems/systems-host && rollup -c",
-    "build-a32nx:tcas": "rollup -c fbw-a32nx/src/systems/tcas/rollup.config.js",
+    "build-a32nx:sentry-client": "node fbw-a32nx/src/systems/sentry-client/build.js",
+    "build-a32nx:simbridge-client": "node fbw-a32nx/src/systems/simbridge-client/build.js",
+    "build-a32nx:systems-host": "node fbw-a32nx/src/systems/systems-host/build.js",
+    "build-a32nx:tcas": "node fbw-a32nx/src/systems/tcas/build.js",
 
     "build-a32nx:fadec": "cd fbw-a32nx/src/wasm/fadec_a320 && ./build.sh && wasm-opt -O1 -o /external/fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fadec.wasm /external/fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fadec.wasm",
     "build-a32nx:fbw": "cd fbw-a32nx/src/wasm/fbw_a320 && ./build.sh && wasm-opt -O1 -o /external/fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fbw.wasm /external/fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fbw.wasm",

@@ -4,8 +4,7 @@
 /* eslint-disable no-console */
 import Compare from 'semver/functions/compare';
 import { CommitInfo, GitVersions, ReleaseInfo } from '@flybywiresim/api-client';
-import { NotificationManager } from '@shared/notification';
-import { PopUpDialog } from '@shared/popup';
+import { NotificationManager, PopUpDialog } from '@flybywiresim/fbw-sdk';
 
 /**
  * Contains the a32nx_build_info.json file's information in a structured way.

@@ -1,7 +1,10 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import React, { useContext, useEffect, useState } from 'react';
 import { FlightPlanManager, ManagedFlightPlan } from '@shared/flightplan';
-import { useSimVar } from './simVars';
-import { getRootElement } from './defaults';
+import { getRootElement, useSimVar } from '@flybywiresim/fbw-sdk';
 
 const FlightPlanContext = React.createContext<{ flightPlanManager: FlightPlanManager }>(undefined as any);
 
