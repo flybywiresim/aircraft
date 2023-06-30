@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import EWDMessages from '@instruments/common/EWDMessages';
-import { useSimVar } from '@instruments/common/simVars';
+import { useSimVar } from '@flybywiresim/fbw-sdk';
 import React from 'react';
 import FormattedFwcText from './FormattedFwcText';
 import padCode from './PadCode';

@@ -1,5 +1,9 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { NdSymbol, NdSymbolTypeFlags } from '@shared/NavigationDisplay';
-import { MathUtils } from '@shared/MathUtils';
+import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { BitFlags } from '@microsoft/msfs-sdk';
 import { MapLayer } from './MapLayer';
 import { MapParameters } from '../../../ND/utils/MapParameters';
@@ -172,7 +176,7 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
         context.moveTo(0, -15);
         context.lineTo(0, 15);
         context.moveTo(-15, 0);
-        context.lineTo(0, 0);
+        context.lineTo(15, 0);
         context.closePath();
         context.stroke();
         context.resetTransform();

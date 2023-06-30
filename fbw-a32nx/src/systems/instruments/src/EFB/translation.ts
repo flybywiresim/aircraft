@@ -3,7 +3,7 @@
 
 /* eslint-disable no-console */
 
-import { NXDataStore } from '@shared/persistence';
+import { NXDataStore } from '@flybywiresim/fbw-sdk';
 
 // source language
 import en from '@localization/flypad/en.json';

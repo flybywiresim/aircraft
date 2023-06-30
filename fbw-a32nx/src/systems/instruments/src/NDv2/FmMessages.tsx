@@ -19,6 +19,8 @@ export class FmMessages extends DisplayComponent<FmMessagesProps> {
 
     private readonly overflowArrowRef = FSComponent.createRef<SVGPathElement>();
 
+    private readonly backgroundFillShown = this.props.mode.map((it) => it === EfisNdMode.ARC || it === EfisNdMode.ROSE_NAV);
+
     private readonly visible = this.props.mode.map((mode) => {
         if (mode === EfisNdMode.ROSE_ILS || mode === EfisNdMode.ROSE_VOR) {
             return false;
@@ -79,7 +81,17 @@ export class FmMessages extends DisplayComponent<FmMessagesProps> {
     render(): VNode | null {
         return (
             <Layer x={164} y={707} visible={this.visible}>
-                <rect ref={this.boxRef} x={0} y={0} width={440} height={27} class="White BackgroundFill" stroke-width={1.75} />
+                <rect
+                    visibility={this.backgroundFillShown.map((shown) => (shown ? 'inherit' : 'hidden'))}
+                    x={0}
+                    y={27}
+                    width={440}
+                    height={34}
+                    class="BackgroundFill"
+                    stroke="none"
+                />
+
+                <rect ref={this.boxRef} x={0} y={0} width={440} height={27} class="Grey BackgroundFill" stroke-width={1.75} />
 
                 { /* the text message is offset from centre on the real one...
                  guess by the width of the multiple message arrow... */ }

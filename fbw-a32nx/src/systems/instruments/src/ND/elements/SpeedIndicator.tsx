@@ -1,6 +1,9 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import React, { FC } from 'react';
-import { Layer } from '@instruments/common/utils';
-import { Arinc429Word, useArinc429Var } from '@instruments/common/arinc429';
+import { Layer, Arinc429Word, useArinc429Var } from '@flybywiresim/fbw-sdk';
 import { AdirsTasDrivenIndicatorProps } from '../index';
 
 export const SpeedIndicator: FC<AdirsTasDrivenIndicatorProps> = ({ adrs, irs }) => {

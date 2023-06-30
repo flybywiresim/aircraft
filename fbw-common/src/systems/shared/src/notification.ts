@@ -48,7 +48,7 @@ export interface NotificationData extends Omit<NotificationParameters, 'message'
  * Notification utility class to create a notification event and element
  *
  * Usage:
- * import { NotificationManager } from '@shared/notification';
+ * import { NotificationManager } from '@flybywiresim/fbw-sdk';
  * ...
  * const notification = new NotificationManager();
  * notification.showNotification({ message: 'Your notification here!' });
