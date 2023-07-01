@@ -1191,8 +1191,13 @@ mod tests {
                 self.packs[id].left_pack_flow_valve_air_flow()
             }
         }
-        fn pack_flow_valve_inlet_pressure(&self, pack_id: usize) -> Option<Pressure> {
-            self.packs[pack_id].pack_flow_valve_inlet_pressure()
+        fn pack_flow_valve_inlet_pressure(&self, fcv_id: usize) -> Option<Pressure> {
+            let id = A380AirConditioning::fcv_to_pack_id(fcv_id);
+            if fcv_id % 2 == 0 {
+                self.packs[id].right_pack_flow_valve_inlet_pressure()
+            } else {
+                self.packs[id].left_pack_flow_valve_inlet_pressure()
+            }
         }
     }
     impl SimulationElement for TestPneumatic {
@@ -1302,7 +1307,8 @@ mod tests {
         exhaust: PneumaticExhaust,
         left_pack_flow_valve: ElectroPneumaticValve,
         right_pack_flow_valve: ElectroPneumaticValve,
-        pack_inlet_pressure_sensor: PressureTransducer,
+        left_inlet_pressure_sensor: PressureTransducer,
+        right_inlet_pressure_sensor: PressureTransducer,
     }
     impl TestPneumaticPackComplex {
         fn new(pack_number: usize) -> Self {
@@ -1320,7 +1326,10 @@ mod tests {
                 right_pack_flow_valve: ElectroPneumaticValve::new(
                     ElectricalBusType::DirectCurrentEssential,
                 ),
-                pack_inlet_pressure_sensor: PressureTransducer::new(
+                left_inlet_pressure_sensor: PressureTransducer::new(
+                    ElectricalBusType::DirectCurrentEssentialShed,
+                ),
+                right_inlet_pressure_sensor: PressureTransducer::new(
                     ElectricalBusType::DirectCurrentEssentialShed,
                 ),
             }
@@ -1331,6 +1340,10 @@ mod tests {
             from: &mut impl PneumaticContainer,
             pack_flow_valve_signals: &impl PackFlowControllers,
         ) {
+            // TODO: Should come from two different sources
+            self.left_inlet_pressure_sensor.update(context, from);
+            self.right_inlet_pressure_sensor.update(context, from);
+
             self.left_pack_flow_valve.update_open_amount(
                 pack_flow_valve_signals
                     .pack_flow_controller(1 + ((self.pack_number == 2) as usize * 2)),
@@ -1362,8 +1375,11 @@ mod tests {
         fn right_pack_flow_valve_air_flow(&self) -> MassRate {
             self.right_pack_flow_valve.fluid_flow()
         }
-        fn pack_flow_valve_inlet_pressure(&self) -> Option<Pressure> {
-            self.pack_inlet_pressure_sensor.signal()
+        fn left_pack_flow_valve_inlet_pressure(&self) -> Option<Pressure> {
+            self.left_inlet_pressure_sensor.signal()
+        }
+        fn right_pack_flow_valve_inlet_pressure(&self) -> Option<Pressure> {
+            self.right_inlet_pressure_sensor.signal()
         }
     }
     impl PneumaticContainer for TestPneumaticPackComplex {
@@ -1401,7 +1417,8 @@ mod tests {
         fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
             self.left_pack_flow_valve.accept(visitor);
             self.right_pack_flow_valve.accept(visitor);
-            self.pack_inlet_pressure_sensor.accept(visitor);
+            self.left_inlet_pressure_sensor.accept(visitor);
+            self.right_inlet_pressure_sensor.accept(visitor);
 
             visitor.visit(self);
         }

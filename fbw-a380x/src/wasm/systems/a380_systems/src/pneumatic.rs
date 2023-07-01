@@ -389,9 +389,13 @@ impl PackFlowValveState for A380Pneumatic {
             self.packs[id].left_pack_flow_valve_air_flow()
         }
     }
-    fn pack_flow_valve_inlet_pressure(&self, pack_id: usize) -> Option<Pressure> {
-        // TODO: Need to make this use both PACK valves
-        self.packs[pack_id].left_pack_flow_valve_inlet_pressure()
+    fn pack_flow_valve_inlet_pressure(&self, fcv_id: usize) -> Option<Pressure> {
+        let id = A380AirConditioning::fcv_to_pack_id(fcv_id);
+        if fcv_id % 2 == 0 {
+            self.packs[id].right_pack_flow_valve_inlet_pressure()
+        } else {
+            self.packs[id].left_pack_flow_valve_inlet_pressure()
+        }
     }
 }
 impl SimulationElement for A380Pneumatic {
@@ -619,7 +623,7 @@ impl ControllerSignal<HighPressureValveSignal> for CoreProcessingInputOutputModu
         // TODO: Add overtemperature condition here
         if self.pressure_regulating_valve_is_closed
             || self.high_pressure_compressor_pressure < Pressure::new::<psi>(15.)
-            || self.intermediate_pressure_compressor_pressure > Pressure::new::<psi>(33.5)
+            || self.intermediate_pressure_compressor_pressure > Pressure::new::<psi>(50.)
         {
             Some(HighPressureValveSignal::new_closed())
         } else {
@@ -755,11 +759,12 @@ impl EngineBleedAirSystem {
                 "PNEU_ENG_{}_DIFFERENTIAL_TRANSDUCER_PRESSURE",
                 number
             )),
-            fan_compression_chamber_controller: EngineCompressionChamberController::new(1., 0.),
+            // TODO: These constants are copied from the A320
+            fan_compression_chamber_controller: EngineCompressionChamberController::new(1.4, 0.),
             intermediate_pressure_compression_chamber_controller:
-                EngineCompressionChamberController::new(3., 0.),
+                EngineCompressionChamberController::new(9.47404, 0.),
             high_pressure_compression_chamber_controller: EngineCompressionChamberController::new(
-                3., 2.,
+                5.98726, 6.03051,
             ),
             fan_compression_chamber: CompressionChamber::new(Volume::new::<cubic_meter>(1.)),
             intermediate_pressure_compression_chamber: CompressionChamber::new(Volume::new::<
@@ -1277,7 +1282,6 @@ impl PackComplex {
         self.left_inlet_pressure_sensor.signal()
     }
 
-    #[cfg(test)]
     fn right_pack_flow_valve_inlet_pressure(&self) -> Option<Pressure> {
         self.right_inlet_pressure_sensor.signal()
     }

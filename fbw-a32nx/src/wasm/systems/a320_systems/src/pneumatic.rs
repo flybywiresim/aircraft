@@ -217,7 +217,10 @@ impl A320Pneumatic {
                 Pressure::new::<psi>(75.),
                 6e-2,
             ),
-            packs: [PackComplex::new(context, 1), PackComplex::new(context, 2)],
+            packs: [
+                PackComplex::new(context, 1, ElectricalBusType::DirectCurrent(1)),
+                PackComplex::new(context, 2, ElectricalBusType::DirectCurrent(2)),
+            ],
         }
     }
 
@@ -397,7 +400,7 @@ impl PackFlowValveState for A320Pneumatic {
         self.packs[pack_id - 1].pack_flow_valve_air_flow()
     }
     fn pack_flow_valve_inlet_pressure(&self, pack_id: usize) -> Option<Pressure> {
-        self.packs[pack_id].pack_flow_valve_inlet_pressure()
+        self.packs[pack_id - 1].pack_flow_valve_inlet_pressure()
     }
 }
 impl SimulationElement for A320Pneumatic {
@@ -1595,7 +1598,7 @@ pub struct PackComplex {
     pack_inlet_pressure_sensor: PressureTransducer,
 }
 impl PackComplex {
-    fn new(context: &mut InitContext, engine_number: usize) -> Self {
+    fn new(context: &mut InitContext, engine_number: usize, powered_by: ElectricalBusType) -> Self {
         Self {
             engine_number,
             pack_flow_valve_id: context.get_identifier(Self::pack_flow_valve_id(engine_number)),
@@ -1608,9 +1611,9 @@ impl PackComplex {
             ),
             exhaust: PneumaticExhaust::new(0.3, 0.3, Pressure::new::<psi>(0.)),
             pack_flow_valve: DefaultValve::new_closed(),
-            pack_inlet_pressure_sensor: PressureTransducer::new(
-                ElectricalBusType::DirectCurrentEssentialShed, // TODO: Check this
-            ),
+            // TODO: Check electrical supply of this
+            // I'm pretty sure PACK 1 is DC 1 and PACK 2 is DC 2, but happy to be corrected
+            pack_inlet_pressure_sensor: PressureTransducer::new(powered_by),
         }
     }
 
@@ -1626,9 +1629,8 @@ impl PackComplex {
     ) {
         self.pack_inlet_pressure_sensor.update(context, from);
 
-        self.pack_flow_valve.update_open_amount(
-            pack_flow_valve_signals.pack_flow_controller(self.engine_number),
-        );
+        self.pack_flow_valve
+            .update_open_amount(pack_flow_valve_signals.pack_flow_controller(self.engine_number));
 
         self.pack_flow_valve
             .update_move_fluid(context, from, &mut self.pack_container);
@@ -1686,6 +1688,7 @@ impl SimulationElement for PackComplex {
         Self: Sized,
     {
         self.pack_inlet_pressure_sensor.accept(visitor);
+        self.pack_flow_valve.accept(visitor);
 
         visitor.visit(self);
     }
@@ -2619,7 +2622,7 @@ pub mod tests {
             self.command(|a| {
                 a.apu
                     .set_bleed_air_temperature(ThermodynamicTemperature::new::<degree_celsius>(
-                        250.,
+                        165.,
                     ))
             });
 
@@ -2861,18 +2864,17 @@ pub mod tests {
     #[test]
     #[ignore]
     fn full_graphing_test() {
-        let alt = Length::new::<foot>(10000.);
+        let alt = Length::new::<foot>(0.);
         let ambient_pressure = InternationalStandardAtmosphere::pressure_at_altitude(alt);
         println!("Ambient pressure: {} psi", ambient_pressure.get::<psi>());
 
         let mut test_bed = test_bed_with()
-            .eng1_n1(0.8)
+            .eng1_n1(0.2)
             .and_eng1_n2_based_on_n1()
-            .eng2_n1(0.8)
+            .eng2_n1(0.2)
             .and_eng2_n2_based_on_n1()
             .in_isa_atmosphere(alt)
             .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Auto)
-            .mach_number(MachNumber(0.5))
             .both_packs_auto();
 
         let mut time_points = Vec::new();
@@ -2911,14 +2913,19 @@ pub mod tests {
         for i in 1..num_steps {
             time_points.push((i * update_step_ms) as f64);
 
-            // if i > set_toga_thrust_at_step {
-            //     let n1 = interpolation(&n1_profile_timesteps, &n1_profile, i as f64);
-            //     test_bed = test_bed
-            //         .eng1_n1(n1)
-            //         .and_eng1_n2_based_on_n1()
-            //         .eng2_n1(n1)
-            //         .and_eng2_n2_based_on_n1()
+            // if i == 2500 {
+            //     test_bed =
+            //         test_bed.set_apu_bleed_valve_signal(ApuBleedAirValveSignal::new_closed());
             // }
+
+            if i > set_toga_thrust_at_step {
+                let n1 = interpolation(&n1_profile_timesteps, &n1_profile, i as f64);
+                test_bed = test_bed
+                    .eng1_n1(n1)
+                    .and_eng1_n2_based_on_n1()
+                    .eng2_n1(n1)
+                    .and_eng2_n2_based_on_n1()
+            }
 
             high_pressures.push((test_bed.hp_pressure(1) - ambient_pressure).get::<psi>());
             intermediate_pressures.push((test_bed.ip_pressure(1) - ambient_pressure).get::<psi>());

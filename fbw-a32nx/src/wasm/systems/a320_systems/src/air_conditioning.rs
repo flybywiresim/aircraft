@@ -320,11 +320,11 @@ impl A320AirConditioningSystem {
             .update(context, &self.mixer_unit, &self.acsc);
 
         self.air_conditioning_overhead
-            .set_pack_pushbutton_fault(self.pack_fault_determination(pneumatic));
+            .set_pack_pushbutton_fault(self.pack_fault_determination());
     }
 
-    pub fn pack_fault_determination(&self, pneumatic: &impl PackFlowValveState) -> [bool; 2] {
-        self.acsc.pack_fault_determination(pneumatic)
+    pub fn pack_fault_determination(&self) -> [bool; 2] {
+        self.acsc.pack_fault_determination()
     }
 
     pub fn mix_packs_air_update(&mut self, pack_container: &mut [impl PneumaticContainer; 2]) {
@@ -984,7 +984,7 @@ mod tests {
             self.packs[pack_id - 1].pack_flow_valve_air_flow()
         }
         fn pack_flow_valve_inlet_pressure(&self, pack_id: usize) -> Option<Pressure> {
-            self.packs[pack_id].pack_flow_valve_inlet_pressure()
+            self.packs[pack_id - 1].pack_flow_valve_inlet_pressure()
         }
     }
     impl SimulationElement for TestPneumatic {
@@ -1119,6 +1119,7 @@ mod tests {
             self.pack_flow_valve.update_open_amount(
                 pack_flow_valve_signals.pack_flow_controller(self.engine_number),
             );
+            self.pack_inlet_pressure_sensor.update(context, from);
             self.pack_flow_valve
                 .update_move_fluid(context, from, &mut self.pack_container);
             self.exhaust
