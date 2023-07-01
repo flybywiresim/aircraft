@@ -6,13 +6,14 @@ import { ClockEvents, ComponentProps, DisplayComponent, EventBus, FSComponent, S
 
 import { FmsHeader } from 'instruments/src/MFD/pages/common/FmsHeader';
 import { MouseCursor } from 'instruments/src/MFD/pages/common/MouseCursor';
-import { MfdFmsActivePerf } from 'instruments/src/MFD/pages/FMS/PERF';
-import { MfdFmsActiveInit } from 'instruments/src/MFD/pages/FMS/INIT';
+import { MfdFmsPerf } from 'instruments/src/MFD/pages/FMS/PERF';
+import { MfdFmsInit } from 'instruments/src/MFD/pages/FMS/INIT';
 
 import { MfdNotFound } from 'instruments/src/MFD/pages/FMS/NOT_FOUND';
 import { FcuBkupHeader } from 'instruments/src/MFD/pages/common/FcuBkupHeader';
 import { SurvHeader } from 'instruments/src/MFD/pages/common/SurvHeader';
 import { AtccomHeader } from 'instruments/src/MFD/pages/common/AtccomHeader';
+import { MfdFmsFuelLoad } from 'instruments/src/MFD/pages/FMS/FUEL_LOAD';
 import { MfdSimvars } from './shared/MFDSimvarPublisher';
 import { DisplayUnit } from '../MsfsAvionicsCommon/displayUnit';
 
@@ -116,9 +117,21 @@ export class MfdComponent extends DisplayComponent<MfdProps> {
      * In theory, one can use anything after a third slash for intra-page deep linking: fms/active/f-pln/dep could link to the F-PLN's departure page.
      */
     private navigateTo(uri: string) {
-        console.info(`Navigate to ${uri}`);
-        this.navigationStack.push(uri);
-        const parsedUri = this.parseUri(uri);
+        let nextUri: string;
+        if (uri === 'back') {
+            if (this.navigationStack.length === 0) {
+                return;
+            }
+            console.info('Navigate back');
+            this.navigationStack.pop();
+            nextUri = this.navigationStack[this.navigationStack.length - 1];
+        } else {
+            console.info(`Navigate to ${uri}`);
+            this.navigationStack.push(uri);
+            nextUri = uri;
+        }
+
+        const parsedUri = this.parseUri(nextUri);
         this.activeUri.set(parsedUri);
 
         // Remove and destroy old header
@@ -200,10 +213,13 @@ export class MfdComponent extends DisplayComponent<MfdProps> {
         // Mapping from URL to page component
         switch (`${parsedUri.sys}/${parsedUri.category}/${parsedUri.page}`) {
         case 'fms/active/perf':
-            this.activePage = <MfdFmsActivePerf bus={this.props.bus} activeUri={this.activeUri} navigateTo={(uri) => this.navigateTo(uri)} />;
+            this.activePage = <MfdFmsPerf bus={this.props.bus} activeUri={this.activeUri} navigateTo={(uri) => this.navigateTo(uri)} />;
             break;
         case 'fms/active/init':
-            this.activePage = <MfdFmsActiveInit bus={this.props.bus} activeUri={this.activeUri} navigateTo={(uri) => this.navigateTo(uri)} />;
+            this.activePage = <MfdFmsInit bus={this.props.bus} activeUri={this.activeUri} navigateTo={(uri) => this.navigateTo(uri)} />;
+            break;
+        case 'fms/active/fuel-load':
+            this.activePage = <MfdFmsFuelLoad bus={this.props.bus} instrument={this.props.instrument} activeUri={this.activeUri} navigateTo={(uri) => this.navigateTo(uri)} />;
             break;
 
         default:

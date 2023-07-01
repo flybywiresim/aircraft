@@ -143,10 +143,8 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
 
         if (this.modifiedFieldValue.get() === null && this.props.value.get() !== null) {
             // Enter is pressed after no modification
-            console.log(this.props.value.get().toString());
             await this.validateAndUpdate(this.props.value.get().toString());
         } else {
-            console.log(2);
             await this.validateAndUpdate(this.modifiedFieldValue.get());
         }
     }

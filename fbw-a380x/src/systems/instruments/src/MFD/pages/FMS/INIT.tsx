@@ -10,10 +10,10 @@ import { AirportFormat, CostIndexFormat, CrzTempFormat, FlightLevelFormat, LongA
 import { Button } from 'instruments/src/MFD/pages/common/Button';
 import { defaultTropopauseAlt, maxCertifiedAlt } from 'shared/PerformanceConstants';
 
-interface MfdFmsActiveInitProps extends MfdComponentProps {
+interface MfdFmsInitProps extends MfdComponentProps {
 }
 
-export class MfdFmsActiveInit extends DisplayComponent<MfdFmsActiveInitProps> {
+export class MfdFmsInit extends DisplayComponent<MfdFmsInitProps> {
     // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
     private subs = [] as Subscription[];
 
@@ -227,7 +227,9 @@ export class MfdFmsActiveInit extends DisplayComponent<MfdFmsActiveInitProps> {
                         <InputField<number>
                             dataEntryFormat={new TropoFormat()}
                             mandatory={Subject.create(false)}
+                            computedByFms={Subject.create(true)}
                             value={this.tropoAlt}
+                            alignText="flex-end"
                         />
                     </div>
                     <div style="display: flex; flex-direction: row; align-items: center; margin-top: 5px;border-bottom: 1px solid lightgrey; margin-bottom: 15px; padding-bottom: 35px;">
@@ -249,7 +251,7 @@ export class MfdFmsActiveInit extends DisplayComponent<MfdFmsActiveInitProps> {
                         </Button>
                     </div>
                     <Button onClick={() => this.props.navigateTo('fms/position/irs')} buttonStyle="width: 160px; margin-left: 150px; margin-bottom: 10px;">IRS</Button>
-                    <div style="display: flex; flex-direction: row;">
+                    <div style={`display: ${this.props.activeUri.get().category === 'active' ? 'flex' : 'none'}; flex-direction: row;`}>
                         <Button
                             disabled={this.departureButtonDisabled}
                             onClick={() => this.props.navigateTo(`fms/${this.props.activeUri.get().category}/f-pln/departure`)}

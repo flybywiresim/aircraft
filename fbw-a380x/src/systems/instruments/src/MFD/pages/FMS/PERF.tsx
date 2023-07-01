@@ -32,10 +32,10 @@ import { Mmo, Vmo, maxCertifiedAlt } from 'shared/PerformanceConstants';
 import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { ConfirmationDialog } from 'instruments/src/MFD/pages/common/ConfirmationDialog';
 
-interface MfdFmsActivePerfProps extends MfdComponentProps {
+interface MfdFmsPerfProps extends MfdComponentProps {
 }
 
-export class MfdFmsActivePerf extends DisplayComponent<MfdFmsActivePerfProps> {
+export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
     // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
     private subs = [] as Subscription[];
 

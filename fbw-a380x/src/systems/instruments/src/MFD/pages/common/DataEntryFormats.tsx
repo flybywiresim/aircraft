@@ -262,11 +262,11 @@ export class WeightFormat implements DataEntryFormat<number> {
         if (!value) {
             return [this.placeholder, null, 'T'] as FieldFormatTuple;
         }
-        return [value.toFixed(1), null, 'T'] as FieldFormatTuple;
+        return [(value / 1000).toFixed(1), null, 'T'] as FieldFormatTuple;
     }
 
     public async parse(input: string) {
-        const nbr = Number(input);
+        const nbr = Number(input) * 1000;
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
         }
@@ -627,6 +627,70 @@ export class LongAlphanumericFormat implements DataEntryFormat<string> {
 
     public async parse(input: string) {
         return input;
+    }
+}
+
+export class PaxNbrFormat implements DataEntryFormat<number> {
+    public placeholder = '---';
+
+    public maxDigits = 3;
+
+    private minValue = 0;
+
+    private maxValue = 999;
+
+    public format(value: number) {
+        if (!value) {
+            return [this.placeholder, null, null] as FieldFormatTuple;
+        }
+        return [value.toFixed(0).toString(), null, null] as FieldFormatTuple;
+    }
+
+    public async parse(input: string) {
+        const nbr = Number(input);
+        if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
+            return nbr;
+        }
+        return null;
+    }
+}
+
+// Stored in minutes
+export class TimeHHMMFormat implements DataEntryFormat<number> {
+    public placeholder = '--:--';
+
+    public maxDigits = 4;
+
+    private minValue = 0;
+
+    private maxValue = 90;
+
+    public format(value: number) {
+        if (!value) {
+            return [this.placeholder, null, null] as FieldFormatTuple;
+        }
+        const hours = Math.abs(Math.floor(value / 60)).toFixed(0).toString().padStart(2, '0');
+        const minutes = Math.abs(value % 60).toFixed(0).toString().padStart(2, '0');
+        return [`${hours}:${minutes}`, null, null] as FieldFormatTuple;
+    }
+
+    public async parse(input: string) {
+        const replacedInput = input.replace(':', '');
+        let hours = 0;
+        let minutes = 0;
+        minutes = Number(replacedInput.slice(-2));
+        if (replacedInput.length > 2) {
+            hours = Number(replacedInput.slice(0, -2));
+        }
+        if (minutes < 0 || minutes > 59 || hours < 0 || hours > 23) {
+            return null;
+        }
+
+        const nbr = minutes + hours * 60;
+        if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
+            return nbr;
+        }
+        return null;
     }
 }
 
