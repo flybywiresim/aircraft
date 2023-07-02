@@ -74,6 +74,9 @@ class DataManager {
   HANDLE hSimConnect{};
 
   // A map of all registered variables.
+  // Map over the variable name to quickly find the variable.
+  // De-duplication of variables happens via this map. So each aspect of a variable needs to be
+  // part of the unique name - e.g. the index or unit.
   std::map<std::string, CacheableVariablePtr> variables{};
 
   // A map of all registered SimObjects.
@@ -99,7 +102,7 @@ class DataManager {
 
  public:
   /**
-   * Creates an instance of the DataManager.
+   * @brief Creates an instance of the DataManager.
    */
   explicit DataManager(MsfsHandler* msfsHdl) : msfsHandlerPtr(msfsHdl) {}
 
@@ -116,7 +119,7 @@ class DataManager {
   // ===============================================================================================
 
   /**
-   * Initializes the data manager.<br/>
+   * @brief Initializes the data manager.<br/>
    * This method must be called before any other method of the data manager.
    * Usually called in the MsfsHandler initialization.
    * @param hdl Handle to the simconnect instance
@@ -124,7 +127,7 @@ class DataManager {
   bool initialize(HANDLE simConnectHandle);
 
   /**
-   * Called by the MsfsHandler update() method.<br/>
+   * @brief Called by the MsfsHandler update() method.<br/>
    * Updates all variables marked for automatic reading.<br/>
    * Calls SimConnect_GetNextDispatch to retrieve all messages from the simconnect queue.
    * @param pData Pointer to the data structure of gauge pre-draw event
@@ -133,14 +136,14 @@ class DataManager {
   bool preUpdate([[maybe_unused]] sGaugeDrawData* pData) const;
 
   /**
-   * Called by the MsfsHandler update() method.
+   * @brief Called by the MsfsHandler update() method.
    * @param pData Pointer to the data structure of gauge pre-draw event
    * @return true if successful, false otherwise
    */
   bool update(sGaugeDrawData* pData) const;
 
   /**
-   * Called by the MsfsHandler update() method.<br/>
+   * @brief Called by the MsfsHandler update() method.<br/>
    * Writes all variables marked for automatic writing back to the sim.
    * @param pData Pointer to the data structure of gauge pre-draw event
    * @return true if successful, false otherwise
@@ -148,14 +151,14 @@ class DataManager {
   bool postUpdate(sGaugeDrawData* pData) const;
 
   /**
-   * Called by the MsfsHandler shutdown() method.<br/>
+   * @brief Called by the MsfsHandler shutdown() method.<br/>
    * Can be used for any extra cleanup.
    * @return true if successful, false otherwise
    */
   bool shutdown();
 
   /**
-   * Must be called to retrieve requested sim data.
+   * @brief Ask the sim to send the requested data for this tick.<br/>
    * It will loop until all requested data has been received for this tick.
    * Will be called at the end of preUpdate() whenever preUpdate() is called.
    * Request data by calling any of the DataDefinitions::request...() methods
@@ -168,7 +171,7 @@ class DataManager {
   // ===============================================================================================
 
   /**
-   * Creates a new named variable (LVAR) and adds it to the list of managed variables.<p/>
+   * @brief Creates a new named variable (LVAR) and adds it to the list of managed variables.<p/>
    *
    * The NamedVariable is a variable which is mapped to a LVAR. It is the simplest variable type and
    * can be used to store and retrieve custom numeric data from the sim.<p/>
@@ -191,7 +194,7 @@ class DataManager {
                                                 UINT64 maxAgeTicks = 0);
 
   /**
-   * Creates a new AircraftVariable and adds it to the list of managed variables.<p/>
+   * @brief Creates a new AircraftVariable and adds it to the list of managed variables.<p/>
    *
    * The AircraftVariable is a variable which is mapped to an aircraft simvar. As simvars are
    * read-only it is required to use an event to write the variable back to the sim.<p/>
@@ -220,7 +223,7 @@ class DataManager {
                                                       UINT64 maxAgeTicks = 0);
 
   /**
-   * Creates a new readonly non-indexed AircraftVariable and adds it to the list of managed variables.
+   * @brief Creates a new readonly non-indexed AircraftVariable and adds it to the list of managed variables.
    * This is a convenience method for make_aircraft_var() to create a variable that is read-only and
    * does not have an index.
    *
@@ -236,10 +239,13 @@ class DataManager {
                                                              SimUnit unit = UNITS.Number,
                                                              bool autoReading = false,
                                                              FLOAT64 maxAgeTime = 0.0,
-                                                             UINT64 maxAgeTicks = 0);
+                                                             UINT64 maxAgeTicks = 0) {
+    LOG_DEBUG("DataManager::make_simple_aircraft_var(): call make_aircraft_var() to create variable " + var->str());
+    return make_aircraft_var(varName, 0, "", nullptr, unit, autoReading ? UpdateMode::AUTO_READ : UpdateMode::NO_AUTO_UPDATE, maxAgeTime, maxAgeTicks);
+  };
 
   /**
-   * Creates a new data definition variable and adds it to the list of managed variables.<p/>
+   * @brief Creates a new data definition variable and adds it to the list of managed variables.<p/>
    *
    * The DataDefinitionVariable is a variable which is mapped to a custom data struct and a SimObject
    * which can be defined by adding separate data definitions for single sim variables (objects) to
@@ -268,7 +274,7 @@ class DataManager {
   }
 
   /**
-   * Creates a new client data area variable and adds it to the list of managed variables.<p/>
+   * @brief Creates a new client data area variable and adds it to the list of managed variables.<p/>
    *
    * A ClientDataArea allows to define custom SimObjects using memory mapped data to send and
    * receive arbitrary data to and from the sim and allows therefore SimConnect clients to exchange
@@ -301,7 +307,7 @@ class DataManager {
   }
 
   /**
-   * Creates a new streaming client data area variable and adds it to the list of managed variables.
+   * @brief Creates a new streaming client data area variable and adds it to the list of managed variables.
    *
    * A ClientDataBufferedArea is similar to a ClientDataArea but allows to exchange data larger
    * than the 8k limit of a ClientDataArea.
@@ -346,7 +352,7 @@ class DataManager {
   }
 
   /**
-   * Creates a new client event with a unique ID and adds it to the list of managed events.<br/>
+   * @brief Creates a new client event with a unique ID and adds it to the list of managed events.<br/>
    *
    * The ClientEvent class represents a client event which can be used to:<br/>
    * - create a custom event

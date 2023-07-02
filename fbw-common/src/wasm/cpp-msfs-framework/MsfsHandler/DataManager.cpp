@@ -193,44 +193,6 @@ AircraftVariablePtr DataManager::make_aircraft_var(const std::string& varName,
   return var;
 }
 
-AircraftVariablePtr DataManager::make_simple_aircraft_var(const std::string& varName,
-                                                          SimUnit unit,
-                                                          bool autoReading,
-                                                          FLOAT64 maxAgeTime,
-                                                          UINT64 maxAgeTicks) {
-  // The name needs to contain all the information to identify the variable
-  // and the expected value uniquely. This is because the same variable can be
-  // used in different places with different expected values via Index and SimUnits.
-  const std::string uniqueName = varName + ":0:" + unit.name;
-
-  // Check if variable already exists
-  // Check which update method and frequency to use - if two variables are the same
-  // use the update method and frequency of the automated one with faster update frequency
-  const auto pair = variables.find(uniqueName);
-  if (pair != variables.end()) {
-    if (!pair->second->isAutoRead() && autoReading) {
-      pair->second->setAutoRead(true);
-    }
-    if (pair->second->getMaxAgeTime() > maxAgeTime) {
-      pair->second->setMaxAgeTime(maxAgeTime);
-    }
-    if (pair->second->getMaxAgeTicks() > maxAgeTicks) {
-      pair->second->setMaxAgeTicks(maxAgeTicks);
-    }
-    LOG_DEBUG("DataManager::make_simple_aircraft_var(): already exists: " + pair->second->str());
-    return std::dynamic_pointer_cast<AircraftVariable>(pair->second);
-  }
-
-  // Create new var and store it in the map
-  AircraftVariablePtr var = AircraftVariablePtr(new AircraftVariable(
-      varName, 0, "", unit, (autoReading ? UpdateMode::AUTO_READ : UpdateMode::NO_AUTO_UPDATE),
-      maxAgeTime, maxAgeTicks));
-  variables[uniqueName] = var;
-
-  LOG_DEBUG("DataManager::make_simple_aircraft_var(): created variable " + var->str());
-  return var;
-}
-
 ClientEventPtr DataManager::make_client_event(const std::string& clientEventName,
                                               bool registerToSim,
                                               SIMCONNECT_NOTIFICATION_GROUP_ID notificationGroupId) {

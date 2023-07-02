@@ -70,7 +70,16 @@ class MsfsHandler {
   };
   std::shared_ptr<DataDefinitionVariable<BaseSimData>> baseSimData;
 
-  // Pause detection - not working because of sim issue - see initialize() for details
+  /**
+   * @brief Pause detection via System Events
+   * Uses the value from the system event "PAUSE_STATE" to detect if the sim is paused.<br/>
+   * PAUSE_STATE_FLAG_OFF 0               // No Pause<br/>
+   * PAUSE_STATE_FLAG_PAUSE 1             // "full" Pause (sim + traffic + etc...)<br/>
+   * PAUSE_STATE_FLAG_PAUSE_WITH_SOUND 2  // FSX Legacy Pause (not used anymore)<br/>
+   * PAUSE_STATE_FLAG_ACTIVE_PAUSE 4      // Pause was activated using the "Active Pause" Button<br/>
+   * PAUSE_STATE_FLAG_SIM_PAUSE 8         // Pause the player sim but traffic, multi, etc... will still run<br/>
+   */
+  // Pause detection
   NamedVariablePtr a32nxPauseDetected;
   ClientEventPtr pauseDetectedEvent;
   [[maybe_unused]] CallbackID pauseDetectedEventCallbackId;
