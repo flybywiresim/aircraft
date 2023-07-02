@@ -174,15 +174,15 @@ class ManagedDataObjectBase : public DataObjectBase {
   }
 
   /**
-   * When this is true every read from the sim will set the changed flag to true
-   * no matter if the value has changed or not.
-   * When this is false the changed flag will be set to true only if the value
-   * has actually changed.
    * @return true if the value has changed since the last read from the sim.
    */
   [[nodiscard]] bool hasChanged() const { return changedFlag; }
 
   /**
+   * When this is true every read from the sim will set the changed flag to true
+   * no matter if the value has changed or not.
+   * When this is false the changed flag will be set to true only if the value
+   * has actually changed.
    * @return true if the check for data changes should be skipped to save performance when the check is not required, false otherwise
    */
   [[nodiscard]] bool getSkipChangeCheck() const { return skipChangeCheckFlag; }
