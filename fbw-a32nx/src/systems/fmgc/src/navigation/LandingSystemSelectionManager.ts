@@ -70,11 +70,15 @@ export class LandingSystemSelectionManager {
                     await this.selectDepartureIls();
                 } else if (phase >= FmgcFlightPhase.Descent) {
                     await this.selectApproachIls();
-                } else if (this.pposValid) {
+                } else if (this.pposValid && phase >= FmgcFlightPhase.Cruise) {
                     const destination = this.fpm.getDestination(FlightPlans.Active);
                     if (destination && distanceTo(this.ppos, destination.infos.coordinates) <= LandingSystemSelectionManager.DESTINATION_TUNING_DISTANCE) {
                         await this.selectApproachIls();
+                    } else if (this._selectedIls !== null) {
+                        this.resetSelectedIls();
                     }
+                } else if (this._selectedIls !== null) {
+                    this.resetSelectedIls();
                 }
             } catch (e) {
                 console.error('Failed to select ILS', e);
@@ -117,8 +121,8 @@ export class LandingSystemSelectionManager {
         const airport = this.fpm.getDestination(FlightPlans.Active);
         const approach = this.fpm.getApproach(FlightPlans.Active);
 
-        if (this.isTunableApproach(approach?.approachType) && this.setIlsFromApproach(airport, approach, true)) {
-            return true;
+        if (this.isTunableApproach(approach?.approachType)) {
+            return this.setIlsFromApproach(airport, approach, true);
         }
 
         // if we got here there wasn't a suitable ILS

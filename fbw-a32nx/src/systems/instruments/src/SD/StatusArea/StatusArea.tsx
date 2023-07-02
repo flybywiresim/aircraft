@@ -1,11 +1,10 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import './StatusArea.scss';
 import React, { useEffect, useState } from 'react';
-import { useGlobalVar, useSimVar } from '@instruments/common/simVars';
-import { getSupplier } from '@instruments/common/utils';
-import { useArinc429Var } from '@instruments/common/arinc429';
-import { NXLogicConfirmNode, NXLogicMemoryNode } from '@instruments/common/NXLogic';
-import { useUpdate } from '@instruments/common/hooks';
-import { NXUnits } from '@instruments/common/NXUnits';
+import { useGlobalVar, useSimVar, useArinc429Var, NXLogicConfirmNode, NXLogicMemoryNode, NXUnits, useUpdate, getSupplier } from '@flybywiresim/fbw-sdk';
 import { Text } from '../Text/Text';
 
 export const StatusArea = () => {
@@ -114,9 +113,9 @@ export const StatusArea = () => {
         <div id="StatusArea">
             <svg viewBox="0 0 600 150" xmlns="http://www.w3.org/2000/svg">
                 <g>
-                    <path className="sd-status-line" d="M 0   40 h 600" />
-                    <path className="sd-status-line" d="M 200 40 v 125" />
-                    <path className="sd-status-line" d="M 400 40 v 125" />
+                    <path className="sd-status-line" d="M 4   40 h 592" />
+                    <path className="sd-status-line" d="M 200 40 v 75" />
+                    <path className="sd-status-line" d="M 400 40 v 75" />
 
                     {/* Temperatures */}
 

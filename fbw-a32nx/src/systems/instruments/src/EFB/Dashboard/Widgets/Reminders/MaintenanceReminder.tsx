@@ -1,4 +1,8 @@
-import { AtaChapterNumber } from '@shared/ata';
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
+import { AtaChapterNumber } from '@flybywiresim/fbw-sdk';
 import React, { FC } from 'react';
 import { ArrowRight } from 'react-bootstrap-icons';
 import { useHistory } from 'react-router';

@@ -9,7 +9,7 @@ import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
 import { NearbyFacilities } from '@fmgc/navigation/NearbyFacilities';
 import { RequiredPerformance } from '@fmgc/navigation/RequiredPerformance';
 import { VorType } from '@fmgc/types/fstypes/FSEnums';
-import { Arinc429Register } from '@shared/arinc429';
+import { Arinc429Register } from '@flybywiresim/fbw-sdk';
 import { Coordinates } from 'msfs-geo';
 
 export enum SelectedNavaidType {

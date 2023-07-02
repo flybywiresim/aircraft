@@ -7,6 +7,7 @@ use crate::{
 };
 
 pub struct CoreProcessingInputOutputModule {
+    name: String,
     power_supply: ElectricalBusType,
     is_powered: bool,
     available_id: VariableIdentifier,
@@ -17,12 +18,17 @@ pub struct CoreProcessingInputOutputModule {
 impl CoreProcessingInputOutputModule {
     pub fn new(context: &mut InitContext, name: &str, power_supply: ElectricalBusType) -> Self {
         Self {
+            name: name.to_owned(),
             power_supply,
             is_powered: false,
             available_id: context.get_identifier(format!("CPIOM_{}_AVAIL", name)),
             failure_indication_id: context.get_identifier(format!("CPIOM_{}_FAILURE", name)),
             failure_indication: false,
         }
+    }
+
+    pub fn name(&self) -> &str {
+        &self.name
     }
 
     pub fn is_available(&self) -> bool {

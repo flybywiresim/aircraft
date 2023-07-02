@@ -5,7 +5,7 @@ type UseIntervalOptions = Partial<{
     additionalDeps: any[],
 }>
 
-function useInterval(callback: () => void, delay: number | null, options?: UseIntervalOptions): void {
+export function useInterval(callback: () => void, delay: number | null, options?: UseIntervalOptions): void {
     const savedCallback = useRef<() => void | null>();
 
     const deps = [delay];
@@ -37,4 +37,3 @@ function useInterval(callback: () => void, delay: number | null, options?: UseIn
         }
     }, deps);
 }
-export default useInterval;

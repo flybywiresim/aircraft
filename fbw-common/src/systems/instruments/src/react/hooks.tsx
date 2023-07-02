@@ -1,6 +1,10 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import React from 'react';
-import { GenericDataListenerSync } from '@shared/GenericDataListenerSync';
-import { getRootElement } from './defaults';
+import { GenericDataListenerSync } from '../../../shared/src/GenericDataListenerSync';
+import { getRootElement } from '../defaults';
 
 export const useUpdate = (handler: (deltaTime: number) => void) => {
     // Logic based on https://usehooks.com/useEventListener/
