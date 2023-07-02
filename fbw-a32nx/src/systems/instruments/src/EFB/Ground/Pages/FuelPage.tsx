@@ -442,7 +442,7 @@ export const FuelPage = () => {
                     </div>
 
                     <div
-                        className={`flex justify-center items-center w-20  ${formatRefuelStatusClass()} bg-current`}
+                        className={`flex justify-center items-center w-20 ${formatRefuelStatusClass()} bg-current`}
                         onClick={() => switchRefuelState()}
                     >
                         <div className={`${airplaneCanRefuel() ? 'text-white' : 'text-theme-unselected'}`}>
