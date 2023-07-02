@@ -5,6 +5,7 @@
 - [A320neo Local SimVars](#a320neo-local-simvars)
   - [Contents](#contents)
   - [Uncategorized](#uncategorized)
+  - [Model/XML Interface](#modelxml-interface)
   - [EIS Display System](#eis-display-system)
   - [ADIRS](#adirs)
   - [Radio Receivers](#radio-receivers)
@@ -1229,6 +1230,26 @@
     - Bool
     - Persistent
     - Enables developer-specific options like direct payload adjustments
+
+## Model/XML Interface
+
+These variables are the interface between the 3D model and the systems/code.
+
+- A32NX_OVHD_INTLT_ANN
+    - Enum
+    - ANN LT TEST Switch On the Overhead Panel (25VU)
+    Value | Meaning
+    --- | ---
+    0 | TEST
+    1 | BRT
+    2 | DIM
+
+- A32NX_MCDU_{side}_BRIGHTNESS
+    - Boolean
+    - MCDU display emissive brightness. Non-linear to account for MSFS emissive behaviour, and max brightness can change from time to time with sim updates.
+    - {side}
+        - L
+        - R
 
 ## EIS Display System
 
