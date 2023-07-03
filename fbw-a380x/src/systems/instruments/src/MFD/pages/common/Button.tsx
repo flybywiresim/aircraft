@@ -7,7 +7,7 @@ type ButtonMenuItem = {
 };
 
 interface ButtonProps extends ComponentProps {
-    menuItems?: ButtonMenuItem[];
+    menuItems?: ButtonMenuItem[]; // When defining menu items, idPrefix has to be set
     idPrefix?: string;
     disabled?: Subscribable<boolean>;
     buttonStyle?: string;
@@ -37,11 +37,13 @@ export class Button extends DisplayComponent<ButtonProps> {
         if (!this.props.disabled) {
             this.props.disabled = Subject.create(false);
         }
-        if (!this.props.idPrefix) {
-            this.props.idPrefix = '';
-        }
         if (!this.props.menuItems) {
             this.props.menuItems = [] as ButtonMenuItem[];
+        } else if (!this.props.idPrefix) {
+            console.error('Button: menuItems set without idPrefix.');
+        }
+        if (!this.props.idPrefix) {
+            this.props.idPrefix = '';
         }
 
         this.buttonRef.instance.addEventListener('click', () => this.clickHandler());

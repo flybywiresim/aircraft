@@ -14,6 +14,7 @@ import { FcuBkupHeader } from 'instruments/src/MFD/pages/common/FcuBkupHeader';
 import { SurvHeader } from 'instruments/src/MFD/pages/common/SurvHeader';
 import { AtccomHeader } from 'instruments/src/MFD/pages/common/AtccomHeader';
 import { MfdFmsFuelLoad } from 'instruments/src/MFD/pages/FMS/FUEL_LOAD';
+import { MfdFmsFpln } from 'instruments/src/MFD/pages/FMS/F-PLN';
 import { MfdSimvars } from './shared/MFDSimvarPublisher';
 import { DisplayUnit } from '../MsfsAvionicsCommon/displayUnit';
 
@@ -220,6 +221,9 @@ export class MfdComponent extends DisplayComponent<MfdProps> {
             break;
         case 'fms/active/fuel-load':
             this.activePage = <MfdFmsFuelLoad bus={this.props.bus} instrument={this.props.instrument} activeUri={this.activeUri} navigateTo={(uri) => this.navigateTo(uri)} />;
+            break;
+        case 'fms/active/f-pln':
+            this.activePage = <MfdFmsFpln bus={this.props.bus} instrument={this.props.instrument} activeUri={this.activeUri} navigateTo={(uri) => this.navigateTo(uri)} />;
             break;
 
         default:

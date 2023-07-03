@@ -125,6 +125,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
         if (this.isValidating.get() === false && this.props.disabled.get() === false) {
             this.isFocused.set(true);
             this.textInputRef.getOrDefault().classList.add('valueSelected');
+            this.textInputRef.getOrDefault().classList.add('editing');
             if (this.props.mandatory.get() === true) {
                 this.textInputRef.getOrDefault().classList.remove('mandatory');
             }
@@ -137,7 +138,6 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
     private async onBlur() {
         this.isFocused.set(false);
         this.textInputRef.getOrDefault().classList.remove('valueSelected');
-        this.spanningDivRef.getOrDefault().style.justifyContent = this.props.alignText;
         this.caretRef.getOrDefault().style.display = 'none';
         this.updateDisplayElement();
 
@@ -147,6 +147,8 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
         } else {
             await this.validateAndUpdate(this.modifiedFieldValue.get());
         }
+        this.spanningDivRef.getOrDefault().style.justifyContent = this.props.alignText;
+        this.textInputRef.getOrDefault().classList.remove('editing');
     }
 
     private populatePlaceholders() {

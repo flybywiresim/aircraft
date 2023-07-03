@@ -13,10 +13,10 @@ Status legend:
 | Status      | URI | Sprint/Prio |
 | ------------- | ------------- | ------------- |
 | 2️⃣ | fms/\*/init | 1 |
-| 1️⃣ | fms/\*/fuel-load | 1 |
+| 2️⃣ | fms/\*/fuel-load | 1 |
 | 2️⃣ | fms/\*/perf | 1 |
 |  |  |
-| 🟥 | fms/\*/f-pln | 1 |
+| 1️⃣ | fms/\*/f-pln | 1 |
 | 🟥 | fms/\*/f-pln/rte-sel | 1 |
 | 🟥 | fms/\*/f-pln/departure | 1 |
 | 🟥 | fms/\*/f-pln/arrival | 1 |
@@ -93,4 +93,6 @@ Status legend:
 | Page / component | Question | Answer |
 | ------------- | ------------- | ------------- |
 | Input field | Is it possible to input illegal characters into the input fields before validation? I.e. when selecting an altitude field, and pressing „A“ on the KCCU, does it actually display „A“ in the field? | - |
-| Confirmation dialog | When triggering a confirmation dialog (e.g. by selecting a derated thrust, or trying to ACTIVATE APPR), are the other fields and buttons outside the dialog still clickable? Are there images available for the ACTIVATE APPR confirmation dialog? Specifically its location. | - |
+| Confirmation dialog | When triggering a confirmation dialog (e.g. by selecting a derated thrust, or trying to ACTIVATE APPR), are the other fields and buttons outside the dialog still clickable? Are there images available for the ACTIVATE APPR confirmation dialog? Specifically its location within the PERF page. | - |
+| Dropdown menu | When opening a dropdown menu, what are means of selecting and navigating, apart from scroll wheel, keyboard arrows and KCCU cursor? Can you also enter a character or number on the keyboard, and the list jumps to the respective element? | - |
+| DIRECT TO Dropdown menu | How are DIRECT TO non-flight plan waypoints entered, assuming you are already on ACTIVE/F-PLN/DIRECT TO? Click on dropdown menu, enter fix or coordinate with keyboard, press ENT? Does every dropdown menu allow entering arbitrary characters? | - |

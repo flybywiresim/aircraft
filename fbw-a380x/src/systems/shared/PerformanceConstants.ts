@@ -23,9 +23,9 @@ export const defaultTropopauseAlt = 36090; // feet
 export const minZfwCg = 23; // %
 export const maxZfwCg = 48; // %
 
-export const maxZfw = 361000; // kg, TODO
+export const maxZfw = 361000; // kg
 
-export const maxGw = 562000; // kg, TODO
+export const maxGw = 562000; // kg
 
 export const maxBlockFuel = 289982; // kg
 export const maxTaxiFuel = 9889; // kg

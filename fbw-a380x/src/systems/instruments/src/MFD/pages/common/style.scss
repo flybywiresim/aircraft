@@ -433,6 +433,10 @@ $display-mfd-dark-grey: #3c3c3c;
   color: $display-background;
 }
 
+.MFDNumberInputTextInput.editing {
+  font-size: 25px !important;
+}
+
 .MFDNumberInputTextInput.computedByFms {
   font-size: 21px;
 }
@@ -472,4 +476,14 @@ $display-mfd-dark-grey: #3c3c3c;
   border: 2px outset lightgray;
   padding: 5px;
   margin: 5px;
+}
+
+.MFDFplnLine {
+  color: $display-white;
+  font-family: "Ecam", monospace;
+  height: 72px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
 }

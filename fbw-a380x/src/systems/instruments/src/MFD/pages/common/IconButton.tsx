@@ -1,27 +1,76 @@
-import { ComponentProps, DisplayComponent, FSComponent, VNode } from '@microsoft/msfs-sdk';
+import { ComponentProps, DisplayComponent, FSComponent, Subject, Subscription, VNode } from '@microsoft/msfs-sdk';
 import './style.scss';
 
 interface IconButtonProps extends ComponentProps {
     containerStyle?: string;
-    icon: 'double-up' | '' | null;
+    icon: 'double-up' | 'double-down' | '' | null;
+    disabled?: Subject<boolean>;
     onClick?: () => void;
 }
 export class IconButton extends DisplayComponent<IconButtonProps> {
+    // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
+    private subs = [] as Subscription[];
+
     private spanRef = FSComponent.createRef<HTMLSpanElement>();
+
+    private svgGroupRef = FSComponent.createRef<SVGGElement>();
+
+    private fillColor = Subject.create('white');
+
+    clickHandler(): void {
+        if (this.props.disabled.get() === false && this.props.onClick) {
+            this.props.onClick();
+        }
+    }
+
+    updateSvgColor(color: string) {
+        if (this.svgGroupRef) {
+            this.svgGroupRef.getOrDefault().setAttribute('fill', color);
+        }
+    }
 
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        this.spanRef.instance.addEventListener('click', this.props.onClick);
+        if (!this.props.disabled) {
+            this.props.disabled = Subject.create(false);
+        }
+
+        this.subs.push(this.props.disabled.sub((val) => {
+            if (val === true) {
+                this.updateSvgColor('grey');
+            } else {
+                this.updateSvgColor('white');
+            }
+        }, true));
+
+        this.spanRef.instance.addEventListener('click', this.clickHandler);
+    }
+
+    public destroy(): void {
+        // Destroy all subscriptions to remove all references to this instance.
+        this.subs.forEach((x) => x.destroy());
+
+        super.destroy();
     }
 
     render(): VNode {
         return (
             <span ref={this.spanRef} class="MFDIconButton" style={`${this.props.containerStyle}`}>
                 {this.props.icon === 'double-up' && (
-                    <svg width="35" height="35" xmlns="http://www.w3.org/17.500/svg">
-                        <polygon points="0,17.5 17.5,0 35,17.5" style="fill:white;" />
-                        <polygon points="0,35 17.5,17.5 35,35" style="fill:white;" />
+                    <svg width="35" height="35" xmlns="http://www.w3.org/2000/svg">
+                        <g ref={this.svgGroupRef} fill={this.fillColor}>
+                            <polygon points="0,17.5 17.5,0 35,17.5" />
+                            <polygon points="0,35 17.5,17.5 35,35" />
+                        </g>
+                    </svg>
+                )}
+                {this.props.icon === 'double-down' && (
+                    <svg width="35" height="35" xmlns="http://www.w3.org/2000/svg">
+                        <g ref={this.svgGroupRef} fill={this.fillColor} transform="rotate(180 17.5 17.5)">
+                            <polygon points="0,17.5 17.5,0 35,17.5" />
+                            <polygon points="0,35 17.5,17.5 35,35" />
+                        </g>
                     </svg>
                 )}
             </span>

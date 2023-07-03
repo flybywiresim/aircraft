@@ -694,4 +694,27 @@ export class TimeHHMMFormat implements DataEntryFormat<number> {
     }
 }
 
-// TODO add coordinate types, use decimalToDms from fbw-common/datalink
+export class LatitudeFormat implements DataEntryFormat<number> {
+    public placeholder = '----.--';
+
+    public maxDigits = 7;
+
+    private minValue = -90;
+
+    private maxValue = 90;
+
+    public format(value: number) {
+        if (!value) {
+            return [this.placeholder, null, null] as FieldFormatTuple;
+        }
+        return [value.toFixed(0).toString(), null, null] as FieldFormatTuple;
+    }
+
+    public async parse(input: string) {
+        const nbr = Number(input);
+        if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
+            return nbr;
+        }
+        return null;
+    }
+}

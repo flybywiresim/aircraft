@@ -1,5 +1,6 @@
 import { ComponentProps, DisplayComponent, FSComponent, Subject, Subscribable, Subscription, VNode } from '@microsoft/msfs-sdk';
 import './style.scss';
+import { TriangleDown } from 'instruments/src/MFD/pages/common/shapes';
 
 type PageSelectorMenuItem = {
     label: string;
@@ -85,9 +86,7 @@ export class PageSelectorDropdownMenu extends DisplayComponent<PageSelectorDropd
                     <div style="display: flex;">
                         {this.props.menuItems.length > 1 && (
                             <span style="padding: 8px;">
-                                <svg height="15" width="15">
-                                    <polygon points="0,0 15,0 7.5,15" style="fill: white" />
-                                </svg>
+                                <TriangleDown />
                             </span>
                         )}
                     </div>

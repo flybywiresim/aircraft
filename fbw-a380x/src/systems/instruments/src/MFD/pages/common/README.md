@@ -13,6 +13,7 @@ Status legend:
 | ------------- | ------------- | ------------- |
 | ✅ | ActivePageTitleBar | Display title of currently active page at the top of the screen |
 | ✅ | Button | Generic button, with optional dropdown menu |
+| 🟥 | Checkbox | E.g. found on time marker page, for enabling aural alerts |
 | ✅ | ContextMenu | Context menu, e.g. for F-PLN page or OANS in ND |
 | ✅ | ConfirmationDialog | Confirmation dialog, e.g. for confirming ACTIVATE APPR or selected derated thrust |
 | ✅ | DropdownMenu | Generic dropdown menu |

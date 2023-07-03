@@ -64,7 +64,7 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
 
     private noiseSpd = Subject.create<number>(null);
 
-    private showNoiseFields(visible: boolean) { // TODO for all phases
+    private showNoiseFields(visible: boolean) {
         if (visible === true) {
             // TO page
             this.toNoiseButtonRef.instance.style.display = 'none';
