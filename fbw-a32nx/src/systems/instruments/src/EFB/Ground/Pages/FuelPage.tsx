@@ -399,7 +399,7 @@ export const FuelPage = () => {
                     />
                 </div>
 
-                <div className="flex absolute bottom-0 left-0 z-10 flex-row max-w-3xl rounded-2xl border border-theme-accentborder-2">
+                <div className="flex overflow-x-hidden absolute bottom-0 left-0 z-10 flex-row max-w-3xl rounded-2xl border border-theme-accentborder-2">
                     <div className="py-3 px-5 space-y-4">
                         <div className="flex flex-row justify-between items-center">
                             <div className="flex flex-row items-center space-x-3">
