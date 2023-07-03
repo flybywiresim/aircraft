@@ -221,7 +221,7 @@ impl A320Pneumatic {
         overhead_panel: &A320PneumaticOverheadPanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         apu: &impl ControllerSignal<TargetPressureTemperatureSignal>,
-        pack_flow_valve_signals: &impl PackFlowControllers<2>,
+        pack_flow_valve_signals: &impl PackFlowControllers,
         lgciu: [&impl LgciuWeightOnWheels; 2],
     ) {
         self.physics_updater.update(context);
@@ -246,7 +246,7 @@ impl A320Pneumatic {
         overhead_panel: &A320PneumaticOverheadPanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         apu: &impl ControllerSignal<TargetPressureTemperatureSignal>,
-        pack_flow_valve_signals: &impl PackFlowControllers<2>,
+        pack_flow_valve_signals: &impl PackFlowControllers,
         lgciu: [&impl LgciuWeightOnWheels; 2],
     ) {
         self.apu_compression_chamber.update(apu);
@@ -373,22 +373,20 @@ impl PneumaticBleed for A320Pneumatic {
     }
 }
 impl EngineStartState for A320Pneumatic {
-    fn left_engine_state(&self) -> EngineState {
-        self.fadec.engine_state(1)
-    }
-    fn right_engine_state(&self) -> EngineState {
-        self.fadec.engine_state(2)
+    fn engine_state(&self, engine_number: usize) -> EngineState {
+        self.fadec.engine_state(engine_number)
     }
     fn engine_mode_selector(&self) -> EngineModeSelector {
         self.fadec.engine_mode_selector()
     }
 }
 impl PackFlowValveState for A320Pneumatic {
+    // pack_id: 1 or 2
     fn pack_flow_valve_is_open(&self, pack_id: usize) -> bool {
-        self.packs[pack_id].pack_flow_valve_is_open()
+        self.packs[pack_id - 1].pack_flow_valve_is_open()
     }
     fn pack_flow_valve_air_flow(&self, pack_id: usize) -> MassRate {
-        self.packs[pack_id].pack_flow_valve_air_flow()
+        self.packs[pack_id - 1].pack_flow_valve_air_flow()
     }
 }
 impl SimulationElement for A320Pneumatic {
@@ -1275,11 +1273,10 @@ impl PackComplex {
         &mut self,
         context: &UpdateContext,
         from: &mut impl PneumaticContainer,
-        pack_flow_valve_signals: &impl PackFlowControllers<2>,
+        pack_flow_valve_signals: &impl PackFlowControllers,
     ) {
-        self.pack_flow_valve.update_open_amount(
-            &pack_flow_valve_signals.pack_flow_controller(self.engine_number.into()),
-        );
+        self.pack_flow_valve
+            .update_open_amount(pack_flow_valve_signals.pack_flow_controller(self.engine_number));
 
         self.pack_flow_valve
             .update_move_fluid(context, from, &mut self.pack_container);
@@ -1411,10 +1408,7 @@ impl SimulationElement for CrossBleedValve {
 #[cfg(test)]
 mod tests {
     use systems::{
-        air_conditioning::{
-            acs_controller::{Pack, PackFlowController},
-            AdirsToAirCondInterface, PackFlowControllers, ZoneType,
-        },
+        air_conditioning::{AdirsToAirCondInterface, PackFlowControllers, ZoneType},
         electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
         engine::leap_engine::LeapEngine,
         failures::FailureType,
@@ -1493,8 +1487,11 @@ mod tests {
             );
         }
     }
-    impl PackFlowControllers<2> for TestAirConditioning {
-        fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<2> {
+    impl PackFlowControllers for TestAirConditioning {
+        type PackFlowControllerSignal =
+            <A320AirConditioningSystem as PackFlowControllers>::PackFlowControllerSignal;
+
+        fn pack_flow_controller(&self, pack_id: usize) -> &Self::PackFlowControllerSignal {
             self.a320_air_conditioning_system
                 .pack_flow_controller(pack_id)
         }

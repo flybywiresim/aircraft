@@ -1,6 +1,9 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import React, { useEffect, useState } from 'react';
-import { useSimVar } from '@instruments/common/simVars';
-import { usePersistentProperty } from '@instruments/common/persistence';
+import { useSimVar, usePersistentProperty } from '@flybywiresim/fbw-sdk';
 
 enum BaroMode {
     QNH = 0,

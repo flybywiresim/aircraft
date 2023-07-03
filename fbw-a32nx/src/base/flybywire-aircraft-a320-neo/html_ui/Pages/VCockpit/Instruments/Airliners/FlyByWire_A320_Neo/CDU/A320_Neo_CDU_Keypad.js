@@ -39,7 +39,10 @@ class Keypad {
             "DOT": () => mcdu.onDot(),
             "OVFY": () => mcdu.onOvfy(),
             "PLUSMINUS": () => mcdu.onPlusMinus(),
-            "SP": () => mcdu.onSp()
+            "SP": () => mcdu.onSp(),
+
+            "BRT": (side) => mcdu.onBrightnessKey(side, 1),
+            "DIM": (side) => mcdu.onBrightnessKey(side, -1),
         };
 
         for (const letter of FMCMainDisplay._AvailableKeys) {
@@ -47,7 +50,13 @@ class Keypad {
         }
     }
 
-    onKeyPress(value) {
+    /**
+     * Handle CDU key presses
+     * @param {unknown} value
+     * @param {'L' | 'R'} side
+     * @returns true if handled
+     */
+    onKeyPress(value, side) {
         const action = this._keys[value];
         if (!action) {
             return false;
@@ -56,7 +65,7 @@ class Keypad {
         const cur = this._mcdu.page.Current;
         setTimeout(() => {
             if (this._mcdu.page.Current === cur) {
-                action();
+                action(side);
             }
         }, this._mcdu.getDelaySwitchPage());
         return true;

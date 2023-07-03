@@ -1,7 +1,11 @@
-import { ClockEvents, DisplayComponent, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import { Arinc429Word } from '@shared/arinc429';
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
 
-import { DisplayManagementComputerEvents } from 'instruments/src/PFD/shared/DisplayManagementComputer';
+import { ClockEvents, DisplayComponent, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import { Arinc429Register, Arinc429Word } from '@flybywiresim/fbw-sdk';
+
+import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import {
     calculateHorizonOffsetFromPitch,
     calculateVerticalOffsetFromRoll,
@@ -23,7 +27,7 @@ class HeadingBug extends DisplayComponent<{ bus: ArincEventBus, isCaptainSide: b
 
     private selectedHeading = 0;
 
-    private heading = new Arinc429Word(0);
+    private heading = Arinc429Register.empty();;
 
     private horizonHeadingBug = FSComponent.createRef<SVGGElement>();
 
@@ -45,7 +49,7 @@ class HeadingBug extends DisplayComponent<{ bus: ArincEventBus, isCaptainSide: b
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<DisplayManagementComputerEvents & PFDSimvars & Arinc429Values>();
+        const sub = this.props.bus.getSubscriber<DmcLogicEvents & PFDSimvars & Arinc429Values>();
 
         sub.on('selectedHeading').whenChanged().handle((s) => {
             this.selectedHeading = s;
@@ -55,7 +59,7 @@ class HeadingBug extends DisplayComponent<{ bus: ArincEventBus, isCaptainSide: b
         });
 
         sub.on('heading').handle((h) => {
-            this.heading = h;
+            this.heading.set(h);
             if (this.isActive) {
                 this.calculateAndSetOffset();
             }
