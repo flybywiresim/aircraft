@@ -53,7 +53,7 @@ class CDUSelectedNavaids {
         const selectedNavaids = mcdu.getSelectedNavaids();
 
         for (const [i, navaid] of selectedNavaids.entries()) {
-            if (navaid.frequency === null) {
+            if (navaid.frequency < 1) {
                 continue;
             }
 

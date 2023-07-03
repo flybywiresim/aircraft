@@ -1,4 +1,8 @@
-import { NXDataStore } from '@shared/persistence';
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
+import { NXDataStore } from '@flybywiresim/fbw-sdk';
 
 type SimVarProp = {name: string, defaultValue: string}
 type migrationSet = [oldSimvar: SimVarProp, newSimvar: string]

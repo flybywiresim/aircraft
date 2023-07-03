@@ -1,7 +1,11 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { A320Failure, FailuresConsumer } from '@failures';
 import { ClockEvents, ComponentProps, DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
-import { Arinc429Word } from '@shared/arinc429';
-import { DisplayManagementComputerEvents } from 'instruments/src/PFD/shared/DisplayManagementComputer';
+import { Arinc429Register, Arinc429Word } from '@flybywiresim/fbw-sdk';
+import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import { LagFilter } from './PFDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { DisplayUnit } from '../MsfsAvionicsCommon/displayUnit';
@@ -49,6 +53,8 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
 
     private radioAltitudeFilter = new LagFilter(5);
 
+    private readonly headingWord = Arinc429Register.empty();
+
     private failuresConsumer;
 
     constructor(props: PFDProps) {
@@ -63,7 +69,7 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
 
         this.failuresConsumer.register(isCaptainSide ? A320Failure.LeftPfdDisplay : A320Failure.RightPfdDisplay);
 
-        const sub = this.props.bus.getSubscriber<Arinc429Values & ClockEvents & DisplayManagementComputerEvents & PFDSimvars>();
+        const sub = this.props.bus.getSubscriber<Arinc429Values & ClockEvents & DmcLogicEvents & PFDSimvars>();
 
         sub.on(isCaptainSide ? 'potentiometerCaptain' : 'potentiometerFo').whenChanged().handle((value) => {
             this.displayBrightness.set(value);
@@ -74,8 +80,9 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
         });
 
         sub.on('heading').handle((h) => {
-            if (this.headingFailed.get() !== h.isNormalOperation()) {
-                this.headingFailed.set(!h.isNormalOperation());
+            this.headingWord.set(h);
+            if (this.headingFailed.get() !== this.headingWord.isNormalOperation()) {
+                this.headingFailed.set(!this.headingWord.isNormalOperation());
             }
         });
 

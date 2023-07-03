@@ -1,5 +1,9 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import React, { useState } from 'react';
-import { useInteractionEvents } from '@instruments/common/hooks.js';
+import { useInteractionEvents } from '@flybywiresim/fbw-sdk';
 import { Checkerboard } from './Checkerboard';
 
 type ButtonProps = {

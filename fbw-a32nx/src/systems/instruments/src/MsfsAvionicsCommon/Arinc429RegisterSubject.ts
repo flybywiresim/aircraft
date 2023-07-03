@@ -1,5 +1,9 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { Subject } from '@microsoft/msfs-sdk';
-import { Arinc429Register } from '@shared/arinc429';
+import { Arinc429Register } from '@flybywiresim/fbw-sdk';
 
 export class Arinc429RegisterSubject extends Subject<Arinc429Register> {
     static createEmpty(): Arinc429RegisterSubject {

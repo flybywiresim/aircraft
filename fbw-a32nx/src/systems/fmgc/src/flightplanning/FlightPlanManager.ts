@@ -23,7 +23,7 @@
  * SOFTWARE.
  */
 
-import { NXDataStore } from '@shared/persistence';
+import { NXDataStore } from '@flybywiresim/fbw-sdk';
 import { LegType } from '@fmgc/types/fstypes/FSEnums';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { ApproachStats, HoldData } from '@fmgc/flightplanning/data/flightplan';
@@ -2008,7 +2008,7 @@ export class FlightPlanManager {
     }
 
     public addOrUpdateCruiseStep(waypoint: WayPoint, toAltitude: Feet, waypointIndex?: number): void {
-        this._flightPlans[this._currentFlightPlanIndex].addOrUpdateCruiseStep(waypoint, toAltitude, waypointIndex)
+        this._flightPlans[this._currentFlightPlanIndex].addOrUpdateCruiseStep(waypoint, toAltitude, waypointIndex);
         // Unignore all of them, so a new VNAV computation with all steps is done
         this.unignoreAllCruiseSteps();
         this.updateFlightPlanVersion().catch(console.error);
@@ -2017,7 +2017,7 @@ export class FlightPlanManager {
     public removeCruiseStep(waypoint: WayPoint): void {
         this._flightPlans[this._currentFlightPlanIndex].removeCruiseStep(waypoint);
         // Unignore all of them, so a new VNAV computation with all steps is done
-        this.unignoreAllCruiseSteps()
+        this.unignoreAllCruiseSteps();
         this.updateFlightPlanVersion().catch(console.error);
     }
 

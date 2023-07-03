@@ -9,7 +9,7 @@ import { GuidanceManager } from '@fmgc/guidance/GuidanceManager';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { SegmentType } from '@fmgc/wtsdk';
-import { GenericDataListenerSync } from '@shared/GenericDataListenerSync';
+import { GenericDataListenerSync } from '@flybywiresim/fbw-sdk';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { NearbyFacilities } from '@fmgc/navigation/NearbyFacilities';
 import { NavaidTuner } from '@fmgc/navigation/NavaidTuner';
@@ -315,6 +315,7 @@ export class EfisSymbols {
             }
 
             const isInLatAutoControl = this.guidanceController.vnavDriver.isLatAutoControlActive();
+            const isNavArmedWithIntercept = this.guidanceController.vnavDriver.isLatAutoControlArmedWithIntercept();
             const waypointPredictions = this.guidanceController.vnavDriver.mcduProfile?.waypointPredictions;
             const isSelectedVerticalModeActive = this.guidanceController.vnavDriver.isSelectedVerticalModeActive();
             const flightPhase = getFlightPhaseManager().phase;
@@ -378,11 +379,11 @@ export class EfisSymbols {
                         direction = wp.additionalData.course;
                     }
 
-                    if (isInLatAutoControl && !isFromWp && wp.legAltitudeDescription > 0 && wp.legAltitudeDescription < 6) {
+                    if ((isInLatAutoControl || isNavArmedWithIntercept) && !isFromWp && wp.legAltitudeDescription > 0 && wp.legAltitudeDescription < 6) {
                         if (!isSelectedVerticalModeActive && shouldShowConstraintCircleInPhase(flightPhase, wp)) {
                             type |= NdSymbolTypeFlags.Constraint;
 
-                            const predictionAtWaypoint = waypointPredictions.get(i);
+                            const predictionAtWaypoint = waypointPredictions?.get(i);
                             if (predictionAtWaypoint?.isAltitudeConstraintMet) {
                                 type |= NdSymbolTypeFlags.MagentaColor;
                             } else if (predictionAtWaypoint) {
@@ -596,7 +597,7 @@ export class EfisSymbols {
 }
 
 const shouldShowConstraintCircleInPhase = (phase: FmgcFlightPhase, waypoint: WayPoint) => (
-    (phase === FmgcFlightPhase.Takeoff || phase === FmgcFlightPhase.Climb) && waypoint.additionalData.constraintType === WaypointConstraintType.CLB
+    (phase <= FmgcFlightPhase.Climb) && waypoint.additionalData.constraintType === WaypointConstraintType.CLB
 ) || (
     (phase === FmgcFlightPhase.Cruise || phase === FmgcFlightPhase.Descent || phase === FmgcFlightPhase.Approach) && waypoint.additionalData.constraintType === WaypointConstraintType.DES
 );

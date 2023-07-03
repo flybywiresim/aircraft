@@ -1,6 +1,10 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { NavaidTuner } from '@fmgc/navigation/NavaidTuner';
 import { FMMessage, FMMessageTypes } from '@shared/FmMessages';
-import { Trigger } from '@shared/logic';
+import { Trigger } from '@flybywiresim/fbw-sdk';
 import { FMMessageSelector, FMMessageUpdate } from './FmsMessages';
 
 abstract class RwyLsMismatch implements FMMessageSelector {
