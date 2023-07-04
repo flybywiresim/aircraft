@@ -292,14 +292,6 @@ void removeProbes() {
 void probeInit(int probeIndex)
 {
 	HRESULT hr;
-	//hr = SimConnect_AIReleaseControl(hSimConnect, probeIndexnfo[probeIndex].id, (UINT)REQUEST_PROBE_RELEASE+probeIndex);
-
-	//hr = SimConnect_TransmitClientEvent(hSimConnect,
-	//  probeIndexnfo[probeIndex].id,
-	//  EVENT_FREEZE_ALTITUDE,
-	//  1, // set freeze value to 1
-	//  SIMCONNECT_GROUP_PRIORITY_HIGHEST,
-	//  SIMCONNECT_EVENT_FLAG_GROUPID_IS_PRIORITY);
 	hr = SimConnect_TransmitClientEvent(hSimConnect,
 		probeIndexnfo[probeIndex].id,
 		EVENT_FREEZE_ATTITUDE,
