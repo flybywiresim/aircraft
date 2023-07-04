@@ -233,7 +233,6 @@ void createProbeMesh(int probeIndex) {
 
 // Removes the probe mesh when RA is turned off. Called by REQUEST_PROBE_DATA
 void removeProbeMesh(int probeIndex) {
-
 	HRESULT hr;
 
 	if (probeIndexnfo[probeIndex].created) {
