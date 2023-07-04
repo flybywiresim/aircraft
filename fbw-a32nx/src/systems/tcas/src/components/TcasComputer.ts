@@ -1,15 +1,14 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 /* eslint-disable camelcase */
 /* eslint-disable no-empty-function */
 /* eslint-disable no-useless-constructor */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-console */
-import { UpdateThrottler } from '@shared/UpdateThrottler';
-import { MathUtils } from '@shared/MathUtils';
-import { Arinc429Word } from '@shared/arinc429';
+import { MathUtils, Arinc429Word, GenericDataListenerSync, NXDataStore, UpdateThrottler, LocalSimVar } from '@flybywiresim/fbw-sdk';
 import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
-import { LocalSimVar } from '@shared/simvar';
-import { NXDataStore } from '@shared/persistence';
-import { GenericDataListenerSync } from '@shared/GenericDataListenerSync';
 import { TcasComponent } from '../lib/TcasComponent';
 import {
     TCAS_CONST as TCAS, JS_NPCPlane,

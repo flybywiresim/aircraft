@@ -1,6 +1,10 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import React from 'react';
 
-import { useInteractionSimVar, useSimVar } from '@instruments/common/simVars';
+import { useInteractionSimVar, useSimVar } from '@flybywiresim/fbw-sdk';
 import { LagFilter } from 'instruments/src/ISIS/ISISUtils';
 
 type DeviationIndicatorProps = {

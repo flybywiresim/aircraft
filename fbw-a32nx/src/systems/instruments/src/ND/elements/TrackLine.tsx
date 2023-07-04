@@ -1,4 +1,8 @@
-import { MathUtils } from '@shared/MathUtils';
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
+import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { NdSymbol } from '@shared/NavigationDisplay';
 import React, { memo, useEffect, useState } from 'react';
 import { SymbolMarker } from './FlightPlan';

@@ -417,12 +417,8 @@
                 <RIGHTARROW/>
                 <CURSOR>Hand</CURSOR>
                 <ANIM_NAME>#ANIM_NAME_BRT_DIM#</ANIM_NAME>
-                <CODE_POS_0>
-                (L:A32NX_MCDU_#SIDE#_BRIGHTNESS) (L:A32NX_MCDU_#SIDE#_BRIGHTNESS) 0.2 * + 8 min (&gt;L:A32NX_MCDU_#SIDE#_BRIGHTNESS)
-                </CODE_POS_0>
-                <CODE_POS_2>
-                (L:A32NX_MCDU_#SIDE#_BRIGHTNESS) (L:A32NX_MCDU_#SIDE#_BRIGHTNESS) 0.2 * - 0.5 max (&gt;L:A32NX_MCDU_#SIDE#_BRIGHTNESS)
-                </CODE_POS_2>
+                <CODE_POS_0>(&gt;H:A320_Neo_CDU_#SIDE_NUMERIC#_BTN_BRT)</CODE_POS_0>
+                <CODE_POS_2>(&gt;H:A320_Neo_CDU_#SIDE_NUMERIC#_BTN_DIM)</CODE_POS_2>
                 <STATE_MAX_TIMER>0.01</STATE_MAX_TIMER>
                 <STATE0_TIMER>0.01</STATE0_TIMER>
                 <MOMENTARY_REPEAT_FREQUENCY>5</MOMENTARY_REPEAT_FREQUENCY>
@@ -489,7 +485,6 @@
             </UseTemplate>
             <UseTemplate Name="FBW_MCDU_ANNUNCIATOR_Template">
                 <BASE_NAME>BLANK</BASE_NAME>
-                <ANNUNC_LIT>0</ANNUNC_LIT>
             </UseTemplate>
             <UseTemplate Name="FBW_MCDU_ANNUNCIATOR_Template">
                 <BASE_NAME>FM2</BASE_NAME>
@@ -510,9 +505,8 @@
                 <EMISSIVE_CODE type="rnp" return="number">
                     let lit = #ANNUNC_LIT, boolean#;
                     let annSwitch = (L:A32NX_OVHD_INTLT_ANN, number);
-                    alias dc2Powered = (L:A32NX_ELEC_DC_2_BUS_IS_POWERED, bool);
-                    let brightness = if annSwitch == 2 { 0.1 } else { 1 };
-                    let emissive = if (((annSwitch == 0) and dc2Powered) or lit) {
+                    let emissive = if lit {
+                        let brightness = if annSwitch == 2 { 0.1 } else { 1 };
                         brightness
                     } else {
                         0

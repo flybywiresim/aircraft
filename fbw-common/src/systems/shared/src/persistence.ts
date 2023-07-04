@@ -1,6 +1,3 @@
-declare function GetStoredData(property: string, defaultValue?: string);
-declare function SetStoredData(property: string, newValue: string);
-
 type SubscribeCallback = (key: string, value: string) => void;
 type SubscribeCancellation = () => void;
 

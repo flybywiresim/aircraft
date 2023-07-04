@@ -1,4 +1,8 @@
-import { useSimVar } from '@instruments/common/simVars';
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
+import { useSimVar } from '@flybywiresim/fbw-sdk';
 import React, { FC } from 'react';
 import { Triangle } from '../../../Common/Shapes';
 import BleedGauge from './BleedGauge';
@@ -42,10 +46,10 @@ const EngineBleed: FC<EngineBleedProps> = ({ x, y, engine, sdacDatum, enginePRVa
         <g id={`bleed-${engine}`}>
 
             {/* Air Cond shape and labels */}
-            <path className="GreyStroke Stroke1" d={`M ${x},${y} l -47,10 l 0,123 l 14,0`} />
-            <path className="GreyStroke Stroke1" d={`M ${x - 47},${y + 64} l 14,0`} />
-            <path className="GreyStroke Stroke1" d={`M ${x},${y} l +47,10 l 0,123 l -14,0`} />
-            <path className="GreyStroke Stroke1" d={`M ${x + 47},${y + 64} l -14,0`} />
+            <path className="GreyStroke Stroke2" d={`M ${x},${y} l -47,10 l 0,123 l 14,0`} />
+            <path className="GreyStroke Stroke2" d={`M ${x - 47},${y + 64} l 14,0`} />
+            <path className="GreyStroke Stroke2" d={`M ${x},${y} l +47,10 l 0,123 l -14,0`} />
+            <path className="GreyStroke Stroke2" d={`M ${x + 47},${y + 64} l -14,0`} />
             <text x={x - 56} y={y + 64} className="White Standard End">C</text>
             <text x={x + 58} y={y + 64} className="White Standard">H</text>
             <text x={x - 55} y={y + 132} className="White Standard End">LO</text>

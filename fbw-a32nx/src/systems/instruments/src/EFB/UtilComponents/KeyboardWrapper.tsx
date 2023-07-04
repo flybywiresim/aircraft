@@ -1,8 +1,12 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import React, { useEffect, useRef, useState } from 'react';
 import Keyboard, { KeyboardInput } from 'react-simple-keyboard';
 import '../Assets/Keyboard.scss';
 import SimpleKeyboardLayouts from 'simple-keyboard-layouts';
-import { usePersistentProperty } from '@instruments/common/persistence';
+import { usePersistentProperty } from '@flybywiresim/fbw-sdk';
 import { useAppSelector } from '../Store/store';
 
 interface KeyboardWrapperProps {
@@ -70,7 +74,7 @@ export const KeyboardWrapper = ({ onChangeAll, keyboardRef, setOpen, blurInput, 
 
     return (
         <div
-            className="fixed bottom-0 z-50 m-0 shadow-lg w-[1430px]"
+            className="fixed bottom-0 z-50 m-0 w-[1430px] shadow-lg"
             style={{ transform: `translate(${offsetX}px, ${verticalDeviation - offsetY}px)` }}
             ref={keyboardWrapperRef}
         >
