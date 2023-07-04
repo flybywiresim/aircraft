@@ -2,7 +2,7 @@ import React from 'react';
 import { FailureGenContext, ModalGenType } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGen';
 import { findGeneratorFailures, selectAllFailureChapter, selectAllFailures, setSelectedFailure } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelection';
 import { Failure } from 'failures/src/failures-orchestrator';
-import { AtaChapterNumber, AtaChaptersTitle } from '@shared/ata';
+import { AtaChapterNumber, AtaChaptersTitle } from '@flybywiresim/fbw-sdk';
 import { t } from 'instruments/src/EFB/translation';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';

@@ -7,7 +7,7 @@ import {
 } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGen';
 import { findGeneratorFailures } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelection';
 import { ExclamationDiamond, PlusLg, Sliders2Vertical, Trash } from 'react-bootstrap-icons';
-import { AtaChapterNumber, AtaChaptersTitle } from '@shared/ata';
+import { AtaChapterNumber, AtaChaptersTitle } from '@flybywiresim/fbw-sdk';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
 import { GeneratorFailureSelection } from './GeneratorFailureSelectionUI';

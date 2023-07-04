@@ -1,10 +1,10 @@
 import { useEffect, useMemo } from 'react';
-import { useSimVar } from '@instruments/common/simVars';
+import { useSimVar } from '@flybywiresim/fbw-sdk';
 import {
     activateRandomFailure, basicData, FailureGenContext, FailureGenData, failureGeneratorCommonFunction,
     FailurePhases, flatten, setNewSetting,
 } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGen';
-import { usePersistentProperty } from '@instruments/common/persistence';
+import { usePersistentProperty } from '@flybywiresim/fbw-sdk';
 import { t } from 'instruments/src/EFB/translation';
 import { findGeneratorFailures } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelection';
 import { FailureGeneratorSingleSetting } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorSettingsUI';

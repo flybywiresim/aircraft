@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Failure } from '@failures';
-import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
+import { usePersistentNumberProperty, usePersistentProperty, AtaChapterNumber, useSimVar } from '@flybywiresim/fbw-sdk';
 import { failureGenConfigAltitude, failureGeneratorAltitude }
     from 'instruments/src/EFB/Failures/FailureGenerators/AltitudeFailureGenerator';
 import { failureGenConfigPerHour, failureGeneratorPerHour }
@@ -11,9 +11,7 @@ import { failureGenConfigTakeOff, failureGeneratorTakeOff }
     from 'instruments/src/EFB/Failures/FailureGenerators/TakeOffFailureGenerator';
 import { failureGenConfigTimer, failureGeneratorTimer } from 'instruments/src/EFB/Failures/FailureGenerators/TimerFailureGenerator';
 import { ModalContextInterface, useModals } from 'instruments/src/EFB/UtilComponents/Modals/Modals';
-import { AtaChapterNumber } from '@shared/ata';
 import { deleteGeneratorFailures, selectAllFailures } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelection';
-import { useSimVar } from '@instruments/common/simVars';
 import { useFailuresOrchestrator } from '../../failures-orchestrator-provider';
 
 export const failureGeneratorCommonFunction = () => {
