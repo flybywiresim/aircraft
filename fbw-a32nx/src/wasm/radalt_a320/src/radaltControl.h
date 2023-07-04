@@ -182,7 +182,6 @@ ProbeStruct distanceAndBearing(const UserStruct& user, int probeIndex, int preSa
 
 	double bearing = atan2(probeY, probeX);  // 2D top-down bearing (degrees)
 
-	//bearing += (probeY < 0) ? PI : ((probeX < 0 && probeY > 0) ? (2 * PI) : 0);
 	bearing += user.heading;
 
 	double distance = sqrt(probeX * probeX + probeY * probeY); // 2D top-down distance (feet)
