@@ -6,7 +6,8 @@ __attribute__((export_name("RadAlt_gauge_callback"))) extern "C" MSFS_CALLBACK b
 	switch (service_id) {
 	case PANEL_SERVICE_PRE_INSTALL: {
 		return true;
-	} break;
+	} 
+	break;
 	case PANEL_SERVICE_POST_INSTALL:
 		return RADALT_GAUGE.initializeRA();
 		break;
