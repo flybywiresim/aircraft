@@ -53,6 +53,7 @@ constexpr double MAX_BEAM_DISTANCE = 8192;
 constexpr double GAIN_FACTOR = POWER_TX * GAIN_TX_RX * WAVELENGTH_SQUARED;
 constexpr double PI_FACTOR = 64.0 * PI_THIRD;
 constexpr double K = GAIN_FACTOR / PI_FACTOR;
+constexpr double FEET_TO_METER = 3.28084;
 const double TAN_H_ANGLE = tan(H_ANGLE * DEG_TO_RAD);
 const double TAN_V_ANGLE = tan(V_ANGLE * DEG_TO_RAD);
 
@@ -139,7 +140,8 @@ ProbeInfo	probeIndexnfo[MAX_AI];
 
 double probeRX(double beamActual) {
 	double alpha = 0.01;
-	beamActual = beamActual / 3.28084;
+	beamActual = beamActual / FEET_TO_METER;
+	// sigmaFactor: the function in parenthesis represents the linear relationship between air conductivity (S/m) and aircraft altitude
 	double sigmaFactor = PI * TAN_H_ANGLE * TAN_V_ANGLE * ((0.0021529922 * beamActual) + 1.9649909) / beamActual;
 	double noiseFactor = std::exp(-2 * beamActual * alpha / 1000);
 	return 10 * std::log10(K * sigmaFactor * noiseFactor * 1000);
@@ -289,8 +291,7 @@ void removeProbes() {
 }
 
 // Calls freeze events on each probe. Called within REQUEST_PROBE_CREATE
-void probeInit(int probeIndex)
-{
+void probeInit(int probeIndex) {
 	HRESULT hr;
 	hr = SimConnect_TransmitClientEvent(hSimConnect,
 		probeIndexnfo[probeIndex].id,
@@ -305,8 +306,9 @@ void probeInit(int probeIndex)
 		SIMCONNECT_GROUP_PRIORITY_HIGHEST,
 		SIMCONNECT_EVENT_FLAG_GROUPID_IS_PRIORITY);
 
-	if (probeIndex == 0)
+	if (probeIndex == 0) {
 		simVars->setProbeZero(probeIndexnfo[0].id);
+	}
 }
 
 // Sets request for probe position while probes are being created. Called within REQUEST_PROBE_CREATE
@@ -355,16 +357,18 @@ void readProbeData(int probeIndex, ProbeStruct probePosition) {
 	if (isNewRxMax(rxActual, rxMax)) {
 		radioAltitude = userPosition.altitude - probePosition.altitude;
 		rxMax = rxActual;
-		if (preSample == 1)
+		if (preSample == 1) {
 			probeBest = probeIndex;
+		}
 		planeAltitude = userPosition.altitude; // Debug
 		probeAltitude = probePosition.altitude; // Debug
 		planeAboveGround = userPosition.altitudeAboveGround; // Debug
 	}
 
 	if (probeIndex == MAX_AI - 1) {
-		if (radioAltitude > MAX_BEAM_DISTANCE || rxMax < NOISE_FLOOR)
+		if (radioAltitude > MAX_BEAM_DISTANCE || rxMax < NOISE_FLOOR) {
 			radioAltitude = 99999;
+		}
 	}
 }
 
@@ -469,15 +473,13 @@ void CALLBACK RadaltDispatchProc(SIMCONNECT_RECV* pData, DWORD cbData, void* pCo
 				double acBusState = simVars->getAcBusState1() + simVars->getAcBusState2();
 				double altitudeAGL = simVars->getPlaneAltitudeAGL();
 
-				if (!radarActive && acBusState > 0 && altitudeAGL < MAX_BEAM_DISTANCE)
-				{
+				if (!radarActive && acBusState > 0 && altitudeAGL < MAX_BEAM_DISTANCE) {
 					if (debug) std::cout << "RADALT: [EVENT_4S_TIMER] Probe START ..." << std::endl;
 					getStartupData();
 				}
 
 				if ((radarActive && acBusState < 1) ||
-					(radarActive && acBusState > 0 && altitudeAGL > MAX_BEAM_DISTANCE))
-				{
+					(radarActive && acBusState > 0 && altitudeAGL > MAX_BEAM_DISTANCE)) {
 					if (debug) std::cout << "RADALT: [EVENT_4S_TIMER] Probe STOP ..." << std::endl;
 					removeProbes();
 				}
@@ -485,16 +487,14 @@ void CALLBACK RadaltDispatchProc(SIMCONNECT_RECV* pData, DWORD cbData, void* pCo
 			break;
 		case EVENT_RADAR_ON:
 			if (debug) std::cout << "RADALT: [EVENT_RADAR_ON]" << std::endl;
-			if (!radarActive)
-			{
+			if (!radarActive) {
 				simVars = new SimVars();
 				getStartupData();
 			}
 			break;
 		case EVENT_RADAR_OFF:
 			if (debug) std::cout << "RADALT: [EVENT_RADAR_OFF]" << std::endl;
-			if (radarActive)
-			{
+			if (radarActive) {
 				removeProbes();
 			}
 			break;
@@ -529,10 +529,11 @@ void CALLBACK RadaltDispatchProc(SIMCONNECT_RECV* pData, DWORD cbData, void* pCo
 
 			if (probeIndex == MAX_AI - 1) {
 				if (preSample == 0) {
-					if (simVars->getAcBusState1() == 1 || simVars->getAcBusState2() == 1)
+					if (simVars->getAcBusState1() == 1 || simVars->getAcBusState2() == 1) {
 						simVars->setRadioAltitude(radioAltitude);
-					else
+					} else {
 						simVars->setRadioAltitude(99999);
+					}
 					
 					if (debug) {
 						std::cout << "RADALT: Probe# (" << probeBest <<
