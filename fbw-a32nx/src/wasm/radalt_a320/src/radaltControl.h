@@ -207,8 +207,7 @@ ProbeStruct distanceAndBearing(const UserStruct& user, int probeIndex, int preSa
 }
 
 // Creates initial probe mesh when RA is turned on. Called by REQUEST_USER_DATA
-void createProbeMesh(int probeIndex)
-{
+void createProbeMesh(int probeIndex) {
 	SIMCONNECT_DATA_INITPOSITION initPosition;
 	HRESULT hr;
 
