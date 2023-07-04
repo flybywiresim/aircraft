@@ -459,8 +459,7 @@ static const char* ExceptionName(SIMCONNECT_EXCEPTION exception) {
 		return "UNKNOWN EXCEPTION";
 	}
 }
-void CALLBACK RadaltDispatchProc(SIMCONNECT_RECV* pData, DWORD cbData, void* pContext)
-{
+void CALLBACK RadaltDispatchProc(SIMCONNECT_RECV* pData, DWORD cbData, void* pContext) {
 	switch (pData->dwID)
 	{
 	case SIMCONNECT_RECV_ID_EVENT:
