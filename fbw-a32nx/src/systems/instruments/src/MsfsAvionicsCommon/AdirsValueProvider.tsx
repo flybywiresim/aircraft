@@ -19,6 +19,8 @@ export class AdirsValueProvider<T extends AdirsSimVars> {
 
         sub.on('attHdgKnob').whenChanged().handle((knobPosition) => {
             const inertialSource = getSupplier(this.displaySide, knobPosition);
+            this.varProvider.updateSimVarSource('latitude', { name: `L:A32NX_ADIRS_IR_${inertialSource}_LATITUDE`, type: SimVarValueType.Number });
+            this.varProvider.updateSimVarSource('longitude', { name: `L:A32NX_ADIRS_IR_${inertialSource}_LONGITUDE`, type: SimVarValueType.Number });
             this.varProvider.updateSimVarSource('vsInert', { name: `L:A32NX_ADIRS_IR_${inertialSource}_VERTICAL_SPEED`, type: SimVarValueType.Number });
             this.varProvider.updateSimVarSource('pitch', { name: `L:A32NX_ADIRS_IR_${inertialSource}_PITCH`, type: SimVarValueType.Number });
             this.varProvider.updateSimVarSource('roll', { name: `L:A32NX_ADIRS_IR_${inertialSource}_ROLL`, type: SimVarValueType.Number });
