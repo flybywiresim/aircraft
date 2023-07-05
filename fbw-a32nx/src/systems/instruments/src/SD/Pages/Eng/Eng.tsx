@@ -366,9 +366,7 @@ const EngineColumn = ({ x, y, engineNumber, fadecOn }: ComponentPositionProps) =
             </g>
             <g visibility={inactiveVisibility}>
                 <text x={x} y={y + 220} className="FontLarge TextCenter FillAmber">XX</text>
-
                 <text x={x} y={y + 270} className="FontLarge FillAmber TextCenter">XX</text>
-
                 <text x={x} y={y + 300} className="FontLarge FillAmber TextCenter">XX</text>
             </g>
 
