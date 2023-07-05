@@ -10,11 +10,7 @@ export class Footer extends DisplayComponent<MfdComponentProps> {
     render(): VNode {
         return (
             <div style="display: flex; border-top: 2px solid $display-mfd-dark-grey; padding: 5px;">
-                <Button onClick={() => console.log('MSG LIST')}>
-                    MSG
-                    <br />
-                    LIST
-                </Button>
+                <Button label="MSG<br />LIST" onClick={() => console.log('MSG LIST')} />
             </div>
         );
     }

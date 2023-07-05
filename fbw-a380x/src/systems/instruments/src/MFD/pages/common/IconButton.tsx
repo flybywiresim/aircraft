@@ -18,7 +18,7 @@ export class IconButton extends DisplayComponent<IconButtonProps> {
     private fillColor = Subject.create('white');
 
     clickHandler(): void {
-        if (this.props.disabled.get() === false && this.props.onClick) {
+        if (this.props?.disabled?.get() === false && this.props.onClick !== undefined) {
             this.props.onClick();
         }
     }
@@ -44,7 +44,7 @@ export class IconButton extends DisplayComponent<IconButtonProps> {
             }
         }, true));
 
-        this.spanRef.instance.addEventListener('click', this.clickHandler);
+        this.spanRef.instance.addEventListener('click', () => this.clickHandler());
     }
 
     public destroy(): void {

@@ -1,18 +1,20 @@
 import { ComponentProps, DisplayComponent, FSComponent, Subject, Subscribable, Subscription, VNode } from '@microsoft/msfs-sdk';
 import './style.scss';
 
-type ButtonMenuItem = {
+export type ButtonMenuItem = {
     label: string;
     action(): void;
 };
 
-interface ButtonProps extends ComponentProps {
-    menuItems?: ButtonMenuItem[]; // When defining menu items, idPrefix has to be set
+export interface ButtonProps extends ComponentProps {
+    label: string | Subject<VNode>;
+    menuItems?: Subscribable<ButtonMenuItem[]>; // When defining menu items, idPrefix has to be set
     idPrefix?: string;
-    disabled?: Subscribable<boolean>;
+    disabled?: Subject<boolean>;
     buttonStyle?: string;
     onClick: () => void;
 }
+
 export class Button extends DisplayComponent<ButtonProps> {
     // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
     private subs = [] as Subscription[];
@@ -24,6 +26,10 @@ export class Button extends DisplayComponent<ButtonProps> {
     private dropdownMenuRef = FSComponent.createRef<HTMLDivElement>();
 
     private dropdownIsOpened = Subject.create(false);
+
+    private renderedLabel: VNode;
+
+    private renderedMenuItems: ButtonMenuItem[];
 
     clickHandler(): void {
         if (this.props.disabled.get() === false) {
@@ -37,8 +43,11 @@ export class Button extends DisplayComponent<ButtonProps> {
         if (!this.props.disabled) {
             this.props.disabled = Subject.create(false);
         }
+        if (typeof this.props.label === 'string') {
+            this.props.label = Subject.create(<span>{this.props.label}</span>);
+        }
         if (!this.props.menuItems) {
-            this.props.menuItems = [] as ButtonMenuItem[];
+            this.props.menuItems = Subject.create<ButtonMenuItem[]>([]);
         } else if (!this.props.idPrefix) {
             console.error('Button: menuItems set without idPrefix.');
         }
@@ -57,12 +66,53 @@ export class Button extends DisplayComponent<ButtonProps> {
         }, true));
 
         // Menu handling
-        this.props.menuItems.forEach((val, i) => {
-            document.getElementById(`${this.props.idPrefix}_${i}`).addEventListener('click', () => {
-                val.action();
-                this.dropdownIsOpened.set(false);
+        this.subs.push(this.props.menuItems.sub((items) => {
+            // Delete click handler, delete dropdownMenuRef children, render dropdownMenuRef children,
+            this.renderedMenuItems?.forEach((val, i) => {
+                document.getElementById(`${this.props.idPrefix}_${i}`).removeEventListener('click', () => {
+                    val.action();
+                    this.dropdownIsOpened.set(false);
+                });
             });
-        });
+
+            // Delete dropdownMenuRef's children
+            while (this.dropdownMenuRef.instance.firstChild) {
+                this.dropdownMenuRef.instance.removeChild(this.dropdownMenuRef.instance.firstChild);
+            }
+
+            this.renderedMenuItems = items;
+
+            // Render dropdownMenuRef's children
+            const itemNodes: VNode = (
+                <div>
+                    {items?.map<VNode>((el, idx) => (
+                        <span
+                            id={`${this.props.idPrefix}_${idx}`}
+                            class="MFDDropdownMenuElement"
+                            style={'text-align: \'left\'; padding: 5px 16px;'}
+                        >
+                            {el.label}
+                        </span>
+                    ), this)}
+                </div>
+            );
+            FSComponent.render(itemNodes, this.dropdownMenuRef.instance);
+
+            // Add click event listener
+            items?.forEach((val, i) => {
+                document.getElementById(`${this.props.idPrefix}_${i}`).addEventListener('click', () => {
+                    val.action();
+                    this.dropdownIsOpened.set(false);
+                });
+            });
+        }, true));
+
+        this.subs.push(this.props.label?.sub((val) => {
+            while (this.buttonRef.instance.firstChild) {
+                this.buttonRef.instance.removeChild(this.buttonRef.instance.firstChild);
+            }
+            FSComponent.render(val, this.buttonRef.instance);
+        }, true));
 
         // Close dropdown menu if clicked outside
         document.getElementById('MFD_CONTENT').addEventListener('click', (e) => {
@@ -72,7 +122,7 @@ export class Button extends DisplayComponent<ButtonProps> {
         });
 
         this.buttonRef.instance.addEventListener('click', () => {
-            if (this.props.menuItems.length > 0) {
+            if (this.props.menuItems.get().length > 0) {
                 this.dropdownIsOpened.set(!this.dropdownIsOpened.get());
             }
         });
@@ -97,20 +147,8 @@ export class Button extends DisplayComponent<ButtonProps> {
                     ref={this.buttonRef}
                     class="MFDButton"
                     style={`align-items: center; ${this.props.buttonStyle}`}
-                >
-                    {this.props.children}
-                </span>
-                <div ref={this.dropdownMenuRef} class="MFDDropdownMenu" style={`display: ${this.dropdownIsOpened.get() ? 'block' : 'none'}`}>
-                    {this.props.menuItems && this.props.menuItems.map((el, idx) => (
-                        <span
-                            id={`${this.props.idPrefix}_${idx}`}
-                            class="MFDDropdownMenuElement"
-                            style={'text-align: \'left\'; padding: 5px 16px;'}
-                        >
-                            {el.label}
-                        </span>
-                    ), this)}
-                </div>
+                />
+                <div ref={this.dropdownMenuRef} class="MFDDropdownMenu" style={`display: ${this.dropdownIsOpened.get() ? 'block' : 'none'}`} />
             </div>
         );
     }

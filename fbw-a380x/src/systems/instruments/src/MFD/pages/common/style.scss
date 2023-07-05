@@ -102,7 +102,7 @@ $display-mfd-dark-grey: #3c3c3c;
 }
 
 .MFDIconButton:hover {
-  border: 2px outset cyan;
+  border: 2px outset $display-cyan;
 }
 
 .MFDDropdownContainer {
@@ -338,22 +338,22 @@ $display-mfd-dark-grey: #3c3c3c;
 
 
 .MFDRadioButton input[type="radio"]:checked {
-  background: cyan;
+  background: $display-cyan;
   box-shadow: inset 0 0 0px 4px black;
 }
 
 
 .MFDRadioButton input[type="radio"]:checked {
-  background: cyan;
+  background: $display-cyan;
   box-shadow: inset 0 0 0px 4px black;
 }
 
 .MFDRadioButton input[type="radio"]:checked ~ * {
-  color: cyan;
+  color: $display-cyan;
 }
 
 .MFDRadioButton:hover {
-  border: 2px outset cyan;
+  border: 2px outset $display-cyan;
 }
 
 .MFDContextMenu {
@@ -484,6 +484,78 @@ $display-mfd-dark-grey: #3c3c3c;
   height: 72px;
   display: flex;
   flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.MFDFplnLineAnnotation {
+  height: 32px;
+  text-align: right;
+  font-size: 22px;
+  color: $display-white;
+}
+
+.MFDFplnLineIdent {
+  height: 40px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  font-size: 30px;
+  color: $display-green;
+  border: 2px solid transparent;
+}
+
+.MFDFplnLineIdent:hover {
+  border: 2px solid $display-cyan;
+}
+
+.MFDFplnSmallLabel {
+  height: 72px;
+  display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
+  font-size: 22px;
+  color: $display-green;
+}
+
+.MFDFplnClickableSmallLabel {
+  height: 72px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-size: 22px;
+  color: $display-green;
+  border: 2px solid transparent;
+}
+
+.MFDFplnClickableSmallLabel:hover {
+  border: 2px solid $display-cyan;
+}
+
+.MFDFplnLegUpperRow {
+  height: 32px;
+}
+
+.MFDFplnLegLowerRow {
+  height: 40px;
+}
+
+.MFDFplnActiveLeg {
+  color: $display-white;
+}
+
+.MFDFplnConstraintRespected {
+  width: 20px;
+  text-align: center;
+  font-size: 30px;
+  color: $display-magenta;
+}
+
+.MFDFplnConstraintMissed {
+  width: 20px;
+  text-align: center;
+  font-size: 30px;
+  color: $display-amber;
 }

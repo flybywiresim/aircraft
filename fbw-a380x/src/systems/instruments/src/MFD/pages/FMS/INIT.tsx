@@ -127,20 +127,17 @@ export class MfdFmsInit extends DisplayComponent<MfdFmsInitProps> {
                             containerStyle="width: 200px; margin-right: 5px;"
                             alignText="center"
                         />
-                        <Button onClick={() => this.props.navigateTo('fms/data/status')} buttonStyle="margin-right: 10px; width: 200px;">ACFT STATUS</Button>
+                        <Button label="ACFT STATUS" onClick={() => this.props.navigateTo('fms/data/status')} buttonStyle="margin-right: 10px; width: 200px;" />
                         <div style="flex-grow: 1" />
                         <Button
+                            label="RECEIVED<br />CPNY F-PLN"
                             onClick={() => console.log('CPNY F-PLN REQUEST')}
                             buttonStyle="width: 175px;"
                             idPrefix="fplnreq"
-                            menuItems={[
+                            menuItems={Subject.create([
                                 { label: 'INSERT*', action: () => console.log('INSERT') },
-                                { label: 'CLEAR*', action: () => console.log('CLEAR') }]}
-                        >
-                            RECEIVED
-                            <br />
-                            CPNY F-PLN
-                        </Button>
+                                { label: 'CLEAR*', action: () => console.log('CLEAR') }])}
+                        />
                     </div>
                     <div style="display: flex; flex-direction: row; align-items: center; margin-top: 10px; margin-bottom: 10px;">
                         <div class="MFDLabel" style="width: 150px; text-align: right; padding-right: 5px;">FROM</div>
@@ -178,7 +175,7 @@ export class MfdFmsInit extends DisplayComponent<MfdFmsInitProps> {
                             containerStyle="width: 200px; margin-right: 5px;"
                             alignText="center"
                         />
-                        <Button onClick={() => console.log('RTE SEL')} buttonStyle="margin-right: 10px; width: 200px;">RTE SEL</Button>
+                        <Button label="RTE SEL" onClick={() => console.log('RTE SEL')} buttonStyle="margin-right: 10px; width: 200px;" />
                     </div>
                     <div style="display: flex; flex-direction: row; align-items: center; margin-top: 5px; border-bottom: 1px solid lightgrey; margin-bottom: 25px; padding-bottom: 25px;">
                         <div class="MFDLabel" style="width: 150px; text-align: right; padding-right: 5px;">ALTN RTE</div>
@@ -191,7 +188,7 @@ export class MfdFmsInit extends DisplayComponent<MfdFmsInitProps> {
                             containerStyle="width: 200px; margin-right: 5px;"
                             alignText="center"
                         />
-                        <Button disabled={this.altnDisabled} onClick={() => console.log('ALTN RTE SEL')} buttonStyle="margin-right: 10px; width: 200px;">ALTN RTE SEL</Button>
+                        <Button label="ALTN RTE SEL" disabled={this.altnDisabled} onClick={() => console.log('ALTN RTE SEL')} buttonStyle="margin-right: 10px; width: 200px;" />
                     </div>
                     <div style="display: flex; flex-direction: row; align-items: center; margin-top: 5px;">
                         <div class="MFDLabel" style="width: 150px; text-align: right; padding-right: 5px;">CRZ FL</div>
@@ -242,45 +239,34 @@ export class MfdFmsInit extends DisplayComponent<MfdFmsInitProps> {
                             containerStyle="width: 125px; margin-right: 80px; margin-top: 90px;"
                             alignText="center"
                         />
-                        <Button onClick={() => console.log('WIND')} buttonStyle="margin-right: 10px; margin-top: 90px;">WIND</Button>
+                        <Button label="WIND" onClick={() => console.log('WIND')} buttonStyle="margin-right: 10px; margin-top: 90px;" />
                         <div style="flex-grow: 1" />
-                        <Button onClick={() => console.log('CPNY WIND REQUEST')} buttonStyle="margin-right: 10px; justify-self: flex-end; width: 175px;">
-                            CPNY WIND
-                            <br />
-                            REQUEST
-                        </Button>
+                        <Button label="CPNY WIND<br />REQUEST" onClick={() => console.log('CPNY WIND REQUEST')} buttonStyle="margin-right: 10px; justify-self: flex-end; width: 175px;" />
                     </div>
-                    <Button onClick={() => this.props.navigateTo('fms/position/irs')} buttonStyle="width: 160px; margin-left: 150px; margin-bottom: 10px;">IRS</Button>
+                    <Button label="IRS" onClick={() => this.props.navigateTo('fms/position/irs')} buttonStyle="width: 160px; margin-left: 150px; margin-bottom: 10px;" />
                     <div style={`display: ${this.props.activeUri.get().category === 'active' ? 'flex' : 'none'}; flex-direction: row;`}>
                         <Button
+                            label="DEPARTURE"
                             disabled={this.departureButtonDisabled}
                             onClick={() => this.props.navigateTo(`fms/${this.props.activeUri.get().category}/f-pln/departure`)}
                             buttonStyle="width: 160px; margin-left: 150px; margin-bottom: 10px;"
-                        >
-                            DEPARTURE
-                        </Button>
-                        <Button onClick={() => this.props.navigateTo('fms/data/route')} buttonStyle="margin-left: 50px; margin-bottom: 10px;">RTE SUMMARY</Button>
+                        />
+                        <Button label="RTE SUMMARY" onClick={() => this.props.navigateTo('fms/data/route')} buttonStyle="margin-left: 50px; margin-bottom: 10px;" />
                     </div>
-                    <Button onClick={() => this.props.navigateTo('fms/position/navaids')} buttonStyle="width: 160px; margin-left: 150px; margin-bottom: 10px;">NAVAIDS</Button>
+                    <Button label="NAVAIDS" onClick={() => this.props.navigateTo('fms/position/navaids')} buttonStyle="width: 160px; margin-left: 150px; margin-bottom: 10px;" />
                     <Button
+                        label="FUEL&LOAD"
                         onClick={() => this.props.navigateTo(`fms/${this.props.activeUri.get().category}/fuel-load`)}
                         buttonStyle="width: 160px; margin-left: 150px; margin-bottom: 10px;"
-                    >
-                        FUEL&LOAD
-                    </Button>
+                    />
                     <div style="display: flex; flex-direction: row;">
                         <Button
+                            label="T.O. PERF"
                             onClick={() => this.props.navigateTo(`fms/${this.props.activeUri.get().category}/perf/to`)}
                             buttonStyle="width: 160px; margin-left: 150px; margin-bottom: 10px; height: 40px;"
-                        >
-                            T.O. PERF
-                        </Button>
+                        />
                         <div style="flex-grow: 1" />
-                        <Button onClick={() => console.log('CPNY T.O. REQUEST')} buttonStyle="margin-right: 10px; justify-self: flex-end; width: 175px;">
-                            CPNY T.O.
-                            <br />
-                            REQUEST
-                        </Button>
+                        <Button label="CPNY T.O.<br />REQUEST" onClick={() => console.log('CPNY T.O. REQUEST')} buttonStyle="margin-right: 10px; justify-self: flex-end; width: 175px;" />
                     </div>
 
                     {/* end page content */}

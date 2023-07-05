@@ -138,16 +138,20 @@ export class MfdFmsFuelLoad extends DisplayComponent<MfdFmsFuelLoadProps> {
                             containerStyle="width: 150px;"
                         />
                         <div style="display: flex; flex: 1; justify-content: center;">
-                            <Button onClick={() => console.log('FUEL PLANNING')} buttonStyle="padding-right: 2px;">
-                                <div style="display: flex; flex-direction: row;">
-                                    <span style="text-align: center; vertical-align: center; margin-right: 10px;">
-                                        FUEL
-                                        <br />
-                                        PLANNING
-                                    </span>
-                                    <span style="display: flex; align-items: center; justify-content: center;">*</span>
-                                </div>
-                            </Button>
+                            <Button
+                                label={Subject.create(
+                                    <div style="display: flex; flex-direction: row;">
+                                        <span style="text-align: center; vertical-align: center; margin-right: 10px;">
+                                            FUEL
+                                            <br />
+                                            PLANNING
+                                        </span>
+                                        <span style="display: flex; align-items: center; justify-content: center;">*</span>
+                                    </div>,
+                                )}
+                                onClick={() => console.log('FUEL PLANNING')}
+                                buttonStyle="padding-right: 2px;"
+                            />
                         </div>
                     </div>
                     <div style="display: grid; grid-template-columns: 125px 155px 145px 150px auto; margin-top: 15px;
@@ -339,9 +343,7 @@ export class MfdFmsFuelLoad extends DisplayComponent<MfdFmsFuelLoadProps> {
                     <div style="flex-grow: 1;" />
                     {/* fill space vertically */}
                     <div style="width: 150px;">
-                        <Button onClick={() => this.props.navigateTo('back')} buttonStyle="margin-right: 5px;">
-                            RETURN
-                        </Button>
+                        <Button label="RETURN" onClick={() => this.props.navigateTo('back')} buttonStyle="margin-right: 5px;" />
                     </div>
 
                     {/* end page content */}

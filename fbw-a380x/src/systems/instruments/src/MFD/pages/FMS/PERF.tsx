@@ -522,11 +522,7 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                 </div>
                                 <div style="grid-row-start: span 2;">
                                     <div ref={this.toNoiseFieldsRefs[2]} style=" display: flex; justify-content: center; align-items: center;">
-                                        <Button onClick={() => this.showNoiseFields(false)}>
-                                            CANCEL
-                                            <br />
-                                            NOISE
-                                        </Button>
+                                        <Button label="CANCEL<br />NOISE" onClick={() => this.showNoiseFields(false)} />
                                     </div>
                                 </div>
                                 <div style="display: flex; justify-content: flex-end; align-items: center; margin-right: 15px; margin-bottom: 15px; width: 125px;">
@@ -566,7 +562,7 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                 </div>
                                 <div>
                                     <div ref={this.toNoiseButtonRef} style="display: flex;">
-                                        <Button onClick={() => this.showNoiseFields(true)}>
+                                        <Button label="NOISE" onClick={() => this.showNoiseFields(true)}>
                                             NOISE
                                         </Button>
                                     </div>
@@ -607,11 +603,7 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                     />
                                 </div>
                                 <div>
-                                    <Button onClick={() => console.log('CPNY T.O REQUEST')} buttonStyle="padding-left: 30px; padding-right: 30px">
-                                        CPNY T.O
-                                        <br />
-                                        REQUEST
-                                    </Button>
+                                    <Button label="CPNY T.O<br />REQUEST" onClick={() => console.log('CPNY T.O REQUEST')} buttonStyle="padding-left: 30px; padding-right: 30px" />
                                 </div>
                             </div>
                         </TopTabNavigatorPage>
@@ -736,11 +728,7 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                 </div>
                                 <div style="grid-row-start: span 2; display: flex; justify-content: center; align-items: center;">
                                     <div ref={this.clbNoiseFieldsRefs[2]} style=" display: flex; justify-content: center; align-items: center;">
-                                        <Button onClick={() => this.showNoiseFields(false)}>
-                                            CANCEL
-                                            <br />
-                                            NOISE
-                                        </Button>
+                                        <Button label="CANCEL<br />NOISE" onClick={() => this.showNoiseFields(false)} />
                                     </div>
                                 </div>
                                 <div style="display: flex; justify-content: flex-end; align-items: center; margin-right: 15px; margin-bottom: 15px; width: 125px;">
@@ -806,9 +794,7 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                             {/* fill space vertically */}
                             <div style="margin: 5px 2px 3px 2px; display: flex; flex-direction: row; justify-content: flex-end; align-items: center;">
                                 <div ref={this.clbNoiseButtonRef} style="display: flex;">
-                                    <Button onClick={() => this.showNoiseFields(true)}>
-                                        NOISE
-                                    </Button>
+                                    <Button label="NOISE" onClick={() => this.showNoiseFields(true)} />
                                 </div>
                                 <div class="MFDLabelValueContainer" style="margin-left: 50px;">
                                     <span class="MFDLabel spacingRight">TRANS</span>
@@ -821,7 +807,7 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                     />
                                 </div>
                                 <div>
-                                    <Button onClick={() => this.props.navigateTo('fms/active/f-pln/vert-rev')}>
+                                    <Button label="SPD CSTR" onClick={() => this.props.navigateTo('fms/active/f-pln/vert-rev')}>
                                         SPD CSTR
                                     </Button>
                                 </div>
@@ -951,12 +937,8 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                     <span class="MFDUnitLabel trailingUnit">T</span>
                                 </div>
                                 <div style="display: flex; flex-direction: row;">
-                                    <Button onClick={() => console.log('CMS')} buttonStyle="margin-right: 10px;">
-                                        CMS
-                                    </Button>
-                                    <Button onClick={() => this.props.navigateTo('fms/active/f-pln/vert-rev')}>
-                                        STEP ALTs
-                                    </Button>
+                                    <Button label="CMS" onClick={() => console.log('CMS')} buttonStyle="margin-right: 10px;" />
+                                    <Button label="STEP ALTs" onClick={() => this.props.navigateTo('fms/active/f-pln/vert-rev')} />
                                 </div>
                             </div>
                         </TopTabNavigatorPage>
@@ -1046,9 +1028,7 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                     <span class="MFDUnitLabel trailingUnit">T</span>
                                 </div>
                                 <div style="display: flex; flex-direction: row;">
-                                    <Button onClick={() => this.props.navigateTo('fms/active/f-pln/vert-rev')}>
-                                        SPD CSTR
-                                    </Button>
+                                    <Button label="SPD CSTR" onClick={() => this.props.navigateTo('fms/active/f-pln/vert-rev')} />
                                 </div>
                             </div>
                         </TopTabNavigatorPage>
@@ -1297,26 +1277,26 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                     </TopTabNavigator>
                     <div style="margin: 0px 2px 3px 2px; display: flex; flex-direction: row; justify-content: flex-start; align-items: flex-end;">
                         <div>
-                            <Button onClick={() => console.log('RETURN')} buttonStyle="margin-right: 5px;">
-                                RETURN
-                            </Button>
+                            <Button label="RETURN" onClick={() => this.props.navigateTo('back')} buttonStyle="margin-right: 5px;" />
                         </div>
                         <div ref={this.activateApprButton} style="margin-right: 5px;">
-                            <Button onClick={() => console.log('ACTIVATE APPR')} buttonStyle="color: #e68000; padding-right: 2px;">
-                                <div style="display: flex; flex-direction: row;">
-                                    <span style="text-align: center; vertical-align: center; margin-right: 10px;">
-                                        ACTIVATE
-                                        <br />
-                                        APPR
-                                    </span>
-                                    <span style="display: flex; align-items: center; justify-content: center;">*</span>
-                                </div>
-                            </Button>
+                            <Button
+                                label={Subject.create(
+                                    <div style="display: flex; flex-direction: row;">
+                                        <span style="text-align: center; vertical-align: center; margin-right: 10px;">
+                                            ACTIVATE
+                                            <br />
+                                            APPR
+                                        </span>
+                                        <span style="display: flex; align-items: center; justify-content: center;">*</span>
+                                    </div>,
+                                )}
+                                onClick={() => console.log('ACTIVATE APPR')}
+                                buttonStyle="color: #e68000; padding-right: 2px;"
+                            />
                         </div>
                         <div>
-                            <Button onClick={() => console.log('POS MONITOR')}>
-                                POS MONITOR
-                            </Button>
+                            <Button label="POS MONITOR" onClick={() => console.log('POS MONITOR')} />
                         </div>
                         <div style="flex: 1" />
                     </div>

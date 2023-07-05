@@ -35,8 +35,8 @@ export class ConfirmationDialog extends DisplayComponent<ConfirmationDialogProps
                         <span class="MFDLabel">{this.props.children}</span>
                     </div>
                     <div style="display: flex; flex-direction: row; justify-content: space-between">
-                        <Button onClick={() => this.props.cancelAction()}>CANCEL</Button>
-                        <Button onClick={() => this.props.confirmAction()} buttonStyle="padding-right: 6px;">CONFIRM *</Button>
+                        <Button label="CANCEL" onClick={() => this.props.cancelAction()} />
+                        <Button label="CONFIRM *" onClick={() => this.props.confirmAction()} buttonStyle="padding-right: 6px;" />
                     </div>
                 </div>
             </div>
