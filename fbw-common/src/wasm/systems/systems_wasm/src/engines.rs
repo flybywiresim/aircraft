@@ -22,12 +22,12 @@ pub fn engines(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
                 let starter_pressure_psi = values[0];
                 let is_sim_bleed_air_active = to_bool(values[1]);
 
-                if starter_pressure_psi > 35. && !is_sim_bleed_air_active {
-                    // 35 psia is about 20.3 psig at sealevel
+                // These values are very arbitrary. Whether crossbleed starts work or not is binary for now,
+                // until we have a custom engine model
+                if starter_pressure_psi > 30. && !is_sim_bleed_air_active {
                     toggle_sim_engine_bleed_air(engine_number);
                     println!("Opening bleed starter valve")
-                } else if starter_pressure_psi < 25. && is_sim_bleed_air_active {
-                    // 25 psia is about 10.3 psig at sealevel
+                } else if starter_pressure_psi < 20. && is_sim_bleed_air_active {
                     toggle_sim_engine_bleed_air(engine_number);
                     println!("Closing bleed starter valve")
                 }
