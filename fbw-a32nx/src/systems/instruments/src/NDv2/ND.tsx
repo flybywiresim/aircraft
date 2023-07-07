@@ -796,7 +796,7 @@ class ToWaypointIndicator extends DisplayComponent<ToWaypointIndicatorProps> {
                 <text x={-13} y={0} class="White FontIntermediate EndAlign">{this.toWptIdentValue}</text>
 
                 <g visibility={this.bearingContainerVisible.map(this.visibilityFn)}>
-                    <text x={54} y={0} class="Green FontIntermediate EndAlign">{this.bearingText}</text>
+                    <text x={57} y={0} class="Green FontIntermediate EndAlign">{this.bearingText}</text>
                     <text x={73} y={2} class="Cyan FontIntermediate EndAlign" visibility={this.trueRefActive.map(this.inverseVisibilityFn)}>&deg;</text>
                     <text x={71} y={-3} class="Cyan FontIntermediate EndAlign" visibility={this.trueRefActive.map(this.visibilityFn)}>T</text>
                 </g>
