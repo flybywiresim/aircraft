@@ -2,6 +2,8 @@ import { Publisher } from '@microsoft/msfs-sdk';
 
 import { ArincEventBus } from 'instruments/src/MsfsAvionicsCommon/ArincEventBus';
 
+export type SimplaneBaroMode = 'QNH' | 'QFE' | 'STD';
+
 export interface SimplaneValues {
     units: string;
     pressure: number;
@@ -10,7 +12,7 @@ export interface SimplaneValues {
     airSpeedHoldValue: number;
     isSelectedSpeed: boolean;
     selectedAltitude: number;
-    baroMode: 'QNH' | 'QFE' | 'STD';
+    baroMode: SimplaneBaroMode;
 
 }
 export class SimplaneValueProvider {
