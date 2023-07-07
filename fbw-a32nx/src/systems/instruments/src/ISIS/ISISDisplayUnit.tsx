@@ -66,21 +66,21 @@ export const ISISDisplayUnit: React.FC<ISISDisplayUnitProps> = ({ indicatedAirsp
             <>
                 <svg id="SelfTest" style={{ backgroundColor: 'black' }} className="SelfTest" version="1.1" viewBox="0 0 512 512">
                     <g id="AttFlag">
-                        <rect id="AttTest" className="FillYellow" width="84" height="40" x="214" y="174" />
-                        <text id="AltTestTxt" className="TextBackground" textAnchor="middle" x="256" y="206">ATT</text>
+                        <rect id="AttTest" className="FillYellow" width="110" height="40" x="190" y="174" />
+                        <text id="AltTestTxt" className="TextBackground" textAnchor="middle" x="245" y="206">ATT</text>
                     </g>
                     <g id="SpeedFlag">
-                        <rect id="SpeedTest" className="FillYellow" width="84" height="40" x="70" y="244" />
-                        <text id="SpeedTestTxt" className="TextBackground" textAnchor="middle" x="112" y="276">SPD</text>
+                        <rect id="SpeedTest" className="FillYellow" width="84" height="40" x="40" y="244" />
+                        <text id="SpeedTestTxt" className="TextBackground" textAnchor="middle" x="82" y="277">SPD</text>
                     </g>
                     <g id="AltFlag">
-                        <rect id="AltTest" className="FillYellow" width="84" height="40" x="358" y="244" />
-                        <text id="AltTestTxt" className="TextBackground" textAnchor="middle" x="400" y="276">ALT</text>
+                        <rect id="AltTest" className="FillYellow" width="110" height="40" x="358" y="244" />
+                        <text id="AltTestTxt" className="TextBackground" textAnchor="middle" x="415" y="277">ALT</text>
                     </g>
                     <g id="TimerFlag">
-                        <rect id="TmrTest" className="FillYellow" width="160" height="40" x="178" y="332" />
-                        <text id="TmrTestTxt" className="TextBackground" x="186" y="366">INIT</text>
-                        <text id="TmrTestCountdown" className="TextBackground" textAnchor="end" x="330" y="366">
+                        <rect id="TmrTest" className="FillYellow" width="180" height="40" x="150" y="332" />
+                        <text id="TmrTestTxt" className="TextBackground FontMedium" x="160" y="365">INIT</text>
+                        <text id="TmrTestCountdown" className="TextBackground FontMedium" textAnchor="end" x="325" y="365">
                             {Math.max(0, Math.ceil(timer!))}
                             s
                         </text>

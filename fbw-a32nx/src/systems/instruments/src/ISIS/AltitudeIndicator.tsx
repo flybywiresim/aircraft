@@ -25,14 +25,14 @@ const BugElement = React.memo<BugProps>(({ bug, offset }) => {
     if (bug.value % 500 === 0) {
         return (
             <g className="StrokeCyan NoFill" transform={`translate(0 ${offset})`}>
-                <path d="M3,152 v-10 h65 v30 h-65 v-6" />
+                <path d="M3,152 v-10 h65 v32 h-65 v-6" />
             </g>
         );
     }
 
     return (
         <g className="StrokeCyan" transform={`translate(0 ${offset})`}>
-            <path strokeWidth={7} d="M0,158 h30" />
+            <path strokeWidth={5} d="M0,158 h25" />
         </g>
     );
 });
@@ -44,7 +44,7 @@ type AltitudeIndicatorProps = {
 }
 
 export const AltitudeIndicator: React.FC<AltitudeIndicatorProps> = ({ altitude, mda, bugs }) => {
-    const [metricAltitude] = usePersistentNumberProperty('ISIS_METRIC_ALTITUDE', 0);
+    const [metricAltitude] = usePersistentNumberProperty('ISIS_METRIC_ALTITUDE', 1);
 
     return (
         <g id="AltitudeIndicator">
@@ -72,13 +72,16 @@ type MetricAltitudeIndicatorProps = {
 }
 
 export const MetricAltitudeIndicator: React.FC<MetricAltitudeIndicatorProps> = ({ altitude }) => {
-    const metricAltitude = Math.round(altitude * 0.3048 / 10) * 10;
-
+    const metricAltitude = Math.abs(Math.round(altitude * 0.3048 / 10) * 10);
+    const isNegative = altitude < 0;
     return (
-        <g id="MetricAltitudeIndicator" fontSize={32}>
-            <rect className="StrokeYellow NoFill" x={276} y={40} width={164} height={40} />
-            <text className="TextGreen" x={392} y={72} textAnchor="end">{metricAltitude}</text>
-            <text className="TextCyan" x={400} y={72}>M</text>
+        <g id="MetricAltitudeIndicator" fontSize={30}>
+            {isNegative && (
+                <text className="TextWhite" x={238} y={89}>NEG</text>
+            )}
+            <rect className="StrokeYellow NoFill" x={235} y={60} width={159} height={32} />
+            <text className="TextGreen" x={359} y={89} textAnchor="end">{metricAltitude}</text>
+            <text className="TextCyan" x={370} y={89}>M</text>
         </g>
     );
 };

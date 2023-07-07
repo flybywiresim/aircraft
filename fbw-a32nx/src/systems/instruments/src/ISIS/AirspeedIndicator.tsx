@@ -30,7 +30,7 @@ type BugProps = { offset: number }
 
 const BugElement = React.memo<BugProps>(({ offset }) => (
     <g className="StrokeCyan" transform={`translate(0 ${offset})`}>
-        <path strokeWidth={7} d="M78,158 h30" />
+        <path strokeWidth={5} d="M83,158 h25" />
     </g>
 ));
 
