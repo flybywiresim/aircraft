@@ -6,7 +6,7 @@ import { Waypoint } from '@datalink/common';
 import { FlightPhaseManager } from '@fmgc/flightphase';
 import { WaypointStats } from '@fmgc/flightplanning/data/flightplan';
 import { FlightPlanManager, ManagedFlightPlan } from '@fmgc/wtsdk';
-import { Arinc429Word } from '@shared/arinc429';
+import { Arinc429Word } from '@flybywiresim/fbw-sdk';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { EventBus, Publisher } from '@microsoft/msfs-sdk';
 

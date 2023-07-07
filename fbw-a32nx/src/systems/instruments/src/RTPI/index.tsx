@@ -1,8 +1,11 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import './style.scss';
 import React from 'react';
-import { useArinc429Var } from '@instruments/common/arinc429';
+import { useArinc429Var, useSimVar } from '@flybywiresim/fbw-sdk';
 import { render } from '../Common';
-import { useSimVar } from '../Common/simVars';
 
 const RTPIDisplay = () => {
     const [ltsTest] = useSimVar('L:A32NX_OVHD_INTLT_ANN', 'Bool', 400);

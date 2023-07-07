@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ConsumerSubject, DebounceTimer, EventBus, MappedSubject } from '@microsoft/msfs-sdk';
-import { NotificationManager, NotificationTheme } from '@shared/notification';
+import { NotificationManager, NotificationTheme } from '@flybywiresim/fbw-sdk';
 import { ExtrasSimVarEvents } from 'extras-host/modules/common/ExtrasSimVarPublisher';
 
 /**

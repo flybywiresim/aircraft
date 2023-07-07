@@ -1,4 +1,8 @@
-import { useSimVar } from '@instruments/common/simVars';
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
+import { useSimVar } from '@flybywiresim/fbw-sdk';
 import React, { useEffect, useState } from 'react';
 import { ArrowRight, Check } from 'react-bootstrap-icons';
 import { Link } from 'react-router-dom';

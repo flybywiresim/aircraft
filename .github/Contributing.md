@@ -19,8 +19,8 @@ It's recommended to set gitbash as your default shell in vscode
 ## Cloning and setup
 
 ```shell
-git clone https://github.com/flybywiresim/a32nx.git
-cd a32nx
+git clone https://github.com/flybywiresim/aircraft.git
+cd aircraft
 .\scripts\dev-env\run.cmd ./scripts/setup.sh
 ```
 
@@ -70,7 +70,7 @@ When submitting an issue, there's a few guidelines we'd ask you to respect to ma
 
 We welcome pull requests with fixes and improvements to the project.
 
-If you wish to add a new feature or you spot a bug that you wish to fix, **please open an issue for it first** on the [A32NX issue tracker](https://github.com/flybywiresim/a32nx/issues).
+If you wish to add a new feature or you spot a bug that you wish to fix, **please open an issue for it first** on the [A32NX issue tracker](https://github.com/flybywiresim/aircraft/issues).
 
 The work-flow for submitting a new pull request is designed to be simple, but also to ensure consistency from **all** contributors:
 * Fork the project into your personal space on GitHub.com.

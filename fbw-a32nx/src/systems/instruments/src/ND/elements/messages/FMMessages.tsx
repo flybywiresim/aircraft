@@ -1,7 +1,10 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import React, { FC, useEffect, useState } from 'react';
-import { Layer } from '@instruments/common/utils';
+import { Layer, useSimVar } from '@flybywiresim/fbw-sdk';
 import { EfisNdMode } from '@shared/NavigationDisplay';
-import { useSimVar } from '@instruments/common/simVars';
 import { FMMessage, FMMessageTypes } from '@shared/FmMessages';
 
 export const FMMessages: FC<{ modeIndex: EfisNdMode, side: 'L' | 'R' }> = ({ modeIndex, side }) => {

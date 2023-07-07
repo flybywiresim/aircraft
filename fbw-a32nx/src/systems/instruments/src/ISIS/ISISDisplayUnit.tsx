@@ -1,6 +1,9 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import React, { useEffect, useState } from 'react';
-import { useSimVar } from '@instruments/common/simVars';
-import { useUpdate } from '@instruments/common/hooks';
+import { useSimVar, useUpdate } from '@flybywiresim/fbw-sdk';
 import { PressureIndicator } from 'instruments/src/ISIS/PressureIndicator';
 
 enum DisplayUnitState {

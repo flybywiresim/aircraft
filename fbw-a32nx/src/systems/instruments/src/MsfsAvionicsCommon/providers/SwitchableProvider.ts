@@ -1,4 +1,5 @@
-import { EventBus, SimVarDefinition, SimVarPublisher, SimVarValueType, Subject } from '@microsoft/msfs-sdk';
+import { EventBus, SimVarValueType, Subject } from '@microsoft/msfs-sdk';
+import { UpdatableSimVarPublisher } from '../UpdatableSimVarPublisher';
 
 export interface SwitchableSimVarDefinition<TState> {
     name: (state: TState) => string;
@@ -6,13 +7,16 @@ export interface SwitchableSimVarDefinition<TState> {
     type: SimVarValueType;
 }
 
-export abstract class SwitchableSimVarProvider<TSimVar, TState> extends SimVarPublisher<TSimVar> {
+export abstract class SwitchableSimVarProvider<TSimVar, TState> extends UpdatableSimVarPublisher<TSimVar> {
     protected constructor(
-        private simVars: Map<keyof TSimVar, SwitchableSimVarDefinition<TState>>,
+        private simVars: Map<keyof TSimVar & string, SwitchableSimVarDefinition<TState>>,
         public stateSubject: Subject<TState>,
         bus: EventBus,
     ) {
-        super(definitions(simVars, stateSubject.get()), bus);
+        super(new Map(Array.from(simVars.entries()).map(([k, v]) => [k, {
+            name: v.name(stateSubject.get()),
+            type: v.type,
+        }])), bus);
 
         stateSubject.sub((value) => this.updateDefinitions(value));
     }
@@ -24,14 +28,4 @@ export abstract class SwitchableSimVarProvider<TSimVar, TState> extends SimVarPu
             this.updateSimVarSource(key, { name: newName, type: value.type });
         }
     }
-}
-
-function definitions<TSimVar, TState>(
-    simVars: Map<keyof TSimVar, SwitchableSimVarDefinition<TState>>,
-    state: TState,
-): Map<keyof TSimVar, SimVarDefinition> {
-    return new Map(Array.from(simVars.entries()).map(([k, v]) => [k, {
-        name: v.name(state),
-        type: v.type,
-    }]));
 }

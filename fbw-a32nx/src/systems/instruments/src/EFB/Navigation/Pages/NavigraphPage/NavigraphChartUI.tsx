@@ -8,7 +8,7 @@ import { useAppDispatch, useAppSelector } from '../../../Store/store';
 import { SelectGroup, SelectItem } from '../../../UtilComponents/Form/Select';
 import { SimpleInput } from '../../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { ScrollableContainer } from '../../../UtilComponents/ScrollableContainer';
-import { useNavigraph, emptyNavigraphCharts, NavigraphAirportCharts } from '../../../ChartsApi/Navigraph';
+import { useNavigraph, emptyNavigraphCharts, NavigraphAirportCharts } from '../../../Apis/Navigraph/Navigraph';
 import { ChartViewer } from '../../Navigation';
 
 export const NavigraphChartUI = () => {

@@ -1,6 +1,10 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import React from 'react';
 
-import { useInteractionSimVar, useSimVar } from '@instruments/common/simVars';
+import { useInteractionSimVar, useSimVar } from '@flybywiresim/fbw-sdk';
 import { LagFilter } from 'instruments/src/ISIS/ISISUtils';
 
 type DeviationIndicatorProps = {
@@ -55,10 +59,10 @@ export const LandingSystem: React.FC = () => {
         lsActive && (
             <g id="LandingSystem">
                 <g transform="translate(166.869 376.62)">
-                    <DeviationIndicator deviation={lsDeviation / 2} available={lsAvailable} />
+                    <DeviationIndicator deviation={locLagfilter.step(lsDeviation / 2, 50 / 1000)} available={lsAvailable} />
                 </g>
                 <g transform="translate(340.133 180.869) rotate(90 0 0)">
-                    <DeviationIndicator deviation={gsDeviation} available={gsAvailable} />
+                    <DeviationIndicator deviation={gsLagfilter.step(gsDeviation, 50 / 1000)} available={gsAvailable} />
                 </g>
             </g>
         )

@@ -33,6 +33,8 @@ use systems::{
     },
 };
 
+use crate::air_conditioning::A380AirConditioning;
+
 macro_rules! valve_signal_implementation {
     ($signal_type: ty) => {
         impl PneumaticValveSignal for $signal_type {
@@ -203,7 +205,7 @@ impl A380Pneumatic {
         pneumatic_overhead_panel: &A380PneumaticOverheadPanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         apu: &impl ControllerSignal<TargetPressureTemperatureSignal>,
-        pack_flow_valve_signals: &impl PackFlowControllers<4>,
+        pack_flow_valve_signals: &impl PackFlowControllers,
     ) {
         self.physics_updater.update(context);
 
@@ -226,7 +228,7 @@ impl A380Pneumatic {
         overhead_panel: &A380PneumaticOverheadPanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         apu: &impl ControllerSignal<TargetPressureTemperatureSignal>,
-        pack_flow_valve_signals: &impl PackFlowControllers<4>,
+        pack_flow_valve_signals: &impl PackFlowControllers,
     ) {
         self.apu_compression_chamber.update(apu);
 
@@ -362,24 +364,30 @@ impl PneumaticBleed for A380Pneumatic {
     }
 }
 impl EngineStartState for A380Pneumatic {
-    fn left_engine_state(&self) -> EngineState {
-        self.fadec.engine_state(1)
-    }
-    fn right_engine_state(&self) -> EngineState {
-        self.fadec.engine_state(2)
+    fn engine_state(&self, engine_number: usize) -> EngineState {
+        self.fadec.engine_state(engine_number)
     }
     fn engine_mode_selector(&self) -> EngineModeSelector {
         self.fadec.engine_mode_selector()
     }
 }
 impl PackFlowValveState for A380Pneumatic {
-    fn pack_flow_valve_is_open(&self, pack_id: usize) -> bool {
-        self.packs[pack_id].left_pack_flow_valve_is_open()
-        // TODO: Need to make this use both PACK valves
+    // fcv_id: 1, 2, 3 or 4
+    fn pack_flow_valve_is_open(&self, fcv_id: usize) -> bool {
+        let id = A380AirConditioning::fcv_to_pack_id(fcv_id);
+        if fcv_id % 2 == 0 {
+            self.packs[id].right_pack_flow_valve_is_open()
+        } else {
+            self.packs[id].left_pack_flow_valve_is_open()
+        }
     }
-    fn pack_flow_valve_air_flow(&self, pack_id: usize) -> MassRate {
-        // TODO: Need to make this use both PACK valves
-        self.packs[pack_id].left_pack_flow_valve_air_flow()
+    fn pack_flow_valve_air_flow(&self, fcv_id: usize) -> MassRate {
+        let id = A380AirConditioning::fcv_to_pack_id(fcv_id);
+        if fcv_id % 2 == 0 {
+            self.packs[id].right_pack_flow_valve_air_flow()
+        } else {
+            self.packs[id].left_pack_flow_valve_air_flow()
+        }
     }
 }
 impl SimulationElement for A380Pneumatic {
@@ -1212,14 +1220,16 @@ impl PackComplex {
         context: &UpdateContext,
         left_input: &mut impl PneumaticContainer,
         right_input: &mut impl PneumaticContainer,
-        pack_flow_valve_signals: &impl PackFlowControllers<4>,
+        pack_flow_valve_signals: &impl PackFlowControllers,
     ) {
         self.left_pack_flow_valve.update_open_amount(
-            &pack_flow_valve_signals.pack_flow_controller(self.pack_number.into()),
+            pack_flow_valve_signals
+                .pack_flow_controller(1 + ((self.pack_number == 2) as usize * 2)),
         );
 
         self.right_pack_flow_valve.update_open_amount(
-            &pack_flow_valve_signals.pack_flow_controller(self.pack_number.into()),
+            pack_flow_valve_signals
+                .pack_flow_controller(2 + ((self.pack_number == 2) as usize * 2)),
         );
 
         self.left_pack_flow_valve
@@ -1247,7 +1257,6 @@ impl PackComplex {
         self.left_pack_flow_valve.fluid_flow()
     }
 
-    #[cfg(test)]
     fn right_pack_flow_valve_air_flow(&self) -> MassRate {
         self.right_pack_flow_valve.fluid_flow()
     }
@@ -1397,10 +1406,7 @@ mod tests {
     use ntest::assert_about_eq;
     use rstest::rstest;
     use systems::{
-        air_conditioning::{
-            acs_controller::{Pack, PackFlowController},
-            AdirsToAirCondInterface, PackFlowControllers, ZoneType,
-        },
+        air_conditioning::{AdirsToAirCondInterface, PackFlowControllers},
         electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
         engine::leap_engine::LeapEngine,
         failures::FailureType,
@@ -1410,9 +1416,9 @@ mod tests {
         },
         shared::{
             arinc429::{Arinc429Word, SignStatus},
-            ApuBleedAirValveSignal, CabinAltitude, CabinSimulation, ControllerSignal,
-            ElectricalBusType, ElectricalBuses, EmergencyElectricalState, EngineBleedPushbutton,
-            EngineCorrectedN1, EngineFirePushButtons, EngineStartState, HydraulicColor,
+            ApuBleedAirValveSignal, ControllerSignal, ElectricalBusType, ElectricalBuses,
+            EmergencyElectricalState, EngineBleedPushbutton, EngineCorrectedN1,
+            EngineFirePushButtons, EngineStartState, HydraulicColor,
             InternationalStandardAtmosphere, LgciuWeightOnWheels, MachNumber, PackFlowValveState,
             PneumaticBleed, PneumaticValve, PotentialOrigin,
         },
@@ -1429,47 +1435,25 @@ mod tests {
         thermodynamic_temperature::degree_celsius, velocity::knot,
     };
 
-    use crate::air_conditioning::{A380AirConditioningSystem, A380PressurizationOverheadPanel};
+    use crate::{
+        air_conditioning::{A380AirConditioning, A380PressurizationOverheadPanel},
+        avionics_data_communication_network::A380AvionicsDataCommunicationNetwork,
+    };
 
     use super::{A380Pneumatic, A380PneumaticOverheadPanel};
 
     struct TestAirConditioning {
-        a380_air_conditioning_system: A380AirConditioningSystem,
-        test_cabin: TestCabin,
-
+        air_conditioning: A380AirConditioning,
+        adcn: A380AvionicsDataCommunicationNetwork,
         adirs: TestAdirs,
-        pressurization: TestPressurization,
         pressurization_overhead: A380PressurizationOverheadPanel,
     }
     impl TestAirConditioning {
         fn new(context: &mut InitContext) -> Self {
-            let cabin_zones: [ZoneType; 18] = [
-                ZoneType::Cockpit,
-                ZoneType::Cabin(11), // MAIN_DECK_1
-                ZoneType::Cabin(12), // MAIN_DECK_2
-                ZoneType::Cabin(13), // MAIN_DECK_3
-                ZoneType::Cabin(14), // MAIN_DECK_4
-                ZoneType::Cabin(15), // MAIN_DECK_5
-                ZoneType::Cabin(16), // MAIN_DECK_6
-                ZoneType::Cabin(17), // MAIN_DECK_7
-                ZoneType::Cabin(18), // MAIN_DECK_8
-                ZoneType::Cabin(21), // UPPER_DECK_1
-                ZoneType::Cabin(22), // UPPER_DECK_2
-                ZoneType::Cabin(23), // UPPER_DECK_3
-                ZoneType::Cabin(24), // UPPER_DECK_4
-                ZoneType::Cabin(25), // UPPER_DECK_5
-                ZoneType::Cabin(26), // UPPER_DECK_6
-                ZoneType::Cabin(27), // UPPER_DECK_7
-                ZoneType::Cargo(1),  // FWD
-                ZoneType::Cargo(2),  // BULK
-            ];
-
             Self {
-                a380_air_conditioning_system: A380AirConditioningSystem::new(context, &cabin_zones),
-                test_cabin: TestCabin::new(),
-
+                air_conditioning: A380AirConditioning::new(context),
+                adcn: A380AvionicsDataCommunicationNetwork::new(context),
                 adirs: TestAdirs::new(),
-                pressurization: TestPressurization::new(),
                 pressurization_overhead: A380PressurizationOverheadPanel::new(context),
             }
         }
@@ -1482,43 +1466,33 @@ mod tests {
             pneumatic_overhead: &impl EngineBleedPushbutton<4>,
             lgciu: [&impl LgciuWeightOnWheels; 2],
         ) {
-            self.a380_air_conditioning_system.update(
+            self.air_conditioning.update(
                 context,
                 &self.adirs,
-                &self.test_cabin,
+                &self.adcn,
                 engines,
                 engine_fire_push_buttons,
                 pneumatic,
                 pneumatic_overhead,
-                &self.pressurization,
                 &self.pressurization_overhead,
                 lgciu,
             );
         }
     }
-    impl PackFlowControllers<4> for TestAirConditioning {
-        fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<4> {
-            self.a380_air_conditioning_system
-                .pack_flow_controller(pack_id)
+    impl PackFlowControllers for TestAirConditioning {
+        type PackFlowControllerSignal =
+            <A380AirConditioning as PackFlowControllers>::PackFlowControllerSignal;
+
+        fn pack_flow_controller(&self, fcv_id: usize) -> &Self::PackFlowControllerSignal {
+            self.air_conditioning.pack_flow_controller(fcv_id)
         }
     }
     impl SimulationElement for TestAirConditioning {
         fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
-            self.a380_air_conditioning_system.accept(visitor);
+            self.air_conditioning.accept(visitor);
+            self.adcn.accept(visitor);
 
             visitor.visit(self);
-        }
-    }
-
-    struct TestCabin;
-    impl TestCabin {
-        fn new() -> Self {
-            Self {}
-        }
-    }
-    impl CabinSimulation for TestCabin {
-        fn cabin_temperature(&self) -> Vec<ThermodynamicTemperature> {
-            vec![ThermodynamicTemperature::new::<degree_celsius>(24.); 18]
         }
     }
 
@@ -1544,19 +1518,6 @@ mod tests {
         }
         fn ambient_static_pressure(&self, _adiru_number: usize) -> Arinc429Word<Pressure> {
             Arinc429Word::new(Pressure::default(), SignStatus::NoComputedData)
-        }
-    }
-
-    struct TestPressurization;
-
-    impl TestPressurization {
-        fn new() -> Self {
-            Self {}
-        }
-    }
-    impl CabinAltitude for TestPressurization {
-        fn altitude(&self) -> Length {
-            Length::default()
         }
     }
 
@@ -1705,12 +1666,15 @@ mod tests {
         dc_ess_bus: ElectricalBus,
         dc_ess_shed_bus: ElectricalBus,
         ac_1_bus: ElectricalBus,
+        ac_2_bus: ElectricalBus,
+        ac_4_bus: ElectricalBus,
         // Electric buses states to be able to kill them dynamically
         is_dc_1_powered: bool,
         is_dc_2_powered: bool,
         is_dc_ess_powered: bool,
         is_dc_ess_shed_powered: bool,
         is_ac_1_powered: bool,
+        is_ac_2_powered: bool,
     }
     impl PneumaticTestAircraft {
         fn new(context: &mut InitContext) -> Self {
@@ -1738,11 +1702,14 @@ mod tests {
                     ElectricalBusType::DirectCurrentEssentialShed,
                 ),
                 ac_1_bus: ElectricalBus::new(context, ElectricalBusType::AlternatingCurrent(1)),
+                ac_2_bus: ElectricalBus::new(context, ElectricalBusType::AlternatingCurrent(2)),
+                ac_4_bus: ElectricalBus::new(context, ElectricalBusType::AlternatingCurrent(4)),
                 is_dc_1_powered: true,
                 is_dc_2_powered: true,
                 is_dc_ess_powered: true,
                 is_dc_ess_shed_powered: true,
                 is_ac_1_powered: true,
+                is_ac_2_powered: true,
             }
         }
 
@@ -1776,6 +1743,11 @@ mod tests {
 
             if self.is_ac_1_powered {
                 electricity.flow(&self.powered_source, &self.ac_1_bus);
+            }
+
+            if self.is_ac_2_powered {
+                electricity.flow(&self.powered_source, &self.ac_2_bus);
+                electricity.flow(&self.powered_source, &self.ac_4_bus);
             }
         }
 

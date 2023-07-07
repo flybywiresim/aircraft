@@ -5,7 +5,7 @@
 
 import { computeDestinationPoint as geolibDestPoint } from 'geolib';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
-import { MathUtils } from '@shared/MathUtils';
+import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import {
     bearingTo,
