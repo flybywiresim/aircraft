@@ -1,6 +1,10 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "resolveJsonModule" : true
-  }
+    "resolveJsonModule" : true,
+    "skipLibCheck": true
+  },
+  "include": ["*.tsx", "*.ts"],
+  "exclude": ["vite.config.ts"]
+
 }

@@ -72,7 +72,7 @@ export const ErrorFallback = ({ resetErrorBoundary }: ErrorFallbackProps) => {
                         </>
                     )}
 
-                    <div className="py-4 px-8 w-full text-theme-body hover:text-utility-red bg-utility-red hover:bg-theme-body rounded-md border-2 border-utility-red transition duration-100" onClick={resetErrorBoundary}>
+                    <div className="py-4 px-8 w-full rounded-md border-2 transition duration-100 text-theme-body hover:text-utility-red bg-utility-red hover:bg-theme-body border-utility-red" onClick={resetErrorBoundary}>
                         <h2 className="font-bold text-center text-current">Reset Display</h2>
                     </div>
                 </div>
