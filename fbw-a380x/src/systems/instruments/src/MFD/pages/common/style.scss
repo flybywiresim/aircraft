@@ -488,6 +488,14 @@ $display-mfd-dark-grey: #3c3c3c;
   align-items: center;
 }
 
+.MFDFplnSpecialLine {
+  border: 2px solid transparent;
+}
+
+.MFDFplnSpecialLine:hover {
+  border: 2px solid $display-cyan;
+}
+
 .MFDFplnLineAnnotation {
   height: 32px;
   text-align: right;

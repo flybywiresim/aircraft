@@ -1,6 +1,6 @@
 import {
     FlightPlanLeg, FlightPlanSegment, SegmentClass, VerticalWaypointPrediction,
-    AltitudeConstraintType, SpeedConstraintType, WindVector, DerivedFplnLegData,
+    AltitudeConstraintType, SpeedConstraintType, WindVector, DerivedFplnLegData, Discontinuity, FlightPlanElement,
 } from 'instruments/src/MFD/dev-data/FlightPlanInterfaceMockup';
 import { EnrouteSubsectionCode, LegType, SectionCode, Waypoint, WaypointArea, WaypointDescriptor } from 'msfs-navdata';
 
@@ -269,6 +269,8 @@ const der9: DerivedFplnLegData = {
     windPrediction: new WindVector(240, 40),
 };
 
-export const flightPlanLegsMockData: FlightPlanLeg[] = [leg1, leg2, leg3, leg4, leg5, leg6, leg7, leg8, leg9, leg2, leg3, leg4, leg5, leg6, leg7, leg8, leg9];
-export const predictionsMockData: VerticalWaypointPrediction[] = [pred1, pred2, pred3, pred4, pred5, pred6, pred7, pred8, pred9, pred2, pred3, pred4, pred5, pred6, pred7, pred8, pred9];
-export const derivedMockData: DerivedFplnLegData[] = [der1, der2, der3, der4, der5, der6, der7, der8, der9, der2, der3, der4, der5, der6, der7, der8, der9];
+const disco: Discontinuity = { isDiscontinuity: true };
+
+export const flightPlanLegsMockData: FlightPlanElement[] = [leg1, leg2, leg3, leg4, leg5, leg6, leg7, leg8, leg9, disco, leg2, leg3, leg4, leg5, leg6, leg7, leg8, leg9];
+export const predictionsMockData: VerticalWaypointPrediction[] = [pred1, pred2, pred3, pred4, pred5, pred6, pred7, pred8, pred9, null, pred2, pred3, pred4, pred5, pred6, pred7, pred8, pred9];
+export const derivedMockData: DerivedFplnLegData[] = [der1, der2, der3, der4, der5, der6, der7, der8, der9, null, der2, der3, der4, der5, der6, der7, der8, der9];
