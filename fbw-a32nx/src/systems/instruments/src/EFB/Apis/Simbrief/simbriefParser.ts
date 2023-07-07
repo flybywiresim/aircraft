@@ -31,7 +31,7 @@ const simbriefDataParser = (simbriefJson: any): ISimbriefData => {
     const { weights } = simbriefJson;
     const { fuel } = simbriefJson;
     const { params } = simbriefJson;
-    const { alternate } = simbriefJson;
+    const alternate = Array.isArray(simbriefJson.alternate) ? simbriefJson.alternate[0] : simbriefJson.alternate;
     const { files } = simbriefJson;
     const { text } = simbriefJson;
     const { weather } = simbriefJson;
