@@ -1,6 +1,7 @@
+/* eslint-disable max-len */
 import {
     FlightPlanLeg, FlightPlanSegment, SegmentClass, VerticalWaypointPrediction,
-    AltitudeConstraintType, SpeedConstraintType, WindVector, DerivedFplnLegData, Discontinuity, FlightPlanElement,
+    AltitudeConstraintType, SpeedConstraintType, WindVector, DerivedFplnLegData, Discontinuity, FlightPlanElement, PseudoWaypoint,
 } from 'instruments/src/MFD/dev-data/FlightPlanInterfaceMockup';
 import { EnrouteSubsectionCode, LegType, SectionCode, Waypoint, WaypointArea, WaypointDescriptor } from 'msfs-navdata';
 
@@ -138,28 +139,6 @@ const der4: DerivedFplnLegData = {
     windPrediction: new WindVector(276, 17),
 };
 
-const leg5: FlightPlanLeg = new FlightPlanLeg(enrouteSegment, procDaxi, '(SPDLIM)', undefined, undefined, undefined, false);
-const pred5: VerticalWaypointPrediction = {
-    waypointIndex: 4,
-    altitude: 10000,
-    speed: 250,
-    estimatedFuelOnBoard: 87.4,
-    distanceFromStart: 23,
-    secondsFromPresent: 6 * 60,
-    altitudeConstraint: null,
-    speedConstraint: { type: SpeedConstraintType.at, speed: 250 },
-    isAltitudeConstraintMet: null,
-    isSpeedConstraintMet: true,
-    altError: null,
-    distanceToTopOfDescent: null,
-    distanceFromAircraft: null,
-};
-const der5: DerivedFplnLegData = {
-    trackFromLastWpt: null,
-    distanceFromLastWpt: null,
-    windPrediction: new WindVector(276, 19),
-};
-
 const leg6: FlightPlanLeg = new FlightPlanLeg(enrouteSegment, procDaxi, 'DAXIB', 'DAXI1K', undefined, undefined, false);
 const pred6: VerticalWaypointPrediction = {
     waypointIndex: 5,
@@ -185,11 +164,11 @@ const der6: DerivedFplnLegData = {
 const leg7: FlightPlanLeg = new FlightPlanLeg(enrouteSegment, {
     procedureIdent: 'PS53',
     type: LegType.CF,
-    overfly: false,
+    overfly: true,
     waypoint: simpleWaypointFactory('UKUVO'),
     waypointDescriptor: WaypointDescriptor.Essential,
     transitionAltitude: 13000,
-}, 'UKUVO', 'PS53', undefined, undefined, false);
+}, 'UKUVO', 'PS53', undefined, undefined, true);
 const pred7: VerticalWaypointPrediction = {
     waypointIndex: 6,
     altitude: 22700,
@@ -269,8 +248,135 @@ const der9: DerivedFplnLegData = {
     windPrediction: new WindVector(240, 40),
 };
 
+const leg10: FlightPlanLeg = new FlightPlanLeg(enrouteSegment, {
+    procedureIdent: '',
+    type: LegType.IF,
+    overfly: false,
+    waypoint: simpleWaypointFactory('FF26R'),
+    waypointDescriptor: WaypointDescriptor.Runway,
+    transitionAltitude: 5000,
+    verticalAngle: -3.0,
+}, 'FF26R', 'ILS26R', undefined, undefined, false);
+const pred10: VerticalWaypointPrediction = {
+    waypointIndex: 9,
+    altitude: 4000,
+    speed: 190,
+    estimatedFuelOnBoard: 11.2,
+    distanceFromStart: 490,
+    secondsFromPresent: 195 * 60,
+    altitudeConstraint: { type: AltitudeConstraintType.atOrAbove, altitude1: 4000, altitude2: null },
+    speedConstraint: null,
+    isAltitudeConstraintMet: true,
+    isSpeedConstraintMet: null,
+    altError: null,
+    distanceToTopOfDescent: null,
+    distanceFromAircraft: null,
+};
+const der10: DerivedFplnLegData = {
+    trackFromLastWpt: 264,
+    distanceFromLastWpt: null,
+    windPrediction: new WindVector(276, 9),
+};
+
+const leg11: FlightPlanLeg = new FlightPlanLeg(enrouteSegment, {
+    procedureIdent: '',
+    type: LegType.IF,
+    overfly: false,
+    waypoint: simpleWaypointFactory('LFPG26R'),
+    waypointDescriptor: WaypointDescriptor.Runway,
+    transitionAltitude: 5000,
+    verticalAngle: -3.0,
+}, 'LFPG26R', 'ILS26R', undefined, undefined, false);
+const pred11: VerticalWaypointPrediction = {
+    waypointIndex: 10,
+    altitude: 145,
+    speed: 138,
+    estimatedFuelOnBoard: 8.7,
+    distanceFromStart: 500,
+    secondsFromPresent: 200 * 60,
+    altitudeConstraint: null,
+    speedConstraint: null,
+    isAltitudeConstraintMet: null,
+    isSpeedConstraintMet: null,
+    altError: null,
+    distanceToTopOfDescent: null,
+    distanceFromAircraft: null,
+};
+const der11: DerivedFplnLegData = {
+    trackFromLastWpt: 264,
+    distanceFromLastWpt: null,
+    windPrediction: new WindVector(270, 6),
+};
+
+const spdlim: PseudoWaypoint = {
+    ident: '(SPDLIM)',
+    mcduIdent: '(SPDLIM)',
+    mcduHeader: '',
+    alongLegIndex: 4,
+    distanceFromLegTermination: 18,
+    displayedOnMcdu: true,
+    efisSymbolFlag: 1,
+    efisSymbolLla: null,
+    displayedOnNd: true,
+    distanceFromStart: 200,
+    flightPlanInfo: {
+        altitude: 10000,
+        speed: 250,
+        secondsFromPresent: 6 * 60,
+        distanceFromLastFix: 2,
+    },
+};
+
+const tc: PseudoWaypoint = {
+    ident: '(T/D)',
+    mcduHeader: '',
+    alongLegIndex: 16,
+    distanceFromLegTermination: 1,
+    displayedOnMcdu: true,
+    efisSymbolFlag: 1,
+    efisSymbolLla: null,
+    displayedOnNd: true,
+    distanceFromStart: 200,
+    flightPlanInfo: {
+        altitude: 29000,
+        speed: 0.84,
+        secondsFromPresent: 400,
+        distanceFromLastFix: 2,
+    },
+};
+
+const afterDiscoLeg: FlightPlanLeg = new FlightPlanLeg(enrouteSegment, {
+    procedureIdent: '',
+    type: LegType.CF,
+    overfly: false,
+    waypoint: simpleWaypointFactory('ABAXA'),
+    waypointDescriptor: WaypointDescriptor.Essential,
+    transitionAltitude: 13000,
+}, 'ABAXA', '', undefined, undefined, false);
+const afterDiscoPred: VerticalWaypointPrediction = {
+    waypointIndex: 10,
+    altitude: 4400,
+    speed: 250,
+    estimatedFuelOnBoard: 88.5,
+    distanceFromStart: 112,
+    secondsFromPresent: 3 * 60,
+    altitudeConstraint: null,
+    speedConstraint: null,
+    isAltitudeConstraintMet: null,
+    isSpeedConstraintMet: null,
+    altError: null,
+    distanceToTopOfDescent: null,
+    distanceFromAircraft: 10,
+};
+const afterDiscoDer: DerivedFplnLegData = {
+    trackFromLastWpt: null,
+    distanceFromLastWpt: null,
+    windPrediction: new WindVector(276, 8),
+};
+
 const disco: Discontinuity = { isDiscontinuity: true };
 
-export const flightPlanLegsMockData: FlightPlanElement[] = [leg1, leg2, leg3, leg4, leg5, leg6, leg7, leg8, leg9, disco, leg2, leg3, leg4, leg5, leg6, leg7, leg8, leg9];
-export const predictionsMockData: VerticalWaypointPrediction[] = [pred1, pred2, pred3, pred4, pred5, pred6, pred7, pred8, pred9, null, pred2, pred3, pred4, pred5, pred6, pred7, pred8, pred9];
-export const derivedMockData: DerivedFplnLegData[] = [der1, der2, der3, der4, der5, der6, der7, der8, der9, null, der2, der3, der4, der5, der6, der7, der8, der9];
+export const mockFlightPlanLegsData: FlightPlanElement[] = [leg1, leg2, leg3, leg4, leg6, leg7, leg8, leg9, disco, afterDiscoLeg, leg2, leg3, leg4, leg6, leg7, leg8, leg9, leg10, leg11];
+export const mockPredictionsData: VerticalWaypointPrediction[] = [pred1, pred2, pred3, pred4, pred6, pred7, pred8, pred9, null, afterDiscoPred, pred2, pred3, pred4, pred6, pred7, pred8, pred9, pred10, pred11];
+export const mockDerivedData: DerivedFplnLegData[] = [der1, der2, der3, der4, der6, der7, der8, der9, null, afterDiscoDer, der2, der3, der4, der6, der7, der8, der9, der10, der11];
+export const mockPseudoWaypoints: PseudoWaypoint[] = [spdlim, tc];

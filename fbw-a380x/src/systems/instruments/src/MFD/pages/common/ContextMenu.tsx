@@ -1,7 +1,7 @@
-import { ComponentProps, DisplayComponent, FSComponent, SubscribableArray, VNode } from '@microsoft/msfs-sdk';
+import { ComponentProps, DisplayComponent, FSComponent, Subject, SubscribableArray, VNode } from '@microsoft/msfs-sdk';
 import './style.scss';
 
-interface ContextMenuElementProps {
+export interface ContextMenuElementProps {
     title: string;
     disabled: boolean;
     onSelectCallback: () => void;
@@ -10,17 +10,23 @@ interface ContextMenuElementProps {
 interface ContextMenuProps extends ComponentProps {
     values: SubscribableArray<ContextMenuElementProps>;
     idPrefix: string;
+    isOpened: Subject<boolean>;
 }
 export class ContextMenu extends DisplayComponent<ContextMenuProps> {
     private contextMenuRef = FSComponent.createRef<HTMLDivElement>();
 
+    private openedAt: number = 0;
+
     public display(x: number, y: number) {
+        this.props.isOpened.set(true);
+        this.openedAt = Date.now();
         this.contextMenuRef.instance.style.display = 'block';
         this.contextMenuRef.instance.style.left = `${x}px`;
         this.contextMenuRef.instance.style.top = `${y}px`;
     }
 
     public hideMenu() {
+        this.props.isOpened.set(false);
         this.contextMenuRef.instance.style.display = 'none';
     }
 
@@ -35,6 +41,13 @@ export class ContextMenu extends DisplayComponent<ContextMenuProps> {
                     this.hideMenu();
                     el.onSelectCallback();
                 });
+            }
+        });
+
+        // Close dropdown menu if clicked outside
+        document.getElementById('MFD_CONTENT').addEventListener('click', () => {
+            if ((Date.now() - this.openedAt) > 100 && this.props.isOpened.get() === true) {
+                this.hideMenu();
             }
         });
     }

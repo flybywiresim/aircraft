@@ -369,7 +369,7 @@ $display-mfd-dark-grey: #3c3c3c;
   color: $display-white;
   font-size: 22px;
   text-align: left;
-  padding: 4px 2px;
+  padding: 7px 2px;
   display: block;
   border: 3px solid transparent;
 }
@@ -488,7 +488,23 @@ $display-mfd-dark-grey: #3c3c3c;
   align-items: center;
 }
 
+.MFDFplnLineSecondary > div > .MFDFplnLineAnnotation,
+.MFDFplnLineSecondary > div > .MFDFplnLineIdent,
+.MFDFplnLineSecondary > .MFDFplnSmallLabel,
+.MFDFplnLineSecondary > .MFDFplnClickableSmallLabel {
+  color: $display-white;
+}
+
+.MFDFplnLineTemporary > div > .MFDFplnLineAnnotation,
+.MFDFplnLineTemporary > div > .MFDFplnLineIdent,
+.MFDFplnLineTemporary > .MFDFplnSmallLabel,
+.MFDFplnLineTemporary > .MFDFplnClickableSmallLabel,
+.MFDFplnLineTemporary > div > .MFDFplnActiveLeg {
+  color: $display-yellow;
+}
+
 .MFDFplnSpecialLine {
+  justify-content: center;
   border: 2px solid transparent;
 }
 
@@ -515,6 +531,11 @@ $display-mfd-dark-grey: #3c3c3c;
 
 .MFDFplnLineIdent:hover {
   border: 2px solid $display-cyan;
+}
+
+.MFDFplnLineIdent.selected {
+  background-color: $display-dark-grey;
+  color: $display-white;
 }
 
 .MFDFplnSmallLabel {
