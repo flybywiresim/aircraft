@@ -31,10 +31,16 @@ struct EngineData {
   double engineEngine2EGT;
   double engineEngine1Oil;
   double engineEngine2Oil;
-  double engineEngine1TotalOil;
-  double engineEngine2TotalOil;
+  double engineEngine1OilTotal;
+  double engineEngine2OilTotal;
   double engineEngineOilTemperature_1;
   double engineEngineOilTemperature_2;
+  double engineEngineOilPressure_1;
+  double engineEngineOilPressure_2;
+  double engineEngine1VibN1;
+  double engineEngine2VibN1;
+  double engineEngine1VibN2;
+  double engineEngine2VibN2;
   double engineEngine1FF;
   double engineEngine2FF;
   double engineEngine1PreFF;

@@ -90,6 +90,8 @@ struct SimData {
   double corrected_engine_N1_2_percent;
   double engineEngineOilTemperature_1;
   double engineEngineOilTemperature_2;
+  double engineEngineOilPressure_1;
+  double engineEngineOilPressure_2;
   unsigned long long engine_combustion_1;
   unsigned long long engine_combustion_2;
   unsigned long long is_mach_mode_active;
