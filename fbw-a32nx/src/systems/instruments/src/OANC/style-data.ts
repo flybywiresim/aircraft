@@ -1,4 +1,8 @@
-import { FeatureType, PolygonStructureType } from './types';
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
+import { FeatureType, PolygonStructureType } from '@flybywiresim/fbw-sdk';
 
 export interface StyleRule {
     forFeatureTypes?: FeatureType[],

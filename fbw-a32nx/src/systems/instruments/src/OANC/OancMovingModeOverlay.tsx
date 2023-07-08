@@ -2,22 +2,12 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import {
-    ConsumerSubject,
-    DisplayComponent,
-    EventBus,
-    FSComponent,
-    MappedSubject,
-    Subject,
-    Subscribable,
-    VNode,
-} from '@microsoft/msfs-sdk';
+import { DisplayComponent, EventBus, FSComponent, MappedSubject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 
-import { Arinc429SignStatusMatrix, Arinc429Word } from '@shared/arinc429';
 import { EfisNdMode } from '@shared/NavigationDisplay';
+import { Arinc429SignStatusMatrix, Arinc429Word } from '@flybywiresim/fbw-sdk';
 import { RoseModeUnderlay } from './OancRoseCompass';
 import { OANC_RENDER_HEIGHT, OANC_RENDER_WIDTH } from './Oanc';
-import { FcuSimVars } from '../MsfsAvionicsCommon/providers/FcuBusSimVarPublisher';
 import { ArcModeUnderlay } from './OancArcModeCompass';
 import { OancPlanModeCompass } from './OancPlanModeCompass';
 

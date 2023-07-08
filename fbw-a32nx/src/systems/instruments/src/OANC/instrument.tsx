@@ -1,15 +1,19 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { EventBus, FSComponent, HEventPublisher, InstrumentBackplane, Subject } from '@microsoft/msfs-sdk';
 import { Oanc } from './Oanc';
+import { FcuBusPublisher } from '../MsfsAvionicsCommon/providers/FcuBusPublisher';
 
 import './styles.scss';
-import { FcuBusSimVarPublisher } from '../MsfsAvionicsCommon/providers/FcuBusSimVarPublisher';
 
 class A32NX_OANC extends BaseInstrument {
     private bus: EventBus;
 
     private readonly backplane = new InstrumentBackplane();
 
-    private readonly fcuBusPublisher: FcuBusSimVarPublisher;
+    private readonly fcuBusPublisher: FcuBusPublisher;
 
     private readonly hEventPublisher: HEventPublisher;
 
@@ -26,7 +30,7 @@ class A32NX_OANC extends BaseInstrument {
     constructor() {
         super();
         this.bus = new EventBus();
-        this.fcuBusPublisher = new FcuBusSimVarPublisher(this.bus, Subject.create('L'));
+        this.fcuBusPublisher = new FcuBusPublisher(this.bus, 'L');
         this.hEventPublisher = new HEventPublisher(this.bus);
     }
 

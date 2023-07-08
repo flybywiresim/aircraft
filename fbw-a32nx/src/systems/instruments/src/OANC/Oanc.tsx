@@ -11,9 +11,19 @@ import {
     FSComponent,
     MappedSubject,
     Subject,
-    SubscribableArrayEventType,
+    SubscribableArrayEventType, UnitType,
     VNode,
 } from '@microsoft/msfs-sdk';
+import {
+    AmdbFeatureCollection,
+    AmdbFeatureTypeStrings,
+    AmdbProjection,
+    AmdbProperties,
+    FeatureType,
+    FeatureTypeString,
+    MathUtils,
+    PolygonStructureType,
+} from '@flybywiresim/fbw-sdk';
 import {
     BBox,
     bbox,
@@ -22,24 +32,23 @@ import {
     featureCollection,
     FeatureCollection,
     Geometry,
-    LineString,
+    LineString, point,
     Point,
     Polygon,
     Position,
 } from '@turf/turf';
-import { bearingTo, clampAngle, Coordinates, distanceTo } from 'msfs-geo';
-import { MathUtils } from '@shared/MathUtils';
+import { bearingTo, clampAngle, Coordinates, distanceTo, placeBearingDistance } from 'msfs-geo';
 import { reciprocal } from '@fmgc/guidance/lnav/CommonGeometry';
 import { EfisNdMode } from '@shared/NavigationDisplay';
 import { MapParameters } from '../ND/utils/MapParameters';
-import { AmdbFeatureCollection, AmdbProperties, FeatureType, PolygonStructureType } from './types';
 import { STYLE_DATA } from './style-data';
 import { OancMovingModeOverlay, OancStaticModeOverlay } from './OancMovingModeOverlay';
-import { FcuSimVars } from '../MsfsAvionicsCommon/providers/FcuBusSimVarPublisher';
 import { OancAircraftIcon } from './OancAircraftIcon';
 import { OancLabelManager } from './OancLabelManager';
 import { OancPositionComputer } from './OancPositionComputer';
-import { Layer } from '../MsfsAvionicsCommon/Layer';
+import { NavigraphAmdbClient } from './api/NavigraphAmdbClient';
+import { FcuSimVars } from '../MsfsAvionicsCommon/providers/FcuBusPublisher';
+import { pointAngle, pointDistance } from './OancMapUtils';
 
 export const OANC_RENDER_WIDTH = 768;
 export const OANC_RENDER_HEIGHT = 768;
@@ -147,9 +156,9 @@ export class Oanc extends DisplayComponent<OancProps> {
 
     private dataBbox: BBox | undefined;
 
-    private dataCenterCoordinates: Coordinates | undefined;
+    private arpCoordinates: Coordinates | undefined;
 
-    private dataScale: number | undefined;
+    private canvasCenterCoordinates: Coordinates | undefined;
 
     private readonly dataAirportName = Subject.create('');
 
@@ -179,8 +188,6 @@ export class Oanc extends DisplayComponent<OancProps> {
 
     private positionComputer = new OancPositionComputer(this);
 
-    private showLabels = true;
-
     public doneDrawing = false;
 
     private isPanning = false;
@@ -201,8 +208,6 @@ export class Oanc extends DisplayComponent<OancProps> {
 
     private modeAnimationMapNorthUp = Subject.create(false);
 
-    private modeAnimationInterpolatedRotation = 0;
-
     private readonly aircraftX = Subject.create(0);
 
     private readonly aircraftY = Subject.create(0);
@@ -213,7 +218,9 @@ export class Oanc extends DisplayComponent<OancProps> {
 
     private canvasHeight = Subject.create(0);
 
-    private readonly viewBbox: BBox = [0, 0, 0, 0];
+    private canvasCentreX = Subject.create(0);
+
+    private canvasCentreY = Subject.create(0);
 
     public readonly ppos: Coordinates = { lat: 0, long: 0 };
 
@@ -225,11 +232,11 @@ export class Oanc extends DisplayComponent<OancProps> {
 
     public readonly interpolatedMapHeading = Subject.create(0);
 
-    private readonly planeMagneticHeading = Subject.create(0);
-
     public readonly zoomLevelIndex = Subject.create(0);
 
-    public readonly mapParams = new MapParameters();
+    public readonly canvasCentreReferencedMapParams = new MapParameters();
+
+    public readonly arpReferencedMapParams = new MapParameters();
 
     private readonly efisNDModeSub = ConsumerSubject.create<EfisNdMode>(null, EfisNdMode.PLAN);
 
@@ -259,16 +266,7 @@ export class Oanc extends DisplayComponent<OancProps> {
 
         this.efisNDModeSub.sub((mode) => this.handleNDModeChange(mode), true);
 
-        this.loadAirportMap('YSSY');
-
-        // MappedSubject.create(([width, height]) => {
-        //     for (let i = 0; i < this.layerCanvasRefs.length; i++) {
-        //         const canvas = this.layerCanvasRefs[i].instance;
-        //
-        //         canvas.style.left = `${-(width / 2) + OANC_RENDER_WIDTH / 2}px`;
-        //         canvas.style.top = `${-(height / 2) + OANC_RENDER_HEIGHT / 2}px`;
-        //     }
-        // }, this.canvasWidth, this.canvasHeight);
+        this.loadAirportMap('LFPG');
 
         this.labelManager.visibleLabels.sub((index, type, item) => {
             switch (type) {
@@ -316,20 +314,31 @@ export class Oanc extends DisplayComponent<OancProps> {
     }
 
     private async loadAirportMap(icao: string) {
-        const response = await fetch(`/Data/fbw-a32nx/OANS/${icao}.geojson`);
+        const includeFeatureTypes: FeatureType[] = Object.values(STYLE_DATA).reduce((acc, it) => [...acc, ...it.reduce((acc, it) => [...acc, ...it.forFeatureTypes], [])], []);
+        const includeLayers = includeFeatureTypes.map((it) => AmdbFeatureTypeStrings[it]);
 
-        const airportMap = await response.json() as AmdbFeatureCollection;
+        // Additional stuff we need that isn't handled by the canvas renderer
+        includeLayers.push(FeatureTypeString.AerodromeReferencePoint);
+        includeLayers.push(FeatureTypeString.ParkingStandLocation);
 
-        const referencePoint = airportMap.features.find((it) => it.properties.feattype === FeatureType.AerodromeReferencePoint);
+        const client = new NavigraphAmdbClient();
 
-        if (!referencePoint) {
+        const data = await client.getAirportData(icao, includeLayers, undefined);
+        const wgs84ArpDat = await client.getAirportData(icao, [FeatureTypeString.AerodromeReferencePoint], undefined, AmdbProjection.Epsg4326);
+
+        const features = Object.values(data).reduce((acc, it) => [...acc, ...it.features], [] as Feature<Geometry, AmdbProperties>[]);
+        const airportMap: AmdbFeatureCollection = featureCollection(features);
+
+        const wsg84ReferencePoint = wgs84ArpDat.aerodromereferencepoint.features[0];
+
+        if (!wsg84ReferencePoint) {
             console.error('[OANC](loadAirportMap) Invalid airport data - aerodrome reference point not found');
             return;
         }
 
-        const refPointLat = referencePoint.properties['x-fbw-projection-center-lat'];
-        const refPointLong = referencePoint.properties['x-fbw-projection-center-long'];
-        const projectionScale = referencePoint.properties['x-fbw-projection-scale'];
+        const refPointLat = (wsg84ReferencePoint.geometry as Point).coordinates[1];
+        const refPointLong = (wsg84ReferencePoint.geometry as Point).coordinates[0];
+        const projectionScale = 1000;
 
         if (!refPointLat || !refPointLong || !projectionScale) {
             console.error('[OANC](loadAirportMap) Invalid airport data - aerodrome reference point does not contain lat/long/scale custom properties');
@@ -338,23 +347,49 @@ export class Oanc extends DisplayComponent<OancProps> {
 
         this.data = airportMap;
 
-        this.dataBbox = bbox(airportMap);
-
-        this.dataAirportName.set(referencePoint.properties.name);
+        this.dataAirportName.set(wsg84ReferencePoint.properties.name);
         this.dataAirportIcao.set(icao);
-        this.dataAirportIata.set(referencePoint.properties.iata);
+        this.dataAirportIata.set(wsg84ReferencePoint.properties.iata);
 
-        this.dataCenterCoordinates = { lat: refPointLat, long: refPointLong };
-        this.dataScale = projectionScale;
+        // Figure out the boundaries of the map data
 
-        const width = (this.dataBbox[2] - this.dataBbox[0]) * 3;
-        const height = (this.dataBbox[3] - this.dataBbox[1]) * 3;
+        const dataBbox = bbox(airportMap);
+
+        const width = (dataBbox[2] - dataBbox[0]) * 1;
+        const height = (dataBbox[3] - dataBbox[1]) * 1;
 
         this.canvasWidth.set(width);
         this.canvasHeight.set(height);
+        this.canvasCentreX.set(Math.abs(dataBbox[0]));
+        this.canvasCentreY.set(Math.abs(dataBbox[3]));
+
+        this.arpCoordinates = { lat: refPointLat, long: refPointLong };
+        this.canvasCenterCoordinates = this.calculateCanvasCenterCoordinates();
 
         this.sortDataIntoLayers(this.data);
         this.generateAllLabels(this.data);
+    }
+
+    private calculateCanvasCenterCoordinates() {
+        const pxDistanceToCanvasCentre = pointDistance(
+            (this.canvasWidth.get() / 2),
+            (this.canvasHeight.get() / 2),
+            this.canvasCentreX.get(),
+            this.canvasCentreY.get(),
+        );
+        const nmDistanceToCanvasCentre = UnitType.NMILE.convertFrom((pxDistanceToCanvasCentre / 1_000), UnitType.KILOMETER);
+        const angleToCanvasCentre = clampAngle(pointAngle(
+            (this.canvasWidth.get() / 2),
+            (this.canvasHeight.get() / 2),
+            this.canvasCentreX.get(),
+            this.canvasCentreY.get(),
+        ) + 90);
+
+        return placeBearingDistance(
+            this.arpCoordinates,
+            reciprocal(angleToCanvasCentre),
+            nmDistanceToCanvasCentre,
+        );
     }
 
     private createLabelElement(label: Label): HTMLSpanElement {
@@ -490,9 +525,18 @@ export class Oanc extends DisplayComponent<OancProps> {
                         break;
                     }
 
-                    const existing = this.labelManager.labels.find((it) => it.text === text);
+                    const existing = this.labelManager.labels.filter((it) => it.text === text);
 
-                    if (feature.properties.feattype === FeatureType.ParkingStandLocation && existing && feature.properties.termref === existing.associatedFeature.properties.termref) {
+                    const shortestDistance = existing.reduce((shortestDistance, label) => {
+                        const distance = pointDistance(label.position[0], label.position[1], labelPosition[0], labelPosition[1]);
+
+                        return distance > shortestDistance ? distance : shortestDistance;
+                    }, Number.MAX_SAFE_INTEGER);
+
+                    if (
+                        (feature.properties.feattype === FeatureType.ParkingStandLocation && existing.some((it) => feature.properties.termref === it.associatedFeature.properties.termref))
+                        || shortestDistance < 50
+                    ) {
                         continue;
                     }
 
@@ -518,15 +562,15 @@ export class Oanc extends DisplayComponent<OancProps> {
     private lastTime = 0;
 
     private projectCoordinates(coordinates: Coordinates): [number, number] {
-        const bearing = bearingTo(this.dataCenterCoordinates, coordinates);
-        const distance = distanceTo(this.dataCenterCoordinates, coordinates);
+        const bearing = bearingTo(this.arpCoordinates, coordinates);
+        const distance = distanceTo(this.arpCoordinates, coordinates);
 
         const xNm = distance * Math.cos(bearing * MathUtils.DEGREES_TO_RADIANS);
         const yNm = distance * Math.sin(bearing * MathUtils.DEGREES_TO_RADIANS);
 
         const nmToPx = 1_000 / 0.539957;
 
-        return [xNm * nmToPx, yNm * nmToPx];
+        return [yNm * nmToPx, xNm * nmToPx];
     }
 
     public Update() {
@@ -537,7 +581,6 @@ export class Oanc extends DisplayComponent<OancProps> {
         this.ppos.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'Degrees');
         this.ppos.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'Degrees');
         this.planeTrueHeading.set(SimVar.GetSimVarValue('PLANE HEADING DEGREES TRUE', 'Degrees'));
-        this.planeMagneticHeading.set(SimVar.GetSimVarValue('PLANE HEADING DEGREES MAGNETIC', 'Degrees'));
 
         if (!this.data) {
             return;
@@ -577,20 +620,18 @@ export class Oanc extends DisplayComponent<OancProps> {
 
         const mapCurrentHeading = this.interpolatedMapHeading.get();
 
-        this.mapParams.compute(this.dataCenterCoordinates, 0, 0.539957, 1_000, mapCurrentHeading);
+        this.canvasCentreReferencedMapParams.compute(this.canvasCenterCoordinates, 0, 0.539957, 1_000, mapCurrentHeading);
+        this.arpReferencedMapParams.compute(this.arpCoordinates, 0, 0.539957, 1_000, mapCurrentHeading);
 
         // eslint-disable-next-line prefer-const
-        let [offsetX, offsetY] = this.mapParams.coordinatesToXYy(this.ppos);
+        let [offsetX, offsetY] = this.canvasCentreReferencedMapParams.coordinatesToXYy(this.ppos);
 
-        const [projectedX, projectedY] = this.projectCoordinates(this.ppos);
-        this.projectedPpos[0] = projectedX;
-        this.projectedPpos[1] = projectedY;
+        [this.projectedPpos[0], this.projectedPpos[1]] = this.projectCoordinates(this.ppos);
 
         // TODO figure out how to not need this
         offsetY *= -1;
 
-        // const rotate = 160;
-        const rotate = 180 - mapCurrentHeading;
+        const rotate = -mapCurrentHeading;
 
         // Transform layers
         for (let i = 0; i < this.layerCanvasRefs.length; i++) {
@@ -602,7 +643,7 @@ export class Oanc extends DisplayComponent<OancProps> {
             const translateX = -(this.canvasWidth.get() / 2) + (OANC_RENDER_WIDTH / 2);
             const translateY = -(this.canvasHeight.get() / 2) + (OANC_RENDER_HEIGHT / 2);
 
-            canvas.style.transform = `translate(${(-offsetX)}px, ${offsetY}px) rotate(${rotate}deg)`;
+            canvas.style.transform = `translate(${-offsetX}px, ${offsetY}px) rotate(${rotate}deg)`;
 
             canvasScaleContainer.style.left = `${translateX}px`;
             canvasScaleContainer.style.top = `${translateY}px`;
@@ -612,7 +653,7 @@ export class Oanc extends DisplayComponent<OancProps> {
 
             context.resetTransform();
 
-            context.translate((this.canvasWidth.get() / 2), (this.canvasHeight.get() / 2));
+            context.translate(this.canvasCentreX.get(), this.canvasCentreY.get());
         }
 
         // Transform airplane
@@ -620,6 +661,7 @@ export class Oanc extends DisplayComponent<OancProps> {
         this.aircraftY.set(384);
         this.aircraftRotation.set(this.planeTrueHeading.get() - mapCurrentHeading);
 
+        // Reflow labels if necessary
         if (this.lastLayerDrawnIndex > this.layerCanvasRefs.length - 1) {
             this.doneDrawing = true;
 
@@ -806,7 +848,7 @@ export class Oanc extends DisplayComponent<OancProps> {
                     </div>
                 </div>
 
-                <div ref={this.cursorSurfaceRef} style={`position: absolute; width: ${OANC_RENDER_WIDTH}px; height: ${OANC_RENDER_HEIGHT}px; pointer-events: none;`} />
+                <div ref={this.cursorSurfaceRef} style={`position: absolute; width: ${OANC_RENDER_WIDTH}px; height: ${OANC_RENDER_HEIGHT}px; pointer-events: auto;`} />
 
                 <div
                     style={`position: absolute; width: ${OANC_RENDER_WIDTH}px; height: ${OANC_RENDER_HEIGHT}px; pointer-events: none`}
@@ -918,11 +960,11 @@ function renderFeaturesToCanvas(layer: number, ctx: CanvasRenderingContext2D, da
             } else {
                 path = new Path2D();
 
-                path.moveTo(outline.coordinates[0][1] * -1, outline.coordinates[0][0]);
+                path.moveTo(outline.coordinates[0][0], outline.coordinates[0][1] * -1);
 
                 for (let i = 1; i < outline.coordinates.length; i++) {
                     const point = outline.coordinates[i];
-                    path.lineTo(point[1] * -1, point[0]);
+                    path.lineTo(point[0], point[1] * -1);
                 }
 
                 pathCache.set(`${feature.properties.id}-${feature.properties.feattype}`, [path]);
@@ -948,11 +990,11 @@ function renderFeaturesToCanvas(layer: number, ctx: CanvasRenderingContext2D, da
                 for (const outline of polygon.coordinates) {
                     const toCachePath = new Path2D();
 
-                    toCachePath.moveTo(outline[0][1] * -1, outline[0][0]);
+                    toCachePath.moveTo(outline[0][0], outline[0][1] * -1);
 
                     for (let i = 1; i < outline.length; i++) {
                         const point = outline[i];
-                        toCachePath.lineTo(point[1] * -1, point[0]);
+                        toCachePath.lineTo(point[0], point[1] * -1);
                     }
 
                     paths.push(toCachePath);

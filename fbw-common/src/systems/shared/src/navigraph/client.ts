@@ -1,8 +1,9 @@
 import pkce from '@navigraph/pkce';
+import { AmdbProjection, AmdbResponse, FeatureTypeString } from '../amdb';
 import { AirportInfo, AuthType, NavigraphAirportCharts, NavigraphChart, NavigraphSubscriptionStatus } from './types';
 import { NXDataStore } from '../persistence';
 
-const NAVIGRAPH_API_SCOPES = 'openid charts offline_access';
+const NAVIGRAPH_API_SCOPES = 'openid charts amdb offline_access';
 
 const NAVIGRAPH_DEFAULT_AUTH_STATE = {
     code: '',
@@ -12,7 +13,7 @@ const NAVIGRAPH_DEFAULT_AUTH_STATE = {
     disabled: false,
 };
 
-export const emptyNavigraphCharts = {
+const emptyNavigraphCharts = {
     arrival: [],
     approach: [],
     airport: [],
@@ -306,6 +307,27 @@ export class NavigraphClient {
         }
 
         return null;
+    }
+
+    public async getAmdbData(
+        icao: string,
+        includeFeatureTypes?: FeatureTypeString[],
+        excludeFeatureTypes?: FeatureTypeString[],
+        projection = AmdbProjection.ArpAzeq,
+    ): Promise<AmdbResponse> {
+        let query = icao;
+
+        const excludeString = excludeFeatureTypes ? excludeFeatureTypes.join(',') : '';
+        const includeString = includeFeatureTypes ? includeFeatureTypes.join(',') : '';
+
+        query += `?projection=${projection}`;
+        query += '&format=geojson';
+        query += `&exclude=${excludeString}`;
+        query += `&include=${includeString}`;
+
+        const response = await this.amdbCall(query);
+
+        return JSON.parse(response);
     }
 
     public get hasToken(): boolean {

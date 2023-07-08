@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { clampAngle } from 'msfs-geo';
-import { MathUtils } from '@shared/MathUtils';
 import { Feature, LineString } from '@turf/turf';
 import { ArraySubject } from '@microsoft/msfs-sdk';
+import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { filterLabel, OancLabelFilter } from './OancLabelFIlter';
 import { Label, LabelStyle, LABEL_VISIBILITY_RULES, Oanc, OANC_RENDER_HEIGHT, OANC_RENDER_WIDTH } from './Oanc';
 import { intersectLineWithRectangle, midPoint, pointAngle, pointDistance } from './OancMapUtils';
@@ -28,14 +28,14 @@ export class OancLabelManager {
 
     public reflowLabels() {
         // eslint-disable-next-line prefer-const
-        let [offsetX, offsetY] = this.oanc.mapParams.coordinatesToXYy(this.oanc.ppos);
+        let [offsetX, offsetY] = this.oanc.arpReferencedMapParams.coordinatesToXYy(this.oanc.ppos);
 
         // TODO figure out how to not need this
         offsetY *= -1;
 
         const mapCurrentHeading = this.oanc.interpolatedMapHeading.get();
 
-        const rotate = 180 - mapCurrentHeading;
+        const rotate = -mapCurrentHeading;
 
         if (this.oanc.doneDrawing && this.showLabels && LABEL_VISIBILITY_RULES[this.oanc.zoomLevelIndex.get()]) {
             this.oanc.labelContainerRef.instance.style.visibility = 'visible';
@@ -54,7 +54,7 @@ export class OancLabelManager {
                     continue;
                 }
 
-                const [labelY, labelX] = label.position;
+                const [labelX, labelY] = label.position;
 
                 const hypotenuse = Math.sqrt(labelX ** 2 + labelY ** 2) * this.oanc.getZoomLevelInverseScale();
                 const angle = clampAngle(Math.atan2(labelY, labelX) * MathUtils.RADIANS_TO_DEGREES);
@@ -66,8 +66,8 @@ export class OancLabelManager {
                 const scaledOffsetY = offsetY * this.oanc.getZoomLevelInverseScale();
 
                 if (label.style !== LabelStyle.RunwayAxis) {
-                    let labelScreenX = (OANC_RENDER_WIDTH / 2) + -rotationAdjustX + -scaledOffsetX + this.oanc.panOffsetX.get();
-                    let labelScreenY = (OANC_RENDER_HEIGHT / 2) + rotationAdjustY + scaledOffsetY + this.oanc.panOffsetY.get();
+                    let labelScreenX = (OANC_RENDER_WIDTH / 2) + rotationAdjustX + -scaledOffsetX + this.oanc.panOffsetX.get();
+                    let labelScreenY = (OANC_RENDER_HEIGHT / 2) + -rotationAdjustY + scaledOffsetY + this.oanc.panOffsetY.get();
 
                     labelScreenX += this.oanc.modeAnimationOffsetX.get();
                     labelScreenY += this.oanc.modeAnimationOffsetY.get();

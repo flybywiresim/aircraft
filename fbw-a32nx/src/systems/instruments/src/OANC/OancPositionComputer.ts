@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
+import { FeatureType } from '@flybywiresim/fbw-sdk';
 import { booleanPointInPolygon, Polygon } from '@turf/turf';
 import { Oanc } from './Oanc';
-import { FeatureType } from './types';
 
 const OANC_VALID_POSITION_INDICATION_FEATURE_TYPES = [
     FeatureType.ParkingStandArea,

@@ -2,9 +2,8 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
+import { Arinc429WordData, MathUtils } from '@flybywiresim/fbw-sdk';
 import { DisplayComponent, EventBus, FSComponent, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import { MathUtils } from '@shared/MathUtils';
-import { Arinc429WordData } from '@shared/arinc429';
 import { Layer } from '../MsfsAvionicsCommon/Layer';
 
 export interface ArcModeOverlayProps {

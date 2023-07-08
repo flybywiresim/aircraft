@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { MathUtils } from '@shared/MathUtils';
+import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { clampAngle } from 'msfs-geo';
 
 export function midPoint(x1: number, y1: number, x2: number, y2: number): [number, number] {
