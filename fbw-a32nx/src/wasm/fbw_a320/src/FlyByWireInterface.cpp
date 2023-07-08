@@ -1119,6 +1119,8 @@ bool FlyByWireInterface::updateEngineData(double sampleTime) {
   engineData.engineEngine2Oil = engineEngine2Oil->get();
   engineData.engineEngine1TotalOil = engineEngine1TotalOil->get();
   engineData.engineEngine2TotalOil = engineEngine2TotalOil->get();
+  engineData.engineEngineOilTemperature_1 = simData.engineEngineOilTemperature_1;
+  engineData.engineEngineOilTemperature_2 = simData.engineEngineOilTemperature_2;
   engineData.engineEngine1FF = engineEngine1FF->get();
   engineData.engineEngine2FF = engineEngine2FF->get();
   engineData.engineEngine1PreFF = engineEngine1PreFF->get();

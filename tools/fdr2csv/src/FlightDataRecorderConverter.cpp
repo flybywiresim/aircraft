@@ -388,6 +388,8 @@ void FlightDataRecorderConverter::writeHeader(std::ofstream& out, const std::str
   fmt::print(out, "engine.engineEngine2Oil{}", delimiter);
   fmt::print(out, "engine.engineEngine1TotalOil{}", delimiter);
   fmt::print(out, "engine.engineEngine2TotalOil{}", delimiter);
+  fmt::print(out, "engine.engineEngineOilTemperature_1{}", delimiter);
+  fmt::print(out, "engine.engineEngineOilTemperature_2{}", delimiter);
   fmt::print(out, "engine.engineEngine1FF{}", delimiter);
   fmt::print(out, "engine.engineEngine2FF{}", delimiter);
   fmt::print(out, "engine.engineEngine1PreFF{}", delimiter);
@@ -862,6 +864,8 @@ void FlightDataRecorderConverter::writeStruct(std::ofstream& out,
   fmt::print(out, "{}{}", engine.engineEngine2Oil, delimiter);
   fmt::print(out, "{}{}", engine.engineEngine1TotalOil, delimiter);
   fmt::print(out, "{}{}", engine.engineEngine2TotalOil, delimiter);
+  fmt::print(out, "{}{}", engine.engineEngineOilTemperature_1, delimiter);
+  fmt::print(out, "{}{}", engine.engineEngineOilTemperature_2, delimiter);
   fmt::print(out, "{}{}", engine.engineEngine1FF, delimiter);
   fmt::print(out, "{}{}", engine.engineEngine2FF, delimiter);
   fmt::print(out, "{}{}", engine.engineEngine1PreFF, delimiter);
