@@ -155,11 +155,11 @@ $display-mfd-dark-grey: #3c3c3c;
 
 .MFDDropdownMenu {
   background-color: $display-mfd-dark-grey;
-  width: 100%;
+  min-width: 100%;
   position: absolute;
   z-index: 10;
   overflow: auto;
-  max-height: 200px;
+  max-height: 275px;
   display: none;
   border: 2px outset $display-light-grey;
 }
@@ -170,6 +170,8 @@ $display-mfd-dark-grey: #3c3c3c;
   padding: 12px 16px;
   display: block;
   border: 3px solid transparent;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 .MFDDropdownMenuElement:hover {

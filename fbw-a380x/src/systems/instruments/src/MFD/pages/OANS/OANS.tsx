@@ -63,6 +63,8 @@ export class OANS extends DisplayComponent<OANSProps> {
 
     private contextMenuRef = FSComponent.createRef<ContextMenu>();
 
+    private contextMenuOpened = Subject.create<boolean>(false);
+
     private oansMenuRef = FSComponent.createRef<HTMLDivElement>();
 
     private oansMenuSelectedPageIndex = Subject.create(0);
@@ -176,6 +178,7 @@ export class OANS extends DisplayComponent<OANSProps> {
                     <span style="font-size: 40px; color: white;">MAP</span>
                     <ContextMenu
                         ref={this.contextMenuRef}
+                        opened={this.contextMenuOpened}
                         idPrefix="contextMenu"
                         values={this.contextMenuActions}
                     />
@@ -197,6 +200,7 @@ export class OANS extends DisplayComponent<OANSProps> {
                                         values={this.availableEntityList}
                                         selectedIndex={this.selectedEntityIndex}
                                         idPrefix="123"
+                                        freeTextAllowed={false}
                                         onModified={(i) => this.selectedEntityIndex.set(i)}
                                     />
                                     <div style="padding-top: 20px; margin-top: 2px; border-right: 2px solid lightgrey; height: 100%;">
@@ -271,6 +275,7 @@ export class OANS extends DisplayComponent<OANSProps> {
                                         values={this.airportList}
                                         selectedIndex={this.selectedAirportIndex}
                                         idPrefix="airportDropdown"
+                                        freeTextAllowed={false}
                                         onModified={(i) => this.selectedAirportIndex.set(i)}
                                     />
                                     <div style="padding-top: 20px; margin-top: 2px; height: 100%;">

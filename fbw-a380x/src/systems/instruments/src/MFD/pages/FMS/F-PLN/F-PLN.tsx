@@ -1,4 +1,4 @@
-import { ComponentProps, DisplayComponent, FSComponent, NodeReference, Subject, Subscribable, Subscription, VNode } from '@microsoft/msfs-sdk';
+import { ArraySubject, ComponentProps, DisplayComponent, FSComponent, NodeReference, Subject, Subscribable, Subscription, VNode } from '@microsoft/msfs-sdk';
 
 import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
 import { MfdComponentProps } from 'instruments/src/MFD/MFD';
@@ -11,6 +11,8 @@ import { mockDerivedData, mockFlightPlanLegsData, mockPredictionsData, mockPseud
 import { DerivedFplnLegData, FlightPlanLeg, PseudoWaypoint, WindVector } from 'instruments/src/MFD/dev-data/FlightPlanInterfaceMockup';
 import { ContextMenu } from 'instruments/src/MFD/pages/common/ContextMenu';
 import { getRevisionsMenu } from 'instruments/src/MFD/pages/FMS/F-PLN/FplnRevisionsMenu';
+import { DestinationWindow } from 'instruments/src/MFD/pages/FMS/F-PLN/DestinationWindow';
+import { InsertNextWptFromWindow } from 'instruments/src/MFD/pages/FMS/F-PLN/InsertNextWptFrom';
 
 interface MfdFmsFplnProps extends MfdComponentProps {
     instrument: BaseInstrument;
@@ -23,6 +25,8 @@ export class MfdFmsFpln extends DisplayComponent<MfdFmsFplnProps> {
     private activePageTitle = Subject.create<string>('');
 
     private tmpyIsActive = Subject.create<boolean>(false);
+
+    private lineColor = Subject.create<FplnLineColor>(FplnLineColor.Active);
 
     private flightPlan = { allLegs: mockFlightPlanLegsData };
 
@@ -44,6 +48,8 @@ export class MfdFmsFpln extends DisplayComponent<MfdFmsFplnProps> {
 
     private linesDivRef = FSComponent.createRef<HTMLDivElement>();
 
+    private tmpyLineRef = FSComponent.createRef<HTMLDivElement>();
+
     private displayFplnFromLegIndex = Subject.create<number>(0);
 
     private disabledScrollDown = Subject.create(true);
@@ -52,7 +58,17 @@ export class MfdFmsFpln extends DisplayComponent<MfdFmsFplnProps> {
 
     private revisionsMenuRef = FSComponent.createRef<ContextMenu>();
 
-    private revisionsMenuIsOpened = Subject.create<boolean>(false);
+    private revisedWaypoint = Subject.create<FlightPlanLeg>(null);
+
+    private revisedWaypointIndex = Subject.create<number>(0);
+
+    private revisionsMenuOpened = Subject.create<boolean>(false);
+
+    private newDestWindowOpened = Subject.create<boolean>(false);
+
+    private insertNextWptWindowOpened = Subject.create<boolean>(false);
+
+    private nextWptAvailableWaypoints = ArraySubject.create<string>(['']) ;
 
     private update(startAtIndex: number): void {
         this.flightPlan = { allLegs: mockFlightPlanLegsData };
@@ -165,7 +181,8 @@ export class MfdFmsFpln extends DisplayComponent<MfdFmsFplnProps> {
             label: 'NO ALTN F-PLN',
         });
 
-        for (let drawIndex = startAtIndex; drawIndex < Math.min(this.lineData.length, startAtIndex + 9); drawIndex++) {
+        const untilLegIndex = Math.min(this.lineData.length, startAtIndex + (this.tmpyIsActive.get() ? 8 : 9));
+        for (let drawIndex = startAtIndex; drawIndex < untilLegIndex; drawIndex++) {
             const lineIndex = drawIndex - startAtIndex;
 
             const previousRow = (drawIndex > 0) ? this.lineData[drawIndex - 1] : null;
@@ -199,9 +216,9 @@ export class MfdFmsFpln extends DisplayComponent<MfdFmsFplnProps> {
                     openRevisionsMenuCallback={() => this.openRevisionsMenu(lineIndex, this.lineData[drawIndex].originalLegIndex)}
                     flags={Subject.create(flags)}
                     displayEfobAndWind={this.displayEfobAndWind}
-                    lineColor={Subject.create(FplnLineColor.Active)}
+                    lineColor={this.lineColor}
                     selectedForRevision={Subject.create(false)}
-                    revisionsMenuIsOpened={this.revisionsMenuIsOpened}
+                    revisionsMenuIsOpened={this.revisionsMenuOpened}
                 />
             );
             FSComponent.render(node, this.linesDivRef.instance);
@@ -209,10 +226,43 @@ export class MfdFmsFpln extends DisplayComponent<MfdFmsFplnProps> {
     }
 
     private openRevisionsMenu(lineIndex: number, originalLegIndex: number) {
-        if (this.revisionsMenuIsOpened.get() === false) {
-            console.log(`Open revisions menu at line ${lineIndex}, leg ${originalLegIndex}`);
-            this.revisionsMenuRef.instance.display(195, 183);
+        if (this.revisionsMenuOpened.get() === false) {
+            const leg = this.flightPlan.allLegs[originalLegIndex];
+
+            if (leg instanceof FlightPlanLeg) {
+                this.revisedWaypoint.set(leg);
+                this.revisedWaypointIndex.set(originalLegIndex);
+                this.revisionsMenuRef.instance.props.values = getRevisionsMenu(this, 'waypoint');
+                this.revisionsMenuRef.instance.display(195, 183);
+            } else {
+                // Find last leg before DISCO which is a proper leg, and revise this leg
+                let beforeDiscoIndex = originalLegIndex - 1;
+                while (beforeDiscoIndex >= 0) {
+                    const beforeLeg = this.flightPlan.allLegs[beforeDiscoIndex];
+                    if (beforeLeg instanceof FlightPlanLeg) {
+                        this.revisedWaypoint.set(beforeLeg);
+                    }
+                    beforeDiscoIndex -= 1;
+                }
+                this.revisionsMenuRef.instance.props.values = getRevisionsMenu(this, 'discontinuity');
+                this.revisionsMenuRef.instance.display(195, 183);
+            }
         }
+    }
+
+    public openNewDestWindow() {
+        this.newDestWindowOpened.set(true);
+    }
+
+    public openInsertNextWptFromWindow() {
+        const wpt = this.flightPlan.allLegs.slice(this.revisedWaypointIndex.get() + 1).map((el) => {
+            if (el instanceof FlightPlanLeg) {
+                return el.ident;
+            }
+            return null;
+        }).filter((el) => el !== null);
+        this.nextWptAvailableWaypoints.set(wpt);
+        this.insertNextWptWindowOpened.set(true);
     }
 
     public onAfterRender(node: VNode): void {
@@ -243,7 +293,7 @@ export class MfdFmsFpln extends DisplayComponent<MfdFmsFplnProps> {
             this.efobAndWindButtonDynamicContent.set(val === true ? this.efobWindButton() : this.spdAltButton());
             this.efobAndWindButtonMenuItems.set([{
                 action: () => this.displayEfobAndWind.set(!this.displayEfobAndWind.get()),
-                label: this.displayEfobAndWind.get() === true ? 'SPD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ALT' : 'EFOB&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;T.WIND',
+                label: this.displayEfobAndWind.get() === true ? 'SPD&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ALT' : 'EFOB&nbsp;&nbsp;&nbsp;&nbsp;T.WIND',
             }]);
         }, true));
 
@@ -252,6 +302,17 @@ export class MfdFmsFpln extends DisplayComponent<MfdFmsFplnProps> {
 
             this.disabledScrollUp.set(!this.lineData || val <= 0);
             this.disabledScrollDown.set(!this.lineData || val >= this.lineData.length - (this.tmpyIsActive.get() ? 8 : 9));
+        }, true));
+
+        this.subs.push(this.tmpyIsActive.sub((val) => {
+            if (val === true) {
+                this.lineColor.set(FplnLineColor.Temporary);
+                this.tmpyLineRef.instance.style.display = 'flex';
+            } else {
+                this.lineColor.set(FplnLineColor.Active);
+                this.tmpyLineRef.instance.style.display = 'none';
+            }
+            this.update(this.displayFplnFromLegIndex.get());
         }, true));
     }
 
@@ -299,8 +360,27 @@ export class MfdFmsFpln extends DisplayComponent<MfdFmsFplnProps> {
                     <ContextMenu
                         ref={this.revisionsMenuRef}
                         idPrefix="revisionsMenu"
-                        values={getRevisionsMenu(this, false, false)}
-                        isOpened={this.revisionsMenuIsOpened}
+                        values={getRevisionsMenu(this, 'waypoint')}
+                        opened={this.revisionsMenuOpened}
+                    />
+                    <DestinationWindow
+                        revisedWaypoint={this.revisedWaypoint}
+                        visible={this.newDestWindowOpened}
+                        cancelAction={() => this.newDestWindowOpened.set(false)}
+                        confirmAction={(newDest) => {
+                            console.log(`New DEST: ${newDest}`);
+                            this.newDestWindowOpened.set(false);
+                        }}
+                    />
+                    <InsertNextWptFromWindow
+                        revisedWaypoint={this.revisedWaypoint}
+                        availableWaypoints={this.nextWptAvailableWaypoints}
+                        visible={this.insertNextWptWindowOpened}
+                        cancelAction={() => this.insertNextWptWindowOpened.set(false)}
+                        confirmAction={(nextWpt) => {
+                            console.log(`Next WPT: ${nextWpt}`);
+                            // this.insertNextWptWindowOpened.set(false);
+                        }}
                     />
                     <div style="display: flex; flex-direction: row; justify-content: flex-start; margin-top: 5px; border-bottom: 1px solid lightgrey;">
                         <div style="display: flex; width: 25%; justify-content: flex-start; align-items: center; padding-left: 3px;">
@@ -329,6 +409,36 @@ export class MfdFmsFpln extends DisplayComponent<MfdFmsFplnProps> {
                         </div>
                     </div>
                     <div ref={this.linesDivRef} />
+                    <div ref={this.tmpyLineRef} style="height: 72px; display: flex; flex-direction: row; justify-content: space-between; align-items: flex-end;">
+                        <Button
+                            label={Subject.create(
+                                <div style="display: flex; flex-direction: row; justify-content: space-between;">
+                                    <span style="text-align: center; vertical-align: center; margin-right: 10px;">
+                                        ERASE
+                                        <br />
+                                        TMPY
+                                    </span>
+                                    <span style="display: flex; align-items: center; justify-content: center;">*</span>
+                                </div>,
+                            )}
+                            onClick={() => this.tmpyIsActive.set(false)}
+                            buttonStyle="color: #e68000; padding-right: 2px;"
+                        />
+                        <Button
+                            label={Subject.create(
+                                <div style="display: flex; flex-direction: row; justify-content: space-between;">
+                                    <span style="text-align: center; vertical-align: center; margin-right: 10px;">
+                                        INSERT
+                                        <br />
+                                        TMPY
+                                    </span>
+                                    <span style="display: flex; align-items: center; justify-content: center;">*</span>
+                                </div>,
+                            )}
+                            onClick={() => this.tmpyIsActive.set(false)}
+                            buttonStyle="color: #e68000; padding-right: 2px;"
+                        />
+                    </div>
                     <div style="flex-grow: 1;" />
                     {/* fill space vertically */}
                     <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid lightgrey;">
@@ -377,10 +487,39 @@ export class MfdFmsFpln extends DisplayComponent<MfdFmsFplnProps> {
                                     <span style="display: flex; align-items: center; justify-content: center;"><TriangleUp /></span>
                                 </div>,
                             )}
-                            onClick={() => console.log('F_PLN INFO')}
+                            onClick={() => null}
                             buttonStyle="padding-right: 5px;"
+                            idPrefix="f-pln-infoBtn"
+                            menuItems={Subject.create([{
+                                label: 'ALTERNATE',
+                                action: () => this.props.navigateTo(`fms/${this.props.activeUri.get().category}/f-pln-alternate`),
+                            },
+                            {
+                                label: 'CLOSEST AIRPORTS',
+                                action: () => this.props.navigateTo(`fms/${this.props.activeUri.get().category}/f-pln-closest-airports`),
+                            },
+                            {
+                                label: 'EQUI-TIME POINT',
+                                action: () => this.props.navigateTo(`fms/${this.props.activeUri.get().category}/f-pln-equi-time-point`),
+                            },
+                            {
+                                label: 'FIX INFO',
+                                action: () => this.props.navigateTo(`fms/${this.props.activeUri.get().category}/f-pln-fix-info`),
+                            },
+                            {
+                                label: 'LL CROSSING',
+                                action: () => this.props.navigateTo(`fms/${this.props.activeUri.get().category}/f-pln-ll-xing-time-mkr`),
+                            },
+                            {
+                                label: 'TIME MARKER',
+                                action: () => this.props.navigateTo(`fms/${this.props.activeUri.get().category}/f-pln-ll-xing-time-mkr`),
+                            },
+                            {
+                                label: 'CPNY F-PLN REPORT',
+                                action: () => null,
+                            }])}
                         />
-                        <Button label="DIR TO" onClick={() => this.props.navigateTo(`fms/${this.props.activeUri.get().category}/f-pln/direct-to`)} buttonStyle="margin-right: 5px;" />
+                        <Button label="DIR TO" onClick={() => this.props.navigateTo(`fms/${this.props.activeUri.get().category}/f-pln-direct-to`)} buttonStyle="margin-right: 5px;" />
                     </div>
                     {/* end page content */}
                 </div>
@@ -467,7 +606,6 @@ export interface FplnLegLineProps extends FplnLineCommonProps {
     selectedForRevision: Subject<boolean>;
     revisionsMenuIsOpened: Subject<boolean>;
 }
-// TODO TMPY fpln line (CLEAR/INSERT)
 
 class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
     // Make sure to collect all subscriptions here, so we can properly destroy them.
@@ -561,17 +699,20 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
                 this.lineRef.getOrDefault().classList.remove('MFDFplnLineSecondary');
             }
 
+            // TODO: Hold/turn direction
             if (data.overfly === true) {
                 this.identRef.getOrDefault().innerHTML = `<span>${data.ident}<span style="font-size: 24px; vertical-align: baseline;">@</span></span>`;
             } else {
                 this.identRef.getOrDefault().innerText = data.ident;
             }
 
+            // TODO: Hold/turn direction
             if (this.annotationRef.getOrDefault()) {
                 this.annotationRef.getOrDefault().innerText = data.annotation;
             }
 
             // Format time to leg
+            // TODO: Time constraint, "HOLD SPD" label
             if (data.etaOrSecondsFromPresent) {
                 const minutesTotal = data.etaOrSecondsFromPresent / 60;
                 const hours = Math.abs(Math.floor(minutesTotal / 60)).toFixed(0).toString().padStart(2, '0');
@@ -586,6 +727,7 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
             }
             FSComponent.render(this.lineConnector(data), this.connectorRef.getOrDefault());
 
+            // TODO: True / magnetic track
             if (this.trackRef.getOrDefault() && this.distRef.getOrDefault() && this.fpaRef.getOrDefault()) {
                 if (FplnLineFlags.AfterSpecial === (this.props.flags.get() & FplnLineFlags.AfterSpecial)) {
                     this.trackRef.getOrDefault().innerText = '';
@@ -665,7 +807,7 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
     }
 
     private formatAltitude(data: FplnLineWaypointDisplayData): VNode {
-        let altStr = '';
+        let altStr: VNode = <></>;
         const previousRow = this.props.previousRow.get();
         if (data.altitudePrediction) {
             if (previousRow
@@ -673,11 +815,11 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
                 && previousRow.altitudePrediction === data.altitudePrediction
                 && !data.hasAltitudeConstraint
                 && !(FplnLineFlags.AfterSpecial === (this.props.flags.get() & FplnLineFlags.AfterSpecial) || FplnLineFlags.FirstLine === (this.props.flags.get() & FplnLineFlags.FirstLine))) {
-                altStr = ':';
+                altStr = <span style="font-family: HoneywellMCDU, monospace;">"</span>;
             } else if (data.altitudePrediction > (data.transitionAltitude ?? 18000)) {
-                altStr = `FL${Math.round(data.altitudePrediction / 100).toString()}`;
+                altStr = <span>{`FL${Math.round(data.altitudePrediction / 100).toString()}`}</span>;
             } else {
-                altStr = data.altitudePrediction.toFixed(0);
+                altStr = <span>{data.altitudePrediction.toFixed(0)}</span>;
             }
         }
         if (data.hasAltitudeConstraint) {
@@ -696,20 +838,20 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
                 </>
             );
         }
-        return <span style="margin-left: 20px;">{altStr.toString()}</span>;
+        return <span style="margin-left: 20px;">{altStr}</span>;
     }
 
     private formatSpeed(data: FplnLineWaypointDisplayData): VNode {
-        let speedStr = '';
+        let speedStr: VNode = <></>;
         const previousRow = this.props.previousRow.get();
         if (previousRow
             && isWaypoint(previousRow)
             && previousRow.speedPrediction === data.speedPrediction
             && !data.hasSpeedConstraint
             && !(FplnLineFlags.AfterSpecial === (this.props.flags.get() & FplnLineFlags.AfterSpecial) || FplnLineFlags.FirstLine === (this.props.flags.get() & FplnLineFlags.FirstLine))) {
-            speedStr = ':';
+            speedStr = <span style="font-family: HoneywellMCDU, monospace;">"</span>;
         } else {
-            speedStr = data.speedPrediction > 2 ? data.speedPrediction.toString() : `.${data.speedPrediction.toFixed(2).split('.')[1]}`;
+            speedStr = <span>{data.speedPrediction > 2 ? data.speedPrediction.toString() : `.${data.speedPrediction.toFixed(2).split('.')[1]}`}</span>;
         }
         if (data.hasSpeedConstraint) {
             if (data.speedConstraintIsRespected) {
@@ -727,7 +869,7 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
                 </>
             );
         }
-        return <span style="margin-left: 20px;">{speedStr.toString()}</span>;
+        return <span style="margin-left: 20px;">{speedStr}</span>;
     }
 
     private efobOrSpeed(data: FplnLineWaypointDisplayData): VNode {

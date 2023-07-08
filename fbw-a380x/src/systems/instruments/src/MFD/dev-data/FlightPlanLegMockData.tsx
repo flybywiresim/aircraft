@@ -22,7 +22,7 @@ function simpleWaypointFactory(name: string): Waypoint {
         subSectionCode: EnrouteSubsectionCode.Waypoints,
         name,
         area: WaypointArea.Enroute,
-        location: { lat: 0, long: 0 },
+        location: { lat: 42.262, long: 50.282 },
         databaseId: 'abc123',
         icaoCode: 'XYZ',
         ident: name,

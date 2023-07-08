@@ -90,9 +90,10 @@ export class SurvHeader extends DisplayComponent<MfdSurvHeaderProps> {
                         values={this.availableSystems}
                         selectedIndex={this.sysSelectorSelectedIndex}
                         idPrefix="sysSelectorDropdown"
+                        freeTextAllowed={false}
                         onModified={(val) => this.changeSystem(val)}
                         containerStyle="width: 25%;"
-                        alignLabels="left"
+                        alignLabels="flex-start"
                     />
                     <span class="MFDLabel" style="width: 25%; text-align: left; padding: 8px 10px 0px 10px;">{this.props.callsign}</span>
                 </div>

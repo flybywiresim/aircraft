@@ -445,7 +445,10 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                                 this.toDeratedThrustSelected();
                                             }}
                                             idPrefix="deratedDropdown"
+                                            freeTextAllowed={false}
                                             containerStyle="width: 100px;"
+                                            numberOfDigitsForInputField={3}
+                                            alignLabels="flex-start"
                                         />
                                     </div>
                                 </div>
@@ -461,7 +464,10 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                         values={ArraySubject.create(['1', '2', '3'])}
                                         selectedIndex={this.toSelectedFlapsIndex}
                                         idPrefix="flapDropdown"
+                                        freeTextAllowed={false}
                                         containerStyle="width: 75px;"
+                                        numberOfDigitsForInputField={1}
+                                        alignLabels="center"
                                     />
                                 </div>
                                 <div style="width: 120px; margin-top: 15px; background-color: yellow; justify-self: center; align-self: center;">
@@ -477,6 +483,9 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                         values={ArraySubject.create(['OFF/APU', 'ON'])}
                                         selectedIndex={this.toSelectedPacksIndex}
                                         idPrefix="packsDropdown"
+                                        freeTextAllowed={false}
+                                        numberOfDigitsForInputField={7}
+                                        alignLabels="center"
                                     />
                                 </div>
                                 <div style="margin-top: 15px;">
@@ -484,6 +493,9 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                         values={ArraySubject.create(['OFF', 'ENG ONLY', 'ENG + WING'])}
                                         selectedIndex={this.toSelectedAntiIceIndex}
                                         idPrefix="antiIceDropdown"
+                                        freeTextAllowed={false}
+                                        numberOfDigitsForInputField={10}
+                                        alignLabels="center"
                                     />
                                 </div>
                             </div>
@@ -626,7 +638,10 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                         values={ArraySubject.create(['NONE', '01', '02', '03', '04', '05'])}
                                         selectedIndex={this.clbDeratedClbSelectedIndex}
                                         idPrefix="deratedClbDropdown"
+                                        freeTextAllowed={false}
                                         containerStyle="width: 125px;"
+                                        numberOfDigitsForInputField={4}
+                                        alignLabels="center"
                                     />
                                 </div>
                             </div>
@@ -807,7 +822,7 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                     />
                                 </div>
                                 <div>
-                                    <Button label="SPD CSTR" onClick={() => this.props.navigateTo('fms/active/f-pln/vert-rev')}>
+                                    <Button label="SPD CSTR" onClick={() => this.props.navigateTo('fms/active/f-pln-vert-rev')}>
                                         SPD CSTR
                                     </Button>
                                 </div>
@@ -938,7 +953,7 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                 </div>
                                 <div style="display: flex; flex-direction: row;">
                                     <Button label="CMS" onClick={() => console.log('CMS')} buttonStyle="margin-right: 10px;" />
-                                    <Button label="STEP ALTs" onClick={() => this.props.navigateTo('fms/active/f-pln/vert-rev')} />
+                                    <Button label="STEP ALTs" onClick={() => this.props.navigateTo('fms/active/f-pln-vert-rev')} />
                                 </div>
                             </div>
                         </TopTabNavigatorPage>
@@ -1028,7 +1043,7 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                     <span class="MFDUnitLabel trailingUnit">T</span>
                                 </div>
                                 <div style="display: flex; flex-direction: row;">
-                                    <Button label="SPD CSTR" onClick={() => this.props.navigateTo('fms/active/f-pln/vert-rev')} />
+                                    <Button label="SPD CSTR" onClick={() => this.props.navigateTo('fms/active/f-pln-vert-rev')} />
                                 </div>
                             </div>
                         </TopTabNavigatorPage>
@@ -1282,7 +1297,7 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                         <div ref={this.activateApprButton} style="margin-right: 5px;">
                             <Button
                                 label={Subject.create(
-                                    <div style="display: flex; flex-direction: row;">
+                                    <div style="display: flex; flex-direction: row; justify-content: space-between;">
                                         <span style="text-align: center; vertical-align: center; margin-right: 10px;">
                                             ACTIVATE
                                             <br />

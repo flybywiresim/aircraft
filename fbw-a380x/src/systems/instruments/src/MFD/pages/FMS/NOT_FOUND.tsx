@@ -15,6 +15,8 @@ export class MfdNotFound extends DisplayComponent<MfdNotFoundProps> {
 
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
+
+        new Promise((resolve) => setTimeout(resolve, 500)).then(() => this.props.navigateTo('back'));
     }
 
     public destroy(): void {

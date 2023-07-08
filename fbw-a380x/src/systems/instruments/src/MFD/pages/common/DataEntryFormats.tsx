@@ -613,6 +613,27 @@ export class AirportFormat implements DataEntryFormat<string> {
     }
 }
 
+export class DropdownFieldFormat implements DataEntryFormat<string> {
+    public placeholder = '';
+
+    public maxDigits = 6;
+
+    constructor(numDigits: number) {
+        this.maxDigits = numDigits;
+    }
+
+    public format(value: string) {
+        if (!value) {
+            return [this.placeholder, null, null] as FieldFormatTuple;
+        }
+        return [value, null, null] as FieldFormatTuple;
+    }
+
+    public async parse(input: string) {
+        return input;
+    }
+}
+
 export class LongAlphanumericFormat implements DataEntryFormat<string> {
     public placeholder = '----------';
 

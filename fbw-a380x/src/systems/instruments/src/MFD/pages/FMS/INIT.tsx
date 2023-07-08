@@ -248,7 +248,7 @@ export class MfdFmsInit extends DisplayComponent<MfdFmsInitProps> {
                         <Button
                             label="DEPARTURE"
                             disabled={this.departureButtonDisabled}
-                            onClick={() => this.props.navigateTo(`fms/${this.props.activeUri.get().category}/f-pln/departure`)}
+                            onClick={() => this.props.navigateTo(`fms/${this.props.activeUri.get().category}/f-pln-departure`)}
                             buttonStyle="width: 160px; margin-left: 150px; margin-bottom: 10px;"
                         />
                         <Button label="RTE SUMMARY" onClick={() => this.props.navigateTo('fms/data/route')} buttonStyle="margin-left: 50px; margin-bottom: 10px;" />

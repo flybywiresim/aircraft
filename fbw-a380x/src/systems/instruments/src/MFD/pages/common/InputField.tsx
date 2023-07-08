@@ -16,6 +16,8 @@ interface InputFieldProps<T> extends ComponentProps {
      * If defined, this component does not update the value prop, but rather calls this method.
      */
     onModified?: (newValue: T) => void;
+    onInput?: (newValue: string) => void; // Called for every character that is being typed
+    handleFocusBlurExternally?: boolean;
     containerStyle?: string;
     alignText?: 'flex-start' | 'center' | 'flex-end';
 }
@@ -31,7 +33,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
 
     private spanningDivRef = FSComponent.createRef<HTMLDivElement>();
 
-    private textInputRef = FSComponent.createRef<HTMLSpanElement>();
+    public textInputRef = FSComponent.createRef<HTMLSpanElement>();
 
     private caretRef = FSComponent.createRef<HTMLSpanElement>();
 
@@ -96,6 +98,10 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
             } else {
                 this.modifiedFieldValue.set(this.modifiedFieldValue.get().slice(0, -1));
             }
+
+            if (this.props.onInput) {
+                this.props.onInput(this.modifiedFieldValue.get());
+            }
         }
     }
 
@@ -114,14 +120,23 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
                 this.modifiedFieldValue.set(`${this.modifiedFieldValue.get()}${key}`);
                 this.caretRef.getOrDefault().style.display = 'inline';
             }
+
+            if (this.props.onInput) {
+                this.props.onInput(this.modifiedFieldValue.get());
+            }
         } else {
             // Enter was pressed
             ev.preventDefault();
-            this.textInputRef.getOrDefault().blur();
+
+            if (this.props.handleFocusBlurExternally) {
+                this.onBlur(true);
+            } else {
+                this.textInputRef.getOrDefault().blur();
+            }
         }
     }
 
-    private onFocus() {
+    public onFocus() {
         if (this.isValidating.get() === false && this.props.disabled.get() === false) {
             this.isFocused.set(true);
             this.textInputRef.getOrDefault().classList.add('valueSelected');
@@ -135,17 +150,19 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
         }
     }
 
-    private async onBlur() {
+    public async onBlur(validateAndUpdate: boolean = true) {
         this.isFocused.set(false);
         this.textInputRef.getOrDefault().classList.remove('valueSelected');
         this.caretRef.getOrDefault().style.display = 'none';
         this.updateDisplayElement();
 
-        if (this.modifiedFieldValue.get() === null && this.props.value.get() !== null) {
-            // Enter is pressed after no modification
-            await this.validateAndUpdate(this.props.value.get().toString());
-        } else {
-            await this.validateAndUpdate(this.modifiedFieldValue.get());
+        if (validateAndUpdate) {
+            if (this.modifiedFieldValue.get() === null && this.props.value.get() !== null) {
+                // Enter is pressed after no modification
+                await this.validateAndUpdate(this.props.value.get().toString());
+            } else {
+                await this.validateAndUpdate(this.modifiedFieldValue.get());
+            }
         }
         this.spanningDivRef.getOrDefault().style.justifyContent = this.props.alignText;
         this.textInputRef.getOrDefault().classList.remove('editing');
@@ -196,6 +213,9 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
         }
         if (this.props.alignText === undefined) {
             this.props.alignText = 'flex-end';
+        }
+        if (this.props.handleFocusBlurExternally === undefined) {
+            this.props.handleFocusBlurExternally = false;
         }
 
         // Aspect ratio for font: 2:3 WxH
@@ -261,18 +281,20 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
 
         this.textInputRef.instance.addEventListener('keypress', (ev) => this.onKeyPress(ev));
         this.textInputRef.instance.addEventListener('keydown', (ev) => this.onKeyDown(ev));
-        this.textInputRef.instance.addEventListener('focus', () => this.onFocus());
-        this.textInputRef.instance.addEventListener('blur', () => this.onBlur());
 
-        this.spanningDivRef.instance.addEventListener('click', () => {
-            this.textInputRef.instance.focus();
-        });
-        this.leadingUnitRef.instance.addEventListener('click', () => {
-            this.textInputRef.instance.focus();
-        });
-        this.trailingUnitRef.instance.addEventListener('click', () => {
-            this.textInputRef.instance.focus();
-        });
+        if (!this.props.handleFocusBlurExternally) {
+            this.textInputRef.instance.addEventListener('focus', () => this.onFocus());
+            this.textInputRef.instance.addEventListener('blur', () => this.onBlur());
+            this.spanningDivRef.instance.addEventListener('click', () => {
+                this.textInputRef.instance.focus();
+            });
+            this.leadingUnitRef.instance.addEventListener('click', () => {
+                this.textInputRef.instance.focus();
+            });
+            this.trailingUnitRef.instance.addEventListener('click', () => {
+                this.textInputRef.instance.focus();
+            });
+        }
     }
 
     render(): VNode {

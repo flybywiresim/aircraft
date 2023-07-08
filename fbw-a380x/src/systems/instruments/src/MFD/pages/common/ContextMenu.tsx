@@ -10,7 +10,7 @@ export interface ContextMenuElementProps {
 interface ContextMenuProps extends ComponentProps {
     values: SubscribableArray<ContextMenuElementProps>;
     idPrefix: string;
-    isOpened: Subject<boolean>;
+    opened: Subject<boolean>;
 }
 export class ContextMenu extends DisplayComponent<ContextMenuProps> {
     private contextMenuRef = FSComponent.createRef<HTMLDivElement>();
@@ -18,7 +18,7 @@ export class ContextMenu extends DisplayComponent<ContextMenuProps> {
     private openedAt: number = 0;
 
     public display(x: number, y: number) {
-        this.props.isOpened.set(true);
+        this.props.opened.set(true);
         this.openedAt = Date.now();
         this.contextMenuRef.instance.style.display = 'block';
         this.contextMenuRef.instance.style.left = `${x}px`;
@@ -26,7 +26,7 @@ export class ContextMenu extends DisplayComponent<ContextMenuProps> {
     }
 
     public hideMenu() {
-        this.props.isOpened.set(false);
+        this.props.opened.set(false);
         this.contextMenuRef.instance.style.display = 'none';
     }
 
@@ -46,7 +46,7 @@ export class ContextMenu extends DisplayComponent<ContextMenuProps> {
 
         // Close dropdown menu if clicked outside
         document.getElementById('MFD_CONTENT').addEventListener('click', () => {
-            if ((Date.now() - this.openedAt) > 100 && this.props.isOpened.get() === true) {
+            if ((Date.now() - this.openedAt) > 100 && this.props.opened.get() === true) {
                 this.hideMenu();
             }
         });

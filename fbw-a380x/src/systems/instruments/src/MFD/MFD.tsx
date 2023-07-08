@@ -115,7 +115,7 @@ export class MfdComponent extends DisplayComponent<MfdProps> {
     /**
      * Navigate to MFD page.
      * @param uri The URI to navigate to. Format: sys/category/page, e.g. fms/active/init represents ACTIVE/INIT page from the FMS.
-     * In theory, one can use anything after a third slash for intra-page deep linking: fms/active/f-pln/dep could link to the F-PLN's departure page.
+     * In theory, one can use anything after a third slash for intra-page deep linking: fms/active/perf/appr could link to the approach PERF page.
      */
     private navigateTo(uri: string) {
         let nextUri: string;

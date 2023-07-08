@@ -17,25 +17,25 @@ Status legend:
 | 2️⃣ | fms/\*/perf | 1 |
 |  |  |
 | 1️⃣ | fms/\*/f-pln | 1 |
-| 🟥 | fms/\*/f-pln/rte-sel | 1 |
-| 🟥 | fms/\*/f-pln/departure | 1 |
-| 🟥 | fms/\*/f-pln/arrival | 1 |
-| 🟥 | fms/\*/f-pln/airways | 1 |
-| 🟥 | fms/\*/f-pln/direct-to | 1 |
-| 🟥 | fms/\*/f-pln/hold | 1 |
-| 🟥 | fms/\*/f-pln/duplicate-names | 1 |
-| 🟥 | fms/\*/f-pln/vert-rev | 2 |
-| 🟥 | fms/\*/f-pln/offset | 3 |
-| 🟥 | fms/\*/f-pln/fix-info | 3 |
-| 🟥 | fms/\*/f-pln/alternate | 3 |
-| 🟥 | fms/\*/f-pln/closest-airports | 3 |
-| 🟥 | fms/\*/f-pln/cpny-wind-data-req | 3 |
+| 🟥 | fms/\*/f-pln-rte-sel | 1 |
+| 🟥 | fms/\*/f-pln-departure | 1 |
+| 🟥 | fms/\*/f-pln-arrival | 1 |
+| 🟥 | fms/\*/f-pln-airways | 1 |
+| 🟥 | fms/\*/f-pln-direct-to | 1 |
+| 🟥 | fms/\*/f-pln-hold | 1 |
+| 🟥 | fms/\*/f-pln-duplicate-names | 1 |
+| 🟥 | fms/\*/f-pln-vert-rev | 2 |
+| 🟥 | fms/\*/f-pln-offset | 3 |
+| 🟥 | fms/\*/f-pln-fix-info | 3 |
+| 🟥 | fms/\*/f-pln-alternate | 3 |
+| 🟥 | fms/\*/f-pln-closest-airports | 3 |
+| 🟥 | fms/\*/f-pln-cpny-wind-data-req | 3 |
 | 🟥 | fms/\*/wind | 3 |
-| 🟥 | fms/\*/f-pln/cpny-f-pln-req | 9 |
-| 🟥 | fms/\*/f-pln/cpny-to-data-req | 9 |
-| 🟥 | fms/\*/f-pln/cpny-to-data-recv | 9 |
-| 🟥 | fms/\*/f-pln/equi-time-point | 9 |
-| 🟥 | fms/\*/f-pln/ll-xing-time-mkr | 9 |
+| 🟥 | fms/\*/f-pln-cpny-f-pln-req | 9 |
+| 🟥 | fms/\*/f-pln-cpny-to-data-req | 9 |
+| 🟥 | fms/\*/f-pln-cpny-to-data-recv | 9 |
+| 🟥 | fms/\*/f-pln-equi-time-point | 9 |
+| 🟥 | fms/\*/f-pln-ll-xing-time-mkr | 9 |
 |  |  |
 | 🟥 | fms/position/irs | 1 |
 | 🟥 | fms/position/monitor | 2 |
@@ -93,6 +93,5 @@ Status legend:
 | Page / component | Question | Answer |
 | ------------- | ------------- | ------------- |
 | Input field | Is it possible to input illegal characters into the input fields before validation? I.e. when selecting an altitude field, and pressing „A“ on the KCCU, does it actually display „A“ in the field? | - |
-| Confirmation dialog | When triggering a confirmation dialog (e.g. by selecting a derated thrust, or trying to ACTIVATE APPR), are the other fields and buttons outside the dialog still clickable? Are there images available for the ACTIVATE APPR confirmation dialog? Specifically its location within the PERF page. | - |
-| Dropdown menu | When opening a dropdown menu, what are means of selecting and navigating, apart from scroll wheel, keyboard arrows and KCCU cursor? Can you also enter a character or number on the keyboard, and the list jumps to the respective element? | - |
-| DIRECT TO Dropdown menu | How are DIRECT TO non-flight plan waypoints entered, assuming you are already on ACTIVE/F-PLN/DIRECT TO? Click on dropdown menu, enter fix or coordinate with keyboard, press ENT? Does every dropdown menu allow entering arbitrary characters? | - |
+| Confirmation dialog | When triggering a confirmation dialog (e.g. by selecting a derated thrust, or trying to ACTIVATE APPR), are the other fields and buttons outside the dialog still clickable? Are there images available for the ACTIVATE APPR confirmation dialog? Specifically its location within the PERF page. | yes, everything else remains clickable when there is a “starred” prompt waiting to be clicked. (The star means that it will action something and should be cross checked before selecting/activating) |
+| Dropdown menu | When opening a dropdown menu, what are means of selecting and navigating, apart from scroll wheel, keyboard arrows and KCCU cursor? Can you also enter a character or number on the keyboard, and the list jumps to the respective element? | when there is a long list, like waypoints, when you start typing in the drop down, it clears the rest of the drop-down, and searches on the text that you have typed. These results populate a new drop-down (same place as previous one) and the text entry field stays with what you typed. To select one of the ‘found’ entries you need to move the cursor to it and hit enter. |

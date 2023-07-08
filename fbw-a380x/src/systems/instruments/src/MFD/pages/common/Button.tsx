@@ -27,8 +27,6 @@ export class Button extends DisplayComponent<ButtonProps> {
 
     private dropdownIsOpened = Subject.create(false);
 
-    private renderedLabel: VNode;
-
     private renderedMenuItems: ButtonMenuItem[];
 
     clickHandler(): void {
@@ -130,6 +128,14 @@ export class Button extends DisplayComponent<ButtonProps> {
         this.subs.push(this.dropdownIsOpened.sub((val) => {
             this.dropdownMenuRef.instance.style.display = val ? 'block' : 'none';
             this.buttonRef.instance.classList.toggle('opened');
+
+            // Check if menu leaves screen at the bottom, reposition if needed
+            const boundingRect = this.dropdownMenuRef.instance.getBoundingClientRect();
+            const overflowsVertically = (boundingRect.top + boundingRect.height) > 1024;
+
+            if (overflowsVertically === true) {
+                this.dropdownMenuRef.instance.style.top = `${Math.round(-boundingRect.height)}px`;
+            }
         }));
     }
 
