@@ -1,6 +1,5 @@
 /* eslint-disable camelcase */
 // Disable eslint camelcase as these are types for external library
-
 export enum ColorCode {
     None,
     Highlight,

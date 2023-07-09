@@ -2,7 +2,7 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { Atis, Metar, Taf, Telex, AircraftStatus } from '@flybywiresim/api-client';
-import { NXDataStore } from '@shared/persistence';
+import { NXDataStore } from '@flybywiresim/fbw-sdk';
 import {
     AtsuStatusCodes,
     AtsuMessage,

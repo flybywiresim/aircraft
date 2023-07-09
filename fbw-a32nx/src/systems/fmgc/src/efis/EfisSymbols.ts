@@ -9,7 +9,7 @@ import { GuidanceManager } from '@fmgc/guidance/GuidanceManager';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { SegmentType } from '@fmgc/wtsdk';
-import { GenericDataListenerSync } from '@shared/GenericDataListenerSync';
+import { GenericDataListenerSync } from '@flybywiresim/fbw-sdk';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { NearbyFacilities } from '@fmgc/navigation/NearbyFacilities';
 import { NavaidTuner } from '@fmgc/navigation/NavaidTuner';

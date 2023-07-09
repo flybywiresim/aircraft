@@ -1,5 +1,9 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { EventBus, SimVarDefinition, SimVarPublisher, SimVarValueType, Subject } from '@microsoft/msfs-sdk';
-import { Arinc429WordData } from '@shared/arinc429';
+import { Arinc429WordData } from '@flybywiresim/fbw-sdk';
 import { Arinc429RegisterSubject } from '../Arinc429RegisterSubject';
 import { AdirsSimVars } from '../SimVarTypes';
 

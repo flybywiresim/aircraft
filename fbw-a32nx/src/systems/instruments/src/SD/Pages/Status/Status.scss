@@ -100,10 +100,9 @@
     }
 
     .Separator {
-        stroke: $display-light-grey;
+        stroke: $display-grey;
         stroke-width: 3;
         fill: none;
-        stroke-linecap: "round"
+        stroke-linecap: round;
     }
-
-    }
+}

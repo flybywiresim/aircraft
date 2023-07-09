@@ -1,5 +1,9 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { ClockEvents, ConsumerSubject, DisplayComponent, EventBus, FSComponent, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import { SimVarString } from '@shared/simvar';
+import { SimVarString } from '@flybywiresim/fbw-sdk';
 import { EfisNdMode, EfisNdRangeValue, EfisSide, rangeSettings } from '@shared/NavigationDisplay';
 import { DmcEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 import { clampAngle } from 'msfs-geo';
@@ -178,9 +182,9 @@ export class NDComponent extends DisplayComponent<NDProps> {
         });
     }
 
-    private readonly mapFlagShown = MappedSubject.create(([headingWord, latWord, longWord]) => {
-        return !headingWord.isNormalOperation() || !latWord.isNormalOperation() || !longWord.isNormalOperation();
-    }, this.headingWord, this.pposLatWord, this.pposLonWord);
+    private readonly mapFlagShown = MappedSubject.create(([headingWord, latWord, longWord, currentPageMode]) => {
+        return (!headingWord.isNormalOperation() || !latWord.isNormalOperation() || !longWord.isNormalOperation()) && currentPageMode !== EfisNdMode.PLAN;
+    }, this.headingWord, this.pposLatWord, this.pposLonWord, this.currentPageMode);
 
     private readonly planeRotation = MappedSubject.create(([isUsingTrackUpMode, headingWord, trackWord]) => {
         if (isUsingTrackUpMode) {
@@ -235,10 +239,17 @@ export class NDComponent extends DisplayComponent<NDProps> {
             window.clearTimeout(this.rangeChangeInvalidationTimeout);
         }
 
-        this.rangeChangeInProgress.set(true);
-        this.rangeChangeInvalidationTimeout = window.setTimeout(() => {
+        if (this.currentPageMode.get() !== EfisNdMode.ROSE_ILS
+            && this.currentPageMode.get() !== EfisNdMode.ROSE_VOR && !this.mapFlagShown.get()) {
+            // Range has priority over mode change
+            this.pageChangeInProgress.set(false);
+            this.rangeChangeInProgress.set(true);
+            this.rangeChangeInvalidationTimeout = window.setTimeout(() => {
+                this.rangeChangeInProgress.set(false);
+            }, (Math.random() * PAGE_GENERATION_RANDOM_DELAY) + PAGE_GENERATION_BASE_DELAY);
+        } else {
             this.rangeChangeInProgress.set(false);
-        }, (Math.random() * PAGE_GENERATION_RANDOM_DELAY) + PAGE_GENERATION_BASE_DELAY);
+        }
     }
 
     private invalidatePage() {
@@ -246,10 +257,15 @@ export class NDComponent extends DisplayComponent<NDProps> {
             window.clearTimeout(this.pageChangeInvalidationTimeout);
         }
 
-        this.pageChangeInProgress.set(true);
-        this.pageChangeInvalidationTimeout = window.setTimeout(() => {
+        if (this.currentPageMode.get() !== EfisNdMode.ROSE_ILS && this.currentPageMode.get() !== EfisNdMode.ROSE_VOR
+             && !this.rangeChangeInProgress.get() && !this.mapFlagShown.get()) {
+            this.pageChangeInProgress.set(true);
+            this.pageChangeInvalidationTimeout = window.setTimeout(() => {
+                this.pageChangeInProgress.set(false);
+            }, (Math.random() * PAGE_GENERATION_RANDOM_DELAY) + PAGE_GENERATION_BASE_DELAY);
+        } else {
             this.pageChangeInProgress.set(false);
-        }, (Math.random() * PAGE_GENERATION_RANDOM_DELAY) + PAGE_GENERATION_BASE_DELAY);
+        }
     }
 
     render(): VNode | null {
@@ -609,7 +625,7 @@ class TopMessages extends DisplayComponent<{ bus: EventBus, ndMode: Subscribable
             <>
                 <Layer x={384} y={28}>
                     {/* TODO verify */}
-                    <text class="Green FontSmall MiddleAlign">{this.approachMessageValue}</text>
+                    <text class="Green FontIntermediate MiddleAlign">{this.approachMessageValue}</text>
                 </Layer>
                 <TrueFlag x={this.trueFlagX} y={this.trueFlagY} class="Cyan FontSmallest" boxed={this.trueFlagBoxed} visible={this.trueRefVisible} />
                 <GridTrack x={Subject.create(384)} y={this.trueFlagY} visible={this.gridTrackVisible} gridTrack={this.gridTrack} />
@@ -780,9 +796,9 @@ class ToWaypointIndicator extends DisplayComponent<ToWaypointIndicatorProps> {
                 <text x={-13} y={0} class="White FontIntermediate EndAlign">{this.toWptIdentValue}</text>
 
                 <g visibility={this.bearingContainerVisible.map(this.visibilityFn)}>
-                    <text x={54} y={0} class="Green FontIntermediate EndAlign">{this.bearingText}</text>
+                    <text x={57} y={0} class="Green FontIntermediate EndAlign">{this.bearingText}</text>
                     <text x={73} y={2} class="Cyan FontIntermediate EndAlign" visibility={this.trueRefActive.map(this.inverseVisibilityFn)}>&deg;</text>
-                    <text x={71} y={-3} class="Cyan FontSmallest EndAlign" visibility={this.trueRefActive.map(this.visibilityFn)}>T</text>
+                    <text x={71} y={-3} class="Cyan FontIntermediate EndAlign" visibility={this.trueRefActive.map(this.visibilityFn)}>T</text>
                 </g>
 
                 <g visibility={this.distanceLargeContainerVisible.map(this.visibilityFn)}>

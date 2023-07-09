@@ -1,4 +1,8 @@
-import { ApproachUtils } from '@shared/ApproachUtils';
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
+import { ApproachUtils } from '@flybywiresim/fbw-sdk';
 import { FlightPlanManager } from './flightplanning/FlightPlanManager';
 import { getFlightPhaseManager } from './flightphase';
 import { FlightPlanAsoboSync } from './flightplanning/FlightPlanAsoboSync';

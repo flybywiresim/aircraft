@@ -1,6 +1,9 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import React, { FC, useState } from 'react';
-import { useCoherentEvent } from '@instruments/common/hooks';
-import { Layer } from '@instruments/common/utils';
+import { useCoherentEvent, Layer } from '@flybywiresim/fbw-sdk';
 
 export const LnavStatus: FC = () => {
     const [strings, setStrings] = useState<string[]>([]);

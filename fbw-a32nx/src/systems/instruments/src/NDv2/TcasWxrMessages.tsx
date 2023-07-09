@@ -64,7 +64,7 @@ export class TcasWxrMessages extends DisplayComponent<TcasWXMessagesProps> {
                     y={0}
                     width={440}
                     height={27}
-                    class="White BackgroundFill"
+                    class="Grey BackgroundFill"
                     stroke-width={1.75}
                 />
 

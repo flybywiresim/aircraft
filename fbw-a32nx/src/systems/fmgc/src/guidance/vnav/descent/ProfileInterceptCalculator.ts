@@ -1,5 +1,9 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { VerticalCheckpoint } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
-import { MathUtils } from '@shared/MathUtils';
+import { MathUtils } from '@flybywiresim/fbw-sdk';
 
 export class ProfileInterceptCalculator {
     /**

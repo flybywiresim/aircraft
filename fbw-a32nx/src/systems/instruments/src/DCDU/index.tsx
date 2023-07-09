@@ -1,7 +1,10 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import React, { useEffect, useState, useRef } from 'react';
 import { EventBus, Publisher, EventSubscriber } from '@microsoft/msfs-sdk';
-import { useSimVar } from '@instruments/common/simVars';
-import { useInteractionEvents } from '@instruments/common/hooks';
+import { useSimVar, useInteractionEvents } from '@flybywiresim/fbw-sdk';
 import {
     AtsuMessageComStatus,
     AtsuMessageDirection,
@@ -30,6 +33,7 @@ import { DatalinkMessage } from './elements/DatalinkMessage';
 import { MessageStatus } from './elements/MessageStatus';
 import { AtcStatus } from './elements/AtcStatus';
 import { useUpdate } from '../util.js';
+
 import './style.scss';
 
 enum DcduState {

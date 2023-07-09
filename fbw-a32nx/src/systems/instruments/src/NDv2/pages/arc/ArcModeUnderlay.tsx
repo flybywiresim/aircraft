@@ -1,6 +1,10 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { DisplayComponent, EventBus, FSComponent, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import { MathUtils } from '@shared/MathUtils';
+import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { rangeSettings } from '@shared/NavigationDisplay';
 import { FcuSimVars } from 'instruments/src/MsfsAvionicsCommon/providers/FcuBusPublisher';
 import { TcasSimVars } from 'instruments/src/MsfsAvionicsCommon/providers/TcasBusPublisher';

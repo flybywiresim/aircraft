@@ -1,16 +1,18 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 /* eslint-disable max-len */
 import React, { useCallback, useEffect, useState } from 'react';
 import * as apiClient from '@flybywiresim/api-client';
 import { AtcType } from '@flybywiresim/api-client';
-import useInterval from '@instruments/common/useInterval';
+import { useSimVar, useInterval, useSplitSimVar, usePersistentProperty } from '@flybywiresim/fbw-sdk';
 import { Link } from 'react-router-dom';
 import { CloudArrowDown, Gear, InfoCircle } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import { t } from '../translation';
 import { pathify } from '../Utils/routing';
 import { ScrollableContainer } from '../UtilComponents/ScrollableContainer';
-import { useSimVar, useSplitSimVar } from '../../Common/simVars';
-import { usePersistentProperty } from '../../Common/persistence';
 import { SimpleInput } from '../UtilComponents/Form/SimpleInput/SimpleInput';
 import { SelectGroup, SelectItem } from '../UtilComponents/Form/Select';
 import { TooltipWrapper } from '../UtilComponents/TooltipWrapper';
