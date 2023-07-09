@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Airport, Runway, Waypoint, WaypointArea } from 'msfs-navdata';
+import { Airport, EnrouteSubsectionCode, Runway, SectionCode, Waypoint, WaypointArea } from 'msfs-navdata';
 import { Coordinates, distanceTo, placeBearingDistance, placeBearingIntersection } from 'msfs-geo';
 import { runwayIdent } from '@fmgc/flightplanning/new/legs/FlightPlanLegNaming';
 import { Icao } from '@shared/Icao';
@@ -14,6 +14,8 @@ export namespace WaypointFactory {
         location: Coordinates,
     ): Waypoint {
         return {
+            sectionCode: SectionCode.Enroute,
+            subSectionCode: EnrouteSubsectionCode.Waypoints,
             databaseId: Icao.create('W', '', '', ident),
             icaoCode: '  ',
             area: WaypointArea.Enroute,
@@ -51,6 +53,8 @@ export namespace WaypointFactory {
     export function fromAirportAndRunway(airport: Airport, runway: Runway): Waypoint {
         return {
             ...runway,
+            sectionCode: SectionCode.Enroute,
+            subSectionCode: EnrouteSubsectionCode.Waypoints,
             ident: `${airport.ident + runwayIdent(runway)}`,
             location: runway.thresholdLocation,
             area: WaypointArea.Terminal,

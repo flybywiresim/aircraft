@@ -1,14 +1,10 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { Coordinates } from 'msfs-geo';
 
 export class MagVar {
-    static getMagVar(location: Coordinates): Degrees {
-        if ('Facilities' in window) {
-            return Facilities.getMagVar(location.lat, location.long);
-        }
-
-        return 0;
-    }
-
     static magneticToTrue(magneticHeading: Degrees, amgVar?: Degrees): Degrees {
         return (720 + magneticHeading + (amgVar || SimVar.GetSimVarValue('MAGVAR', 'degree'))) % 360;
     }

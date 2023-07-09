@@ -4,9 +4,9 @@
 
 import React, { useEffect, useRef, useCallback, useState } from 'react';
 import { DisplayUnit } from '@instruments/common/displayUnit';
-import { FlightPlanProvider } from '@instruments/common/flightplan';
-import { useSimVar, useArinc429Var, useFlowSyncEvent, getSupplier } from '@flybywiresim/fbw-sdk';
+import { getSupplier } from '@instruments/common/utils';
 import { EfisNdMode, NdSymbol, rangeSettings } from '@shared/NavigationDisplay';
+import { useArinc429Var, useFlowSyncEvent, useSimVar } from '@flybywiresim/fbw-sdk';
 import { TerrainMapThresholds } from './elements/TerrainMapThresholds';
 import { render } from '../Common';
 import { ArcMode } from './pages/ArcMode';
@@ -19,8 +19,9 @@ import { FMMessages } from './elements/messages/FMMessages';
 import { TcasWxrMessages } from './elements/messages/TcasWxrMessages';
 import { PlanMode } from './pages/PlanMode';
 import { RoseMode } from './pages/RoseMode';
-import './styles.scss';
 import { LnavStatus } from './elements/LnavStatus';
+
+import './styles.scss';
 
 const NavigationDisplay: React.FC = () => {
     const [displayIndex] = useState(() => {
@@ -113,30 +114,29 @@ const NavigationDisplay: React.FC = () => {
             potentiometerIndex={displayIndex === 1 ? 89 : 91}
             normDmc={displayIndex}
         >
-            <FlightPlanProvider>
-                <svg className="nd-svg" version="1.1" viewBox="0 0 768 768">
-                    {modeIndex === EfisNdMode.PLAN && (
-                        <PlanMode
-                            adirsAlign={adirsAlign}
-                            rangeSetting={rangeSettings[rangeIndex]}
-                            symbols={symbols}
-                            side={side}
-                            ppos={ppos}
-                            mapHidden={modeChangeShown || rangeChangeShown}
-                        />
-                    )}
-                    {modeIndex === EfisNdMode.ARC && (
-                        <ArcMode
-                            adirsAlign={adirsAlign}
-                            rangeSetting={rangeSettings[rangeIndex]}
-                            symbols={symbols}
-                            side={side}
-                            ppos={ppos}
-                            mapHidden={modeChangeShown || rangeChangeShown}
-                            trueRef={trueRef}
-                        />
-                    )}
-                    {(modeIndex === EfisNdMode.ROSE_ILS || modeIndex === EfisNdMode.ROSE_VOR || modeIndex === EfisNdMode.ROSE_NAV)
+            <svg className="nd-svg" version="1.1" viewBox="0 0 768 768">
+                {modeIndex === EfisNdMode.PLAN && (
+                    <PlanMode
+                        adirsAlign={adirsAlign}
+                        rangeSetting={rangeSettings[rangeIndex]}
+                        symbols={symbols}
+                        side={side}
+                        ppos={ppos}
+                        mapHidden={modeChangeShown || rangeChangeShown}
+                    />
+                )}
+                {modeIndex === EfisNdMode.ARC && (
+                    <ArcMode
+                        adirsAlign={adirsAlign}
+                        rangeSetting={rangeSettings[rangeIndex]}
+                        symbols={symbols}
+                        side={side}
+                        ppos={ppos}
+                        mapHidden={modeChangeShown || rangeChangeShown}
+                        trueRef={trueRef}
+                    />
+                )}
+                {(modeIndex === EfisNdMode.ROSE_ILS || modeIndex === EfisNdMode.ROSE_VOR || modeIndex === EfisNdMode.ROSE_NAV)
                     && (
                         <RoseMode
                             adirsAlign={adirsAlign}
@@ -150,27 +150,26 @@ const NavigationDisplay: React.FC = () => {
                         />
                     )}
 
-                    <Chrono side={side} />
-                    <SpeedIndicator adrs={airDataReferenceSource} irs={inertialReferenceSource} />
-                    <WindIndicator adrs={airDataReferenceSource} irs={inertialReferenceSource} />
+                <Chrono side={side} />
+                <SpeedIndicator adrs={airDataReferenceSource} irs={inertialReferenceSource} />
+                <WindIndicator adrs={airDataReferenceSource} irs={inertialReferenceSource} />
 
-                    {true && (
-                        <LnavStatus />
-                    )}
+                {true && (
+                    <LnavStatus />
+                )}
 
-                    <TerrainMapThresholds side={side} />
-                    <NavigationDisplayMessages adirsAlign={adirsAlign} mode={modeIndex} modeChangeShown={modeChangeShown} rangeChangeShown={rangeChangeShown} />
-                    {(adirsAlign && modeIndex !== EfisNdMode.PLAN) && (
-                        <>
-                            <RadioNavInfo index={1} side={side} trueRef={trueRef} mode={modeIndex} />
-                            <RadioNavInfo index={2} side={side} trueRef={trueRef} mode={modeIndex} />
-                        </>
-                    )}
-                    <TcasWxrMessages modeIndex={modeIndex} />
-                    <FMMessages modeIndex={modeIndex} side={side} />
+                <TerrainMapThresholds side={side} />
+                <NavigationDisplayMessages adirsAlign={adirsAlign} mode={modeIndex} modeChangeShown={modeChangeShown} rangeChangeShown={rangeChangeShown} />
+                {(adirsAlign && modeIndex !== EfisNdMode.PLAN) && (
+                    <>
+                        <RadioNavInfo index={1} side={side} trueRef={trueRef} mode={modeIndex} />
+                        <RadioNavInfo index={2} side={side} trueRef={trueRef} mode={modeIndex} />
+                    </>
+                )}
+                <TcasWxrMessages modeIndex={modeIndex} />
+                <FMMessages modeIndex={modeIndex} side={side} />
 
-                </svg>
-            </FlightPlanProvider>
+            </svg>
         </DisplayUnit>
     );
 };

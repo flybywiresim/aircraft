@@ -80,7 +80,7 @@ export class FlightPlanService implements FlightPlanInterface {
         return this.flightPlanManager.has(FlightPlanIndex.Uplink);
     }
 
-    temporaryInsert() {
+    async temporaryInsert(): Promise<void> {
         const temporaryPlan = this.flightPlanManager.get(FlightPlanIndex.Temporary);
 
         if (temporaryPlan.pendingAirways) {
@@ -100,7 +100,7 @@ export class FlightPlanService implements FlightPlanInterface {
         this.flightPlanManager.delete(FlightPlanIndex.Temporary);
     }
 
-    temporaryDelete() {
+    async temporaryDelete(): Promise<void> {
         if (!this.hasTemporary) {
             throw new Error('[FMS/FPS] Cannot delete temporary flight plan if none exists');
         }
@@ -108,7 +108,7 @@ export class FlightPlanService implements FlightPlanInterface {
         this.flightPlanManager.delete(FlightPlanIndex.Temporary);
     }
 
-    uplinkInsert() {
+    async uplinkInsert(): Promise<void> {
         if (!this.hasUplink) {
             throw new Error('[FMS/FPS] Cannot insert uplink flight plan if none exists');
         }
@@ -121,7 +121,7 @@ export class FlightPlanService implements FlightPlanInterface {
         }
     }
 
-    reset() {
+    async reset(): Promise<void> {
         this.flightPlanManager.deleteAll();
 
         this.createFlightPlans();
@@ -313,7 +313,7 @@ export class FlightPlanService implements FlightPlanInterface {
      *
      * @returns `true` if the element could be removed, `false` if removal is not allowed
      */
-    deleteElementAt(index: number, planIndex = FlightPlanIndex.Active, alternate = false): boolean {
+    async deleteElementAt(index: number, planIndex = FlightPlanIndex.Active, alternate = false): Promise<boolean> {
         if (!this.config.ALLOW_REVISIONS_ON_TMPY && planIndex === FlightPlanIndex.Temporary) {
             throw new Error('[FMS/FPS] Cannot delete element in temporary flight plan');
         }

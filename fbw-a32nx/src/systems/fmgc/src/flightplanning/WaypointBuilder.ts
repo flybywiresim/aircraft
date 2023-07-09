@@ -22,11 +22,6 @@
  * SOFTWARE.
  */
 
-import { LegType, TurnDirection } from '@fmgc/types/fstypes/FSEnums';
-import { Minutes } from 'msfs-geo';
-import { FlightPlanManager } from './FlightPlanManager';
-import { GeoMath } from './GeoMath';
-
 /**
  * Creating a new waypoint to be added to a flight plan.
  */
@@ -54,77 +49,5 @@ export class WaypointBuilder {
         waypoint.additionalData = additionalData ?? {};
 
         return waypoint;
-    }
-
-    /**
-   * Builds a WayPoint from a refrence waypoint.
-   * @param ident The ident of the waypoint to be created.
-   * @param placeCoordinates The coordinates of the reference waypoint.
-   * @param bearing The bearing from the reference waypoint.
-   * @param distance The distance from the reference waypoint.
-   * @param instrument The base instrument instance.
-   * @returns The built waypoint.
-   */
-    public static fromPlaceBearingDistance(ident: string, placeCoordinates: LatLongAlt, bearing: number, distance: number, instrument: BaseInstrument): WayPoint {
-        let magneticBearing = bearing + GeoMath.getMagvar(placeCoordinates.lat, placeCoordinates.long);
-        magneticBearing = magneticBearing < 0 ? 360 + magneticBearing : magneticBearing;
-
-        const coordinates = Avionics.Utils.bearingDistanceToCoordinates(magneticBearing, distance, placeCoordinates.lat, placeCoordinates.long);
-
-        return WaypointBuilder.fromCoordinates(ident, coordinates, instrument);
-    }
-
-    /**
-   * Builds a WayPoint at a distance from an existing waypoint along the flight plan.
-   * @param ident The ident of the waypoint to be created.
-   * @param placeIndex The index of the reference waypoint in the flight plan.
-   * @param distance The distance from the reference waypoint.
-   * @param instrument The base instrument instance.
-   * @param fpm The flightplanmanager instance.
-   * @returns The built waypoint.
-   */
-    public static fromPlaceAlongFlightPlan(ident: string, placeIndex: number, distance: number, instrument: BaseInstrument, fpm: FlightPlanManager): WayPoint {
-        console.log('running fromPlaceAlongFlightPlan');
-        console.log(`destination? ${fpm.getDestination()}` ? 'True' : 'False');
-        const destinationDistanceInFlightplan = fpm.getDestination().cumulativeDistanceInFP;
-        console.log(`destinationDistanceInFlightplan ${destinationDistanceInFlightplan}`);
-
-        const placeDistanceFromDestination = fpm.getWaypoint(placeIndex, 0, true).cumulativeDistanceInFP;
-        console.log(`placeDistanceFromDestination ${placeDistanceFromDestination}`);
-
-        const distanceFromDestination = destinationDistanceInFlightplan - placeDistanceFromDestination - distance;
-        console.log(`distanceFromDestination ${distanceFromDestination}`);
-
-        const coordinates = fpm.getCoordinatesAtNMFromDestinationAlongFlightPlan(distanceFromDestination);
-
-        return WaypointBuilder.fromCoordinates(ident, coordinates, instrument);
-    }
-
-    public static fromWaypointManualHold(
-        waypoint: WayPoint,
-        holdDirection: TurnDirection,
-        inboundCourse: Degrees,
-        holdLength: NauticalMiles | undefined,
-        holdTime: Minutes | undefined,
-        instrument: BaseInstrument,
-    ): WayPoint {
-        const newWaypoint = WaypointBuilder.fromCoordinates(waypoint.ident, waypoint.infos.coordinates, instrument);
-
-        newWaypoint.icao = waypoint.icao;
-        newWaypoint.infos = waypoint.infos;
-
-        newWaypoint.additionalData.legType = LegType.HM;
-        newWaypoint.turnDirection = holdDirection;
-        newWaypoint.additionalData.course = inboundCourse;
-        newWaypoint.additionalData.distance = holdLength;
-        newWaypoint.additionalData.distanceInMinutes = holdTime;
-
-        newWaypoint.speedConstraint = waypoint.speedConstraint;
-        newWaypoint.legAltitudeDescription = waypoint.legAltitudeDescription;
-        newWaypoint.legAltitude1 = waypoint.legAltitude1;
-        newWaypoint.legAltitude2 = waypoint.legAltitude2;
-        newWaypoint.additionalData.constraintType = waypoint.additionalData.constraintType;
-
-        return newWaypoint;
     }
 }

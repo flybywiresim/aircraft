@@ -12,7 +12,7 @@ import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
 import { Waypoint } from 'msfs-navdata';
 import { TurnDirection } from '@fmgc/types/fstypes/FSEnums';
 import { bearingTo, distanceTo } from 'msfs-geo';
-import { MathUtils } from '@shared/MathUtils';
+import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { PathVector, PathVectorType } from '../PathVector';
 
 export class RFLeg extends XFLeg {

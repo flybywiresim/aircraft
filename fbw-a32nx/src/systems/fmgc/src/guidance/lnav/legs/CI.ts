@@ -20,7 +20,7 @@ import { DmeArcTransition } from '@fmgc/guidance/lnav/transitions/DmeArcTransiti
 import { FixedRadiusTransition } from '@fmgc/guidance/lnav/transitions/FixedRadiusTransition';
 import { distanceTo, placeBearingIntersection } from 'msfs-geo';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
-import { MathUtils } from '@shared/MathUtils';
+import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { PathVector, PathVectorType } from '../PathVector';
 
 export class CILeg extends Leg {

@@ -1,7 +1,7 @@
 // Copyright (c) 2022-2023 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { FlightPlanManager } from '@fmgc/index';
+import { FlightPlanService } from '@fmgc/index';
 import { LandingSystemSelectionManager } from '@fmgc/navigation/LandingSystemSelectionManager';
 import { NavaidSelectionManager, VorSelectionReason } from '@fmgc/navigation/NavaidSelectionManager';
 import { NavaidTuner } from '@fmgc/navigation/NavaidTuner';
@@ -80,10 +80,10 @@ export class Navigation implements NavigationProvider {
         facility: null,
     }));
 
-    constructor(private flightPlanManager: FlightPlanManager, private readonly facLoader: FacilityLoader) {
-        this.requiredPerformance = new RequiredPerformance(this.flightPlanManager);
-        this.navaidSelectionManager = new NavaidSelectionManager(this);
-        this.landingSystemSelectionManager = new LandingSystemSelectionManager(this);
+    constructor(private flightPlanService: FlightPlanService, private readonly facLoader: FacilityLoader) {
+        this.requiredPerformance = new RequiredPerformance(this.flightPlanService);
+        this.navaidSelectionManager = new NavaidSelectionManager(this.flightPlanService, this);
+        this.landingSystemSelectionManager = new LandingSystemSelectionManager(this.flightPlanService, this);
         this.navaidTuner = new NavaidTuner(this, this.navaidSelectionManager, this.landingSystemSelectionManager);
     }
 

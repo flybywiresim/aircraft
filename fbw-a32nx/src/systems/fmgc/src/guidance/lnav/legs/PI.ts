@@ -15,7 +15,7 @@ import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { SegmentType } from '@fmgc/wtsdk';
 import { bearingTo, distanceTo, placeBearingDistance, smallCircleGreatCircleIntersection } from 'msfs-geo';
 import { Fix, TurnDirection, Waypoint } from 'msfs-navdata';
-import { MathUtils } from '@shared/MathUtils';
+import { MathUtils } from '@flybywiresim/fbw-sdk';
 
 interface Segment {
     itp?: Coordinates,

@@ -21,7 +21,7 @@ export class PendingAirways {
 
     legs: FlightPlanLeg[] = [];
 
-    revisedWaypoint: Waypoint;
+    revisedWaypoint: Fix;
 
     constructor(
         private readonly flightPlan: BaseFlightPlan,
