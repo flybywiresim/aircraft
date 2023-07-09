@@ -38,30 +38,25 @@ class HeadingBug extends DisplayComponent<{ bus: ArincEventBus, isCaptainSide: b
     private horizonHeadingBug = FSComponent.createRef<SVGGElement>();
 
     private readonly headingBugSubject = MappedSubject.create(([heading, selectedHeading, yOffset]) => {
-        if (this.isActive) {
-            this.calculateAndSetOffset(selectedHeading, heading.value, yOffset);
+        if (this.visibilitySub.get()) {
+            const headingDelta = getSmallestAngle(selectedHeading, heading.value);
+
+            const offset = headingDelta * DistanceSpacing / ValueSpacing;
+
+            return `transform: translate3d(${offset}px, ${yOffset}px, 0px)`;
         }
+        return '';
     }, this.heading, this.selectedHeading, this.props.yOffset)
 
-    private readonly visibilitySub = MappedSubject.create(([heading, attitude, fdActive]) => {
-        if (!fdActive && attitude.isNormalOperation() && heading.isNormalOperation()) {
+    private readonly visibilitySub = MappedSubject.create(([heading, attitude, fdActive, selectedHeading]) => {
+        const headingDelta = getSmallestAngle(selectedHeading, heading.value);
+        const offset = headingDelta * DistanceSpacing / ValueSpacing;
+        const inRange = Math.abs(offset) <= DisplayRange + 10;
+        if (!fdActive && attitude.isNormalOperation() && heading.isNormalOperation() && inRange) {
             return true;
         }
         return false;
-    }, this.heading, this.attitude, this.fdActive);
-
-    private calculateAndSetOffset(selectedHeading: number, heading: number, yOffset) {
-        const headingDelta = getSmallestAngle(selectedHeading, heading);
-
-        const offset = headingDelta * DistanceSpacing / ValueSpacing;
-
-        if (Math.abs(offset) <= DisplayRange + 10) {
-            this.horizonHeadingBug.instance.classList.remove('HiddenElement');
-            this.horizonHeadingBug.instance.style.transform = `translate3d(${offset}px, ${yOffset}px, 0px)`;
-        } else {
-            this.horizonHeadingBug.instance.classList.add('HiddenElement');
-        }
-    }
+    }, this.heading, this.attitude, this.fdActive, this.selectedHeading);
 
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
@@ -88,7 +83,7 @@ class HeadingBug extends DisplayComponent<{ bus: ArincEventBus, isCaptainSide: b
 
     render(): VNode {
         return (
-            <g ref={this.horizonHeadingBug} id="HorizonHeadingBug" visibility={this.visibilitySub.map((v) => (v ? 'hidden' : 'inherit'))}>
+            <g ref={this.horizonHeadingBug} id="HorizonHeadingBug" style={this.headingBugSubject} visibility={this.visibilitySub.map((v) => (v ? 'hidden' : 'inherit'))}>
                 <path class="ThickOutline" d="m68.906 80.823v-9.0213" />
                 <path class="ThickStroke Cyan" d="m68.906 80.823v-9.0213" />
             </g>
