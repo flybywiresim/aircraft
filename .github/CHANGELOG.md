@@ -23,6 +23,7 @@
 1. [MCDU] The remote MCDU protocol now sends the display and integral light brightness - @tracernz (Mike)
 1. [MCDU] The remote MCDU protocol now supports the BRT/DIM keys - @tracernz (Mike)
 1. [PFD] Corrected the NO DH logic in the FMS and PFD - @tracernz (Mike)
+1. [ISIS] Fixed the ISIS alt tape order for negative altitudes - @aweissoertel (Alex)
 
 ## 0.10.0
 
