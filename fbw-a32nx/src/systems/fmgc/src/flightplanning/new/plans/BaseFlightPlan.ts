@@ -30,7 +30,7 @@ import { MissedApproachSegment } from '@fmgc/flightplanning/new/segments/MissedA
 import { ArrivalRunwayTransitionSegment } from '@fmgc/flightplanning/new/segments/ArrivalRunwayTransitionSegment';
 import { ApproachViaSegment } from '@fmgc/flightplanning/new/segments/ApproachViaSegment';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
-import { WaypointStats } from '@fmgc/flightplanning/data/flightplan';
+import { HoldData, WaypointStats } from '@fmgc/flightplanning/data/flightplan';
 import { procedureLegIdentAndAnnotation } from '@fmgc/flightplanning/new/legs/FlightPlanLegNaming';
 import { FlightPlanSyncEvents } from '@fmgc/flightplanning/new/sync/FlightPlanSyncEvents';
 import { EventBus, Publisher } from '@microsoft/msfs-sdk';
@@ -39,6 +39,7 @@ import { AlternateFlightPlan } from '@fmgc/flightplanning/new/plans/AlternateFli
 import { FixInfoEntry } from '@fmgc/flightplanning/new/plans/FixInfo';
 import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/new/legs/FlightPlanLegDefinition';
+import { PendingAirways } from '@fmgc/flightplanning/new/plans/PendingAirways';
 
 export enum FlightPlanQueuedOperation {
     Restring,
@@ -48,6 +49,8 @@ export enum FlightPlanQueuedOperation {
 
 export abstract class BaseFlightPlan {
     private readonly syncPub: Publisher<FlightPlanSyncEvents>;
+
+    public pendingAirways: PendingAirways | undefined;
 
     constructor(public readonly index: number, public readonly bus: EventBus) {
         this.syncPub = this.bus.getPublisher<FlightPlanSyncEvents>();
@@ -807,6 +810,64 @@ export abstract class BaseFlightPlan {
         this.enrouteSegment.strung = true;
 
         await this.flushOperationQueue();
+    }
+
+    startAirwayEntry(revisedLegIndex: number) {
+        const leg = this.elementAt(revisedLegIndex);
+
+        if (leg.isDiscontinuity === true) {
+            throw new Error('Cannot start airway entry at a discontinuity');
+        }
+
+        if (!leg.isXF() && !leg.isHX()) {
+            throw new Error('Cannot create a pending airways entry from a non XF or HX leg');
+        }
+
+        this.pendingAirways = new PendingAirways(this, revisedLegIndex, leg);
+    }
+
+    async addOrEditManualHold(atIndex: number, desiredHold: HoldData, modifiedHold: HoldData, defaultHold: HoldData): Promise<number> {
+        const targetLeg = this.elementAt(atIndex);
+
+        if (targetLeg.isDiscontinuity === true) {
+            throw new Error('[FPM] Target leg of a direct to cannot be a discontinuity');
+        }
+
+        const waypoint = targetLeg.terminationWaypoint();
+
+        if (targetLeg.type === LegType.HA || targetLeg.type === LegType.HF || targetLeg.type === LegType.HM) {
+            targetLeg.type = LegType.HM;
+            targetLeg.definition.turnDirection = desiredHold.turnDirection;
+            targetLeg.definition.magneticCourse = desiredHold.inboundMagneticCourse;
+            targetLeg.definition.length = desiredHold.distance;
+            targetLeg.definition.lengthTime = desiredHold.time;
+
+            targetLeg.modifiedHold = modifiedHold;
+            if (targetLeg.defaultHold === undefined) {
+                targetLeg.defaultHold = defaultHold;
+            }
+
+            return atIndex;
+        }
+
+        const manualHoldLeg = FlightPlanLeg.manualHold(this.enrouteSegment, waypoint, desiredHold);
+
+        manualHoldLeg.modifiedHold = modifiedHold;
+        manualHoldLeg.defaultHold = defaultHold;
+
+        await this.insertElementAfter(atIndex, manualHoldLeg);
+
+        return atIndex + 1;
+    }
+
+    revertHoldToComputed(atIndex: number) {
+        const targetLeg = this.elementAt(atIndex);
+
+        if (targetLeg.isDiscontinuity === true || !targetLeg.isHX()) {
+            throw new Error('[FPM] Target leg of a direct to cannot be a discontinuity or a non-HX leg');
+        }
+
+        targetLeg.modifiedHold = undefined;
     }
 
     // TODO make this private, adjust tests to test nextWaypoint instead

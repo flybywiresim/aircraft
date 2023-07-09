@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { FpmConfig } from '@fmgc/flightplanning/new/FpmConfig';
-import { NavigationDatabase } from '@fmgc/NavigationDatabase';
 import { AltitudeDescriptor, Fix, Waypoint } from 'msfs-navdata';
 import { Coordinates, Degrees } from 'msfs-geo';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
@@ -12,6 +11,17 @@ import { FixInfoEntry } from '@fmgc/flightplanning/new/plans/FixInfo';
 import { FlightPlan } from '@fmgc/flightplanning/new/plans/FlightPlan';
 import { FlightPlanIndex } from '@fmgc/flightplanning/new/FlightPlanManager';
 
+/**
+ * Interface for querying, modifying and creating flight plans.
+ *
+ * This should be the only API used to modify flight plans - the implementations of the methods here take care of managing
+ * temporary flight plan creation based on the FMS configuration, among other things.
+ *
+ * There are two main implementations of this interface:
+ *
+ * - {@link FlightPlanService} - a local implementation for use where the FMS software is located
+ * - {@link FlightPlanRpcClient} - a remote implementation using RPC calls to a distant `FlightPlanService` - for use in remote FMS UIs
+ */
 export interface FlightPlanInterface {
     get(index: number): FlightPlan;
 
@@ -175,14 +185,38 @@ export interface FlightPlanInterface {
      */
     newDest(atIndex: number, airportIdent: string, planIndex?: number, alternate?: boolean): Promise<void>;
 
-    startAirwayEntry(at: number, planIndex: number): Promise<void>; // TODO alternate
+    /**
+     * AIRWAYS revision. Begins a pending airway entry at an index.
+     *
+     * @param atIndex the index of the leg to start the pending airway entry at
+     * @param planIndex which flight plan to make the change on
+     * @param alternate whether to edit the plan's alternate flight plan
+     */
+    startAirwayEntry(atIndex: number, planIndex: number, alternate?: boolean): Promise<void>;
 
     // TODO do not pass in fix object (rpc)
     directTo(ppos: Coordinates, trueTrack: Degrees, waypoint: Fix, withAbeam: boolean, planIndex: number): Promise<void>
 
-    addOrEditManualHold(at: number, desiredHold: HoldData, modifiedHold: HoldData, defaultHold: HoldData, planIndex: number): Promise<number>; // TODO maybe alternate
+    /**
+     * HOLD AT revision. Inserts or edits a manual hold parented to the leg.
+     *
+     * @param atIndex the index of the leg to start the pending airway entry at
+     * @param desiredHold the desired hold
+     * @param modifiedHold the modified hold
+     * @param defaultHold the default hold
+     * @param planIndex which flight plan to make the change on
+     * @param alternate whether to edit the plan's alternate flight plan
+     */
+    addOrEditManualHold(atIndex: number, desiredHold: HoldData, modifiedHold: HoldData, defaultHold: HoldData, planIndex: number, alternate?: boolean): Promise<number>;
 
-    revertHoldToComputed(at: number, planIndex: number): Promise<void>; // TODO maybe alternate
+    /**
+     * Reverts a hold parented to a leg to a computed hold.
+     *
+     * @param atIndex the index of the leg to start the pending airway entry at
+     * @param planIndex which flight plan to make the change on
+     * @param alternate whether to edit the plan's alternate flight plan
+     */
+    revertHoldToComputed(atIndex: number, planIndex: number, alternate?: boolean): Promise<void>;
 
     enableAltn(atIndexInAlternate: number, planIndex: number): Promise<void>;
 
