@@ -27,8 +27,6 @@ export class FlightPlan extends BaseFlightPlan {
      */
     alternateFlightPlan = new AlternateFlightPlan(this.index, this);
 
-    pendingAirways: PendingAirways | undefined;
-
     /**
      * Performance data for this flight plan
      */
@@ -144,50 +142,6 @@ export class FlightPlan extends BaseFlightPlan {
         this.incrementVersion();
     }
 
-    async addOrEditManualHold(atIndex: number, desiredHold: HoldData, modifiedHold: HoldData, defaultHold: HoldData): Promise<number> {
-        const targetLeg = this.elementAt(atIndex);
-
-        if (targetLeg.isDiscontinuity === true) {
-            throw new Error('[FPM] Target leg of a direct to cannot be a discontinuity');
-        }
-
-        const waypoint = targetLeg.terminationWaypoint();
-
-        if (targetLeg.type === LegType.HA || targetLeg.type === LegType.HF || targetLeg.type === LegType.HM) {
-            targetLeg.type = LegType.HM;
-            targetLeg.definition.turnDirection = desiredHold.turnDirection;
-            targetLeg.definition.magneticCourse = desiredHold.inboundMagneticCourse;
-            targetLeg.definition.length = desiredHold.distance;
-            targetLeg.definition.lengthTime = desiredHold.time;
-
-            targetLeg.modifiedHold = modifiedHold;
-            if (targetLeg.defaultHold === undefined) {
-                targetLeg.defaultHold = defaultHold;
-            }
-
-            return atIndex;
-        }
-
-        const manualHoldLeg = FlightPlanLeg.manualHold(this.enrouteSegment, waypoint, desiredHold);
-
-        manualHoldLeg.modifiedHold = modifiedHold;
-        manualHoldLeg.defaultHold = defaultHold;
-
-        await this.insertElementAfter(atIndex, manualHoldLeg);
-
-        return atIndex + 1;
-    }
-
-    revertHoldToComputed(atIndex: number) {
-        const targetLeg = this.elementAt(atIndex);
-
-        if (targetLeg.isDiscontinuity === true || !targetLeg.isHX()) {
-            throw new Error('[FPM] Target leg of a direct to cannot be a discontinuity or a non-HX leg');
-        }
-
-        targetLeg.modifiedHold = undefined;
-    }
-
     // TODO this is wrong and we need to redo all this
     // we wanna end up with:
     // - revise point
@@ -253,20 +207,6 @@ export class FlightPlan extends BaseFlightPlan {
 
         this.enqueueOperation(FlightPlanQueuedOperation.Restring);
         this.flushOperationQueue();
-    }
-
-    startAirwayEntry(revisedLegIndex: number) {
-        const leg = this.elementAt(revisedLegIndex);
-
-        if (leg.isDiscontinuity === true) {
-            throw new Error('Cannot start airway entry at a discontinuity');
-        }
-
-        if (!leg.isXF() && !leg.isHX()) {
-            throw new Error('Cannot create a pending airways entry from a non XF or HX leg');
-        }
-
-        this.pendingAirways = new PendingAirways(this, revisedLegIndex, leg);
     }
 
     setFixInfoEntry(index: 1 | 2 | 3 | 4, fixInfo: FixInfoEntry | null, notify = true): void {

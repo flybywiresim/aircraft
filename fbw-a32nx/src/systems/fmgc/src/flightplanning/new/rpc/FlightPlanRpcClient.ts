@@ -167,20 +167,20 @@ export class FlightPlanRpcClient implements FlightPlanInterface {
         return this.callFunctionViaRpc('newDest', atIndex, airportIdent, planIndex, alternate);
     }
 
-    startAirwayEntry(at: number, planIndex: number): Promise<void> {
-        return this.callFunctionViaRpc('startAirwayEntry', at, planIndex);
+    startAirwayEntry(at: number, planIndex: number, alternate: boolean): Promise<void> {
+        return this.callFunctionViaRpc('startAirwayEntry', at, planIndex, alternate);
     }
 
     directTo(ppos: Coordinates, trueTrack: Degrees, waypoint: Fix, withAbeam: boolean, planIndex: number): Promise<void> {
         return this.callFunctionViaRpc('directTo', ppos, trueTrack, waypoint, withAbeam, planIndex);
     }
 
-    addOrEditManualHold(at: number, desiredHold: HoldData, modifiedHold: HoldData, defaultHold: HoldData, planIndex: number): Promise<number> {
-        return this.callFunctionViaRpc('addOrEditManualHold', at, desiredHold, modifiedHold, desiredHold, planIndex);
+    addOrEditManualHold(at: number, desiredHold: HoldData, modifiedHold: HoldData, defaultHold: HoldData, planIndex: number, alternate: boolean): Promise<number> {
+        return this.callFunctionViaRpc('addOrEditManualHold', at, desiredHold, modifiedHold, desiredHold, planIndex, alternate);
     }
 
-    revertHoldToComputed(at: number, planIndex: number): Promise<void> {
-        return this.callFunctionViaRpc('revertHoldToComputed', at, planIndex);
+    revertHoldToComputed(at: number, planIndex: number, alternate: boolean): Promise<void> {
+        return this.callFunctionViaRpc('revertHoldToComputed', at, planIndex, alternate);
     }
 
     enableAltn(atIndexInAlternate: number, planIndex: number): Promise<void> {
