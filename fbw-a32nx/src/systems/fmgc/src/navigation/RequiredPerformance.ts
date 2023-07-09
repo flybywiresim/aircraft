@@ -48,9 +48,11 @@ export class RequiredPerformance {
             return;
         }
 
-        const plan = this.flightPlanManager.activeFlightPlan;
-        if (plan && plan.activeWaypoint) {
-            const legRnp = plan.activeWaypoint.additionalData.rnp;
+        const plan = this.flightPlanService.active;
+
+        if (plan && plan.activeLeg && plan.activeLeg.isDiscontinuity === false) {
+            const legRnp = plan.activeLeg.rnp;
+
             if (legRnp !== undefined) {
                 if (legRnp !== this.activeRnp) {
                     this.setActiveRnp(legRnp);
