@@ -3,44 +3,47 @@
 // SPDX-License-Identifier: GPL-3.0
 
 class A320_Neo_CDU_AirwaysFromWaypointPage {
-    static ShowPage(mcdu, reviseIndex, pendingAirway, lastIndex) {
+    static ShowPage(mcdu, reviseIndex, pendingAirway, lastIndex, forPlan, inAlternate) {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.AirwaysFromWaypointPage;
 
-        const waypoint = mcdu.flightPlanService.activeOrTemporary.legElementAt(reviseIndex);
-        const fpIsTmpy = mcdu.flightPlanService.hasTemporary;
+        const targetPlan = mcdu.flightPlan(forPlan, inAlternate);
+        const waypoint = targetPlan.legElementAt(reviseIndex);
+        const fpIsTmpy = forPlan === Fmgc.FlightPlanIndex.Active && mcdu.flightPlanService.hasTemporary;
 
         let prevIcao = waypoint.definition.waypoint.databaseId;
         let prevFpIndex = reviseIndex;
 
-        if (!mcdu.flightPlanService.activeOrTemporary.pendingAirways) {
-            mcdu.flightPlanService.startAirwayEntry(reviseIndex);
+        if (!targetPlan.pendingAirways) {
+            mcdu.flightPlanService.startAirwayEntry(reviseIndex, forPlan, inAlternate);
         }
 
         const rows = [["----"], [""], [""], [""], [""]];
         const subRows = [["VIA", ""], [""], [""], [""], [""]];
-        const allRows = lastIndex ? A320_Neo_CDU_AirwaysFromWaypointPage._GetAllRows(mcdu, reviseIndex, lastIndex) : [];
+        const allRows = lastIndex ? A320_Neo_CDU_AirwaysFromWaypointPage._GetAllRows(targetPlan) : [];
         let rowBottomLine = ["<RETURN"];
+
         if (fpIsTmpy) {
             rowBottomLine = ["{ERASE[color]amber", "INSERT*[color]amber"];
 
+            mcdu.onLeftInput[5] = async () => {
+                mcdu.eraseTemporaryFlightPlan(() => {
+                    CDUFlightPlanPage.ShowPage(mcdu, 0, forPlan);
+                });
+            };
+
             mcdu.onRightInput[5] = async () => {
                 mcdu.insertTemporaryFlightPlan(() => {
-                    mcdu.flightPlanService.activeOrTemporary.pendingAirways = undefined;
+                    targetPlan.pendingAirways = undefined;
 
                     mcdu.updateConstraints();
 
-                    CDUFlightPlanPage.ShowPage(mcdu, 0);
+                    CDUFlightPlanPage.ShowPage(mcdu, 0, forPlan);
                 });
             };
         }
-        mcdu.onLeftInput[5] = async () => {
-            mcdu.eraseTemporaryFlightPlan(() => {
-                CDUFlightPlanPage.ShowPage(mcdu, 0);
-            });
-        };
-        let showInput = false;
 
+        let showInput = false;
         for (let i = 0; i < rows.length; i++) {
             if (allRows[i]) {
                 const [airwayIdent, termIdent, fromIcao, fromIndex] = allRows[i];
@@ -55,20 +58,20 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                     rows[i] = ["[\xa0\xa0\xa0][color]cyan", ""];
 
                     mcdu.onLeftInput[i] = async (value, scratchpadCallback) => {
-                        if (value.length > 0) {
-                            const plan = mcdu.flightPlanService.activeOrTemporary;
+                        const targetPlan = mcdu.flightPlan(forPlan, inAlternate);
 
-                            const elements = plan.pendingAirways.elements;
+                        if (value.length > 0) {
+                            const elements = targetPlan.pendingAirways.elements;
                             const tailElement = elements[elements.length - 1];
 
-                            const lastFix = tailElement ? tailElement.to : plan.legElementAt(prevFpIndex).terminationWaypoint();
+                            const lastFix = tailElement ? tailElement.to : targetPlan.legElementAt(prevFpIndex).terminationWaypoint();
 
                             const airway = await this._getAirway(mcdu, prevFpIndex, tailElement ? tailElement.airway : undefined, lastFix, value).catch(console.error);
 
                             if (airway) {
-                                const result = plan.pendingAirways.thenAirway(airway);
+                                const result = targetPlan.pendingAirways.thenAirway(airway);
 
-                                A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(mcdu, reviseIndex, airway, result ? 1 : -1);
+                                A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(mcdu, reviseIndex, airway, result ? 1 : -1, forPlan, inAlternate);
                             } else {
                                 mcdu.setScratchpadMessage(NXSystemMessages.awyWptMismatch);
                                 scratchpadCallback();
@@ -80,12 +83,14 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                     rows[i] = [`${pendingAirway.ident}[color]cyan`, "[\xa0\xa0\xa0][color]cyan"];
 
                     mcdu.onRightInput[i] = (value, scratchpadCallback) => {
+                        const targetPlan = mcdu.flightPlan(forPlan, inAlternate);
+
                         if (value.length > 0) {
                             mcdu.getOrSelectWaypointByIdent(value, /** @param wp {import('msfs-navdata').Waypoint|undefined} */ (wp) => {
                                 if (wp) {
-                                    const result = mcdu.flightPlanService.activeOrTemporary.pendingAirways.thenTo(wp);
+                                    const result = targetPlan.pendingAirways.thenTo(wp);
 
-                                    A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(mcdu, reviseIndex, undefined, result ? 1 : -1);
+                                    A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(mcdu, reviseIndex, undefined, result ? 1 : -1, forPlan, inAlternate);
                                 } else {
                                     mcdu.setScratchpadMessage(NXSystemMessages.awyWptMismatch);
                                     scratchpadCallback();
@@ -98,20 +103,20 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                         subRows[i + 1] = ["\xa0VIA", ""];
 
                         mcdu.onLeftInput[i + 1] = async (value, scratchpadCallback) => {
-                            const plan = mcdu.flightPlanService.activeOrTemporary;
+                            const targetPlan = mcdu.flightPlan(forPlan, inAlternate);
 
                             if (value.length > 0) {
-                                const elements = plan.pendingAirways.elements;
+                                const elements = targetPlan.pendingAirways.elements;
                                 const tailElement = elements[elements.length - 1];
 
-                                const lastFix = tailElement ? tailElement.to : plan.legElementAt(prevFpIndex).terminationWaypoint();
+                                const lastFix = tailElement ? tailElement.to : targetPlan.legElementAt(prevFpIndex).terminationWaypoint();
 
                                 const airway = await this._getAirway(mcdu, prevFpIndex, tailElement ? tailElement.airway : undefined, lastFix, value).catch(console.error);
 
                                 if (airway) {
-                                    const result = plan.pendingAirways.thenAirway(airway);
+                                    const result = targetPlan.pendingAirways.thenAirway(airway);
 
-                                    A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(mcdu, reviseIndex, airway, lastIndex, result ? 1 : -1);
+                                    A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(mcdu, reviseIndex, airway, lastIndex, result ? 1 : -1, forPlan, inAlternate);
                                 } else {
                                     mcdu.setScratchpadMessage(NXSystemMessages.awyWptMismatch);
                                     scratchpadCallback();
@@ -140,9 +145,12 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
         ]);
     }
 
-    static _GetAllRows(mcdu) {
+    /**
+     * @param plan {FlightPlan}
+     */
+    static _GetAllRows(plan) {
         const allRows = [];
-        const elements = mcdu.flightPlanService.activeOrTemporary.pendingAirways.elements;
+        const elements = plan.pendingAirways.elements;
 
         for (let i = 0; i < elements.length; i++) {
             const element = elements[i];

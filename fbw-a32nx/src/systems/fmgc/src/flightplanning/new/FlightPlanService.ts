@@ -87,6 +87,10 @@ export class FlightPlanService implements FlightPlanInterface {
             temporaryPlan.pendingAirways.finalize();
         }
 
+        if (temporaryPlan.alternateFlightPlan.pendingAirways) {
+            temporaryPlan.alternateFlightPlan.pendingAirways.finalize();
+        }
+
         const fromLeg = temporaryPlan.maybeElementAt(temporaryPlan.activeLegIndex - 1);
 
         // Update T-P
