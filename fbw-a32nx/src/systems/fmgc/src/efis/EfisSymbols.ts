@@ -1,15 +1,14 @@
 // Copyright (c) 2021-2023 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
+import { GenericDataListenerSync, MathUtils } from '@flybywiresim/fbw-sdk';
 import { EfisOption, EfisNdMode, NdSymbol, NdSymbolTypeFlags, rangeSettings, EfisNdRangeValue } from '@shared/NavigationDisplay';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { bearingTo, distanceTo } from 'msfs-geo';
-import { GenericDataListenerSync } from '@shared/GenericDataListenerSync';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { Airport, AltitudeDescriptor, LegType, Runway, RunwaySurfaceType, VhfNavaidType, WaypointDescriptor } from 'msfs-navdata';
-import { MathUtils } from '@shared/MathUtils';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { NavigationDatabase } from '@fmgc/NavigationDatabase';
 import { FlightPlan } from '@fmgc/flightplanning/new/plans/FlightPlan';
