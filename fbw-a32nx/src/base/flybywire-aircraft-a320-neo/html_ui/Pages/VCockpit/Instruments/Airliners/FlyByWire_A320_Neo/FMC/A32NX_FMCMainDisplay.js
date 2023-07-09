@@ -1631,7 +1631,7 @@ class FMCMainDisplay extends BaseAirliners {
         const dhValid = !mdaValid && inRange && typeof this.perfApprDH === 'number';
 
         const mdaSsm = mdaValid ? Arinc429Word.SignStatusMatrix.NormalOperation : Arinc429Word.SignStatusMatrix.NoComputedData;
-        const dhSsm = dhValid ? Arinc429Word.SignStatusMatrix.NormalOperation : Arinc429Word.SignStatusMatrix.NoComputedData
+        const dhSsm = dhValid ? Arinc429Word.SignStatusMatrix.NormalOperation : Arinc429Word.SignStatusMatrix.NoComputedData;
 
         this.arincMDA.setBnrValue(mdaValid ? this.perfApprMDA : 0, mdaSsm, 17, 131072, 0);
         this.arincDH.setBnrValue(dhValid ? this.perfApprDH : 0, dhSsm, 16, 8192, 0);
@@ -2491,6 +2491,15 @@ class FMCMainDisplay extends BaseAirliners {
 
     getTotalTripFuelCons() {
         return this._routeTripFuelWeight;
+    }
+
+    onUplinkInProgress() {
+        this.setScratchpadMessage(NXSystemMessages.uplinkInsertInProg);
+    }
+
+    onUplinkDone() {
+        this.removeScratchpadMessage(NXSystemMessages.uplinkInsertInProg);
+        this.setScratchpadMessage(NXSystemMessages.aocActFplnUplink);
     }
 
     /**

@@ -8,6 +8,16 @@ import { FmsErrorType } from '@fmgc/FmsError';
 
 export interface DisplayInterface {
     /**
+     * Called when a flight plan uplink is in progress
+     */
+    onUplinkInProgress();
+
+    /**
+     * Called when a flight plan uplink is done
+     */
+    onUplinkDone();
+
+    /**
      * Calling this function with a message should display 1the message in the FMS' message area,
      * such as the scratchpad or a dedicated error line. The FMS error type given should be translated
      * into the appropriate message for the UI
@@ -25,7 +35,7 @@ export interface DisplayInterface {
      *
      * @returns the chosen item
      */
-    deduplicateFacilities<T extends DatabaseItem>(items: T[]): Promise<T | undefined>;
+    deduplicateFacilities<T extends DatabaseItem<any>>(items: T[]): Promise<T | undefined>;
 
     /**
      * Calling this function should show a UI allowing the pilot to create a new waypoint with the ident

@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 class CDUInitPage {
     static ShowPage1(mcdu) {
         mcdu.clearDisplay();
@@ -215,10 +219,10 @@ class CDUInitPage {
                     }
                 })
                     .then((data) => {
-                        Fmgc.SimBriefUplinkAdapter.uplinkFlightPlanFromSimbrief(mcdu, data, { doUplinkProcedures: false }).then(() => {
+                        Fmgc.SimBriefUplinkAdapter.uplinkFlightPlanFromSimbrief(mcdu, mcdu.flightPlanService, data, { doUplinkProcedures: false }).then(() => {
                             console.log('SimBrief data uplinked.');
 
-                            Fmgc.FlightPlanService.uplinkInsert();
+                            mcdu.flightPlanService.uplinkInsert();
 
                             if (mcdu.page.Current === mcdu.page.InitPageA) {
                                 CDUInitPage.ShowPage1(mcdu);
