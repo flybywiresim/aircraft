@@ -46,14 +46,14 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
 
         this.subs.push(this.props.visible.sub((val) => {
             this.topRef.getOrDefault().style.display = val ? 'block' : 'none';
-            this.selectedWaypointIndex.set(0);
+            this.selectedWaypointIndex.set(null);
             this.nextWpt.set('');
         }, true));
 
         this.subs.push(this.props.revisedWaypoint.sub((wpt) => {
             this.identRef.instance.innerText = wpt.ident;
             this.coordinatesRef.instance.innerText = coordinateToString(wpt.definition.waypoint.location, false);
-            this.selectedWaypointIndex.set(0);
+            this.selectedWaypointIndex.set(null);
         }));
     }
 

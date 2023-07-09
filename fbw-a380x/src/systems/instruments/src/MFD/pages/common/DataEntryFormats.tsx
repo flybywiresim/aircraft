@@ -617,6 +617,7 @@ export class DropdownFieldFormat implements DataEntryFormat<string> {
 
     constructor(numDigits: number) {
         this.maxDigits = numDigits;
+        this.placeholder = '-'.repeat(numDigits);
     }
 
     public format(value: string) {

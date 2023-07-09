@@ -117,7 +117,7 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
 
     private toFlexTemp = Subject.create<number>(null);
 
-    private toSelectedDeratedIndex = Subject.create(0);
+    private toSelectedDeratedIndex = Subject.create(null);
 
     private toSelectedFlapsIndex = Subject.create(0);
 
@@ -453,10 +453,10 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                     </div>
                                 </div>
                             </div>
-                            <div style="display: grid; grid-template-columns: 17% 19% 1% 30% 30%; margin-top: 10px; padding-bottom: 15px; border-bottom: 1px solid lightgrey;">
+                            <div style="display: grid; grid-template-columns: auto auto 15px auto auto; margin-top: 10px; padding-bottom: 15px; border-bottom: 1px solid lightgrey;">
                                 <div><span class="MFDLabel">FLAPS</span></div>
                                 <div><span class="MFDLabel">THS FOR</span></div>
-                                <div style="grid-row-start: span 2; border-left: 1px solid lightgrey;" />
+                                <div style="grid-row-start: span 2; border-left: 1px solid lightgrey; margin-right: 10px;" />
                                 <div><span class="MFDLabel">PACKS</span></div>
                                 <div><span class="MFDLabel">ANTI ICE</span></div>
                                 <div style="margin-top: 15px;">
@@ -470,7 +470,7 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                         alignLabels="center"
                                     />
                                 </div>
-                                <div style="width: 120px; margin-top: 15px; background-color: yellow; justify-self: center; align-self: center;">
+                                <div style="margin-top: 15px; align-self: center;">
                                     <InputField<number>
                                         dataEntryFormat={new PercentageFormat(Subject.create(0), Subject.create(99.9))}
                                         mandatory={Subject.create(true)}
@@ -478,14 +478,15 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                         alignText="flex-end"
                                     />
                                 </div>
-                                <div style="margin-right: 15px; margin-top: 15px;">
+                                <div style="margin-top: 15px;">
                                     <DropdownMenu
                                         values={ArraySubject.create(['OFF/APU', 'ON'])}
                                         selectedIndex={this.toSelectedPacksIndex}
                                         idPrefix="packsDropdown"
                                         freeTextAllowed={false}
-                                        numberOfDigitsForInputField={7}
+                                        numberOfDigitsForInputField={8}
                                         alignLabels="center"
+                                        containerStyle="width: 200px;"
                                     />
                                 </div>
                                 <div style="margin-top: 15px;">
@@ -496,11 +497,12 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                         freeTextAllowed={false}
                                         numberOfDigitsForInputField={10}
                                         alignLabels="center"
+                                        containerStyle="width: 225px;"
                                     />
                                 </div>
                             </div>
                             <div style="display: grid; grid-template-columns: auto auto auto auto auto; grid-auto-rows: 50px; margin: 20px 20px 20px 0px; height: 150px;">
-                                <div style="display: flex; justify-content: flex-end; align-items: center; margin-right: 15px; margin-bottom: 15px; width: 125px;">
+                                <div style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 15px; width: 125px;">
                                     <span class="MFDLabel">THR RED</span>
                                 </div>
                                 <div style="margin-bottom: 15px;">

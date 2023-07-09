@@ -118,7 +118,11 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
         }));
 
         this.subs.push(this.props.values.sub((index, type, item, array) => {
-            this.inputFieldValue.set(array[this.props.selectedIndex.get()]);
+            if (this.props.selectedIndex.get() !== null) {
+                this.inputFieldValue.set(array[this.props.selectedIndex.get()]);
+            } else {
+                this.inputFieldValue.set('');
+            }
             this.renderedDropdownOptionsIndices = array.map((val, idx) => idx);
             this.renderedDropdownOptions.set(array);
         }, true));
@@ -186,7 +190,7 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
                         </svg>
                     </div>
                 </div>
-                <div ref={this.dropdownMenuRef} class="MFDDropdownMenu" style={`top: 41px; display: ${this.dropdownIsOpened.get() ? 'block' : 'none'}`} />
+                <div ref={this.dropdownMenuRef} class="MFDDropdownMenu" style={`top: 42px; display: ${this.dropdownIsOpened.get() ? 'block' : 'none'}`} />
             </div>
         );
     }

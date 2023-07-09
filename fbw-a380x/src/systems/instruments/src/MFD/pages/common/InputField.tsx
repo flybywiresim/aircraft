@@ -156,6 +156,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
         if (ev.keyCode !== KeyCode.KEY_ENTER) {
             if (this.modifiedFieldValue.get() === null) {
                 this.modifiedFieldValue.set('');
+                this.spanningDivRef.getOrDefault().style.justifyContent = 'flex-start';
             }
 
             if (this.modifiedFieldValue.get()?.length < this.props.dataEntryFormat.maxDigits || this.props.canOverflow === true) {
@@ -185,7 +186,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
                 this.textInputRef.getOrDefault().classList.remove('mandatory');
             }
             this.modifiedFieldValue.set(null);
-            this.spanningDivRef.getOrDefault().style.justifyContent = 'flex-start';
+            this.spanningDivRef.getOrDefault().style.justifyContent = this.props.alignText;
             this.updateDisplayElement();
         }
     }
@@ -262,7 +263,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
         }
 
         // Aspect ratio for font: 2:3 WxH
-        this.spanningDivRef.instance.style.minWidth = `${Math.round(this.props.dataEntryFormat.maxDigits * 25.0 / 1.5)}px`;
+        this.spanningDivRef.instance.style.minWidth = `${Math.round(this.props.dataEntryFormat.maxDigits * 27.0 / 1.5)}px`;
 
         // Align text
 
@@ -342,8 +343,11 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
 
     render(): VNode {
         return (
-            <div ref={this.topRef}>
-                <div ref={this.containerRef} class="MFDNumberInputContainer" style={this.props.containerStyle}>
+            <div
+                ref={this.topRef}
+                style="display: flex; flex-direction: row; justify-items: flex-start; align-items: baseline;"
+            >
+                <div ref={this.containerRef} class="MFDNumberInputContainer" style={`${this.props.containerStyle}`}>
                     <span ref={this.leadingUnitRef} class="MFDUnitLabel leadingUnit" style="align-self: center;">{this.leadingUnit}</span>
                     <div ref={this.spanningDivRef} style={`display: flex; flex: 1; flex-direction: row; align-self: center; align-items: center; justify-content: ${this.props.alignText};`}>
                         <span

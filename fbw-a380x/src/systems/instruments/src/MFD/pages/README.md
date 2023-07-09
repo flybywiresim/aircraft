@@ -16,7 +16,7 @@ Status legend:
 | 2️⃣ | fms/\*/fuel-load | 1 |
 | 2️⃣ | fms/\*/perf | 1 |
 |  |  |
-| 1️⃣ | fms/\*/f-pln | 1 |
+| 2️⃣ | fms/\*/f-pln | 1 |
 | 🟥 | fms/\*/f-pln-rte-sel | 1 |
 | 🟥 | fms/\*/f-pln-departure | 1 |
 | 🟥 | fms/\*/f-pln-arrival | 1 |
@@ -52,7 +52,7 @@ Status legend:
 | 🟥 | fms/data/printer | 3 |
 | 🟥 | fms/data/route | 3 |
 |  |  |
-| 🟥 | fms/data/msg-list | 1 |
+| 2️⃣ | fms/data/msg-list | 1 |
 
 \* (active | sec1 | sec2 | sec3)
 

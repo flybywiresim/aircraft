@@ -187,7 +187,8 @@ $display-mfd-dark-grey: #3c3c3c;
   text-align: center;
   display: inline;
   margin: 10px;
-  padding: 4px;
+  padding: 3px;
+  border: 1px solid transparent;
 }
 
 .MFDPageSelectorLabel.active {
@@ -225,17 +226,6 @@ $display-mfd-dark-grey: #3c3c3c;
 
 .trailingUnit {
   margin-left: 6px;
-}
-
-.MFDTextInput {
-  display: flex;
-  flex-direction: row;
-  justify-items: center;
-  align-items: baseline;
-  padding: 4px;
-  border: 2px inset $display-light-grey;
-  text-align: center;
-  vertical-align: center;
 }
 
 .MFDTopTabNavigatorContainer {
@@ -413,7 +403,8 @@ $display-mfd-dark-grey: #3c3c3c;
   background-color: $display-background;
   border: none;
   font-family: "Ecam", monospace;
-  font-size: 25px;
+  font-size: 27px;
+  line-height: 27px;
   color: $display-cyan;
   padding: 0px;
 }
@@ -437,21 +428,21 @@ $display-mfd-dark-grey: #3c3c3c;
 }
 
 .MFDNumberInputTextInput.editing {
-  font-size: 25px !important;
+  font-size: 27px !important;
 }
 
 .MFDNumberInputTextInput.computedByFms {
-  font-size: 21px;
+  font-size: 22px;
 }
 
 .MFDInputFieldCaret {
   animation: blinking 1s step-start infinite;
-  height: 24px;
-  width: 15px;
+  height: 27px;
+  width: 18px;
   background-color: $display-cyan;
   color: $display-background;
   font-family: "Ecam", monospace;
-  font-size: 25px;
+  font-size: 27px;
   text-align: center;
   vertical-align: center;
 }

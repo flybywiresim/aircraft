@@ -12,7 +12,7 @@ export class ActivePageTitleBar extends DisplayComponent<ActivePageTitleBarProps
         return (
             <div style="display: flex;">
                 <div style="flex: 10; background-color: #a0a0a0; padding: 3px 10px 3px 7px;">
-                    <span class="MFDLabel" style="color: #222222; font-size: 26px;">
+                    <span class="MFDLabel" style="color: #222222; font-size: 28px;">
                         {this.props.activePage}
                         {this.props.offset.get() !== '' ? `     OFFSET${this.props.offset.get()}` : ''}
                     </span>
