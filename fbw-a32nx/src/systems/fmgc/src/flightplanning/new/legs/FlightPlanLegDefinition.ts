@@ -34,7 +34,7 @@ export interface FlightPlanLegDefinition {
     /**
      * Radio navaid to be used for this leg
      */
-    recommendedNavaid?: VhfNavaid | NdbNavaid | Waypoint;
+    recommendedNavaid?: Fix;
 
     /**
      * Distance from the recommended navaid, to the waypoint
@@ -50,7 +50,7 @@ export interface FlightPlanLegDefinition {
     /**
      * Defines the arc for RF legs
      */
-    arcCentreFix?: Waypoint;
+    arcCentreFix?: Fix;
 
     /**
      * Defines the radius for RF legs

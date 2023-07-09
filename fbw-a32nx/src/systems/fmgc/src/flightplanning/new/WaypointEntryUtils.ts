@@ -10,8 +10,8 @@ import { runwayIdent } from '@fmgc/flightplanning/new/legs/FlightPlanLegNaming';
 import { DisplayInterface } from '@fmgc/flightplanning/new/interface/DisplayInterface';
 import { Coordinates } from 'msfs-geo';
 import { DataInterface } from '@fmgc/flightplanning/new/interface/DataInterface';
-import { MagVar } from '@shared/MagVar';
 import { FmsError, FmsErrorType } from '@fmgc/FmsError';
+import { MagVar } from '@microsoft/msfs-sdk';
 
 export class WaypointEntryUtils {
     /**
@@ -162,9 +162,9 @@ export class WaypointEntryUtils {
         }
 
         const place1 = await WaypointEntryUtils.parsePlace(fms, pbx[1]);
-        const magVar1 = Facilities.getMagVar(place1.location.lat, place1.location.long);
+        const magVar1 = MagVar.get(place1.location.lat, place1.location.long);
         const place2 = await WaypointEntryUtils.parsePlace(fms, pbx[3]);
-        const magVar2 = Facilities.getMagVar(place2.location.lat, place2.location.long);
+        const magVar2 = MagVar.get(place2.location.lat, place2.location.long);
 
         return [place1, MagVar.magneticToTrue(brg1, magVar1), place2, MagVar.magneticToTrue(brg2, magVar2)];
     }

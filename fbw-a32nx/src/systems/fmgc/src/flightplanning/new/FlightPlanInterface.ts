@@ -13,12 +13,6 @@ import { FlightPlan } from '@fmgc/flightplanning/new/plans/FlightPlan';
 import { FlightPlanIndex } from '@fmgc/flightplanning/new/FlightPlanManager';
 
 export interface FlightPlanInterface {
-    navigationDatabase: NavigationDatabase
-
-    version: number;
-
-    createFlightPlans(): void;
-
     get(index: number): FlightPlan;
 
     has(index: number): boolean;
@@ -41,13 +35,13 @@ export interface FlightPlanInterface {
 
     get hasUplink(): boolean;
 
-    temporaryInsert(): void;
+    temporaryInsert(): Promise<void>;
 
-    temporaryDelete(): void;
+    temporaryDelete(): Promise<void>;
 
-    uplinkInsert(): void;
+    uplinkInsert(): Promise<void>;
 
-    reset(): void;
+    reset(): Promise<void>;
 
     /**
      * Resets the flight plan with a new FROM/TO/ALTN city pair
@@ -149,7 +143,7 @@ export interface FlightPlanInterface {
      *
      * @returns `true` if the element could be removed, `false` if removal is not allowed
      */
-    deleteElementAt(index: number, planIndex?: number, alternate?: boolean): boolean;
+    deleteElementAt(index: number, planIndex?: number, alternate?: boolean): Promise<boolean>;
 
     /**
      * Inserts a waypoint before a leg at an index.
@@ -183,6 +177,7 @@ export interface FlightPlanInterface {
 
     startAirwayEntry(at: number, planIndex: number): Promise<void>; // TODO alternate
 
+    // TODO do not pass in fix object (rpc)
     directTo(ppos: Coordinates, trueTrack: Degrees, waypoint: Fix, withAbeam: boolean, planIndex: number): Promise<void>
 
     addOrEditManualHold(at: number, desiredHold: HoldData, modifiedHold: HoldData, defaultHold: HoldData, planIndex: number): Promise<number>; // TODO maybe alternate
@@ -201,7 +196,9 @@ export interface FlightPlanInterface {
 
     setFixInfoEntry(index: 1 | 2 | 3 | 4, fixInfo: FixInfoEntry | null, planIndex: number): Promise<void>;
 
+    // TODO do not pass in callback (rpc)
     editFixInfoEntry(index: 1 | 2 | 3 | 4, callback: (fixInfo: FixInfoEntry) => FixInfoEntry, planIndex: number): Promise<void>;
 
+    // TODO do not pass in waypoint object (rpc)
     isWaypointInUse(waypoint: Waypoint): Promise<boolean>;
 }

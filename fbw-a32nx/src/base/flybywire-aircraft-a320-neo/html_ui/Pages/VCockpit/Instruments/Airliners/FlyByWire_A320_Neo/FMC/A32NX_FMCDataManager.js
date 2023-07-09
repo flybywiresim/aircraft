@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 const StoredWaypointType = Object.freeze({
     Pbd: 1,
     Pbx: 2,
@@ -27,6 +31,7 @@ class FMCDataManager {
         if (stored !== null) {
             JSON.parse(stored).forEach((wp) => {
                 if (wp) {
+                    // TODO port fms-v2)
                     this.storedWaypoints.push(Fmgc.WaypointBuilder.fromCoordinates(wp.ident, new LatLongAlt(wp.coordinates), this.fmc, wp.additionalData));
                 } else {
                     this.storedWaypoints.push(undefined);
@@ -397,6 +402,7 @@ class FMCDataManager {
     createRunwayWaypoint(airport, runway) {
         const ident = `${airport.ident}${Avionics.Utils.formatRunway(runway.designation)}`;
         // TODO should this be threshold co-ordinates?
+        // TODO port fms-v2)
         const wp = Fmgc.WaypointBuilder.fromCoordinates(ident, runway.beginningCoordinates, this.fmc.instrument);
         wp.icao = `R${airport.icao.substring(1, 4)}${airport.icao.substring(7, 11)}RW${Avionics.Utils.formatRunway(runway.designation)}`;
         wp.infos.icao = wp.icao;

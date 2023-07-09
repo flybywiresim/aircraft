@@ -6,7 +6,7 @@
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { SegmentType } from '@fmgc/flightplanning/FlightPlanSegment';
 import { GuidanceParameters } from '@fmgc/guidance/ControlLaws';
-import { courseToFixDistanceToGo, courseToFixGuidance, reciprocal } from '@fmgc/guidance/lnav/CommonGeometry';
+import { courseToFixDistanceToGo, courseToFixGuidance } from '@fmgc/guidance/lnav/CommonGeometry';
 import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { Transition } from '@fmgc/guidance/lnav/Transition';
@@ -15,7 +15,7 @@ import { placeBearingDistance, placeBearingIntersection } from 'msfs-geo';
 import { Waypoint } from 'msfs-navdata';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
 import { IFLeg } from '@fmgc/guidance/lnav/legs/IF';
-import { MathUtils } from '@shared/MathUtils';
+import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { PathVector, PathVectorType } from '../PathVector';
 import { FixedRadiusTransition } from '../transitions/FixedRadiusTransition';
 

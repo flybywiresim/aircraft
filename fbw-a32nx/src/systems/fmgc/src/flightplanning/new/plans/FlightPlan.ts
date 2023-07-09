@@ -6,11 +6,10 @@
 import { Airport, ApproachType, Fix, LegType } from 'msfs-navdata';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/new/plans/AlternateFlightPlan';
 import { PendingAirways } from '@fmgc/flightplanning/new/plans/PendingAirways';
-import { EventBus } from '@microsoft/msfs-sdk';
+import { EventBus, MagVar } from '@microsoft/msfs-sdk';
 import { FixInfoEntry } from '@fmgc/flightplanning/new/plans/FixInfo';
 import { loadAllDepartures, loadAllRunways } from '@fmgc/flightplanning/new/DataLoading';
 import { Coordinates, Degrees } from 'msfs-geo';
-import { MagVar } from '@shared/MagVar';
 import { FlightPlanLeg, FlightPlanLegFlags } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
@@ -116,7 +115,7 @@ export class FlightPlan extends BaseFlightPlan {
             throw new Error('[FPM] Target leg of a direct to cannot be a discontinuity or non-XF leg');
         }
 
-        const magVar = MagVar.getMagVar(ppos);
+        const magVar = MagVar.get(ppos.lat, ppos.long);
         const magneticCourse = MagVar.trueToMagnetic(trueTrack, magVar);
 
         const turningPoint = FlightPlanLeg.turningPoint(this.enrouteSegment, ppos, magneticCourse);

@@ -5,17 +5,17 @@
 
 import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { Coordinates } from 'msfs-geo';
-import { Airport, Fix, LegType, ProcedureLeg, Runway, Waypoint, WaypointArea, WaypointDescriptor } from 'msfs-navdata';
+import { Airport, EnrouteSubsectionCode, Fix, LegType, ProcedureLeg, Runway, SectionCode, WaypointArea, WaypointDescriptor } from 'msfs-navdata';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/new/legs/FlightPlanLegDefinition';
 import { procedureLegIdentAndAnnotation } from '@fmgc/flightplanning/new/legs/FlightPlanLegNaming';
 import { WaypointFactory } from '@fmgc/flightplanning/new/waypoints/WaypointFactory';
 import { FlightPlanSegment } from '@fmgc/flightplanning/new/segments/FlightPlanSegment';
 import { EnrouteSegment } from '@fmgc/flightplanning/new/segments/EnrouteSegment';
-import { MagVar } from '@shared/MagVar';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
 import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
+import { MagVar } from '@microsoft/msfs-sdk';
 
 /**
  * A serialized flight plan leg, to be sent across FMSes
@@ -138,7 +138,7 @@ export class FlightPlanLeg {
     /**
      * Returns the termination waypoint is this is an XF leg, `null` otherwise
      */
-    terminationWaypoint(): Waypoint | null {
+    terminationWaypoint(): Fix | null {
         if (!this.isXF() && !this.isFX() && !this.isHX()) {
             return null;
         }
@@ -171,7 +171,7 @@ export class FlightPlanLeg {
     }
 
     static directToTurnStart(segment: EnrouteSegment, location: Coordinates, bearing: DegreesTrue): FlightPlanLeg {
-        const magVar = Facilities.getMagVar(location.lat, location.long);
+        const magVar = MagVar.get(location.lat, location.long);
 
         return new FlightPlanLeg(segment, {
             procedureIdent: '',
@@ -183,7 +183,7 @@ export class FlightPlanLeg {
         }, '', '', undefined, undefined, false);
     }
 
-    static directToTurnEnd(segment: EnrouteSegment, targetWaypoint: Waypoint): FlightPlanLeg {
+    static directToTurnEnd(segment: EnrouteSegment, targetWaypoint: Fix): FlightPlanLeg {
         return new FlightPlanLeg(segment, {
             procedureIdent: '',
             type: LegType.DF,
@@ -192,7 +192,7 @@ export class FlightPlanLeg {
         }, targetWaypoint.ident, '', undefined, undefined, false);
     }
 
-    static manualHold(segment: FlightPlanSegment, waypoint: Waypoint, hold: HoldData): FlightPlanLeg {
+    static manualHold(segment: FlightPlanSegment, waypoint: Fix, hold: HoldData): FlightPlanLeg {
         return new FlightPlanLeg(segment, {
             procedureIdent: '',
             type: LegType.HM,
@@ -241,7 +241,7 @@ export class FlightPlanLeg {
             procedureIdent: '',
             type: LegType.IF,
             overfly: false,
-            waypoint: { ...airport, area: WaypointArea.Terminal },
+            waypoint: { ...airport, sectionCode: SectionCode.Enroute, subSectionCode: EnrouteSubsectionCode.Waypoints, area: WaypointArea.Terminal },
             waypointDescriptor: WaypointDescriptor.Airport,
             magneticCourse: runway?.magneticBearing,
         }, `${airport.ident}${runway ? runway.ident.replace('RW', '') : ''}`, procedureIdent, undefined, undefined, false);
