@@ -3,11 +3,11 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
+import { GenericDataListenerSync } from '@flybywiresim/fbw-sdk';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { EfisSide, EfisVectorsGroup } from '@shared/NavigationDisplay';
 import { PathVector, pathVectorLength, pathVectorValid } from '@fmgc/guidance/lnav/PathVector';
 import { ArmedLateralMode, isArmed, LateralMode } from '@shared/autopilot';
-import { GenericDataListenerSync } from '@shared/GenericDataListenerSync';
 import { FlightPlanIndex } from '@fmgc/flightplanning/new/FlightPlanManager';
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { FlightPlan } from '@fmgc/flightplanning/new/plans/FlightPlan';

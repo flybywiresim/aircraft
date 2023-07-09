@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { ApproachUtils } from '@shared/ApproachUtils';
 import { FlightPlanService } from './flightplanning/new/FlightPlanService';
 import { NavigationDatabase, NavigationDatabaseBackend } from './NavigationDatabase';
 import { FlightPlanManager } from './flightplanning/FlightPlanManager';
@@ -20,7 +19,6 @@ import { WaypointEntryUtils } from './flightplanning/new/WaypointEntryUtils';
 import { FlightPlanIndex } from './flightplanning/new/FlightPlanManager';
 import { NavigationDatabaseService } from './flightplanning/new/NavigationDatabaseService';
 import { SimBriefUplinkAdapter } from './flightplanning/new/uplink/SimBriefUplinkAdapter';
-import { ApproachUtils } from '@shared/ApproachUtils';
 
 function initFmgcLoop(baseInstrument: BaseInstrument, flightPlanService: FlightPlanService): void {
     initComponents(baseInstrument, flightPlanService);
@@ -48,7 +46,6 @@ export {
     DescentPathBuilder,
     WaypointBuilder,
     RawDataMapper,
-    ApproachUtils,
     Navigation,
     SelectedNavaidMode,
     SelectedNavaidType,

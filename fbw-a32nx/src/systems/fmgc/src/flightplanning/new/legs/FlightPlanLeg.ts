@@ -3,13 +3,13 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
+import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { Coordinates } from 'msfs-geo';
 import { Airport, Fix, LegType, ProcedureLeg, Runway, Waypoint, WaypointArea, WaypointDescriptor } from 'msfs-navdata';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/new/legs/FlightPlanLegDefinition';
 import { procedureLegIdentAndAnnotation } from '@fmgc/flightplanning/new/legs/FlightPlanLegNaming';
 import { WaypointFactory } from '@fmgc/flightplanning/new/waypoints/WaypointFactory';
 import { FlightPlanSegment } from '@fmgc/flightplanning/new/segments/FlightPlanSegment';
-import { MathUtils } from '@shared/MathUtils';
 import { EnrouteSegment } from '@fmgc/flightplanning/new/segments/EnrouteSegment';
 import { MagVar } from '@shared/MagVar';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';

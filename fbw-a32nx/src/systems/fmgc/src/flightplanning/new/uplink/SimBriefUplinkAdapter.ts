@@ -8,7 +8,7 @@ import { FlightPlanIndex } from '@fmgc/flightplanning/new/FlightPlanManager';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/new/NavigationDatabaseService';
 import { Airway, Fix } from 'msfs-navdata';
 import { Coordinates, distanceTo } from 'msfs-geo';
-import { ISimbriefData, simbriefDataParser } from '../../../../../instruments/src/EFB/SimbriefApi';
+import { ISimbriefData, simbriefDataParser } from '../../../../../instruments/src/EFB/Apis/Simbrief';
 import { DataInterface } from '../interface/DataInterface';
 
 const SIMBRIEF_API_URL = 'https://www.simbrief.com/api/xml.fetcher.php?json=1';

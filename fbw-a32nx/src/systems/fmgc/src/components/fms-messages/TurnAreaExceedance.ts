@@ -2,7 +2,6 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { PILeg } from '@fmgc/guidance/lnav/legs/PI';
 import { Navigation } from '@fmgc/navigation/Navigation';
