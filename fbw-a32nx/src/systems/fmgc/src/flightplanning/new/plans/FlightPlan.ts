@@ -240,6 +240,11 @@ export class FlightPlan extends BaseFlightPlan {
      */
     calculateActiveArea(): FlightArea {
         const activeLegIndex = this.activeLegIndex;
+
+        if (activeLegIndex >= this.legCount) {
+            return FlightArea.Enroute;
+        }
+
         const [activeSegment] = this.segmentPositionForIndex(activeLegIndex);
 
         if (activeSegment === this.missedApproachSegment

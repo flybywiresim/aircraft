@@ -218,7 +218,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.dataManager = new FMCDataManager(this);
 
         this.guidanceController = new Fmgc.GuidanceController(this, this.currFlightPlanService);
-        this.navigation = new Fmgc.Navigation(this.flightPlanManager, this.facilityLoader);
+        this.navigation = new Fmgc.Navigation(this.flightPlanService, this.facilityLoader);
         this.efisSymbols = new Fmgc.EfisSymbols(this.guidanceController, this.currFlightPlanService, this.navigation.getNavaidTuner());
 
         Fmgc.initFmgcLoop(this, this.currFlightPlanService);
