@@ -369,6 +369,7 @@ export class MfdFmsFpln extends DisplayComponent<MfdFmsFplnProps> {
                         cancelAction={() => this.newDestWindowOpened.set(false)}
                         confirmAction={(newDest) => {
                             console.log(`New DEST: ${newDest}`);
+                            this.tmpyIsActive.set(true);
                             this.newDestWindowOpened.set(false);
                         }}
                     />
@@ -377,9 +378,9 @@ export class MfdFmsFpln extends DisplayComponent<MfdFmsFplnProps> {
                         availableWaypoints={this.nextWptAvailableWaypoints}
                         visible={this.insertNextWptWindowOpened}
                         cancelAction={() => this.insertNextWptWindowOpened.set(false)}
-                        confirmAction={(nextWpt) => {
-                            console.log(`Next WPT: ${nextWpt}`);
-                            // this.insertNextWptWindowOpened.set(false);
+                        confirmAction={() => {
+                            this.tmpyIsActive.set(true);
+                            this.insertNextWptWindowOpened.set(false);
                         }}
                     />
                     <div style="display: flex; flex-direction: row; justify-content: flex-start; margin-top: 5px; border-bottom: 1px solid lightgrey;">

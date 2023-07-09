@@ -1,4 +1,4 @@
-import { ComponentProps, DisplayComponent, FSComponent, Subject, SubscribableArray, Subscription, VNode } from '@microsoft/msfs-sdk';
+import { ArraySubject, ComponentProps, DisplayComponent, FSComponent, Subject, SubscribableArray, Subscription, VNode } from '@microsoft/msfs-sdk';
 import './style.scss';
 import { InputField } from 'instruments/src/MFD/pages/common/InputField';
 import { DropdownFieldFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
@@ -22,11 +22,11 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
     // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
     private subs = [] as Subscription[];
 
-    private label = Subject.create('NOT SET');
-
     private topRef = FSComponent.createRef<HTMLDivElement>();
 
     private dropdownSelectorRef = FSComponent.createRef<HTMLDivElement>();
+
+    private dropdownInnerRef = FSComponent.createRef<HTMLDivElement>();
 
     // private dropdownSelectorLabelRef = FSComponent.createRef<HTMLSpanElement>();
 
@@ -40,14 +40,19 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
 
     private freeTextEntered = false;
 
+    private renderedDropdownOptions = ArraySubject.create<string>();
+
+    private renderedDropdownOptionsIndices: number[] = [];
+
     clickHandler(i: number, thisArg: DropdownMenu) {
         this.freeTextEntered = false;
         if (thisArg.props.onModified) {
-            thisArg.props.onModified(i, '');
+            thisArg.props.onModified(this.renderedDropdownOptionsIndices[i], '');
         } else {
-            thisArg.props.selectedIndex.set(i);
+            thisArg.props.selectedIndex.set(this.renderedDropdownOptionsIndices[i]);
         }
         thisArg.dropdownIsOpened.set(false);
+        this.filterList('');
     }
 
     private onFieldSubmit(text: string) {
@@ -61,21 +66,28 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
             this.dropdownIsOpened.set(false);
             this.freeTextEntered = false;
         }
+        this.filterList('');
     }
 
-    private onFieldChanged(_text: string) {
+    private filterList(text: string) {
+        const arr = this.props.values.getArray();
+        this.renderedDropdownOptionsIndices = arr.map((val, idx) => idx).filter((val, idx) => arr[idx].startsWith(text));
+        this.renderedDropdownOptions.set(arr.filter((val) => val.startsWith(text)));
+    }
+
+    private onFieldChanged(text: string) {
         this.freeTextEntered = true;
+
+        // Filter dropdown options based on input
+        this.filterList(text);
     }
 
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        this.subs.push(this.props.values.sub((value, type, item, array) => {
-            // this.label.set(array[this.props.selectedIndex.get()]);
-            this.inputFieldValue.set(array[this.props.selectedIndex.get()]);
-
+        this.subs.push(this.renderedDropdownOptions.sub((index, type, item, array) => {
             // Remove click handlers
-            this.props.values.getArray().forEach((val, i) => {
+            array.forEach((val, i) => {
                 if (document.getElementById(`${this.props.idPrefix}_${i}`)) {
                     document.getElementById(`${this.props.idPrefix}_${i}`).removeEventListener('click', () => this.clickHandler(i, this));
                 }
@@ -85,7 +97,7 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
             while (this.dropdownMenuRef.instance.firstChild) {
                 this.dropdownMenuRef.instance.removeChild(this.dropdownMenuRef.instance.firstChild);
             }
-            this.props.values.getArray().forEach((el, idx) => {
+            array.forEach((el, idx) => {
                 const n: VNode = (
                     <span
                         id={`${this.props.idPrefix}_${idx}`}
@@ -100,13 +112,18 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
             //
 
             // Add click handlers
-            this.props.values.getArray().forEach((val, i) => {
+            array.forEach((val, i) => {
                 document.getElementById(`${this.props.idPrefix}_${i}`).addEventListener('click', () => this.clickHandler(i, this));
             });
+        }));
+
+        this.subs.push(this.props.values.sub((index, type, item, array) => {
+            this.inputFieldValue.set(array[this.props.selectedIndex.get()]);
+            this.renderedDropdownOptionsIndices = array.map((val, idx) => idx);
+            this.renderedDropdownOptions.set(array);
         }, true));
 
         this.subs.push(this.props.selectedIndex.sub((value) => {
-            // this.label.set(this.props.values.get(value));
             this.inputFieldValue.set(this.props.values.get(value));
         }));
 
@@ -150,20 +167,18 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
         return (
             <div class="MFDDropdownContainer" ref={this.topRef} style={this.props.containerStyle}>
                 <div ref={this.dropdownSelectorRef} class="MFDDropdownOuter">
-                    <div class="MFDDropdownInner" style={`justify-content: ${this.props.alignLabels};`}>
+                    <div ref={this.dropdownInnerRef} class="MFDDropdownInner" style={`justify-content: ${this.props.alignLabels}; align-items: center;`}>
                         <InputField<string>
                             ref={this.inputFieldRef}
                             dataEntryFormat={new DropdownFieldFormat(this.props.numberOfDigitsForInputField ?? 6)}
                             value={this.inputFieldValue}
                             containerStyle="border: 2px inset transparent"
                             alignText={this.props.alignLabels}
+                            canOverflow={this.props.freeTextAllowed}
                             onModified={(text) => this.onFieldSubmit(text)}
                             onInput={(text) => this.onFieldChanged(text)}
                             handleFocusBlurExternally
                         />
-                        {/* <span ref={this.dropdownSelectorLabelRef} class="MFDDropdownLabel">
-                            {this.label}
-        </span> */ }
                     </div>
                     <div style="display: flex; justify-content: center; align-items: center; width: 25px;">
                         <svg height="15" width="15">
@@ -171,7 +186,7 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
                         </svg>
                     </div>
                 </div>
-                <div ref={this.dropdownMenuRef} class="MFDDropdownMenu" style={`display: ${this.dropdownIsOpened.get() ? 'block' : 'none'}`} />
+                <div ref={this.dropdownMenuRef} class="MFDDropdownMenu" style={`top: 41px; display: ${this.dropdownIsOpened.get() ? 'block' : 'none'}`} />
             </div>
         );
     }

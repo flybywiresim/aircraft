@@ -11,6 +11,7 @@ interface InputFieldProps<T> extends ComponentProps {
     disabled?: Subscribable<boolean>;
     canBeCleared?: Subscribable<boolean>;
     computedByFms?: Subscribable<boolean>;
+    canOverflow?: boolean;
     value: Subject<T>;
     /**
      * If defined, this component does not update the value prop, but rather calls this method.
@@ -29,7 +30,9 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
     // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
     private subs = [] as Subscription[];
 
-    private topRef = FSComponent.createRef<HTMLDivElement>();
+    public topRef = FSComponent.createRef<HTMLDivElement>();
+
+    public containerRef = FSComponent.createRef<HTMLDivElement>();
 
     private spanningDivRef = FSComponent.createRef<HTMLDivElement>();
 
@@ -59,6 +62,11 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
             this.modifiedFieldValue.set(null);
         }
         if (this.props.value.get()) {
+            if (this.props.canOverflow === true) {
+                // If item was overflowed, check whether overflow is still needed
+                this.overflow(!(this.props.value.get().toString().length <= this.props.dataEntryFormat.maxDigits));
+            }
+
             if (this.props.mandatory.get() === true) {
                 this.textInputRef.getOrDefault().classList.remove('mandatory');
             }
@@ -79,12 +87,48 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
             }
         } else { // Else, render modifiedFieldValue
             const numDigits = this.props.dataEntryFormat.maxDigits;
-            if (this.modifiedFieldValue.get().length < numDigits || this.isFocused.get() === false) {
+            if (this.modifiedFieldValue.get().length < numDigits || this.isFocused.get() === false || this.props.canOverflow === true) {
                 this.textInputRef.getOrDefault().innerText = this.modifiedFieldValue.get();
                 this.caretRef.getOrDefault().innerText = '';
             } else {
                 this.textInputRef.getOrDefault().innerText = this.modifiedFieldValue.get().slice(0, numDigits - 1);
                 this.caretRef.getOrDefault().innerText = this.modifiedFieldValue.get().slice(numDigits - 1, numDigits);
+            }
+        }
+    }
+
+    // Called when the input field changes
+    private onInput() {
+        if (this.props.canOverflow === true && this.modifiedFieldValue.get().length === this.props.dataEntryFormat.maxDigits) {
+            this.overflow(true);
+        }
+
+        if (this.props.onInput) {
+            this.props.onInput(this.modifiedFieldValue.get());
+        }
+    }
+
+    public overflow(overflow: boolean) {
+        if (overflow === true) {
+            this.topRef.instance.style.position = 'relative';
+            this.topRef.instance.style.top = '0px';
+            this.containerRef.instance.style.position = 'absolute';
+            this.containerRef.instance.style.top = '-18px';
+            this.containerRef.instance.style.zIndex = '5';
+            const remainingWidth = 768 - 50 - this.containerRef.instance.getBoundingClientRect().left;
+            this.containerRef.instance.style.width = `${remainingWidth}px`; // TODO extend to right edge
+            this.containerRef.instance.style.border = '1px solid grey';
+        } else {
+            this.topRef.instance.style.position = null;
+            this.topRef.instance.style.top = null;
+            this.containerRef.instance.style.position = null;
+            this.containerRef.instance.style.top = null;
+            this.containerRef.instance.style.zIndex = null;
+            this.containerRef.instance.style.width = null;
+            this.containerRef.instance.style.border = null;
+
+            if (this.props.containerStyle) {
+                this.containerRef.instance.setAttribute('style', this.props.containerStyle);
             }
         }
     }
@@ -99,9 +143,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
                 this.modifiedFieldValue.set(this.modifiedFieldValue.get().slice(0, -1));
             }
 
-            if (this.props.onInput) {
-                this.props.onInput(this.modifiedFieldValue.get());
-            }
+            this.onInput();
         }
     }
 
@@ -116,14 +158,12 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
                 this.modifiedFieldValue.set('');
             }
 
-            if (this.modifiedFieldValue.get()?.length < this.props.dataEntryFormat.maxDigits) {
+            if (this.modifiedFieldValue.get()?.length < this.props.dataEntryFormat.maxDigits || this.props.canOverflow === true) {
                 this.modifiedFieldValue.set(`${this.modifiedFieldValue.get()}${key}`);
                 this.caretRef.getOrDefault().style.display = 'inline';
             }
 
-            if (this.props.onInput) {
-                this.props.onInput(this.modifiedFieldValue.get());
-            }
+            this.onInput();
         } else {
             // Enter was pressed
             ev.preventDefault();
@@ -217,6 +257,9 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
         if (this.props.handleFocusBlurExternally === undefined) {
             this.props.handleFocusBlurExternally = false;
         }
+        if (this.props.canOverflow === undefined) {
+            this.props.canOverflow = false;
+        }
 
         // Aspect ratio for font: 2:3 WxH
         this.spanningDivRef.instance.style.minWidth = `${Math.round(this.props.dataEntryFormat.maxDigits * 25.0 / 1.5)}px`;
@@ -250,14 +293,14 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
                 // Disable click listeners
                 this.textInputRef.getOrDefault().tabIndex = null;
 
-                this.topRef.getOrDefault().classList.add('disabled');
+                this.containerRef.getOrDefault().classList.add('disabled');
                 this.textInputRef.getOrDefault().classList.add('disabled');
 
                 if (this.props.mandatory.get() === true) {
                     this.textInputRef.getOrDefault().classList.remove('mandatory');
                 }
             } else {
-                this.topRef.getOrDefault().classList.remove('disabled');
+                this.containerRef.getOrDefault().classList.remove('disabled');
                 this.textInputRef.getOrDefault().classList.remove('disabled');
 
                 if (this.props.mandatory.get() === true) {
@@ -299,20 +342,22 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
 
     render(): VNode {
         return (
-            <div ref={this.topRef} class="MFDNumberInputContainer" style={this.props.containerStyle}>
-                <span ref={this.leadingUnitRef} class="MFDUnitLabel leadingUnit" style="align-self: center;">{this.leadingUnit}</span>
-                <div ref={this.spanningDivRef} style={`display: flex; flex: 1; flex-direction: row; align-self: center; align-items: center; justify-content: ${this.props.alignText};`}>
-                    <span
-                        ref={this.textInputRef}
-                        // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
-                        tabIndex={-1}
-                        class="MFDNumberInputTextInput"
-                    >
-                        .
-                    </span>
-                    <span ref={this.caretRef} class="MFDInputFieldCaret" />
+            <div ref={this.topRef}>
+                <div ref={this.containerRef} class="MFDNumberInputContainer" style={this.props.containerStyle}>
+                    <span ref={this.leadingUnitRef} class="MFDUnitLabel leadingUnit" style="align-self: center;">{this.leadingUnit}</span>
+                    <div ref={this.spanningDivRef} style={`display: flex; flex: 1; flex-direction: row; align-self: center; align-items: center; justify-content: ${this.props.alignText};`}>
+                        <span
+                            ref={this.textInputRef}
+                            // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
+                            tabIndex={-1}
+                            class="MFDNumberInputTextInput"
+                        >
+                            .
+                        </span>
+                        <span ref={this.caretRef} class="MFDInputFieldCaret" />
+                    </div>
+                    <span ref={this.trailingUnitRef} class="MFDUnitLabel trailingUnit" style="align-self: center;">{this.trailingUnit}</span>
                 </div>
-                <span ref={this.trailingUnitRef} class="MFDUnitLabel trailingUnit" style="align-self: center;">{this.trailingUnit}</span>
             </div>
         );
     }

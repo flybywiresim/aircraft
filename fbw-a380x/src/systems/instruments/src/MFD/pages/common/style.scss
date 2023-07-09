@@ -126,6 +126,7 @@ $display-mfd-dark-grey: #3c3c3c;
   display: flex;
   flex: 1;
   justify-content: center;
+  height: 40px;
 }
 
 .MFDDropdownLabel {
@@ -396,7 +397,7 @@ $display-mfd-dark-grey: #3c3c3c;
   padding: 4px 2px;
   background-color: $display-background;
   border: 2px inset $display-light-grey;
-  overflow: hidden;
+  overflow: visible;
   height: 37px;
 }
 

@@ -178,10 +178,7 @@ export class FlightLevelFormat implements DataEntryFormat<number> {
     }
 
     public async parse(input: string) {
-        let nbr = Number(input);
-        if (nbr < 430) {
-            nbr = Number(input) * 100; // Convert FL to feet, still need to handle this because value is stored as number
-        }
+        const nbr = Number(input) * 100;
         if (Number.isNaN(nbr) === false && nbr <= (this.maxValue) && nbr >= (this.minValue)) {
             return nbr;
         }

@@ -10,7 +10,7 @@ interface InsertNextWptFromWindowProps extends ComponentProps {
     availableWaypoints: SubscribableArray<string>;
     visible: Subscribable<boolean>;
     cancelAction: () => void;
-    confirmAction: (nextWpt: string) => void;
+    confirmAction: () => void;
     contentContainerStyle?: string;
 }
 export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromWindowProps> {
@@ -28,18 +28,17 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
     private selectedWaypointIndex = Subject.create<number>(0);
 
     private onModified(idx: number, text: string): void {
-        if (idx > 0) {
-            console.log(`NextWPT: ${idx}`);
+        if (idx >= 0) {
+            console.log(`NextWPT: ${this.props.availableWaypoints.get(idx)}`);
             if (this.props.availableWaypoints.get(idx)) {
                 this.selectedWaypointIndex.set(idx);
-
-                // Consider having no confirm action, but handling the flight plan actions in here
-                // this.props.confirmAction(this.props.availableWaypoints.get(idx));
-                // this.nextWpt.set('');
             }
         } else {
             console.log(`NextWPT: ${text}`);
         }
+
+        // Consider handling the flight plan actions in here, to accomodate free text entries better
+        this.props.confirmAction();
     }
 
     onAfterRender(node: VNode): void {
@@ -47,12 +46,14 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
 
         this.subs.push(this.props.visible.sub((val) => {
             this.topRef.getOrDefault().style.display = val ? 'block' : 'none';
+            this.selectedWaypointIndex.set(0);
             this.nextWpt.set('');
         }, true));
 
         this.subs.push(this.props.revisedWaypoint.sub((wpt) => {
             this.identRef.instance.innerText = wpt.ident;
             this.coordinatesRef.instance.innerText = coordinateToString(wpt.definition.waypoint.location, false);
+            this.selectedWaypointIndex.set(0);
         }));
     }
 
@@ -68,7 +69,7 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
             <div ref={this.topRef} style="position: relative;">
                 <div
                     class="MFDDialog"
-                    style={`${this.props.contentContainerStyle ?? ''}; left: 175px; top: 50px; width: 500px; height: 625px;
+                    style={`${this.props.contentContainerStyle ?? ''}; left: 175px; top: 50px; width: 500px; height: 625px; overflow: visible;
                     display: flex; flex-direction: column; justify-content: space-between;`}
                 >
                     <div style="width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; padding-top: 0px; padding-left: 10px;">
@@ -86,10 +87,10 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
                                 selectedIndex={this.selectedWaypointIndex}
                                 values={this.props.availableWaypoints}
                                 freeTextAllowed
-                                containerStyle="width: 300px;"
+                                containerStyle="width: 175px;"
                                 alignLabels="flex-start"
                                 onModified={(i, text) => this.onModified(i, text)}
-                                numberOfDigitsForInputField={14} // Workaround for now: Overflow not yet implemented, so make it extra large
+                                numberOfDigitsForInputField={7}
                             />
                         </div>
                     </div>

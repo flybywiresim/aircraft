@@ -376,7 +376,7 @@ const afterDiscoDer: DerivedFplnLegData = {
 
 const disco: Discontinuity = { isDiscontinuity: true };
 
-export const mockFlightPlanLegsData: FlightPlanElement[] = [leg1, leg2, leg3, leg4, leg6, leg7, leg8, leg9, disco, afterDiscoLeg, leg2, leg3, leg4, leg6, leg7, leg8, leg9, leg10, leg11];
-export const mockPredictionsData: VerticalWaypointPrediction[] = [pred1, pred2, pred3, pred4, pred6, pred7, pred8, pred9, null, afterDiscoPred, pred2, pred3, pred4, pred6, pred7, pred8, pred9, pred10, pred11];
-export const mockDerivedData: DerivedFplnLegData[] = [der1, der2, der3, der4, der6, der7, der8, der9, null, afterDiscoDer, der2, der3, der4, der6, der7, der8, der9, der10, der11];
+export const mockFlightPlanLegsData: FlightPlanElement[] = [leg1, leg2, leg3, leg4, leg6, leg7, leg8, leg9, disco, afterDiscoLeg, leg10, leg11];
+export const mockPredictionsData: VerticalWaypointPrediction[] = [pred1, pred2, pred3, pred4, pred6, pred7, pred8, pred9, null, afterDiscoPred, pred10, pred11];
+export const mockDerivedData: DerivedFplnLegData[] = [der1, der2, der3, der4, der6, der7, der8, der9, null, afterDiscoDer, der10, der11];
 export const mockPseudoWaypoints: PseudoWaypoint[] = [spdlim, tc];
