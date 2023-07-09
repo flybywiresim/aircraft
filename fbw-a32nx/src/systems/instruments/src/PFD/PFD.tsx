@@ -4,7 +4,7 @@
 
 import { A320Failure, FailuresConsumer } from '@failures';
 import { ClockEvents, ComponentProps, DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
-import { Arinc429Register, Arinc429Word } from '@flybywiresim/fbw-sdk';
+import { Arinc429Word } from '@flybywiresim/fbw-sdk';
 import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import { LagFilter } from './PFDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
@@ -53,8 +53,6 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
 
     private radioAltitudeFilter = new LagFilter(5);
 
-    private readonly headingWord = Arinc429Register.empty();
-
     private failuresConsumer;
 
     constructor(props: PFDProps) {
@@ -80,10 +78,7 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
         });
 
         sub.on('heading').handle((h) => {
-            this.headingWord.set(h);
-            if (this.headingFailed.get() !== this.headingWord.isNormalOperation()) {
-                this.headingFailed.set(!this.headingWord.isNormalOperation());
-            }
+            this.headingFailed.set(!h.isNormalOperation());
         });
 
         sub.on('rollAr').handle((r) => {
