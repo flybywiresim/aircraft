@@ -3,11 +3,14 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
+/* eslint-disable no-await-in-loop */
+
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { FlightPlanIndex } from '@fmgc/flightplanning/new/FlightPlanManager';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/new/NavigationDatabaseService';
 import { Airway, Fix } from 'msfs-navdata';
 import { Coordinates, distanceTo } from 'msfs-geo';
+import { DisplayInterface } from '@fmgc/flightplanning/new/interface/DisplayInterface';
 import { ISimbriefData, simbriefDataParser } from '../../../../../instruments/src/EFB/Apis/Simbrief';
 import { DataInterface } from '../interface/DataInterface';
 
@@ -91,30 +94,32 @@ export interface SimBriefUplinkOptions {
 }
 
 export class SimBriefUplinkAdapter {
-    static async uplinkFlightPlanFromSimbrief(fms: DataInterface, ofp: ISimbriefData, options: SimBriefUplinkOptions) {
+    static async uplinkFlightPlanFromSimbrief(fms: DataInterface & DisplayInterface, flightPlanService: FlightPlanService, ofp: ISimbriefData, options: SimBriefUplinkOptions) {
         const doUplinkProcedures = options.doUplinkProcedures ?? false;
 
         const route = await this.getRouteFromOfp(ofp);
 
-        await FlightPlanService.newCityPair(route.from.ident, route.to.ident, route.altn, FlightPlanIndex.Uplink);
+        fms.onUplinkInProgress();
+
+        await flightPlanService.newCityPair(route.from.ident, route.to.ident, route.altn, FlightPlanIndex.Uplink);
 
         if (doUplinkProcedures) {
-            await FlightPlanService.setOriginRunway(`RW${route.from.rwy}`, FlightPlanIndex.Uplink);
-            await FlightPlanService.setDestinationRunway(`RW${route.to.rwy}`, FlightPlanIndex.Uplink);
+            await flightPlanService.setOriginRunway(`RW${route.from.rwy}`, FlightPlanIndex.Uplink);
+            await flightPlanService.setDestinationRunway(`RW${route.to.rwy}`, FlightPlanIndex.Uplink);
         }
 
         let insertHead = -1;
 
         const setInsertHeadToEndOfEnroute = () => {
-            insertHead = FlightPlanService.uplink.originSegment.legCount
-                + FlightPlanService.uplink.departureRunwayTransitionSegment.legCount
-                + FlightPlanService.uplink.departureSegment.legCount
-                + FlightPlanService.uplink.departureEnrouteTransitionSegment.legCount
-                + FlightPlanService.uplink.enrouteSegment.legCount
+            insertHead = flightPlanService.uplink.originSegment.legCount
+                + flightPlanService.uplink.departureRunwayTransitionSegment.legCount
+                + flightPlanService.uplink.departureSegment.legCount
+                + flightPlanService.uplink.departureEnrouteTransitionSegment.legCount
+                + flightPlanService.uplink.enrouteSegment.legCount
                 - 1;
 
-            if (FlightPlanService.uplink.enrouteSegment.legCount > 0) {
-                const lastElement = FlightPlanService.uplink.allLegs[insertHead];
+            if (flightPlanService.uplink.enrouteSegment.legCount > 0) {
+                const lastElement = flightPlanService.uplink.allLegs[insertHead];
 
                 if (lastElement?.isDiscontinuity === true) {
                     insertHead--;
@@ -125,9 +130,9 @@ export class SimBriefUplinkAdapter {
         setInsertHeadToEndOfEnroute();
 
         const ensureAirwaysFinalized = () => {
-            if (FlightPlanService.uplink.pendingAirways) {
-                FlightPlanService.uplink.pendingAirways.finalize();
-                FlightPlanService.uplink.pendingAirways = undefined;
+            if (flightPlanService.uplink.pendingAirways) {
+                flightPlanService.uplink.pendingAirways.finalize();
+                flightPlanService.uplink.pendingAirways = undefined;
 
                 setInsertHeadToEndOfEnroute();
             }
@@ -187,11 +192,11 @@ export class SimBriefUplinkAdapter {
                 const isDeparture = i === 0;
 
                 if (isDeparture) {
-                    await FlightPlanService.setDepartureProcedure(chunk.ident, FlightPlanIndex.Uplink);
+                    await flightPlanService.setDepartureProcedure(chunk.ident, FlightPlanIndex.Uplink);
 
                     setInsertHeadToEndOfEnroute();
                 } else {
-                    await FlightPlanService.setArrival(chunk.ident, FlightPlanIndex.Uplink);
+                    await flightPlanService.setArrival(chunk.ident, FlightPlanIndex.Uplink);
                 }
 
                 break;
@@ -201,7 +206,7 @@ export class SimBriefUplinkAdapter {
                     const fixes = await NavigationDatabaseService.activeDatabase.searchAllFix(chunk.ident);
 
                     if (fixes.length > 0) {
-                        await FlightPlanService.nextWaypoint(insertHead, fixes.length > 1 ? pickFix(fixes, chunk.locationHint) : fixes[0], FlightPlanIndex.Uplink);
+                        await flightPlanService.nextWaypoint(insertHead, fixes.length > 1 ? pickFix(fixes, chunk.locationHint) : fixes[0], FlightPlanIndex.Uplink);
                         insertHead++;
                     } else {
                         throw new Error(`[SimBriefUplinkAdapter](uplinkFlightPlanFromSimbrief) Found no fixes for "sidEnrouteTransition" chunk: ${chunk.ident}`);
@@ -210,7 +215,7 @@ export class SimBriefUplinkAdapter {
                     continue;
                 }
 
-                await FlightPlanService.setDepartureEnrouteTransition(chunk.ident, FlightPlanIndex.Uplink);
+                await flightPlanService.setDepartureEnrouteTransition(chunk.ident, FlightPlanIndex.Uplink);
 
                 setInsertHeadToEndOfEnroute();
 
@@ -224,7 +229,7 @@ export class SimBriefUplinkAdapter {
                 const fixes = await NavigationDatabaseService.activeDatabase.searchAllFix(chunk.ident);
 
                 if (fixes.length > 0) {
-                    await FlightPlanService.nextWaypoint(insertHead, fixes.length > 1 ? pickFix(fixes, chunk.locationHint) : fixes[0], FlightPlanIndex.Uplink);
+                    await flightPlanService.nextWaypoint(insertHead, fixes.length > 1 ? pickFix(fixes, chunk.locationHint) : fixes[0], FlightPlanIndex.Uplink);
                     insertHead++;
                 } else {
                     throw new Error(`[SimBriefUplinkAdapter](uplinkFlightPlanFromSimbrief) Found no fixes for "waypoint" chunk: ${chunk.ident}`);
@@ -239,12 +244,12 @@ export class SimBriefUplinkAdapter {
 
                 const fix = fms.createLatLonWaypoint({ lat: chunk.lat, long: chunk.long }, true);
 
-                await FlightPlanService.nextWaypoint(insertHead, fix, FlightPlanIndex.Uplink);
+                await flightPlanService.nextWaypoint(insertHead, fix, FlightPlanIndex.Uplink);
                 insertHead++;
                 break;
             }
             case 'airway': {
-                const plan = FlightPlanService.uplink;
+                const plan = flightPlanService.uplink;
 
                 let airwaySearchFix: Fix;
                 if (!plan.pendingAirways) {
@@ -276,7 +281,7 @@ export class SimBriefUplinkAdapter {
                 break;
             }
             case 'airwayTermination': {
-                const plan = FlightPlanService.uplink;
+                const plan = flightPlanService.uplink;
 
                 if (!plan.pendingAirways) {
                     plan.startAirwayEntry(insertHead);
@@ -300,6 +305,8 @@ export class SimBriefUplinkAdapter {
                 console.error(`Unknown route instruction: ${chunk.instruction}`);
             }
         }
+
+        fms.onUplinkDone();
     }
 
     static async downloadOfpForUserID(userID: string): Promise<ISimbriefData> {
