@@ -3,16 +3,14 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Airport, ApproachType, Fix, LegType } from 'msfs-navdata';
+import { Airport, ApproachType, Fix } from 'msfs-navdata';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/new/plans/AlternateFlightPlan';
-import { PendingAirways } from '@fmgc/flightplanning/new/plans/PendingAirways';
 import { EventBus, MagVar } from '@microsoft/msfs-sdk';
 import { FixInfoEntry } from '@fmgc/flightplanning/new/plans/FixInfo';
 import { loadAllDepartures, loadAllRunways } from '@fmgc/flightplanning/new/DataLoading';
 import { Coordinates, Degrees } from 'msfs-geo';
 import { FlightPlanLeg, FlightPlanLegFlags } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
-import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { FlightArea } from '@fmgc/navigation/FlightArea';
 import { FlightPlanPerformanceData } from './performance/FlightPlanPerformanceData';
 import { BaseFlightPlan, FlightPlanQueuedOperation, SerializedFlightPlan } from './BaseFlightPlan';
