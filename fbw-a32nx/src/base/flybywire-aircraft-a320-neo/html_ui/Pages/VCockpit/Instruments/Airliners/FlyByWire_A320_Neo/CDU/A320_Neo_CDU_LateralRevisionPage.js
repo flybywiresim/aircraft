@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 class CDULateralRevisionPage {
     /**
      *
@@ -111,9 +115,9 @@ class CDULateralRevisionPage {
                 const nextLeg = targetPlan.maybeElementAt(waypointIndexFP + 1);
 
                 if (nextLeg && nextLeg.isDiscontinuity === false && nextLeg.isHX()) {
-                    CDUHoldAtPage.ShowPage(mcdu, waypointIndexFP + 1, forPlan);
+                    CDUHoldAtPage.ShowPage(mcdu, waypointIndexFP + 1, forPlan, inAlternate);
                 } else {
-                    CDUHoldAtPage.ShowPage(mcdu, waypointIndexFP, forPlan);
+                    CDUHoldAtPage.ShowPage(mcdu, waypointIndexFP, forPlan, inAlternate);
                 }
             };
         }

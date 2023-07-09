@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 const TurnDirection = Object.freeze({
     Unknown: 'U',
     Left: 'L',
@@ -12,10 +16,8 @@ const HoldType = Object.freeze({
 });
 
 class CDUHoldAtPage {
-    static ShowPage(mcdu, waypointIndexFP, forPlan) {
-        const tmpy = forPlan === Fmgc.FlightPlanIndex.Active && mcdu.flightPlanService.hasTemporary;
-
-        const targetPlan = tmpy ? mcdu.flightPlanService.temporary : mcdu.flightPlanService.get(forPlan);
+    static ShowPage(mcdu, waypointIndexFP, forPlan, inAlternate) {
+        const targetPlan = mcdu.flightPlan(forPlan, inAlternate);
         const waypoint = targetPlan.legElementAt(waypointIndexFP);
 
         if (!waypoint) {
@@ -25,7 +27,7 @@ class CDUHoldAtPage {
         const editingHm = waypoint.type === 'HM'; // HM
 
         if (editingHm) {
-            CDUHoldAtPage.DrawPage(mcdu, waypointIndexFP, waypointIndexFP, forPlan);
+            CDUHoldAtPage.DrawPage(mcdu, waypointIndexFP, waypointIndexFP, forPlan, inAlternate);
         } else {
             const editingHx = waypoint.isHX();
             const alt = waypoint.definition.altitude1 ? waypoint.definition.altitude1 : SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet');
@@ -61,19 +63,20 @@ class CDUHoldAtPage {
                 Object.assign({}, defaultHold),
                 modifiedHold,
                 defaultHold,
+                forPlan,
+                inAlternate,
             ).then((holdIndex) => {
-                CDUHoldAtPage.DrawPage(mcdu, holdIndex, waypointIndexFP, forPlan);
+                CDUHoldAtPage.DrawPage(mcdu, holdIndex, waypointIndexFP, forPlan, inAlternate);
             });
         }
     }
 
-    static DrawPage(mcdu, waypointIndexFP, originalFpIndex, forPlan) {
+    static DrawPage(mcdu, waypointIndexFP, originalFpIndex, forPlan, inAlternate) {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.HoldAtPage;
 
         const tmpy = forPlan === Fmgc.FlightPlanIndex.Active && mcdu.flightPlanService.hasTemporary;
-
-        const targetPlan = tmpy ? mcdu.flightPlanService.temporary : mcdu.flightPlanService.get(forPlan);
+        const targetPlan = mcdu.flightPlan(forPlan, inAlternate);
 
         const leg = targetPlan.legElementAt(waypointIndexFP);
 
@@ -126,8 +129,8 @@ class CDUHoldAtPage {
                 return;
             }
 
-            CDUHoldAtPage.modifyHold(mcdu, waypointIndexFP, leg, 'inboundMagneticCourse', magCourse).then(() => {
-                CDUHoldAtPage.DrawPage(mcdu, waypointIndexFP, originalFpIndex, forPlan);
+            CDUHoldAtPage.modifyHold(mcdu, waypointIndexFP, leg, 'inboundMagneticCourse', magCourse, forPlan, inAlternate).then(() => {
+                CDUHoldAtPage.DrawPage(mcdu, waypointIndexFP, originalFpIndex, forPlan, inAlternate);
             });
         };
 
@@ -145,9 +148,11 @@ class CDUHoldAtPage {
                 leg,
                 'turnDirection',
                 value === 'L' ? TurnDirection.Left : TurnDirection.Right,
+                forPlan,
+                inAlternate,
             );
 
-            CDUHoldAtPage.DrawPage(mcdu, waypointIndexFP, originalFpIndex, forPlan);
+            CDUHoldAtPage.DrawPage(mcdu, waypointIndexFP, originalFpIndex, forPlan, inAlternate);
         };
 
         // change time or distance
@@ -165,8 +170,8 @@ class CDUHoldAtPage {
             const param = dist ? 'distance' : 'time';
             const newValue = dist ? parseFloat(dist) : parseFloat(time);
 
-            CDUHoldAtPage.modifyHold(mcdu, waypointIndexFP, leg, param, newValue).then(() => {
-                CDUHoldAtPage.DrawPage(mcdu, waypointIndexFP, originalFpIndex, forPlan);
+            CDUHoldAtPage.modifyHold(mcdu, waypointIndexFP, leg, param, newValue, forPlan, inAlternate).then(() => {
+                CDUHoldAtPage.DrawPage(mcdu, waypointIndexFP, originalFpIndex, forPlan, inAlternate);
             });
         };
 
@@ -180,9 +185,11 @@ class CDUHoldAtPage {
                     CDUHoldAtPage.computeDesiredHold(leg.additionalData),
                     leg.additionalData.modifiedHold,
                     leg.additionalData.defaultHold,
+                    forPlan,
+                    inAlternate,
                 );
 
-                CDUHoldAtPage.DrawPage(mcdu, waypointIndexFP, originalFpIndex, forPlan);
+                CDUHoldAtPage.DrawPage(mcdu, waypointIndexFP, originalFpIndex, forPlan, inAlternate);
             };
         }
 
@@ -190,7 +197,7 @@ class CDUHoldAtPage {
         mcdu.onLeftInput[5] = () => {
             if (tmpy) {
                 mcdu.eraseTemporaryFlightPlan(() => {
-                    CDULateralRevisionPage.ShowPage(mcdu, targetPlan.maybeElementAt(originalFpIndex), originalFpIndex);
+                    CDULateralRevisionPage.ShowPage(mcdu, targetPlan.maybeElementAt(originalFpIndex), originalFpIndex, forPlan, inAlternate);
                 });
             }
         };
@@ -220,7 +227,7 @@ class CDUHoldAtPage {
         };
     }
 
-    static async modifyHold(mcdu, waypointIndexFP, /** @type {FlightPlanLeg} */ waypointData, param, value) {
+    static async modifyHold(mcdu, waypointIndexFP, /** @type {FlightPlanLeg} */ waypointData, param, value, forPlan, inAlternate) {
         waypointData.modifiedHold.type = HoldType.Modified;
 
         if (param === 'time') {
@@ -236,6 +243,8 @@ class CDUHoldAtPage {
             CDUHoldAtPage.computeDesiredHold(waypointData),
             waypointData.modifiedHold,
             waypointData.defaultHold,
+            forPlan,
+            inAlternate,
         );
     }
 }

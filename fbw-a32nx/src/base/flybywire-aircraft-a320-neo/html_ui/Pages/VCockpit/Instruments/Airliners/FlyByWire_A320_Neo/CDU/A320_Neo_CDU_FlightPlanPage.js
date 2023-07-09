@@ -232,6 +232,8 @@ class CDUFlightPlanPage {
                 distanceFromLastLine
             } = waypointsAndMarkers[winI];
 
+            const legAccentColor = inAlternate ? "cyan" : planAccentColor;
+
             const wpPrev = targetPlan.maybeElementAt(fpIndex - 1);
             const wpNext = targetPlan.maybeElementAt(fpIndex + 1);
             const wpActive = (fpIndex >= targetPlan.activeLegIndex);
@@ -604,10 +606,9 @@ class CDUFlightPlanPage {
             } else if (holdResumeExit && holdResumeExit.isDiscontinuity === false) {
                 const isActive = fpIndex === targetPlan.activeLegIndex;
                 const isNext = fpIndex === (targetPlan.activeLegIndex + 1);
-                let color = "green";
-                if (mcdu.flightPlanService.hasTemporary) {
-                    color = "yellow";
-                } else if (isActive) {
+
+                let color = legAccentColor;
+                if (isActive) {
                     color = "white";
                 }
 
@@ -633,7 +634,7 @@ class CDUFlightPlanPage {
                         CDUFlightPlanPage.clearElement(mcdu, fpIndex, offset, forPlan, inAlternate, scratchpadCallback);
                     }
 
-                    CDUHoldAtPage.ShowPage(mcdu, fpIndex, forPlan);
+                    CDUHoldAtPage.ShowPage(mcdu, fpIndex, forPlan, inAlternate);
                     scratchpadCallback();
                 });
 
