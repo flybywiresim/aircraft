@@ -32,6 +32,16 @@ export class EnrouteSegment extends FlightPlanSegment {
 
         return newSegment;
     }
+
+    /**
+     * Sets the contents of this enroute segment using a serialized flight plan segment.
+     *
+     * @param serialized the serialized flight plan segment
+     */
+    setFromSerializedSegment(serialized: SerializedFlightPlanSegment): void {
+        this.strung = true;
+        this.allLegs = serialized.allLegs.map((it) => (it.isDiscontinuity === false ? FlightPlanLeg.deserialize(it, this) : it));
+    }
 }
 
 export interface EnrouteElement {

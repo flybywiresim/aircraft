@@ -16,13 +16,13 @@ import { FlightPlanLegDefinition } from '@fmgc/flightplanning/new/legs/FlightPla
 import { FlightPlanInterface } from '@fmgc/flightplanning/new/FlightPlanInterface';
 
 export class FlightPlanService implements FlightPlanInterface {
-    private flightPlanManager = new FlightPlanManager(new EventBus(), Math.round(Math.random() * 10_000), true);
+    private readonly bus = new EventBus();
 
-    private config: FpmConfig = FpmConfigs.A320_HONEYWELL_H3
+    private readonly flightPlanManager = new FlightPlanManager(this.bus, Math.round(Math.random() * 10_000), true);
 
-    navigationDatabase: NavigationDatabase
+    private config: FpmConfig = FpmConfigs.A320_HONEYWELL_H3;
 
-    version = 0;
+    navigationDatabase: NavigationDatabase;
 
     createFlightPlans() {
         this.flightPlanManager.create(FlightPlanIndex.Active);

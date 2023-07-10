@@ -284,7 +284,7 @@ export class FlightPlan extends BaseFlightPlan {
         newPlan.departureSegment.setFromSerializedSegment(serialized.segments.departureSegment);
         newPlan.departureRunwayTransitionSegment.setFromSerializedSegment(serialized.segments.departureRunwayTransitionSegment);
         newPlan.departureEnrouteTransitionSegment.setFromSerializedSegment(serialized.segments.departureEnrouteTransitionSegment);
-        // TODO enroute
+        newPlan.enrouteSegment.setFromSerializedSegment(serialized.segments.enrouteSegment);
         newPlan.arrivalSegment.setFromSerializedSegment(serialized.segments.arrivalSegment);
         newPlan.arrivalRunwayTransitionSegment.setFromSerializedSegment(serialized.segments.arrivalRunwayTransitionSegment);
         newPlan.arrivalEnrouteTransitionSegment.setFromSerializedSegment(serialized.segments.arrivalEnrouteTransitionSegment);
