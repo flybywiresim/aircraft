@@ -46,17 +46,19 @@ export class FlightPlanManager {
         });
 
         subs.on('flightPlanManager.syncResponse').handle((event) => {
-            console.log('[FpmSync] SyncResponse()');
+            if (!this.ignoreSync) {
+                console.log('[FpmSync] SyncResponse()');
 
-            for (const [index, serialisedPlan] of Object.entries(event.plans)) {
-                const intIndex = parseInt(index);
+                for (const [index, serialisedPlan] of Object.entries(event.plans)) {
+                    const intIndex = parseInt(index);
 
-                const newPlan = FlightPlan.fromSerializedFlightPlan(intIndex, serialisedPlan, this.bus);
+                    const newPlan = FlightPlan.fromSerializedFlightPlan(intIndex, serialisedPlan, this.bus);
 
-                this.set(intIndex, newPlan);
+                    this.set(intIndex, newPlan);
+                }
+
+                console.log(event);
             }
-
-            console.log(event);
         });
 
         subs.on('flightPlanManager.create').handle((event) => {

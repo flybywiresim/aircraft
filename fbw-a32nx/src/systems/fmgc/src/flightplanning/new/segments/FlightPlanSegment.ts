@@ -153,6 +153,16 @@ export abstract class FlightPlanSegment {
         this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.Restring);
     }
 
+    clear(): FlightPlanElement[] {
+        const legs = this.allLegs.slice();
+
+        this.allLegs.length = 0;
+        this.flightPlan.syncSegmentLegsChange(this);
+        this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.Restring);
+
+        return legs;
+    }
+
     insertNecessaryDiscontinuities() {
         // We do not consider the last leg as we do not want to insert a discontinuity at the end of the flight plan
         for (let i = 0; i < this.allLegs.length - 1; i++) {

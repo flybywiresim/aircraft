@@ -688,6 +688,8 @@ export abstract class BaseFlightPlan {
             segment.allLegs.splice(indexInSegment, 1);
         }
 
+        this.syncSegmentLegsChange(segment);
+
         this.incrementVersion();
 
         this.adjustIFLegs();
@@ -1094,8 +1096,7 @@ export abstract class BaseFlightPlan {
 
                 toInsertInEnroute.push(...this.departureRunwayTransitionSegment.truncate(indexInSegment));
             } else if (emptyAllNext) {
-                const removed = this.departureRunwayTransitionSegment.allLegs.slice();
-                this.departureRunwayTransitionSegment.allLegs.length = 0;
+                const removed = this.departureRunwayTransitionSegment.clear();
 
                 toInsertInEnroute.push(...removed);
             }
@@ -1105,8 +1106,9 @@ export abstract class BaseFlightPlan {
 
                 toInsertInEnroute.push(...this.departureSegment.truncate(indexInSegment));
             } else if (emptyAllNext) {
-                const removed = this.departureSegment.allLegs.slice();
-                this.departureSegment.allLegs.length = 0;
+                const removed = this.departureSegment.clear();
+
+                this.syncSegmentLegsChange(this.departureSegment);
 
                 toInsertInEnroute.push(...removed);
             }
@@ -1114,8 +1116,9 @@ export abstract class BaseFlightPlan {
             if (segment === this.departureEnrouteTransitionSegment) {
                 toInsertInEnroute.push(...this.departureEnrouteTransitionSegment.truncate(indexInSegment));
             } else if (emptyAllNext) {
-                const removed = this.departureEnrouteTransitionSegment.allLegs.slice();
-                this.departureEnrouteTransitionSegment.allLegs.length = 0;
+                const removed = this.departureEnrouteTransitionSegment.clear();
+
+                this.syncSegmentLegsChange(this.departureEnrouteTransitionSegment);
 
                 toInsertInEnroute.push(...removed);
             }
@@ -1128,6 +1131,7 @@ export abstract class BaseFlightPlan {
             }
 
             this.enrouteSegment.allLegs.unshift(...toInsertInEnroute);
+            this.syncSegmentLegsChange(this.enrouteSegment);
 
             return 1;
         }
@@ -1148,8 +1152,7 @@ export abstract class BaseFlightPlan {
 
                 toInsertInEnroute.unshift(...this.approachViaSegment.truncate(indexInSegment));
             } else if (emptyAllNext) {
-                const removed = this.approachViaSegment.allLegs.slice();
-                this.approachViaSegment.allLegs.length = 0;
+                const removed = this.approachViaSegment.clear();
 
                 toInsertInEnroute.unshift(...removed);
             }
@@ -1159,8 +1162,7 @@ export abstract class BaseFlightPlan {
 
                 toInsertInEnroute.unshift(...this.arrivalRunwayTransitionSegment.truncate(indexInSegment));
             } else if (emptyAllNext) {
-                const removed = this.arrivalRunwayTransitionSegment.allLegs.slice();
-                this.arrivalRunwayTransitionSegment.allLegs.length = 0;
+                const removed = this.arrivalRunwayTransitionSegment.clear();
 
                 toInsertInEnroute.unshift(...removed);
             }
@@ -1170,8 +1172,7 @@ export abstract class BaseFlightPlan {
 
                 toInsertInEnroute.unshift(...this.arrivalSegment.truncate(indexInSegment));
             } else if (emptyAllNext) {
-                const removed = this.arrivalSegment.allLegs.slice();
-                this.arrivalSegment.allLegs.length = 0;
+                const removed = this.arrivalSegment.clear();
 
                 toInsertInEnroute.unshift(...removed);
             }
@@ -1179,8 +1180,7 @@ export abstract class BaseFlightPlan {
             if (segment === this.arrivalEnrouteTransitionSegment) {
                 toInsertInEnroute.unshift(...this.arrivalEnrouteTransitionSegment.truncate(indexInSegment));
             } else if (emptyAllNext) {
-                const removed = this.arrivalEnrouteTransitionSegment.allLegs.slice();
-                this.arrivalEnrouteTransitionSegment.allLegs.length = 0;
+                const removed = this.arrivalEnrouteTransitionSegment.clear();
 
                 toInsertInEnroute.unshift(...removed);
             }
@@ -1193,6 +1193,7 @@ export abstract class BaseFlightPlan {
             }
 
             this.enrouteSegment.allLegs.push(...toInsertInEnroute);
+            this.syncSegmentLegsChange(this.enrouteSegment);
 
             return -1;
         }

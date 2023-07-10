@@ -188,6 +188,7 @@ export class PendingAirways {
         }
 
         this.flightPlan.enrouteSegment.allLegs.splice(indexInSegment + 1, 0, ...this.legs);
+        this.flightPlan.syncSegmentLegsChange(this.flightPlan.enrouteSegment);
         this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.Restring);
         this.flightPlan.flushOperationQueue();
     }
