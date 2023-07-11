@@ -2,10 +2,11 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { ComponentProps, DisplayComponent, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import { ComponentProps, DisplayComponent, FSComponent, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { ArmedLateralMode, ArmedVerticalMode, isArmed, LateralMode, VerticalMode } from '@shared/autopilot';
 
 import { Arinc429Word } from '@flybywiresim/fbw-sdk';
+import { Arinc429RegisterSubject } from 'instruments/src/MsfsAvionicsCommon/Arinc429RegisterSubject';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { ArincEventBus } from '../MsfsAvionicsCommon/ArincEventBus';
@@ -1426,47 +1427,59 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps> {
 }
 
 class D3Cell extends DisplayComponent<{bus: ArincEventBus}> {
-    private textRef = FSComponent.createRef<SVGTextElement>();
+    private readonly textRef = FSComponent.createRef<SVGTextElement>();
 
-    private classNameSub = Subject.create('');
+    /** bit 29 is NO DH selection */
+    private readonly fmEisDiscrete2 = Arinc429RegisterSubject.createEmpty();
+
+    private readonly mda = Arinc429RegisterSubject.createEmpty();
+
+    private readonly dh = Arinc429RegisterSubject.createEmpty();
+
+    private readonly noDhSelected = this.fmEisDiscrete2.map((r) => r.bitValueOr(29, false));
+
+    private mdaMdhHtml = MappedSubject.create(
+        ([mda, dh, noDhSelected]) => {
+            if (noDhSelected) {
+                return '<tspan>NO DH</tspan>';
+            }
+
+            if (!dh.isNoComputedData() && !dh.isFailureWarning()) {
+                const DHText = Math.round(dh.value).toString().padStart(4, ' ');
+                return `<tspan>RADIO</tspan><tspan class="Cyan" xml:space="preserve">${DHText}</tspan>`;
+            }
+
+            if (!mda.isNoComputedData() && !mda.isFailureWarning()) {
+                const MDAText = Math.round(mda.value).toString().padStart(6, ' ');
+                return `<tspan>BARO</tspan><tspan class="Cyan" xml:space="preserve">${MDAText}</tspan>`;
+            }
+
+            return '';
+        },
+        this.mda,
+        this.dh,
+        this.noDhSelected,
+    );
 
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
+        this.mdaMdhHtml.sub((html) => this.textRef.instance.innerHTML = html);
+        this.noDhSelected.sub((noDh) => {
+            this.textRef.instance.classList.toggle('FontSmallest', !noDh);
+            this.textRef.instance.classList.toggle('FontMedium', noDh);
+        });
+
         const sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values>();
 
-        sub.on('mdaAr').withArinc429Precision(0).handle((mda) => {
-            if ((!mda.isNoComputedData() && !mda.isFailureWarning()) && mda.value !== 0) {
-                const MDAText = Math.round(mda.value).toString().padStart(6, ' ');
-
-                this.textRef.instance.innerHTML = `<tspan>BARO</tspan><tspan class="Cyan" xml:space="preserve">${MDAText}</tspan>`;
-            } else {
-                this.textRef.instance.innerHTML = '';
-            }
-        });
-
-        sub.on('dhAr').withArinc429Precision(0).handle((dh) => {
-            let fontSize = 'FontSmallest';
-            const dhValue = dh.value;
-            if ((!dh.isNoComputedData() && !dh.isFailureWarning()) && dhValue !== -1 && dhValue !== -2) {
-                const DHText = Math.round(dhValue).toString().padStart(4, ' ');
-
-                this.textRef.instance.innerHTML = `
-                        <tspan>RADIO</tspan><tspan class="Cyan" xml:space="preserve">${DHText}</tspan>
-                    `;
-            } else if ((!dh.isNoComputedData() && !dh.isFailureWarning()) && dhValue === -2) {
-                this.textRef.instance.innerHTML = '<tspan>NO DH</tspan>';
-                fontSize = 'FontMedium';
-            } else {
-                this.textRef.instance.innerHTML = '';
-            }
-            this.classNameSub.set(`${fontSize} MiddleAlign White`);
-        });
+        sub.on('fmEisDiscreteWord2Raw').handle(this.fmEisDiscrete2.setWord.bind(this.fmEisDiscrete2));
+        sub.on('fmMdaRaw').handle(this.mda.setWord.bind(this.mda));
+        sub.on('fmDhRaw').handle(this.dh.setWord.bind(this.dh));
     }
 
     render(): VNode {
         return (
-            <text ref={this.textRef} class={this.classNameSub} x="118.38384" y="21.104172" />
+            <text ref={this.textRef} class="FontSmallest MiddleAlign White" x="118.38384" y="21.104172" />
         );
     }
 }

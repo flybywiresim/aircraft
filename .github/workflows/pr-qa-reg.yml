@@ -14,5 +14,5 @@ jobs:
         uses: docker://misterchocker/project-automation:sandbox
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_PROJECT_URL: https://github.com/flybywiresim/a32nx/projects/4
+          GITHUB_PROJECT_URL: https://github.com/flybywiresim/aircraft/projects/4
           GITHUB_PROJECT_COLUMN_NAME: "🟡 Code Review: Ready for Review"

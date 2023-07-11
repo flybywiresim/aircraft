@@ -29,7 +29,15 @@ export class SelectedHeadingBug extends DisplayComponent<SelectedHeadingBugProps
             return false;
         }
 
-        return diff <= 48 && mode !== EfisNdMode.PLAN;
+        if (mode === EfisNdMode.ROSE_ILS || mode === EfisNdMode.ROSE_NAV || mode === EfisNdMode.ROSE_VOR) {
+            return true;
+        }
+
+        if (mode === EfisNdMode.PLAN) {
+            return false;
+        }
+
+        return diff <= 48;
     }, this.headingWord, this.selected, this.diffSubject, this.props.mode);
 
     // eslint-disable-next-line
@@ -42,7 +50,15 @@ export class SelectedHeadingBug extends DisplayComponent<SelectedHeadingBugProps
             return false;
         }
 
-        return Math.abs(diff) > 48 && mode !== EfisNdMode.PLAN;
+        if (mode === EfisNdMode.ROSE_ILS || mode === EfisNdMode.ROSE_NAV || mode === EfisNdMode.ROSE_VOR) {
+            return false;
+        }
+
+        if (mode === EfisNdMode.PLAN) {
+            return false;
+        }
+
+        return Math.abs(diff) > 48;
     }, this.headingWord, this.selected, this.diffSubject, this.props.mode);
 
     private readonly transformSubject = MappedSubject.create(([diff, ndMode]) => {
