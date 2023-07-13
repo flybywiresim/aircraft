@@ -4,7 +4,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { GaugeComponent, GaugeMarkerComponent, splitDecimals } from '@instruments/common/gauges';
-import { useSimVar, usePersistentProperty } from '@flybywiresim/fbw-sdk';
+import { useSimVar, usePersistentProperty, Units } from '@flybywiresim/fbw-sdk';
 import { fuelForDisplay } from '../../Common/FuelFunctions';
 
 import './Crz.scss';
@@ -213,9 +213,16 @@ export const PressureComponent = () => {
 };
 
 export const CondComponent = () => {
+    const [unit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
     const [cockpitCabinTemp] = useSimVar('L:A32NX_COND_CKPT_TEMP', 'celsius', 1000);
     const [fwdCabinTemp] = useSimVar('L:A32NX_COND_FWD_TEMP', 'celsius', 1000);
     const [aftCabinTemp] = useSimVar('L:A32NX_COND_AFT_TEMP', 'celsius', 1000);
+    // If Yankee units selected, convert to Fahrenheit
+    if (unit === '0') {
+        Units.celsiusToFahrenheit(cockpitCabinTemp);
+        Units.celsiusToFahrenheit(fwdCabinTemp);
+        Units.celsiusToFahrenheit(aftCabinTemp);
+    }
 
     return (
         <>
@@ -227,7 +234,7 @@ export const CondComponent = () => {
             <text id="ForwardTemp" className="Standard Green" x="150" y="448">{fwdCabinTemp.toFixed(0)}</text>
             <text className="Standard" x="245" y="425">AFT</text>
             <text id="AftTemp" className="Standard Green" x="235" y="448">{aftCabinTemp.toFixed(0)}</text>
-            <text className="Medium Cyan" x="310" y="455">°C</text>
+            <text className="Medium Cyan" x="310" y="455">{unit === '1' ? '°C' : '°F'}</text>
         </>
     );
 };

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React from 'react';
-import { useSimVar } from '@flybywiresim/fbw-sdk';
+import { useSimVar, usePersistentProperty, Units } from '@flybywiresim/fbw-sdk';
 import { SvgGroup } from '../../Common/SvgGroup';
 import Valve from './Valve';
 
@@ -11,7 +11,10 @@ import '../../Common/CommonStyles.scss';
 
 export const CondPage = () => {
     // Display trim valve position for each zone
-    const gaugeOffset = -43; // Gauges range is from -43 degree to +43 degree
+    const gaugeOffset = -43; // This the range of travel for each 'zones' respective gauge is -43->+43 degrees.
+    // These gauges denote the Physical position of the valve. No relation to air temperature or set point!
+
+    const [unit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
 
     const [cockpitTrimAirValve] = useSimVar('L:A32NX_COND_CKPT_TRIM_AIR_VALVE_POSITION', 'number', 1000);
     const [cockpitTrimTemp] = useSimVar('L:A32NX_COND_CKPT_DUCT_TEMP', 'celsius', 1000);
