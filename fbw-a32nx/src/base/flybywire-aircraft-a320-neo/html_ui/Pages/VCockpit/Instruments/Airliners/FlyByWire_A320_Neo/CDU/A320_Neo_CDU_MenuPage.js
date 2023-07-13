@@ -59,40 +59,40 @@ class CDUMenuPage {
 
         updateView();
 
-        mcdu.setScratchpadMessage(NXSystemMessages.selectDesiredSystem);
+        mcdu.mcduScratchpad.setMessage(NXSystemMessages.selectDesiredSystem);
 
         mcdu.onLeftInput[0] = () => {
-            mcdu.setScratchpadMessage(NXSystemMessages.waitForSystemResponse);
+            mcdu.mcduScratchpad.setMessage(NXSystemMessages.waitForSystemResponse);
             updateView("FMGC");
             setTimeout(() => {
-                mcdu.removeScratchpadMessage(NXSystemMessages.waitForSystemResponse.text);
+                mcdu.mcduScratchpad.removeMessage(NXSystemMessages.waitForSystemResponse.text);
                 CDUIdentPage.ShowPage(mcdu);
             }, connectedSubsystemDelay); // FMGCs are on high-speed port... always fast
         };
 
         mcdu.onLeftInput[1] = () => {
-            mcdu.setScratchpadMessage(NXSystemMessages.waitForSystemResponse);
+            mcdu.mcduScratchpad.setMessage(NXSystemMessages.waitForSystemResponse);
             updateView("ATSU");
             setTimeout(() => {
-                mcdu.removeScratchpadMessage(NXSystemMessages.waitForSystemResponse.text);
+                mcdu.mcduScratchpad.removeMessage(NXSystemMessages.waitForSystemResponse.text);
                 CDUAtsuMenu.ShowPage(mcdu);
             }, atsuActive ? connectedSubsystemDelay : disconnectedSubsystemDelay);
         };
 
         mcdu.onLeftInput[2] = () => {
-            mcdu.setScratchpadMessage(NXSystemMessages.waitForSystemResponse);
+            mcdu.mcduScratchpad.setMessage(NXSystemMessages.waitForSystemResponse);
             updateView("AIDS");
             setTimeout(() => {
-                mcdu.removeScratchpadMessage(NXSystemMessages.waitForSystemResponse.text);
+                mcdu.mcduScratchpad.removeMessage(NXSystemMessages.waitForSystemResponse.text);
                 CDU_AIDS_MainMenu.ShowPage(mcdu);
             }, aidsActive ? connectedSubsystemDelay : disconnectedSubsystemDelay);
         };
 
         mcdu.onLeftInput[3] = () => {
-            mcdu.setScratchpadMessage(NXSystemMessages.waitForSystemResponse);
+            mcdu.mcduScratchpad.setMessage(NXSystemMessages.waitForSystemResponse);
             updateView("CFDS");
             setTimeout(() => {
-                mcdu.removeScratchpadMessage(NXSystemMessages.waitForSystemResponse.text);
+                mcdu.mcduScratchpad.removeMessage(NXSystemMessages.waitForSystemResponse.text);
                 CDUCfdsMainMenu.ShowPage(mcdu);
             }, cfdsActive ? connectedSubsystemDelay : disconnectedSubsystemDelay);
         };

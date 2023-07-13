@@ -27,6 +27,7 @@
 1. [FLIGHTMODEL] Fix outer to inner tank transfer valve closure - @donstim (donbikes)
 1. [MCDU] Add basic annunciator support - @tracernz (Mike)
 1. [MCDU] Add basic MCDU MENU functionality - @tracernz (Mike)
+1. [MCDU] Split subsystem scratchpads - @tracernz (Mike)
 
 ## 0.10.0
 
