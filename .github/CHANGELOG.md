@@ -25,6 +25,8 @@
 1. [PFD] Corrected the NO DH logic in the FMS and PFD - @tracernz (Mike)
 1. [FDR] Add secondary engine parameters to FDR - @Taz5150 (TazX [Z+2]#0405)
 1. [FLIGHTMODEL] Fix outer to inner tank transfer valve closure - @donstim (donbikes)
+1. [MCDU] Add basic annunciator support - @tracernz (Mike)
+1. [MCDU] Add basic MCDU MENU functionality - @tracernz (Mike)
 
 ## 0.10.0
 

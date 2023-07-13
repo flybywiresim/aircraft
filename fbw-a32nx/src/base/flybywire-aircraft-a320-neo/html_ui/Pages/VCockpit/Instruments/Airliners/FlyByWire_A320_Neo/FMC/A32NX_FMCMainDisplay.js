@@ -560,6 +560,8 @@ class FMCMainDisplay extends BaseAirliners {
         });
 
         this.toSpeedsChecks(true);
+
+        this.setRequest('FMGC');
     }
 
     onUpdate(_deltaTime) {
@@ -569,6 +571,7 @@ class FMCMainDisplay extends BaseAirliners {
         const flightPlanChanged = this.flightPlanManager.currentFlightPlanVersion !== this.lastFlightPlanVersion;
         if (flightPlanChanged) {
             this.lastFlightPlanVersion = this.flightPlanManager.currentFlightPlanVersion;
+            this.setRequest("FMGC");
         }
 
         Fmgc.updateFmgcLoop(_deltaTime);
@@ -655,6 +658,8 @@ class FMCMainDisplay extends BaseAirliners {
     onFlightPhaseChanged(prevPhase, nextPhase) {
         this.updateConstraints();
         this.updateManagedSpeed();
+
+        this.setRequest("FMGC");
 
         SimVar.SetSimVarValue("L:A32NX_CABIN_READY", "Bool", 0);
 

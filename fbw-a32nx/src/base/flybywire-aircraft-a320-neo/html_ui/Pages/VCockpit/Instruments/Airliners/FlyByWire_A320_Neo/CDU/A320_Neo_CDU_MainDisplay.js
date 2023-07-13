@@ -42,13 +42,22 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 fm2: false,
             }
         };
+        /** MCDU request flags from subsystems */
+        this.requests = {
+            AIDS: false,
+            ATSU: false,
+            CFDS: false,
+            FMGC: false,
+        }
+        this._lastAtsuMessageCount = 0;
         this.leftBrightness = 0;
         this.rightBrightness = 0;
         this.onLeftInput = [];
         this.onRightInput = [];
         this.leftInputDelay = [];
         this.rightInputDelay = [];
-        this.activeSystem = 'FMGC';
+        /** @type {'FMGC' | 'ATSU' | 'AIDS' | 'CFDS'} */
+        this._activeSystem = 'FMGC';
         this.inFocus = false;
         this.lastInput = 0;
         this.clrStop = false;
@@ -414,6 +423,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.updateBrightness();
 
         this.updateInitBFuelPred();
+
+        this.updateAtsuRequest();
     }
 
     /**
@@ -469,6 +480,15 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         }
     }
 
+    updateAtsuRequest() {
+        // the ATSU currently doesn't have the MCDU request signal, so we just check for messages and set it's flag
+        const msgs = SimVar.GetSimVarValue('L:A32NX_COMPANY_MSG_COUNT', 'number');
+        if (msgs > this._lastAtsuMessageCount) {
+            this.setRequest('ATSU');
+        }
+        this._lastAtsuMessageCount = msgs;
+    }
+
     /**
      * Updates the annunciator light states for one MCDU.
      * @param {'left' | 'right'} side Which MCDU to update.
@@ -482,7 +502,14 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
         const states = this.annunciators[side];
         for (const [annunc, state] of Object.entries(states)) {
-            const newState = !!(lightTest && powerOn);
+            let newState = !!(lightTest && powerOn);
+
+            if (annunc === 'fm') {
+                newState = newState || this.isSubsystemRequesting('FMGC');
+            } else if (annunc === 'mcdu_menu') {
+                newState = newState || this.isSubsystemRequesting('AIDS') || this.isSubsystemRequesting('ATSU') || this.isSubsystemRequesting('CFDS');
+            }
+
             if (newState !== state || forceWrite) {
                 states[annunc] = newState;
                 SimVar.SetSimVarValue(`L:A32NX_MCDU_${simVarSide}_ANNUNC_${annunc.toUpperCase()}`, 'bool', newState);
@@ -845,6 +872,66 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.onUp = () => {};
         this.onDown = () => {};
         this.updateRequest = false;
+    }
+
+    /**
+     * Set the active subsystem
+     * @param {'AIDS' | 'ATSU' | 'CFDS' | 'FMGC'} subsystem
+     */
+    set activeSystem(subsystem) {
+        this._activeSystem = subsystem;
+        this.scratchpad = this.scratchpads[subsystem];
+        this._clearRequest(subsystem);
+    }
+
+    get activeSystem() {
+        return this._activeSystem;
+    }
+
+    /**
+     * Check if there is an active request from a subsystem to the MCDU
+     * @param {'AIDS' | 'ATSU' | 'CFDS' | 'FMGC'} subsystem
+     * @returns true if an active request exists
+     */
+    isSubsystemRequesting(subsystem) {
+        return this.requests[subsystem] === true;
+    }
+
+    /**
+     * Set a request from a subsystem to the MCDU
+     * @param {'AIDS' | 'ATSU' | 'CFDS' | 'FMGC'} subsystem
+     */
+    setRequest(subsystem) {
+        if (!(subsystem in this.requests) || this.activeSystem === subsystem) {
+            return;
+        }
+        if (!this.requests[subsystem]) {
+            this.requests[subsystem] = true;
+
+            // refresh the menu page if active
+            if (this.page.Current === this.page.MenuPage) {
+                CDUMenuPage.ShowPage(this);
+            }
+        }
+    }
+
+    /**
+     * Clear a request from a subsystem to the MCDU
+     * @param {'AIDS' | 'ATSU' | 'CFDS' | 'FMGC'} subsystem
+     */
+    _clearRequest(subsystem) {
+        if (!(subsystem in this.requests)) {
+            return;
+        }
+
+        if (this.requests[subsystem]) {
+            this.requests[subsystem] = false;
+
+            // refresh the menu page if active
+            if (this.page.Current === this.page.MenuPage) {
+                CDUMenuPage.ShowPage(this);
+            }
+        }
     }
 
     generateHTMLLayout(parent) {
