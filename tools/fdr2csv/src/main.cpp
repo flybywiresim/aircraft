@@ -12,7 +12,7 @@
 #include "zfstream.h"
 
 // IMPORTANT: this constant needs to increased with every interface change
-const uint64_t INTERFACE_VERSION = 24;
+const uint64_t INTERFACE_VERSION = 25;
 
 int main(int argc, char* argv[]) {
   // variables for command line parameters
