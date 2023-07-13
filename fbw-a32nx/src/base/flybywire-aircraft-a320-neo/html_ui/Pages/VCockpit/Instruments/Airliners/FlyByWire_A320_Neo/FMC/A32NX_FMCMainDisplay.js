@@ -2120,7 +2120,7 @@ class FMCMainDisplay extends BaseAirliners {
             if (this.isMinDestFobInRange(value)) {
                 this._minDestFobEntered = true;
                 if (value < this._minDestFob) {
-                    this.setScratchpadMessage(NXSystemMessages.checkMinDestFob);
+                    this.addMessageToQueue(NXSystemMessages.checkMinDestFob);
                 }
                 this._minDestFob = value;
                 return true;
@@ -3159,10 +3159,10 @@ class FMCMainDisplay extends BaseAirliners {
     thrustReductionAccelerationChecks() {
         const activePlan = this.flightPlanManager.activeFlightPlan;
         if (activePlan.reconcileAccelerationWithConstraints()) {
-            this.setScratchpadMessage(NXSystemMessages.newAccAlt.getModifiedMessage(activePlan.accelerationAltitude.toFixed(0)));
+            this.addMessageToQueue(NXSystemMessages.newAccAlt.getModifiedMessage(activePlan.accelerationAltitude.toFixed(0)));
         }
         if (activePlan.reconcileThrustReductionWithConstraints()) {
-            this.setScratchpadMessage(NXSystemMessages.newThrRedAlt.getModifiedMessage(activePlan.thrustReductionAltitude.toFixed(0)));
+            this.addMessageToQueue(NXSystemMessages.newThrRedAlt.getModifiedMessage(activePlan.thrustReductionAltitude.toFixed(0)));
         }
     }
 

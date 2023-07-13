@@ -1193,6 +1193,11 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
      * @param message {TypeIMessage}
      */
     setScratchpadMessage(message) {
+        if (typeof message === 'TypeIIMessage') {
+            console.error('Type II message passed to setScratchpadMessage!', message);
+            return;
+        }
+
         if (this.scratchpad) {
             this.scratchpad.setMessage(message);
         }
