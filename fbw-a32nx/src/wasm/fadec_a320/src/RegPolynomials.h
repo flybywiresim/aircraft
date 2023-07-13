@@ -237,9 +237,6 @@ class Polynomial {
       oilTemp_out = (t_steady - dt);
     }
 
-    // std::cout << "FADEC: Max= " << maxOilTemp << " Energy = " << energy << " dt = " << dt << " preT= " << preOilTemp
-    //          << " Tss = " << t_steady << " To = " << oilTemp_out << std::flush;
-
     return oilTemp_out;
   }
 

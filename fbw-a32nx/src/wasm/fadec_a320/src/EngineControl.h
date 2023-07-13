@@ -587,13 +587,13 @@ class EngineControl {
       thermalEnergy = thermalEnergy1;
       oilTemperaturePre = oilTemperatureLeftPre;
       oilQtyActual = simVars->getEngine1Oil();
-      oilTotalActual = simVars->getEngine1TotalOil();
+      oilTotalActual = simVars->getEngine1OilTotal();
     } else {
       steadyTemperature = simVars->getEngine2EGT();
       thermalEnergy = thermalEnergy2;
       oilTemperaturePre = oilTemperatureRightPre;
       oilQtyActual = simVars->getEngine2Oil();
-      oilTotalActual = simVars->getEngine2TotalOil();
+      oilTotalActual = simVars->getEngine2OilTotal();
     }
 
     //--------------------------------------------
@@ -643,7 +643,7 @@ class EngineControl {
       thermalEnergy1 = thermalEnergy;
       oilTemperatureLeftPre = oilTemperature;
       simVars->setEngine1Oil(oilQtyActual);
-      simVars->setEngine1TotalOil(oilTotalActual);
+      simVars->setEngine1OilTotal(oilTotalActual);
       SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilTempLeft, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
                                     &oilTemperature);
       SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilPsiLeft, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &oilPressure);
@@ -651,7 +651,7 @@ class EngineControl {
       thermalEnergy2 = thermalEnergy;
       oilTemperatureRightPre = oilTemperature;
       simVars->setEngine2Oil(oilQtyActual);
-      simVars->setEngine2TotalOil(oilTotalActual);
+      simVars->setEngine2OilTotal(oilTotalActual);
       SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilTempRight, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
                                     &oilTemperature);
       SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilPsiRight, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &oilPressure);
@@ -1097,9 +1097,9 @@ class EngineControl {
 
       // Setting initial Oil
       if (engine == 1) {
-        simVars->setEngine1TotalOil(idleOil - paramImbalance);
+        simVars->setEngine1OilTotal(idleOil - paramImbalance);
       } else {
-        simVars->setEngine2TotalOil(idleOil - paramImbalance);
+        simVars->setEngine2OilTotal(idleOil - paramImbalance);
       }
     }
 
