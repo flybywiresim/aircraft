@@ -42,7 +42,7 @@ class ScratchpadDataLink {
 
         // internal state
         this._text = "";
-        this._message = {};
+        this._message = undefined;
         this._status = 0;
         this._displayUnit = displayUnit;
         this._isPaused = true;
