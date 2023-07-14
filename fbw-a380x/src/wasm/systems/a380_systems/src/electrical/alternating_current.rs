@@ -210,10 +210,6 @@ impl A380AlternatingCurrentElectrical {
         self.emergency_gen_contactor.is_closed()
     }
 
-    pub fn ac_ess_bus_is_powered(&self, electricity: &Electricity) -> bool {
-        electricity.is_powered(&self.ac_ess_bus)
-    }
-
     pub fn ac_emer_bus_is_powered(&self, electricity: &Electricity) -> bool {
         electricity.is_powered(&self.ac_emer_bus)
     }
