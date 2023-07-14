@@ -25,7 +25,7 @@ interface BatDisplayProp extends ComponentProps {
 }
 
 class BatDisplay extends DisplayComponent<BatDisplayProp> {
-    private ltsTest: number = 1
+    private isLtsTest: boolean = false
 
     private dc2IsPowered: boolean = false
 
@@ -34,16 +34,20 @@ class BatDisplay extends DisplayComponent<BatDisplayProp> {
     private displayValue = Subject.create('')
 
     public onAfterRender(node: VNode): void {
+        const batteryMap = {
+            1: 'batVoltage1',
+            2: 'batVoltage2',
+        };
         super.onAfterRender(node);
 
         const sub = this.props.bus.getSubscriber<BATSimvars>();
-
-        sub.on(this.props.batteryNumber === 1 ? 'batVoltage1' : 'batVoltage2').withPrecision(1).handle((value) => {
+        // sub.on(this.props.batteryNumber === 1 ? 'batVoltage1' : 'batVoltage2').withPrecision(1).handle((value) => {
+        sub.on(batteryMap[this.props.batteryNumber]).withPrecision(1).handle((value) => {
             this.voltage = value;
             this.updateDisplayValue();
         });
-        sub.on('ltsTest').whenChanged().handle((value) => {
-            this.ltsTest = value;
+        sub.on('annSwitchState').whenChanged().handle((value) => {
+            this.isLtsTest = value === 0;
             this.updateDisplayValue();
         });
         sub.on('dc2IsPowered').whenChanged().handle((value) => {
@@ -58,7 +62,7 @@ class BatDisplay extends DisplayComponent<BatDisplayProp> {
     }
 
     private getDisplayValue(): number {
-        if (this.ltsTest === 0 && this.dc2IsPowered) return 88.8;
+        if (this.isLtsTest && this.dc2IsPowered) return 88.8;
         return this.voltage;
     }
 
