@@ -6,8 +6,9 @@ import {
     failureGeneratorAdd, failureGeneratorsSettings, ModalContext, ModalGenType,
 } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGen';
 import { findGeneratorFailures } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelection';
-import { ExclamationDiamond, PlusLg, Sliders2Vertical, Trash } from 'react-bootstrap-icons';
+import { ExclamationDiamond, InfoCircle, PlusLg, Sliders2Vertical, Trash } from 'react-bootstrap-icons';
 import { AtaChapterNumber, AtaChaptersTitle } from '@flybywiresim/fbw-sdk';
+import { FailureGeneratorInfoModalUI } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorInfo';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
 import { GeneratorFailureSelection } from './GeneratorFailureSelectionUI';
@@ -23,28 +24,48 @@ export const FailureGeneratorsUI = () => {
     if (settings.failureGenModalType === ModalGenType.Settings) {
         settings.modals.showModal(FailureGeneratorDetailsModalUI(settings));
     }
+    const generatorList = Array.from(settings.allGenSettings.values()).map((genSetting : FailureGenData) => ({
+        value: genSetting.genName,
+        displayValue: `${genSetting.alias()}`,
+    }));
+    generatorList.push({
+        value: 'default',
+        displayValue: `<${t('Failures.Generators.SelectInList')}>`,
+    });
     return (
         <>
             <div className="flex flex-col">
-                <div className="flex flex-row flex-1 justify-start py-2 space-x-4">
-                    <h2 className="flex-none">
-                        {t('Failures.Generators.Select')}
-                    </h2>
-                    <SelectInput
-                        className="flex-none w-96 h-10"
-                        value={chosenGen}
-                        onChange={(value) => setChosenGen(value as string)}
-                        options={Array.from(settings.allGenSettings.values()).map((genSetting : FailureGenData) => ({
-                            value: genSetting.genName,
-                            displayValue: `${genSetting.alias()}`,
-                        }))}
-                        maxHeight={32}
-                    />
-                    <div
-                        onClick={() => failureGeneratorAdd(settings.allGenSettings.get(chosenGen), settings)}
-                        className="flex-none py-2 px-2 mr-4 text-center rounded-md bg-theme-accent hover:text-theme-body hover:bg-theme-highlight"
-                    >
-                        <PlusLg />
+                <div className="flex flex-row flex-1 justify-between">
+                    <div className="flex flex-row flex-1 justify-start py-2 space-x-4">
+                        <h2 className="flex-none">
+                            {`${t('Failures.Generators.GeneratorToAdd')}:`}
+                        </h2>
+                        <SelectInput
+                            className="flex-none w-96 h-10"
+                            value={chosenGen}
+                            defaultValue="default"
+                            onChange={(value) => setChosenGen(value as string)}
+                            options={generatorList}
+                            maxHeight={32}
+                        />
+                        <div
+                            onClick={() => {
+                                if (chosenGen !== 'default') {
+                                    failureGeneratorAdd(settings.allGenSettings.get(chosenGen), settings);
+                                }
+                            }}
+                            className="flex-none py-2 px-2 mr-4 text-center rounded-md bg-theme-accent hover:text-theme-body hover:bg-theme-highlight"
+                        >
+                            <PlusLg />
+                        </div>
+                    </div>
+                    <div className="flex flex-row flex-1 justify-end py-2">
+                        <div
+                            onClick={() => settings.modals.showModal(FailureGeneratorInfoModalUI(settings))}
+                            className="flex-none py-2 px-2 text-center rounded-md bg-theme-accent hover:text-theme-body hover:bg-theme-highlight"
+                        >
+                            <InfoCircle />
+                        </div>
                     </div>
                 </div>
                 <div className="flex items-center">
@@ -95,7 +116,7 @@ function FailureShortList(failureGenContext: FailureGenContext, uniqueID : strin
     let listOfSelectedFailures = findGeneratorFailures(failureGenContext.allFailures, failureGenContext.generatorFailuresGetters, uniqueID);
 
     if (listOfSelectedFailures.length === failureGenContext.allFailures.length) {
-        return <div className="p-1 mb-1 rounded-md bg-theme-accent">{t('Failures.Generators.AllFailures')}</div>;
+        return <div className="p-1 mb-1 rounded-md bg-theme-accent">{t('Failures.Generators.AllSystems')}</div>;
     }
     if (listOfSelectedFailures.length === 0) return <div className="p-1 mb-1 rounded-md bg-theme-accent">{t('Failures.Generators.NoFailure')}</div>;
 

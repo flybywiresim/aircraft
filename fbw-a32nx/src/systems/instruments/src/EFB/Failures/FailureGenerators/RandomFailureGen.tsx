@@ -170,6 +170,7 @@ export const randomFailureGenerator = () => {
 
 export const failureGeneratorAdd = (generatorSettings : FailureGenData, failureGenContext: FailureGenContext) => {
     let genNumber : number;
+
     if (generatorSettings.settings === undefined || generatorSettings.settings.length % generatorSettings.numberOfSettingsPerGenerator !== 0 || generatorSettings.settings.length === 0) {
         generatorSettings.setSetting(flatten(generatorSettings.additionalSetting));
         genNumber = 0;

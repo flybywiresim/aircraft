@@ -76,7 +76,7 @@ const generatorSettingComponents = (genNumber: number, generatorSettings : Failu
         settings[genNumber * numberOfSettingsPerGenerator + 7],
         settings[genNumber * numberOfSettingsPerGenerator + 6], 1,
         setNewSetting, generatorSettings, genNumber, 6, failureGenContext),
-    FailureGeneratorSingleSetting(t('Failures.Generators.MaximumSpeed'), t('Failures.Generators.knots'),
+    FailureGeneratorSingleSetting(t('Failures.Generators.SpeedTransMedHigh'), t('Failures.Generators.knots'),
         settings[genNumber * numberOfSettingsPerGenerator + 6], 300,
         settings[genNumber * numberOfSettingsPerGenerator + 7], 1,
         setNewSetting, generatorSettings, genNumber, 7, failureGenContext),
