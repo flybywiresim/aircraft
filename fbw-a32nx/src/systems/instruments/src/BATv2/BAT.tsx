@@ -25,11 +25,11 @@ interface BatDisplayProp extends ComponentProps {
 }
 
 class BatDisplay extends DisplayComponent<BatDisplayProp> {
-    private ltsTest = Subject.create(1)
+    private ltsTest: number = 1
 
-    private dc2IsPowered = Subject.create(false)
+    private dc2IsPowered: boolean = false
 
-    private voltage = Subject.create(88.8)
+    private voltage: number = 88.8
 
     private displayValue = Subject.create('')
 
@@ -39,15 +39,15 @@ class BatDisplay extends DisplayComponent<BatDisplayProp> {
         const sub = this.props.bus.getSubscriber<BATSimvars>();
 
         sub.on(this.props.batteryNumber === 1 ? 'batVoltage1' : 'batVoltage2').withPrecision(1).handle((value) => {
-            this.voltage.set(value);
+            this.voltage = value;
             this.updateDisplayValue();
         });
         sub.on('ltsTest').whenChanged().handle((value) => {
-            this.ltsTest.set(value);
+            this.ltsTest = value;
             this.updateDisplayValue();
         });
         sub.on('dc2IsPowered').whenChanged().handle((value) => {
-            this.dc2IsPowered.set(value);
+            this.dc2IsPowered = value;
             this.updateDisplayValue();
         });
     }
@@ -58,8 +58,8 @@ class BatDisplay extends DisplayComponent<BatDisplayProp> {
     }
 
     private getDisplayValue(): number {
-        if (this.ltsTest.get() === 0 && this.dc2IsPowered.get()) return 88.8;
-        return this.voltage.get();
+        if (this.ltsTest === 0 && this.dc2IsPowered) return 88.8;
+        return this.voltage;
     }
 
     public render(): VNode {
