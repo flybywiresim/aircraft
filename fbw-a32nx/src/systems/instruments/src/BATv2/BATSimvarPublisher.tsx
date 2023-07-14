@@ -18,7 +18,7 @@ export enum BATVars {
 
 export class BATSimvarPublisher extends UpdatableSimVarPublisher<BATSimvars> {
     private static simvars = new Map<keyof BATSimvars, SimVarDefinition>([
-        ['annSwitchState', { name: BATVars.ltsTest, type: SimVarValueType.Number }],
+        ['annSwitchState', { name: BATVars.annSwitchState, type: SimVarValueType.Number }],
         ['dc2IsPowered', { name: BATVars.dc2IsPowered, type: SimVarValueType.Bool }],
         ['batVoltage1', { name: BATVars.batVoltage1, type: SimVarValueType.Volts }],
         ['batVoltage2', { name: BATVars.batVoltage2, type: SimVarValueType.Volts }],
