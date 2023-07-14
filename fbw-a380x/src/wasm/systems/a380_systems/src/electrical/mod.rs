@@ -204,6 +204,10 @@ impl A380Electrical {
         self.alternating_current.ac_ess_bus_is_powered(electricity)
     }
 
+    fn ac_emer_bus_is_powered(&self, electricity: &Electricity) -> bool {
+        self.alternating_current.ac_emer_bus_is_powered(electricity)
+    }
+
     fn galley_is_shed(&self) -> bool {
         self.main_galley.is_shed() || self.secondary_galley.is_shed()
     }
@@ -348,7 +352,7 @@ impl A380ElectricalOverheadPanel {
         electricity: &Electricity,
     ) {
         self.ac_ess_feed
-            .set_fault(!electrical.ac_ess_bus_is_powered(electricity));
+            .set_fault(!electrical.ac_emer_bus_is_powered(electricity));
 
         self.generators
             .iter_mut()

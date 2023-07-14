@@ -213,6 +213,10 @@ impl A380AlternatingCurrentElectrical {
     pub fn ac_ess_bus_is_powered(&self, electricity: &Electricity) -> bool {
         electricity.is_powered(&self.ac_ess_bus)
     }
+
+    pub fn ac_emer_bus_is_powered(&self, electricity: &Electricity) -> bool {
+        electricity.is_powered(&self.ac_emer_bus)
+    }
 }
 impl A380AlternatingCurrentElectricalSystem for A380AlternatingCurrentElectrical {
     fn ac_bus_powered(&self, electricity: &Electricity, number: usize) -> bool {
