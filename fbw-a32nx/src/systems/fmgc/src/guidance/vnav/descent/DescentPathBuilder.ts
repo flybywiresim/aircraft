@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { DescentAltitudeConstraint, MaxSpeedConstraint, VerticalCheckpoint, VerticalCheckpointReason } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { BaseGeometryProfile } from '@fmgc/guidance/vnav/profile/BaseGeometryProfile';
 import { ManagedSpeedType, SpeedProfile } from '@fmgc/guidance/vnav/climb/SpeedProfile';
@@ -9,7 +13,7 @@ import { StepResults } from '@fmgc/guidance/vnav/Predictions';
 import { HeadwindProfile } from '@fmgc/guidance/vnav/wind/HeadwindProfile';
 import { TemporaryCheckpointSequence } from '@fmgc/guidance/vnav/profile/TemporaryCheckpointSequence';
 import { AltitudeConstraint, AltitudeConstraintType } from '@fmgc/guidance/lnav/legs';
-import { MathUtils } from '@shared/MathUtils';
+import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { SpeedLimit } from '@fmgc/guidance/vnav/SpeedLimit';
 
 export class DescentPathBuilder {

@@ -1,6 +1,10 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import React, { useState } from 'react';
 import { A320Failure, Failure, FailuresOrchestrator } from '@failures';
-import { useUpdate } from '@instruments/common/hooks';
+import { useUpdate } from '@flybywiresim/fbw-sdk';
 
 interface FailuresOrchestratorContext {
     allFailures: Readonly<Readonly<Failure>[]>,

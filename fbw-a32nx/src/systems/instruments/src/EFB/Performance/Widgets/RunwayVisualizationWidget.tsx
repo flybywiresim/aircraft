@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 /* eslint-disable max-len */
 /*
  * A32NX
@@ -17,7 +21,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import { Units } from '@shared/units';
+import { Units } from '@flybywiresim/fbw-sdk';
 import React, { useEffect, useState } from 'react';
 
 export type DistanceLabel = {

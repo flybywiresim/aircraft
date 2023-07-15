@@ -2,13 +2,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { useEffect, useState } from 'react';
-
-import useInterval from '@instruments/common/useInterval';
+import { useSimVar, useInterval, useInteractionEvent, usePersistentNumberProperty, usePersistentProperty } from '@flybywiresim/fbw-sdk';
 import { Redirect, Route, Switch, useHistory } from 'react-router-dom';
-import { useSimVar } from '@instruments/common/simVars';
-import { useInteractionEvent } from '@instruments/common/hooks';
-import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
-
 import { Battery } from 'react-bootstrap-icons';
 import { toast, ToastContainer } from 'react-toastify';
 import { distanceTo } from 'msfs-geo';
@@ -16,9 +11,6 @@ import { Tooltip } from './UtilComponents/TooltipWrapper';
 import { FbwLogo } from './UtilComponents/FbwLogo';
 import { AlertModal, ModalContainer, useModals } from './UtilComponents/Modals/Modals';
 import NavigraphClient, { NavigraphContext } from './Apis/Navigraph/Navigraph';
-import 'react-toastify/dist/ReactToastify.css';
-import './toast.css';
-
 import { StatusBar } from './StatusBar/StatusBar';
 import { ToolBar } from './ToolBar/ToolBar';
 import { Dashboard } from './Dashboard/Dashboard';
@@ -30,7 +22,6 @@ import { ATC } from './ATC/ATC';
 import { Settings } from './Settings/Settings';
 import { Failures } from './Failures/Failures';
 import { Presets } from './Presets/Presets';
-
 import { clearEfbState, useAppDispatch, useAppSelector } from './Store/store';
 import { fetchSimbriefDataAction, isSimbriefDataLoaded } from './Store/features/simBrief';
 import { setFlightPlanProgress } from './Store/features/flightProgress';
@@ -38,6 +29,9 @@ import { Checklists, setAutomaticItemStates } from './Checklists/Checklists';
 import { CHECKLISTS } from './Checklists/Lists';
 import { setChecklistItems } from './Store/features/checklists';
 import { FlyPadPage } from './Settings/Pages/FlyPadPage';
+
+import 'react-toastify/dist/ReactToastify.css';
+import './toast.css';
 
 const BATTERY_DURATION_CHARGE_MIN = 180;
 const BATTERY_DURATION_DISCHARGE_MIN = 540;

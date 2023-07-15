@@ -35,10 +35,10 @@ export class EwdComponent extends DisplayComponent<EwdProps> {
             <DisplayUnit bus={this.props.bus} normDmc={1} brightness={this.ewdPotentiometer} powered={this.acEssBus}>
                 <svg class="ewd-svg" version="1.1" viewBox="0 0 768 768" xmlns="http://www.w3.org/2000/svg">
                     <UpperDisplay bus={this.props.bus} />
-                    <line class="Separator" x1="4" y1="520" x2="444" y2="520" strokeLinecap="round" />
-                    <line class="Separator" x1="522" y1="520" x2="764" y2="520" strokeLinecap="round" />
+                    <line class="Separator" x1="4" y1="520" x2="444" y2="520" />
+                    <line class="Separator" x1="522" y1="520" x2="764" y2="520" />
                     <LowerLeftDisplay bus={this.props.bus} />
-                    <line class="Separator" x1="484" y1="540" x2="484" y2="730" strokeLinecap="round" />
+                    <line class="Separator" x1="484" y1="540" x2="484" y2="730" />
                     <LowerRightDisplay bus={this.props.bus} />
                 </svg>
             </DisplayUnit>

@@ -1,5 +1,9 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import React, { useEffect } from 'react';
-import { useSimVar } from '@instruments/common/simVars';
+import { useSimVar } from '@flybywiresim/fbw-sdk';
 import { t } from '../../../translation';
 import { useAppDispatch, useAppSelector } from '../../../Store/store';
 import { removeTodGroundSpeed, setTodGroundSpeed, setTodGroundSpeedMode } from '../../../Store/features/todCalculator';

@@ -3,7 +3,7 @@
 
 /* eslint-disable max-len */
 import React from 'react';
-import { useSimVar } from '@instruments/common/simVars';
+import { useSimVar } from '@flybywiresim/fbw-sdk';
 import { t } from '../../translation';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
 import { PromptModal, useModals } from '../../UtilComponents/Modals/Modals';
