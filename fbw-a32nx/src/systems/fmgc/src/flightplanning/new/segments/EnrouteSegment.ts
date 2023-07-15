@@ -7,7 +7,7 @@ import { Waypoint } from 'msfs-navdata';
 import { FlightPlanElement, FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { BaseFlightPlan } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
-import { FlightPlanSegment } from './FlightPlanSegment';
+import { FlightPlanSegment, SerializedFlightPlanSegment } from './FlightPlanSegment';
 
 export class EnrouteSegment extends FlightPlanSegment {
     class = SegmentClass.Enroute

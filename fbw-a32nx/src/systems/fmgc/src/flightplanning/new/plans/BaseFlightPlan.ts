@@ -7,6 +7,7 @@ import {
     Airport,
     AltitudeDescriptor,
     Approach,
+    ApproachWaypointDescriptor,
     Arrival,
     Departure,
     Fix,
@@ -742,6 +743,18 @@ export abstract class BaseFlightPlan {
         default:
             return WaypointConstraintType.Unknown;
         }
+    }
+
+    glideslopeIntercept(): number | undefined {
+        for (const leg of this.approachSegment.allLegs) {
+            if (leg.isDiscontinuity === false
+                && leg.definition.approachWaypointDescriptor === ApproachWaypointDescriptor.FinalApproachCourseFix
+                && (leg.definition.altitudeDescriptor === AltitudeDescriptor.AtAlt1GsMslAlt2 || leg.definition.altitudeDescriptor === AltitudeDescriptor.AtOrAboveAlt1GsMslAlt2)) {
+                return leg.definition.altitude2;
+            }
+        }
+
+        return undefined;
     }
 
     /**
