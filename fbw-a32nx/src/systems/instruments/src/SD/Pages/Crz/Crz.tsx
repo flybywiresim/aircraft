@@ -214,14 +214,14 @@ export const PressureComponent = () => {
 
 export const CondComponent = () => {
     const [unit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
-    const [cockpitCabinTemp] = useSimVar('L:A32NX_COND_CKPT_TEMP', 'celsius', 1000);
-    const [fwdCabinTemp] = useSimVar('L:A32NX_COND_FWD_TEMP', 'celsius', 1000);
-    const [aftCabinTemp] = useSimVar('L:A32NX_COND_AFT_TEMP', 'celsius', 1000);
-    // If Yankee units selected, convert to Fahrenheit
-    if (unit === '0') {
-        Units.celsiusToFahrenheit(cockpitCabinTemp);
-        Units.celsiusToFahrenheit(fwdCabinTemp);
-        Units.celsiusToFahrenheit(aftCabinTemp);
+    let [cockpitCabinTemp] = useSimVar('L:A32NX_COND_CKPT_TEMP', 'celsius', 1000);
+    let [fwdCabinTemp] = useSimVar('L:A32NX_COND_CKPT_TEMP', 'celsius', 1000);
+    let [aftCabinTemp] = useSimVar('L:A32NX_COND_CKPT_TEMP', 'celsius', 1000);
+
+    if (unit === '0') { //  converting to F if 'lbs' selected in EFB
+        cockpitCabinTemp = Units.celsiusToFahrenheit(cockpitCabinTemp);
+        fwdCabinTemp = Units.celsiusToFahrenheit(fwdCabinTemp);
+        aftCabinTemp = Units.celsiusToFahrenheit(aftCabinTemp);
     }
 
     return (

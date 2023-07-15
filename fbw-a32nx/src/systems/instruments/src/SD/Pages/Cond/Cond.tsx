@@ -17,19 +17,28 @@ export const CondPage = () => {
     const [unit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
 
     const [cockpitTrimAirValve] = useSimVar('L:A32NX_COND_CKPT_TRIM_AIR_VALVE_POSITION', 'number', 1000);
-    const [cockpitTrimTemp] = useSimVar('L:A32NX_COND_CKPT_DUCT_TEMP', 'celsius', 1000);
-    const [cockpitCabinTemp] = useSimVar('L:A32NX_COND_CKPT_TEMP', 'celsius', 1000);
+    let [cockpitTrimTemp] = useSimVar('L:A32NX_COND_CKPT_DUCT_TEMP', 'celsius', 1000);
+    let [cockpitCabinTemp] = useSimVar('L:A32NX_COND_CKPT_TEMP', 'celsius', 1000);
 
     const [fwdTrimAirValve] = useSimVar('L:A32NX_COND_FWD_TRIM_AIR_VALVE_POSITION', 'number', 1000);
-    const [fwdTrimTemp] = useSimVar('L:A32NX_COND_FWD_DUCT_TEMP', 'celsius', 1000);
-    const [fwdCabinTemp] = useSimVar('L:A32NX_COND_FWD_TEMP', 'celsius', 1000);
+    let [fwdTrimTemp] = useSimVar('L:A32NX_COND_FWD_DUCT_TEMP', 'celsius', 1000);
+    let [fwdCabinTemp] = useSimVar('L:A32NX_COND_FWD_TEMP', 'celsius', 1000);
 
     const [aftTrimAirValve] = useSimVar('L:A32NX_COND_AFT_TRIM_AIR_VALVE_POSITION', 'number', 1000);
-    const [aftTrimTemp] = useSimVar('L:A32NX_COND_AFT_DUCT_TEMP', 'celsius', 1000);
-    const [aftCabinTemp] = useSimVar('L:A32NX_COND_AFT_TEMP', 'celsius', 1000);
+    let [aftTrimTemp] = useSimVar('L:A32NX_COND_AFT_DUCT_TEMP', 'celsius', 1000);
+    let [aftCabinTemp] = useSimVar('L:A32NX_COND_AFT_TEMP', 'celsius', 1000);
 
     const [hotAirOpen] = useSimVar('L:A32NX_HOT_AIR_VALVE_IS_OPEN', 'bool', 1000);
     const [hotAirEnabled] = useSimVar('L:A32NX_HOT_AIR_VALVE_IS_ENABLED', 'bool', 1000);
+
+    if (unit === '0') { //  converting to F if 'lbs' selected in EFB
+        cockpitTrimTemp = Units.celsiusToFahrenheit(cockpitTrimTemp);
+        cockpitCabinTemp = Units.celsiusToFahrenheit(cockpitCabinTemp);
+        fwdTrimTemp = Units.celsiusToFahrenheit(fwdTrimTemp);
+        fwdCabinTemp = Units.celsiusToFahrenheit(fwdCabinTemp);
+        aftTrimTemp = Units.celsiusToFahrenheit(aftTrimTemp);
+        aftCabinTemp = Units.celsiusToFahrenheit(aftCabinTemp);
+    }
 
     return (
         <svg id="cond-page" className="ecam-common-styles" viewBox="0 0 768 768" style={{ marginTop: '-60px' }} xmlns="http://www.w3.org/2000/svg">
@@ -38,7 +47,7 @@ export const CondPage = () => {
                 <text className="Title UnderlineWhite" x="7" y="33">COND</text>
                 <text className="Huge" x="630" y="32">TEMP</text>
                 <text className="Huge" x="715" y="32">:</text>
-                <text id="CondTempUnit" className="Standard Cyan" x="726" y="31">°C</text>
+                <text id="CondTempUnit" className="Standard Cyan" x="726" y="31">{unit === '1' ? '°C' : '°F'}</text>
                 { /* Not yet implemented
                     <text id="LeftFanWarning" className="Large Amber" x="180" y="75">FAN</text>
                     <text id="RightFanWarning" className="Large Amber" x="510" y="75">FAN</text>
