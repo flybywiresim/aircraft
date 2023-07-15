@@ -7,8 +7,11 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.AirwaysFromWaypointPage;
 
+        /** @type {FlightPlan} */
         const targetPlan = mcdu.flightPlan(forPlan, inAlternate);
         const waypoint = targetPlan.legElementAt(reviseIndex);
+
+        const fpIsSec = forPlan >= Fmgc.FlightPlanIndex.FirstSecondary;
         const fpIsTmpy = forPlan === Fmgc.FlightPlanIndex.Active && mcdu.flightPlanService.hasTemporary;
 
         let prevIcao = waypoint.definition.waypoint.databaseId;
@@ -21,9 +24,25 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
         const rows = [["----"], [""], [""], [""], [""]];
         const subRows = [["VIA", ""], [""], [""], [""], [""]];
         const allRows = lastIndex ? A320_Neo_CDU_AirwaysFromWaypointPage._GetAllRows(targetPlan) : [];
-        let rowBottomLine = ["<RETURN"];
 
-        if (fpIsTmpy) {
+        let rowBottomLine = ["<RETURN"];
+        mcdu.onLeftInput[5] = () => {
+            targetPlan.pendingAirways = undefined;
+
+            CDULateralRevisionPage.ShowPage(mcdu, targetPlan.elementAt(reviseIndex), reviseIndex, forPlan, inAlternate);
+        };
+
+        if (fpIsSec && targetPlan.pendingAirways && targetPlan.pendingAirways.elements.length > 0) {
+            rowBottomLine = ["<RETURN", "INSERT*[color]cyan"];
+
+            mcdu.onRightInput[5] = async () => {
+                targetPlan.pendingAirways.finalize(); // TODO replace with fps call (fms-v2)
+
+                mcdu.updateConstraints();
+
+                CDUFlightPlanPage.ShowPage(mcdu, 0, forPlan);
+            };
+        } else if (fpIsTmpy && targetPlan.pendingAirways && targetPlan.pendingAirways.elements.length > 0) {
             rowBottomLine = ["{ERASE[color]amber", "INSERT*[color]amber"];
 
             mcdu.onLeftInput[5] = async () => {
