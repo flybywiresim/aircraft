@@ -1287,3 +1287,4 @@
 1. [ISIS] Fixed issue where ISIS was allowing a bug to be set while in the OFF state - Patrick Macken (@Pat M on
    Discord)
 1. [EFB] Restructured APIs and made Navigraph Auth a reusable component - @MicahBCode (Mischa Binder)
+1. [ECAM] Added F units to CRZ and COND pages for Cabin temps.  Currently tied to kg/lbs  option in EFB -Patrick Macken  (@PatM on Discord)
