@@ -629,7 +629,8 @@ impl Aps3200ApuGenerator {
     }
 
     fn should_provide_output(&self) -> bool {
-        !self.is_emergency_shutdown
+        !self.failure.is_active()
+            && !self.is_emergency_shutdown
             && self.n.get::<percent>() >= Aps3200ApuGenerator::APU_GEN_POWERED_N
     }
 }
