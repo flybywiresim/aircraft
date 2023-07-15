@@ -609,6 +609,7 @@ impl UpdateContext {
 
         self.in_cloud = reader.read(&self.in_cloud_id);
 
+<<<<<<< HEAD
         let surface_read: f64 = reader.read(&self.surface_id);
         self.surface = surface_read.into();
 
@@ -630,6 +631,8 @@ impl UpdateContext {
             AngularVelocity::new::<degree_per_second>(reader.read(&self.rotation_vel_z_id)),
         );
 
+=======
+>>>>>>> 4d2817d7f (linting fix)
         self.side_controlling = reader.read(&self.side_controlling_id);
 
         self.update_relative_wind();
