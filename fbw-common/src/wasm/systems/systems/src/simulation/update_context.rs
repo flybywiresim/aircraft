@@ -491,8 +491,8 @@ impl UpdateContext {
         self.precipitation_rate = Length::new::<millimeter>(precipitation_height_millimeter);
 
         self.in_cloud = reader.read(&self.in_cloud_id);
-      
-       self.side_controlling = reader.read(&self.side_controlling_id);
+
+        self.side_controlling = reader.read(&self.side_controlling_id);
 
         self.update_relative_wind();
 
