@@ -131,6 +131,8 @@ class CDUFlightPlanPage {
 
         // In this loop, we insert pseudowaypoints between regular waypoints and compute the distances between the previous and next (pseudo-)waypoint.
         for (let i = first; i < targetPlan.legCount; i++) {
+            const inMissedApproach = i >= targetPlan.firstMissedApproachLegIndex;
+
             const pseudoWaypointsOnLeg = fmsPseudoWaypoints.filter((it) => it.displayedOnMcdu && it.alongLegIndex === i);
             pseudoWaypointsOnLeg.sort((a, b) => a.flightPlanInfo.distanceFromLastFix - b.flightPlanInfo.distanceFromLastFix);
 
@@ -140,7 +142,7 @@ class CDUFlightPlanPage {
             }
 
             if (pseudoWaypointsOnLeg) {
-                waypointsAndMarkers.push(...pseudoWaypointsOnLeg.map((pwp) => ({ pwp, fpIndex: i })));
+                waypointsAndMarkers.push(...pseudoWaypointsOnLeg.map((pwp) => ({ pwp, fpIndex: i, inMissedApproach })));
             }
 
             const wp = targetPlan.allLegs[i];
@@ -153,18 +155,18 @@ class CDUFlightPlanPage {
             }
 
             if (wp.isDiscontinuity) {
-                waypointsAndMarkers.push({ marker: Markers.FPLN_DISCONTINUITY, fpIndex: i, inAlternate: false });
+                waypointsAndMarkers.push({ marker: Markers.FPLN_DISCONTINUITY, fpIndex: i, inAlternate: false, inMissedApproach });
                 continue;
             }
 
             if (i >= targetPlan.activeLegIndex && wp.definition.type === 'HM') {
-                waypointsAndMarkers.push({ holdResumeExit: wp, fpIndex: i });
+                waypointsAndMarkers.push({ holdResumeExit: wp, fpIndex: i, inMissedApproach });
             }
 
-            waypointsAndMarkers.push({ wp, fpIndex: i, inAlternate: false });
+            waypointsAndMarkers.push({ wp, fpIndex: i, inAlternate: false, inMissedApproach });
 
             if (i === targetPlan.lastLegIndex) {
-                waypointsAndMarkers.push({ marker: Markers.END_OF_FPLN, fpIndex: i, inAlternate: false });
+                waypointsAndMarkers.push({ marker: Markers.END_OF_FPLN, fpIndex: i, inAlternate: false, inMissedApproach });
             }
         }
 
@@ -229,10 +231,11 @@ class CDUFlightPlanPage {
                 holdResumeExit,
                 fpIndex,
                 inAlternate,
+                inMissedApproach,
                 distanceFromLastLine
             } = waypointsAndMarkers[winI];
 
-            const legAccentColor = inAlternate ? "cyan" : planAccentColor;
+            const legAccentColor = (inAlternate || inMissedApproach) ? "cyan" : planAccentColor;
 
             const wpPrev = targetPlan.maybeElementAt(fpIndex - 1);
             const wpNext = targetPlan.maybeElementAt(fpIndex + 1);
@@ -646,9 +649,8 @@ class CDUFlightPlanPage {
                             CDUFlightPlanPage.ShowPage(mcdu, offset, forPlan);
                         }, 500);
                     } else if (decelReached) {
-                        fpm.removeWaypoint(fpIndex, true, () => {
-                            CDUFlightPlanPage.ShowPage(mcdu, offset, forPlan);
-                        });
+                        CDUFlightPlanPage.clearElement(mcdu, fpIndex, offset, forPlan, inAlternate, scratchpadCallback);
+                        return;
                     }
                     scratchpadCallback();
                 });
@@ -840,7 +842,7 @@ class CDUFlightPlanPage {
         ]);
     }
 
-    static clearElement(mcdu, fpIndex, offset, forPlan, forAlternate, scratchpadCallback) {
+    static async clearElement(mcdu, fpIndex, offset, forPlan, forAlternate, scratchpadCallback) {
         if (fpIndex === Fmgc.FlightPlanIndex.Active && mcdu.flightPlanService.hasTemporary) {
             mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
             scratchpadCallback();
@@ -859,7 +861,7 @@ class CDUFlightPlanPage {
         }
 
         try {
-            mcdu.flightPlanService.deleteElementAt(fpIndex, forPlan, forAlternate);
+            await mcdu.flightPlanService.deleteElementAt(fpIndex, forPlan, forAlternate);
         } catch (e) {
             console.error(e);
             mcdu.setScratchpadMessage(NXFictionalMessages.internalError);

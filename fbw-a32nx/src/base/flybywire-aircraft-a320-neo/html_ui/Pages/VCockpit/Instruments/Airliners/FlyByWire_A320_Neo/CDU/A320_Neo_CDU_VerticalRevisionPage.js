@@ -45,7 +45,8 @@ class CDUVerticalRevisionPage {
                 const destinationRunway = targetPlan.destinationRunway;
 
                 if (destinationRunway) {
-                    waypointIdent += Avionics.Utils.formatRunway(destinationRunway.designation);
+                    // TODO this is broken currently, need to see if this is just the leg ident r actual airport + runway? (fms-v2)
+                    waypointIdent += Avionics.Utils.formatRunway(destinationRunway.ident);
                 }
             }
         }
@@ -123,10 +124,8 @@ class CDUVerticalRevisionPage {
         let r5Cell = "";
 
         if (isDestination) {
-            const hasGsIntercept = false; // TODO fms-v2: port getGlideslopeIntercept (requires fixTypeFlags)
-            // const hasGsIntercept = targetPlan.approach?.type === 5 /* ILS */ || targetPlan.approach?.type === 6 /* GLS */ || targetPlan.approach?.type === 6;
-            const gsIntercept = 0;
-            // const gsIntercept = hasGsIntercept ? mcdu.flightPlanManager.getGlideslopeIntercept() : 0;
+            const hasGsIntercept = targetPlan.approach && (targetPlan.approach.type === 5 /* ILS */ || targetPlan.approach.type === 6 /* GLS */);
+            const gsIntercept = hasGsIntercept ? targetPlan.glideslopeIntercept() : 0;
 
             if (hasGsIntercept && gsIntercept > 0) {
                 r3Title = "G/S INTCP\xa0";

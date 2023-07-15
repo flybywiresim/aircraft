@@ -24,7 +24,7 @@ import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
-import { ApproachType, LegType } from 'msfs-navdata';
+import { ApproachType, ApproachWaypointDescriptor, LegType } from 'msfs-navdata';
 import { distanceTo } from 'msfs-geo';
 
 /**
@@ -137,10 +137,9 @@ export class ConstraintReader {
                 this.finalDescentAngle = pathAngleConstraint;
             }
 
-            // TODO fms-v2: find fixTypeFlags in msfs-navdata
-            // if ((leg.definition.fixTypeFlags & FixTypeFlags.FAF) > 0) {
-            //     this.fafDistanceToEnd = leg.additionalData.distanceToEnd;
-            // }
+            if (leg.definition.approachWaypointDescriptor === ApproachWaypointDescriptor.FinalApproachFix) {
+                this.fafDistanceToEnd = legDistanceToEnd;
+            }
         }
 
         this.updateFinalAltitude();
@@ -209,14 +208,13 @@ export class ConstraintReader {
 
         // Check if we have a procedure loaded from which we can extract the final altitude
         if (approach && approach.type !== ApproachType.Unknown) {
-            // TODO fms-v2: find fixTypeFlags in msfs-navdata
-            // for (const leg of approach.legs) {
-            // if (leg.fixTypeFlags & FixTypeFlags.MAP && Number.isFinite(leg.altitude1)) {
-            //     this.finalAltitude = leg.altitude1 * metersToFeet;
-            //
-            //     return;
-            // }
-            // }
+            for (const leg of approach.legs) {
+                if (leg.approachWaypointDescriptor === ApproachWaypointDescriptor.MissedApproachPoint && Number.isFinite(leg.altitude1)) {
+                    this.finalAltitude = leg.altitude2;
+
+                    return;
+                }
+            }
         }
 
         // Check if we only have a runway loaded. In this case, take the threshold elevation.
