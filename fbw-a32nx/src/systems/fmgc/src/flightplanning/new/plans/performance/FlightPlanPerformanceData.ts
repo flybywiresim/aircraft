@@ -10,6 +10,40 @@ type VSpeedValue = number | undefined;
 type AltitudeValue = number | undefined;
 
 export class FlightPlanPerformanceData {
+    public clone(): FlightPlanPerformanceData {
+        const cloned = new FlightPlanPerformanceData();
+
+        cloned.v1.set(this.v1.get());
+        cloned.vr.set(this.vr.get());
+        cloned.v2.set(this.v2.get());
+
+        cloned.pilotThrustReductionAltitude.set(this.pilotThrustReductionAltitude.get());
+        cloned.defaultThrustReductionAltitude.set(this.defaultThrustReductionAltitude.get());
+
+        cloned.pilotAccelerationAltitude.set(this.pilotAccelerationAltitude.get());
+        cloned.defaultAccelerationAltitude.set(this.defaultAccelerationAltitude.get());
+
+        cloned.pilotEngineOutAccelerationAltitude.set(this.pilotEngineOutAccelerationAltitude.get());
+        cloned.defaultEngineOutAccelerationAltitude.set(this.defaultEngineOutAccelerationAltitude.get());
+
+        cloned.pilotMissedThrustReductionAltitude.set(this.pilotMissedThrustReductionAltitude.get());
+        cloned.defaultMissedThrustReductionAltitude.set(this.defaultMissedThrustReductionAltitude.get());
+
+        cloned.pilotMissedAccelerationAltitude.set(this.pilotMissedAccelerationAltitude.get());
+        cloned.defaultMissedAccelerationAltitude.set(this.defaultMissedAccelerationAltitude.get());
+
+        cloned.pilotMissedEngineOutAccelerationAltitude.set(this.pilotMissedEngineOutAccelerationAltitude.get());
+        cloned.defaultMissedEngineOutAccelerationAltitude.set(this.defaultMissedEngineOutAccelerationAltitude.get());
+
+        cloned.databaseTransitionAltitude.set(this.databaseTransitionAltitude.get());
+        cloned.pilotTransitionAltitude.set(this.pilotTransitionAltitude.get());
+
+        cloned.databaseTransitionLevel.set(this.databaseTransitionLevel.get());
+        cloned.pilotTransitionLevel.set(this.pilotTransitionLevel.get());
+
+        return cloned;
+    }
+
     /**
      * V1 speed
      */
@@ -196,4 +230,51 @@ export class FlightPlanPerformanceData {
      * Whether TRANS LVL is from the database
      */
     readonly transitionLevelIsFromDatabase = this.pilotTransitionLevel.map((it) => it !== undefined);
+
+    serialize(): SerializedFlightPlanPerformanceData {
+        return {
+            pilotThrustReductionAltitude: this.pilotThrustReductionAltitude.get(),
+            defaultThrustReductionAltitude: this.defaultThrustReductionAltitude.get(),
+            pilotAccelerationAltitude: this.pilotAccelerationAltitude.get(),
+            defaultAccelerationAltitude: this.defaultAccelerationAltitude.get(),
+            pilotEngineOutAccelerationAltitude: this.pilotEngineOutAccelerationAltitude.get(),
+            defaultEngineOutAccelerationAltitude: this.defaultEngineOutAccelerationAltitude.get(),
+            pilotMissedThrustReductionAltitude: this.pilotMissedThrustReductionAltitude.get(),
+            defaultMissedThrustReductionAltitude: this.defaultMissedThrustReductionAltitude.get(),
+            pilotMissedAccelerationAltitude: this.pilotMissedAccelerationAltitude.get(),
+            defaultMissedAccelerationAltitude: this.defaultMissedAccelerationAltitude.get(),
+            pilotMissedEngineOutAccelerationAltitude: this.pilotMissedEngineOutAccelerationAltitude.get(),
+            defaultMissedEngineOutAccelerationAltitude: this.defaultMissedEngineOutAccelerationAltitude.get(),
+            databaseTransitionAltitude: this.databaseTransitionAltitude.get(),
+            pilotTransitionAltitude: this.pilotTransitionAltitude.get(),
+            databaseTransitionLevel: this.databaseTransitionLevel.get(),
+            pilotTransitionLevel: this.pilotTransitionLevel.get(),
+        };
+    }
+}
+
+export interface SerializedFlightPlanPerformanceData {
+    pilotThrustReductionAltitude: number,
+    defaultThrustReductionAltitude: number,
+
+    pilotAccelerationAltitude: number,
+    defaultAccelerationAltitude: number,
+
+    pilotEngineOutAccelerationAltitude: number,
+    defaultEngineOutAccelerationAltitude: number,
+
+    pilotMissedThrustReductionAltitude: number,
+    defaultMissedThrustReductionAltitude: number,
+
+    pilotMissedAccelerationAltitude: number,
+    defaultMissedAccelerationAltitude: number,
+
+    pilotMissedEngineOutAccelerationAltitude: number,
+    defaultMissedEngineOutAccelerationAltitude: number,
+
+    databaseTransitionAltitude: number,
+    pilotTransitionAltitude: number,
+
+    databaseTransitionLevel: number,
+    pilotTransitionLevel: number,
 }

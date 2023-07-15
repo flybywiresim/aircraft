@@ -41,6 +41,7 @@ import { FixInfoEntry } from '@fmgc/flightplanning/new/plans/FixInfo';
 import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/new/legs/FlightPlanLegDefinition';
 import { PendingAirways } from '@fmgc/flightplanning/new/plans/PendingAirways';
+import { SerializedFlightPlanPerformanceData } from '@fmgc/flightplanning/new/plans/performance/FlightPlanPerformanceData';
 
 export enum FlightPlanQueuedOperation {
     Restring,
@@ -77,6 +78,8 @@ export abstract class BaseFlightPlan {
 
         subs.on('flightPlan.setSegmentLegs').handle((event) => {
             if (!this.ignoreSync) {
+                console.log(`[FlightPlanSync] ${event.legs.length} legs to segment #${event.segmentIndex}`);
+
                 if (event.planIndex !== this.index || isAlternatePlan !== event.forAlternate) {
                     return;
                 }
@@ -1507,6 +1510,8 @@ export abstract class BaseFlightPlan {
 
             fixInfo: this instanceof FlightPlan ? this.fixInfos : [],
 
+            performanceData: this instanceof FlightPlan ? this.performanceData.serialize() : undefined,
+
             segments: {
                 originSegment: this.originSegment.serialize(),
                 departureRunwayTransitionSegment: this.departureRunwayTransitionSegment.serialize(),
@@ -1531,6 +1536,8 @@ export interface SerializedFlightPlan {
     activeLegIndex: number,
 
     fixInfo: readonly FixInfoEntry[],
+
+    performanceData?: SerializedFlightPlanPerformanceData,
 
     segments: {
         originSegment: SerializedFlightPlanSegment,
