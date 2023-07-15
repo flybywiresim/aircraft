@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 class CDUPerformancePage {
     static ShowPage(mcdu, _phase = undefined) {
         mcdu.activeSystem = 'FMGC';
@@ -395,7 +399,7 @@ class CDUPerformancePage {
         const fcuAltitude = SimVar.GetSimVarValue("AUTOPILOT ALTITUDE LOCK VAR:3", "feet");
         const altitudeToPredict = Math.min(cruiseAltitude, fcuAltitude);
 
-        const predToCell = CDUPerformancePage.formatAltitudeOrLevel(altitudeToPredict, mcdu.flightPlanManager.getOriginTransitionAltitude()) + "[color]cyan";
+        const predToCell = CDUPerformancePage.formatAltitudeOrLevel(altitudeToPredict, mcdu.getOriginTransitionAltitude()) + "[color]cyan";
 
         let predToDistanceCell = "---";
         let predToTimeCell = "----";
