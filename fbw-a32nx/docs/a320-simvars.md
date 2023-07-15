@@ -5,6 +5,7 @@
 - [A320neo Local SimVars](#a320neo-local-simvars)
   - [Contents](#contents)
   - [Uncategorized](#uncategorized)
+  - [Model/XML Interface](#modelxml-interface)
   - [EIS Display System](#eis-display-system)
   - [ADIRS](#adirs)
   - [Radio Receivers](#radio-receivers)
@@ -1362,6 +1363,26 @@
     - Persistent
     - Enables developer-specific options like direct payload adjustments
 
+## Model/XML Interface
+
+These variables are the interface between the 3D model and the systems/code.
+
+- A32NX_OVHD_INTLT_ANN
+    - Enum
+    - ANN LT TEST Switch On the Overhead Panel (25VU)
+    Value | Meaning
+    --- | ---
+    0 | TEST
+    1 | BRT
+    2 | DIM
+
+- A32NX_MCDU_{side}_BRIGHTNESS
+    - Boolean
+    - MCDU display emissive brightness. Non-linear to account for MSFS emissive behaviour, and max brightness can change from time to time with sim updates.
+    - {side}
+        - L
+        - R
+
 ## EIS Display System
 
 - A32NX_EFIS_{side}_NAVAID_{1|2}_MODE
@@ -1967,6 +1988,20 @@ In the variables below, {number} should be replaced with one item in the set: { 
       | 16  | V1/Vr/V2 disagree                 |
       | 17  | Takeoff speeds too low            |
       | 18  | Takeoff speeds not inserted       |
+
+- A32NX_FM{number}_NAV_DISCRETE
+    - Arinc429<Discrete>
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC (currently not written)
+    - | Bit |     Description     |
+      |:---:|:-------------------:|
+      | 11  | VOR 1 manually tuned |
+      | 12  | VOR 2 manually tuned |
+      | 13  | ADF 1 manually tuned |
+      | 14  | ADF 2 manually tuned |
+      | 15  | MMR 1 manually tuned |
+      | 16  | MMR 2 manually tuned |
 
 - A32NX_FM{number}_EO_ACC_ALT
     - ARINC429<number> (feet MSL)
@@ -2686,11 +2721,11 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Number (lbs)
     - Previous deltaTime fuel for the center tank
 
-- A32NX_ENGINE_TOTAL_OIL:{index}
+- A32NX_ENGINE_OIL_TOTAL:{index}
     - Number (quarts)
     - Total engine {index} oil quantity in the oil system (tank + circuit)
 
-- A32NX_ENGINE_TANK_OIL:{index}
+- A32NX_ENGINE_OIL_QTY:{index}
     - Number (quarts)
     - Total engine {index} oil quantity in the oil tank
 

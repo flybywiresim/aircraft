@@ -5,7 +5,7 @@ import { FlightPlans } from '@fmgc/flightplanning/FlightPlanManager';
 import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
 import { NearbyFacilities } from '@fmgc/navigation/NearbyFacilities';
 import { VorClass, VorType } from '@fmgc/types/fstypes/FSEnums';
-import { arrayFlat } from '@shared/array';
+import { arrayFlat } from '@flybywiresim/fbw-sdk';
 import { FlightPlanManager } from '@shared/flightplan';
 import { bearingTo, diffAngle, distanceTo, EARTH_RADIUS } from 'msfs-geo';
 

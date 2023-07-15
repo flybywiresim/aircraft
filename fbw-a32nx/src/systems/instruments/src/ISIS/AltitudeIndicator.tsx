@@ -1,4 +1,8 @@
-import { usePersistentNumberProperty } from '@instruments/common/persistence';
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
+import { usePersistentNumberProperty } from '@flybywiresim/fbw-sdk';
 import React from 'react';
 import { Bug } from './Bug';
 import { DigitalAltitudeIndicator } from './DigitalAltitudeIndicator';

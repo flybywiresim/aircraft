@@ -4,7 +4,7 @@
 import { DatalinkModeCode, DatalinkStatusCode } from '@datalink/common';
 import { ATC } from '@flybywiresim/api-client';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { NXDataStore } from '@shared/persistence';
+import { NXDataStore } from '@flybywiresim/fbw-sdk';
 import { DatalinkConfiguration, DatalinkProviders, MaxSearchRange, OwnAircraft, VdlMaxDatarate } from './Common';
 
 // worldwide international airports

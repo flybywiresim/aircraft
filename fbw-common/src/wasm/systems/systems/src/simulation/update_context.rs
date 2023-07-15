@@ -3,6 +3,7 @@ use uom::si::{
     acceleration::meter_per_second_squared,
     angle::radian,
     f64::*,
+    length::millimeter,
     mass_density::kilogram_per_cubic_meter,
     pressure::inch_of_mercury,
     time::second,
@@ -164,8 +165,9 @@ pub struct UpdateContext {
     latitude_id: VariableIdentifier,
     total_weight_id: VariableIdentifier,
     total_yaw_inertia_id: VariableIdentifier,
+    precipitation_rate_id: VariableIdentifier,
+    in_cloud_id: VariableIdentifier,
     side_controlling_id: VariableIdentifier,
-
     delta: Delta,
     simulation_time: f64,
     is_ready: bool,
@@ -192,11 +194,16 @@ pub struct UpdateContext {
     latitude: Angle,
     total_weight: Mass,
     total_yaw_inertia_slug_foot_squared: f64,
+    // From msfs in millimeters
+    precipitation_rate: Length,
+    in_cloud: bool,
     side_controlling: SideControlling,
 }
 impl UpdateContext {
     pub(crate) const IS_READY_KEY: &'static str = "IS_READY";
     pub(crate) const AMBIENT_DENSITY_KEY: &'static str = "AMBIENT DENSITY";
+    pub(crate) const IN_CLOUD_KEY: &'static str = "AMBIENT IN CLOUD";
+    pub(crate) const AMBIENT_PRECIP_RATE_KEY: &'static str = "AMBIENT PRECIP RATE";
     pub(crate) const AMBIENT_TEMPERATURE_KEY: &'static str = "AMBIENT TEMPERATURE";
     pub(crate) const INDICATED_AIRSPEED_KEY: &'static str = "AIRSPEED INDICATED";
     pub(crate) const TRUE_AIRSPEED_KEY: &'static str = "AIRSPEED TRUE";
@@ -285,6 +292,8 @@ impl UpdateContext {
             latitude_id: context.get_identifier(Self::LATITUDE_KEY.to_owned()),
             total_weight_id: context.get_identifier(Self::TOTAL_WEIGHT_KEY.to_owned()),
             total_yaw_inertia_id: context.get_identifier(Self::TOTAL_YAW_INERTIA.to_owned()),
+            precipitation_rate_id: context.get_identifier(Self::AMBIENT_PRECIP_RATE_KEY.to_owned()),
+            in_cloud_id: context.get_identifier(Self::IN_CLOUD_KEY.to_owned()),
             side_controlling_id: context.get_identifier(Self::SIDE_CONTROLLING.to_owned()),
 
             delta: delta.into(),
@@ -332,6 +341,8 @@ impl UpdateContext {
             latitude,
             total_weight: Mass::default(),
             total_yaw_inertia_slug_foot_squared: 10.,
+            precipitation_rate: Length::default(),
+            in_cloud: false,
             side_controlling,
         }
     }
@@ -365,6 +376,8 @@ impl UpdateContext {
             latitude_id: context.get_identifier("PLANE LATITUDE".to_owned()),
             total_weight_id: context.get_identifier("TOTAL WEIGHT".to_owned()),
             total_yaw_inertia_id: context.get_identifier("TOTAL WEIGHT YAW MOI".to_owned()),
+            precipitation_rate_id: context.get_identifier("AMBIENT PRECIP RATE".to_owned()),
+            in_cloud_id: context.get_identifier("AMBIENT IN CLOUD".to_owned()),
             side_controlling_id: context.get_identifier("SIDE_CONTROLLING".to_owned()),
 
             delta: Default::default(),
@@ -410,6 +423,8 @@ impl UpdateContext {
             latitude: Default::default(),
             total_weight: Mass::default(),
             total_yaw_inertia_slug_foot_squared: 1.,
+            precipitation_rate: Length::default(),
+            in_cloud: false,
         }
     }
 
@@ -472,7 +487,12 @@ impl UpdateContext {
 
         self.total_yaw_inertia_slug_foot_squared = reader.read(&self.total_yaw_inertia_id);
 
-        self.side_controlling = reader.read(&self.side_controlling_id);
+        let precipitation_height_millimeter = reader.read(&self.precipitation_rate_id);
+        self.precipitation_rate = Length::new::<millimeter>(precipitation_height_millimeter);
+
+        self.in_cloud = reader.read(&self.in_cloud_id);
+      
+       self.side_controlling = reader.read(&self.side_controlling_id);
 
         self.update_relative_wind();
 
@@ -595,6 +615,14 @@ impl UpdateContext {
 
     pub fn is_on_ground(&self) -> bool {
         self.is_on_ground
+    }
+
+    pub fn is_in_cloud(&self) -> bool {
+        self.in_cloud
+    }
+
+    pub fn precipitation_rate(&self) -> Length {
+        self.precipitation_rate
     }
 
     pub fn long_accel(&self) -> Acceleration {

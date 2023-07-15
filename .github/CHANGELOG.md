@@ -15,6 +15,16 @@
 1. [FMS] TO SPEEDS TOO LOW uses FQI fuel quantity after engine start to avoid spurious warnings - @tracernz (Mike)
 1. [ND] Fix ROSE VOR/LS conditions and ILS course - @tracernz (Mike)
 1. [HYD] Added hydraulic reverser actuators - @Crocket63 (crocket)
+1. [SD] Added a display duration of 3s for STS page - @pluce
+1. [EIS] Added > character to the font - @KiloEchoVictor (Kevin)
+1. [ND] Mask the map below the TCAS/WXR and FM messages - @tracernz (Mike)
+1. [FMS] Improved robustness of ILS selection - @tracernz (Mike)
+1. [MCDU] The remote MCDU protocol now sends the annunciator light state - @tracernz (Mike)
+1. [MCDU] The remote MCDU protocol now sends the display and integral light brightness - @tracernz (Mike)
+1. [MCDU] The remote MCDU protocol now supports the BRT/DIM keys - @tracernz (Mike)
+1. [PFD] Corrected the NO DH logic in the FMS and PFD - @tracernz (Mike)
+1. [FDR] Add secondary engine parameters to FDR - @Taz5150 (TazX [Z+2]#0405)
+1. [FLIGHTMODEL] Fix outer to inner tank transfer valve closure - @donstim (donbikes)
 1. [COMMS] Enabled all components of comms panels. Shared cockpit. - @Julian [Z+2 fr en esp]#8476 (Julian Sebline)
 
 ## 0.10.0
@@ -1277,3 +1287,4 @@
 1. [DCDU] Fixed MSG- and MSG+ button labels - @tyler58546 (tyler58546)
 1. [ISIS] Fixed issue where ISIS was allowing a bug to be set while in the OFF state - Patrick Macken (@Pat M on
    Discord)
+1. [EFB] Restructured APIs and made Navigraph Auth a reusable component - @MicahBCode (Mischa Binder)

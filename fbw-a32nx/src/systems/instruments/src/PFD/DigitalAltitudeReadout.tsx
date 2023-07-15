@@ -1,5 +1,10 @@
-import { Arinc429Word } from '@shared/arinc429';
-import { DisplayComponent, FSComponent, NodeReference, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
+import { ConsumerSubject, DisplayComponent, FSComponent, MappedSubject, NodeReference, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import { Arinc429RegisterSubject } from 'instruments/src/MsfsAvionicsCommon/Arinc429RegisterSubject';
+import { SimplaneBaroMode, SimplaneValues } from 'instruments/src/PFD/shared/SimplaneValueProvider';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { ArincEventBus } from '../MsfsAvionicsCommon/ArincEventBus';
@@ -54,13 +59,13 @@ interface DigitalAltitudeReadoutProps {
 }
 
 export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeReadoutProps> {
-    private mda = new Arinc429Word(0);
+    private readonly mda = Arinc429RegisterSubject.createEmpty();
 
-    private altitude = 0;
+    private readonly altitude = Arinc429RegisterSubject.createEmpty();
+
+    private readonly baroMode = ConsumerSubject.create<SimplaneBaroMode>(null, 'QNH');
 
     private isNegativeSub = Subject.create('hidden')
-
-    private colorSub = Subject.create('')
 
     private showThousandsZeroSub = Subject.create(false);
 
@@ -78,22 +83,20 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
 
     private tenThousandsPosition = Subject.create(0);
 
+    private readonly color = MappedSubject.create(
+        ([mda, altitude]) => (((!mda.isNoComputedData() && !mda.isFailureWarning()) && altitude.value < mda.value) ? 'Amber' : 'Green'),
+        this.mda,
+        this.altitude,
+    );
+
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values>();
+        const sub = this.props.bus.getArincSubscriber<Arinc429Values & PFDSimvars & SimplaneValues>();
 
-        sub.on('mdaAr').withArinc429Precision(0).handle((mda) => {
-            this.mda = mda;
-            this.updateColor();
-        });
-
-        sub.on('altitudeAr').handle((altitude) => {
+        this.altitude.sub((altitude) => {
             const isNegative = altitude.value < 0;
             this.isNegativeSub.set(isNegative ? 'visible' : 'hidden');
-
-            this.altitude = altitude.value;
-            this.updateColor();
 
             const absAlt = Math.abs(Math.max(Math.min(altitude.value, 50000), -1500));
             const tensDigits = absAlt % 100;
@@ -131,11 +134,12 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
 
             this.showThousandsZeroSub.set(showThousandsZero);
         });
-    }
 
-    private updateColor() {
-        const color = ((!this.mda.isNoComputedData() && !this.mda.isFailureWarning()) && this.mda.value !== 0 && this.altitude < this.mda.value) ? 'Amber' : 'Green';
-        this.colorSub.set(color);
+        sub.on('fmMdaRaw').handle(this.mda.setWord.bind(this.mda));
+        // FIXME once the ADR has the proper baro alt implementation this will need filtered altitude with source selection
+        sub.on('baroCorrectedAltitude').handle(this.altitude.setWord.bind(this.altitude));
+
+        this.baroMode.setConsumer(sub.on('baroMode'));
     }
 
     render(): VNode {
@@ -147,7 +151,7 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
                             type="ten-thousands"
                             position={this.tenThousandsPosition}
                             value={this.tenThousandsValue}
-                            color={this.colorSub}
+                            color={this.color}
                             showZero={Subject.create(false)}
                             getText={TenThousandsDigit}
                             valueSpacing={1}
@@ -159,7 +163,7 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
                             type="thousands"
                             position={this.thousandsPosition}
                             value={this.thousandsValue}
-                            color={this.colorSub}
+                            color={this.color}
                             showZero={this.showThousandsZeroSub}
                             getText={ThousandsDigit}
                             valueSpacing={1}
@@ -172,7 +176,7 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
                             type="hundreds"
                             position={this.hundredsPosition}
                             value={this.hundredsValue}
-                            color={this.colorSub}
+                            color={this.color}
                             getText={HundredsDigit}
                             valueSpacing={1}
                             distanceSpacing={7}
@@ -186,7 +190,7 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
                             amount={4}
                             position={this.tenDigitsSub}
                             value={this.tenDigitsSub}
-                            color={this.colorSub}
+                            color={this.color}
                             getText={TensDigits}
                             valueSpacing={20}
                             distanceSpacing={4.7}

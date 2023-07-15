@@ -51,6 +51,7 @@ export enum AdirsVars {
     mach = 'L:A32NX_ADIRS_ADR_1_MACH',
     latitude = 'L:A32NX_ADIRS_IR_1_LATITUDE',
     longitude = 'L:A32NX_ADIRS_IR_1_LONGITUDE',
+    irMaintWordRaw = 'L:A32NX_ADIRS_IR_1_MAINT_WORD',
 }
 
 export const AdirsSimVarDefinitions = new Map<keyof AdirsSimVars, SimVarDefinition>([
@@ -71,6 +72,7 @@ export const AdirsSimVarDefinitions = new Map<keyof AdirsSimVars, SimVarDefiniti
     ['mach', { name: AdirsVars.mach, type: SimVarValueType.Number }],
     ['latitude', { name: AdirsVars.latitude, type: SimVarValueType.Number }],
     ['longitude', { name: AdirsVars.longitude, type: SimVarValueType.Number }],
+    ['irMaintWordRaw', { name: AdirsVars.irMaintWordRaw, type: SimVarValueType.Number }],
 ]);
 
 export interface SwitchingPanelVSimVars {
