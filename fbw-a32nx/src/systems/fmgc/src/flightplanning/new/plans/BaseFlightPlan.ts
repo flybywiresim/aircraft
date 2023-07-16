@@ -1263,12 +1263,6 @@ export abstract class BaseFlightPlan {
             return;
         }
 
-        if (first instanceof OriginSegment && second instanceof DestinationSegment) {
-            // Don't do anything for origin and dest - we might have something like NZQN <disco> NZQN, and want to keep it that way
-            first.strung = true;
-            return;
-        }
-
         if (first instanceof ApproachSegment && second instanceof DestinationSegment) {
             // Always string approach to destination
             first.strung = true;
@@ -1315,9 +1309,11 @@ export abstract class BaseFlightPlan {
             }
         }
 
+        const originAndDestination = first instanceof OriginSegment && second instanceof DestinationSegment;
+
         // If no matching leg is found, insert a discontinuity (if there isn't one already) at the end of the first segment
-        if (cutBefore === -1) {
-            if (lastElementInFirst.isDiscontinuity === false) {
+        if (cutBefore === -1 || originAndDestination) {
+            if (lastElementInFirst.isDiscontinuity === false && second.allLegs[0]?.isDiscontinuity === false) {
                 first.allLegs.push({ isDiscontinuity: true });
                 this.enqueueOperation(FlightPlanQueuedOperation.SyncSegmentLegs, first);
             }
