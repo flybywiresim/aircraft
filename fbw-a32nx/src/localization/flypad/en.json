@@ -184,7 +184,7 @@
         "Repeat1": "The failure generator is armed and will trigger the failures only once and then disarm.",
         "Sliders2Vertical": "The page for the settings of each failure generator.",
         "ToggleOff": "The failure generator is not armed and will not trigger any failure.",
-        "Trash": "Removes the failure generator and it's settings."
+        "Trash": "Removes the failure generator and its settings."
       }
     }
   },

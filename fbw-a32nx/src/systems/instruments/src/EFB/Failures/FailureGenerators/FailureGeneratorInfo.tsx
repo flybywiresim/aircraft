@@ -23,11 +23,11 @@ export function FailureGeneratorInfoModalUI(
                 </div>
             </div>
             <div className="flex flex-col pt-4 w-full">
-                <div className="flex flex-row w-full text-left">
+                <div className="flex flex-row mb-4 w-full text-left">
                     {t('Failures.Generators.Legends.Info')}
                 </div>
                 <div className="flex flex-row justify-start items-center w-full">
-                    <div className="py-2 px-2 w-12 text-center align-middle">
+                    <div className="flex-none py-2 px-2 w-12 text-center align-middle">
                         <ArrowUpRight size={20} />
                     </div>
                     <div className="py-2 px-2 text-left">
@@ -35,7 +35,7 @@ export function FailureGeneratorInfoModalUI(
                     </div>
                 </div>
                 <div className="flex flex-row justify-start items-center w-full">
-                    <div className="py-2 px-2 w-12 text-center align-middle">
+                    <div className="flex-none py-2 px-2 w-12 text-center align-middle">
                         <ArrowDownRight size={20} />
                     </div>
                     <div className="py-2 px-2 text-left">
@@ -44,7 +44,7 @@ export function FailureGeneratorInfoModalUI(
                     </div>
                 </div>
                 <div className="flex flex-row justify-start items-center w-full">
-                    <div className="py-2 px-2 w-12 text-center align-middle">
+                    <div className="flex-none py-2 px-2 w-12 text-center align-middle">
                         <Sliders2Vertical size={20} />
                     </div>
                     <div className="py-2 px-2 text-left">
@@ -53,7 +53,7 @@ export function FailureGeneratorInfoModalUI(
                     </div>
                 </div>
                 <div className="flex flex-row justify-start items-center w-full">
-                    <div className="py-2 px-2 w-12 text-center align-middle">
+                    <div className="flex-none py-2 px-2 w-12 text-center align-middle">
                         <ExclamationDiamond size={20} />
                     </div>
                     <div className="py-2 px-2 text-left">
@@ -62,7 +62,7 @@ export function FailureGeneratorInfoModalUI(
                     </div>
                 </div>
                 <div className="flex flex-row justify-start items-center w-full">
-                    <div className="py-2 px-2 w-12 text-center align-middle">
+                    <div className="flex-none py-2 px-2 w-12 text-center align-middle">
                         <Trash size={20} />
                     </div>
                     <div className="py-2 px-2 text-left">
@@ -70,7 +70,7 @@ export function FailureGeneratorInfoModalUI(
                     </div>
                 </div>
                 <div className="flex flex-row justify-start items-center w-full">
-                    <div className="py-2 px-2 w-12 text-center align-middle">
+                    <div className="flex-none py-2 px-2 w-12 text-center align-middle">
                         <ToggleOff size={20} />
                     </div>
                     <div className="py-2 px-2 text-left">
@@ -78,7 +78,7 @@ export function FailureGeneratorInfoModalUI(
                     </div>
                 </div>
                 <div className="flex flex-row justify-start items-center w-full">
-                    <div className="py-2 px-2 w-12 text-center align-middle">
+                    <div className="flex-none py-2 px-2 w-12 text-center align-middle">
                         <Repeat1 size={20} />
                     </div>
                     <div className="py-2 px-2 text-left">
@@ -86,7 +86,7 @@ export function FailureGeneratorInfoModalUI(
                     </div>
                 </div>
                 <div className="flex flex-row justify-start items-center w-full">
-                    <div className="py-2 px-2 w-12 text-center align-middle">
+                    <div className="flex-none py-2 px-2 w-12 text-center align-middle">
                         <Airplane size={20} />
                         <ArrowBarUp size={20} />
                     </div>
@@ -95,7 +95,7 @@ export function FailureGeneratorInfoModalUI(
                     </div>
                 </div>
                 <div className="flex flex-row justify-start items-center w-full">
-                    <div className="py-2 px-2 w-12 text-center align-middle">
+                    <div className="flex-none py-2 px-2 w-12 text-center align-middle">
                         <Repeat size={20} />
                     </div>
                     <div className="py-2 px-2 text-left">
