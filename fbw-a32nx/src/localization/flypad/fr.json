@@ -179,7 +179,7 @@
         "ArrowUpRight": "La panne va se décelncher lorsque la vitesse ou l'altitude augmente.",
         "ArrowDownRight": "a panne va se décelncher lorsque la vitesse ou l'altitude diminue.",
         "ExclamationDiamond": "La page où selectionner les pannes qui peuvent survenir lorsque le générateur se déclenche.",
-        "Info": "Un générateur de panne est une fonction qui active des pannes de systèmes automatiquement en fonction des règles du type du générateur. Il existe plusieurs types de générateur possédant différentes logiques de déclenchement des pannes. Chaque générateur possède son propre jeu de réglages pour déclencher les pannes, peut être armé individuellement et déclencher un jeu de pannes spécifique. Voir la documentation FBW documentation pour plus de détails.",
+        "Info": "Pour plus d'informations, consultez: docs.flybywiresim.com/a32nx-failures",
         "Repeat": "Le générateur de panne est armé et va déclencher de manière répétée des pannes quand ses conditions sont remplies.",
         "Repeat1": "Le générateur de panne est armé et va déclencher des pannes une seule fois puis se désarmer.",
         "Sliders2Vertical": "La page pour les réglages de chaque générateur de panne.",

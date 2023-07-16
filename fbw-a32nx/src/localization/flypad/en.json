@@ -179,7 +179,7 @@
         "ArrowUpRight": "The failure will happen when speed or altitude is increasing.",
         "ArrowDownRight": "The failure will happen when speed or altitude is decreasing.",
         "ExclamationDiamond": "The page to select which failures can happen when the generator triggers.",
-        "Info": "A failure generator is a feature that will trigger system failures automatically depending on the rules of the type of generator. There are several types of generator that have different logics to trigger a failure. Each generator have their own settings for their triggering conditions, can be armed individually and can trigger a specific set of failures. See FBW documentation for further details.",
+        "Info": "For More information see: docs.flybywiresim.com/a32nx-failures",
         "Repeat": "The failure generator is armed and will repeatingly trigger the failures when conditions are met.",
         "Repeat1": "The failure generator is armed and will trigger the failures only once and then disarm.",
         "Sliders2Vertical": "The page for the settings of each failure generator.",
