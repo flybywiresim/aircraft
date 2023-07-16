@@ -7,7 +7,7 @@ import { Airport, Runway } from 'msfs-navdata';
 import { FlightPlanSegment } from '@fmgc/flightplanning/new/segments/FlightPlanSegment';
 import { loadAirport, loadAllDepartures, loadAllRunways, loadRunway } from '@fmgc/flightplanning/new/DataLoading';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
-import { BaseFlightPlan } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
+import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 import { FlightPlanElement, FlightPlanLeg } from '../legs/FlightPlanLeg';
 import { NavigationDatabaseService } from '../NavigationDatabaseService';
 
@@ -82,14 +82,12 @@ export class OriginSegment extends FlightPlanSegment {
                 }
 
                 this.allLegs.push(FlightPlanLeg.originExtendedCenterline(this, runwayLeg));
-                this.allLegs.push({ isDiscontinuity: true });
             }
 
             this.flightPlan.availableDepartures = newRunwayCompatibleSids;
-        } else {
-            this.allLegs.push({ isDiscontinuity: true });
         }
 
+        this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.Restring);
         this.flightPlan.syncSegmentLegsChange(this);
     }
 

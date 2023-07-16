@@ -82,7 +82,7 @@ export class FlightPlan extends BaseFlightPlan {
 
         await this.alternateFlightPlan.originSegment.refreshOriginLegs();
 
-        this.alternateFlightPlan.incrementVersion();
+        await this.alternateFlightPlan.flushOperationQueue();
     }
 
     deleteAlternateFlightPlan() {
