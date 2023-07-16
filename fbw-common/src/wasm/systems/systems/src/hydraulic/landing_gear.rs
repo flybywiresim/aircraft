@@ -6,8 +6,8 @@ use crate::{
         ProximityDetectorId, SectionPressure,
     },
     simulation::{
-        InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
-        VariableIdentifier, Write,
+        InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
+        SimulatorWriter, UpdateContext, VariableIdentifier, Write,
     },
 };
 
@@ -46,6 +46,10 @@ pub struct HydraulicGearSystem {
     nose_gear_assembly: GearSystemComponentAssembly,
     left_gear_assembly: GearSystemComponentAssembly,
     right_gear_assembly: GearSystemComponentAssembly,
+
+    nose_gear_shock_absorber: GearSystemShockAbsorber,
+    left_gear_shock_absorber: GearSystemShockAbsorber,
+    right_gear_shock_absorber: GearSystemShockAbsorber,
 }
 impl HydraulicGearSystem {
     pub fn new(
@@ -169,6 +173,19 @@ impl HydraulicGearSystem {
                 ],
                 gear_right_aerodynamic,
             ),
+
+            nose_gear_shock_absorber: GearSystemShockAbsorber::new(
+                context,
+                GearActuatorId::GearNose,
+            ),
+            left_gear_shock_absorber: GearSystemShockAbsorber::new(
+                context,
+                GearActuatorId::GearLeft,
+            ),
+            right_gear_shock_absorber: GearSystemShockAbsorber::new(
+                context,
+                GearActuatorId::GearRight,
+            ),
         }
     }
 
@@ -270,6 +287,24 @@ impl GearSystemSensors for HydraulicGearSystem {
             GearWheel::RIGHT => self.right_door_assembly.is_sensor_fully_opened(lgciu_id),
         }
     }
+
+    fn is_gear_id_shock_absorber_fully_extended(
+        &self,
+        wheel_id: GearWheel,
+        lgciu_id: LgciuId,
+    ) -> bool {
+        match wheel_id {
+            GearWheel::NOSE => self
+                .nose_gear_shock_absorber
+                .is_shock_absorber_fully_extended(lgciu_id),
+            GearWheel::LEFT => self
+                .left_gear_shock_absorber
+                .is_shock_absorber_fully_extended(lgciu_id),
+            GearWheel::RIGHT => self
+                .right_gear_shock_absorber
+                .is_shock_absorber_fully_extended(lgciu_id),
+        }
+    }
 }
 impl SimulationElement for HydraulicGearSystem {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
@@ -281,6 +316,10 @@ impl SimulationElement for HydraulicGearSystem {
         self.nose_door_assembly.accept(visitor);
         self.left_door_assembly.accept(visitor);
         self.right_door_assembly.accept(visitor);
+
+        self.nose_gear_shock_absorber.accept(visitor);
+        self.left_gear_shock_absorber.accept(visitor);
+        self.right_gear_shock_absorber.accept(visitor);
 
         visitor.visit(self);
     }
@@ -387,6 +426,42 @@ impl SimulationElement for GearSystemHydraulicSupply {
         self.gear_and_door_selector_valve.accept(visitor);
 
         visitor.visit(self);
+    }
+}
+
+struct GearSystemShockAbsorber {
+    shock_absorber_position_id: VariableIdentifier,
+    shock_absorber_position: Ratio,
+}
+impl GearSystemShockAbsorber {
+    const COMPRESSION_THRESHOLD_FOR_WEIGHT_ON_WHEELS_RATIO: f64 = 0.02;
+
+    fn new(context: &mut InitContext, id: GearActuatorId) -> Self {
+        let contact_point_id = match id {
+            GearActuatorId::GearNose => 0,
+            GearActuatorId::GearLeft => 1,
+            GearActuatorId::GearRight => 2,
+            GearActuatorId::GearDoorLeft
+            | GearActuatorId::GearDoorRight
+            | GearActuatorId::GearDoorNose => panic!("Gear doors don't have shock absorbers"),
+        };
+
+        Self {
+            shock_absorber_position_id: context.get_identifier(
+                format!("CONTACT POINT COMPRESSION:{}", contact_point_id).to_owned(),
+            ),
+            shock_absorber_position: Ratio::default(),
+        }
+    }
+
+    fn is_shock_absorber_fully_extended(&self, _lgciu_id: LgciuId) -> bool {
+        self.shock_absorber_position
+            < Ratio::new::<ratio>(Self::COMPRESSION_THRESHOLD_FOR_WEIGHT_ON_WHEELS_RATIO)
+    }
+}
+impl SimulationElement for GearSystemShockAbsorber {
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.shock_absorber_position = reader.read(&self.shock_absorber_position_id);
     }
 }
 

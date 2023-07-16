@@ -36,7 +36,7 @@ use systems::{
     electrical::{Electricity, ElectricitySource, ExternalPowerSource},
     engine::{leap_engine::LeapEngine, reverser_thrust::ReverserForce, EngineFireOverheadPanel},
     hydraulic::brake_circuit::AutobrakePanel,
-    landing_gear::{LandingGear, LandingGearControlInterfaceUnitSet},
+    landing_gear::LandingGearControlInterfaceUnitSet,
     navigation::adirs::{
         AirDataInertialReferenceSystem, AirDataInertialReferenceSystemOverheadPanel,
     },
@@ -68,7 +68,6 @@ pub struct A320 {
     hydraulic: A320Hydraulic,
     hydraulic_overhead: A320HydraulicOverheadPanel,
     autobrake_panel: AutobrakePanel,
-    landing_gear: LandingGear,
     pneumatic: A320Pneumatic,
     radio_altimeters: A320RadioAltimeters,
     egpwc: EnhancedGroundProximityWarningComputer,
@@ -110,7 +109,6 @@ impl A320 {
             hydraulic: A320Hydraulic::new(context),
             hydraulic_overhead: A320HydraulicOverheadPanel::new(context),
             autobrake_panel: AutobrakePanel::new(context),
-            landing_gear: LandingGear::new(context),
             pneumatic: A320Pneumatic::new(context),
             radio_altimeters: A320RadioAltimeters::new(context),
             egpwc: EnhancedGroundProximityWarningComputer::new(
@@ -180,7 +178,6 @@ impl Aircraft for A320 {
 
         self.lgcius.update(
             context,
-            &self.landing_gear,
             self.hydraulic.gear_system(),
             self.ext_pwr.output_potential().is_powered(),
         );
@@ -271,7 +268,6 @@ impl SimulationElement for A320 {
         self.autobrake_panel.accept(visitor);
         self.hydraulic.accept(visitor);
         self.hydraulic_overhead.accept(visitor);
-        self.landing_gear.accept(visitor);
         self.pneumatic.accept(visitor);
         self.egpwc.accept(visitor);
         self.reverse_thrust.accept(visitor);

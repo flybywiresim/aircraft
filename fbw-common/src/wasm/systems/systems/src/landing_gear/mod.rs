@@ -26,6 +26,11 @@ pub trait GearSystemSensors {
     fn is_wheel_id_down_and_locked(&self, wheel_id: GearWheel, lgciu_id: LgciuId) -> bool;
     fn is_door_id_up_and_locked(&self, wheel_id: GearWheel, lgciu_id: LgciuId) -> bool;
     fn is_door_id_down_and_locked(&self, wheel_id: GearWheel, lgciu_id: LgciuId) -> bool;
+    fn is_gear_id_shock_absorber_fully_extended(
+        &self,
+        wheel_id: GearWheel,
+        lgciu_id: LgciuId,
+    ) -> bool;
 }
 
 pub struct TiltingGear {
@@ -59,7 +64,7 @@ impl TiltingGear {
             tilt_animation_id: context
                 .get_identifier(format!("GEAR_{}_TILT_POSITION", contact_point_id)),
             compression_id: context
-                .get_identifier(format!("GEAR ANIMATION POSITION:{}", contact_point_id)),
+                .get_identifier(format!("CONTACT POINT COMPRESSION:{}", contact_point_id)),
             tilt_height_from_low_to_up,
             contact_point_offset_from_datum_ref_meters,
             tilting_max_angle,
@@ -123,61 +128,6 @@ impl SimulationElement for TiltingGear {
 
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.current_compression = reader.read(&self.compression_id);
-    }
-}
-
-/// Represents a landing gear on Airbus aircraft.
-/// Note that this type somewhat hides the gear's position.
-/// The real aircraft also can only check whether or not the gear is up and
-/// locked or down and locked. No in between state.
-/// It provides as well the state of all weight on wheel sensors
-pub struct LandingGear {
-    center_compression_id: VariableIdentifier,
-    left_compression_id: VariableIdentifier,
-    right_compression_id: VariableIdentifier,
-
-    center_compression: Ratio,
-    left_compression: Ratio,
-    right_compression: Ratio,
-}
-impl LandingGear {
-    pub const GEAR_CENTER_COMPRESSION: &'static str = "GEAR ANIMATION POSITION";
-    pub const GEAR_LEFT_COMPRESSION: &'static str = "GEAR ANIMATION POSITION:1";
-    pub const GEAR_RIGHT_COMPRESSION: &'static str = "GEAR ANIMATION POSITION:2";
-
-    // Is extended at 0.5, we set a super small margin of 0.02 from fully extended so 0.52
-    const COMPRESSION_THRESHOLD_FOR_WEIGHT_ON_WHEELS_RATIO: f64 = 0.52;
-
-    pub fn new(context: &mut InitContext) -> Self {
-        Self {
-            center_compression_id: context.get_identifier(Self::GEAR_CENTER_COMPRESSION.to_owned()),
-            left_compression_id: context.get_identifier(Self::GEAR_LEFT_COMPRESSION.to_owned()),
-            right_compression_id: context.get_identifier(Self::GEAR_RIGHT_COMPRESSION.to_owned()),
-
-            center_compression: Ratio::new::<percent>(0.),
-            left_compression: Ratio::new::<percent>(0.),
-            right_compression: Ratio::new::<percent>(0.),
-        }
-    }
-
-    fn is_wheel_id_compressed(&self, wheel_id: GearWheel) -> bool {
-        self.wheel_id_compression(wheel_id)
-            > Ratio::new::<ratio>(Self::COMPRESSION_THRESHOLD_FOR_WEIGHT_ON_WHEELS_RATIO)
-    }
-
-    fn wheel_id_compression(&self, wheel_id: GearWheel) -> Ratio {
-        match wheel_id {
-            GearWheel::NOSE => self.center_compression,
-            GearWheel::LEFT => self.left_compression,
-            GearWheel::RIGHT => self.right_compression,
-        }
-    }
-}
-impl SimulationElement for LandingGear {
-    fn read(&mut self, reader: &mut SimulatorReader) {
-        self.center_compression = reader.read(&self.center_compression_id);
-        self.left_compression = reader.read(&self.left_compression_id);
-        self.right_compression = reader.read(&self.right_compression_id);
     }
 }
 
@@ -260,7 +210,6 @@ impl LgciuSensorInputs {
 
     pub fn update(
         &mut self,
-        landing_gear: &LandingGear,
         gear_system_sensors: &impl GearSystemSensors,
         external_power_available: bool,
         is_powered: bool,
@@ -268,9 +217,12 @@ impl LgciuSensorInputs {
         self.external_power_available = external_power_available;
         self.is_powered = is_powered;
 
-        self.nose_gear_sensor_compressed = landing_gear.is_wheel_id_compressed(GearWheel::NOSE);
-        self.left_gear_sensor_compressed = landing_gear.is_wheel_id_compressed(GearWheel::LEFT);
-        self.right_gear_sensor_compressed = landing_gear.is_wheel_id_compressed(GearWheel::RIGHT);
+        self.nose_gear_sensor_compressed = !gear_system_sensors
+            .is_gear_id_shock_absorber_fully_extended(GearWheel::NOSE, self.lgciu_id);
+        self.left_gear_sensor_compressed = !gear_system_sensors
+            .is_gear_id_shock_absorber_fully_extended(GearWheel::LEFT, self.lgciu_id);
+        self.right_gear_sensor_compressed = !gear_system_sensors
+            .is_gear_id_shock_absorber_fully_extended(GearWheel::RIGHT, self.lgciu_id);
 
         self.right_gear_up_and_locked =
             gear_system_sensors.is_wheel_id_up_and_locked(GearWheel::RIGHT, self.lgciu_id);
@@ -512,7 +464,6 @@ impl LandingGearControlInterfaceUnitSet {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        landing_gear: &LandingGear,
         gear_system_sensors: &impl GearSystemSensors,
         external_power_available: bool,
     ) {
@@ -526,7 +477,6 @@ impl LandingGearControlInterfaceUnitSet {
 
         self.lgcius[LgciuId::Lgciu1 as usize].update(
             context,
-            landing_gear,
             gear_system_sensors,
             external_power_available,
             &self.gear_handle_unit,
@@ -534,7 +484,6 @@ impl LandingGearControlInterfaceUnitSet {
         );
         self.lgcius[LgciuId::Lgciu2 as usize].update(
             context,
-            landing_gear,
             gear_system_sensors,
             external_power_available,
             &self.gear_handle_unit,
@@ -824,7 +773,6 @@ impl LandingGearControlInterfaceUnit {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        landing_gear: &LandingGear,
         gear_system_sensors: &impl GearSystemSensors,
         external_power_available: bool,
         gear_handle: &impl LandingGearHandle,
@@ -834,7 +782,6 @@ impl LandingGearControlInterfaceUnit {
         self.external_power_available = external_power_available;
 
         self.sensor_inputs.update(
-            landing_gear,
             gear_system_sensors,
             external_power_available,
             self.is_powered,

@@ -44,7 +44,7 @@ use systems::{
     engine::{trent_engine::TrentEngine, EngineFireOverheadPanel},
     enhanced_gpwc::EnhancedGroundProximityWarningComputer,
     hydraulic::brake_circuit::AutobrakePanel,
-    landing_gear::{LandingGear, LandingGearControlInterfaceUnitSet},
+    landing_gear::LandingGearControlInterfaceUnitSet,
     navigation::adirs::{
         AirDataInertialReferenceSystem, AirDataInertialReferenceSystemOverheadPanel,
     },
@@ -82,7 +82,6 @@ pub struct A380 {
     hydraulic: A380Hydraulic,
     hydraulic_overhead: A380HydraulicOverheadPanel,
     autobrake_panel: AutobrakePanel,
-    landing_gear: LandingGear,
     pneumatic: A380Pneumatic,
     radio_altimeters: A380RadioAltimeters,
     engines_flex_physics: EnginesFlexiblePhysics<4>,
@@ -129,7 +128,6 @@ impl A380 {
             hydraulic: A380Hydraulic::new(context),
             hydraulic_overhead: A380HydraulicOverheadPanel::new(context),
             autobrake_panel: AutobrakePanel::new(context),
-            landing_gear: LandingGear::new(context),
             pneumatic: A380Pneumatic::new(context),
             radio_altimeters: A380RadioAltimeters::new(context),
             engines_flex_physics: EnginesFlexiblePhysics::new(context),
@@ -211,7 +209,6 @@ impl Aircraft for A380 {
         self.adcn.update();
         self.lgcius.update(
             context,
-            &self.landing_gear,
             self.hydraulic.gear_system(),
             self.ext_pwrs[0].output_potential().is_powered(),
         );
@@ -323,7 +320,6 @@ impl SimulationElement for A380 {
         self.autobrake_panel.accept(visitor);
         self.hydraulic.accept(visitor);
         self.hydraulic_overhead.accept(visitor);
-        self.landing_gear.accept(visitor);
         self.pneumatic.accept(visitor);
         self.elevators_flex_physics.accept(visitor);
         self.engines_flex_physics.accept(visitor);

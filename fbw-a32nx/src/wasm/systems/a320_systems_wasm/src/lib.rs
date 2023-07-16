@@ -302,9 +302,9 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("FUEL TANK RIGHT MAIN QUANTITY", "gallons", 0)?
     .provides_aircraft_variable("FUEL TANK RIGHT AUX QUANTITY", "gallons", 0)?
     .provides_aircraft_variable("FUEL TOTAL QUANTITY WEIGHT", "Pounds", 0)?
-    .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 0)?
-    .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 1)?
-    .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 2)?
+    .provides_aircraft_variable("CONTACT POINT COMPRESSION", "Percent", 0)?
+    .provides_aircraft_variable("CONTACT POINT COMPRESSION", "Percent", 1)?
+    .provides_aircraft_variable("CONTACT POINT COMPRESSION", "Percent", 2)?
     .provides_aircraft_variable("GEAR CENTER POSITION", "Percent", 0)?
     .provides_aircraft_variable("GEAR LEFT POSITION", "Percent", 0)?
     .provides_aircraft_variable("GEAR RIGHT POSITION", "Percent", 0)?
