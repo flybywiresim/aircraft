@@ -131,7 +131,7 @@
       "AltitudeMax": "Maximum altitude",
       "AltitudeMin": "Minimum altitude",
       "Arming": "Arming",
-      "ClimbingChance": "Probability during climb",
+      "ClimbingChance": "Probability at high speed and climb",
       "days": "days",
       "DelayAfterArmingMax": "Maximum delay after arming",
       "DelayAfterArmingMin": "Minimum delay after arming",
