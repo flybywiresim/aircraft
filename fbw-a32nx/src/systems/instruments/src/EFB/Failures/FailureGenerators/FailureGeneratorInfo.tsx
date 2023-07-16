@@ -10,7 +10,7 @@ export function FailureGeneratorInfoModalUI(
         <div className="flex flex-col items-stretch px-4 pt-4 w-1/2 text-center rounded-md border-2 border-solid bg-theme-body border-theme-accent">
             <div className="flex flex-row flex-1 justify-between items-stretch">
                 <h2 className="mr-4 font-bold text-left text-current grow align-left">
-                    {t('Failures.Generators.InfoTitle')}
+                    {t('Failures.Generators.Legends.InfoTitle')}
                 </h2>
                 <div />
                 <div
