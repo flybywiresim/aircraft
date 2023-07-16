@@ -291,7 +291,7 @@ impl Communications {
                     AudioSwitchingKnobPosition::NORM | AudioSwitchingKnobPosition::CAPTAIN => {
                         self.ls_fcu1_pressed
                     }
-                    AudioSwitchingKnobPosition::FO => self.ls_fcu1_pressed,
+                    AudioSwitchingKnobPosition::FO => self.ls_fcu2_pressed,
                 },
                 CommunicationPanelSideName::CAPTAIN => self.ls_fcu1_pressed,
                 CommunicationPanelSideName::FO => self.ls_fcu2_pressed,

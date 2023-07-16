@@ -18,81 +18,27 @@
         </Component>
     </Template>
 
+    <!--
+        STATE0_TIMER forcing INT position to kind of forever
+        STATE_MAX_TIMER used for RAD position to return on neutral as soon as released
+        INVERT_ANIM due to reverted animation, I don't know why
+        CODE_POS_0 to 200 due to OVERRIDE_ANIM_CODE internally setting the maximum to (NB_POS_MAX - 1) * 100
+    -->
     <Template Name="FBW_Switch_INT_RAD">
-        <DefaultTemplateParameters>
-            <ANIM_GUID/>
-            <ANIM_WRAP>FALSE</ANIM_WRAP>
-            <SIMVAR_TYPE>bool</SIMVAR_TYPE>
-            <ANIM_DELTA>FALSE</ANIM_DELTA>
-            <ANIM_BLENDWEIGHT>1.0</ANIM_BLENDWEIGHT>
-            <ADDITIONAL_EVENT_CODE></ADDITIONAL_EVENT_CODE>
-            <LENGTH_CLICK>50</LENGTH_CLICK>
-            <ANIM_LENGTH>100</ANIM_LENGTH>
-        </DefaultTemplateParameters>
-        <EditableTemplateParameters>
-            <AddParams>
-                <ANIM_NAME/>
-                <SIMVAR_TYPE/>
-                <TOGGLE_EVENT/>
-                <TOGGLE_EVENT_2/>
-                <SIMVAR_INDEX_1/>
-                <SIMVAR_INDEX_2/>
-                <SIMVAR_NAME/>
-                <SIMVAR_NAME_2/>
-                <ADDITIONAL_EVENT_CODE/>
-            </AddParams>
-        </EditableTemplateParameters>
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
-            <UseTemplate Name="ASOBO_GT_Anim_Code">
-                <ANIM_NAME>#ANIM_NAME#</ANIM_NAME>
-                <ANIM_CODE>(L:A32NX_ACP#ID#_SWITCH_INT, number)</ANIM_CODE>
-                <ANIM_LAG>600</ANIM_LAG>
-            </UseTemplate>
-            <UseTemplate Name="ASOBO_GT_MouseRect">
-                <Condition NotEmpty="SIMVAR_INDEX_1">
-                    <True>
-                        <TOOLTIPID>%((#SIMVAR_GROUP#:#SIMVAR_NAME#:#SIMVAR_INDEX_1#,#SIMVAR_TYPE#))%{if}#ANIMTIP_1#%{else}#ANIMTIP_0#%{end}</TOOLTIPID>
-                    </True>
-                    <False>
-                        <TOOLTIPID>%((#SIMVAR_GROUP#:#SIMVAR_NAME#,#SIMVAR_TYPE#))%{if}#ANIMTIP_1#%{else}#ANIMTIP_0#%{end}</TOOLTIPID>
-                    </False>
-                </Condition>
-                <CURSOR>Hand</CURSOR>
-                <MOUSEFLAGS>LeftSingle+RightSingle+RightRelease+WheelUp+WheelDown</MOUSEFLAGS>
-                <CALLBACKCODE type="rnp">
-                    alias switch = (L:A32NX_ACP#ID#_SWITCH_INT, number);
-                    let anim_length = #ANIM_LENGTH, number#;
-
-                    if (M:Event, string) == 'LeftSingle' {
-                        if switch == anim_length {
-                            switch = anim_length / 2;
-                        } else {
-                            switch = anim_length;
-                        }
-                    }
-
-                    if (M:Event, string) == 'RightSingle' {
-                        if switch == (anim_length / 2) {
-                            switch = 0;
-                        }
-                    }
-
-                    if (M:Event, string) == 'RightRelease' {
-                        if switch == 0 {
-                            switch = anim_length / 2;
-                        }
-                    }
-
-                    if (M:Event, string) == 'WheelUp' {
-                        switch = ((anim_length / 2) + switch).min(anim_length);
-                    }
-
-                    if (M:Event, string) == 'WheelDown' {
-                        (L:A32NX_ACP#ID#, number) = (switch - (anim_length / 2)).max(0);
-                    }
-
-                    (L:A32NX_UPDATE_COMMS) = #ID, number#;
-                </CALLBACKCODE>
+            <UseTemplate Name="ASOBO_GT_Switch_3States">
+                <ANIM_NAME>#NODE_ID#</ANIM_NAME>
+                <PART_ID>#NODE_ID#</PART_ID>
+                <SWITCH_DIRECTION>Vertical</SWITCH_DIRECTION>
+                <WWISE_EVENT>clds</WWISE_EVENT>
+                <CODE_POS_0>200 (&gt;L:A32NX_ACP#ID#_SWITCH_INT) #ID# (&gt;L:A32NX_UPDATE_COMMS)</CODE_POS_0>
+                <CODE_POS_1>100 (&gt;L:A32NX_ACP#ID#_SWITCH_INT) #ID# (&gt;L:A32NX_UPDATE_COMMS)</CODE_POS_1>
+                <CODE_POS_2>0 (&gt;L:A32NX_ACP#ID#_SWITCH_INT) #ID# (&gt;L:A32NX_UPDATE_COMMS)</CODE_POS_2>
+                <STATE0_TIMER>9999999</STATE0_TIMER>
+                <STATE_MAX_TIMER>0.01</STATE_MAX_TIMER>
+                <REST_STATE>1</REST_STATE>
+                <OVERRIDE_ANIM_CODE>(L:A32NX_ACP#ID#_SWITCH_INT)</OVERRIDE_ANIM_CODE>
+                <MOMENTARY_SWITCH/>
             </UseTemplate>
         </Component>
     </Template>

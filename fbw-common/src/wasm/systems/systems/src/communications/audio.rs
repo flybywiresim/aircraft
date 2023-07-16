@@ -3,7 +3,7 @@ use crate::simulation::{
     SimulatorWriter, VariableIdentifier, Write,
 };
 
-pub const DEFAULT_INT_RAD_SWITCH: u8 = 50;
+pub const DEFAULT_INT_RAD_SWITCH: u8 = 100;
 
 // Foundable in XML behaviors for MECH
 pub const TRANSMIT_ID_INT: u8 = 6;
