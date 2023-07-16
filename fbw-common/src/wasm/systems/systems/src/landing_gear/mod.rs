@@ -1308,7 +1308,7 @@ mod tests {
     use super::*;
 
     use crate::simulation::test::{
-        ElementCtorFn, ReadByName, SimulationTestBed, TestAircraft, TestBed, WriteByName,
+        ElementCtorFn, ReadByName, SimulationTestBed, TestBed, WriteByName,
     };
     use std::time::Duration;
 
@@ -1318,21 +1318,39 @@ mod tests {
     };
 
     use crate::electrical::{test::TestElectricitySource, ElectricalBus, Electricity};
-    use crate::shared::PotentialOrigin;
+    use crate::hydraulic::landing_gear::GearSystemShockAbsorber;
+    use crate::shared::{GearActuatorId, PotentialOrigin};
 
     use uom::si::{electric_potential::volt, pressure::psi};
 
     struct TestGearSystem {
         door_position: u8,
         gear_position: u8,
+
+        nose_gear_shock_absorber: GearSystemShockAbsorber,
+        left_gear_shock_absorber: GearSystemShockAbsorber,
+        right_gear_shock_absorber: GearSystemShockAbsorber,
     }
     impl TestGearSystem {
         const UP_LOCK_TRESHOLD: u8 = 10;
 
-        fn new() -> Self {
+        fn new(context: &mut InitContext) -> Self {
             Self {
                 door_position: Self::UP_LOCK_TRESHOLD,
                 gear_position: 1,
+
+                nose_gear_shock_absorber: GearSystemShockAbsorber::new(
+                    context,
+                    GearActuatorId::GearNose,
+                ),
+                left_gear_shock_absorber: GearSystemShockAbsorber::new(
+                    context,
+                    GearActuatorId::GearLeft,
+                ),
+                right_gear_shock_absorber: GearSystemShockAbsorber::new(
+                    context,
+                    GearActuatorId::GearRight,
+                ),
             }
         }
 
@@ -1380,10 +1398,35 @@ mod tests {
         fn is_door_id_down_and_locked(&self, _: GearWheel, _: LgciuId) -> bool {
             self.door_position <= 1
         }
+
+        fn is_gear_id_shock_absorber_fully_extended(
+            &self,
+            wheel_id: GearWheel,
+            lgciu_id: LgciuId,
+        ) -> bool {
+            match wheel_id {
+                GearWheel::NOSE => self
+                    .nose_gear_shock_absorber
+                    .is_shock_absorber_fully_extended(lgciu_id),
+                GearWheel::LEFT => self
+                    .left_gear_shock_absorber
+                    .is_shock_absorber_fully_extended(lgciu_id),
+                GearWheel::RIGHT => self
+                    .right_gear_shock_absorber
+                    .is_shock_absorber_fully_extended(lgciu_id),
+            }
+        }
+    }
+    impl SimulationElement for TestGearSystem {
+        fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+            self.nose_gear_shock_absorber.accept(visitor);
+            self.left_gear_shock_absorber.accept(visitor);
+            self.right_gear_shock_absorber.accept(visitor);
+            visitor.visit(self);
+        }
     }
 
     struct TestGearAircraft {
-        landing_gear: LandingGear,
         lgcius: LandingGearControlInterfaceUnitSet,
         gear_system: TestGearSystem,
 
@@ -1394,13 +1437,12 @@ mod tests {
     impl TestGearAircraft {
         fn new(context: &mut InitContext) -> Self {
             Self {
-                landing_gear: LandingGear::new(context),
                 lgcius: LandingGearControlInterfaceUnitSet::new(
                     context,
                     ElectricalBusType::DirectCurrentEssential,
                     ElectricalBusType::DirectCurrentEssential,
                 ),
-                gear_system: TestGearSystem::new(),
+                gear_system: TestGearSystem::new(context),
 
                 powered_source_ac: TestElectricitySource::powered(
                     context,
@@ -1413,8 +1455,7 @@ mod tests {
         }
 
         fn update(&mut self, context: &UpdateContext) {
-            self.lgcius
-                .update(context, &self.landing_gear, &self.gear_system, false);
+            self.lgcius.update(context, &self.gear_system, false);
 
             self.gear_system
                 .update(self.lgcius.active_lgciu(), self.pressure);
@@ -1427,8 +1468,18 @@ mod tests {
             );
 
             println!(
-                "Gear pos{} / Door pos{}",
-                self.gear_system.gear_position, self.gear_system.door_position,
+                "Gear pos{} / Door pos{} / Shock Absorber extended {},{},{}",
+                self.gear_system.gear_position,
+                self.gear_system.door_position,
+                self.gear_system
+                    .nose_gear_shock_absorber
+                    .is_shock_absorber_fully_extended(LgciuId::Lgciu1),
+                self.gear_system
+                    .left_gear_shock_absorber
+                    .is_shock_absorber_fully_extended(LgciuId::Lgciu1),
+                self.gear_system
+                    .right_gear_shock_absorber
+                    .is_shock_absorber_fully_extended(LgciuId::Lgciu1),
             );
         }
 
@@ -1454,7 +1505,7 @@ mod tests {
     }
     impl SimulationElement for TestGearAircraft {
         fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-            self.landing_gear.accept(visitor);
+            self.gear_system.accept(visitor);
             self.lgcius.accept(visitor);
             visitor.visit(self);
         }
@@ -1541,45 +1592,6 @@ mod tests {
 
     fn test_bed_in_flight_with() -> LgciusTestBed {
         test_bed(StartState::Cruise)
-    }
-
-    #[test]
-    fn all_weight_on_wheels_when_all_compressed() {
-        let test_bed = run_test_bed_on_with_compression(
-            Ratio::new::<ratio>(0.9),
-            Ratio::new::<ratio>(0.9),
-            Ratio::new::<ratio>(0.9),
-        );
-
-        assert!(test_bed.query_element(|e| e.is_wheel_id_compressed(GearWheel::NOSE)));
-        assert!(test_bed.query_element(|e| e.is_wheel_id_compressed(GearWheel::LEFT)));
-        assert!(test_bed.query_element(|e| e.is_wheel_id_compressed(GearWheel::RIGHT)));
-    }
-
-    #[test]
-    fn no_weight_on_wheels_when_all_extended() {
-        let test_bed = run_test_bed_on_with_compression(
-            Ratio::new::<ratio>(0.51),
-            Ratio::new::<ratio>(0.51),
-            Ratio::new::<ratio>(0.51),
-        );
-
-        assert!(!test_bed.query_element(|e| e.is_wheel_id_compressed(GearWheel::NOSE)));
-        assert!(!test_bed.query_element(|e| e.is_wheel_id_compressed(GearWheel::LEFT)));
-        assert!(!test_bed.query_element(|e| e.is_wheel_id_compressed(GearWheel::RIGHT)));
-    }
-
-    #[test]
-    fn left_weight_on_wheels_only_when_only_left_compressed() {
-        let test_bed = run_test_bed_on_with_compression(
-            Ratio::new::<ratio>(0.8),
-            Ratio::new::<ratio>(0.51),
-            Ratio::new::<ratio>(0.51),
-        );
-
-        assert!(!test_bed.query_element(|e| e.is_wheel_id_compressed(GearWheel::NOSE)));
-        assert!(test_bed.query_element(|e| e.is_wheel_id_compressed(GearWheel::LEFT)));
-        assert!(!test_bed.query_element(|e| e.is_wheel_id_compressed(GearWheel::RIGHT)));
     }
 
     #[test]
@@ -1894,20 +1906,5 @@ mod tests {
             Vector3::new(-5., -2., -5.),
             Angle::new::<degree>(9.),
         )
-    }
-
-    fn run_test_bed_on_with_compression(
-        left: Ratio,
-        center: Ratio,
-        right: Ratio,
-    ) -> SimulationTestBed<TestAircraft<LandingGear>> {
-        let mut test_bed = SimulationTestBed::from(ElementCtorFn(LandingGear::new));
-        test_bed.write_by_name(LandingGear::GEAR_LEFT_COMPRESSION, left);
-        test_bed.write_by_name(LandingGear::GEAR_CENTER_COMPRESSION, center);
-        test_bed.write_by_name(LandingGear::GEAR_RIGHT_COMPRESSION, right);
-
-        test_bed.run();
-
-        test_bed
     }
 }

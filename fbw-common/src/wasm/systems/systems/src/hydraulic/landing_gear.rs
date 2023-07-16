@@ -429,14 +429,14 @@ impl SimulationElement for GearSystemHydraulicSupply {
     }
 }
 
-struct GearSystemShockAbsorber {
+pub struct GearSystemShockAbsorber {
     shock_absorber_position_id: VariableIdentifier,
     shock_absorber_position: Ratio,
 }
 impl GearSystemShockAbsorber {
     const COMPRESSION_THRESHOLD_FOR_WEIGHT_ON_WHEELS_RATIO: f64 = 0.02;
 
-    fn new(context: &mut InitContext, id: GearActuatorId) -> Self {
+    pub fn new(context: &mut InitContext, id: GearActuatorId) -> Self {
         let contact_point_id = match id {
             GearActuatorId::GearNose => 0,
             GearActuatorId::GearLeft => 1,
@@ -454,7 +454,7 @@ impl GearSystemShockAbsorber {
         }
     }
 
-    fn is_shock_absorber_fully_extended(&self, _lgciu_id: LgciuId) -> bool {
+    pub fn is_shock_absorber_fully_extended(&self, _lgciu_id: LgciuId) -> bool {
         self.shock_absorber_position
             < Ratio::new::<ratio>(Self::COMPRESSION_THRESHOLD_FOR_WEIGHT_ON_WHEELS_RATIO)
     }

@@ -5992,7 +5992,7 @@ mod tests {
                 cargo_doors::{DoorControlState, HydraulicDoorController},
                 electrical_generator::TestGenerator,
             },
-            landing_gear::{GearSystemState, LandingGear, LandingGearControlInterfaceUnitSet},
+            landing_gear::{GearSystemState, LandingGearControlInterfaceUnitSet},
             shared::{
                 EmergencyElectricalState, EmergencyGeneratorControlUnit, LgciuId, PotentialOrigin,
             },
@@ -6146,7 +6146,6 @@ mod tests {
             autobrake_panel: AutobrakePanel,
             emergency_electrical_overhead: A320TestEmergencyElectricalOverheadPanel,
             engine_fire_overhead: EngineFireOverheadPanel<2>,
-            landing_gear: LandingGear,
             lgcius: LandingGearControlInterfaceUnitSet,
             adirus: A320TestAdirus,
             electrical: A320TestElectrical,
@@ -6187,7 +6186,6 @@ mod tests {
                         context,
                     ),
                     engine_fire_overhead: EngineFireOverheadPanel::new(context),
-                    landing_gear: LandingGear::new(context),
                     lgcius: LandingGearControlInterfaceUnitSet::new(
                         context,
                         ElectricalBusType::DirectCurrentEssential,
@@ -6431,7 +6429,6 @@ mod tests {
 
                 self.lgcius.update(
                     context,
-                    &self.landing_gear,
                     &self.hydraulics.gear_system,
                     self.ext_pwr.output_potential().is_powered(),
                 );
@@ -6457,7 +6454,6 @@ mod tests {
             fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
                 self.engine_1.accept(visitor);
                 self.engine_2.accept(visitor);
-                self.landing_gear.accept(visitor);
                 self.lgcius.accept(visitor);
                 self.hydraulics.accept(visitor);
                 self.autobrake_panel.accept(visitor);
@@ -6812,15 +6808,9 @@ mod tests {
                 self.set_indicated_altitude(Length::new::<foot>(0.));
                 self.set_on_ground(false);
                 self.set_indicated_airspeed(Velocity::new::<knot>(135.));
-                self.write_by_name(
-                    LandingGear::GEAR_CENTER_COMPRESSION,
-                    Ratio::new::<ratio>(0.5),
-                );
-                self.write_by_name(LandingGear::GEAR_LEFT_COMPRESSION, Ratio::new::<ratio>(0.8));
-                self.write_by_name(
-                    LandingGear::GEAR_RIGHT_COMPRESSION,
-                    Ratio::new::<ratio>(0.8),
-                );
+                self.write_by_name("CONTACT POINT COMPRESSION:0", Ratio::new::<ratio>(0.));
+                self.write_by_name("CONTACT POINT COMPRESSION:1", Ratio::new::<ratio>(0.6));
+                self.write_by_name("CONTACT POINT COMPRESSION:2", Ratio::new::<ratio>(0.6));
                 self
             }
 

@@ -22,7 +22,6 @@ use super::{
     SimulationToSimulatorVisitor, SimulatorReaderWriter, SimulatorWriter, UpdateContext, Write,
     Writer,
 };
-use crate::landing_gear::LandingGear;
 use crate::shared::arinc429::{from_arinc429, to_arinc429, Arinc429Word, SignStatus};
 use crate::simulation::update_context::Delta;
 use crate::simulation::{
@@ -395,14 +394,14 @@ impl<T: Aircraft> SimulationTestBed<T> {
     fn set_on_ground(&mut self, on_ground: bool) {
         self.write_by_name(UpdateContext::IS_ON_GROUND_KEY, on_ground);
 
-        let mut gear_compression = Ratio::new::<ratio>(0.5);
+        let mut gear_compression = Ratio::default();
         if on_ground {
-            gear_compression = Ratio::new::<ratio>(0.8);
+            gear_compression = Ratio::new::<ratio>(0.6);
         }
 
-        self.write_by_name(LandingGear::GEAR_CENTER_COMPRESSION, gear_compression);
-        self.write_by_name(LandingGear::GEAR_LEFT_COMPRESSION, gear_compression);
-        self.write_by_name(LandingGear::GEAR_RIGHT_COMPRESSION, gear_compression);
+        self.write_by_name("CONTACT POINT COMPRESSION:0", gear_compression);
+        self.write_by_name("CONTACT POINT COMPRESSION:1", gear_compression);
+        self.write_by_name("CONTACT POINT COMPRESSION:2", gear_compression);
     }
 
     fn set_ambient_pressure(&mut self, ambient_pressure: Pressure) {

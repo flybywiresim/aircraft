@@ -6631,7 +6631,7 @@ mod tests {
             engine::{trent_engine::TrentEngine, EngineFireOverheadPanel},
             failures::FailureType,
             hydraulic::cargo_doors::{DoorControlState, HydraulicDoorController},
-            landing_gear::{GearSystemState, LandingGear, LandingGearControlInterfaceUnitSet},
+            landing_gear::{GearSystemState, LandingGearControlInterfaceUnitSet},
             shared::{EmergencyElectricalState, LgciuId, PotentialOrigin},
             simulation::{
                 test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
@@ -6743,7 +6743,6 @@ mod tests {
             autobrake_panel: AutobrakePanel,
             engine_fire_overhead: EngineFireOverheadPanel<4>,
 
-            landing_gear: LandingGear,
             lgcius: LandingGearControlInterfaceUnitSet,
             adirus: A380TestAdirus,
             electrical: A380TestElectrical,
@@ -6791,7 +6790,6 @@ mod tests {
                     overhead: A380HydraulicOverheadPanel::new(context),
                     autobrake_panel: AutobrakePanel::new(context),
                     engine_fire_overhead: EngineFireOverheadPanel::new(context),
-                    landing_gear: LandingGear::new(context),
                     lgcius: LandingGearControlInterfaceUnitSet::new(
                         context,
                         ElectricalBusType::DirectCurrentEssential,
@@ -7048,7 +7046,6 @@ mod tests {
 
                 self.lgcius.update(
                     context,
-                    &self.landing_gear,
                     &self.hydraulics.gear_system,
                     self.ext_pwr.output_potential().is_powered(),
                 );
@@ -7078,7 +7075,6 @@ mod tests {
                 self.engine_2.accept(visitor);
                 self.engine_3.accept(visitor);
                 self.engine_4.accept(visitor);
-                self.landing_gear.accept(visitor);
                 self.lgcius.accept(visitor);
                 self.hydraulics.accept(visitor);
                 self.autobrake_panel.accept(visitor);
