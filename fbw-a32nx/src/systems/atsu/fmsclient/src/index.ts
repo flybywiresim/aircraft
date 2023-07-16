@@ -220,6 +220,11 @@ export class FmsClient {
         this.publisher.pub(aocMessage ? 'aocMessageRead' : 'atcMessageRead', uid, true, false);
     }
 
+    public printAocAtis(data: any): void {
+        const message = WeatherMessage.deserialize(data);
+        this.printMessage(message);
+    }
+
     public printMessage(message: AtsuMessage): void {
         const text = message.serialize(AtsuMessageSerializationFormat.Printer);
         this.fms.printPage(text.split('\n'));
