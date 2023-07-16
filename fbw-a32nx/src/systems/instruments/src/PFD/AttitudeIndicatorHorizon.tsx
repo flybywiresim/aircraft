@@ -37,17 +37,6 @@ class HeadingBug extends DisplayComponent<{ bus: ArincEventBus, isCaptainSide: b
 
     private horizonHeadingBug = FSComponent.createRef<SVGGElement>();
 
-    private readonly headingBugSubject = MappedSubject.create(([heading, selectedHeading, yOffset]) => {
-        if (this.visibilitySub.get()) {
-            const headingDelta = getSmallestAngle(selectedHeading, heading.value);
-
-            const offset = headingDelta * DistanceSpacing / ValueSpacing;
-
-            return `transform: translate3d(${offset}px, ${yOffset}px, 0px)`;
-        }
-        return '';
-    }, this.heading, this.selectedHeading, this.props.yOffset)
-
     private readonly visibilitySub = MappedSubject.create(([heading, attitude, fdActive, selectedHeading]) => {
         const headingDelta = getSmallestAngle(selectedHeading, heading.value);
         const offset = headingDelta * DistanceSpacing / ValueSpacing;
@@ -57,6 +46,17 @@ class HeadingBug extends DisplayComponent<{ bus: ArincEventBus, isCaptainSide: b
         }
         return false;
     }, this.heading, this.attitude, this.fdActive, this.selectedHeading);
+
+    private readonly headingBugSubject = MappedSubject.create(([heading, selectedHeading, yOffset, visible]) => {
+        if (visible) {
+            const headingDelta = getSmallestAngle(selectedHeading, heading.value);
+
+            const offset = headingDelta * DistanceSpacing / ValueSpacing;
+
+            return `transform: translate3d(${offset}px, ${yOffset}px, 0px)`;
+        }
+        return '';
+    }, this.heading, this.selectedHeading, this.props.yOffset, this.visibilitySub)
 
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
@@ -69,21 +69,13 @@ class HeadingBug extends DisplayComponent<{ bus: ArincEventBus, isCaptainSide: b
             this.selectedHeading.set(s);
         });
 
-        this.attitude.setConsumer(sub.on('pitchAr').whenArinc429SsmChanged());
-
-        sub.on(this.props.isCaptainSide ? 'fd1Active' : 'fd2Active').whenChanged().handle((fd) => {
-            this.isActive = !fd;
-            if (this.isActive) {
-                this.horizonHeadingBug.instance.classList.remove('HiddenElement');
-            } else {
-                this.horizonHeadingBug.instance.classList.add('HiddenElement');
-            }
-        });
+        this.attitude.setConsumer(sub.on('pitchAr'));
+        this.fdActive.setConsumer(sub.on(this.props.isCaptainSide ? 'fd1Active' : 'fd2Active').whenChanged());
     }
 
     render(): VNode {
         return (
-            <g ref={this.horizonHeadingBug} id="HorizonHeadingBug" style={this.headingBugSubject} visibility={this.visibilitySub.map((v) => (v ? 'hidden' : 'inherit'))}>
+            <g ref={this.horizonHeadingBug} id="HorizonHeadingBug" style={this.headingBugSubject} visibility={this.visibilitySub.map((v) => (v ? 'inherit' : 'hidden'))}>
                 <path class="ThickOutline" d="m68.906 80.823v-9.0213" />
                 <path class="ThickStroke Cyan" d="m68.906 80.823v-9.0213" />
             </g>
