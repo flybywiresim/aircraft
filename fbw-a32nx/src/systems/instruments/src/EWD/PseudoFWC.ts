@@ -116,6 +116,24 @@ export class PseudoFWC {
 
     private readonly hotAirPbOn = Subject.create(false);
 
+    private readonly ckptTrimFault = Subject.create(false);
+
+    private readonly fwdTrimFault = Subject.create(false);
+
+    private readonly aftTrimFault = Subject.create(false);
+
+    private readonly ckptDuctOvht = Subject.create(false);
+
+    private readonly fwdDuctOvht = Subject.create(false);
+
+    private readonly aftDuctOvht = Subject.create(false);
+
+    private readonly anyDuctOvht = Subject.create(false);
+
+    private readonly pack1On = Subject.create(false);
+
+    private readonly pack2On = Subject.create(false);
+
     private readonly packOffBleedAvailable1 = new NXLogicConfirmNode(5, false);
 
     private readonly packOffBleedAvailable2 = new NXLogicConfirmNode(5, false);
@@ -1042,6 +1060,15 @@ export class PseudoFWC {
         this.hotAirOpen.set(SimVar.GetSimVarValue('L:A32NX_HOT_AIR_VALVE_IS_OPEN', 'bool'));
         this.hotAirPbOn.set(SimVar.GetSimVarValue('L:A32NX_OVHD_COND_HOT_AIR_PB_IS_ON', 'bool'));
 
+        this.ckptTrimFault.set(SimVar.GetSimVarValue('L:A32NX_COND_CKPT_TRIM_AIR_VALVE_HAS_FAULT', 'bool'));
+        this.fwdTrimFault.set(SimVar.GetSimVarValue('L:A32NX_COND_FWD_TRIM_AIR_VALVE_HAS_FAULT', 'bool'));
+        this.aftTrimFault.set(SimVar.GetSimVarValue('L:A32NX_COND_AFT_TRIM_AIR_VALVE_HAS_FAULT', 'bool'));
+
+        this.ckptDuctOvht.set(SimVar.GetSimVarValue('L:A32NX_COND_CKPT_DUCT_OVHT', 'bool'));
+        this.fwdDuctOvht.set(SimVar.GetSimVarValue('L:A32NX_COND_FWD_DUCT_OVHT', 'bool'));
+        this.aftDuctOvht.set(SimVar.GetSimVarValue('L:A32NX_COND_AFT_DUCT_OVHT', 'bool'));
+        this.anyDuctOvht.set(this.ckptDuctOvht.get() || this.fwdDuctOvht.get() || this.aftDuctOvht.get());
+
         const crossfeed = SimVar.GetSimVarValue('L:A32NX_PNEU_XBLEED_VALVE_OPEN', 'bool');
         const eng1Bleed = SimVar.GetSimVarValue('A:BLEED AIR ENGINE:1', 'bool');
         const eng1BleedPbFault = SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_1_BLEED_PB_HAS_FAULT', 'bool');
@@ -1049,8 +1076,8 @@ export class PseudoFWC {
         const eng2BleedPbFault = SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_2_BLEED_PB_HAS_FAULT', 'bool');
         const pack1Fault = SimVar.GetSimVarValue('L:A32NX_OVHD_COND_PACK_1_PB_HAS_FAULT', 'bool');
         const pack2Fault = SimVar.GetSimVarValue('L:A32NX_OVHD_COND_PACK_2_PB_HAS_FAULT', 'bool');
-        const pack1On = SimVar.GetSimVarValue('L:A32NX_OVHD_COND_PACK_1_PB_IS_ON', 'bool');
-        const pack2On = SimVar.GetSimVarValue('L:A32NX_OVHD_COND_PACK_2_PB_IS_ON', 'bool');
+        this.pack1On.set(SimVar.GetSimVarValue('L:A32NX_OVHD_COND_PACK_1_PB_IS_ON', 'bool'));
+        this.pack2On.set(SimVar.GetSimVarValue('L:A32NX_OVHD_COND_PACK_2_PB_IS_ON', 'bool'));
 
         this.excessPressure.set(SimVar.GetSimVarValue('L:A32NX_PRESS_EXCESS_CAB_ALT', 'bool'));
         this.cabAltSetResetState1.set(
@@ -1061,8 +1088,8 @@ export class PseudoFWC {
         );
         this.packOffBleedAvailable1.write((eng1Bleed === 1 && !eng1BleedPbFault) || crossfeed === 1, deltaTime);
         this.packOffBleedAvailable2.write((eng2Bleed === 1 && !eng2BleedPbFault) || crossfeed === 1, deltaTime);
-        this.packOffNotFailed1Status.set(this.packOffNotFailed1.write(!pack1On && !pack1Fault && this.packOffBleedAvailable1.read() && this.fwcFlightPhase.get() === 6, deltaTime));
-        this.packOffNotFailed2Status.set(this.packOffNotFailed2.write(!pack2On && !pack2Fault && this.packOffBleedAvailable2.read() && this.fwcFlightPhase.get() === 6, deltaTime));
+        this.packOffNotFailed1Status.set(this.packOffNotFailed1.write(!this.pack1On.get() && !pack1Fault && this.packOffBleedAvailable1.read() && this.fwcFlightPhase.get() === 6, deltaTime));
+        this.packOffNotFailed2Status.set(this.packOffNotFailed2.write(!this.pack2On.get() && !pack2Fault && this.packOffBleedAvailable2.read() && this.fwcFlightPhase.get() === 6, deltaTime));
 
         /* OTHER STUFF */
 
@@ -2148,29 +2175,6 @@ export class PseudoFWC {
             sysPage: -1,
             side: 'LEFT',
         },
-        2100140: { // L+R CAB FAN FAULT
-            flightPhaseInhib: [3, 4, 5, 7, 8],
-            simVarIsActive: MappedSubject.create(([cabFanHasFault1, cabFanHasFault2]) => cabFanHasFault1 && cabFanHasFault2, this.cabFanHasFault1, this.cabFanHasFault2),
-            whichCodeToReturn: () => [0, 1],
-            codesToReturn: ['210014001', '210014002'],
-            memoInhibit: () => false,
-            failure: 2,
-            sysPage: 7,
-            side: 'LEFT',
-        },
-        2100150: { // HOT AIR FAULT
-            flightPhaseInhib: [3, 4, 5, 7, 8],
-            simVarIsActive: MappedSubject.create(([hotAirEnabled, hotAirOpen]) => hotAirEnabled !== hotAirOpen, this.hotAirEnabled, this.hotAirOpen),
-            whichCodeToReturn: () => [0,
-                this.hotAirPbOn.get() ? 1 : null,
-                this.hotAirPbOn.get() ? 2 : null,
-                3, 4, 5], // Fixme: Add check, 2-5 only returned if duct overheat
-            codesToReturn: ['210015001', '210015002', '210015003', '210015004', '210015005'],
-            memoInhibit: () => false,
-            failure: 2,
-            sysPage: 7,
-            side: 'LEFT',
-        },
         2131221: { // EXCESS CAB ALT
             flightPhaseInhib: [1, 2, 3, 4, 5, 7, 8, 9, 10],
             simVarIsActive: MappedSubject.create(([aircraftOnGround, excessPressure]) => !aircraftOnGround && excessPressure, this.aircraftOnGround, this.excessPressure),
@@ -2199,6 +2203,77 @@ export class PseudoFWC {
             memoInhibit: () => false,
             failure: 3,
             sysPage: 2,
+            side: 'LEFT',
+        },
+        2163210: { // CKPT DUCT OVHT
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: this.ckptDuctOvht,
+            whichCodeToReturn: () => [0, 1, null, 3], // TODO: Add support for Fahrenheit
+            codesToReturn: ['216321001', '216321002', '216321003', '216321004'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: 7,
+            side: 'LEFT',
+        },
+        2163211: { // FWD DUCT OVHT
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: this.fwdDuctOvht,
+            whichCodeToReturn: () => [0, 1, null, 3], // TODO: Add support for Fahrenheit
+            codesToReturn: ['216321101', '216321102', '216321103', '216321104'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: 7,
+            side: 'LEFT',
+        },
+        2163212: { // AFT DUCT OVHT
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: this.aftDuctOvht,
+            whichCodeToReturn: () => [0, 1, null, 3], // TODO: Add support for Fahrenheit
+            codesToReturn: ['216321201', '216321202', '216321203', '216321204'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: 7,
+            side: 'LEFT',
+        },
+        2163218: { // L+R CAB FAN FAULT
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: MappedSubject.create(([cabFanHasFault1, cabFanHasFault2]) => cabFanHasFault1 && cabFanHasFault2, this.cabFanHasFault1, this.cabFanHasFault2),
+            whichCodeToReturn: () => [0, 1],
+            codesToReturn: ['216321801', '216321802'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: 7,
+            side: 'LEFT',
+        },
+        2163290: { // HOT AIR FAULT
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: MappedSubject.create(([hotAirEnabled, hotAirOpen]) => hotAirEnabled !== hotAirOpen, this.hotAirEnabled, this.hotAirOpen),
+            whichCodeToReturn: () => [0,
+                this.hotAirPbOn.get() ? 1 : null,
+                (this.anyDuctOvht.get() && this.hotAirPbOn.get()) ? 2 : null,
+                (this.anyDuctOvht.get() && this.pack1On.get()) ? 3 : null,
+                (this.anyDuctOvht.get() && this.pack2On.get()) ? 4 : null,
+            ],
+            codesToReturn: ['216329001', '216329002', '216329003', '216329004', '216329005'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: 7,
+            side: 'LEFT',
+        },
+        216330: { // TRIM AIR SYS FAULT
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: MappedSubject.create(
+                ([ckptTrimFault, fwdTrimFault, aftTrimFault]) => ckptTrimFault || fwdTrimFault || aftTrimFault, this.ckptTrimFault, this.fwdTrimFault, this.aftTrimFault,
+            ),
+            whichCodeToReturn: () => [0,
+                this.ckptTrimFault.get() ? 1 : null,
+                this.fwdTrimFault.get() ? 2 : null,
+                this.aftTrimFault.get() ? 3 : null,
+            ],
+            codesToReturn: ['216330501', '216330502', '216330503', '216330504'],
+            memoInhibit: () => false,
+            failure: 1,
+            sysPage: -1,
             side: 'LEFT',
         },
         2600150: { // SMOKE FWD CARGO SMOKE

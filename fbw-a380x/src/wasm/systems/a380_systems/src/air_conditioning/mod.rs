@@ -420,8 +420,12 @@ impl A380AirConditioningSystem {
         }
         self.mixer_unit.update(mixer_intakes);
 
-        self.trim_air_system
-            .update(context, &self.mixer_unit, &self.acsc);
+        self.trim_air_system.update(
+            context,
+            self.acsc.trim_air_pressure_regulating_valve_is_open(),
+            &self.mixer_unit,
+            &self.acsc,
+        );
 
         self.air_conditioning_overhead
             .set_pack_pushbutton_fault(self.pack_fault_determination());

@@ -51,13 +51,40 @@ export const CondPage = () => {
             <path id="PlaneSeperators" className="LightGreyLine" d="m 278,94 v96 m 179,0 v-54" />
 
             {/* Cockpit */}
-            <CondUnit title="CKPT" trimAirValve={cockpitTrimAirValve} cabinTemp={cockpitCabinTemp} trimTemp={cockpitTrimTemp} x={153} y={105} offset={gaugeOffset} hotAir={hotAirEnabled} />
+            <CondUnit
+                title="CKPT"
+                trimAirValve={cockpitTrimAirValve}
+                cabinTemp={cockpitCabinTemp}
+                trimTemp={cockpitTrimTemp}
+                x={153}
+                y={105}
+                offset={gaugeOffset}
+                hotAir={(hotAirOpen !== hotAirEnabled) || !hotAirPb}
+            />
 
             {/* Fwd */}
-            <CondUnit title="FWD" trimAirValve={fwdTrimAirValve} cabinTemp={fwdCabinTemp} trimTemp={fwdTrimTemp} x={324} y={105} offset={gaugeOffset} hotAir={hotAirEnabled} />
+            <CondUnit
+                title="FWD"
+                trimAirValve={fwdTrimAirValve}
+                cabinTemp={fwdCabinTemp}
+                trimTemp={fwdTrimTemp}
+                x={324}
+                y={105}
+                offset={gaugeOffset}
+                hotAir={(hotAirOpen !== hotAirEnabled) || !hotAirPb}
+            />
 
             {/*  Aft */}
-            <CondUnit title="AFT" trimAirValve={aftTrimAirValve} cabinTemp={aftCabinTemp} trimTemp={aftTrimTemp} x={494} y={105} offset={gaugeOffset} hotAir={hotAirEnabled} />
+            <CondUnit
+                title="AFT"
+                trimAirValve={aftTrimAirValve}
+                cabinTemp={aftCabinTemp}
+                trimTemp={aftTrimTemp}
+                x={494}
+                y={105}
+                offset={gaugeOffset}
+                hotAir={(hotAirOpen !== hotAirEnabled) || !hotAirPb}
+            />
 
             {/* Valve and tubes */}
             <g id="ValveAndTubes">
@@ -81,24 +108,26 @@ type CondUnitProps = {
     x: number,
     y: number,
     offset: number,
-    hotAir: number
+    hotAir: boolean
 }
 
 const CondUnit = ({ title, trimAirValve, cabinTemp, trimTemp, x, y, offset, hotAir } : CondUnitProps) => {
     const rotateTemp = offset + (trimAirValve * 86 / 100);
+    const overheat = trimTemp > 80;
 
     return (
         <SvgGroup x={x} y={y}>
             <text className="Large Center" x={47} y={23}>{title}</text>
             <text id="CkptCabinTemp" className="Large Green" x={26} y={56}>{cabinTemp.toFixed(0)}</text>
-            <text id="CkptTrimTemp" className="Standard Green" x={29} y={106}>{trimTemp.toFixed(0)}</text>
+            <text id="CkptTrimTemp" className={overheat ? 'Standard Amber' : 'Standard Green'} x={29} y={106}>{trimTemp.toFixed(0)}</text>
             <text className="Standard" x={-2} y={147}>C</text>
             <text className="Standard" x={74} y={146}>H</text>
             <g id="CkptGauge" transform={`rotate(${rotateTemp.toFixed(0)} 42 158 )`}>
                 <path className="GreenLine" d="m 37,137 l 10,0 l -5,-9 z" />
                 <line className="GreenLine" x1={42} y1={158} x2={42} y2={138} />
             </g>
-            <line className={hotAir ? 'GreenLine' : 'AmberLine'} x1={42} y1={207} x2={42} y2={158} />
+            {/* TODO: When Trim valves are failed the gauge should be replaced by amber XX */}
+            <line className={hotAir ? 'AmberLine' : 'GreenLine'} x1={42} y1={207} x2={42} y2={158} />
             <g>
                 <path className="WhiteLine" d="m 21,136 a 30 30 0 0 1 42 0" />
                 <line className="WhiteLine" x1={42} y1={118} x2={42} y2={127} />

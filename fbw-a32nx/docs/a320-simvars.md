@@ -2594,6 +2594,14 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - FWD
         - AFT
 
+- A32NX_COND_{id}_DUCT_OVHT
+    - Bool
+    - True when the duct temperature of the respective zone rises above 88 deg C
+    - {id}
+        - CKPT
+        - FWD
+        - AFT
+
 - A32NX_COND_PACK_FLOW_VALVE_{index}_IS_OPEN
     - Bool
     - True if the respective {1 or 2} pack flow valve is open
@@ -2605,6 +2613,14 @@ In the variables below, {number} should be replaced with one item in the set: { 
 - A32NX_COND_{id}_TRIM_AIR_VALVE_POSITION
     - Percentage
     - Percentage opening of each trim air valve (hot air)
+    - {id}
+        - CKPT
+        - FWD
+        - AFT
+
+- A32NX_COND_{id}_TRIM_AIR_VALVE_HAS_FAULT
+    - Bool
+    - The respective trim air valve is faulted
     - {id}
         - CKPT
         - FWD

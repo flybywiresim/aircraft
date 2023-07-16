@@ -181,6 +181,14 @@ impl<const ZONES: usize, const ENGINES: usize> AirConditioningSystemController<Z
             .map(|zone| zone.duct_demand_temperature())
             .collect()
     }
+
+    pub fn trim_air_pressure_regulating_valve_is_open(&self) -> bool {
+        self.trim_air_system_controller.is_open()
+    }
+
+    pub fn hot_air_pb_fault_light_determination(&self) -> bool {
+        self.trim_air_system_controller.should_turn_on_fault_light()
+    }
 }
 
 impl<const ZONES: usize, const ENGINES: usize> PackFlow
@@ -899,6 +907,8 @@ struct TrimAirSystemController<const ZONES: usize, const ENGINES: usize> {
     is_enabled: bool,
     is_open: bool,
     failure: Failure,
+    overheat_event: bool,
+    previous_pb_state: bool,
     trim_air_valve_controllers: [TrimAirValveController; ZONES],
 }
 
@@ -910,8 +920,10 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystemController<ZONES, EN
 
             is_enabled: false,
             is_open: false,
-            trim_air_valve_controllers: [TrimAirValveController::new(); ZONES],
             failure: Failure::new(FailureType::HotAir(1)), // Only one hot air valve in the A320
+            overheat_event: false,
+            previous_pb_state: false,
+            trim_air_valve_controllers: [TrimAirValveController::new(); ZONES],
         }
     }
 
@@ -930,6 +942,7 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystemController<ZONES, EN
         // If the valve was open before the failure, it will stay open
         self.is_enabled = self.trim_air_pressure_regulating_valve_status_determination(
             acs_overhead,
+            trim_air_system.any_trim_air_valve_has_fault(),
             operation_mode,
             pack_flow_controller,
             pneumatic,
@@ -948,23 +961,29 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystemController<ZONES, EN
                 duct_demand_temperature[id],
             )
         }
+
+        self.overheat_event =
+            self.hot_air_fault_determination(acs_overhead, trim_air_system.duct_temperature());
+
+        self.previous_pb_state = acs_overhead.hot_air_pushbutton_is_on();
     }
 
     fn trim_air_pressure_regulating_valve_status_determination(
         &self,
         acs_overhead: &impl AirConditioningOverheadShared,
+        any_tav_has_fault: bool,
         operation_mode: ACSCActiveComputer,
         pack_flow_controller: &[PackFlowController<ENGINES>; 2],
         pneumatic: &impl PackFlowValveState,
     ) -> bool {
-        // TODO: Add overheat protection
-        // TODO: If more than one TAV fails, the system should be off
         acs_overhead.hot_air_pushbutton_is_on()
             && operation_mode == ACSCActiveComputer::Primary
             && !pack_flow_controller
                 .iter()
                 .any(|pack| pack.pack_start_condition_determination(pneumatic))
             && ((pneumatic.pack_flow_valve_is_open(1)) || (pneumatic.pack_flow_valve_is_open(2)))
+            && !self.overheat_event
+            && !any_tav_has_fault
     }
 
     fn trim_air_valve_controllers(&self, zone_id: usize) -> TrimAirValveController {
@@ -977,6 +996,31 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystemController<ZONES, EN
 
     fn is_open(&self) -> bool {
         self.is_open
+    }
+
+    fn hot_air_fault_determination(
+        &self,
+        acs_overhead: &impl AirConditioningOverheadShared,
+        duct_temperature: Vec<ThermodynamicTemperature>,
+    ) -> bool {
+        if duct_temperature
+            .iter()
+            .any(|temp| *temp > ThermodynamicTemperature::new::<degree_celsius>(88.))
+        {
+            true
+        } else if duct_temperature
+            .iter()
+            .all(|temp| *temp < ThermodynamicTemperature::new::<degree_celsius>(70.))
+            && self.overheat_event
+        {
+            self.previous_pb_state || !acs_overhead.hot_air_pushbutton_is_on()
+        } else {
+            self.overheat_event
+        }
+    }
+
+    fn should_turn_on_fault_light(&self) -> bool {
+        self.overheat_event
     }
 }
 
@@ -2078,8 +2122,12 @@ mod acs_controller_tests {
             }
             self.mixer_unit.update(mixer_intakes);
 
-            self.trim_air_system
-                .update(context, &self.mixer_unit, &self.acsc);
+            self.trim_air_system.update(
+                context,
+                self.acsc.trim_air_pressure_regulating_valve_is_open(),
+                &self.mixer_unit,
+                &self.acsc,
+            );
 
             self.acs_overhead
                 .set_pack_pushbutton_fault(self.acsc.pack_fault_determination(&self.pneumatic));
@@ -2098,6 +2146,7 @@ mod acs_controller_tests {
             self.cabin_air_simulation.accept(visitor);
             self.pneumatic.accept(visitor);
             self.pressurization_overhead.accept(visitor);
+            self.trim_air_system.accept(visitor);
             accept_iterable!(self.cabin_fans, visitor);
 
             visitor.visit(self);
@@ -3732,6 +3781,126 @@ mod acs_controller_tests {
             assert!(
                 (test_bed.trim_air_system_outlet_air(1).flow_rate())
                     < MassRate::new::<kilogram_per_second>(0.01)
+            );
+        }
+
+        #[test]
+        fn trim_air_valves_are_unresponsive_when_failed() {
+            let mut test_bed = test_bed()
+                .with()
+                .engine_idle()
+                .both_packs_on()
+                .and()
+                .command_fwd_selected_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+                    30.,
+                ));
+
+            test_bed.command_measured_temperature(
+                [ThermodynamicTemperature::new::<degree_celsius>(15.); 2],
+            );
+
+            test_bed = test_bed.iterate(100);
+
+            assert!((test_bed.trim_air_valves_open_amount()[1]) > Ratio::default());
+
+            let initial_open = test_bed.trim_air_valves_open_amount()[1];
+
+            test_bed = test_bed.command_fwd_selected_temperature(ThermodynamicTemperature::new::<
+                degree_celsius,
+            >(18.));
+
+            test_bed.fail(FailureType::TrimAirFault(ZoneType::Cabin(1)));
+
+            test_bed.command_measured_temperature(
+                [ThermodynamicTemperature::new::<degree_celsius>(30.); 2],
+            );
+
+            test_bed = test_bed.iterate(100);
+
+            assert!((test_bed.trim_air_valves_open_amount()[1]) > Ratio::default());
+            assert_eq!(test_bed.trim_air_valves_open_amount()[1], initial_open);
+        }
+
+        #[test]
+        fn trim_air_system_delivers_overheat_air_if_overheat() {
+            let mut test_bed = test_bed()
+                .with()
+                .hot_air_pb_on(true)
+                .and()
+                .engine_idle()
+                .command_fwd_selected_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+                    30.,
+                ))
+                .iterate(500);
+
+            assert!((test_bed.trim_air_system_outlet_air(1).flow_rate()) > MassRate::default());
+            assert!(
+                (test_bed.trim_air_system_outlet_air(1).temperature())
+                    > ThermodynamicTemperature::new::<degree_celsius>(25.)
+            );
+
+            test_bed.fail(FailureType::TrimAirOverheat(ZoneType::Cabin(1)));
+
+            test_bed = test_bed.iterate(1);
+
+            assert!(
+                (test_bed.duct_temperature()[1])
+                    > ThermodynamicTemperature::new::<degree_celsius>(88.)
+            );
+        }
+
+        #[test]
+        fn hot_air_closes_if_overheat() {
+            let mut test_bed = test_bed()
+                .with()
+                .hot_air_pb_on(true)
+                .and()
+                .engine_idle()
+                .command_fwd_selected_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+                    30.,
+                ))
+                .iterate(500);
+
+            test_bed.command_measured_temperature(
+                [ThermodynamicTemperature::new::<degree_celsius>(15.); 2],
+            );
+            assert!((test_bed.trim_air_system_outlet_air(1).flow_rate()) > MassRate::default());
+            test_bed.fail(FailureType::TrimAirOverheat(ZoneType::Cabin(1)));
+
+            test_bed = test_bed.iterate(500);
+
+            assert!(
+                (test_bed.trim_air_system_outlet_air(1).flow_rate())
+                    < MassRate::new::<kilogram_per_second>(0.001)
+            );
+        }
+
+        #[test]
+        fn hot_air_closes_if_one_tav_failed() {
+            let mut test_bed = test_bed()
+                .with()
+                .hot_air_pb_on(true)
+                .and()
+                .engine_idle()
+                .command_fwd_selected_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+                    30.,
+                ));
+
+            test_bed.command_measured_temperature([
+                ThermodynamicTemperature::new::<degree_celsius>(25.),
+                ThermodynamicTemperature::new::<degree_celsius>(15.),
+            ]);
+
+            test_bed = test_bed.iterate(500);
+
+            assert!((test_bed.duct_temperature()[1] > test_bed.duct_temperature()[0]));
+            test_bed.fail(FailureType::TrimAirFault(ZoneType::Cabin(1)));
+
+            test_bed = test_bed.iterate(100);
+
+            assert_eq!(
+                test_bed.duct_temperature()[0],
+                test_bed.duct_temperature()[1]
             );
         }
 

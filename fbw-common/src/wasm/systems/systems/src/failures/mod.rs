@@ -1,3 +1,4 @@
+use crate::air_conditioning::ZoneType;
 use crate::shared::{
     AirbusElectricPumpId, AirbusEngineDrivenPumpId, GearActuatorId, HydraulicColor, LgciuId,
     ProximityDetectorId,
@@ -8,6 +9,8 @@ use crate::simulation::SimulationElement;
 pub enum FailureType {
     CabinFan(usize),
     HotAir(usize),
+    TrimAirOverheat(ZoneType),
+    TrimAirFault(ZoneType),
     TransformerRectifier(usize),
     ReservoirLeak(HydraulicColor),
     ReservoirAirLeak(HydraulicColor),

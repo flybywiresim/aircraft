@@ -323,11 +323,17 @@ impl A320AirConditioningSystem {
         }
         self.mixer_unit.update(mixer_intakes);
 
-        self.trim_air_system
-            .update(context, &self.mixer_unit, &self.acsc);
+        self.trim_air_system.update(
+            context,
+            self.acsc.trim_air_pressure_regulating_valve_is_open(),
+            &self.mixer_unit,
+            &self.acsc,
+        );
 
         self.air_conditioning_overhead
             .set_pack_pushbutton_fault(self.pack_fault_determination(pneumatic));
+        self.air_conditioning_overhead
+            .set_hot_air_pushbutton_fault(self.acsc.hot_air_pb_fault_light_determination());
     }
 
     pub fn pack_fault_determination(&self, pneumatic: &impl PackFlowValveState) -> [bool; 2] {
@@ -418,6 +424,10 @@ impl<const ZONES: usize> A320AirConditioningSystemOverhead<ZONES> {
             .iter_mut()
             .enumerate()
             .for_each(|(index, pushbutton)| pushbutton.set_fault(pb_has_fault[index]));
+    }
+
+    fn set_hot_air_pushbutton_fault(&mut self, hot_air_pb_has_fault: bool) {
+        self.hot_air_pb.set_fault(hot_air_pb_has_fault);
     }
 }
 

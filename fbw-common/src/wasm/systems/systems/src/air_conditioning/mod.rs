@@ -98,6 +98,7 @@ pub trait PressurizationOverheadShared {
 
 /// Cabin Zones with double digit IDs are specific to the A380
 /// 1X is main deck, 2X is upper deck
+#[derive(Clone, Copy, Eq, PartialEq)]
 pub enum ZoneType {
     Cockpit,
     Cabin(u8),
@@ -461,42 +462,36 @@ impl Default for AirConditioningPack {
 
 pub struct TrimAirSystem<const ZONES: usize, const ENGINES: usize> {
     duct_temperature_id: [VariableIdentifier; ZONES],
+    duct_overheat_id: [VariableIdentifier; ZONES],
+
     trim_air_valves: [TrimAirValve; ZONES],
     // These are not a real components of the system, but a tool to simulate the mixing of air
     pack_mixer_container: PneumaticPipe,
     trim_air_mixers: [MixerUnit<1>; ZONES],
+    duct_overheat: [bool; ZONES],
     outlet_air: Air,
 }
 
 impl<const ZONES: usize, const ENGINES: usize> TrimAirSystem<ZONES, ENGINES> {
     pub fn new(context: &mut InitContext, cabin_zone_ids: &[ZoneType; ZONES]) -> Self {
-        let duct_temperature_id = cabin_zone_ids
-            .iter()
-            .map(|id| context.get_identifier(format!("COND_{}_DUCT_TEMP", id)))
-            .collect::<Vec<VariableIdentifier>>()
-            .try_into()
-            .unwrap_or_else(|v: Vec<VariableIdentifier>| {
-                panic!("Expected a Vec of length {} but it was {}", ZONES, v.len())
-            });
-
-        let trim_air_valves = cabin_zone_ids
-            .iter()
-            .map(|id| TrimAirValve::new(context, id))
-            .collect::<Vec<TrimAirValve>>()
-            .try_into()
-            .unwrap_or_else(|v: Vec<TrimAirValve>| {
-                panic!("Expected a Vec of length {} but it was {}", ZONES, v.len())
-            });
+        let duct_temperature_id =
+            cabin_zone_ids.map(|id| context.get_identifier(format!("COND_{}_DUCT_TEMP", id)));
+        let duct_overheat_id =
+            cabin_zone_ids.map(|id| context.get_identifier(format!("COND_{}_DUCT_OVHT", id)));
 
         Self {
             duct_temperature_id,
-            trim_air_valves,
+            duct_overheat_id,
+
+            trim_air_valves: cabin_zone_ids.map(|id| TrimAirValve::new(context, &id)),
             pack_mixer_container: PneumaticPipe::new(
                 Volume::new::<cubic_meter>(4.),
                 Pressure::new::<psi>(14.7),
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
             trim_air_mixers: [MixerUnit::new(&[ZoneType::Cabin(1)]); ZONES],
+
+            duct_overheat: [false; ZONES],
             outlet_air: Air::new(),
         }
     }
@@ -504,12 +499,14 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystem<ZONES, ENGINES> {
     pub fn update(
         &mut self,
         context: &UpdateContext,
+        trim_air_pressure_regulating_valve_open: bool,
         mixer_air: &MixerUnit<ZONES>,
         tav_controller: &AirConditioningSystemController<ZONES, ENGINES>,
     ) {
         for (id, tav) in self.trim_air_valves.iter_mut().enumerate() {
             tav.update(
                 context,
+                trim_air_pressure_regulating_valve_open,
                 &mut self.pack_mixer_container,
                 tav_controller.trim_air_valve_controllers(id),
             );
@@ -525,6 +522,18 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystem<ZONES, ENGINES> {
         self.outlet_air.set_flow_rate(total_flow);
         self.outlet_air
             .set_pressure(self.trim_air_outlet_pressure());
+
+        self.duct_overheat = (0..ZONES)
+            .map(|id| {
+                self.duct_overheat_determination(id)
+                    || (self.duct_overheat[id]
+                        && tav_controller.hot_air_pb_fault_light_determination())
+            })
+            .collect::<Vec<bool>>()
+            .try_into()
+            .unwrap_or_else(|v: Vec<bool>| {
+                panic!("Expected a Vec of length {} but it was {}", ZONES, v.len())
+            });
     }
 
     pub fn mix_packs_air_update(&mut self, pack_container: &mut [impl PneumaticContainer; 2]) {
@@ -552,6 +561,17 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystem<ZONES, ENGINES> {
             .iter()
             .map(|tam| tam.outlet_air.pressure())
             .average()
+    }
+
+    fn any_trim_air_valve_has_fault(&self) -> bool {
+        self.trim_air_valves
+            .iter()
+            .any(|tav| tav.trim_air_valve_has_fault())
+    }
+
+    fn duct_overheat_determination(&self, zone_id: usize) -> bool {
+        self.trim_air_mixers[zone_id].outlet_air().temperature()
+            > ThermodynamicTemperature::new::<degree_celsius>(88.)
     }
 
     #[cfg(test)]
@@ -584,18 +604,28 @@ impl<const ZONES: usize, const ENGINES: usize> SimulationElement for TrimAirSyst
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        for (id, var) in self.duct_temperature_id.iter().enumerate() {
-            writer.write(var, self.duct_temperature()[id])
+        for (id, var) in self
+            .duct_temperature_id
+            .iter()
+            .zip(self.duct_overheat_id.iter())
+            .enumerate()
+        {
+            writer.write(var.0, self.duct_temperature()[id]);
+            writer.write(var.1, self.duct_overheat[id]);
         }
     }
 }
 
 struct TrimAirValve {
     trim_air_valve_id: VariableIdentifier,
+    trim_air_valve_failure_id: VariableIdentifier,
+
     trim_air_valve: DefaultValve,
     trim_air_container: PneumaticPipe,
     exhaust: PneumaticExhaust,
     outlet_air: Air,
+    failure: Failure,
+    overheat: Failure,
 }
 
 impl TrimAirValve {
@@ -605,6 +635,9 @@ impl TrimAirValve {
         Self {
             trim_air_valve_id: context
                 .get_identifier(format!("COND_{}_TRIM_AIR_VALVE_POSITION", zone_id)),
+            trim_air_valve_failure_id: context
+                .get_identifier(format!("COND_{}_TRIM_AIR_VALVE_HAS_FAULT", zone_id)),
+
             trim_air_valve: DefaultValve::new_closed(),
             trim_air_container: PneumaticPipe::new(
                 Volume::new::<cubic_meter>(0.03), // Based on references
@@ -613,26 +646,44 @@ impl TrimAirValve {
             ),
             exhaust: PneumaticExhaust::new(5., 1., Pressure::new::<psi>(0.)),
             outlet_air: Air::new(),
+            failure: Failure::new(FailureType::TrimAirFault(*zone_id)),
+            overheat: Failure::new(FailureType::TrimAirOverheat(*zone_id)),
         }
     }
 
     fn update(
         &mut self,
         context: &UpdateContext,
+        trim_air_pressure_regulating_valve_open: bool,
         from: &mut impl PneumaticContainer,
         tav_controller: TrimAirValveController,
     ) {
-        self.trim_air_valve.update_open_amount(&tav_controller);
+        if !self.failure.is_active() {
+            self.trim_air_valve.update_open_amount(&tav_controller);
+        }
         self.trim_air_valve
             .update_move_fluid(context, from, &mut self.trim_air_container);
         self.exhaust
             .update_move_fluid(context, &mut self.trim_air_container);
 
-        self.outlet_air.set_temperature(from.temperature());
+        if self.overheat.is_active() && trim_air_pressure_regulating_valve_open {
+            // When forcing overheat we inject high pressure high temperature air
+            self.outlet_air
+                .set_temperature(ThermodynamicTemperature::new::<degree_celsius>(200.));
+            self.outlet_air
+                .set_flow_rate(MassRate::new::<kilogram_per_second>(0.8));
+        } else {
+            self.outlet_air.set_temperature(from.temperature());
+            self.outlet_air
+                .set_flow_rate(self.trim_air_valve_air_flow());
+        }
+
         self.outlet_air
             .set_pressure(self.trim_air_container.pressure());
-        self.outlet_air
-            .set_flow_rate(self.trim_air_valve_air_flow());
+
+        if !trim_air_pressure_regulating_valve_open {
+            self.outlet_air.set_flow_rate(MassRate::default());
+        }
     }
 
     fn trim_air_valve_open_amount(&self) -> Ratio {
@@ -641,6 +692,10 @@ impl TrimAirValve {
 
     fn trim_air_valve_air_flow(&self) -> MassRate {
         self.trim_air_valve.fluid_flow()
+    }
+
+    fn trim_air_valve_has_fault(&self) -> bool {
+        self.failure.is_active()
     }
 }
 
@@ -653,6 +708,16 @@ impl OutletAir for TrimAirValve {
 impl SimulationElement for TrimAirValve {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.trim_air_valve_id, self.trim_air_valve_open_amount());
+        writer.write(
+            &self.trim_air_valve_failure_id,
+            self.trim_air_valve_has_fault(),
+        );
+    }
+
+    fn accept<T: crate::simulation::SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.failure.accept(visitor);
+        self.overheat.accept(visitor);
+        visitor.visit(self);
     }
 }
 
@@ -708,6 +773,12 @@ impl Air {
         MassDensity::new::<kilogram_per_cubic_meter>(
             self.pressure.get::<pascal>() / (Self::R * self.temperature.get::<kelvin>()),
         )
+    }
+}
+
+impl OutletAir for Air {
+    fn outlet_air(&self) -> Air {
+        *self
     }
 }
 
