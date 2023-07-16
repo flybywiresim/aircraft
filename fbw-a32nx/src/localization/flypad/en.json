@@ -147,7 +147,6 @@
       "GenPerHour": "Probability over time",
       "GenSpeed": "Speed",
       "hours": "hours",
-      "InfoTitle": "Information and legends",
       "knots": "knots",
       "LowSpeedChance": "Probability at low Speed",
       "MaxHeightAboveRunway": "Maximum height above runway",
@@ -180,11 +179,12 @@
         "ArrowDownRight": "The failure will happen when speed or altitude is decreasing.",
         "ExclamationDiamond": "The page to select which failures can happen when the generator triggers.",
         "Info": "For More information see: docs.flybywiresim.com/a32nx-failures",
+        "InfoTitle": "Information and legend",
         "Repeat": "The failure generator is armed and will repeatingly trigger the failures when conditions are met.",
         "Repeat1": "The failure generator is armed and will trigger the failures only once and then disarm.",
         "Sliders2Vertical": "The page for the settings of each failure generator.",
-        "Trash": "Removes the failure generator and it's settings.",
-        "ToggleOff": "The failure generator is not armed and will not trigger any failure."
+        "ToggleOff": "The failure generator is not armed and will not trigger any failure.",
+        "Trash": "Removes the failure generator and it's settings."
       }
     }
   },

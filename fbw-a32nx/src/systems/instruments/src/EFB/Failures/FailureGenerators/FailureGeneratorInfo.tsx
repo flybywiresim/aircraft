@@ -32,7 +32,6 @@ export function FailureGeneratorInfoModalUI(
                     </div>
                     <div className="py-2 px-2 text-left">
                         {t('Failures.Generators.Legends.ArrowUpRight')}
-
                     </div>
                 </div>
                 <div className="flex flex-row justify-start items-center w-full">
@@ -68,7 +67,6 @@ export function FailureGeneratorInfoModalUI(
                     </div>
                     <div className="py-2 px-2 text-left">
                         {t('Failures.Generators.Legends.Trash')}
-
                     </div>
                 </div>
                 <div className="flex flex-row justify-start items-center w-full">
@@ -77,7 +75,6 @@ export function FailureGeneratorInfoModalUI(
                     </div>
                     <div className="py-2 px-2 text-left">
                         {t('Failures.Generators.Legends.ToggleOff')}
-
                     </div>
                 </div>
                 <div className="flex flex-row justify-start items-center w-full">
@@ -86,7 +83,6 @@ export function FailureGeneratorInfoModalUI(
                     </div>
                     <div className="py-2 px-2 text-left">
                         {t('Failures.Generators.Legends.Repeat1')}
-
                     </div>
                 </div>
                 <div className="flex flex-row justify-start items-center w-full">
@@ -96,7 +92,6 @@ export function FailureGeneratorInfoModalUI(
                     </div>
                     <div className="py-2 px-2 text-left">
                         {t('Failures.Generators.Legends.Airplane')}
-
                     </div>
                 </div>
                 <div className="flex flex-row justify-start items-center w-full">
