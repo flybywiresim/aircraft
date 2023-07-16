@@ -24,6 +24,9 @@ const createOrchestrator = () => new FailuresOrchestrator('A32NX', [
     [21, A320Failure.CkptDuctOvht, 'Cockpit Duct Overheat'],
     [21, A320Failure.FwdDuctOvht, 'Forward Zone Duct Overheat'],
     [21, A320Failure.AftDuctOvht, 'Aft Zone Duct Overheat'],
+    [21, A320Failure.LabGalleyFan, 'Extraction Fan of lavatory and galley'],
+    [21, A320Failure.ZoneControllerPrimary, 'Zone Controller primary channel'],
+    [21, A320Failure.ZoneControllerSecondary, 'Zone Controller secondary channel'],
 
     [22, A320Failure.Fac1Failure, 'FAC 1'],
     [22, A320Failure.Fac2Failure, 'FAC 2'],

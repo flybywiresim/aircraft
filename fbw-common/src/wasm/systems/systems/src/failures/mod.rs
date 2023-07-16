@@ -1,4 +1,4 @@
-use crate::air_conditioning::ZoneType;
+use crate::air_conditioning::{acs_controller::ZoneControllerChannel, ZoneType};
 use crate::shared::{
     AirbusElectricPumpId, AirbusEngineDrivenPumpId, GearActuatorId, HydraulicColor, LgciuId,
     ProximityDetectorId,
@@ -11,6 +11,8 @@ pub enum FailureType {
     HotAir(usize),
     TrimAirOverheat(ZoneType),
     TrimAirFault(ZoneType),
+    GalleyFans,
+    ZoneController(ZoneControllerChannel),
     TransformerRectifier(usize),
     ReservoirLeak(HydraulicColor),
     ReservoirAirLeak(HydraulicColor),

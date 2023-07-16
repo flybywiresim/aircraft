@@ -130,6 +130,10 @@ export class PseudoFWC {
 
     private readonly anyDuctOvht = Subject.create(false);
 
+    private readonly lavGalleyFanFault = Subject.create(false);
+
+    private readonly zoneControllerPrimaryFault = Subject.create(false);
+
     private readonly pack1On = Subject.create(false);
 
     private readonly pack2On = Subject.create(false);
@@ -1068,6 +1072,9 @@ export class PseudoFWC {
         this.fwdDuctOvht.set(SimVar.GetSimVarValue('L:A32NX_COND_FWD_DUCT_OVHT', 'bool'));
         this.aftDuctOvht.set(SimVar.GetSimVarValue('L:A32NX_COND_AFT_DUCT_OVHT', 'bool'));
         this.anyDuctOvht.set(this.ckptDuctOvht.get() || this.fwdDuctOvht.get() || this.aftDuctOvht.get());
+
+        this.lavGalleyFanFault.set(SimVar.GetSimVarValue('L:A32NX_VENT_LAB_GALLEY_FAN_HAS_FAULT', 'bool'));
+        this.zoneControllerPrimaryFault.set(SimVar.GetSimVarValue('L:A32NX_COND_ZONE_CONTROLLER_PRIMARY_CHANNEL_HAS_FAULT', 'bool'));
 
         const crossfeed = SimVar.GetSimVarValue('L:A32NX_PNEU_XBLEED_VALVE_OPEN', 'bool');
         const eng1Bleed = SimVar.GetSimVarValue('A:BLEED AIR ENGINE:1', 'bool');
@@ -2245,6 +2252,16 @@ export class PseudoFWC {
             sysPage: 7,
             side: 'LEFT',
         },
+        2163260: { // LAV+GALLEY FAN FAULT
+            flightPhaseInhib: [3, 4, 5, 7, 8, 9],
+            simVarIsActive: this.lavGalleyFanFault,
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['216326001'],
+            memoInhibit: () => false,
+            failure: 1,
+            sysPage: -1,
+            side: 'LEFT',
+        },
         2163290: { // HOT AIR FAULT
             flightPhaseInhib: [3, 4, 5, 7, 8],
             simVarIsActive: MappedSubject.create(([hotAirEnabled, hotAirOpen]) => hotAirEnabled !== hotAirOpen, this.hotAirEnabled, this.hotAirOpen),
@@ -2258,6 +2275,16 @@ export class PseudoFWC {
             memoInhibit: () => false,
             failure: 2,
             sysPage: 7,
+            side: 'LEFT',
+        },
+        2163300: { // ZONE REGUL FAULT
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: this.zoneControllerPrimaryFault,
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['216330001'],
+            memoInhibit: () => false,
+            failure: 1,
+            sysPage: -1,
             side: 'LEFT',
         },
         216330: { // TRIM AIR SYS FAULT

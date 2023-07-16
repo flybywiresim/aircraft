@@ -350,7 +350,10 @@ impl A380AirConditioningSystem {
                 CabinFan::new(context, 2, ElectricalBusType::AlternatingCurrent(1)),
             ],
             mixer_unit: MixerUnit::new(cabin_zones),
-            packs: [AirConditioningPack::new(), AirConditioningPack::new()],
+            packs: [
+                AirConditioningPack::new(Pack(1)),
+                AirConditioningPack::new(Pack(2)),
+            ],
             trim_air_system: TrimAirSystem::new(context, cabin_zones),
 
             air_conditioning_overhead: A380AirConditioningSystemOverhead::new(context),
@@ -411,7 +414,11 @@ impl A380AirConditioningSystem {
         ];
         let duct_demand_temperature = self.acsc.duct_demand_temperature();
         for (id, pack) in self.packs.iter_mut().enumerate() {
-            pack.update(pack_flow[id], &duct_demand_temperature)
+            pack.update(
+                pack_flow[id],
+                &duct_demand_temperature,
+                self.acsc.zone_controller_failure(),
+            )
         }
 
         let mut mixer_intakes: Vec<&dyn OutletAir> = vec![&self.packs[0], &self.packs[1]];

@@ -2647,6 +2647,14 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - FWD
         - AFT
 
+- A32NX_COND_ZONE_CONTROLLER_PRIMARY_CHANNEL_HAS_FAULT
+    - Bool
+    - True when the primary channel of the zone controller is faulted
+
+- A32NX_COND_ZONE_CONTROLLER_BOTH_CHANNEL_HAS_FAULT
+    - Bool
+    - True when the both the primary and secondary channels of the zone controller have failed
+
 - A32NX_HOT_AIR_VALVE_IS_ENABLED
     - Bool
     - True if the trim air system is enabled (pushbutton in auto and power supplied to system)
@@ -2759,6 +2767,10 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - {number}
         - 1
         - 2
+
+- A32NX_VENT_LAB_GALLEY_FAN_HAS_FAULT
+    - Bool
+    - True when the lavatory and galley extraction fan has failed
 
 ## Pneumatic
 

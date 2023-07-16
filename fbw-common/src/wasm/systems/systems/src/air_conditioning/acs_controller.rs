@@ -57,7 +57,7 @@ impl<const ZONES: usize, const ENGINES: usize> AirConditioningSystemController<Z
     ) -> Self {
         let zone_controller = cabin_zone_ids
             .iter()
-            .map(ZoneController::new)
+            .map(|id| ZoneController::new(context, id))
             .collect::<Vec<ZoneController<ZONES>>>();
         Self {
             aircraft_state: AirConditioningStateManager::new(),
@@ -131,6 +131,9 @@ impl<const ZONES: usize, const ENGINES: usize> AirConditioningSystemController<Z
             operation_mode,
             pneumatic,
             trim_air_system,
+            self.zone_controller
+                .iter()
+                .any(|zone| zone.zone_controller_primary_fault()),
         );
 
         self.cabin_fans_controller
@@ -189,6 +192,12 @@ impl<const ZONES: usize, const ENGINES: usize> AirConditioningSystemController<Z
     pub fn hot_air_pb_fault_light_determination(&self) -> bool {
         self.trim_air_system_controller.should_turn_on_fault_light()
     }
+
+    pub fn zone_controller_failure(&self) -> bool {
+        self.zone_controller
+            .iter()
+            .all(|zone| zone.zone_controller_total_failure())
+    }
 }
 
 impl<const ZONES: usize, const ENGINES: usize> PackFlow
@@ -214,6 +223,7 @@ impl<const ZONES: usize, const ENGINES: usize> SimulationElement
 {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         accept_iterable!(self.pack_flow_controller, visitor);
+        accept_iterable!(self.zone_controller, visitor);
         self.trim_air_system_controller.accept(visitor);
 
         visitor.visit(self);
@@ -467,11 +477,25 @@ impl AirConditioningState<EndLanding> {
 
 transition!(EndLanding, OnGround);
 
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum ZoneControllerChannel {
+    Primary,
+    Secondary,
+}
+
 struct ZoneController<const ZONES: usize> {
+    galley_fan_failure_id: VariableIdentifier,
+    zone_controller_primary_failure_id: VariableIdentifier,
+    zone_controller_both_channels_failure_id: VariableIdentifier,
+
     zone_id: usize,
     duct_demand_temperature: ThermodynamicTemperature,
     zone_selected_temperature: ThermodynamicTemperature,
     pid_controller: PidController,
+
+    galley_fan_failure: Failure,
+    zone_regulation_primary_failure: Failure,
+    zone_regulation_secondary_failure: Failure,
 }
 
 impl<const ZONES: usize> ZoneController<ZONES> {
@@ -490,7 +514,7 @@ impl<const ZONES: usize> ZoneController<ZONES> {
     const KP_DUCT_DEMAND_CABIN: f64 = 3.5;
     const KP_DUCT_DEMAND_COCKPIT: f64 = 2.;
 
-    fn new(zone_type: &ZoneType) -> Self {
+    fn new(context: &mut InitContext, zone_type: &ZoneType) -> Self {
         let pid_controller = match zone_type {
             ZoneType::Cockpit => {
                 PidController::new(
@@ -514,10 +538,25 @@ impl<const ZONES: usize> ZoneController<ZONES> {
             ),
         };
         Self {
+            galley_fan_failure_id: context
+                .get_identifier("VENT_LAB_GALLEY_FAN_HAS_FAULT".to_owned()),
+            zone_controller_primary_failure_id: context
+                .get_identifier("COND_ZONE_CONTROLLER_PRIMARY_CHANNEL_HAS_FAULT".to_owned()),
+            zone_controller_both_channels_failure_id: context
+                .get_identifier("COND_ZONE_CONTROLLER_BOTH_CHANNEL_HAS_FAULT".to_owned()),
+
             zone_id: zone_type.id(),
             duct_demand_temperature: ThermodynamicTemperature::new::<degree_celsius>(24.),
             zone_selected_temperature: ThermodynamicTemperature::new::<degree_celsius>(24.),
             pid_controller,
+
+            galley_fan_failure: Failure::new(FailureType::GalleyFans),
+            zone_regulation_primary_failure: Failure::new(FailureType::ZoneController(
+                ZoneControllerChannel::Primary,
+            )),
+            zone_regulation_secondary_failure: Failure::new(FailureType::ZoneController(
+                ZoneControllerChannel::Secondary,
+            )),
         }
     }
 
@@ -530,14 +569,18 @@ impl<const ZONES: usize> ZoneController<ZONES> {
         operation_mode: &ACSCActiveComputer,
     ) {
         self.zone_selected_temperature = if matches!(operation_mode, ACSCActiveComputer::Secondary)
+            || self.zone_regulation_primary_failure.is_active()
         {
-            // If the Zone controller is working on secondary power, the zones are controlled to
-            // 24 degrees by the secondary computer
+            // If the Zone controller is working on secondary power or the primary channel has failed,
+            // the zones are controlled to 24 degrees by the secondary computer
             ThermodynamicTemperature::new::<degree_celsius>(24.)
         } else {
             acs_overhead.selected_cabin_temperature(self.zone_id)
         };
-        self.duct_demand_temperature = if matches!(operation_mode, ACSCActiveComputer::None) {
+        self.duct_demand_temperature = if matches!(operation_mode, ACSCActiveComputer::None)
+            || (self.zone_regulation_primary_failure.is_active()
+                && self.zone_regulation_secondary_failure.is_active())
+        {
             // If unpowered or failed, the pack controller would take over and deliver a fixed 20deg
             // for the cockpit and 10 for the cabin
             // Simulated here until packs are modelled
@@ -546,6 +589,10 @@ impl<const ZONES: usize> ZoneController<ZONES> {
             } else {
                 10.
             })
+        } else if self.galley_fan_failure.is_active() && self.zone_id != 0 {
+            // Cabin zone temperature sensors are ventilated by air extracted by this fan, cabin temperature regulation is lost
+            // Cabin inlet duct is constant at 15C, cockpit air is unnafected
+            ThermodynamicTemperature::new::<degree_celsius>(15.)
         } else {
             self.calculate_duct_temp_demand(context, pressurization, zone_measured_temperature)
         };
@@ -647,6 +694,43 @@ impl<const ZONES: usize> ZoneController<ZONES> {
 
     fn duct_demand_temperature(&self) -> ThermodynamicTemperature {
         self.duct_demand_temperature
+    }
+
+    fn zone_controller_primary_fault(&self) -> bool {
+        self.zone_regulation_primary_failure.is_active()
+    }
+
+    fn zone_controller_total_failure(&self) -> bool {
+        self.zone_regulation_primary_failure.is_active()
+            && self.zone_regulation_secondary_failure.is_active()
+    }
+}
+
+impl<const ZONES: usize> SimulationElement for ZoneController<ZONES> {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        if self.zone_id == 0 {
+            // To avoid overwriting the same values for each zone
+            writer.write(
+                &self.galley_fan_failure_id,
+                self.galley_fan_failure.is_active(),
+            );
+            writer.write(
+                &self.zone_controller_primary_failure_id,
+                self.zone_regulation_primary_failure.is_active(),
+            );
+            writer.write(
+                &self.zone_controller_both_channels_failure_id,
+                self.zone_regulation_primary_failure.is_active()
+                    && self.zone_regulation_secondary_failure.is_active(),
+            );
+        }
+    }
+
+    fn accept<T: crate::simulation::SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.galley_fan_failure.accept(visitor);
+        self.zone_regulation_primary_failure.accept(visitor);
+        self.zone_regulation_secondary_failure.accept(visitor);
+        visitor.visit(self);
     }
 }
 
@@ -936,6 +1020,7 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystemController<ZONES, EN
         operation_mode: ACSCActiveComputer,
         pneumatic: &impl PackFlowValveState,
         trim_air_system: &TrimAirSystem<ZONES, ENGINES>,
+        zone_controller_fault: bool,
     ) {
         // When there is a failure the overhead button (or any other condition)
         // will not open or close the trim air pressure regulating valve
@@ -946,6 +1031,7 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystemController<ZONES, EN
             operation_mode,
             pack_flow_controller,
             pneumatic,
+            zone_controller_fault,
         );
 
         // When a failure is active the TAPRV will be unresponsive - it will stay in the same state as it was
@@ -975,6 +1061,7 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystemController<ZONES, EN
         operation_mode: ACSCActiveComputer,
         pack_flow_controller: &[PackFlowController<ENGINES>; 2],
         pneumatic: &impl PackFlowValveState,
+        zone_controller_fault: bool,
     ) -> bool {
         acs_overhead.hot_air_pushbutton_is_on()
             && operation_mode == ACSCActiveComputer::Primary
@@ -984,6 +1071,7 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystemController<ZONES, EN
             && ((pneumatic.pack_flow_valve_is_open(1)) || (pneumatic.pack_flow_valve_is_open(2)))
             && !self.overheat_event
             && !any_tav_has_fault
+            && !zone_controller_fault
     }
 
     fn trim_air_valve_controllers(&self, zone_id: usize) -> TrimAirValveController {
@@ -1949,7 +2037,10 @@ mod acs_controller_tests {
                 engine_fire_push_buttons: TestEngineFirePushButtons::new(),
                 mixer_unit: MixerUnit::new(&cabin_zones),
                 number_of_passengers: 0,
-                packs: [AirConditioningPack::new(), AirConditioningPack::new()],
+                packs: [
+                    AirConditioningPack::new(Pack(1)),
+                    AirConditioningPack::new(Pack(2)),
+                ],
                 pneumatic: TestPneumatic::new(context),
                 pneumatic_overhead: TestPneumaticOverhead::new(context),
                 pressurization: TestPressurization::new(),
@@ -2108,7 +2199,11 @@ mod acs_controller_tests {
             ];
             let duct_demand_temperature = self.acsc.duct_demand_temperature();
             for (id, pack) in self.packs.iter_mut().enumerate() {
-                pack.update(pack_flow[id], &duct_demand_temperature)
+                pack.update(
+                    pack_flow[id],
+                    &duct_demand_temperature,
+                    self.acsc.zone_controller_failure(),
+                )
             }
             for fan in self.cabin_fans.iter_mut() {
                 fan.update(
@@ -3003,6 +3098,87 @@ mod acs_controller_tests {
             );
             assert!(
                 (test_bed.duct_demand_temperature()[1].get::<degree_celsius>() - 10.).abs() < 1.
+            );
+        }
+
+        #[test]
+        fn failing_primary_sets_the_zones_at_24c() {
+            let mut test_bed = test_bed()
+                .with()
+                .both_packs_on()
+                .and()
+                .engine_idle()
+                .and()
+                .command_selected_temperature(
+                    [ThermodynamicTemperature::new::<degree_celsius>(30.); 2],
+                );
+
+            test_bed.fail(FailureType::ZoneController(ZoneControllerChannel::Primary));
+
+            test_bed = test_bed.iterate(1000);
+
+            assert!((test_bed.duct_temperature()[1].get::<degree_celsius>() - 24.).abs() < 1.);
+            assert_eq!(
+                (test_bed.trim_air_valves_open_amount()[1]),
+                Ratio::default()
+            );
+        }
+
+        #[test]
+        fn failing_both_channels_sets_duct_demand_to_packs() {
+            let mut test_bed = test_bed()
+                .with()
+                .both_packs_on()
+                .and()
+                .engine_idle()
+                .iterate(2)
+                .and()
+                .command_selected_temperature(
+                    [ThermodynamicTemperature::new::<degree_celsius>(30.); 2],
+                );
+
+            test_bed.fail(FailureType::ZoneController(ZoneControllerChannel::Primary));
+            test_bed.fail(FailureType::ZoneController(
+                ZoneControllerChannel::Secondary,
+            ));
+
+            test_bed = test_bed.iterate(1000);
+
+            assert!(
+                (test_bed.duct_demand_temperature()[0].get::<degree_celsius>() - 20.).abs() < 1.
+            );
+            assert!(
+                (test_bed.duct_demand_temperature()[1].get::<degree_celsius>() - 10.).abs() < 1.
+            );
+            assert_eq!(
+                (test_bed.trim_air_valves_open_amount()[1]),
+                Ratio::default()
+            );
+        }
+
+        #[test]
+        fn failing_galley_fans_sets_duct_demand_to_15c() {
+            let mut test_bed = test_bed()
+                .with()
+                .both_packs_on()
+                .and()
+                .engine_idle()
+                .iterate(2)
+                .and()
+                .command_selected_temperature(
+                    [ThermodynamicTemperature::new::<degree_celsius>(30.); 2],
+                );
+
+            test_bed.fail(FailureType::GalleyFans);
+
+            test_bed = test_bed.iterate(1000);
+
+            assert!(
+                (test_bed.duct_demand_temperature()[1].get::<degree_celsius>() - 15.).abs() < 1.
+            );
+            assert_eq!(
+                (test_bed.trim_air_valves_open_amount()[1]),
+                Ratio::default()
             );
         }
 

@@ -425,38 +425,49 @@ impl<const ZONES: usize> OutletAir for MixerUnitOutlet<ZONES> {
 
 /// Temporary struct until packs are fully simulated
 pub struct AirConditioningPack {
+    pack_id: Pack,
     outlet_air: Air,
 }
 
 impl AirConditioningPack {
-    pub fn new() -> Self {
+    pub fn new(pack_id: Pack) -> Self {
         Self {
+            pack_id,
             outlet_air: Air::new(),
         }
     }
 
     /// Takes the minimum duct demand temperature as the pack outlet temperature. This is accurate to real world behaviour but
     /// this is a placeholder until the packs are modelled
-    pub fn update(&mut self, pack_flow: MassRate, duct_demand: &[ThermodynamicTemperature]) {
+    pub fn update(
+        &mut self,
+        pack_flow: MassRate,
+        duct_demand: &[ThermodynamicTemperature],
+        zone_controller_failure: bool,
+    ) {
         self.outlet_air.set_flow_rate(pack_flow);
 
         let min_temp = duct_demand
             .iter()
             .fold(f64::INFINITY, |acc, &t| acc.min(t.get::<kelvin>()));
-        self.outlet_air
-            .set_temperature(ThermodynamicTemperature::new::<kelvin>(min_temp));
+        if zone_controller_failure {
+            if matches!(self.pack_id, Pack(1)) {
+                self.outlet_air
+                    .set_temperature(ThermodynamicTemperature::new::<degree_celsius>(20.));
+            } else {
+                self.outlet_air
+                    .set_temperature(ThermodynamicTemperature::new::<degree_celsius>(10.));
+            }
+        } else {
+            self.outlet_air
+                .set_temperature(ThermodynamicTemperature::new::<kelvin>(min_temp));
+        }
     }
 }
 
 impl OutletAir for AirConditioningPack {
     fn outlet_air(&self) -> Air {
         self.outlet_air
-    }
-}
-
-impl Default for AirConditioningPack {
-    fn default() -> Self {
-        Self::new()
     }
 }
 

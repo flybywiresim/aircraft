@@ -32,6 +32,11 @@ export const CondPage = () => {
     const [cabFanHasFault1] = useSimVar('L:A32NX_VENT_CABIN_FAN_1_HAS_FAULT', 'bool', 1000);
     const [cabFanHasFault2] = useSimVar('L:A32NX_VENT_CABIN_FAN_2_HAS_FAULT', 'bool', 1000);
 
+    const [zoneControllerPrimaryFault] = useSimVar('L:A32NX_COND_ZONE_CONTROLLER_PRIMARY_CHANNEL_HAS_FAULT', 'bool', 1000);
+    const [zoneControllerBothChannelFault] = useSimVar('L:A32NX_COND_ZONE_CONTROLLER_BOTH_CHANNEL_HAS_FAULT', 'bool', 1000);
+
+    const altnMode = zoneControllerPrimaryFault && !zoneControllerBothChannelFault;
+
     return (
         <svg id="cond-page" className="ecam-common-styles" viewBox="0 0 768 768" style={{ marginTop: '-60px' }} xmlns="http://www.w3.org/2000/svg">
             {/* Title and unit */}
@@ -42,7 +47,8 @@ export const CondPage = () => {
                 <text id="CondTempUnit" className="Standard Cyan" x="726" y="31">°C</text>
                 <text id="LeftFanWarning" className={`Large Amber ${cabFanHasFault1 ? 'Show' : 'Hide'}`} x="180" y="75">FAN</text>
                 <text id="RightFanWarning" className={`Large Amber ${cabFanHasFault2 ? 'Show' : 'Hide'}`} x="510" y="75">FAN</text>
-                {/* <text id="AltnMode" className="Large Green" x="310" y="45">ALTN MODE</text> */}
+                <text id="AltnMode" className={`Large Green ${altnMode ? 'Show' : 'Hide'}`} x="310" y="45">ALTN MODE</text>
+                <text id="PackReg" className={`Large Green ${zoneControllerBothChannelFault ? 'Show' : 'Hide'}`} x="310" y="45">PACK REG</text>
             </g>
 
             {/* Plane shape */}
