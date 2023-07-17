@@ -723,9 +723,9 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
 
   30.0,
 
-  SignStatusMatrix::NoComputedData,
-
   SignStatusMatrix::NormalOperation,
+
+  SignStatusMatrix::NoComputedData,
 
   a380_pitch_efcs_law::AlternateLaw2,
 
@@ -3427,19 +3427,19 @@ A380PrimComputer::Parameters_A380PrimComputer_T A380PrimComputer::A380PrimComput
 
   false,
 
-  false,
-
-  false,
-
-  false,
-
-  false,
-
-  false,
-
-  false,
-
   true,
+
+  false,
+
+  false,
+
+  false,
+
+  false,
+
+  false,
+
+  false,
 
   false
 };
