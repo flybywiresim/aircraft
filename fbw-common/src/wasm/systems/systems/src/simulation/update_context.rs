@@ -503,8 +503,12 @@ impl UpdateContext {
             is_on_ground: Default::default(),
             vertical_speed: Default::default(),
             local_acceleration: Default::default(),
+<<<<<<< HEAD
             local_acceleration_plane_reference: Vector3::new(0., -9.8, 0.),
             side_controlling: SideControlling::BOTH,
+=======
+            side_controlling: SideControlling::CAPTAIN,
+>>>>>>> 79882d14e (Removal of sync)
 
             local_acceleration_plane_reference_filtered:
                 LowPassFilter::<Vector3<f64>>::new_with_init_value(
@@ -609,7 +613,6 @@ impl UpdateContext {
 
         self.in_cloud = reader.read(&self.in_cloud_id);
 
-<<<<<<< HEAD
         let surface_read: f64 = reader.read(&self.surface_id);
         self.surface = surface_read.into();
 
@@ -631,8 +634,6 @@ impl UpdateContext {
             AngularVelocity::new::<degree_per_second>(reader.read(&self.rotation_vel_z_id)),
         );
 
-=======
->>>>>>> 4d2817d7f (linting fix)
         self.side_controlling = reader.read(&self.side_controlling_id);
 
         self.update_relative_wind();
