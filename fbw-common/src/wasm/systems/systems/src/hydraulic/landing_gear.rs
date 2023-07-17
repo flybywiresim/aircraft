@@ -110,9 +110,8 @@ impl GearSystemShockAbsorber {
         };
 
         Self {
-            shock_absorber_position_id: context.get_identifier(
-                format!("CONTACT POINT COMPRESSION:{}", contact_point_id).to_owned(),
-            ),
+            shock_absorber_position_id: context
+                .get_identifier(format!("CONTACT POINT COMPRESSION:{}", contact_point_id)),
             shock_absorber_position: Ratio::default(),
         }
     }
