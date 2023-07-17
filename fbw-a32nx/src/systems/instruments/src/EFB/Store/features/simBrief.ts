@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { getSimbriefData } from '../../Apis/Simbrief';
 import { IFuel, IWeights } from '../../Apis/Simbrief/simbriefInterface';
@@ -127,10 +131,10 @@ export const simbriefSlice = createSlice({
     },
 });
 
-export async function fetchSimbriefDataAction(simbriefUserId: string): Promise<PayloadAction<SimbriefData>> {
-    const returnedSimbriefData = await getSimbriefData(simbriefUserId);
+export async function fetchSimbriefDataAction(naivgraphUsername: string): Promise<PayloadAction<SimbriefData>> {
+    const returnedSimbriefData = await getSimbriefData(naivgraphUsername);
 
-    if (simbriefUserId) {
+    if (naivgraphUsername) {
         return setSimbriefData({
             airline: returnedSimbriefData.airline,
             flightNum: returnedSimbriefData.flightNumber,

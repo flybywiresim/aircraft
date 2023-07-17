@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { ISimbriefData } from './simbriefInterface';
 
 const simbriefApiUrl = new URL('https://www.simbrief.com/api/xml.fetcher.php');
@@ -8,8 +12,8 @@ const getRequestData: RequestInit = {
     method: 'GET',
 };
 
-export const getSimbriefData = (simbriefUserId: string): Promise<ISimbriefData> => {
-    simbriefApiParams.append('userid', simbriefUserId);
+export const getSimbriefData = (navigraphUsername: string): Promise<ISimbriefData> => {
+    simbriefApiParams.append('username', navigraphUsername);
     simbriefApiParams.append('json', '1');
     simbriefApiUrl.search = simbriefApiParams.toString();
 

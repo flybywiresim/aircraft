@@ -1,7 +1,11 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 class SimBriefApi {
     static getSimBriefOfp(userId) {
         if (userId) {
-            return fetch(`${SimBriefApi.url}&userid=${userId}`)
+            return fetch(`${SimBriefApi.url}&username=${userId}`)
                 .then((response) => {
                     if (!response.ok) {
                         throw new HttpError(response.status);
@@ -10,7 +14,7 @@ class SimBriefApi {
                     return response.json();
                 });
         } else {
-            throw new Error("No SimBrief pilot ID provided");
+            throw new Error("No Navigraph username provided");
         }
     }
 }

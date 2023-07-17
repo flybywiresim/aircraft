@@ -15,7 +15,7 @@ const isProductionBuild = process.env.A32NX_PRODUCTION_BUILD === '1';
 esbuild.build({
     absWorkingDir: __dirname,
 
-    define: { DEBUG: 'false' },
+    define: { 'DEBUG': 'false', 'process.env.CLIENT_ID': `'${process.env.CLIENT_ID}'`, 'process.env.CLIENT_SECRET': `'${process.env.CLIENT_SECRET}'` },
 
     entryPoints: ['./index.ts'],
     bundle: true,
