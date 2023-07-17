@@ -5,6 +5,7 @@ mod airframe;
 mod electrical;
 mod fuel;
 pub mod hydraulic;
+mod landing_gear;
 mod navigation;
 mod payload;
 mod pneumatic;
@@ -22,6 +23,7 @@ use electrical::{
     APU_START_MOTOR_BUS_TYPE,
 };
 use hydraulic::{A320Hydraulic, A320HydraulicOverheadPanel};
+use landing_gear::LandingGearControlInterfaceUnitSet;
 use navigation::A320RadioAltimeters;
 use power_consumption::A320PowerConsumption;
 use systems::enhanced_gpwc::EnhancedGroundProximityWarningComputer;
@@ -36,7 +38,6 @@ use systems::{
     electrical::{Electricity, ElectricitySource, ExternalPowerSource},
     engine::{leap_engine::LeapEngine, reverser_thrust::ReverserForce, EngineFireOverheadPanel},
     hydraulic::brake_circuit::AutobrakePanel,
-    landing_gear::LandingGearControlInterfaceUnitSet,
     navigation::adirs::{
         AirDataInertialReferenceSystem, AirDataInertialReferenceSystemOverheadPanel,
     },

@@ -3136,13 +3136,13 @@ impl HeatingElement for ManualPump {}
 impl HeatingPressureSource for ManualPump {}
 
 #[derive(PartialEq, Clone, Copy)]
-enum HydraulicValveType {
+pub enum HydraulicValveType {
     ClosedWhenOff,
     _OpenedWhenOff,
     Mechanical,
 }
 
-struct HydraulicValve {
+pub struct HydraulicValve {
     position: LowPassFilter<Ratio>,
     is_powered: bool,
     powered_by: Option<Vec<ElectricalBusType>>,

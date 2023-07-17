@@ -27,7 +27,7 @@ use systems::{
         },
         cargo_doors::{CargoDoor, HydraulicDoorController},
         flap_slat::FlapSlatAssembly,
-        landing_gear::{GearGravityExtension, GearSystemController, HydraulicGearSystem},
+        landing_gear::GearSystemController,
         linear_actuator::{
             Actuator, BoundedLinearLength, ElectroHydrostaticActuatorType,
             ElectroHydrostaticBackup, ElectroHydrostaticPowered, HydraulicAssemblyController,
@@ -47,7 +47,7 @@ use systems::{
         HydraulicCircuitController, HydraulicPressureSensors, ManualPump, PressureSwitch,
         PressureSwitchType, PriorityValve, PumpController, Reservoir,
     },
-    landing_gear::{GearSystemSensors, LandingGearControlInterfaceUnitSet, TiltingGear},
+    landing_gear::TiltingGear,
     overhead::{AutoOffFaultPushButton, AutoOnFaultPushButton},
     shared::{
         interpolation, random_from_range, update_iterator::MaxStepLoop, AdirsDiscreteOutputs,
@@ -62,12 +62,18 @@ use systems::{
     },
 };
 
+use crate::{
+    hydraulic::landing_gear::{GearGravityExtension, HydraulicGearSystem},
+    landing_gear::{GearSystemSensors, LandingGearControlInterfaceUnitSet},
+};
+
 use std::fmt::Debug;
 
 mod flaps_computer;
 use flaps_computer::SlatFlapComplex;
 mod engine_pump_disc;
 use engine_pump_disc::EnginePumpDisconnectionClutch;
+mod landing_gear;
 
 #[cfg(test)]
 use systems::hydraulic::PressureSwitchState;

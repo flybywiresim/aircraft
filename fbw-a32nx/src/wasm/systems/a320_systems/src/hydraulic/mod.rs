@@ -29,7 +29,7 @@ use systems::{
         cargo_doors::{CargoDoor, HydraulicDoorController},
         electrical_generator::{GeneratorControlUnit, HydraulicGeneratorMotor},
         flap_slat::FlapSlatAssembly,
-        landing_gear::{GearGravityExtension, GearSystemController, HydraulicGearSystem},
+        landing_gear::GearSystemController,
         linear_actuator::{
             Actuator, BoundedLinearLength, ElectroHydrostaticPowered, HydraulicAssemblyController,
             HydraulicLinearActuatorAssembly, HydraulicLocking, LinearActuatedRigidBodyOnHingeAxis,
@@ -54,7 +54,6 @@ use systems::{
         PowerTransferUnitCharacteristics, PowerTransferUnitController, PressureSwitch,
         PressureSwitchType, PriorityValve, PumpController, RamAirTurbine, Reservoir,
     },
-    landing_gear::{GearSystemSensors, LandingGearControlInterfaceUnitSet},
     overhead::{
         AutoOffFaultPushButton, AutoOnFaultPushButton, MomentaryOnPushButton, MomentaryPushButton,
     },
@@ -74,8 +73,14 @@ use systems::{
     },
 };
 
+use crate::{
+    hydraulic::landing_gear::{GearGravityExtension, HydraulicGearSystem},
+    landing_gear::{GearSystemSensors, LandingGearControlInterfaceUnitSet},
+};
+
 mod flaps_computer;
 use flaps_computer::SlatFlapComplex;
+mod landing_gear;
 
 #[cfg(test)]
 use systems::hydraulic::PressureSwitchState;

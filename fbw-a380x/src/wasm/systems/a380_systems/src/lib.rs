@@ -8,6 +8,7 @@ mod electrical;
 mod fuel;
 pub mod hydraulic;
 mod icing;
+mod landing_gear;
 mod navigation;
 mod payload;
 mod pneumatic;
@@ -28,6 +29,7 @@ use electrical::{
 use fuel::FuelLevel;
 use hydraulic::{A380Hydraulic, A380HydraulicOverheadPanel};
 use icing::Icing;
+use landing_gear::LandingGearControlInterfaceUnitSet;
 use navigation::A380RadioAltimeters;
 use payload::A380Payload;
 use power_consumption::A380PowerConsumption;
@@ -44,7 +46,6 @@ use systems::{
     engine::{trent_engine::TrentEngine, EngineFireOverheadPanel},
     enhanced_gpwc::EnhancedGroundProximityWarningComputer,
     hydraulic::brake_circuit::AutobrakePanel,
-    landing_gear::LandingGearControlInterfaceUnitSet,
     navigation::adirs::{
         AirDataInertialReferenceSystem, AirDataInertialReferenceSystemOverheadPanel,
     },

@@ -1,556 +1,356 @@
-use crate::{
-    failures::{Failure, FailureType},
+use systems::{
+    hydraulic::{
+        aerodynamic_model::AerodynamicModel,
+        landing_gear::{
+            GearSystemComponentAssembly, GearSystemController, GearSystemHydraulicSupply,
+            GearSystemShockAbsorber,
+        },
+        linear_actuator::{Actuator, HydraulicLinearActuatorAssembly},
+    },
     shared::{
-        random_from_range, ElectricalBusType, GearActuatorId, LgciuGearControl, LgciuId,
-        ProximityDetectorId,
+        GearActuatorId, GearWheel, LgciuGearControl, LgciuId, ProximityDetectorId, SectionPressure,
     },
     simulation::{
-        InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
-        UpdateContext, VariableIdentifier,
+        InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
+        VariableIdentifier, Write,
     },
 };
 
-use super::{
-    aerodynamic_model::AerodynamicModel,
-    linear_actuator::{
-        Actuator, ElectroHydrostaticPowered, HydraulicAssemblyController,
-        HydraulicLinearActuatorAssembly, HydraulicLocking, LinearActuatorMode,
-    },
-    HydraulicValve, HydraulicValveType,
-};
+use crate::landing_gear::GearSystemSensors;
 
-use uom::si::{f64::*, pressure::psi, ratio::ratio};
-
-pub trait GearSystemController {
-    fn safety_valve_should_open(&self) -> bool;
-    fn shut_off_valve_should_open(&self) -> bool;
-    fn vent_valves_should_open(&self) -> bool;
-    fn doors_uplocks_should_mechanically_unlock(&self) -> bool;
-    fn gears_uplocks_should_mechanically_unlock(&self) -> bool;
+pub trait GearGravityExtension {
+    fn extension_handle_number_of_turns(&self) -> u8;
 }
 
-pub struct GearSystemHydraulicSupply {
-    safety_valve: HydraulicValve,
-    cutoff_valve: HydraulicValve,
-    gear_and_door_selector_valve: HydraulicValve,
+pub struct HydraulicGearSystem {
+    door_center_position_id: VariableIdentifier,
+    door_center_gear_slaved_position_id: VariableIdentifier,
+
+    door_left_position_id: VariableIdentifier,
+    door_right_position_id: VariableIdentifier,
+
+    gear_center_position_id: VariableIdentifier,
+    gear_left_position_id: VariableIdentifier,
+    gear_right_position_id: VariableIdentifier,
+
+    hydraulic_supply: GearSystemHydraulicSupply,
+
+    nose_door_assembly: GearSystemComponentAssembly,
+    left_door_assembly: GearSystemComponentAssembly,
+    right_door_assembly: GearSystemComponentAssembly,
+
+    nose_gear_assembly: GearSystemComponentAssembly,
+    left_gear_assembly: GearSystemComponentAssembly,
+    right_gear_assembly: GearSystemComponentAssembly,
+
+    nose_gear_shock_absorber: GearSystemShockAbsorber,
+    left_gear_shock_absorber: GearSystemShockAbsorber,
+    right_gear_shock_absorber: GearSystemShockAbsorber,
 }
-impl GearSystemHydraulicSupply {
-    pub fn new() -> Self {
-        Self {
-            safety_valve: HydraulicValve::new(
-                HydraulicValveType::ClosedWhenOff,
-                Some(vec![
-                    ElectricalBusType::DirectCurrentEssential,
-                    ElectricalBusType::DirectCurrentGndFltService,
-                ]),
-            ),
-            cutoff_valve: HydraulicValve::new(HydraulicValveType::Mechanical, None),
-            gear_and_door_selector_valve: HydraulicValve::new(
-                HydraulicValveType::ClosedWhenOff,
-                Some(vec![
-                    ElectricalBusType::DirectCurrentEssential,
-                    ElectricalBusType::DirectCurrentGndFltService,
-                ]),
-            ),
-        }
-    }
-
-    pub fn update(
-        &mut self,
-        context: &UpdateContext,
-        valves_controller: &impl GearSystemController,
-        gear_controller: &impl LgciuGearControl,
-        main_hydraulic_circuit_pressure: Pressure,
-    ) {
-        self.safety_valve.update(
-            context,
-            valves_controller.safety_valve_should_open(),
-            main_hydraulic_circuit_pressure,
-        );
-        self.cutoff_valve.update(
-            context,
-            valves_controller.shut_off_valve_should_open(),
-            self.safety_valve.pressure_output(),
-        );
-        self.gear_and_door_selector_valve.update(
-            context,
-            gear_controller.control_active(),
-            self.cutoff_valve.pressure_output(),
-        );
-    }
-
-    pub fn gear_system_manifold_pressure(&self) -> Pressure {
-        self.gear_and_door_selector_valve.pressure_output()
-    }
-}
-impl SimulationElement for GearSystemHydraulicSupply {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.safety_valve.accept(visitor);
-        self.gear_and_door_selector_valve.accept(visitor);
-
-        visitor.visit(self);
-    }
-}
-
-pub struct GearSystemShockAbsorber {
-    shock_absorber_position_id: VariableIdentifier,
-    shock_absorber_position: Ratio,
-}
-impl GearSystemShockAbsorber {
-    const COMPRESSION_THRESHOLD_FOR_WEIGHT_ON_WHEELS_RATIO: f64 = 0.02;
-
-    pub fn new(context: &mut InitContext, id: GearActuatorId) -> Self {
-        let contact_point_id = match id {
-            GearActuatorId::GearNose => 0,
-            GearActuatorId::GearLeft => 1,
-            GearActuatorId::GearRight => 2,
-            GearActuatorId::GearDoorLeft
-            | GearActuatorId::GearDoorRight
-            | GearActuatorId::GearDoorNose => panic!("Gear doors don't have shock absorbers"),
-        };
-
-        Self {
-            shock_absorber_position_id: context.get_identifier(
-                format!("CONTACT POINT COMPRESSION:{}", contact_point_id).to_owned(),
-            ),
-            shock_absorber_position: Ratio::default(),
-        }
-    }
-
-    pub fn is_shock_absorber_fully_extended(&self, _lgciu_id: LgciuId) -> bool {
-        self.shock_absorber_position
-            < Ratio::new::<ratio>(Self::COMPRESSION_THRESHOLD_FOR_WEIGHT_ON_WHEELS_RATIO)
-    }
-}
-impl SimulationElement for GearSystemShockAbsorber {
-    fn read(&mut self, reader: &mut SimulatorReader) {
-        self.shock_absorber_position = reader.read(&self.shock_absorber_position_id);
-    }
-}
-
-pub trait GearSystemComponentController {
-    fn should_open(&self) -> bool;
-    fn should_close(&self) -> bool;
-}
-
-enum GearSysComponentId {
-    Door,
-    Gear,
-}
-impl From<GearActuatorId> for GearSysComponentId {
-    fn from(id: GearActuatorId) -> Self {
-        match id {
-            GearActuatorId::GearDoorLeft
-            | GearActuatorId::GearDoorRight
-            | GearActuatorId::GearDoorNose => GearSysComponentId::Door,
-            GearActuatorId::GearLeft | GearActuatorId::GearRight | GearActuatorId::GearNose => {
-                GearSysComponentId::Gear
-            }
-        }
-    }
-}
-
-pub struct GearSystemComponentAssembly {
-    component_id: GearSysComponentId,
-    is_inverted_control: bool,
-    hydraulic_controller: GearSystemComponentHydraulicController,
-    hydraulic_assembly: HydraulicLinearActuatorAssembly<1>,
-    fully_opened_proximity_detectors: [ProximityDetector; 2],
-    uplock_proximity_detectors: [ProximityDetector; 2],
-    hydraulic_uplock: HydraulicLock,
-    hydraulic_downlock: Option<HydraulicLock>,
-
-    aerodynamic_model: AerodynamicModel,
-}
-impl GearSystemComponentAssembly {
-    const OPENED_PROXIMITY_DETECTOR_MOUNTING_POSITION_RATIO: f64 = 1.;
-    const OPENED_PROXIMITY_DETECTOR_TRIG_DISTANCE_RATIO: f64 = 0.03;
-
-    const UPLOCKED_PROXIMITY_DETECTOR_MOUNTING_POSITION_RATIO: f64 = 0.;
-    const UPLOCKED_PROXIMITY_DETECTOR_TRIG_DISTANCE_RATIO: f64 = 0.01;
-
+impl HydraulicGearSystem {
     pub fn new(
-        id: GearActuatorId,
-        is_inverted_control: bool,
-        hydraulic_assembly: HydraulicLinearActuatorAssembly<1>,
-        has_hydraulic_downlock: bool,
-        uplock_id: [ProximityDetectorId; 2],
-        downlock_id: [ProximityDetectorId; 2],
-        aerodynamic_model: AerodynamicModel,
+        context: &mut InitContext,
+        nose_door: HydraulicLinearActuatorAssembly<1>,
+        left_door: HydraulicLinearActuatorAssembly<1>,
+        right_door: HydraulicLinearActuatorAssembly<1>,
+        nose_gear: HydraulicLinearActuatorAssembly<1>,
+        left_gear: HydraulicLinearActuatorAssembly<1>,
+        right_gear: HydraulicLinearActuatorAssembly<1>,
+        gear_door_left_aerodynamic: AerodynamicModel,
+        gear_door_right_aerodynamic: AerodynamicModel,
+        gear_door_nose_aerodynamic: AerodynamicModel,
+        gear_left_aerodynamic: AerodynamicModel,
+        gear_right_aerodynamic: AerodynamicModel,
+        gear_nose_aerodynamic: AerodynamicModel,
     ) -> Self {
-        let mut obj = Self {
-            component_id: id.into(),
-            is_inverted_control,
-            hydraulic_controller: GearSystemComponentHydraulicController::new(
-                id,
-                is_inverted_control,
-                !has_hydraulic_downlock,
+        Self {
+            door_center_position_id: context.get_identifier("GEAR_DOOR_CENTER_POSITION".to_owned()),
+            door_center_gear_slaved_position_id: context
+                .get_identifier("GEAR_CENTER_SMALL_POSITION".to_owned()),
+
+            door_left_position_id: context.get_identifier("GEAR_DOOR_LEFT_POSITION".to_owned()),
+            door_right_position_id: context.get_identifier("GEAR_DOOR_RIGHT_POSITION".to_owned()),
+
+            gear_center_position_id: context.get_identifier("GEAR_CENTER_POSITION".to_owned()),
+            gear_left_position_id: context.get_identifier("GEAR_LEFT_POSITION".to_owned()),
+            gear_right_position_id: context.get_identifier("GEAR_RIGHT_POSITION".to_owned()),
+
+            hydraulic_supply: GearSystemHydraulicSupply::new(),
+
+            nose_door_assembly: GearSystemComponentAssembly::new(
+                GearActuatorId::GearDoorNose,
+                false,
+                nose_door,
+                false,
+                [
+                    ProximityDetectorId::UplockDoorNose1,
+                    ProximityDetectorId::UplockDoorNose2,
+                ],
+                [
+                    ProximityDetectorId::DownlockDoorNose1,
+                    ProximityDetectorId::DownlockDoorNose2,
+                ],
+                gear_door_nose_aerodynamic,
             ),
-            hydraulic_assembly,
-            fully_opened_proximity_detectors: [
-                ProximityDetector::new(
-                    downlock_id[0],
-                    Ratio::new::<ratio>(Self::OPENED_PROXIMITY_DETECTOR_MOUNTING_POSITION_RATIO),
-                    Ratio::new::<ratio>(Self::OPENED_PROXIMITY_DETECTOR_TRIG_DISTANCE_RATIO),
-                ),
-                ProximityDetector::new(
-                    downlock_id[1],
-                    Ratio::new::<ratio>(Self::OPENED_PROXIMITY_DETECTOR_MOUNTING_POSITION_RATIO),
-                    Ratio::new::<ratio>(Self::OPENED_PROXIMITY_DETECTOR_TRIG_DISTANCE_RATIO),
-                ),
-            ],
-            uplock_proximity_detectors: [
-                ProximityDetector::new(
-                    uplock_id[0],
-                    Ratio::new::<ratio>(Self::UPLOCKED_PROXIMITY_DETECTOR_MOUNTING_POSITION_RATIO),
-                    Ratio::new::<ratio>(Self::UPLOCKED_PROXIMITY_DETECTOR_TRIG_DISTANCE_RATIO),
-                ),
-                ProximityDetector::new(
-                    uplock_id[1],
-                    Ratio::new::<ratio>(Self::UPLOCKED_PROXIMITY_DETECTOR_MOUNTING_POSITION_RATIO),
-                    Ratio::new::<ratio>(Self::UPLOCKED_PROXIMITY_DETECTOR_TRIG_DISTANCE_RATIO),
-                ),
-            ],
-            hydraulic_uplock: HydraulicLock::new(),
-            hydraulic_downlock: if has_hydraulic_downlock {
-                Some(HydraulicLock::new())
-            } else {
-                None
-            },
-            aerodynamic_model,
-        };
+            left_door_assembly: GearSystemComponentAssembly::new(
+                GearActuatorId::GearDoorLeft,
+                false,
+                left_door,
+                false,
+                [
+                    ProximityDetectorId::UplockDoorLeft1,
+                    ProximityDetectorId::UplockDoorLeft2,
+                ],
+                [
+                    ProximityDetectorId::DownlockDoorLeft1,
+                    ProximityDetectorId::DownlockDoorLeft2,
+                ],
+                gear_door_left_aerodynamic,
+            ),
+            right_door_assembly: GearSystemComponentAssembly::new(
+                GearActuatorId::GearDoorRight,
+                false,
+                right_door,
+                false,
+                [
+                    ProximityDetectorId::UplockDoorRight1,
+                    ProximityDetectorId::UplockDoorRight2,
+                ],
+                [
+                    ProximityDetectorId::DownlockDoorRight1,
+                    ProximityDetectorId::DownlockDoorRight2,
+                ],
+                gear_door_right_aerodynamic,
+            ),
 
-        obj.update_proximity_detectors();
+            // Nose gear has pull to retract system while main gears have push to retract
+            nose_gear_assembly: GearSystemComponentAssembly::new(
+                GearActuatorId::GearNose,
+                false,
+                nose_gear,
+                true,
+                [
+                    ProximityDetectorId::UplockGearNose1,
+                    ProximityDetectorId::UplockGearNose2,
+                ],
+                [
+                    ProximityDetectorId::DownlockGearNose1,
+                    ProximityDetectorId::DownlockGearNose2,
+                ],
+                gear_nose_aerodynamic,
+            ),
+            left_gear_assembly: GearSystemComponentAssembly::new(
+                GearActuatorId::GearLeft,
+                true,
+                left_gear,
+                true,
+                [
+                    ProximityDetectorId::UplockGearLeft1,
+                    ProximityDetectorId::UplockGearLeft2,
+                ],
+                [
+                    ProximityDetectorId::DownlockGearLeft1,
+                    ProximityDetectorId::DownlockGearLeft2,
+                ],
+                gear_left_aerodynamic,
+            ),
+            right_gear_assembly: GearSystemComponentAssembly::new(
+                GearActuatorId::GearRight,
+                true,
+                right_gear,
+                true,
+                [
+                    ProximityDetectorId::UplockGearRight1,
+                    ProximityDetectorId::UplockGearRight2,
+                ],
+                [
+                    ProximityDetectorId::DownlockGearRight1,
+                    ProximityDetectorId::DownlockGearRight2,
+                ],
+                gear_right_aerodynamic,
+            ),
 
-        obj
+            nose_gear_shock_absorber: GearSystemShockAbsorber::new(
+                context,
+                GearActuatorId::GearNose,
+            ),
+            left_gear_shock_absorber: GearSystemShockAbsorber::new(
+                context,
+                GearActuatorId::GearLeft,
+            ),
+            right_gear_shock_absorber: GearSystemShockAbsorber::new(
+                context,
+                GearActuatorId::GearRight,
+            ),
+        }
     }
 
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        gear_system_controller: &impl LgciuGearControl,
         valves_controller: &impl GearSystemController,
-        current_pressure: Pressure,
+        lgciu_controller: &impl LgciuGearControl,
+        main_hydraulic_circuit: &impl SectionPressure,
     ) {
-        self.update_proximity_detectors();
-
-        self.update_hydraulic_control(gear_system_controller, valves_controller, current_pressure);
-
-        self.aerodynamic_model
-            .update_body(context, self.hydraulic_assembly.body());
-
-        self.hydraulic_assembly.update(
+        self.hydraulic_supply.update(
             context,
-            std::slice::from_ref(&self.hydraulic_controller),
-            [current_pressure],
+            valves_controller,
+            lgciu_controller,
+            main_hydraulic_circuit.pressure_downstream_priority_valve(),
         );
-    }
 
-    fn update_proximity_detectors(&mut self) {
-        let position_normalized = self.position_normalized();
+        let current_pressure = self.hydraulic_supply.gear_system_manifold_pressure();
 
-        for sensor in &mut self.fully_opened_proximity_detectors {
-            sensor.update(position_normalized);
-        }
-        for sensor in &mut self.uplock_proximity_detectors {
-            sensor.update(position_normalized);
-        }
-    }
-
-    fn update_hydraulic_control(
-        &mut self,
-        gear_system_controller: &impl LgciuGearControl,
-        valves_controller: &impl GearSystemController,
-        current_pressure: Pressure,
-    ) {
-        let should_hydraulically_open = match self.component_id {
-            GearSysComponentId::Door => gear_system_controller.should_open_doors(),
-            GearSysComponentId::Gear => gear_system_controller.should_extend_gears(),
-        };
-        let should_mechanically_open = match self.component_id {
-            GearSysComponentId::Door => {
-                valves_controller.doors_uplocks_should_mechanically_unlock()
-            }
-            GearSysComponentId::Gear => {
-                valves_controller.gears_uplocks_should_mechanically_unlock()
-            }
-        };
-
-        self.hydraulic_uplock.update(
-            should_hydraulically_open,
-            should_mechanically_open,
+        self.nose_door_assembly.update(
+            context,
+            lgciu_controller,
+            valves_controller,
+            current_pressure,
+        );
+        self.left_door_assembly.update(
+            context,
+            lgciu_controller,
+            valves_controller,
+            current_pressure,
+        );
+        self.right_door_assembly.update(
+            context,
+            lgciu_controller,
+            valves_controller,
             current_pressure,
         );
 
-        let mut should_lock_down = false;
-
-        if let Some(hyd_lock) = &mut self.hydraulic_downlock {
-            hyd_lock.update(!should_hydraulically_open, false, current_pressure);
-            should_lock_down = hyd_lock.is_locked_or_ready_to_latch();
-        }
-
-        self.hydraulic_controller.update(
-            should_mechanically_open || should_hydraulically_open,
-            self.hydraulic_uplock.is_locked_or_ready_to_latch(),
-            should_lock_down,
-            self.position_normalized(),
+        self.nose_gear_assembly.update(
+            context,
+            lgciu_controller,
+            valves_controller,
+            current_pressure,
+        );
+        self.left_gear_assembly.update(
+            context,
+            lgciu_controller,
+            valves_controller,
+            current_pressure,
+        );
+        self.right_gear_assembly.update(
+            context,
+            lgciu_controller,
+            valves_controller,
+            current_pressure,
         );
     }
 
-    pub fn position_normalized(&self) -> Ratio {
-        if !self.is_inverted_control {
-            self.hydraulic_assembly.position_normalized()
-        } else {
-            Ratio::new::<ratio>(1.) - self.hydraulic_assembly.position_normalized()
+    pub fn all_actuators(&mut self) -> [&mut impl Actuator; 6] {
+        [
+            self.nose_door_assembly.actuator(),
+            self.left_door_assembly.actuator(),
+            self.right_door_assembly.actuator(),
+            self.nose_gear_assembly.actuator(),
+            self.left_gear_assembly.actuator(),
+            self.right_gear_assembly.actuator(),
+        ]
+    }
+}
+impl GearSystemSensors for HydraulicGearSystem {
+    fn is_wheel_id_up_and_locked(&self, wheel_id: GearWheel, lgciu_id: LgciuId) -> bool {
+        match wheel_id {
+            GearWheel::NOSE => self.nose_gear_assembly.is_sensor_uplock(lgciu_id),
+            GearWheel::LEFT => self.left_gear_assembly.is_sensor_uplock(lgciu_id),
+            GearWheel::RIGHT => self.right_gear_assembly.is_sensor_uplock(lgciu_id),
         }
     }
 
-    pub fn actuator(&mut self) -> &mut impl Actuator {
-        self.hydraulic_assembly.actuator(0)
+    fn is_wheel_id_down_and_locked(&self, wheel_id: GearWheel, lgciu_id: LgciuId) -> bool {
+        match wheel_id {
+            GearWheel::NOSE => self.nose_gear_assembly.is_sensor_fully_opened(lgciu_id),
+            GearWheel::LEFT => self.left_gear_assembly.is_sensor_fully_opened(lgciu_id),
+            GearWheel::RIGHT => self.right_gear_assembly.is_sensor_fully_opened(lgciu_id),
+        }
     }
 
-    pub fn is_sensor_uplock(&self, lgciu_id: LgciuId) -> bool {
-        self.uplock_proximity_detectors[lgciu_id as usize].proximity_detected()
+    fn is_door_id_up_and_locked(&self, wheel_id: GearWheel, lgciu_id: LgciuId) -> bool {
+        match wheel_id {
+            GearWheel::NOSE => self.nose_door_assembly.is_sensor_uplock(lgciu_id),
+            GearWheel::LEFT => self.left_door_assembly.is_sensor_uplock(lgciu_id),
+            GearWheel::RIGHT => self.right_door_assembly.is_sensor_uplock(lgciu_id),
+        }
     }
 
-    pub fn is_sensor_fully_opened(&self, lgciu_id: LgciuId) -> bool {
-        self.fully_opened_proximity_detectors[lgciu_id as usize].proximity_detected()
+    fn is_door_id_down_and_locked(&self, wheel_id: GearWheel, lgciu_id: LgciuId) -> bool {
+        match wheel_id {
+            GearWheel::NOSE => self.nose_door_assembly.is_sensor_fully_opened(lgciu_id),
+            GearWheel::LEFT => self.left_door_assembly.is_sensor_fully_opened(lgciu_id),
+            GearWheel::RIGHT => self.right_door_assembly.is_sensor_fully_opened(lgciu_id),
+        }
     }
 
-    #[cfg(test)]
-    fn _actuator_flow(&self) -> VolumeRate {
-        self.hydraulic_assembly.actuator_flow(0)
-    }
-
-    #[cfg(test)]
-    fn is_locked(&self) -> bool {
-        self.hydraulic_assembly.is_locked()
+    fn is_gear_id_shock_absorber_fully_extended(
+        &self,
+        wheel_id: GearWheel,
+        lgciu_id: LgciuId,
+    ) -> bool {
+        match wheel_id {
+            GearWheel::NOSE => self
+                .nose_gear_shock_absorber
+                .is_shock_absorber_fully_extended(lgciu_id),
+            GearWheel::LEFT => self
+                .left_gear_shock_absorber
+                .is_shock_absorber_fully_extended(lgciu_id),
+            GearWheel::RIGHT => self
+                .right_gear_shock_absorber
+                .is_shock_absorber_fully_extended(lgciu_id),
+        }
     }
 }
-impl SimulationElement for GearSystemComponentAssembly {
+impl SimulationElement for HydraulicGearSystem {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        accept_iterable!(self.uplock_proximity_detectors, visitor);
-        accept_iterable!(self.fully_opened_proximity_detectors, visitor);
-        self.hydraulic_controller.accept(visitor);
+        self.hydraulic_supply.accept(visitor);
+        self.nose_gear_assembly.accept(visitor);
+        self.left_gear_assembly.accept(visitor);
+        self.right_gear_assembly.accept(visitor);
+
+        self.nose_door_assembly.accept(visitor);
+        self.left_door_assembly.accept(visitor);
+        self.right_door_assembly.accept(visitor);
+
+        self.nose_gear_shock_absorber.accept(visitor);
+        self.left_gear_shock_absorber.accept(visitor);
+        self.right_gear_shock_absorber.accept(visitor);
 
         visitor.visit(self);
     }
-}
 
-struct GearSystemComponentHydraulicController {
-    is_inverted_control: bool,
-    is_soft_downlock: bool,
-    requested_position: Ratio,
-    should_lock: bool,
-    lock_position: Ratio,
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(
+            &self.door_center_position_id,
+            self.nose_door_assembly.position_normalized(),
+        );
+        writer.write(
+            &self.door_center_gear_slaved_position_id,
+            self.nose_gear_assembly.position_normalized(),
+        );
 
-    actual_position: Ratio,
+        writer.write(
+            &self.door_left_position_id,
+            self.left_door_assembly.position_normalized(),
+        );
+        writer.write(
+            &self.door_right_position_id,
+            self.right_door_assembly.position_normalized(),
+        );
 
-    jammed_actuator_failure: Failure,
-    jamming_position: Ratio,
-    jamming_is_effective: bool,
-
-    soft_downlock_is_active: bool,
-}
-impl GearSystemComponentHydraulicController {
-    fn new(id: GearActuatorId, is_inverted_control: bool, is_soft_downlock: bool) -> Self {
-        Self {
-            is_inverted_control,
-            is_soft_downlock,
-            requested_position: Ratio::new::<ratio>(0.),
-            should_lock: true,
-            lock_position: Ratio::new::<ratio>(0.),
-            actual_position: Ratio::new::<ratio>(0.5),
-            jammed_actuator_failure: Failure::new(FailureType::GearActuatorJammed(id)),
-            jamming_position: Ratio::new::<ratio>(random_from_range(0., 1.)),
-            jamming_is_effective: false,
-            soft_downlock_is_active: false,
-        }
-    }
-
-    // Here actual position shall be in convention 1 extended 0 retracted
-    fn update(
-        &mut self,
-        should_open: bool,
-        should_uplock: bool,
-        should_downlock: bool,
-        actual_position: Ratio,
-    ) {
-        self.actual_position = actual_position;
-
-        self.requested_position = if should_open {
-            Ratio::new::<ratio>(1.1)
-        } else {
-            Ratio::new::<ratio>(-0.1)
-        };
-
-        self.should_lock = actual_position.get::<ratio>() > 0.5 && should_downlock
-            || actual_position.get::<ratio>() < 0.5 && should_uplock;
-
-        self.lock_position = if should_downlock {
-            Ratio::new::<ratio>(1.)
-        } else {
-            Ratio::new::<ratio>(0.)
-        };
-
-        self.update_soft_downlock();
-
-        self.update_jamming();
-    }
-
-    fn update_jamming(&mut self) {
-        // If jamming and actuator reaches jammed position, we activate the jamming
-        if self.jammed_actuator_failure.is_active()
-            && (self.jamming_position - self.actual_position)
-                .abs()
-                .get::<ratio>()
-                < 0.2
-        {
-            self.jamming_is_effective = true;
-        };
-
-        if !self.jammed_actuator_failure.is_active() {
-            self.jamming_is_effective = false;
-            // Taking a new random jamming position when failure is switched off for more new fun later
-            self.jamming_position = Ratio::new::<ratio>(random_from_range(0., 1.));
-        }
-    }
-
-    fn update_soft_downlock(&mut self) {
-        if self.is_soft_downlock {
-            if (!self.is_inverted_control
-                && self.requested_position.get::<ratio>() >= 1.
-                && self.actual_position.get::<ratio>() >= 0.98)
-                || (self.is_inverted_control
-                    && self.requested_position.get::<ratio>() <= 0.
-                    && self.actual_position.get::<ratio>() <= 0.02)
-            {
-                self.soft_downlock_is_active = true;
-            }
-
-            // We disable soft locking only if position demand is far away from current position
-            if self.soft_downlock_is_active
-                && (self.requested_position - self.actual_position)
-                    .abs()
-                    .get::<ratio>()
-                    > 0.5
-            {
-                self.soft_downlock_is_active = false;
-            }
-        }
-    }
-}
-impl HydraulicAssemblyController for GearSystemComponentHydraulicController {
-    fn requested_mode(&self) -> LinearActuatorMode {
-        if self.jamming_is_effective {
-            return LinearActuatorMode::ClosedValves;
-        }
-
-        if self.soft_downlock_is_active {
-            LinearActuatorMode::ClosedValves
-        } else {
-            LinearActuatorMode::PositionControl
-        }
-    }
-
-    fn requested_position(&self) -> Ratio {
-        if self.is_inverted_control {
-            Ratio::new::<ratio>(1.) - self.requested_position
-        } else {
-            self.requested_position
-        }
-    }
-
-    fn should_lock(&self) -> bool {
-        self.should_lock
-    }
-
-    fn requested_lock_position(&self) -> Ratio {
-        if self.is_inverted_control {
-            Ratio::new::<ratio>(1.) - self.lock_position
-        } else {
-            self.lock_position
-        }
-    }
-}
-impl HydraulicLocking for GearSystemComponentHydraulicController {}
-impl ElectroHydrostaticPowered for GearSystemComponentHydraulicController {}
-impl SimulationElement for GearSystemComponentHydraulicController {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.jammed_actuator_failure.accept(visitor);
-
-        visitor.visit(self);
-    }
-}
-
-struct HydraulicLock {
-    is_unlocked: bool,
-}
-impl HydraulicLock {
-    const UNLOCK_MIN_PRESS_PSI: f64 = 1000.;
-
-    fn new() -> Self {
-        Self { is_unlocked: false }
-    }
-
-    fn update(
-        &mut self,
-        should_unlock: bool,
-        should_manually_unlock: bool,
-        current_pressure: Pressure,
-    ) {
-        self.is_unlocked = should_unlock
-            && current_pressure.get::<psi>() > Self::UNLOCK_MIN_PRESS_PSI
-            || should_manually_unlock
-    }
-
-    fn is_locked_or_ready_to_latch(&self) -> bool {
-        !self.is_unlocked
-    }
-}
-
-struct ProximityDetector {
-    is_active: bool,
-
-    installation_position_normalized: Ratio,
-    trigger_distance: Ratio,
-
-    damage_failure: Failure,
-}
-impl ProximityDetector {
-    fn new(
-        id: ProximityDetectorId,
-        installation_position_normalized: Ratio,
-        trigger_distance: Ratio,
-    ) -> Self {
-        Self {
-            is_active: false,
-
-            installation_position_normalized,
-            trigger_distance,
-
-            damage_failure: Failure::new(FailureType::GearProxSensorDamage(id)),
-        }
-    }
-
-    fn update(&mut self, position: Ratio) {
-        self.is_active =
-            (self.installation_position_normalized - position).abs() < self.trigger_distance;
-    }
-
-    fn proximity_detected(&self) -> bool {
-        if self.damage_failure.is_active() {
-            false
-        } else {
-            self.is_active
-        }
-    }
-}
-impl SimulationElement for ProximityDetector {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.damage_failure.accept(visitor);
-
-        visitor.visit(self);
+        writer.write(
+            &self.gear_center_position_id,
+            self.nose_gear_assembly.position_normalized(),
+        );
+        writer.write(
+            &self.gear_left_position_id,
+            self.left_gear_assembly.position_normalized(),
+        );
+        writer.write(
+            &self.gear_right_position_id,
+            self.right_gear_assembly.position_normalized(),
+        );
     }
 }
 
