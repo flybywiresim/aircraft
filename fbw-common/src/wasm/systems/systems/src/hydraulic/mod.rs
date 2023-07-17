@@ -3135,7 +3135,7 @@ impl PressureSource for ManualPump {
 impl HeatingElement for ManualPump {}
 impl HeatingPressureSource for ManualPump {}
 
-#[derive(PartialEq, Clone, Copy)]
+#[derive(PartialEq, Eq, Clone, Copy)]
 pub enum HydraulicValveType {
     ClosedWhenOff,
     _OpenedWhenOff,

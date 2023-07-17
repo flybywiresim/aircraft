@@ -83,6 +83,11 @@ impl GearSystemHydraulicSupply {
         self.gear_and_door_selector_valve.pressure_output()
     }
 }
+impl Default for GearSystemHydraulicSupply {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 impl SimulationElement for GearSystemHydraulicSupply {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.safety_valve.accept(visitor);
