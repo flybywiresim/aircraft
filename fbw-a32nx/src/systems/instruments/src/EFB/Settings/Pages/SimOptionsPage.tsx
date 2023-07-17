@@ -32,7 +32,7 @@ export const SimOptionsPage = () => {
     const [conesEnabled, setConesEnabled] = usePersistentNumberProperty('MODEL_CONES_ENABLED', 1);
     const [gsxFuelSyncEnabled] = usePersistentNumberProperty('GSX_FUEL_SYNC', 0);
     const [gsxPayloadSyncEnabled] = usePersistentNumberProperty('GSX_PAYLOAD_SYNC', 0);
-    const [sideControlling, setSideControlling] = usePersistentNumberProperty('SIDE_CONTROLLING', 2);
+    const [sideControlling, setSideControlling] = usePersistentNumberProperty('SIDE_CONTROLLING', 0);
 
     const defaultBaroButtons: ButtonType[] = [
         { name: t('Settings.SimOptions.Auto'), setting: 'AUTO' },
@@ -49,7 +49,6 @@ export const SimOptionsPage = () => {
     const defaultCockpitSeatUsedToControlButtons: ButtonType[] = [
         { name: t('Settings.SimOptions.Captain'), setting: 'Captain', index: 0 },
         { name: t('Settings.SimOptions.Copilot'), setting: 'Copilot', index: 1 },
-        { name: t('Settings.SimOptions.Both'), setting: 'Both', index: 2 },
     ];
 
     const isGSXSyncEnabled = () => !!gsxFuelSyncEnabled || !!gsxPayloadSyncEnabled;

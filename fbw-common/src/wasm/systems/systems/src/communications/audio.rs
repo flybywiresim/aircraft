@@ -188,61 +188,6 @@ impl AudioControlPanel {
         // 0 the the bottom position of the switch meaning transmitting on current radio channel
         self.int_rad_switch == 0
     }
-
-    pub fn update_transmit(&mut self, other_acp: &AudioControlPanel) {
-        self.transmit_channel = other_acp.get_transmit_channel_value();
-    }
-
-    pub fn update_volume(&mut self, other_acp: &AudioControlPanel) {
-        self.vhfs[0].set_volume(other_acp.get_volume_com1());
-        self.vhfs[1].set_volume(other_acp.get_volume_com2());
-        self.vhfs[2].set_volume(other_acp.get_volume_com3());
-
-        self.comms[0].set_volume(other_acp.get_volume_hf1());
-        self.comms[1].set_volume(other_acp.get_volume_hf2());
-        self.comms[2].set_volume(other_acp.get_volume_pa());
-        self.comms[3].set_volume(other_acp.get_volume_mech());
-        self.comms[4].set_volume(other_acp.get_volume_att());
-
-        self.vors[0].set_volume(other_acp.get_volume_vor1());
-        self.vors[1].set_volume(other_acp.get_volume_vor2());
-
-        self.adfs[0].set_volume(other_acp.get_volume_adf1());
-        self.adfs[1].set_volume(other_acp.get_volume_adf2());
-
-        self.ils.set_volume(other_acp.get_volume_ils());
-        self.gls.set_volume(other_acp.get_volume_gls());
-
-        self.markers.set_volume(other_acp.get_volume_markers());
-    }
-
-    pub fn update_receive(&mut self, other_acp: &AudioControlPanel) {
-        self.vhfs[0].set_receive(other_acp.get_receive_com1());
-        self.vhfs[1].set_receive(other_acp.get_receive_com2());
-        self.vhfs[2].set_receive(other_acp.get_receive_com3());
-
-        self.comms[0].set_receive(other_acp.get_receive_hf1());
-        self.comms[1].set_receive(other_acp.get_receive_hf2());
-        self.comms[2].set_receive(other_acp.get_receive_pa());
-        self.comms[3].set_receive(other_acp.get_receive_mech());
-        self.comms[4].set_receive(other_acp.get_receive_att());
-
-        self.vors[0].set_receive(other_acp.get_receive_vor1());
-        self.vors[1].set_receive(other_acp.get_receive_vor2());
-
-        self.adfs[0].set_receive(other_acp.get_receive_adf1());
-        self.adfs[1].set_receive(other_acp.get_receive_adf2());
-
-        self.ils.set_receive(other_acp.get_receive_ils());
-        self.gls.set_receive(other_acp.get_receive_gls());
-
-        self.markers.set_receive(other_acp.get_receive_markers());
-    }
-
-    pub fn update_misc(&mut self, other_acp: &AudioControlPanel) {
-        self.voice_button = other_acp.get_voice_button();
-        self.int_rad_switch = other_acp.get_int_rad_switch();
-    }
 }
 
 impl SimulationElement for AudioControlPanel {
@@ -280,13 +225,6 @@ impl SimulationElement for AudioControlPanel {
     }
 }
 
-pub trait Transceiver {
-    fn get_volume(&self) -> u8;
-    fn get_receive(&self) -> bool;
-    fn set_volume(&mut self, volume: u8);
-    fn set_receive(&mut self, receive: bool);
-}
-
 #[derive(Copy, Clone)]
 pub struct VHF {
     volume_id: VariableIdentifier,
@@ -303,19 +241,12 @@ impl VHF {
             knob: false,
         }
     }
-}
-impl Transceiver for VHF {
+
     fn get_volume(&self) -> u8 {
         self.volume
     }
     fn get_receive(&self) -> bool {
         self.knob
-    }
-    fn set_volume(&mut self, volume: u8) {
-        self.volume = volume;
-    }
-    fn set_receive(&mut self, receive: bool) {
-        self.knob = receive;
     }
 }
 
@@ -351,21 +282,15 @@ impl COMM {
             knob: false,
         }
     }
-}
-impl Transceiver for COMM {
+
     fn get_volume(&self) -> u8 {
         self.volume
     }
     fn get_receive(&self) -> bool {
         self.knob
     }
-    fn set_volume(&mut self, volume: u8) {
-        self.volume = volume;
-    }
-    fn set_receive(&mut self, receive: bool) {
-        self.knob = receive;
-    }
 }
+
 impl SimulationElement for COMM {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         visitor.visit(self);
@@ -402,21 +327,15 @@ impl ADF {
             volume: 0,
         }
     }
-}
-impl Transceiver for ADF {
+
     fn get_volume(&self) -> u8 {
         self.volume
     }
     fn get_receive(&self) -> bool {
         self.knob
     }
-    fn set_volume(&mut self, volume: u8) {
-        self.volume = volume;
-    }
-    fn set_receive(&mut self, receive: bool) {
-        self.knob = receive;
-    }
 }
+
 impl SimulationElement for ADF {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         visitor.visit(self);
@@ -453,21 +372,15 @@ impl VOR {
             knob: false,
         }
     }
-}
-impl Transceiver for VOR {
+
     fn get_volume(&self) -> u8 {
         self.volume
     }
     fn get_receive(&self) -> bool {
         self.knob
     }
-    fn set_volume(&mut self, volume: u8) {
-        self.volume = volume;
-    }
-    fn set_receive(&mut self, receive: bool) {
-        self.knob = receive;
-    }
 }
+
 impl SimulationElement for VOR {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         visitor.visit(self);
@@ -500,21 +413,15 @@ impl ILS {
             knob: false,
         }
     }
-}
-impl Transceiver for ILS {
+
     fn get_volume(&self) -> u8 {
         self.volume
     }
     fn get_receive(&self) -> bool {
         self.knob
     }
-    fn set_volume(&mut self, volume: u8) {
-        self.volume = volume;
-    }
-    fn set_receive(&mut self, receive: bool) {
-        self.knob = receive;
-    }
 }
+
 impl SimulationElement for ILS {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         visitor.visit(self);
@@ -547,21 +454,15 @@ impl GLS {
             knob: false,
         }
     }
-}
-impl Transceiver for GLS {
+
     fn get_volume(&self) -> u8 {
         self.volume
     }
     fn get_receive(&self) -> bool {
         self.knob
     }
-    fn set_volume(&mut self, volume: u8) {
-        self.volume = volume;
-    }
-    fn set_receive(&mut self, receive: bool) {
-        self.knob = receive;
-    }
 }
+
 impl SimulationElement for GLS {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         visitor.visit(self);
@@ -594,21 +495,15 @@ impl MARKERS {
             knob: false,
         }
     }
-}
-impl Transceiver for MARKERS {
+
     fn get_volume(&self) -> u8 {
         self.volume
     }
     fn get_receive(&self) -> bool {
         self.knob
     }
-    fn set_volume(&mut self, volume: u8) {
-        self.volume = volume;
-    }
-    fn set_receive(&mut self, receive: bool) {
-        self.knob = receive;
-    }
 }
+
 impl SimulationElement for MARKERS {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         visitor.visit(self);

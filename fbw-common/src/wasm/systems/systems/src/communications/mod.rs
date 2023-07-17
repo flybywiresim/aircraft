@@ -111,7 +111,6 @@ pub struct Communications {
     //
     is_emitting: bool,
     update_comms: CommunicationPanelSideName,
-    last_acp_used: CommunicationPanelSideName,
 
     volume_com1: u8,
     volume_com2: u8,
@@ -189,7 +188,7 @@ impl Communications {
             ls_fcu1_pressed_id: context.get_identifier("BTN_LS_1_FILTER_ACTIVE".to_owned()),
             ls_fcu2_pressed_id: context.get_identifier("BTN_LS_2_FILTER_ACTIVE".to_owned()),
 
-            previous_side_controlling: SideControlling::BOTH,
+            previous_side_controlling: SideControlling::CAPTAIN,
             previous_audio_switching_knob: AudioSwitchingKnobPosition::NORM,
 
             pilot_transmit_channel: 1,
@@ -220,7 +219,6 @@ impl Communications {
             sound_markers: false,
             is_emitting: false,
             update_comms: CommunicationPanelSideName::NONE,
-            last_acp_used: CommunicationPanelSideName::NONE,
 
             volume_com1: 0,
             volume_com2: 0,
@@ -263,8 +261,6 @@ impl Communications {
         }
 
         if let Some(chosen_panel) = self.communications_panel_elected {
-            self.last_acp_used = self.update_comms;
-
             self.is_emitting = chosen_panel.is_emitting();
 
             if chosen_panel.get_int_rad_switch() <= DEFAULT_INT_RAD_SWITCH {
@@ -327,33 +323,7 @@ impl Communications {
             // self.volume_mech = chosen_panel.get_volume_mech();
             // self.volume_pa = chosen_panel.get_volume_pa();
 
-            // Updating all ACPs with same values if EFB option is on BOTH
-            // We are updating an ACP with itself but not a big deal
-            if context.side_controlling() == SideControlling::BOTH {
-                self.communications_panel_captain
-                    .update_transmit(&chosen_panel);
-                self.communications_panel_first_officer
-                    .update_transmit(&chosen_panel);
-                self.communications_panel_ovhd
-                    .update_transmit(&chosen_panel);
-
-                self.communications_panel_captain
-                    .update_receive(&chosen_panel);
-                self.communications_panel_first_officer
-                    .update_receive(&chosen_panel);
-                self.communications_panel_ovhd.update_receive(&chosen_panel);
-
-                self.communications_panel_captain
-                    .update_volume(&chosen_panel);
-                self.communications_panel_first_officer
-                    .update_volume(&chosen_panel);
-                self.communications_panel_ovhd.update_volume(&chosen_panel);
-
-                self.communications_panel_captain.update_misc(&chosen_panel);
-                self.communications_panel_first_officer
-                    .update_misc(&chosen_panel);
-                self.communications_panel_ovhd.update_misc(&chosen_panel);
-            } else if context.side_controlling() == SideControlling::CAPTAIN {
+            if context.side_controlling() == SideControlling::CAPTAIN {
                 self.copilot_transmit_channel = 4;
             } else {
                 self.pilot_transmit_channel = 4;
@@ -365,8 +335,7 @@ impl Communications {
      * guess_panel_other_actions_based()
      *
      * This function detects any changes on AudioSwitching knob, EFB option or LS FCU button.
-     * If there are any changes, that mean the configuration has changed.
-     * Therefore it elects an ACP which will be used to update the simvars.
+     * If so, it elects an ACP which will be used to update the simvars.
      *
      * @return None if there was no ACP elected. The elected ACP otherwise.
      */
@@ -377,17 +346,7 @@ impl Communications {
         self.communications_panel_elected = None;
 
         if side_controlling != self.previous_side_controlling {
-            // Whenever the player presses BOTH on the EFB
-            // Let's configure the ACPs with the last ACP used as we cannot guess otherwise
-            if side_controlling == SideControlling::BOTH {
-                // See last_acp_used definition in update() top comment
-                self.communications_panel_elected = match self.last_acp_used {
-                    CommunicationPanelSideName::CAPTAIN => Some(self.communications_panel_captain),
-                    CommunicationPanelSideName::FO => Some(self.communications_panel_first_officer),
-                    CommunicationPanelSideName::OVHD => Some(self.communications_panel_ovhd),
-                    _ => None,
-                };
-            } else if side_controlling == SideControlling::CAPTAIN {
+            if side_controlling == SideControlling::CAPTAIN {
                 // If Captain is now controlling, ACP3 is chosen if AudioSwitching knob on Captain
                 self.communications_panel_elected = match self.audio_switching_knob {
                     AudioSwitchingKnobPosition::CAPTAIN => Some(self.communications_panel_ovhd),
@@ -404,25 +363,19 @@ impl Communications {
             self.previous_side_controlling = side_controlling;
 
             // Whenever the player switches the AudioSwitching knob
-            // If knob position and EFB option are matching, OVHD ACP is preferred
+            // If knob position and EFB option are matching, OVHD ACP is elected
         } else if self.audio_switching_knob != self.previous_audio_switching_knob {
             self.communications_panel_elected = match self.audio_switching_knob {
                 AudioSwitchingKnobPosition::NORM => match side_controlling {
-                    SideControlling::BOTH | SideControlling::CAPTAIN => {
-                        Some(self.communications_panel_captain)
-                    }
+                    SideControlling::CAPTAIN => Some(self.communications_panel_captain),
                     SideControlling::FO => Some(self.communications_panel_first_officer),
                 },
                 AudioSwitchingKnobPosition::CAPTAIN => match side_controlling {
-                    SideControlling::BOTH | SideControlling::CAPTAIN => {
-                        Some(self.communications_panel_ovhd)
-                    }
+                    SideControlling::CAPTAIN => Some(self.communications_panel_ovhd),
                     SideControlling::FO => Some(self.communications_panel_first_officer),
                 },
                 AudioSwitchingKnobPosition::FO => match side_controlling {
-                    SideControlling::BOTH | SideControlling::FO => {
-                        Some(self.communications_panel_ovhd)
-                    }
+                    SideControlling::FO => Some(self.communications_panel_ovhd),
                     SideControlling::CAPTAIN => Some(self.communications_panel_captain),
                 },
             };
@@ -456,13 +409,10 @@ impl Communications {
     /*
      * guess_panel_acp_actions_based()
      *
-     * This functions determine if the ACP (served as an ID in self.update_comms) is suitable for simvars update
-     * depending on the current configuration (AudioSwitching knob position and side played (EFB option).
-     *
-     * "The ACP" means the ACP on which an action was performed.
+     * This functions determine if the ACP on which the action was performed (served as an ID in self.update_comms)
+     * is suitable to update the simvars depending on the current configuration (AudioSwitching knob position and side played (EFB option)).
      *
      * @return None if the association ACP/Configuration was not suitable. The ACP otherwise.
-     *
      */
     fn guess_panel_acp_actions_based(
         &mut self,
@@ -487,9 +437,8 @@ impl Communications {
                         Some(self.communications_panel_first_officer);
                 }
             // ACP3 taken into account only if the audioswitching knob and side playing are matching
-            } else if side_controlling == SideControlling::BOTH
-                || (self.audio_switching_knob == AudioSwitchingKnobPosition::CAPTAIN
-                    && side_controlling == SideControlling::CAPTAIN)
+            } else if (self.audio_switching_knob == AudioSwitchingKnobPosition::CAPTAIN
+                && side_controlling == SideControlling::CAPTAIN)
                 || (self.audio_switching_knob == AudioSwitchingKnobPosition::FO
                     && side_controlling == SideControlling::FO)
             {
@@ -669,7 +618,7 @@ mod communications_tests {
         test_bed.write_by_name("ACP1_ADF1_KNOB_VOLUME_DOWN", 1);
         test_bed.write_by_name("ACP1_VHF1_VOLUME", 50);
         test_bed.write_by_name("AUDIOSWITCHING_KNOB", 1);
-        test_bed.write_by_name("SIDE_CONTROLLING", 2);
+        test_bed.write_by_name("SIDE_CONTROLLING", 0);
 
         test_bed.run();
 

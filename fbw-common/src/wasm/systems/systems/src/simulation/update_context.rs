@@ -392,7 +392,7 @@ impl UpdateContext {
             is_on_ground: Default::default(),
             vertical_speed: Default::default(),
             local_acceleration: Default::default(),
-            side_controlling: SideControlling::BOTH,
+            side_controlling: SideControlling::CAPTAIN,
 
             local_acceleration_plane_reference_filtered:
                 LowPassFilter::<Vector3<f64>>::new_with_init_value(

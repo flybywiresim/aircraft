@@ -567,12 +567,11 @@
 
 - A32NX_SIDE_CONTROLLING
     - Enum
-    - Indicates which side controls the communications
+    - Indicates which side controls the airplane
       Value | Meaning
       --- | ---
       0 | Captain
       1 | FO
-      2 | Both sides
 
 - A32NX_TO_CONFIG_FLAPS
     - Enum

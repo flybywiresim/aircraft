@@ -165,22 +165,6 @@ impl CommunicationsPanel {
     pub fn is_emitting(&self) -> bool {
         self.acp.is_emitting()
     }
-
-    pub fn update_transmit(&mut self, other_panel: &CommunicationsPanel) {
-        self.acp.update_transmit(&other_panel.acp);
-    }
-
-    pub fn update_volume(&mut self, other_panel: &CommunicationsPanel) {
-        self.acp.update_volume(&other_panel.acp);
-    }
-
-    pub fn update_receive(&mut self, other_panel: &CommunicationsPanel) {
-        self.acp.update_receive(&other_panel.acp);
-    }
-
-    pub fn update_misc(&mut self, other_panel: &CommunicationsPanel) {
-        self.acp.update_misc(&other_panel.acp);
-    }
 }
 
 impl SimulationElement for CommunicationsPanel {
