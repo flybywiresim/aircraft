@@ -648,6 +648,7 @@ impl BleedMonitoringComputerChannel {
     const LOW_BLEED_TEMPERATURE_THRESHOLD_C: f64 = 150.;
     const FORCE_HP_BLEED_WAI_THRESHOLD_C: f64 = 185.;
     const FORCE_HP_BLEED_ISOLATION_C: f64 = 510.;
+    const FORCE_HP_BLEED_ISOLATION_PS3_PSI: f64 = 110.;
 
     const DUAL_BLEED_WAI_OFF_HP_IP_SWITCHING_THRESHOLDS: [f64; 2] = [33.3, 38.9];
     const DUAL_BLEED_WAI_ON_HP_IP_SWITCHING_THRESHOLDS: [f64; 2] = [36.4, 43.2];
@@ -772,7 +773,12 @@ impl BleedMonitoringComputerChannel {
                     < Self::FORCE_HP_BLEED_WAI_THRESHOLD_C;
 
             force_ip_bleed = precooler_outlet_temperature.get::<degree_celsius>()
-                > Self::FORCE_HP_BLEED_ISOLATION_C;
+                > Self::FORCE_HP_BLEED_ISOLATION_C
+                || (sensors.high_pressure().get::<psi>() > Self::FORCE_HP_BLEED_ISOLATION_PS3_PSI
+                    && context.pressure_altitude().get::<foot>() > 25000.
+                    && (self.is_in_dual_bleed_config
+                        || (wing_anti_ice.is_wai_valve_closed(0)
+                            && wing_anti_ice.is_wai_valve_closed(1))));
         }
 
         self.should_use_ip_vs_hp_valve = force_ip_bleed
