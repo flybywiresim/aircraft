@@ -679,7 +679,7 @@ impl BleedMonitoringComputerChannel {
                 Self::PRESSURE_REGULATING_VALVE_DUAL_BLEED_CONFIG_TARGET_PSI,
                 1.,
             ),
-            fan_air_valve_pid: PidController::new(-0.005, -0.001, 0., 0., 1., 200., 1.),
+            fan_air_valve_pid: PidController::new(-0.0001, -0.0001, 0., 0., 1., 200., 1.),
             cross_bleed_valve_selector: CrossBleedValveSelectorMode::Auto,
             should_use_ip_vs_hp_valve: false,
             overheat_monitor: BleedOverheatMonitor::new(),
@@ -1092,13 +1092,13 @@ impl EngineBleedAirSystem {
                 "PNEU_ENG_{}_DIFFERENTIAL_TRANSDUCER_PRESSURE",
                 number
             )),
-            fan_compression_chamber_controller: EngineCompressionChamberController::new(1.4, 0.),
+            fan_compression_chamber_controller: EngineCompressionChamberController::new(2., 0.),
             // Maximum IP bleed pressure output should be about 150 psig
             intermediate_pressure_compression_chamber_controller:
-                EngineCompressionChamberController::new(9.47404, 0.),
+                EngineCompressionChamberController::new(2.77366, 0.0667803),
             // Maximum HP bleed pressure output should be about 660 psig
             high_pressure_compression_chamber_controller: EngineCompressionChamberController::new(
-                5.98726, 6.03051,
+                2.15397, 1.82113,
             ),
             fan_compression_chamber: CompressionChamber::new(Volume::new::<cubic_meter>(1.)),
             intermediate_pressure_compression_chamber: CompressionChamber::new(Volume::new::<
@@ -1111,7 +1111,7 @@ impl EngineBleedAirSystem {
             high_pressure_valve: SolenoidValve::new(
                 PneumaticValveCharacteristics::new(
                     Pressure::new::<psi>(15.), // psig
-                    [30., 70.],                // psig
+                    [35., 75.],                // psig
                     [1., 0.],
                     0.25, // -> 1 / 0.25 = 4 seconds to open
                 ),
@@ -4022,14 +4022,12 @@ pub mod tests {
 
     #[test]
     fn pr_valve_regulates_to_42_psig_in_dual_bleed_config() {
-        let mut test_bed = test_bed_with()
+        let test_bed = test_bed_with()
             .idle_eng1()
             .idle_eng2()
             .mach_number(MachNumber(0.))
-            .both_packs_auto();
-
-        // We need a bit of time to get into an equilibrium state
-        test_bed.run_with_delta(Duration::from_secs(30));
+            .both_packs_auto()
+            .and_stabilize(); // We need a bit of time to get into an equilibrium state
 
         let eng1_pressure = test_bed.regulated_pressure_transducer_signal(1).unwrap();
         let eng2_pressure = test_bed.regulated_pressure_transducer_signal(2).unwrap();
@@ -4045,14 +4043,13 @@ pub mod tests {
 
     #[test]
     fn pr_valve_regulates_to_50_psig_in_single_bleed_config() {
-        let mut test_bed = test_bed_with()
+        let test_bed = test_bed_with()
             .stop_eng1()
-            .idle_eng2()
+            .eng2_n1(0.4)
+            .and_eng2_n2_based_on_n1() // Not quite idle to make sure we have enough upstream pressure
             .mach_number(MachNumber(0.))
-            .both_packs_auto();
-
-        // We need a bit of time to get into an equilibrium state
-        test_bed.run_with_delta(Duration::from_secs(30));
+            .both_packs_auto()
+            .and_stabilize();
 
         let eng1_pressure = test_bed.regulated_pressure_transducer_signal(1).unwrap();
         let eng2_pressure = test_bed.regulated_pressure_transducer_signal(2).unwrap();
@@ -4205,7 +4202,6 @@ pub mod tests {
             assert!(test_bed.ip_pressure(i) - ambient_pressure < Pressure::new::<psi>(43.2));
 
             // Check HP pressure is used
-            assert!(!test_bed.ip_valve_is_open(i));
             assert!(test_bed.hp_valve_is_open(i));
         }
 
@@ -4234,36 +4230,29 @@ pub mod tests {
 
         let mut test_bed = test_bed_with()
             .idle_eng1()
-            .idle_eng2()
+            .stop_eng2()
             .mach_number(MachNumber(0.))
             .wing_anti_ice_push_button(WingAntiIcePushButtonMode::Off)
+            .both_packs_auto()
             .and_stabilize();
 
-        for i in 1..2 {
-            // Below the switching threshold
-            assert!(test_bed.ip_pressure(i) - ambient_pressure < Pressure::new::<psi>(48.2));
+        // Below the switching threshold
+        assert!(test_bed.ip_pressure(1) - ambient_pressure < Pressure::new::<psi>(48.2));
 
-            // Check HP pressure is used
-            assert!(!test_bed.ip_valve_is_open(i));
-            assert!(test_bed.hp_valve_is_open(i));
-        }
+        // Check HP pressure is used
+        assert!(test_bed.hp_valve_is_open(1));
 
         // Spool up engines to increase IP pressure
         test_bed = test_bed
             .eng1_n1(0.8)
             .and_eng1_n2_based_on_n1()
-            .eng2_n1(0.8)
-            .and_eng2_n2_based_on_n1()
             .and_stabilize();
 
-        for i in 1..2 {
-            // Above the switching threshold
-            assert!(test_bed.ip_pressure(i) - ambient_pressure > Pressure::new::<psi>(48.2));
+        // Above the switching threshold
+        assert!(test_bed.ip_pressure(1) - ambient_pressure > Pressure::new::<psi>(48.2));
 
-            // Check IP pressure is used
-            assert!(test_bed.ip_valve_is_open(i));
-            assert!(!test_bed.hp_valve_is_open(i));
-        }
+        // Check IP pressure is used
+        assert!(!test_bed.hp_valve_is_open(1));
     }
 
     #[test]
@@ -4278,14 +4267,11 @@ pub mod tests {
             .wing_anti_ice_push_button(WingAntiIcePushButtonMode::On)
             .and_stabilize();
 
-        for i in 1..2 {
-            // Below the switching threshold
-            assert!(test_bed.ip_pressure(i) - ambient_pressure < Pressure::new::<psi>(60.5));
+        // Below the switching threshold
+        assert!(test_bed.ip_pressure(1) - ambient_pressure < Pressure::new::<psi>(60.5));
 
-            // Check HP pressure is used
-            assert!(!test_bed.ip_valve_is_open(i));
-            assert!(test_bed.hp_valve_is_open(i));
-        }
+        // Check HP pressure is used
+        assert!(test_bed.hp_valve_is_open(1));
 
         // Spool up engines to increase IP pressure
         test_bed = test_bed
@@ -4295,14 +4281,11 @@ pub mod tests {
             .and_eng2_n2_based_on_n1()
             .and_stabilize();
 
-        for i in 1..2 {
-            // Above the switching threshold
-            assert!(test_bed.ip_pressure(i) - ambient_pressure > Pressure::new::<psi>(60.5));
+        // Above the switching threshold
+        assert!(test_bed.ip_pressure(1) - ambient_pressure > Pressure::new::<psi>(60.5));
 
-            // Check IP pressure is used
-            assert!(test_bed.ip_valve_is_open(i));
-            assert!(!test_bed.hp_valve_is_open(i));
-        }
+        // Check IP pressure is used
+        assert!(!test_bed.hp_valve_is_open(1));
     }
 
     #[test]

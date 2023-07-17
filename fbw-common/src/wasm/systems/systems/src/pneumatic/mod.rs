@@ -327,9 +327,9 @@ impl EngineCompressionChamberController {
         context: &UpdateContext,
         engine: &(impl EngineCorrectedN1 + EngineCorrectedN2),
     ) {
-        let lp_cpr = 1. + self.n1_contribution_factor * engine.corrected_n1().get::<ratio>();
-        let hp_cpr = 1. + self.n2_contribution_factor * engine.corrected_n2().get::<ratio>();
-        let compression_ratio = (lp_cpr * hp_cpr).max(1.);
+        let lp_cpr = (self.n1_contribution_factor * engine.corrected_n1().get::<ratio>()).exp();
+        let hp_cpr = (self.n2_contribution_factor * engine.corrected_n2().get::<ratio>()).exp();
+
         let exponent = Self::HEAT_CAPACITY_RATIO / (Self::HEAT_CAPACITY_RATIO - 1.);
 
         let relative_ram_rise =
@@ -339,9 +339,13 @@ impl EngineCompressionChamberController {
             * (1. + Self::INTAKE_EFFICIENCY * relative_ram_rise).powf(exponent);
         let inlet_temperature = context.ambient_temperature() * (1. + relative_ram_rise);
 
-        self.target_temperature = inlet_temperature
-            * (1. + (compression_ratio.powf(1. / exponent) - 1.) / Self::COMPRESSOR_EFFICIENCY);
-        self.target_pressure = compression_ratio * inlet_pressure;
+        let lpc_outlet_pressure = inlet_pressure * lp_cpr;
+        let lpc_outlet_temperature = inlet_temperature
+            * (1. + (lp_cpr.powf(1. / exponent) - 1.) / Self::COMPRESSOR_EFFICIENCY);
+
+        self.target_temperature = lpc_outlet_temperature
+            * (1. + (hp_cpr.powf(1. / exponent) - 1.) / Self::COMPRESSOR_EFFICIENCY);
+        self.target_pressure = hp_cpr * lpc_outlet_pressure;
     }
 }
 
