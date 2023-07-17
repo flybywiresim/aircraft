@@ -6637,13 +6637,14 @@ mod tests {
             engine::{trent_engine::TrentEngine, EngineFireOverheadPanel},
             failures::FailureType,
             hydraulic::cargo_doors::{DoorControlState, HydraulicDoorController},
-            landing_gear::{GearSystemState, LandingGearControlInterfaceUnitSet},
             shared::{EmergencyElectricalState, LgciuId, PotentialOrigin},
             simulation::{
                 test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
                 Aircraft, InitContext,
             },
         };
+
+        use crate::landing_gear::{GearSystemState, LandingGearControlInterfaceUnitSet};
 
         use uom::si::{
             angle::{degree, radian},

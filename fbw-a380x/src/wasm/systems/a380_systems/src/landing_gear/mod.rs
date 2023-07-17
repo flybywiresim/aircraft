@@ -1206,19 +1206,17 @@ impl GearSystemStateMachine {
 mod tests {
     use super::*;
 
-    use crate::simulation::test::{
-        ElementCtorFn, ReadByName, SimulationTestBed, TestBed, WriteByName,
-    };
     use std::time::Duration;
+    use systems::simulation::test::{ReadByName, SimulationTestBed, TestBed, WriteByName};
 
-    use crate::simulation::{
+    use systems::simulation::{
         Aircraft, InitContext, SimulationElement, SimulationElementVisitor, StartState,
         UpdateContext,
     };
 
-    use crate::electrical::{test::TestElectricitySource, ElectricalBus, Electricity};
-    use crate::hydraulic::landing_gear::GearSystemShockAbsorber;
-    use crate::shared::{GearActuatorId, PotentialOrigin};
+    use systems::electrical::{test::TestElectricitySource, ElectricalBus, Electricity};
+    use systems::hydraulic::landing_gear::GearSystemShockAbsorber;
+    use systems::shared::{GearActuatorId, PotentialOrigin};
 
     use uom::si::{electric_potential::volt, pressure::psi};
 

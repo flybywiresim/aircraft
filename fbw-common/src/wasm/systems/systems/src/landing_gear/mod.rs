@@ -116,16 +116,7 @@ mod tests {
     };
     use std::time::Duration;
 
-    use crate::simulation::{
-        Aircraft, InitContext, SimulationElement, SimulationElementVisitor, StartState,
-        UpdateContext,
-    };
-
-    use crate::electrical::{test::TestElectricitySource, ElectricalBus, Electricity};
-    use crate::hydraulic::landing_gear::GearSystemShockAbsorber;
-    use crate::shared::{GearActuatorId, PotentialOrigin};
-
-    use uom::si::{electric_potential::volt, pressure::psi};
+    use crate::simulation::InitContext;
 
     #[test]
     fn tilting_gear_does_not_tilt_when_no_pitch_on_ground() {

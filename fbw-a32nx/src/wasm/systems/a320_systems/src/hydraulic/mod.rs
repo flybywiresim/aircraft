@@ -5997,7 +5997,6 @@ mod tests {
                 cargo_doors::{DoorControlState, HydraulicDoorController},
                 electrical_generator::TestGenerator,
             },
-            landing_gear::{GearSystemState, LandingGearControlInterfaceUnitSet},
             shared::{
                 EmergencyElectricalState, EmergencyGeneratorControlUnit, LgciuId, PotentialOrigin,
             },
@@ -6006,6 +6005,8 @@ mod tests {
                 Aircraft, InitContext,
             },
         };
+
+        use crate::landing_gear::{GearSystemState, LandingGearControlInterfaceUnitSet};
 
         use uom::si::{
             angle::degree,
