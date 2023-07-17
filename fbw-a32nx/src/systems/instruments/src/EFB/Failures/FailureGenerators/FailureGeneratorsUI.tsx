@@ -9,10 +9,13 @@ import { findGeneratorFailures } from 'instruments/src/EFB/Failures/FailureGener
 import { ExclamationDiamond, InfoCircle, PlusLg, Sliders2Vertical, Trash } from 'react-bootstrap-icons';
 import { AtaChapterNumber, AtaChaptersTitle } from '@flybywiresim/fbw-sdk';
 import { FailureGeneratorInfoModalUI } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorInfo';
-import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
 import { GeneratorFailureSelection } from './GeneratorFailureSelectionUI';
 import { FailureGeneratorDetailsModalUI, ArmedState } from './FailureGeneratorSettingsUI';
+
+export const ArmingIndex = 0;
+export const FailuresAtOnceIndex = 1;
+export const MaxFailuresIndex = 2;
 
 export const FailureGeneratorsUI = () => {
     const [chosenGen, setChosenGen] = useState<string>();
@@ -67,27 +70,6 @@ export const FailureGeneratorsUI = () => {
                             <InfoCircle />
                         </div>
                     </div>
-                </div>
-                <div className="flex items-center">
-                    <div className="mr-2">
-                        {t('Failures.Generators.MaxSimultaneous')}
-                        :
-                    </div>
-                    <SimpleInput
-                        className="my-2 w-20 font-mono text-2xl px-3 py-1.5 rounded-md border-2 transition duration-100
-                    focus-within:outline-none focus-within:border-theme-highlight
-                    placeholder-theme-unselected bg-theme-accent border-theme-accent text-theme-text hover:bg-theme-body
-                     hover:border-theme-highlight"
-                        fontSizeClassName="text-2xl"
-                        number
-                        min={0}
-                        value={settings.maxFailuresAtOnce}
-                        onBlur={(x: string) => {
-                            if (!Number.isNaN(parseInt(x) || parseInt(x) >= 0)) {
-                                settings.setMaxFailuresAtOnce(parseInt(x));
-                            }
-                        }}
-                    />
                 </div>
                 <ScrollableContainer height={48}>
                     <div className="grid grid-cols-3 grid-flow-row">

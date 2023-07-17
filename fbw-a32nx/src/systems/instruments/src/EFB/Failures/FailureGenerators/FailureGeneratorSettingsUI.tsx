@@ -1,11 +1,13 @@
 import React from 'react';
 import { t } from 'instruments/src/EFB/translation';
-import { FailureGenContext, FailureGenData, ModalGenType, setNewSetting } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGen';
+import { FailureGenContext, FailureGenData, ModalGenType, setNewNumberOfFailureSetting, setNewSetting } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGen';
 import { ExtractFirstNumber, findGeneratorFailures } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelection';
 import { Airplane, ArrowBarUp, Repeat, Repeat1, ToggleOff } from 'react-bootstrap-icons';
 import { SelectGroup, SelectItem } from 'instruments/src/EFB/UtilComponents/Form/Select';
 import { SimpleInput } from 'instruments/src/EFB/UtilComponents/Form/SimpleInput/SimpleInput';
 import { ButtonType, SettingItem } from 'instruments/src/EFB/Settings/Settings';
+import { FailuresAtOnceIndex, MaxFailuresIndex } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
+import { ScrollableContainer } from 'instruments/src/EFB/UtilComponents/ScrollableContainer';
 
 export type SettingVar = {
     settingVar: number,
@@ -31,7 +33,7 @@ export function FailureGeneratorDetailsModalUI(
                 </h2>
                 <div />
                 <div
-                    className="flex-none justify-center items-center py-2 px-4 text-center rounded-md border-2
+                    className="flex-none justify-center items-center px-4 text-center rounded-md border-2
                     text-theme-body hover:text-utility-red bg-utility-red hover:bg-theme-body border-utility-red transition duration-100
                     "
                     onClick={() => failureGenContext.modals.popModal()}
@@ -39,14 +41,22 @@ export function FailureGeneratorDetailsModalUI(
                     X
                 </div>
             </div>
-            <div className="pt-4 w-full divide-y-2 divide-theme-accent">
-                {RearmSettingsUI(failureGenContext.modalContext.failureGenData, genNumber, setNewSetting, failureGenContext)}
-                {FailureGeneratorSingleSettingShortcut(t('Failures.Generators.NumberOfFailures'), '', t('Failures.Generators.All'),
-                    numberOfSelectedFailures, 0, numberOfSelectedFailures,
-                    failureGenContext.modalContext.failureGenData.settings[genNumber * failureGenContext.modalContext.failureGenData.numberOfSettingsPerGenerator + 1], 1,
-                    setNewSetting, failureGenContext.modalContext.failureGenData, genNumber, 1, failureGenContext)}
-                {failureGenContext.modalContext.failureGenData.generatorSettingComponents(genNumber, failureGenContext.modalContext.failureGenData, failureGenContext)}
-            </div>
+            <ScrollableContainer height={48}>
+                <div className="pt-4 w-full divide-y-2 divide-theme-accent">
+
+                    {RearmSettingsUI(failureGenContext.modalContext.failureGenData, genNumber, setNewSetting, failureGenContext)}
+                    {FailureGeneratorSingleSettingShortcut(t('Failures.Generators.NumberOfFailures'), '', t('Failures.Generators.All'),
+                        numberOfSelectedFailures, 0, numberOfSelectedFailures,
+                        failureGenContext.modalContext.failureGenData.settings[genNumber * failureGenContext.modalContext.failureGenData.numberOfSettingsPerGenerator + FailuresAtOnceIndex], 1,
+                        setNewNumberOfFailureSetting, failureGenContext.modalContext.failureGenData, genNumber, FailuresAtOnceIndex, failureGenContext)}
+                    {FailureGeneratorSingleSetting(t('Failures.Generators.MaxSimultaneous'), '',
+                        failureGenContext.modalContext.failureGenData.settings[genNumber * failureGenContext.modalContext.failureGenData.numberOfSettingsPerGenerator + FailuresAtOnceIndex],
+                        Infinity,
+                        failureGenContext.modalContext.failureGenData.settings[genNumber * failureGenContext.modalContext.failureGenData.numberOfSettingsPerGenerator + MaxFailuresIndex], 1,
+                        setNewSetting, failureGenContext.modalContext.failureGenData, genNumber, MaxFailuresIndex, failureGenContext)}
+                    {failureGenContext.modalContext.failureGenData.generatorSettingComponents(genNumber, failureGenContext.modalContext.failureGenData, failureGenContext)}
+                </div>
+            </ScrollableContainer>
         </div>
     );
 }

@@ -9,16 +9,21 @@ import { t } from 'instruments/src/EFB/translation';
 import { findGeneratorFailures } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelection';
 import { ArrowDownRight, ArrowUpRight } from 'react-bootstrap-icons';
 import { ButtonIcon, FailureGeneratorChoiceSetting, FailureGeneratorSingleSetting } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorSettingsUI';
+import { ArmingIndex, FailuresAtOnceIndex, MaxFailuresIndex } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
 
 const settingName = 'EFB_FAILURE_GENERATOR_SETTING_SPEED';
-const additionalSetting = [2, 1, 0, 200, 300];
-const numberOfSettingsPerGenerator = 4;
+const additionalSetting = [2, 1, 2, 0, 200, 300];
+const numberOfSettingsPerGenerator = 6;
 const uniqueGenPrefix = 'B';
 const failureGeneratorArmed :boolean[] = [];
 const genName = 'Speed';
 const alias = () => t('Failures.Generators.GenSpeed');
 const disableTakeOffRearm = false;
 const rolledDice:number[] = [];
+
+const SpeedConditionIndex = 3;
+const SpeedMinIndex = 4;
+const SpeedMaxIndex = 5;
 
 export const failureGenConfigSpeed : ()=>FailureGenData = () => {
     const [setting, setSetting] = usePersistentProperty(settingName);
@@ -49,24 +54,24 @@ const onErase = (genNumber : number) => {
 const generatorSettingComponents = (genNumber: number, generatorSettings : FailureGenData, failureGenContext : FailureGenContext) => {
     const settings = generatorSettings.settings;
     const settingTable = [
-        FailureGeneratorChoiceSetting(t('Failures.Generators.SpeedCondition'), settings[genNumber * numberOfSettingsPerGenerator + 2], accelDecelMode,
-            setNewSetting, generatorSettings, genNumber, 2, failureGenContext),
-        FailureGeneratorSingleSetting(t('Failures.Generators.MinimumSpeed'), t('Failures.Generators.knots'), 0,
-            settings[genNumber * numberOfSettingsPerGenerator + 4],
-            settings[genNumber * numberOfSettingsPerGenerator + 3], 1,
-            setNewSetting, generatorSettings, genNumber, 3, failureGenContext),
-        FailureGeneratorSingleSetting(t('Failures.Generators.MaximumSpeed'), t('Failures.Generators.knots'),
-            settings[genNumber * numberOfSettingsPerGenerator + 3], 400,
-            settings[genNumber * numberOfSettingsPerGenerator + 4], 1,
-            setNewSetting, generatorSettings, genNumber, 4, failureGenContext),
+        FailureGeneratorChoiceSetting(t('Failures.Generators.SpeedCondition'), settings[genNumber * numberOfSettingsPerGenerator + SpeedConditionIndex], accelDecelMode,
+            setNewSetting, generatorSettings, genNumber, SpeedConditionIndex, failureGenContext),
+        FailureGeneratorSingleSetting(t('Failures.Generators.MinimumGroundSpeed'), t('Failures.Generators.knots'), 0,
+            settings[genNumber * numberOfSettingsPerGenerator + SpeedMaxIndex],
+            settings[genNumber * numberOfSettingsPerGenerator + SpeedMinIndex], 1,
+            setNewSetting, generatorSettings, genNumber, SpeedMinIndex, failureGenContext),
+        FailureGeneratorSingleSetting(t('Failures.Generators.MaximumGroundSpeed'), t('Failures.Generators.knots'),
+            settings[genNumber * numberOfSettingsPerGenerator + SpeedMinIndex], 400,
+            settings[genNumber * numberOfSettingsPerGenerator + SpeedMaxIndex], 1,
+            setNewSetting, generatorSettings, genNumber, SpeedMaxIndex, failureGenContext),
     ];
     return settingTable;
 };
 
 export const failureGeneratorSpeed = (generatorFailuresGetters : Map<number, string>) => {
-    const [absoluteTime5s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);
+    const [absoluteTime2s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 2000);
     const [absoluteTime500ms] = useSimVar('E:ABSOLUTE TIME', 'seconds', 500);
-    const { maxFailuresAtOnce, totalActiveFailures, allFailures, activate, activeFailures } = failureGeneratorCommonFunction();
+    const { allFailures, activate, activeFailures, totalActiveFailures } = failureGeneratorCommonFunction();
     const [failureGeneratorSetting, setFailureGeneratorSetting] = usePersistentProperty(settingName, '');
     const settings : number[] = useMemo<number[]>(() => failureGeneratorSetting.split(',').map(((it) => parseFloat(it))), [failureGeneratorSetting]);
     const { failureFlightPhase } = basicData();
@@ -75,41 +80,43 @@ export const failureGeneratorSpeed = (generatorFailuresGetters : Map<number, str
     const [gs] = useSimVar('GPS GROUND SPEED', 'knots', 500);
 
     useEffect(() => {
-        if (totalActiveFailures < maxFailuresAtOnce) {
-            const tempSettings : number[] = Array.from(settings);
-            let change = false;
-            for (let i = 0; i < nbGenerator; i++) {
-                if (failureGeneratorArmed[i]) {
-                    const failureSpeed = (settings[i * numberOfSettingsPerGenerator + 3]
-                        + rolledDice[i] * (settings[i * numberOfSettingsPerGenerator + 4] - settings[i * numberOfSettingsPerGenerator + 3]));
-                    if ((gs > failureSpeed && settings[i * numberOfSettingsPerGenerator + 2] === 0)
-                        || (gs < failureSpeed && settings[i * numberOfSettingsPerGenerator + 2] === 1)
-                    ) {
+        const tempSettings : number[] = Array.from(settings);
+        let change = false;
+        for (let i = 0; i < nbGenerator; i++) {
+            if (failureGeneratorArmed[i]) {
+                const failureSpeed = (settings[i * numberOfSettingsPerGenerator + SpeedMinIndex]
+                        + rolledDice[i] * (settings[i * numberOfSettingsPerGenerator + SpeedMaxIndex] - settings[i * numberOfSettingsPerGenerator + SpeedMinIndex]));
+                if ((gs > failureSpeed && settings[i * numberOfSettingsPerGenerator + SpeedConditionIndex] === 0)
+                        || (gs < failureSpeed && settings[i * numberOfSettingsPerGenerator + SpeedConditionIndex] === 1)
+                ) {
+                    const numberOfFailureToActivate = Math.min(settings[i * numberOfSettingsPerGenerator + FailuresAtOnceIndex],
+                        settings[i * numberOfSettingsPerGenerator + MaxFailuresIndex] - totalActiveFailures);
+                    if (numberOfFailureToActivate > 0) {
                         activateRandomFailure(findGeneratorFailures(allFailures, generatorFailuresGetters, uniqueGenPrefix + i.toString()),
-                            activate, activeFailures, settings[i * numberOfSettingsPerGenerator + 1]);
+                            activate, activeFailures, numberOfFailureToActivate);
                         failureGeneratorArmed[i] = false;
                         change = true;
-                        if (tempSettings[i * numberOfSettingsPerGenerator + 0] === 1) tempSettings[i * numberOfSettingsPerGenerator + 0] = 0;
+                        if (tempSettings[i * numberOfSettingsPerGenerator + ArmingIndex] === 1) tempSettings[i * numberOfSettingsPerGenerator + ArmingIndex] = 0;
                     }
                 }
             }
-            if (change) {
-                setFailureGeneratorSetting(flatten(tempSettings));
-            }
         }
-    }, [absoluteTime5s]);
+        if (change) {
+            setFailureGeneratorSetting(flatten(tempSettings));
+        }
+    }, [absoluteTime2s]);
 
     useEffect(() => {
         for (let i = 0; i < nbGenerator; i++) {
-            if (!failureGeneratorArmed[i] && ((gs < settings[i * numberOfSettingsPerGenerator + 3] - 10 && settings[i * numberOfSettingsPerGenerator + 2] === 0)
-            || (gs > settings[i * numberOfSettingsPerGenerator + 4] + 10 && settings[i * numberOfSettingsPerGenerator + 2] === 1))
-                && (settings[i * numberOfSettingsPerGenerator + 0] === 1
-                    || (settings[i * numberOfSettingsPerGenerator + 0] === 2 && failureFlightPhase === FailurePhases.TAKEOFF)
-                    || settings[i * numberOfSettingsPerGenerator + 0] === 3)) {
+            if (!failureGeneratorArmed[i] && ((gs < settings[i * numberOfSettingsPerGenerator + SpeedMinIndex] - 10 && settings[i * numberOfSettingsPerGenerator + SpeedConditionIndex] === 0)
+            || (gs > settings[i * numberOfSettingsPerGenerator + SpeedMaxIndex] + 10 && settings[i * numberOfSettingsPerGenerator + SpeedConditionIndex] === 1))
+                && (settings[i * numberOfSettingsPerGenerator + ArmingIndex] === 1
+                    || (settings[i * numberOfSettingsPerGenerator + ArmingIndex] === 2 && failureFlightPhase === FailurePhases.TAKEOFF)
+                    || settings[i * numberOfSettingsPerGenerator + ArmingIndex] === 3)) {
                 failureGeneratorArmed[i] = true;
                 rolledDice[i] = Math.random();
             }
-            if (settings[i * numberOfSettingsPerGenerator + 0] === 0) failureGeneratorArmed[i] = false;
+            if (settings[i * numberOfSettingsPerGenerator + ArmingIndex] === 0) failureGeneratorArmed[i] = false;
         }
     }, [absoluteTime500ms]);
 

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Failure } from '@failures';
-import { usePersistentNumberProperty, usePersistentProperty, AtaChapterNumber, useSimVar } from '@flybywiresim/fbw-sdk';
+import { usePersistentProperty, AtaChapterNumber, useSimVar } from '@flybywiresim/fbw-sdk';
 import { failureGenConfigAltitude, failureGeneratorAltitude }
     from 'instruments/src/EFB/Failures/FailureGenerators/AltitudeFailureGenerator';
 import { failureGenConfigPerHour, failureGeneratorPerHour }
@@ -12,14 +12,14 @@ import { failureGenConfigTakeOff, failureGeneratorTakeOff }
 import { failureGenConfigTimer, failureGeneratorTimer } from 'instruments/src/EFB/Failures/FailureGenerators/TimerFailureGenerator';
 import { ModalContextInterface, useModals } from 'instruments/src/EFB/UtilComponents/Modals/Modals';
 import { deleteGeneratorFailures, selectAllFailures } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelection';
+import { FailuresAtOnceIndex, MaxFailuresIndex } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
 import { useFailuresOrchestrator } from '../../failures-orchestrator-provider';
 
 export const failureGeneratorCommonFunction = () => {
-    const [maxFailuresAtOnce, setMaxFailuresAtOnce] = usePersistentNumberProperty('EFB_MAX_FAILURES_AT_ONCE', 2);
     const { changingFailures, activeFailures, allFailures, activate } = useFailuresOrchestrator();
 
     const totalActiveFailures = useMemo(() => changingFailures.size + activeFailures.size, [changingFailures, activeFailures]);
-    return { maxFailuresAtOnce, setMaxFailuresAtOnce, changingFailures, activeFailures, totalActiveFailures, allFailures, activate };
+    return { changingFailures, activeFailures, totalActiveFailures, allFailures, activate };
 };
 
 export type FailureGenData = {
@@ -37,8 +37,6 @@ export type FailureGenData = {
 }
 
 export type FailureGenContext = {
-    maxFailuresAtOnce: number,
-    setMaxFailuresAtOnce: (value: number) => void,
     allGenSettings: Map<string, FailureGenData>,
     modals: ModalContextInterface,
     generatorFailuresGetters : Map<number, string>,
@@ -122,7 +120,7 @@ export const basicData = () => {
 
 export const failureGeneratorsSettings : () => FailureGenContext = () => {
     const modals = useModals();
-    const { maxFailuresAtOnce, setMaxFailuresAtOnce, allFailures } = failureGeneratorCommonFunction();
+    const { allFailures } = failureGeneratorCommonFunction();
     const { generatorFailuresGetters, generatorFailuresSetters } = allGeneratorFailures(allFailures);
     const allGenSettings : Map<string, FailureGenData> = new Map();
     const chapters = useMemo(() => Array.from(new Set<AtaChapterNumber>(allFailures.map((it : Failure) => it.ata))).sort((a: AtaChapterNumber, b: AtaChapterNumber) => a - b), [allFailures]);
@@ -136,8 +134,6 @@ export const failureGeneratorsSettings : () => FailureGenContext = () => {
     allGenSettings.set(failureGenConfigTakeOff().genName, failureGenConfigTakeOff());
 
     return {
-        maxFailuresAtOnce,
-        setMaxFailuresAtOnce,
         allGenSettings,
         modals,
         generatorFailuresGetters,
@@ -182,6 +178,14 @@ export const failureGeneratorAdd = (generatorSettings : FailureGenData, failureG
     const genID = `${generatorSettings.uniqueGenPrefix}${genNumber}`;
     selectAllFailures(failureGenContext, genID, true);
 };
+
+export function setNewNumberOfFailureSetting(newSetting: number, generatorSettings : FailureGenData, genID : number) {
+    const settings = generatorSettings.settings;
+    settings[genID * generatorSettings.numberOfSettingsPerGenerator + FailuresAtOnceIndex] = newSetting;
+    settings[genID * generatorSettings.numberOfSettingsPerGenerator + MaxFailuresIndex] = Math.max(settings[genID * generatorSettings.numberOfSettingsPerGenerator + MaxFailuresIndex],
+        newSetting);
+    generatorSettings.setSetting(flatten(settings));
+}
 
 export function setNewSetting(newSetting: number, generatorSettings : FailureGenData, genID : number, settingIndex : number) {
     const settings = generatorSettings.settings;
