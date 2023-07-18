@@ -17,7 +17,7 @@ pub struct AudioControlPanel {
     transmit_channel: u8,
     int_rad_switch: u8,
     vhfs: [VHF; 3],
-    comms: [COMM; 5], // Transceivers not simulated. Jus to make the knobs rotate
+    comms: [COMM; 5], // Transceivers not simulated due to SDK capabilities. Just to make the knobs rotatable/pushable
     adfs: [ADF; 2],
     vors: [VOR; 2],
     ils: ILS,
