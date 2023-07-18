@@ -58,6 +58,7 @@ pub struct Communications {
 
     volume_com1_id: VariableIdentifier,
     volume_com2_id: VariableIdentifier,
+    volume_com3_id: VariableIdentifier,
 
     volume_adf1_id: VariableIdentifier,
     volume_adf2_id: VariableIdentifier,
@@ -114,6 +115,7 @@ pub struct Communications {
 
     volume_com1: u8,
     volume_com2: u8,
+    volume_com3: u8,
     volume_adf1: u8,
     volume_adf2: u8,
     volume_vor1: u8,
@@ -168,6 +170,7 @@ impl Communications {
 
             volume_com1_id: context.get_identifier("VHF1_VOLUME".to_owned()),
             volume_com2_id: context.get_identifier("VHF2_VOLUME".to_owned()),
+            volume_com3_id: context.get_identifier("VHF3_VOLUME".to_owned()),
             volume_adf1_id: context.get_identifier("ADF1_VOLUME".to_owned()),
             volume_adf2_id: context.get_identifier("ADF2_VOLUME".to_owned()),
             volume_vor1_id: context.get_identifier("VOR1_VOLUME".to_owned()),
@@ -222,6 +225,7 @@ impl Communications {
 
             volume_com1: 0,
             volume_com2: 0,
+            volume_com3: 0,
             volume_adf1: 0,
             volume_adf2: 0,
             volume_vor1: 0,
@@ -308,6 +312,7 @@ impl Communications {
 
             self.volume_com1 = chosen_panel.get_volume_com1();
             self.volume_com2 = chosen_panel.get_volume_com2();
+            self.volume_com3 = chosen_panel.get_volume_com3();
             self.volume_adf1 = chosen_panel.get_volume_adf1();
             self.volume_adf2 = chosen_panel.get_volume_adf2();
             self.volume_vor1 = chosen_panel.get_volume_vor1();
@@ -381,7 +386,9 @@ impl Communications {
             };
 
             self.previous_audio_switching_knob = self.audio_switching_knob;
-        } else if self.previous_ls_fcu1_pressed != self.ls_fcu1_pressed {
+        } else if self.previous_ls_fcu1_pressed != self.ls_fcu1_pressed
+            && side_controlling == SideControlling::CAPTAIN
+        {
             // FCU1 is connected to Captain only. Therefore, we only need to check AudioSwitching knob position
             // and the next group of conditions will make the job with side_controlling
             if self.audio_switching_knob == AudioSwitchingKnobPosition::NORM {
@@ -391,7 +398,9 @@ impl Communications {
             }
 
             self.previous_ls_fcu1_pressed = self.ls_fcu1_pressed;
-        } else if self.previous_ls_fcu2_pressed != self.ls_fcu2_pressed {
+        } else if self.previous_ls_fcu2_pressed != self.ls_fcu2_pressed
+            && side_controlling == SideControlling::FO
+        {
             // FCU1 is connected to FO only. Therefore, we only need to check AudioSwitching knob position
             // and the next group of conditions will make the job with side_controlling
             if self.audio_switching_knob == AudioSwitchingKnobPosition::NORM {
@@ -513,30 +522,13 @@ impl SimulationElement for Communications {
 
             writer.write(&self.volume_com1_id, self.volume_com1);
             writer.write(&self.volume_com2_id, self.volume_com2);
-            writer.write(
-                &self.volume_adf1_id,
-                self.volume_adf1 * (self.receive_adf1 as u8),
-            );
-            writer.write(
-                &self.volume_adf2_id,
-                self.volume_adf2 * (self.receive_adf2 as u8),
-            );
-            writer.write(
-                &self.volume_vor1_id,
-                self.volume_vor1 * (self.receive_vor1 as u8),
-            );
-            writer.write(
-                &self.volume_vor2_id,
-                self.volume_vor2 * (self.receive_vor2 as u8),
-            );
-            writer.write(
-                &self.volume_ils_id,
-                self.volume_ils * (self.receive_ils as u8),
-            );
-            writer.write(
-                &self.volume_gls_id,
-                self.volume_gls * (self.receive_gls as u8),
-            );
+            writer.write(&self.volume_com3_id, self.volume_com3);
+            writer.write(&self.volume_adf1_id, self.volume_adf1);
+            writer.write(&self.volume_adf2_id, self.volume_adf2);
+            writer.write(&self.volume_vor1_id, self.volume_vor1);
+            writer.write(&self.volume_vor2_id, self.volume_vor2);
+            writer.write(&self.volume_ils_id, self.volume_ils);
+            writer.write(&self.volume_gls_id, self.volume_gls);
             writer.write(&self.volume_markers_id, self.volume_markers);
 
             // FOR FUTURE USE: Not needed for the time being as there's no K event for all this

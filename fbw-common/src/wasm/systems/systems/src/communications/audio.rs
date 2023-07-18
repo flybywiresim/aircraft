@@ -448,8 +448,9 @@ pub struct GLS {
 impl GLS {
     pub fn new(context: &mut InitContext, id_acp: usize) -> Self {
         Self {
-            volume_id: context.get_identifier(format!("ACP{}_GLS_VOLUME", id_acp)),
-            knob_id: context.get_identifier(format!("ACP{}_GLS_KNOB_VOLUME_DOWN", id_acp)),
+            // To change to GLS version once flight deck reworked
+            volume_id: context.get_identifier(format!("ACP{}_MLS_VOLUME", id_acp)),
+            knob_id: context.get_identifier(format!("ACP{}_MLS_KNOB_VOLUME_DOWN", id_acp)),
             volume: 0,
             knob: false,
         }

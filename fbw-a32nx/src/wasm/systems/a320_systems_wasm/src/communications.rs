@@ -49,42 +49,49 @@ pub(super) fn communications(builder: &mut MsfsAspectBuilder) -> Result<(), Box<
         VariableToEventWriteOn::EveryTick,
         "COM2_VOLUME_SET",
     )?;
-    // builder.variable_to_event(
-    //     Variable::aspect("ADF1_VOLUME"),
-    //     VariableToEventMapping::EventDataRaw,
-    //     VariableToEventWriteOn::Change,
-    //     "ADF_VOLUME_SET",
-    // )?;
-    // builder.variable_to_event(
-    //     Variable::aspect("ADF2_VOLUME"),
-    //     VariableToEventMapping::EventDataRaw,
-    //     VariableToEventWriteOn::Change,
-    //     "ADF2_VOLUME_SET",
-    // )?;
-    // builder.variable_to_event(
-    //     Variable::aspect("VOR1_VOLUME"),
-    //     VariableToEventMapping::EventDataRaw,
-    //     VariableToEventWriteOn::Change,
-    //     "NAV1_VOLUME_SET_EX1",
-    // )?;
-    // builder.variable_to_event(
-    //     Variable::aspect("VOR2_VOLUME"),
-    //     VariableToEventMapping::EventDataRaw,
-    //     VariableToEventWriteOn::Change,
-    //     "NAV2_VOLUME_SET_EX1",
-    // )?;
-    // builder.variable_to_event(
-    //     Variable::aspect("ILS_VOLUME"),
-    //     VariableToEventMapping::EventDataRaw,
-    //     VariableToEventWriteOn::Change,
-    //     "NAV3_VOLUME_SET_EX1",
-    // )?;
-    // builder.variable_to_event(
-    //     Variable::aspect("GLS_VOLUME"),
-    //     VariableToEventMapping::EventDataRaw,
-    //     VariableToEventWriteOn::Change,
-    //     "NAV4_VOLUME_SET_EX1",
-    // )?;
+    builder.variable_to_event(
+        Variable::aspect("VHF3_VOLUME"),
+        VariableToEventMapping::EventDataRaw,
+        VariableToEventWriteOn::Change,
+        "COM3_VOLUME_SET",
+    )?;
+
+    builder.variable_to_event(
+        Variable::aspect("ADF1_VOLUME"),
+        VariableToEventMapping::EventDataRaw,
+        VariableToEventWriteOn::Change,
+        "ADF_VOLUME_SET",
+    )?;
+    builder.variable_to_event(
+        Variable::aspect("ADF2_VOLUME"),
+        VariableToEventMapping::EventDataRaw,
+        VariableToEventWriteOn::Change,
+        "ADF2_VOLUME_SET",
+    )?;
+    builder.variable_to_event(
+        Variable::aspect("VOR1_VOLUME"),
+        VariableToEventMapping::EventDataRaw,
+        VariableToEventWriteOn::Change,
+        "NAV1_VOLUME_SET_EX1",
+    )?;
+    builder.variable_to_event(
+        Variable::aspect("VOR2_VOLUME"),
+        VariableToEventMapping::EventDataRaw,
+        VariableToEventWriteOn::Change,
+        "NAV2_VOLUME_SET_EX1",
+    )?;
+    builder.variable_to_event(
+        Variable::aspect("ILS_VOLUME"),
+        VariableToEventMapping::EventDataRaw,
+        VariableToEventWriteOn::Change,
+        "NAV3_VOLUME_SET_EX1",
+    )?;
+    builder.variable_to_event(
+        Variable::aspect("GLS_VOLUME"),
+        VariableToEventMapping::EventDataRaw,
+        VariableToEventWriteOn::Change,
+        "NAV4_VOLUME_SET_EX1",
+    )?;
     // builder.variable_to_event(
     //     Variable::aspect("MKR_VOLUME"),
     //     VariableToEventMapping::EventDataRaw,
@@ -134,7 +141,7 @@ pub(super) fn communications(builder: &mut MsfsAspectBuilder) -> Result<(), Box<
         "RADIO_DME2_IDENT_SET",
     )?;
     // For the next two, they are not VOR but
-    // the SDK does not allow us to call RADIO_DM3/4_IDENT_SET yet
+    // the SDK does not allow us to call RADIO_DME3/4_IDENT_SET yet
     builder.variable_to_event(
         Variable::aspect("ILS_IDENT"),
         VariableToEventMapping::EventDataRaw,
