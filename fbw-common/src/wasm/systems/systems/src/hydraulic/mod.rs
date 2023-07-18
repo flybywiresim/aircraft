@@ -3155,7 +3155,7 @@ impl HydraulicValve {
     const POSITION_RESPONSE_TIME_CONSTANT: Duration = Duration::from_millis(150);
     const MIN_POSITION_FOR_ZERO_PRESSURE_RATIO: f64 = 0.02;
 
-    fn new(valve_type: HydraulicValveType, powered_by: Option<Vec<ElectricalBusType>>) -> Self {
+    pub fn new(valve_type: HydraulicValveType, powered_by: Option<Vec<ElectricalBusType>>) -> Self {
         Self {
             position: LowPassFilter::<Ratio>::new(Self::POSITION_RESPONSE_TIME_CONSTANT),
             is_powered: false,
@@ -3166,7 +3166,7 @@ impl HydraulicValve {
         }
     }
 
-    fn update(
+    pub fn update(
         &mut self,
         context: &UpdateContext,
         commanded_open: bool,
@@ -3217,7 +3217,7 @@ impl HydraulicValve {
             }
     }
 
-    fn pressure_output(&self) -> Pressure {
+    pub fn pressure_output(&self) -> Pressure {
         self.pressure_output
     }
 }
