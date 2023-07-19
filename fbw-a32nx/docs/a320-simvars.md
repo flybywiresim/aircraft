@@ -559,7 +559,7 @@
 
 - A32NX_ACP{1,2,3}_SWITCH_INT
     - Number
-    - Set to 0 whenever on RAD position. 50 whenever neutral position. 100 whenever in INT position
+    - Set to 0 whenever on RAD position. 100 whenever neutral position. 200 whenever in INT position
 
 - A32NX_IS_EMITTING_ON_FREQUENCY
     - Bool
