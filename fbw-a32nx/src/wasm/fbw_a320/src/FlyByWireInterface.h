@@ -330,8 +330,12 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> engineEngine2EGT;
   std::unique_ptr<LocalVariable> engineEngine1Oil;
   std::unique_ptr<LocalVariable> engineEngine2Oil;
-  std::unique_ptr<LocalVariable> engineEngine1TotalOil;
-  std::unique_ptr<LocalVariable> engineEngine2TotalOil;
+  std::unique_ptr<LocalVariable> engineEngine1OilTotal;
+  std::unique_ptr<LocalVariable> engineEngine2OilTotal;
+  std::unique_ptr<LocalVariable> engineEngine1VibN1;
+  std::unique_ptr<LocalVariable> engineEngine2VibN1;
+  std::unique_ptr<LocalVariable> engineEngine1VibN2;
+  std::unique_ptr<LocalVariable> engineEngine2VibN2;
   std::unique_ptr<LocalVariable> engineEngine1FF;
   std::unique_ptr<LocalVariable> engineEngine2FF;
   std::unique_ptr<LocalVariable> engineEngine1PreFF;
