@@ -67,7 +67,6 @@ const generatorSettingComponents = (genNumber: number, generatorSettings : Failu
 };
 
 export const failureGeneratorAltitude = (generatorFailuresGetters : Map<number, string>) => {
-    const [absoluteTime5s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);
     const [absoluteTime1s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 1000);
     const { allFailures, activate, activeFailures, totalActiveFailures } = failureGeneratorCommonFunction();
     const [failureGeneratorSetting, setFailureGeneratorSetting] = usePersistentProperty(settingName, '');
@@ -102,7 +101,7 @@ export const failureGeneratorAltitude = (generatorFailuresGetters : Map<number, 
         if (change) {
             setFailureGeneratorSetting(flatten(tempSettings));
         }
-    }, [absoluteTime5s]);
+    }, [absoluteTime1s]);
 
     useEffect(() => {
         for (let i = 0; i < nbGenerator; i++) {

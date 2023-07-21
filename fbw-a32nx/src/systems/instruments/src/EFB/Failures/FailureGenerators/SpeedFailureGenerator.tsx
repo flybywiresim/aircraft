@@ -69,7 +69,6 @@ const generatorSettingComponents = (genNumber: number, generatorSettings : Failu
 };
 
 export const failureGeneratorSpeed = (generatorFailuresGetters : Map<number, string>) => {
-    const [absoluteTime2s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 2000);
     const [absoluteTime500ms] = useSimVar('E:ABSOLUTE TIME', 'seconds', 500);
     const { allFailures, activate, activeFailures, totalActiveFailures } = failureGeneratorCommonFunction();
     const [failureGeneratorSetting, setFailureGeneratorSetting] = usePersistentProperty(settingName, '');
@@ -104,7 +103,7 @@ export const failureGeneratorSpeed = (generatorFailuresGetters : Map<number, str
         if (change) {
             setFailureGeneratorSetting(flatten(tempSettings));
         }
-    }, [absoluteTime2s]);
+    }, [absoluteTime500ms]);
 
     useEffect(() => {
         for (let i = 0; i < nbGenerator; i++) {

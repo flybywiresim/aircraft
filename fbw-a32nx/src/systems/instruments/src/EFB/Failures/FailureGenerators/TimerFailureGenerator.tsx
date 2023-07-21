@@ -64,7 +64,6 @@ const generatorSettingComponents = (genNumber: number, generatorSettings : Failu
 };
 
 export const failureGeneratorTimer = (generatorFailuresGetters : Map<number, string>) => {
-    const [absoluteTime5s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);
     const [absoluteTime1s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 1000);
     const { allFailures, activate, activeFailures, totalActiveFailures } = failureGeneratorCommonFunction();
     const [failureGeneratorSetting, setFailureGeneratorSetting] = usePersistentProperty(settingName, '');
@@ -80,7 +79,7 @@ export const failureGeneratorTimer = (generatorFailuresGetters : Map<number, str
             if (failureGeneratorArmed[i]) {
                 const failureDelay = (settings[i * numberOfSettingsPerGenerator + DelayMinIndex]
                         + rolledDice[i] * (settings[i * numberOfSettingsPerGenerator + DelayMaxIndex] - settings[i * numberOfSettingsPerGenerator + DelayMinIndex]));
-                if (absoluteTime5s > failureStartTime[i] + failureDelay) {
+                if (absoluteTime1s > failureStartTime[i] + failureDelay) {
                     const numberOfFailureToActivate = Math.min(settings[i * numberOfSettingsPerGenerator + FailuresAtOnceIndex],
                         settings[i * numberOfSettingsPerGenerator + MaxFailuresIndex] - totalActiveFailures);
                     if (numberOfFailureToActivate > 0) {
@@ -96,7 +95,7 @@ export const failureGeneratorTimer = (generatorFailuresGetters : Map<number, str
         if (change) {
             setFailureGeneratorSetting(flatten(tempSettings));
         }
-    }, [absoluteTime5s]);
+    }, [absoluteTime1s]);
 
     useEffect(() => {
         for (let i = 0; i < nbGenerator; i++) {
@@ -105,7 +104,7 @@ export const failureGeneratorTimer = (generatorFailuresGetters : Map<number, str
                     || settings[i * numberOfSettingsPerGenerator + ArmingIndex] === 3)) {
                 failureGeneratorArmed[i] = true;
                 rolledDice[i] = Math.random();
-                failureStartTime[i] = absoluteTime5s;
+                failureStartTime[i] = absoluteTime1s;
             }
             if (settings[i * numberOfSettingsPerGenerator + ArmingIndex] === 0) failureGeneratorArmed[i] = false;
         }
