@@ -114,11 +114,12 @@ class CDUWindPage {
 
         let alternatHeader = "";
         let alternateCell = "";
+        let altFLightlevel = "";
 
         if (mcdu.simbrief.alternate) {
             alternatHeader = "ALTN WIND";
             alternateCell = "[ ]°/[ ][color]cyan";
-
+            altFLightlevel = "{green}{small}FL100{end}{end}";
             if (mcdu.winds.alternate != null) {
                 alternateCell = `${CDUWindPage.FormatNumber(mcdu.winds.alternate.direction)}°/${CDUWindPage.FormatNumber(mcdu.winds.alternate.speed)}[color]cyan`;
             }
@@ -127,7 +128,7 @@ class CDUWindPage {
             ["DESCENT WIND"],
             ["TRU WIND/ALT", alternatHeader],
             ["", alternateCell],
-            ["", "{green}{small}FL100{end}{end}"],
+            ["", altFLightlevel],
             ["", ""],
             ["", "WIND{sp}[color]amber"],
             ["", requestButton],
