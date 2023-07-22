@@ -207,7 +207,7 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
             <A380SeatOutlineBg stroke={getTheme(theme)[0]} highlight="#69BD45" />
             <canvas className="absolute cursor-pointer" ref={canvasRef} style={{ transform: `translateX(${canvasX}px) translateY(${canvasY}px)` }} />
 
-            <div className="flex absolute top-full flex-row px-4 w-fit">
+            <div className="flex absolute top-full flex-row px-4 w-full">
                 <div><AirplaneFill size={25} className="my-1 mx-3" /></div>
                 <SelectGroup>
                     <SelectItem
@@ -217,6 +217,7 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
                     </SelectItem>
                     <SelectItem>
                         Upper
+
                     </SelectItem>
                 </SelectGroup>
             </div>

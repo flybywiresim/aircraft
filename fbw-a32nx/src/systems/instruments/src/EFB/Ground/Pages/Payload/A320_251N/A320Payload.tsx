@@ -50,7 +50,6 @@ export const A320Payload = () => {
     }, []);
 
     useEffect(() => {
-        console.log(acType);
         fetch(`./${acType}.json`)
             .then((response) => response.json())
             .then((data) => setLoadsheet(data))
