@@ -72,7 +72,6 @@ const getSimBriefOfp = (mcdu, updateView, callback = () => {}) => {
             mcdu.simbrief["costIndex"] = data.general.costindex;
             mcdu.simbrief["navlog"] = data.navlog.fix;
             mcdu.simbrief["callsign"] = data.atc.callsign;
-            mcdu.simbrief["alternateIcao"] = data.alternate.icao_code;
             let alternate = data.alternate;
             if (Array.isArray(data.alternate)) {
                 alternate = data.alternate[0];
