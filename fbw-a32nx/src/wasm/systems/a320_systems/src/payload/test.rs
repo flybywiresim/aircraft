@@ -7,6 +7,7 @@ use systems::electrical::Electricity;
 use uom::si::mass::pound;
 
 use super::*;
+use crate::fuel::A320Fuel;
 use crate::payload::A320Payload;
 use crate::systems::simulation::{
     test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
@@ -15,12 +16,14 @@ use crate::systems::simulation::{
 
 struct BoardingTestAircraft {
     boarding: A320Payload,
+    fuel: A320Fuel,
 }
 
 impl BoardingTestAircraft {
     fn new(context: &mut InitContext) -> Self {
         Self {
             boarding: A320Payload::new(context),
+            fuel: A320Fuel::new(context),
         }
     }
 }
@@ -30,12 +33,13 @@ impl Aircraft for BoardingTestAircraft {
         context: &UpdateContext,
         _electricity: &mut Electricity,
     ) {
-        self.boarding.update(context);
+        self.boarding.update(context, &self.fuel);
     }
 }
 impl SimulationElement for BoardingTestAircraft {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.boarding.accept(visitor);
+        self.fuel.accept(visitor);
 
         visitor.visit(self);
     }

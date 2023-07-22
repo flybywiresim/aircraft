@@ -14,6 +14,8 @@ use systems::{
     },
 };
 
+use crate::fuel::FuelForeAftCG;
+
 #[cfg(test)]
 pub mod test;
 
@@ -85,6 +87,9 @@ lazy_static! {
             "PAYLOAD_STATION_8_REQ",
         )
     ]);
+    static ref A320_EMPTY_WEIGHT: Mass = Mass::new::<kilogram>(42500.);
+    static ref A320_MAC_SIZE: f64 = 13.464;
+    static ref A320_LEMAC_Z: f64 = -5.383;
 }
 
 pub struct A320BoardingSounds {
@@ -188,6 +193,14 @@ pub struct A320Payload {
     cargo: Vec<Cargo>,
     boarding_sounds: A320BoardingSounds,
     time: Duration,
+
+    gw_cg_percent_mac: f64,
+    zfw_cg_percent_mac: f64,
+
+    desired_gw_cg_percent_mac: f64,
+    desired_zfw_cg_percent_mac: f64,
+
+    ths_setting: f64,
 }
 impl A320Payload {
     const DEFAULT_PER_PAX_WEIGHT_KG: f64 = 84.;
@@ -253,10 +266,18 @@ impl A320Payload {
             pax,
             cargo,
             time: Duration::from_nanos(0),
+
+            gw_cg_percent_mac: 0.,
+            zfw_cg_percent_mac: 0.,
+
+            desired_gw_cg_percent_mac: 0.,
+            desired_zfw_cg_percent_mac: 0.,
+
+            ths_setting: 0.,
         }
     }
 
-    pub(crate) fn update(&mut self, context: &UpdateContext) {
+    pub(crate) fn update(&mut self, context: &UpdateContext, fuel_cg: &impl FuelForeAftCG) {
         if !self.is_developer_state_active() {
             self.ensure_payload_sync()
         };
@@ -268,6 +289,13 @@ impl A320Payload {
         } else {
             self.update_intern(context);
         }
+
+        self.desired_zfw_cg_percent_mac;
+        /*
+        self.desired_gw_cg_percent_mac = self.desired_zfw_cg_percent_mac
+            + -100 * (fuel_cg.fore_aft_center_of_gravity() - A320_LEMAC_Z) / A320_MAC_SIZE;
+        self.gw_cg_percent_mac = self.zfw_cg + fuel_cg.fore_aft_center_of_gravity();
+        */
     }
 
     fn ensure_payload_sync(&mut self) {

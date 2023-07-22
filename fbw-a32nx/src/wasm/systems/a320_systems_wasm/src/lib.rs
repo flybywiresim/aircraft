@@ -267,7 +267,11 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("AMBIENT WIND Z", "meter per second", 0)?
     .provides_aircraft_variable("ANTISKID BRAKES ACTIVE", "Bool", 0)?
     .provides_aircraft_variable("EXTERNAL POWER AVAILABLE", "Bool", 1)?
+    .provides_aircraft_variable("FUEL TANK CENTER QUANTITY", "Pounds", 0)?
     .provides_aircraft_variable("FUEL TANK LEFT MAIN QUANTITY", "Pounds", 0)?
+    .provides_aircraft_variable("FUEL TANK LEFT AUX QUANTITY", "Pounds", 0)?
+    .provides_aircraft_variable("FUEL TANK RIGHT MAIN QUANTITY", "Pounds", 0)?
+    .provides_aircraft_variable("FUEL TANK RIGHT AUX QUANTITY", "Pounds", 0)?
     .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 0)?
     .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 1)?
     .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 2)?
