@@ -6,7 +6,8 @@ use uom::si::{f64::Mass, mass::kilogram};
 
 use systems::{
     accept_iterable,
-    payload::{BoardingRate, Cargo, CargoInfo, GsxState, Pax, PaxInfo},
+    misc::{BoardingSounds, Gsx, GsxState},
+    payload::{BoardingRate, Cargo, CargoInfo, Pax, PaxInfo},
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
         SimulatorWriter, UpdateContext, VariableIdentifier, Write,
@@ -40,7 +41,6 @@ pub trait CargoPayload {
     fn target_fore_aft_center_of_gravity(&self) -> f64;
 }
 
-#[derive(Debug, Clone, Copy)]
 pub enum A320Pax {
     A,
     B,
@@ -53,7 +53,7 @@ impl Into<usize> for A320Pax {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[allow(dead_code)]
 pub enum A320Cargo {
     FwdBaggage,
     AftContainer,
@@ -66,123 +66,21 @@ impl Into<usize> for A320Cargo {
     }
 }
 
-pub struct A320BoardingSounds {
-    pax_board_id: VariableIdentifier,
-    pax_deboard_id: VariableIdentifier,
-    pax_complete_id: VariableIdentifier,
-    pax_ambience_id: VariableIdentifier,
-    pax_boarding: bool,
-    pax_deboarding: bool,
-    pax_complete: bool,
-    pax_ambience: bool,
-}
-impl A320BoardingSounds {
-    pub fn new(
-        pax_board_id: VariableIdentifier,
-        pax_deboard_id: VariableIdentifier,
-        pax_complete_id: VariableIdentifier,
-        pax_ambience_id: VariableIdentifier,
-    ) -> Self {
-        A320BoardingSounds {
-            pax_board_id,
-            pax_deboard_id,
-            pax_complete_id,
-            pax_ambience_id,
-            pax_boarding: false,
-            pax_deboarding: false,
-            pax_complete: false,
-            pax_ambience: false,
-        }
-    }
-
-    fn pax_boarding(&self) -> bool {
-        self.pax_boarding
-    }
-
-    fn pax_deboarding(&self) -> bool {
-        self.pax_deboarding
-    }
-
-    fn pax_complete(&self) -> bool {
-        self.pax_complete
-    }
-
-    fn pax_ambience(&self) -> bool {
-        self.pax_ambience
-    }
-
-    fn start_pax_boarding(&mut self) {
-        self.pax_boarding = true;
-    }
-
-    fn stop_pax_boarding(&mut self) {
-        self.pax_boarding = false;
-    }
-
-    fn start_pax_deboarding(&mut self) {
-        self.pax_deboarding = true;
-    }
-
-    fn stop_pax_deboarding(&mut self) {
-        self.pax_deboarding = false;
-    }
-
-    fn start_pax_complete(&mut self) {
-        self.pax_complete = true;
-    }
-
-    fn stop_pax_complete(&mut self) {
-        self.pax_complete = false;
-    }
-
-    fn start_pax_ambience(&mut self) {
-        self.pax_ambience = true;
-    }
-
-    fn stop_pax_ambience(&mut self) {
-        self.pax_ambience = false;
-    }
-}
-impl SimulationElement for A320BoardingSounds {
-    fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.pax_board_id, self.pax_boarding);
-        writer.write(&self.pax_deboard_id, self.pax_deboarding);
-        writer.write(&self.pax_complete_id, self.pax_complete);
-        writer.write(&self.pax_ambience_id, self.pax_ambience);
-    }
-}
-
 pub struct A320Payload {
     developer_state_id: VariableIdentifier,
     is_boarding_id: VariableIdentifier,
     board_rate_id: VariableIdentifier,
     per_pax_weight_id: VariableIdentifier,
 
-    // TODO: Move into context
-    is_gsx_enabled_id: VariableIdentifier,
-    gsx_boarding_state_id: VariableIdentifier,
-    gsx_deboarding_state_id: VariableIdentifier,
-    gsx_pax_boarding_id: VariableIdentifier,
-    gsx_pax_deboarding_id: VariableIdentifier,
-    gsx_cargo_boarding_pct_id: VariableIdentifier,
-    gsx_cargo_deboarding_pct_id: VariableIdentifier,
-
     developer_state: i8,
     is_boarding: bool,
     board_rate: BoardingRate,
     per_pax_weight: Rc<Cell<Mass>>,
 
-    is_gsx_enabled: bool,
-    gsx_boarding_state: GsxState,
-    gsx_deboarding_state: GsxState,
-    gsx_pax_boarding: i32,
-    gsx_pax_deboarding: i32,
-    gsx_cargo_boarding_pct: f64,
-    gsx_cargo_deboarding_pct: f64,
-
     pax: Vec<Pax>,
     cargo: Vec<Cargo>,
-    boarding_sounds: A320BoardingSounds,
+    boarding_sounds: BoardingSounds,
+    gsx: Gsx,
     time: Duration,
 }
 impl A320Payload {
@@ -282,30 +180,11 @@ impl A320Payload {
             board_rate_id: context.get_identifier("BOARDING_RATE".to_owned()),
             per_pax_weight_id: context.get_identifier("WB_PER_PAX_WEIGHT".to_owned()),
 
-            is_gsx_enabled_id: context.get_identifier("GSX_PAYLOAD_SYNC_ENABLED".to_owned()),
-            gsx_boarding_state_id: context.get_identifier("FSDT_GSX_BOARDING_STATE".to_owned()),
-            gsx_deboarding_state_id: context.get_identifier("FSDT_GSX_DEBOARDING_STATE".to_owned()),
-            gsx_pax_boarding_id: context
-                .get_identifier("FSDT_GSX_NUMPASSENGERS_BOARDING_TOTAL".to_owned()),
-            gsx_pax_deboarding_id: context
-                .get_identifier("FSDT_GSX_NUMPASSENGERS_DEBOARDING_TOTAL".to_owned()),
-            gsx_cargo_boarding_pct_id: context
-                .get_identifier("FSDT_GSX_BOARDING_CARGO_PERCENT".to_owned()),
-            gsx_cargo_deboarding_pct_id: context
-                .get_identifier("FSDT_GSX_DEBOARDING_CARGO_PERCENT".to_owned()),
-
             developer_state: 0,
             is_boarding: false,
             board_rate: BoardingRate::Instant,
             per_pax_weight,
-            is_gsx_enabled: false,
-            gsx_boarding_state: GsxState::None,
-            gsx_deboarding_state: GsxState::None,
-            gsx_pax_boarding: 0,
-            gsx_pax_deboarding: 0,
-            gsx_cargo_boarding_pct: 0.,
-            gsx_cargo_deboarding_pct: 0.,
-            boarding_sounds: A320BoardingSounds::new(
+            boarding_sounds: BoardingSounds::new(
                 context.get_identifier("SOUND_PAX_BOARDING".to_owned()),
                 context.get_identifier("SOUND_PAX_DEBOARDING".to_owned()),
                 context.get_identifier("SOUND_BOARDING_COMPLETE".to_owned()),
@@ -313,6 +192,15 @@ impl A320Payload {
             ),
             pax,
             cargo,
+            gsx: Gsx::new(
+                context.get_identifier("GSX_PAYLOAD_SYNC_ENABLED".to_owned()),
+                context.get_identifier("FSDT_GSX_BOARDING_STATE".to_owned()),
+                context.get_identifier("FSDT_GSX_DEBOARDING_STATE".to_owned()),
+                context.get_identifier("FSDT_GSX_NUMPASSENGERS_BOARDING_TOTAL".to_owned()),
+                context.get_identifier("FSDT_GSX_NUMPASSENGERS_DEBOARDING_TOTAL".to_owned()),
+                context.get_identifier("FSDT_GSX_BOARDING_CARGO_PERCENT".to_owned()),
+                context.get_identifier("FSDT_GSX_DEBOARDING_CARGO_PERCENT".to_owned()),
+            ),
             time: Duration::from_nanos(0),
         }
     }
@@ -352,7 +240,7 @@ impl A320Payload {
 
     fn update_gsx_deboarding(&mut self, _context: &UpdateContext) {
         self.update_pax_ambience();
-        match self.gsx_deboarding_state {
+        match self.gsx.deboarding_state() {
             GsxState::None | GsxState::Available | GsxState::NotAvailable | GsxState::Bypassed => {}
             GsxState::Requested => {
                 self.update_cargo_loaded();
@@ -366,9 +254,9 @@ impl A320Payload {
             }
             GsxState::Performing => {
                 self.move_all_pax_num(
-                    self.total_pax_num() - (self.total_max_pax() - self.gsx_pax_deboarding),
+                    self.total_pax_num() - (self.total_max_pax() - self.gsx.pax_deboarding()),
                 );
-                self.load_all_cargo_percent(100. - self.gsx_cargo_deboarding_pct);
+                self.load_all_cargo_percent(100. - self.gsx.cargo_deboarding_pct());
             }
         }
     }
@@ -387,7 +275,7 @@ impl A320Payload {
 
     fn update_gsx_boarding(&mut self, _context: &UpdateContext) {
         self.update_pax_ambience();
-        match self.gsx_boarding_state {
+        match self.gsx.boarding_state() {
             GsxState::None
             | GsxState::Available
             | GsxState::NotAvailable
@@ -397,8 +285,8 @@ impl A320Payload {
                 self.board_cargo();
             }
             GsxState::Performing => {
-                self.move_all_pax_num(self.gsx_pax_boarding - self.total_pax_num());
-                self.load_all_cargo_percent(self.gsx_cargo_boarding_pct);
+                self.move_all_pax_num(self.gsx.pax_boarding() - self.total_pax_num());
+                self.load_all_cargo_percent(self.gsx.cargo_boarding_pct());
             }
         }
     }
@@ -604,18 +492,22 @@ impl A320Payload {
         self.board_rate
     }
 
+    #[allow(dead_code)]
     fn sound_pax_boarding_playing(&self) -> bool {
         self.boarding_sounds.pax_boarding()
     }
 
+    #[allow(dead_code)]
     fn sound_pax_ambience_playing(&self) -> bool {
         self.boarding_sounds.pax_ambience()
     }
 
+    #[allow(dead_code)]
     fn sound_pax_complete_playing(&self) -> bool {
         self.boarding_sounds.pax_complete()
     }
 
+    #[allow(dead_code)]
     fn sound_pax_deboarding_playing(&self) -> bool {
         self.boarding_sounds.pax_deboarding()
     }
@@ -766,7 +658,7 @@ impl A320Payload {
     }
 
     fn is_gsx_enabled(&self) -> bool {
-        self.is_gsx_enabled
+        self.gsx.is_enabled()
     }
 
     fn stop_boarding(&mut self) {
@@ -782,6 +674,7 @@ impl SimulationElement for A320Payload {
         accept_iterable!(self.pax, visitor);
         accept_iterable!(self.cargo, visitor);
         self.boarding_sounds.accept(visitor);
+        self.gsx.accept(visitor);
 
         visitor.visit(self);
     }
@@ -790,13 +683,6 @@ impl SimulationElement for A320Payload {
         self.developer_state = reader.read(&self.developer_state_id);
         self.is_boarding = reader.read(&self.is_boarding_id);
         self.board_rate = reader.read(&self.board_rate_id);
-        self.is_gsx_enabled = reader.read(&self.is_gsx_enabled_id);
-        self.gsx_boarding_state = reader.read(&self.gsx_boarding_state_id);
-        self.gsx_deboarding_state = reader.read(&self.gsx_deboarding_state_id);
-        self.gsx_pax_boarding = reader.read(&self.gsx_pax_boarding_id);
-        self.gsx_pax_deboarding = reader.read(&self.gsx_pax_deboarding_id);
-        self.gsx_cargo_boarding_pct = reader.read(&self.gsx_cargo_boarding_pct_id);
-        self.gsx_cargo_deboarding_pct = reader.read(&self.gsx_cargo_deboarding_pct_id);
         self.per_pax_weight
             .replace(Mass::new::<kilogram>(reader.read(&self.per_pax_weight_id)));
     }
@@ -838,8 +724,7 @@ impl PassengerPayload for A320Payload {
         }
         let total_pax_load = self.total_passenger_load().get::<kilogram>();
         let cg: Vector3<f64> = if total_pax_load > 0. {
-            moments.iter().fold(Vector3::zeros(), |acc, x| acc + x)
-                / self.total_passenger_load().get::<kilogram>()
+            moments.iter().fold(Vector3::zeros(), |acc, x| acc + x) / total_pax_load
         } else {
             Vector3::zeros()
         };
@@ -855,9 +740,12 @@ impl PassengerPayload for A320Payload {
         for ps in 0..Self::A320_PAX.len() {
             moments.push(self.pax_target_moment(ps));
         }
-
-        let cg: Vector3<f64> = moments.iter().fold(Vector3::zeros(), |acc, x| acc + x)
-            / self.total_target_passenger_load().get::<kilogram>();
+        let total_tgt_pax_load = self.total_target_passenger_load().get::<kilogram>();
+        let cg: Vector3<f64> = if total_tgt_pax_load > 0. {
+            moments.iter().fold(Vector3::zeros(), |acc, x| acc + x) / total_tgt_pax_load
+        } else {
+            Vector3::zeros()
+        };
         cg
     }
 
@@ -888,11 +776,9 @@ impl CargoPayload for A320Payload {
         for cs in 0..Self::A320_CARGO.len() {
             moments.push(self.cargo_moment(cs));
         }
-
         let total_cargo_load = self.total_cargo_load().get::<kilogram>();
         let cg: Vector3<f64> = if total_cargo_load > 0. {
-            moments.iter().fold(Vector3::zeros(), |acc, x| acc + x)
-                / self.total_cargo_load().get::<kilogram>()
+            moments.iter().fold(Vector3::zeros(), |acc, x| acc + x) / total_cargo_load
         } else {
             Vector3::zeros()
         };
@@ -908,9 +794,12 @@ impl CargoPayload for A320Payload {
         for cs in 0..Self::A320_CARGO.len() {
             moments.push(self.cargo_target_moment(cs));
         }
-
-        let cg: Vector3<f64> = moments.iter().fold(Vector3::zeros(), |acc, x| acc + x)
-            / self.total_target_cargo_load().get::<kilogram>();
+        let total_tgt_cargo_load = self.total_target_cargo_load().get::<kilogram>();
+        let cg: Vector3<f64> = if total_tgt_cargo_load > 0. {
+            moments.iter().fold(Vector3::zeros(), |acc, x| acc + x) / total_tgt_cargo_load
+        } else {
+            Vector3::zeros()
+        };
         cg
     }
 
