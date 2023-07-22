@@ -23,6 +23,10 @@
 1. [MCDU] The remote MCDU protocol now sends the display and integral light brightness - @tracernz (Mike)
 1. [MCDU] The remote MCDU protocol now supports the BRT/DIM keys - @tracernz (Mike)
 1. [PFD] Corrected the NO DH logic in the FMS and PFD - @tracernz (Mike)
+1. [FDR] Add secondary engine parameters to FDR - @Taz5150 (TazX [Z+2]#0405)
+1. [FLIGHTMODEL] Fix outer to inner tank transfer valve closure - @donstim (donbikes)
+1. [SD] Corrected thickness and position of lower ECAM fuel page lines - @robertxing2004 (robeet)
+1. [SD] Corrected position of outer tank fuel quantity values - @robertxing2004 (robeet)
 
 ## 0.10.0
 
