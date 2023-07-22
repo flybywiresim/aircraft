@@ -614,11 +614,11 @@ impl A380Payload {
     }
 
     fn reset_pax_and_target(&mut self, ps: A380Pax) {
-        self.pax[ps as usize].reset_pax_and_target();
+        self.pax[ps as usize].reset_pax_target();
     }
 
     fn reset_cargo_and_target(&mut self, cs: A380Cargo) {
-        self.cargo[cs as usize].reset_cargo_and_target();
+        self.cargo[cs as usize].reset_cargo_target();
     }
 
     fn cargo_is_sync(&mut self, cs: A380Cargo) -> bool {
