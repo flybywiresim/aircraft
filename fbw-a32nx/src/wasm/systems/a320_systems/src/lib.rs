@@ -1,6 +1,7 @@
 extern crate systems;
 
 mod air_conditioning;
+mod airframe;
 mod electrical;
 mod fuel;
 pub mod hydraulic;
