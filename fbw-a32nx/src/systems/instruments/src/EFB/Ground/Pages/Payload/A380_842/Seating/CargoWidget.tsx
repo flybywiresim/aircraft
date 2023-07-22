@@ -1,8 +1,8 @@
 /* eslint-disable max-len */
 import React from 'react';
 import { BriefcaseFill, CaretDownFill } from 'react-bootstrap-icons';
-import { CargoStationInfo } from './Constants';
-import { ProgressBar } from '../../../../UtilComponents/Progress/Progress';
+import { CargoStationInfo } from '../../Seating/Constants';
+import { ProgressBar } from '../../../../../UtilComponents/Progress/Progress';
 
 interface SeatMapProps {
     cargo: number[],
@@ -19,7 +19,7 @@ enum CargoStation {
 }
 
 // TODO FIXME: Remove hard-coding
-export const A380CargoWidget: React.FC<SeatMapProps> = ({ cargo, cargoDesired, cargoMap, cargoStationSize, onClickCargo }) => (
+export const CargoWidget: React.FC<SeatMapProps> = ({ cargo, cargoDesired, cargoMap, cargoStationSize, onClickCargo }) => (
     <>
         <div className="flex absolute top-4 left-40 flex-row px-4 w-fit">
             <div><BriefcaseFill size={25} className="my-1 mx-3" /></div>

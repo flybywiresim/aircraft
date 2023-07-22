@@ -1,85 +1,91 @@
 /* eslint-disable max-len */
 import React, { FC, useCallback, useEffect, useMemo, useState } from 'react';
 import {
+    Shuffle,
     ArrowLeftRight,
     BoxArrowRight,
     BriefcaseFill,
     CloudArrowDown,
     PersonFill,
-    Shuffle,
     StopCircleFill,
 } from 'react-bootstrap-icons';
 import { useSimVar } from '@instruments/common/simVars';
 import { Units } from '@shared/units';
 import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
 import { SeatFlags } from '@shared/bitFlags';
+// import { useSeatFlags, useSeatMap } from '@instruments/common/bitFlags';
 import { useSeatFlags } from '@instruments/common/bitFlags';
 import { round } from 'lodash';
-import { A380CargoWidget } from './Seating/A380CargoWidget';
-import { ChartWidget } from './Chart/ChartWidget';
-import { CargoStationInfo, PaxStationInfo } from './Seating/Constants';
-import { t } from '../../../translation';
-import { TooltipWrapper } from '../../../UtilComponents/TooltipWrapper';
-import { SimpleInput } from '../../../UtilComponents/Form/SimpleInput/SimpleInput';
-// import Loadsheet from './Loadsheet/a20nv55.json';
-import Loadsheet from './Loadsheet/a380v3.json';
-import Card from '../../../UtilComponents/Card/Card';
-import { SelectGroup, SelectItem } from '../../../UtilComponents/Form/Select';
-import { A380SeatMapWidget } from './Seating/A380SeatMapWidget';
-import { isSimbriefDataLoaded } from '../../../Store/features/simBrief';
-import { PromptModal, useModals } from '../../../UtilComponents/Modals/Modals';
-import { useAppSelector } from '../../../Store/store';
+import { CargoWidget } from './Seating/CargoWidget';
+import { ChartWidget } from '../Chart/ChartWidget';
+import { CargoStationInfo, PaxStationInfo } from '../Seating/Constants';
+import { t } from '../../../../translation';
+import { TooltipWrapper } from '../../../../UtilComponents/TooltipWrapper';
+import { SimpleInput } from '../../../../UtilComponents/Form/SimpleInput/SimpleInput';
+import defaultLoadsheet from './A320_251N.json';
+import Card from '../../../../UtilComponents/Card/Card';
+import { SelectGroup, SelectItem } from '../../../../UtilComponents/Form/Select';
+import { SeatMapWidget } from './Seating/SeatMapWidget';
+import { isSimbriefDataLoaded } from '../../../../Store/features/simBrief';
+import { PromptModal, useModals } from '../../../../UtilComponents/Modals/Modals';
+import { useAppSelector } from '../../../../Store/store';
+import { getAirframeType } from '../../../../Efb';
+import { AC_TYPE } from '../../../../Enum/Airframe';
 
-export const A380Payload = () => {
+export const A320Payload = () => {
     const { usingMetric } = Units;
     const { showModal } = useModals();
+    const [Loadsheet, setLoadsheet] = useState(defaultLoadsheet);
 
-    const [mainFwdA] = useSeatFlags(`L:${Loadsheet.seatMap[0].simVar}`, Loadsheet.seatMap[0].capacity);
-    const [mainFwdB] = useSeatFlags(`L:${Loadsheet.seatMap[1].simVar}`, Loadsheet.seatMap[1].capacity);
-    const [mainMid1A] = useSeatFlags(`L:${Loadsheet.seatMap[2].simVar}`, Loadsheet.seatMap[2].capacity);
-    const [mainMid1B] = useSeatFlags(`L:${Loadsheet.seatMap[3].simVar}`, Loadsheet.seatMap[3].capacity);
-    const [mainMid1C] = useSeatFlags(`L:${Loadsheet.seatMap[4].simVar}`, Loadsheet.seatMap[4].capacity);
-    const [mainMid2A] = useSeatFlags(`L:${Loadsheet.seatMap[5].simVar}`, Loadsheet.seatMap[5].capacity);
-    const [mainMid2B] = useSeatFlags(`L:${Loadsheet.seatMap[6].simVar}`, Loadsheet.seatMap[6].capacity);
-    const [mainMid2C] = useSeatFlags(`L:${Loadsheet.seatMap[7].simVar}`, Loadsheet.seatMap[7].capacity);
-    const [mainAftA] = useSeatFlags(`L:${Loadsheet.seatMap[8].simVar}`, Loadsheet.seatMap[8].capacity);
-    const [mainAftB] = useSeatFlags(`L:${Loadsheet.seatMap[9].simVar}`, Loadsheet.seatMap[9].capacity);
+    // Note: !!! --- This is temporary and should be considered placeholder code --- !!!
+    // TODO: Refactor
+    const acType = useMemo(() => {
+        switch (getAirframeType()) {
+        case 'A380_842':
+            return AC_TYPE.A380_842;
+        case 'A320_251N':
+        default:
+            return AC_TYPE.A320_251N;
+        }
+    }, []);
 
-    const [mainFwdADesired, setMainFwdADesired] = useSeatFlags(`L:${Loadsheet.seatMap[0].simVar}_DESIRED`, Loadsheet.seatMap[0].capacity);
-    const [mainFwdBDesired, setMainFwdBDesired] = useSeatFlags(`L:${Loadsheet.seatMap[1].simVar}_DESIRED`, Loadsheet.seatMap[1].capacity);
-    const [mainMid1ADesired, setMainMid1ADesired] = useSeatFlags(`L:${Loadsheet.seatMap[2].simVar}_DESIRED`, Loadsheet.seatMap[2].capacity);
-    const [mainMid1BDesired, setMainMid1BDesired] = useSeatFlags(`L:${Loadsheet.seatMap[3].simVar}_DESIRED`, Loadsheet.seatMap[3].capacity);
-    const [mainMid1CDesired, setMainMid1CDesired] = useSeatFlags(`L:${Loadsheet.seatMap[4].simVar}_DESIRED`, Loadsheet.seatMap[4].capacity);
-    const [mainMid2ADesired, setMainMid2ADesired] = useSeatFlags(`L:${Loadsheet.seatMap[5].simVar}_DESIRED`, Loadsheet.seatMap[5].capacity);
-    const [mainMid2BDesired, setMainMid2BDesired] = useSeatFlags(`L:${Loadsheet.seatMap[6].simVar}_DESIRED`, Loadsheet.seatMap[6].capacity);
-    const [mainMid2CDesired, setMainMid2CDesired] = useSeatFlags(`L:${Loadsheet.seatMap[7].simVar}_DESIRED`, Loadsheet.seatMap[7].capacity);
-    const [mainAftADesired, setMainAftADesired] = useSeatFlags(`L:${Loadsheet.seatMap[8].simVar}_DESIRED`, Loadsheet.seatMap[8].capacity);
-    const [mainAftBDesired, setMainAftBDesired] = useSeatFlags(`L:${Loadsheet.seatMap[9].simVar}_DESIRED`, Loadsheet.seatMap[9].capacity);
+    useEffect(() => {
+        console.log(acType);
+        fetch(`./${acType}.json`)
+            .then((response) => response.json())
+            .then((data) => setLoadsheet(data))
+            .catch((error) => console.error(error));
+    }, [acType]);
 
-    const activeFlags = useMemo(
-        () => [mainFwdA, mainFwdB, mainMid1A, mainMid1B, mainMid1C, mainMid2A, mainMid2B, mainMid2C, mainAftA, mainAftB],
-        [mainFwdA, mainFwdB, mainMid1A, mainMid1B, mainMid1C, mainMid2A, mainMid2B, mainMid2C, mainAftA, mainAftB],
-    );
-    const desiredFlags = useMemo(
-        () => [mainFwdADesired, mainFwdBDesired, mainMid1ADesired, mainMid1BDesired, mainMid1CDesired, mainMid2ADesired, mainMid2BDesired, mainMid2CDesired, mainAftADesired, mainAftBDesired],
-        [mainFwdADesired, mainFwdBDesired, mainMid1ADesired, mainMid1BDesired, mainMid1CDesired, mainMid2ADesired, mainMid2BDesired, mainMid2CDesired, mainAftADesired, mainAftBDesired],
-    );
-    const setDesiredFlags = useMemo(
-        () => [setMainFwdADesired, setMainFwdBDesired, setMainMid1ADesired, setMainMid1BDesired, setMainMid1CDesired, setMainMid2ADesired, setMainMid2BDesired, setMainMid2CDesired, setMainAftADesired, setMainAftBDesired],
-        [],
-    );
+    const [aFlags] = useSeatFlags(`L:${Loadsheet.seatMap[0].simVar}`, Loadsheet.seatMap[0].capacity);
+    const [bFlags] = useSeatFlags(`L:${Loadsheet.seatMap[1].simVar}`, Loadsheet.seatMap[1].capacity);
+    const [cFlags] = useSeatFlags(`L:${Loadsheet.seatMap[2].simVar}`, Loadsheet.seatMap[2].capacity);
+    const [dFlags] = useSeatFlags(`L:${Loadsheet.seatMap[3].simVar}`, Loadsheet.seatMap[3].capacity);
+
+    const [aFlagsDesired, setAFlagsDesired] = useSeatFlags(`L:${Loadsheet.seatMap[0].simVar}_DESIRED`, Loadsheet.seatMap[0].capacity);
+    const [bFlagsDesired, setBFlagsDesired] = useSeatFlags(`L:${Loadsheet.seatMap[1].simVar}_DESIRED`, Loadsheet.seatMap[1].capacity);
+    const [cFlagsDesired, setCFlagsDesired] = useSeatFlags(`L:${Loadsheet.seatMap[2].simVar}_DESIRED`, Loadsheet.seatMap[2].capacity);
+    const [dFlagsDesired, setDFlagsDesired] = useSeatFlags(`L:${Loadsheet.seatMap[3].simVar}_DESIRED`, Loadsheet.seatMap[3].capacity);
+
+    const activeFlags = useMemo(() => [aFlags, bFlags, cFlags, dFlags], [aFlags, bFlags, cFlags, dFlags]);
+    const desiredFlags = useMemo(() => [aFlagsDesired, bFlagsDesired, cFlagsDesired, dFlagsDesired], [aFlagsDesired, bFlagsDesired, cFlagsDesired, dFlagsDesired]);
+    const setDesiredFlags = useMemo(() => [setAFlagsDesired, setBFlagsDesired, setCFlagsDesired, setDFlagsDesired], []);
+
+    // const [desiredFlags, activeFlags, setDesiredFlags] = useSeatMap(Loadsheet);
 
     const [fwdBag] = useSimVar(`L:${Loadsheet.cargoMap[0].simVar}`, 'Number', 200);
-    const [aftBag] = useSimVar(`L:${Loadsheet.cargoMap[1].simVar}`, 'Number', 200);
-    const [aftBulk] = useSimVar(`L:${Loadsheet.cargoMap[2].simVar}`, 'Number', 200);
+    const [aftCont] = useSimVar(`L:${Loadsheet.cargoMap[1].simVar}`, 'Number', 200);
+    const [aftBag] = useSimVar(`L:${Loadsheet.cargoMap[2].simVar}`, 'Number', 200);
+    const [aftBulk] = useSimVar(`L:${Loadsheet.cargoMap[3].simVar}`, 'Number', 200);
 
     const [fwdBagDesired, setFwdBagDesired] = useSimVar(`L:${Loadsheet.cargoMap[0].simVar}_DESIRED`, 'Number', 200);
-    const [aftBagDesired, setAftBagDesired] = useSimVar(`L:${Loadsheet.cargoMap[1].simVar}_DESIRED`, 'Number', 200);
-    const [aftBulkDesired, setAftBulkDesired] = useSimVar(`L:${Loadsheet.cargoMap[2].simVar}_DESIRED`, 'Number', 200);
+    const [aftContDesired, setAftContDesired] = useSimVar(`L:${Loadsheet.cargoMap[1].simVar}_DESIRED`, 'Number', 200);
+    const [aftBagDesired, setAftBagDesired] = useSimVar(`L:${Loadsheet.cargoMap[2].simVar}_DESIRED`, 'Number', 200);
+    const [aftBulkDesired, setAftBulkDesired] = useSimVar(`L:${Loadsheet.cargoMap[3].simVar}_DESIRED`, 'Number', 200);
 
-    const cargo = useMemo(() => [fwdBag, aftBag, aftBulk], [fwdBag, aftBag, aftBulk]);
-    const cargoDesired = useMemo(() => [fwdBagDesired, aftBagDesired, aftBulkDesired], [fwdBagDesired, aftBagDesired, aftBulkDesired]);
-    const setCargoDesired = useMemo(() => [setFwdBagDesired, setAftBagDesired, setAftBulkDesired], []);
+    const cargo = useMemo(() => [fwdBag, aftCont, aftBag, aftBulk], [fwdBag, aftCont, aftBag, aftBulk]);
+    const cargoDesired = useMemo(() => [fwdBagDesired, aftContDesired, aftBagDesired, aftBulkDesired], [fwdBagDesired, aftContDesired, aftBagDesired, aftBulkDesired]);
+    const setCargoDesired = useMemo(() => [setFwdBagDesired, setAftContDesired, setAftBagDesired, setAftBulkDesired], []);
 
     const massUnitForDisplay = usingMetric ? 'KGS' : 'LBS';
 
@@ -332,9 +338,11 @@ export const A380Payload = () => {
         // TODO FIXME: This calculation does not work correctly if user clicks on many seats in rapid succession
         const oldPaxBag = totalPaxDesired * paxBagWeight;
         const freight = Math.max(totalCargoDesired - oldPaxBag, 0);
+
         const seatFlags: SeatFlags = desiredFlags[stationIndex];
         seatFlags.toggleSeatId(seatId);
         setDesiredFlags[stationIndex](seatFlags);
+
         let newPaxDesired = 0;
         desiredFlags.forEach((flag) => {
             newPaxDesired += flag.getTotalFilledSeats();
@@ -528,6 +536,7 @@ export const A380Payload = () => {
         boardingStarted,
         gsxPayloadSyncEnabled,
     ]);
+
     useEffect(() => {
         // TODO FIXME: Move all this logic into rust
         // Note: Looks messy after phase 1 refactor, will be fixed by deprecating this and moving all calculations into rust
@@ -564,7 +573,6 @@ export const A380Payload = () => {
         setDesiredCg(newDesiredCg);
         // TODO: Predicted MLDW
         setMlw(newGw);
-
         setMlwCg(newCg);
         setMlwDesired(newTotalWeightDesired);
         setMlwDesiredCg(newDesiredCg);
@@ -587,9 +595,9 @@ export const A380Payload = () => {
         <div>
             <div className="relative h-content-section-reduced">
                 <div className="mb-10">
-                    <A380SeatMapWidget seatMap={seatMap} desiredFlags={desiredFlags} activeFlags={activeFlags} canvasX={146} canvasY={71} onClickSeat={onClickSeat} />
+                    <SeatMapWidget seatMap={seatMap} desiredFlags={desiredFlags} activeFlags={activeFlags} onClickSeat={onClickSeat} canvasX={243} canvasY={78} />
                 </div>
-                <A380CargoWidget cargo={cargo} cargoDesired={cargoDesired} cargoMap={cargoMap} cargoStationSize={cargoStationWeights} onClickCargo={onClickCargo} />
+                <CargoWidget cargo={cargo} cargoDesired={cargoDesired} cargoMap={cargoMap} cargoStationSize={cargoStationWeights} onClickCargo={onClickCargo} />
 
                 <div className="flex relative right-0 flex-row justify-between px-4 mt-16">
                     <div className="flex flex-col flex-grow pr-24">
@@ -666,6 +674,7 @@ export const A380Payload = () => {
                                                 <PayloadValueUnitDisplay value={Units.kilogramToUser(totalCargo)} padTo={5} unit={massUnitForDisplay} />
                                             </td>
                                         </tr>
+
                                         <tr>
                                             <td className="px-4 font-light whitespace-nowrap text-md">
                                                 {displayZfw ? t('Ground.Payload.ZFW') : t('Ground.Payload.GW')}

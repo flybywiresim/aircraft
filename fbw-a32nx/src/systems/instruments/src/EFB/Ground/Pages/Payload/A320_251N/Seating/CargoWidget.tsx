@@ -1,8 +1,8 @@
 /* eslint-disable max-len */
 import React from 'react';
 import { BriefcaseFill, CaretDownFill } from 'react-bootstrap-icons';
-import { CargoStationInfo } from './Constants';
-import { ProgressBar } from '../../../../UtilComponents/Progress/Progress';
+import { CargoStationInfo } from '../../Seating/Constants';
+import { ProgressBar } from '../../../../../UtilComponents/Progress/Progress';
 
 interface SeatMapProps {
     cargo: number[],

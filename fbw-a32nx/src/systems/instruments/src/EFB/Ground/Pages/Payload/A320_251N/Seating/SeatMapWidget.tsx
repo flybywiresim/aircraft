@@ -1,13 +1,14 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import React, { useEffect, useRef, useState } from 'react';
-import { BitFlags } from '@shared/bitFlags';
+import { BitFlags, usePersistentProperty } from '@flybywiresim/fbw-sdk';
 import * as ReactDOMServer from 'react-dom/server';
 import { usePersistentProperty } from '@instruments/common/persistence';
-import { AirplaneFill } from 'react-bootstrap-icons';
-import { SelectGroup, SelectItem } from '../../../../UtilComponents/Form/Select';
-import { CanvasConst, SeatConstants, SeatInfo, PaxStationInfo, TYPE, RowInfo } from './Constants';
-import { Seat } from '../../../../Assets/Seat';
-import { A380SeatOutlineBg } from '../../../../Assets/A380SeatOutlineBg';
-import { t } from '../../../../translation';
+import { CanvasConst, SeatConstants, SeatInfo, PaxStationInfo, TYPE, RowInfo } from '../../Seating/Constants';
+import { Seat } from '../../../../../Assets/Seat';
+import { SeatOutlineBg } from '../../../../../Assets/SeatOutlineBg';
 
 interface SeatMapProps {
     seatMap: PaxStationInfo[],
@@ -28,7 +29,7 @@ const useCanvasEvent = (canvas: HTMLCanvasElement | null, event: string, handler
     });
 };
 
-export const A380SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, activeFlags, canvasX, canvasY, onClickSeat }) => {
+export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, activeFlags, canvasX, canvasY, onClickSeat }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [ctx, setCtx] = useState<CanvasRenderingContext2D | null>(null);
 
@@ -108,7 +109,6 @@ export const A380SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlag
                 let seatId = 0;
                 for (let row = 0; row < seatMap[station].rows.length; row++) {
                     xOff = addXOffsetRow(xOff, station, row);
-                    console.log(`drawRow(xOff: ${xOff}, station: ${station}, row: ${row}, seatID: ${seatId})`);
                     drawRow(xOff, station, row, seatMap[station].rows[row], seatId);
                     seatId += seatMap[station].rows[row].seats.length;
                 }
@@ -204,22 +204,8 @@ export const A380SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlag
 
     return (
         <div className="flex relative flex-col">
-            <A380SeatOutlineBg stroke={getTheme(theme)[0]} highlight="#69BD45" />
+            <SeatOutlineBg stroke={getTheme(theme)[0]} highlight="#69BD45" />
             <canvas className="absolute cursor-pointer" ref={canvasRef} style={{ transform: `translateX(${canvasX}px) translateY(${canvasY}px)` }} />
-
-            <div className="flex absolute top-full flex-row px-4 w-fit">
-                <div><AirplaneFill size={25} className="my-1 mx-3" /></div>
-                <SelectGroup>
-                    <SelectItem
-                        selected
-                    >
-                        Main
-                    </SelectItem>
-                    <SelectItem>
-                        Upper
-                    </SelectItem>
-                </SelectGroup>
-            </div>
         </div>
     );
 };
