@@ -200,17 +200,7 @@ impl FuelTestAircraft {
     }
 }
 
-impl Aircraft for FuelTestAircraft {
-    /*
-    fn update_before_power_distribution(
-        &mut self,
-        context: &UpdateContext,
-        _electricity: &mut Electricity,
-    ) {
-        // self.fuel.update(context);
-    }
-     */
-}
+impl Aircraft for FuelTestAircraft {}
 impl SimulationElement for FuelTestAircraft {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.fuel.accept(visitor);
@@ -221,6 +211,7 @@ impl SimulationElement for FuelTestAircraft {
 
 pub const HOURS_TO_MINUTES: u64 = 60;
 pub const MINUTES_TO_SECONDS: u64 = 60;
+pub const FUEL_GALLONS_TO_KG: f64 = 3.039075693483925;
 
 struct FuelTestBed {
     test_bed: SimulationTestBed<FuelTestAircraft>,
@@ -247,10 +238,10 @@ impl FuelTestBed {
     }
 
     fn init_vars(mut self) -> Self {
-        self.write_by_name("FUEL TANK LEFT MAIN QUANTITY", 1000.);
-        self.write_by_name("FUEL TANK LEFT AUX QUANTITY", 1000.);
-        self.write_by_name("FUEL TANK RIGHT MAIN QUANTITY", 1000.);
-        self.write_by_name("FUEL TANK RIGHT AUX QUANTITY", 1000.);
+        self.write_by_name("FUEL TANK LEFT MAIN QUANTITY", 324. * FUEL_GALLONS_TO_KG);
+        self.write_by_name("FUEL TANK LEFT AUX QUANTITY", 324. * FUEL_GALLONS_TO_KG);
+        self.write_by_name("FUEL TANK RIGHT MAIN QUANTITY", 324. * FUEL_GALLONS_TO_KG);
+        self.write_by_name("FUEL TANK RIGHT AUX QUANTITY", 324. * FUEL_GALLONS_TO_KG);
         self.write_by_name("FUEL TANK CENTER QUANTITY", 0.);
 
         self
@@ -293,5 +284,10 @@ fn init() {
 
     test_bed = test_bed.and_run();
 
-    println!("{}", test_bed.fore_aft_center_of_gravity());
+    assert_eq!(
+        test_bed.fore_aft_center_of_gravity(),
+        -12.45,
+        "Expected cg: -12.45, cg: {}",
+        test_bed.fore_aft_center_of_gravity(),
+    );
 }
