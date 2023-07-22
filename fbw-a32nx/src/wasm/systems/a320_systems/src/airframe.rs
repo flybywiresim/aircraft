@@ -1,4 +1,7 @@
-use systems::{payload::LoadsheetInfo, simulation::UpdateContext};
+use systems::{
+    payload::LoadsheetInfo,
+    simulation::{InitContext, UpdateContext},
+};
 use uom::si::mass::kilogram;
 
 use crate::{
@@ -27,7 +30,7 @@ impl A320WeightBalance {
         lemac_z: -5.383,
     };
 
-    pub fn new() -> Self {
+    pub fn new(context: &mut InitContext) -> Self {
         A320WeightBalance {
             fuel_cg_percent_mac: 0.0,
             zfw_cg_percent_mac: 0.0,
@@ -121,14 +124,23 @@ impl A320WeightBalance {
         let total_pax_kg = pax_payload.total_passenger_load().get::<kilogram>();
         let total_cargo_kg = cargo_payload.total_cargo_load().get::<kilogram>();
 
+        println!("total_pax_kg {}", total_pax_kg);
+        println!("pax_cg {}", pax_payload.fore_aft_center_of_gravity());
+
         let empty_moment =
             Self::LOADSHEET.operating_empty_position.0 * Self::LOADSHEET.operating_empty_weight_kg;
         let pax_moment = total_pax_kg * pax_payload.fore_aft_center_of_gravity();
         let cargo_moment = total_cargo_kg * cargo_payload.fore_aft_center_of_gravity();
 
         let zfw_moment = empty_moment + pax_moment + cargo_moment;
+        println!("empty_moment {}", empty_moment);
+        println!("pax_moment {}", pax_moment);
+        println!("cargo_moment {}", cargo_moment);
+        println!("zfw_moment {}", zfw_moment);
         let zfw_kg = Self::LOADSHEET.operating_empty_weight_kg + total_pax_kg + total_cargo_kg;
         let zfw_cg = zfw_moment / zfw_kg;
+        println!("zfw_kg {}", zfw_kg);
+        println!("zfw_cg {}", zfw_cg);
 
         self.set_zfw_cg_percent_mac(zfw_cg);
 
@@ -172,8 +184,6 @@ impl A320WeightBalance {
 
         self.set_to_cg_percent_mac(to_cg);
         self.set_target_to_cg_percent_mac(target_to_cg);
-
-        println!("GW CG MAC IS {}", self.gw_cg_percent_mac);
 
         println!("GW CG MAC IS {}", self.gw_cg_percent_mac);
     }
