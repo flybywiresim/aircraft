@@ -476,19 +476,19 @@ impl BoardingTestBed {
     }
 
     fn sound_pax_ambience(&self) -> bool {
-        self.query(|a| a.boarding.boarding_sounds.pax_ambience())
+        self.query(|a| a.boarding.boarding_sounds.pax_ambience)
     }
 
     fn sound_pax_boarding(&self) -> bool {
-        self.query(|a| a.boarding.boarding_sounds.pax_boarding())
+        self.query(|a| a.boarding.boarding_sounds.pax_boarding)
     }
 
     fn sound_pax_deboarding(&self) -> bool {
-        self.query(|a| a.boarding.boarding_sounds.pax_deboarding())
+        self.query(|a| a.boarding.boarding_sounds.pax_deboarding)
     }
 
     fn sound_pax_complete(&self) -> bool {
-        self.query(|a| a.boarding.boarding_sounds.pax_complete())
+        self.query(|a| a.boarding.boarding_sounds.pax_complete)
     }
 
     fn pax_num(&self, ps: A380Pax) -> i8 {

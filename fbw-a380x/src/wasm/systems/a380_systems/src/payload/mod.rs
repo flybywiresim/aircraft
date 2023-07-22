@@ -6,6 +6,7 @@ use std::{cell::Cell, rc::Rc, time::Duration};
 use uom::si::{f64::Mass, mass::kilogram};
 
 use systems::{
+    accept_iterable,
     payload::{BoardingRate, Cargo, CargoInfo, GsxState, Pax, PaxInfo},
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -166,22 +167,6 @@ impl A380BoardingSounds {
     fn stop_pax_ambience(&mut self) {
         self.pax_ambience = false;
     }
-
-    fn pax_ambience(&self) -> bool {
-        self.pax_ambience
-    }
-
-    fn pax_boarding(&self) -> bool {
-        self.pax_boarding
-    }
-
-    fn pax_deboarding(&self) -> bool {
-        self.pax_deboarding
-    }
-
-    fn pax_complete(&self) -> bool {
-        self.pax_complete
-    }
 }
 impl SimulationElement for A380BoardingSounds {
     fn write(&self, writer: &mut SimulatorWriter) {
@@ -297,7 +282,7 @@ impl A380Payload {
 
         if self.is_gsx_enabled() {
             self.stop_boarding();
-            self.stop_all_sounds();
+            self.stop_boarding_sounds();
             self.update_extern_gsx(context);
         } else {
             self.update_intern(context);
@@ -328,18 +313,33 @@ impl A380Payload {
         match self.gsx_deboarding_state {
             GsxState::None | GsxState::Available | GsxState::NotAvailable | GsxState::Bypassed => {}
             GsxState::Requested => {
-                self.reset_all_pax_and_targets();
-                self.reset_all_cargo_and_targets();
+                self.update_cargo_loaded();
+                self.reset_all_pax_targets();
+                self.reset_all_cargo_targets();
             }
             GsxState::Completed => {
-                self.board_cargo();
+                self.move_all_payload();
+                self.reset_cargo_loaded();
+                self.reset_all_cargo_targets();
             }
             GsxState::Performing => {
-                self.board_pax(
+                self.move_all_pax_num(
                     self.total_pax_num() - (self.total_max_pax() - self.gsx_pax_deboarding),
                 );
                 self.load_all_cargo_percent(100. - self.gsx_cargo_deboarding_pct);
             }
+        }
+    }
+
+    fn update_cargo_loaded(&mut self) {
+        for cs in A380Cargo::iterator() {
+            self.cargo[cs as usize].update_cargo_loaded()
+        }
+    }
+
+    fn reset_cargo_loaded(&mut self) {
+        for cs in A380Cargo::iterator() {
+            self.cargo[cs as usize].reset_cargo_loaded()
         }
     }
 
@@ -450,16 +450,23 @@ impl A380Payload {
         self.boarding_sounds.stop_pax_complete();
     }
 
-    fn stop_all_sounds(&mut self) {
-        self.boarding_sounds.stop_pax_boarding();
-        self.boarding_sounds.stop_pax_deboarding();
-        self.boarding_sounds.stop_pax_ambience();
-        self.boarding_sounds.stop_pax_complete();
+    fn reset_all_pax_targets(&mut self) {
+        for ps in A380Pax::iterator() {
+            self.reset_pax_target(ps);
+        }
     }
 
-    fn reset_all_pax_and_targets(&mut self) {
-        for ps in A380Pax::iterator() {
-            self.reset_pax_and_target(ps);
+    fn move_all_pax_num(&mut self, pax_diff: i32) {
+        if pax_diff > 0 {
+            for _ in 0..pax_diff {
+                for ps in A380Pax::iterator() {
+                    if self.pax_is_target(ps) {
+                        continue;
+                    }
+                    self.move_one_pax(ps);
+                    break;
+                }
+            }
         }
     }
 
@@ -491,9 +498,9 @@ impl A380Payload {
         }
     }
 
-    fn reset_all_cargo_and_targets(&mut self) {
+    fn reset_all_cargo_targets(&mut self) {
         for cs in A380Cargo::iterator() {
-            self.reset_cargo_and_target(cs);
+            self.reset_cargo_target(cs);
         }
     }
 
@@ -613,11 +620,11 @@ impl A380Payload {
         self.pax[ps as usize].move_one_pax();
     }
 
-    fn reset_pax_and_target(&mut self, ps: A380Pax) {
+    fn reset_pax_target(&mut self, ps: A380Pax) {
         self.pax[ps as usize].reset_pax_target();
     }
 
-    fn reset_cargo_and_target(&mut self, cs: A380Cargo) {
+    fn reset_cargo_target(&mut self, cs: A380Cargo) {
         self.cargo[cs as usize].reset_cargo_target();
     }
 
@@ -657,6 +664,15 @@ impl A380Payload {
         self.cargo[cs as usize].load_payload();
     }
 
+    fn move_all_payload(&mut self) {
+        for ps in A380Pax::iterator() {
+            self.move_all_pax(ps)
+        }
+        for cs in A380Cargo::iterator() {
+            self.move_all_cargo(cs)
+        }
+    }
+
     fn is_boarding(&self) -> bool {
         self.is_boarding
     }
@@ -675,12 +691,8 @@ impl A380Payload {
 }
 impl SimulationElement for A380Payload {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        for ps in 0..self.pax.len() {
-            self.pax[ps].accept(visitor);
-        }
-        for cs in 0..self.cargo.len() {
-            self.cargo[cs].accept(visitor);
-        }
+        accept_iterable!(self.pax, visitor);
+        accept_iterable!(self.cargo, visitor);
         self.boarding_sounds.accept(visitor);
 
         visitor.visit(self);
