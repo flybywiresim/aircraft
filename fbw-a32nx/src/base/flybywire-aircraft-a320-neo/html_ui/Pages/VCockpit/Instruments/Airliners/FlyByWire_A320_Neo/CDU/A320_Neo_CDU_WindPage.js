@@ -116,7 +116,7 @@ class CDUWindPage {
         let alternateCell = "";
         let altFLightlevel = "";
 
-        if (mcdu.simbrief.alternate) {
+        if (mcdu.altDestination) {
             alternatHeader = "ALTN WIND";
             alternateCell = "[ ]°/[ ][color]cyan";
             altFLightlevel = "{green}{small}FL100{end}{end}";
@@ -142,7 +142,7 @@ class CDUWindPage {
 
         mcdu.setTemplate(CDUWindPage.ShowWinds(template, mcdu, CDUWindPage.ShowDESPage, mcdu.winds.des, offset, 5));
 
-        if (mcdu.simbrief.alternate) {
+        if (mcdu.altDestination) {
             mcdu.onRightInput[0] = (value, scratchpadCallback) => {
                 if (value == FMCMainDisplay.clrValue) {
                     mcdu.winds.alternate = null;
