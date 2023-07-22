@@ -47,10 +47,13 @@ dependencies = [
 name = "a380_systems"
 version = "0.1.0"
 dependencies = [
+ "enum-map",
  "fxhash",
+ "lazy_static",
  "nalgebra",
  "ntest",
  "rand",
+ "rand_pcg",
  "rstest",
  "systems",
  "uom",
