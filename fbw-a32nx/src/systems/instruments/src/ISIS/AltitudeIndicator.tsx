@@ -14,10 +14,11 @@ const Tick = React.memo<TickProps>(({ altitude, offset }) => {
     const shouldShowText = altitude % 500 === 0;
     const tickLength = shouldShowText ? 5 : 19;
     const stroke = shouldShowText ? 'StrokeWhiteBig' : 'StrokeWhite';
+    const lineStart = shouldShowText ? 0.5 : 0;
 
     return (
         <g transform={`translate(0 ${offset})`}>
-            <path className={stroke} d={`M0,${158} h${tickLength}`} />
+            <path className={stroke} d={`M${lineStart},${158} h${tickLength}`} />
             {shouldShowText && <text x={7} y={158 + 12} className="TextWhite FontMedium">{Math.abs(altitude).toString().padStart(5, '0').slice(0, 3)}</text>}
         </g>
     );
@@ -29,7 +30,9 @@ const BugElement = React.memo<BugProps>(({ bug, offset }) => {
     if (bug.value % 500 === 0) {
         return (
             <g className="StrokeCyan NoFill" transform={`translate(0 ${offset})`}>
-                <path d="M3,152 v-10 h65 v32 h-65 v-6" />
+                <path d="M3,151 v-9 h65 v32 h-65 v-9" />
+                <polygon className="FillCyan" stroke="none" points="0, 150 10, 142 0, 142" />
+                <polygon className="FillCyan" stroke="none" points="0, 165 10, 173 0, 173" />
             </g>
         );
     }
@@ -76,16 +79,16 @@ type MetricAltitudeIndicatorProps = {
 }
 
 export const MetricAltitudeIndicator: React.FC<MetricAltitudeIndicatorProps> = ({ altitude }) => {
-    const metricAltitude = Math.abs(Math.round(altitude * 0.3048 / 10) * 10);
+    const metricAltitude = Math.abs(Math.round(altitude * 0.3048));
     const isNegative = altitude < 0;
     return (
         <g id="MetricAltitudeIndicator" fontSize={30}>
             {isNegative && (
-                <text className="TextWhite" x={238} y={89}>NEG</text>
+                <text className="TextWhite" x={238} y={94}>NEG</text>
             )}
-            <rect className="StrokeYellow NoFill" x={235} y={60} width={159} height={32} />
-            <text className="TextGreen" x={359} y={89} textAnchor="end">{metricAltitude}</text>
-            <text className="TextCyan" x={370} y={89}>M</text>
+            <rect className="StrokeYellow NoFill" strokeWidth={2} x={235} y={65} width={165} height={32} />
+            <text className="TextGreen" x={373} y={94} textAnchor="end">{metricAltitude}</text>
+            <text className="TextCyan" x={377} y={94}>M</text>
         </g>
     );
 };

@@ -59,7 +59,7 @@
 }
 
 .FontTens {
-  font-size: 28;
+  font-size: 28px;
   letter-spacing: 3.1px;
 }
 
@@ -75,6 +75,10 @@
 
 .FillMagenta {
   fill: $display-magenta
+}
+
+.FillCyan {
+  fill: $display-cyan;
 }
 
 .FillYellow {
@@ -96,7 +100,7 @@
 
 .StrokeWhiteBig {
   stroke: $display-white;
-  stroke-width: 5px;
+  stroke-width: 6px;
 }
 
 .StrokeYellow {
