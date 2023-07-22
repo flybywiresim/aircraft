@@ -33,7 +33,7 @@ use uom::si::{
     velocity::knot,
 };
 
-use crate::payload::{A320PaxStation, NumberOfPassengers};
+use crate::payload::{A320Pax, NumberOfPassengers};
 
 pub(super) struct A320AirConditioning {
     a320_cabin: A320Cabin,
@@ -201,11 +201,11 @@ impl A320Cabin {
 
     fn update_number_of_passengers(&mut self, number_of_passengers: &impl NumberOfPassengers) {
         self.number_of_passengers[1] =
-            (number_of_passengers.number_of_passengers(A320PaxStation::A)
-                + number_of_passengers.number_of_passengers(A320PaxStation::B)) as u8;
+            (number_of_passengers.number_of_passengers(A320Pax::A.into())
+                + number_of_passengers.number_of_passengers(A320Pax::B.into())) as u8;
         self.number_of_passengers[2] =
-            (number_of_passengers.number_of_passengers(A320PaxStation::C)
-                + number_of_passengers.number_of_passengers(A320PaxStation::D)) as u8;
+            (number_of_passengers.number_of_passengers(A320Pax::C.into())
+                + number_of_passengers.number_of_passengers(A320Pax::D.into())) as u8;
     }
 }
 
@@ -919,7 +919,7 @@ mod tests {
 
     struct TestPayload;
     impl NumberOfPassengers for TestPayload {
-        fn number_of_passengers(&self, _ps: A320PaxStation) -> i8 {
+        fn number_of_passengers(&self, _ps: usize) -> i8 {
             0
         }
     }

@@ -1,4 +1,5 @@
 use systems::{
+    airframe::CgMac,
     payload::LoadsheetInfo,
     simulation::{InitContext, UpdateContext},
 };
@@ -10,14 +11,13 @@ use crate::{
 };
 
 pub struct A320WeightBalance {
-    fuel_cg_percent_mac: f64,
-    zfw_cg_percent_mac: f64,
-    gw_cg_percent_mac: f64,
-    to_cg_percent_mac: f64,
+    zfw_cg_percent_mac: CgMac,
+    gw_cg_percent_mac: CgMac,
+    to_cg_percent_mac: CgMac,
 
-    target_zfw_cg_percent_mac: f64,
-    target_gw_cg_percent_mac: f64,
-    target_to_cg_percent_mac: f64,
+    target_zfw_cg_percent_mac: CgMac,
+    target_gw_cg_percent_mac: CgMac,
+    target_to_cg_percent_mac: CgMac,
 
     ths_setting: f64,
 }
@@ -32,41 +32,58 @@ impl A320WeightBalance {
 
     pub fn new(context: &mut InitContext) -> Self {
         A320WeightBalance {
-            fuel_cg_percent_mac: 0.0,
-            zfw_cg_percent_mac: 0.0,
-            gw_cg_percent_mac: 0.0,
-            to_cg_percent_mac: 0.0,
+            zfw_cg_percent_mac: CgMac::new(
+                context.get_identifier("ZFW_CG_PERCENT_MAC".to_owned()),
+                0.0,
+            ),
+            gw_cg_percent_mac: CgMac::new(
+                context.get_identifier("GW_CG_PERCENT_MAC".to_owned()),
+                0.0,
+            ),
+            to_cg_percent_mac: CgMac::new(
+                context.get_identifier("TO_CG_PERCENT_MAC".to_owned()),
+                0.0,
+            ),
 
-            target_zfw_cg_percent_mac: 0.0,
-            target_gw_cg_percent_mac: 0.0,
-            target_to_cg_percent_mac: 0.0,
+            target_zfw_cg_percent_mac: CgMac::new(
+                context.get_identifier("DESIRED_ZFW_CG_PERCENT_MAC".to_owned()),
+                0.0,
+            ),
+            target_gw_cg_percent_mac: CgMac::new(
+                context.get_identifier("DESIRED_GW_CG_PERCENT_MAC".to_owned()),
+                0.0,
+            ),
+            target_to_cg_percent_mac: CgMac::new(
+                context.get_identifier("DESIRED_TO_CG_PERCENT_MAC".to_owned()),
+                0.0,
+            ),
 
             ths_setting: 0.0,
         }
     }
 
     fn zfw_cg_percent_mac(&self) -> f64 {
-        self.zfw_cg_percent_mac
+        self.zfw_cg_percent_mac.cg_mac()
     }
 
     fn gw_cg_percent_mac(&self) -> f64 {
-        self.gw_cg_percent_mac
+        self.gw_cg_percent_mac.cg_mac()
     }
 
     fn to_cg_percent_mac(&self) -> f64 {
-        self.to_cg_percent_mac
+        self.to_cg_percent_mac.cg_mac()
     }
 
     fn target_zfw_cg_percent_mac(&self) -> f64 {
-        self.target_zfw_cg_percent_mac
+        self.target_zfw_cg_percent_mac.cg_mac()
     }
 
     fn target_gw_cg_percent_mac(&self) -> f64 {
-        self.target_gw_cg_percent_mac
+        self.target_gw_cg_percent_mac.cg_mac()
     }
 
     fn target_to_cg_percent_mac(&self) -> f64 {
-        self.target_to_cg_percent_mac
+        self.target_to_cg_percent_mac.cg_mac()
     }
 
     fn ths_setting(&self) -> f64 {
@@ -77,32 +94,37 @@ impl A320WeightBalance {
         -100. * (cg - Self::LOADSHEET.lemac_z) / Self::LOADSHEET.mac_size
     }
 
-    fn set_fuel_cg_percent_mac(&mut self, fuel_cg: f64) {
-        self.fuel_cg_percent_mac = self.convert_cg(fuel_cg);
-    }
-
     fn set_zfw_cg_percent_mac(&mut self, zfw_cg: f64) {
-        self.zfw_cg_percent_mac = self.convert_cg(zfw_cg);
+        let zfw_cg_mac = self.convert_cg(zfw_cg);
+        self.zfw_cg_percent_mac.set_cg_mac(zfw_cg_mac);
     }
 
     fn set_gw_cg_percent_mac(&mut self, gw_cg: f64) {
-        self.gw_cg_percent_mac = self.convert_cg(gw_cg);
+        let gw_cg_mac = self.convert_cg(gw_cg);
+        self.gw_cg_percent_mac.set_cg_mac(gw_cg_mac);
     }
 
     fn set_to_cg_percent_mac(&mut self, to_cg: f64) {
-        self.to_cg_percent_mac = self.convert_cg(to_cg);
+        let to_cg_mac = self.convert_cg(to_cg);
+        self.to_cg_percent_mac.set_cg_mac(to_cg_mac);
     }
 
-    fn set_target_zfw_cg_percent_mac(&mut self, target_zfw_cg: f64) {
-        self.target_zfw_cg_percent_mac = self.convert_cg(target_zfw_cg);
+    fn set_target_zfw_cg_percent_mac(&mut self, tgt_zfw_cg: f64) {
+        let tgt_zfw_cg_percent_mac = self.convert_cg(tgt_zfw_cg);
+        self.target_zfw_cg_percent_mac
+            .set_cg_mac(tgt_zfw_cg_percent_mac);
     }
 
-    fn set_target_gw_cg_percent_mac(&mut self, target_gw_cg: f64) {
-        self.target_gw_cg_percent_mac = self.convert_cg(target_gw_cg);
+    fn set_target_gw_cg_percent_mac(&mut self, tgt_gw_cg: f64) {
+        let tgt_gw_cg_percent_mac = self.convert_cg(tgt_gw_cg);
+        self.target_gw_cg_percent_mac
+            .set_cg_mac(tgt_gw_cg_percent_mac);
     }
 
-    fn set_target_to_cg_percent_mac(&mut self, target_to_cg_percent_mac: f64) {
-        self.target_to_cg_percent_mac = target_to_cg_percent_mac;
+    fn set_target_to_cg_percent_mac(&mut self, tgt_to_cg_percent_mac: f64) {
+        let tgt_to_cg_percent_mac = self.convert_cg(tgt_to_cg_percent_mac);
+        self.target_to_cg_percent_mac
+            .set_cg_mac(tgt_to_cg_percent_mac);
     }
 
     pub(crate) fn update(
@@ -151,7 +173,7 @@ impl A320WeightBalance {
 
         self.set_target_zfw_cg_percent_mac(target_zfw_cg);
 
-        self.set_fuel_cg_percent_mac(fuel_payload.fore_aft_center_of_gravity());
+        // self.set_fuel_cg_percent_mac(fuel_payload.fore_aft_center_of_gravity());
 
         let fuel_kg = fuel_payload.total_load().get::<kilogram>();
         let fuel_moment = fuel_kg * fuel_payload.fore_aft_center_of_gravity();
