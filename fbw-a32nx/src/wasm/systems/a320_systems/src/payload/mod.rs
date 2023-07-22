@@ -24,7 +24,23 @@ pub trait NumberOfPassengers {
 }
 
 pub trait PassengerPayload {
-    fn passenger_payload(&self, ps: A320PaxStation) -> Mass;
+    fn total_passenger_load(&self) -> Mass;
+    fn total_target_passenger_load(&self) -> Mass;
+
+    fn center_of_gravity(&self) -> Vector3<f64>;
+    fn fore_aft_center_of_gravity(&self) -> f64;
+    fn target_center_of_gravity(&self) -> Vector3<f64>;
+    fn target_fore_aft_center_of_gravity(&self) -> f64;
+}
+
+pub trait CargoPayload {
+    fn total_cargo_load(&self) -> Mass;
+    fn total_target_cargo_load(&self) -> Mass;
+
+    fn center_of_gravity(&self) -> Vector3<f64>;
+    fn fore_aft_center_of_gravity(&self) -> f64;
+    fn target_center_of_gravity(&self) -> Vector3<f64>;
+    fn target_fore_aft_center_of_gravity(&self) -> f64;
 }
 
 #[derive(Debug, Clone, Copy, Enum)]
@@ -629,9 +645,20 @@ impl A320Payload {
         self.pax[ps as usize].pax_num() as i8
     }
 
-    #[allow(dead_code)]
     fn pax_payload(&self, ps: A320PaxStation) -> Mass {
         self.pax[ps as usize].payload()
+    }
+
+    fn pax_target_payload(&self, ps: A320PaxStation) -> Mass {
+        self.pax[ps as usize].payload_target()
+    }
+
+    fn pax_moment(&self, ps: A320PaxStation) -> Vector3<f64> {
+        self.pax[ps as usize].pax_moment()
+    }
+
+    fn pax_target_moment(&self, ps: A320PaxStation) -> Vector3<f64> {
+        self.pax[ps as usize].pax_target_moment()
     }
 
     fn max_pax(&self, ps: A320PaxStation) -> i8 {
@@ -686,17 +713,26 @@ impl A320Payload {
         self.cargo[cs as usize].reset_cargo_target();
     }
 
-    #[allow(dead_code)]
     fn cargo(&self, cs: A320CargoStation) -> Mass {
         self.cargo[cs as usize].cargo()
     }
 
-    #[allow(dead_code)]
+    fn cargo_target(&self, cs: A320CargoStation) -> Mass {
+        self.cargo[cs as usize].cargo_target()
+    }
+
     fn cargo_payload(&self, cs: A320CargoStation) -> Mass {
         self.cargo[cs as usize].payload()
     }
 
-    #[allow(dead_code)]
+    fn cargo_moment(&self, cs: A320CargoStation) -> Vector3<f64> {
+        self.cargo[cs as usize].cargo_moment()
+    }
+
+    fn cargo_target_moment(&self, cs: A320CargoStation) -> Vector3<f64> {
+        self.cargo[cs as usize].cargo_target_moment()
+    }
+
     fn max_cargo(&self, cs: A320CargoStation) -> Mass {
         self.cargo[cs as usize].max_cargo()
     }
@@ -800,7 +836,120 @@ impl NumberOfPassengers for A320Payload {
     }
 }
 impl PassengerPayload for A320Payload {
-    fn passenger_payload(&self, ps: A320PaxStation) -> Mass {
-        self.pax_payload(ps)
+    fn total_passenger_load(&self) -> Mass {
+        let mut total_payload = Mass::default();
+        for ps in A320PaxStation::iterator() {
+            total_payload += self.pax_payload(ps);
+        }
+        total_payload
+    }
+
+    fn total_target_passenger_load(&self) -> Mass {
+        let mut total_payload = Mass::default();
+        for ps in A320PaxStation::iterator() {
+            total_payload += self.pax_target_payload(ps);
+        }
+        total_payload
+    }
+
+    /*
+    fn total_passenger_moment(&self) -> f64 {
+        let mut total_moment = 0.;
+        for ps in A320PaxStation::iterator() {
+            total_moment += self.pax_moment(ps).x;
+        }
+        total_moment
+    }
+    */
+
+    fn center_of_gravity(&self) -> Vector3<f64> {
+        let mut moments: Vec<Vector3<f64>> = Vec::new();
+        for ps in A320PaxStation::iterator() {
+            moments.push(self.pax_moment(ps));
+        }
+
+        let cg: Vector3<f64> = moments.iter().fold(Vector3::zeros(), |acc, x| acc + x)
+            / self.total_passenger_load().get::<kilogram>();
+        cg
+    }
+
+    fn fore_aft_center_of_gravity(&self) -> f64 {
+        PassengerPayload::center_of_gravity(self).x
+        // self.total_passenger_moment() / self.total_passenger_payload().get::<kilogram>()
+    }
+
+    fn target_center_of_gravity(&self) -> Vector3<f64> {
+        let mut moments: Vec<Vector3<f64>> = Vec::new();
+        for ps in A320PaxStation::iterator() {
+            moments.push(self.pax_target_moment(ps));
+        }
+
+        let cg: Vector3<f64> = moments.iter().fold(Vector3::zeros(), |acc, x| acc + x)
+            / self.total_target_passenger_load().get::<kilogram>();
+        cg
+    }
+
+    fn target_fore_aft_center_of_gravity(&self) -> f64 {
+        PassengerPayload::target_center_of_gravity(self).x
+        // self.total_passenger_moment() / self.total_passenger_payload().get::<kilogram>()
+    }
+}
+
+impl CargoPayload for A320Payload {
+    fn total_cargo_load(&self) -> Mass {
+        let mut total_payload = Mass::default();
+        for cs in A320CargoStation::iterator() {
+            total_payload += self.cargo(cs);
+        }
+        total_payload
+    }
+
+    fn total_target_cargo_load(&self) -> Mass {
+        let mut total_payload = Mass::default();
+        for cs in A320CargoStation::iterator() {
+            total_payload += self.cargo_target(cs);
+        }
+        total_payload
+    }
+
+    /*
+    fn total_cargo_moment(&self) -> f64 {
+        let mut total_moment = 0.;
+        for cs in A320CargoStation::iterator() {
+            total_moment += self.cargo_moment(cs);
+        }
+        total_moment
+    }
+    */
+
+    fn center_of_gravity(&self) -> Vector3<f64> {
+        let mut moments: Vec<Vector3<f64>> = Vec::new();
+        for cs in A320CargoStation::iterator() {
+            moments.push(self.cargo_moment(cs));
+        }
+
+        let cg: Vector3<f64> = moments.iter().fold(Vector3::zeros(), |acc, x| acc + x)
+            / self.total_cargo_load().get::<kilogram>();
+        cg
+    }
+
+    fn fore_aft_center_of_gravity(&self) -> f64 {
+        CargoPayload::center_of_gravity(self).x
+        // self.total_cargo_moment() / self.total_cargo_payload().get::<kilogram>()
+    }
+
+    fn target_center_of_gravity(&self) -> Vector3<f64> {
+        let mut moments: Vec<Vector3<f64>> = Vec::new();
+        for cs in A320CargoStation::iterator() {
+            moments.push(self.cargo_target_moment(cs));
+        }
+
+        let cg: Vector3<f64> = moments.iter().fold(Vector3::zeros(), |acc, x| acc + x)
+            / self.total_target_cargo_load().get::<kilogram>();
+        cg
+    }
+
+    fn target_fore_aft_center_of_gravity(&self) -> f64 {
+        CargoPayload::target_center_of_gravity(self).x
     }
 }

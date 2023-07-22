@@ -64,8 +64,6 @@ pub struct A320Fuel {
     unlimited_fuel: bool,
 
     fuel_tanks: EnumMap<A320FuelTankType, FuelTank>,
-
-    center_of_gravity: Vector3<f64>,
 }
 impl A320Fuel {
     pub fn new(context: &mut InitContext) -> Self {
@@ -100,8 +98,6 @@ impl A320Fuel {
                     Mass::default(),
                 ),
             ]),
-
-            center_of_gravity: Vector3::zeros(),
         }
     }
 
@@ -131,11 +127,32 @@ impl A320Fuel {
     }
 
     fn fore_aft_center_of_gravity(&self) -> f64 {
-        self.center_of_gravity.x
+        self.center_of_gravity().x
     }
 
     fn center_of_gravity(&self) -> Vector3<f64> {
-        self.center_of_gravity
+        let positions: Vec<Vector3<f64>> = self
+            .fuel_tanks
+            .iter()
+            .map(|t| t.1.location())
+            .collect::<Vec<_>>();
+
+        let masses: Vec<Mass> = self
+            .fuel_tanks
+            .iter()
+            .map(|t| t.1.quantity())
+            .collect::<Vec<_>>();
+
+        // This section of code calculates the center of gravity (assume center of gravity/center of mass is near identical)
+        let total_mass_kg: f64 = masses.iter().map(|m| m.get::<kilogram>()).sum();
+        let center_of_gravity = positions
+            .iter()
+            .zip(masses.iter())
+            .map(|(pos, m)| pos * m.get::<kilogram>())
+            .fold(Vector3::zeros(), |acc, x| acc + x)
+            / total_mass_kg;
+
+        center_of_gravity
     }
 }
 impl SimulationElement for A320Fuel {
@@ -146,27 +163,6 @@ impl SimulationElement for A320Fuel {
 
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.unlimited_fuel = reader.read(&self.unlimited_fuel_id);
-
-        let positions = self
-            .fuel_tanks
-            .iter()
-            .map(|t| t.1.location())
-            .collect::<Vec<_>>();
-
-        let masses = self
-            .fuel_tanks
-            .iter()
-            .map(|t| t.1.quantity())
-            .collect::<Vec<_>>();
-
-        // This section of code calculates the center of gravity (assume center of gravity/center of mass is near identical)
-        let total_mass_kg: f64 = masses.iter().map(|m| m.get::<kilogram>()).sum();
-        self.center_of_gravity = positions
-            .iter()
-            .zip(masses.iter())
-            .map(|(pos, m)| pos * m.get::<kilogram>())
-            .fold(Vector3::zeros(), |acc, x| acc + x)
-            / total_mass_kg;
     }
 }
 
