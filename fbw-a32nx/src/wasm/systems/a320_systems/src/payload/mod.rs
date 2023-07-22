@@ -77,8 +77,8 @@ pub struct A320Payload {
     board_rate: BoardingRate,
     per_pax_weight: Rc<Cell<Mass>>,
 
-    pax: Vec<Pax>,
-    cargo: Vec<Cargo>,
+    pax: [Pax; 4],
+    cargo: [Cargo; 4],
     boarding_sounds: BoardingSounds,
     gsx: Gsx,
     time: Duration,
@@ -86,7 +86,7 @@ pub struct A320Payload {
 impl A320Payload {
     // Note: These constants reflect flight_model.cfg values and will have to be updated in sync with the configuration
 
-    const DEFAULT_PER_PAX_WEIGHT_KG: f64 = 84.;
+    pub const DEFAULT_PER_PAX_WEIGHT_KG: f64 = 84.;
 
     const A320_PAX: [PaxInfo<'_>; 4] = [
         PaxInfo {
@@ -147,33 +147,37 @@ impl A320Payload {
             Self::DEFAULT_PER_PAX_WEIGHT_KG,
         )));
 
-        let mut pax = Vec::new();
+        let pax: [Pax; 4] = Self::A320_PAX
+            .iter()
+            .map(|p| {
+                Pax::new(
+                    context.get_identifier(p.pax_id.to_owned()),
+                    context.get_identifier(format!("{}_DESIRED", p.pax_id).to_owned()),
+                    context.get_identifier(p.payload_id.to_owned()),
+                    Rc::clone(&per_pax_weight),
+                    Vector3::new(p.position.0, p.position.1, p.position.2),
+                    p.max_pax,
+                )
+            })
+            .collect::<Vec<Pax>>()
+            .try_into()
+            .unwrap();
 
-        for ps in Self::A320_PAX {
-            let pos = ps.position;
-            pax.push(Pax::new(
-                context.get_identifier(ps.pax_id.to_owned()),
-                context.get_identifier(format!("{}_DESIRED", ps.pax_id).to_owned()),
-                context.get_identifier(ps.payload_id.to_owned()),
-                Rc::clone(&per_pax_weight),
-                Vector3::new(pos.0, pos.1, pos.2),
-                ps.max_pax,
-            ));
-        }
+        let cargo: [Cargo; 4] = Self::A320_CARGO
+            .iter()
+            .map(|c| {
+                Cargo::new(
+                    context.get_identifier(c.cargo_id.to_owned()),
+                    context.get_identifier(format!("{}_DESIRED", c.cargo_id).to_owned()),
+                    context.get_identifier(c.payload_id.to_owned()),
+                    Vector3::new(c.position.0, c.position.1, c.position.2),
+                    Mass::new::<kilogram>(c.max_cargo_kg),
+                )
+            })
+            .collect::<Vec<Cargo>>()
+            .try_into()
+            .unwrap();
 
-        let mut cargo = Vec::new();
-        for cs in 0..Self::A320_CARGO.len() {
-            let pos = Self::A320_CARGO[cs].position;
-            cargo.push(Cargo::new(
-                context.get_identifier(Self::A320_CARGO[cs].cargo_id.to_owned()),
-                context.get_identifier(
-                    format!("{}_DESIRED", Self::A320_CARGO[cs].cargo_id).to_owned(),
-                ),
-                context.get_identifier(Self::A320_CARGO[cs].payload_id.to_owned()),
-                Vector3::new(pos.0, pos.1, pos.2),
-                Mass::new::<kilogram>(Self::A320_CARGO[cs].max_cargo_kg),
-            ));
-        }
         A320Payload {
             developer_state_id: context.get_identifier("DEVELOPER_STATE".to_owned()),
             is_boarding_id: context.get_identifier("BOARDING_STARTED_BY_USR".to_owned()),
@@ -592,6 +596,7 @@ impl A320Payload {
         self.cargo[cs].cargo_target()
     }
 
+    #[allow(dead_code)]
     fn cargo_payload(&self, cs: usize) -> Mass {
         self.cargo[cs].payload()
     }
@@ -604,6 +609,7 @@ impl A320Payload {
         self.cargo[cs].cargo_target_moment()
     }
 
+    #[allow(dead_code)]
     fn max_cargo(&self, cs: usize) -> Mass {
         self.cargo[cs].max_cargo()
     }

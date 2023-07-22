@@ -7,7 +7,6 @@ use systems::electrical::Electricity;
 use uom::si::mass::pound;
 
 use super::*;
-use crate::fuel::A320Fuel;
 use crate::payload::A320Payload;
 use crate::systems::simulation::{
     test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
@@ -15,14 +14,12 @@ use crate::systems::simulation::{
 };
 struct BoardingTestAircraft {
     payload: A320Payload,
-    fuel: A320Fuel,
 }
 
 impl BoardingTestAircraft {
     fn new(context: &mut InitContext) -> Self {
         Self {
             payload: A320Payload::new(context),
-            fuel: A320Fuel::new(context),
         }
     }
 
@@ -65,6 +62,31 @@ impl BoardingTestAircraft {
     fn sound_pax_ambience_playing(&self) -> bool {
         self.payload.sound_pax_ambience_playing()
     }
+
+    #[allow(dead_code)]
+    fn total_pax_payload(&self) -> Mass {
+        PassengerPayload::total_passenger_load(&self.payload)
+    }
+
+    #[allow(dead_code)]
+    fn pax_center_of_gravity(&self) -> Vector3<f64> {
+        PassengerPayload::center_of_gravity(&self.payload)
+    }
+
+    #[allow(dead_code)]
+    fn pax_fore_aft_center_of_gravity(&self) -> f64 {
+        PassengerPayload::fore_aft_center_of_gravity(&self.payload)
+    }
+
+    #[allow(dead_code)]
+    fn cargo_center_of_gravity(&self) -> Vector3<f64> {
+        CargoPayload::center_of_gravity(&self.payload)
+    }
+
+    #[allow(dead_code)]
+    fn cargo_fore_aft_pax_center_of_gravity(&self) -> f64 {
+        CargoPayload::fore_aft_center_of_gravity(&self.payload)
+    }
 }
 impl Aircraft for BoardingTestAircraft {
     fn update_before_power_distribution(
@@ -78,7 +100,6 @@ impl Aircraft for BoardingTestAircraft {
 impl SimulationElement for BoardingTestAircraft {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.payload.accept(visitor);
-        self.fuel.accept(visitor);
 
         visitor.visit(self);
     }
@@ -234,7 +255,7 @@ impl BoardingTestBed {
     }
 
     fn load_pax(&mut self, ps: usize, pax_qty: i8) {
-        let mut test_bed = test_bed();
+        let test_bed = test_bed();
 
         assert!(pax_qty <= test_bed.query(|a| a.max_pax(ps)));
 
@@ -619,6 +640,31 @@ impl BoardingTestBed {
 
     fn cargo_payload(&self, cs: usize) -> Mass {
         self.query(|a| a.cargo_payload(cs))
+    }
+
+    #[allow(dead_code)]
+    fn pax_center_of_gravity(&self) -> Vector3<f64> {
+        self.query(|a| a.pax_center_of_gravity())
+    }
+
+    #[allow(dead_code)]
+    fn pax_fore_aft_center_of_gravity(&self) -> f64 {
+        self.query(|a| a.pax_fore_aft_center_of_gravity())
+    }
+
+    #[allow(dead_code)]
+    fn total_pax_payload(&self) -> Mass {
+        self.query(|a| a.total_pax_payload())
+    }
+
+    #[allow(dead_code)]
+    fn cargo_center_of_gravity(&self) -> Vector3<f64> {
+        self.query(|a| a.cargo_center_of_gravity())
+    }
+
+    #[allow(dead_code)]
+    fn cargo_fore_aft_center_of_gravity(&self) -> f64 {
+        self.query(|a| a.cargo_fore_aft_pax_center_of_gravity())
     }
 }
 
