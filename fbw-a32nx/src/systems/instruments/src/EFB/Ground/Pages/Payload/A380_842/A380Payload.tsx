@@ -9,19 +9,14 @@ import {
     Shuffle,
     StopCircleFill,
 } from 'react-bootstrap-icons';
-import { useSimVar } from '@instruments/common/simVars';
-import { Units } from '@shared/units';
-import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
-import { SeatFlags } from '@shared/bitFlags';
-import { useSeatFlags } from '@instruments/common/bitFlags';
 import { round } from 'lodash';
+import { SeatFlags, Units, usePersistentNumberProperty, usePersistentProperty, useSeatFlags, useSimVar } from '@flybywiresim/fbw-sdk';
 import { CargoWidget } from './Seating/CargoWidget';
 import { ChartWidget } from '../Chart/ChartWidget';
 import { CargoStationInfo, PaxStationInfo } from '../Seating/Constants';
 import { t } from '../../../../translation';
 import { TooltipWrapper } from '../../../../UtilComponents/TooltipWrapper';
 import { SimpleInput } from '../../../../UtilComponents/Form/SimpleInput/SimpleInput';
-// import Loadsheet from './Loadsheet/A320_251N.json';
 import Loadsheet from './A380_842.json';
 import Card from '../../../../UtilComponents/Card/Card';
 import { SelectGroup, SelectItem } from '../../../../UtilComponents/Form/Select';
