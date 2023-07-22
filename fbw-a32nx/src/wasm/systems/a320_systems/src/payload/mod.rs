@@ -1,5 +1,6 @@
 use enum_map::{Enum, EnumMap};
 use lazy_static::lazy_static;
+use nalgebra::Vector3;
 
 use std::{cell::Cell, rc::Rc, time::Duration};
 
@@ -60,37 +61,63 @@ impl A320Cargo {
 
 lazy_static! {
     static ref A320_PAX: EnumMap<A320Pax, PaxInfo> = EnumMap::from_array([
-        PaxInfo::new(36, "PAX_A", "PAYLOAD_STATION_1_REQ",),
-        PaxInfo::new(42, "PAX_B", "PAYLOAD_STATION_2_REQ",),
-        PaxInfo::new(48, "PAX_C", "PAYLOAD_STATION_3_REQ",),
-        PaxInfo::new(48, "PAX_D", "PAYLOAD_STATION_4_REQ",)
+        PaxInfo::new(
+            36,
+            Vector3::new(20.5, 0., 5.),
+            "PAX_A",
+            "PAYLOAD_STATION_1_REQ",
+        ),
+        PaxInfo::new(
+            42,
+            Vector3::new(1.5, 0., 5.1),
+            "PAX_B",
+            "PAYLOAD_STATION_2_REQ",
+        ),
+        PaxInfo::new(
+            48,
+            Vector3::new(-16.6, 0., 5.3),
+            "PAX_C",
+            "PAYLOAD_STATION_3_REQ",
+        ),
+        PaxInfo::new(
+            48,
+            Vector3::new(-35.6, 0., 5.3),
+            "PAX_D",
+            "PAYLOAD_STATION_4_REQ",
+        )
     ]);
     static ref A320_CARGO: EnumMap<A320Cargo, CargoInfo> = EnumMap::from_array([
         CargoInfo::new(
             Mass::new::<kilogram>(3402.),
+            Vector3::new(17.3, 0., 0.),
             "CARGO_FWD_BAGGAGE_CONTAINER",
             "PAYLOAD_STATION_5_REQ",
         ),
         CargoInfo::new(
             Mass::new::<kilogram>(2426.),
+            Vector3::new(-24.1, 0., 1.),
             "CARGO_AFT_CONTAINER",
             "PAYLOAD_STATION_6_REQ",
         ),
         CargoInfo::new(
             Mass::new::<kilogram>(2110.),
+            Vector3::new(-34.1, 0., 1.2),
             "CARGO_AFT_BAGGAGE",
             "PAYLOAD_STATION_7_REQ",
         ),
         CargoInfo::new(
             Mass::new::<kilogram>(1497.),
+            Vector3::new(-42.4, 0., 1.4),
             "CARGO_AFT_BULK_LOOSE",
             "PAYLOAD_STATION_8_REQ",
         )
     ]);
-    static ref A320_EMPTY_WEIGHT: Mass = Mass::new::<kilogram>(42500.);
-    static ref A320_MAC_SIZE: f64 = 13.464;
-    static ref A320_LEMAC_Z: f64 = -5.383;
 }
+
+const A320_EMPTY_WEIGHT_KG: f64 = 42500.;
+const A320_EMPTY_POSITION: f64 = -9.42;
+const A320_MAC_SIZE: f64 = 13.464;
+const A320_LEMAC_Z: f64 = -5.383;
 
 pub struct A320BoardingSounds {
     pax_board_id: VariableIdentifier,
@@ -217,6 +244,7 @@ impl A320Payload {
                 context.get_identifier(format!("{}_DESIRED", A320_PAX[ps].pax_id).to_owned()),
                 context.get_identifier(A320_PAX[ps].payload_id.to_owned()),
                 Rc::clone(&per_pax_weight),
+                A320_PAX[ps].position,
             ));
         }
 
@@ -290,12 +318,7 @@ impl A320Payload {
             self.update_intern(context);
         }
 
-        self.desired_zfw_cg_percent_mac;
-        /*
-        self.desired_gw_cg_percent_mac = self.desired_zfw_cg_percent_mac
-            + -100 * (fuel_cg.fore_aft_center_of_gravity() - A320_LEMAC_Z) / A320_MAC_SIZE;
-        self.gw_cg_percent_mac = self.zfw_cg + fuel_cg.fore_aft_center_of_gravity();
-        */
+        self.update_calc(fuel_cg.fore_aft_center_of_gravity());
     }
 
     fn ensure_payload_sync(&mut self) {
@@ -397,6 +420,27 @@ impl A320Payload {
         // Check sound before updating boarding status
         self.update_boarding_sounds();
         self.update_boarding_status();
+    }
+
+    fn update_calc(&mut self, fuel_cg: f64) {
+        let fuel_cg_percent_mac = -100. * (fuel_cg - A320_LEMAC_Z) / A320_MAC_SIZE;
+
+        // const newZfwMoment = Loadsheet.specs.emptyPosition * emptyWeight + calculatePaxMoment() + calculateCargoMoment();
+        // let zfw_moment = A320_EMPTY_WEIGHT_KG * A320_EMPTY_POSITION; // + pax moment + cargo moment
+
+        /*
+        for ps in self.pax {
+            ps.pax_num() as f64 * ps.per_pax_weight();
+        }
+        */
+
+        self.desired_zfw_cg_percent_mac;
+        self.desired_gw_cg_percent_mac = self.desired_zfw_cg_percent_mac + fuel_cg_percent_mac;
+
+        self.zfw_cg_percent_mac;
+        self.zfw_cg_percent_mac = self.zfw_cg_percent_mac + fuel_cg_percent_mac;
+
+        // self.gw_cg_percent_mac = A320_EMPTY_WEIGHT.get::<kilogram>();
     }
 
     fn update_boarding_status(&mut self) {
