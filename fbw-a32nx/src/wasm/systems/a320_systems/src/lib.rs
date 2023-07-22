@@ -166,7 +166,7 @@ impl Aircraft for A320 {
             .update_after_electrical(&self.electrical, electricity);
         self.emergency_electrical_overhead
             .update_after_electrical(context, &self.electrical);
-        self.payload.update(context, &self.fuel);
+        self.payload.update(context);
     }
 
     fn update_after_power_distribution(&mut self, context: &UpdateContext) {

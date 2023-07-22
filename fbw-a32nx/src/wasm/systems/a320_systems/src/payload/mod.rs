@@ -1,4 +1,4 @@
-use enum_map::{Enum, EnumMap};
+use enum_map::{Enum, EnumMap}; // TODO: deprecate usage of enum map
 use nalgebra::Vector3;
 
 use std::{cell::Cell, rc::Rc, time::Duration};
@@ -7,14 +7,12 @@ use uom::si::{f64::Mass, mass::kilogram};
 
 use systems::{
     accept_iterable,
-    payload::{BoardingRate, Cargo, CargoInfo, GsxState, LoadsheetInfo, Pax, PaxInfo},
+    payload::{BoardingRate, Cargo, CargoInfo, GsxState, Pax, PaxInfo},
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
         SimulatorWriter, UpdateContext, VariableIdentifier, Write,
     },
 };
-
-use crate::fuel::FuelForeAftCG;
 
 #[cfg(test)]
 pub mod test;
@@ -334,7 +332,7 @@ impl A320Payload {
         }
     }
 
-    pub(crate) fn update(&mut self, context: &UpdateContext, fuel_cg: &impl FuelForeAftCG) {
+    pub(crate) fn update(&mut self, context: &UpdateContext) {
         if !self.is_developer_state_active() {
             self.ensure_payload_sync()
         };
@@ -621,22 +619,18 @@ impl A320Payload {
         self.board_rate
     }
 
-    #[allow(dead_code)]
     fn sound_pax_boarding_playing(&self) -> bool {
         self.boarding_sounds.pax_boarding()
     }
 
-    #[allow(dead_code)]
     fn sound_pax_ambience_playing(&self) -> bool {
         self.boarding_sounds.pax_ambience()
     }
 
-    #[allow(dead_code)]
     fn sound_pax_complete_playing(&self) -> bool {
         self.boarding_sounds.pax_complete()
     }
 
-    #[allow(dead_code)]
     fn sound_pax_deboarding_playing(&self) -> bool {
         self.boarding_sounds.pax_deboarding()
     }

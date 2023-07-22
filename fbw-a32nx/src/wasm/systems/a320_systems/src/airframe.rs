@@ -2,7 +2,7 @@ use systems::{payload::LoadsheetInfo, simulation::UpdateContext};
 use uom::si::mass::kilogram;
 
 use crate::{
-    fuel::FuelForeAftCG,
+    fuel::FuelPayload,
     payload::{CargoPayload, PassengerPayload},
 };
 
@@ -13,8 +13,8 @@ pub struct A320WeightBalance {
     to_cg_percent_mac: f64,
 
     target_zfw_cg_percent_mac: f64,
-    desired_gw_cg_percent_mac: f64,
-    desired_to_cg_percent_mac: f64,
+    target_gw_cg_percent_mac: f64,
+    target_to_cg_percent_mac: f64,
 
     ths_setting: f64,
 }
@@ -35,8 +35,8 @@ impl A320WeightBalance {
             to_cg_percent_mac: 0.0,
 
             target_zfw_cg_percent_mac: 0.0,
-            desired_gw_cg_percent_mac: 0.0,
-            desired_to_cg_percent_mac: 0.0,
+            target_gw_cg_percent_mac: 0.0,
+            target_to_cg_percent_mac: 0.0,
 
             ths_setting: 0.0,
         }
@@ -58,12 +58,12 @@ impl A320WeightBalance {
         self.target_zfw_cg_percent_mac
     }
 
-    fn desired_gw_cg_percent_mac(&self) -> f64 {
-        self.desired_gw_cg_percent_mac
+    fn target_gw_cg_percent_mac(&self) -> f64 {
+        self.target_gw_cg_percent_mac
     }
 
-    fn desired_to_cg_percent_mac(&self) -> f64 {
-        self.desired_to_cg_percent_mac
+    fn target_to_cg_percent_mac(&self) -> f64 {
+        self.target_to_cg_percent_mac
     }
 
     fn ths_setting(&self) -> f64 {
@@ -94,46 +94,41 @@ impl A320WeightBalance {
         self.target_zfw_cg_percent_mac = self.convert_cg(target_zfw_cg);
     }
 
-    fn set_target_gw_cg_percent_mac(&mut self, desired_gw_cg: f64) {
-        self.desired_gw_cg_percent_mac = self.convert_cg(desired_gw_cg);
+    fn set_target_gw_cg_percent_mac(&mut self, target_gw_cg: f64) {
+        self.target_gw_cg_percent_mac = self.convert_cg(target_gw_cg);
     }
 
-    fn set_target_to_cg_percent_mac(&mut self, desired_to_cg_percent_mac: f64) {
-        self.desired_to_cg_percent_mac = desired_to_cg_percent_mac;
+    fn set_target_to_cg_percent_mac(&mut self, target_to_cg_percent_mac: f64) {
+        self.target_to_cg_percent_mac = target_to_cg_percent_mac;
     }
 
     pub(crate) fn update(
         &mut self,
         context: &UpdateContext,
-        fuel_cg: &impl FuelForeAftCG,
+        fuel_payload: &impl FuelPayload,
         pax_payload: &impl PassengerPayload,
         cargo_payload: &impl CargoPayload,
     ) {
-        self.update_calc(fuel_cg, pax_payload, cargo_payload);
+        self.update_calc(fuel_payload, pax_payload, cargo_payload);
     }
 
     fn update_calc(
         &mut self,
-        fuel_cg: &impl FuelForeAftCG,
+        fuel_payload: &impl FuelPayload,
         pax_payload: &impl PassengerPayload,
         cargo_payload: &impl CargoPayload,
     ) {
-        // TODO: Finish then refactor
-
-        self.set_fuel_cg_percent_mac(fuel_cg.fore_aft_center_of_gravity());
-
-        let empty_moment =
-            Self::LOADSHEET.operating_empty_position.0 * Self::LOADSHEET.operating_empty_weight_kg;
-
         let total_pax_kg = pax_payload.total_passenger_load().get::<kilogram>();
         let total_cargo_kg = cargo_payload.total_cargo_load().get::<kilogram>();
 
+        let empty_moment =
+            Self::LOADSHEET.operating_empty_position.0 * Self::LOADSHEET.operating_empty_weight_kg;
         let pax_moment = total_pax_kg * pax_payload.fore_aft_center_of_gravity();
         let cargo_moment = total_cargo_kg * cargo_payload.fore_aft_center_of_gravity();
 
         let zfw_moment = empty_moment + pax_moment + cargo_moment;
-        let zfw_cg = zfw_moment
-            / (Self::LOADSHEET.operating_empty_weight_kg + total_pax_kg + total_cargo_kg);
+        let zfw_kg = Self::LOADSHEET.operating_empty_weight_kg + total_pax_kg + total_cargo_kg;
+        let zfw_cg = zfw_moment / zfw_kg;
 
         self.set_zfw_cg_percent_mac(zfw_cg);
 
@@ -145,24 +140,41 @@ impl A320WeightBalance {
         let cargo_target_moment =
             total_target_cargo_kg * cargo_payload.target_fore_aft_center_of_gravity();
 
-        let zfw_target_moment = empty_moment + pax_target_moment + cargo_target_moment;
-        let target_zfw_cg = zfw_target_moment
-            / (Self::LOADSHEET.operating_empty_weight_kg
-                + total_target_pax_kg
-                + total_target_cargo_kg);
+        let target_zfw_moment = empty_moment + pax_target_moment + cargo_target_moment;
+        let target_zfw_kg =
+            Self::LOADSHEET.operating_empty_weight_kg + total_target_pax_kg + total_target_cargo_kg;
+
+        let target_zfw_cg: f64 = target_zfw_moment / target_zfw_kg;
 
         self.set_target_zfw_cg_percent_mac(target_zfw_cg);
 
-        /*
-        self.set_zfw_cg_percent_mac(Self::LOADSHEET.operating_empty_cg + pax_cg + cargo_cg);
-        self.set_target_zfw_cg_percent_mac(
-            Self::LOADSHEET.operating_empty_cg + pax_target_cg + cargo_target_cg,
-        );
+        self.set_fuel_cg_percent_mac(fuel_payload.fore_aft_center_of_gravity());
 
-        self.gw_cg_percent_mac = self.zfw_cg_percent_mac + self.fuel_cg_percent_mac;
-        self.desired_gw_cg_percent_mac = self.target_zfw_cg_percent_mac + self.fuel_cg_percent_mac;
-        */
+        let fuel_kg = fuel_payload.total_load().get::<kilogram>();
+        let fuel_moment = fuel_kg * fuel_payload.fore_aft_center_of_gravity();
 
-        // self.gw_cg_percent_mac = A320_EMPTY_WEIGHT.get::<kilogram>();
+        let gw_moment = zfw_moment + fuel_moment;
+        let gw_kg = zfw_kg + fuel_kg;
+        let gw_cg = gw_moment / gw_kg;
+
+        self.set_gw_cg_percent_mac(gw_cg);
+
+        let target_gw_moment = target_zfw_moment + fuel_moment;
+        let target_gw_kg = target_zfw_kg + fuel_kg;
+        let target_gw_cg = target_gw_moment / target_gw_kg;
+
+        self.set_target_gw_cg_percent_mac(target_gw_cg);
+
+        // TODO: Implement Taxi Fuel Input/Calculation
+
+        let to_cg = gw_cg;
+        let target_to_cg = target_gw_cg;
+
+        self.set_to_cg_percent_mac(to_cg);
+        self.set_target_to_cg_percent_mac(target_to_cg);
+
+        println!("GW CG MAC IS {}", self.gw_cg_percent_mac);
+
+        println!("GW CG MAC IS {}", self.gw_cg_percent_mac);
     }
 }
