@@ -275,6 +275,7 @@ impl SimulationElement for A320 {
         self.pneumatic.accept(visitor);
         self.egpwc.accept(visitor);
         self.reverse_thrust.accept(visitor);
+        self.weight.accept(visitor);
 
         visitor.visit(self);
     }
