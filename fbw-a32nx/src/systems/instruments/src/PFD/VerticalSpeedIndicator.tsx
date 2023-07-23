@@ -83,7 +83,7 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
             this.needsUpdate = true;
         });
 
-        sub.on('realTime').handle((_r) => {
+        sub.on('simTime').handle((_r) => {
             if (this.needsUpdate) {
                 if (this.tcasState.tcasState === 2) {
                     this.needleColour.set('White');
@@ -92,7 +92,7 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
             }
         });
 
-        sub.on('vs').withArinc429Precision(2).handle((vs) => {
+        sub.on('vs').withArinc429Precision(3).handle((vs) => {
             const filteredVS = this.lagFilter.step(vs.value, this.props.instrument.deltaTime / 1000);
 
             const absVSpeed = Math.abs(filteredVS);
@@ -189,9 +189,9 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
 }
 
 class VSpeedNeedle extends DisplayComponent<{ yOffset: Subscribable<number>, needleColour: Subscribable<string> }> {
-    private outLineRef = FSComponent.createRef<SVGPathElement>();
-
     private indicatorRef = FSComponent.createRef<SVGPathElement>();
+
+    private readonly pathSub = Subject.create('');
 
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
@@ -204,8 +204,7 @@ class VSpeedNeedle extends DisplayComponent<{ yOffset: Subscribable<number>, nee
         this.props.yOffset.sub((yOffset) => {
             const path = `m${centerX - dxBorder} ${centerY + dxBorder / dxFull * yOffset} l ${dxBorder - dxFull} ${(1 - dxBorder / dxFull) * yOffset}`;
 
-            this.outLineRef.instance.setAttribute('d', path);
-            this.indicatorRef.instance.setAttribute('d', path);
+            this.pathSub.set(path);
         });
 
         this.props.needleColour.sub((colour) => {
@@ -216,8 +215,8 @@ class VSpeedNeedle extends DisplayComponent<{ yOffset: Subscribable<number>, nee
     render(): VNode | null {
         return (
             <>
-                <path ref={this.outLineRef} class="HugeOutline" />
-                <path ref={this.indicatorRef} id="VSpeedIndicator" />
+                <path d={this.pathSub} class="HugeOutline" />
+                <path d={this.pathSub} id="VSpeedIndicator" />
             </>
         );
     }
