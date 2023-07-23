@@ -112,7 +112,7 @@ class CDUWindPage {
             requestButton = "REQUEST [color]amber";
         }
 
-        let alternatHeader = "";
+        let alternateHeader = "";
         let alternateCell = "";
         let altFLightlevel = "";
 
