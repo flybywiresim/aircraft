@@ -8,6 +8,7 @@ use super::{
     ProvidePotential,
 };
 use crate::{
+    failures::{Failure, FailureType},
     shared::{ConsumePower, PowerConsumptionReport},
     simulation::{InitContext, SimulationElement, SimulatorWriter, UpdateContext},
 };
@@ -18,6 +19,7 @@ pub struct StaticInverter {
     writer: ElectricalStateWriter,
     output_potential: ElectricPotential,
     output_frequency: Frequency,
+    failure: Failure,
 }
 impl StaticInverter {
     pub fn new(context: &mut InitContext) -> StaticInverter {
@@ -27,6 +29,7 @@ impl StaticInverter {
             writer: ElectricalStateWriter::new(context, "STAT_INV"),
             output_potential: ElectricPotential::new::<volt>(0.),
             output_frequency: Frequency::new::<hertz>(0.),
+            failure: Failure::new(FailureType::StaticInverter),
         }
     }
 }
@@ -55,6 +58,11 @@ impl ElectricityTransformer for StaticInverter {
     }
 }
 impl SimulationElement for StaticInverter {
+    fn accept<T: crate::simulation::SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.failure.accept(visitor);
+        visitor.visit(self);
+    }
+
     fn write(&self, writer: &mut SimulatorWriter) {
         self.writer.write_alternating(self, writer);
     }
@@ -78,7 +86,7 @@ impl SimulationElement for StaticInverter {
         _: &UpdateContext,
         report: &T,
     ) {
-        let has_output = report.is_powered(self);
+        let has_output = report.is_powered(self) && !self.failure.is_active();
         self.output_potential = if has_output {
             ElectricPotential::new::<volt>(115.)
         } else {
