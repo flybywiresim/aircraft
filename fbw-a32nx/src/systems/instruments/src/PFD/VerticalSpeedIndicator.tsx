@@ -216,7 +216,7 @@ class VSpeedNeedle extends DisplayComponent<{ yOffset: Subscribable<number>, nee
         return (
             <>
                 <path d={this.pathSub} class="HugeOutline" />
-                <path d={this.pathSub} id="VSpeedIndicator" />
+                <path d={this.pathSub} ref={this.indicatorRef} id="VSpeedIndicator" />
             </>
         );
     }
