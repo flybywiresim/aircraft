@@ -117,7 +117,7 @@ class CDUWindPage {
         let altFLightlevel = "";
 
         if (mcdu.altDestination) {
-            alternatHeader = "ALTN WIND";
+            alternateHeader = "ALTN WIND";
             alternateCell = "[ ]°/[ ][color]cyan";
             altFLightlevel = "{green}{small}FL100{end}{end}";
             if (mcdu.winds.alternate != null) {
@@ -126,7 +126,7 @@ class CDUWindPage {
         }
         const template = [
             ["DESCENT WIND"],
-            ["TRU WIND/ALT", alternatHeader],
+            ["TRU WIND/ALT", alternateHeader],
             ["", alternateCell],
             ["", altFLightlevel],
             ["", ""],
