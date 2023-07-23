@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ClockEvents, ConsumerSubject, DisplayComponent, FSComponent, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import { Arinc429Word } from '@flybywiresim/fbw-sdk';
+import { Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
 
 import { Arinc429RegisterSubject } from 'instruments/src/MsfsAvionicsCommon/Arinc429RegisterSubject';
 import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
@@ -41,7 +41,7 @@ class HeadingBug extends DisplayComponent<{ bus: ArincEventBus, isCaptainSide: b
         const headingDelta = getSmallestAngle(selectedHeading, heading.value);
         const offset = headingDelta * DistanceSpacing / ValueSpacing;
         const inRange = Math.abs(offset) <= DisplayRange + 10;
-        return !fdActive && attitude.isNormalOperation() && heading.isNormalOperation() && inRange
+        return !fdActive && attitude.isNormalOperation() && heading.isNormalOperation() && inRange;
     }, this.heading, this.attitude, this.fdActive, this.selectedHeading);
 
     private readonly headingBugSubject = MappedSubject.create(([heading, selectedHeading, yOffset, visible]) => {
@@ -570,9 +570,9 @@ class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
 }
 
 class RisingGround extends DisplayComponent<{ bus: ArincEventBus, filteredRadioAltitude: Subscribable<number> }> {
-    private radioAlt = new Arinc429Word(0);
+    private radioAlt: Arinc429WordData = new Arinc429Word(0);
 
-    private lastPitch = new Arinc429Word(0);
+    private lastPitch: Arinc429WordData = new Arinc429Word(0);
 
     private horizonGroundRectangle = FSComponent.createRef<SVGGElement>();
 

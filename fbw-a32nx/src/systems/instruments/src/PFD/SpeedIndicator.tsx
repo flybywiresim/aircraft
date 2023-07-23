@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ClockEvents, DisplayComponent, FSComponent, NodeReference, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import { Arinc429Word } from '@flybywiresim/fbw-sdk';
+import { Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
 import { FmsVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { VerticalTape } from './VerticalTape';
@@ -119,7 +119,7 @@ class VRBugElement extends DisplayComponent<{bus: ArincEventBus}> {
 interface AirspeedIndicatorProps {
     airspeedAcc?: number;
     FWCFlightPhase?: number;
-    altitude?: Arinc429Word;
+    altitude?: Arinc429WordData;
     VLs?: number;
     VMax?: number;
     showBars?: boolean;
@@ -510,7 +510,7 @@ class VLsBar extends DisplayComponent<{ bus: ArincEventBus }> {
 
     private airSpeed= new Arinc429Word(0);
 
-    private vls= new Arinc429Word(0);
+    private vls = new Arinc429Word(0);
 
     private fcdc1DiscreteWord1 = new Arinc429Word(0);
 
@@ -849,7 +849,7 @@ interface SpeedStateInfo {
     holdValue: number;
     isSpeedManaged: boolean;
     isMach: boolean;
-    speed: Arinc429Word;
+    speed: Arinc429WordData;
 
   }
 

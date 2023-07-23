@@ -13,10 +13,10 @@ const DistanceSpacing = 15;
 const ValueSpacing = 10;
 
 interface FlightPathVectorData {
-    roll: Arinc429Word;
+    roll: Arinc429WordData;
     pitch: Arinc429WordData;
-    fpa: Arinc429Word;
-    da: Arinc429Word;
+    fpa: Arinc429WordData;
+    da: Arinc429WordData;
 }
 
 export class FlightPathVector extends DisplayComponent<{ bus: ArincEventBus }> {
