@@ -4,7 +4,7 @@
 
 import { A320Failure, FailuresConsumer } from '@failures';
 import { ClockEvents, ComponentProps, DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
-import { Arinc429Word } from '@flybywiresim/fbw-sdk';
+import { Arinc429Register, Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
 import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import { LagFilter } from './PFDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
@@ -43,7 +43,7 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
 
     private isAttExcessive = Subject.create(false);
 
-    private pitch = new Arinc429Word(0);
+    private pitch: Arinc429WordData = Arinc429Register.empty();
 
     private roll = new Arinc429Word(0);
 
