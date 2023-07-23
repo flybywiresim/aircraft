@@ -41,10 +41,7 @@ class HeadingBug extends DisplayComponent<{ bus: ArincEventBus, isCaptainSide: b
         const headingDelta = getSmallestAngle(selectedHeading, heading.value);
         const offset = headingDelta * DistanceSpacing / ValueSpacing;
         const inRange = Math.abs(offset) <= DisplayRange + 10;
-        if (!fdActive && attitude.isNormalOperation() && heading.isNormalOperation() && inRange) {
-            return true;
-        }
-        return false;
+        return !fdActive && attitude.isNormalOperation() && heading.isNormalOperation() && inRange
     }, this.heading, this.attitude, this.fdActive, this.selectedHeading);
 
     private readonly headingBugSubject = MappedSubject.create(([heading, selectedHeading, yOffset, visible]) => {
