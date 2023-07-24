@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React from 'react';
-import { useSimVar } from '@flybywiresim/fbw-sdk';
+import { useArinc429Var, useSimVar } from '@flybywiresim/fbw-sdk';
 import { SvgGroup } from '../../Common/SvgGroup';
 import Valve from './Valve';
 
@@ -12,6 +12,9 @@ import '../../Common/CommonStyles.scss';
 export const CondPage = () => {
     // Display trim valve position for each zone
     const gaugeOffset = -43; // Gauges range is from -43 degree to +43 degree
+
+    const AcscDiscreteWord1 = useArinc429Var('L:A32NX_COND_ACSC_DISCRETE_WORD_1');
+    // TODO: If the Sign Status is Failure Warning or No Computed Data, the whole page should display XX's
 
     const [cockpitTrimAirValve] = useSimVar('L:A32NX_COND_CKPT_TRIM_AIR_VALVE_POSITION', 'number', 1000);
     const [cockpitTrimTemp] = useSimVar('L:A32NX_COND_CKPT_DUCT_TEMP', 'celsius', 1000);
@@ -25,15 +28,15 @@ export const CondPage = () => {
     const [aftTrimTemp] = useSimVar('L:A32NX_COND_AFT_DUCT_TEMP', 'celsius', 1000);
     const [aftCabinTemp] = useSimVar('L:A32NX_COND_AFT_TEMP', 'celsius', 1000);
 
-    const [hotAirOpen] = useSimVar('L:A32NX_HOT_AIR_VALVE_IS_OPEN', 'bool', 1000);
-    const [hotAirEnabled] = useSimVar('L:A32NX_HOT_AIR_VALVE_IS_ENABLED', 'bool', 1000);
-    const [hotAirPb] = useSimVar('L:A32NX_OVHD_COND_HOT_AIR_PB_IS_ON', 'bool', 1000);
+    const hotAirOpen = !AcscDiscreteWord1.getBitValueOr(20, false);
+    const hotAirPositionDisagrees = AcscDiscreteWord1.getBitValueOr(27, false);
+    const hotAirPb = AcscDiscreteWord1.getBitValueOr(23, false);
 
-    const [cabFanHasFault1] = useSimVar('L:A32NX_VENT_CABIN_FAN_1_HAS_FAULT', 'bool', 1000);
-    const [cabFanHasFault2] = useSimVar('L:A32NX_VENT_CABIN_FAN_2_HAS_FAULT', 'bool', 1000);
+    const cabFanHasFault1 = AcscDiscreteWord1.getBitValueOr(25, false);
+    const cabFanHasFault2 = AcscDiscreteWord1.getBitValueOr(26, false);
 
-    const [zoneControllerPrimaryFault] = useSimVar('L:A32NX_COND_ZONE_CONTROLLER_PRIMARY_CHANNEL_HAS_FAULT', 'bool', 1000);
-    const [zoneControllerBothChannelFault] = useSimVar('L:A32NX_COND_ZONE_CONTROLLER_BOTH_CHANNEL_HAS_FAULT', 'bool', 1000);
+    const zoneControllerPrimaryFault = AcscDiscreteWord1.getBitValueOr(21, false);
+    const zoneControllerBothChannelFault = AcscDiscreteWord1.getBitValueOr(21, false) && AcscDiscreteWord1.getBitValueOr(22, false);
 
     const altnMode = zoneControllerPrimaryFault && !zoneControllerBothChannelFault;
 
@@ -65,7 +68,7 @@ export const CondPage = () => {
                 x={153}
                 y={105}
                 offset={gaugeOffset}
-                hotAir={(hotAirOpen !== hotAirEnabled) || !hotAirPb}
+                hotAir={hotAirPositionDisagrees || !hotAirPb}
             />
 
             {/* Fwd */}
@@ -77,7 +80,7 @@ export const CondPage = () => {
                 x={324}
                 y={105}
                 offset={gaugeOffset}
-                hotAir={(hotAirOpen !== hotAirEnabled) || !hotAirPb}
+                hotAir={hotAirPositionDisagrees || !hotAirPb}
             />
 
             {/*  Aft */}
@@ -89,7 +92,7 @@ export const CondPage = () => {
                 x={494}
                 y={105}
                 offset={gaugeOffset}
-                hotAir={(hotAirOpen !== hotAirEnabled) || !hotAirPb}
+                hotAir={hotAirPositionDisagrees || !hotAirPb}
             />
 
             {/* Valve and tubes */}
@@ -98,9 +101,9 @@ export const CondPage = () => {
                     <tspan x="706" y="306" style={{ letterSpacing: '1px' }}>HOT</tspan>
                     <tspan x="706" y="336" style={{ letterSpacing: '2px' }}>AIR</tspan>
                 </text>
-                <Valve x={650} y={312} radius={21} position={hotAirOpen ? 'H' : 'V'} css={((hotAirOpen !== hotAirEnabled) || !hotAirPb) ? 'AmberLine' : 'GreenLine'} sdacDatum />
-                <line className={((hotAirOpen !== hotAirEnabled) || !hotAirPb) ? 'AmberLine' : 'GreenLine'} x1="195" y1="312" x2="627" y2="312" />
-                <line className={((hotAirOpen !== hotAirEnabled) || !hotAirPb) ? 'AmberLine' : 'GreenLine'} x1="672" y1="312" x2="696" y2="312" />
+                <Valve x={650} y={312} radius={21} position={hotAirOpen ? 'H' : 'V'} css={(hotAirPositionDisagrees || !hotAirPb) ? 'AmberLine' : 'GreenLine'} sdacDatum />
+                <line className={(hotAirPositionDisagrees || !hotAirPb) ? 'AmberLine' : 'GreenLine'} x1="195" y1="312" x2="627" y2="312" />
+                <line className={(hotAirPositionDisagrees || !hotAirPb) ? 'AmberLine' : 'GreenLine'} x1="672" y1="312" x2="696" y2="312" />
             </g>
         </svg>
     );

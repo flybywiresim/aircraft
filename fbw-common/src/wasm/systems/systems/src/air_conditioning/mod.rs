@@ -106,7 +106,7 @@ pub enum ZoneType {
 }
 
 impl ZoneType {
-    fn id(&self) -> usize {
+    pub fn id(&self) -> usize {
         match self {
             ZoneType::Cockpit => 0,
             ZoneType::Cabin(number) => {
@@ -290,6 +290,10 @@ impl CabinFan {
             (self.outlet_air.pressure().get::<pascal>() * Self::DESIGN_FLOW_RATE_L_S * 1e-3)
                 / (Air::R * self.outlet_air.temperature().get::<kelvin>());
         MassRate::new::<kilogram_per_second>(mass_flow)
+    }
+
+    pub fn has_fault(&self) -> bool {
+        self.failure.is_active()
     }
 }
 
@@ -574,6 +578,10 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystem<ZONES, ENGINES> {
             .average()
     }
 
+    pub fn trim_air_valve_has_fault(&self, tav_id: usize) -> bool {
+        self.trim_air_valves[tav_id].trim_air_valve_has_fault()
+    }
+
     fn any_trim_air_valve_has_fault(&self) -> bool {
         self.trim_air_valves
             .iter()
@@ -583,6 +591,10 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystem<ZONES, ENGINES> {
     fn duct_overheat_determination(&self, zone_id: usize) -> bool {
         self.trim_air_mixers[zone_id].outlet_air().temperature()
             > ThermodynamicTemperature::new::<degree_celsius>(88.)
+    }
+
+    pub fn duct_overheat(&self, zone_id: usize) -> bool {
+        self.duct_overheat[zone_id]
     }
 
     #[cfg(test)]

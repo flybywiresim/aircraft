@@ -94,6 +94,10 @@ export class PseudoFWC {
 
     /* 21 - AIR CONDITIONING AND PRESSURIZATION */
 
+    private readonly acscDiscreteWord1 = Arinc429Register.empty();
+
+    private readonly acscDiscreteWord2 = Arinc429Register.empty();
+
     private readonly apuBleedValveOpen = Subject.create(false);
 
     private readonly cabAltSetReset1 = new NXLogicMemoryNode();
@@ -110,7 +114,7 @@ export class PseudoFWC {
 
     private readonly excessPressure = Subject.create(false);
 
-    private readonly hotAirEnabled = Subject.create(false);
+    private readonly hotAirDisagrees = Subject.create(false);
 
     private readonly hotAirOpen = Subject.create(false);
 
@@ -1057,24 +1061,27 @@ export class PseudoFWC {
 
         /* 21 - AIR CONDITIONING AND PRESSURIZATION */
 
-        this.cabFanHasFault1.set(SimVar.GetSimVarValue('L:A32NX_VENT_CABIN_FAN_1_HAS_FAULT', 'bool'));
-        this.cabFanHasFault2.set(SimVar.GetSimVarValue('L:A32NX_VENT_CABIN_FAN_2_HAS_FAULT', 'bool'));
+        this.acscDiscreteWord1.setFromSimVar('L:A32NX_COND_ACSC_DISCRETE_WORD_1');
+        this.acscDiscreteWord2.setFromSimVar('L:A32NX_COND_ACSC_DISCRETE_WORD_2');
 
-        this.hotAirEnabled.set(SimVar.GetSimVarValue('L:A32NX_HOT_AIR_VALVE_IS_ENABLED', 'bool'));
-        this.hotAirOpen.set(SimVar.GetSimVarValue('L:A32NX_HOT_AIR_VALVE_IS_OPEN', 'bool'));
-        this.hotAirPbOn.set(SimVar.GetSimVarValue('L:A32NX_OVHD_COND_HOT_AIR_PB_IS_ON', 'bool'));
+        this.cabFanHasFault1.set(this.acscDiscreteWord1.bitValueOr(25, false));
+        this.cabFanHasFault2.set(this.acscDiscreteWord1.bitValueOr(26, false));
 
-        this.ckptTrimFault.set(SimVar.GetSimVarValue('L:A32NX_COND_CKPT_TRIM_AIR_VALVE_HAS_FAULT', 'bool'));
-        this.fwdTrimFault.set(SimVar.GetSimVarValue('L:A32NX_COND_FWD_TRIM_AIR_VALVE_HAS_FAULT', 'bool'));
-        this.aftTrimFault.set(SimVar.GetSimVarValue('L:A32NX_COND_AFT_TRIM_AIR_VALVE_HAS_FAULT', 'bool'));
+        this.hotAirDisagrees.set(this.acscDiscreteWord1.bitValueOr(27, false));
+        this.hotAirOpen.set(!this.acscDiscreteWord1.bitValueOr(20, false));
+        this.hotAirPbOn.set(this.acscDiscreteWord1.bitValueOr(23, false));
 
-        this.ckptDuctOvht.set(SimVar.GetSimVarValue('L:A32NX_COND_CKPT_DUCT_OVHT', 'bool'));
-        this.fwdDuctOvht.set(SimVar.GetSimVarValue('L:A32NX_COND_FWD_DUCT_OVHT', 'bool'));
-        this.aftDuctOvht.set(SimVar.GetSimVarValue('L:A32NX_COND_AFT_DUCT_OVHT', 'bool'));
+        this.ckptTrimFault.set(this.acscDiscreteWord2.bitValueOr(18, false));
+        this.fwdTrimFault.set(this.acscDiscreteWord2.bitValueOr(19, false));
+        this.aftTrimFault.set(this.acscDiscreteWord2.bitValueOr(20, false));
+
+        this.ckptDuctOvht.set(this.acscDiscreteWord1.bitValueOr(11, false));
+        this.fwdDuctOvht.set(this.acscDiscreteWord1.bitValueOr(12, false));
+        this.aftDuctOvht.set(this.acscDiscreteWord1.bitValueOr(13, false));
         this.anyDuctOvht.set(this.ckptDuctOvht.get() || this.fwdDuctOvht.get() || this.aftDuctOvht.get());
 
-        this.lavGalleyFanFault.set(SimVar.GetSimVarValue('L:A32NX_VENT_LAB_GALLEY_FAN_HAS_FAULT', 'bool'));
-        this.zoneControllerPrimaryFault.set(SimVar.GetSimVarValue('L:A32NX_COND_ZONE_CONTROLLER_PRIMARY_CHANNEL_HAS_FAULT', 'bool'));
+        this.lavGalleyFanFault.set(this.acscDiscreteWord1.bitValueOr(24, false));
+        this.zoneControllerPrimaryFault.set(this.acscDiscreteWord1.bitValueOr(21, false));
 
         const crossfeed = SimVar.GetSimVarValue('L:A32NX_PNEU_XBLEED_VALVE_OPEN', 'bool');
         const eng1Bleed = SimVar.GetSimVarValue('A:BLEED AIR ENGINE:1', 'bool');
@@ -2264,7 +2271,7 @@ export class PseudoFWC {
         },
         2163290: { // HOT AIR FAULT
             flightPhaseInhib: [3, 4, 5, 7, 8],
-            simVarIsActive: MappedSubject.create(([hotAirEnabled, hotAirOpen]) => hotAirEnabled !== hotAirOpen, this.hotAirEnabled, this.hotAirOpen),
+            simVarIsActive: this.hotAirDisagrees,
             whichCodeToReturn: () => [0,
                 this.hotAirPbOn.get() ? 1 : null,
                 (this.anyDuctOvht.get() && this.hotAirPbOn.get()) ? 2 : null,

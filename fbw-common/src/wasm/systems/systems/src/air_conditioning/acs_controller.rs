@@ -29,8 +29,8 @@ use uom::si::{
     velocity::knot,
 };
 
-#[derive(PartialEq, Clone, Copy)]
-enum ACSCActiveComputer {
+#[derive(Eq, PartialEq, Clone, Copy)]
+pub enum ACSCActiveComputer {
     Primary,
     Secondary,
     None,
@@ -140,7 +140,7 @@ impl<const ZONES: usize, const ENGINES: usize> AirConditioningSystemController<Z
             .update(acs_overhead, operation_mode);
     }
 
-    fn operation_mode_determination(&self) -> ACSCActiveComputer {
+    pub fn operation_mode_determination(&self) -> ACSCActiveComputer {
         // TODO: Add failures
         if self.primary_is_powered {
             ACSCActiveComputer::Primary
@@ -191,6 +191,28 @@ impl<const ZONES: usize, const ENGINES: usize> AirConditioningSystemController<Z
 
     pub fn hot_air_pb_fault_light_determination(&self) -> bool {
         self.trim_air_system_controller.should_turn_on_fault_light()
+    }
+
+    pub fn zone_controller_primary_fault(&self) -> bool {
+        self.zone_controller
+            .iter()
+            .any(|zone| zone.zone_controller_primary_fault())
+    }
+
+    pub fn zone_controller_secondary_fault(&self) -> bool {
+        self.zone_controller
+            .iter()
+            .any(|zone| zone.zone_controller_secondary_fault())
+    }
+
+    pub fn galley_fan_fault(&self) -> bool {
+        self.zone_controller
+            .iter()
+            .any(|zone| zone.galley_fan_fault())
+    }
+
+    pub fn taprv_position_disagrees(&self) -> bool {
+        self.trim_air_system_controller.is_enabled() != self.trim_air_system_controller.is_open()
     }
 
     pub fn zone_controller_failure(&self) -> bool {
@@ -700,6 +722,15 @@ impl<const ZONES: usize> ZoneController<ZONES> {
         self.zone_regulation_primary_failure.is_active()
     }
 
+    fn zone_controller_secondary_fault(&self) -> bool {
+        self.zone_regulation_secondary_failure.is_active()
+    }
+
+    fn galley_fan_fault(&self) -> bool {
+        self.galley_fan_failure.is_active()
+    }
+
+    // TODO: Remove
     fn zone_controller_total_failure(&self) -> bool {
         self.zone_regulation_primary_failure.is_active()
             && self.zone_regulation_secondary_failure.is_active()

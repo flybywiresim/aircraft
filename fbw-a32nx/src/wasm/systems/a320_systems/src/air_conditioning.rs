@@ -1,7 +1,7 @@
 use systems::{
     accept_iterable,
     air_conditioning::{
-        acs_controller::{AirConditioningSystemController, Pack},
+        acs_controller::{ACSCActiveComputer, AirConditioningSystemController, Pack},
         cabin_air::CabinAirSimulation,
         cabin_pressure_controller::CabinPressureController,
         pressure_valve::{OutflowValve, SafetyValve},
@@ -16,10 +16,12 @@ use systems::{
     },
     pneumatic::PneumaticContainer,
     shared::{
-        random_number, update_iterator::MaxStepLoop, AverageExt, CabinAltitude, CabinSimulation,
-        ControllerSignal, ElectricalBusType, EngineBleedPushbutton, EngineCorrectedN1,
-        EngineFirePushButtons, EngineStartState, LgciuWeightOnWheels, PackFlowValveState,
-        PneumaticBleed,
+        arinc429::{Arinc429Word, SignStatus},
+        random_number,
+        update_iterator::MaxStepLoop,
+        AverageExt, CabinAltitude, CabinSimulation, ControllerSignal, ElectricalBusType,
+        EngineBleedPushbutton, EngineCorrectedN1, EngineFirePushButtons, EngineStartState,
+        LgciuWeightOnWheels, PackFlowValveState, PneumaticBleed,
     },
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -239,6 +241,7 @@ impl SimulationElement for A320Cabin {
 }
 
 pub struct A320AirConditioningSystem {
+    acs_interface: AirConditioningSystemInterfaceUnit,
     acsc: AirConditioningSystemController<3, 2>,
     cabin_fans: [CabinFan; 2],
     mixer_unit: MixerUnit<3>,
@@ -252,6 +255,7 @@ pub struct A320AirConditioningSystem {
 impl A320AirConditioningSystem {
     pub(crate) fn new(context: &mut InitContext, cabin_zones: &[ZoneType; 3]) -> Self {
         Self {
+            acs_interface: AirConditioningSystemInterfaceUnit::new(context, cabin_zones),
             acsc: AirConditioningSystemController::new(
                 context,
                 cabin_zones,
@@ -341,6 +345,13 @@ impl A320AirConditioningSystem {
             .set_pack_pushbutton_fault(self.pack_fault_determination(pneumatic));
         self.air_conditioning_overhead
             .set_hot_air_pushbutton_fault(self.acsc.hot_air_pb_fault_light_determination());
+
+        self.acs_interface.update(
+            &self.air_conditioning_overhead,
+            &self.acsc,
+            &self.cabin_fans,
+            &self.trim_air_system,
+        );
     }
 
     pub fn pack_fault_determination(&self, pneumatic: &impl PackFlowValveState) -> [bool; 2] {
@@ -382,6 +393,7 @@ impl OutletAir for A320AirConditioningSystem {
 
 impl SimulationElement for A320AirConditioningSystem {
     fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
+        self.acs_interface.accept(visitor);
         self.acsc.accept(visitor);
         self.trim_air_system.accept(visitor);
         accept_iterable!(self.cabin_fans, visitor);
@@ -389,6 +401,85 @@ impl SimulationElement for A320AirConditioningSystem {
         self.air_conditioning_overhead.accept(visitor);
 
         visitor.visit(self);
+    }
+}
+
+/// Not sure this is a real subsystem of the ACSC but to keep it tidy we separate it
+struct AirConditioningSystemInterfaceUnit {
+    discrete_word_1_id: VariableIdentifier,
+    discrete_word_2_id: VariableIdentifier,
+
+    cabin_zones: [ZoneType; 3],
+    discrete_word_1: Arinc429Word<u32>,
+    discrete_word_2: Arinc429Word<u32>,
+}
+
+impl AirConditioningSystemInterfaceUnit {
+    fn new(context: &mut InitContext, cabin_zones: &[ZoneType; 3]) -> Self {
+        Self {
+            discrete_word_1_id: context.get_identifier("COND_ACSC_DISCRETE_WORD_1".to_owned()),
+            discrete_word_2_id: context.get_identifier("COND_ACSC_DISCRETE_WORD_2".to_owned()),
+
+            cabin_zones: *cabin_zones,
+            discrete_word_1: Arinc429Word::new(0, SignStatus::NoComputedData),
+            discrete_word_2: Arinc429Word::new(0, SignStatus::NoComputedData),
+        }
+    }
+
+    fn update(
+        &mut self,
+        acs_overhead: &impl AirConditioningOverheadShared,
+        acsc: &AirConditioningSystemController<3, 2>,
+        cabin_fans: &[CabinFan; 2],
+        trim_air_system: &TrimAirSystem<3, 2>,
+    ) {
+        let duct_overheat = self
+            .cabin_zones
+            .map(|zone| trim_air_system.duct_overheat(zone.id()));
+        let trim_air_valve_fault = self
+            .cabin_zones
+            .map(|zone| trim_air_system.trim_air_valve_has_fault(zone.id()));
+
+        if matches!(
+            acsc.operation_mode_determination(),
+            ACSCActiveComputer::None
+        ) {
+            self.discrete_word_1 = Arinc429Word::new(0, SignStatus::FailureWarning);
+            self.discrete_word_2 = Arinc429Word::new(0, SignStatus::FailureWarning);
+        } else {
+            self.discrete_word_1 = Arinc429Word::new(0, SignStatus::NormalOperation);
+            self.discrete_word_2 = Arinc429Word::new(0, SignStatus::NormalOperation);
+
+            self.discrete_word_1.set_bit(11, duct_overheat[0]);
+            self.discrete_word_1.set_bit(12, duct_overheat[1]);
+            self.discrete_word_1.set_bit(13, duct_overheat[2]);
+            self.discrete_word_1.set_bit(18, false); // TODO: Implement trim air high pressure
+            self.discrete_word_1
+                .set_bit(20, !acsc.trim_air_pressure_regulating_valve_is_open());
+            self.discrete_word_1
+                .set_bit(21, acsc.zone_controller_primary_fault());
+            self.discrete_word_1
+                .set_bit(22, acsc.zone_controller_secondary_fault());
+            self.discrete_word_1
+                .set_bit(23, acs_overhead.hot_air_pushbutton_is_on());
+            self.discrete_word_1.set_bit(24, acsc.galley_fan_fault());
+            self.discrete_word_1.set_bit(25, cabin_fans[0].has_fault());
+            self.discrete_word_1.set_bit(26, cabin_fans[1].has_fault());
+            self.discrete_word_1
+                .set_bit(27, acsc.taprv_position_disagrees());
+            self.discrete_word_1.set_bit(28, false); // TODO: Implement trim air inop
+
+            self.discrete_word_2.set_bit(18, trim_air_valve_fault[0]);
+            self.discrete_word_2.set_bit(19, trim_air_valve_fault[1]);
+            self.discrete_word_2.set_bit(20, trim_air_valve_fault[2]);
+        }
+    }
+}
+
+impl SimulationElement for AirConditioningSystemInterfaceUnit {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.discrete_word_1_id, self.discrete_word_1);
+        writer.write(&self.discrete_word_2_id, self.discrete_word_2);
     }
 }
 

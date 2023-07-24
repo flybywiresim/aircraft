@@ -2599,6 +2599,57 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 ## Air Conditioning / Pressurisation / Ventilation
 
+- A32NX_COND_ACSC_DISCRETE_WORD_1
+    - Discrete Data word 1 of the ACSC bus output
+    - Arinc429<Discrete>
+    - | Bit |                      Description                     |
+      |:---:|:----------------------------------------------------:|
+      | 11  | Duct overheat F/D warning                            |
+      | 12  | Duct overheat FWD warning                            |
+      | 13  | Duct overheat AFT warning                            |
+      | 14  | Not used                                             |
+      | 15  | Not used                                             |
+      | 16  | Not used                                             |
+      | 17  | Spare                                                |
+      | 18  | Trim air pressure high                               |
+      | 19  | Spare                                                |
+      | 20  | TAPRV status - close                                 |
+      | 21  | Main zone control inop                               |
+      | 22  | Zone secondary control inop                          |
+      | 23  | Hot air switch position on                           |
+      | 24  | G + T fan off/fault                                  |
+      | 25  | Recirc fan LH fault/OVHT                             |
+      | 26  | Recirc fan RH fault/OVHT                             |
+      | 27  | TAPRV disagree                                       |
+      | 28  | Trim air system inop                                 |
+      | 29  | Spare                                                |
+
+- A32NX_COND_ACSC_DISCRETE_WORD_2
+    - Discrete Data word 2 of the ACSC bus output
+    - Bits with * not yet implemented
+    - Arinc429<Discrete>
+    - | Bit |                      Description                     |
+      |:---:|:----------------------------------------------------:|
+      | 11  | Spare                                                |
+      | 12  | *K1 half wing anti-ice on                            |
+      | 13  | *K2 full wing anti-ice on                            |
+      | 14  | *K3 nacelle anti-ice on                              |
+      | 15  | *K4 air cond with two packs on                       |
+      | 16  | *K5 air cond with one pack on                        |
+      | 17  | *K6 air cond with two packs and one engine on        |
+      | 18  | Trim valve F/D inop                                  |
+      | 19  | Trim valve FWD inop                                  |
+      | 20  | Trim valve AFT inop                                  |
+      | 21  | Not used                                             |
+      | 22  | Not used                                             |
+      | 23  | Spare                                                |
+      | 24  | Spare                                                |
+      | 25  | Spare                                                |
+      | 26  | Spare                                                |
+      | 27  | *Nacelle anti-ice eng 2 open                         |
+      | 28  | *Nacelle anti-ice eng 1 open                         |
+      | 29  | Spare                                                |
+
 - A32NX_COND_{id}_TEMP
     - Degree Celsius
     - Temperature as measured in each of the cabin zones and cockpit
