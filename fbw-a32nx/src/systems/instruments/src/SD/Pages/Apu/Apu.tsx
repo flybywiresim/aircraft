@@ -159,7 +159,8 @@ const ApuBleed = ({ x, y } : ComponentPositionProps) => {
 
         return () => {};
     }, [apuBleedPbOn]);
-
+    // FIXME should be APU bleed absolute pressure label from SDAC
+    const apuBleedPressAvailable = apuN.isNormalOperation() && correctedAverageStaticPressure.isNormalOperation();
     return (
         <>
             {/* FBW-31-08 */}
@@ -171,9 +172,9 @@ const ApuBleed = ({ x, y } : ComponentPositionProps) => {
                 <text
                     x={44}
                     y={48}
-                    className={`FontLarger Right ${adir1ModeSelectorKnob === 1 ? 'Green' : 'Amber'}`}
+                    className={`FontLarger Right $className= ${apuBleedPressAvailable ? 'Green' : 'Amber'}`}
                 >
-                    {adir1ModeSelectorKnob === 1 ? displayedBleedPressure : 'XX'}
+                    {apuN.isNormalOperation() && adir1ModeSelectorKnob === 1 ? displayedBleedPressure : 'XX'}
                 </text>
                 <text x={90} y={48} className="Cyan FontNormal Right">PSI</text>
 

@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React from 'react';
-import { useSimVar, usePersistentProperty, Units } from '@flybywiresim/fbw-sdk';
+import { useSimVar, usePersistentProperty } from '@flybywiresim/fbw-sdk';
+import { UnitType } from '@microsoft/msfs-sdk';
 import { SvgGroup } from '../../Common/SvgGroup';
 import Valve from './Valve';
-
 import '../../Common/CommonStyles.scss';
 
 export const CondPage = () => {
@@ -32,12 +32,12 @@ export const CondPage = () => {
     const [hotAirEnabled] = useSimVar('L:A32NX_HOT_AIR_VALVE_IS_ENABLED', 'bool', 1000);
 
     if (unit === '0') { //  converting to F if 'lbs' selected in EFB
-        cockpitTrimTemp = Units.celsiusToFahrenheit(cockpitTrimTemp);
-        cockpitCabinTemp = Units.celsiusToFahrenheit(cockpitCabinTemp);
-        fwdTrimTemp = Units.celsiusToFahrenheit(fwdTrimTemp);
-        fwdCabinTemp = Units.celsiusToFahrenheit(fwdCabinTemp);
-        aftTrimTemp = Units.celsiusToFahrenheit(aftTrimTemp);
-        aftCabinTemp = Units.celsiusToFahrenheit(aftCabinTemp);
+        cockpitTrimTemp = UnitType.CELSIUS.convertTo(cockpitTrimTemp, UnitType.FAHRENHEIT);
+        cockpitCabinTemp = UnitType.CELSIUS.convertTo(cockpitCabinTemp, UnitType.FAHRENHEIT);
+        fwdTrimTemp = UnitType.CELSIUS.convertTo(fwdTrimTemp, UnitType.FAHRENHEIT);
+        fwdCabinTemp = UnitType.CELSIUS.convertTo(fwdCabinTemp, UnitType.FAHRENHEIT);
+        aftTrimTemp = UnitType.CELSIUS.convertTo(aftTrimTemp, UnitType.FAHRENHEIT);
+        aftCabinTemp = UnitType.CELSIUS.convertTo(aftCabinTemp, UnitType.FAHRENHEIT);
     }
 
     return (

@@ -4,6 +4,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { GaugeComponent, GaugeMarkerComponent, splitDecimals } from '@instruments/common/gauges';
+import { UnitType } from '@microsoft/msfs-sdk';
 import { useSimVar, usePersistentProperty, Units } from '@flybywiresim/fbw-sdk';
 import { fuelForDisplay } from '../../Common/FuelFunctions';
 
@@ -219,9 +220,9 @@ export const CondComponent = () => {
     let [aftCabinTemp] = useSimVar('L:A32NX_COND_CKPT_TEMP', 'celsius', 1000);
 
     if (unit === '0') { //  converting to F if 'lbs' selected in EFB
-        cockpitCabinTemp = Units.celsiusToFahrenheit(cockpitCabinTemp);
-        fwdCabinTemp = Units.celsiusToFahrenheit(fwdCabinTemp);
-        aftCabinTemp = Units.celsiusToFahrenheit(aftCabinTemp);
+        cockpitCabinTemp = UnitType.CELSIUS.convertTo(cockpitCabinTemp, UnitType.FAHRENHEIT);
+        fwdCabinTemp = UnitType.CELSIUS.convertTo(fwdCabinTemp, UnitType.FAHRENHEIT);
+        aftCabinTemp = UnitType.CELSIUS.convertTo(aftCabinTemp, UnitType.FAHRENHEIT);
     }
 
     return (
