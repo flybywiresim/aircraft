@@ -61,9 +61,9 @@ export class HeadingOfftape extends DisplayComponent<{ bus: ArincEventBus, faile
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<DmcLogicEvents & PFDSimvars & Arinc429Values & HEvent>();
+        const sub = this.props.bus.getArincSubscriber<DmcLogicEvents & PFDSimvars & Arinc429Values & HEvent>();
 
-        sub.on('heading').handle((word) => {
+        sub.on('heading').withArinc429Precision(2).handle((word) => {
             this.heading.set(word.value);
 
             if (word.isNormalOperation()) {

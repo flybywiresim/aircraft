@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ClockEvents, DisplayComponent, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import { Arinc429Word } from '@flybywiresim/fbw-sdk';
+import { Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
 import { VerticalMode } from '@shared/autopilot';
 import { Arinc429RegisterSubject } from 'instruments/src/MsfsAvionicsCommon/Arinc429RegisterSubject';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
@@ -665,7 +665,7 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
 }
 
  interface MetricAltIndicatorState {
-    altitude: Arinc429Word;
+    altitude: Arinc429WordData;
     targetAlt: number;
     altitudeColor: TargetAltitudeColor;
     metricAltToggle: boolean;

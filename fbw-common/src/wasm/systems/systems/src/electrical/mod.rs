@@ -17,7 +17,10 @@ use std::{
     time::Duration,
 };
 
-use crate::simulation::{InitContext, VariableIdentifier};
+use crate::{
+    failures::{Failure, FailureType},
+    simulation::{InitContext, VariableIdentifier},
+};
 use crate::{
     shared::{
         ConsumePower, ElectricalBusType, ElectricalBuses, EmergencyElectricalState,
@@ -111,6 +114,7 @@ pub struct ElectricalBus {
     bus_potential_normal_id: VariableIdentifier,
     potential: ElectricPotential,
     bus_type: ElectricalBusType,
+    failure: Failure,
 }
 impl ElectricalBus {
     pub fn new(context: &mut InitContext, bus_type: ElectricalBusType) -> ElectricalBus {
@@ -121,6 +125,7 @@ impl ElectricalBus {
                 .get_identifier(format!("ELEC_{}_BUS_POTENTIAL_NORMAL", bus_type)),
             potential: ElectricPotential::new::<volt>(0.),
             bus_type,
+            failure: Failure::new(FailureType::ElectricalBus(bus_type)),
         }
     }
 
@@ -138,10 +143,15 @@ impl ElectricalElement for ElectricalBus {
     }
 
     fn is_conductive(&self) -> bool {
-        true
+        !self.failure.is_active()
     }
 }
 impl SimulationElement for ElectricalBus {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.failure.accept(visitor);
+        visitor.visit(self);
+    }
+
     fn write(&self, writer: &mut SimulatorWriter) {
         if let ElectricalBusType::Sub(_) = self.bus_type {
             // Sub buses are not written towards the simulator. See the

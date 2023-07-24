@@ -21,7 +21,7 @@
 #include <string>
 
 #include "EngineControl.h"
-//#include "ThrustLimits.h"
+// #include "ThrustLimits.h"
 #include "RegPolynomials.h"
 #include "SimVars.h"
 #include "Tables.h"
@@ -122,16 +122,16 @@ class FadecGauge {
     return true;
   }
 
-    bool simConnectRequestDataAcftInfo() {
+  bool simConnectRequestDataAcftInfo() {
     // check if we are connected
     if (!isConnected) {
       return false;
     }
 
     // request data
-    return S_OK == SimConnect_RequestDataOnSimObject(hSimConnect, 8, DataTypesID::AcftInfo, SIMCONNECT_OBJECT_ID_USER, SIMCONNECT_PERIOD_ONCE);
+    return S_OK ==
+           SimConnect_RequestDataOnSimObject(hSimConnect, 8, DataTypesID::AcftInfo, SIMCONNECT_OBJECT_ID_USER, SIMCONNECT_PERIOD_ONCE);
   }
-
 
   bool simConnectRequestData() {
     // check if we are connected
@@ -209,7 +209,7 @@ class FadecGauge {
         return;
       case 8:
         simulationDataLivery = *((SimulationDataLivery*)&data->dwData);
-        if(simulationDataLivery.atc_id[0] == '\0') {
+        if (simulationDataLivery.atc_id[0] == '\0') {
           std::cout << "FADEC: Use default aircraft registration " << DEFAULT_AIRCRAFT_REGISTRATION << std::endl;
           strncpy(simulationDataLivery.atc_id, DEFAULT_AIRCRAFT_REGISTRATION, sizeof(simulationDataLivery.atc_id));
         }
@@ -360,15 +360,17 @@ class FadecGauge {
   }
 
   /*
-  * This function is to call if some data are needed before initialization of the engine (such as aircraft registration).
-  * This has to be done here due to data fetch feature being available after the first PANEL_SERVICE_PRE_DRAW (from what I have observed)
-  * This problem was observed when engine configuration file was under development
-  * Reach Julian Sebline on Discord if information needed
-  *
-  * Modify this function as needed
-  *
-  * @return true if all the requirements to initialize the engine are fulfilled
-  */
+   * This function is to call if some data are needed before initialization of
+   * the engine (such as aircraft registration). This has to be done here due to
+   * data fetch feature being available after the first PANEL_SERVICE_PRE_DRAW
+   * (from what I have observed) This problem was observed when engine
+   * configuration file was under development Reach Julian Sebline on Discord if
+   * information needed
+   *
+   * Modify this function as needed
+   *
+   * @return true if all the requirements to initialize the engine are fulfilled
+   */
   bool fetchNeededData() {
     // This two lines request aircraft registration
     simConnectRequestDataAcftInfo();
@@ -376,7 +378,7 @@ class FadecGauge {
 
     _isReady = isRegistrationFound();
 
-    if(_isReady) {
+    if (_isReady) {
       EngineControlInstance.initialize(simulationDataLivery.atc_id);
     }
 
