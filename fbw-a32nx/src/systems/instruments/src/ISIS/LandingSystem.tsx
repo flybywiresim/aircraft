@@ -5,15 +5,11 @@
 import React from 'react';
 
 import { useInteractionSimVar, useSimVar } from '@flybywiresim/fbw-sdk';
-import { LagFilter } from 'instruments/src/ISIS/ISISUtils';
 
 type DeviationIndicatorProps = {
     deviation: number,
     available: boolean
 }
-
-const locLagfilter = new LagFilter(1.5);
-const gsLagfilter = new LagFilter(1.5);
 
 const DeviationIndicator: React.FC<DeviationIndicatorProps> = ({ deviation, available }) => {
     const dots = deviation / 0.4;
@@ -59,10 +55,10 @@ export const LandingSystem: React.FC = () => {
         lsActive && (
             <g id="LandingSystem">
                 <g transform="translate(166.869 376.62)">
-                    <DeviationIndicator deviation={locLagfilter.step(lsDeviation / 2, 50 / 1000)} available={lsAvailable} />
+                    <DeviationIndicator deviation={lsDeviation / 2} available={lsAvailable} />
                 </g>
                 <g transform="translate(340.133 180.869) rotate(90 0 0)">
-                    <DeviationIndicator deviation={gsLagfilter.step(gsDeviation, 50 / 1000)} available={gsAvailable} />
+                    <DeviationIndicator deviation={gsDeviation} available={gsAvailable} />
                 </g>
             </g>
         )
