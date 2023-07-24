@@ -1,7 +1,6 @@
 #ifndef RTW_HEADER_A380PrimComputer_types_h_
 #define RTW_HEADER_A380PrimComputer_types_h_
 #include "rtwtypes.h"
-
 #ifndef DEFINED_TYPEDEF_FOR_a380_pitch_efcs_law_
 #define DEFINED_TYPEDEF_FOR_a380_pitch_efcs_law_
 
@@ -701,33 +700,6 @@ struct lateral_normal_input
 
 #endif
 
-#ifndef DEFINED_TYPEDEF_FOR_base_roll_data_computed_
-#define DEFINED_TYPEDEF_FOR_base_roll_data_computed_
-
-struct base_roll_data_computed
-{
-  real_T delta_xi_deg;
-  real_T delta_zeta_deg;
-  real_T in_flight;
-  real_T in_flight_gain;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_base_roll_normal_
-#define DEFINED_TYPEDEF_FOR_base_roll_normal_
-
-struct base_roll_normal
-{
-  real_T pk_c_deg_s;
-  real_T Phi_c_deg;
-  real_T xi_deg;
-  real_T zeta_deg;
-  real_T zeta_tc_yd_deg;
-};
-
-#endif
-
 #ifndef DEFINED_TYPEDEF_FOR_pitch_alternate_input_
 #define DEFINED_TYPEDEF_FOR_pitch_alternate_input_
 
@@ -765,6 +737,87 @@ struct base_pitch_output
   real_T eta_trim_dot_deg_s;
   real_T eta_trim_limit_lo;
   real_T eta_trim_limit_up;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_pitch_direct_input_
+#define DEFINED_TYPEDEF_FOR_pitch_direct_input_
+
+struct pitch_direct_input
+{
+  base_time time;
+  real_T eta_deg;
+  real_T flaps_handle_index;
+  real_T delta_eta_pos;
+  boolean_T tracking_mode_on;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_pitch_normal_input_
+#define DEFINED_TYPEDEF_FOR_pitch_normal_input_
+
+struct pitch_normal_input
+{
+  base_time time;
+  real_T nz_g;
+  real_T Theta_deg;
+  real_T Phi_deg;
+  real_T qk_deg_s;
+  real_T qk_dot_deg_s2;
+  real_T eta_deg;
+  real_T eta_trim_deg;
+  real_T alpha_deg;
+  real_T V_ias_kn;
+  real_T V_tas_kn;
+  real_T H_radio_ft;
+  real_T CG_percent_MAC;
+  real_T total_weight_kg;
+  real_T flaps_handle_index;
+  real_T spoilers_left_pos;
+  real_T spoilers_right_pos;
+  real_T thrust_lever_1_pos;
+  real_T thrust_lever_2_pos;
+  boolean_T tailstrike_protection_on;
+  real_T VLS_kn;
+  real_T delta_eta_pos;
+  boolean_T on_ground;
+  boolean_T tracking_mode_on;
+  boolean_T high_aoa_prot_active;
+  boolean_T high_speed_prot_active;
+  real_T alpha_prot;
+  real_T alpha_max;
+  real_T high_speed_prot_high_kn;
+  real_T high_speed_prot_low_kn;
+  real_T ap_theta_c_deg;
+  boolean_T any_ap_engaged;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_roll_data_computed_
+#define DEFINED_TYPEDEF_FOR_base_roll_data_computed_
+
+struct base_roll_data_computed
+{
+  real_T delta_xi_deg;
+  real_T delta_zeta_deg;
+  real_T in_flight;
+  real_T in_flight_gain;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_base_roll_normal_
+#define DEFINED_TYPEDEF_FOR_base_roll_normal_
+
+struct base_roll_normal
+{
+  real_T pk_c_deg_s;
+  real_T Phi_c_deg;
+  real_T xi_deg;
+  real_T zeta_deg;
 };
 
 #endif
@@ -822,61 +875,6 @@ struct base_pitch_law_output
 struct base_pitch_integrated
 {
   real_T eta_deg;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_pitch_direct_input_
-#define DEFINED_TYPEDEF_FOR_pitch_direct_input_
-
-struct pitch_direct_input
-{
-  base_time time;
-  real_T eta_deg;
-  real_T flaps_handle_index;
-  real_T delta_eta_pos;
-  boolean_T tracking_mode_on;
-};
-
-#endif
-
-#ifndef DEFINED_TYPEDEF_FOR_pitch_normal_input_
-#define DEFINED_TYPEDEF_FOR_pitch_normal_input_
-
-struct pitch_normal_input
-{
-  base_time time;
-  real_T nz_g;
-  real_T Theta_deg;
-  real_T Phi_deg;
-  real_T qk_deg_s;
-  real_T qk_dot_deg_s2;
-  real_T eta_deg;
-  real_T eta_trim_deg;
-  real_T alpha_deg;
-  real_T V_ias_kn;
-  real_T V_tas_kn;
-  real_T H_radio_ft;
-  real_T CG_percent_MAC;
-  real_T total_weight_kg;
-  real_T flaps_handle_index;
-  real_T spoilers_left_pos;
-  real_T spoilers_right_pos;
-  real_T thrust_lever_1_pos;
-  real_T thrust_lever_2_pos;
-  boolean_T tailstrike_protection_on;
-  real_T VLS_kn;
-  real_T delta_eta_pos;
-  boolean_T on_ground;
-  boolean_T tracking_mode_on;
-  boolean_T high_aoa_prot_active;
-  boolean_T high_speed_prot_active;
-  real_T alpha_prot;
-  real_T alpha_max;
-  real_T high_speed_prot_high_kn;
-  real_T high_speed_prot_low_kn;
-  real_T ap_theta_c_deg;
-  boolean_T any_ap_engaged;
 };
 
 #endif

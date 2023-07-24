@@ -31,12 +31,22 @@ bool FlyByWireInterface::connect() {
   // initialize flight data recorder
   flightDataRecorder.initialize();
 
+  
+
   // connect to sim connect
-  return simConnectInterface.connect(clientDataEnabled, autopilotStateMachineEnabled, autopilotLawsEnabled, flyByWireEnabled, elacDisabled,
+  bool success = simConnectInterface.connect(clientDataEnabled, autopilotStateMachineEnabled, autopilotLawsEnabled, flyByWireEnabled, elacDisabled,
                                      secDisabled, facDisabled, throttleAxis, spoilersHandler, flightControlsKeyChangeAileron,
                                      flightControlsKeyChangeElevator, flightControlsKeyChangeRudder,
                                      disableXboxCompatibilityRudderAxisPlusMinus, enableRudder2AxisMode, idMinimumSimulationRate->get(),
                                      idMaximumSimulationRate->get(), limitSimulationRateByPerformance);
+
+  // request data
+  if (!simConnectInterface.requestData()) {
+    std::cout << "WASM: Request data failed!" << std::endl;
+    return false;
+  }
+
+  return success;
 }
 
 void FlyByWireInterface::disconnect() {
@@ -797,11 +807,7 @@ bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
   simConnectInterface.setLoggingFlightControlsEnabled(idLoggingFlightControlsEnabled->get() == 1);
   simConnectInterface.setLoggingThrottlesEnabled(idLoggingThrottlesEnabled->get() == 1);
 
-  // request data
-  if (!simConnectInterface.requestData()) {
-    std::cout << "WASM: Request data failed!" << std::endl;
-    return false;
-  }
+
 
   // read data
   if (!simConnectInterface.readData()) {

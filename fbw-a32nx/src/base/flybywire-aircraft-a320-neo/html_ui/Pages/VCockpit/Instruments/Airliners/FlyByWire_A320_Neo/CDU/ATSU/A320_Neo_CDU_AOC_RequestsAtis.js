@@ -170,6 +170,7 @@ class CDUAocRequestsAtis {
 
             mcdu.atsu.receiveAocAtis(store.selected, store.requestId, onRequestSent).then((retval) => {
                 if (retval[0] === AtsuCommon.AtsuStatusCodes.Ok) {
+                    retval[1].Confirmed = store.formatID === 0
                     mcdu.atsu.registerMessages([retval[1]]);
                     store.sendStatus = "";
                     if (mcdu.page.Current === mcdu.page.AOCRequestAtis) {
@@ -178,8 +179,7 @@ class CDUAocRequestsAtis {
 
                     // print the message
                     if (store.formatID === 0) {
-                        mcdu.atsu.messageRead(retval[1].UniqueMessageID, true);
-                        mcdu.atsu.printMessage(retval[1]);
+                        mcdu.atsu.printAocAtis(retval[1]);
                     }
                 } else {
                     mcdu.addNewAtsuMessage(retval[0]);
