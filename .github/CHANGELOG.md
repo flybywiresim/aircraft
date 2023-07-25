@@ -27,7 +27,8 @@
 1. [FLIGHTMODEL] Fix outer to inner tank transfer valve closure - @donstim (donbikes)
 1. [SD] Corrected thickness and position of lower ECAM fuel page lines - @robertxing2004 (robeet)
 1. [SD] Corrected position of outer tank fuel quantity values - @robertxing2004 (robeet)
-1. [COMMS] Enabled all components of comms panels. Shared cockpit. - @Julian [Z+2 fr en esp]#8476 (Julian Sebline)
+1. [ISIS] Fixed the ISIS alt tape order for negative altitudes - @aweissoertel (Alex)
+1. [COMMS] Enabled all components of comms panels - @Julian [Z+2 fr en esp]#8476 (Julian Sebline)
 
 ## 0.10.0
 

@@ -40,7 +40,7 @@ export class VerticalTape extends DisplayComponent<VerticalTapeProps> {
 
                     const tickRef = FSComponent.createRef<SVGGElement>();
                     graduationPoints.push(
-                        <g ref={tickRef} transform={`translate(0 ${offset})`}>
+                        <g ref={tickRef} style={`transform: translate3d(0px, ${offset}px, 0px)`}>
                             <path class="NormalStroke White" d="m19.031 80.818h-2.8206" />
                             <text class="FontMedium MiddleAlign White" x="8.0348943" y="82.936722">{text}</text>
                         </g>,
@@ -77,7 +77,7 @@ export class VerticalTape extends DisplayComponent<VerticalTapeProps> {
                     const tickRef = FSComponent.createRef<SVGGElement>();
 
                     graduationPoints.push(
-                        <g ref={tickRef} transform={`translate(0 ${offset}`}>
+                        <g ref={tickRef} style={`transform: translate3d(0px, ${offset}px, 0px`}>
                             <path class="NormalStroke White HiddenElement" d="m115.79 81.889 1.3316-1.0783-1.3316-1.0783" />
                             <path class="NormalStroke White" d="m130.85 80.819h-2.0147" />
                             <text class="FontMedium MiddleAlign White" x="123.28826" y="82.64006">{text}</text>
@@ -109,7 +109,7 @@ export class VerticalTape extends DisplayComponent<VerticalTapeProps> {
                     const offset = -elementValue * this.props.distanceSpacing / this.props.valueSpacing;
                     const element = { elementValue, offset };
                     if (element) {
-                        this.tickRefs[i].instance.setAttribute('transform', `translate(0 ${offset})`);
+                        this.tickRefs[i].instance.style.transform = `translate3d(0px, ${offset}px, 0px)`;
 
                         let text = '';
                         if (this.props.type === 'speed') {
