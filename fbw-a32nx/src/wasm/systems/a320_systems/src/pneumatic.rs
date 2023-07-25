@@ -679,7 +679,7 @@ impl BleedMonitoringComputerChannel {
                 Self::PRESSURE_REGULATING_VALVE_DUAL_BLEED_CONFIG_TARGET_PSI,
                 1.,
             ),
-            fan_air_valve_pid: PidController::new(-0.0001, -0.0001, 0., 0., 1., 200., 1.),
+            fan_air_valve_pid: PidController::new(-0.02, 0., 0., 0., 1., 200., 1.),
             cross_bleed_valve_selector: CrossBleedValveSelectorMode::Auto,
             should_use_ip_vs_hp_valve: false,
             overheat_monitor: BleedOverheatMonitor::new(),
@@ -761,7 +761,9 @@ impl BleedMonitoringComputerChannel {
 
         if let Some(precooler_outlet_temperature) = sensors.bleed_temperature_sensor_temperature() {
             self.fan_air_valve_pid.next_control_output(
-                precooler_outlet_temperature.get::<degree_celsius>(),
+                precooler_outlet_temperature
+                    .get::<degree_celsius>()
+                    .max(self.fan_air_valve_pid.setpoint()),
                 Some(context.delta()),
             );
 
@@ -1160,7 +1162,7 @@ impl EngineBleedAirSystem {
             ),
             engine_starter_exhaust: PneumaticExhaust::new(5., 5., Pressure::new::<psi>(0.)),
             engine_starter_valve: DefaultValve::new_closed(),
-            precooler: Precooler::new(180. * 2.),
+            precooler: Precooler::new(900. * 2.),
             transfer_pressure_transducer: PressureTransducer::new(powered_by),
             regulated_pressure_transducer: PressureTransducer::new(powered_by),
             differential_pressure_transducer: DifferentialPressureTransducer::new(powered_by),
