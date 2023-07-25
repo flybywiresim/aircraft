@@ -92,13 +92,9 @@ export class Horizon extends DisplayComponent<HorizonProps> {
 
     private rollGroupRef = FSComponent.createRef<SVGGElement>();
 
-    private pitchProtSymbolUpper = FSComponent.createRef<SVGGElement>();
+    private pitchProtActiveVisibility = Subject.create('visible');
 
-    private pitchProtSymbolLower = FSComponent.createRef<SVGGElement>();
-
-    private pitchProtLostSymbolUpper = FSComponent.createRef<SVGGElement>();
-
-    private pitchProtLostSymbolLower = FSComponent.createRef<SVGGElement>();
+    private pitchProtLostVisibility = Subject.create('hidden');
 
     private yOffset = Subject.create(0);
 
@@ -129,14 +125,11 @@ export class Horizon extends DisplayComponent<HorizonProps> {
             }
         });
 
-        apfd.on('fcdcDiscreteWord1').whenArinc429SsmChanged().handle((fcdcWord1) => {
+        apfd.on('fcdcDiscreteWord1').handle((fcdcWord1) => {
             const isNormalLawActive = fcdcWord1.getBitValue(11) && !fcdcWord1.isFailureWarning();
 
-            this.pitchProtSymbolLower.instance.style.display = isNormalLawActive ? 'block' : 'none';
-            this.pitchProtSymbolUpper.instance.style.display = isNormalLawActive ? 'block' : 'none';
-
-            this.pitchProtLostSymbolLower.instance.style.display = !isNormalLawActive ? 'block' : 'none';
-            this.pitchProtLostSymbolUpper.instance.style.display = !isNormalLawActive ? 'block' : 'none';
+            this.pitchProtActiveVisibility.set(isNormalLawActive ? 'visible' : 'hidden');
+            this.pitchProtLostVisibility.set(!isNormalLawActive ? 'visible' : 'hidden');
         });
     }
 
@@ -176,19 +169,19 @@ export class Horizon extends DisplayComponent<HorizonProps> {
                         <path d="m47.906-19.177h42h0" />
                     </g>
 
-                    <g id="PitchProtUpper" ref={this.pitchProtSymbolUpper} style="display: none" class="NormalStroke Green">
+                    <g id="PitchProtUpper" visibility={this.pitchProtActiveVisibility} class="NormalStroke Green">
                         <path d="m51.506 31.523h4m-4-1.4h4" />
                         <path d="m86.306 31.523h-4m4-1.4h-4" />
                     </g>
-                    <g id="PitchProtLostUpper" ref={this.pitchProtLostSymbolUpper} style="display: none" class="NormalStroke Amber">
+                    <g id="PitchProtLostUpper" visibility={this.pitchProtLostVisibility} class="NormalStroke Amber">
                         <path d="m52.699 30.116 1.4142 1.4142m-1.4142 0 1.4142-1.4142" />
                         <path d="m85.114 31.53-1.4142-1.4142m1.4142 0-1.4142 1.4142" />
                     </g>
-                    <g id="PitchProtLower" ref={this.pitchProtSymbolLower} style="display: none" class="NormalStroke Green">
+                    <g id="PitchProtLower" visibility={this.pitchProtActiveVisibility} class="NormalStroke Green">
                         <path d="m59.946 104.52h4m-4-1.4h4" />
                         <path d="m77.867 104.52h-4m4-1.4h-4" />
                     </g>
-                    <g id="PitchProtLostLower" ref={this.pitchProtLostSymbolLower} style="display: none" class="NormalStroke Amber">
+                    <g id="PitchProtLostLower" visibility={this.pitchProtLostVisibility} class="NormalStroke Amber">
                         <path d="m61.199 103.12 1.4142 1.4142m-1.4142 0 1.4142-1.4142" />
                         <path d="m76.614 104.53-1.4142-1.4142m1.4142 0-1.4142 1.4142" />
                     </g>
