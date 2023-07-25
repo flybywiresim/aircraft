@@ -2680,7 +2680,7 @@ export class PseudoFWC {
             sysPage: -1,
             side: 'RIGHT',
         },
-        '0000280': // AUDIO SWITCHING KNOB
+        '0000280': // AUDIO 3 XFRD
         {
             flightPhaseInhib: [],
             simVarIsActive: this.audioSwitchingKnob.map((v) => v !== 1),
