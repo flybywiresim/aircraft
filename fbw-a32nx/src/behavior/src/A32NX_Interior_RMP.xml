@@ -66,9 +66,17 @@
 
         <!-- Panel transfer button -->
         <!-- Force COM3_RADIO_SET_HZ to 0 to show "DATA" at startup -->
+         <!-- Force NAV volume to 0 due to default value being 100.
+         Needed for the morse volume as default ident cannot be overidden -->
         <Component ID="RMP_TRANSFER_BUTTON_#SIDE#" Node="PUSH_RADIO#SIDE#_ARROWS">
             <Update Once="True">
                 0 (&gt;K:COM3_RADIO_SET_HZ)
+                0 (&gt;K:ADF_VOLUME_SET)
+                0 (&gt;K:ADF2_VOLUME_SET)
+                0 (&gt;K:NAV1_VOLUME_SET_EX1)
+                0 (&gt;K:NAV2_VOLUME_SET_EX1)
+                0 (&gt;K:NAV3_VOLUME_SET_EX1)
+                0 (&gt;K:NAV4_VOLUME_SET_EX1)
             </Update>
             <UseTemplate Name="FBW_Anim_Interactions">
                 <ANIM_TYPE>BUTTON</ANIM_TYPE>
