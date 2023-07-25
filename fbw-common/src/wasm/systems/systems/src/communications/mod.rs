@@ -171,12 +171,12 @@ impl Communications {
             volume_com1_id: context.get_identifier("VHF1_VOLUME".to_owned()),
             volume_com2_id: context.get_identifier("VHF2_VOLUME".to_owned()),
             volume_com3_id: context.get_identifier("VHF3_VOLUME".to_owned()),
-            volume_adf1_id: context.get_identifier("ADF1_VOLUME".to_owned()),
-            volume_adf2_id: context.get_identifier("ADF2_VOLUME".to_owned()),
-            volume_vor1_id: context.get_identifier("VOR1_VOLUME".to_owned()),
-            volume_vor2_id: context.get_identifier("VOR2_VOLUME".to_owned()),
-            volume_ils_id: context.get_identifier("ILS_VOLUME".to_owned()),
-            volume_gls_id: context.get_identifier("GLS_VOLUME".to_owned()),
+            volume_adf1_id: context.get_identifier("ADF_VOLUME:1".to_owned()),
+            volume_adf2_id: context.get_identifier("ADF_VOLUME:2".to_owned()),
+            volume_vor1_id: context.get_identifier("NAV_VOLUME:1".to_owned()),
+            volume_vor2_id: context.get_identifier("NAV_VOLUME:2".to_owned()),
+            volume_ils_id: context.get_identifier("NAV_VOLUME:3".to_owned()),
+            volume_gls_id: context.get_identifier("NAV_VOLUME:4".to_owned()),
             volume_markers_id: context.get_identifier("MKR_VOLUME".to_owned()),
 
             // FOR FUTURE USE: Not needed for the time being as there's no K event for all this
