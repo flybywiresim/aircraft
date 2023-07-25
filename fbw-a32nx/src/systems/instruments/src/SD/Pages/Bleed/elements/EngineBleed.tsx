@@ -21,9 +21,12 @@ interface EngineBleedProps {
 }
 
 const EngineBleed: FC<EngineBleedProps> = ({ x, y, engine, sdacDatum, enginePRValveOpen, packFlowValveOpen, onGround, wingAntiIceOn, wingAntiIceTimer }) => {
+    // TODO: Should come from ECU
     const [engineN1] = useSimVar(`L:A32NX_ENGINE_N1:${engine}`, 'percent', 100);
     const [engineN1Idle] = useSimVar('L:A32NX_ENGINE_IDLE_N1', 'percent', 500);
     const engineN1BelowIdle = (engineN1 + 2) < engineN1Idle;
+    const [engineN1BelowIdleValid] = useSimVar(`L:A32NX_FADEC_POWERED_ENG${engine}`, 'bool', 500);
+
     const [engineHPValveOpen] = useSimVar(`L:A32NX_PNEU_ENG_${engine}_HP_VALVE_OPEN`, 'bool', 500);
     const [precoolerOutletTemp] = useSimVar(`L:A32NX_PNEU_ENG_${engine}_BLEED_TEMPERATURE_SENSOR_TEMPERATURE`, 'celsius', 100);
 
@@ -116,7 +119,7 @@ const EngineBleed: FC<EngineBleedProps> = ({ x, y, engine, sdacDatum, enginePRVa
             <text x={engine === 1 ? x + 95 : x - 90} y={y + 433} className="White Center Standard">HP</text>
             <path className={engineHPValveOpen === 1 || !sdacDatum ? 'GreenLine' : 'Hide'} d={`M ${engine === 1 ? x + 33 : x - 33},${y + 398} l ${engine === 1 ? '-33' : '33'},0`} />
 
-            <text x={engine === 1 ? x - 61 : x + 58} y={423} className={`Huge ${engineN1BelowIdle ? 'Amber' : 'White'}`}>{engine}</text>
+            <text x={engine === 1 ? x - 61 : x + 58} y={423} className={`Huge ${engineN1BelowIdle && engineN1BelowIdleValid ? 'Amber' : 'White'}`}>{engine}</text>
         </g>
     );
 };

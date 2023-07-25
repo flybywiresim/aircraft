@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import React, { FC } from 'react';
+import React, { FC, useEffect, useState } from 'react';
 import { useSimVar } from '@flybywiresim/fbw-sdk';
 import { PageTitle } from '../../Common/PageTitle';
 import { EcamPage } from '../../Common/EcamPage';
@@ -12,6 +12,25 @@ import APUValve from './elements/APUValve';
 import { Triangle } from '../../Common/Shapes';
 
 import './Bleed.scss';
+
+const useConfirmedState = (state: boolean, confirmationTime: number, initialState: boolean = false) => {
+    const [confirmedState, setConfirmedState] = useState(initialState);
+
+    useEffect(() => {
+        if (state) {
+            const timeout = setTimeout(() => {
+                setConfirmedState(true);
+            }, confirmationTime);
+
+            return () => clearTimeout(timeout);
+        }
+        setConfirmedState(false);
+
+        return () => {};
+    }, [state]);
+
+    return confirmedState;
+};
 
 export const BleedPage: FC = () => {
     const sdacDatum = true;
@@ -27,17 +46,22 @@ export const BleedPage: FC = () => {
     }
 
     const [engine1PRValveOpen] = useSimVar('L:A32NX_PNEU_ENG_1_PR_VALVE_OPEN', 'bool', 500);
+    const engine1PRValveFullyClosed5s = useConfirmedState(!engine1PRValveOpen, 5_000);
     const [engine2PRValveOpen] = useSimVar('L:A32NX_PNEU_ENG_2_PR_VALVE_OPEN', 'bool', 500);
+    const engine2PRValveFullyClosed5s = useConfirmedState(!engine2PRValveOpen, 5_000);
     const [apuBleedAirValveOpen] = useSimVar('L:A32NX_APU_BLEED_AIR_VALVE_OPEN', 'bool', 500);
     const [apuMasterSwitchOn] = useSimVar('L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON', 'bool', 500);
     const [apuIsAvailable] = useSimVar('L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE', 'bool', 500);
     const [packFlowValve1Open] = useSimVar('L:A32NX_COND_PACK_FLOW_VALVE_1_IS_OPEN', 'bool', 500);
     const [packFlowValve2Open] = useSimVar('L:A32NX_COND_PACK_FLOW_VALVE_2_IS_OPEN', 'bool', 500);
     const [ramAirToggle] = useSimVar('L:A32NX_AIRCOND_RAMAIR_TOGGLE', 'bool', 500);
+    const leftPrValveLowRegulation = false; // TODO: Implement
+    const rightPrValveLowRegulation = false; // TODO: Implement
 
-    const leftVerticalDuctColour = (xbleedAirValveFullyClosed && (!apuBleedAirValveOpen || (!apuMasterSwitchOn && !apuIsAvailable)) && !engine1PRValveOpen) && sdacDatum ? 'Amber' : 'Green';
+    const leftVerticalDuctColour = (xbleedAirValveFullyClosed
+        && (!apuBleedAirValveOpen || (!apuMasterSwitchOn && !apuIsAvailable)) && !engine1PRValveOpen && leftPrValveLowRegulation) && sdacDatum ? 'Amber' : 'Green';
     const leftHorizontalDuct = xbleedAirValveFullyClosed && (!apuBleedAirValveOpen || (!apuMasterSwitchOn && !apuIsAvailable)) ? 'Hide' : 'GreenLine';
-    const rightVerticalDuctColour = (xbleedAirValveFullyClosed && !engine2PRValveOpen) && sdacDatum ? 'Amber' : 'Green';
+    const rightVerticalDuctColour = (xbleedAirValveFullyClosed && !engine2PRValveOpen && rightPrValveLowRegulation) && sdacDatum ? 'Amber' : 'Green';
     const indicationBleedUsers = !packFlowValve1Open && !packFlowValve2Open && ramAirToggle === 0 ? 'Amber' : 'Green';
 
     const [left1LandingGear] = useSimVar('L:A32NX_LGCIU_1_LEFT_GEAR_COMPRESSED', 'bool', 1000);
@@ -46,8 +70,6 @@ export const BleedPage: FC = () => {
 
     const [wingAntiIceOn] = useSimVar('L:A32NX_PNEU_WING_ANTI_ICE_SYSTEM_ON', 'bool', 500);
     const [wingAntiIceTimer] = useSimVar('L:A32NX_PNEU_WING_ANTI_ICE_GROUND_TIMER', 'number', 1000);
-
-    const groundAirSupplied = false;
 
     return (
         <EcamPage name="main-bleed">
@@ -91,7 +113,7 @@ export const BleedPage: FC = () => {
                 y={62}
                 engine={1}
                 sdacDatum={sdacDatum}
-                enginePRValveOpen={engine1PRValveOpen}
+                enginePRValveOpen={!engine1PRValveFullyClosed5s}
                 packFlowValveOpen={packFlowValve1Open}
                 onGround={aircraftOnGround}
                 wingAntiIceOn={wingAntiIceOn === 1}
@@ -102,7 +124,7 @@ export const BleedPage: FC = () => {
                 y={62}
                 engine={2}
                 sdacDatum={sdacDatum}
-                enginePRValveOpen={engine2PRValveOpen}
+                enginePRValveOpen={!engine2PRValveFullyClosed5s}
                 packFlowValveOpen={packFlowValve2Open}
                 onGround={aircraftOnGround}
                 wingAntiIceOn={wingAntiIceOn === 1}
@@ -110,7 +132,7 @@ export const BleedPage: FC = () => {
             />
 
             {/* Ground Supply of Compressed Air */}
-            <g id="CompressedAir" className={groundAirSupplied ? 'Show' : 'Hide'}>
+            <g id="CompressedAir" className={aircraftOnGround ? 'Show' : 'Hide'}>
                 <Triangle x={248} y={274} colour="White" orientation={0} fill={0} scale={0.75} />
                 <text className="Medium White Center" x={250} y={306}>GND</text>
             </g>
