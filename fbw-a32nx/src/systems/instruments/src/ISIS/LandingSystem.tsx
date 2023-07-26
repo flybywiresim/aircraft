@@ -31,7 +31,7 @@ const DeviationIndicator: React.FC<DeviationIndicatorProps> = ({ deviation, avai
                 </g>
             )
             || belowMinimum
-            && (// TODO:change size and location of magenta markers
+            && (
                 <path className="FillMagenta" d="M 0.75 9.1 v 0.8 l 8.3443 6.7 h 5.0066 v -15 h -5.0066 l -8.3443 6.7 z" />
             )
              || aboveMaximum
