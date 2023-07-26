@@ -1,7 +1,11 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { FbwAircraftSentryClient } from '@sentry/FbwAircraftSentryClient';
-import * as Defaults from './defaults';
+import { getRenderTarget } from '@flybywiresim/fbw-sdk';
 
 declare const process: any;
 
@@ -17,7 +21,7 @@ export const render = (Slot: React.ReactElement, enableSentryTracing = false, se
             root: sentryRootClient,
         });
 
-        ReactDOM.render(Slot, Defaults.getRenderTarget());
+        ReactDOM.render(Slot, getRenderTarget());
     };
 
     if (process.env.VITE_BUILD) {

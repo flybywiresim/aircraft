@@ -4,14 +4,6 @@
 /// SimConnect data types to send to Sim Updated
 /// </summary>
 enum DataTypesID {
-  PayloadStation1,
-  PayloadStation2,
-  PayloadStation3,
-  PayloadStation4,
-  PayloadStation5,
-  PayloadStation6,
-  PayloadStation7,
-  PayloadStation8,
   FuelLeftMain,
   FuelRightMain,
   FuelCenterMain,
@@ -106,8 +98,6 @@ class SimVars {
 
   ENUM NacelleAntiIce = get_aircraft_var_enum("ENG ANTI ICE");
 
-  ENUM PayloadStationWeights = get_aircraft_var_enum("PAYLOAD STATION WEIGHT");
-
   /// <summary>
   /// Collection of LVars for the A32NX
   /// </summary>
@@ -126,8 +116,12 @@ class SimVars {
   ID Engine2EGT;
   ID Engine1Oil;
   ID Engine2Oil;
-  ID Engine1TotalOil;
-  ID Engine2TotalOil;
+  ID Engine1OilTotal;
+  ID Engine2OilTotal;
+  ID Engine1VibN1;
+  ID Engine2VibN1;
+  ID Engine1VibN2;
+  ID Engine2VibN2;
   ID Engine1FF;
   ID Engine2FF;
   ID Engine1PreFF;
@@ -177,10 +171,14 @@ class SimVars {
     EngineIdleEGT = register_named_variable("A32NX_ENGINE_IDLE_EGT");
     Engine1EGT = register_named_variable("A32NX_ENGINE_EGT:1");
     Engine2EGT = register_named_variable("A32NX_ENGINE_EGT:2");
-    Engine1Oil = register_named_variable("A32NX_ENGINE_TANK_OIL:1");
-    Engine2Oil = register_named_variable("A32NX_ENGINE_TANK_OIL:2");
-    Engine1TotalOil = register_named_variable("A32NX_ENGINE_TOTAL_OIL:1");
-    Engine2TotalOil = register_named_variable("A32NX_ENGINE_TOTAL_OIL:2");
+    Engine1Oil = register_named_variable("A32NX_ENGINE_OIL_QTY:1");
+    Engine2Oil = register_named_variable("A32NX_ENGINE_OIL_QTY:2");
+    Engine1OilTotal = register_named_variable("A32NX_ENGINE_OIL_TOTAL:1");
+    Engine2OilTotal = register_named_variable("A32NX_ENGINE_OIL_TOTAL:2");
+    Engine1VibN1 = register_named_variable("A32NX_ENGINE_VIB_N1:1");
+    Engine2VibN1 = register_named_variable("A32NX_ENGINE_VIB_N1:2");
+    Engine1VibN2 = register_named_variable("A32NX_ENGINE_VIB_N2:1");
+    Engine2VibN2 = register_named_variable("A32NX_ENGINE_VIB_N2:2");				
     Engine1FF = register_named_variable("A32NX_ENGINE_FF:1");
     Engine2FF = register_named_variable("A32NX_ENGINE_FF:2");
     Engine1PreFF = register_named_variable("A32NX_ENGINE_PRE_FF:1");
@@ -226,8 +224,12 @@ class SimVars {
     this->setEngine2EGT(0);
     this->setEngine1Oil(0);
     this->setEngine2Oil(0);
-    this->setEngine1TotalOil(0);
-    this->setEngine2TotalOil(0);
+    this->setEngine1OilTotal(0);
+    this->setEngine2OilTotal(0);
+    this->setEngine1VibN1(0);
+    this->setEngine2VibN1(0);
+    this->setEngine1VibN2(0);
+    this->setEngine2VibN2(0);
     this->setEngine1FF(0);
     this->setEngine2FF(0);
     this->setEngine1PreFF(0);
@@ -269,8 +271,12 @@ class SimVars {
   void setEngine2EGT(FLOAT64 value) { set_named_variable_value(Engine2EGT, value); }
   void setEngine1Oil(FLOAT64 value) { set_named_variable_value(Engine1Oil, value); }
   void setEngine2Oil(FLOAT64 value) { set_named_variable_value(Engine2Oil, value); }
-  void setEngine1TotalOil(FLOAT64 value) { set_named_variable_value(Engine1TotalOil, value); }
-  void setEngine2TotalOil(FLOAT64 value) { set_named_variable_value(Engine2TotalOil, value); }
+  void setEngine1OilTotal(FLOAT64 value) { set_named_variable_value(Engine1OilTotal, value); }
+  void setEngine2OilTotal(FLOAT64 value) { set_named_variable_value(Engine2OilTotal, value); }
+  void setEngine1VibN1(FLOAT64 value) { set_named_variable_value(Engine1VibN1, value); }
+  void setEngine2VibN1(FLOAT64 value) { set_named_variable_value(Engine2VibN1, value); }
+  void setEngine1VibN2(FLOAT64 value) { set_named_variable_value(Engine1VibN2, value); }
+  void setEngine2VibN2(FLOAT64 value) { set_named_variable_value(Engine2VibN2, value); }
   void setEngine1FF(FLOAT64 value) { set_named_variable_value(Engine1FF, value); }
   void setEngine2FF(FLOAT64 value) { set_named_variable_value(Engine2FF, value); }
   void setEngine1PreFF(FLOAT64 value) { set_named_variable_value(Engine1PreFF, value); }
@@ -313,8 +319,12 @@ class SimVars {
   FLOAT64 getEngine2EGT() { return get_named_variable_value(Engine2EGT); }
   FLOAT64 getEngine1Oil() { return get_named_variable_value(Engine1Oil); }
   FLOAT64 getEngine2Oil() { return get_named_variable_value(Engine2Oil); }
-  FLOAT64 getEngine1TotalOil() { return get_named_variable_value(Engine1TotalOil); }
-  FLOAT64 getEngine2TotalOil() { return get_named_variable_value(Engine2TotalOil); }
+  FLOAT64 getEngine1OilTotal() { return get_named_variable_value(Engine1OilTotal); }
+  FLOAT64 getEngine2OilTotal() { return get_named_variable_value(Engine2OilTotal); }
+  FLOAT64 getEngine1VibN1() { return get_named_variable_value(Engine1VibN1); }
+  FLOAT64 getEngine2VibN1() { return get_named_variable_value(Engine2VibN1); }
+  FLOAT64 getEngine1VibN2() { return get_named_variable_value(Engine1VibN2); }
+  FLOAT64 getEngine2VibN2() { return get_named_variable_value(Engine2VibN2); }  
   FLOAT64 getEngine1PreFF() { return get_named_variable_value(Engine1PreFF); }
   FLOAT64 getEngine2PreFF() { return get_named_variable_value(Engine2PreFF); }
   FLOAT64 getEngineImbalance() { return get_named_variable_value(EngineImbalance); }
@@ -366,7 +376,6 @@ class SimVars {
   FLOAT64 getEngineCombustion(int index) { return aircraft_varget(EngineCombustion, m_Units->Bool, index); }
   FLOAT64 getAnimDeltaTime() { return aircraft_varget(animDeltaTime, m_Units->Seconds, 0); }
   FLOAT64 getNAI(int index) { return aircraft_varget(NacelleAntiIce, m_Units->Bool, index); }
-  FLOAT64 getPayloadStationWeight(int index) { return aircraft_varget(PayloadStationWeights, m_Units->Pounds, index); }
   FLOAT64 getPump(int index) { return aircraft_varget(FuelPump, m_Units->Number, index); }
   FLOAT64 getValve(int index) { return aircraft_varget(FuelValve, m_Units->Number, index); }
   FLOAT64 getLineFlow(int index) { return aircraft_varget(FuelLineFlow, m_Units->Gph, index); }

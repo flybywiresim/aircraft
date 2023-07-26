@@ -1,7 +1,10 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import React, { useEffect, useState } from 'react';
-import { useSimVar } from '@instruments/common/simVars';
+import { useSimVar, useArinc429Var } from '@flybywiresim/fbw-sdk';
 import { EfisNdMode, EfisSide, NavAidMode } from '@shared/NavigationDisplay';
-import { useArinc429Var } from '@instruments/common/arinc429';
 
 export type RadioNavInfoProps = {
     index: 1 | 2,

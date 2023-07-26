@@ -1,7 +1,10 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { FSComponent, DisplayComponent, ComponentProps, Subject, Subscribable, VNode, EventBus } from '@microsoft/msfs-sdk';
-import { Arinc429WordData } from '@shared/arinc429';
+import { Arinc429WordData, MathUtils } from '@flybywiresim/fbw-sdk';
 import { rangeSettings } from '@shared/NavigationDisplay';
-import { MathUtils } from '@shared/MathUtils';
 import { TcasSimVars } from 'instruments/src/MsfsAvionicsCommon/providers/TcasBusPublisher';
 import { FcuSimVars } from 'instruments/src/MsfsAvionicsCommon/providers/FcuBusPublisher';
 

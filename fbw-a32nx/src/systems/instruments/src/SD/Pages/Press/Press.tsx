@@ -1,10 +1,13 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import React, { FC, useState, useEffect, memo } from 'react';
 import { GaugeComponent, GaugeMarkerComponent, splitDecimals } from '@instruments/common/gauges';
-import { MathUtils } from '@shared/MathUtils';
+import { MathUtils, useSimVar } from '@flybywiresim/fbw-sdk';
 import { Triangle } from '../../Common/Shapes';
 import { PageTitle } from '../../Common/PageTitle';
 import { EcamPage } from '../../Common/EcamPage';
-import { useSimVar } from '../../../Common/simVars';
 import { SvgGroup } from '../../Common/SvgGroup';
 
 import './Press.scss';

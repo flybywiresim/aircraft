@@ -1,5 +1,9 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { FSComponent, DisplayComponent, EventBus, VNode, MappedSubject, Subscribable, ConsumerSubject, Subject } from '@microsoft/msfs-sdk';
-import { MathUtils } from '@shared/MathUtils';
+import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { ArmedLateralMode, isArmed, LateralMode } from '@shared/autopilot';
 import { DmcEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 import { EfisNdMode } from '@shared/NavigationDisplay';

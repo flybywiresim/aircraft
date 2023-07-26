@@ -1,5 +1,9 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import React, { useEffect, useState } from 'react';
-import { usePersistentProperty } from '@instruments/common/persistence';
+import { usePersistentProperty } from '@flybywiresim/fbw-sdk';
 import { ArrowDown, ArrowUp, PencilFill } from 'react-bootstrap-icons';
 import { t } from '../../translation';
 import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';

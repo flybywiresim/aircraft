@@ -6,6 +6,7 @@ use uom::si::{
 };
 
 use crate::{
+    failures::{Failure, FailureType},
     shared::{
         calculate_towards_target_temperature, EngineCorrectedN2, EngineFirePushButtons,
         PowerConsumptionReport,
@@ -32,6 +33,7 @@ pub struct EngineGenerator {
     output_frequency: Frequency,
     output_potential: ElectricPotential,
     load: Ratio,
+    failure: Failure,
 }
 impl EngineGenerator {
     pub fn new(context: &mut InitContext, number: usize) -> EngineGenerator {
@@ -43,6 +45,7 @@ impl EngineGenerator {
             output_frequency: Frequency::new::<hertz>(0.),
             output_potential: ElectricPotential::new::<volt>(0.),
             load: Ratio::new::<percent>(0.),
+            failure: Failure::new(FailureType::Generator(number)),
         }
     }
 
@@ -68,7 +71,7 @@ impl EngineGenerator {
     }
 
     fn should_provide_output(&self) -> bool {
-        self.idg.provides_stable_power_output()
+        self.idg.provides_stable_power_output() && !self.failure.is_active()
     }
 }
 impl ElectricitySource for EngineGenerator {
@@ -102,6 +105,7 @@ impl ElectricalElement for EngineGenerator {
 impl SimulationElement for EngineGenerator {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.idg.accept(visitor);
+        self.failure.accept(visitor);
 
         visitor.visit(self);
     }

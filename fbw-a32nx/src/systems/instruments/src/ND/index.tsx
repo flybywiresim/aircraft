@@ -1,10 +1,11 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import React, { useEffect, useRef, useCallback, useState } from 'react';
 import { DisplayUnit } from '@instruments/common/displayUnit';
 import { FlightPlanProvider } from '@instruments/common/flightplan';
-import { useSimVar } from '@instruments/common/simVars';
-import { useArinc429Var } from '@instruments/common/arinc429';
-import { getSupplier } from '@instruments/common/utils';
-import { useFlowSyncEvent } from '@instruments/common/hooks';
+import { useSimVar, useArinc429Var, useFlowSyncEvent, getSupplier } from '@flybywiresim/fbw-sdk';
 import { EfisNdMode, NdSymbol, rangeSettings } from '@shared/NavigationDisplay';
 import { TerrainMapThresholds } from './elements/TerrainMapThresholds';
 import { render } from '../Common';

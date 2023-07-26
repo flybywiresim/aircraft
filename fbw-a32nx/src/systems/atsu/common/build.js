@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 'use strict';
 
 const esbuild = require('esbuild');
@@ -13,7 +17,7 @@ esbuild.build({
 
     define: { DEBUG: 'false' },
 
-    entryPoints: [ path.join(rootDir,  '../fbw-common/src/systems/datalink/common/src/index.ts')],
+    entryPoints: [path.join(rootDir, '../fbw-common/src/systems/datalink/common/src/index.ts')],
     bundle: true,
     treeShaking: false,
     minify: isProductionBuild,
@@ -23,7 +27,7 @@ esbuild.build({
     format: 'iife',
     globalName: 'AtsuCommon',
 
-    sourcemap: isProductionBuild ? undefined : 'linked',
+    sourcemap: isProductionBuild ? 'linked' : undefined,
 
     // Target approximate CoherentGT WebKit version
     target: 'safari11',

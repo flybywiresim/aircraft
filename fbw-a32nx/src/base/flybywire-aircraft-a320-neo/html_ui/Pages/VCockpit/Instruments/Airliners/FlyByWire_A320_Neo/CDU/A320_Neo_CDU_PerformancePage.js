@@ -806,7 +806,7 @@ class CDUPerformancePage {
         };
 
         let baroCell = "[\xa0\xa0\xa0]";
-        if (isFinite(mcdu.perfApprMDA)) {
+        if (mcdu.perfApprMDA !== null) {
             baroCell = mcdu.perfApprMDA.toFixed(0);
         }
         mcdu.onRightInput[1] = (value, scratchpadCallback) => {
@@ -823,7 +823,7 @@ class CDUPerformancePage {
         let radioCell = "";
         if (isILS) {
             radioLabel = "RADIO";
-            if (isFinite(mcdu.perfApprDH)) {
+            if (typeof mcdu.perfApprDH === 'number') {
                 radioCell = mcdu.perfApprDH.toFixed(0);
             } else if (mcdu.perfApprDH === "NO DH") {
                 radioCell = "NO DH";
