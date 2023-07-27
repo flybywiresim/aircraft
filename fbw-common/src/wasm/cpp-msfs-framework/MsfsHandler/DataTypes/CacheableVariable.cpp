@@ -46,7 +46,9 @@ void CacheableVariable::set(FLOAT64 value) {
   if (cachedValue.has_value() && cachedValue.value() == value) {
     return;
   }
-  // TODO: should hasChanged be set to true here? Would call all subscribers' callbacks
+  // TODO:
+  //  Should hasChanged be set to true here? Would call all subscribers' callbacks
+  //  Normally this is only done when a changed value is read from the sim0
   cachedValue = value;
   dirty = true;
 }
