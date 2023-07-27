@@ -27,7 +27,10 @@ class CDUFlightPlanPage {
             mcdu.onRightInput[index] = callback;
         }
 
-        function getRunwayInfo(/** @type {import('msfs-navdata').Runway} */ runway) {
+        /**
+         * @param runway {import('msfs-navdata').Runway}
+         */
+        function getRunwayInfo(runway) {
             return ['', ''];
             let runwayText, runwayAlt;
             if (runway) {
@@ -39,8 +42,9 @@ class CDUFlightPlanPage {
 
         function formatAltitudeOrLevel(altitudeToFormat) {
             const activePlan = mcdu.flightPlanService.active;
+            const transitionAltitude = activePlan.performanceData.transitionAltitude.get();
 
-            if (activePlan.performanceData.transitionAltitude.get() >= 100 && altitudeToFormat > mcdu.flightPlanManager.getOriginTransitionAltitude()) {
+            if (transitionAltitude >= 100 && altitudeToFormat > transitionAltitude) {
                 return `FL${(altitudeToFormat / 100).toFixed(0).padStart(3, "0")}`;
             }
 
