@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 function translateAtsuMessageType(type) {
     switch (type) {
         case AtsuCommon.AtsuMessageType.Freetext:
@@ -70,9 +74,9 @@ const getSimBriefOfp = (mcdu, updateView, callback = () => {}) => {
             mcdu.simbrief["bagWeight"] = data.weights.bagWeight;
             mcdu.simbrief["freight"] = data.weights.freight;
             mcdu.simbrief["cargo"] = data.weights.cargo;
-            mcdu.simbrief["costIndex"] = data.general.costindex;
-            mcdu.simbrief["navlog"] = data.navlog.fix;
-            mcdu.simbrief["callsign"] = data.atc.callsign;
+            mcdu.simbrief["costIndex"] = data.costIndex;
+            mcdu.simbrief["navlog"] = data.navlog;
+            mcdu.simbrief["callsign"] = data.flightNumber;
             let alternate = data.alternate;
             if (Array.isArray(data.alternate)) {
                 alternate = data.alternate[0];
