@@ -7,7 +7,7 @@ import { MappedSubject, Subject } from '@microsoft/msfs-sdk';
 
 type VSpeedValue = number | undefined;
 
-type AltitudeValue = number | undefined;
+type AltitudeValue = Feet | undefined;
 
 export class FlightPlanPerformanceData {
     public clone(): FlightPlanPerformanceData {
@@ -43,6 +43,11 @@ export class FlightPlanPerformanceData {
 
         return cloned;
     }
+
+    /**
+     * Cruise FL
+     */
+    readonly cruiseFlightLevel = Subject.create<AltitudeValue>(undefined);
 
     /**
      * V1 speed
@@ -184,7 +189,11 @@ export class FlightPlanPerformanceData {
     /**
      * Missed EO ACC from pilot if entered, otherwise from database
      */
-    readonly missedEngineOutAccelerationAltitude = MappedSubject.create(([db, pilot]) => db ?? pilot, this.defaultMissedEngineOutAccelerationAltitude, this.pilotMissedEngineOutAccelerationAltitude)
+    readonly missedEngineOutAccelerationAltitude = MappedSubject.create(
+        ([db, pilot]) => db ?? pilot,
+        this.defaultMissedEngineOutAccelerationAltitude,
+        this.pilotMissedEngineOutAccelerationAltitude,
+    );
 
     /**
      * Whether missed EO ACC is from the database
@@ -233,6 +242,10 @@ export class FlightPlanPerformanceData {
 
     serialize(): SerializedFlightPlanPerformanceData {
         return {
+            cruiseFlightLevel: this.cruiseFlightLevel.get(),
+            v1: this.v1.get(),
+            vr: this.vr.get(),
+            v2: this.v2.get(),
             pilotThrustReductionAltitude: this.pilotThrustReductionAltitude.get(),
             defaultThrustReductionAltitude: this.defaultThrustReductionAltitude.get(),
             pilotAccelerationAltitude: this.pilotAccelerationAltitude.get(),
@@ -254,27 +267,35 @@ export class FlightPlanPerformanceData {
 }
 
 export interface SerializedFlightPlanPerformanceData {
-    pilotThrustReductionAltitude: number,
-    defaultThrustReductionAltitude: number,
+    cruiseFlightLevel: number | undefined,
 
-    pilotAccelerationAltitude: number,
-    defaultAccelerationAltitude: number,
+    v1: number | undefined,
 
-    pilotEngineOutAccelerationAltitude: number,
-    defaultEngineOutAccelerationAltitude: number,
+    vr: number | undefined,
 
-    pilotMissedThrustReductionAltitude: number,
-    defaultMissedThrustReductionAltitude: number,
+    v2: number | undefined,
 
-    pilotMissedAccelerationAltitude: number,
-    defaultMissedAccelerationAltitude: number,
+    pilotThrustReductionAltitude: number | undefined,
+    defaultThrustReductionAltitude: number | undefined,
 
-    pilotMissedEngineOutAccelerationAltitude: number,
-    defaultMissedEngineOutAccelerationAltitude: number,
+    pilotAccelerationAltitude: number | undefined,
+    defaultAccelerationAltitude: number | undefined,
 
-    databaseTransitionAltitude: number,
-    pilotTransitionAltitude: number,
+    pilotEngineOutAccelerationAltitude: number | undefined,
+    defaultEngineOutAccelerationAltitude: number | undefined,
 
-    databaseTransitionLevel: number,
-    pilotTransitionLevel: number,
+    pilotMissedThrustReductionAltitude: number | undefined,
+    defaultMissedThrustReductionAltitude: number | undefined,
+
+    pilotMissedAccelerationAltitude: number | undefined,
+    defaultMissedAccelerationAltitude: number | undefined,
+
+    pilotMissedEngineOutAccelerationAltitude: number | undefined,
+    defaultMissedEngineOutAccelerationAltitude: number | undefined,
+
+    databaseTransitionAltitude: number | undefined,
+    pilotTransitionAltitude: number | undefined,
+
+    databaseTransitionLevel: number | undefined,
+    pilotTransitionLevel: number | undefined,
 }

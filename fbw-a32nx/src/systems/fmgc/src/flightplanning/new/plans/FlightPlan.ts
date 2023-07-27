@@ -5,13 +5,14 @@
 
 import { Airport, ApproachType, Fix } from 'msfs-navdata';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/new/plans/AlternateFlightPlan';
-import { EventBus, MagVar } from '@microsoft/msfs-sdk';
+import { EventBus, MagVar, UnitType } from '@microsoft/msfs-sdk';
 import { FixInfoEntry } from '@fmgc/flightplanning/new/plans/FixInfo';
 import { loadAllDepartures, loadAllRunways } from '@fmgc/flightplanning/new/DataLoading';
 import { Coordinates, Degrees } from 'msfs-geo';
 import { FlightPlanLeg, FlightPlanLegFlags } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { FlightArea } from '@fmgc/navigation/FlightArea';
+import { NXDataStore } from '@flybywiresim/fbw-sdk';
 import { FlightPlanPerformanceData } from './performance/FlightPlanPerformanceData';
 import { BaseFlightPlan, FlightPlanQueuedOperation, SerializedFlightPlan } from './BaseFlightPlan';
 
@@ -274,6 +275,66 @@ export class FlightPlan extends BaseFlightPlan {
         }
 
         return FlightArea.Enroute;
+    }
+
+    async setOriginAirport(icao: string): Promise<void> {
+        await super.setOriginAirport(icao);
+
+        FlightPlan.setOriginDefaultPerformanceData(this, this.originAirport);
+    }
+
+    async setDestinationAirport(icao: string | undefined): Promise<void> {
+        await super.setDestinationAirport(icao);
+
+        FlightPlan.setDestinationDefaultPerformanceData(this, this.destinationAirport);
+    }
+
+    /**
+     * Sets defaults for performance data parameters related to an origin
+     *
+     * @param plan the flight plan
+     * @param airport the origin airport
+     */
+    private static setOriginDefaultPerformanceData(plan: FlightPlan, airport: Airport | undefined): void {
+        const referenceAltitude = UnitType.FOOT.convertFrom(airport?.location.alt, UnitType.METER); // TODO fix in msfs-navdata (fms-v2)
+
+        if (referenceAltitude !== undefined) {
+            plan.performanceData.defaultThrustReductionAltitude.set(referenceAltitude + parseInt(NXDataStore.get('CONFIG_THR_RED_ALT', '1500')));
+            plan.performanceData.defaultAccelerationAltitude.set(referenceAltitude + parseInt(NXDataStore.get('CONFIG_ACCEL_ALT', '1500')));
+            plan.performanceData.defaultEngineOutAccelerationAltitude.set(referenceAltitude + parseInt(NXDataStore.get('CONFIG_ENG_OUT_ACCEL_ALT', '1500')));
+        } else {
+            plan.performanceData.defaultThrustReductionAltitude.set(undefined);
+            plan.performanceData.defaultAccelerationAltitude.set(undefined);
+            plan.performanceData.defaultEngineOutAccelerationAltitude.set(undefined);
+        }
+
+        plan.performanceData.pilotThrustReductionAltitude.set(undefined);
+        plan.performanceData.pilotAccelerationAltitude.set(undefined);
+        plan.performanceData.pilotEngineOutAccelerationAltitude.set(undefined);
+    }
+
+    /**
+     * Sets defaults for performance data parameters related to a destination
+     *
+     * @param plan the flight plan
+     * @param airport the destination airport
+     */
+    private static setDestinationDefaultPerformanceData(plan: FlightPlan, airport: Airport): void {
+        const referenceAltitude = UnitType.FOOT.convertFrom(airport?.location.alt, UnitType.METER); // TODO fix in msfs-navdata (fms-v2)
+
+        if (referenceAltitude !== undefined) {
+            plan.performanceData.defaultMissedThrustReductionAltitude.set(referenceAltitude + parseInt(NXDataStore.get('CONFIG_THR_RED_ALT', '1500')));
+            plan.performanceData.defaultMissedAccelerationAltitude.set(referenceAltitude + parseInt(NXDataStore.get('CONFIG_ACCEL_ALT', '1500')));
+            plan.performanceData.defaultMissedEngineOutAccelerationAltitude.set(referenceAltitude + parseInt(NXDataStore.get('CONFIG_ENG_OUT_ACCEL_ALT', '1500')));
+        } else {
+            plan.performanceData.defaultMissedThrustReductionAltitude.set(undefined);
+            plan.performanceData.defaultMissedAccelerationAltitude.set(undefined);
+            plan.performanceData.defaultMissedEngineOutAccelerationAltitude.set(undefined);
+        }
+
+        plan.performanceData.pilotMissedThrustReductionAltitude.set(undefined);
+        plan.performanceData.pilotMissedAccelerationAltitude.set(undefined);
+        plan.performanceData.pilotMissedEngineOutAccelerationAltitude.set(undefined);
     }
 
     static fromSerializedFlightPlan(index: number, serialized: SerializedFlightPlan, bus: EventBus): FlightPlan {
