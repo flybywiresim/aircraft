@@ -40,6 +40,7 @@ class A32NX_GPWS {
         this.Mode3MaxBaroAlt = NaN;
 
         this.Mode4MaxRAAlt = NaN;
+        this.hasEnteredGoAroundPhase = false;
 
         this.Mode2BoundaryLeaveAlt = NaN;
         this.Mode2NumTerrain = 0;
@@ -205,6 +206,12 @@ class A32NX_GPWS {
             });
 
             this.Mode3MaxBaroAlt = NaN;
+
+            //ensures switch from Mode 4C to Mode 4A and 4B
+            if (phase === FmgcFlightPhases.CRUISE){
+                this.Mode4MaxRAAlt = 2450;
+            }
+            
             if (onGround || (radioAltValid && radioAlt < 10)) {
                 this.Mode4MaxRAAlt = NaN;
             }
@@ -251,11 +258,34 @@ class A32NX_GPWS {
     }
 
     update_maxRA(radioAlt, onGround, phase) {
+
+
         // on ground check is to get around the fact that radio alt is set to around 300 while loading
-        if (onGround || phase === FmgcFlightPhases.GOAROUND) {
+        if (onGround){
+
             this.Mode4MaxRAAlt = NaN;
-        } else if (this.Mode4MaxRAAlt < radioAlt || isNaN(this.Mode4MaxRAAlt)) {
-            this.Mode4MaxRAAlt = radioAlt;
+
+            // resets the GA phase flag when on the ground
+            this.hasEnteredGoAroundPhase = false;
+        } else {
+
+            // checks if in GA phase and resets the MaxRAAlt
+            if (phase === FmgcFlightPhases.GOAROUND && !this.hasEnteredGoAroundPhase) {
+
+                this.Mode4MaxRAAlt = NaN;
+
+                this.hasEnteredGoAroundPhase = true;
+            }
+
+            if(phase !== FmgcFlightPhases.GOAROUND){
+                // resets the GA phase flag when exiting the GA phase
+                this.hasEnteredGoAroundPhase = false;
+            }
+
+            // updates the Mode4MaxRAAlt
+            if (this.Mode4MaxRAAlt < radioAlt || isNaN(this.Mode4MaxRAAlt)) {
+                this.Mode4MaxRAAlt = radioAlt;
+            }
         }
     }
 
@@ -436,36 +466,38 @@ class A32NX_GPWS {
      * @param phase - Flight phase index
      * @constructor
      */
-    GPWSMode4(mode, radioAlt, speed, FlapsInLandingConfig, gearExtended, phase) {
+    GPWSMode4(mode, radioAlt, speed, FlapsInLandingConfig, gearExtended) {
+        
+        mode.current = 0;
+
         if (radioAlt < 30 || radioAlt > 1000) {
-            mode.current = 0;
             return;
         }
+
         const FlapModeOff = SimVar.GetSimVarValue("L:A32NX_GPWS_FLAP_OFF", "Bool");
 
-        // Mode 4 A and B logic
-        if (!gearExtended && phase === FmgcFlightPhases.APPROACH) {
+        // Mode 4 A
+        if (!gearExtended && this.Mode4MaxRAAlt >= 2400) {
             if (speed < 190 && radioAlt < 500) {
                 mode.current = 1;
             } else if (speed >= 190) {
                 const maxWarnAlt = 8.333 * speed - 1083.333;
                 mode.current = radioAlt < maxWarnAlt ? 3 : 0;
             }
-        } else if (!FlapsInLandingConfig && !FlapModeOff && phase === FmgcFlightPhases.APPROACH) {
+        // Mode 4 B
+        } else if (!FlapsInLandingConfig && !FlapModeOff && this.Mode4MaxRAAlt >= 2400) {
             if (speed < 159 && radioAlt < 245) {
                 mode.current = 2;
             } else if (speed >= 159) {
                 const maxWarnAlt = 8.2967 * speed - 1074.18;
                 mode.current = radioAlt < maxWarnAlt ? 3 : 0;
             }
-        } else {
-            mode.current = 0;
-        }
-        if (!FlapsInLandingConfig || !gearExtended) {
+        // Mode 4 C
+        } else if (!FlapsInLandingConfig || !gearExtended) {
             const maxWarnAltSpeed = Math.max(Math.min(8.3333 * speed - 1083.33, 1000), 500);
             const maxWarnAlt = 0.750751 * this.Mode4MaxRAAlt - 0.750751;
 
-            if (this.Mode4MaxRAAlt > 100 && radioAlt < maxWarnAltSpeed && radioAlt < maxWarnAlt) {
+            if (this.Mode4MaxRAAlt > 100 && this.Mode4MaxRAAlt < 2400 && radioAlt < maxWarnAltSpeed && radioAlt < maxWarnAlt) {
                 mode.current = 3;
             }
         }
