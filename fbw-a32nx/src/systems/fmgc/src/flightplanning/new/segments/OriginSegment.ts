@@ -8,6 +8,8 @@ import { FlightPlanSegment } from '@fmgc/flightplanning/new/segments/FlightPlanS
 import { loadAirport, loadAllDepartures, loadAllRunways, loadRunway } from '@fmgc/flightplanning/new/DataLoading';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
+import { bearingTo } from 'msfs-geo';
+import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { FlightPlanElement, FlightPlanLeg } from '../legs/FlightPlanLeg';
 import { NavigationDatabaseService } from '../NavigationDatabaseService';
 
@@ -58,8 +60,35 @@ export class OriginSegment extends FlightPlanSegment {
     async refreshOriginLegs() {
         const db = NavigationDatabaseService.activeDatabase.backendDatabase;
 
+        let addOriginLeg = true;
+        let addRunwayLeg = true;
+        if (this.runway && this.flightPlan.originDeparture) {
+            let firstDepartureLeg: FlightPlanElement;
+            if (this.flightPlan.departureRunwayTransitionSegment.allLegs.length > 0) {
+                firstDepartureLeg = this.flightPlan.departureRunwayTransitionSegment.allLegs[0];
+            } else if (this.flightPlan.departureSegment.allLegs.length > 0) {
+                firstDepartureLeg = this.flightPlan.departureSegment.allLegs[0];
+            } else {
+                firstDepartureLeg = this.flightPlan.departureEnrouteTransitionSegment.allLegs[0];
+            }
+
+            if (firstDepartureLeg?.isDiscontinuity === false && firstDepartureLeg.isXF()) {
+                if (firstDepartureLeg.terminationWaypoint().ident === this.runway.ident) {
+                    addOriginLeg = false;
+                    addRunwayLeg = false;
+                } else {
+                    const bearing = bearingTo(this.runway.thresholdLocation, firstDepartureLeg.terminationWaypoint().location);
+                    const diff = MathUtils.diffAngle(bearing, this.runway.bearing);
+
+                    addRunwayLeg = Math.abs(diff) < 0.5;
+                }
+            }
+        }
+
         this.allLegs.length = 0;
-        this.allLegs.push(FlightPlanLeg.fromAirportAndRunway(this, this.flightPlan.departureSegment.procedure?.ident ?? '', this.originAirport, this.runway));
+        if (addOriginLeg) {
+            this.allLegs.push(FlightPlanLeg.fromAirportAndRunway(this, this.flightPlan.departureSegment.procedure?.ident ?? '', this.originAirport, addRunwayLeg ? this.runway : undefined));
+        }
 
         if (this.runway) {
             const newRunwayCompatibleSids = await db.getDepartures(this.runway.airportIdent, this.runway.ident);

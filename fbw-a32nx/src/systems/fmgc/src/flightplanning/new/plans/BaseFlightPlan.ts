@@ -1275,41 +1275,43 @@ export abstract class BaseFlightPlan {
             return;
         }
 
+        const originAndDestination = first instanceof OriginSegment && second instanceof DestinationSegment;
+
         let cutBefore = -1;
-        for (let i = 0; i < second.allLegs.length; i++) {
-            const element = second.allLegs[i];
+        if (!originAndDestination) {
+            for (let i = 0; i < second.allLegs.length; i++) {
+                const element = second.allLegs[i];
 
-            if (element.isDiscontinuity === true) {
-                continue;
-            }
+                if (element.isDiscontinuity === true) {
+                    continue;
+                }
 
-            const bothXf = lastLegInFirst.isXF() && element.isXF();
+                const bothXf = lastLegInFirst.isXF() && element.isXF();
 
-            if (bothXf) {
-                if (element.terminatesWithWaypoint(lastLegInFirst.terminationWaypoint())) {
-                    // Transfer leg type from lastLegInFirst definition onto element
-                    element.type = lastLegInFirst.definition.type;
-                    Object.assign(element.definition, lastLegInFirst.definition);
+                if (bothXf) {
+                    if (element.terminatesWithWaypoint(lastLegInFirst.terminationWaypoint())) {
+                        // Transfer leg type from lastLegInFirst definition onto element
+                        element.type = lastLegInFirst.definition.type;
+                        Object.assign(element.definition, lastLegInFirst.definition);
 
-                    // FIXME carry procedure ident from second segment
-                    [element.ident, element.annotation] = procedureLegIdentAndAnnotation(element.definition, '');
+                        // FIXME carry procedure ident from second segment
+                        [element.ident, element.annotation] = procedureLegIdentAndAnnotation(element.definition, '');
 
-                    first.allLegs.pop();
-                    first.flightPlan.syncSegmentLegsChange(first);
+                        first.allLegs.pop();
+                        first.flightPlan.syncSegmentLegsChange(first);
+                        cutBefore = i;
+                        break;
+                    }
+                }
+
+                const xfToFx = lastLegInFirst.isXF() && element.isFX();
+
+                if (xfToFx && lastLegInFirst.terminatesWithWaypoint(element.terminationWaypoint())) {
                     cutBefore = i;
                     break;
                 }
             }
-
-            const xfToFx = lastLegInFirst.isXF() && element.isFX();
-
-            if (xfToFx && lastLegInFirst.terminatesWithWaypoint(element.terminationWaypoint())) {
-                cutBefore = i;
-                break;
-            }
         }
-
-        const originAndDestination = first instanceof OriginSegment && second instanceof DestinationSegment;
 
         // If no matching leg is found, insert a discontinuity (if there isn't one already) at the end of the first segment
         if (cutBefore === -1 || originAndDestination) {
@@ -1341,15 +1343,11 @@ export abstract class BaseFlightPlan {
         const elements = this.allLegs;
 
         for (let i = 0; i < elements.length; i++) {
-            if (i === 0) {
-                continue;
-            }
-
             const prevElement = elements[i - 1];
             const element = elements[i];
 
             // IF -> XX if no discontinuity before, and element present
-            if (element && element.isDiscontinuity === false && element.type === LegType.IF) {
+            if (i !== 0 && element && element.isDiscontinuity === false && element.type === LegType.IF) {
                 if (prevElement && prevElement.isDiscontinuity === true) {
                     continue;
                 }
@@ -1361,9 +1359,9 @@ export abstract class BaseFlightPlan {
                 }
             }
 
-            // XX -> IF if no element, or discontinuity before
+            // XX -> IF if no element, or discontinuity before, or 0th leg
             if (element && element.isDiscontinuity === false && element.type !== LegType.IF) {
-                if (!prevElement || (prevElement && prevElement.isDiscontinuity === true)) {
+                if (!prevElement || (prevElement && prevElement.isDiscontinuity === true) || i === 0) {
                     element.type = LegType.IF;
                 }
             }
