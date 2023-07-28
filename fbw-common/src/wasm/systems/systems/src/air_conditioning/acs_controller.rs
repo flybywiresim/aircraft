@@ -57,7 +57,7 @@ impl<const ZONES: usize, const ENGINES: usize> AirConditioningSystemController<Z
     ) -> Self {
         let zone_controller = cabin_zone_ids
             .iter()
-            .map(|id| ZoneController::new(context, id))
+            .map(ZoneController::new)
             .collect::<Vec<ZoneController<ZONES>>>();
         Self {
             aircraft_state: AirConditioningStateManager::new(),
@@ -216,9 +216,7 @@ impl<const ZONES: usize, const ENGINES: usize> AirConditioningSystemController<Z
     }
 
     pub fn zone_controller_failure(&self) -> bool {
-        self.zone_controller
-            .iter()
-            .all(|zone| zone.zone_controller_total_failure())
+        self.zone_controller_primary_fault() && self.zone_controller_secondary_fault()
     }
 }
 
@@ -506,10 +504,6 @@ pub enum ZoneControllerChannel {
 }
 
 struct ZoneController<const ZONES: usize> {
-    galley_fan_failure_id: VariableIdentifier,
-    zone_controller_primary_failure_id: VariableIdentifier,
-    zone_controller_both_channels_failure_id: VariableIdentifier,
-
     zone_id: usize,
     duct_demand_temperature: ThermodynamicTemperature,
     zone_selected_temperature: ThermodynamicTemperature,
@@ -536,7 +530,7 @@ impl<const ZONES: usize> ZoneController<ZONES> {
     const KP_DUCT_DEMAND_CABIN: f64 = 3.5;
     const KP_DUCT_DEMAND_COCKPIT: f64 = 2.;
 
-    fn new(context: &mut InitContext, zone_type: &ZoneType) -> Self {
+    fn new(zone_type: &ZoneType) -> Self {
         let pid_controller = match zone_type {
             ZoneType::Cockpit => {
                 PidController::new(
@@ -560,13 +554,6 @@ impl<const ZONES: usize> ZoneController<ZONES> {
             ),
         };
         Self {
-            galley_fan_failure_id: context
-                .get_identifier("VENT_LAB_GALLEY_FAN_HAS_FAULT".to_owned()),
-            zone_controller_primary_failure_id: context
-                .get_identifier("COND_ZONE_CONTROLLER_PRIMARY_CHANNEL_HAS_FAULT".to_owned()),
-            zone_controller_both_channels_failure_id: context
-                .get_identifier("COND_ZONE_CONTROLLER_BOTH_CHANNEL_HAS_FAULT".to_owned()),
-
             zone_id: zone_type.id(),
             duct_demand_temperature: ThermodynamicTemperature::new::<degree_celsius>(24.),
             zone_selected_temperature: ThermodynamicTemperature::new::<degree_celsius>(24.),
@@ -729,34 +716,9 @@ impl<const ZONES: usize> ZoneController<ZONES> {
     fn galley_fan_fault(&self) -> bool {
         self.galley_fan_failure.is_active()
     }
-
-    // TODO: Remove
-    fn zone_controller_total_failure(&self) -> bool {
-        self.zone_regulation_primary_failure.is_active()
-            && self.zone_regulation_secondary_failure.is_active()
-    }
 }
 
 impl<const ZONES: usize> SimulationElement for ZoneController<ZONES> {
-    fn write(&self, writer: &mut SimulatorWriter) {
-        if self.zone_id == 0 {
-            // To avoid overwriting the same values for each zone
-            writer.write(
-                &self.galley_fan_failure_id,
-                self.galley_fan_failure.is_active(),
-            );
-            writer.write(
-                &self.zone_controller_primary_failure_id,
-                self.zone_regulation_primary_failure.is_active(),
-            );
-            writer.write(
-                &self.zone_controller_both_channels_failure_id,
-                self.zone_regulation_primary_failure.is_active()
-                    && self.zone_regulation_secondary_failure.is_active(),
-            );
-        }
-    }
-
     fn accept<T: crate::simulation::SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.galley_fan_failure.accept(visitor);
         self.zone_regulation_primary_failure.accept(visitor);
@@ -2060,8 +2022,8 @@ mod acs_controller_tests {
                 adirs: TestAdirs::new(),
                 air_conditioning_system: TestAirConditioningSystem::new(),
                 cabin_fans: [
-                    CabinFan::new(context, 1, ElectricalBusType::AlternatingCurrent(1)),
-                    CabinFan::new(context, 2, ElectricalBusType::AlternatingCurrent(2)),
+                    CabinFan::new(1, ElectricalBusType::AlternatingCurrent(1)),
+                    CabinFan::new(2, ElectricalBusType::AlternatingCurrent(2)),
                 ],
                 engine_1: TestEngine::new(Ratio::default()),
                 engine_2: TestEngine::new(Ratio::default()),
@@ -2580,10 +2542,6 @@ mod acs_controller_tests {
 
         fn pack_2_has_fault(&mut self) -> bool {
             self.read_by_name("OVHD_COND_PACK_2_PB_HAS_FAULT")
-        }
-
-        fn cabin_fan_has_fault(&mut self, fan_id: usize) -> bool {
-            self.read_by_name(format!("VENT_CABIN_FAN_{}_HAS_FAULT", fan_id).as_str())
         }
 
         fn trim_air_system_controller_is_enabled(&self) -> bool {
@@ -3897,8 +3855,6 @@ mod acs_controller_tests {
                 (test_bed.mixer_unit_outlet_air().flow_rate() - test_bed.pack_flow())
                     < MassRate::new::<kilogram_per_second>(0.1)
             );
-            assert!(test_bed.cabin_fan_has_fault(1));
-            assert!(test_bed.cabin_fan_has_fault(2));
         }
     }
 

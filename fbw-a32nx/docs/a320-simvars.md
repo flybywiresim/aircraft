@@ -2666,14 +2666,6 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - FWD
         - AFT
 
-- A32NX_COND_{id}_DUCT_OVHT
-    - Bool
-    - True when the duct temperature of the respective zone rises above 88 deg C
-    - {id}
-        - CKPT
-        - FWD
-        - AFT
-
 - A32NX_COND_PACK_FLOW_VALVE_{index}_IS_OPEN
     - Bool
     - True if the respective {1 or 2} pack flow valve is open
@@ -2689,22 +2681,6 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - CKPT
         - FWD
         - AFT
-
-- A32NX_COND_{id}_TRIM_AIR_VALVE_HAS_FAULT
-    - Bool
-    - The respective trim air valve is faulted
-    - {id}
-        - CKPT
-        - FWD
-        - AFT
-
-- A32NX_COND_ZONE_CONTROLLER_PRIMARY_CHANNEL_HAS_FAULT
-    - Bool
-    - True when the primary channel of the zone controller is faulted
-
-- A32NX_COND_ZONE_CONTROLLER_BOTH_CHANNEL_HAS_FAULT
-    - Bool
-    - True when the both the primary and secondary channels of the zone controller have failed
 
 - A32NX_HOT_AIR_VALVE_IS_ENABLED
     - Bool
@@ -2811,17 +2787,6 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - {number}
         - 1
         - 2
-
-- A32NX_VENT_CABIN_FAN_{id}_HAS_FAULT
-    - Bool
-    - True if the corresponding cabin fan is faulted and not operating
-    - {number}
-        - 1
-        - 2
-
-- A32NX_VENT_LAB_GALLEY_FAN_HAS_FAULT
-    - Bool
-    - True when the lavatory and galley extraction fan has failed
 
 ## Pneumatic
 

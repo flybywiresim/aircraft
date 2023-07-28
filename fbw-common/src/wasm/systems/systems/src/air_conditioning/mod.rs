@@ -228,8 +228,6 @@ pub trait PressurizationConstants {
 
 /// A320neo fan part number: VD3900-03
 pub struct CabinFan {
-    cabin_fan_fault_id: VariableIdentifier,
-
     is_on: bool,
     outlet_air: Air,
 
@@ -243,10 +241,8 @@ impl CabinFan {
     const PRESSURE_RISE_HPA: f64 = 22.; // hPa
     const FAN_EFFICIENCY: f64 = 0.75; // Ratio - so output matches AMM numbers
 
-    pub fn new(context: &mut InitContext, id: u8, powered_by: ElectricalBusType) -> Self {
+    pub fn new(id: u8, powered_by: ElectricalBusType) -> Self {
         Self {
-            cabin_fan_fault_id: context.get_identifier(format!("VENT_CABIN_FAN_{}_HAS_FAULT", id)),
-
             is_on: false,
             outlet_air: Air::new(),
 
@@ -307,10 +303,6 @@ impl SimulationElement for CabinFan {
     fn accept<T: crate::simulation::SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.failure.accept(visitor);
         visitor.visit(self);
-    }
-
-    fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.cabin_fan_fault_id, self.failure.is_active());
     }
 
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
@@ -477,7 +469,6 @@ impl OutletAir for AirConditioningPack {
 
 pub struct TrimAirSystem<const ZONES: usize, const ENGINES: usize> {
     duct_temperature_id: [VariableIdentifier; ZONES],
-    duct_overheat_id: [VariableIdentifier; ZONES],
 
     trim_air_valves: [TrimAirValve; ZONES],
     // These are not a real components of the system, but a tool to simulate the mixing of air
@@ -491,12 +482,9 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystem<ZONES, ENGINES> {
     pub fn new(context: &mut InitContext, cabin_zone_ids: &[ZoneType; ZONES]) -> Self {
         let duct_temperature_id =
             cabin_zone_ids.map(|id| context.get_identifier(format!("COND_{}_DUCT_TEMP", id)));
-        let duct_overheat_id =
-            cabin_zone_ids.map(|id| context.get_identifier(format!("COND_{}_DUCT_OVHT", id)));
 
         Self {
             duct_temperature_id,
-            duct_overheat_id,
 
             trim_air_valves: cabin_zone_ids.map(|id| TrimAirValve::new(context, &id)),
             pack_mixer_container: PneumaticPipe::new(
@@ -627,21 +615,14 @@ impl<const ZONES: usize, const ENGINES: usize> SimulationElement for TrimAirSyst
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        for (id, var) in self
-            .duct_temperature_id
-            .iter()
-            .zip(self.duct_overheat_id.iter())
-            .enumerate()
-        {
-            writer.write(var.0, self.duct_temperature()[id]);
-            writer.write(var.1, self.duct_overheat[id]);
+        for (id, var) in self.duct_temperature_id.iter().enumerate() {
+            writer.write(var, self.duct_temperature()[id])
         }
     }
 }
 
 struct TrimAirValve {
     trim_air_valve_id: VariableIdentifier,
-    trim_air_valve_failure_id: VariableIdentifier,
 
     trim_air_valve: DefaultValve,
     trim_air_container: PneumaticPipe,
@@ -658,8 +639,6 @@ impl TrimAirValve {
         Self {
             trim_air_valve_id: context
                 .get_identifier(format!("COND_{}_TRIM_AIR_VALVE_POSITION", zone_id)),
-            trim_air_valve_failure_id: context
-                .get_identifier(format!("COND_{}_TRIM_AIR_VALVE_HAS_FAULT", zone_id)),
 
             trim_air_valve: DefaultValve::new_closed(),
             trim_air_container: PneumaticPipe::new(
@@ -731,10 +710,6 @@ impl OutletAir for TrimAirValve {
 impl SimulationElement for TrimAirValve {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.trim_air_valve_id, self.trim_air_valve_open_amount());
-        writer.write(
-            &self.trim_air_valve_failure_id,
-            self.trim_air_valve_has_fault(),
-        );
     }
 
     fn accept<T: crate::simulation::SimulationElementVisitor>(&mut self, visitor: &mut T) {

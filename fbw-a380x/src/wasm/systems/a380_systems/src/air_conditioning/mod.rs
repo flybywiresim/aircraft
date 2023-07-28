@@ -346,8 +346,8 @@ impl A380AirConditioningSystem {
                 ),
             ],
             cabin_fans: [
-                CabinFan::new(context, 1, ElectricalBusType::AlternatingCurrent(1)),
-                CabinFan::new(context, 2, ElectricalBusType::AlternatingCurrent(1)),
+                CabinFan::new(1, ElectricalBusType::AlternatingCurrent(1)),
+                CabinFan::new(2, ElectricalBusType::AlternatingCurrent(1)),
             ],
             mixer_unit: MixerUnit::new(cabin_zones),
             packs: [
