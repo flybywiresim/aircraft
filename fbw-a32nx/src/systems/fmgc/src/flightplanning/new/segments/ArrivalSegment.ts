@@ -26,7 +26,11 @@ export class ArrivalSegment extends ProcedureSegment<Arrival> {
 
             if (!skipUpdateLegs) {
                 this.allLegs.length = 0;
-                await this.flightPlan.arrivalEnrouteTransitionSegment.setProcedure(undefined);
+
+                // We don't have to await any of this because of how we use it, but this might be something to clean up in the future
+
+                this.flightPlan.arrivalEnrouteTransitionSegment.setProcedure(undefined);
+                this.flightPlan.arrivalRunwayTransitionSegment.setProcedure(undefined);
 
                 this.flightPlan.syncSegmentLegsChange(this);
             }

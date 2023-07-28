@@ -26,6 +26,8 @@ export class ArrivalRunwayTransitionSegment extends ProcedureSegment<ProcedureTr
             const matchingTransition = ident !== undefined ? existingArrival.runwayTransitions.find((it) => it.ident === ident) : undefined;
 
             this.arrivalRunwayTransition = matchingTransition;
+        } else {
+            this.arrivalRunwayTransition = undefined;
         }
 
         if (!skipUpdateLegs) {
@@ -34,6 +36,8 @@ export class ArrivalRunwayTransitionSegment extends ProcedureSegment<ProcedureTr
             this.allLegs.length = 0;
             this.allLegs.push(...legs);
             this.strung = false;
+
+            this.flightPlan.syncSegmentLegsChange(this);
 
             this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.RebuildArrivalAndApproach);
             this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.Restring);

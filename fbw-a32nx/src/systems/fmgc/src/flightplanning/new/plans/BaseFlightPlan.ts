@@ -164,7 +164,6 @@ export abstract class BaseFlightPlan {
 
             // We don't have to await any of this because of how we use it, but this might be something to clean up in the future
 
-            this.arrivalEnrouteTransitionSegment.setProcedure(undefined);
             this.arrivalSegment.setProcedure(undefined);
 
             this.approachSegment.setProcedure(this.approachSegment.procedure?.ident);
@@ -535,10 +534,6 @@ export abstract class BaseFlightPlan {
 
     async setOriginAirport(icao: string) {
         await this.originSegment.setOriginIcao(icao);
-        await this.departureSegment.setProcedure(undefined);
-        this.enrouteSegment.allLegs.length = 0;
-        await this.arrivalSegment.setProcedure(undefined);
-        await this.approachSegment.setProcedure(undefined);
 
         if (this instanceof FlightPlan) {
             this.performanceData.databaseTransitionAltitude.set(this.originAirport.transitionAltitude);
