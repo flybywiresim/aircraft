@@ -131,6 +131,7 @@
       "Defueling": "Defueling",
       "EstimatedDuration": "Estimated duration (minutes)",
       "EstimatedTime": "Estimated Time",
+      "GSXFuelSyncEnabled": "GSX Fuel Sync Enabled",
       "LeftInnerTank": "Left Inner Tank",
       "LeftOuterTank": "Left Outer Tank",
       "ReadyToStart": "Ready to Start",
