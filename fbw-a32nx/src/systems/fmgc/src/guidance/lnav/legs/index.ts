@@ -47,6 +47,7 @@ export function altitudeConstraintFromProcedureLeg(definition: FlightPlanLegDefi
     if (definition.altitudeDescriptor !== undefined && definition.altitude1 !== undefined) {
         const ac: Partial<AltitudeConstraint> = {};
 
+        ac.type = AltitudeConstraintType.at; // TODO temporary workaround for VNAV now knowing about all constraint types (fms-v2)
         ac.altitude1 = definition.altitude1;
         ac.altitude2 = undefined;
 
