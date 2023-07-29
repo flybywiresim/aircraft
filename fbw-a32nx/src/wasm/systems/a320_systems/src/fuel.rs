@@ -1,6 +1,9 @@
+// Note: Fuel system for now is still handled in MSFS. This is used for calculating fuel-related factors.
+use std::time::Duration;
+
 use nalgebra::{ArrayStorage, Matrix, Vector3, U1, U3};
 use systems::simulation::{
-    test::{SimulationTestBed, TestBed},
+    test::{SimulationTestBed, TestBed, WriteByName},
     Aircraft, InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
     VariableIdentifier,
 };
@@ -8,6 +11,16 @@ use uom::si::{f64::*, mass::kilogram};
 
 pub trait LeftTankHasFuel {
     fn left_inner_tank_has_fuel_remaining(&self) -> bool;
+}
+
+pub trait FuelForeAftCG {
+    fn fore_aft_center_of_gravity(&self) -> f64;
+}
+
+impl FuelForeAftCG for A320Fuel {
+    fn fore_aft_center_of_gravity(&self) -> f64 {
+        self.fore_aft_center_of_gravity()
+    }
 }
 
 pub struct A320Fuel {
@@ -67,24 +80,48 @@ impl A320Fuel {
         }
     }
 
+    fn _left_inner_tank_fuel_quantity(&self) -> Mass {
+        self.left_inner_tank_fuel_quantity
+    }
+
+    fn _left_outer_tank_fuel_quantity(&self) -> Mass {
+        self.left_outer_tank_fuel_quantity
+    }
+
+    fn _right_inner_tank_fuel_quantity(&self) -> Mass {
+        self.right_inner_tank_fuel_quantity
+    }
+
+    fn _right_outer_tank_fuel_quantity(&self) -> Mass {
+        self.right_outer_tank_fuel_quantity
+    }
+
+    fn _center_tank_fuel_quantity(&self) -> Mass {
+        self.center_tank_fuel_quantity
+    }
+
     pub fn left_inner_tank_has_fuel_remaining(&self) -> bool {
         self.unlimited_fuel || self.left_inner_tank_fuel_quantity > Mass::default()
     }
 
-    pub fn _right_inner_tank_has_fuel_remaining(&self) -> bool {
+    fn _right_inner_tank_has_fuel_remaining(&self) -> bool {
         self.unlimited_fuel || self.right_inner_tank_fuel_quantity > Mass::default()
     }
 
-    pub fn _left_outer_tank_has_fuel_remaining(&self) -> bool {
+    fn _left_outer_tank_has_fuel_remaining(&self) -> bool {
         self.unlimited_fuel || self.left_outer_tank_fuel_quantity > Mass::default()
     }
 
-    pub fn _right_outer_tank_has_fuel_remaining(&self) -> bool {
+    fn _right_outer_tank_has_fuel_remaining(&self) -> bool {
         self.unlimited_fuel || self.right_outer_tank_fuel_quantity > Mass::default()
     }
 
-    pub fn _center_tank_has_fuel_remaining(&self) -> bool {
+    fn _center_tank_has_fuel_remaining(&self) -> bool {
         self.unlimited_fuel || self.center_tank_fuel_quantity > Mass::default()
+    }
+
+    fn fore_aft_center_of_gravity(&self) -> f64 {
+        self.cg.x
     }
 }
 impl SimulationElement for A320Fuel {
@@ -119,9 +156,6 @@ impl SimulationElement for A320Fuel {
             .map(|(pos, m)| pos * m.get::<kilogram>())
             .fold(Vector3::zeros(), |acc, x| acc + x)
             / total_mass_kg;
-
-        println!("cg x: {}", self.cg.x);
-        println!("cg: {:?}", self.cg);
     }
 }
 
@@ -156,6 +190,9 @@ impl SimulationElement for FuelTestAircraft {
     }
 }
 
+pub const HOURS_TO_MINUTES: u64 = 60;
+pub const MINUTES_TO_SECONDS: u64 = 60;
+
 struct FuelTestBed {
     test_bed: SimulationTestBed<FuelTestAircraft>,
 }
@@ -164,6 +201,34 @@ impl FuelTestBed {
         FuelTestBed {
             test_bed: SimulationTestBed::new(FuelTestAircraft::new),
         }
+    }
+
+    fn and_run(mut self) -> Self {
+        self.run();
+
+        self
+    }
+
+    fn and_stabilize(mut self) -> Self {
+        let five_minutes = 5 * MINUTES_TO_SECONDS;
+        self.test_bed
+            .run_multiple_frames(Duration::from_secs(five_minutes));
+
+        self
+    }
+
+    fn init_vars(mut self) -> Self {
+        self.write_by_name("FUEL TANK LEFT MAIN QUANTITY", 1000.);
+        self.write_by_name("FUEL TANK LEFT AUX QUANTITY", 1000.);
+        self.write_by_name("FUEL TANK RIGHT MAIN QUANTITY", 1000.);
+        self.write_by_name("FUEL TANK RIGHT AUX QUANTITY", 1000.);
+        self.write_by_name("FUEL TANK CENTER QUANTITY", 0.);
+
+        self
+    }
+
+    fn fore_aft_center_of_gravity(&self) -> f64 {
+        self.query(|a| a.fuel.fore_aft_center_of_gravity())
     }
 }
 
@@ -185,4 +250,19 @@ fn test_bed() -> FuelTestBed {
 
 fn test_bed_with() -> FuelTestBed {
     test_bed()
+}
+
+#[test]
+fn init() {
+    let mut test_bed = test_bed_with().init_vars();
+
+    assert!(test_bed.contains_variable_with_name("FUEL TANK LEFT MAIN QUANTITY"));
+    assert!(test_bed.contains_variable_with_name("FUEL TANK LEFT AUX QUANTITY"));
+    assert!(test_bed.contains_variable_with_name("FUEL TANK RIGHT MAIN QUANTITY"));
+    assert!(test_bed.contains_variable_with_name("FUEL TANK RIGHT AUX QUANTITY"));
+    assert!(test_bed.contains_variable_with_name("FUEL TANK CENTER QUANTITY"));
+
+    test_bed = test_bed.and_run();
+
+    println!("{}", test_bed.fore_aft_center_of_gravity());
 }
