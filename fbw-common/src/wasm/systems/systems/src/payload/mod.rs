@@ -7,6 +7,7 @@ use crate::{
         SimulatorWriter, VariableIdentifier, Write, Writer,
     },
 };
+use nalgebra::Vector3;
 use uom::si::{f64::Mass, mass::kilogram, mass::pound};
 
 const JS_MAX_SAFE_INTEGER: i8 = 53;
@@ -41,13 +42,15 @@ read_write_enum!(GsxState);
 
 pub struct PaxInfo {
     pub max_pax: i8,
+    pub position: Vector3<f64>,
     pub pax_id: String,
     pub payload_id: String,
 }
 impl PaxInfo {
-    pub fn new(max_pax: i8, pax_id: &str, payload_id: &str) -> Self {
+    pub fn new(max_pax: i8, position: Vector3<f64>, pax_id: &str, payload_id: &str) -> Self {
         PaxInfo {
             max_pax,
+            position,
             pax_id: pax_id.to_string(),
             payload_id: payload_id.to_string(),
         }
@@ -56,13 +59,15 @@ impl PaxInfo {
 
 pub struct CargoInfo {
     pub max_cargo: Mass,
+    pub position: Vector3<f64>,
     pub cargo_id: String,
     pub payload_id: String,
 }
 impl CargoInfo {
-    pub fn new(max_cargo: Mass, cargo_id: &str, payload_id: &str) -> Self {
+    pub fn new(max_cargo: Mass, position: Vector3<f64>, cargo_id: &str, payload_id: &str) -> Self {
         CargoInfo {
             max_cargo,
+            position,
             cargo_id: cargo_id.to_string(),
             payload_id: payload_id.to_string(),
         }
@@ -76,7 +81,9 @@ pub struct Pax {
     per_pax_weight: Rc<Cell<Mass>>,
     pax_target: u64,
     pax: u64,
+
     payload: Mass,
+    position: Vector3<f64>,
 }
 impl Pax {
     pub fn new(
@@ -84,6 +91,7 @@ impl Pax {
         pax_target_id: VariableIdentifier,
         payload_id: VariableIdentifier,
         per_pax_weight: Rc<Cell<Mass>>,
+        position: Vector3<f64>,
     ) -> Self {
         Pax {
             pax_id,
@@ -93,10 +101,11 @@ impl Pax {
             pax_target: 0,
             pax: 0,
             payload: Mass::default(),
+            position,
         }
     }
 
-    fn per_pax_weight(&self) -> Mass {
+    pub fn per_pax_weight(&self) -> Mass {
         self.per_pax_weight.get()
     }
 
@@ -118,6 +127,10 @@ impl Pax {
 
     pub fn payload(&self) -> Mass {
         self.payload
+    }
+
+    pub fn pax_moment(&self) -> f64 {
+        self.pax_num() as f64 * self.per_pax_weight().get::<kilogram>() * self.position.x
     }
 
     pub fn payload_is_sync(&self) -> bool {
