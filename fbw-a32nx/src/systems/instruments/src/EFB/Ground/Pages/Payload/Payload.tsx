@@ -28,10 +28,23 @@ import { SeatMapWidget } from './Seating/SeatMapWidget';
 import { isSimbriefDataLoaded } from '../../../Store/features/simBrief';
 import { PromptModal, useModals } from '../../../UtilComponents/Modals/Modals';
 import { useAppSelector } from '../../../Store/store';
+import { getAirframeType } from '../../../Efb';
+import { AC_TYPE } from '../../../Enum/Airframe';
 
 export const Payload = () => {
     const { usingMetric } = Units;
     const { showModal } = useModals();
+
+    const acType = useMemo(() => {
+        switch (getAirframeType()) {
+        case 'A380_842':
+            return AC_TYPE.A380_842;
+        case 'A320_251N':
+        default:
+            return AC_TYPE.A320_251N;
+        }
+    }, []);
+    console.log(acType);
 
     const [aFlags] = useSeatFlags(`L:${Loadsheet.seatMap[0].simVar}`, Loadsheet.seatMap[0].capacity);
     const [bFlags] = useSeatFlags(`L:${Loadsheet.seatMap[1].simVar}`, Loadsheet.seatMap[1].capacity);
