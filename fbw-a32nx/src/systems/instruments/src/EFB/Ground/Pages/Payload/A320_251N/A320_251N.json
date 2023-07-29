@@ -20,29 +20,17 @@
     "seatMap": [
         {
             "name": "ROWS [1-6]",
+            "deck": 0,
             "capacity": 36,
             "rows": [
                 {
                     "seats": [
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0,
-                            "yOffset": 19
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        }
+                        { "type": 0 },
+                        { "type": 0 },
+                        { "type": 0 },
+                        { "type": 0,  "yOffset": 19},
+                        { "type": 0 },
+                        { "type": 0 }
                     ],
                     "x": 0,
                     "y": 0,
@@ -51,25 +39,12 @@
                 },
                 {
                     "seats": [
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0,
-                            "yOffset": 19
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        }
+                        { "type": 0 },
+                        { "type": 0 },
+                        { "type": 0 },
+                        { "type": 0,  "yOffset": 19},
+                        { "type": 0 },
+                        { "type": 0 }
                     ],
                     "x": 0,
                     "y": 0,
@@ -78,25 +53,12 @@
                 },
                 {
                     "seats": [
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0,
-                            "yOffset": 19
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        }
+                        { "type": 0 },
+                        { "type": 0 },
+                        { "type": 0 },
+                        { "type": 0,  "yOffset": 19},
+                        { "type": 0 },
+                        { "type": 0 }
                     ],
                     "x": 0,
                     "y": 0,
@@ -105,25 +67,12 @@
                 },
                 {
                     "seats": [
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0,
-                            "yOffset": 19
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        }
+                        { "type": 0 },
+                        { "type": 0 },
+                        { "type": 0 },
+                        { "type": 0,  "yOffset": 19},
+                        { "type": 0 },
+                        { "type": 0 }
                     ],
                     "x": 0,
                     "y": 0,
@@ -132,25 +81,12 @@
                 },
                 {
                     "seats": [
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0,
-                            "yOffset": 19
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        }
+                        { "type": 0 },
+                        { "type": 0 },
+                        { "type": 0 },
+                        { "type": 0,  "yOffset": 19},
+                        { "type": 0 },
+                        { "type": 0 }
                     ],
                     "x": 0,
                     "y": 0,
@@ -159,25 +95,12 @@
                 },
                 {
                     "seats": [
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0,
-                            "yOffset": 19
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        }
+                        { "type": 0 },
+                        { "type": 0 },
+                        { "type": 0 },
+                        { "type": 0,  "yOffset": 19},
+                        { "type": 0 },
+                        { "type": 0 }
                     ],
                     "x": 0,
                     "y": 0,
@@ -192,29 +115,17 @@
         },
         {
             "name": "ROWS [7-13]",
+            "deck": 0,
             "capacity": 42,
             "rows": [
                 {
                     "seats": [
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0,
-                            "yOffset": 19
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        }
+                        { "type": 0 },
+                        { "type": 0 },
+                        { "type": 0 },
+                        { "type": 0,  "yOffset": 19},
+                        { "type": 0 },
+                        { "type": 0 }
                     ],
                     "x": 0,
                     "y": 0,
@@ -223,25 +134,12 @@
                 },
                 {
                     "seats": [
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0,
-                            "yOffset": 19
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        }
+                        { "type": 0 },
+                        { "type": 0 },
+                        { "type": 0 },
+                        { "type": 0,  "yOffset": 19},
+                        { "type": 0 },
+                        { "type": 0 }
                     ],
                     "x": 0,
                     "y": 0,
@@ -250,25 +148,12 @@
                 },
                 {
                     "seats": [
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0,
-                            "yOffset": 19
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        }
+                        { "type": 0 },
+                        { "type": 0 },
+                        { "type": 0 },
+                        { "type": 0,  "yOffset": 19},
+                        { "type": 0 },
+                        { "type": 0 }
                     ],
                     "x": 0,
                     "y": 0,
@@ -277,25 +162,12 @@
                 },
                 {
                     "seats": [
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0,
-                            "yOffset": 19
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        }
+                        { "type": 0 },
+                        { "type": 0 },
+                        { "type": 0 },
+                        { "type": 0,  "yOffset": 19},
+                        { "type": 0 },
+                        { "type": 0 }
                     ],
                     "x": 0,
                     "y": 0,
@@ -304,25 +176,12 @@
                 },
                 {
                     "seats": [
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0,
-                            "yOffset": 19
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        }
+                        { "type": 0 },
+                        { "type": 0 },
+                        { "type": 0 },
+                        { "type": 0,  "yOffset": 19},
+                        { "type": 0 },
+                        { "type": 0 }
                     ],
                     "x": 0,
                     "y": 0,
@@ -331,25 +190,12 @@
                 },
                 {
                     "seats": [
-                        {
-                            "type": 1
-                        },
-                        {
-                            "type": 1
-                        },
-                        {
-                            "type": 1
-                        },
-                        {
-                            "type": 1,
-                            "yOffset": 19
-                        },
-                        {
-                            "type": 1
-                        },
-                        {
-                            "type": 1
-                        }
+                        { "type": 1 },
+                        { "type": 1 },
+                        { "type": 1 },
+                        { "type": 1,  "yOffset": 19 },
+                        { "type": 1 },
+                        { "type": 1 }
                     ],
                     "x": 0,
                     "y": 0,
@@ -358,25 +204,12 @@
                 },
                 {
                     "seats": [
-                        {
-                            "type": 1
-                        },
-                        {
-                            "type": 1
-                        },
-                        {
-                            "type": 1
-                        },
-                        {
-                            "type": 1,
-                            "yOffset": 19
-                        },
-                        {
-                            "type": 1
-                        },
-                        {
-                            "type": 1
-                        }
+                        { "type": 1 },
+                        { "type": 1 },
+                        { "type": 1 },
+                        { "type": 1,  "yOffset": 19 },
+                        { "type": 1 },
+                        { "type": 1 }
                     ],
                     "x": 0,
                     "y": 0,
@@ -391,29 +224,17 @@
         },
         {
             "name": "ROWS [14-21]",
+            "deck": 0,
             "capacity": 48,
             "rows": [
                 {
                     "seats": [
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0,
-                            "yOffset": 19
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        }
+                        { "type": 0 },
+                        { "type": 0 },
+                        { "type": 0 },
+                        { "type": 0,  "yOffset": 19},
+                        { "type": 0 },
+                        { "type": 0 }
                     ],
                     "x": 0,
                     "y": 0,
@@ -422,25 +243,12 @@
                 },
                 {
                     "seats": [
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0,
-                            "yOffset": 19
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        }
+                        { "type": 0 },
+                        { "type": 0 },
+                        { "type": 0 },
+                        { "type": 0,  "yOffset": 19},
+                        { "type": 0 },
+                        { "type": 0 }
                     ],
                     "x": 0,
                     "y": 0,
@@ -449,25 +257,12 @@
                 },
                 {
                     "seats": [
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0,
-                            "yOffset": 19
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        }
+                        { "type": 0 },
+                        { "type": 0 },
+                        { "type": 0 },
+                        { "type": 0,  "yOffset": 19},
+                        { "type": 0 },
+                        { "type": 0 }
                     ],
                     "x": 0,
                     "y": 0,
@@ -476,25 +271,12 @@
                 },
                 {
                     "seats": [
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0,
-                            "yOffset": 19
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        }
+                        { "type": 0 },
+                        { "type": 0 },
+                        { "type": 0 },
+                        { "type": 0,  "yOffset": 19},
+                        { "type": 0 },
+                        { "type": 0 }
                     ],
                     "x": 0,
                     "y": 0,
@@ -503,25 +285,12 @@
                 },
                 {
                     "seats": [
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0,
-                            "yOffset": 19
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        }
+                        { "type": 0 },
+                        { "type": 0 },
+                        { "type": 0 },
+                        { "type": 0,  "yOffset": 19},
+                        { "type": 0 },
+                        { "type": 0 }
                     ],
                     "x": 0,
                     "y": 0,
@@ -530,25 +299,12 @@
                 },
                 {
                     "seats": [
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0,
-                            "yOffset": 19
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        }
+                        { "type": 0 },
+                        { "type": 0 },
+                        { "type": 0 },
+                        { "type": 0,  "yOffset": 19},
+                        { "type": 0 },
+                        { "type": 0 }
                     ],
                     "x": 0,
                     "y": 0,
@@ -557,25 +313,12 @@
                 },
                 {
                     "seats": [
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0,
-                            "yOffset": 19
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        }
+                        { "type": 0 },
+                        { "type": 0 },
+                        { "type": 0 },
+                        { "type": 0,  "yOffset": 19},
+                        { "type": 0 },
+                        { "type": 0 }
                     ],
                     "x": 0,
                     "y": 0,
@@ -584,25 +327,12 @@
                 },
                 {
                     "seats": [
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0,
-                            "yOffset": 19
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        }
+                        { "type": 0 },
+                        { "type": 0 },
+                        { "type": 0 },
+                        { "type": 0,  "yOffset": 19},
+                        { "type": 0 },
+                        { "type": 0 }
                     ],
                     "x": 0,
                     "y": 0,
@@ -617,29 +347,17 @@
         },
         {
             "name": "ROWS [22-29]",
+            "deck": 0,
             "capacity": 48,
             "rows": [
                 {
                     "seats": [
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0,
-                            "yOffset": 19
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        }
+                        { "type": 0 },
+                        { "type": 0 },
+                        { "type": 0 },
+                        { "type": 0,  "yOffset": 19},
+                        { "type": 0 },
+                        { "type": 0 }
                     ],
                     "x": 0,
                     "y": 0,
@@ -648,25 +366,12 @@
                 },
                 {
                     "seats": [
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0,
-                            "yOffset": 19
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        }
+                        { "type": 0 },
+                        { "type": 0 },
+                        { "type": 0 },
+                        { "type": 0,  "yOffset": 19},
+                        { "type": 0 },
+                        { "type": 0 }
                     ],
                     "x": 0,
                     "y": 0,
@@ -675,25 +380,12 @@
                 },
                 {
                     "seats": [
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0,
-                            "yOffset": 19
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        }
+                        { "type": 0 },
+                        { "type": 0 },
+                        { "type": 0 },
+                        { "type": 0,  "yOffset": 19},
+                        { "type": 0 },
+                        { "type": 0 }
                     ],
                     "x": 0,
                     "y": 0,
@@ -702,25 +394,12 @@
                 },
                 {
                     "seats": [
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0,
-                            "yOffset": 19
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        }
+                        { "type": 0 },
+                        { "type": 0 },
+                        { "type": 0 },
+                        { "type": 0,  "yOffset": 19},
+                        { "type": 0 },
+                        { "type": 0 }
                     ],
                     "x": 0,
                     "y": 0,
@@ -729,25 +408,12 @@
                 },
                 {
                     "seats": [
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0,
-                            "yOffset": 19
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        }
+                        { "type": 0 },
+                        { "type": 0 },
+                        { "type": 0 },
+                        { "type": 0,  "yOffset": 19},
+                        { "type": 0 },
+                        { "type": 0 }
                     ],
                     "x": 0,
                     "y": 0,
@@ -756,25 +422,12 @@
                 },
                 {
                     "seats": [
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0,
-                            "yOffset": 19
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        }
+                        { "type": 0 },
+                        { "type": 0 },
+                        { "type": 0 },
+                        { "type": 0,  "yOffset": 19},
+                        { "type": 0 },
+                        { "type": 0 }
                     ],
                     "x": 0,
                     "y": 0,
@@ -783,25 +436,12 @@
                 },
                 {
                     "seats": [
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0,
-                            "yOffset": 19
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        }
+                        { "type": 0 },
+                        { "type": 0 },
+                        { "type": 0 },
+                        { "type": 0,  "yOffset": 19},
+                        { "type": 0 },
+                        { "type": 0 }
                     ],
                     "x": 0,
                     "y": 0,
@@ -810,25 +450,12 @@
                 },
                 {
                     "seats": [
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0,
-                            "yOffset": 19
-                        },
-                        {
-                            "type": 0
-                        },
-                        {
-                            "type": 0
-                        }
+                        { "type": 0 },
+                        { "type": 0 },
+                        { "type": 0 },
+                        { "type": 0,  "yOffset": 19},
+                        { "type": 0 },
+                        { "type": 0 }
                     ],
                     "x": 0,
                     "y": 0,

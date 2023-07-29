@@ -26,7 +26,7 @@ const useCanvasEvent = (canvas: HTMLCanvasElement | null, event: string, handler
     });
 };
 
-export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, activeFlags, canvasX, canvasY, onClickSeat }) => {
+export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, activeFlags, canvasX, canvasY, isMainDeck, onClickSeat }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [ctx, setCtx] = useState<CanvasRenderingContext2D | null>(null);
 
@@ -97,6 +97,7 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
     };
 
     const draw = () => {
+        const currDeck = isMainDeck ? 0 : 1;
         if (ctx) {
             ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
             ctx.fillStyle = '#fff';
@@ -104,12 +105,14 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
 
             let xOff = 0;
             for (let station = 0; station < seatMap.length; station++) {
-                let seatId = 0;
-                for (let row = 0; row < seatMap[station].rows.length; row++) {
-                    // console.log(`drawRow(xOff: ${xOff}, station: ${station}, row: ${row}, seatID: ${seatId})`);
-                    xOff = addXOffsetRow(xOff, station, row);
-                    drawRow(xOff, station, row, seatMap[station].rows[row], seatId);
-                    seatId += seatMap[station].rows[row].seats.length;
+                if (seatMap[station].deck === currDeck) {
+                    let seatId = 0;
+                    for (let row = 0; row < seatMap[station].rows.length; row++) {
+                        // console.log(`drawRow(xOff: ${xOff}, station: ${station}, row: ${row}, seatID: ${seatId})`);
+                        xOff = addXOffsetRow(xOff, station, row);
+                        drawRow(xOff, station, row, seatMap[station].rows[row], seatId);
+                        seatId += seatMap[station].rows[row].seats.length;
+                    }
                 }
             }
             ctx.fill();

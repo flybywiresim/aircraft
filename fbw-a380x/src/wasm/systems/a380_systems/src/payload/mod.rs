@@ -149,13 +149,13 @@ impl A380Payload {
         },
         // PAX MAIN MID 2: 124
         PaxInfo {
-            max_pax: 48,
+            max_pax: 42,
             position: (-51.9, 0., 7.1),
             pax_id: "PAX_MAIN_AFT_A",
             payload_id: "PAYLOAD_STATION_9_REQ",
         },
         PaxInfo {
-            max_pax: 34,
+            max_pax: 40,
             position: (-51.9, 0., 7.1),
             pax_id: "PAX_MAIN_AFT_B",
             payload_id: "PAYLOAD_STATION_10_REQ",

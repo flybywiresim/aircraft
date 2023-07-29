@@ -27,6 +27,7 @@ export interface PaxStationInfo {
     fill: number,
     stationIndex: number,
     position: number,
+    deck: number
 }
 
 export interface CargoStationInfo {
