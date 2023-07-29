@@ -63,6 +63,85 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
         (24_000, FailureType::TransformerRectifier(1)),
         (24_001, FailureType::TransformerRectifier(2)),
         (24_002, FailureType::TransformerRectifier(3)),
+        (24_004, FailureType::StaticInverter),
+        (24_020, FailureType::Generator(1)),
+        (24_021, FailureType::Generator(2)),
+        (24_022, FailureType::Generator(3)),
+        (24_023, FailureType::Generator(4)),
+        (24_030, FailureType::ApuGenerator(1)),
+        (24_031, FailureType::ApuGenerator(2)),
+        (
+            24_100,
+            FailureType::ElectricalBus(ElectricalBusType::AlternatingCurrent(1)),
+        ),
+        (
+            24_101,
+            FailureType::ElectricalBus(ElectricalBusType::AlternatingCurrent(2)),
+        ),
+        (
+            24_102,
+            FailureType::ElectricalBus(ElectricalBusType::AlternatingCurrent(3)),
+        ),
+        (
+            24_103,
+            FailureType::ElectricalBus(ElectricalBusType::AlternatingCurrent(4)),
+        ),
+        (
+            24_104,
+            FailureType::ElectricalBus(ElectricalBusType::AlternatingCurrentEssential),
+        ),
+        (
+            24_105,
+            FailureType::ElectricalBus(ElectricalBusType::AlternatingCurrentEssentialShed),
+        ),
+        (
+            24_106,
+            FailureType::ElectricalBus(ElectricalBusType::AlternatingCurrentNamed("247XP")),
+        ),
+        (
+            24_107,
+            FailureType::ElectricalBus(ElectricalBusType::AlternatingCurrentGndFltService),
+        ),
+        (
+            24_108,
+            FailureType::ElectricalBus(ElectricalBusType::DirectCurrent(1)),
+        ),
+        (
+            24_109,
+            FailureType::ElectricalBus(ElectricalBusType::DirectCurrent(2)),
+        ),
+        (
+            24_110,
+            FailureType::ElectricalBus(ElectricalBusType::DirectCurrentEssential),
+        ),
+        (
+            24_111,
+            FailureType::ElectricalBus(ElectricalBusType::DirectCurrentNamed("247PP")),
+        ),
+        (
+            24_112,
+            FailureType::ElectricalBus(ElectricalBusType::DirectCurrentNamed("309PP")),
+        ),
+        (
+            24_113,
+            FailureType::ElectricalBus(ElectricalBusType::DirectCurrentHot(1)),
+        ),
+        (
+            24_114,
+            FailureType::ElectricalBus(ElectricalBusType::DirectCurrentHot(2)),
+        ),
+        (
+            24_115,
+            FailureType::ElectricalBus(ElectricalBusType::DirectCurrentHot(3)),
+        ),
+        (
+            24_116,
+            FailureType::ElectricalBus(ElectricalBusType::DirectCurrentHot(4)),
+        ),
+        (
+            24_117,
+            FailureType::ElectricalBus(ElectricalBusType::DirectCurrentGndFltService),
+        ),
         (29_000, FailureType::ReservoirLeak(HydraulicColor::Green)),
         (29_001, FailureType::ReservoirLeak(HydraulicColor::Blue)),
         (29_002, FailureType::ReservoirLeak(HydraulicColor::Yellow)),

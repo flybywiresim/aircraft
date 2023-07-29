@@ -253,7 +253,7 @@ class AdfNeedle extends DisplayComponent<SingleNeedleProps> {
                 break;
             default:
             }
-        });
+        }, true);
     }
 
     render(): VNode | null {
