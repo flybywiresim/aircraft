@@ -25,7 +25,9 @@ class A32NX_MessageQueue {
                 message.onClear(this._fmgc);
                 this._queue.splice(i, 1);
                 if (i === 0) {
-                    this._fmgc.removeScratchpadMessage(value);
+                    if (this._fmgc.fmgcScratchpad) {
+                        this._fmgc.fmgcScratchpad.removeMessage(value);
+                    }
                     this.updateDisplayedMessage();
                 }
                 break;
@@ -45,7 +47,9 @@ class A32NX_MessageQueue {
                 return this.updateDisplayedMessage();
             }
 
-            this._fmgc.setScratchpadMessage(message);
+            if (this._fmgc.fmgcScratchpad) {
+                this._fmgc.fmgcScratchpad.setMessage(message);
+            }
         }
     }
 
