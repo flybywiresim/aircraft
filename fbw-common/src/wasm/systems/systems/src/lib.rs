@@ -8,6 +8,7 @@
 pub mod macros;
 
 pub mod air_conditioning;
+pub mod airframe;
 pub mod apu;
 pub mod electrical;
 pub mod engine;
