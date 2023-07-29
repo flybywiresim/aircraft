@@ -339,7 +339,7 @@ export class SimBriefUplinkAdapter {
             const lastFix = ofp.navlog[i - 1];
             const fix = ofp.navlog[i];
 
-            if (fix.ident === 'TOC' || fix.ident === 'TOD') {
+            if (fix.ident === 'TOC' || fix.ident === 'TOD' || fix.type === 'apt') {
                 continue;
             }
 
