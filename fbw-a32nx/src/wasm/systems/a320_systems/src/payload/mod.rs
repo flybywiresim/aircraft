@@ -860,10 +860,20 @@ impl PassengerPayload for A320Payload {
         let mut moments: Vec<Vector3<f64>> = Vec::new();
         for ps in A320PaxStation::iterator() {
             moments.push(self.pax_moment(ps));
+            let pax_moment: nalgebra::Matrix<
+                f64,
+                nalgebra::U3,
+                nalgebra::U1,
+                nalgebra::ArrayStorage<f64, nalgebra::U3, nalgebra::U1>,
+            > = self.pax_moment(ps);
         }
-
-        let cg: Vector3<f64> = moments.iter().fold(Vector3::zeros(), |acc, x| acc + x)
-            / self.total_passenger_load().get::<kilogram>();
+        let total_pax_load = self.total_passenger_load().get::<kilogram>();
+        let cg: Vector3<f64> = if total_pax_load > 0. {
+            moments.iter().fold(Vector3::zeros(), |acc, x| acc + x)
+                / self.total_passenger_load().get::<kilogram>()
+        } else {
+            Vector3::zeros()
+        };
         cg
     }
 
@@ -922,8 +932,13 @@ impl CargoPayload for A320Payload {
             moments.push(self.cargo_moment(cs));
         }
 
-        let cg: Vector3<f64> = moments.iter().fold(Vector3::zeros(), |acc, x| acc + x)
-            / self.total_cargo_load().get::<kilogram>();
+        let total_cargo_load = self.total_cargo_load().get::<kilogram>();
+        let cg: Vector3<f64> = if total_cargo_load > 0. {
+            moments.iter().fold(Vector3::zeros(), |acc, x| acc + x)
+                / self.total_cargo_load().get::<kilogram>()
+        } else {
+            Vector3::zeros()
+        };
         cg
     }
 

@@ -1,7 +1,8 @@
 use crate::simulation::{Read, SimulationElement, SimulatorReader, VariableIdentifier};
 use nalgebra::Vector3;
-use uom::si::f64::Mass;
+use uom::si::{f64::Mass, mass::kilogram};
 
+pub const FUEL_GALLONS_TO_KG: f64 = 3.039075693483925;
 pub struct FuelTank {
     fuel_id: VariableIdentifier,
     location: Vector3<f64>,
@@ -26,6 +27,7 @@ impl FuelTank {
 }
 impl SimulationElement for FuelTank {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.quantity = reader.read(&self.fuel_id);
+        let volume: f64 = reader.read(&self.fuel_id);
+        self.quantity = Mass::new::<kilogram>(volume * FUEL_GALLONS_TO_KG);
     }
 }
