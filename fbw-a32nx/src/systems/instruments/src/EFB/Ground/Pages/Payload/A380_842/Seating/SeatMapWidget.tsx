@@ -1,8 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { BitFlags } from '@shared/bitFlags';
 import * as ReactDOMServer from 'react-dom/server';
-import { usePersistentProperty } from '@instruments/common/persistence';
 import { AirplaneFill } from 'react-bootstrap-icons';
+import { BitFlags, usePersistentProperty } from '@flybywiresim/fbw-sdk';
 import { SelectGroup, SelectItem } from '../../../../../UtilComponents/Form/Select';
 import { CanvasConst, SeatConstants, SeatInfo, PaxStationInfo, TYPE, RowInfo } from '../../Seating/Constants';
 import { Seat } from '../../../../../Assets/Seat';

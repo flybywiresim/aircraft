@@ -5,7 +5,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { BitFlags, usePersistentProperty } from '@flybywiresim/fbw-sdk';
 import * as ReactDOMServer from 'react-dom/server';
-import { usePersistentProperty } from '@instruments/common/persistence';
 import { CanvasConst, SeatConstants, SeatInfo, PaxStationInfo, TYPE, RowInfo } from '../../Seating/Constants';
 import { Seat } from '../../../../../Assets/Seat';
 import { SeatOutlineBg } from '../../../../../Assets/SeatOutlineBg';
