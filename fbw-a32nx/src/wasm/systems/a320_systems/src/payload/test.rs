@@ -72,7 +72,7 @@ impl Aircraft for BoardingTestAircraft {
         context: &UpdateContext,
         _electricity: &mut Electricity,
     ) {
-        self.payload.update(context, &self.fuel);
+        self.payload.update(context);
     }
 }
 impl SimulationElement for BoardingTestAircraft {

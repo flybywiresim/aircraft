@@ -1,7 +1,6 @@
 // Note: Fuel system for now is still handled in MSFS. This is used for calculating fuel-related factors.
 use std::time::Duration;
 
-use enum_map::{Enum, EnumMap};
 use nalgebra::Vector3;
 use systems::{
     accept_iterable,
@@ -14,14 +13,39 @@ use systems::{
 };
 use uom::si::{f64::*, mass::kilogram};
 
-pub trait LeftTankHasFuel {
-    fn left_inner_tank_has_fuel_remaining(&self) -> bool;
+pub trait FuelLevel {
+    fn left_inner_tank_has_fuel(&self) -> bool;
+    fn right_inner_tank_has_fuel(&self) -> bool;
+    fn left_outer_tank_has_fuel(&self) -> bool;
+    fn right_outer_tank_has_fuel(&self) -> bool;
+    fn center_tank_has_fuel(&self) -> bool;
+}
+impl FuelLevel for A320Fuel {
+    fn left_inner_tank_has_fuel(&self) -> bool {
+        self.left_inner_tank_has_fuel()
+    }
+    fn right_inner_tank_has_fuel(&self) -> bool {
+        self.right_inner_tank_has_fuel()
+    }
+    fn left_outer_tank_has_fuel(&self) -> bool {
+        self.left_outer_tank_has_fuel()
+    }
+    fn right_outer_tank_has_fuel(&self) -> bool {
+        self.right_outer_tank_has_fuel()
+    }
+    fn center_tank_has_fuel(&self) -> bool {
+        self.center_tank_has_fuel()
+    }
 }
 
-pub trait FuelForeAftCG {
+pub trait FuelPayload {
+    fn total_load(&self) -> Mass;
     fn fore_aft_center_of_gravity(&self) -> f64;
 }
-impl FuelForeAftCG for A320Fuel {
+impl FuelPayload for A320Fuel {
+    fn total_load(&self) -> Mass {
+        self.total_load()
+    }
     fn fore_aft_center_of_gravity(&self) -> f64 {
         self.fore_aft_center_of_gravity()
     }
@@ -36,7 +60,6 @@ impl FuelCG for A320Fuel {
     }
 }
 
-#[derive(Debug, Clone, Copy, Enum)]
 pub enum A320FuelTankType {
     Center,
     LeftInner,
@@ -45,25 +68,11 @@ pub enum A320FuelTankType {
     RightOuter,
 }
 
-impl A320FuelTankType {
-    pub fn iterator() -> impl Iterator<Item = A320FuelTankType> {
-        [
-            A320FuelTankType::Center,
-            A320FuelTankType::LeftInner,
-            A320FuelTankType::LeftOuter,
-            A320FuelTankType::RightInner,
-            A320FuelTankType::RightOuter,
-        ]
-        .iter()
-        .copied()
-    }
-}
-
 pub struct A320Fuel {
     unlimited_fuel_id: VariableIdentifier,
     unlimited_fuel: bool,
 
-    fuel_tanks: EnumMap<A320FuelTankType, FuelTank>,
+    fuel_tanks: [FuelTank; 5],
 }
 impl A320Fuel {
     pub fn new(context: &mut InitContext) -> Self {
@@ -71,7 +80,7 @@ impl A320Fuel {
             unlimited_fuel_id: context.get_identifier("UNLIMITED FUEL".to_owned()),
             unlimited_fuel: false,
 
-            fuel_tanks: EnumMap::from_array([
+            fuel_tanks: [
                 FuelTank::new(
                     context.get_identifier("FUEL TANK CENTER QUANTITY".to_owned()),
                     Vector3::new(-4.5, 0., 1.),
@@ -97,50 +106,63 @@ impl A320Fuel {
                     Vector3::new(-16.9, 27., 3.),
                     Mass::default(),
                 ),
-            ]),
+            ],
         }
     }
 
-    fn _center_tank_has_fuel_remaining(&self) -> bool {
-        self.unlimited_fuel
-            || self.fuel_tanks[A320FuelTankType::Center].quantity() > Mass::default()
-    }
-
+    #[deprecated(note = "Do not call function directly, use trait instead")]
     pub fn left_inner_tank_has_fuel_remaining(&self) -> bool {
         self.unlimited_fuel
-            || self.fuel_tanks[A320FuelTankType::LeftInner].quantity() > Mass::default()
+            || self.fuel_tanks[A320FuelTankType::LeftInner as usize].quantity() > Mass::default()
     }
 
-    fn _left_outer_tank_has_fuel_remaining(&self) -> bool {
+    fn center_tank_has_fuel(&self) -> bool {
         self.unlimited_fuel
-            || self.fuel_tanks[A320FuelTankType::LeftOuter].quantity() > Mass::default()
+            || self.fuel_tanks[A320FuelTankType::Center as usize].quantity() > Mass::default()
     }
 
-    fn _right_inner_tank_has_fuel_remaining(&self) -> bool {
+    fn left_inner_tank_has_fuel(&self) -> bool {
         self.unlimited_fuel
-            || self.fuel_tanks[A320FuelTankType::RightInner].quantity() > Mass::default()
+            || self.fuel_tanks[A320FuelTankType::LeftInner as usize].quantity() > Mass::default()
     }
 
-    fn _right_outer_tank_has_fuel_remaining(&self) -> bool {
+    fn left_outer_tank_has_fuel(&self) -> bool {
         self.unlimited_fuel
-            || self.fuel_tanks[A320FuelTankType::RightOuter].quantity() > Mass::default()
+            || self.fuel_tanks[A320FuelTankType::LeftOuter as usize].quantity() > Mass::default()
+    }
+
+    fn right_inner_tank_has_fuel(&self) -> bool {
+        self.unlimited_fuel
+            || self.fuel_tanks[A320FuelTankType::RightInner as usize].quantity() > Mass::default()
+    }
+
+    fn right_outer_tank_has_fuel(&self) -> bool {
+        self.unlimited_fuel
+            || self.fuel_tanks[A320FuelTankType::RightOuter as usize].quantity() > Mass::default()
     }
 
     fn fore_aft_center_of_gravity(&self) -> f64 {
         self.center_of_gravity().x
     }
 
+    fn total_load(&self) -> Mass {
+        self.fuel_tanks
+            .iter()
+            .map(|t: &FuelTank| t.quantity())
+            .sum()
+    }
+
     fn center_of_gravity(&self) -> Vector3<f64> {
         let positions: Vec<Vector3<f64>> = self
             .fuel_tanks
             .iter()
-            .map(|t| t.1.location())
+            .map(|t| t.location())
             .collect::<Vec<_>>();
 
         let masses: Vec<Mass> = self
             .fuel_tanks
             .iter()
-            .map(|t| t.1.quantity())
+            .map(|t| t.quantity())
             .collect::<Vec<_>>();
 
         // This section of code calculates the center of gravity (assume center of gravity/center of mass is near identical)
