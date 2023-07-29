@@ -1,11 +1,16 @@
 // Note: Fuel system for now is still handled in MSFS. This is used for calculating fuel-related factors.
 use std::time::Duration;
 
-use nalgebra::{ArrayStorage, Matrix, Vector3, U1, U3};
-use systems::simulation::{
-    test::{SimulationTestBed, TestBed, WriteByName},
-    Aircraft, InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
-    VariableIdentifier,
+use enum_map::{Enum, EnumMap};
+use nalgebra::Vector3;
+use systems::{
+    accept_iterable,
+    fuel::FuelTank,
+    simulation::{
+        test::{SimulationTestBed, TestBed, WriteByName},
+        Aircraft, InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
+        VariableIdentifier,
+    },
 };
 use uom::si::{f64::*, mass::kilogram};
 
@@ -16,10 +21,41 @@ pub trait LeftTankHasFuel {
 pub trait FuelForeAftCG {
     fn fore_aft_center_of_gravity(&self) -> f64;
 }
-
 impl FuelForeAftCG for A320Fuel {
     fn fore_aft_center_of_gravity(&self) -> f64 {
         self.fore_aft_center_of_gravity()
+    }
+}
+
+pub trait FuelCG {
+    fn center_of_gravity(&self) -> Vector3<f64>;
+}
+impl FuelCG for A320Fuel {
+    fn center_of_gravity(&self) -> Vector3<f64> {
+        self.center_of_gravity()
+    }
+}
+
+#[derive(Debug, Clone, Copy, Enum)]
+pub enum A320FuelTankType {
+    Center,
+    LeftInner,
+    LeftOuter,
+    RightInner,
+    RightOuter,
+}
+
+impl A320FuelTankType {
+    pub fn iterator() -> impl Iterator<Item = A320FuelTankType> {
+        [
+            A320FuelTankType::Center,
+            A320FuelTankType::LeftInner,
+            A320FuelTankType::LeftOuter,
+            A320FuelTankType::RightInner,
+            A320FuelTankType::RightOuter,
+        ]
+        .iter()
+        .copied()
     }
 }
 
@@ -27,130 +63,105 @@ pub struct A320Fuel {
     unlimited_fuel_id: VariableIdentifier,
     unlimited_fuel: bool,
 
-    fuel_tank_center_quantity_id: VariableIdentifier,
-    fuel_tank_left_main_quantity_id: VariableIdentifier,
-    fuel_tank_left_aux_quantity_id: VariableIdentifier,
-    fuel_tank_right_main_quantity_id: VariableIdentifier,
-    fuel_tank_right_aux_quantity_id: VariableIdentifier,
+    fuel_tanks: EnumMap<A320FuelTankType, FuelTank>,
 
-    center_tank_location: Vector3<f64>,
-    left_inner_tank_location: Vector3<f64>,
-    left_outer_tank_location: Vector3<f64>,
-    right_inner_tank_location: Vector3<f64>,
-    right_outer_tank_location: Vector3<f64>,
-
-    center_tank_fuel_quantity: Mass,
-    left_inner_tank_fuel_quantity: Mass,
-    left_outer_tank_fuel_quantity: Mass,
-    right_inner_tank_fuel_quantity: Mass,
-    right_outer_tank_fuel_quantity: Mass,
-
-    cg: Matrix<f64, U3, U1, ArrayStorage<f64, U3, U1>>,
+    center_of_gravity: Vector3<f64>,
 }
 impl A320Fuel {
     pub fn new(context: &mut InitContext) -> Self {
         A320Fuel {
             unlimited_fuel_id: context.get_identifier("UNLIMITED FUEL".to_owned()),
-
-            fuel_tank_center_quantity_id: context
-                .get_identifier("FUEL TANK CENTER QUANTITY".to_owned()),
-            fuel_tank_left_main_quantity_id: context
-                .get_identifier("FUEL TANK LEFT MAIN QUANTITY".to_owned()),
-            fuel_tank_left_aux_quantity_id: context
-                .get_identifier("FUEL TANK LEFT AUX QUANTITY".to_owned()),
-            fuel_tank_right_main_quantity_id: context
-                .get_identifier("FUEL TANK RIGHT MAIN QUANTITY".to_owned()),
-            fuel_tank_right_aux_quantity_id: context
-                .get_identifier("FUEL TANK RIGHT AUX QUANTITY".to_owned()),
             unlimited_fuel: false,
 
-            center_tank_location: Vector3::new(-4.5, 0., 1.),
-            left_inner_tank_location: Vector3::new(-8., -13., 2.),
-            left_outer_tank_location: Vector3::new(-16.9, -27., 3.),
-            right_inner_tank_location: Vector3::new(-8., 13., 2.),
-            right_outer_tank_location: Vector3::new(-16.9, 27., 3.),
+            fuel_tanks: EnumMap::from_array([
+                FuelTank::new(
+                    context.get_identifier("FUEL TANK CENTER QUANTITY".to_owned()),
+                    Vector3::new(-4.5, 0., 1.),
+                    Mass::default(),
+                ),
+                FuelTank::new(
+                    context.get_identifier("FUEL TANK LEFT MAIN QUANTITY".to_owned()),
+                    Vector3::new(-8., -13., 2.),
+                    Mass::default(),
+                ),
+                FuelTank::new(
+                    context.get_identifier("FUEL TANK LEFT AUX QUANTITY".to_owned()),
+                    Vector3::new(-16.9, -27., 3.),
+                    Mass::default(),
+                ),
+                FuelTank::new(
+                    context.get_identifier("FUEL TANK RIGHT MAIN QUANTITY".to_owned()),
+                    Vector3::new(-8., 13., 2.),
+                    Mass::default(),
+                ),
+                FuelTank::new(
+                    context.get_identifier("FUEL TANK RIGHT AUX QUANTITY".to_owned()),
+                    Vector3::new(-16.9, 27., 3.),
+                    Mass::default(),
+                ),
+            ]),
 
-            center_tank_fuel_quantity: Mass::default(),
-            left_inner_tank_fuel_quantity: Mass::default(),
-            left_outer_tank_fuel_quantity: Mass::default(),
-            right_inner_tank_fuel_quantity: Mass::default(),
-            right_outer_tank_fuel_quantity: Mass::default(),
-
-            cg: Matrix::default(),
+            center_of_gravity: Vector3::zeros(),
         }
     }
 
-    fn _left_inner_tank_fuel_quantity(&self) -> Mass {
-        self.left_inner_tank_fuel_quantity
-    }
-
-    fn _left_outer_tank_fuel_quantity(&self) -> Mass {
-        self.left_outer_tank_fuel_quantity
-    }
-
-    fn _right_inner_tank_fuel_quantity(&self) -> Mass {
-        self.right_inner_tank_fuel_quantity
-    }
-
-    fn _right_outer_tank_fuel_quantity(&self) -> Mass {
-        self.right_outer_tank_fuel_quantity
-    }
-
-    fn _center_tank_fuel_quantity(&self) -> Mass {
-        self.center_tank_fuel_quantity
+    fn _center_tank_has_fuel_remaining(&self) -> bool {
+        self.unlimited_fuel
+            || self.fuel_tanks[A320FuelTankType::Center].quantity() > Mass::default()
     }
 
     pub fn left_inner_tank_has_fuel_remaining(&self) -> bool {
-        self.unlimited_fuel || self.left_inner_tank_fuel_quantity > Mass::default()
-    }
-
-    fn _right_inner_tank_has_fuel_remaining(&self) -> bool {
-        self.unlimited_fuel || self.right_inner_tank_fuel_quantity > Mass::default()
+        self.unlimited_fuel
+            || self.fuel_tanks[A320FuelTankType::LeftInner].quantity() > Mass::default()
     }
 
     fn _left_outer_tank_has_fuel_remaining(&self) -> bool {
-        self.unlimited_fuel || self.left_outer_tank_fuel_quantity > Mass::default()
+        self.unlimited_fuel
+            || self.fuel_tanks[A320FuelTankType::LeftOuter].quantity() > Mass::default()
+    }
+
+    fn _right_inner_tank_has_fuel_remaining(&self) -> bool {
+        self.unlimited_fuel
+            || self.fuel_tanks[A320FuelTankType::RightInner].quantity() > Mass::default()
     }
 
     fn _right_outer_tank_has_fuel_remaining(&self) -> bool {
-        self.unlimited_fuel || self.right_outer_tank_fuel_quantity > Mass::default()
-    }
-
-    fn _center_tank_has_fuel_remaining(&self) -> bool {
-        self.unlimited_fuel || self.center_tank_fuel_quantity > Mass::default()
+        self.unlimited_fuel
+            || self.fuel_tanks[A320FuelTankType::RightOuter].quantity() > Mass::default()
     }
 
     fn fore_aft_center_of_gravity(&self) -> f64 {
-        self.cg.x
+        self.center_of_gravity.x
+    }
+
+    fn center_of_gravity(&self) -> Vector3<f64> {
+        self.center_of_gravity
     }
 }
 impl SimulationElement for A320Fuel {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        accept_iterable!(self.fuel_tanks, visitor);
+        visitor.visit(self);
+    }
+
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.unlimited_fuel = reader.read(&self.unlimited_fuel_id);
-        self.center_tank_fuel_quantity = reader.read(&self.fuel_tank_center_quantity_id);
-        self.left_inner_tank_fuel_quantity = reader.read(&self.fuel_tank_left_main_quantity_id);
-        self.left_outer_tank_fuel_quantity = reader.read(&self.fuel_tank_left_aux_quantity_id);
-        self.right_inner_tank_fuel_quantity = reader.read(&self.fuel_tank_right_main_quantity_id);
-        self.right_outer_tank_fuel_quantity = reader.read(&self.fuel_tank_right_aux_quantity_id);
 
-        let positions = vec![
-            self.center_tank_location,
-            self.left_inner_tank_location,
-            self.left_outer_tank_location,
-            self.right_inner_tank_location,
-            self.right_outer_tank_location,
-        ];
+        let positions = self
+            .fuel_tanks
+            .iter()
+            .map(|t| t.1.location())
+            .collect::<Vec<_>>();
 
-        let masses = vec![
-            self.center_tank_fuel_quantity,
-            self.left_inner_tank_fuel_quantity,
-            self.left_outer_tank_fuel_quantity,
-            self.right_inner_tank_fuel_quantity,
-            self.right_outer_tank_fuel_quantity,
-        ];
-        // Calculate center of mass
+        let masses = self
+            .fuel_tanks
+            .iter()
+            .map(|t| t.1.quantity())
+            .collect::<Vec<_>>();
+
+        // This section of code calculates the center of gravity (assume center of gravity/center of mass is near identical)
         let total_mass_kg: f64 = masses.iter().map(|m| m.get::<kilogram>()).sum();
-        self.cg = positions
+        self.center_of_gravity = positions
             .iter()
             .zip(masses.iter())
             .map(|(pos, m)| pos * m.get::<kilogram>())

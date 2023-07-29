@@ -20,38 +20,47 @@ use crate::fuel::FuelForeAftCG;
 pub mod test;
 
 pub trait NumberOfPassengers {
-    fn number_of_passengers(&self, ps: A320Pax) -> i8;
+    fn number_of_passengers(&self, ps: A320PaxStation) -> i8;
+}
+
+pub trait PassengerPayload {
+    fn passenger_payload(&self, ps: A320PaxStation) -> Mass;
 }
 
 #[derive(Debug, Clone, Copy, Enum)]
-pub enum A320Pax {
+pub enum A320PaxStation {
     A,
     B,
     C,
     D,
 }
-impl A320Pax {
-    pub fn iterator() -> impl Iterator<Item = A320Pax> {
-        [A320Pax::A, A320Pax::B, A320Pax::C, A320Pax::D]
-            .iter()
-            .copied()
+impl A320PaxStation {
+    pub fn iterator() -> impl Iterator<Item = A320PaxStation> {
+        [
+            A320PaxStation::A,
+            A320PaxStation::B,
+            A320PaxStation::C,
+            A320PaxStation::D,
+        ]
+        .iter()
+        .copied()
     }
 }
 
 #[derive(Debug, Clone, Copy, Enum)]
-pub enum A320Cargo {
+pub enum A320CargoStation {
     FwdBaggage,
     AftContainer,
     AftBaggage,
     AftBulkLoose,
 }
-impl A320Cargo {
-    pub fn iterator() -> impl Iterator<Item = A320Cargo> {
+impl A320CargoStation {
+    pub fn iterator() -> impl Iterator<Item = A320CargoStation> {
         [
-            A320Cargo::FwdBaggage,
-            A320Cargo::AftContainer,
-            A320Cargo::AftBaggage,
-            A320Cargo::AftBulkLoose,
+            A320CargoStation::FwdBaggage,
+            A320CargoStation::AftContainer,
+            A320CargoStation::AftBaggage,
+            A320CargoStation::AftBulkLoose,
         ]
         .iter()
         .copied()
@@ -143,6 +152,7 @@ impl SimulationElement for A320BoardingSounds {
         writer.write(&self.pax_ambience_id, self.pax_ambience);
     }
 }
+
 pub struct A320Payload {
     developer_state_id: VariableIdentifier,
     is_boarding_id: VariableIdentifier,
@@ -158,7 +168,6 @@ pub struct A320Payload {
     gsx_cargo_boarding_pct_id: VariableIdentifier,
     gsx_cargo_deboarding_pct_id: VariableIdentifier,
 
-    // cargo_info: EnumMap<A320Cargo, CargoInfo>,
     developer_state: i8,
     is_boarding: bool,
     board_rate: BoardingRate,
@@ -176,25 +185,13 @@ pub struct A320Payload {
     cargo: Vec<Cargo>,
     boarding_sounds: A320BoardingSounds,
     time: Duration,
-
-    gw_cg_percent_mac: f64,
-    zfw_cg_percent_mac: f64,
-
-    desired_gw_cg_percent_mac: f64,
-    desired_zfw_cg_percent_mac: f64,
-
-    ths_setting: f64,
 }
 impl A320Payload {
-    const LOADSHEET: LoadsheetInfo = LoadsheetInfo {
-        operating_empty_weight_kg: 42500.,
-        operating_empty_position: (0., 0., -9.42),
-        per_pax_weight_kg: 84.,
-        mac_size: 13.464,
-        lemac_z: -5.383,
-    };
+    // Note: These constants reflect flight_model.cfg values and will have to be updated in sync with the configuration
 
-    const A320_PAX: EnumMap<A320Pax, PaxInfo<'_>> = EnumMap::from_array([
+    const DEFAULT_PER_PAX_WEIGHT_KG: f64 = 84.;
+
+    const A320_PAX: EnumMap<A320PaxStation, PaxInfo<'_>> = EnumMap::from_array([
         PaxInfo {
             max_pax: 36,
             position: (20.5, 0., 5.),
@@ -221,7 +218,7 @@ impl A320Payload {
         },
     ]);
 
-    const A320_CARGO: EnumMap<A320Cargo, CargoInfo<'_>> = EnumMap::from_array([
+    const A320_CARGO: EnumMap<A320CargoStation, CargoInfo<'_>> = EnumMap::from_array([
         CargoInfo {
             max_cargo_kg: 3402.,
             position: (17.3, 0., 0.),
@@ -250,12 +247,12 @@ impl A320Payload {
 
     pub fn new(context: &mut InitContext) -> Self {
         let per_pax_weight = Rc::new(Cell::new(Mass::new::<kilogram>(
-            Self::LOADSHEET.per_pax_weight_kg,
+            Self::DEFAULT_PER_PAX_WEIGHT_KG,
         )));
 
         let mut pax = Vec::new();
 
-        for ps in A320Pax::iterator() {
+        for ps in A320PaxStation::iterator() {
             let pos = Self::A320_PAX[ps].position;
             pax.push(Pax::new(
                 context.get_identifier(Self::A320_PAX[ps].pax_id.to_owned()),
@@ -268,7 +265,7 @@ impl A320Payload {
         }
 
         let mut cargo = Vec::new();
-        for cs in A320Cargo::iterator() {
+        for cs in A320CargoStation::iterator() {
             let pos = Self::A320_CARGO[cs].position;
             cargo.push(Cargo::new(
                 context.get_identifier(Self::A320_CARGO[cs].cargo_id.to_owned()),
@@ -318,14 +315,6 @@ impl A320Payload {
             pax,
             cargo,
             time: Duration::from_nanos(0),
-
-            gw_cg_percent_mac: 0.,
-            zfw_cg_percent_mac: 0.,
-
-            desired_gw_cg_percent_mac: 0.,
-            desired_zfw_cg_percent_mac: 0.,
-
-            ths_setting: 0.,
         }
     }
 
@@ -341,18 +330,16 @@ impl A320Payload {
         } else {
             self.update_intern(context);
         }
-
-        self.update_calc(fuel_cg.fore_aft_center_of_gravity());
     }
 
     fn ensure_payload_sync(&mut self) {
-        for ps in A320Pax::iterator() {
+        for ps in A320PaxStation::iterator() {
             if !self.pax_is_sync(ps) {
                 self.sync_pax(ps);
             }
         }
 
-        for cs in A320Cargo::iterator() {
+        for cs in A320CargoStation::iterator() {
             if !self.cargo_is_sync(cs) {
                 self.sync_cargo(cs);
             }
@@ -388,13 +375,13 @@ impl A320Payload {
     }
 
     fn update_cargo_loaded(&mut self) {
-        for cs in A320Cargo::iterator() {
+        for cs in A320CargoStation::iterator() {
             self.cargo[cs as usize].update_cargo_loaded()
         }
     }
 
     fn reset_cargo_loaded(&mut self) {
-        for cs in A320Cargo::iterator() {
+        for cs in A320CargoStation::iterator() {
             self.cargo[cs as usize].reset_cargo_loaded()
         }
     }
@@ -444,36 +431,6 @@ impl A320Payload {
         // Check sound before updating boarding status
         self.update_boarding_sounds();
         self.update_boarding_status();
-    }
-
-    fn update_calc(&mut self, fuel_cg: f64) {
-        // TODO: Finish then refactor
-
-        let fuel_cg_percent_mac =
-            -100. * (fuel_cg - Self::LOADSHEET.lemac_z) / Self::LOADSHEET.mac_size;
-
-        // const newZfwMoment = Loadsheet.specs.emptyPosition * emptyWeight + calculatePaxMoment() + calculateCargoMoment();
-
-        // let zfw_moment = A320_EMPTY_MOMENT + pax moment + cargo moment
-
-        // A320_EMPTY_MOMENT = Self::LOADSHEET.empty_weight * Self::LOADSHEET.empty_position.2
-
-        let operating_empty_moment =
-            Self::LOADSHEET.operating_empty_weight_kg * Self::LOADSHEET.operating_empty_position.2;
-
-        /*
-        for ps in self.pax {
-            ps.pax_num() as f64 * ps.per_pax_weight();
-        }
-        */
-
-        self.desired_zfw_cg_percent_mac;
-        self.desired_gw_cg_percent_mac = self.desired_zfw_cg_percent_mac + fuel_cg_percent_mac;
-
-        // self.zfw_cg_percent_mac;
-        // self.zfw_cg_percent_mac = self.zfw_cg_percent_mac + fuel_cg_percent_mac;
-
-        // self.gw_cg_percent_mac = A320_EMPTY_WEIGHT.get::<kilogram>();
     }
 
     fn update_boarding_status(&mut self) {
@@ -537,7 +494,7 @@ impl A320Payload {
     }
 
     fn reset_all_pax_targets(&mut self) {
-        for ps in A320Pax::iterator() {
+        for ps in A320PaxStation::iterator() {
             self.reset_pax_target(ps);
         }
     }
@@ -545,7 +502,7 @@ impl A320Payload {
     fn move_all_pax_num(&mut self, pax_diff: i32) {
         if pax_diff > 0 {
             for _ in 0..pax_diff {
-                for ps in A320Pax::iterator() {
+                for ps in A320PaxStation::iterator() {
                     if self.pax_is_target(ps) {
                         continue;
                     }
@@ -557,7 +514,7 @@ impl A320Payload {
     }
 
     fn update_pax(&mut self) {
-        for ps in A320Pax::iterator() {
+        for ps in A320PaxStation::iterator() {
             if self.pax_is_target(ps) {
                 continue;
             }
@@ -571,13 +528,13 @@ impl A320Payload {
     }
 
     fn reset_all_cargo_targets(&mut self) {
-        for cs in A320Cargo::iterator() {
+        for cs in A320CargoStation::iterator() {
             self.reset_cargo_target(cs);
         }
     }
 
     fn update_cargo(&mut self) {
-        for cs in A320Cargo::iterator() {
+        for cs in A320CargoStation::iterator() {
             if self.cargo_is_target(cs) {
                 continue;
             }
@@ -595,7 +552,7 @@ impl A320Payload {
     }
 
     fn is_pax_boarding(&self) -> bool {
-        for ps in A320Pax::iterator() {
+        for ps in A320PaxStation::iterator() {
             if self.pax_num(ps) < self.pax_target_num(ps) && self.is_boarding() {
                 return true;
             }
@@ -604,7 +561,7 @@ impl A320Payload {
     }
 
     fn is_pax_deboarding(&self) -> bool {
-        for ps in A320Pax::iterator() {
+        for ps in A320PaxStation::iterator() {
             if self.pax_num(ps) > self.pax_target_num(ps) && self.is_boarding() {
                 return true;
             }
@@ -613,7 +570,7 @@ impl A320Payload {
     }
 
     fn is_pax_loaded(&self) -> bool {
-        for ps in A320Pax::iterator() {
+        for ps in A320PaxStation::iterator() {
             if !self.pax_is_target(ps) {
                 return false;
             }
@@ -622,7 +579,7 @@ impl A320Payload {
     }
 
     fn is_cargo_loaded(&self) -> bool {
-        for cs in A320Cargo::iterator() {
+        for cs in A320CargoStation::iterator() {
             if !self.cargo_is_target(cs) {
                 return false;
             }
@@ -635,7 +592,7 @@ impl A320Payload {
     }
 
     fn has_no_pax(&mut self) -> bool {
-        for ps in A320Pax::iterator() {
+        for ps in A320PaxStation::iterator() {
             let pax_num = 0;
             if self.pax_num(ps) == pax_num {
                 return true;
@@ -668,22 +625,22 @@ impl A320Payload {
         self.boarding_sounds.pax_deboarding()
     }
 
-    fn pax_num(&self, ps: A320Pax) -> i8 {
+    fn pax_num(&self, ps: A320PaxStation) -> i8 {
         self.pax[ps as usize].pax_num() as i8
     }
 
     #[allow(dead_code)]
-    fn pax_payload(&self, ps: A320Pax) -> Mass {
+    fn pax_payload(&self, ps: A320PaxStation) -> Mass {
         self.pax[ps as usize].payload()
     }
 
-    fn max_pax(&self, ps: A320Pax) -> i8 {
+    fn max_pax(&self, ps: A320PaxStation) -> i8 {
         self.pax[ps as usize].max_pax()
     }
 
     fn total_pax_num(&self) -> i32 {
         let mut pax_num = 0;
-        for ps in A320Pax::iterator() {
+        for ps in A320PaxStation::iterator() {
             pax_num += self.pax_num(ps) as i32;
         }
         pax_num
@@ -691,101 +648,101 @@ impl A320Payload {
 
     fn total_max_pax(&self) -> i32 {
         let mut max_pax = 0;
-        for ps in A320Pax::iterator() {
+        for ps in A320PaxStation::iterator() {
             max_pax += self.max_pax(ps) as i32;
         }
         max_pax
     }
 
-    fn pax_target_num(&self, ps: A320Pax) -> i8 {
+    fn pax_target_num(&self, ps: A320PaxStation) -> i8 {
         self.pax[ps as usize].pax_target_num() as i8
     }
 
-    fn pax_is_sync(&mut self, ps: A320Pax) -> bool {
+    fn pax_is_sync(&mut self, ps: A320PaxStation) -> bool {
         self.pax[ps as usize].payload_is_sync()
     }
 
-    fn pax_is_target(&self, ps: A320Pax) -> bool {
+    fn pax_is_target(&self, ps: A320PaxStation) -> bool {
         self.pax[ps as usize].pax_is_target()
     }
 
-    fn sync_pax(&mut self, ps: A320Pax) {
+    fn sync_pax(&mut self, ps: A320PaxStation) {
         self.pax[ps as usize].load_payload();
     }
 
-    fn move_all_pax(&mut self, ps: A320Pax) {
+    fn move_all_pax(&mut self, ps: A320PaxStation) {
         self.pax[ps as usize].move_all_pax();
     }
 
-    fn move_one_pax(&mut self, ps: A320Pax) {
+    fn move_one_pax(&mut self, ps: A320PaxStation) {
         self.pax[ps as usize].move_one_pax();
     }
 
-    fn reset_pax_target(&mut self, ps: A320Pax) {
+    fn reset_pax_target(&mut self, ps: A320PaxStation) {
         self.pax[ps as usize].reset_pax_target();
     }
 
-    fn reset_cargo_target(&mut self, cs: A320Cargo) {
+    fn reset_cargo_target(&mut self, cs: A320CargoStation) {
         self.cargo[cs as usize].reset_cargo_target();
     }
 
     #[allow(dead_code)]
-    fn cargo(&self, cs: A320Cargo) -> Mass {
+    fn cargo(&self, cs: A320CargoStation) -> Mass {
         self.cargo[cs as usize].cargo()
     }
 
     #[allow(dead_code)]
-    fn cargo_payload(&self, cs: A320Cargo) -> Mass {
+    fn cargo_payload(&self, cs: A320CargoStation) -> Mass {
         self.cargo[cs as usize].payload()
     }
 
     #[allow(dead_code)]
-    fn max_cargo(&self, cs: A320Cargo) -> Mass {
+    fn max_cargo(&self, cs: A320CargoStation) -> Mass {
         self.cargo[cs as usize].max_cargo()
     }
 
-    fn cargo_is_sync(&mut self, cs: A320Cargo) -> bool {
+    fn cargo_is_sync(&mut self, cs: A320CargoStation) -> bool {
         self.cargo[cs as usize].payload_is_sync()
     }
 
-    fn cargo_is_target(&self, cs: A320Cargo) -> bool {
+    fn cargo_is_target(&self, cs: A320CargoStation) -> bool {
         self.cargo[cs as usize].cargo_is_target()
     }
 
-    fn move_all_cargo(&mut self, cs: A320Cargo) {
+    fn move_all_cargo(&mut self, cs: A320CargoStation) {
         self.cargo[cs as usize].move_all_cargo();
     }
 
-    fn move_one_cargo(&mut self, cs: A320Cargo) {
+    fn move_one_cargo(&mut self, cs: A320CargoStation) {
         self.cargo[cs as usize].move_one_cargo();
     }
 
     fn board_cargo(&mut self) {
-        for cs in A320Cargo::iterator() {
+        for cs in A320CargoStation::iterator() {
             self.move_all_cargo(cs);
         }
     }
 
     fn load_all_cargo_percent(&mut self, percent: f64) {
-        for cs in A320Cargo::iterator() {
+        for cs in A320CargoStation::iterator() {
             self.load_cargo_percent(cs, percent);
         }
     }
 
-    fn load_cargo_percent(&mut self, cs: A320Cargo, percent: f64) {
+    fn load_cargo_percent(&mut self, cs: A320CargoStation, percent: f64) {
         self.cargo[cs as usize].load_cargo_percent(percent)
     }
 
     fn move_all_payload(&mut self) {
-        for ps in A320Pax::iterator() {
+        for ps in A320PaxStation::iterator() {
             self.move_all_pax(ps)
         }
-        for cs in A320Cargo::iterator() {
+        for cs in A320CargoStation::iterator() {
             self.move_all_cargo(cs)
         }
     }
 
-    fn sync_cargo(&mut self, cs: A320Cargo) {
+    fn sync_cargo(&mut self, cs: A320CargoStation) {
         self.cargo[cs as usize].load_payload();
     }
 
@@ -838,7 +795,12 @@ impl SimulationElement for A320Payload {
     }
 }
 impl NumberOfPassengers for A320Payload {
-    fn number_of_passengers(&self, ps: A320Pax) -> i8 {
+    fn number_of_passengers(&self, ps: A320PaxStation) -> i8 {
         self.pax_num(ps)
+    }
+}
+impl PassengerPayload for A320Payload {
+    fn passenger_payload(&self, ps: A320PaxStation) -> Mass {
+        self.pax_payload(ps)
     }
 }
