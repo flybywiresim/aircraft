@@ -5,7 +5,7 @@ import { Navbar } from '../UtilComponents/Navbar';
 import { ServicesPage } from './Pages/ServicesPage';
 import { PushbackPage } from './Pages/PushbackPage';
 import { FuelPage } from './Pages/FuelPage';
-import { Payload } from './Pages/Payload/Payload';
+import { A380Payload } from './Pages/Payload/A380Payload';
 
 export interface StatefulButton {
     id: string,
@@ -18,7 +18,7 @@ export const Ground = () => {
     const tabs: PageLink[] = [
         { name: 'Services', alias: t('Ground.Services.Title'), component: <ServicesPage /> },
         { name: 'Fuel', alias: t('Ground.Fuel.Title'), component: <FuelPage /> },
-        { name: 'Payload', alias: t('Ground.Payload.Title'), component: <Payload /> },
+        { name: 'Payload', alias: t('Ground.Payload.Title'), component: <A380Payload /> },
         { name: 'Pushback', alias: t('Ground.Pushback.Title'), component: <PushbackPage /> },
     ];
 
