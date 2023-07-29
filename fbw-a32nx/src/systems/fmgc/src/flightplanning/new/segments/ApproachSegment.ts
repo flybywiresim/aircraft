@@ -104,22 +104,21 @@ export class ApproachSegment extends ProcedureSegment<Approach> {
             legs.push(FlightPlanLeg.fromAirportAndRunway(this, '', airport, runway));
         } else {
             const lastLeg = approachLegs[approachLegs.length - 1];
+            // let lastLegIsRunway = lastLeg && lastLeg.isDiscontinuity === false && lastLeg.waypointDescriptor === WaypointDescriptor.Runway;
+            const lastLegIsRunway = lastLeg && lastLeg.isDiscontinuity === false && this.findRunwayFromRunwayLeg(lastLeg); // TODO user workaround until msfs-navdata fix (fms-v2)
 
-            if (lastLeg && lastLeg.isDiscontinuity === false && lastLeg.waypointDescriptor === WaypointDescriptor.Runway) {
+            if (lastLegIsRunway) {
                 legs.push(...approachLegs.slice(0, approachLegs.length - 1));
 
                 const runway = this.findRunwayFromRunwayLeg(lastLeg);
+                const mappedLeg = FlightPlanLeg.fromAirportAndRunway(this, this.procedure?.ident ?? '', airport, runway);
 
-                if (lastLeg?.isDiscontinuity === false && lastLeg.waypointDescriptor === WaypointDescriptor.Runway) {
-                    const mappedLeg = FlightPlanLeg.fromAirportAndRunway(this, this.procedure?.ident ?? '', airport, runway);
-
-                    if (approachLegs.length > 1) {
-                        mappedLeg.type = lastLeg.type;
-                        Object.assign(mappedLeg.definition, lastLeg.definition);
-                    }
-
-                    legs.push(mappedLeg);
+                if (approachLegs.length > 1) {
+                    mappedLeg.type = lastLeg.type;
+                    Object.assign(mappedLeg.definition, lastLeg.definition);
                 }
+
+                legs.push(mappedLeg);
             } else {
                 legs.push(...approachLegs);
             }
