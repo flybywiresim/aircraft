@@ -202,9 +202,9 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
     };
 
     return (
-        <div className="flex relative flex-col">
+        <>
             <SeatOutlineBg stroke={getTheme(theme)[0]} highlight="#69BD45" />
             <canvas className="absolute cursor-pointer" ref={canvasRef} style={{ transform: `translateX(${canvasX}px) translateY(${canvasY}px)` }} />
-        </div>
+        </>
     );
 };

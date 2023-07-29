@@ -59,8 +59,11 @@ export const A320Payload = () => {
 
     const [emptyWeight] = useSimVar('A:EMPTY WEIGHT', 'Kilograms', 10_000);
 
-    const [stationSize, setStationLen] = useState<number[]>([]);
-    const maxPax = useMemo(() => ((stationSize && stationSize.length > 0) ? stationSize.reduce((a, b) => a + b) : -1), [stationSize]);
+    const [seatMap] = useState<PaxStationInfo[]>(Loadsheet.seatMap);
+    const [cargoMap] = useState<CargoStationInfo[]>(Loadsheet.cargoMap);
+
+    const maxPax = useMemo(() => seatMap.reduce((a, b) => a + b.capacity, 0), [seatMap]);
+    const maxCargo = useMemo(() => cargoMap.reduce((a, b) => a + b.weight, 0), [cargoMap]);
 
     // Calculate Total Pax from Pax Flags
     const totalPax = useMemo(() => {
@@ -82,9 +85,6 @@ export const A320Payload = () => {
     const totalCargoDesired = useMemo(() => ((cargoDesired && cargoDesired.length > 0) ? cargoDesired.reduce((a, b) => a + b) : -1), [...cargoDesired]);
     const totalCargo = useMemo(() => ((cargo && cargo.length > 0) ? cargo.reduce((a, b) => a + b) : -1), [...cargo]);
 
-    const [cargoStationWeights, setCargoStationWeight] = useState<number[]>([]);
-    const maxCargo = useMemo(() => ((cargoStationWeights && cargoStationWeights.length > 0) ? cargoStationWeights.reduce((a, b) => a + b) : -1), [cargoStationWeights]);
-
     // Units
     // Weights
     const [zfw] = useSimVar('L:A32NX_ZFW', 'number', 200);
@@ -98,9 +98,6 @@ export const A320Payload = () => {
     const [desiredZfwCgMac] = useSimVar('L:A32NX_DESIRED_ZFW_CG_PERCENT_MAC', 'number', 200);
     const [gwCgMac] = useSimVar('L:A32NX_GW_CG_PERCENT_MAC', 'number', 200);
     const [desiredGwCgMac] = useSimVar('L:A32NX_DESIRED_GW_CG_PERCENT_MAC', 'number', 200);
-
-    const [seatMap] = useState<PaxStationInfo[]>(Loadsheet.seatMap);
-    const [cargoMap] = useState<CargoStationInfo[]>(Loadsheet.cargoMap);
 
     const [showSimbriefButton, setShowSimbriefButton] = useState(false);
     const simbriefUnits = useAppSelector((state) => state.simbrief.data.units);
@@ -162,14 +159,13 @@ export const A320Payload = () => {
     const setTargetPax = useCallback((numOfPax: number) => {
         setGsxNumPassengers(numOfPax);
 
-        if (!stationSize || numOfPax === totalPaxDesired || numOfPax > maxPax || numOfPax < 0) return;
+        if (numOfPax === totalPaxDesired || numOfPax > maxPax || numOfPax < 0) return;
 
         let paxRemaining = numOfPax;
 
         const fillStation = (stationIndex: number, percent: number, paxToFill: number) => {
             const sFlags: SeatFlags = desiredFlags[stationIndex];
-            const toBeFilled = Math.min(Math.trunc(percent * paxToFill), stationSize[stationIndex]);
-
+            const toBeFilled = Math.min(Math.trunc(percent * paxToFill), seatMap[stationIndex].capacity);
             paxRemaining -= toBeFilled;
 
             const planSeatedPax = sFlags.getTotalFilledSeats();
@@ -184,7 +180,7 @@ export const A320Payload = () => {
             fillStation(i, seatMap[i].fill, numOfPax);
         }
         fillStation(0, 1, paxRemaining);
-    }, [maxPax, ...stationSize, ...seatMap, totalPaxDesired]);
+    }, [maxPax, ...seatMap, totalPaxDesired]);
 
     const setTargetCargo = useCallback((numberOfPax: number, freight: number, perBagWeight: number = paxBagWeight) => {
         const bagWeight = numberOfPax * perBagWeight;
@@ -199,10 +195,10 @@ export const A320Payload = () => {
         }
 
         for (let i = cargoDesired.length - 1; i > 0; i--) {
-            fillCargo(i, cargoStationWeights[i] / maxCargo, loadableCargoWeight);
+            fillCargo(i, cargoMap[i].weight / maxCargo, loadableCargoWeight);
         }
         fillCargo(0, 1, remainingWeight);
-    }, [maxCargo, ...cargoStationWeights, ...cargoMap, ...cargoDesired, paxBagWeight]);
+    }, [maxCargo, ...cargoMap, ...cargoDesired, paxBagWeight]);
 
     const processZfw = useCallback((newZfw) => {
         let paxCargoWeight = newZfw - emptyWeight;
@@ -263,7 +259,7 @@ export const A320Payload = () => {
         paxBagWeight,
         totalCargoDesired,
         ...cargoDesired,
-        ...desiredFlags, ...stationSize,
+        ...desiredFlags,
         totalPaxDesired,
     ]);
 
@@ -340,30 +336,6 @@ export const A320Payload = () => {
             }
         }
     }, [coldAndDark, boardingRate]);
-
-    // Init the seating map
-    useEffect(() => {
-        const stationSize: number[] = [];
-        for (let i = 0; i < seatMap.length; i++) {
-            stationSize.push(0);
-        }
-        seatMap.forEach((station, i) => {
-            stationSize[i] = station.capacity;
-        });
-        setStationLen(stationSize);
-    }, [seatMap]);
-
-    // Init the cargo map
-    useEffect(() => {
-        const cargoSize: number[] = [];
-        for (let i = 0; i < cargoMap.length; i++) {
-            cargoSize.push(0);
-        }
-        cargoMap.forEach((station, index) => {
-            cargoSize[index] = station.weight;
-        });
-        setCargoStationWeight(cargoSize);
-    }, [cargoMap]);
 
     useEffect(() => {
         if (gsxPayloadSyncEnabled === 1) {
@@ -458,9 +430,11 @@ export const A320Payload = () => {
         <div>
             <div className="relative h-content-section-reduced">
                 <div className="mb-10">
-                    <SeatMapWidget seatMap={seatMap} desiredFlags={desiredFlags} activeFlags={activeFlags} onClickSeat={onClickSeat} canvasX={243} canvasY={78} />
+                    <div className="flex relative flex-col">
+                        <SeatMapWidget seatMap={seatMap} desiredFlags={desiredFlags} activeFlags={activeFlags} onClickSeat={onClickSeat} canvasX={243} canvasY={78} />
+                    </div>
                 </div>
-                <CargoWidget cargo={cargo} cargoDesired={cargoDesired} cargoMap={cargoMap} cargoStationSize={cargoStationWeights} onClickCargo={onClickCargo} />
+                <CargoWidget cargo={cargo} cargoDesired={cargoDesired} cargoMap={cargoMap} onClickCargo={onClickCargo} />
 
                 <div className="flex relative right-0 flex-row justify-between px-4 mt-16">
                     <div className="flex flex-col flex-grow pr-24">

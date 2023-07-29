@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { CloudArrowDown } from 'react-bootstrap-icons';
+import { AirplaneFill, CloudArrowDown } from 'react-bootstrap-icons';
 import { SeatFlags, Units, usePersistentNumberProperty, usePersistentProperty, useSeatFlags, useSimVar } from '@flybywiresim/fbw-sdk';
 import { BoardingInput, MiscParamsInput, PayloadInputTable } from '../PayloadElements';
 import { CargoWidget } from './Seating/CargoWidget';
@@ -78,8 +78,11 @@ export const A380Payload = () => {
 
     const [emptyWeight] = useSimVar('A:EMPTY WEIGHT', 'Kilograms', 10_000);
 
-    const [stationSize, setStationLen] = useState<number[]>([]);
-    const maxPax = useMemo(() => ((stationSize && stationSize.length > 0) ? stationSize.reduce((a, b) => a + b) : -1), [stationSize]);
+    const [seatMap] = useState<PaxStationInfo[]>(Loadsheet.seatMap);
+    const [cargoMap] = useState<CargoStationInfo[]>(Loadsheet.cargoMap);
+
+    const maxPax = useMemo(() => seatMap.reduce((a, b) => a + b.capacity, 0), [seatMap]);
+    const maxCargo = useMemo(() => cargoMap.reduce((a, b) => a + b.weight, 0), [cargoMap]);
 
     // Calculate Total Pax from Pax Flags
     const totalPax = useMemo(() => {
@@ -101,9 +104,6 @@ export const A380Payload = () => {
     const totalCargoDesired = useMemo(() => ((cargoDesired && cargoDesired.length > 0) ? cargoDesired.reduce((a, b) => a + b) : -1), [...cargoDesired]);
     const totalCargo = useMemo(() => ((cargo && cargo.length > 0) ? cargo.reduce((a, b) => a + b) : -1), [...cargo]);
 
-    const [cargoStationWeights, setCargoStationWeight] = useState<number[]>([]);
-    const maxCargo = useMemo(() => ((cargoStationWeights && cargoStationWeights.length > 0) ? cargoStationWeights.reduce((a, b) => a + b) : -1), [cargoStationWeights]);
-
     // Units
     // Weights
     const [zfw] = useSimVar('L:A32NX_ZFW', 'number', 200);
@@ -118,9 +118,6 @@ export const A380Payload = () => {
     const [gwCgMac] = useSimVar('L:A32NX_GW_CG_PERCENT_MAC', 'number', 200);
     const [desiredGwCgMac] = useSimVar('L:A32NX_DESIRED_GW_CG_PERCENT_MAC', 'number', 200);
 
-    const [seatMap] = useState<PaxStationInfo[]>(Loadsheet.seatMap);
-    const [cargoMap] = useState<CargoStationInfo[]>(Loadsheet.cargoMap);
-
     const [showSimbriefButton, setShowSimbriefButton] = useState(false);
     const simbriefUnits = useAppSelector((state) => state.simbrief.data.units);
     const simbriefBagWeight = parseInt(useAppSelector((state) => state.simbrief.data.weights.bagWeight));
@@ -130,6 +127,7 @@ export const A380Payload = () => {
     const simbriefFreight = parseInt(useAppSelector((state) => state.simbrief.data.weights.freight));
 
     const [displayZfw, setDisplayZfw] = useState(true);
+    const [displayPaxMainDeck, setDisplayPaxMainDeck] = useState(true);
 
     // GSX
     const [gsxPayloadSyncEnabled] = usePersistentNumberProperty('GSX_PAYLOAD_SYNC', 0);
@@ -181,13 +179,13 @@ export const A380Payload = () => {
     const setTargetPax = useCallback((numOfPax: number) => {
         setGsxNumPassengers(numOfPax);
 
-        if (!stationSize || numOfPax === totalPaxDesired || numOfPax > maxPax || numOfPax < 0) return;
+        if (numOfPax === totalPaxDesired || numOfPax > maxPax || numOfPax < 0) return;
 
         let paxRemaining = numOfPax;
 
         const fillStation = (stationIndex: number, percent: number, paxToFill: number) => {
             const sFlags: SeatFlags = desiredFlags[stationIndex];
-            const toBeFilled = Math.min(Math.trunc(percent * paxToFill), stationSize[stationIndex]);
+            const toBeFilled = Math.min(Math.trunc(percent * paxToFill), seatMap[stationIndex].capacity);
 
             paxRemaining -= toBeFilled;
 
@@ -203,7 +201,7 @@ export const A380Payload = () => {
             fillStation(i, seatMap[i].fill, numOfPax);
         }
         fillStation(0, 1, paxRemaining);
-    }, [maxPax, ...stationSize, ...seatMap, totalPaxDesired]);
+    }, [maxPax, ...seatMap, totalPaxDesired]);
 
     const setTargetCargo = useCallback((numberOfPax: number, freight: number, perBagWeight: number = paxBagWeight) => {
         const bagWeight = numberOfPax * perBagWeight;
@@ -218,10 +216,10 @@ export const A380Payload = () => {
         }
 
         for (let i = cargoDesired.length - 1; i > 0; i--) {
-            fillCargo(i, cargoStationWeights[i] / maxCargo, loadableCargoWeight);
+            fillCargo(i, cargoMap[i].weight / maxCargo, loadableCargoWeight);
         }
         fillCargo(0, 1, remainingWeight);
-    }, [maxCargo, ...cargoStationWeights, ...cargoMap, ...cargoDesired, paxBagWeight]);
+    }, [maxCargo, ...cargoMap, ...cargoDesired, paxBagWeight]);
 
     const processZfw = useCallback((newZfw) => {
         let paxCargoWeight = newZfw - emptyWeight;
@@ -280,7 +278,7 @@ export const A380Payload = () => {
         paxBagWeight,
         totalCargoDesired,
         ...cargoDesired,
-        ...desiredFlags, ...stationSize,
+        ...desiredFlags,
         totalPaxDesired,
     ]);
 
@@ -357,30 +355,6 @@ export const A380Payload = () => {
             }
         }
     }, [coldAndDark, boardingRate]);
-
-    // Init the seating map
-    useEffect(() => {
-        const stationSize: number[] = [];
-        for (let i = 0; i < seatMap.length; i++) {
-            stationSize.push(0);
-        }
-        seatMap.forEach((station, i) => {
-            stationSize[i] = station.capacity;
-        });
-        setStationLen(stationSize);
-    }, [seatMap]);
-
-    // Init the cargo map
-    useEffect(() => {
-        const cargoSize: number[] = [];
-        for (let i = 0; i < cargoMap.length; i++) {
-            cargoSize.push(0);
-        }
-        cargoMap.forEach((station, index) => {
-            cargoSize[index] = station.weight;
-        });
-        setCargoStationWeight(cargoSize);
-    }, [cargoMap]);
 
     useEffect(() => {
         if (gsxPayloadSyncEnabled === 1) {
@@ -470,14 +444,32 @@ export const A380Payload = () => {
         const padding = seconds < 10 ? '0' : '';
         return `${minutes}:${padding}${seconds.toFixed(0)} ${t('Ground.Payload.EstimatedDurationUnit')}`;
     };
-
     return (
         <div>
             <div className="relative h-content-section-reduced">
                 <div className="mb-10">
-                    <SeatMapWidget seatMap={seatMap} desiredFlags={desiredFlags} activeFlags={activeFlags} canvasX={146} canvasY={71} onClickSeat={onClickSeat} />
+                    <div className="flex relative flex-col">
+                        <SeatMapWidget seatMap={seatMap} desiredFlags={desiredFlags} activeFlags={activeFlags} canvasX={146} canvasY={71} isMainDeck={displayPaxMainDeck} onClickSeat={onClickSeat} />
+                        <div className="flex absolute top-full flex-row px-4 w-full">
+                            <div><AirplaneFill size={25} className="my-1 mx-3" /></div>
+                            <SelectGroup>
+                                <SelectItem
+                                    selected={displayPaxMainDeck}
+                                    onSelect={() => setDisplayPaxMainDeck(true)}
+                                >
+                                    Main
+                                </SelectItem>
+                                <SelectItem
+                                    selected={!displayPaxMainDeck}
+                                    onSelect={() => setDisplayPaxMainDeck(false)}
+                                >
+                                    Upper
+                                </SelectItem>
+                            </SelectGroup>
+                        </div>
+                    </div>
                 </div>
-                <CargoWidget cargo={cargo} cargoDesired={cargoDesired} cargoMap={cargoMap} cargoStationSize={cargoStationWeights} onClickCargo={onClickCargo} />
+                <CargoWidget cargo={cargo} cargoDesired={cargoDesired} cargoMap={cargoMap} onClickCargo={onClickCargo} />
 
                 <div className="flex relative right-0 flex-row justify-between px-4 mt-16">
                     <div className="flex flex-col flex-grow pr-24">

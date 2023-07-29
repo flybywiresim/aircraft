@@ -7,7 +7,6 @@ import { ProgressBar } from '../../../../../UtilComponents/Progress/Progress';
 interface SeatMapProps {
     cargo: number[],
     cargoDesired: number[],
-    cargoStationSize: number[],
     cargoMap: CargoStationInfo[],
     onClickCargo: (cargoStation: number, event: any) => void,
 }
@@ -19,7 +18,7 @@ enum CargoStation {
 }
 
 // TODO FIXME: Remove hard-coding
-export const CargoWidget: React.FC<SeatMapProps> = ({ cargo, cargoDesired, cargoMap, cargoStationSize, onClickCargo }) => (
+export const CargoWidget: React.FC<SeatMapProps> = ({ cargo, cargoDesired, cargoMap, onClickCargo }) => (
     <>
         <div className="flex absolute top-4 left-40 flex-row px-4 w-fit">
             <div><BriefcaseFill size={25} className="my-1 mx-3" /></div>
@@ -31,12 +30,12 @@ export const CargoWidget: React.FC<SeatMapProps> = ({ cargo, cargoDesired, cargo
                     completedBarBegin={100}
                     isLabelVisible={false}
                     bgcolor="var(--color-highlight)"
-                    completed={cargo[CargoStation.FwdBag] / cargoStationSize[CargoStation.FwdBag] * 100}
+                    completed={cargo[CargoStation.FwdBag] / cargoMap[CargoStation.FwdBag].weight * 100}
                 />
                 <CaretDownFill
                     size={25}
                     className="absolute top-0"
-                    style={{ transform: `translateY(-12px) translateX(${cargoDesired[CargoStation.FwdBag] / cargoStationSize[CargoStation.FwdBag] * cargoMap[CargoStation.FwdBag].progressBarWidth - 12}px)` }}
+                    style={{ transform: `translateY(-12px) translateX(${cargoDesired[CargoStation.FwdBag] / cargoMap[CargoStation.FwdBag].weight * cargoMap[CargoStation.FwdBag].progressBarWidth - 12}px)` }}
                 />
             </div>
         </div>
@@ -50,12 +49,12 @@ export const CargoWidget: React.FC<SeatMapProps> = ({ cargo, cargoDesired, cargo
                     completedBarBegin={100}
                     isLabelVisible={false}
                     bgcolor="var(--color-highlight)"
-                    completed={cargo[CargoStation.AftBag] / cargoStationSize[CargoStation.AftBag] * 100}
+                    completed={cargo[CargoStation.AftBag] / cargoMap[CargoStation.AftBag].weight * 100}
                 />
                 <CaretDownFill
                     size={25}
                     className="absolute top-0"
-                    style={{ transform: `translateY(-12px) translateX(${cargoDesired[CargoStation.AftBag] / cargoStationSize[CargoStation.AftBag] * cargoMap[CargoStation.AftBag].progressBarWidth - 12}px)` }}
+                    style={{ transform: `translateY(-12px) translateX(${cargoDesired[CargoStation.AftBag] / cargoMap[CargoStation.AftBag].weight * cargoMap[CargoStation.AftBag].progressBarWidth - 12}px)` }}
                 />
             </div>
             <div className="flex flex-row mr-3 cursor-pointer" onClick={(e) => onClickCargo(CargoStation.AftBulk, e)}>
@@ -66,13 +65,13 @@ export const CargoWidget: React.FC<SeatMapProps> = ({ cargo, cargoDesired, cargo
                     completedBarBegin={100}
                     isLabelVisible={false}
                     bgcolor="var(--color-highlight)"
-                    completed={cargo[CargoStation.AftBulk] / cargoStationSize[CargoStation.AftBulk] * 100}
+                    completed={cargo[CargoStation.AftBulk] / cargoMap[CargoStation.AftBulk].weight * 100}
                 />
                 <CaretDownFill
                     size={25}
                     className="absolute top-0"
                     style={
-                        { transform: `translateY(-12px) translateX(${cargoDesired[CargoStation.AftBulk] / cargoStationSize[CargoStation.AftBulk] * cargoMap[CargoStation.AftBulk].progressBarWidth - 12}px)` }
+                        { transform: `translateY(-12px) translateX(${cargoDesired[CargoStation.AftBulk] / cargoMap[CargoStation.AftBulk].weight * cargoMap[CargoStation.AftBulk].progressBarWidth - 12}px)` }
                     }
                 />
             </div>

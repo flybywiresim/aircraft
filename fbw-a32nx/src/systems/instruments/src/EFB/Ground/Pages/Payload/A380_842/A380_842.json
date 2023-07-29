@@ -996,63 +996,6 @@
             "simVar": "A32NX_PAX_MAIN_AFT_B"
         }
     ],
-    "seatMapUpper": [
-        {
-            "name": "UPPER FWD",
-            "capacity": 14,
-            "rows": [
-                { "seats": [
-                        { "type": 2 },
-                        { "type": 2 },
-                        { "type": 2 },
-                        { "type": 2 }
-                    ],
-                    "x": 0,
-                    "y": 0,
-                    "xOffset": 0,
-                    "yOffset": 0
-                },
-                {
-                    "seats": [
-                        { "type": 2 },
-                        { "type": 2 },
-                        { "type": 2 },
-                        { "type": 2 }
-                    ],
-                    "x": 0,
-                    "y": 0,
-                    "xOffset": 0,
-                    "yOffset": 0
-                },
-                {
-                    "seats": [
-                        { "type": 2 },
-                        { "type": 2 },
-                        { "type": 2 },
-                        { "type": 2 }
-                    ],
-                    "x": 0,
-                    "y": 0,
-                    "xOffset": 0,
-                    "yOffset": 0
-                },
-                {
-                    "seats": [
-                        { "type": 2 },
-                        { "type": 2 }
-                    ],
-                    "x": 0,
-                    "y": 0,
-                    "xOffset": 0,
-                    "yOffset": 0
-                }
-            ],
-            "stationIndex": 11,
-            "position": 55.8,
-            "fill": 0.05,
-            "simVar": "PAX_UPPER_FWD"
-        }
-    ],
     "cargoMap": [
         {
             "name": "FWD BAGGAGE/CONTAINER",

@@ -64,12 +64,11 @@ interface CargoBarProps {
     cargoId: number,
     cargo: number[],
     cargoDesired: number[],
-    cargoStationSize: number[],
     cargoMap: CargoStationInfo[],
     onClickCargo: (cargoStation: number, event: any) => void,
 }
 
-export const CargoBar: React.FC<CargoBarProps> = ({ cargoId, cargo, cargoDesired, cargoStationSize, cargoMap, onClickCargo }) => (
+export const CargoBar: React.FC<CargoBarProps> = ({ cargoId, cargo, cargoDesired, cargoMap, onClickCargo }) => (
     <>
         <div><BriefcaseFill size={25} className="my-1 mx-3" /></div>
         <div className="cursor-pointer" onClick={(e) => onClickCargo(cargoId, e)}>
@@ -80,12 +79,12 @@ export const CargoBar: React.FC<CargoBarProps> = ({ cargoId, cargo, cargoDesired
                 completedBarBegin={100}
                 isLabelVisible={false}
                 bgcolor="var(--color-highlight)"
-                completed={cargo[cargoId] / cargoStationSize[cargoId] * 100}
+                completed={cargo[cargoId] / cargoMap[cargoId].weight * 100}
             />
             <CaretDownFill
                 size={25}
                 className="absolute top-0"
-                style={{ transform: `translateY(-12px) translateX(${cargoDesired[cargoId] / cargoStationSize[cargoId] * cargoMap[cargoId].progressBarWidth - 12}px)` }}
+                style={{ transform: `translateY(-12px) translateX(${cargoDesired[cargoId] / cargoMap[cargoId].weight * cargoMap[cargoId].progressBarWidth - 12}px)` }}
             />
         </div>
     </>

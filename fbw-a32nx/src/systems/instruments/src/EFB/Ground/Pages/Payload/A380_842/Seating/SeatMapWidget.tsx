@@ -1,8 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as ReactDOMServer from 'react-dom/server';
-import { AirplaneFill } from 'react-bootstrap-icons';
 import { BitFlags, usePersistentProperty } from '@flybywiresim/fbw-sdk';
-import { SelectGroup, SelectItem } from '../../../../../UtilComponents/Form/Select';
 import { CanvasConst, SeatConstants, SeatInfo, PaxStationInfo, TYPE, RowInfo } from '../../Seating/Constants';
 import { Seat } from '../../../../../Assets/Seat';
 import { A380SeatOutlineBg } from '../../../../../Assets/A380SeatOutlineBg';
@@ -14,6 +12,7 @@ interface SeatMapProps {
     activeFlags: BitFlags[],
     canvasX: number,
     canvasY: number,
+    isMainDeck: boolean,
     onClickSeat: (paxStation: number, section: number) => void,
 }
 
@@ -68,6 +67,7 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
     const [xYMap, setXYMap] = useState<number[][][]>([]);
 
     const addXOffsetRow = (xOff: number, station: number, row: number) => {
+        // console.log(`addXOffsetRow(xOff: ${xOff}, station: ${station}, row: ${row})`);
         let seatType: number = TYPE.NB_ECO;
         if (seatMap[station].rows[row].xOffset !== undefined) {
             xOff += seatMap[station].rows[row].xOffset;
@@ -106,8 +106,8 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
             for (let station = 0; station < seatMap.length; station++) {
                 let seatId = 0;
                 for (let row = 0; row < seatMap[station].rows.length; row++) {
+                    // console.log(`drawRow(xOff: ${xOff}, station: ${station}, row: ${row}, seatID: ${seatId})`);
                     xOff = addXOffsetRow(xOff, station, row);
-                    console.log(`drawRow(xOff: ${xOff}, station: ${station}, row: ${row}, seatID: ${seatId})`);
                     drawRow(xOff, station, row, seatMap[station].rows[row], seatId);
                     seatId += seatMap[station].rows[row].seats.length;
                 }
@@ -202,24 +202,9 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
     };
 
     return (
-        <div className="flex relative flex-col">
+        <>
             <A380SeatOutlineBg stroke={getTheme(theme)[0]} highlight="#69BD45" />
             <canvas className="absolute cursor-pointer" ref={canvasRef} style={{ transform: `translateX(${canvasX}px) translateY(${canvasY}px)` }} />
-
-            <div className="flex absolute top-full flex-row px-4 w-full">
-                <div><AirplaneFill size={25} className="my-1 mx-3" /></div>
-                <SelectGroup>
-                    <SelectItem
-                        selected
-                    >
-                        Main
-                    </SelectItem>
-                    <SelectItem>
-                        Upper
-
-                    </SelectItem>
-                </SelectGroup>
-            </div>
-        </div>
+        </>
     );
 };
