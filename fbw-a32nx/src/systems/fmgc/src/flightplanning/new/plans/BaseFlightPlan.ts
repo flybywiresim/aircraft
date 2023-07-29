@@ -762,7 +762,13 @@ export abstract class BaseFlightPlan {
      * @param waypoint the waypoint to insert
      */
     async insertWaypointBefore(index: number, waypoint: Fix) {
-        this.redistributeLegsAt(index - 1);
+        const [insertSegment, insertIndexInSegment] = this.segmentPositionForIndex(index);
+
+        const prependInMissedApproach = insertSegment === this.missedApproachSegment && insertIndexInSegment === 0;
+
+        if (!prependInMissedApproach) {
+            this.redistributeLegsAt(index - 1);
+        }
 
         const leg = FlightPlanLeg.fromEnrouteFix(this.enrouteSegment, waypoint);
 
@@ -889,25 +895,42 @@ export abstract class BaseFlightPlan {
             throw new Error(`[FMS/FPM] Tried to insert waypoint out of bounds (index=${index})`);
         }
 
-        let startSegment: FlightPlanSegment;
-        let indexInStartSegment;
+        let insertSegment: FlightPlanSegment;
+        let insertIndexInSegment: number;
 
         if (this.legCount > 0) {
-            [startSegment, indexInStartSegment] = this.segmentPositionForIndex(index);
+            [insertSegment, insertIndexInSegment] = this.segmentPositionForIndex(index);
         } else {
-            startSegment = this.enrouteSegment;
-            indexInStartSegment = 0;
+            insertSegment = this.enrouteSegment;
+            insertIndexInSegment = 0;
         }
 
-        startSegment.insertAfter(indexInStartSegment, element);
+        const prependInMissedApproach = insertSegment === this.approachSegment && insertIndexInSegment === this.approachSegment.allLegs.length - 1;
+
+        if (prependInMissedApproach) {
+            insertSegment = this.missedApproachSegment;
+            insertIndexInSegment = 0;
+
+            // If we are inserting after the last leg of the approach (the missed approach point, we really
+            // want to insert before the first leg of the missed approach
+
+            insertSegment.insertBefore(insertIndexInSegment, element);
+        } else {
+            insertSegment.insertAfter(insertIndexInSegment, element);
+        }
 
         if (insertDiscontinuity) {
             this.incrementVersion();
 
-            const elementAfterInserted = startSegment.allLegs[index + 2];
+            const elementAfterInserted = this.allLegs[index + 2];
 
             if (elementAfterInserted && elementAfterInserted.isDiscontinuity === false) {
-                startSegment.insertAfter(indexInStartSegment + 1, { isDiscontinuity: true });
+                if (prependInMissedApproach) {
+                    insertSegment.insertAfter(insertIndexInSegment, { isDiscontinuity: true });
+                } else {
+                    insertSegment.insertAfter(insertIndexInSegment + 1, { isDiscontinuity: true });
+                }
+
                 this.incrementVersion();
             }
         }
@@ -1457,6 +1480,12 @@ export abstract class BaseFlightPlan {
         await this.destinationSegment.refresh(false);
     }
 
+    /**
+     * Removes all legs between start and end
+     *
+     * @param start start of the range, inclusive
+     * @param end end of the range, exclusive
+     */
     protected removeRange(start: number, end: number) {
         const [startSegment, indexInStartSegment] = this.segmentPositionForIndex(start);
         const [endSegment, indexInEndSegment] = this.segmentPositionForIndex(end - 1);
