@@ -29,7 +29,7 @@
     "ChecklistResetWarning": "Ellenőrzőlista visszaállítás figyelmeztetés",
     "MarkChecklistAsComplete": "Ellenőrző lista megjelölése befejezettként",
     "MarkItemAsComplete": "Elem megjelölése készként",
-    "ProceedToNextChecklist": "Tovább a következő ellenörzőlistára",
+    "ProceedToNextChecklist": "Tovább a következő ellenőrzőlistára",
     "ResetAll": "Összes alaphelyzetbe állítása",
     "ResetChecklist": "Lista alaphelyzetbe állítása",
     "TheLastChecklistIsComplete": "Az utolsó ellenőrzőlista kész",
@@ -58,7 +58,7 @@
       "Weather": {
         "AirPressure": "Légnyomás",
         "DewPoint": "Harmatpont",
-        "IcaoInvalid": "ICAO helytelen vagy nincs elérhető METAR",
+        "IcaoInvalid": "helytelen ICAO-kód vagy nincs elérhető METAR",
         "Loading": "Betöltés",
         "MetarParsingError": "A kapott METAR nem értelmezhető",
         "NoIcaoProvided": "Nincs ICAO megadva",
@@ -82,7 +82,7 @@
       "CruiseAlt": "Utazómagasság",
       "ImportSimBriefData": "SimBrief adatok importálása",
       "Route": "Útvonal",
-      "SimBriefDataNotYetLoaded": "SimBrief adatok még nincsenek betöltve.",
+      "SimBriefDataNotYetLoaded": "A SimBrief adatok még nincsenek betöltve.",
       "Title": "A repülésed",
       "ZFW": "ZFW"
     }
@@ -106,7 +106,7 @@
       "MZFW": "MZFW",
       "MaximumCargo": "Maximális rakomány",
       "MaximumFuelCapacity": "Maximális üzemanyag ",
-      "MaximumPassengers": "Maximális utaslétszám",
+      "MaximumPassengers": "Maximális utasszám",
       "Model": "Típus",
       "Range": "Hatótávolság",
       "Title": "Áttekintés"
@@ -140,8 +140,8 @@
       "RightInnerTank": "Jobb belső tartály",
       "RightOuterTank": "Jobb külső tartály",
       "TT": {
-        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "A tankolás időtartamának megváltoztatása csak a földön, álló hajtóművek esetén lehetséges",
-        "FillBlockFuelFromSimBrief": "(block) üzemanyag kitöltése SimBrief-ből"
+        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "A repülőgépnek álló hajtóművekkel a földön kell lennie a tankolás időtartamának változtatásához",
+        "FillBlockFuelFromSimBrief": "Block-üzemanyag kitöltése SimBrief-ből"
       },
       "Title": "Üzemanyag",
       "TotalFuel": "Összes üzemanyag",
@@ -185,7 +185,7 @@
     "Services": {
       "BaggageTruck": "Poggyászkocsi",
       "CateringTruck": "Utasellátó",
-      "Cones": "Biztonsági bója",
+      "Cones": "Biztonsági bóják",
       "DoorAft": "Hátsó ajtó",
       "DoorCargo": "Raktér ajtó",
       "DoorFwd": "Első ajtó",
@@ -206,15 +206,15 @@
     "All": "Mind",
     "Altn": "Kitérő reptér",
     "ExitFullscreenMode": "Kilépés teljes képernyős üzemmódból",
-    "From": "Induló",
+    "From": "Indulás",
     "LoadingImage": "Kép betöltése…",
     "LoadingImageFailed": "A kép betöltése sikertelen",
     "LoadingPdf": "PDF betöltése",
     "LoadingPdfFailed": "A PDF betöltése sikertelen",
     "LocalFiles": {
       "Both": "Mindkettő",
-      "EstablishingConnection": "Kapcsolat létrehozása",
-      "FailedToEstablishConnection": "Csatlakozás sikertelen",
+      "EstablishingConnection": "Kapcsolat létrehozása…",
+      "FailedToEstablishConnection": "A kapcsolat létesítése sikertelen",
       "FileName": "Fájlnév",
       "Image": "Kép",
       "Pdf": "PDF",
@@ -223,13 +223,13 @@
     },
     "Navigraph": {
       "AirportDoesNotExist": "A repülőtér nem létezik",
-      "AuthenticateWithNavigraph": "Hitelesítés a Navigraph segítségével",
+      "AuthenticateWithNavigraph": "Navigraph Hitelesítése ",
       "InsufficientEnv": "Nem megfelelő .env fájl",
-      "IntoYourBrowserAndEnterTheCodeBelow": "a böngészőbe, és írja be a kódot lentebb\n",
+      "IntoYourBrowserAndEnterTheCodeBelow": "a böngészőbe, és írja be a kódot \n",
       "LoadingMsg": "Betöltés…",
       "NoAirportSelected": "Nincs repülőtér kiválasztva",
       "ResetNavigraphAuthentication": "Navigraph hitelesítés visszaállítása",
-      "ScanTheQrCodeOrOpen": "Szkennelje be a QR-kódot vagy megnyitás",
+      "ScanTheQrCodeOrOpen": "Olvassa be a QR-kódot vagy nyissa meg",
       "Title": "Navigraph"
     },
     "PinnedCharts": {
@@ -237,7 +237,7 @@
       "Edit": "Szerkesztés",
       "NoItemsFound": "Nem található elem",
       "SearchPlaceholder": "Keresés",
-      "ShowingChartsFromAllProviders": "Chart-ok megjelenítése az összes szolgáltatótól",
+      "ShowingChartsFromAllProviders": "Chartok megjelenítése az összes szolgáltatótól",
       "SortMethods": {
         "AlphabeticalAZ": "ABC sorrend - A -> Z",
         "AlphabeticalZA": "ABC sorrend - Z -> A",
@@ -246,11 +246,11 @@
         "None": "Egyik sem"
       },
       "TT": {
-        "ChangeChartProvider": "Chart szolgáltató váltása",
+        "ChangeChartProvider": "Chart-szolgáltató váltása",
         "ChangeChartSortMethod": "Chart rendezési módszer módosítása",
         "RemoveAllPinnedCharts": "Összes rögzített Chart eltávolítása"
       },
-      "Title": "Rögzített chart-ok",
+      "Title": "Rögzített chartok",
       "View": "Megtekintés"
     },
     "PleaseWait": "Kérem várjon",
@@ -264,28 +264,28 @@
       "ZoomIn": "Nagyítás",
       "ZoomOut": "Kicsinyítés"
     },
-    "ThereAreNoChartsToDisplay": "Nincsenek megjeleníthető Chart-ok",
-    "ThereIsNoChartToDisplay": "Nincs megjeleníthető Chart",
-    "Title": "Navigáció és Chart-ok",
-    "To": "Érkező"
+    "ThereAreNoChartsToDisplay": "Nincsenek megjeleníthető chartok",
+    "ThereIsNoChartToDisplay": "Nincs megjeleníthető chart",
+    "Title": "Navigáció és chartok",
+    "To": "Érkezés"
   },
   "Performance": {
     "Data": "Adatok",
     "Landing": {
-      "AirportIcao": "Repülőtér ICAO",
+      "AirportIcao": "Repülőtér ICAO-kódja",
       "ApproachSpeed": "Megközelítési sebesség",
       "ApproachSpeedUnit": "kts",
       "AutoLand": "Automata leszállás",
-      "Calculate": "Kiszámol",
+      "Calculate": "Kiszámolás",
       "Clear": "Törlés",
       "DropDownNo": "Nem",
       "DropDownYes": "Igen",
-      "FillDataFrom": "Adat kitöltése",
+      "FillDataFrom": "Adatok kitöltése innen",
       "FlapsConfiguration": "Fékszárny konfiguráció",
       "Low": "Alacsony",
-      "MaximumManual": "Maximális manuális",
+      "MaximumManual": "Maximális kézi",
       "Medium": "Közepes",
-      "MetarErrorDialogMessage": "Az OFP-ből származó METAR nem sikerült elemezni. Szeretné automatikusan kitölteni az adatokat egy lekért METAR használatával?",
+      "MetarErrorDialogMessage": "Az OFP-ből nem sikerült elemezni a METAR-t. Szeretné automatikusan kitölteni az adatokat egy lekért METAR-ból?",
       "MetarErrorDialogTitle": "Hiba az OFP METAR elemzésekor",
       "OverweightProcedure": "Túlsúlyos eljárás",
       "Qnh": "QNH",
@@ -297,9 +297,9 @@
         "Dry": "Száraz (6)",
         "Good": "Jó (5)",
         "GoodMedium": "Közepesen jó",
-        "Medium": "Közepes",
-        "MediumPoor": "Gyenge közepes",
-        "Poor": "Rossz"
+        "Medium": "Közepes (3)",
+        "MediumPoor": "Közepesen gyenge (2)",
+        "Poor": "Rossz (1)"
       },
       "RunwayHeading": "Futópálya iránya",
       "RunwayHeadingUnit": "°",
@@ -308,7 +308,7 @@
       "RunwayLdaUnitMeter": "m",
       "RunwaySlope": "Futópálya lejtése",
       "TT": {
-        "YouNeedToEnterAnIcaoCodeInOrderToMakeAMetarRequest": "Irjon be egy ICAO kódot a METAR lekérdezéséhez",
+        "YouNeedToEnterAnIcaoCodeInOrderToMakeAMetarRequest": "Irjon be egy ICAO-kódot a METAR lekérdezéséhez",
         "YouNeedToLoadSimBriefDataInOrderToAutofillData": "Az adatok automatikus kitöltéséhez be kell töltenie a SimBrief adatokat"
       },
       "Temperature": "Hőmérséklet",
@@ -342,7 +342,7 @@
         "FetchingSpeedFromSimulator": "Sebesség lekérése a szimulátorból",
         "GroundSpeed": "Föld feletti sebesség",
         "ManualInput": "Kézi bevitel",
-        "MinAltitude": "Min. Magasság",
+        "MinAltitude": "Min. magasság",
         "RemoveLast": "Utolsó eltávolítása",
         "Sync": "Szinkronizálás",
         "Title": "Föld feletti sebesség",
@@ -353,14 +353,14 @@
         "BeforeTarget": "Cél előtt",
         "DesiredDescentAngle": "Kívánt süllyedési szög",
         "DesiredVerticalSpeed": "Kívánt függőleges sebesség",
-        "StartYourDescentAbout": "Süllyedés megkezdése",
+        "StartYourDescentAbout": "Süllyedés megkezdése körülbelül",
         "Title": "Eredmény"
       },
       "TT": {
         "DesynchronizeInputWithAircraftsCurrentAltitude": "Adat szinkronizálása a repülőgép jelenlegi magasságával",
-        "SynchronizeInputWithAircraftsCurrentAltitude": "Adat szinkronizálása a perülőgép jelenlegi magasságával"
+        "SynchronizeInputWithAircraftsCurrentAltitude": "Adat szinkronizálása a repülőgép jelenlegi magasságával"
       },
-      "Title": "Süllyedés megkezdése"
+      "Title": "Ereszkedés megkezdése"
     }
   },
   "Presets": {
@@ -368,43 +368,43 @@
       "Cancel": "Mégse",
       "ColdDark": "Áramtalanított ",
       "ConfirmationDialogMsg": "Kérem erősítse meg a beállítás betöltését",
-      "CurrentProcedureStep": "Aktuális részfolyamat",
+      "CurrentProcedureStep": "Jelenlegi lépése az eljárásnak",
       "PleaseConfirmLoadingOfPreset": "Kérem erősítse meg a beállítás betöltését",
       "Powered": "Áram alatt",
       "ReadyPushback": "Hátratolásra kész",
       "ReadyTakeoff": "Felszállásra kész",
       "ReadyTaxi": "Gurulásra kész",
-      "SelectAPresetToLoad": "Válasszon egy beállítás a betöltéshez",
-      "TheAircraftMustBeOnTheGroundToLoadAPreset": "A repülőgépnek a földön kell lennie a beállítás betöltéséhez.",
-      "TheAircraftMustBeOntheGroundToLoadAPreset": "A repülőgépnek a földön kell lennie a beállítás betöltéséhez.",
-      "Title": "Repülőgép Állapotai",
+      "SelectAPresetToLoad": "Válasszon egy beállítást a betöltéshez",
+      "TheAircraftMustBeOnTheGroundToLoadAPreset": "A repülőgépnek a földön kell lennie egy beállítás betöltéséhez.",
+      "TheAircraftMustBeOntheGroundToLoadAPreset": "A repülőgépnek a földön kell lennie egy beállítás betöltéséhez.",
+      "Title": "Repülőgép állapotai",
       "Turnaround": "Forduló"
     },
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "Helyezze áram alá a repülőgépet a beállítások betöltéséhez",
       "AircraftNeedsToBePoweredToSavePresets": "Helyezze áram alá a repülőgépet a beállítások mentéséhez",
-      "AutoLoadDawnDusk": "Hajnal/szürkület:",
-      "AutoLoadDay": "Nap:",
+      "AutoLoadDawnDusk": "Hajnal/Alkonyat:",
+      "AutoLoadDay": "Nappal:",
       "AutoLoadLightingHelpTitle": "Automatikus beállítás betöltés",
       "AutoLoadLightingPreset": "Engedélyezze a világítási beállítások automatikus betöltését:",
       "AutoLoadNight": "Éjszaka:",
       "AutoLoadNoneSelection": "Nincs",
       "LoadPreset": "Beállítás betöltése",
-      "LoadingPreset": "Beállítás betöltée folyamatban",
-      "NewNameConfirmationDialogMsg": "Új név megerősítése",
+      "LoadingPreset": "Beállítás betöltése folyamatban",
+      "NewNameConfirmationDialogMsg": "Erősítse meg a világítási beállítás új nevét!",
       "NoName": "Nincs név",
       "PleaseConfirmSavingPreset": "Erősítse meg a beállítás mentését",
       "SavePreset": "Beállítás mentése",
       "SavingPreset": "Beállítás mentése folyamatban",
-      "SelectAnInteriorLightingPresetToLoadOrSave": "Fedélzeti világítás betöltés és mentése",
+      "SelectAnInteriorLightingPresetToLoadOrSave": "Válasszon ki egy belső világítási beállítást a betöltéshez vagy mentéshez.",
       "TT": {
         "AircraftMustBePowered": "A repülőnek áramellátás alatt kell lennie",
         "ClickTextToChangeThePresetsName": "Kattintson a szövegre a beállítás nevének megváltozatásához",
         "LoadThisPreset": "Töltse be ezt a beállítást",
-        "SaveTheCurrentLightingLevels": "Jelenlegi fedélzet világítási konfiguráció mentése"
+        "SaveTheCurrentLightingLevels": "Jelenlegi fedélzeti világítási konfiguráció mentése"
       },
       "TheAircraftMustBePoweredForInteriorLightingPresets": "A repülőnek áramellátás alatt kell lennie a belső világítási beállításokhoz",
-      "Title": "Kabin világítás"
+      "Title": "Belső világítás"
     },
     "Title": "Beállítások"
   },
@@ -412,12 +412,12 @@
     "AvailableOnlyOnGround": "A hátratolás csak a földön lehetséges",
     "Backward": "Hátra",
     "CallTug": "Vontató hívása",
-    "DisableSystemMessageBody": "Biztos vagy abban, hogy kikapcsolod a hátratoló rendszert? Ez lekapcsolja a vontatót is.",
+    "DisableSystemMessageBody": "Biztos abban, hogy kikapcsolja a hátratolási rendszert? Ez lekapcsolja a vontatót is.",
     "DisableSystemMessageTitle": "Hátratoló rendszer kikapcsolása\n",
-    "EnableSystemMessageBody": "Az új flyPadOS 3 hátratoló rendszer konfliktusokat okozhat más hátratoló kiegészítőkkel. Javasoljuk, hogy ne engedélyezze a rendszert, ha egy másik hátratoló bővítményt kíván használni. ",
-    "EnableSystemMessageTitle": "Hátratoló redszer bekapcsolása",
+    "EnableSystemMessageBody": "Az új flyPadOS 3 hátratoló rendszer konfliktusokat okozhat más hátratolási kiegészítőkkel. Javasoljuk, hogy ne kapcsolja be a rendszert, ha egy másik hátratolási bővítményt kíván használni. ",
+    "EnableSystemMessageTitle": "Hátratolási redszer bekapcsolása",
     "Forward": "Előre",
-    "Halt": "Megállítva",
+    "Halt": "Szüneteltetve",
     "LeavePageMessage": "Hátratolás szünetelése",
     "Left": "Balra",
     "Moving": "Mozgásban",
@@ -427,11 +427,11 @@
       "Title": "Rögzítőfék"
     },
     "Right": "Jobbra",
-    "SystemEnabledOff": "Hátratoló rendszer ki",
-    "SystemEnabledOn": "Hátratoló rendszer be",
+    "SystemEnabledOff": "Hátratolási rendszer ki",
+    "SystemEnabledOn": "Hátratolási rendszer be",
     "TT": {
       "CallReleaseTug": "Hátratoló hívása vagy leoldása",
-      "CenterPlaneMode": "Repülőgép a térképen középen Be/Ki",
+      "CenterPlaneMode": "Repülőgép rögzítése a térkép közepén be/ki",
       "DecreaseSpeed": "Visszafelé vagy lassabban előre",
       "IncreaseSpeed": "Előrefelé vagy lassan hátrafelé",
       "Left": "Menj balra",
@@ -440,8 +440,8 @@
       "SetReleaseParkingBrake": "Rögzítőfék behúzása vagy kiengedése",
       "SliderDirection": "Mozgás a kívánt irányba",
       "SliderSpeed": "Mozgás a kívánt sebességgel",
-      "SystemEnabledOff": "Kattintson a hátratoló rendszer bekapcsolásához.",
-      "SystemEnabledOn": "Kattintson a hátratoló rendszer kikapcsolásához.",
+      "SystemEnabledOff": "Kattintson a hátratolási rendszer bekapcsolásához.",
+      "SystemEnabledOn": "Kattintson a hátratolási rendszer kikapcsolásához.",
       "UseControllerInput": "Kapcsolja ki/be a vezérlést a oldalkormányról és a magassági kormányról",
       "ZoomIn": "Nagyítás",
       "ZoomOut": "Kicsinyítés"
@@ -453,7 +453,7 @@
     "UseControllerInput": "Használja a vezérlő bemenetét"
   },
   "QuickControls": {
-    "AlignAdirs": "ADIRS beállítása",
+    "AlignAdirs": "ADIRS kalibrálása",
     "FinishBoarding": "Beszállítás befejezése",
     "OnScreenKeyboard": "Képernyőn megjelenő billentyűzet",
     "SimBridge": "SimBridge",
@@ -479,7 +479,7 @@
       "Title": "Névjegy"
     },
     "AircraftOptionsPinPrograms": {
-      "AccelerationHeight": "Gyorsulási magasság (ft)",
+      "AccelerationHeight": "Gyorsítási magasság (ft)",
       "EngineOutAccelerationHeight": "Hajtómű leállás gyorsulási magasság (ft)",
       "IsisBaroUnit": "ISIS barométer egység",
       "IsisMetricAltitude": "ISIS metrikus magasság",
@@ -488,7 +488,7 @@
       "RmpVhfSpacing": "RMP VHF elosztás",
       "Satcom": "Satcom megjelenítése",
       "ThrustReductionHeight": "Tolóerő csökkentési magasság (ft)",
-      "Title": "Repülő beállításai / Pin programok",
+      "Title": "Repülő beállításai / programok kitűzése",
       "WeightUnit": "Súly mértékegység"
     },
     "AtsuAoc": {
@@ -501,7 +501,7 @@
       "HoppieUserId": "Hoppie felhasználói ID",
       "MetarSource": "METAR Forrás",
       "OptionalA32nxErrorReporting": "Opcionális A32NX hibajelentés",
-      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimbBriefUsernameOrPilotId": "Kérlek ellenőrizd hogy helyesen adtad-e meg a SimBrief felhasználóneved vagy a pilot ID-t.",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimbBriefUsernameOrPilotId": "Kérlek ellenőrize, hogy helyesen adta-e meg a SimBrief felhasználónevét vagy pilot ID-ját.",
       "SimBriefUsernamePilotId": "SimBrief felhasználónév/Pilot ID",
       "TafSource": "TAF forrása",
       "Telex": "TELEX",
@@ -509,10 +509,10 @@
       "TelexWarning": "TELEX figyelmeztetés",
       "ThereWasAnErrorEncounteredWhenValidatingYourHoppieID": "Hiba a Hoppie-ID érvényesítése közben",
       "Title": "ATSU / AOC",
-      "YouAreAbleToOptIntoAnonymousErrorReporting": "Felíratkozhat egy anonim hibajelentés küldő funkcióra, amely lehetővé teszi számunkra, hogy a problémákat gyorsabban megoldjuk, diagnosztizáljuk, és figyeljük. Ez a funkció teljesen opcionális, soha nem gyűjtjük az ön személyes adatait, de lehetővé teheti a könnyebb támogatást, és gyorsabban megoldhajuk a felmerülő problémákat.",
-      "YourHoppieIdHasBeenRemoved": "Az ön Hoppie-ID ja eltávolításra került",
-      "YourHoppieIdHasBeenValidated": "Az ön Hoppie-ID ja érvényesítve lett",
-      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "Az ön SimBrief Pilot-ID ja érvényesítve és frissítve lett"
+      "YouAreAbleToOptIntoAnonymousErrorReporting": "Felíratkozhat egy anonim hibajelentés küldő funkcióra, amely lehetővé teszi számunkra, hogy a problémákat gyorsabban megoldjuk, diagnosztizáljuk, és figyeljük. Ez a funkció teljesen opcionális, soha nem gyűjtjük az ön személyes adatait, de lehetővé teheti a könnyebb támogatást, és a felmerülő problémák gyorsabb megoldását.",
+      "YourHoppieIdHasBeenRemoved": "A Hoppie-ID-ját eltávolításra került",
+      "YourHoppieIdHasBeenValidated": "A Hoppie-ID-ja érvényesítve lett",
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "A SimBrief Pilot-ID-ja érvényesítve és frissítve lett"
     },
     "Audio": {
       "Announcements": "Közlemények",
