@@ -119,7 +119,6 @@ impl A320Fuel {
         }
     }
 
-    #[deprecated(note = "Do not call function directly, use trait instead")]
     pub fn left_inner_tank_has_fuel_remaining(&self) -> bool {
         self.unlimited_fuel
             || self.fuel_tanks[A320FuelTankType::LeftInner as usize].quantity() > Mass::default()
@@ -176,13 +175,16 @@ impl A320Fuel {
 
         // This section of code calculates the center of gravity (assume center of gravity/center of mass is near identical)
         let total_mass_kg: f64 = masses.iter().map(|m| m.get::<kilogram>()).sum();
-        let center_of_gravity = positions
-            .iter()
-            .zip(masses.iter())
-            .map(|(pos, m)| pos * m.get::<kilogram>())
-            .fold(Vector3::zeros(), |acc, x| acc + x)
-            / total_mass_kg;
-
+        let center_of_gravity: Vector3<f64> = if total_mass_kg > 0. {
+            positions
+                .iter()
+                .zip(masses.iter())
+                .map(|(pos, m)| pos * m.get::<kilogram>())
+                .fold(Vector3::zeros(), |acc, x| acc + x)
+                / total_mass_kg
+        } else {
+            Vector3::zeros()
+        };
         center_of_gravity
     }
 }

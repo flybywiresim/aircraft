@@ -255,6 +255,7 @@ impl SimulationElement for A320 {
         self.apu_fire_overhead.accept(visitor);
         self.apu_overhead.accept(visitor);
         self.payload.accept(visitor);
+        self.airframe.accept(visitor);
         self.electrical_overhead.accept(visitor);
         self.emergency_electrical_overhead.accept(visitor);
         self.fuel.accept(visitor);
@@ -275,7 +276,6 @@ impl SimulationElement for A320 {
         self.pneumatic.accept(visitor);
         self.egpwc.accept(visitor);
         self.reverse_thrust.accept(visitor);
-        self.airframe.accept(visitor);
 
         visitor.visit(self);
     }

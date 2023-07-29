@@ -24,27 +24,27 @@ impl BoardingTestAircraft {
         }
     }
 
-    fn pax_num(&self, ps: A380PaxStation) -> i8 {
+    fn pax_num(&self, ps: usize) -> i8 {
         self.payload.pax_num(ps)
     }
 
-    fn pax_payload(&self, ps: A380PaxStation) -> Mass {
+    fn pax_payload(&self, ps: usize) -> Mass {
         self.payload.pax_payload(ps)
     }
 
-    fn max_pax(&self, ps: A380PaxStation) -> i8 {
+    fn max_pax(&self, ps: usize) -> i8 {
         self.payload.max_pax(ps)
     }
 
-    fn cargo(&self, cs: A380CargoStation) -> Mass {
+    fn cargo(&self, cs: usize) -> Mass {
         self.payload.cargo(cs)
     }
 
-    fn cargo_payload(&self, cs: A380CargoStation) -> Mass {
+    fn cargo_payload(&self, cs: usize) -> Mass {
         self.payload.cargo_payload(cs)
     }
 
-    fn max_cargo(&self, cs: A380CargoStation) -> Mass {
+    fn max_cargo(&self, cs: usize) -> Mass {
         self.payload.max_cargo(cs)
     }
 
@@ -62,6 +62,27 @@ impl BoardingTestAircraft {
 
     fn sound_pax_ambience_playing(&self) -> bool {
         self.payload.sound_pax_ambience_playing()
+    }
+
+    #[allow(dead_code)]
+    fn total_pax_payload(&self) -> Mass {
+        PassengerPayload::total_passenger_load(&self.payload)
+    }
+    #[allow(dead_code)]
+    fn pax_center_of_gravity(&self) -> Vector3<f64> {
+        PassengerPayload::center_of_gravity(&self.payload)
+    }
+    #[allow(dead_code)]
+    fn pax_fore_aft_center_of_gravity(&self) -> f64 {
+        PassengerPayload::fore_aft_center_of_gravity(&self.payload)
+    }
+    #[allow(dead_code)]
+    fn cargo_center_of_gravity(&self) -> Vector3<f64> {
+        CargoPayload::center_of_gravity(&self.payload)
+    }
+    #[allow(dead_code)]
+    fn cargo_fore_aft_pax_center_of_gravity(&self) -> f64 {
+        CargoPayload::fore_aft_center_of_gravity(&self.payload)
     }
 }
 impl Aircraft for BoardingTestAircraft {
@@ -136,6 +157,11 @@ impl BoardingTestBed {
         self
     }
 
+    fn gsx_requested_board_state(mut self) -> Self {
+        self.write_by_name("FSDT_GSX_BOARDING_STATE", GsxState::Requested);
+        self
+    }
+
     fn gsx_performing_board_state(mut self) -> Self {
         self.write_by_name("FSDT_GSX_BOARDING_STATE", GsxState::Performing);
         self
@@ -143,6 +169,12 @@ impl BoardingTestBed {
 
     fn gsx_performing_deboard_state(mut self) -> Self {
         self.write_by_name("FSDT_GSX_DEBOARDING_STATE", GsxState::Performing);
+        self.write_by_name("FSDT_GSX_DEBOARDING_CARGO_PERCENT", 0.);
+        self
+    }
+
+    fn gsx_requested_deboard_state(mut self) -> Self {
+        self.write_by_name("FSDT_GSX_DEBOARDING_STATE", GsxState::Requested);
         self
     }
 
@@ -158,8 +190,8 @@ impl BoardingTestBed {
 
     fn board_gsx_pax_half(mut self) -> Self {
         let mut max_pax = 0;
-        for ps in A380PaxStation::iterator() {
-            max_pax += test_bed().query(|a| a.max_pax(ps)) as i32;
+        for ps in 0..A380Payload::A380_PAX.len() {
+            max_pax += test_bed().query(|a: &BoardingTestAircraft| a.max_pax(ps)) as i32;
         }
         self.write_by_name("FSDT_GSX_NUMPASSENGERS_BOARDING_TOTAL", max_pax / 2);
         self
@@ -167,7 +199,7 @@ impl BoardingTestBed {
 
     fn board_gsx_pax_full(mut self) -> Self {
         let mut max_pax = 0;
-        for ps in A380PaxStation::iterator() {
+        for ps in 0..A380Payload::A380_PAX.len() {
             max_pax += test_bed().query(|a| a.max_pax(ps)) as i32;
         }
         self.write_by_name("FSDT_GSX_NUMPASSENGERS_BOARDING_TOTAL", max_pax);
@@ -176,7 +208,7 @@ impl BoardingTestBed {
 
     fn deboard_gsx_pax_half(mut self) -> Self {
         let mut max_pax = 0;
-        for ps in A380PaxStation::iterator() {
+        for ps in 0..A380Payload::A380_PAX.len() {
             max_pax += test_bed().query(|a| a.max_pax(ps)) as i32;
         }
         self.write_by_name("FSDT_GSX_NUMPASSENGERS_DEBOARDING_TOTAL", max_pax / 2);
@@ -185,10 +217,16 @@ impl BoardingTestBed {
 
     fn deboard_gsx_pax_full(mut self) -> Self {
         let mut max_pax = 0;
-        for ps in A380PaxStation::iterator() {
+        for ps in 0..A380Payload::A380_PAX.len() {
             max_pax += test_bed().query(|a| a.max_pax(ps)) as i32;
         }
         self.write_by_name("FSDT_GSX_NUMPASSENGERS_DEBOARDING_TOTAL", max_pax);
+        self
+    }
+
+    #[allow(dead_code)]
+    fn deboard_gsx_pax_num(mut self, value: i32) -> Self {
+        self.write_by_name("FSDT_GSX_NUMPASSENGERS_DEBOARDING_TOTAL", value);
         self
     }
 
@@ -212,15 +250,17 @@ impl BoardingTestBed {
         self
     }
 
-    fn load_pax(&mut self, ps: A380PaxStation, pax_qty: i8) {
-        assert!(pax_qty <= A380Payload::A380_PAX[ps].max_pax);
+    fn load_pax(&mut self, ps: usize, pax_qty: i8) {
+        let test_bed = test_bed();
+
+        assert!(pax_qty <= test_bed.query(|a| a.max_pax(ps)));
 
         let per_pax_weight: Mass = Mass::new::<kilogram>(self.read_by_name("WB_PER_PAX_WEIGHT"));
 
         let seed = 380320;
         let mut rng = rand_pcg::Pcg32::seed_from_u64(seed);
 
-        let binding: Vec<i8> = (0..A380Payload::A380_PAX[ps].max_pax).collect();
+        let binding: Vec<i8> = (0..test_bed.query(|a| a.max_pax(ps))).collect();
         let choices = binding
             .iter()
             .choose_multiple(&mut rng, pax_qty.try_into().unwrap());
@@ -236,13 +276,14 @@ impl BoardingTestBed {
         self.write_by_name(&A380Payload::A380_PAX[ps].payload_id, payload);
     }
 
-    fn target_pax(&mut self, ps: A380PaxStation, pax_qty: i8) {
-        assert!(pax_qty <= A380Payload::A380_PAX[ps].max_pax);
+    fn target_pax(&mut self, ps: usize, pax_qty: i8) {
+        let test_bed = test_bed();
+        assert!(pax_qty <= test_bed.query(|a| a.max_pax(ps)));
 
         let seed = 747777;
         let mut rng = rand_pcg::Pcg32::seed_from_u64(seed);
 
-        let binding: Vec<i8> = (0..A380Payload::A380_PAX[ps].max_pax).collect();
+        let binding: Vec<i8> = (0..test_bed.query(|a| a.max_pax(ps))).collect();
         let choices = binding
             .iter()
             .choose_multiple(&mut rng, pax_qty.try_into().unwrap());
@@ -258,7 +299,7 @@ impl BoardingTestBed {
         );
     }
 
-    fn load_cargo(&mut self, cs: A380CargoStation, cargo_qty: Mass) {
+    fn load_cargo(&mut self, cs: usize, cargo_qty: Mass) {
         assert!(cargo_qty <= test_bed().query(|a| a.max_cargo(cs)));
 
         self.write_by_name(
@@ -271,7 +312,7 @@ impl BoardingTestBed {
         );
     }
 
-    fn target_cargo(&mut self, cs: A380CargoStation, cargo_qty: Mass) {
+    fn target_cargo(&mut self, cs: usize, cargo_qty: Mass) {
         assert!(cargo_qty <= test_bed().query(|a| a.max_cargo(cs)));
 
         self.write_by_name(
@@ -334,77 +375,83 @@ impl BoardingTestBed {
         assert!(!pax_ambience);
     }
 
-    fn with_pax(mut self, ps: A380PaxStation, pax_qty: i8) -> Self {
+    fn with_pax(mut self, ps: usize, pax_qty: i8) -> Self {
         self.load_pax(ps, pax_qty);
         self
     }
 
     fn with_no_pax(mut self) -> Self {
-        for ps in A380PaxStation::iterator() {
+        for ps in 0..A380Payload::A380_PAX.len() {
             self.load_pax(ps, 0);
         }
         self
     }
 
-    fn with_half_pax(mut self) -> Self {
-        for ps in A380PaxStation::iterator() {
-            self.load_pax(ps, &A380Payload::A380_PAX[ps].max_pax / 2);
+    fn with_all_stations_half_pax(mut self) -> Self {
+        for ps in 0..A380Payload::A380_PAX.len() {
+            self.load_pax(ps, test_bed().query(|a| a.max_pax(ps)) / 2);
         }
         self
     }
 
     fn with_full_pax(mut self) -> Self {
-        for ps in A380PaxStation::iterator() {
+        for ps in 0..A380Payload::A380_PAX.len() {
             self.load_pax(ps, test_bed().query(|a| a.max_pax(ps)));
         }
         self
     }
 
-    fn with_half_cargo(mut self) -> Self {
-        for cs in A380CargoStation::iterator() {
+    fn with_all_stations_half_cargo(mut self) -> Self {
+        for cs in 0..A380Payload::A380_CARGO.len() {
             self.load_cargo(cs, test_bed().query(|a| a.max_cargo(cs)) / 2.);
         }
         self
     }
 
     fn with_full_cargo(mut self) -> Self {
-        for cs in A380CargoStation::iterator() {
+        for cs in 0..A380Payload::A380_CARGO.len() {
             self.load_cargo(cs, test_bed().query(|a| a.max_cargo(cs)));
         }
         self
     }
 
-    fn with_pax_target(mut self, ps: A380PaxStation, pax_qty: i8) -> Self {
+    fn with_pax_target(mut self, ps: usize, pax_qty: i8) -> Self {
         self.target_pax(ps, pax_qty);
         self
     }
 
     fn target_half_pax(mut self) -> Self {
-        for ps in A380PaxStation::iterator() {
-            self.target_pax(ps, &A380Payload::A380_PAX[ps].max_pax / 2);
+        for ps in 0..A380Payload::A380_PAX.len() {
+            self.target_pax(ps, test_bed().query(|a| a.max_pax(ps)) / 2);
         }
         self
     }
 
     fn target_full_pax(mut self) -> Self {
-        for ps in A380PaxStation::iterator() {
+        for ps in 0..A380Payload::A380_PAX.len() {
             self.target_pax(ps, test_bed().query(|a| a.max_pax(ps)));
         }
         self
     }
 
     fn target_no_pax(mut self) -> Self {
-        for ps in A380PaxStation::iterator() {
+        for ps in 0..A380Payload::A380_PAX.len() {
             self.target_pax(ps, 0);
         }
         self
     }
 
     fn has_no_pax(&self) {
-        for ps in A380PaxStation::iterator() {
+        for ps in 0..A380Payload::A380_PAX.len() {
             let pax_num = 0;
-            let pax_payload = Mass::new::<pound>(0.);
-            assert_eq!(self.pax_num(ps), pax_num);
+            let pax_payload = Mass::default();
+            assert_eq!(
+                self.pax_num(ps),
+                pax_num,
+                "Expected Pax: {}, current Pax: {}",
+                pax_num,
+                self.pax_num(ps)
+            );
             assert_eq!(
                 self.pax_payload(ps).get::<pound>().floor(),
                 pax_payload.get::<pound>().floor()
@@ -415,8 +462,24 @@ impl BoardingTestBed {
     fn has_half_pax(&mut self) {
         let per_pax_weight: Mass = Mass::new::<kilogram>(self.read_by_name("WB_PER_PAX_WEIGHT"));
 
-        for ps in A380PaxStation::iterator() {
-            let pax_num = &A380Payload::A380_PAX[ps].max_pax / 2;
+        let mut total_pax_payload = Mass::default();
+        let mut total_expected_pax_payload = Mass::default();
+        for ps in 0..A380Payload::A380_PAX.len() {
+            let pax_num = test_bed().query(|a| a.max_pax(ps)) / 2;
+            let pax_payload = Mass::new::<pound>(pax_num as f64 * per_pax_weight.get::<pound>());
+            total_expected_pax_payload += pax_payload;
+            total_pax_payload += self.pax_payload(ps);
+        }
+        assert_eq!(
+            total_pax_payload.get::<pound>().floor(),
+            total_expected_pax_payload.get::<pound>().floor()
+        );
+    }
+
+    fn has_all_stations_half_pax(&mut self) {
+        let per_pax_weight: Mass = Mass::new::<kilogram>(self.read_by_name("WB_PER_PAX_WEIGHT"));
+        for ps in 0..A380Payload::A380_PAX.len() {
+            let pax_num = test_bed().query(|a| a.max_pax(ps)) / 2;
             let pax_payload = Mass::new::<pound>(pax_num as f64 * per_pax_weight.get::<pound>());
             assert_eq!(
                 self.pax_payload(ps).get::<pound>().floor(),
@@ -428,7 +491,7 @@ impl BoardingTestBed {
     fn has_full_pax(&mut self) {
         let per_pax_weight: Mass = Mass::new::<kilogram>(self.read_by_name("WB_PER_PAX_WEIGHT"));
 
-        for ps in A380PaxStation::iterator() {
+        for ps in 0..A380Payload::A380_PAX.len() {
             let pax_num = test_bed().query(|a| a.max_pax(ps));
             let pax_payload = Mass::new::<pound>(pax_num as f64 * per_pax_weight.get::<pound>());
             assert_eq!(self.pax_num(ps), pax_num);
@@ -440,22 +503,36 @@ impl BoardingTestBed {
     }
 
     fn load_half_cargo(mut self) -> Self {
-        for cs in A380CargoStation::iterator() {
+        for cs in 0..A380Payload::A380_CARGO.len() {
             self.load_cargo(cs, test_bed().query(|a| a.max_cargo(cs)) / 2.);
         }
         self
     }
 
     fn load_full_cargo(mut self) -> Self {
-        for cs in A380CargoStation::iterator() {
+        for cs in 0..A380Payload::A380_CARGO.len() {
             self.load_cargo(cs, test_bed().query(|a| a.max_cargo(cs)));
         }
         self
     }
 
     fn has_no_cargo(&self) {
-        for cs in A380CargoStation::iterator() {
-            let cargo = Mass::new::<kilogram>(0.);
+        for cs in 0..A380Payload::A380_CARGO.len() {
+            let cargo = Mass::default();
+            assert_eq!(
+                self.cargo(cs).get::<kilogram>().floor(),
+                cargo.get::<kilogram>().floor(),
+            );
+            assert_eq!(
+                self.cargo_payload(cs).get::<pound>().floor(),
+                cargo.get::<pound>().floor()
+            );
+        }
+    }
+
+    fn has_all_stations_half_cargo(&mut self) {
+        for cs in 0..A380Payload::A380_CARGO.len() {
+            let cargo = test_bed().query(|a| a.max_cargo(cs)) / 2.;
             assert_eq!(
                 self.cargo(cs).get::<kilogram>().floor(),
                 cargo.get::<kilogram>().floor(),
@@ -470,7 +547,7 @@ impl BoardingTestBed {
     fn has_half_cargo(&mut self) {
         let mut total_cargo_payload = Mass::default();
         let mut total_expected_cargo_payload = Mass::default();
-        for cs in A380CargoStation::iterator() {
+        for cs in 0..A380Payload::A380_CARGO.len() {
             total_cargo_payload += self.cargo(cs);
             total_expected_cargo_payload += test_bed().query(|a| a.max_cargo(cs)) / 2.;
         }
@@ -481,7 +558,7 @@ impl BoardingTestBed {
     }
 
     fn has_full_cargo(&mut self) {
-        for cs in A380CargoStation::iterator() {
+        for cs in 0..A380Payload::A380_CARGO.len() {
             let cargo = test_bed().query(|a| a.max_cargo(cs));
             assert_eq!(
                 self.cargo(cs).get::<kilogram>().floor(),
@@ -495,21 +572,21 @@ impl BoardingTestBed {
     }
 
     fn target_no_cargo(mut self) -> Self {
-        for cs in A380CargoStation::iterator() {
-            self.target_cargo(cs, Mass::new::<kilogram>(0.));
+        for cs in 0..A380Payload::A380_CARGO.len() {
+            self.target_cargo(cs, Mass::default());
         }
         self
     }
 
     fn target_half_cargo(mut self) -> Self {
-        for cs in A380CargoStation::iterator() {
+        for cs in 0..A380Payload::A380_CARGO.len() {
             self.target_cargo(cs, test_bed().query(|a| a.max_cargo(cs)) / 2.);
         }
         self
     }
 
     fn target_full_cargo(mut self) -> Self {
-        for cs in A380CargoStation::iterator() {
+        for cs in 0..A380Payload::A380_CARGO.len() {
             self.target_cargo(cs, test_bed().query(|a| a.max_cargo(cs)));
         }
         self
@@ -539,20 +616,41 @@ impl BoardingTestBed {
         self.query(|a: &BoardingTestAircraft| a.sound_pax_ambience_playing())
     }
 
-    fn pax_num(&self, ps: A380PaxStation) -> i8 {
+    fn pax_num(&self, ps: usize) -> i8 {
         self.query(|a| a.pax_num(ps))
     }
 
-    fn pax_payload(&self, ps: A380PaxStation) -> Mass {
+    fn pax_payload(&self, ps: usize) -> Mass {
         self.query(|a| a.pax_payload(ps))
     }
 
-    fn cargo(&self, cs: A380CargoStation) -> Mass {
+    fn cargo(&self, cs: usize) -> Mass {
         self.query(|a| a.cargo(cs))
     }
 
-    fn cargo_payload(&self, cs: A380CargoStation) -> Mass {
+    fn cargo_payload(&self, cs: usize) -> Mass {
         self.query(|a| a.cargo_payload(cs))
+    }
+
+    #[allow(dead_code)]
+    fn pax_center_of_gravity(&self) -> Vector3<f64> {
+        self.query(|a| a.pax_center_of_gravity())
+    }
+    #[allow(dead_code)]
+    fn pax_fore_aft_center_of_gravity(&self) -> f64 {
+        self.query(|a| a.pax_fore_aft_center_of_gravity())
+    }
+    #[allow(dead_code)]
+    fn total_pax_payload(&self) -> Mass {
+        self.query(|a| a.total_pax_payload())
+    }
+    #[allow(dead_code)]
+    fn cargo_center_of_gravity(&self) -> Vector3<f64> {
+        self.query(|a| a.cargo_center_of_gravity())
+    }
+    #[allow(dead_code)]
+    fn cargo_fore_aft_center_of_gravity(&self) -> f64 {
+        self.query(|a| a.cargo_fore_aft_pax_center_of_gravity())
     }
 }
 
@@ -588,39 +686,39 @@ fn boarding_init() {
     assert!(test_bed.contains_variable_with_name("BOARDING_RATE"));
     assert!(test_bed.contains_variable_with_name("WB_PER_PAX_WEIGHT"));
     assert!(test_bed
-        .contains_variable_with_name(&&A380Payload::A380_PAX[A380PaxStation::MainFwdA].pax_id));
+        .contains_variable_with_name(&&A380Payload::A380_PAX[A380Pax::MainFwdA as usize].pax_id));
     assert!(test_bed
-        .contains_variable_with_name(&&A380Payload::A380_PAX[A380PaxStation::MainFwdB].pax_id));
+        .contains_variable_with_name(&&A380Payload::A380_PAX[A380Pax::MainFwdB as usize].pax_id));
     assert!(test_bed
-        .contains_variable_with_name(&&A380Payload::A380_PAX[A380PaxStation::MainMid1A].pax_id));
+        .contains_variable_with_name(&&A380Payload::A380_PAX[A380Pax::MainMid1A as usize].pax_id));
     assert!(test_bed
-        .contains_variable_with_name(&&A380Payload::A380_PAX[A380PaxStation::MainMid1B].pax_id));
+        .contains_variable_with_name(&&A380Payload::A380_PAX[A380Pax::MainMid1B as usize].pax_id));
     assert!(test_bed
-        .contains_variable_with_name(&&A380Payload::A380_PAX[A380PaxStation::MainMid1C].pax_id));
+        .contains_variable_with_name(&&A380Payload::A380_PAX[A380Pax::MainMid1C as usize].pax_id));
     assert!(test_bed
-        .contains_variable_with_name(&&A380Payload::A380_PAX[A380PaxStation::MainMid2A].pax_id));
+        .contains_variable_with_name(&&A380Payload::A380_PAX[A380Pax::MainMid2A as usize].pax_id));
     assert!(test_bed
-        .contains_variable_with_name(&&A380Payload::A380_PAX[A380PaxStation::MainMid2B].pax_id));
+        .contains_variable_with_name(&&A380Payload::A380_PAX[A380Pax::MainMid2B as usize].pax_id));
     assert!(test_bed
-        .contains_variable_with_name(&&A380Payload::A380_PAX[A380PaxStation::MainMid2C].pax_id));
+        .contains_variable_with_name(&&A380Payload::A380_PAX[A380Pax::MainMid2C as usize].pax_id));
     assert!(test_bed
-        .contains_variable_with_name(&&A380Payload::A380_PAX[A380PaxStation::MainAftA].pax_id));
+        .contains_variable_with_name(&&A380Payload::A380_PAX[A380Pax::MainAftA as usize].pax_id));
     assert!(test_bed
-        .contains_variable_with_name(&&A380Payload::A380_PAX[A380PaxStation::MainAftB].pax_id));
+        .contains_variable_with_name(&&A380Payload::A380_PAX[A380Pax::MainAftB as usize].pax_id));
     assert!(test_bed
-        .contains_variable_with_name(&&A380Payload::A380_PAX[A380PaxStation::UpperFwd].pax_id));
+        .contains_variable_with_name(&&A380Payload::A380_PAX[A380Pax::UpperFwd as usize].pax_id));
     assert!(test_bed
-        .contains_variable_with_name(&&A380Payload::A380_PAX[A380PaxStation::UpperMidA].pax_id));
+        .contains_variable_with_name(&&A380Payload::A380_PAX[A380Pax::UpperMidA as usize].pax_id));
     assert!(test_bed
-        .contains_variable_with_name(&&A380Payload::A380_PAX[A380PaxStation::UpperMidB].pax_id));
+        .contains_variable_with_name(&&A380Payload::A380_PAX[A380Pax::UpperMidB as usize].pax_id));
     assert!(test_bed
-        .contains_variable_with_name(&&A380Payload::A380_PAX[A380PaxStation::UpperAft].pax_id));
+        .contains_variable_with_name(&&A380Payload::A380_PAX[A380Pax::UpperAft as usize].pax_id));
     assert!(test_bed
-        .contains_variable_with_name(&A380Payload::A380_CARGO[A380CargoStation::Fwd].cargo_id));
+        .contains_variable_with_name(&A380Payload::A380_CARGO[A380Cargo::Fwd as usize].cargo_id));
     assert!(test_bed
-        .contains_variable_with_name(&A380Payload::A380_CARGO[A380CargoStation::Aft].cargo_id));
+        .contains_variable_with_name(&A380Payload::A380_CARGO[A380Cargo::Aft as usize].cargo_id));
     assert!(test_bed
-        .contains_variable_with_name(&A380Payload::A380_CARGO[A380CargoStation::Bulk].cargo_id));
+        .contains_variable_with_name(&A380Payload::A380_CARGO[A380Cargo::Bulk as usize].cargo_id));
 }
 #[test]
 fn loaded_no_pax() {
@@ -650,9 +748,12 @@ fn loaded_full_pax() {
 
 #[test]
 fn loaded_half_pax() {
-    let mut test_bed = test_bed_with().init_vars().with_half_pax().and_run();
+    let mut test_bed = test_bed_with()
+        .init_vars()
+        .with_all_stations_half_pax()
+        .and_run();
 
-    test_bed.has_half_pax();
+    test_bed.has_all_stations_half_pax();
     test_bed.has_no_cargo();
     test_bed.boarding_stopped();
 
@@ -687,7 +788,7 @@ fn loaded_no_pax_half_cargo() {
         .and_run();
 
     test_bed.has_no_pax();
-    test_bed.has_half_cargo();
+    test_bed.has_all_stations_half_cargo();
     test_bed.boarding_stopped();
 
     test_bed = test_bed.and_run();
@@ -699,12 +800,12 @@ fn loaded_no_pax_half_cargo() {
 fn loaded_half_use() {
     let mut test_bed = test_bed_with()
         .init_vars()
-        .with_half_pax()
+        .with_all_stations_half_pax()
         .load_half_cargo()
         .and_run();
 
-    test_bed.has_half_pax();
-    test_bed.has_half_cargo();
+    test_bed.has_all_stations_half_pax();
+    test_bed.has_all_stations_half_cargo();
     test_bed.boarding_stopped();
 
     test_bed = test_bed.and_run();
@@ -746,7 +847,7 @@ fn target_half_pax_trigger_and_finish_board() {
         .and_run()
         .and_stabilize();
 
-    test_bed.has_half_pax();
+    test_bed.has_all_stations_half_pax();
     test_bed.has_no_cargo();
     test_bed.boarding_stopped();
 
@@ -773,7 +874,7 @@ fn target_half_pax_trigger_and_finish_board_realtime_use() {
         .test_bed
         .run_multiple_frames(Duration::from_secs(one_hour_in_seconds));
 
-    test_bed.has_half_pax();
+    test_bed.has_all_stations_half_pax();
     test_bed.has_no_cargo();
     test_bed.boarding_stopped();
 
@@ -786,7 +887,7 @@ fn target_half_pax_trigger_and_finish_board_realtime_use() {
 fn loaded_half_idle_pending() {
     let mut test_bed = test_bed_with()
         .init_vars()
-        .with_half_pax()
+        .with_all_stations_half_pax()
         .load_half_cargo()
         .instant_board_rate()
         .and_run()
@@ -798,8 +899,8 @@ fn loaded_half_idle_pending() {
         .test_bed
         .run_multiple_frames(Duration::from_secs(fifteen_minutes_in_seconds));
 
-    test_bed.has_half_pax();
-    test_bed.has_half_cargo();
+    test_bed.has_all_stations_half_pax();
+    test_bed.has_all_stations_half_cargo();
     test_bed.boarding_stopped();
 
     test_bed = test_bed.and_run();
@@ -845,8 +946,8 @@ fn target_half_and_board_fifteen_minutes_idle() {
         .test_bed
         .run_multiple_frames(Duration::from_secs(fifteen_minutes_in_seconds));
 
-    test_bed.has_half_pax();
-    test_bed.has_half_cargo();
+    test_bed.has_all_stations_half_pax();
+    test_bed.has_all_stations_half_cargo();
     test_bed.boarding_stopped();
 
     test_bed = test_bed.and_run();
@@ -864,8 +965,8 @@ fn target_half_and_board_instant() {
         .start_boarding()
         .and_run();
 
-    test_bed.has_half_pax();
-    test_bed.has_half_cargo();
+    test_bed.has_all_stations_half_pax();
+    test_bed.has_all_stations_half_cargo();
     test_bed.boarding_stopped();
 
     test_bed = test_bed.and_run();
@@ -877,7 +978,7 @@ fn target_half_and_board_instant() {
 fn start_half_pax_target_full_pax_fast_board() {
     let mut test_bed = test_bed_with()
         .init_vars()
-        .with_half_pax()
+        .with_all_stations_half_pax()
         .load_half_cargo()
         .target_full_pax()
         .target_half_cargo()
@@ -887,7 +988,7 @@ fn start_half_pax_target_full_pax_fast_board() {
         .and_stabilize();
 
     test_bed.has_full_pax();
-    test_bed.has_half_cargo();
+    test_bed.has_all_stations_half_cargo();
     test_bed.boarding_stopped();
 
     test_bed = test_bed.and_run();
@@ -899,7 +1000,7 @@ fn start_half_pax_target_full_pax_fast_board() {
 fn start_half_cargo_target_full_cargo_real_board() {
     let mut test_bed = test_bed_with()
         .init_vars()
-        .with_half_pax()
+        .with_all_stations_half_pax()
         .load_half_cargo()
         .target_half_pax()
         .target_full_cargo()
@@ -916,7 +1017,7 @@ fn start_half_cargo_target_full_cargo_real_board() {
         .test_bed
         .run_multiple_frames(Duration::from_secs(one_hour_in_seconds));
 
-    test_bed.has_half_pax();
+    test_bed.has_all_stations_half_pax();
     test_bed.has_full_cargo();
     test_bed.boarding_stopped();
 
@@ -929,7 +1030,7 @@ fn start_half_cargo_target_full_cargo_real_board() {
 fn start_half_target_full_instantly() {
     let mut test_bed = test_bed_with()
         .init_vars()
-        .with_half_pax()
+        .with_all_stations_half_pax()
         .load_half_cargo()
         .target_full_pax()
         .target_full_cargo()
@@ -999,7 +1100,7 @@ fn deboard_full_pax_full_cargo_fast() {
 fn deboard_half_pax_full_cargo_instantly() {
     let mut test_bed = test_bed_with()
         .init_vars()
-        .with_half_pax()
+        .with_all_stations_half_pax()
         .load_full_cargo()
         .target_no_pax()
         .target_no_cargo()
@@ -1020,7 +1121,7 @@ fn deboard_half_pax_full_cargo_instantly() {
 fn deboard_half_real() {
     let mut test_bed = test_bed_with()
         .init_vars()
-        .with_half_pax()
+        .with_all_stations_half_pax()
         .load_half_cargo()
         .target_no_pax()
         .target_no_cargo()
@@ -1050,20 +1151,18 @@ fn deboard_half_real() {
 fn deboard_half_five_min_change_to_board_full_real() {
     let mut test_bed = test_bed_with()
         .init_vars()
-        .with_half_pax()
+        .with_all_stations_half_pax()
         .load_half_cargo()
         .target_no_pax()
         .target_no_cargo()
         .real_board_rate()
         .start_boarding()
-        .and_run();
+        .and_run()
+        .and_stabilize();
 
     test_bed.boarding_started();
 
-    test_bed = test_bed
-        .and_stabilize()
-        .target_full_pax()
-        .target_full_cargo();
+    test_bed = test_bed.target_full_pax().target_full_cargo();
 
     let ninety_minutes_in_seconds = 90 * MINUTES_TO_SECONDS;
 
@@ -1084,7 +1183,7 @@ fn deboard_half_five_min_change_to_board_full_real() {
 fn deboard_half_two_min_change_instant() {
     let mut test_bed = test_bed_with()
         .init_vars()
-        .with_half_pax()
+        .with_all_stations_half_pax()
         .load_half_cargo()
         .target_no_pax()
         .target_no_cargo()
@@ -1110,7 +1209,7 @@ fn deboard_half_two_min_change_instant() {
 fn deboard_half_two_min_change_instant_change_units_load_full_kg() {
     let mut test_bed = test_bed_with()
         .init_vars()
-        .with_half_pax()
+        .with_all_stations_half_pax()
         .load_half_cargo()
         .target_no_pax()
         .target_no_cargo()
@@ -1140,20 +1239,20 @@ fn deboard_half_two_min_change_instant_change_units_load_full_kg() {
 fn detailed_test_with_multiple_stops() {
     let mut test_bed = test_bed_with()
         .init_vars()
-        .with_pax(A380PaxStation::MainFwdA, 5)
-        .with_pax(A380PaxStation::MainFwdB, 1)
-        .with_pax(A380PaxStation::MainMid1A, 16)
-        .with_pax(A380PaxStation::MainMid1B, 16)
-        .with_pax(A380PaxStation::MainMid1C, 16)
-        .with_pax_target(A380PaxStation::MainMid2A, 15)
-        .with_pax_target(A380PaxStation::MainMid2B, 14)
-        .with_pax_target(A380PaxStation::MainMid2C, 25)
-        .with_pax_target(A380PaxStation::MainAftA, 12)
-        .with_pax_target(A380PaxStation::MainAftB, 12)
-        .with_pax_target(A380PaxStation::UpperFwd, 12)
-        .with_pax_target(A380PaxStation::UpperMidA, 14)
-        .with_pax_target(A380PaxStation::UpperMidB, 14)
-        .with_pax_target(A380PaxStation::UpperAft, 6)
+        .with_pax(A380Pax::MainFwdA as usize, 5)
+        .with_pax(A380Pax::MainFwdB as usize, 1)
+        .with_pax(A380Pax::MainMid1A as usize, 16)
+        .with_pax(A380Pax::MainMid1B as usize, 16)
+        .with_pax(A380Pax::MainMid1C as usize, 16)
+        .with_pax_target(A380Pax::MainMid2A as usize, 15)
+        .with_pax_target(A380Pax::MainMid2B as usize, 14)
+        .with_pax_target(A380Pax::MainMid2C as usize, 25)
+        .with_pax_target(A380Pax::MainAftA as usize, 12)
+        .with_pax_target(A380Pax::MainAftB as usize, 12)
+        .with_pax_target(A380Pax::UpperFwd as usize, 12)
+        .with_pax_target(A380Pax::UpperMidA as usize, 14)
+        .with_pax_target(A380Pax::UpperMidB as usize, 14)
+        .with_pax_target(A380Pax::UpperAft as usize, 6)
         .load_half_cargo()
         .real_board_rate()
         .start_boarding()
@@ -1172,18 +1271,18 @@ fn detailed_test_with_multiple_stops() {
         .test_bed
         .run_multiple_frames(Duration::from_secs(forty_five_minutes_in_seconds));
 
-    assert_eq!(test_bed.pax_num(A380PaxStation::MainFwdA), 0);
-    assert_eq!(test_bed.pax_num(A380PaxStation::MainFwdB), 0);
-    assert_eq!(test_bed.pax_num(A380PaxStation::MainMid1A), 0);
-    assert_eq!(test_bed.pax_num(A380PaxStation::MainMid1B), 0);
-    assert_eq!(test_bed.pax_num(A380PaxStation::MainMid1C), 0);
-    assert_eq!(test_bed.pax_num(A380PaxStation::MainMid2A), 15);
-    assert_eq!(test_bed.pax_num(A380PaxStation::MainMid2B), 14);
-    assert_eq!(test_bed.pax_num(A380PaxStation::MainMid2C), 25);
-    assert_eq!(test_bed.pax_num(A380PaxStation::MainAftA), 12);
-    assert_eq!(test_bed.pax_num(A380PaxStation::MainAftB), 12);
-    assert_eq!(test_bed.pax_num(A380PaxStation::UpperFwd), 12);
-    assert_eq!(test_bed.pax_num(A380PaxStation::UpperMidA), 14);
+    assert_eq!(test_bed.pax_num(A380Pax::MainFwdA as usize), 0);
+    assert_eq!(test_bed.pax_num(A380Pax::MainFwdB as usize), 0);
+    assert_eq!(test_bed.pax_num(A380Pax::MainMid1A as usize), 0);
+    assert_eq!(test_bed.pax_num(A380Pax::MainMid1B as usize), 0);
+    assert_eq!(test_bed.pax_num(A380Pax::MainMid1C as usize), 0);
+    assert_eq!(test_bed.pax_num(A380Pax::MainMid2A as usize), 15);
+    assert_eq!(test_bed.pax_num(A380Pax::MainMid2B as usize), 14);
+    assert_eq!(test_bed.pax_num(A380Pax::MainMid2C as usize), 25);
+    assert_eq!(test_bed.pax_num(A380Pax::MainAftA as usize), 12);
+    assert_eq!(test_bed.pax_num(A380Pax::MainAftB as usize), 12);
+    assert_eq!(test_bed.pax_num(A380Pax::UpperFwd as usize), 12);
+    assert_eq!(test_bed.pax_num(A380Pax::UpperMidA as usize), 14);
     test_bed.has_no_cargo();
 
     test_bed = test_bed
@@ -1238,6 +1337,8 @@ fn gsx_boarding_half_pax() {
         .init_vars_gsx()
         .target_half_pax()
         .target_half_cargo()
+        .gsx_requested_board_state()
+        .and_run()
         .gsx_performing_board_state()
         .board_gsx_pax_half()
         .board_gsx_cargo_half()
@@ -1245,8 +1346,8 @@ fn gsx_boarding_half_pax() {
         .gsx_complete_board_state()
         .and_stabilize();
 
-    test_bed.has_half_pax();
-    test_bed.has_half_cargo();
+    test_bed.has_all_stations_half_pax();
+    test_bed.has_all_stations_half_cargo();
 
     test_bed = test_bed.and_run();
     test_bed.has_sound_pax_ambience();
@@ -1260,6 +1361,8 @@ fn gsx_boarding_full_pax() {
         .init_vars_gsx()
         .target_full_pax()
         .target_full_cargo()
+        .gsx_requested_board_state()
+        .and_run()
         .gsx_performing_board_state()
         .board_gsx_pax_half()
         .board_gsx_cargo_half()
@@ -1285,8 +1388,10 @@ fn gsx_deboarding_full_pax() {
         .init_vars_gsx()
         .with_full_pax()
         .with_full_cargo()
-        .target_no_pax()
-        .target_no_cargo()
+        .target_full_pax()
+        .target_full_cargo()
+        .gsx_requested_deboard_state()
+        .and_run()
         .gsx_performing_deboard_state()
         .deboard_gsx_pax_half()
         .deboard_gsx_cargo_half()
@@ -1310,10 +1415,12 @@ fn gsx_deboarding_half_pax() {
     let mut test_bed = test_bed_with()
         .init_vars()
         .init_vars_gsx()
-        .with_half_pax()
-        .with_half_cargo()
-        .target_no_pax()
-        .target_no_cargo()
+        .with_all_stations_half_pax()
+        .with_all_stations_half_cargo()
+        .target_half_pax()
+        .target_half_cargo()
+        .gsx_requested_deboard_state()
+        .and_run()
         .gsx_performing_deboard_state()
         .deboard_gsx_pax_half()
         .deboard_gsx_cargo_half()

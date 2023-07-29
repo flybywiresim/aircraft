@@ -13,22 +13,22 @@ use crate::{
 #[cfg(test)]
 pub mod test;
 
-pub struct A320Airframe {
+pub struct A380Airframe {
     cg_mac: CgMac,
     weight: WeightData,
     // ths_setting: f64,
 }
-impl A320Airframe {
+impl A380Airframe {
     const LOADSHEET: LoadsheetInfo = LoadsheetInfo {
-        operating_empty_weight_kg: 42500.,
-        operating_empty_position: (-9.42, 0., 0.),
+        operating_empty_weight_kg: 270000.,
+        operating_empty_position: (0.83, 0., 2.8),
         per_pax_weight_kg: 84.,
-        mac_size: 13.464,
-        lemac_z: -5.383,
+        mac_size: 39.9475,
+        lemac_z: 15.29,
     };
 
     pub fn new(context: &mut InitContext) -> Self {
-        A320Airframe {
+        A380Airframe {
             cg_mac: CgMac::new(
                 context.get_identifier("ZFW_CG_PERCENT_MAC".to_owned()),
                 context.get_identifier("GW_CG_PERCENT_MAC".to_owned()),
@@ -190,8 +190,9 @@ impl A320Airframe {
         self.set_target_zfw(target_zfw_kg);
         self.set_target_zfw_cg_percent_mac(target_zfw_cg);
 
-        let fuel_kg = fuel_payload.total_load().get::<kilogram>();
-        let fuel_moment = fuel_kg * fuel_payload.fore_aft_center_of_gravity();
+        let fuel_kg: f64 = fuel_payload.total_load().get::<kilogram>();
+
+        let fuel_moment: f64 = fuel_kg * fuel_payload.fore_aft_center_of_gravity();
 
         self.set_total_fuel(fuel_kg);
 
@@ -220,14 +221,14 @@ impl A320Airframe {
         let target_tow = target_gw_kg;
         let target_to_cg: f64 = target_gw_cg;
 
-        self.set_target_tow(target_tow);
-        self.set_target_to_cg_percent_mac(target_to_cg);
-
         println!("ZFW CG MAC: {}", self.zfw_cg_mac());
         println!("GW CG MAC: {}", self.gw_cg_mac());
+
+        self.set_target_tow(target_tow);
+        self.set_target_to_cg_percent_mac(target_to_cg);
     }
 }
-impl SimulationElement for A320Airframe {
+impl SimulationElement for A380Airframe {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.cg_mac.accept(visitor);
         self.weight.accept(visitor);

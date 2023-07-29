@@ -560,7 +560,7 @@ impl A320Payload {
         self.pax[ps].pax_target_num() as i8
     }
 
-    fn pax_is_sync(&mut self, ps: usize) -> bool {
+    fn pax_is_sync(&self, ps: usize) -> bool {
         self.pax[ps].payload_is_sync()
     }
 
@@ -614,7 +614,7 @@ impl A320Payload {
         self.cargo[cs].max_cargo()
     }
 
-    fn cargo_is_sync(&mut self, cs: usize) -> bool {
+    fn cargo_is_sync(&self, cs: usize) -> bool {
         self.cargo[cs].payload_is_sync()
     }
 

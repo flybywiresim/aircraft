@@ -264,6 +264,17 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("ANTISKID BRAKES ACTIVE", "Bool", 0)?
     .provides_aircraft_variable("EXTERNAL POWER AVAILABLE", "Bool", 1)?
     .provides_aircraft_variable("FUEL TANK LEFT MAIN QUANTITY", "Pounds", 0)?
+    .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 1)?
+    .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 2)?
+    .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 3)?
+    .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 4)?
+    .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 5)?
+    .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 6)?
+    .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 7)?
+    .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 8)?
+    .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 9)?
+    .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 10)?
+    .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 11)?
     .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 0)?
     .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 1)?
     .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 2)?

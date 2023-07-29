@@ -1,4 +1,3 @@
-use enum_map::{Enum, EnumMap};
 use nalgebra::Vector3;
 
 use std::{cell::Cell, rc::Rc, time::Duration};
@@ -7,7 +6,7 @@ use uom::si::{f64::Mass, mass::kilogram};
 
 use systems::{
     accept_iterable,
-    misc::GsxState,
+    misc::{BoardingSounds, Gsx, GsxState},
     payload::{BoardingRate, Cargo, CargoInfo, Pax, PaxInfo},
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -18,8 +17,31 @@ use systems::{
 #[cfg(test)]
 pub mod test;
 
-#[derive(Debug, Clone, Copy, Enum)]
-pub enum A380PaxStation {
+pub trait NumberOfPassengers {
+    fn number_of_passengers(&self, ps: usize) -> i8;
+}
+
+pub trait PassengerPayload {
+    fn total_passenger_load(&self) -> Mass;
+    fn total_target_passenger_load(&self) -> Mass;
+
+    fn center_of_gravity(&self) -> Vector3<f64>;
+    fn fore_aft_center_of_gravity(&self) -> f64;
+    fn target_center_of_gravity(&self) -> Vector3<f64>;
+    fn target_fore_aft_center_of_gravity(&self) -> f64;
+}
+
+pub trait CargoPayload {
+    fn total_cargo_load(&self) -> Mass;
+    fn total_target_cargo_load(&self) -> Mass;
+
+    fn center_of_gravity(&self) -> Vector3<f64>;
+    fn fore_aft_center_of_gravity(&self) -> f64;
+    fn target_center_of_gravity(&self) -> Vector3<f64>;
+    fn target_fore_aft_center_of_gravity(&self) -> f64;
+}
+
+pub enum A380Pax {
     MainFwdA,
     MainFwdB,
     MainMid1A,
@@ -35,166 +57,46 @@ pub enum A380PaxStation {
     UpperMidB,
     UpperAft,
 }
-impl A380PaxStation {
-    pub fn iterator() -> impl Iterator<Item = A380PaxStation> {
-        [
-            A380PaxStation::MainFwdA,
-            A380PaxStation::MainFwdB,
-            A380PaxStation::MainMid1A,
-            A380PaxStation::MainMid1B,
-            A380PaxStation::MainMid1C,
-            A380PaxStation::MainMid2A,
-            A380PaxStation::MainMid2B,
-            A380PaxStation::MainMid2C,
-            A380PaxStation::MainAftA,
-            A380PaxStation::MainAftB,
-            A380PaxStation::UpperFwd,
-            A380PaxStation::UpperMidA,
-            A380PaxStation::UpperMidB,
-            A380PaxStation::UpperAft,
-        ]
-        .iter()
-        .copied()
+impl Into<usize> for A380Pax {
+    fn into(self) -> usize {
+        self as usize
     }
 }
 
-#[derive(Debug, Clone, Copy, Enum)]
-pub enum A380CargoStation {
+pub enum A380Cargo {
     Fwd,
     Aft,
     Bulk,
 }
-impl A380CargoStation {
-    pub fn iterator() -> impl Iterator<Item = A380CargoStation> {
-        [
-            A380CargoStation::Fwd,
-            A380CargoStation::Aft,
-            A380CargoStation::Bulk,
-        ]
-        .iter()
-        .copied()
+impl Into<usize> for A380Cargo {
+    fn into(self) -> usize {
+        self as usize
     }
 }
-pub struct A380BoardingSounds {
-    pax_board_id: VariableIdentifier,
-    pax_deboard_id: VariableIdentifier,
-    pax_complete_id: VariableIdentifier,
-    pax_ambience_id: VariableIdentifier,
-    pax_boarding: bool,
-    pax_deboarding: bool,
-    pax_complete: bool,
-    pax_ambience: bool,
-}
-impl A380BoardingSounds {
-    pub fn new(
-        pax_board_id: VariableIdentifier,
-        pax_deboard_id: VariableIdentifier,
-        pax_complete_id: VariableIdentifier,
-        pax_ambience_id: VariableIdentifier,
-    ) -> Self {
-        A380BoardingSounds {
-            pax_board_id,
-            pax_deboard_id,
-            pax_complete_id,
-            pax_ambience_id,
-            pax_boarding: false,
-            pax_deboarding: false,
-            pax_complete: false,
-            pax_ambience: false,
-        }
-    }
 
-    fn pax_boarding(&self) -> bool {
-        self.pax_boarding
-    }
-
-    fn pax_deboarding(&self) -> bool {
-        self.pax_deboarding
-    }
-
-    fn pax_complete(&self) -> bool {
-        self.pax_complete
-    }
-
-    fn pax_ambience(&self) -> bool {
-        self.pax_ambience
-    }
-
-    fn start_pax_boarding(&mut self) {
-        self.pax_boarding = true;
-    }
-
-    fn stop_pax_boarding(&mut self) {
-        self.pax_boarding = false;
-    }
-
-    fn start_pax_deboarding(&mut self) {
-        self.pax_deboarding = true;
-    }
-
-    fn stop_pax_deboarding(&mut self) {
-        self.pax_deboarding = false;
-    }
-
-    fn start_pax_complete(&mut self) {
-        self.pax_complete = true;
-    }
-
-    fn stop_pax_complete(&mut self) {
-        self.pax_complete = false;
-    }
-
-    fn start_pax_ambience(&mut self) {
-        self.pax_ambience = true;
-    }
-
-    fn stop_pax_ambience(&mut self) {
-        self.pax_ambience = false;
-    }
-}
-impl SimulationElement for A380BoardingSounds {
-    fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.pax_board_id, self.pax_boarding);
-        writer.write(&self.pax_deboard_id, self.pax_deboarding);
-        writer.write(&self.pax_complete_id, self.pax_complete);
-        writer.write(&self.pax_ambience_id, self.pax_ambience);
-    }
-}
 pub struct A380Payload {
     developer_state_id: VariableIdentifier,
     is_boarding_id: VariableIdentifier,
     board_rate_id: VariableIdentifier,
     per_pax_weight_id: VariableIdentifier,
 
-    is_gsx_enabled_id: VariableIdentifier,
-    gsx_boarding_state_id: VariableIdentifier,
-    gsx_deboarding_state_id: VariableIdentifier,
-    gsx_pax_boarding_id: VariableIdentifier,
-    gsx_pax_deboarding_id: VariableIdentifier,
-    gsx_cargo_boarding_pct_id: VariableIdentifier,
-    gsx_cargo_deboarding_pct_id: VariableIdentifier,
-
     developer_state: i8,
     is_boarding: bool,
     board_rate: BoardingRate,
     per_pax_weight: Rc<Cell<Mass>>,
 
-    is_gsx_enabled: bool,
-    gsx_boarding_state: GsxState,
-    gsx_deboarding_state: GsxState,
-    gsx_pax_boarding: i32,
-    gsx_pax_deboarding: i32,
-    gsx_cargo_boarding_pct: f64,
-    gsx_cargo_deboarding_pct: f64,
-
-    pax: Vec<Pax>,
-    cargo: Vec<Cargo>,
-    boarding_sounds: A380BoardingSounds,
+    pax: [Pax; 14],
+    cargo: [Cargo; 3],
+    boarding_sounds: BoardingSounds,
+    gsx: Gsx,
     time: Duration,
 }
 impl A380Payload {
-    const DEFAULT_PER_PAX_WEIGHT_KG: f64 = 84.;
-    const A380_PAX: EnumMap<A380PaxStation, PaxInfo<'_>> = EnumMap::from_array([
+    // Note: These constants reflect flight_model.cfg values and will have to be updated in sync with the configuration
+
+    pub const DEFAULT_PER_PAX_WEIGHT_KG: f64 = 84.;
+
+    const A380_PAX: [PaxInfo<'_>; 14] = [
         PaxInfo {
             max_pax: 44,
             position: (70.7, 0., 7.1),
@@ -286,12 +188,12 @@ impl A380Payload {
             payload_id: "PAYLOAD_STATION_14_REQ",
         },
         // PAX UPPER AFT: 18
-    ]);
+    ];
 
-    const A380_CARGO: EnumMap<A380CargoStation, CargoInfo<'_>> = EnumMap::from_array([
+    const A380_CARGO: [CargoInfo<'_>; 3] = [
         CargoInfo {
             max_cargo_kg: 28577.,
-            position: (-62.4, 0., -0.95),
+            position: (62.4, 0., -0.95),
             cargo_id: "CARGO_FWD",
             payload_id: "PAYLOAD_STATION_15_REQ",
         },
@@ -307,70 +209,55 @@ impl A380Payload {
             cargo_id: "CARGO_BULK",
             payload_id: "PAYLOAD_STATION_17_REQ",
         },
-    ]);
+    ];
 
     pub fn new(context: &mut InitContext) -> Self {
         let per_pax_weight = Rc::new(Cell::new(Mass::new::<kilogram>(
             Self::DEFAULT_PER_PAX_WEIGHT_KG,
         )));
 
-        let mut pax = Vec::new();
+        let pax: [Pax; 14] = Self::A380_PAX
+            .iter()
+            .map(|p| {
+                Pax::new(
+                    context.get_identifier(p.pax_id.to_owned()),
+                    context.get_identifier(format!("{}_DESIRED", p.pax_id).to_owned()),
+                    context.get_identifier(p.payload_id.to_owned()),
+                    Rc::clone(&per_pax_weight),
+                    Vector3::new(p.position.0, p.position.1, p.position.2),
+                    p.max_pax,
+                )
+            })
+            .collect::<Vec<Pax>>()
+            .try_into()
+            .unwrap();
 
-        for ps in A380PaxStation::iterator() {
-            let pos = Self::A380_PAX[ps].position;
-            pax.push(Pax::new(
-                context.get_identifier(Self::A380_PAX[ps].pax_id.to_owned()),
-                context.get_identifier(format!("{}_DESIRED", Self::A380_PAX[ps].pax_id).to_owned()),
-                context.get_identifier(Self::A380_PAX[ps].payload_id.to_owned()),
-                Rc::clone(&per_pax_weight),
-                Vector3::new(pos.0, pos.1, pos.2),
-                Self::A380_PAX[ps].max_pax,
-            ));
-        }
+        let cargo: [Cargo; 3] = Self::A380_CARGO
+            .iter()
+            .map(|c| {
+                Cargo::new(
+                    context.get_identifier(c.cargo_id.to_owned()),
+                    context.get_identifier(format!("{}_DESIRED", c.cargo_id).to_owned()),
+                    context.get_identifier(c.payload_id.to_owned()),
+                    Vector3::new(c.position.0, c.position.1, c.position.2),
+                    Mass::new::<kilogram>(c.max_cargo_kg),
+                )
+            })
+            .collect::<Vec<Cargo>>()
+            .try_into()
+            .unwrap();
 
-        let mut cargo = Vec::new();
-        for cs in A380CargoStation::iterator() {
-            let pos = Self::A380_CARGO[cs].position;
-            cargo.push(Cargo::new(
-                context.get_identifier(Self::A380_CARGO[cs].cargo_id.to_owned()),
-                context.get_identifier(
-                    format!("{}_DESIRED", Self::A380_CARGO[cs].cargo_id).to_owned(),
-                ),
-                context.get_identifier(Self::A380_CARGO[cs].payload_id.to_owned()),
-                Vector3::new(pos.0, pos.1, pos.2),
-                Mass::new::<kilogram>(Self::A380_CARGO[cs].max_cargo_kg),
-            ));
-        }
         A380Payload {
             developer_state_id: context.get_identifier("DEVELOPER_STATE".to_owned()),
             is_boarding_id: context.get_identifier("BOARDING_STARTED_BY_USR".to_owned()),
             board_rate_id: context.get_identifier("BOARDING_RATE".to_owned()),
             per_pax_weight_id: context.get_identifier("WB_PER_PAX_WEIGHT".to_owned()),
 
-            is_gsx_enabled_id: context.get_identifier("GSX_PAYLOAD_SYNC_ENABLED".to_owned()),
-            gsx_boarding_state_id: context.get_identifier("FSDT_GSX_BOARDING_STATE".to_owned()),
-            gsx_deboarding_state_id: context.get_identifier("FSDT_GSX_DEBOARDING_STATE".to_owned()),
-            gsx_pax_boarding_id: context
-                .get_identifier("FSDT_GSX_NUMPASSENGERS_BOARDING_TOTAL".to_owned()),
-            gsx_pax_deboarding_id: context
-                .get_identifier("FSDT_GSX_NUMPASSENGERS_DEBOARDING_TOTAL".to_owned()),
-            gsx_cargo_boarding_pct_id: context
-                .get_identifier("FSDT_GSX_BOARDING_CARGO_PERCENT".to_owned()),
-            gsx_cargo_deboarding_pct_id: context
-                .get_identifier("FSDT_GSX_DEBOARDING_CARGO_PERCENT".to_owned()),
-
             developer_state: 0,
             is_boarding: false,
             board_rate: BoardingRate::Instant,
             per_pax_weight,
-            is_gsx_enabled: false,
-            gsx_boarding_state: GsxState::None,
-            gsx_deboarding_state: GsxState::None,
-            gsx_pax_boarding: 0,
-            gsx_pax_deboarding: 0,
-            gsx_cargo_boarding_pct: 0.,
-            gsx_cargo_deboarding_pct: 0.,
-            boarding_sounds: A380BoardingSounds::new(
+            boarding_sounds: BoardingSounds::new(
                 context.get_identifier("SOUND_PAX_BOARDING".to_owned()),
                 context.get_identifier("SOUND_PAX_DEBOARDING".to_owned()),
                 context.get_identifier("SOUND_BOARDING_COMPLETE".to_owned()),
@@ -378,6 +265,15 @@ impl A380Payload {
             ),
             pax,
             cargo,
+            gsx: Gsx::new(
+                context.get_identifier("GSX_PAYLOAD_SYNC_ENABLED".to_owned()),
+                context.get_identifier("FSDT_GSX_BOARDING_STATE".to_owned()),
+                context.get_identifier("FSDT_GSX_DEBOARDING_STATE".to_owned()),
+                context.get_identifier("FSDT_GSX_NUMPASSENGERS_BOARDING_TOTAL".to_owned()),
+                context.get_identifier("FSDT_GSX_NUMPASSENGERS_DEBOARDING_TOTAL".to_owned()),
+                context.get_identifier("FSDT_GSX_BOARDING_CARGO_PERCENT".to_owned()),
+                context.get_identifier("FSDT_GSX_DEBOARDING_CARGO_PERCENT".to_owned()),
+            ),
             time: Duration::from_nanos(0),
         }
     }
@@ -397,13 +293,13 @@ impl A380Payload {
     }
 
     fn ensure_payload_sync(&mut self) {
-        for ps in A380PaxStation::iterator() {
+        for ps in 0..Self::A380_PAX.len() {
             if !self.pax_is_sync(ps) {
                 self.sync_pax(ps);
             }
         }
 
-        for cs in A380CargoStation::iterator() {
+        for cs in 0..Self::A380_CARGO.len() {
             if !self.cargo_is_sync(cs) {
                 self.sync_cargo(cs);
             }
@@ -417,7 +313,7 @@ impl A380Payload {
 
     fn update_gsx_deboarding(&mut self, _context: &UpdateContext) {
         self.update_pax_ambience();
-        match self.gsx_deboarding_state {
+        match self.gsx.deboarding_state() {
             GsxState::None | GsxState::Available | GsxState::NotAvailable | GsxState::Bypassed => {}
             GsxState::Requested => {
                 self.update_cargo_loaded();
@@ -431,28 +327,28 @@ impl A380Payload {
             }
             GsxState::Performing => {
                 self.move_all_pax_num(
-                    self.total_pax_num() - (self.total_max_pax() - self.gsx_pax_deboarding),
+                    self.total_pax_num() - (self.total_max_pax() - self.gsx.pax_deboarding()),
                 );
-                self.load_all_cargo_percent(100. - self.gsx_cargo_deboarding_pct);
+                self.load_all_cargo_percent(100. - self.gsx.cargo_deboarding_pct());
             }
         }
     }
 
     fn update_cargo_loaded(&mut self) {
-        for cs in A380CargoStation::iterator() {
-            self.cargo[cs as usize].update_cargo_loaded()
+        for cs in 0..Self::A380_CARGO.len() {
+            self.cargo[cs].update_cargo_loaded()
         }
     }
 
     fn reset_cargo_loaded(&mut self) {
-        for cs in A380CargoStation::iterator() {
-            self.cargo[cs as usize].reset_cargo_loaded()
+        for cs in 0..Self::A380_CARGO.len() {
+            self.cargo[cs].reset_cargo_loaded()
         }
     }
 
     fn update_gsx_boarding(&mut self, _context: &UpdateContext) {
         self.update_pax_ambience();
-        match self.gsx_boarding_state {
+        match self.gsx.boarding_state() {
             GsxState::None
             | GsxState::Available
             | GsxState::NotAvailable
@@ -462,8 +358,8 @@ impl A380Payload {
                 self.board_cargo();
             }
             GsxState::Performing => {
-                self.board_pax(self.gsx_pax_boarding - self.total_pax_num());
-                self.load_all_cargo_percent(self.gsx_cargo_boarding_pct);
+                self.move_all_pax_num(self.gsx.pax_boarding() - self.total_pax_num());
+                self.load_all_cargo_percent(self.gsx.cargo_boarding_pct());
             }
         }
     }
@@ -558,7 +454,7 @@ impl A380Payload {
     }
 
     fn reset_all_pax_targets(&mut self) {
-        for ps in A380PaxStation::iterator() {
+        for ps in 0..Self::A380_PAX.len() {
             self.reset_pax_target(ps);
         }
     }
@@ -566,21 +462,7 @@ impl A380Payload {
     fn move_all_pax_num(&mut self, pax_diff: i32) {
         if pax_diff > 0 {
             for _ in 0..pax_diff {
-                for ps in A380PaxStation::iterator() {
-                    if self.pax_is_target(ps) {
-                        continue;
-                    }
-                    self.move_one_pax(ps);
-                    break;
-                }
-            }
-        }
-    }
-
-    fn board_pax(&mut self, pax_diff: i32) {
-        if pax_diff > 0 {
-            for _ in 0..pax_diff {
-                for ps in A380PaxStation::iterator() {
+                for ps in 0..Self::A380_PAX.len() {
                     if self.pax_is_target(ps) {
                         continue;
                     }
@@ -592,7 +474,7 @@ impl A380Payload {
     }
 
     fn update_pax(&mut self) {
-        for ps in A380PaxStation::iterator() {
+        for ps in 0..Self::A380_PAX.len() {
             if self.pax_is_target(ps) {
                 continue;
             }
@@ -606,13 +488,13 @@ impl A380Payload {
     }
 
     fn reset_all_cargo_targets(&mut self) {
-        for cs in A380CargoStation::iterator() {
+        for cs in 0..Self::A380_CARGO.len() {
             self.reset_cargo_target(cs);
         }
     }
 
     fn update_cargo(&mut self) {
-        for cs in A380CargoStation::iterator() {
+        for cs in 0..Self::A380_CARGO.len() {
             if self.cargo_is_target(cs) {
                 continue;
             }
@@ -625,12 +507,12 @@ impl A380Payload {
         }
     }
 
-    fn is_developer_state_active(&mut self) -> bool {
+    fn is_developer_state_active(&self) -> bool {
         self.developer_state > 0
     }
 
-    fn is_pax_boarding(&mut self) -> bool {
-        for ps in A380PaxStation::iterator() {
+    fn is_pax_boarding(&self) -> bool {
+        for ps in 0..Self::A380_PAX.len() {
             if self.pax_num(ps) < self.pax_target_num(ps) && self.is_boarding() {
                 return true;
             }
@@ -638,8 +520,8 @@ impl A380Payload {
         false
     }
 
-    fn is_pax_deboarding(&mut self) -> bool {
-        for ps in A380PaxStation::iterator() {
+    fn is_pax_deboarding(&self) -> bool {
+        for ps in 0..Self::A380_PAX.len() {
             if self.pax_num(ps) > self.pax_target_num(ps) && self.is_boarding() {
                 return true;
             }
@@ -647,8 +529,8 @@ impl A380Payload {
         false
     }
 
-    fn is_pax_loaded(&mut self) -> bool {
-        for ps in A380PaxStation::iterator() {
+    fn is_pax_loaded(&self) -> bool {
+        for ps in 0..Self::A380_PAX.len() {
             if !self.pax_is_target(ps) {
                 return false;
             }
@@ -656,8 +538,8 @@ impl A380Payload {
         true
     }
 
-    fn is_cargo_loaded(&mut self) -> bool {
-        for cs in A380CargoStation::iterator() {
+    fn is_cargo_loaded(&self) -> bool {
+        for cs in 0..Self::A380_CARGO.len() {
             if !self.cargo_is_target(cs) {
                 return false;
             }
@@ -665,12 +547,12 @@ impl A380Payload {
         true
     }
 
-    fn is_fully_loaded(&mut self) -> bool {
+    fn is_fully_loaded(&self) -> bool {
         self.is_pax_loaded() && self.is_cargo_loaded()
     }
 
-    fn has_no_pax(&mut self) -> bool {
-        for ps in A380PaxStation::iterator() {
+    fn has_no_pax(&self) -> bool {
+        for ps in 0..Self::A380_PAX.len() {
             let pax_num = 0;
             if self.pax_num(ps) == pax_num {
                 return true;
@@ -683,49 +565,53 @@ impl A380Payload {
         self.board_rate
     }
 
+    #[allow(dead_code)]
     fn sound_pax_boarding_playing(&self) -> bool {
         self.boarding_sounds.pax_boarding()
     }
 
+    #[allow(dead_code)]
     fn sound_pax_ambience_playing(&self) -> bool {
         self.boarding_sounds.pax_ambience()
     }
 
+    #[allow(dead_code)]
     fn sound_pax_complete_playing(&self) -> bool {
         self.boarding_sounds.pax_complete()
     }
 
+    #[allow(dead_code)]
     fn sound_pax_deboarding_playing(&self) -> bool {
         self.boarding_sounds.pax_deboarding()
     }
 
-    fn pax_num(&self, ps: A380PaxStation) -> i8 {
-        self.pax[ps as usize].pax_num() as i8
+    fn pax_num(&self, ps: usize) -> i8 {
+        self.pax[ps].pax_num() as i8
     }
 
-    fn pax_payload(&self, ps: A380PaxStation) -> Mass {
-        self.pax[ps as usize].payload()
+    fn pax_payload(&self, ps: usize) -> Mass {
+        self.pax[ps].payload()
     }
 
-    fn pax_target_payload(&self, ps: A380PaxStation) -> Mass {
-        self.pax[ps as usize].payload_target()
+    fn pax_target_payload(&self, ps: usize) -> Mass {
+        self.pax[ps].payload_target()
     }
 
-    fn pax_moment(&self, ps: A380PaxStation) -> Vector3<f64> {
-        self.pax[ps as usize].pax_moment()
+    fn pax_moment(&self, ps: usize) -> Vector3<f64> {
+        self.pax[ps].pax_moment()
     }
 
-    fn pax_target_moment(&self, ps: A380PaxStation) -> Vector3<f64> {
-        self.pax[ps as usize].pax_target_moment()
+    fn pax_target_moment(&self, ps: usize) -> Vector3<f64> {
+        self.pax[ps].pax_target_moment()
     }
 
-    fn max_pax(&self, ps: A380PaxStation) -> i8 {
-        self.pax[ps as usize].max_pax()
+    fn max_pax(&self, ps: usize) -> i8 {
+        self.pax[ps].max_pax()
     }
 
     fn total_pax_num(&self) -> i32 {
         let mut pax_num = 0;
-        for ps in A380PaxStation::iterator() {
+        for ps in 0..Self::A380_PAX.len() {
             pax_num += self.pax_num(ps) as i32;
         }
         pax_num
@@ -733,111 +619,113 @@ impl A380Payload {
 
     fn total_max_pax(&self) -> i32 {
         let mut max_pax = 0;
-        for ps in A380PaxStation::iterator() {
-            max_pax += Self::A380_PAX[ps].max_pax as i32;
+        for ps in 0..Self::A380_PAX.len() {
+            max_pax += self.max_pax(ps) as i32;
         }
         max_pax
     }
 
-    fn pax_target_num(&self, ps: A380PaxStation) -> i8 {
-        self.pax[ps as usize].pax_target_num() as i8
+    fn pax_target_num(&self, ps: usize) -> i8 {
+        self.pax[ps].pax_target_num() as i8
     }
 
-    fn pax_is_sync(&mut self, ps: A380PaxStation) -> bool {
-        self.pax[ps as usize].payload_is_sync()
+    fn pax_is_sync(&self, ps: usize) -> bool {
+        self.pax[ps].payload_is_sync()
     }
 
-    fn pax_is_target(&mut self, ps: A380PaxStation) -> bool {
-        self.pax[ps as usize].pax_is_target()
+    fn pax_is_target(&self, ps: usize) -> bool {
+        self.pax[ps].pax_is_target()
     }
 
-    fn sync_pax(&mut self, ps: A380PaxStation) {
-        self.pax[ps as usize].load_payload();
+    fn sync_pax(&mut self, ps: usize) {
+        self.pax[ps].load_payload();
     }
 
-    fn move_all_pax(&mut self, ps: A380PaxStation) {
-        self.pax[ps as usize].move_all_pax();
+    fn move_all_pax(&mut self, ps: usize) {
+        self.pax[ps].move_all_pax();
     }
 
-    fn move_one_pax(&mut self, ps: A380PaxStation) {
-        self.pax[ps as usize].move_one_pax();
+    fn move_one_pax(&mut self, ps: usize) {
+        self.pax[ps].move_one_pax();
     }
 
-    fn reset_pax_target(&mut self, ps: A380PaxStation) {
-        self.pax[ps as usize].reset_pax_target();
+    fn reset_pax_target(&mut self, ps: usize) {
+        self.pax[ps].reset_pax_target();
     }
 
-    fn reset_cargo_target(&mut self, cs: A380CargoStation) {
-        self.cargo[cs as usize].reset_cargo_target();
+    fn reset_cargo_target(&mut self, cs: usize) {
+        self.cargo[cs].reset_cargo_target();
     }
 
-    fn cargo(&self, cs: A380CargoStation) -> Mass {
-        self.cargo[cs as usize].cargo()
+    fn cargo(&self, cs: usize) -> Mass {
+        self.cargo[cs].cargo()
     }
 
-    fn cargo_target(&self, cs: A380CargoStation) -> Mass {
-        self.cargo[cs as usize].cargo_target()
+    fn cargo_target(&self, cs: usize) -> Mass {
+        self.cargo[cs].cargo_target()
     }
 
-    fn cargo_payload(&self, cs: A380CargoStation) -> Mass {
-        self.cargo[cs as usize].payload()
+    #[allow(dead_code)]
+    fn cargo_payload(&self, cs: usize) -> Mass {
+        self.cargo[cs].payload()
     }
 
-    fn cargo_moment(&self, cs: A380CargoStation) -> Vector3<f64> {
-        self.cargo[cs as usize].cargo_moment()
+    fn cargo_moment(&self, cs: usize) -> Vector3<f64> {
+        self.cargo[cs].cargo_moment()
     }
 
-    fn cargo_target_moment(&self, cs: A380CargoStation) -> Vector3<f64> {
-        self.cargo[cs as usize].cargo_target_moment()
+    fn cargo_target_moment(&self, cs: usize) -> Vector3<f64> {
+        self.cargo[cs].cargo_target_moment()
     }
 
-    fn max_cargo(&self, cs: A380CargoStation) -> Mass {
-        self.cargo[cs as usize].max_cargo()
+    #[allow(dead_code)]
+    fn max_cargo(&self, cs: usize) -> Mass {
+        self.cargo[cs].max_cargo()
     }
 
-    fn cargo_is_sync(&mut self, cs: A380CargoStation) -> bool {
-        self.cargo[cs as usize].payload_is_sync()
+    fn cargo_is_sync(&self, cs: usize) -> bool {
+        self.cargo[cs].payload_is_sync()
     }
 
-    fn cargo_is_target(&mut self, cs: A380CargoStation) -> bool {
-        self.cargo[cs as usize].cargo_is_target()
+    fn cargo_is_target(&self, cs: usize) -> bool {
+        self.cargo[cs].cargo_is_target()
     }
 
-    fn move_all_cargo(&mut self, cs: A380CargoStation) {
-        self.cargo[cs as usize].move_all_cargo();
+    fn move_all_cargo(&mut self, cs: usize) {
+        self.cargo[cs].move_all_cargo();
     }
 
-    fn move_one_cargo(&mut self, cs: A380CargoStation) {
-        self.cargo[cs as usize].move_one_cargo();
+    fn move_one_cargo(&mut self, cs: usize) {
+        self.cargo[cs].move_one_cargo();
     }
 
     fn board_cargo(&mut self) {
-        for cs in A380CargoStation::iterator() {
+        for cs in 0..Self::A380_CARGO.len() {
             self.move_all_cargo(cs);
         }
     }
 
     fn load_all_cargo_percent(&mut self, percent: f64) {
-        for cs in A380CargoStation::iterator() {
+        for cs in 0..Self::A380_CARGO.len() {
             self.load_cargo_percent(cs, percent);
         }
     }
 
-    fn load_cargo_percent(&mut self, cs: A380CargoStation, percent: f64) {
-        self.cargo[cs as usize].load_cargo_percent(percent)
-    }
-
-    fn sync_cargo(&mut self, cs: A380CargoStation) {
-        self.cargo[cs as usize].load_payload();
+    fn load_cargo_percent(&mut self, cs: usize, percent: f64) {
+        self.cargo[cs].load_cargo_percent(percent)
     }
 
     fn move_all_payload(&mut self) {
-        for ps in A380PaxStation::iterator() {
+        for ps in 0..Self::A380_PAX.len() {
             self.move_all_pax(ps)
         }
-        for cs in A380CargoStation::iterator() {
+        for cs in 0..Self::A380_CARGO.len() {
             self.move_all_cargo(cs)
         }
+    }
+
+    fn sync_cargo(&mut self, cs: usize) {
+        self.cargo[cs].load_payload();
     }
 
     fn is_boarding(&self) -> bool {
@@ -845,7 +733,7 @@ impl A380Payload {
     }
 
     fn is_gsx_enabled(&self) -> bool {
-        self.is_gsx_enabled
+        self.gsx.is_enabled()
     }
 
     fn stop_boarding(&mut self) {
@@ -861,6 +749,7 @@ impl SimulationElement for A380Payload {
         accept_iterable!(self.pax, visitor);
         accept_iterable!(self.cargo, visitor);
         self.boarding_sounds.accept(visitor);
+        self.gsx.accept(visitor);
 
         visitor.visit(self);
     }
@@ -869,13 +758,6 @@ impl SimulationElement for A380Payload {
         self.developer_state = reader.read(&self.developer_state_id);
         self.is_boarding = reader.read(&self.is_boarding_id);
         self.board_rate = reader.read(&self.board_rate_id);
-        self.is_gsx_enabled = reader.read(&self.is_gsx_enabled_id);
-        self.gsx_boarding_state = reader.read(&self.gsx_boarding_state_id);
-        self.gsx_deboarding_state = reader.read(&self.gsx_deboarding_state_id);
-        self.gsx_pax_boarding = reader.read(&self.gsx_pax_boarding_id);
-        self.gsx_pax_deboarding = reader.read(&self.gsx_pax_deboarding_id);
-        self.gsx_cargo_boarding_pct = reader.read(&self.gsx_cargo_boarding_pct_id);
-        self.gsx_cargo_deboarding_pct = reader.read(&self.gsx_cargo_deboarding_pct_id);
         self.per_pax_weight
             .replace(Mass::new::<kilogram>(reader.read(&self.per_pax_weight_id)));
     }
@@ -886,5 +768,106 @@ impl SimulationElement for A380Payload {
             &self.per_pax_weight_id,
             self.per_pax_weight().get::<kilogram>(),
         );
+    }
+}
+impl NumberOfPassengers for A380Payload {
+    fn number_of_passengers(&self, ps: usize) -> i8 {
+        self.pax_num(ps)
+    }
+}
+impl PassengerPayload for A380Payload {
+    fn total_passenger_load(&self) -> Mass {
+        let mut total_payload = Mass::default();
+        for ps in 0..Self::A380_PAX.len() {
+            total_payload += self.pax_payload(ps);
+        }
+        total_payload
+    }
+    fn total_target_passenger_load(&self) -> Mass {
+        let mut total_payload = Mass::default();
+        for ps in 0..Self::A380_PAX.len() {
+            total_payload += self.pax_target_payload(ps);
+        }
+        total_payload
+    }
+    fn center_of_gravity(&self) -> Vector3<f64> {
+        let mut moments: Vec<Vector3<f64>> = Vec::new();
+        for ps in 0..Self::A380_PAX.len() {
+            moments.push(self.pax_moment(ps));
+        }
+        let total_pax_load = self.total_passenger_load().get::<kilogram>();
+        let cg: Vector3<f64> = if total_pax_load > 0. {
+            moments.iter().fold(Vector3::zeros(), |acc, x| acc + x) / total_pax_load
+        } else {
+            Vector3::zeros()
+        };
+        cg
+    }
+    fn fore_aft_center_of_gravity(&self) -> f64 {
+        PassengerPayload::center_of_gravity(self).x
+    }
+    fn target_center_of_gravity(&self) -> Vector3<f64> {
+        let mut moments: Vec<Vector3<f64>> = Vec::new();
+        for ps in 0..Self::A380_PAX.len() {
+            moments.push(self.pax_target_moment(ps));
+        }
+        let total_tgt_pax_load = self.total_target_passenger_load().get::<kilogram>();
+        let cg: Vector3<f64> = if total_tgt_pax_load > 0. {
+            moments.iter().fold(Vector3::zeros(), |acc, x| acc + x) / total_tgt_pax_load
+        } else {
+            Vector3::zeros()
+        };
+        cg
+    }
+    fn target_fore_aft_center_of_gravity(&self) -> f64 {
+        PassengerPayload::target_center_of_gravity(self).x
+    }
+}
+impl CargoPayload for A380Payload {
+    fn total_cargo_load(&self) -> Mass {
+        let mut total_payload = Mass::default();
+        for cs in 0..Self::A380_CARGO.len() {
+            total_payload += self.cargo(cs);
+        }
+        total_payload
+    }
+    fn total_target_cargo_load(&self) -> Mass {
+        let mut total_payload = Mass::default();
+        for cs in 0..Self::A380_CARGO.len() {
+            total_payload += self.cargo_target(cs);
+        }
+        total_payload
+    }
+    fn center_of_gravity(&self) -> Vector3<f64> {
+        let mut moments: Vec<Vector3<f64>> = Vec::new();
+        for cs in 0..Self::A380_CARGO.len() {
+            moments.push(self.cargo_moment(cs));
+        }
+        let total_cargo_load = self.total_cargo_load().get::<kilogram>();
+        let cg: Vector3<f64> = if total_cargo_load > 0. {
+            moments.iter().fold(Vector3::zeros(), |acc, x| acc + x) / total_cargo_load
+        } else {
+            Vector3::zeros()
+        };
+        cg
+    }
+    fn fore_aft_center_of_gravity(&self) -> f64 {
+        CargoPayload::center_of_gravity(self).x
+    }
+    fn target_center_of_gravity(&self) -> Vector3<f64> {
+        let mut moments: Vec<Vector3<f64>> = Vec::new();
+        for cs in 0..Self::A380_CARGO.len() {
+            moments.push(self.cargo_target_moment(cs));
+        }
+        let total_tgt_cargo_load = self.total_target_cargo_load().get::<kilogram>();
+        let cg: Vector3<f64> = if total_tgt_cargo_load > 0. {
+            moments.iter().fold(Vector3::zeros(), |acc, x| acc + x) / total_tgt_cargo_load
+        } else {
+            Vector3::zeros()
+        };
+        cg
+    }
+    fn target_fore_aft_center_of_gravity(&self) -> f64 {
+        CargoPayload::target_center_of_gravity(self).x
     }
 }
