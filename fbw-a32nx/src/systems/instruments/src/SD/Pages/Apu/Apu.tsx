@@ -161,6 +161,7 @@ const ApuBleed = ({ x, y } : ComponentPositionProps) => {
     }, [apuBleedPbOn]);
     // FIXME should be APU bleed absolute pressure label from SDAC
     const apuBleedPressAvailable = apuN.isNormalOperation() && correctedAverageStaticPressure.isNormalOperation();
+    
     return (
         <>
             {/* FBW-31-08 */}
