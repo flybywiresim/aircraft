@@ -1,9 +1,6 @@
 {
     "specs": {
         "prefix": "A32NX",
-        "emptyPosition": -9.42,
-        "macSize": 13.464,
-        "leMacZ": -5.383,
         "weights": {
             "maxGw": 79000,
             "maxZfw": 64300,

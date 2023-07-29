@@ -1,13 +1,10 @@
 {
     "specs": {
         "prefix": "A380",
-        "emptyPosition": 0.83,
-        "macSize": 39.9475,
-        "leMacZ": 15.29,
         "weights": {
             "maxGw": 512000,
             "maxZfw": 373000,
-            "minZfw": 270000,
+            "minZfw": 300006,
             "maxGwCg": 43,
             "maxZfwCg": 43
         },
@@ -313,16 +310,38 @@
             "rows": [
                 {
                     "seats": [
-                        { "type": 2 },
-                        { "type": 2 },
-                        { "type": 2 },
-                        { "type": 2, "yOffset": 9},
-                        { "type": 2 },
-                        { "type": 2 },
-                        { "type": 2 },
-                        { "type": 2, "yOffset": 9},
-                        { "type": 2 },
-                        { "type": 2 }
+                        {
+                            "type": 2
+                        },
+                        {
+                            "type": 2
+                        },
+                        {
+                            "type": 2
+                        },
+                        {
+                            "type": 2,
+                            "yOffset": 9
+                        },
+                        {
+                            "type": 2
+                        },
+                        {
+                            "type": 2
+                        },
+                        {
+                            "type": 2
+                        },
+                        {
+                            "type": 2,
+                            "yOffset": 9
+                        },
+                        {
+                            "type": 2
+                        },
+                        {
+                            "type": 2
+                        }
                     ],
                     "x": 0,
                     "y": 0,
@@ -558,16 +577,38 @@
                 },
                 {
                     "seats": [
-                        { "type": 2 },
-                        { "type": 2 },
-                        { "type": 2 },
-                        { "type": 2, "yOffset": 9},
-                        { "type": 2 },
-                        { "type": 2 },
-                        { "type": 2 },
-                        { "type": 2, "yOffset": 9},
-                        { "type": 2 },
-                        { "type": 2 }
+                        {
+                            "type": 2
+                        },
+                        {
+                            "type": 2
+                        },
+                        {
+                            "type": 2
+                        },
+                        {
+                            "type": 2,
+                            "yOffset": 9
+                        },
+                        {
+                            "type": 2
+                        },
+                        {
+                            "type": 2
+                        },
+                        {
+                            "type": 2
+                        },
+                        {
+                            "type": 2,
+                            "yOffset": 9
+                        },
+                        {
+                            "type": 2
+                        },
+                        {
+                            "type": 2
+                        }
                     ],
                     "x": 0,
                     "y": 0,
@@ -755,7 +796,7 @@
             ],
             "stationIndex": 8,
             "position": -16.1,
-            "fill":  0.084,
+            "fill": 0.084,
             "simVar": "A32NX_PAX_MAIN_MID_2C"
         },
         {
@@ -792,16 +833,38 @@
                 },
                 {
                     "seats": [
-                        { "type": 2 },
-                        { "type": 2 },
-                        { "type": 2 },
-                        { "type": 2, "yOffset": 9},
-                        { "type": 2 },
-                        { "type": 2 },
-                        { "type": 2 },
-                        { "type": 2, "yOffset": 9},
-                        { "type": 2 },
-                        { "type": 2 }
+                        {
+                            "type": 2
+                        },
+                        {
+                            "type": 2
+                        },
+                        {
+                            "type": 2
+                        },
+                        {
+                            "type": 2,
+                            "yOffset": 9
+                        },
+                        {
+                            "type": 2
+                        },
+                        {
+                            "type": 2
+                        },
+                        {
+                            "type": 2
+                        },
+                        {
+                            "type": 2,
+                            "yOffset": 9
+                        },
+                        {
+                            "type": 2
+                        },
+                        {
+                            "type": 2
+                        }
                     ],
                     "x": 0,
                     "y": 0,

@@ -223,8 +223,8 @@ impl A320Airframe {
         self.set_target_tow(target_tow);
         self.set_target_to_cg_percent_mac(target_to_cg);
 
-        println!("ZFW CG MAC: {}", self.zfw_cg_mac());
-        println!("GW CG MAC: {}", self.gw_cg_mac());
+        // println!("ZFW CG MAC: {}", self.zfw_cg_mac());
+        // println!("GW CG MAC: {}", self.gw_cg_mac());
     }
 }
 impl SimulationElement for A320Airframe {
