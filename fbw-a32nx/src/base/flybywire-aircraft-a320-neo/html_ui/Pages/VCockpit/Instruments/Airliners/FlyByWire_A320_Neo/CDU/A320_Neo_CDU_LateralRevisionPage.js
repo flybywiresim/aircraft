@@ -87,22 +87,17 @@ class CDULateralRevisionPage {
         let nextWpt = "";
         const isPreflight = mcdu.flightPhaseManager.phase === FmgcFlightPhases.PREFLIGHT;
         if ((isDeparture && isPreflight) || isWaypoint || isDestination) {
-            if (isDestination) {
-                // TODO remove this once we support waypoints after the destination (otherwise sim crash)
-                nextWptLabel = "NEXT WPT{sp}[color]inop";
-                nextWpt = "[{sp}{sp}{sp}{sp}][color]inop";
-            } else {
-                nextWptLabel = "NEXT WPT{sp}";
-                nextWpt = "[{sp}{sp}{sp}{sp}][color]cyan";
-                mcdu.onRightInput[2] = async (value, scratchpadCallback) => {
-                    mcdu.insertWaypoint(value, forPlan, inAlternate, waypointIndexFP, false, (success) => {
-                        if (!success) {
-                            scratchpadCallback();
-                        }
-                        CDUFlightPlanPage.ShowPage(mcdu, 0, forPlan);
-                    });
-                };
-            }
+            nextWptLabel = "NEXT WPT{sp}";
+            nextWpt = "[{sp}{sp}{sp}{sp}][color]cyan";
+
+            mcdu.onRightInput[2] = async (value, scratchpadCallback) => {
+                mcdu.insertWaypoint(value, forPlan, inAlternate, waypointIndexFP, false, (success) => {
+                    if (!success) {
+                        scratchpadCallback();
+                    }
+                    CDUFlightPlanPage.ShowPage(mcdu, 0, forPlan);
+                });
+            };
         }
 
         let holdCell = "";
