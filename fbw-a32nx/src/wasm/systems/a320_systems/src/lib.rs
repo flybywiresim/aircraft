@@ -16,7 +16,7 @@ use self::{
     payload::A320Payload,
     pneumatic::{A320Pneumatic, A320PneumaticOverheadPanel},
 };
-use airframe::A320WeightBalance;
+use airframe::A320Airframe;
 use electrical::{
     A320Electrical, A320ElectricalOverheadPanel, A320EmergencyElectricalOverheadPanel,
     APU_START_MOTOR_BUS_TYPE,
@@ -56,7 +56,7 @@ pub struct A320 {
     electrical_overhead: A320ElectricalOverheadPanel,
     emergency_electrical_overhead: A320EmergencyElectricalOverheadPanel,
     payload: A320Payload,
-    weight: A320WeightBalance,
+    airframe: A320Airframe,
     fuel: A320Fuel,
     engine_1: LeapEngine,
     engine_2: LeapEngine,
@@ -94,7 +94,7 @@ impl A320 {
             electrical_overhead: A320ElectricalOverheadPanel::new(context),
             emergency_electrical_overhead: A320EmergencyElectricalOverheadPanel::new(context),
             payload: A320Payload::new(context),
-            weight: A320WeightBalance::new(context),
+            airframe: A320Airframe::new(context),
             fuel: A320Fuel::new(context),
             engine_1: LeapEngine::new(context, 1),
             engine_2: LeapEngine::new(context, 2),
@@ -170,8 +170,8 @@ impl Aircraft for A320 {
         self.emergency_electrical_overhead
             .update_after_electrical(context, &self.electrical);
         self.payload.update(context);
-        self.weight
-            .update(context, &self.fuel, &self.payload, &self.payload);
+        self.airframe
+            .update(&self.fuel, &self.payload, &self.payload);
     }
 
     fn update_after_power_distribution(&mut self, context: &UpdateContext) {
@@ -275,7 +275,7 @@ impl SimulationElement for A320 {
         self.pneumatic.accept(visitor);
         self.egpwc.accept(visitor);
         self.reverse_thrust.accept(visitor);
-        self.weight.accept(visitor);
+        self.airframe.accept(visitor);
 
         visitor.visit(self);
     }

@@ -391,6 +391,11 @@ impl BoardingTestBed {
         self
     }
 
+    fn with_cargo(mut self, cs: usize, cargo_qty: Mass) -> Self {
+        self.load_cargo(cs, cargo_qty);
+        self
+    }
+
     fn with_full_cargo(mut self) -> Self {
         for cs in 0..A320Payload::A320_CARGO.len() {
             self.load_cargo(cs, test_bed().query(|a| a.max_cargo(cs)));
@@ -1162,7 +1167,10 @@ fn detailed_test_with_multiple_stops() {
         .with_pax_target(A320Pax::B.into(), 14)
         .with_pax_target(A320Pax::C.into(), 32)
         .with_pax_target(A320Pax::D.into(), 12)
-        .load_half_cargo()
+        .with_cargo(A320Cargo::FwdBaggage.into(), Mass::new::<kilogram>(100.0))
+        .with_cargo(A320Cargo::AftBaggage.into(), Mass::new::<kilogram>(100.0))
+        .with_cargo(A320Cargo::AftBulkLoose.into(), Mass::new::<kilogram>(100.0))
+        .with_cargo(A320Cargo::AftContainer.into(), Mass::new::<kilogram>(100.0))
         .real_board_rate()
         .start_boarding()
         .and_run()

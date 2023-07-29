@@ -7,7 +7,8 @@ use uom::si::{f64::Mass, mass::kilogram};
 
 use systems::{
     accept_iterable,
-    payload::{BoardingRate, Cargo, CargoInfo, GsxState, Pax, PaxInfo},
+    misc::GsxState,
+    payload::{BoardingRate, Cargo, CargoInfo, Pax, PaxInfo},
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
         SimulatorWriter, UpdateContext, VariableIdentifier, Write,

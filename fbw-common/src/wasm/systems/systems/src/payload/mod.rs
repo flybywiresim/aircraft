@@ -13,33 +13,6 @@ use uom::si::{f64::Mass, mass::kilogram, mass::pound};
 const JS_MAX_SAFE_INTEGER: i8 = 53;
 const MAX_CARGO_MOVE: f64 = 60.;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum GsxState {
-    None,
-    Available,
-    NotAvailable,
-    Bypassed,
-    Requested,
-    Performing,
-    Completed,
-}
-impl From<f64> for GsxState {
-    fn from(value: f64) -> Self {
-        match value as u8 {
-            0 => GsxState::None,
-            1 => GsxState::Available,
-            2 => GsxState::NotAvailable,
-            3 => GsxState::Bypassed,
-            4 => GsxState::Requested,
-            5 => GsxState::Performing,
-            6 => GsxState::Completed,
-            i => panic!("Cannot convert from {} to GsxState.", i),
-        }
-    }
-}
-
-read_write_enum!(GsxState);
-
 pub struct LoadsheetInfo {
     pub operating_empty_weight_kg: f64,
     pub operating_empty_position: (f64, f64, f64),

@@ -15,7 +15,6 @@ import { usePersistentNumberProperty, usePersistentProperty } from '@instruments
 import { SeatFlags } from '@shared/bitFlags';
 // import { useSeatFlags, useSeatMap } from '@instruments/common/bitFlags';
 import { useSeatFlags } from '@instruments/common/bitFlags';
-import { round } from 'lodash';
 import { CargoWidget } from './Seating/CargoWidget';
 import { ChartWidget } from '../Chart/ChartWidget';
 import { CargoStationInfo, PaxStationInfo } from '../Seating/Constants';
@@ -93,7 +92,6 @@ export const A320Payload = () => {
     const [boardingRate, setBoardingRate] = usePersistentProperty('CONFIG_BOARDING_RATE', 'REAL');
     const [paxWeight, setPaxWeight] = useSimVar('L:A32NX_WB_PER_PAX_WEIGHT', 'Kilograms', 200);
     const [paxBagWeight, setPaxBagWeight] = useSimVar('L:A32NX_WB_PER_BAG_WEIGHT', 'Kilograms', 200);
-    const [galToKg] = useSimVar('FUEL WEIGHT PER GALLON', 'Kilograms', 2_000);
     // const [destEfob] = useSimVar('L:A32NX_DESTINATION_FUEL_ON_BOARD', 'Kilograms', 5_000);
 
     const [emptyWeight] = useSimVar('A:EMPTY WEIGHT', 'Kilograms', 2_000);
@@ -125,35 +123,22 @@ export const A320Payload = () => {
     const totalCargo = useMemo(() => ((cargo && cargo.length > 0) ? cargo.reduce((a, b) => a + b) : -1), [...cargo]);
     const maxCargo = useMemo(() => ((cargoStationWeights && cargoStationWeights.length > 0) ? cargoStationWeights.reduce((a, b) => a + b) : -1), [cargoStationWeights]);
 
-    const [centerCurrent] = useSimVar('FUEL TANK CENTER QUANTITY', 'Gallons', 7_000);
-    const [LInnCurrent] = useSimVar('FUEL TANK LEFT MAIN QUANTITY', 'Gallons', 7_000);
-    const [LOutCurrent] = useSimVar('FUEL TANK LEFT AUX QUANTITY', 'Gallons', 7_000);
-    const [RInnCurrent] = useSimVar('FUEL TANK RIGHT MAIN QUANTITY', 'Gallons', 7_000);
-    const [ROutCurrent] = useSimVar('FUEL TANK RIGHT AUX QUANTITY', 'Gallons', 7_000);
-
-    const fuel = [centerCurrent, LInnCurrent, LOutCurrent, RInnCurrent, ROutCurrent];
-
     // Units
-    // Weight/CG
-    // TODO FIXME: Move all ZFW and GW calculations to rust - Will be refactored in phase 2
-    const [zfw, setZfw] = useState(0);
-    const [zfwCg, setZfwCg] = useState(0);
-    const [zfwDesired, setZfwDesired] = useState(0);
-    const [zfwDesiredCg, setZfwDesiredCg] = useState(0);
-    const [gw, setGw] = useState(emptyWeight);
-    const [gwDesired, setGwDesired] = useState(emptyWeight);
-    const [cg, setCg] = useState(25);
-    const [totalDesiredWeight, setTotalDesiredWeight] = useState(0);
-    const [desiredCg, setDesiredCg] = useState(0);
-    const [mlw, setMlw] = useState(0);
-    const [mlwCg, setMlwCg] = useState(0);
-    const [mlwDesired, setMlwDesired] = useState(0);
-    const [mlwDesiredCg, setMlwDesiredCg] = useState(0);
+    // Weights
+    const [zfw] = useSimVar('L:A32NX_ZFW', 'number', 200);
+    const [zfwDesired] = useSimVar('L:A32NX_DESIRED_ZFW', 'number', 200);
+    const [gw] = useSimVar('L:A32NX_GW', 'number', 200);
+    const [gwDesired] = useSimVar('L:A32NX_DESIRED_GW', 'number', 200);
+    const [totalFuel] = useSimVar('L:A32NX_FW', 'number', 200);
+
+    // CG MAC
+    const [zfwCgMac] = useSimVar('L:A32NX_ZFW_CG_PERCENT_MAC', 'number', 200);
+    const [desiredZfwCgMac] = useSimVar('L:A32NX_DESIRED_ZFW_CG_PERCENT_MAC', 'number', 200);
+    const [gwCgMac] = useSimVar('L:A32NX_GW_CG_PERCENT_MAC', 'number', 200);
+    const [desiredGwCgMac] = useSimVar('L:A32NX_DESIRED_GW_CG_PERCENT_MAC', 'number', 200);
 
     const [seatMap] = useState<PaxStationInfo[]>(Loadsheet.seatMap);
     const [cargoMap] = useState<CargoStationInfo[]>(Loadsheet.cargoMap);
-
-    const totalCurrentGallon = useMemo(() => round(Math.max(LInnCurrent + LOutCurrent + RInnCurrent + ROutCurrent + centerCurrent, 0)), [fuel]);
 
     const [showSimbriefButton, setShowSimbriefButton] = useState(false);
     const simbriefUnits = useAppSelector((state) => state.simbrief.data.units);
@@ -257,41 +242,6 @@ export const A320Payload = () => {
         fillCargo(0, 1, remainingWeight);
     }, [maxCargo, ...cargoStationWeights, ...cargoMap, ...cargoDesired, paxBagWeight]);
 
-    const calculatePaxMoment = useCallback(() => {
-        let paxMoment = 0;
-        activeFlags.forEach((stationFlag, i) => {
-            paxMoment += stationFlag.getTotalFilledSeats() * paxWeight * seatMap[i].position;
-        });
-        return paxMoment;
-    }, [paxWeight, seatMap, ...activeFlags]);
-
-    const calculatePaxDesiredMoment = useCallback(() => {
-        let paxMoment = 0;
-        desiredFlags.forEach((stationFlag, i) => {
-            paxMoment += stationFlag.getTotalFilledSeats() * paxWeight * seatMap[i].position;
-        });
-
-        return paxMoment;
-    }, [paxWeight, seatMap, ...desiredFlags]);
-
-    const calculateCargoMoment = useCallback(() => {
-        let cargoMoment = 0;
-        cargo.forEach((station, i) => {
-            cargoMoment += station * cargoMap[i].position;
-        });
-        return cargoMoment;
-    }, [...cargo, cargoMap]);
-
-    const calculateCargoDesiredMoment = useCallback(() => {
-        let cargoMoment = 0;
-        cargoDesired.forEach((station, i) => {
-            cargoMoment += station * cargoMap[i].position;
-        });
-        return cargoMoment;
-    }, [...cargoDesired, cargoMap]);
-
-    const calculateCg = useCallback((mass: number, moment: number) => -100 * ((moment / mass - Loadsheet.specs.leMacZ) / Loadsheet.specs.macSize), []);
-
     const processZfw = useCallback((newZfw) => {
         let paxCargoWeight = newZfw - emptyWeight;
 
@@ -307,7 +257,6 @@ export const A320Payload = () => {
     }, [emptyWeight, paxWeight, paxBagWeight, maxPax, maxCargo]);
 
     const processGw = useCallback((newGw) => {
-        const totalFuel = round(totalCurrentGallon * galToKg);
         let paxCargoWeight = newGw - emptyWeight - totalFuel;
 
         // Load pax first
@@ -319,7 +268,7 @@ export const A320Payload = () => {
 
         setTargetPax(newPax);
         setTargetCargo(newPax, newCargo);
-    }, [emptyWeight, paxWeight, paxBagWeight, maxPax, maxCargo, totalCurrentGallon]);
+    }, [emptyWeight, paxWeight, paxBagWeight, maxPax, maxCargo, totalFuel]);
 
     const onClickCargo = useCallback((cargoStation, e) => {
         if (gsxPayloadSyncEnabled === 1 && boardingStarted) {
@@ -536,53 +485,6 @@ export const A320Payload = () => {
         gsxPayloadSyncEnabled,
     ]);
 
-    useEffect(() => {
-        // TODO FIXME: Move all this logic into rust
-        // Note: Looks messy after phase 1 refactor, will be fixed by deprecating this and moving all calculations into rust
-        const centerTankMoment = -4.5;
-        const innerTankMoment = -8;
-        const outerTankMoment = -16.9;
-        // Adjust ZFW CG Values based on payload
-        const newZfw = emptyWeight + totalPax * paxWeight + totalCargo;
-        const newZfwDesired = emptyWeight + totalPaxDesired * paxWeight + totalCargoDesired;
-        const newZfwMoment = Loadsheet.specs.emptyPosition * emptyWeight + calculatePaxMoment() + calculateCargoMoment();
-        const newZfwDesiredMoment = Loadsheet.specs.emptyPosition * emptyWeight + calculatePaxDesiredMoment() + calculateCargoDesiredMoment();
-        const newZfwCg = calculateCg(newZfw, newZfwMoment);
-        const newZfwDesiredCg = calculateCg(newZfwDesired, newZfwDesiredMoment);
-        const totalFuel = round(totalCurrentGallon * galToKg);
-
-        const totalFuelMoment = centerCurrent * galToKg * centerTankMoment + (LOutCurrent + ROutCurrent) * galToKg * outerTankMoment + (LInnCurrent + RInnCurrent) * galToKg * innerTankMoment;
-        const newGw = newZfw + totalFuel;
-        const newGwDesired = newZfwDesired + totalFuel;
-        const newTotalMoment = newZfwMoment + totalFuelMoment;
-        const newCg = calculateCg(newGw, newTotalMoment);
-
-        const newTotalWeightDesired = newZfwDesired + totalFuel;
-        const newTotalDesiredMoment = newZfwDesiredMoment + totalFuelMoment;
-        const newDesiredCg = calculateCg(newTotalWeightDesired, newTotalDesiredMoment);
-
-        setZfw(newZfw);
-        setZfwCg(newZfwCg);
-        setZfwDesired(newZfwDesired);
-        setZfwDesiredCg(newZfwDesiredCg);
-        setGw(newGw);
-        setGwDesired(newGwDesired);
-        setCg(newCg);
-        setTotalDesiredWeight(newTotalWeightDesired);
-        setDesiredCg(newDesiredCg);
-        // TODO: Predicted MLDW
-        setMlw(newGw);
-        setMlwCg(newCg);
-        setMlwDesired(newTotalWeightDesired);
-        setMlwDesiredCg(newDesiredCg);
-    }, [
-        ...desiredFlags, ...activeFlags,
-        ...cargo, ...cargoDesired,
-        ...fuel,
-        paxWeight, paxBagWeight,
-        emptyWeight,
-    ]);
-
     const remainingTimeString = () => {
         const minutes = Math.round(calculateBoardingTime / 60);
         const seconds = calculateBoardingTime % 60;
@@ -747,7 +649,7 @@ export const A320Payload = () => {
                                                     <div className="px-4 font-mono whitespace-nowrap text-md">
                                                         {/* TODO FIXME: Setting pax/cargo given desired ZFWCG, ZFW, total pax, total cargo */}
                                                         <div className="py-4 px-3 rounded-md transition">
-                                                            <PayloadPercentUnitDisplay value={displayZfw ? zfwDesiredCg : desiredCg} />
+                                                            <PayloadPercentUnitDisplay value={displayZfw ? desiredZfwCgMac : desiredGwCgMac} />
                                                         </div>
                                                         {/*
                                                             <SimpleInput
@@ -756,7 +658,7 @@ export const A320Payload = () => {
                                                                 disabled
                                                                 min={0}
                                                                 max={maxPax > 0 ? maxPax : 999}
-                                                                value={zfwCg.toFixed(2)}
+                                                                value={zfwCgMac.toFixed(2)}
                                                                 onBlur={{(x) => processZfwCg(x)}
                                                             />
                                                         */}
@@ -764,7 +666,7 @@ export const A320Payload = () => {
                                                 </TooltipWrapper>
                                             </td>
                                             <td className="px-4 font-mono whitespace-nowrap text-md">
-                                                <PayloadPercentUnitDisplay value={displayZfw ? zfwCg : cg} />
+                                                <PayloadPercentUnitDisplay value={displayZfw ? zfwCgMac : gwCgMac} />
                                             </td>
                                         </tr>
                                     </tbody>
@@ -916,11 +818,11 @@ export const A320Payload = () => {
                             height={511}
                             envelope={Loadsheet.chart.performanceEnvelope}
                             limits={Loadsheet.chart.chartLimits}
-                            cg={boardingStarted ? Math.round(cg * 100) / 100 : Math.round(desiredCg * 100) / 100}
-                            gw={boardingStarted ? Math.round(gw) : Math.round(totalDesiredWeight)}
-                            mldwCg={boardingStarted ? Math.round(mlwCg * 100) / 100 : Math.round(mlwDesiredCg * 100) / 100}
-                            mldw={boardingStarted ? Math.round(mlw) : Math.round(mlwDesired)}
-                            zfwCg={boardingStarted ? Math.round(zfwCg * 100) / 100 : Math.round(zfwDesiredCg * 100) / 100}
+                            cg={boardingStarted ? Math.round(gwCgMac * 100) / 100 : Math.round(desiredGwCgMac * 100) / 100}
+                            gw={boardingStarted ? Math.round(gw) : Math.round(gwDesired)}
+                            mldwCg={boardingStarted ? Math.round(gwCgMac * 100) / 100 : Math.round(desiredGwCgMac * 100) / 100}
+                            mldw={boardingStarted ? Math.round(gw) : Math.round(gwDesired)}
+                            zfwCg={boardingStarted ? Math.round(zfwCgMac * 100) / 100 : Math.round(desiredZfwCgMac * 100) / 100}
                             zfw={boardingStarted ? Math.round(zfw) : Math.round(zfwDesired)}
                         />
                     </div>
