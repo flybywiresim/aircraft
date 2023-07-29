@@ -13,18 +13,57 @@ use crate::systems::simulation::{
     test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
     Aircraft, SimulationElement, SimulationElementVisitor,
 };
-
 struct BoardingTestAircraft {
-    boarding: A320Payload,
+    payload: A320Payload,
     fuel: A320Fuel,
 }
 
 impl BoardingTestAircraft {
     fn new(context: &mut InitContext) -> Self {
         Self {
-            boarding: A320Payload::new(context),
+            payload: A320Payload::new(context),
             fuel: A320Fuel::new(context),
         }
+    }
+
+    fn pax_num(&self, ps: A320Pax) -> i8 {
+        self.payload.pax_num(ps)
+    }
+
+    fn pax_payload(&self, ps: A320Pax) -> Mass {
+        self.payload.pax_payload(ps)
+    }
+
+    fn max_pax(&self, ps: A320Pax) -> i8 {
+        self.payload.max_pax(ps)
+    }
+
+    fn cargo(&self, cs: A320Cargo) -> Mass {
+        self.payload.cargo(cs)
+    }
+
+    fn cargo_payload(&self, cs: A320Cargo) -> Mass {
+        self.payload.cargo_payload(cs)
+    }
+
+    fn max_cargo(&self, cs: A320Cargo) -> Mass {
+        self.payload.max_cargo(cs)
+    }
+
+    fn sound_pax_boarding_playing(&self) -> bool {
+        self.payload.sound_pax_boarding_playing()
+    }
+
+    fn sound_pax_deboarding_playing(&self) -> bool {
+        self.payload.sound_pax_deboarding_playing()
+    }
+
+    fn sound_pax_complete_playing(&self) -> bool {
+        self.payload.sound_pax_complete_playing()
+    }
+
+    fn sound_pax_ambience_playing(&self) -> bool {
+        self.payload.sound_pax_ambience_playing()
     }
 }
 impl Aircraft for BoardingTestAircraft {
@@ -33,12 +72,12 @@ impl Aircraft for BoardingTestAircraft {
         context: &UpdateContext,
         _electricity: &mut Electricity,
     ) {
-        self.boarding.update(context, &self.fuel);
+        self.payload.update(context, &self.fuel);
     }
 }
 impl SimulationElement for BoardingTestAircraft {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.boarding.accept(visitor);
+        self.payload.accept(visitor);
         self.fuel.accept(visitor);
 
         visitor.visit(self);
@@ -71,7 +110,10 @@ impl BoardingTestBed {
 
     fn init_vars(mut self) -> Self {
         self.write_by_name("BOARDING_RATE", BoardingRate::Instant);
-        self.write_by_name("WB_PER_PAX_WEIGHT", A320Payload::DEFAULT_PER_PAX_WEIGHT_KG);
+        self.write_by_name(
+            "WB_PER_PAX_WEIGHT",
+            A320Payload::LOADSHEET.per_pax_weight_kg,
+        );
 
         self
     }
@@ -133,8 +175,9 @@ impl BoardingTestBed {
 
     fn board_gsx_pax_half(mut self) -> Self {
         let mut max_pax = 0;
+
         for ps in A320Pax::iterator() {
-            max_pax += A320_PAX[ps].max_pax as i32;
+            max_pax += test_bed().query(|a| a.max_pax(ps)) as i32;
         }
         self.write_by_name("FSDT_GSX_NUMPASSENGERS_BOARDING_TOTAL", max_pax / 2);
         self
@@ -143,7 +186,7 @@ impl BoardingTestBed {
     fn board_gsx_pax_full(mut self) -> Self {
         let mut max_pax = 0;
         for ps in A320Pax::iterator() {
-            max_pax += A320_PAX[ps].max_pax as i32;
+            max_pax += test_bed().query(|a| a.max_pax(ps)) as i32;
         }
         self.write_by_name("FSDT_GSX_NUMPASSENGERS_BOARDING_TOTAL", max_pax);
         self
@@ -152,7 +195,7 @@ impl BoardingTestBed {
     fn deboard_gsx_pax_half(mut self) -> Self {
         let mut max_pax = 0;
         for ps in A320Pax::iterator() {
-            max_pax += A320_PAX[ps].max_pax as i32;
+            max_pax += test_bed().query(|a| a.max_pax(ps)) as i32;
         }
         self.write_by_name("FSDT_GSX_NUMPASSENGERS_DEBOARDING_TOTAL", max_pax / 2);
         self
@@ -167,7 +210,7 @@ impl BoardingTestBed {
     fn deboard_gsx_pax_full(mut self) -> Self {
         let mut max_pax = 0;
         for ps in A320Pax::iterator() {
-            max_pax += A320_PAX[ps].max_pax as i32;
+            max_pax += test_bed().query(|a| a.max_pax(ps)) as i32;
         }
         self.write_by_name("FSDT_GSX_NUMPASSENGERS_DEBOARDING_TOTAL", max_pax);
         self
@@ -194,14 +237,16 @@ impl BoardingTestBed {
     }
 
     fn load_pax(&mut self, ps: A320Pax, pax_qty: i8) {
-        assert!(pax_qty <= A320_PAX[ps].max_pax);
+        let mut test_bed = test_bed();
+
+        assert!(pax_qty <= test_bed.query(|a| a.max_pax(ps)));
 
         let per_pax_weight: Mass = Mass::new::<kilogram>(self.read_by_name("WB_PER_PAX_WEIGHT"));
 
         let seed = 380320;
         let mut rng = rand_pcg::Pcg32::seed_from_u64(seed);
 
-        let binding: Vec<i8> = (0..A320_PAX[ps].max_pax).collect();
+        let binding: Vec<i8> = (0..test_bed.query(|a| a.max_pax(ps))).collect();
         let choices = binding
             .iter()
             .choose_multiple(&mut rng, pax_qty.try_into().unwrap());
@@ -213,17 +258,18 @@ impl BoardingTestBed {
 
         let payload = Mass::new::<pound>(pax_qty as f64 * per_pax_weight.get::<pound>());
 
-        self.write_by_name(&A320_PAX[ps].pax_id, pax_flag);
-        self.write_by_name(&A320_PAX[ps].payload_id, payload);
+        self.write_by_name(&A320Payload::A320_PAX[ps].pax_id, pax_flag);
+        self.write_by_name(&A320Payload::A320_PAX[ps].payload_id, payload);
     }
 
     fn target_pax(&mut self, ps: A320Pax, pax_qty: i8) {
-        assert!(pax_qty <= A320_PAX[ps].max_pax);
+        let test_bed = test_bed();
+        assert!(pax_qty <= test_bed.query(|a| a.max_pax(ps)));
 
         let seed = 747777;
         let mut rng = rand_pcg::Pcg32::seed_from_u64(seed);
 
-        let binding: Vec<i8> = (0..A320_PAX[ps].max_pax).collect();
+        let binding: Vec<i8> = (0..test_bed.query(|a| a.max_pax(ps))).collect();
         let choices = binding
             .iter()
             .choose_multiple(&mut rng, pax_qty.try_into().unwrap());
@@ -233,21 +279,30 @@ impl BoardingTestBed {
             pax_flag ^= 1 << c;
         }
 
-        self.write_by_name(&format!("{}_DESIRED", A320_PAX[ps].pax_id), pax_flag);
+        self.write_by_name(
+            &format!("{}_DESIRED", A320Payload::A320_PAX[ps].pax_id),
+            pax_flag,
+        );
     }
 
     fn load_cargo(&mut self, cs: A320Cargo, cargo_qty: Mass) {
-        assert!(cargo_qty <= A320_CARGO[cs].max_cargo);
+        assert!(cargo_qty <= test_bed().query(|a| a.max_cargo(cs)));
 
-        self.write_by_name(&A320_CARGO[cs].cargo_id, cargo_qty.get::<kilogram>());
-        self.write_by_name(&A320_CARGO[cs].payload_id, cargo_qty.get::<pound>());
+        self.write_by_name(
+            &A320Payload::A320_CARGO[cs].cargo_id,
+            cargo_qty.get::<kilogram>(),
+        );
+        self.write_by_name(
+            &A320Payload::A320_CARGO[cs].payload_id,
+            cargo_qty.get::<pound>(),
+        );
     }
 
     fn target_cargo(&mut self, cs: A320Cargo, cargo_qty: Mass) {
-        assert!(cargo_qty <= A320_CARGO[cs].max_cargo);
+        assert!(cargo_qty <= test_bed().query(|a| a.max_cargo(cs)));
 
         self.write_by_name(
-            &format!("{}_DESIRED", A320_CARGO[cs].cargo_id),
+            &format!("{}_DESIRED", A320Payload::A320_CARGO[cs].cargo_id),
             cargo_qty.get::<kilogram>(),
         );
     }
@@ -320,28 +375,28 @@ impl BoardingTestBed {
 
     fn with_all_stations_half_pax(mut self) -> Self {
         for ps in A320Pax::iterator() {
-            self.load_pax(ps, A320_PAX[ps].max_pax / 2);
+            self.load_pax(ps, test_bed().query(|a| a.max_pax(ps)) / 2);
         }
         self
     }
 
     fn with_full_pax(mut self) -> Self {
         for ps in A320Pax::iterator() {
-            self.load_pax(ps, A320_PAX[ps].max_pax);
+            self.load_pax(ps, test_bed().query(|a| a.max_pax(ps)));
         }
         self
     }
 
     fn with_all_stations_half_cargo(mut self) -> Self {
         for cs in A320Cargo::iterator() {
-            self.load_cargo(cs, A320_CARGO[cs].max_cargo / 2.);
+            self.load_cargo(cs, test_bed().query(|a| a.max_cargo(cs)) / 2.);
         }
         self
     }
 
     fn with_full_cargo(mut self) -> Self {
         for cs in A320Cargo::iterator() {
-            self.load_cargo(cs, A320_CARGO[cs].max_cargo);
+            self.load_cargo(cs, test_bed().query(|a| a.max_cargo(cs)));
         }
         self
     }
@@ -353,14 +408,14 @@ impl BoardingTestBed {
 
     fn target_half_pax(mut self) -> Self {
         for ps in A320Pax::iterator() {
-            self.target_pax(ps, A320_PAX[ps].max_pax / 2);
+            self.target_pax(ps, test_bed().query(|a| a.max_pax(ps)) / 2);
         }
         self
     }
 
     fn target_full_pax(mut self) -> Self {
         for ps in A320Pax::iterator() {
-            self.target_pax(ps, A320_PAX[ps].max_pax);
+            self.target_pax(ps, test_bed().query(|a| a.max_pax(ps)));
         }
         self
     }
@@ -396,7 +451,7 @@ impl BoardingTestBed {
         let mut total_pax_payload = Mass::default();
         let mut total_expected_pax_payload = Mass::default();
         for ps in A320Pax::iterator() {
-            let pax_num = A320_PAX[ps].max_pax / 2;
+            let pax_num = test_bed().query(|a| a.max_pax(ps)) / 2;
             let pax_payload = Mass::new::<pound>(pax_num as f64 * per_pax_weight.get::<pound>());
             total_expected_pax_payload += pax_payload;
             total_pax_payload += self.pax_payload(ps);
@@ -411,7 +466,7 @@ impl BoardingTestBed {
         let per_pax_weight: Mass = Mass::new::<kilogram>(self.read_by_name("WB_PER_PAX_WEIGHT"));
 
         for ps in A320Pax::iterator() {
-            let pax_num = A320_PAX[ps].max_pax / 2;
+            let pax_num = test_bed().query(|a| a.max_pax(ps)) / 2;
             let pax_payload = Mass::new::<pound>(pax_num as f64 * per_pax_weight.get::<pound>());
             assert_eq!(
                 self.pax_payload(ps).get::<pound>().floor(),
@@ -424,7 +479,7 @@ impl BoardingTestBed {
         let per_pax_weight: Mass = Mass::new::<kilogram>(self.read_by_name("WB_PER_PAX_WEIGHT"));
 
         for ps in A320Pax::iterator() {
-            let pax_num = A320_PAX[ps].max_pax;
+            let pax_num = test_bed().query(|a| a.max_pax(ps));
             let pax_payload = Mass::new::<pound>(pax_num as f64 * per_pax_weight.get::<pound>());
             assert_eq!(self.pax_num(ps), pax_num);
             assert_eq!(
@@ -436,14 +491,14 @@ impl BoardingTestBed {
 
     fn load_half_cargo(mut self) -> Self {
         for cs in A320Cargo::iterator() {
-            self.load_cargo(cs, A320_CARGO[cs].max_cargo / 2.);
+            self.load_cargo(cs, test_bed().query(|a| a.max_cargo(cs)) / 2.);
         }
         self
     }
 
     fn load_full_cargo(mut self) -> Self {
         for cs in A320Cargo::iterator() {
-            self.load_cargo(cs, A320_CARGO[cs].max_cargo);
+            self.load_cargo(cs, test_bed().query(|a| a.max_cargo(cs)));
         }
         self
     }
@@ -464,7 +519,7 @@ impl BoardingTestBed {
 
     fn has_all_stations_half_cargo(&mut self) {
         for cs in A320Cargo::iterator() {
-            let cargo = A320_CARGO[cs].max_cargo / 2.;
+            let cargo = test_bed().query(|a| a.max_cargo(cs)) / 2.;
             assert_eq!(
                 self.cargo(cs).get::<kilogram>().floor(),
                 cargo.get::<kilogram>().floor(),
@@ -481,7 +536,7 @@ impl BoardingTestBed {
         let mut total_expected_cargo_payload = Mass::default();
         for cs in A320Cargo::iterator() {
             total_cargo_payload += self.cargo(cs);
-            total_expected_cargo_payload += A320_CARGO[cs].max_cargo / 2.;
+            total_expected_cargo_payload += test_bed().query(|a| a.max_cargo(cs)) / 2.;
         }
         assert_eq!(
             total_cargo_payload.get::<pound>().floor(),
@@ -491,7 +546,7 @@ impl BoardingTestBed {
 
     fn has_full_cargo(&mut self) {
         for cs in A320Cargo::iterator() {
-            let cargo = A320_CARGO[cs].max_cargo;
+            let cargo = test_bed().query(|a| a.max_cargo(cs));
             assert_eq!(
                 self.cargo(cs).get::<kilogram>().floor(),
                 cargo.get::<kilogram>().floor(),
@@ -512,56 +567,56 @@ impl BoardingTestBed {
 
     fn target_half_cargo(mut self) -> Self {
         for cs in A320Cargo::iterator() {
-            self.target_cargo(cs, A320_CARGO[cs].max_cargo / 2.);
+            self.target_cargo(cs, test_bed().query(|a| a.max_cargo(cs)) / 2.);
         }
         self
     }
 
     fn target_full_cargo(mut self) -> Self {
         for cs in A320Cargo::iterator() {
-            self.target_cargo(cs, A320_CARGO[cs].max_cargo);
+            self.target_cargo(cs, test_bed().query(|a| a.max_cargo(cs)));
         }
         self
     }
 
     fn is_boarding(&self) -> bool {
-        self.query(|a| a.boarding.is_boarding())
+        self.query(|a| a.payload.is_boarding())
     }
 
     fn board_rate(&self) -> BoardingRate {
-        self.query(|a| a.boarding.board_rate())
-    }
-
-    fn sound_pax_ambience(&self) -> bool {
-        self.query(|a| a.boarding.boarding_sounds.pax_ambience)
+        self.query(|a| a.payload.board_rate())
     }
 
     fn sound_pax_boarding(&self) -> bool {
-        self.query(|a| a.boarding.boarding_sounds.pax_boarding)
+        self.query(|a| a.sound_pax_boarding_playing())
     }
 
     fn sound_pax_deboarding(&self) -> bool {
-        self.query(|a| a.boarding.boarding_sounds.pax_deboarding)
+        self.query(|a| a.sound_pax_deboarding_playing())
     }
 
     fn sound_pax_complete(&self) -> bool {
-        self.query(|a| a.boarding.boarding_sounds.pax_complete)
+        self.query(|a| a.sound_pax_complete_playing())
+    }
+
+    fn sound_pax_ambience(&self) -> bool {
+        self.query(|a: &BoardingTestAircraft| a.sound_pax_ambience_playing())
     }
 
     fn pax_num(&self, ps: A320Pax) -> i8 {
-        self.query(|a| a.boarding.pax[ps as usize].pax_num())
+        self.query(|a| a.pax_num(ps))
     }
 
     fn pax_payload(&self, ps: A320Pax) -> Mass {
-        self.query(|a| a.boarding.pax[ps as usize].payload())
+        self.query(|a| a.pax_payload(ps))
     }
 
     fn cargo(&self, cs: A320Cargo) -> Mass {
-        self.query(|a| a.boarding.cargo[cs as usize].cargo())
+        self.query(|a| a.cargo(cs))
     }
 
     fn cargo_payload(&self, cs: A320Cargo) -> Mass {
-        self.query(|a| a.boarding.cargo[cs as usize].payload())
+        self.query(|a| a.cargo_payload(cs))
     }
 }
 
@@ -596,10 +651,10 @@ fn boarding_init() {
     assert!(test_bed.contains_variable_with_name("BOARDING_STARTED_BY_USR"));
     assert!(test_bed.contains_variable_with_name("BOARDING_RATE"));
     assert!(test_bed.contains_variable_with_name("WB_PER_PAX_WEIGHT"));
-    assert!(test_bed.contains_variable_with_name(&A320_PAX[A320Pax::A].pax_id));
-    assert!(test_bed.contains_variable_with_name(&A320_PAX[A320Pax::B].pax_id));
-    assert!(test_bed.contains_variable_with_name(&A320_PAX[A320Pax::C].pax_id));
-    assert!(test_bed.contains_variable_with_name(&A320_PAX[A320Pax::D].pax_id));
+    assert!(test_bed.contains_variable_with_name(&A320Payload::A320_PAX[A320Pax::A].pax_id));
+    assert!(test_bed.contains_variable_with_name(&A320Payload::A320_PAX[A320Pax::B].pax_id));
+    assert!(test_bed.contains_variable_with_name(&A320Payload::A320_PAX[A320Pax::C].pax_id));
+    assert!(test_bed.contains_variable_with_name(&A320Payload::A320_PAX[A320Pax::D].pax_id));
 }
 #[test]
 fn loaded_no_pax() {

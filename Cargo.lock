@@ -22,7 +22,6 @@ name = "a320_systems"
 version = "0.1.0"
 dependencies = [
  "enum-map",
- "lazy_static",
  "nalgebra",
  "ntest",
  "rand",

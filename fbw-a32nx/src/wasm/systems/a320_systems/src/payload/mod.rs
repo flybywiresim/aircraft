@@ -1,5 +1,4 @@
 use enum_map::{Enum, EnumMap};
-use lazy_static::lazy_static;
 use nalgebra::Vector3;
 
 use std::{cell::Cell, rc::Rc, time::Duration};
@@ -8,7 +7,7 @@ use uom::si::{f64::Mass, mass::kilogram};
 
 use systems::{
     accept_iterable,
-    payload::{BoardingRate, Cargo, CargoInfo, GsxState, Pax, PaxInfo},
+    payload::{BoardingRate, Cargo, CargoInfo, GsxState, LoadsheetInfo, Pax, PaxInfo},
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
         SimulatorWriter, UpdateContext, VariableIdentifier, Write,
@@ -59,66 +58,6 @@ impl A320Cargo {
     }
 }
 
-lazy_static! {
-    static ref A320_PAX: EnumMap<A320Pax, PaxInfo> = EnumMap::from_array([
-        PaxInfo::new(
-            36,
-            Vector3::new(20.5, 0., 5.),
-            "PAX_A",
-            "PAYLOAD_STATION_1_REQ",
-        ),
-        PaxInfo::new(
-            42,
-            Vector3::new(1.5, 0., 5.1),
-            "PAX_B",
-            "PAYLOAD_STATION_2_REQ",
-        ),
-        PaxInfo::new(
-            48,
-            Vector3::new(-16.6, 0., 5.3),
-            "PAX_C",
-            "PAYLOAD_STATION_3_REQ",
-        ),
-        PaxInfo::new(
-            48,
-            Vector3::new(-35.6, 0., 5.3),
-            "PAX_D",
-            "PAYLOAD_STATION_4_REQ",
-        )
-    ]);
-    static ref A320_CARGO: EnumMap<A320Cargo, CargoInfo> = EnumMap::from_array([
-        CargoInfo::new(
-            Mass::new::<kilogram>(3402.),
-            Vector3::new(17.3, 0., 0.),
-            "CARGO_FWD_BAGGAGE_CONTAINER",
-            "PAYLOAD_STATION_5_REQ",
-        ),
-        CargoInfo::new(
-            Mass::new::<kilogram>(2426.),
-            Vector3::new(-24.1, 0., 1.),
-            "CARGO_AFT_CONTAINER",
-            "PAYLOAD_STATION_6_REQ",
-        ),
-        CargoInfo::new(
-            Mass::new::<kilogram>(2110.),
-            Vector3::new(-34.1, 0., 1.2),
-            "CARGO_AFT_BAGGAGE",
-            "PAYLOAD_STATION_7_REQ",
-        ),
-        CargoInfo::new(
-            Mass::new::<kilogram>(1497.),
-            Vector3::new(-42.4, 0., 1.4),
-            "CARGO_AFT_BULK_LOOSE",
-            "PAYLOAD_STATION_8_REQ",
-        )
-    ]);
-}
-
-const A320_EMPTY_WEIGHT_KG: f64 = 42500.;
-const A320_EMPTY_POSITION: f64 = -9.42;
-const A320_MAC_SIZE: f64 = 13.464;
-const A320_LEMAC_Z: f64 = -5.383;
-
 pub struct A320BoardingSounds {
     pax_board_id: VariableIdentifier,
     pax_deboard_id: VariableIdentifier,
@@ -146,6 +85,22 @@ impl A320BoardingSounds {
             pax_complete: false,
             pax_ambience: false,
         }
+    }
+
+    fn pax_boarding(&self) -> bool {
+        self.pax_boarding
+    }
+
+    fn pax_deboarding(&self) -> bool {
+        self.pax_deboarding
+    }
+
+    fn pax_complete(&self) -> bool {
+        self.pax_complete
+    }
+
+    fn pax_ambience(&self) -> bool {
+        self.pax_ambience
     }
 
     fn start_pax_boarding(&mut self) {
@@ -188,13 +143,13 @@ impl SimulationElement for A320BoardingSounds {
         writer.write(&self.pax_ambience_id, self.pax_ambience);
     }
 }
-
 pub struct A320Payload {
     developer_state_id: VariableIdentifier,
     is_boarding_id: VariableIdentifier,
     board_rate_id: VariableIdentifier,
     per_pax_weight_id: VariableIdentifier,
 
+    // TODO: Move into context
     is_gsx_enabled_id: VariableIdentifier,
     gsx_boarding_state_id: VariableIdentifier,
     gsx_deboarding_state_id: VariableIdentifier,
@@ -203,6 +158,7 @@ pub struct A320Payload {
     gsx_cargo_boarding_pct_id: VariableIdentifier,
     gsx_cargo_deboarding_pct_id: VariableIdentifier,
 
+    // cargo_info: EnumMap<A320Cargo, CargoInfo>,
     developer_state: i8,
     is_boarding: bool,
     board_rate: BoardingRate,
@@ -230,30 +186,98 @@ pub struct A320Payload {
     ths_setting: f64,
 }
 impl A320Payload {
-    const DEFAULT_PER_PAX_WEIGHT_KG: f64 = 84.;
+    const LOADSHEET: LoadsheetInfo = LoadsheetInfo {
+        operating_empty_weight_kg: 42500.,
+        operating_empty_position: (0., 0., -9.42),
+        per_pax_weight_kg: 84.,
+        mac_size: 13.464,
+        lemac_z: -5.383,
+    };
+
+    const A320_PAX: EnumMap<A320Pax, PaxInfo<'_>> = EnumMap::from_array([
+        PaxInfo {
+            max_pax: 36,
+            position: (20.5, 0., 5.),
+            pax_id: "PAX_A",
+            payload_id: "PAYLOAD_STATION_1_REQ",
+        },
+        PaxInfo {
+            max_pax: 42,
+            position: (1.5, 0., 5.1),
+            pax_id: "PAX_B",
+            payload_id: "PAYLOAD_STATION_2_REQ",
+        },
+        PaxInfo {
+            max_pax: 48,
+            position: (-16.6, 0., 5.3),
+            pax_id: "PAX_C",
+            payload_id: "PAYLOAD_STATION_3_REQ",
+        },
+        PaxInfo {
+            max_pax: 48,
+            position: (-35.6, 0., 5.3),
+            pax_id: "PAX_D",
+            payload_id: "PAYLOAD_STATION_4_REQ",
+        },
+    ]);
+
+    const A320_CARGO: EnumMap<A320Cargo, CargoInfo<'_>> = EnumMap::from_array([
+        CargoInfo {
+            max_cargo_kg: 3402.,
+            position: (17.3, 0., 0.),
+            cargo_id: "CARGO_FWD_BAGGAGE_CONTAINER",
+            payload_id: "PAYLOAD_STATION_5_REQ",
+        },
+        CargoInfo {
+            max_cargo_kg: 2426.,
+            position: (-24.1, 0., 1.),
+            cargo_id: "CARGO_AFT_CONTAINER",
+            payload_id: "PAYLOAD_STATION_6_REQ",
+        },
+        CargoInfo {
+            max_cargo_kg: 2110.,
+            position: (-34.1, 0., 1.2),
+            cargo_id: "CARGO_AFT_BAGGAGE",
+            payload_id: "PAYLOAD_STATION_7_REQ",
+        },
+        CargoInfo {
+            max_cargo_kg: 1497.,
+            position: (-42.4, 0., 1.4),
+            cargo_id: "CARGO_AFT_BULK_LOOSE",
+            payload_id: "PAYLOAD_STATION_8_REQ",
+        },
+    ]);
+
     pub fn new(context: &mut InitContext) -> Self {
         let per_pax_weight = Rc::new(Cell::new(Mass::new::<kilogram>(
-            Self::DEFAULT_PER_PAX_WEIGHT_KG,
+            Self::LOADSHEET.per_pax_weight_kg,
         )));
 
         let mut pax = Vec::new();
 
         for ps in A320Pax::iterator() {
+            let pos = Self::A320_PAX[ps].position;
             pax.push(Pax::new(
-                context.get_identifier(A320_PAX[ps].pax_id.to_owned()),
-                context.get_identifier(format!("{}_DESIRED", A320_PAX[ps].pax_id).to_owned()),
-                context.get_identifier(A320_PAX[ps].payload_id.to_owned()),
+                context.get_identifier(Self::A320_PAX[ps].pax_id.to_owned()),
+                context.get_identifier(format!("{}_DESIRED", Self::A320_PAX[ps].pax_id).to_owned()),
+                context.get_identifier(Self::A320_PAX[ps].payload_id.to_owned()),
                 Rc::clone(&per_pax_weight),
-                A320_PAX[ps].position,
+                Vector3::new(pos.0, pos.1, pos.2),
+                Self::A320_PAX[ps].max_pax,
             ));
         }
 
         let mut cargo = Vec::new();
         for cs in A320Cargo::iterator() {
+            let pos = Self::A320_CARGO[cs].position;
             cargo.push(Cargo::new(
-                context.get_identifier(A320_CARGO[cs].cargo_id.to_owned()),
-                context.get_identifier(format!("{}_DESIRED", A320_CARGO[cs].cargo_id).to_owned()),
-                context.get_identifier(A320_CARGO[cs].payload_id.to_owned()),
+                context.get_identifier(Self::A320_CARGO[cs].cargo_id.to_owned()),
+                context.get_identifier(
+                    format!("{}_DESIRED", Self::A320_CARGO[cs].cargo_id).to_owned(),
+                ),
+                context.get_identifier(Self::A320_CARGO[cs].payload_id.to_owned()),
+                Vector3::new(pos.0, pos.1, pos.2),
+                Mass::new::<kilogram>(Self::A320_CARGO[cs].max_cargo_kg),
             ));
         }
         A320Payload {
@@ -423,10 +447,19 @@ impl A320Payload {
     }
 
     fn update_calc(&mut self, fuel_cg: f64) {
-        let fuel_cg_percent_mac = -100. * (fuel_cg - A320_LEMAC_Z) / A320_MAC_SIZE;
+        // TODO: Finish then refactor
+
+        let fuel_cg_percent_mac =
+            -100. * (fuel_cg - Self::LOADSHEET.lemac_z) / Self::LOADSHEET.mac_size;
 
         // const newZfwMoment = Loadsheet.specs.emptyPosition * emptyWeight + calculatePaxMoment() + calculateCargoMoment();
-        // let zfw_moment = A320_EMPTY_WEIGHT_KG * A320_EMPTY_POSITION; // + pax moment + cargo moment
+
+        // let zfw_moment = A320_EMPTY_MOMENT + pax moment + cargo moment
+
+        // A320_EMPTY_MOMENT = Self::LOADSHEET.empty_weight * Self::LOADSHEET.empty_position.2
+
+        let operating_empty_moment =
+            Self::LOADSHEET.operating_empty_weight_kg * Self::LOADSHEET.operating_empty_position.2;
 
         /*
         for ps in self.pax {
@@ -437,8 +470,8 @@ impl A320Payload {
         self.desired_zfw_cg_percent_mac;
         self.desired_gw_cg_percent_mac = self.desired_zfw_cg_percent_mac + fuel_cg_percent_mac;
 
-        self.zfw_cg_percent_mac;
-        self.zfw_cg_percent_mac = self.zfw_cg_percent_mac + fuel_cg_percent_mac;
+        // self.zfw_cg_percent_mac;
+        // self.zfw_cg_percent_mac = self.zfw_cg_percent_mac + fuel_cg_percent_mac;
 
         // self.gw_cg_percent_mac = A320_EMPTY_WEIGHT.get::<kilogram>();
     }
@@ -615,8 +648,37 @@ impl A320Payload {
         self.board_rate
     }
 
+    #[allow(dead_code)]
+    fn sound_pax_boarding_playing(&self) -> bool {
+        self.boarding_sounds.pax_boarding()
+    }
+
+    #[allow(dead_code)]
+    fn sound_pax_ambience_playing(&self) -> bool {
+        self.boarding_sounds.pax_ambience()
+    }
+
+    #[allow(dead_code)]
+    fn sound_pax_complete_playing(&self) -> bool {
+        self.boarding_sounds.pax_complete()
+    }
+
+    #[allow(dead_code)]
+    fn sound_pax_deboarding_playing(&self) -> bool {
+        self.boarding_sounds.pax_deboarding()
+    }
+
     fn pax_num(&self, ps: A320Pax) -> i8 {
         self.pax[ps as usize].pax_num() as i8
+    }
+
+    #[allow(dead_code)]
+    fn pax_payload(&self, ps: A320Pax) -> Mass {
+        self.pax[ps as usize].payload()
+    }
+
+    fn max_pax(&self, ps: A320Pax) -> i8 {
+        self.pax[ps as usize].max_pax()
     }
 
     fn total_pax_num(&self) -> i32 {
@@ -630,7 +692,7 @@ impl A320Payload {
     fn total_max_pax(&self) -> i32 {
         let mut max_pax = 0;
         for ps in A320Pax::iterator() {
-            max_pax += A320_PAX[ps].max_pax as i32;
+            max_pax += self.max_pax(ps) as i32;
         }
         max_pax
     }
@@ -665,6 +727,21 @@ impl A320Payload {
 
     fn reset_cargo_target(&mut self, cs: A320Cargo) {
         self.cargo[cs as usize].reset_cargo_target();
+    }
+
+    #[allow(dead_code)]
+    fn cargo(&self, cs: A320Cargo) -> Mass {
+        self.cargo[cs as usize].cargo()
+    }
+
+    #[allow(dead_code)]
+    fn cargo_payload(&self, cs: A320Cargo) -> Mass {
+        self.cargo[cs as usize].payload()
+    }
+
+    #[allow(dead_code)]
+    fn max_cargo(&self, cs: A320Cargo) -> Mass {
+        self.cargo[cs as usize].max_cargo()
     }
 
     fn cargo_is_sync(&mut self, cs: A320Cargo) -> bool {

@@ -40,38 +40,25 @@ impl From<f64> for GsxState {
 
 read_write_enum!(GsxState);
 
-pub struct PaxInfo {
-    pub max_pax: i8,
-    pub position: Vector3<f64>,
-    pub pax_id: String,
-    pub payload_id: String,
-}
-impl PaxInfo {
-    pub fn new(max_pax: i8, position: Vector3<f64>, pax_id: &str, payload_id: &str) -> Self {
-        PaxInfo {
-            max_pax,
-            position,
-            pax_id: pax_id.to_string(),
-            payload_id: payload_id.to_string(),
-        }
-    }
+pub struct LoadsheetInfo {
+    pub operating_empty_weight_kg: f64,
+    pub operating_empty_position: (f64, f64, f64),
+    pub per_pax_weight_kg: f64,
+    pub mac_size: f64,
+    pub lemac_z: f64,
 }
 
-pub struct CargoInfo {
-    pub max_cargo: Mass,
-    pub position: Vector3<f64>,
-    pub cargo_id: String,
-    pub payload_id: String,
+pub struct PaxInfo<'a> {
+    pub max_pax: i8,
+    pub position: (f64, f64, f64),
+    pub pax_id: &'a str,
+    pub payload_id: &'a str,
 }
-impl CargoInfo {
-    pub fn new(max_cargo: Mass, position: Vector3<f64>, cargo_id: &str, payload_id: &str) -> Self {
-        CargoInfo {
-            max_cargo,
-            position,
-            cargo_id: cargo_id.to_string(),
-            payload_id: payload_id.to_string(),
-        }
-    }
+pub struct CargoInfo<'a> {
+    pub max_cargo_kg: f64,
+    pub position: (f64, f64, f64),
+    pub cargo_id: &'a str,
+    pub payload_id: &'a str,
 }
 #[derive(Debug)]
 pub struct Pax {
@@ -83,7 +70,9 @@ pub struct Pax {
     pax: u64,
 
     payload: Mass,
+
     position: Vector3<f64>,
+    max: i8,
 }
 impl Pax {
     pub fn new(
@@ -92,6 +81,7 @@ impl Pax {
         payload_id: VariableIdentifier,
         per_pax_weight: Rc<Cell<Mass>>,
         position: Vector3<f64>,
+        max: i8,
     ) -> Self {
         Pax {
             pax_id,
@@ -102,6 +92,7 @@ impl Pax {
             pax: 0,
             payload: Mass::default(),
             position,
+            max,
         }
     }
 
@@ -123,6 +114,10 @@ impl Pax {
 
     pub fn pax_target_num(&self) -> i8 {
         self.pax_target.count_ones() as i8
+    }
+
+    pub fn max_pax(&self) -> i8 {
+        self.max
     }
 
     pub fn payload(&self) -> Mass {
@@ -206,12 +201,17 @@ pub struct Cargo {
     cargo_loaded: Mass,
     cargo_target: Mass,
     payload: Mass,
+
+    position: Vector3<f64>,
+    max: Mass,
 }
 impl Cargo {
     pub fn new(
         cargo_id: VariableIdentifier,
         cargo_target_id: VariableIdentifier,
         payload_id: VariableIdentifier,
+        position: Vector3<f64>,
+        max: Mass,
     ) -> Self {
         Cargo {
             cargo_id,
@@ -221,11 +221,17 @@ impl Cargo {
             cargo_loaded: Mass::default(),
             cargo_target: Mass::default(),
             payload: Mass::default(),
+            position,
+            max,
         }
     }
 
     pub fn cargo(&self) -> Mass {
         self.cargo
+    }
+
+    pub fn max_cargo(&self) -> Mass {
+        self.max
     }
 
     pub fn update_cargo_loaded(&mut self) {
