@@ -1437,6 +1437,12 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   prims[primIndex].modelInputs.in.bus_inputs.sec_2_bus = secsBusOutputs[1];
   prims[primIndex].modelInputs.in.bus_inputs.sec_3_bus = secsBusOutputs[2];
 
+  prims[primIndex].modelInputs.in.temporary_ap_input.ap_engaged =
+      autopilotStateMachineOutput.enabled_AP1 || autopilotStateMachineOutput.enabled_AP2;
+  prims[primIndex].modelInputs.in.temporary_ap_input.roll_command = autopilotLawsOutput.autopilot.Phi_c_deg;
+  prims[primIndex].modelInputs.in.temporary_ap_input.pitch_command = autopilotLawsOutput.autopilot.Theta_c_deg;
+  prims[primIndex].modelInputs.in.temporary_ap_input.yaw_command = autopilotLawsOutput.autopilot.Beta_c_deg;
+
   if (primIndex == primDisabled) {
     simConnectInterface.setClientDataPrimDiscretes(prims[primIndex].modelInputs.in.discrete_inputs);
     simConnectInterface.setClientDataPrimAnalog(prims[primIndex].modelInputs.in.analog_inputs);
@@ -2000,7 +2006,7 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
 
   bool doDisconnect = false;
   if (autopilotStateMachineOutput.enabled_AP1 || autopilotStateMachineOutput.enabled_AP2) {
-    doDisconnect = true;
+    doDisconnect = false;
   }
 
   // update state machine ---------------------------------------------------------------------------------------------
@@ -2066,8 +2072,10 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineInput.in.data.flight_phase = idFmgcFlightPhase->get();
     autopilotStateMachineInput.in.data.V2_kn = idFmgcV2->get();
     autopilotStateMachineInput.in.data.VAPP_kn = idFmgcV_APP->get();
-    autopilotStateMachineInput.in.data.VLS_kn = idFmgcV_LS->get();
-    autopilotStateMachineInput.in.data.VMAX_kn = idFmgcV_MAX->get();
+    autopilotStateMachineInput.in.data.VLS_kn =
+        facsDiscreteOutputs[0].fac_healthy ? facsBusOutputs[0].v_ls_kn.Data : facsBusOutputs[1].v_ls_kn.Data;
+    autopilotStateMachineInput.in.data.VMAX_kn =
+        facsDiscreteOutputs[0].fac_healthy ? facsBusOutputs[0].v_max_kn.Data : facsBusOutputs[1].v_max_kn.Data;
     autopilotStateMachineInput.in.data.is_flight_plan_available = idFlightGuidanceAvailable->get();
     autopilotStateMachineInput.in.data.altitude_constraint_ft = idFmgcAltitudeConstraint->get();
     autopilotStateMachineInput.in.data.thrust_reduction_altitude = fmThrustReductionAltitude->valueOr(0);
@@ -2415,8 +2423,10 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
     autopilotLawsInput.in.data.flight_phase = idFmgcFlightPhase->get();
     autopilotLawsInput.in.data.V2_kn = idFmgcV2->get();
     autopilotLawsInput.in.data.VAPP_kn = idFmgcV_APP->get();
-    autopilotLawsInput.in.data.VLS_kn = idFmgcV_LS->get();
-    autopilotLawsInput.in.data.VMAX_kn = idFmgcV_MAX->get();
+    autopilotLawsInput.in.data.VLS_kn =
+        facsDiscreteOutputs[0].fac_healthy ? facsBusOutputs[0].v_ls_kn.Data : facsBusOutputs[1].v_ls_kn.Data;
+    autopilotLawsInput.in.data.VMAX_kn =
+        facsDiscreteOutputs[0].fac_healthy ? facsBusOutputs[0].v_max_kn.Data : facsBusOutputs[1].v_max_kn.Data;
     autopilotLawsInput.in.data.is_flight_plan_available = idFlightGuidanceAvailable->get();
     autopilotLawsInput.in.data.altitude_constraint_ft = idFmgcAltitudeConstraint->get();
     autopilotLawsInput.in.data.thrust_reduction_altitude = fmThrustReductionAltitude->valueOr(0);
@@ -2672,8 +2682,9 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
     autoThrustInput.in.input.TLA_3_deg = thrustLeverAngle_3->get();
     autoThrustInput.in.input.TLA_4_deg = thrustLeverAngle_4->get();
     autoThrustInput.in.input.V_c_kn = simData.ap_V_c_kn;
-    autoThrustInput.in.input.V_LS_kn = idFmgcV_LS->get();
-    autoThrustInput.in.input.V_MAX_kn = idFmgcV_MAX->get();
+    autoThrustInput.in.input.V_LS_kn = facsDiscreteOutputs[0].fac_healthy ? facsBusOutputs[0].v_ls_kn.Data : facsBusOutputs[1].v_ls_kn.Data;
+    autoThrustInput.in.input.V_MAX_kn =
+        facsDiscreteOutputs[0].fac_healthy ? facsBusOutputs[0].v_max_kn.Data : facsBusOutputs[1].v_max_kn.Data;
     autoThrustInput.in.input.thrust_limit_REV_percent = idAutothrustThrustLimitREV->get();
     autoThrustInput.in.input.thrust_limit_IDLE_percent = idAutothrustThrustLimitIDLE->get();
     autoThrustInput.in.input.thrust_limit_CLB_percent = idAutothrustThrustLimitCLB->get();
