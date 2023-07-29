@@ -1,15 +1,18 @@
-use nalgebra::Vector3;
 use systems::{payload::LoadsheetInfo, simulation::UpdateContext};
-use uom::si::{f64::Mass, mass::kilogram};
+use uom::si::mass::kilogram;
 
-use crate::{fuel::FuelForeAftCG, payload::PassengerPayload};
+use crate::{
+    fuel::FuelForeAftCG,
+    payload::{CargoPayload, PassengerPayload},
+};
 
 pub struct A320WeightBalance {
+    fuel_cg_percent_mac: f64,
     zfw_cg_percent_mac: f64,
     gw_cg_percent_mac: f64,
     to_cg_percent_mac: f64,
 
-    desired_zfw_cg_percent_mac: f64,
+    target_zfw_cg_percent_mac: f64,
     desired_gw_cg_percent_mac: f64,
     desired_to_cg_percent_mac: f64,
 
@@ -18,7 +21,7 @@ pub struct A320WeightBalance {
 impl A320WeightBalance {
     const LOADSHEET: LoadsheetInfo = LoadsheetInfo {
         operating_empty_weight_kg: 42500.,
-        operating_empty_position: (0., 0., -9.42),
+        operating_empty_position: (-9.42, 0., 0.),
         per_pax_weight_kg: 84.,
         mac_size: 13.464,
         lemac_z: -5.383,
@@ -26,11 +29,12 @@ impl A320WeightBalance {
 
     pub fn new() -> Self {
         A320WeightBalance {
+            fuel_cg_percent_mac: 0.0,
             zfw_cg_percent_mac: 0.0,
             gw_cg_percent_mac: 0.0,
             to_cg_percent_mac: 0.0,
 
-            desired_zfw_cg_percent_mac: 0.0,
+            target_zfw_cg_percent_mac: 0.0,
             desired_gw_cg_percent_mac: 0.0,
             desired_to_cg_percent_mac: 0.0,
 
@@ -50,8 +54,8 @@ impl A320WeightBalance {
         self.to_cg_percent_mac
     }
 
-    fn desired_zfw_cg_percent_mac(&self) -> f64 {
-        self.desired_zfw_cg_percent_mac
+    fn target_zfw_cg_percent_mac(&self) -> f64 {
+        self.target_zfw_cg_percent_mac
     }
 
     fn desired_gw_cg_percent_mac(&self) -> f64 {
@@ -66,20 +70,12 @@ impl A320WeightBalance {
         self.ths_setting
     }
 
-    fn position_to_cg(&self, masses: Vec<Mass>, positions: Vec<Vector3<f64>>) -> Vector3<f64> {
-        let total_mass_kg: f64 = masses.iter().map(|m| m.get::<kilogram>()).sum();
-        let cg = positions
-            .iter()
-            .zip(masses.iter())
-            .map(|(pos, m)| pos * m.get::<kilogram>())
-            .fold(Vector3::zeros(), |acc, x| acc + x)
-            / total_mass_kg;
-
-        cg
-    }
-
     fn convert_cg(&self, cg: f64) -> f64 {
         -100. * (cg - Self::LOADSHEET.lemac_z) / Self::LOADSHEET.mac_size
+    }
+
+    fn set_fuel_cg_percent_mac(&mut self, fuel_cg: f64) {
+        self.fuel_cg_percent_mac = self.convert_cg(fuel_cg);
     }
 
     fn set_zfw_cg_percent_mac(&mut self, zfw_cg: f64) {
@@ -94,15 +90,15 @@ impl A320WeightBalance {
         self.to_cg_percent_mac = self.convert_cg(to_cg);
     }
 
-    fn set_desired_zfw_cg_percent_mac(&mut self, desired_zfw_cg: f64) {
-        self.desired_zfw_cg_percent_mac = self.convert_cg(desired_zfw_cg);
+    fn set_target_zfw_cg_percent_mac(&mut self, target_zfw_cg: f64) {
+        self.target_zfw_cg_percent_mac = self.convert_cg(target_zfw_cg);
     }
 
-    fn set_desired_gw_cg_percent_mac(&mut self, desired_gw_cg: f64) {
+    fn set_target_gw_cg_percent_mac(&mut self, desired_gw_cg: f64) {
         self.desired_gw_cg_percent_mac = self.convert_cg(desired_gw_cg);
     }
 
-    fn set_desired_to_cg_percent_mac(&mut self, desired_to_cg_percent_mac: f64) {
+    fn set_target_to_cg_percent_mac(&mut self, desired_to_cg_percent_mac: f64) {
         self.desired_to_cg_percent_mac = desired_to_cg_percent_mac;
     }
 
@@ -111,49 +107,61 @@ impl A320WeightBalance {
         context: &UpdateContext,
         fuel_cg: &impl FuelForeAftCG,
         pax_payload: &impl PassengerPayload,
+        cargo_payload: &impl CargoPayload,
     ) {
-        self.update_calc(fuel_cg.fore_aft_center_of_gravity());
+        self.update_calc(fuel_cg, pax_payload, cargo_payload);
     }
 
-    fn update_calc(&mut self, fuel_cg: f64) {
+    fn update_calc(
+        &mut self,
+        fuel_cg: &impl FuelForeAftCG,
+        pax_payload: &impl PassengerPayload,
+        cargo_payload: &impl CargoPayload,
+    ) {
         // TODO: Finish then refactor
 
-        let fuel_cg_percent_mac = self.convert_cg(fuel_cg);
+        self.set_fuel_cg_percent_mac(fuel_cg.fore_aft_center_of_gravity());
 
-        //    -100. * (fuel_cg - Self::LOADSHEET.lemac_z) / Self::LOADSHEET.mac_size;
+        let empty_moment =
+            Self::LOADSHEET.operating_empty_position.0 * Self::LOADSHEET.operating_empty_weight_kg;
 
-        // const newZfwMoment = Loadsheet.specs.emptyPosition * emptyWeight + calculatePaxMoment() + calculateCargoMoment();
+        let total_pax_kg = pax_payload.total_passenger_load().get::<kilogram>();
+        let total_cargo_kg = cargo_payload.total_cargo_load().get::<kilogram>();
 
-        // A320_EMPTY_MOMENT = Self::LOADSHEET.empty_weight * Self::LOADSHEET.empty_position.2
+        let pax_moment = total_pax_kg * pax_payload.fore_aft_center_of_gravity();
+        let cargo_moment = total_cargo_kg * cargo_payload.fore_aft_center_of_gravity();
 
-        // let zfw_moment = A320_EMPTY_MOMENT + pax moment + cargo moment
+        let zfw_moment = empty_moment + pax_moment + cargo_moment;
+        let zfw_cg = zfw_moment
+            / (Self::LOADSHEET.operating_empty_weight_kg + total_pax_kg + total_cargo_kg);
 
-        let operating_empty_moment =
-            Self::LOADSHEET.operating_empty_weight_kg * Self::LOADSHEET.operating_empty_position.2;
+        self.set_zfw_cg_percent_mac(zfw_cg);
 
-        // Pax * pax weight * pax position
+        let total_target_pax_kg = pax_payload.total_target_passenger_load().get::<kilogram>();
+        let total_target_cargo_kg = cargo_payload.total_target_cargo_load().get::<kilogram>();
+
+        let pax_target_moment =
+            total_target_pax_kg * pax_payload.target_fore_aft_center_of_gravity();
+        let cargo_target_moment =
+            total_target_cargo_kg * cargo_payload.target_fore_aft_center_of_gravity();
+
+        let zfw_target_moment = empty_moment + pax_target_moment + cargo_target_moment;
+        let target_zfw_cg = zfw_target_moment
+            / (Self::LOADSHEET.operating_empty_weight_kg
+                + total_target_pax_kg
+                + total_target_cargo_kg);
+
+        self.set_target_zfw_cg_percent_mac(target_zfw_cg);
 
         /*
-        const calculatePaxMoment {
-        let paxMoment = 0;
-        activeFlags.forEach((stationFlag, i) => {
-            paxMoment += stationFlag.getTotalFilledSeats() * paxWeight * seatMap[i].position;
-        });
-            return paxMoment;
-        }
-         */
+        self.set_zfw_cg_percent_mac(Self::LOADSHEET.operating_empty_cg + pax_cg + cargo_cg);
+        self.set_target_zfw_cg_percent_mac(
+            Self::LOADSHEET.operating_empty_cg + pax_target_cg + cargo_target_cg,
+        );
 
-        /*
-        for ps in self.pax {
-            ps.pax_num() as f64 * ps.per_pax_weight();
-        }
+        self.gw_cg_percent_mac = self.zfw_cg_percent_mac + self.fuel_cg_percent_mac;
+        self.desired_gw_cg_percent_mac = self.target_zfw_cg_percent_mac + self.fuel_cg_percent_mac;
         */
-
-        self.desired_zfw_cg_percent_mac;
-        self.desired_gw_cg_percent_mac = self.desired_zfw_cg_percent_mac + fuel_cg_percent_mac;
-
-        // self.zfw_cg_percent_mac;
-        // self.zfw_cg_percent_mac = self.zfw_cg_percent_mac + fuel_cg_percent_mac;
 
         // self.gw_cg_percent_mac = A320_EMPTY_WEIGHT.get::<kilogram>();
     }

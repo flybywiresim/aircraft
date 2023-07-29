@@ -124,8 +124,20 @@ impl Pax {
         self.payload
     }
 
-    pub fn pax_moment(&self) -> f64 {
-        self.pax_num() as f64 * self.per_pax_weight().get::<kilogram>() * self.position.x
+    pub fn payload_target(&self) -> Mass {
+        Mass::new::<pound>(self.pax_target_num() as f64 * self.per_pax_weight().get::<pound>())
+    }
+
+    pub fn pax_moment(&self) -> Vector3<f64> {
+        let pax_moment: Vector3<f64> =
+            self.pax_num() as f64 * self.per_pax_weight().get::<kilogram>() * self.position;
+        pax_moment
+    }
+
+    pub fn pax_target_moment(&self) -> Vector3<f64> {
+        let pax_target_moment: Vector3<f64> =
+            self.pax_target_num() as f64 * self.per_pax_weight().get::<kilogram>() * self.position;
+        pax_target_moment
     }
 
     pub fn payload_is_sync(&self) -> bool {
@@ -230,6 +242,10 @@ impl Cargo {
         self.cargo
     }
 
+    pub fn cargo_target(&self) -> Mass {
+        self.cargo_target
+    }
+
     pub fn max_cargo(&self) -> Mass {
         self.max
     }
@@ -248,6 +264,14 @@ impl Cargo {
 
     pub fn payload_is_sync(&self) -> bool {
         self.payload == self.cargo
+    }
+
+    pub fn cargo_moment(&self) -> Vector3<f64> {
+        self.cargo.get::<kilogram>() * self.position
+    }
+
+    pub fn cargo_target_moment(&self) -> Vector3<f64> {
+        self.cargo_target.get::<kilogram>() * self.position
     }
 
     pub fn cargo_is_target(&self) -> bool {
