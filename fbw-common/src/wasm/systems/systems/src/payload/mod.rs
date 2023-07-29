@@ -33,6 +33,7 @@ pub struct CargoInfo<'a> {
     pub cargo_id: &'a str,
     pub payload_id: &'a str,
 }
+
 #[derive(Debug)]
 pub struct Pax {
     pax_id: VariableIdentifier,

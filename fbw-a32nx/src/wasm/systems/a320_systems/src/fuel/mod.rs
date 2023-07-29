@@ -1,17 +1,18 @@
 // Note: Fuel system for now is still handled in MSFS. This is used for calculating fuel-related factors.
-use std::time::Duration;
 
 use nalgebra::Vector3;
 use systems::{
     accept_iterable,
-    fuel::FuelTank,
+    fuel::{FuelInfo, FuelTank},
     simulation::{
-        test::{SimulationTestBed, TestBed, WriteByName},
-        Aircraft, InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
+        InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
         VariableIdentifier,
     },
 };
 use uom::si::{f64::*, mass::kilogram};
+
+#[cfg(test)]
+pub mod test;
 
 pub trait FuelLevel {
     fn left_inner_tank_has_fuel(&self) -> bool;
@@ -75,38 +76,46 @@ pub struct A320Fuel {
     fuel_tanks: [FuelTank; 5],
 }
 impl A320Fuel {
+    pub const A320_FUEL: [FuelInfo<'_>; 5] = [
+        FuelInfo {
+            fuel_tank_id: "FUEL TANK CENTER QUANTITY",
+            position: (-4.5, 0., 1.),
+        },
+        FuelInfo {
+            fuel_tank_id: "FUEL TANK LEFT MAIN QUANTITY",
+            position: (-8., -13., 2.),
+        },
+        FuelInfo {
+            fuel_tank_id: "FUEL TANK LEFT AUX QUANTITY",
+            position: (-16.9, -27., 3.),
+        },
+        FuelInfo {
+            fuel_tank_id: "FUEL TANK RIGHT MAIN QUANTITY",
+            position: (-8., 13., 2.),
+        },
+        FuelInfo {
+            fuel_tank_id: "FUEL TANK RIGHT AUX QUANTITY",
+            position: (-16.9, 27., 3.),
+        },
+    ];
+
     pub fn new(context: &mut InitContext) -> Self {
+        let fuel_tanks: [FuelTank; 5] = Self::A320_FUEL
+            .iter()
+            .map(|f| {
+                FuelTank::new(
+                    context.get_identifier(f.fuel_tank_id.to_owned()),
+                    Vector3::new(f.position.0, f.position.1, f.position.2),
+                )
+            })
+            .collect::<Vec<FuelTank>>()
+            .try_into()
+            .unwrap();
         A320Fuel {
             unlimited_fuel_id: context.get_identifier("UNLIMITED FUEL".to_owned()),
             unlimited_fuel: false,
 
-            fuel_tanks: [
-                FuelTank::new(
-                    context.get_identifier("FUEL TANK CENTER QUANTITY".to_owned()),
-                    Vector3::new(-4.5, 0., 1.),
-                    Mass::default(),
-                ),
-                FuelTank::new(
-                    context.get_identifier("FUEL TANK LEFT MAIN QUANTITY".to_owned()),
-                    Vector3::new(-8., -13., 2.),
-                    Mass::default(),
-                ),
-                FuelTank::new(
-                    context.get_identifier("FUEL TANK LEFT AUX QUANTITY".to_owned()),
-                    Vector3::new(-16.9, -27., 3.),
-                    Mass::default(),
-                ),
-                FuelTank::new(
-                    context.get_identifier("FUEL TANK RIGHT MAIN QUANTITY".to_owned()),
-                    Vector3::new(-8., 13., 2.),
-                    Mass::default(),
-                ),
-                FuelTank::new(
-                    context.get_identifier("FUEL TANK RIGHT AUX QUANTITY".to_owned()),
-                    Vector3::new(-16.9, 27., 3.),
-                    Mass::default(),
-                ),
-            ],
+            fuel_tanks,
         }
     }
 
@@ -186,108 +195,4 @@ impl SimulationElement for A320Fuel {
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.unlimited_fuel = reader.read(&self.unlimited_fuel_id);
     }
-}
-
-struct FuelTestAircraft {
-    fuel: A320Fuel,
-}
-
-impl FuelTestAircraft {
-    fn new(context: &mut InitContext) -> Self {
-        Self {
-            fuel: A320Fuel::new(context),
-        }
-    }
-}
-
-impl Aircraft for FuelTestAircraft {}
-impl SimulationElement for FuelTestAircraft {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        self.fuel.accept(visitor);
-
-        visitor.visit(self);
-    }
-}
-
-pub const HOURS_TO_MINUTES: u64 = 60;
-pub const MINUTES_TO_SECONDS: u64 = 60;
-pub const FUEL_GALLONS_TO_KG: f64 = 3.039075693483925;
-
-struct FuelTestBed {
-    test_bed: SimulationTestBed<FuelTestAircraft>,
-}
-impl FuelTestBed {
-    fn new() -> Self {
-        FuelTestBed {
-            test_bed: SimulationTestBed::new(FuelTestAircraft::new),
-        }
-    }
-
-    fn and_run(mut self) -> Self {
-        self.run();
-
-        self
-    }
-
-    fn and_stabilize(mut self) -> Self {
-        let five_minutes = 5 * MINUTES_TO_SECONDS;
-        self.test_bed
-            .run_multiple_frames(Duration::from_secs(five_minutes));
-
-        self
-    }
-
-    fn init_vars(mut self) -> Self {
-        self.write_by_name("FUEL TANK LEFT MAIN QUANTITY", 324. * FUEL_GALLONS_TO_KG);
-        self.write_by_name("FUEL TANK LEFT AUX QUANTITY", 324. * FUEL_GALLONS_TO_KG);
-        self.write_by_name("FUEL TANK RIGHT MAIN QUANTITY", 324. * FUEL_GALLONS_TO_KG);
-        self.write_by_name("FUEL TANK RIGHT AUX QUANTITY", 324. * FUEL_GALLONS_TO_KG);
-        self.write_by_name("FUEL TANK CENTER QUANTITY", 0.);
-
-        self
-    }
-
-    fn fore_aft_center_of_gravity(&self) -> f64 {
-        self.query(|a| a.fuel.fore_aft_center_of_gravity())
-    }
-}
-
-impl TestBed for FuelTestBed {
-    type Aircraft = FuelTestAircraft;
-
-    fn test_bed(&self) -> &SimulationTestBed<FuelTestAircraft> {
-        &self.test_bed
-    }
-
-    fn test_bed_mut(&mut self) -> &mut SimulationTestBed<FuelTestAircraft> {
-        &mut self.test_bed
-    }
-}
-
-fn test_bed() -> FuelTestBed {
-    FuelTestBed::new()
-}
-
-fn test_bed_with() -> FuelTestBed {
-    test_bed()
-}
-
-#[test]
-fn init() {
-    let mut test_bed = test_bed_with().init_vars();
-
-    assert!(test_bed.contains_variable_with_name("FUEL TANK LEFT MAIN QUANTITY"));
-    assert!(test_bed.contains_variable_with_name("FUEL TANK LEFT AUX QUANTITY"));
-    assert!(test_bed.contains_variable_with_name("FUEL TANK RIGHT MAIN QUANTITY"));
-    assert!(test_bed.contains_variable_with_name("FUEL TANK RIGHT AUX QUANTITY"));
-    assert!(test_bed.contains_variable_with_name("FUEL TANK CENTER QUANTITY"));
-
-    test_bed = test_bed.and_run();
-
-    assert_eq!(
-        test_bed.fore_aft_center_of_gravity(),
-        -12.45,
-        "Expected cg: -12.45, cg: {}",
-        test_bed.fore_aft_center_of_gravity(),
-    );
 }

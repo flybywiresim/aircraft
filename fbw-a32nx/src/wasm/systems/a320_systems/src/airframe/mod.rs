@@ -16,8 +16,7 @@ pub mod test;
 pub struct A320Airframe {
     cg_mac: CgMac,
     weight: WeightData,
-
-    ths_setting: f64,
+    // ths_setting: f64,
 }
 impl A320Airframe {
     const LOADSHEET: LoadsheetInfo = LoadsheetInfo {
@@ -47,8 +46,38 @@ impl A320Airframe {
                 context.get_identifier("DESIRED_GW".to_owned()),
                 context.get_identifier("DESIRED_TOW".to_owned()),
             ),
-            ths_setting: 0.0,
+            // ths_setting: 0.0,
         }
+    }
+
+    #[allow(dead_code)]
+    fn zfw_cg_mac(&self) -> f64 {
+        self.cg_mac.zfw_cg_mac()
+    }
+
+    #[allow(dead_code)]
+    fn gw_cg_mac(&self) -> f64 {
+        self.cg_mac.gw_cg_mac()
+    }
+
+    #[allow(dead_code)]
+    fn to_cg_mac(&self) -> f64 {
+        self.cg_mac.to_cg_mac()
+    }
+
+    #[allow(dead_code)]
+    fn target_zfw_cg_mac(&self) -> f64 {
+        self.cg_mac.target_zfw_cg_mac()
+    }
+
+    #[allow(dead_code)]
+    fn target_gw_cg_mac(&self) -> f64 {
+        self.cg_mac.target_gw_cg_mac()
+    }
+
+    #[allow(dead_code)]
+    fn target_to_cg_mac(&self) -> f64 {
+        self.cg_mac.target_to_cg_mac()
     }
 
     fn convert_cg(&self, cg: f64) -> f64 {
@@ -193,9 +222,6 @@ impl A320Airframe {
 
         self.set_target_tow(target_tow);
         self.set_target_to_cg_percent_mac(target_to_cg);
-
-        // println!("ZFW CG MAC IS {}", self.zfw_cg_percent_mac.cg_mac());
-        // println!("GW CG MAC IS {}", self.gw_cg_percent_mac.cg_mac());
     }
 }
 impl SimulationElement for A320Airframe {
