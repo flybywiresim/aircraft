@@ -174,7 +174,7 @@ const ApuBleed = ({ x, y } : ComponentPositionProps) => {
                     y={48}
                     className={`FontLarger Right $className= ${apuBleedPressAvailable ? 'Green' : 'Amber'}`}
                 >
-                    {apuN.isNormalOperation() && adir1ModeSelectorKnob === 1 ? displayedBleedPressure : 'XX'}
+                    {(apuN.isNormalOperation() && adir1ModeSelectorKnob === 1) ? displayedBleedPressure : 'XX'}
                 </text>
                 <text x={90} y={48} className="Cyan FontNormal Right">PSI</text>
 
