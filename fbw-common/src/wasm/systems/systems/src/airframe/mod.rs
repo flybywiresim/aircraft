@@ -33,6 +33,5 @@ impl SimulationElement for CgMac {
     }
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.cg_mac_id, self.cg_mac);
-        //writer.write(&self.cg_mac_id, self.cg_mac);
     }
 }

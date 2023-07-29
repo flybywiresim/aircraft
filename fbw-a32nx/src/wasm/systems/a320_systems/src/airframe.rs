@@ -1,7 +1,7 @@
 use systems::{
     airframe::CgMac,
     payload::LoadsheetInfo,
-    simulation::{InitContext, UpdateContext},
+    simulation::{InitContext, SimulationElement, SimulationElementVisitor, UpdateContext},
 };
 use uom::si::mass::kilogram;
 
@@ -152,7 +152,7 @@ impl A320WeightBalance {
         let cargo_moment = total_cargo_kg * cargo_payload.fore_aft_center_of_gravity();
 
         let zfw_moment = empty_moment + pax_moment + cargo_moment;
-        let zfw_kg = Self::LOADSHEET.operating_empty_weight_kg + total_pax_kg + total_cargo_kg;
+        let zfw_kg: f64 = Self::LOADSHEET.operating_empty_weight_kg + total_pax_kg + total_cargo_kg;
         let zfw_cg = zfw_moment / zfw_kg;
 
         self.set_zfw_cg_percent_mac(zfw_cg);
@@ -172,8 +172,6 @@ impl A320WeightBalance {
         let target_zfw_cg: f64 = target_zfw_moment / target_zfw_kg;
 
         self.set_target_zfw_cg_percent_mac(target_zfw_cg);
-
-        // self.set_fuel_cg_percent_mac(fuel_payload.fore_aft_center_of_gravity());
 
         let fuel_kg = fuel_payload.total_load().get::<kilogram>();
         let fuel_moment = fuel_kg * fuel_payload.fore_aft_center_of_gravity();
@@ -198,7 +196,20 @@ impl A320WeightBalance {
         self.set_to_cg_percent_mac(to_cg);
         self.set_target_to_cg_percent_mac(target_to_cg);
 
-        // println!("ZFW CG MAC IS {}", self.zfw_cg_percent_mac);
-        // println!("GW CG MAC IS {}", self.gw_cg_percent_mac);
+        // println!("ZFW CG MAC IS {}", self.zfw_cg_percent_mac.cg_mac());
+        // println!("GW CG MAC IS {}", self.gw_cg_percent_mac.cg_mac());
+    }
+}
+impl SimulationElement for A320WeightBalance {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.zfw_cg_percent_mac.accept(visitor);
+        self.gw_cg_percent_mac.accept(visitor);
+        self.to_cg_percent_mac.accept(visitor);
+
+        self.target_zfw_cg_percent_mac.accept(visitor);
+        self.target_gw_cg_percent_mac.accept(visitor);
+        self.target_to_cg_percent_mac.accept(visitor);
+
+        visitor.visit(self);
     }
 }
