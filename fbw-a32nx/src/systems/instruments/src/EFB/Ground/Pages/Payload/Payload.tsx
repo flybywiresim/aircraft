@@ -35,6 +35,8 @@ export const Payload = () => {
     const { usingMetric } = Units;
     const { showModal } = useModals();
 
+    // Note: !!! --- This is temporary and should be considered placeholder code --- !!!
+    // TODO: Refactor
     const acType = useMemo(() => {
         switch (getAirframeType()) {
         case 'A380_842':
