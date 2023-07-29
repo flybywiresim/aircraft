@@ -529,10 +529,7 @@ class CDUInitPage {
         const tripWindDirCell = new Column(19, "--");
         const tripWindAvgCell = new Column(21, "---");
 
-        if (
-            mcdu.flightPlanManager.getPersistentOrigin() && mcdu.flightPlanManager.getPersistentOrigin().ident
-            && mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().ident
-        ) {
+        if (mcdu.flightPlanService.active.originAirport && mcdu.flightPlanService.active.destinationAirport) {
             tripWindDirCell.update(mcdu._windDir, Column.cyan, Column.small);
             tripWindAvgCell.update(mcdu.averageWind.toFixed(0).padStart(3, "0"), Column.cyan);
 
