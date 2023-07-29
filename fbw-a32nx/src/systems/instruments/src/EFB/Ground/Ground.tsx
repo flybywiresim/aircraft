@@ -5,7 +5,7 @@ import { Navbar } from '../UtilComponents/Navbar';
 import { ServicesPage } from './Pages/ServicesPage';
 import { PushbackPage } from './Pages/PushbackPage';
 import { FuelPage } from './Pages/FuelPage';
-import { A380Payload } from './Pages/Payload/A380Payload';
+import { A380Payload } from './Pages/Payload/A380_842/A380Payload';
 import { Payload } from './Pages/Payload/Payload';
 
 export interface StatefulButton {
