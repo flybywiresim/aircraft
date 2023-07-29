@@ -317,7 +317,7 @@
         <Component ID="#BACKLIGHT_NAME#" Node="#BACKLIGHT_NAME#">
             <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
                 <EMISSIVE_CODE>
-                   (A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent over 100) #BACKLIGHTS_POWERED# (L:A32NX_RMP_#SIDE#_TOGGLE_SWITCH) * *
+                   (A:LIGHT POTENTIOMETER:#POTENTIOMETER#, Percent over 100) #BACKLIGHTS_POWERED# *
                 </EMISSIVE_CODE>
             </UseTemplate>
         </Component>
