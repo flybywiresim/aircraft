@@ -277,24 +277,6 @@ class SimVars {
     PumpStateEngine2 = register_named_variable("A32NX_PUMP_STATE:2");
     PumpStateEngine3 = register_named_variable("A32NX_PUMP_STATE:3");
     PumpStateEngine4 = register_named_variable("A32NX_PUMP_STATE:4");
-    ConversionFactor = register_named_variable("A32NX_EFB_UNIT_CONVERSION_FACTOR");
-    PerPaxWeight = register_named_variable("A32NX_WB_PER_PAX_WEIGHT");
-    PaxRows1to6Actual = register_named_variable("A32NX_PAX_TOTAL_ROWS_1_6");
-    PaxRows7to13Actual = register_named_variable("A32NX_PAX_TOTAL_ROWS_7_13");
-    PaxRows14to21Actual = register_named_variable("A32NX_PAX_TOTAL_ROWS_14_21");
-    PaxRows22to29Actual = register_named_variable("A32NX_PAX_TOTAL_ROWS_22_29");
-    PaxRows1to6Desired = register_named_variable("A32NX_PAX_TOTAL_ROWS_1_6_DESIRED");
-    PaxRows7to13Desired = register_named_variable("A32NX_PAX_TOTAL_ROWS_7_13_DESIRED");
-    PaxRows14to21Desired = register_named_variable("A32NX_PAX_TOTAL_ROWS_14_21_DESIRED");
-    PaxRows22to29Desired = register_named_variable("A32NX_PAX_TOTAL_ROWS_22_29_DESIRED");
-    CargoFwdContainerActual = register_named_variable("A32NX_CARGO_FWD_BAGGAGE_CONTAINER");
-    CargoAftContainerActual = register_named_variable("A32NX_CARGO_AFT_CONTAINER");
-    CargoAftBaggageActual = register_named_variable("A32NX_CARGO_AFT_BAGGAGE");
-    CargoAftBulkActual = register_named_variable("A32NX_CARGO_AFT_BULK_LOOSE");
-    CargoFwdContainerDesired = register_named_variable("A32NX_CARGO_FWD_BAGGAGE_CONTAINER_DESIRED");
-    CargoAftContainerDesired = register_named_variable("A32NX_CARGO_AFT_CONTAINER_DESIRED");
-    CargoAftBaggageDesired = register_named_variable("A32NX_CARGO_AFT_BAGGAGE_DESIRED");
-    CargoAftBulkDesired = register_named_variable("A32NX_CARGO_AFT_BULK_LOOSE_DESIRED");
 
     ThrustLimitType = register_named_variable("A32NX_AUTOTHRUST_THRUST_LIMIT_TYPE");
     ThrustLimitIdle = register_named_variable("A32NX_AUTOTHRUST_THRUST_LIMIT_IDLE");
@@ -519,24 +501,6 @@ class SimVars {
   FLOAT64 getPumpStateEngine2() { return get_named_variable_value(PumpStateEngine2); }
   FLOAT64 getPumpStateEngine3() { return get_named_variable_value(PumpStateEngine3); }
   FLOAT64 getPumpStateEngine4() { return get_named_variable_value(PumpStateEngine4); }
-  FLOAT64 getPerPaxWeight() { return get_named_variable_value(PerPaxWeight); }
-  FLOAT64 getConversionFactor() { return get_named_variable_value(ConversionFactor); }
-  FLOAT64 getPaxRows1to6Actual() { return get_named_variable_value(PaxRows1to6Actual); }
-  FLOAT64 getPaxRows7to13Actual() { return get_named_variable_value(PaxRows7to13Actual); }
-  FLOAT64 getPaxRows14to21Actual() { return get_named_variable_value(PaxRows14to21Actual); }
-  FLOAT64 getPaxRows22to29Actual() { return get_named_variable_value(PaxRows22to29Actual); }
-  FLOAT64 getPaxRows1to6Desired() { return get_named_variable_value(PaxRows1to6Desired); }
-  FLOAT64 getPaxRows7to13Desired() { return get_named_variable_value(PaxRows7to13Desired); }
-  FLOAT64 getPaxRows14to21Desired() { return get_named_variable_value(PaxRows14to21Desired); }
-  FLOAT64 getPaxRows22to29Desired() { return get_named_variable_value(PaxRows22to29Desired); }
-  FLOAT64 getCargoFwdContainerActual() { return get_named_variable_value(CargoFwdContainerActual); }
-  FLOAT64 getCargoAftContainerActual() { return get_named_variable_value(CargoAftContainerActual); }
-  FLOAT64 getCargoAftBaggageActual() { return get_named_variable_value(CargoAftBaggageActual); }
-  FLOAT64 getCargoAftBulkActual() { return get_named_variable_value(CargoAftBulkActual); }
-  FLOAT64 getCargoFwdContainerDesired() { return get_named_variable_value(CargoFwdContainerDesired); }
-  FLOAT64 getCargoAftContainerDesired() { return get_named_variable_value(CargoAftContainerDesired); }
-  FLOAT64 getCargoAftBaggageDesired() { return get_named_variable_value(CargoAftBaggageDesired); }
-  FLOAT64 getCargoAftBulkDesired() { return get_named_variable_value(CargoAftBulkDesired); }
   FLOAT64 getPacksState1() { return get_named_variable_value(PacksState1); }
   FLOAT64 getPacksState2() { return get_named_variable_value(PacksState2); }
   FLOAT64 getThrustLimitType() { return get_named_variable_value(ThrustLimitType); }
