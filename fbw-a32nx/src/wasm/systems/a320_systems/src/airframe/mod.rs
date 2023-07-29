@@ -10,6 +10,9 @@ use crate::{
     payload::{CargoPayload, PassengerPayload},
 };
 
+#[cfg(test)]
+pub mod test;
+
 pub struct A320Airframe {
     cg_mac: CgMac,
     weight: WeightData,
