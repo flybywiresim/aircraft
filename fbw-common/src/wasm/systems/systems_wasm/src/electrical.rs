@@ -40,6 +40,7 @@ pub(super) fn electrical_buses<const N: usize>(
 pub(super) fn auxiliary_power_unit(
     is_available_variable: Variable,
     fuel_valve_number: u8,
+    fuel_pump_number: u8,
 ) -> impl FnOnce(&mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
     move |builder: &mut MsfsAspectBuilder| {
         builder.on_change(
@@ -49,10 +50,10 @@ pub(super) fn auxiliary_power_unit(
                 let is_available = to_bool(values[0]);
 
                 if is_available {
-                    toggle_fuel_valve(fuel_valve_number);
+                    toggle_fuel_valve_and_pump(fuel_valve_number, fuel_pump_number);
                     start_apu();
                 } else {
-                    toggle_fuel_valve(fuel_valve_number);
+                    toggle_fuel_valve_and_pump(fuel_valve_number, fuel_pump_number);
                     stop_apu();
                 }
             }),
@@ -62,11 +63,12 @@ pub(super) fn auxiliary_power_unit(
     }
 }
 
-fn toggle_fuel_valve(fuel_valve_number: u8) {
+fn toggle_fuel_valve_and_pump(fuel_valve_number: u8, fuel_pump_number: u8) {
     execute_calculator_code::<()>(&format!(
         "{} (>K:FUELSYSTEM_VALVE_TOGGLE)",
         fuel_valve_number
     ));
+    execute_calculator_code::<()>(&format!("{} (>K:FUELSYSTEM_PUMP_TOGGLE)", fuel_pump_number));
 }
 
 fn start_apu() {
