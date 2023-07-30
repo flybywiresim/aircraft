@@ -221,9 +221,6 @@ impl A380Airframe {
         let target_tow = target_gw_kg;
         let target_to_cg: f64 = target_gw_cg;
 
-        println!("ZFW CG MAC: {}", self.zfw_cg_mac());
-        println!("GW CG MAC: {}", self.gw_cg_mac());
-
         self.set_target_tow(target_tow);
         self.set_target_to_cg_percent_mac(target_to_cg);
     }

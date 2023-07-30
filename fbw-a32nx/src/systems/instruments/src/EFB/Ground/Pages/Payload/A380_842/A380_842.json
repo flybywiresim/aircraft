@@ -1011,10 +1011,10 @@
             "capacity": 14,
             "rows": [
                 { "seats": [
-                        { "type": 2, "yOffset": 25 },
-                        { "type": 2, "yOffset": 15 },
-                        { "type": 2, "xOffset": 5 },
-                        { "type": 2, "yOffset": 15 }
+                        { "type": 6, "yOffset": 10 },
+                        { "type": 7, "yOffset": 11 },
+                        { "type": 6 },
+                        { "type": 7, "yOffset": 11 }
                     ],
                     "x": 0,
                     "y": 0,
@@ -1023,36 +1023,36 @@
                 },
                 {
                     "seats": [
-                        { "type": 2, "yOffset": 25 },
-                        { "type": 2, "yOffset": 15 },
-                        { "type": 2 },
-                        { "type": 2, "yOffset": 15 }
+                        { "type": 6, "yOffset": 10 },
+                        { "type": 7, "yOffset": 11 },
+                        { "type": 6 },
+                        { "type": 7, "yOffset": 11 }
                     ],
                     "x": 0,
                     "y": 0,
-                    "xOffset": 30,
+                    "xOffset": 0,
                     "yOffset": 0
                 },
                 {
                     "seats": [
-                        { "type": 2, "yOffset": 25 },
-                        { "type": 2, "yOffset": 15 },
-                        { "type": 2 },
-                        { "type": 2, "yOffset": 15 }
+                        { "type": 6, "yOffset": 10 },
+                        { "type": 7, "yOffset": 11 },
+                        { "type": 6 },
+                        { "type": 7, "yOffset": 11 }
                     ],
                     "x": 0,
                     "y": 0,
-                    "xOffset": 30,
+                    "xOffset": 0,
                     "yOffset": 0
                 },
                 {
                     "seats": [
-                        { "type": 2, "yOffset": 25 },
-                        { "type": 2, "yOffset": 54.25 }
+                        { "type": 6, "yOffset": 10 },
+                        { "type": 7, "yOffset": 62 }
                     ],
                     "x": 0,
                     "y": 0,
-                    "xOffset": 30,
+                    "xOffset": 0,
                     "yOffset": 0
                 }
             ],
@@ -1068,94 +1068,95 @@
             "rows": [
                 {
                     "seats": [
-                        { "type": 2, "yOffset": 50 },
-                        { "type": 2 }
+                        { "type": 4, "yOffset": 45 },
+                        { "type": 5 }
                     ],
                     "x": 0,
                     "y": 0,
-                    "xOffset": 50,
+                    "xOffset": 20,
                     "yOffset": 0
                 },
                 { "seats": [
-                        { "type": 2, "yOffset": 25 },
-                        { "type": 2, "yOffset": 15 },
-                        { "type": 2, "xOffset": 5 },
-                        { "type": 2, "yOffset": 15 }
+                        { "type": 4, "yOffset": 10 },
+                        { "type": 4, "yOffset": 11 },
+                        { "type": 5 },
+                        { "type": 5, "yOffset": 11 }
                     ],
                     "x": 0,
                     "y": 0,
-                    "xOffset": 15,
+                    "xOffset": 0,
                     "yOffset": 0
                 },
                 {
                     "seats": [
-                        { "type": 2, "yOffset": 25 },
-                        { "type": 2, "yOffset": 15 },
-                        { "type": 2 },
-                        { "type": 2, "yOffset": 15 }
+                        { "type": 4, "yOffset": 10 },
+                        { "type": 4, "yOffset": 11 },
+                        { "type": 5 },
+                        { "type": 5, "yOffset": 11 }
                     ],
                     "x": 0,
                     "y": 0,
-                    "xOffset": 15,
+                    "xOffset": 0,
                     "yOffset": 0
                 },
                 {
                     "seats": [
-                        { "type": 2, "yOffset": 25 },
-                        { "type": 2, "yOffset": 15 },
-                        { "type": 2 },
-                        { "type": 2, "yOffset": 15 }
+                        { "type": 4, "yOffset": 10 },
+                        { "type": 4, "yOffset": 11 },
+                        { "type": 5 },
+                        { "type": 5, "yOffset": 11 }
                     ],
                     "x": 0,
                     "y": 0,
-                    "xOffset": 15,
+                    "xOffset": 0,
                     "yOffset": 0
                 },
                 { 
                     "seats": [
-                    { "type": 2, "yOffset": 25 },
-                    { "type": 2, "yOffset": 15 },
-                    { "type": 2, "xOffset": 5 },
-                    { "type": 2, "yOffset": 15 }
+                        
+                        { "type": 4, "yOffset": 10 },
+                        { "type": 4, "yOffset": 11 },
+                        { "type": 5 },
+                        { "type": 5, "yOffset": 11 }
                     ],
                     "x": 0,
                     "y": 0,
-                    "xOffset": 15,
+                    "xOffset": 0,
                     "yOffset": 0
                 },
                 { "seats": [
-                        { "type": 2, "yOffset": 25 },
-                        { "type": 2, "yOffset": 15 },
-                        { "type": 2, "xOffset": 5 },
-                        { "type": 2, "yOffset": 15 }
+                        { "type": 4, "yOffset": 10 },
+                        { "type": 4, "yOffset": 11 },
+                        { "type": 5 },
+                        { "type": 5, "yOffset": 11 }
                     ],
                     "x": 0,
                     "y": 0,
-                    "xOffset": 15,
+                    "xOffset": 0,
                     "yOffset": 0
                 },
                 {
                     "seats": [
-                        { "type": 2, "yOffset": 25 },
-                        { "type": 2, "yOffset": 15 },
-                        { "type": 2 },
-                        { "type": 2, "yOffset": 15 }
+                        { "type": 4, "yOffset": 10 },
+                        { "type": 4, "yOffset": 11 },
+                        { "type": 5 },
+                        { "type": 5, "yOffset": 11 }
                     ],
                     "x": 0,
                     "y": 0,
-                    "xOffset": 15,
+                    "xOffset": 0,
                     "yOffset": 0
                 },
                 {
                     "seats": [
-                        { "type": 2, "yOffset": 25 },
-                        { "type": 2, "yOffset": 15 },
-                        { "type": 2 },
-                        { "type": 2, "yOffset": 15 }
+                        { "type": 4, "yOffset": 10 },
+                        { "type": 4, "yOffset": 11 },
+                        { "type": 5 },
+                        { "type": 5, "yOffset": 11 }
                     ],
                     "x": 0,
                     "y": 0,
-                    "xOffset": 15,
+                    "xOffset": 0,
                     "yOffset": 0
                 }
             ],
@@ -1170,85 +1171,85 @@
             "capacity": 28,
             "rows": [
                 { "seats": [
-                        { "type": 2, "yOffset": 25 },
-                        { "type": 2, "yOffset": 15 },
-                        { "type": 2, "xOffset": 5 },
-                        { "type": 2, "yOffset": 15 }
+                        { "type": 4, "yOffset": 10 },
+                        { "type": 4, "yOffset": 11 },
+                        { "type": 5 },
+                        { "type": 5, "yOffset": 11 }
                     ],
                     "x": 0,
                     "y": 0,
-                    "xOffset": 15,
+                    "xOffset": 0,
                     "yOffset": 0
                 },
                 {
                     "seats": [
-                        { "type": 2, "yOffset": 25 },
-                        { "type": 2, "yOffset": 15 },
-                        { "type": 2 },
-                        { "type": 2, "yOffset": 15 }
+                        { "type": 4, "yOffset": 10 },
+                        { "type": 4, "yOffset": 11 },
+                        { "type": 5 },
+                        { "type": 5, "yOffset": 11 }
                     ],
                     "x": 0,
                     "y": 0,
-                    "xOffset": 15,
+                    "xOffset": 0,
                     "yOffset": 0
                 },
                 {
                     "seats": [
-                        { "type": 2, "yOffset": 25 },
-                        { "type": 2, "yOffset": 15 },
-                        { "type": 2 },
-                        { "type": 2, "yOffset": 15 }
+                        { "type": 4, "yOffset": 10 },
+                        { "type": 4, "yOffset": 11 },
+                        { "type": 5 },
+                        { "type": 5, "yOffset": 11 }
                     ],
                     "x": 0,
                     "y": 0,
-                    "xOffset": 15,
+                    "xOffset": 0,
                     "yOffset": 0
                 },
                 { 
                     "seats": [
-                    { "type": 2, "yOffset": 25 },
-                    { "type": 2, "yOffset": 15 },
-                    { "type": 2, "xOffset": 5 },
-                    { "type": 2, "yOffset": 15 }
+                        { "type": 4, "yOffset": 10 },
+                        { "type": 4, "yOffset": 11 },
+                        { "type": 5 },
+                        { "type": 5, "yOffset": 11 }
                     ],
                     "x": 0,
                     "y": 0,
-                    "xOffset": 15,
+                    "xOffset": 0,
                     "yOffset": 0
                 },
                 { "seats": [
-                        { "type": 2, "yOffset": 25 },
-                        { "type": 2, "yOffset": 15 },
-                        { "type": 2, "xOffset": 5 },
-                        { "type": 2, "yOffset": 15 }
+                        { "type": 4, "yOffset": 10 },
+                        { "type": 4, "yOffset": 11 },
+                        { "type": 5 },
+                        { "type": 5, "yOffset": 11 }
                     ],
                     "x": 0,
                     "y": 0,
-                    "xOffset": 15,
+                    "xOffset": 0,
                     "yOffset": 0
                 },
                 {
                     "seats": [
-                        { "type": 2, "yOffset": 25 },
-                        { "type": 2, "yOffset": 15 },
-                        { "type": 2 },
-                        { "type": 2, "yOffset": 15 }
+                        { "type": 4, "yOffset": 10 },
+                        { "type": 4, "yOffset": 11 },
+                        { "type": 5 },
+                        { "type": 5, "yOffset": 11 }
                     ],
                     "x": 0,
                     "y": 0,
-                    "xOffset": 15,
+                    "xOffset": 0,
                     "yOffset": 0
                 },
                 {
                     "seats": [
-                        { "type": 2, "yOffset": 25 },
-                        { "type": 2, "yOffset": 15 },
-                        { "type": 2 },
-                        { "type": 2, "yOffset": 15 }
+                        { "type": 4, "yOffset": 10 },
+                        { "type": 4, "yOffset": 11 },
+                        { "type": 5 },
+                        { "type": 5, "yOffset": 11 }
                     ],
                     "x": 0,
                     "y": 0,
-                    "xOffset": 15,
+                    "xOffset": 0,
                     "yOffset": 0
                 }
             ],
@@ -1265,59 +1266,59 @@
                 
                 {
                     "seats": [
-                        { "type": 2, "yOffset": 50 },
-                        { "type": 2 }
+                        { "type": 4, "yOffset": 45 },
+                        { "type": 5 }
                     ],
                     "x": 0,
                     "y": 0,
-                    "xOffset": 50,
+                    "xOffset": 25,
                     "yOffset": 0
                 },
                 { "seats": [
-                        { "type": 2, "yOffset": 25 },
-                        { "type": 2, "yOffset": 15 },
-                        { "type": 2, "xOffset": 5 },
-                        { "type": 2, "yOffset": 15 }
+                        { "type": 4, "yOffset": 10 },
+                        { "type": 4, "yOffset": 11 },
+                        { "type": 5 },
+                        { "type": 5, "yOffset": 11 }
                     ],
                     "x": 0,
                     "y": 0,
-                    "xOffset": 15,
+                    "xOffset": 0,
                     "yOffset": 0
                 },
                 {
                     "seats": [
-                        { "type": 2, "yOffset": 25 },
-                        { "type": 2, "yOffset": 15 },
-                        { "type": 2 },
-                        { "type": 2, "yOffset": 15 }
+                        { "type": 4, "yOffset": 10 },
+                        { "type": 4, "yOffset": 11 },
+                        { "type": 5 },
+                        { "type": 5, "yOffset": 11 }
                     ],
                     "x": 0,
                     "y": 0,
-                    "xOffset": 15,
+                    "xOffset": 0,
                     "yOffset": 0
                 },
                 {
                     "seats": [
-                        { "type": 2, "yOffset": 25 },
-                        { "type": 2, "yOffset": 15 },
-                        { "type": 2 },
-                        { "type": 2, "yOffset": 15 }
+                        { "type": 4, "yOffset": 10 },
+                        { "type": 4, "yOffset": 11 },
+                        { "type": 5 },
+                        { "type": 5, "yOffset": 11 }
                     ],
                     "x": 0,
                     "y": 0,
-                    "xOffset": 15,
+                    "xOffset": 0,
                     "yOffset": 0
                 },
                 { 
                     "seats": [
-                    { "type": 2, "yOffset": 25 },
-                    { "type": 2, "yOffset": 15 },
-                    { "type": 2, "xOffset": 5 },
-                    { "type": 2, "yOffset": 15 }
+                        { "type": 4, "yOffset": 10 },
+                        { "type": 4, "yOffset": 11 },
+                        { "type": 5 },
+                        { "type": 5, "yOffset": 11 }
                     ],
                     "x": 0,
                     "y": 0,
-                    "xOffset": 15,
+                    "xOffset": 0,
                     "yOffset": 0
                 }
             ],

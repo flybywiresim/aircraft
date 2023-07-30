@@ -11,7 +11,7 @@ import { TooltipWrapper } from '../../../../UtilComponents/TooltipWrapper';
 import Loadsheet from './A320_251N.json';
 import Card from '../../../../UtilComponents/Card/Card';
 import { SelectGroup, SelectItem } from '../../../../UtilComponents/Form/Select';
-import { SeatMapWidget } from './Seating/SeatMapWidget';
+import { SeatMapWidget } from '../Seating/SeatMapWidget';
 import { isSimbriefDataLoaded } from '../../../../Store/features/simBrief';
 import { PromptModal, useModals } from '../../../../UtilComponents/Modals/Modals';
 import { useAppSelector } from '../../../../Store/store';
@@ -57,7 +57,7 @@ export const A320Payload = () => {
     const [paxBagWeight, setPaxBagWeight] = useSimVar('L:A32NX_WB_PER_BAG_WEIGHT', 'Kilograms', 200);
     // const [destEfob] = useSimVar('L:A32NX_DESTINATION_FUEL_ON_BOARD', 'Kilograms', 5_000);
 
-    const [emptyWeight] = useSimVar('A:EMPTY WEIGHT', 'Kilograms', 10_000);
+    const [emptyWeight] = useState(SimVar.GetSimVarValue('A:EMPTY WEIGHT', 'Kilograms'));
 
     const [seatMap] = useState<PaxStationInfo[]>(Loadsheet.seatMap);
     const [cargoMap] = useState<CargoStationInfo[]>(Loadsheet.cargoMap);
@@ -431,7 +431,7 @@ export const A320Payload = () => {
             <div className="relative h-content-section-reduced">
                 <div className="mb-10">
                     <div className="flex relative flex-col">
-                        <SeatMapWidget seatMap={seatMap} desiredFlags={desiredFlags} activeFlags={activeFlags} onClickSeat={onClickSeat} canvasX={243} canvasY={78} />
+                        <SeatMapWidget seatMap={seatMap} desiredFlags={desiredFlags} activeFlags={activeFlags} onClickSeat={onClickSeat} isMainDeck canvasX={243} canvasY={78} />
                     </div>
                 </div>
                 <CargoWidget cargo={cargo} cargoDesired={cargoDesired} cargoMap={cargoMap} onClickCargo={onClickCargo} />

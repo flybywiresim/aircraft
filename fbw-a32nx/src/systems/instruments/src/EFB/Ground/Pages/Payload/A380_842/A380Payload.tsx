@@ -11,7 +11,7 @@ import { TooltipWrapper } from '../../../../UtilComponents/TooltipWrapper';
 import Loadsheet from './A380_842.json';
 import Card from '../../../../UtilComponents/Card/Card';
 import { SelectGroup, SelectItem } from '../../../../UtilComponents/Form/Select';
-import { SeatMapWidget } from './Seating/SeatMapWidget';
+import { SeatMapWidget } from '../Seating/SeatMapWidget';
 import { isSimbriefDataLoaded } from '../../../../Store/features/simBrief';
 import { PromptModal, useModals } from '../../../../UtilComponents/Modals/Modals';
 import { useAppSelector } from '../../../../Store/store';
@@ -84,7 +84,7 @@ export const A380Payload = () => {
     const [paxBagWeight, setPaxBagWeight] = useSimVar('L:A32NX_WB_PER_BAG_WEIGHT', 'Kilograms', 200);
     // const [destEfob] = useSimVar('L:A32NX_DESTINATION_FUEL_ON_BOARD', 'Kilograms', 5_000);
 
-    const [emptyWeight] = useSimVar('A:EMPTY WEIGHT', 'Kilograms', 10_000);
+    const [emptyWeight] = useState(SimVar.GetSimVarValue('A:EMPTY WEIGHT', 'Kilograms'));
 
     const [seatMap] = useState<PaxStationInfo[]>(Loadsheet.seatMap);
     const [cargoMap] = useState<CargoStationInfo[]>(Loadsheet.cargoMap);
