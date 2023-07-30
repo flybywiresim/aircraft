@@ -109,12 +109,21 @@ impl SimulationElement for CgMac {
         self.target_to_cg_mac = reader.read(&self.target_to_cg_mac_id);
     }
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.zfw_cg_mac_id, self.zfw_cg_mac);
-        writer.write(&self.gw_cg_mac_id, self.gw_cg_mac);
-        writer.write(&self.to_cg_mac_id, self.to_cg_mac);
-        writer.write(&self.target_zfw_cg_mac_id, self.target_zfw_cg_mac);
-        writer.write(&self.target_gw_cg_mac_id, self.target_gw_cg_mac);
-        writer.write(&self.target_to_cg_mac_id, self.target_to_cg_mac);
+        writer.write(&self.zfw_cg_mac_id, (self.zfw_cg_mac * 100.).round() / 100.);
+        writer.write(&self.gw_cg_mac_id, (self.gw_cg_mac * 100.).round() / 100.);
+        writer.write(&self.to_cg_mac_id, (self.to_cg_mac * 100.).round() / 100.);
+        writer.write(
+            &self.target_zfw_cg_mac_id,
+            (self.target_zfw_cg_mac * 100.).round() / 100.,
+        );
+        writer.write(
+            &self.target_gw_cg_mac_id,
+            (self.target_gw_cg_mac * 100.).round() / 100.,
+        );
+        writer.write(
+            &self.target_to_cg_mac_id,
+            (self.target_to_cg_mac * 100.).round() / 100.,
+        );
     }
 }
 
@@ -229,12 +238,21 @@ impl SimulationElement for WeightData {
         self.total_fuel = reader.read(&self.total_fuel_id);
     }
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.zfw_id, self.zfw.get::<kilogram>());
-        writer.write(&self.gw_id, self.gw.get::<kilogram>());
-        writer.write(&self.tow_id, self.tow.get::<kilogram>());
-        writer.write(&self.target_zfw_id, self.target_zfw.get::<kilogram>());
-        writer.write(&self.target_gw_id, self.target_gw.get::<kilogram>());
-        writer.write(&self.target_tow_id, self.target_tow.get::<kilogram>());
-        writer.write(&self.total_fuel_id, self.total_fuel.get::<kilogram>());
+        writer.write(&self.zfw_id, self.zfw.get::<kilogram>().round());
+        writer.write(&self.gw_id, self.gw.get::<kilogram>().round());
+        writer.write(&self.tow_id, self.tow.get::<kilogram>().round());
+        writer.write(
+            &self.target_zfw_id,
+            self.target_zfw.get::<kilogram>().round(),
+        );
+        writer.write(&self.target_gw_id, self.target_gw.get::<kilogram>().round());
+        writer.write(
+            &self.target_tow_id,
+            self.target_tow.get::<kilogram>().round(),
+        );
+        writer.write(
+            &self.total_fuel_id,
+            (self.total_fuel.get::<kilogram>() / 10.).round() * 10.,
+        );
     }
 }

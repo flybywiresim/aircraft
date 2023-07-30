@@ -1,9 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as ReactDOMServer from 'react-dom/server';
-import { BitFlags, usePersistentProperty } from '@flybywiresim/fbw-sdk';
+import { BitFlags } from '@flybywiresim/fbw-sdk';
 import { CanvasConst, SeatConstants, SeatInfo, PaxStationInfo, TYPE, RowInfo } from './Constants';
 import { BusinessSeatLeft, BusinessSeatRight, Seat, SuiteLeft, SuiteRight } from '../../../../Assets/Seat';
-import { A380SeatOutlineBg } from '../../../../Assets/A380SeatOutlineBg';
 // import { t } from '../../../../../translation';
 
 interface SeatMapProps {
@@ -12,6 +11,7 @@ interface SeatMapProps {
     activeFlags: BitFlags[],
     canvasX: number,
     canvasY: number,
+    theme: string[],
     isMainDeck: boolean,
     onClickSeat: (paxStation: number, section: number) => void,
 }
@@ -26,63 +26,39 @@ const useCanvasEvent = (canvas: HTMLCanvasElement | null, event: string, handler
     });
 };
 
-export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, activeFlags, canvasX, canvasY, isMainDeck, onClickSeat }) => {
+export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, activeFlags, canvasX, canvasY, theme, isMainDeck, onClickSeat }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [ctx, setCtx] = useState<CanvasRenderingContext2D | null>(null);
-
-    const getTheme = (theme: string): [string, string, string] => {
-        let base = '#fff';
-        let primary = '#00C9E4';
-        let secondary = '#84CC16';
-        switch (theme) {
-        case 'dark':
-            base = '#fff';
-            primary = '#3B82F6';
-            secondary = '#84CC16';
-            break;
-        case 'light':
-            base = '#000000';
-            primary = '#3B82F6';
-            secondary = '#84CC16';
-            break;
-        default:
-            break;
-        }
-        return [base, primary, secondary];
-    };
-
-    const [theme] = usePersistentProperty('EFB_UI_THEME', 'blue');
-    const [base, primary] = getTheme(theme);
 
     const getImageFromComponent = (component: React.ReactElement): HTMLImageElement => {
         const imageElement = new Image();
         imageElement.src = `data:image/svg+xml; charset=utf8, ${encodeURIComponent(ReactDOMServer.renderToStaticMarkup(component))}`;
         return imageElement;
     };
-    const seatEmptyImg = useRef(getImageFromComponent(<Seat fill="none" stroke={base} opacity="1.0" />));
-    const seatMinusImg = useRef(getImageFromComponent(<Seat fill={base} stroke="none" opacity="0.25" />));
-    const seatAddImg = useRef(getImageFromComponent(<Seat fill={primary} stroke="none" opacity="0.6" />));
-    const seatFilledImg = useRef(getImageFromComponent(<Seat fill={primary} stroke="none" opacity="1.0" />));
+    const seatEmptyImg = useRef(getImageFromComponent(<Seat fill="none" stroke={theme[0]} opacity="1.0" />));
+    const seatMinusImg = useRef(getImageFromComponent(<Seat fill={theme[0]} stroke="none" opacity="0.25" />));
+    const seatAddImg = useRef(getImageFromComponent(<Seat fill={theme[1]} stroke="none" opacity="0.6" />));
+    const seatFilledImg = useRef(getImageFromComponent(<Seat fill={theme[1]} stroke="none" opacity="1.0" />));
 
-    const bizLeftSeatEmptyImg = useRef(getImageFromComponent(<BusinessSeatLeft fill="none" stroke={base} opacity="1.0" />));
-    const bizLeftSeatMinusImg = useRef(getImageFromComponent(<BusinessSeatLeft fill={base} stroke="none" opacity="0.25" />));
-    const bizLeftSeatAddImg = useRef(getImageFromComponent(<BusinessSeatLeft fill={primary} stroke="none" opacity="0.6" />));
-    const bizLeftSeatFilledImg = useRef(getImageFromComponent(<BusinessSeatLeft fill={primary} stroke="none" opacity="1.0" />));
+    const bizLeftSeatEmptyImg = useRef(getImageFromComponent(<BusinessSeatLeft fill="none" stroke={theme[0]} opacity="1.0" />));
+    const bizLeftSeatMinusImg = useRef(getImageFromComponent(<BusinessSeatLeft fill={theme[0]} stroke="none" opacity="0.25" />));
+    const bizLeftSeatAddImg = useRef(getImageFromComponent(<BusinessSeatLeft fill={theme[1]} stroke="none" opacity="0.6" />));
+    const bizLeftSeatFilledImg = useRef(getImageFromComponent(<BusinessSeatLeft fill={theme[1]} stroke="none" opacity="1.0" />));
 
-    const bizRightSeatEmptyImg = useRef(getImageFromComponent(<BusinessSeatRight fill="none" stroke={base} opacity="1.0" />));
-    const bizRightSeatMinusImg = useRef(getImageFromComponent(<BusinessSeatRight fill={base} stroke="none" opacity="0.25" />));
-    const bizRightSeatAddImg = useRef(getImageFromComponent(<BusinessSeatRight fill={primary} stroke="none" opacity="0.6" />));
-    const bizRightSeatFilledImg = useRef(getImageFromComponent(<BusinessSeatRight fill={primary} stroke="none" opacity="1.0" />));
+    const bizRightSeatEmptyImg = useRef(getImageFromComponent(<BusinessSeatRight fill="none" stroke={theme[0]} opacity="1.0" />));
+    const bizRightSeatMinusImg = useRef(getImageFromComponent(<BusinessSeatRight fill={theme[0]} stroke="none" opacity="0.25" />));
+    const bizRightSeatAddImg = useRef(getImageFromComponent(<BusinessSeatRight fill={theme[1]} stroke="none" opacity="0.6" />));
+    const bizRightSeatFilledImg = useRef(getImageFromComponent(<BusinessSeatRight fill={theme[1]} stroke="none" opacity="1.0" />));
 
-    const suiteRightSeatEmptyImg = useRef(getImageFromComponent(<SuiteRight fill="none" stroke={base} opacity="1.0" />));
-    const suiteRightSeatMinusImg = useRef(getImageFromComponent(<SuiteRight fill={base} stroke="none" opacity="0.25" />));
-    const suiteRightSeatAddImg = useRef(getImageFromComponent(<SuiteRight fill={primary} stroke="none" opacity="0.6" />));
-    const suiteRightSeatFilledImg = useRef(getImageFromComponent(<SuiteRight fill={primary} stroke="none" opacity="1.0" />));
+    const suiteRightSeatEmptyImg = useRef(getImageFromComponent(<SuiteRight fill="none" stroke={theme[0]} opacity="1.0" />));
+    const suiteRightSeatMinusImg = useRef(getImageFromComponent(<SuiteRight fill={theme[0]} stroke="none" opacity="0.25" />));
+    const suiteRightSeatAddImg = useRef(getImageFromComponent(<SuiteRight fill={theme[1]} stroke="none" opacity="0.6" />));
+    const suiteRightSeatFilledImg = useRef(getImageFromComponent(<SuiteRight fill={theme[1]} stroke="none" opacity="1.0" />));
 
-    const suiteLeftSeatEmptyImg = useRef(getImageFromComponent(<SuiteLeft fill="none" stroke={base} opacity="1.0" />));
-    const suiteLeftSeatMinusImg = useRef(getImageFromComponent(<SuiteLeft fill={base} stroke="none" opacity="0.25" />));
-    const suiteLeftSeatAddImg = useRef(getImageFromComponent(<SuiteLeft fill={primary} stroke="none" opacity="0.6" />));
-    const suiteLeftSeatFilledImg = useRef(getImageFromComponent(<SuiteLeft fill={primary} stroke="none" opacity="1.0" />));
+    const suiteLeftSeatEmptyImg = useRef(getImageFromComponent(<SuiteLeft fill="none" stroke={theme[0]} opacity="1.0" />));
+    const suiteLeftSeatMinusImg = useRef(getImageFromComponent(<SuiteLeft fill={theme[0]} stroke="none" opacity="0.25" />));
+    const suiteLeftSeatAddImg = useRef(getImageFromComponent(<SuiteLeft fill={theme[1]} stroke="none" opacity="0.6" />));
+    const suiteLeftSeatFilledImg = useRef(getImageFromComponent(<SuiteLeft fill={theme[1]} stroke="none" opacity="1.0" />));
 
     const [xYMap, setXYMap] = useState<number[][][]>([]);
 
@@ -286,7 +262,6 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
 
     return (
         <>
-            <A380SeatOutlineBg stroke={getTheme(theme)[0]} highlight="#69BD45" />
             <canvas className="absolute cursor-pointer" ref={canvasRef} style={{ transform: `translateX(${canvasX}px) translateY(${canvasY}px)` }} />
         </>
     );

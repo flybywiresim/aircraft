@@ -3,18 +3,19 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { AirplaneFill, CloudArrowDown } from 'react-bootstrap-icons';
 import { SeatFlags, Units, usePersistentNumberProperty, usePersistentProperty, useSeatFlags, useSimVar } from '@flybywiresim/fbw-sdk';
 import { BoardingInput, MiscParamsInput, PayloadInputTable } from '../PayloadElements';
-import { CargoWidget } from './Seating/CargoWidget';
+import { CargoWidget } from './CargoWidget';
 import { ChartWidget } from '../Chart/ChartWidget';
 import { CargoStationInfo, PaxStationInfo } from '../Seating/Constants';
 import { t } from '../../../../translation';
 import { TooltipWrapper } from '../../../../UtilComponents/TooltipWrapper';
-import Loadsheet from './A380_842.json';
+import Loadsheet from './a380v3.json';
 import Card from '../../../../UtilComponents/Card/Card';
 import { SelectGroup, SelectItem } from '../../../../UtilComponents/Form/Select';
 import { SeatMapWidget } from '../Seating/SeatMapWidget';
 import { isSimbriefDataLoaded } from '../../../../Store/features/simBrief';
 import { PromptModal, useModals } from '../../../../UtilComponents/Modals/Modals';
 import { useAppSelector } from '../../../../Store/store';
+import { A380SeatOutlineBg } from '../../../../Assets/A380SeatOutlineBg';
 
 export const A380Payload = () => {
     const { usingMetric } = Units;
@@ -452,12 +453,36 @@ export const A380Payload = () => {
         const padding = seconds < 10 ? '0' : '';
         return `${minutes}:${padding}${seconds.toFixed(0)} ${t('Ground.Payload.EstimatedDurationUnit')}`;
     };
+
+    const [theme] = usePersistentProperty('EFB_UI_THEME', 'blue');
+    const getTheme = useCallback((theme: string): [string, string, string] => {
+        let base = '#fff';
+        let primary = '#00C9E4';
+        let secondary = '#84CC16';
+        switch (theme) {
+        case 'dark':
+            base = '#fff';
+            primary = '#3B82F6';
+            secondary = '#84CC16';
+            break;
+        case 'light':
+            base = '#000000';
+            primary = '#3B82F6';
+            secondary = '#84CC16';
+            break;
+        default:
+            break;
+        }
+        return [base, primary, secondary];
+    }, [theme]);
+
     return (
         <div>
             <div className="relative h-content-section-reduced">
                 <div className="mb-10">
                     <div className="flex relative flex-col">
-                        <SeatMapWidget seatMap={seatMap} desiredFlags={desiredFlags} activeFlags={activeFlags} canvasX={146} canvasY={71} isMainDeck={displayPaxMainDeck} onClickSeat={onClickSeat} />
+                        <A380SeatOutlineBg stroke={getTheme(theme)[0]} highlight="#69BD45" />
+                        <SeatMapWidget seatMap={seatMap} desiredFlags={desiredFlags} activeFlags={activeFlags} canvasX={146} canvasY={71} theme={getTheme(theme)} isMainDeck={displayPaxMainDeck} onClickSeat={onClickSeat} />
                         <div className="flex absolute top-full flex-row px-4 w-full">
                             <div><AirplaneFill size={25} className="my-1 mx-3" /></div>
                             <SelectGroup>

@@ -1,7 +1,7 @@
 /* eslint-disable max-len */
 import React from 'react';
-import { CargoStationInfo } from '../../Seating/Constants';
-import { CargoBar } from '../../PayloadElements';
+import { CargoStationInfo } from '../Seating/Constants';
+import { CargoBar } from '../PayloadElements';
 
 interface SeatMapProps {
     cargo: number[],
@@ -16,7 +16,6 @@ enum CargoStation {
     AftBulk
 }
 
-// TODO FIXME: Remove hard-coding
 export const CargoWidget: React.FC<SeatMapProps> = ({ cargo, cargoDesired, cargoMap, onClickCargo }) => (
     <>
         <div className="flex absolute top-4 left-40 flex-row px-4 w-fit">

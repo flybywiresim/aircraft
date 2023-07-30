@@ -1,7 +1,7 @@
 /* eslint-disable max-len */
 import React from 'react';
-import { CargoBar } from '../../PayloadElements';
-import { CargoStationInfo } from '../../Seating/Constants';
+import { CargoBar } from '../PayloadElements';
+import { CargoStationInfo } from '../Seating/Constants';
 
 interface SeatMapProps {
     cargo: number[],
