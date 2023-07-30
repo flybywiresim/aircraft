@@ -2999,8 +2999,8 @@ class FMCMainDisplay extends BaseAirliners {
         const elevation = destination.location.alt !== undefined ? destination.location.alt : 0;
         const minimumAltitude = elevation + 400;
 
-        const newThrRed = thrRed !== undefined ? thrRed : plan.performanceData.missedThrustReductionAltitude;
-        const newAccAlt = accAlt !== undefined ? accAlt : plan.performanceData.missedAccelerationAltitude;
+        const newThrRed = thrRed !== undefined ? thrRed : plan.performanceData.missedThrustReductionAltitude.get();
+        const newAccAlt = accAlt !== undefined ? accAlt : plan.performanceData.missedAccelerationAltitude.get();
 
         if (
             (thrRed !== undefined && (thrRed < minimumAltitude || thrRed > 45000))

@@ -79,7 +79,9 @@ export class FlightPlanPerformanceData {
     /**
      * THR RED from pilot if entered, otherwise from database
      */
-    readonly thrustReductionAltitude = MappedSubject.create(([db, pilot]) => db ?? pilot, this.defaultThrustReductionAltitude, this.pilotThrustReductionAltitude)
+    readonly thrustReductionAltitude = MappedSubject.create(
+        ([db, pilot]) => FlightPlanPerformanceData.round(pilot ?? db, 10), this.defaultThrustReductionAltitude, this.pilotThrustReductionAltitude,
+    )
 
     /**
      * Whether THR RED is from the database
@@ -101,7 +103,9 @@ export class FlightPlanPerformanceData {
     /**
      * ACC from pilot if entered, otherwise from database
      */
-    readonly accelerationAltitude = MappedSubject.create(([db, pilot]) => db ?? pilot, this.defaultAccelerationAltitude, this.pilotAccelerationAltitude)
+    readonly accelerationAltitude = MappedSubject.create(
+        ([db, pilot]) => FlightPlanPerformanceData.round(pilot ?? db, 10), this.defaultAccelerationAltitude, this.pilotAccelerationAltitude,
+    )
 
     /**
      * Whether ACC is from the database
@@ -123,12 +127,14 @@ export class FlightPlanPerformanceData {
     /**
      * EO ACC from pilot if entered, otherwise from database
      */
-    readonly engineOutAccelerationAltitude = MappedSubject.create(([db, pilot]) => db ?? pilot, this.defaultEngineOutAccelerationAltitude, this.pilotEngineOutAccelerationAltitude)
+    readonly engineOutAccelerationAltitude = MappedSubject.create(
+        ([db, pilot]) => FlightPlanPerformanceData.round(pilot ?? db, 10), this.defaultEngineOutAccelerationAltitude, this.pilotEngineOutAccelerationAltitude,
+    )
 
     /**
      * Whether EO ACC is from the database
      */
-    readonly engineOutAccelerationAltitudeIsPilotEntered = this.pilotAccelerationAltitude.map((it) => it !== undefined);
+    readonly engineOutAccelerationAltitudeIsPilotEntered = this.pilotEngineOutAccelerationAltitude.map((it) => it !== undefined);
 
     // MISSED THR RED
 
@@ -145,7 +151,9 @@ export class FlightPlanPerformanceData {
     /**
      * Missed THR RED from pilot if entered, otherwise from database
      */
-    readonly missedThrustReductionAltitude = MappedSubject.create(([db, pilot]) => db ?? pilot, this.defaultMissedThrustReductionAltitude, this.pilotMissedThrustReductionAltitude)
+    readonly missedThrustReductionAltitude = MappedSubject.create(
+        ([db, pilot]) => FlightPlanPerformanceData.round(pilot ?? db, 10), this.defaultMissedThrustReductionAltitude, this.pilotMissedThrustReductionAltitude,
+    )
 
     /**
      * Whether missed THR RED is from the database
@@ -167,7 +175,9 @@ export class FlightPlanPerformanceData {
     /**
      * Missed ACC from pilot if entered, otherwise from database
      */
-    readonly missedAccelerationAltitude = MappedSubject.create(([db, pilot]) => db ?? pilot, this.defaultMissedAccelerationAltitude, this.pilotMissedAccelerationAltitude)
+    readonly missedAccelerationAltitude = MappedSubject.create(
+        ([db, pilot]) => FlightPlanPerformanceData.round(pilot ?? db, 10), this.defaultMissedAccelerationAltitude, this.pilotMissedAccelerationAltitude,
+    )
 
     /**
      * Whether missed ACC is from the database
@@ -190,7 +200,7 @@ export class FlightPlanPerformanceData {
      * Missed EO ACC from pilot if entered, otherwise from database
      */
     readonly missedEngineOutAccelerationAltitude = MappedSubject.create(
-        ([db, pilot]) => db ?? pilot,
+        ([db, pilot]) => FlightPlanPerformanceData.round(pilot ?? db, 10),
         this.defaultMissedEngineOutAccelerationAltitude,
         this.pilotMissedEngineOutAccelerationAltitude,
     );
@@ -213,7 +223,7 @@ export class FlightPlanPerformanceData {
     /**
      * TRANS ALT from pilot if entered, otherwise from database
      */
-    readonly transitionAltitude = MappedSubject.create(([db, pilot]) => pilot ?? db, this.databaseTransitionAltitude, this.pilotTransitionAltitude);
+    readonly transitionAltitude = MappedSubject.create(([db, pilot]) => FlightPlanPerformanceData.round(pilot ?? db, 10), this.databaseTransitionAltitude, this.pilotTransitionAltitude);
 
     /**
      * Whether TRANS ALT is from the database
@@ -233,7 +243,7 @@ export class FlightPlanPerformanceData {
     /**
      * TRANS LVL from pilot if entered, otherwise from database
      */
-    readonly transitionLevel = MappedSubject.create(([db, pilot]) => pilot ?? db, this.databaseTransitionLevel, this.pilotTransitionLevel);
+    readonly transitionLevel = MappedSubject.create(([db, pilot]) => FlightPlanPerformanceData.round(pilot ?? db, 10), this.databaseTransitionLevel, this.pilotTransitionLevel);
 
     /**
      * Whether TRANS LVL is from the database
@@ -263,6 +273,19 @@ export class FlightPlanPerformanceData {
             databaseTransitionLevel: this.databaseTransitionLevel.get(),
             pilotTransitionLevel: this.pilotTransitionLevel.get(),
         };
+    }
+
+    /**
+     * Rounds a number to the nearest multiple
+     * @param n the number to round
+     * @param r the multiple
+     * @returns n rounded to the nereast multiple of r, or null/undefined if n is null/undefined
+     */
+    private static round(n: number | undefined | null, r: number = 1): number | undefined | null {
+        if (n === undefined || n === null) {
+            return n;
+        }
+        return Math.round(n / r) * r;
     }
 }
 
