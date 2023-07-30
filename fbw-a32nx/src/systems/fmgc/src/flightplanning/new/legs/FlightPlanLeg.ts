@@ -28,6 +28,7 @@ export interface SerializedFlightPlanLeg {
     effectiveType: LegType,
     modifiedHold: HoldData | undefined,
     defaultHold: HoldData | undefined,
+    cruiseStep: CruiseStepEntry | undefined,
 }
 
 export enum FlightPlanLegFlags {
@@ -75,6 +76,7 @@ export class FlightPlanLeg {
             effectiveType: this.type,
             modifiedHold: this.modifiedHold,
             defaultHold: this.defaultHold,
+            cruiseStep: this.cruiseStep,
         };
     }
 
@@ -90,6 +92,7 @@ export class FlightPlanLeg {
         leg.type = serialized.effectiveType;
         leg.modifiedHold = serialized.modifiedHold;
         leg.defaultHold = serialized.defaultHold;
+        leg.cruiseStep = serialized.cruiseStep;
 
         return leg;
     }

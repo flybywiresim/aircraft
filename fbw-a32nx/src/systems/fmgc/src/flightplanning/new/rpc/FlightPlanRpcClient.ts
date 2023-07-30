@@ -199,6 +199,14 @@ export class FlightPlanRpcClient implements FlightPlanInterface {
         return this.callFunctionViaRpc('setSpeedAt', atIndex, speed, isDescentConstraint, planIndex, alternate);
     }
 
+    addOrUpdateCruiseStep(atIndex: number, toAltitude: number, planIndex?: FlightPlanIndex): Promise<void> {
+        return this.callFunctionViaRpc('addOrUpdateCruiseStep', atIndex, toAltitude, planIndex);
+    }
+
+    removeCruiseStep(atIndex: number, planIndex?: FlightPlanIndex): Promise<void> {
+        return this.callFunctionViaRpc('removeCruiseStep', atIndex, planIndex);
+    }
+
     editLegDefinition(atIndex: number, changes: Partial<FlightPlanLegDefinition>, planIndex?: number, alternate?: boolean): Promise<void> {
         return this.callFunctionViaRpc('editLegDefinition', atIndex, changes, planIndex, alternate);
     }

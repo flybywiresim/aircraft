@@ -78,8 +78,6 @@ export abstract class BaseFlightPlan {
 
         subs.on('flightPlan.setSegmentLegs').handle((event) => {
             if (!this.ignoreSync) {
-                console.log(`[FlightPlanSync] ${event.legs.length} legs to segment #${event.segmentIndex}`);
-
                 if (event.planIndex !== this.index || isAlternatePlan !== event.forAlternate) {
                     return;
                 }
@@ -94,6 +92,34 @@ export abstract class BaseFlightPlan {
                 });
 
                 segment.allLegs = elements;
+
+                this.incrementVersion();
+            }
+        });
+
+        subs.on('flightPlan.legDefinitionEdit').handle((event) => {
+            if (!this.ignoreSync) {
+                if (event.planIndex !== this.index || isAlternatePlan !== event.forAlternate) {
+                    return;
+                }
+
+                const element = this.legElementAt(event.atIndex);
+
+                Object.assign(element.definition, event.newDefinition);
+
+                this.incrementVersion();
+            }
+        });
+
+        subs.on('flightPlan.setLegCruiseStep').handle((event) => {
+            if (!this.ignoreSync) {
+                if (event.planIndex !== this.index || isAlternatePlan !== event.forAlternate) {
+                    return;
+                }
+
+                const element = this.legElementAt(event.atIndex);
+
+                element.cruiseStep = event.cruiseStep;
 
                 this.incrementVersion();
             }
@@ -138,6 +164,33 @@ export abstract class BaseFlightPlan {
 
     get isApproachActive(): boolean {
         return this.activeLegIndex >= this.firstApproachLegIndex && this.activeLegIndex < this.firstMissedApproachLegIndex;
+    }
+
+    /**
+     * Finds the index of the first XF leg whose fix has the same ident as the ident provided, or -1 if none is found
+     *
+     * @param ident the ident to look for
+     */
+    findLegIndexByFixIdent(ident: string): number {
+        for (let i = 0; i < this.allLegs.length; i++) {
+            const element = this.allLegs[i];
+
+            if (element.isDiscontinuity === true) {
+                continue;
+            }
+
+            if (!element.isXF()) {
+                continue;
+            }
+
+            if (element.terminationWaypoint().ident !== ident) {
+                continue;
+            }
+
+            return i;
+        }
+
+        return -1;
     }
 
     sequence() {
@@ -392,7 +445,7 @@ export abstract class BaseFlightPlan {
     }
 
     public computeWaypointStatistics(): Map<number, WaypointStats> {
-        // TODO port over
+        // TODO port over (fms-v2)
 
         const stats = new Map<number, WaypointStats>();
 
@@ -1052,6 +1105,50 @@ export abstract class BaseFlightPlan {
         }
 
         this.incrementVersion();
+    }
+
+    addOrUpdateCruiseStep(index: number, toAltitude: number) {
+        const leg = this.legElementAt(index);
+
+        leg.cruiseStep = {
+            distanceBeforeTermination: 0,
+            toAltitude,
+            waypointIndex: index,
+            isIgnored: false,
+        };
+        this.sendEvent('flightPlan.setLegCruiseStep', { planIndex: this.index, forAlternate: this instanceof AlternateFlightPlan, atIndex: index, cruiseStep: leg.cruiseStep });
+
+        this.unignoreAllCruiseSteps();
+
+        this.incrementVersion();
+    }
+
+    removeCruiseStep(index: number) {
+        const leg = this.legElementAt(index);
+
+        leg.cruiseStep = undefined;
+        this.sendEvent('flightPlan.setLegCruiseStep', { planIndex: this.index, forAlternate: this instanceof AlternateFlightPlan, atIndex: index, cruiseStep: undefined });
+
+        this.unignoreAllCruiseSteps();
+
+        this.incrementVersion();
+    }
+
+    private unignoreAllCruiseSteps() {
+        for (let i = 0; i < this.allLegs.length; i++) {
+            const element = this.allLegs[i];
+
+            if (element.isDiscontinuity === true) {
+                continue;
+            }
+
+            if (!element.cruiseStep) {
+                continue;
+            }
+
+            element.cruiseStep.isIgnored = false;
+            this.sendEvent('flightPlan.setLegCruiseStep', { planIndex: this.index, forAlternate: this instanceof AlternateFlightPlan, atIndex: i, cruiseStep: element.cruiseStep });
+        }
     }
 
     private setLastClbConstraintWaypoint(index: number) {
