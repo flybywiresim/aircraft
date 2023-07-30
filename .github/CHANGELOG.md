@@ -28,6 +28,9 @@
 1. [SD] Corrected thickness and position of lower ECAM fuel page lines - @robertxing2004 (robeet)
 1. [SD] Corrected position of outer tank fuel quantity values - @robertxing2004 (robeet)
 1. [ISIS] Fixed the ISIS alt tape order for negative altitudes - @aweissoertel (Alex)
+1. [MCDU] Add basic annunciator support - @tracernz (Mike)
+1. [MCDU] Add basic MCDU MENU functionality - @tracernz (Mike)
+1. [MCDU] Split subsystem scratchpads - @tracernz (Mike)
 
 ## 0.10.0
 
