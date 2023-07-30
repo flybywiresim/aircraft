@@ -4,11 +4,11 @@
     "ChangeATISATCSourceButton": "Alterar fonte ATIS/ATC",
     "ConnectHoppieACARS": "Conetar Hoppie ACARS",
     "NoInformationAvailableForThisFrequency": "Sem informação disponível para esta frequência",
-    "SearchPlaceholder": "Search",
+    "SearchPlaceholder": "Pesquisar",
     "SelectCorrectATISATCSource": "Esta página só está disponível quando IVAO ou VATSIM é selecionado como a fonte ATIS/ATC na página de configurações.",
     "SetActive": "Definir Ativo",
     "SetStandby": "Definir Standby",
-    "ShowAll": "All",
+    "ShowAll": "Tudo",
     "ShowApproach": "Approach",
     "ShowAtis": "ATIS",
     "ShowDelivery": "Delivery",
@@ -18,8 +18,8 @@
     "ShowTower": "Tower",
     "Standby": "Standby",
     "TT": {
-      "AtcCallSignSearch": "ATC Call-sign Search",
-      "AtcTypeFilter": "Filter for"
+      "AtcCallSignSearch": "Pesquisa de indicativos de chamada ATC",
+      "AtcTypeFilter": "Filtrar por"
     },
     "Title": "Controlo de Tráfego Aéreo"
   },
@@ -131,7 +131,7 @@
       "Defueling": "Desabastecer",
       "EstimatedDuration": "Duração estimada (minutos)",
       "EstimatedTime": "Estimated Time",
-      "GSXFuelSyncEnabled": "GSX Fuel Sync Enabled",
+      "GSXFuelSyncEnabled": "Sincronização de combustível GSX ativada",
       "LeftInnerTank": "Tanque Interno Esquerdo",
       "LeftOuterTank": "Tanque Externo Esquerdo",
       "ReadyToStart": "Pronto para Iniciar",
@@ -152,12 +152,12 @@
       "BoardingTime": "Tempo de Embarque",
       "Cargo": "Cargo",
       "Current": "Current",
-      "DeboardConfirmationBody": "Please confirm deboarding all passengers",
-      "DeboardConfirmationCancel": "Cancel",
-      "DeboardConfirmationConfirm": "Deboard",
-      "DeboardConfirmationTitle": "Deboard all Passengers?",
-      "EstimatedDurationUnit": "minutes",
-      "GSXPayloadSyncEnabled": "GSX Payload Sync Enabled",
+      "DeboardConfirmationBody": "Por favor confirme o desembarque de todos os passageiros",
+      "DeboardConfirmationCancel": "Cancelar",
+      "DeboardConfirmationConfirm": "Desembarque",
+      "DeboardConfirmationTitle": "Desembarcar todos os passageiros?",
+      "EstimatedDurationUnit": "minutos",
+      "GSXPayloadSyncEnabled": "Sincronização de carga GSX ativada",
       "GW": "GW",
       "GWCG": "GW CG",
       "LoadingTime": "Loading Time",
@@ -167,15 +167,15 @@
         "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
         "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
         "MaxCargo": "Max Cargo",
-        "MaxGW": "Maximum GW",
-        "MaxGWCG": "Maximum GW CG",
+        "MaxGW": "GW máximo",
+        "MaxGWCG": "GW CG máximo",
         "MaxPassengers": "Lotação Máxima de Passageiros",
         "MaxZFW": "Maximum ZFW",
         "MaxZFWCG": "Maximum ZFWCG",
         "PerPaxBagWeight": "Per Passenger Bag Weight",
         "PerPaxWeight": "Per Passenger Weight",
         "StartBoarding": "Begin Boarding",
-        "StartDeboarding": "Begin Deboarding"
+        "StartDeboarding": "Começar desembarque"
       },
       "Title": "Payload",
       "ZFW": "ZFW",
@@ -209,10 +209,10 @@
     "Altn": "Altn",
     "ExitFullscreenMode": "Sair do modo de tela cheia",
     "From": "De",
-    "LoadingImage": "Loading Image",
-    "LoadingImageFailed": "Loading Image failed",
-    "LoadingPdf": "Loading PDF",
-    "LoadingPdfFailed": "Loading PDF failed",
+    "LoadingImage": "A carregar imagem",
+    "LoadingImageFailed": "Carregamento da imagem falhou",
+    "LoadingPdf": "A carregar PDF",
+    "LoadingPdfFailed": "Carregamento do PDF falhou",
     "LocalFiles": {
       "Both": "Ambos",
       "EstablishingConnection": "A Estabelecer Ligação",
@@ -372,7 +372,7 @@
       "ConfirmationDialogMsg": "Por favor, confirme o carregamento da predefinição.",
       "CurrentProcedureStep": "Etapa do Procedimento Atual",
       "PleaseConfirmLoadingOfPreset": "Por favor, confirme o carregamento da predefinição.",
-      "Powered": "Powered",
+      "Powered": "Alimentado",
       "ReadyPushback": "Pronto para Pushback",
       "ReadyTakeoff": "Pronto para Descolar",
       "ReadyTaxi": "Pronto para Táxi",
@@ -385,12 +385,12 @@
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "O avião precisa ser alimentado para carregar predefinições",
       "AircraftNeedsToBePoweredToSavePresets": "O avião precisa ser alimentado para guardar predefinições",
-      "AutoLoadDawnDusk": "Dawn/Dusk:",
-      "AutoLoadDay": "Day:",
-      "AutoLoadLightingHelpTitle": "Automatic Preset Loading",
-      "AutoLoadLightingPreset": "Enable automatic loading of lighting presets:",
-      "AutoLoadNight": "Night:",
-      "AutoLoadNoneSelection": "None",
+      "AutoLoadDawnDusk": "Amanhecer/Anoitecer:",
+      "AutoLoadDay": "Dia:",
+      "AutoLoadLightingHelpTitle": "Ativação automática de predefinições",
+      "AutoLoadLightingPreset": "Ativar utilização automática de predefinições de illuminação",
+      "AutoLoadNight": "Noite:",
+      "AutoLoadNoneSelection": "Nenhum",
       "LoadPreset": "Carregar predefinição",
       "LoadingPreset": "A Carregar Predefinição",
       "NewNameConfirmationDialogMsg": "Por favor, confirme o novo nome para a predefinição de iluminação",
@@ -444,7 +444,7 @@
       "SliderSpeed": "Mova para a velocidade desejada",
       "SystemEnabledOff": "Clique para ativar o sistema de pushback.",
       "SystemEnabledOn": "Clique para desligar completamente o sistema de pushback.",
-      "UseControllerInput": "Turn controller input from rudder and elevator on/off",
+      "UseControllerInput": "Ligar/desligar input do controlador do leme e do elevador",
       "ZoomIn": "Ampliar",
       "ZoomOut": "Reduzir"
     },
@@ -452,29 +452,29 @@
     "TugDirection": "Direção do Reboque",
     "TugInTransit": "À espera do Rebocador/Pino",
     "TugSpeed": "Velocidade do Reboque",
-    "UseControllerInput": "Use Controller Input"
+    "UseControllerInput": "Usar input do controlador"
   },
   "QuickControls": {
-    "AlignAdirs": "Align ADIRS",
-    "FinishBoarding": "Finish Boarding",
-    "OnScreenKeyboard": "OnScreen Keyboard",
+    "AlignAdirs": "Alinhar ADIRS",
+    "FinishBoarding": "Concluir o embarque",
+    "OnScreenKeyboard": "Teclado no ecrã",
     "SimBridge": "SimBridge",
-    "SimBridgeConnected": "Connected",
-    "SimBridgeConnecting": "Connecting...",
-    "SimBridgeOff": "Off",
-    "SimBridgeOffline": "Not Available",
+    "SimBridgeConnected": "Conectado",
+    "SimBridgeConnecting": "A conectar...",
+    "SimBridgeOff": "Desligado",
+    "SimBridgeOffline": "Indisponível",
     "TT": {
-      "AlignAdirs": "Instantly align ADIRS",
-      "AutoBrightness": "Turn Auto Brightness On/Off",
-      "Brightness": "Set flyPad brightness",
-      "FinishBoarding": "Instantly finish boarding",
-      "OnScreenKeyboard": "Turn OnScreen Keyboard On/Off",
-      "PowerButton": "Power Off",
-      "Settings": "Go to flyPad Settings page",
-      "SimBridge": "Control SimBridge Connection",
-      "Sleep": "Standby"
+      "AlignAdirs": "Alinhar ADIS instantaneamente",
+      "AutoBrightness": "Ligar/Desligar luminosidade automática",
+      "Brightness": "Definir luminosidade do flyPad",
+      "FinishBoarding": "Completar desembarque instantaneamente",
+      "OnScreenKeyboard": "Desligar/Ligar teclado no ecrã",
+      "PowerButton": "Desligar",
+      "Settings": "Ir para página de definições do flyPad",
+      "SimBridge": "Controlar conexão ao SimBridge",
+      "Sleep": "Em espera"
     },
-    "Title": "Quick Controls"
+    "Title": "Controlos Rápidos"
   },
   "Settings": {
     "About": {
@@ -534,26 +534,26 @@
       "AutofillChecklists": "Preencher automaticamente as Listas de Verificação",
       "BoardingTime": "Tempo de Embarque",
       "DmcSelfTestTime": "Tempo de autoteste DMC",
-      "FirstOfficerAvatar": "Show First Officer Avatar",
+      "FirstOfficerAvatar": "Mostrar avatar do primeiro oficial",
       "HomeCockpitMode": "Modo Cockpit em Casa",
       "McduFocusTimeout": "Tempo limite de foco da MCDU (segundos)",
       "McduKeyboardInput": "Entrada de teclado MCDU",
       "PauseAtTod": "T/D Pause",
       "PauseAtTodDistance": "T/D Pause Distance (nm)",
-      "PilotAvatar": "Show Pilot Avatar",
+      "PilotAvatar": "Mostrar o avatar do piloto",
       "SeparateTillerFromRudderInputs": "Separar o Tiller do controlo do Leme",
-      "SyncEfis": "Sync EFIS controls between Captain and FO",
+      "SyncEfis": "Sincronizar controlos EFIS do capitão com o primeiro oficial",
       "Title": "Realismo"
     },
     "SimOptions": {
       "Active": "Ativo",
       "Auto": "Automático",
-      "Both": "Synchronized",
+      "Both": "Sincronizado",
       "Calibrate": "Calibrar",
-      "Captain": "Captain",
-      "CockpitSeatUsedToControl": "Cockpit Seat Used To Control",
+      "Captain": "Capitão",
+      "CockpitSeatUsedToControl": "Assento do cockpit usado para controlar",
       "ConesEnabled": "Cones de segurança",
-      "Copilot": "Copilot",
+      "Copilot": "Copiloto",
       "DefaultBarometerUnit": "Unidade de Barómetro Padrão",
       "DynamicRegistrationDecal": "Decalque de Registro Dinâmico",
       "EnableSimBridge": "Ativar conexão SimBridge (desativa automaticamente após 5 minutos se não houver conexão bem-sucedida)",
@@ -566,7 +566,7 @@
       "Off": "Desativado",
       "Save": "Salvar",
       "Side": "Side",
-      "SimBridgeIp": "External SimBridge Host Address",
+      "SimBridgeIp": "Endereço do anfitrião SimBridge externo",
       "SimBridgePort": "Porta SimBridge externa",
       "SyncMsfsFlightPlan": "Sincronizar plano de voo do MSFS",
       "ThrottleDetents": "Retentores da Manete",
@@ -576,9 +576,9 @@
       "inHg": "inHg"
     },
     "ThirdPartyOptions": {
-      "GsxFuelEnabled": "GSX Fueling Synchronization",
-      "GsxPayloadEnabled": "GSX Payload Synchronization",
-      "Title": "3rd Party Options"
+      "GsxFuelEnabled": "Sincronização de abastecimento GSX",
+      "GsxPayloadEnabled": "Sincronização de carga GSX",
+      "Title": "Opções de terceiros"
     },
     "ThrottleConfig": {
       "Apply": "Aplicar",
@@ -645,9 +645,9 @@
     "Sun": "Dom",
     "TT": {
       "Brightness": "Click to change Brightness",
-      "ConnectedToLocalApi": "Conectado à API local",
-      "DisconnectedFromLocalApi": "Desconectado da API local",
-      "QuickControls": "Click to open Quick Controls",
+      "ConnectedToLocalApi": "Conectado ao SimBridge",
+      "DisconnectedFromLocalApi": "Desconectado do SimBridge",
+      "QuickControls": "Clique para abrir controlos rápidos",
       "TurnOffOrShutdownEfb": "Desligar o EFB"
     },
     "Thu": "Qui",
@@ -655,13 +655,13 @@
     "Wed": "Qua"
   },
   "VersionCheck": {
-    "CurrentVersionText": "You are using the $edition edition with version:",
-    "LatestVersionText": "Latest $edition version is",
-    "RecommendationText": "Please update your aircraft using the FlyByWire Installer.",
-    "StatusBarWarning": "Outdated Aircraft Version",
+    "CurrentVersionText": "Está a usar a $edition edição com versão:",
+    "LatestVersionText": "A versão mais recente de $edition é",
+    "RecommendationText": "Por favor atualize a sua aeronave utilizando o FlyByWire Installer.",
+    "StatusBarWarning": "Versão desatualizada da aeronave",
     "TT": {
-      "StatusBarWarning": "Please update your aircraft using the FlyByWire Installer."
+      "StatusBarWarning": "Por favor atualize a sua aeronave usando o instalador FlybyWire."
     },
-    "Title": "New Version Available"
+    "Title": "Nova versão disponível"
   }
 }

@@ -452,7 +452,7 @@
     "TugDirection": "牽引方向",
     "TugInTransit": "牽引車/ピンの取り外しを準備中",
     "TugSpeed": "牽引速度",
-    "UseControllerInput": "操作の入力を使用"
+    "UseControllerInput": "コントローラー入力を使用"
   },
   "QuickControls": {
     "AlignAdirs": "ADIRSの調整完了",
