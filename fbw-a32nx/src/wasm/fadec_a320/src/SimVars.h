@@ -178,7 +178,7 @@ class SimVars {
     Engine1VibN1 = register_named_variable("A32NX_ENGINE_VIB_N1:1");
     Engine2VibN1 = register_named_variable("A32NX_ENGINE_VIB_N1:2");
     Engine1VibN2 = register_named_variable("A32NX_ENGINE_VIB_N2:1");
-    Engine2VibN2 = register_named_variable("A32NX_ENGINE_VIB_N2:2");				
+    Engine2VibN2 = register_named_variable("A32NX_ENGINE_VIB_N2:2");
     Engine1FF = register_named_variable("A32NX_ENGINE_FF:1");
     Engine2FF = register_named_variable("A32NX_ENGINE_FF:2");
     Engine1PreFF = register_named_variable("A32NX_ENGINE_PRE_FF:1");
@@ -324,7 +324,7 @@ class SimVars {
   FLOAT64 getEngine1VibN1() { return get_named_variable_value(Engine1VibN1); }
   FLOAT64 getEngine2VibN1() { return get_named_variable_value(Engine2VibN1); }
   FLOAT64 getEngine1VibN2() { return get_named_variable_value(Engine1VibN2); }
-  FLOAT64 getEngine2VibN2() { return get_named_variable_value(Engine2VibN2); }  
+  FLOAT64 getEngine2VibN2() { return get_named_variable_value(Engine2VibN2); }
   FLOAT64 getEngine1PreFF() { return get_named_variable_value(Engine1PreFF); }
   FLOAT64 getEngine2PreFF() { return get_named_variable_value(Engine2PreFF); }
   FLOAT64 getEngineImbalance() { return get_named_variable_value(EngineImbalance); }

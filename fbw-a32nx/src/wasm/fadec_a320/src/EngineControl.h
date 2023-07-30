@@ -552,7 +552,7 @@ class EngineControl {
       outFlow = 0;
     } else {
       outFlow = max(0, (correctedFuelFlow * LBS_TO_KGS * ratios->delta2(mach, ambientPressure) * sqrt(ratios->theta2(mach, ambientTemp))) -
-                paramImbalance);
+                           paramImbalance);
     }
 
     if (engine == 1) {
@@ -719,7 +719,7 @@ class EngineControl {
     double xfrAuxRight = 0;
     double fuelTotalActual = leftQuantity + rightQuantity + leftAuxQuantity + rightAuxQuantity + centerQuantity;  // LBS
     double fuelTotalPre = fuelLeftPre + fuelRightPre + fuelAuxLeftPre + fuelAuxRightPre + fuelCenterPre;          // LBS
-    double deltaFuelRate = abs(fuelTotalActual - fuelTotalPre) / (fuelWeightGallon * deltaTime);                  // LBS/ sec
+    double deltaFuelRate = abs(fuelTotalActual - fuelTotalPre) / (fuelWeightGallon * deltaTimeSeconds);           // LBS/ sec
 
     double engine1State = simVars->getEngine1State();
     double engine2State = simVars->getEngine2State();
