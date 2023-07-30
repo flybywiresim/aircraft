@@ -658,11 +658,10 @@ class EngineControl {
     }
   }
 
-  /// <summary>
-  /// FBW Fuel Consumption and Tankering
+  /// @brief FBW Fuel Consumption and Tankering
   /// Updates Fuel Consumption with realistic values
-  /// </summary>
-  void updateFuel(double deltaTime) {
+  /// @param deltaTimeSeconds Frame delta time in seconds
+  void updateFuel(double deltaTimeSeconds) {
     double m = 0;
     double b = 0;
     double fuelBurn1 = 0;
@@ -692,6 +691,7 @@ class EngineControl {
     double engine1FF = simVars->getEngine1FF();        // KG/H
     double engine2FF = simVars->getEngine2FF();        // KG/H
 
+    /// weight of one gallon of fuel in pounds
     double fuelWeightGallon = simVars->getFuelWeightGallon();
     double fuelUsedLeft = simVars->getFuelUsedLeft();    // Kg
     double fuelUsedRight = simVars->getFuelUsedRight();  // Kg
@@ -706,7 +706,9 @@ class EngineControl {
     double leftAuxQuantity = simVars->getFuelTankQuantity(4) * fuelWeightGallon;   // LBS
     double rightAuxQuantity = simVars->getFuelTankQuantity(5) * fuelWeightGallon;  // LBS
     double centerQuantity = simVars->getFuelTankQuantity(1) * fuelWeightGallon;    // LBS
-    double fuelLeft = 0;                                                           // LBS
+    /// Left inner tank fuel quantity in pounds
+    double fuelLeft = 0;
+    /// Right inner tank fuel quantity in pounds
     double fuelRight = 0;
     double fuelLeftAux = 0;
     double fuelRightAux = 0;
@@ -733,7 +735,8 @@ class EngineControl {
     isReady = simVars->getIsReady();
     devState = simVars->getDeveloperState();
 
-    deltaTime = deltaTime / 3600;
+    /// Delta time for this update in hours
+    double deltaTime = deltaTimeSeconds / 3600;
 
     // Pump State Logic for Left Wing
     if (pumpStateLeft == 0 && (timerLeft.elapsed() == 0 || timerLeft.elapsed() >= 1000)) {
@@ -902,10 +905,13 @@ class EngineControl {
       else if (xfrValveCenterRightOpen)
         xfrCenterToRight = fuelCenterPre - centerQuantity;
 
+      /// apu fuel consumption for this frame in pounds
+      double apuFuelConsumption = simVars->getLineFlow(18) * fuelWeightGallon * deltaTime;
+
       //--------------------------------------------
       // Final Fuel levels for left and right inner tanks
-      fuelLeft = (fuelLeftPre - (fuelBurn1 * KGS_TO_LBS)) + xfrAuxLeft + xfrCenterToLeft;      // LBS
-      fuelRight = (fuelRightPre - (fuelBurn2 * KGS_TO_LBS)) + xfrAuxRight + xfrCenterToRight;  // LBS
+      fuelLeft = (fuelLeftPre - (fuelBurn1 * KGS_TO_LBS)) + xfrAuxLeft + xfrCenterToLeft - apuFuelConsumption;  // LBS
+      fuelRight = (fuelRightPre - (fuelBurn2 * KGS_TO_LBS)) + xfrAuxRight + xfrCenterToRight;                   // LBS
 
       //--------------------------------------------
       // Setting new pre-cycle conditions

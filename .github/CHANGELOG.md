@@ -31,6 +31,7 @@
 1. [MCDU] Add basic annunciator support - @tracernz (Mike)
 1. [MCDU] Add basic MCDU MENU functionality - @tracernz (Mike)
 1. [MCDU] Split subsystem scratchpads - @tracernz (Mike)
+1. [APU] APU can now consume fuel - @tracernz (Mike)
 
 ## 0.10.0
 

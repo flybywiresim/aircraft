@@ -378,6 +378,9 @@ class SimVars {
   FLOAT64 getNAI(int index) { return aircraft_varget(NacelleAntiIce, m_Units->Bool, index); }
   FLOAT64 getPump(int index) { return aircraft_varget(FuelPump, m_Units->Number, index); }
   FLOAT64 getValve(int index) { return aircraft_varget(FuelValve, m_Units->Number, index); }
+  /// @brief Gets a fuel line flow rate in gallons/hour
+  /// @param index Index of the fuel line
+  /// @return Fuel line flow rate in gallons/hour
   FLOAT64 getLineFlow(int index) { return aircraft_varget(FuelLineFlow, m_Units->Gph, index); }
   FLOAT64 getJunctionSetting(int index) { return aircraft_varget(FuelJunctionSetting, m_Units->Number, index); }
 };
