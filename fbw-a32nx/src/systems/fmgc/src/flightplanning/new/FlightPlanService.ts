@@ -14,6 +14,7 @@ import { FixInfoEntry } from '@fmgc/flightplanning/new/plans/FixInfo';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/new/legs/FlightPlanLegDefinition';
 import { FlightPlanInterface } from '@fmgc/flightplanning/new/FlightPlanInterface';
+import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
 
 export class FlightPlanService implements FlightPlanInterface {
     private readonly bus = new EventBus();
@@ -338,6 +339,22 @@ export class FlightPlanService implements FlightPlanInterface {
         const plan = alternate ? this.flightPlanManager.get(finalIndex).alternateFlightPlan : this.flightPlanManager.get(finalIndex);
 
         plan.setSpeedAt(atIndex, speed, isDescentConstraint);
+    }
+
+    async addOrUpdateCruiseStep(atIndex: number, toAltitude: number, planIndex = FlightPlanIndex.Active): Promise<void> {
+        const finalIndex = this.config.TMPY_ON_CONSTRAINT_EDIT ? this.prepareDestructiveModification(planIndex) : planIndex;
+
+        const plan = this.flightPlanManager.get(finalIndex);
+
+        plan.addOrUpdateCruiseStep(atIndex, toAltitude);
+    }
+
+    async removeCruiseStep(atIndex: number, planIndex?: FlightPlanIndex): Promise<void> {
+        const finalIndex = this.config.TMPY_ON_CONSTRAINT_EDIT ? this.prepareDestructiveModification(planIndex) : planIndex;
+
+        const plan = this.flightPlanManager.get(finalIndex);
+
+        plan.removeCruiseStep(atIndex);
     }
 
     async editLegDefinition(atIndex: number, changes: Partial<FlightPlanLegDefinition>, planIndex = FlightPlanIndex.Active, alternate = false) {

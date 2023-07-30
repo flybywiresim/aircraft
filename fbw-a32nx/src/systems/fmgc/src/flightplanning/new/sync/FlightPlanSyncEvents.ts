@@ -7,6 +7,7 @@ import { Discontinuity, SerializedFlightPlanLeg } from '@fmgc/flightplanning/new
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/new/legs/FlightPlanLegDefinition';
 import { FixInfoEntry } from '@fmgc/flightplanning/new/plans/FixInfo';
 import { SerializedFlightPlan } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
+import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
 
 export interface FlightPlanSyncResponsePacket {
     plans: Record<number, SerializedFlightPlan>,
@@ -38,6 +39,11 @@ export interface FlightPlanLegDefinitionEditEvent extends FlightPlanEditSyncEven
     newDefinition: FlightPlanLegDefinition,
 }
 
+export interface FlightPlanLegCruiseStepEditEvent extends FlightPlanEditSyncEvent {
+    atIndex: number,
+    cruiseStep: CruiseStepEntry | undefined,
+}
+
 export interface FlightPlanSetFixInfoEntryEvent extends FlightPlanEditSyncEvent {
     index: 1 | 2 | 3 | 4,
     fixInfo: FixInfoEntry | null,
@@ -56,5 +62,6 @@ export interface FlightPlanSyncEvents {
     'flightPlan.setActiveLegIndex': FlightPlanSetActiveLegIndexEvent,
     'flightPlan.setSegmentLegs': FlightPlanSetSegmentLegsEvent,
     'flightPlan.legDefinitionEdit': FlightPlanLegDefinitionEditEvent,
+    'flightPlan.setLegCruiseStep': FlightPlanLegCruiseStepEditEvent,
     'flightPlan.setFixInfoEntry': FlightPlanSetFixInfoEntryEvent,
 }

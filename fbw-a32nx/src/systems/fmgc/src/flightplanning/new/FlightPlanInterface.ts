@@ -226,6 +226,10 @@ export interface FlightPlanInterface {
 
     setSpeedAt(atIndex: number, speed: number, isDescentConstraint: boolean, planIndex?: FlightPlanIndex, alternate?: boolean): Promise<void>;
 
+    addOrUpdateCruiseStep(atIndex: number, toAltitude: number, planIndex?: FlightPlanIndex): Promise<void>;
+
+    removeCruiseStep(atIndex: number, planIndex?: FlightPlanIndex): Promise<void>;
+
     editLegDefinition(atIndex: number, changes: Partial<FlightPlanLegDefinition>, planIndex?: number, alternate?: boolean): Promise<void>;
 
     setFixInfoEntry(index: 1 | 2 | 3 | 4, fixInfo: FixInfoEntry | null, planIndex: number): Promise<void>;
