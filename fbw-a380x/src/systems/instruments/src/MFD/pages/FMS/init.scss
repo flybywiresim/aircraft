@@ -1,0 +1,35 @@
+﻿@import "../../../MsfsAvionicsCommon/definitions";
+
+.initLine {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-top: 5px;
+}
+
+.initLine.initSecondLine {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.initLine.initAltnRte {
+  border-bottom: 1px solid lightgrey;
+  margin-bottom: 25px;
+  padding-bottom: 25px;
+}
+
+.initLine.initTripWind {
+  border-bottom: 1px solid lightgrey;
+  margin-bottom: 15px;
+  padding-bottom: 35px;
+}
+
+.MFDLabel.initInputFieldLabel {
+  width: 150px;
+  text-align: right;
+  padding-right: 5px;
+}
+
+.MFDLabel.initSpaceLR {
+  margin: 0px 10px 0px 10px;
+}

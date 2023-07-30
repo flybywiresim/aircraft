@@ -1,5 +1,6 @@
 import { ArraySubject, ComponentProps, DisplayComponent, FSComponent, NodeReference, Subject, Subscribable, Subscription, VNode } from '@microsoft/msfs-sdk';
 
+import './f-pln.scss';
 import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
 import { MfdComponentProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
@@ -325,7 +326,7 @@ export class MfdFmsFpln extends DisplayComponent<MfdFmsFplnProps> {
 
     private spdAltButton(): VNode {
         return (
-            <div style="flex: 1; display: flex; flex-direction: row; justify-content: space-between;">
+            <div class="fPlnSpeedAltButton">
                 <span style="text-align: center; vertical-align: center; padding-left: 10px;">
                     SPD
                 </span>
@@ -339,7 +340,7 @@ export class MfdFmsFpln extends DisplayComponent<MfdFmsFplnProps> {
 
     private efobWindButton(): VNode {
         return (
-            <div style="flex: 1; display: flex; flex-direction: row; justify-content: space-between;">
+            <div class="fPlnSpeedAltButton">
                 <span style="text-align: center; vertical-align: center;">
                     EFOB
                 </span>
@@ -383,14 +384,14 @@ export class MfdFmsFpln extends DisplayComponent<MfdFmsFplnProps> {
                             this.insertNextWptWindowOpened.set(false);
                         }}
                     />
-                    <div style="display: flex; flex-direction: row; justify-content: flex-start; margin-top: 5px; border-bottom: 1px solid lightgrey;">
-                        <div style="display: flex; width: 25%; justify-content: flex-start; align-items: center; padding-left: 3px;">
+                    <div class="fPlnHeader">
+                        <div class="fPlnHeaderFrom">
                             <span class="MFDLabel">FROM</span>
                         </div>
-                        <div style="display: flex; width: 11.5%; justify-content: center; align-items: center;">
+                        <div class="fPlnHeaderTime">
                             <span class="MFDLabel">TIME</span>
                         </div>
-                        <div ref={this.spdAltEfobWindRef} style="display: flex; width: 36%; justify-content: flex-start; margin-left: 35px; align-items: center; padding-bottom: 2px;">
+                        <div ref={this.spdAltEfobWindRef} class="fPlnHeaderSpdAlt">
                             <Button
                                 label={this.efobAndWindButtonDynamicContent}
                                 onClick={() => null}
@@ -399,18 +400,18 @@ export class MfdFmsFpln extends DisplayComponent<MfdFmsFplnProps> {
                                 menuItems={this.efobAndWindButtonMenuItems}
                             />
                         </div>
-                        <div style="display: flex; width: 9%; justify-content: flex-start; align-items: center;">
+                        <div class="fPlnHeaderTrk">
                             <span class="MFDLabel">TRK</span>
                         </div>
-                        <div style="display: flex; width: 6%; justify-content: flex-end; align-items: center;">
+                        <div class="fPlnHeaderDist">
                             <span class="MFDLabel">DIST</span>
                         </div>
-                        <div style="display: flex; width: 8%; justify-content: flex-end; align-items: center;">
+                        <div class="fPlnHeaderFpa">
                             <span class="MFDLabel">FPA</span>
                         </div>
                     </div>
                     <div ref={this.linesDivRef} />
-                    <div ref={this.tmpyLineRef} style="height: 72px; display: flex; flex-direction: row; justify-content: space-between; align-items: flex-end;">
+                    <div ref={this.tmpyLineRef} class="fPlnTmpyLine">
                         <Button
                             label={Subject.create(
                                 <div style="display: flex; flex-direction: row; justify-content: space-between;">
@@ -442,7 +443,7 @@ export class MfdFmsFpln extends DisplayComponent<MfdFmsFplnProps> {
                     </div>
                     <div style="flex-grow: 1;" />
                     {/* fill space vertically */}
-                    <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid lightgrey;">
+                    <div class="fPlnDestLine">
                         <Button
                             label="LFPG26R"
                             onClick={() => this.props.navigateTo(`fms/${this.props.activeUri.get().category}/f-pln-dep`)}
@@ -477,15 +478,15 @@ export class MfdFmsFpln extends DisplayComponent<MfdFmsFplnProps> {
                             />
                         </div>
                     </div>
-                    <div style="display: flex; justify-content: space-between; margin: 0px 0px 5px 0px; border-top: 1px solid lightgrey; padding-top: 10px;">
+                    <div class="fPlnFooter">
                         <Button label="INIT" onClick={() => this.props.navigateTo(`fms/${this.props.activeUri.get().category}/init`)} buttonStyle="width: 125px;" />
                         <Button
                             label={Subject.create(
-                                <div style="flex: 1; display: flex; flex-direction: row; justify-content: space-between;">
-                                    <span style="text-align: center; vertical-align: center; padding-left: 5px; padding-right: 10px;">
+                                <div class="fPlnDropdownButton">
+                                    <span class="fPlnDropdownButtonLabel">
                                         F-PLN INFO
                                     </span>
-                                    <span style="display: flex; align-items: center; justify-content: center;"><TriangleUp /></span>
+                                    <span class="fPlnDropdownButtonArrow"><TriangleUp /></span>
                                 </div>,
                             )}
                             onClick={() => null}
@@ -784,18 +785,18 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
             && isWaypoint(previousRow)
             && previousRow.windPrediction.direction === data.windPrediction.direction
             && !(FplnLineFlags.AfterSpecial === (this.props.flags.get() & FplnLineFlags.AfterSpecial) || FplnLineFlags.FirstLine === (this.props.flags.get() & FplnLineFlags.FirstLine))) {
-            directionStr = ':';
+            directionStr = <span style="font-family: HoneywellMCDU, monospace;">"</span>;
         } else {
-            directionStr = data.windPrediction.direction.toFixed(0).toString().padStart(3, '0');
+            directionStr = <span>{data.windPrediction.direction.toFixed(0).toString().padStart(3, '0')}</span>;
         }
 
         let speedStr = '';
         if (previousRow
             && isWaypoint(previousRow)
             && previousRow.windPrediction.speed === data.windPrediction.speed) {
-            speedStr = ':';
+            speedStr = <span style="font-family: HoneywellMCDU, monospace;">"</span>;
         } else {
-            speedStr = data.windPrediction.speed.toFixed(0).toString().padStart(3, '0');
+            speedStr = <span>{data.windPrediction.speed.toFixed(0).toString().padStart(3, '0')}</span>;
         }
 
         return (
@@ -929,16 +930,16 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
                 </div>
                 <div class="MFDFplnClickableSmallLabel" style="width: 11.5%;">
                     {!(FplnLineFlags.FirstLine === (this.props.flags.get() & FplnLineFlags.FirstLine)) && <div class="MFDFplnLegUpperRow" />}
-                    <div ref={this.timeRef} class="MFDFplnLegLowerRow" style="display: flex; justify-content: center; align-items: center;" />
+                    <div ref={this.timeRef} class="MFDFplnLegLowerRow" />
 
                 </div>
                 <div class="MFDFplnClickableSmallLabel" style="width: 15%; align-items: flex-start; padding-left: 40px;">
                     {!(FplnLineFlags.FirstLine === (this.props.flags.get() & FplnLineFlags.FirstLine)) && <div class="MFDFplnLegUpperRow" />}
-                    <div ref={this.speedRef} class="MFDFplnLegLowerRow" style="display: flex; justify-content: center; align-items: center;" />
+                    <div ref={this.speedRef} class="MFDFplnLegLowerRow" />
                 </div>
                 <div class="MFDFplnClickableSmallLabel" style="width: 21%; align-items: flex-start; padding-left: 20px;">
                     {!(FplnLineFlags.FirstLine === (this.props.flags.get() & FplnLineFlags.FirstLine)) && <div class="MFDFplnLegUpperRow" />}
-                    <div ref={this.altRef} class="MFDFplnLegLowerRow" style="display: flex; justify-content: center; align-items: center;" />
+                    <div ref={this.altRef} class="MFDFplnLegLowerRow" />
                 </div>
                 <div ref={this.connectorRef} class="MFDFplnSmallLabel" style="width: 30px; margin-right: 5px;" />
                 <div class="MFDFplnSmallLabel" style="width: 9%; align-items: flex-start;">
@@ -949,7 +950,7 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
                 </div>
                 <div class="MFDFplnSmallLabel" style="width: 6%; align-items: flex-end;">
                     {!(FplnLineFlags.FirstLine === (this.props.flags.get() & FplnLineFlags.FirstLine)) && (
-                        <div ref={this.distRef} class="MFDFplnLegUpperRow" style="text-align: right;" />
+                        <div ref={this.distRef} class="MFDFplnLegUpperRow" />
                     )}
                     <div class="MFDFplnLegLowerRow" />
                 </div>

@@ -2,6 +2,7 @@
 
 import { DisplayComponent, FSComponent, Subject, Subscription, VNode } from '@microsoft/msfs-sdk';
 
+import './init.scss';
 import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
 import { MfdComponentProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
@@ -118,8 +119,8 @@ export class MfdFmsInit extends DisplayComponent<MfdFmsInitProps> {
                 <ActivePageTitleBar activePage={this.activePageTitle} offset={Subject.create('')} eoIsActive={Subject.create(false)} tmpyIsActive={Subject.create(false)} />
                 {/* begin page content */}
                 <div class="MFDPageContainer">
-                    <div style="display: flex; flex-direction: row; align-items: center; margin-top: 5px;">
-                        <div class="MFDLabel" style="width: 150px; text-align: right; padding-right: 5px;">FLT NBR</div>
+                    <div class="initLine">
+                        <div class="MFDLabel initInputFieldLabel">FLT NBR</div>
                         <InputField<string>
                             dataEntryFormat={new LongAlphanumericFormat()}
                             mandatory={Subject.create(true)}
@@ -139,8 +140,8 @@ export class MfdFmsInit extends DisplayComponent<MfdFmsInitProps> {
                                 { label: 'CLEAR*', action: () => console.log('CLEAR') }])}
                         />
                     </div>
-                    <div style="display: flex; flex-direction: row; align-items: center; margin-top: 10px; margin-bottom: 10px;">
-                        <div class="MFDLabel" style="width: 150px; text-align: right; padding-right: 5px;">FROM</div>
+                    <div class="initLine initSecondLine">
+                        <div class="MFDLabel initInputFieldLabel">FROM</div>
                         <InputField<string>
                             dataEntryFormat={new AirportFormat()}
                             mandatory={Subject.create(true)}
@@ -148,7 +149,7 @@ export class MfdFmsInit extends DisplayComponent<MfdFmsInitProps> {
                             value={this.fromIcao}
                             alignText="center"
                         />
-                        <div class="MFDLabel" style="margin: 0px 10px 0px 10px;">TO</div>
+                        <div class="MFDLabel initSpaceLR">TO</div>
                         <InputField<string>
                             dataEntryFormat={new AirportFormat()}
                             mandatory={Subject.create(true)}
@@ -156,7 +157,7 @@ export class MfdFmsInit extends DisplayComponent<MfdFmsInitProps> {
                             value={this.toIcao}
                             alignText="center"
                         />
-                        <div class="MFDLabel" style="margin: 0px 10px 0px 10px;">ALTN</div>
+                        <div class="MFDLabel initSpaceLR">ALTN</div>
                         <InputField<string>
                             dataEntryFormat={new AirportFormat()}
                             mandatory={Subject.create(true)}
@@ -165,8 +166,8 @@ export class MfdFmsInit extends DisplayComponent<MfdFmsInitProps> {
                             alignText="center"
                         />
                     </div>
-                    <div style="display: flex; flex-direction: row; align-items: center; margin-top: 5px;">
-                        <div class="MFDLabel" style="width: 150px; text-align: right; padding-right: 5px;">CPNY RTE</div>
+                    <div class="initLine">
+                        <div class="MFDLabel initInputFieldLabel">CPNY RTE</div>
                         <InputField<string>
                             dataEntryFormat={new LongAlphanumericFormat()}
                             mandatory={this.cpnyRteMandatory}
@@ -177,8 +178,8 @@ export class MfdFmsInit extends DisplayComponent<MfdFmsInitProps> {
                         />
                         <Button label="RTE SEL" onClick={() => console.log('RTE SEL')} buttonStyle="margin-right: 10px; width: 200px;" />
                     </div>
-                    <div style="display: flex; flex-direction: row; align-items: center; margin-top: 5px; border-bottom: 1px solid lightgrey; margin-bottom: 25px; padding-bottom: 25px;">
-                        <div class="MFDLabel" style="width: 150px; text-align: right; padding-right: 5px;">ALTN RTE</div>
+                    <div class="initLine initAltnRte">
+                        <div class="MFDLabel initInputFieldLabel">ALTN RTE</div>
                         <InputField<string>
                             dataEntryFormat={new LongAlphanumericFormat()}
                             mandatory={Subject.create(false)}
@@ -190,8 +191,8 @@ export class MfdFmsInit extends DisplayComponent<MfdFmsInitProps> {
                         />
                         <Button label="ALTN RTE SEL" disabled={this.altnDisabled} onClick={() => console.log('ALTN RTE SEL')} buttonStyle="margin-right: 10px; width: 200px;" />
                     </div>
-                    <div style="display: flex; flex-direction: row; align-items: center; margin-top: 5px;">
-                        <div class="MFDLabel" style="width: 150px; text-align: right; padding-right: 5px;">CRZ FL</div>
+                    <div class="initLine">
+                        <div class="MFDLabel initInputFieldLabel">CRZ FL</div>
                         <InputField<number>
                             dataEntryFormat={new FlightLevelFormat(Subject.create(100), Subject.create(maxCertifiedAlt))}
                             mandatory={Subject.create(true)}
@@ -200,7 +201,7 @@ export class MfdFmsInit extends DisplayComponent<MfdFmsInitProps> {
                             value={this.crzFl}
                             containerStyle="margin-right: 25px;"
                         />
-                        <div class="MFDLabel" style="text-align: right; padding-right: 5px;">CRZ TEMP</div>
+                        <div class="MFDLabel initInputFieldLabel" style="width: auto;">CRZ TEMP</div>
                         <InputField<number>
                             dataEntryFormat={new CrzTempFormat()}
                             mandatory={Subject.create(false)}
@@ -210,8 +211,8 @@ export class MfdFmsInit extends DisplayComponent<MfdFmsInitProps> {
                             alignText="center"
                         />
                     </div>
-                    <div style="display: flex; flex-direction: row; align-items: center; margin-top: 10px;">
-                        <div class="MFDLabel" style="width: 150px; text-align: right; padding-right: 5px;">CI</div>
+                    <div class="initLine" style="margin-top: 10px;">
+                        <div class="MFDLabel initInputFieldLabel">CI</div>
                         <InputField<number>
                             dataEntryFormat={new CostIndexFormat()}
                             mandatory={Subject.create(true)}
@@ -220,7 +221,7 @@ export class MfdFmsInit extends DisplayComponent<MfdFmsInitProps> {
                             containerStyle="width: 70px; margin-right: 90px; justify-content: center;"
                             alignText="center"
                         />
-                        <div class="MFDLabel" style="text-align: right; padding-right: 5px;">TROPO</div>
+                        <div class="MFDLabel initInputFieldLabel" style="width: auto;">TROPO</div>
                         <InputField<number>
                             dataEntryFormat={new TropoFormat()}
                             mandatory={Subject.create(false)}
@@ -229,8 +230,8 @@ export class MfdFmsInit extends DisplayComponent<MfdFmsInitProps> {
                             alignText="flex-end"
                         />
                     </div>
-                    <div style="display: flex; flex-direction: row; align-items: center; margin-top: 5px;border-bottom: 1px solid lightgrey; margin-bottom: 15px; padding-bottom: 35px;">
-                        <div class="MFDLabel" style="width: 150px; text-align: right; padding-right: 5px; margin-top: 90px;">TRIP WIND</div>
+                    <div class="initLine initTripWind">
+                        <div class="MFDLabel initInputFieldLabel" style="margin-top: 90px;">TRIP WIND</div>
                         <InputField<number>
                             dataEntryFormat={new TripWindFormat()}
                             mandatory={Subject.create(false)}

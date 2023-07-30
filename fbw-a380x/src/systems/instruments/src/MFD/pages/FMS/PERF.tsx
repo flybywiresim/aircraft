@@ -338,7 +338,7 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                     >
                         <TopTabNavigatorPage>
                             {/* T.O */}
-                            <div style="height: 100%; flex: 1; display: flex; justify-content: space-between; border-bottom: 1px solid lightgrey;">
+                            <div class="perfToFirst">
                                 <div class="MFDLabelValueContainer" style="padding: 15px;">
                                     <span class="MFDLabel spacingRight">RWY</span>
                                     <span class="MFDGreenValue">14L</span>
@@ -352,10 +352,8 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                     />
                                 </div>
                             </div>
-                            <div style="display: flex; flex-direction: row; border-bottom: 1px solid lightgrey; padding-bottom: 10px;">
-                                <div style="flex: 5; display: grid; grid-template-columns: auto auto;
-                                justify-content: space-between; border-right: 1px solid lightgrey; padding-top: 10px; margin-top: 5px; padding-right: 20px"
-                                >
+                            <div class="perfToSecond">
+                                <div class="perfToVSpeeds">
                                     <div class="MFDLabelValueContainer">
                                         <span class="MFDLabel spacingRight">V1</span>
                                         <InputField<number>
@@ -415,7 +413,7 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                 >
                                     {this.toDeratedDialogTitle}
                                 </ConfirmationDialog>
-                                <div style="width: 200px; height: 165px; display: flex; flex-direction: column; justify-items: center; justify-content: center; ">
+                                <div class="perfToFlxToga" style="width: 200px;">
                                     <span style="width: 175px; display: inline; margin-left: 15px;">
                                         <RadioButtonGroup
                                             values={ArraySubject.create(['TOGA', 'FLEX', 'DERATED'])}
@@ -426,7 +424,7 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                         />
                                     </span>
                                 </div>
-                                <div style="width: 125px; height: 165px; display: flex; flex-direction: column; justify-items: center; justify-content: center; ">
+                                <div class="perfToFlxToga" style="width: 125px;">
                                     <div class="MFDLabelValueContainer" style="margin-top: 60px;" ref={this.toFlexInputRef}>
                                         <InputField<number>
                                             dataEntryFormat={new TemperatureFormat(Subject.create(0), Subject.create(99))}
@@ -453,7 +451,7 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                     </div>
                                 </div>
                             </div>
-                            <div style="display: grid; grid-template-columns: auto auto 15px auto auto; margin-top: 10px; padding-bottom: 15px; border-bottom: 1px solid lightgrey;">
+                            <div class="perfToFlapsPacksGrid">
                                 <div><span class="MFDLabel">FLAPS</span></div>
                                 <div><span class="MFDLabel">THS FOR</span></div>
                                 <div style="grid-row-start: span 2; border-left: 1px solid lightgrey; margin-right: 10px;" />
@@ -501,8 +499,8 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                     />
                                 </div>
                             </div>
-                            <div style="display: grid; grid-template-columns: auto auto auto auto auto; grid-auto-rows: 50px; margin: 20px 20px 20px 0px; height: 150px;">
-                                <div style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 15px; width: 125px;">
+                            <div class="perfToThrRedNoiseGrid">
+                                <div class="perfToThrRedNoiseGridCell" style="margin-bottom: 15px; width: 125px;">
                                     <span class="MFDLabel">THR RED</span>
                                 </div>
                                 <div style="margin-bottom: 15px;">
@@ -516,7 +514,7 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                     />
                                 </div>
                                 <div>
-                                    <div ref={this.toNoiseFieldsRefs[0]} style="display: flex; justify-content: flex-end; align-items: center; margin-right: 15px; margin-bottom: 15px;">
+                                    <div class="perfToThrRedNoiseGridCell" ref={this.toNoiseFieldsRefs[0]} style="margin-bottom: 15px; margin-right: 15px;">
                                         <svg fill="#ffffff" height="35px" width="35px" viewBox="0 0 60 60">
                                             <polygon points="0,28 50,28 50,20 60,30 50,40 50,32 0,32" />
                                         </svg>
@@ -539,7 +537,7 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                         <Button label="CANCEL<br />NOISE" onClick={() => this.showNoiseFields(false)} />
                                     </div>
                                 </div>
-                                <div style="display: flex; justify-content: flex-end; align-items: center; margin-right: 15px; margin-bottom: 15px; width: 125px;">
+                                <div class="perfToThrRedNoiseGridCell" style="margin-right: 15px; margin-bottom: 15px; width: 125px;">
                                     <span class="MFDLabel">ACCEL</span>
                                 </div>
                                 <div style="margin-bottom: 15px;">
@@ -553,7 +551,7 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                     />
                                 </div>
                                 <div>
-                                    <div ref={this.toNoiseFieldsRefs[3]} style="display: flex; justify-content: flex-end; align-items: center; margin-right: 15px; margin-bottom: 15px;">
+                                    <div ref={this.toNoiseFieldsRefs[3]} class="perfToThrRedNoiseGridCell" style="margin-right: 15px; margin-bottom: 15px;">
                                         <svg fill="#ffffff" height="35px" width="35px" viewBox="0 0 60 60">
                                             <polygon points="0,28 50,28 50,20 60,30 50,40 50,32 0,32" />
                                         </svg>
@@ -571,7 +569,7 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                         />
                                     </div>
                                 </div>
-                                <div style="display: flex; justify-content: flex-end; align-items: center; margin-right: 15px; margin-bottom: 15px; width: 125px;">
+                                <div class="perfToThrRedNoiseGridCell" style="margin-right: 15px; margin-bottom: 15px; width: 125px;">
                                     <span ref={this.toNoiseEndLabelRef} class="MFDLabel">NOISE END</span>
                                 </div>
                                 <div>
@@ -595,7 +593,7 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                             </div>
                             <div style="flex-grow: 1;" />
                             {/* fill space vertically */}
-                            <div style="margin: 10px 2px 3px 2px; display: flex; flex-direction: row;justify-content: space-between; padding-top: 10px; border-top: 1px solid lightgrey;">
+                            <div class="perfToBottom">
                                 <div class="MFDLabelValueContainer">
                                     <span class="MFDLabel spacingRight">TRANS</span>
                                     <InputField<number>
@@ -647,8 +645,8 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                     />
                                 </div>
                             </div>
-                            <div style="display: grid; grid-template-columns: 20% 22% 13% 45%">
-                                <div class="spdTableCell" style="border-right: 1px solid lightgrey;">
+                            <div class="perfClbGrid">
+                                <div class="spdTableCell br">
                                     <div class="MFDLabel">MODE</div>
                                 </div>
                                 <div class="spdTableCell">
@@ -657,7 +655,7 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                 <div class="spdTableCell">
                                     <div class="MFDLabel">MACH</div>
                                 </div>
-                                <div class="spdTableCell" style="flex-direction: row; justify-content: center; align-items: center;">
+                                <div class="spdTableCell">
                                     <div class="MFDLabel">PRED TO </div>
                                     <InputField<number>
                                         dataEntryFormat={new AltitudeOrFlightLevelFormat(Subject.create(0), Subject.create(maxCertifiedAlt), this.transAlt)}
@@ -667,7 +665,7 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                         alignText="flex-end"
                                     />
                                 </div>
-                                <div class="spdPreselManagedTableCell" style="border-right: 1px solid lightgrey; justify-content: flex-end;">
+                                <div class="spdPreselManagedTableCell">
                                     <div class="MFDLabel">PRESEL</div>
                                 </div>
                                 <div class="spdTableCell">
@@ -680,7 +678,7 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                 </div>
                                 <div class="spdTableCell" />
                                 <div class="spdTableCell" />
-                                <div class="spdPreselManagedTableCell" style="border-right: 1px solid lightgrey; justify-content: flex-end;">
+                                <div class="spdPreselManagedTableCell">
                                     <div class="MFDLabel green">MANAGED</div>
                                 </div>
                                 <div class="spdTableCell">
@@ -693,7 +691,7 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                 <div class="spdTableCell">
                                     <span class="MFDGreenValue">--:--   ----</span>
                                 </div>
-                                <div class="spdTableCell" style="border-right: 1px solid lightgrey; justify-content: flex-end; padding: 5px 15px 5px 15px;">
+                                <div class="spdTableCell br" style="justify-content: flex-end; padding: 5px 15px 5px 15px;">
                                     <div class="MFDLabel">ECON</div>
                                 </div>
                                 <div class="spdTableCell" style="padding: 5px 15px 5px 15px;">
@@ -711,8 +709,8 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                 <div />
                                 <div />
                             </div>
-                            <div style="display: grid; grid-template-columns: auto auto auto auto auto; grid-auto-rows: 50px; margin: 20px 20px 20px 0px; height: 150px;">
-                                <div style="display: flex; justify-content: flex-end; align-items: center; margin-right: 15px; margin-bottom: 15px; width: 125px;">
+                            <div class="perfToThrRedNoiseGrid">
+                                <div class="perfToThrRedNoiseGridCell" style="margin-right: 15px; margin-bottom: 15px; width: 125px;">
                                     <span class="MFDLabel">THR RED</span>
                                 </div>
                                 <div style="margin-bottom: 15px;">
@@ -725,7 +723,7 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                     />
                                 </div>
                                 <div>
-                                    <div ref={this.clbNoiseFieldsRefs[0]} style="display: flex; justify-content: flex-end; align-items: center; margin-right: 15px; margin-bottom: 15px;">
+                                    <div ref={this.clbNoiseFieldsRefs[0]} class="perfToThrRedNoiseGridCell" style="margin-right: 15px; margin-bottom: 15px;">
                                         <svg fill="#ffffff" height="35px" width="35px" viewBox="0 0 60 60">
                                             <polygon points="0,28 50,28 50,20 60,30 50,40 50,32 0,32" />
                                         </svg>
@@ -748,7 +746,7 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                         <Button label="CANCEL<br />NOISE" onClick={() => this.showNoiseFields(false)} />
                                     </div>
                                 </div>
-                                <div style="display: flex; justify-content: flex-end; align-items: center; margin-right: 15px; margin-bottom: 15px; width: 125px;">
+                                <div class="perfToThrRedNoiseGridCell" style="margin-right: 15px; margin-bottom: 15px; width: 125px;">
                                     <span class="MFDLabel">ACCEL</span>
                                 </div>
                                 <div style="margin-bottom: 15px;">
@@ -761,7 +759,7 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                     />
                                 </div>
                                 <div>
-                                    <div ref={this.clbNoiseFieldsRefs[3]} style="display: flex; justify-content: flex-end; align-items: center; margin-right: 15px; margin-bottom: 15px;">
+                                    <div ref={this.clbNoiseFieldsRefs[3]} class="perfToThrRedNoiseGridCell" style="margin-right: 15px; margin-bottom: 15px;">
                                         <svg fill="#ffffff" height="35px" width="35px" viewBox="0 0 60 60">
                                             <polygon points="0,28 50,28 50,20 60,30 50,40 50,32 0,32" />
                                         </svg>
@@ -779,7 +777,7 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                         />
                                     </div>
                                 </div>
-                                <div style="display: flex; justify-content: flex-end; align-items: center; margin-right: 15px; margin-bottom: 15px; width: 150px;">
+                                <div class="perfToThrRedNoiseGridCell" style="margin-right: 15px; margin-bottom: 15px; width: 150px;">
                                     <span ref={this.clbSpdLimLabelRef} class="MFDLabel">CLB SPD LIM</span>
                                     <span ref={this.clbNoiseEndLabelRef} class="MFDLabel">NOISE END</span>
                                 </div>
@@ -809,7 +807,7 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                             </div>
                             <div style="flex-grow: 1;" />
                             {/* fill space vertically */}
-                            <div style="margin: 5px 2px 3px 2px; display: flex; flex-direction: row; justify-content: flex-end; align-items: center;">
+                            <div class="perfToThrRedNoiseGridCell" style="margin: 5px 2px 3px 2px;">
                                 <div ref={this.clbNoiseButtonRef} style="display: flex;">
                                     <Button label="NOISE" onClick={() => this.showNoiseFields(true)} />
                                 </div>
@@ -844,8 +842,8 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                     />
                                 </div>
                             </div>
-                            <div style="display: grid; grid-template-columns: 20% 13% 22% 45%">
-                                <div class="spdTableCell" style="border-right: 1px solid lightgrey;">
+                            <div class="perfCrzGrid">
+                                <div class="spdTableCell br">
                                     <div class="MFDLabel">MODE</div>
                                 </div>
                                 <div class="spdTableCell">
@@ -854,7 +852,7 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                 <div class="spdTableCell">
                                     <div class="MFDLabel">SPD</div>
                                 </div>
-                                <div class="spdTableCell" style="display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                                <div class="spdTableCell" style="flex-direction: column;">
                                     <div style="display: flex; flex-direction: row; justify-content: center; align-items: center;">
                                         <div class="MFDLabel spacingRight">AT</div>
                                         <div class="MFDGreenValue bigger">TOKMA</div>
@@ -867,7 +865,7 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                         </div>
                                     </div>
                                 </div>
-                                <div class="spdPreselManagedTableCell" style="border-right: 1px solid lightgrey; justify-content: flex-end;">
+                                <div class="spdPreselManagedTableCell">
                                     <div class="MFDLabel">PRESEL</div>
                                 </div>
                                 <div class="spdTableCell">
@@ -887,7 +885,7 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                     />
                                 </div>
                                 <div class="spdTableCell" />
-                                <div class="spdPreselManagedTableCell" style="border-right: 1px solid lightgrey; justify-content: flex-end;">
+                                <div class="spdPreselManagedTableCell">
                                     <div class="MFDLabel green">MANAGED</div>
                                 </div>
                                 <div class="spdTableCell">
@@ -903,7 +901,7 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                     <span class="MFDGreenValue">00:45   298</span>
                                     <span class="MFDUnitLabel trailingUnit">NM</span>
                                 </div>
-                                <div class="spdTableCell" style="border-right: 1px solid lightgrey; justify-content: flex-end; padding: 5px 15px 5px 15px;">
+                                <div class="spdTableCell br" style="justify-content: flex-end; padding: 5px 15px 5px 15px;">
                                     <div class="MFDLabel">ECON</div>
                                 </div>
                                 <div class="spdTableCell" style="padding: 5px 15px 5px 15px;">
@@ -916,7 +914,7 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                     </div>
                                 </div>
                                 <div class="spdTableCell" style="padding: 5px 15px 5px 15px;" />
-                                <div class="spdTableCell" style="border-right: 1px solid lightgrey; border-bottom: none; justify-content: flex-end; padding: 5px;">
+                                <div class="spdTableCell br" style="border-bottom: none; justify-content: flex-end; padding: 5px;">
                                     <div class="MFDLabel">LRC</div>
                                 </div>
                                 <div class="spdTableCell" style="border-bottom: none; padding: 5px;">
@@ -929,7 +927,7 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                     </div>
                                 </div>
                                 <div />
-                                <div class="spdTableCell" style="border-right: 1px solid lightgrey; border-bottom: none; justify-content: flex-end; padding: 5px;">
+                                <div class="spdTableCell br" style="border-bottom: none; justify-content: flex-end; padding: 5px;">
                                     <div class="MFDLabel">MAX TURB</div>
                                 </div>
                                 <div class="spdTableCell" style="border-bottom: none; padding: 5px;">
@@ -945,7 +943,7 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                             </div>
                             <div style="flex-grow: 1;" />
                             {/* fill space vertically */}
-                            <div style="margin: 10px 2px 3px 2px; display: flex; flex-direction: row; justify-content: space-between; align-items: center; padding-top: 10px;">
+                            <div class="perfCrzDest">
                                 <span class="MFDLabel bigger">DEST</span>
                                 <span class="MFDLabel green bigger">LFPG</span>
                                 <span class="MFDLabel green bigger">06:38</span>
@@ -983,8 +981,8 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                     />
                                 </div>
                             </div>
-                            <div style="display: grid; grid-template-columns: 20% 13% 22% 45%">
-                                <div class="spdTableCell" style="border-right: 1px solid lightgrey;">
+                            <div class="perfCrzGrid">
+                                <div class="spdTableCell br">
                                     <div class="MFDLabel">MODE</div>
                                 </div>
                                 <div class="spdTableCell">
@@ -993,7 +991,7 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                 <div class="spdTableCell">
                                     <div class="MFDLabel">SPD</div>
                                 </div>
-                                <div class="spdTableCell" style="flex-direction: row; justify-content: center; align-items: center;">
+                                <div class="spdTableCell">
                                     <div class="MFDLabel">PRED TO </div>
                                     <InputField<number>
                                         dataEntryFormat={new AltitudeOrFlightLevelFormat(Subject.create(0), Subject.create(maxCertifiedAlt), this.transFl)}
@@ -1003,7 +1001,7 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                         alignText="flex-end"
                                     />
                                 </div>
-                                <div class="spdPreselManagedTableCell" style="border-right: 1px solid lightgrey; justify-content: flex-end;">
+                                <div class="spdPreselManagedTableCell">
                                     <div class="MFDLabel green biggest">MANAGED</div>
                                 </div>
                                 <div class="spdTableCell">
@@ -1025,18 +1023,18 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                 <div class="spdTableCell">
                                     <span class="MFDGreenValue">--:--   ----</span>
                                 </div>
-                                <div class="spdPreselManagedTableCell" style="border-right: 1px solid lightgrey; justify-content: flex-end; height: 100px;" />
+                                <div class="spdPreselManagedTableCell" style="height: 100px;" />
                                 <div class="spdTableCell" />
                                 <div class="spdTableCell" />
                                 <div class="spdTableCell" />
-                                <div class="spdTableCell" style="border-right: 1px solid lightgrey; border-bottom: none; justify-content: flex-end; height: 75px;" />
+                                <div class="spdTableCell br" style="border-bottom: none; justify-content: flex-end; height: 75px;" />
                                 <div class="spdTableCell" style="border-bottom: none; padding: 5px;" />
                                 <div class="spdTableCell" style="border-bottom: none; padding: 5px;" />
                                 <div class="spdTableCell" style="border-bottom: none; padding: 5px;" />
                             </div>
                             <div style="flex-grow: 1;" />
                             {/* fill space vertically */}
-                            <div style="margin: 10px 2px 3px 2px; display: flex; flex-direction: row; justify-content: space-between; align-items: center; padding-top: 10px;">
+                            <div class="perfCrzDest">
                                 <span class="MFDLabel bigger">DEST</span>
                                 <span class="MFDLabel green bigger">LFPG</span>
                                 <span class="MFDLabel green bigger">06:38</span>
@@ -1070,7 +1068,7 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                 <div style="flex: 5; display: flex; flex-direction: column;">
                                     <div style="border: 1px solid lightgrey; display: flex; flex-direction: column; margin: 20px 40px 20px 0px; padding: 15px;">
                                         <div style="display: flex; flex-direction: row;">
-                                            <span class="MFDLabel spacingRight" style="width: 125px; text-align: right; align-self: center; padding-left: 20px;">MAG WIND</span>
+                                            <span class="MFDLabel spacingRight apprWeather">MAG WIND</span>
                                             <div style="border: 1px solid lightgrey; display: flex; flex-direction: row; padding: 2px;">
                                                 <InputField<number>
                                                     dataEntryFormat={new WindDirectionFormat()}
@@ -1098,7 +1096,7 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                             </div>
                                         </div>
                                         <div style="display: flex; flex-direction: row; margin-top: 20px;">
-                                            <span class="MFDLabel spacingRight" style="width: 125px; text-align: right; align-self: center; padding-left: 20px;">OAT</span>
+                                            <span class="MFDLabel spacingRight apprWeather">OAT</span>
                                             <InputField<number>
                                                 dataEntryFormat={new TemperatureFormat(Subject.create(-99), Subject.create(99))}
                                                 mandatory={Subject.create(false)}
@@ -1108,7 +1106,7 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                             />
                                         </div>
                                         <div style="display: flex; flex-direction: row; margin-top: 15px;">
-                                            <span class="MFDLabel spacingRight" style="width: 125px; text-align: right; align-self: center; padding-left: 20px;">QNH</span>
+                                            <span class="MFDLabel spacingRight apprWeather">QNH</span>
                                             <InputField<number>
                                                 dataEntryFormat={new QnhFormat()}
                                                 mandatory={Subject.create(false)}
@@ -1118,32 +1116,27 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                             />
                                         </div>
                                     </div>
-                                    <div style="position: relative; border: 1px solid lightgrey; display: flex; flex-direction: column; margin: 20px 40px 20px 0px; padding: 15px;">
-                                        <span
-                                            class="MFDLabel spacingRight"
-                                            style="position: absolute; left: 10px; top: -10px;
-                                            text-align: right; align-self: center; background-color: #040404;"
-                                        >
+                                    <div class="perfApprMinimumContainer">
+                                        <span class="MFDLabel spacingRight perfApprMinimumLabel">
                                             MINIMUM
-
                                         </span>
                                         <div style="display: flex; flex-direction: row;">
-                                            <span class="MFDLabel spacingRight" style="width: 125px; text-align: right; align-self: center; padding-left: 20px;">BARO</span>
+                                            <span class="MFDLabel spacingRight apprWeather">BARO</span>
                                             <InputField<number>
                                                 dataEntryFormat={new AltitudeFormat(Subject.create(0), Subject.create(maxCertifiedAlt))}
                                                 mandatory={Subject.create(false)}
                                                 value={this.apprMinimumBaro}
-                                                containerStyle="width: 125px;"
+                                                containerStyle="width: 150px;"
                                                 alignText="flex-end"
                                             />
                                         </div>
                                         <div style="display: flex; flex-direction: row; margin-top: 15px;">
-                                            <span class="MFDLabel spacingRight" style="width: 125px; text-align: right; align-self: center; padding-left: 20px;">RADIO</span>
+                                            <span class="MFDLabel spacingRight apprWeather">RADIO</span>
                                             <InputField<number>
                                                 dataEntryFormat={new AltitudeFormat(Subject.create(0), Subject.create(maxCertifiedAlt))}
                                                 mandatory={Subject.create(false)}
                                                 value={this.apprMinimumRadio}
-                                                containerStyle="width: 125px;"
+                                                containerStyle="width: 150px;"
                                                 alignText="flex-end"
                                             />
                                         </div>
@@ -1153,29 +1146,29 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                 <div style="flex: 4; display: flex; flex-direction: column;">
                                     <div style="display: flex; flex-direction: column; align-items: center; margin-top: 30px;">
                                         <div class="MFDLabelValueContainer">
-                                            <span style="margin-right: 15px; text-align: right; width: 50px;">
+                                            <span class="perfApprFlapSpeeds">
                                                 <svg width="13" height="13" viewBox="0 0 13 13"><circle cx="6" cy="6" r="5" stroke="#00ff00" stroke-width="2" /></svg>
                                             </span>
                                             <span class="MFDGreenValue">192</span>
                                             <span class="MFDUnitLabel trailingUnit">KT</span>
                                         </div>
                                         <div class="MFDLabelValueContainer">
-                                            <span class="MFDLabel spacingRight" style="margin-right: 15px; text-align: right; width: 50px;">S</span>
+                                            <span class="MFDLabel spacingRight perfApprFlapSpeeds">S</span>
                                             <span class="MFDGreenValue">175</span>
                                             <span class="MFDUnitLabel trailingUnit">KT</span>
                                         </div>
                                         <div class="MFDLabelValueContainer">
-                                            <span class="MFDLabel spacingRight" style="margin-right: 15px; text-align: right; width: 50px;">F</span>
+                                            <span class="MFDLabel spacingRight perfApprFlapSpeeds">F</span>
                                             <span class="MFDGreenValue">161</span>
                                             <span class="MFDUnitLabel trailingUnit">KT</span>
                                         </div>
                                         <div class="MFDLabelValueContainer" style="padding-top: 15px;">
-                                            <span class="MFDLabel spacingRight" style="margin-right: 15px; text-align: right; width: 50px;">VREF</span>
+                                            <span class="MFDLabel spacingRight perfApprFlapSpeeds">VREF</span>
                                             <span class="MFDGreenValue">129</span>
                                             <span class="MFDUnitLabel trailingUnit">KT</span>
                                         </div>
                                     </div>
-                                    <div style="width: 200px; margin-top: 20px; border: 1px solid lightgrey; display: flex; flex-direction: column; align-self: center; align-items: center;">
+                                    <div class="perfApprConfBox">
                                         <RadioButtonGroup
                                             values={ArraySubject.create(['CONF 3', 'FULL'])}
                                             selectedIndex={this.apprSelectedFlapsIndex}
@@ -1188,8 +1181,8 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                             <span class="MFDUnitLabel trailingUnit">KT</span>
                                         </div>
                                     </div>
-                                    <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; align-self: center; margin-top: 20px;">
-                                        <div style="display: flex; flex-direction: row; justify-content: center; justify-self; center; ">
+                                    <div class="perfApprVappBox">
+                                        <div style="display: flex; flex-direction: row; justify-content: center; justify-self; center;">
                                             <span class="MFDLabel spacingRight" style="text-align: right; align-self: center;">VAPP</span>
                                             <InputField<number>
                                                 dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
@@ -1203,7 +1196,7 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                             </div>
                             <div style="flex-grow: 1;" />
                             {/* fill space vertically */}
-                            <div style="margin: 10px 2px 3px 2px; display: flex; flex-direction: row;justify-content: space-between; padding-top: 10px;">
+                            <div class="perfApprTransVertDev">
                                 <div class="MFDLabelValueContainer">
                                     <span class="MFDLabel spacingRight" style="width: 125px; text-align: right; align-self: center; padding-left: 20px;">TRANS</span>
                                     <InputField<number>
@@ -1243,7 +1236,7 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                             </div>
                             <div style="display: flex; flex-direction: column;">
                                 <div style="display: flex; flex-direction: row;">
-                                    <div style="display: flex; justify-content: flex-end; align-items: center; margin-right: 15px; margin-bottom: 15px; width: 150px;">
+                                    <div class="perfApprThrRedAccel">
                                         <span class="MFDLabel">THR RED</span>
                                     </div>
                                     <div style="margin-bottom: 15px;">
@@ -1257,7 +1250,7 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                     </div>
                                 </div>
                                 <div style="display: flex; flex-direction: row;">
-                                    <div style="display: flex; justify-content: flex-end; align-items: center; margin-right: 15px; margin-bottom: 15px; width: 150px;">
+                                    <div class="perfApprThrRedAccel">
                                         <span class="MFDLabel">ACCEL</span>
                                     </div>
                                     <div style="margin-bottom: 15px;">
@@ -1269,7 +1262,7 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                                             alignText="flex-end"
                                         />
                                     </div>
-                                    <div style="display: flex; justify-content: flex-end; align-items: center; margin-left: 40px; margin-right: 15px; margin-bottom: 15px; width: 125px;">
+                                    <div class="perfApprEoAccel">
                                         <span class="MFDLabel">EO ACCEL</span>
                                     </div>
                                     <div style="margin-bottom: 15px;">
@@ -1292,7 +1285,7 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
                             </div>
                         </TopTabNavigatorPage>
                     </TopTabNavigator>
-                    <div style="margin: 0px 2px 3px 2px; display: flex; flex-direction: row; justify-content: flex-start; align-items: flex-end;">
+                    <div class="perfApprFooter">
                         <div>
                             <Button label="RETURN" onClick={() => this.props.navigateTo('back')} buttonStyle="margin-right: 5px;" />
                         </div>

@@ -7,6 +7,10 @@ interface MfdAtccomHeaderProps extends MfdComponentProps {
     activeFmsSource: Subscribable<'FMS 1' | 'FMS 2' | 'FMS 1-C' | 'FMS 2-C'>;
     callsign: Subscribable<string>;
 }
+
+/*
+ * Complete header for the ATCCOM system
+ */
 export class AtccomHeader extends DisplayComponent<MfdAtccomHeaderProps> {
     // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
     private subs = [] as Subscription[];

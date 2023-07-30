@@ -1,0 +1,13 @@
+﻿@import "../../../MsfsAvionicsCommon/definitions";
+
+.msgListElementContainer {
+  margin: 75px;
+  border-top: 2px solid white;
+}
+
+.MFDLabel.msgListElement {
+  font-size: 26px;
+  height: 80px;
+  padding: 5px;
+  border-bottom: 2px solid white;
+}

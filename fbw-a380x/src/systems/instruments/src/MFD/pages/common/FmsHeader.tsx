@@ -7,6 +7,10 @@ interface MfdFmsHeaderProps extends MfdComponentProps {
     activeFmsSource: Subscribable<'FMS 1' | 'FMS 2' | 'FMS 1-C' | 'FMS 2-C'>;
     callsign: Subscribable<string>;
 }
+
+/*
+ * Complete header for the FMS system
+ */
 export class FmsHeader extends DisplayComponent<MfdFmsHeaderProps> {
     // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
     private subs = [] as Subscription[];

@@ -8,6 +8,10 @@ interface ConfirmationDialogProps extends ComponentProps {
     confirmAction: () => void;
     contentContainerStyle?: string;
 }
+
+/*
+ * Popup dialog for actions needing confirmation (e.g. DERATED TO)
+ */
 export class ConfirmationDialog extends DisplayComponent<ConfirmationDialogProps> {
     // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
     private subs = [] as Subscription[];

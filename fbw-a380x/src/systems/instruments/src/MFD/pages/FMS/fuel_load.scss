@@ -1,0 +1,43 @@
+﻿@import "../../../MsfsAvionicsCommon/definitions";
+
+.MFDLabel.fuelLoad {
+  width: 175px;
+  text-align: right;
+}
+
+.MFDLabel.middleGrid {
+  text-align: right;
+  margin-bottom: 20px;
+}
+
+.fuelLoadBlockLine {
+  display: flex;
+  flex-direction: row;
+  margin-bottom: 15px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid lightgrey;
+  align-items: center;
+}
+
+.fuelLoadMiddleGrid {
+  display: grid;
+  grid-template-columns: 125px 155px 145px 150px auto;
+  margin-top: 15px;
+  margin-bottom: 25px;
+  padding-bottom: 5px;
+  align-items: center;
+  border-bottom: 1px solid lightgrey;
+}
+
+.fuelLoadDestGridTopCell {
+  text-align: center;
+  border-bottom: 1px solid lightgrey;
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+}
+
+.fuelLoadDestGridMiddleCell {
+  text-align: center;
+  align-self: center;
+  margin-bottom: 10px;
+}

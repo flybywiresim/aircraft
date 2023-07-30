@@ -104,6 +104,9 @@ interface TopTabNavigatorProps {
     pageChangeCallback?: (index: number) => void;
 }
 
+/*
+ * Container for multiple tabs, with tab navigation at the top. Pages are instantiated as children of the component, as TopTabElement
+ */
 export class TopTabNavigator extends DisplayComponent<TopTabNavigatorProps> {
     private navigatorBarRef = FSComponent.createRef<HTMLDivElement>();
 

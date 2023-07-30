@@ -18,6 +18,9 @@ interface DropdownMenuProps extends ComponentProps {
     numberOfDigitsForInputField?: number;
 }
 
+/*
+ * Dropdown menu with optional free text entry (with black background, and cyan font color)
+ */
 export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
     // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
     private subs = [] as Subscription[];

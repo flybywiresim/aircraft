@@ -2,7 +2,7 @@
 
 import 'instruments/src/MFD/pages/common/style.scss';
 
-import { ClockEvents, ComponentProps, DisplayComponent, EventBus, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import { ArraySubject, ClockEvents, ComponentProps, DisplayComponent, EventBus, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 
 import { FmsHeader } from 'instruments/src/MFD/pages/common/FmsHeader';
 import { MouseCursor } from 'instruments/src/MFD/pages/common/MouseCursor';
@@ -15,6 +15,7 @@ import { SurvHeader } from 'instruments/src/MFD/pages/common/SurvHeader';
 import { AtccomHeader } from 'instruments/src/MFD/pages/common/AtccomHeader';
 import { MfdFmsFuelLoad } from 'instruments/src/MFD/pages/FMS/FUEL_LOAD';
 import { MfdFmsFpln } from 'instruments/src/MFD/pages/FMS/F-PLN/F-PLN';
+import { MfdMsgList } from 'instruments/src/MFD/pages/FMS/MSG_LIST';
 import { MfdSimvars } from './shared/MFDSimvarPublisher';
 import { DisplayUnit } from '../MsfsAvionicsCommon/displayUnit';
 
@@ -50,10 +51,10 @@ export class MfdComponent extends DisplayComponent<MfdProps> {
     private activeFmsSource = Subject.create<'FMS 1' | 'FMS 2' | 'FMS 1-C' | 'FMS 2-C'>('FMS 1');
 
     private activeUri = Subject.create<ActiveUriInformation>({
-        uri: 'fms/active/init',
-        sys: 'fms',
-        category: 'active',
-        page: 'init',
+        uri: '',
+        sys: '',
+        category: '',
+        page: '',
         extra: '',
     });
 
@@ -119,6 +120,13 @@ export class MfdComponent extends DisplayComponent<MfdProps> {
      */
     private navigateTo(uri: string) {
         let nextUri: string;
+
+        if (uri === this.activeUri.get().uri) {
+            // Same URL, don't navigate
+            console.info('Navigate to same URL, ignored.');
+            return;
+        }
+
         if (uri === 'back') {
             if (this.navigationStack.length === 0) {
                 return;
@@ -230,6 +238,19 @@ export class MfdComponent extends DisplayComponent<MfdProps> {
             this.activePage = <MfdNotFound bus={this.props.bus} activeUri={this.activeUri} navigateTo={(uri) => this.navigateTo(uri)} />;
             break;
         }
+
+        if (parsedUri.page === 'msg-list') {
+            this.activePage = (
+                <MfdMsgList
+                    // eslint-disable-next-line max-len
+                    messages={ArraySubject.create(['CLOSE RTE REQUEST FIRST', 'RECEIVED POS T.O DATA NOT VALID', 'CONSTRAINTS ABOVE CRZ FL DELETED', 'NOT IN DATABASE', 'GPS PRIMARY', 'CHECK T.O DATA'])}
+                    bus={this.props.bus}
+                    activeUri={this.activeUri}
+                    navigateTo={(uri) => this.navigateTo(uri)}
+                />
+            );
+        }
+
         FSComponent.render(this.activeHeader, this.activeHeaderRef.getOrDefault());
         FSComponent.render(this.activePage, this.activePageRef?.getOrDefault());
     }

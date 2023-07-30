@@ -7,6 +7,10 @@ interface ActivePageTitleBarProps extends ComponentProps {
     eoIsActive: Subscribable<boolean>;
     tmpyIsActive: Subscribable<boolean>;
 }
+
+/*
+ * Displays the title bar, with optional markers for lateral offsets, engine out and temporary flight plan
+ */
 export class ActivePageTitleBar extends DisplayComponent<ActivePageTitleBarProps> {
     render(): VNode {
         return (

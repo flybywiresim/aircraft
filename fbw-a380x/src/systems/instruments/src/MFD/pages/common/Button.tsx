@@ -15,6 +15,9 @@ export interface ButtonProps extends ComponentProps {
     onClick: () => void;
 }
 
+/*
+ * Button for MFD pages. If menuItems is set, a dropdown menu will be displayed when button is clicked
+ */
 export class Button extends DisplayComponent<ButtonProps> {
     // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
     private subs = [] as Subscription[];

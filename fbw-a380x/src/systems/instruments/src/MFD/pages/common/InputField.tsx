@@ -24,8 +24,8 @@ interface InputFieldProps<T> extends ComponentProps {
 }
 
 /**
-     * Input field for text or numbers
-     */
+ * Input field for text or numbers
+ */
 export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
     // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
     private subs = [] as Subscription[];

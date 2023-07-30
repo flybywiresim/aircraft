@@ -7,6 +7,10 @@ interface IconButtonProps extends ComponentProps {
     disabled?: Subject<boolean>;
     onClick?: () => void;
 }
+
+/*
+ * Button without text, just an icon
+ */
 export class IconButton extends DisplayComponent<IconButtonProps> {
     // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
     private subs = [] as Subscription[];

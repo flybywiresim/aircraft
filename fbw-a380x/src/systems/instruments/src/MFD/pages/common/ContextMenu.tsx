@@ -12,6 +12,10 @@ interface ContextMenuProps extends ComponentProps {
     idPrefix: string;
     opened: Subject<boolean>;
 }
+
+/*
+ * Context menu, which can be opened e.g. by clicking on F-PLN waypoints
+ */
 export class ContextMenu extends DisplayComponent<ContextMenuProps> {
     private contextMenuRef = FSComponent.createRef<HTMLDivElement>();
 

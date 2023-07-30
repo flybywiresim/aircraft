@@ -1,0 +1,221 @@
+﻿@import "../../../../MsfsAvionicsCommon/definitions";
+
+
+.MFDFplnLine {
+  color: $display-white;
+  font-family: "Ecam", monospace;
+  height: 72px;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.MFDFplnLineSecondary > div > .MFDFplnLineAnnotation,
+.MFDFplnLineSecondary > div > .MFDFplnLineIdent,
+.MFDFplnLineSecondary > .MFDFplnSmallLabel,
+.MFDFplnLineSecondary > .MFDFplnClickableSmallLabel {
+  color: $display-white;
+}
+
+.MFDFplnLineTemporary > div > .MFDFplnLineAnnotation,
+.MFDFplnLineTemporary > div > .MFDFplnLineIdent,
+.MFDFplnLineTemporary > .MFDFplnSmallLabel,
+.MFDFplnLineTemporary > .MFDFplnClickableSmallLabel,
+.MFDFplnLineTemporary > div > .MFDFplnActiveLeg {
+  color: $display-yellow;
+}
+
+.MFDFplnSpecialLine {
+  justify-content: center;
+  border: 2px solid transparent;
+}
+
+.MFDFplnSpecialLine:hover {
+  border: 2px solid $display-cyan;
+}
+
+.MFDFplnLineAnnotation {
+  height: 32px;
+  text-align: right;
+  font-size: 22px;
+  color: $display-white;
+}
+
+.MFDFplnLineIdent {
+  height: 40px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  font-size: 30px;
+  color: $display-green;
+  border: 2px solid transparent;
+}
+
+.MFDFplnLineIdent:hover {
+  border: 2px solid $display-cyan;
+}
+
+.MFDFplnLineIdent.selected {
+  background-color: $display-dark-grey;
+  color: $display-white;
+}
+
+.MFDFplnSmallLabel {
+  height: 72px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-size: 22px;
+  color: $display-green;
+}
+
+.MFDFplnClickableSmallLabel {
+  height: 72px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-size: 22px;
+  color: $display-green;
+  border: 2px solid transparent;
+}
+
+.MFDFplnClickableSmallLabel:hover {
+  border: 2px solid $display-cyan;
+}
+
+.MFDFplnLegUpperRow {
+  height: 32px;
+  text-align: right;
+}
+
+.MFDFplnLegLowerRow {
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.MFDFplnActiveLeg {
+  color: $display-white;
+}
+
+.MFDFplnConstraintRespected {
+  width: 20px;
+  text-align: center;
+  font-size: 30px;
+  color: $display-magenta;
+}
+
+.MFDFplnConstraintMissed {
+  width: 20px;
+  text-align: center;
+  font-size: 30px;
+  color: $display-amber;
+}
+
+
+.fPlnSpeedAltButton {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.fPlnHeader {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  margin-top: 5px;
+  border-bottom: 1px solid lightgrey;
+}
+
+.fPlnHeaderFrom {
+  display: flex;
+  width: 25%;
+  justify-content: flex-start;
+  align-items: center;
+  padding-left: 3px;
+}
+
+.fPlnHeaderTime {
+  display: flex;
+  width: 11.5%;
+  justify-content: center;
+  align-items: center;
+}
+
+.fPlnHeaderSpdAlt {
+  display: flex;
+  width: 36%;
+  justify-content: flex-start;
+  margin-left: 35px;
+  align-items: center;
+  padding-bottom: 2px;
+}
+
+.fPlnHeaderTrk {
+  display: flex;
+  width: 9%;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.fPlnHeaderDist {
+  display: flex;
+  width: 6%;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.fPlnHeaderFpa {
+  display: flex;
+  width: 8%;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.fPlnTmpyLine {
+  height: 72px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.fPlnDestLine {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid lightgrey;
+}
+
+.fPlnFooter {
+  display: flex;
+  justify-content: space-between;
+  margin: 0px 0px 5px 0px;
+  border-top: 1px solid lightgrey;
+  padding-top: 10px;
+}
+
+.fPlnDropdownButton {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.fPlnDropdownButtonLabel {
+  text-align: center;
+  vertical-align: center;
+  padding-left: 5px;
+  padding-right: 10px;
+}
+
+.fPlnDropdownButtonArrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

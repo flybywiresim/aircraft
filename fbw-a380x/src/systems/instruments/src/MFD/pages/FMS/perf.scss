@@ -8,10 +8,188 @@
   padding: 10px;
 }
 
+.spdTableCell.br {
+  border-right: 1px solid lightgrey;
+}
+
+.spdTableCell.bb {
+  border-bottom: 1px solid lightgrey;
+}
+
 .spdPreselManagedTableCell {
   border-bottom: 1px solid lightgrey;
+  border-right: 1px solid lightgrey;
   display: flex;
-  justify-content: center;
   align-items: center;
   padding: 20px 10px 20px 10px;
+  justify-content: flex-end;
+}
+
+.perfToFirst {
+  height: 100%;
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid lightgrey;
+}
+
+.perfToSecond {
+  display: flex;
+  flex-direction: row;
+  border-bottom: 1px solid lightgrey;
+  padding-bottom: 10px;
+}
+
+.perfToVSpeeds {
+  flex: 5;
+  display: grid;
+  grid-template-columns: auto auto;
+  justify-content: space-between;
+  border-right: 1px solid lightgrey;
+  padding-top: 10px;
+  margin-top: 5px;
+  padding-right: 20px;
+}
+
+.perfToFlxToga {
+  height: 165px;
+  display: flex;
+  flex-direction: column;
+  justify-items: center;
+  justify-content: center;
+}
+
+.perfToFlapsPacksGrid {
+  display: grid;
+  grid-template-columns: auto auto 15px auto auto;
+  margin-top: 10px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid lightgrey;
+}
+
+.perfToThrRedNoiseGrid {
+  display: grid;
+  grid-template-columns: auto auto auto auto auto;
+  grid-auto-rows: 50px;
+  margin: 20px 20px 20px 0px;
+  height: 150px;
+}
+
+.perfToThrRedNoiseGridCell {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.perfToBottom {
+  margin: 10px 2px 3px 2px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding-top: 10px;
+  border-top: 1px solid lightgrey;
+}
+
+.perfClbGrid {
+  display: grid;
+  grid-template-columns: 20% 22% 13% 45%;
+}
+
+.perfCrzGrid {
+  display: grid;
+  grid-template-columns: 20% 13% 22% 45%;
+}
+
+.perfCrzDest {
+  margin: 10px 2px 3px 2px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 10px;
+}
+
+.MFDLabel.apprWeather {
+  width: 125px;
+  text-align: right;
+  align-self: center;
+  padding-left: 20px;
+}
+
+.perfApprMinimumContainer {
+  position: relative;
+  border: 1px solid lightgrey;
+  display: flex;
+  flex-direction: column;
+  margin: 20px 40px 20px 0px;
+  padding: 15px;
+}
+
+.perfApprMinimumLabel {
+  position: absolute;
+  left: 10px;
+  top: -10px;
+  text-align: right;
+  align-self: center;
+  background-color: #040404;
+}
+
+.perfApprFlapSpeeds {
+  margin-right: 15px;
+  text-align: right;
+  width: 50px;
+}
+
+.perfApprConfBox {
+  width: 200px;
+  margin-top: 20px;
+  border: 1px solid lightgrey;
+  display: flex;
+  flex-direction: column;
+  align-self: center;
+  align-items: center;
+}
+
+.perfApprVappBox {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  align-self: center;
+  margin-top: 20px;
+}
+
+.perfApprTransVertDev {
+  margin: 10px 2px 3px 2px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding-top: 10px;
+}
+
+.perfApprThrRedAccel {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-right: 15px;
+  margin-bottom: 15px;
+  width: 150px;
+}
+
+.perfApprEoAccel {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-left: 40px;
+  margin-right: 15px;
+  margin-bottom: 15px;
+  width: 125px;
+}
+
+.perfApprFooter {
+  margin: 0px 2px 3px 2px;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: flex-end;
 }
