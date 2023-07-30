@@ -634,11 +634,11 @@ export class EfisSymbols {
             const databaseId = `A${airport.ident}${(planAltnStr)}${planIndexStr}${runwayIdentStr}`;
 
             if (runway) {
-                if (withinEditArea(runway.thresholdLocation)) {
+                if (withinEditArea(runway.startLocation)) {
                     ret.push({
                         databaseId,
                         ident: NavigationDatabase.formatLongRunwayIdent(airport.ident, runway.ident),
-                        location: runway.thresholdLocation,
+                        location: runway.startLocation,
                         direction: runway.bearing,
                         length: runway.length / MathUtils.DIV_METRES_TO_NAUTICAL_MILES,
                         type: NdSymbolTypeFlags.Runway,
