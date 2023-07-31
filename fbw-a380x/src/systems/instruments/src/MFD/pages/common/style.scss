@@ -21,48 +21,48 @@ $display-mfd-dark-grey: #3c3c3c;
   flex-direction: column;
 }
 
-.MFDLabel {
+.mfd-label {
   font-size: 20px;
   color: $display-white;
   font-family: "Ecam", monospace;
 }
 
-.MFDLabel.green {
+.mfd-label.green {
   color: $display-green;
 }
 
-.MFDLabel.bigger {
+.mfd-label.bigger {
   font-size: 24px;
 }
 
-.MFDLabel.biggest {
+.mfd-label.biggest {
   font-size: 28px;
 }
 
-.MFDUnitLabel {
+.mfd-label-unit {
   color: $display-dark-blue;
   font-size: 20px;
 }
 
-.MFDGreenValue {
+.mfd-value-green {
   color: $display-green;
   font-size: 25px;
 }
 
-.MFDGreenValue.smaller {
+.mfd-value-green.smaller {
   font-size: 20px;
 }
 
-.MFDGreenValue.bigger {
+.mfd-value-green.bigger {
   font-size: 30px;
 }
 
-.MFDCyanValue {
+.mfd-value-cyan {
   color: $display-cyan;
   font-size: 25px;
 }
 
-.MFDButton {
+.mfd-button {
   font-size: 22px;
   background-color: $display-mfd-dark-grey;
   color: $display-white;
@@ -74,24 +74,24 @@ $display-mfd-dark-grey: #3c3c3c;
   justify-content: center;
 }
 
-.MFDButton.opened {
+.mfd-button.opened {
   background-color: $display-dark-grey;
   border: 2px inset $display-light-grey;
 }
 
-.MFDButton:hover {
+.mfd-button:hover {
   border-color: $display-cyan;
 }
 
-.MFDButton.disabled {
+.mfd-button.disabled {
   color: grey;
 }
 
-.MFDButton.disabled:hover {
+.mfd-button.disabled:hover {
   border-color: $display-light-grey;
 }
 
-.MFDIconButton {
+.mfd-icon-button {
   display: flex;
   flex-direction: row;
   background-color: $display-mfd-dark-grey;
@@ -101,15 +101,15 @@ $display-mfd-dark-grey: #3c3c3c;
   align-items: center;
 }
 
-.MFDIconButton:hover {
+.mfd-icon-button:hover {
   border: 2px outset $display-cyan;
 }
 
-.MFDDropdownContainer {
+.mfd-dropdown-container {
   position: relative;
 }
 
-.MFDDropdownOuter {
+.mfd-dropdown-outer {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -117,11 +117,11 @@ $display-mfd-dark-grey: #3c3c3c;
   border: 2px outset $display-light-grey;
 }
 
-.MFDDropdownOuter:hover {
+.mfd-dropdown-outer:hover {
   border-color: $display-cyan;
 }
 
-.MFDDropdownInner {
+.mfd-dropdown-inner {
   background-color: #040405;
   display: flex;
   flex: 1;
@@ -129,7 +129,7 @@ $display-mfd-dark-grey: #3c3c3c;
   height: 40px;
 }
 
-.MFDDropdownLabel {
+.mfd-dropdown-label {
   font-size: 26px;
   color: $display-cyan;
   font-family: "Ecam", monospace;
@@ -137,24 +137,24 @@ $display-mfd-dark-grey: #3c3c3c;
   display: block;
 }
 
-.MFDDropdownLabel.opened {
+.mfd-dropdown-label.opened {
   background-color: $display-cyan;
   color: $display-background;
 }
 
-.MFDDropdownMenu::-webkit-scrollbar {
+.mfd-dropdown-menu::-webkit-scrollbar {
   width: 20px;
 }
 
-.MFDDropdownMenu::-webkit-scrollbar-track {
+.mfd-dropdown-menu::-webkit-scrollbar-track {
   background: $display-mfd-dark-grey;
 }
 
-.MFDDropdownMenu::-webkit-scrollbar-thumb {
+.mfd-dropdown-menu::-webkit-scrollbar-thumb {
   background: $display-light-grey;
 }
 
-.MFDDropdownMenu {
+.mfd-dropdown-menu {
   background-color: $display-mfd-dark-grey;
   min-width: 100%;
   position: absolute;
@@ -165,7 +165,7 @@ $display-mfd-dark-grey: #3c3c3c;
   border: 2px outset $display-light-grey;
 }
 
-.MFDDropdownMenuElement {
+.mfd-dropdown-menu-element {
   color: $display-white;
   font-size: 20px;
   padding: 12px 16px;
@@ -175,11 +175,11 @@ $display-mfd-dark-grey: #3c3c3c;
   overflow: hidden;
 }
 
-.MFDDropdownMenuElement:hover {
+.mfd-dropdown-menu-element:hover {
   border: 3px solid $display-cyan;
 }
 
-.MFDPageSelectorLabel {
+.mfd-page-selector-label {
   font-size: 22px;
   color: $display-white;
   font-family: "Ecam", monospace;
@@ -191,11 +191,11 @@ $display-mfd-dark-grey: #3c3c3c;
   border: 1px solid transparent;
 }
 
-.MFDPageSelectorLabel.active {
+.mfd-page-selector-label.active {
   border: 1px solid $display-white;
 }
 
-.MFDPageSelectorOuter {
+.mfd-page-selector-outer {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -206,58 +206,58 @@ $display-mfd-dark-grey: #3c3c3c;
   border-right: 2px solid rgba(211, 211, 211, 0.432);
 }
 
-.MFDPageSelectorOuter:hover {
+.mfd-page-selector-outer:hover {
   border-color: $display-cyan;
 }
 
-.MFDPageContainer {
+.mfd-page-container {
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
 }
 
-.spacingRight {
+.mfd-spacing-right {
   margin-right: 15px;
 }
 
-.leadingUnit {
+.mfd-unit-leading {
   margin-right: 6px;
 }
 
-.trailingUnit {
+.mfd-unit-trailing {
   margin-left: 6px;
 }
 
-.MFDTopTabNavigatorContainer {
+.mfd-top-tab-navigator-container {
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;
   margin: 2px;
 }
 
-.MFDNavigatorContainer {
+.mfd-navigator-container {
   display: flex;
   flex-direction: column;
   flex: 1;
 }
 
-.MFDNavigatorContent {
+.mfd-navigator-content {
   display: flex;
   flex-direction: column;
   flex: 1;
 }
 
-.MFDTopTabNavigatorBar {
+.mfd-top-tab-navigator-bar {
   display: flex;
 }
 
-.MFDTopTabNavigatorBarElementOuter {
+.mfd-top-tab-navigator-bar-element-outer {
   display: flex;
   flex: 1;
   border-bottom: 2px solid $display-light-grey;
 }
 
-.MFDTopTabNavigatorBarElementLabel {
+.mfd-top-tab-navigator-bar-element-label {
   display: flex;
   flex: 1;
   justify-content: center;
@@ -267,20 +267,20 @@ $display-mfd-dark-grey: #3c3c3c;
   padding: 6px 0px 2px 0px;
 }
 
-.MFDTopTabNavigatorBarElementLabel.active {
+.mfd-top-tab-navigator-bar-element-label.active {
   background-color: $display-background;
 }
 
-.MFDTopTabNavigatorBarElementLabel:hover {
+.mfd-top-tab-navigator-bar-element-label:hover {
   border: 2px outset $display-cyan;
 }
 
-.MFDTopTabNavigatorBarElementOuter.active {
+.mfd-top-tab-navigator-bar-element-outer.active {
   background-color: $display-background;
   border-bottom-style: none;
 }
 
-.MFDTopTabNavigatorTabContent {
+.mfd-top-tab-navigator-tab-content {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -290,14 +290,14 @@ $display-mfd-dark-grey: #3c3c3c;
   overflow: hidden;
 }
 
-.MFDLabelValueContainer {
+.mfd-label-value-container {
   padding: 7px;
   display: flex;
   flex-direction: row;
   align-items: center;
 }
 
-.MFDRadioButton{
+.mfd-radio-button{
   -webkit-appearance: none; /* WebKit */
   -moz-appearance: none; /* Mozilla */
   -o-appearance: none; /* Opera */
@@ -309,11 +309,11 @@ $display-mfd-dark-grey: #3c3c3c;
   border: 2px solid transparent;
 }
 
-.MFDRadioButton + .MFDRadioButton {
+.mfd-radio-button + .mfd-radio-button {
   margin-top: 5px;
 }
 
-.MFDRadioButton input[type="radio"] {
+.mfd-radio-button input[type="radio"] {
   appearance: none; /* CSS3 */
   background-color: $display-background;
   width: 30px;
@@ -325,31 +325,31 @@ $display-mfd-dark-grey: #3c3c3c;
   place-content: center;
 }
 
-.MFDRadioButton input[type="radio"]::after {
+.mfd-radio-button input[type="radio"]::after {
   display: none;
 }
 
 
-.MFDRadioButton input[type="radio"]:checked {
+.mfd-radio-button input[type="radio"]:checked {
   background: $display-cyan;
   box-shadow: inset 0 0 0px 4px black;
 }
 
 
-.MFDRadioButton input[type="radio"]:checked {
+.mfd-radio-button input[type="radio"]:checked {
   background: $display-cyan;
   box-shadow: inset 0 0 0px 4px black;
 }
 
-.MFDRadioButton input[type="radio"]:checked ~ * {
+.mfd-radio-button input[type="radio"]:checked ~ * {
   color: $display-cyan;
 }
 
-.MFDRadioButton:hover {
+.mfd-radio-button:hover {
   border: 2px outset $display-cyan;
 }
 
-.MFDContextMenu {
+.mfd-context-menu {
   background-color: $display-mfd-dark-grey;
   border: 2px outset $display-light-grey;
   position: absolute;
@@ -358,7 +358,7 @@ $display-mfd-dark-grey: #3c3c3c;
   display: none;
 }
 
-.MFDContextMenuElement {
+.mfd-context-menu-element {
   color: $display-white;
   font-size: 22px;
   text-align: left;
@@ -367,19 +367,19 @@ $display-mfd-dark-grey: #3c3c3c;
   border: 3px solid transparent;
 }
 
-.MFDContextMenuElement:hover {
+.mfd-context-menu-element:hover {
   border: 3px solid $display-cyan;
 }
 
-.MFDContextMenuElement.disabled {
+.mfd-context-menu-element.disabled {
   color: $display-dark-grey;
 }
 
-.MFDContextMenuElement.disabled:hover {
+.mfd-context-menu-element.disabled:hover {
   border: 3px solid transparent;
 }
 
-.MFDNumberInputContainer {
+.mfd-input-field-container {
   display: flex;
   flex-direction: row;
   justify-items: center;
@@ -391,15 +391,15 @@ $display-mfd-dark-grey: #3c3c3c;
   height: 37px;
 }
 
-.MFDNumberInputContainer.disabled {
+.mfd-input-field-container.disabled {
   background-color: $display-mfd-dark-grey;
 }
 
-.MFDNumberInputContainer:hover {
+.mfd-input-field-container:hover {
   border: 2px inset $display-cyan;
 }
 
-.MFDNumberInputTextInput {
+.mfd-input-field-text-input {
   background-color: $display-background;
   border: none;
   font-family: "Ecam", monospace;
@@ -409,33 +409,33 @@ $display-mfd-dark-grey: #3c3c3c;
   padding: 0px;
 }
 
-.MFDNumberInputTextInput.validating {
+.mfd-input-field-text-input.validating {
   color: $display-light-grey;
 }
 
-.MFDNumberInputTextInput.disabled {
+.mfd-input-field-text-input.disabled {
   background-color: $display-mfd-dark-grey;
   color: $display-light-grey;
 }
 
-.MFDNumberInputTextInput.mandatory {
+.mfd-input-field-text-input.mandatory {
   color: $display-amber;
 }
 
-.MFDNumberInputTextInput.valueSelected {
+.mfd-input-field-text-input.valueSelected {
   background-color: $display-cyan;
   color: $display-background;
 }
 
-.MFDNumberInputTextInput.editing {
+.mfd-input-field-text-input.editing {
   font-size: 27px !important;
 }
 
-.MFDNumberInputTextInput.computedByFms {
+.mfd-input-field-text-input.computedByFms {
   font-size: 22px;
 }
 
-.MFDInputFieldCaret {
+.mfd-input-field-caret {
   animation: blinking 1s step-start infinite;
   height: 27px;
   width: 18px;
@@ -454,7 +454,7 @@ $display-mfd-dark-grey: #3c3c3c;
   }
 }
 
-.MFDMouseCursor {
+.mfd-mouse-cursor {
   pointer-events: none;
   width: 80px;
   height: 80px;
@@ -462,7 +462,7 @@ $display-mfd-dark-grey: #3c3c3c;
   z-index: 999;
 }
 
-.MFDDialog {
+.mfd-dialog {
   z-index: 10;
   overflow: auto;
   position: absolute;

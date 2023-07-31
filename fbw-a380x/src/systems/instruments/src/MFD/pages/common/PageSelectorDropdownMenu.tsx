@@ -76,10 +76,10 @@ export class PageSelectorDropdownMenu extends DisplayComponent<PageSelectorDropd
 
     render(): VNode {
         return (
-            <div class="MFDDropdownContainer" ref={this.topRef} style={this.props.containerStyle}>
-                <div class="MFDPageSelectorOuter" ref={this.dropdownSelectorRef}>
+            <div class="mfd-dropdown-container" ref={this.topRef} style={this.props.containerStyle}>
+                <div class="mfd-page-selector-outer" ref={this.dropdownSelectorRef}>
                     <div style="display: flex; flex: 8; justify-content: center; hover:background-color: cyan;">
-                        <span class="MFDPageSelectorLabel" ref={this.dropdownSelectorLabelRef}>
+                        <span class="mfd-page-selector-label" ref={this.dropdownSelectorLabelRef}>
                             {this.props.label}
                         </span>
                     </div>
@@ -91,11 +91,11 @@ export class PageSelectorDropdownMenu extends DisplayComponent<PageSelectorDropd
                         )}
                     </div>
                 </div>
-                <div ref={this.dropdownMenuRef} class="MFDDropdownMenu" style={`display: ${this.dropdownIsOpened.get() ? 'block' : 'none'}`}>
+                <div ref={this.dropdownMenuRef} class="mfd-dropdown-menu" style={`display: ${this.dropdownIsOpened.get() ? 'block' : 'none'}`}>
                     {this.props.menuItems.map((el, idx) => (
                         <span
                             id={`${this.props.idPrefix}_${idx}`}
-                            class="MFDDropdownMenuElement"
+                            class="mfd-dropdown-menu-element"
                             style={'text-align: \'left\'; padding: 5px 16px;'}
                         >
                             {el.label}

@@ -54,15 +54,15 @@ export class DestinationWindow extends DisplayComponent<DestinationWindowProps> 
         return (
             <div ref={this.topRef} style="position: relative;">
                 <div
-                    class="MFDDialog"
+                    class="mfd-dialog"
                     style={`${this.props.contentContainerStyle ?? ''}; left: 195px; top: 225px; width: 500px; height: 300px;
                     display: flex; flex-direction: column; justify-content: space-between;`}
                 >
                     <div style="width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; padding-top: 40px; padding-left: 15px;">
-                        <span class="MFDLabel">
+                        <span class="mfd-label">
                             NEW DEST FROM
                             {' '}
-                            <span ref={this.identRef} class="MFDGreenValue bigger">{this.props.revisedWaypoint.get()?.ident ?? ''}</span>
+                            <span ref={this.identRef} class="mfd-value-green bigger">{this.props.revisedWaypoint.get()?.ident ?? ''}</span>
                         </span>
                         <div style="align-self: center; margin-top: 50px;">
                             <InputField<string>

@@ -2,7 +2,7 @@ import { ArraySubject, ComponentProps, DisplayComponent, FSComponent, NodeRefere
 
 import './f-pln.scss';
 import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
-import { MfdComponentProps } from 'instruments/src/MFD/MFD';
+import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 
 import { Button, ButtonMenuItem } from 'instruments/src/MFD/pages/common/Button';
@@ -15,7 +15,7 @@ import { getRevisionsMenu } from 'instruments/src/MFD/pages/FMS/F-PLN/FplnRevisi
 import { DestinationWindow } from 'instruments/src/MFD/pages/FMS/F-PLN/DestinationWindow';
 import { InsertNextWptFromWindow } from 'instruments/src/MFD/pages/FMS/F-PLN/InsertNextWptFrom';
 
-interface MfdFmsFplnProps extends MfdComponentProps {
+interface MfdFmsFplnProps extends AbstractMfdPageProps {
     instrument: BaseInstrument;
 }
 
@@ -269,7 +269,7 @@ export class MfdFmsFpln extends DisplayComponent<MfdFmsFplnProps> {
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        this.subs.push(this.props.activeUri.sub((val) => {
+        this.subs.push(this.props.uiService.activeUri.sub((val) => {
             switch (val.category) {
             case 'active':
                 this.activePageTitle.set('ACTIVE/F-PLN');
@@ -326,11 +326,11 @@ export class MfdFmsFpln extends DisplayComponent<MfdFmsFplnProps> {
 
     private spdAltButton(): VNode {
         return (
-            <div class="fPlnSpeedAltButton">
-                <span style="text-align: center; vertical-align: center; padding-left: 10px;">
+            <div class="mfd-fms-fpln-button-speed-alt">
+                <span style="padding-left: 10px;">
                     SPD
                 </span>
-                <span style="text-align: center; vertical-align: center; margin-right: 10px;">
+                <span style="margin-right: 10px;">
                     ALT
                 </span>
                 <span style="display: flex; align-items: center; justify-content: center;"><TriangleDown /></span>
@@ -340,11 +340,11 @@ export class MfdFmsFpln extends DisplayComponent<MfdFmsFplnProps> {
 
     private efobWindButton(): VNode {
         return (
-            <div class="fPlnSpeedAltButton">
-                <span style="text-align: center; vertical-align: center;">
+            <div class="mfd-fms-fpln-button-speed-alt">
+                <span>
                     EFOB
                 </span>
-                <span style="text-align: center; vertical-align: center; margin-left: 40px;">
+                <span style="margin-left: 40px;">
                     T.WIND
                 </span>
                 <span style="display: flex; align-items: center; justify-content: center;"><TriangleDown /></span>
@@ -357,7 +357,7 @@ export class MfdFmsFpln extends DisplayComponent<MfdFmsFplnProps> {
             <>
                 <ActivePageTitleBar activePage={this.activePageTitle} offset={Subject.create('')} eoIsActive={Subject.create(false)} tmpyIsActive={Subject.create(false)} />
                 {/* begin page content */}
-                <div class="MFDPageContainer">
+                <div class="mfd-page-container">
                     <ContextMenu
                         ref={this.revisionsMenuRef}
                         idPrefix="revisionsMenu"
@@ -384,14 +384,14 @@ export class MfdFmsFpln extends DisplayComponent<MfdFmsFplnProps> {
                             this.insertNextWptWindowOpened.set(false);
                         }}
                     />
-                    <div class="fPlnHeader">
-                        <div class="fPlnHeaderFrom">
-                            <span class="MFDLabel">FROM</span>
+                    <div class="mfd-fms-fpln-header">
+                        <div class="mfd-fms-fpln-header-from">
+                            <span class="mfd-label">FROM</span>
                         </div>
-                        <div class="fPlnHeaderTime">
-                            <span class="MFDLabel">TIME</span>
+                        <div class="mfd-fms-fpln-header-time">
+                            <span class="mfd-label">TIME</span>
                         </div>
-                        <div ref={this.spdAltEfobWindRef} class="fPlnHeaderSpdAlt">
+                        <div ref={this.spdAltEfobWindRef} class="mfd-fms-fpln-header-speed-alt">
                             <Button
                                 label={this.efobAndWindButtonDynamicContent}
                                 onClick={() => null}
@@ -400,18 +400,18 @@ export class MfdFmsFpln extends DisplayComponent<MfdFmsFplnProps> {
                                 menuItems={this.efobAndWindButtonMenuItems}
                             />
                         </div>
-                        <div class="fPlnHeaderTrk">
-                            <span class="MFDLabel">TRK</span>
+                        <div class="mfd-fms-fpln-header-trk">
+                            <span class="mfd-label">TRK</span>
                         </div>
-                        <div class="fPlnHeaderDist">
-                            <span class="MFDLabel">DIST</span>
+                        <div class="mfd-fms-fpln-header-dist">
+                            <span class="mfd-label">DIST</span>
                         </div>
-                        <div class="fPlnHeaderFpa">
-                            <span class="MFDLabel">FPA</span>
+                        <div class="mfd-fms-fpln-header-fpa">
+                            <span class="mfd-label">FPA</span>
                         </div>
                     </div>
                     <div ref={this.linesDivRef} />
-                    <div ref={this.tmpyLineRef} class="fPlnTmpyLine">
+                    <div ref={this.tmpyLineRef} class="mfd-fms-fpln-line-erase-temporary">
                         <Button
                             label={Subject.create(
                                 <div style="display: flex; flex-direction: row; justify-content: space-between;">
@@ -443,20 +443,20 @@ export class MfdFmsFpln extends DisplayComponent<MfdFmsFplnProps> {
                     </div>
                     <div style="flex-grow: 1;" />
                     {/* fill space vertically */}
-                    <div class="fPlnDestLine">
+                    <div class="mfd-fms-fpln-line-destination">
                         <Button
                             label="LFPG26R"
-                            onClick={() => this.props.navigateTo(`fms/${this.props.activeUri.get().category}/f-pln-dep`)}
+                            onClick={() => this.props.uiService.navigateTo(`fms/${this.props.uiService.activeUri.get().category}/f-pln-dep`)}
                             buttonStyle="font-size: 30px; width: 150px; margin-right: 5px;"
                         />
-                        <span class="MFDLabel">20:08</span>
-                        <div class="MFDLabelValueContainer">
-                            <span class="MFDLabel">74.5</span>
-                            <span class="MFDUnitLabel trailingUnit">T</span>
+                        <span class="mfd-label">20:08</span>
+                        <div class="mfd-label-value-container">
+                            <span class="mfd-label">74.5</span>
+                            <span class="mfd-label-unit mfd-unit-trailing">T</span>
                         </div>
-                        <div class="MFDLabelValueContainer">
-                            <span class="MFDLabel">6009</span>
-                            <span class="MFDUnitLabel trailingUnit">NM</span>
+                        <div class="mfd-label-value-container">
+                            <span class="mfd-label">6009</span>
+                            <span class="mfd-label-unit mfd-unit-trailing">NM</span>
                         </div>
                         <div style="display: flex; flex-direction: row; margin-top: 5px; margin-bottom: 5px;">
                             <IconButton
@@ -473,20 +473,20 @@ export class MfdFmsFpln extends DisplayComponent<MfdFmsFplnProps> {
                             />
                             <Button
                                 label="DEST"
-                                onClick={() => this.props.navigateTo(`fms/${this.props.activeUri.get().category}/f-pln-arrival`)}
+                                onClick={() => this.props.uiService.navigateTo(`fms/${this.props.uiService.activeUri.get().category}/f-pln-arrival`)}
                                 buttonStyle="height: 60px; margin-right: 5px; padding: auto 15px auto 15px;"
                             />
                         </div>
                     </div>
-                    <div class="fPlnFooter">
-                        <Button label="INIT" onClick={() => this.props.navigateTo(`fms/${this.props.activeUri.get().category}/init`)} buttonStyle="width: 125px;" />
+                    <div class="mfd-fms-fpln-footer">
+                        <Button label="INIT" onClick={() => this.props.uiService.navigateTo(`fms/${this.props.uiService.activeUri.get().category}/init`)} buttonStyle="width: 125px;" />
                         <Button
                             label={Subject.create(
-                                <div class="fPlnDropdownButton">
-                                    <span class="fPlnDropdownButtonLabel">
+                                <div class="mfd-fms-fpln-button-dropdown">
+                                    <span class="mfd-fms-fpln-button-dropdown-label">
                                         F-PLN INFO
                                     </span>
-                                    <span class="fPlnDropdownButtonArrow"><TriangleUp /></span>
+                                    <span class="mfd-fms-fpln-button-dropdown-arrow"><TriangleUp /></span>
                                 </div>,
                             )}
                             onClick={() => null}
@@ -494,38 +494,42 @@ export class MfdFmsFpln extends DisplayComponent<MfdFmsFplnProps> {
                             idPrefix="f-pln-infoBtn"
                             menuItems={Subject.create([{
                                 label: 'ALTERNATE',
-                                action: () => this.props.navigateTo(`fms/${this.props.activeUri.get().category}/f-pln-alternate`),
+                                action: () => this.props.uiService.navigateTo(`fms/${this.props.uiService.activeUri.get().category}/f-pln-alternate`),
                             },
                             {
                                 label: 'CLOSEST AIRPORTS',
-                                action: () => this.props.navigateTo(`fms/${this.props.activeUri.get().category}/f-pln-closest-airports`),
+                                action: () => this.props.uiService.navigateTo(`fms/${this.props.uiService.activeUri.get().category}/f-pln-closest-airports`),
                             },
                             {
                                 label: 'EQUI-TIME POINT',
-                                action: () => this.props.navigateTo(`fms/${this.props.activeUri.get().category}/f-pln-equi-time-point`),
+                                action: () => this.props.uiService.navigateTo(`fms/${this.props.uiService.activeUri.get().category}/f-pln-equi-time-point`),
                             },
                             {
                                 label: 'FIX INFO',
-                                action: () => this.props.navigateTo(`fms/${this.props.activeUri.get().category}/f-pln-fix-info`),
+                                action: () => this.props.uiService.navigateTo(`fms/${this.props.uiService.activeUri.get().category}/f-pln-fix-info`),
                             },
                             {
                                 label: 'LL CROSSING',
-                                action: () => this.props.navigateTo(`fms/${this.props.activeUri.get().category}/f-pln-ll-xing-time-mkr`),
+                                action: () => this.props.uiService.navigateTo(`fms/${this.props.uiService.activeUri.get().category}/f-pln-ll-xing-time-mkr`),
                             },
                             {
                                 label: 'TIME MARKER',
-                                action: () => this.props.navigateTo(`fms/${this.props.activeUri.get().category}/f-pln-ll-xing-time-mkr`),
+                                action: () => this.props.uiService.navigateTo(`fms/${this.props.uiService.activeUri.get().category}/f-pln-ll-xing-time-mkr`),
                             },
                             {
                                 label: 'CPNY F-PLN REPORT',
                                 action: () => null,
                             }])}
                         />
-                        <Button label="DIR TO" onClick={() => this.props.navigateTo(`fms/${this.props.activeUri.get().category}/f-pln-direct-to`)} buttonStyle="margin-right: 5px;" />
+                        <Button
+                            label="DIR TO"
+                            onClick={() => this.props.uiService.navigateTo(`fms/${this.props.uiService.activeUri.get().category}/f-pln-direct-to`)}
+                            buttonStyle="margin-right: 5px;"
+                        />
                     </div>
                     {/* end page content */}
                 </div>
-                <Footer bus={this.props.bus} activeUri={this.props.activeUri} navigateTo={this.props.navigateTo} />
+                <Footer bus={this.props.bus} uiService={this.props.uiService} />
             </>
         );
     }
@@ -534,17 +538,11 @@ export class MfdFmsFpln extends DisplayComponent<MfdFmsFplnProps> {
 interface FplnLineCommonProps extends ComponentProps {
     openRevisionsMenuCallback: () => void;
 }
-
-enum FplnLineType {
-    Waypoint,
-    Special,
-  }
-
 enum FplnLineColor {
     Active = '#00ff00',
     Temporary = '#ffff00',
     Secondary = '#ffffff'
-  }
+}
 
 enum FplnLineFlags {
     None = 0,
@@ -554,7 +552,13 @@ enum FplnLineFlags {
     BeforeActiveLeg = 1 << 3,
     IsActiveLeg = 1 << 4,
     LastLine = 1 << 5,
-  }
+}
+
+  enum FplnLineType {
+    Waypoint,
+    Special,
+}
+
 interface FplnLineTypeDiscriminator {
     /*
      * waypoint: Regular or pseudo waypoints
@@ -644,9 +648,9 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
 
         this.subs.push(this.props.flags.sub((val) => {
             if (FplnLineFlags.IsActiveLeg === (val & FplnLineFlags.IsActiveLeg)) {
-                this.allRefs.forEach((ref) => (ref.getOrDefault() ? ref.getOrDefault().classList.add('MFDFplnActiveLeg') : null));
+                this.allRefs.forEach((ref) => (ref.getOrDefault() ? ref.getOrDefault().classList.add('mfd-fms-fpln-leg-active') : null));
             } else {
-                this.allRefs.forEach((ref) => (ref.getOrDefault() ? ref.getOrDefault().classList.remove('MFDFplnActiveLeg') : null));
+                this.allRefs.forEach((ref) => (ref.getOrDefault() ? ref.getOrDefault().classList.remove('mfd-fms-fpln-leg-active') : null));
             }
         }, true));
 
@@ -691,14 +695,14 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
             }
 
             if (this.props.lineColor.get() === FplnLineColor.Active) {
-                this.lineRef.getOrDefault().classList.remove('MFDFplnLineSecondary');
-                this.lineRef.getOrDefault().classList.remove('MFDFplnLineTemporary');
+                this.lineRef.getOrDefault().classList.remove('mfd-fms-fpln-line-secondary');
+                this.lineRef.getOrDefault().classList.remove('mfd-fms-fpln-line-temporary');
             } else if (this.props.lineColor.get() === FplnLineColor.Secondary) {
-                this.lineRef.getOrDefault().classList.add('MFDFplnLineSecondary');
-                this.lineRef.getOrDefault().classList.remove('MFDFplnLineTemporary');
+                this.lineRef.getOrDefault().classList.add('mfd-fms-fpln-line-secondary');
+                this.lineRef.getOrDefault().classList.remove('mfd-fms-fpln-line-temporary');
             } else if (this.props.lineColor.get() === FplnLineColor.Temporary) {
-                this.lineRef.getOrDefault().classList.add('MFDFplnLineTemporary');
-                this.lineRef.getOrDefault().classList.remove('MFDFplnLineSecondary');
+                this.lineRef.getOrDefault().classList.add('mfd-fms-fpln-line-temporary');
+                this.lineRef.getOrDefault().classList.remove('mfd-fms-fpln-line-secondary');
             }
 
             // TODO: Hold/turn direction
@@ -768,12 +772,12 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
         if (this.props.displayEfobAndWind.get() === true) {
             this.altRef.instance.style.alignSelf = 'flex-end';
             this.altRef.instance.style.paddingRight = '20px';
-            this.speedRef.instance.parentElement.className = 'MFDFplnSmallLabel';
+            this.speedRef.instance.parentElement.className = 'mfd-fms-fpln-label-small';
             this.speedRef.instance.style.paddingLeft = '10px';
         } else {
             this.altRef.instance.style.alignSelf = null;
             this.altRef.instance.style.paddingRight = null;
-            this.speedRef.instance.parentElement.className = 'MFDFplnClickableSmallLabel';
+            this.speedRef.instance.parentElement.className = 'mfd-fms-fpln-label-small-clickable';
             this.speedRef.instance.style.paddingLeft = null;
         }
     }
@@ -828,14 +832,14 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
             if (data.altitudeConstraintIsRespected) {
                 return (
                     <>
-                        <span class="MFDFplnConstraintRespected">*</span>
+                        <span class="mfd-fms-fpln-leg-constraint-respected">*</span>
                         <span>{altStr}</span>
                     </>
                 );
             }
             return (
                 <>
-                    <span class="MFDFplnConstraintMissed">*</span>
+                    <span class="mfd-fms-fpln-leg-constraint-missed">*</span>
                     <span>{altStr}</span>
                 </>
             );
@@ -859,14 +863,14 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
             if (data.speedConstraintIsRespected) {
                 return (
                     <>
-                        <span class="MFDFplnConstraintRespected">*</span>
+                        <span class="mfd-fms-fpln-leg-constraint-respected">*</span>
                         <span>{speedStr}</span>
                     </>
                 );
             }
             return (
                 <>
-                    <span class="MFDFplnConstraintMissed">*</span>
+                    <span class="mfd-fms-fpln-leg-constraint-missed">*</span>
                     <span>{speedStr}</span>
                 </>
             );
@@ -919,46 +923,46 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
         return (
             <div
                 ref={this.lineRef}
-                class="MFDFplnLine"
+                class="mfd-fms-fpln-line"
                 style={`${FplnLineFlags.FirstLine === (this.props.flags.get() & FplnLineFlags.FirstLine) ? 'height: 40px; margin-top: 16px;' : 'height: 72px;'};`}
             >
                 <div style="width: 25%; display: flex; flex-direction: column;">
                     {!(FplnLineFlags.FirstLine === (this.props.flags.get() & FplnLineFlags.FirstLine)) && (
-                        <div ref={this.annotationRef} class="MFDFplnLineAnnotation" />
+                        <div ref={this.annotationRef} class="mfd-fms-fpln-line-annotation" />
                     )}
-                    <div ref={this.identRef} class="MFDFplnLineIdent" />
+                    <div ref={this.identRef} class="mfd-fms-fpln-line-ident" />
                 </div>
-                <div class="MFDFplnClickableSmallLabel" style="width: 11.5%;">
-                    {!(FplnLineFlags.FirstLine === (this.props.flags.get() & FplnLineFlags.FirstLine)) && <div class="MFDFplnLegUpperRow" />}
-                    <div ref={this.timeRef} class="MFDFplnLegLowerRow" />
+                <div class="mfd-fms-fpln-label-small-clickable" style="width: 11.5%;">
+                    {!(FplnLineFlags.FirstLine === (this.props.flags.get() & FplnLineFlags.FirstLine)) && <div class="mfd-fms-fpln-leg-upper-row" />}
+                    <div ref={this.timeRef} class="mfd-fms-fpln-leg-lower-row" />
 
                 </div>
-                <div class="MFDFplnClickableSmallLabel" style="width: 15%; align-items: flex-start; padding-left: 40px;">
-                    {!(FplnLineFlags.FirstLine === (this.props.flags.get() & FplnLineFlags.FirstLine)) && <div class="MFDFplnLegUpperRow" />}
-                    <div ref={this.speedRef} class="MFDFplnLegLowerRow" />
+                <div class="mfd-fms-fpln-label-small-clickable" style="width: 15%; align-items: flex-start; padding-left: 40px;">
+                    {!(FplnLineFlags.FirstLine === (this.props.flags.get() & FplnLineFlags.FirstLine)) && <div class="mfd-fms-fpln-leg-upper-row" />}
+                    <div ref={this.speedRef} class="mfd-fms-fpln-leg-lower-row" />
                 </div>
-                <div class="MFDFplnClickableSmallLabel" style="width: 21%; align-items: flex-start; padding-left: 20px;">
-                    {!(FplnLineFlags.FirstLine === (this.props.flags.get() & FplnLineFlags.FirstLine)) && <div class="MFDFplnLegUpperRow" />}
-                    <div ref={this.altRef} class="MFDFplnLegLowerRow" />
+                <div class="mfd-fms-fpln-label-small-clickable" style="width: 21%; align-items: flex-start; padding-left: 20px;">
+                    {!(FplnLineFlags.FirstLine === (this.props.flags.get() & FplnLineFlags.FirstLine)) && <div class="mfd-fms-fpln-leg-upper-row" />}
+                    <div ref={this.altRef} class="mfd-fms-fpln-leg-lower-row" />
                 </div>
-                <div ref={this.connectorRef} class="MFDFplnSmallLabel" style="width: 30px; margin-right: 5px;" />
-                <div class="MFDFplnSmallLabel" style="width: 9%; align-items: flex-start;">
+                <div ref={this.connectorRef} class="mfd-fms-fpln-label-small" style="width: 30px; margin-right: 5px;" />
+                <div class="mfd-fms-fpln-label-small" style="width: 9%; align-items: flex-start;">
                     {!(FplnLineFlags.FirstLine === (this.props.flags.get() & FplnLineFlags.FirstLine)) && (
-                        <div ref={this.trackRef} class="MFDFplnLegUpperRow" />
+                        <div ref={this.trackRef} class="mfd-fms-fpln-leg-upper-row" />
                     )}
-                    <div class="MFDFplnLegLowerRow" />
+                    <div class="mfd-fms-fpln-leg-lower-row" />
                 </div>
-                <div class="MFDFplnSmallLabel" style="width: 6%; align-items: flex-end;">
+                <div class="mfd-fms-fpln-label-small" style="width: 6%; align-items: flex-end;">
                     {!(FplnLineFlags.FirstLine === (this.props.flags.get() & FplnLineFlags.FirstLine)) && (
-                        <div ref={this.distRef} class="MFDFplnLegUpperRow" />
+                        <div ref={this.distRef} class="mfd-fms-fpln-leg-upper-row" />
                     )}
-                    <div class="MFDFplnLegLowerRow" />
+                    <div class="mfd-fms-fpln-leg-lower-row" />
                 </div>
-                <div class="MFDFplnSmallLabel" style="width: 8%; align-items: flex-end;">
+                <div class="mfd-fms-fpln-label-small" style="width: 8%; align-items: flex-end;">
                     {!(FplnLineFlags.FirstLine === (this.props.flags.get() & FplnLineFlags.FirstLine)) && (
-                        <div ref={this.fpaRef} class="MFDFplnLegUpperRow" />
+                        <div ref={this.fpaRef} class="mfd-fms-fpln-leg-upper-row" />
                     )}
-                    <div class="MFDFplnLegLowerRow" />
+                    <div class="mfd-fms-fpln-leg-lower-row" />
                 </div>
             </div>
         );
@@ -969,7 +973,7 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
         return (
             <div
                 ref={this.identRef}
-                class="MFDFplnLine MFDFplnSpecialLine"
+                class="MFDFplnLine mfd-fms-fpln-line-special"
                 style={`font-size: 30px; ${FplnLineFlags.FirstLine === (this.props.flags.get() & FplnLineFlags.FirstLine) ? 'height: 40px; margin-top: 16px;' : 'height: 72px;'};`}
             >
                 {delimiter}

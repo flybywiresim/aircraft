@@ -3,10 +3,10 @@
 import { DisplayComponent, FSComponent, Subject, Subscription, VNode } from '@microsoft/msfs-sdk';
 
 import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
-import { MfdComponentProps } from 'instruments/src/MFD/MFD';
+import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 
-interface MfdNotFoundProps extends MfdComponentProps {
+interface MfdNotFoundProps extends AbstractMfdPageProps {
 }
 
 export class MfdNotFound extends DisplayComponent<MfdNotFoundProps> {
@@ -16,7 +16,7 @@ export class MfdNotFound extends DisplayComponent<MfdNotFoundProps> {
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        new Promise((resolve) => setTimeout(resolve, 500)).then(() => this.props.navigateTo('back'));
+        new Promise((resolve) => setTimeout(resolve, 500)).then(() => this.props.uiService.navigateTo('back'));
     }
 
     public destroy(): void {
@@ -31,9 +31,9 @@ export class MfdNotFound extends DisplayComponent<MfdNotFoundProps> {
             <>
                 <ActivePageTitleBar activePage={Subject.create('ERROR 404 NOT FOUND')} offset={Subject.create('')} eoIsActive={Subject.create(false)} tmpyIsActive={Subject.create(false)} />
                 {/* begin page content */}
-                <div class="MFDPageContainer" />
+                <div class="mfd-page-container" />
                 {/* end page content */}
-                <Footer bus={this.props.bus} activeUri={this.props.activeUri} navigateTo={this.props.navigateTo} />
+                <Footer bus={this.props.bus} uiService={this.props.uiService} />
             </>
         );
     }

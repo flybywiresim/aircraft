@@ -1,7 +1,7 @@
 ﻿@import "../../../../MsfsAvionicsCommon/definitions";
 
 
-.MFDFplnLine {
+.mfd-fms-fpln-line {
   color: $display-white;
   font-family: "Ecam", monospace;
   height: 72px;
@@ -11,38 +11,38 @@
   align-items: center;
 }
 
-.MFDFplnLineSecondary > div > .MFDFplnLineAnnotation,
-.MFDFplnLineSecondary > div > .MFDFplnLineIdent,
-.MFDFplnLineSecondary > .MFDFplnSmallLabel,
-.MFDFplnLineSecondary > .MFDFplnClickableSmallLabel {
+.mfd-fms-fpln-line-secondary > div > .mfd-fms-fpln-line-annotation,
+.mfd-fms-fpln-line-secondary > div > .mfd-fms-fpln-line-ident,
+.mfd-fms-fpln-line-secondary > .mfd-fms-fpln-label-small,
+.mfd-fms-fpln-line-secondary > .mfd-fms-fpln-label-small-clickable {
   color: $display-white;
 }
 
-.MFDFplnLineTemporary > div > .MFDFplnLineAnnotation,
-.MFDFplnLineTemporary > div > .MFDFplnLineIdent,
-.MFDFplnLineTemporary > .MFDFplnSmallLabel,
-.MFDFplnLineTemporary > .MFDFplnClickableSmallLabel,
-.MFDFplnLineTemporary > div > .MFDFplnActiveLeg {
+.mfd-fms-fpln-line-temporary > div > .mfd-fms-fpln-line-annotation,
+.mfd-fms-fpln-line-temporary > div > .mfd-fms-fpln-line-ident,
+.mfd-fms-fpln-line-temporary > .mfd-fms-fpln-label-small,
+.mfd-fms-fpln-line-temporary > .mfd-fms-fpln-label-small-clickable,
+.mfd-fms-fpln-line-temporary > div > .mfd-fms-fpln-leg-active {
   color: $display-yellow;
 }
 
-.MFDFplnSpecialLine {
+.mfd-fms-fpln-line-special {
   justify-content: center;
   border: 2px solid transparent;
 }
 
-.MFDFplnSpecialLine:hover {
+.mfd-fms-fpln-line-special:hover {
   border: 2px solid $display-cyan;
 }
 
-.MFDFplnLineAnnotation {
+.mfd-fms-fpln-line-annotation {
   height: 32px;
   text-align: right;
   font-size: 22px;
   color: $display-white;
 }
 
-.MFDFplnLineIdent {
+.mfd-fms-fpln-line-ident {
   height: 40px;
   display: flex;
   justify-content: flex-start;
@@ -52,16 +52,16 @@
   border: 2px solid transparent;
 }
 
-.MFDFplnLineIdent:hover {
+.mfd-fms-fpln-line-ident:hover {
   border: 2px solid $display-cyan;
 }
 
-.MFDFplnLineIdent.selected {
+.mfd-fms-fpln-line-ident.selected {
   background-color: $display-dark-grey;
   color: $display-white;
 }
 
-.MFDFplnSmallLabel {
+.mfd-fms-fpln-label-small {
   height: 72px;
   display: flex;
   flex-direction: column;
@@ -71,7 +71,7 @@
   color: $display-green;
 }
 
-.MFDFplnClickableSmallLabel {
+.mfd-fms-fpln-label-small-clickable {
   height: 72px;
   display: flex;
   flex-direction: column;
@@ -82,34 +82,34 @@
   border: 2px solid transparent;
 }
 
-.MFDFplnClickableSmallLabel:hover {
+.mfd-fms-fpln-label-small-clickable:hover {
   border: 2px solid $display-cyan;
 }
 
-.MFDFplnLegUpperRow {
+.mfd-fms-fpln-leg-upper-row {
   height: 32px;
   text-align: right;
 }
 
-.MFDFplnLegLowerRow {
+.mfd-fms-fpln-leg-lower-row {
   height: 40px;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-.MFDFplnActiveLeg {
+.mfd-fms-fpln-leg-active {
   color: $display-white;
 }
 
-.MFDFplnConstraintRespected {
+.mfd-fms-fpln-leg-constraint-respected {
   width: 20px;
   text-align: center;
   font-size: 30px;
   color: $display-magenta;
 }
 
-.MFDFplnConstraintMissed {
+.mfd-fms-fpln-leg-constraint-missed {
   width: 20px;
   text-align: center;
   font-size: 30px;
@@ -117,14 +117,19 @@
 }
 
 
-.fPlnSpeedAltButton {
+.mfd-fms-fpln-button-speed-alt {
   flex: 1;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
 }
 
-.fPlnHeader {
+.mfd-fms-fpln-button-speed-alt > span {
+  text-align: center;
+  vertical-align: center;
+}
+
+.mfd-fms-fpln-header {
   display: flex;
   flex-direction: row;
   justify-content: flex-start;
@@ -132,7 +137,7 @@
   border-bottom: 1px solid lightgrey;
 }
 
-.fPlnHeaderFrom {
+.mfd-fms-fpln-header-from {
   display: flex;
   width: 25%;
   justify-content: flex-start;
@@ -140,14 +145,14 @@
   padding-left: 3px;
 }
 
-.fPlnHeaderTime {
+.mfd-fms-fpln-header-time {
   display: flex;
   width: 11.5%;
   justify-content: center;
   align-items: center;
 }
 
-.fPlnHeaderSpdAlt {
+.mfd-fms-fpln-header-speed-alt {
   display: flex;
   width: 36%;
   justify-content: flex-start;
@@ -156,28 +161,28 @@
   padding-bottom: 2px;
 }
 
-.fPlnHeaderTrk {
+.mfd-fms-fpln-header-trk {
   display: flex;
   width: 9%;
   justify-content: flex-start;
   align-items: center;
 }
 
-.fPlnHeaderDist {
+.mfd-fms-fpln-header-dist {
   display: flex;
   width: 6%;
   justify-content: flex-end;
   align-items: center;
 }
 
-.fPlnHeaderFpa {
+.mfd-fms-fpln-header-fpa {
   display: flex;
   width: 8%;
   justify-content: flex-end;
   align-items: center;
 }
 
-.fPlnTmpyLine {
+.mfd-fms-fpln-line-erase-temporary {
   height: 72px;
   display: flex;
   flex-direction: row;
@@ -185,14 +190,14 @@
   align-items: flex-end;
 }
 
-.fPlnDestLine {
+.mfd-fms-fpln-line-destination {
   display: flex;
   justify-content: space-between;
   align-items: center;
   border-top: 1px solid lightgrey;
 }
 
-.fPlnFooter {
+.mfd-fms-fpln-footer {
   display: flex;
   justify-content: space-between;
   margin: 0px 0px 5px 0px;
@@ -200,21 +205,21 @@
   padding-top: 10px;
 }
 
-.fPlnDropdownButton {
+.mfd-fms-fpln-button-dropdown {
   flex: 1;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
 }
 
-.fPlnDropdownButtonLabel {
+.mfd-fms-fpln-button-dropdown-label {
   text-align: center;
   vertical-align: center;
   padding-left: 5px;
   padding-right: 10px;
 }
 
-.fPlnDropdownButtonArrow {
+.mfd-fms-fpln-button-dropdown-arrow {
   display: flex;
   align-items: center;
   justify-content: center;

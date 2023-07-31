@@ -58,10 +58,10 @@ export class ContextMenu extends DisplayComponent<ContextMenuProps> {
 
     render(): VNode {
         return (
-            <div ref={this.contextMenuRef} class="MFDContextMenu">
+            <div ref={this.contextMenuRef} class="mfd-context-menu">
                 {this.props.values.getArray().map((el, idx) => (
                     <span
-                        class={`MFDContextMenuElement${el.disabled === true ? ' disabled' : ''}`}
+                        class={`mfd-context-menu-element${el.disabled === true ? ' disabled' : ''}`}
                         id={`${this.props.idPrefix}_${idx}`}
                     >
                         {el.title}

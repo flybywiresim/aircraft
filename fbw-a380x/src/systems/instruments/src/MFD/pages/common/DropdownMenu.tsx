@@ -104,7 +104,7 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
                 const n: VNode = (
                     <span
                         id={`${this.props.idPrefix}_${idx}`}
-                        class="MFDDropdownMenuElement"
+                        class="mfd-dropdown-menu-element"
                         style={`text-align: ${this.props.alignLabels};`}
                     >
                         {el}
@@ -172,9 +172,9 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
 
     render(): VNode {
         return (
-            <div class="MFDDropdownContainer" ref={this.topRef} style={this.props.containerStyle}>
-                <div ref={this.dropdownSelectorRef} class="MFDDropdownOuter">
-                    <div ref={this.dropdownInnerRef} class="MFDDropdownInner" style={`justify-content: ${this.props.alignLabels}; align-items: center;`}>
+            <div class="mfd-dropdown-container" ref={this.topRef} style={this.props.containerStyle}>
+                <div ref={this.dropdownSelectorRef} class="mfd-dropdown-outer">
+                    <div ref={this.dropdownInnerRef} class="mfd-dropdown-inner" style={`justify-content: ${this.props.alignLabels}; align-items: center;`}>
                         <InputField<string>
                             ref={this.inputFieldRef}
                             dataEntryFormat={new DropdownFieldFormat(this.props.numberOfDigitsForInputField ?? 6)}
@@ -193,7 +193,7 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
                         </svg>
                     </div>
                 </div>
-                <div ref={this.dropdownMenuRef} class="MFDDropdownMenu" style={`top: 42px; display: ${this.dropdownIsOpened.get() ? 'block' : 'none'}`} />
+                <div ref={this.dropdownMenuRef} class="mfd-dropdown-menu" style={`top: 42px; display: ${this.dropdownIsOpened.get() ? 'block' : 'none'}`} />
             </div>
         );
     }

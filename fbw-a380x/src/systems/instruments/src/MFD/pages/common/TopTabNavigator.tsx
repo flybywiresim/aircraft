@@ -35,7 +35,7 @@ class TopTabElement extends DisplayComponent<TopTabElementProps> {
 
     render(): VNode {
         return (
-            <div ref={this.divRef} class={`MFDTopTabNavigatorBarElementOuter${this.props.isSelected === true ? ' active' : ''}`}>
+            <div ref={this.divRef} class={`mfd-top-tab-navigator-bar-element-outer${this.props.isSelected === true ? ' active' : ''}`}>
                 <svg height={this.props.height} width={this.triangleWidth}>
                     <polygon
                         points={`0,${this.props.height} ${this.triangleWidth},0 ${this.triangleWidth},${this.props.height}`}
@@ -46,7 +46,7 @@ class TopTabElement extends DisplayComponent<TopTabElementProps> {
                 </svg>
                 <span
                     ref={this.textRef}
-                    class={`MFDTopTabNavigatorBarElementLabel${this.props.isSelected === true ? ' active' : ''}`}
+                    class={`mfd-top-tab-navigator-bar-element-label${this.props.isSelected === true ? ' active' : ''}`}
                     // eslint-disable-next-line max-len
                     style={`font-size: ${Math.floor(this.props.height * 0.55)}px;`}
                 >
@@ -86,7 +86,7 @@ export class TopTabNavigatorPage extends DisplayComponent<TopTabNavigatorPagePro
 
     render(): VNode {
         return (
-            <div ref={this.topDivRef} class="MFDTopTabNavigatorTabContent" style={this.props.containerStyle}>
+            <div ref={this.topDivRef} class="mfd-top-tab-navigator-tab-content" style={this.props.containerStyle}>
                 {this.props.children}
             </div>
         );
@@ -190,8 +190,8 @@ export class TopTabNavigator extends DisplayComponent<TopTabNavigatorProps> {
 
     render(): VNode {
         return (
-            <div class="MFDTopTabNavigatorContainer">
-                <div class="MFDTopTabNavigatorBar" ref={this.navigatorBarRef} style={`height: ${this.props.tabBarHeight || 36}px`}>
+            <div class="mfd-top-tab-navigator-container">
+                <div class="mfd-top-tab-navigator-bar" ref={this.navigatorBarRef} style={`height: ${this.props.tabBarHeight || 36}px`}>
                     {
                         this.props.pageTitles.get().map((pageTitle, index) => (
                             <TopTabElement

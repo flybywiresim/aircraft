@@ -2,7 +2,7 @@
 
 import 'instruments/src/MFD/pages/common/style.scss';
 
-import { ArraySubject, ClockEvents, ComponentProps, DisplayComponent, EventBus, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import { ArraySubject, ClockEvents, ComponentProps, DisplayComponent, EventBus, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 
 import { FmsHeader } from 'instruments/src/MFD/pages/common/FmsHeader';
 import { MouseCursor } from 'instruments/src/MFD/pages/common/MouseCursor';
@@ -16,6 +16,7 @@ import { AtccomHeader } from 'instruments/src/MFD/pages/common/AtccomHeader';
 import { MfdFmsFuelLoad } from 'instruments/src/MFD/pages/FMS/FUEL_LOAD';
 import { MfdFmsFpln } from 'instruments/src/MFD/pages/FMS/F-PLN/F-PLN';
 import { MfdMsgList } from 'instruments/src/MFD/pages/FMS/MSG_LIST';
+import { ActiveUriInformation, MfdUIService } from 'instruments/src/MFD/pages/common/UIService';
 import { MfdSimvars } from './shared/MFDSimvarPublisher';
 import { DisplayUnit } from '../MsfsAvionicsCommon/displayUnit';
 
@@ -24,41 +25,23 @@ export const getDisplayIndex = () => {
     return url ? parseInt(url.substring(url.length - 1), 10) : 0;
 };
 
-interface MfdProps extends ComponentProps {
+export interface AbstractMfdPageProps extends ComponentProps {
+    bus: EventBus;
+    uiService: MfdUIService;
+}
+
+interface MfdComponentProps extends ComponentProps {
     bus: EventBus;
     instrument: BaseInstrument;
 }
+export class MfdComponent extends DisplayComponent<MfdComponentProps> {
+    private uiService = new MfdUIService();
 
-export interface ActiveUriInformation {
-    uri: string;
-    sys: string;
-    category: string;
-    page: string;
-    extra?: string;
-}
-
-export interface MfdComponentProps extends ComponentProps {
-    bus: EventBus;
-    activeUri: Subscribable<ActiveUriInformation>;
-    navigateTo(uri: string): void;
-}
-
-export class MfdComponent extends DisplayComponent<MfdProps> {
     private displayBrightness = Subject.create(0);
 
     private displayPowered = Subject.create(false);
 
     private activeFmsSource = Subject.create<'FMS 1' | 'FMS 2' | 'FMS 1-C' | 'FMS 2-C'>('FMS 1');
-
-    private activeUri = Subject.create<ActiveUriInformation>({
-        uri: '',
-        sys: '',
-        category: '',
-        page: '',
-        extra: '',
-    });
-
-    private navigationStack: string[] = [];
 
     private mouseCursorRef = FSComponent.createRef<MouseCursor>();
 
@@ -94,55 +77,17 @@ export class MfdComponent extends DisplayComponent<MfdProps> {
             this.displayPowered.set(value);
         });
 
+        this.uiService.activeUri.sub((uri) => this.activeUriChanged(uri));
+
         this.topRef.instance.addEventListener('mousemove', (ev) => {
             this.mouseCursorRef.instance.updatePosition(ev.clientX, ev.clientY);
         });
 
         // Navigate to initial page
-        this.navigateTo('fms/active/init');
+        this.uiService.navigateTo('fms/active/init');
     }
 
-    public parseUri(uri: string) : ActiveUriInformation {
-        const uriParts = uri.split('/');
-        return {
-            uri,
-            sys: uriParts[0],
-            category: uriParts[1],
-            page: uriParts[2],
-            extra: uriParts.slice(3).join('/'),
-        };
-    }
-
-    /**
-     * Navigate to MFD page.
-     * @param uri The URI to navigate to. Format: sys/category/page, e.g. fms/active/init represents ACTIVE/INIT page from the FMS.
-     * In theory, one can use anything after a third slash for intra-page deep linking: fms/active/perf/appr could link to the approach PERF page.
-     */
-    private navigateTo(uri: string) {
-        let nextUri: string;
-
-        if (uri === this.activeUri.get().uri) {
-            // Same URL, don't navigate
-            console.info('Navigate to same URL, ignored.');
-            return;
-        }
-
-        if (uri === 'back') {
-            if (this.navigationStack.length === 0) {
-                return;
-            }
-            console.info('Navigate back');
-            this.navigationStack.pop();
-            nextUri = this.navigationStack[this.navigationStack.length - 1];
-        } else {
-            console.info(`Navigate to ${uri}`);
-            this.navigationStack.push(uri);
-            nextUri = uri;
-        }
-
-        const parsedUri = this.parseUri(nextUri);
-        this.activeUri.set(parsedUri);
-
+    private activeUriChanged(uri: ActiveUriInformation) {
         // Remove and destroy old header
         while (this.activeHeaderRef.getOrDefault().firstChild) {
             this.activeHeaderRef.getOrDefault().removeChild(this.activeHeaderRef.getOrDefault().firstChild);
@@ -160,15 +105,14 @@ export class MfdComponent extends DisplayComponent<MfdProps> {
         }
 
         // Different systems use different navigation bars
-        switch (parsedUri.sys) {
+        switch (uri.sys) {
         case 'fms':
             this.activeHeader = (
                 <FmsHeader
                     bus={this.props.bus}
                     callsign={Subject.create('FBW123')}
                     activeFmsSource={this.activeFmsSource}
-                    activeUri={this.activeUri}
-                    navigateTo={(uri) => this.navigateTo(uri)}
+                    uiService={this.uiService}
                 />
             );
             break;
@@ -178,8 +122,7 @@ export class MfdComponent extends DisplayComponent<MfdProps> {
                     bus={this.props.bus}
                     callsign={Subject.create('FBW123')}
                     activeFmsSource={this.activeFmsSource}
-                    activeUri={this.activeUri}
-                    navigateTo={(uri) => this.navigateTo(uri)}
+                    uiService={this.uiService}
                 />
             );
             break;
@@ -189,8 +132,7 @@ export class MfdComponent extends DisplayComponent<MfdProps> {
                     bus={this.props.bus}
                     callsign={Subject.create('FBW123')}
                     activeFmsSource={this.activeFmsSource}
-                    activeUri={this.activeUri}
-                    navigateTo={(uri) => this.navigateTo(uri)}
+                    uiService={this.uiService}
                 />
             );
             break;
@@ -200,8 +142,7 @@ export class MfdComponent extends DisplayComponent<MfdProps> {
                     bus={this.props.bus}
                     callsign={Subject.create('FBW123')}
                     activeFmsSource={this.activeFmsSource}
-                    activeUri={this.activeUri}
-                    navigateTo={(uri) => this.navigateTo(uri)}
+                    uiService={this.uiService}
                 />
             );
             break;
@@ -212,41 +153,39 @@ export class MfdComponent extends DisplayComponent<MfdProps> {
                     bus={this.props.bus}
                     callsign={Subject.create('FBW123')}
                     activeFmsSource={this.activeFmsSource}
-                    activeUri={this.activeUri}
-                    navigateTo={(uri) => this.navigateTo(uri)}
+                    uiService={this.uiService}
                 />
             );
             break;
         }
 
         // Mapping from URL to page component
-        switch (`${parsedUri.sys}/${parsedUri.category}/${parsedUri.page}`) {
+        switch (`${uri.sys}/${uri.category}/${uri.page}`) {
         case 'fms/active/perf':
-            this.activePage = <MfdFmsPerf bus={this.props.bus} activeUri={this.activeUri} navigateTo={(uri) => this.navigateTo(uri)} />;
+            this.activePage = <MfdFmsPerf bus={this.props.bus} uiService={this.uiService} />;
             break;
         case 'fms/active/init':
-            this.activePage = <MfdFmsInit bus={this.props.bus} activeUri={this.activeUri} navigateTo={(uri) => this.navigateTo(uri)} />;
+            this.activePage = <MfdFmsInit bus={this.props.bus} uiService={this.uiService} />;
             break;
         case 'fms/active/fuel-load':
-            this.activePage = <MfdFmsFuelLoad bus={this.props.bus} instrument={this.props.instrument} activeUri={this.activeUri} navigateTo={(uri) => this.navigateTo(uri)} />;
+            this.activePage = <MfdFmsFuelLoad bus={this.props.bus} instrument={this.props.instrument} uiService={this.uiService} />;
             break;
         case 'fms/active/f-pln':
-            this.activePage = <MfdFmsFpln bus={this.props.bus} instrument={this.props.instrument} activeUri={this.activeUri} navigateTo={(uri) => this.navigateTo(uri)} />;
+            this.activePage = <MfdFmsFpln bus={this.props.bus} instrument={this.props.instrument} uiService={this.uiService} />;
             break;
 
         default:
-            this.activePage = <MfdNotFound bus={this.props.bus} activeUri={this.activeUri} navigateTo={(uri) => this.navigateTo(uri)} />;
+            this.activePage = <MfdNotFound bus={this.props.bus} uiService={this.uiService} />;
             break;
         }
 
-        if (parsedUri.page === 'msg-list') {
+        if (uri.page === 'msg-list') {
             this.activePage = (
                 <MfdMsgList
                     // eslint-disable-next-line max-len
                     messages={ArraySubject.create(['CLOSE RTE REQUEST FIRST', 'RECEIVED POS T.O DATA NOT VALID', 'CONSTRAINTS ABOVE CRZ FL DELETED', 'NOT IN DATABASE', 'GPS PRIMARY', 'CHECK T.O DATA'])}
                     bus={this.props.bus}
-                    activeUri={this.activeUri}
-                    navigateTo={(uri) => this.navigateTo(uri)}
+                    uiService={this.uiService}
                 />
             );
         }
@@ -260,7 +199,7 @@ export class MfdComponent extends DisplayComponent<MfdProps> {
             <DisplayUnit bus={this.props.bus} normDmc={1} brightness={this.displayBrightness} powered={this.displayPowered}>
                 <div class="mfd-main" ref={this.topRef}>
                     <div ref={this.activeHeaderRef} />
-                    <div ref={this.activePageRef} class="MFDNavigatorContainer" />
+                    <div ref={this.activePageRef} class="mfd-navigator-container" />
                     <MouseCursor side={Subject.create('CPT')} ref={this.mouseCursorRef} />
                 </div>
             </DisplayUnit>

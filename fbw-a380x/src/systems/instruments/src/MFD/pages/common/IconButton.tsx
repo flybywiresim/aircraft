@@ -60,7 +60,7 @@ export class IconButton extends DisplayComponent<IconButtonProps> {
 
     render(): VNode {
         return (
-            <span ref={this.spanRef} class="MFDIconButton" style={`${this.props.containerStyle}`}>
+            <span ref={this.spanRef} class="mfd-icon-button" style={`${this.props.containerStyle}`}>
                 {this.props.icon === 'double-up' && (
                     <svg width="35" height="35" xmlns="http://www.w3.org/2000/svg">
                         <g ref={this.svgGroupRef} fill={this.fillColor}>

@@ -347,20 +347,20 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
                 ref={this.topRef}
                 style="display: flex; flex-direction: row; justify-items: flex-start; align-items: baseline;"
             >
-                <div ref={this.containerRef} class="MFDNumberInputContainer" style={`${this.props.containerStyle}`}>
-                    <span ref={this.leadingUnitRef} class="MFDUnitLabel leadingUnit" style="align-self: center;">{this.leadingUnit}</span>
+                <div ref={this.containerRef} class="mfd-input-field-container" style={`${this.props.containerStyle}`}>
+                    <span ref={this.leadingUnitRef} class="mfd-label-unit mfd-unit-leading" style="align-self: center;">{this.leadingUnit}</span>
                     <div ref={this.spanningDivRef} style={`display: flex; flex: 1; flex-direction: row; align-self: center; align-items: center; justify-content: ${this.props.alignText};`}>
                         <span
                             ref={this.textInputRef}
                             // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
                             tabIndex={-1}
-                            class="MFDNumberInputTextInput"
+                            class="mfd-input-field-text-input"
                         >
                             .
                         </span>
-                        <span ref={this.caretRef} class="MFDInputFieldCaret" />
+                        <span ref={this.caretRef} class="mfd-input-field-caret" />
                     </div>
-                    <span ref={this.trailingUnitRef} class="MFDUnitLabel trailingUnit" style="align-self: center;">{this.trailingUnit}</span>
+                    <span ref={this.trailingUnitRef} class="mfd-label-unit mfd-unit-trailing" style="align-self: center;">{this.trailingUnit}</span>
                 </div>
             </div>
         );

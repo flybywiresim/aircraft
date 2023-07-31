@@ -1,6 +1,6 @@
 ﻿@import "../../../MsfsAvionicsCommon/definitions";
 
-.spdTableCell {
+.mfd-fms-perf-speed-table-cell {
   border-bottom: 1px solid lightgrey;
   display: flex;
   justify-content: center;
@@ -8,15 +8,15 @@
   padding: 10px;
 }
 
-.spdTableCell.br {
+.mfd-fms-perf-speed-table-cell.br {
   border-right: 1px solid lightgrey;
 }
 
-.spdTableCell.bb {
+.mfd-fms-perf-speed-table-cell.bb {
   border-bottom: 1px solid lightgrey;
 }
 
-.spdPreselManagedTableCell {
+.mfd-fms-perf-speed-presel-managed-table-cell {
   border-bottom: 1px solid lightgrey;
   border-right: 1px solid lightgrey;
   display: flex;
@@ -25,7 +25,7 @@
   justify-content: flex-end;
 }
 
-.perfToFirst {
+.mfd-fms-perf-to-first {
   height: 100%;
   flex: 1;
   display: flex;
@@ -33,14 +33,14 @@
   border-bottom: 1px solid lightgrey;
 }
 
-.perfToSecond {
+.mfd-fms-perf-to-second {
   display: flex;
   flex-direction: row;
   border-bottom: 1px solid lightgrey;
   padding-bottom: 10px;
 }
 
-.perfToVSpeeds {
+.mfd-fms-perf-to-v-speeds {
   flex: 5;
   display: grid;
   grid-template-columns: auto auto;
@@ -51,7 +51,7 @@
   padding-right: 20px;
 }
 
-.perfToFlxToga {
+.mfd-fms-perf-to-flex-toga {
   height: 165px;
   display: flex;
   flex-direction: column;
@@ -59,7 +59,7 @@
   justify-content: center;
 }
 
-.perfToFlapsPacksGrid {
+.mfd-fms-perf-to-flaps-packs-grid {
   display: grid;
   grid-template-columns: auto auto 15px auto auto;
   margin-top: 10px;
@@ -67,7 +67,7 @@
   border-bottom: 1px solid lightgrey;
 }
 
-.perfToThrRedNoiseGrid {
+.mfd-fms-perf-to-thrred-noise-grid {
   display: grid;
   grid-template-columns: auto auto auto auto auto;
   grid-auto-rows: 50px;
@@ -75,13 +75,13 @@
   height: 150px;
 }
 
-.perfToThrRedNoiseGridCell {
+.mfd-fms-perf-to-thrred-noise-grid-cell {
   display: flex;
   justify-content: flex-end;
   align-items: center;
 }
 
-.perfToBottom {
+.mfd-fms-perf-to-bottom {
   margin: 10px 2px 3px 2px;
   display: flex;
   flex-direction: row;
@@ -90,17 +90,17 @@
   border-top: 1px solid lightgrey;
 }
 
-.perfClbGrid {
+.mfd-fms-perf-clb-grid {
   display: grid;
   grid-template-columns: 20% 22% 13% 45%;
 }
 
-.perfCrzGrid {
+.mfd-fms-perf-crz-grid {
   display: grid;
   grid-template-columns: 20% 13% 22% 45%;
 }
 
-.perfCrzDest {
+.mfd-fms-perf-crz-dest {
   margin: 10px 2px 3px 2px;
   display: flex;
   flex-direction: row;
@@ -109,14 +109,14 @@
   padding-top: 10px;
 }
 
-.MFDLabel.apprWeather {
+.mfd-label.perf-appr-weather {
   width: 125px;
   text-align: right;
   align-self: center;
   padding-left: 20px;
 }
 
-.perfApprMinimumContainer {
+.mfd-fms-perf-appr-min-container {
   position: relative;
   border: 1px solid lightgrey;
   display: flex;
@@ -125,7 +125,7 @@
   padding: 15px;
 }
 
-.perfApprMinimumLabel {
+.mfd-fms-perf-appr-min-label {
   position: absolute;
   left: 10px;
   top: -10px;
@@ -134,13 +134,13 @@
   background-color: #040404;
 }
 
-.perfApprFlapSpeeds {
+.mfd-fms-perf-appr-flap-speeds {
   margin-right: 15px;
   text-align: right;
   width: 50px;
 }
 
-.perfApprConfBox {
+.mfd-fms-perf-appr-conf-box {
   width: 200px;
   margin-top: 20px;
   border: 1px solid lightgrey;
@@ -150,7 +150,7 @@
   align-items: center;
 }
 
-.perfApprVappBox {
+.mfd-fms-perf-appr-vapp-box {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -159,7 +159,7 @@
   margin-top: 20px;
 }
 
-.perfApprTransVertDev {
+.mfd-fms-perf-appr-trans-vertdev {
   margin: 10px 2px 3px 2px;
   display: flex;
   flex-direction: row;
@@ -167,7 +167,7 @@
   padding-top: 10px;
 }
 
-.perfApprThrRedAccel {
+.mfd-fms-perf-appr-thrred-accel {
   display: flex;
   justify-content: flex-end;
   align-items: center;
@@ -176,7 +176,7 @@
   width: 150px;
 }
 
-.perfApprEoAccel {
+.mfd-fms-perf-appr-eo-accel {
   display: flex;
   justify-content: flex-end;
   align-items: center;
@@ -186,7 +186,7 @@
   width: 125px;
 }
 
-.perfApprFooter {
+.mfd-fms-perf-appr-footer {
   margin: 0px 2px 3px 2px;
   display: flex;
   flex-direction: row;

@@ -48,7 +48,7 @@ export class RadioButtonGroup extends DisplayComponent<RadioButtonGroupProps> {
             <form>
                 {this.props.values.getArray().map((el, idx) => (
                     <label
-                        class="MFDRadioButton"
+                        class="mfd-radio-button"
                         htmlFor={`${this.props.idPrefix}_${idx}`}
                         style={this.props.additionalVerticalSpacing ? `margin-top: ${this.props.additionalVerticalSpacing}px;` : ''}
                     >

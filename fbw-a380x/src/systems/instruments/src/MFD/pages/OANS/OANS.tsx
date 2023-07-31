@@ -158,20 +158,20 @@ export class OANS extends DisplayComponent<OANSProps> {
                 {/* begin header */}
                 <div style="display: flex; flex-direction: row; justify-content: space-between">
                     <div style="display: flex; flex-direction: column">
-                        <span class="MFDLabel">
+                        <span class="mfd-label">
                             GS
                             {' '}
-                            <span class="MFDGreenValue">0</span>
+                            <span class="mfd-value-green">0</span>
                         </span>
-                        <span class="MFDLabel">
-                            <span class="MFDGreenValue">---</span>
+                        <span class="mfd-label">
+                            <span class="mfd-value-green">---</span>
                             {' / '}
-                            <span class="MFDGreenValue">---</span>
+                            <span class="mfd-value-green">---</span>
                         </span>
                     </div>
                     <div style="display: flex; flex-direction: column; align-items: flex-end">
-                        <span class="MFDLabel">MUNICH INTL</span>
-                        <span class="MFDLabel">EDDM MUC</span>
+                        <span class="mfd-label">MUNICH INTL</span>
+                        <span class="mfd-label">EDDM MUC</span>
                     </div>
                 </div>
                 <div ref={this.mapRef} style="display: flex; flex: 1; justify-content: center; align-items: center; background-color: #111; cursor: crosshair;">
@@ -213,21 +213,21 @@ export class OANS extends DisplayComponent<OANSProps> {
                                 </div>
                                 <div id="MapDataLdgShiftPanel" style="display: none; flex: 3; flex-direction: column; margin: 5px 20px 5px 20px;">
                                     <div style="flex: 1; display: flex; justify-content: space-between; border-bottom: 1px solid lightgrey;">
-                                        <div class="MFDLabelValueContainer" style="padding: 15px;">
-                                            <span class="MFDLabel spacingRight">RWY</span>
-                                            <span class="MFDGreenValue">{this.selectedEntityString}</span>
+                                        <div class="mfd-label-value-container" style="padding: 15px;">
+                                            <span class="mfd-label mfd-spacing-right">RWY</span>
+                                            <span class="mfd-value-green">{this.selectedEntityString}</span>
                                         </div>
                                     </div>
                                     <div style="flex: 5; display: flex; flex-direction: row; justify-content: space-between; margin: 10px;">
                                         <div style="display: flex; flex-direction: column;">
                                             <div style="display: grid; grid-template-columns: 1fr auto; grid-template-rows: 50px 50px; align-items: center;">
-                                                <span class="MFDLabel spacingRight bigger" style="justify-self: flex-end">THRESHOLD SHIFT</span>
+                                                <span class="mfd-label mfd-spacing-right bigger" style="justify-self: flex-end">THRESHOLD SHIFT</span>
                                                 <InputField<number>
                                                     dataEntryFormat={new LengthFormat(Subject.create(0), Subject.create(4000))}
                                                     value={this.thresholdShift}
                                                     mandatory={Subject.create(false)}
                                                 />
-                                                <span class="MFDLabel spacingRight bigger" style="justify-self: flex-end">END SHIFT</span>
+                                                <span class="mfd-label mfd-spacing-right bigger" style="justify-self: flex-end">END SHIFT</span>
                                                 <InputField<number>
                                                     dataEntryFormat={new LengthFormat(Subject.create(0), Subject.create(4000))}
                                                     value={this.endShift}
@@ -288,9 +288,9 @@ export class OANS extends DisplayComponent<OANSProps> {
                                 </div>
                                 <div id="ArptSelMiddle" style="display: flex; flex: 2; flex-direction: column; margin: 5px 20px 5px 20px;">
                                     <div style="display: flex; flex-direction: column; justify-content: space-between; align-items: center; margin: 30px;">
-                                        <span class="MFDGreenValue">MUNICH INTL</span>
-                                        <span class="MFDGreenValue">EDDM MUC</span>
-                                        <span class="MFDGreenValue">48°21.5N/011°47.0E</span>
+                                        <span class="mfd-value-green">MUNICH INTL</span>
+                                        <span class="mfd-value-green">EDDM MUC</span>
+                                        <span class="mfd-value-green">48°21.5N/011°47.0E</span>
                                     </div>
                                     <div style="display: flex; flex-direction: row; justify-content: center; margin: 10px; ">
                                         <Button
@@ -315,25 +315,25 @@ export class OANS extends DisplayComponent<OANSProps> {
                             padding-bottom: 25px; margin-left: 30px; margin-right: 30px;"
                             >
                                 <div style="flex: 3; display: flex; flex-direction: column; align-items: center;">
-                                    <span class="MFDLabel" style="margin-bottom: 10px;">ACTIVE DATABASE</span>
-                                    <span class="MFDGreenValue bigger">7MAR-3APR</span>
+                                    <span class="mfd-label" style="margin-bottom: 10px;">ACTIVE DATABASE</span>
+                                    <span class="mfd-value-green bigger">7MAR-3APR</span>
                                 </div>
                                 <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
                                     <Button label="SWAP" onClick={() => console.log('SWAP')} buttonStyle="padding: 20px 30px 20px 30px;" />
                                 </div>
                                 <div style="flex: 3; display: flex; flex-direction: column; align-items: center;">
-                                    <span class="MFDLabel" style="margin-bottom: 10px;">SECOND DATABASE</span>
-                                    <span class="MFDGreenValue smaller">7FEB-6MAR</span>
+                                    <span class="mfd-label" style="margin-bottom: 10px;">SECOND DATABASE</span>
+                                    <span class="mfd-value-green smaller">7FEB-6MAR</span>
                                 </div>
                             </div>
                             <div style="display: flex; flex-direction: row; justify-content: space-between;
                             border-bottom: 2px solid lightgray; margin: 0px 15px 0px 15px; padding: 25px 10px 25px 10px;"
                             >
-                                <span class="MFDLabel">AIRPORT DATABASE</span>
-                                <span class="MFDGreenValue">SXT59027250AA04</span>
+                                <span class="mfd-label">AIRPORT DATABASE</span>
+                                <span class="mfd-value-green">SXT59027250AA04</span>
                             </div>
                             <div style="display: flex; flex-direction: row; justify-content: space-between; justify-content: center; margin-top: 20px;">
-                                <span class="MFDLabel bigger">DATABASE CYCLE NOT VALID</span>
+                                <span class="mfd-label bigger">DATABASE CYCLE NOT VALID</span>
                             </div>
                         </TopTabNavigatorPage>
                     </TopTabNavigator>

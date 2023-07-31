@@ -34,9 +34,9 @@ export class ConfirmationDialog extends DisplayComponent<ConfirmationDialogProps
     render(): VNode {
         return (
             <div ref={this.topRef} style="position: relative;">
-                <div class="MFDDialog" style={`${this.props.contentContainerStyle ?? ''} display: flex; flex-direction: column; justify-content: space-between`}>
+                <div class="mfd-dialog" style={`${this.props.contentContainerStyle ?? ''} display: flex; flex-direction: column; justify-content: space-between`}>
                     <div style="display: flex; justify-content: center; align-items: flex-start; padding-top: 20px;">
-                        <span class="MFDLabel">{this.props.children}</span>
+                        <span class="mfd-label">{this.props.children}</span>
                     </div>
                     <div style="display: flex; flex-direction: row; justify-content: space-between">
                         <Button label="CANCEL" onClick={() => this.props.cancelAction()} />

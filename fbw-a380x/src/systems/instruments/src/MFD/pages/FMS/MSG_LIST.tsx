@@ -4,11 +4,11 @@ import { DisplayComponent, FSComponent, Subject, SubscribableArray, Subscribable
 
 import './msg_list.scss';
 import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
-import { MfdComponentProps } from 'instruments/src/MFD/MFD';
+import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 import { Button } from 'instruments/src/MFD/pages/common/Button';
 
-interface MfdMsgListProps extends MfdComponentProps {
+interface MfdMsgListProps extends AbstractMfdPageProps {
     messages: SubscribableArray<string>;
 }
 
@@ -34,14 +34,14 @@ export class MfdMsgList extends DisplayComponent<MfdMsgListProps> {
 
                     // Display previously truncated message
                     if (arr.length >= 5) {
-                        this.msgListContainer.instance.appendChild(<div class="MFDLabel msgListElement">{arr[4]}</div>);
+                        this.msgListContainer.instance.appendChild(<div class="mfd-label msg-list-element">{arr[4]}</div>);
                     }
                 }
             } else if (type === SubscribableArrayEventType.Removed) {
                 this.msgListContainer.instance.removeChild(this.msgListContainer.instance.children[idx]);
             } else {
                 // Add element
-                this.msgListContainer.instance.children[idx].after(<div class="MFDLabel msgListElement">{item}</div>);
+                this.msgListContainer.instance.children[idx].after(<div class="mfd-label msg-list-element">{item}</div>);
             }
         }, true));
     }
@@ -58,23 +58,23 @@ export class MfdMsgList extends DisplayComponent<MfdMsgListProps> {
             <>
                 <ActivePageTitleBar activePage={Subject.create('MESSAGES LIST')} offset={Subject.create('')} eoIsActive={Subject.create(false)} tmpyIsActive={Subject.create(false)} />
                 {/* begin page content */}
-                <div class="MFDPageContainer">
-                    <div ref={this.msgListContainer} class="msgListElementContainer">
+                <div class="mfd-page-container">
+                    <div ref={this.msgListContainer} class="mfd-msg-list-element-container">
                         {this.props.messages.getArray().map((val, idx) => {
                             if (idx > 4) {
                                 return null;
                             }
 
-                            return (<div class="MFDLabel msgListElement">{val}</div>);
+                            return (<div class="mfd-label msg-list-element">{val}</div>);
                         })}
                     </div>
                     <div style="flex-grow: 1;" />
                     <div style="display: flex; justify-content: flex-start;">
-                        <Button label="CLOSE" onClick={() => this.props.navigateTo('back')} />
+                        <Button label="CLOSE" onClick={() => this.props.uiService.navigateTo('back')} />
                     </div>
                 </div>
                 {/* end page content */}
-                <Footer bus={this.props.bus} activeUri={this.props.activeUri} navigateTo={this.props.navigateTo} />
+                <Footer bus={this.props.bus} uiService={this.props.uiService} />
             </>
         );
     }

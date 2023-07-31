@@ -68,18 +68,18 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
         return (
             <div ref={this.topRef} style="position: relative;">
                 <div
-                    class="MFDDialog"
+                    class="mfd-dialog"
                     style={`${this.props.contentContainerStyle ?? ''}; left: 175px; top: 50px; width: 500px; height: 625px; overflow: visible;
                     display: flex; flex-direction: column; justify-content: space-between;`}
                 >
                     <div style="width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; padding-top: 0px; padding-left: 10px;">
-                        <span class="MFDLabel">
+                        <span class="mfd-label">
                             INSERT NEXT WPT FROM
                             {' '}
-                            <span ref={this.identRef} class="MFDGreenValue bigger">{this.props.revisedWaypoint.get()?.ident ?? ''}</span>
+                            <span ref={this.identRef} class="mfd-value-green bigger">{this.props.revisedWaypoint.get()?.ident ?? ''}</span>
                         </span>
                         <span style="margin-left: 50px; margin-top: 10px;">
-                            <span ref={this.coordinatesRef} class="MFDGreenValue bigger" />
+                            <span ref={this.coordinatesRef} class="mfd-value-green bigger" />
                         </span>
                         <div style="margin-left: 50px; margin-top: 10px;">
                             <DropdownMenu

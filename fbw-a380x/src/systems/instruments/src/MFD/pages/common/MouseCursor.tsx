@@ -29,7 +29,7 @@ export class MouseCursor extends DisplayComponent<MouseCursorProps> {
 
     render(): VNode {
         return (
-            <div ref={this.divRef} class="MFDMouseCursor">
+            <div ref={this.divRef} class="mfd-mouse-cursor">
                 <svg width="80" height="80" xmlns="http://www.w3.org/2000/svg">
                     <polyline points="0,0 40,35 80,0" style={`fill: none; stroke: ${this.fillColor}; stroke-width: 3`} />
                     <line x1="40" y1="39" x2="40" y2="41" style={`stroke: ${this.fillColor}; stroke-width: 2`} />

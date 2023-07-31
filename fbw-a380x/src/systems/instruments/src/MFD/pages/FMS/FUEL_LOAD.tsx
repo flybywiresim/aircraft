@@ -4,7 +4,7 @@ import { DisplayComponent, FSComponent, Subject, Subscription, VNode } from '@mi
 
 import './fuel_load.scss';
 import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
-import { MfdComponentProps } from 'instruments/src/MFD/MFD';
+import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 
 import { InputField } from 'instruments/src/MFD/pages/common/InputField';
@@ -12,7 +12,7 @@ import { CostIndexFormat, PaxNbrFormat, PercentageFormat, TimeHHMMFormat, Weight
 import { Button } from 'instruments/src/MFD/pages/common/Button';
 import { maxAltnFuel, maxBlockFuel, maxFinalFuel, maxJtsnGw, maxRteRsvFuel, maxRteRsvFuelPerc, maxTaxiFuel, maxZfw, maxZfwCg, minZfwCg } from 'shared/PerformanceConstants';
 
-interface MfdFmsFuelLoadProps extends MfdComponentProps {
+interface MfdFmsFuelLoadProps extends AbstractMfdPageProps {
     instrument: BaseInstrument;
 }
 
@@ -51,7 +51,7 @@ export class MfdFmsFuelLoad extends DisplayComponent<MfdFmsFuelLoadProps> {
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        this.subs.push(this.props.activeUri.sub((val) => {
+        this.subs.push(this.props.uiService.activeUri.sub((val) => {
             switch (val.category) {
             case 'active':
                 this.activePageTitle.set('ACTIVE/FUEL&LOAD');
@@ -85,26 +85,26 @@ export class MfdFmsFuelLoad extends DisplayComponent<MfdFmsFuelLoadProps> {
             <>
                 <ActivePageTitleBar activePage={this.activePageTitle} offset={Subject.create('')} eoIsActive={Subject.create(false)} tmpyIsActive={Subject.create(false)} />
                 {/* begin page content */}
-                <div class="MFDPageContainer">
+                <div class="mfd-page-container">
                     <div style="display: flex; flex-direction: row; justify-content: space-between; margin: 10px 25px 10px 25px;">
-                        <div class="MFDLabelValueContainer">
-                            <span class="MFDLabel spacingRight">GW</span>
-                            <span class="MFDGreenValue">---.-</span>
-                            <span class="MFDUnitLabel trailingUnit">T</span>
+                        <div class="mfd-label-value-container">
+                            <span class="mfd-label mfd-spacing-right">GW</span>
+                            <span class="mfd-value-green">---.-</span>
+                            <span class="mfd-label-unit mfd-unit-trailing">T</span>
                         </div>
-                        <div class="MFDLabelValueContainer">
-                            <span class="MFDLabel spacingRight">CG</span>
-                            <span class="MFDGreenValue">--.-</span>
-                            <span class="MFDUnitLabel trailingUnit">%</span>
+                        <div class="mfd-label-value-container">
+                            <span class="mfd-label mfd-spacing-right">CG</span>
+                            <span class="mfd-value-green">--.-</span>
+                            <span class="mfd-label-unit mfd-unit-trailing">%</span>
                         </div>
-                        <div class="MFDLabelValueContainer">
-                            <span class="MFDLabel spacingRight">FOB</span>
-                            <span class="MFDGreenValue">---.-</span>
-                            <span class="MFDUnitLabel trailingUnit">T</span>
+                        <div class="mfd-label-value-container">
+                            <span class="mfd-label mfd-spacing-right">FOB</span>
+                            <span class="mfd-value-green">---.-</span>
+                            <span class="mfd-label-unit mfd-unit-trailing">T</span>
                         </div>
                     </div>
                     <div style="display: flex; flex-direction: row; margin-bottom: 15px; align-items: center; ">
-                        <div class="MFDLabel spacingRight fuelLoad">
+                        <div class="mfd-label mfd-spacing-right fuelLoad">
                             ZFW
                         </div>
                         <InputField<number>
@@ -115,7 +115,7 @@ export class MfdFmsFuelLoad extends DisplayComponent<MfdFmsFuelLoadProps> {
                             alignText="flex-end"
                             containerStyle="width: 150px;"
                         />
-                        <div class="MFDLabel spacingRight fuelLoad">
+                        <div class="mfd-label mfd-spacing-right fuelLoad">
                             ZFWCG
                         </div>
                         <InputField<number>
@@ -127,8 +127,8 @@ export class MfdFmsFuelLoad extends DisplayComponent<MfdFmsFuelLoadProps> {
                             containerStyle="width: 100px;"
                         />
                     </div>
-                    <div class="fuelLoadBlockLine">
-                        <div class="MFDLabel spacingRight fuelLoad">
+                    <div class="mfd-fms-fuel-load-block-line">
+                        <div class="mfd-label mfd-spacing-right fuelLoad">
                             BLOCK
                         </div>
                         <InputField<number>
@@ -155,8 +155,8 @@ export class MfdFmsFuelLoad extends DisplayComponent<MfdFmsFuelLoadProps> {
                             />
                         </div>
                     </div>
-                    <div class="fuelLoadMiddleGrid">
-                        <div class="MFDLabel spacingRight middleGrid">
+                    <div class="mfd-fms-fuel-load-middle-grid">
+                        <div class="mfd-label mfd-spacing-right middleGrid">
                             TAXI
                         </div>
                         <div style="margin-bottom: 20px;">
@@ -168,7 +168,7 @@ export class MfdFmsFuelLoad extends DisplayComponent<MfdFmsFuelLoadProps> {
                             />
                         </div>
                         <div />
-                        <div class="MFDLabel spacingRight middleGrid">
+                        <div class="mfd-label mfd-spacing-right middleGrid">
                             PAX NBR
                         </div>
                         <div style="margin-bottom: 20px;">
@@ -180,17 +180,17 @@ export class MfdFmsFuelLoad extends DisplayComponent<MfdFmsFuelLoadProps> {
                                 containerStyle="width: 75px;"
                             />
                         </div>
-                        <div class="MFDLabel spacingRight middleGrid">
+                        <div class="mfd-label mfd-spacing-right middleGrid">
                             TRIP
                         </div>
-                        <div class="MFDLabelValueContainer" style="justify-content: flex-end; margin-bottom: 20px;">
-                            <span class="MFDGreenValue">---.-</span>
-                            <span class="MFDUnitLabel trailingUnit">T</span>
+                        <div class="mfd-label-value-container" style="justify-content: flex-end; margin-bottom: 20px;">
+                            <span class="mfd-value-green">---.-</span>
+                            <span class="mfd-label-unit mfd-unit-trailing">T</span>
                         </div>
                         <div style="display: flex; justify-content: center; margin-bottom: 20px;">
-                            <span class="MFDGreenValue">--:--</span>
+                            <span class="mfd-value-green">--:--</span>
                         </div>
-                        <div class="MFDLabel spacingRight middleGrid">
+                        <div class="mfd-label mfd-spacing-right middleGrid">
                             CI
                         </div>
                         <div style="margin-bottom: 20px;">
@@ -202,7 +202,7 @@ export class MfdFmsFuelLoad extends DisplayComponent<MfdFmsFuelLoadProps> {
                                 containerStyle="width: 75px;"
                             />
                         </div>
-                        <div class="MFDLabel spacingRight middleGrid">
+                        <div class="mfd-label mfd-spacing-right middleGrid">
                             RTE RSV
                         </div>
                         <div style="margin-bottom: 20px;">
@@ -221,7 +221,7 @@ export class MfdFmsFuelLoad extends DisplayComponent<MfdFmsFuelLoadProps> {
                                 containerStyle="width: 120px;"
                             />
                         </div>
-                        <div class="MFDLabel spacingRight middleGrid">
+                        <div class="mfd-label mfd-spacing-right middleGrid">
                             JTSN GW
                         </div>
                         <div style="margin-bottom: 20px;">
@@ -232,7 +232,7 @@ export class MfdFmsFuelLoad extends DisplayComponent<MfdFmsFuelLoadProps> {
                                 containerStyle="width: 150px;"
                             />
                         </div>
-                        <div class="MFDLabel spacingRight middleGrid">
+                        <div class="mfd-label mfd-spacing-right middleGrid">
                             ALTN
                         </div>
                         <div style="margin-bottom: 20px;">
@@ -244,16 +244,16 @@ export class MfdFmsFuelLoad extends DisplayComponent<MfdFmsFuelLoadProps> {
                             />
                         </div>
                         <div style="display: flex; justify-content: center; margin-bottom: 20px;">
-                            <span class="MFDGreenValue">--:--</span>
+                            <span class="mfd-value-green">--:--</span>
                         </div>
-                        <div class="MFDLabel spacingRight middleGrid">
+                        <div class="mfd-label mfd-spacing-right middleGrid">
                             TOW
                         </div>
-                        <div class="MFDLabelValueContainer" style="justify-content: flex-end; margin-bottom: 20px;">
-                            <span class="MFDGreenValue">---.-</span>
-                            <span class="MFDUnitLabel trailingUnit">T</span>
+                        <div class="mfd-label-value-container" style="justify-content: flex-end; margin-bottom: 20px;">
+                            <span class="mfd-value-green">---.-</span>
+                            <span class="mfd-label-unit mfd-unit-trailing">T</span>
                         </div>
-                        <div class="MFDLabel spacingRight middleGrid">
+                        <div class="mfd-label mfd-spacing-right middleGrid">
                             FINAL
                         </div>
                         <div style="margin-bottom: 20px;">
@@ -272,55 +272,55 @@ export class MfdFmsFuelLoad extends DisplayComponent<MfdFmsFuelLoadProps> {
                                 containerStyle="width: 120px;"
                             />
                         </div>
-                        <div class="MFDLabel spacingRight middleGrid">
+                        <div class="mfd-label mfd-spacing-right middleGrid">
                             LW
                         </div>
-                        <div class="MFDLabelValueContainer" style="justify-content: flex-end; margin-bottom: 20px;">
-                            <span class="MFDGreenValue">---.-</span>
-                            <span class="MFDUnitLabel trailingUnit">T</span>
+                        <div class="mfd-label-value-container" style="justify-content: flex-end; margin-bottom: 20px;">
+                            <span class="mfd-value-green">---.-</span>
+                            <span class="mfd-label-unit mfd-unit-trailing">T</span>
                         </div>
                     </div>
                     <div style="flex: 1; display: flex; flex-direction: row; margin-top: 25px;">
                         <div style="width: 62.5%">
                             <div style="display: grid; grid-template-columns: auto auto auto auto;">
-                                <div class="fuelLoadDestGridTopCell" />
-                                <div class="fuelLoadDestGridTopCell" />
-                                <div class="MFDLabel fuelLoadDestGridTopCell">
+                                <div class="mfd-fms-fuel-load-dest-grid-top-cell" />
+                                <div class="mfd-fms-fuel-load-dest-grid-top-cell" />
+                                <div class="mfd-label mfd-fms-fuel-load-dest-grid-top-cell">
                                     UTC
                                 </div>
-                                <div class="MFDLabel fuelLoadDestGridTopCell">
+                                <div class="mfd-label mfd-fms-fuel-load-dest-grid-top-cell">
                                     EFOB
                                 </div>
-                                <div class="MFDLabel fuelLoadDestGridMiddleCell">
+                                <div class="mfd-label mfd-fms-fuel-load-dest-grid-middle-cell">
                                     DEST
                                 </div>
-                                <div class="MFDLabel bigger green fuelLoadDestGridMiddleCell">
+                                <div class="mfd-label bigger green mfd-fms-fuel-load-dest-grid-middle-cell">
                                     KFBW
                                 </div>
-                                <div class="MFDLabel bigger green fuelLoadDestGridMiddleCell">
+                                <div class="mfd-label bigger green mfd-fms-fuel-load-dest-grid-middle-cell">
                                     01:23
                                 </div>
-                                <div class="MFDLabelValueContainer fuelLoadDestGridMiddleCell">
-                                    <span class="MFDGreenValue">43.2</span>
-                                    <span class="MFDUnitLabel trailingUnit">T</span>
+                                <div class="mfd-label-value-container mfd-fms-fuel-load-dest-grid-middle-cell">
+                                    <span class="mfd-value-green">43.2</span>
+                                    <span class="mfd-label-unit mfd-unit-trailing">T</span>
                                 </div>
-                                <div class="MFDLabel" style="text-align: center; align-self: center;">
+                                <div class="mfd-label" style="text-align: center; align-self: center;">
                                     ALTN
                                 </div>
-                                <div class="MFDLabel bigger green" style="text-align: center; align-self: center;">
+                                <div class="mfd-label bigger green" style="text-align: center; align-self: center;">
                                     KFBW
                                 </div>
-                                <div class="MFDLabel bigger green" style="text-align: center; align-self: center;">
+                                <div class="mfd-label bigger green" style="text-align: center; align-self: center;">
                                     02:34
                                 </div>
-                                <div class="MFDLabelValueContainer" style="align-self: center; justify-content: center;">
-                                    <span class="MFDGreenValue">33.2</span>
-                                    <span class="MFDUnitLabel trailingUnit">T</span>
+                                <div class="mfd-label-value-container" style="align-self: center; justify-content: center;">
+                                    <span class="mfd-value-green">33.2</span>
+                                    <span class="mfd-label-unit mfd-unit-trailing">T</span>
                                 </div>
                             </div>
                         </div>
                         <div style="flex: 1; flex-direction: column; justify-content: center; align-items: center;">
-                            <div class="MFDLabel" style="margin-bottom: 20px; text-align: center;">MIN FUEL AT DEST</div>
+                            <div class="mfd-label" style="margin-bottom: 20px; text-align: center;">MIN FUEL AT DEST</div>
                             <div style="margin-bottom: 30px; display: flex; justify-content: center;">
                                 <InputField<number>
                                     dataEntryFormat={new WeightFormat()}
@@ -329,25 +329,25 @@ export class MfdFmsFuelLoad extends DisplayComponent<MfdFmsFuelLoadProps> {
                                     containerStyle="width: 150px;"
                                 />
                             </div>
-                            <div class="MFDLabel" style="margin-bottom: 5px; text-align: center;">EXTRA</div>
+                            <div class="mfd-label" style="margin-bottom: 5px; text-align: center;">EXTRA</div>
                             <div style="display: flex; flex-direction: row; justify-content: center; align-items: center;">
-                                <div class="MFDLabelValueContainer" style="margin-right: 20px;">
-                                    <span class="MFDGreenValue">10.2</span>
-                                    <span class="MFDUnitLabel trailingUnit">T</span>
+                                <div class="mfd-label-value-container" style="margin-right: 20px;">
+                                    <span class="mfd-value-green">10.2</span>
+                                    <span class="mfd-label-unit mfd-unit-trailing">T</span>
                                 </div>
-                                <span class="MFDGreenValue">00:20</span>
+                                <span class="mfd-value-green">00:20</span>
                             </div>
                         </div>
                     </div>
                     <div style="flex-grow: 1;" />
                     {/* fill space vertically */}
                     <div style="width: 150px;">
-                        <Button label="RETURN" onClick={() => this.props.navigateTo('back')} buttonStyle="margin-right: 5px;" />
+                        <Button label="RETURN" onClick={() => this.props.uiService.navigateTo('back')} buttonStyle="margin-right: 5px;" />
                     </div>
 
                     {/* end page content */}
                 </div>
-                <Footer bus={this.props.bus} activeUri={this.props.activeUri} navigateTo={this.props.navigateTo} />
+                <Footer bus={this.props.bus} uiService={this.props.uiService} />
             </>
         );
     }

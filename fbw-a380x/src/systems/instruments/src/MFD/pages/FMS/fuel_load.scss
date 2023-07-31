@@ -1,16 +1,16 @@
 ﻿@import "../../../MsfsAvionicsCommon/definitions";
 
-.MFDLabel.fuelLoad {
+.mfd-label.fuelLoad {
   width: 175px;
   text-align: right;
 }
 
-.MFDLabel.middleGrid {
+.mfd-label.middleGrid {
   text-align: right;
   margin-bottom: 20px;
 }
 
-.fuelLoadBlockLine {
+.mfd-fms-fuel-load-block-line {
   display: flex;
   flex-direction: row;
   margin-bottom: 15px;
@@ -19,7 +19,7 @@
   align-items: center;
 }
 
-.fuelLoadMiddleGrid {
+.mfd-fms-fuel-load-middle-grid {
   display: grid;
   grid-template-columns: 125px 155px 145px 150px auto;
   margin-top: 15px;
@@ -29,14 +29,14 @@
   border-bottom: 1px solid lightgrey;
 }
 
-.fuelLoadDestGridTopCell {
+.mfd-fms-fuel-load-dest-grid-top-cell {
   text-align: center;
   border-bottom: 1px solid lightgrey;
   padding-bottom: 10px;
   margin-bottom: 15px;
 }
 
-.fuelLoadDestGridMiddleCell {
+.mfd-fms-fuel-load-dest-grid-middle-cell {
   text-align: center;
   align-self: center;
   margin-bottom: 10px;
