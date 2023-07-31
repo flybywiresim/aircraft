@@ -454,10 +454,10 @@ void FlyByWireInterface::setupLocalVariables() {
   engineEngineIdleEGT = std::make_unique<LocalVariable>("A32NX_ENGINE_IDLE_EGT");
   engineEngine1EGT = std::make_unique<LocalVariable>("A32NX_ENGINE_EGT:1");
   engineEngine2EGT = std::make_unique<LocalVariable>("A32NX_ENGINE_EGT:2");
-  engineEngine1Oil = std::make_unique<LocalVariable>("A32NX_ENGINE_TANK_OIL:1");
-  engineEngine2Oil = std::make_unique<LocalVariable>("A32NX_ENGINE_TANK_OIL:2");
-  engineEngine1TotalOil = std::make_unique<LocalVariable>("A32NX_ENGINE_TOTAL_OIL:1");
-  engineEngine2TotalOil = std::make_unique<LocalVariable>("A32NX_ENGINE_TOTAL_OIL:2");
+  engineEngine1Oil = std::make_unique<LocalVariable>("A32NX_ENGINE_OIL_QTY:1");
+  engineEngine2Oil = std::make_unique<LocalVariable>("A32NX_ENGINE_OIL_QTY:2");
+  engineEngine1TotalOil = std::make_unique<LocalVariable>("A32NX_ENGINE_OIL_TOTAL:1");
+  engineEngine2TotalOil = std::make_unique<LocalVariable>("A32NX_ENGINE_OIL_TOTAL:2");
   engineEngine1FF = std::make_unique<LocalVariable>("A32NX_ENGINE_FF:1");
   engineEngine2FF = std::make_unique<LocalVariable>("A32NX_ENGINE_FF:2");
   engineEngine1PreFF = std::make_unique<LocalVariable>("A32NX_ENGINE_PRE_FF:1");

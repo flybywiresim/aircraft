@@ -69,7 +69,7 @@ class CDUPerformancePage {
                     } else {
                         // not real: v-speed helper
                         if (mcdu.flaps && !isFinite(mcdu.zeroFuelWeight)) {
-                            mcdu.setScratchpadMessage(NXSystemMessages.initializeWeightOrCg);
+                            mcdu.addMessageToQueue(NXSystemMessages.initializeWeightOrCg);
                         } else if (mcdu.flaps && isFinite(mcdu.zeroFuelWeight)) {
                             mcdu.setScratchpadText(mcdu._getV1Speed().toString());
                         } else {
@@ -99,7 +99,7 @@ class CDUPerformancePage {
                         mcdu.unconfirmedVRSpeed = undefined;
                     } else {
                         if (mcdu.flaps && !isFinite(mcdu.zeroFuelWeight)) {
-                            mcdu.setScratchpadMessage(NXSystemMessages.initializeWeightOrCg);
+                            mcdu.addMessageToQueue(NXSystemMessages.initializeWeightOrCg);
                         } else if (mcdu.flaps && isFinite(mcdu.zeroFuelWeight)) {
                             mcdu.setScratchpadText(mcdu._getVRSpeed().toString());
                         } else {
@@ -129,7 +129,7 @@ class CDUPerformancePage {
                         mcdu.unconfirmedV2Speed = undefined;
                     } else {
                         if (mcdu.flaps && !isFinite(mcdu.zeroFuelWeight)) {
-                            mcdu.setScratchpadMessage(NXSystemMessages.initializeWeightOrCg);
+                            mcdu.addMessageToQueue(NXSystemMessages.initializeWeightOrCg);
                         } else if (mcdu.flaps && isFinite(mcdu.zeroFuelWeight)) {
                             mcdu.setScratchpadText(mcdu._getV2Speed().toString());
                         } else {
@@ -806,7 +806,7 @@ class CDUPerformancePage {
         };
 
         let baroCell = "[\xa0\xa0\xa0]";
-        if (isFinite(mcdu.perfApprMDA)) {
+        if (mcdu.perfApprMDA !== null) {
             baroCell = mcdu.perfApprMDA.toFixed(0);
         }
         mcdu.onRightInput[1] = (value, scratchpadCallback) => {
@@ -823,7 +823,7 @@ class CDUPerformancePage {
         let radioCell = "";
         if (isILS) {
             radioLabel = "RADIO";
-            if (isFinite(mcdu.perfApprDH)) {
+            if (typeof mcdu.perfApprDH === 'number') {
                 radioCell = mcdu.perfApprDH.toFixed(0);
             } else if (mcdu.perfApprDH === "NO DH") {
                 radioCell = "NO DH";

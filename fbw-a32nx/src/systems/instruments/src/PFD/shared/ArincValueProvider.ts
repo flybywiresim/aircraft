@@ -2,14 +2,14 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Publisher } from '@microsoft/msfs-sdk';
+import { ConsumerSubject, MathUtils, Publisher, Subscription } from '@microsoft/msfs-sdk';
 import { getDisplayIndex } from 'instruments/src/PFD/PFD';
-import { Arinc429Word } from '@flybywiresim/fbw-sdk';
+import { Arinc429Register, Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
 import { PFDSimvars } from './PFDSimvarPublisher';
 import { ArincEventBus } from '../../MsfsAvionicsCommon/ArincEventBus';
 
 export interface Arinc429Values {
-    pitchAr: Arinc429Word;
+    pitchAr: Arinc429WordData;
     rollAr: Arinc429Word;
     altitudeAr: Arinc429Word;
     magTrack: Arinc429Word;
@@ -48,13 +48,15 @@ export interface Arinc429Values {
     irMaintWord: Arinc429Word;
     trueHeading: Arinc429Word;
     trueTrack: Arinc429Word;
-    mdaAr: Arinc429Word;
-    dhAr: Arinc429Word;
+    fmEisDiscreteWord1Raw: number;
+    fmEisDiscreteWord2Raw: number;
+    fmMdaRaw: number;
+    fmDhRaw: number;
 }
 export class ArincValueProvider {
     private roll = new Arinc429Word(0);
 
-    private pitch = new Arinc429Word(0);
+    private pitch = Arinc429Register.empty();
 
     private magTrack = new Arinc429Word(0);
 
@@ -106,8 +108,15 @@ export class ArincValueProvider {
 
     private facToUse = 0;
 
-    constructor(private readonly bus: ArincEventBus) {
+    private readonly fm1Healthy = ConsumerSubject.create(null, 0);
 
+    private readonly fm2Healthy = ConsumerSubject.create(null, 0);
+
+    private readonly fm1Subs: Subscription[] = [];
+
+    private readonly fm2Subs: Subscription[] = [];
+
+    constructor(private readonly bus: ArincEventBus) {
     }
 
     public init() {
@@ -115,7 +124,7 @@ export class ArincValueProvider {
         const subscriber = this.bus.getSubscriber<PFDSimvars>();
 
         subscriber.on('pitch').handle((p) => {
-            this.pitch = new Arinc429Word(p);
+            this.pitch.set(p);
             publisher.pub('pitchAr', this.pitch);
         });
         subscriber.on('roll').handle((p) => {
@@ -487,13 +496,17 @@ export class ArincValueProvider {
             publisher.pub('trueTrack', new Arinc429Word(word));
         });
 
-        subscriber.on('mda').handle((word) => {
-            publisher.pub('mdaAr', new Arinc429Word(word));
-        });
+        this.fm1Subs.push(subscriber.on('fm1EisDiscrete2Raw').handle((raw) => publisher.pub('fmEisDiscreteWord2Raw', raw), true));
+        this.fm2Subs.push(subscriber.on('fm2EisDiscrete2Raw').handle((raw) => publisher.pub('fmEisDiscreteWord2Raw', raw), true));
+        this.fm1Subs.push(subscriber.on('fm1MdaRaw').handle((raw) => publisher.pub('fmMdaRaw', raw), true));
+        this.fm2Subs.push(subscriber.on('fm2MdaRaw').handle((raw) => publisher.pub('fmMdaRaw', raw), true));
+        this.fm1Subs.push(subscriber.on('fm1DhRaw').handle((raw) => publisher.pub('fmDhRaw', raw), true));
+        this.fm2Subs.push(subscriber.on('fm2DhRaw').handle((raw) => publisher.pub('fmDhRaw', raw), true));
 
-        subscriber.on('dh').handle((word) => {
-            publisher.pub('dhAr', new Arinc429Word(word));
-        });
+        this.fm1Healthy.setConsumer(subscriber.on('fm1HealthyDiscrete'));
+        this.fm2Healthy.setConsumer(subscriber.on('fm2HealthyDiscrete'));
+        this.fm1Healthy.sub(this.determineFmToUse.bind(this));
+        this.fm2Healthy.sub(this.determineFmToUse.bind(this), true);
     }
 
     private determineAndPublishChosenRadioAltitude(publisher: Publisher<Arinc429Values>) {
@@ -559,5 +572,20 @@ export class ArincValueProvider {
         }
 
         publisher.pub('facToUse', this.facToUse);
+    }
+
+    private determineFmToUse(): void {
+        const onSideIndex = MathUtils.clamp(getDisplayIndex(), 1, 2);
+
+        const onlyFm1Healthy = this.fm1Healthy.get() && !this.fm2Healthy.get();
+        const onlyFm2Healthy = this.fm2Healthy.get() && !this.fm1Healthy.get();
+
+        if ((onSideIndex === 1 && !onlyFm2Healthy) || onlyFm1Healthy) {
+            this.fm2Subs.forEach((sub) => sub.pause());
+            this.fm1Subs.forEach((sub) => sub.resume(true));
+        } else if ((onSideIndex === 2 && !onlyFm1Healthy) || onlyFm2Healthy) {
+            this.fm1Subs.forEach((sub) => sub.pause());
+            this.fm2Subs.forEach((sub) => sub.resume(true));
+        }
     }
 }

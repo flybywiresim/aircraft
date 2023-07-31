@@ -72,7 +72,6 @@ const getSimBriefOfp = (mcdu, updateView, callback = () => {}) => {
             mcdu.simbrief["costIndex"] = data.general.costindex;
             mcdu.simbrief["navlog"] = data.navlog.fix;
             mcdu.simbrief["callsign"] = data.atc.callsign;
-            mcdu.simbrief["alternateIcao"] = data.alternate.icao_code;
             let alternate = data.alternate;
             if (Array.isArray(data.alternate)) {
                 alternate = data.alternate[0];
@@ -125,7 +124,7 @@ const insertUplink = (mcdu) => {
         callsign
     } = mcdu.simbrief;
 
-    mcdu.setScratchpadMessage(NXSystemMessages.uplinkInsertInProg);
+    mcdu.addMessageToQueue(NXSystemMessages.uplinkInsertInProg);
 
     /**
      * AOC ACT F-PLN UPLINK
@@ -143,7 +142,7 @@ const insertUplink = (mcdu) => {
 
             setTimeout(async () => {
                 await uplinkRoute(mcdu);
-                mcdu.setScratchpadMessage(NXSystemMessages.aocActFplnUplink);
+                mcdu.addMessageToQueue(NXSystemMessages.aocActFplnUplink);
             }, mcdu.getDelayRouteChange());
 
             if (mcdu.page.Current === mcdu.page.InitPageA) {

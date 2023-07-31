@@ -133,7 +133,7 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
                 <h2 style={{ visibility: showWarning ? 'visible' : 'hidden' }} className="mt-4 w-48 h-12 text-xl text-utility-red">
                     {t('Settings.ThrottleConfig.PleaseEnterAValidDeadzone')}
                     {' '}
-                    (&gt; 0.05)
+                    (&gt; 0.01)
                 </h2>
 
             </div>
