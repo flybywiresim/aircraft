@@ -973,7 +973,7 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
         return (
             <div
                 ref={this.identRef}
-                class="MFDFplnLine mfd-fms-fpln-line-special"
+                class="mfd-fms-fpln-line mfd-fms-fpln-line-special"
                 style={`font-size: 30px; ${FplnLineFlags.FirstLine === (this.props.flags.get() & FplnLineFlags.FirstLine) ? 'height: 40px; margin-top: 16px;' : 'height: 72px;'};`}
             >
                 {delimiter}

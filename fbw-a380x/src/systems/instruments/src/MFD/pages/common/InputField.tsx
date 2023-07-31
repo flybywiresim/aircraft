@@ -75,7 +75,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
     }
 
     private updateDisplayElement() {
-        // If modifiedFieldValue.get() === null, render props' value
+        // If input was not modified, render props' value
         if (this.modifiedFieldValue.get() === null) {
             if (!this.props.value.get()) {
                 this.populatePlaceholders();
@@ -199,12 +199,21 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
 
         if (validateAndUpdate) {
             if (this.modifiedFieldValue.get() === null && this.props.value.get() !== null) {
+                console.log(this.props.value.get().toString());
                 // Enter is pressed after no modification
-                await this.validateAndUpdate(this.props.value.get().toString());
+                const [formatted] = this.props.dataEntryFormat.format(this.props.value.get());
+                await this.validateAndUpdate(formatted);
             } else {
+                console.log('mod');
                 await this.validateAndUpdate(this.modifiedFieldValue.get());
             }
         }
+
+        // Restore mandatory class for correct coloring of dot (e.g. non-placeholders)
+        if (!this.props.value.get() && this.props.mandatory.get() === true) {
+            this.textInputRef.getOrDefault().classList.add('mandatory');
+        }
+
         this.spanningDivRef.getOrDefault().style.justifyContent = this.props.alignText;
         this.textInputRef.getOrDefault().classList.remove('editing');
     }
