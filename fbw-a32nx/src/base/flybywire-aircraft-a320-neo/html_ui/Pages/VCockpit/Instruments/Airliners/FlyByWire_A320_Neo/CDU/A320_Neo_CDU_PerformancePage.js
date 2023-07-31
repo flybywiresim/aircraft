@@ -193,7 +193,7 @@ class CDUPerformancePage {
             transAltCell = "[\xa0".padEnd(4, "\xa0") + "]";
 
             const transAlt = targetPlan.performanceData.transitionAltitude.get();
-            const transAltitudeIsFromDatabase = targetPlan.performanceData.transitionAltitudeIsFromDatabase;
+            const transAltitudeIsFromDatabase = targetPlan.performanceData.transitionAltitudeIsFromDatabase.get();
 
             if (transAlt !== undefined) {
                 transAltCell = `{cyan}${transAlt}{end}`;
