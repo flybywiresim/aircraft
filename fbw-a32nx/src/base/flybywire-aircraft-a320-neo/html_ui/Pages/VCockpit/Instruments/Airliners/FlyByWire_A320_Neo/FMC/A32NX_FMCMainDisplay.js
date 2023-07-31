@@ -1165,10 +1165,7 @@ class FMCMainDisplay extends BaseAirliners {
                     break;
                 }
                 case FmgcFlightPhases.GOAROUND: {
-                    const activePlan = this.flightPlanService.active;
-                    const accAlt = (engineOut ? activePlan.performanceData.missedEngineOutAccelerationAltitude : activePlan.performanceData.missedAccelerationAltitude).get();
-
-                    if (accAlt === undefined || Simplane.getAltitude() < accAlt) {
+                    if (SimVar.GetSimVarValue("L:A32NX_FMA_VERTICAL_MODE", "number") === 41 /* SRS GA */) {
                         const speed = Math.min(
                             this.computedVls + (engineOut ? 15 : 25),
                             Math.max(
@@ -1183,8 +1180,11 @@ class FMCMainDisplay extends BaseAirliners {
                         vPfd = speed;
                         this.managedSpeedTarget = speed;
                     } else {
-                        vPfd = this.computedVgd;
-                        this.managedSpeedTarget = this.computedVgd;
+                        const speedConstraint = this.getSpeedConstraint();
+                        const speed = Math.min(this.computedVgd, speedConstraint);
+
+                        vPfd = speed;
+                        this.managedSpeedTarget = speed;
                     }
                     break;
                 }
@@ -1464,7 +1464,6 @@ class FMCMainDisplay extends BaseAirliners {
         const plan = this.flightPlanService.active;
 
         const origin = plan.originAirport;
-        const originElevation = origin ? origin.location.alt : 0;
         const destination = plan.destinationAirport;
         const destinationElevation = destination ? destination.location.alt : 0;
 
@@ -1473,14 +1472,14 @@ class FMCMainDisplay extends BaseAirliners {
         // propagate descent speed constraints forward
         let currentSpeedConstraint = Infinity;
         let previousSpeedConstraint = Infinity;
-        for (let index = 0; index < plan.legCount; index++) {
+        for (let index = 0; index < Math.min(plan.firstMissedApproachLegIndex, plan.legCount); index++) {
             const leg = plan.elementAt(index);
 
             if (leg.isDiscontinuity === true) {
                 continue;
             }
 
-            if (leg.segment.class === 2 /** DES */) {
+            if (leg.constraintType === 2 /** DES */) {
                 if (leg.definition.speed > 0) {
                     currentSpeedConstraint = Math.min(currentSpeedConstraint, Math.round(leg.definition.speed));
                 }
@@ -1504,14 +1503,15 @@ class FMCMainDisplay extends BaseAirliners {
         previousSpeedConstraint = Infinity;
         let currentDesConstraint = -Infinity;
         let currentClbConstraint = Infinity;
-        for (let index = plan.legCount - 1; index >= 0; index--) {
+
+        for (let index = Math.min(plan.firstMissedApproachLegIndex, plan.legCount) - 1; index >= 0; index--) {
             const leg = plan.elementAt(index);
 
             if (leg.isDiscontinuity === true) {
                 continue;
             }
 
-            if (leg.segment.class === 0 /** CLB */) {
+            if (leg.constraintType === 1 /** CLB */) {
                 if (leg.definition.speed > 0) {
                     currentSpeedConstraint = Math.min(currentSpeedConstraint, Math.round(leg.definition.speed));
                 }
@@ -1528,7 +1528,7 @@ class FMCMainDisplay extends BaseAirliners {
             } else if (leg.segment.class === 2 /** DES */) {
                 switch (leg.definition.altitudeDescriptor) {
                     case "@": // at alt 1
-                    case "-": // at or above alt 1
+                    case "+": // at or above alt 1
                         currentDesConstraint = Math.max(currentDesConstraint, Math.round(leg.definition.altitude1));
                         break;
                     case "B": // between alt 1 and alt 2

@@ -8,6 +8,7 @@ import { ProcedureTransition } from 'msfs-navdata';
 import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { ProcedureSegment } from '@fmgc/flightplanning/new/segments/ProcedureSegment';
+import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
 
 export class DepartureRunwayTransitionSegment extends ProcedureSegment<ProcedureTransition> {
     class = SegmentClass.Departure
@@ -32,7 +33,7 @@ export class DepartureRunwayTransitionSegment extends ProcedureSegment<Procedure
         }
 
         if (!skipUpdateLegs) {
-            const legs = this.departureRunwayTransition?.legs.map((it) => FlightPlanLeg.fromProcedureLeg(this, it, existingDeparture?.ident ?? '')) ?? [];
+            const legs = this.departureRunwayTransition?.legs.map((it) => FlightPlanLeg.fromProcedureLeg(this, it, existingDeparture?.ident ?? '', WaypointConstraintType.CLB)) ?? [];
 
             this.allLegs.length = 0;
             this.allLegs.push(...legs);
