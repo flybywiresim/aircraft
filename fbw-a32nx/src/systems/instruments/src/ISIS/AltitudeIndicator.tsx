@@ -51,7 +51,7 @@ type AltitudeIndicatorProps = {
 }
 
 export const AltitudeIndicator: React.FC<AltitudeIndicatorProps> = ({ altitude, mda, bugs }) => {
-    const [metricAltitude] = usePersistentNumberProperty('ISIS_METRIC_ALTITUDE', 1);
+    const [metricAltitude] = usePersistentNumberProperty('ISIS_METRIC_ALTITUDE', 0);
 
     return (
         <g id="AltitudeIndicator">
