@@ -63,10 +63,10 @@
         "MetarParsingError": "METAR đã nhận không thể phân tích được",
         "NoIcaoProvided": "Chưa cung cấp mã ICAO",
         "NotAvailableShort": "Không có",
-        "Raw": "Nguyên",
+        "Raw": "Thô",
         "TT": {
           "SwitchToIconView": "Chuyển sang Chế độ biểu tượng",
-          "SwitchToRawMetarView": "Chuyển sang Chế độ xem METAR nguyên"
+          "SwitchToRawMetarView": "Chuyển sang Chế độ xem METAR thô"
         },
         "Temperature": "Nhiệt độ",
         "Title": "Thời tiết",
@@ -229,7 +229,7 @@
       "LoadingMsg": "Đang tải",
       "NoAirportSelected": "Không có sân bay nào được chọn",
       "ResetNavigraphAuthentication": "Đặt lại xác thực Navigraph",
-      "ScanTheQrCodeOrOpen": "Quét mã QR hoặc Mở",
+      "ScanTheQrCodeOrOpen": "Quét mã QR hoặc mở",
       "Title": "Navigraph"
     },
     "PinnedCharts": {
@@ -613,7 +613,7 @@
       "Local": "Cục bộ",
       "LocalTimeFormat": "Định dạng thời gian cục bộ",
       "OnscreenKeyboardLayout": "Bố cục bàn phím trên màn hình",
-      "ShowColoredRawMetar": "Hiển thị METAR nguyên có màu",
+      "ShowColoredRawMetar": "Hiển thị METAR thô có màu",
       "ShowStatusBarFlightProgressIndicator": "Hiển thị thanh trạng thái chuyến bay",
       "Theme": "Giao diện",
       "TimeDisplayed": "Thời gian hiển thị",
