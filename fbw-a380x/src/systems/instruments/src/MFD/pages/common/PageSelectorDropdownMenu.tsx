@@ -78,14 +78,14 @@ export class PageSelectorDropdownMenu extends DisplayComponent<PageSelectorDropd
         return (
             <div class="mfd-dropdown-container" ref={this.topRef} style={this.props.containerStyle}>
                 <div class="mfd-page-selector-outer" ref={this.dropdownSelectorRef}>
-                    <div style="display: flex; flex: 8; justify-content: center; hover:background-color: cyan;">
+                    <div class="mfd-page-selector-label-container">
                         <span class="mfd-page-selector-label" ref={this.dropdownSelectorLabelRef}>
                             {this.props.label}
                         </span>
                     </div>
-                    <div style="display: flex;">
+                    <div class="mfd-page-selector-label-triangle">
                         {this.props.menuItems.length > 1 && (
-                            <span style="padding: 8px;">
+                            <span>
                                 <TriangleDown />
                             </span>
                         )}
@@ -93,11 +93,7 @@ export class PageSelectorDropdownMenu extends DisplayComponent<PageSelectorDropd
                 </div>
                 <div ref={this.dropdownMenuRef} class="mfd-dropdown-menu" style={`display: ${this.dropdownIsOpened.get() ? 'block' : 'none'}`}>
                     {this.props.menuItems.map((el, idx) => (
-                        <span
-                            id={`${this.props.idPrefix}_${idx}`}
-                            class="mfd-dropdown-menu-element"
-                            style={'text-align: \'left\'; padding: 5px 16px;'}
-                        >
+                        <span id={`${this.props.idPrefix}_${idx}`} class="mfd-dropdown-menu-element">
                             {el.label}
                         </span>
                     ), this)}

@@ -1,6 +1,5 @@
 import { FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 import { AbstractHeader } from 'instruments/src/MFD/pages/common/AbstractHeader';
-import { DropdownMenu } from 'instruments/src/MFD/pages/common/DropdownMenu';
 import { PageSelectorDropdownMenu } from 'instruments/src/MFD/pages/common/PageSelectorDropdownMenu';
 
 /*
@@ -30,19 +29,8 @@ export class SurvHeader extends AbstractHeader {
     render(): VNode {
         return (
             <>
-                <div style="display: flex; flex-direction: row; justify-content: space-between;">
-                    <DropdownMenu
-                        values={this.availableSystems}
-                        selectedIndex={this.sysSelectorSelectedIndex}
-                        idPrefix="sysSelectorDropdown"
-                        freeTextAllowed={false}
-                        onModified={(val) => this.changeSystem(val)}
-                        containerStyle="width: 25%;"
-                        alignLabels="flex-start"
-                    />
-                    <span class="mfd-label" style="width: 25%; text-align: left; padding: 8px 10px 0px 10px;">{this.props.callsign}</span>
-                </div>
-                <div style="display: flex; flex-direction: row; width: 100%">
+                {super.render()}
+                <div class="mfd-header-page-select-row">
                     <PageSelectorDropdownMenu
                         isActive={this.controlsIsSelected}
                         label="CONTROLS"

@@ -694,17 +694,6 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
                 this.currentlyRenderedType = FplnLineType.Special;
             }
 
-            if (this.props.lineColor.get() === FplnLineColor.Active) {
-                this.lineRef.getOrDefault().classList.remove('mfd-fms-fpln-line-secondary');
-                this.lineRef.getOrDefault().classList.remove('mfd-fms-fpln-line-temporary');
-            } else if (this.props.lineColor.get() === FplnLineColor.Secondary) {
-                this.lineRef.getOrDefault().classList.add('mfd-fms-fpln-line-secondary');
-                this.lineRef.getOrDefault().classList.remove('mfd-fms-fpln-line-temporary');
-            } else if (this.props.lineColor.get() === FplnLineColor.Temporary) {
-                this.lineRef.getOrDefault().classList.add('mfd-fms-fpln-line-temporary');
-                this.lineRef.getOrDefault().classList.remove('mfd-fms-fpln-line-secondary');
-            }
-
             // TODO: Hold/turn direction
             if (data.overfly === true) {
                 this.identRef.getOrDefault().innerHTML = `<span>${data.ident}<span style="font-size: 24px; vertical-align: baseline;">@</span></span>`;
@@ -923,7 +912,11 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
         return (
             <div
                 ref={this.lineRef}
-                class="mfd-fms-fpln-line"
+                class={{
+                    'mfd-fms-fpln-line': true,
+                    'mfd-fms-fpln-line-temporary': this.props.lineColor.map((it) => it === FplnLineColor.Temporary),
+                    'mfd-fms-fpln-line-secondary': this.props.lineColor.map((it) => it === FplnLineColor.Secondary),
+                }}
                 style={`${FplnLineFlags.FirstLine === (this.props.flags.get() & FplnLineFlags.FirstLine) ? 'height: 40px; margin-top: 16px;' : 'height: 72px;'};`}
             >
                 <div style="width: 25%; display: flex; flex-direction: column;">

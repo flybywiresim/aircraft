@@ -9,7 +9,7 @@ export class Footer extends DisplayComponent<AbstractMfdPageProps> {
 
     render(): VNode {
         return (
-            <div style="display: flex; border-top: 2px solid $display-mfd-dark-grey; padding: 5px;">
+            <div class="mfd-footer">
                 <Button label="MSG<br />LIST" onClick={() => this.props.uiService.navigateTo(`fms/${this.props.uiService.activeUri.get().category}/msg-list`)} />
             </div>
         );

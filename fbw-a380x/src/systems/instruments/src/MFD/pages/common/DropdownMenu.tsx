@@ -174,7 +174,7 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
         return (
             <div class="mfd-dropdown-container" ref={this.topRef} style={this.props.containerStyle}>
                 <div ref={this.dropdownSelectorRef} class="mfd-dropdown-outer">
-                    <div ref={this.dropdownInnerRef} class="mfd-dropdown-inner" style={`justify-content: ${this.props.alignLabels}; align-items: center;`}>
+                    <div ref={this.dropdownInnerRef} class="mfd-dropdown-inner" style={`justify-content: ${this.props.alignLabels};`}>
                         <InputField<string>
                             ref={this.inputFieldRef}
                             dataEntryFormat={new DropdownFieldFormat(this.props.numberOfDigitsForInputField ?? 6)}
@@ -187,13 +187,13 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
                             handleFocusBlurExternally
                         />
                     </div>
-                    <div style="display: flex; justify-content: center; align-items: center; width: 25px;">
+                    <div class="mfd-dropdown-arrow">
                         <svg height="15" width="15">
                             <polygon points="0,0 15,0 7.5,15" style="fill: white" />
                         </svg>
                     </div>
                 </div>
-                <div ref={this.dropdownMenuRef} class="mfd-dropdown-menu" style={`top: 42px; display: ${this.dropdownIsOpened.get() ? 'block' : 'none'}`} />
+                <div ref={this.dropdownMenuRef} class="mfd-dropdown-menu" style={`display: ${this.dropdownIsOpened.get() ? 'block' : 'none'}`} />
             </div>
         );
     }

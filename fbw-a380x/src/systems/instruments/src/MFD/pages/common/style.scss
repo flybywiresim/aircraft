@@ -15,7 +15,6 @@ $display-mfd-dark-grey: #3c3c3c;
   width: 768px;
   height: 1024px; /* 1:1.33 W:H  */
   background: $display-background;
-  /* background: $display-background; */
   font-family: "Ecam", monospace !important;
   display: flex;
   flex-direction: column;
@@ -63,15 +62,16 @@ $display-mfd-dark-grey: #3c3c3c;
 }
 
 .mfd-button {
+  display: flex;
   font-size: 22px;
   background-color: $display-mfd-dark-grey;
   color: $display-white;
   font-family: "Ecam", monospace;
   text-align: center;
+  align-items: center;
+  justify-content: center;
   border: 2px outset $display-light-grey;
   padding: 9px 12px 5px 12px;
-  display: flex;
-  justify-content: center;
 }
 
 .mfd-button.opened {
@@ -122,11 +122,19 @@ $display-mfd-dark-grey: #3c3c3c;
 }
 
 .mfd-dropdown-inner {
-  background-color: #040405;
+  background-color: $display-background;
   display: flex;
   flex: 1;
   justify-content: center;
+  align-items: center;
   height: 40px;
+}
+
+.mfd-dropdown-arrow {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 25px;
 }
 
 .mfd-dropdown-label {
@@ -155,6 +163,7 @@ $display-mfd-dark-grey: #3c3c3c;
 }
 
 .mfd-dropdown-menu {
+  top: 42px;
   background-color: $display-mfd-dark-grey;
   min-width: 100%;
   position: absolute;
@@ -173,6 +182,8 @@ $display-mfd-dark-grey: #3c3c3c;
   border: 3px solid transparent;
   white-space: nowrap;
   overflow: hidden;
+  text-align: left;
+  padding: 5px 16px;
 }
 
 .mfd-dropdown-menu-element:hover {
@@ -208,6 +219,20 @@ $display-mfd-dark-grey: #3c3c3c;
 
 .mfd-page-selector-outer:hover {
   border-color: $display-cyan;
+}
+
+.mfd-page-selector-label-container {
+  display: flex;
+  flex: 8;
+  justify-content: center;
+}
+
+.mfd-page-selector-label-triangle {
+  display: flex;
+}
+
+.mfd-page-selector-label-triangle > span {
+  padding: 8px;
 }
 
 .mfd-page-container {
@@ -379,6 +404,13 @@ $display-mfd-dark-grey: #3c3c3c;
   border: 3px solid transparent;
 }
 
+.mfd-input-field-root {
+  display: flex;
+  flex-direction: row;
+  justify-items: flex-start;
+  align-items: baseline;
+}
+
 .mfd-input-field-container {
   display: flex;
   flex-direction: row;
@@ -454,6 +486,18 @@ $display-mfd-dark-grey: #3c3c3c;
   }
 }
 
+.mfd-input-field-unit {
+  align-self: center;
+}
+
+.mfd-input-field-text-input-container {
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+  align-self: center;
+  align-items: center;
+}
+
 .mfd-mouse-cursor {
   pointer-events: none;
   width: 80px;
@@ -463,6 +507,9 @@ $display-mfd-dark-grey: #3c3c3c;
 }
 
 .mfd-dialog {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
   z-index: 10;
   overflow: auto;
   position: absolute;
@@ -470,4 +517,88 @@ $display-mfd-dark-grey: #3c3c3c;
   border: 2px outset lightgray;
   padding: 5px;
   margin: 5px;
+}
+
+.mfd-dialog-title {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 20px;
+}
+
+.mfd-dialog-buttons {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.mfd-title-bar-container {
+  display: flex;
+}
+
+.mfd-title-bar-title {
+  flex: 10;
+  background-color: #a0a0a0;
+  padding: 3px 10px 3px 7px;
+}
+
+.mfd-title-bar-title-label {
+  color: #222222;
+  font-size: 28px;
+}
+
+.mfd-title-bar-eo-section {
+  display: flex;
+  width: 70px;
+  background-color: #a0a0a0;
+  margin-left: 2px;
+  justify-content: center;
+  align-items: center;
+}
+
+.mfd-title-bar-eo-label {
+  background-color: $display-amber;
+  color: #222222;
+  font-size: 26px;
+  padding: 2px;
+}
+
+.mfd-title-bar-tmpy-section {
+  display: flex;
+  width: 100px;
+  background-color: #a0a0a0;
+  margin-left: 2px;
+  justify-content: center;
+  align-items: center;
+}
+
+.mfd-title-bar-tmpy-label {
+  background-color: $display-yellow;
+  color: #222222;
+  font-size: 26px;
+  padding: 2px;
+}
+
+.mfd-header-sys-select-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.mfd-header-callsign {
+  width: 25%;
+  text-align: left;
+  padding: 8px 10px 0px 10px;
+}
+
+.mfd-header-page-select-row {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+}
+
+.mfd-footer {
+  display: flex;
+  border-top: 2px solid $display-mfd-dark-grey;
+  padding: 5px;
 }

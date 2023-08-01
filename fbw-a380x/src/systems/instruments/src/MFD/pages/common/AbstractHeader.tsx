@@ -1,5 +1,6 @@
 import { ArraySubject, DisplayComponent, FSComponent, Subject, Subscribable, Subscription, VNode } from '@microsoft/msfs-sdk';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
+import { DropdownMenu } from 'instruments/src/MFD/pages/common/DropdownMenu';
 
 interface AbstractMfdHeaderProps extends AbstractMfdPageProps {
     activeFmsSource: Subscribable<'FMS 1' | 'FMS 2' | 'FMS 1-C' | 'FMS 2-C'>;
@@ -78,6 +79,19 @@ export abstract class AbstractHeader extends DisplayComponent<AbstractMfdHeaderP
     }
 
     render(): VNode {
-        return null;
+        return (
+            <div class="mfd-header-sys-select-row">
+                <DropdownMenu
+                    values={this.availableSystems}
+                    selectedIndex={this.sysSelectorSelectedIndex}
+                    idPrefix="sysSelectorDropdown"
+                    freeTextAllowed={false}
+                    onModified={(val) => this.changeSystem(val)}
+                    containerStyle="width: 25%;"
+                    alignLabels="flex-start"
+                />
+                <span class="mfd-label mfd-header-callsign">{this.props.callsign}</span>
+            </div>
+        );
     }
 }

@@ -352,13 +352,10 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
 
     render(): VNode {
         return (
-            <div
-                ref={this.topRef}
-                style="display: flex; flex-direction: row; justify-items: flex-start; align-items: baseline;"
-            >
+            <div ref={this.topRef} class="mfd-input-field-root">
                 <div ref={this.containerRef} class="mfd-input-field-container" style={`${this.props.containerStyle}`}>
-                    <span ref={this.leadingUnitRef} class="mfd-label-unit mfd-unit-leading" style="align-self: center;">{this.leadingUnit}</span>
-                    <div ref={this.spanningDivRef} style={`display: flex; flex: 1; flex-direction: row; align-self: center; align-items: center; justify-content: ${this.props.alignText};`}>
+                    <span ref={this.leadingUnitRef} class="mfd-label-unit mfd-unit-leading mfd-input-field-unit">{this.leadingUnit}</span>
+                    <div ref={this.spanningDivRef} class="mfd-input-field-text-input-container" style={`justify-content: ${this.props.alignText};`}>
                         <span
                             ref={this.textInputRef}
                             // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
@@ -369,7 +366,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
                         </span>
                         <span ref={this.caretRef} class="mfd-input-field-caret" />
                     </div>
-                    <span ref={this.trailingUnitRef} class="mfd-label-unit mfd-unit-trailing" style="align-self: center;">{this.trailingUnit}</span>
+                    <span ref={this.trailingUnitRef} class="mfd-label-unit mfd-unit-trailing mfd-input-field-unit">{this.trailingUnit}</span>
                 </div>
             </div>
         );

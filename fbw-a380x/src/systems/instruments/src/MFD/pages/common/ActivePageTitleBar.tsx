@@ -14,18 +14,18 @@ interface ActivePageTitleBarProps extends ComponentProps {
 export class ActivePageTitleBar extends DisplayComponent<ActivePageTitleBarProps> {
     render(): VNode {
         return (
-            <div style="display: flex;">
-                <div style="flex: 10; background-color: #a0a0a0; padding: 3px 10px 3px 7px;">
-                    <span class="mfd-label" style="color: #222222; font-size: 28px;">
+            <div class="mfd-title-bar-container">
+                <div class="mfd-title-bar-title">
+                    <span class="mfd-label mfd-title-bar-title-label">
                         {this.props.activePage}
                         {this.props.offset.get() !== '' ? `     OFFSET${this.props.offset.get()}` : ''}
                     </span>
                 </div>
-                <div style="width: 70px; background-color: #a0a0a0; margin-left: 2px; display: flex; justify-content: center; align-items: center;">
-                    {(this.props.eoIsActive.get() === true) && <span class="mfd-label" style="background-color: orange; color: #222222; font-size: 26px; padding: 2px;">EO</span>}
+                <div class="mfd-title-bar-eo-section">
+                    {(this.props.eoIsActive.get() === true) && <span class="mfd-label mfd-title-bar-eo-label">EO</span>}
                 </div>
-                <div style="width: 100px; background-color: #a0a0a0; margin-left: 2px; display: flex; justify-content: center; align-items: center;">
-                    {(this.props.tmpyIsActive.get() === true) && <span class="mfd-label" style="background-color: yellow; color: #222222; font-size: 26px; padding: 2px;">TMPY</span>}
+                <div class="mfd-title-bar-tmpy-section">
+                    {(this.props.tmpyIsActive.get() === true) && <span class="mfd-label mfd-title-bar-tmpy-label">TMPY</span>}
                 </div>
             </div>
         );

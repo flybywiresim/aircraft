@@ -87,11 +87,7 @@ export class Button extends DisplayComponent<ButtonProps> {
             const itemNodes: VNode = (
                 <div>
                     {items?.map<VNode>((el, idx) => (
-                        <span
-                            id={`${this.props.idPrefix}_${idx}`}
-                            class="mfd-dropdown-menu-element"
-                            style={'text-align: \'left\'; padding: 5px 16px;'}
-                        >
+                        <span id={`${this.props.idPrefix}_${idx}`} class="mfd-dropdown-menu-element">
                             {el.label}
                         </span>
                     ), this)}
@@ -155,7 +151,7 @@ export class Button extends DisplayComponent<ButtonProps> {
                 <span
                     ref={this.buttonRef}
                     class="mfd-button"
-                    style={`align-items: center; ${this.props.buttonStyle}`}
+                    style={`${this.props.buttonStyle}`}
                 />
                 <div ref={this.dropdownMenuRef} class="mfd-dropdown-menu" style={`display: ${this.dropdownIsOpened.get() ? 'block' : 'none'}`} />
             </div>
