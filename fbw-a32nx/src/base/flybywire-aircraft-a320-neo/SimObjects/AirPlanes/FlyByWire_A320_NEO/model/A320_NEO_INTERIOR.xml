@@ -4318,6 +4318,7 @@
             <Component ID="Audio_Panel_Left">
                 <UseTemplate Name="FBW_AIRLINER_Audio_Panel_Template">
                     <ID>1</ID>
+                    <PANEL_FOR_ANIM>AUDIOL</PANEL_FOR_ANIM>
                     <SIDE>L</SIDE>
                     <INDICATORS_POWERED>(L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or </INDICATORS_POWERED>
                     <SEQ1_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
@@ -4456,6 +4457,7 @@
             <Component ID="Audio_Panel_Right">
                 <UseTemplate Name="FBW_AIRLINER_Audio_Panel_Template">
                     <ID>2</ID>
+                    <PANEL_FOR_ANIM>AUDIOR</PANEL_FOR_ANIM>
                     <SIDE>R</SIDE>
                     <INDICATORS_POWERED>(L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED, Bool)</INDICATORS_POWERED>
                     <SEQ1_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
@@ -4581,6 +4583,7 @@
             <Component ID="Audio_Panel_Overhead">
                 <UseTemplate Name="FBW_AIRLINER_Audio_Panel_Template">
                     <ID>3</ID>
+                    <PANEL_FOR_ANIM>OVHD_RADIO</PANEL_FOR_ANIM>
                     <SIDE>OVHD</SIDE>
                     <INDICATORS_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</INDICATORS_POWERED>
                     <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool) </SEQ1_POWERED>
