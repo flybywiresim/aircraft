@@ -474,6 +474,8 @@ pub struct TrimAirSystem<const ZONES: usize, const ENGINES: usize> {
     // These are not a real components of the system, but a tool to simulate the mixing of air
     pack_mixer_container: PneumaticPipe,
     trim_air_mixers: [MixerUnit<1>; ZONES],
+
+    duct_high_pressure: Failure,
     duct_overheat: [bool; ZONES],
     outlet_air: Air,
 }
@@ -494,6 +496,7 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystem<ZONES, ENGINES> {
             ),
             trim_air_mixers: [MixerUnit::new(&[ZoneType::Cabin(1)]); ZONES],
 
+            duct_high_pressure: Failure::new(FailureType::TrimAirHighPressure),
             duct_overheat: [false; ZONES],
             outlet_air: Air::new(),
         }
@@ -523,8 +526,13 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystem<ZONES, ENGINES> {
             .map(|tam| tam.outlet_air.flow_rate())
             .sum();
         self.outlet_air.set_flow_rate(total_flow);
-        self.outlet_air
-            .set_pressure(self.trim_air_outlet_pressure());
+
+        if self.duct_high_pressure.is_active() {
+            self.outlet_air.set_pressure(Pressure::new::<psi>(22.));
+        } else {
+            self.outlet_air
+                .set_pressure(self.trim_air_outlet_pressure());
+        }
 
         self.duct_overheat = (0..ZONES)
             .map(|id| {
@@ -585,6 +593,10 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystem<ZONES, ENGINES> {
         self.duct_overheat[zone_id]
     }
 
+    pub fn trim_air_high_pressure(&self) -> bool {
+        self.outlet_air.pressure() > Pressure::new::<psi>(20.)
+    }
+
     #[cfg(test)]
     fn trim_air_valves_open_amount(&self) -> [Ratio; ZONES] {
         self.trim_air_valves
@@ -610,6 +622,7 @@ impl<const ZONES: usize, const ENGINES: usize> DuctTemperature for TrimAirSystem
 impl<const ZONES: usize, const ENGINES: usize> SimulationElement for TrimAirSystem<ZONES, ENGINES> {
     fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
         accept_iterable!(self.trim_air_valves, visitor);
+        self.duct_high_pressure.accept(visitor);
 
         visitor.visit(self);
     }

@@ -27,6 +27,7 @@ const createOrchestrator = () => new FailuresOrchestrator('A32NX', [
     [21, A320Failure.LabGalleyFan, 'Extraction Fan of lavatory and galley'],
     [21, A320Failure.ZoneControllerPrimary, 'Zone Controller primary channel'],
     [21, A320Failure.ZoneControllerSecondary, 'Zone Controller secondary channel'],
+    [21, A320Failure.TrimAirHighPressure, 'Trim Air System High Pressure'],
 
     [22, A320Failure.Fac1Failure, 'FAC 1'],
     [22, A320Failure.Fac2Failure, 'FAC 2'],

@@ -2559,6 +2559,10 @@ mod acs_controller_tests {
             self.query(|a| a.trim_air_system.duct_temperature()[0])
         }
 
+        fn trim_air_system_outlet_pressure(&self) -> Pressure {
+            self.query(|a| a.trim_air_system.outlet_air.pressure())
+        }
+
         fn trim_air_valves_open_amount(&self) -> [Ratio; 2] {
             self.query(|a| a.trim_air_system.trim_air_valves_open_amount())
         }
@@ -2569,6 +2573,10 @@ mod acs_controller_tests {
 
         fn mixer_unit_outlet_air(&self) -> Air {
             self.query(|a| a.mixer_unit.outlet_air())
+        }
+
+        fn trim_air_high_pressure(&self) -> bool {
+            self.query(|a| a.trim_air_system.trim_air_high_pressure())
         }
     }
 
@@ -4065,6 +4073,36 @@ mod acs_controller_tests {
                 test_bed.duct_temperature()[0],
                 test_bed.duct_temperature()[1]
             );
+        }
+
+        #[test]
+        fn trim_increases_pressure_if_overpressure() {
+            let mut test_bed = test_bed()
+                .with()
+                .engine_idle()
+                .and()
+                .command_fwd_selected_temperature(ThermodynamicTemperature::new::<degree_celsius>(
+                    30.,
+                ));
+
+            test_bed.command_measured_temperature(
+                [ThermodynamicTemperature::new::<degree_celsius>(15.); 2],
+            );
+
+            test_bed = test_bed.iterate(50);
+
+            assert!(
+                (test_bed.trim_air_system_outlet_air(1).flow_rate())
+                    > MassRate::new::<kilogram_per_second>(0.01)
+            );
+            assert!((test_bed.trim_air_system_outlet_pressure()) < Pressure::new::<psi>(20.));
+
+            test_bed.fail(FailureType::TrimAirHighPressure);
+
+            test_bed = test_bed.iterate(50);
+
+            assert!((test_bed.trim_air_system_outlet_pressure()) > Pressure::new::<psi>(20.));
+            assert!(test_bed.trim_air_high_pressure());
         }
 
         #[test]

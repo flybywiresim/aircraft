@@ -80,6 +80,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
             21_011,
             FailureType::ZoneController(ZoneControllerChannel::Secondary),
         ),
+        (21_012, FailureType::TrimAirHighPressure),
         (24_000, FailureType::TransformerRectifier(1)),
         (24_001, FailureType::TransformerRectifier(2)),
         (24_002, FailureType::TransformerRectifier(3)),

@@ -11,6 +11,7 @@ pub enum FailureType {
     HotAir(usize),
     TrimAirOverheat(ZoneType),
     TrimAirFault(ZoneType),
+    TrimAirHighPressure,
     GalleyFans,
     ZoneController(ZoneControllerChannel),
     TransformerRectifier(usize),

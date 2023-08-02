@@ -2621,7 +2621,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
       | 25  | Recirc fan LH fault/OVHT                             |
       | 26  | Recirc fan RH fault/OVHT                             |
       | 27  | TAPRV disagree                                       |
-      | 28  | Trim air system inop                                 |
+      | 28  | Trim air system fault                                |
       | 29  | Spare                                                |
 
 - A32NX_COND_ACSC_DISCRETE_WORD_2

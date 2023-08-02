@@ -120,11 +120,15 @@ export class PseudoFWC {
 
     private readonly hotAirPbOn = Subject.create(false);
 
+    private readonly trimAirFault = Subject.create(false);
+
     private readonly ckptTrimFault = Subject.create(false);
 
     private readonly fwdTrimFault = Subject.create(false);
 
     private readonly aftTrimFault = Subject.create(false);
+
+    private readonly trimAirHighPressure = Subject.create(false);
 
     private readonly ckptDuctOvht = Subject.create(false);
 
@@ -1071,9 +1075,11 @@ export class PseudoFWC {
         this.hotAirOpen.set(!this.acscDiscreteWord1.bitValueOr(20, false));
         this.hotAirPbOn.set(this.acscDiscreteWord1.bitValueOr(23, false));
 
+        this.trimAirFault.set(this.acscDiscreteWord1.bitValueOr(28, false));
         this.ckptTrimFault.set(this.acscDiscreteWord2.bitValueOr(18, false));
         this.fwdTrimFault.set(this.acscDiscreteWord2.bitValueOr(19, false));
         this.aftTrimFault.set(this.acscDiscreteWord2.bitValueOr(20, false));
+        this.trimAirHighPressure.set(this.acscDiscreteWord1.bitValueOr(18, false));
 
         this.ckptDuctOvht.set(this.acscDiscreteWord1.bitValueOr(11, false));
         this.fwdDuctOvht.set(this.acscDiscreteWord1.bitValueOr(12, false));
@@ -2296,15 +2302,14 @@ export class PseudoFWC {
         },
         216330: { // TRIM AIR SYS FAULT
             flightPhaseInhib: [3, 4, 5, 7, 8],
-            simVarIsActive: MappedSubject.create(
-                ([ckptTrimFault, fwdTrimFault, aftTrimFault]) => ckptTrimFault || fwdTrimFault || aftTrimFault, this.ckptTrimFault, this.fwdTrimFault, this.aftTrimFault,
-            ),
+            simVarIsActive: this.trimAirFault,
             whichCodeToReturn: () => [0,
                 this.ckptTrimFault.get() ? 1 : null,
                 this.fwdTrimFault.get() ? 2 : null,
                 this.aftTrimFault.get() ? 3 : null,
+                this.trimAirHighPressure.get() ? 4 : null,
             ],
-            codesToReturn: ['216330501', '216330502', '216330503', '216330504'],
+            codesToReturn: ['216330501', '216330502', '216330503', '216330504', '216330505'],
             memoInhibit: () => false,
             failure: 1,
             sysPage: -1,

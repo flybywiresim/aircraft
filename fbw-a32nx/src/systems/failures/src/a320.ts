@@ -13,6 +13,7 @@ export const A320Failure = Object.freeze({
     LabGalleyFan: 21009,
     ZoneControllerPrimary: 21010,
     ZoneControllerSecondary: 21011,
+    TrimAirHighPressure: 21012,
 
     Fac1Failure: 22000,
     Fac2Failure: 22001,

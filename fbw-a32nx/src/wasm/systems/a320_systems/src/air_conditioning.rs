@@ -453,7 +453,8 @@ impl AirConditioningSystemInterfaceUnit {
             self.discrete_word_1.set_bit(11, duct_overheat[0]);
             self.discrete_word_1.set_bit(12, duct_overheat[1]);
             self.discrete_word_1.set_bit(13, duct_overheat[2]);
-            self.discrete_word_1.set_bit(18, false); // TODO: Implement trim air high pressure
+            self.discrete_word_1
+                .set_bit(18, trim_air_system.trim_air_high_pressure());
             self.discrete_word_1
                 .set_bit(20, !acsc.trim_air_pressure_regulating_valve_is_open());
             self.discrete_word_1
@@ -467,7 +468,10 @@ impl AirConditioningSystemInterfaceUnit {
             self.discrete_word_1.set_bit(26, cabin_fans[1].has_fault());
             self.discrete_word_1
                 .set_bit(27, acsc.taprv_position_disagrees());
-            self.discrete_word_1.set_bit(28, false); // TODO: Implement trim air inop
+            self.discrete_word_1.set_bit(
+                28,
+                trim_air_valve_fault.iter().any(|&t| t) || trim_air_system.trim_air_high_pressure(),
+            );
 
             self.discrete_word_2.set_bit(18, trim_air_valve_fault[0]);
             self.discrete_word_2.set_bit(19, trim_air_valve_fault[1]);

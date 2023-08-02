@@ -149,6 +149,7 @@ const EWDMessages = {
     '216330502': '\x1b<4m -CPKT TRIM VALVE',
     '216330503': '\x1b<4m -FWD CAB TRIM VALVE',
     '216330504': '\x1b<4m -AFT CAB TRIM VALVE',
+    '216330505': '\x1b<4m -TRIM AIR HI PR',
     '221070001': '\x1b<4m\x1b4mT.O\x1bm SPEEDS TOO LOW',
     '221070002': '\x1b<5m -TOW AND T.O DATA.CHECK',
     '221071001': '\x1b<4m\x1b4mT.O\x1bm V1/VR/V2 DISAGREE',
