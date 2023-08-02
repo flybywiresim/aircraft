@@ -15,6 +15,7 @@ const additionalSetting = [2, 1, 2, 0, 80, 250];
 const numberOfSettingsPerGenerator = 6;
 const uniqueGenPrefix = 'A';
 const failureGeneratorArmed :boolean[] = [];
+const doNotRepeatuntilTakeOff: boolean[] = [];
 const genName = 'Altitude';
 const alias = () => t('Failures.Generators.GenAlt');
 const disableTakeOffRearm = false;
@@ -92,6 +93,7 @@ export const failureGeneratorAltitude = (generatorFailuresGetters : Map<number, 
                         activateRandomFailure(findGeneratorFailures(allFailures, generatorFailuresGetters, uniqueGenPrefix + i.toString()),
                             activate, activeFailures, numberOfFailureToActivate);
                         failureGeneratorArmed[i] = false;
+                        if (settings[i * numberOfSettingsPerGenerator + ArmingIndex] === 2) doNotRepeatuntilTakeOff[i] = true;
                         change = true;
                         if (tempSettings[i * numberOfSettingsPerGenerator + ArmingIndex] === 1) tempSettings[i * numberOfSettingsPerGenerator + ArmingIndex] = 0;
                     }
@@ -105,12 +107,17 @@ export const failureGeneratorAltitude = (generatorFailuresGetters : Map<number, 
 
     useEffect(() => {
         for (let i = 0; i < nbGenerator; i++) {
-            if (!failureGeneratorArmed[i]
-                && ((altitude < settings[i * numberOfSettingsPerGenerator + AltitudeMinIndex] * 100 - 100 && settings[i * numberOfSettingsPerGenerator + AltitudeConditionIndex] === 0)
-                || (altitude > settings[i * numberOfSettingsPerGenerator + AltitudeMaxIndex] * 100 + 100 && settings[i * numberOfSettingsPerGenerator + AltitudeConditionIndex] === 1))
+            if (doNotRepeatuntilTakeOff[i]
                 && (settings[i * numberOfSettingsPerGenerator + ArmingIndex] === 1
                 || (settings[i * numberOfSettingsPerGenerator + ArmingIndex] === 2 && failureFlightPhase === FailurePhases.TAKEOFF)
                 || settings[i * numberOfSettingsPerGenerator + ArmingIndex] === 3)) {
+                doNotRepeatuntilTakeOff[i] = false;
+            }
+
+            if (!failureGeneratorArmed[i]
+                && ((altitude < settings[i * numberOfSettingsPerGenerator + AltitudeMinIndex] * 100 - 100 && settings[i * numberOfSettingsPerGenerator + AltitudeConditionIndex] === 0)
+                || (altitude > settings[i * numberOfSettingsPerGenerator + AltitudeMaxIndex] * 100 + 100 && settings[i * numberOfSettingsPerGenerator + AltitudeConditionIndex] === 1))
+                && !doNotRepeatuntilTakeOff[i]) {
                 failureGeneratorArmed[i] = true;
                 rolledDice[i] = Math.random();
             }
@@ -122,6 +129,7 @@ export const failureGeneratorAltitude = (generatorFailuresGetters : Map<number, 
         const generatorNumber = Math.floor(failureGeneratorSetting.split(',').length / numberOfSettingsPerGenerator);
         for (let i = 0; i < generatorNumber; i++) {
             failureGeneratorArmed[i] = false;
+            doNotRepeatuntilTakeOff[i] = false;
         }
     }, []);
 };

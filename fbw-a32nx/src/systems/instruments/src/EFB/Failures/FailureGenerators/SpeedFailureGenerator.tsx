@@ -16,6 +16,7 @@ const additionalSetting = [2, 1, 2, 0, 200, 300];
 const numberOfSettingsPerGenerator = 6;
 const uniqueGenPrefix = 'B';
 const failureGeneratorArmed :boolean[] = [];
+const doNotRepeatuntilTakeOff: boolean[] = [];
 const genName = 'Speed';
 const alias = () => t('Failures.Generators.GenSpeed');
 const disableTakeOffRearm = false;
@@ -94,6 +95,7 @@ export const failureGeneratorSpeed = (generatorFailuresGetters : Map<number, str
                         activateRandomFailure(findGeneratorFailures(allFailures, generatorFailuresGetters, uniqueGenPrefix + i.toString()),
                             activate, activeFailures, numberOfFailureToActivate);
                         failureGeneratorArmed[i] = false;
+                        if (settings[i * numberOfSettingsPerGenerator + ArmingIndex] === 2) doNotRepeatuntilTakeOff[i] = true;
                         change = true;
                         if (tempSettings[i * numberOfSettingsPerGenerator + ArmingIndex] === 1) tempSettings[i * numberOfSettingsPerGenerator + ArmingIndex] = 0;
                     }
@@ -107,11 +109,17 @@ export const failureGeneratorSpeed = (generatorFailuresGetters : Map<number, str
 
     useEffect(() => {
         for (let i = 0; i < nbGenerator; i++) {
-            if (!failureGeneratorArmed[i] && ((gs < settings[i * numberOfSettingsPerGenerator + SpeedMinIndex] - 10 && settings[i * numberOfSettingsPerGenerator + SpeedConditionIndex] === 0)
-            || (gs > settings[i * numberOfSettingsPerGenerator + SpeedMaxIndex] + 10 && settings[i * numberOfSettingsPerGenerator + SpeedConditionIndex] === 1))
+            if (doNotRepeatuntilTakeOff[i]
                 && (settings[i * numberOfSettingsPerGenerator + ArmingIndex] === 1
-                    || (settings[i * numberOfSettingsPerGenerator + ArmingIndex] === 2 && failureFlightPhase === FailurePhases.TAKEOFF)
-                    || settings[i * numberOfSettingsPerGenerator + ArmingIndex] === 3)) {
+                || (settings[i * numberOfSettingsPerGenerator + ArmingIndex] === 2 && failureFlightPhase === FailurePhases.TAKEOFF)
+                || settings[i * numberOfSettingsPerGenerator + ArmingIndex] === 3)) {
+                doNotRepeatuntilTakeOff[i] = false;
+            }
+
+            if (!failureGeneratorArmed[i]
+                && ((gs < settings[i * numberOfSettingsPerGenerator + SpeedMinIndex] - 10 && settings[i * numberOfSettingsPerGenerator + SpeedConditionIndex] === 0)
+                || (gs > settings[i * numberOfSettingsPerGenerator + SpeedMaxIndex] + 10 && settings[i * numberOfSettingsPerGenerator + SpeedConditionIndex] === 1))
+                && !doNotRepeatuntilTakeOff[i]) {
                 failureGeneratorArmed[i] = true;
                 rolledDice[i] = Math.random();
             }
