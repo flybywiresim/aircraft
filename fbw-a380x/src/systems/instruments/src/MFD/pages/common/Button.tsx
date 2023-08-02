@@ -1,5 +1,6 @@
 import { ComponentProps, DisplayComponent, FSComponent, Subject, Subscribable, Subscription, VNode } from '@microsoft/msfs-sdk';
 import './style.scss';
+import { TriangleDown, TriangleUp } from 'instruments/src/MFD/pages/common/shapes';
 
 export type ButtonMenuItem = {
     label: string;
@@ -9,6 +10,7 @@ export type ButtonMenuItem = {
 export interface ButtonProps extends ComponentProps {
     label: string | Subject<VNode>;
     menuItems?: Subscribable<ButtonMenuItem[]>; // When defining menu items, idPrefix has to be set
+    showArrow?: boolean;
     idPrefix?: string;
     disabled?: Subject<boolean>;
     buttonStyle?: string;
@@ -29,6 +31,8 @@ export class Button extends DisplayComponent<ButtonProps> {
     private dropdownMenuRef = FSComponent.createRef<HTMLDivElement>();
 
     private dropdownIsOpened = Subject.create(false);
+
+    private menuOpensUpwards = Subject.create(false);
 
     private renderedMenuItems: ButtonMenuItem[];
 
@@ -55,7 +59,9 @@ export class Button extends DisplayComponent<ButtonProps> {
         if (!this.props.idPrefix) {
             this.props.idPrefix = '';
         }
-
+        if (!this.props.showArrow) {
+            this.props.showArrow = true;
+        }
         this.buttonRef.instance.addEventListener('click', () => this.clickHandler());
 
         this.subs.push(this.props.disabled.sub((val) => {
@@ -102,13 +108,49 @@ export class Button extends DisplayComponent<ButtonProps> {
                     this.dropdownIsOpened.set(false);
                 });
             });
+
+            // Check if menu would overflow vertically (i.e. leave screen at the bottom). If so, open menu upwards
+            // Open menu for a split second to measure size
+            this.dropdownMenuRef.instance.style.display = 'block';
+            this.buttonRef.instance.classList.add('opened');
+
+            // Check if menu leaves screen at the bottom, reposition if needed
+            const boundingRect = this.dropdownMenuRef.instance.getBoundingClientRect();
+            const overflowsVertically = (boundingRect.top + boundingRect.height) > 1024;
+            this.menuOpensUpwards.set(overflowsVertically);
+
+            if (overflowsVertically === true) {
+                this.dropdownMenuRef.instance.style.top = `${Math.round(-boundingRect.height)}px`;
+            }
+
+            // Close again
+            this.dropdownMenuRef.instance.style.display = 'none';
+            this.buttonRef.instance.classList.remove('opened');
         }, true));
 
         this.subs.push(this.props.label?.sub((val) => {
             while (this.buttonRef.instance.firstChild) {
                 this.buttonRef.instance.removeChild(this.buttonRef.instance.firstChild);
             }
-            FSComponent.render(val, this.buttonRef.instance);
+
+            // If menuItems is defined, render as button with arrow on the right side
+            if (this.props.menuItems.get().length > 0) {
+                const n: VNode = (
+                    <div class="mfd-fms-fpln-button-dropdown">
+                        <span class="mfd-fms-fpln-button-dropdown-label">
+                            {val}
+                        </span>
+                        <span class="mfd-fms-fpln-button-dropdown-arrow">
+                            {this.menuOpensUpwards.get()
+                                ? <TriangleUp color={this.props.disabled.get() ? 'grey' : 'white'} />
+                                : <TriangleDown color={this.props.disabled.get() ? 'grey' : 'white'} />}
+                        </span>
+                    </div>
+                );
+                FSComponent.render(n, this.buttonRef.instance);
+            } else {
+                FSComponent.render(val, this.buttonRef.instance);
+            }
         }, true));
 
         // Close dropdown menu if clicked outside
@@ -119,21 +161,18 @@ export class Button extends DisplayComponent<ButtonProps> {
         });
 
         this.buttonRef.instance.addEventListener('click', () => {
-            if (this.props.menuItems.get().length > 0) {
+            if (this.props.menuItems.get().length > 0 && !this.props.disabled.get()) {
                 this.dropdownIsOpened.set(!this.dropdownIsOpened.get());
             }
         });
 
         this.subs.push(this.dropdownIsOpened.sub((val) => {
             this.dropdownMenuRef.instance.style.display = val ? 'block' : 'none';
-            this.buttonRef.instance.classList.toggle('opened');
 
-            // Check if menu leaves screen at the bottom, reposition if needed
-            const boundingRect = this.dropdownMenuRef.instance.getBoundingClientRect();
-            const overflowsVertically = (boundingRect.top + boundingRect.height) > 1024;
-
-            if (overflowsVertically === true) {
-                this.dropdownMenuRef.instance.style.top = `${Math.round(-boundingRect.height)}px`;
+            if (val === true) {
+                this.buttonRef.instance.classList.add('opened');
+            } else {
+                this.buttonRef.instance.classList.remove('opened');
             }
         }));
     }
@@ -151,7 +190,7 @@ export class Button extends DisplayComponent<ButtonProps> {
                 <span
                     ref={this.buttonRef}
                     class="mfd-button"
-                    style={`${this.props.buttonStyle}`}
+                    style={`${this.props.buttonStyle} ${(this.props.menuItems && this.props.menuItems.get().length > 0) ? 'padding-right: 5px;' : ''}`}
                 />
                 <div ref={this.dropdownMenuRef} class="mfd-dropdown-menu" style={`display: ${this.dropdownIsOpened.get() ? 'block' : 'none'}`} />
             </div>

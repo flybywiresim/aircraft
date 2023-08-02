@@ -18,8 +18,8 @@ Status legend:
 |  |  |
 | 2️⃣ | fms/\*/f-pln | 1 |
 | 🟥 | fms/\*/f-pln-rte-sel | 1 |
-| 🟥 | fms/\*/f-pln-departure | 1 |
-| 🟥 | fms/\*/f-pln-arrival | 1 |
+| 2️⃣ | fms/\*/f-pln-departure | 1 |
+| 2️⃣ | fms/\*/f-pln-arrival | 1 |
 | 🟥 | fms/\*/f-pln-airways | 1 |
 | 🟥 | fms/\*/f-pln-direct-to | 1 |
 | 🟥 | fms/\*/f-pln-hold | 1 |

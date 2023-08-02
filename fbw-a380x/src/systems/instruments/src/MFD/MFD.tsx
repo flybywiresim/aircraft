@@ -17,6 +17,8 @@ import { MfdFmsFuelLoad } from 'instruments/src/MFD/pages/FMS/FUEL_LOAD';
 import { MfdFmsFpln } from 'instruments/src/MFD/pages/FMS/F-PLN/F-PLN';
 import { MfdMsgList } from 'instruments/src/MFD/pages/FMS/MSG_LIST';
 import { ActiveUriInformation, MfdUIService } from 'instruments/src/MFD/pages/common/UIService';
+import { MfdFmsFplnDep } from 'instruments/src/MFD/pages/FMS/F-PLN/DEPARTURE';
+import { MfdFmsFplnArr } from 'instruments/src/MFD/pages/FMS/F-PLN/ARRIVAL';
 import { MfdSimvars } from './shared/MFDSimvarPublisher';
 import { DisplayUnit } from '../MsfsAvionicsCommon/displayUnit';
 
@@ -175,6 +177,9 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> {
             break;
         case 'fms/active/f-pln-departure':
             this.activePage = <MfdFmsFplnDep bus={this.props.bus} uiService={this.uiService} />;
+            break;
+        case 'fms/active/f-pln-arrival':
+            this.activePage = <MfdFmsFplnArr bus={this.props.bus} uiService={this.uiService} />;
             break;
 
         default:

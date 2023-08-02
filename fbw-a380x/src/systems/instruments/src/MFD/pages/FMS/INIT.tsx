@@ -138,6 +138,7 @@ export class MfdFmsInit extends DisplayComponent<MfdFmsInitProps> {
                             menuItems={Subject.create([
                                 { label: 'INSERT*', action: () => console.log('INSERT') },
                                 { label: 'CLEAR*', action: () => console.log('CLEAR') }])}
+                            showArrow={false}
                         />
                     </div>
                     <div class="mfd-fms-init-line second-line">

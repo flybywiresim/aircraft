@@ -5,7 +5,6 @@ import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageT
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 import { Button } from 'instruments/src/MFD/pages/common/Button';
-import { TriangleDown } from 'instruments/src/MFD/pages/common/shapes';
 
 interface MfdFmsFplnDepProps extends AbstractMfdPageProps {
 }
@@ -19,6 +18,10 @@ export class MfdFmsFplnDep extends DisplayComponent<MfdFmsFplnDepProps> {
     private tmpyIsActive = Subject.create<boolean>(false);
 
     private secIsActive = Subject.create<boolean>(false);
+
+    private sidDisabled = Subject.create<boolean>(false);
+
+    private transDisabled = Subject.create<boolean>(false);
 
     private update(): void {
         // ...
@@ -168,18 +171,11 @@ export class MfdFmsFplnDep extends DisplayComponent<MfdFmsFplnDepProps> {
                         </div>
                     </div>
                 </div>
-                <div style="display: flex; flex-direction:row; margin-left: 50px;">
+                <div style="display: flex; flex-direction: row; margin-left: 50px;">
                     <Button
-                        label={Subject.create(
-                            <div class="mfd-fms-fpln-button-dropdown">
-                                <span class="mfd-fms-fpln-button-dropdown-label">
-                                    RWY
-                                </span>
-                                <span class="mfd-fms-fpln-button-dropdown-arrow"><TriangleDown /></span>
-                            </div>,
-                        )}
+                        label="RWY"
                         onClick={() => null}
-                        buttonStyle="width: 250px; padding-right: 5px;"
+                        buttonStyle="width: 250px;"
                         idPrefix="f-pln-dep-rwy-btn"
                         menuItems={Subject.create([{
                             label: '14L 9843FT ILS',
@@ -193,16 +189,10 @@ export class MfdFmsFplnDep extends DisplayComponent<MfdFmsFplnDepProps> {
                     />
                     <div style="width: 100px;" />
                     <Button
-                        label={Subject.create(
-                            <div class="mfd-fms-fpln-button-dropdown">
-                                <span class="mfd-fms-fpln-button-dropdown-label">
-                                    SID
-                                </span>
-                                <span class="mfd-fms-fpln-button-dropdown-arrow"><TriangleDown /></span>
-                            </div>,
-                        )}
+                        label="SID"
                         onClick={() => null}
-                        buttonStyle="width: 140px; padding-right: 5px;"
+                        disabled={this.sidDisabled}
+                        buttonStyle="width: 140px;"
                         idPrefix="f-pln-dep-sid-btn"
                         menuItems={Subject.create([{
                             label: 'NONE',
@@ -264,16 +254,10 @@ export class MfdFmsFplnDep extends DisplayComponent<MfdFmsFplnDepProps> {
                     />
                     <div style="width: 50px;" />
                     <Button
-                        label={Subject.create(
-                            <div class="mfd-fms-fpln-button-dropdown">
-                                <span class="mfd-fms-fpln-button-dropdown-label">
-                                    TRANS
-                                </span>
-                                <span class="mfd-fms-fpln-button-dropdown-arrow"><TriangleDown /></span>
-                            </div>,
-                        )}
+                        label="TRANS"
                         onClick={() => null}
-                        buttonStyle="width: 130px; padding-right: 5px;"
+                        disabled={this.transDisabled}
+                        buttonStyle="width: 130px;"
                         idPrefix="f-pln-dep-trans-btn"
                         menuItems={Subject.create([{
                             label: 'NONE',

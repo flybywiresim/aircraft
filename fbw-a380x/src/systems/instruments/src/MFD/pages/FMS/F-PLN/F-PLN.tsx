@@ -7,7 +7,6 @@ import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 
 import { Button, ButtonMenuItem } from 'instruments/src/MFD/pages/common/Button';
 import { IconButton } from 'instruments/src/MFD/pages/common/IconButton';
-import { TriangleDown, TriangleUp } from 'instruments/src/MFD/pages/common/shapes';
 import { mockDerivedData, mockFlightPlanLegsData, mockPredictionsData, mockPseudoWaypoints } from 'instruments/src/MFD/dev-data/FlightPlanLegMockData';
 import { DerivedFplnLegData, FlightPlanLeg, PseudoWaypoint, WindVector } from 'instruments/src/MFD/dev-data/FlightPlanInterfaceMockup';
 import { ContextMenu } from 'instruments/src/MFD/pages/common/ContextMenu';
@@ -38,7 +37,7 @@ export class MfdFmsFpln extends DisplayComponent<MfdFmsFplnProps> {
 
     private efobAndWindButtonDynamicContent = Subject.create<VNode>(<span>HELLO</span>);
 
-    private efobAndWindButtonMenuItems = Subject.create<ButtonMenuItem[]>([]);
+    private efobAndWindButtonMenuItems = Subject.create<ButtonMenuItem[]>([{ label: '', action: () => null }]);
 
     private lineData: FplnLineDisplayData[];
 
@@ -329,10 +328,9 @@ export class MfdFmsFpln extends DisplayComponent<MfdFmsFplnProps> {
                 <span style="padding-left: 10px;">
                     SPD
                 </span>
-                <span style="margin-right: 10px;">
+                <span style="margin-right: 55px;">
                     ALT
                 </span>
-                <span style="display: flex; align-items: center; justify-content: center;"><TriangleDown /></span>
             </div>
         );
     }
@@ -343,10 +341,9 @@ export class MfdFmsFpln extends DisplayComponent<MfdFmsFplnProps> {
                 <span>
                     EFOB
                 </span>
-                <span style="margin-left: 40px;">
+                <span style="margin-left: 30px;">
                     T.WIND
                 </span>
-                <span style="display: flex; align-items: center; justify-content: center;"><TriangleDown /></span>
             </div>
         );
     }
@@ -480,16 +477,8 @@ export class MfdFmsFpln extends DisplayComponent<MfdFmsFplnProps> {
                     <div class="mfd-fms-fpln-footer">
                         <Button label="INIT" onClick={() => this.props.uiService.navigateTo(`fms/${this.props.uiService.activeUri.get().category}/init`)} buttonStyle="width: 125px;" />
                         <Button
-                            label={Subject.create(
-                                <div class="mfd-fms-fpln-button-dropdown">
-                                    <span class="mfd-fms-fpln-button-dropdown-label">
-                                        F-PLN INFO
-                                    </span>
-                                    <span class="mfd-fms-fpln-button-dropdown-arrow"><TriangleUp /></span>
-                                </div>,
-                            )}
+                            label="F-PLN INFO"
                             onClick={() => null}
-                            buttonStyle="padding-right: 5px;"
                             idPrefix="f-pln-infoBtn"
                             menuItems={Subject.create([{
                                 label: 'ALTERNATE',
@@ -569,10 +558,12 @@ interface FplnLineTypeDiscriminator {
 
 // Type for DISCO, END OF F-PLN etc.
 interface FplnLineSpecialDisplayData extends FplnLineTypeDiscriminator {
+    // type: FplnLineType.Special;
     label: string;
 }
 
 export interface FplnLineWaypointDisplayData extends FplnLineTypeDiscriminator {
+    // type: FplnLineType.Waypoint;
     isPseudoWaypoint: boolean;
     ident: string;
     overfly: boolean;
