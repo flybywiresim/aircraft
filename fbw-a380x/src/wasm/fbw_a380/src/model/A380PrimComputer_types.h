@@ -30,6 +30,19 @@ enum class SignStatusMatrix
 
 #endif
 
+#ifndef DEFINED_TYPEDEF_FOR_base_prim_temporary_ap_input_
+#define DEFINED_TYPEDEF_FOR_base_prim_temporary_ap_input_
+
+struct base_prim_temporary_ap_input
+{
+  boolean_T ap_engaged;
+  real_T roll_command;
+  real_T pitch_command;
+  real_T yaw_command;
+};
+
+#endif
+
 #ifndef DEFINED_TYPEDEF_FOR_base_time_
 #define DEFINED_TYPEDEF_FOR_base_time_
 
@@ -362,6 +375,7 @@ struct prim_inputs
   base_prim_discrete_inputs discrete_inputs;
   base_prim_analog_inputs analog_inputs;
   base_prim_bus_inputs bus_inputs;
+  base_prim_temporary_ap_input temporary_ap_input;
 };
 
 #endif
