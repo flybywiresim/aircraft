@@ -187,6 +187,13 @@ export function setNewNumberOfFailureSetting(newSetting: number, generatorSettin
     generatorSettings.setSetting(flatten(settings));
 }
 
+export function setNewSettingAndResetArm(newSetting: number, generatorSettings : FailureGenData, genID : number, settingIndex : number) {
+    const settings = generatorSettings.settings;
+    settings[genID * generatorSettings.numberOfSettingsPerGenerator + settingIndex] = newSetting;
+    generatorSettings.failureGeneratorArmed[genID] = false;
+    generatorSettings.setSetting(flatten(settings));
+}
+
 export function setNewSetting(newSetting: number, generatorSettings : FailureGenData, genID : number, settingIndex : number) {
     const settings = generatorSettings.settings;
     settings[genID * generatorSettings.numberOfSettingsPerGenerator + settingIndex] = newSetting;

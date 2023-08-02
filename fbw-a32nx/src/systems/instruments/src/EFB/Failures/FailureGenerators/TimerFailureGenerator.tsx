@@ -99,13 +99,15 @@ export const failureGeneratorTimer = (generatorFailuresGetters : Map<number, str
 
     useEffect(() => {
         for (let i = 0; i < nbGenerator; i++) {
-            if (!failureGeneratorArmed[i] && (settings[i * numberOfSettingsPerGenerator + ArmingIndex] === 1
+            if (!failureGeneratorArmed[i]) {
+                if (settings[i * numberOfSettingsPerGenerator + ArmingIndex] === 1
                     || (failureFlightPhase === FailurePhases.TAKEOFF && settings[i * numberOfSettingsPerGenerator + ArmingIndex] === 2)
-                    || settings[i * numberOfSettingsPerGenerator + ArmingIndex] === 3)) {
-                failureGeneratorArmed[i] = true;
-                rolledDice[i] = Math.random();
-                failureStartTime[i] = absoluteTime1s;
-            }
+                    || settings[i * numberOfSettingsPerGenerator + ArmingIndex] === 3) {
+                    failureGeneratorArmed[i] = true;
+                    rolledDice[i] = Math.random();
+                    failureStartTime[i] = absoluteTime1s;
+                }
+            } else
             if (settings[i * numberOfSettingsPerGenerator + ArmingIndex] === 0) failureGeneratorArmed[i] = false;
         }
     }, [absoluteTime1s]);

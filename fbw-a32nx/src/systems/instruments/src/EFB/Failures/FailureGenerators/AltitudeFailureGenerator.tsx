@@ -2,7 +2,7 @@ import React, { useEffect, useMemo } from 'react';
 import { useSimVar, usePersistentProperty } from '@flybywiresim/fbw-sdk';
 import {
     activateRandomFailure, basicData, FailureGenContext, FailureGenData, failureGeneratorCommonFunction,
-    FailurePhases, flatten, setNewSetting,
+    FailurePhases, flatten, setNewSetting, setNewSettingAndResetArm,
 } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGen';
 import { t } from 'instruments/src/EFB/translation';
 import { findGeneratorFailures } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelection';
@@ -20,9 +20,12 @@ const genName = 'Altitude';
 const alias = () => t('Failures.Generators.GenAlt');
 const disableTakeOffRearm = false;
 const rolledDice:number[] = [];
+
 const AltitudeConditionIndex = 3;
 const AltitudeMinIndex = 4;
 const AltitudeMaxIndex = 5;
+
+const resetMargin = 100;
 
 export const failureGenConfigAltitude : ()=>FailureGenData = () => {
     const [setting, setSetting] = usePersistentProperty(settingName);
@@ -54,7 +57,7 @@ const generatorSettingComponents = (genNumber: number, generatorSettings : Failu
     const settings = generatorSettings.settings;
     const settingTable = [
         FailureGeneratorChoiceSetting(t('Failures.Generators.AltitudeCondition'), settings[genNumber * numberOfSettingsPerGenerator + AltitudeConditionIndex], climbDescentMode,
-            setNewSetting, generatorSettings, genNumber, AltitudeConditionIndex, failureGenContext),
+            setNewSettingAndResetArm, generatorSettings, genNumber, AltitudeConditionIndex, failureGenContext),
         FailureGeneratorSingleSetting(t('Failures.Generators.AltitudeMin'),
             t('Failures.Generators.feet'), 0, settings[genNumber * numberOfSettingsPerGenerator + AltitudeMaxIndex] * 100,
             settings[genNumber * numberOfSettingsPerGenerator + AltitudeMinIndex], 100,
@@ -114,13 +117,14 @@ export const failureGeneratorAltitude = (generatorFailuresGetters : Map<number, 
                 doNotRepeatuntilTakeOff[i] = false;
             }
 
-            if (!failureGeneratorArmed[i]
-                && ((altitude < settings[i * numberOfSettingsPerGenerator + AltitudeMinIndex] * 100 - 100 && settings[i * numberOfSettingsPerGenerator + AltitudeConditionIndex] === 0)
-                || (altitude > settings[i * numberOfSettingsPerGenerator + AltitudeMaxIndex] * 100 + 100 && settings[i * numberOfSettingsPerGenerator + AltitudeConditionIndex] === 1))
+            if (!failureGeneratorArmed[i]) {
+                if (((altitude < settings[i * numberOfSettingsPerGenerator + AltitudeMinIndex] * 100 - resetMargin && settings[i * numberOfSettingsPerGenerator + AltitudeConditionIndex] === 0)
+                || (altitude > settings[i * numberOfSettingsPerGenerator + AltitudeMaxIndex] * 100 + resetMargin && settings[i * numberOfSettingsPerGenerator + AltitudeConditionIndex] === 1))
                 && !doNotRepeatuntilTakeOff[i]) {
-                failureGeneratorArmed[i] = true;
-                rolledDice[i] = Math.random();
-            }
+                    failureGeneratorArmed[i] = true;
+                    rolledDice[i] = Math.random();
+                }
+            } else
             if (settings[i * numberOfSettingsPerGenerator + ArmingIndex] === 0) failureGeneratorArmed[i] = false;
         }
     }, [absoluteTime1s]);

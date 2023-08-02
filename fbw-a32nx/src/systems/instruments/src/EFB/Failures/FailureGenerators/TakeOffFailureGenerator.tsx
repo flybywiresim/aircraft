@@ -133,38 +133,39 @@ export const failureGeneratorTakeOff = (generatorFailuresGetters : Map<number, s
     }, [absoluteTime500ms]);
 
     useEffect(() => {
-        if (failureFlightPhase === FailurePhases.TAKEOFF && gs < 1.0) {
-            for (let i = 0; i < nbGenerator; i++) {
-                if (!failureGeneratorArmed[i] && settings[i * numberOfSettingsPerGenerator + ArmingIndex] > 0) {
-                    if (Math.random() < settings[i * numberOfSettingsPerGenerator + ChancePerTakeOffIndex]) {
-                        const chanceFailureLowTakeOffRegime : number = settings[i * numberOfSettingsPerGenerator + ChanceLowIndex];
-                        const chanceFailureMediumTakeOffRegime : number = settings[i * numberOfSettingsPerGenerator + ChanceMediumIndex];
-                        const minFailureTakeOffSpeed : number = settings[i * numberOfSettingsPerGenerator + MinSpeedIndex];
-                        const mediumTakeOffRegimeSpeed : number = settings[i * numberOfSettingsPerGenerator + MediumSpeedIndex];
-                        const maxFailureTakeOffSpeed : number = settings[i * numberOfSettingsPerGenerator + MaxSpeedIndex];
-                        const takeOffDeltaAltitudeEnd : number = 100 * settings[i * numberOfSettingsPerGenerator + AltitudeIndex];
-                        const rolledDice = Math.random();
-                        if (rolledDice < chanceFailureLowTakeOffRegime) {
+        for (let i = 0; i < nbGenerator; i++) {
+            const minFailureTakeOffSpeed : number = settings[i * numberOfSettingsPerGenerator + MinSpeedIndex];
+            if (!failureGeneratorArmed[i]) {
+                if (settings[i * numberOfSettingsPerGenerator + ArmingIndex] > 0) {
+                    if (gs < minFailureTakeOffSpeed && failureFlightPhase === FailurePhases.TAKEOFF) {
+                        if (Math.random() < settings[i * numberOfSettingsPerGenerator + ChancePerTakeOffIndex]) {
+                            const chanceFailureLowTakeOffRegime : number = settings[i * numberOfSettingsPerGenerator + ChanceLowIndex];
+                            const chanceFailureMediumTakeOffRegime : number = settings[i * numberOfSettingsPerGenerator + ChanceMediumIndex];
+                            const lowMedTakeOffSpeed : number = settings[i * numberOfSettingsPerGenerator + MediumSpeedIndex];
+                            const medHighTakeOffSpeed : number = settings[i * numberOfSettingsPerGenerator + MaxSpeedIndex];
+                            const takeOffDeltaAltitudeEnd : number = 100 * settings[i * numberOfSettingsPerGenerator + AltitudeIndex];
+                            const rolledDice = Math.random();
+                            if (rolledDice < chanceFailureLowTakeOffRegime) {
                             // Low Take Off speed regime
-                            const temp = Math.random() * (mediumTakeOffRegimeSpeed - minFailureTakeOffSpeed) + minFailureTakeOffSpeed;
-                            failureTakeOffAltitudeThreshold[i] = -1;
-                            failureTakeOffSpeedThreshold[i] = temp;
-                        } else if (rolledDice < chanceFailureMediumTakeOffRegime + chanceFailureLowTakeOffRegime) {
+                                const temp = Math.random() * (lowMedTakeOffSpeed - minFailureTakeOffSpeed) + minFailureTakeOffSpeed;
+                                failureTakeOffAltitudeThreshold[i] = -1;
+                                failureTakeOffSpeedThreshold[i] = temp;
+                            } else if (rolledDice < chanceFailureMediumTakeOffRegime + chanceFailureLowTakeOffRegime) {
                             // Medium Take Off speed regime
-                            const temp = Math.random() * (maxFailureTakeOffSpeed - mediumTakeOffRegimeSpeed) + mediumTakeOffRegimeSpeed;
-                            failureTakeOffAltitudeThreshold[i] = -1;
-                            failureTakeOffSpeedThreshold[i] = temp;
-                        } else {
+                                const temp = Math.random() * (medHighTakeOffSpeed - lowMedTakeOffSpeed) + lowMedTakeOffSpeed;
+                                failureTakeOffAltitudeThreshold[i] = -1;
+                                failureTakeOffSpeedThreshold[i] = temp;
+                            } else {
                             // High Take Off speed regime
-                            const temp = altitude + 10 + Math.random() * takeOffDeltaAltitudeEnd;
-                            failureTakeOffAltitudeThreshold[i] = temp;
-                            failureTakeOffSpeedThreshold[i] = -1;
+                                const temp = altitude + 10 + Math.random() * takeOffDeltaAltitudeEnd;
+                                failureTakeOffAltitudeThreshold[i] = temp;
+                                failureTakeOffSpeedThreshold[i] = -1;
+                            }
+                            failureGeneratorArmed[i] = true;
                         }
-                        failureGeneratorArmed[i] = true;
                     }
                 }
-                if (settings[i * numberOfSettingsPerGenerator + ArmingIndex] === 0) failureGeneratorArmed[i] = false;
-            }
+            } else if (settings[i * numberOfSettingsPerGenerator + ArmingIndex] === 0)failureGeneratorArmed[i] = false;
         }
     }, [absoluteTime500ms]);
 

@@ -2,7 +2,7 @@ import React, { useEffect, useMemo } from 'react';
 import { useSimVar, usePersistentProperty } from '@flybywiresim/fbw-sdk';
 import {
     activateRandomFailure, basicData, FailureGenContext, FailureGenData, failureGeneratorCommonFunction,
-    FailurePhases, flatten, setNewSetting,
+    FailurePhases, flatten, setNewSetting, setNewSettingAndResetArm,
 } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGen';
 
 import { t } from 'instruments/src/EFB/translation';
@@ -25,6 +25,8 @@ const rolledDice:number[] = [];
 const SpeedConditionIndex = 3;
 const SpeedMinIndex = 4;
 const SpeedMaxIndex = 5;
+
+const resetMargin = 5;
 
 export const failureGenConfigSpeed : ()=>FailureGenData = () => {
     const [setting, setSetting] = usePersistentProperty(settingName);
@@ -56,7 +58,7 @@ const generatorSettingComponents = (genNumber: number, generatorSettings : Failu
     const settings = generatorSettings.settings;
     const settingTable = [
         FailureGeneratorChoiceSetting(t('Failures.Generators.SpeedCondition'), settings[genNumber * numberOfSettingsPerGenerator + SpeedConditionIndex], accelDecelMode,
-            setNewSetting, generatorSettings, genNumber, SpeedConditionIndex, failureGenContext),
+            setNewSettingAndResetArm, generatorSettings, genNumber, SpeedConditionIndex, failureGenContext),
         FailureGeneratorSingleSetting(t('Failures.Generators.MinimumGroundSpeed'), t('Failures.Generators.knots'), 0,
             settings[genNumber * numberOfSettingsPerGenerator + SpeedMaxIndex],
             settings[genNumber * numberOfSettingsPerGenerator + SpeedMinIndex], 1,
@@ -116,13 +118,14 @@ export const failureGeneratorSpeed = (generatorFailuresGetters : Map<number, str
                 doNotRepeatuntilTakeOff[i] = false;
             }
 
-            if (!failureGeneratorArmed[i]
-                && ((gs < settings[i * numberOfSettingsPerGenerator + SpeedMinIndex] - 10 && settings[i * numberOfSettingsPerGenerator + SpeedConditionIndex] === 0)
-                || (gs > settings[i * numberOfSettingsPerGenerator + SpeedMaxIndex] + 10 && settings[i * numberOfSettingsPerGenerator + SpeedConditionIndex] === 1))
+            if (!failureGeneratorArmed[i]) {
+                if (((gs < settings[i * numberOfSettingsPerGenerator + SpeedMinIndex] - resetMargin && settings[i * numberOfSettingsPerGenerator + SpeedConditionIndex] === 0)
+                || (gs > settings[i * numberOfSettingsPerGenerator + SpeedMaxIndex] + resetMargin && settings[i * numberOfSettingsPerGenerator + SpeedConditionIndex] === 1))
                 && !doNotRepeatuntilTakeOff[i]) {
-                failureGeneratorArmed[i] = true;
-                rolledDice[i] = Math.random();
-            }
+                    failureGeneratorArmed[i] = true;
+                    rolledDice[i] = Math.random();
+                }
+            } else
             if (settings[i * numberOfSettingsPerGenerator + ArmingIndex] === 0) failureGeneratorArmed[i] = false;
         }
     }, [absoluteTime500ms]);

@@ -108,12 +108,13 @@ export const failureGeneratorPerHour = (generatorFailuresGetters : Map<number, s
 
     useEffect(() => {
         for (let i = 0; i < nbGenerator; i++) {
-            if (!failureGeneratorArmed[i]
-                && (settings[i * numberOfSettingsPerGenerator + ArmingIndex] === 1
+            if (!failureGeneratorArmed[i]) {
+                if ((settings[i * numberOfSettingsPerGenerator + ArmingIndex] === 1
                     || (settings[i * numberOfSettingsPerGenerator + ArmingIndex] === 2 && failureFlightPhase === FailurePhases.FLIGHT)
                     || settings[i * numberOfSettingsPerGenerator + ArmingIndex] === 3)) {
-                failureGeneratorArmed[i] = true;
-            }
+                    failureGeneratorArmed[i] = true;
+                }
+            } else
             if (settings[i * numberOfSettingsPerGenerator + ArmingIndex] === 0) failureGeneratorArmed[i] = false;
         }
     }, [absoluteTime5s]);
