@@ -13,7 +13,6 @@ import { Button } from 'instruments/src/MFD/pages/common/Button';
 import { maxAltnFuel, maxBlockFuel, maxFinalFuel, maxJtsnGw, maxRteRsvFuel, maxRteRsvFuelPerc, maxTaxiFuel, maxZfw, maxZfwCg, minZfwCg } from 'shared/PerformanceConstants';
 
 interface MfdFmsFuelLoadProps extends AbstractMfdPageProps {
-    instrument: BaseInstrument;
 }
 
 export class MfdFmsFuelLoad extends DisplayComponent<MfdFmsFuelLoadProps> {

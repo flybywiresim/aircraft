@@ -23,7 +23,7 @@ export interface ActiveUriInformation {
  * Handles navigation (and potentially other aspects) for MFD pages
  */
 export class MfdUIService {
-    #activeUri = Subject.create<ActiveUriInformation>({
+    public readonly activeUri = Subject.create<ActiveUriInformation>({
         uri: '',
         sys: MfdSystem.None,
         category: '',
@@ -31,11 +31,7 @@ export class MfdUIService {
         extra: '',
     });
 
-    #navigationStack: string[] = [];
-
-    public get activeUri() {
-        return this.#activeUri;
-    }
+    private navigationStack: string[] = [];
 
     public parseUri(uri: string) : ActiveUriInformation {
         const uriParts = uri.split('/');
@@ -56,26 +52,26 @@ export class MfdUIService {
     public navigateTo(uri: string) {
         let nextUri: string;
 
-        if (uri === this.#activeUri.get().uri) {
+        if (uri === this.activeUri.get().uri) {
             // Same URL, don't navigate
             console.info('Navigate to same URL, ignored.');
             return;
         }
 
         if (uri === 'back') {
-            if (this.#navigationStack.length === 0) {
+            if (this.navigationStack.length === 0) {
                 return;
             }
             console.info('Navigate back');
-            this.#navigationStack.pop();
-            nextUri = this.#navigationStack[this.#navigationStack.length - 1];
+            this.navigationStack.pop();
+            nextUri = this.navigationStack[this.navigationStack.length - 1];
         } else {
             console.info(`Navigate to ${uri}`);
-            this.#navigationStack.push(uri);
+            this.navigationStack.push(uri);
             nextUri = uri;
         }
 
         const parsedUri = this.parseUri(nextUri);
-        this.#activeUri.set(parsedUri);
+        this.activeUri.set(parsedUri);
     }
 }

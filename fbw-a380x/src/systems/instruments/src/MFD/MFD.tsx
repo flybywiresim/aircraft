@@ -168,10 +168,13 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> {
             this.activePage = <MfdFmsInit bus={this.props.bus} uiService={this.uiService} />;
             break;
         case 'fms/active/fuel-load':
-            this.activePage = <MfdFmsFuelLoad bus={this.props.bus} instrument={this.props.instrument} uiService={this.uiService} />;
+            this.activePage = <MfdFmsFuelLoad bus={this.props.bus} uiService={this.uiService} />;
             break;
         case 'fms/active/f-pln':
-            this.activePage = <MfdFmsFpln bus={this.props.bus} instrument={this.props.instrument} uiService={this.uiService} />;
+            this.activePage = <MfdFmsFpln bus={this.props.bus} uiService={this.uiService} />;
+            break;
+        case 'fms/active/f-pln-departure':
+            this.activePage = <MfdFmsFplnDep bus={this.props.bus} uiService={this.uiService} />;
             break;
 
         default:

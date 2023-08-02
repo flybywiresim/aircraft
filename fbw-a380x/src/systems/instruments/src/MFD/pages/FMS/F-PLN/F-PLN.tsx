@@ -16,7 +16,6 @@ import { DestinationWindow } from 'instruments/src/MFD/pages/FMS/F-PLN/Destinati
 import { InsertNextWptFromWindow } from 'instruments/src/MFD/pages/FMS/F-PLN/InsertNextWptFrom';
 
 interface MfdFmsFplnProps extends AbstractMfdPageProps {
-    instrument: BaseInstrument;
 }
 
 export class MfdFmsFpln extends DisplayComponent<MfdFmsFplnProps> {
@@ -446,7 +445,7 @@ export class MfdFmsFpln extends DisplayComponent<MfdFmsFplnProps> {
                     <div class="mfd-fms-fpln-line-destination">
                         <Button
                             label="LFPG26R"
-                            onClick={() => this.props.uiService.navigateTo(`fms/${this.props.uiService.activeUri.get().category}/f-pln-dep`)}
+                            onClick={() => this.props.uiService.navigateTo(`fms/${this.props.uiService.activeUri.get().category}/f-pln-departure`)}
                             buttonStyle="font-size: 30px; width: 150px; margin-right: 5px;"
                         />
                         <span class="mfd-label">20:08</span>

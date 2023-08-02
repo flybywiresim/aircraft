@@ -61,6 +61,14 @@ $display-mfd-dark-grey: #3c3c3c;
   font-size: 25px;
 }
 
+.mfd-value-tmpy {
+  color: $display-yellow;
+}
+
+.mfd-value-sec {
+  color: $display-white;
+}
+
 .mfd-button {
   display: flex;
   font-size: 22px;
@@ -163,7 +171,7 @@ $display-mfd-dark-grey: #3c3c3c;
 }
 
 .mfd-dropdown-menu {
-  top: 42px;
+
   background-color: $display-mfd-dark-grey;
   min-width: 100%;
   position: absolute;

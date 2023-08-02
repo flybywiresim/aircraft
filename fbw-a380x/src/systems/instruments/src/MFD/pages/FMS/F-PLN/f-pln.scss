@@ -213,6 +213,7 @@
 }
 
 .mfd-fms-fpln-button-dropdown-label {
+  flex-grow: 1;
   text-align: center;
   vertical-align: center;
   padding-left: 5px;
@@ -223,4 +224,27 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.mfd-fms-fpln-labeled-box-container {
+  position: relative;
+  border: 1px solid lightgrey;
+  display: flex;
+  flex-direction: column;
+  margin: 20px 0px 20px 0px;
+  padding: 15px;
+}
+
+.mfd-fms-fpln-labeled-box-label {
+  position: absolute;
+  left: 10px;
+  top: -10px;
+  text-align: right;
+  align-self: center;
+  background-color: #040404;
+  padding: 0px 2px 0px 2px;
+}
+
+.mfd-fms-fpln-label-bottom-space {
+  margin-bottom: 10px;
 }

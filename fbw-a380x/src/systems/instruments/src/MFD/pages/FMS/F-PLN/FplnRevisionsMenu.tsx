@@ -44,12 +44,12 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: lineType): ArraySubject
         {
             title: 'DEPARTURE',
             disabled: disabledVec[3],
-            onSelectCallback: () => null,
+            onSelectCallback: () => fpln.props.uiService.navigateTo(`fms/${fpln.props.uiService.activeUri.get().category}/f-pln-departure`),
         },
         {
             title: 'ARRIVAL',
             disabled: disabledVec[4],
-            onSelectCallback: () => null,
+            onSelectCallback: () => fpln.props.uiService.navigateTo(`fms/${fpln.props.uiService.activeUri.get().category}/f-pln-arrival`),
         },
         {
             title: 'OFFSET',
