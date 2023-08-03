@@ -15,13 +15,17 @@ import '../../Common/CommonStyles.scss';
 const maxStaleness = 300;
 
 export const WheelPage = () => {
-    const temperatures: number[] = [];
-    for (let brakeNumber = 1; brakeNumber <= 4; brakeNumber++) {
-        const [temperature] = useSimVar(`L:A32NX_REPORTED_BRAKE_TEMPERATURE_${brakeNumber}`, 'celsius', maxStaleness);
-        temperatures.push(temperature);
-    }
+    const [temperatureBrake1] = useSimVar(`L:A32NX_REPORTED_BRAKE_TEMPERATURE_1`, 'celsius', maxStaleness);
+    const [temperatureBrake2] = useSimVar(`L:A32NX_REPORTED_BRAKE_TEMPERATURE_2`, 'celsius', maxStaleness);
+    const [temperatureBrake3] = useSimVar(`L:A32NX_REPORTED_BRAKE_TEMPERATURE_3`, 'celsius', maxStaleness);
+    const [temperatureBrake4] = useSimVar(`L:A32NX_REPORTED_BRAKE_TEMPERATURE_4`, 'celsius', maxStaleness);
 
-    const maxTemperatureIndex = temperatures.reduce((maxIndex, element, index, array) => (element > array[maxIndex] ? index : maxIndex), 0);
+    const maxTemperatureIndex = [
+        temperatureBrake1,
+        temperatureBrake2,
+        temperatureBrake3,
+        temperatureBrake4
+    ].reduce((maxIndex, element, index, array) => (element > array[maxIndex] ? index : maxIndex), 0);
 
     const lgciu1DiscreteWord1 = useArinc429Var('L:A32NX_LGCIU_1_DISCRETE_WORD_1');
     const lgciu2DiscreteWord1 = useArinc429Var('L:A32NX_LGCIU_2_DISCRETE_WORD_1');
@@ -62,8 +66,8 @@ export const WheelPage = () => {
             <Wheels
                 x={36}
                 y={431}
-                left={{ number: 1, temperature: temperatures[0], hottest: maxTemperatureIndex === 0 }}
-                right={{ number: 2, temperature: temperatures[1], hottest: maxTemperatureIndex === 1 }}
+                left={{ number: 1, temperature: temperatureBrake1, hottest: maxTemperatureIndex === 0 }}
+                right={{ number: 2, temperature: temperatureBrake2, hottest: maxTemperatureIndex === 1 }}
             />
 
             <Gear
@@ -90,8 +94,8 @@ export const WheelPage = () => {
             <Wheels
                 x={551}
                 y={431}
-                left={{ number: 3, temperature: temperatures[2], hottest: maxTemperatureIndex === 2 }}
-                right={{ number: 4, temperature: temperatures[3], hottest: maxTemperatureIndex === 3 }}
+                left={{ number: 3, temperature: temperatureBrake3, hottest: maxTemperatureIndex === 2 }}
+                right={{ number: 4, temperature: temperatureBrake4, hottest: maxTemperatureIndex === 3 }}
             />
         </svg>
     );
