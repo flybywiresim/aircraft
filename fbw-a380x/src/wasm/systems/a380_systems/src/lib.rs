@@ -130,6 +130,7 @@ impl A380 {
                 context,
                 ElectricalBusType::DirectCurrent(1),
                 vec![
+                    Length::new::<nautical_mile>(0.0),
                     Length::new::<nautical_mile>(10.0),
                     Length::new::<nautical_mile>(20.0),
                     Length::new::<nautical_mile>(40.0),
