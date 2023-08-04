@@ -527,17 +527,6 @@
                         (L:A32NX_UPDATE_COMMS) = #ID, number#;
                     }
                 </LEFT_SINGLE_CODE>
-                <SEQ1_EMISSIVE_CODE type="rnp" return="number">
-                    let ret = 0;
-
-                    if #SEQ1_POWERED, bool# {
-                        if (L:A32NX_ACP#ID#_#FREQ_ID#_KNOB_VOLUME_DOWN, bool) or !(L:A32NX_OVHD_INTLT_ANN, bool) {
-                            ret = #EMISSIVE_DIM, number#;
-                        }
-                    }
-
-                    ret
-                </SEQ1_EMISSIVE_CODE>
                 <WWISE_EVENT></WWISE_EVENT>
                 <WWISE_EVENT_1>mcdubuttons</WWISE_EVENT_1>
                 <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
