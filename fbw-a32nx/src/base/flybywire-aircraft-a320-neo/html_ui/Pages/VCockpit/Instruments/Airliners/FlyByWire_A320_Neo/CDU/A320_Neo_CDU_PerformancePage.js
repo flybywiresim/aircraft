@@ -69,7 +69,7 @@ class CDUPerformancePage {
                     } else {
                         // not real: v-speed helper
                         if (mcdu.flaps && !isFinite(mcdu.zeroFuelWeight)) {
-                            mcdu.setScratchpadMessage(NXSystemMessages.initializeWeightOrCg);
+                            mcdu.addMessageToQueue(NXSystemMessages.initializeWeightOrCg);
                         } else if (mcdu.flaps && isFinite(mcdu.zeroFuelWeight)) {
                             mcdu.setScratchpadText(mcdu._getV1Speed().toString());
                         } else {
@@ -99,7 +99,7 @@ class CDUPerformancePage {
                         mcdu.unconfirmedVRSpeed = undefined;
                     } else {
                         if (mcdu.flaps && !isFinite(mcdu.zeroFuelWeight)) {
-                            mcdu.setScratchpadMessage(NXSystemMessages.initializeWeightOrCg);
+                            mcdu.addMessageToQueue(NXSystemMessages.initializeWeightOrCg);
                         } else if (mcdu.flaps && isFinite(mcdu.zeroFuelWeight)) {
                             mcdu.setScratchpadText(mcdu._getVRSpeed().toString());
                         } else {
@@ -129,7 +129,7 @@ class CDUPerformancePage {
                         mcdu.unconfirmedV2Speed = undefined;
                     } else {
                         if (mcdu.flaps && !isFinite(mcdu.zeroFuelWeight)) {
-                            mcdu.setScratchpadMessage(NXSystemMessages.initializeWeightOrCg);
+                            mcdu.addMessageToQueue(NXSystemMessages.initializeWeightOrCg);
                         } else if (mcdu.flaps && isFinite(mcdu.zeroFuelWeight)) {
                             mcdu.setScratchpadText(mcdu._getV2Speed().toString());
                         } else {

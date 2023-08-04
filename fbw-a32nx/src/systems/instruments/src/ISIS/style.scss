@@ -8,17 +8,24 @@
   font-style: normal;
 }
 
+.SelfTest {
+  font-family: "Ecam", monospace !important;
+}
+
 .ISIS {
   position: absolute;
   width: 512px;
   height: 512px;
-  stroke-width: 3px;
+  stroke-width: 2px;
 
   background: $display-background;
 
   font-family: "Ecam", monospace !important;
 }
-
+.ArtificialHorizon{
+  transform:  scale(1.1) translate(-30px, -30px);
+  stroke-width: 3.332px;
+}
 .sky {
   fill: #0698ff;
 }
@@ -51,6 +58,11 @@
   font-size: 36px;
 }
 
+.FontTens {
+  font-size: 28px;
+  letter-spacing: 3.1px;
+}
+
 .MiddleAlign {
   text-align: center;
   text-anchor: middle;
@@ -65,20 +77,46 @@
   fill: $display-magenta
 }
 
+.FillCyan {
+  fill: $display-cyan;
+}
+
 .FillYellow {
   fill: $display-yellow;
+}
+
+.LSCircle {
+  stroke: $display-white;
 }
 
 .StrokeWhite {
   stroke: $display-white;
 }
 
+.StrokeWhiteMed {
+  stroke: $display-white;
+  stroke-width: 4px;
+}
+
+.StrokeWhiteBig {
+  stroke: $display-white;
+  stroke-width: 6px;
+}
+
 .StrokeYellow {
   stroke: $display-yellow;
 }
 
+.StrokeYellowBig {
+  stroke: $display-yellow;
+  stroke-width: 5px;
+}
 .StrokeCyan {
   stroke: $display-cyan;
+}
+.StrokeCyanBig {
+  stroke: $display-cyan;
+  stroke-width: 5px;
 }
 
 .StrokeRed {

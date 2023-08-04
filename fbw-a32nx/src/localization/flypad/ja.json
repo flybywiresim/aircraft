@@ -590,7 +590,7 @@
       "ErrorOverlapMsg": "が次の項目と重複:",
       "IndependentAxis": "独立した軸",
       "LoadFromFile": "ファイルから読み込む",
-      "PleaseEnterAValidDeadzone": "有効なデッドゾーンを入力してください",
+      "PleaseEnterAValidDeadzone": "有効なデッドバンドを入力してください",
       "ResetToDefaults": "デフォルトに戻す",
       "ReverseFull": "Reverse Full",
       "ReverseIdle": "Reverse Idle",
