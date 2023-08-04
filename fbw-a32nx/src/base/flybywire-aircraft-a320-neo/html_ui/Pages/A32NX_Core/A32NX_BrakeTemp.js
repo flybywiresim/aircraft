@@ -25,6 +25,11 @@ const BASE_HEAT_DIFFERENTIAL_FACTOR = 0.000015;
 * */
 const MIN_TEMP_DELTA = 0.1;
 
+
+function isReady() {
+    return SimVar.GetSimVarValue('L:A32NX_IS_READY', 'number') === 1;
+}
+
 class A32NX_BrakeTemp {
 
     /**
@@ -57,16 +62,14 @@ class A32NX_BrakeTemp {
     init() { }
 
     update(_deltaTime) {
-        let currentBrakeTemps = [0,0,0,0];
-        let currentReportedBrakeTemps = [0,0,0,0];
-        if (!this.initializedAmbientBrakeTemp) {
-            const ambientTemperature = Simplane.getAmbientTemperature();
+        if(!isReady()) {
+            return
+        }
+        const ambientTemperature = Simplane.getAmbientTemperature();
+        let currentBrakeTemps = [ambientTemperature,ambientTemperature,ambientTemperature,ambientTemperature];
+        let currentReportedBrakeTemps = [ambientTemperature,ambientTemperature,ambientTemperature,ambientTemperature];
 
-            // Initial brake temperatures
-            currentBrakeTemps.fill(ambientTemperature);
-            currentReportedBrakeTemps.fill(ambientTemperature);
-            this.initializedAmbientBrakeTemp = true;
-        } else {
+        if (this.initializedAmbientBrakeTemp) {
             //actual physical temperatures of the brakes
             currentBrakeTemps = [
                 SimVar.GetSimVarValue("L:A32NX_BRAKE_TEMPERATURE_1", "celsius"),
@@ -81,6 +84,8 @@ class A32NX_BrakeTemp {
                 SimVar.GetSimVarValue("L:A32NX_REPORTED_BRAKE_TEMPERATURE_3", "celsius"),
                 SimVar.GetSimVarValue("L:A32NX_REPORTED_BRAKE_TEMPERATURE_4", "celsius")
             ];
+        } else {
+            this.initializedAmbientBrakeTemp = true;
         }
         const GearLeftPosition = SimVar.GetSimVarValue("L:A32NX_GEAR_LEFT_POSITION", "Percent Over 100");
         const GearLeftExtended = GearLeftPosition >= 0.25;
@@ -105,7 +110,6 @@ class A32NX_BrakeTemp {
         const currentBrakeLeft = SimVar.GetSimVarValue("BRAKE LEFT POSITION", "position 32k");
         const currentBrakeRight = SimVar.GetSimVarValue("BRAKE RIGHT POSITION", "position 32k");
 
-        const ambientTemperature = Simplane.getAmbientTemperature();
         const airspeed = SimVar.GetSimVarValue("AIRSPEED TRUE", "Meters per second");
 
         const wheelSet1Rpm = SimVar.GetSimVarValue("WHEEL RPM:1", "number");
