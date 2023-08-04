@@ -298,7 +298,9 @@ export const A380Payload = () => {
                     onConfirm={() => {
                         setTargetPax(0);
                         setTargetCargo(0, 0);
-                        setBoardingStarted(true);
+                        setTimeout(() => {
+                            setBoardingStarted(true);
+                        }, 500);
                     }}
                 />,
             );
