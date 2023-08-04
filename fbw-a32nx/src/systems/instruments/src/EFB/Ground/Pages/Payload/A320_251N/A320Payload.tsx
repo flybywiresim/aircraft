@@ -88,11 +88,10 @@ export const A320Payload = () => {
 
     // Units
     // Weights
-    const [zfw] = useSimVar('L:A32NX_ZFW', 'number', 1_500);
+    const [zfw] = useSimVar('L:A32NX_ZFW', 'number', 1_550);
     const [zfwDesired] = useSimVar('L:A32NX_DESIRED_ZFW', 'number', 1_500);
     const [gw] = useSimVar('L:A32NX_GW', 'number', 1_750);
     const [gwDesired] = useSimVar('L:A32NX_DESIRED_GW', 'number', 1_750);
-    const [totalFuel] = useSimVar('L:A32NX_FW', 'number', 7_000);
 
     // CG MAC
     const [zfwCgMac] = useSimVar('L:A32NX_ZFW_CG_PERCENT_MAC', 'number', 1_200);
@@ -138,12 +137,9 @@ export const A320Payload = () => {
         }
     };
 
-    const [busDC2] = useSimVar('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'Bool', 4_500);
-    const [busDCHot1] = useSimVar('L:A32NX_ELEC_DC_HOT_1_BUS_IS_POWERED', 'Bool', 4_500);
-    const [simGroundSpeed] = useSimVar('GPS GROUND SPEED', 'knots', 4_500);
-    const [isOnGround] = useSimVar('SIM ON GROUND', 'Bool', 3_000);
-    const [eng1Running] = useSimVar('ENG COMBUSTION:1', 'Bool', 3_000);
-    const [eng2Running] = useSimVar('ENG COMBUSTION:2', 'Bool', 3_000);
+    const [isOnGround] = useSimVar('SIM ON GROUND', 'Bool', 8_000);
+    const [eng1Running] = useSimVar('ENG COMBUSTION:1', 'Bool', 6_500);
+    const [eng2Running] = useSimVar('ENG COMBUSTION:2', 'Bool', 6_500);
     const [coldAndDark, setColdAndDark] = useState<boolean>(true);
 
     const chooseDesiredSeats = useCallback((stationIndex: number, fillSeats: boolean = true, numChoose: number) => {
@@ -216,7 +212,7 @@ export const A320Payload = () => {
     }, [emptyWeight, paxWeight, paxBagWeight, maxPax, maxCargo]);
 
     const processGw = useCallback((newGw) => {
-        let paxCargoWeight = newGw - emptyWeight - totalFuel;
+        let paxCargoWeight = newGw - emptyWeight - (gw - zfw); // new gw - empty - total fuel
 
         // Load pax first
         const pWeight = paxWeight + paxBagWeight;
@@ -227,7 +223,7 @@ export const A320Payload = () => {
 
         setTargetPax(newPax);
         setTargetCargo(newPax, newCargo);
-    }, [emptyWeight, paxWeight, paxBagWeight, maxPax, maxCargo, totalFuel]);
+    }, [emptyWeight, paxWeight, paxBagWeight, maxPax, maxCargo, gw, zfw]);
 
     const onClickCargo = useCallback((cargoStation, e) => {
         if (gsxPayloadSyncEnabled === 1 && boardingStarted) {
@@ -275,7 +271,9 @@ export const A320Payload = () => {
                     onConfirm={() => {
                         setTargetPax(0);
                         setTargetCargo(0, 0);
-                        setBoardingStarted(true);
+                        setTimeout(() => {
+                            setBoardingStarted(true);
+                        }, 500);
                     }}
                 />,
             );
@@ -323,12 +321,12 @@ export const A320Payload = () => {
 
     // Set Cold and Dark State
     useEffect(() => {
-        if (simGroundSpeed > 0.1 || eng1Running || eng2Running || !isOnGround || (!busDC2 && !busDCHot1)) {
+        if (eng1Running || eng2Running || !isOnGround) {
             setColdAndDark(false);
         } else {
             setColdAndDark(true);
         }
-    }, [simGroundSpeed, eng1Running, eng2Running, isOnGround, busDC2, busDCHot1]);
+    }, [eng1Running, eng2Running, isOnGround]);
 
     useEffect(() => {
         if (boardingRate !== 'INSTANT') {

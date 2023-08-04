@@ -134,7 +134,6 @@ pub struct WeightData {
     target_zfw_id: VariableIdentifier,
     target_gw_id: VariableIdentifier,
     target_tow_id: VariableIdentifier,
-    total_fuel_id: VariableIdentifier,
     zfw: Mass,
     gw: Mass,
     tow: Mass,
@@ -148,7 +147,6 @@ impl WeightData {
         zfw_id: VariableIdentifier,
         gw_id: VariableIdentifier,
         tow_id: VariableIdentifier,
-        total_fuel_id: VariableIdentifier,
         target_zfw_id: VariableIdentifier,
         target_gw_id: VariableIdentifier,
         target_tow_id: VariableIdentifier,
@@ -160,7 +158,6 @@ impl WeightData {
             target_zfw_id,
             target_gw_id,
             target_tow_id,
-            total_fuel_id,
             zfw: Mass::default(),
             gw: Mass::default(),
             tow: Mass::default(),
@@ -235,7 +232,6 @@ impl SimulationElement for WeightData {
         self.target_zfw = reader.read(&self.target_zfw_id);
         self.target_gw = reader.read(&self.target_gw_id);
         self.target_tow = reader.read(&self.target_tow_id);
-        self.total_fuel = reader.read(&self.total_fuel_id);
     }
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.zfw_id, self.zfw.get::<kilogram>().round());
@@ -249,10 +245,6 @@ impl SimulationElement for WeightData {
         writer.write(
             &self.target_tow_id,
             self.target_tow.get::<kilogram>().round(),
-        );
-        writer.write(
-            &self.total_fuel_id,
-            (self.total_fuel.get::<kilogram>() / 10.).round() * 10.,
         );
     }
 }

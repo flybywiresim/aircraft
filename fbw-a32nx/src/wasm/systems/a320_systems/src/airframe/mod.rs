@@ -41,7 +41,6 @@ impl A320Airframe {
                 context.get_identifier("ZFW".to_owned()),
                 context.get_identifier("GW".to_owned()),
                 context.get_identifier("TOW".to_owned()),
-                context.get_identifier("FW".to_owned()),
                 context.get_identifier("DESIRED_ZFW".to_owned()),
                 context.get_identifier("DESIRED_GW".to_owned()),
                 context.get_identifier("DESIRED_TOW".to_owned()),
