@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable react/no-unknown-property */
 /* eslint-disable max-len */
 import React from 'react';
