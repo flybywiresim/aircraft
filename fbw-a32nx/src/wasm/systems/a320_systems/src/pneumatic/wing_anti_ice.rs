@@ -16,7 +16,7 @@ use systems::{
     pneumatic::{
         valve::DefaultValve, valve::PneumaticExhaust, ControllablePneumaticValve,
         PneumaticContainer, PneumaticPipe, PneumaticValveSignal, WingAntiIcePushButtonMode,
-        WingAntiIceValves,
+        WingAntiIceSelected,
     },
     shared::{
         pid::PidController, random_from_normal_distribution, ControllerSignal, ElectricalBusType,
@@ -547,6 +547,11 @@ impl WingAntiIceComplex {
     }
 
     #[cfg(test)]
+    pub fn is_wai_valve_closed(&self, number: usize) -> bool {
+        self.wai_systems[number].is_wai_valve_closed()
+    }
+
+    #[cfg(test)]
     pub fn wai_consumer_pressure(&self, number: usize) -> Pressure {
         self.wai_systems[number].wai_consumer_pressure()
     }
@@ -596,9 +601,9 @@ impl WingAntiIceComplex {
         self.wai_selected = wai_mode == WingAntiIcePushButtonMode::On;
     }
 }
-impl WingAntiIceValves for WingAntiIceComplex {
-    fn is_wai_valve_closed(&self, number: usize) -> bool {
-        self.wai_systems[number].is_wai_valve_closed()
+impl WingAntiIceSelected for WingAntiIceComplex {
+    fn is_wai_selected(&self) -> bool {
+        self.wai_selected
     }
 }
 impl SimulationElement for WingAntiIceComplex {

@@ -940,8 +940,8 @@ impl SimulationElement for Solenoid {
     }
 }
 
-pub trait WingAntiIceValves {
-    fn is_wai_valve_closed(&self, number: usize) -> bool;
+pub trait WingAntiIceSelected {
+    fn is_wai_selected(&self) -> bool;
 }
 
 #[cfg(test)]

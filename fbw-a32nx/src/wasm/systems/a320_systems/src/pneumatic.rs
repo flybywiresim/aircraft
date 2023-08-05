@@ -22,7 +22,7 @@ use systems::{
         EngineState, PneumaticContainer, PneumaticPipe, PneumaticValveSignal, Precooler,
         PressureTransducer, PressurisedReservoirWithExhaustValve, PressurizeableReservoir,
         SolenoidSignal, TargetPressureTemperatureSignal, VariableVolumeContainer,
-        WingAntiIcePushButton, WingAntiIceValves,
+        WingAntiIcePushButton, WingAntiIceSelected,
     },
     shared::{
         pid::PidController, update_iterator::MaxStepLoop, ControllerSignal, DelayedTrueLogicGate,
@@ -518,7 +518,7 @@ impl BleedMonitoringComputer {
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         cross_bleed_valve: &impl PneumaticValve,
         fadec: &FullAuthorityDigitalEngineControl,
-        wing_anti_ice: &impl WingAntiIceValves,
+        wing_anti_ice: &impl WingAntiIceSelected,
     ) {
         self.main_channel.update(
             context,
@@ -706,7 +706,7 @@ impl BleedMonitoringComputerChannel {
         cross_bleed_valve: &impl PneumaticValve,
         overhead_panel: &A320PneumaticOverheadPanel,
         fadec: &FullAuthorityDigitalEngineControl,
-        wing_anti_ice: &impl WingAntiIceValves,
+        wing_anti_ice: &impl WingAntiIceSelected,
     ) {
         // READ IN SENSORS
 
@@ -770,7 +770,7 @@ impl BleedMonitoringComputerChannel {
             self.overheat_monitor
                 .update(context, precooler_outlet_temperature);
 
-            force_hp_bleed = (!wing_anti_ice.is_wai_valve_closed(self.engine_number - 1)
+            force_hp_bleed = (wing_anti_ice.is_wai_selected()
                 && precooler_outlet_temperature.get::<degree_celsius>()
                     < Self::FORCE_HP_BLEED_WAI_THRESHOLD_C)
                 || (context.pressure_altitude().get::<foot>() < 7000.
@@ -782,9 +782,7 @@ impl BleedMonitoringComputerChannel {
                 > Self::FORCE_HP_BLEED_ISOLATION_C
                 || (sensors.high_pressure().get::<psi>() > Self::FORCE_HP_BLEED_ISOLATION_PS3_PSI
                     && context.pressure_altitude().get::<foot>() > 25000.
-                    && (self.is_in_dual_bleed_config
-                        || (wing_anti_ice.is_wai_valve_closed(0)
-                            && wing_anti_ice.is_wai_valve_closed(1))));
+                    && (self.is_in_dual_bleed_config || !wing_anti_ice.is_wai_selected()));
         }
 
         self.should_use_ip_vs_hp_valve = force_ip_bleed
@@ -793,7 +791,7 @@ impl BleedMonitoringComputerChannel {
                     self.should_use_ip_vs_hp_valve,
                     self.get_switching_thresholds(
                         !self.is_in_dual_bleed_config,
-                        !wing_anti_ice.is_wai_valve_closed(self.engine_number - 1),
+                        wing_anti_ice.is_wai_selected(),
                     ),
                     self.intermediate_compressor_pressure.get::<psi>(),
                 ));
@@ -803,14 +801,14 @@ impl BleedMonitoringComputerChannel {
         &mut self,
         context: &UpdateContext,
         sensors: &EngineBleedAirSystem,
-        wing_anti_ice: &impl WingAntiIceValves,
+        wing_anti_ice: &impl WingAntiIceSelected,
     ) {
         self.has_low_bleed_temperature = if let Some(precooler_outlet_temperature) =
             sensors.bleed_temperature_sensor_temperature()
         {
             precooler_outlet_temperature.get::<degree_celsius>()
                 < Self::LOW_BLEED_TEMPERATURE_THRESHOLD_C
-                && !wing_anti_ice.is_wai_valve_closed(self.engine_number - 1)
+                && wing_anti_ice.is_wai_selected()
                 && self.pressure_regulating_valve_is_closed
                 && context.is_in_flight() // TODO: Figure out where this signal comes from.
         } else {
@@ -921,14 +919,13 @@ impl BleedMonitoringComputerChannel {
     fn update_low_temperature_regulation(
         &mut self,
         context: &UpdateContext,
-        wing_anti_ice: &impl WingAntiIceValves,
+        wing_anti_ice: &impl WingAntiIceSelected,
     ) {
         let both_bleed_sources_active = self.is_in_dual_bleed_config;
-        let wai_is_off = wing_anti_ice.is_wai_valve_closed(self.engine_number - 1);
 
         self.low_temperature_regulation_active.update(
             context,
-            wai_is_off
+            !wing_anti_ice.is_wai_selected()
                 && both_bleed_sources_active
                 && (self.flight_phase_loop.is_climb_active()
                     || self.flight_phase_loop.is_hold_active()),
@@ -1855,7 +1852,7 @@ pub mod tests {
         pneumatic::{
             BleedMonitoringComputerChannelOperationMode, ControllablePneumaticValve,
             CrossBleedValveSelectorMode, EngineState, PneumaticContainer, PneumaticValveSignal,
-            TargetPressureTemperatureSignal, WingAntiIcePushButtonMode, WingAntiIceValves,
+            TargetPressureTemperatureSignal, WingAntiIcePushButtonMode,
         },
         shared::{
             arinc429::{Arinc429Word, SignStatus},
