@@ -5,6 +5,7 @@ import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageT
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 import { Button, ButtonMenuItem } from 'instruments/src/MFD/pages/common/Button';
+import { FlightPlan } from '@fmgc/flightplanning/new/plans/FlightPlan';
 import { ActiveUriInformation } from 'instruments/src/MFD/pages/common/UIService';
 
 interface MfdFmsFplnDepProps extends AbstractMfdPageProps {
@@ -16,9 +17,10 @@ export class MfdFmsFplnDep extends DisplayComponent<MfdFmsFplnDepProps> {
 
     private activePageTitle = Subject.create<string>('');
 
-    private tmpyIsActive = Subject.create<boolean>(false);
+    private loadedFlightPlan: FlightPlan;
 
-    private secIsActive = Subject.create<boolean>(false);
+    private currentFlightPlanVersion: number = 0;
+
     private tmpyActive = Subject.create<boolean>(false);
 
     private secActive = Subject.create<boolean>(false);
@@ -51,31 +53,139 @@ export class MfdFmsFplnDep extends DisplayComponent<MfdFmsFplnDepProps> {
 
     private tmpyInsertButtonDiv = FSComponent.createRef<HTMLDivElement>();
 
+    private onNewData(): void {
+        console.time('DEPARTURE:onNewData');
+        this.currentFlightPlanVersion = this.loadedFlightPlan.version;
+
+        if (this.loadedFlightPlan.originAirport) {
+            this.fromIcao.set(this.loadedFlightPlan.originAirport.ident);
+
+            const runways: ButtonMenuItem[] = [];
+            this.loadedFlightPlan.availableOriginRunways.forEach((rw) => {
+                runways.push({
+                    label: `${rw.ident.substring(2).padEnd(3, ' ')} ${rw.length.toFixed(0).padStart(5, ' ')}FT ${rw.lsIdent ? 'ILS' : ''}`,
+                    action: () => {
+                        this.props.flightPlanService.setOriginRunway(rw.ident);
+                        this.props.flightPlanService.setDepartureProcedure(undefined);
+                        this.props.flightPlanService.setDepartureEnrouteTransition(undefined);
+                    },
+                });
+            });
+            this.rwyOptions.set(runways);
+
+            if (this.loadedFlightPlan.originRunway) {
+                this.rwyIdent.set(this.loadedFlightPlan.originRunway.ident.substring(2));
+                this.rwyLength.set(this.loadedFlightPlan.originRunway.length.toFixed(0) ?? '----');
+                this.rwyCrs.set(this.loadedFlightPlan.originRunway.bearing.toFixed(0) ?? '---');
+                this.rwyEoSid.set('NONE');
+                this.rwyFreq.set(this.loadedFlightPlan.originRunway.lsFrequencyChannel.toFixed(2) ?? '---.--');
+
+                if (this.loadedFlightPlan.availableDepartures?.length > 0) {
+                    const sids: ButtonMenuItem[] = [{
+                        label: 'NONE',
+                        action: () => {
+                            this.props.flightPlanService.setDepartureProcedure(undefined);
+                            this.props.flightPlanService.setDepartureEnrouteTransition(undefined);
+                        },
+                    }];
+                    this.loadedFlightPlan.availableDepartures.forEach((dep) => {
+                        sids.push({
+                            label: dep.ident,
+                            action: () => {
+                                this.props.flightPlanService.setDepartureProcedure(dep.ident);
+                                this.props.flightPlanService.setDepartureEnrouteTransition(undefined);
+                            },
+                        });
+                    });
+                    this.sidOptions.set(sids);
+                    this.sidDisabled.set(false);
+                }
+            } else {
+                this.rwyIdent.set('---');
+                this.rwyLength.set('----');
+                this.rwyCrs.set('---');
+                this.rwyEoSid.set('------');
+                this.rwyFreq.set('---.--');
+                this.sidDisabled.set(true);
+            }
+
+            if (this.loadedFlightPlan.originDeparture) {
+                this.rwySid.set(this.loadedFlightPlan.originDeparture.ident);
+
+                if (this.loadedFlightPlan.originDeparture.enrouteTransitions?.length > 0) {
+                    const trans: ButtonMenuItem[] = [{ label: 'NONE', action: () => this.props.flightPlanService.setDepartureEnrouteTransition(undefined) }];
+                    this.loadedFlightPlan.originDeparture.enrouteTransitions.forEach((el) => {
+                        trans.push({ label: el.ident, action: () => this.props.flightPlanService.setDepartureEnrouteTransition(el.ident) });
+                    });
+                    this.transOptions.set(trans);
+                    this.transDisabled.set(false);
+                }
+            } else {
+                if (this.loadedFlightPlan.availableDepartures?.length > 0) {
+                    this.rwySid.set('------');
+                } else {
+                    this.rwySid.set('NONE');
+                }
+                this.transDisabled.set(true);
+            }
+
+            if (this.loadedFlightPlan.departureEnrouteTransition) {
+                this.rwyTrans.set(this.loadedFlightPlan.departureEnrouteTransition.ident);
+            } else if (this.loadedFlightPlan?.originDeparture?.enrouteTransitions?.length === 0) {
+                this.rwyTrans.set('NONE');
+            } else {
+                this.rwyTrans.set('------');
+            }
+        } else {
+            this.fromIcao.set('----');
+        }
+
+        this.tmpyActive.set(this.props.flightPlanService.hasTemporary);
+        console.timeEnd('DEPARTURE:onNewData');
+    }
+
+    private whichFlightPlan(activeUri: ActiveUriInformation): FlightPlan {
+        switch (activeUri.category) {
+        case 'active':
+            return this.props.flightPlanService.activeOrTemporary;
+        case 'sec1':
+            return this.props.flightPlanService.secondary(1);
+        case 'sec2':
+            return this.props.flightPlanService.secondary(2);
+        case 'sec3':
+            return this.props.flightPlanService.secondary(3);
+
+        default:
+            return this.props.flightPlanService.activeOrTemporary;
+        }
+    }
+
+    private onFlightPlanChanged() {
+        console.log(1);
+        this.loadedFlightPlan = this.whichFlightPlan(this.props.uiService.activeUri.get());
+        this.currentFlightPlanVersion = this.loadedFlightPlan.version;
+        this.tmpyActive.set(this.props.flightPlanService.hasTemporary);
+    }
+
+    private checkIfFlightPlanChanged() {
+        if (this.whichFlightPlan(this.props.uiService.activeUri.get()).version !== this.currentFlightPlanVersion) {
+            this.onFlightPlanChanged();
+            this.onNewData();
+        }
     }
 
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
         this.subs.push(this.props.uiService.activeUri.sub((val) => {
-            switch (val.category) {
-            case 'active':
-                this.activePageTitle.set('ACTIVE/F-PLN/DEPARTURE');
-                break;
-            case 'sec1':
-                this.activePageTitle.set('SEC1/F-PLN/DEPARTURE');
-                break;
-            case 'sec2':
-                this.activePageTitle.set('SEC2/F-PLN/DEPARTURE');
-                break;
-            case 'sec3':
-                this.activePageTitle.set('SEC3/F-PLN/DEPARTURE');
-                break;
-
-            default:
-                this.activePageTitle.set('ACTIVE/F-PLN/DEPARTURE');
-                break;
-            }
+            this.activePageTitle.set(`${val.category.toUpperCase()}/F-PLN/DEPARTURE`);
         }, true));
+
+        this.subs.push(this.tmpyActive.sub((v) => this.tmpyInsertButtonDiv.getOrDefault().style.visibility = (v ? 'visible' : 'hidden'), true));
+
+        this.onFlightPlanChanged();
+        this.onNewData();
+        setInterval(() => this.checkIfFlightPlanChanged(), 50);
     }
 
     public destroy(): void {

@@ -329,7 +329,7 @@ export class MfdFmsFuelLoad extends DisplayComponent<MfdFmsFuelLoadProps> {
 
                     {/* end page content */}
                 </div>
-                <Footer bus={this.props.bus} uiService={this.props.uiService} />
+                <Footer bus={this.props.bus} uiService={this.props.uiService} flightPlanService={this.props.flightPlanService} />
             </>
         );
     }

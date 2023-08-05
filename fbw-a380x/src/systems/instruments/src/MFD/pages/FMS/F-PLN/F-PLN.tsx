@@ -500,7 +500,7 @@ export class MfdFmsFpln extends DisplayComponent<MfdFmsFplnProps> {
                     </div>
                     {/* end page content */}
                 </div>
-                <Footer bus={this.props.bus} uiService={this.props.uiService} />
+                <Footer bus={this.props.bus} uiService={this.props.uiService} flightPlanService={this.props.flightPlanService} />
             </>
         );
     }

@@ -1,6 +1,6 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 
-import { DisplayComponent, FSComponent, Subject, Subscription, VNode } from '@microsoft/msfs-sdk';
+import { DisplayComponent, FSComponent, MappedSubject, Subject, Subscription, VNode } from '@microsoft/msfs-sdk';
 
 import './init.scss';
 import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
@@ -10,6 +10,7 @@ import { InputField } from 'instruments/src/MFD/pages/common/InputField';
 import { AirportFormat, CostIndexFormat, CrzTempFormat, FlightLevelFormat, LongAlphanumericFormat, TripWindFormat, TropoFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { Button } from 'instruments/src/MFD/pages/common/Button';
 import { defaultTropopauseAlt, maxCertifiedAlt } from 'shared/PerformanceConstants';
+import { FlightPlan } from '@fmgc/flightplanning/new/plans/FlightPlan';
 
 interface MfdFmsInitProps extends AbstractMfdPageProps {
 }
@@ -20,7 +21,10 @@ export class MfdFmsInit extends DisplayComponent<MfdFmsInitProps> {
 
     private activePageTitle = Subject.create<string>('');
 
-    private fltNbr = Subject.create<string>(null);
+    private loadedFlightPlan: FlightPlan;
+
+    private currentFlightPlanVersion: number = 0;
+
     private tmpyActive = Subject.create<boolean>(false);
 
     private fltNbr = Subject.create<string>(null); // FIXME not found
@@ -64,44 +68,74 @@ export class MfdFmsInit extends DisplayComponent<MfdFmsInitProps> {
         super.onAfterRender(node);
 
         this.subs.push(this.props.uiService.activeUri.sub((val) => {
-            switch (val.category) {
-            case 'active':
-                this.activePageTitle.set('ACTIVE/INIT');
-                break;
-            case 'sec1':
-                this.activePageTitle.set('SEC1/INIT');
-                break;
-            case 'sec2':
-                this.activePageTitle.set('SEC2/INIT');
-                break;
-            case 'sec3':
-                this.activePageTitle.set('SEC3/INIT');
-                break;
-
-            default:
-                this.activePageTitle.set('ACTIVE/INIT');
-                break;
-            }
+            this.activePageTitle.set(`${val.category.toUpperCase()}/INIT`);
         }, true));
 
-        // Check if CPNY RTE is mandatory
-        this.subs.push(this.fromIcao.sub(() => this.fromToChanged(), true));
-        this.subs.push(this.toIcao.sub(() => this.fromToChanged(), true));
-        this.subs.push(this.crzFl.sub((val) => this.crzTempIsDisabled.set(!val), true));
+        this.onFlightPlanChanged();
+        this.onNewData();
+        setInterval(() => this.checkIfFlightPlanChanged(), 500);
     }
 
-    private fromToChanged() {
-        this.cpnyRteMandatory.set(!this.fromIcao.get() || !this.toIcao.get());
-        this.altnDisabled.set(!this.fromIcao.get() || !this.toIcao.get());
-        this.costIndexDisabled.set(!this.fromIcao.get() || !this.toIcao.get());
-        this.tripWindDisabled.set(!this.fromIcao.get() || !this.toIcao.get());
-        this.departureButtonDisabled.set(!this.fromIcao.get());
+    private onFlightPlanChanged() {
+        switch (this.props.uiService.activeUri.get().category) {
+        case 'active':
+            this.loadedFlightPlan = this.props.flightPlanService.activeOrTemporary;
+            break;
+        case 'sec1':
+            this.loadedFlightPlan = this.props.flightPlanService.secondary(1);
+            break;
+        case 'sec2':
+            this.loadedFlightPlan = this.props.flightPlanService.secondary(2);
+            break;
+        case 'sec3':
+            this.loadedFlightPlan = this.props.flightPlanService.secondary(3);
+            break;
 
+        default:
+            this.loadedFlightPlan = this.props.flightPlanService.activeOrTemporary;
+            break;
+        }
+        this.currentFlightPlanVersion = this.loadedFlightPlan.version;
+    }
+
+    private checkIfFlightPlanChanged() {
+        if (this.loadedFlightPlan.version !== this.currentFlightPlanVersion) {
+            this.onFlightPlanChanged();
+            this.onNewData();
+        }
+    }
+
+    private onNewData() {
+        console.time('INIT:onNewData');
+        this.currentFlightPlanVersion = this.loadedFlightPlan.version;
+
+        // Update internal subjects for display purposes or input fields
+        if (this.loadedFlightPlan.originAirport) {
+            this.fromIcao.set(this.loadedFlightPlan.originAirport.ident);
+        } else {
+            this.fromIcao.set('');
+        }
+
+        if (this.loadedFlightPlan.destinationAirport) {
+            this.toIcao.set(this.loadedFlightPlan.destinationAirport.ident);
+        } else {
+            this.toIcao.set('');
+        }
+
+        if (this.loadedFlightPlan.alternateDestinationAirport) {
+            this.altnIcao.set(this.loadedFlightPlan.alternateDestinationAirport.ident);
+        } else {
+            this.altnIcao.set((this.loadedFlightPlan.originAirport && this.loadedFlightPlan.destinationAirport) ? 'NONE' : '');
+        }
+
+        if (this.loadedFlightPlan.performanceData.cruiseFlightLevel) {
+            this.crzFl.set(this.loadedFlightPlan.performanceData.cruiseFlightLevel.get());
+        }
+
+        // Disable or enable fields
+
+        // Set some empty fields with pre-defined values
         if (this.fromIcao.get() && this.toIcao.get()) {
-            if (!this.altnIcao.get()) {
-                this.altnIcao.set('NONE');
-            }
-
             if (!this.cpnyRte.get()) {
                 this.cpnyRte.set('NONE');
             }
@@ -110,6 +144,9 @@ export class MfdFmsInit extends DisplayComponent<MfdFmsInitProps> {
                 this.altnRte.set('NONE');
             }
         }
+
+        this.tmpyActive.set(this.props.flightPlanService.hasTemporary);
+        console.timeEnd('INIT:onNewData');
     }
 
     public destroy(): void {
@@ -122,7 +159,7 @@ export class MfdFmsInit extends DisplayComponent<MfdFmsInitProps> {
     render(): VNode {
         return (
             <>
-                <ActivePageTitleBar activePage={this.activePageTitle} offset={Subject.create('')} eoIsActive={Subject.create(false)} tmpyIsActive={Subject.create(false)} />
+                <ActivePageTitleBar activePage={this.activePageTitle} offset={Subject.create('')} eoIsActive={Subject.create(false)} tmpyIsActive={this.tmpyActive} />
                 {/* begin page content */}
                 <div class="mfd-page-container">
                     <div class="mfd-fms-init-line">
@@ -151,6 +188,11 @@ export class MfdFmsInit extends DisplayComponent<MfdFmsInitProps> {
                         <div class="mfd-label init-input-field">FROM</div>
                         <InputField<string>
                             dataEntryFormat={new AirportFormat()}
+                            dataHandlerDuringValidation={async (v) => {
+                                if (v && this.toIcao.get()) {
+                                    await this.props.flightPlanService.newCityPair(v, this.toIcao.get(), this.altnIcao.get());
+                                }
+                            }}
                             mandatory={Subject.create(true)}
                             canBeCleared={Subject.create(false)}
                             value={this.fromIcao}
@@ -160,6 +202,11 @@ export class MfdFmsInit extends DisplayComponent<MfdFmsInitProps> {
                         <div class="mfd-label init-space-lr">TO</div>
                         <InputField<string>
                             dataEntryFormat={new AirportFormat()}
+                            dataHandlerDuringValidation={async (v) => {
+                                if (this.fromIcao.get() && v) {
+                                    await this.props.flightPlanService.newCityPair(this.fromIcao.get(), v, this.altnIcao.get());
+                                }
+                            }}
                             mandatory={Subject.create(true)}
                             canBeCleared={Subject.create(false)}
                             value={this.toIcao}
@@ -168,6 +215,7 @@ export class MfdFmsInit extends DisplayComponent<MfdFmsInitProps> {
                         <div class="mfd-label init-space-lr">ALTN</div>
                         <InputField<string>
                             dataEntryFormat={new AirportFormat()}
+                            dataHandlerDuringValidation={(v) => this.props.flightPlanService.setAlternate(v)}
                             mandatory={Subject.create(true)}
                             disabled={this.altnDisabled}
                             value={this.altnIcao}
@@ -203,6 +251,7 @@ export class MfdFmsInit extends DisplayComponent<MfdFmsInitProps> {
                         <div class="mfd-label init-input-field">CRZ FL</div>
                         <InputField<number>
                             dataEntryFormat={new FlightLevelFormat(Subject.create(100), Subject.create(maxCertifiedAlt))}
+                            dataHandlerDuringValidation={async (v) => this.loadedFlightPlan.performanceData.cruiseFlightLevel.set(v)}
                             mandatory={Subject.create(true)}
                             disabled={this.altnDisabled}
                             canBeCleared={Subject.create(false)}
@@ -280,7 +329,7 @@ export class MfdFmsInit extends DisplayComponent<MfdFmsInitProps> {
 
                     {/* end page content */}
                 </div>
-                <Footer bus={this.props.bus} uiService={this.props.uiService} />
+                <Footer bus={this.props.bus} uiService={this.props.uiService} flightPlanService={this.props.flightPlanService} />
             </>
         );
     }

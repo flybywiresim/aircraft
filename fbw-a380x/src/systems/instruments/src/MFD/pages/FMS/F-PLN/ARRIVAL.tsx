@@ -306,7 +306,7 @@ export class MfdFmsFplnArr extends DisplayComponent<MfdFmsFplnArrProps> {
                     <Button label="TMPY F-PLN" onClick={() => null} buttonStyle="color: yellow" />
                 </div>
                 {/* end page content */}
-                <Footer bus={this.props.bus} uiService={this.props.uiService} />
+                <Footer bus={this.props.bus} uiService={this.props.uiService} flightPlanService={this.props.flightPlanService} />
             </>
         );
     }

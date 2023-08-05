@@ -15,7 +15,8 @@
       "@datalink/atc": ["../../../fbw-common/src/systems/datalink/atc/src/index.ts"],
       "@datalink/common": ["../../../fbw-common/src/systems/datalink/common/src/index.ts"],
       "@datalink/router": ["../../../fbw-common/src/systems/datalink/router/src/index.ts"],
-      "@shared/*": ["./shared/src/*"],
+      "@fmgc/*": ["./fmgc/src/*"],
+      "@shared/*": ["./shared/*"],
       "@typings/*": ["../../../fbw-common/src/typings/*"],
       "@flybywiresim/fbw-sdk": ["../../../fbw-common/src/systems/index.ts"]
     }

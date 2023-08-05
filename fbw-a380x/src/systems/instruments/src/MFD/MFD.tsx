@@ -9,6 +9,8 @@ import { MouseCursor } from 'instruments/src/MFD/pages/common/MouseCursor';
 import { MfdFmsPerf } from 'instruments/src/MFD/pages/FMS/PERF';
 import { MfdFmsInit } from 'instruments/src/MFD/pages/FMS/INIT';
 
+import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
+
 import { MfdNotFound } from 'instruments/src/MFD/pages/FMS/NOT_FOUND';
 import { FcuBkupHeader } from 'instruments/src/MFD/pages/common/FcuBkupHeader';
 import { SurvHeader } from 'instruments/src/MFD/pages/common/SurvHeader';
@@ -19,6 +21,8 @@ import { MfdMsgList } from 'instruments/src/MFD/pages/FMS/MSG_LIST';
 import { ActiveUriInformation, MfdUIService } from 'instruments/src/MFD/pages/common/UIService';
 import { MfdFmsFplnDep } from 'instruments/src/MFD/pages/FMS/F-PLN/DEPARTURE';
 import { MfdFmsFplnArr } from 'instruments/src/MFD/pages/FMS/F-PLN/ARRIVAL';
+import { NavigationDatabaseService } from '@fmgc/flightplanning/new/NavigationDatabaseService';
+import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
 import { MfdSimvars } from './shared/MFDSimvarPublisher';
 import { DisplayUnit } from '../MsfsAvionicsCommon/displayUnit';
 
@@ -30,6 +34,7 @@ export const getDisplayIndex = () => {
 export interface AbstractMfdPageProps extends ComponentProps {
     bus: EventBus;
     uiService: MfdUIService;
+    flightPlanService: FlightPlanService;
 }
 
 interface MfdComponentProps extends ComponentProps {
@@ -38,6 +43,8 @@ interface MfdComponentProps extends ComponentProps {
 }
 export class MfdComponent extends DisplayComponent<MfdComponentProps> {
     private uiService = new MfdUIService();
+
+    private flightPlanService = new FlightPlanService();
 
     private displayBrightness = Subject.create(0);
 
@@ -62,8 +69,16 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> {
         return true;
     }
 
-    public onAfterRender(node: VNode): void {
+    private async initializeFlightPlans() {
+        NavigationDatabaseService.activeDatabase = new NavigationDatabase(NavigationDatabaseBackend.Msfs);
+        await new Promise((r) => setTimeout(r, 1000));
+        this.flightPlanService.createFlightPlans();
+    }
+
+    public async onAfterRender(node: VNode): Promise<void> {
         super.onAfterRender(node);
+
+        await this.initializeFlightPlans();
 
         const isCaptainSide = getDisplayIndex() === 1;
 
@@ -115,6 +130,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> {
                     callsign={Subject.create('FBW123')}
                     activeFmsSource={this.activeFmsSource}
                     uiService={this.uiService}
+                    flightPlanService={this.flightPlanService}
                 />
             );
             break;
@@ -125,6 +141,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> {
                     callsign={Subject.create('FBW123')}
                     activeFmsSource={this.activeFmsSource}
                     uiService={this.uiService}
+                    flightPlanService={this.flightPlanService}
                 />
             );
             break;
@@ -135,6 +152,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> {
                     callsign={Subject.create('FBW123')}
                     activeFmsSource={this.activeFmsSource}
                     uiService={this.uiService}
+                    flightPlanService={this.flightPlanService}
                 />
             );
             break;
@@ -145,6 +163,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> {
                     callsign={Subject.create('FBW123')}
                     activeFmsSource={this.activeFmsSource}
                     uiService={this.uiService}
+                    flightPlanService={this.flightPlanService}
                 />
             );
             break;
@@ -156,6 +175,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> {
                     callsign={Subject.create('FBW123')}
                     activeFmsSource={this.activeFmsSource}
                     uiService={this.uiService}
+                    flightPlanService={this.flightPlanService}
                 />
             );
             break;
@@ -164,26 +184,26 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> {
         // Mapping from URL to page component
         switch (`${uri.sys}/${uri.category}/${uri.page}`) {
         case 'fms/active/perf':
-            this.activePage = <MfdFmsPerf bus={this.props.bus} uiService={this.uiService} />;
+            this.activePage = <MfdFmsPerf bus={this.props.bus} uiService={this.uiService} flightPlanService={this.flightPlanService} />;
             break;
         case 'fms/active/init':
-            this.activePage = <MfdFmsInit bus={this.props.bus} uiService={this.uiService} />;
+            this.activePage = <MfdFmsInit bus={this.props.bus} uiService={this.uiService} flightPlanService={this.flightPlanService} />;
             break;
         case 'fms/active/fuel-load':
-            this.activePage = <MfdFmsFuelLoad bus={this.props.bus} uiService={this.uiService} />;
+            this.activePage = <MfdFmsFuelLoad bus={this.props.bus} uiService={this.uiService} flightPlanService={this.flightPlanService} />;
             break;
         case 'fms/active/f-pln':
-            this.activePage = <MfdFmsFpln bus={this.props.bus} uiService={this.uiService} />;
+            this.activePage = <MfdFmsFpln bus={this.props.bus} uiService={this.uiService} flightPlanService={this.flightPlanService} />;
             break;
         case 'fms/active/f-pln-departure':
-            this.activePage = <MfdFmsFplnDep bus={this.props.bus} uiService={this.uiService} />;
+            this.activePage = <MfdFmsFplnDep bus={this.props.bus} uiService={this.uiService} flightPlanService={this.flightPlanService} />;
             break;
         case 'fms/active/f-pln-arrival':
-            this.activePage = <MfdFmsFplnArr bus={this.props.bus} uiService={this.uiService} />;
+            this.activePage = <MfdFmsFplnArr bus={this.props.bus} uiService={this.uiService} flightPlanService={this.flightPlanService} />;
             break;
 
         default:
-            this.activePage = <MfdNotFound bus={this.props.bus} uiService={this.uiService} />;
+            this.activePage = <MfdNotFound bus={this.props.bus} uiService={this.uiService} flightPlanService={this.flightPlanService} />;
             break;
         }
 
@@ -194,6 +214,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> {
                     messages={ArraySubject.create(['CLOSE RTE REQUEST FIRST', 'RECEIVED POS T.O DATA NOT VALID', 'CONSTRAINTS ABOVE CRZ FL DELETED', 'NOT IN DATABASE', 'GPS PRIMARY', 'CHECK T.O DATA'])}
                     bus={this.props.bus}
                     uiService={this.uiService}
+                    flightPlanService={this.flightPlanService}
                 />
             );
         }
