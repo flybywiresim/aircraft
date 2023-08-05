@@ -100,6 +100,8 @@ export class NavigraphClient {
         this.accessToken = null;
         this.userName = '';
         this.auth = NAVIGRAPH_DEFAULT_AUTH_STATE;
+        NXDataStore.set('NAVIGRAPH_REFRESH_TOKEN', '');
+        NXDataStore.set('NAVIGRAPH_USERNAME', '');
     }
 
     private async tokenCall(body): Promise<void> {
