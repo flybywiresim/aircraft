@@ -45,18 +45,8 @@ const ArrivalPagination = Object.freeze(
 );
 class CDUAvailableArrivalsPage {
     static ShowPage(mcdu, airport, pageCurrent = 0, starSelection = false, forPlan = Fmgc.FlightPlanIndex.Active, inAlternate = false) {
-        // TODO SEC F-PLN
-        /** @type {import('../../../../../../../../src/fmgc/src/flightplanning/new/plans/BaseFlightPlan').BaseFlightPlan} */
-        let targetPlan;
-        if (forPlan === Fmgc.FlightPlanIndex.Active) {
-            if (inAlternate) {
-                targetPlan = mcdu.flightPlanService.activeOrTemporary.alternateFlightPlan;
-            } else {
-                targetPlan = mcdu.flightPlanService.activeOrTemporary;
-            }
-        } else {
-            targetPlan = mcdu.flightPlanService.get(forPlan);
-        }
+        /** @type {BaseFlightPlan} */
+        const targetPlan = mcdu.flightPlan(forPlan, inAlternate);
 
         const isTemporary = targetPlan.index === Fmgc.FlightPlanIndex.Temporary;
 
@@ -336,18 +326,8 @@ class CDUAvailableArrivalsPage {
     static ShowViasPage(mcdu, airport, pageCurrent = 0, forPlan = Fmgc.FlightPlanIndex.Active, inAlternate = false) {
         const appr_page = 3;
 
-        // TODO SEC F-PLN
-        /** @type {import('../../../../../../../../src/fmgc/src/flightplanning/new/plans/BaseFlightPlan').BaseFlightPlan} */
-        let targetPlan;
-        if (forPlan === Fmgc.FlightPlanIndex.Active) {
-            if (inAlternate) {
-                targetPlan = mcdu.flightPlanService.activeOrTemporary.alternateFlightPlan;
-            } else {
-                targetPlan = mcdu.flightPlanService.activeOrTemporary;
-            }
-        } else {
-            targetPlan = mcdu.flightPlanService.get(forPlan);
-        }
+        /** @type {BaseFlightPlan} */
+        const targetPlan = mcdu.flightPlan(forPlan, inAlternate);
 
         const planColor = targetPlan.index === Fmgc.FlightPlanIndex.Temporary ? "yellow" : "green";
 

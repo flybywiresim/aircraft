@@ -7,7 +7,7 @@ import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
 import { NearbyFacilities } from '@fmgc/navigation/NearbyFacilities';
 import { arrayFlat } from '@flybywiresim/fbw-sdk';
 import { bearingTo, diffAngle, distanceTo, EARTH_RADIUS } from 'msfs-geo';
-import { ApproachType, NavaidSubsectionCode, NdbNavaid, SectionCode, VhfNavaid, VhfNavaidType } from 'msfs-navdata';
+import { ApproachType, NavaidSubsectionCode, NdbNavaid, VhfNavaid, VhfNavaidType } from 'msfs-navdata';
 
 type VorFacilityWithDistance = VhfNavaid & { distance: number };
 

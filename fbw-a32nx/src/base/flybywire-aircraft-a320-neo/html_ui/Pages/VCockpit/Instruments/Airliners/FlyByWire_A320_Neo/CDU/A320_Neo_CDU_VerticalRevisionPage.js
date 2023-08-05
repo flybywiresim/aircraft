@@ -22,16 +22,8 @@ class CDUVerticalRevisionPage {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.VerticalRevisionPage;
 
-        let targetPlan;
-        if (forPlan === Fmgc.FlightPlanIndex.Active) {
-            if (inAlternate) {
-                targetPlan = mcdu.flightPlanService.activeOrTemporary.alternateFlightPlan;
-            } else {
-                targetPlan = mcdu.flightPlanService.activeOrTemporary;
-            }
-        } else {
-            targetPlan = mcdu.flightPlanService.get(forPlan);
-        }
+        /** @type {BaseFlightPlan} */
+        const targetPlan = mcdu.flightPlan(forPlan, inAlternate);
 
         const confirmConstraint = Number.isFinite(confirmSpeed) || Number.isFinite(confirmAlt);
         const constraintType = CDUVerticalRevisionPage.constraintType(mcdu, wpIndex, forPlan, inAlternate);
