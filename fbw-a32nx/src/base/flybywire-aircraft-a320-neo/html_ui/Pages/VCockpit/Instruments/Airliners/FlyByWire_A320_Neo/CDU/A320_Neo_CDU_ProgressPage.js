@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 class CDUProgressPage {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
@@ -230,8 +234,8 @@ class CDUProgressPage {
                 destCell += plan.destinationRunway.ident.replace('RW', '');
             }
 
-            // destUTCCell = FMCMainDisplay.secondsTohhmm(mcdu.flightPlanManager.getDestination().infos.etaInFP); TODO port over
-            // destDistCell = mcdu.flightPlanManager.getDestination().infos.totalDistInFP.toFixed(0); TODO port over
+            // destUTCCell = FMCMainDisplay.secondsTohhmm(mcdu.flightPlanManager.getDestination().infos.etaInFP); TODO port over (fms-v2)
+            // destDistCell = mcdu.flightPlanManager.getDestination().infos.totalDistInFP.toFixed(0); TODO port over (fms-v2)
         }
 
         mcdu.setTemplate([
@@ -265,7 +269,7 @@ class CDUProgressPage {
             if (overrideDestETA) {
                 destETACell = overrideDestETA;
             } else {
-                // destETACell = FMCMainDisplay.secondsTohhmm(mcdu.flightPlanManager.getDestination().infos.etaInFP); TODO port over
+                // destETACell = FMCMainDisplay.secondsTohhmm(mcdu.flightPlanManager.getDestination().infos.etaInFP); TODO port over (fms-v2)
             }
 
             mcdu.onRightInput[0] = (value) => {
