@@ -12,8 +12,12 @@ const getRequestData: RequestInit = {
     method: 'GET',
 };
 
-export const getSimbriefData = (navigraphUsername: string): Promise<ISimbriefData> => {
-    simbriefApiParams.append('username', navigraphUsername);
+export const getSimbriefData = (navigraphUsername: string, overrideSimbriefID: string): Promise<ISimbriefData> => {
+    if (overrideSimbriefID) {
+        simbriefApiParams.append('userid', overrideSimbriefID);
+    } else {
+        simbriefApiParams.append('username', navigraphUsername);
+    }
     simbriefApiParams.append('json', '1');
     simbriefApiUrl.search = simbriefApiParams.toString();
 

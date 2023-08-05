@@ -131,10 +131,10 @@ export const simbriefSlice = createSlice({
     },
 });
 
-export async function fetchSimbriefDataAction(naivgraphUsername: string): Promise<PayloadAction<SimbriefData>> {
-    const returnedSimbriefData = await getSimbriefData(naivgraphUsername);
+export async function fetchSimbriefDataAction(naivgraphUsername: string, overrideSimbriefID: string): Promise<PayloadAction<SimbriefData>> {
+    const returnedSimbriefData = await getSimbriefData(naivgraphUsername, overrideSimbriefID);
 
-    if (naivgraphUsername) {
+    if (naivgraphUsername || overrideSimbriefID) {
         return setSimbriefData({
             airline: returnedSimbriefData.airline,
             flightNum: returnedSimbriefData.flightNumber,

@@ -43,8 +43,9 @@ const lbsToKg = (value) => {
  */
 const getSimBriefOfp = (mcdu, updateView, callback = () => {}) => {
     const navigraphUsername = NXDataStore.get("NAVIGRAPH_USERNAME", "");
+    const overrideSimBriefUserID = NXDataStore.get('CONFIG_OVERRIDE_SIMBRIEF_USERID', '');
 
-    if (!navigraphUsername) {
+    if (!navigraphUsername && !overrideSimBriefUserID) {
         mcdu.setScratchpadMessage(NXFictionalMessages.noNavigraphUser);
         throw new Error("No Navigraph username provided");
     }
@@ -53,7 +54,7 @@ const getSimBriefOfp = (mcdu, updateView, callback = () => {}) => {
 
     updateView();
 
-    return SimBriefApi.getSimBriefOfp(navigraphUsername)
+    return SimBriefApi.getSimBriefOfp(navigraphUsername, overrideSimBriefUserID)
         .then(data => {
             mcdu.simbrief["units"] = data.params.units;
             mcdu.simbrief["route"] = data.general.route;
