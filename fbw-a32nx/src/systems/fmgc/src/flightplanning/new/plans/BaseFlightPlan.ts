@@ -34,7 +34,7 @@ import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { HoldData, WaypointStats } from '@fmgc/flightplanning/data/flightplan';
 import { procedureLegIdentAndAnnotation } from '@fmgc/flightplanning/new/legs/FlightPlanLegNaming';
 import { FlightPlanSyncEvents } from '@fmgc/flightplanning/new/sync/FlightPlanSyncEvents';
-import { EventBus, Publisher } from '@microsoft/msfs-sdk';
+import { EventBus, Publisher, Subscription } from '@microsoft/msfs-sdk';
 import { FlightPlan } from '@fmgc/flightplanning/new/plans/FlightPlan';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/new/plans/AlternateFlightPlan';
 import { FixInfoEntry } from '@fmgc/flightplanning/new/plans/FixInfo';
