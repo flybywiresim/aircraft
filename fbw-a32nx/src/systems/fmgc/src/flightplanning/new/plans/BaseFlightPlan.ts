@@ -42,6 +42,7 @@ import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/new/legs/FlightPlanLegDefinition';
 import { PendingAirways } from '@fmgc/flightplanning/new/plans/PendingAirways';
 import { SerializedFlightPlanPerformanceData } from '@fmgc/flightplanning/new/plans/performance/FlightPlanPerformanceData';
+import { ReadonlyFlightPlan } from '@fmgc/flightplanning/new/plans/ReadonlyFlightPlan';
 
 export enum FlightPlanQueuedOperation {
     Restring,
@@ -49,7 +50,7 @@ export enum FlightPlanQueuedOperation {
     SyncSegmentLegs,
 }
 
-export abstract class BaseFlightPlan {
+export abstract class BaseFlightPlan implements ReadonlyFlightPlan {
     private readonly syncPub: Publisher<FlightPlanSyncEvents>;
 
     public pendingAirways: PendingAirways | undefined;
@@ -392,10 +393,6 @@ export abstract class BaseFlightPlan {
         return lastApproachLeg && lastApproachLeg.isDiscontinuity === false && lastApproachLeg.definition.waypointDescriptor === WaypointDescriptor.Runway;
     }
 
-    get lastLegIndex() {
-        return this.legCount - 1;
-    }
-
     hasElement(index: number): boolean {
         return index >= 0 && index < this.allLegs.length;
     }
@@ -453,6 +450,9 @@ export abstract class BaseFlightPlan {
         return this.cachedAllLegs;
     }
 
+    /**
+     * @deprecated this needs to be refactored into something harmonized with the VNAV profile
+     */
     public computeWaypointStatistics(): Map<number, WaypointStats> {
         // TODO port over (fms-v2)
 
@@ -503,7 +503,7 @@ export abstract class BaseFlightPlan {
      *
      * @param before the segment
      */
-    public previousSegment(before: FlightPlanSegment) {
+    private previousSegment(before: FlightPlanSegment) {
         const segments = this.orderedSegments;
         const segmentIndex = segments.findIndex((s) => s === before);
 
@@ -535,7 +535,7 @@ export abstract class BaseFlightPlan {
      *
      * @param after the segment
      */
-    public nextSegment(after: FlightPlanSegment) {
+    private nextSegment(after: FlightPlanSegment) {
         const segments = this.orderedSegments;
         const segmentIndex = segments.findIndex((s) => s === after);
 
@@ -562,7 +562,7 @@ export abstract class BaseFlightPlan {
         return undefined;
     }
 
-    public replaceSegment(segment: FlightPlanSegment) {
+    protected replaceSegment(segment: FlightPlanSegment) {
         if (segment instanceof OriginSegment) {
             this.originSegment = segment;
         } else if (segment instanceof DepartureRunwayTransitionSegment) {
@@ -1554,7 +1554,7 @@ export abstract class BaseFlightPlan {
         }
     }
 
-    arrivalAndApproachSegmentsBeingRebuilt = false;
+    private arrivalAndApproachSegmentsBeingRebuilt = false;
 
     private async rebuildArrivalAndApproachSegments() {
         // We call the segment functions here, otherwise we infinitely enqueue restrings and rebuilds since calling

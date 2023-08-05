@@ -59,7 +59,6 @@ class CDUFlightPlanPage {
             CDUFlightPlanPage.ShowPage(mcdu, offset, forPlan);
         };
         mcdu.activeSystem = 'FMGC';
-        const fpm = mcdu.flightPlanManager;
 
         // regular update due to showing dynamic data on this page
         mcdu.page.SelfPtr = setTimeout(() => {
@@ -169,7 +168,7 @@ class CDUFlightPlanPage {
 
             waypointsAndMarkers.push({ wp, fpIndex: i, inAlternate: false, inMissedApproach });
 
-            if (i === targetPlan.lastLegIndex) {
+            if (i === targetPlan.lastIndex) {
                 waypointsAndMarkers.push({ marker: Markers.END_OF_FPLN, fpIndex: i, inAlternate: false, inMissedApproach });
             }
         }
@@ -191,7 +190,7 @@ class CDUFlightPlanPage {
 
                 waypointsAndMarkers.push({ wp, fpIndex: i, inAlternate: true });
 
-                if (i === targetPlan.alternateFlightPlan.lastLegIndex) {
+                if (i === targetPlan.alternateFlightPlan.lastIndex) {
                     waypointsAndMarkers.push({ marker: Markers.END_OF_ALTN_FPLN, fpIndex: i, inAlternate: true });
                 }
             }

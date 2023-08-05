@@ -21,16 +21,8 @@ class CDULateralRevisionPage {
         //     const long = CDUInitPage.ConvertDDToDMS(waypoint.infos.coordinates['long'], true);
         //     coordinates = `${lat.deg}°${lat.min}.${Math.ceil(Number(lat.sec / 100))}${lat.dir}/${long.deg}°${long.min}.${Math.ceil(Number(long.sec / 100))}${long.dir}[color]green`;
         // }
-        let targetPlan;
-        if (forPlan === Fmgc.FlightPlanIndex.Active) {
-            if (inAlternate) {
-                targetPlan = mcdu.flightPlanService.activeOrTemporary.alternateFlightPlan;
-            } else {
-                targetPlan = mcdu.flightPlanService.activeOrTemporary;
-            }
-        } else {
-            targetPlan = mcdu.flightPlanService.get(forPlan);
-        }
+        /** @type {BaseFlightPlan} */
+        const targetPlan = mcdu.flightPlan(forPlan, inAlternate);
 
         const isPpos = waypoint === undefined || waypointIndexFP === 0 && waypoint !== targetPlan.originLeg;
         const isFrom = waypointIndexFP === targetPlan.activeLegIndex - 1;

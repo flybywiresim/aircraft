@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 const DeparturePagination = Object.freeze(
     {
         DEPT_PAGE: 4,
@@ -20,18 +24,8 @@ class CDUAvailableDeparturesPage {
 
         const editingTmpy = forPlan === Fmgc.FlightPlanIndex.Active && mcdu.flightPlanService.hasTemporary;
 
-        // TODO SEC F-PLN
-        /** @type {import('../../../../../../../../src/fmgc/src/flightplanning/new/plans/BaseFlightPlan').BaseFlightPlan} */
-        let targetPlan;
-        if (forPlan === Fmgc.FlightPlanIndex.Active) {
-            if (inAlternate) {
-                targetPlan = mcdu.flightPlanService.activeOrTemporary.alternateFlightPlan;
-            } else {
-                targetPlan = mcdu.flightPlanService.activeOrTemporary;
-            }
-        } else {
-            targetPlan = mcdu.flightPlanService.get(forPlan);
-        }
+        /** @type {BaseFlightPlan} */
+        const targetPlan = mcdu.flightPlan(forPlan, inAlternate);
 
         const planColor = forPlan === Fmgc.FlightPlanIndex.Active ? mcdu.flightPlanService.hasTemporary ? "yellow" : "green" : "white";
 
@@ -243,24 +237,24 @@ class CDUAvailableDeparturesPage {
         }
         mcdu.setArrows(up, down, true, true);
 
-            if (editingTmpy) {
-                mcdu.onLeftInput[5] = () => {
-                    mcdu.eraseTemporaryFlightPlan(() => {
-                        CDUFlightPlanPage.ShowPage(mcdu, 0, forPlan);
-                    });
-                };
-                mcdu.onRightInput[5] = () => {
-                    mcdu.insertTemporaryFlightPlan(() => {
-                        mcdu.updateConstraints();
-                        mcdu.onToRwyChanged();
-                        CDUFlightPlanPage.ShowPage(mcdu, 0, forPlan);
-                    });
-                };
-            } else {
-                mcdu.onLeftInput[5] = () => {
+        if (editingTmpy) {
+            mcdu.onLeftInput[5] = () => {
+                mcdu.eraseTemporaryFlightPlan(() => {
                     CDUFlightPlanPage.ShowPage(mcdu, 0, forPlan);
-                };
-            }
+                });
+            };
+            mcdu.onRightInput[5] = () => {
+                mcdu.insertTemporaryFlightPlan(() => {
+                    mcdu.updateConstraints();
+                    mcdu.onToRwyChanged();
+                    CDUFlightPlanPage.ShowPage(mcdu, 0, forPlan);
+                });
+            };
+        } else {
+            mcdu.onLeftInput[5] = () => {
+                CDUFlightPlanPage.ShowPage(mcdu, 0, forPlan);
+            };
+        }
 
         if (showEosid) {
             rows[7][2] = 'EOSID';
