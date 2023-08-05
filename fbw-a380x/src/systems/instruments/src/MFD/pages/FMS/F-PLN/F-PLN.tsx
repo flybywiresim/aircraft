@@ -268,24 +268,7 @@ export class MfdFmsFpln extends DisplayComponent<MfdFmsFplnProps> {
         super.onAfterRender(node);
 
         this.subs.push(this.props.uiService.activeUri.sub((val) => {
-            switch (val.category) {
-            case 'active':
-                this.activePageTitle.set('ACTIVE/F-PLN');
-                break;
-            case 'sec1':
-                this.activePageTitle.set('SEC1/F-PLN');
-                break;
-            case 'sec2':
-                this.activePageTitle.set('SEC2/F-PLN');
-                break;
-            case 'sec3':
-                this.activePageTitle.set('SEC3/F-PLN');
-                break;
-
-            default:
-                this.activePageTitle.set('ACTIVE/F-PLN');
-                break;
-            }
+            this.activePageTitle.set(`${val.category.toUpperCase()}/F-PLN`);
         }, true));
 
         this.subs.push(this.displayEfobAndWind.sub((val) => {

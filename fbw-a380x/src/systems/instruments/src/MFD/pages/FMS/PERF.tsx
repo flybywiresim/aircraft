@@ -243,24 +243,7 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
         this.showNoiseFields(false);
 
         this.subs.push(this.props.uiService.activeUri.sub((val) => {
-            switch (val.category) {
-            case 'active':
-                this.activePageTitle.set('ACTIVE/PERF');
-                break;
-            case 'sec1':
-                this.activePageTitle.set('SEC1/PERF');
-                break;
-            case 'sec2':
-                this.activePageTitle.set('SEC2/PERF');
-                break;
-            case 'sec3':
-                this.activePageTitle.set('SEC3/PERF');
-                break;
-
-            default:
-                this.activePageTitle.set('ACTIVE/PERF');
-                break;
-            }
+            this.activePageTitle.set(`${val.category.toUpperCase()}/PERF`);
         }, true));
 
         // If extra parameter for activeUri is given, navigate to flight phase sub-page

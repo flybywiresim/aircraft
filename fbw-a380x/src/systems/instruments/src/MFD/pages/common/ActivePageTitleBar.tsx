@@ -1,4 +1,4 @@
-import { ComponentProps, DisplayComponent, FSComponent, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import { ComponentProps, DisplayComponent, FSComponent, Subscribable, Subscription, VNode } from '@microsoft/msfs-sdk';
 import './style.scss';
 
 interface ActivePageTitleBarProps extends ComponentProps {
@@ -12,20 +12,43 @@ interface ActivePageTitleBarProps extends ComponentProps {
  * Displays the title bar, with optional markers for lateral offsets, engine out and temporary flight plan
  */
 export class ActivePageTitleBar extends DisplayComponent<ActivePageTitleBarProps> {
+    // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
+    private subs = [] as Subscription[];
+
+    private offsetText = this.props.offset.map((it) => (it ? `     OFFSET${this.props.offset.get()}` : ''));
+
+    private eoRef = FSComponent.createRef<HTMLSpanElement>();
+
+    private tmpyRef = FSComponent.createRef<HTMLSpanElement>();
+
+    public onAfterRender(node: VNode): void {
+        super.onAfterRender(node);
+
+        this.subs.push(this.props.eoIsActive.sub((v) => this.eoRef.getOrDefault().style.display = v ? 'block' : 'none', true));
+        this.subs.push(this.props.tmpyIsActive.sub((v) => this.tmpyRef.getOrDefault().style.display = v ? 'block' : 'none', true));
+    }
+
+    public destroy(): void {
+        // Destroy all subscriptions to remove all references to this instance.
+        this.subs.forEach((x) => x.destroy());
+
+        super.destroy();
+    }
+
     render(): VNode {
         return (
             <div class="mfd-title-bar-container">
                 <div class="mfd-title-bar-title">
                     <span class="mfd-label mfd-title-bar-title-label">
                         {this.props.activePage}
-                        {this.props.offset.get() !== '' ? `     OFFSET${this.props.offset.get()}` : ''}
+                        {this.offsetText}
                     </span>
                 </div>
                 <div class="mfd-title-bar-eo-section">
-                    {(this.props.eoIsActive.get() === true) && <span class="mfd-label mfd-title-bar-eo-label">EO</span>}
+                    <span ref={this.eoRef} class="mfd-label mfd-title-bar-eo-label" style="display: none">EO</span>
                 </div>
                 <div class="mfd-title-bar-tmpy-section">
-                    {(this.props.tmpyIsActive.get() === true) && <span class="mfd-label mfd-title-bar-tmpy-label">TMPY</span>}
+                    <span ref={this.tmpyRef} class="mfd-label mfd-title-bar-tmpy-label" style="display: none">TMPY</span>
                 </div>
             </div>
         );

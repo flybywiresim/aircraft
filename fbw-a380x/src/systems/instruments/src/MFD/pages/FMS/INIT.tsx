@@ -21,38 +21,44 @@ export class MfdFmsInit extends DisplayComponent<MfdFmsInitProps> {
     private activePageTitle = Subject.create<string>('');
 
     private fltNbr = Subject.create<string>(null);
+    private tmpyActive = Subject.create<boolean>(false);
+
+    private fltNbr = Subject.create<string>(null); // FIXME not found
 
     private fromIcao = Subject.create<string>(null);
+
+    private fromIcaoDisabled = Subject.create<boolean>(false);
 
     private toIcao = Subject.create<string>(null);
 
     private altnIcao = Subject.create<string>(null);
 
-    private altnDisabled = Subject.create(true);
+    private altnDisabled = MappedSubject.create(([toIcao, fromIcao]) => !toIcao || !fromIcao, this.fromIcao, this.toIcao);
 
-    private cpnyRte = Subject.create<string>(null);
+    private cpnyRte = Subject.create<string>(null); // FIXME not found
 
-    private altnRte = Subject.create<string>(null);
+    private altnRte = Subject.create<string>(null); // FIXME not found
 
     private crzFl = Subject.create<number>(null);
 
-    private crzTemp = Subject.create<number>(null);
+    private crzTemp = Subject.create<number>(null); // FIXME missing
 
-    private crzTempIsDisabled = Subject.create(true);
+    // private crzTempIsDisabled = !crzTemp;
+    private crzTempIsDisabled = this.crzFl.map((crzFl) => !crzFl);
 
-    private costIndex = Subject.create<number>(null);
+    private costIndex = Subject.create<number>(null); // FIXME missing
 
-    private costIndexDisabled = Subject.create(true);
+    private costIndexDisabled = MappedSubject.create(([toIcao, fromIcao]) => !toIcao || !fromIcao, this.fromIcao, this.toIcao);
 
-    private tropoAlt = Subject.create<number>(defaultTropopauseAlt);
+    private tropoAlt = Subject.create<number>(defaultTropopauseAlt); // FIXME missing
 
-    private tripWind = Subject.create<number>(null);
+    private tripWind = Subject.create<number>(null); // FIXME missing
 
-    private tripWindDisabled = Subject.create(true);
+    private tripWindDisabled = MappedSubject.create(([toIcao, fromIcao]) => !toIcao || !fromIcao, this.fromIcao, this.toIcao);
 
-    private cpnyRteMandatory = Subject.create(true);
+    private cpnyRteMandatory = MappedSubject.create(([toIcao, fromIcao]) => !toIcao || !fromIcao, this.fromIcao, this.toIcao);
 
-    private departureButtonDisabled = Subject.create(true);
+    private departureButtonDisabled = MappedSubject.create(([toIcao, fromIcao]) => !toIcao || !fromIcao, this.fromIcao, this.toIcao);
 
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
@@ -149,6 +155,7 @@ export class MfdFmsInit extends DisplayComponent<MfdFmsInitProps> {
                             canBeCleared={Subject.create(false)}
                             value={this.fromIcao}
                             alignText="center"
+                            disabled={this.fromIcaoDisabled}
                         />
                         <div class="mfd-label init-space-lr">TO</div>
                         <InputField<string>

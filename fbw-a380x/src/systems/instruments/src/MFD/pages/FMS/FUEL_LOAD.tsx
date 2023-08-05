@@ -51,24 +51,7 @@ export class MfdFmsFuelLoad extends DisplayComponent<MfdFmsFuelLoadProps> {
         super.onAfterRender(node);
 
         this.subs.push(this.props.uiService.activeUri.sub((val) => {
-            switch (val.category) {
-            case 'active':
-                this.activePageTitle.set('ACTIVE/FUEL&LOAD');
-                break;
-            case 'sec1':
-                this.activePageTitle.set('SEC1/FUEL&LOAD');
-                break;
-            case 'sec2':
-                this.activePageTitle.set('SEC2/FUEL&LOAD');
-                break;
-            case 'sec3':
-                this.activePageTitle.set('SEC3/FUEL&LOAD');
-                break;
-
-            default:
-                this.activePageTitle.set('ACTIVE/FUEL&LOAD');
-                break;
-            }
+            this.activePageTitle.set(`${val.category.toUpperCase()}/FUEL&LOAD`);
         }, true));
     }
 

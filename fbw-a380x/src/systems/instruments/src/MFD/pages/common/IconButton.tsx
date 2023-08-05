@@ -36,7 +36,7 @@ export class IconButton extends DisplayComponent<IconButtonProps> {
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        if (!this.props.disabled) {
+        if (this.props.disabled === undefined) {
             this.props.disabled = Subject.create(false);
         }
 

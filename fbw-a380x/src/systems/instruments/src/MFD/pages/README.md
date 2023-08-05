@@ -5,6 +5,7 @@ This directory contains the different pages for the A380's MFD. List for pages i
 ## Status and description of components
 Status legend:
 ✅ MVP complete
+3️⃣ Phase 3 in progress: Connect to final interfaces/classes
 2️⃣ Phase 2 in progress: Data
 1️⃣ Phase 1 in progress: Layout
 🟥 Not yet started

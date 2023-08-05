@@ -46,7 +46,7 @@ export class MfdUIService {
 
     /**
      * Navigate to MFD page.
-     * @param uri The URI to navigate to. Format: sys/category/page, e.g. fms/active/init represents ACTIVE/INIT page from the FMS.
+     * @param uri The URI to navigate to. Format: sys/category/page, e.g. fms/active/init represents ACTIVE/INIT page from the FMS. Use URI 'back' for retuning to previous page.
      * In theory, one can use anything after a third slash for intra-page deep linking: fms/active/perf/appr could link to the approach PERF page.
      */
     public navigateTo(uri: string) {
@@ -73,5 +73,12 @@ export class MfdUIService {
 
         const parsedUri = this.parseUri(nextUri);
         this.activeUri.set(parsedUri);
+    }
+
+    /*
+     * Whether one can navigate back
+     */
+    public canGoBack() {
+        return this.navigationStack.length > 1;
     }
 }

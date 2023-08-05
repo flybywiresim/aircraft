@@ -4,7 +4,8 @@ import './f-pln.scss';
 import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
-import { Button } from 'instruments/src/MFD/pages/common/Button';
+import { Button, ButtonMenuItem } from 'instruments/src/MFD/pages/common/Button';
+import { ActiveUriInformation } from 'instruments/src/MFD/pages/common/UIService';
 
 interface MfdFmsFplnDepProps extends AbstractMfdPageProps {
 }
@@ -18,13 +19,38 @@ export class MfdFmsFplnDep extends DisplayComponent<MfdFmsFplnDepProps> {
     private tmpyIsActive = Subject.create<boolean>(false);
 
     private secIsActive = Subject.create<boolean>(false);
+    private tmpyActive = Subject.create<boolean>(false);
+
+    private secActive = Subject.create<boolean>(false);
+
+    private fromIcao = Subject.create<string>('');
+
+    private rwyIdent = Subject.create<string>('');
+
+    private rwyLength = Subject.create<string>('');
+
+    private rwyCrs = Subject.create<string>('');
+
+    private rwyEoSid = Subject.create<string>('');
+
+    private rwyFreq = Subject.create<string>('');
+
+    private rwySid = Subject.create<string>('');
+
+    private rwyTrans = Subject.create<string>('');
+
+    private rwyOptions = Subject.create<ButtonMenuItem[]>([]);
 
     private sidDisabled = Subject.create<boolean>(false);
 
+    private sidOptions = Subject.create<ButtonMenuItem[]>([]);
+
     private transDisabled = Subject.create<boolean>(false);
 
-    private update(): void {
-        // ...
+    private transOptions = Subject.create<ButtonMenuItem[]>([]);
+
+    private tmpyInsertButtonDiv = FSComponent.createRef<HTMLDivElement>();
+
     }
 
     public onAfterRender(node: VNode): void {
@@ -62,7 +88,7 @@ export class MfdFmsFplnDep extends DisplayComponent<MfdFmsFplnDepProps> {
     render(): VNode {
         return (
             <>
-                <ActivePageTitleBar activePage={this.activePageTitle} offset={Subject.create('')} eoIsActive={Subject.create(false)} tmpyIsActive={Subject.create(false)} />
+                <ActivePageTitleBar activePage={this.activePageTitle} offset={Subject.create('')} eoIsActive={Subject.create(false)} tmpyIsActive={this.tmpyActive} />
                 {/* begin page content */}
                 <div class="mfd-fms-fpln-labeled-box-container">
                     <span class="mfd-label mfd-spacing-right mfd-fms-fpln-labeled-box-label">
@@ -73,22 +99,22 @@ export class MfdFmsFplnDep extends DisplayComponent<MfdFmsFplnDepProps> {
                             <span class="mfd-label mfd-spacing-right">FROM</span>
                             <span class={{
                                 'mfd-value-green': true,
-                                'mfd-value-tmpy': this.tmpyIsActive.get(),
-                                'mfd-value-sec': this.secIsActive.get(),
+                                'mfd-value-tmpy': this.tmpyActive,
+                                'mfd-value-sec': this.secActive,
                             }}
                             >
-                                LFBO
+                                {this.fromIcao}
                             </span>
                         </div>
                         <div style="flex: 1; display: flex; flex-direction: column;">
                             <span class="mfd-label mfd-fms-fpln-label-bottom-space">RWY</span>
                             <span class={{
                                 'mfd-value-green': true,
-                                'mfd-value-tmpy': this.tmpyIsActive.get(),
-                                'mfd-value-sec': this.secIsActive.get(),
+                                'mfd-value-tmpy': this.tmpyActive,
+                                'mfd-value-sec': this.secActive,
                             }}
                             >
-                                14L
+                                {this.rwyIdent}
                             </span>
                         </div>
                         <div style="flex: 1.3; display: flex; flex-direction: column;">
@@ -96,11 +122,11 @@ export class MfdFmsFplnDep extends DisplayComponent<MfdFmsFplnDepProps> {
                             <div>
                                 <span class={{
                                     'mfd-value-green': true,
-                                    'mfd-value-tmpy': this.tmpyIsActive.get(),
-                                    'mfd-value-sec': this.secIsActive.get(),
+                                    'mfd-value-tmpy': this.tmpyActive,
+                                    'mfd-value-sec': this.secActive,
                                 }}
                                 >
-                                    9843
+                                    {this.rwyLength}
                                 </span>
                                 <span class="mfd-label-unit mfd-unit-trailing">FT</span>
                             </div>
@@ -110,11 +136,11 @@ export class MfdFmsFplnDep extends DisplayComponent<MfdFmsFplnDepProps> {
                             <div>
                                 <span class={{
                                     'mfd-value-green': true,
-                                    'mfd-value-tmpy': this.tmpyIsActive.get(),
-                                    'mfd-value-sec': this.secIsActive.get(),
+                                    'mfd-value-tmpy': this.tmpyActive,
+                                    'mfd-value-sec': this.secActive,
                                 }}
                                 >
-                                    144
+                                    {this.rwyCrs}
                                 </span>
                                 <span class="mfd-label-unit mfd-unit-trailing">°</span>
                             </div>
@@ -125,22 +151,22 @@ export class MfdFmsFplnDep extends DisplayComponent<MfdFmsFplnDepProps> {
                             <span class="mfd-label mfd-fms-fpln-label-bottom-space">EOSID</span>
                             <span class={{
                                 'mfd-value-green': true,
-                                'mfd-value-tmpy': this.tmpyIsActive.get(),
-                                'mfd-value-sec': this.secIsActive.get(),
+                                'mfd-value-tmpy': this.tmpyActive,
+                                'mfd-value-sec': this.secActive,
                             }}
                             >
-                                NONE
+                                {this.rwyEoSid}
                             </span>
                         </div>
                         <div style="flex: 0.3; display: flex; flex-direction: column;">
                             <span class="mfd-label mfd-fms-fpln-label-bottom-space">FREQ/CHAN</span>
                             <span class={{
                                 'mfd-value-green': true,
-                                'mfd-value-tmpy': this.tmpyIsActive.get(),
-                                'mfd-value-sec': this.secIsActive.get(),
+                                'mfd-value-tmpy': this.tmpyActive,
+                                'mfd-value-sec': this.secActive,
                             }}
                             >
-                                108.90
+                                {this.rwyFreq}
                             </span>
                         </div>
                         <div style="flex: 0.25; display: flex; flex-direction: column;">
@@ -148,11 +174,11 @@ export class MfdFmsFplnDep extends DisplayComponent<MfdFmsFplnDepProps> {
                             <div>
                                 <span class={{
                                     'mfd-value-green': true,
-                                    'mfd-value-tmpy': this.tmpyIsActive.get(),
-                                    'mfd-value-sec': this.secIsActive.get(),
+                                    'mfd-value-tmpy': this.tmpyActive,
+                                    'mfd-value-sec': this.secActive,
                                 }}
                                 >
-                                    AMOL5H
+                                    {this.rwySid}
                                 </span>
                             </div>
                         </div>
@@ -161,11 +187,11 @@ export class MfdFmsFplnDep extends DisplayComponent<MfdFmsFplnDepProps> {
                             <div>
                                 <span class={{
                                     'mfd-value-green': true,
-                                    'mfd-value-tmpy': this.tmpyIsActive.get(),
-                                    'mfd-value-sec': this.secIsActive.get(),
+                                    'mfd-value-tmpy': this.tmpyActive,
+                                    'mfd-value-sec': this.secActive,
                                 }}
                                 >
-                                    NONE
+                                    {this.rwyTrans}
                                 </span>
                             </div>
                         </div>
@@ -177,15 +203,7 @@ export class MfdFmsFplnDep extends DisplayComponent<MfdFmsFplnDepProps> {
                         onClick={() => null}
                         buttonStyle="width: 250px;"
                         idPrefix="f-pln-dep-rwy-btn"
-                        menuItems={Subject.create([{
-                            label: '14L 9843FT ILS',
-                            action: () => null,
-                        },
-                        {
-                            label: '14R 9843FT ILS',
-                            action: () => null,
-                        },
-                        ])}
+                        menuItems={this.rwyOptions}
                     />
                     <div style="width: 100px;" />
                     <Button
@@ -194,63 +212,7 @@ export class MfdFmsFplnDep extends DisplayComponent<MfdFmsFplnDepProps> {
                         disabled={this.sidDisabled}
                         buttonStyle="width: 140px;"
                         idPrefix="f-pln-dep-sid-btn"
-                        menuItems={Subject.create([{
-                            label: 'NONE',
-                            action: () => null,
-                        },
-                        {
-                            label: 'AFRI5A',
-                            action: () => null,
-                        },
-                        {
-                            label: 'AFRI5H',
-                            action: () => null,
-                        },
-                        {
-                            label: 'AMOL5A',
-                            action: () => null,
-                        },
-                        {
-                            label: 'AMOL5H',
-                            action: () => null,
-                        },
-                        {
-                            label: 'ANET5H',
-                            action: () => null,
-                        },
-                        {
-                            label: 'DEPE5A',
-                            action: () => null,
-                        },
-                        {
-                            label: 'DEPE5H',
-                            action: () => null,
-                        },
-                        {
-                            label: 'FINO5A',
-                            action: () => null,
-                        },
-                        {
-                            label: 'FINO5H',
-                            action: () => null,
-                        },
-                        {
-                            label: 'FIST5A',
-                            action: () => null,
-                        },
-                        {
-                            label: 'FIST5H',
-                            action: () => null,
-                        },
-                        {
-                            label: 'TEST1',
-                            action: () => null,
-                        },
-                        {
-                            label: 'TEST2',
-                            action: () => null,
-                        },
-                        ])}
+                        menuItems={this.sidOptions}
                     />
                     <div style="width: 50px;" />
                     <Button
@@ -259,71 +221,15 @@ export class MfdFmsFplnDep extends DisplayComponent<MfdFmsFplnDepProps> {
                         disabled={this.transDisabled}
                         buttonStyle="width: 130px;"
                         idPrefix="f-pln-dep-trans-btn"
-                        menuItems={Subject.create([{
-                            label: 'NONE',
-                            action: () => null,
-                        },
-                        {
-                            label: 'AFRI5A',
-                            action: () => null,
-                        },
-                        {
-                            label: 'AFRI5H',
-                            action: () => null,
-                        },
-                        {
-                            label: 'AMOL5A',
-                            action: () => null,
-                        },
-                        {
-                            label: 'AMOL5H',
-                            action: () => null,
-                        },
-                        {
-                            label: 'ANET5H',
-                            action: () => null,
-                        },
-                        {
-                            label: 'DEPE5A',
-                            action: () => null,
-                        },
-                        {
-                            label: 'DEPE5H',
-                            action: () => null,
-                        },
-                        {
-                            label: 'FINO5A',
-                            action: () => null,
-                        },
-                        {
-                            label: 'FINO5H',
-                            action: () => null,
-                        },
-                        {
-                            label: 'FIST5A',
-                            action: () => null,
-                        },
-                        {
-                            label: 'FIST5H',
-                            action: () => null,
-                        },
-                        {
-                            label: 'TEST1',
-                            action: () => null,
-                        },
-                        {
-                            label: 'TEST2',
-                            action: () => null,
-                        },
-                        ])}
+                        menuItems={this.transOptions}
                     />
                 </div>
                 <div style="flex-grow: 1;" />
-                <div style="display: flex; justify-content: flex-end; padding: 2px;">
-                    <Button label="TMPY F-PLN" onClick={() => null} buttonStyle="color: yellow" />
+                <div ref={this.tmpyInsertButtonDiv} style="display: flex; justify-content: flex-end; padding: 2px;">
+                    <Button label="TMPY F-PLN" onClick={() => this.props.flightPlanService.temporaryInsert()} buttonStyle="color: yellow" />
                 </div>
                 {/* end page content */}
-                <Footer bus={this.props.bus} uiService={this.props.uiService} />
+                <Footer bus={this.props.bus} uiService={this.props.uiService} flightPlanService={this.props.flightPlanService} />
             </>
         );
     }

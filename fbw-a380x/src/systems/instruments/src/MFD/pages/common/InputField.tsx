@@ -18,6 +18,7 @@ interface InputFieldProps<T> extends ComponentProps {
      */
     onModified?: (newValue: T) => void;
     onInput?: (newValue: string) => void; // Called for every character that is being typed
+    dataHandlerDuringValidation?: (newValue: T) => Promise<void>; // Function which modifies data within flight plan. Called during validation phase, after data type has been checked
     handleFocusBlurExternally?: boolean;
     containerStyle?: string;
     alignText?: 'flex-start' | 'center' | 'flex-end';
@@ -55,8 +56,11 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
     private isValidating = Subject.create(false);
 
     private onNewValue() {
-        // If currently editing, blur field
-        this.textInputRef.getOrDefault().blur();
+        // Don't update if field is being edited
+        if (this.isFocused.get() === true || this.isValidating.get() === true) {
+            return;
+        }
+
         // Reset modifiedFieldValue
         if (this.modifiedFieldValue.get() !== null) {
             this.modifiedFieldValue.set(null);
@@ -173,6 +177,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
                 this.onBlur(true);
             } else {
                 this.textInputRef.getOrDefault().blur();
+                this.onBlur();
             }
         }
     }
@@ -204,7 +209,6 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
                 const [formatted] = this.props.dataEntryFormat.format(this.props.value.get());
                 await this.validateAndUpdate(formatted);
             } else {
-                console.log('mod');
                 await this.validateAndUpdate(this.modifiedFieldValue.get());
             }
         }
@@ -232,16 +236,32 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
 
     private async validateAndUpdate(input: string) {
         this.isValidating.set(true);
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        this.modifiedFieldValue.set(null);
+
         const newValue = await this.props.dataEntryFormat.parse(input);
 
-        if (this.props.onModified) {
-            this.props.onModified(newValue);
+        let updateWasSuccessful = true;
+        const artificialWaitingTime = new Promise((resolve) => setTimeout(resolve, 500));
+        if (this.props.dataHandlerDuringValidation) {
+            try {
+                const realWaitingTime = this.props.dataHandlerDuringValidation(newValue);
+                await Promise.all([realWaitingTime, artificialWaitingTime]);
+            } catch {
+                updateWasSuccessful = false;
+                await artificialWaitingTime;
+            }
         } else {
-            this.props.value.set(newValue);
+            await artificialWaitingTime;
         }
 
+        if (updateWasSuccessful) {
+            if (this.props.onModified) {
+                this.props.onModified(newValue);
+            } else {
+                this.props.value.set(newValue);
+            }
+        }
+
+        this.modifiedFieldValue.set(null);
         this.isValidating.set(false);
     }
 
@@ -290,7 +310,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
             }
         }));
         this.subs.push(this.props.mandatory.sub((val) => {
-            if (val === true) {
+            if (val === true && !this.props.value.get()) {
                 this.textInputRef.getOrDefault().classList.add('mandatory');
             } else {
                 this.textInputRef.getOrDefault().classList.remove('mandatory');
@@ -306,14 +326,14 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
                 this.containerRef.getOrDefault().classList.add('disabled');
                 this.textInputRef.getOrDefault().classList.add('disabled');
 
-                if (this.props.mandatory.get() === true) {
+                if (this.props.mandatory.get() === true && !this.props.value.get()) {
                     this.textInputRef.getOrDefault().classList.remove('mandatory');
                 }
             } else {
                 this.containerRef.getOrDefault().classList.remove('disabled');
                 this.textInputRef.getOrDefault().classList.remove('disabled');
 
-                if (this.props.mandatory.get() === true) {
+                if (this.props.mandatory.get() === true && !this.props.value.get()) {
                     this.textInputRef.getOrDefault().classList.add('mandatory');
                 }
             }

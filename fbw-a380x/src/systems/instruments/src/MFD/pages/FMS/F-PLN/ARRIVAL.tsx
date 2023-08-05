@@ -35,24 +35,7 @@ export class MfdFmsFplnArr extends DisplayComponent<MfdFmsFplnArrProps> {
         super.onAfterRender(node);
 
         this.subs.push(this.props.uiService.activeUri.sub((val) => {
-            switch (val.category) {
-            case 'active':
-                this.activePageTitle.set('ACTIVE/F-PLN/ARRIVAL');
-                break;
-            case 'sec1':
-                this.activePageTitle.set('SEC1/F-PLN/ARRIVAL');
-                break;
-            case 'sec2':
-                this.activePageTitle.set('SEC2/F-PLN/ARRIVAL');
-                break;
-            case 'sec3':
-                this.activePageTitle.set('SEC3/F-PLN/ARRIVAL');
-                break;
-
-            default:
-                this.activePageTitle.set('ACTIVE/F-PLN/ARRIVAL');
-                break;
-            }
+            this.activePageTitle.set(`${val.category.toUpperCase()}/F-PLN/ARRIVAL`);
         }, true));
     }
 

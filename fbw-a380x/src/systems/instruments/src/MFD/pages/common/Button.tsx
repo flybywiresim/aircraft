@@ -12,7 +12,7 @@ export interface ButtonProps extends ComponentProps {
     menuItems?: Subscribable<ButtonMenuItem[]>; // When defining menu items, idPrefix has to be set
     showArrow?: boolean;
     idPrefix?: string;
-    disabled?: Subject<boolean>;
+    disabled?: Subscribable<boolean>;
     buttonStyle?: string;
     onClick: () => void;
 }
@@ -45,21 +45,19 @@ export class Button extends DisplayComponent<ButtonProps> {
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        if (!this.props.disabled) {
+        if (this.props.disabled === undefined) {
             this.props.disabled = Subject.create(false);
         }
         if (typeof this.props.label === 'string') {
             this.props.label = Subject.create(<span>{this.props.label}</span>);
         }
-        if (!this.props.menuItems) {
-            this.props.menuItems = Subject.create<ButtonMenuItem[]>([]);
-        } else if (!this.props.idPrefix) {
+        if (this.props.menuItems && !this.props.idPrefix) {
             console.error('Button: menuItems set without idPrefix.');
         }
-        if (!this.props.idPrefix) {
+        if (this.props.idPrefix === undefined) {
             this.props.idPrefix = '';
         }
-        if (!this.props.showArrow) {
+        if (this.props.showArrow === undefined) {
             this.props.showArrow = true;
         }
         this.buttonRef.instance.addEventListener('click', () => this.clickHandler());
@@ -73,60 +71,62 @@ export class Button extends DisplayComponent<ButtonProps> {
         }, true));
 
         // Menu handling
-        this.subs.push(this.props.menuItems.sub((items) => {
-            // Delete click handler, delete dropdownMenuRef children, render dropdownMenuRef children,
-            this.renderedMenuItems?.forEach((val, i) => {
-                document.getElementById(`${this.props.idPrefix}_${i}`).removeEventListener('click', () => {
-                    val.action();
-                    this.dropdownIsOpened.set(false);
+        if (this.props.menuItems !== undefined) {
+            this.subs.push(this.props.menuItems.sub((items) => {
+                // Delete click handler, delete dropdownMenuRef children, render dropdownMenuRef children,
+                this.renderedMenuItems?.forEach((val, i) => {
+                    document.getElementById(`${this.props.idPrefix}_${i}`).removeEventListener('click', () => {
+                        val.action();
+                        this.dropdownIsOpened.set(false);
+                    });
                 });
-            });
 
-            // Delete dropdownMenuRef's children
-            while (this.dropdownMenuRef.instance.firstChild) {
-                this.dropdownMenuRef.instance.removeChild(this.dropdownMenuRef.instance.firstChild);
-            }
+                // Delete dropdownMenuRef's children
+                while (this.dropdownMenuRef.instance.firstChild) {
+                    this.dropdownMenuRef.instance.removeChild(this.dropdownMenuRef.instance.firstChild);
+                }
 
-            this.renderedMenuItems = items;
+                this.renderedMenuItems = items;
 
-            // Render dropdownMenuRef's children
-            const itemNodes: VNode = (
-                <div>
-                    {items?.map<VNode>((el, idx) => (
-                        <span id={`${this.props.idPrefix}_${idx}`} class="mfd-dropdown-menu-element">
-                            {el.label}
-                        </span>
-                    ), this)}
-                </div>
-            );
-            FSComponent.render(itemNodes, this.dropdownMenuRef.instance);
+                // Render dropdownMenuRef's children
+                const itemNodes: VNode = (
+                    <div>
+                        {items?.map<VNode>((el, idx) => (
+                            <span id={`${this.props.idPrefix}_${idx}`} class="mfd-dropdown-menu-element">
+                                {el.label}
+                            </span>
+                        ), this)}
+                    </div>
+                );
+                FSComponent.render(itemNodes, this.dropdownMenuRef.instance);
 
-            // Add click event listener
-            items?.forEach((val, i) => {
-                document.getElementById(`${this.props.idPrefix}_${i}`).addEventListener('click', () => {
-                    val.action();
-                    this.dropdownIsOpened.set(false);
+                // Add click event listener
+                items?.forEach((val, i) => {
+                    document.getElementById(`${this.props.idPrefix}_${i}`).addEventListener('click', () => {
+                        val.action();
+                        this.dropdownIsOpened.set(false);
+                    });
                 });
-            });
 
-            // Check if menu would overflow vertically (i.e. leave screen at the bottom). If so, open menu upwards
-            // Open menu for a split second to measure size
-            this.dropdownMenuRef.instance.style.display = 'block';
-            this.buttonRef.instance.classList.add('opened');
+                // Check if menu would overflow vertically (i.e. leave screen at the bottom). If so, open menu upwards
+                // Open menu for a split second to measure size
+                this.dropdownMenuRef.instance.style.display = 'block';
+                this.buttonRef.instance.classList.add('opened');
 
-            // Check if menu leaves screen at the bottom, reposition if needed
-            const boundingRect = this.dropdownMenuRef.instance.getBoundingClientRect();
-            const overflowsVertically = (boundingRect.top + boundingRect.height) > 1024;
-            this.menuOpensUpwards.set(overflowsVertically);
+                // Check if menu leaves screen at the bottom, reposition if needed
+                const boundingRect = this.dropdownMenuRef.instance.getBoundingClientRect();
+                const overflowsVertically = (boundingRect.top + boundingRect.height) > 1024;
+                this.menuOpensUpwards.set(overflowsVertically);
 
-            if (overflowsVertically === true) {
-                this.dropdownMenuRef.instance.style.top = `${Math.round(-boundingRect.height)}px`;
-            }
+                if (overflowsVertically === true) {
+                    this.dropdownMenuRef.instance.style.top = `${Math.round(-boundingRect.height)}px`;
+                }
 
-            // Close again
-            this.dropdownMenuRef.instance.style.display = 'none';
-            this.buttonRef.instance.classList.remove('opened');
-        }, true));
+                // Close again
+                this.dropdownMenuRef.instance.style.display = 'none';
+                this.buttonRef.instance.classList.remove('opened');
+            }, true));
+        }
 
         this.subs.push(this.props.label?.sub((val) => {
             while (this.buttonRef.instance.firstChild) {
@@ -134,7 +134,7 @@ export class Button extends DisplayComponent<ButtonProps> {
             }
 
             // If menuItems is defined, render as button with arrow on the right side
-            if (this.props.menuItems.get().length > 0) {
+            if (this.props.menuItems !== undefined && this.props.showArrow === true) {
                 const n: VNode = (
                     <div class="mfd-fms-fpln-button-dropdown">
                         <span class="mfd-fms-fpln-button-dropdown-label">
@@ -161,7 +161,7 @@ export class Button extends DisplayComponent<ButtonProps> {
         });
 
         this.buttonRef.instance.addEventListener('click', () => {
-            if (this.props.menuItems.get().length > 0 && !this.props.disabled.get()) {
+            if (this.props.menuItems && this.props.menuItems.get().length > 0 && !this.props.disabled.get()) {
                 this.dropdownIsOpened.set(!this.dropdownIsOpened.get());
             }
         });
