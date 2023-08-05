@@ -80,6 +80,8 @@
 
 !/scripts/**
 
+!/build-utils.js
+
 !/tools/**
 /tools/fdr2csv/*.exe
 /tools/fdr2csv/build/
