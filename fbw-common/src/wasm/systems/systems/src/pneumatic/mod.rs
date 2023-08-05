@@ -311,7 +311,7 @@ impl ControllerSignal<TargetPressureTemperatureSignal> for EngineCompressionCham
 impl EngineCompressionChamberController {
     const HEAT_CAPACITY_RATIO: f64 = 1.4; // Adiabatic index of dry air
     const INTAKE_EFFICIENCY: f64 = 0.93;
-    const COMPRESSOR_EFFICIENCY: f64 = 0.87;
+    const COMPRESSOR_EFFICIENCY: f64 = 0.8;
 
     pub fn new(n1_contribution_factor: f64, n2_contribution_factor: f64) -> Self {
         Self {
@@ -327,6 +327,8 @@ impl EngineCompressionChamberController {
         context: &UpdateContext,
         engine: &(impl EngineCorrectedN1 + EngineCorrectedN2),
     ) {
+        // From https://liu.diva-portal.org/smash/get/diva2:1682001/FULLTEXT01.pdf
+        // The paper uses constant compression factors, the dependence on N1/N2 is made up.
         let lp_cpr = (self.n1_contribution_factor * engine.corrected_n1().get::<ratio>()).exp();
         let hp_cpr = (self.n2_contribution_factor * engine.corrected_n2().get::<ratio>()).exp();
 

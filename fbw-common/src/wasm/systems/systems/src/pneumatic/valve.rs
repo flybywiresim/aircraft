@@ -435,7 +435,7 @@ pub struct PneumaticContainerConnector {
     transfer_speed_factor: Ratio,
 }
 impl PneumaticContainerConnector {
-    const TRANSFER_SPEED: f64 = 5.;
+    const TRANSFER_SPEED: f64 = 10.;
     const HEAT_TRANSFER_SPEED: f64 = 2.5;
     const HEAT_TRANSFER_COEFF: f64 = 1e-2;
 
