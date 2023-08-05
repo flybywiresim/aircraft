@@ -4216,30 +4216,6 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     /**
-     * Parse a runway string and return the location of the threshold
-     * Returns undefined if invalid format or not in database
-     * @param {string} place
-     * @throws {McduMessage}
-     * @returns {WayPoint}
-     */
-    async parseRunway(place) {
-        const rwy = place.match(/^([A-Z]{4})([0-9]{2}[RCL]?)$/);
-        if (rwy !== null) {
-            const airport = await this.dataManager.GetAirportByIdent(rwy[1]);
-            if (airport) {
-                for (let i = 0; i < airport.infos.oneWayRunways.length; i++) {
-                    if (Avionics.Utils.formatRunway(airport.infos.oneWayRunways[i].designation) === rwy[2]) {
-                        return this.dataManager.createRunwayWaypoint(airport, airport.infos.oneWayRunways[i]);
-                    }
-                }
-                throw NXSystemMessages.notInDatabase;
-            }
-        } else {
-            throw NXSystemMessages.notInDatabase;
-        }
-    }
-
-    /**
      * Check if a place is the correct format for a latitude/longitude
      * @param {string} s
      * @returns true if valid lat/lon format
@@ -4295,7 +4271,7 @@ class FMCMainDisplay extends BaseAirliners {
      */
     async parsePlace(place) {
         if (this.isRunwayFormat(place)) {
-            return this.parseRunway(place);
+            return Fmgc.WaypointEntryUtils.parseRunway(place);
         }
 
         return new Promise((resolve, reject) => {
