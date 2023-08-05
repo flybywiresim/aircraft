@@ -76,13 +76,13 @@ export const ThirdPartyOptionsPage = () => {
 
     const handleUsernameInput = (value: string) => {
         getSimbriefUserId(value).then((response) => {
-            toast.success(`${t('Settings.AtsuAoc.YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo')} ${response}`);
+            toast.success(`${t('Settings.ThirdPartyOptions.YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo')} ${response}`);
 
             setOverrideSimbriefUserID(response);
             setOverrideSimbriefDisplay(response);
         }).catch(() => {
             setOverrideSimbriefDisplay(overrideSimbriefUserID);
-            toast.error(t('Settings.AtsuAoc.PleaseCheckThatYouHaveCorrectlyEnteredYourSimbBriefUsernameOrPilotId'));
+            toast.error(t('Settings.ThirdPartyOptions.PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId'));
         });
     };
 
