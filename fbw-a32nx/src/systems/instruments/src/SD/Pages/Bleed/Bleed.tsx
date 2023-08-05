@@ -46,9 +46,9 @@ export const BleedPage: FC = () => {
     }
 
     const [engine1PRValveOpen] = useSimVar('L:A32NX_PNEU_ENG_1_PR_VALVE_OPEN', 'bool', 500);
-    const engine1PRValveFullyClosed5s = useConfirmedState(!engine1PRValveOpen, 5_000);
+    const engine1PRValveFullyClosed5s = useConfirmedState(!engine1PRValveOpen, 5_000, !engine1PRValveOpen);
     const [engine2PRValveOpen] = useSimVar('L:A32NX_PNEU_ENG_2_PR_VALVE_OPEN', 'bool', 500);
-    const engine2PRValveFullyClosed5s = useConfirmedState(!engine2PRValveOpen, 5_000);
+    const engine2PRValveFullyClosed5s = useConfirmedState(!engine2PRValveOpen, 5_000, !engine2PRValveOpen);
     const [apuBleedAirValveOpen] = useSimVar('L:A32NX_APU_BLEED_AIR_VALVE_OPEN', 'bool', 500);
     const [apuMasterSwitchOn] = useSimVar('L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON', 'bool', 500);
     const [apuIsAvailable] = useSimVar('L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE', 'bool', 500);
