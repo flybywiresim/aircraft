@@ -770,9 +770,13 @@ impl BleedMonitoringComputerChannel {
             self.overheat_monitor
                 .update(context, precooler_outlet_temperature);
 
-            force_hp_bleed = !wing_anti_ice.is_wai_valve_closed(self.engine_number - 1)
+            force_hp_bleed = (!wing_anti_ice.is_wai_valve_closed(self.engine_number - 1)
                 && precooler_outlet_temperature.get::<degree_celsius>()
-                    < Self::FORCE_HP_BLEED_WAI_THRESHOLD_C;
+                    < Self::FORCE_HP_BLEED_WAI_THRESHOLD_C)
+                || (context.pressure_altitude().get::<foot>() < 7000.
+                    && !context.is_on_ground()
+                    && !self.flight_phase_loop.is_climb_active()
+                    && !self.flight_phase_loop.is_hold_active());
 
             force_ip_bleed = precooler_outlet_temperature.get::<degree_celsius>()
                 > Self::FORCE_HP_BLEED_ISOLATION_C
@@ -2301,6 +2305,7 @@ pub mod tests {
         }
 
         fn in_isa_atmosphere(mut self, altitude: Length) -> Self {
+            self.set_pressure_altitude(altitude);
             self.set_ambient_pressure(InternationalStandardAtmosphere::pressure_at_altitude(
                 altitude,
             ));
@@ -2359,6 +2364,18 @@ pub mod tests {
             self.write_by_name("GENERAL ENG STARTER ACTIVE:2", true);
             self.write_by_name("TURB ENG CORRECTED N1:2", Ratio::new::<ratio>(n1));
             self.write_by_name("ENGINE_STATE:2", EngineState::On);
+
+            self
+        }
+
+        fn eng1_n2(mut self, n2: f64) -> Self {
+            self.write_by_name("TURB ENG CORRECTED N2:1", Ratio::new::<ratio>(n2));
+
+            self
+        }
+
+        fn eng2_n2(mut self, n2: f64) -> Self {
+            self.write_by_name("TURB ENG CORRECTED N2:2", Ratio::new::<ratio>(n2));
 
             self
         }
@@ -2755,6 +2772,14 @@ pub mod tests {
             })
         }
 
+        fn pack_temperature(&self, engine_number: usize) -> ThermodynamicTemperature {
+            self.query(|a| {
+                a.pneumatic.packs[engine_number - 1]
+                    .pack_container
+                    .temperature()
+            })
+        }
+
         fn cross_bleed_valve_is_powered_for_automatic_control(&self) -> bool {
             self.query(|a| {
                 a.pneumatic
@@ -2872,18 +2897,22 @@ pub mod tests {
     #[test]
     #[ignore]
     fn full_graphing_test() {
-        let alt = Length::new::<foot>(0.);
+        let alt = Length::new::<foot>(10000.);
         let ambient_pressure = InternationalStandardAtmosphere::pressure_at_altitude(alt);
         println!("Ambient pressure: {} psi", ambient_pressure.get::<psi>());
 
         let mut test_bed = test_bed_with()
-            .eng1_n1(0.2)
-            .and_eng1_n2_based_on_n1()
-            .eng2_n1(0.2)
-            .and_eng2_n2_based_on_n1()
             .in_isa_atmosphere(alt)
+            .eng1_n1(0.6)
+            .and_eng1_n2_based_on_n1()
+            .eng2_n1(0.6)
+            .and_eng2_n2_based_on_n1()
+            .mach_number(MachNumber(0.4))
             .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Auto)
             .both_packs_auto();
+
+        test_bed.set_on_ground(false);
+        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(1000.));
 
         let mut time_points = Vec::new();
         let mut high_pressures = Vec::new();
@@ -2894,6 +2923,7 @@ pub mod tests {
         let mut precooler_outlet_pressures = Vec::new(); // Precooler outlet pressure
         let mut precooler_supply_pressures = Vec::new(); // Precooler cooling air pressure
         let mut engine_starter_container_pressures = Vec::new(); // Precooler cooling air pressure
+        let mut pack_container_pressures = Vec::new();
         let mut intermediate_pressure_compressor_temperatures = Vec::new();
         let mut high_pressure_compressor_temperatures = Vec::new(); // Transfer temperature (before PRV)
         let mut transfer_temperatures = Vec::new(); // Precooler inlet temperature
@@ -2902,6 +2932,7 @@ pub mod tests {
         let mut precooler_outlet_temperatures = Vec::new(); // Precooler cooling air temperature
         let mut precooler_supply_temperatures = Vec::new();
         let mut engine_starter_container_temperatures = Vec::new();
+        let mut pack_container_temperatures = Vec::new();
         let mut high_pressure_valve_open_amounts = Vec::new();
         let mut pressure_regulating_valve_open_amounts = Vec::new();
         let mut intermediate_pressure_valve_open_amounts = Vec::new();
@@ -2912,7 +2943,7 @@ pub mod tests {
         let update_step_ms = 32;
         let num_steps = 5000;
 
-        let set_toga_thrust_at_step = 2500;
+        let set_toga_thrust_at_step = 1500;
         // 8s * 1000 steps / 16 ms = 500 steps
         let n1_profile_timesteps: [f64; 2] = [set_toga_thrust_at_step as f64, 2750.];
         // let n1_profile: [f64; 2] = [0.2, 0.87];
@@ -2921,19 +2952,29 @@ pub mod tests {
         for i in 1..num_steps {
             time_points.push((i * update_step_ms) as f64);
 
-            // if i == 2500 {
-            //     test_bed =
-            //         test_bed.set_apu_bleed_valve_signal(ApuBleedAirValveSignal::new_closed());
+            if i == 2000 {
+                // test_bed =
+                //     test_bed.set_apu_bleed_valve_signal(ApuBleedAirValveSignal::new_closed());
+                // test_bed = test_bed.eng1_n1(0.8).and_eng1_n2_based_on_n1()#
+                // test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(1000.));
+            }
+
+            // if i > set_toga_thrust_at_step {
+            //     let n1 = interpolation(&n1_profile_timesteps, &n1_profile, i as f64);
+            //     test_bed = test_bed
+            //         .eng1_n1(n1)
+            //         .and_eng1_n2_based_on_n1()
+            //         .eng2_n1(n1)
+            //         .and_eng2_n2_based_on_n1()
             // }
 
-            if i > set_toga_thrust_at_step {
-                let n1 = interpolation(&n1_profile_timesteps, &n1_profile, i as f64);
-                test_bed = test_bed
-                    .eng1_n1(n1)
-                    .and_eng1_n2_based_on_n1()
-                    .eng2_n1(n1)
-                    .and_eng2_n2_based_on_n1()
-            }
+            // if i == 3000 {
+            //     // test_bed =
+            //     //     test_bed.set_apu_bleed_valve_signal(ApuBleedAirValveSignal::new_closed());
+            //     // test_bed = test_bed.eng1_n1(0.8).and_eng1_n2_based_on_n1()#
+            //     test_bed.set_on_ground(false);
+            //     test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(1000.));
+            // }
 
             high_pressures.push((test_bed.hp_pressure(1) - ambient_pressure).get::<psi>());
             intermediate_pressures.push((test_bed.ip_pressure(1) - ambient_pressure).get::<psi>());
@@ -2950,6 +2991,8 @@ pub mod tests {
             engine_starter_container_pressures.push(
                 (test_bed.engine_starter_container_pressure(1) - ambient_pressure).get::<psi>(),
             );
+            pack_container_pressures
+                .push((test_bed.pack_pressure(1) - ambient_pressure).get::<psi>());
 
             intermediate_pressure_compressor_temperatures
                 .push(test_bed.ip_temperature(1).get::<degree_celsius>());
@@ -2977,6 +3020,7 @@ pub mod tests {
                     .engine_starter_container_temperature(1)
                     .get::<degree_celsius>(),
             );
+            pack_container_temperatures.push(test_bed.pack_temperature(1).get::<degree_celsius>());
 
             high_pressure_valve_open_amounts.push(test_bed.query(|aircraft| {
                 aircraft.pneumatic.engine_systems[0]
@@ -3042,6 +3086,11 @@ pub mod tests {
                 .get::<degree_celsius>()
         );
 
+        println!(
+            "Final PS3 pressure: {:.2} psia",
+            test_bed.hp_pressure(1).get::<psi>()
+        );
+
         // If anyone is wondering, I am using python to plot pressure curves. This will be removed once the model is complete.
         let data = vec![
             time_points,
@@ -3053,6 +3102,7 @@ pub mod tests {
             precooler_outlet_pressures,
             precooler_supply_pressures,
             engine_starter_container_pressures,
+            pack_container_pressures,
             high_pressure_compressor_temperatures,
             intermediate_pressure_compressor_temperatures,
             transfer_temperatures,
@@ -3061,6 +3111,7 @@ pub mod tests {
             precooler_outlet_temperatures,
             precooler_supply_temperatures,
             engine_starter_container_temperatures,
+            pack_container_temperatures,
             high_pressure_valve_open_amounts,
             pressure_regulating_valve_open_amounts,
             intermediate_pressure_valve_open_amounts,
@@ -4318,16 +4369,18 @@ pub mod tests {
 
     #[test]
     fn forced_hp_bleed_with_wai_on() {
-        let altitude = Length::new::<foot>(10000.);
+        let altitude = Length::new::<foot>(0.);
 
         let mut test_bed = test_bed_with()
             .in_isa_atmosphere(altitude)
-            .eng1_n1(0.7)
+            .eng1_n1(0.5)
             .and_eng1_n2_based_on_n1()
-            .eng2_n1(0.7)
-            .and_eng2_n2_based_on_n1();
+            .eng2_n1(0.5)
+            .and_eng2_n2_based_on_n1()
+            .both_packs_auto()
+            .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Auto);
 
-        test_bed.set_on_ground(false);
+        test_bed.set_on_ground(true);
         test_bed = test_bed.and_stabilize();
 
         assert!(!test_bed.hp_valve_is_open(1));
@@ -4428,7 +4481,7 @@ pub mod tests {
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(500.));
         test_bed.run_multiple_frames(Duration::from_secs(5));
         // >25000 ft, so we don't trigger the HOLD phase
-        test_bed.set_pressure_altitude(Length::new::<foot>(26000.));
+        test_bed = test_bed.in_isa_atmosphere(Length::new::<foot>(26000.));
 
         // Should not be in climb phase yet
         assert!(!test_bed.bmc_in_low_temperature_regulation(1));
@@ -4451,6 +4504,7 @@ pub mod tests {
     #[test]
     fn bmc_hold_phase_detection() {
         let mut test_bed = test_bed_with()
+            .in_isa_atmosphere(Length::new::<foot>(20000.))
             .eng1_n1(0.7)
             .and_eng1_n2_based_on_n1()
             .eng2_n1(0.7)
@@ -4458,7 +4512,6 @@ pub mod tests {
 
         test_bed.set_on_ground(false);
         test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(0.));
-        test_bed.set_pressure_altitude(Length::new::<foot>(20000.));
 
         // Should be in hold phase
         test_bed.run_multiple_frames(Duration::from_secs(60));
