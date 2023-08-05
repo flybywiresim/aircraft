@@ -54,6 +54,8 @@ export abstract class BaseFlightPlan {
 
     public pendingAirways: PendingAirways | undefined;
 
+    private subscriptions: Subscription[] = [];
+
     constructor(public readonly index: number, public readonly bus: EventBus) {
         this.syncPub = this.bus.getPublisher<FlightPlanSyncEvents>();
 
@@ -64,7 +66,7 @@ export abstract class BaseFlightPlan {
         // FIXME we need to destroy those subscriptions, this is a memory leak
         // FIXME we should not be doing this here anyway...
 
-        subs.on('flightPlan.setActiveLegIndex').handle((event) => {
+        this.subscriptions.push(subs.on('flightPlan.setActiveLegIndex').handle((event) => {
             if (!this.ignoreSync) {
                 if (event.planIndex !== this.index || isAlternatePlan !== event.forAlternate) {
                     return;
@@ -74,9 +76,9 @@ export abstract class BaseFlightPlan {
 
                 this.incrementVersion();
             }
-        });
+        }));
 
-        subs.on('flightPlan.setSegmentLegs').handle((event) => {
+        this.subscriptions.push(subs.on('flightPlan.setSegmentLegs').handle((event) => {
             if (!this.ignoreSync) {
                 if (event.planIndex !== this.index || isAlternatePlan !== event.forAlternate) {
                     return;
@@ -95,9 +97,9 @@ export abstract class BaseFlightPlan {
 
                 this.incrementVersion();
             }
-        });
+        }));
 
-        subs.on('flightPlan.legDefinitionEdit').handle((event) => {
+        this.subscriptions.push(subs.on('flightPlan.legDefinitionEdit').handle((event) => {
             if (!this.ignoreSync) {
                 if (event.planIndex !== this.index || isAlternatePlan !== event.forAlternate) {
                     return;
@@ -109,9 +111,9 @@ export abstract class BaseFlightPlan {
 
                 this.incrementVersion();
             }
-        });
+        }));
 
-        subs.on('flightPlan.setLegCruiseStep').handle((event) => {
+        this.subscriptions.push(subs.on('flightPlan.setLegCruiseStep').handle((event) => {
             if (!this.ignoreSync) {
                 if (event.planIndex !== this.index || isAlternatePlan !== event.forAlternate) {
                     return;
@@ -123,9 +125,9 @@ export abstract class BaseFlightPlan {
 
                 this.incrementVersion();
             }
-        });
+        }));
 
-        subs.on('flightPlan.setFixInfoEntry').handle((event) => {
+        this.subscriptions.push(subs.on('flightPlan.setFixInfoEntry').handle((event) => {
             if (!this.ignoreSync) {
                 if (event.planIndex !== this.index || isAlternatePlan !== event.forAlternate) {
                     return;
@@ -137,7 +139,14 @@ export abstract class BaseFlightPlan {
                     this.incrementVersion();
                 }
             }
-        });
+        }));
+    }
+
+    destroy() {
+        for (const subscription of this.subscriptions) {
+            console.log('subscription destroyed!');
+            subscription.destroy();
+        }
     }
 
     get legCount() {

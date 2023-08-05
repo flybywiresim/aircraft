@@ -8,7 +8,7 @@ import { WaypointStats } from '@fmgc/flightplanning/data/flightplan';
 import { Arinc429Word } from '@flybywiresim/fbw-sdk';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { EventBus, Publisher } from '@microsoft/msfs-sdk';
-import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
+import { FlightPlanInterface } from '@fmgc/flightplanning/new/FlightPlanInterface';
 import { FlightPlan } from '@fmgc/flightplanning/new/plans/FlightPlan';
 
 export class FlightPlanSynchronization {
@@ -92,7 +92,7 @@ export class FlightPlanSynchronization {
 
     constructor(
         private readonly bus: EventBus,
-        private readonly flightPlanService: FlightPlanService,
+        private readonly flightPlanService: FlightPlanInterface,
         private readonly flightPhaseManager: FlightPhaseManager,
     ) {
         this.publisher = this.bus.getPublisher<FmsAtcMessages>();

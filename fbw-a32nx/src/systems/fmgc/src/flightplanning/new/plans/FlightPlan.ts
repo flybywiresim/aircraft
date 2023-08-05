@@ -36,6 +36,12 @@ export class FlightPlan extends BaseFlightPlan {
      */
     fixInfos: readonly FixInfoEntry[] = [];
 
+    destroy() {
+        super.destroy();
+
+        this.alternateFlightPlan.destroy();
+    }
+
     clone(newIndex: number): FlightPlan {
         const newPlan = FlightPlan.empty(newIndex, this.bus);
 
