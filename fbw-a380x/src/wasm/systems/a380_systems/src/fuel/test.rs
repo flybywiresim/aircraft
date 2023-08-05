@@ -59,21 +59,21 @@ impl FuelTestBed {
     }
 
     fn fuel_low(mut self) -> Self {
-        self.write_by_name("FUEL TANK LEFT MAIN QUANTITY", 324. * FUEL_GALLONS_TO_KG);
-        self.write_by_name("FUEL TANK LEFT AUX QUANTITY", 150. * FUEL_GALLONS_TO_KG);
-        self.write_by_name("FUEL TANK RIGHT MAIN QUANTITY", 324. * FUEL_GALLONS_TO_KG);
-        self.write_by_name("FUEL TANK RIGHT AUX QUANTITY", 150. * FUEL_GALLONS_TO_KG);
-        self.write_by_name("FUEL TANK CENTER QUANTITY", 0.);
+        self.write_by_name("FUELSYSTEM TANK QUANTITY:1", 324. * FUEL_GALLONS_TO_KG);
+        self.write_by_name("FUELSYSTEM TANK QUANTITY:2", 150. * FUEL_GALLONS_TO_KG);
+        self.write_by_name("FUELSYSTEM TANK QUANTITY:3", 324. * FUEL_GALLONS_TO_KG);
+        self.write_by_name("FUELSYSTEM TANK QUANTITY:4", 150. * FUEL_GALLONS_TO_KG);
+        self.write_by_name("FUELSYSTEM TANK QUANTITY:5", 0.);
 
         self
     }
 
     fn fuel_high(mut self) -> Self {
-        self.write_by_name("FUEL TANK LEFT MAIN QUANTITY", 1600. * FUEL_GALLONS_TO_KG);
-        self.write_by_name("FUEL TANK LEFT AUX QUANTITY", 200. * FUEL_GALLONS_TO_KG);
-        self.write_by_name("FUEL TANK RIGHT MAIN QUANTITY", 1600. * FUEL_GALLONS_TO_KG);
-        self.write_by_name("FUEL TANK RIGHT AUX QUANTITY", 200. * FUEL_GALLONS_TO_KG);
-        self.write_by_name("FUEL TANK CENTER QUANTITY", 2000.);
+        self.write_by_name("FUELSYSTEM TANK QUANTITY:1", 1600. * FUEL_GALLONS_TO_KG);
+        self.write_by_name("FUELSYSTEM TANK QUANTITY:2", 200. * FUEL_GALLONS_TO_KG);
+        self.write_by_name("FUELSYSTEM TANK QUANTITY:3", 1600. * FUEL_GALLONS_TO_KG);
+        self.write_by_name("FUELSYSTEM TANK QUANTITY:4", 200. * FUEL_GALLONS_TO_KG);
+        self.write_by_name("FUELSYSTEM TANK QUANTITY:5", 2000.);
 
         self
     }
@@ -121,8 +121,8 @@ fn low_fuel() {
 
     assert_eq!(
         (test_bed.fore_aft_center_of_gravity() * 100.).round() / 100.,
-        -10.82,
-        "Expected cg: -10.82, cg: {}",
+        -10.43,
+        "Expected cg: -10.43, cg: {}",
         (test_bed.fore_aft_center_of_gravity() * 100.).round() / 100.,
     );
 }
@@ -134,8 +134,8 @@ fn high_fuel() {
 
     assert_eq!(
         (test_bed.fore_aft_center_of_gravity() * 100.).round() / 100.,
-        -8.30,
-        "Expected cg: -8.30, cg: {}",
+        -7.82,
+        "Expected cg: -7.82, cg: {}",
         (test_bed.fore_aft_center_of_gravity() * 100.).round() / 100.,
     );
 }

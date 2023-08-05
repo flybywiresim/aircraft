@@ -474,8 +474,8 @@ fn empty() {
     println!("ZFW CG MAC: {}", zfw_cg_mac);
     println!("GW CG MAC: {}", gw_cg_mac);
 
-    assert_eq!(zfw_cg_mac, 29.98);
-    assert_eq!(gw_cg_mac, 29.98);
+    assert_eq!(zfw_cg_mac, 36.2);
+    assert_eq!(gw_cg_mac, 36.2);
     // Equal when fuel is empty
     assert_eq!(zfw_cg_mac, gw_cg_mac);
 }
@@ -497,10 +497,10 @@ fn low_fuel_half_pax() {
     println!("ZFW CG MAC: {}", zfw_cg_mac);
     println!("GW CG MAC: {}", gw_cg_mac);
 
-    assert!(zfw_cg_mac > 30.);
-    assert!(zfw_cg_mac < 30.5);
-    assert!(gw_cg_mac > 30.5);
-    assert!(gw_cg_mac < 31.);
+    assert!(zfw_cg_mac > 36.);
+    assert!(zfw_cg_mac < 37.);
+    assert!(gw_cg_mac > 37.);
+    assert!(gw_cg_mac < 38.);
 }
 
 #[test]
@@ -520,10 +520,10 @@ fn high_fuel_full_pax_full_cargo() {
     println!("ZFW CG MAC: {}", zfw_cg_mac);
     println!("GW CG MAC: {}", gw_cg_mac);
 
-    assert!(zfw_cg_mac > 35.);
-    assert!(zfw_cg_mac < 36.);
-    assert!(gw_cg_mac > 32.);
-    assert!(gw_cg_mac < 33.);
+    assert!(zfw_cg_mac > 38.);
+    assert!(zfw_cg_mac < 39.);
+    assert!(gw_cg_mac > 39.);
+    assert!(gw_cg_mac < 40.);
 }
 
 #[test]
@@ -546,13 +546,13 @@ fn half_pax_cargo_target_full() {
     println!("ZFW CG MAC: {} => {}", zfw_cg_mac, target_zfw_cg_mac);
     println!("GW CG MAC: {} => {}", gw_cg_mac, target_gw_cg_mac);
 
-    assert!(zfw_cg_mac > 33.);
-    assert!(zfw_cg_mac < 34.);
-    assert!(gw_cg_mac > 33.5);
-    assert!(gw_cg_mac < 34.);
+    assert!(zfw_cg_mac > 37.);
+    assert!(zfw_cg_mac < 38.);
+    assert!(gw_cg_mac > 37.5);
+    assert!(gw_cg_mac < 38.);
 
-    assert!(target_zfw_cg_mac > 35.5);
-    assert!(target_zfw_cg_mac < 36.);
-    assert!(target_gw_cg_mac > 35.5);
-    assert!(target_gw_cg_mac < 36.);
+    assert!(target_zfw_cg_mac > 38.);
+    assert!(target_zfw_cg_mac < 39.);
+    assert!(target_gw_cg_mac > 38.);
+    assert!(target_gw_cg_mac < 39.);
 }
