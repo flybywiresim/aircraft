@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 class CDUNewWaypoint {
     /**
      * Callback when a new waypoint has been created, or aborted
@@ -7,7 +11,6 @@ class CDUNewWaypoint {
      */
     /**
      * New Waypoint Page
-     * @param {A320_CDU_MainDisplay} mcdu
      * @param {NewWaypointDoneCallback} doneCallback callback when the user is finished with the page
      * @param {any} _inProgressData private data used by the page
      */
