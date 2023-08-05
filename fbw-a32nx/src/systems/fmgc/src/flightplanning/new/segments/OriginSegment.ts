@@ -80,7 +80,7 @@ export class OriginSegment extends FlightPlanSegment {
                     const bearing = bearingTo(this.runway.thresholdLocation, firstDepartureLeg.terminationWaypoint().location);
                     const diff = MathUtils.diffAngle(bearing, this.runway.bearing);
 
-                    addRunwayLeg = Math.abs(diff) < 0.5;
+                    addRunwayLeg = Math.abs(diff) < 1.0;
                 }
             }
         }
