@@ -211,7 +211,6 @@ export class FlightPlanLeg {
     static fromProcedureLeg(segment: FlightPlanSegment, procedureLeg: ProcedureLeg, procedureIdent: string): FlightPlanLeg {
         const [ident, annotation] = procedureLegIdentAndAnnotation(procedureLeg, procedureIdent);
 
-        // TODO somehow we need to also return a discont for legs combinations that always have a discontinuity between them
         const flightPlanLeg = new FlightPlanLeg(segment, procedureLeg, ident, annotation, undefined, procedureLeg.rnp, procedureLeg.overfly);
 
         let constraintType: WaypointConstraintType;

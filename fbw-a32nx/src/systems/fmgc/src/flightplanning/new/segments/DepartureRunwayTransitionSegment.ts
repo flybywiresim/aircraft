@@ -27,10 +27,12 @@ export class DepartureRunwayTransitionSegment extends ProcedureSegment<Procedure
             const matchingTransition = ident !== undefined ? existingDeparture.runwayTransitions.find((it) => it.ident === ident) : undefined;
 
             this.departureRunwayTransition = matchingTransition;
+        } else {
+            this.departureRunwayTransition = undefined;
         }
 
         if (!skipUpdateLegs) {
-            const legs = this.departureRunwayTransition?.legs.map((it) => FlightPlanLeg.fromProcedureLeg(this, it, this.departureRunwayTransition.ident)) ?? [];
+            const legs = this.departureRunwayTransition?.legs.map((it) => FlightPlanLeg.fromProcedureLeg(this, it, existingDeparture?.ident ?? '')) ?? [];
 
             this.allLegs.length = 0;
             this.allLegs.push(...legs);

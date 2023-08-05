@@ -8,6 +8,7 @@ import { FlightPlanElement, FlightPlanLeg } from '@fmgc/flightplanning/new/legs/
 import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { ProcedureSegment } from '@fmgc/flightplanning/new/segments/ProcedureSegment';
+import { ApproachUtils } from '@flybywiresim/fbw-sdk';
 import { NavigationDatabaseService } from '../NavigationDatabaseService';
 
 export class ApproachSegment extends ProcedureSegment<Approach> {
@@ -32,7 +33,7 @@ export class ApproachSegment extends ProcedureSegment<Approach> {
             if (!skipUpdateLegs) {
                 await this.flightPlan.approachViaSegment.setProcedure(undefined);
 
-                this.allLegs = this.createLegSet([]);
+                this.allLegs = this.createLegSet(undefined, []);
 
                 this.flightPlan.syncSegmentLegsChange(this);
                 this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.Restring);
@@ -61,18 +62,20 @@ export class ApproachSegment extends ProcedureSegment<Approach> {
             return;
         }
 
-        this.allLegs = this.createLegSet(matchingProcedure.legs.map((leg) => FlightPlanLeg.fromProcedureLeg(this, leg, matchingProcedure.ident)));
+        const shortApproachName = ApproachUtils.shortApproachName(matchingProcedure);
+
+        this.allLegs = this.createLegSet(matchingProcedure, matchingProcedure.legs.map((leg) => FlightPlanLeg.fromProcedureLeg(this, leg, shortApproachName)));
         this.strung = false;
 
         // Set plan destination runway
+
         const procedureRunwayIdent = matchingProcedure.runwayIdent;
 
-        if (procedureRunwayIdent) {
-            // TODO temporary workaround for bug in msfs backend
+        if (procedureRunwayIdent && procedureRunwayIdent !== 'RW00') { // TODO temporary workaround for bug in msfs backend
             await this.flightPlan.destinationSegment.setDestinationRunway(procedureRunwayIdent.startsWith('R') ? procedureRunwayIdent : `RW${procedureRunwayIdent}`, true);
         }
 
-        const mappedMissedApproachLegs = matchingProcedure.missedLegs.map((leg) => FlightPlanLeg.fromProcedureLeg(this.flightPlan.missedApproachSegment, leg, matchingProcedure.ident));
+        const mappedMissedApproachLegs = matchingProcedure.missedLegs.map((leg) => FlightPlanLeg.fromProcedureLeg(this.flightPlan.missedApproachSegment, leg, shortApproachName));
         this.flightPlan.missedApproachSegment.setMissedApproachLegs(mappedMissedApproachLegs);
 
         // Clear flight plan approach via if the new approach is different
@@ -87,11 +90,13 @@ export class ApproachSegment extends ProcedureSegment<Approach> {
         this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.Restring);
     }
 
-    createLegSet(approachLegs: FlightPlanElement[]): FlightPlanElement[] {
+    private createLegSet(procedure: Approach | undefined, approachLegs: FlightPlanElement[]): FlightPlanElement[] {
         const legs = [];
 
         const airport = this.flightPlan.destinationAirport;
         const runway = this.flightPlan.destinationRunway;
+
+        const shortApproachName = procedure ? ApproachUtils.shortApproachName(procedure) : '';
 
         if (approachLegs.length === 0 && this.flightPlan.destinationAirport && this.flightPlan.destinationSegment.destinationRunway) {
             const cf = FlightPlanLeg.destinationExtendedCenterline(
@@ -101,7 +106,7 @@ export class ApproachSegment extends ProcedureSegment<Approach> {
             );
 
             legs.push(cf);
-            legs.push(FlightPlanLeg.fromAirportAndRunway(this, '', airport, runway));
+            legs.push(FlightPlanLeg.fromAirportAndRunway(this, shortApproachName, airport, runway));
         } else {
             const lastLeg = approachLegs[approachLegs.length - 1];
             // let lastLegIsRunway = lastLeg && lastLeg.isDiscontinuity === false && lastLeg.waypointDescriptor === WaypointDescriptor.Runway;
@@ -111,7 +116,7 @@ export class ApproachSegment extends ProcedureSegment<Approach> {
                 legs.push(...approachLegs.slice(0, approachLegs.length - 1));
 
                 const runway = this.findRunwayFromRunwayLeg(lastLeg);
-                const mappedLeg = FlightPlanLeg.fromAirportAndRunway(this, this.procedure?.ident ?? '', airport, runway);
+                const mappedLeg = FlightPlanLeg.fromAirportAndRunway(this, shortApproachName, airport, runway);
 
                 if (approachLegs.length > 1) {
                     mappedLeg.type = lastLeg.type;
