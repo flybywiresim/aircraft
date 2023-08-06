@@ -834,10 +834,14 @@ impl<const ENGINES: usize> PackFlowController<ENGINES> {
         pressurization_overhead: &impl PressurizationOverheadShared,
         pneumatic: &(impl PneumaticBleed + EngineStartState),
     ) -> bool {
+        let is_onside_engine_start = pneumatic.engine_state(self.id + 1) == EngineState::Starting
+            || pneumatic.engine_state(self.id + 1) == EngineState::Restarting;
+        let is_offside_engine_start = pneumatic.engine_state(2 - self.id) == EngineState::Starting
+            || pneumatic.engine_state(2 - self.id) == EngineState::Restarting;
+
         acs_overhead.pack_pushbuttons_state()[self.id]
-            && !(pneumatic.engine_state(self.id + 1) == EngineState::Starting)
-            && (!(pneumatic.engine_state(2 - self.id) == EngineState::Starting)
-                || !pneumatic.engine_crossbleed_is_on())
+            && !is_onside_engine_start
+            && (!is_offside_engine_start || !pneumatic.engine_crossbleed_is_on())
             && (pneumatic.engine_mode_selector() != EngineModeSelector::Ignition
                 || (pneumatic.engine_state(self.id + 1) != EngineState::Off
                     && pneumatic.engine_state(self.id + 1) != EngineState::Shutting))
