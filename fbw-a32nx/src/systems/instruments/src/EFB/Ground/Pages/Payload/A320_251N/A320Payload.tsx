@@ -13,49 +13,71 @@ import Loadsheet from './a20nv55.json';
 import Card from '../../../../UtilComponents/Card/Card';
 import { SelectGroup, SelectItem } from '../../../../UtilComponents/Form/Select';
 import { SeatMapWidget } from '../Seating/SeatMapWidget';
-import { isSimbriefDataLoaded } from '../../../../Store/features/simBrief';
 import { PromptModal, useModals } from '../../../../UtilComponents/Modals/Modals';
-import { useAppSelector } from '../../../../Store/store';
 
-export const A320Payload = () => {
-    const { usingMetric } = Units;
+interface A320Props {
+    simbriefUnits: string,
+    simbriefBagWeight: number,
+    simbriefPaxWeight: number,
+    simbriefPax: number,
+    simbriefBag: number,
+    simbriefFreight: number,
+    simbriefDataLoaded: boolean,
+    massUnitForDisplay: string,
+    isOnGround: boolean,
+
+    boardingStarted: boolean,
+    boardingRate: string,
+    setBoardingStarted: (boardingStarted: any) => void,
+    setBoardingRate: (boardingRate: any) => void,
+}
+export const A320Payload: React.FC<A320Props> = ({
+    simbriefUnits,
+    simbriefBagWeight,
+    simbriefPaxWeight,
+    simbriefPax,
+    simbriefBag,
+    simbriefFreight,
+    simbriefDataLoaded,
+    massUnitForDisplay,
+    isOnGround,
+    boardingStarted,
+    boardingRate,
+    setBoardingStarted,
+    setBoardingRate,
+}) => {
     const { showModal } = useModals();
 
-    const [aFlags] = useSeatFlags(`L:${Loadsheet.seatMap[0].simVar}`, Loadsheet.seatMap[0].capacity, 500);
-    const [bFlags] = useSeatFlags(`L:${Loadsheet.seatMap[1].simVar}`, Loadsheet.seatMap[1].capacity, 500);
-    const [cFlags] = useSeatFlags(`L:${Loadsheet.seatMap[2].simVar}`, Loadsheet.seatMap[2].capacity, 500);
-    const [dFlags] = useSeatFlags(`L:${Loadsheet.seatMap[3].simVar}`, Loadsheet.seatMap[3].capacity, 500);
+    const [aFlags] = useSeatFlags(`L:${Loadsheet.seatMap[0].simVar}`, Loadsheet.seatMap[0].capacity, 509);
+    const [bFlags] = useSeatFlags(`L:${Loadsheet.seatMap[1].simVar}`, Loadsheet.seatMap[1].capacity, 541);
+    const [cFlags] = useSeatFlags(`L:${Loadsheet.seatMap[2].simVar}`, Loadsheet.seatMap[2].capacity, 569);
+    const [dFlags] = useSeatFlags(`L:${Loadsheet.seatMap[3].simVar}`, Loadsheet.seatMap[3].capacity, 593);
 
-    const [aFlagsDesired, setAFlagsDesired] = useSeatFlags(`L:${Loadsheet.seatMap[0].simVar}_DESIRED`, Loadsheet.seatMap[0].capacity, 500);
-    const [bFlagsDesired, setBFlagsDesired] = useSeatFlags(`L:${Loadsheet.seatMap[1].simVar}_DESIRED`, Loadsheet.seatMap[1].capacity, 500);
-    const [cFlagsDesired, setCFlagsDesired] = useSeatFlags(`L:${Loadsheet.seatMap[2].simVar}_DESIRED`, Loadsheet.seatMap[2].capacity, 500);
-    const [dFlagsDesired, setDFlagsDesired] = useSeatFlags(`L:${Loadsheet.seatMap[3].simVar}_DESIRED`, Loadsheet.seatMap[3].capacity, 500);
+    const [aFlagsDesired, setAFlagsDesired] = useSeatFlags(`L:${Loadsheet.seatMap[0].simVar}_DESIRED`, Loadsheet.seatMap[0].capacity, 379);
+    const [bFlagsDesired, setBFlagsDesired] = useSeatFlags(`L:${Loadsheet.seatMap[1].simVar}_DESIRED`, Loadsheet.seatMap[1].capacity, 421);
+    const [cFlagsDesired, setCFlagsDesired] = useSeatFlags(`L:${Loadsheet.seatMap[2].simVar}_DESIRED`, Loadsheet.seatMap[2].capacity, 457);
+    const [dFlagsDesired, setDFlagsDesired] = useSeatFlags(`L:${Loadsheet.seatMap[3].simVar}_DESIRED`, Loadsheet.seatMap[3].capacity, 499);
 
     const activeFlags = useMemo(() => [aFlags, bFlags, cFlags, dFlags], [aFlags, bFlags, cFlags, dFlags]);
     const desiredFlags = useMemo(() => [aFlagsDesired, bFlagsDesired, cFlagsDesired, dFlagsDesired], [aFlagsDesired, bFlagsDesired, cFlagsDesired, dFlagsDesired]);
     const setDesiredFlags = useMemo(() => [setAFlagsDesired, setBFlagsDesired, setCFlagsDesired, setDFlagsDesired], []);
 
-    const [fwdBag] = useSimVar(`L:${Loadsheet.cargoMap[0].simVar}`, 'Number', 500);
-    const [aftCont] = useSimVar(`L:${Loadsheet.cargoMap[1].simVar}`, 'Number', 500);
-    const [aftBag] = useSimVar(`L:${Loadsheet.cargoMap[2].simVar}`, 'Number', 500);
-    const [aftBulk] = useSimVar(`L:${Loadsheet.cargoMap[3].simVar}`, 'Number', 500);
+    const [fwdBag] = useSimVar(`L:${Loadsheet.cargoMap[0].simVar}`, 'Number', 719);
+    const [aftCont] = useSimVar(`L:${Loadsheet.cargoMap[1].simVar}`, 'Number', 743);
+    const [aftBag] = useSimVar(`L:${Loadsheet.cargoMap[2].simVar}`, 'Number', 769);
+    const [aftBulk] = useSimVar(`L:${Loadsheet.cargoMap[3].simVar}`, 'Number', 797);
 
-    const [fwdBagDesired, setFwdBagDesired] = useSimVar(`L:${Loadsheet.cargoMap[0].simVar}_DESIRED`, 'Number', 500);
-    const [aftContDesired, setAftContDesired] = useSimVar(`L:${Loadsheet.cargoMap[1].simVar}_DESIRED`, 'Number', 500);
-    const [aftBagDesired, setAftBagDesired] = useSimVar(`L:${Loadsheet.cargoMap[2].simVar}_DESIRED`, 'Number', 500);
-    const [aftBulkDesired, setAftBulkDesired] = useSimVar(`L:${Loadsheet.cargoMap[3].simVar}_DESIRED`, 'Number', 500);
+    const [fwdBagDesired, setFwdBagDesired] = useSimVar(`L:${Loadsheet.cargoMap[0].simVar}_DESIRED`, 'Number', 619);
+    const [aftContDesired, setAftContDesired] = useSimVar(`L:${Loadsheet.cargoMap[1].simVar}_DESIRED`, 'Number', 631);
+    const [aftBagDesired, setAftBagDesired] = useSimVar(`L:${Loadsheet.cargoMap[2].simVar}_DESIRED`, 'Number', 641);
+    const [aftBulkDesired, setAftBulkDesired] = useSimVar(`L:${Loadsheet.cargoMap[3].simVar}_DESIRED`, 'Number', 677);
 
     const cargo = useMemo(() => [fwdBag, aftCont, aftBag, aftBulk], [fwdBag, aftCont, aftBag, aftBulk]);
     const cargoDesired = useMemo(() => [fwdBagDesired, aftContDesired, aftBagDesired, aftBulkDesired], [fwdBagDesired, aftContDesired, aftBagDesired, aftBulkDesired]);
     const setCargoDesired = useMemo(() => [setFwdBagDesired, setAftContDesired, setAftBagDesired, setAftBulkDesired], []);
 
-    const massUnitForDisplay = usingMetric ? 'KGS' : 'LBS';
-
-    const simbriefDataLoaded = isSimbriefDataLoaded();
-    const [boardingStarted, setBoardingStarted] = useSimVar('L:A32NX_BOARDING_STARTED_BY_USR', 'Bool', 500);
-    const [boardingRate, setBoardingRate] = usePersistentProperty('CONFIG_BOARDING_RATE', 'REAL');
-    const [paxWeight, setPaxWeight] = useSimVar('L:A32NX_WB_PER_PAX_WEIGHT', 'Kilograms', 500);
-    const [paxBagWeight, setPaxBagWeight] = useSimVar('L:A32NX_WB_PER_BAG_WEIGHT', 'Kilograms', 500);
+    const [paxWeight, setPaxWeight] = useSimVar('L:A32NX_WB_PER_PAX_WEIGHT', 'Kilograms', 739);
+    const [paxBagWeight, setPaxBagWeight] = useSimVar('L:A32NX_WB_PER_BAG_WEIGHT', 'Kilograms', 797);
     // const [destEfob] = useSimVar('L:A32NX_DESTINATION_FUEL_ON_BOARD', 'Kilograms', 5_000);
 
     const [emptyWeight] = useState(SimVar.GetSimVarValue('A:EMPTY WEIGHT', 'Kilograms'));
@@ -88,32 +110,25 @@ export const A320Payload = () => {
 
     // Units
     // Weights
-    const [zfw] = useSimVar('L:A32NX_ZFW', 'number', 1_550);
-    const [zfwDesired] = useSimVar('L:A32NX_DESIRED_ZFW', 'number', 1_500);
-    const [gw] = useSimVar('L:A32NX_GW', 'number', 1_750);
-    const [gwDesired] = useSimVar('L:A32NX_DESIRED_GW', 'number', 1_750);
+    const [zfw] = useSimVar('L:A32NX_ZFW', 'number', 1_553);
+    const [zfwDesired] = useSimVar('L:A32NX_DESIRED_ZFW', 'number', 1_621);
+    const [gw] = useSimVar('L:A32NX_GW', 'number', 1_741);
+    const [gwDesired] = useSimVar('L:A32NX_DESIRED_GW', 'number', 1_787);
 
     // CG MAC
-    const [zfwCgMac] = useSimVar('L:A32NX_ZFW_CG_PERCENT_MAC', 'number', 1_200);
-    const [desiredZfwCgMac] = useSimVar('L:A32NX_DESIRED_ZFW_CG_PERCENT_MAC', 'number', 1_200);
-    const [gwCgMac] = useSimVar('L:A32NX_GW_CG_PERCENT_MAC', 'number', 1_200);
-    const [desiredGwCgMac] = useSimVar('L:A32NX_DESIRED_GW_CG_PERCENT_MAC', 'number', 1_200);
+    const [zfwCgMac] = useSimVar('L:A32NX_ZFW_CG_PERCENT_MAC', 'number', 1_223);
+    const [desiredZfwCgMac] = useSimVar('L:A32NX_DESIRED_ZFW_CG_PERCENT_MAC', 'number', 1_279);
+    const [gwCgMac] = useSimVar('L:A32NX_GW_CG_PERCENT_MAC', 'number', 1_301);
+    const [desiredGwCgMac] = useSimVar('L:A32NX_DESIRED_GW_CG_PERCENT_MAC', 'number', 1_447);
 
     const [showSimbriefButton, setShowSimbriefButton] = useState(false);
-    const simbriefUnits = useAppSelector((state) => state.simbrief.data.units);
-    const simbriefBagWeight = parseInt(useAppSelector((state) => state.simbrief.data.weights.bagWeight));
-    const simbriefPaxWeight = parseInt(useAppSelector((state) => state.simbrief.data.weights.passengerWeight));
-    const simbriefPax = parseInt(useAppSelector((state) => state.simbrief.data.weights.passengerCount));
-    const simbriefBag = parseInt(useAppSelector((state) => state.simbrief.data.weights.bagCount));
-    const simbriefFreight = parseInt(useAppSelector((state) => state.simbrief.data.weights.freight));
-
     const [displayZfw, setDisplayZfw] = useState(true);
 
     // GSX
     const [gsxPayloadSyncEnabled] = usePersistentNumberProperty('GSX_PAYLOAD_SYNC', 0);
-    const [_, setGsxNumPassengers] = useSimVar('L:FSDT_GSX_NUMPASSENGERS', 'Number', 200);
-    const [gsxBoardingState] = useSimVar('L:FSDT_GSX_BOARDING_STATE', 'Number', 200);
-    const [gsxDeBoardingState] = useSimVar('L:FSDT_GSX_DEBOARDING_STATE', 'Number', 200);
+    const [_, setGsxNumPassengers] = useSimVar('L:FSDT_GSX_NUMPASSENGERS', 'Number', 223);
+    const [gsxBoardingState] = useSimVar('L:FSDT_GSX_BOARDING_STATE', 'Number', 227);
+    const [gsxDeBoardingState] = useSimVar('L:FSDT_GSX_DEBOARDING_STATE', 'Number', 229);
     const gsxStates = {
         AVAILABLE: 1,
         NOT_AVAILABLE: 2,
@@ -137,9 +152,8 @@ export const A320Payload = () => {
         }
     };
 
-    const [isOnGround] = useSimVar('SIM ON GROUND', 'Bool', 8_000);
-    const [eng1Running] = useSimVar('ENG COMBUSTION:1', 'Bool', 6_500);
-    const [eng2Running] = useSimVar('ENG COMBUSTION:2', 'Bool', 6_500);
+    const [eng1Running] = useSimVar('ENG COMBUSTION:1', 'Bool', 6_581);
+    const [eng2Running] = useSimVar('ENG COMBUSTION:2', 'Bool', 6_397);
     const [coldAndDark, setColdAndDark] = useState<boolean>(true);
 
     const chooseDesiredSeats = useCallback((stationIndex: number, fillSeats: boolean = true, numChoose: number) => {
@@ -163,6 +177,7 @@ export const A320Payload = () => {
         const fillStation = (stationIndex: number, percent: number, paxToFill: number) => {
             const sFlags: SeatFlags = desiredFlags[stationIndex];
             const toBeFilled = Math.min(Math.trunc(percent * paxToFill), seatMap[stationIndex].capacity);
+
             paxRemaining -= toBeFilled;
 
             const planSeatedPax = sFlags.getTotalFilledSeats();
