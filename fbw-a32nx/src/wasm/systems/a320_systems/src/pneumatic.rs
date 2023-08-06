@@ -1165,6 +1165,7 @@ impl EngineBleedAirSystem {
             engine_starter_valve: DefaultValve::new_closed(),
             precooler: Precooler::new(900. * 2.),
             transfer_pressure_transducer: PressureTransducer::new(powered_by),
+            // Should be powered by 801PP for engine 1 and 202PP for engine 2
             regulated_pressure_transducer: PressureTransducer::new(powered_by),
             differential_pressure_transducer: DifferentialPressureTransducer::new(powered_by),
             bleed_temperature_sensor: BleedTemperatureSensor::new(powered_by),
@@ -1353,12 +1354,12 @@ impl SimulationElement for EngineBleedAirSystem {
         writer.write(
             &self.transfer_pressure_transducer_pressure_id,
             self.transfer_pressure_transducer_pressure()
-                .map_or(-1., |p| p.get::<psi>()),
+                .map_or(-1., |p| p.get::<psi>().max(0.).min(512.)),
         );
         writer.write(
             &self.regulated_pressure_transducer_pressure_id,
             self.regulated_pressure_transducer_pressure()
-                .map_or(-1., |p| p.get::<psi>()),
+                .map_or(-1., |p| p.get::<psi>().max(0.).min(512.)),
         );
         writer.write(
             &self.differential_pressure_transducer_pressure_id,
