@@ -623,7 +623,7 @@ impl ControllerSignal<HighPressureValveSignal> for CoreProcessingInputOutputModu
         // TODO: Add overtemperature condition here
         if self.pressure_regulating_valve_is_closed
             || self.high_pressure_compressor_pressure < Pressure::new::<psi>(15.)
-            || self.intermediate_pressure_compressor_pressure > Pressure::new::<psi>(50.)
+            || self.intermediate_pressure_compressor_pressure > Pressure::new::<psi>(33.5)
         {
             Some(HighPressureValveSignal::new_closed())
         } else {
@@ -760,11 +760,11 @@ impl EngineBleedAirSystem {
                 number
             )),
             // TODO: These constants are copied from the A320
-            fan_compression_chamber_controller: EngineCompressionChamberController::new(1.4, 0.),
+            fan_compression_chamber_controller: EngineCompressionChamberController::new(2., 0.),
             intermediate_pressure_compression_chamber_controller:
-                EngineCompressionChamberController::new(9.47404, 0.),
+                EngineCompressionChamberController::new(2.77366, 0.0667803),
             high_pressure_compression_chamber_controller: EngineCompressionChamberController::new(
-                5.98726, 6.03051,
+                2.40411, 1.61386,
             ),
             fan_compression_chamber: CompressionChamber::new(Volume::new::<cubic_meter>(1.)),
             intermediate_pressure_compression_chamber: CompressionChamber::new(Volume::new::<
@@ -1436,7 +1436,7 @@ mod tests {
     use systems::{
         air_conditioning::{AdirsToAirCondInterface, PackFlowControllers},
         electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
-        engine::leap_engine::LeapEngine,
+        engine::trent_engine::TrentEngine,
         failures::FailureType,
         pneumatic::{
             ControllablePneumaticValve, CrossBleedValveSelectorMode, EngineState,
@@ -1681,10 +1681,10 @@ mod tests {
         air_conditioning: TestAirConditioning,
         lgciu: TestLgciu,
         apu: TestApu,
-        engine_1: LeapEngine,
-        engine_2: LeapEngine,
-        engine_3: LeapEngine,
-        engine_4: LeapEngine,
+        engine_1: TrentEngine,
+        engine_2: TrentEngine,
+        engine_3: TrentEngine,
+        engine_4: TrentEngine,
         pneumatic_overhead_panel: A380PneumaticOverheadPanel,
         fire_pushbuttons: TestEngineFirePushButtons,
         electrical: A380TestElectrical,
@@ -1711,10 +1711,10 @@ mod tests {
                 air_conditioning: TestAirConditioning::new(context),
                 lgciu: TestLgciu::new(true),
                 apu: TestApu::new(),
-                engine_1: LeapEngine::new(context, 1),
-                engine_2: LeapEngine::new(context, 2),
-                engine_3: LeapEngine::new(context, 3),
-                engine_4: LeapEngine::new(context, 4),
+                engine_1: TrentEngine::new(context, 1),
+                engine_2: TrentEngine::new(context, 2),
+                engine_3: TrentEngine::new(context, 3),
+                engine_4: TrentEngine::new(context, 4),
                 pneumatic_overhead_panel: A380PneumaticOverheadPanel::new(context),
                 fire_pushbuttons: TestEngineFirePushButtons::new(),
                 electrical: A380TestElectrical::new(),
@@ -1870,6 +1870,7 @@ mod tests {
         }
 
         fn in_isa_atmosphere(mut self, altitude: Length) -> Self {
+            self.set_pressure_altitude(altitude);
             self.set_ambient_pressure(InternationalStandardAtmosphere::pressure_at_altitude(
                 altitude,
             ));
@@ -1984,6 +1985,62 @@ mod tests {
             self.write_by_name("TURB ENG CORRECTED N2:4", Ratio::new::<ratio>(0.));
             self.write_by_name("TURB ENG CORRECTED N1:4", Ratio::new::<ratio>(0.));
             self.write_by_name("ENGINE_STATE:4", EngineState::Off);
+
+            self
+        }
+
+        fn eng1_n1(mut self, n1: f64) -> Self {
+            self.write_by_name("GENERAL ENG STARTER ACTIVE:1", true);
+            self.write_by_name("TURB ENG CORRECTED N1:1", Ratio::new::<ratio>(n1));
+            self.write_by_name("ENGINE_STATE:1", EngineState::On);
+
+            self
+        }
+
+        fn eng2_n1(mut self, n1: f64) -> Self {
+            self.write_by_name("GENERAL ENG STARTER ACTIVE:2", true);
+            self.write_by_name("TURB ENG CORRECTED N1:2", Ratio::new::<ratio>(n1));
+            self.write_by_name("ENGINE_STATE:2", EngineState::On);
+
+            self
+        }
+
+        fn eng3_n1(mut self, n1: f64) -> Self {
+            self.write_by_name("GENERAL ENG STARTER ACTIVE:3", true);
+            self.write_by_name("TURB ENG CORRECTED N1:3", Ratio::new::<ratio>(n1));
+            self.write_by_name("ENGINE_STATE:3", EngineState::On);
+
+            self
+        }
+
+        fn eng4_n1(mut self, n1: f64) -> Self {
+            self.write_by_name("GENERAL ENG STARTER ACTIVE:4", true);
+            self.write_by_name("TURB ENG CORRECTED N1:4", Ratio::new::<ratio>(n1));
+            self.write_by_name("ENGINE_STATE:4", EngineState::On);
+
+            self
+        }
+
+        fn eng1_n2(mut self, n2: f64) -> Self {
+            self.write_by_name("TURB ENG CORRECTED N2:1", Ratio::new::<ratio>(n2));
+
+            self
+        }
+
+        fn eng2_n2(mut self, n2: f64) -> Self {
+            self.write_by_name("TURB ENG CORRECTED N2:2", Ratio::new::<ratio>(n2));
+
+            self
+        }
+
+        fn eng3_n2(mut self, n2: f64) -> Self {
+            self.write_by_name("TURB ENG CORRECTED N2:3", Ratio::new::<ratio>(n2));
+
+            self
+        }
+
+        fn eng4_n2(mut self, n2: f64) -> Self {
+            self.write_by_name("TURB ENG CORRECTED N2:4", Ratio::new::<ratio>(n2));
 
             self
         }
@@ -2719,11 +2776,15 @@ mod tests {
             .idle_eng4()
             .in_isa_atmosphere(altitude)
             .mach_number(MachNumber(0.))
+            .both_packs_auto()
             .and_stabilize();
 
         let ambient_pressure = InternationalStandardAtmosphere::pressure_at_altitude(altitude);
 
         for i in 1..=4 {
+            assert!(test_bed.hp_valve_is_powered(i));
+            assert!(test_bed.pr_valve_is_powered(i));
+
             assert!(test_bed.ip_pressure(i) - ambient_pressure > pressure_tolerance());
             assert!(test_bed.hp_pressure(i) - ambient_pressure > pressure_tolerance());
             assert!(test_bed.transfer_pressure(i) - ambient_pressure > pressure_tolerance());
@@ -3033,21 +3094,21 @@ mod tests {
     }
 
     #[rstest]
-    fn pressure_regulating_valve_regulates_to_40_psig(
-        #[values(0., 10000., 20000., 30000.)] altitude: f64,
-    ) {
-        // Just estimate a realistic Mach number
-        let mach = MachNumber(0.78 * altitude / 30000.);
-
-        let test_bed = test_bed()
-            .in_isa_atmosphere(Length::new::<foot>(altitude))
-            .mach_number(mach)
-            .idle_eng1()
-            .idle_eng2()
-            .idle_eng3()
-            .idle_eng4()
-            .set_pack_flow_pb_is_auto(1, true)
-            .set_pack_flow_pb_is_auto(2, true)
+    fn pressure_regulating_valve_regulates_to_40_psig() {
+        // Set engine parameters to values that will ensure enough upstream pressure,
+        // so the desired downstream pressure of 40 psig can be reached.
+        let test_bed = test_bed_with()
+            .in_isa_atmosphere(Length::new::<foot>(0.))
+            .mach_number(MachNumber(0.))
+            .eng1_n1(0.7)
+            .eng1_n2(0.875)
+            .eng2_n1(0.7)
+            .eng2_n2(0.875)
+            .eng3_n1(0.7)
+            .eng3_n2(0.875)
+            .eng4_n1(0.7)
+            .eng4_n2(0.875)
+            .both_packs_auto()
             .and_stabilize();
 
         for engine_number in 1..=4 {

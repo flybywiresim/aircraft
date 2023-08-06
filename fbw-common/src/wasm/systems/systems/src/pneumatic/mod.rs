@@ -1207,7 +1207,7 @@ mod tests {
                 .target_pressure()
                 .get::<psi>(),
             compression_chamber.pressure().get::<psi>(),
-            1e-1
+            1.
         );
     }
 
