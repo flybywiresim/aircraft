@@ -461,21 +461,6 @@
             <ANIM_KNOB_PARAM_NAME>ANIM_CODE_SWITCH</ANIM_KNOB_PARAM_NAME>
             <EMISSIVE_DIM>(L:A32NX_OVHD_INTLT_ANN, number) 2 == if{ 0.1 } els{ 1 }</EMISSIVE_DIM>
         </DefaultTemplateParameters>
-        <OverrideTemplateParameters>
-        <TRANSMIT_EMISSIVE_CODE type="rnp" return="number">
-            let ret = 0;
-
-            if #SEQ1_POWERED, bool# {
-                if (L:A32NX_ACP#ID#_#FREQ_ID#_KNOB_VOLUME_DOWN, bool) or !(L:A32NX_OVHD_INTLT_ANN, bool) {
-                    ret = 3.0 * #EMISSIVE_DIM, number#;
-                } else {
-                    ret = 0.1 * #EMISSIVE_DIM, number#;
-                }
-            }
-
-            ret
-        </TRANSMIT_EMISSIVE_CODE>
-        </OverrideTemplateParameters>
 
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
             <UseTemplate Name="#KNOB_TEMPLATE#">
@@ -538,7 +523,11 @@
 
         <Component ID="#NODE_ID_LIGHT#_Light" Node="#NODE_ID_LIGHT#">
             <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
-                <EMISSIVE_CODE>#TRANSMIT_EMISSIVE_CODE#</EMISSIVE_CODE>
+                <EMISSIVE_CODE>
+                    #SEQ1_POWERED# #INDICATORS_POWERED# and if{
+                        (L:A32NX_ACP#ID#_#FREQ_ID#_KNOB_VOLUME_DOWN, bool) (L:A32NX_OVHD_INTLT_ANN) 0 == (L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Bool) and or #EMISSIVE_DIM# *
+                    }
+                </EMISSIVE_CODE>
             </UseTemplate>
         </Component>
     </Template>

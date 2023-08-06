@@ -283,14 +283,12 @@
 
     <Template Name="FBW_RMP_MODE_SELECTED_LED">
         <DefaultTemplateParameters>
-            <INOP>0</INOP>
             <LED_NODE_ID>PUSH_RADIO#SIDE#_#BASE_NAME#_SEQ2</LED_NODE_ID>
         </DefaultTemplateParameters>
 
         <Component ID="#LED_NODE_ID#" Node="#LED_NODE_ID#">
             <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
                 <EMISSIVE_CODE type="rnp" return="number">
-                    let inop = #INOP, boolean#;
                     let indicatorsPowered = #INDICATORS_POWERED, bool#;
                     let modeId = #MODE_ID, number#;
                     alias toggleSwitch = (L:A32NX_RMP_#SIDE#_TOGGLE_SWITCH, bool);
@@ -298,9 +296,9 @@
                     alias navButtonPressed = (L:A32NX_RMP_#SIDE#_NAV_BUTTON_SELECTED, bool);
                     alias annunciatorLight = (L:A32NX_OVHD_INTLT_ANN, number);
                     alias dc2Powered = (L:A32NX_ELEC_DC_2_BUS_IS_POWERED, bool);
-                    let emissiveDim = if annunciatorLight == 2 { 0.05 } else { 1 };
-                    (if ((!inop and toggleSwitch and ((selectedMode == modeId) or (modeId == 12 and navButtonPressed))) or ((annunciatorLight == 0) and dc2Powered)) and indicatorsPowered  {
-                        1 * emissiveDim
+                    let emissiveDim = if annunciatorLight == 2 { 0.1 } else { 1 };
+                    (if ((toggleSwitch and ((selectedMode == modeId) or (modeId == 12 and navButtonPressed))) or (annunciatorLight == 0 and dc2Powered)) and indicatorsPowered {
+                        emissiveDim
                     } else {
                         0
                     })
