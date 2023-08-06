@@ -6,6 +6,7 @@ import React, { useEffect, useState } from 'react';
 import { NavigraphSubscriptionStatus, usePersistentNumberProperty, usePersistentProperty } from '@flybywiresim/fbw-sdk';
 import { Route, Switch, useHistory } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { IconTrash } from '@tabler/icons';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
 import { FullscreenSettingsPage, SettingItem, SettingsPage } from '../Settings';
 import { t } from '../../translation';
@@ -74,7 +75,7 @@ export const ThirdPartyOptionsPage = () => {
             });
     });
 
-    const handleUsernameInput = (value: string) => {
+    const handleOverrideSimbriefIDInput = (value: string) => {
         getSimbriefUserId(value).then((response) => {
             toast.success(`${t('Settings.ThirdPartyOptions.YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo')} ${response}`);
 
@@ -84,6 +85,11 @@ export const ThirdPartyOptionsPage = () => {
             setOverrideSimbriefDisplay(overrideSimbriefUserID);
             toast.error(t('Settings.ThirdPartyOptions.PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId'));
         });
+    };
+
+    const handleOverrideSimBriefIDDelete = () => {
+        setOverrideSimbriefUserID('');
+        setOverrideSimbriefDisplay('');
     };
 
     const handleNavigraphAccountSuccessfulLink = () => {
@@ -136,12 +142,22 @@ export const ThirdPartyOptionsPage = () => {
 
                     <TooltipWrapper text={t('Settings.ThirdPartyOptions.TT.OverrideSimBriefUserID')}>
                         <SettingItem name={t('Settings.ThirdPartyOptions.OverrideSimBriefUserID')}>
-                            <SimpleInput
-                                className="text-center w-30"
-                                value={overrideSimbriefDisplay}
-                                onBlur={(value) => handleUsernameInput(value.replace(/\s/g, ''))}
-                                onChange={(value) => setOverrideSimbriefDisplay(value)}
-                            />
+                            <div className="flex flex-row">
+                                <SimpleInput
+                                    className="mr-5 text-center w-30"
+                                    value={overrideSimbriefDisplay}
+                                    onBlur={(value) => handleOverrideSimbriefIDInput(value.replace(/\s/g, ''))}
+                                    onChange={(value) => setOverrideSimbriefDisplay(value)}
+                                />
+
+                                <div
+                                    className="flex flex-shrink justify-center items-center py-2 px-2 w-min text-center text-theme-body hover:text-utility-red
+                                    bg-utility-red hover:bg-theme-bodyrounded-md border-2 border-utility-red transition duration-100"
+                                    onClick={handleOverrideSimBriefIDDelete}
+                                >
+                                    <IconTrash />
+                                </div>
+                            </div>
                         </SettingItem>
                     </TooltipWrapper>
 
