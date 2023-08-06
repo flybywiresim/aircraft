@@ -226,6 +226,10 @@
     "Navigraph": {
       "AirportDoesNotExist": "Oro uostas neegzistuoja",
       "AuthenticateWithNavigraph": "Autentifikuoti su Navigraph",
+      "GoToThirdPartyOptions": {
+        "Button": "3rd Party Options",
+        "Title": "Go to 3rd Party Options to link Navigraph account"
+      },
       "InsufficientEnv": "Nepakankamas .env failas",
       "IntoYourBrowserAndEnterTheCodeBelow": "savo naršyklėje ir įveskite žemiau esantį kodą.",
       "LoadingMsg": "Įkeliama",
@@ -578,7 +582,26 @@
     "ThirdPartyOptions": {
       "GsxFuelEnabled": "GSX kuro tiekimo sinchronizavimas",
       "GsxPayloadEnabled": "GSX krovinio sinchronizavimas",
-      "Title": "Trečiųjų šalių parinktys"
+      "NavigraphAccountLink": {
+        "Connected": "Connected",
+        "Link": "Link Account",
+        "LoginPage": {
+          "Title": "Navigraph Account Login"
+        },
+        "SettingTitle": "Navigraph Account Link",
+        "SubscriptionStatus": {
+          "None": "None",
+          "Unlimited": "Navigraph Unlimited"
+        },
+        "Unlink": "Unlink Account"
+      },
+      "OverrideSimBriefUserID": "Override SimBrief User ID",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Please check that you have correctly entered your SimBrief username or pilot ID.",
+      "TT": {
+        "OverrideSimBriefUserID": "Alternative SimBrief user ID to use instead of the linked Navigraph Account"
+      },
+      "Title": "Trečiųjų šalių parinktys",
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "The override SimBrief PilotID has been validated and updated to"
     },
     "ThrottleConfig": {
       "Apply": "Taikyti",

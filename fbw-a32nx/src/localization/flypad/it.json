@@ -226,6 +226,10 @@
     "Navigraph": {
       "AirportDoesNotExist": "Aeroporto Inesistente",
       "AuthenticateWithNavigraph": "Autenticati con Navigraph",
+      "GoToThirdPartyOptions": {
+        "Button": "3rd Party Options",
+        "Title": "Go to 3rd Party Options to link Navigraph account"
+      },
       "InsufficientEnv": "File .env Insufficiente",
       "IntoYourBrowserAndEnterTheCodeBelow": "nel tuo browser e inserisci il codice riportato sotto",
       "LoadingMsg": "Caricamento",
@@ -578,7 +582,26 @@
     "ThirdPartyOptions": {
       "GsxFuelEnabled": "Sincronizzazione Rifornimento GSX",
       "GsxPayloadEnabled": "Sincronizzazione Carico Utile GSX",
-      "Title": "Opzioni di terze parti"
+      "NavigraphAccountLink": {
+        "Connected": "Connected",
+        "Link": "Link Account",
+        "LoginPage": {
+          "Title": "Navigraph Account Login"
+        },
+        "SettingTitle": "Navigraph Account Link",
+        "SubscriptionStatus": {
+          "None": "None",
+          "Unlimited": "Navigraph Unlimited"
+        },
+        "Unlink": "Unlink Account"
+      },
+      "OverrideSimBriefUserID": "Override SimBrief User ID",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Please check that you have correctly entered your SimBrief username or pilot ID.",
+      "TT": {
+        "OverrideSimBriefUserID": "Alternative SimBrief user ID to use instead of the linked Navigraph Account"
+      },
+      "Title": "Opzioni di terze parti",
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "The override SimBrief PilotID has been validated and updated to"
     },
     "ThrottleConfig": {
       "Apply": "Applica",

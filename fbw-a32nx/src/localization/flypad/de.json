@@ -226,6 +226,10 @@
     "Navigraph": {
       "AirportDoesNotExist": "Der Flughafen existiert nicht",
       "AuthenticateWithNavigraph": "Authentifizierung mit Navigraph",
+      "GoToThirdPartyOptions": {
+        "Button": "Optionen von Drittanbietern",
+        "Title": "Gehen Sie zu Drittanbieter-Optionen, um das Navigraph-Konto zu verknüpfen"
+      },
       "InsufficientEnv": "Keine oder unzureichende .env Datei",
       "IntoYourBrowserAndEnterTheCodeBelow": "mit dem Browser öffnen und folgenden Code eingeben:",
       "LoadingMsg": "Wird geladen…",
@@ -578,7 +582,26 @@
     "ThirdPartyOptions": {
       "GsxFuelEnabled": "GSX Betankungssynchronisation",
       "GsxPayloadEnabled": "GSX Beladungssynchronisation",
-      "Title": "Optionen von Drittanbietern"
+      "NavigraphAccountLink": {
+        "Connected": "Verbunden",
+        "Link": "Account verknüpfen",
+        "LoginPage": {
+          "Title": "Anmeldung zum Navigraph-Konto"
+        },
+        "SettingTitle": "Navigraph-Kontolink",
+        "SubscriptionStatus": {
+          "None": "Keine Navigraph Subscription",
+          "Unlimited": "Navigraph Unlimited"
+        },
+        "Unlink": "Kontoverknüpfung aufheben"
+      },
+      "OverrideSimBriefUserID": "SimBrief-Benutzer-ID überschreiben",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Bitte überprüfen, ob der SimBrief-Benutzername oder die Pilot-ID korrekt eingegeben wurde.",
+      "TT": {
+        "OverrideSimBriefUserID": "Alternative SimBrief-Benutzer-ID, die anstelle des verknüpften Navigraph-Kontos verwendet werden soll"
+      },
+      "Title": "Optionen von Drittanbietern",
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "Die überschriebene SimBrief PilotID wurde validiert und aktualisiert auf"
     },
     "ThrottleConfig": {
       "Apply": "Anwenden",
