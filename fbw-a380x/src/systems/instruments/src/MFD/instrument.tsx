@@ -50,6 +50,7 @@ class A380X_MFD extends BaseInstrument {
         this.simVarPublisher.subscribe('coldDark');
         this.simVarPublisher.subscribe('potentiometerCaptain');
         this.simVarPublisher.subscribe('potentiometerFo');
+        this.simVarPublisher.subscribe('flightPhase');
 
         FSComponent.render(<MfdComponent bus={this.bus} instrument={this} />, document.getElementById('MFD_CONTENT'));
 

@@ -1,24 +1,15 @@
-import { DisplayComponent, FSComponent, Subject, Subscription, VNode } from '@microsoft/msfs-sdk';
+import { FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 
 import './f-pln.scss';
-import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 import { Button } from 'instruments/src/MFD/pages/common/Button';
+import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 
 interface MfdFmsFplnArrProps extends AbstractMfdPageProps {
 }
 
-export class MfdFmsFplnArr extends DisplayComponent<MfdFmsFplnArrProps> {
-    // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
-    private subs = [] as Subscription[];
-
-    private activePageTitle = Subject.create<string>('');
-
-    private tmpyIsActive = Subject.create<boolean>(false);
-
-    private secIsActive = Subject.create<boolean>(false);
-
+export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
     private apprDisabled = Subject.create<boolean>(false);
 
     private viaDisabled = Subject.create<boolean>(false);
@@ -27,16 +18,12 @@ export class MfdFmsFplnArr extends DisplayComponent<MfdFmsFplnArrProps> {
 
     private transDisabled = Subject.create<boolean>(false);
 
-    private update(): void {
+    protected onNewData(): void {
         // ...
     }
 
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
-
-        this.subs.push(this.props.uiService.activeUri.sub((val) => {
-            this.activePageTitle.set(`${val.category.toUpperCase()}/F-PLN/ARRIVAL`);
-        }, true));
     }
 
     public destroy(): void {
@@ -49,7 +36,7 @@ export class MfdFmsFplnArr extends DisplayComponent<MfdFmsFplnArrProps> {
     render(): VNode {
         return (
             <>
-                <ActivePageTitleBar activePage={this.activePageTitle} offset={Subject.create('')} eoIsActive={Subject.create(false)} tmpyIsActive={Subject.create(false)} />
+                {super.render()}
                 {/* begin page content */}
                 <div class="mfd-fms-fpln-labeled-box-container">
                     <span class="mfd-label mfd-spacing-right mfd-fms-fpln-labeled-box-label">
@@ -60,8 +47,8 @@ export class MfdFmsFplnArr extends DisplayComponent<MfdFmsFplnArrProps> {
                             <span class="mfd-label mfd-spacing-right">TO</span>
                             <span class={{
                                 'mfd-value-green': true,
-                                'mfd-value-tmpy': this.tmpyIsActive.get(),
-                                'mfd-value-sec': this.secIsActive.get(),
+                                'mfd-value-tmpy': this.tmpyActive,
+                                'mfd-value-sec': this.secActive,
                             }}
                             >
                                 WSSS
@@ -71,8 +58,8 @@ export class MfdFmsFplnArr extends DisplayComponent<MfdFmsFplnArrProps> {
                             <span class="mfd-label mfd-fms-fpln-label-bottom-space">LS</span>
                             <span class={{
                                 'mfd-value-green': true,
-                                'mfd-value-tmpy': this.tmpyIsActive.get(),
-                                'mfd-value-sec': this.secIsActive.get(),
+                                'mfd-value-tmpy': this.tmpyActive,
+                                'mfd-value-sec': this.secActive,
                             }}
                             >
                                 ICC
@@ -83,8 +70,8 @@ export class MfdFmsFplnArr extends DisplayComponent<MfdFmsFplnArrProps> {
                             <div>
                                 <span class={{
                                     'mfd-value-green': true,
-                                    'mfd-value-tmpy': this.tmpyIsActive.get(),
-                                    'mfd-value-sec': this.secIsActive.get(),
+                                    'mfd-value-tmpy': this.tmpyActive,
+                                    'mfd-value-sec': this.secActive,
                                 }}
                                 >
                                     20C
@@ -96,8 +83,8 @@ export class MfdFmsFplnArr extends DisplayComponent<MfdFmsFplnArrProps> {
                             <div>
                                 <span class={{
                                     'mfd-value-green': true,
-                                    'mfd-value-tmpy': this.tmpyIsActive.get(),
-                                    'mfd-value-sec': this.secIsActive.get(),
+                                    'mfd-value-tmpy': this.tmpyActive,
+                                    'mfd-value-sec': this.secActive,
                                 }}
                                 >
                                     13000
@@ -110,8 +97,8 @@ export class MfdFmsFplnArr extends DisplayComponent<MfdFmsFplnArrProps> {
                             <div>
                                 <span class={{
                                     'mfd-value-green': true,
-                                    'mfd-value-tmpy': this.tmpyIsActive.get(),
-                                    'mfd-value-sec': this.secIsActive.get(),
+                                    'mfd-value-tmpy': this.tmpyActive,
+                                    'mfd-value-sec': this.secActive,
                                 }}
                                 >
                                     203
@@ -125,8 +112,8 @@ export class MfdFmsFplnArr extends DisplayComponent<MfdFmsFplnArrProps> {
                             <span class="mfd-label mfd-fms-fpln-label-bottom-space">APPR</span>
                             <span class={{
                                 'mfd-value-green': true,
-                                'mfd-value-tmpy': this.tmpyIsActive.get(),
-                                'mfd-value-sec': this.secIsActive.get(),
+                                'mfd-value-tmpy': this.tmpyActive,
+                                'mfd-value-sec': this.secActive,
                             }}
                             >
                                 ILS20C
@@ -136,8 +123,8 @@ export class MfdFmsFplnArr extends DisplayComponent<MfdFmsFplnArrProps> {
                             <span class="mfd-label mfd-fms-fpln-label-bottom-space">FREQ/CHAN</span>
                             <span class={{
                                 'mfd-value-green': true,
-                                'mfd-value-tmpy': this.tmpyIsActive.get(),
-                                'mfd-value-sec': this.secIsActive.get(),
+                                'mfd-value-tmpy': this.tmpyActive,
+                                'mfd-value-sec': this.secActive,
                             }}
                             >
                                 109.70
@@ -148,8 +135,8 @@ export class MfdFmsFplnArr extends DisplayComponent<MfdFmsFplnArrProps> {
                             <div>
                                 <span class={{
                                     'mfd-value-green': true,
-                                    'mfd-value-tmpy': this.tmpyIsActive.get(),
-                                    'mfd-value-sec': this.secIsActive.get(),
+                                    'mfd-value-tmpy': this.tmpyActive,
+                                    'mfd-value-sec': this.secActive,
                                 }}
                                 >
                                     NONE
@@ -161,8 +148,8 @@ export class MfdFmsFplnArr extends DisplayComponent<MfdFmsFplnArrProps> {
                             <div>
                                 <span class={{
                                     'mfd-value-green': true,
-                                    'mfd-value-tmpy': this.tmpyIsActive.get(),
-                                    'mfd-value-sec': this.secIsActive.get(),
+                                    'mfd-value-tmpy': this.tmpyActive,
+                                    'mfd-value-sec': this.secActive,
                                 }}
                                 >
                                     VJR1B
@@ -174,8 +161,8 @@ export class MfdFmsFplnArr extends DisplayComponent<MfdFmsFplnArrProps> {
                             <div>
                                 <span class={{
                                     'mfd-value-green': true,
-                                    'mfd-value-tmpy': this.tmpyIsActive.get(),
-                                    'mfd-value-sec': this.secIsActive.get(),
+                                    'mfd-value-tmpy': this.tmpyActive,
+                                    'mfd-value-sec': this.secActive,
                                 }}
                                 >
                                     NONE

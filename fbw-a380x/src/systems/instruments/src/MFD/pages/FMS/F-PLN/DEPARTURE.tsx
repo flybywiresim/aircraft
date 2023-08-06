@@ -1,30 +1,15 @@
-import { DisplayComponent, FSComponent, Subject, Subscription, VNode } from '@microsoft/msfs-sdk';
+import { FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 
 import './f-pln.scss';
-import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 import { Button, ButtonMenuItem } from 'instruments/src/MFD/pages/common/Button';
-import { FlightPlan } from '@fmgc/flightplanning/new/plans/FlightPlan';
-import { ActiveUriInformation } from 'instruments/src/MFD/pages/common/UIService';
+import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 
 interface MfdFmsFplnDepProps extends AbstractMfdPageProps {
 }
 
-export class MfdFmsFplnDep extends DisplayComponent<MfdFmsFplnDepProps> {
-    // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
-    private subs = [] as Subscription[];
-
-    private activePageTitle = Subject.create<string>('');
-
-    private loadedFlightPlan: FlightPlan;
-
-    private currentFlightPlanVersion: number = 0;
-
-    private tmpyActive = Subject.create<boolean>(false);
-
-    private secActive = Subject.create<boolean>(false);
-
+export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
     private fromIcao = Subject.create<string>('');
 
     private rwyIdent = Subject.create<string>('');
@@ -53,7 +38,7 @@ export class MfdFmsFplnDep extends DisplayComponent<MfdFmsFplnDepProps> {
 
     private tmpyInsertButtonDiv = FSComponent.createRef<HTMLDivElement>();
 
-    private onNewData(): void {
+    protected onNewData(): void {
         console.time('DEPARTURE:onNewData');
         this.currentFlightPlanVersion = this.loadedFlightPlan.version;
 
@@ -144,61 +129,16 @@ export class MfdFmsFplnDep extends DisplayComponent<MfdFmsFplnDepProps> {
         console.timeEnd('DEPARTURE:onNewData');
     }
 
-    private whichFlightPlan(activeUri: ActiveUriInformation): FlightPlan {
-        switch (activeUri.category) {
-        case 'active':
-            return this.props.flightPlanService.activeOrTemporary;
-        case 'sec1':
-            return this.props.flightPlanService.secondary(1);
-        case 'sec2':
-            return this.props.flightPlanService.secondary(2);
-        case 'sec3':
-            return this.props.flightPlanService.secondary(3);
-
-        default:
-            return this.props.flightPlanService.activeOrTemporary;
-        }
-    }
-
-    private onFlightPlanChanged() {
-        console.log(1);
-        this.loadedFlightPlan = this.whichFlightPlan(this.props.uiService.activeUri.get());
-        this.currentFlightPlanVersion = this.loadedFlightPlan.version;
-        this.tmpyActive.set(this.props.flightPlanService.hasTemporary);
-    }
-
-    private checkIfFlightPlanChanged() {
-        if (this.whichFlightPlan(this.props.uiService.activeUri.get()).version !== this.currentFlightPlanVersion) {
-            this.onFlightPlanChanged();
-            this.onNewData();
-        }
-    }
-
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        this.subs.push(this.props.uiService.activeUri.sub((val) => {
-            this.activePageTitle.set(`${val.category.toUpperCase()}/F-PLN/DEPARTURE`);
-        }, true));
-
         this.subs.push(this.tmpyActive.sub((v) => this.tmpyInsertButtonDiv.getOrDefault().style.visibility = (v ? 'visible' : 'hidden'), true));
-
-        this.onFlightPlanChanged();
-        this.onNewData();
-        setInterval(() => this.checkIfFlightPlanChanged(), 50);
-    }
-
-    public destroy(): void {
-        // Destroy all subscriptions to remove all references to this instance.
-        this.subs.forEach((x) => x.destroy());
-
-        super.destroy();
     }
 
     render(): VNode {
         return (
             <>
-                <ActivePageTitleBar activePage={this.activePageTitle} offset={Subject.create('')} eoIsActive={Subject.create(false)} tmpyIsActive={this.tmpyActive} />
+                {super.render()}
                 {/* begin page content */}
                 <div class="mfd-fms-fpln-labeled-box-container">
                     <span class="mfd-label mfd-spacing-right mfd-fms-fpln-labeled-box-label">
@@ -336,7 +276,13 @@ export class MfdFmsFplnDep extends DisplayComponent<MfdFmsFplnDepProps> {
                 </div>
                 <div style="flex-grow: 1;" />
                 <div ref={this.tmpyInsertButtonDiv} style="display: flex; justify-content: flex-end; padding: 2px;">
-                    <Button label="TMPY F-PLN" onClick={() => this.props.flightPlanService.temporaryInsert()} buttonStyle="color: yellow" />
+                    <Button
+                        label="TMPY F-PLN"
+                        onClick={() => {
+                            this.props.flightPlanService.temporaryInsert().then(() => this.props.uiService.navigateTo(`fms/${this.props.uiService.activeUri.get().category}/f-pln`));
+                        }}
+                        buttonStyle="color: yellow"
+                    />
                 </div>
                 {/* end page content */}
                 <Footer bus={this.props.bus} uiService={this.props.uiService} flightPlanService={this.props.flightPlanService} />

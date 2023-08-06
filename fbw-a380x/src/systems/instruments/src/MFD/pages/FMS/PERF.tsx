@@ -4,10 +4,9 @@ import { DropdownMenu } from 'instruments/src/MFD/pages/common/DropdownMenu';
 import { InputField } from 'instruments/src/MFD/pages/common/InputField';
 import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MFD/pages/common/TopTabNavigator';
 
-import { ArraySubject, DisplayComponent, FSComponent, Subject, Subscription, VNode } from '@microsoft/msfs-sdk';
+import { ArraySubject, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 
 import { Button } from 'instruments/src/MFD/pages/common/Button';
-import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
 import { RadioButtonGroup } from 'instruments/src/MFD/pages/common/RadioButtonGroup';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
@@ -31,22 +30,18 @@ import {
 import { Mmo, Vmo, maxCertifiedAlt } from 'shared/PerformanceConstants';
 import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { ConfirmationDialog } from 'instruments/src/MFD/pages/common/ConfirmationDialog';
+import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 
 interface MfdFmsPerfProps extends AbstractMfdPageProps {
 }
 
-export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
-    // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
-    private subs = [] as Subscription[];
-
+export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
     private activateApprButton = FSComponent.createRef<HTMLDivElement>();
 
     // Subjects
     private activeFlightPhase = Subject.create<number>(0);
 
     private crzFl = Subject.create<number>(35000);
-
-    private activePageTitle = Subject.create<string>('');
 
     private flightPhasesSelectedPageIndex = Subject.create(0);
 
@@ -235,16 +230,14 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
 
     // GA page subjects, refs and methods
 
+    protected onNewData: () => null;
+
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
         // Initialized hidden/visible states
         this.toThrustSettingChanged(0);
         this.showNoiseFields(false);
-
-        this.subs.push(this.props.uiService.activeUri.sub((val) => {
-            this.activePageTitle.set(`${val.category.toUpperCase()}/PERF`);
-        }, true));
 
         // If extra parameter for activeUri is given, navigate to flight phase sub-page
         switch (this.props.uiService.activeUri.get().extra) {
@@ -279,17 +272,10 @@ export class MfdFmsPerf extends DisplayComponent<MfdFmsPerfProps> {
         }));
     }
 
-    public destroy(): void {
-        // Destroy all subscriptions to remove all references to this instance.
-        this.subs.forEach((x) => x.destroy());
-
-        super.destroy();
-    }
-
     render(): VNode {
         return (
             <>
-                <ActivePageTitleBar activePage={this.activePageTitle} offset={Subject.create('5L')} eoIsActive={Subject.create(true)} tmpyIsActive={Subject.create(true)} />
+                {super.render()}
                 {/* begin page content */}
                 <div class="mfd-page-container">
                     <div style="margin: 15px; display: flex; justify-content: space-between;">

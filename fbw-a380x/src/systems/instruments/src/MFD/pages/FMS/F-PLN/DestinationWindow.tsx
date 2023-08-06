@@ -3,7 +3,7 @@ import '../../common/style.scss';
 import { Button } from 'instruments/src/MFD/pages/common/Button';
 import { InputField } from 'instruments/src/MFD/pages/common/InputField';
 import { AirportFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
-import { FlightPlanLeg } from 'instruments/src/MFD/dev-data/FlightPlanInterfaceMockup';
+import { FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 
 interface DestinationWindowProps extends ComponentProps {
     revisedWaypoint: Subscribable<FlightPlanLeg>;
@@ -23,7 +23,6 @@ export class DestinationWindow extends DisplayComponent<DestinationWindowProps> 
     private newDest = Subject.create<string>('');
 
     private onModified(newDest: string): void {
-        // Consider checking for valid ICAO code
         if (newDest.length === 4) {
             this.props.confirmAction(newDest);
             this.newDest.set('');

@@ -32,6 +32,7 @@ export const getDisplayIndex = () => {
 };
 
 export interface AbstractMfdPageProps extends ComponentProps {
+    pageTitle?: string;
     bus: EventBus;
     uiService: MfdUIService;
     flightPlanService: FlightPlanService;
@@ -44,7 +45,7 @@ interface MfdComponentProps extends ComponentProps {
 export class MfdComponent extends DisplayComponent<MfdComponentProps> {
     private uiService = new MfdUIService();
 
-    private flightPlanService = new FlightPlanService();
+    private flightPlanService = new FlightPlanService(this.props.bus);
 
     private displayBrightness = Subject.create(0);
 
@@ -184,26 +185,26 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> {
         // Mapping from URL to page component
         switch (`${uri.sys}/${uri.category}/${uri.page}`) {
         case 'fms/active/perf':
-            this.activePage = <MfdFmsPerf bus={this.props.bus} uiService={this.uiService} flightPlanService={this.flightPlanService} />;
+            this.activePage = <MfdFmsPerf pageTitle="PERF" bus={this.props.bus} uiService={this.uiService} flightPlanService={this.flightPlanService} />;
             break;
         case 'fms/active/init':
-            this.activePage = <MfdFmsInit bus={this.props.bus} uiService={this.uiService} flightPlanService={this.flightPlanService} />;
+            this.activePage = <MfdFmsInit pageTitle="INIT" bus={this.props.bus} uiService={this.uiService} flightPlanService={this.flightPlanService} />;
             break;
         case 'fms/active/fuel-load':
-            this.activePage = <MfdFmsFuelLoad bus={this.props.bus} uiService={this.uiService} flightPlanService={this.flightPlanService} />;
+            this.activePage = <MfdFmsFuelLoad pageTitle="FUEL&LOAD" bus={this.props.bus} uiService={this.uiService} flightPlanService={this.flightPlanService} />;
             break;
         case 'fms/active/f-pln':
-            this.activePage = <MfdFmsFpln bus={this.props.bus} uiService={this.uiService} flightPlanService={this.flightPlanService} />;
+            this.activePage = <MfdFmsFpln pageTitle="F-PLN" bus={this.props.bus} uiService={this.uiService} flightPlanService={this.flightPlanService} />;
             break;
         case 'fms/active/f-pln-departure':
-            this.activePage = <MfdFmsFplnDep bus={this.props.bus} uiService={this.uiService} flightPlanService={this.flightPlanService} />;
+            this.activePage = <MfdFmsFplnDep pageTitle="F-PLN/DEPARTURE" bus={this.props.bus} uiService={this.uiService} flightPlanService={this.flightPlanService} />;
             break;
         case 'fms/active/f-pln-arrival':
-            this.activePage = <MfdFmsFplnArr bus={this.props.bus} uiService={this.uiService} flightPlanService={this.flightPlanService} />;
+            this.activePage = <MfdFmsFplnArr pageTitle="F-PLN/ARRIVAL" bus={this.props.bus} uiService={this.uiService} flightPlanService={this.flightPlanService} />;
             break;
 
         default:
-            this.activePage = <MfdNotFound bus={this.props.bus} uiService={this.uiService} flightPlanService={this.flightPlanService} />;
+            this.activePage = <MfdNotFound pageTitle="NOT FOUND" bus={this.props.bus} uiService={this.uiService} flightPlanService={this.flightPlanService} />;
             break;
         }
 

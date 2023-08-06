@@ -2,15 +2,15 @@ import { ComponentProps, DisplayComponent, FSComponent, Subject, Subscribable, S
 import '../../common/style.scss';
 import { Button } from 'instruments/src/MFD/pages/common/Button';
 import { coordinateToString } from '@flybywiresim/fbw-sdk';
-import { FlightPlanLeg } from 'instruments/src/MFD/dev-data/FlightPlanInterfaceMockup';
 import { DropdownMenu } from 'instruments/src/MFD/pages/common/DropdownMenu';
+import { FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 
 interface InsertNextWptFromWindowProps extends ComponentProps {
     revisedWaypoint: Subscribable<FlightPlanLeg>;
     availableWaypoints: SubscribableArray<string>;
     visible: Subscribable<boolean>;
     cancelAction: () => void;
-    confirmAction: () => void;
+    confirmAction: (wpt) => void;
     contentContainerStyle?: string;
 }
 export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromWindowProps> {
@@ -38,7 +38,7 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
         }
 
         // Consider handling the flight plan actions in here, to accomodate free text entries better
-        this.props.confirmAction();
+        this.props.confirmAction(text);
     }
 
     onAfterRender(node: VNode): void {

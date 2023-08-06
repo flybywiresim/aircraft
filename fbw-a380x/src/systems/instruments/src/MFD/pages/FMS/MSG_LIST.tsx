@@ -1,22 +1,21 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 
-import { DisplayComponent, FSComponent, Subject, SubscribableArray, SubscribableArrayEventType, Subscription, VNode } from '@microsoft/msfs-sdk';
+import { FSComponent, SubscribableArray, SubscribableArrayEventType, VNode } from '@microsoft/msfs-sdk';
 
 import './msg_list.scss';
-import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 import { Button } from 'instruments/src/MFD/pages/common/Button';
+import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 
 interface MfdMsgListProps extends AbstractMfdPageProps {
     messages: SubscribableArray<string>;
 }
 
-export class MfdMsgList extends DisplayComponent<MfdMsgListProps> {
-    // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
-    private subs = [] as Subscription[];
-
+export class MfdMsgList extends FmsPage<MfdMsgListProps> {
     private msgListContainer = FSComponent.createRef<HTMLDivElement>();
+
+    protected onNewData: () => null;
 
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
@@ -65,7 +64,7 @@ export class MfdMsgList extends DisplayComponent<MfdMsgListProps> {
     render(): VNode {
         return (
             <>
-                <ActivePageTitleBar activePage={Subject.create('MESSAGES LIST')} offset={Subject.create('')} eoIsActive={Subject.create(false)} tmpyIsActive={Subject.create(false)} />
+                {super.render()}
                 {/* begin page content */}
                 <div class="mfd-page-container">
                     <div ref={this.msgListContainer} class="mfd-msg-list-element-container" />

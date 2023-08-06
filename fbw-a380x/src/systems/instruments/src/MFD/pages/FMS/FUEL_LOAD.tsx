@@ -1,9 +1,8 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 
-import { DisplayComponent, FSComponent, Subject, Subscription, VNode } from '@microsoft/msfs-sdk';
+import { FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 
 import './fuel_load.scss';
-import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 
@@ -11,61 +10,50 @@ import { InputField } from 'instruments/src/MFD/pages/common/InputField';
 import { CostIndexFormat, PaxNbrFormat, PercentageFormat, TimeHHMMFormat, WeightFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { Button } from 'instruments/src/MFD/pages/common/Button';
 import { maxAltnFuel, maxBlockFuel, maxFinalFuel, maxJtsnGw, maxRteRsvFuel, maxRteRsvFuelPerc, maxTaxiFuel, maxZfw, maxZfwCg, minZfwCg } from 'shared/PerformanceConstants';
+import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 
 interface MfdFmsFuelLoadProps extends AbstractMfdPageProps {
 }
 
-export class MfdFmsFuelLoad extends DisplayComponent<MfdFmsFuelLoadProps> {
-    // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
-    private subs = [] as Subscription[];
+export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
+    private zfw = Subject.create<number>(null); // TODO connect
 
-    private activePageTitle = Subject.create<string>('');
+    private zfwCg = Subject.create<number>(null); // TODO connect
 
-    private zfw = Subject.create<number>(null);
+    private blockFuel = Subject.create<number>(null); // TODO connect
 
-    private zfwCg = Subject.create<number>(null);
+    private taxiFuel = Subject.create<number>(null); // TODO connect
 
-    private blockFuel = Subject.create<number>(null);
+    private paxNbr = Subject.create<number>(null); // TODO connect
 
-    private taxiFuel = Subject.create<number>(null);
+    private costIndex = Subject.create<number>(null); // TODO connect
 
-    private paxNbr = Subject.create<number>(null);
+    private rteRsvFuelWeight = Subject.create<number>(null); // TODO connect
 
-    private costIndex = Subject.create<number>(null);
+    private rteRsvFuelPercentage = Subject.create<number>(null); // TODO connect
 
-    private rteRsvFuelWeight = Subject.create<number>(null);
+    private jtsnGw = Subject.create<number>(null); // TODO connect
 
-    private rteRsvFuelPercentage = Subject.create<number>(null);
+    private altnFuel = Subject.create<number>(null); // TODO connect
 
-    private jtsnGw = Subject.create<number>(null);
+    private finalFuelWeight = Subject.create<number>(null); // TODO connect
 
-    private altnFuel = Subject.create<number>(null);
+    private finalFuelTime = Subject.create<number>(null); // TODO connect
 
-    private finalFuelWeight = Subject.create<number>(null);
+    private minFuelAtDest = Subject.create<number>(null); // TODO connect
 
-    private finalFuelTime = Subject.create<number>(null);
-
-    private minFuelAtDest = Subject.create<number>(null);
+    protected onNewData() {
+        // TODO, find out data source
+    }
 
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
-
-        this.subs.push(this.props.uiService.activeUri.sub((val) => {
-            this.activePageTitle.set(`${val.category.toUpperCase()}/FUEL&LOAD`);
-        }, true));
-    }
-
-    public destroy(): void {
-        // Destroy all subscriptions to remove all references to this instance.
-        this.subs.forEach((x) => x.destroy());
-
-        super.destroy();
     }
 
     render(): VNode {
         return (
             <>
-                <ActivePageTitleBar activePage={this.activePageTitle} offset={Subject.create('')} eoIsActive={Subject.create(false)} tmpyIsActive={Subject.create(false)} />
+                {super.render()}
                 {/* begin page content */}
                 <div class="mfd-page-container">
                     <div style="display: flex; flex-direction: row; justify-content: space-between; margin: 10px 25px 10px 25px;">

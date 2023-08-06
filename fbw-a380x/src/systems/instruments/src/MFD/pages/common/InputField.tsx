@@ -173,7 +173,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
             // Enter was pressed
             ev.preventDefault();
 
-            if (this.props.handleFocusBlurExternally) {
+            if (this.props.handleFocusBlurExternally === true) {
                 this.onBlur(true);
             } else {
                 this.textInputRef.getOrDefault().blur();
@@ -204,7 +204,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
 
         if (validateAndUpdate) {
             if (this.modifiedFieldValue.get() === null && this.props.value.get() !== null) {
-                console.log(this.props.value.get().toString());
+                console.log('Enter pressed after no modification');
                 // Enter is pressed after no modification
                 const [formatted] = this.props.dataEntryFormat.format(this.props.value.get());
                 await this.validateAndUpdate(formatted);
