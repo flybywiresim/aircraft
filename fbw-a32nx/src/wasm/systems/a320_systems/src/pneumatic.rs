@@ -1101,7 +1101,7 @@ impl EngineBleedAirSystem {
                 EngineCompressionChamberController::new(2.77366, 0.0667803),
             // Maximum HP bleed pressure output should be about 660 psig
             high_pressure_compression_chamber_controller: EngineCompressionChamberController::new(
-                2.15397, 1.82113,
+                2.40411, 1.61386,
             ),
             fan_compression_chamber: CompressionChamber::new(Volume::new::<cubic_meter>(1.)),
             intermediate_pressure_compression_chamber: CompressionChamber::new(Volume::new::<
@@ -1157,11 +1157,11 @@ impl EngineBleedAirSystem {
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
             engine_starter_container: PneumaticPipe::new(
-                Volume::new::<cubic_meter>(0.1),
+                Volume::new::<cubic_meter>(0.3),
                 Pressure::new::<psi>(14.7),
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
-            engine_starter_exhaust: PneumaticExhaust::new(5., 5., Pressure::new::<psi>(0.)),
+            engine_starter_exhaust: PneumaticExhaust::new(10., 10., Pressure::new::<psi>(0.)),
             engine_starter_valve: DefaultValve::new_closed(),
             precooler: Precooler::new(900. * 2.),
             transfer_pressure_transducer: PressureTransducer::new(powered_by),
