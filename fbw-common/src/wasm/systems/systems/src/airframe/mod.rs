@@ -140,7 +140,6 @@ pub struct WeightData {
     target_zfw: Mass,
     target_gw: Mass,
     target_tow: Mass,
-    total_fuel: Mass,
 }
 impl WeightData {
     pub fn new(
@@ -164,7 +163,6 @@ impl WeightData {
             target_zfw: Mass::default(),
             target_gw: Mass::default(),
             target_tow: Mass::default(),
-            total_fuel: Mass::default(),
         }
     }
 
@@ -214,14 +212,6 @@ impl WeightData {
 
     pub fn set_target_tow(&mut self, target_tow: Mass) {
         self.target_tow = target_tow;
-    }
-
-    pub fn total_fuel(&self) -> Mass {
-        self.total_fuel
-    }
-
-    pub fn set_total_fuel(&mut self, total_fuel: Mass) {
-        self.total_fuel = total_fuel;
     }
 }
 impl SimulationElement for WeightData {

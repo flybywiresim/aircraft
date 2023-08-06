@@ -137,11 +137,6 @@ impl A320Airframe {
         self.weight.set_target_tow(Mass::new::<kilogram>(tgt_tow));
     }
 
-    fn set_total_fuel(&mut self, total_fuel: f64) {
-        self.weight
-            .set_total_fuel(Mass::new::<kilogram>(total_fuel));
-    }
-
     pub(crate) fn update(
         &mut self,
         fuel_payload: &impl FuelPayload,
@@ -191,8 +186,6 @@ impl A320Airframe {
 
         let fuel_kg = fuel_payload.total_load().get::<kilogram>();
         let fuel_moment = fuel_kg * fuel_payload.fore_aft_center_of_gravity();
-
-        self.set_total_fuel(fuel_kg);
 
         let gw_moment = zfw_moment + fuel_moment;
         let gw_kg = zfw_kg + fuel_kg;
