@@ -433,14 +433,14 @@ impl Communications {
             // ACP1 disabled if ACP3 in Captain mode OR the FO is controlling (via the EFB)
             if self.update_comms == CommunicationPanelSideName::CAPTAIN {
                 if self.audio_switching_knob != AudioSwitchingKnobPosition::CAPTAIN
-                    && side_controlling != SideControlling::FO
+                    && side_controlling == SideControlling::CAPTAIN
                 {
                     self.communications_panel_elected = Some(self.communications_panel_captain);
                 }
             // ACP2 disabled if ACP3 in FO mode OR the Captain is controlling (via the EFB)
             } else if self.update_comms == CommunicationPanelSideName::FO {
                 if self.audio_switching_knob != AudioSwitchingKnobPosition::FO
-                    && side_controlling != SideControlling::CAPTAIN
+                    && side_controlling == SideControlling::FO
                 {
                     self.communications_panel_elected =
                         Some(self.communications_panel_first_officer);
