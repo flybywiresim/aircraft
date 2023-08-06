@@ -261,7 +261,7 @@ impl Communications {
         self.guess_panel_other_actions_based(context.side_controlling());
 
         if self.communications_panel_elected.is_none() {
-            self.guess_panel_acp_actions_based(context.side_controlling());
+            self.guess_panel_acp_or_rmp_actions_based(context.side_controlling());
         }
 
         if let Some(chosen_panel) = self.communications_panel_elected {
@@ -423,7 +423,7 @@ impl Communications {
      *
      * @return None if the association ACP/Configuration was not suitable. The ACP otherwise.
      */
-    fn guess_panel_acp_actions_based(
+    fn guess_panel_acp_or_rmp_actions_based(
         &mut self,
         side_controlling: SideControlling,
     ) -> Option<CommunicationsPanel> {
