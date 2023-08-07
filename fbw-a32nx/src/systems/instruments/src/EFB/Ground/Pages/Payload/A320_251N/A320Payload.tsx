@@ -292,6 +292,7 @@ export const A320Payload: React.FC<A320Props> = ({
                     }}
                 />,
             );
+            return;
         }
         setBoardingStarted(false);
     }, [totalPaxDesired, totalPax, totalCargo, boardingStarted, totalCargoDesired]);
@@ -586,6 +587,11 @@ export const A320Payload: React.FC<A320Props> = ({
                                         </SelectGroup>
                                     </div>
                                 </Card>
+                            </div>
+                        )}
+                        {gsxPayloadSyncEnabled === 1 && (
+                            <div className="pt-6 pl-2">
+                                {t('Ground.Payload.GSXPayloadSyncEnabled')}
                             </div>
                         )}
                     </div>
