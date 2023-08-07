@@ -5,7 +5,7 @@ This directory contains the different pages for the A380's MFD. List for pages i
 ## Status and description of components
 Status legend:
 ✅ MVP complete
-3️⃣ Phase 3 in progress: Connect to final interfaces/classes
+3️⃣ Phase 3 in progress: Connect to final interfaces/classes, merged with fms-v2
 2️⃣ Phase 2 in progress: Data
 1️⃣ Phase 1 in progress: Layout
 🟥 Not yet started
@@ -19,8 +19,8 @@ Status legend:
 |  |  |
 | 2️⃣ | fms/\*/f-pln | 1 |
 | 🟥 | fms/\*/f-pln-rte-sel | 1 |
-| 2️⃣ | fms/\*/f-pln-departure | 1 |
-| 2️⃣ | fms/\*/f-pln-arrival | 1 |
+| 3️⃣ | fms/\*/f-pln-departure | 1 |
+| 3️⃣ | fms/\*/f-pln-arrival | 1 |
 | 🟥 | fms/\*/f-pln-airways | 1 |
 | 🟥 | fms/\*/f-pln-direct-to | 1 |
 | 🟥 | fms/\*/f-pln-hold | 1 |

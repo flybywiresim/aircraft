@@ -46,6 +46,10 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
     private tmpyLineRef = FSComponent.createRef<HTMLDivElement>();
 
+    private destButtonLabel = Subject.create<string>('');
+
+    private destButtonDisabled = Subject.create<boolean>(true);
+
     private displayFplnFromLegIndex = Subject.create<number>(0);
 
     private disabledScrollDown = Subject.create(true);
@@ -68,6 +72,19 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
     protected onNewData(): void {
         this.update(this.displayFplnFromLegIndex.get());
+
+        console.log(this.loadedFlightPlan.destinationAirport);
+        if (this.loadedFlightPlan.destinationAirport) {
+            this.destButtonDisabled.set(false);
+            if (this.loadedFlightPlan.destinationRunway) {
+                this.destButtonLabel.set(`${this.loadedFlightPlan.destinationRunway.airportIdent}${this.loadedFlightPlan.destinationRunway.ident.substring(2)}`);
+            } else {
+                this.destButtonLabel.set(this.loadedFlightPlan.destinationAirport.ident);
+            }
+        } else {
+            this.destButtonDisabled.set(true);
+            this.destButtonLabel.set('DEST');
+        }
     }
 
     private update(startAtIndex: number): void {
@@ -405,6 +422,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                         </div>
                     </div>
                     <div ref={this.linesDivRef} />
+                    <div style="flex-grow: 1" />
                     <div ref={this.tmpyLineRef} class="mfd-fms-fpln-line-erase-temporary">
                         <Button
                             label={Subject.create(
@@ -439,7 +457,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                     {/* fill space vertically */}
                     <div class="mfd-fms-fpln-line-destination">
                         <Button
-                            label={this.loadedFlightPlan?.destinationRunway?.airportIdent ?? 'DEST'}
+                            label={this.destButtonLabel.map((it) => <span>{it}</span>)}
                             onClick={() => this.props.uiService.navigateTo(`fms/${this.props.uiService.activeUri.get().category}/f-pln-departure`)}
                             buttonStyle="font-size: 30px; width: 150px; margin-right: 5px;"
                         />
@@ -466,7 +484,8 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                                 containerStyle="width: 60px; height: 60px;"
                             />
                             <Button
-                                label="DEST"
+                                label={this.destButtonLabel.get()}
+                                disabled={this.destButtonDisabled}
                                 onClick={() => this.props.uiService.navigateTo(`fms/${this.props.uiService.activeUri.get().category}/f-pln-arrival`)}
                                 buttonStyle="height: 60px; margin-right: 5px; padding: auto 15px auto 15px;"
                             />

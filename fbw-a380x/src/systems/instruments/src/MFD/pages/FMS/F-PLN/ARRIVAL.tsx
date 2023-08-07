@@ -3,27 +3,226 @@ import { FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 import './f-pln.scss';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
-import { Button } from 'instruments/src/MFD/pages/common/Button';
+import { Button, ButtonMenuItem } from 'instruments/src/MFD/pages/common/Button';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 
 interface MfdFmsFplnArrProps extends AbstractMfdPageProps {
 }
 
 export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
+    private toIcao = Subject.create<string>('');
+
+    private rwyLs = Subject.create<string>('');
+
+    private rwyIdent = Subject.create<string>('');
+
+    private rwyLength = Subject.create<string>('');
+
+    private rwyCrs = Subject.create<string>('');
+
+    private appr = Subject.create<string>('');
+
+    private rwyFreq = Subject.create<string>('');
+
+    private via = Subject.create<string>('');
+
+    private star = Subject.create<string>('');
+
+    private trans = Subject.create<string>('');
+
+    private rwyOptions = Subject.create<ButtonMenuItem[]>([]);
+
     private apprDisabled = Subject.create<boolean>(false);
+
+    private apprOptions = Subject.create<ButtonMenuItem[]>([]);
 
     private viaDisabled = Subject.create<boolean>(false);
 
+    private viaOptions = Subject.create<ButtonMenuItem[]>([]);
+
     private starDisabled = Subject.create<boolean>(false);
+
+    private starOptions = Subject.create<ButtonMenuItem[]>([]);
 
     private transDisabled = Subject.create<boolean>(false);
 
+    private transOptions = Subject.create<ButtonMenuItem[]>([]);
+
+    private tmpyInsertButtonDiv = FSComponent.createRef<HTMLDivElement>();
+
     protected onNewData(): void {
-        // ...
+        console.time('ARRIVAL:onNewData');
+        this.currentFlightPlanVersion = this.loadedFlightPlan.version;
+
+        if (this.loadedFlightPlan.originAirport) {
+            this.toIcao.set(this.loadedFlightPlan.originAirport.ident);
+
+            const runways: ButtonMenuItem[] = [];
+            this.loadedFlightPlan.availableDestinationRunways.forEach((rw) => {
+                runways.push({
+                    label: `${rw.ident.substring(2).padEnd(3, ' ')} ${rw.length.toFixed(0).padStart(5, ' ')}FT`,
+                    action: () => {
+                        this.props.flightPlanService.setDestinationRunway(rw.ident);
+                        this.props.flightPlanService.setApproach(undefined);
+                        this.props.flightPlanService.setApproachVia(undefined);
+                        this.props.flightPlanService.setArrival(undefined);
+                        this.props.flightPlanService.setArrivalEnrouteTransition(undefined);
+                    },
+                });
+            });
+            this.rwyOptions.set(runways);
+
+            if (this.loadedFlightPlan.destinationRunway) {
+                this.rwyIdent.set(this.loadedFlightPlan.destinationRunway.ident.substring(2));
+                this.rwyLength.set(this.loadedFlightPlan.destinationRunway.length.toFixed(0) ?? '----');
+                this.rwyCrs.set(this.loadedFlightPlan.destinationRunway.bearing.toFixed(0) ?? '---');
+
+                if (this.loadedFlightPlan.availableApproaches?.length > 0) {
+                    const appr: ButtonMenuItem[] = [{
+                        label: 'NONE',
+                        action: () => {
+                            this.props.flightPlanService.setApproach(undefined);
+                            this.props.flightPlanService.setApproachVia(undefined);
+                            this.props.flightPlanService.setArrival(undefined);
+                            this.props.flightPlanService.setArrivalEnrouteTransition(undefined);
+                        },
+                    }];
+                    this.loadedFlightPlan.availableDepartures.forEach((el) => {
+                        appr.push({
+                            label: el.ident,
+                            action: () => {
+                                this.props.flightPlanService.setApproach(el.ident);
+                                this.props.flightPlanService.setApproachVia(undefined);
+                                this.props.flightPlanService.setArrival(undefined);
+                                this.props.flightPlanService.setArrivalEnrouteTransition(undefined);
+                            },
+                        });
+                    });
+                    this.apprOptions.set(appr);
+                    this.apprDisabled.set(false);
+                }
+            } else {
+                this.rwyIdent.set('---');
+                this.rwyLength.set('----');
+                this.rwyCrs.set('---');
+                this.apprDisabled.set(true);
+            }
+
+            if (this.loadedFlightPlan.approach) {
+                this.appr.set(this.loadedFlightPlan.approach.ident);
+
+                if (this.loadedFlightPlan.availableApproachVias?.length > 0) {
+                    const vias: ButtonMenuItem[] = [{
+                        label: 'NONE',
+                        action: () => {
+                            this.props.flightPlanService.setApproachVia(undefined);
+                            this.props.flightPlanService.setArrival(undefined);
+                            this.props.flightPlanService.setArrivalEnrouteTransition(undefined);
+                        },
+                    }];
+                    this.loadedFlightPlan.availableApproachVias.forEach((el) => {
+                        vias.push({
+                            label: el.ident,
+                            action: () => {
+                                this.props.flightPlanService.setApproachVia(el.ident);
+                                this.props.flightPlanService.setArrival(undefined);
+                                this.props.flightPlanService.setArrivalEnrouteTransition(undefined);
+                            },
+                        });
+                    });
+                    this.viaOptions.set(vias);
+                    this.viaDisabled.set(false);
+                }
+            } else {
+                if (this.loadedFlightPlan.availableApproaches?.length > 0) {
+                    this.appr.set('------');
+                } else {
+                    this.appr.set('NONE');
+                }
+                this.viaDisabled.set(true);
+            }
+
+            if (this.loadedFlightPlan.approachVia) {
+                this.via.set(this.loadedFlightPlan.approachVia.ident);
+
+                if (this.loadedFlightPlan.availableArrivals?.length > 0) {
+                    const arrivals: ButtonMenuItem[] = [{
+                        label: 'NONE',
+                        action: () => {
+                            this.props.flightPlanService.setArrival(undefined);
+                            this.props.flightPlanService.setArrivalEnrouteTransition(undefined);
+                        },
+                    }];
+                    this.loadedFlightPlan.availableArrivals.forEach((el) => {
+                        arrivals.push({
+                            label: el.ident,
+                            action: () => {
+                                this.props.flightPlanService.setArrival(el.ident);
+                                this.props.flightPlanService.setArrivalEnrouteTransition(undefined);
+                            },
+                        });
+                    });
+                    this.starOptions.set(arrivals);
+                    this.starDisabled.set(false);
+                }
+            } else {
+                if (this.loadedFlightPlan.availableApproachVias?.length > 0) {
+                    this.via.set('------');
+                } else {
+                    this.via.set('NONE');
+                }
+                this.starDisabled.set(true);
+            }
+
+            if (this.loadedFlightPlan.arrival) {
+                this.star.set(this.loadedFlightPlan.arrival.ident);
+
+                if (this.loadedFlightPlan.arrival.enrouteTransitions?.length > 0) {
+                    const trans: ButtonMenuItem[] = [{
+                        label: 'NONE',
+                        action: () => {
+                            this.props.flightPlanService.setArrivalEnrouteTransition(undefined);
+                        },
+                    }];
+                    this.loadedFlightPlan.arrival.enrouteTransitions.forEach((el) => {
+                        trans.push({
+                            label: el.ident,
+                            action: () => {
+                                this.props.flightPlanService.setArrivalEnrouteTransition(el.ident);
+                            },
+                        });
+                    });
+                    this.transOptions.set(trans);
+                    this.transDisabled.set(false);
+                }
+            } else {
+                if (this.loadedFlightPlan.availableArrivals?.length > 0) {
+                    this.star.set('------');
+                } else {
+                    this.star.set('NONE');
+                }
+                this.transDisabled.set(true);
+            }
+
+            if (this.loadedFlightPlan.arrivalEnrouteTransition) {
+                this.trans.set(this.loadedFlightPlan.arrivalEnrouteTransition.ident);
+            } else if (this.loadedFlightPlan?.arrival?.enrouteTransitions?.length === 0) {
+                this.trans.set('NONE');
+            } else {
+                this.trans.set('------');
+            }
+        } else {
+            this.toIcao.set('----');
+        }
+
+        this.tmpyActive.set(this.props.flightPlanService.hasTemporary);
+        console.timeEnd('ARRIVAL:onNewData');
     }
 
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
+
+        this.subs.push(this.tmpyActive.sub((v) => this.tmpyInsertButtonDiv.getOrDefault().style.visibility = (v ? 'visible' : 'hidden'), true));
     }
 
     public destroy(): void {
@@ -51,7 +250,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                                 'mfd-value-sec': this.secActive,
                             }}
                             >
-                                WSSS
+                                {this.toIcao}
                             </span>
                         </div>
                         <div style="flex: 0.2; display: flex; flex-direction: column;">
@@ -62,7 +261,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                                 'mfd-value-sec': this.secActive,
                             }}
                             >
-                                ICC
+                                {this.rwyLs}
                             </span>
                         </div>
                         <div style="flex: 0.2; display: flex; flex-direction: column;">
@@ -74,7 +273,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                                     'mfd-value-sec': this.secActive,
                                 }}
                                 >
-                                    20C
+                                    {this.rwyIdent}
                                 </span>
                             </div>
                         </div>
@@ -87,7 +286,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                                     'mfd-value-sec': this.secActive,
                                 }}
                                 >
-                                    13000
+                                    {this.rwyLength}
                                 </span>
                                 <span class="mfd-label-unit mfd-unit-trailing">FT</span>
                             </div>
@@ -101,7 +300,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                                     'mfd-value-sec': this.secActive,
                                 }}
                                 >
-                                    203
+                                    {this.rwyCrs}
                                 </span>
                                 <span class="mfd-label-unit mfd-unit-trailing">°</span>
                             </div>
@@ -116,7 +315,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                                 'mfd-value-sec': this.secActive,
                             }}
                             >
-                                ILS20C
+                                {this.appr}
                             </span>
                         </div>
                         <div style="flex: 0.2; display: flex; flex-direction: column;">
@@ -127,7 +326,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                                 'mfd-value-sec': this.secActive,
                             }}
                             >
-                                109.70
+                                {this.rwyFreq}
                             </span>
                         </div>
                         <div style="flex: 0.2; display: flex; flex-direction: column;">
@@ -139,7 +338,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                                     'mfd-value-sec': this.secActive,
                                 }}
                                 >
-                                    NONE
+                                    {this.via}
                                 </span>
                             </div>
                         </div>
@@ -152,7 +351,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                                     'mfd-value-sec': this.secActive,
                                 }}
                                 >
-                                    VJR1B
+                                    {this.star}
                                 </span>
                             </div>
                         </div>
@@ -165,7 +364,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                                     'mfd-value-sec': this.secActive,
                                 }}
                                 >
-                                    NONE
+                                    {this.trans}
                                 </span>
                             </div>
                         </div>
@@ -177,15 +376,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                         onClick={() => null}
                         buttonStyle="width: 190px;"
                         idPrefix="f-pln-arr-rwy-btn"
-                        menuItems={Subject.create([{
-                            label: '01 3200M',
-                            action: () => null,
-                        },
-                        {
-                            label: '16 1700M',
-                            action: () => null,
-                        },
-                        ])}
+                        menuItems={this.rwyOptions}
                     />
                     <Button
                         label="APPR"
@@ -193,63 +384,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                         disabled={this.apprDisabled}
                         buttonStyle="width: 160px;"
                         idPrefix="f-pln-arr-appr-btn"
-                        menuItems={Subject.create([{
-                            label: 'NONE',
-                            action: () => null,
-                        },
-                        {
-                            label: 'AFRI5A',
-                            action: () => null,
-                        },
-                        {
-                            label: 'AFRI5H',
-                            action: () => null,
-                        },
-                        {
-                            label: 'AMOL5A',
-                            action: () => null,
-                        },
-                        {
-                            label: 'AMOL5H',
-                            action: () => null,
-                        },
-                        {
-                            label: 'ANET5H',
-                            action: () => null,
-                        },
-                        {
-                            label: 'DEPE5A',
-                            action: () => null,
-                        },
-                        {
-                            label: 'DEPE5H',
-                            action: () => null,
-                        },
-                        {
-                            label: 'FINO5A',
-                            action: () => null,
-                        },
-                        {
-                            label: 'FINO5H',
-                            action: () => null,
-                        },
-                        {
-                            label: 'FIST5A',
-                            action: () => null,
-                        },
-                        {
-                            label: 'FIST5H',
-                            action: () => null,
-                        },
-                        {
-                            label: 'TEST1',
-                            action: () => null,
-                        },
-                        {
-                            label: 'TEST2',
-                            action: () => null,
-                        },
-                        ])}
+                        menuItems={this.apprOptions}
                     />
                     <Button
                         label="VIA"
@@ -257,11 +392,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                         disabled={this.viaDisabled}
                         buttonStyle="width: 125px;"
                         idPrefix="f-pln-arr-via-btn"
-                        menuItems={Subject.create([{
-                            label: 'NONE',
-                            action: () => null,
-                        },
-                        ])}
+                        menuItems={this.viaOptions}
                     />
                     <Button
                         label="STAR"
@@ -269,11 +400,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                         disabled={this.starDisabled}
                         buttonStyle="width: 125px;"
                         idPrefix="f-pln-arr-star-btn"
-                        menuItems={Subject.create([{
-                            label: 'NONE',
-                            action: () => null,
-                        },
-                        ])}
+                        menuItems={this.starOptions}
                     />
                     <Button
                         label="TRANS"
@@ -281,16 +408,18 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                         disabled={this.transDisabled}
                         buttonStyle="width: 125px;"
                         idPrefix="f-pln-arr-trans-btn"
-                        menuItems={Subject.create([{
-                            label: 'NONE',
-                            action: () => null,
-                        },
-                        ])}
+                        menuItems={this.transOptions}
                     />
                 </div>
                 <div style="flex-grow: 1;" />
-                <div style="display: flex; justify-content: flex-end; padding: 2px;">
-                    <Button label="TMPY F-PLN" onClick={() => null} buttonStyle="color: yellow" />
+                <div ref={this.tmpyInsertButtonDiv} style="display: flex; justify-content: flex-end; padding: 2px;">
+                    <Button
+                        label="TMPY F-PLN"
+                        onClick={() => {
+                            this.props.flightPlanService.temporaryInsert().then(() => this.props.uiService.navigateTo(`fms/${this.props.uiService.activeUri.get().category}/f-pln`));
+                        }}
+                        buttonStyle="color: yellow"
+                    />
                 </div>
                 {/* end page content */}
                 <Footer bus={this.props.bus} uiService={this.props.uiService} flightPlanService={this.props.flightPlanService} />

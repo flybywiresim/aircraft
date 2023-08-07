@@ -21,8 +21,8 @@ import { MfdMsgList } from 'instruments/src/MFD/pages/FMS/MSG_LIST';
 import { ActiveUriInformation, MfdUIService } from 'instruments/src/MFD/pages/common/UIService';
 import { MfdFmsFplnDep } from 'instruments/src/MFD/pages/FMS/F-PLN/DEPARTURE';
 import { MfdFmsFplnArr } from 'instruments/src/MFD/pages/FMS/F-PLN/ARRIVAL';
-import { NavigationDatabaseService } from '@fmgc/flightplanning/new/NavigationDatabaseService';
 import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
+import { NavigationDatabaseService } from '@fmgc/flightplanning/new/NavigationDatabaseService';
 import { MfdSimvars } from './shared/MFDSimvarPublisher';
 import { DisplayUnit } from '../MsfsAvionicsCommon/displayUnit';
 
@@ -74,6 +74,8 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> {
         NavigationDatabaseService.activeDatabase = new NavigationDatabase(NavigationDatabaseBackend.Msfs);
         await new Promise((r) => setTimeout(r, 1000));
         this.flightPlanService.createFlightPlans();
+
+        this.flightPlanService.newCityPair('EGLL', 'LFPG', 'EBBR');
     }
 
     public async onAfterRender(node: VNode): Promise<void> {

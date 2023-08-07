@@ -8,7 +8,7 @@ export type ButtonMenuItem = {
 };
 
 export interface ButtonProps extends ComponentProps {
-    label: string | Subject<VNode>;
+    label: string | Subscribable<VNode>;
     menuItems?: Subscribable<ButtonMenuItem[]>; // When defining menu items, idPrefix has to be set
     showArrow?: boolean;
     idPrefix?: string;
