@@ -20,7 +20,7 @@ pub struct A380Airframe {
 }
 impl A380Airframe {
     const LOADSHEET: LoadsheetInfo = LoadsheetInfo {
-        operating_empty_weight_kg: 300006.4,
+        operating_empty_weight_kg: 300007.12,
         operating_empty_position: (0.83, 0., 2.8),
         per_pax_weight_kg: 84.,
         mac_size: 39.9475,

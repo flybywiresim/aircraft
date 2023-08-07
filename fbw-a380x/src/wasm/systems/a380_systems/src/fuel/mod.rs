@@ -2,14 +2,10 @@
 
 use nalgebra::Vector3;
 use systems::{
-    accept_iterable,
-    fuel::{FuelInfo, FuelTank},
-    simulation::{
-        InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
-        VariableIdentifier,
-    },
+    fuel::{FuelInfo, FuelSystem, FuelTank},
+    simulation::{InitContext, SimulationElement, SimulationElementVisitor},
 };
-use uom::si::{f64::*, mass::kilogram};
+use uom::si::f64::*;
 
 #[cfg(test)]
 pub mod test;
@@ -100,10 +96,7 @@ pub enum A380FuelTankType {
 }
 
 pub struct A380Fuel {
-    unlimited_fuel_id: VariableIdentifier,
-    unlimited_fuel: bool,
-
-    fuel_tanks: [FuelTank; 11],
+    fuel_system: FuelSystem,
 }
 
 impl A380Fuel {
@@ -166,7 +159,7 @@ impl A380Fuel {
     ];
 
     pub fn new(context: &mut InitContext) -> Self {
-        let fuel_tanks: [FuelTank; 11] = Self::A380_FUEL
+        let fuel_tanks: Vec<FuelTank> = Self::A380_FUEL
             .iter()
             .map(|f| {
                 FuelTank::new(
@@ -178,66 +171,63 @@ impl A380Fuel {
             .try_into()
             .unwrap();
         A380Fuel {
-            unlimited_fuel_id: context.get_identifier("UNLIMITED FUEL".to_owned()),
-            unlimited_fuel: false,
-
-            fuel_tanks,
+            fuel_system: FuelSystem::new(context, fuel_tanks),
         }
     }
 
     fn left_outer_tank_has_fuel(&self) -> bool {
-        self.unlimited_fuel
-            || self.fuel_tanks[A380FuelTankType::LeftOuter as usize].quantity() > Mass::default()
+        self.fuel_system
+            .tank_has_fuel(A380FuelTankType::LeftOuter as usize)
     }
 
     fn feed_one_has_fuel(&self) -> bool {
-        self.unlimited_fuel
-            || self.fuel_tanks[A380FuelTankType::FeedOne as usize].quantity() > Mass::default()
+        self.fuel_system
+            .tank_has_fuel(A380FuelTankType::FeedOne as usize)
     }
 
     fn left_mid_tank_has_fuel(&self) -> bool {
-        self.unlimited_fuel
-            || self.fuel_tanks[A380FuelTankType::LeftMid as usize].quantity() > Mass::default()
+        self.fuel_system
+            .tank_has_fuel(A380FuelTankType::LeftMid as usize)
     }
 
     fn left_inner_tank_has_fuel(&self) -> bool {
-        self.unlimited_fuel
-            || self.fuel_tanks[A380FuelTankType::LeftInner as usize].quantity() > Mass::default()
+        self.fuel_system
+            .tank_has_fuel(A380FuelTankType::LeftInner as usize)
     }
 
     fn feed_two_tank_has_fuel(&self) -> bool {
-        self.unlimited_fuel
-            || self.fuel_tanks[A380FuelTankType::FeedTwo as usize].quantity() > Mass::default()
+        self.fuel_system
+            .tank_has_fuel(A380FuelTankType::FeedTwo as usize)
     }
 
     fn feed_three_tank_has_fuel(&self) -> bool {
-        self.unlimited_fuel
-            || self.fuel_tanks[A380FuelTankType::FeedThree as usize].quantity() > Mass::default()
+        self.fuel_system
+            .tank_has_fuel(A380FuelTankType::FeedThree as usize)
     }
 
     fn right_inner_tank_has_fuel(&self) -> bool {
-        self.unlimited_fuel
-            || self.fuel_tanks[A380FuelTankType::RightInner as usize].quantity() > Mass::default()
+        self.fuel_system
+            .tank_has_fuel(A380FuelTankType::RightInner as usize)
     }
 
     fn right_mid_tank_has_fuel(&self) -> bool {
-        self.unlimited_fuel
-            || self.fuel_tanks[A380FuelTankType::RightMid as usize].quantity() > Mass::default()
+        self.fuel_system
+            .tank_has_fuel(A380FuelTankType::RightMid as usize)
     }
 
     pub fn feed_four_tank_has_fuel(&self) -> bool {
-        self.unlimited_fuel
-            || self.fuel_tanks[A380FuelTankType::FeedFour as usize].quantity() > Mass::default()
+        self.fuel_system
+            .tank_has_fuel(A380FuelTankType::FeedFour as usize)
     }
 
     fn right_outer_tank_has_fuel(&self) -> bool {
-        self.unlimited_fuel
-            || self.fuel_tanks[A380FuelTankType::RightOuter as usize].quantity() > Mass::default()
+        self.fuel_system
+            .tank_has_fuel(A380FuelTankType::RightOuter as usize)
     }
 
     fn trim_tank_has_fuel(&self) -> bool {
-        self.unlimited_fuel
-            || self.fuel_tanks[A380FuelTankType::Trim as usize].quantity() > Mass::default()
+        self.fuel_system
+            .tank_has_fuel(A380FuelTankType::Trim as usize)
     }
 
     fn fore_aft_center_of_gravity(&self) -> f64 {
@@ -245,47 +235,16 @@ impl A380Fuel {
     }
 
     fn total_load(&self) -> Mass {
-        self.fuel_tanks
-            .iter()
-            .map(|t: &FuelTank| t.quantity())
-            .sum()
+        self.fuel_system.total_load()
     }
 
     fn center_of_gravity(&self) -> Vector3<f64> {
-        let positions: Vec<Vector3<f64>> = self
-            .fuel_tanks
-            .iter()
-            .map(|t| t.location())
-            .collect::<Vec<_>>();
-
-        let masses: Vec<Mass> = self
-            .fuel_tanks
-            .iter()
-            .map(|t| t.quantity())
-            .collect::<Vec<_>>();
-
-        // This section of code calculates the center of gravity (assume center of gravity/center of mass is near identical)
-        let total_mass_kg: f64 = masses.iter().map(|m| m.get::<kilogram>()).sum();
-        let center_of_gravity: Vector3<f64> = if total_mass_kg > 0. {
-            positions
-                .iter()
-                .zip(masses.iter())
-                .map(|(pos, m)| pos * m.get::<kilogram>())
-                .fold(Vector3::zeros(), |acc, x| acc + x)
-                / total_mass_kg
-        } else {
-            Vector3::zeros()
-        };
-        center_of_gravity
+        self.fuel_system.center_of_gravity()
     }
 }
 impl SimulationElement for A380Fuel {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        accept_iterable!(self.fuel_tanks, visitor);
+        self.fuel_system.accept(visitor);
         visitor.visit(self);
-    }
-
-    fn read(&mut self, reader: &mut SimulatorReader) {
-        self.unlimited_fuel = reader.read(&self.unlimited_fuel_id);
     }
 }
