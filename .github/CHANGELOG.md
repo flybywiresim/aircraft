@@ -31,6 +31,7 @@
 1. [MCDU] Add basic annunciator support - @tracernz (Mike)
 1. [MCDU] Add basic MCDU MENU functionality - @tracernz (Mike)
 1. [MCDU] Split subsystem scratchpads - @tracernz (Mike)
+1. [MCDU] PERF APPR page no longer demands QNH and TEMP when outside 180NM from destination - @robertxing2004 (robeet)
 
 ## 0.10.0
 
