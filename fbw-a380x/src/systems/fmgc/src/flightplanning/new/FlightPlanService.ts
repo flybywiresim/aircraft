@@ -14,7 +14,6 @@ import { FixInfoEntry } from '@fmgc/flightplanning/new/plans/FixInfo';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/new/legs/FlightPlanLegDefinition';
 import { FlightPlanInterface } from '@fmgc/flightplanning/new/FlightPlanInterface';
-import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
 
 export class FlightPlanService implements FlightPlanInterface {
     private readonly flightPlanManager: FlightPlanManager;

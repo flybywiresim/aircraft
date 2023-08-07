@@ -31,7 +31,7 @@ export class ArrivalRunwayTransitionSegment extends ProcedureSegment<ProcedureTr
         }
 
         if (!skipUpdateLegs) {
-            const legs = this.arrivalRunwayTransition?.legs.map((it) => FlightPlanLeg.fromProcedureLeg(this, it, this.arrivalRunwayTransition.ident)) ?? [];
+            const legs = this.arrivalRunwayTransition?.legs.map((it) => FlightPlanLeg.fromProcedureLeg(this, it, existingArrival?.ident ?? '')) ?? [];
 
             this.allLegs.length = 0;
             this.allLegs.push(...legs);

@@ -132,6 +132,7 @@ export class FlightPlanManager {
     delete(index: number, notify = true) {
         this.assertFlightPlanExists(index);
 
+        this.plans[index].destroy();
         this.plans[index] = undefined;
 
         if (notify) {
@@ -140,6 +141,10 @@ export class FlightPlanManager {
     }
 
     deleteAll(notify = true) {
+        for (const plan of this.plans) {
+            plan.destroy();
+        }
+
         this.plans.length = 0;
 
         if (notify) {

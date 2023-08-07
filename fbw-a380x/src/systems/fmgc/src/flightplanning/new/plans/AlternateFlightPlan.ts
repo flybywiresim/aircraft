@@ -22,7 +22,7 @@ export class AlternateFlightPlan extends BaseFlightPlan {
         this.originSegment = new AlternateOriginSegment(this, this.mainFlightPlan.destinationSegment);
     }
 
-    get originAirport(): Airport {
+    get originAirport(): Airport | undefined {
         return this.mainFlightPlan.destinationAirport;
     }
 
