@@ -8,13 +8,14 @@ import { Button, ButtonMenuItem } from 'instruments/src/MFD/pages/common/Button'
 import { IconButton } from 'instruments/src/MFD/pages/common/IconButton';
 import { DerivedFplnLegData, PseudoWaypoint, WindVector } from 'instruments/src/MFD/dev-data/FlightPlanInterfaceMockup';
 import { ContextMenu } from 'instruments/src/MFD/pages/common/ContextMenu';
-import { getRevisionsMenu } from 'instruments/src/MFD/pages/FMS/F-PLN/FplnRevisionsMenu';
+import { FplnRevisionsMenuType, getRevisionsMenu } from 'instruments/src/MFD/pages/FMS/F-PLN/FplnRevisionsMenu';
 import { DestinationWindow } from 'instruments/src/MFD/pages/FMS/F-PLN/DestinationWindow';
 import { InsertNextWptFromWindow } from 'instruments/src/MFD/pages/FMS/F-PLN/InsertNextWptFrom';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { VerticalWaypointPrediction } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/new/NavigationDatabaseService';
+import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 
 interface MfdFmsFplnProps extends AbstractMfdPageProps {
 }
@@ -71,9 +72,9 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     private nextWptAvailableWaypoints = ArraySubject.create<string>(['']) ;
 
     protected onNewData(): void {
+        console.time('F-PLN:onNewData');
         this.update(this.displayFplnFromLegIndex.get());
 
-        console.log(this.loadedFlightPlan.destinationAirport);
         if (this.loadedFlightPlan.destinationAirport) {
             this.destButtonDisabled.set(false);
             if (this.loadedFlightPlan.destinationRunway) {
@@ -85,6 +86,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             this.destButtonDisabled.set(true);
             this.destButtonLabel.set('DEST');
         }
+        console.timeEnd('F-PLN:onNewData');
     }
 
     private update(startAtIndex: number): void {
@@ -268,9 +270,16 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             const leg = this.loadedFlightPlan.allLegs[originalLegIndex];
 
             if (leg instanceof FlightPlanLeg) {
+                let type: FplnRevisionsMenuType = FplnRevisionsMenuType.Waypoint;
+                if (leg.segment.class === SegmentClass.Departure) {
+                    type = FplnRevisionsMenuType.Departure;
+                } else if (leg.segment.class === SegmentClass.Arrival) {
+                    type = FplnRevisionsMenuType.Arrival;
+                }
+
                 this.revisedWaypoint.set(leg);
                 this.revisedWaypointIndex.set(originalLegIndex);
-                this.revisionsMenuRef.instance.props.values = getRevisionsMenu(this, 'waypoint');
+                this.revisionsMenuRef.instance.props.values = getRevisionsMenu(this, type, originalLegIndex, this.loadedFlightPlanIndex);
                 this.revisionsMenuRef.instance.display(195, 183);
             } else {
                 // Find last leg before DISCO which is a proper leg, and revise this leg
@@ -282,7 +291,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                     }
                     beforeDiscoIndex -= 1;
                 }
-                this.revisionsMenuRef.instance.props.values = getRevisionsMenu(this, 'discontinuity');
+                this.revisionsMenuRef.instance.props.values = getRevisionsMenu(this, FplnRevisionsMenuType.Discontinuity, originalLegIndex, this.loadedFlightPlanIndex);
                 this.revisionsMenuRef.instance.display(195, 183);
             }
         }
@@ -368,7 +377,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                     <ContextMenu
                         ref={this.revisionsMenuRef}
                         idPrefix="revisionsMenu"
-                        values={getRevisionsMenu(this, 'waypoint')}
+                        values={getRevisionsMenu(this, FplnRevisionsMenuType.Waypoint, this.revisedWaypointIndex.get() ?? 0, this.loadedFlightPlanIndex)}
                         opened={this.revisionsMenuOpened}
                     />
                     <DestinationWindow
@@ -435,7 +444,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                                     <span style="display: flex; align-items: center; justify-content: center;">*</span>
                                 </div>,
                             )}
-                            onClick={() => this.tmpyActive.set(false)}
+                            onClick={() => this.props.flightPlanService.temporaryDelete()}
                             buttonStyle="color: #e68000; padding-right: 2px;"
                         />
                         <Button
@@ -449,7 +458,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                                     <span style="display: flex; align-items: center; justify-content: center;">*</span>
                                 </div>,
                             )}
-                            onClick={() => this.tmpyActive.set(false)}
+                            onClick={() => this.props.flightPlanService.temporaryInsert()}
                             buttonStyle="color: #e68000; padding-right: 2px;"
                         />
                     </div>
@@ -458,7 +467,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                     <div class="mfd-fms-fpln-line-destination">
                         <Button
                             label={this.destButtonLabel.map((it) => <span>{it}</span>)}
-                            onClick={() => this.props.uiService.navigateTo(`fms/${this.props.uiService.activeUri.get().category}/f-pln-departure`)}
+                            onClick={() => this.props.uiService.navigateTo(`fms/${this.props.uiService.activeUri.get().category}/f-pln-arrival`)}
                             buttonStyle="font-size: 30px; width: 150px; margin-right: 5px;"
                         />
                         <span class="mfd-label">--:--</span>
@@ -484,9 +493,9 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                                 containerStyle="width: 60px; height: 60px;"
                             />
                             <Button
-                                label={this.destButtonLabel.get()}
+                                label="DEST"
                                 disabled={this.destButtonDisabled}
-                                onClick={() => this.props.uiService.navigateTo(`fms/${this.props.uiService.activeUri.get().category}/f-pln-arrival`)}
+                                onClick={() => this.displayFplnFromLegIndex.set(this.loadedFlightPlan.destinationLegIndex - (this.tmpyActive.get() ? 7 : 8))}
                                 buttonStyle="height: 60px; margin-right: 5px; padding: auto 15px auto 15px;"
                             />
                         </div>

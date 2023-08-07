@@ -36,6 +36,8 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
 
     private transOptions = Subject.create<ButtonMenuItem[]>([]);
 
+    private returnButtonDiv = FSComponent.createRef<HTMLDivElement>();
+
     private tmpyInsertButtonDiv = FSComponent.createRef<HTMLDivElement>();
 
     protected onNewData(): void {
@@ -50,9 +52,9 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
                 runways.push({
                     label: `${rw.ident.substring(2).padEnd(3, ' ')} ${rw.length.toFixed(0).padStart(5, ' ')}FT ${rw.lsIdent ? 'ILS' : ''}`,
                     action: () => {
-                        this.props.flightPlanService.setOriginRunway(rw.ident);
-                        this.props.flightPlanService.setDepartureProcedure(undefined);
-                        this.props.flightPlanService.setDepartureEnrouteTransition(undefined);
+                        this.props.flightPlanService.setOriginRunway(rw.ident, this.loadedFlightPlanIndex);
+                        this.props.flightPlanService.setDepartureProcedure(undefined, this.loadedFlightPlanIndex);
+                        this.props.flightPlanService.setDepartureEnrouteTransition(undefined, this.loadedFlightPlanIndex);
                     },
                 });
             });
@@ -69,16 +71,16 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
                     const sids: ButtonMenuItem[] = [{
                         label: 'NONE',
                         action: () => {
-                            this.props.flightPlanService.setDepartureProcedure(undefined);
-                            this.props.flightPlanService.setDepartureEnrouteTransition(undefined);
+                            this.props.flightPlanService.setDepartureProcedure(undefined, this.loadedFlightPlanIndex);
+                            this.props.flightPlanService.setDepartureEnrouteTransition(undefined, this.loadedFlightPlanIndex);
                         },
                     }];
                     this.loadedFlightPlan.availableDepartures.forEach((dep) => {
                         sids.push({
                             label: dep.ident,
                             action: () => {
-                                this.props.flightPlanService.setDepartureProcedure(dep.ident);
-                                this.props.flightPlanService.setDepartureEnrouteTransition(undefined);
+                                this.props.flightPlanService.setDepartureProcedure(dep.ident, this.loadedFlightPlanIndex);
+                                this.props.flightPlanService.setDepartureEnrouteTransition(undefined, this.loadedFlightPlanIndex);
                             },
                         });
                     });
@@ -98,9 +100,9 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
                 this.rwySid.set(this.loadedFlightPlan.originDeparture.ident);
 
                 if (this.loadedFlightPlan.originDeparture.enrouteTransitions?.length > 0) {
-                    const trans: ButtonMenuItem[] = [{ label: 'NONE', action: () => this.props.flightPlanService.setDepartureEnrouteTransition(undefined) }];
+                    const trans: ButtonMenuItem[] = [{ label: 'NONE', action: () => this.props.flightPlanService.setDepartureEnrouteTransition(undefined, this.loadedFlightPlanIndex) }];
                     this.loadedFlightPlan.originDeparture.enrouteTransitions.forEach((el) => {
-                        trans.push({ label: el.ident, action: () => this.props.flightPlanService.setDepartureEnrouteTransition(el.ident) });
+                        trans.push({ label: el.ident, action: () => this.props.flightPlanService.setDepartureEnrouteTransition(el.ident, this.loadedFlightPlanIndex) });
                     });
                     this.transOptions.set(trans);
                     this.transDisabled.set(false);
@@ -132,7 +134,10 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        this.subs.push(this.tmpyActive.sub((v) => this.tmpyInsertButtonDiv.getOrDefault().style.visibility = (v ? 'visible' : 'hidden'), true));
+        this.subs.push(this.tmpyActive.sub((v) => {
+            this.returnButtonDiv.getOrDefault().style.visibility = (v ? 'hidden' : 'visible');
+            this.tmpyInsertButtonDiv.getOrDefault().style.visibility = (v ? 'visible' : 'hidden');
+        }, true));
     }
 
     render(): VNode {
@@ -275,14 +280,20 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
                     />
                 </div>
                 <div style="flex-grow: 1;" />
-                <div ref={this.tmpyInsertButtonDiv} style="display: flex; justify-content: flex-end; padding: 2px;">
-                    <Button
-                        label="TMPY F-PLN"
-                        onClick={() => {
-                            this.props.flightPlanService.temporaryInsert().then(() => this.props.uiService.navigateTo(`fms/${this.props.uiService.activeUri.get().category}/f-pln`));
-                        }}
-                        buttonStyle="color: yellow"
-                    />
+                <div style="display: flex; flex-direction: row; justify-content: space-between;">
+                    <div ref={this.returnButtonDiv} style="display: flex; justify-content: flex-end; padding: 2px;">
+                        <Button
+                            label="RETURN"
+                            onClick={() => this.props.uiService.navigateTo('back')}
+                        />
+                    </div>
+                    <div ref={this.tmpyInsertButtonDiv} style="display: flex; justify-content: flex-end; padding: 2px;">
+                        <Button
+                            label="TMPY F-PLN"
+                            onClick={() => this.props.uiService.navigateTo(`fms/${this.props.uiService.activeUri.get().category}/f-pln`)}
+                            buttonStyle="color: yellow"
+                        />
+                    </div>
                 </div>
                 {/* end page content */}
                 <Footer bus={this.props.bus} uiService={this.props.uiService} flightPlanService={this.props.flightPlanService} />

@@ -1,24 +1,33 @@
+import { FlightPlanIndex } from '@fmgc/flightplanning/new/FlightPlanManager';
+import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { ArraySubject, FSComponent } from '@microsoft/msfs-sdk';
 import { MfdFmsFpln } from 'instruments/src/MFD/pages/FMS/F-PLN/F-PLN';
 import { ContextMenuElementProps } from 'instruments/src/MFD/pages/common/ContextMenu';
 
-type lineType = 'waypoint' | 'discontinuity' | 'departure' | 'arrival' | 'too-steep-path';
-export function getRevisionsMenu(fpln: MfdFmsFpln, type: lineType): ArraySubject<ContextMenuElementProps> {
+export enum FplnRevisionsMenuType {
+    Waypoint,
+    Discontinuity,
+    Departure,
+    Arrival,
+    TooSteepPath
+}
+
+export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType, legIndex: number, planIndex: FlightPlanIndex): ArraySubject<ContextMenuElementProps> {
     let disabledVec: boolean[] = [false, false, false, true, true, false, false, false, false, false, false, false, false, false, false];
     switch (type) {
-    case 'waypoint':
+    case FplnRevisionsMenuType.Waypoint:
         disabledVec = [false, false, false, true, true, false, false, false, false, false, false, false, false, false, false];
         break;
-    case 'discontinuity':
+    case FplnRevisionsMenuType.Discontinuity:
         disabledVec = [true, false, false, true, true, false, true, true, true, false, false, true, true, true, true];
         break;
-    case 'departure':
+    case FplnRevisionsMenuType.Departure:
         disabledVec = [false, false, false, false, true, false, false, false, false, false, false, false, false, false, false];
         break;
-    case 'arrival':
+    case FplnRevisionsMenuType.Arrival:
         disabledVec = [false, false, false, true, false, false, false, false, false, false, false, false, false, false, false];
         break;
-    case 'too-steep-path':
+    case FplnRevisionsMenuType.TooSteepPath:
         disabledVec = [true, false, true, true, true, true, true, true, true, true, true, true, true, true];
         break;
     default:
@@ -27,9 +36,9 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: lineType): ArraySubject
     }
     return ArraySubject.create([
         {
-            title: 'FROM P.POS DIR TO',
-            disabled: disabledVec[0],
-            onSelectCallback: () => null,
+            title: '(N/A) FROM P.POS DIR TO',
+            disabled: true,
+            onSelectCallback: () => fpln.props.uiService.navigateTo(`fms/${fpln.props.uiService.activeUri.get().category}/f-pln-direct-to`),
         },
         {
             title: 'INSERT NEXT WPT',
@@ -39,7 +48,7 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: lineType): ArraySubject
         {
             title: 'DELETE *',
             disabled: disabledVec[2],
-            onSelectCallback: () => null,
+            onSelectCallback: () => fpln.props.flightPlanService.deleteElementAt(legIndex, planIndex),
         },
         {
             title: 'DEPARTURE',
@@ -52,29 +61,29 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: lineType): ArraySubject
             onSelectCallback: () => fpln.props.uiService.navigateTo(`fms/${fpln.props.uiService.activeUri.get().category}/f-pln-arrival`),
         },
         {
-            title: 'OFFSET',
-            disabled: disabledVec[5],
-            onSelectCallback: () => null,
+            title: '(N/A) OFFSET',
+            disabled: true,
+            onSelectCallback: () => fpln.props.uiService.navigateTo(`fms/${fpln.props.uiService.activeUri.get().category}/f-pln-offset`),
         },
         {
-            title: 'HOLD',
-            disabled: disabledVec[6],
-            onSelectCallback: () => null,
+            title: '(N/A) HOLD',
+            disabled: true,
+            onSelectCallback: () => fpln.props.uiService.navigateTo(`fms/${fpln.props.uiService.activeUri.get().category}/f-pln-hold`),
         },
         {
-            title: 'AIRWAYS',
-            disabled: disabledVec[7],
-            onSelectCallback: () => null,
+            title: '(N/A) AIRWAYS',
+            disabled: true,
+            onSelectCallback: () => fpln.props.uiService.navigateTo(`fms/${fpln.props.uiService.activeUri.get().category}/f-pln-airways`),
         },
         {
             title: 'OVERFLY *',
             disabled: disabledVec[8],
-            onSelectCallback: () => null,
+            onSelectCallback: () => fpln.props.flightPlanService.toggleOverfly(legIndex, planIndex),
         },
         {
             title: 'ENABLE ALTN *',
             disabled: disabledVec[9],
-            onSelectCallback: () => null,
+            onSelectCallback: () => fpln.props.flightPlanService.enableAltn(legIndex, planIndex),
         },
         {
             title: 'NEW DEST',
@@ -82,24 +91,33 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: lineType): ArraySubject
             onSelectCallback: () => fpln.openNewDestWindow(),
         },
         {
-            title: 'CONSTRAINTS',
-            disabled: disabledVec[11],
-            onSelectCallback: () => null,
+            title: '(N/A) CONSTRAINTS',
+            disabled: true,
+            onSelectCallback: () => fpln.props.uiService.navigateTo(`fms/${fpln.props.uiService.activeUri.get().category}/f-pln-vert-rev/alt`),
         },
         {
-            title: 'CMS',
-            disabled: disabledVec[12],
-            onSelectCallback: () => null,
+            title: '(N/A) CMS',
+            disabled: true,
+            onSelectCallback: () => fpln.props.uiService.navigateTo(`fms/${fpln.props.uiService.activeUri.get().category}/f-pln-vert-rev/cms`),
         },
         {
-            title: 'STEP ALTs',
-            disabled: disabledVec[13],
-            onSelectCallback: () => null,
+            title: '(N/A) STEP ALTs',
+            disabled: true,
+            onSelectCallback: () => fpln.props.uiService.navigateTo(`fms/${fpln.props.uiService.activeUri.get().category}/f-pln-vert-rev/step-alts`),
         },
         {
-            title: 'WIND',
-            disabled: disabledVec[14],
-            onSelectCallback: () => null,
+            title: '(N/A) WIND',
+            disabled: true,
+            onSelectCallback: () => {
+                // Find out whether waypoint is CLB, CRZ or DES waypoint and direct to appropriate WIND sub-page
+                if (fpln.loadedFlightPlan?.legElementAt(legIndex)?.segment?.class === SegmentClass.Arrival) {
+                    fpln.props.uiService.navigateTo(`fms/${fpln.props.uiService.activeUri.get().category}/wind/des`);
+                } else if (fpln.loadedFlightPlan?.legElementAt(legIndex)?.segment?.class === SegmentClass.Enroute) {
+                    fpln.props.uiService.navigateTo(`fms/${fpln.props.uiService.activeUri.get().category}/wind/crz`);
+                } else {
+                    fpln.props.uiService.navigateTo(`fms/${fpln.props.uiService.activeUri.get().category}/wind/clb`);
+                }
+            },
         },
     ]);
 }

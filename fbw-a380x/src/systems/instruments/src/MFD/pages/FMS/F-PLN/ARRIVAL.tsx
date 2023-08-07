@@ -48,25 +48,25 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
 
     private transOptions = Subject.create<ButtonMenuItem[]>([]);
 
+    private returnButtonDiv = FSComponent.createRef<HTMLDivElement>();
+
     private tmpyInsertButtonDiv = FSComponent.createRef<HTMLDivElement>();
 
     protected onNewData(): void {
         console.time('ARRIVAL:onNewData');
         this.currentFlightPlanVersion = this.loadedFlightPlan.version;
 
-        if (this.loadedFlightPlan.originAirport) {
-            this.toIcao.set(this.loadedFlightPlan.originAirport.ident);
+        if (this.loadedFlightPlan.destinationAirport) {
+            this.toIcao.set(this.loadedFlightPlan.destinationAirport.ident);
 
             const runways: ButtonMenuItem[] = [];
             this.loadedFlightPlan.availableDestinationRunways.forEach((rw) => {
                 runways.push({
                     label: `${rw.ident.substring(2).padEnd(3, ' ')} ${rw.length.toFixed(0).padStart(5, ' ')}FT`,
                     action: () => {
-                        this.props.flightPlanService.setDestinationRunway(rw.ident);
-                        this.props.flightPlanService.setApproach(undefined);
-                        this.props.flightPlanService.setApproachVia(undefined);
-                        this.props.flightPlanService.setArrival(undefined);
-                        this.props.flightPlanService.setArrivalEnrouteTransition(undefined);
+                        this.props.flightPlanService.setDestinationRunway(rw.ident, this.loadedFlightPlanIndex);
+                        this.props.flightPlanService.setApproach(undefined, this.loadedFlightPlanIndex);
+                        this.props.flightPlanService.setApproachVia(undefined, this.loadedFlightPlanIndex);
                     },
                 });
             });
@@ -76,101 +76,98 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                 this.rwyIdent.set(this.loadedFlightPlan.destinationRunway.ident.substring(2));
                 this.rwyLength.set(this.loadedFlightPlan.destinationRunway.length.toFixed(0) ?? '----');
                 this.rwyCrs.set(this.loadedFlightPlan.destinationRunway.bearing.toFixed(0) ?? '---');
-
-                if (this.loadedFlightPlan.availableApproaches?.length > 0) {
-                    const appr: ButtonMenuItem[] = [{
-                        label: 'NONE',
-                        action: () => {
-                            this.props.flightPlanService.setApproach(undefined);
-                            this.props.flightPlanService.setApproachVia(undefined);
-                            this.props.flightPlanService.setArrival(undefined);
-                            this.props.flightPlanService.setArrivalEnrouteTransition(undefined);
-                        },
-                    }];
-                    this.loadedFlightPlan.availableDepartures.forEach((el) => {
-                        appr.push({
-                            label: el.ident,
-                            action: () => {
-                                this.props.flightPlanService.setApproach(el.ident);
-                                this.props.flightPlanService.setApproachVia(undefined);
-                                this.props.flightPlanService.setArrival(undefined);
-                                this.props.flightPlanService.setArrivalEnrouteTransition(undefined);
-                            },
-                        });
-                    });
-                    this.apprOptions.set(appr);
-                    this.apprDisabled.set(false);
-                }
             } else {
                 this.rwyIdent.set('---');
                 this.rwyLength.set('----');
                 this.rwyCrs.set('---');
+            }
+
+            if (this.loadedFlightPlan.availableApproaches?.length > 0) {
+                const appr: ButtonMenuItem[] = [{
+                    label: 'NONE',
+                    action: () => {
+                        this.props.flightPlanService.setApproach(undefined, this.loadedFlightPlanIndex);
+                        this.props.flightPlanService.setApproachVia(undefined, this.loadedFlightPlanIndex);
+                    },
+                }];
+                this.loadedFlightPlan.availableApproaches.forEach((el) => {
+                    appr.push({
+                        label: el.ident,
+                        action: () => {
+                            this.props.flightPlanService.setDestinationRunway(el.runwayIdent, this.loadedFlightPlanIndex); // Should we do this here?
+                            this.props.flightPlanService.setApproach(el.ident, this.loadedFlightPlanIndex);
+                            this.props.flightPlanService.setApproachVia(undefined, this.loadedFlightPlanIndex);
+                        },
+                    });
+                });
+                this.apprOptions.set(appr);
+                this.apprDisabled.set(false);
+            } else {
                 this.apprDisabled.set(true);
             }
 
             if (this.loadedFlightPlan.approach) {
                 this.appr.set(this.loadedFlightPlan.approach.ident);
+                this.rwyFreq.set(this.loadedFlightPlan.destinationRunway.lsFrequencyChannel.toFixed(2));
 
-                if (this.loadedFlightPlan.availableApproachVias?.length > 0) {
+                if (this.loadedFlightPlan.approach.transitions.length > 0) {
                     const vias: ButtonMenuItem[] = [{
                         label: 'NONE',
                         action: () => {
-                            this.props.flightPlanService.setApproachVia(undefined);
-                            this.props.flightPlanService.setArrival(undefined);
-                            this.props.flightPlanService.setArrivalEnrouteTransition(undefined);
+                            this.props.flightPlanService.setApproachVia(undefined, this.loadedFlightPlanIndex);
                         },
                     }];
-                    this.loadedFlightPlan.availableApproachVias.forEach((el) => {
+                    this.loadedFlightPlan.approach.transitions.forEach((el) => {
                         vias.push({
                             label: el.ident,
                             action: () => {
-                                this.props.flightPlanService.setApproachVia(el.ident);
-                                this.props.flightPlanService.setArrival(undefined);
-                                this.props.flightPlanService.setArrivalEnrouteTransition(undefined);
+                                this.props.flightPlanService.setApproachVia(el.ident, this.loadedFlightPlanIndex);
                             },
                         });
                     });
                     this.viaOptions.set(vias);
                     this.viaDisabled.set(false);
-                }
-            } else {
-                if (this.loadedFlightPlan.availableApproaches?.length > 0) {
-                    this.appr.set('------');
                 } else {
-                    this.appr.set('NONE');
+                    this.viaDisabled.set(true);
                 }
-                this.viaDisabled.set(true);
+            } else if (this.loadedFlightPlan.availableApproaches?.length > 0) {
+                this.appr.set('------');
+                this.rwyFreq.set('---.--');
+            } else {
+                this.appr.set('NONE');
+                this.rwyFreq.set('---.--');
             }
+
+            console.log(this.loadedFlightPlan);
 
             if (this.loadedFlightPlan.approachVia) {
                 this.via.set(this.loadedFlightPlan.approachVia.ident);
-
-                if (this.loadedFlightPlan.availableArrivals?.length > 0) {
-                    const arrivals: ButtonMenuItem[] = [{
-                        label: 'NONE',
-                        action: () => {
-                            this.props.flightPlanService.setArrival(undefined);
-                            this.props.flightPlanService.setArrivalEnrouteTransition(undefined);
-                        },
-                    }];
-                    this.loadedFlightPlan.availableArrivals.forEach((el) => {
-                        arrivals.push({
-                            label: el.ident,
-                            action: () => {
-                                this.props.flightPlanService.setArrival(el.ident);
-                                this.props.flightPlanService.setArrivalEnrouteTransition(undefined);
-                            },
-                        });
-                    });
-                    this.starOptions.set(arrivals);
-                    this.starDisabled.set(false);
-                }
+            } else if (!this.loadedFlightPlan.approach || this.loadedFlightPlan?.approach?.transitions?.length > 0) {
+                this.via.set('------');
             } else {
-                if (this.loadedFlightPlan.availableApproachVias?.length > 0) {
-                    this.via.set('------');
-                } else {
-                    this.via.set('NONE');
-                }
+                this.via.set('NONE');
+            }
+
+            if (this.loadedFlightPlan.availableArrivals?.length > 0) {
+                const arrivals: ButtonMenuItem[] = [{
+                    label: 'NONE',
+                    action: () => {
+                        this.props.flightPlanService.setArrival(undefined, this.loadedFlightPlanIndex);
+                        this.props.flightPlanService.setArrivalEnrouteTransition(undefined, this.loadedFlightPlanIndex);
+                    },
+                }];
+                this.loadedFlightPlan.availableArrivals.forEach((el) => {
+                    arrivals.push({
+                        label: el.ident,
+                        action: () => {
+                            this.props.flightPlanService.setArrival(el.ident, this.loadedFlightPlanIndex);
+                            this.props.flightPlanService.setArrivalEnrouteTransition(undefined, this.loadedFlightPlanIndex);
+                        },
+                    });
+                });
+                this.starOptions.set(arrivals);
+                this.starDisabled.set(false);
+            } else {
                 this.starDisabled.set(true);
             }
 
@@ -181,14 +178,14 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                     const trans: ButtonMenuItem[] = [{
                         label: 'NONE',
                         action: () => {
-                            this.props.flightPlanService.setArrivalEnrouteTransition(undefined);
+                            this.props.flightPlanService.setArrivalEnrouteTransition(undefined, this.loadedFlightPlanIndex);
                         },
                     }];
                     this.loadedFlightPlan.arrival.enrouteTransitions.forEach((el) => {
                         trans.push({
                             label: el.ident,
                             action: () => {
-                                this.props.flightPlanService.setArrivalEnrouteTransition(el.ident);
+                                this.props.flightPlanService.setArrivalEnrouteTransition(el.ident, this.loadedFlightPlanIndex);
                             },
                         });
                     });
@@ -222,7 +219,10 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        this.subs.push(this.tmpyActive.sub((v) => this.tmpyInsertButtonDiv.getOrDefault().style.visibility = (v ? 'visible' : 'hidden'), true));
+        this.subs.push(this.tmpyActive.sub((v) => {
+            this.returnButtonDiv.getOrDefault().style.visibility = (v ? 'hidden' : 'visible');
+            this.tmpyInsertButtonDiv.getOrDefault().style.visibility = (v ? 'visible' : 'hidden');
+        }, true));
     }
 
     public destroy(): void {
@@ -412,14 +412,20 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                     />
                 </div>
                 <div style="flex-grow: 1;" />
-                <div ref={this.tmpyInsertButtonDiv} style="display: flex; justify-content: flex-end; padding: 2px;">
-                    <Button
-                        label="TMPY F-PLN"
-                        onClick={() => {
-                            this.props.flightPlanService.temporaryInsert().then(() => this.props.uiService.navigateTo(`fms/${this.props.uiService.activeUri.get().category}/f-pln`));
-                        }}
-                        buttonStyle="color: yellow"
-                    />
+                <div style="display: flex; flex-direction: row; justify-content: space-between;">
+                    <div ref={this.returnButtonDiv} style="display: flex; justify-content: flex-end; padding: 2px;">
+                        <Button
+                            label="RETURN"
+                            onClick={() => this.props.uiService.navigateTo('back')}
+                        />
+                    </div>
+                    <div ref={this.tmpyInsertButtonDiv} style="display: flex; justify-content: flex-end; padding: 2px;">
+                        <Button
+                            label="TMPY F-PLN"
+                            onClick={() => this.props.uiService.navigateTo(`fms/${this.props.uiService.activeUri.get().category}/f-pln`)}
+                            buttonStyle="color: yellow"
+                        />
+                    </div>
                 </div>
                 {/* end page content */}
                 <Footer bus={this.props.bus} uiService={this.props.uiService} flightPlanService={this.props.flightPlanService} />
