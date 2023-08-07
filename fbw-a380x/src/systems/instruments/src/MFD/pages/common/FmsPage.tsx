@@ -68,6 +68,7 @@ export abstract class FmsPage<T extends AbstractMfdPageProps> extends DisplayCom
         // Check for current flight plan, whether it has changed (TODO switch to Subscribable in the future)
         if (this.loadedFlightPlan.version !== this.currentFlightPlanVersion) {
             this.onNewData();
+            this.currentFlightPlanVersion = this.loadedFlightPlan.version;
         }
     }
 

@@ -58,7 +58,6 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
 
     protected onNewData() {
         console.time('INIT:onNewData');
-        this.currentFlightPlanVersion = this.loadedFlightPlan.version;
 
         // Update internal subjects for display purposes or input fields
         if (this.loadedFlightPlan.originAirport) {

@@ -1,14 +1,14 @@
-import { ComponentProps, DisplayComponent, FSComponent, Subject, SubscribableArray, VNode } from '@microsoft/msfs-sdk';
+import { ComponentProps, DisplayComponent, FSComponent, Subject, Subscribable, Subscription, VNode } from '@microsoft/msfs-sdk';
 import './style.scss';
 
-export interface ContextMenuElementProps {
+export interface ContextMenuElement {
     title: string;
     disabled: boolean;
     onSelectCallback: () => void;
 }
 
 interface ContextMenuProps extends ComponentProps {
-    values: SubscribableArray<ContextMenuElementProps>;
+    values: Subscribable<ContextMenuElement[]>;
     idPrefix: string;
     opened: Subject<boolean>;
 }
@@ -17,7 +17,12 @@ interface ContextMenuProps extends ComponentProps {
  * Context menu, which can be opened e.g. by clicking on F-PLN waypoints
  */
 export class ContextMenu extends DisplayComponent<ContextMenuProps> {
+    // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
+    private subs = [] as Subscription[];
+
     private contextMenuRef = FSComponent.createRef<HTMLDivElement>();
+
+    private renderedMenuItems: ContextMenuElement[];
 
     private openedAt: number = 0;
 
@@ -37,16 +42,51 @@ export class ContextMenu extends DisplayComponent<ContextMenuProps> {
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
+        if (!this.props.idPrefix) {
+            console.error('ContextMenu: No idPrefix set.');
+        }
+
         this.contextMenuRef.instance.style.display = 'none';
 
-        this.props.values.getArray().forEach((el, idx) => {
-            if (el.disabled === false) {
-                document.getElementById(`${this.props.idPrefix}_${idx}`).addEventListener('click', () => {
+        this.subs.push(this.props.values.sub((items) => {
+            // Delete click handler, delete contextMenuRef children, render contextMenuRef children,
+            this.renderedMenuItems?.forEach((val, i) => {
+                document.getElementById(`${this.props.idPrefix}_${i}`).removeEventListener('click', () => {
                     this.hideMenu();
-                    el.onSelectCallback();
+                    val.onSelectCallback();
                 });
+            });
+
+            // Delete contextMenuRef's children
+            while (this.contextMenuRef.instance.firstChild) {
+                this.contextMenuRef.instance.removeChild(this.contextMenuRef.instance.firstChild);
             }
-        });
+
+            this.renderedMenuItems = items;
+
+            // Render contextMenuRef's children
+            const itemNodes: VNode = (
+                <div>
+                    {items?.map<VNode>((el, idx) => (
+                        <span
+                            class={`mfd-context-menu-element${el.disabled === true ? ' disabled' : ''}`}
+                            id={`${this.props.idPrefix}_${idx}`}
+                        >
+                            {el.title}
+                        </span>
+                    ), this)}
+                </div>
+            );
+            FSComponent.render(itemNodes, this.contextMenuRef.instance);
+
+            // Add click event listener
+            items?.forEach((val, i) => {
+                document.getElementById(`${this.props.idPrefix}_${i}`).addEventListener('click', () => {
+                    this.hideMenu();
+                    val.onSelectCallback();
+                });
+            });
+        }, true));
 
         // Close dropdown menu if clicked outside
         document.getElementById('MFD_CONTENT').addEventListener('click', () => {
@@ -58,16 +98,7 @@ export class ContextMenu extends DisplayComponent<ContextMenuProps> {
 
     render(): VNode {
         return (
-            <div ref={this.contextMenuRef} class="mfd-context-menu">
-                {this.props.values.getArray().map((el, idx) => (
-                    <span
-                        class={`mfd-context-menu-element${el.disabled === true ? ' disabled' : ''}`}
-                        id={`${this.props.idPrefix}_${idx}`}
-                    >
-                        {el.title}
-                    </span>
-                ))}
-            </div>
+            <div ref={this.contextMenuRef} class="mfd-context-menu" />
         );
     }
 }

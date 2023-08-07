@@ -26,6 +26,14 @@
   color: $display-yellow;
 }
 
+.mfd-fms-fpln-line-altn > div > .mfd-fms-fpln-line-annotation,
+.mfd-fms-fpln-line-altn > div > .mfd-fms-fpln-line-ident,
+.mfd-fms-fpln-line-altn > .mfd-fms-fpln-label-small,
+.mfd-fms-fpln-line-altn > .mfd-fms-fpln-label-small-clickable,
+.mfd-fms-fpln-line-altn > div > .mfd-fms-fpln-leg-active {
+  color: $display-cyan;
+}
+
 .mfd-fms-fpln-line-special {
   justify-content: center;
   border: 2px solid transparent;
