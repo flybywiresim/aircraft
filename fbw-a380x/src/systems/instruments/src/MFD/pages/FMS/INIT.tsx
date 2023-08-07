@@ -1,6 +1,6 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 
-import { DisplayComponent, FSComponent, Subject, Subscription, VNode } from '@microsoft/msfs-sdk';
+import { DisplayComponent, FSComponent, MappedSubject, Subject, Subscription, VNode } from '@microsoft/msfs-sdk';
 
 import './init.scss';
 import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
@@ -21,9 +21,8 @@ export class MfdFmsInit extends DisplayComponent<MfdFmsInitProps> {
     private activePageTitle = Subject.create<string>('');
 
     private fltNbr = Subject.create<string>(null);
-    private tmpyActive = Subject.create<boolean>(false);
 
-    private fltNbr = Subject.create<string>(null); // FIXME not found
+    private tmpyActive = Subject.create<boolean>(false);
 
     private fromIcao = Subject.create<string>(null);
 
@@ -87,16 +86,9 @@ export class MfdFmsInit extends DisplayComponent<MfdFmsInitProps> {
         // Check if CPNY RTE is mandatory
         this.subs.push(this.fromIcao.sub(() => this.fromToChanged(), true));
         this.subs.push(this.toIcao.sub(() => this.fromToChanged(), true));
-        this.subs.push(this.crzFl.sub((val) => this.crzTempIsDisabled.set(!val), true));
     }
 
     private fromToChanged() {
-        this.cpnyRteMandatory.set(!this.fromIcao.get() || !this.toIcao.get());
-        this.altnDisabled.set(!this.fromIcao.get() || !this.toIcao.get());
-        this.costIndexDisabled.set(!this.fromIcao.get() || !this.toIcao.get());
-        this.tripWindDisabled.set(!this.fromIcao.get() || !this.toIcao.get());
-        this.departureButtonDisabled.set(!this.fromIcao.get());
-
         if (this.fromIcao.get() && this.toIcao.get()) {
             if (!this.altnIcao.get()) {
                 this.altnIcao.set('NONE');

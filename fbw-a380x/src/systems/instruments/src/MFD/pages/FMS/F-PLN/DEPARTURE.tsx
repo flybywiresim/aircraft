@@ -5,7 +5,6 @@ import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageT
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 import { Button, ButtonMenuItem } from 'instruments/src/MFD/pages/common/Button';
-import { ActiveUriInformation } from 'instruments/src/MFD/pages/common/UIService';
 
 interface MfdFmsFplnDepProps extends AbstractMfdPageProps {
 }
@@ -16,10 +15,9 @@ export class MfdFmsFplnDep extends DisplayComponent<MfdFmsFplnDepProps> {
 
     private activePageTitle = Subject.create<string>('');
 
-    private tmpyIsActive = Subject.create<boolean>(false);
+    private tmpyActive = Subject.create<boolean>(false);
 
     private secIsActive = Subject.create<boolean>(false);
-    private tmpyActive = Subject.create<boolean>(false);
 
     private secActive = Subject.create<boolean>(false);
 
@@ -50,8 +48,6 @@ export class MfdFmsFplnDep extends DisplayComponent<MfdFmsFplnDepProps> {
     private transOptions = Subject.create<ButtonMenuItem[]>([]);
 
     private tmpyInsertButtonDiv = FSComponent.createRef<HTMLDivElement>();
-
-    }
 
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
@@ -226,10 +222,10 @@ export class MfdFmsFplnDep extends DisplayComponent<MfdFmsFplnDepProps> {
                 </div>
                 <div style="flex-grow: 1;" />
                 <div ref={this.tmpyInsertButtonDiv} style="display: flex; justify-content: flex-end; padding: 2px;">
-                    <Button label="TMPY F-PLN" onClick={() => this.props.flightPlanService.temporaryInsert()} buttonStyle="color: yellow" />
+                    <Button label="TMPY F-PLN" onClick={() => this.tmpyActive.set(false)} buttonStyle="color: yellow" />
                 </div>
                 {/* end page content */}
-                <Footer bus={this.props.bus} uiService={this.props.uiService} flightPlanService={this.props.flightPlanService} />
+                <Footer bus={this.props.bus} uiService={this.props.uiService} />
             </>
         );
     }
