@@ -227,8 +227,8 @@
       "AirportDoesNotExist": "Letiště neexistuje",
       "AuthenticateWithNavigraph": "Navigraph autentizace",
       "GoToThirdPartyOptions": {
-        "Button": "3rd Party Options",
-        "Title": "Go to 3rd Party Options to link Navigraph account"
+        "Button": "Možnosti třetích stran",
+        "Title": "Přejděte na Možnosti třetích stran pro propojení Navigraph účtu"
       },
       "InsufficientEnv": "Nedostatečný soubor .env",
       "IntoYourBrowserAndEnterTheCodeBelow": "ve vašem prohlížeči a vložte následující kód\n",
@@ -583,25 +583,25 @@
       "GsxFuelEnabled": "GSX synchronizace paliva",
       "GsxPayloadEnabled": "GSX synchronizace cestujících a nákladu",
       "NavigraphAccountLink": {
-        "Connected": "Connected",
-        "Link": "Link Account",
+        "Connected": "Připojeno",
+        "Link": "Propojit účet",
         "LoginPage": {
-          "Title": "Navigraph Account Login"
+          "Title": "Přihlášení k účtu Navigraph"
         },
-        "SettingTitle": "Navigraph Account Link",
+        "SettingTitle": "Propojení s účtem Navigraph",
         "SubscriptionStatus": {
-          "None": "None",
+          "None": "Žádný",
           "Unlimited": "Navigraph Unlimited"
         },
-        "Unlink": "Unlink Account"
+        "Unlink": "Odpojit účet"
       },
-      "OverrideSimBriefUserID": "Override SimBrief User ID",
-      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Please check that you have correctly entered your SimBrief username or pilot ID.",
+      "OverrideSimBriefUserID": "Přepsat uživatelské ID SimBrief",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Zkontrolujte prosím, zda jste správně zadali své SimBrief uživatelské jméno nebo ID pilota.",
       "TT": {
-        "OverrideSimBriefUserID": "Alternative SimBrief user ID to use instead of the linked Navigraph Account"
+        "OverrideSimBriefUserID": "Alternativní SimBrief uživatelské ID, které se použije místo propojeného účtu Navigraph"
       },
       "Title": "Možnosti třetích stran",
-      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "The override SimBrief PilotID has been validated and updated to"
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "Přednostní SimBrief PilotID bylo ověřeno a změněno na"
     },
     "ThrottleConfig": {
       "Apply": "Použít",

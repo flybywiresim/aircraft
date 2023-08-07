@@ -228,7 +228,7 @@
       "AuthenticateWithNavigraph": "Autenticati con Navigraph",
       "GoToThirdPartyOptions": {
         "Button": "3rd Party Options",
-        "Title": "Go to 3rd Party Options to link Navigraph account"
+        "Title": "Vai a Opzioni di terze parti per collegare l'account Navigraph"
       },
       "InsufficientEnv": "File .env Insufficiente",
       "IntoYourBrowserAndEnterTheCodeBelow": "nel tuo browser e inserisci il codice riportato sotto",
@@ -584,21 +584,21 @@
       "GsxPayloadEnabled": "Sincronizzazione Carico Utile GSX",
       "NavigraphAccountLink": {
         "Connected": "Connected",
-        "Link": "Link Account",
+        "Link": "Collega account",
         "LoginPage": {
-          "Title": "Navigraph Account Login"
+          "Title": "Accesso all'account Navigraph"
         },
-        "SettingTitle": "Navigraph Account Link",
+        "SettingTitle": "Link all'account Navigraph",
         "SubscriptionStatus": {
           "None": "None",
-          "Unlimited": "Navigraph Unlimited"
+          "Unlimited": "Navigraph illimitato"
         },
-        "Unlink": "Unlink Account"
+        "Unlink": "Scollega account"
       },
-      "OverrideSimBriefUserID": "Override SimBrief User ID",
+      "OverrideSimBriefUserID": "Oltrepassa ID utente SimBrief",
       "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Please check that you have correctly entered your SimBrief username or pilot ID.",
       "TT": {
-        "OverrideSimBriefUserID": "Alternative SimBrief user ID to use instead of the linked Navigraph Account"
+        "OverrideSimBriefUserID": "ID utente SimBrief alternativo da utilizzare al posto dell'account Navigraph collegato"
       },
       "Title": "Opzioni di terze parti",
       "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "The override SimBrief PilotID has been validated and updated to"

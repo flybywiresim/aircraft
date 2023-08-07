@@ -227,8 +227,8 @@
       "AirportDoesNotExist": "Sân bay không tồn tại",
       "AuthenticateWithNavigraph": "Xác thực với Navigraph",
       "GoToThirdPartyOptions": {
-        "Button": "3rd Party Options",
-        "Title": "Go to 3rd Party Options to link Navigraph account"
+        "Button": "Tùy chọn bên thứ 3",
+        "Title": "Hãy vào phần Tùy chọn bên thứ 3 để liên kết tải khoản Navigraph"
       },
       "InsufficientEnv": "Tệp .env không đủ",
       "IntoYourBrowserAndEnterTheCodeBelow": "vào trình duyệt của bạn và nhập mã dưới đây\n",
@@ -583,25 +583,25 @@
       "GsxFuelEnabled": "Đồng bộ hoá hệ thống nhiên liệu của GSX",
       "GsxPayloadEnabled": "Đồng bộ hoá hệ thống tải trọng của GSX",
       "NavigraphAccountLink": {
-        "Connected": "Connected",
-        "Link": "Link Account",
+        "Connected": "Đã kết nối",
+        "Link": "Liên kết tài khoản",
         "LoginPage": {
-          "Title": "Navigraph Account Login"
+          "Title": "Đăng nhập tài khoản Navigraph"
         },
-        "SettingTitle": "Navigraph Account Link",
+        "SettingTitle": "Liên kết tài khoản Navigraph",
         "SubscriptionStatus": {
-          "None": "None",
+          "None": "Không",
           "Unlimited": "Navigraph Unlimited"
         },
-        "Unlink": "Unlink Account"
+        "Unlink": "Hủy liên kết tài khoản"
       },
-      "OverrideSimBriefUserID": "Override SimBrief User ID",
-      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Please check that you have correctly entered your SimBrief username or pilot ID.",
+      "OverrideSimBriefUserID": "Ghi đè ID SimBrief",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Vui lòng kiểm tra xem bạn đã nhập đúng tên người dùng SimBrief hoặc ID của mình chưa.",
       "TT": {
-        "OverrideSimBriefUserID": "Alternative SimBrief user ID to use instead of the linked Navigraph Account"
+        "OverrideSimBriefUserID": "ID SimBrief để sử dụng thay cho tải khoản Navigraph đã được liên kết"
       },
       "Title": "Tùy chọn bên thứ 3",
-      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "The override SimBrief PilotID has been validated and updated to"
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "SimBrief PilotID ghi đè đã được xác thực và cập nhật thành"
     },
     "ThrottleConfig": {
       "Apply": "Áp dụng",
