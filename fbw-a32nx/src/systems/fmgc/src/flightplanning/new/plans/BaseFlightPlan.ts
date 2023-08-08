@@ -145,7 +145,6 @@ export abstract class BaseFlightPlan implements ReadonlyFlightPlan {
 
     destroy() {
         for (const subscription of this.subscriptions) {
-            console.log('subscription destroyed!');
             subscription.destroy();
         }
     }
