@@ -3,9 +3,7 @@ use std::error::Error;
 use msfs::sim_connect;
 use msfs::{sim_connect::SimConnect, sim_connect::SIMCONNECT_OBJECT_ID_USER};
 
-use systems_wasm::aspects::{
-    EventToVariableMapping, MsfsAspectBuilder, ObjectWrite, VariablesToObject,
-};
+use systems_wasm::aspects::{MsfsAspectBuilder, ObjectWrite, VariablesToObject};
 use systems_wasm::{set_data_on_sim_object, Variable};
 
 pub(super) fn payload(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {

@@ -41,6 +41,7 @@ pub trait CargoPayload {
     fn target_fore_aft_center_of_gravity(&self) -> f64;
 }
 
+#[allow(dead_code)]
 pub enum A380Pax {
     MainFwdA,
     MainFwdB,
@@ -63,6 +64,7 @@ impl Into<usize> for A380Pax {
     }
 }
 
+#[allow(dead_code)]
 pub enum A380Cargo {
     Fwd,
     Aft,
