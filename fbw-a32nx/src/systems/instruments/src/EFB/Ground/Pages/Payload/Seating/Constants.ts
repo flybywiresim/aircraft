@@ -1,12 +1,12 @@
-export enum TYPE {
-    NB_ECO = 0,
-    NB_ECO_EMERG = 1,
-    WB_ECO = 2,
-    WB_ECO_EMERG = 3,
-    WB_BIZ_FLAT_R = 4,
-    WB_BIZ_FLAT_L = 5,
-    WB_SUITE_R = 6,
-    WB_SUITE_L = 7,
+export enum ClassType {
+    NarrowbodyEconomy = 0,
+    NarrowbodyEconomyEmergency = 1,
+    WidebodyEconomy = 2,
+    WidebodyEconomyEmergency = 3,
+    WidebodyBusinessFlatRight = 4,
+    WidebodyBusinessFlatLeft = 5,
+    WidebodySuiteRight = 6,
+    WidebodySuiteLeft = 7,
 }
 
 export const CanvasConst = Object.freeze({
@@ -49,7 +49,7 @@ export interface CargoStationInfo {
 }
 
 export const SeatConstants = Object.freeze({
-    [TYPE.NB_ECO]: {
+    [ClassType.NarrowbodyEconomy]: {
         len: 25.4,
         wid: 19.2,
         padX: 6.8,
@@ -57,7 +57,7 @@ export const SeatConstants = Object.freeze({
         imageX: 25.4,
         imageY: 19.2,
     },
-    [TYPE.NB_ECO_EMERG]: {
+    [ClassType.NarrowbodyEconomyEmergency]: {
         len: 25.4,
         wid: 19.2,
         padX: 13.8,
@@ -65,7 +65,7 @@ export const SeatConstants = Object.freeze({
         imageX: 25.4,
         imageY: 19.2,
     },
-    [TYPE.WB_ECO]: {
+    [ClassType.WidebodyEconomy]: {
         len: 16,
         wid: 12.125,
         padX: 2,
@@ -73,7 +73,7 @@ export const SeatConstants = Object.freeze({
         imageX: 16,
         imageY: 12.125,
     },
-    [TYPE.WB_ECO_EMERG]: {
+    [ClassType.WidebodyEconomyEmergency]: {
         len: 16,
         wid: 12.125,
         padX: 2,
@@ -81,7 +81,7 @@ export const SeatConstants = Object.freeze({
         imageX: 16,
         imageY: 12.125,
     },
-    [TYPE.WB_BIZ_FLAT_R]: {
+    [ClassType.WidebodyBusinessFlatRight]: {
         len: 24,
         wid: 23.22,
         padX: 12,
@@ -89,7 +89,7 @@ export const SeatConstants = Object.freeze({
         imageX: 24,
         imageY: 23.22,
     },
-    [TYPE.WB_BIZ_FLAT_L]: {
+    [ClassType.WidebodyBusinessFlatLeft]: {
         len: 24,
         wid: 23.22,
         padX: 12,
@@ -97,7 +97,7 @@ export const SeatConstants = Object.freeze({
         imageX: 24,
         imageY: 23.22,
     },
-    [TYPE.WB_SUITE_R]: {
+    [ClassType.WidebodySuiteRight]: {
         len: 35,
         wid: 20,
         padX: 2,
@@ -105,7 +105,7 @@ export const SeatConstants = Object.freeze({
         imageX: 50,
         imageY: 50,
     },
-    [TYPE.WB_SUITE_L]: {
+    [ClassType.WidebodySuiteLeft]: {
         len: 35,
         wid: 20,
         padX: 5,

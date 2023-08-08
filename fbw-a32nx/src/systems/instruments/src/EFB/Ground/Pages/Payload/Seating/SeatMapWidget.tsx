@@ -1,9 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as ReactDOMServer from 'react-dom/server';
 import { BitFlags } from '@flybywiresim/fbw-sdk';
-import { CanvasConst, SeatConstants, SeatInfo, PaxStationInfo, TYPE, RowInfo } from './Constants';
+import { CanvasConst, SeatConstants, SeatInfo, PaxStationInfo, ClassType, RowInfo } from './Constants';
 import { BusinessSeatLeft, BusinessSeatRight, Seat, SuiteLeft, SuiteRight } from '../../../../Assets/Seat';
-// import { t } from '../../../../../translation';
 
 interface SeatMapProps {
     seatMap: PaxStationInfo[],
@@ -63,7 +62,7 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
     const [xYMap, setXYMap] = useState<number[][][]>([]);
 
     const addXOffsetRow = (xOff: number, rowInfo: RowInfo, station: number, row: number) => {
-        let seatType: TYPE = TYPE.NB_ECO;
+        let seatType: ClassType = ClassType.NarrowbodyEconomy;
         if (rowInfo.xOffset !== undefined) {
             xOff += rowInfo.xOffset;
         }
@@ -129,7 +128,7 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
 
     const drawSeat = (x: number, y: number, seatType: number, imageX: number, imageY: number, station: number, seatId: number) => {
         switch (seatType) {
-        case TYPE.WB_BIZ_FLAT_L:
+        case ClassType.WidebodyBusinessFlatLeft:
             if (ctx && bizLeftSeatEmptyImg && bizLeftSeatMinusImg && bizLeftSeatAddImg && bizLeftSeatFilledImg) {
                 if (desiredFlags[station].getBitIndex(seatId) && activeFlags[station].getBitIndex(seatId)) {
                     ctx.drawImage(bizLeftSeatFilledImg.current, x, y, imageX, imageY);
@@ -142,7 +141,7 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
                 }
             }
             break;
-        case TYPE.WB_BIZ_FLAT_R:
+        case ClassType.WidebodyBusinessFlatRight:
             if (ctx && bizRightSeatEmptyImg && bizRightSeatMinusImg && bizRightSeatAddImg && bizRightSeatFilledImg) {
                 if (desiredFlags[station].getBitIndex(seatId) && activeFlags[station].getBitIndex(seatId)) {
                     ctx.drawImage(bizRightSeatFilledImg.current, x, y, imageX, imageY);
@@ -155,7 +154,7 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
                 }
             }
             break;
-        case TYPE.WB_SUITE_R:
+        case ClassType.WidebodySuiteRight:
             if (ctx && suiteRightSeatEmptyImg && suiteRightSeatMinusImg && suiteRightSeatAddImg && suiteRightSeatFilledImg) {
                 if (desiredFlags[station].getBitIndex(seatId) && activeFlags[station].getBitIndex(seatId)) {
                     ctx.drawImage(suiteRightSeatFilledImg.current, x, y, imageX, imageY);
@@ -168,7 +167,7 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
                 }
             }
             break;
-        case TYPE.WB_SUITE_L:
+        case ClassType.WidebodySuiteLeft:
             if (ctx && suiteLeftSeatEmptyImg && suiteLeftSeatMinusImg && suiteLeftSeatAddImg && suiteLeftSeatFilledImg) {
                 if (desiredFlags[station].getBitIndex(seatId) && activeFlags[station].getBitIndex(seatId)) {
                     ctx.drawImage(suiteLeftSeatFilledImg.current, x, y, imageX, imageY);

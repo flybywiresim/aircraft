@@ -12,13 +12,41 @@ import Loadsheet from './a380v3.json';
 import Card from '../../../../UtilComponents/Card/Card';
 import { SelectGroup, SelectItem } from '../../../../UtilComponents/Form/Select';
 import { SeatMapWidget } from '../Seating/SeatMapWidget';
-import { isSimbriefDataLoaded } from '../../../../Store/features/simBrief';
 import { PromptModal, useModals } from '../../../../UtilComponents/Modals/Modals';
-import { useAppSelector } from '../../../../Store/store';
 import { A380SeatOutlineBg } from '../../../../Assets/A380SeatOutlineBg';
 
-export const A380Payload = () => {
-    const { usingMetric } = Units;
+interface A380Props {
+    simbriefUnits: string,
+    simbriefBagWeight: number,
+    simbriefPaxWeight: number,
+    simbriefPax: number,
+    simbriefBag: number,
+    simbriefFreight: number,
+    simbriefDataLoaded: boolean,
+    massUnitForDisplay: string,
+    isOnGround: boolean,
+
+    boardingStarted: boolean,
+    boardingRate: string,
+    setBoardingStarted: (boardingStarted: any) => void,
+    setBoardingRate: (boardingRate: any) => void,
+}
+
+export const A380Payload: React.FC<A380Props> = ({
+    simbriefUnits,
+    simbriefBagWeight,
+    simbriefPaxWeight,
+    simbriefPax,
+    simbriefBag,
+    simbriefFreight,
+    simbriefDataLoaded,
+    massUnitForDisplay,
+    isOnGround,
+    boardingStarted,
+    boardingRate,
+    setBoardingStarted,
+    setBoardingRate,
+}) => {
     const { showModal } = useModals();
 
     const [mainFwdA] = useSeatFlags(`L:${Loadsheet.seatMap[0].simVar}`, Loadsheet.seatMap[0].capacity, 500);
@@ -76,11 +104,6 @@ export const A380Payload = () => {
     const cargoDesired = useMemo(() => [fwdBagDesired, aftBagDesired, aftBulkDesired], [fwdBagDesired, aftBagDesired, aftBulkDesired]);
     const setCargoDesired = useMemo(() => [setFwdBagDesired, setAftBagDesired, setAftBulkDesired], []);
 
-    const massUnitForDisplay = usingMetric ? 'KGS' : 'LBS';
-
-    const simbriefDataLoaded = isSimbriefDataLoaded();
-    const [boardingStarted, setBoardingStarted] = useSimVar('L:A32NX_BOARDING_STARTED_BY_USR', 'Bool', 500);
-    const [boardingRate, setBoardingRate] = usePersistentProperty('CONFIG_BOARDING_RATE', 'REAL');
     const [paxWeight, setPaxWeight] = useSimVar('L:A32NX_WB_PER_PAX_WEIGHT', 'Kilograms', 500);
     const [paxBagWeight, setPaxBagWeight] = useSimVar('L:A32NX_WB_PER_BAG_WEIGHT', 'Kilograms', 500);
     // const [destEfob] = useSimVar('L:A32NX_DESTINATION_FUEL_ON_BOARD', 'Kilograms', 5_000);
@@ -127,12 +150,6 @@ export const A380Payload = () => {
     const [desiredGwCgMac] = useSimVar('L:A32NX_DESIRED_GW_CG_PERCENT_MAC', 'number', 1_200);
 
     const [showSimbriefButton, setShowSimbriefButton] = useState(false);
-    const simbriefUnits = useAppSelector((state) => state.simbrief.data.units);
-    const simbriefBagWeight = parseInt(useAppSelector((state) => state.simbrief.data.weights.bagWeight));
-    const simbriefPaxWeight = parseInt(useAppSelector((state) => state.simbrief.data.weights.passengerWeight));
-    const simbriefPax = parseInt(useAppSelector((state) => state.simbrief.data.weights.passengerCount));
-    const simbriefBag = parseInt(useAppSelector((state) => state.simbrief.data.weights.bagCount));
-    const simbriefFreight = parseInt(useAppSelector((state) => state.simbrief.data.weights.freight));
 
     const [displayZfw, setDisplayZfw] = useState(true);
     const [displayPaxMainDeck, setDisplayPaxMainDeck] = useState(true);
@@ -164,10 +181,8 @@ export const A380Payload = () => {
             setTargetCargo(simbriefBag, Units.poundToKilogram(simbriefFreight), Units.poundToKilogram(simbriefBagWeight));
         }
     };
-
-    const [isOnGround] = useSimVar('SIM ON GROUND', 'Bool', 8_000);
     const [eng1Running] = useSimVar('ENG COMBUSTION:1', 'Bool', 6_500);
-    const [eng2Running] = useSimVar('ENG COMBUSTION:2', 'Bool', 6_500);
+    const [eng4Running] = useSimVar('ENG COMBUSTION:4', 'Bool', 6_500);
     const [coldAndDark, setColdAndDark] = useState<boolean>(true);
 
     const chooseDesiredSeats = useCallback((stationIndex: number, fillSeats: boolean = true, numChoose: number) => {
@@ -349,12 +364,12 @@ export const A380Payload = () => {
 
     // Set Cold and Dark State
     useEffect(() => {
-        if (eng1Running || eng2Running || !isOnGround) {
+        if (eng1Running || eng4Running || !isOnGround) {
             setColdAndDark(false);
         } else {
             setColdAndDark(true);
         }
-    }, [eng1Running, eng2Running, isOnGround]);
+    }, [eng1Running, eng4Running, isOnGround]);
 
     useEffect(() => {
         if (boardingRate !== 'INSTANT') {
