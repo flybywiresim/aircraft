@@ -3,6 +3,7 @@
 
 /* eslint-disable no-underscore-dangle */
 
+import { UpdateThrottler } from '@flybywiresim/fbw-sdk';
 import { FlightPhaseManager, getFlightPhaseManager } from '@fmgc/flightphase';
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/new/NavigationDatabaseService';
@@ -30,7 +31,7 @@ export class LandingSystemSelectionManager {
 
     private readonly flightPhaseManager: FlightPhaseManager;
 
-    private readonly autotuneUpdateThrottler = new A32NX_Util.UpdateThrottler(30000);
+    private readonly autotuneUpdateThrottler = new UpdateThrottler(30000);
 
     private inProcess = false;
 

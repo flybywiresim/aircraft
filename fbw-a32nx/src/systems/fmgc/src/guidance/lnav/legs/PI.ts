@@ -13,7 +13,7 @@ import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { DebugPointColour, PathVector, PathVectorType } from '@fmgc/guidance/lnav/PathVector';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { SegmentType } from '@fmgc/wtsdk';
-import { bearingTo, distanceTo, placeBearingDistance, smallCircleGreatCircleIntersection } from 'msfs-geo';
+import { bearingTo, distanceTo, placeBearingDistance, placeBearingIntersection, smallCircleGreatCircleIntersection } from 'msfs-geo';
 import { Fix, TurnDirection, Waypoint } from 'msfs-navdata';
 import { MathUtils } from '@flybywiresim/fbw-sdk';
 
@@ -208,12 +208,12 @@ export class PILeg extends Leg {
         }
 
         this.intercept.itp = this.turn2.ftp;
-        this.intercept.ftp = A32NX_Util.greatCircleIntersection(
+        this.intercept.ftp = placeBearingIntersection(
             this.turn2.ftp,
             (this.outbound.course + 180) % 360,
             tp,
             cfInverseCrs,
-        );
+        )[0];
         this.intercept.length = distanceTo(this.intercept.itp, this.intercept.ftp);
         this.intercept.course = bearingTo(this.intercept.itp, this.intercept.ftp);
 
