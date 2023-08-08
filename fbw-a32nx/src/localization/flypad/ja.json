@@ -227,8 +227,8 @@
       "AirportDoesNotExist": "空港が存在しません",
       "AuthenticateWithNavigraph": "Navigraphで認証する",
       "GoToThirdPartyOptions": {
-        "Button": "3rd Party Options",
-        "Title": "Go to 3rd Party Options to link Navigraph account"
+        "Button": "サードパーティーオプション",
+        "Title": "サードパーティーオプションからNavigraphアカウントをリンクする"
       },
       "InsufficientEnv": ".envファイルが不足しています",
       "IntoYourBrowserAndEnterTheCodeBelow": "このURLをブラウザに入力し、以下のコードを入力してください\n",
@@ -583,14 +583,14 @@
       "GsxFuelEnabled": "GSX給油同期",
       "GsxPayloadEnabled": "GSX積載物同期",
       "NavigraphAccountLink": {
-        "Connected": "Connected",
-        "Link": "Link Account",
+        "Connected": "接続完了",
+        "Link": "アカウントを連携する",
         "LoginPage": {
-          "Title": "Navigraph Account Login"
+          "Title": "Navigraphアカウントにログインする"
         },
-        "SettingTitle": "Navigraph Account Link",
+        "SettingTitle": "Navigraphアカウント連携",
         "SubscriptionStatus": {
-          "None": "None",
+          "None": "サブスクリプション無し",
           "Unlimited": "Navigraph Unlimited"
         },
         "Unlink": "Unlink Account"
