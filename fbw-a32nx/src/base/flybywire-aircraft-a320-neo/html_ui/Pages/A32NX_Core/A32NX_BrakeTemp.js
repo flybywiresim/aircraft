@@ -22,7 +22,6 @@ const WHEEL_RPM_THRESHOLD = 10;
  * Represents a full landing gear
  */
 class A32NX_GearStatus {
-
     /**
      *
      * @param {number} gearIndex Index from left to right, starts at zero
@@ -45,9 +44,9 @@ class A32NX_GearStatus {
      * @param {number} deltaTime
      */
     update(deltaTime) {
-        this.gearPosition = SimVar.GetSimVarValue(this.gearPositionSimVar, "Percent Over 100");
-        this.brakePosition =  SimVar.GetSimVarValue(this.brakePositionSimVar, "position 32k");
-        this.wheelRPM = SimVar.GetSimVarValue(this.wheelRPMSimVar, "number");
+        this.gearPosition = SimVar.GetSimVarValue(this.gearPositionSimVar, 'Percent Over 100');
+        this.brakePosition = SimVar.GetSimVarValue(this.brakePositionSimVar, 'position 32k');
+        this.wheelRPM = SimVar.GetSimVarValue(this.wheelRPMSimVar, 'number');
     }
 
     /**
@@ -58,7 +57,6 @@ class A32NX_GearStatus {
         return this.gearPosition >= 0.25;
     }
 
-
     /**
      * Check if gear is fully extended
      * SimVar is documented to extend from 0.0 to 1.0 but fully extended position is 100
@@ -67,7 +65,6 @@ class A32NX_GearStatus {
     fullyExtended() {
         return this.gearPosition === 100;
     }
-
 
     /**
      * Check if this gear's brake pedal is pressed
@@ -83,7 +80,7 @@ class A32NX_GearStatus {
      * @returns {boolean} true if this gear's wheel is spinning
      */
     wheelSpinning() {
-        return this.wheelRPM > WHEEL_RPM_THRESHOLD
+        return this.wheelRPM > WHEEL_RPM_THRESHOLD;
     }
 
     /**
@@ -102,8 +99,8 @@ class A32NX_GearStatus {
 class A32NX_BrakeFan {
     /**
      *
-     * @param {string} brakeFanSimVar SimVar name to describing if brake fan is on
-     * @param {string} brakeFanPressedSimVar SimVar name to describing if brake fan button is pressed
+     * @param {string} brakeFanSimVar SimVar name describing if brake fan is on
+     * @param {string} brakeFanPressedSimVar SimVar name describing if brake fan button is pressed
      * @param {A32NX_GearStatus} leftGearStatus GearStatus object for the left gear
      */
     constructor(brakeFanSimVar, brakeFanPressedSimVar, leftGearStatus) {
@@ -118,15 +115,13 @@ class A32NX_BrakeFan {
      * Update internal state from simulation values
      * Manage Brake Fan status SimVar by checking button pressed or not
      * This probably shouldn't be the place where the brake fan is to be commanded
-     * @param {number} deltaTime
+     * @param {number} _deltaTime
      */
-    update(deltaTime) {
-        this.brakeFan = SimVar.GetSimVarValue(this.brakeFanSimVar, "Bool") === 0 ? false : true;
-        this.brakeFanPressed = SimVar.GetSimVarValue(this.brakeFanPressedSimVar, "Bool") === 0 ? false : true;
-        if(this.shouldBeOn()) {
-            SimVar.SetSimVarValue(this.brakeFanSimVar, "Bool", true);
-        } else {
-            SimVar.SetSimVarValue(this.brakeFanSimVar, "Bool", false);
+    update(_deltaTime) {
+        this.brakeFan = SimVar.GetSimVarValue(this.brakeFanSimVar, 'Bool') !== 0;
+        this.brakeFanPressed = SimVar.GetSimVarValue(this.brakeFanPressedSimVar, 'Bool') !== 0;
+        if (this.shouldBeOn() !== this.brakeFan) {
+            SimVar.SetSimVarValue(this.brakeFanSimVar, 'Bool', this.shouldBeOn());
         }
     }
 
@@ -155,7 +150,6 @@ class A32NX_BrakeFan {
         return this.shouldBeOn() ? 0.28 : 1.0;
     }
 }
-
 
 /**
  * Scale factor for cool down
@@ -250,21 +244,21 @@ class A32NX_OneBrakeTemp {
      * @param {number} airspeed Current aircraft air speed
      */
     update(deltaTime, ambiantTemperature, airspeed) {
-        const secondRatio = (deltaTime/1000);
+        const secondRatio = (deltaTime / 1000);
 
         // Initialize with ambientTemperature
         if (this.brakeTemp === null || this.reportedBrakeTemp === null) {
             this.brakeTemp = ambiantTemperature;
             this.reportedBrakeTemp = ambiantTemperature;
         } else {
-            this.brakeTemp = SimVar.GetSimVarValue(this.brakeTempSimVar, "celsius");
-            this.reportedBrakeTemp = SimVar.GetSimVarValue(this.reportedBrakeTempSimVar, "celsius");
+            this.brakeTemp = SimVar.GetSimVarValue(this.brakeTempSimVar, 'celsius');
+            this.reportedBrakeTemp = SimVar.GetSimVarValue(this.reportedBrakeTempSimVar, 'celsius');
         }
 
         // First, the heat up process
 
         // Don't need to check for spinning wheel of applied brakes, it's handled by calculateHeatUpPerSecond()
-        const heatUpFactor = secondRatio * getRandomArbitrary(0.5, 1.5) * this.gearStatus.calculateHeatUpPerSecond() ;
+        const heatUpFactor = secondRatio * getRandomArbitrary(0.5, 1.5) * this.gearStatus.calculateHeatUpPerSecond();
         this.brakeTemp += heatUpFactor;
         this.reportedBrakeTemp += heatUpFactor;
 
@@ -273,14 +267,14 @@ class A32NX_OneBrakeTemp {
         // Cooldown from convection
         if (Math.abs(deltaAmbiant) > MIN_TEMP_DELTA) {
             const deltaTempFactor = 1 + Math.pow(deltaAmbiant, 2) * BASE_HEAT_DIFFERENTIAL_FACTOR * this.brakeFan.fanDifferentialFactor();
-            const brakeCoolDown = secondRatio * getRandomArbitrary(0.8, 1.2) * this.calculateDeltaCoolDown(deltaAmbiant, airspeed,  deltaTempFactor);
+            const brakeCoolDown = secondRatio * getRandomArbitrary(0.8, 1.2) * this.calculateDeltaCoolDown(deltaAmbiant, airspeed, deltaTempFactor);
             this.brakeTemp -= brakeCoolDown;
             this.reportedBrakeTemp -= brakeCoolDown;
         }
 
-        if(this.brakeFan.shouldBeOn()) {
+        if (this.brakeFan.shouldBeOn()) {
             // When fan is on, it will cool the probe faster than the brakes
-            const probeTargetTemp = ambiantTemperature + deltaAmbiant / 2.0
+            const probeTargetTemp = ambiantTemperature + deltaAmbiant / 2.0;
             this.reportedBrakeTemp += secondRatio * getRandomArbitrary(0.8, 1.2) * this.coolProbe(probeTargetTemp, this.reportedBrakeTemp);
         } else {
             // When fan is off, hot brakes will heat up the probe
@@ -288,8 +282,8 @@ class A32NX_OneBrakeTemp {
         }
 
         // Update simulation with new values
-        SimVar.SetSimVarValue(this.brakeTempSimVar, "celsius", this.brakeTemp);
-        SimVar.SetSimVarValue(this.reportedBrakeTempSimVar, "celsius", this.reportedBrakeTemp);
+        SimVar.SetSimVarValue(this.brakeTempSimVar, 'celsius', this.brakeTemp);
+        SimVar.SetSimVarValue(this.reportedBrakeTempSimVar, 'celsius', this.reportedBrakeTemp);
     }
 }
 
@@ -298,22 +292,18 @@ class A32NX_OneBrakeTemp {
  * It owns one GearStatus per landing gear, a BrakeFan system and 4 brakes.
  */
 class A32NX_BrakeTemp {
-
-
     constructor() {
         this.initializedAmbientBrakeTemp = false;
-        this.gearLeft = new A32NX_GearStatus(0, "L:A32NX_GEAR_LEFT_POSITION", "BRAKE LEFT POSITION", "WHEEL RPM:1");
-        this.gearRight = new A32NX_GearStatus(1, "L:A32NX_GEAR_RIGHT_POSITION", "BRAKE RIGHT POSITION", "WHEEL RPM:2");
-        this.brakeFan = new A32NX_BrakeFan("L:A32NX_BRAKE_FAN", "L:A32NX_BRAKE_FAN_BTN_PRESSED", this.gearLeft)
+        this.gearLeft = new A32NX_GearStatus(0, 'L:A32NX_GEAR_LEFT_POSITION', 'BRAKE LEFT POSITION', 'WHEEL RPM:1');
+        this.gearRight = new A32NX_GearStatus(1, 'L:A32NX_GEAR_RIGHT_POSITION', 'BRAKE RIGHT POSITION', 'WHEEL RPM:2');
+        this.brakeFan = new A32NX_BrakeFan('L:A32NX_BRAKE_FAN', 'L:A32NX_BRAKE_FAN_BTN_PRESSED', this.gearLeft);
         this.brakes = [
-            new A32NX_OneBrakeTemp(0, "L:A32NX_BRAKE_TEMPERATURE_1", "L:A32NX_REPORTED_BRAKE_TEMPERATURE_1", this.gearLeft, this.brakeFan),
-            new A32NX_OneBrakeTemp(1, "L:A32NX_BRAKE_TEMPERATURE_2", "L:A32NX_REPORTED_BRAKE_TEMPERATURE_2", this.gearLeft, this.brakeFan),
-            new A32NX_OneBrakeTemp(2, "L:A32NX_BRAKE_TEMPERATURE_3", "L:A32NX_REPORTED_BRAKE_TEMPERATURE_3", this.gearLeft, this.brakeFan),
-            new A32NX_OneBrakeTemp(3, "L:A32NX_BRAKE_TEMPERATURE_4", "L:A32NX_REPORTED_BRAKE_TEMPERATURE_4", this.gearLeft, this.brakeFan)
-        ]
+            new A32NX_OneBrakeTemp(0, 'L:A32NX_BRAKE_TEMPERATURE_1', 'L:A32NX_REPORTED_BRAKE_TEMPERATURE_1', this.gearLeft, this.brakeFan),
+            new A32NX_OneBrakeTemp(1, 'L:A32NX_BRAKE_TEMPERATURE_2', 'L:A32NX_REPORTED_BRAKE_TEMPERATURE_2', this.gearLeft, this.brakeFan),
+            new A32NX_OneBrakeTemp(2, 'L:A32NX_BRAKE_TEMPERATURE_3', 'L:A32NX_REPORTED_BRAKE_TEMPERATURE_3', this.gearLeft, this.brakeFan),
+            new A32NX_OneBrakeTemp(3, 'L:A32NX_BRAKE_TEMPERATURE_4', 'L:A32NX_REPORTED_BRAKE_TEMPERATURE_4', this.gearLeft, this.brakeFan),
+        ];
     }
-
-    init() { }
 
     /**
      * Update loop
@@ -321,26 +311,26 @@ class A32NX_BrakeTemp {
      * Get ambiant temperature and airspeed, then update gear/brake fan systems from simulation
      * Then compute brake temperature evolution
      * Finally compute if any brake can be considered HOT
-     * @param {number} _deltaTime
+     * @param {number} deltaTime
      */
-    update(_deltaTime) {
-        if(!isReady()) {
-            return
+    update(deltaTime) {
+        if (!isReady()) {
+            return;
         }
         const ambientTemperature = Simplane.getAmbientTemperature();
-        const airspeed = SimVar.GetSimVarValue("AIRSPEED TRUE", "Meters per second");
+        const airspeed = SimVar.GetSimVarValue('AIRSPEED TRUE', 'Meters per second');
 
-        this.gearLeft.update(_deltaTime);
-        this.gearRight.update(_deltaTime);
-        this.brakeFan.update(_deltaTime);
+        this.gearLeft.update(deltaTime);
+        this.gearRight.update(deltaTime);
+        this.brakeFan.update(deltaTime);
 
         let someHot = false;
 
         this.brakes.forEach((brake) => {
-            brake.update(_deltaTime, ambientTemperature, airspeed);
-            someHot = someHot || brake.hot()
-        })
+            brake.update(deltaTime, ambientTemperature, airspeed);
+            someHot = someHot || brake.hot();
+        });
 
-        SimVar.SetSimVarValue("L:A32NX_BRAKES_HOT", "Bool", someHot);
+        SimVar.SetSimVarValue('L:A32NX_BRAKES_HOT', 'Bool', someHot);
     }
 }

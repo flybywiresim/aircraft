@@ -12,26 +12,24 @@ import { Spoilers } from '../../Common/Spoilers';
 
 import '../../Common/CommonStyles.scss';
 
-const roundTemperature = (rawTemp: number) : number => {
-    return Math.max(0, Math.round(rawTemp / 5) * 5)
-}
+const roundTemperature = (rawTemp: number) : number => Math.min(995, Math.max(0, Math.round(rawTemp / 5) * 5));
 
 const maxStaleness = 300;
 
 export const WheelPage = () => {
-    const [rawTempBrake1] = useSimVar(`L:A32NX_REPORTED_BRAKE_TEMPERATURE_1`, 'celsius', maxStaleness);
-    const [rawTempBrake2] = useSimVar(`L:A32NX_REPORTED_BRAKE_TEMPERATURE_2`, 'celsius', maxStaleness);
-    const [rawTempBrake3] = useSimVar(`L:A32NX_REPORTED_BRAKE_TEMPERATURE_3`, 'celsius', maxStaleness);
-    const [rawTempBrake4] = useSimVar(`L:A32NX_REPORTED_BRAKE_TEMPERATURE_4`, 'celsius', maxStaleness);
+    const [rawTempBrake1] = useSimVar('L:A32NX_REPORTED_BRAKE_TEMPERATURE_1', 'celsius', maxStaleness);
+    const [rawTempBrake2] = useSimVar('L:A32NX_REPORTED_BRAKE_TEMPERATURE_2', 'celsius', maxStaleness);
+    const [rawTempBrake3] = useSimVar('L:A32NX_REPORTED_BRAKE_TEMPERATURE_3', 'celsius', maxStaleness);
+    const [rawTempBrake4] = useSimVar('L:A32NX_REPORTED_BRAKE_TEMPERATURE_4', 'celsius', maxStaleness);
 
     const roundedTemperatures = [
         roundTemperature(rawTempBrake1),
         roundTemperature(rawTempBrake2),
         roundTemperature(rawTempBrake3),
         roundTemperature(rawTempBrake4),
-    ]
+    ];
 
-    const maxTemperature = roundedTemperatures.reduce((maxTemp, element) => (element > maxTemp ? element : maxTemp), 0);
+    const maxTemperature = roundedTemperatures.reduce((maxTemp, element) => Math.max(maxTemp, element), 0);
 
     const lgciu1DiscreteWord1 = useArinc429Var('L:A32NX_LGCIU_1_DISCRETE_WORD_1');
     const lgciu2DiscreteWord1 = useArinc429Var('L:A32NX_LGCIU_2_DISCRETE_WORD_1');
@@ -100,8 +98,8 @@ export const WheelPage = () => {
             <Wheels
                 x={551}
                 y={431}
-                left={{ number: 3, temperature: rawTempBrake3, hottest:  maxTemperature === roundedTemperatures[2] }}
-                right={{ number: 4, temperature: rawTempBrake4, hottest:  maxTemperature === roundedTemperatures[3] }}
+                left={{ number: 3, temperature: rawTempBrake3, hottest: maxTemperature === roundedTemperatures[2] }}
+                right={{ number: 4, temperature: rawTempBrake4, hottest: maxTemperature === roundedTemperatures[3] }}
             />
         </svg>
     );
