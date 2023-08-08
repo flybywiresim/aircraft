@@ -6,8 +6,7 @@ import { LandingSystemSelectionManager } from '@fmgc/navigation/LandingSystemSel
 import { NavaidSelectionManager, VorSelectionReason } from '@fmgc/navigation/NavaidSelectionManager';
 import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
 import { NavRadioUtils } from '@fmgc/navigation/NavRadioUtils';
-import { VorType } from '@fmgc/types/fstypes/FSEnums';
-import { Arinc429SignStatusMatrix, Arinc429Word } from '@flybywiresim/fbw-sdk';
+import { Arinc429SignStatusMatrix, Arinc429Word, NotificationManager } from '@flybywiresim/fbw-sdk';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { IlsNavaid, NdbNavaid, VhfNavaid, VhfNavaidType } from 'msfs-navdata';
 
@@ -250,8 +249,7 @@ export class NavaidTuner {
     /** Whether the tuning event blocked message has been shown before. It is only shown once. */
     private blockEventMessageShown = false;
 
-    // eslint-disable-next-line camelcase
-    private tipsManager?: A32NX_TipsManager;
+    private notificationManager = new NotificationManager();
 
     constructor(
         private readonly navigationProvider: NavigationProvider,
@@ -266,7 +264,6 @@ export class NavaidTuner {
 
         // FIXME move this to the RMP when it's rewritten in msfs-avionics-framework
         // FIXME use the framework manager when the framework is updated
-        this.tipsManager = A32NX_TipsManager.instance;
         Coherent.on('keyIntercepted', this.handleKeyEvent.bind(this));
         NavaidTuner.TUNING_EVENT_INTERCEPTS.forEach((key) => Coherent.call('INTERCEPT_KEY_EVENT', key, 1));
     }
@@ -314,7 +311,12 @@ export class NavaidTuner {
                 // pass the tuning event through to the sim
                 Coherent.call('TRIGGER_KEY_EVENT', key, true, value0 ?? 0, value1 ?? 0, value2 ?? 0);
             } else if (!this.blockEventMessageShown) {
-                this.tipsManager?.showNavRadioTuningTip();
+                this.notificationManager.showNotification({
+                    message: 'Navigation radio tuning is not possible while the FMGC controls the radios:\n\n• tune via the MCDU RADIO NAV page, or'
+                        + '\n• press the NAV button on the RMP to enable manual tuning.',
+                    timeout: 15000,
+                });
+
                 this.blockEventMessageShown = true;
             }
         }
