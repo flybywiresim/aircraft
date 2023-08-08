@@ -7,20 +7,10 @@ import { computeDestinationPoint as geolibDestPoint } from 'geolib';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
-import {
-    bearingTo,
-    distanceTo,
-    placeBearingDistance,
-    smallCircleGreatCircleIntersection,
-    placeBearingIntersection,
-} from 'msfs-geo';
+import { distanceTo, smallCircleGreatCircleIntersection, placeBearingIntersection } from 'msfs-geo';
 import { AFLeg } from '@fmgc/guidance/lnav/legs/AF';
 import { TFLeg } from '@fmgc/guidance/lnav/legs/TF';
 import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
-
-const sin = (input: Degrees) => Math.sin(input * (Math.PI / 180));
-
-const asin = (input: Degrees) => Math.asin(input) * (180 / Math.PI);
 
 export class Geo {
     static computeDestinationPoint(start: Coordinates, distance: NauticalMiles, bearing: DegreesTrue, radius: Metres = 6371000): Coordinates {
@@ -132,18 +122,5 @@ export class Geo {
         }
 
         return intersections2[1];
-    }
-
-    static placeBearingPlaceDistanceIntercept(bearingPoint: Coordinates, distancePoint: Coordinates, bearing: DegreesTrue, distance: NauticalMiles): Coordinates {
-        const relativeBearing = bearingTo(bearingPoint, distancePoint);
-        const distanceBetween = distanceTo(bearingPoint, distancePoint);
-        const angleA = Math.abs(MathUtils.diffAngle(relativeBearing, bearing));
-        const angleC = angleA > 90 ? asin(distanceBetween * (sin(angleA) / distance)) : 180 - asin(distanceBetween * (sin(angleA) / distance));
-        const angleB = 180 - angleA - angleC;
-        return placeBearingDistance(bearingPoint, bearing, Math.abs(sin(angleB) * (distance / sin(angleA))));
-    }
-
-    static doublePlaceBearingIntercept(pointA: Coordinates, pointB: Coordinates, bearingA: DegreesTrue, bearingB: DegreesTrue): Coordinates {
-        return A32NX_Util.greatCircleIntersection(pointA, bearingA, pointB, bearingB);
     }
 }

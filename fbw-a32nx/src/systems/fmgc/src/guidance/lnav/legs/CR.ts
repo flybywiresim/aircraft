@@ -12,10 +12,9 @@ import {
     PointSide,
     sideOfPointOnCourseToFix,
 } from '@fmgc/guidance/lnav/CommonGeometry';
-import { Geo } from '@fmgc/utils/Geo';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
-import { distanceTo } from 'msfs-geo';
+import { distanceTo, placeBearingIntersection } from 'msfs-geo';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
 import { PathVector, PathVectorType } from '../PathVector';
 
@@ -67,12 +66,12 @@ export class CRLeg extends Leg {
         _ppos: Coordinates,
         _trueTrack: DegreesTrue,
     ) {
-        this.intercept = Geo.doublePlaceBearingIntercept(
+        this.intercept = placeBearingIntersection(
             this.getPathStartPoint(),
-            this.origin.coordinates,
             this.course,
+            this.origin.coordinates,
             this.radial,
-        );
+        )[0];
 
         const overshot = distanceTo(this.getPathStartPoint(), this.intercept) >= 5_000;
 
