@@ -270,7 +270,10 @@
         <Component ID="#NODE_ID#" Node="#NODE_ID#">
             <UseTemplate Name="ASOBO_GT_Push_Button">
                 <ANIM_NAME>#ANIM_NAME_BUTTON#</ANIM_NAME>
-                <LEFT_SINGLE_CODE>(&gt;H:A32NX_RMP_#SIDE#_#BASE_NAME#_BUTTON_PRESSED)</LEFT_SINGLE_CODE>
+                <LEFT_SINGLE_CODE>
+                    (&gt;H:A32NX_RMP_#SIDE#_#BASE_NAME#_BUTTON_PRESSED)
+                    #ID# (&gt;L:A32NX_UPDATE_COMMS)
+                </LEFT_SINGLE_CODE>
             </UseTemplate>
         </Component>
 
