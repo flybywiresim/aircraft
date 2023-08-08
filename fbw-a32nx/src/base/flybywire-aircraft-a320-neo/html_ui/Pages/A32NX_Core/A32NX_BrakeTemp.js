@@ -240,16 +240,16 @@ class A32NX_OneBrakeTemp {
     /**
      * Update simulation with new temperatures
      * @param {number} deltaTime
-     * @param {number} ambiantTemperature Ambient temperature as per the simulation
+     * @param {number} ambientTemperature Ambient temperature as per the simulation
      * @param {number} airspeed Current aircraft air speed
      */
-    update(deltaTime, ambiantTemperature, airspeed) {
+    update(deltaTime, ambientTemperature, airspeed) {
         const secondRatio = (deltaTime / 1000);
 
         // Initialize with ambientTemperature
         if (this.brakeTemp === null || this.reportedBrakeTemp === null) {
-            this.brakeTemp = ambiantTemperature;
-            this.reportedBrakeTemp = ambiantTemperature;
+            this.brakeTemp = ambientTemperature;
+            this.reportedBrakeTemp = ambientTemperature;
         } else {
             this.brakeTemp = SimVar.GetSimVarValue(this.brakeTempSimVar, 'celsius');
             this.reportedBrakeTemp = SimVar.GetSimVarValue(this.reportedBrakeTempSimVar, 'celsius');
@@ -263,18 +263,18 @@ class A32NX_OneBrakeTemp {
         this.reportedBrakeTemp += heatUpFactor;
 
         // Then the cooldown process
-        const deltaAmbiant = this.brakeTemp - ambiantTemperature;
+        const deltaAmbient = this.brakeTemp - ambientTemperature;
         // Cooldown from convection
-        if (Math.abs(deltaAmbiant) > MIN_TEMP_DELTA) {
-            const deltaTempFactor = 1 + Math.pow(deltaAmbiant, 2) * BASE_HEAT_DIFFERENTIAL_FACTOR * this.brakeFan.fanDifferentialFactor();
-            const brakeCoolDown = secondRatio * getRandomArbitrary(0.8, 1.2) * this.calculateDeltaCoolDown(deltaAmbiant, airspeed, deltaTempFactor);
+        if (Math.abs(deltaAmbient) > MIN_TEMP_DELTA) {
+            const deltaTempFactor = 1 + Math.pow(deltaAmbient, 2) * BASE_HEAT_DIFFERENTIAL_FACTOR * this.brakeFan.fanDifferentialFactor();
+            const brakeCoolDown = secondRatio * getRandomArbitrary(0.8, 1.2) * this.calculateDeltaCoolDown(deltaAmbient, airspeed, deltaTempFactor);
             this.brakeTemp -= brakeCoolDown;
             this.reportedBrakeTemp -= brakeCoolDown;
         }
 
         if (this.brakeFan.shouldBeOn()) {
             // When fan is on, it will cool the probe faster than the brakes
-            const probeTargetTemp = ambiantTemperature + deltaAmbiant / 2.0;
+            const probeTargetTemp = ambientTemperature + deltaAmbient / 2.0;
             this.reportedBrakeTemp += secondRatio * getRandomArbitrary(0.8, 1.2) * this.coolProbe(probeTargetTemp, this.reportedBrakeTemp);
         } else {
             // When fan is off, hot brakes will heat up the probe
@@ -308,7 +308,7 @@ class A32NX_BrakeTemp {
     /**
      * Update loop
      * Fail fast if simulation is not ready
-     * Get ambiant temperature and airspeed, then update gear/brake fan systems from simulation
+     * Get ambient temperature and airspeed, then update gear/brake fan systems from simulation
      * Then compute brake temperature evolution
      * Finally compute if any brake can be considered HOT
      * @param {number} deltaTime
