@@ -706,7 +706,7 @@ class CDUPerformancePage {
             }
         };
 
-        const closeToDest = mcdu.flightPlanManager.getDistanceToDestination() != -1 && mcdu.flightPlanManager.getDistanceToDestination() <= 180;
+        const closeToDest = mcdu.flightPlanManager.getDistanceToDestination() !== -1 && mcdu.flightPlanManager.getDistanceToDestination() <= 180;
 
         let qnhCell = "[\xa0\xa0][color]cyan";
         if (isFinite(mcdu.perfApprQNH)) {
