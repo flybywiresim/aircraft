@@ -877,16 +877,18 @@ export abstract class BaseFlightPlan implements ReadonlyFlightPlan {
 
         const legsToDelete = this.enrouteSegment.allLegs.length - (legIndexInEnroute + 1);
 
-        this.enrouteSegment.allLegs.splice(legIndexInEnroute + 1, legsToDelete);
-
-        await this.setArrivalEnrouteTransition(undefined);
-        await this.setArrival(undefined);
         await this.setApproach(undefined);
         await this.setApproachVia(undefined);
+        await this.setArrivalEnrouteTransition(undefined);
+        await this.setArrival(undefined);
         await this.setDestinationAirport(airportIdent);
         await this.setDestinationRunway(undefined);
 
-        this.enrouteSegment.allLegs.push({ isDiscontinuity: true });
+        this.enrouteSegment.allLegs.splice(legIndexInEnroute + 1, legsToDelete);
+
+        if (this.enrouteSegment.allLegs[this.enrouteSegment.legCount - 1].isDiscontinuity === false) {
+            this.enrouteSegment.allLegs.push({ isDiscontinuity: true });
+        }
         this.enrouteSegment.strung = true;
 
         await this.flushOperationQueue();
