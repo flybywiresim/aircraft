@@ -593,15 +593,15 @@
           "None": "サブスクリプション無し",
           "Unlimited": "Navigraph Unlimited"
         },
-        "Unlink": "Unlink Account"
+        "Unlink": "アカウントの連携を解除"
       },
-      "OverrideSimBriefUserID": "Override SimBrief User ID",
-      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Please check that you have correctly entered your SimBrief username or pilot ID.",
+      "OverrideSimBriefUserID": "SimBriefユーザーIDの上書き",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "SimBriefのユーザー名、またはパイロットIDが正しく入力されているか確認してください。",
       "TT": {
-        "OverrideSimBriefUserID": "Alternative SimBrief user ID to use instead of the linked Navigraph Account"
+        "OverrideSimBriefUserID": "連携されたNavigraphアカウントの代わりに使用するSimBriefユーザー ID"
       },
       "Title": "サードパーティーオプション",
-      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "The override SimBrief PilotID has been validated and updated to"
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "上書きするSimBriefパイロットIDが検証され、次のように更新されました。"
     },
     "ThrottleConfig": {
       "Apply": "適用",
