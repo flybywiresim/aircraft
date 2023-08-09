@@ -161,6 +161,7 @@ pub struct UpdateContext {
     plane_bank_id: VariableIdentifier,
     plane_true_heading_id: VariableIdentifier,
     mach_number_id: VariableIdentifier,
+    incidence_alpha_id: VariableIdentifier,
     plane_height_id: VariableIdentifier,
     latitude_id: VariableIdentifier,
     total_weight_id: VariableIdentifier,
@@ -190,6 +191,7 @@ pub struct UpdateContext {
     mach_number: MachNumber,
     air_density: MassDensity,
     true_heading: Angle,
+    alpha: Angle,
     plane_height_over_ground: Length,
     latitude: Angle,
 
@@ -227,6 +229,7 @@ impl UpdateContext {
     pub(crate) const LOCAL_LATERAL_SPEED_KEY: &'static str = "VELOCITY BODY X";
     pub(crate) const LOCAL_LONGITUDINAL_SPEED_KEY: &'static str = "VELOCITY BODY Z";
     pub(crate) const LOCAL_VERTICAL_SPEED_KEY: &'static str = "VELOCITY BODY Y";
+    pub(crate) const INCIDENCE_ALPHA_KEY: &'static str = "INCIDENCE ALPHA";
     pub(crate) const ALT_ABOVE_GROUND_KEY: &'static str = "PLANE ALT ABOVE GROUND";
     pub(crate) const LATITUDE_KEY: &'static str = "PLANE LATITUDE";
     pub(crate) const TOTAL_WEIGHT_KEY: &'static str = "TOTAL WEIGHT";
@@ -258,6 +261,7 @@ impl UpdateContext {
         pitch: Angle,
         bank: Angle,
         mach_number: MachNumber,
+        alpha: Angle,
         latitude: Angle,
     ) -> UpdateContext {
         UpdateContext {
@@ -288,6 +292,7 @@ impl UpdateContext {
             plane_bank_id: context.get_identifier(Self::PLANE_BANK_KEY.to_owned()),
             plane_true_heading_id: context.get_identifier(Self::TRUE_HEADING_KEY.to_owned()),
             mach_number_id: context.get_identifier(Self::MACH_NUMBER_KEY.to_owned()),
+            incidence_alpha_id: context.get_identifier(Self::INCIDENCE_ALPHA_KEY.to_owned()),
             plane_height_id: context.get_identifier(Self::ALT_ABOVE_GROUND_KEY.to_owned()),
             latitude_id: context.get_identifier(Self::LATITUDE_KEY.to_owned()),
             total_weight_id: context.get_identifier(Self::TOTAL_WEIGHT_KEY.to_owned()),
@@ -336,6 +341,7 @@ impl UpdateContext {
             mach_number,
             air_density: MassDensity::new::<kilogram_per_cubic_meter>(1.22),
             true_heading: Default::default(),
+            alpha,
             plane_height_over_ground: Length::default(),
             latitude,
             total_weight: Mass::default(),
@@ -370,6 +376,7 @@ impl UpdateContext {
             plane_bank_id: context.get_identifier("PLANE BANK DEGREES".to_owned()),
             plane_true_heading_id: context.get_identifier("PLANE HEADING DEGREES TRUE".to_owned()),
             mach_number_id: context.get_identifier("AIRSPEED MACH".to_owned()),
+            incidence_alpha_id: context.get_identifier("INCIDENCE ALPHA".to_owned()),
             plane_height_id: context.get_identifier("PLANE ALT ABOVE GROUND".to_owned()),
             latitude_id: context.get_identifier("PLANE LATITUDE".to_owned()),
             total_weight_id: context.get_identifier("TOTAL WEIGHT".to_owned()),
@@ -415,6 +422,7 @@ impl UpdateContext {
             mach_number: Default::default(),
             air_density: MassDensity::default(),
             true_heading: Default::default(),
+            alpha: Default::default(),
             plane_height_over_ground: Length::default(),
             latitude: Default::default(),
             total_weight: Mass::default(),
@@ -474,6 +482,8 @@ impl UpdateContext {
         self.air_density = reader.read(&self.ambient_density_id);
 
         self.true_heading = reader.read(&self.plane_true_heading_id);
+
+        self.alpha = reader.read(&self.incidence_alpha_id);
 
         self.plane_height_over_ground = reader.read(&self.plane_height_id);
 
@@ -665,6 +675,10 @@ impl UpdateContext {
 
     pub fn mach_number(&self) -> MachNumber {
         self.mach_number
+    }
+
+    pub fn alpha(&self) -> Angle {
+        self.alpha
     }
 
     pub fn with_delta(&self, delta: Duration) -> Self {

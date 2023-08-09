@@ -525,11 +525,14 @@ void FlyByWireInterface::setupLocalVariables() {
     idLgciuDiscreteWord3[i] = std::make_unique<LocalVariable>("A32NX_LGCIU_" + idString + "_DISCRETE_WORD_3");
   }
 
-  idSfccSlatFlapComponentStatusWord = std::make_unique<LocalVariable>("A32NX_SFCC_SLAT_FLAP_COMPONENT_STATUS_WORD");
-  idSfccSlatFlapSystemStatusWord = std::make_unique<LocalVariable>("A32NX_SFCC_SLAT_FLAP_SYSTEM_STATUS_WORD");
-  idSfccSlatFlapActualPositionWord = std::make_unique<LocalVariable>("A32NX_SFCC_SLAT_FLAP_ACTUAL_POSITION_WORD");
-  idSfccSlatActualPositionWord = std::make_unique<LocalVariable>("A32NX_SFCC_SLAT_ACTUAL_POSITION_WORD");
-  idSfccFlapActualPositionWord = std::make_unique<LocalVariable>("A32NX_SFCC_FLAP_ACTUAL_POSITION_WORD");
+  for (int i = 0; i < 2; i++) {
+    std::string idString = std::to_string(i + 1);
+    idSfccSlatFlapComponentStatusWord[i] = std::make_unique<LocalVariable>("A32NX_SFCC_" + idString + "_SLAT_FLAP_COMPONENT_STATUS_WORD");
+    idSfccSlatFlapSystemStatusWord[i] = std::make_unique<LocalVariable>("A32NX_SFCC_" + idString + "_SLAT_FLAP_SYSTEM_STATUS_WORD");
+    idSfccSlatFlapActualPositionWord[i] = std::make_unique<LocalVariable>("A32NX_SFCC_" + idString + "_SLAT_FLAP_ACTUAL_POSITION_WORD");
+    idSfccSlatActualPositionWord[i] = std::make_unique<LocalVariable>("A32NX_SFCC_" + idString + "_SLAT_ACTUAL_POSITION_WORD");
+    idSfccFlapActualPositionWord[i] = std::make_unique<LocalVariable>("A32NX_SFCC_" + idString + "_FLAP_ACTUAL_POSITION_WORD");
+  }
 
   for (int i = 0; i < 3; i++) {
     std::string idString = std::to_string(i + 1);
@@ -1183,11 +1186,11 @@ bool FlyByWireInterface::updateLgciu(int lgciuIndex) {
 }
 
 bool FlyByWireInterface::updateSfcc(int sfccIndex) {
-  sfccBusOutputs[sfccIndex].slat_flap_component_status_word = Arinc429Utils::fromSimVar(idSfccSlatFlapComponentStatusWord->get());
-  sfccBusOutputs[sfccIndex].slat_flap_system_status_word = Arinc429Utils::fromSimVar(idSfccSlatFlapSystemStatusWord->get());
-  sfccBusOutputs[sfccIndex].slat_flap_actual_position_word = Arinc429Utils::fromSimVar(idSfccSlatFlapActualPositionWord->get());
-  sfccBusOutputs[sfccIndex].slat_actual_position_deg = Arinc429Utils::fromSimVar(idSfccSlatActualPositionWord->get());
-  sfccBusOutputs[sfccIndex].flap_actual_position_deg = Arinc429Utils::fromSimVar(idSfccFlapActualPositionWord->get());
+  sfccBusOutputs[sfccIndex].slat_flap_component_status_word = Arinc429Utils::fromSimVar(idSfccSlatFlapComponentStatusWord[sfccIndex]->get());
+  sfccBusOutputs[sfccIndex].slat_flap_system_status_word = Arinc429Utils::fromSimVar(idSfccSlatFlapSystemStatusWord[sfccIndex]->get());
+  sfccBusOutputs[sfccIndex].slat_flap_actual_position_word = Arinc429Utils::fromSimVar(idSfccSlatFlapActualPositionWord[sfccIndex]->get());
+  sfccBusOutputs[sfccIndex].slat_actual_position_deg = Arinc429Utils::fromSimVar(idSfccSlatActualPositionWord[sfccIndex]->get());
+  sfccBusOutputs[sfccIndex].flap_actual_position_deg = Arinc429Utils::fromSimVar(idSfccFlapActualPositionWord[sfccIndex]->get());
 
   if (clientDataEnabled) {
     simConnectInterface.setClientDataSfcc(sfccBusOutputs[sfccIndex], sfccIndex);

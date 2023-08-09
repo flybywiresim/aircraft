@@ -1,0 +1,14 @@
+Following features are not implemented:
+- RS232 protocol
+- BITE procedure
+- CFDIU integration
+- ARINC WrapAround signal
+
+These features are simplified for MSFS:
+- CSU only gives only detent signals
+- XSFCC signals
+- Pin programming only for A320NEO
+- Iteration rate not realistic
+- Single process for each channel
+- No parity check in arinc429.rs
+- No A429 transmission failure checks in sfcc.rs

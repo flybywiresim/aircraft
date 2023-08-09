@@ -35,6 +35,7 @@ use uom::si::{
 pub mod aerodynamic_model;
 pub mod brake_circuit;
 pub mod cargo_doors;
+pub mod command_sensor_unit;
 pub mod electrical_generator;
 pub mod electrical_pump_physics;
 pub mod flap_slat;

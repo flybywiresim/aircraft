@@ -112,10 +112,10 @@ class A32NX_EWD extends BaseInstrument {
         this.simVarPublisher.subscribe('totalFuel');
         this.simVarPublisher.subscribe('wingAntiIce');
 
-        this.simVarPublisher.subscribe('flapsPositionRaw');
+        this.simVarPublisher.subscribe('flapsPosition');
         this.simVarPublisher.subscribe('satRaw');
         this.simVarPublisher.subscribe('slatsFlapsStatusRaw');
-        this.simVarPublisher.subscribe('slatsPositionRaw');
+        this.simVarPublisher.subscribe('slatsPosition');
 
         FSComponent.render(<EwdComponent bus={this.bus} instrument={this} />, document.getElementById('EWD_CONTENT'));
 

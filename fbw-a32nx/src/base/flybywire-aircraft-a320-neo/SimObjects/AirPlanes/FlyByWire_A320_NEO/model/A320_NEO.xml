@@ -71,7 +71,7 @@
             <UseTemplate Name="FBW_HANDLING_Elevator_Template">
                 <ANIM_NAME>elevator_percent_key</ANIM_NAME>
             </UseTemplate>
-            <UseTemplate Name="ASOBO_HANDLING_Slats_Template">
+            <UseTemplate Name="FBW_HANDLING_Slat_Template">
                 <ANIM_NAME_LEFT>l_slat_percent_key</ANIM_NAME_LEFT>
                 <ANIM_NAME_RIGHT>r_slat_percent_key</ANIM_NAME_RIGHT>
             </UseTemplate>
@@ -100,7 +100,7 @@
                 <ANIM_NAME_LEFT>l_spoiler_key</ANIM_NAME_LEFT>
                 <ANIM_NAME_RIGHT>r_spoiler_key</ANIM_NAME_RIGHT>
             </UseTemplate>
-            <UseTemplate Name="ASOBO_HANDLING_Flaps_Template">
+            <UseTemplate Name="FBW_HANDLING_Flap_Template">
                 <ANIM_NAME_LEFT>l_flap_percent_key</ANIM_NAME_LEFT>
                 <ANIM_NAME_RIGHT>r_flap_percent_key</ANIM_NAME_RIGHT>
                 <!-- ANIM_EVENTS -->

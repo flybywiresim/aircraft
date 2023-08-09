@@ -731,6 +731,7 @@ pub struct LandingGearControlInterfaceUnit {
     discrete_word_1_id: VariableIdentifier,
     discrete_word_2_id: VariableIdentifier,
     discrete_word_3_id: VariableIdentifier,
+    discrete_word_4_id: VariableIdentifier,
 
     is_powered: bool,
     is_powered_previous_state: bool,
@@ -796,6 +797,8 @@ impl LandingGearControlInterfaceUnit {
                 .get_identifier(format!("LGCIU_{}_DISCRETE_WORD_2", lgciu_number(lgciu_id))),
             discrete_word_3_id: context
                 .get_identifier(format!("LGCIU_{}_DISCRETE_WORD_3", lgciu_number(lgciu_id))),
+            discrete_word_4_id: context
+                .get_identifier(format!("LGCIU_{}_DISCRETE_WORD_4", lgciu_number(lgciu_id))),
 
             is_powered: false,
             is_powered_previous_state: false,
@@ -1073,6 +1076,34 @@ impl LandingGearControlInterfaceUnit {
             word
         }
     }
+
+    pub fn discrete_word_4(&self) -> Arinc429Word<u32> {
+        if !self.is_powered {
+            Arinc429Word::new(0, SignStatus::FailureWarning)
+        } else {
+            // Label 23
+            let mut word = Arinc429Word::new(0, SignStatus::NormalOperation);
+
+            // Total movement of flap interconnecting struct is 18mm each direction.
+            // With flaps rigged, flap interconnecting struct is extended 2.2mm.
+            // Differential movement between flaps is 14.5mm. If more than 15mm,
+            // sensors send signal
+
+            // LH Flap attachment failure
+            word.set_bit(21, false);
+
+            // LH flat attachment sensor valid
+            word.set_bit(22, true);
+
+            // RH Flap attachment failure
+            word.set_bit(25, false);
+
+            // RH flat attachment sensor valid
+            word.set_bit(26, true);
+
+            word
+        }
+    }
 }
 impl SimulationElement for LandingGearControlInterfaceUnit {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
@@ -1130,6 +1161,7 @@ impl SimulationElement for LandingGearControlInterfaceUnit {
         writer.write(&self.discrete_word_1_id, self.discrete_word_1());
         writer.write(&self.discrete_word_2_id, self.discrete_word_2());
         writer.write(&self.discrete_word_3_id, self.discrete_word_3());
+        writer.write(&self.discrete_word_4_id, self.discrete_word_4());
     }
 }
 

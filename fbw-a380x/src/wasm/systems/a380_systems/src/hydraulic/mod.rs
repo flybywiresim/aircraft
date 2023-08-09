@@ -9,7 +9,7 @@ use uom::si::{
     f64::*,
     length::meter,
     mass::kilogram,
-    pressure::psi,
+    pressure::{bar, psi},
     ratio::{percent, ratio},
     velocity::knot,
     volume::{cubic_inch, gallon, liter},
@@ -26,7 +26,7 @@ use systems::{
             BrakeAccumulatorCharacteristics, BrakeCircuit, BrakeCircuitController,
         },
         cargo_doors::{CargoDoor, HydraulicDoorController},
-        flap_slat::FlapSlatAssembly,
+        flap_slat::{FlapSlatAssy, FlapSlatElement, FlapSlatGroup},
         landing_gear::{GearGravityExtension, GearSystemController, HydraulicGearSystem},
         linear_actuator::{
             Actuator, BoundedLinearLength, ElectroHydrostaticActuatorType,
@@ -50,11 +50,12 @@ use systems::{
     landing_gear::{GearSystemSensors, LandingGearControlInterfaceUnitSet, TiltingGear},
     overhead::{AutoOffFaultPushButton, AutoOnFaultPushButton},
     shared::{
-        interpolation, random_from_range, update_iterator::MaxStepLoop, AdirsDiscreteOutputs,
+        interpolation, litre_per_minute::litre_per_minute, random_from_range,
+        update_iterator::MaxStepLoop, ActuatorSide, AdirsDiscreteOutputs, AirDataSource,
         AirbusElectricPumpId, AirbusEngineDrivenPumpId, DelayedFalseLogicGate,
         DelayedPulseTrueLogicGate, DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses,
-        EngineFirePushButtons, GearWheel, HydraulicColor, LandingGearHandle, LgciuInterface,
-        LgciuWeightOnWheels, ReservoirAirPressure, SectionPressure,
+        EngineFirePushButtons, GearWheel, HighLiftDevices, HydraulicColor, LandingGearHandle,
+        LgciuInterface, LgciuWeightOnWheels, ReservoirAirPressure, SFCCChannel, SectionPressure,
     },
     simulation::{
         InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -64,13 +65,152 @@ use systems::{
 
 use std::fmt::Debug;
 
-mod flaps_computer;
-use flaps_computer::SlatFlapComplex;
+mod sfcc_computer;
+use sfcc_computer::SlatFlapComplex;
+use sfcc_computer::SlatFlapControlComputerMisc;
+
+mod flaps_channel;
+mod slats_channel;
+
 mod engine_pump_disc;
 use engine_pump_disc::EnginePumpDisconnectionClutch;
 
 #[cfg(test)]
 use systems::hydraulic::PressureSwitchState;
+
+pub struct A380FlapFactory {}
+impl A380FlapFactory {
+    // Generics
+    const MAX_PCU_PRESSURE_BAR: f64 = 220.;
+    const MAX_FLOW_HYDRAULIC_MOTOR: f64 = 22.22; // Litre per minute
+    const HYDRAULIC_MOTOR_DISPLACEMENT_CUBIC_INCH: f64 = 0.32;
+    const HYDRAULIC_MOTOR_VOLUMETRIC_EFFICIENCY: f64 = 0.95;
+    const UNLOCK_POB_PRESSURE_BAR: f64 = 500.; // No references, can someone check?
+    const DIFFERENTIAL_GEAR_RATIO: f64 = 16.632;
+    const INTERMEDIATE_GEAR_RATIO: f64 = 140.;
+    const DRIVE_LEVER_GEAR_RATIO: f64 = 314.98;
+    // Flaps related
+    const FLAP_FPPU_TO_SURFACE_ANGLE_BREAKPTS: [f64; 12] = [
+        0., 35.66, 69.32, 89.7, 105.29, 120.22, 145.51, 168.35, 189.87, 210.69, 231.23, 251.97,
+    ];
+    const FLAP_FPPU_TO_SURFACE_ANGLE_DEGREES: [f64; 12] =
+        [0., 0., 2.5, 5., 7.5, 10., 15., 20., 25., 30., 35., 40.];
+    const FLAP_MOTOR_FLOW: [f64; 7] = [0., 1.5, 3., 6., 18., 19., 22.22]; // Litre per minute
+    const FLAP_MOTOR_HYDRAULIC_PRESSURE: [f64; 7] = [3.3, 3.3, 15., 16.2, 17.8, 20., 22.]; // Newton per mm2 @ 0degC
+
+    fn new_flaps(context: &mut InitContext) -> FlapSlatAssy<7> {
+        FlapSlatAssy::new(
+            context,
+            "FLAPS",
+            Pressure::new::<bar>(Self::MAX_PCU_PRESSURE_BAR),
+            Self::FLAP_MOTOR_FLOW,
+            Self::FLAP_MOTOR_HYDRAULIC_PRESSURE,
+            VolumeRate::new::<litre_per_minute>(Self::MAX_FLOW_HYDRAULIC_MOTOR),
+            Volume::new::<cubic_inch>(Self::HYDRAULIC_MOTOR_DISPLACEMENT_CUBIC_INCH),
+            Ratio::new::<ratio>(Self::HYDRAULIC_MOTOR_VOLUMETRIC_EFFICIENCY),
+            Pressure::new::<psi>(Self::UNLOCK_POB_PRESSURE_BAR),
+            Ratio::new::<ratio>(Self::DIFFERENTIAL_GEAR_RATIO),
+            Ratio::new::<ratio>(Self::INTERMEDIATE_GEAR_RATIO),
+            Ratio::new::<ratio>(Self::DRIVE_LEVER_GEAR_RATIO),
+            Self::FLAP_FPPU_TO_SURFACE_ANGLE_BREAKPTS,
+            Self::FLAP_FPPU_TO_SURFACE_ANGLE_DEGREES,
+        )
+    }
+
+    fn new_flaps_linkage(context: &mut InitContext) -> FlapSlatLinkage<2> {
+        let max_position =
+            Angle::new::<degree>(*Self::FLAP_FPPU_TO_SURFACE_ANGLE_DEGREES.last().unwrap());
+
+        let left_group =
+            A380FlapFactory::new_a380_flap_group(context, ActuatorSide::Left, max_position);
+
+        let right_group =
+            A380FlapFactory::new_a380_flap_group(context, ActuatorSide::Right, max_position);
+
+        FlapSlatLinkage::new(context, left_group, right_group)
+    }
+
+    fn new_a380_flap_group(
+        context: &mut InitContext,
+        id: ActuatorSide,
+        max_position: Angle,
+    ) -> FlapSlatGroup<2> {
+        let surface_id = "FLAPS";
+        let flap_inboard = FlapSlatElement::new(context, id, surface_id, "INBOARD", max_position);
+        let flap_outboard = FlapSlatElement::new(context, id, surface_id, "OUTBOARD", max_position);
+
+        FlapSlatGroup::new(context, [flap_inboard, flap_outboard])
+    }
+}
+
+pub struct A380SlatFactory {}
+impl A380SlatFactory {
+    // Generics
+    const MAX_PCU_PRESSURE_BAR: f64 = 220.;
+    const MAX_FLOW_HYDRAULIC_MOTOR: f64 = 22.22; // Litre per minute
+    const HYDRAULIC_MOTOR_DISPLACEMENT_CUBIC_INCH: f64 = 0.32;
+    const HYDRAULIC_MOTOR_VOLUMETRIC_EFFICIENCY: f64 = 0.95;
+    const UNLOCK_POB_PRESSURE_BAR: f64 = 500.; // No references, can someone check?
+    const DIFFERENTIAL_GEAR_RATIO: f64 = 16.632;
+    const INTERMEDIATE_GEAR_RATIO: f64 = 140.;
+    const DRIVE_LEVER_GEAR_RATIO: f64 = 314.98;
+
+    // Slats related
+    const SLAT_FPPU_TO_SURFACE_ANGLE_BREAKPTS: [f64; 12] = [
+        0., 66.83, 167.08, 222.27, 272.27, 334.16, 334.16, 334.16, 334.16, 334.16, 334.16, 334.16,
+    ];
+    const SLAT_FPPU_TO_SURFACE_ANGLE_DEGREES: [f64; 12] =
+        [0., 5.4, 13.5, 18., 22., 27., 27., 27., 27., 27., 27., 27.];
+    const SLAT_MOTOR_FLOW: [f64; 7] = [0., 1.5, 3., 6., 18., 19., 22.22]; // Litre per minute
+    const SLAT_MOTOR_HYDRAULIC_PRESSURE: [f64; 7] = [3.3, 3.3, 15., 16.2, 17.8, 20., 22.]; // Newton per mm2 @ 0degC
+
+    fn new_slats(context: &mut InitContext) -> FlapSlatAssy<7> {
+        FlapSlatAssy::new(
+            context,
+            "SLATS",
+            Pressure::new::<bar>(Self::MAX_PCU_PRESSURE_BAR),
+            Self::SLAT_MOTOR_FLOW,
+            Self::SLAT_MOTOR_HYDRAULIC_PRESSURE,
+            VolumeRate::new::<litre_per_minute>(Self::MAX_FLOW_HYDRAULIC_MOTOR),
+            Volume::new::<cubic_inch>(Self::HYDRAULIC_MOTOR_DISPLACEMENT_CUBIC_INCH),
+            Ratio::new::<ratio>(Self::HYDRAULIC_MOTOR_VOLUMETRIC_EFFICIENCY),
+            Pressure::new::<psi>(Self::UNLOCK_POB_PRESSURE_BAR),
+            Ratio::new::<ratio>(Self::DIFFERENTIAL_GEAR_RATIO),
+            Ratio::new::<ratio>(Self::INTERMEDIATE_GEAR_RATIO),
+            Ratio::new::<ratio>(Self::DRIVE_LEVER_GEAR_RATIO),
+            Self::SLAT_FPPU_TO_SURFACE_ANGLE_BREAKPTS,
+            Self::SLAT_FPPU_TO_SURFACE_ANGLE_DEGREES,
+        )
+    }
+
+    fn new_slats_linkage(context: &mut InitContext) -> FlapSlatLinkage<5> {
+        let max_position =
+            Angle::new::<degree>(*Self::SLAT_FPPU_TO_SURFACE_ANGLE_DEGREES.last().unwrap());
+
+        let left_group =
+            A380SlatFactory::new_a380_slat_group(context, ActuatorSide::Left, max_position);
+
+        let right_group =
+            A380SlatFactory::new_a380_slat_group(context, ActuatorSide::Right, max_position);
+
+        FlapSlatLinkage::new(context, left_group, right_group)
+    }
+
+    fn new_a380_slat_group(
+        context: &mut InitContext,
+        id: ActuatorSide,
+        max_position: Angle,
+    ) -> FlapSlatGroup<5> {
+        let surface_id = "SLATS";
+        let slat_1 = FlapSlatElement::new(context, id, surface_id, "1", max_position);
+        let slat_2 = FlapSlatElement::new(context, id, surface_id, "2", max_position);
+        let slat_3 = FlapSlatElement::new(context, id, surface_id, "3", max_position);
+        let slat_4 = FlapSlatElement::new(context, id, surface_id, "4", max_position);
+        let slat_5 = FlapSlatElement::new(context, id, surface_id, "5", max_position);
+
+        FlapSlatGroup::new(context, [slat_1, slat_2, slat_3, slat_4, slat_5])
+    }
+}
 
 const AC_EHA_BUS: ElectricalBusType = ElectricalBusType::AlternatingCurrentNamed("247XP");
 
@@ -1556,8 +1696,10 @@ pub(super) struct A380Hydraulic {
     braking_circuit_altn: BrakeCircuit,
     braking_force: A380BrakingForce,
 
-    flap_system: FlapSlatAssembly,
-    slat_system: FlapSlatAssembly,
+    flap_system: FlapSlatAssy<7>,
+    flap_linkage: FlapSlatLinkage<2>,
+    slat_system: FlapSlatAssy<7>,
+    slat_linkage: FlapSlatLinkage<5>,
     slats_flaps_complex: SlatFlapComplex,
 
     forward_cargo_door: CargoDoor,
@@ -1591,18 +1733,6 @@ pub(super) struct A380Hydraulic {
     tilting_gears: A380TiltingGears,
 }
 impl A380Hydraulic {
-    const FLAP_FPPU_TO_SURFACE_ANGLE_BREAKPTS: [f64; 12] = [
-        0., 35.66, 69.32, 89.7, 105.29, 120.22, 145.51, 168.35, 189.87, 210.69, 231.25, 251.97,
-    ];
-    const FLAP_FPPU_TO_SURFACE_ANGLE_DEGREES: [f64; 12] =
-        [0., 0., 2.5, 5., 7.5, 10., 15., 20., 25., 30., 35., 40.];
-
-    const SLAT_FPPU_TO_SURFACE_ANGLE_BREAKPTS: [f64; 12] = [
-        0., 66.83, 167.08, 222.27, 272.27, 334.16, 334.16, 334.16, 334.16, 334.16, 334.16, 334.16,
-    ];
-    const SLAT_FPPU_TO_SURFACE_ANGLE_DEGREES: [f64; 12] =
-        [0., 5.4, 13.5, 18., 22., 27., 27., 27., 27., 27., 27., 27.];
-
     const FORWARD_CARGO_DOOR_ID: &'static str = "FWD";
     const AFT_CARGO_DOOR_ID: &'static str = "AFT";
 
@@ -1822,32 +1952,10 @@ impl A380Hydraulic {
 
             braking_force: A380BrakingForce::new(context),
 
-            flap_system: FlapSlatAssembly::new(
-                context,
-                "FLAPS",
-                Volume::new::<cubic_inch>(0.32),
-                AngularVelocity::new::<radian_per_second>(0.13),
-                Angle::new::<degree>(251.97),
-                Ratio::new::<ratio>(140.),
-                Ratio::new::<ratio>(16.632),
-                Ratio::new::<ratio>(314.98),
-                Self::FLAP_FPPU_TO_SURFACE_ANGLE_BREAKPTS,
-                Self::FLAP_FPPU_TO_SURFACE_ANGLE_DEGREES,
-                Pressure::new::<psi>(A380HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
-            ),
-            slat_system: FlapSlatAssembly::new(
-                context,
-                "SLATS",
-                Volume::new::<cubic_inch>(0.32),
-                AngularVelocity::new::<radian_per_second>(0.13),
-                Angle::new::<degree>(334.16),
-                Ratio::new::<ratio>(140.),
-                Ratio::new::<ratio>(16.632),
-                Ratio::new::<ratio>(314.98),
-                Self::SLAT_FPPU_TO_SURFACE_ANGLE_BREAKPTS,
-                Self::SLAT_FPPU_TO_SURFACE_ANGLE_DEGREES,
-                Pressure::new::<psi>(A380HydraulicCircuitFactory::HYDRAULIC_TARGET_PRESSURE_PSI),
-            ),
+            flap_system: A380FlapFactory::new_flaps(context),
+            flap_linkage: A380FlapFactory::new_flaps_linkage(context),
+            slat_system: A380SlatFactory::new_slats(context),
+            slat_linkage: A380SlatFactory::new_slats_linkage(context),
             slats_flaps_complex: SlatFlapComplex::new(context),
 
             forward_cargo_door: A380CargoDoorFactory::new_a380_cargo_door(
@@ -1922,7 +2030,7 @@ impl A380Hydraulic {
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         lgcius: &LandingGearControlInterfaceUnitSet,
         reservoir_pneumatics: &impl ReservoirAirPressure,
-        adirs: &impl AdirsDiscreteOutputs,
+        adirs: &(impl AdirsDiscreteOutputs + AirDataSource),
     ) {
         self.core_hydraulic_updater.update(context);
 
@@ -1934,6 +2042,7 @@ impl A380Hydraulic {
             lgcius.lgciu2(),
             engines[0],
             engines[1],
+            adirs,
         );
 
         for cur_time_step in self.core_hydraulic_updater {
@@ -2198,6 +2307,7 @@ impl A380Hydraulic {
         lgciu2: &impl LgciuInterface,
         engine1: &impl Engine,
         engine2: &impl Engine,
+        adiru: &impl AirDataSource,
     ) {
         self.aileron_system_controller.update();
 
@@ -2239,24 +2349,31 @@ impl A380Hydraulic {
             &self.pushback_tug,
         );
 
-        self.slats_flaps_complex
-            .update(context, &self.flap_system, &self.slat_system);
+        // Commented out because doubled?
+        // self.slats_flaps_complex
+        //     .update(context, &self.flap_system, &self.slat_system);
 
         self.flap_system.update(
             context,
-            self.slats_flaps_complex.flap_demand(),
-            self.slats_flaps_complex.flap_demand(),
             self.green_circuit.system_section(),
             self.yellow_circuit.system_section(),
+            self.slats_flaps_complex
+                .get_pcu_solenoids_commands(0, SFCCChannel::FlapChannel),
+            self.slats_flaps_complex
+                .get_pcu_solenoids_commands(1, SFCCChannel::FlapChannel),
         );
+        self.flap_linkage.update(&self.flap_system);
 
         self.slat_system.update(
             context,
-            self.slats_flaps_complex.slat_demand(),
-            self.slats_flaps_complex.slat_demand(),
             self.green_circuit.system_section(),
             self.green_circuit.system_section(),
+            self.slats_flaps_complex
+                .get_pcu_solenoids_commands(0, SFCCChannel::FlapChannel),
+            self.slats_flaps_complex
+                .get_pcu_solenoids_commands(1, SFCCChannel::FlapChannel),
         );
+        self.slat_linkage.update(&self.slat_system);
 
         self.forward_cargo_door_controller.update(
             context,
@@ -2270,8 +2387,14 @@ impl A380Hydraulic {
             self.green_circuit.auxiliary_section(),
         );
 
-        self.slats_flaps_complex
-            .update(context, &self.flap_system, &self.slat_system);
+        self.slats_flaps_complex.update(
+            context,
+            &self.flap_system,
+            &self.slat_system,
+            adiru,
+            lgciu1,
+            lgciu2,
+        );
 
         self.epump_auto_logic.update(
             context,
@@ -2860,9 +2983,12 @@ impl SimulationElement for A380Hydraulic {
         self.braking_force.accept(visitor);
 
         self.nose_steering.accept(visitor);
+
         self.slats_flaps_complex.accept(visitor);
         self.flap_system.accept(visitor);
+        self.flap_linkage.accept(visitor);
         self.slat_system.accept(visitor);
+        self.slat_linkage.accept(visitor);
 
         self.elevator_system_controller.accept(visitor);
         self.aileron_system_controller.accept(visitor);
@@ -5972,12 +6098,6 @@ impl SimulationElement for RudderSystemHydraulicController {
 }
 
 #[derive(PartialEq, Clone, Copy)]
-enum ActuatorSide {
-    Left,
-    Right,
-}
-
-#[derive(PartialEq, Clone, Copy)]
 enum AileronActuatorPosition {
     Outward = 0,
     Inward = 1,
@@ -6324,6 +6444,36 @@ impl SimulationElement for RudderAssembly {
     }
 }
 
+struct FlapSlatLinkage<const N: usize> {
+    left_linkage: FlapSlatGroup<N>,
+    right_linkage: FlapSlatGroup<N>,
+}
+impl<const N: usize> FlapSlatLinkage<N> {
+    pub fn new(
+        _context: &mut InitContext,
+        left_linkage: FlapSlatGroup<N>,
+        right_linkage: FlapSlatGroup<N>,
+    ) -> Self {
+        Self {
+            left_linkage,
+            right_linkage,
+        }
+    }
+
+    pub fn update(&mut self, hls: &dyn HighLiftDevices) {
+        self.left_linkage.update(hls);
+        self.right_linkage.update(hls);
+    }
+}
+impl<const N: usize> SimulationElement for FlapSlatLinkage<N> {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.left_linkage.accept(visitor);
+        self.right_linkage.accept(visitor);
+
+        visitor.visit(self);
+    }
+}
+
 struct SpoilerElement {
     hydraulic_assembly: HydraulicLinearActuatorAssembly<1>,
 
@@ -6632,7 +6782,10 @@ mod tests {
             failures::FailureType,
             hydraulic::cargo_doors::{DoorControlState, HydraulicDoorController},
             landing_gear::{GearSystemState, LandingGear, LandingGearControlInterfaceUnitSet},
-            shared::{EmergencyElectricalState, LgciuId, PotentialOrigin},
+            shared::{
+                arinc429::{Arinc429Word, SignStatus},
+                EmergencyElectricalState, LgciuId, PotentialOrigin,
+            },
             simulation::{
                 test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
                 Aircraft, InitContext,
@@ -6649,10 +6802,12 @@ mod tests {
         #[derive(Default)]
         struct A380TestAdirus {
             airspeed: Velocity,
+            aoa: Angle,
         }
         impl A380TestAdirus {
             fn update(&mut self, context: &UpdateContext) {
-                self.airspeed = context.true_airspeed()
+                self.airspeed = context.true_airspeed();
+                self.aoa = context.alpha();
             }
         }
         impl AdirsDiscreteOutputs for A380TestAdirus {
@@ -6670,6 +6825,15 @@ mod tests {
 
             fn low_speed_warning_4_260kts(&self, _: usize) -> bool {
                 self.airspeed.get::<knot>() > 260.
+            }
+        }
+        impl AirDataSource for A380TestAdirus {
+            fn computed_airspeed(&self, _: usize) -> Arinc429Word<Velocity> {
+                Arinc429Word::new(self.airspeed, SignStatus::NormalOperation)
+            }
+
+            fn alpha(&self, _: usize) -> Arinc429Word<Angle> {
+                Arinc429Word::new(self.aoa, SignStatus::NormalOperation)
             }
         }
 
@@ -9986,6 +10150,39 @@ mod tests {
 
             // Yellow epump has stopped
             assert!(!test_bed.is_yellow_pressure_switch_pressurised());
+        }
+
+        #[test]
+        fn flaps_and_slats_simvars() {
+            let test_bed = test_bed_on_ground_with().run_one_tick();
+
+            assert!(test_bed.contains_variable_with_name("FLAPS_IPPU_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("FLAPS_FPPU_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("LEFT_FLAPS_APPU_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_FLAPS_APPU_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("IS_FLAPS_MOVING"));
+
+            assert!(test_bed.contains_variable_with_name("RIGHT_FLAPS_INBOARD_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_FLAPS_OUTBOARD_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("LEFT_FLAPS_INBOARD_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("LEFT_FLAPS_OUTBOARD_POSITION_PERCENT"));
+
+            assert!(test_bed.contains_variable_with_name("SLATS_IPPU_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("SLATS_FPPU_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("LEFT_SLATS_APPU_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_APPU_ANGLE"));
+            assert!(test_bed.contains_variable_with_name("IS_SLATS_MOVING"));
+
+            assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_1_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_2_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_3_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_4_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("RIGHT_SLATS_5_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("LEFT_SLATS_1_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("LEFT_SLATS_2_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("LEFT_SLATS_3_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("LEFT_SLATS_4_POSITION_PERCENT"));
+            assert!(test_bed.contains_variable_with_name("LEFT_SLATS_5_POSITION_PERCENT"));
         }
 
         #[test]

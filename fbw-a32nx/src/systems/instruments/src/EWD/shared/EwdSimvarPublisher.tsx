@@ -45,8 +45,8 @@ export type EwdSimvars = {
     satRaw: number;
     totalFuel: number;
     slatsFlapsStatusRaw: number;
-    slatsPositionRaw: number;
-    flapsPositionRaw: number;
+    slatsPosition: number;
+    flapsPosition: number;
     ewdLowerLeft1: number;
     ewdLowerLeft2: number;
     ewdLowerLeft3: number;
@@ -107,9 +107,9 @@ export enum EwdVars {
     flexTemp = 'L:AIRLINER_TO_FLEX_TEMP',
     satRaw = 'L:A32NX_ADIRS_ADR_1_STATIC_AIR_TEMPERATURE',
     totalFuel = 'FUEL TOTAL QUANTITY WEIGHT',
-    slatsFlapsStatusRaw = 'L:A32NX_SFCC_SLAT_FLAP_SYSTEM_STATUS_WORD',
-    slatsPositionRaw = 'L:A32NX_SFCC_SLAT_ACTUAL_POSITION_WORD',
-    flapsPositionRaw = 'L:A32NX_SFCC_FLAP_ACTUAL_POSITION_WORD',
+    slatsFlapsStatusRaw = 'L:A32NX_SFCC_1_SLAT_FLAP_SYSTEM_STATUS_WORD',
+    slatsPosition = 'L:A32NX_SLATS_IPPU_ANGLE',
+    flapsPosition = 'L:A32NX_FLAPS_IPPU_ANGLE',
     ewdLowerLeft1 = 'L:A32NX_Ewd_LOWER_LEFT_LINE_1',
     ewdLowerLeft2 = 'L:A32NX_Ewd_LOWER_LEFT_LINE_2',
     ewdLowerLeft3 = 'L:A32NX_Ewd_LOWER_LEFT_LINE_3',
@@ -172,8 +172,8 @@ export class EwdSimvarPublisher extends SimVarPublisher<EwdSimvars> {
         ['satRaw', { name: EwdVars.satRaw, type: SimVarValueType.Number }],
         ['totalFuel', { name: EwdVars.totalFuel, type: SimVarValueType.Number }],
         ['slatsFlapsStatusRaw', { name: EwdVars.slatsFlapsStatusRaw, type: SimVarValueType.Number }],
-        ['slatsPositionRaw', { name: EwdVars.slatsPositionRaw, type: SimVarValueType.Number }],
-        ['flapsPositionRaw', { name: EwdVars.flapsPositionRaw, type: SimVarValueType.Number }],
+        ['slatsPosition', { name: EwdVars.slatsPosition, type: SimVarValueType.Number }],
+        ['flapsPosition', { name: EwdVars.flapsPosition, type: SimVarValueType.Number }],
         ['ewdLowerLeft1', { name: EwdVars.ewdLowerLeft1, type: SimVarValueType.Number }],
         ['ewdLowerLeft2', { name: EwdVars.ewdLowerLeft2, type: SimVarValueType.Number }],
         ['ewdLowerLeft3', { name: EwdVars.ewdLowerLeft3, type: SimVarValueType.Number }],

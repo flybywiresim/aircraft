@@ -7,6 +7,9 @@
 #[macro_use]
 pub mod macros;
 
+#[macro_use]
+extern crate uom;
+
 pub mod air_conditioning;
 pub mod apu;
 pub mod electrical;

@@ -94,9 +94,7 @@ export class Slats extends DisplayComponent<SlatsProps> {
             }
         });
 
-        sub.on('slatsPosition').whenChanged().handle((s) => {
-            const slats = s.valueOr(0);
-
+        sub.on('slatsPosition').whenChanged().handle((slats) => {
             this.slatsOut = slats > 6.1;
 
             const xFactor = -4.5766;
@@ -140,9 +138,8 @@ export class Slats extends DisplayComponent<SlatsProps> {
             }
         });
 
-        sub.on('flapsPosition').whenChanged().handle((s) => {
-            const flaps = s.valueOr(0);
-
+        // When IPPU is less than 79.1 deg, show flaps at 0deg. Then Flaps = 0.2301 * IPPU - 18.202
+        sub.on('flapsPosition').whenChanged().handle((flaps) => {
             this.flapsOut = flaps > 73.1;
 
             const xFactor = 4.71;

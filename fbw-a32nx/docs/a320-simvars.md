@@ -3473,7 +3473,6 @@ In the variables below, {number} should be replaced with one item in the set: { 
       | 14  | RH gear shock absorber compressed (Don't treat GND PWR connected as on ground)      |
       | 15  | LH & RH gear downlocked                                                             |
 
-
 - A32NX_LGCIU_{number}_DISCRETE_WORD_3
     - Discrete Data word 3 of the LGCIU bus output
     - Arinc429<Discrete>
@@ -3490,6 +3489,19 @@ In the variables below, {number} should be replaced with one item in the set: { 
       | 26  | RH gear door fully open           |
       | 27  | LH Nose gear door fully open      |
       | 28  | RH Nose gear door fully open      |
+
+- A32NX_LGCIU_{number}_DISCRETE_WORD_4
+    - Discrete Data word 4 of the LGCIU bus output
+    - Arinc429<Discrete>
+    - {number}
+        - 1
+        - 2
+    - | Bit |             Description             |
+      |:---:|:-----------------------------------:|
+      | 21  | LH flap attachment failure detected |
+      | 22  | LH flap attachment sensor valid     |
+      | 25  | RH flap attachment failure detected |
+      | 26  | RH flap attachment sensor valid     |
 
 - A32NX_LGCIU_{number}_{gear}_GEAR_COMPRESSED
     - Indicates if the shock absorber is compressed (not fully extended)

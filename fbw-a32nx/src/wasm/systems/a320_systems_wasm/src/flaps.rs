@@ -50,14 +50,58 @@ pub(super) fn flaps(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error
         Variable::named("FLAPS_HANDLE_PERCENT"),
     );
 
+    builder.map_many(
+        ExecuteOn::PostTick,
+        vec![
+            Variable::named("LEFT_FLAPS_INBOARD_POSITION_PERCENT"),
+            Variable::named("LEFT_FLAPS_OUTBOARD_POSITION_PERCENT"),
+        ],
+        |values| values.iter().sum::<f64>() / (values.len() as f64),
+        Variable::named("LEFT_FLAPS_POSITION_PERCENT"),
+    );
+    builder.map_many(
+        ExecuteOn::PostTick,
+        vec![
+            Variable::named("RIGHT_FLAPS_INBOARD_POSITION_PERCENT"),
+            Variable::named("RIGHT_FLAPS_OUTBOARD_POSITION_PERCENT"),
+        ],
+        |values| values.iter().sum::<f64>() / (values.len() as f64),
+        Variable::named("RIGHT_FLAPS_POSITION_PERCENT"),
+    );
     builder.variables_to_object(Box::new(FlapsSurface {
         left_flap: 0.,
         right_flap: 0.,
     }));
+
+    builder.map_many(
+        ExecuteOn::PostTick,
+        vec![
+            Variable::named("LEFT_SLATS_1_POSITION_PERCENT"),
+            Variable::named("LEFT_SLATS_2_POSITION_PERCENT"),
+            Variable::named("LEFT_SLATS_3_POSITION_PERCENT"),
+            Variable::named("LEFT_SLATS_4_POSITION_PERCENT"),
+            Variable::named("LEFT_SLATS_5_POSITION_PERCENT"),
+        ],
+        |values| values.iter().sum::<f64>() / (values.len() as f64),
+        Variable::named("LEFT_SLATS_POSITION_PERCENT"),
+    );
+    builder.map_many(
+        ExecuteOn::PostTick,
+        vec![
+            Variable::named("RIGHT_SLATS_1_POSITION_PERCENT"),
+            Variable::named("RIGHT_SLATS_2_POSITION_PERCENT"),
+            Variable::named("RIGHT_SLATS_3_POSITION_PERCENT"),
+            Variable::named("RIGHT_SLATS_4_POSITION_PERCENT"),
+            Variable::named("RIGHT_SLATS_5_POSITION_PERCENT"),
+        ],
+        |values| values.iter().sum::<f64>() / (values.len() as f64),
+        Variable::named("RIGHT_SLATS_POSITION_PERCENT"),
+    );
     builder.variables_to_object(Box::new(SlatsSurface {
         left_slat: 0.,
         right_slat: 0.,
     }));
+
     builder.variables_to_object(Box::new(FlapsHandleIndex { index: 0. }));
 
     Ok(())
@@ -93,6 +137,11 @@ fn get_handle_pos_from_0_1(input: f64, current_value: f64) -> f64 {
         current_value
     }
 }
+
+/*
+    [LEFT | RIGHT] [INBOARD | OUTBOARD] FLAP
+    [LEFT | RIGHT] {1..5}               SLAT
+*/
 
 #[sim_connect::data_definition]
 struct FlapsSurface {

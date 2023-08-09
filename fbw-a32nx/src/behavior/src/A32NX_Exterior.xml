@@ -201,6 +201,28 @@
         </UseTemplate>
     </Template>
 
+    <Template Name="FBW_HANDLING_Flap_Template">
+        <UseTemplate Name="ASOBO_GT_Anim_Code">
+            <ANIM_NAME>l_flap_percent_key</ANIM_NAME>
+            <ANIM_CODE>(L:A32NX_LEFT_FLAPS_POSITION_PERCENT, number) 100 *</ANIM_CODE>
+        </UseTemplate>
+        <UseTemplate Name="ASOBO_GT_Anim_Code">
+            <ANIM_NAME>r_flap_percent_key</ANIM_NAME>
+            <ANIM_CODE>(L:A32NX_RIGHT_FLAPS_POSITION_PERCENT, number) 100 *</ANIM_CODE>
+        </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_HANDLING_Slat_Template">
+        <UseTemplate Name="ASOBO_GT_Anim_Code">
+            <ANIM_NAME>l_slat_percent_key</ANIM_NAME>
+            <ANIM_CODE>(L:A32NX_LEFT_SLATS_POSITION_PERCENT, number) 100 *</ANIM_CODE>
+        </UseTemplate>
+        <UseTemplate Name="ASOBO_GT_Anim_Code">
+            <ANIM_NAME>r_slat_percent_key</ANIM_NAME>
+            <ANIM_CODE>(L:A32NX_RIGHT_SLATS_POSITION_PERCENT, number) 100 *</ANIM_CODE>
+        </UseTemplate>
+    </Template>
+
     <!--
     Template for displayng GND equipment given different conditions
     and preferences/overrides set in EFB.

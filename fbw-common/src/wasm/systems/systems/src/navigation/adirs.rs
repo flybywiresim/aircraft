@@ -5,7 +5,7 @@ use crate::{
     shared::{
         arinc429::{Arinc429Word, SignStatus},
         low_pass_filter::LowPassFilter,
-        AdirsDiscreteOutputs, AdirsMeasurementOutputs, MachNumber,
+        AdirsDiscreteOutputs, AdirsMeasurementOutputs, AirDataSource, MachNumber,
     },
     simulation::{
         Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -418,6 +418,10 @@ impl AirDataInertialReferenceSystem {
     fn ir_has_fault(&self, number: usize) -> bool {
         self.adirus[number - 1].ir_has_fault()
     }
+
+    pub fn adirus(&self, n: usize) -> &AirDataInertialReferenceUnit {
+        &self.adirus[n]
+    }
 }
 impl SimulationElement for AirDataInertialReferenceSystem {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
@@ -473,6 +477,17 @@ impl AdirsDiscreteOutputs for AirDataInertialReferenceSystem {
         self.adirus[adiru_number - 1].low_speed_warning_4_260kts()
     }
 }
+
+impl AirDataSource for AirDataInertialReferenceSystem {
+    fn computed_airspeed(&self, adiru_number: usize) -> Arinc429Word<Velocity> {
+        self.adirus[adiru_number - 1].computed_airspeed()
+    }
+
+    fn alpha(&self, adiru_number: usize) -> Arinc429Word<Angle> {
+        self.adirus[adiru_number - 1].alpha()
+    }
+}
+
 impl AdirsMeasurementOutputs for AirDataInertialReferenceSystem {
     fn is_fully_aligned(&self, adiru_number: usize) -> bool {
         self.adirus[adiru_number - 1].is_fully_aligned()
@@ -503,7 +518,7 @@ impl AdirsMeasurementOutputs for AirDataInertialReferenceSystem {
     }
 }
 
-struct AirDataInertialReferenceUnit {
+pub struct AirDataInertialReferenceUnit {
     state_id: VariableIdentifier,
 
     adr: AirDataReference,
@@ -571,6 +586,14 @@ impl AirDataInertialReferenceUnit {
 
     fn ir_has_fault(&self) -> bool {
         self.ir.has_fault()
+    }
+
+    pub fn computed_airspeed(&self) -> Arinc429Word<Velocity> {
+        self.adr.computed_airspeed()
+    }
+
+    pub fn alpha(&self) -> Arinc429Word<Angle> {
+        self.adr.alpha()
     }
 
     fn adr_is_valid(&self) -> bool {
@@ -682,6 +705,7 @@ impl SimulationElement for AirDataInertialReferenceUnit {
     }
 }
 
+#[derive(Clone, Copy)]
 struct AdirsData<T> {
     id: VariableIdentifier,
     value: T,
@@ -713,6 +737,7 @@ impl<T: Copy + Default + PartialOrd> AdirsData<T> {
         self.value
     }
 
+    #[allow(dead_code)]
     fn ssm(&self) -> SignStatus {
         self.ssm
     }
@@ -787,6 +812,14 @@ fn output_data_id(data_type: OutputDataType, number: usize, name: &str) -> Strin
 
 trait TrueAirspeedSource {
     fn true_airspeed(&self) -> Arinc429Word<Velocity>;
+}
+
+trait ComputedAirspeedSource {
+    fn computed_airspeed(&self) -> Arinc429Word<Velocity>;
+}
+
+trait AlphaSource {
+    fn alpha(&self) -> Arinc429Word<Angle>;
 }
 
 struct AirDataReference {
@@ -1038,9 +1071,24 @@ impl AirDataReference {
         )
     }
 }
+impl<T: Copy> From<AdirsData<T>> for Arinc429Word<T> {
+    fn from(data: AdirsData<T>) -> Self {
+        Arinc429Word::new(data.value, data.ssm)
+    }
+}
 impl TrueAirspeedSource for AirDataReference {
     fn true_airspeed(&self) -> Arinc429Word<Velocity> {
-        Arinc429Word::new(self.true_airspeed.value(), self.true_airspeed.ssm())
+        self.true_airspeed.into()
+    }
+}
+impl ComputedAirspeedSource for AirDataReference {
+    fn computed_airspeed(&self) -> Arinc429Word<Velocity> {
+        self.computed_airspeed.into()
+    }
+}
+impl AlphaSource for AirDataReference {
+    fn alpha(&self) -> Arinc429Word<Angle> {
+        self.angle_of_attack.into()
     }
 }
 impl SimulationElement for AirDataReference {

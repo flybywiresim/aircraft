@@ -1,6 +1,7 @@
 use crate::{
     apu::ApuGenerator,
     electrical::{ElectricalElement, Potential},
+    hydraulic::flap_slat::SolenoidStatus,
     pneumatic::{EngineModeSelector, EngineState, PneumaticValveSignal},
     simulation::UpdateContext,
 };
@@ -18,7 +19,9 @@ use uom::si::{
     thermodynamic_temperature::{degree_celsius, kelvin},
 };
 
+pub mod litre_per_minute;
 pub mod low_pass_filter;
+pub mod newton_per_square_millimeter;
 pub mod pid;
 pub mod update_iterator;
 
@@ -76,6 +79,171 @@ pub trait ControlValveCommand {
 
 pub trait EmergencyGeneratorPower {
     fn generated_power(&self) -> Power;
+}
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub enum ActuatorSide {
+    Left,
+    Right,
+}
+
+pub trait Synchro {
+    fn get_angle(&self) -> Angle;
+}
+
+pub trait WingTipBrake {
+    fn get_angle(&self) -> Angle;
+}
+
+pub trait PowerControlUnitInterface {
+    fn retract_energise(&self) -> SolenoidStatus;
+
+    fn extend_energise(&self) -> SolenoidStatus;
+
+    fn pob_energise(&self) -> SolenoidStatus;
+}
+
+pub trait HighLiftDevices {
+    fn get_surface_position(&self) -> Angle;
+}
+
+pub trait PositionPickoffUnit {
+    fn fppu_angle(&self) -> Angle;
+    fn appu_left_angle(&self) -> Angle;
+    fn appu_right_angle(&self) -> Angle;
+    fn ippu_angle(&self) -> Angle;
+}
+
+pub trait SfccChannel {
+    fn receive_signal_fppu(&mut self, feedback: &impl PositionPickoffUnit);
+    fn send_signal_to_motors(&self) -> (Option<ChannelCommand>, Option<ChannelCommand>);
+    fn generate_configuration(
+        &self,
+        context: &UpdateContext,
+        flaps_handle: &impl HandlePositionMemory,
+        adiru: &impl AirDataSource,
+    ) -> FlapsConf;
+}
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub enum ChannelCommand {
+    Extend,
+    Retract,
+}
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub enum ChannelCommandMode {
+    Normal,
+    Slow,
+}
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub enum PCUState {
+    Idle,
+    Starting,
+    Accel,
+    Decel,
+    LowSpeed,
+    GetPositionThreshold,
+}
+impl From<u8> for PCUState {
+    fn from(value: u8) -> Self {
+        match value {
+            0b000 => PCUState::Idle,
+            0b100 => PCUState::Starting,
+            0b101 => PCUState::Accel,
+            0b011 => PCUState::Decel,
+            0b111 => PCUState::LowSpeed,
+            0b010 => PCUState::GetPositionThreshold,
+            i => panic!("Cannot convert from {} to PCUState.", i),
+        }
+    }
+}
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub enum SFCCChannel {
+    FlapChannel,
+    SlatChannel,
+}
+
+// There is one more state called Misadjust. It happens when the position detected
+// goes from 0 to FULL (or viceversa) with no intermediate steps
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub enum CSUPosition {
+    Conf0 = 0,
+    Conf1,
+    Conf2,
+    Conf3,
+    ConfFull,
+    OutOfDetent,
+    Fault,
+}
+impl CSUPosition {
+    pub fn is_valid(value: CSUPosition) -> bool {
+        matches!(
+            value,
+            CSUPosition::Conf0
+                | CSUPosition::Conf1
+                | CSUPosition::Conf2
+                | CSUPosition::Conf3
+                | CSUPosition::ConfFull
+        )
+    }
+}
+impl From<u8> for CSUPosition {
+    fn from(value: u8) -> Self {
+        let u8_to_switch = match value {
+            0 => 0b11000,
+            1 => 0b01100,
+            2 => 0b00110,
+            3 => 0b00011,
+            4 => 0b10001,
+            254 => 0b00001, // It could have been any number leading to OutOfDetent
+            i => panic!("Invalid CSUPosition still unsupported. CSUPosition {}.", i),
+        };
+
+        // Gray code!
+        match u8_to_switch {
+            0b11000 => CSUPosition::Conf0,
+            0b01000 => CSUPosition::OutOfDetent,
+            0b01100 => CSUPosition::Conf1,
+            0b00100 => CSUPosition::OutOfDetent,
+            0b00110 => CSUPosition::Conf2,
+            0b00010 => CSUPosition::OutOfDetent,
+            0b00011 => CSUPosition::Conf3,
+            0b00001 => CSUPosition::OutOfDetent,
+            0b10001 => CSUPosition::ConfFull,
+            _ => CSUPosition::Fault,
+        }
+    }
+}
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub enum FlapsConf {
+    Conf0,
+    Conf1,
+    Conf1F,
+    Conf2,
+    Conf3,
+    ConfFull,
+}
+impl From<u8> for FlapsConf {
+    fn from(value: u8) -> Self {
+        match value {
+            0 => FlapsConf::Conf0,
+            1 => FlapsConf::Conf1,
+            2 => FlapsConf::Conf1F,
+            3 => FlapsConf::Conf2,
+            4 => FlapsConf::Conf3,
+            5 => FlapsConf::ConfFull,
+            i => panic!("Cannot convert from {} to FlapsConf.", i),
+        }
+    }
+}
+
+pub trait HandlePositionMemory {
+    fn position(&self) -> u8;
+    fn previous_position(&self) -> u8;
 }
 
 pub trait RamAirTurbineController {
@@ -248,6 +416,11 @@ pub trait AdirsDiscreteOutputs {
     fn low_speed_warning_2_54kts(&self, adiru_number: usize) -> bool;
     fn low_speed_warning_3_159kts(&self, adiru_number: usize) -> bool;
     fn low_speed_warning_4_260kts(&self, adiru_number: usize) -> bool;
+}
+
+pub trait AirDataSource {
+    fn computed_airspeed(&self, adiru_number: usize) -> Arinc429Word<Velocity>;
+    fn alpha(&self, adiru_number: usize) -> Arinc429Word<Angle>;
 }
 
 pub enum GearWheel {
@@ -1466,6 +1639,22 @@ mod average_tests {
 
         let average: Pressure = iterator.iter().average();
         assert_eq!(average, Pressure::new::<hectopascal>(200.));
+    }
+}
+
+#[cfg(test)]
+mod csu_position_tests {
+    use super::*;
+
+    #[test]
+    fn csu_position_is_valid_checks() {
+        assert!(CSUPosition::is_valid(CSUPosition::Conf0));
+        assert!(CSUPosition::is_valid(CSUPosition::Conf1));
+        assert!(CSUPosition::is_valid(CSUPosition::Conf2));
+        assert!(CSUPosition::is_valid(CSUPosition::Conf3));
+        assert!(CSUPosition::is_valid(CSUPosition::ConfFull));
+        assert!(!CSUPosition::is_valid(CSUPosition::OutOfDetent));
+        assert!(!CSUPosition::is_valid(CSUPosition::Fault));
     }
 }
 
