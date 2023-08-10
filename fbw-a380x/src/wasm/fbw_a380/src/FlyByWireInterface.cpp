@@ -746,14 +746,12 @@ void FlyByWireInterface::setupLocalVariables() {
   idLeftElevatorOutwardPosition = std::make_unique<LocalVariable>("A32NX_HYD_ELEVATOR_LEFT_OUTWARD_DEFLECTION");
   idRightElevatorInwardPosition = std::make_unique<LocalVariable>("A32NX_HYD_ELEVATOR_RIGHT_INWARD_DEFLECTION");
   idRightElevatorOutwardPosition = std::make_unique<LocalVariable>("A32NX_HYD_ELEVATOR_RIGHT_OUTWARD_DEFLECTION");
-  idThsPosition = std::make_unique<LocalVariable>("A32NX_HYD_THS_DEFLECTION");
   idUpperRudderPosition = std::make_unique<LocalVariable>("A32NX_HYD_UPPER_RUDDER_DEFLECTION");
   idLowerRudderPosition = std::make_unique<LocalVariable>("A32NX_HYD_LOWER_RUDDER_DEFLECTION");
 
-  idElecDcBus2Powered = std::make_unique<LocalVariable>("A32NX_ELEC_DC_2_BUS_IS_POWERED");
-  idElecDcEssShedBusPowered = std::make_unique<LocalVariable>("A32NX_ELEC_DC_ESS_SHED_BUS_IS_POWERED");
   idElecDcEssBusPowered = std::make_unique<LocalVariable>("A32NX_ELEC_DC_ESS_BUS_IS_POWERED");
-  idElecBat1HotBusPowered = std::make_unique<LocalVariable>("A32NX_ELEC_DC_HOT_1_BUS_IS_POWERED");
+  idElecDcEhaBusPowered = std::make_unique<LocalVariable>("A32NX_ELEC_247PP_BUS_IS_POWERED");
+  idElecDc1BusPowered = std::make_unique<LocalVariable>("A32NX_ELEC_DC_1_BUS_IS_POWERED");
 
   idHydYellowSystemPressure = std::make_unique<LocalVariable>("A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE");
   idHydGreenSystemPressure = std::make_unique<LocalVariable>("A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE");
@@ -1291,7 +1289,7 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
     elevator2Position = idLeftElevatorInwardPosition->get();
     elevator3Position = idRightElevatorOutwardPosition->get();
 
-    thsPosition = idThsPosition->get();
+    thsPosition = -simData.eta_trim_deg;
 
     rudder1Position = idUpperRudderPosition->get();
     rudder2Position = idLowerRudderPosition->get();
@@ -1331,7 +1329,7 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
     elevator2Position = idRightElevatorInwardPosition->get();
     elevator3Position = 0;
 
-    thsPosition = idThsPosition->get();
+    thsPosition = -simData.eta_trim_deg;
 
     rudder1Position = idLowerRudderPosition->get();
     rudder2Position = 0;
@@ -1439,6 +1437,12 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
   prims[primIndex].modelInputs.in.bus_inputs.sec_2_bus = secsBusOutputs[1];
   prims[primIndex].modelInputs.in.bus_inputs.sec_3_bus = secsBusOutputs[2];
 
+  prims[primIndex].modelInputs.in.temporary_ap_input.ap_engaged =
+      autopilotStateMachineOutput.enabled_AP1 || autopilotStateMachineOutput.enabled_AP2;
+  prims[primIndex].modelInputs.in.temporary_ap_input.roll_command = autopilotLawsOutput.autopilot.Phi_c_deg;
+  prims[primIndex].modelInputs.in.temporary_ap_input.pitch_command = autopilotLawsOutput.autopilot.Theta_c_deg;
+  prims[primIndex].modelInputs.in.temporary_ap_input.yaw_command = autopilotLawsOutput.autopilot.Beta_c_deg;
+
   if (primIndex == primDisabled) {
     simConnectInterface.setClientDataPrimDiscretes(prims[primIndex].modelInputs.in.discrete_inputs);
     simConnectInterface.setClientDataPrimAnalog(prims[primIndex].modelInputs.in.analog_inputs);
@@ -1451,9 +1455,9 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
     if (primIndex == 0) {
       powerSupplyAvailable = idElecDcEssBusPowered->get();
     } else if (primIndex == 1) {
-      powerSupplyAvailable = idElecDcBus2Powered->get();
+      powerSupplyAvailable = idElecDcEhaBusPowered->get();
     } else {
-      powerSupplyAvailable = idElecDcBus2Powered->get();
+      powerSupplyAvailable = idElecDc1BusPowered->get();
     }
 
     prims[primIndex].update(sampleTime, simData.simulationTime,
@@ -1510,7 +1514,7 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
     elevator2Position = idLeftElevatorInwardPosition->get();
     elevator3Position = idRightElevatorOutwardPosition->get();
 
-    thsPosition = idThsPosition->get();
+    thsPosition = -simData.eta_trim_deg;
 
     rudder1Position = idLowerRudderPosition->get();
     rudder2Position = idUpperRudderPosition->get();
@@ -1548,7 +1552,7 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
     elevator2Position = idRightElevatorInwardPosition->get();
     elevator3Position = 0;
 
-    thsPosition = idThsPosition->get();
+    thsPosition = -simData.eta_trim_deg;
 
     rudder1Position = idLowerRudderPosition->get();
     rudder2Position = 0;
@@ -1645,9 +1649,9 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
     if (secIndex == 0) {
       powerSupplyAvailable = idElecDcEssBusPowered->get();
     } else if (secIndex == 1) {
-      powerSupplyAvailable = idElecDcBus2Powered->get();
+      powerSupplyAvailable = idElecDcEhaBusPowered->get();
     } else {
-      powerSupplyAvailable = idElecDcBus2Powered->get();
+      powerSupplyAvailable = idElecDc1BusPowered->get();
     }
 
     Failures failureIndex = secIndex == 0 ? Failures::Sec1 : (secIndex == 1 ? Failures::Sec2 : Failures::Sec3);
@@ -1800,7 +1804,7 @@ bool FlyByWireInterface::updateFac(double sampleTime, int facIndex) {
     facsBusOutputs[facIndex] = simConnectInterface.getClientDataFacBusOutput();
   } else {
     facs[facIndex].update(sampleTime, simData.simulationTime, failuresConsumer.isActive(facIndex == 0 ? Failures::Fac1 : Failures::Fac2),
-                          facIndex == 0 ? idElecDcEssShedBusPowered->get() : idElecDcBus2Powered->get());
+                          true);
 
     facsDiscreteOutputs[facIndex] = facs[facIndex].getDiscreteOutputs();
     facsAnalogOutputs[facIndex] = facs[facIndex].getAnalogOutputs();
@@ -2002,7 +2006,7 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
 
   bool doDisconnect = false;
   if (autopilotStateMachineOutput.enabled_AP1 || autopilotStateMachineOutput.enabled_AP2) {
-    doDisconnect = true;
+    doDisconnect = false;
   }
 
   // update state machine ---------------------------------------------------------------------------------------------
@@ -2068,8 +2072,10 @@ bool FlyByWireInterface::updateAutopilotStateMachine(double sampleTime) {
     autopilotStateMachineInput.in.data.flight_phase = idFmgcFlightPhase->get();
     autopilotStateMachineInput.in.data.V2_kn = idFmgcV2->get();
     autopilotStateMachineInput.in.data.VAPP_kn = idFmgcV_APP->get();
-    autopilotStateMachineInput.in.data.VLS_kn = idFmgcV_LS->get();
-    autopilotStateMachineInput.in.data.VMAX_kn = idFmgcV_MAX->get();
+    autopilotStateMachineInput.in.data.VLS_kn =
+        facsDiscreteOutputs[0].fac_healthy ? facsBusOutputs[0].v_ls_kn.Data : facsBusOutputs[1].v_ls_kn.Data;
+    autopilotStateMachineInput.in.data.VMAX_kn =
+        facsDiscreteOutputs[0].fac_healthy ? facsBusOutputs[0].v_max_kn.Data : facsBusOutputs[1].v_max_kn.Data;
     autopilotStateMachineInput.in.data.is_flight_plan_available = idFlightGuidanceAvailable->get();
     autopilotStateMachineInput.in.data.altitude_constraint_ft = idFmgcAltitudeConstraint->get();
     autopilotStateMachineInput.in.data.thrust_reduction_altitude = fmThrustReductionAltitude->valueOr(0);
@@ -2417,8 +2423,10 @@ bool FlyByWireInterface::updateAutopilotLaws(double sampleTime) {
     autopilotLawsInput.in.data.flight_phase = idFmgcFlightPhase->get();
     autopilotLawsInput.in.data.V2_kn = idFmgcV2->get();
     autopilotLawsInput.in.data.VAPP_kn = idFmgcV_APP->get();
-    autopilotLawsInput.in.data.VLS_kn = idFmgcV_LS->get();
-    autopilotLawsInput.in.data.VMAX_kn = idFmgcV_MAX->get();
+    autopilotLawsInput.in.data.VLS_kn =
+        facsDiscreteOutputs[0].fac_healthy ? facsBusOutputs[0].v_ls_kn.Data : facsBusOutputs[1].v_ls_kn.Data;
+    autopilotLawsInput.in.data.VMAX_kn =
+        facsDiscreteOutputs[0].fac_healthy ? facsBusOutputs[0].v_max_kn.Data : facsBusOutputs[1].v_max_kn.Data;
     autopilotLawsInput.in.data.is_flight_plan_available = idFlightGuidanceAvailable->get();
     autopilotLawsInput.in.data.altitude_constraint_ft = idFmgcAltitudeConstraint->get();
     autopilotLawsInput.in.data.thrust_reduction_altitude = fmThrustReductionAltitude->valueOr(0);
@@ -2674,8 +2682,9 @@ bool FlyByWireInterface::updateAutothrust(double sampleTime) {
     autoThrustInput.in.input.TLA_3_deg = thrustLeverAngle_3->get();
     autoThrustInput.in.input.TLA_4_deg = thrustLeverAngle_4->get();
     autoThrustInput.in.input.V_c_kn = simData.ap_V_c_kn;
-    autoThrustInput.in.input.V_LS_kn = idFmgcV_LS->get();
-    autoThrustInput.in.input.V_MAX_kn = idFmgcV_MAX->get();
+    autoThrustInput.in.input.V_LS_kn = facsDiscreteOutputs[0].fac_healthy ? facsBusOutputs[0].v_ls_kn.Data : facsBusOutputs[1].v_ls_kn.Data;
+    autoThrustInput.in.input.V_MAX_kn =
+        facsDiscreteOutputs[0].fac_healthy ? facsBusOutputs[0].v_max_kn.Data : facsBusOutputs[1].v_max_kn.Data;
     autoThrustInput.in.input.thrust_limit_REV_percent = idAutothrustThrustLimitREV->get();
     autoThrustInput.in.input.thrust_limit_IDLE_percent = idAutothrustThrustLimitIDLE->get();
     autoThrustInput.in.input.thrust_limit_CLB_percent = idAutothrustThrustLimitCLB->get();

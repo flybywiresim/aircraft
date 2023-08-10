@@ -181,7 +181,7 @@ class CDUStepAltsPage {
         mcdu.flightPlanManager.addOrUpdateCruiseStep(waypoint, alt);
 
         if (CDUStepAltsPage.checkIfStepAboveMaxFl(mcdu, alt)) {
-            mcdu.setScratchpadMessage(NXSystemMessages.stepAboveMaxFl);
+            mcdu.addMessageToQueue(NXSystemMessages.stepAboveMaxFl);
         }
     }
 
@@ -233,7 +233,7 @@ class CDUStepAltsPage {
             mcdu.flightPlanManager.addOrUpdateCruiseStep(stepWaypoint, altitude, clickedStep.waypointIndex);
 
             if (this.checkIfStepAboveMaxFl(mcdu, altitude)) {
-                mcdu.setScratchpadMessage(NXSystemMessages.stepAboveMaxFl);
+                mcdu.addMessageToQueue(NXSystemMessages.stepAboveMaxFl);
             }
         } else if (splitInputs.length === 2) {
             const rawAltitudeInput = splitInputs[0];
@@ -266,7 +266,7 @@ class CDUStepAltsPage {
                 mcdu.flightPlanManager.removeCruiseStep(stepWaypoint);
 
                 if (this.checkIfStepAboveMaxFl(mcdu, altitude)) {
-                    mcdu.setScratchpadMessage(NXSystemMessages.stepAboveMaxFl);
+                    mcdu.addMessageToQueue(NXSystemMessages.stepAboveMaxFl);
                 }
             }
         } else if (splitInputs.length === 3) {

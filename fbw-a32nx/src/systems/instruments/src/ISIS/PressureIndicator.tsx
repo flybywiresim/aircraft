@@ -28,8 +28,11 @@ export const PressureIndicator: React.FC = () => {
         }
     }, [baroUnitInHg, baroMode, hpaQnh, inHgQnh]);
 
+    const fontSize = baroMode === BaroMode.STD ? 36 : 28;
+    const positionX = baroMode === BaroMode.STD ? 250 : 256;
+
     return (
-        <text x={256} y={466} className="TextCyan" textAnchor="middle" fontSize={baroMode === BaroMode.STD ? 36 : 28}>
+        <text x={positionX} y={450} className="TextCyan" textAnchor="middle" fontSize={fontSize}>
             {baroText}
         </text>
     );

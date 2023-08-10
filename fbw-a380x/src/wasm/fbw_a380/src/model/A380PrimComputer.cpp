@@ -22,8 +22,6 @@ const uint8_T A380PrimComputer_IN_Takeoff100ft{ 4U };
 
 const real_T A380PrimComputer_RGND{ 0.0 };
 
-const boolean_T A380PrimComputer_BGND{ false };
-
 void A380PrimComputer::A380PrimComputer_RateLimiter_Reset(rtDW_RateLimiter_A380PrimComputer_T *localDW)
 {
   localDW->pY_not_empty = false;
@@ -2173,10 +2171,11 @@ void A380PrimComputer::step()
                     &rtb_right_midboard_aileron_deg, &rtb_left_inboard_aileron_deg, &A380PrimComputer_P.Constant_Value_a,
                     &rtb_eta_deg_dv, &rtb_eta_trim_dot_deg_s_n, &u0_0,
                     &A380PrimComputer_U.in.analog_inputs.rudder_pedal_pos, &rtb_AND1, &rtb_y_og,
-                    &A380PrimComputer_DWork.sProtActive, &rtb_AND11_m, (const_cast<real_T*>(&A380PrimComputer_RGND)), (
-      const_cast<real_T*>(&A380PrimComputer_RGND)), (const_cast<boolean_T*>(&A380PrimComputer_BGND)),
-                    &rtb_xi_inboard_deg, &rtb_xi_midboard_deg, &rtb_xi_outboard_deg, &rtb_xi_spoiler_deg,
-                    &rtb_zeta_upper_deg, &rtb_zeta_lower_deg);
+                    &A380PrimComputer_DWork.sProtActive, &rtb_AND11_m,
+                    &A380PrimComputer_U.in.temporary_ap_input.roll_command,
+                    &A380PrimComputer_U.in.temporary_ap_input.yaw_command,
+                    &A380PrimComputer_U.in.temporary_ap_input.ap_engaged, &rtb_xi_inboard_deg, &rtb_xi_midboard_deg,
+                    &rtb_xi_outboard_deg, &rtb_xi_spoiler_deg, &rtb_zeta_upper_deg, &rtb_zeta_lower_deg);
     LawMDLOBJ1.step(&A380PrimComputer_U.in.time.dt, &u0_0, (const_cast<real_T*>(&A380PrimComputer_RGND)),
                     &rtb_xi_inboard_deg_n, &rtb_xi_midboard_deg_a, &rtb_xi_outboard_deg_l, &rtb_xi_spoiler_deg_i,
                     &rtb_zeta_upper_deg_p, &rtb_zeta_lower_deg_n);
@@ -2880,8 +2879,9 @@ void A380PrimComputer::step()
       const_cast<real_T*>(&A380PrimComputer_RGND)), &u0, &rtb_AND1, &rtb_y_og, &A380PrimComputer_DWork.sProtActive,
                     &rtb_AND11_m, &rtb_BusAssignment_d_logic_alpha_prot_deg, &rtb_BusAssignment_p_logic_alpha_max_deg,
                     &rtb_BusAssignment_p_logic_high_speed_prot_hi_thresh_kn,
-                    &rtb_BusAssignment_p_logic_high_speed_prot_lo_thresh_kn, (const_cast<real_T*>(&A380PrimComputer_RGND)),
-                    (const_cast<boolean_T*>(&A380PrimComputer_BGND)), &rtb_eta_deg, &rtb_eta_trim_dot_deg_s,
+                    &rtb_BusAssignment_p_logic_high_speed_prot_lo_thresh_kn,
+                    &A380PrimComputer_U.in.temporary_ap_input.pitch_command,
+                    &A380PrimComputer_U.in.temporary_ap_input.ap_engaged, &rtb_eta_deg, &rtb_eta_trim_dot_deg_s,
                     &rtb_eta_trim_limit_lo, &rtb_eta_trim_limit_up);
     A380PrimComputer_MATLABFunction_e(&A380PrimComputer_U.in.bus_inputs.sfcc_1_bus.slat_flap_system_status_word,
       A380PrimComputer_P.BitfromLabel_bit_n, &rtb_y_c);
