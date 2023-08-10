@@ -1,4 +1,4 @@
-export enum ClassType {
+export enum SeatType {
     NarrowbodyEconomy = 0,
     NarrowbodyEconomyEmergency = 1,
     WidebodyEconomy = 2,
@@ -49,7 +49,7 @@ export interface CargoStationInfo {
 }
 
 export const SeatConstants = Object.freeze({
-    [ClassType.NarrowbodyEconomy]: {
+    [SeatType.NarrowbodyEconomy]: {
         len: 25.4,
         wid: 19.2,
         padX: 6.8,
@@ -57,7 +57,7 @@ export const SeatConstants = Object.freeze({
         imageX: 25.4,
         imageY: 19.2,
     },
-    [ClassType.NarrowbodyEconomyEmergency]: {
+    [SeatType.NarrowbodyEconomyEmergency]: {
         len: 25.4,
         wid: 19.2,
         padX: 13.8,
@@ -65,7 +65,7 @@ export const SeatConstants = Object.freeze({
         imageX: 25.4,
         imageY: 19.2,
     },
-    [ClassType.WidebodyEconomy]: {
+    [SeatType.WidebodyEconomy]: {
         len: 16,
         wid: 12.125,
         padX: 2,
@@ -73,7 +73,7 @@ export const SeatConstants = Object.freeze({
         imageX: 16,
         imageY: 12.125,
     },
-    [ClassType.WidebodyEconomyEmergency]: {
+    [SeatType.WidebodyEconomyEmergency]: {
         len: 16,
         wid: 12.125,
         padX: 2,
@@ -81,7 +81,7 @@ export const SeatConstants = Object.freeze({
         imageX: 16,
         imageY: 12.125,
     },
-    [ClassType.WidebodyBusinessFlatRight]: {
+    [SeatType.WidebodyBusinessFlatRight]: {
         len: 24,
         wid: 23.22,
         padX: 12,
@@ -89,7 +89,7 @@ export const SeatConstants = Object.freeze({
         imageX: 24,
         imageY: 23.22,
     },
-    [ClassType.WidebodyBusinessFlatLeft]: {
+    [SeatType.WidebodyBusinessFlatLeft]: {
         len: 24,
         wid: 23.22,
         padX: 12,
@@ -97,7 +97,7 @@ export const SeatConstants = Object.freeze({
         imageX: 24,
         imageY: 23.22,
     },
-    [ClassType.WidebodySuiteRight]: {
+    [SeatType.WidebodySuiteRight]: {
         len: 35,
         wid: 20,
         padX: 2,
@@ -105,7 +105,7 @@ export const SeatConstants = Object.freeze({
         imageX: 50,
         imageY: 50,
     },
-    [ClassType.WidebodySuiteLeft]: {
+    [SeatType.WidebodySuiteLeft]: {
         len: 35,
         wid: 20,
         padX: 5,

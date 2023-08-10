@@ -1,7 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import * as ReactDOMServer from 'react-dom/server';
 import { BitFlags } from '@flybywiresim/fbw-sdk';
-import { CanvasConst, SeatConstants, SeatInfo, PaxStationInfo, ClassType, RowInfo } from './Constants';
+import { CanvasConst, SeatConstants, SeatInfo, PaxStationInfo, SeatType, RowInfo } from './Constants';
 import { BusinessSeatLeft, BusinessSeatRight, Seat, SuiteLeft, SuiteRight } from '../../../../Assets/Seat';
 
 interface SeatMapProps {
@@ -29,11 +29,12 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [ctx, setCtx] = useState<CanvasRenderingContext2D | null>(null);
 
-    const getImageFromComponent = (component: React.ReactElement): HTMLImageElement => {
+    const getImageFromComponent = useMemo(() => (component: React.ReactElement): HTMLImageElement => {
         const imageElement = new Image();
         imageElement.src = `data:image/svg+xml; charset=utf8, ${encodeURIComponent(ReactDOMServer.renderToStaticMarkup(component))}`;
         return imageElement;
-    };
+    }, []);
+
     const seatEmptyImg = useRef(getImageFromComponent(<Seat fill="none" stroke={theme[0]} opacity="1.0" />));
     const seatMinusImg = useRef(getImageFromComponent(<Seat fill={theme[0]} stroke="none" opacity="0.25" />));
     const seatAddImg = useRef(getImageFromComponent(<Seat fill={theme[1]} stroke="none" opacity="0.6" />));
@@ -61,8 +62,9 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
 
     const [xYMap, setXYMap] = useState<number[][][]>([]);
 
-    const addXOffsetRow = (xOff: number, rowInfo: RowInfo, station: number, row: number) => {
-        let seatType: ClassType = ClassType.NarrowbodyEconomy;
+    const addXOffsetRow = useMemo(() => (xOff: number, rowInfo: RowInfo, station: number, row: number) => {
+        // Use largest seat in this row to set seat pitch for the row
+        let seatType: SeatType = SeatType.NarrowbodyEconomy;
         if (rowInfo.xOffset !== undefined) {
             xOff += rowInfo.xOffset;
         }
@@ -75,9 +77,9 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
             xOff += (SeatConstants[seatType].padX + SeatConstants[seatType].len);
         }
         return xOff;
-    };
+    }, [ctx]);
 
-    const addYOffsetSeat = (yOff: number, station: number, row: number, seat: number) => {
+    const addYOffsetSeat = useMemo(() => (yOff: number, station: number, row: number, seat: number) => {
         if (seatMap[station].rows[row].yOffset !== undefined
             && seatMap[station].rows[row].seats[seat].yOffset !== undefined) {
             yOff += seatMap[station].rows[row].yOffset;
@@ -88,9 +90,9 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
             yOff += (SeatConstants[seatType].padY + SeatConstants[seatType].wid);
         }
         return yOff;
-    };
+    }, [ctx]);
 
-    const draw = () => {
+    const draw = useMemo(() => () => {
         const currDeck = isMainDeck ? 0 : 1;
         if (ctx) {
             ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -111,9 +113,9 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
             }
             ctx.fill();
         }
-    };
+    }, [ctx, ...activeFlags, ...desiredFlags]);
 
-    const drawRow = (x: number, station: number, rowI: number, rowInfo: RowInfo, seatId: number) => {
+    const drawRow = useMemo(() => (x: number, station: number, rowI: number, rowInfo: RowInfo, seatId: number) => {
         const seatsInfo: SeatInfo[] = rowInfo.seats;
         for (let seat = 0, yOff = 0; seat < seatsInfo.length; seat++) {
             yOff = addYOffsetSeat(yOff, station, rowI, seat);
@@ -124,11 +126,11 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
             setXYMap(xYMap);
             drawSeat(x, yOff, seatsInfo[seat].type, SeatConstants[seatsInfo[seat].type].imageX, SeatConstants[seatsInfo[seat].type].imageY, station, seatId++);
         }
-    };
+    }, [ctx, ...activeFlags, ...desiredFlags]);
 
-    const drawSeat = (x: number, y: number, seatType: number, imageX: number, imageY: number, station: number, seatId: number) => {
+    const drawSeat = useMemo(() => (x: number, y: number, seatType: number, imageX: number, imageY: number, station: number, seatId: number) => {
         switch (seatType) {
-        case ClassType.WidebodyBusinessFlatLeft:
+        case SeatType.WidebodyBusinessFlatLeft:
             if (ctx && bizLeftSeatEmptyImg && bizLeftSeatMinusImg && bizLeftSeatAddImg && bizLeftSeatFilledImg) {
                 if (desiredFlags[station].getBitIndex(seatId) && activeFlags[station].getBitIndex(seatId)) {
                     ctx.drawImage(bizLeftSeatFilledImg.current, x, y, imageX, imageY);
@@ -141,7 +143,7 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
                 }
             }
             break;
-        case ClassType.WidebodyBusinessFlatRight:
+        case SeatType.WidebodyBusinessFlatRight:
             if (ctx && bizRightSeatEmptyImg && bizRightSeatMinusImg && bizRightSeatAddImg && bizRightSeatFilledImg) {
                 if (desiredFlags[station].getBitIndex(seatId) && activeFlags[station].getBitIndex(seatId)) {
                     ctx.drawImage(bizRightSeatFilledImg.current, x, y, imageX, imageY);
@@ -154,7 +156,7 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
                 }
             }
             break;
-        case ClassType.WidebodySuiteRight:
+        case SeatType.WidebodySuiteRight:
             if (ctx && suiteRightSeatEmptyImg && suiteRightSeatMinusImg && suiteRightSeatAddImg && suiteRightSeatFilledImg) {
                 if (desiredFlags[station].getBitIndex(seatId) && activeFlags[station].getBitIndex(seatId)) {
                     ctx.drawImage(suiteRightSeatFilledImg.current, x, y, imageX, imageY);
@@ -167,7 +169,7 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
                 }
             }
             break;
-        case ClassType.WidebodySuiteLeft:
+        case SeatType.WidebodySuiteLeft:
             if (ctx && suiteLeftSeatEmptyImg && suiteLeftSeatMinusImg && suiteLeftSeatAddImg && suiteLeftSeatFilledImg) {
                 if (desiredFlags[station].getBitIndex(seatId) && activeFlags[station].getBitIndex(seatId)) {
                     ctx.drawImage(suiteLeftSeatFilledImg.current, x, y, imageX, imageY);
@@ -194,9 +196,9 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
             }
             break;
         }
-    };
+    }, [ctx, ...desiredFlags, ...activeFlags]);
 
-    const mouseEvent = (e) => {
+    const mouseEvent = useMemo(() => (e) => {
         let selectedStation = -1;
         let selectedSeat = -1;
         let shortestDistance = Number.POSITIVE_INFINITY;
@@ -214,9 +216,20 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
         if (selectedStation !== -1 && selectedSeat !== -1) {
             onClickSeat(selectedStation, selectedSeat);
         }
-    };
+    }, [ctx]);
 
     useCanvasEvent(canvasRef.current, 'click', mouseEvent);
+
+    useEffect(() => {
+        setCtx(canvasRef.current.getContext('2d'));
+        const width = CanvasConst.width;
+        const height = CanvasConst.height;
+        let ratio = 1;
+        ratio = window.devicePixelRatio;
+        canvasRef.current.width = width * ratio;
+        canvasRef.current.height = height * ratio;
+        ctx?.scale(ratio, ratio);
+    }, []);
 
     useEffect(() => {
         const canvas = canvasRef.current;
@@ -226,13 +239,6 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
             return undefined;
         }
 
-        const width = CanvasConst.width;
-        const height = CanvasConst.height;
-        const { devicePixelRatio: ratio = 1 } = window;
-        setCtx(canvas.getContext('2d'));
-        canvas.width = width * ratio;
-        canvas.height = height * ratio;
-        ctx?.scale(ratio, ratio);
         const render = () => {
             draw();
             // workaround for rendering bug
@@ -246,7 +252,7 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
                 window.cancelAnimationFrame(frameId);
             }
         };
-    }, [draw]);
+    }, [ctx, ...activeFlags, ...desiredFlags]);
 
     useEffect(() => {
         // Reset mouse map when switching decks
