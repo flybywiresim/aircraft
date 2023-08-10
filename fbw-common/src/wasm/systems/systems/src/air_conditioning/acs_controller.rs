@@ -189,8 +189,12 @@ impl<const ZONES: usize, const ENGINES: usize> AirConditioningSystemController<Z
         self.trim_air_system_controller.is_open()
     }
 
+    pub fn duct_overheat(&self, zone_id: usize) -> bool {
+        self.trim_air_system_controller.duct_overheat(zone_id)
+    }
+
     pub fn hot_air_pb_fault_light_determination(&self) -> bool {
-        self.trim_air_system_controller.should_turn_on_fault_light()
+        self.trim_air_system_controller.duct_overheat_monitor()
     }
 
     pub fn zone_controller_primary_fault(&self) -> bool {
@@ -212,7 +216,8 @@ impl<const ZONES: usize, const ENGINES: usize> AirConditioningSystemController<Z
     }
 
     pub fn taprv_position_disagrees(&self) -> bool {
-        self.trim_air_system_controller.is_enabled() != self.trim_air_system_controller.is_open()
+        self.trim_air_system_controller
+            .taprv_disagree_status_monitor()
     }
 
     pub fn zone_controller_failure(&self) -> bool {
@@ -981,25 +986,39 @@ struct TrimAirSystemController<const ZONES: usize, const ENGINES: usize> {
     hot_air_is_enabled_id: VariableIdentifier,
     hot_air_is_open_id: VariableIdentifier,
 
+    duct_overheat: [bool; ZONES],
     is_enabled: bool,
     is_open: bool,
     failure: Failure,
-    overheat_event: bool,
-    previous_pb_state: bool,
+    overheat_timer: [Duration; ZONES],
+    taprv_open_disagrees: bool,
+    taprv_open_timer: Duration,
+    taprv_closed_disagrees: bool,
+    taprv_closed_timer: Duration,
     trim_air_valve_controllers: [TrimAirValveController; ZONES],
 }
 
 impl<const ZONES: usize, const ENGINES: usize> TrimAirSystemController<ZONES, ENGINES> {
+    const DUCT_OVERHEAT_SET_LIMIT: f64 = 88.; // Deg C
+    const DUCT_OVERHEAT_RESET_LIMIT: f64 = 70.; // Deg C
+    const TAPRV_OPEN_COMMAND_DISAGREE_TIMER: f64 = 30.; // seconds
+    const TAPRV_CLOSE_COMMAND_DISAGREE_TIMER: f64 = 14.; // seconds
+    const TIMER_RESET: f64 = 1.2; // seconds
+
     fn new(context: &mut InitContext) -> Self {
         Self {
             hot_air_is_enabled_id: context.get_identifier("HOT_AIR_VALVE_IS_ENABLED".to_owned()),
             hot_air_is_open_id: context.get_identifier("HOT_AIR_VALVE_IS_OPEN".to_owned()),
 
+            duct_overheat: [false; ZONES],
             is_enabled: false,
             is_open: false,
             failure: Failure::new(FailureType::HotAir(1)), // Only one hot air valve in the A320
-            overheat_event: false,
-            previous_pb_state: false,
+            overheat_timer: [Duration::default(); ZONES],
+            taprv_open_disagrees: false,
+            taprv_open_timer: Duration::default(),
+            taprv_closed_disagrees: false,
+            taprv_closed_timer: Duration::default(),
             trim_air_valve_controllers: [TrimAirValveController::new(); ZONES],
         }
     }
@@ -1041,10 +1060,23 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystemController<ZONES, EN
             )
         }
 
-        self.overheat_event =
-            self.hot_air_fault_determination(acs_overhead, trim_air_system.duct_temperature());
+        self.duct_overheat = (0..ZONES)
+            .map(|id| {
+                self.duct_zone_overheat_monitor(
+                    context,
+                    acs_overhead,
+                    trim_air_system.duct_temperature(),
+                    id,
+                )
+            })
+            .collect::<Vec<bool>>()
+            .try_into()
+            .unwrap_or_else(|v: Vec<bool>| {
+                panic!("Expected a Vec of length {} but it was {}", ZONES, v.len())
+            });
 
-        self.previous_pb_state = acs_overhead.hot_air_pushbutton_is_on();
+        self.taprv_open_disagrees = self.taprv_open_command_disagree_monitor(context);
+        self.taprv_closed_disagrees = self.taprv_closed_command_disagree_monitor(context);
     }
 
     fn trim_air_pressure_regulating_valve_status_determination(
@@ -1062,7 +1094,7 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystemController<ZONES, EN
                 .iter()
                 .any(|pack| pack.pack_start_condition_determination(pneumatic))
             && ((pneumatic.pack_flow_valve_is_open(1)) || (pneumatic.pack_flow_valve_is_open(2)))
-            && !self.overheat_event
+            && !self.duct_overheat_monitor()
             && !any_tav_has_fault
             && !zone_controller_fault
     }
@@ -1079,29 +1111,106 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystemController<ZONES, EN
         self.is_open
     }
 
-    fn hot_air_fault_determination(
-        &self,
+    fn duct_zone_overheat_monitor(
+        &mut self,
+        context: &UpdateContext,
         acs_overhead: &impl AirConditioningOverheadShared,
         duct_temperature: Vec<ThermodynamicTemperature>,
+        zone_id: usize,
     ) -> bool {
-        if duct_temperature
-            .iter()
-            .any(|temp| *temp > ThermodynamicTemperature::new::<degree_celsius>(88.))
+        if duct_temperature[zone_id]
+            > ThermodynamicTemperature::new::<degree_celsius>(Self::DUCT_OVERHEAT_SET_LIMIT)
+        {
+            if self.overheat_timer[zone_id] > Duration::from_secs_f64(Self::TIMER_RESET) {
+                true
+            } else {
+                self.overheat_timer[zone_id] += context.delta();
+                false
+            }
+        } else if self.duct_overheat[zone_id]
+            && ((duct_temperature[zone_id]
+                > ThermodynamicTemperature::new::<degree_celsius>(Self::DUCT_OVERHEAT_RESET_LIMIT))
+                || (duct_temperature[zone_id]
+                    <= ThermodynamicTemperature::new::<degree_celsius>(
+                        Self::DUCT_OVERHEAT_RESET_LIMIT,
+                    )
+                    && acs_overhead.hot_air_pushbutton_is_on()))
         {
             true
-        } else if duct_temperature
-            .iter()
-            .all(|temp| *temp < ThermodynamicTemperature::new::<degree_celsius>(70.))
-            && self.overheat_event
+        } else if self.duct_overheat[zone_id]
+            && duct_temperature[zone_id]
+                <= ThermodynamicTemperature::new::<degree_celsius>(Self::DUCT_OVERHEAT_RESET_LIMIT)
+            && !acs_overhead.hot_air_pushbutton_is_on()
         {
-            self.previous_pb_state || !acs_overhead.hot_air_pushbutton_is_on()
+            self.overheat_timer[zone_id] = Duration::default();
+            false
         } else {
-            self.overheat_event
+            self.duct_overheat[zone_id]
         }
     }
 
-    fn should_turn_on_fault_light(&self) -> bool {
-        self.overheat_event
+    fn taprv_open_command_disagree_monitor(&mut self, context: &UpdateContext) -> bool {
+        if !self.is_enabled {
+            false
+        } else if !self.is_open && !self.taprv_open_disagrees {
+            if self.taprv_open_timer
+                > Duration::from_secs_f64(Self::TAPRV_OPEN_COMMAND_DISAGREE_TIMER)
+            {
+                self.taprv_open_timer = Duration::default();
+                true
+            } else {
+                self.taprv_open_timer += context.delta();
+                false
+            }
+        } else if self.is_open && self.taprv_open_disagrees {
+            if self.taprv_open_timer > Duration::from_secs_f64(Self::TIMER_RESET) {
+                self.taprv_open_timer = Duration::default();
+                false
+            } else {
+                self.taprv_open_timer += context.delta();
+                true
+            }
+        } else {
+            self.taprv_open_disagrees
+        }
+    }
+
+    fn taprv_closed_command_disagree_monitor(&mut self, context: &UpdateContext) -> bool {
+        if self.is_enabled {
+            false
+        } else if self.is_open && !self.taprv_closed_disagrees {
+            if self.taprv_closed_timer
+                > Duration::from_secs_f64(Self::TAPRV_CLOSE_COMMAND_DISAGREE_TIMER)
+            {
+                self.taprv_closed_timer = Duration::default();
+                true
+            } else {
+                self.taprv_closed_timer += context.delta();
+                false
+            }
+        } else if !self.is_open && self.taprv_closed_disagrees {
+            if self.taprv_closed_timer > Duration::from_secs_f64(Self::TIMER_RESET) {
+                self.taprv_closed_timer = Duration::default();
+                false
+            } else {
+                self.taprv_closed_timer += context.delta();
+                true
+            }
+        } else {
+            self.taprv_closed_disagrees
+        }
+    }
+
+    fn duct_overheat(&self, zone_id: usize) -> bool {
+        self.duct_overheat[zone_id]
+    }
+
+    fn duct_overheat_monitor(&self) -> bool {
+        self.duct_overheat.iter().any(|&overheat| overheat)
+    }
+
+    fn taprv_disagree_status_monitor(&self) -> bool {
+        self.taprv_open_disagrees || self.taprv_closed_disagrees
     }
 }
 

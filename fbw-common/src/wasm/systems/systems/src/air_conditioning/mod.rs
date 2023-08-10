@@ -476,7 +476,6 @@ pub struct TrimAirSystem<const ZONES: usize, const ENGINES: usize> {
     trim_air_mixers: [MixerUnit<1>; ZONES],
 
     duct_high_pressure: Failure,
-    duct_overheat: [bool; ZONES],
     outlet_air: Air,
 }
 
@@ -497,7 +496,6 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystem<ZONES, ENGINES> {
             trim_air_mixers: [MixerUnit::new(&[ZoneType::Cabin(1)]); ZONES],
 
             duct_high_pressure: Failure::new(FailureType::TrimAirHighPressure),
-            duct_overheat: [false; ZONES],
             outlet_air: Air::new(),
         }
     }
@@ -533,18 +531,6 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystem<ZONES, ENGINES> {
             self.outlet_air
                 .set_pressure(self.trim_air_outlet_pressure());
         }
-
-        self.duct_overheat = (0..ZONES)
-            .map(|id| {
-                self.duct_overheat_determination(id)
-                    || (self.duct_overheat[id]
-                        && tav_controller.hot_air_pb_fault_light_determination())
-            })
-            .collect::<Vec<bool>>()
-            .try_into()
-            .unwrap_or_else(|v: Vec<bool>| {
-                panic!("Expected a Vec of length {} but it was {}", ZONES, v.len())
-            });
     }
 
     pub fn mix_packs_air_update(&mut self, pack_container: &mut [impl PneumaticContainer; 2]) {
@@ -582,15 +568,6 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystem<ZONES, ENGINES> {
         self.trim_air_valves
             .iter()
             .any(|tav| tav.trim_air_valve_has_fault())
-    }
-
-    fn duct_overheat_determination(&self, zone_id: usize) -> bool {
-        self.trim_air_mixers[zone_id].outlet_air().temperature()
-            > ThermodynamicTemperature::new::<degree_celsius>(88.)
-    }
-
-    pub fn duct_overheat(&self, zone_id: usize) -> bool {
-        self.duct_overheat[zone_id]
     }
 
     pub fn trim_air_high_pressure(&self) -> bool {

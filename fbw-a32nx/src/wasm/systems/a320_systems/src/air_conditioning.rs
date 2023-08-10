@@ -435,7 +435,7 @@ impl AirConditioningSystemInterfaceUnit {
     ) {
         let duct_overheat = self
             .cabin_zones
-            .map(|zone| trim_air_system.duct_overheat(zone.id()));
+            .map(|zone| acsc.duct_overheat(zone.id()));
         let trim_air_valve_fault = self
             .cabin_zones
             .map(|zone| trim_air_system.trim_air_valve_has_fault(zone.id()));
