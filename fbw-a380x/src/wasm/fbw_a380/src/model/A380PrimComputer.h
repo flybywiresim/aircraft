@@ -9,7 +9,6 @@
 #include "A380PitchDirectLaw.h"
 
 extern const real_T A380PrimComputer_RGND;
-extern const boolean_T A380PrimComputer_BGND;
 extern base_prim_logic_outputs rtP_prim_logic_output_MATLABStruct;
 extern base_prim_laws_outputs rtP_prim_laws_output_MATLABStruct;
 extern base_prim_analog_outputs rtP_prim_analog_output_MATLABStruct;
