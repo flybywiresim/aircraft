@@ -563,9 +563,9 @@ class FlyByWireInterface {
   std::unique_ptr<LocalVariable> idUpperRudderPosition;
   std::unique_ptr<LocalVariable> idLowerRudderPosition;
 
-  std::unique_ptr<LocalVariable> idElecDcBus2Powered;
   std::unique_ptr<LocalVariable> idElecDcEssBusPowered;
-  std::unique_ptr<LocalVariable> idElecBat1HotBusPowered;
+  std::unique_ptr<LocalVariable> idElecDcEhaBusPowered;
+  std::unique_ptr<LocalVariable> idElecDc1BusPowered;
 
   std::unique_ptr<LocalVariable> idHydYellowSystemPressure;
   std::unique_ptr<LocalVariable> idHydGreenSystemPressure;

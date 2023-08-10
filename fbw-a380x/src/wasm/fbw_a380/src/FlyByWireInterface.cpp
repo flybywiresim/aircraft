@@ -749,9 +749,9 @@ void FlyByWireInterface::setupLocalVariables() {
   idUpperRudderPosition = std::make_unique<LocalVariable>("A32NX_HYD_UPPER_RUDDER_DEFLECTION");
   idLowerRudderPosition = std::make_unique<LocalVariable>("A32NX_HYD_LOWER_RUDDER_DEFLECTION");
 
-  idElecDcBus2Powered = std::make_unique<LocalVariable>("A32NX_ELEC_DC_2_BUS_IS_POWERED");
   idElecDcEssBusPowered = std::make_unique<LocalVariable>("A32NX_ELEC_DC_ESS_BUS_IS_POWERED");
-  idElecBat1HotBusPowered = std::make_unique<LocalVariable>("A32NX_ELEC_DC_HOT_1_BUS_IS_POWERED");
+  idElecDcEhaBusPowered = std::make_unique<LocalVariable>("A32NX_ELEC_247PP_BUS_IS_POWERED");
+  idElecDc1BusPowered = std::make_unique<LocalVariable>("A32NX_ELEC_DC_1_BUS_IS_POWERED");
 
   idHydYellowSystemPressure = std::make_unique<LocalVariable>("A32NX_HYD_YELLOW_SYSTEM_1_SECTION_PRESSURE");
   idHydGreenSystemPressure = std::make_unique<LocalVariable>("A32NX_HYD_GREEN_SYSTEM_1_SECTION_PRESSURE");
@@ -1455,9 +1455,9 @@ bool FlyByWireInterface::updatePrim(double sampleTime, int primIndex) {
     if (primIndex == 0) {
       powerSupplyAvailable = idElecDcEssBusPowered->get();
     } else if (primIndex == 1) {
-      powerSupplyAvailable = idElecDcBus2Powered->get();
+      powerSupplyAvailable = idElecDcEhaBusPowered->get();
     } else {
-      powerSupplyAvailable = idElecDcBus2Powered->get();
+      powerSupplyAvailable = idElecDc1BusPowered->get();
     }
 
     prims[primIndex].update(sampleTime, simData.simulationTime,
@@ -1649,9 +1649,9 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
     if (secIndex == 0) {
       powerSupplyAvailable = idElecDcEssBusPowered->get();
     } else if (secIndex == 1) {
-      powerSupplyAvailable = idElecDcBus2Powered->get();
+      powerSupplyAvailable = idElecDcEhaBusPowered->get();
     } else {
-      powerSupplyAvailable = idElecDcBus2Powered->get();
+      powerSupplyAvailable = idElecDc1BusPowered->get();
     }
 
     Failures failureIndex = secIndex == 0 ? Failures::Sec1 : (secIndex == 1 ? Failures::Sec2 : Failures::Sec3);
