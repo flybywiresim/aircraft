@@ -259,11 +259,11 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
         setXYMap([]);
     }, [isMainDeck]);
 
-    const distSquared = (x1: number, y1: number, x2: number, y2: number): number => {
+    const distSquared = useMemo(() => (x1: number, y1: number, x2: number, y2: number): number => {
         const diffX = x1 - x2;
         const diffY = y1 - y2;
         return (diffX * diffX + diffY * diffY);
-    };
+    }, [ctx]);
 
     return (
         <>
