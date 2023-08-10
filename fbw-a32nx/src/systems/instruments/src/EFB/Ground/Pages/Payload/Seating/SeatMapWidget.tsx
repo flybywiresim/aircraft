@@ -101,12 +101,13 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
 
             let xOff = 0;
             for (let station = 0; station < seatMap.length; station++) {
-                if (seatMap[station].deck === currDeck) {
+                const deck = seatMap[station].deck;
+                if (deck === currDeck) {
                     let seatId = 0;
                     for (let row = 0; row < seatMap[station].rows.length; row++) {
                         const rowInfo = seatMap[station].rows[row];
                         xOff = addXOffsetRow(xOff, rowInfo, station, row);
-                        drawRow(xOff, station, row, rowInfo, seatId);
+                        drawRow(xOff, deck, station, row, rowInfo, seatId);
                         seatId += seatMap[station].rows[row].seats.length;
                     }
                 }
@@ -115,14 +116,14 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
         }
     }, [ctx, ...activeFlags, ...desiredFlags]);
 
-    const drawRow = useMemo(() => (x: number, station: number, rowI: number, rowInfo: RowInfo, seatId: number) => {
+    const drawRow = useMemo(() => (x: number, deck: number, station: number, rowI: number, rowInfo: RowInfo, seatId: number) => {
         const seatsInfo: SeatInfo[] = rowInfo.seats;
         for (let seat = 0, yOff = 0; seat < seatsInfo.length; seat++) {
             yOff = addYOffsetSeat(yOff, station, rowI, seat);
             if (!xYMap[station]) {
                 xYMap[station] = [];
             }
-            xYMap[station][seatId] = [x + SeatConstants[seatsInfo[seat].type].imageX / 2, yOff + SeatConstants[seatsInfo[seat].type].imageY / 2];
+            xYMap[station][seatId] = [x + SeatConstants[seatsInfo[seat].type].imageX / 2, yOff + SeatConstants[seatsInfo[seat].type].imageY / 2, deck];
             setXYMap(xYMap);
             drawSeat(x, yOff, seatsInfo[seat].type, SeatConstants[seatsInfo[seat].type].imageX, SeatConstants[seatsInfo[seat].type].imageY, station, seatId++);
         }
@@ -205,7 +206,7 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
         xYMap.forEach((station, i) => {
             station.forEach((seat, j) => {
                 const distance = distSquared(e.offsetX, e.offsetY, seat[0], seat[1]);
-                if (distance < shortestDistance) {
+                if (seat[2] === (isMainDeck ? 0 : 1) && distance < shortestDistance) {
                     selectedStation = i;
                     selectedSeat = j;
                     shortestDistance = distance;
@@ -216,7 +217,7 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
         if (selectedStation !== -1 && selectedSeat !== -1) {
             onClickSeat(selectedStation, selectedSeat);
         }
-    }, [ctx]);
+    }, [ctx, isMainDeck]);
 
     useCanvasEvent(canvasRef.current, 'click', mouseEvent);
 
@@ -253,11 +254,6 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
             }
         };
     }, [ctx, ...activeFlags, ...desiredFlags]);
-
-    useEffect(() => {
-        // Reset mouse map when switching decks
-        setXYMap([]);
-    }, [isMainDeck]);
 
     const distSquared = useMemo(() => (x1: number, y1: number, x2: number, y2: number): number => {
         const diffX = x1 - x2;
