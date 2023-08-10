@@ -64,6 +64,7 @@ jobs:
           ./scripts/dev-env/run.sh ./scripts/setup.sh
           ./scripts/dev-env/run.sh ./scripts/build.sh --no-tty -j 4
           df -h
+          ls -la /mnt
           rm -rf fbw-a32nx/src
       - name: Generate install.json
         run: |
