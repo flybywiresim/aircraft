@@ -69,6 +69,7 @@ jobs:
 
           cp ./fbw-a32nx/out/build-modules/modules.json ./fbw-a32nx/out/flybywire-aircraft-a320-neo/install.json
           ./scripts/dev-env/run.sh node ./scripts/install-source_a32nx.js
+          rm -rf fbw-a32nx/src/textures
       - name: Upload PR artifact
         uses: actions/upload-artifact@v2
         with:
