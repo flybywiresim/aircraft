@@ -1,10 +1,10 @@
-import { ComponentProps, DisplayComponent, FSComponent, Subject, Subscription, VNode } from '@microsoft/msfs-sdk';
+import { ComponentProps, DisplayComponent, FSComponent, Subject, Subscribable, Subscription, VNode } from '@microsoft/msfs-sdk';
 import './style.scss';
 
 interface IconButtonProps extends ComponentProps {
     containerStyle?: string;
     icon: 'double-up' | 'double-down' | '' | null;
-    disabled?: Subject<boolean>;
+    disabled?: Subscribable<boolean>;
     onClick?: () => void;
 }
 

@@ -256,3 +256,43 @@
 .mfd-fms-fpln-label-bottom-space {
   margin-bottom: 10px;
 }
+
+.mfd-fms-fpln-duplicate-outer {
+  position: relative;
+}
+
+.mfd-fms-fpln-duplicate-inner {
+  z-index: 20;
+  position: absolute;
+  left: 0px;
+  top: -33px;
+  width: 768px;
+  height: 850px;
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+  background-color: $display-background;
+  }
+
+.mfd-fms-fpln-duplicate-grid {
+  display: grid;
+  grid-template-columns: 20% 20% 30% 30%;
+  align-items: start;
+  justify-content: start;
+}
+
+.mfd-fms-fpln-duplicate-outline {
+  border: 2px solid $display-grey;
+  height: 60%;
+}
+
+.mfd-fms-fpln-duplicate-grid > div {
+  display: flex;
+  justify-content: center;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.mfd-fms-fpln-duplicate-grid > div.sel {
+  background-color: $display-grey;
+}

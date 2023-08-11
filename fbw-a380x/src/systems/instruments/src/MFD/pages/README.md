@@ -23,7 +23,7 @@ Status legend:
 | 🟥 | fms/\*/f-pln-airways | 1 |
 | 🟥 | fms/\*/f-pln-direct-to | 1 |
 | 🟥 | fms/\*/f-pln-hold | 1 |
-| 🟥 | fms/\*/f-pln-duplicate-names | 1 |
+| 1️⃣ | fms/\*/f-pln-duplicate-names | 1 |
 | 🟥 | fms/\*/f-pln-vert-rev | 2 |
 | 🟥 | fms/\*/f-pln-offset | 3 |
 | 🟥 | fms/\*/f-pln-fix-info | 3 |
@@ -31,7 +31,7 @@ Status legend:
 | 🟥 | fms/\*/f-pln-closest-airports | 3 |
 | 🟥 | fms/\*/f-pln-cpny-wind-data-req | 3 |
 | 🟥 | fms/\*/wind | 3 |
-| 🟥 | fms/\*/f-pln-cpny-f-pln-req | 9 |
+| 🟥 | fms/\*/f-pln-cpny-f-pln-req | 2 |
 | 🟥 | fms/\*/f-pln-cpny-to-data-req | 9 |
 | 🟥 | fms/\*/f-pln-cpny-to-data-recv | 9 |
 | 🟥 | fms/\*/f-pln-equi-time-point | 9 |

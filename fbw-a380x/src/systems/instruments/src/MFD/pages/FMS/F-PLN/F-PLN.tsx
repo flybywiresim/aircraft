@@ -16,6 +16,8 @@ import { FlightPlanElement, FlightPlanLeg } from '@fmgc/flightplanning/new/legs/
 import { VerticalWaypointPrediction } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/new/NavigationDatabaseService';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
+import { MfdFmsFplnDuplicateNames } from 'instruments/src/MFD/pages/FMS/F-PLN/DUPLICATE_NAMES';
+import { NdbNavaid, VhfNavaid, Waypoint } from 'msfs-navdata';
 
 interface MfdFmsFplnProps extends AbstractMfdPageProps {
 }
@@ -73,6 +75,12 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
     private nextWptAvailableWaypoints = ArraySubject.create<string>(['']) ;
 
+    private duplicateNamesOpened = Subject.create<boolean>(false);
+
+    private duplicateNamesIdent = Subject.create<string>('');
+
+    private duplicateNamesFunction = Subject.create<(wpt: VhfNavaid | NdbNavaid | Waypoint) => Promise<void>>(() => null);
+
     protected onNewData(): void {
         console.time('F-PLN:onNewData');
         this.activeLegIndex = this.loadedFlightPlan.activeLegIndex;
@@ -93,6 +101,10 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     }
 
     private update(startAtIndex: number): void {
+        // Make sure that you can't scroll higher than the active leg
+        startAtIndex = Math.max(startAtIndex, (this.loadedFlightPlan.activeLegIndex - 1), 0);
+        this.displayFplnFromLegIndex.set(startAtIndex);
+
         // Dummy data for navGeometryProfile
         const waypointPredictions = new Map<number, VerticalWaypointPrediction>();
         this.loadedFlightPlan.allLegs.concat(this.loadedFlightPlan.alternateFlightPlan.allLegs).forEach((el, idx) => {
@@ -115,7 +127,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
         });
         this.navGeometryProfile.waypointPredictions = waypointPredictions;
 
-        if (startAtIndex > (this.loadedFlightPlan.allLegs.length + this.loadedFlightPlan.alternateFlightPlan.allLegs.length) || startAtIndex < 0) {
+        if (startAtIndex > (this.loadedFlightPlan.allLegs.length + this.loadedFlightPlan.alternateFlightPlan.allLegs.length)) {
             this.displayFplnFromLegIndex.set(0);
             return;
         }
@@ -418,10 +430,28 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                         cancelAction={() => this.insertNextWptWindowOpened.set(false)}
                         confirmAction={async (wpt) => {
                             const fix = await NavigationDatabaseService.activeDatabase.searchAllFix(wpt);
-                            // TODO dialog if multiple fixes found
-                            await this.props.flightPlanService.nextWaypoint(this.revisedWaypointIndex.get(), fix[0]);
-                            this.insertNextWptWindowOpened.set(false);
+
+                            if (fix.length > 1) {
+                                console.log('longer');
+                                this.duplicateNamesIdent.set(wpt);
+                                this.duplicateNamesFunction.set(async (result) => {
+                                    await this.props.flightPlanService.nextWaypoint(this.revisedWaypointIndex.get(), result);
+                                    this.insertNextWptWindowOpened.set(false);
+                                });
+                                this.duplicateNamesOpened.set(true);
+                            } else {
+                                await this.props.flightPlanService.nextWaypoint(this.revisedWaypointIndex.get(), fix[0]);
+                                this.insertNextWptWindowOpened.set(false);
+                            }
                         }}
+                    />
+                    <MfdFmsFplnDuplicateNames
+                        visible={this.duplicateNamesOpened}
+                        ident={this.duplicateNamesIdent}
+                        afterSelected={this.duplicateNamesFunction}
+                        bus={this.props.bus}
+                        uiService={this.props.uiService}
+                        flightPlanService={this.props.flightPlanService}
                     />
                     <div class="mfd-fms-fpln-header">
                         <div class="mfd-fms-fpln-header-from">

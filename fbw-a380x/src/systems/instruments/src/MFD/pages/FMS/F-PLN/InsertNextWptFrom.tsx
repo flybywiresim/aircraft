@@ -10,7 +10,7 @@ interface InsertNextWptFromWindowProps extends ComponentProps {
     availableWaypoints: SubscribableArray<string>;
     visible: Subscribable<boolean>;
     cancelAction: () => void;
-    confirmAction: (wpt) => void;
+    confirmAction: (wpt: string) => void;
     contentContainerStyle?: string;
 }
 export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromWindowProps> {
