@@ -1,11 +1,11 @@
 // Copyright (c) 2023 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
+import { arrayFlat, UpdateThrottler } from '@flybywiresim/fbw-sdk';
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
 import { NearbyFacilities } from '@fmgc/navigation/NearbyFacilities';
-import { arrayFlat } from '@flybywiresim/fbw-sdk';
 import { bearingTo, diffAngle, distanceTo, EARTH_RADIUS } from 'msfs-geo';
 import { ApproachType, NavaidSubsectionCode, NdbNavaid, VhfNavaid, VhfNavaidType } from 'msfs-navdata';
 
@@ -29,11 +29,11 @@ export class NavaidSelectionManager {
 
     private readonly nearbyFacilities: NearbyFacilities = NearbyFacilities.getInstance();
 
-    private readonly candidateUpdateThrottler = new A32NX_Util.UpdateThrottler(180);
+    private readonly candidateUpdateThrottler = new UpdateThrottler(180);
 
-    private readonly dmePairUpdateThrottler = new A32NX_Util.UpdateThrottler(10);
+    private readonly dmePairUpdateThrottler = new UpdateThrottler(10);
 
-    private readonly autotuneUpdateThrottler = new A32NX_Util.UpdateThrottler(1);
+    private readonly autotuneUpdateThrottler = new UpdateThrottler(1);
 
     private ppos = { lat: 0, long: 0 };
 

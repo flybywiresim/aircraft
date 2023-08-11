@@ -32,6 +32,7 @@ export class ApproachSegment extends ProcedureSegment<Approach> {
 
             if (!skipUpdateLegs) {
                 await this.flightPlan.approachViaSegment.setProcedure(undefined);
+                this.flightPlan.missedApproachSegment.setMissedApproachLegs([]);
 
                 this.allLegs = this.createLegSet(undefined, []);
 

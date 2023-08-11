@@ -57,7 +57,7 @@ export class DestinationSegment extends FlightPlanSegment {
         return this.runway;
     }
 
-    public async setDestinationRunway(runwayIdent: string, setByApproach = false) {
+    public async setDestinationRunway(runwayIdent: string | undefined, setByApproach = false) {
         const db = NavigationDatabaseService.activeDatabase.backendDatabase;
 
         if (!this.airport) {
@@ -66,15 +66,19 @@ export class DestinationSegment extends FlightPlanSegment {
 
         const runways = await db.getRunways(this.airport.ident);
 
-        const matchingRunway = runways.find((runway) => runway.ident === runwayIdent);
-
-        if (!matchingRunway) {
-            throw new Error(`[FMS/FPM] Can't find runway '${runwayIdent}' at ${this.airport.ident}`);
-        }
-
         const oldRunwayIdent = this.runway?.ident;
 
-        this.runway = matchingRunway;
+        if (runwayIdent === undefined) {
+            this.runway = undefined;
+        } else {
+            const matchingRunway = runways.find((runway) => runway.ident === runwayIdent);
+
+            if (!matchingRunway) {
+                throw new Error(`[FMS/FPM] Can't find runway '${runwayIdent}' at ${this.airport.ident}`);
+            }
+
+            this.runway = matchingRunway;
+        }
 
         await this.refresh(oldRunwayIdent !== this.runway?.ident && !setByApproach);
     }

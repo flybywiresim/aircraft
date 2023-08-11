@@ -67,10 +67,6 @@ export class TransitionPicker {
             return TransitionPicker.fromVM(from, to);
         }
 
-        if (DEBUG) {
-            console.error(`[FMS/Geometry] Could not pick transition between '${from.repr}' and '${to.repr}'.`);
-        }
-
         return null;
     }
 

@@ -1,10 +1,11 @@
 // Copyright (c) 2021, 2023 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
+import { UpdateThrottler } from '@flybywiresim/fbw-sdk';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/new/NavigationDatabaseService';
 import { Coordinates } from 'msfs-geo';
-import { Airport, Database, NdbNavaid, VhfNavaid, Waypoint } from 'msfs-navdata';
+import { Airport, NdbNavaid, VhfNavaid, Waypoint } from 'msfs-navdata';
+
 export class NearbyFacilities {
     private static instance: NearbyFacilities;
 
@@ -12,7 +13,7 @@ export class NearbyFacilities {
 
     private nearbyNdbNavaids: NdbNavaid[] = [];
 
-    private nearbyVhfNavaids:  VhfNavaid[] = [];
+    private nearbyVhfNavaids: VhfNavaid[] = [];
 
     private nearbyWaypoints: Waypoint[] = [];
 
@@ -22,7 +23,7 @@ export class NearbyFacilities {
 
     private pposValid = false;
 
-    private throttler = new A32NX_Util.UpdateThrottler(10000);
+    private throttler = new UpdateThrottler(10000);
 
     private radius = 381; // nautical miles
 
