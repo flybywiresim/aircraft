@@ -169,8 +169,8 @@ class A32NX_GPWS {
 
             this.Mode3MaxBaroAlt = NaN;
 
-            //ensures switch from Mode 4C to Mode 4A and 4B
-            if (phase === FmgcFlightPhases.CRUISE){
+            // ensures switch from Mode 4C to Mode 4A and 4B
+            if (phase === FmgcFlightPhases.CRUISE) {
                 this.Mode4MaxRAAlt = 2450;
             }
             
@@ -219,10 +219,8 @@ class A32NX_GPWS {
     }
 
     update_maxRA(radioAlt, onGround, phase) {
-
-
         // on ground check is to get around the fact that radio alt is set to around 300 while loading
-        if (onGround){
+        if (onGround) {
 
             this.Mode4MaxRAAlt = NaN;
 
@@ -238,7 +236,7 @@ class A32NX_GPWS {
                 this.hasEnteredGoAroundPhase = true;
             }
 
-            if(phase !== FmgcFlightPhases.GOAROUND){
+            if (phase !== FmgcFlightPhases.GOAROUND) {
                 // resets the GA phase flag when exiting the GA phase
                 this.hasEnteredGoAroundPhase = false;
             }
@@ -424,11 +422,9 @@ class A32NX_GPWS {
      * @param speed - Airspeed in knots.
      * @param FlapsInLandingConfig - If flaps is in landing config
      * @param gearExtended - If the gear is extended
-     * @param phase - Flight phase index
      * @constructor
      */
     GPWSMode4(mode, radioAlt, speed, FlapsInLandingConfig, gearExtended) {
-        
         mode.current = 0;
 
         if (radioAlt < 30 || radioAlt > 1000) {
@@ -442,7 +438,7 @@ class A32NX_GPWS {
             if (speed < 190 && radioAlt < 500) {
                 mode.current = 1;
             } else if (speed >= 190) {
-                const maxWarnAlt = 8.333 * speed - 1083.333;
+                const maxWarnAlt = Math.min(8.333 * speed - 1083.333, 1000);
                 mode.current = radioAlt < maxWarnAlt ? 3 : 0;
             }
         // Mode 4 B
