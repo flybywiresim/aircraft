@@ -47,9 +47,20 @@ pub enum A320Pax {
     C,
     D,
 }
-impl Into<usize> for A320Pax {
-    fn into(self) -> usize {
-        self as usize
+impl From<A320Pax> for usize {
+    fn from(value: A320Pax) -> Self {
+        value as usize
+    }
+}
+impl From<usize> for A320Pax {
+    fn from(value: usize) -> Self {
+        match value {
+            0 => A320Pax::A,
+            1 => A320Pax::B,
+            2 => A320Pax::C,
+            3 => A320Pax::D,
+            i => panic!("Cannot convert from {} to A320Pax.", i),
+        }
     }
 }
 
@@ -60,9 +71,20 @@ pub enum A320Cargo {
     AftBaggage,
     AftBulkLoose,
 }
-impl Into<usize> for A320Cargo {
-    fn into(self) -> usize {
-        self as usize
+impl From<A320Cargo> for usize {
+    fn from(value: A320Cargo) -> Self {
+        value as usize
+    }
+}
+impl From<usize> for A320Cargo {
+    fn from(value: usize) -> Self {
+        match value {
+            0 => A320Cargo::FwdBaggage,
+            1 => A320Cargo::AftContainer,
+            2 => A320Cargo::AftBaggage,
+            3 => A320Cargo::AftBulkLoose,
+            i => panic!("Cannot convert from {} to A320Cargo.", i),
+        }
     }
 }
 
@@ -152,7 +174,7 @@ impl A320Payload {
             .map(|p| {
                 Pax::new(
                     context.get_identifier(p.pax_id.to_owned()),
-                    context.get_identifier(format!("{}_DESIRED", p.pax_id).to_owned()),
+                    context.get_identifier(format!("{}_DESIRED", p.pax_id)),
                     context.get_identifier(p.payload_id.to_owned()),
                     Rc::clone(&per_pax_weight),
                     Vector3::new(p.position.0, p.position.1, p.position.2),
@@ -168,7 +190,7 @@ impl A320Payload {
             .map(|c| {
                 Cargo::new(
                     context.get_identifier(c.cargo_id.to_owned()),
-                    context.get_identifier(format!("{}_DESIRED", c.cargo_id).to_owned()),
+                    context.get_identifier(format!("{}_DESIRED", c.cargo_id)),
                     context.get_identifier(c.payload_id.to_owned()),
                     Vector3::new(c.position.0, c.position.1, c.position.2),
                     Mass::new::<kilogram>(c.max_cargo_kg),

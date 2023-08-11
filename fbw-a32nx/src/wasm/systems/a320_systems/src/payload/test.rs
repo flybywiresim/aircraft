@@ -1,6 +1,8 @@
 pub const HOURS_TO_MINUTES: u64 = 60;
 pub const MINUTES_TO_SECONDS: u64 = 60;
 
+use std::usize;
+
 use rand::seq::IteratorRandom;
 use rand::SeedableRng;
 use systems::electrical::Electricity;
@@ -276,8 +278,8 @@ impl BoardingTestBed {
 
         let payload = Mass::new::<pound>(pax_qty as f64 * per_pax_weight.get::<pound>());
 
-        self.write_by_name(&A320Payload::A320_PAX[ps].pax_id, pax_flag);
-        self.write_by_name(&A320Payload::A320_PAX[ps].payload_id, payload);
+        self.write_by_name(A320Payload::A320_PAX[ps].pax_id, pax_flag);
+        self.write_by_name(A320Payload::A320_PAX[ps].payload_id, payload);
     }
 
     fn target_pax(&mut self, ps: usize, pax_qty: i8) {
@@ -307,11 +309,11 @@ impl BoardingTestBed {
         assert!(cargo_qty <= test_bed().query(|a| a.max_cargo(cs)));
 
         self.write_by_name(
-            &A320Payload::A320_CARGO[cs].cargo_id,
+            A320Payload::A320_CARGO[cs].cargo_id,
             cargo_qty.get::<kilogram>(),
         );
         self.write_by_name(
-            &A320Payload::A320_CARGO[cs].payload_id,
+            A320Payload::A320_CARGO[cs].payload_id,
             cargo_qty.get::<pound>(),
         );
     }
@@ -699,18 +701,18 @@ fn boarding_init() {
     assert!(test_bed.contains_variable_with_name("BOARDING_STARTED_BY_USR"));
     assert!(test_bed.contains_variable_with_name("BOARDING_RATE"));
     assert!(test_bed.contains_variable_with_name("WB_PER_PAX_WEIGHT"));
-    assert!(
-        test_bed.contains_variable_with_name(&A320Payload::A320_PAX[A320Pax::A as usize].pax_id)
-    );
-    assert!(
-        test_bed.contains_variable_with_name(&A320Payload::A320_PAX[A320Pax::B as usize].pax_id)
-    );
-    assert!(
-        test_bed.contains_variable_with_name(&A320Payload::A320_PAX[A320Pax::C as usize].pax_id)
-    );
-    assert!(
-        test_bed.contains_variable_with_name(&A320Payload::A320_PAX[A320Pax::D as usize].pax_id)
-    );
+    assert!(test_bed.contains_variable_with_name(
+        A320Payload::A320_PAX[Into::<usize>::into(A320Pax::A)].pax_id
+    ));
+    assert!(test_bed.contains_variable_with_name(
+        A320Payload::A320_PAX[Into::<usize>::into(A320Pax::B)].pax_id
+    ));
+    assert!(test_bed.contains_variable_with_name(
+        A320Payload::A320_PAX[Into::<usize>::into(A320Pax::C)].pax_id
+    ));
+    assert!(test_bed.contains_variable_with_name(
+        A320Payload::A320_PAX[Into::<usize>::into(A320Pax::D)].pax_id
+    ));
 }
 #[test]
 fn loaded_no_pax() {

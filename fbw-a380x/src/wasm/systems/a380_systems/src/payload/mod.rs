@@ -58,9 +58,30 @@ pub enum A380Pax {
     UpperMidB,
     UpperAft,
 }
-impl Into<usize> for A380Pax {
-    fn into(self) -> usize {
-        self as usize
+impl From<A380Pax> for usize {
+    fn from(value: A380Pax) -> Self {
+        value as usize
+    }
+}
+impl From<usize> for A380Pax {
+    fn from(value: usize) -> Self {
+        match value {
+            0 => A380Pax::MainFwdA,
+            1 => A380Pax::MainFwdB,
+            2 => A380Pax::MainMid1A,
+            3 => A380Pax::MainMid1B,
+            4 => A380Pax::MainMid1C,
+            5 => A380Pax::MainMid2A,
+            6 => A380Pax::MainMid2B,
+            7 => A380Pax::MainMid2C,
+            8 => A380Pax::MainAftA,
+            9 => A380Pax::MainAftB,
+            10 => A380Pax::UpperFwd,
+            11 => A380Pax::UpperMidA,
+            12 => A380Pax::UpperMidB,
+            13 => A380Pax::UpperAft,
+            i => panic!("Cannot convert from {} to A380Pax.", i),
+        }
     }
 }
 
@@ -70,9 +91,19 @@ pub enum A380Cargo {
     Aft,
     Bulk,
 }
-impl Into<usize> for A380Cargo {
-    fn into(self) -> usize {
-        self as usize
+impl From<A380Cargo> for usize {
+    fn from(value: A380Cargo) -> Self {
+        value as usize
+    }
+}
+impl From<usize> for A380Cargo {
+    fn from(value: usize) -> Self {
+        match value {
+            0 => A380Cargo::Fwd,
+            1 => A380Cargo::Aft,
+            2 => A380Cargo::Bulk,
+            i => panic!("Cannot convert from {} to A380Cargo.", i),
+        }
     }
 }
 
@@ -223,7 +254,7 @@ impl A380Payload {
             .map(|p| {
                 Pax::new(
                     context.get_identifier(p.pax_id.to_owned()),
-                    context.get_identifier(format!("{}_DESIRED", p.pax_id).to_owned()),
+                    context.get_identifier(format!("{}_DESIRED", p.pax_id)),
                     context.get_identifier(p.payload_id.to_owned()),
                     Rc::clone(&per_pax_weight),
                     Vector3::new(p.position.0, p.position.1, p.position.2),
@@ -239,7 +270,7 @@ impl A380Payload {
             .map(|c| {
                 Cargo::new(
                     context.get_identifier(c.cargo_id.to_owned()),
-                    context.get_identifier(format!("{}_DESIRED", c.cargo_id).to_owned()),
+                    context.get_identifier(format!("{}_DESIRED", c.cargo_id)),
                     context.get_identifier(c.payload_id.to_owned()),
                     Vector3::new(c.position.0, c.position.1, c.position.2),
                     Mass::new::<kilogram>(c.max_cargo_kg),

@@ -167,9 +167,7 @@ impl A380Fuel {
                     Vector3::new(f.position.0, f.position.1, f.position.2),
                 )
             })
-            .collect::<Vec<FuelTank>>()
-            .try_into()
-            .unwrap();
+            .collect::<Vec<FuelTank>>();
         A380Fuel {
             fuel_system: FuelSystem::new(context, fuel_tanks),
         }

@@ -65,6 +65,24 @@ pub enum A320FuelTankType {
     RightOuter,
 }
 
+impl From<A320FuelTankType> for usize {
+    fn from(value: A320FuelTankType) -> Self {
+        value as usize
+    }
+}
+impl From<usize> for A320FuelTankType {
+    fn from(value: usize) -> Self {
+        match value {
+            0 => A320FuelTankType::Center,
+            1 => A320FuelTankType::LeftInner,
+            2 => A320FuelTankType::LeftOuter,
+            3 => A320FuelTankType::RightInner,
+            4 => A320FuelTankType::RightOuter,
+            i => panic!("Cannot convert from {} to A320FuelTankType.", i),
+        }
+    }
+}
+
 pub struct A320Fuel {
     fuel_system: FuelSystem,
 }
@@ -101,9 +119,7 @@ impl A320Fuel {
                     Vector3::new(f.position.0, f.position.1, f.position.2),
                 )
             })
-            .collect::<Vec<FuelTank>>()
-            .try_into()
-            .unwrap();
+            .collect::<Vec<FuelTank>>();
         A320Fuel {
             fuel_system: FuelSystem::new(context, fuel_tanks),
         }
@@ -111,32 +127,32 @@ impl A320Fuel {
 
     pub fn left_inner_tank_has_fuel_remaining(&self) -> bool {
         self.fuel_system
-            .tank_has_fuel(A320FuelTankType::LeftInner as usize)
+            .tank_has_fuel(A320FuelTankType::LeftInner.into())
     }
 
     fn center_tank_has_fuel(&self) -> bool {
         self.fuel_system
-            .tank_has_fuel(A320FuelTankType::Center as usize)
+            .tank_has_fuel(A320FuelTankType::Center.into())
     }
 
     fn left_inner_tank_has_fuel(&self) -> bool {
         self.fuel_system
-            .tank_has_fuel(A320FuelTankType::LeftInner as usize)
+            .tank_has_fuel(A320FuelTankType::LeftInner.into())
     }
 
     fn left_outer_tank_has_fuel(&self) -> bool {
         self.fuel_system
-            .tank_has_fuel(A320FuelTankType::LeftOuter as usize)
+            .tank_has_fuel(A320FuelTankType::LeftOuter.into())
     }
 
     fn right_inner_tank_has_fuel(&self) -> bool {
         self.fuel_system
-            .tank_has_fuel(A320FuelTankType::RightInner as usize)
+            .tank_has_fuel(A320FuelTankType::RightInner.into())
     }
 
     fn right_outer_tank_has_fuel(&self) -> bool {
         self.fuel_system
-            .tank_has_fuel(A320FuelTankType::RightOuter as usize)
+            .tank_has_fuel(A320FuelTankType::RightOuter.into())
     }
 
     fn fore_aft_center_of_gravity(&self) -> f64 {
