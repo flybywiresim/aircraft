@@ -391,7 +391,6 @@ class A32NX_GPWS {
      * @param speed - Airspeed in knots.
      * @param FlapsInLandingConfig - If flaps is in landing config
      * @param gearExtended - If the gear is extended
-     * @param phase - Flight phase index
      * @constructor
      */
     GPWSMode4(mode, radioAlt, speed, FlapsInLandingConfig, gearExtended) {
