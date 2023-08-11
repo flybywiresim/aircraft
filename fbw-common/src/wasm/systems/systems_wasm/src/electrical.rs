@@ -45,14 +45,18 @@ pub(super) fn auxiliary_power_unit(
     move |builder: &mut MsfsAspectBuilder| {
         builder.on_change(
             ExecuteOn::PostTick,
-            vec![is_available_variable],
+            vec![
+                is_available_variable,
+                Variable::aircraft("APU SWITCH", "Bool", 0),
+            ],
             Box::new(move |_, values| {
                 let is_available = to_bool(values[0]);
+                let msfs_apu_is_on = to_bool(values[1]);
 
-                if is_available {
+                if is_available && !msfs_apu_is_on {
                     toggle_fuel_valve_and_pump(fuel_valve_number, fuel_pump_number);
                     start_apu();
-                } else {
+                } else if !is_available && msfs_apu_is_on {
                     toggle_fuel_valve_and_pump(fuel_valve_number, fuel_pump_number);
                     stop_apu();
                 }
