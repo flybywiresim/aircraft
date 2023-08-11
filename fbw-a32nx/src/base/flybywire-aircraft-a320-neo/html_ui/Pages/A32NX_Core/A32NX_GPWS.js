@@ -205,7 +205,7 @@ class A32NX_GPWS {
                 this.hasEnteredGoAroundPhase = true;
             }
 
-            if(phase !== FmgcFlightPhases.GOAROUND){
+            if (phase !== FmgcFlightPhases.GOAROUND) {
                 // resets the GA phase flag when exiting the GA phase
                 this.hasEnteredGoAroundPhase = false;
             }
