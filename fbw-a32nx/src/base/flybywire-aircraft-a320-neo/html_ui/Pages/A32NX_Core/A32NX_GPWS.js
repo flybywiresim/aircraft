@@ -392,7 +392,6 @@ class A32NX_GPWS {
      * @constructor
      */
     GPWSMode4(mode, radioAlt, speed, FlapsInLandingConfig, gearExtended) {
-        
         mode.current = 0;
 
         if (radioAlt < 30 || radioAlt > 1000) {
