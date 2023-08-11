@@ -189,7 +189,7 @@ class A32NX_GPWS {
 
 
         // on ground check is to get around the fact that radio alt is set to around 300 while loading
-        if (onGround){
+        if (onGround) {
 
             this.Mode4MaxRAAlt = NaN;
 
