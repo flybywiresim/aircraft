@@ -135,8 +135,8 @@ class A32NX_GPWS {
 
             this.Mode3MaxBaroAlt = NaN;
 
-            //ensures switch from Mode 4C to Mode 4A and 4B
-            if (phase === FmgcFlightPhases.CRUISE){
+            // ensures switch from Mode 4C to Mode 4A and 4B
+            if (phase === FmgcFlightPhases.CRUISE) {
                 this.Mode4MaxRAAlt = 2450;
             }
             
