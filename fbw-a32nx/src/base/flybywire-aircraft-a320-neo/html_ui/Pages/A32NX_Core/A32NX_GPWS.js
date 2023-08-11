@@ -186,8 +186,6 @@ class A32NX_GPWS {
     }
 
     update_maxRA(radioAlt, onGround, phase) {
-
-
         // on ground check is to get around the fact that radio alt is set to around 300 while loading
         if (onGround) {
 
