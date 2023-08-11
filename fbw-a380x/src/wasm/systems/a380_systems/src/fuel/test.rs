@@ -33,6 +33,7 @@ impl SimulationElement for FuelTestAircraft {
 
 pub const MINUTES_TO_SECONDS: u64 = 60;
 pub const FUEL_GALLONS_TO_KG: f64 = 3.039075693483925;
+pub const LBS_TO_KG: f64 = 0.4535934;
 
 struct FuelTestBed {
     test_bed: SimulationTestBed<FuelTestAircraft>,
@@ -59,21 +60,35 @@ impl FuelTestBed {
     }
 
     fn fuel_low(mut self) -> Self {
-        self.write_by_name("FUELSYSTEM TANK QUANTITY:1", 324. * FUEL_GALLONS_TO_KG);
-        self.write_by_name("FUELSYSTEM TANK QUANTITY:2", 150. * FUEL_GALLONS_TO_KG);
-        self.write_by_name("FUELSYSTEM TANK QUANTITY:3", 324. * FUEL_GALLONS_TO_KG);
-        self.write_by_name("FUELSYSTEM TANK QUANTITY:4", 150. * FUEL_GALLONS_TO_KG);
-        self.write_by_name("FUELSYSTEM TANK QUANTITY:5", 0.);
+        self.write_by_name("FUELSYSTEM TANK QUANTITY:1", 300. / FUEL_GALLONS_TO_KG);
+        self.write_by_name("FUELSYSTEM TANK QUANTITY:2", 300. / FUEL_GALLONS_TO_KG);
+        self.write_by_name("FUELSYSTEM TANK QUANTITY:3", 300. / FUEL_GALLONS_TO_KG);
+        self.write_by_name("FUELSYSTEM TANK QUANTITY:4", 300. / FUEL_GALLONS_TO_KG);
+        self.write_by_name("FUELSYSTEM TANK QUANTITY:5", 300. / FUEL_GALLONS_TO_KG);
+        self.write_by_name("FUELSYSTEM TANK QUANTITY:6", 300. / FUEL_GALLONS_TO_KG);
+        self.write_by_name("FUELSYSTEM TANK QUANTITY:7", 300. / FUEL_GALLONS_TO_KG);
+        self.write_by_name("FUELSYSTEM TANK QUANTITY:8", 300. / FUEL_GALLONS_TO_KG);
+        self.write_by_name("FUELSYSTEM TANK QUANTITY:9", 300. / FUEL_GALLONS_TO_KG);
+        self.write_by_name("FUELSYSTEM TANK QUANTITY:10", 300. / FUEL_GALLONS_TO_KG);
+        self.write_by_name("FUELSYSTEM TANK QUANTITY:11", 300. / FUEL_GALLONS_TO_KG);
+        self.write_by_name("FUEL TOTAL QUANTITY WEIGHT", 3300. / LBS_TO_KG);
 
         self
     }
 
     fn fuel_high(mut self) -> Self {
-        self.write_by_name("FUELSYSTEM TANK QUANTITY:1", 1600. * FUEL_GALLONS_TO_KG);
-        self.write_by_name("FUELSYSTEM TANK QUANTITY:2", 200. * FUEL_GALLONS_TO_KG);
-        self.write_by_name("FUELSYSTEM TANK QUANTITY:3", 1600. * FUEL_GALLONS_TO_KG);
-        self.write_by_name("FUELSYSTEM TANK QUANTITY:4", 200. * FUEL_GALLONS_TO_KG);
-        self.write_by_name("FUELSYSTEM TANK QUANTITY:5", 2000.);
+        self.write_by_name("FUELSYSTEM TANK QUANTITY:1", 1500. / FUEL_GALLONS_TO_KG);
+        self.write_by_name("FUELSYSTEM TANK QUANTITY:2", 1500. / FUEL_GALLONS_TO_KG);
+        self.write_by_name("FUELSYSTEM TANK QUANTITY:3", 1500. / FUEL_GALLONS_TO_KG);
+        self.write_by_name("FUELSYSTEM TANK QUANTITY:4", 10000. / FUEL_GALLONS_TO_KG);
+        self.write_by_name("FUELSYSTEM TANK QUANTITY:5", 1500. / FUEL_GALLONS_TO_KG);
+        self.write_by_name("FUELSYSTEM TANK QUANTITY:6", 1500. / FUEL_GALLONS_TO_KG);
+        self.write_by_name("FUELSYSTEM TANK QUANTITY:7", 10000. / FUEL_GALLONS_TO_KG);
+        self.write_by_name("FUELSYSTEM TANK QUANTITY:8", 1500. / FUEL_GALLONS_TO_KG);
+        self.write_by_name("FUELSYSTEM TANK QUANTITY:9", 1500. / FUEL_GALLONS_TO_KG);
+        self.write_by_name("FUELSYSTEM TANK QUANTITY:10", 1500. / FUEL_GALLONS_TO_KG);
+        self.write_by_name("FUELSYSTEM TANK QUANTITY:11", 1500. / FUEL_GALLONS_TO_KG);
+        self.write_by_name("FUEL TOTAL QUANTITY WEIGHT", 33500. / LBS_TO_KG);
 
         self
     }
@@ -121,8 +136,8 @@ fn low_fuel() {
 
     assert_eq!(
         (test_bed.fore_aft_center_of_gravity() * 100.).round() / 100.,
-        -10.43,
-        "Expected cg: -10.43, cg: {}",
+        -10.3,
+        "Expected cg: -10.3, cg: {}",
         (test_bed.fore_aft_center_of_gravity() * 100.).round() / 100.,
     );
 }
@@ -134,8 +149,8 @@ fn high_fuel() {
 
     assert_eq!(
         (test_bed.fore_aft_center_of_gravity() * 100.).round() / 100.,
-        -7.82,
-        "Expected cg: -7.82, cg: {}",
+        0.41,
+        "Expected cg: 0.41, cg: {}",
         (test_bed.fore_aft_center_of_gravity() * 100.).round() / 100.,
     );
 }
