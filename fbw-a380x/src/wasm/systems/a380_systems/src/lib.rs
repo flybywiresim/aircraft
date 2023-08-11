@@ -25,6 +25,7 @@ use electrical::{
     A380Electrical, A380ElectricalOverheadPanel, A380EmergencyElectricalOverheadPanel,
     APU_START_MOTOR_BUS_TYPE,
 };
+use fuel::FuelLevel;
 use hydraulic::{A380Hydraulic, A380HydraulicOverheadPanel};
 use icing::Icing;
 use navigation::A380RadioAltimeters;
@@ -173,7 +174,7 @@ impl Aircraft for A380 {
                 && !(self.electrical_overhead.external_power_is_on(1)
                     && self.electrical_overhead.external_power_is_available(1)),
             self.pneumatic.apu_bleed_air_valve(),
-            self.fuel.feed_four_tank_has_fuel(),
+            self.fuel.feed_one_tank_has_fuel(),
         );
 
         self.electrical.update(
