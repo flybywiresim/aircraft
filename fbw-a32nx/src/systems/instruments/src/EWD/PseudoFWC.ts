@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Subject, Subscribable, MappedSubject, DebounceTimer, ConsumerValue, EventBus } from '@microsoft/msfs-sdk';
+import { Subject, Subscribable, MappedSubject, DebounceTimer, ConsumerValue, EventBus, ConsumerSubject } from '@microsoft/msfs-sdk';
 
 import { Arinc429Register, Arinc429Word, NXDataStore, NXLogicClockNode, NXLogicConfirmNode, NXLogicMemoryNode, NXLogicPulseNode, NXLogicTriggeredMonostableNode } from '@flybywiresim/fbw-sdk';
 import { VerticalMode } from '@shared/autopilot';
@@ -321,37 +321,37 @@ export class PseudoFWC {
 
     /* FUEL */
 
-    private readonly centerFuelPump1Auto = Subject.create(false);
+    private readonly centerFuelPump1Auto = ConsumerValue.create(null, false);
 
-    private readonly centerFuelPump2Auto = Subject.create(false);
+    private readonly centerFuelPump2Auto = ConsumerValue.create(null, false);
 
     private readonly centerFuelQuantity = Subject.create(0);
 
     private readonly fuelXFeedPBOn = Subject.create(false);
 
-    private readonly leftOuterInnerValve = Subject.create(0);
+    private readonly leftOuterInnerValve = ConsumerSubject.create(null, 0);
 
     private readonly leftFuelLow = Subject.create(false);
 
     private readonly leftFuelLowConfirm = new NXLogicConfirmNode(30, true);
 
-    private readonly leftFuelPump1Auto = Subject.create(false);
+    private readonly leftFuelPump1Auto = ConsumerValue.create(null, false);
 
-    private readonly leftFuelPump2Auto = Subject.create(false);
+    private readonly leftFuelPump2Auto = ConsumerValue.create(null, false);
 
     private readonly lrTankLow = Subject.create(false);
 
     private readonly lrTankLowConfirm = new NXLogicConfirmNode(30, true);
 
-    private readonly rightOuterInnerValve = Subject.create(0);
+    private readonly rightOuterInnerValve = ConsumerSubject.create(null, 0);
 
     private readonly rightFuelLow = Subject.create(false);
 
     private readonly rightFuelLowConfirm = new NXLogicConfirmNode(30, true);
 
-    private readonly rightFuelPump1Auto = Subject.create(false);
+    private readonly rightFuelPump1Auto = ConsumerValue.create(null, false);
 
-    private readonly rightFuelPump2Auto = Subject.create(false);
+    private readonly rightFuelPump2Auto = ConsumerValue.create(null, false);
 
     private readonly fuelCtrTankModeSelMan = ConsumerValue.create(null, false);
 
@@ -560,9 +560,9 @@ export class PseudoFWC {
 
     private readonly throttle2Position = Subject.create(0);
 
-    private readonly engine1ValueSwitch = Subject.create(false);
+    private readonly engine1ValueSwitch = ConsumerValue.create(null, false);
 
-    private readonly engine2ValueSwitch = Subject.create(false);
+    private readonly engine2ValueSwitch = ConsumerValue.create(null, false);
 
     private readonly autoThrustStatus = Subject.create(0);
 
@@ -719,6 +719,16 @@ export class PseudoFWC {
         const sub = this.bus.getSubscriber<FuelSystemEvents>();
 
         this.fuelCtrTankModeSelMan.setConsumer(sub.on('fuel_ctr_tk_mode_sel_man'));
+        this.engine1ValueSwitch.setConsumer(sub.on('fuel_valve_switch_1'));
+        this.engine2ValueSwitch.setConsumer(sub.on('fuel_valve_switch_2'));
+        this.centerFuelPump1Auto.setConsumer(sub.on('fuel_pump_switch_1'));
+        this.centerFuelPump2Auto.setConsumer(sub.on('fuel_pump_switch_4'));
+        this.leftOuterInnerValve.setConsumer(sub.on('fuel_valve_open_4'));
+        this.leftFuelPump1Auto.setConsumer(sub.on('fuel_pump_switch_2'));
+        this.leftFuelPump2Auto.setConsumer(sub.on('fuel_pump_switch_5'));
+        this.rightOuterInnerValve.setConsumer(sub.on('fuel_valve_open_5'));
+        this.rightFuelPump1Auto.setConsumer(sub.on('fuel_pump_switch_3'));
+        this.rightFuelPump2Auto.setConsumer(sub.on('fuel_pump_switch_6'));
     }
 
     mapOrder(array, order): [] {
@@ -891,8 +901,6 @@ export class PseudoFWC {
         this.eng2AntiIce.set(SimVar.GetSimVarValue('ENG ANTI ICE:2', 'bool'));
         this.throttle1Position.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:1', 'number'));
         this.throttle2Position.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:2', 'number'));
-        this.engine1ValueSwitch.set(SimVar.GetSimVarValue('FUELSYSTEM VALVE SWITCH:1', 'bool'));
-        this.engine2ValueSwitch.set(SimVar.GetSimVarValue('FUELSYSTEM VALVE SWITCH:2', 'bool'));
         this.autoThrustStatus.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_STATUS', 'enum'));
         this.autothrustLeverWarningFlex.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_FLEX', 'bool'));
         this.autothrustLeverWarningToga.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_TOGA', 'bool'));
@@ -1078,16 +1086,8 @@ export class PseudoFWC {
 
         /* FUEL */
         const fuelGallonsToKg = SimVar.GetSimVarValue('FUEL WEIGHT PER GALLON', 'kilogram');
-        this.centerFuelPump1Auto.set(SimVar.GetSimVarValue('FUELSYSTEM PUMP SWITCH:1', 'Enum'));
-        this.centerFuelPump2Auto.set(SimVar.GetSimVarValue('FUELSYSTEM PUMP SWITCH:4', 'Enum'));
         this.centerFuelQuantity.set(SimVar.GetSimVarValue('FUEL TANK CENTER QUANTITY', 'gallons') * fuelGallonsToKg);
         this.fuelXFeedPBOn.set(SimVar.GetSimVarValue('L:XMLVAR_Momentary_PUSH_OVHD_FUEL_XFEED_Pressed', 'bool'));
-        this.leftOuterInnerValve.set(SimVar.GetSimVarValue('FUELSYSTEM VALVE OPEN:4', 'Bool'));
-        this.leftFuelPump1Auto.set(SimVar.GetSimVarValue('FUELSYSTEM PUMP SWITCH:2', 'Enum'));
-        this.leftFuelPump2Auto.set(SimVar.GetSimVarValue('FUELSYSTEM PUMP SWITCH:5', 'Enum'));
-        this.rightOuterInnerValve.set(SimVar.GetSimVarValue('FUELSYSTEM VALVE OPEN:5', 'Bool'));
-        this.rightFuelPump1Auto.set(SimVar.GetSimVarValue('FUELSYSTEM PUMP SWITCH:3', 'Enum'));
-        this.rightFuelPump2Auto.set(SimVar.GetSimVarValue('FUELSYSTEM PUMP SWITCH:6', 'Enum'));
 
         const leftInnerFuelQuantity = SimVar.GetSimVarValue('FUEL TANK LEFT MAIN QUANTITY', 'gallons') * fuelGallonsToKg;
         const rightInnerFuelQuantity = SimVar.GetSimVarValue('FUEL TANK RIGHT MAIN QUANTITY', 'gallons') * fuelGallonsToKg;
