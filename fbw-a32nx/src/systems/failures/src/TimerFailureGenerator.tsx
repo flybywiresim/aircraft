@@ -3,9 +3,9 @@ import { useSimVar, usePersistentProperty } from '@flybywiresim/fbw-sdk';
 import {
     activateRandomFailure, basicData, FailureGenContext, FailureGenData, failureGeneratorCommonFunction,
     FailurePhases, flatten, setNewSetting,
-} from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGen';
+} from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenUI';
 import { t } from 'instruments/src/EFB/translation';
-import { findGeneratorFailures } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelection';
+import { findGeneratorFailures } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelectionUI';
 import { FailureGeneratorSingleSetting } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorSettingsUI';
 import { ArmingIndex, FailuresAtOnceIndex, MaxFailuresIndex } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { t } from 'instruments/src/EFB/translation';
-import { FailureGenContext, FailureGenData, ModalGenType, setNewNumberOfFailureSetting, setNewSetting } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGen';
-import { ExtractFirstNumber, findGeneratorFailures } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelection';
+import { FailureGenContext, FailureGenData, ModalGenType, setNewNumberOfFailureSetting, setNewSetting } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenUI';
+import { ExtractFirstNumber, findGeneratorFailures } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelectionUI';
 import { Airplane, ArrowBarUp, Repeat, Repeat1, ToggleOff } from 'react-bootstrap-icons';
 import { SelectGroup, SelectItem } from 'instruments/src/EFB/UtilComponents/Form/Select';
 import { SimpleInput } from 'instruments/src/EFB/UtilComponents/Form/SimpleInput/SimpleInput';

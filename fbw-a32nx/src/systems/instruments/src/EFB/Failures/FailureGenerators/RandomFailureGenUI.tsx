@@ -1,17 +1,17 @@
 import { useMemo, useState } from 'react';
 import { Failure } from '@failures';
-import { usePersistentProperty, AtaChapterNumber, useSimVar } from '@flybywiresim/fbw-sdk';
-import { failureGenConfigAltitude, failureGeneratorAltitude }
-    from 'instruments/src/EFB/Failures/FailureGenerators/AltitudeFailureGenerator';
-import { failureGenConfigPerHour, failureGeneratorPerHour }
-    from 'instruments/src/EFB/Failures/FailureGenerators/PerHourFailureGenerator';
-import { failureGenConfigSpeed, failureGeneratorSpeed }
-    from 'instruments/src/EFB/Failures/FailureGenerators/SpeedFailureGenerator';
-import { failureGenConfigTakeOff, failureGeneratorTakeOff }
-    from 'instruments/src/EFB/Failures/FailureGenerators/TakeOffFailureGenerator';
-import { failureGenConfigTimer, failureGeneratorTimer } from 'instruments/src/EFB/Failures/FailureGenerators/TimerFailureGenerator';
+import { AtaChapterNumber, useSimVar } from '@flybywiresim/fbw-sdk';
+import { failureGenConfigAltitude }
+    from 'instruments/src/EFB/Failures/FailureGenerators/AltitudeFailureGeneratorUI';
+import { failureGenConfigPerHour }
+    from 'instruments/src/EFB/Failures/FailureGenerators/PerHourFailureGeneratorUI';
+import { failureGenConfigSpeed }
+    from 'instruments/src/EFB/Failures/FailureGenerators/SpeedFailureGeneratorUI';
+import { failureGenConfigTakeOff }
+    from 'instruments/src/EFB/Failures/FailureGenerators/TakeOffFailureGeneratorUI';
+import { failureGenConfigTimer } from 'instruments/src/EFB/Failures/FailureGenerators/TimerFailureGeneratorUI';
 import { ModalContextInterface, useModals } from 'instruments/src/EFB/UtilComponents/Modals/Modals';
-import { deleteGeneratorFailures, selectAllFailures } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelection';
+import { deleteGeneratorFailures, selectAllFailures } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelectionUI';
 import { FailuresAtOnceIndex, MaxFailuresIndex } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
 import { useFailuresOrchestrator } from '../../failures-orchestrator-provider';
 
@@ -73,36 +73,6 @@ export enum FailurePhases {
     FLIGHT= 3,
 }
 
-export const allGeneratorFailures = (allFailures : readonly Readonly<Failure>[]) => {
-    const generatorFailuresGetters : Map<number, string> = new Map();
-    const generatorFailuresSetters : Map<number, (value: string) => void> = new Map();
-    if (allFailures.length > 0) {
-        allFailures.forEach((failure) => {
-            const [generatorSetting, setGeneratorSetting] = usePersistentProperty(`EFB_FAILURE_${failure.identifier.toString()}_GENERATORS`, '');
-            generatorFailuresGetters.set(failure.identifier, generatorSetting);
-            generatorFailuresSetters.set(failure.identifier, setGeneratorSetting);
-        });
-    }
-    return { generatorFailuresGetters, generatorFailuresSetters };
-};
-
-export const activateRandomFailure = (failureList : readonly Readonly<Failure>[], activate : ((identifier: number) => Promise<void>),
-    activeFailures : Set<number>, failuresAtOnce : number) => {
-    let failuresOffMap = failureList.filter((failure) => !activeFailures.has(failure.identifier)).map((failure) => failure.identifier);
-    const maxNumber = Math.min(failuresAtOnce, failuresOffMap.length);
-    for (let i = 0; i < maxNumber; i++) {
-        if (failuresOffMap.length > 0) {
-            const pick = Math.floor(Math.random() * failuresOffMap.length);
-            const failureIdentifierPicked = failuresOffMap[pick];
-            const pickedFailure = failureList.find((failure) => failure.identifier === failureIdentifierPicked);
-            if (pickedFailure) {
-                activate(failureIdentifierPicked);
-                failuresOffMap = failuresOffMap.filter((identifier) => identifier !== failureIdentifierPicked);
-            }
-        }
-    }
-};
-
 export const basicData = () => {
     const [isOnGround] = useSimVar('SIM ON GROUND', 'Bool');
     const maxThrottleMode = Math.max(Simplane.getEngineThrottleMode(0), Simplane.getEngineThrottleMode(1));
@@ -145,23 +115,6 @@ export const failureGeneratorsSettings : () => FailureGenContext = () => {
         modalContext,
         setModalContext,
     };
-};
-
-const failureGenerators : ((generatorFailuresGetters : Map<number, string>) => void)[] = [
-    failureGeneratorAltitude,
-    failureGeneratorSpeed,
-    failureGeneratorPerHour,
-    failureGeneratorTimer,
-    failureGeneratorTakeOff,
-];
-
-export const randomFailureGenerator = () => {
-    const { allFailures } = failureGeneratorCommonFunction();
-    const { generatorFailuresGetters } = allGeneratorFailures(allFailures);
-
-    for (let i = 0; i < failureGenerators.length; i++) {
-        failureGenerators[i](generatorFailuresGetters);
-    }
 };
 
 export const failureGeneratorAdd = (generatorSettings : FailureGenData, failureGenContext: FailureGenContext) => {

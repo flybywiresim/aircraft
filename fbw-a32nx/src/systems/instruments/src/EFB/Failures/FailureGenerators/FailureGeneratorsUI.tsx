@@ -4,8 +4,8 @@ import { t } from 'instruments/src/EFB/translation';
 import {
     eraseGenerator, FailureGenContext, FailureGenData,
     failureGeneratorAdd, failureGeneratorsSettings, ModalContext, ModalGenType,
-} from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGen';
-import { findGeneratorFailures } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelection';
+} from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenUI';
+import { findGeneratorFailures } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelectionUI';
 import { ExclamationDiamond, InfoCircle, PlusLg, Sliders2Vertical, Trash } from 'react-bootstrap-icons';
 import { AtaChapterNumber, AtaChaptersTitle } from '@flybywiresim/fbw-sdk';
 import { FailureGeneratorInfoModalUI } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorInfo';

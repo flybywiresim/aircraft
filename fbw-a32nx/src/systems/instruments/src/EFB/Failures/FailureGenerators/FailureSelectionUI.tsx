@@ -1,5 +1,5 @@
 import { Failure } from 'failures/src/failures-orchestrator';
-import { FailureGenContext, FailureGenData } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGen';
+import { FailureGenContext, FailureGenData } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenUI';
 
 export function selectAllFailureChapter(chapter: number, failureGenContext : FailureGenContext, genIDToChange : string, value : boolean): void {
     failureGenContext.allFailures.forEach((failure) => {

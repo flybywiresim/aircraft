@@ -1,6 +1,6 @@
 import React from 'react';
 import { t } from 'instruments/src/EFB/translation';
-import { FailureGenContext } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGen';
+import { FailureGenContext } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenUI';
 import { Airplane, ArrowBarUp, ArrowDownRight, ArrowUpRight, ExclamationDiamond, Repeat, Repeat1, Sliders2Vertical, ToggleOff, Trash } from 'react-bootstrap-icons';
 
 export function FailureGeneratorInfoModalUI(
