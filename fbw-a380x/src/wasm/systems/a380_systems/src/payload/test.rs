@@ -685,40 +685,57 @@ fn boarding_init() {
     assert!(test_bed.contains_variable_with_name("BOARDING_STARTED_BY_USR"));
     assert!(test_bed.contains_variable_with_name("BOARDING_RATE"));
     assert!(test_bed.contains_variable_with_name("WB_PER_PAX_WEIGHT"));
-    assert!(test_bed
-        .contains_variable_with_name(A380Payload::A380_PAX[A380Pax::MainFwdA as usize].pax_id));
-    assert!(test_bed
-        .contains_variable_with_name(A380Payload::A380_PAX[A380Pax::MainFwdB as usize].pax_id));
-    assert!(test_bed
-        .contains_variable_with_name(A380Payload::A380_PAX[A380Pax::MainMid1A as usize].pax_id));
-    assert!(test_bed
-        .contains_variable_with_name(A380Payload::A380_PAX[A380Pax::MainMid1B as usize].pax_id));
-    assert!(test_bed
-        .contains_variable_with_name(A380Payload::A380_PAX[A380Pax::MainMid1C as usize].pax_id));
-    assert!(test_bed
-        .contains_variable_with_name(A380Payload::A380_PAX[A380Pax::MainMid2A as usize].pax_id));
-    assert!(test_bed
-        .contains_variable_with_name(A380Payload::A380_PAX[A380Pax::MainMid2B as usize].pax_id));
-    assert!(test_bed
-        .contains_variable_with_name(A380Payload::A380_PAX[A380Pax::MainMid2C as usize].pax_id));
-    assert!(test_bed
-        .contains_variable_with_name(A380Payload::A380_PAX[A380Pax::MainAftA as usize].pax_id));
-    assert!(test_bed
-        .contains_variable_with_name(A380Payload::A380_PAX[A380Pax::MainAftB as usize].pax_id));
-    assert!(test_bed
-        .contains_variable_with_name(A380Payload::A380_PAX[A380Pax::UpperFwd as usize].pax_id));
-    assert!(test_bed
-        .contains_variable_with_name(A380Payload::A380_PAX[A380Pax::UpperMidA as usize].pax_id));
-    assert!(test_bed
-        .contains_variable_with_name(A380Payload::A380_PAX[A380Pax::UpperMidB as usize].pax_id));
-    assert!(test_bed
-        .contains_variable_with_name(A380Payload::A380_PAX[A380Pax::UpperAft as usize].pax_id));
-    assert!(test_bed
-        .contains_variable_with_name(A380Payload::A380_CARGO[A380Cargo::Fwd as usize].cargo_id));
-    assert!(test_bed
-        .contains_variable_with_name(A380Payload::A380_CARGO[A380Cargo::Aft as usize].cargo_id));
-    assert!(test_bed
-        .contains_variable_with_name(A380Payload::A380_CARGO[A380Cargo::Bulk as usize].cargo_id));
+    assert!(test_bed.contains_variable_with_name(
+        A380Payload::A380_PAX[Into::<usize>::into(A380Pax::MainFwdA)].pax_id
+    ));
+    assert!(test_bed.contains_variable_with_name(
+        A380Payload::A380_PAX[Into::<usize>::into(A380Pax::MainFwdB)].pax_id
+    ));
+    assert!(test_bed.contains_variable_with_name(
+        A380Payload::A380_PAX[Into::<usize>::into(A380Pax::MainMid1A)].pax_id
+    ));
+    assert!(test_bed.contains_variable_with_name(
+        A380Payload::A380_PAX[Into::<usize>::into(A380Pax::MainMid1B)].pax_id
+    ));
+    assert!(test_bed.contains_variable_with_name(
+        A380Payload::A380_PAX[Into::<usize>::into(A380Pax::MainMid1C)].pax_id
+    ));
+    assert!(test_bed.contains_variable_with_name(
+        A380Payload::A380_PAX[Into::<usize>::into(A380Pax::MainMid2A)].pax_id
+    ));
+    assert!(test_bed.contains_variable_with_name(
+        A380Payload::A380_PAX[Into::<usize>::into(A380Pax::MainMid2B)].pax_id
+    ));
+    assert!(test_bed.contains_variable_with_name(
+        A380Payload::A380_PAX[Into::<usize>::into(A380Pax::MainMid2C)].pax_id
+    ));
+    assert!(test_bed.contains_variable_with_name(
+        A380Payload::A380_PAX[Into::<usize>::into(A380Pax::MainAftA)].pax_id
+    ));
+    assert!(test_bed.contains_variable_with_name(
+        A380Payload::A380_PAX[Into::<usize>::into(A380Pax::MainAftB)].pax_id
+    ));
+    assert!(test_bed.contains_variable_with_name(
+        A380Payload::A380_PAX[Into::<usize>::into(A380Pax::UpperFwd)].pax_id
+    ));
+    assert!(test_bed.contains_variable_with_name(
+        A380Payload::A380_PAX[Into::<usize>::into(A380Pax::UpperMidA)].pax_id
+    ));
+    assert!(test_bed.contains_variable_with_name(
+        A380Payload::A380_PAX[Into::<usize>::into(A380Pax::UpperMidB)].pax_id
+    ));
+    assert!(test_bed.contains_variable_with_name(
+        A380Payload::A380_PAX[Into::<usize>::into(A380Pax::UpperAft)].pax_id
+    ));
+    assert!(test_bed.contains_variable_with_name(
+        A380Payload::A380_CARGO[Into::<usize>::into(A380Cargo::Fwd)].cargo_id
+    ));
+    assert!(test_bed.contains_variable_with_name(
+        A380Payload::A380_CARGO[Into::<usize>::into(A380Cargo::Aft)].cargo_id
+    ));
+    assert!(test_bed.contains_variable_with_name(
+        A380Payload::A380_CARGO[Into::<usize>::into(A380Cargo::Bulk)].cargo_id
+    ));
 }
 #[test]
 fn loaded_no_pax() {
@@ -1239,20 +1256,20 @@ fn deboard_half_two_min_change_instant_change_units_load_full_kg() {
 fn detailed_test_with_multiple_stops() {
     let mut test_bed = test_bed_with()
         .init_vars()
-        .with_pax(A380Pax::MainFwdA as usize, 5)
-        .with_pax(A380Pax::MainFwdB as usize, 1)
-        .with_pax(A380Pax::MainMid1A as usize, 16)
-        .with_pax(A380Pax::MainMid1B as usize, 16)
-        .with_pax(A380Pax::MainMid1C as usize, 16)
-        .with_pax_target(A380Pax::MainMid2A as usize, 15)
-        .with_pax_target(A380Pax::MainMid2B as usize, 14)
-        .with_pax_target(A380Pax::MainMid2C as usize, 25)
-        .with_pax_target(A380Pax::MainAftA as usize, 12)
-        .with_pax_target(A380Pax::MainAftB as usize, 12)
-        .with_pax_target(A380Pax::UpperFwd as usize, 12)
-        .with_pax_target(A380Pax::UpperMidA as usize, 14)
-        .with_pax_target(A380Pax::UpperMidB as usize, 14)
-        .with_pax_target(A380Pax::UpperAft as usize, 6)
+        .with_pax(Into::<usize>::into(A380Pax::MainFwdA), 5)
+        .with_pax(Into::<usize>::into(A380Pax::MainFwdB), 1)
+        .with_pax(Into::<usize>::into(A380Pax::MainMid1A), 16)
+        .with_pax(Into::<usize>::into(A380Pax::MainMid1B), 16)
+        .with_pax(Into::<usize>::into(A380Pax::MainMid1C), 16)
+        .with_pax_target(Into::<usize>::into(A380Pax::MainMid2A), 15)
+        .with_pax_target(Into::<usize>::into(A380Pax::MainMid2B), 14)
+        .with_pax_target(Into::<usize>::into(A380Pax::MainMid2C), 25)
+        .with_pax_target(Into::<usize>::into(A380Pax::MainAftA), 12)
+        .with_pax_target(Into::<usize>::into(A380Pax::MainAftB), 12)
+        .with_pax_target(Into::<usize>::into(A380Pax::UpperFwd), 12)
+        .with_pax_target(Into::<usize>::into(A380Pax::UpperMidA), 14)
+        .with_pax_target(Into::<usize>::into(A380Pax::UpperMidB), 14)
+        .with_pax_target(Into::<usize>::into(A380Pax::UpperAft), 6)
         .load_half_cargo()
         .real_board_rate()
         .start_boarding()
@@ -1271,18 +1288,30 @@ fn detailed_test_with_multiple_stops() {
         .test_bed
         .run_multiple_frames(Duration::from_secs(forty_five_minutes_in_seconds));
 
-    assert_eq!(test_bed.pax_num(A380Pax::MainFwdA as usize), 0);
-    assert_eq!(test_bed.pax_num(A380Pax::MainFwdB as usize), 0);
-    assert_eq!(test_bed.pax_num(A380Pax::MainMid1A as usize), 0);
-    assert_eq!(test_bed.pax_num(A380Pax::MainMid1B as usize), 0);
-    assert_eq!(test_bed.pax_num(A380Pax::MainMid1C as usize), 0);
-    assert_eq!(test_bed.pax_num(A380Pax::MainMid2A as usize), 15);
-    assert_eq!(test_bed.pax_num(A380Pax::MainMid2B as usize), 14);
-    assert_eq!(test_bed.pax_num(A380Pax::MainMid2C as usize), 25);
-    assert_eq!(test_bed.pax_num(A380Pax::MainAftA as usize), 12);
-    assert_eq!(test_bed.pax_num(A380Pax::MainAftB as usize), 12);
-    assert_eq!(test_bed.pax_num(A380Pax::UpperFwd as usize), 12);
-    assert_eq!(test_bed.pax_num(A380Pax::UpperMidA as usize), 14);
+    assert_eq!(test_bed.pax_num(Into::<usize>::into(A380Pax::MainFwdA)), 0);
+    assert_eq!(test_bed.pax_num(Into::<usize>::into(A380Pax::MainFwdB)), 0);
+    assert_eq!(test_bed.pax_num(Into::<usize>::into(A380Pax::MainMid1A)), 0);
+    assert_eq!(test_bed.pax_num(Into::<usize>::into(A380Pax::MainMid1B)), 0);
+    assert_eq!(test_bed.pax_num(Into::<usize>::into(A380Pax::MainMid1C)), 0);
+    assert_eq!(
+        test_bed.pax_num(Into::<usize>::into(A380Pax::MainMid2A)),
+        15
+    );
+    assert_eq!(
+        test_bed.pax_num(Into::<usize>::into(A380Pax::MainMid2B)),
+        14
+    );
+    assert_eq!(
+        test_bed.pax_num(Into::<usize>::into(A380Pax::MainMid2C)),
+        25
+    );
+    assert_eq!(test_bed.pax_num(Into::<usize>::into(A380Pax::MainAftA)), 12);
+    assert_eq!(test_bed.pax_num(Into::<usize>::into(A380Pax::MainAftB)), 12);
+    assert_eq!(test_bed.pax_num(Into::<usize>::into(A380Pax::UpperFwd)), 12);
+    assert_eq!(
+        test_bed.pax_num(Into::<usize>::into(A380Pax::UpperMidA)),
+        14
+    );
     test_bed.has_no_cargo();
 
     test_bed = test_bed

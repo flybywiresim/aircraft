@@ -127,6 +127,13 @@ fn init() {
     assert!(test_bed.contains_variable_with_name("FUELSYSTEM TANK QUANTITY:3"));
     assert!(test_bed.contains_variable_with_name("FUELSYSTEM TANK QUANTITY:4"));
     assert!(test_bed.contains_variable_with_name("FUELSYSTEM TANK QUANTITY:5"));
+    assert!(test_bed.contains_variable_with_name("FUELSYSTEM TANK QUANTITY:6"));
+    assert!(test_bed.contains_variable_with_name("FUELSYSTEM TANK QUANTITY:7"));
+    assert!(test_bed.contains_variable_with_name("FUELSYSTEM TANK QUANTITY:8"));
+    assert!(test_bed.contains_variable_with_name("FUELSYSTEM TANK QUANTITY:9"));
+    assert!(test_bed.contains_variable_with_name("FUELSYSTEM TANK QUANTITY:10"));
+    assert!(test_bed.contains_variable_with_name("FUELSYSTEM TANK QUANTITY:11"));
+    assert!(test_bed.contains_variable_with_name("FUEL TOTAL QUANTITY WEIGHT"));
 }
 
 #[test]
