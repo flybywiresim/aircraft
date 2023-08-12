@@ -5,8 +5,7 @@ export enum NavigraphSubscriptionStatus {
 
 export interface NavigraphBoundingBox {
     bottomLeft: { lat: number, lon: number, xPx: number, yPx: number },
-    topRight: { lat: number, lon: number, xPx: number, yPx: number }
-    ,
+    topRight: { lat: number, lon: number, xPx: number, yPx: number },
     width: number,
     height: number,
 }

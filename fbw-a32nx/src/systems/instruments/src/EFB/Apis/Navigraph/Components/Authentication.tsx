@@ -204,7 +204,7 @@ export const NavigraphAuthUIWrapper: React.FC<NavigraphAuthUIWrapperProps> = ({ 
 export const NavigraphAuthRedirectUI = () => {
     const history = useHistory();
 
-    const handleGoToThirdPArtySettings = () => {
+    const handleGoToThirdPartySettings = () => {
         history.push('/settings/3rd-party-options');
     };
 
@@ -218,7 +218,7 @@ export const NavigraphAuthRedirectUI = () => {
                     className="flex justify-center items-center py-2 space-x-4 w-52 text-theme-body
                          hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md border-2
                          border-theme-highlight transition duration-100"
-                    onClick={handleGoToThirdPArtySettings}
+                    onClick={handleGoToThirdPartySettings}
                 >
                     {t('NavigationAndCharts.Navigraph.GoToThirdPartyOptions.Button')}
                 </button>
