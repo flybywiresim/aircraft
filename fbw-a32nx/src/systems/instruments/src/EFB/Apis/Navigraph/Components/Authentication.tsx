@@ -26,11 +26,14 @@ export const useNavigraphAuthInfo = (): NavigraphAuthInfo => {
     const navigraph = useNavigraph();
 
     const [tokenAvail, setTokenAvail] = useState(false);
-    const [subscriptionStatus, setSubscriptionStatus] = useState<NavigraphSubscriptionStatus>(NavigraphSubscriptionStatus.None);
+    const [subscriptionStatus, setSubscriptionStatus] = useState<NavigraphSubscriptionStatus>(NavigraphSubscriptionStatus.Unknown);
+    const [username] = usePersistentProperty('NAVIGRAPH_USERNAME');
 
     useInterval(() => {
         if ((tokenAvail !== navigraph.hasToken) && navigraph.hasToken) {
-            navigraph.subscriptionStatus().then(setSubscriptionStatus);
+            navigraph.fetchSubscriptionStatus()
+                .then(setSubscriptionStatus)
+                .catch(() => setSubscriptionStatus(NavigraphSubscriptionStatus.Unknown));
         } else if (!navigraph.hasToken) {
             setSubscriptionStatus(NavigraphSubscriptionStatus.None);
         }
@@ -39,7 +42,7 @@ export const useNavigraphAuthInfo = (): NavigraphAuthInfo => {
     }, 1000, { runOnStart: true });
 
     if (tokenAvail) {
-        return { loggedIn: tokenAvail, username: navigraph.userName, subscriptionStatus };
+        return { loggedIn: tokenAvail, username, subscriptionStatus };
     }
     return { loggedIn: false };
 };

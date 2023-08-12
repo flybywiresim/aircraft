@@ -597,7 +597,8 @@
         "Unlink": "Unlink Account",
         "SubscriptionStatus": {
           "None": "None",
-          "Unlimited": "Navigraph Unlimited"
+          "Unlimited": "Navigraph Unlimited",
+          "Unknown": "Unknown"
         },
         "LoginPage": {
           "Title": "Navigraph Account Login"

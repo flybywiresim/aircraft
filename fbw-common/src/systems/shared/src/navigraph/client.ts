@@ -329,7 +329,7 @@ export class NavigraphClient {
         }
     }
 
-    public async subscriptionStatus(): Promise<NavigraphSubscriptionStatus> {
+    public async fetchSubscriptionStatus(): Promise<NavigraphSubscriptionStatus> {
         if (this.hasToken) {
             const decodedToken = JSON.parse(atob(this.accessToken.split('.')[1]));
 

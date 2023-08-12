@@ -1,6 +1,7 @@
 export enum NavigraphSubscriptionStatus {
     None,
     Unlimited,
+    Unknown,
 }
 
 export interface NavigraphBoundingBox {

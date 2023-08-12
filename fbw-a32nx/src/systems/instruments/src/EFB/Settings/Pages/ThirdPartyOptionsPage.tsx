@@ -14,6 +14,8 @@ import { NavigraphAuthUIWrapper, useNavigraphAuthInfo } from '../../Apis/Navigra
 import { useNavigraph } from '../../Apis/Navigraph/Navigraph';
 import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
+// @ts-ignore
+import NavigraphIcon from '../../Assets/navigraph-logo-alone.svg';
 
 export const ThirdPartyOptionsPage = () => {
     const history = useHistory();
@@ -115,7 +117,7 @@ export const ThirdPartyOptionsPage = () => {
                             <>
                                 <span className="py-2.5 pr-4">
                                     {navigraphAuthInfo.username}
-                                    {' - '}
+                                    <img src={NavigraphIcon} className="inline-block mx-1.5 mb-1 w-6" />
                                     {t(`Settings.ThirdPartyOptions.NavigraphAccountLink.SubscriptionStatus.${NavigraphSubscriptionStatus[navigraphAuthInfo.subscriptionStatus]}`)}
                                 </span>
 
@@ -152,7 +154,7 @@ export const ThirdPartyOptionsPage = () => {
 
                                 <div
                                     className="flex flex-shrink justify-center items-center py-2 px-2 w-min text-center text-theme-body hover:text-utility-red
-                                    bg-utility-red hover:bg-theme-bodyrounded-md border-2 border-utility-red transition duration-100"
+                                    bg-utility-red hover:bg-theme-body rounded-md border-2 border-utility-red transition duration-100"
                                     onClick={handleOverrideSimBriefIDDelete}
                                 >
                                     <IconTrash />
