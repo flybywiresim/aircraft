@@ -37,6 +37,7 @@
 # Project folders
 
 /fbw-a32nx/*
+/fbw-a32nx/.env.local
 !/fbw-a32nx/README.md
 !/fbw-a32nx/mach.config.js
 !/fbw-a32nx/.env
@@ -60,6 +61,7 @@
 /fbw-a32nx/src/wasm/systems/a320_pneumatic_simulation_graph_data/*.txt
 
 /fbw-a380x/*
+/fbw-a380x/.env.local
 !/fbw-a380x/README.md
 !/fbw-a380x/docs/
 !/fbw-a380x/docs/**

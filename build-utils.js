@@ -2,6 +2,7 @@ const dotenv = require('dotenv');
 const path = require("path");
 
 function defineEnvVars() {
+    dotenv.config({ path: '.env.local' });
     dotenv.config();
 
     const defines = {};
@@ -52,7 +53,7 @@ function esbuildModuleBuild(projectRoot, globalName, entryPoint, outFile) {
         format: 'iife',
         globalName,
 
-        sourcemap: isProductionBuild ? 'linked' : undefined,
+        sourcemap: isProductionBuild ? undefined : 'linked',
 
         // Target approximate CoherentGT WebKit version
         target: 'safari11',
