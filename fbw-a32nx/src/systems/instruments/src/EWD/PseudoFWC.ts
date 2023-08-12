@@ -2,10 +2,11 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Subject, Subscribable, MappedSubject, DebounceTimer } from '@microsoft/msfs-sdk';
+import { Subject, Subscribable, MappedSubject, DebounceTimer, ConsumerValue, EventBus } from '@microsoft/msfs-sdk';
 
 import { Arinc429Register, Arinc429Word, NXDataStore, NXLogicClockNode, NXLogicConfirmNode, NXLogicMemoryNode, NXLogicPulseNode, NXLogicTriggeredMonostableNode } from '@flybywiresim/fbw-sdk';
 import { VerticalMode } from '@shared/autopilot';
+import { FuelSystemEvents } from '../MsfsAvionicsCommon/providers/FuelSystemPublisher';
 
 export function xor(a: boolean, b: boolean): boolean {
     return !!((a ? 1 : 0) ^ (b ? 1 : 0));
@@ -352,6 +353,8 @@ export class PseudoFWC {
 
     private readonly rightFuelPump2Auto = Subject.create(false);
 
+    private readonly fuelCtrTankModeSelMan = ConsumerValue.create(null, false);
+
     /* HYDRAULICS */
 
     private readonly blueElecPumpPBAuto = Subject.create(false);
@@ -685,7 +688,7 @@ export class PseudoFWC {
 
     private readonly configPortableDevices = Subject.create(false);
 
-    constructor() {
+    constructor(private readonly bus: EventBus, private readonly instrument: BaseInstrument) {
         this.ewdMessageLinesLeft.forEach((ls, i) => ls.sub((l) => {
             SimVar.SetSimVarValue(PseudoFWC.ewdMessageSimVarsLeft[i], 'string', l ?? '');
         }));
@@ -712,6 +715,10 @@ export class PseudoFWC {
             SimVar.SetSimVarValue('L:A32NX_MASTER_WARNING', 'Bool', warning);
             SimVar.SetSimVarValue('L:Generic_Master_Warning_Active', 'Bool', warning);
         });
+
+        const sub = this.bus.getSubscriber<FuelSystemEvents>();
+
+        this.fuelCtrTankModeSelMan.setConsumer(sub.on('fuel_ctr_tk_mode_sel_man'));
     }
 
     mapOrder(array, order): [] {
@@ -790,9 +797,10 @@ export class PseudoFWC {
 
     /**
      * Periodic update
-     * @param deltaTime Time since the last update in ms
      */
-    onUpdate(deltaTime: number) {
+    onUpdate() {
+        const deltaTime = this.instrument.deltaTime;
+
         // Inputs update
 
         this.flightPhaseEndedPulseNode.write(false, deltaTime);
@@ -2460,7 +2468,7 @@ export class PseudoFWC {
             simVarIsActive: this.leftFuelLow,
             whichCodeToReturn: () => [
                 0,
-                1,
+                !this.fuelCtrTankModeSelMan.get() ? 1 : null,
                 !this.fuelXFeedPBOn.get() ? 2 : null,
                 !this.fuelXFeedPBOn.get() ? 3 : null,
                 !this.fuelXFeedPBOn.get() ? 4 : null,
@@ -2478,7 +2486,7 @@ export class PseudoFWC {
             simVarIsActive: this.rightFuelLow,
             whichCodeToReturn: () => [
                 0,
-                1,
+                !this.fuelCtrTankModeSelMan.get() ? 1 : null,
                 !this.fuelXFeedPBOn.get() ? 2 : null,
                 !this.fuelXFeedPBOn.get() ? 3 : null,
                 !this.fuelXFeedPBOn.get() ? 4 : null,
