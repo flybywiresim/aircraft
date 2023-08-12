@@ -1,7 +1,7 @@
-import { EventBus, PublishPacer, SimVarPublisher, SimVarPublisherEntry, SimVarValueType } from '@microsoft/msfs-sdk';
+import { EventBus, IndexedEventType, PublishPacer, SimVarPublisher, SimVarPublisherEntry, SimVarValueType } from '@microsoft/msfs-sdk';
 
 /* eslint-disable camelcase */
-export interface FuelSystemEvents {
+export interface BaseFuelSystemEvents {
     fuel_ctr_tk_mode_sel_man: boolean,
     /** The valve's switch: */
     fuel_valve_switch: boolean;
@@ -19,6 +19,19 @@ export interface FuelSystemEvents {
     fuel_line_flow: number;
     /** The quantity of fuel in the selected tank (by tank index), in gallons. */
     fuel_tank_quantity: number;
+}
+
+type IndexedTopics = 'fuel_valve_switch' | 'fuel_valve_open' | 'fuel_pump_switch' | 'fuel_pump_active'
+    | 'fuel_engine_pressure' | 'fuel_line_pressure' | 'fuel_line_flow' | 'fuel_tank_quantity';
+
+type FuelSystemIndexedEvents = {
+  [P in keyof Pick<BaseFuelSystemEvents, IndexedTopics> as IndexedEventType<P>]: BaseFuelSystemEvents[P];
+};
+
+/**
+ * Fuel System events.
+ */
+export interface FuelSystemEvents extends BaseFuelSystemEvents, FuelSystemIndexedEvents {
 }
 
 export class FuelSystemPublisher extends SimVarPublisher<FuelSystemEvents> {
