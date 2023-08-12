@@ -26,9 +26,9 @@ pub fn engines(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
 
                 // These values are very arbitrary. Whether crossbleed starts work or not is binary for now,
                 // until we have a custom engine model
-                if starter_pressure_psig > 10. && !is_sim_bleed_air_active {
-                    toggle_sim_engine_bleed_air(engine_number);
-                } else if starter_pressure_psig < 5. && is_sim_bleed_air_active {
+                if (starter_pressure_psig > 10. && !is_sim_bleed_air_active)
+                    || (starter_pressure_psig < 5. && is_sim_bleed_air_active)
+                {
                     toggle_sim_engine_bleed_air(engine_number);
                 }
             }),

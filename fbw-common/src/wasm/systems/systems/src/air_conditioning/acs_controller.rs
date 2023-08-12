@@ -1134,7 +1134,7 @@ mod acs_controller_tests {
             ValueKnob,
         },
         pneumatic::{
-            valve::{DefaultValve, ElectroPneumaticValve, PneumaticExhaust},
+            valve::{DefaultValve, PneumaticExhaust},
             ControllablePneumaticValve, EngineModeSelector, PneumaticContainer, PneumaticPipe,
             Precooler, PressureTransducer,
         },
@@ -2461,10 +2461,6 @@ mod acs_controller_tests {
             self.query(|a| {
                 a.pneumatic.pack_flow_valve_air_flow(1) + a.pneumatic.pack_flow_valve_air_flow(2)
             })
-        }
-
-        fn pack_flow_valve_inlet_pressure(&self, pack_id: usize) -> Option<Pressure> {
-            self.query(|a| a.pneumatic.pack_flow_valve_inlet_pressure(pack_id))
         }
 
         fn pack_1_has_fault(&mut self) -> bool {

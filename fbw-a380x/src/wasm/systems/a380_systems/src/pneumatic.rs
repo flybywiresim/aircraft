@@ -2335,17 +2335,6 @@ mod tests {
         fn right_pack_flow_valve_flow(&self, pack_number: usize) -> MassRate {
             self.query(|a| a.pneumatic.packs[pack_number - 1].right_pack_flow_valve_air_flow())
         }
-
-        fn left_pack_flow_valve_inlet_pressure(&self, pack_number: usize) -> Option<Pressure> {
-            self.query(|a| a.pneumatic.packs[pack_number - 1].left_pack_flow_valve_inlet_pressure())
-        }
-
-        fn right_pack_flow_valve_inlet_pressure(&self, pack_number: usize) -> Option<Pressure> {
-            self.query(|a| {
-                a.pneumatic.packs[pack_number - 1].right_pack_flow_valve_inlet_pressure()
-            })
-        }
-
         fn pack_pressure(&self, pack_number: usize) -> Pressure {
             self.query(|a| a.pneumatic.packs[pack_number - 1].pack_container.pressure())
         }

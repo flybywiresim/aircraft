@@ -2366,18 +2366,6 @@ pub mod tests {
             self
         }
 
-        fn eng1_n2(mut self, n2: f64) -> Self {
-            self.write_by_name("TURB ENG CORRECTED N2:1", Ratio::new::<ratio>(n2));
-
-            self
-        }
-
-        fn eng2_n2(mut self, n2: f64) -> Self {
-            self.write_by_name("TURB ENG CORRECTED N2:2", Ratio::new::<ratio>(n2));
-
-            self
-        }
-
         fn and_eng1_n2_based_on_n1(mut self) -> Self {
             let n1 = self.read_by_name("TURB ENG CORRECTED N1:1");
             let n2 = interpolation(&Self::N1_BREAKPOINTS, &Self::N2_BREAKPOINTS, n1);
@@ -2895,22 +2883,21 @@ pub mod tests {
     #[test]
     #[ignore]
     fn full_graphing_test() {
-        let alt = Length::new::<foot>(10000.);
+        let alt = Length::new::<foot>(0.);
         let ambient_pressure = InternationalStandardAtmosphere::pressure_at_altitude(alt);
         println!("Ambient pressure: {} psi", ambient_pressure.get::<psi>());
 
         let mut test_bed = test_bed_with()
             .in_isa_atmosphere(alt)
-            .eng1_n1(0.6)
-            .and_eng1_n2_based_on_n1()
-            .eng2_n1(0.6)
-            .and_eng2_n2_based_on_n1()
-            .mach_number(MachNumber(0.4))
+            .stop_eng1()
+            .idle_eng2()
+            .mach_number(MachNumber(0.0))
             .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Auto)
-            .both_packs_auto();
+            .set_pack_flow_pb_is_auto(1, true)
+            .set_pack_flow_pb_is_auto(2, false);
 
-        test_bed.set_on_ground(false);
-        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(1000.));
+        test_bed.set_on_ground(true);
+        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(0.));
 
         let mut time_points = Vec::new();
         let mut high_pressures = Vec::new();
@@ -2950,29 +2937,14 @@ pub mod tests {
         for i in 1..num_steps {
             time_points.push((i * update_step_ms) as f64);
 
-            if i == 2000 {
-                // test_bed =
-                //     test_bed.set_apu_bleed_valve_signal(ApuBleedAirValveSignal::new_closed());
-                // test_bed = test_bed.eng1_n1(0.8).and_eng1_n2_based_on_n1()#
-                // test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(1000.));
+            if i > set_toga_thrust_at_step {
+                let n1 = interpolation(&n1_profile_timesteps, &n1_profile, i as f64);
+                test_bed = test_bed
+                    .eng1_n1(n1)
+                    .and_eng1_n2_based_on_n1()
+                    .eng2_n1(n1)
+                    .and_eng2_n2_based_on_n1()
             }
-
-            // if i > set_toga_thrust_at_step {
-            //     let n1 = interpolation(&n1_profile_timesteps, &n1_profile, i as f64);
-            //     test_bed = test_bed
-            //         .eng1_n1(n1)
-            //         .and_eng1_n2_based_on_n1()
-            //         .eng2_n1(n1)
-            //         .and_eng2_n2_based_on_n1()
-            // }
-
-            // if i == 3000 {
-            //     // test_bed =
-            //     //     test_bed.set_apu_bleed_valve_signal(ApuBleedAirValveSignal::new_closed());
-            //     // test_bed = test_bed.eng1_n1(0.8).and_eng1_n2_based_on_n1()#
-            //     test_bed.set_on_ground(false);
-            //     test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(1000.));
-            // }
 
             high_pressures.push((test_bed.hp_pressure(1) - ambient_pressure).get::<psi>());
             intermediate_pressures.push((test_bed.ip_pressure(1) - ambient_pressure).get::<psi>());
