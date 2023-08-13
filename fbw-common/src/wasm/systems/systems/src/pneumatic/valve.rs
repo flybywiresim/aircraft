@@ -104,16 +104,13 @@ impl<const N: usize> PneumaticValveCharacteristics<N> {
                 &self.open_amount_breakpoints,
                 downstream_pressure.get::<psi>(),
             )
-            .max(0.)
-            .min(1.)
+            .clamp(0., 1.)
         }
     }
 }
 
-/**
- * A valve with a solenoid. If the solenoid is energized, the valve is allowed to open
- * If the solenoid is de-energized, the valve is closed.
- */
+/// A valve with a solenoid. If the solenoid is energized, the valve is allowed to open
+/// If the solenoid is de-energized, the valve is closed.
 pub struct SolenoidValve<const N: usize> {
     connector: PneumaticContainerConnector,
     characteristics: PneumaticValveCharacteristics<N>,
@@ -153,17 +150,12 @@ impl<const N: usize> SolenoidValve<N> {
         };
 
         let current_open_amount = self.open_amount.get::<ratio>();
+        let open_amount_change = context.delta_as_secs_f64() * self.characteristics.valve_speed;
 
         self.open_amount = Ratio::new::<ratio>(if target_open_amount > current_open_amount {
-            target_open_amount.min(
-                current_open_amount
-                    + context.delta_as_secs_f64() * self.characteristics.valve_speed,
-            )
+            target_open_amount.min(current_open_amount + open_amount_change)
         } else {
-            target_open_amount.max(
-                current_open_amount
-                    - context.delta_as_secs_f64() * self.characteristics.valve_speed,
-            )
+            target_open_amount.max(current_open_amount - open_amount_change)
         });
 
         self.connector
@@ -187,6 +179,8 @@ impl<const N: usize> PneumaticValve for SolenoidValve<N> {
 impl<const N: usize> SimulationElement for SolenoidValve<N> {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.solenoid.accept(visitor);
+
+        visitor.visit(self);
     }
 }
 
@@ -201,7 +195,7 @@ impl ElectroPneumaticValve {
 
     pub fn new(powered_by: ElectricalBusType) -> Self {
         Self {
-            open_amount: Ratio::new::<ratio>(0.),
+            open_amount: Ratio::default(),
             connector: PneumaticContainerConnector::new(),
             is_powered: false,
             powered_by,
@@ -316,17 +310,12 @@ impl<const N: usize> OverpressureValve<N> {
         };
 
         let current_open_amount = self.open_amount.get::<ratio>();
+        let open_amount_change = context.delta_as_secs_f64() * self.characteristics.valve_speed;
 
         self.open_amount = Ratio::new::<ratio>(if target_open_amount > current_open_amount {
-            target_open_amount.min(
-                current_open_amount
-                    + context.delta_as_secs_f64() * self.characteristics.valve_speed,
-            )
+            target_open_amount.min(current_open_amount + open_amount_change)
         } else {
-            target_open_amount.max(
-                current_open_amount
-                    - context.delta_as_secs_f64() * self.characteristics.valve_speed,
-            )
+            target_open_amount.max(current_open_amount - open_amount_change)
         });
 
         if self.is_closing && self.is_fully_open() {
@@ -344,11 +333,11 @@ impl<const N: usize> FullyOpen for OverpressureValve<N> {
     }
 }
 
-trait FullyOpen {
+pub trait FullyOpen {
     fn is_fully_open(&self) -> bool;
 }
 
-trait FullyClosed {
+pub trait FullyClosed {
     fn is_fully_closed(&self) -> bool;
 }
 

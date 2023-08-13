@@ -1354,12 +1354,12 @@ impl SimulationElement for EngineBleedAirSystem {
         writer.write(
             &self.transfer_pressure_transducer_pressure_id,
             self.transfer_pressure_transducer_pressure()
-                .map_or(-1., |p| p.get::<psi>().max(0.).min(512.)),
+                .map_or(-1., |p| p.get::<psi>().clamp(0., 512.)),
         );
         writer.write(
             &self.regulated_pressure_transducer_pressure_id,
             self.regulated_pressure_transducer_pressure()
-                .map_or(-1., |p| p.get::<psi>().max(0.).min(512.)),
+                .map_or(-1., |p| p.get::<psi>().clamp(0., 512.)),
         );
         writer.write(
             &self.differential_pressure_transducer_pressure_id,
@@ -1739,12 +1739,14 @@ impl CrossBleedValve {
         container_one: &mut impl PneumaticContainer,
         container_two: &mut impl PneumaticContainer,
     ) {
+        let open_amount_change = context.delta_as_secs_f64() * self.valve_speed;
+
         self.open_amount = if self.target_open_amount > self.open_amount {
             self.target_open_amount
-                .min(self.open_amount + context.delta_as_secs_f64() * self.valve_speed)
+                .min(self.open_amount + open_amount_change)
         } else {
             self.target_open_amount
-                .max(self.open_amount - context.delta_as_secs_f64() * self.valve_speed)
+                .max(self.open_amount - open_amount_change)
         };
 
         self.connector
@@ -1766,18 +1768,20 @@ impl CrossBleedValve {
         // If neither of the motors is powered, there is a braking system to hold the valve in place,
         // so we don't do anything here
     }
-
-    fn is_fully_closed(&self) -> bool {
-        self.open_amount.get::<ratio>() < 1e-4
-    }
-
-    fn is_fully_open(&self) -> bool {
-        self.open_amount.get::<ratio>() > 1. - 1e-4
-    }
 }
 impl PneumaticValve for CrossBleedValve {
     fn is_open(&self) -> bool {
         !self.is_fully_closed()
+    }
+}
+impl FullyOpen for CrossBleedValve {
+    fn is_fully_open(&self) -> bool {
+        self.open_amount.get::<ratio>() > 1. - 1e-4
+    }
+}
+impl FullyClosed for CrossBleedValve {
+    fn is_fully_closed(&self) -> bool {
+        self.open_amount.get::<ratio>() < 1e-4
     }
 }
 impl SimulationElement for CrossBleedValve {

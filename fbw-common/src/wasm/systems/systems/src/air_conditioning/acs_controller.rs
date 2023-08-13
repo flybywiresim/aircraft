@@ -665,7 +665,6 @@ impl From<Pack> for usize {
     }
 }
 
-#[derive(Copy, Clone)]
 pub struct PackFlowController<const ENGINES: usize> {
     pack_flow_id: VariableIdentifier,
 
@@ -696,8 +695,9 @@ impl<const ENGINES: usize> PackFlowController<ENGINES> {
     const FLOW_CONSTANT_XCAB: f64 = 0.00001828; // kg(feet*s)
 
     const PACK_INLET_PRESSURE_MIN_PSIG: f64 = 8.;
-    const FCV_FAILED_OPEN_TIME_LIMIT_SECOND: u64 = 30;
-    const FCV_FAILED_CLOSED_TIME_LIMIT_SECOND: u64 = 17;
+    const FCV_FAILED_OPEN_TIME_LIMIT: Duration = Duration::from_secs(30);
+    const FCV_FAILED_CLOSED_TIME_LIMIT: Duration = Duration::from_secs(17);
+    const INLET_PRESSURE_BELOW_MIN_TIME: Duration = Duration::from_secs(5);
 
     fn new(context: &mut InitContext, pack_id: Pack) -> Self {
         Self {
@@ -713,13 +713,13 @@ impl<const ENGINES: usize> PackFlowController<ENGINES> {
             operation_mode: ACSCActiveComputer::None,
 
             fcv_timer_open: Duration::from_secs(0),
-            fcv_failed_open_monitor: DelayedTrueLogicGate::new(Duration::from_secs(
-                Self::FCV_FAILED_OPEN_TIME_LIMIT_SECOND,
-            )),
-            fcv_failed_closed_monitor: DelayedTrueLogicGate::new(Duration::from_secs(
-                Self::FCV_FAILED_CLOSED_TIME_LIMIT_SECOND,
-            )),
-            inlet_pressure_below_min: DelayedTrueLogicGate::new(Duration::from_secs(5)),
+            fcv_failed_open_monitor: DelayedTrueLogicGate::new(Self::FCV_FAILED_OPEN_TIME_LIMIT),
+            fcv_failed_closed_monitor: DelayedTrueLogicGate::new(
+                Self::FCV_FAILED_CLOSED_TIME_LIMIT,
+            ),
+            inlet_pressure_below_min: DelayedTrueLogicGate::new(
+                Self::INLET_PRESSURE_BELOW_MIN_TIME,
+            ),
         }
     }
 
@@ -890,7 +890,7 @@ impl<const ENGINES: usize> PackFlowController<ENGINES> {
 
         self.fcv_failed_closed_monitor.update(
             context,
-            !self.should_open_fcv && pneumatic.pack_flow_valve_is_open(self.id + 1),
+            self.should_open_fcv && !pneumatic.pack_flow_valve_is_open(self.id + 1),
         );
     }
 

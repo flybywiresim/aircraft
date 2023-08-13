@@ -1224,10 +1224,10 @@ impl PackComplex {
                 ElectricalBusType::DirectCurrentEssential,
             ),
             left_inlet_pressure_sensor: PressureTransducer::new(
-                ElectricalBusType::DirectCurrentEssentialShed, // TODO: This is almost definitely not correct, just copied from the A320
+                ElectricalBusType::DirectCurrentEssential, // TODO: This is almost definitely not correct, just copied from the A320
             ),
             right_inlet_pressure_sensor: PressureTransducer::new(
-                ElectricalBusType::DirectCurrentEssentialShed, // TODO: This is almost definitely not correct, just copied from the A320
+                ElectricalBusType::DirectCurrentEssential, // TODO: This is almost definitely not correct, just copied from the A320
             ),
         }
     }
@@ -2335,6 +2335,7 @@ mod tests {
         fn right_pack_flow_valve_flow(&self, pack_number: usize) -> MassRate {
             self.query(|a| a.pneumatic.packs[pack_number - 1].right_pack_flow_valve_air_flow())
         }
+
         fn pack_pressure(&self, pack_number: usize) -> Pressure {
             self.query(|a| a.pneumatic.packs[pack_number - 1].pack_container.pressure())
         }

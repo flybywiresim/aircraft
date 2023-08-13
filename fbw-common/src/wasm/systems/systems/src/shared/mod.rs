@@ -492,7 +492,6 @@ pub(crate) enum FwcFlightPhase {
 
 /// The delay logic gate delays the true result of a given expression by the given amount of time.
 /// False results are output immediately.
-#[derive(Copy, Clone)]
 pub struct DelayedTrueLogicGate {
     delay: Duration,
     expression_result: bool,
