@@ -2,33 +2,56 @@ class CDUMenuPage {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.MenuPage;
-        const activeSystem = mcdu.activeSystem;
-        let selectedFMGC = false;
-        let selectedATSU = false;
-        let selectedAIDS = false;
-        let selectedCFDS = false;
-        //const selectedMaint = false;
+        // The MCDU MENU does not maintain an editable scratchpad... subsystems and the backup nav do that.
+        mcdu.activateMcduScratchpad();
 
-        const updateView = () => {
-            const getText = (name, isSelected, extra = "", isLeft = true) => isSelected ? (isLeft ? name + " (SEL)" : "(SEL) " + name) : name + extra;
-            const getColor = (system, isSelected) => isSelected ? Column.cyan : system === activeSystem ? Column.green : Column.white;
+        const fmActive = mcdu.activeSystem === "FMGC";
+        const atsuActive = mcdu.activeSystem === "ATSU";
+        const aidsActive = mcdu.activeSystem === "AIDS";
+        const cfdsActive = mcdu.activeSystem === "CFDS";
+
+        // delay to get text and draw already connected subsystem page
+        const connectedSubsystemDelay = 200;
+        // delay to establish initial communication with disconnect systems on low speed ports
+        const disconnectedSubsystemDelay = Math.floor(Math.random() * 800) + 500;
+
+        /**
+         * Updates the page text.
+         * @param {"FMGC" | "ATSU" | "AIDS" | "CFDS" | null} selectedSystem Newly selected system establishing comms, or null if none.
+         */
+        const updateView = (selectedSystem = null) => {
+            const getText = (name, isRequesting = false, isLeft = true) => {
+                let flag = null;
+                if (selectedSystem !== null) {
+                    if (selectedSystem === name) {
+                        flag = "(SEL)";
+                    }
+                } else if (isRequesting) {
+                    flag = "(REQ)";
+                }
+                if (isLeft) {
+                    return `${name}\xa0${flag !== null ? flag : ""}`;
+                } else {
+                    return `${flag !== null ? flag : ""}\xa0${name}`;
+                }
+            };
+            const getColor = (isActive, isSelected) => isSelected ? Column.cyan : (isActive && selectedSystem === null ? Column.green : Column.white);
 
             mcdu.setTemplate(FormatTemplate([
                 [new Column(7, "MCDU MENU")],
-                [new Column(22, "SELECT", Column.right)],
+                [new Column(22, "SELECT", Column.right, Column.inop)],
                 [
-                    new Column(0, getText("<FMGC", selectedFMGC, " (REQ)"), getColor("FMGC", selectedFMGC)),
-                    new Column(23, "NAV B/UP>", Column.right)
+                    new Column(0, getText("<FMGC", mcdu.isSubsystemRequesting("FMGC")), getColor(fmActive, selectedSystem === "FMGC")),
+                    new Column(23, "NAV B/UP>", Column.right, Column.inop)
                 ],
                 [""],
-                [new Column(0, getText("<ATSU", selectedATSU), getColor("ATSU", selectedATSU))],
+                [new Column(0, getText("<ATSU", mcdu.isSubsystemRequesting("ATSU")), getColor(atsuActive, selectedSystem === "ATSU"))],
                 [""],
-                [new Column(0, getText("<AIDS", selectedAIDS), getColor("AIDS", selectedAIDS))],
+                [new Column(0, getText("<AIDS", mcdu.isSubsystemRequesting("AIDS")), getColor(aidsActive, selectedSystem === "AIDS"))],
                 [""],
-                [new Column(0, getText("<CFDS", selectedCFDS), getColor("CFDS", selectedCFDS))],
+                [new Column(0, getText("<CFDS", mcdu.isSubsystemRequesting("CFDS")), getColor(cfdsActive, selectedSystem === "CFDS"))],
                 [""],
                 [""],
-                //[new Column(0, getText("MCDU MAINT>", selectedMaint, "", false), Column.right, getColor("MAINT", selectedMaint))],
                 [""],
                 [""]
             ]));
@@ -36,46 +59,42 @@ class CDUMenuPage {
 
         updateView();
 
-        mcdu.setScratchpadMessage(NXSystemMessages.selectDesiredSystem);
+        mcdu.mcduScratchpad.setMessage(NXSystemMessages.selectDesiredSystem);
 
         mcdu.onLeftInput[0] = () => {
-            mcdu.setScratchpadMessage(NXSystemMessages.waitForSystemResponse);
-            selectedFMGC = true;
-            updateView();
+            mcdu.mcduScratchpad.setMessage(NXSystemMessages.waitForSystemResponse);
+            updateView("FMGC");
             setTimeout(() => {
-                mcdu.removeScratchpadMessage(NXSystemMessages.waitForSystemResponse.text);
+                mcdu.mcduScratchpad.removeMessage(NXSystemMessages.waitForSystemResponse.text);
                 CDUIdentPage.ShowPage(mcdu);
-            }, Math.floor(Math.random() * 400) + 200);
+            }, connectedSubsystemDelay); // FMGCs are on high-speed port... always fast
         };
 
         mcdu.onLeftInput[1] = () => {
-            mcdu.setScratchpadMessage(NXSystemMessages.waitForSystemResponse);
-            selectedATSU = true;
-            updateView();
+            mcdu.mcduScratchpad.setMessage(NXSystemMessages.waitForSystemResponse);
+            updateView("ATSU");
             setTimeout(() => {
-                mcdu.removeScratchpadMessage(NXSystemMessages.waitForSystemResponse.text);
+                mcdu.mcduScratchpad.removeMessage(NXSystemMessages.waitForSystemResponse.text);
                 CDUAtsuMenu.ShowPage(mcdu);
-            }, Math.floor(Math.random() * 400) + 200);
+            }, atsuActive ? connectedSubsystemDelay : disconnectedSubsystemDelay);
         };
 
         mcdu.onLeftInput[2] = () => {
-            mcdu.setScratchpadMessage(NXSystemMessages.waitForSystemResponse);
-            selectedAIDS = true;
-            updateView();
+            mcdu.mcduScratchpad.setMessage(NXSystemMessages.waitForSystemResponse);
+            updateView("AIDS");
             setTimeout(() => {
-                mcdu.removeScratchpadMessage(NXSystemMessages.waitForSystemResponse.text);
+                mcdu.mcduScratchpad.removeMessage(NXSystemMessages.waitForSystemResponse.text);
                 CDU_AIDS_MainMenu.ShowPage(mcdu);
-            }, Math.floor(Math.random() * 400) + 400);
+            }, aidsActive ? connectedSubsystemDelay : disconnectedSubsystemDelay);
         };
 
         mcdu.onLeftInput[3] = () => {
-            mcdu.setScratchpadMessage(NXSystemMessages.waitForSystemResponse);
-            selectedCFDS = true;
-            updateView();
+            mcdu.mcduScratchpad.setMessage(NXSystemMessages.waitForSystemResponse);
+            updateView("CFDS");
             setTimeout(() => {
-                mcdu.removeScratchpadMessage(NXSystemMessages.waitForSystemResponse.text);
+                mcdu.mcduScratchpad.removeMessage(NXSystemMessages.waitForSystemResponse.text);
                 CDUCfdsMainMenu.ShowPage(mcdu);
-            }, Math.floor(Math.random() * 400) + 400);
+            }, cfdsActive ? connectedSubsystemDelay : disconnectedSubsystemDelay);
         };
     }
 }
