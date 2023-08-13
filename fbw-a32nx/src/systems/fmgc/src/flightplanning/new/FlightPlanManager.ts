@@ -157,10 +157,12 @@ export class FlightPlanManager {
 
         const newPlan = this.get(from).clone(to);
 
+        if (this.has(to)) {
+            const old = this.get(to);
+            old.destroy();
+        }
         this.set(to, newPlan);
         this.get(to).incrementVersion();
-
-        console.log(this.get(to).serialize());
 
         if (notify) {
             this.sendEvent('flightPlanManager.copy', { planIndex: from, targetPlanIndex: to });
