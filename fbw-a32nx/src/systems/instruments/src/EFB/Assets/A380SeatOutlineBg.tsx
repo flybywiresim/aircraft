@@ -24,12 +24,12 @@ export const A380SeatOutlineBg = ({ stroke, highlight }: SeatOutlineBgProps) => 
                 <g id="Left_Horizontal_Stablizer">
                     <path id="Left_idk_what_this_is" d="M653.621,95.442L709.291,172.612L728.791,161.772L686.621,91.112" stroke={stroke} strokeWidth={0.5} />
                     <g id="Left_Elevator" />
-                    <path id="Left_Stablizer" d="M726.011,84.862L781.121,234.502L754.291,229.892C746.121,227.672 737.901,224.452 732.351,218.062L644.241,104.062C641.911,101.062 639.571,99.012 634.751,98.822" stroke={stroke} strokeWidth={2} />
+                    <path id="Left_Stablizer" d="M726.011,84.862L781.121,234.502L754.291,229.892C746.121,227.672 737.901,224.452 732.351,218.062L644.241,104.062C641.911,101.062 639.571,99.012 634.751,98.822" stroke={stroke} strokeWidth={1} />
                 </g>
                 <g id="Right_Horizontal_Stablizer">
                     <path id="Right_idk_what_this_is" d="M653.621,49.552L709.291,-27.618L728.791,-16.778L686.621,53.882" stroke={stroke} strokeWidth={0.5} />
                     <g id="Right_Elevator" />
-                    <path id="Right_Stablizer" d="M726.011,60.132L781.121,-89.508L754.291,-84.898C746.121,-82.678 737.901,-79.458 732.351,-73.068L644.241,40.932C641.911,43.932 639.571,45.982 634.751,46.172" stroke={stroke} strokeWidth={2} />
+                    <path id="Right_Stablizer" d="M726.011,60.132L781.121,-89.508L754.291,-84.898C746.121,-82.678 737.901,-79.458 732.351,-73.068L644.241,40.932C641.911,43.932 639.571,45.982 634.751,46.172" stroke={stroke} strokeWidth={1} />
                 </g>
             </g>
             <g id="Wings">
@@ -37,10 +37,10 @@ export const A380SeatOutlineBg = ({ stroke, highlight }: SeatOutlineBgProps) => 
                     <g id="Slats_Droop" />
                     <g id="Ailerons" />
                     <g id="Flap_Fairings" />
-                    <g id="Flaps_Spoilers">
-                        <path id="Spoilers_Box" d="M400.491,120.522L367.791,120.522L388.541,196.272L461.871,345.442L481.501,346.572" stroke={stroke} strokeWidth={1} />
-                        <path id="Flaps_Box" d="M470.221,345.922L402.771,196.412L383.341,120.522" stroke={stroke} strokeWidth={1} />
-                        <path id="Left_Spoiler_Line_6" d="M375.111,147.272L389.151,143.082" stroke={stroke} strokeWidth={0.5} />
+                    <g id="Flaps_Spoilers" stroke={stroke} strokeWidth={0.5}>
+                        <path id="Spoilers_Box" d="M400.491,120.522L367.791,120.522L388.541,196.272L461.871,345.442L481.501,346.572" />
+                        <path id="Flaps_Box" d="M470.221,345.922L402.771,196.412L383.341,120.522" />
+                        <path id="Left_Spoiler_Line_6" d="M375.111,147.272L389.151,143.082" />
                     </g>
                     <path id="Walk_Zone" d="M226.371,112.052L248.451,140.362L277.701,140.362L317.371,219.782L508.291,486.692L523.461,478.362L382.141,202.032L364.291,138.202C352.871,141.372 345.481,138.842 337.431,117.102" stroke={stroke} strokeWidth={0.5} />
                     <path id="Left_Wing-2" d="M399.841,118.112L420.511,194.862L479.621,342.272L547.291,496.832C554.371,498.362 567.851,499.612 567.851,499.832C567.851,500.302 549.281,499.682 521.131,498.192C514.801,497.802 501.961,494.112 496.461,486.942L310.461,233.612L225.131,129.442L209.411,114.332L199.801,112.052" stroke={stroke} strokeWidth={2} />
@@ -49,10 +49,10 @@ export const A380SeatOutlineBg = ({ stroke, highlight }: SeatOutlineBgProps) => 
                     <g id="Slats_Droop-2" />
                     <g id="Ailerons-2" />
                     <g id="Flap_Fairings-2" />
-                    <g id="Flaps_Spoilers-2">
-                        <path id="Spoilers_Box-2" d="M400.491,24.472L367.791,24.472L388.541,-51.278L461.871,-200.448L481.501,-201.578" stroke={stroke} strokeWidth={1} />
-                        <path id="Flaps_Box-2" d="M470.221,-200.928L402.771,-51.418L383.341,24.472" stroke={stroke} strokeWidth={1} />
-                        <path id="Right_Spoiler_Line_6" d="M375.111,-2.278L389.151,1.912" stroke={stroke} strokeWidth={0.5} />
+                    <g id="Flaps_Spoilers-2" stroke={stroke} strokeWidth={0.5}>
+                        <path id="Spoilers_Box-2" d="M400.491,24.472L367.791,24.472L388.541,-51.278L461.871,-200.448L481.501,-201.578" />
+                        <path id="Flaps_Box-2" d="M470.221,-200.928L402.771,-51.418L383.341,24.472" />
+                        <path id="Right_Spoiler_Line_6" d="M375.111,-2.278L389.151,1.912" />
                     </g>
                     <path id="Walk_Zone-2" d="M226.371,32.942L248.451,4.632L277.701,4.632L317.371,-74.788L508.291,-341.708L523.461,-333.378L382.141,-57.048L364.291,6.782C352.871,3.612 345.481,6.142 337.431,27.882" stroke={stroke} strokeWidth={0.5} />
                     <path id="Right_Wing-2" d="M399.841,26.882L420.511,-49.868L479.621,-197.278L547.291,-351.838C554.371,-353.368 567.851,-354.618 567.851,-354.838C567.851,-355.308 549.281,-354.688 521.131,-353.198C514.801,-352.808 501.961,-349.118 496.461,-341.948L310.461,-88.618L225.131,15.552L209.411,30.662L199.801,32.942" stroke={stroke} strokeWidth={2} />
@@ -604,6 +604,8 @@ export const A380SeatOutlineUpperBg = ({ stroke, highlight }: SeatOutlineBgProps
                         d="m 451.14,77.88 -3.43,-0.46 c -0.51,-0.07 -0.84,0.54 -0.49,0.92 l 1.69,1.89 c 0,0 0.05,0.05 0.08,0.07 l 3.97,3.06 c 0.33,0.25 0.81,0.07 0.89,-0.33 l 0.2,-1 c 0.03,-0.15 0,-0.3 -0.09,-0.43 l -2.42,-3.49 c -0.09,-0.13 -0.23,-0.21 -0.38,-0.24 z"
                     />
                     <polygon
+                        stroke={stroke}
+                        strokeWidth={2}
                         points="467.22,571 467.22,158.33 461.25,104.78 405.64,104.66 399.67,158.22 399.67,570.88 404.11,624.33 462.78,624.44 "
                         data-name="White Outline"
                     />
