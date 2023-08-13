@@ -72,11 +72,11 @@ export class FlightPlanLeg {
             ident: this.ident,
             annotation: this.annotation,
             isDiscontinuity: false,
-            definition: this.definition,
+            definition: JSON.parse(JSON.stringify(this.definition)),
             effectiveType: this.type,
-            modifiedHold: this.modifiedHold,
-            defaultHold: this.defaultHold,
-            cruiseStep: this.cruiseStep,
+            modifiedHold: JSON.parse(JSON.stringify(this.modifiedHold)),
+            defaultHold: JSON.parse(JSON.stringify(this.defaultHold)),
+            cruiseStep: JSON.parse(JSON.stringify(this.cruiseStep)),
         };
     }
 
