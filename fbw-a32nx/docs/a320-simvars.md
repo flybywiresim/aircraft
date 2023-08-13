@@ -2599,8 +2599,9 @@ In the variables below, {number} should be replaced with one item in the set: { 
 
 ## Air Conditioning / Pressurisation / Ventilation
 
-- A32NX_COND_ACSC_DISCRETE_WORD_1
-    - Discrete Data word 1 of the ACSC bus output
+- A32NX_COND_ACSC_{number}_DISCRETE_WORD_1
+    - Number 1 or 2
+    - Discrete Data word 1 of the ACSC bus output (label 060)
     - Arinc429<Discrete>
     - | Bit |                      Description                     |
       |:---:|:----------------------------------------------------:|
@@ -2612,20 +2613,21 @@ In the variables below, {number} should be replaced with one item in the set: { 
       | 16  | Not used                                             |
       | 17  | Spare                                                |
       | 18  | Trim air pressure high                               |
-      | 19  | Spare                                                |
+      | 19  | ACSC Lane 1 Active                                   |
       | 20  | TAPRV status - close                                 |
-      | 21  | Main zone control inop                               |
-      | 22  | Zone secondary control inop                          |
+      | 21  | ACSC Lane 1 INOP                                     |
+      | 22  | ACSC Lane 2 INOP                                     |
       | 23  | Hot air switch position on                           |
       | 24  | G + T fan off/fault                                  |
       | 25  | Recirc fan LH fault/OVHT                             |
       | 26  | Recirc fan RH fault/OVHT                             |
       | 27  | TAPRV disagree                                       |
       | 28  | Trim air system fault                                |
-      | 29  | Spare                                                |
+      | 29  | ACSC Installed                                       |
 
-- A32NX_COND_ACSC_DISCRETE_WORD_2
-    - Discrete Data word 2 of the ACSC bus output
+- A32NX_COND_ACSC_{number}_DISCRETE_WORD_2
+    - Number 1 or 2
+    - Discrete Data word 2 of the ACSC bus output (label 061)
     - Bits with * not yet implemented
     - Arinc429<Discrete>
     - | Bit |                      Description                     |
@@ -2642,9 +2644,9 @@ In the variables below, {number} should be replaced with one item in the set: { 
       | 20  | Trim valve AFT inop                                  |
       | 21  | Not used                                             |
       | 22  | Not used                                             |
-      | 23  | Spare                                                |
-      | 24  | Spare                                                |
-      | 25  | Spare                                                |
+      | 23  | FCV status (Both pakcs off)                          |
+      | 24  | One pack operation                                   |
+      | 25  | FCV status (Both pakcs on)                           |
       | 26  | Spare                                                |
       | 27  | *Nacelle anti-ice eng 2 open                         |
       | 28  | *Nacelle anti-ice eng 1 open                         |
@@ -2681,14 +2683,6 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - CKPT
         - FWD
         - AFT
-
-- A32NX_HOT_AIR_VALVE_IS_ENABLED
-    - Bool
-    - True if the trim air system is enabled (pushbutton in auto and power supplied to system)
-
-- A32NX_HOT_AIR_VALVE_IS_OPEN
-    - Bool
-    - True if the trim air system is enabled and the hot air valve is open
 
 - A32NX_OVHD_COND_{id}_SELECTOR_KNOB
     - Percentage

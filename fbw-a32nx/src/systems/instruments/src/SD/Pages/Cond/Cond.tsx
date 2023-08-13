@@ -13,8 +13,11 @@ export const CondPage = () => {
     // Display trim valve position for each zone
     const gaugeOffset = -43; // Gauges range is from -43 degree to +43 degree
 
-    const AcscDiscreteWord1 = useArinc429Var('L:A32NX_COND_ACSC_DISCRETE_WORD_1');
-    // TODO: If the Sign Status is Failure Warning or No Computed Data, the whole page should display XX's
+    const Acsc1DiscreteWord1 = useArinc429Var('L:A32NX_COND_ACSC_1_DISCRETE_WORD_1');
+    const Acsc2DiscreteWord1 = useArinc429Var('L:A32NX_COND_ACSC_1_DISCRETE_WORD_1');
+    const AcscDiscreteWord1 = !Acsc1DiscreteWord1.isFailureWarning() ? Acsc1DiscreteWord1 : Acsc2DiscreteWord1;
+
+    // TODO: If both Sign Status are Failure Warning or No Computed Data, the whole page should display XX's
 
     const [cockpitTrimAirValve] = useSimVar('L:A32NX_COND_CKPT_TRIM_AIR_VALVE_POSITION', 'number', 1000);
     const [cockpitTrimTemp] = useSimVar('L:A32NX_COND_CKPT_DUCT_TEMP', 'celsius', 1000);

@@ -1,7 +1,7 @@
 use systems::{
     accept_iterable,
     air_conditioning::{
-        acs_controller::{AirConditioningSystemController, Pack},
+        acs_controller::{AcscId, AirConditioningSystemController, Pack},
         cabin_air::CabinAirSimulation,
         cabin_pressure_controller::CabinPressureController,
         full_digital_agu_controller::FullDigitalAGUController,
@@ -319,14 +319,11 @@ impl A380AirConditioningSystem {
         Self {
             acsc: AirConditioningSystemController::new(
                 context,
+                AcscId::Acsc1,
                 cabin_zones,
                 vec![
                     ElectricalBusType::DirectCurrent(1),
                     ElectricalBusType::AlternatingCurrent(1),
-                ],
-                vec![
-                    ElectricalBusType::DirectCurrent(2),
-                    ElectricalBusType::AlternatingCurrent(2),
                 ],
             ),
             fdac: [
@@ -354,7 +351,7 @@ impl A380AirConditioningSystem {
                 AirConditioningPack::new(Pack(1)),
                 AirConditioningPack::new(Pack(2)),
             ],
-            trim_air_system: TrimAirSystem::new(context, cabin_zones),
+            trim_air_system: TrimAirSystem::new(context, cabin_zones, vec![1]),
 
             air_conditioning_overhead: A380AirConditioningSystemOverhead::new(context),
         }
@@ -408,16 +405,13 @@ impl A380AirConditioningSystem {
             fan.update(cabin_simulation, &self.acsc.cabin_fans_controller())
         }
 
-        let pack_flow: [MassRate; 2] = [
-            self.acsc.individual_pack_flow(Pack(1)),
-            self.acsc.individual_pack_flow(Pack(2)),
-        ];
+        let pack_flow: [MassRate; 2] = [self.fdac[0].pack_flow(), self.fdac[1].pack_flow()];
         let duct_demand_temperature = self.acsc.duct_demand_temperature();
         for (id, pack) in self.packs.iter_mut().enumerate() {
             pack.update(
                 pack_flow[id],
                 &duct_demand_temperature,
-                self.acsc.zone_controller_failure(),
+                self.acsc.both_channels_failure(),
             )
         }
 
@@ -431,7 +425,7 @@ impl A380AirConditioningSystem {
             context,
             self.acsc.trim_air_pressure_regulating_valve_is_open(),
             &self.mixer_unit,
-            &self.acsc,
+            &[&self.acsc; 18],
         );
 
         self.air_conditioning_overhead
@@ -472,9 +466,8 @@ impl DuctTemperature for A380AirConditioningSystem {
 impl OutletAir for A380AirConditioningSystem {
     fn outlet_air(&self) -> Air {
         let mut outlet_air = Air::new();
-        outlet_air.set_flow_rate(
-            self.acsc.individual_pack_flow(Pack(1)) + self.acsc.individual_pack_flow(Pack(2)),
-        );
+        outlet_air
+            .set_flow_rate(self.acsc.individual_pack_flow() + self.acsc.individual_pack_flow());
         outlet_air.set_pressure(self.trim_air_system.trim_air_outlet_pressure());
         outlet_air.set_temperature(self.duct_temperature().iter().average());
 

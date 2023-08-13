@@ -144,7 +144,6 @@ const EWDMessages = {
     '216329003': '\x1b<7m  .IF HOT AIR STILL OPEN:',
     '216329004': '\x1b<5m -PACK 1.............OFF',
     '216329005': '\x1b<5m -PACK 2.............OFF',
-    '216330001': '\x1b<4m\x1b4mCOND\x1bm ZONE REGUL FAULT',
     '216330501': '\x1b<4m\x1b4mCOND\x1bm TRIM AIR SYS FAULT',
     '216330502': '\x1b<4m -CPKT TRIM VALVE',
     '216330503': '\x1b<4m -FWD CAB TRIM VALVE',

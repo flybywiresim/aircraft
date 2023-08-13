@@ -94,9 +94,13 @@ export class PseudoFWC {
 
     /* 21 - AIR CONDITIONING AND PRESSURIZATION */
 
-    private readonly acscDiscreteWord1 = Arinc429Register.empty();
+    private readonly acsc1DiscreteWord1 = Arinc429Register.empty();
 
-    private readonly acscDiscreteWord2 = Arinc429Register.empty();
+    private readonly acsc1DiscreteWord2 = Arinc429Register.empty();
+
+    private readonly acsc2DiscreteWord1 = Arinc429Register.empty();
+
+    private readonly acsc2DiscreteWord2 = Arinc429Register.empty();
 
     private readonly apuBleedValveOpen = Subject.create(false);
 
@@ -139,8 +143,6 @@ export class PseudoFWC {
     private readonly anyDuctOvht = Subject.create(false);
 
     private readonly lavGalleyFanFault = Subject.create(false);
-
-    private readonly zoneControllerPrimaryFault = Subject.create(false);
 
     private readonly pack1On = Subject.create(false);
 
@@ -1065,29 +1067,31 @@ export class PseudoFWC {
 
         /* 21 - AIR CONDITIONING AND PRESSURIZATION */
 
-        this.acscDiscreteWord1.setFromSimVar('L:A32NX_COND_ACSC_DISCRETE_WORD_1');
-        this.acscDiscreteWord2.setFromSimVar('L:A32NX_COND_ACSC_DISCRETE_WORD_2');
+        // FIXME: Should take both words
+        this.acsc1DiscreteWord1.setFromSimVar('L:A32NX_COND_ACSC_1_DISCRETE_WORD_1');
+        this.acsc1DiscreteWord2.setFromSimVar('L:A32NX_COND_ACSC_1_DISCRETE_WORD_2');
+        this.acsc2DiscreteWord1.setFromSimVar('L:A32NX_COND_ACSC_2_DISCRETE_WORD_1');
+        this.acsc2DiscreteWord2.setFromSimVar('L:A32NX_COND_ACSC_2_DISCRETE_WORD_2');
 
-        this.cabFanHasFault1.set(this.acscDiscreteWord1.bitValueOr(25, false));
-        this.cabFanHasFault2.set(this.acscDiscreteWord1.bitValueOr(26, false));
+        this.cabFanHasFault1.set(this.acsc1DiscreteWord1.bitValueOr(25, false) || this.acsc2DiscreteWord1.bitValueOr(25, false));
+        this.cabFanHasFault2.set(this.acsc1DiscreteWord1.bitValueOr(26, false) || this.acsc2DiscreteWord1.bitValueOr(26, false));
 
-        this.hotAirDisagrees.set(this.acscDiscreteWord1.bitValueOr(27, false));
-        this.hotAirOpen.set(!this.acscDiscreteWord1.bitValueOr(20, false));
-        this.hotAirPbOn.set(this.acscDiscreteWord1.bitValueOr(23, false));
+        this.hotAirDisagrees.set(this.acsc1DiscreteWord1.bitValueOr(27, false) || this.acsc2DiscreteWord1.bitValueOr(27, false));
+        this.hotAirOpen.set(!this.acsc1DiscreteWord1.bitValueOr(20, false) || !this.acsc2DiscreteWord1.bitValueOr(20, false));
+        this.hotAirPbOn.set(this.acsc1DiscreteWord1.bitValueOr(23, false) || this.acsc2DiscreteWord1.bitValueOr(23, false));
 
-        this.trimAirFault.set(this.acscDiscreteWord1.bitValueOr(28, false));
-        this.ckptTrimFault.set(this.acscDiscreteWord2.bitValueOr(18, false));
-        this.fwdTrimFault.set(this.acscDiscreteWord2.bitValueOr(19, false));
-        this.aftTrimFault.set(this.acscDiscreteWord2.bitValueOr(20, false));
-        this.trimAirHighPressure.set(this.acscDiscreteWord1.bitValueOr(18, false));
+        this.trimAirFault.set(this.acsc1DiscreteWord1.bitValueOr(28, false) || this.acsc2DiscreteWord1.bitValueOr(28, false));
+        this.ckptTrimFault.set(this.acsc1DiscreteWord2.bitValueOr(18, false) || this.acsc2DiscreteWord2.bitValueOr(18, false));
+        this.fwdTrimFault.set(this.acsc1DiscreteWord2.bitValueOr(19, false) || this.acsc2DiscreteWord2.bitValueOr(19, false));
+        this.aftTrimFault.set(this.acsc1DiscreteWord2.bitValueOr(20, false) || this.acsc2DiscreteWord2.bitValueOr(20, false));
+        this.trimAirHighPressure.set(this.acsc1DiscreteWord1.bitValueOr(18, false) || this.acsc2DiscreteWord1.bitValueOr(18, false));
 
-        this.ckptDuctOvht.set(this.acscDiscreteWord1.bitValueOr(11, false));
-        this.fwdDuctOvht.set(this.acscDiscreteWord1.bitValueOr(12, false));
-        this.aftDuctOvht.set(this.acscDiscreteWord1.bitValueOr(13, false));
+        this.ckptDuctOvht.set(this.acsc1DiscreteWord1.bitValueOr(11, false) || this.acsc2DiscreteWord1.bitValueOr(11, false));
+        this.fwdDuctOvht.set(this.acsc1DiscreteWord1.bitValueOr(12, false) || this.acsc2DiscreteWord1.bitValueOr(12, false));
+        this.aftDuctOvht.set(this.acsc1DiscreteWord1.bitValueOr(13, false) || this.acsc2DiscreteWord1.bitValueOr(13, false));
         this.anyDuctOvht.set(this.ckptDuctOvht.get() || this.fwdDuctOvht.get() || this.aftDuctOvht.get());
 
-        this.lavGalleyFanFault.set(this.acscDiscreteWord1.bitValueOr(24, false));
-        this.zoneControllerPrimaryFault.set(this.acscDiscreteWord1.bitValueOr(21, false));
+        this.lavGalleyFanFault.set(this.acsc1DiscreteWord1.bitValueOr(24, false) || this.acsc2DiscreteWord1.bitValueOr(24, false));
 
         const crossfeed = SimVar.GetSimVarValue('L:A32NX_PNEU_XBLEED_VALVE_OPEN', 'bool');
         const eng1Bleed = SimVar.GetSimVarValue('A:BLEED AIR ENGINE:1', 'bool');
@@ -2288,16 +2292,6 @@ export class PseudoFWC {
             memoInhibit: () => false,
             failure: 2,
             sysPage: 7,
-            side: 'LEFT',
-        },
-        2163300: { // ZONE REGUL FAULT
-            flightPhaseInhib: [3, 4, 5, 7, 8],
-            simVarIsActive: this.zoneControllerPrimaryFault,
-            whichCodeToReturn: () => [0],
-            codesToReturn: ['216330001'],
-            memoInhibit: () => false,
-            failure: 1,
-            sysPage: -1,
             side: 'LEFT',
         },
         216330: { // TRIM AIR SYS FAULT

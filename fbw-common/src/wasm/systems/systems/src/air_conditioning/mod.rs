@@ -1,6 +1,4 @@
-use self::acs_controller::{
-    AirConditioningSystemController, CabinFansSignal, Pack, TrimAirValveController,
-};
+use self::acs_controller::{CabinFansSignal, Pack, TrimAirValveController};
 
 use crate::{
     failures::{Failure, FailureType},
@@ -54,6 +52,10 @@ pub trait PackFlow {
 pub trait PackFlowControllers {
     type PackFlowControllerSignal: ControllerSignal<PackFlowValveSignal>;
     fn pack_flow_controller(&self, pack_id: usize) -> &Self::PackFlowControllerSignal;
+}
+
+pub trait TrimAirControllers {
+    fn trim_air_valve_controllers(&self, zone_id: usize) -> TrimAirValveController;
 }
 
 pub struct PackFlowValveSignal {
@@ -199,6 +201,72 @@ impl OutflowValveSignal {
 pub trait CabinPressure {
     fn exterior_pressure(&self) -> Pressure;
     fn cabin_pressure(&self) -> Pressure;
+}
+
+// Future work this can be different types of failure.
+enum OperatingChannelFault {
+    NoFault,
+    Fault,
+}
+
+#[derive(Clone, Copy)]
+enum Channel {
+    ChannelOne,
+    ChannelTwo,
+}
+
+impl From<Channel> for usize {
+    fn from(value: Channel) -> Self {
+        match value {
+            Channel::ChannelOne => 1,
+            Channel::ChannelTwo => 2,
+        }
+    }
+}
+
+struct OperatingChannel {
+    channel_id: Channel,
+    powered_by: ElectricalBusType,
+    is_powered: bool,
+    fault: OperatingChannelFault,
+}
+
+impl OperatingChannel {
+    fn new(id: usize, powered_by: ElectricalBusType) -> Self {
+        let channel_id: Channel = {
+            match id {
+                1 => Channel::ChannelOne,
+                2 => Channel::ChannelTwo,
+                _ => panic!("Operating Channel out of bounds"),
+            }
+        };
+        Self {
+            channel_id,
+            powered_by,
+            is_powered: false,
+            fault: OperatingChannelFault::NoFault,
+        }
+    }
+
+    fn has_fault(&self) -> bool {
+        matches!(self.fault, OperatingChannelFault::Fault)
+    }
+
+    fn id(&self) -> Channel {
+        self.channel_id
+    }
+}
+
+impl SimulationElement for OperatingChannel {
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        self.is_powered = buses.is_powered(self.powered_by);
+        // For now the channel faults only when it's unpowered. In the future we can add other types of failure
+        if !self.is_powered {
+            self.fault = OperatingChannelFault::Fault;
+        } else {
+            self.fault = OperatingChannelFault::NoFault;
+        }
+    }
 }
 
 pub trait PressurizationConstants {
@@ -439,14 +507,14 @@ impl AirConditioningPack {
         &mut self,
         pack_flow: MassRate,
         duct_demand: &[ThermodynamicTemperature],
-        zone_controller_failure: bool,
+        acsc_failure: bool,
     ) {
         self.outlet_air.set_flow_rate(pack_flow);
 
         let min_temp = duct_demand
             .iter()
             .fold(f64::INFINITY, |acc, &t| acc.min(t.get::<kelvin>()));
-        if zone_controller_failure {
+        if acsc_failure {
             if matches!(self.pack_id, Pack(1)) {
                 self.outlet_air
                     .set_temperature(ThermodynamicTemperature::new::<degree_celsius>(20.));
@@ -467,9 +535,44 @@ impl OutletAir for AirConditioningPack {
     }
 }
 
+struct TrimAirPressureRegulatingValve {
+    is_open: bool,
+    failure: Failure,
+}
+
+impl TrimAirPressureRegulatingValve {
+    fn new(id: usize) -> Self {
+        Self {
+            is_open: false,
+            failure: Failure::new(FailureType::HotAir(id)),
+        }
+    }
+
+    fn update(&mut self, should_open_taprv: bool) {
+        // When a failure is active the TAPRV is unresponsive - it stays in the same state as it was
+        self.is_open = if !self.failure.is_active() {
+            should_open_taprv
+        } else {
+            self.is_open
+        };
+    }
+
+    fn is_open(&self) -> bool {
+        self.is_open
+    }
+}
+
+impl SimulationElement for TrimAirPressureRegulatingValve {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.failure.accept(visitor);
+        visitor.visit(self);
+    }
+}
+
 pub struct TrimAirSystem<const ZONES: usize, const ENGINES: usize> {
     duct_temperature_id: [VariableIdentifier; ZONES],
 
+    trim_air_pressure_regulating_valves: Vec<TrimAirPressureRegulatingValve>,
     trim_air_valves: [TrimAirValve; ZONES],
     // These are not a real components of the system, but a tool to simulate the mixing of air
     pack_mixer_container: PneumaticPipe,
@@ -480,13 +583,22 @@ pub struct TrimAirSystem<const ZONES: usize, const ENGINES: usize> {
 }
 
 impl<const ZONES: usize, const ENGINES: usize> TrimAirSystem<ZONES, ENGINES> {
-    pub fn new(context: &mut InitContext, cabin_zone_ids: &[ZoneType; ZONES]) -> Self {
+    pub fn new(
+        context: &mut InitContext,
+        cabin_zone_ids: &[ZoneType; ZONES],
+        taprv_ids: Vec<usize>,
+    ) -> Self {
         let duct_temperature_id =
             cabin_zone_ids.map(|id| context.get_identifier(format!("COND_{}_DUCT_TEMP", id)));
+        let trim_air_pressure_regulating_valves = taprv_ids
+            .iter()
+            .map(|id| TrimAirPressureRegulatingValve::new(*id))
+            .collect::<Vec<TrimAirPressureRegulatingValve>>();
 
         Self {
             duct_temperature_id,
 
+            trim_air_pressure_regulating_valves,
             trim_air_valves: cabin_zone_ids.map(|id| TrimAirValve::new(context, &id)),
             pack_mixer_container: PneumaticPipe::new(
                 Volume::new::<cubic_meter>(4.),
@@ -503,16 +615,23 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystem<ZONES, ENGINES> {
     pub fn update(
         &mut self,
         context: &UpdateContext,
-        trim_air_pressure_regulating_valve_open: bool,
+        should_open_taprv: bool,
         mixer_air: &MixerUnit<ZONES>,
-        tav_controller: &AirConditioningSystemController<ZONES, ENGINES>,
+        tav_controller: &[&impl TrimAirControllers],
     ) {
+        // FIXME: In the A380 should_open_taprv needs to be a vector
+        self.trim_air_pressure_regulating_valves
+            .iter_mut()
+            .for_each(|taprv| taprv.update(should_open_taprv));
+
         for (id, tav) in self.trim_air_valves.iter_mut().enumerate() {
             tav.update(
                 context,
-                trim_air_pressure_regulating_valve_open,
+                self.trim_air_pressure_regulating_valves
+                    .iter()
+                    .any(|taprv| taprv.is_open()),
                 &mut self.pack_mixer_container,
-                tav_controller.trim_air_valve_controllers(id),
+                tav_controller[id].trim_air_valve_controllers(id),
             );
             self.trim_air_mixers[id].update(vec![tav, &mixer_air.mixer_unit_individual_outlet(id)]);
         }
@@ -574,6 +693,12 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystem<ZONES, ENGINES> {
         self.outlet_air.pressure() > Pressure::new::<psi>(20.)
     }
 
+    fn trim_air_pressure_regulating_valve_is_open(&self) -> bool {
+        self.trim_air_pressure_regulating_valves
+            .iter()
+            .any(|taprv| taprv.is_open())
+    }
+
     #[cfg(test)]
     fn trim_air_valves_open_amount(&self) -> [Ratio; ZONES] {
         self.trim_air_valves
@@ -598,6 +723,7 @@ impl<const ZONES: usize, const ENGINES: usize> DuctTemperature for TrimAirSystem
 
 impl<const ZONES: usize, const ENGINES: usize> SimulationElement for TrimAirSystem<ZONES, ENGINES> {
     fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
+        accept_iterable!(self.trim_air_pressure_regulating_valves, visitor);
         accept_iterable!(self.trim_air_valves, visitor);
         self.duct_high_pressure.accept(visitor);
 
