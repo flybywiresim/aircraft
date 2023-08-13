@@ -1,7 +1,36 @@
+// Note the master copy of these flags is contained in `fbw-a32nx\src\systems\shared\src\AutoCallOuts.ts`
+// Please do not edit here unless copying from there.
+
+/** Bit flags for the radio auto call outs (for CONFIG_A32NX_RADIO_AUTO_CALL_OUTS). */
+const RadioAutoCallOutFlags = Object.freeze({
+    TwoThousandFiveHundred: 1 << 0,
+    TwentyFiveHundred: 1 << 1,
+    TwoThousand: 1 << 2,
+    OneThousand: 1 << 3,
+    FiveHundred: 1 << 4,
+    FourHundred: 1 << 5,
+    ThreeHundred: 1 << 6,
+    TwoHundred: 1 << 7,
+    OneHundred: 1 << 8,
+    Fifty: 1 << 9,
+    Forty: 1 << 10,
+    Thirty: 1 << 11,
+    Twenty: 1 << 12,
+    Ten: 1 << 13,
+    Five: 1 << 14,
+});
+
+/** The default (Airbus basic configuration) radio altitude auto call outs. */
+const DEFAULT_RADIO_AUTO_CALL_OUTS = RadioAutoCallOutFlags.TwoThousandFiveHundred | RadioAutoCallOutFlags.OneThousand | RadioAutoCallOutFlags.FourHundred
+    | RadioAutoCallOutFlags.Fifty | RadioAutoCallOutFlags.Forty | RadioAutoCallOutFlags.Thirty | RadioAutoCallOutFlags.Twenty
+    | RadioAutoCallOutFlags.Ten | RadioAutoCallOutFlags.Five;
+
 class A32NX_GPWS {
     constructor(_core) {
         console.log('A32NX_GPWS constructed');
         this.core = _core;
+
+        this.autoCallOutPins = DEFAULT_RADIO_AUTO_CALL_OUTS;
 
         this.minimumsState = 0;
 
@@ -88,6 +117,8 @@ class A32NX_GPWS {
 
         SimVar.SetSimVarValue("L:A32NX_GPWS_GS_Warning_Active", "Bool", 0);
         SimVar.SetSimVarValue("L:A32NX_GPWS_Warning_Active", "Bool", 0);
+
+        NXDataStore.getAndSubscribe('CONFIG_A32NX_RADIO_AUTO_CALL_OUTS', (k, v) => k === 'CONFIG_A32NX_RADIO_AUTO_CALL_OUTS' && (this.autoCallOutPins = v), DEFAULT_RADIO_AUTO_CALL_OUTS);
     }
 
     update(deltaTime, _core) {
@@ -444,7 +475,7 @@ class A32NX_GPWS {
                 if (radioAlt > 12) {
                     this.AltCallState.action("up");
                 } else if (radioAlt <= 6) {
-                    if (this.RetardState.value !== "retardPlaying") {
+                    if (this.RetardState.value !== "retardPlaying" && (this.autoCallOutPins & RadioAutoCallOutFlags.Five)) {
                         this.core.soundManager.tryPlaySound(soundList.alt_5);
                     }
                     this.AltCallState.action("down");
@@ -454,7 +485,7 @@ class A32NX_GPWS {
                 if (radioAlt > 22) {
                     this.AltCallState.action("up");
                 } else if (radioAlt <= 12) {
-                    if (this.RetardState.value !== "retardPlaying") {
+                    if (this.RetardState.value !== "retardPlaying" && (this.autoCallOutPins & RadioAutoCallOutFlags.Ten)) {
                         this.core.soundManager.tryPlaySound(soundList.alt_10);
                     }
                     this.AltCallState.action("down");
@@ -464,7 +495,9 @@ class A32NX_GPWS {
                 if (radioAlt > 32) {
                     this.AltCallState.action("up");
                 } else if (radioAlt <= 22) {
-                    this.core.soundManager.tryPlaySound(soundList.alt_20);
+                    if (this.autoCallOutPins & RadioAutoCallOutFlags.Twenty) {
+                        this.core.soundManager.tryPlaySound(soundList.alt_20);
+                    }
                     this.AltCallState.action("down");
                 }
                 break;
@@ -472,7 +505,9 @@ class A32NX_GPWS {
                 if (radioAlt > 42) {
                     this.AltCallState.action("up");
                 } else if (radioAlt <= 32) {
-                    this.core.soundManager.tryPlaySound(soundList.alt_30);
+                    if (this.autoCallOutPins & RadioAutoCallOutFlags.Thirty) {
+                        this.core.soundManager.tryPlaySound(soundList.alt_30);
+                    }
                     this.AltCallState.action("down");
                 }
                 break;
@@ -480,7 +515,9 @@ class A32NX_GPWS {
                 if (radioAlt > 53) {
                     this.AltCallState.action("up");
                 } else if (radioAlt <= 42) {
-                    this.core.soundManager.tryPlaySound(soundList.alt_40);
+                    if (this.autoCallOutPins & RadioAutoCallOutFlags.Forty) {
+                        this.core.soundManager.tryPlaySound(soundList.alt_40);
+                    }
                     this.AltCallState.action("down");
                 }
                 break;
@@ -488,7 +525,9 @@ class A32NX_GPWS {
                 if (radioAlt > 110) {
                     this.AltCallState.action("up");
                 } else if (radioAlt <= 53) {
-                    this.core.soundManager.tryPlaySound(soundList.alt_50);
+                    if (this.autoCallOutPins & RadioAutoCallOutFlags.Fifty) {
+                        this.core.soundManager.tryPlaySound(soundList.alt_50);
+                    }
                     this.AltCallState.action("down");
                 }
                 break;
@@ -496,7 +535,9 @@ class A32NX_GPWS {
                 if (radioAlt > 210) {
                     this.AltCallState.action("up");
                 } else if (radioAlt <= 110) {
-                    this.core.soundManager.tryPlaySound(soundList.alt_100);
+                    if (this.autoCallOutPins & RadioAutoCallOutFlags.OneHundred) {
+                        this.core.soundManager.tryPlaySound(soundList.alt_100);
+                    }
                     this.AltCallState.action("down");
                 }
                 break;
@@ -504,7 +545,9 @@ class A32NX_GPWS {
                 if (radioAlt > 310) {
                     this.AltCallState.action("up");
                 } else if (radioAlt <= 210) {
-                    this.core.soundManager.tryPlaySound(soundList.alt_200);
+                    if (this.autoCallOutPins & RadioAutoCallOutFlags.TwoHundred) {
+                        this.core.soundManager.tryPlaySound(soundList.alt_200);
+                    }
                     this.AltCallState.action("down");
                 }
                 break;
@@ -512,7 +555,9 @@ class A32NX_GPWS {
                 if (radioAlt > 410) {
                     this.AltCallState.action("up");
                 } else if (radioAlt <= 310) {
-                    this.core.soundManager.tryPlaySound(soundList.alt_300);
+                    if (this.autoCallOutPins & RadioAutoCallOutFlags.ThreeHundred) {
+                        this.core.soundManager.tryPlaySound(soundList.alt_300);
+                    }
                     this.AltCallState.action("down");
                 }
                 break;
@@ -520,7 +565,9 @@ class A32NX_GPWS {
                 if (radioAlt > 513) {
                     this.AltCallState.action("up");
                 } else if (radioAlt <= 410) {
-                    this.core.soundManager.tryPlaySound(soundList.alt_400);
+                    if (this.autoCallOutPins & RadioAutoCallOutFlags.FourHundred) {
+                        this.core.soundManager.tryPlaySound(soundList.alt_400);
+                    }
                     this.AltCallState.action("down");
                 }
                 break;
@@ -528,7 +575,9 @@ class A32NX_GPWS {
                 if (radioAlt > 1020) {
                     this.AltCallState.action("up");
                 } else if (radioAlt <= 513) {
-                    this.core.soundManager.tryPlaySound(soundList.alt_500);
+                    if (this.autoCallOutPins & RadioAutoCallOutFlags.FiveHundred) {
+                        this.core.soundManager.tryPlaySound(soundList.alt_500);
+                    }
                     this.AltCallState.action("down");
                 }
                 break;
@@ -536,13 +585,19 @@ class A32NX_GPWS {
                 if (radioAlt > 2530) {
                     this.AltCallState.action("up");
                 } else if (radioAlt <= 1020) {
-                    this.core.soundManager.tryPlaySound(soundList.alt_1000);
+                    if (this.autoCallOutPins & RadioAutoCallOutFlags.OneThousand) {
+                        this.core.soundManager.tryPlaySound(soundList.alt_1000);
+                    }
                     this.AltCallState.action("down");
                 }
                 break;
             case "over2500":
                 if (radioAlt <= 2530) {
-                    this.core.soundManager.tryPlaySound(soundList.alt_2500);
+                    if (this.autoCallOutPins & RadioAutoCallOutFlags.TwoThousandFiveHundred) {
+                        this.core.soundManager.tryPlaySound(soundList.alt_2500);
+                    } else if (this.autoCallOutPins & RadioAutoCallOutFlags.TwentyFiveHundred) {
+                        this.core.soundManager.tryPlaySound(soundList.alt_2500b);
+                    }
                     this.AltCallState.action("down");
                 }
                 break;

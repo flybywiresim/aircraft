@@ -1231,6 +1231,27 @@
     - Persistent
     - Enables developer-specific options like direct payload adjustments
 
+- A32NX_RADIO_AUTO_CALL_OUTS
+    - Flags
+    - Radio altitude automatic call out pin programs
+    - | Bit   | Meaning                   |
+      |-------|---------------------------|
+      | 0     | Two Thousand Five Hundred |
+      | 1     | Twenty Five Hundred       |
+      | 2     | Two Thousand              |
+      | 3     | One Thousand              |
+      | 4     | Five Hundred              |
+      | 5     | Four Hundred              |
+      | 6     | Three Hundred             |
+      | 7     | Two Hundred               |
+      | 8     | One Hundred               |
+      | 9     | Fifty                     |
+      | 10    | Forty                     |
+      | 11    | Thirty                    |
+      | 12    | Twenty                    |
+      | 13    | Ten                       |
+      | 14    | Five                      |
+
 ## Model/XML Interface
 
 These variables are the interface between the 3D model and the systems/code.
