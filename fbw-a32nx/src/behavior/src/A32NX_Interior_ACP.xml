@@ -269,9 +269,6 @@
             <SEQ1_CODE>
                 (L:A32NX_ACP#ID#_TRANSMIT_CHANNEL) 8 == (L:A32NX_OVHD_INTLT_ANN) 0 == (L:A32NX_ELEC_DC_2_BUS_IS_POWERED) and or
             </SEQ1_CODE>
-            <SEQ2_CODE>
-                (L:A32NX_ACP#ID#_TRANSMIT_CHANNEL) 8 == (L:A32NX_OVHD_INTLT_ANN) 0 == (L:A32NX_ELEC_DC_2_BUS_IS_POWERED) and or
-            </SEQ2_CODE>
             <TOOLTIPID>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_PA</TOOLTIPID>
         </UseTemplate>
 
