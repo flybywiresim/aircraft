@@ -605,7 +605,7 @@ export const A380SeatOutlineUpperBg = ({ stroke, highlight }: SeatOutlineBgProps
                     />
                     <polygon
                         stroke={stroke}
-                        strokeWidth={2}
+                        strokeWidth={1.5}
                         points="467.22,571 467.22,158.33 461.25,104.78 405.64,104.66 399.67,158.22 399.67,570.88 404.11,624.33 462.78,624.44 "
                         data-name="White Outline"
                     />
