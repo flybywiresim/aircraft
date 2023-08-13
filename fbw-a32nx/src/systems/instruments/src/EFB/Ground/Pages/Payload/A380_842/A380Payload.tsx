@@ -13,7 +13,7 @@ import Card from '../../../../UtilComponents/Card/Card';
 import { SelectGroup, SelectItem } from '../../../../UtilComponents/Form/Select';
 import { SeatMapWidget } from '../Seating/SeatMapWidget';
 import { PromptModal, useModals } from '../../../../UtilComponents/Modals/Modals';
-import { A380SeatOutlineBg } from '../../../../Assets/A380SeatOutlineBg';
+import { A380SeatOutlineBg, A380SeatOutlineUpperBg } from '../../../../Assets/A380SeatOutlineBg';
 
 interface A380Props {
     simbriefUnits: string,
@@ -495,7 +495,12 @@ export const A380Payload: React.FC<A380Props> = ({
             <div className="relative h-content-section-reduced">
                 <div className="mb-10">
                     <div className="flex relative flex-col">
-                        <A380SeatOutlineBg stroke={getTheme(theme)[0]} highlight="#69BD45" />
+                        {displayPaxMainDeck && (
+                            <A380SeatOutlineBg stroke={getTheme(theme)[0]} highlight="#69BD45" />
+                        )}
+                        {!displayPaxMainDeck && (
+                            <A380SeatOutlineUpperBg stroke={getTheme(theme)[0]} highlight="#69BD45" />
+                        )}
                         <SeatMapWidget seatMap={seatMap} desiredFlags={desiredFlags} activeFlags={activeFlags} canvasX={146} canvasY={71} theme={getTheme(theme)} isMainDeck={displayPaxMainDeck} onClickSeat={onClickSeat} />
                         <div className="flex absolute top-full flex-row px-4 w-full">
                             <div><AirplaneFill size={25} className="my-1 mx-3" /></div>

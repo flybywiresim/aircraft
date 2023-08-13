@@ -84,7 +84,7 @@ export const SeatConstants = Object.freeze({
     [SeatType.WidebodyBusinessFlatRight]: {
         len: 24,
         wid: 23.22,
-        padX: 12,
+        padX: 1,
         padY: 0,
         imageX: 24,
         imageY: 23.22,
@@ -92,7 +92,7 @@ export const SeatConstants = Object.freeze({
     [SeatType.WidebodyBusinessFlatLeft]: {
         len: 24,
         wid: 23.22,
-        padX: 12,
+        padX: 1,
         padY: 0,
         imageX: 24,
         imageY: 23.22,
