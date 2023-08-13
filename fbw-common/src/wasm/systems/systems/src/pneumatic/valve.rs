@@ -283,7 +283,7 @@ impl<const N: usize> OverpressureValve<N> {
             connector: PneumaticContainerConnector::new(),
             characteristics,
             protection_threshold,
-            open_amount: Ratio::new::<ratio>(0.),
+            open_amount: Ratio::default(),
             is_closing: true,
         }
     }
