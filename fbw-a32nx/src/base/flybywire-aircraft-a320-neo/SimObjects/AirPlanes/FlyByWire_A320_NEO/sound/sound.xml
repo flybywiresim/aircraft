@@ -2363,6 +2363,7 @@
         <Sound WwiseData="true" WwiseEvent="new_500" NodeName="WIPER_BASE_L" />
         <Sound WwiseData="true" WwiseEvent="new_1000" NodeName="WIPER_BASE_L" />
         <Sound WwiseData="true" WwiseEvent="new_2500" NodeName="WIPER_BASE_L" />
+        <Sound WwiseData="true" WwiseEvent="new_2_500" NodeName="WIPER_BASE_L" />
         <Sound WwiseData="true" WwiseEvent="new_retard" NodeName="WIPER_BASE_L" />
         <Sound WwiseData="true" WwiseEvent="aural_minimumnew" NodeName="WIPER_BASE_L" />
         <Sound WwiseData="true" WwiseEvent="aural_100above" NodeName="WIPER_BASE_L" />

@@ -132,8 +132,8 @@ const soundList = {
         length: 1.1
     },
     alt_2500b: {
-        name: "new_2500b",
-        length: 1.1, // TODO
+        name: "new_2_500",
+        length: 1.047,
     },
     alt_1000: {
         name: "new_1000",
