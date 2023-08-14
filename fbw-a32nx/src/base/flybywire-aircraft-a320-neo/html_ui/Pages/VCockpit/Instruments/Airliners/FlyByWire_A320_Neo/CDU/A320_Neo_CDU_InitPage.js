@@ -374,8 +374,8 @@ class CDUInitPage {
                 let zfw = undefined;
                 let zfwCg = undefined;
                 if (!!SimVar.GetSimVarValue("L:A32NX_BOARDING_STARTED_BY_USR", "bool")) {
-                    zfw = SimVar.GetSimVarValue("L:A32NX_BOARDING_ZFW_DESIRED", "number");
-                    zfwCg = SimVar.GetSimVarValue("L:A32NX_BOARDING_ZFWCG_DESIRED", "number");
+                    zfw = SimVar.GetSimVarValue("L:A32NX_AIRFRAME_ZFW_DESIRED", "number");
+                    zfwCg = SimVar.GetSimVarValue("L:A32NX_AIRFRAME_ZFW_CG_PERCENT_MAC_DESIRED", "number");
                 } else if (isFinite(getZfw()) && isFinite(getZfwcg())) {
                     zfw = getZfw();
                     zfwCg = getZfwcg();
