@@ -1,24 +1,37 @@
-use crate::simulation::{InitContext, SimulationElement, SimulationElementVisitor};
-
 use super::CommunicationPanelSideName;
 use crate::communications::audio::AudioControlPanel;
+use crate::communications::radio::RadioManagementPanel;
+use crate::shared::ElectricalBusType;
+use crate::simulation::{InitContext, SimulationElement, SimulationElementVisitor};
 
-#[derive(Copy, Clone)]
+#[derive(Clone)]
 pub struct CommunicationsPanel {
     name: CommunicationPanelSideName,
     acp: AudioControlPanel,
-    // We could think of adding a rmp here in the future
+    rmp: Option<RadioManagementPanel>,
 }
 impl CommunicationsPanel {
-    pub fn new(context: &mut InitContext, id_panel: usize) -> Self {
+    pub fn new_cpt(context: &mut InitContext) -> Self {
         Self {
-            name: match id_panel {
-                1 => CommunicationPanelSideName::CAPTAIN,
-                2 => CommunicationPanelSideName::FO,
-                3 => CommunicationPanelSideName::OVHD,
-                _ => CommunicationPanelSideName::NONE,
-            },
-            acp: AudioControlPanel::new(context, id_panel),
+            name: CommunicationPanelSideName::CAPTAIN,
+            acp: AudioControlPanel::new(context, 1, ElectricalBusType::DirectCurrentEssential),
+            rmp: Some(RadioManagementPanel::new_cpt(context)),
+        }
+    }
+
+    pub fn new_fo(context: &mut InitContext) -> Self {
+        Self {
+            name: CommunicationPanelSideName::FO,
+            acp: AudioControlPanel::new(context, 1, ElectricalBusType::DirectCurrentEssential),
+            rmp: Some(RadioManagementPanel::new_fo(context)),
+        }
+    }
+
+    pub fn new_ovhd(context: &mut InitContext) -> Self {
+        Self {
+            name: CommunicationPanelSideName::OVHD,
+            acp: AudioControlPanel::new(context, 3, ElectricalBusType::DirectCurrent(1)),
+            rmp: None,
         }
     }
 
@@ -165,11 +178,26 @@ impl CommunicationsPanel {
     pub fn is_emitting(&self) -> bool {
         self.acp.is_emitting()
     }
+
+    pub fn is_abnormal_mode(&self) -> bool {
+        self.rmp.is_some() && self.rmp.as_ref().unwrap().is_abnormal_mode()
+    }
+
+    pub fn is_rmp_on(&self) -> bool {
+        self.rmp.is_some() && self.rmp.as_ref().unwrap().is_on()
+    }
+
+    pub fn is_acp_on(&self) -> bool {
+        self.acp.is_on()
+    }
 }
 
 impl SimulationElement for CommunicationsPanel {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.acp.accept(visitor);
+        if self.rmp.is_some() {
+            self.rmp.as_mut().unwrap().accept(visitor);
+        }
 
         visitor.visit(self);
     }
