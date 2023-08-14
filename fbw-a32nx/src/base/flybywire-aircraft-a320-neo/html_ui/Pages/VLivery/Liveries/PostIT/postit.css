@@ -1,0 +1,54 @@
+@font-face {
+  font-family: "Caveat";
+  src: url("/Fonts/Caveat-Bold.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Marker";
+  src: url("/Fonts/PermanentMarker-Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Gochi";
+  src: url("/Fonts/GochiHand-Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "RockSalt";
+  src: url("/Fonts/RockSalt-Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Kalam";
+  src: url("/Fonts/Kalam-Regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+#postit {
+  padding: 3.5rem;
+  background-image: url("/Images/PostIT/postit-bg.png");
+  background-color: rgb(255,255,151);
+  background-blend-mode: multiply;
+  background-repeat: no-repeat;
+  background-size: cover;
+  font-family: "Caveat";
+  line-height: 1.1;
+  font-size: 100px;
+  color: #000;
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  overflow-wrap: break-word;
+  overflow: hidden;
+}
