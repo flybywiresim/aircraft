@@ -88,16 +88,12 @@ impl RadioManagementPanel {
     //No RMP3 for the time being
 
     pub fn is_abnormal_mode(&self) -> bool {
-        // May be abnormal only if voice comms are selected
-        self.selected_mode < SelectedMode::VOR
-            && (((self.selected_mode == SelectedMode::VHF3
-                || self.selected_mode == SelectedMode::HF1
-                || self.selected_mode == SelectedMode::HF2)
-                && (self.id_rmp == 1 || self.id_rmp == 2))
-                || (self.selected_mode == SelectedMode::VHF1
-                    && (self.id_rmp == 2 || self.id_rmp == 3))
-                || (self.selected_mode == SelectedMode::VHF2
-                    && (self.id_rmp == 1 || self.id_rmp == 3)))
+        ((self.selected_mode == SelectedMode::VHF3
+            || self.selected_mode == SelectedMode::HF1
+            || self.selected_mode == SelectedMode::HF2)
+            && (self.id_rmp == 1 || self.id_rmp == 2))
+            || (self.selected_mode == SelectedMode::VHF1 && (self.id_rmp == 2 || self.id_rmp == 3))
+            || (self.selected_mode == SelectedMode::VHF2 && (self.id_rmp == 1 || self.id_rmp == 3))
     }
 
     pub fn is_on(&self) -> bool {
