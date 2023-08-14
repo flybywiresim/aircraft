@@ -1,6 +1,9 @@
-use crate::simulation::{
-    InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
-    SimulatorWriter, VariableIdentifier, Write,
+use crate::{
+    shared::{ElectricalBusType, ElectricalBuses},
+    simulation::{
+        InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
+        SimulatorWriter, VariableIdentifier, Write,
+    },
 };
 
 pub const DEFAULT_INT_RAD_SWITCH: u8 = 100;
@@ -8,7 +11,7 @@ pub const DEFAULT_INT_RAD_SWITCH: u8 = 100;
 // Foundable in XML behaviors for MECH
 pub const TRANSMIT_ID_INT: u8 = 6;
 
-#[derive(Copy, Clone)]
+#[derive(Clone)]
 pub struct AudioControlPanel {
     transmit_channel_id: VariableIdentifier,
     voice_button_id: VariableIdentifier,
@@ -23,9 +26,12 @@ pub struct AudioControlPanel {
     ils: ILS,
     gls: GLS,
     markers: MARKERS,
+
+    power_supply: ElectricalBusType,
+    is_power_supply_powered: bool,
 }
 impl AudioControlPanel {
-    pub fn new(context: &mut InitContext, id_acp: usize) -> Self {
+    pub fn new(context: &mut InitContext, id_acp: usize, power_supply: ElectricalBusType) -> Self {
         Self {
             voice_button_id: context.get_identifier(format!("ACP{}_VOICE_BUTTON_DOWN", id_acp)),
             transmit_channel_id: context.get_identifier(format!("ACP{}_TRANSMIT_CHANNEL", id_acp)),
@@ -50,6 +56,9 @@ impl AudioControlPanel {
             ils: ILS::new(context, id_acp),
             gls: GLS::new(context, id_acp),
             markers: MARKERS::new(context, id_acp),
+
+            power_supply,
+            is_power_supply_powered: false,
         }
     }
 
@@ -188,6 +197,10 @@ impl AudioControlPanel {
         // 0 the the bottom position of the switch meaning transmitting on current radio channel
         self.int_rad_switch == 0
     }
+
+    pub fn is_on(&self) -> bool {
+        self.is_power_supply_powered
+    }
 }
 
 impl SimulationElement for AudioControlPanel {
@@ -222,6 +235,10 @@ impl SimulationElement for AudioControlPanel {
         writer.write(&self.int_rad_switch_id, self.int_rad_switch);
         writer.write(&self.voice_button_id, self.voice_button);
         writer.write(&self.transmit_channel_id, self.transmit_channel);
+    }
+
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        self.is_power_supply_powered = buses.is_powered(self.power_supply);
     }
 }
 
