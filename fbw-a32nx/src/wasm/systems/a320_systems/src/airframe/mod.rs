@@ -30,20 +30,20 @@ impl A320Airframe {
     pub fn new(context: &mut InitContext) -> Self {
         A320Airframe {
             cg_mac: CgMac::new(
-                context.get_identifier("ZFW_CG_PERCENT_MAC".to_owned()),
-                context.get_identifier("GW_CG_PERCENT_MAC".to_owned()),
-                context.get_identifier("TO_CG_PERCENT_MAC".to_owned()),
-                context.get_identifier("ZFW_CG_PERCENT_MAC_DESIRED".to_owned()),
-                context.get_identifier("GW_CG_PERCENT_MAC_DESIRED".to_owned()),
-                context.get_identifier("TO_CG_PERCENT_MAC_DESIRED".to_owned()),
+                context.get_identifier("AIRFRAME_ZFW_CG_PERCENT_MAC".to_owned()),
+                context.get_identifier("AIRFRAME_GW_CG_PERCENT_MAC".to_owned()),
+                context.get_identifier("AIRFRAME_TO_CG_PERCENT_MAC".to_owned()),
+                context.get_identifier("AIRFRAME_ZFW_CG_PERCENT_MAC_DESIRED".to_owned()),
+                context.get_identifier("AIRFRAME_GW_CG_PERCENT_MAC_DESIRED".to_owned()),
+                context.get_identifier("AIRFRAME_TO_CG_PERCENT_MAC_DESIRED".to_owned()),
             ),
             weight: WeightData::new(
-                context.get_identifier("ZFW".to_owned()),
-                context.get_identifier("GW".to_owned()),
-                context.get_identifier("TOW".to_owned()),
-                context.get_identifier("ZFW_DESIRED".to_owned()),
-                context.get_identifier("GW_DESIRED".to_owned()),
-                context.get_identifier("TOW_DESIRED".to_owned()),
+                context.get_identifier("AIRFRAME_ZFW".to_owned()),
+                context.get_identifier("AIRFRAME_GW".to_owned()),
+                context.get_identifier("AIRFRAME_TOW".to_owned()),
+                context.get_identifier("AIRFRAME_ZFW_DESIRED".to_owned()),
+                context.get_identifier("AIRFRAME_GW_DESIRED".to_owned()),
+                context.get_identifier("AIRFRAME_TOW_DESIRED".to_owned()),
             ),
             // ths_setting: 0.0,
         }

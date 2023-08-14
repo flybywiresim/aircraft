@@ -138,16 +138,16 @@ export const A380Payload: React.FC<A380Props> = ({
 
     // Units
     // Weights
-    const [zfw] = useSimVar('L:A32NX_ZFW', 'number', 1_553);
-    const [zfwDesired] = useSimVar('L:A32NX_DESIRED_ZFW', 'number', 1_621);
-    const [gw] = useSimVar('L:A32NX_GW', 'number', 1_741);
-    const [gwDesired] = useSimVar('L:A32NX_DESIRED_GW', 'number', 1_787);
+    const [zfw] = useSimVar('L:A32NX_AIRFRAME_ZFW', 'number', 1_553);
+    const [zfwDesired] = useSimVar('L:A32NX_AIRFRAME_ZFW_DESIRED', 'number', 1_621);
+    const [gw] = useSimVar('L:A32NX_AIRFRAME_GW', 'number', 1_741);
+    const [gwDesired] = useSimVar('L:A32NX_AIRFRAME_GW_DESIRED', 'number', 1_787);
 
     // CG MAC
-    const [zfwCgMac] = useSimVar('L:A32NX_ZFW_CG_PERCENT_MAC', 'number', 1_223);
-    const [desiredZfwCgMac] = useSimVar('L:A32NX_DESIRED_ZFW_CG_PERCENT_MAC', 'number', 1_279);
-    const [gwCgMac] = useSimVar('L:A32NX_GW_CG_PERCENT_MAC', 'number', 1_301);
-    const [desiredGwCgMac] = useSimVar('L:A32NX_DESIRED_GW_CG_PERCENT_MAC', 'number', 1_447);
+    const [zfwCgMac] = useSimVar('L:A32NX_AIRFRAME_ZFW_CG_PERCENT_MAC', 'number', 1_223);
+    const [desiredZfwCgMac] = useSimVar('L:A32NX_AIRFRAME_ZFW_CG_PERCENT_MAC_DESIRED', 'number', 1_279);
+    const [gwCgMac] = useSimVar('L:A32NX_AIRFRAME_GW_CG_PERCENT_MAC', 'number', 1_301);
+    const [desiredGwCgMac] = useSimVar('L:A32NX_AIRFRAME_GW_CG_PERCENT_MAC_DESIRED', 'number', 1_447);
 
     const [showSimbriefButton, setShowSimbriefButton] = useState(false);
     const [displayZfw, setDisplayZfw] = useState(true);
