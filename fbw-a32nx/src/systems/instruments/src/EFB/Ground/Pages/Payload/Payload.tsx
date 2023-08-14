@@ -346,6 +346,7 @@ export const Payload = () => {
                     }}
                 />,
             );
+            return;
         }
         setBoardingStarted(false);
     }, [totalPaxDesired, totalPax, totalCargo, boardingStarted, totalCargoDesired]);
@@ -882,6 +883,11 @@ export const Payload = () => {
                                 {/* <Card className="h-full w-fit" childrenContainerClassName="h-full w-fit rounded-r-none"> */}
                                 {/* */}
                                 {/* </Card> */}
+                            </div>
+                        )}
+                        {gsxPayloadSyncEnabled === 1 && (
+                            <div className="pt-6 pl-2">
+                                {t('Ground.Payload.GSXPayloadSyncEnabled')}
                             </div>
                         )}
                     </div>
