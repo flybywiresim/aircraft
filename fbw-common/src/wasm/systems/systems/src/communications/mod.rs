@@ -3,6 +3,7 @@ mod audio_management_unit;
 mod radio_management_panel;
 mod receivers;
 
+
 use crate::simulation::{
     InitContext, SideControlling, SimulationElement, SimulationElementVisitor, SimulatorWriter,
     UpdateContext, VariableIdentifier, Write,
@@ -63,6 +64,59 @@ impl SimulationElement for Communications {
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
+        if self.communications_panel_elected.is_some() {
+            // To avoid data race
+            if self.update_comms != CommunicationPanelSideName::NONE {
+                writer.write(&self.update_comms_id, 0);
+            }
+
+            writer.write(&self.is_emitting_id, self.is_emitting);
+
+            writer.write(&self.pilot_transmit_id, self.pilot_transmit_channel);
+            writer.write(&self.copilot_transmit_id, self.copilot_transmit_channel);
+
+            writer.write(&self.receive_com1_id, self.receive_com1);
+            writer.write(&self.receive_com2_id, self.receive_com2);
+            writer.write(&self.receive_adf1_id, self.receive_adf1);
+            writer.write(&self.receive_adf2_id, self.receive_adf2);
+            writer.write(&self.receive_vor1_id, self.receive_vor1);
+            writer.write(&self.receive_vor2_id, self.receive_vor2);
+            writer.write(&self.receive_ils_id, self.receive_ils);
+            writer.write(&self.receive_gls_id, self.receive_gls);
+
+            // FOR FUTURE USE: Not needed for the time being as there's no K event for all this
+            // writer.write(&self.receive_hf1_id, self.receive_hf1);
+            // writer.write(&self.receive_hf2_id, self.receive_hf2);
+            // writer.write(&self.receive_mech_id, self.receive_mech);
+            // writer.write(&self.receive_att_id, self.receive_att);
+            // writer.write(&self.receive_pa_id, self.receive_pa);
+
+            // Special case for markers as there's no XXXX_SET function. Only Toggle
+            // Setting opposite value of sound_markers to trigger the event as it
+            // using VariableToEventWriteOn::Change
+            if self.receive_markers {
+                writer.write(&self.receive_markers_id, !self.sound_markers);
+            }
+
+            writer.write(&self.volume_com1_id, self.volume_com1);
+            writer.write(&self.volume_com2_id, self.volume_com2);
+            writer.write(&self.volume_com3_id, self.volume_com3);
+            writer.write(&self.volume_adf1_id, self.volume_adf1);
+            writer.write(&self.volume_adf2_id, self.volume_adf2);
+            writer.write(&self.volume_vor1_id, self.volume_vor1);
+            writer.write(&self.volume_vor2_id, self.volume_vor2);
+            writer.write(&self.volume_ils_id, self.volume_ils);
+            writer.write(&self.volume_gls_id, self.volume_gls);
+            writer.write(&self.volume_markers_id, self.volume_markers);
+
+            // FOR FUTURE USE: Not needed for the time being as there's no K event for all this
+            // writer.write(&self.volume_hf1_id, self.volume_hf1);
+            // writer.write(&self.volume_hf2_id, self.volume_hf2);
+            // writer.write(&self.volume_att_id, self.volume_att);
+            // writer.write(&self.volume_mech_id, self.volume_mech);
+            // writer.write(&self.volume_pa_id, self.volume_pa);
+        }
+
         writer.write(&self.sel_light_id, self.sel_light);
     }
 }
