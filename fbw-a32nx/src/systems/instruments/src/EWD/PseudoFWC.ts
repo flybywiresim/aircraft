@@ -118,6 +118,22 @@ export class PseudoFWC {
 
     private readonly excessPressure = Subject.create(false);
 
+    private readonly acsc1Lane1Fault = Subject.create(false);
+
+    private readonly acsc1Lane2Fault = Subject.create(false);
+
+    private readonly acsc2Lane1Fault = Subject.create(false);
+
+    private readonly acsc2Lane2Fault = Subject.create(false);
+
+    private readonly acsc1Fault = Subject.create(false);
+
+    private readonly acsc2Fault = Subject.create(false);
+
+    private readonly pack1And2Fault = Subject.create(false);
+
+    private readonly ramAirOn = Subject.create(false);
+
     private readonly hotAirDisagrees = Subject.create(false);
 
     private readonly hotAirOpen = Subject.create(false);
@@ -1073,10 +1089,23 @@ export class PseudoFWC {
         this.acsc2DiscreteWord1.setFromSimVar('L:A32NX_COND_ACSC_2_DISCRETE_WORD_1');
         this.acsc2DiscreteWord2.setFromSimVar('L:A32NX_COND_ACSC_2_DISCRETE_WORD_2');
 
+        this.acsc1Lane1Fault.set(this.acsc1DiscreteWord1.bitValueOr(21, false));
+        this.acsc1Lane2Fault.set(this.acsc1DiscreteWord1.bitValueOr(22, false));
+        this.acsc2Lane1Fault.set(this.acsc2DiscreteWord1.bitValueOr(21, false));
+        this.acsc2Lane2Fault.set(this.acsc2DiscreteWord1.bitValueOr(22, false));
+
+        const acsc1FT = this.acsc1DiscreteWord1.isFailureWarning();
+        const acsc2FT = this.acsc2DiscreteWord1.isFailureWarning();
+        this.acsc1Fault.set(acsc1FT && !acsc2FT);
+        this.acsc2Fault.set(!acsc1FT && acsc2FT);
+        const acscBothFault = acsc1FT && acsc2FT;
+
+        this.ramAirOn.set(SimVar.GetSimVarValue('L:A32NX_AIRCOND_RAMAIR_TOGGLE', 'bool'));
+
         this.cabFanHasFault1.set(this.acsc1DiscreteWord1.bitValueOr(25, false) || this.acsc2DiscreteWord1.bitValueOr(25, false));
         this.cabFanHasFault2.set(this.acsc1DiscreteWord1.bitValueOr(26, false) || this.acsc2DiscreteWord1.bitValueOr(26, false));
 
-        this.hotAirDisagrees.set(this.acsc1DiscreteWord1.bitValueOr(27, false) || this.acsc2DiscreteWord1.bitValueOr(27, false));
+        this.hotAirDisagrees.set(this.acsc1DiscreteWord1.bitValueOr(27, false) && this.acsc2DiscreteWord1.bitValueOr(27, false));
         this.hotAirOpen.set(!this.acsc1DiscreteWord1.bitValueOr(20, false) || !this.acsc2DiscreteWord1.bitValueOr(20, false));
         this.hotAirPbOn.set(this.acsc1DiscreteWord1.bitValueOr(23, false) || this.acsc2DiscreteWord1.bitValueOr(23, false));
 
@@ -1114,6 +1143,7 @@ export class PseudoFWC {
         this.packOffBleedAvailable2.write((eng2Bleed === 1 && !eng2BleedPbFault) || crossfeed === 1, deltaTime);
         this.packOffNotFailed1Status.set(this.packOffNotFailed1.write(!this.pack1On.get() && !pack1Fault && this.packOffBleedAvailable1.read() && this.fwcFlightPhase.get() === 6, deltaTime));
         this.packOffNotFailed2Status.set(this.packOffNotFailed2.write(!this.pack2On.get() && !pack2Fault && this.packOffBleedAvailable2.read() && this.fwcFlightPhase.get() === 6, deltaTime));
+        this.pack1And2Fault.set(acscBothFault || (this.packOffNotFailed1Status.get() && this.acsc2Fault.get()) || (this.packOffNotFailed2Status.get() && this.acsc1Fault.get()));
 
         /* OTHER STUFF */
 
@@ -2229,6 +2259,111 @@ export class PseudoFWC {
             sysPage: 2,
             side: 'LEFT',
         },
+        2161206: { // PACK 1+2 FAULT
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: this.pack1And2Fault,
+            whichCodeToReturn: () => [
+                0,
+                this.pack1On.get() ? 1 : null,
+                this.pack2On.get() ? 2 : null,
+                !this.aircraftOnGround.get() && !this.ramAirOn.get() ? 3 : null,
+                !this.aircraftOnGround.get() && !this.ramAirOn.get() ? 4 : null,
+                !this.aircraftOnGround.get() && !this.ramAirOn.get() ? 5 : null,
+                !this.aircraftOnGround.get() && !this.ramAirOn.get() ? 6 : null,
+                !this.aircraftOnGround.get() ? 7 : null,
+            ],
+            codesToReturn: ['216120601', '216120602', '216120603', '216120604', '216120605', '216120606', '216120607', '216120608'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: 1,
+            side: 'LEFT',
+        },
+        2161202: { // PACK 1 FAULT
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: this.acsc1Fault,
+            whichCodeToReturn: () => [
+                0,
+                this.pack1On.get() ? 1 : null,
+            ],
+            codesToReturn: ['216120201', '216120202'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: 1,
+            side: 'LEFT',
+        },
+        2161203: { // PACK 2 FAULT
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: this.acsc2Fault,
+            whichCodeToReturn: () => [
+                0,
+                this.pack2On.get() ? 1 : null,
+            ],
+            codesToReturn: ['216120301', '216120302'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: 1,
+            side: 'LEFT',
+        },
+        2161207: { // PACK 1 ABNORMALLY OFF
+            flightPhaseInhib: [1, 2, 3, 4, 5, 7, 8, 9, 10],
+            simVarIsActive: this.packOffNotFailed1Status,
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['216120701'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: 1,
+            side: 'LEFT',
+        },
+        2161208: { // PACK 2 ABNORMALLY OFF
+            flightPhaseInhib: [1, 2, 3, 4, 5, 7, 8, 9, 10],
+            simVarIsActive: this.packOffNotFailed2Status,
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['216120801'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: 1,
+            side: 'LEFT',
+        },
+        2161291: { // COND CTL 1-A FAULT
+            flightPhaseInhib: [2, 3, 4, 5, 6, 7, 8, 9],
+            simVarIsActive: MappedSubject.create(([acsc1Lane1Fault, acsc1Lane2Fault]) => acsc1Lane1Fault && !acsc1Lane2Fault, this.acsc1Lane1Fault, this.acsc1Lane2Fault),
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['216129101'],
+            memoInhibit: () => false,
+            failure: 1,
+            sysPage: -1,
+            side: 'LEFT',
+        },
+        2161297: { // COND CTL 1-B FAULT
+            flightPhaseInhib: [2, 3, 4, 5, 6, 7, 8, 9],
+            simVarIsActive: MappedSubject.create(([acsc1Lane1Fault, acsc1Lane2Fault]) => !acsc1Lane1Fault && acsc1Lane2Fault, this.acsc1Lane1Fault, this.acsc1Lane2Fault),
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['216129701'],
+            memoInhibit: () => false,
+            failure: 1,
+            sysPage: -1,
+            side: 'LEFT',
+        },
+        2161294: { // COND CTL 2-A FAULT
+            flightPhaseInhib: [2, 3, 4, 5, 6, 7, 8, 9],
+            simVarIsActive: MappedSubject.create(([acsc2Lane1Fault, acsc2Lane2Fault]) => acsc2Lane1Fault && !acsc2Lane2Fault, this.acsc2Lane1Fault, this.acsc2Lane2Fault),
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['216129401'],
+            memoInhibit: () => false,
+            failure: 1,
+            sysPage: -1,
+            side: 'LEFT',
+        },
+        2161298: { // COND CTL 2-B FAULT
+            flightPhaseInhib: [2, 3, 4, 5, 6, 7, 8, 9],
+            simVarIsActive: MappedSubject.create(([acsc2Lane1Fault, acsc2Lane2Fault]) => !acsc2Lane1Fault && acsc2Lane2Fault, this.acsc2Lane1Fault, this.acsc2Lane2Fault),
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['216129801'],
+            memoInhibit: () => false,
+            failure: 1,
+            sysPage: -1,
+            side: 'LEFT',
+        },
         2163210: { // CKPT DUCT OVHT
             flightPhaseInhib: [3, 4, 5, 7, 8],
             simVarIsActive: this.ckptDuctOvht,
@@ -2294,7 +2429,7 @@ export class PseudoFWC {
             sysPage: 7,
             side: 'LEFT',
         },
-        216330: { // TRIM AIR SYS FAULT
+        2163305: { // TRIM AIR SYS FAULT
             flightPhaseInhib: [3, 4, 5, 7, 8],
             simVarIsActive: this.trimAirFault,
             whichCodeToReturn: () => [0,
@@ -2344,26 +2479,6 @@ export class PseudoFWC {
             memoInhibit: () => false,
             failure: 2,
             sysPage: -1,
-            side: 'LEFT',
-        },
-        2161207: { // PACK 1 ABNORMALLY OFF
-            flightPhaseInhib: [1, 2, 3, 4, 5, 7, 8, 9, 10],
-            simVarIsActive: this.packOffNotFailed1Status,
-            whichCodeToReturn: () => [0],
-            codesToReturn: ['216120701'],
-            memoInhibit: () => false,
-            failure: 2,
-            sysPage: 1,
-            side: 'LEFT',
-        },
-        2161208: { // PACK 2 ABNORMALLY OFF
-            flightPhaseInhib: [1, 2, 3, 4, 5, 7, 8, 9, 10],
-            simVarIsActive: this.packOffNotFailed2Status,
-            whichCodeToReturn: () => [0],
-            codesToReturn: ['216120801'],
-            memoInhibit: () => false,
-            failure: 2,
-            sysPage: 1,
             side: 'LEFT',
         },
         3200060: { // NW ANTI SKID INACTIVE

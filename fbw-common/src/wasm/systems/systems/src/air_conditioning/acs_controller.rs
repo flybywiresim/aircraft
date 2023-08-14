@@ -30,23 +30,16 @@ use uom::si::{
 };
 
 #[derive(Eq, PartialEq, Clone, Copy)]
-pub enum ACSCActiveComputer {
-    Primary,
-    Secondary,
-    None,
-}
-
-#[derive(Eq, PartialEq, Clone, Copy)]
 pub enum AcscId {
-    Acsc1,
-    Acsc2,
+    Acsc1(Channel),
+    Acsc2(Channel),
 }
 
 impl From<AcscId> for usize {
     fn from(value: AcscId) -> Self {
         match value {
-            AcscId::Acsc1 => 1,
-            AcscId::Acsc2 => 2,
+            AcscId::Acsc1(_) => 1,
+            AcscId::Acsc2(_) => 2,
         }
     }
 }
@@ -54,8 +47,8 @@ impl From<AcscId> for usize {
 impl Display for AcscId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            AcscId::Acsc1 => write!(f, "1"),
-            AcscId::Acsc2 => write!(f, "2"),
+            AcscId::Acsc1(_) => write!(f, "1"),
+            AcscId::Acsc2(_) => write!(f, "2"),
         }
     }
 }
@@ -66,6 +59,7 @@ enum AcscFault {
     BothChannelsFault,
 }
 
+/// A320 ACSC P/N S1803A0001-xx
 pub struct AirConditioningSystemController<const ZONES: usize, const ENGINES: usize> {
     id: AcscId,
     active_channel: OperatingChannel,
@@ -87,12 +81,23 @@ impl<const ZONES: usize, const ENGINES: usize> AirConditioningSystemController<Z
         cabin_zone_ids: &[ZoneType; ZONES],
         powered_by: Vec<ElectricalBusType>,
     ) -> Self {
+        let failure_types: [FailureType; 2] = match id {
+            AcscId::Acsc1(_) => [
+                FailureType::Acsc(AcscId::Acsc1(Channel::ChannelOne)),
+                FailureType::Acsc(AcscId::Acsc1(Channel::ChannelTwo)),
+            ],
+            AcscId::Acsc2(_) => [
+                FailureType::Acsc(AcscId::Acsc2(Channel::ChannelOne)),
+                FailureType::Acsc(AcscId::Acsc2(Channel::ChannelTwo)),
+            ],
+        };
+
         Self {
             id,
 
             // FIXME Find correct power supply for ACSC
-            active_channel: OperatingChannel::new(1, powered_by[0]),
-            stand_by_channel: OperatingChannel::new(2, powered_by[1]),
+            active_channel: OperatingChannel::new(1, failure_types[0], powered_by[0]),
+            stand_by_channel: OperatingChannel::new(2, failure_types[1], powered_by[1]),
 
             aircraft_state: AirConditioningStateManager::new(),
             zone_controller: Self::zone_controller_initiation(id, cabin_zone_ids),
@@ -109,7 +114,7 @@ impl<const ZONES: usize, const ENGINES: usize> AirConditioningSystemController<Z
         cabin_zone_ids: &[ZoneType; ZONES],
     ) -> Vec<ZoneController<ZONES>> {
         // ACSC 1 regulates the cockpit temperature and ACSC 2 the cabin zones
-        if matches!(id, AcscId::Acsc1) {
+        if matches!(id, AcscId::Acsc1(_)) {
             vec![ZoneController::new(&cabin_zone_ids[0])]
         } else {
             cabin_zone_ids[1..ZONES]
@@ -180,6 +185,9 @@ impl<const ZONES: usize, const ENGINES: usize> AirConditioningSystemController<Z
     }
 
     fn fault_determination(&mut self) {
+        self.active_channel.update_fault();
+        self.stand_by_channel.update_fault();
+
         self.internal_failure = match self.active_channel.has_fault() {
             true => {
                 if self.stand_by_channel.has_fault() {
@@ -237,6 +245,7 @@ impl<const ZONES: usize, const ENGINES: usize> AirConditioningSystemController<Z
     pub fn pack_fault_determination(&self, pneumatic: &impl PackFlowValveState) -> bool {
         self.pack_flow_controller
             .fcv_status_determination(pneumatic)
+            || self.both_channels_failure()
     }
 
     pub fn cabin_fans_controller(&self) -> CabinFanController<ZONES> {
@@ -258,7 +267,7 @@ impl<const ZONES: usize, const ENGINES: usize> AirConditioningSystemController<Z
             ThermodynamicTemperature::new::<degree_celsius>(24.);
             ZONES - demand_temperature.len()
         ];
-        if self.id == AcscId::Acsc1 {
+        if matches!(self.id, AcscId::Acsc1(_)) {
             demand_temperature.extend(filler_vector);
             demand_temperature
         } else {
@@ -649,7 +658,7 @@ impl<const ZONES: usize> ZoneController<ZONES> {
             acs_overhead.selected_cabin_temperature(self.zone_id)
         };
         self.duct_demand_temperature =
-            if self.galley_fan_failure.is_active() && matches!(acsc_id, AcscId::Acsc2) {
+            if self.galley_fan_failure.is_active() && matches!(acsc_id, AcscId::Acsc2(_)) {
                 // Cabin zone temperature sensors are ventilated by air extracted by this fan, cabin temperature regulation is lost
                 // Cabin inlet duct is constant at 15C, cockpit air is unnafected
                 ThermodynamicTemperature::new::<degree_celsius>(15.)
@@ -2114,7 +2123,7 @@ mod acs_controller_tests {
                 acsc: [
                     AirConditioningSystemController::new(
                         context,
-                        AcscId::Acsc1,
+                        AcscId::Acsc1(Channel::ChannelOne),
                         &cabin_zones,
                         vec![
                             ElectricalBusType::DirectCurrent(1),
@@ -2123,7 +2132,7 @@ mod acs_controller_tests {
                     ),
                     AirConditioningSystemController::new(
                         context,
-                        AcscId::Acsc2,
+                        AcscId::Acsc2(Channel::ChannelOne),
                         &cabin_zones,
                         vec![
                             ElectricalBusType::DirectCurrent(2),
@@ -3011,6 +3020,25 @@ mod acs_controller_tests {
         }
 
         #[test]
+        fn failing_one_lane_has_no_effect() {
+            let mut test_bed = test_bed()
+                .with()
+                .both_packs_on()
+                .and()
+                .engine_idle()
+                .and()
+                .command_selected_temperature([
+                    ThermodynamicTemperature::new::<degree_celsius>(24.),
+                    ThermodynamicTemperature::new::<degree_celsius>(26.),
+                ]);
+
+            test_bed.fail(FailureType::Acsc(AcscId::Acsc1(Channel::ChannelOne)));
+            test_bed = test_bed.iterate(1000);
+
+            assert!((test_bed.measured_temperature().get::<degree_celsius>() - 26.).abs() < 1.);
+        }
+
+        #[test]
         fn unpowering_both_lanes_shuts_off_pack() {
             let mut test_bed = test_bed()
                 .with()
@@ -3032,6 +3060,28 @@ mod acs_controller_tests {
         }
 
         #[test]
+        fn failing_both_lanes_shuts_off_pack() {
+            let mut test_bed = test_bed()
+                .with()
+                .both_packs_on()
+                .and()
+                .engine_idle()
+                .and()
+                .command_selected_temperature([
+                    ThermodynamicTemperature::new::<degree_celsius>(24.),
+                    ThermodynamicTemperature::new::<degree_celsius>(26.),
+                ]);
+
+            test_bed.fail(FailureType::Acsc(AcscId::Acsc2(Channel::ChannelOne)));
+            test_bed.fail(FailureType::Acsc(AcscId::Acsc2(Channel::ChannelTwo)));
+            test_bed = test_bed.iterate(1000);
+
+            assert_eq!(test_bed.trim_air_valves_open_amount()[1], Ratio::default());
+            assert!(!test_bed.trim_air_system_controller_is_enabled());
+            assert!((test_bed.measured_temperature().get::<degree_celsius>() - 26.).abs() > 1.);
+        }
+
+        #[test]
         fn unpowering_opposite_acsc_doesnt_shut_off_pack() {
             let mut test_bed = test_bed()
                 .with()
@@ -3046,6 +3096,27 @@ mod acs_controller_tests {
                 .unpowered_ac_1_bus()
                 .unpowered_dc_1_bus()
                 .iterate(1000);
+
+            assert_ne!(test_bed.pack_flow(), MassRate::default());
+            assert!((test_bed.measured_temperature().get::<degree_celsius>() - 24.).abs() < 1.);
+        }
+
+        #[test]
+        fn failing_opposite_acsc_doesnt_shut_off_pack() {
+            let mut test_bed = test_bed()
+                .with()
+                .both_packs_on()
+                .and()
+                .engine_idle()
+                .and()
+                .command_selected_temperature([
+                    ThermodynamicTemperature::new::<degree_celsius>(24.),
+                    ThermodynamicTemperature::new::<degree_celsius>(26.),
+                ]);
+
+            test_bed.fail(FailureType::Acsc(AcscId::Acsc1(Channel::ChannelOne)));
+            test_bed.fail(FailureType::Acsc(AcscId::Acsc1(Channel::ChannelTwo)));
+            test_bed = test_bed.iterate(1000);
 
             assert_ne!(test_bed.pack_flow(), MassRate::default());
             assert!((test_bed.measured_temperature().get::<degree_celsius>() - 24.).abs() < 1.);

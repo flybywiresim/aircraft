@@ -1,4 +1,4 @@
-use crate::air_conditioning::ZoneType;
+use crate::air_conditioning::{acs_controller::AcscId, ZoneType};
 use crate::shared::{
     AirbusElectricPumpId, AirbusEngineDrivenPumpId, GearActuatorId, HydraulicColor, LgciuId,
     ProximityDetectorId,
@@ -7,6 +7,7 @@ use crate::simulation::SimulationElement;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum FailureType {
+    Acsc(AcscId),
     CabinFan(usize),
     HotAir(usize),
     TrimAirOverheat(ZoneType),

@@ -209,8 +209,8 @@ enum OperatingChannelFault {
     Fault,
 }
 
-#[derive(Clone, Copy)]
-enum Channel {
+#[derive(Eq, PartialEq, Clone, Copy)]
+pub enum Channel {
     ChannelOne,
     ChannelTwo,
 }
@@ -224,28 +224,41 @@ impl From<Channel> for usize {
     }
 }
 
+impl From<usize> for Channel {
+    fn from(value: usize) -> Self {
+        match value {
+            1 => Channel::ChannelOne,
+            2 => Channel::ChannelTwo,
+            _ => panic!("Operating Channel out of bounds"),
+        }
+    }
+}
+
 struct OperatingChannel {
     channel_id: Channel,
     powered_by: ElectricalBusType,
     is_powered: bool,
+    failure: Failure,
     fault: OperatingChannelFault,
 }
 
 impl OperatingChannel {
-    fn new(id: usize, powered_by: ElectricalBusType) -> Self {
-        let channel_id: Channel = {
-            match id {
-                1 => Channel::ChannelOne,
-                2 => Channel::ChannelTwo,
-                _ => panic!("Operating Channel out of bounds"),
-            }
-        };
+    fn new(id: usize, failure_type: FailureType, powered_by: ElectricalBusType) -> Self {
         Self {
-            channel_id,
+            channel_id: id.into(),
             powered_by,
             is_powered: false,
+            failure: Failure::new(failure_type),
             fault: OperatingChannelFault::NoFault,
         }
+    }
+
+    fn update_fault(&mut self) {
+        self.fault = if !self.is_powered || self.failure.is_active() {
+            OperatingChannelFault::Fault
+        } else {
+            OperatingChannelFault::NoFault
+        };
     }
 
     fn has_fault(&self) -> bool {
@@ -258,14 +271,13 @@ impl OperatingChannel {
 }
 
 impl SimulationElement for OperatingChannel {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.failure.accept(visitor);
+        visitor.visit(self);
+    }
+
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
         self.is_powered = buses.is_powered(self.powered_by);
-        // For now the channel faults only when it's unpowered. In the future we can add other types of failure
-        if !self.is_powered {
-            self.fault = OperatingChannelFault::Fault;
-        } else {
-            self.fault = OperatingChannelFault::NoFault;
-        }
     }
 }
 

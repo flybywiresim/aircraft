@@ -7,9 +7,9 @@ use systems::{
         full_digital_agu_controller::FullDigitalAGUController,
         pressure_valve::{OutflowValve, SafetyValve},
         AdirsToAirCondInterface, Air, AirConditioningOverheadShared, AirConditioningPack, CabinFan,
-        DuctTemperature, MixerUnit, OutflowValveSignal, OutletAir, OverheadFlowSelector, PackFlow,
-        PackFlowControllers, PressurizationConstants, PressurizationOverheadShared, TrimAirSystem,
-        ZoneType,
+        Channel, DuctTemperature, MixerUnit, OutflowValveSignal, OutletAir, OverheadFlowSelector,
+        PackFlow, PackFlowControllers, PressurizationConstants, PressurizationOverheadShared,
+        TrimAirSystem, ZoneType,
     },
     overhead::{
         AutoManFaultPushButton, NormalOnPushButton, OnOffFaultPushButton, OnOffPushButton,
@@ -319,7 +319,7 @@ impl A380AirConditioningSystem {
         Self {
             acsc: AirConditioningSystemController::new(
                 context,
-                AcscId::Acsc1,
+                AcscId::Acsc1(Channel::ChannelOne),
                 cabin_zones,
                 vec![
                     ElectricalBusType::DirectCurrent(1),

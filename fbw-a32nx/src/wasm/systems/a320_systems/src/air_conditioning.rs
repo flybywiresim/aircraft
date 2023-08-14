@@ -6,7 +6,7 @@ use systems::{
         cabin_pressure_controller::CabinPressureController,
         pressure_valve::{OutflowValve, SafetyValve},
         AdirsToAirCondInterface, Air, AirConditioningOverheadShared, AirConditioningPack, CabinFan,
-        DuctTemperature, MixerUnit, OutflowValveSignal, OutletAir, OverheadFlowSelector,
+        Channel, DuctTemperature, MixerUnit, OutflowValveSignal, OutletAir, OverheadFlowSelector,
         PackFlowControllers, PressurizationConstants, PressurizationOverheadShared, TrimAirSystem,
         ZoneType,
     },
@@ -256,13 +256,21 @@ impl A320AirConditioningSystem {
     pub(crate) fn new(context: &mut InitContext, cabin_zones: &[ZoneType; 3]) -> Self {
         Self {
             acs_interface: [
-                AirConditioningSystemInterfaceUnit::new(context, AcscId::Acsc1, cabin_zones),
-                AirConditioningSystemInterfaceUnit::new(context, AcscId::Acsc2, cabin_zones),
+                AirConditioningSystemInterfaceUnit::new(
+                    context,
+                    AcscId::Acsc1(Channel::ChannelOne),
+                    cabin_zones,
+                ),
+                AirConditioningSystemInterfaceUnit::new(
+                    context,
+                    AcscId::Acsc2(Channel::ChannelOne),
+                    cabin_zones,
+                ),
             ],
             acsc: [
                 AirConditioningSystemController::new(
                     context,
-                    AcscId::Acsc1,
+                    AcscId::Acsc1(Channel::ChannelOne),
                     cabin_zones,
                     vec![
                         ElectricalBusType::DirectCurrent(1),
@@ -271,7 +279,7 @@ impl A320AirConditioningSystem {
                 ),
                 AirConditioningSystemController::new(
                     context,
-                    AcscId::Acsc2,
+                    AcscId::Acsc2(Channel::ChannelOne),
                     cabin_zones,
                     vec![
                         ElectricalBusType::DirectCurrent(2),
