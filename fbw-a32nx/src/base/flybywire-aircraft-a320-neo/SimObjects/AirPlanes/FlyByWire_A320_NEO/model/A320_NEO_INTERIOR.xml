@@ -3994,6 +3994,9 @@
                 <TYPE>AIRBUS</TYPE>
                 <!-- disable lock mode blue highlight -->
                 <NO_HIGHLIGHT_NODE_ID>@StopLockHighlight</NO_HIGHLIGHT_NODE_ID>
+                <BACKLIGHTS_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</BACKLIGHTS_POWERED>
+                <EMISSIVE_DIM>(L:A32NX_OVHD_INTLT_ANN, number) 2 == (L:A32NX_ELEC_DC_2_BUS_IS_POWERED) and if{ 0.1 } els{ 1 }</EMISSIVE_DIM>
+                <EMISSIVE_TEST>(L:A32NX_OVHD_INTLT_ANN, number) 0 == (L:A32NX_ELEC_DC_2_BUS_IS_POWERED, bool) and</EMISSIVE_TEST>
             </DefaultTemplateParameters>
             <!-- RMP 1 is powered by AC/DC ESS (via ESS TR for AC) -->
             <!-- For each ACP, VHF1 is powered with ESS (emergency circuit), VHF2 with AC/DC 2 and VHF3 with AC/DC 3 (via corresponding TR for AC) -->
@@ -4003,14 +4006,16 @@
                 <UseTemplate Name="FBW_RADIO_MANAGEMENT_PANEL_Template">
                     <ID>1</ID>
                     <SIDE>L</SIDE>
-                    <BACKLIGHTS_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</BACKLIGHTS_POWERED>
-                    <INDICATORS_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</INDICATORS_POWERED>
+                    <INDICATORS_POWERED>(L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or </INDICATORS_POWERED>
+                    <RMP_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool) (L:A32NX_RMP_L_TOGGLE_SWITCH, bool) and </RMP_POWERED>
                 </UseTemplate>
             </Component>
             <Component ID="Audio_Panel_Left">
                 <UseTemplate Name="FBW_AIRLINER_Audio_Panel_Template">
                     <ID>1</ID>
                     <SIDE>L</SIDE>
+                    <INDICATORS_POWERED>(L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_AC_STAT_INV_BUS_IS_POWERED, Bool) or </INDICATORS_POWERED>
+                    <SEQ1_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     <NODE_ID_RECEIVER_VHF_L>KNOB_AUDIOL_VHF1</NODE_ID_RECEIVER_VHF_L>
                     <NODE_ID_LIGHT_RECEIVER_VHF_L>PUSH_AUDIOL_VHF1_EMIS</NODE_ID_LIGHT_RECEIVER_VHF_L>
                     <ANIM_NAME_KNOB_RECEIVER_VHF_L>KNOB_AUDIOL_VHF1</ANIM_NAME_KNOB_RECEIVER_VHF_L>
@@ -4138,14 +4143,16 @@
                 <UseTemplate Name="FBW_RADIO_MANAGEMENT_PANEL_Template">
                     <ID>2</ID>
                     <SIDE>R</SIDE>
-                    <BACKLIGHTS_POWERED>(L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Bool)</BACKLIGHTS_POWERED>
-                    <INDICATORS_POWERED>(L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Bool)</INDICATORS_POWERED>
+                    <INDICATORS_POWERED>(L:A32NX_ELEC_AC_2_BUS_IS_POWERED, Bool)</INDICATORS_POWERED>
+                    <RMP_POWERED>(L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Bool) (L:A32NX_RMP_R_TOGGLE_SWITCH, bool) and </RMP_POWERED>
                 </UseTemplate>
             </Component>
             <Component ID="Audio_Panel_Right">
                 <UseTemplate Name="FBW_AIRLINER_Audio_Panel_Template">
                     <ID>2</ID>
                     <SIDE>R</SIDE>
+                    <INDICATORS_POWERED>(L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED, Bool)</INDICATORS_POWERED>
+                    <SEQ1_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
                     <NODE_ID_RECEIVER_VHF_L>KNOB_AUDIOR_VHF1</NODE_ID_RECEIVER_VHF_L>
                     <NODE_ID_LIGHT_RECEIVER_VHF_L>PUSH_AUDIOR_VHF1_EMIS</NODE_ID_LIGHT_RECEIVER_VHF_L>
                     <ANIM_NAME_KNOB_RECEIVER_VHF_L>KNOB_AUDIOR_VHF1</ANIM_NAME_KNOB_RECEIVER_VHF_L>
@@ -4268,6 +4275,8 @@
                 <UseTemplate Name="FBW_AIRLINER_Audio_Panel_Template">
                     <ID>3</ID>
                     <SIDE>OVHD</SIDE>
+                    <INDICATORS_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</INDICATORS_POWERED>
+                    <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool) </SEQ1_POWERED>
                     <NODE_ID_RECEIVER_VHF_L>KNOB_OVHD_RADIO_VHF1</NODE_ID_RECEIVER_VHF_L>
                     <NODE_ID_LIGHT_RECEIVER_VHF_L>PUSH_OVHD_RADIO_VHF1_EMIS</NODE_ID_LIGHT_RECEIVER_VHF_L>
                     <ANIM_NAME_KNOB_RECEIVER_VHF_L>KNOB_OVHD_RADIO_VHF1</ANIM_NAME_KNOB_RECEIVER_VHF_L>

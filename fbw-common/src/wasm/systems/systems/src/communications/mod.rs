@@ -1,5 +1,6 @@
 pub mod audio;
 pub mod communications_panel;
+pub mod radio;
 
 use crate::{
     communications::audio::{DEFAULT_INT_RAD_SWITCH, TRANSMIT_ID_INT},
@@ -78,6 +79,7 @@ pub struct Communications {
     // voice_button_id: VariableIdentifier,
     //
     is_emitting_id: VariableIdentifier,
+    sel_light_id: VariableIdentifier,
     update_comms_id: VariableIdentifier,
     ls_fcu1_pressed_id: VariableIdentifier,
     ls_fcu2_pressed_id: VariableIdentifier,
@@ -111,6 +113,7 @@ pub struct Communications {
     // receive_pa: bool,
     //
     is_emitting: bool,
+    sel_light: bool,
     update_comms: CommunicationPanelSideName,
 
     volume_com1: u8,
@@ -136,9 +139,9 @@ impl Communications {
     pub fn new(context: &mut InitContext) -> Self {
         Self {
             communications_panel_elected: None,
-            communications_panel_captain: CommunicationsPanel::new(context, 1),
-            communications_panel_first_officer: CommunicationsPanel::new(context, 2),
-            communications_panel_ovhd: CommunicationsPanel::new(context, 3),
+            communications_panel_captain: CommunicationsPanel::new_cpt(context),
+            communications_panel_first_officer: CommunicationsPanel::new_fo(context),
+            communications_panel_ovhd: CommunicationsPanel::new_ovhd(context),
 
             audio_switching_knob_id: context.get_identifier("AUDIOSWITCHING_KNOB".to_owned()),
             audio_switching_knob: AudioSwitchingKnobPosition::NORM,
@@ -187,6 +190,7 @@ impl Communications {
             // volume_pa_id: context.get_identifier("PA_VOLUME".to_owned()),
             //
             is_emitting_id: context.get_identifier("IS_EMITTING_ON_FREQUENCY".to_owned()),
+            sel_light_id: context.get_identifier("RMP_SEL_LIGHT_ON".to_owned()),
             update_comms_id: context.get_identifier("UPDATE_COMMS".to_owned()),
             ls_fcu1_pressed_id: context.get_identifier("BTN_LS_1_FILTER_ACTIVE".to_owned()),
             ls_fcu2_pressed_id: context.get_identifier("BTN_LS_2_FILTER_ACTIVE".to_owned()),
@@ -221,6 +225,7 @@ impl Communications {
             //
             sound_markers: false,
             is_emitting: false,
+            sel_light: false,
             update_comms: CommunicationPanelSideName::NONE,
 
             volume_com1: 0,
@@ -258,80 +263,88 @@ impl Communications {
      *
      */
     pub fn update(&mut self, context: &UpdateContext) {
+        // self.communications_panel_captain.update(context);
+        // self.communications_panel_first_officer.update(context);
+        // self.communications_panel_ovhd.update(context);
+
         self.guess_panel_other_actions_based(context.side_controlling());
+        self.guess_panel_acp_or_rmp_actions_based(context.side_controlling());
 
-        if self.communications_panel_elected.is_none() {
-            self.guess_panel_acp_or_rmp_actions_based(context.side_controlling());
-        }
+        if let Some(chosen_panel) = self.communications_panel_elected.clone() {
+            self.communications_panel_elected = None;
 
-        if let Some(chosen_panel) = self.communications_panel_elected {
-            self.is_emitting = chosen_panel.is_emitting();
+            // Don't update the simvars if not power supplied
+            if chosen_panel.is_acp_on() {
+                self.is_emitting = chosen_panel.is_emitting();
 
-            if chosen_panel.get_int_rad_switch() <= DEFAULT_INT_RAD_SWITCH {
-                self.pilot_transmit_channel = chosen_panel.get_transmit_channel_value();
-                self.copilot_transmit_channel = chosen_panel.get_transmit_channel_value();
-            } else {
-                self.pilot_transmit_channel = TRANSMIT_ID_INT;
-                self.copilot_transmit_channel = TRANSMIT_ID_INT;
-            }
+                // Init with same value because we don't know which side is chosen_panel
+                if chosen_panel.get_int_rad_switch() <= DEFAULT_INT_RAD_SWITCH {
+                    self.pilot_transmit_channel = chosen_panel.get_transmit_channel_value();
+                    self.copilot_transmit_channel = chosen_panel.get_transmit_channel_value();
+                } else {
+                    self.pilot_transmit_channel = TRANSMIT_ID_INT;
+                    self.copilot_transmit_channel = TRANSMIT_ID_INT;
+                }
 
-            self.receive_com1 = chosen_panel.get_receive_com1();
-            self.receive_com2 = chosen_panel.get_receive_com2();
-            self.receive_adf1 = chosen_panel.get_receive_adf1();
-            self.receive_adf2 = chosen_panel.get_receive_adf2();
-            self.receive_vor1 = chosen_panel.get_receive_vor1();
-            self.receive_vor2 = chosen_panel.get_receive_vor2();
-            self.receive_ils = chosen_panel.get_receive_ils();
+                // Refine with the side. 4 is NONE according to the SDK
+                if context.side_controlling() == SideControlling::CAPTAIN {
+                    self.copilot_transmit_channel = 4;
+                } else {
+                    self.pilot_transmit_channel = 4;
+                }
 
-            // FIXME: It's very likely there is not direct bus between FCU buttons and ACPs.
-            // To fix with proper simulation
-            // FCOM compliant: ILS can be listened to only if LS is pressed
-            self.receive_ils &= match chosen_panel.get_name() {
-                CommunicationPanelSideName::OVHD => match self.audio_switching_knob {
-                    AudioSwitchingKnobPosition::NORM | AudioSwitchingKnobPosition::CAPTAIN => {
-                        self.ls_fcu1_pressed
-                    }
-                    AudioSwitchingKnobPosition::FO => self.ls_fcu2_pressed,
-                },
-                CommunicationPanelSideName::CAPTAIN => self.ls_fcu1_pressed,
-                CommunicationPanelSideName::FO => self.ls_fcu2_pressed,
-                CommunicationPanelSideName::NONE => false,
-            };
-            self.receive_gls = chosen_panel.get_receive_gls();
+                self.receive_com1 = chosen_panel.get_receive_com1();
+                self.receive_com2 = chosen_panel.get_receive_com2();
+                self.receive_adf1 = chosen_panel.get_receive_adf1();
+                self.receive_adf2 = chosen_panel.get_receive_adf2();
+                self.receive_vor1 = chosen_panel.get_receive_vor1();
+                self.receive_vor2 = chosen_panel.get_receive_vor2();
+                self.receive_ils = chosen_panel.get_receive_ils();
 
-            self.receive_markers = (self.sound_markers && !chosen_panel.get_receive_markers())
-                || (!self.sound_markers && chosen_panel.get_receive_markers());
+                // FIXME: It's very likely there is not direct bus between FCU buttons and ACPs.
+                // To fix with proper simulation
+                // FCOM compliant: ILS can be listened to only if LS is pressed
+                self.receive_ils &= match chosen_panel.get_name() {
+                    CommunicationPanelSideName::OVHD => match self.audio_switching_knob {
+                        AudioSwitchingKnobPosition::NORM | AudioSwitchingKnobPosition::CAPTAIN => {
+                            self.ls_fcu1_pressed
+                        }
+                        AudioSwitchingKnobPosition::FO => self.ls_fcu2_pressed,
+                    },
+                    CommunicationPanelSideName::CAPTAIN => self.ls_fcu1_pressed,
+                    CommunicationPanelSideName::FO => self.ls_fcu2_pressed,
+                    CommunicationPanelSideName::NONE => false,
+                };
+                self.receive_gls = chosen_panel.get_receive_gls();
 
-            // FOR FUTURE USE: Not needed for the time being as there's no K event for all this
-            // self.receive_hf1 = chosen_panel.get_receive_hf1();
-            // self.receive_hf2 = chosen_panel.get_receive_hf2();
-            // self.receive_mech = chosen_panel.get_receive_mech();
-            // self.receive_att = chosen_panel.get_receive_att();
-            // self.receive_pa = chosen_panel.get_receive_pa();
-            // self.voice_button = chosen_panel.get_voice_button();
+                self.receive_markers = (self.sound_markers && !chosen_panel.get_receive_markers())
+                    || (!self.sound_markers && chosen_panel.get_receive_markers());
 
-            self.volume_com1 = chosen_panel.get_volume_com1();
-            self.volume_com2 = chosen_panel.get_volume_com2();
-            self.volume_com3 = chosen_panel.get_volume_com3();
-            self.volume_adf1 = chosen_panel.get_volume_adf1();
-            self.volume_adf2 = chosen_panel.get_volume_adf2();
-            self.volume_vor1 = chosen_panel.get_volume_vor1();
-            self.volume_vor2 = chosen_panel.get_volume_vor2();
-            self.volume_ils = chosen_panel.get_volume_ils();
-            self.volume_gls = chosen_panel.get_volume_gls();
-            self.volume_markers = chosen_panel.get_volume_markers();
+                // FOR FUTURE USE: Not needed for the time being as there's no K event for all this
+                // self.receive_hf1 = chosen_panel.get_receive_hf1();
+                // self.receive_hf2 = chosen_panel.get_receive_hf2();
+                // self.receive_mech = chosen_panel.get_receive_mech();
+                // self.receive_att = chosen_panel.get_receive_att();
+                // self.receive_pa = chosen_panel.get_receive_pa();
+                // self.voice_button = chosen_panel.get_voice_button();
 
-            // FOR FUTURE USE: Not needed for the time being as there's no K event for all this
-            // self.volume_hf1 = chosen_panel.get_volume_hf1();
-            // self.volume_hf2 = chosen_panel.get_volume_hf2();
-            // self.volume_att = chosen_panel.get_volume_att();
-            // self.volume_mech = chosen_panel.get_volume_mech();
-            // self.volume_pa = chosen_panel.get_volume_pa();
+                self.volume_com1 = chosen_panel.get_volume_com1();
+                self.volume_com2 = chosen_panel.get_volume_com2();
+                self.volume_com3 = chosen_panel.get_volume_com3();
+                self.volume_adf1 = chosen_panel.get_volume_adf1();
+                self.volume_adf2 = chosen_panel.get_volume_adf2();
+                self.volume_vor1 = chosen_panel.get_volume_vor1();
+                self.volume_vor2 = chosen_panel.get_volume_vor2();
+                self.volume_ils = chosen_panel.get_volume_ils();
+                self.volume_gls = chosen_panel.get_volume_gls();
+                self.volume_markers = chosen_panel.get_volume_markers();
 
-            if context.side_controlling() == SideControlling::CAPTAIN {
-                self.copilot_transmit_channel = 4;
-            } else {
-                self.pilot_transmit_channel = 4;
+                // FOR FUTURE USE: Not needed for the time being as there's no K event for all this
+                // self.volume_hf1 = chosen_panel.get_volume_hf1();
+                // self.volume_hf2 = chosen_panel.get_volume_hf2();
+                // self.volume_att = chosen_panel.get_volume_att();
+                // self.volume_mech = chosen_panel.get_volume_mech();
+                // self.volume_pa = chosen_panel.get_volume_pa();
             }
         }
     }
@@ -344,24 +357,21 @@ impl Communications {
      *
      * @return None if there was no ACP elected. The elected ACP otherwise.
      */
-    fn guess_panel_other_actions_based(
-        &mut self,
-        side_controlling: SideControlling,
-    ) -> Option<CommunicationsPanel> {
-        self.communications_panel_elected = None;
-
+    fn guess_panel_other_actions_based(&mut self, side_controlling: SideControlling) {
         if side_controlling != self.previous_side_controlling {
             if side_controlling == SideControlling::CAPTAIN {
                 // If Captain is now controlling, ACP3 is chosen if AudioSwitching knob on Captain
                 self.communications_panel_elected = match self.audio_switching_knob {
-                    AudioSwitchingKnobPosition::CAPTAIN => Some(self.communications_panel_ovhd),
-                    _ => Some(self.communications_panel_captain),
+                    AudioSwitchingKnobPosition::CAPTAIN => {
+                        Some(self.communications_panel_ovhd.clone())
+                    }
+                    _ => Some(self.communications_panel_captain.clone()),
                 }
             } else {
                 // If FO is now controlling, ACP3 is chosen if AudioSwitching knob on FO
                 self.communications_panel_elected = match self.audio_switching_knob {
-                    AudioSwitchingKnobPosition::FO => Some(self.communications_panel_ovhd),
-                    _ => Some(self.communications_panel_first_officer),
+                    AudioSwitchingKnobPosition::FO => Some(self.communications_panel_ovhd.clone()),
+                    _ => Some(self.communications_panel_first_officer.clone()),
                 }
             }
 
@@ -372,16 +382,16 @@ impl Communications {
         } else if self.audio_switching_knob != self.previous_audio_switching_knob {
             self.communications_panel_elected = match self.audio_switching_knob {
                 AudioSwitchingKnobPosition::NORM => match side_controlling {
-                    SideControlling::CAPTAIN => Some(self.communications_panel_captain),
-                    SideControlling::FO => Some(self.communications_panel_first_officer),
+                    SideControlling::CAPTAIN => Some(self.communications_panel_captain.clone()),
+                    SideControlling::FO => Some(self.communications_panel_first_officer.clone()),
                 },
                 AudioSwitchingKnobPosition::CAPTAIN => match side_controlling {
-                    SideControlling::CAPTAIN => Some(self.communications_panel_ovhd),
-                    SideControlling::FO => Some(self.communications_panel_first_officer),
+                    SideControlling::CAPTAIN => Some(self.communications_panel_ovhd.clone()),
+                    SideControlling::FO => Some(self.communications_panel_first_officer.clone()),
                 },
                 AudioSwitchingKnobPosition::FO => match side_controlling {
-                    SideControlling::FO => Some(self.communications_panel_ovhd),
-                    SideControlling::CAPTAIN => Some(self.communications_panel_captain),
+                    SideControlling::FO => Some(self.communications_panel_ovhd.clone()),
+                    SideControlling::CAPTAIN => Some(self.communications_panel_captain.clone()),
                 },
             };
 
@@ -392,9 +402,9 @@ impl Communications {
             // FCU1 is connected to Captain only. Therefore, we only need to check AudioSwitching knob position
             // and the next group of conditions will make the job with side_controlling
             if self.audio_switching_knob == AudioSwitchingKnobPosition::NORM {
-                self.communications_panel_elected = Some(self.communications_panel_captain)
+                self.communications_panel_elected = Some(self.communications_panel_captain.clone())
             } else if self.audio_switching_knob == AudioSwitchingKnobPosition::CAPTAIN {
-                self.communications_panel_elected = Some(self.communications_panel_ovhd)
+                self.communications_panel_elected = Some(self.communications_panel_ovhd.clone())
             }
 
             self.previous_ls_fcu1_pressed = self.ls_fcu1_pressed;
@@ -404,15 +414,14 @@ impl Communications {
             // FCU1 is connected to FO only. Therefore, we only need to check AudioSwitching knob position
             // and the next group of conditions will make the job with side_controlling
             if self.audio_switching_knob == AudioSwitchingKnobPosition::NORM {
-                self.communications_panel_elected = Some(self.communications_panel_first_officer)
+                self.communications_panel_elected =
+                    Some(self.communications_panel_first_officer.clone())
             } else if self.audio_switching_knob == AudioSwitchingKnobPosition::FO {
-                self.communications_panel_elected = Some(self.communications_panel_ovhd)
+                self.communications_panel_elected = Some(self.communications_panel_ovhd.clone())
             }
 
             self.previous_ls_fcu2_pressed = self.ls_fcu2_pressed;
         }
-
-        self.communications_panel_elected
     }
 
     /*
@@ -423,19 +432,15 @@ impl Communications {
      *
      * @return None if the association ACP/Configuration was not suitable. The ACP otherwise.
      */
-    fn guess_panel_acp_or_rmp_actions_based(
-        &mut self,
-        side_controlling: SideControlling,
-    ) -> Option<CommunicationsPanel> {
-        self.communications_panel_elected = None;
-
+    fn guess_panel_acp_or_rmp_actions_based(&mut self, side_controlling: SideControlling) {
         if self.update_comms != CommunicationPanelSideName::NONE {
             // ACP1 disabled if ACP3 in Captain mode OR the FO is controlling (via the EFB)
             if self.update_comms == CommunicationPanelSideName::CAPTAIN {
                 if self.audio_switching_knob != AudioSwitchingKnobPosition::CAPTAIN
                     && side_controlling == SideControlling::CAPTAIN
                 {
-                    self.communications_panel_elected = Some(self.communications_panel_captain);
+                    self.communications_panel_elected =
+                        Some(self.communications_panel_captain.clone());
                 }
             // ACP2 disabled if ACP3 in FO mode OR the Captain is controlling (via the EFB)
             } else if self.update_comms == CommunicationPanelSideName::FO {
@@ -443,7 +448,7 @@ impl Communications {
                     && side_controlling == SideControlling::FO
                 {
                     self.communications_panel_elected =
-                        Some(self.communications_panel_first_officer);
+                        Some(self.communications_panel_first_officer.clone());
                 }
             // ACP3 taken into account only if the audioswitching knob and side playing are matching
             } else if (self.audio_switching_knob == AudioSwitchingKnobPosition::CAPTAIN
@@ -451,11 +456,15 @@ impl Communications {
                 || (self.audio_switching_knob == AudioSwitchingKnobPosition::FO
                     && side_controlling == SideControlling::FO)
             {
-                self.communications_panel_elected = Some(self.communications_panel_ovhd);
+                self.communications_panel_elected = Some(self.communications_panel_ovhd.clone());
             }
-        }
 
-        self.communications_panel_elected
+            // Special case for sel light with which we don't mind which side is controlling
+            self.sel_light = self.communications_panel_captain.is_rmp_on()
+                && self.communications_panel_first_officer.is_rmp_on()
+                && (self.communications_panel_captain.is_abnormal_mode()
+                    || self.communications_panel_first_officer.is_abnormal_mode())
+        }
     }
 }
 
@@ -538,6 +547,8 @@ impl SimulationElement for Communications {
             // writer.write(&self.volume_mech_id, self.volume_mech);
             // writer.write(&self.volume_pa_id, self.volume_pa);
         }
+
+        writer.write(&self.sel_light_id, self.sel_light);
     }
 }
 
