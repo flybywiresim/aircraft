@@ -874,24 +874,24 @@
                     </UseTemplate>
                     <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Code">
                         <LEFT_SINGLE_CODE>
-                        (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) ! (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#)
-                        #LEFT_SINGLE_CODE#
+                            (#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) ! (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#)
+                            #LEFT_SINGLE_CODE#
                         </LEFT_SINGLE_CODE>
                     </UseTemplate>
                 </Case>
                 <Case Value="3">
                     <UseTemplate Name = "ASOBO_GT_Switch_3States">
                         <CODE_POS_0>
-                        0 (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#)
-                        #CODE_POS_0#
+                            0 (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#)
+                            #CODE_POS_0#
                         </CODE_POS_0>
                         <CODE_POS_1>
-                        1 (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#)
-                        #CODE_POS_1#
+                            1 (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#)
+                            #CODE_POS_1#
                         </CODE_POS_1>
                         <CODE_POS_2>
-                        2 (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#)
-                        #CODE_POS_2#
+                            2 (&gt;#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#)
+                            #CODE_POS_2#
                         </CODE_POS_2>
                         <STATE0_TEST>(#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 0 ==</STATE0_TEST>
                         <STATE1_TEST>(#SWITCH_POSITION_TYPE#:#SWITCH_POSITION_VAR#) 1 ==</STATE1_TEST>
