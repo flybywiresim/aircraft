@@ -154,65 +154,43 @@ export class FlightPlan extends BaseFlightPlan {
     // - disco
     // - destination airport
     // - complete alternate routing
-    enableAltn(atIndexInAlternate: number) {
+    async enableAltn(atIndex: number) {
         if (!this.alternateDestinationAirport) {
             throw new Error('[FMS/FPM] Cannot enable alternate with no alternate destination defined');
         }
 
-        this.redistributeLegsAt(this.activeLegIndex);
+        this.redistributeLegsAt(atIndex);
 
-        this.removeRange(this.activeLegIndex + 1, this.legCount);
+        this.removeRange(atIndex + 1, this.legCount);
 
-        this.enrouteSegment.allLegs.push({ isDiscontinuity: true });
+        await this.setDestinationAirport(this.alternateDestinationAirport.ident);
+        await this.setDestinationRunway(this.alternateFlightPlan.destinationRunway?.ident ?? undefined);
+        await this.setApproach(this.alternateFlightPlan.approach?.ident ?? undefined);
+        await this.setApproachVia(this.alternateFlightPlan.approachVia?.ident ?? undefined);
+        await this.setArrival(this.alternateFlightPlan.arrival?.ident ?? undefined);
+        await this.setArrivalEnrouteTransition(this.alternateFlightPlan.arrivalEnrouteTransition?.ident ?? undefined);
 
-        let indexOfFirstSegmentToReplace = -1;
+        const alternateLastEnrouteIndex = this.alternateFlightPlan.originSegment.legCount
+            + this.alternateFlightPlan.departureRunwayTransitionSegment.legCount
+            + this.alternateFlightPlan.departureSegment.legCount
+            + this.alternateFlightPlan.departureEnrouteTransitionSegment.legCount
+            + this.alternateFlightPlan.enrouteSegment.legCount + 1;
+        const alternateLegsToInsert = this.alternateFlightPlan.allLegs.slice(0, alternateLastEnrouteIndex).map((it) => (it.isDiscontinuity === false ? it.clone(this.enrouteSegment) : it));
 
-        let accumulator = 0;
-        for (let i = 0; i < this.alternateFlightPlan.orderedSegments.length; i++) {
-            const segment = this.alternateFlightPlan.orderedSegments[i];
-            accumulator += segment.legCount;
+        // TODO add the destination again - don't know if the origin leg of the altn is counted here
 
-            if (segment.legCount !== 0 && accumulator - segment.legCount === atIndexInAlternate) {
-                if (segment.class === SegmentClass.Departure) {
-                    throw new Error('[FMS/FPM] Tried to enable alternate ');
-                }
-
-                // If atIndexInAlternate ends up ati segment local index 0, we can move the entire segment into the flight plan
-
-                indexOfFirstSegmentToReplace = i;
-                break;
-            } else if (accumulator > atIndexInAlternate) {
-                if (segment.class === SegmentClass.Departure) {
-                    throw new Error('[FMS/FPM] Tried to enable alternate ');
-                }
-
-                // Otherwise, we only move the next segment onwards, and insert the legs from atIndexInAlternate to the last segment leg into the enroute
-
-                // TODO this is bad, we need to preserve segment topology...
-                // for example this breaks if we ENABLE ALTN into the approach, because we put the rest of approach into the
-                // enroute, and now the stringing to the missed approach breaks
-
-                indexOfFirstSegmentToReplace = i + 1;
-
-                const [, indexInSegment] = this.alternateFlightPlan.segmentPositionForIndex(atIndexInAlternate);
-
-                const legsToInsertIntoEnroute = segment.allLegs.slice(indexInSegment);
-
-                this.enrouteSegment.allLegs.push(...legsToInsertIntoEnroute);
-                break;
-            }
+        if (this.enrouteSegment.allLegs[this.enrouteSegment.legCount - 1]?.isDiscontinuity === false && alternateLegsToInsert[0]?.isDiscontinuity === false) {
+            this.enrouteSegment.allLegs.push({ isDiscontinuity: true });
         }
 
-        if (indexOfFirstSegmentToReplace !== -1) {
-            for (let i = indexOfFirstSegmentToReplace; i < this.alternateFlightPlan.orderedSegments.length; i++) {
-                this.replaceSegment(this.alternateFlightPlan.orderedSegments[i].clone(this));
-            }
-        }
+        this.enrouteSegment.allLegs.push(...alternateLegsToInsert);
+        this.syncSegmentLegsChange(this.enrouteSegment);
+        this.enrouteSegment.strung = false;
 
         this.deleteAlternateFlightPlan();
 
         this.enqueueOperation(FlightPlanQueuedOperation.Restring);
-        this.flushOperationQueue();
+        await this.flushOperationQueue();
     }
 
     setFixInfoEntry(index: 1 | 2 | 3 | 4, fixInfo: FixInfoEntry | null, notify = true): void {

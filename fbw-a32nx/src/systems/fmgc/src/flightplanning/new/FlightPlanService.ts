@@ -313,7 +313,7 @@ export class FlightPlanService implements FlightPlanInterface {
 
         const plan = this.flightPlanManager.get(finalIndex);
 
-        plan.enableAltn(atIndexInAlternate);
+        await plan.enableAltn(atIndexInAlternate);
     }
 
     async setAltitudeDescriptionAt(atIndex: number, altDesc: AltitudeDescriptor, isDescentConstraint: boolean, planIndex?: FlightPlanIndex, alternate?: boolean): Promise<void> {
