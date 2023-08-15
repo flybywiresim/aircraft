@@ -53,6 +53,10 @@ exports.getGitBuildInfo = () => {
 
         return buildInfo;
     } catch (e) {
-        console.log('Git failed', e);
+        if (process.env['CI']) {
+            throw e;
+        } else {
+            console.warn('Git failed', e);
+        }
     }
 };
