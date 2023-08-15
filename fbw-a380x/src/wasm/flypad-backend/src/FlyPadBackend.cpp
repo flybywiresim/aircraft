@@ -69,14 +69,15 @@ bool FlyPadBackend::initialize() {
   aircraftPresetPtr->initialize();
   pushbackPtr->initialize();
 
+  // read simulation data from simconnect
+  simConnectRequestData();
+
   std::cout << "FLYPAD_BACKEND: SimConnect connected." << std::endl;
   return (result == S_OK);
 }
 
 bool FlyPadBackend::onUpdate(double deltaTime) {
   if (isConnected) {
-    // read simulation data from simconnect
-    simConnectRequestData();
     simConnectProcessMessages();
 
     // detect pause
@@ -113,8 +114,8 @@ bool FlyPadBackend::simConnectRequestData() const {
   HRESULT result = S_OK;
 
   // Request data for each data structure - remember to increase the request id.
-  result &= SimConnect_RequestDataOnSimObject(hSimConnect, 0, DataStructureIDs::SimulationDataID, SIMCONNECT_OBJECT_ID_USER, SIMCONNECT_PERIOD_ONCE);
-  result &= SimConnect_RequestDataOnSimObject(hSimConnect, 1, DataStructureIDs::PushbackDataID, SIMCONNECT_OBJECT_ID_USER, SIMCONNECT_PERIOD_ONCE);
+  result &= SimConnect_RequestDataOnSimObject(hSimConnect, 0, DataStructureIDs::SimulationDataID, SIMCONNECT_OBJECT_ID_USER, SIMCONNECT_PERIOD_VISUAL_FRAME);
+  result &= SimConnect_RequestDataOnSimObject(hSimConnect, 1, DataStructureIDs::PushbackDataID, SIMCONNECT_OBJECT_ID_USER, SIMCONNECT_PERIOD_VISUAL_FRAME);
 
   if (result != S_OK) {
     return false;
