@@ -254,7 +254,7 @@ class CDUFlightPlanPage {
                             fixAnnotation = `C${magCourse}\u00b0`;
                             break;
                         case 8: // FA
-                            fixAnnotation = `${wp.ident.substring(0, 3)}${magCourse}`;
+                            fixAnnotation = `${WayPoint.formatIdentFromIcao(wp.additionalData.fixIcao ? wp.additionalData.fixIcao : '').substring(0, 3)}${magCourse}`;
                             break;
                         case 11: // FM
                             if (wpPrev) {

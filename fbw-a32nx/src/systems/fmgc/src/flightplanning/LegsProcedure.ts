@@ -520,6 +520,7 @@ export class LegsProcedure {
     const waypoint = this.buildWaypoint(FixNamingScheme.headingUntilAltitude(altitudeFeet), coordinates, magVar);
 
     waypoint.additionalData.vectorsAltitude = altitudeFeet;
+    waypoint.additionalData.fixIcao = leg.fixIcao;
 
     return waypoint;
   }
