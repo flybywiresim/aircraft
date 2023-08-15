@@ -74,9 +74,9 @@ export class FlightPlanLeg {
             isDiscontinuity: false,
             definition: JSON.parse(JSON.stringify(this.definition)),
             effectiveType: this.type,
-            modifiedHold: JSON.parse(JSON.stringify(this.modifiedHold)),
-            defaultHold: JSON.parse(JSON.stringify(this.defaultHold)),
-            cruiseStep: JSON.parse(JSON.stringify(this.cruiseStep)),
+            modifiedHold: this.modifiedHold ? JSON.parse(JSON.stringify(this.modifiedHold)) : undefined,
+            defaultHold: this.defaultHold ? JSON.parse(JSON.stringify(this.defaultHold)) : undefined,
+            cruiseStep: this.cruiseStep ? JSON.parse(JSON.stringify(this.cruiseStep)) : undefined,
         };
     }
 
