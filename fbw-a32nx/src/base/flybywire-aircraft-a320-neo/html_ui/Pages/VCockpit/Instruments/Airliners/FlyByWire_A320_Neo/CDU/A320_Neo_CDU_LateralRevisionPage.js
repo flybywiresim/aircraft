@@ -111,15 +111,15 @@ class CDULateralRevisionPage {
 
         let enableAltnLabel = "";
         let enableAltnCell = "";
-        if (!isDeparture && inAlternate) { // TODO this is wrong, should only show in primary flight plan
+        if (targetPlan['alternateDestinationAirport'] && !isDeparture && !inAlternate) {
             enableAltnLabel = "{sp}ENABLE[color]cyan";
             enableAltnCell = "{ALTN[color]cyan";
 
             mcdu.leftInputDelay[3] = () => {
                 return mcdu.getDelaySwitchPage();
             };
-            mcdu.onLeftInput[3] = () => {
-                mcdu.flightPlanService.enableAltn(waypointIndexFP);
+            mcdu.onLeftInput[3] = async () => {
+                await mcdu.flightPlanService.enableAltn(waypointIndexFP);
 
                 CDUFlightPlanPage.ShowPage(mcdu, 0, forPlan);
             };

@@ -65,7 +65,11 @@ export async function loadRunway(airport: Airport, runwayIdent: string): Promise
  *
  * @param airport Airport object
  */
-export async function loadAllDepartures(airport: Airport): Promise<Departure[]> {
+export async function loadAllDepartures(airport: Airport | undefined): Promise<Departure[]> {
+    if (!airport) {
+        return [];
+    }
+
     const db = NavigationDatabaseService.activeDatabase.backendDatabase;
 
     const proceduresAtAirport = await db.getDepartures(airport.ident);
@@ -78,7 +82,11 @@ export async function loadAllDepartures(airport: Airport): Promise<Departure[]> 
  *
  * @param airport Airport object
  */
-export async function loadAllArrivals(airport: Airport): Promise<Arrival[]> {
+export async function loadAllArrivals(airport: Airport | undefined): Promise<Arrival[]> {
+    if (!airport) {
+        return [];
+    }
+
     const db = NavigationDatabaseService.activeDatabase.backendDatabase;
 
     const proceduresAtAirport = await db.getArrivals(airport.ident);
@@ -91,7 +99,11 @@ export async function loadAllArrivals(airport: Airport): Promise<Arrival[]> {
  *
  * @param airport Airport object
  */
-export async function loadAllApproaches(airport: Airport): Promise<Approach[]> {
+export async function loadAllApproaches(airport: Airport | undefined): Promise<Approach[]> {
+    if (!airport) {
+        return [];
+    }
+
     const db = NavigationDatabaseService.activeDatabase.backendDatabase;
 
     const proceduresAtAirport = await db.getApproaches(airport.ident);
