@@ -1,6 +1,6 @@
 const { execSync } = require('child_process');
 
-evaluate = (cmd) => execSync(cmd, { shell: 'bash', stdio: ['ignore', 'pipe', 'ignore', 'ipc'] }).toString().trim();
+evaluate = (cmd) => execSync(cmd, { shell: 'bash', stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim();
 
 /**
  * @typedef GitBuildInfo
@@ -53,6 +53,6 @@ exports.getGitBuildInfo = () => {
 
         return buildInfo;
     } catch (e) {
-        console.log('Git failed');
+        console.log('Git failed', e);
     }
 };
