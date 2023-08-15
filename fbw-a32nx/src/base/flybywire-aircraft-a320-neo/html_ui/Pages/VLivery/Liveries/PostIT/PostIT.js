@@ -6,12 +6,14 @@ class PostIT extends TemplateElement {
     }
 
     get templateID() {
-        return "postit";
+        return "postitstatic";
     }
 
     connectedCallback() {
         super.connectedCallback();
-        this.postit = this.querySelector("#postit");
+        this.postit = this.querySelector("#postitarea");
+        this.mainframe = document.body;
+
 
         if (this.postit) {
             NXDataStore.getAndSubscribe('POSTIT_CONTENT', (_, text) => {
@@ -24,6 +26,7 @@ class PostIT extends TemplateElement {
 
             NXDataStore.getAndSubscribe('POSTIT_PAGE_COLOR', (_, color) => {
                 this.postit.style.backgroundColor = color;
+                this.mainframe.style.backgroundColor = color;
             }, 'yellow');
 
             NXDataStore.getAndSubscribe('POSTIT_PEN_COLOR', (_, color) => {

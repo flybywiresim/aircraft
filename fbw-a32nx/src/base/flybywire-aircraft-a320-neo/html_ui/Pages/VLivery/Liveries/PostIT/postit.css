@@ -1,42 +1,63 @@
 @font-face {
   font-family: "Caveat";
-  src: url("/Fonts/Caveat-Bold.ttf") format("truetype");
+  src: url("/Fonts/fbw-a32nx/Caveat-Bold.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
 
 @font-face {
-  font-family: "Marker";
-  src: url("/Fonts/PermanentMarker-Regular.ttf") format("truetype");
-  font-weight: normal;
-  font-style: normal;
+    font-family: "Marker";
+    src: url("/Fonts/fbw-a32nx/PermanentMarker-Regular.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
 }
 
 @font-face {
-  font-family: "Gochi";
-  src: url("/Fonts/GochiHand-Regular.ttf") format("truetype");
-  font-weight: normal;
-  font-style: normal;
+    font-family: "Gochi";
+    src: url("/Fonts/fbw-a32nx/GochiHand-Regular.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
 }
 
 @font-face {
-  font-family: "RockSalt";
-  src: url("/Fonts/RockSalt-Regular.ttf") format("truetype");
-  font-weight: normal;
-  font-style: normal;
+    font-family: "RockSalt";
+    src: url("/Fonts/fbw-a32nx/RockSalt-Regular.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
 }
 
 @font-face {
-  font-family: "Kalam";
-  src: url("/Fonts/Kalam-Regular.ttf") format("truetype");
-  font-weight: normal;
-  font-style: normal;
+    font-family: "Kalam";
+    src: url("/Fonts/fbw-a32nx/Kalam-Regular.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
 }
 
-#postit {
+/*
+body {
+  opacity: 100;
+} */
+
+#lines {
+  padding: 30px;
+}
+
+.line {
+  color: black;
+  font-family: ecam;
+}
+
+.large {
+  font-size: 100px;
+}
+
+.small {
+  font-size: 23px;
+}
+
+#postitarea {
   padding: 3.5rem;
-  background-image: url("/Images/PostIT/postit-bg.png");
-  background-color: rgb(255,255,151);
+  background-image: url("/Images/fbw-a32nx/PostIT/postit-bg.png");
   background-blend-mode: multiply;
   background-repeat: no-repeat;
   background-size: cover;
@@ -44,11 +65,9 @@
   line-height: 1.1;
   font-size: 100px;
   color: #000;
-  position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  right: 0;
+  width: 1022px;
+  height: 1022px;
+  margin: 1px;
   overflow-wrap: break-word;
   overflow: hidden;
 }

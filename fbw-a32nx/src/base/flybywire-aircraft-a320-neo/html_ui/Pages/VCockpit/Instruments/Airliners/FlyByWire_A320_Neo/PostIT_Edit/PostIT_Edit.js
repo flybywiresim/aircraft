@@ -3,6 +3,7 @@
 class PostIT_Edit extends BaseInstrument {
     constructor() {
         super();
+
         this.curTime = 0.0;
         this.needUpdate = false;
         this._isConnected = false;
@@ -13,10 +14,19 @@ class PostIT_Edit extends BaseInstrument {
         return "postit";
     }
 
+     genGuid() {
+        return 'INPT-xxxyxxyy'.replace(/[xy]/g, function (c) {
+          const r = Math.random() * 16 | 0,
+            v = c == 'x' ? r : (r & 0x3 | 0x8);
+          return v.toString(16);
+        });
+    }
+
     connectedCallback() {
         super.connectedCallback();
 
-        this.unlockControls();
+       // this.unlockControls();
+
 
         const doc = document;
 
@@ -27,6 +37,8 @@ class PostIT_Edit extends BaseInstrument {
         this.closeIcon = doc.getElementById("close");
         this.paletteIcon = doc.getElementById("palette");
         this.pencilIcon = doc.getElementById("pencil");
+        this.inputId = this.genGuid();
+        this.timeout = null;
 
         this.fonts = ['Caveat', 'Marker', 'Gochi', 'RockSalt', 'Kalam'];
         // IMPORTANT NOTE: The formatting of these strings is very important. (They MUST be defined as 'rgb(xxx, xxx, xxx)')
@@ -60,7 +72,7 @@ class PostIT_Edit extends BaseInstrument {
         }
 
         const setProperties = (options, textElemProperty, iconElem, dataStoreKey) => {
-            this.textElem.focus();
+         //   this.textElem.focus();
             const option = options[(options.indexOf(this.textElem.style[textElemProperty]) + 1) % options.length];
             this.textElem.style[textElemProperty] = option;
 
@@ -85,25 +97,25 @@ class PostIT_Edit extends BaseInstrument {
         });
 
         this.closeIcon.addEventListener("click", () => {
-            this.unlockControls();
             NXDataStore.set("POSTIT_CONTENT", this.textElem.value.substring(this.splitIndex));
             SimVar.SetSimVarValue("L:A32NX_MODEL_POSTIT_EDIT", "Bool", 0);
+            this.textElem.blur();
         });
 
-        this.textElem.addEventListener("input", (e) => {
-            console.log("event input fired, target:" + e.target);
-            // The character being replaced is U+007f (DELETE Character)
-            //this.textElem.value = this.textElem.value.replace(/\u007f/g, '');
-            //if (e.target.value.length < this.splitIndex) {
-            //    this.splitIndex = e.target.value.length;
-            //}
-        });
 
-        //this.textElem.addEventListener("click", () => {
-        //    console.log("textel focus (click), set focus, lock controls");
-        //    this.lockControls();
-        //    this.textElem.focus();
-        //});
+
+        this.textElem.addEventListener("blur", (e) => {
+            console.log("UBU BÖLUR")
+            Coherent.trigger('UNFOCUS_INPUT_FIELD', this.inputId);
+            Coherent.off('mousePressOutsideView');
+            Coherent.off('SetInputTextFromOS');
+            console.log("controls unlocked, input field blurred", this.inputId);
+        })
+
+        this.textElem.addEventListener("click", () => {
+            console.log("textel focus (click)", this.inputId);
+           // this.textElem.focus();
+        });
 
         this.textElem.addEventListener("keypress", (e) => {
             console.log("event keypress fired, value:" + e.target.value);
@@ -113,25 +125,45 @@ class PostIT_Edit extends BaseInstrument {
             if (this.invisElem.clientHeight > 1000) {
                 e.preventDefault();
             }
+            if(this.timeout) {
+                clearTimeout(this.timeout);
+                this.timeout = null;
+             }
+            this.timeout = setTimeout(() => {
+                this.textElem.blur();
+            }, 5000);
+
         });
 
-        //        this.textElem.addEventListener("focus", () => {
-        //            console.log("textel focus, set focus, lock controls");
-        //            this.lockControls();
-        //            //this.textElem.focus();
-        //        });
+        this.textElem.addEventListener("focus", () => {
+
+            this.lockControls();
+            if(this.timeout) {
+                clearTimeout(this.timeout);
+                this.timeout = null;
+             }
+            this.timeout = setTimeout(() => {
+                this.textElem.blur();
+            }, 5000);
+
+
+            //this.textElem.focus();
+        });
+
     }
 
     lockControls() {
-        Coherent.call("FOCUS_INPUT_FIELD");
-        Coherent.trigger("FOCUS_INPUT_FIELD");
-        console.log("controls locked, input field focused");
+        console.log("lock controls", this.inputId);
+        Coherent.on('SetInputTextFromOS', (text) => console.log("LOL",text));
+        Coherent.trigger('FOCUS_INPUT_FIELD', this.inputId, '', '', '', false);
+        //document.addEventListener('keydown', this.keydownHandler, true);
+      //  Coherent.on('SetInputTextFromOS', this.setValueFromOS);
+        Coherent.on('mousePressOutsideView', () => console.log("ASUH"));
     }
 
     unlockControls() {
-        Coherent.call("UNFOCUS_INPUT_FIELD");
-        Coherent.trigger("UNFOCUS_INPUT_FIELD");
-        console.log("controls unlocked, input field unfocused");
+        console.log("SUH");
+        this.textElem.blur();
     }
 
     get isInteractive() {
@@ -187,7 +219,7 @@ class PostIT_Edit extends BaseInstrument {
         }
     }
 
-    onFlightStart() {
+     onFlightStart() {
         this.fetchSimbriefData();
     }
 

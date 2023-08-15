@@ -1,41 +1,41 @@
 @font-face {
   font-family: "Caveat";
-  src: url("/Fonts/Caveat-Bold.ttf") format("truetype");
+  src: url("/Fonts/fbw-a32nx/Caveat-Bold.ttf") format("truetype");
   font-weight: normal;
   font-style: normal;
 }
 
 @font-face {
     font-family: "Marker";
-    src: url("/Fonts/PermanentMarker-Regular.ttf") format("truetype");
+    src: url("/Fonts/fbw-a32nx/PermanentMarker-Regular.ttf") format("truetype");
     font-weight: normal;
     font-style: normal;
 }
 
 @font-face {
     font-family: "Gochi";
-    src: url("/Fonts/GochiHand-Regular.ttf") format("truetype");
+    src: url("/Fonts/fbw-a32nx/GochiHand-Regular.ttf") format("truetype");
     font-weight: normal;
     font-style: normal;
 }
 
 @font-face {
     font-family: "RockSalt";
-    src: url("/Fonts/RockSalt-Regular.ttf") format("truetype");
+    src: url("/Fonts/fbw-a32nx/RockSalt-Regular.ttf") format("truetype");
     font-weight: normal;
     font-style: normal;
 }
 
 @font-face {
     font-family: "Kalam";
-    src: url("/Fonts/Kalam-Regular.ttf") format("truetype");
+    src: url("/Fonts/fbw-a32nx/Kalam-Regular.ttf") format("truetype");
     font-weight: normal;
     font-style: normal;
 }
 
 #text {
   padding: 3.5rem;
-  background-image: url("/Images/PostIT/postit-bg.png");
+  background-image: url("/Images/fbw-a32nx/PostIT/postit-bg.png");
   background-color: rgb(255,255,151);
   background-blend-mode: multiply;
   background-repeat: no-repeat;
