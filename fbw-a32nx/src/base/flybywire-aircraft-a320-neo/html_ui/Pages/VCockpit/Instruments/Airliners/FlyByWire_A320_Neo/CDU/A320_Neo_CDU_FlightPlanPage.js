@@ -104,9 +104,6 @@ class CDUFlightPlanPage {
             flightNumberText = SimVar.GetSimVarValue("ATC FLIGHT NUMBER", "string", "FMC");
         }
 
-        const stats = targetPlan.computeWaypointStatistics();
-        // const stats = fpm.getCurrentFlightPlan().computeWaypointStatistics(ppos);
-
         // TODO FIXME: Move from F-PLN A
         const utcTime = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
 
@@ -124,6 +121,7 @@ class CDUFlightPlanPage {
         const fmsGeometryProfile = mcdu.guidanceController.vnavDriver.mcduProfile;
         const fmsPseudoWaypoints = mcdu.guidanceController.currentPseudoWaypoints;
 
+        /** @type {Map<number, VerticalWaypointPrediction>} */
         let vnavPredictionsMapByWaypoint = null;
         if (fmsGeometryProfile && fmsGeometryProfile.isReadyToDisplay) {
             vnavPredictionsMapByWaypoint = fmsGeometryProfile.waypointPredictions;
@@ -335,8 +333,8 @@ class CDUFlightPlanPage {
                 // Active waypoint is live distance, others are distances in the flight plan
                 // TODO FIXME: actually use the correct prediction
                 if (!inAlternate) {
-                    if (fpIndex === targetPlan.activeLegIndex) {
-                        distance = stats.get(fpIndex).distanceFromPpos.toFixed(0);
+                    if (fpIndex === targetPlan.activeLegIndex && vnavPredictionsMapByWaypoint) {
+                        distance = vnavPredictionsMapByWaypoint.get(fpIndex).distanceFromAircraft.toFixed(0);
                     } else if (distanceFromLastLine > 0) {
                         distance = distanceFromLastLine.toFixed(0);
                     }
@@ -762,17 +760,17 @@ class CDUFlightPlanPage {
                     mcdu.tryUpdateRouteTrip(isFlying);
                 }
 
-                const destStats = stats.get(targetPlan.legCount - 1);
-
-                if (destStats) {
-                    destDistCell = destStats.distanceFromPpos.toFixed(0);
-                }
-
                 if (fmsGeometryProfile && fmsGeometryProfile.isReadyToDisplay) {
+                    const destDist = fmsGeometryProfile.getDistanceFromAircraftToDestination();
+
+                    if (Number.isFinite(destDist)) {
+                        destDistCell = destDist.toFixed(0);
+                    }
+
                     const destEfob = fmsGeometryProfile.getRemainingFuelAtDestination();
+
                     if (Number.isFinite(destEfob)) {
                         destEFOBCell = (NXUnits.poundsToUser(destEfob) / 1000).toFixed(1);
-
                     }
 
                     const timeRemaining = fmsGeometryProfile.getTimeToDestination();
@@ -787,7 +785,7 @@ class CDUFlightPlanPage {
             }
 
             destText[0] = ["\xa0DEST", "DIST\xa0\xa0EFOB", isFlying ? "\xa0UTC{sp}{sp}{sp}{sp}" : "TIME{sp}{sp}{sp}{sp}"];
-            destText[1] = [destCell, `{small}${destDistCell}\xa0${destEFOBCell.padStart(5, '\xa0')}{end}`, `{small}${destTimeCell}{end}{sp}{sp}{sp}{sp}`];
+            destText[1] = [destCell, `{small}${destDistCell.padStart(4, '\xa0')}\xa0${destEFOBCell.padStart(5, '\xa0')}{end}`, `{small}${destTimeCell}{end}{sp}{sp}{sp}{sp}`];
 
             addLskAt(5, () => mcdu.getDelaySwitchPage(),
                 () => {
