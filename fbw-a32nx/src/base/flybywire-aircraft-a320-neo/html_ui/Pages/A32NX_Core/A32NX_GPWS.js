@@ -405,7 +405,7 @@ class A32NX_GPWS {
             if (speed < 190 && radioAlt < 500) {
                 mode.current = 1;
             } else if (speed >= 190) {
-                const maxWarnAlt = 8.333 * speed - 1083.333;
+                const maxWarnAlt = Math.min(8.333 * speed - 1083.333, 1000);
                 mode.current = radioAlt < maxWarnAlt ? 3 : 0;
             }
         // Mode 4 B
