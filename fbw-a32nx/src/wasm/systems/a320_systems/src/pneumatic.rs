@@ -218,6 +218,7 @@ impl A320Pneumatic {
                 6e-2,
             ),
             packs: [
+                // TODO: Figure out the correct electrical busses for all PACK components
                 PackComplex::new(context, 1, ElectricalBusType::DirectCurrent(1)),
                 PackComplex::new(context, 2, ElectricalBusType::DirectCurrent(2)),
             ],
@@ -1621,8 +1622,6 @@ impl PackComplex {
             ),
             exhaust: PneumaticExhaust::new(0.3, 0.3, Pressure::new::<psi>(0.)),
             pack_flow_valve: DefaultValve::new_closed(),
-            // TODO: Check electrical supply of this
-            // I'm pretty sure PACK 1 is DC 1 and PACK 2 is DC 2, but happy to be corrected
             pack_inlet_pressure_sensor: PressureTransducer::new(powered_by),
         }
     }
