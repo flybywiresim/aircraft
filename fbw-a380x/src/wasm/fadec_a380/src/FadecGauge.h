@@ -163,7 +163,7 @@ class FadecGauge {
 
     // request data
     HRESULT result = SimConnect_RequestDataOnSimObject(hSimConnect, 0, DataTypesID::SimulationDataTypeId, SIMCONNECT_OBJECT_ID_USER,
-                                                       SIMCONNECT_PERIOD_SIM_FRAME);
+                                                       SIMCONNECT_PERIOD_VISUAL_FRAME);
 
     // check result of data request
     if (result != S_OK) {
