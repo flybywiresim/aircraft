@@ -111,8 +111,8 @@ impl<'a, 'b> MsfsSimulationBuilder<'a, 'b> {
         ))
     }
 
-    pub fn with_engines(self) -> Result<Self, Box<dyn Error>> {
-        self.with_aspect(engines)
+    pub fn with_engines(self, engine_count: usize) -> Result<Self, Box<dyn Error>> {
+        self.with_aspect(engines(engine_count))
     }
 
     pub fn with_failures(mut self, failures: Vec<(u64, FailureType)>) -> Self {
