@@ -911,11 +911,13 @@ impl Solenoid {
     }
 
     fn update(&mut self, controller: &impl ControllerSignal<SolenoidSignal>) {
-        if !self.is_powered {
-            self.is_energized = false;
+        self.is_energized = if !self.is_powered {
+            false
         } else if let Some(signal) = controller.signal() {
-            self.is_energized = signal.should_energize;
-        }
+            signal.should_energize
+        } else {
+            false
+        };
     }
 
     pub fn is_powered(&self) -> bool {
