@@ -1231,7 +1231,7 @@
     - Persistent
     - Enables developer-specific options like direct payload adjustments
 
-- A32NX_RADIO_AUTO_CALL_OUTS
+- A32NX_FWC_RADIO_AUTO_CALL_OUT_PINS
     - Flags
     - Radio altitude automatic call out pin programs
     - | Bit   | Meaning                   |

@@ -1,7 +1,7 @@
 // Note the master copy of these flags is contained in `fbw-a32nx\src\systems\shared\src\AutoCallOuts.ts`
 // Please do not edit here unless copying from there.
 
-/** Bit flags for the radio auto call outs (for CONFIG_A32NX_RADIO_AUTO_CALL_OUTS). */
+/** Bit flags for the radio auto call outs (for CONFIG_A32NX_FWC_RADIO_AUTO_CALL_OUT_PINS). */
 const RadioAutoCallOutFlags = Object.freeze({
     TwoThousandFiveHundred: 1 << 0,
     TwentyFiveHundred: 1 << 1,
@@ -118,7 +118,7 @@ class A32NX_GPWS {
         SimVar.SetSimVarValue("L:A32NX_GPWS_GS_Warning_Active", "Bool", 0);
         SimVar.SetSimVarValue("L:A32NX_GPWS_Warning_Active", "Bool", 0);
 
-        NXDataStore.getAndSubscribe('CONFIG_A32NX_RADIO_AUTO_CALL_OUTS', (k, v) => k === 'CONFIG_A32NX_RADIO_AUTO_CALL_OUTS' && (this.autoCallOutPins = v), DEFAULT_RADIO_AUTO_CALL_OUTS);
+        NXDataStore.getAndSubscribe('CONFIG_A32NX_FWC_RADIO_AUTO_CALL_OUT_PINS', (k, v) => k === 'CONFIG_A32NX_FWC_RADIO_AUTO_CALL_OUT_PINS' && (this.autoCallOutPins = v), DEFAULT_RADIO_AUTO_CALL_OUTS);
     }
 
     update(deltaTime, _core) {

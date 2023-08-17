@@ -11,7 +11,7 @@ import { SettingItem, SettingsPage } from '../Settings';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
 
 export const AutomaticCallOutsPage = () => {
-    const [autoCallOuts, setAutoCallOuts] = usePersistentNumberProperty('CONFIG_A32NX_RADIO_AUTO_CALL_OUTS', DEFAULT_RADIO_AUTO_CALL_OUTS);
+    const [autoCallOuts, setAutoCallOuts] = usePersistentNumberProperty('CONFIG_A32NX_FWC_RADIO_AUTO_CALL_OUT_PINS', DEFAULT_RADIO_AUTO_CALL_OUTS);
 
     const toggleRadioAcoFlag = (flag: RadioAutoCallOutFlags): void => {
         let newFlags = autoCallOuts;
