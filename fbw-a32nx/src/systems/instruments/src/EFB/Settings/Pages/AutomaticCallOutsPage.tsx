@@ -49,56 +49,56 @@ export const AutomaticCallOutsPage = () => {
         <SettingsPage name={t('Settings.AutomaticCallOuts.Title')} backRoute={`/settings/${pathify('Aircraft Options / Pin Programs')}`}>
             <div className="grid grid-cols-2 gap-x-6">
                 <div className="mr-3 divide-y-2 divide-theme-accent">
-                    <SettingItem name={t('Settings.AutomaticCallOuts.TwoThousandFiveHundred')}>
+                    <SettingItem name="Two Thousand Five Hundred">
                         <Toggle value={(autoCallOuts & RadioAutoCallOutFlags.TwoThousandFiveHundred) > 0} onToggle={() => toggleRadioAcoFlag(RadioAutoCallOutFlags.TwoThousandFiveHundred)} />
                     </SettingItem>
-                    <SettingItem name={t('Settings.AutomaticCallOuts.TwentyFiveHundred')}>
+                    <SettingItem name="Twenty Five Hundred">
                         <Toggle value={(autoCallOuts & RadioAutoCallOutFlags.TwentyFiveHundred) > 0} onToggle={() => toggleRadioAcoFlag(RadioAutoCallOutFlags.TwentyFiveHundred)} />
                     </SettingItem>
-                    <SettingItem name={t('Settings.AutomaticCallOuts.TwoThousand')}>
+                    <SettingItem name="Two Thousand">
                         <Toggle value={(autoCallOuts & RadioAutoCallOutFlags.TwoThousand) > 0} onToggle={() => toggleRadioAcoFlag(RadioAutoCallOutFlags.TwoThousand)} />
                     </SettingItem>
-                    <SettingItem name={t('Settings.AutomaticCallOuts.OneThousand')}>
+                    <SettingItem name="One Thousand">
                         <Toggle value={(autoCallOuts & RadioAutoCallOutFlags.OneThousand) > 0} onToggle={() => toggleRadioAcoFlag(RadioAutoCallOutFlags.OneThousand)} />
                     </SettingItem>
-                    <SettingItem name={t('Settings.AutomaticCallOuts.FiveHundred')}>
+                    <SettingItem name="Five Hundred">
                         <Toggle value={(autoCallOuts & RadioAutoCallOutFlags.FiveHundred) > 0} onToggle={() => toggleRadioAcoFlag(RadioAutoCallOutFlags.FiveHundred)} />
                     </SettingItem>
-                    <SettingItem name={t('Settings.AutomaticCallOuts.FourHundred')}>
+                    <SettingItem name="Four Hundred">
                         <Toggle value={(autoCallOuts & RadioAutoCallOutFlags.FourHundred) > 0} onToggle={() => toggleRadioAcoFlag(RadioAutoCallOutFlags.FourHundred)} />
                     </SettingItem>
-                    <SettingItem name={t('Settings.AutomaticCallOuts.ThreeHundred')}>
+                    <SettingItem name="Three Hundred">
                         <Toggle value={(autoCallOuts & RadioAutoCallOutFlags.ThreeHundred) > 0} onToggle={() => toggleRadioAcoFlag(RadioAutoCallOutFlags.ThreeHundred)} />
                     </SettingItem>
-                    <SettingItem name={t('Settings.AutomaticCallOuts.TwoHundred')}>
+                    <SettingItem name="Two Hundred">
                         <Toggle value={(autoCallOuts & RadioAutoCallOutFlags.TwoHundred) > 0} onToggle={() => toggleRadioAcoFlag(RadioAutoCallOutFlags.TwoHundred)} />
                     </SettingItem>
-                    <SettingItem name={t('Settings.AutomaticCallOuts.OneHundred')}>
+                    <SettingItem name="One Hundred">
                         <Toggle value={(autoCallOuts & RadioAutoCallOutFlags.OneHundred) > 0} onToggle={() => toggleRadioAcoFlag(RadioAutoCallOutFlags.OneHundred)} />
                     </SettingItem>
                 </div>
                 <div className="ml-3 divide-y-2 divide-theme-accent">
-                    <SettingItem name={t('Settings.AutomaticCallOuts.Fifty')}>
+                    <SettingItem name="Fifty">
                         <Toggle value={(autoCallOuts & RadioAutoCallOutFlags.Fifty) > 0} onToggle={() => toggleRadioAcoFlag(RadioAutoCallOutFlags.Fifty)} />
                     </SettingItem>
 
-                    <SettingItem name={t('Settings.AutomaticCallOuts.Forty')}>
+                    <SettingItem name="Forty">
                         <Toggle value={(autoCallOuts & RadioAutoCallOutFlags.Forty) > 0} onToggle={() => toggleRadioAcoFlag(RadioAutoCallOutFlags.Forty)} />
                     </SettingItem>
 
-                    <SettingItem name={t('Settings.AutomaticCallOuts.Thirty')}>
+                    <SettingItem name="Thirty">
                         <Toggle value={(autoCallOuts & RadioAutoCallOutFlags.Thirty) > 0} onToggle={() => toggleRadioAcoFlag(RadioAutoCallOutFlags.Thirty)} />
                     </SettingItem>
 
-                    <SettingItem name={t('Settings.AutomaticCallOuts.Twenty')}>
+                    <SettingItem name="Twenty">
                         <Toggle value={(autoCallOuts & RadioAutoCallOutFlags.Twenty) > 0} onToggle={() => toggleRadioAcoFlag(RadioAutoCallOutFlags.Twenty)} />
                     </SettingItem>
 
-                    <SettingItem name={t('Settings.AutomaticCallOuts.Ten')}>
+                    <SettingItem name="Ten">
                         <Toggle value={(autoCallOuts & RadioAutoCallOutFlags.Ten) > 0} onToggle={() => toggleRadioAcoFlag(RadioAutoCallOutFlags.Ten)} />
                     </SettingItem>
 
-                    <SettingItem name={t('Settings.AutomaticCallOuts.Five')}>
+                    <SettingItem name="Five">
                         <Toggle value={(autoCallOuts & RadioAutoCallOutFlags.Five) > 0} onToggle={() => toggleRadioAcoFlag(RadioAutoCallOutFlags.Five)} />
                     </SettingItem>
                 </div>
