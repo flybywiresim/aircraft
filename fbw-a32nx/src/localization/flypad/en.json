@@ -496,6 +496,7 @@
     },
     "AutomaticCallOuts": {
       "Title": "Automatic Call Outs",
+      "FiveHundredGlide": "Inhibited When Glideslope Captured",
       "ResetStandardConfig": "Reset To Standard Configuration",
       "Reset": "Reset"
     },

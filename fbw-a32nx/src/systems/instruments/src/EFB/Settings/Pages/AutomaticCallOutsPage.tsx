@@ -42,6 +42,11 @@ export const AutomaticCallOutsPage = () => {
             }
         }
 
+        // can't have 500 glide without 500
+        if ((newFlags & RadioAutoCallOutFlags.FiveHundred) === 0) {
+            newFlags &= ~RadioAutoCallOutFlags.FiveHundredGlide;
+        }
+
         setAutoCallOuts(newFlags);
     };
 
@@ -61,9 +66,20 @@ export const AutomaticCallOutsPage = () => {
                     <SettingItem name="One Thousand">
                         <Toggle value={(autoCallOuts & RadioAutoCallOutFlags.OneThousand) > 0} onToggle={() => toggleRadioAcoFlag(RadioAutoCallOutFlags.OneThousand)} />
                     </SettingItem>
+                    { /* TODO enable this when the new rust FWC is merged with the 500 hundred GS inhibit logic */ }
+                    { /* <SettingGroup> */ }
+                    { /* groupType="parent" */ }
                     <SettingItem name="Five Hundred">
                         <Toggle value={(autoCallOuts & RadioAutoCallOutFlags.FiveHundred) > 0} onToggle={() => toggleRadioAcoFlag(RadioAutoCallOutFlags.FiveHundred)} />
                     </SettingItem>
+                    { /* <SettingItem name={t('Settings.AutomaticCallOuts.FiveHundredGlide')} groupType="sub">
+                            <Toggle
+                                value={(autoCallOuts & RadioAutoCallOutFlags.FiveHundredGlide) > 0}
+                                disabled={(autoCallOuts & RadioAutoCallOutFlags.FiveHundred) === 0}
+                                onToggle={() => toggleRadioAcoFlag(RadioAutoCallOutFlags.FiveHundredGlide)}
+                            />
+                        </SettingItem> */ }
+                    { /* </SettingGroup> */ }
                     <SettingItem name="Four Hundred">
                         <Toggle value={(autoCallOuts & RadioAutoCallOutFlags.FourHundred) > 0} onToggle={() => toggleRadioAcoFlag(RadioAutoCallOutFlags.FourHundred)} />
                     </SettingItem>
