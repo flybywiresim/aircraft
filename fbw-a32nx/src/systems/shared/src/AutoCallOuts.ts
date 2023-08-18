@@ -18,6 +18,7 @@ export enum RadioAutoCallOutFlags {
     Twenty = 1 << 12,
     Ten = 1 << 13,
     Five = 1 << 14,
+    FiveHundredGlide = 1 << 15,
 }
 
 /** The default (Airbus basic configuration) radio altitude auto call outs. */
