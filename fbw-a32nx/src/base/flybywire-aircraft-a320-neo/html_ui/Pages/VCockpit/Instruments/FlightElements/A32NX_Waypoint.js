@@ -141,6 +141,8 @@ class WayPoint {
             return 'CF';
         } else if (icao.charAt(0) === 'R') {
             return `${icao.substring(3, 7)}${icao.substring(9, 12).trim()}`;
+        } else if (icao.charAt(0) === 'R') {
+            return `${icao.substring(3, 7)}${icao.substring(9, 12).trim()}`;
         }
         return icao.substring(7, 12).trim();
     }
