@@ -35,6 +35,7 @@
 1. [EFB] Added UI message on fuel/payload page when GSX is activated - @frankkopp (Frank Kopp)
 1. [FWC] WING TANK LO LVL message now considers centre tank mode selector - @tracernz (Mike)
 1. [MCDU] PERF APPR page no longer demands QNH and TEMP when outside 180NM from destination - @robertxing2004 (robeet)
+1. [FMS] Add basic support for FA legs - @tracernz (Mike)
 
 ## 0.10.0
 
