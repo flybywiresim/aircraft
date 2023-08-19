@@ -12,26 +12,23 @@ pub(super) fn engines(
 ) -> impl FnOnce(&mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
     move |builder: &mut MsfsAspectBuilder| {
         for engine_number in 1..=engine_count {
+            let starter_pressurized_variable =
+                Variable::named(&format!("PNEU_ENG_{}_STARTER_PRESSURIZED", engine_number));
+
+            builder.init_variable(starter_pressurized_variable.clone(), 0.);
             builder.on_change(
                 ExecuteOn::PostTick,
                 vec![
-                    Variable::named(&format!(
-                        "PNEU_ENG_{}_STARTER_CONTAINER_PRESSURE",
-                        engine_number
-                    )),
+                    starter_pressurized_variable,
                     Variable::aircraft("BLEED AIR ENGINE", "bool", engine_number),
-                    Variable::aircraft("AMBIENT PRESSURE", "psi", 0),
                 ],
                 Box::new(move |_, values| {
-                    let ambient_pressure_psi = values[2];
-                    let starter_pressure_psig = values[0] - ambient_pressure_psi;
+                    let sim_engine_start_allowed = to_bool(values[0]);
                     let is_sim_bleed_air_active = to_bool(values[1]);
 
                     // These values are very arbitrary. Whether crossbleed starts work or not is binary for now,
                     // until we have a custom engine model
-                    if (starter_pressure_psig > 10. && !is_sim_bleed_air_active)
-                        || (starter_pressure_psig < 5. && is_sim_bleed_air_active)
-                    {
+                    if sim_engine_start_allowed != is_sim_bleed_air_active {
                         toggle_sim_engine_bleed_air(engine_number);
                     }
                 }),

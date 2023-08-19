@@ -1029,6 +1029,7 @@ struct EngineBleedAirSystem {
     transfer_pressure_transducer_pressure_id: VariableIdentifier,
     regulated_pressure_transducer_pressure_id: VariableIdentifier,
     differential_pressure_transducer_pressure_id: VariableIdentifier,
+    engine_starter_pressurized_id: VariableIdentifier,
 
     number: usize,
     fan_compression_chamber_controller: EngineCompressionChamberController, // Controls pressure just behind the main fan
@@ -1048,6 +1049,7 @@ struct EngineBleedAirSystem {
     precooler_supply_pipe: PneumaticPipe,
     engine_starter_exhaust: PneumaticExhaust,
     engine_starter_container: PneumaticPipe,
+    engine_starter_pressurized: bool,
     engine_starter_valve: DefaultValve,
     fan_air_valve: ElectroPneumaticValve,
     precooler: Precooler,
@@ -1058,6 +1060,9 @@ struct EngineBleedAirSystem {
     bleed_temperature_sensor: BleedTemperatureSensor,
 }
 impl EngineBleedAirSystem {
+    const MIN_ENGINE_START_CONTAINER_PRESSURE_PSIG_HIGH: f64 = 10.;
+    const MIN_ENGINE_START_CONTAINER_PRESSURE_PSIG_LOW: f64 = 5.;
+
     fn new(context: &mut InitContext, number: usize, powered_by: ElectricalBusType) -> Self {
         Self {
             number,
@@ -1096,6 +1101,8 @@ impl EngineBleedAirSystem {
                 "PNEU_ENG_{}_DIFFERENTIAL_TRANSDUCER_PRESSURE",
                 number
             )),
+            engine_starter_pressurized_id: context
+                .get_identifier(format!("PNEU_ENG_{}_STARTER_PRESSURIZED", number)),
             fan_compression_chamber_controller: EngineCompressionChamberController::new(2., 0.),
             // Maximum IP bleed pressure output should be about 150 psig
             intermediate_pressure_compression_chamber_controller:
@@ -1162,6 +1169,7 @@ impl EngineBleedAirSystem {
                 Pressure::new::<psi>(14.7),
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
+            engine_starter_pressurized: false,
             engine_starter_exhaust: PneumaticExhaust::new(10., 10., Pressure::new::<psi>(0.)),
             engine_starter_valve: DefaultValve::new_closed(),
             precooler: Precooler::new(900. * 2.),
@@ -1246,6 +1254,7 @@ impl EngineBleedAirSystem {
             );
         self.engine_starter_exhaust
             .update_move_fluid(context, &mut self.engine_starter_container);
+        self.update_engine_start_pressurization(context);
 
         self.transfer_pressure_transducer
             .update(context, &self.transfer_pressure_pipe);
@@ -1256,6 +1265,18 @@ impl EngineBleedAirSystem {
 
         self.bleed_temperature_sensor
             .update(&self.precooler_outlet_pipe);
+    }
+
+    fn update_engine_start_pressurization(&mut self, context: &UpdateContext) {
+        let starter_container_pressure_psig =
+            self.engine_starter_container.pressure() - context.ambient_pressure();
+
+        self.engine_starter_pressurized = (!self.engine_starter_pressurized
+            && starter_container_pressure_psig.get::<psi>()
+                > Self::MIN_ENGINE_START_CONTAINER_PRESSURE_PSIG_HIGH)
+            || (self.engine_starter_pressurized
+                && starter_container_pressure_psig.get::<psi>()
+                    > Self::MIN_ENGINE_START_CONTAINER_PRESSURE_PSIG_LOW);
     }
 
     fn intermediate_pressure(&self) -> Pressure {
@@ -1405,6 +1426,10 @@ impl SimulationElement for EngineBleedAirSystem {
         writer.write(
             &self.starter_valve_open_id,
             self.engine_starter_valve.is_open(),
+        );
+        writer.write(
+            &self.engine_starter_pressurized_id,
+            self.engine_starter_pressurized,
         );
     }
 }

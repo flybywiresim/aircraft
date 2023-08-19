@@ -2789,6 +2789,13 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - 1
         - 2
 
+- A32NX_PNEU_ENG_{number}_STARTER_PRESSURIZED:
+    - Indicates whether enough bleed air is supplied to the starter to start the engine
+    - Bool
+    - {number}
+        - 1
+        - 2
+
 - A32NX_PNEU_ENG_{number}_TRANSFER_TRANSDUCER_PRESSURE
     - Pressure measured at the transfer pressure transducer, -1 if no output
     - psi
