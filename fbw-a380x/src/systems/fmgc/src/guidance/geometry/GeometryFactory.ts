@@ -145,7 +145,7 @@ export namespace GeometryFactory {
                 const prevLeg = geometry.legs.get(i - 1);
 
                 const oldInboundTransition = geometry.transitions.get(i - 1);
-                const newInboundTransition = TransitionPicker.forLegs(prevLeg, newLeg);
+                const newInboundTransition = prevLeg && newLeg && TransitionPicker.forLegs(prevLeg, newLeg);
 
                 const transitionsMatch = oldInboundTransition?.repr === newInboundTransition?.repr;
 

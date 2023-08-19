@@ -1,9 +1,6 @@
 // private variables and function are marked with _ prefix
-/** The MCDU scratchpad display. This belongs to the MCDU itself. */
 class ScratchpadDisplay {
-    constructor(mcdu, scratchpadElement) {
-        this.guid = `SP-${Utils.generateGUID()}`;
-        this._mcdu = mcdu;
+    constructor(scratchpadElement) {
         this._scratchpadElement = scratchpadElement;
         this._scratchpadElement.className = "white";
     }
@@ -11,42 +8,21 @@ class ScratchpadDisplay {
     write(value = "", color = "white") {
         this._scratchpadElement.textContent = value;
         this._scratchpadElement.className = color;
-        this._mcdu.sendUpdate();
     }
 
     setStyle(style) {
         this._scratchpadElement.style = style;
     }
-
-    getText() {
-        return this._scratchpadElement.textContent;
-    }
-
-    getColor() {
-        return this._scratchpadElement.className;
-    }
 }
 
-/**
- * The scratchpad for each subsystem. These belong to the subsystems,
- * and one will be connected to the MCDU display (not paused) at any given time.
- */
 class ScratchpadDataLink {
-    constructor(mcdu, displayUnit, subsystem, keypadEnabled = true) {
-        this._mcdu = mcdu;
-        this._subsystem = subsystem;
-
-        // actual scratchpad text/colour
-        this._value = "";
-        this._colour = "";
-
-        // internal state
+    constructor(mcdu, displayUnit) {
+        this.guid = `SP-${Utils.generateGUID()}`;
         this._text = "";
-        this._message = undefined;
+        this._message = {};
         this._status = 0;
+        this._mcdu = mcdu;
         this._displayUnit = displayUnit;
-        this._isPaused = true;
-        this._keypadEnabled = keypadEnabled;
     }
 
     setText(text) {
@@ -70,9 +46,6 @@ class ScratchpadDataLink {
     }
 
     addChar(char) {
-        if (!this._keypadEnabled) {
-            return;
-        }
         if (this._status !== SpDisplayStatus.userContent) {
             this.setText(char);
         } else if (this._text.length + 1 < 23) {
@@ -81,9 +54,6 @@ class ScratchpadDataLink {
     }
 
     clear() {
-        if (!this._keypadEnabled) {
-            return;
-        }
         if (this._status === SpDisplayStatus.empty) {
             this.setText(FMCMainDisplay.clrValue);
         } else if (this._status === SpDisplayStatus.clrValue) {
@@ -97,9 +67,6 @@ class ScratchpadDataLink {
     }
 
     clearHeld() {
-        if (!this._keypadEnabled) {
-            return;
-        }
         if (this._status === SpDisplayStatus.clrValue || this._status === SpDisplayStatus.userContent) {
             this.setText("");
         }
@@ -110,9 +77,6 @@ class ScratchpadDataLink {
     };
 
     plusMinus(char) {
-        if (!this._keypadEnabled) {
-            return;
-        }
         if (this._status === SpDisplayStatus.userContent && this._text.slice(-1) === "-") {
             this.setText(this._text.slice(0, -1) + "+");
         } else {
@@ -132,35 +96,26 @@ class ScratchpadDataLink {
         return userContent;
     }
 
+    setDisplayStyle(style) {
+        this._displayUnit.setStyle(style);
+    }
+
     getText() {
         return this._text;
     };
 
+    getDisplayText() {
+        return this._displayUnit._scratchpadElement.textContent;
+    }
+
     getColor() {
-        return this._colour;
-    }
-
-    pause() {
-        this._isPaused = true;
-    }
-
-    resume() {
-        this._isPaused = false;
-        this._display(this._value, this._colour);
+        return this._displayUnit._scratchpadElement.className;
     }
 
     _display(value, color = "white") {
-        // store the content whether we're paused or not
-        this._colour = color;
-        this._value = value;
+        this._displayUnit.write(value, color);
         this._updateStatus(value);
-
-        // if we're not paused, write to the display
-        if (!this._isPaused) {
-            this._displayUnit.write(value, color);
-        }
-        // flag the annunciator if needed
-        this._mcdu.setRequest(this._subsystem);
+        this._mcdu.sendUpdate();
     }
 
     _updateStatus(scratchpadText) {

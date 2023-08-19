@@ -2,7 +2,17 @@
 
 import 'instruments/src/MFD/pages/common/style.scss';
 
-import { ArraySubject, ClockEvents, ComponentProps, DisplayComponent, EventBus, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+import {
+    ArraySubject,
+    ClockEvents,
+    ComponentProps,
+    DisplayComponent,
+    EventBus,
+    FSComponent,
+    SimVarValueType,
+    Subject,
+    VNode,
+} from '@microsoft/msfs-sdk';
 
 import { FmsHeader } from 'instruments/src/MFD/pages/common/FmsHeader';
 import { MouseCursor } from 'instruments/src/MFD/pages/common/MouseCursor';
@@ -23,7 +33,17 @@ import { MfdFmsFplnDep } from 'instruments/src/MFD/pages/FMS/F-PLN/DEPARTURE';
 import { MfdFmsFplnArr } from 'instruments/src/MFD/pages/FMS/F-PLN/ARRIVAL';
 import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/new/NavigationDatabaseService';
-import { GuidanceController } from '@fmgc/guidance/GuidanceController';
+import { Fmgc, GuidanceController } from '@fmgc/guidance/GuidanceController';
+import { FmgcFlightPhase } from '@shared/flightphase';
+import { SpeedLimit } from '@fmgc/guidance/vnav/SpeedLimit';
+import { FlapConf } from '@fmgc/guidance/vnav/common';
+import { FmcWinds, FmcWindVector } from '@fmgc/guidance/vnav/wind/types';
+import { Coordinates, Feet } from 'msfs-geo';
+import { EfisSymbols } from '@fmgc/efis/EfisSymbols';
+import { NavaidTuner } from '@fmgc/navigation/NavaidTuner';
+import { NavaidSelectionManager } from '@fmgc/navigation/NavaidSelectionManager';
+import { LandingSystemSelectionManager } from '@fmgc/navigation/LandingSystemSelectionManager';
+import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
 import { MfdSimvars } from './shared/MFDSimvarPublisher';
 import { DisplayUnit } from '../MsfsAvionicsCommon/displayUnit';
 
@@ -48,7 +68,138 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> {
 
     private flightPlanService = new FlightPlanService(this.props.bus);
 
-    private guidanceController = new GuidanceController(null, this.flightPlanService);
+    private fmgc: Fmgc = {
+        getZeroFuelWeight(): number {
+            return 300_000;
+        },
+        getFOB(): number {
+            return 100_0000;
+        },
+        getV2Speed(): Knots {
+            return 150;
+        },
+        getTropoPause(): Feet {
+            return 36_000;
+        },
+        getManagedClimbSpeed(): Knots {
+            return 250;
+        },
+        getManagedClimbSpeedMach(): Mach {
+            return 0.78;
+        },
+        getAccelerationAltitude(): Feet {
+            return 1_500;
+        },
+        getThrustReductionAltitude(): Feet {
+            return 1_500;
+        },
+        getOriginTransitionAltitude(): Feet | undefined {
+            return 1_500;
+        },
+        getCruiseAltitude(): Feet {
+            return 32_000;
+        },
+        getFlightPhase(): FmgcFlightPhase {
+            return FmgcFlightPhase.Preflight;
+        },
+        getManagedCruiseSpeed(): Knots {
+            return 280;
+        },
+        getManagedCruiseSpeedMach(): Mach {
+            return 0.8;
+        },
+        getClimbSpeedLimit(): SpeedLimit {
+            return { speed: 250, underAltitude: 10_000 };
+        },
+        getDescentSpeedLimit(): SpeedLimit {
+            return { speed: 250, underAltitude: 10_000 };
+        },
+        getPreSelectedClbSpeed(): Knots {
+            return 250;
+        },
+        getPreSelectedCruiseSpeed(): Knots {
+            return 280;
+        },
+        getPreSelectedDescentSpeed(): Knots {
+            return 220;
+        },
+        getTakeoffFlapsSetting(): FlapConf | undefined {
+            return FlapConf.CONF_1;
+        },
+        getManagedDescentSpeed(): Knots {
+            return 220;
+        },
+        getManagedDescentSpeedMach(): Mach {
+            return 0.5;
+        },
+        getApproachSpeed(): Knots {
+            return 136;
+        },
+        getFlapRetractionSpeed(): Knots {
+            return 141;
+        },
+        getSlatRetractionSpeed(): Knots {
+            return 159;
+        },
+        getCleanSpeed(): Knots {
+            return 135;
+        },
+        getTripWind(): number {
+            return 0;
+        },
+        getWinds(): FmcWinds {
+            return { climb: [], cruise: [], des: [], alternate: null };
+        },
+        getApproachWind(): FmcWindVector {
+            return { speed: 0, direction: 0 };
+        },
+        getApproachQnh(): number {
+            return 1013;
+        },
+        getApproachTemperature(): number {
+            return 15;
+        },
+        getDestEFOB(useFob: boolean): number { // Metric tons
+            return useFob ? 12 : 11;
+        },
+        getDepartureElevation(): Feet | null {
+            return 100;
+        },
+        getDestinationElevation(): Feet {
+            return 100;
+        },
+    }
+
+    private guidanceController = new GuidanceController(this.fmgc, this.flightPlanService);
+
+    private navigationProvider: NavigationProvider = {
+        getEpe(): number {
+            return 0.1;
+        },
+        getPpos(): Coordinates | null {
+            const lat = SimVar.GetSimVarValue('PLANE LATITUDE', SimVarValueType.Degree);
+            const long = SimVar.GetSimVarValue('PLANE LONGITUDE', SimVarValueType.Degree);
+
+            return { lat, long };
+        },
+        getBaroCorrectedAltitude(): number | null {
+            return 0;
+        },
+        getPressureAltitude(): number | null {
+            return 0;
+        },
+        getRadioHeight(): number | null {
+            return 0;
+        },
+    }
+
+    private navaidSelectionManager = new NavaidSelectionManager(this.flightPlanService, this.navigationProvider);
+
+    private landingSystemSelectionManager = new LandingSystemSelectionManager(this.flightPlanService, this.navigationProvider)
+
+    private navaidTuner = new NavaidTuner(this.navigationProvider, this.navaidSelectionManager, this.landingSystemSelectionManager);
+
+    private efisSymbols = new EfisSymbols(this.guidanceController, this.flightPlanService, this.navaidTuner);
 
     private displayBrightness = Subject.create(0);
 
@@ -85,6 +236,23 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> {
         super.onAfterRender(node);
 
         await this.initializeFlightPlans();
+        this.navaidTuner.init();
+        this.efisSymbols.init();
+        this.guidanceController.init();
+
+        let lastUpdateTime = Date.now();
+        setInterval(() => {
+            const now = Date.now();
+            const dt = now - lastUpdateTime;
+
+            this.navaidSelectionManager.update(dt);
+            this.landingSystemSelectionManager.update(dt);
+            this.navaidTuner.update(dt);
+            this.efisSymbols.update(dt);
+            this.guidanceController.update(dt);
+
+            lastUpdateTime = now;
+        }, 100);
 
         const isCaptainSide = getDisplayIndex() === 1;
 

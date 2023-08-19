@@ -2,7 +2,6 @@ class CDUAtcMenu {
     static ShowPage(mcdu) {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.ATCMenu;
-        mcdu.activeSystem = 'ATSU';
 
         // regular update due to showing dynamic data on this page
         mcdu.page.SelfPtr = setTimeout(() => {

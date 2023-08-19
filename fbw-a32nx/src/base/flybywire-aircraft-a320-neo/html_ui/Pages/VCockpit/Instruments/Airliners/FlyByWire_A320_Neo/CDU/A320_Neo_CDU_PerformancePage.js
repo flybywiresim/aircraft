@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 class CDUPerformancePage {
     static ShowPage(mcdu, _phase = undefined) {
         mcdu.activeSystem = 'FMGC';
@@ -28,21 +32,25 @@ class CDUPerformancePage {
             }
         };
 
+        // TODO SEC F-PLN
+        const targetPlan = mcdu.flightPlanService.active;
+
         let titleColor = "white";
         if (mcdu.flightPhaseManager.phase === FmgcFlightPhases.TAKEOFF) {
             titleColor = "green";
         }
 
         // check if we even have an airport
-        const hasOrigin = !!mcdu.flightPlanManager.getOrigin();
+        const hasOrigin = !!targetPlan.originAirport;
 
         // runway
         let runway = "";
         let hasRunway = false;
         if (hasOrigin) {
-            const runwayObj = mcdu.flightPlanManager.getOriginRunway();
+            const runwayObj = targetPlan.originRunway;
+
             if (runwayObj) {
-                runway = Avionics.Utils.formatRunway(runwayObj.designation);
+                runway = runwayObj.ident.substring(2);
                 hasRunway = true;
             }
         }
@@ -68,10 +76,9 @@ class CDUPerformancePage {
                         mcdu.unconfirmedV1Speed = undefined;
                     } else {
                         // not real: v-speed helper
-                        const gw = mcdu.getGrossWeight();
-                        if (mcdu.flaps && !gw) {
-                            mcdu.addMessageToQueue(NXSystemMessages.initializeWeightOrCg);
-                        } else if (mcdu.flaps && gw) {
+                        if (mcdu.flaps && !isFinite(mcdu.zeroFuelWeight)) {
+                            mcdu.setScratchpadMessage(NXSystemMessages.initializeWeightOrCg);
+                        } else if (mcdu.flaps && isFinite(mcdu.zeroFuelWeight)) {
                             mcdu.setScratchpadText(mcdu._getV1Speed().toString());
                         } else {
                             mcdu.setScratchpadMessage(NXSystemMessages.formatError);
@@ -99,10 +106,9 @@ class CDUPerformancePage {
                         mcdu.vRSpeed = mcdu.unconfirmedVRSpeed;
                         mcdu.unconfirmedVRSpeed = undefined;
                     } else {
-                        const gw = mcdu.getGrossWeight();
-                        if (mcdu.flaps && !gw) {
-                            mcdu.addMessageToQueue(NXSystemMessages.initializeWeightOrCg);
-                        } else if (mcdu.flaps && gw) {
+                        if (mcdu.flaps && !isFinite(mcdu.zeroFuelWeight)) {
+                            mcdu.setScratchpadMessage(NXSystemMessages.initializeWeightOrCg);
+                        } else if (mcdu.flaps && isFinite(mcdu.zeroFuelWeight)) {
                             mcdu.setScratchpadText(mcdu._getVRSpeed().toString());
                         } else {
                             mcdu.setScratchpadMessage(NXSystemMessages.formatError);
@@ -130,10 +136,9 @@ class CDUPerformancePage {
                         mcdu.v2Speed = mcdu.unconfirmedV2Speed;
                         mcdu.unconfirmedV2Speed = undefined;
                     } else {
-                        const gw = mcdu.getGrossWeight();
-                        if (mcdu.flaps && !gw) {
-                            mcdu.addMessageToQueue(NXSystemMessages.initializeWeightOrCg);
-                        } else if (mcdu.flaps && gw) {
+                        if (mcdu.flaps && !isFinite(mcdu.zeroFuelWeight)) {
+                            mcdu.setScratchpadMessage(NXSystemMessages.initializeWeightOrCg);
+                        } else if (mcdu.flaps && isFinite(mcdu.zeroFuelWeight)) {
                             mcdu.setScratchpadText(mcdu._getV2Speed().toString());
                         } else {
                             mcdu.setScratchpadMessage(NXSystemMessages.formatError);
@@ -186,12 +191,17 @@ class CDUPerformancePage {
         let transAltCell = "";
         if (hasOrigin) {
             transAltCell = "[\xa0".padEnd(4, "\xa0") + "]";
-            if (mcdu.flightPlanManager.originTransitionAltitude !== undefined) {
-                transAltCell = `{cyan}${mcdu.flightPlanManager.originTransitionAltitude}{end}`;
-                if (mcdu.flightPlanManager.originTransitionAltitudeIsFromDb) {
+
+            const transAlt = targetPlan.performanceData.transitionAltitude.get();
+            const transAltitudeIsFromDatabase = targetPlan.performanceData.transitionAltitudeIsFromDatabase;
+
+            if (transAlt !== undefined) {
+                transAltCell = `{cyan}${transAlt}{end}`;
+                if (transAltitudeIsFromDatabase) {
                     transAltCell += "[s-text]";
                 }
             }
+
             mcdu.onLeftInput[3] = (value, scratchpadCallback) => {
                 if (mcdu.trySetTakeOffTransAltitude(value)) {
                     CDUPerformancePage.ShowTAKEOFFPage(mcdu);
@@ -204,13 +214,13 @@ class CDUPerformancePage {
         // thrust reduction / acceleration altitude
         const altitudeColour = hasOrigin ? (mcdu.flightPhaseManager.phase >= FmgcFlightPhases.TAKEOFF ? "green" : "cyan") : "white";
 
-        const plan = mcdu.flightPlanManager.getCurrentFlightPlan();
-        const thrRed = plan.thrustReductionAltitude;
-        const thrRedPilot = plan.isThrustReductionAltitudePilotEntered;
-        const acc = plan.accelerationAltitude;
-        const accPilot = plan.isAccelerationAltitudePilotEntered;
-        const eoAcc = plan.engineOutAccelerationAltitude;
-        const eoAccPilot = plan.isEngineOutAccelerationAltitudePilotEntered;
+        const plan = mcdu.flightPlanService.active;
+        const thrRed = plan.performanceData.thrustReductionAltitude.get();
+        const thrRedPilot = plan.performanceData.thrustReductionAltitudeIsPilotEntered.get();
+        const acc = plan.performanceData.accelerationAltitude.get();
+        const accPilot = plan.performanceData.accelerationAltitudeIsPilotEntered.get();
+        const eoAcc = plan.performanceData.engineOutAccelerationAltitude.get();
+        const eoAccPilot = plan.performanceData.engineOutAccelerationAltitudeIsPilotEntered.get();
 
         const thrRedAcc = `{${thrRedPilot ? 'big' : 'small'}}${thrRed !== undefined ? thrRed.toFixed(0).padStart(5, '\xa0') : '-----'}{end}/{${accPilot ? 'big' : 'small'}}${acc !== undefined ? acc.toFixed(0).padEnd(5, '\xa0') : '-----'}{end}`;
 
@@ -389,7 +399,7 @@ class CDUPerformancePage {
         const fcuAltitude = SimVar.GetSimVarValue("AUTOPILOT ALTITUDE LOCK VAR:3", "feet");
         const altitudeToPredict = Math.min(cruiseAltitude, fcuAltitude);
 
-        const predToCell = CDUPerformancePage.formatAltitudeOrLevel(altitudeToPredict, mcdu.flightPlanManager.getOriginTransitionAltitude()) + "[color]cyan";
+        const predToCell = CDUPerformancePage.formatAltitudeOrLevel(altitudeToPredict, mcdu.getOriginTransitionAltitude()) + "[color]cyan";
 
         let predToDistanceCell = "---";
         let predToTimeCell = "----";
@@ -698,6 +708,9 @@ class CDUPerformancePage {
     static ShowAPPRPage(mcdu) {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.PerformancePageAppr;
+
+        const plan = mcdu.flightPlanService.active;
+
         CDUPerformancePage._timer = 0;
         CDUPerformancePage._lastPhase = mcdu.flightPhaseManager.phase;
         mcdu.pageUpdate = () => {
@@ -709,8 +722,7 @@ class CDUPerformancePage {
             }
         };
 
-        const distanceToDest = mcdu.flightPlanManager.getDistanceToDestination();
-        const closeToDest = distanceToDest !== -1 && distanceToDest <= 180;
+        const closeToDest = plan.destinationAirport && 0 <= 180; // TODO port over (fms-v2)
 
         let qnhCell = "[\xa0\xa0][color]cyan";
         if (isFinite(mcdu.perfApprQNH)) {
@@ -762,11 +774,15 @@ class CDUPerformancePage {
         };
 
         let transAltCell = "\xa0".repeat(5);
-        const hasDestination = !!mcdu.flightPlanManager.getDestination();
+        const hasDestination = !!plan.destinationAirport;
+
         if (hasDestination) {
-            if (mcdu.flightPlanManager.destinationTransitionLevel !== undefined) {
-                transAltCell = (mcdu.flightPlanManager.destinationTransitionLevel * 100).toFixed(0).padEnd(5, "\xa0");
-                if (mcdu.flightPlanManager.destinationTransitionLevelIsFromDb) {
+            const transitionLevel = plan.performanceData.transitionLevel.get();
+
+            if (transitionLevel !== undefined) {
+                transAltCell = (transitionLevel * 100).toFixed(0).padEnd(5, "\xa0");
+
+                if (plan.performanceData.transitionLevelIsFromDatabase.get()) {
                     transAltCell = `{small}${transAltCell}{end}`;
                 }
             } else {
@@ -821,8 +837,8 @@ class CDUPerformancePage {
             }
         };
 
-        const approach = mcdu.flightPlanManager.getApproach();
-        const isILS = approach && approach.approachType === ApproachType.APPROACH_TYPE_ILS;
+        const approach = plan.approach;
+        const isILS = approach && approach.type === 5;
         let radioLabel = "";
         let radioCell = "";
         if (isILS) {
@@ -919,18 +935,18 @@ class CDUPerformancePage {
             }
         };
 
-        const haveDestination = mcdu.flightPlanManager.getDestination() !== undefined;
+        const haveDestination = mcdu.flightPlanService.active.destinationAirport !== undefined;
 
         const titleColor = mcdu.flightPhaseManager.phase === FmgcFlightPhases.GOAROUND ? "green" : "white";
         const altitudeColour = haveDestination ? (mcdu.flightPhaseManager.phase >= FmgcFlightPhases.GOAROUND ? "green" : "cyan") : "white";
 
-        const plan = mcdu.flightPlanManager.getCurrentFlightPlan();
-        const thrRed = plan.missedThrustReductionAltitude;
-        const thrRedPilot = plan.isMissedThrustReductionAltitudePilotEntered;
-        const acc = plan.missedAccelerationAltitude;
-        const accPilot = plan.isMissedAccelerationAltitudePilotEntered;
-        const eoAcc = plan.missedEngineOutAccelerationAltitude;
-        const eoAccPilot = plan.isMissedEngineOutAccelerationAltitudePilotEntered;
+        const plan = mcdu.flightPlanService.active;
+        const thrRed = plan.performanceData.missedThrustReductionAltitude.get();
+        const thrRedPilot = plan.performanceData.missedThrustReductionAltitudeIsPilotEntered.get();
+        const acc = plan.performanceData.missedAccelerationAltitude.get();
+        const accPilot = plan.performanceData.missedAccelerationAltitudeIsPilotEntered.get();
+        const eoAcc = plan.performanceData.missedEngineOutAccelerationAltitude.get();
+        const eoAccPilot = plan.performanceData.missedEngineOutAccelerationAltitudeIsPilotEntered.get();
 
         const thrRedAcc = `{${thrRedPilot ? 'big' : 'small'}}${thrRed !== undefined ? thrRed.toFixed(0).padStart(5, '\xa0') : '-----'}{end}/{${accPilot ? 'big' : 'small'}}${acc !== undefined ? acc.toFixed(0).padEnd(5, '\xa0') : '-----'}{end}`;
         const engOut = `{${eoAccPilot ? 'big' : 'small'}}${eoAcc !== undefined ? eoAcc.toFixed(0).padStart(5, '\xa0') : '-----'}{end}`;

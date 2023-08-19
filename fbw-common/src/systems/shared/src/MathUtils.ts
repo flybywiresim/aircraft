@@ -1,3 +1,5 @@
+import { clampAngle } from 'msfs-geo';
+
 /**
  * This comes from fstypes/FSEnums, TODO change this when we have @microsoft/msfs-types
  */
@@ -14,6 +16,10 @@ export class MathUtils {
    static RADIANS_TO_DEGREES = 180 / Math.PI;
 
    private static optiPow10 = [];
+
+   public static clampAngle(a: number) {
+       return clampAngle(a);
+   }
 
    public static fastToFixed(val: number, fraction: number): string {
        if (fraction <= 0) {

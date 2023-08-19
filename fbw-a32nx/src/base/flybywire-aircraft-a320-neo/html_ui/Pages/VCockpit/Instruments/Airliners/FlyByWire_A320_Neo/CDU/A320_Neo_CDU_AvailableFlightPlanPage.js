@@ -3,12 +3,16 @@ class CDUAvailableFlightPlanPage {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.AvailableFlightPlanPage;
         let fromTo = "NO ORIGIN/DEST";
-        const hasCoRoutes = mcdu.coRoute.routes.length > 0;
-        if (mcdu.flightPlanManager.getOrigin()) {
-            if (mcdu.flightPlanManager.getDestination()) {
-                fromTo = mcdu.flightPlanManager.getOrigin().ident + "/" + mcdu.flightPlanManager.getDestination().ident;
-            }
+
+        const origin = mcdu.flightPlanService.active.originAirport;
+        const dest = mcdu.flightPlanService.active.destinationAirport;
+
+        if (origin && dest) {
+            fromTo = `${origin.ident}/${dest.ident}`;
         }
+
+        const hasCoRoutes = mcdu.coRoute.routes.length > 0;
+
         if (hasCoRoutes) {
             const coRoutesListSize = mcdu.coRoute.routes.length;
 
@@ -179,7 +183,6 @@ class CDUAvailableFlightPlanPage {
                 ["<RETURN"]
             ]);
         }
-
         mcdu.onLeftInput[5] = () => {
             CDUInitPage.ShowPage1(mcdu);
         };

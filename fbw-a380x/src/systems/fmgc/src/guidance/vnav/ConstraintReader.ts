@@ -179,7 +179,7 @@ export class ConstraintReader {
             // We subtract `outboundLength` because getDistanceToGo will include the entire distance while we only want the part that's on this leg.
             // For a FixedRadiusTransition, there's also a part on the next leg.
             this.distanceToEnd = outboundTransition.getDistanceToGo(ppos) - outboundLength + (nextLeg ? nextLegDistanceToEnd : 0);
-        } else if (activeTransIndex === activeLegIndex - 1) {
+        } else if (activeTransIndex !== -1 && activeTransIndex === activeLegIndex - 1) {
             // On an inbound transition
             const trueTrack = SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree');
 
