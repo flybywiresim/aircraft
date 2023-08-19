@@ -18,12 +18,12 @@ Status legend:
 |  |  |
 | 2️⃣ | fms/\*/f-pln | 1 |
 | 🟥 | fms/\*/f-pln-rte-sel | 1 |
-| 2️⃣ | fms/\*/f-pln-departure | 1 |
-| 2️⃣ | fms/\*/f-pln-arrival | 1 |
+| ✅ | fms/\*/f-pln-departure | 1 |
+| ✅ | fms/\*/f-pln-arrival | 1 |
 | 🟥 | fms/\*/f-pln-airways | 1 |
 | 🟥 | fms/\*/f-pln-direct-to | 1 |
 | 🟥 | fms/\*/f-pln-hold | 1 |
-| 1️⃣ | fms/\*/f-pln-duplicate-names | 1 |
+| ✅ | fms/\*/f-pln-duplicate-names | 1 |
 | 🟥 | fms/\*/f-pln-vert-rev | 2 |
 | 🟥 | fms/\*/f-pln-offset | 3 |
 | 🟥 | fms/\*/f-pln-fix-info | 3 |

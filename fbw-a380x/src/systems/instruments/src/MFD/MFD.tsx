@@ -23,6 +23,7 @@ import { MfdFmsFplnDep } from 'instruments/src/MFD/pages/FMS/F-PLN/DEPARTURE';
 import { MfdFmsFplnArr } from 'instruments/src/MFD/pages/FMS/F-PLN/ARRIVAL';
 import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/new/NavigationDatabaseService';
+import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { MfdSimvars } from './shared/MFDSimvarPublisher';
 import { DisplayUnit } from '../MsfsAvionicsCommon/displayUnit';
 
@@ -46,6 +47,8 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> {
     private uiService = new MfdUIService();
 
     private flightPlanService = new FlightPlanService(this.props.bus);
+
+    private guidanceController = new GuidanceController(null, this.flightPlanService);
 
     private displayBrightness = Subject.create(0);
 
@@ -75,7 +78,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> {
         await new Promise((r) => setTimeout(r, 1000));
         this.flightPlanService.createFlightPlans();
 
-        this.flightPlanService.newCityPair('EGLL', 'LFPG', 'EBBR');
+        await this.flightPlanService.newCityPair('EGLL', 'LFPG', 'EBBR');
     }
 
     public async onAfterRender(node: VNode): Promise<void> {
