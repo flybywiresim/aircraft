@@ -81,7 +81,7 @@ export class PendingAirways {
                     taiLElement.to = matchInCurrent;
                     taiLElement.isAutoConnected = true;
 
-                    const reversed = i + 1 < taiLElement.fromIndex;
+                    const reversed = i + 1 <= taiLElement.fromIndex;
                     const fixesArray = reversed ? taiLElement.airway.fixes.slice().reverse() : taiLElement.airway.fixes;
 
                     let start;
@@ -153,7 +153,7 @@ export class PendingAirways {
             return false;
         }
 
-        const reversed = endWaypointIndex + 1 < taiLElement.fromIndex;
+        const reversed = endWaypointIndex + 1 <= taiLElement.fromIndex;
         const fixesArray = reversed ? taiLElement.airway.fixes.slice().reverse() : taiLElement.airway.fixes;
 
         let start;

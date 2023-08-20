@@ -371,7 +371,9 @@ export class SimBriefUplinkAdapter {
 
                 // Airway
                 instructions.push({ instruction: 'airway', ident: fix.via_airway, locationHint: { lat: parseFloat(fix.pos_lat), long: parseFloat(fix.pos_long) } });
-            } else if (ofp.navlog[i + 1] && ofp.navlog[i + 1].via_airway !== fix.via_airway) {
+            }
+
+            if (instructions[instructions.length - 1]?.instruction === 'airway' && ofp.navlog[i + 1]?.via_airway !== fix.via_airway) {
                 // End of airway
                 instructions.push({ instruction: 'airwayTermination', ident: fix.ident });
             }
