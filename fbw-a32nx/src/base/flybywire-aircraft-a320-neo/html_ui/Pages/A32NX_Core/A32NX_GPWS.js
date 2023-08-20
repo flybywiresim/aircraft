@@ -583,11 +583,21 @@ class A32NX_GPWS {
                 }
                 break;
             case "over1000":
-                if (radioAlt > 2530) {
+                if (radioAlt > 2020) {
                     this.AltCallState.action("up");
                 } else if (radioAlt <= 1020) {
                     if (this.autoCallOutPins & RadioAutoCallOutFlags.OneThousand) {
                         this.core.soundManager.tryPlaySound(soundList.alt_1000);
+                    }
+                    this.AltCallState.action("down");
+                }
+                break;
+            case "over2000":
+                if (radioAlt > 2530) {
+                    this.AltCallState.action("up");
+                } else if (radioAlt <= 2020) {
+                    if (this.autoCallOutPins & RadioAutoCallOutFlags.TwoThousand) {
+                        this.core.soundManager.tryPlaySound(soundList.alt_2000);
                     }
                     this.AltCallState.action("down");
                 }
@@ -666,7 +676,17 @@ const AltCallStateMachine = {
     over2500: {
         transitions: {
             down: {
+                target: "over2000"
+            }
+        }
+    },
+    over2000: {
+        transitions: {
+            down: {
                 target: "over1000"
+            },
+            up: {
+                target: "over2500",
             }
         }
     },
@@ -676,7 +696,7 @@ const AltCallStateMachine = {
                 target: "over500"
             },
             up: {
-                target: "over2500"
+                target: "over2000"
             }
         }
     },
