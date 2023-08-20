@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable max-len */
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Units, usePersistentProperty, useSimVar } from '@flybywiresim/fbw-sdk';
 import { getAirframeType } from '../../../Efb';
 import { A320Payload } from './A320_251N/A320Payload';
@@ -25,11 +25,7 @@ export const Payload = () => {
 
     const simbriefDataLoaded = isSimbriefDataLoaded();
 
-    const [massUnitForDisplay, setMassUnitForDisplay] = useState('KGS');
-
-    useEffect(() => {
-        setMassUnitForDisplay(Units.usingMetric ? 'KGS' : 'LBS');
-    }, [Units.usingMetric]);
+    const [massUnitForDisplay] = useState(Units.usingMetric ? 'KGS' : 'LBS');
 
     switch (getAirframeType()) {
     case 'A380_842':
