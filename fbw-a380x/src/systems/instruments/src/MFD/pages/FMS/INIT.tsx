@@ -133,7 +133,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                             dataHandlerDuringValidation={async (v) => {
                                 this.fromIcao.set(v);
                                 if (v && this.toIcao.get()) {
-                                    await this.props.flightPlanService.newCityPair(v, this.toIcao.get(), this.altnIcao.get());
+                                    await this.props.fmService.flightPlanService.newCityPair(v, this.toIcao.get(), this.altnIcao.get());
                                 }
                             }}
                             mandatory={Subject.create(true)}
@@ -148,7 +148,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                             dataHandlerDuringValidation={async (v) => {
                                 this.toIcao.set(v);
                                 if (this.fromIcao.get() && v) {
-                                    await this.props.flightPlanService.newCityPair(this.fromIcao.get(), v, this.altnIcao.get());
+                                    await this.props.fmService.flightPlanService.newCityPair(this.fromIcao.get(), v, this.altnIcao.get());
                                 }
                             }}
                             mandatory={Subject.create(true)}
@@ -161,7 +161,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                             dataEntryFormat={new AirportFormat()}
                             dataHandlerDuringValidation={async (v) => {
                                 this.altnIcao.set(v);
-                                await this.props.flightPlanService.setAlternate(v);
+                                await this.props.fmService.flightPlanService.setAlternate(v);
                             }}
                             mandatory={Subject.create(true)}
                             disabled={this.altnDisabled}
@@ -276,7 +276,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
 
                     {/* end page content */}
                 </div>
-                <Footer bus={this.props.bus} uiService={this.props.uiService} flightPlanService={this.props.flightPlanService} />
+                <Footer bus={this.props.bus} uiService={this.props.uiService} fmService={this.props.fmService} />
             </>
         );
     }

@@ -51,9 +51,9 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
                 runways.push({
                     label: `${rw.ident.substring(2).padEnd(3, ' ')} ${rw.length.toFixed(0).padStart(5, ' ')}FT ${rw.lsIdent ? 'ILS' : ''}`,
                     action: async () => {
-                        await this.props.flightPlanService.setOriginRunway(rw.ident, this.loadedFlightPlanIndex);
-                        await this.props.flightPlanService.setDepartureProcedure(undefined, this.loadedFlightPlanIndex);
-                        await this.props.flightPlanService.setDepartureEnrouteTransition(undefined, this.loadedFlightPlanIndex);
+                        await this.props.fmService.flightPlanService.setOriginRunway(rw.ident, this.loadedFlightPlanIndex);
+                        await this.props.fmService.flightPlanService.setDepartureProcedure(undefined, this.loadedFlightPlanIndex);
+                        await this.props.fmService.flightPlanService.setDepartureEnrouteTransition(undefined, this.loadedFlightPlanIndex);
                     },
                 });
             });
@@ -70,16 +70,16 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
                     const sids: ButtonMenuItem[] = [{
                         label: 'NONE',
                         action: async () => {
-                            await this.props.flightPlanService.setDepartureProcedure(undefined, this.loadedFlightPlanIndex);
-                            await this.props.flightPlanService.setDepartureEnrouteTransition(undefined, this.loadedFlightPlanIndex);
+                            await this.props.fmService.flightPlanService.setDepartureProcedure(undefined, this.loadedFlightPlanIndex);
+                            await this.props.fmService.flightPlanService.setDepartureEnrouteTransition(undefined, this.loadedFlightPlanIndex);
                         },
                     }];
                     this.loadedFlightPlan.availableDepartures.forEach((dep) => {
                         sids.push({
                             label: dep.ident,
                             action: async () => {
-                                await this.props.flightPlanService.setDepartureProcedure(dep.ident, this.loadedFlightPlanIndex);
-                                await this.props.flightPlanService.setDepartureEnrouteTransition(undefined, this.loadedFlightPlanIndex);
+                                await this.props.fmService.flightPlanService.setDepartureProcedure(dep.ident, this.loadedFlightPlanIndex);
+                                await this.props.fmService.flightPlanService.setDepartureEnrouteTransition(undefined, this.loadedFlightPlanIndex);
                             },
                         });
                     });
@@ -99,9 +99,9 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
                 this.rwySid.set(this.loadedFlightPlan.originDeparture.ident);
 
                 if (this.loadedFlightPlan.originDeparture.enrouteTransitions?.length > 0) {
-                    const trans: ButtonMenuItem[] = [{ label: 'NONE', action: () => this.props.flightPlanService.setDepartureEnrouteTransition(undefined, this.loadedFlightPlanIndex) }];
+                    const trans: ButtonMenuItem[] = [{ label: 'NONE', action: () => this.props.fmService.flightPlanService.setDepartureEnrouteTransition(undefined, this.loadedFlightPlanIndex) }];
                     this.loadedFlightPlan.originDeparture.enrouteTransitions.forEach((el) => {
-                        trans.push({ label: el.ident, action: () => this.props.flightPlanService.setDepartureEnrouteTransition(el.ident, this.loadedFlightPlanIndex) });
+                        trans.push({ label: el.ident, action: () => this.props.fmService.flightPlanService.setDepartureEnrouteTransition(el.ident, this.loadedFlightPlanIndex) });
                     });
                     this.transOptions.set(trans);
                     this.transDisabled.set(false);
@@ -126,7 +126,7 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
             this.fromIcao.set('----');
         }
 
-        this.tmpyActive.set(this.props.flightPlanService.hasTemporary);
+        this.tmpyActive.set(this.props.fmService.flightPlanService.hasTemporary);
         console.timeEnd('DEPARTURE:onNewData');
     }
 
@@ -295,7 +295,7 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
                     </div>
                 </div>
                 {/* end page content */}
-                <Footer bus={this.props.bus} uiService={this.props.uiService} flightPlanService={this.props.flightPlanService} />
+                <Footer bus={this.props.bus} uiService={this.props.uiService} fmService={this.props.fmService} />
             </>
         );
     }

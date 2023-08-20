@@ -6,30 +6,32 @@ import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 
 import { Button, ButtonMenuItem } from 'instruments/src/MFD/pages/common/Button';
 import { IconButton } from 'instruments/src/MFD/pages/common/IconButton';
-import { DerivedFplnLegData, PseudoWaypoint, WindVector } from 'instruments/src/MFD/dev-data/FlightPlanInterfaceMockup';
 import { ContextMenu, ContextMenuElement } from 'instruments/src/MFD/pages/common/ContextMenu';
 import { FplnRevisionsMenuType, getRevisionsMenu } from 'instruments/src/MFD/pages/FMS/F-PLN/FplnRevisionsMenu';
 import { DestinationWindow } from 'instruments/src/MFD/pages/FMS/F-PLN/DestinationWindow';
 import { InsertNextWptFromWindow } from 'instruments/src/MFD/pages/FMS/F-PLN/InsertNextWptFrom';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { FlightPlanElement, FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
-import { VerticalWaypointPrediction } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/new/NavigationDatabaseService';
+import { WaypointEntryUtils } from '@fmgc/flightplanning/new/WaypointEntryUtils';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { MfdFmsFplnDuplicateNames } from 'instruments/src/MFD/pages/FMS/F-PLN/DUPLICATE_NAMES';
 import { NdbNavaid, VhfNavaid, Waypoint } from 'msfs-navdata';
+import { WindVector } from '@fmgc/guidance/vnav/wind';
+import { PseudoWaypoint } from '@fmgc/guidance/PseudoWaypoint';
+import { Coordinates, bearingTo } from 'msfs-geo';
 
 interface MfdFmsFplnProps extends AbstractMfdPageProps {
 }
 
-type EmptyNavGeometryProfile = {
-    waypointPredictions: Map<number, VerticalWaypointPrediction>;
-};
+export interface DerivedFplnLegData {
+    trackFromLastWpt: number,
+    distanceFromLastWpt: number,
+    windPrediction: WindVector,
+}
 
 export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     private lineColor = Subject.create<FplnLineColor>(FplnLineColor.Active);
-
-    private navGeometryProfile: EmptyNavGeometryProfile = { waypointPredictions: new Map<number, VerticalWaypointPrediction>() };
 
     private spdAltEfobWindRef = FSComponent.createRef<HTMLDivElement>();
 
@@ -95,7 +97,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             }
         } else {
             this.destButtonDisabled.set(true);
-            this.destButtonLabel.set('DEST');
+            this.destButtonLabel.set('-------');
         }
         console.timeEnd('F-PLN:onNewData');
     }
@@ -105,28 +107,6 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
         startAtIndex = Math.max(startAtIndex, (this.loadedFlightPlan.activeLegIndex - 1), 0);
         this.displayFplnFromLegIndex.set(startAtIndex);
 
-        // Dummy data for navGeometryProfile
-        const waypointPredictions = new Map<number, VerticalWaypointPrediction>();
-        this.loadedFlightPlan.allLegs.concat(this.loadedFlightPlan.alternateFlightPlan.allLegs).forEach((el, idx) => {
-            const pred: VerticalWaypointPrediction = {
-                waypointIndex: 0,
-                distanceFromStart: 0,
-                secondsFromPresent: 0,
-                altitude: 0,
-                speed: 0,
-                altitudeConstraint: null,
-                speedConstraint: null,
-                isAltitudeConstraintMet: true,
-                isSpeedConstraintMet: true,
-                altError: 0,
-                distanceToTopOfDescent: null,
-                estimatedFuelOnBoard: 50,
-                distanceFromAircraft: 0,
-            };
-            waypointPredictions.set(idx, pred);
-        });
-        this.navGeometryProfile.waypointPredictions = waypointPredictions;
-
         if (startAtIndex > (this.loadedFlightPlan.allLegs.length + this.loadedFlightPlan.alternateFlightPlan.allLegs.length)) {
             this.displayFplnFromLegIndex.set(0);
             return;
@@ -134,20 +114,36 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
         // Compute rest of required attributes
         this.derivedFplnLegData = [];
-        // const lastDistanceFromStart = (this.navGeometryProfile.waypointPredictions.size > 0) ? this.navGeometryProfile.waypointPredictions[0].distanceFromStart : 0;
-        this.loadedFlightPlan.allLegs.concat(this.loadedFlightPlan.alternateFlightPlan.allLegs).forEach(() => {
+        let lastDistanceFromStart: number = 0;
+        let lastLegLatLong: Coordinates = { lat: 0, long: 0 };
+        this.loadedFlightPlan.allLegs.concat(this.loadedFlightPlan.alternateFlightPlan.allLegs).forEach((el, index) => {
             const newEl: DerivedFplnLegData = { distanceFromLastWpt: undefined, trackFromLastWpt: undefined, windPrediction: undefined };
-            /* if (mockDerivedData[index]) {
-                // Copy over wind and track, need to find source for that
-                newEl.windPrediction = mockDerivedData[index].windPrediction;
-                newEl.trackFromLastWpt = mockDerivedData[index].trackFromLastWpt;
 
-                newEl.distanceFromLastWpt = this.navGeometryProfile.waypointPredictions[index].distanceFromStart - lastDistanceFromStart;
-            } */
+            if (el instanceof FlightPlanLeg && index < this.loadedFlightPlan.legCount) {
+                if (index === 0) {
+                    newEl.distanceFromLastWpt = null;
+                    newEl.trackFromLastWpt = null;
+                    newEl.windPrediction = WindVector.default();
+                } else {
+                    if (!this.props.fmService.guidanceController?.vnavDriver?.mcduProfile?.waypointPredictions?.get(index)) {
+                        console.log(this.props.fmService.guidanceController.vnavDriver.mcduProfile);
+                    }
+                    newEl.distanceFromLastWpt = (this.props.fmService.guidanceController.vnavDriver.mcduProfile)
+                        ? this.props.fmService.guidanceController.vnavDriver.mcduProfile.waypointPredictions.get(index).distanceFromStart - lastDistanceFromStart
+                        : null;
+                    newEl.trackFromLastWpt = (el.definition.waypoint) ? bearingTo(lastLegLatLong, el.definition.waypoint.location) : null;
+                    newEl.windPrediction = WindVector.default();
+                }
+
+                if (this.props.fmService.guidanceController.vnavDriver?.mcduProfile?.waypointPredictions?.get(index)) {
+                    lastDistanceFromStart = (this.props.fmService.guidanceController.vnavDriver.mcduProfile)
+                        ? this.props.fmService.guidanceController.vnavDriver.mcduProfile.waypointPredictions.get(index).distanceFromStart
+                        : 0;
+                    lastLegLatLong = el.definition.waypoint?.location ?? lastLegLatLong;
+                }
+            }
+
             this.derivedFplnLegData.push(newEl);
-            /* if (this.navGeometryProfile.waypointPredictions[index]) {
-                lastDistanceFromStart = this.navGeometryProfile.waypointPredictions[index].distanceFromStart;
-            } */
         });
 
         while (this.linesDivRef.instance.firstChild) {
@@ -159,7 +155,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
         // Prepare sequencing of pseudo waypoints
         const pseudoWptMap = new Map<number, PseudoWaypoint>();
         // Insert pseudo waypoints from guidance controller
-        // mockPseudoWaypoints.forEach((wpt) => pseudoWptMap.set(wpt.alongLegIndex, wpt));
+        this.props.fmService.guidanceController.pseudoWaypoints.pseudoWaypoints.forEach((wpt) => pseudoWptMap.set(wpt.alongLegIndex, wpt));
 
         // Construct leg data for all legs
         const jointFlightPlan: FlightPlanElement[] = this.loadedFlightPlan.allLegs.concat(this.loadedFlightPlan.alternateFlightPlan.allLegs);
@@ -186,9 +182,9 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                     speedPrediction: pwp.flightPlanInfo.speed,
                     hasSpeedConstraint: (pwp.mcduIdent ?? pwp.ident) === '(SPDLIM)',
                     speedConstraintIsRespected: true,
-                    efobPrediction: this.navGeometryProfile.waypointPredictions.get(i).estimatedFuelOnBoard, // TODO
-                    windPrediction: this.derivedFplnLegData[i].windPrediction, // TODO
-                    trackFromLastWpt: this.derivedFplnLegData[i].trackFromLastWpt, // TODO
+                    efobPrediction: this.props.fmService.guidanceController.vnavDriver.mcduProfile?.waypointPredictions?.get(i)?.estimatedFuelOnBoard ?? 0,
+                    windPrediction: this.derivedFplnLegData[i].windPrediction,
+                    trackFromLastWpt: this.derivedFplnLegData[i].trackFromLastWpt,
                     distFromLastWpt: pwp.flightPlanInfo.distanceFromLastFix,
                     fpa: null,
                 };
@@ -204,15 +200,15 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                     ident: leg.ident,
                     overfly: leg.overfly,
                     annotation: leg.annotation,
-                    etaOrSecondsFromPresent: this.navGeometryProfile.waypointPredictions.get(i).secondsFromPresent,
+                    etaOrSecondsFromPresent: this.props.fmService.guidanceController.vnavDriver.mcduProfile?.waypointPredictions?.get(i)?.secondsFromPresent ?? 0,
                     transitionAltitude: leg.definition.transitionAltitude ?? 18000,
-                    altitudePrediction: this.navGeometryProfile.waypointPredictions.get(i).altitude,
-                    hasAltitudeConstraint: !!this.navGeometryProfile.waypointPredictions.get(i).altitudeConstraint,
-                    altitudeConstraintIsRespected: this.navGeometryProfile.waypointPredictions.get(i).isAltitudeConstraintMet,
-                    speedPrediction: this.navGeometryProfile.waypointPredictions.get(i).speed,
-                    hasSpeedConstraint: !!this.navGeometryProfile.waypointPredictions.get(i).speedConstraint,
-                    speedConstraintIsRespected: this.navGeometryProfile.waypointPredictions.get(i).isSpeedConstraintMet,
-                    efobPrediction: this.navGeometryProfile.waypointPredictions.get(i).estimatedFuelOnBoard,
+                    altitudePrediction: this.props.fmService.guidanceController.vnavDriver.mcduProfile?.waypointPredictions?.get(i)?.altitude ?? 0,
+                    hasAltitudeConstraint: !!this.props.fmService.guidanceController.vnavDriver.mcduProfile?.waypointPredictions?.get(i)?.altitudeConstraint ?? false,
+                    altitudeConstraintIsRespected: this.props.fmService.guidanceController.vnavDriver.mcduProfile?.waypointPredictions?.get(i)?.isAltitudeConstraintMet ?? true,
+                    speedPrediction: this.props.fmService.guidanceController.vnavDriver.mcduProfile?.waypointPredictions?.get(i)?.speed ?? 0,
+                    hasSpeedConstraint: !!this.props.fmService.guidanceController.vnavDriver.mcduProfile?.waypointPredictions?.get(i)?.speedConstraint ?? false,
+                    speedConstraintIsRespected: this.props.fmService.guidanceController.vnavDriver.mcduProfile?.waypointPredictions?.get(i)?.isSpeedConstraintMet ?? true,
+                    efobPrediction: this.props.fmService.guidanceController.vnavDriver.mcduProfile?.waypointPredictions.get(i)?.estimatedFuelOnBoard ?? 0,
                     windPrediction: this.derivedFplnLegData[i].windPrediction,
                     trackFromLastWpt: this.derivedFplnLegData[i].trackFromLastWpt,
                     distFromLastWpt: this.derivedFplnLegData[i].distanceFromLastWpt - reduceDistanceBy,
@@ -419,7 +415,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                         visible={this.newDestWindowOpened}
                         cancelAction={() => this.newDestWindowOpened.set(false)}
                         confirmAction={(newDest) => {
-                            this.props.flightPlanService.newDest(this.revisedWaypointIndex.get(), newDest);
+                            this.props.fmService.flightPlanService.newDest(this.revisedWaypointIndex.get(), newDest);
                             this.newDestWindowOpened.set(false);
                         }}
                     />
@@ -429,19 +425,20 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                         visible={this.insertNextWptWindowOpened}
                         cancelAction={() => this.insertNextWptWindowOpened.set(false)}
                         confirmAction={async (wpt) => {
+                            // TODO use getOrCreateWaypoint
+                            // const fix = await WaypointEntryUtils.getOrCreateWaypoint(); TODO
                             const fix = await NavigationDatabaseService.activeDatabase.searchAllFix(wpt);
 
+                            this.insertNextWptWindowOpened.set(false);
+
                             if (fix.length > 1) {
-                                console.log('longer');
                                 this.duplicateNamesIdent.set(wpt);
                                 this.duplicateNamesFunction.set(async (result) => {
-                                    await this.props.flightPlanService.nextWaypoint(this.revisedWaypointIndex.get(), result);
-                                    this.insertNextWptWindowOpened.set(false);
+                                    await this.props.fmService.flightPlanService.nextWaypoint(this.revisedWaypointIndex.get(), result);
                                 });
                                 this.duplicateNamesOpened.set(true);
                             } else {
-                                await this.props.flightPlanService.nextWaypoint(this.revisedWaypointIndex.get(), fix[0]);
-                                this.insertNextWptWindowOpened.set(false);
+                                await this.props.fmService.flightPlanService.nextWaypoint(this.revisedWaypointIndex.get(), fix[0]);
                             }
                         }}
                     />
@@ -451,7 +448,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                         afterSelected={this.duplicateNamesFunction}
                         bus={this.props.bus}
                         uiService={this.props.uiService}
-                        flightPlanService={this.props.flightPlanService}
+                        fmService={this.props.fmService}
                     />
                     <div class="mfd-fms-fpln-header">
                         <div class="mfd-fms-fpln-header-from">
@@ -493,7 +490,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                                     <span style="display: flex; align-items: center; justify-content: center;">*</span>
                                 </div>,
                             )}
-                            onClick={() => this.props.flightPlanService.temporaryDelete()}
+                            onClick={() => this.props.fmService.flightPlanService.temporaryDelete()}
                             buttonStyle="color: #e68000; padding-right: 2px;"
                         />
                         <Button
@@ -507,7 +504,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                                     <span style="display: flex; align-items: center; justify-content: center;">*</span>
                                 </div>,
                             )}
-                            onClick={() => this.props.flightPlanService.temporaryInsert()}
+                            onClick={() => this.props.fmService.flightPlanService.temporaryInsert()}
                             buttonStyle="color: #e68000; padding-right: 2px;"
                         />
                     </div>
@@ -521,7 +518,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                         />
                         <span class="mfd-label">--:--</span>
                         <div class="mfd-label-value-container">
-                            <span class="mfd-label">--.-</span>
+                            <span class="mfd-label">{(this.props.fmService.fmgc.getDestEFOB(true) / 1000).toFixed(1)}</span>
                             <span class="mfd-label-unit mfd-unit-trailing">T</span>
                         </div>
                         <div class="mfd-label-value-container">
@@ -592,7 +589,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                     </div>
                     {/* end page content */}
                 </div>
-                <Footer bus={this.props.bus} uiService={this.props.uiService} flightPlanService={this.props.flightPlanService} />
+                <Footer bus={this.props.bus} uiService={this.props.uiService} fmService={this.props.fmService} />
             </>
         );
     }
@@ -922,7 +919,7 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
             && !(FplnLineFlags.AfterSpecial === (this.props.flags.get() & FplnLineFlags.AfterSpecial) || FplnLineFlags.FirstLine === (this.props.flags.get() & FplnLineFlags.FirstLine))) {
             speedStr = <span style="font-family: HoneywellMCDU, monospace;">"</span>;
         } else {
-            speedStr = <span>{data.speedPrediction > 2 ? data.speedPrediction.toString() : `.${data.speedPrediction.toFixed(2).split('.')[1]}`}</span>;
+            speedStr = <span>{data.speedPrediction > 2 ? data.speedPrediction.toFixed(0) : `.${data.speedPrediction.toFixed(2).split('.')[1]}`}</span>;
         }
         if (data.hasSpeedConstraint) {
             if (data.speedConstraintIsRespected) {
@@ -945,7 +942,7 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
 
     private efobOrSpeed(data: FplnLineWaypointDisplayData): VNode {
         if (this.props.displayEfobAndWind.get() === true) {
-            return <span>{data.efobPrediction.toFixed(1).toString()}</span>;
+            return <span>{(data.efobPrediction / 1000).toFixed(1)}</span>;
         }
         return this.formatSpeed(data);
     }

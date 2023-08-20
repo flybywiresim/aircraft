@@ -63,7 +63,7 @@ export class ApproachSegment extends ProcedureSegment<Approach> {
             return;
         }
 
-        const shortApproachName = ApproachUtils.shortApproachName(matchingProcedure);
+        const shortApproachName = ApproachUtils.shortApproachName(matchingProcedure.ident);
 
         this.allLegs = this.createLegSet(matchingProcedure, matchingProcedure.legs.map((leg) => FlightPlanLeg.fromProcedureLeg(this, leg, shortApproachName)));
         this.strung = false;
@@ -97,7 +97,7 @@ export class ApproachSegment extends ProcedureSegment<Approach> {
         const airport = this.flightPlan.destinationAirport;
         const runway = this.flightPlan.destinationRunway;
 
-        const shortApproachName = procedure ? ApproachUtils.shortApproachName(procedure) : '';
+        const shortApproachName = procedure ? ApproachUtils.shortApproachName(procedure.ident) : '';
 
         if (approachLegs.length === 0 && this.flightPlan.destinationAirport && this.flightPlan.destinationSegment.destinationRunway) {
             const cf = FlightPlanLeg.destinationExtendedCenterline(

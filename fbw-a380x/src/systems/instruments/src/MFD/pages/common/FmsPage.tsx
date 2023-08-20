@@ -75,32 +75,32 @@ export abstract class FmsPage<T extends AbstractMfdPageProps> extends DisplayCom
     protected onFlightPlanChanged() {
         switch (this.props.uiService.activeUri.get().category) {
         case 'active':
-            this.loadedFlightPlan = this.props.flightPlanService.activeOrTemporary;
-            this.loadedFlightPlanIndex = this.props.flightPlanService.hasTemporary ? FlightPlanIndex.Temporary : FlightPlanIndex.Active;
+            this.loadedFlightPlan = this.props.fmService.flightPlanService.activeOrTemporary;
+            this.loadedFlightPlanIndex = this.props.fmService.flightPlanService.hasTemporary ? FlightPlanIndex.Temporary : FlightPlanIndex.Active;
             this.secActive.set(false);
-            this.tmpyActive.set(this.props.flightPlanService.hasTemporary);
+            this.tmpyActive.set(this.props.fmService.flightPlanService.hasTemporary);
             break;
         case 'sec1':
-            this.loadedFlightPlan = this.props.flightPlanService.secondary(1);
+            this.loadedFlightPlan = this.props.fmService.flightPlanService.secondary(1);
             this.loadedFlightPlanIndex = FlightPlanIndex.FirstSecondary;
             this.secActive.set(true);
             this.tmpyActive.set(false);
             break;
         case 'sec2':
-            this.loadedFlightPlan = this.props.flightPlanService.secondary(2);
+            this.loadedFlightPlan = this.props.fmService.flightPlanService.secondary(2);
             this.loadedFlightPlanIndex = FlightPlanIndex.FirstSecondary + 1;
             this.secActive.set(true);
             this.tmpyActive.set(false);
             break;
         case 'sec3':
-            this.loadedFlightPlan = this.props.flightPlanService.secondary(3);
+            this.loadedFlightPlan = this.props.fmService.flightPlanService.secondary(3);
             this.loadedFlightPlanIndex = FlightPlanIndex.FirstSecondary + 2; // TODO FIXME when 2nd and 3rd SEC are introduced
             this.secActive.set(true);
             this.tmpyActive.set(false);
             break;
 
         default:
-            this.loadedFlightPlan = this.props.flightPlanService.activeOrTemporary;
+            this.loadedFlightPlan = this.props.fmService.flightPlanService.activeOrTemporary;
             break;
         }
         this.onNewData();

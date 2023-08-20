@@ -6,7 +6,7 @@ import { IconButton } from 'instruments/src/MFD/pages/common/IconButton';
 import { Button } from 'instruments/src/MFD/pages/common/Button';
 import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/new/NavigationDatabaseService';
-import { Coordinates } from 'msfs-geo';
+import { Coordinates, distanceTo } from 'msfs-geo';
 import { MegaHertz, NdbNavaid, VhfNavaid, Waypoint } from 'msfs-navdata';
 
 interface MfdFmsFplnDuplicateNamesProps extends AbstractMfdPageProps {
@@ -20,6 +20,7 @@ type DuplicateWaypointData = {
     distance: NauticalMiles;
     location: Coordinates;
     freqChan?: MegaHertz;
+    fixData: VhfNavaid | NdbNavaid | Waypoint;
 };
 
 function isNavaid(fix: VhfNavaid | NdbNavaid | Waypoint): fix is (VhfNavaid | NdbNavaid) {
@@ -42,8 +43,6 @@ export class MfdFmsFplnDuplicateNames extends DisplayComponent<MfdFmsFplnDuplica
 
     private disabledScrollUp = MappedSubject.create(([, fromIndex]) => !(fromIndex > 0), this.duplicateOptions, this.displayFromWaypointIndex);
 
-    private selectedOptionIndex = Subject.create<number | undefined>(undefined);
-
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
@@ -65,17 +64,19 @@ export class MfdFmsFplnDuplicateNames extends DisplayComponent<MfdFmsFplnDuplica
             if (isNavaid(fx)) {
                 const dwd: DuplicateWaypointData = {
                     ident: fx.ident,
-                    distance: fx.distance,
+                    distance: distanceTo(fx.location, this.props.fmService.navigationProvider.getPpos()),
                     location: fx.location,
                     freqChan: fx.frequency,
+                    fixData: fx,
                 };
                 result.push(dwd);
             } else {
                 const dwd: DuplicateWaypointData = {
                     ident: fx.ident,
-                    distance: fx.distance,
+                    distance: distanceTo(fx.location, this.props.fmService.navigationProvider.getPpos()),
                     location: fx.location,
                     freqChan: undefined,
+                    fixData: fx,
                 };
                 result.push(dwd);
             }
@@ -96,31 +97,34 @@ export class MfdFmsFplnDuplicateNames extends DisplayComponent<MfdFmsFplnDuplica
             if (this.duplicateOptions.get()[i] !== undefined) {
                 const fix = this.duplicateOptions.get()[i];
                 // eslint-disable-next-line max-len
-                const latLonString = `${Math.abs(fix.location.lat).toFixed(0).padStart(2, '0')}${fix.location.lat > 0 ? 'N' : 'S'}/${Math.abs(fix.location.long).toFixed(0).padStart(3, '0')}${fix.location.long > 0 ? 'E' : 'W'}`;
+                const latLonString = `${Math.round(Math.abs(fix.location.lat)).toFixed(0).padStart(2, '0')}${fix.location.lat > 0 ? 'N' : 'S'}/${Math.round(Math.abs(fix.location.long)).toFixed(0).padStart(3, '0')}${fix.location.long > 0 ? 'E' : 'W'}`;
                 const node: VNode = (
-                    <>
-                        <div id={`mfd-fms-dupl-${i}-ident`} class={{ sel: this.selectedOptionIndex.map((it) => it === i) }}>
+                    <div class="mfd-fms-fpln-duplicate-table-row" id={`mfd-fms-dupl-${i}`}>
+                        <div style="width: 20%">
                             <span class="mfd-value-green bigger">{fix.ident ?? '\u00A0'}</span>
                         </div>
-                        <div id={`mfd-fms-dupl-${i}-dist`} class={{ sel: this.selectedOptionIndex.map((it) => it === i) }}>
-                            <span class="mfd-value-green bigger">{fix.distance ?? '\u00A0'}</span>
+                        <div style="width: 20%">
+                            <span class="mfd-value-green bigger">{Math.round(fix.distance).toFixed(0) ?? '\u00A0'}</span>
                         </div>
-                        <div id={`mfd-fms-dupl-${i}-loc`} class={{ sel: this.selectedOptionIndex.map((it) => it === i) }}>
+                        <div style="width: 30%">
                             <span class="mfd-value-green bigger">{latLonString ?? '\u00A0'}</span>
                         </div>
-                        <div id={`mfd-fms-dupl-${i}-freq`} class={{ sel: this.selectedOptionIndex.map((it) => it === i) }}>
+                        <div style="width: 30%">
                             <span class="mfd-value-green bigger">{(fix.freqChan > 120) ? fix.freqChan.toFixed(0) : fix.freqChan?.toFixed(2) ?? '\u00A0'}</span>
                         </div>
-                    </>
+                    </div>
                 );
                 FSComponent.render(node, this.linesDivRef.instance);
 
                 // These don't get explicitly deleted when re-rendering the list, TODO check if critical
-                [`mfd-fms-dupl-${i}-ident`, `mfd-fms-dupl-${i}-dist`, `mfd-fms-dupl-${i}-loc`, `mfd-fms-dupl-${i}-freq`].forEach((id) => {
-                    document.getElementById(id).addEventListener('click', () => this.selectedOptionIndex.set(i));
-                });
+                document.getElementById(`mfd-fms-dupl-${i}`).addEventListener('click', () => this.submit(fix.fixData));
             }
         }
+    }
+
+    private async submit(fix: VhfNavaid | NdbNavaid | Waypoint) {
+        this.props.afterSelected.get()(fix);
+        this.props.visible.set(false);
     }
 
     public destroy(): void {
@@ -136,14 +140,16 @@ export class MfdFmsFplnDuplicateNames extends DisplayComponent<MfdFmsFplnDuplica
                 <div class="mfd-fms-fpln-duplicate-inner">
                     <ActivePageTitleBar activePage={Subject.create('DUPLICATE NAMES')} offset={Subject.create('')} eoIsActive={Subject.create(false)} tmpyIsActive={Subject.create(false)} />
                     {/* begin page content */}
-                    <div class="mfd-fms-fpln-duplicate-grid" style="margin-top: 100px;">
-                        <div><span class="mfd-label">IDENT</span></div>
-                        <div><span class="mfd-label">DIST(NM)</span></div>
-                        <div><span class="mfd-label">LAT/LONG</span></div>
-                        <div><span class="mfd-label">FREQ/CHAN</span></div>
+                    <div class="mfd-fms-fpln-duplicate-table" style="margin-top: 100px;">
+                        <div class="mfd-fms-fpln-duplicate-table-header">
+                            <div style="width: 20%"><span class="mfd-label">IDENT</span></div>
+                            <div style="width: 20%"><span class="mfd-label">DIST(NM)</span></div>
+                            <div style="width: 30%"><span class="mfd-label">LAT/LONG</span></div>
+                            <div style="width: 30%"><span class="mfd-label">FREQ/CHAN</span></div>
+                        </div>
                     </div>
                     <div class="mfd-fms-fpln-duplicate-outline mfd-fms-fpln-label-bottom-space">
-                        <div ref={this.linesDivRef} class="mfd-fms-fpln-duplicate-grid" />
+                        <div ref={this.linesDivRef} class="mfd-fms-fpln-duplicate-table" />
                         <div style="flex-grow: 1;" />
                     </div>
                     <div style="display: flex; flex-direction: row; justify-content: center">
@@ -165,11 +171,7 @@ export class MfdFmsFplnDuplicateNames extends DisplayComponent<MfdFmsFplnDuplica
                         <div style="display: flex; justify-content: flex-end; padding: 2px;">
                             <Button
                                 label="RETURN"
-                                onClick={async () => {
-                                    const fix = await NavigationDatabaseService.activeDatabase.searchAllFix(this.props.ident.get());
-                                    this.props.afterSelected.get()(fix[this.selectedOptionIndex.get()]);
-                                    this.props.visible.set(false);
-                                }}
+                                onClick={() => this.props.visible.set(false)}
                             />
                         </div>
                     </div>

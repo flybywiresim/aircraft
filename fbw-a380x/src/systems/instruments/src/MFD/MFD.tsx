@@ -32,7 +32,6 @@ import { ActiveUriInformation, MfdUIService } from 'instruments/src/MFD/pages/co
 import { MfdFmsFplnDep } from 'instruments/src/MFD/pages/FMS/F-PLN/DEPARTURE';
 import { MfdFmsFplnArr } from 'instruments/src/MFD/pages/FMS/F-PLN/ARRIVAL';
 import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
-import { NavigationDatabaseService } from '@fmgc/flightplanning/new/NavigationDatabaseService';
 import { Fmgc, GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { SpeedLimit } from '@fmgc/guidance/vnav/SpeedLimit';
@@ -44,6 +43,8 @@ import { NavaidTuner } from '@fmgc/navigation/NavaidTuner';
 import { NavaidSelectionManager } from '@fmgc/navigation/NavaidSelectionManager';
 import { LandingSystemSelectionManager } from '@fmgc/navigation/LandingSystemSelectionManager';
 import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
+import { NavigationDatabaseService } from '@fmgc/flightplanning/new/NavigationDatabaseService';
+import { MfdFlightManagementService } from 'instruments/src/MFD/pages/common/FlightManagementService';
 import { MfdSimvars } from './shared/MFDSimvarPublisher';
 import { DisplayUnit } from '../MsfsAvionicsCommon/displayUnit';
 
@@ -56,7 +57,7 @@ export interface AbstractMfdPageProps extends ComponentProps {
     pageTitle?: string;
     bus: EventBus;
     uiService: MfdUIService;
-    flightPlanService: FlightPlanService;
+    fmService: MfdFlightManagementService;
 }
 
 interface MfdComponentProps extends ComponentProps {
@@ -65,8 +66,6 @@ interface MfdComponentProps extends ComponentProps {
 }
 export class MfdComponent extends DisplayComponent<MfdComponentProps> {
     private uiService = new MfdUIService();
-
-    private flightPlanService = new FlightPlanService(this.props.bus);
 
     private fmgc: Fmgc = {
         getZeroFuelWeight(): number {
@@ -142,7 +141,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> {
             return 159;
         },
         getCleanSpeed(): Knots {
-            return 135;
+            return 190;
         },
         getTripWind(): number {
             return 0;
@@ -169,6 +168,8 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> {
             return 100;
         },
     }
+
+    private flightPlanService = new FlightPlanService(this.props.bus);
 
     private guidanceController = new GuidanceController(this.fmgc, this.flightPlanService);
 
@@ -201,6 +202,8 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> {
 
     private efisSymbols = new EfisSymbols(this.guidanceController, this.flightPlanService, this.navaidTuner);
 
+    private fmService = new MfdFlightManagementService(this.flightPlanService, this.guidanceController, this.fmgc, this.navigationProvider);
+
     private displayBrightness = Subject.create(0);
 
     private displayPowered = Subject.create(false);
@@ -225,11 +228,32 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> {
     }
 
     private async initializeFlightPlans() {
-        NavigationDatabaseService.activeDatabase = new NavigationDatabase(NavigationDatabaseBackend.Msfs);
+        const db = new NavigationDatabase(NavigationDatabaseBackend.Msfs);
+        NavigationDatabaseService.activeDatabase = db;
         await new Promise((r) => setTimeout(r, 1000));
         this.flightPlanService.createFlightPlans();
 
+        // Build EGLL/27R N0411F250 MAXI1F MAXIT DCT HARDY UM605 BIBAX BIBA9X LFPG/09L
         await this.flightPlanService.newCityPair('EGLL', 'LFPG', 'EBBR');
+        await this.flightPlanService.setOriginRunway('RW27R');
+        await this.flightPlanService.setDepartureProcedure('MAXI1F');
+        await this.flightPlanService.nextWaypoint(8, (await db.searchAllFix('HARDY'))[0]);
+        await this.flightPlanService.temporaryInsert();
+        await this.flightPlanService.deleteElementAt(8);
+
+        this.flightPlanService.active.startAirwayEntry(8);
+        const awy = (await db.searchAirway('UM605', (await db.searchAllFix('HARDY'))[0]))[0];
+        this.flightPlanService.active.pendingAirways.thenAirway(awy);
+        this.flightPlanService.active.pendingAirways.thenTo((await db.searchAllFix('BIBAX'))[0]);
+        this.flightPlanService.active.pendingAirways.finalize();
+
+        await this.flightPlanService.setDestinationRunway('RW09R');
+        // await this.flightPlanService.setApproach('I09R');
+        // await this.flightPlanService.setApproachVia('MOP6E');
+        // await this.flightPlanService.setArrival('BIBA9X');
+
+        await this.flightPlanService.temporaryInsert();
+        await this.flightPlanService.deleteElementAt(12);
     }
 
     public async onAfterRender(node: VNode): Promise<void> {
@@ -275,7 +299,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> {
         });
 
         // Navigate to initial page
-        this.uiService.navigateTo('fms/active/init');
+        this.uiService.navigateTo('fms/active/f-pln');
     }
 
     private activeUriChanged(uri: ActiveUriInformation) {
@@ -304,7 +328,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> {
                     callsign={Subject.create('FBW123')}
                     activeFmsSource={this.activeFmsSource}
                     uiService={this.uiService}
-                    flightPlanService={this.flightPlanService}
+                    fmService={this.fmService}
                 />
             );
             break;
@@ -315,7 +339,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> {
                     callsign={Subject.create('FBW123')}
                     activeFmsSource={this.activeFmsSource}
                     uiService={this.uiService}
-                    flightPlanService={this.flightPlanService}
+                    fmService={this.fmService}
                 />
             );
             break;
@@ -326,7 +350,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> {
                     callsign={Subject.create('FBW123')}
                     activeFmsSource={this.activeFmsSource}
                     uiService={this.uiService}
-                    flightPlanService={this.flightPlanService}
+                    fmService={this.fmService}
                 />
             );
             break;
@@ -337,7 +361,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> {
                     callsign={Subject.create('FBW123')}
                     activeFmsSource={this.activeFmsSource}
                     uiService={this.uiService}
-                    flightPlanService={this.flightPlanService}
+                    fmService={this.fmService}
                 />
             );
             break;
@@ -349,7 +373,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> {
                     callsign={Subject.create('FBW123')}
                     activeFmsSource={this.activeFmsSource}
                     uiService={this.uiService}
-                    flightPlanService={this.flightPlanService}
+                    fmService={this.fmService}
                 />
             );
             break;
@@ -358,26 +382,75 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> {
         // Mapping from URL to page component
         switch (`${uri.sys}/${uri.category}/${uri.page}`) {
         case 'fms/active/perf':
-            this.activePage = <MfdFmsPerf pageTitle="PERF" bus={this.props.bus} uiService={this.uiService} flightPlanService={this.flightPlanService} />;
+            this.activePage = (
+                <MfdFmsPerf
+                    pageTitle="PERF"
+                    bus={this.props.bus}
+                    uiService={this.uiService}
+                    fmService={this.fmService}
+                />
+            );
             break;
         case 'fms/active/init':
-            this.activePage = <MfdFmsInit pageTitle="INIT" bus={this.props.bus} uiService={this.uiService} flightPlanService={this.flightPlanService} />;
+            this.activePage = (
+                <MfdFmsInit
+                    pageTitle="INIT"
+                    bus={this.props.bus}
+                    uiService={this.uiService}
+                    fmService={this.fmService}
+                />
+            );
             break;
         case 'fms/active/fuel-load':
-            this.activePage = <MfdFmsFuelLoad pageTitle="FUEL&LOAD" bus={this.props.bus} uiService={this.uiService} flightPlanService={this.flightPlanService} />;
+            this.activePage = (
+                <MfdFmsFuelLoad
+                    pageTitle="FUEL&LOAD"
+                    bus={this.props.bus}
+                    uiService={this.uiService}
+                    fmService={this.fmService}
+                />
+            );
             break;
         case 'fms/active/f-pln':
-            this.activePage = <MfdFmsFpln pageTitle="F-PLN" bus={this.props.bus} uiService={this.uiService} flightPlanService={this.flightPlanService} />;
+            this.activePage = (
+                <MfdFmsFpln
+                    pageTitle="F-PLN"
+                    bus={this.props.bus}
+                    uiService={this.uiService}
+                    fmService={this.fmService}
+                />
+            );
             break;
         case 'fms/active/f-pln-departure':
-            this.activePage = <MfdFmsFplnDep pageTitle="F-PLN/DEPARTURE" bus={this.props.bus} uiService={this.uiService} flightPlanService={this.flightPlanService} />;
+            this.activePage = (
+                <MfdFmsFplnDep
+                    pageTitle="F-PLN/DEPARTURE"
+                    bus={this.props.bus}
+                    uiService={this.uiService}
+                    fmService={this.fmService}
+                />
+            );
             break;
         case 'fms/active/f-pln-arrival':
-            this.activePage = <MfdFmsFplnArr pageTitle="F-PLN/ARRIVAL" bus={this.props.bus} uiService={this.uiService} flightPlanService={this.flightPlanService} />;
+            this.activePage = (
+                <MfdFmsFplnArr
+                    pageTitle="F-PLN/ARRIVAL"
+                    bus={this.props.bus}
+                    uiService={this.uiService}
+                    fmService={this.fmService}
+                />
+            );
             break;
 
         default:
-            this.activePage = <MfdNotFound pageTitle="NOT FOUND" bus={this.props.bus} uiService={this.uiService} flightPlanService={this.flightPlanService} />;
+            this.activePage = (
+                <MfdNotFound
+                    pageTitle="NOT FOUND"
+                    bus={this.props.bus}
+                    uiService={this.uiService}
+                    fmService={this.fmService}
+                />
+            );
             break;
         }
 
@@ -388,7 +461,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> {
                     messages={ArraySubject.create(['CLOSE RTE REQUEST FIRST', 'RECEIVED POS T.O DATA NOT VALID', 'CONSTRAINTS ABOVE CRZ FL DELETED', 'NOT IN DATABASE', 'GPS PRIMARY', 'CHECK T.O DATA'])}
                     bus={this.props.bus}
                     uiService={this.uiService}
-                    flightPlanService={this.flightPlanService}
+                    fmService={this.fmService}
                 />
             );
         }
