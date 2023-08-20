@@ -100,10 +100,12 @@ impl<'a, 'b> MsfsSimulationBuilder<'a, 'b> {
         self,
         is_available_variable: Variable,
         fuel_valve_number: u8,
+        fuel_pump_number: u8,
     ) -> Result<Self, Box<dyn Error>> {
         self.with_aspect(auxiliary_power_unit(
             is_available_variable,
             fuel_valve_number,
+            fuel_pump_number,
         ))
     }
 
