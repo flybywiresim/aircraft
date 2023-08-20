@@ -68,9 +68,10 @@ class CDUPerformancePage {
                         mcdu.unconfirmedV1Speed = undefined;
                     } else {
                         // not real: v-speed helper
-                        if (mcdu.flaps && !isFinite(mcdu.zeroFuelWeight)) {
+                        const gw = mcdu.getGrossWeight();
+                        if (mcdu.flaps && !gw) {
                             mcdu.addMessageToQueue(NXSystemMessages.initializeWeightOrCg);
-                        } else if (mcdu.flaps && isFinite(mcdu.zeroFuelWeight)) {
+                        } else if (mcdu.flaps && gw) {
                             mcdu.setScratchpadText(mcdu._getV1Speed().toString());
                         } else {
                             mcdu.setScratchpadMessage(NXSystemMessages.formatError);
@@ -98,9 +99,10 @@ class CDUPerformancePage {
                         mcdu.vRSpeed = mcdu.unconfirmedVRSpeed;
                         mcdu.unconfirmedVRSpeed = undefined;
                     } else {
-                        if (mcdu.flaps && !isFinite(mcdu.zeroFuelWeight)) {
+                        const gw = mcdu.getGrossWeight();
+                        if (mcdu.flaps && !gw) {
                             mcdu.addMessageToQueue(NXSystemMessages.initializeWeightOrCg);
-                        } else if (mcdu.flaps && isFinite(mcdu.zeroFuelWeight)) {
+                        } else if (mcdu.flaps && gw) {
                             mcdu.setScratchpadText(mcdu._getVRSpeed().toString());
                         } else {
                             mcdu.setScratchpadMessage(NXSystemMessages.formatError);
@@ -128,9 +130,10 @@ class CDUPerformancePage {
                         mcdu.v2Speed = mcdu.unconfirmedV2Speed;
                         mcdu.unconfirmedV2Speed = undefined;
                     } else {
-                        if (mcdu.flaps && !isFinite(mcdu.zeroFuelWeight)) {
+                        const gw = mcdu.getGrossWeight();
+                        if (mcdu.flaps && !gw) {
                             mcdu.addMessageToQueue(NXSystemMessages.initializeWeightOrCg);
-                        } else if (mcdu.flaps && isFinite(mcdu.zeroFuelWeight)) {
+                        } else if (mcdu.flaps && gw) {
                             mcdu.setScratchpadText(mcdu._getV2Speed().toString());
                         } else {
                             mcdu.setScratchpadMessage(NXSystemMessages.formatError);
@@ -706,7 +709,8 @@ class CDUPerformancePage {
             }
         };
 
-        const closeToDest = mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().liveDistanceTo <= 180;
+        const distanceToDest = mcdu.flightPlanManager.getDistanceToDestination();
+        const closeToDest = distanceToDest !== -1 && distanceToDest <= 180;
 
         let qnhCell = "[\xa0\xa0][color]cyan";
         if (isFinite(mcdu.perfApprQNH)) {

@@ -1454,6 +1454,14 @@ These variables are the interface between the 3D model and the systems/code.
     - Bool
     - Indicates current pax/cargo loading state
 
+- A32NX_AIRFRAME_ZFW_DESIRED
+    - Kg
+    - Indicates the desired ZFW when boarding
+
+- A32NX_AIRFRAME_ZFW_CG_PERCENT_MAC_DESIRED
+    - % MAC
+    - Indicates the desired ZFW CoG when boarding
+
 - A32NX_PAX_{station}
     - Bitwise Field
     - Indicates the current pax in the selected rows (max 53 bits)
