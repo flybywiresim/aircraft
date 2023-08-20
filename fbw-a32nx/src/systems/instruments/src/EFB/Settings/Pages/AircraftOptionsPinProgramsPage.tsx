@@ -25,6 +25,7 @@ export const AircraftOptionsPinProgramsPage = () => {
     const [vhfSpacing, setVhfSpacing] = usePersistentProperty('RMP_VHF_SPACING_25KHZ', '0');
     const [latLonExtended, setLatLonExtended] = usePersistentProperty('LATLON_EXT_FMT', '0');
     const [satcomEnabled, setsatcomEnabled] = usePersistentNumberProperty('MODEL_SATCOM_ENABLED', 0);
+    const [postItEnabled, setPostItEnabled] = usePersistentNumberProperty('MODEL_POSTIT_ENABLED', 0);
 
     const handleSetThrustReductionAlt = (value: string) => {
         setThrustReductionHeightSetting(value);
@@ -190,6 +191,9 @@ export const AircraftOptionsPinProgramsPage = () => {
 
             <SettingItem name={t('Settings.AircraftOptionsPinPrograms.Satcom')}>
                 <Toggle value={!!satcomEnabled} onToggle={(value) => setsatcomEnabled(value ? 1 : 0)} />
+            </SettingItem>
+            <SettingItem name={t('Settings.AircraftOptionsPinPrograms.PostIt')}>
+                <Toggle value={!!postItEnabled} onToggle={(value) => setPostItEnabled(value ? 1 : 0)} />
             </SettingItem>
 
         </SettingsPage>

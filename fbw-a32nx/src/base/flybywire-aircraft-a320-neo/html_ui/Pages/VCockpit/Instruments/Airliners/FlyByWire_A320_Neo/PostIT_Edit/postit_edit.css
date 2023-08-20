@@ -1,0 +1,99 @@
+@font-face {
+  font-family: "Caveat";
+  src: url("/Fonts/fbw-a32nx/Caveat-Bold.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+    font-family: "Marker";
+    src: url("/Fonts/fbw-a32nx/PermanentMarker-Regular.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "Gochi";
+    src: url("/Fonts/fbw-a32nx/GochiHand-Regular.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "RockSalt";
+    src: url("/Fonts/fbw-a32nx/RockSalt-Regular.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "Kalam";
+    src: url("/Fonts/fbw-a32nx/Kalam-Regular.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+}
+
+#text {
+  padding: 3.5rem;
+  background-image: url("/Images/fbw-a32nx/PostIT/postit-bg.png");
+  background-color: rgb(255,255,151);
+  background-blend-mode: multiply;
+  background-repeat: no-repeat;
+  background-size: cover;
+  font-family: "Caveat";
+  line-height: 1.1;
+  font-size: 100px;
+  color: #000;
+  width: 1022px;
+  height: 1022px;
+  margin: 1px;
+  overflow-wrap: break-word;
+  overflow: hidden;
+}
+
+#invis {
+  padding: 3.5rem;
+  font-family: "Caveat", sans-serif;
+  line-height: 1.1;
+  font-size: 100px;
+  position: absolute;
+  overflow-wrap: break-word;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index:-1;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+#text::selection {
+  background: black;
+  color: white;
+}
+
+#taskbar {
+    position: absolute;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    width: fit-content;
+    bottom: 20px;
+    right: 20px;
+    z-index: 120;
+}
+
+#typography, #palette, #pencil, #close {
+  width: 75px;
+  height: 75px;
+  stroke: #000;
+}
+
+#typography:hover, #palette:hover, #pencil:hover, #close:hover {
+  stroke-width: 2.5;
+}
+
+#close {
+  position: absolute;
+  transform: translate(70px, -900px);
+}

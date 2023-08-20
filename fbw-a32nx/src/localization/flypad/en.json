@@ -491,7 +491,8 @@
       "Satcom": "Satcom",
       "ThrustReductionHeight": "Thrust Reduction Height (ft)",
       "Title": "Aircraft Options / Pin Programs",
-      "WeightUnit": "Weight Unit"
+      "WeightUnit": "Weight Unit",
+      "PostIt": "PostIt"
     },
     "AtsuAoc": {
       "AtisAtcSource": "ATIS/ATC Source",

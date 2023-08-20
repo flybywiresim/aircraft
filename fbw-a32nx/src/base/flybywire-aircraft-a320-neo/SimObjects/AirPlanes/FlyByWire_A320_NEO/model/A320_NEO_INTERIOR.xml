@@ -70,6 +70,41 @@
             </Component>
         </Component>
 
+        <!-- Post-It® / Sticky note -->
+
+        <Component ID="POSTIT" Node="POSTIT">
+           <DefaultTemplateParameters>
+                <!-- disable lock mode blue highlight -->
+                <NO_HIGHLIGHT_NODE_ID>@StopLockHighlight</NO_HIGHLIGHT_NODE_ID>
+            </DefaultTemplateParameters>
+         <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                <VISIBILITY_CODE>(L:A32NX_MODEL_POSTIT_ENABLED, bool) (L:A32NX_MODEL_POSTIT_EDIT) ! and</VISIBILITY_CODE>
+         </UseTemplate>
+          <!--   <UseTemplate Name="ASOBO_GT_Anim_Code">
+                <ANIM_NAME>POSTIT_ANIM</ANIM_NAME>
+                <ANIM_CODE>
+                    (L:A32NX_MODEL_POSTIT_ENABLED, bool) if{
+                        (L:A32NX_MODEL_POSTIT_EDIT, bool)
+                    } els{
+                        1
+                    }
+                </ANIM_CODE>
+                <ANIM_LENGTH>1</ANIM_LENGTH>
+            </UseTemplate> -->
+            <UseTemplate Name="ASOBO_GT_Interaction_LeftSingle_Leave_Code">
+                <LEFT_SINGLE_CODE>(L:A32NX_MODEL_POSTIT_EDIT, bool) ! (&gt;L:A32NX_MODEL_POSTIT_EDIT)</LEFT_SINGLE_CODE>
+                <LEFT_LEAVE_CODE />
+            </UseTemplate>
+        </Component>
+
+        <Component ID="POSTIT_EDIT" Node="POSTIT_EDIT">
+              <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                <VISIBILITY_CODE>(L:A32NX_MODEL_POSTIT_ENABLED, bool) (L:A32NX_MODEL_POSTIT_EDIT) and</VISIBILITY_CODE>
+            </UseTemplate>
+        </Component>
+
+        <!-- MCDU -->
+
         <Component ID="MCDU">
             <DefaultTemplateParameters>
                 <!-- disable lock mode blue highlight -->
