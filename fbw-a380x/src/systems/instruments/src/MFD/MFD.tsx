@@ -45,6 +45,13 @@ import { LandingSystemSelectionManager } from '@fmgc/navigation/LandingSystemSel
 import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/new/NavigationDatabaseService';
 import { MfdFlightManagementService } from 'instruments/src/MFD/pages/common/FlightManagementService';
+import { MfdFmsFplnDuplicateNames } from 'instruments/src/MFD/pages/FMS/F-PLN/DUPLICATE_NAMES';
+import { DatabaseItem, Waypoint } from 'msfs-navdata';
+import { DataInterface } from '@fmgc/flightplanning/new/interface/DataInterface';
+import { DisplayInterface } from '@fmgc/flightplanning/new/interface/DisplayInterface';
+import { FmsErrorType } from '@fmgc/FmsError';
+
+import { WaypointFactory } from '@fmgc/flightplanning/new/waypoints/WaypointFactory';
 import { MfdSimvars } from './shared/MFDSimvarPublisher';
 import { DisplayUnit } from '../MsfsAvionicsCommon/displayUnit';
 
@@ -64,7 +71,13 @@ interface MfdComponentProps extends ComponentProps {
     bus: EventBus;
     instrument: BaseInstrument;
 }
-export class MfdComponent extends DisplayComponent<MfdComponentProps> {
+
+export interface FmsErrorMessage {
+    message: string;
+    backgroundColor: 'none' | 'amber' | 'cyan'; // Whether the message should be colored. White text on black background if 'none'
+    cleared: boolean; // If message has been cleared from footer
+}
+export class MfdComponent extends DisplayComponent<MfdComponentProps> implements DisplayInterface, DataInterface {
     private uiService = new MfdUIService();
 
     private fmgc: Fmgc = {
@@ -165,7 +178,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> {
             return 100;
         },
         getDestinationElevation(): Feet {
-            return 100;
+            return 200;
         },
     }
 
@@ -202,7 +215,9 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> {
 
     private efisSymbols = new EfisSymbols(this.guidanceController, this.flightPlanService, this.navaidTuner);
 
-    private fmService = new MfdFlightManagementService(this.flightPlanService, this.guidanceController, this.fmgc, this.navigationProvider);
+    private fmService = new MfdFlightManagementService(this, this.flightPlanService, this.guidanceController, this.fmgc, this.navigationProvider);
+
+    public fmsErrors = ArraySubject.create<FmsErrorMessage>();
 
     private displayBrightness = Subject.create(0);
 
@@ -221,6 +236,12 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> {
     private activeHeaderRef = FSComponent.createRef<HTMLDivElement>();
 
     private activeHeader: VNode = null;
+
+    private messageListOpened = Subject.create<boolean>(false);
+
+    private duplicateNamesOpened = Subject.create<boolean>(false);
+
+    private duplicateNamesRef = FSComponent.createRef<MfdFmsFplnDuplicateNames>();
 
     // Necessary to enable mouse interaction
     get isInteractive(): boolean {
@@ -248,12 +269,142 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> {
         this.flightPlanService.active.pendingAirways.finalize();
 
         await this.flightPlanService.setDestinationRunway('RW09R');
-        // await this.flightPlanService.setApproach('I09R');
+        // await this.flightPlanService.setApproach('I09R'); // throws errors
         // await this.flightPlanService.setApproachVia('MOP6E');
         // await this.flightPlanService.setArrival('BIBA9X');
 
         await this.flightPlanService.temporaryInsert();
         await this.flightPlanService.deleteElementAt(12);
+
+        // Add test FMS error messages
+        this.showFmsErrorMessage(FmsErrorType.NotInDatabase);
+        this.showFmsErrorMessageFreeText({ message: 'CHECK T.O, DATA', cleared: false, backgroundColor: 'amber' });
+    }
+
+    /**
+     * Called when a flight plan uplink is in progress
+     */
+    onUplinkInProgress() {
+        // TODO
+    }
+
+    /**
+         * Called when a flight plan uplink is done
+         */
+    onUplinkDone() {
+        // TODO
+    }
+
+    /**
+         * Calling this function with a message should display 1the message in the FMS' message area,
+         * such as the scratchpad or a dedicated error line. The FMS error type given should be translated
+         * into the appropriate message for the UI
+         *
+         * @param errorType the message to show
+         */
+    showFmsErrorMessage(errorType: FmsErrorType) {
+        let messageStr: string = '';
+
+        switch (errorType) {
+        case FmsErrorType.EntryOutOfRange:
+            messageStr = 'ENTRY OUT OF RANGE';
+            break;
+        case FmsErrorType.FormatError:
+            messageStr = 'FORMAT ERROR';
+            break;
+        case FmsErrorType.NotInDatabase:
+            messageStr = 'NOT IN DATABASE';
+            break;
+        case FmsErrorType.NotYetImplemented:
+            messageStr = 'NOT YET IMPLEMENTED';
+            break;
+
+        default:
+            break;
+        }
+
+        const msg: FmsErrorMessage = { message: messageStr, cleared: false, backgroundColor: 'none' };
+        const exists = this.fmsErrors.getArray().findIndex((el) => el.message === messageStr && el.cleared === true);
+        if (exists !== -1) {
+            this.fmsErrors.removeAt(exists);
+        }
+        this.fmsErrors.insert(msg, 0);
+    }
+
+    public showFmsErrorMessageFreeText(msg: FmsErrorMessage) {
+        const exists = this.fmsErrors.getArray().findIndex((el) => el.message === msg.message && el.cleared === true);
+        if (exists !== -1) {
+            this.fmsErrors.removeAt(exists);
+        }
+        this.fmsErrors.insert(msg, 0);
+    }
+
+    public clearLatestFmsErrorMessage() {
+        const arr = this.fmsErrors.getArray().concat([]);
+        console.log(arr.length);
+        const index = arr.findIndex((val) => val.cleared === false);
+
+        if (index > -1) {
+            console.log(index);
+            const old = arr[index];
+            old.cleared = true;
+
+            this.fmsErrors.set(arr);
+            console.log(arr.length);
+        }
+    }
+
+    public openMessageList() {
+        this.messageListOpened.set(true);
+    }
+
+    /**
+         * Calling this function with an array of items should display a UI allowing the user to
+         * select the right item from a list of duplicates, and return the one chosen by the user or
+         * `undefined` if the operation is cancelled.
+         *
+         * @param items the items to de-duplicate
+         *
+         * @returns the chosen item
+         */
+    async deduplicateFacilities<T extends DatabaseItem<any>>(items: T[]): Promise<T | undefined> {
+        this.duplicateNamesOpened.set(true);
+        const result = await this.duplicateNamesRef.instance.deduplicateFacilities(items);
+        this.duplicateNamesOpened.set(false);
+
+        return result;
+    }
+
+    /**
+         * Calling this function should show a UI allowing the pilot to create a new waypoint with the ident
+         * provided
+         *
+         * @param ident the identifier the waypoint should have
+         *
+         * @returns the created waypoint, or `undefined` if the operation is cancelled
+         */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    async createNewWaypoint(ident: string): Promise<Waypoint | undefined> {
+        // TODO navigate to DATA/NAVAID --> PILOT STORED NAVAIDS --> NEW NAVAID
+        return undefined;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    createLatLonWaypoint(coordinates: Coordinates, stored: boolean): Waypoint {
+        // TODO
+        return WaypointFactory.fromLocation('LL01', coordinates);
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    createPlaceBearingPlaceBearingWaypoint(place1: Waypoint, bearing1: DegreesTrue, place2: Waypoint, bearing2: DegreesTrue, stored: boolean): Waypoint {
+        // TODO
+        return WaypointFactory.fromPlaceBearingPlaceBearing('PBPB01', place1.location, bearing1, place2.location, bearing2);
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    createPlaceBearingDistWaypoint(place: Waypoint, bearing: DegreesTrue, distance: NauticalMiles, stored: boolean): Waypoint {
+        // TODO
+        return WaypointFactory.fromPlaceBearingDistance('PBD01', place.location, bearing, distance);
     }
 
     public async onAfterRender(node: VNode): Promise<void> {
@@ -454,18 +605,6 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> {
             break;
         }
 
-        if (uri.page === 'msg-list') {
-            this.activePage = (
-                <MfdMsgList
-                    // eslint-disable-next-line max-len
-                    messages={ArraySubject.create(['CLOSE RTE REQUEST FIRST', 'RECEIVED POS T.O DATA NOT VALID', 'CONSTRAINTS ABOVE CRZ FL DELETED', 'NOT IN DATABASE', 'GPS PRIMARY', 'CHECK T.O DATA'])}
-                    bus={this.props.bus}
-                    uiService={this.uiService}
-                    fmService={this.fmService}
-                />
-            );
-        }
-
         FSComponent.render(this.activeHeader, this.activeHeaderRef.getOrDefault());
         FSComponent.render(this.activePage, this.activePageRef?.getOrDefault());
     }
@@ -475,6 +614,20 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> {
             <DisplayUnit bus={this.props.bus} normDmc={1} brightness={this.displayBrightness} powered={this.displayPowered}>
                 <div class="mfd-main" ref={this.topRef}>
                     <div ref={this.activeHeaderRef} />
+                    <MfdMsgList
+                        visible={this.messageListOpened}
+                        messages={this.fmsErrors}
+                        bus={this.props.bus}
+                        uiService={this.uiService}
+                        fmService={this.fmService}
+                    />
+                    <MfdFmsFplnDuplicateNames
+                        ref={this.duplicateNamesRef}
+                        visible={this.duplicateNamesOpened}
+                        bus={this.props.bus}
+                        uiService={this.uiService}
+                        fmService={this.fmService}
+                    />
                     <div ref={this.activePageRef} class="mfd-navigator-container" />
                     <MouseCursor side={Subject.create('CPT')} ref={this.mouseCursorRef} />
                 </div>

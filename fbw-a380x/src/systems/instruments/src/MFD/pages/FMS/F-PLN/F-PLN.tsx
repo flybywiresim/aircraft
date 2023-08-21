@@ -12,11 +12,8 @@ import { DestinationWindow } from 'instruments/src/MFD/pages/FMS/F-PLN/Destinati
 import { InsertNextWptFromWindow } from 'instruments/src/MFD/pages/FMS/F-PLN/InsertNextWptFrom';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { FlightPlanElement, FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
-import { NavigationDatabaseService } from '@fmgc/flightplanning/new/NavigationDatabaseService';
 import { WaypointEntryUtils } from '@fmgc/flightplanning/new/WaypointEntryUtils';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
-import { MfdFmsFplnDuplicateNames } from 'instruments/src/MFD/pages/FMS/F-PLN/DUPLICATE_NAMES';
-import { NdbNavaid, VhfNavaid, Waypoint } from 'msfs-navdata';
 import { WindVector } from '@fmgc/guidance/vnav/wind';
 import { PseudoWaypoint } from '@fmgc/guidance/PseudoWaypoint';
 import { Coordinates, bearingTo } from 'msfs-geo';
@@ -77,12 +74,6 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
     private nextWptAvailableWaypoints = ArraySubject.create<string>(['']) ;
 
-    private duplicateNamesOpened = Subject.create<boolean>(false);
-
-    private duplicateNamesIdent = Subject.create<string>('');
-
-    private duplicateNamesFunction = Subject.create<(wpt: VhfNavaid | NdbNavaid | Waypoint) => Promise<void>>(() => null);
-
     protected onNewData(): void {
         console.time('F-PLN:onNewData');
         this.activeLegIndex = this.loadedFlightPlan.activeLegIndex;
@@ -125,10 +116,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                     newEl.trackFromLastWpt = null;
                     newEl.windPrediction = WindVector.default();
                 } else {
-                    if (!this.props.fmService.guidanceController?.vnavDriver?.mcduProfile?.waypointPredictions?.get(index)) {
-                        console.log(this.props.fmService.guidanceController.vnavDriver.mcduProfile);
-                    }
-                    newEl.distanceFromLastWpt = (this.props.fmService.guidanceController.vnavDriver.mcduProfile)
+                    newEl.distanceFromLastWpt = (this.props.fmService.guidanceController.vnavDriver.mcduProfile?.waypointPredictions?.get(index)?.distanceFromStart !== undefined)
                         ? this.props.fmService.guidanceController.vnavDriver.mcduProfile.waypointPredictions.get(index).distanceFromStart - lastDistanceFromStart
                         : null;
                     newEl.trackFromLastWpt = (el.definition.waypoint) ? bearingTo(lastLegLatLong, el.definition.waypoint.location) : null;
@@ -424,31 +412,11 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                         availableWaypoints={this.nextWptAvailableWaypoints}
                         visible={this.insertNextWptWindowOpened}
                         cancelAction={() => this.insertNextWptWindowOpened.set(false)}
-                        confirmAction={async (wpt) => {
-                            // TODO use getOrCreateWaypoint
-                            // const fix = await WaypointEntryUtils.getOrCreateWaypoint(); TODO
-                            const fix = await NavigationDatabaseService.activeDatabase.searchAllFix(wpt);
-
+                        confirmAction={async (ident) => {
+                            const wpt = await WaypointEntryUtils.getOrCreateWaypoint(this.props.fmService.mfd, ident);
                             this.insertNextWptWindowOpened.set(false);
-
-                            if (fix.length > 1) {
-                                this.duplicateNamesIdent.set(wpt);
-                                this.duplicateNamesFunction.set(async (result) => {
-                                    await this.props.fmService.flightPlanService.nextWaypoint(this.revisedWaypointIndex.get(), result);
-                                });
-                                this.duplicateNamesOpened.set(true);
-                            } else {
-                                await this.props.fmService.flightPlanService.nextWaypoint(this.revisedWaypointIndex.get(), fix[0]);
-                            }
+                            await this.props.fmService.flightPlanService.nextWaypoint(this.revisedWaypointIndex.get(), wpt);
                         }}
-                    />
-                    <MfdFmsFplnDuplicateNames
-                        visible={this.duplicateNamesOpened}
-                        ident={this.duplicateNamesIdent}
-                        afterSelected={this.duplicateNamesFunction}
-                        bus={this.props.bus}
-                        uiService={this.props.uiService}
-                        fmService={this.props.fmService}
                     />
                     <div class="mfd-fms-fpln-header">
                         <div class="mfd-fms-fpln-header-from">

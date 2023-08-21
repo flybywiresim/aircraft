@@ -230,7 +230,9 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
     // GA page subjects, refs and methods
 
-    protected onNewData: () => null;
+    protected onNewData(): void {
+        // TODO
+    }
 
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);

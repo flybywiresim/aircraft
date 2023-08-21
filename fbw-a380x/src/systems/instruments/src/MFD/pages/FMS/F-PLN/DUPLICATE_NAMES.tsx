@@ -5,14 +5,11 @@ import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { IconButton } from 'instruments/src/MFD/pages/common/IconButton';
 import { Button } from 'instruments/src/MFD/pages/common/Button';
 import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
-import { NavigationDatabaseService } from '@fmgc/flightplanning/new/NavigationDatabaseService';
 import { Coordinates, distanceTo } from 'msfs-geo';
-import { MegaHertz, NdbNavaid, VhfNavaid, Waypoint } from 'msfs-navdata';
+import { DatabaseItem, MegaHertz, NdbNavaid, VhfNavaid, Waypoint } from 'msfs-navdata';
 
 interface MfdFmsFplnDuplicateNamesProps extends AbstractMfdPageProps {
     visible: Subject<boolean>;
-    ident: Subject<string>;
-    afterSelected: Subject<(wpt: VhfNavaid | NdbNavaid | Waypoint) => Promise<void>>;
 }
 
 type DuplicateWaypointData = {
@@ -20,20 +17,30 @@ type DuplicateWaypointData = {
     distance: NauticalMiles;
     location: Coordinates;
     freqChan?: MegaHertz;
-    fixData: VhfNavaid | NdbNavaid | Waypoint;
+    fixData: DatabaseItem<any>;
 };
 
-function isNavaid(fix: VhfNavaid | NdbNavaid | Waypoint): fix is (VhfNavaid | NdbNavaid) {
+function isNavaid(fix: DatabaseItem<any>): fix is (VhfNavaid | NdbNavaid) {
     return 'frequency' in fix;
+}
+
+function isNavaidOrWaypoint(fix: DatabaseItem<any>): fix is (VhfNavaid | NdbNavaid | Waypoint) {
+    return 'location' in fix;
 }
 
 export class MfdFmsFplnDuplicateNames extends DisplayComponent<MfdFmsFplnDuplicateNamesProps> {
     // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
     private subs = [] as Subscription[];
 
+    private resolveItemIndex: number | undefined;
+
+    private isResolved: boolean = false;
+
     private topRef = FSComponent.createRef<HTMLDivElement>();
 
     private linesDivRef = FSComponent.createRef<HTMLDivElement>();
+
+    private returnButtonRef = FSComponent.createRef<Button>();
 
     private duplicateOptions = Subject.create<DuplicateWaypointData[]>([]);
 
@@ -46,21 +53,18 @@ export class MfdFmsFplnDuplicateNames extends DisplayComponent<MfdFmsFplnDuplica
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        this.subs.push(this.props.ident.sub((id) => this.loadIdent(id), true));
         this.subs.push(this.displayFromWaypointIndex.sub((idx) => this.update(idx)));
         this.subs.push(this.props.visible.sub((vis) => this.topRef.getOrDefault().style.display = vis ? 'block' : 'none', true));
 
         this.update(0);
     }
 
-    private async loadIdent(ident: string) {
-        if (!ident) {
+    private async loadIdent<T extends DatabaseItem<any>>(items: T[]) {
+        if (!items) {
             return;
         }
-        const fix = await NavigationDatabaseService.activeDatabase.searchAllFix(ident);
-
         const result: DuplicateWaypointData[] = [];
-        fix.forEach((fx) => {
+        items.forEach((fx) => {
             if (isNavaid(fx)) {
                 const dwd: DuplicateWaypointData = {
                     ident: fx.ident,
@@ -70,7 +74,7 @@ export class MfdFmsFplnDuplicateNames extends DisplayComponent<MfdFmsFplnDuplica
                     fixData: fx,
                 };
                 result.push(dwd);
-            } else {
+            } else if (isNavaidOrWaypoint(fx)) {
                 const dwd: DuplicateWaypointData = {
                     ident: fx.ident,
                     distance: distanceTo(fx.location, this.props.fmService.navigationProvider.getPpos()),
@@ -117,14 +121,30 @@ export class MfdFmsFplnDuplicateNames extends DisplayComponent<MfdFmsFplnDuplica
                 FSComponent.render(node, this.linesDivRef.instance);
 
                 // These don't get explicitly deleted when re-rendering the list, TODO check if critical
-                document.getElementById(`mfd-fms-dupl-${i}`).addEventListener('click', () => this.submit(fix.fixData));
+                document.getElementById(`mfd-fms-dupl-${i}`).addEventListener('click', () => {
+                    this.resolveItemIndex = i;
+                    this.isResolved = true;
+                });
             }
         }
     }
 
-    private async submit(fix: VhfNavaid | NdbNavaid | Waypoint) {
-        this.props.afterSelected.get()(fix);
-        this.props.visible.set(false);
+    private async waitUntilResolved() {
+        while (this.isResolved === false) {
+            // eslint-disable-next-line no-await-in-loop
+            await new Promise((resolve) => setTimeout(resolve, 50));
+        }
+    }
+
+    // Entry point after opening this dialog
+    public async deduplicateFacilities<T extends DatabaseItem<any>>(items: T[]): Promise<T | undefined> {
+        console.log(items);
+        this.isResolved = false;
+        this.loadIdent(items);
+
+        await this.waitUntilResolved();
+
+        return (this.resolveItemIndex !== undefined) ? items[this.resolveItemIndex] : undefined;
     }
 
     public destroy(): void {
@@ -136,8 +156,8 @@ export class MfdFmsFplnDuplicateNames extends DisplayComponent<MfdFmsFplnDuplica
 
     render(): VNode {
         return (
-            <div ref={this.topRef} class="mfd-fms-fpln-duplicate-outer">
-                <div class="mfd-fms-fpln-duplicate-inner">
+            <div ref={this.topRef} class="mfd-fms-fpln-dialog-outer">
+                <div class="mfd-fms-fpln-dialog-inner">
                     <ActivePageTitleBar activePage={Subject.create('DUPLICATE NAMES')} offset={Subject.create('')} eoIsActive={Subject.create(false)} tmpyIsActive={Subject.create(false)} />
                     {/* begin page content */}
                     <div class="mfd-fms-fpln-duplicate-table" style="margin-top: 100px;">
@@ -170,8 +190,12 @@ export class MfdFmsFplnDuplicateNames extends DisplayComponent<MfdFmsFplnDuplica
                     <div style="display: flex; flex-direction: row; justify-content: space-between;">
                         <div style="display: flex; justify-content: flex-end; padding: 2px;">
                             <Button
+                                ref={this.returnButtonRef}
                                 label="RETURN"
-                                onClick={() => this.props.visible.set(false)}
+                                onClick={() => {
+                                    this.resolveItemIndex = undefined;
+                                    this.isResolved = true;
+                                }}
                             />
                         </div>
                     </div>

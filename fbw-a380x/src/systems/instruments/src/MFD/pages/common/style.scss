@@ -610,3 +610,13 @@ $display-mfd-dark-grey: #3c3c3c;
   border-top: 2px solid $display-mfd-dark-grey;
   padding: 5px;
 }
+
+.mfd-footer-message-area {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-left: 15px;
+  font-size: 26px;
+  color: $display-white;
+  font-family: "Ecam", monospace;
+}

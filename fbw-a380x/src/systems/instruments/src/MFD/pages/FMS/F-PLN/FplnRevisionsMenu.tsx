@@ -21,9 +21,17 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType, 
     }
     return [
         {
-            title: '(N/A) FROM P.POS DIR TO',
-            disabled: true, // for disco and toosteep
-            onSelectCallback: () => fpln.props.uiService.navigateTo(`fms/${fpln.props.uiService.activeUri.get().category}/f-pln-direct-to`),
+            title: 'FROM P.POS DIR TO',
+            disabled: [FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type),
+            onSelectCallback: () => {
+                fpln.props.fmService.flightPlanService.directTo(
+                    fpln.props.fmService.navigationProvider.getPpos(),
+                    SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree'),
+                    fpln.loadedFlightPlan?.legElementAt(realLegIndex).definition.waypoint,
+                    true,
+                    planIndex,
+                );
+            },
         },
         {
             title: 'INSERT NEXT WPT',
@@ -36,7 +44,7 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType, 
             onSelectCallback: () => {
                 console.log(`realLegIndex: ${realLegIndex}`);
                 console.log(`Removing ${fpln.loadedFlightPlan.legElementAt(realLegIndex).ident}`);
-                fpln.props.flightPlanService.deleteElementAt(realLegIndex, planIndex);
+                fpln.props.fmService.flightPlanService.deleteElementAt(realLegIndex, planIndex);
             },
         },
         {
@@ -67,12 +75,12 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType, 
         {
             title: 'OVERFLY *',
             disabled: [FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type),
-            onSelectCallback: () => fpln.props.flightPlanService.toggleOverfly(legIndex, planIndex),
+            onSelectCallback: () => fpln.props.fmService.flightPlanService.toggleOverfly(legIndex, planIndex),
         },
         {
             title: 'ENABLE ALTN *',
             disabled: false,
-            onSelectCallback: () => fpln.props.flightPlanService.enableAltn(legIndex, planIndex),
+            onSelectCallback: () => fpln.props.fmService.flightPlanService.enableAltn(legIndex, planIndex),
         },
         {
             title: 'NEW DEST',

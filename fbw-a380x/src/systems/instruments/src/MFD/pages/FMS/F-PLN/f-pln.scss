@@ -257,15 +257,15 @@
   margin-bottom: 10px;
 }
 
-.mfd-fms-fpln-duplicate-outer {
+.mfd-fms-fpln-dialog-outer {
   position: relative;
 }
 
-.mfd-fms-fpln-duplicate-inner {
+.mfd-fms-fpln-dialog-inner {
   z-index: 20;
   position: absolute;
   left: 0px;
-  top: -33px;
+  top: 0px;
   width: 768px;
   height: 850px;
   overflow: visible;

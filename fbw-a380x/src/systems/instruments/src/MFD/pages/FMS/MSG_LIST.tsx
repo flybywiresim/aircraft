@@ -1,18 +1,23 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 
-import { FSComponent, SubscribableArray, SubscribableArrayEventType, VNode } from '@microsoft/msfs-sdk';
+import { DisplayComponent, FSComponent, Subject, SubscribableArray, SubscribableArrayEventType, Subscription, VNode } from '@microsoft/msfs-sdk';
 
 import './msg_list.scss';
-import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
-import { Footer } from 'instruments/src/MFD/pages/common/Footer';
+import { AbstractMfdPageProps, FmsErrorMessage } from 'instruments/src/MFD/MFD';
 import { Button } from 'instruments/src/MFD/pages/common/Button';
-import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
+import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
 
 interface MfdMsgListProps extends AbstractMfdPageProps {
-    messages: SubscribableArray<string>;
+    visible: Subject<boolean>;
+    messages: SubscribableArray<FmsErrorMessage>;
 }
 
-export class MfdMsgList extends FmsPage<MfdMsgListProps> {
+export class MfdMsgList extends DisplayComponent<MfdMsgListProps> {
+    // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
+    private subs = [] as Subscription[];
+
+    private topRef = FSComponent.createRef<HTMLDivElement>();
+
     private msgListContainer = FSComponent.createRef<HTMLDivElement>();
 
     protected onNewData: () => null;
@@ -42,16 +47,18 @@ export class MfdMsgList extends FmsPage<MfdMsgListProps> {
                 // Add element
                 // Limitation: Can only add elements at the end of the list, have to figure out how to insert after specific child
                 if (Array.isArray(item) === true) {
-                    const itemArr = item as readonly string[];
+                    const itemArr = item as readonly FmsErrorMessage[];
                     itemArr.forEach((el) => {
                         console.log(el);
-                        FSComponent.render(<div class="mfd-label msg-list-element">{el}</div>, this.msgListContainer.instance);
+                        FSComponent.render(<div class="mfd-label msg-list-element">{el.message}</div>, this.msgListContainer.instance);
                     });
                 } else {
-                    FSComponent.render(<div class="mfd-label msg-list-element">{item}</div>, this.msgListContainer.instance);
+                    const it = item as FmsErrorMessage;
+                    FSComponent.render(<div class="mfd-label msg-list-element">{it.message}</div>, this.msgListContainer.instance);
                 }
             }
         }, true));
+        this.subs.push(this.props.visible.sub((vis) => this.topRef.getOrDefault().style.display = vis ? 'block' : 'none', true));
     }
 
     public destroy(): void {
@@ -63,19 +70,20 @@ export class MfdMsgList extends FmsPage<MfdMsgListProps> {
 
     render(): VNode {
         return (
-            <>
-                {super.render()}
-                {/* begin page content */}
-                <div class="mfd-page-container">
-                    <div ref={this.msgListContainer} class="mfd-msg-list-element-container" />
-                    <div style="flex-grow: 1;" />
-                    <div style="display: flex; justify-content: flex-start;">
-                        <Button label="CLOSE" onClick={() => this.props.uiService.navigateTo('back')} />
+            <div ref={this.topRef} class="mfd-fms-fpln-dialog-outer">
+                <div class="mfd-fms-fpln-dialog-inner">
+                    <ActivePageTitleBar activePage={Subject.create('MESSAGE LIST')} offset={Subject.create('')} eoIsActive={Subject.create(false)} tmpyIsActive={Subject.create(false)} />
+                    {/* begin page content */}
+                    <div class="mfd-page-container">
+                        <div ref={this.msgListContainer} class="mfd-msg-list-element-container" />
+                        <div style="flex-grow: 1;" />
+                        <div style="display: flex; justify-content: flex-start;">
+                            <Button label="CLOSE" onClick={() => this.props.visible.set(false)} />
+                        </div>
                     </div>
+                    {/* end page content */}
                 </div>
-                {/* end page content */}
-                <Footer bus={this.props.bus} uiService={this.props.uiService} fmService={this.props.fmService} />
-            </>
+            </div>
         );
     }
 }
