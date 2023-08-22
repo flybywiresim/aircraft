@@ -34,6 +34,12 @@
 1. [APU] APU can now consume fuel - @tracernz (Mike)
 1. [EFB] Added UI message on fuel/payload page when GSX is activated - @frankkopp (Frank Kopp)
 1. [FWC] WING TANK LO LVL message now considers centre tank mode selector - @tracernz (Mike)
+1. [MCDU] PERF APPR page no longer demands QNH and TEMP when outside 180NM from destination - @robertxing2004 (robeet)
+1. [FMS] Add basic support for FA legs - @tracernz (Mike)
+1. [MCDU] Don't calculate V-speeds when FoB not available - @tracernz (Mike)
+1. [MCDU] ZFW/ZFWCG auto-fill uses desired values when boarding in progress - @tracernz (Mike)
+1. [EFB/FWC] Auto Call Outs selectable - @tracernz (Mike)
+1. [FWC] Added "twenty five hundred" and "two thousand" callouts - @tracernz (Mike)
 
 ## 0.10.0
 
