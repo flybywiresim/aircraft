@@ -38,6 +38,8 @@
 1. [FMS] Add basic support for FA legs - @tracernz (Mike)
 1. [MCDU] Don't calculate V-speeds when FoB not available - @tracernz (Mike)
 1. [MCDU] ZFW/ZFWCG auto-fill uses desired values when boarding in progress - @tracernz (Mike)
+1. [EFB/FWC] Auto Call Outs selectable - @tracernz (Mike)
+1. [FWC] Added "twenty five hundred" and "two thousand" callouts - @tracernz (Mike)
 
 ## 0.10.0
 
