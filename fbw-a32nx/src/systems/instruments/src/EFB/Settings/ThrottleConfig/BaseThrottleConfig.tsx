@@ -53,7 +53,7 @@ export const BaseThrottleConfig: FC<BaseThrottleConfigProps> = ({
                 {' '}
                 {throttleCount === 1 ? throttleNumber : '1 & 2'}
             </h1>
-            <div className="px-4 pt-5 mt-4 rounded-lg border-2 border-theme-accent">
+            <div className="px-1 pt-5 mt-4">
                 <div className="flex flex-row justify-center items-center space-x-2">
                     <p>
                         {t('Settings.ThrottleConfig.CurrentValue')}
