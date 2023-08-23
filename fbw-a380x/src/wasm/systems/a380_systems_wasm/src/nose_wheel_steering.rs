@@ -153,7 +153,7 @@ fn recenter_when_close_to_center(value: f64, increment: f64) -> f64 {
     }
 }
 
-const MAX_CONTROLLABLE_STEERING_ANGLE_DEGREES: f64 = 75.;
+const MAX_CONTROLLABLE_STEERING_ANGLE_DEGREES: f64 = 70.;
 
 fn steering_animation_to_msfs_from_steering_angle(nose_wheel_position: f64) -> f64 {
     const STEERING_ANIMATION_TOTAL_RANGE_DEGREES: f64 = 360.;
@@ -168,7 +168,7 @@ fn steering_demand_to_msfs_from_steering_angle(
     nose_wheel_position: f64,
     rudder_position: f64,
 ) -> f64 {
-    const MAX_MSFS_STEERING_ANGLE_DEGREES: f64 = 90.;
+    const MAX_MSFS_STEERING_ANGLE_DEGREES: f64 = 75.;
 
     // Steering in msfs is the max we want rescaled to the max in msfs
     let steering_ratio_converted = nose_wheel_position * MAX_CONTROLLABLE_STEERING_ANGLE_DEGREES
