@@ -31,7 +31,6 @@ export const BaseThrottleConfig: FC<BaseThrottleConfigProps> = ({
         <DetentConfig
             key={activeIndex}
             index={activeIndex}
-            barPosition={throttleNumber === 1 ? 'right' : 'left'}
             throttlePosition={throttlePosition}
             upperBoundDetentSetter={mappingsAxisTwo
                 ? [mappingsAxisOne[activeIndex].getHiSetter(), mappingsAxisTwo[activeIndex].getHiSetter()]
@@ -48,8 +47,8 @@ export const BaseThrottleConfig: FC<BaseThrottleConfigProps> = ({
     );
 
     return (
-        <div className="w-50">
-            <h1 className="mb-4 text-center">
+        <div>
+            <h1 className="mb-2 text-center">
                 {t('Settings.ThrottleConfig.Axis')}
                 {' '}
                 {throttleCount === 1 ? throttleNumber : '1 & 2'}
