@@ -1090,26 +1090,6 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
   return SUCCEEDED(result);
 }
 
-bool SimConnectInterface::requestReadData() {
-  // check if we are connected
-  if (!isConnected) {
-    return false;
-  }
-
-  // request data
-  if (!requestData()) {
-    return false;
-  }
-
-  // read data
-  if (!readData()) {
-    return false;
-  }
-
-  // success
-  return true;
-}
-
 bool SimConnectInterface::requestData() {
   // check if we are connected
   if (!isConnected) {
