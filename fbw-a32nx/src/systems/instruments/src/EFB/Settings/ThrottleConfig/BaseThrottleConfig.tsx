@@ -53,15 +53,15 @@ export const BaseThrottleConfig: FC<BaseThrottleConfigProps> = ({
                 {' '}
                 {throttleCount === 1 ? throttleNumber : '1 & 2'}
             </h1>
-            <div className="px-1 pt-5 mt-4">
-                <div className="flex flex-row justify-center items-center space-x-2">
+            <div className="px-2 pt-5 mt-4">
+                <div className="flex flex-row justify-center items-center space-x-2 w-60">
                     <p>
                         {t('Settings.ThrottleConfig.CurrentValue')}
                         :
                         {' '}
                         {throttlePosition.toFixed(2)}
                     </p>
-                    <PencilSquare className="text-theme-highlight" onMouseDown={() => setExpertMode(!expertMode)} size="1.5rem" stroke="1.5" />
+                    <PencilSquare className="text-theme-highlight" onMouseDown={() => setExpertMode(!expertMode)} stroke="1.5" />
                 </div>
 
                 <div className="flex flex-row">

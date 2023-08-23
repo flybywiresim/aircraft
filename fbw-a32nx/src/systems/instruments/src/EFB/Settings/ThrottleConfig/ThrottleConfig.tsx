@@ -134,7 +134,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
 
     return (
         <div className="flex flex-col justify-between h-content-section-full">
-            <div className="space-y-6">
+            <div className="space-y-2">
                 <div>
                     <div className="flex flex-row justify-center p-4 mt-auto mb-8 space-x-16 w-full rounded-lg border-2 border-theme-accent">
                         <div className="flex flex-row space-x-4">
@@ -157,7 +157,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                             <BaseThrottleConfig
                                 mappingsAxisOne={mappingsAxisOne}
                                 throttleNumber={1}
-                                throttleCount={isDualAxis ? 1 : 2}
+                                throttleCount={1}
                                 activeIndex={selectedIndex}
                             />
                             <div className="m-auto">
@@ -175,7 +175,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                             <BaseThrottleConfig
                                 mappingsAxisOne={mappingsAxisOne}
                                 mappingsAxisTwo={mappingsAxisTwo}
-                                throttleNumber={4}
+                                throttleNumber={1}
                                 throttleCount={2}
                                 activeIndex={selectedIndex}
                             />
