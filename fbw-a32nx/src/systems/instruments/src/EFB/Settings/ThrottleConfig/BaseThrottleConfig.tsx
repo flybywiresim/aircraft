@@ -11,7 +11,7 @@ import { ThrottleSimvar } from './ThrottleSimVar';
 
 interface BaseThrottleConfigProps {
     throttleNumber: number;
-    throttleCount: number;
+    displayNumber: boolean;
     mappingsAxisOne: ThrottleSimvar[];
     mappingsAxisTwo?: ThrottleSimvar[];
     activeIndex: number;
@@ -19,7 +19,7 @@ interface BaseThrottleConfigProps {
 
 export const BaseThrottleConfig: FC<BaseThrottleConfigProps> = ({
     throttleNumber,
-    throttleCount,
+    displayNumber,
     mappingsAxisOne,
     mappingsAxisTwo,
     activeIndex,
@@ -51,7 +51,7 @@ export const BaseThrottleConfig: FC<BaseThrottleConfigProps> = ({
             <h1 className="mb-2 text-center">
                 {t('Settings.ThrottleConfig.Axis')}
                 {' '}
-                {throttleCount === 1 ? throttleNumber : '1 & 2'}
+                {displayNumber ? throttleNumber : ''}
             </h1>
             <div className="px-2 pt-5 mt-4">
                 <div className="flex flex-row justify-center items-center space-x-2 w-60">
