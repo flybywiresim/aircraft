@@ -53,6 +53,22 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
         new ThrottleSimvar('Flex', 'L:A32NX_THROTTLE_MAPPING_FLEXMCT_', 2),
         new ThrottleSimvar('TOGA', 'L:A32NX_THROTTLE_MAPPING_TOGA_', 2),
     ];
+    const mappingsAxisThree: Array<ThrottleSimvar> = [
+        new ThrottleSimvar('Reverse Full', 'L:A32NX_THROTTLE_MAPPING_REVERSE_', 3),
+        new ThrottleSimvar('Reverse Idle', 'L:A32NX_THROTTLE_MAPPING_REVERSE_IDLE_', 3),
+        new ThrottleSimvar('Idle', 'L:A32NX_THROTTLE_MAPPING_IDLE_', 3),
+        new ThrottleSimvar('Climb', 'L:A32NX_THROTTLE_MAPPING_CLIMB_', 3),
+        new ThrottleSimvar('Flex', 'L:A32NX_THROTTLE_MAPPING_FLEXMCT_', 3),
+        new ThrottleSimvar('TOGA', 'L:A32NX_THROTTLE_MAPPING_TOGA_', 3),
+    ];
+    const mappingsAxisFour: Array<ThrottleSimvar> = [
+        new ThrottleSimvar('Reverse Full', 'L:A32NX_THROTTLE_MAPPING_REVERSE_', 4),
+        new ThrottleSimvar('Reverse Idle', 'L:A32NX_THROTTLE_MAPPING_REVERSE_IDLE_', 4),
+        new ThrottleSimvar('Idle', 'L:A32NX_THROTTLE_MAPPING_IDLE_', 4),
+        new ThrottleSimvar('Climb', 'L:A32NX_THROTTLE_MAPPING_CLIMB_', 4),
+        new ThrottleSimvar('Flex', 'L:A32NX_THROTTLE_MAPPING_FLEXMCT_', 4),
+        new ThrottleSimvar('TOGA', 'L:A32NX_THROTTLE_MAPPING_TOGA_', 4),
+    ];
 
     const { showModal } = useModals();
 
@@ -165,7 +181,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                 activeIndex={selectedIndex}
             />
             <BaseThrottleConfig
-                mappingsAxisOne={mappingsAxisOne}
+                mappingsAxisOne={mappingsAxisTwo}
                 throttleNumber={2}
                 displayNumber
                 activeIndex={selectedIndex}
@@ -174,13 +190,13 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                 {navigationBar}
             </div>
             <BaseThrottleConfig
-                mappingsAxisOne={mappingsAxisTwo}
+                mappingsAxisOne={mappingsAxisThree}
                 throttleNumber={3}
                 displayNumber
                 activeIndex={selectedIndex}
             />
             <BaseThrottleConfig
-                mappingsAxisOne={mappingsAxisTwo}
+                mappingsAxisOne={mappingsAxisFour}
                 throttleNumber={4}
                 displayNumber
                 activeIndex={selectedIndex}
