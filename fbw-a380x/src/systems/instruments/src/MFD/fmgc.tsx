@@ -48,6 +48,8 @@ export enum ClimbDerated {
  * Temporary place for data which is found nowhere else. Not associated to flight plans right now, which should be the case for some of these values
  */
 export class FmgcDataSubjects {
+    public readonly atcCallsign = Subject.create<string>('----------');
+
     public readonly zeroFuelWeight = Subject.create<number>(300_000); // in kg
 
     public readonly blockFuel = Subject.create<number>(100_000); // in kg

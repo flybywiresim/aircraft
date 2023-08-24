@@ -383,7 +383,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
             this.activeHeader = (
                 <FmsHeader
                     bus={this.props.bus}
-                    callsign={Subject.create('FBW123')}
+                    callsign={this.fmgc.subjects.atcCallsign}
                     activeFmsSource={this.activeFmsSource}
                     uiService={this.uiService}
                     fmService={this.fmService}
@@ -394,7 +394,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
             this.activeHeader = (
                 <AtccomHeader
                     bus={this.props.bus}
-                    callsign={Subject.create('FBW123')}
+                    callsign={this.fmgc.subjects.atcCallsign}
                     activeFmsSource={this.activeFmsSource}
                     uiService={this.uiService}
                     fmService={this.fmService}
@@ -405,7 +405,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
             this.activeHeader = (
                 <SurvHeader
                     bus={this.props.bus}
-                    callsign={Subject.create('FBW123')}
+                    callsign={this.fmgc.subjects.atcCallsign}
                     activeFmsSource={this.activeFmsSource}
                     uiService={this.uiService}
                     fmService={this.fmService}
@@ -416,7 +416,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
             this.activeHeader = (
                 <FcuBkupHeader
                     bus={this.props.bus}
-                    callsign={Subject.create('FBW123')}
+                    callsign={this.fmgc.subjects.atcCallsign}
                     activeFmsSource={this.activeFmsSource}
                     uiService={this.uiService}
                     fmService={this.fmService}
@@ -428,7 +428,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
             this.activeHeader = (
                 <FmsHeader
                     bus={this.props.bus}
-                    callsign={Subject.create('FBW123')}
+                    callsign={this.fmgc.subjects.atcCallsign}
                     activeFmsSource={this.activeFmsSource}
                     uiService={this.uiService}
                     fmService={this.fmService}

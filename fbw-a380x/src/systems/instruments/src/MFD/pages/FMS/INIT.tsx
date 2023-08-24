@@ -15,7 +15,7 @@ interface MfdFmsInitProps extends AbstractMfdPageProps {
 }
 
 export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
-    private fltNbr = Subject.create<string>(null); // FIXME not found
+    private fltNbr = Subject.create<string>(null);
 
     private fromIcao = Subject.create<string>(null);
 
@@ -38,11 +38,11 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
     // private crzTempIsDisabled = !crzTemp;
     private crzTempIsDisabled = this.crzFl.map((crzFl) => !crzFl);
 
-    private costIndex = Subject.create<number>(null); // FIXME missing
+    private costIndex = Subject.create<number>(null);
 
     private costIndexDisabled = MappedSubject.create(([toIcao, fromIcao]) => !toIcao || !fromIcao, this.fromIcao, this.toIcao);
 
-    private tropoAlt = Subject.create<number>(defaultTropopauseAlt); // FIXME missing
+    private tropoAlt = Subject.create<number>(defaultTropopauseAlt);
 
     private tripWind = Subject.create<number>(null); // FIXME missing
 
@@ -109,7 +109,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                         <InputField<string>
                             dataEntryFormat={new LongAlphanumericFormat()}
                             mandatory={Subject.create(true)}
-                            value={this.fltNbr}
+                            value={this.props.fmService.fmgc.subjects.atcCallsign}
                             containerStyle="width: 200px; margin-right: 5px;"
                             alignText="center"
                         />
