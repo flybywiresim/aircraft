@@ -417,6 +417,12 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
         this.subs.push(sub.on('flightPhase').whenChanged().handle((val) => {
             console.log(`flight phase: ${val}`);
             this.activeFlightPhase.set(val);
+
+            if (val === FmgcFlightPhase.Cruise || val === FmgcFlightPhase.Descent) {
+                this.activateApprButton.instance.style.visibility = 'visible';
+            } else {
+                this.activateApprButton.instance.style.visibility = 'hidden';
+            }
         }));
 
         this.subs.push(this.toSelectedFlapsIndex.sub((v) => {
