@@ -49,7 +49,7 @@ export class MfdUIService {
      * @param uri The URI to navigate to. Format: sys/category/page, e.g. fms/active/init represents ACTIVE/INIT page from the FMS. Use URI 'back' for returning to previous page.
      * In theory, one can use anything after a third slash for intra-page deep linking: fms/active/perf/appr could link to the approach PERF page.
      */
-    public navigateTo(uri: string) {
+    public navigateTo(uri: string): void {
         let nextUri: string;
 
         if (uri === this.activeUri.get().uri) {
@@ -59,7 +59,7 @@ export class MfdUIService {
         }
 
         if (uri === 'back') {
-            if (this.navigationStack.length === 0) {
+            if (this.navigationStack.length < 2) {
                 return;
             }
             console.info('Navigate back');

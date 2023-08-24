@@ -178,6 +178,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                             value={this.cpnyRte}
                             containerStyle="width: 200px; margin-right: 5px;"
                             alignText="center"
+                            disabled={Subject.create(true)} // TODO
                         />
                         <Button label="RTE SEL" onClick={() => console.log('RTE SEL')} buttonStyle="margin-right: 10px; width: 200px;" />
                     </div>
@@ -186,7 +187,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                         <InputField<string>
                             dataEntryFormat={new LongAlphanumericFormat()}
                             mandatory={Subject.create(false)}
-                            disabled={this.altnDisabled}
+                            disabled={Subject.create(true)} // TODO
                             canBeCleared={Subject.create(false)}
                             value={this.altnRte}
                             containerStyle="width: 200px; margin-right: 5px;"
@@ -209,7 +210,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                         <InputField<number>
                             dataEntryFormat={new CrzTempFormat()}
                             mandatory={Subject.create(false)}
-                            disabled={this.crzTempIsDisabled}
+                            disabled={Subject.create(true)} // TODO
                             value={this.crzTemp}
                             containerStyle="width: 110px; justify-content: flex-end;"
                             alignText="center"
@@ -221,7 +222,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                             dataEntryFormat={new CostIndexFormat()}
                             mandatory={Subject.create(true)}
                             disabled={this.costIndexDisabled}
-                            value={this.costIndex}
+                            value={this.props.fmService.fmgc.subjects.costIndex}
                             containerStyle="width: 70px; margin-right: 90px; justify-content: center;"
                             alignText="center"
                         />
@@ -229,9 +230,10 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                         <InputField<number>
                             dataEntryFormat={new TropoFormat()}
                             mandatory={Subject.create(false)}
-                            computedByFms={Subject.create(true)}
+                            enteredByPilot={Subject.create(true)}
                             value={this.tropoAlt}
                             alignText="flex-end"
+                            disabled={Subject.create(true)} // TODO
                         />
                     </div>
                     <div class="mfd-fms-init-line trip-wind">
@@ -239,7 +241,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                         <InputField<number>
                             dataEntryFormat={new TripWindFormat()}
                             mandatory={Subject.create(false)}
-                            disabled={this.tripWindDisabled}
+                            disabled={Subject.create(true)} // TODO
                             value={this.tripWind}
                             containerStyle="width: 125px; margin-right: 80px; margin-top: 90px;"
                             alignText="center"

@@ -7,6 +7,7 @@ export type MfdSimvars = {
     potentiometerCaptain: number;
     potentiometerFo: number;
     flightPhase: number;
+    flexTemp: number;
   }
 
 export enum MFDVars {
@@ -16,6 +17,7 @@ export enum MFDVars {
     potentiometerCaptain = 'LIGHT POTENTIOMETER:88',
     potentiometerFo = 'LIGHT POTENTIOMETER:90',
     flightPhase = 'L:A32NX_FMGC_FLIGHT_PHASE',
+    flexTemp = 'L:AIRLINER_TO_FLEX_TEMP',
   }
 
 /** A publisher to poll and publish nav/com simvars. */
@@ -27,6 +29,7 @@ export class MfdSimvarPublisher extends SimVarPublisher<MfdSimvars> {
         ['potentiometerCaptain', { name: MFDVars.potentiometerCaptain, type: SimVarValueType.Number }],
         ['potentiometerFo', { name: MFDVars.potentiometerFo, type: SimVarValueType.Number }],
         ['flightPhase', { name: MFDVars.flightPhase, type: SimVarValueType.Enum }],
+        ['flexTemp', { name: MFDVars.flexTemp, type: SimVarValueType.Number }],
     ])
 
     public constructor(bus: EventBus) {

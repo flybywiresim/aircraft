@@ -82,7 +82,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
         if (this.loadedFlightPlan.destinationAirport) {
             this.destButtonDisabled.set(false);
             if (this.loadedFlightPlan.destinationRunway) {
-                this.destButtonLabel.set(`${this.loadedFlightPlan.destinationRunway.airportIdent}${this.loadedFlightPlan.destinationRunway.ident.substring(2)}`);
+                this.destButtonLabel.set(`${this.loadedFlightPlan.destinationRunway.airportIdent}${this.loadedFlightPlan.destinationRunway.ident.replace('RW', '')}`);
             } else {
                 this.destButtonLabel.set(this.loadedFlightPlan.destinationAirport.ident);
             }

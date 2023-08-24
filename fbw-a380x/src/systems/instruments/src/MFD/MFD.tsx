@@ -32,12 +32,8 @@ import { ActiveUriInformation, MfdUIService } from 'instruments/src/MFD/pages/co
 import { MfdFmsFplnDep } from 'instruments/src/MFD/pages/FMS/F-PLN/DEPARTURE';
 import { MfdFmsFplnArr } from 'instruments/src/MFD/pages/FMS/F-PLN/ARRIVAL';
 import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
-import { Fmgc, GuidanceController } from '@fmgc/guidance/GuidanceController';
-import { FmgcFlightPhase } from '@shared/flightphase';
-import { SpeedLimit } from '@fmgc/guidance/vnav/SpeedLimit';
-import { FlapConf } from '@fmgc/guidance/vnav/common';
-import { FmcWinds, FmcWindVector } from '@fmgc/guidance/vnav/wind/types';
-import { Coordinates, Feet } from 'msfs-geo';
+import { GuidanceController } from '@fmgc/guidance/GuidanceController';
+import { Coordinates } from 'msfs-geo';
 import { EfisSymbols } from '@fmgc/efis/EfisSymbols';
 import { NavaidTuner } from '@fmgc/navigation/NavaidTuner';
 import { NavaidSelectionManager } from '@fmgc/navigation/NavaidSelectionManager';
@@ -52,6 +48,8 @@ import { DisplayInterface } from '@fmgc/flightplanning/new/interface/DisplayInte
 import { FmsErrorType } from '@fmgc/FmsError';
 
 import { WaypointFactory } from '@fmgc/flightplanning/new/waypoints/WaypointFactory';
+import { FmgcData } from 'instruments/src/MFD/fmgc';
+import { FakeFmgc } from 'instruments/src/MFD/fake_fmgc';
 import { MfdSimvars } from './shared/MFDSimvarPublisher';
 import { DisplayUnit } from '../MsfsAvionicsCommon/displayUnit';
 
@@ -80,109 +78,10 @@ export interface FmsErrorMessage {
 export class MfdComponent extends DisplayComponent<MfdComponentProps> implements DisplayInterface, DataInterface {
     private uiService = new MfdUIService();
 
-    private fmgc: Fmgc = {
-        getZeroFuelWeight(): number {
-            return 300_000;
-        },
-        getFOB(): number {
-            return 100_0000;
-        },
-        getV2Speed(): Knots {
-            return 150;
-        },
-        getTropoPause(): Feet {
-            return 36_000;
-        },
-        getManagedClimbSpeed(): Knots {
-            return 250;
-        },
-        getManagedClimbSpeedMach(): Mach {
-            return 0.78;
-        },
-        getAccelerationAltitude(): Feet {
-            return 1_500;
-        },
-        getThrustReductionAltitude(): Feet {
-            return 1_500;
-        },
-        getOriginTransitionAltitude(): Feet | undefined {
-            return 1_500;
-        },
-        getCruiseAltitude(): Feet {
-            return 32_000;
-        },
-        getFlightPhase(): FmgcFlightPhase {
-            return FmgcFlightPhase.Preflight;
-        },
-        getManagedCruiseSpeed(): Knots {
-            return 280;
-        },
-        getManagedCruiseSpeedMach(): Mach {
-            return 0.8;
-        },
-        getClimbSpeedLimit(): SpeedLimit {
-            return { speed: 250, underAltitude: 10_000 };
-        },
-        getDescentSpeedLimit(): SpeedLimit {
-            return { speed: 250, underAltitude: 10_000 };
-        },
-        getPreSelectedClbSpeed(): Knots {
-            return 250;
-        },
-        getPreSelectedCruiseSpeed(): Knots {
-            return 280;
-        },
-        getPreSelectedDescentSpeed(): Knots {
-            return 220;
-        },
-        getTakeoffFlapsSetting(): FlapConf | undefined {
-            return FlapConf.CONF_1;
-        },
-        getManagedDescentSpeed(): Knots {
-            return 220;
-        },
-        getManagedDescentSpeedMach(): Mach {
-            return 0.5;
-        },
-        getApproachSpeed(): Knots {
-            return 136;
-        },
-        getFlapRetractionSpeed(): Knots {
-            return 141;
-        },
-        getSlatRetractionSpeed(): Knots {
-            return 159;
-        },
-        getCleanSpeed(): Knots {
-            return 190;
-        },
-        getTripWind(): number {
-            return 0;
-        },
-        getWinds(): FmcWinds {
-            return { climb: [], cruise: [], des: [], alternate: null };
-        },
-        getApproachWind(): FmcWindVector {
-            return { speed: 0, direction: 0 };
-        },
-        getApproachQnh(): number {
-            return 1013;
-        },
-        getApproachTemperature(): number {
-            return 15;
-        },
-        getDestEFOB(useFob: boolean): number { // Metric tons
-            return useFob ? 12 : 11;
-        },
-        getDepartureElevation(): Feet | null {
-            return 100;
-        },
-        getDestinationElevation(): Feet {
-            return 200;
-        },
-    }
-
     private flightPlanService = new FlightPlanService(this.props.bus);
+
+    private fmgc = new FmgcData(this.flightPlanService);
+    // private fmgc = new FakeFmgc();
 
     private guidanceController = new GuidanceController(this.fmgc, this.flightPlanService);
 
@@ -251,7 +150,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
     private async initializeFlightPlans() {
         const db = new NavigationDatabase(NavigationDatabaseBackend.Msfs);
         NavigationDatabaseService.activeDatabase = db;
-        await new Promise((r) => setTimeout(r, 1000));
+        await new Promise((r) => setTimeout(r, 250));
         this.flightPlanService.createFlightPlans();
 
         // Build EGLL/27R N0411F250 MAXI1F MAXIT DCT HARDY UM605 BIBAX BIBA9X LFPG/09L
@@ -275,6 +174,14 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
 
         await this.flightPlanService.temporaryInsert();
         await this.flightPlanService.deleteElementAt(12);
+
+        // Default performance values
+        this.flightPlanService.active.performanceData.pilotAccelerationAltitude.set(1_500);
+        this.flightPlanService.active.performanceData.pilotThrustReductionAltitude.set(1_500);
+        this.flightPlanService.active.performanceData.pilotTransitionAltitude.set(1_500);
+        this.flightPlanService.active.performanceData.cruiseFlightLevel.set(32_000);
+        this.flightPlanService.active.performanceData.pilotEngineOutAccelerationAltitude.set(1_500);
+        this.flightPlanService.active.performanceData.v2.set(150);
 
         // Add test FMS error messages
         this.showFmsErrorMessage(FmsErrorType.NotInDatabase);

@@ -28,7 +28,7 @@ export class SpeedKnotsFormat implements DataEntryFormat<number> {
     }
 
     public format(value: number) {
-        if (!value) {
+        if (value === null || value === undefined) {
             return [this.placeholder, null, 'KT'] as FieldFormatTuple;
         }
         return [value.toString(), null, 'KT'] as FieldFormatTuple;
@@ -39,7 +39,7 @@ export class SpeedKnotsFormat implements DataEntryFormat<number> {
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
         }
-        return null;
+        return undefined;
     }
 }
 
@@ -72,7 +72,7 @@ export class SpeedMachFormat implements DataEntryFormat<number> {
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
         }
-        return null;
+        return undefined;
     }
 }
 
@@ -103,7 +103,7 @@ export class AltitudeOrFlightLevelFormat implements DataEntryFormat<number> {
     }
 
     public format(value: number) {
-        if (!value) {
+        if (value === null || value === undefined) {
             return [this.placeholder, null, 'FT'] as FieldFormatTuple;
         }
         if (value >= this.transAlt) {
@@ -120,7 +120,7 @@ export class AltitudeOrFlightLevelFormat implements DataEntryFormat<number> {
         if (Number.isNaN(nbr) === false && (nbr >= this.minValue && nbr <= this.maxValue)) {
             return nbr;
         }
-        return null;
+        return undefined;
     }
 }
 
@@ -139,7 +139,7 @@ export class AltitudeFormat implements DataEntryFormat<number> {
     }
 
     public format(value: number) {
-        if (!value) {
+        if (value === null || value === undefined) {
             return [this.placeholder, null, 'FT'] as FieldFormatTuple;
         }
         return [value.toFixed(0).toString(), null, 'FT'] as FieldFormatTuple;
@@ -150,7 +150,7 @@ export class AltitudeFormat implements DataEntryFormat<number> {
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
         }
-        return null;
+        return undefined;
     }
 }
 
@@ -170,7 +170,7 @@ export class FlightLevelFormat implements DataEntryFormat<number> {
     }
 
     public format(value: number) {
-        if (!value) {
+        if (value === null || value === undefined) {
             return [this.placeholder, 'FL', null] as FieldFormatTuple;
         }
         const fl = Math.round(value / 100);
@@ -182,7 +182,7 @@ export class FlightLevelFormat implements DataEntryFormat<number> {
         if (Number.isNaN(nbr) === false && nbr <= (this.maxValue) && nbr >= (this.minValue)) {
             return nbr;
         }
-        return null;
+        return undefined;
     }
 }
 
@@ -196,7 +196,7 @@ export class TropoFormat implements DataEntryFormat<number> {
     private maxValue = 60000;
 
     public format(value: number) {
-        if (!value) {
+        if (value === null || value === undefined) {
             return [this.placeholder, null, 'FT'] as FieldFormatTuple;
         }
         return [value.toFixed(0).toString(), null, 'FT'] as FieldFormatTuple;
@@ -207,7 +207,7 @@ export class TropoFormat implements DataEntryFormat<number> {
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
         }
-        return null;
+        return undefined;
     }
 }
 
@@ -226,7 +226,7 @@ export class LengthFormat implements DataEntryFormat<number> {
     }
 
     public format(value: number) {
-        if (!value) {
+        if (value === null || value === undefined) {
             return [this.placeholder, null, 'M'] as FieldFormatTuple;
         }
         return [value.toString(), null, 'M'] as FieldFormatTuple;
@@ -237,7 +237,7 @@ export class LengthFormat implements DataEntryFormat<number> {
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
         }
-        return null;
+        return undefined;
     }
 }
 
@@ -256,7 +256,7 @@ export class WeightFormat implements DataEntryFormat<number> {
     }
 
     public format(value: number) {
-        if (!value) {
+        if (value === null || value === undefined) {
             return [this.placeholder, null, 'T'] as FieldFormatTuple;
         }
         return [(value / 1000).toFixed(1), null, 'T'] as FieldFormatTuple;
@@ -267,7 +267,7 @@ export class WeightFormat implements DataEntryFormat<number> {
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
         }
-        return null;
+        return undefined;
     }
 }
 
@@ -288,7 +288,7 @@ export class PercentageFormat implements DataEntryFormat<number> {
     }
 
     public format(value: number) {
-        if (!value) {
+        if (value === null || value === undefined) {
             return [this.placeholder, null, '%'] as FieldFormatTuple;
         }
         return [value.toFixed(1), null, '%'] as FieldFormatTuple;
@@ -299,7 +299,7 @@ export class PercentageFormat implements DataEntryFormat<number> {
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
         }
-        return null;
+        return undefined;
     }
 }
 
@@ -318,7 +318,7 @@ export class TemperatureFormat implements DataEntryFormat<number> {
     }
 
     public format(value: number) {
-        if (!value) {
+        if (value === null || value === undefined) {
             return [this.placeholder, null, '°C'] as FieldFormatTuple;
         }
         if (value >= 0) {
@@ -332,7 +332,7 @@ export class TemperatureFormat implements DataEntryFormat<number> {
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
         }
-        return null;
+        return undefined;
     }
 }
 
@@ -346,7 +346,7 @@ export class CrzTempFormat implements DataEntryFormat<number> {
     private maxValue = 99;
 
     public format(value: number) {
-        if (!value) {
+        if (value === null || value === undefined) {
             return [this.placeholder, null, '°C'] as FieldFormatTuple;
         }
         if (value >= 0) {
@@ -365,7 +365,7 @@ export class CrzTempFormat implements DataEntryFormat<number> {
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
         }
-        return null;
+        return undefined;
     }
 }
 
@@ -379,10 +379,10 @@ export class WindDirectionFormat implements DataEntryFormat<number> {
     private maxValue = 359;
 
     public format(value: number) {
-        if (!value) {
-            return [this.placeholder, null, '°C'] as FieldFormatTuple;
+        if (value === null || value === undefined) {
+            return [this.placeholder, null, '°'] as FieldFormatTuple;
         }
-        return [value.toFixed(0).toString().padStart(3, '0'), null, '°C'] as FieldFormatTuple;
+        return [value.toFixed(0).toString().padStart(3, '0'), null, '°'] as FieldFormatTuple;
     }
 
     public async parse(input: string) {
@@ -390,7 +390,7 @@ export class WindDirectionFormat implements DataEntryFormat<number> {
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
         }
-        return null;
+        return undefined;
     }
 }
 
@@ -404,7 +404,7 @@ export class WindSpeedFormat implements DataEntryFormat<number> {
     private maxValue = 250;
 
     public format(value: number) {
-        if (!value) {
+        if (value === null || value === undefined) {
             return [this.placeholder, null, 'KT'] as FieldFormatTuple;
         }
         return [value.toFixed(0).toString().padStart(3, '0'), null, 'KT'] as FieldFormatTuple;
@@ -415,7 +415,7 @@ export class WindSpeedFormat implements DataEntryFormat<number> {
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
         }
-        return null;
+        return undefined;
     }
 }
 
@@ -429,7 +429,7 @@ export class TripWindFormat implements DataEntryFormat<number> {
     private maxValue = 250;
 
     public format(value: number) {
-        if (!value) {
+        if (value === null || value === undefined) {
             return [this.placeholder, null, null] as FieldFormatTuple;
         }
 
@@ -460,17 +460,17 @@ export class TripWindFormat implements DataEntryFormat<number> {
                 sign = +1;
                 number = Number(input);
             } else {
-                return null;
+                return undefined;
             }
         } else {
-            return null;
+            return undefined;
         }
 
         const nbr = Number(sign * number);
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
         }
-        return null;
+        return undefined;
     }
 }
 
@@ -488,7 +488,7 @@ export class QnhFormat implements DataEntryFormat<number> {
     private maxInHgValue = 32.48;
 
     public format(value: number) {
-        if (!value) {
+        if (value === null || value === undefined) {
             return [this.placeholder, null, null] as FieldFormatTuple;
         }
         return [value.toString(), null, null] as FieldFormatTuple;
@@ -499,7 +499,7 @@ export class QnhFormat implements DataEntryFormat<number> {
         if (Number.isNaN(nbr) === false && (nbr >= this.minHpaValue && nbr <= this.maxHpaValue) || (nbr >= this.minInHgValue && nbr <= this.maxInHgValue)) {
             return nbr;
         }
-        return null;
+        return undefined;
     }
 }
 
@@ -513,7 +513,7 @@ export class CostIndexFormat implements DataEntryFormat<number> {
     private maxValue = 999; // DSC-22-FMS-20-100
 
     public format(value: number) {
-        if (!value) {
+        if (value === null || value === undefined) {
             return [this.placeholder, null, null] as FieldFormatTuple;
         }
         return [value.toString(), null, null] as FieldFormatTuple;
@@ -524,7 +524,7 @@ export class CostIndexFormat implements DataEntryFormat<number> {
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
         }
-        return null;
+        return undefined;
     }
 }
 
@@ -543,7 +543,7 @@ export class VerticalSpeedFormat implements DataEntryFormat<number> {
     }
 
     public format(value: number) {
-        if (!value) {
+        if (value === null || value === undefined) {
             return [this.placeholder, null, 'FT/MN'] as FieldFormatTuple;
         }
         return [value.toString(), null, 'FT/MN'] as FieldFormatTuple;
@@ -554,7 +554,7 @@ export class VerticalSpeedFormat implements DataEntryFormat<number> {
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
         }
-        return null;
+        return undefined;
     }
 }
 
@@ -573,7 +573,7 @@ export class DescentRateFormat implements DataEntryFormat<number> {
     }
 
     public format(value: number) {
-        if (!value) {
+        if (value === null || value === undefined) {
             return [this.placeholder, null, 'FT/MN'] as FieldFormatTuple;
         }
         return [value.toString(), null, 'FT/MN'] as FieldFormatTuple;
@@ -589,7 +589,7 @@ export class DescentRateFormat implements DataEntryFormat<number> {
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
         }
-        return null;
+        return undefined;
     }
 }
 
@@ -599,7 +599,7 @@ export class AirportFormat implements DataEntryFormat<string> {
     public maxDigits = 4;
 
     public format(value: string) {
-        if (!value) {
+        if (value === null || value === undefined) {
             return [this.placeholder, null, null] as FieldFormatTuple;
         }
         return [value, null, null] as FieldFormatTuple;
@@ -659,7 +659,7 @@ export class PaxNbrFormat implements DataEntryFormat<number> {
     private maxValue = 999;
 
     public format(value: number) {
-        if (!value) {
+        if (value === null || value === undefined) {
             return [this.placeholder, null, null] as FieldFormatTuple;
         }
         return [value.toFixed(0).toString(), null, null] as FieldFormatTuple;
@@ -670,7 +670,7 @@ export class PaxNbrFormat implements DataEntryFormat<number> {
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
         }
-        return null;
+        return undefined;
     }
 }
 
@@ -702,14 +702,14 @@ export class TimeHHMMFormat implements DataEntryFormat<number> {
             hours = Number(replacedInput.slice(0, -2));
         }
         if (minutes < 0 || minutes > 59 || hours < 0 || hours > 23) {
-            return null;
+            return undefined;
         }
 
         const nbr = minutes + hours * 60;
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
         }
-        return null;
+        return undefined;
     }
 }
 
@@ -723,7 +723,7 @@ export class LatitudeFormat implements DataEntryFormat<number> {
     private maxValue = 90;
 
     public format(value: number) {
-        if (!value) {
+        if (value === null || value === undefined) {
             return [this.placeholder, null, null] as FieldFormatTuple;
         }
         return [value.toFixed(0).toString(), null, null] as FieldFormatTuple;
@@ -734,6 +734,6 @@ export class LatitudeFormat implements DataEntryFormat<number> {
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
         }
-        return null;
+        return undefined;
     }
 }

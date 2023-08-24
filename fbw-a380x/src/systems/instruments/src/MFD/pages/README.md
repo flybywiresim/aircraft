@@ -21,7 +21,7 @@ Status legend:
 | ✅ | fms/\*/f-pln-departure | 1 |
 | ✅ | fms/\*/f-pln-arrival | 1 |
 | 🟥 | fms/\*/f-pln-airways | 1 |
-| 🟥 | fms/\*/f-pln-direct-to | 1 |
+| 1️⃣ | fms/\*/f-pln-direct-to | 1 |
 | 🟥 | fms/\*/f-pln-hold | 1 |
 | ✅ | fms/\*/f-pln-duplicate-names | 1 |
 | 🟥 | fms/\*/f-pln-vert-rev | 2 |
@@ -37,7 +37,7 @@ Status legend:
 | 🟥 | fms/\*/f-pln-equi-time-point | 9 |
 | 🟥 | fms/\*/f-pln-ll-xing-time-mkr | 9 |
 |  |  |
-| 🟥 | fms/position/irs | 1 |
+| 1️⃣ | fms/position/irs | 1 |
 | 🟥 | fms/position/monitor | 2 |
 | 🟥 | fms/position/gps | 2 |
 | 🟥 | fms/position/navaids | 2 |
@@ -52,7 +52,7 @@ Status legend:
 | 🟥 | fms/data/printer | 3 |
 | 🟥 | fms/data/route | 3 |
 |  |  |
-| 2️⃣ | fms/data/msg-list | 1 |
+| ✅ | fms/data/msg-list | 1 |
 
 \* (active | sec1 | sec2 | sec3)
 
@@ -87,7 +87,13 @@ Status legend:
 | 🟥 | fcubkup/efis | 5 |
 
 ## Known issues / improvements
-
+| Page / component | Known issue |
+| PERF | CLB Speed table doesn't change depending on flight phase |
+| PERF | PRED TO not functional |
+| PERF | CRZ Speed table doesn't change depending on flight phase |
+| PERF | DES Speed table doesn't change depending on flight phase |
+| PERF | DES: MANAGED speed or mach can't be set |
+| PERF | APPR: LW not set |
 
 ## (Open) questions
 | Page / component | Question | Answer |

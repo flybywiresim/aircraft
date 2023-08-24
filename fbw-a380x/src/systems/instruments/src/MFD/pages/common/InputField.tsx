@@ -10,9 +10,9 @@ interface InputFieldProps<T> extends ComponentProps {
     mandatory?: Subscribable<boolean>;
     disabled?: Subscribable<boolean>;
     canBeCleared?: Subscribable<boolean>;
-    computedByFms?: Subscribable<boolean>;
+    enteredByPilot?: Subscribable<boolean>;
     canOverflow?: boolean;
-    value: Subject<T>;
+    value: Subject<T> | Subscribable<T>;
     /**
      * If defined, this component does not update the value prop, but rather calls this method.
      */
@@ -184,6 +184,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
 
     public onFocus() {
         if (this.isValidating.get() === false && this.props.disabled.get() === false) {
+            Coherent.trigger('FOCUS_INPUT_FIELD');
             this.isFocused.set(true);
             this.textInputRef.getOrDefault().classList.add('valueSelected');
             this.textInputRef.getOrDefault().classList.add('editing');
@@ -197,29 +198,32 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
     }
 
     public async onBlur(validateAndUpdate: boolean = true) {
-        this.isFocused.set(false);
-        this.textInputRef.getOrDefault().classList.remove('valueSelected');
-        this.caretRef.getOrDefault().style.display = 'none';
-        this.updateDisplayElement();
+        if (this.props.disabled.get() === false) {
+            Coherent.trigger('UNFOCUS_INPUT_FIELD');
+            this.isFocused.set(false);
+            this.textInputRef.getOrDefault().classList.remove('valueSelected');
+            this.caretRef.getOrDefault().style.display = 'none';
+            this.updateDisplayElement();
 
-        if (validateAndUpdate) {
-            if (this.modifiedFieldValue.get() === null && this.props.value.get() !== null) {
-                console.log('Enter pressed after no modification');
-                // Enter is pressed after no modification
-                const [formatted] = this.props.dataEntryFormat.format(this.props.value.get());
-                await this.validateAndUpdate(formatted);
-            } else {
-                await this.validateAndUpdate(this.modifiedFieldValue.get());
+            if (validateAndUpdate) {
+                if (this.modifiedFieldValue.get() === null && this.props.value.get() !== null) {
+                    console.log('Enter pressed after no modification');
+                    // Enter is pressed after no modification
+                    const [formatted] = this.props.dataEntryFormat.format(this.props.value.get());
+                    await this.validateAndUpdate(formatted);
+                } else {
+                    await this.validateAndUpdate(this.modifiedFieldValue.get());
+                }
             }
-        }
 
-        // Restore mandatory class for correct coloring of dot (e.g. non-placeholders)
-        if (!this.props.value.get() && this.props.mandatory.get() === true) {
-            this.textInputRef.getOrDefault().classList.add('mandatory');
-        }
+            // Restore mandatory class for correct coloring of dot (e.g. non-placeholders)
+            if (!this.props.value.get() && this.props.mandatory.get() === true) {
+                this.textInputRef.getOrDefault().classList.add('mandatory');
+            }
 
-        this.spanningDivRef.getOrDefault().style.justifyContent = this.props.alignText;
-        this.textInputRef.getOrDefault().classList.remove('editing');
+            this.spanningDivRef.getOrDefault().style.justifyContent = this.props.alignText;
+            this.textInputRef.getOrDefault().classList.remove('editing');
+        }
     }
 
     private populatePlaceholders() {
@@ -256,8 +260,10 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
         if (updateWasSuccessful) {
             if (this.props.onModified) {
                 this.props.onModified(newValue);
-            } else {
+            } else if (this.props.value instanceof Subject) {
                 this.props.value.set(newValue);
+            } else {
+                console.error('InputField: this.props.value not of type Subject, and no onModified handler was defined');
             }
         }
 
@@ -278,8 +284,8 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
         if (this.props.canBeCleared === undefined) {
             this.props.canBeCleared = Subject.create(true);
         }
-        if (this.props.computedByFms === undefined) {
-            this.props.computedByFms = Subject.create(false);
+        if (this.props.enteredByPilot === undefined) {
+            this.props.enteredByPilot = Subject.create(true);
         }
         if (this.props.alignText === undefined) {
             this.props.alignText = 'flex-end';
@@ -340,8 +346,8 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
             this.updateDisplayElement();
         }, true));
 
-        this.subs.push(this.props.computedByFms.sub((val) => {
-            if (val === true) {
+        this.subs.push(this.props.enteredByPilot.sub((val) => {
+            if (val === false) {
                 this.textInputRef.getOrDefault().classList.add('computedByFms');
             } else {
                 this.textInputRef.getOrDefault().classList.remove('computedByFms');

@@ -1,6 +1,7 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 import { ComponentProps, DisplayComponent, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import './style.scss';
+import { FmgcFlightPhase } from '@shared/flightphase';
 
 interface TopTabElementProps extends ComponentProps {
     title: string;
@@ -100,7 +101,7 @@ interface TopTabNavigatorProps {
     tabBarHeight?: number; // in pixels
     tabBarSlantedEdgeAngle?: number; // in degrees, vertical line equals 0°
     additionalRightSpace?: number; // in pixels
-    activeFlightPhase?: Subscribable<number>; // special handling for PERF pages, mark tab from active flight phase with green text color
+    activeFlightPhase?: Subscribable<FmgcFlightPhase>; // special handling for PERF pages, mark tab from active flight phase with green text color
     pageChangeCallback?: (index: number) => void;
 }
 
