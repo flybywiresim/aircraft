@@ -15,10 +15,10 @@ interface FailuresOrchestratorContext {
 }
 
 const createOrchestrator = () => new FailuresOrchestrator('A32NX', [
-    [21, A320Failure.Acsc1Lane1, 'ACSC 1 Line 1'],
-    [21, A320Failure.Acsc1Lane2, 'ACSC 1 Line 2'],
-    [21, A320Failure.Acsc2Lane1, 'ACSC 2 Line 1'],
-    [21, A320Failure.Acsc2Lane2, 'ACSC 2 Line 2'],
+    [21, A320Failure.Acsc1Lane1, 'ACSC 1 Lane 1'],
+    [21, A320Failure.Acsc1Lane2, 'ACSC 1 Lane 2'],
+    [21, A320Failure.Acsc2Lane1, 'ACSC 2 Lane 1'],
+    [21, A320Failure.Acsc2Lane2, 'ACSC 2 Lane 2'],
     [21, A320Failure.HotAir, 'Trim Air Pressure Regulating Valve'],
     [21, A320Failure.TrimAirHighPressure, 'Trim Air System High Pressure'],
     [21, A320Failure.CkptTrimAirFailure, 'Cockpit Trim Air Valve'],
