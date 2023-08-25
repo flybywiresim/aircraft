@@ -4,11 +4,20 @@
 
 import { usePersistentNumberProperty, usePersistentProperty } from '@flybywiresim/fbw-sdk';
 import React, { useState } from 'react';
+import { Link, Route, Switch } from 'react-router-dom';
+import { PageLink, TabRoutes, pathify } from 'instruments/src/EFB/Utils/routing';
+import { AutomaticCallOutsPage } from 'instruments/src/EFB/Settings/Pages/AutomaticCallOutsPage';
 import { t } from '../../translation';
 import { SelectGroup, SelectItem } from '../../UtilComponents/Form/Select';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { ButtonType, SettingItem, SettingsPage } from '../Settings';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
+
+const basePinProgRoute = `/settings/${pathify('Aircraft Options / Pin Programs')}`;
+
+const subTabs: PageLink[] = [
+    { alias: t('Settings.AutomaticCallOuts.Title'), name: 'Automatic Call Outs', component: <AutomaticCallOutsPage /> },
+];
 
 export const AircraftOptionsPinProgramsPage = () => {
     const [thrustReductionHeight, setThrustReductionHeight] = usePersistentProperty('CONFIG_THR_RED_ALT', '1500');
@@ -82,116 +91,131 @@ export const AircraftOptionsPinProgramsPage = () => {
     ];
 
     return (
-        <SettingsPage name={t('Settings.AircraftOptionsPinPrograms.Title')}>
-            <SettingItem name={`${t('Settings.AircraftOptionsPinPrograms.ThrustReductionHeight')}`}>
-                <SimpleInput
-                    className="text-center w-30"
-                    placeholder={thrustReductionHeight}
-                    value={thrustReductionHeightSetting}
-                    min={400}
-                    max={5000}
-                    onChange={(event) => handleSetThrustReductionAlt(event)}
-                />
-            </SettingItem>
-            <SettingItem name={`${t('Settings.AircraftOptionsPinPrograms.AccelerationHeight')}`}>
-                <SimpleInput
-                    className="text-center w-30"
-                    placeholder={accelerationHeight}
-                    value={accelerationHeightSetting}
-                    min={400}
-                    max={10000}
-                    onChange={(event) => handleSetAccelerationAlt(event)}
-                />
-            </SettingItem>
-            <SettingItem name={`${t('Settings.AircraftOptionsPinPrograms.EngineOutAccelerationHeight')}`}>
-                <SimpleInput
-                    className="text-center w-30"
-                    placeholder={accelerationOutHeight}
-                    value={accelerationOutHeightSetting}
-                    min={400}
-                    max={10000}
-                    onChange={(event) => handleSetAccelerationOutAlt(event)}
-                />
-            </SettingItem>
+        <Switch>
+            <Route exact path={basePinProgRoute}>
+                <SettingsPage name={t('Settings.AircraftOptionsPinPrograms.Title')}>
+                    <SettingItem name={`${t('Settings.AircraftOptionsPinPrograms.ThrustReductionHeight')}`}>
+                        <SimpleInput
+                            className="text-center w-30"
+                            placeholder={thrustReductionHeight}
+                            value={thrustReductionHeightSetting}
+                            min={400}
+                            max={5000}
+                            onChange={(event) => handleSetThrustReductionAlt(event)}
+                        />
+                    </SettingItem>
+                    <SettingItem name={`${t('Settings.AircraftOptionsPinPrograms.AccelerationHeight')}`}>
+                        <SimpleInput
+                            className="text-center w-30"
+                            placeholder={accelerationHeight}
+                            value={accelerationHeightSetting}
+                            min={400}
+                            max={10000}
+                            onChange={(event) => handleSetAccelerationAlt(event)}
+                        />
+                    </SettingItem>
+                    <SettingItem name={`${t('Settings.AircraftOptionsPinPrograms.EngineOutAccelerationHeight')}`}>
+                        <SimpleInput
+                            className="text-center w-30"
+                            placeholder={accelerationOutHeight}
+                            value={accelerationOutHeightSetting}
+                            min={400}
+                            max={10000}
+                            onChange={(event) => handleSetAccelerationOutAlt(event)}
+                        />
+                    </SettingItem>
 
-            <SettingItem name={t('Settings.AircraftOptionsPinPrograms.IsisBaroUnit')}>
-                <SelectGroup>
-                    {isisBaroButtons.map((button) => (
-                        <SelectItem
-                            key={button.name}
-                            onSelect={() => setIsisBaro(button.setting)}
-                            selected={isisBaro === button.setting}
+                    <SettingItem name={t('Settings.AircraftOptionsPinPrograms.IsisBaroUnit')}>
+                        <SelectGroup>
+                            {isisBaroButtons.map((button) => (
+                                <SelectItem
+                                    key={button.name}
+                                    onSelect={() => setIsisBaro(button.setting)}
+                                    selected={isisBaro === button.setting}
+                                >
+                                    {button.name}
+                                </SelectItem>
+                            ))}
+                        </SelectGroup>
+                    </SettingItem>
+
+                    <SettingItem name={t('Settings.AircraftOptionsPinPrograms.IsisMetricAltitude')}>
+                        <Toggle value={!!isisMetricAltitude} onToggle={(value) => setIsisMetricAltitude(value ? 1 : 0)} />
+                    </SettingItem>
+
+                    <SettingItem name={t('Settings.AircraftOptionsPinPrograms.PaxSigns')}>
+                        <SelectGroup>
+                            {paxSignsButtons.map((button) => (
+                                <SelectItem
+                                    key={button.name}
+                                    onSelect={() => setPaxSigns(button.setting)}
+                                    selected={paxSigns === button.setting}
+                                >
+                                    {button.name}
+                                </SelectItem>
+                            ))}
+                        </SelectGroup>
+                    </SettingItem>
+
+                    <SettingItem name={t('Settings.AircraftOptionsPinPrograms.RmpVhfSpacing')}>
+                        <SelectGroup>
+                            {vhfSpacingButtons.map((button) => (
+                                <SelectItem
+                                    key={button.name}
+                                    onSelect={() => setVhfSpacing(button.setting)}
+                                    selected={vhfSpacing === button.setting}
+                                >
+                                    {button.name}
+                                </SelectItem>
+                            ))}
+                        </SelectGroup>
+                    </SettingItem>
+
+                    <SettingItem name={t('Settings.AircraftOptionsPinPrograms.LatLonExtendedFormat')}>
+                        <SelectGroup>
+                            {latLonExtendedButtons.map((button) => (
+                                <SelectItem
+                                    key={button.name}
+                                    onSelect={() => setLatLonExtended(button.setting)}
+                                    selected={latLonExtended === button.setting}
+                                >
+                                    {button.name}
+                                </SelectItem>
+                            ))}
+                        </SelectGroup>
+                    </SettingItem>
+
+                    <SettingItem name={t('Settings.AircraftOptionsPinPrograms.WeightUnit')}>
+                        <SelectGroup>
+                            {weightUnitButtons.map((button) => (
+                                <SelectItem
+                                    key={button.name}
+                                    onSelect={() => setUsingMetric(button.setting)}
+                                    selected={usingMetric === button.setting}
+                                >
+                                    {button.name}
+                                </SelectItem>
+                            ))}
+                        </SelectGroup>
+                    </SettingItem>
+
+                    <SettingItem name={t('Settings.AircraftOptionsPinPrograms.Satcom')}>
+                        <Toggle value={!!satcomEnabled} onToggle={(value) => setsatcomEnabled(value ? 1 : 0)} />
+                    </SettingItem>
+
+                    <SettingItem name={t('Settings.AutomaticCallOuts.Title')}>
+                        <Link
+                            to={`${basePinProgRoute}/${pathify('Automatic Call Outs')}`}
+                            className="py-2.5 px-5 text-theme-body hover:text-theme-highlight bg-theme-highlight
+                                hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
                         >
-                            {button.name}
-                        </SelectItem>
-                    ))}
-                </SelectGroup>
-            </SettingItem>
+                            {t('Settings.AircraftOptionsPinPrograms.Select')}
+                        </Link>
+                    </SettingItem>
 
-            <SettingItem name={t('Settings.AircraftOptionsPinPrograms.IsisMetricAltitude')}>
-                <Toggle value={!!isisMetricAltitude} onToggle={(value) => setIsisMetricAltitude(value ? 1 : 0)} />
-            </SettingItem>
-
-            <SettingItem name={t('Settings.AircraftOptionsPinPrograms.PaxSigns')}>
-                <SelectGroup>
-                    {paxSignsButtons.map((button) => (
-                        <SelectItem
-                            key={button.name}
-                            onSelect={() => setPaxSigns(button.setting)}
-                            selected={paxSigns === button.setting}
-                        >
-                            {button.name}
-                        </SelectItem>
-                    ))}
-                </SelectGroup>
-            </SettingItem>
-
-            <SettingItem name={t('Settings.AircraftOptionsPinPrograms.RmpVhfSpacing')}>
-                <SelectGroup>
-                    {vhfSpacingButtons.map((button) => (
-                        <SelectItem
-                            key={button.name}
-                            onSelect={() => setVhfSpacing(button.setting)}
-                            selected={vhfSpacing === button.setting}
-                        >
-                            {button.name}
-                        </SelectItem>
-                    ))}
-                </SelectGroup>
-            </SettingItem>
-
-            <SettingItem name={t('Settings.AircraftOptionsPinPrograms.LatLonExtendedFormat')}>
-                <SelectGroup>
-                    {latLonExtendedButtons.map((button) => (
-                        <SelectItem
-                            key={button.name}
-                            onSelect={() => setLatLonExtended(button.setting)}
-                            selected={latLonExtended === button.setting}
-                        >
-                            {button.name}
-                        </SelectItem>
-                    ))}
-                </SelectGroup>
-            </SettingItem>
-
-            <SettingItem name={t('Settings.AircraftOptionsPinPrograms.WeightUnit')}>
-                <SelectGroup>
-                    {weightUnitButtons.map((button) => (
-                        <SelectItem
-                            key={button.name}
-                            onSelect={() => setUsingMetric(button.setting)}
-                            selected={usingMetric === button.setting}
-                        >
-                            {button.name}
-                        </SelectItem>
-                    ))}
-                </SelectGroup>
-            </SettingItem>
-
-            <SettingItem name={t('Settings.AircraftOptionsPinPrograms.Satcom')}>
-                <Toggle value={!!satcomEnabled} onToggle={(value) => setsatcomEnabled(value ? 1 : 0)} />
-            </SettingItem>
-
-        </SettingsPage>
+                </SettingsPage>
+            </Route>
+            <TabRoutes basePath={basePinProgRoute} tabs={subTabs} />
+        </Switch>
     );
 };

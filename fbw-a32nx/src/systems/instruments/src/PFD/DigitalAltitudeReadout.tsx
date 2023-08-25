@@ -228,16 +228,11 @@ class Drum extends DisplayComponent<DrumProperties> {
     private digitRefElements: NodeReference<SVGTextElement>[] = [];
 
     private buildElements(amount: number) {
-        const highestPosition = Math.round((this.position + this.props.displayRange) / this.props.valueSpacing) * this.props.valueSpacing;
-
         const highestValue = Math.round((this.value + this.props.displayRange) / this.props.valueSpacing) * this.props.valueSpacing;
 
         const graduationElements: SVGTextElement[] = [];
 
         for (let i = 0; i < amount; i++) {
-            const elementPosition = highestPosition - i * this.props.valueSpacing;
-            const offset = -elementPosition * this.props.distanceSpacing / this.props.valueSpacing;
-
             let elementVal = highestValue - i * this.props.valueSpacing;
             if (!this.showZero && elementVal === 0) {
                 elementVal = NaN;
@@ -246,13 +241,13 @@ class Drum extends DisplayComponent<DrumProperties> {
             const digitRef = FSComponent.createRef<SVGTextElement>();
 
             if (this.props.type === 'hundreds') {
-                graduationElements.push(<text ref={digitRef} transform={`translate(0 ${offset})`} class={`FontLargest MiddleAlign ${this.color}`} x="11.631" y="7.1" />);
+                graduationElements.push(<text ref={digitRef} style="transform: rotate3d(0px, 0px, 0px)" class={`FontLargest MiddleAlign ${this.color}`} x="11.631" y="7.1" />);
             } else if (this.props.type === 'thousands') {
-                graduationElements.push(<text ref={digitRef} transform={`translate(0 ${offset})`} class={`FontLargest MiddleAlign ${this.color}`} x="7.18" y="7.1" />);
+                graduationElements.push(<text ref={digitRef} style="transform: rotate3d(0px, 0px, 0px)" class={`FontLargest MiddleAlign ${this.color}`} x="7.18" y="7.1" />);
             } else if (this.props.type === 'ten-thousands') {
-                graduationElements.push(<text ref={digitRef} transform={`translate(0 ${offset})`} class={`FontLargest MiddleAlign ${this.color}`} x="2.498" y="7.1" />);
+                graduationElements.push(<text ref={digitRef} style="transform: rotate3d(0px, 0px, 0px)" class={`FontLargest MiddleAlign ${this.color}`} x="2.498" y="7.1" />);
             } else if (this.props.type === 'tens') {
-                graduationElements.push(<text ref={digitRef} transform={`translate(0 ${offset})`} class={`FontSmallest MiddleAlign ${this.color}`} x="4.5894" y="8.9133" />);
+                graduationElements.push(<text ref={digitRef} style="transform: rotate3d(0px, 0px, 0px)" class={`FontSmallest MiddleAlign ${this.color}`} x="4.5894" y="8.9133" />);
             }
             this.digitRefElements.push(digitRef);
         }
@@ -261,9 +256,7 @@ class Drum extends DisplayComponent<DrumProperties> {
     }
 
     private getOffset(position: number) {
-        const className = `translate(0 ${position * this.props.distanceSpacing / this.props.valueSpacing})`;
-
-        this.gRef.instance.setAttribute('transform', className);
+        this.gRef.instance.style.transform = `translate3d(0px, ${position * this.props.distanceSpacing / this.props.valueSpacing}px, 0px)`;
     }
 
     private updateValue() {

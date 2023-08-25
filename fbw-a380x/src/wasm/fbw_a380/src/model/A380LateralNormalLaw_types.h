@@ -1,7 +1,6 @@
 #ifndef RTW_HEADER_A380LateralNormalLaw_types_h_
 #define RTW_HEADER_A380LateralNormalLaw_types_h_
 #include "rtwtypes.h"
-
 #ifndef DEFINED_TYPEDEF_FOR_base_time_
 #define DEFINED_TYPEDEF_FOR_base_time_
 
@@ -63,7 +62,6 @@ struct base_roll_normal
   real_T Phi_c_deg;
   real_T xi_deg;
   real_T zeta_deg;
-  real_T zeta_tc_yd_deg;
 };
 
 #endif

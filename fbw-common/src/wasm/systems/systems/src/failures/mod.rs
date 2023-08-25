@@ -1,7 +1,7 @@
 use crate::air_conditioning::{acs_controller::AcscId, ZoneType};
 use crate::shared::{
-    AirbusElectricPumpId, AirbusEngineDrivenPumpId, GearActuatorId, HydraulicColor, LgciuId,
-    ProximityDetectorId,
+    AirbusElectricPumpId, AirbusEngineDrivenPumpId, ElectricalBusType, GearActuatorId,
+    HydraulicColor, LgciuId, ProximityDetectorId,
 };
 use crate::simulation::SimulationElement;
 
@@ -14,7 +14,11 @@ pub enum FailureType {
     TrimAirFault(ZoneType),
     TrimAirHighPressure,
     GalleyFans,
+    Generator(usize),
+    ApuGenerator(usize),
     TransformerRectifier(usize),
+    StaticInverter,
+    ElectricalBus(ElectricalBusType),
     ReservoirLeak(HydraulicColor),
     ReservoirAirLeak(HydraulicColor),
     ReservoirReturnLeak(HydraulicColor),
