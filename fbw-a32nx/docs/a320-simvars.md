@@ -2673,9 +2673,9 @@ In the variables below, {number} should be replaced with one item in the set: { 
       | 20  | Trim valve AFT inop                                  |
       | 21  | Not used                                             |
       | 22  | Not used                                             |
-      | 23  | FCV status (Both pakcs off)                          |
-      | 24  | One pack operation                                   |
-      | 25  | FCV status (Both pakcs on)                           |
+      | 23  | *FCV status (Both pakcs off)                         |
+      | 24  | *One pack operation                                  |
+      | 25  | *FCV status (Both pakcs on)                          |
       | 26  | Spare                                                |
       | 27  | *Nacelle anti-ice eng 2 open                         |
       | 28  | *Nacelle anti-ice eng 1 open                         |
@@ -2803,13 +2803,6 @@ In the variables below, {number} should be replaced with one item in the set: { 
 - A32NX_OVHD_VENT_CAB_FANS_PB_IS_ON
     - Bool
     - True if CAB FANS pushbutton is in the on position (no white light)
-
-- A32NX_PACKS_{number}_IS_SUPPLYING
-    - Bool
-    - True if the corresponding pack is on and supplying air to the cabin
-    - {number}
-        - 1
-        - 2
 
 ## Pneumatic
 

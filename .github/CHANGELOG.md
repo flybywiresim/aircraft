@@ -41,6 +41,7 @@
 1. [EFB/FWC] Auto Call Outs selectable - @tracernz (Mike)
 1. [FWC] Added "twenty five hundred" and "two thousand" callouts - @tracernz (Mike)
 1. [FMS] Load procedures that reference a runway correctly - @tracernz (Mike)
+1. [COND] Add Air Conditioning systems failures - @mjuhe (Miquel Juhe)
 
 ## 0.10.0
 

@@ -32,7 +32,7 @@ export const CondPage = () => {
     const [aftCabinTemp] = useSimVar('L:A32NX_COND_AFT_TEMP', 'celsius', 1000);
 
     const hotAirOpen = !AcscDiscreteWord1.getBitValueOr(20, false);
-    const hotAirPositionDisagrees = AcscDiscreteWord1.getBitValueOr(27, false);
+    const hotAirPositionDisagrees = Acsc1DiscreteWord1.getBitValueOr(27, false) && Acsc2DiscreteWord1.getBitValueOr(27, false);
     const hotAirPb = AcscDiscreteWord1.getBitValueOr(23, false);
 
     const cabFanHasFault1 = AcscDiscreteWord1.getBitValueOr(25, false);
