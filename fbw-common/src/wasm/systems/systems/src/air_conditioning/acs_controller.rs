@@ -276,8 +276,10 @@ impl<const ZONES: usize, const ENGINES: usize> AirConditioningSystemController<Z
         }
     }
 
-    pub fn should_open_trim_air_pressure_regulating_valve(&self) -> bool {
-        self.trim_air_system_controller.should_open_taprv()
+    pub fn trim_air_pressure_regulating_valve_controller(
+        &self,
+    ) -> TrimAirPressureRegulatingValveController {
+        self.trim_air_system_controller.taprv_controller()
     }
 
     pub fn trim_air_pressure_regulating_valve_is_open(&self) -> bool {
@@ -1033,6 +1035,7 @@ struct TrimAirSystemController<const ZONES: usize, const ENGINES: usize> {
     taprv_open_timer: Duration,
     taprv_closed_disagrees: bool,
     taprv_closed_timer: Duration,
+    taprv_controller: TrimAirPressureRegulatingValveController,
     trim_air_valve_controllers: [TrimAirValveController; ZONES],
 }
 
@@ -1053,6 +1056,7 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystemController<ZONES, EN
             taprv_open_timer: Duration::default(),
             taprv_closed_disagrees: false,
             taprv_closed_timer: Duration::default(),
+            taprv_controller: TrimAirPressureRegulatingValveController::new(),
             trim_air_valve_controllers: [TrimAirValveController::new(); ZONES],
         }
     }
@@ -1075,6 +1079,8 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystemController<ZONES, EN
             pack_flow_controller,
             pneumatic,
         );
+
+        self.taprv_controller.update(self.is_enabled);
 
         self.is_open = trim_air_system.trim_air_pressure_regulating_valve_is_open();
 
@@ -1130,8 +1136,8 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystemController<ZONES, EN
         self.is_open
     }
 
-    fn should_open_taprv(&self) -> bool {
-        self.is_enabled
+    fn taprv_controller(&self) -> TrimAirPressureRegulatingValveController {
+        self.taprv_controller
     }
 
     fn duct_zone_overheat_monitor(
@@ -1237,6 +1243,7 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystemController<ZONES, EN
     }
 }
 
+#[derive(Default)]
 pub struct TrimAirValveSignal {
     target_open_amount: Ratio,
 }
@@ -1248,6 +1255,33 @@ impl PneumaticValveSignal for TrimAirValveSignal {
 
     fn target_open_amount(&self) -> Ratio {
         self.target_open_amount
+    }
+}
+
+#[derive(Clone, Copy)]
+pub struct TrimAirPressureRegulatingValveController {
+    should_open_taprv: bool,
+}
+
+impl TrimAirPressureRegulatingValveController {
+    fn new() -> Self {
+        Self {
+            should_open_taprv: false,
+        }
+    }
+
+    fn update(&mut self, should_open_taprv: bool) {
+        self.should_open_taprv = should_open_taprv
+    }
+}
+
+impl ControllerSignal<TrimAirValveSignal> for TrimAirPressureRegulatingValveController {
+    fn signal(&self) -> Option<TrimAirValveSignal> {
+        if self.should_open_taprv {
+            Some(TrimAirValveSignal::new(Ratio::new::<percent>(100.)))
+        } else {
+            Some(TrimAirValveSignal::new_closed())
+        }
     }
 }
 
@@ -2325,6 +2359,7 @@ mod acs_controller_tests {
 
             [0, 1].iter().for_each(|&id| {
                 self.packs[id].update(
+                    context,
                     pack_flow[id],
                     &duct_demand_temperature,
                     self.acsc[id].both_channels_failure(),
@@ -2346,9 +2381,11 @@ mod acs_controller_tests {
 
             self.trim_air_system.update(
                 context,
-                self.acsc[0].should_open_trim_air_pressure_regulating_valve()
-                    && self.acsc[1].should_open_trim_air_pressure_regulating_valve(),
                 &self.mixer_unit,
+                &[
+                    &self.acsc[0].trim_air_pressure_regulating_valve_controller(),
+                    &self.acsc[1].trim_air_pressure_regulating_valve_controller(),
+                ],
                 &[&self.acsc[0], &self.acsc[1]],
             );
 
@@ -3366,11 +3403,12 @@ mod acs_controller_tests {
                 .and()
                 .command_selected_temperature(
                     [ThermodynamicTemperature::new::<degree_celsius>(30.); 2],
-                );
+                )
+                .iterate(500);
 
             test_bed.fail(FailureType::GalleyFans);
 
-            test_bed = test_bed.iterate(1000);
+            test_bed = test_bed.iterate(100);
 
             assert!(
                 (test_bed.duct_demand_temperature()[1].get::<degree_celsius>() - 15.).abs() < 1.
@@ -3807,7 +3845,7 @@ mod acs_controller_tests {
                 .iterate(32);
             assert!(test_bed.trim_air_system_controller_is_enabled());
 
-            test_bed = test_bed.hot_air_pb_on(false).iterate(2);
+            test_bed = test_bed.hot_air_pb_on(false).iterate(4);
             assert!(!test_bed.trim_air_system_controller_is_enabled());
 
             test_bed = test_bed.hot_air_pb_on(true);
@@ -3817,14 +3855,14 @@ mod acs_controller_tests {
 
             // Pack 1 should be in start condition
             test_bed.command_pack_1_pb_position(true);
-            test_bed = test_bed.iterate(4);
+            test_bed = test_bed.iterate(6);
             assert!(!test_bed.trim_air_system_controller_is_enabled());
 
             // ACSC 1 unpowered
             test_bed = test_bed
                 .unpowered_dc_1_bus()
                 .unpowered_ac_1_bus()
-                .iterate(2);
+                .iterate(4);
             assert!(!test_bed.trim_air_system_controller_is_enabled());
 
             test_bed = test_bed.powered_dc_1_bus().powered_ac_1_bus().iterate(32);
@@ -4262,9 +4300,11 @@ mod acs_controller_tests {
 
             test_bed = test_bed.iterate(100);
 
-            assert_eq!(
-                test_bed.duct_temperature()[0],
-                test_bed.duct_temperature()[1]
+            assert!(
+                (test_bed.duct_temperature()[0].get::<degree_celsius>()
+                    - test_bed.duct_temperature()[1].get::<degree_celsius>())
+                .abs()
+                    < 1.
             );
         }
 

@@ -330,7 +330,7 @@ impl A320AirConditioningSystem {
 
         self.update_fans(cabin_simulation);
 
-        self.update_packs();
+        self.update_packs(context);
 
         self.update_mixer_unit();
 
@@ -383,7 +383,7 @@ impl A320AirConditioningSystem {
         }
     }
 
-    fn update_packs(&mut self) {
+    fn update_packs(&mut self, context: &UpdateContext) {
         let pack_flow: [MassRate; 2] = [
             self.acsc[0].individual_pack_flow(),
             self.acsc[1].individual_pack_flow(),
@@ -397,6 +397,7 @@ impl A320AirConditioningSystem {
 
         [0, 1].iter().for_each(|&id| {
             self.packs[id].update(
+                context,
                 pack_flow[id],
                 &duct_demand_temperature,
                 self.acsc[id].both_channels_failure(),
@@ -413,12 +414,13 @@ impl A320AirConditioningSystem {
     }
 
     fn update_trim_air_system(&mut self, context: &UpdateContext) {
-        // TAPRV monitors by ACSC 1
         self.trim_air_system.update(
             context,
-            self.acsc[0].should_open_trim_air_pressure_regulating_valve()
-                && self.acsc[1].should_open_trim_air_pressure_regulating_valve(),
             &self.mixer_unit,
+            &[
+                &self.acsc[0].trim_air_pressure_regulating_valve_controller(),
+                &self.acsc[1].trim_air_pressure_regulating_valve_controller(),
+            ],
             &[&self.acsc[0], &self.acsc[1], &self.acsc[1]],
         );
     }

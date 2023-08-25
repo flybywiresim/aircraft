@@ -19,16 +19,16 @@ export const CondPage = () => {
 
     // TODO: If both Sign Status are Failure Warning or No Computed Data, the whole page should display XX's
 
-    const [cockpitTrimAirValve] = useSimVar('L:A32NX_COND_CKPT_TRIM_AIR_VALVE_POSITION', 'number', 1000);
-    const [cockpitTrimTemp] = useSimVar('L:A32NX_COND_CKPT_DUCT_TEMP', 'celsius', 1000);
+    const [cockpitTrimAirValve] = useSimVar('L:A32NX_COND_CKPT_TRIM_AIR_VALVE_POSITION', 'number', 100);
+    const [cockpitTrimTemp] = useSimVar('L:A32NX_COND_CKPT_DUCT_TEMP', 'celsius', 100);
     const [cockpitCabinTemp] = useSimVar('L:A32NX_COND_CKPT_TEMP', 'celsius', 1000);
 
-    const [fwdTrimAirValve] = useSimVar('L:A32NX_COND_FWD_TRIM_AIR_VALVE_POSITION', 'number', 1000);
-    const [fwdTrimTemp] = useSimVar('L:A32NX_COND_FWD_DUCT_TEMP', 'celsius', 1000);
+    const [fwdTrimAirValve] = useSimVar('L:A32NX_COND_FWD_TRIM_AIR_VALVE_POSITION', 'number', 100);
+    const [fwdTrimTemp] = useSimVar('L:A32NX_COND_FWD_DUCT_TEMP', 'celsius', 100);
     const [fwdCabinTemp] = useSimVar('L:A32NX_COND_FWD_TEMP', 'celsius', 1000);
 
-    const [aftTrimAirValve] = useSimVar('L:A32NX_COND_AFT_TRIM_AIR_VALVE_POSITION', 'number', 1000);
-    const [aftTrimTemp] = useSimVar('L:A32NX_COND_AFT_DUCT_TEMP', 'celsius', 1000);
+    const [aftTrimAirValve] = useSimVar('L:A32NX_COND_AFT_TRIM_AIR_VALVE_POSITION', 'number', 100);
+    const [aftTrimTemp] = useSimVar('L:A32NX_COND_AFT_DUCT_TEMP', 'celsius', 100);
     const [aftCabinTemp] = useSimVar('L:A32NX_COND_AFT_TEMP', 'celsius', 1000);
 
     const hotAirOpen = !AcscDiscreteWord1.getBitValueOr(20, false);

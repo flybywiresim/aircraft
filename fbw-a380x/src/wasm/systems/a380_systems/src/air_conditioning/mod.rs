@@ -409,6 +409,7 @@ impl A380AirConditioningSystem {
         let duct_demand_temperature = self.acsc.duct_demand_temperature();
         for (id, pack) in self.packs.iter_mut().enumerate() {
             pack.update(
+                context,
                 pack_flow[id],
                 &duct_demand_temperature,
                 self.acsc.both_channels_failure(),
@@ -423,8 +424,8 @@ impl A380AirConditioningSystem {
 
         self.trim_air_system.update(
             context,
-            self.acsc.trim_air_pressure_regulating_valve_is_open(),
             &self.mixer_unit,
+            &[&self.acsc.trim_air_pressure_regulating_valve_controller(); 18],
             &[&self.acsc; 18],
         );
 
