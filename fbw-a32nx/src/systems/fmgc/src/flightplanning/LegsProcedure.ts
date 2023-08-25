@@ -209,6 +209,9 @@ export class LegsProcedure {
                   case LegType.VA:
                       mappedLeg = this.mapHeadingUntilAltitude(currentLeg, this._previousFix);
                       break;
+                  case LegType.FA:
+                      mappedLeg = this.mapFixUntilAltitude(currentLeg);
+                      break;
                   case LegType.HA:
                   case LegType.HF:
                   case LegType.HM:
@@ -514,6 +517,23 @@ export class LegsProcedure {
       waypoint.additionalData.vectorsAltitude = altitudeFeet;
 
       return waypoint;
+  }
+
+  public mapFixUntilAltitude(leg: RawProcedureLeg) {
+    const magVar = this.getMagCorrection(leg);
+    const course = leg.trueDegrees ? leg.course : A32NX_Util.magneticToTrue(leg.course, magVar);
+    const altitudeFeet = (leg.altitude1 * 3.2808399);
+    const distanceInNM = altitudeFeet / 500.0;
+
+    const facility = this.getLoadedFacility(leg.fixIcao);
+
+    const coordinates = GeoMath.relativeBearingDistanceToCoords(course, distanceInNM, { lat: facility.lat, long: facility.lon });
+    const waypoint = this.buildWaypoint(FixNamingScheme.headingUntilAltitude(altitudeFeet), coordinates, magVar);
+
+    waypoint.additionalData.vectorsAltitude = altitudeFeet;
+    waypoint.additionalData.fixIcao = leg.fixIcao;
+
+    return waypoint;
   }
 
   /**

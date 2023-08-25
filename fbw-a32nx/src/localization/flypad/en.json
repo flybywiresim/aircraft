@@ -489,9 +489,16 @@
       "PaxSigns": "PAX Signs",
       "RmpVhfSpacing": "RMP VHF Spacing",
       "Satcom": "Satcom",
+      "Select": "Select",
       "ThrustReductionHeight": "Thrust Reduction Height (ft)",
       "Title": "Aircraft Options / Pin Programs",
       "WeightUnit": "Weight Unit"
+    },
+    "AutomaticCallOuts": {
+      "Title": "Automatic Call Outs",
+      "FiveHundredGlide": "Inhibited When Glideslope Captured",
+      "ResetStandardConfig": "Reset To Standard Configuration",
+      "Reset": "Reset"
     },
     "AtsuAoc": {
       "AtisAtcSource": "ATIS/ATC Source",

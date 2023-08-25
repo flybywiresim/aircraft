@@ -115,7 +115,6 @@ class FadecGauge {
     }
 
     isConnected = true;
-    // read simulation data from simconnect
     simConnectRequestData();
 
     return true;
@@ -127,6 +126,7 @@ class FadecGauge {
   /// <returns>True if successful, false otherwise.</returns>
   bool onUpdate(double deltaTime) {
     if (isConnected == true) {
+      // read simulation data from simconnect
       simConnectReadData();
       // detect pause
       if ((simulationData.simulationTime == previousSimulationTime) || (simulationData.simulationTime < 0.2)) {
