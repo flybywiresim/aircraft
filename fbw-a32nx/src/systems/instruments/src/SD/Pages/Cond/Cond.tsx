@@ -13,9 +13,9 @@ export const CondPage = () => {
     // Display trim valve position for each zone
     const gaugeOffset = -43; // Gauges range is from -43 degree to +43 degree
 
-    const Acsc1DiscreteWord1 = useArinc429Var('L:A32NX_COND_ACSC_1_DISCRETE_WORD_1');
-    const Acsc2DiscreteWord1 = useArinc429Var('L:A32NX_COND_ACSC_2_DISCRETE_WORD_1');
-    const AcscDiscreteWord1 = !Acsc1DiscreteWord1.isFailureWarning() ? Acsc1DiscreteWord1 : Acsc2DiscreteWord1;
+    const acsc1DiscreteWord1 = useArinc429Var('L:A32NX_COND_ACSC_1_DISCRETE_WORD_1');
+    const acsc2DiscreteWord1 = useArinc429Var('L:A32NX_COND_ACSC_2_DISCRETE_WORD_1');
+    const acscDiscreteWord1 = !acsc1DiscreteWord1.isFailureWarning() ? acsc1DiscreteWord1 : acsc2DiscreteWord1;
 
     // TODO: If both Sign Status are Failure Warning or No Computed Data, the whole page should display XX's
 
@@ -31,12 +31,12 @@ export const CondPage = () => {
     const [aftTrimTemp] = useSimVar('L:A32NX_COND_AFT_DUCT_TEMP', 'celsius', 100);
     const [aftCabinTemp] = useSimVar('L:A32NX_COND_AFT_TEMP', 'celsius', 1000);
 
-    const hotAirOpen = !AcscDiscreteWord1.getBitValueOr(20, false);
-    const hotAirPositionDisagrees = Acsc1DiscreteWord1.getBitValueOr(27, false) && Acsc2DiscreteWord1.getBitValueOr(27, false);
-    const hotAirPb = AcscDiscreteWord1.getBitValueOr(23, false);
+    const hotAirOpen = !acscDiscreteWord1.getBitValueOr(20, false);
+    const hotAirPositionDisagrees = acsc1DiscreteWord1.getBitValueOr(27, false) && acsc2DiscreteWord1.getBitValueOr(27, false);
+    const hotAirSwitchPosition = acscDiscreteWord1.getBitValueOr(23, false);
 
-    const cabFanHasFault1 = AcscDiscreteWord1.getBitValueOr(25, false);
-    const cabFanHasFault2 = AcscDiscreteWord1.getBitValueOr(26, false);
+    const cabFanHasFault1 = acscDiscreteWord1.getBitValueOr(25, false);
+    const cabFanHasFault2 = acscDiscreteWord1.getBitValueOr(26, false);
 
     return (
         <svg id="cond-page" className="ecam-common-styles" viewBox="0 0 768 768" style={{ marginTop: '-60px' }} xmlns="http://www.w3.org/2000/svg">
@@ -64,7 +64,7 @@ export const CondPage = () => {
                 x={153}
                 y={105}
                 offset={gaugeOffset}
-                hotAir={hotAirPositionDisagrees || !hotAirPb}
+                hotAir={hotAirPositionDisagrees || !hotAirSwitchPosition}
             />
 
             {/* Fwd */}
@@ -76,7 +76,7 @@ export const CondPage = () => {
                 x={324}
                 y={105}
                 offset={gaugeOffset}
-                hotAir={hotAirPositionDisagrees || !hotAirPb}
+                hotAir={hotAirPositionDisagrees || !hotAirSwitchPosition}
             />
 
             {/*  Aft */}
@@ -88,7 +88,7 @@ export const CondPage = () => {
                 x={494}
                 y={105}
                 offset={gaugeOffset}
-                hotAir={hotAirPositionDisagrees || !hotAirPb}
+                hotAir={hotAirPositionDisagrees || !hotAirSwitchPosition}
             />
 
             {/* Valve and tubes */}
@@ -97,9 +97,9 @@ export const CondPage = () => {
                     <tspan x="706" y="306" style={{ letterSpacing: '1px' }}>HOT</tspan>
                     <tspan x="706" y="336" style={{ letterSpacing: '2px' }}>AIR</tspan>
                 </text>
-                <Valve x={650} y={312} radius={21} position={hotAirOpen ? 'H' : 'V'} css={(hotAirPositionDisagrees || !hotAirPb) ? 'AmberLine' : 'GreenLine'} sdacDatum />
-                <line className={(hotAirPositionDisagrees || !hotAirPb) ? 'AmberLine' : 'GreenLine'} x1="195" y1="312" x2="627" y2="312" />
-                <line className={(hotAirPositionDisagrees || !hotAirPb) ? 'AmberLine' : 'GreenLine'} x1="672" y1="312" x2="696" y2="312" />
+                <Valve x={650} y={312} radius={21} position={hotAirOpen ? 'H' : 'V'} css={(hotAirPositionDisagrees || !hotAirSwitchPosition) ? 'AmberLine' : 'GreenLine'} sdacDatum />
+                <line className={(hotAirPositionDisagrees || !hotAirSwitchPosition) ? 'AmberLine' : 'GreenLine'} x1="195" y1="312" x2="627" y2="312" />
+                <line className={(hotAirPositionDisagrees || !hotAirSwitchPosition) ? 'AmberLine' : 'GreenLine'} x1="672" y1="312" x2="696" y2="312" />
             </g>
         </svg>
     );
