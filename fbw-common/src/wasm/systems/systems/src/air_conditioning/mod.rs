@@ -570,7 +570,7 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystem<ZONES, ENGINES> {
     pub fn new(
         context: &mut InitContext,
         cabin_zone_ids: &[ZoneType; ZONES],
-        taprv_ids: Vec<usize>,
+        taprv_ids: &[usize],
     ) -> Self {
         let duct_temperature_id =
             cabin_zone_ids.map(|id| context.get_identifier(format!("COND_{}_DUCT_TEMP", id)));
@@ -760,16 +760,12 @@ impl TrimAirValveTravelTime {
         if let Some(signal) = signal.signal() {
             if self.valve_open_command < signal.target_open_amount() {
                 self.valve_open_command +=
-                    Ratio::new::<percent>(self.get_valve_change_for_delta(context).min(
-                        signal.target_open_amount().get::<percent>()
-                            - self.valve_open_command.get::<percent>(),
-                    ));
+                    Ratio::new::<percent>(self.get_valve_change_for_delta(context))
+                        .min(signal.target_open_amount() - self.valve_open_command);
             } else if self.valve_open_command > signal.target_open_amount() {
                 self.valve_open_command -=
-                    Ratio::new::<percent>(self.get_valve_change_for_delta(context).min(
-                        self.valve_open_command.get::<percent>()
-                            - signal.target_open_amount().get::<percent>(),
-                    ));
+                    Ratio::new::<percent>(self.get_valve_change_for_delta(context))
+                        .min(self.valve_open_command - signal.target_open_amount());
             }
         }
     }
@@ -807,7 +803,7 @@ impl TrimAirPressureRegulatingValve {
                 Pressure::new::<psi>(14.7),
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
-            exhaust: PneumaticExhaust::new(0.1, 0.1, Pressure::new::<psi>(0.)),
+            exhaust: PneumaticExhaust::new(0.1, 0.1, Pressure::default()),
             failure: Failure::new(FailureType::HotAir(id)),
         }
     }

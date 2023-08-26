@@ -272,7 +272,7 @@ impl A320AirConditioningSystem {
                     context,
                     AcscId::Acsc1(Channel::ChannelOne),
                     cabin_zones,
-                    vec![
+                    [
                         ElectricalBusType::DirectCurrent(1),
                         ElectricalBusType::AlternatingCurrent(1),
                     ],
@@ -281,7 +281,7 @@ impl A320AirConditioningSystem {
                     context,
                     AcscId::Acsc2(Channel::ChannelOne),
                     cabin_zones,
-                    vec![
+                    [
                         ElectricalBusType::DirectCurrent(2),
                         ElectricalBusType::AlternatingCurrent(2),
                     ],
@@ -296,7 +296,7 @@ impl A320AirConditioningSystem {
                 AirConditioningPack::new(Pack(1)),
                 AirConditioningPack::new(Pack(2)),
             ],
-            trim_air_system: TrimAirSystem::new(context, cabin_zones, vec![1]),
+            trim_air_system: TrimAirSystem::new(context, cabin_zones, &[1]),
 
             air_conditioning_overhead: A320AirConditioningSystemOverhead::new(context, cabin_zones),
         }

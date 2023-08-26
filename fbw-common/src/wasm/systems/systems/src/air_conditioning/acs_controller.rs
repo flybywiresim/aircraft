@@ -79,9 +79,9 @@ impl<const ZONES: usize, const ENGINES: usize> AirConditioningSystemController<Z
         context: &mut InitContext,
         id: AcscId,
         cabin_zone_ids: &[ZoneType; ZONES],
-        powered_by: Vec<ElectricalBusType>,
+        powered_by: [ElectricalBusType; 2],
     ) -> Self {
-        let failure_types: [FailureType; 2] = match id {
+        let failure_types = match id {
             AcscId::Acsc1(_) => [
                 FailureType::Acsc(AcscId::Acsc1(Channel::ChannelOne)),
                 FailureType::Acsc(AcscId::Acsc1(Channel::ChannelTwo)),
@@ -117,7 +117,7 @@ impl<const ZONES: usize, const ENGINES: usize> AirConditioningSystemController<Z
         if matches!(id, AcscId::Acsc1(_)) {
             vec![ZoneController::new(&cabin_zone_ids[0])]
         } else {
-            cabin_zone_ids[1..ZONES]
+            cabin_zone_ids[1..]
                 .iter()
                 .map(ZoneController::new)
                 .collect::<Vec<ZoneController<ZONES>>>()
@@ -188,22 +188,17 @@ impl<const ZONES: usize, const ENGINES: usize> AirConditioningSystemController<Z
         self.active_channel.update_fault();
         self.stand_by_channel.update_fault();
 
-        self.internal_failure = match self.active_channel.has_fault() {
-            true => {
-                if self.stand_by_channel.has_fault() {
-                    Some(AcscFault::BothChannelsFault)
-                } else {
-                    self.switch_active_channel();
-                    Some(AcscFault::OneChannelFault)
-                }
+        self.internal_failure = if self.active_channel.has_fault() {
+            if self.stand_by_channel.has_fault() {
+                Some(AcscFault::BothChannelsFault)
+            } else {
+                self.switch_active_channel();
+                Some(AcscFault::OneChannelFault)
             }
-            false => {
-                if self.stand_by_channel.has_fault() {
-                    Some(AcscFault::OneChannelFault)
-                } else {
-                    None
-                }
-            }
+        } else if self.stand_by_channel.has_fault() {
+            Some(AcscFault::OneChannelFault)
+        } else {
+            None
         };
     }
 
@@ -910,7 +905,7 @@ impl<const ENGINES: usize> PackFlowController<ENGINES> {
     ) -> Ratio {
         if !self.is_enabled {
             // If both lanes of the ACSC fail, the PFV closes and the flow demand is 0
-            return Ratio::new::<percent>(0.);
+            return Ratio::default();
         }
         let mut intermediate_flow: Ratio = acs_overhead.flow_selector_position().into();
         // TODO: Add "insufficient performance" based on Pack Mixer Temperature Demand
@@ -2159,7 +2154,7 @@ mod acs_controller_tests {
                         context,
                         AcscId::Acsc1(Channel::ChannelOne),
                         &cabin_zones,
-                        vec![
+                        [
                             ElectricalBusType::DirectCurrent(1),
                             ElectricalBusType::AlternatingCurrent(1),
                         ],
@@ -2168,7 +2163,7 @@ mod acs_controller_tests {
                         context,
                         AcscId::Acsc2(Channel::ChannelOne),
                         &cabin_zones,
-                        vec![
+                        [
                             ElectricalBusType::DirectCurrent(2),
                             ElectricalBusType::AlternatingCurrent(2),
                         ],
@@ -2197,7 +2192,7 @@ mod acs_controller_tests {
                 lgciu1: TestLgciu::new(false),
                 lgciu2: TestLgciu::new(false),
                 cabin_air_simulation: TestCabinAirSimulation::new(context),
-                trim_air_system: TrimAirSystem::new(context, &cabin_zones, vec![1]),
+                trim_air_system: TrimAirSystem::new(context, &cabin_zones, &[1]),
                 powered_dc_source_1: TestElectricitySource::powered(
                     context,
                     PotentialOrigin::Battery(1),
@@ -2348,10 +2343,8 @@ mod acs_controller_tests {
                 [0, self.number_of_passengers / 2],
             );
 
-            let pack_flow: [MassRate; 2] = [
-                self.acsc[0].individual_pack_flow(),
-                self.acsc[1].individual_pack_flow(),
-            ];
+            let pack_flow = [0, 1].map(|id| self.acsc[id].individual_pack_flow());
+
             let duct_demand_temperature = vec![
                 self.acsc[0].duct_demand_temperature()[0],
                 self.acsc[1].duct_demand_temperature()[1],

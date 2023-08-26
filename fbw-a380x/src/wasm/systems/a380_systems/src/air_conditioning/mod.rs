@@ -321,7 +321,7 @@ impl A380AirConditioningSystem {
                 context,
                 AcscId::Acsc1(Channel::ChannelOne),
                 cabin_zones,
-                vec![
+                [
                     ElectricalBusType::DirectCurrent(1),
                     ElectricalBusType::AlternatingCurrent(1),
                 ],
@@ -351,7 +351,7 @@ impl A380AirConditioningSystem {
                 AirConditioningPack::new(Pack(1)),
                 AirConditioningPack::new(Pack(2)),
             ],
-            trim_air_system: TrimAirSystem::new(context, cabin_zones, vec![1]),
+            trim_air_system: TrimAirSystem::new(context, cabin_zones, &[1]),
 
             air_conditioning_overhead: A380AirConditioningSystemOverhead::new(context),
         }
@@ -405,7 +405,7 @@ impl A380AirConditioningSystem {
             fan.update(cabin_simulation, &self.acsc.cabin_fans_controller())
         }
 
-        let pack_flow: [MassRate; 2] = [self.fdac[0].pack_flow(), self.fdac[1].pack_flow()];
+        let pack_flow = [self.fdac[0].pack_flow(), self.fdac[1].pack_flow()];
         let duct_demand_temperature = self.acsc.duct_demand_temperature();
         for (id, pack) in self.packs.iter_mut().enumerate() {
             pack.update(
