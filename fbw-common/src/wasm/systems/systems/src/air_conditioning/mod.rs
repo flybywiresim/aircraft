@@ -236,17 +236,17 @@ impl From<usize> for Channel {
 
 struct OperatingChannel {
     channel_id: Channel,
-    powered_by: ElectricalBusType,
+    powered_by: Vec<ElectricalBusType>,
     is_powered: bool,
     failure: Failure,
     fault: OperatingChannelFault,
 }
 
 impl OperatingChannel {
-    fn new(id: usize, failure_type: FailureType, powered_by: ElectricalBusType) -> Self {
+    fn new(id: usize, failure_type: FailureType, powered_by: &[ElectricalBusType]) -> Self {
         Self {
             channel_id: id.into(),
-            powered_by,
+            powered_by: powered_by.to_vec(),
             is_powered: false,
             failure: Failure::new(failure_type),
             fault: OperatingChannelFault::NoFault,
@@ -277,7 +277,7 @@ impl SimulationElement for OperatingChannel {
     }
 
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
-        self.is_powered = buses.is_powered(self.powered_by);
+        self.is_powered = self.powered_by.iter().all(|&p| buses.is_powered(p));
     }
 }
 

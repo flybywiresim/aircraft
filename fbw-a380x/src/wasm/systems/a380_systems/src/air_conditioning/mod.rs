@@ -322,8 +322,14 @@ impl A380AirConditioningSystem {
                 AcscId::Acsc1(Channel::ChannelOne),
                 cabin_zones,
                 [
-                    ElectricalBusType::DirectCurrent(1),
-                    ElectricalBusType::AlternatingCurrent(1),
+                    [
+                        ElectricalBusType::AlternatingCurrent(1), // 103XP
+                        ElectricalBusType::DirectCurrent(1),      // 101PP
+                    ],
+                    [
+                        ElectricalBusType::AlternatingCurrent(2),  // 202XP
+                        ElectricalBusType::DirectCurrentEssential, // 4PP
+                    ],
                 ],
             ),
             fdac: [

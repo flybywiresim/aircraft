@@ -1700,6 +1700,7 @@ mod tests {
         dc_ess_bus: ElectricalBus,
         dc_ess_shed_bus: ElectricalBus,
         ac_1_bus: ElectricalBus,
+        ac_2_bus: ElectricalBus,
         // Electric buses states to be able to kill them dynamically
         is_dc_1_powered: bool,
         is_dc_2_powered: bool,
@@ -1731,6 +1732,7 @@ mod tests {
                     ElectricalBusType::DirectCurrentEssentialShed,
                 ),
                 ac_1_bus: ElectricalBus::new(context, ElectricalBusType::AlternatingCurrent(1)),
+                ac_2_bus: ElectricalBus::new(context, ElectricalBusType::AlternatingCurrent(2)),
                 is_dc_1_powered: true,
                 is_dc_2_powered: true,
                 is_dc_ess_powered: true,
@@ -1774,6 +1776,8 @@ mod tests {
             if self.is_ac_1_powered {
                 electricity.flow(&self.powered_source, &self.ac_1_bus);
             }
+
+            electricity.flow(&self.powered_source, &self.ac_2_bus);
         }
 
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {

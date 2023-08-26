@@ -79,7 +79,7 @@ impl<const ZONES: usize, const ENGINES: usize> AirConditioningSystemController<Z
         context: &mut InitContext,
         id: AcscId,
         cabin_zone_ids: &[ZoneType; ZONES],
-        powered_by: [ElectricalBusType; 2],
+        powered_by: [[ElectricalBusType; 2]; 2],
     ) -> Self {
         let failure_types = match id {
             AcscId::Acsc1(_) => [
@@ -95,9 +95,8 @@ impl<const ZONES: usize, const ENGINES: usize> AirConditioningSystemController<Z
         Self {
             id,
 
-            // FIXME Find correct power supply for ACSC
-            active_channel: OperatingChannel::new(1, failure_types[0], powered_by[0]),
-            stand_by_channel: OperatingChannel::new(2, failure_types[1], powered_by[1]),
+            active_channel: OperatingChannel::new(1, failure_types[0], &powered_by[0]),
+            stand_by_channel: OperatingChannel::new(2, failure_types[1], &powered_by[1]),
 
             aircraft_state: AirConditioningStateManager::new(),
             zone_controller: Self::zone_controller_initiation(id, cabin_zone_ids),
@@ -2139,10 +2138,12 @@ mod acs_controller_tests {
         powered_ac_source_1: TestElectricitySource,
         powered_dc_source_2: TestElectricitySource,
         powered_ac_source_2: TestElectricitySource,
+        powered_dc_ess_source: TestElectricitySource,
         dc_1_bus: ElectricalBus,
         ac_1_bus: ElectricalBus,
         dc_2_bus: ElectricalBus,
         ac_2_bus: ElectricalBus,
+        dc_ess_bus: ElectricalBus,
     }
     impl TestAircraft {
         fn new(context: &mut InitContext) -> Self {
@@ -2155,8 +2156,14 @@ mod acs_controller_tests {
                         AcscId::Acsc1(Channel::ChannelOne),
                         &cabin_zones,
                         [
-                            ElectricalBusType::DirectCurrent(1),
-                            ElectricalBusType::AlternatingCurrent(1),
+                            [
+                                ElectricalBusType::AlternatingCurrent(1), // 103XP
+                                ElectricalBusType::DirectCurrent(1),      // 101PP
+                            ],
+                            [
+                                ElectricalBusType::AlternatingCurrent(2),  // 202XP
+                                ElectricalBusType::DirectCurrentEssential, // 4PP
+                            ],
                         ],
                     ),
                     AirConditioningSystemController::new(
@@ -2164,8 +2171,14 @@ mod acs_controller_tests {
                         AcscId::Acsc2(Channel::ChannelOne),
                         &cabin_zones,
                         [
-                            ElectricalBusType::DirectCurrent(2),
-                            ElectricalBusType::AlternatingCurrent(2),
+                            [
+                                ElectricalBusType::AlternatingCurrent(2), // 101XP
+                                ElectricalBusType::DirectCurrent(2),      // 103PP
+                            ],
+                            [
+                                ElectricalBusType::AlternatingCurrent(2), // 204XP
+                                ElectricalBusType::DirectCurrent(2),      // 206PP
+                            ],
                         ],
                     ),
                 ],
@@ -2209,10 +2222,15 @@ mod acs_controller_tests {
                     context,
                     PotentialOrigin::EngineGenerator(2),
                 ),
+                powered_dc_ess_source: TestElectricitySource::powered(
+                    context,
+                    PotentialOrigin::StaticInverter,
+                ),
                 dc_1_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrent(1)),
                 ac_1_bus: ElectricalBus::new(context, ElectricalBusType::AlternatingCurrent(1)),
                 dc_2_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrent(2)),
                 ac_2_bus: ElectricalBus::new(context, ElectricalBusType::AlternatingCurrent(2)),
+                dc_ess_bus: ElectricalBus::new(context, ElectricalBusType::DirectCurrentEssential),
             }
         }
 
@@ -2289,6 +2307,10 @@ mod acs_controller_tests {
         fn power_ac_2_bus(&mut self) {
             self.powered_ac_source_2.power();
         }
+
+        fn unpower_dc_ess_bus(&mut self) {
+            self.powered_dc_ess_source.unpower();
+        }
     }
     impl Aircraft for TestAircraft {
         fn update_before_power_distribution(
@@ -2300,10 +2322,12 @@ mod acs_controller_tests {
             electricity.supplied_by(&self.powered_ac_source_1);
             electricity.supplied_by(&self.powered_dc_source_2);
             electricity.supplied_by(&self.powered_ac_source_2);
+            electricity.supplied_by(&self.powered_dc_ess_source);
             electricity.flow(&self.powered_dc_source_1, &self.dc_1_bus);
             electricity.flow(&self.powered_ac_source_1, &self.ac_1_bus);
             electricity.flow(&self.powered_dc_source_2, &self.dc_2_bus);
             electricity.flow(&self.powered_ac_source_2, &self.ac_2_bus);
+            electricity.flow(&self.powered_dc_ess_source, &self.dc_ess_bus)
         }
 
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
@@ -2596,6 +2620,11 @@ mod acs_controller_tests {
 
         fn powered_ac_2_bus(mut self) -> Self {
             self.command(|a| a.power_ac_2_bus());
+            self
+        }
+
+        fn unpowered_dc_ess_bus(mut self) -> Self {
+            self.command(|a| a.unpower_dc_ess_bus());
             self
         }
 
@@ -3043,7 +3072,6 @@ mod acs_controller_tests {
                     ThermodynamicTemperature::new::<degree_celsius>(26.),
                 ])
                 .unpowered_ac_1_bus()
-                .unpowered_ac_2_bus()
                 .iterate(1000);
 
             assert!((test_bed.measured_temperature().get::<degree_celsius>() - 26.).abs() < 1.);
@@ -3125,6 +3153,7 @@ mod acs_controller_tests {
                 ])
                 .unpowered_ac_1_bus()
                 .unpowered_dc_1_bus()
+                .unpowered_dc_ess_bus()
                 .iterate(1000);
 
             assert_ne!(test_bed.pack_flow(), MassRate::default());
@@ -3376,6 +3405,7 @@ mod acs_controller_tests {
                 .and()
                 .unpowered_dc_1_bus()
                 .unpowered_ac_1_bus()
+                .unpowered_dc_ess_bus()
                 .command_selected_temperature(
                     [ThermodynamicTemperature::new::<degree_celsius>(30.); 2],
                 );
@@ -3420,15 +3450,15 @@ mod acs_controller_tests {
                 .and()
                 .engine_idle()
                 .and()
-                .unpowered_dc_1_bus()
-                .unpowered_ac_1_bus()
+                .unpowered_dc_2_bus()
+                .unpowered_ac_2_bus()
                 .command_selected_temperature(
                     [ThermodynamicTemperature::new::<degree_celsius>(30.); 2],
                 );
             test_bed = test_bed.iterate(1000);
             assert!((test_bed.duct_temperature()[1].get::<degree_celsius>() - 24.).abs() < 1.);
 
-            test_bed = test_bed.powered_dc_1_bus().powered_ac_1_bus();
+            test_bed = test_bed.powered_dc_2_bus().powered_ac_2_bus();
             test_bed = test_bed.iterate(1000);
             assert!(test_bed.duct_temperature()[1].get::<degree_celsius>() > 24.);
         }
@@ -3762,6 +3792,7 @@ mod acs_controller_tests {
             test_bed = test_bed
                 .unpowered_dc_1_bus()
                 .unpowered_ac_1_bus()
+                .unpowered_dc_ess_bus()
                 .powered_dc_2_bus()
                 .powered_ac_2_bus();
             test_bed = test_bed.iterate(2);

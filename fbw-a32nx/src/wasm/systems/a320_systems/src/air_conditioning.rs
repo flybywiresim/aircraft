@@ -273,8 +273,14 @@ impl A320AirConditioningSystem {
                     AcscId::Acsc1(Channel::ChannelOne),
                     cabin_zones,
                     [
-                        ElectricalBusType::DirectCurrent(1),
-                        ElectricalBusType::AlternatingCurrent(1),
+                        [
+                            ElectricalBusType::AlternatingCurrent(1), // 103XP
+                            ElectricalBusType::DirectCurrent(1),      // 101PP
+                        ],
+                        [
+                            ElectricalBusType::AlternatingCurrent(2),  // 202XP
+                            ElectricalBusType::DirectCurrentEssential, // 4PP
+                        ],
                     ],
                 ),
                 AirConditioningSystemController::new(
@@ -282,8 +288,14 @@ impl A320AirConditioningSystem {
                     AcscId::Acsc2(Channel::ChannelOne),
                     cabin_zones,
                     [
-                        ElectricalBusType::DirectCurrent(2),
-                        ElectricalBusType::AlternatingCurrent(2),
+                        [
+                            ElectricalBusType::AlternatingCurrent(2), // 101XP
+                            ElectricalBusType::DirectCurrent(2),      // 103PP
+                        ],
+                        [
+                            ElectricalBusType::AlternatingCurrent(2), // 204XP
+                            ElectricalBusType::DirectCurrent(2),      // 206PP
+                        ],
                     ],
                 ),
             ],
