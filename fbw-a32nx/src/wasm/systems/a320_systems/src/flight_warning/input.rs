@@ -26,6 +26,23 @@ use uom::ConstZero;
 pub(super) struct A320FwcInputs {
     number: usize,
 
+    auto_call_out_2500_ft: ElectricPotential,
+    auto_call_out_2500b: ElectricPotential,
+    auto_call_out_2000_ft: ElectricPotential,
+    auto_call_out_1000_ft: ElectricPotential,
+    auto_call_out_500_ft: ElectricPotential,
+    auto_call_out_500_ft_glide_deviation: ElectricPotential,
+    auto_call_out_400_ft: ElectricPotential,
+    auto_call_out_300_ft: ElectricPotential,
+    auto_call_out_200_ft: ElectricPotential,
+    auto_call_out_100_ft: ElectricPotential,
+    auto_call_out_50_ft: ElectricPotential,
+    auto_call_out_40_ft: ElectricPotential,
+    auto_call_out_30_ft: ElectricPotential,
+    auto_call_out_20_ft: ElectricPotential,
+    auto_call_out_10_ft: ElectricPotential,
+    auto_call_out_5_ft: ElectricPotential,
+
     ess_lh_lg_compressed: ElectricPotential,
     norm_lh_lg_compressed: ElectricPotential,
     blue_sys_lo_pr: ElectricPotential,
@@ -152,6 +169,7 @@ pub(super) struct A320FwcInputs {
     has_gs_id: VariableIdentifier,
     gs_deviation_id: VariableIdentifier,
     air_data_switching_knob_id: VariableIdentifier,
+    auto_call_out_pins_id: VariableIdentifier,
 }
 
 impl A320FwcInputs {
@@ -159,6 +177,22 @@ impl A320FwcInputs {
         let open_circuit = ElectricPotential::new::<volt>(POTENTIAL_OPEN_CIRCUIT_VOLTS);
         Self {
             number,
+            auto_call_out_2500_ft: open_circuit,
+            auto_call_out_2500b: open_circuit,
+            auto_call_out_2000_ft: open_circuit,
+            auto_call_out_1000_ft: open_circuit,
+            auto_call_out_500_ft: open_circuit,
+            auto_call_out_500_ft_glide_deviation: open_circuit,
+            auto_call_out_400_ft: open_circuit,
+            auto_call_out_300_ft: open_circuit,
+            auto_call_out_200_ft: open_circuit,
+            auto_call_out_100_ft: open_circuit,
+            auto_call_out_50_ft: open_circuit,
+            auto_call_out_40_ft: open_circuit,
+            auto_call_out_30_ft: open_circuit,
+            auto_call_out_20_ft: open_circuit,
+            auto_call_out_10_ft: open_circuit,
+            auto_call_out_5_ft: open_circuit,
             ess_lh_lg_compressed: open_circuit,
             norm_lh_lg_compressed: open_circuit,
             blue_sys_lo_pr: open_circuit,
@@ -286,6 +320,8 @@ impl A320FwcInputs {
             gs_deviation_id: context.get_identifier("RADIO_RECEIVER_GS_DEVIATION".to_owned()),
             air_data_switching_knob_id: context
                 .get_identifier("AIR_DATA_SWITCHING_KNOB".to_owned()),
+            auto_call_out_pins_id: context
+                .get_identifier("FWC_RADIO_AUTO_CALL_OUT_PINS".to_owned()),
         }
     }
 
@@ -498,6 +534,70 @@ impl A320FwcInputs {
 
     pub fn fwc_ident_side2(&self) -> ElectricPotential {
         (self.number == 2).as_ground_potential()
+    }
+
+    pub fn auto_call_out_2500_ft(&self) -> ElectricPotential {
+        self.auto_call_out_2500_ft
+    }
+
+    pub fn auto_call_out_2500b(&self) -> ElectricPotential {
+        self.auto_call_out_2500b
+    }
+
+    pub fn auto_call_out_2000_ft(&self) -> ElectricPotential {
+        self.auto_call_out_2000_ft
+    }
+
+    pub fn auto_call_out_1000_ft(&self) -> ElectricPotential {
+        self.auto_call_out_1000_ft
+    }
+
+    pub fn auto_call_out_500_ft(&self) -> ElectricPotential {
+        self.auto_call_out_500_ft
+    }
+
+    pub fn auto_call_out_500_ft_glide_deviation(&self) -> ElectricPotential {
+        self.auto_call_out_500_ft_glide_deviation
+    }
+
+    pub fn auto_call_out_400_ft(&self) -> ElectricPotential {
+        self.auto_call_out_400_ft
+    }
+
+    pub fn auto_call_out_300_ft(&self) -> ElectricPotential {
+        self.auto_call_out_300_ft
+    }
+
+    pub fn auto_call_out_200_ft(&self) -> ElectricPotential {
+        self.auto_call_out_200_ft
+    }
+
+    pub fn auto_call_out_100_ft(&self) -> ElectricPotential {
+        self.auto_call_out_100_ft
+    }
+
+    pub fn auto_call_out_50_ft(&self) -> ElectricPotential {
+        self.auto_call_out_50_ft
+    }
+
+    pub fn auto_call_out_40_ft(&self) -> ElectricPotential {
+        self.auto_call_out_40_ft
+    }
+
+    pub fn auto_call_out_30_ft(&self) -> ElectricPotential {
+        self.auto_call_out_30_ft
+    }
+
+    pub fn auto_call_out_20_ft(&self) -> ElectricPotential {
+        self.auto_call_out_20_ft
+    }
+
+    pub fn auto_call_out_10_ft(&self) -> ElectricPotential {
+        self.auto_call_out_10_ft
+    }
+
+    pub fn auto_call_out_5_ft(&self) -> ElectricPotential {
+        self.auto_call_out_5_ft
     }
 
     pub fn ess_lh_lg_compressed(&self) -> ElectricPotential {
@@ -831,6 +931,8 @@ impl SimulationElement for A320FwcInputs {
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
+        // FWC
+
         let mw_cancel_event: bool = reader.read(&self.mw_cancel_event_id);
         self.mw_cancel_on_capt =
             (<SimulatorReader as Read<bool>>::read(reader, &self.mw_cancel_on_capt_id)
@@ -848,6 +950,25 @@ impl SimulationElement for A320FwcInputs {
         self.mc_cancel_on_fo =
             <SimulatorReader as Read<bool>>::read(reader, &self.mc_cancel_on_fo_id)
                 .as_ground_potential();
+
+        // FWC Pins
+        let auto_call_out_pins: u32 = reader.read(&self.auto_call_out_pins_id);
+        self.auto_call_out_2500_ft = (auto_call_out_pins & (1 << 0) != 0).as_ground_potential();
+        self.auto_call_out_2500b = (auto_call_out_pins & (1 << 1) != 0).as_ground_potential();
+        self.auto_call_out_2000_ft = (auto_call_out_pins & (1 << 2) != 0).as_ground_potential();
+        self.auto_call_out_1000_ft = (auto_call_out_pins & (1 << 3) != 0).as_ground_potential();
+        self.auto_call_out_500_ft = (auto_call_out_pins & (1 << 4) != 0).as_ground_potential();
+        self.auto_call_out_500_ft_glide_deviation = false.as_ground_potential();
+        self.auto_call_out_400_ft = (auto_call_out_pins & (1 << 5) != 0).as_ground_potential();
+        self.auto_call_out_300_ft = (auto_call_out_pins & (1 << 6) != 0).as_ground_potential();
+        self.auto_call_out_200_ft = (auto_call_out_pins & (1 << 7) != 0).as_ground_potential();
+        self.auto_call_out_100_ft = (auto_call_out_pins & (1 << 8) != 0).as_ground_potential();
+        self.auto_call_out_50_ft = (auto_call_out_pins & (1 << 9) != 0).as_ground_potential();
+        self.auto_call_out_40_ft = (auto_call_out_pins & (1 << 10) != 0).as_ground_potential();
+        self.auto_call_out_30_ft = (auto_call_out_pins & (1 << 11) != 0).as_ground_potential();
+        self.auto_call_out_20_ft = (auto_call_out_pins & (1 << 12) != 0).as_ground_potential();
+        self.auto_call_out_10_ft = (auto_call_out_pins & (1 << 13) != 0).as_ground_potential();
+        self.auto_call_out_5_ft = (auto_call_out_pins & (1 << 14) != 0).as_ground_potential();
 
         // MMR
         let has_glide_slope: bool = reader.read(&self.has_gs_id);

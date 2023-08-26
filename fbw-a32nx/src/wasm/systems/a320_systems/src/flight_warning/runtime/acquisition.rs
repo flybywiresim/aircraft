@@ -33,6 +33,22 @@ pub(super) struct A320FwcAcquisition {
     gs_visual_alert_on: DiscreteAcquisition,
     tcas_aural_advisory_output: DiscreteAcquisition,
     synthetic_voice_synchronization: DiscreteAcquisition,
+    auto_call_out_2500_ft: DiscreteAcquisition,
+    auto_call_out_2500b: DiscreteAcquisition,
+    auto_call_out_2000_ft: DiscreteAcquisition,
+    auto_call_out_1000_ft: DiscreteAcquisition,
+    auto_call_out_500_ft: DiscreteAcquisition,
+    auto_call_out_500_ft_glide_deviation: DiscreteAcquisition,
+    auto_call_out_400_ft: DiscreteAcquisition,
+    auto_call_out_300_ft: DiscreteAcquisition,
+    auto_call_out_200_ft: DiscreteAcquisition,
+    auto_call_out_100_ft: DiscreteAcquisition,
+    auto_call_out_50_ft: DiscreteAcquisition,
+    auto_call_out_40_ft: DiscreteAcquisition,
+    auto_call_out_30_ft: DiscreteAcquisition,
+    auto_call_out_20_ft: DiscreteAcquisition,
+    auto_call_out_10_ft: DiscreteAcquisition,
+    auto_call_out_5_ft: DiscreteAcquisition,
     ecp_warning_switches_word: Arinc429Acquisition<u32>,
     lgciu_1_discrete_word_1: Arinc429Acquisition<u32>,
     lgciu_2_discrete_word_1: Arinc429Acquisition<u32>,
@@ -116,6 +132,25 @@ impl Default for A320FwcAcquisition {
             gs_visual_alert_on: DiscreteAcquisition::new(DiscreteInputType::IpMinus),
             tcas_aural_advisory_output: DiscreteAcquisition::new(DiscreteInputType::IpMinus),
             synthetic_voice_synchronization: DiscreteAcquisition::new(DiscreteInputType::IpMinus),
+
+            auto_call_out_2500_ft: DiscreteAcquisition::new(DiscreteInputType::IpMinus),
+            auto_call_out_2500b: DiscreteAcquisition::new(DiscreteInputType::IpMinus),
+            auto_call_out_2000_ft: DiscreteAcquisition::new(DiscreteInputType::IpMinus),
+            auto_call_out_1000_ft: DiscreteAcquisition::new(DiscreteInputType::IpMinus),
+            auto_call_out_500_ft: DiscreteAcquisition::new(DiscreteInputType::IpMinus),
+            auto_call_out_500_ft_glide_deviation: DiscreteAcquisition::new(
+                DiscreteInputType::IpMinus,
+            ),
+            auto_call_out_400_ft: DiscreteAcquisition::new(DiscreteInputType::IpMinus),
+            auto_call_out_300_ft: DiscreteAcquisition::new(DiscreteInputType::IpMinus),
+            auto_call_out_200_ft: DiscreteAcquisition::new(DiscreteInputType::IpMinus),
+            auto_call_out_100_ft: DiscreteAcquisition::new(DiscreteInputType::IpMinus),
+            auto_call_out_50_ft: DiscreteAcquisition::new(DiscreteInputType::IpMinus),
+            auto_call_out_40_ft: DiscreteAcquisition::new(DiscreteInputType::IpMinus),
+            auto_call_out_30_ft: DiscreteAcquisition::new(DiscreteInputType::IpMinus),
+            auto_call_out_20_ft: DiscreteAcquisition::new(DiscreteInputType::IpMinus),
+            auto_call_out_10_ft: DiscreteAcquisition::new(DiscreteInputType::IpMinus),
+            auto_call_out_5_ft: DiscreteAcquisition::new(DiscreteInputType::IpMinus),
 
             ecp_warning_switches_word: Arinc429Acquisition::new(Duration::from_millis(60)),
             ecp_emer_cancel_on: DiscreteAcquisition::new(DiscreteInputType::IpMinus),
@@ -312,22 +347,22 @@ impl A320FwcAcquisition {
             decision_height_code_b: DiscreteParameter::new(true), // TODO
             decision_height_plus_100_ft_code_a: DiscreteParameter::new(true), // TODO
             decision_height_plus_100_ft_code_b: DiscreteParameter::new(true), // TODO
-            auto_call_out_2500_ft: DiscreteParameter::new(true),  // TODO
-            auto_call_out_2500b: DiscreteParameter::new(false),   // TODO
-            auto_call_out_2000_ft: DiscreteParameter::new(true),  // TODO
-            auto_call_out_1000_ft: DiscreteParameter::new(true),  // TODO
-            auto_call_out_500_ft: DiscreteParameter::new(true),   // TODO
-            auto_call_out_500_ft_glide_deviation: DiscreteParameter::new(false), // TODO
-            auto_call_out_400_ft: DiscreteParameter::new(true),   // TODO
-            auto_call_out_300_ft: DiscreteParameter::new(true),   // TODO
-            auto_call_out_200_ft: DiscreteParameter::new(true),   // TODO
-            auto_call_out_100_ft: DiscreteParameter::new(true),   // TODO
-            auto_call_out_50_ft: DiscreteParameter::new(true),    // TODO
-            auto_call_out_40_ft: DiscreteParameter::new(true),    // TODO
-            auto_call_out_30_ft: DiscreteParameter::new(true),    // TODO
-            auto_call_out_20_ft: DiscreteParameter::new(true),    // TODO
-            auto_call_out_10_ft: DiscreteParameter::new(true),    // TODO
-            auto_call_out_5_ft: DiscreteParameter::new(true),     // TODO
+            auto_call_out_2500_ft: self.auto_call_out_2500_ft.read(),
+            auto_call_out_2500b: self.auto_call_out_2500b.read(),
+            auto_call_out_2000_ft: self.auto_call_out_2000_ft.read(),
+            auto_call_out_1000_ft: self.auto_call_out_1000_ft.read(),
+            auto_call_out_500_ft: self.auto_call_out_500_ft.read(),
+            auto_call_out_500_ft_glide_deviation: self.auto_call_out_500_ft_glide_deviation.read(),
+            auto_call_out_400_ft: self.auto_call_out_400_ft.read(),
+            auto_call_out_300_ft: self.auto_call_out_300_ft.read(),
+            auto_call_out_200_ft: self.auto_call_out_200_ft.read(),
+            auto_call_out_100_ft: self.auto_call_out_100_ft.read(),
+            auto_call_out_50_ft: self.auto_call_out_50_ft.read(),
+            auto_call_out_40_ft: self.auto_call_out_40_ft.read(),
+            auto_call_out_30_ft: self.auto_call_out_30_ft.read(),
+            auto_call_out_20_ft: self.auto_call_out_20_ft.read(),
+            auto_call_out_10_ft: self.auto_call_out_10_ft.read(),
+            auto_call_out_5_ft: self.auto_call_out_5_ft.read(),
             glide_deviation_1: self.mmr_1_glide_slope_deviation.read(),
             glide_deviation_2: self.mmr_2_glide_slope_deviation.read(),
             land_trk_mode_on_1: self.fmgc_1_discrete_word_4.read_bit(14),
@@ -349,8 +384,43 @@ impl A320FwcAcquisition {
     }
 
     fn measure_discretes(&mut self, inputs: &A320FwcInputs) {
+        // Pins
         self.fwc_ident_side1.measure(inputs.fwc_ident_side1());
         self.fwc_ident_side2.measure(inputs.fwc_ident_side2());
+
+        self.auto_call_out_2500_ft
+            .measure(inputs.auto_call_out_2500_ft());
+        self.auto_call_out_2500b
+            .measure(inputs.auto_call_out_2500b());
+        self.auto_call_out_2000_ft
+            .measure(inputs.auto_call_out_2000_ft());
+        self.auto_call_out_1000_ft
+            .measure(inputs.auto_call_out_1000_ft());
+        self.auto_call_out_500_ft
+            .measure(inputs.auto_call_out_500_ft());
+        self.auto_call_out_500_ft_glide_deviation
+            .measure(inputs.auto_call_out_500_ft_glide_deviation());
+        self.auto_call_out_400_ft
+            .measure(inputs.auto_call_out_400_ft());
+        self.auto_call_out_300_ft
+            .measure(inputs.auto_call_out_300_ft());
+        self.auto_call_out_200_ft
+            .measure(inputs.auto_call_out_200_ft());
+        self.auto_call_out_100_ft
+            .measure(inputs.auto_call_out_100_ft());
+        self.auto_call_out_50_ft
+            .measure(inputs.auto_call_out_50_ft());
+        self.auto_call_out_40_ft
+            .measure(inputs.auto_call_out_40_ft());
+        self.auto_call_out_30_ft
+            .measure(inputs.auto_call_out_30_ft());
+        self.auto_call_out_20_ft
+            .measure(inputs.auto_call_out_20_ft());
+        self.auto_call_out_10_ft
+            .measure(inputs.auto_call_out_10_ft());
+        self.auto_call_out_5_ft.measure(inputs.auto_call_out_5_ft());
+
+        // Other
         self.ess_lh_lg_compressed
             .measure(inputs.ess_lh_lg_compressed());
         self.norm_lh_lg_compressed
