@@ -252,7 +252,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
         default:
             return oneAxis;
         }
-    }, [axisNum, airframe, selectedIndex]);
+    }, [axisNum, airframe, selectedIndex, reverserOnAxis1]);
 
     if (!isShown) return null;
 
