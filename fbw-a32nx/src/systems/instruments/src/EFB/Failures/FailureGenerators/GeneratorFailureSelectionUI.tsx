@@ -1,6 +1,6 @@
 import React from 'react';
-import { FailureGenContext, ModalGenType } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenUI';
-import { findGeneratorFailures, selectAllFailureChapter, selectAllFailures, setSelectedFailure } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelectionUI';
+import { FailureGenContext, ModalGenType, findGeneratorFailures } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
+import { selectAllFailureChapter, selectAllFailures, setSelectedFailure } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelectionUI';
 import { Failure } from 'failures/src/failures-orchestrator';
 import { AtaChapterNumber, AtaChaptersTitle } from '@flybywiresim/fbw-sdk';
 import { t } from 'instruments/src/EFB/translation';

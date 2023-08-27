@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { usePersistentProperty } from '@flybywiresim/fbw-sdk';
-import { FailureGenContext, FailureGenData, setNewSetting } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenUI';
+import { FailureGenContext, FailureGenData, setNewSetting } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
 
 import { t } from 'instruments/src/EFB/translation';
 import { FailureGeneratorSingleSetting, FailureGeneratorText } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorSettingsUI';

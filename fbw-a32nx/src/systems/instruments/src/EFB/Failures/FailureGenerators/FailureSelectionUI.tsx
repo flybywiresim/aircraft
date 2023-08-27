@@ -1,5 +1,5 @@
 import { Failure } from 'failures/src/failures-orchestrator';
-import { FailureGenContext, FailureGenData } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenUI';
+import { FailureGenContext, FailureGenData } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
 
 export function selectAllFailureChapter(chapter: number, failureGenContext : FailureGenContext, genIDToChange : string, value : boolean): void {
     failureGenContext.allFailures.forEach((failure) => {
@@ -104,22 +104,4 @@ export const deleteGeneratorFailures = (generatorSettings : FailureGenData, fail
             });
         }
     }
-};
-
-export const findGeneratorFailures = (allFailures : readonly Readonly<Failure>[], generatorFailuresGetters : Map<number, string>, generatorUniqueID: string) => {
-    const failureIDs : Failure[] = [];
-    if (allFailures.length > 0) {
-        allFailures.forEach((failure) => {
-            const generatorSetting = generatorFailuresGetters.get(failure.identifier);
-            if (generatorSetting) {
-                const failureGeneratorsTable = generatorSetting.split(',');
-                if (failureGeneratorsTable.length > 0) {
-                    failureGeneratorsTable.forEach((generator) => {
-                        if (generator === generatorUniqueID) failureIDs.push(failure);
-                    });
-                }
-            }
-        });
-    }
-    return failureIDs;
 };

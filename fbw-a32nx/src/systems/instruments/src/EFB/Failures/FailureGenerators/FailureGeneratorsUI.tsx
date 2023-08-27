@@ -3,9 +3,8 @@ import { SelectInput } from 'instruments/src/EFB/UtilComponents/Form/SelectInput
 import { t } from 'instruments/src/EFB/translation';
 import {
     eraseGenerator, FailureGenContext, FailureGenData,
-    failureGeneratorAdd, failureGeneratorsSettings, ModalContext, ModalGenType,
-} from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenUI';
-import { findGeneratorFailures } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelectionUI';
+    failureGeneratorAdd, failureGeneratorsSettings, findGeneratorFailures, ModalContext, ModalGenType,
+} from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
 import { ExclamationDiamond, InfoCircle, PlusLg, Sliders2Vertical, Trash } from 'react-bootstrap-icons';
 import { AtaChapterNumber, AtaChaptersTitle } from '@flybywiresim/fbw-sdk';
 import { FailureGeneratorInfoModalUI } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorInfo';

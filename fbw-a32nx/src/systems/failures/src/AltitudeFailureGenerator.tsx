@@ -1,89 +1,105 @@
-import { useEffect, useMemo } from 'react';
-import { useSimVar, usePersistentProperty } from '@flybywiresim/fbw-sdk';
-import {
-    basicData, failureGeneratorCommonFunction,
-    FailurePhases, flatten,
-} from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenUI';
-import { findGeneratorFailures } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelectionUI';
-import { ArmingIndex, FailuresAtOnceIndex, MaxFailuresIndex } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
+import { NXDataStore } from '@flybywiresim/fbw-sdk';
+import { ArmingIndex, FailurePhases, FailuresAtOnceIndex, MaxFailuresIndex, RandomFailureGen } from 'failures/src/RandomFailureGen';
+import { FailuresOrchestrator } from 'failures/src/failures-orchestrator';
 
-const settingName = 'EFB_FAILURE_GENERATOR_SETTING_ALTITUDE';
-const numberOfSettingsPerGenerator = 6;
-const uniqueGenPrefix = 'A';
-const failureGeneratorArmed :boolean[] = [];
-const doNotRepeatuntilTakeOff: boolean[] = [];
-const rolledDice:number[] = [];
+export class FailureGeneratorAltitude {
+private static settingName = 'EFB_FAILURE_GENERATOR_SETTING_ALTITUDE';
 
-const AltitudeConditionIndex = 3;
-const AltitudeMinIndex = 4;
-const AltitudeMaxIndex = 5;
+private static numberOfSettingsPerGenerator = 6;
 
-const resetMargin = 100;
+private static uniqueGenPrefix = 'A';
 
-export const failureGeneratorAltitude = (generatorFailuresGetters : Map<number, string>) => {
-    const [absoluteTime1s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 1000);
-    const { allFailures, activate, activeFailures, totalActiveFailures } = failureGeneratorCommonFunction();
-    const [failureGeneratorSetting, setFailureGeneratorSetting] = usePersistentProperty(settingName, '');
-    const settings : number[] = useMemo<number[]>(() => failureGeneratorSetting.split(',').map(((it) => parseFloat(it))), [failureGeneratorSetting]);
-    const { failureFlightPhase } = basicData();
-    const nbGenerator = useMemo(() => Math.floor(settings.length / numberOfSettingsPerGenerator), [settings]);
+private static failureGeneratorArmed :boolean[] = [];
 
-    const [altitude] = useSimVar('PLANE ALTITUDE', 'feet', 1000);
+private static doNotRepeatUntilTakeOff: boolean[] = [];
 
-    useEffect(() => {
-        const tempSettings : number[] = Array.from(settings);
-        let change = false;
-        for (let i = 0; i < nbGenerator; i++) {
-            if (failureGeneratorArmed[i]) {
-                const failureAltitude = 100 * (settings[i * numberOfSettingsPerGenerator + AltitudeMinIndex]
-                        + rolledDice[i] * (settings[i * numberOfSettingsPerGenerator + AltitudeMaxIndex] - settings[i * numberOfSettingsPerGenerator + AltitudeMinIndex]));
-                if ((altitude > failureAltitude && settings[i * numberOfSettingsPerGenerator + AltitudeConditionIndex] === 0)
-                    || (altitude < failureAltitude && settings[i * numberOfSettingsPerGenerator + AltitudeConditionIndex] === 1)
-                ) {
-                    const numberOfFailureToActivate = Math.min(settings[i * numberOfSettingsPerGenerator + FailuresAtOnceIndex],
-                        settings[i * numberOfSettingsPerGenerator + MaxFailuresIndex] - totalActiveFailures);
-                    if (numberOfFailureToActivate > 0) {
-                        activateRandomFailure(findGeneratorFailures(allFailures, generatorFailuresGetters, uniqueGenPrefix + i.toString()),
-                            activate, activeFailures, numberOfFailureToActivate);
-                        failureGeneratorArmed[i] = false;
-                        if (settings[i * numberOfSettingsPerGenerator + ArmingIndex] === 2) doNotRepeatuntilTakeOff[i] = true;
-                        change = true;
-                        if (tempSettings[i * numberOfSettingsPerGenerator + ArmingIndex] === 1) tempSettings[i * numberOfSettingsPerGenerator + ArmingIndex] = 0;
+private static rolledDice:number[] = [];
+
+private static didOnce : boolean = false;
+
+private static AltitudeConditionIndex = 3;
+
+private static AltitudeMinIndex = 4;
+
+private static AltitudeMaxIndex = 5;
+
+private static resetMargin = 100;
+
+static updateFailure(failureOrchestrator : FailuresOrchestrator) : void {
+    // const [failureGeneratorSetting, setFailureGeneratorSetting] = usePersistentProperty(this.settingName, '');
+    const failureGeneratorSetting = NXDataStore.get(FailureGeneratorAltitude.settingName, '');
+    // const { generatorFailuresGetters } = allGeneratorFailures(failureOrchestrator.getAllFailures());
+    if (!FailureGeneratorAltitude.didOnce) {
+        console.info(`${FailureGeneratorAltitude.settingName} ${failureGeneratorSetting}`);
+        const generatorNumber = Math.floor(failureGeneratorSetting.split(',').length / FailureGeneratorAltitude.numberOfSettingsPerGenerator);
+        for (let i = 0; i < generatorNumber; i++) {
+            FailureGeneratorAltitude.failureGeneratorArmed[i] = false;
+            FailureGeneratorAltitude.doNotRepeatUntilTakeOff[i] = false;
+        }
+        FailureGeneratorAltitude.didOnce = true;
+        console.info(`Initialized ${generatorNumber.toString()} generators`);
+    }
+
+    const settings : number[] = failureGeneratorSetting.split(',').map(((it) => parseFloat(it)));
+    // const { failureFlightPhase } = RandomFailureGen.basicData();
+    const nbGenerator = Math.floor(settings.length / FailureGeneratorAltitude.numberOfSettingsPerGenerator);
+    const altitude = Simplane.getAltitude();
+    const tempSettings : number[] = Array.from(settings);
+
+    let change = false;
+
+    // console.info(altitude.toString());
+
+    for (let i = 0; i < nbGenerator; i++) {
+        const altitudeMax = settings[i * FailureGeneratorAltitude.numberOfSettingsPerGenerator + FailureGeneratorAltitude.AltitudeMaxIndex] * 100;
+        const altitudeMin = settings[i * FailureGeneratorAltitude.numberOfSettingsPerGenerator + FailureGeneratorAltitude.AltitudeMinIndex] * 100;
+        const altitudeCondition = settings[i * FailureGeneratorAltitude.numberOfSettingsPerGenerator + FailureGeneratorAltitude.AltitudeConditionIndex];
+        console.info(`alt:${altitude.toString()} min:${altitudeMin.toString()} max:${altitudeMax.toString()} mode:${altitudeCondition.toString()}`);
+        if (FailureGeneratorAltitude.failureGeneratorArmed[i]) {
+            const failureAltitude = (altitudeMin + FailureGeneratorAltitude.rolledDice[i] * (altitudeMax - altitudeMin));
+            if ((altitude > failureAltitude && altitudeCondition === 0)
+                    || (altitude < failureAltitude && altitudeCondition === 1)
+            ) {
+                console.info('Generator failure triggered');
+                const activeFailures = failureOrchestrator.getActiveFailures();
+                const numberOfFailureToActivate = Math.min(settings[i * FailureGeneratorAltitude.numberOfSettingsPerGenerator + FailuresAtOnceIndex],
+                    settings[i * FailureGeneratorAltitude.numberOfSettingsPerGenerator + MaxFailuresIndex] - activeFailures.size);
+                if (numberOfFailureToActivate > 0) {
+                    RandomFailureGen.activateRandomFailure(RandomFailureGen.getGeneratorFailurePool(failureOrchestrator, FailureGeneratorAltitude.uniqueGenPrefix + i.toString()),
+                        failureOrchestrator, activeFailures, numberOfFailureToActivate);
+                    FailureGeneratorAltitude.failureGeneratorArmed[i] = false;
+                    if (settings[i * FailureGeneratorAltitude.numberOfSettingsPerGenerator + ArmingIndex] === 2) FailureGeneratorAltitude.doNotRepeatUntilTakeOff[i] = true;
+                    change = true;
+                    if (tempSettings[i * FailureGeneratorAltitude.numberOfSettingsPerGenerator + ArmingIndex] === 1) {
+                        tempSettings[i * FailureGeneratorAltitude.numberOfSettingsPerGenerator + ArmingIndex] = 0;
                     }
                 }
             }
         }
-        if (change) {
-            setFailureGeneratorSetting(flatten(tempSettings));
-        }
-    }, [absoluteTime1s]);
 
-    useEffect(() => {
-        for (let i = 0; i < nbGenerator; i++) {
-            if (doNotRepeatuntilTakeOff[i]
-                && (settings[i * numberOfSettingsPerGenerator + ArmingIndex] === 1
-                || (settings[i * numberOfSettingsPerGenerator + ArmingIndex] === 2 && failureFlightPhase === FailurePhases.TAKEOFF)
-                || settings[i * numberOfSettingsPerGenerator + ArmingIndex] === 3)) {
-                doNotRepeatuntilTakeOff[i] = false;
+        if (FailureGeneratorAltitude.doNotRepeatUntilTakeOff[i]
+                && (settings[i * FailureGeneratorAltitude.numberOfSettingsPerGenerator + ArmingIndex] === 1
+                || (settings[i * FailureGeneratorAltitude.numberOfSettingsPerGenerator + ArmingIndex] === 2 && RandomFailureGen.getFailureFlightPhase() === FailurePhases.TAKEOFF)
+                || settings[i * FailureGeneratorAltitude.numberOfSettingsPerGenerator + ArmingIndex] === 3)) {
+            FailureGeneratorAltitude.doNotRepeatUntilTakeOff[i] = false;
+            console.info('Generator Take Off inhibition removed');
+        }
+
+        if (!FailureGeneratorAltitude.failureGeneratorArmed[i]) {
+            if (((altitude < altitudeMin - FailureGeneratorAltitude.resetMargin
+                    && settings[i * FailureGeneratorAltitude.numberOfSettingsPerGenerator + FailureGeneratorAltitude.AltitudeConditionIndex] === 0)
+                    || (altitude > altitudeMax + FailureGeneratorAltitude.resetMargin
+                    && settings[i * FailureGeneratorAltitude.numberOfSettingsPerGenerator + FailureGeneratorAltitude.AltitudeConditionIndex] === 1))
+                && !FailureGeneratorAltitude.doNotRepeatUntilTakeOff[i]) {
+                FailureGeneratorAltitude.failureGeneratorArmed[i] = true;
+                FailureGeneratorAltitude.rolledDice[i] = Math.random();
+                console.info(`Generator Armed with roll ${FailureGeneratorAltitude.rolledDice[i].toString()}`);
             }
-
-            if (!failureGeneratorArmed[i]) {
-                if (((altitude < settings[i * numberOfSettingsPerGenerator + AltitudeMinIndex] * 100 - resetMargin && settings[i * numberOfSettingsPerGenerator + AltitudeConditionIndex] === 0)
-                || (altitude > settings[i * numberOfSettingsPerGenerator + AltitudeMaxIndex] * 100 + resetMargin && settings[i * numberOfSettingsPerGenerator + AltitudeConditionIndex] === 1))
-                && !doNotRepeatuntilTakeOff[i]) {
-                    failureGeneratorArmed[i] = true;
-                    rolledDice[i] = Math.random();
-                }
-            } else
-            if (settings[i * numberOfSettingsPerGenerator + ArmingIndex] === 0) failureGeneratorArmed[i] = false;
-        }
-    }, [absoluteTime1s]);
-
-    useEffect(() => {
-        const generatorNumber = Math.floor(failureGeneratorSetting.split(',').length / numberOfSettingsPerGenerator);
-        for (let i = 0; i < generatorNumber; i++) {
-            failureGeneratorArmed[i] = false;
-            doNotRepeatuntilTakeOff[i] = false;
-        }
-    }, []);
-};
+        } else
+        if (settings[i * FailureGeneratorAltitude.numberOfSettingsPerGenerator + ArmingIndex] === 0) FailureGeneratorAltitude.failureGeneratorArmed[i] = false;
+    }
+    if (change) {
+        NXDataStore.set(FailureGeneratorAltitude.settingName, RandomFailureGen.flatten(tempSettings));
+    }
+}
+}

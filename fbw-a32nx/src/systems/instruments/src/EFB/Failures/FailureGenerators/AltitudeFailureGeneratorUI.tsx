@@ -3,7 +3,7 @@ import { usePersistentProperty } from '@flybywiresim/fbw-sdk';
 import {
     FailureGenContext, FailureGenData,
     setNewSetting, setNewSettingAndResetArm,
-} from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenUI';
+} from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
 import { t } from 'instruments/src/EFB/translation';
 import { ArrowDownRight, ArrowUpRight } from 'react-bootstrap-icons';
 import { ButtonIcon, FailureGeneratorChoiceSetting, FailureGeneratorSingleSetting } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorSettingsUI';

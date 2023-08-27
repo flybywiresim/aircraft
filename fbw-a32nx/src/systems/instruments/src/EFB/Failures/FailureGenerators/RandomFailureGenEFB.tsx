@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Failure } from '@failures';
-import { AtaChapterNumber, useSimVar } from '@flybywiresim/fbw-sdk';
+import { AtaChapterNumber, usePersistentProperty, useSimVar } from '@flybywiresim/fbw-sdk';
 import { failureGenConfigAltitude }
     from 'instruments/src/EFB/Failures/FailureGenerators/AltitudeFailureGeneratorUI';
 import { failureGenConfigPerHour }
@@ -162,4 +162,35 @@ void = (genID : number, generatorSettings : FailureGenData, failureGenContext : 
     generatorSettings.onErase(genID);
 
     deleteGeneratorFailures(generatorSettings, failureGenContext, `${generatorSettings.uniqueGenPrefix}${genID}`);
+};
+
+export const allGeneratorFailures = (allFailures : readonly Readonly<Failure>[]) => {
+    const generatorFailuresGetters : Map<number, string> = new Map();
+    const generatorFailuresSetters : Map<number, (value: string) => void> = new Map();
+    if (allFailures.length > 0) {
+        allFailures.forEach((failure) => {
+            const [generatorSetting, setGeneratorSetting] = usePersistentProperty(`EFB_FAILURE_${failure.identifier.toString()}_GENERATORS`, '');
+            generatorFailuresGetters.set(failure.identifier, generatorSetting);
+            generatorFailuresSetters.set(failure.identifier, setGeneratorSetting);
+        });
+    }
+    return { generatorFailuresGetters, generatorFailuresSetters };
+};
+
+export const findGeneratorFailures = (allFailures : readonly Readonly<Failure>[], generatorFailuresGetters : Map<number, string>, generatorUniqueID: string) => {
+    const failureIDs : Failure[] = [];
+    if (allFailures.length > 0) {
+        allFailures.forEach((failure) => {
+            const generatorSetting = generatorFailuresGetters.get(failure.identifier);
+            if (generatorSetting) {
+                const failureGeneratorsTable = generatorSetting.split(',');
+                if (failureGeneratorsTable.length > 0) {
+                    failureGeneratorsTable.forEach((generator) => {
+                        if (generator === generatorUniqueID) failureIDs.push(failure);
+                    });
+                }
+            }
+        });
+    }
+    return failureIDs;
 };
