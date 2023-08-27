@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable max-len */
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { usePersistentNumberProperty, useSimVar } from '@flybywiresim/fbw-sdk';
 import { ExclamationCircleFill } from 'react-bootstrap-icons';
 import { getAirframeType } from 'instruments/src/EFB/Efb';
@@ -179,6 +179,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                 throttleNumber={1}
                 displayNumber
                 activeIndex={selectedIndex}
+                reverseDisabled
             />
             <BaseThrottleConfig
                 mappingsAxisOne={mappingsAxisTwo}
@@ -200,6 +201,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                 throttleNumber={4}
                 displayNumber
                 activeIndex={selectedIndex}
+                reverseDisabled
             />
         </div>
     );
@@ -239,7 +241,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
         </div>
     );
 
-    const getAxis = useMemo(() => {
+    const getAxis = () => {
         switch (axisNum) {
         case 4:
             if (airframe === 'A380_842') {
@@ -252,7 +254,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
         default:
             return oneAxis;
         }
-    }, [axisNum, airframe, selectedIndex, reverserOnAxis1]);
+    };
 
     if (!isShown) return null;
 
@@ -279,7 +281,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                             )}
                         </div>
                     </div>
-                    {getAxis}
+                    {getAxis()}
                 </div>
 
                 {!validConfig && (

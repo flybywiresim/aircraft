@@ -20,7 +20,7 @@ interface Props {
     expertMode: boolean,
 }
 
-const DetentConfig: React.FC<Props> = (props: Props) => {
+export const DetentConfig: React.FC<Props> = (props: Props) => {
     const [showWarning, setShowWarning] = useState(false);
 
     const [deadZone, setDeadZone] = useState(Math.abs(props.upperBoundDetentGetter - props.lowerBoundDetentGetter) / 2);
@@ -140,4 +140,24 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
         </div>
     );
 };
-export default DetentConfig;
+export const DummyDetentConfig: React.FC<Props> = (props: Props) => (
+    <div className="flex overflow-hidden flex-col flex-shrink-0 justify-between items-center text-white">
+        <div className="h-64">
+            <ProgressBar
+                height="225px"
+                width="40px"
+                vertical
+                displayBar={false}
+                isLabelVisible={false}
+                bgcolor="var(--color-highlight)"
+                baseBgColor="var(--color-accent)"
+                completedBarBegin={(props.lowerBoundDetentGetter + 1) * 50}
+                completedBarBeginValue={props.lowerBoundDetentGetter.toFixed(2)}
+                completedBarEnd={(props.upperBoundDetentGetter + 1) * 50}
+                completedBarEndValue={props.upperBoundDetentGetter.toFixed(2)}
+                completed={(props.throttlePosition + 1) / 2 * 100}
+                borderRadius="0px"
+            />
+        </div>
+    </div>
+);
