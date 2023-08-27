@@ -246,10 +246,10 @@ export const A380Payload: React.FC<A380Props> = ({
 
         // Load pax first
         const pWeight = paxWeight + paxBagWeight;
-        const newPax = Math.min(Math.round(paxCargoWeight / pWeight), maxPax);
+        const newPax = Math.max(Math.min(Math.round(paxCargoWeight / pWeight), maxPax), 0);
 
         paxCargoWeight -= newPax * pWeight;
-        const newCargo = Math.min(paxCargoWeight, maxCargo);
+        const newCargo = Math.max(Math.min(paxCargoWeight, maxCargo), 0);
 
         setTargetPax(newPax);
         setTargetCargo(newPax, newCargo);
@@ -260,10 +260,10 @@ export const A380Payload: React.FC<A380Props> = ({
 
         // Load pax first
         const pWeight = paxWeight + paxBagWeight;
-        const newPax = Math.min(Math.round(paxCargoWeight / pWeight), maxPax);
+        const newPax = Math.max(Math.min(Math.round(paxCargoWeight / pWeight), maxPax), 0);
 
         paxCargoWeight -= newPax * pWeight;
-        const newCargo = Math.min(paxCargoWeight, maxCargo);
+        const newCargo = Math.max(Math.min(paxCargoWeight, maxCargo), 0);
 
         setTargetPax(newPax);
         setTargetCargo(newPax, newCargo);
