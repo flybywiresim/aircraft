@@ -250,24 +250,20 @@ impl<const ZONES: usize, const ENGINES: usize> AirConditioningSystemController<Z
         self.pack_flow_controller.pack_flow()
     }
 
-    pub fn duct_demand_temperature(&self) -> Vec<ThermodynamicTemperature> {
-        let mut demand_temperature: Vec<ThermodynamicTemperature> = self
+    pub fn duct_demand_temperature(&self) -> [ThermodynamicTemperature; ZONES] {
+        let demand_temperature: Vec<ThermodynamicTemperature> = self
             .zone_controller
             .iter()
             .map(|zone| zone.duct_demand_temperature())
             .collect();
         // Because each ACSC calculates the demand of its respective zone(s), we fill the vector for the trim air system
-        let mut filler_vector = vec![
-            ThermodynamicTemperature::new::<degree_celsius>(24.);
-            ZONES - demand_temperature.len()
-        ];
+        let mut filler_vector = [ThermodynamicTemperature::new::<degree_celsius>(24.); ZONES];
         if matches!(self.id, AcscId::Acsc1(_)) {
-            demand_temperature.extend(filler_vector);
-            demand_temperature
+            filler_vector[..1].copy_from_slice(&demand_temperature);
         } else {
-            filler_vector.extend(demand_temperature);
-            filler_vector
-        }
+            filler_vector[1..].copy_from_slice(&demand_temperature);
+        };
+        filler_vector
     }
 
     pub fn trim_air_pressure_regulating_valve_controller(
