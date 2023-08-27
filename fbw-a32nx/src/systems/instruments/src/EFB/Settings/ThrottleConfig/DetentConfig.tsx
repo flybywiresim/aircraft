@@ -40,24 +40,25 @@ const DetentConfig: React.FC<Props> = (props: Props) => {
 
     return (
         <div className="flex overflow-hidden flex-col flex-shrink-0 justify-between items-center text-white">
-            <ProgressBar
-                height="225px"
-                width="40px"
-                isLabelVisible={false}
-                displayBar
-                borderRadius="0px"
-                completedBarBegin={(props.lowerBoundDetentGetter + 1) * 50}
-                completedBarBeginValue={props.lowerBoundDetentGetter.toFixed(2)}
-                completedBarEnd={(props.upperBoundDetentGetter + 1) * 50}
-                completedBarEndValue={props.upperBoundDetentGetter.toFixed(2)}
-                bgcolor="var(--color-highlight)"
-                vertical
-                baseBgColor="var(--color-accent)"
-                completed={(props.throttlePosition + 1) / 2 * 100}
-                completionValue={props.throttlePosition}
-                greenBarsWhenInRange
-            />
-
+            <div className="h-64">
+                <ProgressBar
+                    height="225px"
+                    width="40px"
+                    isLabelVisible={false}
+                    displayBar
+                    borderRadius="0px"
+                    completedBarBegin={(props.lowerBoundDetentGetter + 1) * 50}
+                    completedBarBeginValue={props.lowerBoundDetentGetter.toFixed(2)}
+                    completedBarEnd={(props.upperBoundDetentGetter + 1) * 50}
+                    completedBarEndValue={props.upperBoundDetentGetter.toFixed(2)}
+                    bgcolor="var(--color-highlight)"
+                    vertical
+                    baseBgColor="var(--color-accent)"
+                    completed={(props.throttlePosition + 1) / 2 * 100}
+                    completionValue={props.throttlePosition}
+                    greenBarsWhenInRange
+                />
+            </div>
             <div className="flex flex-col">
                 {!props.expertMode
                     && (
