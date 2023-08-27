@@ -4,12 +4,12 @@
 
 import { ConsumerSubject, MathUtils, Publisher, Subscription } from '@microsoft/msfs-sdk';
 import { getDisplayIndex } from 'instruments/src/PFD/PFD';
-import { Arinc429Word } from '@flybywiresim/fbw-sdk';
+import { Arinc429Register, Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
 import { PFDSimvars } from './PFDSimvarPublisher';
 import { ArincEventBus } from '../../MsfsAvionicsCommon/ArincEventBus';
 
 export interface Arinc429Values {
-    pitchAr: Arinc429Word;
+    pitchAr: Arinc429WordData;
     rollAr: Arinc429Word;
     altitudeAr: Arinc429Word;
     magTrack: Arinc429Word;
@@ -56,7 +56,7 @@ export interface Arinc429Values {
 export class ArincValueProvider {
     private roll = new Arinc429Word(0);
 
-    private pitch = new Arinc429Word(0);
+    private pitch = Arinc429Register.empty();
 
     private magTrack = new Arinc429Word(0);
 
@@ -124,7 +124,7 @@ export class ArincValueProvider {
         const subscriber = this.bus.getSubscriber<PFDSimvars>();
 
         subscriber.on('pitch').handle((p) => {
-            this.pitch = new Arinc429Word(p);
+            this.pitch.set(p);
             publisher.pub('pitchAr', this.pitch);
         });
         subscriber.on('roll').handle((p) => {

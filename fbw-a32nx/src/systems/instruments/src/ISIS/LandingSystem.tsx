@@ -5,15 +5,11 @@
 import React from 'react';
 
 import { useInteractionSimVar, useSimVar } from '@flybywiresim/fbw-sdk';
-import { LagFilter } from 'instruments/src/ISIS/ISISUtils';
 
 type DeviationIndicatorProps = {
     deviation: number,
     available: boolean
 }
-
-const locLagfilter = new LagFilter(1.5);
-const gsLagfilter = new LagFilter(1.5);
 
 const DeviationIndicator: React.FC<DeviationIndicatorProps> = ({ deviation, available }) => {
     const dots = deviation / 0.4;
@@ -23,28 +19,27 @@ const DeviationIndicator: React.FC<DeviationIndicatorProps> = ({ deviation, avai
 
     return (
         <>
-            <rect x={0} y={0} width={200} height={20} fill="black" />
-            <circle className="StrokeWhite NoFill" cx={17} cy={10} r={3} />
-            <circle className="StrokeWhite NoFill" cx={58.5} cy={10} r={3} />
-            <circle className="StrokeWhite NoFill" cx={141.5} cy={10} r={3} />
-            <circle className="StrokeWhite NoFill" cx={183} cy={10} r={3} />
-            { available && (
-                !(aboveMaximum || belowMinimum)
-            && (// assumes 0.4 deg of deviation per dot and 41.5px distance between dots
-                <g transform={`translate(${(dots * 41.5).toFixed(5)} 0)`}>
-                    <path className="FillMagenta" d="M 84.88 10 v 0.8 l 9.45 6.7 h 11.34 l 9.45 -6.7 v -1.6 l -9.45 -6.7 h -11.34 l -9.45 6.7 z" />
+            <rect x={0} y={0} width={178.26} height={18.326} fill="black" />
+            <circle className="LSCircle NoFill" cx={14.161} cy={9.1625} r={2.9155} />
+            <circle className="LSCircle NoFill" cx={51.646} cy={9.1625} r={2.9155} />
+            <circle className="LSCircle NoFill" cx={126.616} cy={9.1625} r={2.9155} />
+            <circle className="LSCircle NoFill" cx={164.101} cy={9.1625} r={2.9155} />
+            { available && (!(aboveMaximum || belowMinimum)
+            && (// assumes 0.4 deg of deviation per dot and 37.485px distance between dots
+                <g transform={`translate(${(dots * 37.485).toFixed(5)} 0)`}>
+                    <path className="FillMagenta" d="M 75.6 9.1 v 0.8 l 8.3443 6.7 h 10.0132 l 8.3443 -6.7 v -1.6 l -8.3443 -6.7 h -10.0132 l -8.3443 6.7 z" />
                 </g>
             )
-             || belowMinimum
+            || belowMinimum
             && (
-                <path className="FillMagenta" d="M 1 10 v 0.8 l 9.45 6.7 h 5.67 v-15 h -5.67 l -9.45 6.7 z" />
+                <path className="FillMagenta" d="M 0.75 9.1 v 0.8 l 8.3443 6.7 h 5.0066 v -15 h -5.0066 l -8.3443 6.7 z" />
             )
              || aboveMaximum
             && (
-                <path className="FillMagenta" d="M 199 10 v 0.8 l -9.45 6.7 h -5.67 v-15 h 5.67 l 9.45 6.7 z" />
+                <path className="FillMagenta" d="M 177.5 9.1 v 0.8 l -8.3443 6.7 h -5.0066 v -15 h 5.0066 l 8.3443 6.7 z" />
             )
             )}
-            <line x1={100} x2={100} y1={2.5} y2={17.5} strokeWidth={5} stroke="yellow" />
+            <line x1={89.131} x2={89.131} y1={2.499} y2={15.827} className="StrokeYellow" />
         </>
     );
 };
@@ -59,11 +54,11 @@ export const LandingSystem: React.FC = () => {
     return (
         lsActive && (
             <g id="LandingSystem">
-                <g transform="translate(156 380)">
-                    <DeviationIndicator deviation={locLagfilter.step(lsDeviation / 2, 50 / 1000)} available={lsAvailable} />
+                <g transform="translate(166.869 376.62)">
+                    <DeviationIndicator deviation={lsDeviation / 2} available={lsAvailable} />
                 </g>
-                <g transform="translate(343 171) rotate(90 0 0)">
-                    <DeviationIndicator deviation={gsLagfilter.step(gsDeviation, 50 / 1000)} available={gsAvailable} />
+                <g transform="translate(340.133 180.869) rotate(90 0 0)">
+                    <DeviationIndicator deviation={gsDeviation} available={gsAvailable} />
                 </g>
             </g>
         )

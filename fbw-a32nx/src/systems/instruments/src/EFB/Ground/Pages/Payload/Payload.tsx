@@ -113,8 +113,10 @@ export const Payload = () => {
     // TODO FIXME: Move all ZFW and GW calculations to rust - Will be refactored in phase 2
     const [zfw, setZfw] = useState(0);
     const [zfwCg, setZfwCg] = useState(0);
-    const [zfwDesired, setZfwDesired] = useState(0);
-    const [zfwDesiredCg, setZfwDesiredCg] = useState(0);
+    // FIXME boarding refactor phase 2
+    const [zfwDesired, setZfwDesired] = useSimVar('L:A32NX_AIRFRAME_ZFW_DESIRED', 'number', 200);
+    // FIXME boarding refactor phase 2
+    const [zfwDesiredCg, setZfwDesiredCg] = useSimVar('L:A32NX_AIRFRAME_ZFW_CG_PERCENT_MAC_DESIRED', 'number', 200);
     const [gw, setGw] = useState(emptyWeight);
     const [gwDesired, setGwDesired] = useState(emptyWeight);
     const [cg, setCg] = useState(25);
@@ -346,6 +348,7 @@ export const Payload = () => {
                     }}
                 />,
             );
+            return;
         }
         setBoardingStarted(false);
     }, [totalPaxDesired, totalPax, totalCargo, boardingStarted, totalCargoDesired]);
@@ -882,6 +885,11 @@ export const Payload = () => {
                                 {/* <Card className="h-full w-fit" childrenContainerClassName="h-full w-fit rounded-r-none"> */}
                                 {/* */}
                                 {/* </Card> */}
+                            </div>
+                        )}
+                        {gsxPayloadSyncEnabled === 1 && (
+                            <div className="pt-6 pl-2">
+                                {t('Ground.Payload.GSXPayloadSyncEnabled')}
                             </div>
                         )}
                     </div>
