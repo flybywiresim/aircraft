@@ -1,6 +1,6 @@
 import { NXDataStore } from '@flybywiresim/fbw-sdk';
-import { ArmingIndex, FailurePhases, FailuresAtOnceIndex, MaxFailuresIndex, RandomFailureGen } from 'failures/src/RandomFailureGen';
-import { FailuresOrchestrator } from 'failures/src/failures-orchestrator';
+import { ArmingIndex, FailurePhases, FailuresAtOnceIndex, MaxFailuresIndex, RandomFailureGen } from './RandomFailureGen';
+import { FailuresOrchestrator } from './failures-orchestrator';
 
 export class FailureGeneratorTimer {
     private static settingName = 'EFB_FAILURE_GENERATOR_SETTING_TIMER';

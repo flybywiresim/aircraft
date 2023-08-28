@@ -1,10 +1,10 @@
 import { Failure, FailuresOrchestrator } from '@failures';
 import { NXDataStore } from '@flybywiresim/fbw-sdk';
-import { FailureGeneratorAltitude } from 'failures/src/AltitudeFailureGenerator';
-import { FailureGeneratorPerHour } from 'failures/src/PerHourFailureGenerator';
-import { FailureGeneratorSpeed } from 'failures/src/SpeedFailureGenerator';
-import { FailureGeneratorTakeOff } from 'failures/src/TakeOffFailureGenerator';
-import { FailureGeneratorTimer } from 'failures/src/TimerFailureGenerator';
+import { FailureGeneratorAltitude } from './AltitudeFailureGenerator';
+import { FailureGeneratorPerHour } from './PerHourFailureGenerator';
+import { FailureGeneratorSpeed } from './SpeedFailureGenerator';
+import { FailureGeneratorTakeOff } from './TakeOffFailureGenerator';
+import { FailureGeneratorTimer } from './TimerFailureGenerator';
 
 export const ArmingIndex = 0;
 export const FailuresAtOnceIndex = 1;
