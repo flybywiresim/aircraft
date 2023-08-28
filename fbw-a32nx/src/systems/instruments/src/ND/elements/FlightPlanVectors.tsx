@@ -126,9 +126,9 @@ function vectorsGroupLineStyle(group: EfisVectorsGroup): React.SVGAttributes<SVG
     case EfisVectorsGroup.TEMPORARY:
         return { stroke: '#ff0', strokeDasharray: '15 12' };
     case EfisVectorsGroup.SECONDARY:
-        return { stroke: '#888' };
+        return { stroke: '#fff' };
     case EfisVectorsGroup.SECONDARY_DASHED:
-        return { stroke: '#888', strokeDasharray: '15 12' };
+        return { stroke: '#fff', strokeDasharray: '15 12' };
     case EfisVectorsGroup.MISSED:
         return { stroke: '#0ff' };
     case EfisVectorsGroup.ALTERNATE:

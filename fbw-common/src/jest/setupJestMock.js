@@ -13,9 +13,16 @@ global.SimVar.GetSimVarValue = jest.fn((name, _, __) => {
         return 0;
     }
 });
+
 global.SimVar.SetSimVarValue = jest.fn((name, _, value, __) => {
     return new Promise((resolve, _) => {
         values[name] = value;
         resolve();
     });
 });
+
+global.Facilities = {
+    getMagVar(lat, lon) {
+        return 0; // FIXME ship magnetic model
+    }
+};

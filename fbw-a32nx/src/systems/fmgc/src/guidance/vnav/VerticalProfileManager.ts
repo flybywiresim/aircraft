@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { DescentPathBuilder } from '@fmgc/guidance/vnav/descent/DescentPathBuilder';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
@@ -21,6 +25,7 @@ import { ProfileInterceptCalculator } from '@fmgc/guidance/vnav/descent/ProfileI
 import { BaseGeometryProfile } from '@fmgc/guidance/vnav/profile/BaseGeometryProfile';
 import { AircraftToDescentProfileRelation } from '@fmgc/guidance/vnav/descent/AircraftToProfileRelation';
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
+import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import {
     isApproachCheckpoint,
     isSpeedChangePoint,
@@ -55,6 +60,7 @@ export class VerticalProfileManager {
     expediteProfile: SelectedGeometryProfile | undefined;
 
     constructor(
+        private readonly flightPlanService: FlightPlanService,
         private guidanceController: GuidanceController,
         private observer: VerticalProfileComputationParametersObserver,
         private atmosphericConditions: AtmosphericConditions,
@@ -87,7 +93,7 @@ export class VerticalProfileManager {
         const descentWinds = new HeadwindProfile(this.windProfileFactory.getDescentWinds(), this.headingProfile);
 
         const mcduProfile = new NavGeometryProfile(
-            this.guidanceController,
+            this.flightPlanService,
             this.constraintReader,
             this.atmosphericConditions,
         );
@@ -125,7 +131,7 @@ export class VerticalProfileManager {
 
     computeDescentPath(): void {
         const descentProfile = new NavGeometryProfile(
-            this.guidanceController,
+            this.flightPlanService,
             this.constraintReader,
             this.atmosphericConditions,
         );
@@ -183,7 +189,7 @@ export class VerticalProfileManager {
         const { fcuAltitude, cleanSpeed, presentPosition, fuelOnBoard, approachSpeed } = this.observer.get();
 
         const ndProfile = this.fcuModes.isLatAutoControlActive()
-            ? new NavGeometryProfile(this.guidanceController, this.constraintReader, this.atmosphericConditions)
+            ? new NavGeometryProfile(this.flightPlanService, this.constraintReader, this.atmosphericConditions)
             : new SelectedGeometryProfile();
 
         let speedProfile: SpeedProfile;

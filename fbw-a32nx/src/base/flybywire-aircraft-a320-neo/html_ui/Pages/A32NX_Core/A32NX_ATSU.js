@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 function translateAtsuMessageType(type) {
     switch (type) {
         case AtsuCommon.AtsuMessageType.Freetext:
@@ -36,6 +40,7 @@ const lbsToKg = (value) => {
  * Fetch SimBrief OFP data and store on FMCMainDisplay object
  * @param {FMCMainDisplay} mcdu FMCMainDisplay
  * @param {() => void} updateView
+ * @return {Promise.<ISimbriefData>}
  */
 const getSimBriefOfp = (mcdu, updateView, callback = () => {}) => {
     const simBriefUserId = NXDataStore.get("CONFIG_SIMBRIEF_USERID", "");
@@ -49,54 +54,54 @@ const getSimBriefOfp = (mcdu, updateView, callback = () => {}) => {
 
     updateView();
 
-    return SimBriefApi.getSimBriefOfp(simBriefUserId)
+    return Fmgc.SimBriefUplinkAdapter.downloadOfpForUserID(simBriefUserId)
         .then(data => {
-            mcdu.simbrief["units"] = data.params.units;
-            mcdu.simbrief["route"] = data.general.route;
-            mcdu.simbrief["cruiseAltitude"] = data.general.initial_altitude;
-            mcdu.simbrief["originIcao"] = data.origin.icao_code;
-            mcdu.simbrief["originTransAlt"] = parseInt(data.origin.trans_alt, 10);
-            mcdu.simbrief["originTransLevel"] = parseInt(data.origin.trans_level, 10);
-            mcdu.simbrief["destinationIcao"] = data.destination.icao_code;
-            mcdu.simbrief["destinationTransAlt"] = parseInt(data.destination.trans_alt, 10);
-            mcdu.simbrief["destinationTransLevel"] = parseInt(data.destination.trans_level, 10);
-            mcdu.simbrief["blockFuel"] = mcdu.simbrief["units"] === 'kgs' ? data.fuel.plan_ramp : lbsToKg(data.fuel.plan_ramp);
+            mcdu.simbrief["units"] = data.units;
+            mcdu.simbrief["route"] = data.route;
+            mcdu.simbrief["cruiseAltitude"] = data.cruiseAltitude;
+            mcdu.simbrief["originIcao"] = data.origin.icao;
+            mcdu.simbrief["originTransAlt"] = parseInt(data.origin.transAlt, 10);
+            mcdu.simbrief["originTransLevel"] = parseInt(data.origin.transLevel, 10);
+            mcdu.simbrief["destinationIcao"] = data.destination.icao;
+            mcdu.simbrief["destinationTransAlt"] = parseInt(data.destination.transAlt, 10);
+            mcdu.simbrief["destinationTransLevel"] = parseInt(data.destination.transLevel, 10);
+            mcdu.simbrief["blockFuel"] = mcdu.simbrief["units"] === 'kgs' ? data.fuel.planRamp : lbsToKg(data.fuel.planRamp);
             mcdu.simbrief["payload"] = mcdu.simbrief["units"] === 'kgs' ? data.weights.payload : lbsToKg(data.weights.payload);
-            mcdu.simbrief["estZfw"] = mcdu.simbrief["units"] === 'kgs' ? data.weights.est_zfw : lbsToKg(data.weights.est_zfw);
-            mcdu.simbrief["paxCount"] = data.weights.pax_count_actual;
-            mcdu.simbrief["bagCount"] = data.weights.bag_count_actual;
-            mcdu.simbrief["paxWeight"] = data.weights.pax_weight;
-            mcdu.simbrief["bagWeight"] = data.weights.bag_weight;
-            mcdu.simbrief["freight"] = data.weights.freight_added;
+            mcdu.simbrief["estZfw"] = mcdu.simbrief["units"] === 'kgs' ? data.weights.estZeroFuelWeight : lbsToKg(data.weights.estZeroFuelWeight);
+            mcdu.simbrief["paxCount"] = data.weights.passengerCount;
+            mcdu.simbrief["bagCount"] = data.weights.bagCount;
+            mcdu.simbrief["paxWeight"] = data.weights.passengerWeight;
+            mcdu.simbrief["bagWeight"] = data.weights.bagWeight;
+            mcdu.simbrief["freight"] = data.weights.freight;
             mcdu.simbrief["cargo"] = data.weights.cargo;
-            mcdu.simbrief["costIndex"] = data.general.costindex;
-            mcdu.simbrief["navlog"] = data.navlog.fix;
-            mcdu.simbrief["callsign"] = data.atc.callsign;
+            mcdu.simbrief["costIndex"] = data.costIndex;
+            mcdu.simbrief["navlog"] = data.navlog;
+            mcdu.simbrief["callsign"] = data.flightNumber;
             let alternate = data.alternate;
             if (Array.isArray(data.alternate)) {
                 alternate = data.alternate[0];
             }
             mcdu.simbrief["alternateIcao"] = alternate.icao_code;
-            mcdu.simbrief["alternateTransAlt"] = parseInt(alternate.trans_alt, 10);
-            mcdu.simbrief["alternateTransLevel"] = parseInt(alternate.trans_level, 10);
-            mcdu.simbrief["alternateAvgWindDir"] = parseInt(alternate.avg_wind_dir, 10);
-            mcdu.simbrief["alternateAvgWindSpd"] = parseInt(alternate.avg_wind_spd, 10);
-            mcdu.simbrief["avgTropopause"] = data.general.avg_tropopause;
-            mcdu.simbrief["ete"] = data.times.est_time_enroute;
-            mcdu.simbrief["blockTime"] = data.times.est_block;
-            mcdu.simbrief["outTime"] = data.times.est_out;
-            mcdu.simbrief["onTime"] = data.times.est_on;
-            mcdu.simbrief["inTime"] = data.times.est_in;
-            mcdu.simbrief["offTime"] = data.times.est_off;
+            mcdu.simbrief["alternateTransAlt"] = parseInt(alternate.transAlt, 10);
+            mcdu.simbrief["alternateTransLevel"] = parseInt(alternate.transLevel, 10);
+            mcdu.simbrief["alternateAvgWindDir"] = parseInt(alternate.averageWindDirection, 10);
+            mcdu.simbrief["alternateAvgWindSpd"] = parseInt(alternate.averageWindSpeed, 10);
+            mcdu.simbrief["avgTropopause"] = data.averageTropopause;
+            mcdu.simbrief["ete"] = data.times.estTimeEnroute;
+            mcdu.simbrief["blockTime"] = data.times.estBlock;
+            mcdu.simbrief["outTime"] = data.times.estOut;
+            mcdu.simbrief["onTime"] = data.times.estOn;
+            mcdu.simbrief["inTime"] = data.times.estIn;
+            mcdu.simbrief["offTime"] = data.times.estOff;
             mcdu.simbrief["taxiFuel"] = mcdu.simbrief["units"] === 'kgs' ? data.fuel.taxi : lbsToKg(data.fuel.taxi);
-            mcdu.simbrief["tripFuel"] = mcdu.simbrief["units"] === 'kgs' ? data.fuel.enroute_burn : lbsToKg(data.fuel.enroute_burn);
+            mcdu.simbrief["tripFuel"] = mcdu.simbrief["units"] === 'kgs' ? data.fuel.enrouteBurn : lbsToKg(data.fuel.enrouteBurn);
             mcdu.simbrief["sendStatus"] = "DONE";
 
             callback();
 
             updateView();
 
-            return mcdu.simbrief;
+            return data;
         })
         .catch(_err => {
             console.log(_err.message);
@@ -132,10 +137,10 @@ const insertUplink = (mcdu) => {
     mcdu.setFromTo(originIcao, destinationIcao).then(async (result) => {
         if (result) {
             if (originTransAlt > 0) {
-                mcdu.flightPlanManager.setOriginTransitionAltitude(originTransAlt, true);
+                mcdu.flightPlanService.active.performanceData.databaseTransitionAltitude.set(originTransAlt);
             }
             if (destinationTransLevel > 0) {
-                mcdu.flightPlanManager.setDestinationTransitionLevel(destinationTransLevel / 100, true);
+                mcdu.flightPlanService.active.performanceData.databaseTransitionLevel.set(destinationTransLevel / 100);
             }
 
             await mcdu.tryUpdateAltDestination(alternateIcao);

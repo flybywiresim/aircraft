@@ -15,6 +15,10 @@ export class MathUtils {
 
    static RADIANS_TO_DEGREES = 180 / Math.PI;
 
+    static DIV_FEET_TO_NAUTICAL_MILES = 6076.12;
+
+    static DIV_METRES_TO_NAUTICAL_MILES = 1852;
+
    private static optiPow10 = [];
 
    public static clampAngle(a: number) {
@@ -80,6 +84,16 @@ export class MathUtils {
            diff -= 360;
        }
        return diff;
+   }
+
+   public static clampAngle(a: number): Degrees {
+       let angle = a % 360;
+
+       if (angle < 0) {
+           angle += 360;
+       }
+
+       return angle;
    }
 
    public static adjustAngleForTurnDirection(angle: Degrees, turnDirection: TurnDirection) {

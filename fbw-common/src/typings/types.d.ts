@@ -1,4 +1,10 @@
-import { FlightPhaseManager as FlightPhaseManager_ } from "../src/fmgc/src";
+import { FlightPlanService as Service, NavigationDatabaseService as NavigationDatabaseService_ } from "../../../fbw-a32nx/src/systems/fmgc/src";
+import { NavigationDatabase as Database, NavigationDatabaseBackend as DatabaseBackend } from '../../../fbw-a32nx/src/systems/fmgc/src/NavigationDatabase'
+import { FlightPlanIndex as Index } from '../../../fbw-a32nx/src/systems/fmgc/src';
+import { FlightPhaseManager as FlightPhaseManager_ } from "../../../fbw-a32nx/src/systems/fmgc/src";
+import { WaypointFactory as WaypointFactory_ } from "../../../fbw-a32nx/src/systems/fmgc/src";
+import { WaypointEntryUtils as WaypointEntryUtils_ } from "../../../fbw-a32nx/src/systems/fmgc/src";
+import { SimBriefUplinkAdapter as SimBriefUplinkAdapter_ } from "../../../fbw-a32nx/src/systems/fmgc/src";
 
 declare global {
     type NauticalMiles = number;
@@ -49,7 +55,25 @@ declare global {
     }
 
     namespace Fmgc {
+        const FlightPlanService: typeof Service
+
+        const NavigationDatabase: typeof Database
+
+        const NavigationDatabaseBackend: typeof DatabaseBackend
+
+        const NavigationDatabaseService: typeof NavigationDatabaseService_
+
+        const FlightPlanIndex: typeof Index
+
         const FlightPhaseManager: typeof FlightPhaseManager_
+
+        const WaypointFactory: typeof WaypointFactory_
+
+        const WaypointEntryUtils: typeof WaypointEntryUtils_
+
+        const SimBriefUplinkAdapter: typeof SimBriefUplinkAdapter_
+
+        function getFlightPhaseManager(): FlightPhaseManager_
     }
 
 }

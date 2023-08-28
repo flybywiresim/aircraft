@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 class NavSystem extends BaseInstrument {
     constructor() {
         super(...arguments);
@@ -34,11 +38,12 @@ class NavSystem extends BaseInstrument {
         this.reversionaryMode = false;
         this.alwaysUpdateList = new Array();
         this.accumulatedDeltaTime = 0;
+        this.navDatabaseBackend = Fmgc.NavigationDatabaseBackend.Msfs;
     }
-    /** @type {FlightPlanManager} */
-    get flightPlanManager() {
-        return this.currFlightPlanManager;
-    }
+    // TODO: DEPRECATE
+    // get flightPlanManager() {
+    //     return this.currFlightPlanManager;
+    // }
     get instrumentAlias() {
         return null;
     }
@@ -49,13 +54,72 @@ class NavSystem extends BaseInstrument {
         this.contextualMenuElements = this.getChildById("ContextualMenuElements");
         this.menuSlider = this.getChildById("SliderMenu");
         this.menuSliderCursor = this.getChildById("SliderMenuCursor");
-        this.currFlightPlanManager = new Fmgc.FlightPlanManager(this);
-        this.currFlightPlan = new Fmgc.ManagedFlightPlan();
-        this.currFlightPhaseManager = Fmgc.getFlightPhaseManager();
+
+        // FIXME all this stuff should not go in NavSystem... or stuff like the FCU should stop using NavSystem
+        // this.currFlightPlanManager = new Fmgc.FlightPlanManager(this); // TODO: DEPRECATE
+        // this.currFlightPlan = new Fmgc.ManagedFlightPlan(); // TODO: DEPRECATE
+
+        if (this.nodeName.includes('CDU')) {
+            this.currFlightPhaseManager = Fmgc.getFlightPhaseManager();
+
+            this.currFlightPlanService = new Fmgc.FlightPlanService();
+            this.currFlightPlanService.createFlightPlans();
+
+            this.currNavigationDatabaseService = Fmgc.NavigationDatabaseService;
+
+            this.navigationDatabase = new Fmgc.NavigationDatabase(Fmgc.NavigationDatabaseBackend.Msfs);
+            this.currNavigationDatabaseService.activeDatabase = this.navigationDatabase;
+        }
     }
     get flightPhaseManager() {
         return this.currFlightPhaseManager;
     }
+
+    /**
+     * @type {Fmgc.FlightPlanService}
+     */
+    get flightPlanService() {
+        return this.currFlightPlanService;
+    }
+
+    flightPlan(index, alternate) {
+        const plan = index === Fmgc.FlightPlanIndex.Active ? this.flightPlanService.activeOrTemporary : this.flightPlanService.get(index);
+
+        if (alternate) {
+            return plan.alternateFlightPlan;
+        }
+
+        return plan;
+    }
+
+    get navigationDatabaseService() {
+        return this.currNavigationDatabaseService;
+    }
+
+    get v1Speed() {
+        return this.flightPlanService.active.performanceData.v1.get();
+    }
+
+    set v1Speed(value) {
+        this.flightPlanService.active.performanceData.v1.set(value);
+    }
+
+    get vRSpeed() {
+        return this.flightPlanService.active.performanceData.vr.get();
+    }
+
+    set vRSpeed(value) {
+        this.flightPlanService.active.performanceData.vr.set(value);
+    }
+
+    get v2Speed() {
+        return this.flightPlanService.active.performanceData.v2.get();
+    }
+
+    set v2Speed(value) {
+        this.flightPlanService.active.performanceData.v2.set(value);
+    }
+
     disconnectedCallback() {
         super.disconnectedCallback();
     }
