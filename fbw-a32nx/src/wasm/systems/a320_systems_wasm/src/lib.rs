@@ -402,12 +402,6 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
         "radian per second squared",
         0,
     )?
-    .provides_aircraft_variable("NAV SOUND", "Bool", 1)?
-    .provides_aircraft_variable("NAV SOUND", "Bool", 2)?
-    .provides_aircraft_variable("NAV SOUND", "Bool", 3)?
-    .provides_aircraft_variable("NAV SOUND", "Bool", 4)?
-    .provides_aircraft_variable("ADF SOUND", "Bool", 1)?
-    .provides_aircraft_variable("ADF SOUND", "Bool", 2)?
     .provides_aircraft_variable("MARKER SOUND", "Bool", 0)?
     .with_aspect(|builder| {
         builder.copy(
