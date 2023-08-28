@@ -3,6 +3,7 @@ import { NXDataStore } from '@flybywiresim/fbw-sdk';
 import { FailureGeneratorAltitude } from 'failures/src/AltitudeFailureGenerator';
 import { FailureGeneratorPerHour } from 'failures/src/PerHourFailureGenerator';
 import { FailureGeneratorSpeed } from 'failures/src/SpeedFailureGenerator';
+import { FailureGeneratorTakeOff } from 'failures/src/TakeOffFailureGenerator';
 import { FailureGeneratorTimer } from 'failures/src/TimerFailureGenerator';
 // import { failureGeneratorPerHour } from 'failures/src/PerHourFailureGenerator';
 // import { failureGeneratorTimer } from 'failures/src/TimerFailureGenerator';
@@ -25,7 +26,7 @@ export class RandomFailureGen {
         FailureGeneratorSpeed.updateFailure,
         FailureGeneratorPerHour.updateFailure,
         FailureGeneratorTimer.updateFailure,
-        // failureGeneratorTakeOff,
+        FailureGeneratorTakeOff.updateFailure,
     ];
 
     static absoluteTimePrev : number = Date.now();
@@ -70,7 +71,7 @@ export class RandomFailureGen {
     private static failureFlightPhase : FailurePhases;
 
     static getFailureFlightPhase() : FailurePhases {
-        return this.failureFlightPhase;
+        return RandomFailureGen.failureFlightPhase;
     }
 
     static basicDataUpdate() : void {
@@ -78,23 +79,23 @@ export class RandomFailureGen {
         const maxThrottleMode = Math.max(Simplane.getEngineThrottleMode(0), Simplane.getEngineThrottleMode(1));
         const throttleTakeOff = maxThrottleMode === ThrottleMode.FLEX_MCT || maxThrottleMode === ThrottleMode.TOGA;
         if (isOnGround) {
-            if (throttleTakeOff) this.failureFlightPhase = FailurePhases.TAKEOFF;
-            this.failureFlightPhase = FailurePhases.DORMANT;
-        } else if (throttleTakeOff) this.failureFlightPhase = FailurePhases.INITIALCLIMB;
-        else this.failureFlightPhase = FailurePhases.FLIGHT;
+            if (throttleTakeOff) RandomFailureGen.failureFlightPhase = FailurePhases.TAKEOFF;
+            else RandomFailureGen.failureFlightPhase = FailurePhases.DORMANT;
+        } else if (throttleTakeOff) RandomFailureGen.failureFlightPhase = FailurePhases.INITIALCLIMB;
+        else RandomFailureGen.failureFlightPhase = FailurePhases.FLIGHT;
     }
 
     static update(failureOrchestrator : FailuresOrchestrator) {
         const absoluteTime = Date.now();
-        // console.info(`delta : ${(absoluteTime - this.absoluteTimePrev).toString()}`);
-        if (absoluteTime - this.absoluteTimePrev >= 100.0) {
+        // console.info(`delta : ${(absoluteTime - RandomFailureGen.absoluteTimePrev).toString()}`);
+        if (absoluteTime - RandomFailureGen.absoluteTimePrev >= 100.0) {
             // console.info('100ms');
-            this.basicDataUpdate();
-            for (let i = 0; i < this.failureGeneratorsUpdaters.length; i++) {
+            RandomFailureGen.basicDataUpdate();
+            for (let i = 0; i < RandomFailureGen.failureGeneratorsUpdaters.length; i++) {
                 // console.info('Gen');
-                this.failureGeneratorsUpdaters[i](failureOrchestrator);
+                RandomFailureGen.failureGeneratorsUpdaters[i](failureOrchestrator);
             }
-            this.absoluteTimePrev = absoluteTime;
+            RandomFailureGen.absoluteTimePrev = absoluteTime;
         }
     }
 
