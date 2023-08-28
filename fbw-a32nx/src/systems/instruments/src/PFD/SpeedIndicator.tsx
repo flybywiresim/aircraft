@@ -1,5 +1,9 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { ClockEvents, DisplayComponent, FSComponent, NodeReference, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import { Arinc429Word } from '@shared/arinc429';
+import { Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
 import { FmsVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { VerticalTape } from './VerticalTape';
@@ -115,7 +119,7 @@ class VRBugElement extends DisplayComponent<{bus: ArincEventBus}> {
 interface AirspeedIndicatorProps {
     airspeedAcc?: number;
     FWCFlightPhase?: number;
-    altitude?: Arinc429Word;
+    altitude?: Arinc429WordData;
     VLs?: number;
     VMax?: number;
     showBars?: boolean;
@@ -125,8 +129,6 @@ interface AirspeedIndicatorProps {
 
 export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> {
     private speedSub = Subject.create<number>(0);
-
-    private speedTapeOutlineRef: NodeReference<SVGPathElement> = FSComponent.createRef();
 
     private speedTapeElements: NodeReference<SVGGElement> = FSComponent.createRef();
 
@@ -145,6 +147,8 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
     private leftMainGearCompressed: boolean;
 
     private rightMainGearCompressed: boolean;
+
+    private pathSub = Subject.create('');
 
     private setOutline() {
         let airspeedValue: number;
@@ -166,7 +170,7 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
         }
 
         const length = 42.9 + Math.max(Math.max(Math.min(Number.isNaN(airspeedValue) ? 100 : airspeedValue, 72.1), 30) - 30, 0);
-        this.speedTapeOutlineRef.instance.setAttribute('d', `m19.031 38.086v${length}`);
+        this.pathSub.set(`m19.031 38.086v${length}`);
     }
 
     onAfterRender(node: VNode): void {
@@ -184,7 +188,7 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
             }
         });
 
-        pf.on('speedAr').handle((airSpeed) => {
+        pf.on('speedAr').withArinc429Precision(3).handle((airSpeed) => {
             this.airSpeed = airSpeed;
             this.setOutline();
         });
@@ -216,7 +220,6 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
     }
 
     render(): VNode {
-        const length = 42.9 + Math.max(Math.max(Math.min(100, 72.1), 30) - 30, 0);
         return (
 
             <>
@@ -224,14 +227,14 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
 
                     <path id="SpeedTapeBackground" class="TapeBackground" d="m1.9058 123.56v-85.473h17.125v85.473z" />
                     <text id="SpeedFailText" class="Blink9Seconds FontLargest EndAlign Red" x="17.756115" y="83.386398">SPD</text>
-                    <path id="SpeedTapeOutlineRight" ref={this.speedTapeOutlineRef} class="NormalStroke Red" d={`m19.031 38.086v${length}`} />
+                    <path id="SpeedTapeOutlineRight" class="NormalStroke Red" d={this.pathSub} />
 
                 </g>
 
                 <g id="SpeedTapeElementsGroup" ref={this.speedTapeElements}>
                     <path id="SpeedTapeBackground" class="TapeBackground" d="m1.9058 123.56v-85.473h17.125v85.473z" />
                     {/* Outline */}
-                    <path id="SpeedTapeOutlineRight" ref={this.speedTapeOutlineRef} class="NormalStroke White" d={`m19.031 38.086v${length}`} />
+                    <path id="SpeedTapeOutlineRight" class="NormalStroke White" d={this.pathSub} />
                     <VerticalTape
                         tapeValue={this.speedSub}
                         lowerLimit={30}
@@ -350,7 +353,7 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values>();
+        const sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values>();
 
         sub.on('leftMainGearCompressed').whenChanged().handle((g) => {
             this.leftMainGearCompressed = g;
@@ -362,7 +365,7 @@ export class AirspeedIndicatorOfftape extends DisplayComponent<{ bus: ArincEvent
             this.onGround = this.leftMainGearCompressed || g;
         });
 
-        sub.on('speedAr').handle((speed) => {
+        sub.on('speedAr').withArinc429Precision(2).handle((speed) => {
             let airspeedValue: number;
             if (speed.isFailureWarning() || (speed.isNoComputedData() && !this.onGround)) {
                 airspeedValue = NaN;
@@ -507,7 +510,7 @@ class VLsBar extends DisplayComponent<{ bus: ArincEventBus }> {
 
     private airSpeed= new Arinc429Word(0);
 
-    private vls= new Arinc429Word(0);
+    private vls = new Arinc429Word(0);
 
     private fcdc1DiscreteWord1 = new Arinc429Word(0);
 
@@ -846,7 +849,7 @@ interface SpeedStateInfo {
     holdValue: number;
     isSpeedManaged: boolean;
     isMach: boolean;
-    speed: Arinc429Word;
+    speed: Arinc429WordData;
 
   }
 
@@ -1035,7 +1038,7 @@ class SpeedMargins extends DisplayComponent<{ bus: ArincEventBus }> {
                     transform={this.upperMarginTransform}
                 />
                 <path
-                    id="UpperSpeedMargin"
+                    id="LowerSpeedMargin"
                     class="Fill Magenta"
                     d="m19.7 80.5 h 5.3577 v 0.7 h-5.3577 z"
                     visibility={this.lowerSpeedMarginVisibility}

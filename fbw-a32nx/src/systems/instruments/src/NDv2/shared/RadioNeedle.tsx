@@ -1,6 +1,10 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { FSComponent, DisplayComponent, EventBus, Subject, Subscribable, VNode, MappedSubject, ClockEvents } from '@microsoft/msfs-sdk';
 import { EfisNdMode, NavAidMode } from '@shared/NavigationDisplay';
-import { Arinc429WordData } from '@shared/arinc429';
+import { Arinc429WordData } from '@flybywiresim/fbw-sdk';
 import { getSmallestAngle } from 'instruments/src/PFD/PFDUtils';
 import { DmcEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 import { diffAngle } from 'msfs-geo';
@@ -249,7 +253,7 @@ class AdfNeedle extends DisplayComponent<SingleNeedleProps> {
                 break;
             default:
             }
-        });
+        }, true);
     }
 
     render(): VNode | null {

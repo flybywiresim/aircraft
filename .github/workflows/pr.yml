@@ -63,8 +63,10 @@ jobs:
         run: |
           ./scripts/dev-env/run.sh ./scripts/setup.sh
           ./scripts/dev-env/run.sh ./scripts/build.sh --no-tty -j 4
+          rm -rf fbw-a32nx/src
       - name: Generate install.json
         run: |
+          df -h
           ./scripts/dev-env/run.sh node ./scripts/fragment_a32nx.js
 
           cp ./fbw-a32nx/out/build-modules/modules.json ./fbw-a32nx/out/flybywire-aircraft-a320-neo/install.json

@@ -2,7 +2,7 @@
 //  SPDX-License-Identifier: GPL-3.0
 
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { MathUtils } from '@shared/MathUtils';
+import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { AtsuMessage, AtsuMessageSerializationFormat } from '@datalink/common';
 import { DatalinkProviders, OwnAircraft, MaxSearchRange } from './Common';
 import { Vhf } from './VHF';

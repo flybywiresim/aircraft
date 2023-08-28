@@ -127,6 +127,7 @@ impl A380 {
                 context,
                 ElectricalBusType::DirectCurrent(1),
                 vec![
+                    Length::new::<nautical_mile>(0.0),
                     Length::new::<nautical_mile>(10.0),
                     Length::new::<nautical_mile>(20.0),
                     Length::new::<nautical_mile>(40.0),
@@ -135,7 +136,7 @@ impl A380 {
                     Length::new::<nautical_mile>(320.0),
                     Length::new::<nautical_mile>(640.0),
                 ],
-                1,
+                3,
             ),
 
             icing_simulation: Icing::new(context),
@@ -249,6 +250,7 @@ impl Aircraft for A380 {
         self.air_conditioning.update(
             context,
             &self.adirs,
+            &self.adcn,
             [
                 &self.engine_1,
                 &self.engine_2,
@@ -277,6 +279,8 @@ impl Aircraft for A380 {
         self.cds.update();
 
         self.icing_simulation.update(context);
+
+        self.egpwc.update(&self.adirs, self.lgcius.lgciu1());
     }
 }
 impl SimulationElement for A380 {

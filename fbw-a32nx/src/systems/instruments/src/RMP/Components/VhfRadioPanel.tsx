@@ -1,8 +1,11 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import React from 'react';
+import { useSplitSimVar, useInteractionEvent } from '@flybywiresim/fbw-sdk';
 import { StandbyFrequency, TransceiverType } from './StandbyFrequency';
-import { useSplitSimVar } from '../../Common/simVars';
 import { RadioPanelDisplay } from './RadioPanelDisplay';
-import { useInteractionEvent } from '../../Common/hooks';
 
 interface Props {
     /**

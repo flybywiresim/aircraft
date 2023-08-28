@@ -1,7 +1,9 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import React, { FC, useEffect, useState } from 'react';
-import { useSimVar } from '@instruments/common/simVars';
-import { useArinc429Var } from '@instruments/common/arinc429';
-import { usePersistentProperty } from '../../../Common/persistence';
+import { useSimVar, useArinc429Var, usePersistentProperty } from '@flybywiresim/fbw-sdk';
 import { fuelForDisplay, fuelInTanksForDisplay } from '../../Common/FuelFunctions';
 import { Triangle } from '../../Common/Shapes';
 import { PageTitle } from '../../Common/PageTitle';
@@ -79,7 +81,7 @@ export const FuelPage = () => {
                 <Pump x={180} y={215} onBus="DC_2" pumpNumber={5} />
 
                 {/* Quantities */}
-                <text className="TankQuantity" x={74} y={285}>{fuelInTanksForDisplay(tankLeftOuter, unit, fuelWeightPerGallon)}</text>
+                <text className="TankQuantity" x={80} y={285}>{fuelInTanksForDisplay(tankLeftOuter, unit, fuelWeightPerGallon)}</text>
                 <text className="TankQuantity" x={190} y={285}>{fuelInTanksForDisplay(tankLeftInner, unit, fuelWeightPerGallon)}</text>
 
                 { leftOuterInnerValve ? <Triangle x={77} y={319} colour="Green" fill={0} orientation={90} /> : null }
@@ -144,7 +146,7 @@ export const FuelPage = () => {
 
                 {/* Quantities */}
                 <text className="TankQuantity" x={472} y={285}>{fuelInTanksForDisplay(tankRightInner, unit, fuelWeightPerGallon)}</text>
-                <text className="TankQuantity" x={579} y={285}>{fuelInTanksForDisplay(tankRightOuter, unit, fuelWeightPerGallon)}</text>
+                <text className="TankQuantity" x={580} y={285}>{fuelInTanksForDisplay(tankRightOuter, unit, fuelWeightPerGallon)}</text>
                 {rightOuterInnerValve && <Triangle x={522} y={319} colour="Green" fill={0} orientation={-90} />}
 
                 <text className="UnitTemp" x="510" y="355">°C</text>
@@ -234,7 +236,7 @@ const FOB = ({ unit }:FOBProps) => {
 const Wings = () => (
     <>
         {/* Bottom line */}
-        <path className="ThickShape" d="M 15, 255 l 0, 80 l 570, 0 l 0,-80" strokeLinecap="round" />
+        <path className="ThickShape" d="M 15, 255 l 0, 75 l 570, 0 l 0,-75" strokeLinecap="round" />
 
         {/* Top line */}
         <path className="ThickShape" d="M 585, 255 l -124.2, -21.6" />
@@ -244,10 +246,10 @@ const Wings = () => (
         <path className="ThickShape" d="M 355, 215 l 29.9, 5.2" />
 
         {/* Tank lines */}
-        <path className="ThickShape" d="M 80,  244 L 80,  335" />
-        <path className="ThickShape" d="M 245, 215 L 230, 335" />
-        <path className="ThickShape" d="M 355, 215 L 370, 335" />
-        <path className="ThickShape" d="M 520, 244 L 520, 335" />
+        <path className="ThickShape" d="M 85,  243 L 85,  330" />
+        <path className="ThickShape" d="M 245, 215 L 230, 330" />
+        <path className="ThickShape" d="M 355, 215 L 370, 330" />
+        <path className="ThickShape" d="M 515, 243 L 515, 330" />
     </>
 );
 

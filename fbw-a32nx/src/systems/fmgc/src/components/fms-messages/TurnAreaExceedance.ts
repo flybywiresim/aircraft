@@ -1,8 +1,12 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { PILeg } from '@fmgc/guidance/lnav/legs/PI';
 import { Navigation } from '@fmgc/navigation/Navigation';
 import { FMMessage, FMMessageTypes } from '@shared/FmMessages';
-import { Trigger } from '@shared/logic';
+import { Trigger } from '@flybywiresim/fbw-sdk';
 import { FMMessageSelector, FMMessageUpdate } from './FmsMessages';
 
 abstract class TurnAreaExceedance implements FMMessageSelector {

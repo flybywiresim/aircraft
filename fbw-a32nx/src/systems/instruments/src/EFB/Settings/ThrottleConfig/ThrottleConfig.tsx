@@ -1,7 +1,10 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 /* eslint-disable max-len */
 import React, { useEffect, useState } from 'react';
-import { usePersistentNumberProperty } from '@instruments/common/persistence';
-import { useSimVar } from '@instruments/common/simVars';
+import { usePersistentNumberProperty, useSimVar } from '@flybywiresim/fbw-sdk';
 import { ExclamationCircleFill } from 'react-bootstrap-icons';
 import { t } from '../../translation';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
