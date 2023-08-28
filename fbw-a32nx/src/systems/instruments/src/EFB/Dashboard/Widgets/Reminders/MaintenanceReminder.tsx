@@ -28,16 +28,16 @@ const ActiveFailureCard: FC<ActiveFailureCardProps> = ({ ata, name }) => {
             onClick={() => {
                 dispatch(setSearchQuery(name.toUpperCase()));
 
-                const lastFailurePath = findLatestSeenPathname(history, '/failures');
+                const lastFailurePath = findLatestSeenPathname(history, '/failures/failureslist');
 
                 if (!ata) {
-                    history.push('/failures/compact');
+                    history.push('/failures/failureslist/compact');
                 }
 
                 if (!lastFailurePath || lastFailurePath.includes('comfort')) {
-                    history.push(`/failures/comfort/${ata}`);
+                    history.push(`/failures/failureslist/comfort/${ata}`);
                 } else {
-                    history.push('/failures/compact');
+                    history.push('/failures/failureslist/compact');
                 }
             }}
         >
