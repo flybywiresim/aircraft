@@ -62,12 +62,12 @@ pub(super) fn communications(builder: &mut MsfsAspectBuilder) -> Result<(), Box<
     //     VariableToEventWriteOn::Change,
     //     "MARKER_VOLUME_SET",
     // )?;
-    // builder.variable_to_event(
-    //     Variable::aspect("MARKER_IDENT"),
-    //     VariableToEventMapping::EventDataRaw,
-    //     VariableToEventWriteOn::Change,
-    //     "MARKER_SOUND_TOGGLE",
-    // )?;
+    builder.variable_to_event(
+        Variable::aspect("MARKER_IDENT"),
+        VariableToEventMapping::EventDataRaw,
+        VariableToEventWriteOn::Change,
+        "MARKER_SOUND_TOGGLE",
+    )?;
     builder.variable_to_event(
         Variable::aspect("ADF1_IDENT"),
         VariableToEventMapping::EventDataRaw,
