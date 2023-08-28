@@ -1,6 +1,7 @@
 import { Failure, FailuresOrchestrator } from '@failures';
 import { NXDataStore } from '@flybywiresim/fbw-sdk';
 import { FailureGeneratorAltitude } from 'failures/src/AltitudeFailureGenerator';
+import { FailureGeneratorSpeed } from 'failures/src/SpeedFailureGenerator';
 // import { failureGeneratorPerHour } from 'failures/src/PerHourFailureGenerator';
 // import { failureGeneratorTimer } from 'failures/src/TimerFailureGenerator';
 // import { failureGeneratorTakeOff } from 'failures/src/TakeOffFailureGenerator';
@@ -19,7 +20,7 @@ export enum FailurePhases {
 export class RandomFailureGen {
     static failureGeneratorsUpdaters : ((failureOrchestrator : FailuresOrchestrator) => void)[] = [
         FailureGeneratorAltitude.updateFailure,
-        // failureGeneratorSpeed,
+        FailureGeneratorSpeed.updateFailure,
         // failureGeneratorPerHour,
         // failureGeneratorTimer,
         // failureGeneratorTakeOff,

@@ -41,7 +41,6 @@ static updateFailure(failureOrchestrator : FailuresOrchestrator) : void {
     }
 
     const settings : number[] = failureGeneratorSetting.split(',').map(((it) => parseFloat(it)));
-    // const { failureFlightPhase } = RandomFailureGen.basicData();
     const nbGenerator = Math.floor(settings.length / FailureGeneratorAltitude.numberOfSettingsPerGenerator);
     const altitude = Simplane.getAltitude();
     const tempSettings : number[] = Array.from(settings);
