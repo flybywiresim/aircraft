@@ -1,69 +1,76 @@
-import { useEffect, useMemo } from 'react';
-import { useSimVar, usePersistentProperty } from '@flybywiresim/fbw-sdk';
-import {
-    basicData, failureGeneratorCommonFunction,
-    FailurePhases, flatten,
-} from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenUI';
+import { NXDataStore } from '@flybywiresim/fbw-sdk';
+import { ArmingIndex, FailurePhases, FailuresAtOnceIndex, MaxFailuresIndex, RandomFailureGen } from 'failures/src/RandomFailureGen';
+import { FailuresOrchestrator } from 'failures/src/failures-orchestrator';
 
-import { findGeneratorFailures } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelectionUI';
-import { ArmingIndex, FailuresAtOnceIndex, MaxFailuresIndex } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
+export class FailureGeneratorPerHour {
+    private static settingName = 'EFB_FAILURE_GENERATOR_SETTING_PERHOUR';
 
-const settingName = 'EFB_FAILURE_GENERATOR_SETTING_PERHOUR';
-const numberOfSettingsPerGenerator = 4;
-const uniqueGenPrefix = 'C';
-const failureGeneratorArmed :boolean[] = [];
-const FailurePerHourIndex = 3;
+    private static numberOfSettingsPerGenerator = 4;
 
-export const failureGeneratorPerHour = (generatorFailuresGetters : Map<number, string>) => {
-    const [absoluteTime5s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);
-    const { allFailures, activate, activeFailures, totalActiveFailures } = failureGeneratorCommonFunction();
-    const [failureGeneratorSetting, setFailureGeneratorSetting] = usePersistentProperty(settingName, '');
-    const settings : number[] = useMemo<number[]>(() => failureGeneratorSetting.split(',').map(((it) => parseFloat(it))), [failureGeneratorSetting]);
-    const { failureFlightPhase } = basicData();
-    const nbGenerator = useMemo(() => Math.floor(settings.length / numberOfSettingsPerGenerator), [settings]);
+    private static uniqueGenPrefix = 'C';
 
-    useEffect(() => {
+    private static failureGeneratorArmed :boolean[] = [];
+
+    private static timePrev:number = Date.now();
+
+    private static didOnce : boolean = false;
+
+    private static failurePerHourIndex = 3;
+
+    static updateFailure(failureOrchestrator : FailuresOrchestrator) : void {
+        const failureGeneratorSetting = NXDataStore.get(FailureGeneratorPerHour.settingName, '');
+
+        if (!FailureGeneratorPerHour.didOnce) {
+            // console.info(`${FailureGeneratorPerHour.settingName} ${failureGeneratorSetting}`);
+            const generatorNumber = Math.floor(failureGeneratorSetting.split(',').length / FailureGeneratorPerHour.numberOfSettingsPerGenerator);
+            for (let i = 0; i < generatorNumber; i++) FailureGeneratorPerHour.failureGeneratorArmed[i] = false;
+            FailureGeneratorPerHour.didOnce = true;
+            // console.info(`Initialized ${generatorNumber.toString()} generators`);
+        }
+
+        const currentTime = Date.now();
+        const settings : number[] = failureGeneratorSetting.split(',').map(((it) => parseFloat(it)));
+        const nbGenerator = Math.floor(settings.length / FailureGeneratorPerHour.numberOfSettingsPerGenerator);
         const tempSettings : number[] = Array.from(settings);
+
         let change = false;
+
         for (let i = 0; i < nbGenerator; i++) {
-            const chanceSetting = settings[i * numberOfSettingsPerGenerator + FailurePerHourIndex];
-            if (failureGeneratorArmed[i] && chanceSetting > 0) {
+            const chanceSetting = settings[i * FailureGeneratorPerHour.numberOfSettingsPerGenerator + FailureGeneratorPerHour.failurePerHourIndex];
+            if (FailureGeneratorPerHour.failureGeneratorArmed[i] && chanceSetting > 0) {
                 const chancePerSecond = chanceSetting / 3600;
                 const rollDice = Math.random();
-                if (rollDice < chancePerSecond * 5) {
-                    const numberOfFailureToActivate = Math.min(settings[i * numberOfSettingsPerGenerator + FailuresAtOnceIndex],
-                        settings[i * numberOfSettingsPerGenerator + MaxFailuresIndex] - totalActiveFailures);
+                // console.info(`timeStep:${(currentTime - FailureGeneratorPerHour.timePrev).toString()} dice:${rollDice.toString()} chancePerSec:${chancePerSecond.toString()}`);
+                if (rollDice < chancePerSecond * (currentTime - FailureGeneratorPerHour.timePrev) / 1000) {
+                    // console.info('Generator failure triggered');
+                    const activeFailures = failureOrchestrator.getActiveFailures();
+                    const numberOfFailureToActivate = Math.min(settings[i * FailureGeneratorPerHour.numberOfSettingsPerGenerator + FailuresAtOnceIndex],
+                        settings[i * FailureGeneratorPerHour.numberOfSettingsPerGenerator + MaxFailuresIndex] - activeFailures.size);
                     if (numberOfFailureToActivate > 0) {
-                        activateRandomFailure(findGeneratorFailures(allFailures, generatorFailuresGetters, uniqueGenPrefix + i.toString()),
-                            activate, activeFailures, numberOfFailureToActivate);
-
-                        failureGeneratorArmed[i] = false;
+                        RandomFailureGen.activateRandomFailure(RandomFailureGen.getGeneratorFailurePool(failureOrchestrator, FailureGeneratorPerHour.uniqueGenPrefix + i.toString()),
+                            failureOrchestrator, activeFailures, numberOfFailureToActivate);
+                        FailureGeneratorPerHour.failureGeneratorArmed[i] = false;
                         change = true;
-                        if (tempSettings[i * numberOfSettingsPerGenerator + ArmingIndex] === 1) tempSettings[i * numberOfSettingsPerGenerator + ArmingIndex] = 0;
+                        if (tempSettings[i * FailureGeneratorPerHour.numberOfSettingsPerGenerator + ArmingIndex] === 1) {
+                            tempSettings[i * FailureGeneratorPerHour.numberOfSettingsPerGenerator + ArmingIndex] = 0;
+                        }
                     }
                 }
             }
-        }
-        if (change) {
-            setFailureGeneratorSetting(flatten(tempSettings));
-        }
-    }, [absoluteTime5s]);
 
-    useEffect(() => {
-        for (let i = 0; i < nbGenerator; i++) {
-            if (!failureGeneratorArmed[i]) {
-                if ((settings[i * numberOfSettingsPerGenerator + ArmingIndex] === 1
-                    || (settings[i * numberOfSettingsPerGenerator + ArmingIndex] === 2 && failureFlightPhase === FailurePhases.FLIGHT)
-                    || settings[i * numberOfSettingsPerGenerator + ArmingIndex] === 3)) {
-                    failureGeneratorArmed[i] = true;
+            if (!FailureGeneratorPerHour.failureGeneratorArmed[i]) {
+                if ((settings[i * FailureGeneratorPerHour.numberOfSettingsPerGenerator + ArmingIndex] === 1
+                    || (settings[i * FailureGeneratorPerHour.numberOfSettingsPerGenerator + ArmingIndex] === 2 && RandomFailureGen.getFailureFlightPhase() === FailurePhases.FLIGHT)
+                    || settings[i * FailureGeneratorPerHour.numberOfSettingsPerGenerator + ArmingIndex] === 3)) {
+                    FailureGeneratorPerHour.failureGeneratorArmed[i] = true;
+                    // console.info('Generator Armed');
                 }
             } else
-            if (settings[i * numberOfSettingsPerGenerator + ArmingIndex] === 0) failureGeneratorArmed[i] = false;
+            if (settings[i * FailureGeneratorPerHour.numberOfSettingsPerGenerator + ArmingIndex] === 0) FailureGeneratorPerHour.failureGeneratorArmed[i] = false;
         }
-    }, [absoluteTime5s]);
-
-    useEffect(() => {
-        const generatorNumber = Math.floor(failureGeneratorSetting.split(',').length / numberOfSettingsPerGenerator);
-        for (let i = 0; i < generatorNumber; i++) failureGeneratorArmed[i] = false;
-    }, []);
-};
+        if (change) {
+            NXDataStore.set(FailureGeneratorPerHour.settingName, RandomFailureGen.flatten(tempSettings));
+        }
+        FailureGeneratorPerHour.timePrev = currentTime;
+    }
+}

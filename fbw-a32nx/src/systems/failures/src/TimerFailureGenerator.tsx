@@ -17,19 +17,19 @@ export class FailureGeneratorTimer {
 
     private static didOnce : boolean = false;
 
-    private static DelayMinIndex = 3;
+    private static delayMinIndex = 3;
 
-    private static DelayMaxIndex = 4;
+    private static delayMaxIndex = 4;
 
     static updateFailure(failureOrchestrator : FailuresOrchestrator) : void {
         const failureGeneratorSetting = NXDataStore.get(FailureGeneratorTimer.settingName, '');
 
         if (!FailureGeneratorTimer.didOnce) {
-            console.info(`${FailureGeneratorTimer.settingName} ${failureGeneratorSetting}`);
+            // console.info(`${FailureGeneratorTimer.settingName} ${failureGeneratorSetting}`);
             const generatorNumber = Math.floor(failureGeneratorSetting.split(',').length / FailureGeneratorTimer.numberOfSettingsPerGenerator);
             for (let i = 0; i < generatorNumber; i++) FailureGeneratorTimer.failureGeneratorArmed[i] = false;
             FailureGeneratorTimer.didOnce = true;
-            console.info(`Initialized ${generatorNumber.toString()} generators`);
+            // console.info(`Initialized ${generatorNumber.toString()} generators`);
         }
 
         const settings : number[] = failureGeneratorSetting.split(',').map(((it) => parseFloat(it)));
@@ -40,13 +40,13 @@ export class FailureGeneratorTimer {
         let change = false;
 
         for (let i = 0; i < nbGenerator; i++) {
-            const timerMax = settings[i * FailureGeneratorTimer.numberOfSettingsPerGenerator + FailureGeneratorTimer.DelayMaxIndex] * 1000;
-            const timerMin = settings[i * FailureGeneratorTimer.numberOfSettingsPerGenerator + FailureGeneratorTimer.DelayMinIndex] * 1000;
-            console.info(`time:${(currentTime - FailureGeneratorTimer.failureStartTime[i]).toString()} min:${timerMin.toString()} max:${timerMax.toString()}`);
+            const timerMax = settings[i * FailureGeneratorTimer.numberOfSettingsPerGenerator + FailureGeneratorTimer.delayMaxIndex] * 1000;
+            const timerMin = settings[i * FailureGeneratorTimer.numberOfSettingsPerGenerator + FailureGeneratorTimer.delayMinIndex] * 1000;
+            // console.info(`time:${(currentTime - FailureGeneratorTimer.failureStartTime[i]).toString()} min:${timerMin.toString()} max:${timerMax.toString()}`);
             if (FailureGeneratorTimer.failureGeneratorArmed[i]) {
                 const failureDelay = timerMin + FailureGeneratorTimer.rolledDice[i] * (timerMax - timerMin);
                 if (currentTime > FailureGeneratorTimer.failureStartTime[i] + failureDelay) {
-                    console.info('Generator failure triggered');
+                    // console.info('Generator failure triggered');
                     const activeFailures = failureOrchestrator.getActiveFailures();
                     const numberOfFailureToActivate = Math.min(settings[i * FailureGeneratorTimer.numberOfSettingsPerGenerator + FailuresAtOnceIndex],
                         settings[i * FailureGeneratorTimer.numberOfSettingsPerGenerator + MaxFailuresIndex] - activeFailures.size);
@@ -69,7 +69,7 @@ export class FailureGeneratorTimer {
                     FailureGeneratorTimer.failureGeneratorArmed[i] = true;
                     FailureGeneratorTimer.rolledDice[i] = Math.random();
                     FailureGeneratorTimer.failureStartTime[i] = currentTime;
-                    console.info(`Generator Armed with roll ${FailureGeneratorTimer.rolledDice[i].toString()}`);
+                    // console.info(`Generator Armed with roll ${FailureGeneratorTimer.rolledDice[i].toString()}`);
                 }
             } else
             if (settings[i * FailureGeneratorTimer.numberOfSettingsPerGenerator + ArmingIndex] === 0) FailureGeneratorTimer.failureGeneratorArmed[i] = false;
