@@ -41,6 +41,7 @@
 1. [EFB/FWC] Auto Call Outs selectable - @tracernz (Mike)
 1. [FWC] Added "twenty five hundred" and "two thousand" callouts - @tracernz (Mike)
 1. [FMS] Load procedures that reference a runway correctly - @tracernz (Mike)
+1. [FMS] Use station declination when appropriate for fix info and place/bearing radials - @tracernz (Mike)
 
 ## 0.10.0
 

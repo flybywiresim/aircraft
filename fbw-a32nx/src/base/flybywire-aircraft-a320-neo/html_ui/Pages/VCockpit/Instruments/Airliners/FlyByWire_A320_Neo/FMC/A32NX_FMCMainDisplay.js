@@ -4418,9 +4418,9 @@ class FMCMainDisplay extends BaseAirliners {
             throw NXSystemMessages.entryOutOfRange;
         }
         const place1 = await this.parsePlace(pbx[1]);
-        const magVar1 = Facilities.getMagVar(place1.infos.coordinates.lat, place1.infos.coordinates.long);
+        const magVar1 = A32NX_Util.getRadialMagVar(place1);
         const place2 = await this.parsePlace(pbx[3]);
-        const magVar2 = Facilities.getMagVar(place2.infos.coordinates.lat, place2.infos.coordinates.long);
+        const magVar2 = A32NX_Util.getRadialMagVar(place2);
 
         return [place1, A32NX_Util.magneticToTrue(brg1, magVar1), place2, A32NX_Util.magneticToTrue(brg2, magVar2)];
     }
@@ -4459,7 +4459,7 @@ class FMCMainDisplay extends BaseAirliners {
         }
         if (this.isPlaceFormat(place)) {
             const wp = await this.parsePlace(place);
-            const magVar = Facilities.getMagVar(wp.infos.coordinates.lat, wp.infos.coordinates.long);
+            const magVar = A32NX_Util.getRadialMagVar(wp);
             return [wp, A32NX_Util.magneticToTrue(brg, magVar), dist];
         }
         throw NXSystemMessages.formatError;

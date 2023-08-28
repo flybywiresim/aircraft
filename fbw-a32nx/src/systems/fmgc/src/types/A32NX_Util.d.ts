@@ -44,7 +44,9 @@ declare global {
 
         function getIsaTemp(alt?: Feet): number;
 
-        function getIsaTempDeviation(alt?: Feet, sat?: Celsius): Celsius
+        function getIsaTempDeviation(alt?: Feet, sat?: Celsius): Celsius;
+
+        function getRadialMagVar(wp: WayPoint): number;
 
         class UpdateThrottler {
             constructor(intervalMs: number);
