@@ -52,7 +52,7 @@ export const MaintenanceReminder = () => {
     const { allFailures, activeFailures } = useFailuresOrchestrator();
 
     return (
-        <RemindersSection title={t('Dashboard.ImportantInformation.Maintenance.Title')} pageLinkPath="/failures">
+        <RemindersSection title={t('Dashboard.ImportantInformation.Maintenance.Title')} pageLinkPath="/failures/failureslist">
             <div className="flex flex-row flex-wrap">
                 {Array
                     .from(activeFailures)
