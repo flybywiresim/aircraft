@@ -334,12 +334,6 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_named_variable("FSDT_GSX_NUMPASSENGERS_DEBOARDING_TOTAL")?
     .provides_named_variable("FSDT_GSX_BOARDING_CARGO_PERCENT")?
     .provides_named_variable("FSDT_GSX_DEBOARDING_CARGO_PERCENT")?
-    .provides_aircraft_variable("NAV SOUND", "Bool", 1)?
-    .provides_aircraft_variable("NAV SOUND", "Bool", 2)?
-    .provides_aircraft_variable("NAV SOUND", "Bool", 3)?
-    .provides_aircraft_variable("NAV SOUND", "Bool", 4)?
-    .provides_aircraft_variable("ADF SOUND", "Bool", 1)?
-    .provides_aircraft_variable("ADF SOUND", "Bool", 2)?
     .provides_aircraft_variable("MARKER SOUND", "Bool", 0)?
     .with_aspect(|builder| {
         builder.copy(
