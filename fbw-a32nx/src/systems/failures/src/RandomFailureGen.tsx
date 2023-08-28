@@ -5,10 +5,6 @@ import { FailureGeneratorPerHour } from 'failures/src/PerHourFailureGenerator';
 import { FailureGeneratorSpeed } from 'failures/src/SpeedFailureGenerator';
 import { FailureGeneratorTakeOff } from 'failures/src/TakeOffFailureGenerator';
 import { FailureGeneratorTimer } from 'failures/src/TimerFailureGenerator';
-// import { failureGeneratorPerHour } from 'failures/src/PerHourFailureGenerator';
-// import { failureGeneratorTimer } from 'failures/src/TimerFailureGenerator';
-// import { failureGeneratorTakeOff } from 'failures/src/TakeOffFailureGenerator';
-// import { failureGeneratorSpeed } from 'failures/src/SpeedFailureGenerator';
 
 export const ArmingIndex = 0;
 export const FailuresAtOnceIndex = 1;
