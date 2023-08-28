@@ -1,119 +1,81 @@
-import { useEffect, useMemo } from 'react';
-import { useSimVar, usePersistentProperty } from '@flybywiresim/fbw-sdk';
-import {
-    activateRandomFailure, basicData, FailureGenContext, FailureGenData, failureGeneratorCommonFunction,
-    FailurePhases, flatten, setNewSetting,
-} from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenUI';
-import { t } from 'instruments/src/EFB/translation';
-import { findGeneratorFailures } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelectionUI';
-import { FailureGeneratorSingleSetting } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorSettingsUI';
-import { ArmingIndex, FailuresAtOnceIndex, MaxFailuresIndex } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
+import { NXDataStore } from '@flybywiresim/fbw-sdk';
+import { ArmingIndex, FailurePhases, FailuresAtOnceIndex, MaxFailuresIndex, RandomFailureGen } from 'failures/src/RandomFailureGen';
+import { FailuresOrchestrator } from 'failures/src/failures-orchestrator';
 
-const settingName = 'EFB_FAILURE_GENERATOR_SETTING_TIMER';
-const additionalSetting = [2, 1, 2, 300, 600];
-const numberOfSettingsPerGenerator = 5;
-const uniqueGenPrefix = 'D';
-const failureGeneratorArmed :boolean[] = [];
-const failureStartTime:number[] = [];
-const genName = 'Timer';
-const alias = () => t('Failures.Generators.GenTimer');
-const disableTakeOffRearm = false;
-const rolledDice:number[] = [];
+export class FailureGeneratorTimer {
+    private static settingName = 'EFB_FAILURE_GENERATOR_SETTING_TIMER';
 
-const DelayMinIndex = 3;
-const DelayMaxIndex = 4;
+    private static numberOfSettingsPerGenerator = 5;
 
-export const failureGenConfigTimer : ()=>FailureGenData = () => {
-    const [setting, setSetting] = usePersistentProperty(settingName);
-    const settings = useMemo(() => {
-        const splitString = setting?.split(',');
-        if (splitString) return splitString.map(((it : string) => parseFloat(it)));
-        return [];
-    }, [setting]);
-    return {
-        setSetting,
-        settings,
-        numberOfSettingsPerGenerator,
-        uniqueGenPrefix,
-        additionalSetting,
-        onErase,
-        failureGeneratorArmed,
-        genName,
-        generatorSettingComponents,
-        alias,
-        disableTakeOffRearm,
-    };
-};
+    private static uniqueGenPrefix = 'D';
 
-const onErase = (genNumber : number) => {
-    failureStartTime.splice(genNumber, 1);
-    rolledDice.splice(genNumber, 1);
-};
+    private static failureGeneratorArmed :boolean[] = [];
 
-const generatorSettingComponents = (genNumber: number, generatorSettings : FailureGenData, failureGenContext : FailureGenContext) => {
-    const settings = generatorSettings.settings;
-    const settingTable = [
-        FailureGeneratorSingleSetting(t('Failures.Generators.DelayAfterArmingMin'), t('Failures.Generators.seconds'), 0, settings[genNumber * numberOfSettingsPerGenerator + DelayMaxIndex],
-            settings[genNumber * numberOfSettingsPerGenerator + DelayMinIndex], 1,
-            setNewSetting, generatorSettings, genNumber, DelayMinIndex, failureGenContext),
-        FailureGeneratorSingleSetting(t('Failures.Generators.DelayAfterArmingMax'), t('Failures.Generators.seconds'), settings[genNumber * numberOfSettingsPerGenerator + DelayMinIndex], 10000,
-            settings[genNumber * numberOfSettingsPerGenerator + DelayMaxIndex], 1,
-            setNewSetting, generatorSettings, genNumber, DelayMaxIndex, failureGenContext),
-    ];
-    return settingTable;
-};
+    private static failureStartTime:number[] = [];
 
-export const failureGeneratorTimer = (generatorFailuresGetters : Map<number, string>) => {
-    const [absoluteTime1s] = useSimVar('E:ABSOLUTE TIME', 'seconds', 1000);
-    const { allFailures, activate, activeFailures, totalActiveFailures } = failureGeneratorCommonFunction();
-    const [failureGeneratorSetting, setFailureGeneratorSetting] = usePersistentProperty(settingName, '');
-    const settings : number[] = useMemo<number[]>(() => failureGeneratorSetting.split(',').map(((it) => parseFloat(it))), [failureGeneratorSetting]);
-    const nbGenerator = useMemo(() => Math.floor(settings.length / numberOfSettingsPerGenerator), [settings]);
+    private static rolledDice:number[] = [];
 
-    const { failureFlightPhase } = basicData();
+    private static didOnce : boolean = false;
 
-    useEffect(() => {
+    private static DelayMinIndex = 3;
+
+    private static DelayMaxIndex = 4;
+
+    static updateFailure(failureOrchestrator : FailuresOrchestrator) : void {
+        const failureGeneratorSetting = NXDataStore.get(FailureGeneratorTimer.settingName, '');
+
+        if (!FailureGeneratorTimer.didOnce) {
+            console.info(`${FailureGeneratorTimer.settingName} ${failureGeneratorSetting}`);
+            const generatorNumber = Math.floor(failureGeneratorSetting.split(',').length / FailureGeneratorTimer.numberOfSettingsPerGenerator);
+            for (let i = 0; i < generatorNumber; i++) FailureGeneratorTimer.failureGeneratorArmed[i] = false;
+            FailureGeneratorTimer.didOnce = true;
+            console.info(`Initialized ${generatorNumber.toString()} generators`);
+        }
+
+        const settings : number[] = failureGeneratorSetting.split(',').map(((it) => parseFloat(it)));
+        const nbGenerator = Math.floor(settings.length / FailureGeneratorTimer.numberOfSettingsPerGenerator);
         const tempSettings : number[] = Array.from(settings);
+        const currentTime = Date.now();
+
         let change = false;
+
         for (let i = 0; i < nbGenerator; i++) {
-            if (failureGeneratorArmed[i]) {
-                const failureDelay = (settings[i * numberOfSettingsPerGenerator + DelayMinIndex]
-                        + rolledDice[i] * (settings[i * numberOfSettingsPerGenerator + DelayMaxIndex] - settings[i * numberOfSettingsPerGenerator + DelayMinIndex]));
-                if (absoluteTime1s > failureStartTime[i] + failureDelay) {
-                    const numberOfFailureToActivate = Math.min(settings[i * numberOfSettingsPerGenerator + FailuresAtOnceIndex],
-                        settings[i * numberOfSettingsPerGenerator + MaxFailuresIndex] - totalActiveFailures);
+            const timerMax = settings[i * FailureGeneratorTimer.numberOfSettingsPerGenerator + FailureGeneratorTimer.DelayMaxIndex] * 1000;
+            const timerMin = settings[i * FailureGeneratorTimer.numberOfSettingsPerGenerator + FailureGeneratorTimer.DelayMinIndex] * 1000;
+            console.info(`time:${(currentTime - FailureGeneratorTimer.failureStartTime[i]).toString()} min:${timerMin.toString()} max:${timerMax.toString()}`);
+            if (FailureGeneratorTimer.failureGeneratorArmed[i]) {
+                const failureDelay = timerMin + FailureGeneratorTimer.rolledDice[i] * (timerMax - timerMin);
+                if (currentTime > FailureGeneratorTimer.failureStartTime[i] + failureDelay) {
+                    console.info('Generator failure triggered');
+                    const activeFailures = failureOrchestrator.getActiveFailures();
+                    const numberOfFailureToActivate = Math.min(settings[i * FailureGeneratorTimer.numberOfSettingsPerGenerator + FailuresAtOnceIndex],
+                        settings[i * FailureGeneratorTimer.numberOfSettingsPerGenerator + MaxFailuresIndex] - activeFailures.size);
                     if (numberOfFailureToActivate > 0) {
-                        activateRandomFailure(findGeneratorFailures(allFailures, generatorFailuresGetters, uniqueGenPrefix + i.toString()),
-                            activate, activeFailures, numberOfFailureToActivate);
-                        failureGeneratorArmed[i] = false;
+                        RandomFailureGen.activateRandomFailure(RandomFailureGen.getGeneratorFailurePool(failureOrchestrator, FailureGeneratorTimer.uniqueGenPrefix + i.toString()),
+                            failureOrchestrator, activeFailures, numberOfFailureToActivate);
+                        FailureGeneratorTimer.failureGeneratorArmed[i] = false;
                         change = true;
-                        if (tempSettings[i * numberOfSettingsPerGenerator + ArmingIndex] === 1) tempSettings[i * numberOfSettingsPerGenerator + ArmingIndex] = 0;
+                        if (tempSettings[i * FailureGeneratorTimer.numberOfSettingsPerGenerator + ArmingIndex] === 1) {
+                            tempSettings[i * FailureGeneratorTimer.numberOfSettingsPerGenerator + ArmingIndex] = 0;
+                        }
                     }
                 }
             }
-        }
-        if (change) {
-            setFailureGeneratorSetting(flatten(tempSettings));
-        }
-    }, [absoluteTime1s]);
 
-    useEffect(() => {
-        for (let i = 0; i < nbGenerator; i++) {
-            if (!failureGeneratorArmed[i]) {
-                if (settings[i * numberOfSettingsPerGenerator + ArmingIndex] === 1
-                    || (failureFlightPhase === FailurePhases.TAKEOFF && settings[i * numberOfSettingsPerGenerator + ArmingIndex] === 2)
-                    || settings[i * numberOfSettingsPerGenerator + ArmingIndex] === 3) {
-                    failureGeneratorArmed[i] = true;
-                    rolledDice[i] = Math.random();
-                    failureStartTime[i] = absoluteTime1s;
+            if (!FailureGeneratorTimer.failureGeneratorArmed[i]) {
+                if (settings[i * FailureGeneratorTimer.numberOfSettingsPerGenerator + ArmingIndex] === 1
+                || (RandomFailureGen.getFailureFlightPhase() === FailurePhases.TAKEOFF && settings[i * FailureGeneratorTimer.numberOfSettingsPerGenerator + ArmingIndex] === 2)
+                || settings[i * FailureGeneratorTimer.numberOfSettingsPerGenerator + ArmingIndex] === 3) {
+                    FailureGeneratorTimer.failureGeneratorArmed[i] = true;
+                    FailureGeneratorTimer.rolledDice[i] = Math.random();
+                    FailureGeneratorTimer.failureStartTime[i] = currentTime;
+                    console.info(`Generator Armed with roll ${FailureGeneratorTimer.rolledDice[i].toString()}`);
                 }
             } else
-            if (settings[i * numberOfSettingsPerGenerator + ArmingIndex] === 0) failureGeneratorArmed[i] = false;
+            if (settings[i * FailureGeneratorTimer.numberOfSettingsPerGenerator + ArmingIndex] === 0) FailureGeneratorTimer.failureGeneratorArmed[i] = false;
         }
-    }, [absoluteTime1s]);
-
-    useEffect(() => {
-        const generatorNumber = Math.floor(failureGeneratorSetting.split(',').length / numberOfSettingsPerGenerator);
-        for (let i = 0; i < generatorNumber; i++) failureGeneratorArmed[i] = false;
-    }, []);
-};
+        if (change) {
+            NXDataStore.set(FailureGeneratorTimer.settingName, RandomFailureGen.flatten(tempSettings));
+        }
+    }
+}

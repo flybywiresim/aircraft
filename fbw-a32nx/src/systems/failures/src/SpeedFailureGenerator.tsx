@@ -26,9 +26,8 @@ export class FailureGeneratorSpeed {
     private static resetMargin = 5;
 
     static updateFailure(failureOrchestrator : FailuresOrchestrator) : void {
-    // const [failureGeneratorSetting, setFailureGeneratorSetting] = usePersistentProperty(this.settingName, '');
         const failureGeneratorSetting = NXDataStore.get(FailureGeneratorSpeed.settingName, '');
-        // const { generatorFailuresGetters } = allGeneratorFailures(failureOrchestrator.getAllFailures());
+
         if (!FailureGeneratorSpeed.didOnce) {
             console.info(`${FailureGeneratorSpeed.settingName} ${failureGeneratorSetting}`);
             const generatorNumber = Math.floor(failureGeneratorSetting.split(',').length / FailureGeneratorSpeed.numberOfSettingsPerGenerator);
@@ -51,17 +50,13 @@ export class FailureGeneratorSpeed {
         // console.info(altitude.toString());
 
         for (let i = 0; i < nbGenerator; i++) {
-            const speedMax = settings[i * FailureGeneratorSpeed.numberOfSettingsPerGenerator + FailureGeneratorSpeed.SpeedMaxIndex] * 100;
-            const speedMin = settings[i * FailureGeneratorSpeed.numberOfSettingsPerGenerator + FailureGeneratorSpeed.SpeedMinIndex] * 100;
+            const speedMax = settings[i * FailureGeneratorSpeed.numberOfSettingsPerGenerator + FailureGeneratorSpeed.SpeedMaxIndex];
+            const speedMin = settings[i * FailureGeneratorSpeed.numberOfSettingsPerGenerator + FailureGeneratorSpeed.SpeedMinIndex];
             const speedCondition = settings[i * FailureGeneratorSpeed.numberOfSettingsPerGenerator + FailureGeneratorSpeed.SpeedConditionIndex];
             console.info(`alt:${altitude.toString()} min:${speedMin.toString()} max:${speedMax.toString()} mode:${speedCondition.toString()}`);
             if (FailureGeneratorSpeed.failureGeneratorArmed[i]) {
-                const failureSpeed = (settings[i * FailureGeneratorSpeed.numberOfSettingsPerGenerator + FailureGeneratorSpeed.SpeedMinIndex]
-                        + FailureGeneratorSpeed.rolledDice[i] * (settings[i * FailureGeneratorSpeed.numberOfSettingsPerGenerator + FailureGeneratorSpeed.SpeedMaxIndex]
-                            - settings[i * FailureGeneratorSpeed.numberOfSettingsPerGenerator + FailureGeneratorSpeed.SpeedMinIndex]));
-                if ((gs > failureSpeed && settings[i * FailureGeneratorSpeed.numberOfSettingsPerGenerator + FailureGeneratorSpeed.SpeedConditionIndex] === 0)
-                        || (gs < failureSpeed && settings[i * FailureGeneratorSpeed.numberOfSettingsPerGenerator + FailureGeneratorSpeed.SpeedConditionIndex] === 1)
-                ) {
+                const failureSpeed = (speedMin + FailureGeneratorSpeed.rolledDice[i] * (speedMax - speedMin));
+                if ((gs > failureSpeed && speedCondition === 0) || (gs < failureSpeed && speedCondition === 1)) {
                     const activeFailures = failureOrchestrator.getActiveFailures();
                     const numberOfFailureToActivate = Math.min(settings[i * FailureGeneratorSpeed.numberOfSettingsPerGenerator + FailuresAtOnceIndex],
                         settings[i * FailureGeneratorSpeed.numberOfSettingsPerGenerator + MaxFailuresIndex] - activeFailures.size);
@@ -87,10 +82,8 @@ export class FailureGeneratorSpeed {
             }
 
             if (!FailureGeneratorSpeed.failureGeneratorArmed[i]) {
-                if (((gs < settings[i * FailureGeneratorSpeed.numberOfSettingsPerGenerator + FailureGeneratorSpeed.SpeedMinIndex] - FailureGeneratorSpeed.resetMargin
-                    && settings[i * FailureGeneratorSpeed.numberOfSettingsPerGenerator + FailureGeneratorSpeed.SpeedConditionIndex] === 0)
-                || (gs > settings[i * FailureGeneratorSpeed.numberOfSettingsPerGenerator + FailureGeneratorSpeed.SpeedMaxIndex] + FailureGeneratorSpeed.resetMargin
-                    && settings[i * FailureGeneratorSpeed.numberOfSettingsPerGenerator + FailureGeneratorSpeed.SpeedConditionIndex] === 1))
+                if (((gs < speedMin - FailureGeneratorSpeed.resetMargin && speedCondition === 0)
+                || (gs > speedMax + FailureGeneratorSpeed.resetMargin && speedCondition === 1))
                 && !FailureGeneratorSpeed.doNotRepeatUntilTakeOff[i]) {
                     FailureGeneratorSpeed.failureGeneratorArmed[i] = true;
                     FailureGeneratorSpeed.rolledDice[i] = Math.random();

@@ -26,9 +26,8 @@ private static AltitudeMaxIndex = 5;
 private static resetMargin = 100;
 
 static updateFailure(failureOrchestrator : FailuresOrchestrator) : void {
-    // const [failureGeneratorSetting, setFailureGeneratorSetting] = usePersistentProperty(this.settingName, '');
     const failureGeneratorSetting = NXDataStore.get(FailureGeneratorAltitude.settingName, '');
-    // const { generatorFailuresGetters } = allGeneratorFailures(failureOrchestrator.getAllFailures());
+
     if (!FailureGeneratorAltitude.didOnce) {
         console.info(`${FailureGeneratorAltitude.settingName} ${failureGeneratorSetting}`);
         const generatorNumber = Math.floor(failureGeneratorSetting.split(',').length / FailureGeneratorAltitude.numberOfSettingsPerGenerator);
