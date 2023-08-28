@@ -58,7 +58,6 @@ export class LegsProcedure {
   /** A collection of filtering rules for filtering ICAO data to pre-load for the procedure. */
   private legFilteringRules: ((icao: string) => boolean)[] = [
       (icao) => icao.trim() !== '', // Icao is not empty
-      (icao) => icao[0] !== 'R', // Icao is not runway icao, which is not searchable
       (icao) => icao[0] !== 'A', // Icao is not airport icao, which can be skipped
       (icao) => !this._facilitiesToLoad.has(icao), // Icao is not already being loaded
   ];
@@ -129,7 +128,7 @@ export class LegsProcedure {
 
           // Some procedures don't start with 15 (initial fix) but instead start with a heading and distance from
           // a fix: the procedure then starts with the fix exactly
-          if (this._currentIndex === 0 && currentLeg.type === 10 && !this._addedProcedureStart) {
+          if (this._currentIndex === 0 && currentLeg.type === 10 && !this._addedProcedureStart && currentLeg.fixIcao[0] !== 'R') {
               mappedLeg = this.mapExactFix(currentLeg);
               this._addedProcedureStart = true;
           } else {
@@ -137,7 +136,11 @@ export class LegsProcedure {
                   switch (currentLeg.type) {
                   case LegType.AF:
                   case LegType.PI:
-                      mappedLeg = this.mapExactFix(currentLeg);
+                      if (currentLeg.fixIcao[0] !== 'R') {
+                          mappedLeg = this.mapExactFix(currentLeg);
+                      } else {
+                          isLegMappable = false;
+                      }
                       break;
                   case LegType.CD:
                   case LegType.VD:
@@ -196,16 +199,27 @@ export class LegsProcedure {
                       }
                       break;
                   case LegType.RF:
-                      mappedLeg = this.mapRadiusToFix(currentLeg);
+                      if (currentLeg.fixIcao[0] !== 'R') {
+                          mappedLeg = this.mapRadiusToFix(currentLeg);
+                      } else {
+                          isLegMappable = false;
+                      }
                       break;
                   case LegType.CA:
                   case LegType.VA:
                       mappedLeg = this.mapHeadingUntilAltitude(currentLeg, this._previousFix);
                       break;
+                  case LegType.FA:
+                      mappedLeg = this.mapFixUntilAltitude(currentLeg);
+                      break;
                   case LegType.HA:
                   case LegType.HF:
                   case LegType.HM:
-                      mappedLeg = this.mapHold(currentLeg);
+                      if (currentLeg.fixIcao[0] !== 'R') {
+                          mappedLeg = this.mapHold(currentLeg);
+                      } else {
+                          isLegMappable = false;
+                      }
                       break;
                   default:
                       isLegMappable = false;
@@ -232,7 +246,7 @@ export class LegsProcedure {
                   mappedLeg.speedConstraint = currentLeg.speedRestriction;
                   mappedLeg.turnDirection = currentLeg.turnDirection;
 
-                  const recNavaid: RawVor | RawNdb | undefined = this._facilities.get(currentLeg.originIcao) as RawVor | RawNdb | undefined;
+                  const recNavaid = this._facilities.get(currentLeg.originIcao) as RawVor | RawNdb | RawIntersection | undefined;
 
                   mappedLeg.additionalData.legType = currentLeg.type;
                   mappedLeg.additionalData.overfly = currentLeg.flyOver;
@@ -241,7 +255,7 @@ export class LegsProcedure {
                   mappedLeg.additionalData.distanceInMinutes = currentLeg.distanceMinutes ? currentLeg.distance : undefined;
                   mappedLeg.additionalData.course = currentLeg.trueDegrees ? currentLeg.course : A32NX_Util.magneticToTrue(currentLeg.course, magCorrection);
                   mappedLeg.additionalData.recommendedIcao = currentLeg.originIcao.trim().length > 0 ? currentLeg.originIcao : undefined;
-                  mappedLeg.additionalData.recommendedFrequency = recNavaid ? recNavaid.freqMHz : undefined;
+                  mappedLeg.additionalData.recommendedFrequency = recNavaid && 'freqMHz' in recNavaid ? recNavaid.freqMHz : undefined;
                   mappedLeg.additionalData.recommendedLocation = recNavaid ? { lat: recNavaid.lat, long: recNavaid.lon } : undefined;
                   mappedLeg.additionalData.recommendedFacility = recNavaid ?? null;
                   mappedLeg.additionalData.rho = currentLeg.rho / 1852;
@@ -341,7 +355,7 @@ export class LegsProcedure {
    */
   public mapHeadingUntilDistanceFromOrigin(leg: RawProcedureLeg, prevLeg: WayPoint): WayPoint {
       const origin = this.getLoadedFacility(leg.originIcao);
-      const originIdent = origin.icao.substring(7, 12).trim();
+      const originIdent = WayPoint.formatIdentFromIcao(origin.icao);
 
       const bearingToOrigin = Avionics.Utils.computeGreatCircleHeading(prevLeg.infos.coordinates, new LatLongAlt(origin.lat, origin.lon));
       const distanceToOrigin = Avionics.Utils.computeGreatCircleDistance(prevLeg.infos.coordinates, new LatLongAlt(origin.lat, origin.lon)) / LegsProcedure.distanceNormalFactorNM;
@@ -380,7 +394,7 @@ export class LegsProcedure {
    */
   public mapBearingAndDistanceFromOrigin(leg: RawProcedureLeg): WayPoint {
       const origin = this.getLoadedFacility(leg.fixIcao);
-      const originIdent = origin.icao.substring(7, 12).trim();
+      const originIdent = WayPoint.formatIdentFromIcao(origin.icao);
       const course = leg.trueDegrees ? leg.course : A32NX_Util.magneticToTrue(leg.course, Facilities.getMagVar(origin.lat, origin.lon));
       // this is the leg length for FC, and the DME distance for FD
       const refDistance = leg.distance / 1852;
@@ -424,7 +438,7 @@ export class LegsProcedure {
       }
 
       const origin = this.getLoadedFacility(leg.originIcao);
-      const originIdent = origin.icao.substring(7, 12).trim();
+      const originIdent = WayPoint.formatIdentFromIcao(origin.icao);
 
       const course = leg.course + GeoMath.getMagvar(prevLeg.infos.coordinates.lat, prevLeg.infos.coordinates.long);
       const coordinates = Avionics.Utils.bearingDistanceToCoordinates(course, leg.distance / 1852, prevLeg.infos.coordinates.lat, prevLeg.infos.coordinates.long);
@@ -479,7 +493,7 @@ export class LegsProcedure {
           legDistance * LegsProcedure.distanceNormalFactorNM, prevLeg.infos.coordinates.lat, prevLeg.infos.coordinates.long,
       );
 
-      const waypoint = this.buildWaypoint(`${this.getIdent(origin.icao)}${leg.theta}`, coordinates);
+      const waypoint = this.buildWaypoint(`${WayPoint.formatIdentFromIcao(origin.icao)}${leg.theta}`, coordinates);
 
       return waypoint;
   }
@@ -503,6 +517,23 @@ export class LegsProcedure {
       waypoint.additionalData.vectorsAltitude = altitudeFeet;
 
       return waypoint;
+  }
+
+  public mapFixUntilAltitude(leg: RawProcedureLeg) {
+    const magVar = this.getMagCorrection(leg);
+    const course = leg.trueDegrees ? leg.course : A32NX_Util.magneticToTrue(leg.course, magVar);
+    const altitudeFeet = (leg.altitude1 * 3.2808399);
+    const distanceInNM = altitudeFeet / 500.0;
+
+    const facility = this.getLoadedFacility(leg.fixIcao);
+
+    const coordinates = GeoMath.relativeBearingDistanceToCoords(course, distanceInNM, { lat: facility.lat, long: facility.lon });
+    const waypoint = this.buildWaypoint(FixNamingScheme.headingUntilAltitude(altitudeFeet), coordinates, magVar);
+
+    waypoint.additionalData.vectorsAltitude = altitudeFeet;
+    waypoint.additionalData.fixIcao = leg.fixIcao;
+
+    return waypoint;
   }
 
   /**
@@ -584,15 +615,6 @@ export class LegsProcedure {
    */
   private deltaAngleRadians(a: number, b: number): number {
       return Math.abs((Avionics.Utils.fmod((a - b) + 180, 360) - 180) * Avionics.Utils.DEG2RAD);
-  }
-
-  /**
-   * Gets an ident from an ICAO.
-   * @param icao The icao to pull the ident from.
-   * @returns The parsed ident.
-   */
-  private getIdent(icao: string): string {
-      return icao.substring(7, 12).trim();
   }
 
   /**

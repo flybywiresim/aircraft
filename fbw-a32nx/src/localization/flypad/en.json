@@ -196,6 +196,7 @@
       "Defueling": "Defueling",
       "EstimatedDuration": "Estimated duration (minutes)",
       "EstimatedTime": "Estimated Time",
+      "GSXFuelSyncEnabled": "GSX Fuel Sync Enabled",
       "LeftInnerTank": "Left Inner Tank",
       "LeftOuterTank": "Left Outer Tank",
       "ReadyToStart": "Ready to Start",
@@ -221,6 +222,7 @@
       "DeboardConfirmationConfirm": "Deboard",
       "DeboardConfirmationTitle": "Deboard all Passengers?",
       "EstimatedDurationUnit": "minutes",
+      "GSXPayloadSyncEnabled": "GSX Payload Sync Enabled",
       "GW": "GW",
       "GWCG": "GW CG",
       "LoadingTime": "Loading Time",
@@ -552,9 +554,16 @@
       "PaxSigns": "PAX Signs",
       "RmpVhfSpacing": "RMP VHF Spacing",
       "Satcom": "Satcom",
+      "Select": "Select",
       "ThrustReductionHeight": "Thrust Reduction Height (ft)",
       "Title": "Aircraft Options / Pin Programs",
       "WeightUnit": "Weight Unit"
+    },
+    "AutomaticCallOuts": {
+      "Title": "Automatic Call Outs",
+      "FiveHundredGlide": "Inhibited When Glideslope Captured",
+      "ResetStandardConfig": "Reset To Standard Configuration",
+      "Reset": "Reset"
     },
     "AtsuAoc": {
       "AtisAtcSource": "ATIS/ATC Source",

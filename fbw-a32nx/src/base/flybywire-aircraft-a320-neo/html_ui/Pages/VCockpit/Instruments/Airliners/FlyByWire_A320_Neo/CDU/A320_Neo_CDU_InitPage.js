@@ -371,10 +371,22 @@ class CDUInitPage {
         }
         mcdu.onRightInput[0] = async (value, scratchpadCallback) => {
             if (value === "") {
-                mcdu.setScratchpadText(
-                    (isFinite(getZfw()) ? (getZfw() / 1000).toFixed(1) : "") +
-                    "/" +
-                    (isFinite(getZfwcg()) ? getZfwcg().toFixed(1) : ""));
+                let zfw = undefined;
+                let zfwCg = undefined;
+                if (!!SimVar.GetSimVarValue("L:A32NX_BOARDING_STARTED_BY_USR", "bool")) {
+                    zfw = SimVar.GetSimVarValue("L:A32NX_AIRFRAME_ZFW_DESIRED", "number");
+                    zfwCg = SimVar.GetSimVarValue("L:A32NX_AIRFRAME_ZFW_CG_PERCENT_MAC_DESIRED", "number");
+                } else if (isFinite(getZfw()) && isFinite(getZfwcg())) {
+                    zfw = getZfw();
+                    zfwCg = getZfwcg();
+                }
+
+                // ZFW/ZFWCG auto-fill helper
+                if (zfw && zfwCg) {
+                    mcdu.setScratchpadText(`${(zfw / 1000).toFixed(1)}/${zfwCg.toFixed(1)}`);
+                } else {
+                    mcdu.setScratchpadMessage(NXSystemMessages.formatError);
+                }
             } else {
                 if (mcdu.trySetZeroFuelWeightZFWCG(value)) {
                     CDUInitPage.updateTowIfNeeded(mcdu);
