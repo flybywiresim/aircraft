@@ -469,7 +469,7 @@ export class EfisSymbols {
                         databaseId: airport.icao,
                         ident: airport.ident,
                         location: airport.infos.coordinates,
-                        type: NdSymbolTypeFlags.Airport,
+                        type: NdSymbolTypeFlags.Airport | NdSymbolTypeFlags.FlightPlan,
                     });
                 }
             }
