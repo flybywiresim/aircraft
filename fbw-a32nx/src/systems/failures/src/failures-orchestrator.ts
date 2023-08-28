@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { AtaChapterNumber } from '@flybywiresim/fbw-sdk';
-import { RandomFailureGen } from './RandomFailureGen';
+import { RandomFailureGen } from 'failures/src/RandomFailureGen';
 import { QueuedSimVarWriter, SimVarReaderWriter } from './communication';
 import { getActivateFailureSimVarName, getDeactivateFailureSimVarName } from './sim-vars';
 
