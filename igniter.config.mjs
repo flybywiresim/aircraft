@@ -56,12 +56,6 @@ export default new TaskOfTasks("all", [
                     'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/Pages/VCockpit/Instruments/A32NX/ExtrasHost'
                 ]
             ),
-            new ExecTask("failures",
-                "npm run build-a32nx:failures",
-                [
-                    "fbw-a32nx/src/systems/failures",
-                    "fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/fbw-a32nx/failures/failures.js"
-                ]),
             new ExecTask("fmgc",
                 "npm run build-a32nx:fmgc",
                 [
