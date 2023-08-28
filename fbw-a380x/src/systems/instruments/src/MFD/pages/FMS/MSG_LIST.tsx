@@ -20,7 +20,7 @@ export class MfdMsgList extends DisplayComponent<MfdMsgListProps> {
 
     private msgListContainer = FSComponent.createRef<HTMLDivElement>();
 
-    protected onNewData: () => null;
+    protected onNewData: () => {};
 
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);

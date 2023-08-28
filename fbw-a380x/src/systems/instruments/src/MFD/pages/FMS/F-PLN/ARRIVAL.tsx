@@ -370,14 +370,14 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                 <div style="display: flex; flex-direction: row; justify-content: space-between;">
                     <Button
                         label="RWY"
-                        onClick={() => null}
+                        onClick={() => {}}
                         buttonStyle="width: 190px;"
                         idPrefix="f-pln-arr-rwy-btn"
                         menuItems={this.rwyOptions}
                     />
                     <Button
                         label="APPR"
-                        onClick={() => null}
+                        onClick={() => {}}
                         disabled={this.apprDisabled}
                         buttonStyle="width: 160px;"
                         idPrefix="f-pln-arr-appr-btn"
@@ -385,7 +385,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                     />
                     <Button
                         label="VIA"
-                        onClick={() => null}
+                        onClick={() => {}}
                         disabled={this.viaDisabled}
                         buttonStyle="width: 125px;"
                         idPrefix="f-pln-arr-via-btn"
@@ -393,7 +393,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                     />
                     <Button
                         label="STAR"
-                        onClick={() => null}
+                        onClick={() => {}}
                         disabled={this.starDisabled}
                         buttonStyle="width: 125px;"
                         idPrefix="f-pln-arr-star-btn"
@@ -401,7 +401,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                     />
                     <Button
                         label="TRANS"
-                        onClick={() => null}
+                        onClick={() => {}}
                         disabled={this.transDisabled}
                         buttonStyle="width: 125px;"
                         idPrefix="f-pln-arr-trans-btn"

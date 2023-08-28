@@ -145,12 +145,12 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
     private toDeratedThrustOptions = ArraySubject.create(['D01', 'D02', 'D03', 'D04', 'D05']);
 
     private toThrustSettingChanged(newIndex: TakeoffPowerSetting) {
-        this.props.fmService.fmgc.subjects.takeoffPowerSetting.set(newIndex);
+        this.props.fmService.fmgc.data.takeoffPowerSetting.set(newIndex);
         this.showToThrustSettings(newIndex);
 
         if (newIndex === TakeoffPowerSetting.FLEX) {
             // FLEX
-            SimVar.SetSimVarValue('L:AIRLINER_TO_FLEX_TEMP', 'Number', this.props.fmService.fmgc.subjects.takeoffFlexTemp.get() ?? 0.1);
+            SimVar.SetSimVarValue('L:AIRLINER_TO_FLEX_TEMP', 'Number', this.props.fmService.fmgc.data.takeoffFlexTemp.get() ?? 0.1);
         } else if (newIndex === TakeoffPowerSetting.DERATED) {
             // DERATED
             SimVar.SetSimVarValue('L:AIRLINER_TO_FLEX_TEMP', 'Number', 0); // 0 meaning no FLEX
@@ -265,7 +265,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
         console.time('PERF:onNewData');
 
         const pd = this.loadedFlightPlan.performanceData;
-        const fm = this.props.fmService.fmgc.subjects;
+        const fm = this.props.fmService.fmgc.data;
 
         if (pd.cruiseFlightLevel) {
             this.crzFl.set(pd.cruiseFlightLevel.get());
@@ -333,6 +333,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
         }
 
         if (pd.transitionAltitude) {
+            console.log(pd.transitionAltitude.get());
+            console.log(pd.pilotTransitionAltitude.get());
             this.transAlt.set(pd.transitionAltitude.get());
         }
 
@@ -378,7 +380,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
         }
 
         if (pd.transitionLevel) {
-            this.transAlt.set(pd.transitionLevel.get());
+            this.transFl.set(pd.transitionLevel.get());
         }
 
         console.timeEnd('PERF:onNewData');
@@ -427,7 +429,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
         this.subs.push(this.toSelectedFlapsIndex.sub((v) => {
             // Convert to FlapConf
-            this.props.fmService.fmgc.subjects.takeoffFlapsSetting.set(v + 1);
+            this.props.fmService.fmgc.data.takeoffFlapsSetting.set(v + 1);
         }));
     }
 
@@ -495,7 +497,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     </div>
                                     <div class="mfd-label-value-container">
                                         <span class="mfd-label mfd-spacing-right">F</span>
-                                        <span class="mfd-value-green">{this.props.fmService.fmgc.subjects.flapRetractionSpeed}</span>
+                                        <span class="mfd-value-green">{this.props.fmService.fmgc.data.flapRetractionSpeed}</span>
                                         <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                                     </div>
                                     <div class="mfd-label-value-container">
@@ -510,7 +512,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     </div>
                                     <div class="mfd-label-value-container">
                                         <span class="mfd-label mfd-spacing-right">S</span>
-                                        <span class="mfd-value-green">{this.props.fmService.fmgc.subjects.slatRetractionSpeed}</span>
+                                        <span class="mfd-value-green">{this.props.fmService.fmgc.data.slatRetractionSpeed}</span>
                                         <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                                     </div>
                                     <div class="mfd-label-value-container">
@@ -527,7 +529,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         <span style="margin-right: 15px; justify-content: center;">
                                             <svg width="13" height="13" viewBox="0 0 13 13"><circle cx="6" cy="6" r="5" stroke="#00ff00" stroke-width="2" /></svg>
                                         </span>
-                                        <span class="mfd-value-green">{this.props.fmService.fmgc.subjects.cleanSpeed}</span>
+                                        <span class="mfd-value-green">{this.props.fmService.fmgc.data.cleanSpeed}</span>
                                         <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                                     </div>
                                 </div>
@@ -535,11 +537,11 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     visible={this.toDeratedDialogVisible}
                                     cancelAction={() => {
                                         this.toDeratedDialogVisible.set(false);
-                                        this.props.fmService.fmgc.subjects.takeoffDeratedSetting.set(this.toDeratedThrustPrevious);
+                                        this.props.fmService.fmgc.data.takeoffDeratedSetting.set(this.toDeratedThrustPrevious);
                                     }}
                                     confirmAction={() => {
                                         this.toDeratedDialogVisible.set(false);
-                                        this.props.fmService.fmgc.subjects.takeoffDeratedSetting.set(this.toDeratedThrustNext);
+                                        this.props.fmService.fmgc.data.takeoffDeratedSetting.set(this.toDeratedThrustNext);
                                     }}
                                     contentContainerStyle="width: 325px; height: 165px;"
                                 >
@@ -563,7 +565,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                             dataHandlerDuringValidation={async (v) => {
                                                 // Special case: 0 means no FLEX, 0.1 means FLEX TEMP of 0
                                                 await SimVar.SetSimVarValue('L:AIRLINER_TO_FLEX_TEMP', 'Number', v === 0 ? 0.1 : v);
-                                                this.props.fmService.fmgc.subjects.takeoffFlexTemp.set(v);
+                                                this.props.fmService.fmgc.data.takeoffFlexTemp.set(v);
                                             }}
                                             mandatory={Subject.create(false)}
                                             value={this.toFlexTemp}
@@ -608,16 +610,16 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                 <div style="margin-top: 15px; align-self: center;">
                                     <InputField<number>
                                         dataEntryFormat={new PercentageFormat(Subject.create(0), Subject.create(99.9))}
-                                        dataHandlerDuringValidation={async (v) => this.props.fmService.fmgc.subjects.takeoffThsFor.set(v)}
+                                        dataHandlerDuringValidation={async (v) => this.props.fmService.fmgc.data.takeoffThsFor.set(v)}
                                         mandatory={Subject.create(true)}
-                                        value={this.props.fmService.fmgc.subjects.takeoffThsFor}
+                                        value={this.props.fmService.fmgc.data.takeoffThsFor}
                                         alignText="flex-end"
                                     />
                                 </div>
                                 <div style="margin-top: 15px;">
                                     <DropdownMenu
                                         values={ArraySubject.create(['OFF/APU', 'ON'])}
-                                        selectedIndex={this.props.fmService.fmgc.subjects.takeoffPacks}
+                                        selectedIndex={this.props.fmService.fmgc.data.takeoffPacks}
                                         idPrefix="packsDropdown"
                                         freeTextAllowed={false}
                                         numberOfDigitsForInputField={8}
@@ -628,7 +630,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                 <div style="margin-top: 15px;">
                                     <DropdownMenu
                                         values={ArraySubject.create(['OFF', 'ENG ONLY', 'ENG + WING'])}
-                                        selectedIndex={this.props.fmService.fmgc.subjects.takeoffAntiIce}
+                                        selectedIndex={this.props.fmService.fmgc.data.takeoffAntiIce}
                                         idPrefix="antiIceDropdown"
                                         freeTextAllowed={false}
                                         numberOfDigitsForInputField={10}
@@ -667,7 +669,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         <InputField<number>
                                             dataEntryFormat={new PercentageFormat(Subject.create(40), Subject.create(110))}
                                             mandatory={Subject.create(false)}
-                                            value={this.props.fmService.fmgc.subjects.noiseN1}
+                                            value={this.props.fmService.fmgc.data.noiseN1}
                                             containerStyle="width: 110px;"
                                             alignText="flex-end"
                                         />
@@ -705,7 +707,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         <InputField<number>
                                             dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
                                             mandatory={Subject.create(false)}
-                                            value={this.props.fmService.fmgc.subjects.noiseSpeed}
+                                            value={this.props.fmService.fmgc.data.noiseSpeed}
                                             containerStyle="width: 110px;"
                                             alignText="flex-end"
                                         />
@@ -773,7 +775,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     <InputField<number>
                                         dataEntryFormat={new CostIndexFormat()}
                                         mandatory={Subject.create(false)}
-                                        value={this.props.fmService.fmgc.subjects.costIndex}
+                                        value={this.props.fmService.fmgc.data.costIndex}
                                         containerStyle="width: 75px;"
                                         alignText="center"
                                     />
@@ -782,7 +784,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     <span class="mfd-label mfd-spacing-right">DERATED CLB</span>
                                     <DropdownMenu
                                         values={ArraySubject.create(['NONE', '01', '02', '03', '04', '05'])}
-                                        selectedIndex={this.props.fmService.fmgc.subjects.climbDerated}
+                                        selectedIndex={this.props.fmService.fmgc.data.climbDerated}
                                         idPrefix="deratedClbDropdown"
                                         freeTextAllowed={false}
                                         containerStyle="width: 125px;"
@@ -818,7 +820,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     <InputField<number>
                                         dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
                                         mandatory={Subject.create(false)}
-                                        value={this.props.fmService.fmgc.subjects.climbPreSelSpeed}
+                                        value={this.props.fmService.fmgc.data.climbPreSelSpeed}
                                         alignText="flex-end"
                                     />
                                 </div>
@@ -829,7 +831,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell">
                                     <div class="mfd-label-value-container">
-                                        <span class="mfd-value-green">{this.props.fmService.fmgc.subjects.climbManagedSpeedFromCostIndex}</span>
+                                        <span class="mfd-value-green">{this.props.fmService.fmgc.data.climbManagedSpeedFromCostIndex.get().toFixed(0)}</span>
                                         <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                                     </div>
                                 </div>
@@ -883,7 +885,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         <InputField<number>
                                             dataEntryFormat={new PercentageFormat(Subject.create(40), Subject.create(110))}
                                             mandatory={Subject.create(false)}
-                                            value={this.props.fmService.fmgc.subjects.noiseN1}
+                                            value={this.props.fmService.fmgc.data.noiseN1}
                                             containerStyle="width: 110px;"
                                             alignText="flex-end"
                                         />
@@ -921,7 +923,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         <InputField<number>
                                             dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
                                             mandatory={Subject.create(false)}
-                                            value={this.props.fmService.fmgc.subjects.noiseSpeed}
+                                            value={this.props.fmService.fmgc.data.noiseSpeed}
                                             containerStyle="width: 110px;"
                                             alignText="flex-end"
                                         />
@@ -934,13 +936,13 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                 <div style="grid-column-start: span 4; width: 300px;">
                                     <div ref={this.clbSpdLimValueRef} style="grid-row-start: span 3; display: flex; justify-content: flex-start; align-items: center;">
                                         <div class="mfd-label-value-container">
-                                            <span class="mfd-value-green">{this.props.fmService.fmgc.subjects.climbSpeedLimit.get().speed.toFixed(0)}</span>
+                                            <span class="mfd-value-green">{this.props.fmService.fmgc.data.climbSpeedLimit.get().speed.toFixed(0)}</span>
                                             <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                                         </div>
                                         <span class="mfd-value-green">/</span>
                                         <div class="mfd-label-value-container">
                                             <span class="mfd-label-unit mfd-unit-leading">FL</span>
-                                            <span class="mfd-value-green">{(this.props.fmService.fmgc.subjects.climbSpeedLimit.get().underAltitude / 100).toFixed(0)}</span>
+                                            <span class="mfd-value-green">{(this.props.fmService.fmgc.data.climbSpeedLimit.get().underAltitude / 100).toFixed(0)}</span>
                                         </div>
                                     </div>
                                     <div ref={this.clbNoiseEndInputRef}>
@@ -985,7 +987,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     <InputField<number>
                                         dataEntryFormat={new CostIndexFormat()}
                                         mandatory={Subject.create(false)}
-                                        value={this.props.fmService.fmgc.subjects.costIndex}
+                                        value={this.props.fmService.fmgc.data.costIndex}
                                         containerStyle="width: 75px;"
                                         alignText="center"
                                     />
@@ -1021,7 +1023,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     <InputField<number>
                                         dataEntryFormat={new SpeedMachFormat(Subject.create(0.1), Subject.create(Mmo))}
                                         mandatory={Subject.create(false)}
-                                        value={this.props.fmService.fmgc.subjects.cruisePreSelMach}
+                                        value={this.props.fmService.fmgc.data.cruisePreSelMach}
                                         alignText="flex-end"
                                     />
                                 </div>
@@ -1029,7 +1031,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     <InputField<number>
                                         dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
                                         mandatory={Subject.create(false)}
-                                        value={this.props.fmService.fmgc.subjects.cruisePreSelSpeed}
+                                        value={this.props.fmService.fmgc.data.cruisePreSelSpeed}
                                         alignText="flex-end"
                                     />
                                 </div>
@@ -1114,7 +1116,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     <InputField<number>
                                         dataEntryFormat={new CostIndexFormat()}
                                         mandatory={Subject.create(false)}
-                                        value={this.props.fmService.fmgc.subjects.costIndex}
+                                        value={this.props.fmService.fmgc.data.costIndex}
                                         containerStyle="width: 75px;"
                                         alignText="center"
                                     />
@@ -1124,7 +1126,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     <InputField<number>
                                         dataEntryFormat={new DescentRateFormat(Subject.create(-999), Subject.create(-100))}
                                         mandatory={Subject.create(false)}
-                                        value={this.props.fmService.fmgc.subjects.descentCabinRate}
+                                        value={this.props.fmService.fmgc.data.descentCabinRate}
                                         containerStyle="width: 175px;"
                                         alignText="flex-end"
                                     />
@@ -1224,18 +1226,18 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                                 <InputField<number>
                                                     dataEntryFormat={new WindDirectionFormat()}
                                                     mandatory={Subject.create(false)}
-                                                    value={this.props.fmService.fmgc.subjects.approachWind.map((it) => it.direction)}
-                                                    onModified={(v) => this.props.fmService.fmgc.subjects.approachWind.set(
-                                                        { direction: v, speed: this.props.fmService.fmgc.subjects.approachWind.get().speed },
+                                                    value={this.props.fmService.fmgc.data.approachWind.map((it) => it.direction)}
+                                                    onModified={(v) => this.props.fmService.fmgc.data.approachWind.set(
+                                                        { direction: v, speed: this.props.fmService.fmgc.data.approachWind.get().speed },
                                                     )}
                                                     alignText="center"
                                                 />
                                                 <InputField<number>
                                                     dataEntryFormat={new WindSpeedFormat()}
                                                     mandatory={Subject.create(false)}
-                                                    value={this.props.fmService.fmgc.subjects.approachWind.map((it) => it.speed)}
-                                                    onModified={(v) => this.props.fmService.fmgc.subjects.approachWind.set(
-                                                        { direction: this.props.fmService.fmgc.subjects.approachWind.get().direction, speed: v },
+                                                    value={this.props.fmService.fmgc.data.approachWind.map((it) => it.speed)}
+                                                    onModified={(v) => this.props.fmService.fmgc.data.approachWind.set(
+                                                        { direction: this.props.fmService.fmgc.data.approachWind.get().direction, speed: v },
                                                     )}
                                                     containerStyle="margin-left: 10px;"
                                                     alignText="center"
@@ -1257,7 +1259,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                             <InputField<number>
                                                 dataEntryFormat={new TemperatureFormat(Subject.create(-99), Subject.create(99))}
                                                 mandatory={Subject.create(false)}
-                                                value={this.props.fmService.fmgc.subjects.approachTemperature}
+                                                value={this.props.fmService.fmgc.data.approachTemperature}
                                                 containerStyle="width: 125px;"
                                                 alignText="flex-end"
                                             />
@@ -1267,7 +1269,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                             <InputField<number>
                                                 dataEntryFormat={new QnhFormat()}
                                                 mandatory={Subject.create(false)}
-                                                value={this.props.fmService.fmgc.subjects.approachQnh}
+                                                value={this.props.fmService.fmgc.data.approachQnh}
                                                 containerStyle="width: 125px;"
                                                 alignText="flex-end"
                                             />
@@ -1282,7 +1284,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                             <InputField<number>
                                                 dataEntryFormat={new AltitudeFormat(Subject.create(0), Subject.create(maxCertifiedAlt))}
                                                 mandatory={Subject.create(false)}
-                                                value={this.props.fmService.fmgc.subjects.approachBaroMinimum}
+                                                value={this.props.fmService.fmgc.data.approachBaroMinimum}
                                                 containerStyle="width: 150px;"
                                                 alignText="flex-end"
                                             />
@@ -1292,7 +1294,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                             <InputField<number>
                                                 dataEntryFormat={new AltitudeFormat(Subject.create(0), Subject.create(maxCertifiedAlt))}
                                                 mandatory={Subject.create(false)}
-                                                value={this.props.fmService.fmgc.subjects.approachRadioMinimum}
+                                                value={this.props.fmService.fmgc.data.approachRadioMinimum}
                                                 containerStyle="width: 150px;"
                                                 alignText="flex-end"
                                             />
@@ -1306,22 +1308,22 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                             <span class="mfd-fms-perf-appr-flap-speeds">
                                                 <svg width="13" height="13" viewBox="0 0 13 13"><circle cx="6" cy="6" r="5" stroke="#00ff00" stroke-width="2" /></svg>
                                             </span>
-                                            <span class="mfd-value-green">{this.props.fmService.fmgc.subjects.cleanSpeed}</span>
+                                            <span class="mfd-value-green">{this.props.fmService.fmgc.data.cleanSpeed}</span>
                                             <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                                         </div>
                                         <div class="mfd-label-value-container">
                                             <span class="mfd-label mfd-spacing-right mfd-fms-perf-appr-flap-speeds">S</span>
-                                            <span class="mfd-value-green">{this.props.fmService.fmgc.subjects.slatRetractionSpeed}</span>
+                                            <span class="mfd-value-green">{this.props.fmService.fmgc.data.slatRetractionSpeed}</span>
                                             <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                                         </div>
                                         <div class="mfd-label-value-container">
                                             <span class="mfd-label mfd-spacing-right mfd-fms-perf-appr-flap-speeds">F</span>
-                                            <span class="mfd-value-green">{this.props.fmService.fmgc.subjects.flapRetractionSpeed}</span>
+                                            <span class="mfd-value-green">{this.props.fmService.fmgc.data.flapRetractionSpeed}</span>
                                             <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                                         </div>
                                         <div class="mfd-label-value-container" style="padding-top: 15px;">
                                             <span class="mfd-label mfd-spacing-right mfd-fms-perf-appr-flap-speeds">VREF</span>
-                                            <span class="mfd-value-green">{this.props.fmService.fmgc.subjects.approachVref}</span>
+                                            <span class="mfd-value-green">{this.props.fmService.fmgc.data.approachVref}</span>
                                             <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                                         </div>
                                     </div>
@@ -1329,13 +1331,13 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         <RadioButtonGroup
                                             values={ArraySubject.create(['CONF 3', 'FULL'])}
                                             selectedIndex={this.apprSelectedFlapsIndex}
-                                            onModified={(v) => this.props.fmService.fmgc.subjects.approachFlapConfig.set(v + 3)}
+                                            onModified={(v) => this.props.fmService.fmgc.data.approachFlapConfig.set(v + 3)}
                                             idPrefix="apprFlapsSettingsRadio"
                                             additionalVerticalSpacing={15}
                                         />
                                         <div class="mfd-label-value-container" style="margin-top: 10px;">
                                             <span class="mfd-label mfd-spacing-right">VLS</span>
-                                            <span class="mfd-value-green">{this.props.fmService.fmgc.subjects.approachVls}</span>
+                                            <span class="mfd-value-green">{this.props.fmService.fmgc.data.approachVls}</span>
                                             <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                                         </div>
                                     </div>
@@ -1345,7 +1347,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                             <InputField<number>
                                                 dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
                                                 mandatory={Subject.create(false)}
-                                                value={this.props.fmService.fmgc.subjects.approachSpeed}
+                                                value={this.props.fmService.fmgc.data.approachSpeed}
                                                 alignText="flex-end"
                                             />
                                         </div>
@@ -1378,19 +1380,19 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                             <div style="margin: 60px 0px 100px 200px; display: flex; flex-direction: column;">
                                 <div class="mfd-label-value-container">
                                     <span class="mfd-label mfd-spacing-right">F</span>
-                                    <span class="mfd-value-green">{this.props.fmService.fmgc.subjects.flapRetractionSpeed}</span>
+                                    <span class="mfd-value-green">{this.props.fmService.fmgc.data.flapRetractionSpeed}</span>
                                     <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                                 </div>
                                 <div class="mfd-label-value-container">
                                     <span class="mfd-label mfd-spacing-right">S</span>
-                                    <span class="mfd-value-green">{this.props.fmService.fmgc.subjects.slatRetractionSpeed}</span>
+                                    <span class="mfd-value-green">{this.props.fmService.fmgc.data.slatRetractionSpeed}</span>
                                     <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                                 </div>
                                 <div class="mfd-label-value-container">
                                     <span style="margin-right: 15px; text-align: right;">
                                         <svg width="13" height="13" viewBox="0 0 13 13"><circle cx="6" cy="6" r="5" stroke="#00ff00" stroke-width="2" /></svg>
                                     </span>
-                                    <span class="mfd-value-green">{this.props.fmService.fmgc.subjects.cleanSpeed}</span>
+                                    <span class="mfd-value-green">{this.props.fmService.fmgc.data.cleanSpeed}</span>
                                     <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                                 </div>
                             </div>

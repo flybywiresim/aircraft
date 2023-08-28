@@ -79,6 +79,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
         }
 
         if (this.loadedFlightPlan.performanceData.cruiseFlightLevel) {
+            console.log(`crz: ${this.loadedFlightPlan.performanceData.cruiseFlightLevel.get()}`);
             this.crzFl.set(this.loadedFlightPlan.performanceData.cruiseFlightLevel.get());
         }
 
@@ -109,7 +110,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                         <InputField<string>
                             dataEntryFormat={new LongAlphanumericFormat()}
                             mandatory={Subject.create(true)}
-                            value={this.props.fmService.fmgc.subjects.atcCallsign}
+                            value={this.props.fmService.fmgc.data.atcCallsign}
                             containerStyle="width: 200px; margin-right: 5px;"
                             alignText="center"
                         />
@@ -222,18 +223,19 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                             dataEntryFormat={new CostIndexFormat()}
                             mandatory={Subject.create(true)}
                             disabled={this.costIndexDisabled}
-                            value={this.props.fmService.fmgc.subjects.costIndex}
+                            value={this.props.fmService.fmgc.data.costIndex}
                             containerStyle="width: 70px; margin-right: 90px; justify-content: center;"
                             alignText="center"
                         />
                         <div class="mfd-label init-input-field" style="width: auto;">TROPO</div>
                         <InputField<number>
                             dataEntryFormat={new TropoFormat()}
+                            dataHandlerDuringValidation={async (v) => this.props.fmService.fmgc.data.tropopausePilotEntry.set(v)}
                             mandatory={Subject.create(false)}
-                            enteredByPilot={Subject.create(true)}
-                            value={this.tropoAlt}
+                            enteredByPilot={this.props.fmService.fmgc.data.tropopauseIsPilotEntered}
+                            value={this.props.fmService.fmgc.data.tropopause}
+                            onModified={() => {}}
                             alignText="flex-end"
-                            disabled={Subject.create(true)} // TODO
                         />
                     </div>
                     <div class="mfd-fms-init-line trip-wind">

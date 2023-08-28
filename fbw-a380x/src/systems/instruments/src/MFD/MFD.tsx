@@ -48,8 +48,7 @@ import { DisplayInterface } from '@fmgc/flightplanning/new/interface/DisplayInte
 import { FmsErrorType } from '@fmgc/FmsError';
 
 import { WaypointFactory } from '@fmgc/flightplanning/new/waypoints/WaypointFactory';
-import { FmgcData } from 'instruments/src/MFD/fmgc';
-import { FakeFmgc } from 'instruments/src/MFD/fake_fmgc';
+import { FmgcDataInterface } from 'instruments/src/MFD/fmgc';
 import { MfdSimvars } from './shared/MFDSimvarPublisher';
 import { DisplayUnit } from '../MsfsAvionicsCommon/displayUnit';
 
@@ -80,8 +79,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
 
     private flightPlanService = new FlightPlanService(this.props.bus);
 
-    private fmgc = new FmgcData(this.flightPlanService);
-    // private fmgc = new FakeFmgc();
+    private fmgc = new FmgcDataInterface(this.flightPlanService);
 
     private guidanceController = new GuidanceController(this.fmgc, this.flightPlanService);
 
@@ -383,7 +381,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
             this.activeHeader = (
                 <FmsHeader
                     bus={this.props.bus}
-                    callsign={this.fmgc.subjects.atcCallsign}
+                    callsign={this.fmgc.data.atcCallsign}
                     activeFmsSource={this.activeFmsSource}
                     uiService={this.uiService}
                     fmService={this.fmService}
@@ -394,7 +392,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
             this.activeHeader = (
                 <AtccomHeader
                     bus={this.props.bus}
-                    callsign={this.fmgc.subjects.atcCallsign}
+                    callsign={this.fmgc.data.atcCallsign}
                     activeFmsSource={this.activeFmsSource}
                     uiService={this.uiService}
                     fmService={this.fmService}
@@ -405,7 +403,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
             this.activeHeader = (
                 <SurvHeader
                     bus={this.props.bus}
-                    callsign={this.fmgc.subjects.atcCallsign}
+                    callsign={this.fmgc.data.atcCallsign}
                     activeFmsSource={this.activeFmsSource}
                     uiService={this.uiService}
                     fmService={this.fmService}
@@ -416,7 +414,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
             this.activeHeader = (
                 <FcuBkupHeader
                     bus={this.props.bus}
-                    callsign={this.fmgc.subjects.atcCallsign}
+                    callsign={this.fmgc.data.atcCallsign}
                     activeFmsSource={this.activeFmsSource}
                     uiService={this.uiService}
                     fmService={this.fmService}
@@ -428,7 +426,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
             this.activeHeader = (
                 <FmsHeader
                     bus={this.props.bus}
-                    callsign={this.fmgc.subjects.atcCallsign}
+                    callsign={this.fmgc.data.atcCallsign}
                     activeFmsSource={this.activeFmsSource}
                     uiService={this.uiService}
                     fmService={this.fmService}

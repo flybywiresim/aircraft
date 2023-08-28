@@ -7,7 +7,7 @@ import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { SpeedLimit } from '@fmgc/guidance/vnav/SpeedLimit';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { FmcWindVector, FmcWinds } from '@fmgc/guidance/vnav/wind/types';
-import { Subject } from '@microsoft/msfs-sdk';
+import { MappedSubject, Subject } from '@microsoft/msfs-sdk';
 import { FlightPlanIndex } from '@fmgc/flightplanning/new/FlightPlanManager';
 
 export enum TakeoffPowerSetting {
@@ -47,16 +47,60 @@ export enum ClimbDerated {
 /**
  * Temporary place for data which is found nowhere else. Not associated to flight plans right now, which should be the case for some of these values
  */
-export class FmgcDataSubjects {
+export class FmgcData {
     public readonly atcCallsign = Subject.create<string>('----------');
 
     public readonly zeroFuelWeight = Subject.create<number>(300_000); // in kg
 
+    public readonly zeroFuelWeightCenterOfGravity = Subject.create<number>(33.0); // in percent
+
     public readonly blockFuel = Subject.create<number>(100_000); // in kg
+
+    public readonly taxiFuel = Subject.create<number>(undefined); // in kg
+
+    public readonly routeReserveFuelWeightPilotEntry = Subject.create<number>(undefined); // in kg
+
+    public readonly routeReserveFuelWeightCalculated = Subject.create<number>(undefined); // in kg
+
+    public readonly routeReserveFuelWeight = MappedSubject.create(([calc, pe]) => (pe !== undefined ? pe : calc), this.routeReserveFuelWeightCalculated, this.routeReserveFuelWeightPilotEntry);
+
+    public readonly routeReserveFuelPercentagePilotEntry = Subject.create<number>(undefined); // in percent
+
+    public readonly routeReserveFuelPercentage = this.routeReserveFuelWeightPilotEntry.map((it) => (!it ? 5.0 : it)); // in percent
+
+    public readonly routeReserveFuelIsPilotEntered = MappedSubject.create((
+        [fuel, time],
+    ) => fuel !== undefined || time !== undefined,
+    this.routeReserveFuelWeightPilotEntry,
+    this.routeReserveFuelPercentagePilotEntry);
+
+    public readonly paxNumber = Subject.create<number>(undefined);
+
+    public readonly jettisonGrossWeight = Subject.create<number>(undefined); // in kg
+
+    public readonly alternateFuel = Subject.create<number>(undefined); // in kg
+
+    public readonly finalFuelWeightPilotEntry = Subject.create<number>(undefined); // in kg
+
+    public readonly finalFuelWeightCalculated = Subject.create<number>(undefined); // in kg
+
+    public readonly finalFuelWeight = MappedSubject.create(([calc, pe]) => (pe !== undefined ? pe : calc), this.finalFuelWeightCalculated, this.finalFuelWeightPilotEntry);
+
+    public readonly finalFuelTimePilotEntry = Subject.create<number>(undefined); // in percent
+
+    public readonly finalFuelTime = this.finalFuelWeightPilotEntry.map((it) => (!it ? 30 : it)); // in minutes
+
+    public readonly finalFuelIsPilotEntered = MappedSubject.create((
+        [fuel, time],
+    ) => fuel !== undefined || time !== undefined,
+    this.finalFuelWeightPilotEntry,
+    this.finalFuelTimePilotEntry);
+
+    public readonly minimumFuelAtDestination = Subject.create<number>(undefined); // in kg
 
     public readonly tropopausePilotEntry = Subject.create<number>(undefined);
 
-    public readonly tropopause = this.tropopausePilotEntry.map((tp) => (!tp ? 36_000 : tp)); // in ft
+    public readonly tropopause = this.tropopausePilotEntry.map((tp) => (tp ?? 36_090)); // in ft
 
     public readonly tropopauseIsPilotEntered = this.tropopausePilotEntry.map((it) => it !== undefined);
 
@@ -152,8 +196,8 @@ export class FmgcDataSubjects {
 /**
  * Implementation of Fmgc interface. Not associated to flight plans right now, which should be the case for some of these values
  */
-export class FmgcData implements Fmgc {
-    public subjects = new FmgcDataSubjects();
+export class FmgcDataInterface implements Fmgc {
+    public data = new FmgcData();
 
     constructor(
         private flightPlanService: FlightPlanService,
@@ -161,11 +205,11 @@ export class FmgcData implements Fmgc {
     }
 
     getZeroFuelWeight(): number {
-        return this.subjects.zeroFuelWeight.get();
+        return this.data.zeroFuelWeight.get();
     }
 
     getFOB(): number {
-        return this.subjects.blockFuel.get();
+        return this.data.blockFuel.get();
     }
 
     getV2Speed(): Knots {
@@ -173,15 +217,15 @@ export class FmgcData implements Fmgc {
     }
 
     getTropoPause(): Feet {
-        return this.subjects.tropopause.get();
+        return this.data.tropopause.get();
     }
 
     getManagedClimbSpeed(): Knots {
-        return this.subjects.climbManagedSpeedFromCostIndex.get();
+        return this.data.climbManagedSpeedFromCostIndex.get();
     }
 
     getManagedClimbSpeedMach(): Mach {
-        return this.subjects.climbManagedSpeedMach.get();
+        return this.data.climbManagedSpeedMach.get();
     }
 
     getAccelerationAltitude(): Feet {
@@ -205,11 +249,11 @@ export class FmgcData implements Fmgc {
     }
 
     getManagedCruiseSpeed(): Knots {
-        return this.subjects.cruiseManagedSpeedFromCostIndex.get();
+        return this.data.cruiseManagedSpeedFromCostIndex.get();
     }
 
     getManagedCruiseSpeedMach(): Mach {
-        return this.subjects.cruiseManagedSpeedMach.get();
+        return this.data.cruiseManagedSpeedMach.get();
     }
 
     getClimbSpeedLimit(): SpeedLimit {
@@ -221,43 +265,43 @@ export class FmgcData implements Fmgc {
     }
 
     getPreSelectedClbSpeed(): Knots {
-        return this.subjects.climbPreSelSpeed.get();
+        return this.data.climbPreSelSpeed.get();
     }
 
     getPreSelectedCruiseSpeed(): Knots {
-        return this.subjects.cruisePreSelSpeed.get();
+        return this.data.cruisePreSelSpeed.get();
     }
 
     getPreSelectedDescentSpeed(): Knots {
-        return this.subjects.descentPreSelSpeed.get();
+        return this.data.descentPreSelSpeed.get();
     }
 
     getTakeoffFlapsSetting(): FlapConf | undefined {
-        return this.subjects.takeoffFlapsSetting.get();
+        return this.data.takeoffFlapsSetting.get();
     }
 
     getManagedDescentSpeed(): Knots {
-        return this.subjects.descentManagedSpeedFromCostIndex.get();
+        return this.data.descentManagedSpeedFromCostIndex.get();
     }
 
     getManagedDescentSpeedMach(): Mach {
-        return this.subjects.descentManagedSpeedMach.get();
+        return this.data.descentManagedSpeedMach.get();
     }
 
     getApproachSpeed(): Knots {
-        return this.subjects.approachSpeed.get();
+        return this.data.approachSpeed.get();
     }
 
     getFlapRetractionSpeed(): Knots {
-        return this.subjects.flapRetractionSpeed.get();
+        return this.data.flapRetractionSpeed.get();
     }
 
     getSlatRetractionSpeed(): Knots {
-        return this.subjects.slatRetractionSpeed.get();
+        return this.data.slatRetractionSpeed.get();
     }
 
     getCleanSpeed(): Knots {
-        return this.subjects.cleanSpeed.get();
+        return this.data.cleanSpeed.get();
     }
 
     getTripWind(): number {
@@ -265,19 +309,19 @@ export class FmgcData implements Fmgc {
     }
 
     getWinds(): FmcWinds {
-        return { climb: [], cruise: [], des: [], alternate: null };
+        return { climb: [{ direction: 0, speed: 0 }], cruise: [{ direction: 0, speed: 0 }], des: [{ direction: 0, speed: 0 }], alternate: null };
     }
 
     getApproachWind(): FmcWindVector {
-        return this.subjects.approachWind.get();
+        return this.data.approachWind.get();
     }
 
     getApproachQnh(): number {
-        return this.subjects.approachQnh.get();
+        return this.data.approachQnh.get();
     }
 
     getApproachTemperature(): number {
-        return this.subjects.approachTemperature.get();
+        return this.data.approachTemperature.get();
     }
 
     getDestEFOB(useFob: boolean): number { // Metric tons

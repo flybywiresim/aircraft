@@ -71,7 +71,7 @@ export class OANS extends DisplayComponent<OANSProps> {
 
     private contextMenuPositionTriggered = Subject.create<MousePosition>({ x: 0, y: 0 })
 
-    private contextMenuActions = ArraySubject.create([
+    private contextMenuActions = Subject.create([
         {
             title: 'ADD CROSS',
             disabled: false,
@@ -304,9 +304,9 @@ export class OANS extends DisplayComponent<OANSProps> {
                                 margin-top: 20px; margin-bottom: 20px; justify-content: space-between;
                                 align-items: center; border-left: 2px solid lightgrey"
                                 >
-                                    <Button label="EDDM" onClick={() => null} />
-                                    <Button label="KJFK" onClick={() => null} />
-                                    <Button label="ALTN" onClick={() => null} disabled={Subject.create(true)} />
+                                    <Button label="EDDM" onClick={() => {}} />
+                                    <Button label="KJFK" onClick={() => {}} />
+                                    <Button label="ALTN" onClick={() => {}} disabled={Subject.create(true)} />
                                 </div>
                             </div>
                         </TopTabNavigatorPage>

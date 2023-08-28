@@ -1,4 +1,4 @@
-import { FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+﻿import { FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 
 import './f-pln.scss';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
@@ -99,7 +99,11 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
                 this.rwySid.set(this.loadedFlightPlan.originDeparture.ident);
 
                 if (this.loadedFlightPlan.originDeparture.enrouteTransitions?.length > 0) {
-                    const trans: ButtonMenuItem[] = [{ label: 'NONE', action: () => this.props.fmService.flightPlanService.setDepartureEnrouteTransition(undefined, this.loadedFlightPlanIndex) }];
+                    const trans: ButtonMenuItem[] = [
+                        {
+                            label: 'NONE',
+                            action: () => this.props.fmService.flightPlanService.setDepartureEnrouteTransition(undefined, this.loadedFlightPlanIndex),
+                        }];
                     this.loadedFlightPlan.originDeparture.enrouteTransitions.forEach((el) => {
                         trans.push({ label: el.ident, action: () => this.props.fmService.flightPlanService.setDepartureEnrouteTransition(el.ident, this.loadedFlightPlanIndex) });
                     });
@@ -254,7 +258,7 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
                 <div style="display: flex; flex-direction: row; margin-left: 50px;">
                     <Button
                         label="RWY"
-                        onClick={() => null}
+                        onClick={() => {}}
                         buttonStyle="width: 250px;"
                         idPrefix="f-pln-dep-rwy-btn"
                         menuItems={this.rwyOptions}
@@ -262,7 +266,7 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
                     <div style="width: 100px;" />
                     <Button
                         label="SID"
-                        onClick={() => null}
+                        onClick={() => {}}
                         disabled={this.sidDisabled}
                         buttonStyle="width: 140px;"
                         idPrefix="f-pln-dep-sid-btn"
@@ -271,7 +275,7 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
                     <div style="width: 50px;" />
                     <Button
                         label="TRANS"
-                        onClick={() => null}
+                        onClick={() => {}}
                         disabled={this.transDisabled}
                         buttonStyle="width: 130px;"
                         idPrefix="f-pln-dep-trans-btn"

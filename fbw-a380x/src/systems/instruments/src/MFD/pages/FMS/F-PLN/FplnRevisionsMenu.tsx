@@ -22,7 +22,7 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType, 
     return [
         {
             title: 'FROM P.POS DIR TO',
-            disabled: [FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type),
+            disabled: altnFlightPlan || [FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type),
             onSelectCallback: () => {
                 fpln.props.fmService.flightPlanService.directTo(
                     fpln.props.fmService.navigationProvider.getPpos(),
@@ -42,9 +42,7 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType, 
             title: 'DELETE *',
             disabled: [FplnRevisionsMenuType.Runway || FplnRevisionsMenuType.TooSteepPath].includes(type),
             onSelectCallback: () => {
-                console.log(`realLegIndex: ${realLegIndex}`);
-                console.log(`Removing ${fpln.loadedFlightPlan.legElementAt(realLegIndex).ident}`);
-                fpln.props.fmService.flightPlanService.deleteElementAt(realLegIndex, planIndex);
+                fpln.props.fmService.flightPlanService.deleteElementAt(realLegIndex, planIndex, altnFlightPlan);
             },
         },
         {
@@ -73,8 +71,8 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType, 
             onSelectCallback: () => fpln.props.uiService.navigateTo(`fms/${fpln.props.uiService.activeUri.get().category}/f-pln-airways`),
         },
         {
-            title: 'OVERFLY *',
-            disabled: [FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type),
+            title: (!altnFlightPlan && fpln.loadedFlightPlan.legElementAt(realLegIndex).overfly === true) ? 'DELETE OVERFLY *' : 'OVERFLY *',
+            disabled: altnFlightPlan || [FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type),
             onSelectCallback: () => fpln.props.fmService.flightPlanService.toggleOverfly(legIndex, planIndex),
         },
         {

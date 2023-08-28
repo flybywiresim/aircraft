@@ -57,6 +57,7 @@ Status legend:
 \* (active | sec1 | sec2 | sec3)
 
 ### ATCCOM
+Use React-based implementation for now, hence no dev. effort needed here.
 
 | Status      | URI | Sprint/Prio |
 | ------------- | ------------- | ------------- |
