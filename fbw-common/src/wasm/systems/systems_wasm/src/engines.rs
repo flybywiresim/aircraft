@@ -26,8 +26,6 @@ pub(super) fn engines(
                     let sim_engine_start_allowed = to_bool(values[0]);
                     let is_sim_bleed_air_active = to_bool(values[1]);
 
-                    // These values are very arbitrary. Whether crossbleed starts work or not is binary for now,
-                    // until we have a custom engine model
                     if sim_engine_start_allowed != is_sim_bleed_air_active {
                         toggle_sim_engine_bleed_air(engine_number);
                     }
