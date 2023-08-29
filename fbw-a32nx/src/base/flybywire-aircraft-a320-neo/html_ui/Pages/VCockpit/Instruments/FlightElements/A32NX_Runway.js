@@ -3,7 +3,8 @@
 // Licensed under Xbox Game Content Usage Rules
 
 class Runway {
-    constructor() {
+    constructor(airportIdent) {
+        this.airportIdent = airportIdent;
         this.designatorCharPrimary = 0;
         this.designatorCharSecondary = 0;
         this.cosDirection = 0;
@@ -27,7 +28,7 @@ class Runway {
         const splitRunways = [];
         const designations = this.designation.split("-");
         for (let i = 0; i < designations.length; i++) {
-            const newRunway = new Runway();
+            const newRunway = new Runway(this.airportIdent);
             newRunway.designation = Avionics.Utils.formatRunway(designations[i]);
             newRunway.number = parseInt(designations[i]);
             newRunway.slope = 100 * (this.secondaryElevation - this.primaryElevation) / (this.length - this.primaryThresholdLength - this.secondaryThresholdLength);
@@ -45,6 +46,7 @@ class Runway {
                 newRunway.slope *= -1;
             }
             newRunway.designation += this.designatorChar(newRunway.designator);
+            newRunway.ident = `${this.airportIdent}${this.designation}`;
             newRunway.latitude = this.latitude;
             newRunway.longitude = this.longitude;
             newRunway.elevation = this.elevation;

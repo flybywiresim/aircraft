@@ -156,7 +156,7 @@ fn recenter_when_close_to_center(value: f64, increment: f64) -> f64 {
 const MAX_CONTROLLABLE_STEERING_ANGLE_DEGREES: f64 = 70.;
 
 fn steering_animation_to_msfs_from_steering_angle(nose_wheel_position: f64) -> f64 {
-    const STEERING_ANIMATION_TOTAL_RANGE_DEGREES: f64 = 360.;
+    const STEERING_ANIMATION_TOTAL_RANGE_DEGREES: f64 = 140.;
 
     ((nose_wheel_position * MAX_CONTROLLABLE_STEERING_ANGLE_DEGREES
         / (STEERING_ANIMATION_TOTAL_RANGE_DEGREES / 2.))
