@@ -1049,7 +1049,6 @@ pub struct BoardingInputs {
     per_pax_weight: Rc<Cell<Mass>>,
 }
 impl BoardingInputs {
-    pub const DEFAULT_PER_PAX_WEIGHT_KG: f64 = 84.;
     pub fn new(
         context: &mut InitContext,
         per_pax_weight: Rc<Cell<Mass>>,

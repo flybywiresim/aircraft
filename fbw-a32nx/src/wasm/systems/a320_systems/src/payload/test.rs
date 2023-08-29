@@ -139,10 +139,7 @@ impl BoardingTestBed {
 
     fn init_vars(mut self) -> Self {
         self.write_by_name("BOARDING_RATE", BoardingRate::Instant);
-        self.write_by_name(
-            "WB_PER_PAX_WEIGHT",
-            BoardingInputs::DEFAULT_PER_PAX_WEIGHT_KG,
-        );
+        self.write_by_name("WB_PER_PAX_WEIGHT", A320Payload::DEFAULT_PER_PAX_WEIGHT_KG);
 
         self
     }

@@ -1,7 +1,10 @@
 use super::*;
-use crate::systems::simulation::{
-    test::{SimulationTestBed, TestBed},
-    Aircraft, SimulationElement, SimulationElementVisitor,
+use crate::{
+    payload::A320Payload,
+    systems::simulation::{
+        test::{SimulationTestBed, TestBed},
+        Aircraft, SimulationElement, SimulationElementVisitor,
+    },
 };
 use nalgebra::Vector3;
 use std::time::Duration;
@@ -317,14 +320,14 @@ impl AirframeTestBed {
 
     fn load_pax(self, pax_qty: i16, center_of_gravity: Vector3<f64>) -> Self {
         let payload =
-            Mass::new::<kilogram>(pax_qty as f64 * BoardingInputs::DEFAULT_PER_PAX_WEIGHT_KG);
+            Mass::new::<kilogram>(pax_qty as f64 * A320Payload::DEFAULT_PER_PAX_WEIGHT_KG);
 
         self.set_passengers(payload, center_of_gravity)
     }
 
     fn target_pax(self, pax_qty: i16, center_of_gravity: Vector3<f64>) -> Self {
         let payload =
-            Mass::new::<kilogram>(pax_qty as f64 * BoardingInputs::DEFAULT_PER_PAX_WEIGHT_KG);
+            Mass::new::<kilogram>(pax_qty as f64 * A320Payload::DEFAULT_PER_PAX_WEIGHT_KG);
 
         self.set_target_passengers(payload, center_of_gravity)
     }
