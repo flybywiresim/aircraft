@@ -145,19 +145,6 @@ $display-mfd-dark-grey: #3c3c3c;
   width: 25px;
 }
 
-.mfd-dropdown-label {
-  font-size: 26px;
-  color: $display-cyan;
-  font-family: "Ecam", monospace;
-  margin: 4px 10px 4px 10px;
-  display: block;
-}
-
-.mfd-dropdown-label.opened {
-  background-color: $display-cyan;
-  color: $display-background;
-}
-
 .mfd-dropdown-menu::-webkit-scrollbar {
   width: 20px;
 }
@@ -368,6 +355,10 @@ $display-mfd-dark-grey: #3c3c3c;
   box-shadow: inset 0 0 0px 4px black;
 }
 
+.mfd-radio-button.tmpy input[type="radio"]:checked {
+  background: $display-yellow;
+}
+
 
 .mfd-radio-button input[type="radio"]:checked {
   background: $display-cyan;
@@ -376,6 +367,10 @@ $display-mfd-dark-grey: #3c3c3c;
 
 .mfd-radio-button input[type="radio"]:checked ~ * {
   color: $display-cyan;
+}
+
+.mfd-radio-button.tmpy input[type="radio"]:checked ~ * {
+  color: $display-yellow;
 }
 
 .mfd-radio-button:hover {
@@ -449,6 +444,10 @@ $display-mfd-dark-grey: #3c3c3c;
   padding: 0px;
 }
 
+.mfd-input-field-text-input.tmpy {
+  color: $display-yellow;
+}
+
 .mfd-input-field-text-input.validating {
   color: $display-light-grey;
 }
@@ -464,6 +463,11 @@ $display-mfd-dark-grey: #3c3c3c;
 
 .mfd-input-field-text-input.valueSelected {
   background-color: $display-cyan;
+  color: $display-background;
+}
+
+.mfd-input-field-text-input.tmpy.valueSelected {
+  background-color: $display-yellow;
   color: $display-background;
 }
 

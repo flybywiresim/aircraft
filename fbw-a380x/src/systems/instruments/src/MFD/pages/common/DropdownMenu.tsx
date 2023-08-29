@@ -1,4 +1,4 @@
-import { ArraySubject, ComponentProps, DisplayComponent, FSComponent, Subject, SubscribableArray, Subscription, VNode } from '@microsoft/msfs-sdk';
+import { ArraySubject, ComponentProps, DisplayComponent, FSComponent, Subject, Subscribable, SubscribableArray, Subscription, VNode } from '@microsoft/msfs-sdk';
 import './style.scss';
 import { InputField } from 'instruments/src/MFD/pages/common/InputField';
 import { DropdownFieldFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
@@ -16,6 +16,7 @@ interface DropdownMenuProps extends ComponentProps {
     containerStyle?: string;
     alignLabels?: 'flex-start' | 'center' | 'flex-end';
     numberOfDigitsForInputField?: number;
+    tmpyActive?: Subscribable<boolean>;
 }
 
 /*
@@ -88,6 +89,10 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
+        if (this.props.tmpyActive === undefined) {
+            this.props.tmpyActive = Subject.create(false);
+        }
+
         this.subs.push(this.renderedDropdownOptions.sub((index, type, item, array) => {
             // Remove click handlers
             array.forEach((val, i) => {
@@ -121,7 +126,7 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
         }));
 
         this.subs.push(this.props.values.sub((index, type, item, array) => {
-            if (this.props.selectedIndex.get() !== null) {
+            if (this.props.selectedIndex.get() !== undefined && this.props.selectedIndex.get() !== null) {
                 this.inputFieldValue.set(array[this.props.selectedIndex.get()]);
             } else {
                 this.inputFieldValue.set('');
@@ -157,10 +162,9 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
                     this.inputFieldRef.instance.onBlur(false);
                 }
             }
-            // this.dropdownSelectorLabelRef.instance.classList.toggle('opened');
         }));
 
-        // TODO add mouse wheel and key events
+        // TODO add KCCU events
     }
 
     public destroy(): void {
@@ -185,6 +189,7 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
                             onModified={(text) => this.onFieldSubmit(text)}
                             onInput={(text) => this.onFieldChanged(text)}
                             handleFocusBlurExternally
+                            tmpyActive={this.props.tmpyActive}
                         />
                     </div>
                     <div class="mfd-dropdown-arrow">

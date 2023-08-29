@@ -22,6 +22,7 @@ interface InputFieldProps<T> extends ComponentProps {
     handleFocusBlurExternally?: boolean;
     containerStyle?: string;
     alignText?: 'flex-start' | 'center' | 'flex-end';
+    tmpyActive?: Subscribable<boolean>;
 }
 
 /**
@@ -296,6 +297,9 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
         if (this.props.canOverflow === undefined) {
             this.props.canOverflow = false;
         }
+        if (this.props.tmpyActive === undefined) {
+            this.props.tmpyActive = Subject.create(false);
+        }
 
         // Aspect ratio for font: 2:3 WxH
         this.spanningDivRef.instance.style.minWidth = `${Math.round(this.props.dataEntryFormat.maxDigits * 27.0 / 1.5)}px`;
@@ -351,6 +355,14 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
                 this.textInputRef.getOrDefault().classList.add('computedByFms');
             } else {
                 this.textInputRef.getOrDefault().classList.remove('computedByFms');
+            }
+        }, true));
+
+        this.subs.push(this.props.tmpyActive.sub((v) => {
+            if (v === true) {
+                this.textInputRef.instance.classList.add('tmpy');
+            } else {
+                this.textInputRef.instance.classList.remove('tmpy');
             }
         }, true));
 
