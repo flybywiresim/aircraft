@@ -396,7 +396,7 @@ export class EfisSymbols {
                     }
 
                     if (efisOption === EfisOption.Constraints && !isFromWp) {
-                        const descent = wp.constraintType === WaypointConstraintType.DES;
+                        const descent = wp.additionalData.constraintType === WaypointConstraintType.DES;
                         switch (wp.legAltitudeDescription) {
                         case 1:
                             constraints.push(formatConstraintAlt(wp.legAltitude1, descent));
