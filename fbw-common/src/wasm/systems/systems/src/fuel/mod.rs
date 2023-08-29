@@ -86,7 +86,7 @@ impl<const N: usize> FuelSystem<N> {
 
         // This section of code calculates the center of gravity (assume center of gravity/center of mass is near identical)
         let total_mass_kg = self.fuel_total_weight.get::<kilogram>();
-        let center_of_gravity = if total_mass_kg > 0. {
+        if total_mass_kg > 0. {
             positions
                 .zip(masses)
                 .map(|(pos, m)| pos * m.get::<kilogram>())
@@ -94,8 +94,7 @@ impl<const N: usize> FuelSystem<N> {
                 / total_mass_kg
         } else {
             Vector3::zeros()
-        };
-        center_of_gravity
+        }
     }
 }
 impl<const N: usize> SimulationElement for FuelSystem<N> {
