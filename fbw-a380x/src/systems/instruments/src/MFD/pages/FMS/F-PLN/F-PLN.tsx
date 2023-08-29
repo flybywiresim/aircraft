@@ -12,11 +12,12 @@ import { DestinationWindow } from 'instruments/src/MFD/pages/FMS/F-PLN/Destinati
 import { InsertNextWptFromWindow } from 'instruments/src/MFD/pages/FMS/F-PLN/InsertNextWptFrom';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { FlightPlanElement, FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
-import { WaypointEntryUtils } from '@fmgc/flightplanning/new/WaypointEntryUtils';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { WindVector } from '@fmgc/guidance/vnav/wind';
 import { PseudoWaypoint } from '@fmgc/guidance/PseudoWaypoint';
 import { Coordinates, bearingTo } from 'msfs-geo';
+import { secondsToHHmmString } from 'instruments/src/MFD/shared/utils';
+import { FmgcFlightPhase } from '@shared/flightphase';
 
 interface MfdFmsFplnProps extends AbstractMfdPageProps {
 }
@@ -52,6 +53,10 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
     private destButtonDisabled = Subject.create<boolean>(true);
 
+    private destTimeLabel = Subject.create<string>('--:--');
+
+    private destDistanceLabel = Subject.create<string>('---');
+
     private displayFplnFromLegIndex = Subject.create<number>(0);
 
     private disabledScrollDown = Subject.create(true);
@@ -61,12 +66,6 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     private revisionsMenuRef = FSComponent.createRef<ContextMenu>();
 
     private revisionsMenuValues = Subject.create<ContextMenuElement[]>([]);
-
-    private revisedWaypoint = Subject.create<FlightPlanLeg>(null);
-
-    private revisedWaypointIndex = Subject.create<number>(0);
-
-    private revisedWaypointIsAltn = Subject.create<boolean>(false);
 
     private revisionsMenuOpened = Subject.create<boolean>(false);
 
@@ -91,6 +90,13 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
         } else {
             this.destButtonDisabled.set(true);
             this.destButtonLabel.set('-------');
+        }
+
+        const destPred = this.props.fmService.guidanceController.vnavDriver.getDestinationPrediction();
+        if (destPred) {
+            const eta = new Date(Date.now() + destPred.secondsFromPresent * 1000);
+            this.destTimeLabel.set(`${eta.getHours().toString().padStart(2, '0')}:${eta.getMinutes().toString().padStart(2, '0')}`);
+            this.destDistanceLabel.set(destPred.distanceFromAircraft.toFixed(0));
         }
         console.timeEnd('F-PLN:onNewData');
     }
@@ -320,13 +326,12 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                     type = FplnRevisionsMenuType.Arrival;
                 }
 
-                this.revisedWaypoint.set(leg);
-                this.revisedWaypointIndex.set(originalLegIndex);
-                this.revisedWaypointIsAltn.set(altnFlightPlan);
-                this.revisionsMenuValues.set(getRevisionsMenu(this, type, originalLegIndex, this.loadedFlightPlanIndex, altnFlightPlan));
+                this.props.fmService.revisedWaypointIndex.set(originalLegIndex);
+                this.props.fmService.revisedWaypointIsAltn.set(altnFlightPlan);
+                this.revisionsMenuValues.set(getRevisionsMenu(this, type));
                 this.revisionsMenuRef.instance.display(195, 183);
             } else {
-                this.revisionsMenuValues.set(getRevisionsMenu(this, FplnRevisionsMenuType.Discontinuity, originalLegIndex, this.loadedFlightPlanIndex, altnFlightPlan));
+                this.revisionsMenuValues.set(getRevisionsMenu(this, FplnRevisionsMenuType.Discontinuity));
                 this.revisionsMenuRef.instance.display(195, 183);
             }
         }
@@ -337,7 +342,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     }
 
     public openInsertNextWptFromWindow() {
-        const wpt = this.loadedFlightPlan.allLegs.slice(this.revisedWaypointIndex.get() + 1).map((el) => {
+        const wpt = this.loadedFlightPlan.allLegs.slice(this.props.fmService.revisedWaypointIndex.get() + 1).map((el) => {
             if (el instanceof FlightPlanLeg) {
                 return el.ident;
             }
@@ -416,24 +421,16 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                         opened={this.revisionsMenuOpened}
                     />
                     <DestinationWindow
-                        revisedWaypoint={this.revisedWaypoint}
+                        fmService={this.props.fmService}
                         visible={this.newDestWindowOpened}
-                        cancelAction={() => this.newDestWindowOpened.set(false)}
-                        confirmAction={(newDest) => {
-                            this.props.fmService.flightPlanService.newDest(this.revisedWaypointIndex.get(), newDest, this.loadedFlightPlanIndex, this.revisedWaypointIsAltn.get());
-                            this.newDestWindowOpened.set(false);
-                        }}
                     />
                     <InsertNextWptFromWindow
-                        revisedWaypoint={this.revisedWaypoint}
+                        fmService={this.props.fmService}
+                        revisedWaypointIndex={this.props.fmService.revisedWaypointIndex}
+                        planIndex={this.props.fmService.revisedWaypointPlanIndex}
+                        altn={this.props.fmService.revisedWaypointIsAltn}
                         availableWaypoints={this.nextWptAvailableWaypoints}
                         visible={this.insertNextWptWindowOpened}
-                        cancelAction={() => this.insertNextWptWindowOpened.set(false)}
-                        confirmAction={async (ident) => {
-                            const wpt = await WaypointEntryUtils.getOrCreateWaypoint(this.props.fmService.mfd, ident);
-                            this.insertNextWptWindowOpened.set(false);
-                            await this.props.fmService.flightPlanService.nextWaypoint(this.revisedWaypointIndex.get(), wpt, this.loadedFlightPlanIndex, this.revisedWaypointIsAltn.get());
-                        }}
                     />
                     <div class="mfd-fms-fpln-header">
                         <div class="mfd-fms-fpln-header-from">
@@ -501,13 +498,34 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                             onClick={() => this.props.uiService.navigateTo(`fms/${this.props.uiService.activeUri.get().category}/f-pln-arrival`)}
                             buttonStyle="font-size: 30px; width: 150px; margin-right: 5px;"
                         />
-                        <span class="mfd-label">--:--</span>
+                        <span class={{
+                            'mfd-label': true,
+                            'mfd-fms-yellow-text': this.lineColor.map((it) => it === FplnLineColor.Temporary),
+                        }}
+                        >
+                            {this.destTimeLabel}
+
+                        </span>
                         <div class="mfd-label-value-container">
-                            <span class="mfd-label">{(this.props.fmService.fmgc.getDestEFOB(true) / 1000).toFixed(1)}</span>
+                            <span class={{
+                                'mfd-label': true,
+                                'mfd-fms-yellow-text': this.lineColor.map((it) => it === FplnLineColor.Temporary),
+                            }}
+                            >
+                                {(this.props.fmService.fmgc.getDestEFOB(true)).toFixed(1)}
+
+                            </span>
                             <span class="mfd-label-unit mfd-unit-trailing">T</span>
                         </div>
                         <div class="mfd-label-value-container">
-                            <span class="mfd-label">---</span>
+                            <span class={{
+                                'mfd-label': true,
+                                'mfd-fms-yellow-text': this.lineColor.map((it) => it === FplnLineColor.Temporary),
+                            }}
+                            >
+                                {this.destDistanceLabel}
+
+                            </span>
                             <span class="mfd-label-unit mfd-unit-trailing">NM</span>
                         </div>
                         <div style="display: flex; flex-direction: row; margin-top: 5px; margin-bottom: 5px;">
@@ -534,6 +552,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                     <div class="mfd-fms-fpln-footer">
                         <Button label="INIT" onClick={() => this.props.uiService.navigateTo(`fms/${this.props.uiService.activeUri.get().category}/init`)} buttonStyle="width: 125px;" />
                         <Button
+                            disabled={Subject.create(true)}
                             label="F-PLN INFO"
                             onClick={() => {}}
                             idPrefix="f-pln-infoBtn"
@@ -766,11 +785,14 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
 
             // Format time to leg
             // TODO: Time constraint, "HOLD SPD" label
+            // TODO show ETA if flight phase >= TO
             if (data.etaOrSecondsFromPresent) {
-                const minutesTotal = data.etaOrSecondsFromPresent / 60;
-                const hours = Math.abs(Math.floor(minutesTotal / 60)).toFixed(0).toString().padStart(2, '0');
-                const minutes = Math.abs(minutesTotal % 60).toFixed(0).toString().padStart(2, '0');
-                this.timeRef.getOrDefault().innerText = `${hours}:${minutes}`;
+                if (SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Enum') >= FmgcFlightPhase.Takeoff) {
+                    const eta = new Date(Date.now() + data.etaOrSecondsFromPresent * 1000);
+                    this.timeRef.getOrDefault().innerText = `${eta.getHours().toString().padStart(2, '0')}:${eta.getMinutes().toString().padStart(2, '0')}`;
+                } else {
+                    this.timeRef.getOrDefault().innerText = secondsToHHmmString(data.etaOrSecondsFromPresent);
+                }
             }
 
             this.renderSpdAltEfobWind(data);

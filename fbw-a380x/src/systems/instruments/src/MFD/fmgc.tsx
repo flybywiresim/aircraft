@@ -50,11 +50,11 @@ export enum ClimbDerated {
 export class FmgcData {
     public readonly atcCallsign = Subject.create<string>('----------');
 
-    public readonly zeroFuelWeight = Subject.create<number>(300_000); // in kg
+    public readonly zeroFuelWeight = Subject.create<number>(55_000); // in kg
 
-    public readonly zeroFuelWeightCenterOfGravity = Subject.create<number>(33.0); // in percent
+    public readonly zeroFuelWeightCenterOfGravity = Subject.create<number>(23.5); // in percent
 
-    public readonly blockFuel = Subject.create<number>(100_000); // in kg
+    public readonly blockFuel = Subject.create<number>(5_000); // in kg
 
     public readonly taxiFuel = Subject.create<number>(undefined); // in kg
 
@@ -144,7 +144,7 @@ export class FmgcData {
 
     public readonly climbDerated = Subject.create<ClimbDerated>(ClimbDerated.NONE);
 
-    public readonly climbPreSelSpeed = Subject.create<Knots>(250);
+    public readonly climbPreSelSpeed = Subject.create<Knots>(undefined);
 
     // TODO adapt computation for A380
     public readonly climbManagedSpeedFromCostIndex = this.costIndex.map((ci) => {
@@ -156,9 +156,9 @@ export class FmgcData {
 
     public readonly climbSpeedLimit = Subject.create<SpeedLimit>({ speed: 250, underAltitude: 10_000 });
 
-    public readonly cruisePreSelMach = Subject.create<Mach>(0.8);
+    public readonly cruisePreSelMach = Subject.create<Mach>(undefined);
 
-    public readonly cruisePreSelSpeed = Subject.create<Knots>(280);
+    public readonly cruisePreSelSpeed = Subject.create<Knots>(undefined);
 
     // TODO adapt computation for A380
     public readonly cruiseManagedSpeedFromCostIndex = this.costIndex.map((ci) => {
@@ -168,7 +168,7 @@ export class FmgcData {
 
     public readonly cruiseManagedSpeedMach = this.cruiseManagedSpeedFromCostIndex.map((spd) => SimVar.GetGameVarValue('FROM KIAS TO MACH', 'number', spd) as number);
 
-    public readonly descentPreSelSpeed = Subject.create<Knots>(220);
+    public readonly descentPreSelSpeed = Subject.create<Knots>(undefined);
 
     // TODO adapt computation for A380
     public readonly descentManagedSpeedFromCostIndex = this.costIndex.map((ci) => {
@@ -209,7 +209,12 @@ export class FmgcDataInterface implements Fmgc {
     }
 
     getFOB(): number {
-        return this.data.blockFuel.get();
+        if (this.getFlightPhase() >= FmgcFlightPhase.Takeoff) {
+            const bf = SimVar.GetSimVarValue('FUEL TOTAL QUANTITY', 'gallons') * SimVar.GetSimVarValue('FUEL WEIGHT PER GALLON', 'kilograms') / 1_000;
+            this.data.blockFuel.set(bf);
+            return bf;
+        }
+        return this.data.blockFuel.get() / 1_000; // Needs to be returned in tonnes
     }
 
     getV2Speed(): Knots {

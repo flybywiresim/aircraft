@@ -3,14 +3,17 @@ import '../../common/style.scss';
 import { Button } from 'instruments/src/MFD/pages/common/Button';
 import { coordinateToString } from '@flybywiresim/fbw-sdk';
 import { DropdownMenu } from 'instruments/src/MFD/pages/common/DropdownMenu';
-import { FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
+import { WaypointEntryUtils } from '@fmgc/flightplanning/new/WaypointEntryUtils';
+import { MfdFlightManagementService } from 'instruments/src/MFD/pages/common/FlightManagementService';
+import { FlightPlanIndex } from '@fmgc/index';
 
 interface InsertNextWptFromWindowProps extends ComponentProps {
-    revisedWaypoint: Subscribable<FlightPlanLeg>;
+    fmService: MfdFlightManagementService;
+    revisedWaypointIndex: Subscribable<number>;
+    planIndex: Subscribable<FlightPlanIndex>;
+    altn: Subscribable<boolean>;
     availableWaypoints: SubscribableArray<string>;
-    visible: Subscribable<boolean>;
-    cancelAction: () => void;
-    confirmAction: (wpt: string) => void;
+    visible: Subject<boolean>;
     contentContainerStyle?: string;
 }
 export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromWindowProps> {
@@ -27,18 +30,23 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
 
     private selectedWaypointIndex = Subject.create<number>(0);
 
-    private onModified(idx: number, text: string): void {
+    private async onModified(idx: number, text: string): Promise<void> {
         if (idx >= 0) {
-            console.log(`NextWPT: ${this.props.availableWaypoints.get(idx)}`);
             if (this.props.availableWaypoints.get(idx)) {
                 this.selectedWaypointIndex.set(idx);
+                this.props.visible.set(false);
+                await this.props.fmService.flightPlanService.nextWaypoint(
+                    this.props.revisedWaypointIndex.get() + idx,
+                    this.props.fmService.flightPlanService.get(this.props.planIndex.get()).legElementAt(this.props.revisedWaypointIndex.get()).definition.waypoint,
+                    this.props.planIndex.get(),
+                    this.props.altn.get(),
+                );
             }
         } else {
-            console.log(`NextWPT: ${text}`);
+            const wpt = await WaypointEntryUtils.getOrCreateWaypoint(this.props.fmService.mfd, text);
+            this.props.visible.set(false);
+            await this.props.fmService.flightPlanService.nextWaypoint(this.props.revisedWaypointIndex.get(), wpt, this.props.planIndex.get(), this.props.altn.get());
         }
-
-        // Consider handling the flight plan actions in here, to accomodate free text entries better
-        this.props.confirmAction(text);
     }
 
     onAfterRender(node: VNode): void {
@@ -50,7 +58,8 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
             this.nextWpt.set('');
         }, true));
 
-        this.subs.push(this.props.revisedWaypoint.sub((wpt) => {
+        this.subs.push(this.props.revisedWaypointIndex.sub((wptIdx) => {
+            const wpt = this.props.fmService.flightPlanService.get(this.props.planIndex.get()).legElementAt(wptIdx);
             this.identRef.instance.innerText = wpt.ident;
             this.coordinatesRef.instance.innerText = coordinateToString(wpt.definition.waypoint.location, false);
             this.selectedWaypointIndex.set(null);
@@ -76,7 +85,9 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
                         <span class="mfd-label">
                             INSERT NEXT WPT FROM
                             {' '}
-                            <span ref={this.identRef} class="mfd-value-green bigger">{this.props.revisedWaypoint.get()?.ident ?? ''}</span>
+                            <span ref={this.identRef} class="mfd-value-green bigger">
+                                {this.props.fmService.flightPlanService.get(this.props.planIndex?.get())?.legElementAt(this.props.revisedWaypointIndex.get()).definition.waypoint.ident ?? ''}
+                            </span>
                         </span>
                         <span style="margin-left: 50px; margin-top: 10px;">
                             <span ref={this.coordinatesRef} class="mfd-value-green bigger" />
@@ -95,7 +106,7 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
                         </div>
                     </div>
                     <div style="display: flex; flex-direction: row; justify-content: space-between">
-                        <Button label="CANCEL" onClick={() => this.props.cancelAction()} />
+                        <Button label="CANCEL" onClick={() => this.props.visible.set(false)} />
                     </div>
                 </div>
             </div>

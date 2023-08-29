@@ -1,15 +1,13 @@
-import { ComponentProps, DisplayComponent, FSComponent, Subject, Subscribable, Subscription, VNode } from '@microsoft/msfs-sdk';
+import { ComponentProps, DisplayComponent, FSComponent, Subject, Subscription, VNode } from '@microsoft/msfs-sdk';
 import '../../common/style.scss';
 import { Button } from 'instruments/src/MFD/pages/common/Button';
 import { InputField } from 'instruments/src/MFD/pages/common/InputField';
 import { AirportFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
-import { FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
+import { MfdFlightManagementService } from 'instruments/src/MFD/pages/common/FlightManagementService';
 
 interface DestinationWindowProps extends ComponentProps {
-    revisedWaypoint: Subscribable<FlightPlanLeg>;
-    visible: Subscribable<boolean>;
-    cancelAction: () => void;
-    confirmAction: (newDest: string) => void;
+    fmService: MfdFlightManagementService;
+    visible: Subject<boolean>;
     contentContainerStyle?: string;
 }
 export class DestinationWindow extends DisplayComponent<DestinationWindowProps> {
@@ -24,7 +22,13 @@ export class DestinationWindow extends DisplayComponent<DestinationWindowProps> 
 
     private onModified(newDest: string): void {
         if (newDest.length === 4) {
-            this.props.confirmAction(newDest);
+            this.props.fmService.flightPlanService.newDest(
+                this.props.fmService.revisedWaypointIndex.get(),
+                newDest,
+                this.props.fmService.revisedWaypointPlanIndex.get(),
+                this.props.fmService.revisedWaypointIsAltn.get(),
+            );
+            this.props.visible.set(false);
             this.newDest.set('');
         }
     }
@@ -37,8 +41,8 @@ export class DestinationWindow extends DisplayComponent<DestinationWindowProps> 
             this.newDest.set('');
         }, true));
 
-        this.subs.push(this.props.revisedWaypoint.sub((wpt) => {
-            this.identRef.instance.innerText = wpt.ident;
+        this.subs.push(this.props.fmService.revisedWaypointIndex.sub(() => {
+            this.identRef.instance.innerText = this.props.fmService.revisedWaypoint().ident;
         }));
     }
 
@@ -61,7 +65,7 @@ export class DestinationWindow extends DisplayComponent<DestinationWindowProps> 
                         <span class="mfd-label">
                             NEW DEST FROM
                             {' '}
-                            <span ref={this.identRef} class="mfd-value-green bigger">{this.props.revisedWaypoint.get()?.ident ?? ''}</span>
+                            <span ref={this.identRef} class="mfd-value-green bigger">{this.props.fmService.revisedWaypoint()?.ident ?? ''}</span>
                         </span>
                         <div style="align-self: center; margin-top: 50px;">
                             <InputField<string>
@@ -75,7 +79,7 @@ export class DestinationWindow extends DisplayComponent<DestinationWindowProps> 
                         </div>
                     </div>
                     <div style="display: flex; flex-direction: row; justify-content: space-between">
-                        <Button label="CANCEL" onClick={() => this.props.cancelAction()} />
+                        <Button label="CANCEL" onClick={() => this.props.visible.set(false)} />
                     </div>
                 </div>
             </div>

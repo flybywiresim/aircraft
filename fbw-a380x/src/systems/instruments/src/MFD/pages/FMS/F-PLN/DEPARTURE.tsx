@@ -51,9 +51,9 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
                 runways.push({
                     label: `${rw.ident.substring(2).padEnd(3, ' ')} ${rw.length.toFixed(0).padStart(5, ' ')}FT ${rw.lsIdent ? 'ILS' : ''}`,
                     action: async () => {
-                        await this.props.fmService.flightPlanService.setOriginRunway(rw.ident, this.loadedFlightPlanIndex);
-                        await this.props.fmService.flightPlanService.setDepartureProcedure(undefined, this.loadedFlightPlanIndex);
-                        await this.props.fmService.flightPlanService.setDepartureEnrouteTransition(undefined, this.loadedFlightPlanIndex);
+                        await this.props.fmService.flightPlanService.setOriginRunway(rw.ident, this.loadedFlightPlanIndex.get());
+                        await this.props.fmService.flightPlanService.setDepartureProcedure(undefined, this.loadedFlightPlanIndex.get());
+                        await this.props.fmService.flightPlanService.setDepartureEnrouteTransition(undefined, this.loadedFlightPlanIndex.get());
                     },
                 });
             });
@@ -70,16 +70,16 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
                     const sids: ButtonMenuItem[] = [{
                         label: 'NONE',
                         action: async () => {
-                            await this.props.fmService.flightPlanService.setDepartureProcedure(undefined, this.loadedFlightPlanIndex);
-                            await this.props.fmService.flightPlanService.setDepartureEnrouteTransition(undefined, this.loadedFlightPlanIndex);
+                            await this.props.fmService.flightPlanService.setDepartureProcedure(undefined, this.loadedFlightPlanIndex.get());
+                            await this.props.fmService.flightPlanService.setDepartureEnrouteTransition(undefined, this.loadedFlightPlanIndex.get());
                         },
                     }];
                     this.loadedFlightPlan.availableDepartures.forEach((dep) => {
                         sids.push({
                             label: dep.ident,
                             action: async () => {
-                                await this.props.fmService.flightPlanService.setDepartureProcedure(dep.ident, this.loadedFlightPlanIndex);
-                                await this.props.fmService.flightPlanService.setDepartureEnrouteTransition(undefined, this.loadedFlightPlanIndex);
+                                await this.props.fmService.flightPlanService.setDepartureProcedure(dep.ident, this.loadedFlightPlanIndex.get());
+                                await this.props.fmService.flightPlanService.setDepartureEnrouteTransition(undefined, this.loadedFlightPlanIndex.get());
                             },
                         });
                     });
@@ -102,10 +102,10 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
                     const trans: ButtonMenuItem[] = [
                         {
                             label: 'NONE',
-                            action: () => this.props.fmService.flightPlanService.setDepartureEnrouteTransition(undefined, this.loadedFlightPlanIndex),
+                            action: () => this.props.fmService.flightPlanService.setDepartureEnrouteTransition(undefined, this.loadedFlightPlanIndex.get()),
                         }];
                     this.loadedFlightPlan.originDeparture.enrouteTransitions.forEach((el) => {
-                        trans.push({ label: el.ident, action: () => this.props.fmService.flightPlanService.setDepartureEnrouteTransition(el.ident, this.loadedFlightPlanIndex) });
+                        trans.push({ label: el.ident, action: () => this.props.fmService.flightPlanService.setDepartureEnrouteTransition(el.ident, this.loadedFlightPlanIndex.get()) });
                     });
                     this.transOptions.set(trans);
                     this.transDisabled.set(false);

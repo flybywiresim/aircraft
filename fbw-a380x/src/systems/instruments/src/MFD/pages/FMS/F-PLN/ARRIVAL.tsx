@@ -63,9 +63,9 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                 runways.push({
                     label: `${rw.ident.substring(2).padEnd(3, ' ')} ${rw.length.toFixed(0).padStart(5, ' ')}FT`,
                     action: async () => {
-                        await this.props.fmService.flightPlanService.setDestinationRunway(rw.ident, this.loadedFlightPlanIndex);
-                        await this.props.fmService.flightPlanService.setApproach(undefined, this.loadedFlightPlanIndex);
-                        await this.props.fmService.flightPlanService.setApproachVia(undefined, this.loadedFlightPlanIndex);
+                        await this.props.fmService.flightPlanService.setDestinationRunway(rw.ident, this.loadedFlightPlanIndex.get());
+                        await this.props.fmService.flightPlanService.setApproach(undefined, this.loadedFlightPlanIndex.get());
+                        await this.props.fmService.flightPlanService.setApproachVia(undefined, this.loadedFlightPlanIndex.get());
                     },
                 });
             });
@@ -85,17 +85,17 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                 const appr: ButtonMenuItem[] = [{
                     label: 'NONE',
                     action: async () => {
-                        await this.props.fmService.flightPlanService.setApproach(undefined, this.loadedFlightPlanIndex);
-                        await this.props.fmService.flightPlanService.setApproachVia(undefined, this.loadedFlightPlanIndex);
+                        await this.props.fmService.flightPlanService.setApproach(undefined, this.loadedFlightPlanIndex.get());
+                        await this.props.fmService.flightPlanService.setApproachVia(undefined, this.loadedFlightPlanIndex.get());
                     },
                 }];
                 this.loadedFlightPlan.availableApproaches.forEach((el) => {
                     appr.push({
                         label: el.ident,
                         action: async () => {
-                            await this.props.fmService.flightPlanService.setDestinationRunway(el.runwayIdent, this.loadedFlightPlanIndex); // Should we do this here?
-                            await this.props.fmService.flightPlanService.setApproach(el.ident, this.loadedFlightPlanIndex);
-                            await this.props.fmService.flightPlanService.setApproachVia(undefined, this.loadedFlightPlanIndex);
+                            await this.props.fmService.flightPlanService.setDestinationRunway(el.runwayIdent, this.loadedFlightPlanIndex.get()); // Should we do this here?
+                            await this.props.fmService.flightPlanService.setApproach(el.ident, this.loadedFlightPlanIndex.get());
+                            await this.props.fmService.flightPlanService.setApproachVia(undefined, this.loadedFlightPlanIndex.get());
                         },
                     });
                 });
@@ -113,14 +113,14 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                     const vias: ButtonMenuItem[] = [{
                         label: 'NONE',
                         action: async () => {
-                            await this.props.fmService.flightPlanService.setApproachVia(undefined, this.loadedFlightPlanIndex);
+                            await this.props.fmService.flightPlanService.setApproachVia(undefined, this.loadedFlightPlanIndex.get());
                         },
                     }];
                     this.loadedFlightPlan.approach.transitions.forEach((el) => {
                         vias.push({
                             label: el.ident,
                             action: async () => {
-                                await this.props.fmService.flightPlanService.setApproachVia(el.ident, this.loadedFlightPlanIndex);
+                                await this.props.fmService.flightPlanService.setApproachVia(el.ident, this.loadedFlightPlanIndex.get());
                             },
                         });
                     });
@@ -149,16 +149,16 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                 const arrivals: ButtonMenuItem[] = [{
                     label: 'NONE',
                     action: async () => {
-                        await this.props.fmService.flightPlanService.setArrival(undefined, this.loadedFlightPlanIndex);
-                        await this.props.fmService.flightPlanService.setArrivalEnrouteTransition(undefined, this.loadedFlightPlanIndex);
+                        await this.props.fmService.flightPlanService.setArrival(undefined, this.loadedFlightPlanIndex.get());
+                        await this.props.fmService.flightPlanService.setArrivalEnrouteTransition(undefined, this.loadedFlightPlanIndex.get());
                     },
                 }];
                 this.loadedFlightPlan.availableArrivals.forEach((el) => {
                     arrivals.push({
                         label: el.ident,
                         action: async () => {
-                            await this.props.fmService.flightPlanService.setArrival(el.ident, this.loadedFlightPlanIndex);
-                            await this.props.fmService.flightPlanService.setArrivalEnrouteTransition(undefined, this.loadedFlightPlanIndex);
+                            await this.props.fmService.flightPlanService.setArrival(el.ident, this.loadedFlightPlanIndex.get());
+                            await this.props.fmService.flightPlanService.setArrivalEnrouteTransition(undefined, this.loadedFlightPlanIndex.get());
                         },
                     });
                 });
@@ -175,14 +175,14 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                     const trans: ButtonMenuItem[] = [{
                         label: 'NONE',
                         action: async () => {
-                            await this.props.fmService.flightPlanService.setArrivalEnrouteTransition(undefined, this.loadedFlightPlanIndex);
+                            await this.props.fmService.flightPlanService.setArrivalEnrouteTransition(undefined, this.loadedFlightPlanIndex.get());
                         },
                     }];
                     this.loadedFlightPlan.arrival.enrouteTransitions.forEach((el) => {
                         trans.push({
                             label: el.ident,
                             action: async () => {
-                                await this.props.fmService.flightPlanService.setArrivalEnrouteTransition(el.ident, this.loadedFlightPlanIndex);
+                                await this.props.fmService.flightPlanService.setArrivalEnrouteTransition(el.ident, this.loadedFlightPlanIndex.get());
                             },
                         });
                     });

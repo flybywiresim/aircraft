@@ -15,7 +15,7 @@ export abstract class FmsPage<T extends AbstractMfdPageProps> extends DisplayCom
 
     public loadedFlightPlan: FlightPlan;
 
-    protected loadedFlightPlanIndex: FlightPlanIndex;
+    protected loadedFlightPlanIndex = Subject.create<FlightPlanIndex>(FlightPlanIndex.Active);
 
     protected currentFlightPlanVersion: number = 0;
 
@@ -76,25 +76,25 @@ export abstract class FmsPage<T extends AbstractMfdPageProps> extends DisplayCom
         switch (this.props.uiService.activeUri.get().category) {
         case 'active':
             this.loadedFlightPlan = this.props.fmService.flightPlanService.activeOrTemporary;
-            this.loadedFlightPlanIndex = this.props.fmService.flightPlanService.hasTemporary ? FlightPlanIndex.Temporary : FlightPlanIndex.Active;
+            this.loadedFlightPlanIndex.set(this.props.fmService.flightPlanService.hasTemporary ? FlightPlanIndex.Temporary : FlightPlanIndex.Active);
             this.secActive.set(false);
             this.tmpyActive.set(this.props.fmService.flightPlanService.hasTemporary);
             break;
         case 'sec1':
             this.loadedFlightPlan = this.props.fmService.flightPlanService.secondary(1);
-            this.loadedFlightPlanIndex = FlightPlanIndex.FirstSecondary;
+            this.loadedFlightPlanIndex.set(FlightPlanIndex.FirstSecondary);
             this.secActive.set(true);
             this.tmpyActive.set(false);
             break;
         case 'sec2':
             this.loadedFlightPlan = this.props.fmService.flightPlanService.secondary(2);
-            this.loadedFlightPlanIndex = FlightPlanIndex.FirstSecondary + 1;
+            this.loadedFlightPlanIndex.set(FlightPlanIndex.FirstSecondary + 1);
             this.secActive.set(true);
             this.tmpyActive.set(false);
             break;
         case 'sec3':
             this.loadedFlightPlan = this.props.fmService.flightPlanService.secondary(3);
-            this.loadedFlightPlanIndex = FlightPlanIndex.FirstSecondary + 2; // TODO FIXME when 2nd and 3rd SEC are introduced
+            this.loadedFlightPlanIndex.set(FlightPlanIndex.FirstSecondary + 2);
             this.secActive.set(true);
             this.tmpyActive.set(false);
             break;

@@ -9,7 +9,6 @@ import {
     DisplayComponent,
     EventBus,
     FSComponent,
-    SimVarValueType,
     Subject,
     VNode,
 } from '@microsoft/msfs-sdk';
@@ -38,7 +37,6 @@ import { EfisSymbols } from '@fmgc/efis/EfisSymbols';
 import { NavaidTuner } from '@fmgc/navigation/NavaidTuner';
 import { NavaidSelectionManager } from '@fmgc/navigation/NavaidSelectionManager';
 import { LandingSystemSelectionManager } from '@fmgc/navigation/LandingSystemSelectionManager';
-import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/new/NavigationDatabaseService';
 import { MfdFlightManagementService } from 'instruments/src/MFD/pages/common/FlightManagementService';
 import { MfdFmsFplnDuplicateNames } from 'instruments/src/MFD/pages/FMS/F-PLN/DUPLICATE_NAMES';
@@ -49,6 +47,7 @@ import { FmsErrorType } from '@fmgc/FmsError';
 
 import { WaypointFactory } from '@fmgc/flightplanning/new/waypoints/WaypointFactory';
 import { FmgcDataInterface } from 'instruments/src/MFD/fmgc';
+import { Navigation } from '@fmgc/index';
 import { MfdSimvars } from './shared/MFDSimvarPublisher';
 import { DisplayUnit } from '../MsfsAvionicsCommon/displayUnit';
 
@@ -83,26 +82,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
 
     private guidanceController = new GuidanceController(this.fmgc, this.flightPlanService);
 
-    private navigationProvider: NavigationProvider = {
-        getEpe(): number {
-            return 0.1;
-        },
-        getPpos(): Coordinates | null {
-            const lat = SimVar.GetSimVarValue('PLANE LATITUDE', SimVarValueType.Degree);
-            const long = SimVar.GetSimVarValue('PLANE LONGITUDE', SimVarValueType.Degree);
-
-            return { lat, long };
-        },
-        getBaroCorrectedAltitude(): number | null {
-            return 0;
-        },
-        getPressureAltitude(): number | null {
-            return 0;
-        },
-        getRadioHeight(): number | null {
-            return 0;
-        },
-    }
+    private navigationProvider = new Navigation(this.flightPlanService, undefined);
 
     private navaidSelectionManager = new NavaidSelectionManager(this.flightPlanService, this.navigationProvider);
 
@@ -151,6 +131,9 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
         await new Promise((r) => setTimeout(r, 250));
         this.flightPlanService.createFlightPlans();
 
+        // Intialize from MSFS flight data
+        this.flightPlanService.active.performanceData.cruiseFlightLevel.set(SimVar.GetGameVarValue('AIRCRAFT CRUISE ALTITUDE', 'feet'));
+
         // Build EGLL/27R N0411F250 MAXI1F MAXIT DCT HARDY UM605 BIBAX BIBA9X LFPG/09L
         await this.flightPlanService.newCityPair('EGLL', 'LFPG', 'EBBR');
         await this.flightPlanService.setOriginRunway('RW27R');
@@ -184,6 +167,40 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
         // Add test FMS error messages
         this.showFmsErrorMessage(FmsErrorType.NotInDatabase);
         this.showFmsErrorMessageFreeText({ message: 'CHECK T.O, DATA', cleared: false, backgroundColor: 'amber' });
+    }
+
+    private initVariables() {
+        // Reset SimVars
+        SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_PFD', 'knots', 0);
+        SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_ATHR', 'knots', 0);
+
+        SimVar.SetSimVarValue('L:A32NX_MachPreselVal', 'mach', -1);
+        SimVar.SetSimVarValue('L:A32NX_SpeedPreselVal', 'knots', -1);
+
+        SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', -1);
+        SimVar.SetSimVarValue('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet', 0);
+
+        SimVar.SetSimVarValue(
+            'L:A32NX_FG_ALTITUDE_CONSTRAINT',
+            'feet',
+            0,
+        );
+        SimVar.SetSimVarValue('L:A32NX_TO_CONFIG_NORMAL', 'Bool', 0);
+        SimVar.SetSimVarValue('L:A32NX_CABIN_READY', 'Bool', 0);
+        SimVar.SetSimVarValue('L:A32NX_FM_GROSS_WEIGHT', 'Number', 0);
+
+        if (
+            SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_DISABLED', 'number') === 1
+        ) {
+            SimVar.SetSimVarValue('K:A32NX.ATHR_RESET_DISABLE', 'number', 1);
+        }
+
+        SimVar.SetSimVarValue('L:A32NX_PFD_MSG_SET_HOLD_SPEED', 'bool', false);
+
+        // Reset SimVars
+        SimVar.SetSimVarValue('L:AIRLINER_V1_SPEED', 'Knots', NaN);
+        SimVar.SetSimVarValue('L:AIRLINER_V2_SPEED', 'Knots', NaN);
+        SimVar.SetSimVarValue('L:AIRLINER_VR_SPEED', 'Knots', NaN);
     }
 
     /**
@@ -321,6 +338,9 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
         this.guidanceController.init();
 
         let lastUpdateTime = Date.now();
+
+        this.initVariables();
+
         setInterval(() => {
             const now = Date.now();
             const dt = now - lastUpdateTime;

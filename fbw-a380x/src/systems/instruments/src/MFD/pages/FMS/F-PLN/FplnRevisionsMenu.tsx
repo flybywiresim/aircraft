@@ -1,4 +1,3 @@
-import { FlightPlanIndex } from '@fmgc/flightplanning/new/FlightPlanManager';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { FSComponent } from '@microsoft/msfs-sdk';
 import { MfdFmsFpln } from 'instruments/src/MFD/pages/FMS/F-PLN/F-PLN';
@@ -14,7 +13,11 @@ export enum FplnRevisionsMenuType {
     TooSteepPath
 }
 
-export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType, legIndex: number, planIndex: FlightPlanIndex, altnFlightPlan: boolean): ContextMenuElement[] {
+export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType): ContextMenuElement[] {
+    const legIndex = fpln.props.fmService.revisedWaypointIndex.get();
+    const planIndex = fpln.props.fmService.revisedWaypointPlanIndex.get();
+    const altnFlightPlan = fpln.props.fmService.revisedWaypointIsAltn.get();
+
     let realLegIndex = legIndex;
     if (altnFlightPlan === true) {
         realLegIndex = legIndex - fpln.loadedFlightPlan.allLegs.length;
