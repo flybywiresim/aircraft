@@ -31,9 +31,9 @@ impl SimulationElement for FuelTestAircraft {
     }
 }
 
-pub const MINUTES_TO_SECONDS: u64 = 60;
-pub const FUEL_GALLONS_TO_KG: f64 = 3.039075693483925;
-pub const LBS_TO_KG: f64 = 0.4535934;
+const MINUTES_TO_SECONDS: u64 = 60;
+const FUEL_GALLONS_TO_KG: f64 = 3.039075693483925;
+const LBS_TO_KG: f64 = 0.4535934;
 
 struct FuelTestBed {
     test_bed: SimulationTestBed<FuelTestAircraft>,

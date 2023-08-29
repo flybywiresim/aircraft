@@ -6,8 +6,6 @@ edition = "2021"
 
 [dependencies]
 uom = "0.33.0"
-rand = "0.8.0"
-rand_pcg = "0.3.1"
 nalgebra = "0.25.0"
 ntest = "0.7.2"
 fxhash = "0.2.1"
@@ -15,3 +13,5 @@ systems = { path = "../../../../../fbw-common/src/wasm/systems/systems" }
 
 [dev-dependencies]
 rstest = "0.10.0"
+rand = "0.8.0"
+rand_pcg = "0.3.1"

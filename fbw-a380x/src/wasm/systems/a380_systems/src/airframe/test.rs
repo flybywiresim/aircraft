@@ -1,17 +1,13 @@
-use std::time::Duration;
-
-use nalgebra::Vector3;
-use systems::electrical::Electricity;
-use systems::simulation::UpdateContext;
-
 use super::*;
-use crate::{
-    payload::A380Payload,
-    systems::simulation::{
-        test::{SimulationTestBed, TestBed},
-        Aircraft, SimulationElement, SimulationElementVisitor,
-    },
+use crate::systems::simulation::{
+    test::{SimulationTestBed, TestBed},
+    Aircraft, SimulationElement, SimulationElementVisitor,
 };
+use nalgebra::Vector3;
+use std::time::Duration;
+use systems::electrical::Electricity;
+use systems::payload::BoardingInputs;
+use systems::simulation::UpdateContext;
 
 const FUEL_GALLONS_TO_KG: f64 = 3.039075693483925;
 const MINUTES_TO_SECONDS: u64 = 60;
@@ -181,30 +177,30 @@ impl AirframeTestAircraft {
         }
     }
 
-    fn zfw_cg_mac(&self) -> f64 {
-        self.airframe.zfw_cg_mac()
+    fn zero_fuel_weight_center_of_gravity(&self) -> f64 {
+        self.airframe.zero_fuel_weight_center_of_gravity()
     }
 
-    fn gw_cg_mac(&self) -> f64 {
-        self.airframe.gw_cg_mac()
-    }
-
-    #[allow(dead_code)]
-    fn to_cg_mac(&self) -> f64 {
-        self.airframe.to_cg_mac()
-    }
-
-    fn target_zfw_cg_mac(&self) -> f64 {
-        self.airframe.target_zfw_cg_mac()
-    }
-
-    fn target_gw_cg_mac(&self) -> f64 {
-        self.airframe.target_gw_cg_mac()
+    fn gross_weight_center_of_gravity(&self) -> f64 {
+        self.airframe.gross_weight_center_of_gravity()
     }
 
     #[allow(dead_code)]
-    fn target_to_cg_mac(&self) -> f64 {
-        self.airframe.target_to_cg_mac()
+    fn take_off_center_of_gravity(&self) -> f64 {
+        self.airframe.take_off_center_of_gravity()
+    }
+
+    fn target_zero_fuel_weight_center_of_gravity(&self) -> f64 {
+        self.airframe.target_zero_fuel_weight_center_of_gravity()
+    }
+
+    fn target_gross_weight_center_of_gravity(&self) -> f64 {
+        self.airframe.target_gross_weight_center_of_gravity()
+    }
+
+    #[allow(dead_code)]
+    fn target_take_off_center_of_gravity(&self) -> f64 {
+        self.airframe.target_take_off_center_of_gravity()
     }
 
     fn set_passengers(&mut self, total_passenger_load: Mass, center_of_gravity: Vector3<f64>) {
@@ -321,14 +317,14 @@ impl AirframeTestBed {
 
     fn load_pax(self, pax_qty: i16, center_of_gravity: Vector3<f64>) -> Self {
         let payload =
-            Mass::new::<kilogram>(pax_qty as f64 * A380Payload::DEFAULT_PER_PAX_WEIGHT_KG);
+            Mass::new::<kilogram>(pax_qty as f64 * BoardingInputs::DEFAULT_PER_PAX_WEIGHT_KG);
 
         self.set_passengers(payload, center_of_gravity)
     }
 
     fn target_pax(self, pax_qty: i16, center_of_gravity: Vector3<f64>) -> Self {
         let payload =
-            Mass::new::<kilogram>(pax_qty as f64 * A380Payload::DEFAULT_PER_PAX_WEIGHT_KG);
+            Mass::new::<kilogram>(pax_qty as f64 * BoardingInputs::DEFAULT_PER_PAX_WEIGHT_KG);
 
         self.set_target_passengers(payload, center_of_gravity)
     }
@@ -412,30 +408,30 @@ impl AirframeTestBed {
         )
     }
 
-    fn zfw_cg_mac(&self) -> f64 {
-        self.query(|a| a.zfw_cg_mac())
+    fn zero_fuel_weight_center_of_gravity(&self) -> f64 {
+        self.query(|a| a.zero_fuel_weight_center_of_gravity())
     }
 
-    fn gw_cg_mac(&self) -> f64 {
-        self.query(|a| a.gw_cg_mac())
-    }
-
-    #[allow(dead_code)]
-    fn to_cg_mac(&self) -> f64 {
-        self.query(|a| a.to_cg_mac())
-    }
-
-    fn target_zfw_cg_mac(&self) -> f64 {
-        self.query(|a| a.target_zfw_cg_mac())
-    }
-
-    fn target_gw_cg_mac(&self) -> f64 {
-        self.query(|a| a.target_gw_cg_mac())
+    fn gross_weight_center_of_gravity(&self) -> f64 {
+        self.query(|a| a.gross_weight_center_of_gravity())
     }
 
     #[allow(dead_code)]
-    fn target_to_cg_mac(&self) -> f64 {
-        self.query(|a| a.target_to_cg_mac())
+    fn take_off_center_of_gravity(&self) -> f64 {
+        self.query(|a| a.take_off_center_of_gravity())
+    }
+
+    fn target_zero_fuel_weight_center_of_gravity(&self) -> f64 {
+        self.query(|a| a.target_zero_fuel_weight_center_of_gravity())
+    }
+
+    fn target_gross_weight_center_of_gravity(&self) -> f64 {
+        self.query(|a| a.target_gross_weight_center_of_gravity())
+    }
+
+    #[allow(dead_code)]
+    fn target_take_off_center_of_gravity(&self) -> f64 {
+        self.query(|a| a.target_take_off_center_of_gravity())
     }
 }
 impl TestBed for AirframeTestBed {
@@ -468,16 +464,21 @@ fn empty() {
         .load_no_fuel()
         .and_run();
 
-    let zfw_cg_mac = (test_bed.zfw_cg_mac() * 100.0).round() / 100.0;
-    let gw_cg_mac = (test_bed.gw_cg_mac() * 100.0).round() / 100.0;
+    let zero_fuel_weight_center_of_gravity =
+        (test_bed.zero_fuel_weight_center_of_gravity() * 100.0).round() / 100.0;
+    let gross_weight_center_of_gravity =
+        (test_bed.gross_weight_center_of_gravity() * 100.0).round() / 100.0;
 
-    println!("ZFW CG MAC: {}", zfw_cg_mac);
-    println!("GW CG MAC: {}", gw_cg_mac);
+    println!("ZFW CG MAC: {}", zero_fuel_weight_center_of_gravity);
+    println!("GW CG MAC: {}", gross_weight_center_of_gravity);
 
-    assert_eq!(zfw_cg_mac, 36.2);
-    assert_eq!(gw_cg_mac, 36.2);
+    assert_eq!(zero_fuel_weight_center_of_gravity, 36.2);
+    assert_eq!(gross_weight_center_of_gravity, 36.2);
     // Equal when fuel is empty
-    assert_eq!(zfw_cg_mac, gw_cg_mac);
+    assert_eq!(
+        zero_fuel_weight_center_of_gravity,
+        gross_weight_center_of_gravity
+    );
 }
 
 #[test]
@@ -491,16 +492,18 @@ fn low_fuel_half_pax() {
         .and_run()
         .and_stabilize();
 
-    let zfw_cg_mac = (test_bed.zfw_cg_mac() * 100.0).round() / 100.0;
-    let gw_cg_mac = (test_bed.gw_cg_mac() * 100.0).round() / 100.0;
+    let zero_fuel_weight_center_of_gravity =
+        (test_bed.zero_fuel_weight_center_of_gravity() * 100.0).round() / 100.0;
+    let gross_weight_center_of_gravity =
+        (test_bed.gross_weight_center_of_gravity() * 100.0).round() / 100.0;
 
-    println!("ZFW CG MAC: {}", zfw_cg_mac);
-    println!("GW CG MAC: {}", gw_cg_mac);
+    println!("ZFW CG MAC: {}", zero_fuel_weight_center_of_gravity);
+    println!("GW CG MAC: {}", gross_weight_center_of_gravity);
 
-    assert!(zfw_cg_mac > 36.);
-    assert!(zfw_cg_mac < 37.);
-    assert!(gw_cg_mac > 37.);
-    assert!(gw_cg_mac < 38.);
+    assert!(zero_fuel_weight_center_of_gravity > 36.);
+    assert!(zero_fuel_weight_center_of_gravity < 37.);
+    assert!(gross_weight_center_of_gravity > 37.);
+    assert!(gross_weight_center_of_gravity < 38.);
 }
 
 #[test]
@@ -514,16 +517,18 @@ fn high_fuel_full_pax_full_cargo() {
         .and_run()
         .and_stabilize();
 
-    let zfw_cg_mac = (test_bed.zfw_cg_mac() * 100.0).round() / 100.0;
-    let gw_cg_mac = (test_bed.gw_cg_mac() * 100.0).round() / 100.0;
+    let zero_fuel_weight_center_of_gravity =
+        (test_bed.zero_fuel_weight_center_of_gravity() * 100.0).round() / 100.0;
+    let gross_weight_center_of_gravity =
+        (test_bed.gross_weight_center_of_gravity() * 100.0).round() / 100.0;
 
-    println!("ZFW CG MAC: {}", zfw_cg_mac);
-    println!("GW CG MAC: {}", gw_cg_mac);
+    println!("ZFW CG MAC: {}", zero_fuel_weight_center_of_gravity);
+    println!("GW CG MAC: {}", gross_weight_center_of_gravity);
 
-    assert!(zfw_cg_mac > 38.);
-    assert!(zfw_cg_mac < 39.);
-    assert!(gw_cg_mac > 39.);
-    assert!(gw_cg_mac < 40.);
+    assert!(zero_fuel_weight_center_of_gravity > 38.);
+    assert!(zero_fuel_weight_center_of_gravity < 39.);
+    assert!(gross_weight_center_of_gravity > 39.);
+    assert!(gross_weight_center_of_gravity < 40.);
 }
 
 #[test]
@@ -537,22 +542,32 @@ fn half_pax_cargo_target_full() {
         .and_run()
         .and_stabilize();
 
-    let zfw_cg_mac = (test_bed.zfw_cg_mac() * 100.0).round() / 100.0;
-    let gw_cg_mac = (test_bed.gw_cg_mac() * 100.0).round() / 100.0;
+    let zero_fuel_weight_center_of_gravity =
+        (test_bed.zero_fuel_weight_center_of_gravity() * 100.0).round() / 100.0;
+    let gross_weight_center_of_gravity =
+        (test_bed.gross_weight_center_of_gravity() * 100.0).round() / 100.0;
 
-    let target_zfw_cg_mac = (test_bed.target_zfw_cg_mac() * 100.0).round() / 100.0;
-    let target_gw_cg_mac = (test_bed.target_gw_cg_mac() * 100.0).round() / 100.0;
+    let target_zero_fuel_weight_center_of_gravity =
+        (test_bed.target_zero_fuel_weight_center_of_gravity() * 100.0).round() / 100.0;
+    let target_gross_weight_center_of_gravity =
+        (test_bed.target_gross_weight_center_of_gravity() * 100.0).round() / 100.0;
 
-    println!("ZFW CG MAC: {} => {}", zfw_cg_mac, target_zfw_cg_mac);
-    println!("GW CG MAC: {} => {}", gw_cg_mac, target_gw_cg_mac);
+    println!(
+        "ZFW CG MAC: {} => {}",
+        zero_fuel_weight_center_of_gravity, target_zero_fuel_weight_center_of_gravity
+    );
+    println!(
+        "GW CG MAC: {} => {}",
+        gross_weight_center_of_gravity, target_gross_weight_center_of_gravity
+    );
 
-    assert!(zfw_cg_mac > 37.);
-    assert!(zfw_cg_mac < 38.);
-    assert!(gw_cg_mac > 37.5);
-    assert!(gw_cg_mac < 38.);
+    assert!(zero_fuel_weight_center_of_gravity > 37.);
+    assert!(zero_fuel_weight_center_of_gravity < 38.);
+    assert!(gross_weight_center_of_gravity > 37.5);
+    assert!(gross_weight_center_of_gravity < 38.);
 
-    assert!(target_zfw_cg_mac > 38.);
-    assert!(target_zfw_cg_mac < 39.);
-    assert!(target_gw_cg_mac > 38.);
-    assert!(target_gw_cg_mac < 39.);
+    assert!(target_zero_fuel_weight_center_of_gravity > 38.);
+    assert!(target_zero_fuel_weight_center_of_gravity < 39.);
+    assert!(target_gross_weight_center_of_gravity > 38.);
+    assert!(target_gross_weight_center_of_gravity < 39.);
 }

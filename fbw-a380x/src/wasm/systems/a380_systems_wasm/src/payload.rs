@@ -80,31 +80,13 @@ pub(super) fn payload(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Err
         Variable::aspect("PAYLOAD_STATION_18_REQ"),
     );
 
-    builder.variables_to_object(Box::new(Payload {
-        payload_station_1: 0.,
-        payload_station_2: 0.,
-        payload_station_3: 0.,
-        payload_station_4: 0.,
-        payload_station_5: 0.,
-        payload_station_6: 0.,
-        payload_station_7: 0.,
-        payload_station_8: 0.,
-        payload_station_9: 0.,
-        payload_station_10: 0.,
-        payload_station_11: 0.,
-        payload_station_12: 0.,
-        payload_station_13: 0.,
-        payload_station_14: 0.,
-        payload_station_15: 0.,
-        payload_station_16: 0.,
-        payload_station_17: 0.,
-        payload_station_18: 0.,
-    }));
+    builder.variables_to_object(Box::new(Payload::default()));
 
     Ok(())
 }
 
 #[sim_connect::data_definition]
+#[derive(Default)]
 struct Payload {
     #[name = "PAYLOAD STATION WEIGHT:1"]
     #[unit = "Pounds"]

@@ -1,240 +1,278 @@
 use uom::si::{f64::Mass, mass::kilogram};
 
 use crate::simulation::{
-    Read, SimulationElement, SimulatorReader, SimulatorWriter, VariableIdentifier, Write,
+    InitContext, Read, SimulationElement, SimulatorReader, SimulatorWriter, VariableIdentifier,
+    Write,
 };
 
 pub struct LoadsheetInfo {
     pub operating_empty_weight_kg: f64,
-    pub operating_empty_position: (f64, f64, f64),
+    pub operating_empty_position: (f64, f64, f64), // (x, y, z)
     pub per_pax_weight_kg: f64,
-    pub mac_size: f64,
-    pub lemac_z: f64,
+    pub mean_aerodynamic_chord_size: f64, // from SDK developer mode debug
+    pub leading_edge_mean_aerodynamic_chord: f64, // from SDK developer mode debug
 }
 
-pub struct CgMac {
-    zfw_cg_mac_id: VariableIdentifier,
-    gw_cg_mac_id: VariableIdentifier,
-    to_cg_mac_id: VariableIdentifier,
-    target_zfw_cg_mac_id: VariableIdentifier,
-    target_gw_cg_mac_id: VariableIdentifier,
-    target_to_cg_mac_id: VariableIdentifier,
-    zfw_cg_mac: f64,
-    gw_cg_mac: f64,
-    to_cg_mac: f64,
-    target_zfw_cg_mac: f64,
-    target_gw_cg_mac: f64,
-    target_to_cg_mac: f64,
+pub struct CenterOfGravityData {
+    zero_fuel_weight_center_of_gravity_id: VariableIdentifier,
+    gross_weight_center_of_gravity_id: VariableIdentifier,
+    take_off_center_of_gravity_id: VariableIdentifier,
+    target_zero_fuel_weight_center_of_gravity_id: VariableIdentifier,
+    target_gross_weight_center_of_gravity_id: VariableIdentifier,
+    target_take_off_center_of_gravity_id: VariableIdentifier,
+    zero_fuel_weight_center_of_gravity: f64, // in % MAC
+    gross_weight_center_of_gravity: f64,     // in % MAC
+    take_off_center_of_gravity: f64,         // in % MAC
+    target_zero_fuel_weight_center_of_gravity: f64, // in % MAC
+    target_gross_weight_center_of_gravity: f64, // in % MAC
+    target_take_off_center_of_gravity: f64,  // in % MAC
 }
-impl CgMac {
-    pub fn new(
-        zfw_cg_mac_id: VariableIdentifier,
-        gw_cg_mac_id: VariableIdentifier,
-        to_cg_mac_id: VariableIdentifier,
-        target_zfw_cg_mac_id: VariableIdentifier,
-        target_gw_cg_mac_id: VariableIdentifier,
-        target_to_cg_mac_id: VariableIdentifier,
-    ) -> Self {
-        CgMac {
-            zfw_cg_mac_id,
-            gw_cg_mac_id,
-            to_cg_mac_id,
-            target_zfw_cg_mac_id,
-            target_gw_cg_mac_id,
-            target_to_cg_mac_id,
-            zfw_cg_mac: 0.,
-            gw_cg_mac: 0.,
-            to_cg_mac: 0.,
-            target_zfw_cg_mac: 0.,
-            target_gw_cg_mac: 0.,
-            target_to_cg_mac: 0.,
+impl CenterOfGravityData {
+    pub fn new(context: &mut InitContext) -> Self {
+        CenterOfGravityData {
+            zero_fuel_weight_center_of_gravity_id: context
+                .get_identifier("AIRFRAME_ZFW_CG_PERCENT_MAC".to_owned()),
+            gross_weight_center_of_gravity_id: context
+                .get_identifier("AIRFRAME_GW_CG_PERCENT_MAC".to_owned()),
+            take_off_center_of_gravity_id: context
+                .get_identifier("AIRFRAME_TO_CG_PERCENT_MAC".to_owned()),
+            target_zero_fuel_weight_center_of_gravity_id: context
+                .get_identifier("AIRFRAME_ZFW_CG_PERCENT_MAC_DESIRED".to_owned()),
+            target_gross_weight_center_of_gravity_id: context
+                .get_identifier("AIRFRAME_GW_CG_PERCENT_MAC_DESIRED".to_owned()),
+            target_take_off_center_of_gravity_id: context
+                .get_identifier("AIRFRAME_TO_CG_PERCENT_MAC_DESIRED".to_owned()),
+            zero_fuel_weight_center_of_gravity: 0.,
+            gross_weight_center_of_gravity: 0.,
+            take_off_center_of_gravity: 0.,
+            target_zero_fuel_weight_center_of_gravity: 0.,
+            target_gross_weight_center_of_gravity: 0.,
+            target_take_off_center_of_gravity: 0.,
         }
     }
 
-    pub fn zfw_cg_mac(&self) -> f64 {
-        self.zfw_cg_mac
+    pub fn zero_fuel_weight_center_of_gravity(&self) -> f64 {
+        self.zero_fuel_weight_center_of_gravity
     }
 
-    pub fn set_zfw_cg_mac(&mut self, zfw_cg_mac: f64) {
-        self.zfw_cg_mac = zfw_cg_mac;
+    pub fn set_zero_fuel_weight_center_of_gravity(
+        &mut self,
+        zero_fuel_weight_center_of_gravity: f64,
+    ) {
+        self.zero_fuel_weight_center_of_gravity = zero_fuel_weight_center_of_gravity;
     }
 
-    pub fn gw_cg_mac(&self) -> f64 {
-        self.gw_cg_mac
+    pub fn gross_weight_center_of_gravity(&self) -> f64 {
+        self.gross_weight_center_of_gravity
     }
 
-    pub fn set_gw_cg_mac(&mut self, gw_cg_mac: f64) {
-        self.gw_cg_mac = gw_cg_mac;
+    pub fn set_gross_weight_center_of_gravity(&mut self, gross_weight_center_of_gravity: f64) {
+        self.gross_weight_center_of_gravity = gross_weight_center_of_gravity;
     }
 
-    pub fn to_cg_mac(&self) -> f64 {
-        self.to_cg_mac
+    pub fn take_off_center_of_gravity(&self) -> f64 {
+        self.take_off_center_of_gravity
     }
 
-    pub fn set_to_cg_mac(&mut self, to_cg_mac: f64) {
-        self.to_cg_mac = to_cg_mac;
+    pub fn set_take_off_center_of_gravity(&mut self, take_off_center_of_gravity: f64) {
+        self.take_off_center_of_gravity = take_off_center_of_gravity;
     }
 
-    pub fn target_zfw_cg_mac(&self) -> f64 {
-        self.target_zfw_cg_mac
+    pub fn target_zero_fuel_weight_center_of_gravity(&self) -> f64 {
+        self.target_zero_fuel_weight_center_of_gravity
     }
 
-    pub fn set_target_zfw_cg_mac(&mut self, target_zfw_cg_mac: f64) {
-        self.target_zfw_cg_mac = target_zfw_cg_mac;
+    pub fn set_target_zero_fuel_weight_center_of_gravity(
+        &mut self,
+        target_zero_fuel_weight_center_of_gravity: f64,
+    ) {
+        self.target_zero_fuel_weight_center_of_gravity = target_zero_fuel_weight_center_of_gravity;
     }
 
-    pub fn target_gw_cg_mac(&self) -> f64 {
-        self.target_gw_cg_mac
+    pub fn target_gross_weight_center_of_gravity(&self) -> f64 {
+        self.target_gross_weight_center_of_gravity
     }
 
-    pub fn set_target_gw_cg_mac(&mut self, target_gw_cg_mac: f64) {
-        self.target_gw_cg_mac = target_gw_cg_mac;
+    pub fn set_target_gross_weight_center_of_gravity(
+        &mut self,
+        target_gross_weight_center_of_gravity: f64,
+    ) {
+        self.target_gross_weight_center_of_gravity = target_gross_weight_center_of_gravity;
     }
 
-    pub fn target_to_cg_mac(&self) -> f64 {
-        self.target_to_cg_mac
+    pub fn target_take_off_center_of_gravity(&self) -> f64 {
+        self.target_take_off_center_of_gravity
     }
 
-    pub fn set_target_to_cg_mac(&mut self, target_to_cg_mac: f64) {
-        self.target_to_cg_mac = target_to_cg_mac;
+    pub fn set_target_take_off_center_of_gravity(
+        &mut self,
+        target_take_off_center_of_gravity: f64,
+    ) {
+        self.target_take_off_center_of_gravity = target_take_off_center_of_gravity;
+    }
+
+    fn round_cg_value(center_of_gravity: f64) -> f64 {
+        (center_of_gravity * 100.).round() / 100.
     }
 }
-impl SimulationElement for CgMac {
+
+impl SimulationElement for CenterOfGravityData {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.zfw_cg_mac = reader.read(&self.zfw_cg_mac_id);
-        self.gw_cg_mac = reader.read(&self.gw_cg_mac_id);
-        self.to_cg_mac = reader.read(&self.to_cg_mac_id);
-        self.target_zfw_cg_mac = reader.read(&self.target_zfw_cg_mac_id);
-        self.target_gw_cg_mac = reader.read(&self.target_gw_cg_mac_id);
-        self.target_to_cg_mac = reader.read(&self.target_to_cg_mac_id);
+        self.zero_fuel_weight_center_of_gravity =
+            reader.read(&self.zero_fuel_weight_center_of_gravity_id);
+        self.gross_weight_center_of_gravity = reader.read(&self.gross_weight_center_of_gravity_id);
+        self.take_off_center_of_gravity = reader.read(&self.take_off_center_of_gravity_id);
+        self.target_zero_fuel_weight_center_of_gravity =
+            reader.read(&self.target_zero_fuel_weight_center_of_gravity_id);
+        self.target_gross_weight_center_of_gravity =
+            reader.read(&self.target_gross_weight_center_of_gravity_id);
+        self.target_take_off_center_of_gravity =
+            reader.read(&self.target_take_off_center_of_gravity_id);
     }
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.zfw_cg_mac_id, (self.zfw_cg_mac * 100.).round() / 100.);
-        writer.write(&self.gw_cg_mac_id, (self.gw_cg_mac * 100.).round() / 100.);
-        writer.write(&self.to_cg_mac_id, (self.to_cg_mac * 100.).round() / 100.);
         writer.write(
-            &self.target_zfw_cg_mac_id,
-            (self.target_zfw_cg_mac * 100.).round() / 100.,
+            &self.zero_fuel_weight_center_of_gravity_id,
+            CenterOfGravityData::round_cg_value(self.zero_fuel_weight_center_of_gravity),
         );
         writer.write(
-            &self.target_gw_cg_mac_id,
-            (self.target_gw_cg_mac * 100.).round() / 100.,
+            &self.gross_weight_center_of_gravity_id,
+            CenterOfGravityData::round_cg_value(self.gross_weight_center_of_gravity),
         );
         writer.write(
-            &self.target_to_cg_mac_id,
-            (self.target_to_cg_mac * 100.).round() / 100.,
+            &self.take_off_center_of_gravity_id,
+            CenterOfGravityData::round_cg_value(self.take_off_center_of_gravity),
+        );
+        writer.write(
+            &self.target_zero_fuel_weight_center_of_gravity_id,
+            CenterOfGravityData::round_cg_value(self.target_zero_fuel_weight_center_of_gravity),
+        );
+        writer.write(
+            &self.target_gross_weight_center_of_gravity_id,
+            CenterOfGravityData::round_cg_value(self.target_gross_weight_center_of_gravity),
+        );
+        writer.write(
+            &self.target_take_off_center_of_gravity_id,
+            CenterOfGravityData::round_cg_value(self.target_take_off_center_of_gravity),
         );
     }
 }
 
 pub struct WeightData {
-    zfw_id: VariableIdentifier,
-    gw_id: VariableIdentifier,
-    tow_id: VariableIdentifier,
-    target_zfw_id: VariableIdentifier,
-    target_gw_id: VariableIdentifier,
-    target_tow_id: VariableIdentifier,
-    zfw: Mass,
-    gw: Mass,
-    tow: Mass,
-    target_zfw: Mass,
-    target_gw: Mass,
-    target_tow: Mass,
+    zero_fuel_weight_id: VariableIdentifier,
+    gross_weight_id: VariableIdentifier,
+    take_off_weight_id: VariableIdentifier,
+
+    target_zero_fuel_weight_id: VariableIdentifier,
+    target_gross_weight_id: VariableIdentifier,
+    target_take_off_weight_id: VariableIdentifier,
+
+    zero_fuel_weight: Mass,
+    gross_weight: Mass,
+    take_off_weight: Mass,
+
+    target_zero_fuel_weight: Mass,
+    target_gross_weight: Mass,
+    target_take_off_weight: Mass,
 }
 impl WeightData {
-    pub fn new(
-        zfw_id: VariableIdentifier,
-        gw_id: VariableIdentifier,
-        tow_id: VariableIdentifier,
-        target_zfw_id: VariableIdentifier,
-        target_gw_id: VariableIdentifier,
-        target_tow_id: VariableIdentifier,
-    ) -> Self {
+    pub fn new(context: &mut InitContext) -> Self {
         WeightData {
-            zfw_id,
-            gw_id,
-            tow_id,
-            target_zfw_id,
-            target_gw_id,
-            target_tow_id,
-            zfw: Mass::default(),
-            gw: Mass::default(),
-            tow: Mass::default(),
-            target_zfw: Mass::default(),
-            target_gw: Mass::default(),
-            target_tow: Mass::default(),
+            zero_fuel_weight_id: context.get_identifier("AIRFRAME_ZFW".to_owned()),
+            gross_weight_id: context.get_identifier("AIRFRAME_GW".to_owned()),
+            take_off_weight_id: context.get_identifier("AIRFRAME_TOW".to_owned()),
+            target_zero_fuel_weight_id: context.get_identifier("AIRFRAME_ZFW_DESIRED".to_owned()),
+            target_gross_weight_id: context.get_identifier("AIRFRAME_GW_DESIRED".to_owned()),
+            target_take_off_weight_id: context.get_identifier("AIRFRAME_TOW_DESIRED".to_owned()),
+            zero_fuel_weight: Mass::default(),
+            gross_weight: Mass::default(),
+            take_off_weight: Mass::default(),
+            target_zero_fuel_weight: Mass::default(),
+            target_gross_weight: Mass::default(),
+            target_take_off_weight: Mass::default(),
         }
     }
 
-    pub fn zfw(&self) -> Mass {
-        self.zfw
+    pub fn zero_fuel_weight(&self) -> Mass {
+        self.zero_fuel_weight
     }
 
-    pub fn set_zfw(&mut self, zfw: Mass) {
-        self.zfw = zfw;
+    pub fn set_zero_fuel_weight(&mut self, zero_fuel_weight: Mass) {
+        self.zero_fuel_weight = zero_fuel_weight;
     }
 
-    pub fn gw(&self) -> Mass {
-        self.gw
+    pub fn gross_weight(&self) -> Mass {
+        self.gross_weight
     }
 
-    pub fn set_gw(&mut self, gw: Mass) {
-        self.gw = gw;
+    pub fn set_gross_weight(&mut self, gross_weight: Mass) {
+        self.gross_weight = gross_weight;
     }
 
-    pub fn tow(&self) -> Mass {
-        self.tow
+    pub fn take_off_weight(&self) -> Mass {
+        self.take_off_weight
     }
 
-    pub fn set_tow(&mut self, tow: Mass) {
-        self.tow = tow;
+    pub fn set_take_off_weight(&mut self, take_off_weight: Mass) {
+        self.take_off_weight = take_off_weight;
     }
 
-    pub fn target_zfw(&self) -> Mass {
-        self.target_zfw
+    pub fn target_zero_fuel_weight(&self) -> Mass {
+        self.target_zero_fuel_weight
     }
 
-    pub fn set_target_zfw(&mut self, target_zfw: Mass) {
-        self.target_zfw = target_zfw;
+    pub fn set_target_zero_fuel_weight(&mut self, target_zero_fuel_weight: Mass) {
+        self.target_zero_fuel_weight = target_zero_fuel_weight;
     }
 
-    pub fn target_gw(&self) -> Mass {
-        self.target_gw
+    pub fn target_gross_weight(&self) -> Mass {
+        self.target_gross_weight
     }
 
-    pub fn set_target_gw(&mut self, target_gw: Mass) {
-        self.target_gw = target_gw;
+    pub fn set_target_gross_weight(&mut self, target_gross_weight: Mass) {
+        self.target_gross_weight = target_gross_weight;
     }
 
-    pub fn target_tow(&self) -> Mass {
-        self.target_tow
+    pub fn target_take_off_weight(&self) -> Mass {
+        self.target_take_off_weight
     }
 
-    pub fn set_target_tow(&mut self, target_tow: Mass) {
-        self.target_tow = target_tow;
+    pub fn set_target_take_off_weight(&mut self, target_take_off_weight: Mass) {
+        self.target_take_off_weight = target_take_off_weight;
     }
 }
 impl SimulationElement for WeightData {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.zfw = reader.read(&self.zfw_id);
-        self.gw = reader.read(&self.gw_id);
-        self.tow = reader.read(&self.tow_id);
-        self.target_zfw = reader.read(&self.target_zfw_id);
-        self.target_gw = reader.read(&self.target_gw_id);
-        self.target_tow = reader.read(&self.target_tow_id);
+        self.zero_fuel_weight = reader.read(&self.zero_fuel_weight_id);
+        self.gross_weight = reader.read(&self.gross_weight_id);
+        self.take_off_weight = reader.read(&self.take_off_weight_id);
+        self.target_zero_fuel_weight = reader.read(&self.target_zero_fuel_weight_id);
+        self.target_gross_weight = reader.read(&self.target_gross_weight_id);
+        self.target_take_off_weight = reader.read(&self.target_take_off_weight_id);
     }
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.zfw_id, self.zfw.get::<kilogram>().round());
-        writer.write(&self.gw_id, self.gw.get::<kilogram>().round());
-        writer.write(&self.tow_id, self.tow.get::<kilogram>().round());
         writer.write(
-            &self.target_zfw_id,
-            self.target_zfw.get::<kilogram>().round(),
+            &self.zero_fuel_weight_id,
+            self.zero_fuel_weight.get::<kilogram>().round(),
         );
-        writer.write(&self.target_gw_id, self.target_gw.get::<kilogram>().round());
         writer.write(
-            &self.target_tow_id,
-            self.target_tow.get::<kilogram>().round(),
+            &self.gross_weight_id,
+            self.gross_weight.get::<kilogram>().round(),
+        );
+        writer.write(
+            &self.take_off_weight_id,
+            self.take_off_weight.get::<kilogram>().round(),
+        );
+        writer.write(
+            &self.target_zero_fuel_weight_id,
+            self.target_zero_fuel_weight.get::<kilogram>().round(),
+        );
+        writer.write(
+            &self.target_gross_weight_id,
+            self.target_gross_weight.get::<kilogram>().round(),
+        );
+        writer.write(
+            &self.target_take_off_weight_id,
+            self.target_take_off_weight.get::<kilogram>().round(),
         );
     }
 }

@@ -14,6 +14,7 @@ use systems::{
         AutoManFaultPushButton, NormalOnPushButton, OnOffFaultPushButton, OnOffPushButton,
         SpringLoadedSwitch, ValueKnob,
     },
+    payload::NumberOfPassengers,
     pneumatic::PneumaticContainer,
     shared::{
         random_number, update_iterator::MaxStepLoop, AverageExt, CabinAltitude, CabinSimulation,
@@ -33,7 +34,7 @@ use uom::si::{
     velocity::knot,
 };
 
-use crate::payload::{A320Pax, NumberOfPassengers};
+use crate::payload::A320Pax;
 
 pub(super) struct A320AirConditioning {
     a320_cabin: A320Cabin,

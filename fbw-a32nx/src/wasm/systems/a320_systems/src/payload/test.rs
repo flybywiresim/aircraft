@@ -1,11 +1,13 @@
-pub const HOURS_TO_MINUTES: u64 = 60;
-pub const MINUTES_TO_SECONDS: u64 = 60;
+const HOURS_TO_MINUTES: u64 = 60;
+const MINUTES_TO_SECONDS: u64 = 60;
 
+use std::time::Duration;
 use std::usize;
 
 use rand::seq::IteratorRandom;
 use rand::SeedableRng;
 use systems::electrical::Electricity;
+use systems::payload::{BoardingInputs, BoardingRate, GsxState};
 use uom::si::mass::pound;
 
 use super::*;
@@ -133,7 +135,10 @@ impl BoardingTestBed {
 
     fn init_vars(mut self) -> Self {
         self.write_by_name("BOARDING_RATE", BoardingRate::Instant);
-        self.write_by_name("WB_PER_PAX_WEIGHT", A320Payload::DEFAULT_PER_PAX_WEIGHT_KG);
+        self.write_by_name(
+            "WB_PER_PAX_WEIGHT",
+            BoardingInputs::DEFAULT_PER_PAX_WEIGHT_KG,
+        );
 
         self
     }
@@ -605,11 +610,11 @@ impl BoardingTestBed {
     }
 
     fn is_boarding(&self) -> bool {
-        self.query(|a| a.payload.is_boarding())
+        self.query(|a| a.payload.payload_manager.is_boarding_allowed())
     }
 
     fn board_rate(&self) -> BoardingRate {
-        self.query(|a| a.payload.board_rate())
+        self.query(|a| a.payload.payload_manager.board_rate())
     }
 
     fn sound_pax_boarding(&self) -> bool {

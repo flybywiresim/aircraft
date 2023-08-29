@@ -2,13 +2,13 @@
 
 use nalgebra::Vector3;
 use systems::{
-    fuel::{FuelInfo, FuelSystem, FuelTank},
+    fuel::{FuelCG, FuelInfo, FuelPayload, FuelSystem, FuelTank},
     simulation::{InitContext, SimulationElement, SimulationElementVisitor},
 };
 use uom::si::f64::*;
 
 #[cfg(test)]
-pub mod test;
+mod test;
 
 pub trait FuelLevel {
     fn left_outer_tank_has_fuel(&self) -> bool;
@@ -22,63 +22,6 @@ pub trait FuelLevel {
     fn feed_four_tank_has_fuel(&self) -> bool;
     fn right_outer_tank_has_fuel(&self) -> bool;
     fn trim_tank_has_fuel(&self) -> bool;
-}
-impl FuelLevel for A380Fuel {
-    fn left_outer_tank_has_fuel(&self) -> bool {
-        self.left_outer_tank_has_fuel()
-    }
-    fn feed_one_tank_has_fuel(&self) -> bool {
-        self.feed_one_has_fuel()
-    }
-    fn left_mid_tank_has_fuel(&self) -> bool {
-        self.left_mid_tank_has_fuel()
-    }
-    fn left_inner_tank_has_fuel(&self) -> bool {
-        self.left_inner_tank_has_fuel()
-    }
-    fn feed_two_tank_has_fuel(&self) -> bool {
-        self.feed_two_tank_has_fuel()
-    }
-    fn feed_three_tank_has_fuel(&self) -> bool {
-        self.feed_three_tank_has_fuel()
-    }
-    fn right_inner_tank_has_fuel(&self) -> bool {
-        self.right_inner_tank_has_fuel()
-    }
-    fn right_mid_tank_has_fuel(&self) -> bool {
-        self.right_mid_tank_has_fuel()
-    }
-    fn feed_four_tank_has_fuel(&self) -> bool {
-        self.feed_four_tank_has_fuel()
-    }
-    fn right_outer_tank_has_fuel(&self) -> bool {
-        self.right_outer_tank_has_fuel()
-    }
-    fn trim_tank_has_fuel(&self) -> bool {
-        self.trim_tank_has_fuel()
-    }
-}
-
-pub trait FuelPayload {
-    fn total_load(&self) -> Mass;
-    fn fore_aft_center_of_gravity(&self) -> f64;
-}
-impl FuelPayload for A380Fuel {
-    fn total_load(&self) -> Mass {
-        self.total_load()
-    }
-    fn fore_aft_center_of_gravity(&self) -> f64 {
-        self.fore_aft_center_of_gravity()
-    }
-}
-
-pub trait FuelCG {
-    fn center_of_gravity(&self) -> Vector3<f64>;
-}
-impl FuelCG for A380Fuel {
-    fn center_of_gravity(&self) -> Vector3<f64> {
-        self.center_of_gravity()
-    }
 }
 
 pub enum A380FuelTankType {
@@ -96,7 +39,7 @@ pub enum A380FuelTankType {
 }
 
 pub struct A380Fuel {
-    fuel_system: FuelSystem,
+    fuel_system: FuelSystem<11>,
 }
 
 impl A380Fuel {
@@ -122,7 +65,7 @@ impl A380Fuel {
             position: (10.8, -24.7, 3.2),
         },
         FuelInfo {
-            // FEED_TWO - Capacity: 7753.2 23327 503863.2
+            // FEED_TWO - Capacity: 7753.2
             fuel_tank_id: "FUELSYSTEM TANK QUANTITY:5",
             position: (21.6, -18.4, 1.0),
         },
@@ -159,15 +102,13 @@ impl A380Fuel {
     ];
 
     pub fn new(context: &mut InitContext) -> Self {
-        let fuel_tanks: Vec<FuelTank> = Self::A380_FUEL
-            .iter()
-            .map(|f| {
-                FuelTank::new(
-                    context.get_identifier(f.fuel_tank_id.to_owned()),
-                    Vector3::new(f.position.0, f.position.1, f.position.2),
-                )
-            })
-            .collect::<Vec<FuelTank>>();
+        let fuel_tanks = Self::A380_FUEL.map(|f| {
+            FuelTank::new(
+                context,
+                f.fuel_tank_id,
+                Vector3::new(f.position.0, f.position.1, f.position.2),
+            )
+        });
         A380Fuel {
             fuel_system: FuelSystem::new(context, fuel_tanks),
         }
@@ -238,6 +179,55 @@ impl A380Fuel {
 
     fn center_of_gravity(&self) -> Vector3<f64> {
         self.fuel_system.center_of_gravity()
+    }
+}
+
+impl FuelLevel for A380Fuel {
+    fn left_outer_tank_has_fuel(&self) -> bool {
+        self.left_outer_tank_has_fuel()
+    }
+    fn feed_one_tank_has_fuel(&self) -> bool {
+        self.feed_one_has_fuel()
+    }
+    fn left_mid_tank_has_fuel(&self) -> bool {
+        self.left_mid_tank_has_fuel()
+    }
+    fn left_inner_tank_has_fuel(&self) -> bool {
+        self.left_inner_tank_has_fuel()
+    }
+    fn feed_two_tank_has_fuel(&self) -> bool {
+        self.feed_two_tank_has_fuel()
+    }
+    fn feed_three_tank_has_fuel(&self) -> bool {
+        self.feed_three_tank_has_fuel()
+    }
+    fn right_inner_tank_has_fuel(&self) -> bool {
+        self.right_inner_tank_has_fuel()
+    }
+    fn right_mid_tank_has_fuel(&self) -> bool {
+        self.right_mid_tank_has_fuel()
+    }
+    fn feed_four_tank_has_fuel(&self) -> bool {
+        self.feed_four_tank_has_fuel()
+    }
+    fn right_outer_tank_has_fuel(&self) -> bool {
+        self.right_outer_tank_has_fuel()
+    }
+    fn trim_tank_has_fuel(&self) -> bool {
+        self.trim_tank_has_fuel()
+    }
+}
+impl FuelPayload for A380Fuel {
+    fn total_load(&self) -> Mass {
+        self.total_load()
+    }
+    fn fore_aft_center_of_gravity(&self) -> f64 {
+        self.fore_aft_center_of_gravity()
+    }
+}
+impl FuelCG for A380Fuel {
+    fn center_of_gravity(&self) -> Vector3<f64> {
+        self.center_of_gravity()
     }
 }
 impl SimulationElement for A380Fuel {
