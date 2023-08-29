@@ -6,8 +6,8 @@ use uom::si::{f64::Mass, mass::kilogram};
 
 use systems::{
     payload::{
-        BoardingSounds, Cargo, CargoDeck, CargoInfo, CargoPayload, NumberOfPassengers,
-        PassengerDeck, PassengerPayload, Pax, PaxInfo, PayloadManager,
+        BoardingAgent, BoardingSounds, Cargo, CargoDeck, CargoInfo, CargoPayload,
+        NumberOfPassengers, PassengerDeck, PassengerPayload, Pax, PaxInfo, PayloadManager,
     },
     simulation::{InitContext, SimulationElement, SimulationElementVisitor, UpdateContext},
 };
@@ -84,7 +84,7 @@ impl From<usize> for A380Cargo {
     }
 }
 pub struct A380Payload {
-    payload_manager: PayloadManager<14, 3>,
+    payload_manager: PayloadManager<14, 3, 3>,
 }
 impl A380Payload {
     // Note: These constants reflect flight_model.cfg values and will have to be updated in sync with the configuration
@@ -231,8 +231,13 @@ impl A380Payload {
                 Mass::new::<kilogram>(c.max_cargo_kg),
             )
         });
+        let boarding_agents = [
+            BoardingAgent::new([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]),
+            BoardingAgent::new([5, 6, 7, 8, 9, 13, 12, 11, 10, 4, 3, 2, 1, 0]),
+            BoardingAgent::new([10, 11, 12, 13, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9]),
+        ];
 
-        let passenger_deck = PassengerDeck::new(pax);
+        let passenger_deck = PassengerDeck::new(context, pax, boarding_agents);
         let cargo_deck = CargoDeck::new(cargo);
 
         A380Payload {

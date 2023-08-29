@@ -7,7 +7,7 @@ use std::usize;
 use rand::seq::IteratorRandom;
 use rand::SeedableRng;
 use systems::electrical::Electricity;
-use systems::payload::{BoardingInputs, BoardingRate, GsxState};
+use systems::payload::{BoardingRate, GsxState};
 use uom::si::mass::pound;
 
 use super::*;
@@ -162,6 +162,16 @@ impl BoardingTestBed {
     fn real_board_rate(mut self) -> Self {
         self.write_by_name("BOARDING_RATE", BoardingRate::Real);
 
+        self
+    }
+
+    fn double_gate_boarding(mut self) -> Self {
+        self.write_by_name("NUM_BOARDING_GATES", 2);
+        self
+    }
+
+    fn triple_gate_boarding(mut self) -> Self {
+        self.write_by_name("NUM_BOARDING_GATES", 3);
         self
     }
 
@@ -939,7 +949,35 @@ fn loaded_half_idle_pending() {
 }
 
 #[test]
-fn target_half_and_board() {
+fn target_half_and_board_real_double_gate() {
+    let mut test_bed = test_bed_with()
+        .init_vars()
+        .double_gate_boarding()
+        .with_full_cargo()
+        .target_half_pax()
+        .target_half_cargo()
+        .real_board_rate()
+        .start_boarding()
+        .and_run()
+        .and_stabilize();
+
+    let thirty_five_minutes_in_seconds = 35 * MINUTES_TO_SECONDS;
+
+    test_bed
+        .test_bed
+        .run_multiple_frames(Duration::from_secs(thirty_five_minutes_in_seconds));
+
+    test_bed.has_half_pax();
+    test_bed.has_half_cargo();
+    test_bed.boarding_stopped();
+
+    test_bed = test_bed.and_run();
+    test_bed.has_sound_pax_ambience();
+    test_bed.sound_boarding_complete_reset();
+}
+
+#[test]
+fn target_half_and_board_fast() {
     let mut test_bed = test_bed_with()
         .init_vars()
         .target_half_pax()
@@ -997,6 +1035,60 @@ fn target_half_and_board_instant() {
 
     test_bed.has_all_stations_half_pax();
     test_bed.has_all_stations_half_cargo();
+    test_bed.boarding_stopped();
+
+    test_bed = test_bed.and_run();
+    test_bed.has_sound_pax_ambience();
+    test_bed.sound_boarding_complete_reset();
+}
+
+#[test]
+fn full_load_forty_five_minutes_real_double_gate() {
+    let mut test_bed = test_bed_with()
+        .init_vars()
+        .double_gate_boarding()
+        .target_full_pax()
+        .target_half_cargo()
+        .real_board_rate()
+        .start_boarding()
+        .and_run()
+        .and_stabilize();
+
+    let forty_five_minutes_in_seconds = 45 * MINUTES_TO_SECONDS;
+
+    test_bed
+        .test_bed
+        .run_multiple_frames(Duration::from_secs(forty_five_minutes_in_seconds));
+
+    test_bed.has_full_pax();
+    test_bed.has_half_cargo();
+    test_bed.boarding_stopped();
+
+    test_bed = test_bed.and_run();
+    test_bed.has_sound_pax_ambience();
+    test_bed.sound_boarding_complete_reset();
+}
+
+#[test]
+fn full_load_thirty_five_minutes_real_double_gate() {
+    let mut test_bed = test_bed_with()
+        .init_vars()
+        .triple_gate_boarding()
+        .target_full_pax()
+        .target_half_cargo()
+        .real_board_rate()
+        .start_boarding()
+        .and_run()
+        .and_stabilize();
+
+    let thirty_five_minutes_in_seconds = 35 * MINUTES_TO_SECONDS;
+
+    test_bed
+        .test_bed
+        .run_multiple_frames(Duration::from_secs(thirty_five_minutes_in_seconds));
+
+    test_bed.has_full_pax();
+    test_bed.has_half_cargo();
     test_bed.boarding_stopped();
 
     test_bed = test_bed.and_run();
@@ -1199,6 +1291,68 @@ fn deboard_half_real() {
     test_bed
         .test_bed
         .run_multiple_frames(Duration::from_secs(ninety_minutes_in_seconds));
+
+    test_bed.has_no_pax();
+    test_bed.has_no_cargo();
+    test_bed.boarding_stopped();
+
+    test_bed = test_bed.and_run();
+    test_bed.has_no_sound_pax_ambience();
+    test_bed.sound_boarding_complete_reset();
+}
+
+#[test]
+fn deboard_all_real_double_gate() {
+    let mut test_bed = test_bed_with()
+        .init_vars()
+        .double_gate_boarding()
+        .with_full_pax()
+        .load_half_cargo()
+        .target_no_pax()
+        .target_no_cargo()
+        .real_board_rate()
+        .start_boarding()
+        .and_run()
+        .and_stabilize();
+
+    test_bed.boarding_started();
+
+    let fourty_five_minutes_in_seconds = 45 * MINUTES_TO_SECONDS;
+
+    test_bed
+        .test_bed
+        .run_multiple_frames(Duration::from_secs(fourty_five_minutes_in_seconds));
+
+    test_bed.has_no_pax();
+    test_bed.has_no_cargo();
+    test_bed.boarding_stopped();
+
+    test_bed = test_bed.and_run();
+    test_bed.has_no_sound_pax_ambience();
+    test_bed.sound_boarding_complete_reset();
+}
+
+#[test]
+fn deboard_all_real_triple_gate_thirty_five_minutes() {
+    let mut test_bed = test_bed_with()
+        .init_vars()
+        .triple_gate_boarding()
+        .with_full_pax()
+        .load_half_cargo()
+        .target_no_pax()
+        .target_no_cargo()
+        .real_board_rate()
+        .start_boarding()
+        .and_run()
+        .and_stabilize();
+
+    test_bed.boarding_started();
+
+    let thirty_five_minutes_in_seconds = 35 * MINUTES_TO_SECONDS;
+
+    test_bed
+        .test_bed
+        .run_multiple_frames(Duration::from_secs(thirty_five_minutes_in_seconds));
 
     test_bed.has_no_pax();
     test_bed.has_no_cargo();

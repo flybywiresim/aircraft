@@ -9,7 +9,6 @@ use crate::{
 use nalgebra::Vector3;
 use std::time::Duration;
 use systems::electrical::Electricity;
-use systems::payload::BoardingInputs;
 use systems::simulation::UpdateContext;
 
 const FUEL_GALLONS_TO_KG: f64 = 3.039075693483925;

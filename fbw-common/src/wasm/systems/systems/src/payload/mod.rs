@@ -1,4 +1,9 @@
-use std::{cell::Cell, rc::Rc, time::Duration};
+use std::{
+    cell::Cell,
+    cmp::{max, min},
+    rc::Rc,
+    time::Duration,
+};
 
 use crate::{
     shared::random_from_range,
@@ -56,12 +61,45 @@ pub trait CargoPayload {
 }
 
 #[derive(Debug)]
-pub struct PassengerDeck<const N: usize> {
-    pax: [Pax; N],
+pub struct BoardingAgent<const P: usize> {
+    order: [usize; P],
 }
-impl<const N: usize> PassengerDeck<N> {
-    pub fn new(pax: [Pax; N]) -> Self {
-        PassengerDeck { pax }
+impl<const P: usize> BoardingAgent<P> {
+    pub fn new(order: [usize; P]) -> Self {
+        BoardingAgent { order }
+    }
+
+    pub fn handle_one_pax(&self, pax: &mut [Pax; P]) {
+        for ps in self.order {
+            if pax[ps].pax_is_target() {
+                continue;
+            }
+            pax[ps].move_one_pax();
+            break;
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct PassengerDeck<const N: usize, const G: usize> {
+    pax: [Pax; N],
+    boarding_agents: [BoardingAgent<N>; G],
+
+    boarding_gates_id: VariableIdentifier,
+    boarding_gates: usize,
+}
+impl<const N: usize, const G: usize> PassengerDeck<N, G> {
+    pub fn new(
+        context: &mut InitContext,
+        pax: [Pax; N],
+        boarding_agents: [BoardingAgent<N>; G],
+    ) -> Self {
+        PassengerDeck {
+            pax,
+            boarding_agents,
+            boarding_gates_id: context.get_identifier("NUM_BOARDING_GATES".to_owned()),
+            boarding_gates: 0,
+        }
     }
 
     fn num_stations(&self) -> usize {
@@ -172,6 +210,10 @@ impl<const N: usize> PassengerDeck<N> {
         true
     }
 
+    fn num_boarding_points(&self) -> usize {
+        min(self.boarding_agents.len(), max(1, self.boarding_gates))
+    }
+
     fn spawn_pax(&mut self, ps: usize) {
         self.pax[ps].spawn_pax();
     }
@@ -194,13 +236,9 @@ impl<const N: usize> PassengerDeck<N> {
         }
     }
 
-    fn move_one_pax_overall(&mut self) {
-        for ps in 0..self.num_stations() {
-            if self.pax_is_target(ps) {
-                continue;
-            }
-            self.move_one_pax(ps);
-            break;
+    fn update_one_tick(&mut self) {
+        for ai in 0..self.num_boarding_points() {
+            self.boarding_agents[ai].handle_one_pax(&mut self.pax);
         }
     }
 
@@ -229,7 +267,11 @@ impl<const N: usize> PassengerDeck<N> {
     }
 }
 
-impl<const N: usize> SimulationElement for PassengerDeck<N> {
+impl<const N: usize, const G: usize> SimulationElement for PassengerDeck<N, G> {
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.boarding_gates = reader.read(&self.boarding_gates_id);
+    }
+
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         accept_iterable!(self.pax, visitor);
 
@@ -764,23 +806,23 @@ impl SimulationElement for BoardingSounds {
     }
 }
 
-pub struct PayloadManager<const P: usize, const C: usize> {
+pub struct PayloadManager<const P: usize, const G: usize, const C: usize> {
     time: Duration,
     fast_rate: u16,
     real_rate: u16,
     boarding_inputs: BoardingInputs,
     boarding_sounds: BoardingSounds,
-    passenger_deck: PassengerDeck<P>,
+    passenger_deck: PassengerDeck<P, G>,
     cargo_deck: CargoDeck<C>,
-    gsx_driver: GsxDriver<P, C>,
+    gsx_driver: GsxDriver<P, G, C>,
 }
-impl<const P: usize, const C: usize> PayloadManager<P, C> {
+impl<const P: usize, const G: usize, const C: usize> PayloadManager<P, G, C> {
     pub fn new(
         context: &mut InitContext,
         per_pax_weight: Rc<Cell<Mass>>,
         developer_state: Rc<Cell<i8>>,
         boarding_sounds: BoardingSounds,
-        passenger_deck: PassengerDeck<P>,
+        passenger_deck: PassengerDeck<P, G>,
         cargo_deck: CargoDeck<C>,
         fast_rate: u16,
         real_rate: u16,
@@ -937,8 +979,8 @@ impl<const P: usize, const C: usize> PayloadManager<P, C> {
         self.passenger_deck.spawn_all_pax();
     }
 
-    fn update_one_pax(&mut self) {
-        self.passenger_deck.move_one_pax_overall();
+    fn update_one_tick(&mut self) {
+        self.passenger_deck.update_one_tick();
     }
 
     pub fn override_pax_payload(&mut self, ps: usize, payload: Mass) {
@@ -956,8 +998,8 @@ impl<const P: usize, const C: usize> PayloadManager<P, C> {
     fn update_pax_tick(&mut self) {
         match self.board_rate() {
             BoardingRate::Instant => self.spawn_all_pax(),
-            BoardingRate::Fast => self.update_one_pax(),
-            BoardingRate::Real => self.update_one_pax(),
+            BoardingRate::Fast => self.update_one_tick(),
+            BoardingRate::Real => self.update_one_tick(),
         }
     }
 
@@ -1025,7 +1067,7 @@ impl<const P: usize, const C: usize> PayloadManager<P, C> {
         }
     }
 }
-impl<const P: usize, const C: usize> SimulationElement for PayloadManager<P, C> {
+impl<const P: usize, const G: usize, const C: usize> SimulationElement for PayloadManager<P, G, C> {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.boarding_inputs.accept(visitor);
         self.passenger_deck.accept(visitor);
@@ -1246,10 +1288,10 @@ impl SimulationElement for GsxInput {
     }
 }
 
-pub struct GsxDriver<const P: usize, const C: usize> {
+pub struct GsxDriver<const P: usize, const G: usize, const C: usize> {
     gsx_input: GsxInput,
 }
-impl<const P: usize, const C: usize> GsxDriver<P, C> {
+impl<const P: usize, const G: usize, const C: usize> GsxDriver<P, G, C> {
     pub fn new(context: &mut InitContext) -> Self {
         GsxDriver {
             gsx_input: GsxInput::new(context),
@@ -1268,11 +1310,11 @@ impl<const P: usize, const C: usize> GsxDriver<P, C> {
         self.gsx_input.boarding_state()
     }
 
-    fn has_pax(&self, passenger_deck: &PassengerDeck<P>) -> bool {
+    fn has_pax(&self, passenger_deck: &PassengerDeck<P, G>) -> bool {
         passenger_deck.has_pax()
     }
 
-    fn total_max_pax_capacity(&self, passenger_deck: &PassengerDeck<P>) -> i32 {
+    fn total_max_pax_capacity(&self, passenger_deck: &PassengerDeck<P, G>) -> i32 {
         passenger_deck.total_max_pax_capacity()
     }
 
@@ -1294,7 +1336,7 @@ impl<const P: usize, const C: usize> GsxDriver<P, C> {
 
     pub fn update(
         &mut self,
-        passenger_deck: &mut PassengerDeck<P>,
+        passenger_deck: &mut PassengerDeck<P, G>,
         cargo_deck: &mut CargoDeck<C>,
         boarding_sounds: &mut BoardingSounds,
     ) {
@@ -1305,7 +1347,7 @@ impl<const P: usize, const C: usize> GsxDriver<P, C> {
 
     fn update_ambient_sound(
         &mut self,
-        passenger_deck: &PassengerDeck<P>,
+        passenger_deck: &PassengerDeck<P, G>,
         boarding_sounds: &mut BoardingSounds,
     ) {
         boarding_sounds.play_sound_pax_ambience(self.has_pax(passenger_deck));
@@ -1313,7 +1355,7 @@ impl<const P: usize, const C: usize> GsxDriver<P, C> {
 
     fn update_boarding(
         &mut self,
-        passenger_deck: &mut PassengerDeck<P>,
+        passenger_deck: &mut PassengerDeck<P, G>,
         cargo_deck: &mut CargoDeck<C>,
     ) {
         match self.boarding_state() {
@@ -1334,7 +1376,7 @@ impl<const P: usize, const C: usize> GsxDriver<P, C> {
 
     fn update_deboarding(
         &mut self,
-        passenger_deck: &mut PassengerDeck<P>,
+        passenger_deck: &mut PassengerDeck<P, G>,
         cargo_deck: &mut CargoDeck<C>,
     ) {
         match self.deboarding_state() {
@@ -1359,7 +1401,7 @@ impl<const P: usize, const C: usize> GsxDriver<P, C> {
         }
     }
 }
-impl<const P: usize, const C: usize> SimulationElement for GsxDriver<P, C> {
+impl<const P: usize, const G: usize, const C: usize> SimulationElement for GsxDriver<P, G, C> {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.gsx_input.accept(visitor);
         visitor.visit(self);
