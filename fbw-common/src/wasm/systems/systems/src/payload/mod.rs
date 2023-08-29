@@ -184,6 +184,10 @@ impl<const N: usize> PassengerDeck<N> {
         self.pax[ps].reset_pax_target();
     }
 
+    fn override_payload(&mut self, ps: usize, payload: Mass) {
+        self.pax[ps].override_payload(payload);
+    }
+
     fn target_none(&mut self) {
         for cs in 0..self.num_stations() {
             self.reset_pax_target(cs);
@@ -464,6 +468,10 @@ impl Pax {
     pub fn payload_is_sync(&self) -> bool {
         self.payload
             == Mass::new::<pound>(self.pax_num() as f64 * self.per_pax_weight().get::<pound>())
+    }
+
+    pub fn override_payload(&mut self, payload: Mass) {
+        self.payload = payload;
     }
 
     pub fn load_payload(&mut self) {
@@ -931,6 +939,10 @@ impl<const P: usize, const C: usize> PayloadManager<P, C> {
 
     fn update_one_pax(&mut self) {
         self.passenger_deck.move_one_pax_overall();
+    }
+
+    pub fn override_pax_payload(&mut self, ps: usize, payload: Mass) {
+        self.passenger_deck.override_payload(ps, payload)
     }
 
     fn spawn_all_cargo(&mut self) {

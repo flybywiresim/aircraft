@@ -339,6 +339,11 @@ impl A380Payload {
     }
 
     #[cfg(test)]
+    fn override_pax_payload(&mut self, ps: usize, payload: Mass) {
+        self.payload_manager.override_pax_payload(ps, payload)
+    }
+
+    #[cfg(test)]
     fn max_cargo(&self, cs: usize) -> Mass {
         self.payload_manager.max_cargo(cs)
     }

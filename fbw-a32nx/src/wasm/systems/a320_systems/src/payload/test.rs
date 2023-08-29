@@ -91,6 +91,10 @@ impl BoardingTestAircraft {
     fn cargo_fore_aft_pax_center_of_gravity(&self) -> f64 {
         CargoPayload::fore_aft_center_of_gravity(&self.payload)
     }
+
+    fn override_pax_payload(&mut self, ps: usize, payload: Mass) {
+        self.payload.override_pax_payload(ps, payload)
+    }
 }
 impl Aircraft for BoardingTestAircraft {
     fn update_before_power_distribution(
@@ -339,6 +343,11 @@ impl BoardingTestBed {
 
     fn stop_boarding(mut self) -> Self {
         self.write_by_name("BOARDING_STARTED_BY_USR", false);
+        self
+    }
+
+    fn override_pax_payload(mut self, ps: usize) -> Self {
+        self.command(|a| a.override_pax_payload(ps, Mass::new::<kilogram>(9999.)));
         self
     }
 
@@ -1003,6 +1012,39 @@ fn start_half_cargo_target_full_cargo_real_board() {
     test_bed = test_bed.and_run();
     test_bed.has_sound_pax_ambience();
     test_bed.sound_boarding_complete_reset();
+}
+
+#[test]
+fn start_half_cargo_target_full_cargo_real_board_usr_interferes_with_payload_manually() {
+    let mut test_bed = test_bed_with()
+        .init_vars()
+        .with_all_stations_half_pax()
+        .load_half_cargo()
+        .target_half_pax()
+        .target_full_cargo()
+        .real_board_rate()
+        .start_boarding()
+        .and_run()
+        .and_stabilize();
+
+    test_bed.boarding_started();
+
+    let one_hour_in_seconds = HOURS_TO_MINUTES * MINUTES_TO_SECONDS;
+
+    test_bed
+        .test_bed
+        .run_multiple_frames(Duration::from_secs(one_hour_in_seconds));
+
+    test_bed.has_all_stations_half_pax();
+    test_bed.has_full_cargo();
+    test_bed.boarding_stopped();
+
+    test_bed.has_sound_pax_ambience();
+    test_bed.sound_boarding_complete_reset();
+    test_bed
+        .override_pax_payload(1)
+        .and_run()
+        .has_all_stations_half_pax();
 }
 
 #[test]
