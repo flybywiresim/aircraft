@@ -178,7 +178,6 @@ impl A320Payload {
         self.payload_manager.pax_num(ps)
     }
 
-    #[cfg(test)]
     fn total_passenger_load(&self) -> Mass {
         self.payload_manager.total_passenger_load()
     }
@@ -274,14 +273,17 @@ impl A320Payload {
         self.payload_manager.sound_pax_boarding_playing()
     }
 
+    #[cfg(test)]
     fn sound_pax_deboarding_playing(&self) -> bool {
         self.payload_manager.sound_pax_deboarding_playing()
     }
 
+    #[cfg(test)]
     fn sound_pax_complete_playing(&self) -> bool {
         self.payload_manager.sound_pax_complete_playing()
     }
 
+    #[cfg(test)]
     fn sound_pax_ambience_playing(&self) -> bool {
         self.payload_manager.sound_pax_ambience_playing()
     }
