@@ -33,7 +33,7 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
             } else if (BitFlags.isAny(symbol.type, NdSymbolTypeFlags.VorDme | NdSymbolTypeFlags.Vor | NdSymbolTypeFlags.Dme | NdSymbolTypeFlags.Ndb)) {
                 this.paintNavaid(false, context, rx, ry, symbol);
             } else if (BitFlags.isAny(symbol.type, NdSymbolTypeFlags.FixInfo | NdSymbolTypeFlags.FlightPlan)) {
-                this.paintFlightPlanWaypoint(false, context, rx, ry, symbol);
+                this.paintFlightPlanWaypoint(false, context, rx, ry, symbol, mapParameters);
             } else {
                 this.paintWaypoint(false, context, rx, ry, symbol);
             }
@@ -51,7 +51,7 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
             } else if (BitFlags.isAny(symbol.type, NdSymbolTypeFlags.VorDme | NdSymbolTypeFlags.Vor | NdSymbolTypeFlags.Dme | NdSymbolTypeFlags.Ndb)) {
                 this.paintNavaid(true, context, rx, ry, symbol);
             } else if (BitFlags.isAny(symbol.type, NdSymbolTypeFlags.FixInfo | NdSymbolTypeFlags.FlightPlan)) {
-                this.paintFlightPlanWaypoint(true, context, rx, ry, symbol);
+                this.paintFlightPlanWaypoint(true, context, rx, ry, symbol, mapParameters);
             } else {
                 this.paintWaypoint(true, context, rx, ry, symbol);
             }
@@ -129,7 +129,7 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
         PaintUtils.paintText(isColorLayer, context, x + 15, y + 17, symbol.ident, '#ff94ff');
     }
 
-    private paintFlightPlanWaypoint(isColorLayer: boolean, context: CanvasRenderingContext2D, x: number, y: number, symbol: NdSymbol) {
+    private paintFlightPlanWaypoint(isColorLayer: boolean, context: CanvasRenderingContext2D, x: number, y: number, symbol: NdSymbol, mapParameters: MapParameters) {
         const mainColor = symbol.type & NdSymbolTypeFlags.ActiveLegTermination ? '#fff' : '#0f0';
 
         this.paintWaypointShape(context, x, y, isColorLayer ? mainColor : '#000', isColorLayer ? 1.75 : 3.25);
@@ -139,16 +139,18 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
         PaintUtils.paintText(isColorLayer, context, x + 15, y + 17, symbol.ident, mainColor);
 
         if (symbol.type & (NdSymbolTypeFlags.CourseReversalLeft | NdSymbolTypeFlags.CourseReversalRight)) {
-            this.paintCourseReversal(context, x, y, symbol);
+            this.paintCourseReversal(context, x, y, symbol, mapParameters);
         }
     }
 
-    private paintCourseReversal(context: CanvasRenderingContext2D, x: number, y: number, symbol: NdSymbol) {
+    private paintCourseReversal(context: CanvasRenderingContext2D, x: number, y: number, symbol: NdSymbol, mapParameters: MapParameters) {
         const left = symbol.type & (NdSymbolTypeFlags.CourseReversalLeft);
         const arcEnd = left ? -42 : 42;
+        const rotation = mapParameters.rotation(symbol.direction);
         context.strokeStyle = '#fff';
         context.lineWidth = 1.75;
         context.translate(x, y);
+        context.rotate(rotation * MathUtils.DEGREES_TO_RADIANS);
         context.beginPath();
         context.moveTo(arcEnd, 0);
         context.lineTo(arcEnd - 4, -4);
