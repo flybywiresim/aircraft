@@ -314,20 +314,32 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     createLatLonWaypoint(coordinates: Coordinates, stored: boolean): Waypoint {
-        // TODO
-        return WaypointFactory.fromLocation('LL01', coordinates);
+        const newWpt = WaypointFactory.fromLocation(`LL${(this.fmService.latLongStoredWaypoints.length + 1).toString().padStart(2, '0')}`, coordinates);
+        this.fmService.latLongStoredWaypoints.push(newWpt);
+
+        return newWpt;
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     createPlaceBearingPlaceBearingWaypoint(place1: Waypoint, bearing1: DegreesTrue, place2: Waypoint, bearing2: DegreesTrue, stored: boolean): Waypoint {
-        // TODO
-        return WaypointFactory.fromPlaceBearingPlaceBearing('PBPB01', place1.location, bearing1, place2.location, bearing2);
+        const newWpt = WaypointFactory.fromPlaceBearingPlaceBearing(
+            `PBX${(this.fmService.latLongStoredWaypoints.length + 1).toString().padStart(2, '0')}`,
+            place1.location,
+            bearing1,
+            place2.location,
+            bearing2,
+        );
+        this.fmService.latLongStoredWaypoints.push(newWpt);
+
+        return newWpt;
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     createPlaceBearingDistWaypoint(place: Waypoint, bearing: DegreesTrue, distance: NauticalMiles, stored: boolean): Waypoint {
-        // TODO
-        return WaypointFactory.fromPlaceBearingDistance('PBD01', place.location, bearing, distance);
+        const newWpt = WaypointFactory.fromPlaceBearingDistance(`PBD${(this.fmService.latLongStoredWaypoints.length + 1).toString().padStart(2, '0')}`, place.location, bearing, distance);
+        this.fmService.latLongStoredWaypoints.push(newWpt);
+
+        return newWpt;
     }
 
     public async onAfterRender(node: VNode): Promise<void> {

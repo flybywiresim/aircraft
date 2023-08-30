@@ -5,7 +5,7 @@ import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
 import { FSComponent, Subject } from '@microsoft/msfs-sdk';
 import { MfdComponent } from 'instruments/src/MFD/MFD';
 import { FmgcDataInterface } from 'instruments/src/MFD/fmgc';
-import { Fix } from 'msfs-navdata';
+import { Fix, Waypoint } from 'msfs-navdata';
 
 /*
  * Handles navigation (and potentially other aspects) for MFD pages
@@ -26,6 +26,12 @@ export class MfdFlightManagementService {
         this.revisedWaypointIsAltn.set(undefined);
         this.revisedWaypointPlanIndex.set(undefined);
     }
+
+    public latLongStoredWaypoints: Waypoint[] = [];
+
+    public pbdStoredWaypoints: Waypoint[] = [];
+
+    public pbxStoredWaypoints: Waypoint[] = [];
 
     constructor(
         public mfd: MfdComponent,
