@@ -5,6 +5,7 @@ import { TriangleDown } from 'instruments/src/MFD/pages/common/shapes';
 type PageSelectorMenuItem = {
     label: string;
     action(): void;
+    disabled?: boolean;
 };
 
 interface PageSelectorDropdownMenuProps extends ComponentProps {
@@ -33,8 +34,10 @@ export class PageSelectorDropdownMenu extends DisplayComponent<PageSelectorDropd
 
         this.props.menuItems.forEach((val, i) => {
             document.getElementById(`${this.props.idPrefix}_${i}`).addEventListener('click', () => {
-                val.action();
-                this.dropdownIsOpened.set(false);
+                if (!val.disabled) {
+                    val.action();
+                    this.dropdownIsOpened.set(false);
+                }
             });
         });
 
@@ -93,7 +96,7 @@ export class PageSelectorDropdownMenu extends DisplayComponent<PageSelectorDropd
                 </div>
                 <div ref={this.dropdownMenuRef} class="mfd-dropdown-menu" style={`display: ${this.dropdownIsOpened.get() ? 'block' : 'none'}`}>
                     {this.props.menuItems.map((el, idx) => (
-                        <span id={`${this.props.idPrefix}_${idx}`} class="mfd-dropdown-menu-element">
+                        <span id={`${this.props.idPrefix}_${idx}`} class={`mfd-dropdown-menu-element${el.disabled ? ' disabled' : ''}`}>
                             {el.label}
                         </span>
                     ), this)}

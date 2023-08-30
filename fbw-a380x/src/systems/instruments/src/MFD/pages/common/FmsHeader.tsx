@@ -44,7 +44,7 @@ export class FmsHeader extends AbstractHeader {
                             { label: 'F-PLN', action: () => this.props.uiService.navigateTo('fms/active/f-pln') },
                             { label: 'PERF', action: () => this.props.uiService.navigateTo('fms/active/perf') },
                             { label: 'FUEL&LOAD', action: () => this.props.uiService.navigateTo('fms/active/fuel-load') },
-                            { label: 'WIND', action: () => this.props.uiService.navigateTo('fms/active/wind') },
+                            { label: 'WIND', action: () => this.props.uiService.navigateTo('fms/active/wind'), disabled: true },
                             { label: 'INIT', action: () => this.props.uiService.navigateTo('fms/active/init') }]}
                         idPrefix="pageSelectorActive"
                         containerStyle="flex: 1"
@@ -53,11 +53,11 @@ export class FmsHeader extends AbstractHeader {
                         isActive={this.positionIsSelected}
                         label="POSITION"
                         menuItems={[
-                            { label: 'MONITOR', action: () => this.props.uiService.navigateTo('fms/position/monitor') },
-                            { label: 'REPORT', action: () => this.props.uiService.navigateTo('fms/position/report') },
-                            { label: 'NAVAIDS', action: () => this.props.uiService.navigateTo('fms/position/navaids') },
+                            { label: 'MONITOR', action: () => this.props.uiService.navigateTo('fms/position/monitor'), disabled: true },
+                            { label: 'REPORT', action: () => this.props.uiService.navigateTo('fms/position/report'), disabled: true },
+                            { label: 'NAVAIDS', action: () => this.props.uiService.navigateTo('fms/position/navaids'), disabled: true },
                             { label: 'IRS', action: () => this.props.uiService.navigateTo('fms/position/irs') },
-                            { label: 'GPS', action: () => this.props.uiService.navigateTo('fms/position/gps') }]}
+                            { label: 'GPS', action: () => this.props.uiService.navigateTo('fms/position/gps'), disabled: true }]}
                         idPrefix="pageSelectorPosition"
                         containerStyle="flex: 1"
                     />
@@ -65,9 +65,9 @@ export class FmsHeader extends AbstractHeader {
                         isActive={this.secIndexIsSelected}
                         label="SEC INDEX"
                         menuItems={[
-                            { label: 'SEC 1', action: () => this.props.uiService.navigateTo('fms/sec1/init') },
-                            { label: 'SEC 2', action: () => this.props.uiService.navigateTo('fms/sec2/init') },
-                            { label: 'SEC 3', action: () => this.props.uiService.navigateTo('fms/sec3/init') }]}
+                            { label: 'SEC 1', action: () => this.props.uiService.navigateTo('fms/sec1/init'), disabled: true },
+                            { label: 'SEC 2', action: () => this.props.uiService.navigateTo('fms/sec2/init'), disabled: true },
+                            { label: 'SEC 3', action: () => this.props.uiService.navigateTo('fms/sec3/init'), disabled: true }]}
                         idPrefix="pageSelectorSecIndex"
                         containerStyle="flex: 1"
                     />
@@ -75,12 +75,12 @@ export class FmsHeader extends AbstractHeader {
                         isActive={this.dataIsSelected}
                         label="DATA"
                         menuItems={[
-                            { label: 'STATUS', action: () => this.props.uiService.navigateTo('fms/data/status') },
-                            { label: 'WAYPOINT', action: () => this.props.uiService.navigateTo('fms/data/waypoint') },
-                            { label: 'NAVAID', action: () => this.props.uiService.navigateTo('fms/data/navaid') },
-                            { label: 'ROUTE', action: () => this.props.uiService.navigateTo('fms/data/route') },
-                            { label: 'AIRPORT', action: () => this.props.uiService.navigateTo('fms/data/airport') },
-                            { label: 'PRINTER', action: () => this.props.uiService.navigateTo('fms/data/printer') }]}
+                            { label: 'STATUS', action: () => this.props.uiService.navigateTo('fms/data/status'), disabled: true },
+                            { label: 'WAYPOINT', action: () => this.props.uiService.navigateTo('fms/data/waypoint'), disabled: true },
+                            { label: 'NAVAID', action: () => this.props.uiService.navigateTo('fms/data/navaid'), disabled: true },
+                            { label: 'ROUTE', action: () => this.props.uiService.navigateTo('fms/data/route'), disabled: true },
+                            { label: 'AIRPORT', action: () => this.props.uiService.navigateTo('fms/data/airport'), disabled: true },
+                            { label: 'PRINTER', action: () => this.props.uiService.navigateTo('fms/data/printer'), disabled: true }]}
                         idPrefix="pageSelectorData"
                         containerStyle="flex: 1"
                     />

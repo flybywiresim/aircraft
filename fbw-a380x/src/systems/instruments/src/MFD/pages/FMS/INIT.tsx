@@ -114,7 +114,12 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                             containerStyle="width: 200px; margin-right: 5px;"
                             alignText="center"
                         />
-                        <Button label="ACFT STATUS" onClick={() => this.props.uiService.navigateTo('fms/data/status')} buttonStyle="margin-right: 10px; width: 200px;" />
+                        <Button
+                            disabled={Subject.create(true)}
+                            label="ACFT STATUS"
+                            onClick={() => this.props.uiService.navigateTo('fms/data/status')}
+                            buttonStyle="margin-right: 10px; width: 200px;"
+                        />
                         <div style="flex-grow: 1" />
                         <Button
                             label="RECEIVED<br />CPNY F-PLN"
@@ -181,7 +186,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                             alignText="center"
                             disabled={Subject.create(true)} // TODO
                         />
-                        <Button label="RTE SEL" onClick={() => console.log('RTE SEL')} buttonStyle="margin-right: 10px; width: 200px;" />
+                        <Button disabled={Subject.create(true)} label="RTE SEL" onClick={() => console.log('RTE SEL')} buttonStyle="margin-right: 10px; width: 200px;" />
                     </div>
                     <div class="mfd-fms-init-line altn-rte">
                         <div class="mfd-label init-input-field">ALTN RTE</div>
@@ -194,7 +199,12 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                             containerStyle="width: 200px; margin-right: 5px;"
                             alignText="center"
                         />
-                        <Button label="ALTN RTE SEL" disabled={this.altnDisabled} onClick={() => console.log('ALTN RTE SEL')} buttonStyle="margin-right: 10px; width: 200px;" />
+                        <Button
+                            label="ALTN RTE SEL"
+                            disabled={Subject.create(true /* this.altnDisabled */)}
+                            onClick={() => console.log('ALTN RTE SEL')}
+                            buttonStyle="margin-right: 10px; width: 200px;"
+                        />
                     </div>
                     <div class="mfd-fms-init-line">
                         <div class="mfd-label init-input-field">CRZ FL</div>
@@ -248,9 +258,14 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                             containerStyle="width: 125px; margin-right: 80px; margin-top: 90px;"
                             alignText="center"
                         />
-                        <Button label="WIND" onClick={() => console.log('WIND')} buttonStyle="margin-right: 10px; margin-top: 90px;" />
+                        <Button disabled={Subject.create(true)} label="WIND" onClick={() => console.log('WIND')} buttonStyle="margin-right: 10px; margin-top: 90px;" />
                         <div style="flex-grow: 1" />
-                        <Button label="CPNY WIND<br />REQUEST" onClick={() => console.log('CPNY WIND REQUEST')} buttonStyle="margin-right: 10px; justify-self: flex-end; width: 175px;" />
+                        <Button
+                            disabled={Subject.create(true)}
+                            label="CPNY WIND<br />REQUEST"
+                            onClick={() => console.log('CPNY WIND REQUEST')}
+                            buttonStyle="margin-right: 10px; justify-self: flex-end; width: 175px;"
+                        />
                     </div>
                     <Button label="IRS" onClick={() => this.props.uiService.navigateTo('fms/position/irs')} buttonStyle="width: 160px; margin-left: 150px; margin-bottom: 10px;" />
                     <div style={`display: ${this.props.uiService.activeUri.get().category === 'active' ? 'flex' : 'none'}; flex-direction: row;`}>
@@ -260,9 +275,19 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                             onClick={() => this.props.uiService.navigateTo(`fms/${this.props.uiService.activeUri.get().category}/f-pln-departure`)}
                             buttonStyle="width: 160px; margin-left: 150px; margin-bottom: 10px;"
                         />
-                        <Button label="RTE SUMMARY" onClick={() => this.props.uiService.navigateTo('fms/data/route')} buttonStyle="margin-left: 50px; margin-bottom: 10px;" />
+                        <Button
+                            disabled={Subject.create(true)}
+                            label="RTE SUMMARY"
+                            onClick={() => this.props.uiService.navigateTo('fms/data/route')}
+                            buttonStyle="margin-left: 50px; margin-bottom: 10px;"
+                        />
                     </div>
-                    <Button label="NAVAIDS" onClick={() => this.props.uiService.navigateTo('fms/position/navaids')} buttonStyle="width: 160px; margin-left: 150px; margin-bottom: 10px;" />
+                    <Button
+                        disabled={Subject.create(true)}
+                        label="NAVAIDS"
+                        onClick={() => this.props.uiService.navigateTo('fms/position/navaids')}
+                        buttonStyle="width: 160px; margin-left: 150px; margin-bottom: 10px;"
+                    />
                     <Button
                         label="FUEL&LOAD"
                         onClick={() => this.props.uiService.navigateTo(`fms/${this.props.uiService.activeUri.get().category}/fuel-load`)}
@@ -275,9 +300,13 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                             buttonStyle="width: 160px; margin-left: 150px; margin-bottom: 10px; height: 40px;"
                         />
                         <div style="flex-grow: 1" />
-                        <Button label="CPNY T.O.<br />REQUEST" onClick={() => console.log('CPNY T.O. REQUEST')} buttonStyle="margin-right: 10px; justify-self: flex-end; width: 175px;" />
+                        <Button
+                            disabled={Subject.create(true)}
+                            label="CPNY T.O.<br />REQUEST"
+                            onClick={() => console.log('CPNY T.O. REQUEST')}
+                            buttonStyle="margin-right: 10px; justify-self: flex-end; width: 175px;"
+                        />
                     </div>
-
                     {/* end page content */}
                 </div>
                 <Footer bus={this.props.bus} uiService={this.props.uiService} fmService={this.props.fmService} />
