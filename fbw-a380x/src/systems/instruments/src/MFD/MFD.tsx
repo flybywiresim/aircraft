@@ -30,6 +30,7 @@ import { MfdMsgList } from 'instruments/src/MFD/pages/FMS/MSG_LIST';
 import { ActiveUriInformation, MfdUIService } from 'instruments/src/MFD/pages/common/UIService';
 import { MfdFmsFplnDep } from 'instruments/src/MFD/pages/FMS/F-PLN/DEPARTURE';
 import { MfdFmsFplnArr } from 'instruments/src/MFD/pages/FMS/F-PLN/ARRIVAL';
+import { MfdFmsFplnDirectTo } from 'instruments/src/MFD/pages/FMS/F-PLN/DIRECT-TO';
 import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { Coordinates } from 'msfs-geo';
@@ -128,7 +129,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
     private async initializeFlightPlans() {
         const db = new NavigationDatabase(NavigationDatabaseBackend.Msfs);
         NavigationDatabaseService.activeDatabase = db;
-        await new Promise((r) => setTimeout(r, 250));
+        await new Promise((r) => setTimeout(r, 1000));
         this.flightPlanService.createFlightPlans();
 
         // Intialize from MSFS flight data
@@ -511,6 +512,16 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
             this.activePage = (
                 <MfdFmsFplnArr
                     pageTitle="F-PLN/ARRIVAL"
+                    bus={this.props.bus}
+                    uiService={this.uiService}
+                    fmService={this.fmService}
+                />
+            );
+            break;
+        case 'fms/active/f-pln-direct-to':
+            this.activePage = (
+                <MfdFmsFplnDirectTo
+                    pageTitle="F-PLN/DIRECT-TO"
                     bus={this.props.bus}
                     uiService={this.uiService}
                     fmService={this.fmService}

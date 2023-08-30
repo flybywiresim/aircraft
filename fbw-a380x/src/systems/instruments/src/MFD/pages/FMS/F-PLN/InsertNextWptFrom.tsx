@@ -1,17 +1,13 @@
-import { ComponentProps, DisplayComponent, FSComponent, Subject, Subscribable, SubscribableArray, Subscription, VNode } from '@microsoft/msfs-sdk';
+import { ComponentProps, DisplayComponent, FSComponent, Subject, SubscribableArray, Subscription, VNode } from '@microsoft/msfs-sdk';
 import '../../common/style.scss';
 import { Button } from 'instruments/src/MFD/pages/common/Button';
 import { coordinateToString } from '@flybywiresim/fbw-sdk';
 import { DropdownMenu } from 'instruments/src/MFD/pages/common/DropdownMenu';
 import { WaypointEntryUtils } from '@fmgc/flightplanning/new/WaypointEntryUtils';
 import { MfdFlightManagementService } from 'instruments/src/MFD/pages/common/FlightManagementService';
-import { FlightPlanIndex } from '@fmgc/index';
 
 interface InsertNextWptFromWindowProps extends ComponentProps {
     fmService: MfdFlightManagementService;
-    revisedWaypointIndex: Subscribable<number>;
-    planIndex: Subscribable<FlightPlanIndex>;
-    altn: Subscribable<boolean>;
     availableWaypoints: SubscribableArray<string>;
     visible: Subject<boolean>;
     contentContainerStyle?: string;
@@ -36,17 +32,25 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
                 this.selectedWaypointIndex.set(idx);
                 this.props.visible.set(false);
                 await this.props.fmService.flightPlanService.nextWaypoint(
-                    this.props.revisedWaypointIndex.get() + idx,
-                    this.props.fmService.flightPlanService.get(this.props.planIndex.get()).legElementAt(this.props.revisedWaypointIndex.get()).definition.waypoint,
-                    this.props.planIndex.get(),
-                    this.props.altn.get(),
+                    this.props.fmService.revisedWaypointIndex.get(),
+                    this.props.fmService.flightPlanService.get(
+                        this.props.fmService.revisedWaypointPlanIndex.get(),
+                    ).legElementAt(this.props.fmService.revisedWaypointIndex.get() + idx + 1).definition.waypoint,
+                    this.props.fmService.revisedWaypointPlanIndex.get(),
+                    this.props.fmService.revisedWaypointIsAltn.get(),
                 );
             }
         } else {
-            const wpt = await WaypointEntryUtils.getOrCreateWaypoint(this.props.fmService.mfd, text);
+            const wpt = await WaypointEntryUtils.getOrCreateWaypoint(this.props.fmService.mfd, text, true);
             this.props.visible.set(false);
-            await this.props.fmService.flightPlanService.nextWaypoint(this.props.revisedWaypointIndex.get(), wpt, this.props.planIndex.get(), this.props.altn.get());
+            await this.props.fmService.flightPlanService.nextWaypoint(
+                this.props.fmService.revisedWaypointIndex.get(),
+                wpt,
+                this.props.fmService.revisedWaypointPlanIndex.get(),
+                this.props.fmService.revisedWaypointIsAltn.get(),
+            );
         }
+        this.props.fmService.resetRevisedWaypoint();
     }
 
     onAfterRender(node: VNode): void {
@@ -54,15 +58,15 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
 
         this.subs.push(this.props.visible.sub((val) => {
             this.topRef.getOrDefault().style.display = val ? 'block' : 'none';
-            this.selectedWaypointIndex.set(null);
+            this.selectedWaypointIndex.set(undefined);
             this.nextWpt.set('');
         }, true));
 
-        this.subs.push(this.props.revisedWaypointIndex.sub((wptIdx) => {
-            const wpt = this.props.fmService.flightPlanService.get(this.props.planIndex.get()).legElementAt(wptIdx);
+        this.subs.push(this.props.fmService.revisedWaypointIndex.sub((wptIdx) => {
+            const wpt = this.props.fmService.flightPlanService.get(this.props.fmService.revisedWaypointPlanIndex.get()).legElementAt(wptIdx);
             this.identRef.instance.innerText = wpt.ident;
             this.coordinatesRef.instance.innerText = coordinateToString(wpt.definition.waypoint.location, false);
-            this.selectedWaypointIndex.set(null);
+            this.selectedWaypointIndex.set(undefined);
         }));
     }
 
@@ -86,7 +90,9 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
                             INSERT NEXT WPT FROM
                             {' '}
                             <span ref={this.identRef} class="mfd-value-green bigger">
-                                {this.props.fmService.flightPlanService.get(this.props.planIndex?.get())?.legElementAt(this.props.revisedWaypointIndex.get()).definition.waypoint.ident ?? ''}
+                                {this.props.fmService.flightPlanService.get(
+                                    this.props.fmService.revisedWaypointPlanIndex?.get(),
+                                )?.legElementAt(this.props.fmService.revisedWaypointIndex.get()).definition.waypoint.ident ?? ''}
                             </span>
                         </span>
                         <span style="margin-left: 50px; margin-top: 10px;">

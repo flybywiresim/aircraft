@@ -103,6 +103,7 @@ export abstract class FmsPage<T extends AbstractMfdPageProps> extends DisplayCom
             this.loadedFlightPlan = this.props.fmService.flightPlanService.activeOrTemporary;
             break;
         }
+        this.props.fmService.revisedWaypointPlanIndex.set(this.loadedFlightPlanIndex.get());
         this.onNewData();
         this.currentFlightPlanVersion = this.loadedFlightPlan.version;
     }

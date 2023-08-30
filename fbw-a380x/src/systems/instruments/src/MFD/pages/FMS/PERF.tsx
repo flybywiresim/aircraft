@@ -550,7 +550,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                 <div class="mfd-fms-perf-to-flex-toga" style="width: 200px;">
                                     <span style="width: 175px; display: inline; margin-left: 15px;">
                                         <RadioButtonGroup
-                                            values={ArraySubject.create(['TOGA', 'FLEX', 'DERATED'])}
+                                            values={['TOGA', 'FLEX', 'DERATED']}
                                             onModified={(val) => this.toThrustSettingChanged(val)}
                                             selectedIndex={this.toSelectedThrustSettingIndex}
                                             idPrefix="toThrustSettingRadio"
@@ -1329,7 +1329,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     </div>
                                     <div class="mfd-fms-perf-appr-conf-box">
                                         <RadioButtonGroup
-                                            values={ArraySubject.create(['CONF 3', 'FULL'])}
+                                            values={['CONF 3', 'FULL']}
                                             selectedIndex={this.apprSelectedFlapsIndex}
                                             onModified={(v) => this.props.fmService.fmgc.data.approachFlapConfig.set(v + 3)}
                                             idPrefix="apprFlapsSettingsRadio"

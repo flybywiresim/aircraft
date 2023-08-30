@@ -3,6 +3,7 @@ import './style.scss';
 
 interface RadioButtonGroupProps extends ComponentProps {
     values: string[];
+    valuesDisabled?: Subject<boolean[]>;
     selectedIndex: Subject<number>;
     idPrefix: string;
     onModified?: (newSelectedIndex: number) => void;
@@ -18,6 +19,9 @@ export class RadioButtonGroup extends DisplayComponent<RadioButtonGroupProps> {
 
         if (this.props.tmpyActive === undefined) {
             this.props.tmpyActive = Subject.create<boolean>(false);
+        }
+        if (this.props.valuesDisabled === undefined) {
+            this.props.valuesDisabled = Subject.create<boolean[]>(this.props.values.map(() => false));
         }
 
         for (let i = 0; i < this.props.values.length; i++) {
@@ -36,6 +40,16 @@ export class RadioButtonGroup extends DisplayComponent<RadioButtonGroupProps> {
                     document.getElementById(`${this.props.idPrefix}_${i}`).setAttribute('checked', 'checked');
                 } else {
                     document.getElementById(`${this.props.idPrefix}_${i}`).removeAttribute('checked');
+                }
+            }
+        }, true));
+
+        this.subs.push(this.props.valuesDisabled.sub((val) => {
+            for (let i = 0; i < this.props.values.length; i++) {
+                if (val[i] === true) {
+                    document.getElementById(`${this.props.idPrefix}_${i}`).setAttribute('disabled', 'disabled');
+                } else {
+                    document.getElementById(`${this.props.idPrefix}_${i}`).removeAttribute('disabled');
                 }
             }
         }, true));

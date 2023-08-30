@@ -30,6 +30,7 @@ export class DestinationWindow extends DisplayComponent<DestinationWindowProps> 
             );
             this.props.visible.set(false);
             this.newDest.set('');
+            this.props.fmService.resetRevisedWaypoint();
         }
     }
 

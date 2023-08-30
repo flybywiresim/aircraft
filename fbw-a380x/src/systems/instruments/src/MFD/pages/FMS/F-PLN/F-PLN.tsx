@@ -168,12 +168,12 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             const leg = jointFlightPlan[i];
             let reduceDistanceBy = 0;
 
-            if (pseudoWptMap.has(i) === true) {
+            if (pseudoWptMap.has(i) === true && pseudoWptMap.get(i).displayedOnMcdu) {
                 const pwp = pseudoWptMap.get(i);
                 reduceDistanceBy = pwp.flightPlanInfo.distanceFromLastFix;
                 const data: FplnLineWaypointDisplayData = {
                     type: FplnLineType.Waypoint,
-                    originalLegIndex: null,
+                    originalLegIndex: undefined,
                     isPseudoWaypoint: true,
                     isAltnWaypoint: i > (this.loadedFlightPlan.allLegs.length - 1),
                     ident: pwp.mcduIdent ?? pwp.ident,
@@ -191,7 +191,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                     windPrediction: this.derivedFplnLegData[i].windPrediction,
                     trackFromLastWpt: this.derivedFplnLegData[i].trackFromLastWpt,
                     distFromLastWpt: pwp.flightPlanInfo.distanceFromLastFix,
-                    fpa: null,
+                    fpa: undefined,
                 };
                 this.lineData.push(data);
             }
@@ -290,7 +290,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                 }
                 const node = (
                     <FplnLegLine
-                        data={Subject.create(this.lineData[drawIndex])} // TODO make subscribable
+                        data={Subject.create(this.lineData[drawIndex])} // TODO make subscribable for leaner updates
                         previousRow={Subject.create(previousRow)}
                         openRevisionsMenuCallback={() => this.openRevisionsMenu(this.lineData[drawIndex].originalLegIndex)}
                         flags={Subject.create(flags)}
@@ -304,7 +304,6 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                             }
                             return FplnLineColor.Active;
                         }, this.tmpyActive, this.secActive)}
-                        selectedForRevision={Subject.create(false)}
                         revisionsMenuIsOpened={this.revisionsMenuOpened}
                     />
                 );
@@ -327,6 +326,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                 }
 
                 this.props.fmService.revisedWaypointIndex.set(originalLegIndex);
+                this.props.fmService.revisedWaypointPlanIndex.set(this.loadedFlightPlanIndex.get());
                 this.props.fmService.revisedWaypointIsAltn.set(altnFlightPlan);
                 this.revisionsMenuValues.set(getRevisionsMenu(this, type));
                 this.revisionsMenuRef.instance.display(195, 183);
@@ -426,9 +426,6 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                     />
                     <InsertNextWptFromWindow
                         fmService={this.props.fmService}
-                        revisedWaypointIndex={this.props.fmService.revisedWaypointIndex}
-                        planIndex={this.props.fmService.revisedWaypointPlanIndex}
-                        altn={this.props.fmService.revisedWaypointIsAltn}
                         availableWaypoints={this.nextWptAvailableWaypoints}
                         visible={this.insertNextWptWindowOpened}
                     />
@@ -677,13 +674,14 @@ export interface FplnLegLineProps extends FplnLineCommonProps {
     flags: Subscribable<FplnLineFlags>;
     displayEfobAndWind: Subscribable<boolean>;
     globalLineColor: Subscribable<FplnLineColor>;
-    selectedForRevision: Subject<boolean>;
     revisionsMenuIsOpened: Subject<boolean>;
 }
 
 class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
     // Make sure to collect all subscriptions here, so we can properly destroy them.
     private subs = [] as Subscription[];
+
+    private selectedForRevision = Subject.create(false);
 
     private lineColor = MappedSubject.create(([color, data]) => {
         if (isWaypoint(data) && data.isAltnWaypoint === true) {
@@ -738,7 +736,7 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
 
         this.subs.push(this.props.data.sub((data) => this.onNewData(data), true));
 
-        this.subs.push(this.props.selectedForRevision.sub((val) => {
+        this.subs.push(this.selectedForRevision.sub((val) => {
             if (val === true) {
                 this.identRef.getOrDefault().classList.add('selected');
             } else {
@@ -748,15 +746,17 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
 
         this.subs.push(this.props.revisionsMenuIsOpened.sub((val) => {
             if (val === false) {
-                this.props.selectedForRevision.set(false);
+                this.selectedForRevision.set(false);
                 this.identRef.getOrDefault().classList.remove('selected');
             }
         }));
 
         if (this.identRef.getOrDefault()) {
             this.identRef.instance.addEventListener('click', () => {
-                this.props.openRevisionsMenuCallback();
-                this.props.selectedForRevision.set(true);
+                if (this.props.data.get().originalLegIndex !== undefined) {
+                    this.props.openRevisionsMenuCallback();
+                    this.selectedForRevision.set(true);
+                }
             });
         }
     }
@@ -778,21 +778,24 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
                 this.identRef.getOrDefault().innerText = data.ident;
             }
 
-            // TODO: Hold/turn direction
+            // TODO: Hold/turn direction, RNP info
             if (this.annotationRef.getOrDefault()) {
                 this.annotationRef.getOrDefault().innerText = data.annotation;
             }
 
             // Format time to leg
             // TODO: Time constraint, "HOLD SPD" label
-            // TODO show ETA if flight phase >= TO
-            if (data.etaOrSecondsFromPresent) {
-                if (SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Enum') >= FmgcFlightPhase.Takeoff) {
-                    const eta = new Date(Date.now() + data.etaOrSecondsFromPresent * 1000);
-                    this.timeRef.getOrDefault().innerText = `${eta.getHours().toString().padStart(2, '0')}:${eta.getMinutes().toString().padStart(2, '0')}`;
-                } else {
-                    this.timeRef.getOrDefault().innerText = secondsToHHmmString(data.etaOrSecondsFromPresent);
+            if (this.props.globalLineColor.get() === FplnLineColor.Active) {
+                if (data.etaOrSecondsFromPresent) {
+                    if (SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Enum') >= FmgcFlightPhase.Takeoff) {
+                        const eta = new Date(Date.now() + data.etaOrSecondsFromPresent * 1000);
+                        this.timeRef.getOrDefault().innerText = `${eta.getHours().toString().padStart(2, '0')}:${eta.getMinutes().toString().padStart(2, '0')}`;
+                    } else {
+                        this.timeRef.getOrDefault().innerText = secondsToHHmmString(data.etaOrSecondsFromPresent);
+                    }
                 }
+            } else {
+                this.timeRef.getOrDefault().innerText = '--:--';
             }
 
             this.renderSpdAltEfobWind(data);
@@ -852,7 +855,7 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
     }
 
     private formatWind(data: FplnLineWaypointDisplayData): VNode {
-        let directionStr = '';
+        let directionStr = '---';
         const previousRow = this.props.previousRow.get();
         if (previousRow
             && isWaypoint(previousRow)
@@ -863,7 +866,7 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
             directionStr = <span>{data.windPrediction.direction.toFixed(0).toString().padStart(3, '0')}</span>;
         }
 
-        let speedStr = '';
+        let speedStr = '--';
         if (previousRow
             && isWaypoint(previousRow)
             && previousRow.windPrediction.speed === data.windPrediction.speed) {
@@ -882,7 +885,7 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
     }
 
     private formatAltitude(data: FplnLineWaypointDisplayData): VNode {
-        let altStr: VNode = <></>;
+        let altStr: VNode = <span>-----</span>;
         const previousRow = this.props.previousRow.get();
         if (data.altitudePrediction) {
             if (previousRow
@@ -917,7 +920,7 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
     }
 
     private formatSpeed(data: FplnLineWaypointDisplayData): VNode {
-        let speedStr: VNode = <></>;
+        let speedStr: VNode = <span>---</span>;
         const previousRow = this.props.previousRow.get();
         if (previousRow
             && isWaypoint(previousRow)
@@ -925,9 +928,10 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
             && !data.hasSpeedConstraint
             && !(FplnLineFlags.AfterSpecial === (this.props.flags.get() & FplnLineFlags.AfterSpecial) || FplnLineFlags.FirstLine === (this.props.flags.get() & FplnLineFlags.FirstLine))) {
             speedStr = <span style="font-family: HoneywellMCDU, monospace;">"</span>;
-        } else {
+        } else if (data.speedPrediction !== undefined && data.speedPrediction !== null) {
             speedStr = <span>{data.speedPrediction > 2 ? data.speedPrediction.toFixed(0) : `.${data.speedPrediction.toFixed(2).split('.')[1]}`}</span>;
         }
+
         if (data.hasSpeedConstraint) {
             if (data.speedConstraintIsRespected) {
                 return (
@@ -949,16 +953,16 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
 
     private efobOrSpeed(data: FplnLineWaypointDisplayData): VNode {
         if (this.props.displayEfobAndWind.get() === true) {
-            return <span>{(data.efobPrediction / 1000).toFixed(1)}</span>;
+            return (data.efobPrediction && this.props.globalLineColor.get() === FplnLineColor.Active) ? <span>{(data.efobPrediction / 1000).toFixed(1)}</span> : <span>--.-</span>;
         }
-        return this.formatSpeed(data);
+        return this.props.globalLineColor.get() === FplnLineColor.Active ? this.formatSpeed(data) : <span>---</span>;
     }
 
     private windOrAlt(data: FplnLineWaypointDisplayData): VNode {
         if (this.props.displayEfobAndWind.get() === true) {
-            return this.formatWind(data);
+            return this.props.globalLineColor.get() === FplnLineColor.Active ? this.formatWind(data) : <span>---°/---</span>;
         }
-        return this.formatAltitude(data);
+        return this.props.globalLineColor.get() === FplnLineColor.Active ? this.formatAltitude(data) : <span>-----</span>;
     }
 
     private lineConnector(data: FplnLineWaypointDisplayData): VNode {

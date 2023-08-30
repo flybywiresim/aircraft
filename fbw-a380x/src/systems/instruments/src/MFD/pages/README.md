@@ -12,44 +12,45 @@ Status legend:
 ### FMS
 | Status      | URI | Sprint/Prio |
 | ------------- | ------------- | ------------- |
-| 2️⃣ | fms/\*/init | 1 |
-| 2️⃣ | fms/\*/fuel-load | 1 |
+| ✅ | fms/\*/init | 1 |
+| ✅ | fms/\*/fuel-load | 1 |
 | 2️⃣ | fms/\*/perf | 1 |
 |  |  |
-| 2️⃣ | fms/\*/f-pln | 1 |
-| 🟥 | fms/\*/f-pln-rte-sel | 1 |
+| ✅ | fms/\*/f-pln | 1 |
 | ✅ | fms/\*/f-pln-departure | 1 |
 | ✅ | fms/\*/f-pln-arrival | 1 |
-| 🟥 | fms/\*/f-pln-airways | 1 |
-| 1️⃣ | fms/\*/f-pln-direct-to | 1 |
-| 🟥 | fms/\*/f-pln-hold | 1 |
+| 1️⃣ | fms/\*/f-pln-airways | 1 |
+| ✅ | fms/\*/f-pln-direct-to | 1 |
 | ✅ | fms/\*/f-pln-duplicate-names | 1 |
+| 1️⃣ | fms/\*/f-pln-cpny-f-pln-req | 1 |
+| 🟥 | fms/\*/f-pln-hold | 2 |
 | 🟥 | fms/\*/f-pln-vert-rev | 2 |
+| 🟥 | fms/\*/f-pln-cpny-wind-data-req | 2 |
+| 🟥 | fms/\*/wind | 2 |
+| 🟥 | fms/\*/f-pln-rte-sel | 3 |
 | 🟥 | fms/\*/f-pln-offset | 3 |
 | 🟥 | fms/\*/f-pln-fix-info | 3 |
 | 🟥 | fms/\*/f-pln-alternate | 3 |
 | 🟥 | fms/\*/f-pln-closest-airports | 3 |
-| 🟥 | fms/\*/f-pln-cpny-wind-data-req | 3 |
-| 🟥 | fms/\*/wind | 3 |
-| 🟥 | fms/\*/f-pln-cpny-f-pln-req | 2 |
+
 | 🟥 | fms/\*/f-pln-cpny-to-data-req | 9 |
 | 🟥 | fms/\*/f-pln-cpny-to-data-recv | 9 |
 | 🟥 | fms/\*/f-pln-equi-time-point | 9 |
 | 🟥 | fms/\*/f-pln-ll-xing-time-mkr | 9 |
 |  |  |
 | 1️⃣ | fms/position/irs | 1 |
-| 🟥 | fms/position/monitor | 2 |
-| 🟥 | fms/position/gps | 2 |
-| 🟥 | fms/position/navaids | 2 |
-| 🟥 | fms/position/report | 3 |
+| 🟥 | fms/position/monitor | 3 |
+| 🟥 | fms/position/gps | 3 |
+| 🟥 | fms/position/navaids | 3 |
+| 🟥 | fms/position/report | 4 |
 |  |  |
-| 🟥 | fms/sec/index | 3 |
+| 🟥 | fms/sec/index | 4 |
 |  |  |
 | 🟥 | fms/data/airport | 2 |
 | 🟥 | fms/data/navaid | 2 |
 | 🟥 | fms/data/status | 2 |
 | 🟥 | fms/data/waypoint | 2 |
-| 🟥 | fms/data/printer | 3 |
+| 🟥 | fms/data/printer | 4 |
 | 🟥 | fms/data/route | 3 |
 |  |  |
 | ✅ | fms/data/msg-list | 1 |
@@ -95,6 +96,9 @@ Use React-based implementation for now, hence no dev. effort needed here.
 | PERF | DES Speed table doesn't change depending on flight phase |
 | PERF | DES: MANAGED speed or mach can't be set |
 | PERF | APPR: LW not set |
+| PERF | MSG LIST: All messages are persistent in msg list, type I / type II not modeled right now |
+| FMS-v2 | NEXT WPT revision: Waypoints in between are not deleted, next wpt is just inserted after revised wpt |
+| FMS-v2 | DIRECT TO: Not possible for waypoints not already sequenced (i.e. no free text entry) |
 
 ## (Open) questions
 | Page / component | Question | Answer |

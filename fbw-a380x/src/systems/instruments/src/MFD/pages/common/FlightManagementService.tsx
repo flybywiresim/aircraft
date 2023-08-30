@@ -21,6 +21,12 @@ export class MfdFlightManagementService {
         return this.flightPlanService.get(this.revisedWaypointIndex.get()).legElementAt(this.revisedWaypointIndex.get()).definition.waypoint;
     }
 
+    public resetRevisedWaypoint(): void {
+        this.revisedWaypointIndex.set(undefined);
+        this.revisedWaypointIsAltn.set(undefined);
+        this.revisedWaypointPlanIndex.set(undefined);
+    }
+
     constructor(
         public mfd: MfdComponent,
         public flightPlanService: FlightPlanService,

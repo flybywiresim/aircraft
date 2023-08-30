@@ -66,7 +66,7 @@ export class FmgcData {
 
     public readonly routeReserveFuelPercentagePilotEntry = Subject.create<number>(undefined); // in percent
 
-    public readonly routeReserveFuelPercentage = this.routeReserveFuelWeightPilotEntry.map((it) => (!it ? 5.0 : it)); // in percent
+    public readonly routeReserveFuelPercentage = this.routeReserveFuelPercentagePilotEntry.map((it) => ((it === undefined) ? undefined : it)); // in percent
 
     public readonly routeReserveFuelIsPilotEntered = MappedSubject.create((
         [fuel, time],
@@ -78,7 +78,13 @@ export class FmgcData {
 
     public readonly jettisonGrossWeight = Subject.create<number>(undefined); // in kg
 
-    public readonly alternateFuel = Subject.create<number>(undefined); // in kg
+    public readonly alternateFuelPilotEntry = Subject.create<number>(undefined); // in kg
+
+    public readonly alternateFuelCalculated = Subject.create<number>(undefined); // in kg
+
+    public readonly alternateFuel = MappedSubject.create(([calc, pe]) => (pe !== undefined ? pe : calc), this.alternateFuelCalculated, this.alternateFuelPilotEntry); // in kg
+
+    public readonly alternateFuelIsPilotEntered = this.alternateFuelPilotEntry.map((it) => it !== undefined);
 
     public readonly finalFuelWeightPilotEntry = Subject.create<number>(undefined); // in kg
 
@@ -88,7 +94,7 @@ export class FmgcData {
 
     public readonly finalFuelTimePilotEntry = Subject.create<number>(undefined); // in percent
 
-    public readonly finalFuelTime = this.finalFuelWeightPilotEntry.map((it) => (!it ? 30 : it)); // in minutes
+    public readonly finalFuelTime = this.finalFuelTimePilotEntry.map((it) => ((it === undefined) ? 30 : it)); // in minutes
 
     public readonly finalFuelIsPilotEntered = MappedSubject.create((
         [fuel, time],
@@ -96,7 +102,16 @@ export class FmgcData {
     this.finalFuelWeightPilotEntry,
     this.finalFuelTimePilotEntry);
 
-    public readonly minimumFuelAtDestination = Subject.create<number>(undefined); // in kg
+    public readonly minimumFuelAtDestinationPilotEntry = Subject.create<number>(undefined); // in kg
+
+    public readonly minimumFuelAtDestination = MappedSubject.create(
+        ([pe, ff, af]) => ((pe === undefined) ? (ff + af) : pe),
+        this.minimumFuelAtDestinationPilotEntry,
+        this.finalFuelWeight,
+        this.alternateFuel,
+    ); // in kg
+
+    public readonly minimumFuelAtDestinationIsPilotEntered = this.minimumFuelAtDestinationPilotEntry.map((it) => it !== undefined);
 
     public readonly tropopausePilotEntry = Subject.create<number>(undefined);
 

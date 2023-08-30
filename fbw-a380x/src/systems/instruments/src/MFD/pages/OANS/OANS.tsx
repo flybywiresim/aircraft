@@ -205,7 +205,7 @@ export class OANS extends DisplayComponent<OANSProps> {
                                     />
                                     <div style="padding-top: 20px; margin-top: 2px; border-right: 2px solid lightgrey; height: 100%;">
                                         <RadioButtonGroup
-                                            values={ArraySubject.create(this.availableEntityTypes)}
+                                            values={this.availableEntityTypes}
                                             selectedIndex={this.selectedEntityType}
                                             idPrefix="entityTypesRadio"
                                         />
@@ -280,7 +280,7 @@ export class OANS extends DisplayComponent<OANSProps> {
                                     />
                                     <div style="padding-top: 20px; margin-top: 2px; height: 100%;">
                                         <RadioButtonGroup
-                                            values={ArraySubject.create(['ICAO', 'IATA', 'CITY NAME'])}
+                                            values={['ICAO', 'IATA', 'CITY NAME']}
                                             selectedIndex={this.selectedAirportSearchFilter}
                                             idPrefix="airportSearchFilterRadio"
                                         />
