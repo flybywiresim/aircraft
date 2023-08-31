@@ -326,8 +326,8 @@ pub struct WingAntiIceSystem {
 impl WingAntiIceSystem {
     const WAI_MIN_PRESSURE: f64 = 1.; //BAR
     const WAI_MAX_PRESSURE: f64 = 2.1; //BAR
-    const WAI_EXHAUST_SPEED: f64 = 0.124; // Regulate wing_anti_ice_tweak_exhaust
-    const WAI_VALVE_TRANSFER_SPEED: f64 = 1.3; // Regulate wing_anti_ice_tweak_time_to_open
+    const WAI_EXHAUST_SPEED: f64 = 0.128; // Regulate wing_anti_ice_tweak_exhaust
+    const WAI_VALVE_TRANSFER_SPEED: f64 = 1.2; // Regulate wing_anti_ice_tweak_time_to_open
 
     // Each WAI duct is made of
     // Flow Trimming Restrictor 47mm diameter

@@ -1106,10 +1106,10 @@ impl EngineBleedAirSystem {
             fan_compression_chamber_controller: EngineCompressionChamberController::new(2., 0.),
             // Maximum IP bleed pressure output should be about 150 psig
             intermediate_pressure_compression_chamber_controller:
-                EngineCompressionChamberController::new(2.77366, 0.0667803),
+                EngineCompressionChamberController::new(2.51457, 0.116127),
             // Maximum HP bleed pressure output should be about 660 psig
             high_pressure_compression_chamber_controller: EngineCompressionChamberController::new(
-                2.40411, 1.61386,
+                2.86121, 1.23509,
             ),
             fan_compression_chamber: CompressionChamber::new(Volume::new::<cubic_meter>(1.)),
             intermediate_pressure_compression_chamber: CompressionChamber::new(Volume::new::<
@@ -2386,10 +2386,22 @@ pub mod tests {
             self
         }
 
+        fn eng1_n2(mut self, n2: f64) -> Self {
+            self.write_by_name("TURB ENG CORRECTED N2:1", Ratio::new::<ratio>(n2));
+
+            self
+        }
+
         fn eng2_n1(mut self, n1: f64) -> Self {
             self.write_by_name("GENERAL ENG STARTER ACTIVE:2", true);
             self.write_by_name("TURB ENG CORRECTED N1:2", Ratio::new::<ratio>(n1));
             self.write_by_name("ENGINE_STATE:2", EngineState::On);
+
+            self
+        }
+
+        fn eng2_n2(mut self, n2: f64) -> Self {
+            self.write_by_name("TURB ENG CORRECTED N2:2", Ratio::new::<ratio>(n2));
 
             self
         }
@@ -3399,7 +3411,8 @@ pub mod tests {
     fn cross_bleed_engine_start() {
         let mut test_bed = test_bed_with()
             .start_eng1()
-            .idle_eng2()
+            .eng2_n1(0.3)
+            .eng2_n2(0.75)
             .set_engine_bleed_push_button_off(1)
             .set_engine_bleed_push_button_auto(2)
             .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Open)
@@ -3420,11 +3433,13 @@ pub mod tests {
         );
 
         assert!(
+            // 21 psi because that's where the ECAM indication turns amber, which we don't want in normal ops
             test_bed.regulated_pressure_transducer_signal(1).unwrap() > Pressure::new::<psi>(21.),
         );
 
         test_bed = test_bed
-            .idle_eng1()
+            .eng1_n1(0.3)
+            .eng1_n2(0.75)
             .start_eng2()
             .set_engine_bleed_push_button_auto(1)
             .set_engine_bleed_push_button_off(2)
@@ -3443,6 +3458,7 @@ pub mod tests {
         );
 
         assert!(
+            // 21 psi because that's where the ECAM indication turns amber, which we don't want in normal ops
             test_bed.regulated_pressure_transducer_signal(2).unwrap() > Pressure::new::<psi>(21.),
         );
     }
@@ -4074,8 +4090,10 @@ pub mod tests {
     #[test]
     fn pr_valve_regulates_to_42_psig_in_dual_bleed_config() {
         let test_bed = test_bed_with()
-            .idle_eng1()
-            .idle_eng2()
+            .eng1_n1(0.30) // Put on a bit of power to make sure we have enough pressure
+            .eng1_n2(0.82)
+            .eng2_n1(0.30)
+            .eng2_n2(0.82)
             .mach_number(MachNumber(0.))
             .both_packs_auto()
             .and_stabilize(); // We need a bit of time to get into an equilibrium state
