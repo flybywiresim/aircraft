@@ -83,8 +83,6 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
             }
             return null;
         }).filter((el) => el !== null);
-        console.log(wpt);
-        console.log(this.loadedFlightPlanIndex.get());
         this.availableWaypoints.set(wpt);
 
         this.subs.push(this.tmpyActive.sub((v) => {
@@ -100,12 +98,12 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
             <>
                 {super.render()}
                 {/* begin page content */}
-                <div style="display: flex; flex-direction: row;">
+                <div class="fr">
                     <div style="flex: 1">
-                        <div style="display: flex; flex-direction: column;">
-                            <div style="display: flex; flex-direction: row; justify-content: flex-start; align-items: center; margin-top: 10px; margin-bottom: 40px;">
+                        <div class="fc">
+                            <div class="mfd-fms-direct-to-wpt-row">
                                 <span class="mfd-label">DIRECT TO</span>
-                                <div style="margin-left: 15px;">
+                                <div class="mfd-fms-direct-to-dropdown-div">
                                     <DropdownMenu
                                         idPrefix="directToDropdown"
                                         selectedIndex={this.selectedWaypointIndex}
@@ -119,9 +117,9 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
                                     />
                                 </div>
                             </div>
-                            <div style="width: 65%; display: grid; grid-template-columns: auto auto auto; align-self: center; justify-content: center; align-items: center;">
-                                <div style="display: flex; justify-content: flex-end; padding-right: 10px; margin-bottom: 10px;"><span class="mfd-label">UTC</span></div>
-                                <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
+                            <div class="mfd-fms-direct-to-wpt-info">
+                                <div class="mfd-fms-direct-to-utc-label"><span class="mfd-label">UTC</span></div>
+                                <div class="mfd-fms-direct-to-utc-value">
                                     <span class={{
                                         'mfd-value-green': true,
                                         'bigger': true,
@@ -133,8 +131,8 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
 
                                 </div>
                                 <div />
-                                <div style="display: flex; justify-content: flex-end; padding-right: 10px;"><span class="mfd-label">DIST</span></div>
-                                <div style="display: flex; justify-content: flex-end;">
+                                <div class="mfd-fms-direct-to-utc-label"><span class="mfd-label">DIST</span></div>
+                                <div class="mfd-fms-direct-to-utc-value">
                                     <span class={{
                                         'mfd-value-green': true,
                                         'bigger': true,
@@ -150,9 +148,9 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
                         </div>
                     </div>
                     <div style="flex: 1">
-                        <div style="display: flex; flex-direction: column; border: 2px solid grey; padding: 5px 10px 35px 10px; margin-top: 10px;">
+                        <div class="mfd-fms-direct-to-options-box">
                             <span class="mfd-label">OPTIONS</span>
-                            <div style="margin-left: 15px; margin-top: 45px;">
+                            <div class="mfd-fms-direct-to-options">
                                 <RadioButtonGroup
                                     idPrefix="directToOptionsRadio"
                                     values={['DIRECT', 'DIRECT WITH ABEAM', 'CRS IN', 'CRS OUT']}
@@ -165,8 +163,8 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
                     </div>
                 </div>
                 <div style="flex-grow: 1;" />
-                <div style="display: flex; flex-direction: row; justify-content: space-between;">
-                    <div ref={this.eraseButtonDiv} style="display: flex; justify-content: flex-end; padding: 2px;">
+                <div class="mfd-fms-bottom-button-row">
+                    <div ref={this.eraseButtonDiv} class="mfd-fms-direct-to-erase-return-btn">
                         <Button
                             label="ERASE<br />DIR TO*"
                             onClick={async () => {
@@ -175,13 +173,13 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
                             buttonStyle="color: #e68000;"
                         />
                     </div>
-                    <div ref={this.returnButtonDiv} style="display: flex; justify-content: flex-end; padding: 2px;">
+                    <div ref={this.returnButtonDiv} class="mfd-fms-direct-to-erase-return-btn">
                         <Button
                             label="RETURN"
                             onClick={() => this.props.uiService.navigateTo(`fms/${this.props.uiService.activeUri.get().category}/f-pln`)}
                         />
                     </div>
-                    <div ref={this.tmpyInsertButtonDiv} style="display: flex; justify-content: flex-end; padding: 2px;">
+                    <div ref={this.tmpyInsertButtonDiv} class="mfd-fms-direct-to-erase-return-btn">
                         <Button
                             label="INSERT<br />DIR TO*"
                             onClick={async () => {

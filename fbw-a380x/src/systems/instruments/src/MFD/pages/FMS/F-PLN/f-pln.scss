@@ -320,3 +320,9 @@
 .mfd-fms-fpln-duplicate-table-row > div.sel {
   background-color: $display-grey;
 }
+
+.mfd-fms-bottom-button-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}

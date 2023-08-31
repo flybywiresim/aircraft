@@ -636,3 +636,13 @@ $display-mfd-dark-grey: #3c3c3c;
   color: $display-white;
   font-family: "Ecam", monospace;
 }
+
+.fr {
+  display: flex;
+  flex-direction: row;
+}
+
+.fc {
+  display: flex;
+  flex-direction: column;
+}
