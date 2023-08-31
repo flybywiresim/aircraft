@@ -37,6 +37,7 @@ Com2Receive=True
 Com3Receive=True
 AudioNav1Listen=False
 AudioNav2Listen=False
+AudioMarkerListen=False
 AudioDmeListen=False
 AudioAdfListen=False
 AudioAdf2Listen=False
