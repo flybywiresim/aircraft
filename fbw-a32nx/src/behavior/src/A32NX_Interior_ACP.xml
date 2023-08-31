@@ -31,9 +31,9 @@
                 <PART_ID>#NODE_ID#</PART_ID>
                 <SWITCH_DIRECTION>Vertical</SWITCH_DIRECTION>
                 <WWISE_EVENT>clds</WWISE_EVENT>
-                <CODE_POS_0>200 (&gt;L:A32NX_ACP#ID#_SWITCH_INT) #ID# (&gt;L:A32NX_UPDATE_COMMS)</CODE_POS_0>
-                <CODE_POS_1>100 (&gt;L:A32NX_ACP#ID#_SWITCH_INT) #ID# (&gt;L:A32NX_UPDATE_COMMS)</CODE_POS_1>
-                <CODE_POS_2>0 (&gt;L:A32NX_ACP#ID#_SWITCH_INT) #ID# (&gt;L:A32NX_UPDATE_COMMS)</CODE_POS_2>
+                <CODE_POS_0>200 (&gt;L:A32NX_ACP#ID#_SWITCH_INT) 1 (&gt;L:A32NX_UPDATE_COMMS)</CODE_POS_0>
+                <CODE_POS_1>100 (&gt;L:A32NX_ACP#ID#_SWITCH_INT) 1 (&gt;L:A32NX_UPDATE_COMMS)</CODE_POS_1>
+                <CODE_POS_2>0 (&gt;L:A32NX_ACP#ID#_SWITCH_INT) 1 (&gt;L:A32NX_UPDATE_COMMS)</CODE_POS_2>
                 <STATE0_TIMER>9999999</STATE0_TIMER>
                 <STATE_MAX_TIMER>0.01</STATE_MAX_TIMER>
                 <REST_STATE>1</REST_STATE>
@@ -83,7 +83,7 @@
             <ANIM_NAME>#ANIM_NAME_BUTTON_VHF_L#</ANIM_NAME>
             <NODE_ID_SEQ1>#NODE_ID_BUTTON_SEQ1_VHF_L#</NODE_ID_SEQ1>
             <NODE_ID_SEQ2>#NODE_ID_BUTTON_SEQ2_VHF_L#</NODE_ID_SEQ2>
-            <TRANSMIT_ID>0</TRANSMIT_ID>
+            <TRANSMIT_ID>1</TRANSMIT_ID>
             <TOOLTIP_PB>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_VHF_L</TOOLTIP_PB>
         </UseTemplate>
 
@@ -107,7 +107,7 @@
             <ANIM_NAME>#ANIM_NAME_BUTTON_VHF_C#</ANIM_NAME>
             <NODE_ID_SEQ1>#NODE_ID_BUTTON_SEQ1_VHF_C#</NODE_ID_SEQ1>
             <NODE_ID_SEQ2>#NODE_ID_BUTTON_SEQ2_VHF_C#</NODE_ID_SEQ2>
-            <TRANSMIT_ID>1</TRANSMIT_ID>
+            <TRANSMIT_ID>2</TRANSMIT_ID>
             <TOOLTIP>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_VHF_C</TOOLTIP>
         </UseTemplate>
 
@@ -131,7 +131,7 @@
             <ANIM_NAME>#ANIM_NAME_BUTTON_VHF_R#</ANIM_NAME>
             <NODE_ID_SEQ1>#NODE_ID_BUTTON_SEQ1_VHF_R#</NODE_ID_SEQ1>
             <NODE_ID_SEQ2>#NODE_ID_BUTTON_SEQ2_VHF_R#</NODE_ID_SEQ2>
-            <TRANSMIT_ID>2</TRANSMIT_ID>
+            <TRANSMIT_ID>3</TRANSMIT_ID>
             <TOOLTIP>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_VHF_R</TOOLTIP>
         </UseTemplate>
 
@@ -155,7 +155,7 @@
             <ANIM_NAME>#ANIM_NAME_BUTTON_HF1#</ANIM_NAME>
             <NODE_ID_SEQ1>#NODE_ID_BUTTON_SEQ1_HF1#</NODE_ID_SEQ1>
             <NODE_ID_SEQ2>#NODE_ID_BUTTON_SEQ2_HF1#</NODE_ID_SEQ2>
-            <TRANSMIT_ID>3</TRANSMIT_ID>
+            <TRANSMIT_ID>4</TRANSMIT_ID>
             <TOOLTIP>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_HF_L</TOOLTIP>
         </UseTemplate>
 
@@ -253,11 +253,11 @@
             <LEFT_SINGLE_CODE type="rnp">
                 (O:A32NX_ACP#ID#_TRANSMIT_CHANNEL_SAVED, number) = (L:A32NX_ACP#ID#_TRANSMIT_CHANNEL, number);
                 (L:A32NX_ACP#ID#_TRANSMIT_CHANNEL, number) = 8;
-                (L:A32NX_UPDATE_COMMS, number) = #ID, number#;
+                (L:A32NX_UPDATE_COMMS, number) = 1;
             </LEFT_SINGLE_CODE>
             <LEFT_LEAVE_CODE type="rnp">
                 (L:A32NX_ACP#ID#_TRANSMIT_CHANNEL, number) = (O:A32NX_ACP#ID#_TRANSMIT_CHANNEL_SAVED, number);
-                (L:A32NX_UPDATE_COMMS, number) = #ID, number#;
+                (L:A32NX_UPDATE_COMMS, number) = 1;
             </LEFT_LEAVE_CODE>
             <SEQ1_CODE>
                 (L:A32NX_ACP#ID#_TRANSMIT_CHANNEL) 8 == #EMISSIVE_TEST# or
@@ -273,7 +273,7 @@
             <SEQ2_NODE_ID>#NODE_ID_BUTTON_VOICE_SEQ2#</SEQ2_NODE_ID>
             <LEFT_SINGLE_CODE>
                 (L:A32NX_ACP#ID#_VOICE_BUTTON_DOWN) ! (&gt;L:A32NX_ACP#ID#_VOICE_BUTTON_DOWN)
-                #ID# (&gt;L:A32NX_UPDATE_COMMS)
+                1 (&gt;L:A32NX_UPDATE_COMMS)
             </LEFT_SINGLE_CODE>
             <WWISE_EVENT_1>fcubutton</WWISE_EVENT_1>
             <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
@@ -287,10 +287,7 @@
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
             <NODE_ID>#NODE_ID_RECEIVER_RESET#</NODE_ID>
             <ANIM_NAME>#ANIM_NAME_PUSH_RECEIVER_RESET#</ANIM_NAME>
-            <LEFT_SINGLE_CODE>
-                0 (&gt;L:XMLVAR_ACP_CALLED_MECH)
-                0 (&gt;L:XMLVAR_ACP_CALLED_ATT)
-            </LEFT_SINGLE_CODE>
+            <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_ACP#ID#_RESET_BUTTON_DOWN)</LEFT_SINGLE_CODE>
             <WWISE_EVENT_1>fcubutton</WWISE_EVENT_1>
             <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
             <WWISE_EVENT_2>fcubutton</WWISE_EVENT_2>
@@ -409,24 +406,18 @@
     <Template Name="FBW_AIRLINER_Audio_Push_Transmit_Template">
         <DefaultTemplateParameters>
             <LEFT_SINGLE_CODE>
-                #SEQ1_POWERED# if{
-                    (L:A32NX_ACP#ID#_TRANSMIT_CHANNEL) #TRANSMIT_ID# == if{
-                        4 (&gt;L:A32NX_ACP#ID#_TRANSMIT_CHANNEL)
-                    } els{
-                        #TRANSMIT_ID# (&gt;L:A32NX_ACP#ID#_TRANSMIT_CHANNEL)
-                    }
-
-                    #ID# (&gt;L:A32NX_UPDATE_COMMS)
+                #TRANSMIT_ID# (L:A32NX_ACP#ID#_TRANSMIT_PUSHED) != if{
+                    #TRANSMIT_ID# (&gt;L:A32NX_ACP#ID#_TRANSMIT_PUSHED)
+                } els{
+                    0 (&gt;L:A32NX_ACP#ID#_TRANSMIT_PUSHED)
                 }
+
+                1 (&gt;L:A32NX_UPDATE_COMMS)
             </LEFT_SINGLE_CODE>
         </DefaultTemplateParameters>
         <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
             <!-- Green light -->
-            <SEQ1_EMISSIVE_CODE>
-                #SEQ1_POWERED# if{
-                    (L:A32NX_ACP#ID#_TRANSMIT_CHANNEL) #TRANSMIT_ID# == #EMISSIVE_TEST# or #EMISSIVE_DIM# *
-                }
-            </SEQ1_EMISSIVE_CODE>
+            <SEQ1_EMISSIVE_CODE>(L:A32NX_ACP#ID#_TRANSMIT_CHANNEL) #TRANSMIT_ID# == #EMISSIVE_TEST# or #EMISSIVE_DIM# *</SEQ1_EMISSIVE_CODE>
                 <!-- Button name light (for example CALL or MECH)-->
             <SEQ2_EMISSIVE_CODE>#SEQ1_POWERED# #EMISSIVE_TEST# and</SEQ2_EMISSIVE_CODE>
             <WWISE_EVENT_1>fcubutton</WWISE_EVENT_1>
@@ -473,7 +464,7 @@
                     alias var = (L:A32NX_ACP#ID#_#FREQ_ID#_VOLUME, number);
                     var = (var + increment).min(100);
 
-                    (L:A32NX_UPDATE_COMMS) = #ID, number#;
+                    (L:A32NX_UPDATE_COMMS) = 1;
                 </CLOCKWISE_CODE>
                 <ANTICLOCKWISE_CODE type="rnp">
                     let increment = #VOLUME_INCREMENT, number#;
@@ -485,13 +476,13 @@
                     alias var = (L:A32NX_ACP#ID#_#FREQ_ID#_VOLUME, number);
                     var = (var - increment).max(0);
 
-                    (L:A32NX_UPDATE_COMMS) = #ID, number#;
+                    (L:A32NX_UPDATE_COMMS) = 1;
                 </ANTICLOCKWISE_CODE>
                 <ANIM_CODE_SWITCH>(L:A32NX_ACP#ID#_#FREQ_ID#_KNOB_VOLUME_DOWN, number) 100 *</ANIM_CODE_SWITCH>
                 <ANIM_NAME_PUSH>#ANIM_NAME_SWITCH#</ANIM_NAME_PUSH>
                 <LEFT_SINGLE_CODE type="rnp">
                     (L:A32NX_ACP#ID#_#FREQ_ID#_KNOB_VOLUME_DOWN, bool) = !(L:A32NX_ACP#ID#_#FREQ_ID#_KNOB_VOLUME_DOWN, bool);
-                    (L:A32NX_UPDATE_COMMS) = #ID, number#;
+                    (L:A32NX_UPDATE_COMMS) = 1;
                 </LEFT_SINGLE_CODE>
                 <WWISE_EVENT></WWISE_EVENT>
                 <WWISE_EVENT_1>mcdubuttons</WWISE_EVENT_1>

@@ -37,6 +37,7 @@ Com2Receive=True
 Com3Receive=True
 AudioNav1Listen=False
 AudioNav2Listen=False
+AudioMarkerListen=False
 AudioDmeListen=False
 AudioAdfListen=False
 AudioAdf2Listen=False
@@ -319,6 +320,9 @@ A32NX_ACP3_VHF2_KNOB_VOLUME_DOWN = 1
 A32NX_ACP1_SWITCH_INT = 100
 A32NX_ACP2_SWITCH_INT = 100
 A32NX_ACP3_SWITCH_INT = 100
+A32NX_ACP1_TRANSMIT_PUSHED = 1
+A32NX_ACP2_TRANSMIT_PUSHED = 1
+A32NX_ACP3_TRANSMIT_PUSHED = 1
 
 [Gauges.0]
 KollsmanSetting=29.921342849731445313
