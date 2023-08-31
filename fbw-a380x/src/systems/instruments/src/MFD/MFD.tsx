@@ -164,10 +164,6 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
         this.flightPlanService.active.performanceData.cruiseFlightLevel.set(32_000);
         this.flightPlanService.active.performanceData.pilotEngineOutAccelerationAltitude.set(1_500);
         this.flightPlanService.active.performanceData.v2.set(150);
-
-        // Add test FMS error messages
-        this.showFmsErrorMessage(FmsErrorType.NotInDatabase);
-        this.showFmsErrorMessageFreeText({ message: 'CHECK T.O, DATA', cleared: false, backgroundColor: 'amber' });
     }
 
     private initVariables() {
@@ -208,14 +204,16 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
      * Called when a flight plan uplink is in progress
      */
     onUplinkInProgress() {
-        // TODO
+        this.fmService.fmgc.data.cpnyFplnUplinkInProgress.set(true);
     }
 
     /**
          * Called when a flight plan uplink is done
          */
     onUplinkDone() {
-        // TODO
+        this.fmService.fmgc.data.cpnyFplnUplinkInProgress.set(false);
+        this.fmService.fmgc.data.cpnyFplnAvailable.set(true);
+        this.showFmsErrorMessageFreeText({ message: 'UPLINK F-PLN AVAILABLE FOR INSERT.', backgroundColor: 'none', cleared: false });
     }
 
     /**
@@ -314,7 +312,10 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     createLatLonWaypoint(coordinates: Coordinates, stored: boolean): Waypoint {
-        const newWpt = WaypointFactory.fromLocation(`LL${(this.fmService.latLongStoredWaypoints.length + 1).toString().padStart(2, '0')}`, coordinates);
+        const newWpt = WaypointFactory.fromLocation(
+            `${coordinates.lat > 0 ? 'N' : 'S'}${coordinates.lat.toFixed(0).padStart(2, '0')}${coordinates.long > 0 ? 'E' : 'W'}${coordinates.long.toFixed(0).padStart(3, '0')}`,
+            coordinates,
+        );
         this.fmService.latLongStoredWaypoints.push(newWpt);
 
         return newWpt;
@@ -388,7 +389,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
         });
 
         // Navigate to initial page
-        this.uiService.navigateTo('fms/active/f-pln');
+        this.uiService.navigateTo('fms/active/init');
     }
 
     private activeUriChanged(uri: ActiveUriInformation) {

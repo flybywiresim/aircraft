@@ -1,21 +1,49 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 
-import { FSComponent, MappedSubject, Subject, VNode } from '@microsoft/msfs-sdk';
+import { FSComponent, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 
 import './init.scss';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 import { InputField } from 'instruments/src/MFD/pages/common/InputField';
 import { AirportFormat, CostIndexFormat, CrzTempFormat, FlightLevelFormat, LongAlphanumericFormat, TripWindFormat, TropoFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
-import { Button } from 'instruments/src/MFD/pages/common/Button';
+import { Button, ButtonMenuItem } from 'instruments/src/MFD/pages/common/Button';
 import { defaultTropopauseAlt, maxCertifiedAlt } from 'shared/PerformanceConstants';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
+import { NXDataStore } from '@flybywiresim/fbw-sdk';
+import { SimBriefUplinkAdapter } from '@fmgc/flightplanning/new/uplink/SimBriefUplinkAdapter';
+import { ISimbriefData } from '../../../../../../../../fbw-a32nx/src/systems/instruments/src/EFB/Apis/Simbrief';
 
 interface MfdFmsInitProps extends AbstractMfdPageProps {
 }
 
 export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
     private fltNbr = Subject.create<string>(null);
+
+    private simBriefOfp: ISimbriefData;
+
+    private cpnyFplnButtonLabel: Subscribable<VNode> = this.props.fmService.fmgc.data.cpnyFplnAvailable.map((it) => {
+        if (it === false) {
+            return (
+                <span>
+                    CPNY F-PLN
+                    <br />
+                    REQUEST
+                </span>
+            );
+        }
+        return (
+            <span>
+                RECEIVED
+                <br />
+                CPNY F-PLN
+            </span>
+        );
+    })
+
+    private cpnyFplnButtonMenuItems: Subscribable<ButtonMenuItem[]> = this.props.fmService.fmgc.data.cpnyFplnAvailable.map((it) => (it ? [
+        { label: 'INSERT*', action: () => this.insertCpnyFpln() },
+        { label: 'CLEAR*', action: () => this.props.fmService.fmgc.data.cpnyFplnAvailable.set(false) }] : []));
 
     private fromIcao = Subject.create<string>(null);
 
@@ -59,6 +87,8 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
     protected onNewData() {
         console.time('INIT:onNewData');
 
+        this.props.fmService.fmgc.data.cpnyFplnAvailable.set(this.props.fmService.flightPlanService.hasUplink && this.props.fmService.flightPlanService.uplink.legCount > 0);
+
         // Update internal subjects for display purposes or input fields
         if (this.loadedFlightPlan.originAirport) {
             this.fromIcao.set(this.loadedFlightPlan.originAirport.ident);
@@ -99,6 +129,34 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
         console.timeEnd('INIT:onNewData');
     }
 
+    private async cpnyFplnRequest() {
+        const simBriefUserId = NXDataStore.get('CONFIG_SIMBRIEF_USERID', '');
+
+        if (!simBriefUserId) {
+            this.props.fmService.mfd.showFmsErrorMessageFreeText({ message: 'NO SIMBRIEF PILOT ID PROVIDED', backgroundColor: 'none', cleared: false });
+        }
+
+        this.simBriefOfp = await SimBriefUplinkAdapter.downloadOfpForUserID(simBriefUserId);
+
+        SimBriefUplinkAdapter.uplinkFlightPlanFromSimbrief(
+            this.props.fmService.mfd,
+            this.props.fmService.flightPlanService,
+            this.simBriefOfp,
+            { doUplinkProcedures: false },
+        );
+    }
+
+    private async insertCpnyFpln() {
+        this.props.fmService.flightPlanService.uplinkInsert();
+        this.props.fmService.fmgc.data.atcCallsign.set(`${this.simBriefOfp.airline}${this.simBriefOfp.flightNumber}`);
+        this.props.fmService.fmgc.data.costIndex.set(parseInt(this.simBriefOfp.costIndex));
+
+        console.log(this.simBriefOfp.cruiseAltitude);
+        this.props.fmService.flightPlanService.active.performanceData.cruiseFlightLevel.set(this.simBriefOfp.cruiseAltitude);
+
+        this.props.fmService.fmgc.data.cpnyFplnAvailable.set(false);
+    }
+
     render(): VNode {
         return (
             <>
@@ -122,13 +180,12 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                         />
                         <div style="flex-grow: 1" />
                         <Button
-                            label="RECEIVED<br />CPNY F-PLN"
-                            onClick={() => console.log('CPNY F-PLN REQUEST')}
+                            label={this.cpnyFplnButtonLabel}
+                            disabled={this.props.fmService.fmgc.data.cpnyFplnUplinkInProgress}
+                            onClick={() => (this.props.fmService.fmgc.data.cpnyFplnAvailable.get() ? {} : this.cpnyFplnRequest())}
                             buttonStyle="width: 175px;"
                             idPrefix="fplnreq"
-                            menuItems={Subject.create([
-                                { label: 'INSERT*', action: () => console.log('INSERT') },
-                                { label: 'CLEAR*', action: () => console.log('CLEAR') }])}
+                            menuItems={this.cpnyFplnButtonMenuItems}
                             showArrow={false}
                         />
                     </div>

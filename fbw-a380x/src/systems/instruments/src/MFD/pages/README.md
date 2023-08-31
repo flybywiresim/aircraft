@@ -22,7 +22,7 @@ Status legend:
 | 1️⃣ | fms/\*/f-pln-airways | 1 |
 | ✅ | fms/\*/f-pln-direct-to | 1 |
 | ✅ | fms/\*/f-pln-duplicate-names | 1 |
-| 1️⃣ | fms/\*/f-pln-cpny-f-pln-req | 1 |
+| ✅ | fms/\*/f-pln-cpny-f-pln-req | 1 |
 | 🟥 | fms/\*/f-pln-hold | 2 |
 | 🟥 | fms/\*/f-pln-vert-rev | 2 |
 | 🟥 | fms/\*/f-pln-cpny-wind-data-req | 2 |
@@ -32,7 +32,6 @@ Status legend:
 | 🟥 | fms/\*/f-pln-fix-info | 3 |
 | 🟥 | fms/\*/f-pln-alternate | 3 |
 | 🟥 | fms/\*/f-pln-closest-airports | 3 |
-
 | 🟥 | fms/\*/f-pln-cpny-to-data-req | 9 |
 | 🟥 | fms/\*/f-pln-cpny-to-data-recv | 9 |
 | 🟥 | fms/\*/f-pln-equi-time-point | 9 |
@@ -99,6 +98,7 @@ Use React-based implementation for now, hence no dev. effort needed here.
 | PERF | MSG LIST: All messages are persistent in msg list, type I / type II not modeled right now |
 | FMS-v2 | NEXT WPT revision: Waypoints in between are not deleted, next wpt is just inserted after revised wpt |
 | FMS-v2 | DIRECT TO: Not possible for waypoints not already sequenced (i.e. no free text entry) |
+| FMS-v2 | Add option to delete flight plans (at least the uplink one) to FlightPlanService |
 
 ## (Open) questions
 | Page / component | Question | Answer |
