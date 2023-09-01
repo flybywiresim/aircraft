@@ -610,6 +610,23 @@ export class AirportFormat implements DataEntryFormat<string> {
     }
 }
 
+export class AirwayFormat implements DataEntryFormat<string> {
+    public placeholder = '---';
+
+    public maxDigits = 5;
+
+    public format(value: string) {
+        if (value === null || value === undefined) {
+            return [this.placeholder, null, null] as FieldFormatTuple;
+        }
+        return [value, null, null] as FieldFormatTuple;
+    }
+
+    public async parse(input: string) {
+        return input;
+    }
+}
+
 export class DropdownFieldFormat implements DataEntryFormat<string> {
     public placeholder = '';
 
@@ -619,6 +636,23 @@ export class DropdownFieldFormat implements DataEntryFormat<string> {
         this.maxDigits = numDigits;
         this.placeholder = '-'.repeat(numDigits);
     }
+
+    public format(value: string) {
+        if (!value) {
+            return [this.placeholder, null, null] as FieldFormatTuple;
+        }
+        return [value, null, null] as FieldFormatTuple;
+    }
+
+    public async parse(input: string) {
+        return input;
+    }
+}
+
+export class WaypointFormat implements DataEntryFormat<string> {
+    public placeholder = '-------';
+
+    public maxDigits = 7;
 
     public format(value: string) {
         if (!value) {

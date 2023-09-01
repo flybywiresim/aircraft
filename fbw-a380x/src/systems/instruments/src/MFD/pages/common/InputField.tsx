@@ -18,7 +18,12 @@ interface InputFieldProps<T> extends ComponentProps {
      */
     onModified?: (newValue: T) => void;
     onInput?: (newValue: string) => void; // Called for every character that is being typed
-    dataHandlerDuringValidation?: (newValue: T) => Promise<void>; // Function which modifies data within flight plan. Called during validation phase, after data type has been checked
+    /**
+     * Function which modifies data within flight plan. Called during validation phase, after data entry format has been checked
+     * @param newValue to be validated
+     * @returns whether validation was successful. If nothing is returned, success is assumed
+     */
+    dataHandlerDuringValidation?: (newValue: T) => Promise<boolean | void>;
     handleFocusBlurExternally?: boolean;
     containerStyle?: string;
     alignText?: 'flex-start' | 'center' | 'flex-end';
@@ -178,7 +183,6 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
                 this.onBlur(true);
             } else {
                 this.textInputRef.getOrDefault().blur();
-                this.onBlur();
             }
         }
     }
@@ -199,7 +203,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
     }
 
     public async onBlur(validateAndUpdate: boolean = true) {
-        if (this.props.disabled.get() === false) {
+        if (this.props.disabled.get() === false && this.isFocused.get() === true) {
             Coherent.trigger('UNFOCUS_INPUT_FIELD');
             this.isFocused.set(false);
             this.textInputRef.getOrDefault().classList.remove('valueSelected');
@@ -249,7 +253,11 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
         if (this.props.dataHandlerDuringValidation) {
             try {
                 const realWaitingTime = this.props.dataHandlerDuringValidation(newValue);
-                await Promise.all([realWaitingTime, artificialWaitingTime]);
+                const [validation] = await Promise.all([realWaitingTime, artificialWaitingTime]);
+
+                if (validation === false) {
+                    updateWasSuccessful = false;
+                }
             } catch {
                 updateWasSuccessful = false;
                 await artificialWaitingTime;
@@ -375,7 +383,9 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
 
         if (!this.props.handleFocusBlurExternally) {
             this.textInputRef.instance.addEventListener('focus', () => this.onFocus());
-            this.textInputRef.instance.addEventListener('blur', () => this.onBlur());
+            this.textInputRef.instance.addEventListener('blur', () => {
+                this.onBlur();
+            });
             this.spanningDivRef.instance.addEventListener('click', () => {
                 this.textInputRef.instance.focus();
             });
