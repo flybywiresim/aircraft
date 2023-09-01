@@ -43,7 +43,9 @@ export class DestinationWindow extends DisplayComponent<DestinationWindowProps> 
         }, true));
 
         this.subs.push(this.props.fmService.revisedWaypointIndex.sub(() => {
-            this.identRef.instance.innerText = this.props.fmService.revisedWaypoint().ident;
+            if (this.props.fmService.revisedWaypoint()) {
+                this.identRef.instance.innerText = this.props.fmService.revisedWaypoint().ident;
+            }
         }));
     }
 

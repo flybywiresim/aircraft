@@ -197,6 +197,15 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             }
 
             if (leg instanceof FlightPlanLeg) {
+                const transAlt = this.loadedFlightPlan.performanceData.transitionAltitude.get() ?? 18_000;
+                const transLevel = this.loadedFlightPlan.performanceData.transitionLevel.get() ?? 18_000;
+                const useTransLevel = (i >= (
+                    this.loadedFlightPlan.originSegment.legCount
+                    + this.loadedFlightPlan.enrouteSegment.legCount
+                    + this.loadedFlightPlan.departureSegment.legCount
+                    + this.loadedFlightPlan.departureRunwayTransitionSegment.legCount
+                    + this.loadedFlightPlan.departureEnrouteTransitionSegment.legCount));
+
                 const data: FplnLineWaypointDisplayData = {
                     type: FplnLineType.Waypoint,
                     originalLegIndex: i,
@@ -206,7 +215,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                     overfly: leg.overfly,
                     annotation: leg.annotation,
                     etaOrSecondsFromPresent: this.props.fmService.guidanceController.vnavDriver.mcduProfile?.waypointPredictions?.get(i)?.secondsFromPresent ?? 0,
-                    transitionAltitude: leg.definition.transitionAltitude ?? 18000,
+                    transitionAltitude: useTransLevel ? transLevel : transAlt,
                     altitudePrediction: this.props.fmService.guidanceController.vnavDriver.mcduProfile?.waypointPredictions?.get(i)?.altitude ?? 0,
                     hasAltitudeConstraint: !!this.props.fmService.guidanceController.vnavDriver.mcduProfile?.waypointPredictions?.get(i)?.altitudeConstraint ?? false,
                     altitudeConstraintIsRespected: this.props.fmService.guidanceController.vnavDriver.mcduProfile?.waypointPredictions?.get(i)?.isAltitudeConstraintMet ?? true,
@@ -327,6 +336,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
                 this.props.fmService.revisedWaypointIndex.set(originalLegIndex);
                 this.props.fmService.revisedWaypointPlanIndex.set(this.loadedFlightPlanIndex.get());
+                console.log(`<o${this.loadedFlightPlanIndex.get()}`);
                 this.props.fmService.revisedWaypointIsAltn.set(altnFlightPlan);
                 this.revisionsMenuValues.set(getRevisionsMenu(this, type));
                 this.revisionsMenuRef.instance.display(195, 183);

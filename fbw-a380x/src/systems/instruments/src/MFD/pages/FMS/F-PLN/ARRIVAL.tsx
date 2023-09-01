@@ -209,7 +209,6 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
             this.toIcao.set('----');
         }
 
-        this.tmpyActive.set(this.props.fmService.flightPlanService.hasTemporary);
         console.timeEnd('ARRIVAL:onNewData');
     }
 

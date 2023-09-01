@@ -69,9 +69,12 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
             onSelectCallback: () => fpln.props.uiService.navigateTo(`fms/${fpln.props.uiService.activeUri.get().category}/f-pln-hold`),
         },
         {
-            title: '(N/A) AIRWAYS',
-            disabled: true,
-            onSelectCallback: () => fpln.props.uiService.navigateTo(`fms/${fpln.props.uiService.activeUri.get().category}/f-pln-airways`),
+            title: 'AIRWAYS',
+            disabled: [FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type),
+            onSelectCallback: () => {
+                fpln.props.fmService.flightPlanService.startAirwayEntry(legIndex);
+                fpln.props.uiService.navigateTo(`fms/${fpln.props.uiService.activeUri.get().category}/f-pln-airways`);
+            },
         },
         {
             title: (!altnFlightPlan && fpln.loadedFlightPlan.legElementAt(realLegIndex).overfly === true) ? 'DELETE OVERFLY *' : 'OVERFLY *',

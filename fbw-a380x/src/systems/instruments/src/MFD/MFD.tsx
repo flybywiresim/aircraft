@@ -49,6 +49,7 @@ import { FmsErrorType } from '@fmgc/FmsError';
 import { WaypointFactory } from '@fmgc/flightplanning/new/waypoints/WaypointFactory';
 import { FmgcDataInterface } from 'instruments/src/MFD/fmgc';
 import { Navigation } from '@fmgc/index';
+import { MfdFmsFplnAirways } from 'instruments/src/MFD/pages/FMS/F-PLN/AIRWAYS';
 import { MfdSimvars } from './shared/MFDSimvarPublisher';
 import { DisplayUnit } from '../MsfsAvionicsCommon/displayUnit';
 
@@ -262,16 +263,13 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
 
     public clearLatestFmsErrorMessage() {
         const arr = this.fmsErrors.getArray().concat([]);
-        console.log(arr.length);
         const index = arr.findIndex((val) => val.cleared === false);
 
         if (index > -1) {
-            console.log(index);
             const old = arr[index];
             old.cleared = true;
 
             this.fmsErrors.set(arr);
-            console.log(arr.length);
         }
     }
 
@@ -505,6 +503,16 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
             this.activePage = (
                 <MfdFmsFpln
                     pageTitle="F-PLN"
+                    bus={this.props.bus}
+                    uiService={this.uiService}
+                    fmService={this.fmService}
+                />
+            );
+            break;
+        case 'fms/active/f-pln-airways':
+            this.activePage = (
+                <MfdFmsFplnAirways
+                    pageTitle="F-PLN/AIRWAYS"
                     bus={this.props.bus}
                     uiService={this.uiService}
                     fmService={this.fmService}

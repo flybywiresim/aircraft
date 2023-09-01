@@ -19,7 +19,7 @@ Status legend:
 | ✅ | fms/\*/f-pln | 1 |
 | ✅ | fms/\*/f-pln-departure | 1 |
 | ✅ | fms/\*/f-pln-arrival | 1 |
-| 1️⃣ | fms/\*/f-pln-airways | 1 |
+| ✅ | fms/\*/f-pln-airways | 1 |
 | ✅ | fms/\*/f-pln-direct-to | 1 |
 | ✅ | fms/\*/f-pln-duplicate-names | 1 |
 | ✅ | fms/\*/f-pln-cpny-f-pln-req | 1 |
@@ -99,6 +99,10 @@ Use React-based implementation for now, hence no dev. effort needed here.
 | FMS-v2 | NEXT WPT revision: Waypoints in between are not deleted, next wpt is just inserted after revised wpt |
 | FMS-v2 | DIRECT TO: Not possible for waypoints not already sequenced (i.e. no free text entry) |
 | FMS-v2 | Add option to delete flight plans (at least the uplink one) to FlightPlanService |
+| AIRWAYS | Scroll not yet implemented |
+| DUPLICATE NAMES | Scroll not yet implemented |
+| AIRWAYS | Can't delete pending airways (RL behavior to be checked) |
+| FMS-v2 | Can't start airway with DCT via |
 
 ## (Open) questions
 | Page / component | Question | Answer |

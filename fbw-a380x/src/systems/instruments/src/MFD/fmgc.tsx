@@ -261,7 +261,7 @@ export class FmgcDataInterface implements Fmgc {
     }
 
     getOriginTransitionAltitude(): Feet | undefined {
-        return this.flightPlanService.has(FlightPlanIndex.Active) ? this.flightPlanService?.active.performanceData.transitionAltitude.get() : 150;
+        return this.flightPlanService.has(FlightPlanIndex.Active) ? this.flightPlanService?.active.performanceData.transitionAltitude.get() : 18_000;
     }
 
     getCruiseAltitude(): Feet {

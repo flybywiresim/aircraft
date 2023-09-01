@@ -41,8 +41,6 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
     protected onNewData(): void {
         console.time('DIRECT-TO:onNewData');
 
-        this.tmpyActive.set(this.props.fmService.flightPlanService.hasTemporary);
-
         console.timeEnd('DIRECT-TO:onNewData');
     }
 

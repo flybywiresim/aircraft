@@ -130,7 +130,6 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
             this.fromIcao.set('----');
         }
 
-        this.tmpyActive.set(this.props.fmService.flightPlanService.hasTemporary);
         console.timeEnd('DEPARTURE:onNewData');
     }
 
