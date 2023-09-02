@@ -155,6 +155,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.destinationLongitude = undefined;
         /** Speed in KCAS when the first engine failed during takeoff */
         this.takeoffEngineOutSpeed = undefined;
+        this.checkSpeedModeMessageActive = undefined;
 
         // ATSU data
         this.atsu = undefined;
@@ -498,6 +499,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.toSpeedsTooLow = false;
         this.vSpeedDisagree = false;
         this.takeoffEngineOutSpeed = undefined;
+        this.checkSpeedModeMessageActive = false;
 
         this.onAirport = () => {};
 
@@ -733,6 +735,7 @@ class FMCMainDisplay extends BaseAirliners {
 
                 /** Activate pre selected speed/mach */
                 if (prevPhase === FmgcFlightPhases.CLIMB) {
+                    this.triggerCheckSpeedModeMessage(this.preSelectedCrzSpeed);
                     this.activatePreSelSpeedMach(this.preSelectedCrzSpeed);
                 }
 
@@ -759,13 +762,7 @@ class FMCMainDisplay extends BaseAirliners {
 
                 Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO).catch(console.error).catch(console.error);
 
-                /** Activate pre selected speed/mach */
-                if (prevPhase === FmgcFlightPhases.CRUISE) {
-                    this.activatePreSelSpeedMach(this.preSelectedDesSpeed);
-                }
-
-                /** Clear pre selected speed/mach */
-                this.updatePreSelSpeedMach(undefined);
+                this.triggerCheckSpeedModeMessage(undefined);
 
                 this.cruiseFlightLevel = undefined;
 
@@ -848,6 +845,32 @@ class FMCMainDisplay extends BaseAirliners {
                     });
                 }).catch(console.error);
                 break;
+        }
+    }
+
+    triggerCheckSpeedModeMessage(preselectedSpeed) {
+        const isSpeedSelected = !Simplane.getAutoPilotAirspeedManaged();
+        const hasPreselectedSpeed = preselectedSpeed !== undefined;
+
+        if (!this.checkSpeedModeMessageActive && isSpeedSelected && !hasPreselectedSpeed) {
+            this.checkSpeedModeMessageActive = true;
+            this.addMessageToQueue(
+                NXSystemMessages.checkSpeedMode,
+                () => !this.checkSpeedModeMessageActive,
+                () => {
+                    this.checkSpeedModeMessageActive = false;
+                    SimVar.SetSimVarValue("L:A32NX_PFD_MSG_CHECK_SPEED_MODE", "bool", false);
+                },
+            );
+            SimVar.SetSimVarValue("L:A32NX_PFD_MSG_CHECK_SPEED_MODE", "bool", true);
+        }
+    }
+
+    clearCheckSpeedModeMessage() {
+        if (this.checkSpeedModeMessageActive && Simplane.getAutoPilotAirspeedManaged()) {
+            this.checkSpeedModeMessageActive = false;
+            this.removeMessageFromQueue(NXSystemMessages.checkSpeedMode.text);
+            SimVar.SetSimVarValue("L:A32NX_PFD_MSG_CHECK_SPEED_MODE", "bool", false);
         }
     }
 
@@ -1075,6 +1098,7 @@ class FMCMainDisplay extends BaseAirliners {
         let isMach = false;
 
         this.updateHoldingSpeed();
+        this.clearCheckSpeedModeMessage();
 
         if (SimVar.GetSimVarValue("L:A32NX_FMA_EXPEDITE_MODE", "number") === 1) {
             const verticalMode = SimVar.GetSimVarValue("L:A32NX_FMA_VERTICAL_MODE", "number");
