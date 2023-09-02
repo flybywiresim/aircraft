@@ -13,6 +13,8 @@ import { CanvasMap } from './CanvasMap';
 const VOR_DME_PATH = new Path2D('M -7,0 a 7,7 0 1,0 14,0 a 7,7 0 1,0 -14,0 M 0,-15 L 0,-7 M 0,15 L 0,7 M -15,0 L -7,0 M 15,0 L 7,0');
 const DME_PATH = new Path2D('M -7,0 a 7,7 0 1,0 14,0 a 7,7 0 1,0 -14,0');
 const NDB_PATH = new Path2D('M -10,10 L 0,-10 L 10,10 L -10,10');
+const COURSE_REVERSAL_ARC_PATH_LEFT = new Path2D('M 0, 0 a 21, 21 0 0 0 -42, 0');
+const COURSE_REVERSAL_ARC_PATH_RIGHT = new Path2D('M 0, 0 a 21, 21 0 0  1 42, 0');
 
 export class WaypointLayer implements MapLayer<NdSymbol> {
     data: NdSymbol[] = [];
@@ -31,7 +33,7 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
             } else if (BitFlags.isAny(symbol.type, NdSymbolTypeFlags.VorDme | NdSymbolTypeFlags.Vor | NdSymbolTypeFlags.Dme | NdSymbolTypeFlags.Ndb)) {
                 this.paintNavaid(false, context, rx, ry, symbol);
             } else if (BitFlags.isAny(symbol.type, NdSymbolTypeFlags.FixInfo | NdSymbolTypeFlags.FlightPlan)) {
-                this.paintFlightPlanWaypoint(false, context, rx, ry, symbol);
+                this.paintFlightPlanWaypoint(false, context, rx, ry, symbol, mapParameters);
             } else {
                 this.paintWaypoint(false, context, rx, ry, symbol);
             }
@@ -49,7 +51,7 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
             } else if (BitFlags.isAny(symbol.type, NdSymbolTypeFlags.VorDme | NdSymbolTypeFlags.Vor | NdSymbolTypeFlags.Dme | NdSymbolTypeFlags.Ndb)) {
                 this.paintNavaid(true, context, rx, ry, symbol);
             } else if (BitFlags.isAny(symbol.type, NdSymbolTypeFlags.FixInfo | NdSymbolTypeFlags.FlightPlan)) {
-                this.paintFlightPlanWaypoint(true, context, rx, ry, symbol);
+                this.paintFlightPlanWaypoint(true, context, rx, ry, symbol, mapParameters);
             } else {
                 this.paintWaypoint(true, context, rx, ry, symbol);
             }
@@ -127,7 +129,7 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
         PaintUtils.paintText(isColorLayer, context, x + 15, y + 17, symbol.ident, '#ff94ff');
     }
 
-    private paintFlightPlanWaypoint(isColorLayer: boolean, context: CanvasRenderingContext2D, x: number, y: number, symbol: NdSymbol) {
+    private paintFlightPlanWaypoint(isColorLayer: boolean, context: CanvasRenderingContext2D, x: number, y: number, symbol: NdSymbol, mapParameters: MapParameters) {
         const mainColor = symbol.type & NdSymbolTypeFlags.ActiveLegTermination ? '#fff' : '#0f0';
 
         this.paintWaypointShape(context, x, y, isColorLayer ? mainColor : '#000', isColorLayer ? 1.75 : 3.25);
@@ -135,6 +137,29 @@ export class WaypointLayer implements MapLayer<NdSymbol> {
         context.font = '21px Ecam';
 
         PaintUtils.paintText(isColorLayer, context, x + 15, y + 17, symbol.ident, mainColor);
+
+        if (symbol.type & (NdSymbolTypeFlags.CourseReversalLeft | NdSymbolTypeFlags.CourseReversalRight)) {
+            this.paintCourseReversal(context, x, y, symbol, mapParameters);
+        }
+    }
+
+    private paintCourseReversal(context: CanvasRenderingContext2D, x: number, y: number, symbol: NdSymbol, mapParameters: MapParameters) {
+        const left = symbol.type & (NdSymbolTypeFlags.CourseReversalLeft);
+        const arcEnd = left ? -42 : 42;
+        const rotation = mapParameters.rotation(symbol.direction);
+        context.strokeStyle = '#fff';
+        context.lineWidth = 1.75;
+        context.translate(x, y);
+        context.rotate(rotation * MathUtils.DEGREES_TO_RADIANS);
+        context.beginPath();
+        context.moveTo(arcEnd, 0);
+        context.lineTo(arcEnd - 4, -4);
+        context.moveTo(arcEnd, 0);
+        context.lineTo(arcEnd + 4, -4);
+        context.stroke();
+        context.stroke(left ? COURSE_REVERSAL_ARC_PATH_LEFT : COURSE_REVERSAL_ARC_PATH_RIGHT);
+        context.closePath();
+        context.resetTransform();
     }
 
     private paintAirportShape(context: CanvasRenderingContext2D, x: number, y: number, color: string, lineWidth: number) {
