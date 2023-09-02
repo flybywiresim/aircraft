@@ -289,8 +289,8 @@ impl A320AirConditioningSystem {
                     cabin_zones,
                     [
                         [
-                            ElectricalBusType::AlternatingCurrent(2), // 101XP
-                            ElectricalBusType::DirectCurrent(2),      // 103PP
+                            ElectricalBusType::AlternatingCurrent(1), // 101XP
+                            ElectricalBusType::DirectCurrent(1),      // 103PP
                         ],
                         [
                             ElectricalBusType::AlternatingCurrent(2), // 204XP

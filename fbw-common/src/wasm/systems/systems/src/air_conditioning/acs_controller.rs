@@ -2168,8 +2168,8 @@ mod acs_controller_tests {
                         &cabin_zones,
                         [
                             [
-                                ElectricalBusType::AlternatingCurrent(2), // 101XP
-                                ElectricalBusType::DirectCurrent(2),      // 103PP
+                                ElectricalBusType::AlternatingCurrent(1), // 101XP
+                                ElectricalBusType::DirectCurrent(1),      // 103PP
                             ],
                             [
                                 ElectricalBusType::AlternatingCurrent(2), // 204XP
@@ -3104,7 +3104,7 @@ mod acs_controller_tests {
                     ThermodynamicTemperature::new::<degree_celsius>(24.),
                     ThermodynamicTemperature::new::<degree_celsius>(26.),
                 ])
-                .unpowered_ac_2_bus()
+                .unpowered_ac_1_bus()
                 .unpowered_dc_2_bus()
                 .iterate(1000);
 
@@ -3447,14 +3447,14 @@ mod acs_controller_tests {
                 .engine_idle()
                 .and()
                 .unpowered_dc_2_bus()
-                .unpowered_ac_2_bus()
+                .unpowered_ac_1_bus()
                 .command_selected_temperature(
                     [ThermodynamicTemperature::new::<degree_celsius>(30.); 2],
                 );
             test_bed = test_bed.iterate(1000);
             assert!((test_bed.duct_temperature()[1].get::<degree_celsius>() - 24.).abs() < 1.);
 
-            test_bed = test_bed.powered_dc_2_bus().powered_ac_2_bus();
+            test_bed = test_bed.powered_dc_2_bus().powered_ac_1_bus();
             test_bed = test_bed.iterate(1000);
             assert!(test_bed.duct_temperature()[1].get::<degree_celsius>() > 24.);
         }
@@ -3778,7 +3778,7 @@ mod acs_controller_tests {
 
             let initial_flow = test_bed.pack_flow();
 
-            test_bed = test_bed.unpowered_dc_2_bus().unpowered_ac_2_bus();
+            test_bed = test_bed.unpowered_dc_2_bus().unpowered_ac_1_bus();
 
             test_bed = test_bed.iterate(2);
 
@@ -3787,16 +3787,15 @@ mod acs_controller_tests {
 
             test_bed = test_bed
                 .unpowered_dc_1_bus()
-                .unpowered_ac_1_bus()
                 .unpowered_dc_ess_bus()
                 .powered_dc_2_bus()
-                .powered_ac_2_bus();
+                .powered_ac_1_bus();
             test_bed = test_bed.iterate(2);
             assert!(test_bed.pack_flow() < initial_flow);
             assert!(test_bed.pack_flow() > MassRate::default());
 
             test_bed = test_bed
-                .unpowered_ac_2_bus()
+                .unpowered_ac_1_bus()
                 .unpowered_dc_2_bus()
                 .iterate(20);
             assert_eq!(test_bed.pack_flow(), MassRate::default());
