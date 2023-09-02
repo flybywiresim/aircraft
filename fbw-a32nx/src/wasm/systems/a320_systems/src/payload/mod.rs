@@ -135,8 +135,8 @@ impl A320Payload {
                 context.get_identifier(p.pax_id.to_owned()),
                 context.get_identifier(format!("{}_DESIRED", p.pax_id)),
                 context.get_identifier(p.payload_id.to_owned()),
-                Rc::clone(&developer_state),
-                Rc::clone(&per_pax_weight),
+                developer_state.clone(),
+                per_pax_weight.clone(),
                 Vector3::new(p.position.0, p.position.1, p.position.2),
                 p.max_pax,
             )
@@ -147,7 +147,7 @@ impl A320Payload {
                 context.get_identifier(c.cargo_id.to_owned()),
                 context.get_identifier(format!("{}_DESIRED", c.cargo_id)),
                 context.get_identifier(c.payload_id.to_owned()),
-                Rc::clone(&developer_state),
+                developer_state.clone(),
                 Vector3::new(c.position.0, c.position.1, c.position.2),
                 Mass::new::<kilogram>(c.max_cargo_kg),
             )

@@ -214,8 +214,8 @@ impl A380Payload {
                 context.get_identifier(p.pax_id.to_owned()),
                 context.get_identifier(format!("{}_DESIRED", p.pax_id)),
                 context.get_identifier(p.payload_id.to_owned()),
-                Rc::clone(&developer_state),
-                Rc::clone(&per_pax_weight),
+                developer_state.clone(),
+                per_pax_weight.clone(),
                 Vector3::new(p.position.0, p.position.1, p.position.2),
                 p.max_pax,
             )

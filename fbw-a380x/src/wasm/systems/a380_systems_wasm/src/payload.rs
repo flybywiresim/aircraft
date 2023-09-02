@@ -163,26 +163,9 @@ struct Payload {
 
 impl VariablesToObject for Payload {
     fn variables(&self) -> Vec<Variable> {
-        vec![
-            Variable::aspect("PAYLOAD_STATION_1_REQ"),
-            Variable::aspect("PAYLOAD_STATION_2_REQ"),
-            Variable::aspect("PAYLOAD_STATION_3_REQ"),
-            Variable::aspect("PAYLOAD_STATION_4_REQ"),
-            Variable::aspect("PAYLOAD_STATION_5_REQ"),
-            Variable::aspect("PAYLOAD_STATION_6_REQ"),
-            Variable::aspect("PAYLOAD_STATION_7_REQ"),
-            Variable::aspect("PAYLOAD_STATION_8_REQ"),
-            Variable::aspect("PAYLOAD_STATION_9_REQ"),
-            Variable::aspect("PAYLOAD_STATION_10_REQ"),
-            Variable::aspect("PAYLOAD_STATION_11_REQ"),
-            Variable::aspect("PAYLOAD_STATION_12_REQ"),
-            Variable::aspect("PAYLOAD_STATION_13_REQ"),
-            Variable::aspect("PAYLOAD_STATION_14_REQ"),
-            Variable::aspect("PAYLOAD_STATION_15_REQ"),
-            Variable::aspect("PAYLOAD_STATION_16_REQ"),
-            Variable::aspect("PAYLOAD_STATION_17_REQ"),
-            Variable::aspect("PAYLOAD_STATION_18_REQ"),
-        ]
+        (1..=18)
+            .map(|i| Variable::aspect(&format!("PAYLOAD_STATION_{i}_REQ")))
+            .collect::<Vec<_>>()
     }
 
     fn write(&mut self, values: Vec<f64>) -> ObjectWrite {

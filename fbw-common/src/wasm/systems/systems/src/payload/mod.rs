@@ -102,24 +102,16 @@ impl<const N: usize, const G: usize> PassengerDeck<N, G> {
         }
     }
 
-    fn num_stations(&self) -> usize {
-        self.pax.len()
-    }
-
     fn pax_num(&self, ps: usize) -> i8 {
         self.pax[ps].pax_num() as i8
     }
 
     fn total_pax_num(&self) -> i32 {
-        (0..self.num_stations())
-            .map(|ps| self.pax_num(ps) as i32)
-            .sum()
+        self.pax.iter().map(|ps| ps.pax_num() as i32).sum()
     }
 
     fn total_max_pax_capacity(&self) -> i32 {
-        (0..self.num_stations())
-            .map(|ps| self.max_pax(ps) as i32)
-            .sum()
+        self.pax.iter().map(|ps| ps.max_pax() as i32).sum()
     }
 
     fn pax_payload(&self, ps: usize) -> Mass {
@@ -130,100 +122,44 @@ impl<const N: usize, const G: usize> PassengerDeck<N, G> {
         self.pax[ps].payload_target()
     }
 
-    fn pax_moment(&self, ps: usize) -> Vector3<f64> {
-        self.pax[ps].pax_moment()
-    }
-
-    fn pax_target_moment(&self, ps: usize) -> Vector3<f64> {
-        self.pax[ps].pax_target_moment()
-    }
-
     fn max_pax(&self, ps: usize) -> i8 {
         self.pax[ps].max_pax()
     }
 
-    fn pax_target_num(&self, ps: usize) -> i8 {
-        self.pax[ps].pax_target_num() as i8
-    }
-
-    fn pax_is_target(&self, ps: usize) -> bool {
-        self.pax[ps].pax_is_target()
-    }
-
     fn has_pax(&self) -> bool {
-        for ps in 0..self.num_stations() {
-            if self.pax_num(ps) > 0 {
-                return true;
-            }
-        }
-        false
+        self.pax.iter().any(|ps| ps.pax_num() > 0)
     }
 
     fn total_passenger_load(&self) -> Mass {
-        (0..self.num_stations())
-            .map(|ps| self.pax_payload(ps))
-            .sum()
+        self.pax.iter().map(|ps| ps.payload()).sum()
     }
 
     fn total_target_passenger_load(&self) -> Mass {
-        (0..self.num_stations())
-            .map(|ps| self.pax_target_payload(ps))
-            .sum()
+        self.pax.iter().map(|ps| ps.payload_target()).sum()
     }
 
     fn total_passenger_moment(&self) -> Vector3<f64> {
-        (0..self.num_stations())
-            .map(|ps| self.pax_moment(ps))
-            .sum::<Vector3<_>>()
+        self.pax.iter().map(|ps| ps.pax_moment()).sum()
     }
 
     fn total_target_passenger_moment(&self) -> Vector3<f64> {
-        (0..self.num_stations())
-            .map(|ps| self.pax_target_moment(ps))
-            .sum::<Vector3<_>>()
+        self.pax.iter().map(|ps| ps.pax_target_moment()).sum()
     }
 
     fn is_pax_boarding(&self, is_door_open: bool) -> bool {
-        for ps in 0..self.num_stations() {
-            if self.pax_num(ps) < self.pax_target_num(ps) && is_door_open {
-                return true;
-            }
-        }
-        false
+        is_door_open && self.pax.iter().any(|ps| ps.pax_num() < ps.pax_target_num())
     }
 
     fn is_pax_deboarding(&self, is_door_open: bool) -> bool {
-        for ps in 0..self.num_stations() {
-            if self.pax_num(ps) > self.pax_target_num(ps) && is_door_open {
-                return true;
-            }
-        }
-        false
+        is_door_open && self.pax.iter().any(|ps| ps.pax_num() > ps.pax_target_num())
     }
 
     fn is_pax_loaded(&self) -> bool {
-        for ps in 0..self.num_stations() {
-            if !self.pax_is_target(ps) {
-                return false;
-            }
-        }
-        true
+        self.pax.iter().all(|ps| ps.pax_is_target())
     }
 
     fn num_boarding_points(&self) -> usize {
         min(self.boarding_agents.len(), max(1, self.boarding_gates))
-    }
-
-    fn spawn_pax(&mut self, ps: usize) {
-        self.pax[ps].spawn_pax();
-    }
-
-    fn move_one_pax(&mut self, ps: usize) {
-        self.pax[ps].move_one_pax();
-    }
-
-    fn reset_pax_target(&mut self, ps: usize) {
-        self.pax[ps].reset_pax_target();
     }
 
     fn override_payload(&mut self, ps: usize, payload: Mass) {
@@ -231,8 +167,8 @@ impl<const N: usize, const G: usize> PassengerDeck<N, G> {
     }
 
     fn target_none(&mut self) {
-        for cs in 0..self.num_stations() {
-            self.reset_pax_target(cs);
+        for cs in &mut self.pax {
+            cs.reset_pax_target();
         }
     }
 
@@ -243,11 +179,11 @@ impl<const N: usize, const G: usize> PassengerDeck<N, G> {
     }
 
     fn spawn_all_pax(&mut self) {
-        for ps in 0..self.num_stations() {
-            if self.pax_is_target(ps) {
+        for ps in &mut self.pax {
+            if ps.pax_is_target() {
                 continue;
             }
-            self.spawn_pax(ps);
+            ps.spawn_pax();
         }
     }
 
@@ -255,11 +191,11 @@ impl<const N: usize, const G: usize> PassengerDeck<N, G> {
         let pax_diff = (pax_target - self.total_pax_num()).abs();
         if pax_diff > 0 {
             for _ in 0..pax_diff {
-                for ps in 0..self.num_stations() {
-                    if self.pax_is_target(ps) {
+                for ps in &mut self.pax {
+                    if ps.pax_is_target() {
                         continue;
                     }
-                    self.move_one_pax(ps);
+                    ps.move_one_pax();
                     break;
                 }
             }
@@ -287,10 +223,6 @@ impl<const N: usize> CargoDeck<N> {
         CargoDeck { cargo }
     }
 
-    pub fn num_stations(&self) -> usize {
-        self.cargo.len()
-    }
-
     pub fn station(&self, cs: usize) -> &Cargo {
         &self.cargo[cs]
     }
@@ -299,59 +231,32 @@ impl<const N: usize> CargoDeck<N> {
         self.cargo[cs].cargo()
     }
 
-    fn cargo_target(&self, cs: usize) -> Mass {
-        self.cargo[cs].cargo_target()
-    }
-
     fn cargo_payload(&self, cs: usize) -> Mass {
         self.cargo[cs].payload()
     }
 
-    fn cargo_moment(&self, cs: usize) -> Vector3<f64> {
-        self.cargo[cs].cargo_moment()
-    }
-
-    fn cargo_target_moment(&self, cs: usize) -> Vector3<f64> {
-        self.cargo[cs].cargo_target_moment()
-    }
-
     fn total_cargo_load(&self) -> Mass {
-        (0..self.num_stations()).map(|cs| self.cargo(cs)).sum()
+        self.cargo.iter().map(|cs| cs.cargo()).sum()
     }
 
     fn total_target_cargo_load(&self) -> Mass {
-        (0..self.num_stations())
-            .map(|cs| self.cargo_target(cs))
-            .sum()
+        self.cargo.iter().map(|cs| cs.cargo_target()).sum()
     }
 
     fn total_cargo_moment(&self) -> Vector3<f64> {
-        (0..self.num_stations())
-            .map(|cs| self.cargo_moment(cs))
-            .sum::<Vector3<_>>()
+        self.cargo.iter().map(|cs| cs.cargo_moment()).sum()
     }
 
     fn total_target_cargo_moment(&self) -> Vector3<f64> {
-        (0..self.num_stations())
-            .map(|cs| self.cargo_target_moment(cs))
-            .sum::<Vector3<_>>()
+        self.cargo.iter().map(|cs| cs.cargo_target_moment()).sum()
     }
 
     fn max_cargo(&self, cs: usize) -> Mass {
         self.cargo[cs].max_capacity()
     }
 
-    fn cargo_is_target(&self, cs: usize) -> bool {
-        self.cargo[cs].cargo_is_target()
-    }
-
     fn is_cargo_loaded(&self) -> bool {
-        for cs in 0..self.num_stations() {
-            if !self.cargo_is_target(cs) {
-                return false;
-            }
-        }
-        true
+        self.cargo.iter().all(|cs| cs.cargo_is_target())
     }
 
     fn update_cargo_loaded(&mut self) {
@@ -366,50 +271,34 @@ impl<const N: usize> CargoDeck<N> {
         }
     }
 
-    fn reset_cargo_target(&mut self, cs: usize) {
-        self.cargo[cs].reset_cargo_target();
-    }
-
-    fn load_cargo_percent(&mut self, cs: usize, percent: f64) {
-        self.cargo[cs].load_cargo_percent(percent)
-    }
-
     fn load_cargo_deck_percent(&mut self, percent: f64) {
-        for cs in 0..self.num_stations() {
-            self.load_cargo_percent(cs, percent);
+        for cs in &mut self.cargo {
+            cs.load_cargo_percent(percent);
         }
     }
 
     fn target_none(&mut self) {
-        for cs in 0..self.num_stations() {
-            self.reset_cargo_target(cs);
+        for cs in &mut self.cargo {
+            cs.reset_cargo_target();
         }
     }
 
-    fn spawn_cargo(&mut self, cs: usize) {
-        self.cargo[cs].spawn_cargo();
-    }
-
-    fn move_one_cargo_from_station(&mut self, cs: usize) {
-        self.cargo[cs].move_one_cargo();
-    }
-
     fn move_one_cargo(&mut self) {
-        for cs in 0..self.num_stations() {
-            if self.cargo_is_target(cs) {
+        for cs in &mut self.cargo {
+            if cs.cargo_is_target() {
                 continue;
             }
-            self.move_one_cargo_from_station(cs);
+            cs.move_one_cargo();
             break;
         }
     }
 
     fn spawn_all_cargo(&mut self) {
-        for cs in 0..self.num_stations() {
-            if self.cargo_is_target(cs) {
+        for cs in &mut self.cargo {
+            if cs.cargo_is_target() {
                 continue;
             }
-            self.spawn_cargo(cs);
+            cs.spawn_cargo();
         }
     }
 }
@@ -535,14 +424,14 @@ impl Pax {
     pub fn move_one_pax(&mut self) {
         let pax_diff = self.pax_target_num() - self.pax_num();
 
-        let n: u64 = if pax_diff > 0 {
+        let n = if pax_diff > 0 {
             !self.pax & self.pax_target
         } else {
             self.pax & !self.pax_target
         };
         let count = n.count_ones() as f64;
         if count > 0. {
-            let mut skip: i8 = random_from_range(0., count) as i8;
+            let mut skip = random_from_range(0., count) as i8;
 
             for i in 0..Self::JS_MAX_SAFE_INTEGER {
                 let bit = 1 << i;
@@ -814,7 +703,7 @@ pub struct PayloadManager<const P: usize, const G: usize, const C: usize> {
     boarding_sounds: BoardingSounds,
     passenger_deck: PassengerDeck<P, G>,
     cargo_deck: CargoDeck<C>,
-    gsx_driver: GsxDriver<P, G, C>,
+    gsx_driver: GsxDriver,
 }
 impl<const P: usize, const G: usize, const C: usize> PayloadManager<P, G, C> {
     pub fn new(
@@ -829,11 +718,7 @@ impl<const P: usize, const G: usize, const C: usize> PayloadManager<P, G, C> {
     ) -> Self {
         PayloadManager {
             time: Duration::default(),
-            boarding_inputs: BoardingInputs::new(
-                context,
-                Rc::clone(&per_pax_weight),
-                Rc::clone(&developer_state),
-            ),
+            boarding_inputs: BoardingInputs::new(context, per_pax_weight, developer_state),
             boarding_sounds,
             gsx_driver: GsxDriver::new(context),
             passenger_deck,
@@ -1132,11 +1017,11 @@ impl BoardingInputs {
 impl SimulationElement for BoardingInputs {
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.developer_state
-            .replace(reader.read(&self.developer_state_id));
+            .set(reader.read(&self.developer_state_id));
         self.is_boarding = reader.read(&self.is_boarding_id);
         self.board_rate = reader.read(&self.board_rate_id);
         self.per_pax_weight
-            .replace(Mass::new::<kilogram>(reader.read(&self.per_pax_weight_id)));
+            .set(Mass::new::<kilogram>(reader.read(&self.per_pax_weight_id)));
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
@@ -1288,10 +1173,10 @@ impl SimulationElement for GsxInput {
     }
 }
 
-pub struct GsxDriver<const P: usize, const G: usize, const C: usize> {
+pub struct GsxDriver {
     gsx_input: GsxInput,
 }
-impl<const P: usize, const G: usize, const C: usize> GsxDriver<P, G, C> {
+impl GsxDriver {
     pub fn new(context: &mut InitContext) -> Self {
         GsxDriver {
             gsx_input: GsxInput::new(context),
@@ -1310,11 +1195,17 @@ impl<const P: usize, const G: usize, const C: usize> GsxDriver<P, G, C> {
         self.gsx_input.boarding_state()
     }
 
-    fn has_pax(&self, passenger_deck: &PassengerDeck<P, G>) -> bool {
+    fn has_pax<const P: usize, const G: usize>(
+        &self,
+        passenger_deck: &PassengerDeck<P, G>,
+    ) -> bool {
         passenger_deck.has_pax()
     }
 
-    fn total_max_pax_capacity(&self, passenger_deck: &PassengerDeck<P, G>) -> i32 {
+    fn total_max_pax_capacity<const P: usize, const G: usize>(
+        &self,
+        passenger_deck: &PassengerDeck<P, G>,
+    ) -> i32 {
         passenger_deck.total_max_pax_capacity()
     }
 
@@ -1334,7 +1225,7 @@ impl<const P: usize, const G: usize, const C: usize> GsxDriver<P, G, C> {
         self.gsx_input.cargo_deboarding_percent
     }
 
-    pub fn update(
+    pub fn update<const P: usize, const G: usize, const C: usize>(
         &mut self,
         passenger_deck: &mut PassengerDeck<P, G>,
         cargo_deck: &mut CargoDeck<C>,
@@ -1345,7 +1236,7 @@ impl<const P: usize, const G: usize, const C: usize> GsxDriver<P, G, C> {
         self.update_deboarding(passenger_deck, cargo_deck);
     }
 
-    fn update_ambient_sound(
+    fn update_ambient_sound<const P: usize, const G: usize>(
         &mut self,
         passenger_deck: &PassengerDeck<P, G>,
         boarding_sounds: &mut BoardingSounds,
@@ -1353,7 +1244,7 @@ impl<const P: usize, const G: usize, const C: usize> GsxDriver<P, G, C> {
         boarding_sounds.play_sound_pax_ambience(self.has_pax(passenger_deck));
     }
 
-    fn update_boarding(
+    fn update_boarding<const P: usize, const G: usize, const C: usize>(
         &mut self,
         passenger_deck: &mut PassengerDeck<P, G>,
         cargo_deck: &mut CargoDeck<C>,
@@ -1374,7 +1265,7 @@ impl<const P: usize, const G: usize, const C: usize> GsxDriver<P, G, C> {
         }
     }
 
-    fn update_deboarding(
+    fn update_deboarding<const P: usize, const G: usize, const C: usize>(
         &mut self,
         passenger_deck: &mut PassengerDeck<P, G>,
         cargo_deck: &mut CargoDeck<C>,
@@ -1401,7 +1292,7 @@ impl<const P: usize, const G: usize, const C: usize> GsxDriver<P, G, C> {
         }
     }
 }
-impl<const P: usize, const G: usize, const C: usize> SimulationElement for GsxDriver<P, G, C> {
+impl SimulationElement for GsxDriver {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.gsx_input.accept(visitor);
         visitor.visit(self);

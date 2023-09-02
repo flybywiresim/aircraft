@@ -41,7 +41,7 @@ impl A380Airframe {
         self.center_of_gravity.gross_weight_center_of_gravity()
     }
 
-    #[allow(dead_code)]
+    #[cfg(test)]
     // TODO: To be iterated upon in the future
     fn take_off_center_of_gravity(&self) -> f64 {
         self.center_of_gravity.take_off_center_of_gravity()
@@ -59,43 +59,43 @@ impl A380Airframe {
             .target_gross_weight_center_of_gravity()
     }
 
-    #[allow(dead_code)]
+    #[cfg(test)]
     // TODO: To be iterated upon in the future
     fn target_take_off_center_of_gravity(&self) -> f64 {
         self.center_of_gravity.target_take_off_center_of_gravity()
     }
 
-    fn convert_cg(&self, cg: f64) -> f64 {
+    fn convert_cg(cg: f64) -> f64 {
         -100. * (cg - Self::LOADSHEET.leading_edge_mean_aerodynamic_chord)
             / Self::LOADSHEET.mean_aerodynamic_chord_size
     }
 
     fn set_zero_fuel_weight_center_of_gravity(&mut self, zero_fuel_weight_cg: f64) {
-        let zero_fuel_weight_center_of_gravity = self.convert_cg(zero_fuel_weight_cg);
+        let zero_fuel_weight_center_of_gravity = Self::convert_cg(zero_fuel_weight_cg);
         self.center_of_gravity
             .set_zero_fuel_weight_center_of_gravity(zero_fuel_weight_center_of_gravity)
     }
 
     fn set_gross_weight_center_of_gravity(&mut self, gross_weight_cg: f64) {
-        let gross_weight_center_of_gravity = self.convert_cg(gross_weight_cg);
+        let gross_weight_center_of_gravity = Self::convert_cg(gross_weight_cg);
         self.center_of_gravity
             .set_gross_weight_center_of_gravity(gross_weight_center_of_gravity);
     }
 
     fn set_take_off_center_of_gravity(&mut self, to_cg: f64) {
-        let take_off_center_of_gravity = self.convert_cg(to_cg);
+        let take_off_center_of_gravity = Self::convert_cg(to_cg);
         self.center_of_gravity
             .set_take_off_center_of_gravity(take_off_center_of_gravity);
     }
 
     fn set_target_zero_fuel_weight_center_of_gravity(&mut self, target_zero_fuel_weight_cg: f64) {
-        let target_zero_fuel_weight_cg_percent_mac = self.convert_cg(target_zero_fuel_weight_cg);
+        let target_zero_fuel_weight_cg_percent_mac = Self::convert_cg(target_zero_fuel_weight_cg);
         self.center_of_gravity
             .set_target_zero_fuel_weight_center_of_gravity(target_zero_fuel_weight_cg_percent_mac)
     }
 
     fn set_target_gross_weight_center_of_gravity(&mut self, target_gross_weight_cg: f64) {
-        let target_gross_weight_cg_percent_mac = self.convert_cg(target_gross_weight_cg);
+        let target_gross_weight_cg_percent_mac = Self::convert_cg(target_gross_weight_cg);
         self.center_of_gravity
             .set_target_gross_weight_center_of_gravity(target_gross_weight_cg_percent_mac);
     }
@@ -105,7 +105,7 @@ impl A380Airframe {
         target_take_off_weight_cg_percent_mac: f64,
     ) {
         let target_take_off_weight_cg_percent_mac =
-            self.convert_cg(target_take_off_weight_cg_percent_mac);
+            Self::convert_cg(target_take_off_weight_cg_percent_mac);
         self.center_of_gravity
             .set_target_take_off_center_of_gravity(target_take_off_weight_cg_percent_mac);
     }
