@@ -8,6 +8,9 @@ export type MfdSimvars = {
     potentiometerFo: number;
     flightPhase: number;
     flexTemp: number;
+    adirs1MaintWord: number;
+    adirs2MaintWord: number;
+    adirs3MaintWord: number;
   }
 
 export enum MFDVars {
@@ -18,6 +21,9 @@ export enum MFDVars {
     potentiometerFo = 'LIGHT POTENTIOMETER:90',
     flightPhase = 'L:A32NX_FMGC_FLIGHT_PHASE',
     flexTemp = 'L:AIRLINER_TO_FLEX_TEMP',
+    adirs1MaintWord = 'L:A32NX_ADIRS_IR_1_MAINT_WORD',
+    adirs2MaintWord = 'L:A32NX_ADIRS_IR_2_MAINT_WORD',
+    adirs3MaintWord = 'L:A32NX_ADIRS_IR_3_MAINT_WORD',
   }
 
 /** A publisher to poll and publish nav/com simvars. */
@@ -30,6 +36,9 @@ export class MfdSimvarPublisher extends SimVarPublisher<MfdSimvars> {
         ['potentiometerFo', { name: MFDVars.potentiometerFo, type: SimVarValueType.Number }],
         ['flightPhase', { name: MFDVars.flightPhase, type: SimVarValueType.Enum }],
         ['flexTemp', { name: MFDVars.flexTemp, type: SimVarValueType.Number }],
+        ['adirs1MaintWord', { name: MFDVars.adirs1MaintWord, type: SimVarValueType.Number }],
+        ['adirs2MaintWord', { name: MFDVars.adirs2MaintWord, type: SimVarValueType.Number }],
+        ['adirs3MaintWord', { name: MFDVars.adirs3MaintWord, type: SimVarValueType.Number }],
     ])
 
     public constructor(bus: EventBus) {

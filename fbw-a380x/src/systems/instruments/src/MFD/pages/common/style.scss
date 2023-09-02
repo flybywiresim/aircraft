@@ -92,7 +92,12 @@ $display-mfd-dark-grey: #3c3c3c;
 }
 
 .mfd-button.disabled {
-  color: grey;
+  color: $display-grey;
+}
+
+.mfd-button.selected {
+  background-color: $display-dark-grey;
+  border: 2px inset $display-light-grey;
 }
 
 .mfd-button.disabled:hover {

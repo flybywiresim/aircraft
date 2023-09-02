@@ -13,6 +13,7 @@ export interface ButtonProps extends ComponentProps {
     showArrow?: boolean;
     idPrefix?: string;
     disabled?: Subscribable<boolean>;
+    selected?: Subscribable<boolean>; // Renders with lighter grey if selected (e.g. for segmented controls)
     buttonStyle?: string;
     onClick: () => void;
 }
@@ -48,6 +49,9 @@ export class Button extends DisplayComponent<ButtonProps> {
         if (this.props.disabled === undefined) {
             this.props.disabled = Subject.create(false);
         }
+        if (this.props.selected === undefined) {
+            this.props.selected = Subject.create(false);
+        }
         if (typeof this.props.label === 'string') {
             this.props.label = Subject.create(<span>{this.props.label}</span>);
         }
@@ -67,6 +71,14 @@ export class Button extends DisplayComponent<ButtonProps> {
                 this.buttonRef.getOrDefault().classList.add('disabled');
             } else {
                 this.buttonRef.getOrDefault().classList.remove('disabled');
+            }
+        }, true));
+
+        this.subs.push(this.props.selected.sub((val) => {
+            if (val === true) {
+                this.buttonRef.getOrDefault().classList.add('selected');
+            } else {
+                this.buttonRef.getOrDefault().classList.remove('selected');
             }
         }, true));
 

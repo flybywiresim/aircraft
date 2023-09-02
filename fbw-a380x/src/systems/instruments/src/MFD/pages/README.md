@@ -37,7 +37,7 @@ Status legend:
 | 🟥 | fms/\*/f-pln-equi-time-point | 9 |
 | 🟥 | fms/\*/f-pln-ll-xing-time-mkr | 9 |
 |  |  |
-| 1️⃣ | fms/position/irs | 1 |
+| ✅ | fms/position/irs | 1 |
 | 🟥 | fms/position/monitor | 3 |
 | 🟥 | fms/position/gps | 3 |
 | 🟥 | fms/position/navaids | 3 |

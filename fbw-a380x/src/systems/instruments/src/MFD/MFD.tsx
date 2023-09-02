@@ -9,6 +9,7 @@ import {
     DisplayComponent,
     EventBus,
     FSComponent,
+    SimVarValueType,
     Subject,
     VNode,
 } from '@microsoft/msfs-sdk';
@@ -48,8 +49,9 @@ import { FmsErrorType } from '@fmgc/FmsError';
 
 import { WaypointFactory } from '@fmgc/flightplanning/new/waypoints/WaypointFactory';
 import { FmgcDataInterface } from 'instruments/src/MFD/fmgc';
-import { Navigation } from '@fmgc/index';
 import { MfdFmsFplnAirways } from 'instruments/src/MFD/pages/FMS/F-PLN/AIRWAYS';
+import { MfdFmsPositionIrs } from 'instruments/src/MFD/pages/FMS/POSITION/IRS';
+import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
 import { MfdSimvars } from './shared/MFDSimvarPublisher';
 import { DisplayUnit } from '../MsfsAvionicsCommon/displayUnit';
 
@@ -84,7 +86,26 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
 
     private guidanceController = new GuidanceController(this.fmgc, this.flightPlanService);
 
-    private navigationProvider = new Navigation(this.flightPlanService, undefined);
+        private navigationProvider: NavigationProvider = {
+            getEpe(): number {
+                return 0.1;
+            },
+            getPpos(): Coordinates | null {
+                const lat = SimVar.GetSimVarValue('PLANE LATITUDE', SimVarValueType.Degree);
+                const long = SimVar.GetSimVarValue('PLANE LONGITUDE', SimVarValueType.Degree);
+
+                return { lat, long };
+            },
+            getBaroCorrectedAltitude(): number | null {
+                return 0;
+            },
+            getPressureAltitude(): number | null {
+                return 0;
+            },
+            getRadioHeight(): number | null {
+                return 0;
+            },
+        }
 
     private navaidSelectionManager = new NavaidSelectionManager(this.flightPlanService, this.navigationProvider);
 
@@ -137,7 +158,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
         this.flightPlanService.active.performanceData.cruiseFlightLevel.set(SimVar.GetGameVarValue('AIRCRAFT CRUISE ALTITUDE', 'feet'));
 
         // Build EGLL/27R N0411F250 MAXI1F MAXIT DCT HARDY UM605 BIBAX BIBA9X LFPG/09L
-        await this.flightPlanService.newCityPair('EGLL', 'LFPG', 'EBBR');
+        /* await this.flightPlanService.newCityPair('EGLL', 'LFPG', 'EBBR');
         await this.flightPlanService.setOriginRunway('RW27R');
         await this.flightPlanService.setDepartureProcedure('MAXI1F');
         await this.flightPlanService.nextWaypoint(8, (await db.searchAllFix('HARDY'))[0]);
@@ -164,7 +185,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
         this.flightPlanService.active.performanceData.pilotTransitionAltitude.set(1_500);
         this.flightPlanService.active.performanceData.cruiseFlightLevel.set(32_000);
         this.flightPlanService.active.performanceData.pilotEngineOutAccelerationAltitude.set(1_500);
-        this.flightPlanService.active.performanceData.v2.set(150);
+        this.flightPlanService.active.performanceData.v2.set(150); */
     }
 
     private initVariables() {
@@ -387,7 +408,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
         });
 
         // Navigate to initial page
-        this.uiService.navigateTo('fms/active/init');
+        this.uiService.navigateTo('fms/position/irs');
     }
 
     private activeUriChanged(uri: ActiveUriInformation) {
@@ -470,6 +491,9 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
         // Mapping from URL to page component
         switch (`${uri.sys}/${uri.category}/${uri.page}`) {
         case 'fms/active/perf':
+        case 'fms/sec1/perf':
+        case 'fms/sec2/perf':
+        case 'fms/sec3/perf':
             this.activePage = (
                 <MfdFmsPerf
                     pageTitle="PERF"
@@ -480,6 +504,9 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
             );
             break;
         case 'fms/active/init':
+        case 'fms/sec1/init':
+        case 'fms/sec2/init':
+        case 'fms/sec3/init':
             this.activePage = (
                 <MfdFmsInit
                     pageTitle="INIT"
@@ -490,6 +517,9 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
             );
             break;
         case 'fms/active/fuel-load':
+        case 'fms/sec1/fuel-load':
+        case 'fms/sec2/fuel-load':
+        case 'fms/sec3/fuel-load':
             this.activePage = (
                 <MfdFmsFuelLoad
                     pageTitle="FUEL&LOAD"
@@ -500,6 +530,9 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
             );
             break;
         case 'fms/active/f-pln':
+        case 'fms/sec1/f-pln':
+        case 'fms/sec2/f-pln':
+        case 'fms/sec3/f-pln':
             this.activePage = (
                 <MfdFmsFpln
                     pageTitle="F-PLN"
@@ -510,6 +543,9 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
             );
             break;
         case 'fms/active/f-pln-airways':
+        case 'fms/sec1/f-pln-airways':
+        case 'fms/sec2/f-pln-airways':
+        case 'fms/sec3/f-pln-airways':
             this.activePage = (
                 <MfdFmsFplnAirways
                     pageTitle="F-PLN/AIRWAYS"
@@ -520,6 +556,9 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
             );
             break;
         case 'fms/active/f-pln-departure':
+        case 'fms/sec1/f-pln-departure':
+        case 'fms/sec2/f-pln-departure':
+        case 'fms/sec3/f-pln-departure':
             this.activePage = (
                 <MfdFmsFplnDep
                     pageTitle="F-PLN/DEPARTURE"
@@ -530,6 +569,9 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
             );
             break;
         case 'fms/active/f-pln-arrival':
+        case 'fms/sec1/f-pln-arrival':
+        case 'fms/sec2/f-pln-arrival':
+        case 'fms/sec3/f-pln-arrival':
             this.activePage = (
                 <MfdFmsFplnArr
                     pageTitle="F-PLN/ARRIVAL"
@@ -540,9 +582,22 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
             );
             break;
         case 'fms/active/f-pln-direct-to':
+        case 'fms/sec1/f-pln-direct-to':
+        case 'fms/sec2/f-pln-direct-to':
+        case 'fms/sec3/f-pln-direct-to':
             this.activePage = (
                 <MfdFmsFplnDirectTo
                     pageTitle="F-PLN/DIRECT-TO"
+                    bus={this.props.bus}
+                    uiService={this.uiService}
+                    fmService={this.fmService}
+                />
+            );
+            break;
+        case 'fms/position/irs':
+            this.activePage = (
+                <MfdFmsPositionIrs
+                    pageTitle="IRS"
                     bus={this.props.bus}
                     uiService={this.uiService}
                     fmService={this.fmService}

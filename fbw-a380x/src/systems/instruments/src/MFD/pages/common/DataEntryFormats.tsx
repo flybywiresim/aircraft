@@ -771,3 +771,33 @@ export class LatitudeFormat implements DataEntryFormat<number> {
         return undefined;
     }
 }
+
+export class HeadingFormat implements DataEntryFormat<number> {
+    public placeholder = '---.-';
+
+    public maxDigits = 5;
+
+    private minValue = 0;
+
+    private maxValue = 360.0;
+
+    constructor(minValue: Subscribable<number> = Subject.create(0), maxValue: Subscribable<number> = Subject.create(Number.POSITIVE_INFINITY)) {
+        minValue.sub((val) => this.minValue = val, true);
+        maxValue.sub((val) => this.maxValue = val, true);
+    }
+
+    public format(value: number) {
+        if (value === null || value === undefined) {
+            return [this.placeholder, null, '°T'] as FieldFormatTuple;
+        }
+        return [value.toFixed(1), null, '°T'] as FieldFormatTuple;
+    }
+
+    public async parse(input: string) {
+        const nbr = Number(input);
+        if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
+            return nbr;
+        }
+        return undefined;
+    }
+}
