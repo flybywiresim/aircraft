@@ -1599,9 +1599,7 @@ fn gsx_boarding_half_pax() {
     test_bed.has_sound_pax_boarding();
     test_bed.has_no_sound_pax_deboarding();
 
-    let mut test_bed = test_bed
-        .gsx_complete_board_state()
-        .and_stabilize();
+    let mut test_bed = test_bed.gsx_complete_board_state().and_stabilize();
 
     test_bed.has_all_stations_half_pax();
     test_bed.has_all_stations_half_cargo();
