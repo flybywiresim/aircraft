@@ -4,11 +4,8 @@
 import React, { FC, useEffect, useState } from 'react';
 import { Metar } from '@flybywiresim/api-client';
 import { Droplet, Speedometer2, ThermometerHalf, Wind } from 'react-bootstrap-icons';
-import useInterval from '@instruments/common/useInterval';
+import { MetarParserType, parseMetar, useInterval, usePersistentNumberProperty, usePersistentProperty } from '@flybywiresim/fbw-sdk';
 import { t } from '../../translation';
-import { parseMetar } from '../../Utils/parseMetar';
-import { MetarParserType } from '../../../Common/metarTypes';
-import { usePersistentNumberProperty, usePersistentProperty } from '../../../Common/persistence';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { ColoredMetar } from './ColorMetar';
 import { useAppDispatch, useAppSelector } from '../../Store/store';

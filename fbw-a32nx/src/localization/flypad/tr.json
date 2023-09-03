@@ -165,8 +165,8 @@
         "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
         "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
         "MaxCargo": "Max Cargo",
-        "MaxGW": "Maximum GW",
-        "MaxGWCG": "Maximum GW CG",
+        "MaxGW": "Maxsimum Gw",
+        "MaxGWCG": "Maksimum GW CG",
         "MaxPassengers": "Maksimum Yolcu",
         "MaxZFW": "Maximum ZFW",
         "MaxZFWCG": "Maximum ZFWCG",
@@ -370,7 +370,7 @@
       "ConfirmationDialogMsg": "Lütfen hazır ayarın yüklenmesini onaylayın.",
       "CurrentProcedureStep": "Mevcut Prosedür Adımı",
       "PleaseConfirmLoadingOfPreset": "Lütfen hazır ayarın yüklenmesini onaylayın.",
-      "Powered": "Güçlendirilmiş",
+      "Powered": "Elektrikli",
       "ReadyPushback": "Pushback için hazır",
       "ReadyTakeoff": "Kalkış için hazır",
       "ReadyTaxi": "Taksi için hazır",
@@ -450,7 +450,7 @@
     "TugDirection": "Römorkör Yönü",
     "TugInTransit": "Römorkör/Pin Bekleniyor",
     "TugSpeed": "Römorkör Hızı",
-    "UseControllerInput": "Kontrolcüden Gelen Girdileri Kullan"
+    "UseControllerInput": "Denetleyici Girişini Kullan"
   },
   "QuickControls": {
     "AlignAdirs": "ADIRS'i Hizala",

@@ -368,7 +368,7 @@ impl SimulationElement for AuxiliaryPowerUnitOverheadPanel {
 }
 
 #[cfg(test)]
-pub mod tests {
+mod tests {
     use crate::{
         electrical::{
             consumption::PowerConsumer, test::TestElectricitySource, ElectricalBus, Electricity,

@@ -1,9 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { NXDataStore } from '@shared/persistence';
-import { getSupplier } from '@instruments/common/utils';
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
 
-import { useSimVar } from './simVars';
-import { useUpdate } from './hooks';
+import React, { useEffect, useRef, useState } from 'react';
+import { NXDataStore, useSimVar, useUpdate, getSupplier } from '@flybywiresim/fbw-sdk';
 
 import './common.scss';
 

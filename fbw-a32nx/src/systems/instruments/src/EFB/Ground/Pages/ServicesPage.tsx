@@ -3,7 +3,7 @@
 
 /* eslint-disable no-console */
 import React, { FC, useEffect, useRef } from 'react';
-import { useSimVar } from '@instruments/common/simVars';
+import { useSimVar } from '@flybywiresim/fbw-sdk';
 import {
     ArchiveFill,
     ConeStriped,

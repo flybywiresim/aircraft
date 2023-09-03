@@ -11,7 +11,7 @@ import { CILeg } from '@fmgc/guidance/lnav/legs/CI';
 import { CFLeg } from '@fmgc/guidance/lnav/legs/CF';
 import { arcDistanceToGo, arcGuidance, maxBank } from '@fmgc/guidance/lnav/CommonGeometry';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
-import { MathUtils } from '@shared/MathUtils';
+import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { bearingTo, closestSmallCircleIntersection, placeBearingDistance } from 'msfs-geo';
 import { PathVector, pathVectorLength, PathVectorType } from '@fmgc/guidance/lnav/PathVector';
 import { GuidanceParameters } from '@fmgc/guidance/ControlLaws';

@@ -15,6 +15,33 @@
 1. [FMS] TO SPEEDS TOO LOW uses FQI fuel quantity after engine start to avoid spurious warnings - @tracernz (Mike)
 1. [ND] Fix ROSE VOR/LS conditions and ILS course - @tracernz (Mike)
 1. [HYD] Added hydraulic reverser actuators - @Crocket63 (crocket)
+1. [SD] Added a display duration of 3s for STS page - @pluce
+1. [EIS] Added > character to the font - @KiloEchoVictor (Kevin)
+1. [ND] Mask the map below the TCAS/WXR and FM messages - @tracernz (Mike)
+1. [FMS] Improved robustness of ILS selection - @tracernz (Mike)
+1. [MCDU] The remote MCDU protocol now sends the annunciator light state - @tracernz (Mike)
+1. [MCDU] The remote MCDU protocol now sends the display and integral light brightness - @tracernz (Mike)
+1. [MCDU] The remote MCDU protocol now supports the BRT/DIM keys - @tracernz (Mike)
+1. [PFD] Corrected the NO DH logic in the FMS and PFD - @tracernz (Mike)
+1. [FDR] Add secondary engine parameters to FDR - @Taz5150 (TazX [Z+2]#0405)
+1. [FLIGHTMODEL] Fix outer to inner tank transfer valve closure - @donstim (donbikes)
+1. [SD] Corrected thickness and position of lower ECAM fuel page lines - @robertxing2004 (robeet)
+1. [SD] Corrected position of outer tank fuel quantity values - @robertxing2004 (robeet)
+1. [ISIS] Fixed the ISIS alt tape order for negative altitudes - @aweissoertel (Alex)
+1. [MCDU] Add basic annunciator support - @tracernz (Mike)
+1. [MCDU] Add basic MCDU MENU functionality - @tracernz (Mike)
+1. [MCDU] Split subsystem scratchpads - @tracernz (Mike)
+1. [APU] APU can now consume fuel - @tracernz (Mike)
+1. [EFB] Added UI message on fuel/payload page when GSX is activated - @frankkopp (Frank Kopp)
+1. [FWC] WING TANK LO LVL message now considers centre tank mode selector - @tracernz (Mike)
+1. [MCDU] PERF APPR page no longer demands QNH and TEMP when outside 180NM from destination - @robertxing2004 (robeet)
+1. [FMS] Add basic support for FA legs - @tracernz (Mike)
+1. [MCDU] Don't calculate V-speeds when FoB not available - @tracernz (Mike)
+1. [MCDU] ZFW/ZFWCG auto-fill uses desired values when boarding in progress - @tracernz (Mike)
+1. [EFB/FWC] Auto Call Outs selectable - @tracernz (Mike)
+1. [FWC] Added "twenty five hundred" and "two thousand" callouts - @tracernz (Mike)
+1. [FMS] Load procedures that reference a runway correctly - @tracernz (Mike)
+1. [MCDU/ND] Corrected altitude formatting with respect to transition altitude and transition level - @tracernz (Mike)
 1. [PAYLOAD] Re-enabled FBW sounds when using GSX Integration
 
 ## 0.10.0
@@ -1277,3 +1304,4 @@
 1. [DCDU] Fixed MSG- and MSG+ button labels - @tyler58546 (tyler58546)
 1. [ISIS] Fixed issue where ISIS was allowing a bug to be set while in the OFF state - Patrick Macken (@Pat M on
    Discord)
+1. [EFB] Restructured APIs and made Navigraph Auth a reusable component - @MicahBCode (Mischa Binder)

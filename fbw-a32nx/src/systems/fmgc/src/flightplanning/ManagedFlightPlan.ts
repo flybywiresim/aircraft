@@ -24,6 +24,8 @@
  */
 
 import { HoldData, WaypointStats } from '@fmgc/flightplanning/data/flightplan';
+import { NXDataStore } from '@flybywiresim/fbw-sdk';
+import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
 import { AltitudeDescriptor, FixTypeFlags, LegType } from '../types/fstypes/FSEnums';
 import { FlightPlanSegment, SegmentType } from './FlightPlanSegment';
 import { LegsProcedure } from './LegsProcedure';
@@ -33,8 +35,6 @@ import { ProcedureDetails } from './ProcedureDetails';
 import { DirectTo } from './DirectTo';
 import { GeoMath } from './GeoMath';
 import { WaypointBuilder } from './WaypointBuilder';
-import { NXDataStore } from '@shared/persistence';
-import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
 
 /**
  * A flight plan managed by the FlightPlanManager.
@@ -1710,9 +1710,9 @@ export class ManagedFlightPlan {
     private setOriginDefaults(airport: WayPoint): void {
         const referenceAltitude = (airport.infos as AirportInfo).elevation;
         if (referenceAltitude !== undefined) {
-            this.thrustReductionAltitudeDefault = referenceAltitude + parseInt(NXDataStore.get("CONFIG_THR_RED_ALT", "1500"));
-            this.accelerationAltitudeDefault = referenceAltitude + parseInt(NXDataStore.get("CONFIG_ACCEL_ALT", "1500"));
-            this.engineOutAccelerationAltitudeDefault = referenceAltitude + parseInt(NXDataStore.get("CONFIG_ENG_OUT_ACCEL_ALT", "1500"));
+            this.thrustReductionAltitudeDefault = referenceAltitude + parseInt(NXDataStore.get('CONFIG_THR_RED_ALT', '1500'));
+            this.accelerationAltitudeDefault = referenceAltitude + parseInt(NXDataStore.get('CONFIG_ACCEL_ALT', '1500'));
+            this.engineOutAccelerationAltitudeDefault = referenceAltitude + parseInt(NXDataStore.get('CONFIG_ENG_OUT_ACCEL_ALT', '1500'));
         } else {
             this.thrustReductionAltitudeDefault = undefined;
             this.accelerationAltitudeDefault = undefined;
@@ -1726,9 +1726,9 @@ export class ManagedFlightPlan {
     private setDestinationDefaults(airport: WayPoint): void {
         const referenceAltitude = (airport.infos as AirportInfo).elevation;
         if (referenceAltitude !== undefined) {
-            this.missedThrustReductionAltitudeDefault = referenceAltitude + parseInt(NXDataStore.get("CONFIG_THR_RED_ALT", "1500"));
-            this.missedAccelerationAltitudeDefault = referenceAltitude + parseInt(NXDataStore.get("CONFIG_ACCEL_ALT", "1500"));
-            this.missedEngineOutAccelerationAltitudeDefault = referenceAltitude + parseInt(NXDataStore.get("CONFIG_ENG_OUT_ACCEL_ALT", "1500"));
+            this.missedThrustReductionAltitudeDefault = referenceAltitude + parseInt(NXDataStore.get('CONFIG_THR_RED_ALT', '1500'));
+            this.missedAccelerationAltitudeDefault = referenceAltitude + parseInt(NXDataStore.get('CONFIG_ACCEL_ALT', '1500'));
+            this.missedEngineOutAccelerationAltitudeDefault = referenceAltitude + parseInt(NXDataStore.get('CONFIG_ENG_OUT_ACCEL_ALT', '1500'));
         } else {
             this.missedThrustReductionAltitudeDefault = undefined;
             this.missedAccelerationAltitudeDefault = undefined;
@@ -1903,7 +1903,7 @@ export class ManagedFlightPlan {
      * @returns true if a reduction occured
      */
     public reconcileThrustReductionWithConstraints(): boolean {
-        const lowestClimbConstraint = this.lowestClimbConstraint();
+        const lowestClimbConstraint = ManagedFlightPlan.round(this.lowestClimbConstraint(), 10);
         if (isFinite(lowestClimbConstraint) && this.thrustReductionAltitude > lowestClimbConstraint) {
             this.thrustReductionAltitudeDefault = this.thrustReductionAltitudeDefault !== undefined ? Math.min(this.thrustReductionAltitudeDefault, lowestClimbConstraint) : undefined;
             this.thrustReductionAltitudePilot = this.thrustReductionAltitudePilot !== undefined ? Math.min(this.thrustReductionAltitudePilot, lowestClimbConstraint) : undefined;
@@ -1918,7 +1918,7 @@ export class ManagedFlightPlan {
      * @returns true if a reduction occured
      */
     public reconcileAccelerationWithConstraints(): boolean {
-        const lowestClimbConstraint = this.lowestClimbConstraint();
+        const lowestClimbConstraint = ManagedFlightPlan.round(this.lowestClimbConstraint(), 10);
         if (isFinite(lowestClimbConstraint) && this.accelerationAltitude > lowestClimbConstraint) {
             this.accelerationAltitudeDefault = this.accelerationAltitudeDefault !== undefined ? Math.min(this.accelerationAltitudeDefault, lowestClimbConstraint) : undefined;
             this.accelerationAltitudePilot = this.accelerationAltitudePilot !== undefined ? Math.min(this.accelerationAltitudePilot, lowestClimbConstraint) : undefined;
@@ -1930,7 +1930,7 @@ export class ManagedFlightPlan {
 
     public addOrUpdateCruiseStep(waypoint: WayPoint, toAltitude: Feet, waypointIndex?: number): void {
         if (!waypointIndex) {
-            waypointIndex = this.findWaypointIndexByIdent(waypoint.ident)
+            waypointIndex = this.findWaypointIndexByIdent(waypoint.ident);
         }
 
         const step: CruiseStepEntry = {
@@ -1938,7 +1938,7 @@ export class ManagedFlightPlan {
             toAltitude,
             waypointIndex,
             isIgnored: false,
-        }
+        };
 
         // TODO: Handle optimum steps
         waypoint.additionalData.cruiseStep = step;
@@ -1949,7 +1949,7 @@ export class ManagedFlightPlan {
     }
 
     public findWaypointIndexByIdent(ident: string): number {
-        return this.waypoints.findIndex(waypoint => waypoint.ident === ident);
+        return this.waypoints.findIndex((waypoint) => waypoint.ident === ident);
     }
 
     public unignoreAllCruiseSteps(): void {

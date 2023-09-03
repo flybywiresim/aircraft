@@ -1,5 +1,9 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import React, { useEffect } from 'react';
-import { usePersistentNumberProperty } from '@instruments/common/persistence';
+import { usePersistentNumberProperty } from '@flybywiresim/fbw-sdk';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
 import { SettingItem, SettingsPage } from '../Settings';
 import { t } from '../../translation';

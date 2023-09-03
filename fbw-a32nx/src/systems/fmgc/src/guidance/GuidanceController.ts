@@ -12,7 +12,7 @@ import { EfisState } from '@fmgc/guidance/FmsState';
 import { EfisSide, EfisNdMode, rangeSettings } from '@shared/NavigationDisplay';
 import { TaskCategory, TaskQueue } from '@fmgc/guidance/TaskQueue';
 import { HMLeg } from '@fmgc/guidance/lnav/legs/HX';
-import { SimVarString } from '@shared/simvar';
+import { SimVarString } from '@flybywiresim/fbw-sdk';
 import { getFlightPhaseManager } from '@fmgc/flightphase';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vnav/VerticalProfileComputationParameters';

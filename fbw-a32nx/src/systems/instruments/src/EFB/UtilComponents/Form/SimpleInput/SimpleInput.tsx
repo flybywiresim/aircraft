@@ -1,6 +1,9 @@
-import { usePersistentNumberProperty } from '@instruments/common/persistence';
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
+import { usePersistentNumberProperty, getRootElement } from '@flybywiresim/fbw-sdk';
 import React, { useEffect, useRef, useState, PropsWithChildren } from 'react';
-import { getRootElement } from '@instruments/common/defaults';
 import { v4 as uuidv4 } from 'uuid';
 import { useAppDispatch } from '../../../Store/store';
 import { setOffsetY } from '../../../Store/features/keyboard';

@@ -59,11 +59,71 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
         (ElectricalBusType::DirectCurrentHot(2), 13),
         (ElectricalBusType::DirectCurrentGndFltService, 15),
     ])?
-    .with_auxiliary_power_unit(Variable::named("OVHD_APU_START_PB_IS_AVAILABLE"), 8)?
+    .with_auxiliary_power_unit(Variable::named("OVHD_APU_START_PB_IS_AVAILABLE"), 8, 7)?
     .with_failures(vec![
         (24_000, FailureType::TransformerRectifier(1)),
         (24_001, FailureType::TransformerRectifier(2)),
         (24_002, FailureType::TransformerRectifier(3)),
+        (24_004, FailureType::StaticInverter),
+        (24_020, FailureType::Generator(1)),
+        (24_021, FailureType::Generator(2)),
+        (24_030, FailureType::ApuGenerator(1)),
+        (
+            24_100,
+            FailureType::ElectricalBus(ElectricalBusType::AlternatingCurrent(1)),
+        ),
+        (
+            24_101,
+            FailureType::ElectricalBus(ElectricalBusType::AlternatingCurrent(2)),
+        ),
+        (
+            24_102,
+            FailureType::ElectricalBus(ElectricalBusType::AlternatingCurrentEssential),
+        ),
+        (
+            24_103,
+            FailureType::ElectricalBus(ElectricalBusType::AlternatingCurrentEssentialShed),
+        ),
+        (
+            24_104,
+            FailureType::ElectricalBus(ElectricalBusType::AlternatingCurrentStaticInverter),
+        ),
+        (
+            24_105,
+            FailureType::ElectricalBus(ElectricalBusType::AlternatingCurrentGndFltService),
+        ),
+        (
+            24_106,
+            FailureType::ElectricalBus(ElectricalBusType::DirectCurrent(1)),
+        ),
+        (
+            24_107,
+            FailureType::ElectricalBus(ElectricalBusType::DirectCurrent(2)),
+        ),
+        (
+            24_108,
+            FailureType::ElectricalBus(ElectricalBusType::DirectCurrentEssential),
+        ),
+        (
+            24_109,
+            FailureType::ElectricalBus(ElectricalBusType::DirectCurrentEssentialShed),
+        ),
+        (
+            24_110,
+            FailureType::ElectricalBus(ElectricalBusType::DirectCurrentBattery),
+        ),
+        (
+            24_111,
+            FailureType::ElectricalBus(ElectricalBusType::DirectCurrentHot(1)),
+        ),
+        (
+            24_112,
+            FailureType::ElectricalBus(ElectricalBusType::DirectCurrentHot(2)),
+        ),
+        (
+            24_113,
+            FailureType::ElectricalBus(ElectricalBusType::DirectCurrentGndFltService),
+        ),
         (29_000, FailureType::ReservoirLeak(HydraulicColor::Green)),
         (29_001, FailureType::ReservoirLeak(HydraulicColor::Blue)),
         (29_002, FailureType::ReservoirLeak(HydraulicColor::Yellow)),
@@ -196,6 +256,8 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("AIRSPEED MACH", "Mach", 0)?
     .provides_aircraft_variable("AIRSPEED TRUE", "Knots", 0)?
     .provides_aircraft_variable("AMBIENT DENSITY", "Slugs per cubic feet", 0)?
+    .provides_aircraft_variable("AMBIENT IN CLOUD", "Bool", 0)?
+    .provides_aircraft_variable("AMBIENT PRECIP RATE", "millimeters of water", 0)?
     .provides_aircraft_variable("AMBIENT PRESSURE", "inHg", 0)?
     .provides_aircraft_variable("AMBIENT TEMPERATURE", "celsius", 0)?
     .provides_aircraft_variable("AMBIENT WIND DIRECTION", "Degrees", 0)?
@@ -205,7 +267,12 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("AMBIENT WIND Z", "meter per second", 0)?
     .provides_aircraft_variable("ANTISKID BRAKES ACTIVE", "Bool", 0)?
     .provides_aircraft_variable("EXTERNAL POWER AVAILABLE", "Bool", 1)?
-    .provides_aircraft_variable("FUEL TANK LEFT MAIN QUANTITY", "Pounds", 0)?
+    .provides_aircraft_variable("FUEL TANK CENTER QUANTITY", "gallons", 0)?
+    .provides_aircraft_variable("FUEL TANK LEFT MAIN QUANTITY", "gallons", 0)?
+    .provides_aircraft_variable("FUEL TANK LEFT AUX QUANTITY", "gallons", 0)?
+    .provides_aircraft_variable("FUEL TANK RIGHT MAIN QUANTITY", "gallons", 0)?
+    .provides_aircraft_variable("FUEL TANK RIGHT AUX QUANTITY", "gallons", 0)?
+    .provides_aircraft_variable("FUEL TOTAL QUANTITY WEIGHT", "Pounds", 0)?
     .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 0)?
     .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 1)?
     .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 2)?

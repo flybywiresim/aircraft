@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
 import { FlightPathAngleStrategy } from '@fmgc/guidance/vnav/climb/ClimbStrategy';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
@@ -8,7 +12,7 @@ import { TemporaryCheckpointSequence } from '@fmgc/guidance/vnav/profile/Tempora
 import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vnav/VerticalProfileComputationParameters';
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 import { HeadwindProfile } from '@fmgc/guidance/vnav/wind/HeadwindProfile';
-import { MathUtils } from '@shared/MathUtils';
+import { MathUtils } from '@flybywiresim/fbw-sdk';
 
 export class GeometricPathBuilder {
     private flightPathAngleStrategy: FlightPathAngleStrategy;

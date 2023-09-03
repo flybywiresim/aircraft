@@ -14,8 +14,7 @@ import {
     Wifi,
     WifiOff,
 } from 'react-bootstrap-icons';
-import { usePersistentNumberProperty, usePersistentProperty } from '@instruments/common/persistence';
-import { useSimVar } from '@instruments/common/simVars';
+import { usePersistentNumberProperty, usePersistentProperty, useSimVar } from '@flybywiresim/fbw-sdk';
 import Slider from 'rc-slider';
 import { useHistory } from 'react-router-dom';
 import { useInterval } from '@flybywiresim/react-components';
@@ -173,10 +172,10 @@ export const QuickControlsPane = ({ setShowQuickControlsPane }: {setShowQuickCon
 
     return (
         <>
-            <div className="absolute top-0 left-0 z-30 w-screen h-screen opacity-70 bg-theme-body" onMouseDown={() => setShowQuickControlsPane(false)} />
+            <div className="absolute top-0 left-0 z-30 w-screen h-screen bg-theme-body opacity-70" onMouseDown={() => setShowQuickControlsPane(false)} />
 
             <div
-                className="absolute z-40 py-6 px-6 rounded-md border transition duration-100 bg-theme-accent border-theme-secondary"
+                className="absolute z-40 py-6 px-6 bg-theme-accent rounded-md border border-theme-secondary transition duration-100"
                 style={{ top: '40px', right: '50px', width: '620px' }}
             >
                 <div className="flex flex-row justify-end items-center mb-5">

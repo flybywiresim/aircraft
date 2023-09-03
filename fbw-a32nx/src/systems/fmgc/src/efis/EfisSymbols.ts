@@ -9,7 +9,7 @@ import { GuidanceManager } from '@fmgc/guidance/GuidanceManager';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { SegmentType } from '@fmgc/wtsdk';
-import { GenericDataListenerSync } from '@shared/GenericDataListenerSync';
+import { GenericDataListenerSync } from '@flybywiresim/fbw-sdk';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { NearbyFacilities } from '@fmgc/navigation/NearbyFacilities';
 import { NavaidTuner } from '@fmgc/navigation/NavaidTuner';
@@ -178,7 +178,8 @@ export class EfisSymbols {
                 if (DEBUG) {
                     console.time(`upsert symbol ${symbol.databaseId}`);
                 }
-                const symbolIdx = symbols.findIndex((s) => s.databaseId === symbol.databaseId);
+                // for symbols with no databaseId, we don't bother trying to de-duplicate as we cannot do it safely
+                const symbolIdx = symbol.databaseId ? symbols.findIndex((s) => s.databaseId === symbol.databaseId) : -1;
                 if (symbolIdx !== -1) {
                     const oldSymbol = symbols.splice(symbolIdx, 1)[0];
                     symbol.constraints = symbol.constraints ?? oldSymbol.constraints;
@@ -315,6 +316,7 @@ export class EfisSymbols {
             }
 
             const isInLatAutoControl = this.guidanceController.vnavDriver.isLatAutoControlActive();
+            const isNavArmedWithIntercept = this.guidanceController.vnavDriver.isLatAutoControlArmedWithIntercept();
             const waypointPredictions = this.guidanceController.vnavDriver.mcduProfile?.waypointPredictions;
             const isSelectedVerticalModeActive = this.guidanceController.vnavDriver.isSelectedVerticalModeActive();
             const flightPhase = getFlightPhaseManager().phase;
@@ -378,11 +380,11 @@ export class EfisSymbols {
                         direction = wp.additionalData.course;
                     }
 
-                    if (isInLatAutoControl && !isFromWp && wp.legAltitudeDescription > 0 && wp.legAltitudeDescription < 6) {
+                    if ((isInLatAutoControl || isNavArmedWithIntercept) && !isFromWp && wp.legAltitudeDescription > 0 && wp.legAltitudeDescription < 6) {
                         if (!isSelectedVerticalModeActive && shouldShowConstraintCircleInPhase(flightPhase, wp)) {
                             type |= NdSymbolTypeFlags.Constraint;
 
-                            const predictionAtWaypoint = waypointPredictions.get(i);
+                            const predictionAtWaypoint = waypointPredictions?.get(i);
                             if (predictionAtWaypoint?.isAltitudeConstraintMet) {
                                 type |= NdSymbolTypeFlags.MagentaColor;
                             } else if (predictionAtWaypoint) {
@@ -394,7 +396,7 @@ export class EfisSymbols {
                     }
 
                     if (efisOption === EfisOption.Constraints && !isFromWp) {
-                        const descent = wp.constraintType === WaypointConstraintType.DES;
+                        const descent = wp.additionalData.constraintType === WaypointConstraintType.DES;
                         switch (wp.legAltitudeDescription) {
                         case 1:
                             constraints.push(formatConstraintAlt(wp.legAltitude1, descent));
@@ -467,7 +469,7 @@ export class EfisSymbols {
                         databaseId: airport.icao,
                         ident: airport.ident,
                         location: airport.infos.coordinates,
-                        type: NdSymbolTypeFlags.Airport,
+                        type: NdSymbolTypeFlags.Airport | NdSymbolTypeFlags.FlightPlan,
                     });
                 }
             }
@@ -596,7 +598,7 @@ export class EfisSymbols {
 }
 
 const shouldShowConstraintCircleInPhase = (phase: FmgcFlightPhase, waypoint: WayPoint) => (
-    (phase === FmgcFlightPhase.Takeoff || phase === FmgcFlightPhase.Climb) && waypoint.additionalData.constraintType === WaypointConstraintType.CLB
+    (phase <= FmgcFlightPhase.Climb) && waypoint.additionalData.constraintType === WaypointConstraintType.CLB
 ) || (
     (phase === FmgcFlightPhase.Cruise || phase === FmgcFlightPhase.Descent || phase === FmgcFlightPhase.Approach) && waypoint.additionalData.constraintType === WaypointConstraintType.DES
 );

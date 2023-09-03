@@ -1,7 +1,7 @@
 use systems::{
     accept_iterable,
     air_conditioning::{
-        acs_controller::{AirConditioningSystemController, Pack, PackFlowController},
+        acs_controller::{AirConditioningSystemController, Pack},
         cabin_air::CabinAirSimulation,
         cabin_pressure_controller::CabinPressureController,
         pressure_valve::{OutflowValve, SafetyValve},
@@ -14,6 +14,7 @@ use systems::{
         AutoManFaultPushButton, NormalOnPushButton, OnOffFaultPushButton, OnOffPushButton,
         SpringLoadedSwitch, ValueKnob,
     },
+    payload::NumberOfPassengers,
     pneumatic::PneumaticContainer,
     shared::{
         random_number, update_iterator::MaxStepLoop, AverageExt, CabinAltitude, CabinSimulation,
@@ -33,7 +34,7 @@ use uom::si::{
     velocity::knot,
 };
 
-use crate::payload::{A320Pax, NumberOfPassengers};
+use crate::payload::A320Pax;
 
 pub(super) struct A320AirConditioning {
     a320_cabin: A320Cabin,
@@ -124,8 +125,11 @@ impl A320AirConditioning {
     }
 }
 
-impl PackFlowControllers<2> for A320AirConditioning {
-    fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<2> {
+impl PackFlowControllers for A320AirConditioning {
+    type PackFlowControllerSignal =
+        <A320AirConditioningSystem as PackFlowControllers>::PackFlowControllerSignal;
+
+    fn pack_flow_controller(&self, pack_id: usize) -> &Self::PackFlowControllerSignal {
         self.a320_air_conditioning_system
             .pack_flow_controller(pack_id)
     }
@@ -197,12 +201,12 @@ impl A320Cabin {
     }
 
     fn update_number_of_passengers(&mut self, number_of_passengers: &impl NumberOfPassengers) {
-        self.number_of_passengers[1] = (number_of_passengers.number_of_passengers(A320Pax::A)
-            + number_of_passengers.number_of_passengers(A320Pax::B))
-            as u8;
-        self.number_of_passengers[2] = (number_of_passengers.number_of_passengers(A320Pax::C)
-            + number_of_passengers.number_of_passengers(A320Pax::D))
-            as u8;
+        self.number_of_passengers[1] =
+            (number_of_passengers.number_of_passengers(A320Pax::A.into())
+                + number_of_passengers.number_of_passengers(A320Pax::B.into())) as u8;
+        self.number_of_passengers[2] =
+            (number_of_passengers.number_of_passengers(A320Pax::C.into())
+                + number_of_passengers.number_of_passengers(A320Pax::D.into())) as u8;
     }
 }
 
@@ -333,8 +337,11 @@ impl A320AirConditioningSystem {
     }
 }
 
-impl PackFlowControllers<2> for A320AirConditioningSystem {
-    fn pack_flow_controller(&self, pack_id: Pack) -> PackFlowController<2> {
+impl PackFlowControllers for A320AirConditioningSystem {
+    type PackFlowControllerSignal =
+        <AirConditioningSystemController<3, 2> as PackFlowControllers>::PackFlowControllerSignal;
+
+    fn pack_flow_controller(&self, pack_id: usize) -> &Self::PackFlowControllerSignal {
         self.acsc.pack_flow_controller(pack_id)
     }
 }
@@ -913,7 +920,7 @@ mod tests {
 
     struct TestPayload;
     impl NumberOfPassengers for TestPayload {
-        fn number_of_passengers(&self, _ps: A320Pax) -> i8 {
+        fn number_of_passengers(&self, _ps: usize) -> i8 {
             0
         }
     }
@@ -943,7 +950,7 @@ mod tests {
         fn update(
             &mut self,
             context: &UpdateContext,
-            pack_flow_valve_signals: &impl PackFlowControllers<2>,
+            pack_flow_valve_signals: &impl PackFlowControllers,
             engine_bleed: [&impl EngineCorrectedN1; 2],
         ) {
             self.engine_bleed
@@ -967,11 +974,8 @@ mod tests {
         }
     }
     impl EngineStartState for TestPneumatic {
-        fn left_engine_state(&self) -> EngineState {
-            self.fadec.engine_state(1)
-        }
-        fn right_engine_state(&self) -> EngineState {
-            self.fadec.engine_state(2)
+        fn engine_state(&self, engine_number: usize) -> EngineState {
+            self.fadec.engine_state(engine_number)
         }
         fn engine_mode_selector(&self) -> EngineModeSelector {
             self.fadec.engine_mode_selector()
@@ -979,10 +983,10 @@ mod tests {
     }
     impl PackFlowValveState for TestPneumatic {
         fn pack_flow_valve_is_open(&self, pack_id: usize) -> bool {
-            self.packs[pack_id].pfv_open_amount() > Ratio::default()
+            self.packs[pack_id - 1].pfv_open_amount() > Ratio::default()
         }
         fn pack_flow_valve_air_flow(&self, pack_id: usize) -> MassRate {
-            self.packs[pack_id].pack_flow_valve_air_flow()
+            self.packs[pack_id - 1].pack_flow_valve_air_flow()
         }
     }
     impl SimulationElement for TestPneumatic {
@@ -1108,10 +1112,10 @@ mod tests {
             &mut self,
             context: &UpdateContext,
             from: &mut impl PneumaticContainer,
-            pack_flow_valve_signals: &impl PackFlowControllers<2>,
+            pack_flow_valve_signals: &impl PackFlowControllers,
         ) {
             self.pack_flow_valve.update_open_amount(
-                &pack_flow_valve_signals.pack_flow_controller(self.engine_number.into()),
+                pack_flow_valve_signals.pack_flow_controller(self.engine_number),
             );
             self.pack_flow_valve
                 .update_move_fluid(context, from, &mut self.pack_container);

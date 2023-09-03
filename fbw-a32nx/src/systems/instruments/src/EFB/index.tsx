@@ -1,9 +1,12 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 /* eslint-disable max-len */
 import React, { useState, useEffect } from 'react';
 import { MemoryRouter as Router } from 'react-router-dom';
 import { customAlphabet } from 'nanoid';
-import { NXDataStore } from '@shared/persistence';
-import { usePersistentProperty } from '@instruments/common/persistence';
+import { NXDataStore, usePersistentProperty } from '@flybywiresim/fbw-sdk';
 import { Provider } from 'react-redux';
 import { render } from '@instruments/common/index';
 import { ErrorBoundary } from 'react-error-boundary';

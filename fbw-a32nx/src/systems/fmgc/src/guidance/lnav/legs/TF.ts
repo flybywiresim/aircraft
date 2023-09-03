@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { GuidanceParameters } from '@fmgc/guidance/ControlLaws';
-import { MathUtils } from '@shared/MathUtils';
+import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { SegmentType } from '@fmgc/wtsdk';
 import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
@@ -37,7 +37,7 @@ export class TFLeg extends XFLeg {
         this.from = from;
         this.to = to;
         this.segment = segment;
-        this.constraintType = to.constraintType;
+        this.constraintType = to.additionalData.constraintType;
         this.course = Avionics.Utils.computeGreatCircleHeading(
             this.from.infos.coordinates,
             this.to.infos.coordinates,

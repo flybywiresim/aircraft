@@ -6,6 +6,7 @@ mod elevators;
 mod flaps;
 mod gear;
 mod nose_wheel_steering;
+mod payload;
 mod rudder;
 mod spoilers;
 mod trimmable_horizontal_stabilizer;
@@ -19,6 +20,7 @@ use elevators::elevators;
 use flaps::flaps;
 use gear::gear;
 use nose_wheel_steering::nose_wheel_steering;
+use payload::payload;
 use rudder::rudder;
 use spoilers::spoilers;
 use std::error::Error;
@@ -58,11 +60,90 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
         (ElectricalBusType::DirectCurrentHot(4), 15),
         (ElectricalBusType::DirectCurrentGndFltService, 17),
     ])?
-    .with_auxiliary_power_unit(Variable::named("OVHD_APU_START_PB_IS_AVAILABLE"), 8)?
+    .with_auxiliary_power_unit(Variable::named("OVHD_APU_START_PB_IS_AVAILABLE"), 8, 7)?
     .with_failures(vec![
         (24_000, FailureType::TransformerRectifier(1)),
         (24_001, FailureType::TransformerRectifier(2)),
         (24_002, FailureType::TransformerRectifier(3)),
+        (24_004, FailureType::StaticInverter),
+        (24_020, FailureType::Generator(1)),
+        (24_021, FailureType::Generator(2)),
+        (24_022, FailureType::Generator(3)),
+        (24_023, FailureType::Generator(4)),
+        (24_030, FailureType::ApuGenerator(1)),
+        (24_031, FailureType::ApuGenerator(2)),
+        (
+            24_100,
+            FailureType::ElectricalBus(ElectricalBusType::AlternatingCurrent(1)),
+        ),
+        (
+            24_101,
+            FailureType::ElectricalBus(ElectricalBusType::AlternatingCurrent(2)),
+        ),
+        (
+            24_102,
+            FailureType::ElectricalBus(ElectricalBusType::AlternatingCurrent(3)),
+        ),
+        (
+            24_103,
+            FailureType::ElectricalBus(ElectricalBusType::AlternatingCurrent(4)),
+        ),
+        (
+            24_104,
+            FailureType::ElectricalBus(ElectricalBusType::AlternatingCurrentEssential),
+        ),
+        (
+            24_105,
+            FailureType::ElectricalBus(ElectricalBusType::AlternatingCurrentEssentialShed),
+        ),
+        (
+            24_106,
+            FailureType::ElectricalBus(ElectricalBusType::AlternatingCurrentNamed("247XP")),
+        ),
+        (
+            24_107,
+            FailureType::ElectricalBus(ElectricalBusType::AlternatingCurrentGndFltService),
+        ),
+        (
+            24_108,
+            FailureType::ElectricalBus(ElectricalBusType::DirectCurrent(1)),
+        ),
+        (
+            24_109,
+            FailureType::ElectricalBus(ElectricalBusType::DirectCurrent(2)),
+        ),
+        (
+            24_110,
+            FailureType::ElectricalBus(ElectricalBusType::DirectCurrentEssential),
+        ),
+        (
+            24_111,
+            FailureType::ElectricalBus(ElectricalBusType::DirectCurrentNamed("247PP")),
+        ),
+        (
+            24_112,
+            FailureType::ElectricalBus(ElectricalBusType::DirectCurrentNamed("309PP")),
+        ),
+        (
+            24_113,
+            FailureType::ElectricalBus(ElectricalBusType::DirectCurrentHot(1)),
+        ),
+        (
+            24_114,
+            FailureType::ElectricalBus(ElectricalBusType::DirectCurrentHot(2)),
+        ),
+        (
+            24_115,
+            FailureType::ElectricalBus(ElectricalBusType::DirectCurrentHot(3)),
+        ),
+        (
+            24_116,
+            FailureType::ElectricalBus(ElectricalBusType::DirectCurrentHot(4)),
+        ),
+        (
+            24_117,
+            FailureType::ElectricalBus(ElectricalBusType::DirectCurrentGndFltService),
+        ),
         (29_000, FailureType::ReservoirLeak(HydraulicColor::Green)),
         (29_001, FailureType::ReservoirLeak(HydraulicColor::Blue)),
         (29_002, FailureType::ReservoirLeak(HydraulicColor::Yellow)),
@@ -171,6 +252,8 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("AIRSPEED MACH", "Mach", 0)?
     .provides_aircraft_variable("AIRSPEED TRUE", "Knots", 0)?
     .provides_aircraft_variable("AMBIENT DENSITY", "Slugs per cubic feet", 0)?
+    .provides_aircraft_variable("AMBIENT IN CLOUD", "Bool", 0)?
+    .provides_aircraft_variable("AMBIENT PRECIP RATE", "millimeters of water", 0)?
     .provides_aircraft_variable("AMBIENT PRESSURE", "inHg", 0)?
     .provides_aircraft_variable("AMBIENT TEMPERATURE", "celsius", 0)?
     .provides_aircraft_variable("AMBIENT WIND DIRECTION", "Degrees", 0)?
@@ -180,7 +263,18 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("AMBIENT WIND Z", "meter per second", 0)?
     .provides_aircraft_variable("ANTISKID BRAKES ACTIVE", "Bool", 0)?
     .provides_aircraft_variable("EXTERNAL POWER AVAILABLE", "Bool", 1)?
-    .provides_aircraft_variable("FUEL TANK LEFT MAIN QUANTITY", "Pounds", 0)?
+    .provides_aircraft_variable("FUEL TOTAL QUANTITY WEIGHT", "Pounds", 0)?
+    .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 1)?
+    .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 2)?
+    .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 3)?
+    .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 4)?
+    .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 5)?
+    .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 6)?
+    .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 7)?
+    .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 8)?
+    .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 9)?
+    .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 10)?
+    .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 11)?
     .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 0)?
     .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 1)?
     .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 2)?
@@ -231,6 +325,24 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("ROTATION VELOCITY BODY X", "degree per second", 0)?
     .provides_aircraft_variable("ROTATION VELOCITY BODY Y", "degree per second", 0)?
     .provides_aircraft_variable("ROTATION VELOCITY BODY Z", "degree per second", 0)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 1)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 2)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 3)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 4)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 5)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 6)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 7)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 8)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 9)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 10)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 11)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 12)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 13)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 14)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 15)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 16)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 17)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 18)?
     .with_aspect(|builder| {
         for i in 1..=2 {
             builder.copy(
@@ -272,6 +384,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .with_aspect(elevators)?
     .with_aspect(rudder)?
     .with_aspect(gear)?
+    .with_aspect(payload)?
     .with_aspect(trimmable_horizontal_stabilizer)?
     .build(A380::new)?;
 
