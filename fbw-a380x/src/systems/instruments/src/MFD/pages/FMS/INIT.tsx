@@ -92,14 +92,10 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
         // Update internal subjects for display purposes or input fields
         if (this.loadedFlightPlan.originAirport) {
             this.fromIcao.set(this.loadedFlightPlan.originAirport.ident);
-        } else {
-            this.fromIcao.set('');
         }
 
         if (this.loadedFlightPlan.destinationAirport) {
             this.toIcao.set(this.loadedFlightPlan.destinationAirport.ident);
-        } else {
-            this.toIcao.set('');
         }
 
         if (this.loadedFlightPlan.alternateDestinationAirport) {
@@ -109,7 +105,6 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
         }
 
         if (this.loadedFlightPlan.performanceData.cruiseFlightLevel) {
-            console.log(`crz: ${this.loadedFlightPlan.performanceData.cruiseFlightLevel.get()}`);
             this.crzFl.set(this.loadedFlightPlan.performanceData.cruiseFlightLevel.get());
         }
 
@@ -210,7 +205,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                             dataEntryFormat={new AirportFormat()}
                             dataHandlerDuringValidation={async (v) => {
                                 this.toIcao.set(v);
-                                if (this.fromIcao.get() && v) {
+                                if (this.fromIcao.get() !== undefined && v) {
                                     await this.props.fmService.flightPlanService.newCityPair(this.fromIcao.get(), v, this.altnIcao.get());
                                 }
                             }}

@@ -124,9 +124,9 @@ export class MfdFmsPositionIrs extends FmsPage<MfdFmsPositionIrsProps> {
 
         const sub = this.props.bus.getSubscriber<ClockEvents & MfdSimvars>();
 
-        sub.on('adirs1MaintWord').handle((w) => this.ir1MaintWord.setWord(w));
-        sub.on('adirs2MaintWord').handle((w) => this.ir2MaintWord.setWord(w));
-        sub.on('adirs3MaintWord').handle((w) => this.ir3MaintWord.setWord(w));
+        this.subs.push(sub.on('adirs1MaintWord').handle((w) => this.ir1MaintWord.setWord(w)));
+        this.subs.push(sub.on('adirs2MaintWord').handle((w) => this.ir2MaintWord.setWord(w)));
+        this.subs.push(sub.on('adirs3MaintWord').handle((w) => this.ir3MaintWord.setWord(w)));
 
         this.subs.push(this.showIrsDataFor.sub((v) => this.changeIrsData(v), true));
 
@@ -152,9 +152,9 @@ export class MfdFmsPositionIrs extends FmsPage<MfdFmsPositionIrsProps> {
         this.subs.push(this.ir2MaintWord.sub((v) => this.setIrsStatusColumns(2, v, this.irs2Status, this.irs2SecondColumn, this.irs2ThirdColumn), true));
         this.subs.push(this.ir3MaintWord.sub((v) => this.setIrsStatusColumns(3, v, this.irs3Status, this.irs3SecondColumn, this.irs3ThirdColumn), true));
 
-        sub.on('realTime').atFrequency(1).handle((_t) => {
+        this.subs.push(sub.on('realTime').atFrequency(1).handle((_t) => {
             this.updateIrsData();
-        });
+        }));
 
         this.setHdgDivRef.instance.style.visibility = 'hidden';
     }
@@ -165,7 +165,6 @@ export class MfdFmsPositionIrs extends FmsPage<MfdFmsPositionIrsProps> {
         if (ir !== IrsDataFor.NONE) {
             const lat = Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_IR_${ir}_LATITUDE`);
             const long = Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_IR_${ir}_LONGITUDE`);
-            console.warn(this.props.fmService.navigationProvider.getPpos());
 
             this.irsDataPosition.set(coordinateToString({ lat: lat.value, long: long.value }, false));
             this.irsDataTrueTrack.set(Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_IR_${ir}_TRUE_TRACK`).value.toFixed(1));
@@ -175,7 +174,7 @@ export class MfdFmsPositionIrs extends FmsPage<MfdFmsPositionIrsProps> {
             this.irsDataTrueHeading.set(Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_IR_${ir}_TRUE_HEADING`).value.toFixed(1));
             this.irsDataMagneticHeading.set(Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_IR_${ir}_HEADING`).value.toFixed(1));
 
-            const magVar = Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_IR_${ir}_TRUE_HEADING`).value - Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_IR_${ir}_HEADING`).value;
+            const magVar = Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_IR_${ir}_HEADING`).value - Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_IR_${ir}_TRUE_HEADING`).value;
             this.irsDataMagneticVariation.set(Math.abs(magVar).toFixed(1));
             this.irsDataMagneticVariationUnit.set(magVar < 0 ? '°W' : '°E');
             this.irsDataGpirsPosition.set(coordinateToString(this.props.fmService.navigationProvider.getPpos(), false));

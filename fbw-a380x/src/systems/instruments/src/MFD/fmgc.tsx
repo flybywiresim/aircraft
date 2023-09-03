@@ -54,11 +54,11 @@ export class FmgcData {
 
     public readonly atcCallsign = Subject.create<string>('----------');
 
-    public readonly zeroFuelWeight = Subject.create<number>(55_000); // in kg
+    public readonly zeroFuelWeight = Subject.create<number>(undefined); // in kg
 
-    public readonly zeroFuelWeightCenterOfGravity = Subject.create<number>(23.5); // in percent
+    public readonly zeroFuelWeightCenterOfGravity = Subject.create<number>(undefined); // in percent
 
-    public readonly blockFuel = Subject.create<number>(5_000); // in kg
+    public readonly blockFuel = Subject.create<number>(undefined); // in kg
 
     public readonly taxiFuel = Subject.create<number>(undefined); // in kg
 
@@ -123,17 +123,17 @@ export class FmgcData {
 
     public readonly tropopauseIsPilotEntered = this.tropopausePilotEntry.map((it) => it !== undefined);
 
-    public readonly costIndex = Subject.create<number>(50);
+    public readonly costIndex = Subject.create<number>(undefined);
 
     public readonly takeoffFlapsSetting = Subject.create<FlapConf>(FlapConf.CONF_1);
 
-    public readonly approachSpeed = Subject.create<Knots>(136);
+    public readonly approachSpeed = Subject.create<Knots>(undefined);
 
     public readonly approachWind = Subject.create<FmcWindVector>({ direction: 0, speed: 0 });
 
-    public readonly approachQnh = Subject.create<number>(1013);
+    public readonly approachQnh = Subject.create<number>(undefined);
 
-    public readonly approachTemperature = Subject.create<number>(15);
+    public readonly approachTemperature = Subject.create<number>(undefined);
 
     public readonly flapRetractionSpeed = Subject.create<Knots>(141);
 
@@ -221,6 +221,13 @@ export class FmgcDataInterface implements Fmgc {
     constructor(
         private flightPlanService: FlightPlanService,
     ) {
+    }
+
+    updateFromSimVars() {
+        /* this.data.cleanSpeed.set(SimVar.GetSimVarValue('L:A32NX_SPEEDS_GD', 'number'));
+        this.data.flapRetractionSpeed.set(SimVar.GetSimVarValue('L:A32NX_SPEEDS_F', 'number'));
+        this.data.slatRetractionSpeed.set(SimVar.GetSimVarValue('L:A32NX_SPEEDS_S', 'number'));
+        this.data.approachVls.set(SimVar.GetSimVarValue('L:A32NX_SPEEDS_VLS', 'number')); */
     }
 
     getZeroFuelWeight(): number {

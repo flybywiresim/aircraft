@@ -155,7 +155,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
         this.flightPlanService.createFlightPlans();
 
         // Intialize from MSFS flight data
-        this.flightPlanService.active.performanceData.cruiseFlightLevel.set(SimVar.GetGameVarValue('AIRCRAFT CRUISE ALTITUDE', 'feet'));
+        // this.flightPlanService.active.performanceData.cruiseFlightLevel.set(SimVar.GetGameVarValue('AIRCRAFT CRUISE ALTITUDE', 'feet'));
 
         // Build EGLL/27R N0411F250 MAXI1F MAXIT DCT HARDY UM605 BIBAX BIBA9X LFPG/09L
         /* await this.flightPlanService.newCityPair('EGLL', 'LFPG', 'EBBR');
@@ -220,6 +220,12 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
         SimVar.SetSimVarValue('L:AIRLINER_V1_SPEED', 'Knots', NaN);
         SimVar.SetSimVarValue('L:AIRLINER_V2_SPEED', 'Knots', NaN);
         SimVar.SetSimVarValue('L:AIRLINER_VR_SPEED', 'Knots', NaN);
+
+        const gpsDriven = SimVar.GetSimVarValue('GPS DRIVES NAV1', 'Bool');
+        if (!gpsDriven) {
+            SimVar.SetSimVarValue('K:TOGGLE_GPS_DRIVES_NAV1', 'Bool', 0);
+        }
+        SimVar.SetSimVarValue('K:VS_SLOT_INDEX_SET', 'number', 1);
     }
 
     /**
@@ -308,11 +314,14 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
          * @returns the chosen item
          */
     async deduplicateFacilities<T extends DatabaseItem<any>>(items: T[]): Promise<T | undefined> {
-        this.duplicateNamesOpened.set(true);
-        const result = await this.duplicateNamesRef.instance.deduplicateFacilities(items);
-        this.duplicateNamesOpened.set(false);
+        if (items.length > 1) {
+            this.duplicateNamesOpened.set(true);
+            const result = await this.duplicateNamesRef.instance.deduplicateFacilities(items);
+            this.duplicateNamesOpened.set(false);
 
-        return result;
+            return result;
+        }
+        return items[0];
     }
 
     /**
@@ -383,6 +392,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
             this.navaidTuner.update(dt);
             this.efisSymbols.update(dt);
             this.guidanceController.update(dt);
+            this.fmgc.updateFromSimVars();
 
             lastUpdateTime = now;
         }, 100);
@@ -408,7 +418,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
         });
 
         // Navigate to initial page
-        this.uiService.navigateTo('fms/position/irs');
+        this.uiService.navigateTo('fms/active/init');
     }
 
     private activeUriChanged(uri: ActiveUriInformation) {

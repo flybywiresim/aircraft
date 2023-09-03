@@ -105,7 +105,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
 
         const sub = this.props.bus.getSubscriber<ClockEvents & MfdSimvars>();
 
-        sub.on('realTime').atFrequency(1).handle((_t) => {
+        this.subs.push(sub.on('realTime').atFrequency(1).handle((_t) => {
             const gw: number = SimVar.GetSimVarValue('TOTAL WEIGHT', 'pounds') * 0.453592 / 1_000;
             this.grossWeight.set(gw.toFixed(1));
 
@@ -114,7 +114,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
 
             const fob = SimVar.GetSimVarValue('FUEL TOTAL QUANTITY', 'gallons') * SimVar.GetSimVarValue('FUEL WEIGHT PER GALLON', 'kilograms') / 1_000;
             this.fuelOnBoard.set(fob.toFixed(1));
-        });
+        }));
     }
 
     render(): VNode {

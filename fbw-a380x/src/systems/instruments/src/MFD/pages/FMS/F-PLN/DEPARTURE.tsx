@@ -62,7 +62,7 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
             if (this.loadedFlightPlan.originRunway) {
                 this.rwyIdent.set(this.loadedFlightPlan.originRunway.ident.substring(2));
                 this.rwyLength.set(this.loadedFlightPlan.originRunway.length.toFixed(0) ?? '----');
-                this.rwyCrs.set(this.loadedFlightPlan.originRunway.bearing.toFixed(0) ?? '---');
+                this.rwyCrs.set(this.loadedFlightPlan.originRunway.bearing.toFixed(0).padStart(3, '0') ?? '---');
                 this.rwyEoSid.set('NONE');
                 this.rwyFreq.set(this.loadedFlightPlan.originRunway.lsFrequencyChannel.toFixed(2) ?? '---.--');
 

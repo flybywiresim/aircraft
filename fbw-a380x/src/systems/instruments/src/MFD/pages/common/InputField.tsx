@@ -188,9 +188,11 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
     }
 
     public onFocus() {
-        if (this.isValidating.get() === false && this.props.disabled.get() === false) {
-            Coherent.trigger('FOCUS_INPUT_FIELD');
+        console.warn('focus 1');
+        if (this.isFocused.get() === false && this.isValidating.get() === false && this.props.disabled.get() === false) {
+            console.warn('focus 1');
             this.isFocused.set(true);
+            Coherent.trigger('FOCUS_INPUT_FIELD');
             this.textInputRef.getOrDefault().classList.add('valueSelected');
             this.textInputRef.getOrDefault().classList.add('editing');
             if (this.props.mandatory.get() === true) {
@@ -203,9 +205,11 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
     }
 
     public async onBlur(validateAndUpdate: boolean = true) {
+        console.warn('blur 1');
         if (this.props.disabled.get() === false && this.isFocused.get() === true) {
-            Coherent.trigger('UNFOCUS_INPUT_FIELD');
+            console.warn('blur 2');
             this.isFocused.set(false);
+            Coherent.trigger('UNFOCUS_INPUT_FIELD');
             this.textInputRef.getOrDefault().classList.remove('valueSelected');
             this.caretRef.getOrDefault().style.display = 'none';
             this.updateDisplayElement();

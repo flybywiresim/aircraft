@@ -74,7 +74,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
             if (this.loadedFlightPlan.destinationRunway) {
                 this.rwyIdent.set(this.loadedFlightPlan.destinationRunway.ident.substring(2));
                 this.rwyLength.set(this.loadedFlightPlan.destinationRunway.length.toFixed(0) ?? '----');
-                this.rwyCrs.set(this.loadedFlightPlan.destinationRunway.bearing.toFixed(0) ?? '---');
+                this.rwyCrs.set(this.loadedFlightPlan.destinationRunway.bearing.toFixed(0).padStart(3, '0') ?? '---');
             } else {
                 this.rwyIdent.set('---');
                 this.rwyLength.set('----');
