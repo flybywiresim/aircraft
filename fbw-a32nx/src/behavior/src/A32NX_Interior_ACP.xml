@@ -453,36 +453,17 @@
                 <USE_SIMVAR_FOR_BUTTON_ANIM>False</USE_SIMVAR_FOR_BUTTON_ANIM>
                 <USE_SIMVAR_FOR_KNOB_ANIM>False</USE_SIMVAR_FOR_KNOB_ANIM>
                 <CENTER_RADIUS>0.002</CENTER_RADIUS>
-                <KNOB_ANIM_CODE>(L:A32NX_ACP#ID#_#FREQ_ID#_VOLUME, number)</KNOB_ANIM_CODE>
-                <CLOCKWISE_CODE type="rnp">
-                    let increment = #VOLUME_INCREMENT, number#;
-
-                    if !(L:A32NX_ACP#ID#_#FREQ_ID#_KNOB_VOLUME_DOWN, bool) {
-                        increment = #VOLUME_INCREMENT_HARD, number#;
-                    }
-
-                    alias var = (L:A32NX_ACP#ID#_#FREQ_ID#_VOLUME, number);
-                    var = (var + increment).min(100);
-
-                    (L:A32NX_UPDATE_COMMS) = 1;
+                <KNOB_ANIM_CODE>(L:A32NX_ACP#ID#_#FREQ_ID#_VOLUME)</KNOB_ANIM_CODE>
+                <CLOCKWISE_CODE>
+                    (L:A32NX_ACP#ID#_#FREQ_ID#_VOLUME) #VOLUME_INCREMENT# + 100 min (&gt;L:A32NX_ACP#ID#_#FREQ_ID#_VOLUME)
                 </CLOCKWISE_CODE>
-                <ANTICLOCKWISE_CODE type="rnp">
-                    let increment = #VOLUME_INCREMENT, number#;
-
-                    if !(L:A32NX_ACP#ID#_#FREQ_ID#_KNOB_VOLUME_DOWN, bool) {
-                        increment = #VOLUME_INCREMENT_HARD, number#;
-                    }
-
-                    alias var = (L:A32NX_ACP#ID#_#FREQ_ID#_VOLUME, number);
-                    var = (var - increment).max(0);
-
-                    (L:A32NX_UPDATE_COMMS) = 1;
+                <ANTICLOCKWISE_CODE>
+                    (L:A32NX_ACP#ID#_#FREQ_ID#_VOLUME) #VOLUME_INCREMENT# - 0 max (&gt;L:A32NX_ACP#ID#_#FREQ_ID#_VOLUME)
                 </ANTICLOCKWISE_CODE>
-                <ANIM_CODE_SWITCH>(L:A32NX_ACP#ID#_#FREQ_ID#_KNOB_VOLUME_DOWN, number) 100 *</ANIM_CODE_SWITCH>
+                <ANIM_CODE_SWITCH>(L:A32NX_ACP#ID#_#FREQ_ID#_KNOB_VOLUME_DOWN) 100 *</ANIM_CODE_SWITCH>
                 <ANIM_NAME_PUSH>#ANIM_NAME_SWITCH#</ANIM_NAME_PUSH>
-                <LEFT_SINGLE_CODE type="rnp">
-                    (L:A32NX_ACP#ID#_#FREQ_ID#_KNOB_VOLUME_DOWN, bool) = !(L:A32NX_ACP#ID#_#FREQ_ID#_KNOB_VOLUME_DOWN, bool);
-                    (L:A32NX_UPDATE_COMMS) = 1;
+                <LEFT_SINGLE_CODE>
+                    (L:A32NX_ACP#ID#_#FREQ_ID#_KNOB_VOLUME_DOWN) ! (&gt;L:A32NX_ACP#ID#_#FREQ_ID#_KNOB_VOLUME_DOWN)
                 </LEFT_SINGLE_CODE>
                 <WWISE_EVENT></WWISE_EVENT>
                 <WWISE_EVENT_1>mcdubuttons</WWISE_EVENT_1>
