@@ -6,6 +6,7 @@ mod elevators;
 mod flaps;
 mod gear;
 mod nose_wheel_steering;
+mod payload;
 mod rudder;
 mod spoilers;
 mod trimmable_horizontal_stabilizer;
@@ -19,6 +20,7 @@ use elevators::elevators;
 use flaps::flaps;
 use gear::gear;
 use nose_wheel_steering::nose_wheel_steering;
+use payload::payload;
 use rudder::rudder;
 use spoilers::spoilers;
 use std::error::Error;
@@ -261,7 +263,18 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("AMBIENT WIND Z", "meter per second", 0)?
     .provides_aircraft_variable("ANTISKID BRAKES ACTIVE", "Bool", 0)?
     .provides_aircraft_variable("EXTERNAL POWER AVAILABLE", "Bool", 1)?
-    .provides_aircraft_variable("FUEL TANK LEFT MAIN QUANTITY", "Pounds", 0)?
+    .provides_aircraft_variable("FUEL TOTAL QUANTITY WEIGHT", "Pounds", 0)?
+    .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 1)?
+    .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 2)?
+    .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 3)?
+    .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 4)?
+    .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 5)?
+    .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 6)?
+    .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 7)?
+    .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 8)?
+    .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 9)?
+    .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 10)?
+    .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 11)?
     .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 0)?
     .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 1)?
     .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 2)?
@@ -312,6 +325,24 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("ROTATION VELOCITY BODY X", "degree per second", 0)?
     .provides_aircraft_variable("ROTATION VELOCITY BODY Y", "degree per second", 0)?
     .provides_aircraft_variable("ROTATION VELOCITY BODY Z", "degree per second", 0)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 1)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 2)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 3)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 4)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 5)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 6)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 7)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 8)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 9)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 10)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 11)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 12)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 13)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 14)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 15)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 16)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 17)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 18)?
     .with_aspect(|builder| {
         for i in 1..=2 {
             builder.copy(
@@ -353,6 +384,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .with_aspect(elevators)?
     .with_aspect(rudder)?
     .with_aspect(gear)?
+    .with_aspect(payload)?
     .with_aspect(trimmable_horizontal_stabilizer)?
     .build(A380::new)?;
 
