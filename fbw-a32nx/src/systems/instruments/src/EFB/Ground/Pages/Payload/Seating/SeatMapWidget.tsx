@@ -217,7 +217,7 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
         if (selectedStation !== -1 && selectedSeat !== -1) {
             onClickSeat(selectedStation, selectedSeat);
         }
-    }, [ctx, isMainDeck]);
+    }, [ctx, ...activeFlags, ...desiredFlags, isMainDeck]);
 
     useCanvasEvent(canvasRef.current, 'click', mouseEvent);
 
