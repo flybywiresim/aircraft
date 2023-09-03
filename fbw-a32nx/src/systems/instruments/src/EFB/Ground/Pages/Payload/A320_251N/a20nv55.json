@@ -491,7 +491,7 @@
             "weight": 2110,
             "stationIndex": 7,
             "position": -34.1,
-            "progressBarWidth": 100,
+            "progressBarWidth": 75,
             "simVar": "A32NX_CARGO_AFT_BAGGAGE"
         },
         {
@@ -499,7 +499,7 @@
             "weight": 1497,
             "stationIndex": 8,
             "position": -42.4,
-            "progressBarWidth": 100,
+            "progressBarWidth": 75,
             "simVar": "A32NX_CARGO_AFT_BULK_LOOSE"
         }
     ],
