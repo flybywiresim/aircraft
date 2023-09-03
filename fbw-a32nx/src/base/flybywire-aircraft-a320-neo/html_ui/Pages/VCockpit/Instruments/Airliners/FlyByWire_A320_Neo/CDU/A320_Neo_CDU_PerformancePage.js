@@ -377,8 +377,9 @@ class CDUPerformancePage {
             }
         };
         const isPhaseActive = mcdu.flightPhaseManager.phase === FmgcFlightPhases.CLIMB;
+        const isTakeoffOrClimbActive = isPhaseActive || (mcdu.flightPhaseManager.phase === FmgcFlightPhases.TAKEOFF);
         const titleColor = isPhaseActive ? "green" : "white";
-        const isSelected = Simplane.getAutoPilotAirspeedSelected() || mcdu.preSelectedClbSpeed !== undefined;
+        const isSelected = Simplane.getAutoPilotAirspeedSelected() || (!isPhaseActive && mcdu.preSelectedClbSpeed !== undefined);
         const actModeCell = isSelected ? "SELECTED" : "MANAGED";
         const costIndexCell = mcdu.costIndexSet && Number.isFinite(mcdu.costIndex) ? `${mcdu.costIndex.toFixed(0)}[color]cyan` : '[][color]cyan';
         const canClickManagedSpeed = mcdu.preSelectedClbSpeed !== undefined && !isPhaseActive;
@@ -388,23 +389,20 @@ class CDUPerformancePage {
 
         const cruiseAltitude = mcdu.cruiseFlightLevel * 100;
         const fcuAltitude = SimVar.GetSimVarValue("AUTOPILOT ALTITUDE LOCK VAR:3", "feet");
-        const altitudeToPredict = Math.min(cruiseAltitude, fcuAltitude);
+        const altitudeToPredict = mcdu.perfClbPredToAltitudePilot !== undefined ? mcdu.perfClbPredToAltitudePilot : Math.min(cruiseAltitude, fcuAltitude);
 
-        const predToCell = `${CDUPerformancePage.formatAltitudeOrLevel(altitudeToPredict, mcdu.flightPlanManager.getOriginTransitionAltitude())}[color]cyan`;
+        const predToLabel = isTakeoffOrClimbActive ? "\xa0\xa0\xa0\xa0\xa0{small}PRED TO{end}" : "";
+        const predToCell = isTakeoffOrClimbActive ? `${CDUPerformancePage.formatAltitudeOrLevel(altitudeToPredict, mcdu.flightPlanManager.getOriginTransitionAltitude())}[color]cyan` : "";
 
-        let predToDistanceCell = "---";
-        let predToTimeCell = "----";
+        let predToDistanceCell = "";
+        let predToTimeCell = "";
 
-        let expeditePredToDistanceCell = "---";
-        let expeditePredToTimeCell = "----";
+        let expeditePredToDistanceCell = "";
+        let expeditePredToTimeCell = "";
 
-        if (vnavDriver) {
-            [predToDistanceCell, predToTimeCell] = CDUPerformancePage.getTimeAndDistancePredictionsFromGeometryProfile(vnavDriver.mcduProfile, altitudeToPredict, mcdu.flightPhaseManager.phase >= FmgcFlightPhases.TAKEOFF);
-
-            if (isPhaseActive) {
-                const expediteProfile = vnavDriver.expediteProfile;
-                [expeditePredToDistanceCell, expeditePredToTimeCell] = CDUPerformancePage.getTimeAndDistancePredictionsFromGeometryProfile(expediteProfile, altitudeToPredict, mcdu.flightPhaseManager.phase >= FmgcFlightPhases.TAKEOFF, true);
-            }
+        if (isTakeoffOrClimbActive && vnavDriver) {
+            [predToDistanceCell, predToTimeCell] = CDUPerformancePage.getTimeAndDistancePredictionsFromGeometryProfile(vnavDriver.ndProfile, altitudeToPredict, true);
+            [expeditePredToDistanceCell, expeditePredToTimeCell] = CDUPerformancePage.getTimeAndDistancePredictionsFromGeometryProfile(vnavDriver.expediteProfile, altitudeToPredict, true, true);
         }
 
         let managedSpeedCell = '';
@@ -435,6 +433,7 @@ class CDUPerformancePage {
                 scratchpadCallback();
             }
         };
+
         if (canClickManagedSpeed) {
             mcdu.onLeftInput[2] = (_, scratchpadCallback) => {
                 if (mcdu.trySetPreSelectedClimbSpeed(FMCMainDisplay.clrValue)) {
@@ -444,7 +443,19 @@ class CDUPerformancePage {
                 scratchpadCallback();
             };
         }
-        const timeLabel = mcdu.flightPhaseManager.phase >= FmgcFlightPhases.TAKEOFF ? 'UTC' : 'TIME';
+
+        if (isTakeoffOrClimbActive) {
+            mcdu.onRightInput[1] = (value, scratchpadCallback) => {
+                if (mcdu.trySetPerfClbPredToAltitude(value)) {
+                    CDUPerformancePage.ShowCLBPage(mcdu);
+                } else {
+                    scratchpadCallback();
+                }
+            }
+        }
+
+        const [toUtcLabel, toDistLabel] = isTakeoffOrClimbActive ? ["\xa0UTC", "DIST"] : ["", ""];
+
         const bottomRowLabels = ['\xa0PREV', 'NEXT\xa0'];
         const bottomRowCells = ['<PHASE', 'PHASE>'];
         mcdu.leftInputDelay[5] = () => mcdu.getDelaySwitchPage();
@@ -475,12 +486,12 @@ class CDUPerformancePage {
             CDUPerformancePage.ShowCRZPage(mcdu);
         };
         mcdu.setTemplate([
-            [`CLB[color]${titleColor}`],
+            [`\xa0CLB[color]${titleColor}`],
             ["ACT MODE"],
             [`${actModeCell}[color]green`],
             ["CI"],
-            [`${costIndexCell}[color]cyan`, predToCell, "\xa0\xa0\xa0{small}PRED TO{end}"],
-            ["MANAGED", "DIST", timeLabel],
+            [`${costIndexCell}[color]cyan`, predToCell, predToLabel],
+            ["MANAGED", toDistLabel, toUtcLabel],
             [`\xa0${managedSpeedCell}[color]green`, !isSelected ? predToDistanceCell : "", !isSelected ? predToTimeCell : ""],
             [`${selectedSpeedTitle}`],
             [`${selectedSpeedCell}`, isSelected ? predToDistanceCell : "", isSelected ? predToTimeCell : ""],
@@ -508,7 +519,7 @@ class CDUPerformancePage {
         };
         const isPhaseActive = mcdu.flightPhaseManager.phase === FmgcFlightPhases.CRUISE;
         const titleColor = isPhaseActive ? "green" : "white";
-        const isSelected = Simplane.getAutoPilotAirspeedSelected() || mcdu.preSelectedCrzSpeed !== undefined;
+        const isSelected = Simplane.getAutoPilotAirspeedSelected() || (!isPhaseActive && mcdu.preSelectedCrzSpeed !== undefined);
         const isFlying = mcdu.flightPhaseManager.phase >= FmgcFlightPhases.TAKEOFF;
         const actModeCell = isSelected ? "SELECTED" : "MANAGED";
         const costIndexCell = mcdu.costIndexSet && Number.isFinite(mcdu.costIndex) ? `${mcdu.costIndex.toFixed(0)}[color]cyan` : "[][color]cyan";
@@ -535,12 +546,11 @@ class CDUPerformancePage {
                 scratchpadCallback();
             }
         };
-        let timeLabel = 'TIME';
-        if (isFlying) {
-            timeLabel = 'UTC';
-        }
+
+        const timeLabel = isFlying ? '\xa0UTC' : 'TIME';
+
         const [destEfobCell, destTimeCell] = CDUPerformancePage.formatDestEfobAndTime(mcdu, isFlying);
-        const [toUtcLabel, toDistLabel] = isFlying ? ["UTC", "DIST"] : ["", ""];
+        const [toUtcLabel, toDistLabel] = isFlying ? ["\xa0UTC", "DIST"] : ["", ""];
         const [toReasonCell, toDistCell, toTimeCell] = isFlying ? CDUPerformancePage.formatToReasonDistanceAndTime(mcdu) : ["", "", ""];
         const desCabinRateCell = "{small}-350{end}";
         const shouldShowStepAltsOption = mcdu._cruiseEntered && mcdu._cruiseFlightLevel
@@ -605,7 +615,7 @@ class CDUPerformancePage {
             CDUPerformancePage.ShowDESPage(mcdu);
         };
         mcdu.setTemplate([
-            [`CRZ[color]${titleColor}`],
+            [`\xa0CRZ[color]${titleColor}`],
             ["ACT MODE", "DEST EFOB", timeLabel],
             [`${actModeCell}[color]green`, destEfobCell, destTimeCell],
             ["CI"],
@@ -642,9 +652,24 @@ class CDUPerformancePage {
         const isSelected = Simplane.getAutoPilotAirspeedSelected();
         const actModeCell = isSelected ? "SELECTED" : "MANAGED";
 
+        // Predictions to altitude
+        const vnavDriver = mcdu.guidanceController.vnavDriver;
+        const fcuAltitude = SimVar.GetSimVarValue("AUTOPILOT ALTITUDE LOCK VAR:3", "feet");
+        const altitudeToPredict = mcdu.perfDesPredToAltitudePilot !== undefined ? mcdu.perfDesPredToAltitudePilot : fcuAltitude;
+
+        const predToLabel = isPhaseActive ? "\xa0\xa0\xa0\xa0\xa0{small}PRED TO{end}" : "";
+        const predToCell = isPhaseActive ? `${CDUPerformancePage.formatAltitudeOrLevel(altitudeToPredict, mcdu.flightPlanManager.getDestinationTransitionLevel() * 100)}[color]cyan` : "";
+
+        let predToDistanceCell = "";
+        let predToTimeCell = "";
+
+        if (isPhaseActive && vnavDriver) {
+            [predToDistanceCell, predToTimeCell] = CDUPerformancePage.getTimeAndDistancePredictionsFromGeometryProfile(vnavDriver.ndProfile, altitudeToPredict, false);
+        }
+
         let costIndexCell = "[][color]cyan";
         if (mcdu.costIndexSet && Number.isFinite(mcdu.costIndex)) {
-            costIndexCell =  `${mcdu.costIndex.toFixed(0)}${isPhaseActive ? "[color]green" : "[color]cyan"}`;
+            costIndexCell = `${mcdu.costIndex.toFixed(0)}${isPhaseActive ? "[color]green" : "[color]cyan"}`;
         }
 
         const econDesPilotEntered = mcdu.managedSpeedDescendPilot !== undefined;
@@ -656,16 +681,22 @@ class CDUPerformancePage {
 
         // The way the arguments are supplied here is a hack to display the correct things
         const [selectedSpeedTitle, selectedSpeedCell] = CDUPerformancePage.getSelectedTitleAndValue(true, isPhaseActive && isSelected, 0);
-        let timeLabel = "TIME";
-        if (isFlying) {
-            timeLabel = "UTC";
-        }
+        const timeLabel = isFlying ? "\xa0UTC" : "TIME";
         const [destEfobCell, destTimeCell] = CDUPerformancePage.formatDestEfobAndTime(mcdu, isFlying);
+        const [toUtcLabel, toDistLabel] = isPhaseActive ? ["\xa0UTC", "DIST"] : ["", ""];
 
         const bottomRowLabels = ["\xa0PREV", "NEXT\xa0"];
         const bottomRowCells = ["<PHASE", "PHASE>"];
         mcdu.leftInputDelay[5] = () => mcdu.getDelaySwitchPage();
         if (isPhaseActive) {
+            mcdu.onRightInput[1] = (value, scratchpadCallback) => {
+                if (mcdu.trySetPerfDesPredToAltitude(value)) {
+                    CDUPerformancePage.ShowDESPage(mcdu);
+                } else {
+                    scratchpadCallback();
+                }
+            }
+
             if (confirmAppr) {
                 bottomRowLabels[0] = "\xa0CONFIRM[color]amber";
                 bottomRowCells[0] = "*APPR PHASE[color]amber";
@@ -686,13 +717,16 @@ class CDUPerformancePage {
                 CDUPerformancePage.ShowCRZPage(mcdu);
             };
         }
-        mcdu.onLeftInput[1] = (value, scratchpadCallback) => {
-            if (mcdu.tryUpdateCostIndex(value)) {
-                CDUPerformancePage.ShowDESPage(mcdu);
-            } else {
-                scratchpadCallback();
-            }
-        };
+        // Can only modify cost index until the phase is active
+        if (mcdu.costIndexSet && Number.isFinite(mcdu.costIndex) && !isPhaseActive) {
+            mcdu.onLeftInput[1] = (value, scratchpadCallback) => {
+                if (mcdu.tryUpdateCostIndex(value)) {
+                    CDUPerformancePage.ShowDESPage(mcdu);
+                } else {
+                    scratchpadCallback();
+                }
+            };
+        }
         mcdu.onLeftInput[2] = (value, scratchpadCallback) => {
             if (mcdu.trySetManagedDescentSpeed(value)) {
                 CDUPerformancePage.ShowDESPage(mcdu);
@@ -705,15 +739,15 @@ class CDUPerformancePage {
             CDUPerformancePage.ShowAPPRPage(mcdu);
         };
         mcdu.setTemplate([
-            [`DES[color]${titleColor}`],
+            [`\xa0DES[color]${titleColor}`],
             ["ACT MODE", "DEST EFOB", timeLabel],
             [`${actModeCell}[color]green`, destEfobCell, destTimeCell],
             ["CI"],
-            [costIndexCell],
-            ["MANAGED"],
-            [`\xa0${managedDescentSpeedCell}[color]cyan`],
+            [costIndexCell, predToCell, predToLabel],
+            ["MANAGED", toDistLabel, toUtcLabel],
+            [`\xa0${managedDescentSpeedCell}[color]cyan`, !isSelected ? predToDistanceCell : "", !isSelected ? predToTimeCell : ""],
             [`\xa0${selectedSpeedTitle}`],
-            [`\xa0${selectedSpeedCell}`],
+            [`\xa0${selectedSpeedCell}`, isSelected ? predToDistanceCell : "", isSelected ? predToTimeCell : ""],
             [""],
             [""],
             bottomRowLabels,
@@ -1058,7 +1092,7 @@ class CDUPerformancePage {
     static getSelectedTitleAndValue(_isPhaseActive, _isSelected, _preSel) {
         if (_isPhaseActive) {
             return _isSelected
-                ? ["SELECTED", "" + Math.round(Simplane.getAutoPilotMachModeActive()
+                ? ["SELECTED", "\xa0" + Math.round(Simplane.getAutoPilotMachModeActive()
                     ? SimVar.GetGameVarValue('FROM MACH TO KIAS', 'number', Simplane.getAutoPilotMachHoldValue())
                     : Simplane.getAutoPilotAirspeedHoldValue()) + "[color]green"]
                 : ["", ""];
@@ -1073,7 +1107,8 @@ class CDUPerformancePage {
 
         return (10 * Math.round(altitudeToFormat / 10)).toFixed(0).toString().padStart(5,"\xa0");
     }
-    static getTimeAndDistancePredictionsFromGeometryProfile(geometryProfile, altitudeToPredict, isFlying, printSmall = false) {
+
+    static getTimeAndDistancePredictionsFromGeometryProfile(geometryProfile, altitudeToPredict, isClimbVsDescent, printSmall = false) {
         let predToDistanceCell = "---";
         let predToTimeCell = "----";
 
@@ -1081,7 +1116,10 @@ class CDUPerformancePage {
             return [predToTimeCell, predToDistanceCell];
         }
 
-        const predictions = geometryProfile.computePredictionToFcuAltitude(altitudeToPredict);
+        const predictions = isClimbVsDescent
+            ? geometryProfile.computeClimbPredictionToAltitude(altitudeToPredict)
+            : geometryProfile.computeDescentPredictionToAltitude(altitudeToPredict);
+
 
         if (predictions) {
             if (Number.isFinite(predictions.distanceFromStart)) {
@@ -1094,10 +1132,7 @@ class CDUPerformancePage {
 
             if (Number.isFinite(predictions.secondsFromPresent)) {
                 const utcTime = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
-
-                const predToTimeCellText = isFlying
-                    ? FMCMainDisplay.secondsToUTC(utcTime + predictions.secondsFromPresent)
-                    : FMCMainDisplay.minutesTohhmm(predictions.secondsFromPresent);
+                const predToTimeCellText = FMCMainDisplay.secondsToUTC(utcTime + predictions.secondsFromPresent)
 
                 if (printSmall) {
                     predToTimeCell = "{small}" + predToTimeCellText + "{end}[color]green";
@@ -1109,6 +1144,7 @@ class CDUPerformancePage {
 
         return [predToDistanceCell, predToTimeCell];
     }
+
     static formatDestEfobAndTime(mcdu, isFlying) {
         const destinationPrediction = mcdu.guidanceController.vnavDriver.getDestinationPrediction();
 
@@ -1133,6 +1169,7 @@ class CDUPerformancePage {
 
         return [destEfobCell, destTimeCell];
     }
+
     static formatToReasonDistanceAndTime(mcdu) {
         const toPrediction = mcdu.guidanceController.vnavDriver.getPerfCrzToPrediction();
 
@@ -1148,7 +1185,7 @@ class CDUPerformancePage {
             if (Number.isFinite(toPrediction.secondsFromPresent)) {
                 const utcTime = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
 
-                timeCell = FMCMainDisplay.secondsToUTC(utcTime + toPrediction.secondsFromPresent) + "\xa0[color]green";
+                timeCell = FMCMainDisplay.secondsToUTC(utcTime + toPrediction.secondsFromPresent) + "[color]green";
             }
 
             if (toPrediction.reason === "StepClimb") {

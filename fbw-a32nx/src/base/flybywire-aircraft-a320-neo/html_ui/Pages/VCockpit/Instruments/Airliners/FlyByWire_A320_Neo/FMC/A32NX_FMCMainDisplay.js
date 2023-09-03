@@ -156,6 +156,8 @@ class FMCMainDisplay extends BaseAirliners {
         /** Speed in KCAS when the first engine failed during takeoff */
         this.takeoffEngineOutSpeed = undefined;
         this.checkSpeedModeMessageActive = undefined;
+        this.perfClbPredToAltitudePilot = undefined;
+        this.perfDesPredToAltitudePilot = undefined;
 
         // ATSU data
         this.atsu = undefined;
@@ -510,6 +512,8 @@ class FMCMainDisplay extends BaseAirliners {
         this.vSpeedDisagree = false;
         this.takeoffEngineOutSpeed = undefined;
         this.checkSpeedModeMessageActive = false;
+        this.perfClbPredToAltitudePilot = undefined;
+        this.perfDesPredToAltitudePilot = undefined;
 
         this.onAirport = () => {};
 
@@ -617,6 +621,7 @@ class FMCMainDisplay extends BaseAirliners {
             this.updateTransitionAltitudeLevel();
             this.updateMinimums();
             this.updateIlsCourse();
+            this.updatePerfPageAltPredictions();
         }
 
         this.A32NXCore.update();
@@ -5135,6 +5140,77 @@ class FMCMainDisplay extends BaseAirliners {
         }
 
         return false;
+    }
+
+    trySetPerfClbPredToAltitude(value) {
+        if (value === FMCMainDisplay.clrValue) {
+            this.perfClbPredToAltitudePilot = undefined;
+            return true;
+        }
+
+        const currentAlt = SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet');
+        const match = value.match(/^(FL\d{3}|\d{1,5})$/);
+        if (match === null || match.length < 1) {
+            this.setScratchpadMessage(NXSystemMessages.formatError);
+            return false;
+        }
+
+        const altOrFlString = match[1].replace("FL", "");
+        const altitude = altOrFlString.length < 4 ? 100 * parseInt(altOrFlString) : parseInt(altOrFlString);
+
+        if (!Number.isFinite(altitude)) {
+            this.setScratchpadMessage(NXSystemMessages.formatError);
+            return false;
+        }
+
+        if (altitude < currentAlt || (this._cruiseEntered && altitude > this.cruiseFlightLevel * 100)) {
+            this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+            return false;
+        }
+
+        this.perfClbPredToAltitudePilot = altitude;
+        return true;
+    }
+
+    trySetPerfDesPredToAltitude(value) {
+        if (value === FMCMainDisplay.clrValue) {
+            this.perfDesPredToAltitudePilot = undefined;
+            return true;
+        }
+
+        const currentAlt = SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet');
+        const match = value.match(/^(FL\d{3}|\d{1,5})$/);
+        if (match === null || match.length < 1) {
+            this.setScratchpadMessage(NXSystemMessages.formatError);
+            return false;
+        }
+
+        const altOrFlString = match[1].replace("FL", "");
+        const altitude = altOrFlString.length < 4 ? 100 * parseInt(altOrFlString) : parseInt(altOrFlString);
+
+        if (!Number.isFinite(altitude)) {
+            this.setScratchpadMessage(NXSystemMessages.formatError);
+            return false;
+        }
+
+        if (altitude > currentAlt) {
+            this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+            return false;
+        }
+
+        this.perfDesPredToAltitudePilot = altitude;
+        return true;
+    }
+
+    updatePerfPageAltPredictions() {
+        const currentAlt = SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet');
+        if (this.perfClbPredToAltitudePilot !== undefined && currentAlt > this.perfClbPredToAltitudePilot) {
+            this.perfClbPredToAltitudePilot = undefined;
+        }
+
+        if (this.perfDesPredToAltitudePilot !== undefined && currentAlt < this.perfDesPredToAltitudePilot) {
+            this.perfDesPredToAltitudePilot = undefined;
+        }
     }
 }
 
