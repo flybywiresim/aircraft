@@ -234,7 +234,7 @@ impl A320Payload {
     }
 
     fn target_cargo_center_of_gravity(&self) -> Vector3<f64> {
-        let total_target_cargo_load = self.total_target_passenger_load().get::<kilogram>();
+        let total_target_cargo_load = self.total_target_cargo_load().get::<kilogram>();
         if total_target_cargo_load > 0. {
             self.total_target_cargo_moment() / total_target_cargo_load
         } else {
