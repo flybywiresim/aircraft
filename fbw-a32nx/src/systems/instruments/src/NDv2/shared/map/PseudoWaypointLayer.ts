@@ -19,8 +19,6 @@ const LEVEL_OFF_CLIMB_PATH = new Path2D('M -42 16.2 l 19.8 -16.2 h 22.2 m -4.2 -
 const START_OF_DESCENT_PATH = new Path2D('M 0 0 h 22.2 l 19.8 16.2 m -6 0 h 6 v -6');
 const LEVEL_OFF_DESCENT_PATH = new Path2D('M -42 -16.2 l 19.8 16.2 h 22.2 m -4.2 -4.2 l 4.2 4.2 l -4.2 4.2');
 const INTERCEPT_PROFILE_PATH = new Path2D('M -38, 0 l 14, -17 v 34 l 14 -17 h10 m -5 -5 l 5 5 l -5 5');
-const COURSE_REVERSAL_ARC_PATH_LEFT = new Path2D('M 0, 0 a 21, 21 0 0 0 -42, 0');
-const COURSE_REVERSAL_ARC_PATH_RIGHT = new Path2D('M 0, 0 a 21, 21 0 0  1 42, 0');
 
 export class PseudoWaypointLayer implements MapLayer<NdSymbol> {
     data: NdSymbol[] = [];
@@ -52,13 +50,13 @@ export class PseudoWaypointLayer implements MapLayer<NdSymbol> {
                 context.translate(384, 620);
                 context.rotate(rotate * Math.PI / 180);
 
-                this.paintPseudoWaypoint(false, context, 0, -dy, symbol, mapParameters);
+                this.paintPseudoWaypoint(false, context, 0, -dy, symbol);
             } else {
                 const [x, y] = mapParameters.coordinatesToXYy(symbol.location);
                 const rx = x + mapWidth / 2;
                 const ry = y + mapHeight / 2;
 
-                this.paintPseudoWaypoint(false, context, rx, ry, symbol, mapParameters);
+                this.paintPseudoWaypoint(false, context, rx, ry, symbol);
             }
             this.lastUpdateTime = Date.now();
         }
@@ -73,19 +71,19 @@ export class PseudoWaypointLayer implements MapLayer<NdSymbol> {
                 context.translate(384, 620);
                 context.rotate(rotate * Math.PI / 180);
 
-                this.paintPseudoWaypoint(true, context, 0, -dy, symbol, mapParameters);
+                this.paintPseudoWaypoint(true, context, 0, -dy, symbol);
             } else {
                 const [x, y] = mapParameters.coordinatesToXYy(symbol.location);
                 const rx = x + mapWidth / 2;
                 const ry = y + mapHeight / 2;
 
-                this.paintPseudoWaypoint(true, context, rx, ry, symbol, mapParameters);
+                this.paintPseudoWaypoint(true, context, rx, ry, symbol);
             }
         }
         this.lastUpdateTime = Date.now();
     }
 
-    private paintPseudoWaypoint(isColorLayer: boolean, context: CanvasRenderingContext2D, x: number, y: number, symbol: NdSymbol, mapParameters: MapParameters) {
+    private paintPseudoWaypoint(isColorLayer: boolean, context: CanvasRenderingContext2D, x: number, y: number, symbol: NdSymbol) {
         const color = isColorLayer ? typeFlagToColor(symbol.type) : '#000';
         context.strokeStyle = color;
 
@@ -111,24 +109,7 @@ export class PseudoWaypointLayer implements MapLayer<NdSymbol> {
             context.fillStyle = color;
             context.strokeStyle = 'none';
             this.paintSpeedChange(context, x, y);
-        } else if (symbol.type & (NdSymbolTypeFlags.CourseReversalLeft | NdSymbolTypeFlags.CourseReversalRight)) {
-            this.paintCourseReversal(context, x, y, mapParameters, symbol);
         }
-    }
-
-    private paintCourseReversal(context: CanvasRenderingContext2D, x: number, y: number, mapParams: MapParameters, symbol: NdSymbol) {
-        const left = symbol.type & (NdSymbolTypeFlags.CourseReversalLeft);
-        const arcEnd = left ? -42 : 42;
-        context.translate(x, y);
-        context.beginPath();
-        context.moveTo(arcEnd, 0);
-        context.lineTo(arcEnd - 4, -4);
-        context.moveTo(arcEnd, 0);
-        context.lineTo(arcEnd + 4, -4);
-        context.stroke();
-        context.stroke(left ? COURSE_REVERSAL_ARC_PATH_LEFT : COURSE_REVERSAL_ARC_PATH_RIGHT);
-        context.closePath();
-        context.resetTransform();
     }
 
     private paintPath(context: CanvasRenderingContext2D, x: number, y: number, path: Path2D) {

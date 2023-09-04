@@ -178,7 +178,8 @@ export class EfisSymbols {
                 if (DEBUG) {
                     console.time(`upsert symbol ${symbol.databaseId}`);
                 }
-                const symbolIdx = symbols.findIndex((s) => s.databaseId === symbol.databaseId);
+                // for symbols with no databaseId, we don't bother trying to de-duplicate as we cannot do it safely
+                const symbolIdx = symbol.databaseId ? symbols.findIndex((s) => s.databaseId === symbol.databaseId) : -1;
                 if (symbolIdx !== -1) {
                     const oldSymbol = symbols.splice(symbolIdx, 1)[0];
                     symbol.constraints = symbol.constraints ?? oldSymbol.constraints;
@@ -395,7 +396,7 @@ export class EfisSymbols {
                     }
 
                     if (efisOption === EfisOption.Constraints && !isFromWp) {
-                        const descent = wp.constraintType === WaypointConstraintType.DES;
+                        const descent = wp.additionalData.constraintType === WaypointConstraintType.DES;
                         switch (wp.legAltitudeDescription) {
                         case 1:
                             constraints.push(formatConstraintAlt(wp.legAltitude1, descent));
@@ -468,7 +469,7 @@ export class EfisSymbols {
                         databaseId: airport.icao,
                         ident: airport.ident,
                         location: airport.infos.coordinates,
-                        type: NdSymbolTypeFlags.Airport,
+                        type: NdSymbolTypeFlags.Airport | NdSymbolTypeFlags.FlightPlan,
                     });
                 }
             }
