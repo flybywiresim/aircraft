@@ -17,10 +17,10 @@ interface BleedGaugeProps {
 
 const BleedGauge: FC<BleedGaugeProps> = ({ x, y, engine, sdacDatum, packFlowValveOpen }) => {
     // TODO
-    // Pack precpper outlet temp, pack inlet flow rate, pack bypass valve and pack outlet temp should be revised once the packs are modelled
-
+    // Pack precooler outlet temp, pack inlet flow rate, pack bypass valve and pack outlet temp should be revised once the packs are modelled
     const [precoolerOutletTemp] = useSimVar(`L:A32NX_PNEU_ENG_${engine}_BLEED_TEMPERATURE_SENSOR_TEMPERATURE`, 'celsius', 500);
     const compressorOutletTemp = Math.round(precoolerOutletTemp / 5) * 5;
+    const compressorOutletTempAmber = compressorOutletTemp > 260;
     const isPrecoolerOutletTempValid = precoolerOutletTemp > -100;
 
     const [packInletFlowPercentage] = useSimVar(`L:A32NX_COND_PACK_FLOW_${engine}`, 'percent', 500);
@@ -82,7 +82,7 @@ const BleedGauge: FC<BleedGaugeProps> = ({ x, y, engine, sdacDatum, packFlowValv
 
             {/* Compressor Outlet Temp */}
             <text
-                className={`Large End ${compressorOutletTemp > 230 || !sdacDatum || !isPrecoolerOutletTempValid ? 'Amber' : 'Green'}`}
+                className={`Large End ${compressorOutletTempAmber || !sdacDatum || !isPrecoolerOutletTempValid ? 'Amber' : 'Green'}`}
                 x={sdacDatum ? x + 15 : x + 12}
                 y={y - 47}
             >
