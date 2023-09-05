@@ -397,7 +397,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
             lastUpdateTime = now;
         }, 100);
 
-        const isCaptainSide = getDisplayIndex() === 1;
+        const isCaptainSide = getDisplayIndex() === 2;
 
         this.activeFmsSource.set(isCaptainSide ? 'FMS 1' : 'FMS 2');
 

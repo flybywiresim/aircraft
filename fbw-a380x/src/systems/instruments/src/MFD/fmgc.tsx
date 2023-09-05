@@ -276,7 +276,7 @@ export class FmgcDataInterface implements Fmgc {
     }
 
     getFlightPhase(): FmgcFlightPhase {
-        return SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Enum');
+        return SimVar.GetSimVarValue('L:A32NX_FMGC_FLIGHT_PHASE', 'Enum');
     }
 
     getManagedCruiseSpeed(): Knots {

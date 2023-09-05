@@ -354,7 +354,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             this.thrRedAlt.set(pd.pilotThrustReductionAltitude.get());
         }
 
-        this.activeFlightPhase.set(SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Enum'));
+        this.activeFlightPhase.set(SimVar.GetSimVarValue('L:A32NX_FMGC_FLIGHT_PHASE', 'Enum'));
 
         if (this.loadedFlightPlan.originRunway) {
             this.originRunwayIdent.set(this.loadedFlightPlan.originRunway.ident.replace('RW', '').padEnd(4, ' '));
