@@ -1,6 +1,6 @@
 mod acp;
 mod amu;
-pub mod receivers;
+mod receivers;
 mod rmp;
 
 use crate::simulation::{
