@@ -61,8 +61,6 @@ export const useSeatFlags = (
             const newValue = SimVar.GetSimVarValue(name, 'number');
 
             if (newValue !== stateValue) {
-                console.log('SETTING FUN', newValue, stateValue);
-
                 setStateValue(newValue);
                 // TODO: Refactor to recycle object instead of generating new object
                 // setter(new SeatFlags(newValue, totalSeats));
@@ -79,12 +77,9 @@ export const useSeatFlags = (
         // console.log(`[SetSimVarValue] ${name} => ${value.toString()}`);
         SimVar.SetSimVarValue(name, 'string', value.toString()).catch(console.error).then();
         setStateValue(value.toNumber());
-        // setSeatFlags(seatFlags);
-        // seatFlags.setFlags(value.toNumber());
     }, [name, totalSeats, stateValue]);
 
     return [
-        // TODO: Refactor to recycle object instead of generating new object
         seatFlags,
         setter,
     ];
