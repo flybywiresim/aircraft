@@ -1,6 +1,7 @@
 /* eslint-disable function-paren-newline */
-import { useCallback, useRef, useState } from 'react';
 import { BitFlags, SeatFlags } from '@flybywiresim/fbw-sdk';
+import { useCallback, useMemo, useRef, useState } from 'react';
+import { useSimVarList } from './simVars';
 import { useUpdate } from './hooks';
 
 export const useBitFlags = (
@@ -81,5 +82,77 @@ export const useSeatFlags = (
         // TODO: Refactor to recycle object instead of generating new object
         new SeatFlags(stateValue, totalSeats),
         setter,
+    ];
+};
+
+export const useSeatMap = (
+    Loadsheet: any,
+) : [
+        SeatFlags[],
+        SeatFlags[],
+        ((setter: SeatFlags, index: number) => void),
+        ((setter: SeatFlags, index: number) => void),
+    ] => {
+    const [
+        desiredVarNames, desiredVarUnits,
+        activeVarNames, activeVarUnits,
+    ] = useMemo(() => {
+        const desiredNames: string[] = [];
+        const desiredUnits: string[] = [];
+        const activeNames: string[] = [];
+        const activeUnits: string[] = [];
+        Loadsheet.seatMap.forEach((station) => {
+            desiredNames.push(`L:${station.bitFlags}_DESIRED`);
+            desiredUnits.push('number');
+            activeNames.push(`L:${station.bitFlags}`);
+            activeUnits.push('number');
+        });
+        return [desiredNames, desiredUnits, activeNames, activeUnits];
+    }, [Loadsheet]);
+
+    const [desiredBitVars] = useSimVarList(desiredVarNames, desiredVarUnits);
+    const [activeBitVars] = useSimVarList(activeVarNames, activeVarUnits);
+
+    const setActiveFlags = useCallback((value: SeatFlags, index: number) => {
+        SimVar.SetSimVarValue(`L:${Loadsheet.seatMap[index].bitFlags}`, 'string', value.toString()).catch(console.error).then();
+    }, [Loadsheet]);
+
+    const setDesiredFlags = useCallback((value: SeatFlags, index: number) => {
+        SimVar.SetSimVarValue(`L:${Loadsheet.seatMap[index].bitFlags}_DESIRED`, 'string', value.toString()).catch(console.error).then();
+    }, [Loadsheet]);
+
+    const desiredFlags = useMemo(() => {
+        const flags: SeatFlags[] = [];
+        Loadsheet.seatMap.forEach((station, index) => {
+            let stationSize = 0;
+            station.rows.forEach((row) => {
+                row.seats.forEach(() => {
+                    stationSize++;
+                });
+            });
+            flags[index] = new SeatFlags(desiredBitVars[index], stationSize);
+        });
+        return flags;
+    }, [desiredBitVars, ...desiredBitVars]);
+
+    const activeFlags = useMemo(() => {
+        const flags: SeatFlags[] = [];
+        Loadsheet.seatMap.forEach((station, index) => {
+            let stationSize = 0;
+            station.rows.forEach((row) => {
+                row.seats.forEach(() => {
+                    stationSize++;
+                });
+            });
+            flags[index] = new SeatFlags(activeBitVars[index], stationSize);
+        });
+        return flags;
+    }, [activeBitVars, ...activeBitVars]);
+
+    return [
+        desiredFlags,
+        activeFlags,
+        setDesiredFlags,
+        setActiveFlags,
     ];
 };
