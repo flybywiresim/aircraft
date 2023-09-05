@@ -8,12 +8,14 @@
 pub mod macros;
 
 pub mod air_conditioning;
+pub mod airframe;
 pub mod apu;
 pub mod communications;
 pub mod electrical;
 pub mod engine;
 pub mod enhanced_gpwc;
 pub mod failures;
+pub mod fuel;
 pub mod hydraulic;
 pub mod icing_state;
 pub mod indicating_recording;
