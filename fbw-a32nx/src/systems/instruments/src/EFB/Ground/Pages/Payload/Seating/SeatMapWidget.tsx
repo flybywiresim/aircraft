@@ -37,7 +37,6 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
 
     useEffect(() => {
         draw();
-        //  }, [JSON.stringify(seatMap), JSON.stringify(desiredFlags), JSON.stringify(activeFlags), canvasX, canvasY]);
     }, [seatMap, desiredFlags, activeFlags, canvasX, canvasY]);
 
     const seatEmptyImg = useRef(getImageFromComponent(<Seat fill="none" stroke={theme[0]} opacity="1.0" />));
@@ -97,11 +96,9 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
         return yOff;
     }, [ctx]);
 
-    const draw = useMemo(() => () => {
+    const draw = () => {
         const currDeck = isMainDeck ? 0 : 1;
         if (ctx) {
-            console.log('DRAW');
-
             ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
             ctx.fillStyle = '#fff';
             ctx.beginPath();
@@ -121,9 +118,9 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
             }
             ctx.fill();
         }
-    }, [ctx, ...activeFlags, ...desiredFlags]);
+    };
 
-    const drawRow = useMemo(() => (x: number, deck: number, station: number, rowI: number, rowInfo: RowInfo, seatId: number) => {
+    const drawRow = (x: number, deck: number, station: number, rowI: number, rowInfo: RowInfo, seatId: number) => {
         const seatsInfo: SeatInfo[] = rowInfo.seats;
         for (let seat = 0, yOff = 0; seat < seatsInfo.length; seat++) {
             yOff = addYOffsetSeat(yOff, station, rowI, seat);
@@ -134,9 +131,9 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
             setXYMap(xYMap);
             drawSeat(x, yOff, seatsInfo[seat].type, SeatConstants[seatsInfo[seat].type].imageX, SeatConstants[seatsInfo[seat].type].imageY, station, seatId++);
         }
-    }, [ctx, ...activeFlags, ...desiredFlags]);
+    };
 
-    const drawSeat = useMemo(() => (x: number, y: number, seatType: number, imageX: number, imageY: number, station: number, seatId: number) => {
+    const drawSeat = (x: number, y: number, seatType: number, imageX: number, imageY: number, station: number, seatId: number) => {
         switch (seatType) {
         case SeatType.WidebodyBusinessFlatLeft:
             if (ctx && bizLeftSeatEmptyImg && bizLeftSeatMinusImg && bizLeftSeatAddImg && bizLeftSeatFilledImg) {
@@ -204,7 +201,7 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
             }
             break;
         }
-    }, [ctx, ...desiredFlags, ...activeFlags]);
+    };
 
     const mouseEvent = useMemo(() => (e) => {
         let selectedStation = -1;
@@ -229,39 +226,25 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
     useCanvasEvent(canvasRef.current, 'click', mouseEvent);
 
     useEffect(() => {
-        setCtx(canvasRef.current.getContext('2d'));
+        const context = canvasRef.current.getContext('2d');
+
         const width = CanvasConst.width;
         const height = CanvasConst.height;
         let ratio = 1;
         ratio = window.devicePixelRatio;
         canvasRef.current.width = width * ratio;
         canvasRef.current.height = height * ratio;
-        ctx?.scale(ratio, ratio);
+        context.scale(ratio, ratio);
+        setCtx(context);
     }, []);
 
     useEffect(() => {
-        const canvas = canvasRef.current;
-        let frameId;
-
-        if (!canvas) {
-            return undefined;
-        }
-        draw();
-
-        /*   const render = () => {
-            draw();
-            // workaround for rendering bug
-            if (!frameId || frameId < 10) {
-                frameId = window.requestAnimationFrame(render);
-            }
-        };
-        render();
-        return () => {
-            if (frameId) {
-                window.cancelAnimationFrame(frameId);
-            }
-        }; */
+        setTimeout(() => draw(), 10);
     }, [ctx]);
+
+    useEffect(() => {
+        draw();
+    }, [seatMap, desiredFlags, activeFlags, canvasX, canvasY]);
 
     const distSquared = useMemo(() => (x1: number, y1: number, x2: number, y2: number): number => {
         const diffX = x1 - x2;
