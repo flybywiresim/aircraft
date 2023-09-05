@@ -50,7 +50,7 @@ export const useSeatFlags = (
     const lastUpdate = useRef(Date.now() - refreshInterval - 1);
 
     const [stateValue, setStateValue] = useState<number>(() => SimVar.GetSimVarValue(name, 'number'));
-    // const [seatFlags] = useState<SeatFlags>(() => new SeatFlags(stateValue, totalSeats));
+    const [seatFlags, setSeatFlags] = useState<SeatFlags>(() => new SeatFlags(stateValue, totalSeats));
 
     const updateCallback = useCallback(() => {
         const delta = Date.now() - lastUpdate.current;
@@ -59,13 +59,17 @@ export const useSeatFlags = (
             lastUpdate.current = Date.now();
 
             const newValue = SimVar.GetSimVarValue(name, 'number');
+
             if (newValue !== stateValue) {
+                console.log('SETTING FUN', newValue, stateValue);
+
                 setStateValue(newValue);
                 // TODO: Refactor to recycle object instead of generating new object
-                setter(new SeatFlags(newValue, totalSeats));
+                // setter(new SeatFlags(newValue, totalSeats));
+                setSeatFlags(new SeatFlags(newValue, totalSeats));
             }
         }
-    }, [name, stateValue, refreshInterval]);
+    }, [name, refreshInterval, totalSeats, seatFlags]);
 
     useUpdate(updateCallback);
 
@@ -75,12 +79,13 @@ export const useSeatFlags = (
         // console.log(`[SetSimVarValue] ${name} => ${value.toString()}`);
         SimVar.SetSimVarValue(name, 'string', value.toString()).catch(console.error).then();
         setStateValue(value.toNumber());
+        // setSeatFlags(seatFlags);
         // seatFlags.setFlags(value.toNumber());
-    }, [name, stateValue]);
+    }, [name, totalSeats, stateValue]);
 
     return [
         // TODO: Refactor to recycle object instead of generating new object
-        new SeatFlags(stateValue, totalSeats),
+        seatFlags,
         setter,
     ];
 };

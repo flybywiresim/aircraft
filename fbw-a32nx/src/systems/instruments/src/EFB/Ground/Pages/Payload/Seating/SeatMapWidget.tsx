@@ -35,6 +35,11 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
         return imageElement;
     }, []);
 
+    useEffect(() => {
+        draw();
+        //  }, [JSON.stringify(seatMap), JSON.stringify(desiredFlags), JSON.stringify(activeFlags), canvasX, canvasY]);
+    }, [seatMap, desiredFlags, activeFlags, canvasX, canvasY]);
+
     const seatEmptyImg = useRef(getImageFromComponent(<Seat fill="none" stroke={theme[0]} opacity="1.0" />));
     const seatMinusImg = useRef(getImageFromComponent(<Seat fill={theme[0]} stroke="none" opacity="0.25" />));
     const seatAddImg = useRef(getImageFromComponent(<Seat fill={theme[1]} stroke="none" opacity="0.6" />));
@@ -95,6 +100,8 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
     const draw = useMemo(() => () => {
         const currDeck = isMainDeck ? 0 : 1;
         if (ctx) {
+            console.log('DRAW');
+
             ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
             ctx.fillStyle = '#fff';
             ctx.beginPath();
@@ -239,8 +246,9 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
         if (!canvas) {
             return undefined;
         }
+        draw();
 
-        const render = () => {
+        /*   const render = () => {
             draw();
             // workaround for rendering bug
             if (!frameId || frameId < 10) {
@@ -252,8 +260,8 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
             if (frameId) {
                 window.cancelAnimationFrame(frameId);
             }
-        };
-    }, [ctx, ...activeFlags, ...desiredFlags]);
+        }; */
+    }, [ctx]);
 
     const distSquared = useMemo(() => (x1: number, y1: number, x2: number, y2: number): number => {
         const diffX = x1 - x2;
