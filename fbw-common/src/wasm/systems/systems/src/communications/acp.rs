@@ -1,4 +1,4 @@
-use super::amu::{IdentificationWordAMUACP, LabelWordAMUACP, AAA};
+use super::amu::{IdentificationWordAMUACP, LabelWordAMUACP, WordAMUACPInfo};
 use crate::{
     shared::{
         arinc429::{Arinc429Word, SignStatus},
@@ -15,6 +15,38 @@ use std::time::Duration;
 // Foundable in XML behaviors for MECH
 //pub const TRANSMIT_ID_INT: u8 = 6;
 
+#[derive(PartialEq, Copy, Clone)]
+pub enum TransmitID {
+    NONE = 0,
+    VHF1,
+    VHF2,
+    VHF3,
+    HF1,
+    HF2,
+    MECH,
+    CAB,
+    PA,
+}
+impl From<u32> for TransmitID {
+    fn from(value: u32) -> Self {
+        match value {
+            0 => TransmitID::NONE,
+            1 => TransmitID::VHF1,
+            2 => TransmitID::VHF2,
+            3 => TransmitID::VHF3,
+            4 => TransmitID::HF1,
+            5 => TransmitID::HF2,
+            6 => TransmitID::MECH,
+            7 => TransmitID::CAB,
+            8 => TransmitID::PA,
+            i => {
+                println!("Unknow Transmit ID {}", i);
+                panic!();
+            }
+        }
+    }
+}
+
 pub struct AudioControlPanel {
     id_acp: u32,
 
@@ -27,31 +59,23 @@ pub struct AudioControlPanel {
     voice_button: bool,
     reset_button: bool,
 
-    transmit_channel: u32,
-    transmit_pushed: u32,
+    transmit_channel: TransmitID,
+    transmit_pushed: TransmitID,
     int_rad_switch: u8,
 
-    vhfs: [CommunicationsTransceiver; 3],
-    comms: [CommunicationsTransceiver; 5], // Transceivers not simulated due to SDK capabilities. Just to make the knobs rotatable/pushable
-    adfs: [NavTransceiver; 2],
-    vors: [NavTransceiver; 2],
-    ils: NavTransceiver,
-    gls: NavTransceiver,
-    markers: NavTransceiver,
+    vhfs: [TransceiverACPFacade; 3],
+    comms: [TransceiverACPFacade; 5], // TransceiverACPFacades not simulated due to SDK capabilities. Just to make the knobs rotatable/pushable
+    adfs: [TransceiverACPFacade; 2],
+    vors: [TransceiverACPFacade; 2],
+    ils: TransceiverACPFacade,
+    gls: TransceiverACPFacade,
+    markers: TransceiverACPFacade,
 
-    // vhfs: [VHF; 3],
-    // comms: [COMM; 5], // Transceivers not simulated due to SDK capabilities. Just to make the knobs rotatable/pushable
-    // adfs: [ADF; 2],
-    // vors: [VOR; 2],
-    // ils: ILS,
-    // gls: GLS,
-    // markers: MARKERS,
     power_supply: ElectricalBusType,
     is_power_supply_powered: bool,
 
-    list_arinc_words: Vec<AAA>,
+    list_arinc_words: Vec<WordAMUACPInfo>,
     last_complete_cycle_sent: Duration,
-    duration: Duration,
 }
 impl AudioControlPanel {
     const DEFAULT_INT_RAD_SWITCH: u8 = 100;
@@ -70,144 +94,120 @@ impl AudioControlPanel {
             voice_button: false,
             reset_button: false,
 
-            transmit_channel: 0,
-            transmit_pushed: 0,
+            transmit_channel: TransmitID::VHF1,
+            transmit_pushed: TransmitID::VHF1,
             int_rad_switch: Self::DEFAULT_INT_RAD_SWITCH,
 
             vhfs: [
-                CommunicationsTransceiver::new(context, id_acp, "VHF1"),
-                CommunicationsTransceiver::new(context, id_acp, "VHF2"),
-                CommunicationsTransceiver::new(context, id_acp, "VHF3"),
+                TransceiverACPFacade::new(context, id_acp, "VHF1"),
+                TransceiverACPFacade::new(context, id_acp, "VHF2"),
+                TransceiverACPFacade::new(context, id_acp, "VHF3"),
             ],
             comms: [
-                CommunicationsTransceiver::new(context, id_acp, "HF1"),
-                CommunicationsTransceiver::new(context, id_acp, "HF2"),
-                CommunicationsTransceiver::new(context, id_acp, "MECH"),
-                CommunicationsTransceiver::new(context, id_acp, "ATT"),
-                CommunicationsTransceiver::new(context, id_acp, "PA"),
+                TransceiverACPFacade::new(context, id_acp, "HF1"),
+                TransceiverACPFacade::new(context, id_acp, "HF2"),
+                TransceiverACPFacade::new(context, id_acp, "MECH"),
+                TransceiverACPFacade::new(context, id_acp, "ATT"),
+                TransceiverACPFacade::new(context, id_acp, "PA"),
             ],
             adfs: [
-                NavTransceiver::new(context, id_acp, "ADF1"),
-                NavTransceiver::new(context, id_acp, "ADF2"),
+                TransceiverACPFacade::new(context, id_acp, "ADF1"),
+                TransceiverACPFacade::new(context, id_acp, "ADF2"),
             ],
             vors: [
-                NavTransceiver::new(context, id_acp, "VOR1"),
-                NavTransceiver::new(context, id_acp, "VOR2"),
+                TransceiverACPFacade::new(context, id_acp, "VOR1"),
+                TransceiverACPFacade::new(context, id_acp, "VOR2"),
             ],
-            ils: NavTransceiver::new(context, id_acp, "ILS"),
-            gls: NavTransceiver::new(context, id_acp, "MLS"),
-            markers: NavTransceiver::new(context, id_acp, "MKR"),
+            ils: TransceiverACPFacade::new(context, id_acp, "ILS"),
+            gls: TransceiverACPFacade::new(context, id_acp, "MLS"),
+            markers: TransceiverACPFacade::new(context, id_acp, "MKR"),
 
-            // vhfs: [
-            //     VHF::new_vhf1(context, id_acp),
-            //     VHF::new_vhf2(context, id_acp),
-            //     VHF::new_vhf3(context, id_acp),
-            // ],
-            // comms: [
-            //     COMM::new_hf1(context, id_acp),
-            //     COMM::new_hf2(context, id_acp),
-            //     COMM::new_mech(context, id_acp),
-            //     COMM::new_cab(context, id_acp),
-            //     COMM::new_pa(context, id_acp),
-            // ],
-            // adfs: [
-            //     ADF::new_adf1(context, id_acp),
-            //     ADF::new_adf2(context, id_acp),
-            // ],
-            // vors: [
-            //     VOR::new_vor1(context, id_acp),
-            //     VOR::new_vor2(context, id_acp),
-            // ],
-            // ils: ILS::new_ils(context, id_acp),
-            // gls: GLS::new_gls(context, id_acp),
-            // markers: MARKERS::new_markers(context, id_acp),
             power_supply,
             is_power_supply_powered: false,
 
             list_arinc_words: Vec::from([
-                AAA::new(
+                WordAMUACPInfo::new(
                     IdentificationWordAMUACP::WORD0,
                     0,
                     LabelWordAMUACP::Label300Request,
                 ),
-                AAA::new(
+                WordAMUACPInfo::new(
                     IdentificationWordAMUACP::WORDAMU,
                     0,
                     LabelWordAMUACP::Label301AMU,
                 ),
-                AAA::new(
+                WordAMUACPInfo::new(
                     IdentificationWordAMUACP::WORD01,
                     1,
                     LabelWordAMUACP::Label210VolumeControlVHF,
                 ),
-                AAA::new(
+                WordAMUACPInfo::new(
                     IdentificationWordAMUACP::WORD02,
                     2,
                     LabelWordAMUACP::Label210VolumeControlVHF,
                 ),
-                AAA::new(
+                WordAMUACPInfo::new(
                     IdentificationWordAMUACP::WORD03,
                     3,
                     LabelWordAMUACP::Label210VolumeControlVHF,
                 ),
-                AAA::new(
+                WordAMUACPInfo::new(
                     IdentificationWordAMUACP::WORD04,
                     1,
                     LabelWordAMUACP::Label211VolumeControlHF,
                 ),
-                AAA::new(
+                WordAMUACPInfo::new(
                     IdentificationWordAMUACP::WORD05,
                     2,
                     LabelWordAMUACP::Label211VolumeControlHF,
                 ),
-                AAA::new(
+                WordAMUACPInfo::new(
                     IdentificationWordAMUACP::WORD06,
                     1,
                     LabelWordAMUACP::Label215VolumeControlINTCAB,
                 ),
-                AAA::new(
+                WordAMUACPInfo::new(
                     IdentificationWordAMUACP::WORD07,
                     2,
                     LabelWordAMUACP::Label215VolumeControlINTCAB,
                 ),
-                AAA::new(
+                WordAMUACPInfo::new(
                     IdentificationWordAMUACP::WORD08,
                     3,
                     LabelWordAMUACP::Label212VolumeControlADFPA,
                 ),
-                AAA::new(
+                WordAMUACPInfo::new(
                     IdentificationWordAMUACP::WORD09,
                     1,
                     LabelWordAMUACP::Label213VolumeControlVORMKR,
                 ),
-                AAA::new(
+                WordAMUACPInfo::new(
                     IdentificationWordAMUACP::WORD10,
                     2,
                     LabelWordAMUACP::Label213VolumeControlVORMKR,
                 ),
-                AAA::new(
+                WordAMUACPInfo::new(
                     IdentificationWordAMUACP::WORD11,
                     3,
                     LabelWordAMUACP::Label213VolumeControlVORMKR,
                 ),
-                AAA::new(
+                WordAMUACPInfo::new(
                     IdentificationWordAMUACP::WORD12,
                     0,
                     LabelWordAMUACP::Label217VolumeControlILS,
                 ),
-                AAA::new(
+                WordAMUACPInfo::new(
                     IdentificationWordAMUACP::WORD15,
                     1,
                     LabelWordAMUACP::Label212VolumeControlADFPA,
                 ),
-                AAA::new(
+                WordAMUACPInfo::new(
                     IdentificationWordAMUACP::WORD16,
                     2,
                     LabelWordAMUACP::Label212VolumeControlADFPA,
                 ),
             ]),
             last_complete_cycle_sent: Duration::from_millis(0),
-            duration: Duration::from_millis(0),
         }
     }
 
@@ -225,7 +225,7 @@ impl AudioControlPanel {
         word_arinc.set_bits(1, self.list_arinc_words[index].get_label() as u32);
         word_arinc.set_bits(9, self.list_arinc_words[index].get_sdi());
 
-        word_arinc.set_bits(11, self.transmit_pushed);
+        word_arinc.set_bits(11, self.transmit_pushed as u32);
         word_arinc.set_bit(15, self.int_rad_switch <= Self::DEFAULT_INT_RAD_SWITCH);
         word_arinc.set_bit(16, self.int_rad_switch == Self::TRANSMIT_ID_INT);
 
@@ -287,7 +287,7 @@ impl AudioControlPanel {
                 word_arinc.set_bit(25, self.adfs[1].knob);
             }
             i => {
-                println!("Cant find {}", i as u32);
+                println!("Cant find word acp with id {}", i as u32);
                 panic!();
             }
         }
@@ -300,7 +300,7 @@ impl AudioControlPanel {
 
     pub fn decode_amu_word(
         bus: &mut Vec<Arinc429Word<u32>>,
-        transmission_table: &mut u32,
+        transmission_table: &mut TransmitID,
         call_mech: &mut bool,
         call_att: &mut bool,
         calls: &mut u32,
@@ -309,19 +309,12 @@ impl AudioControlPanel {
         let label_option: Option<LabelWordAMUACP> = FromPrimitive::from_u32(bus[0].get_bits(8, 1));
 
         if let Some(label) = label_option {
-            //println!("label_option   ({})", label as u32);
             if label == LabelWordAMUACP::Label301AMU {
                 let word = bus.remove(0);
-                *transmission_table = word.get_bits(4, 11);
+                *transmission_table = TransmitID::from(word.get_bits(4, 11));
                 *call_mech = word.get_bit(15);
                 *call_att = word.get_bit(16);
                 *calls = word.get_bits(5, 25);
-
-                println!(
-                    "transmission_table received from AMU = {}",
-                    *transmission_table
-                );
-
                 ret = true;
             }
         }
@@ -337,20 +330,17 @@ impl AudioControlPanel {
     ) {
         if self.is_power_supply_powered {
             self.last_complete_cycle_sent += context.delta();
-            self.duration += context.delta();
 
             // Restart full cycle every 160ms as stated in AMM
-            if self.last_complete_cycle_sent.as_millis() > 170 || need_update_from_options {
-                if self.id_acp == 2 {
-                    println!("Starting full cycle after {} ms", self.duration.as_millis());
-                }
-
+            if self.last_complete_cycle_sent.as_millis() > 160 || need_update_from_options {
                 self.send_word_0(bus_acp);
                 self.last_complete_cycle_sent = Duration::from_millis(0);
             } else if bus_acp.len() != 0 {
+                // These will be used later on
+                // Especially "calls" when SELCAL will be
+                // translated into Rust
                 let mut call_mech: bool = false;
                 let mut call_att: bool = false;
-
                 let mut calls: u32 = 0;
 
                 if AudioControlPanel::decode_amu_word(
@@ -364,45 +354,53 @@ impl AudioControlPanel {
                     // but due to sim capabilities, refresh rate turns out to be not high enough
                     // which leads to actions on the ACP ending up very slow.
                     // Therefore I took the decision to send all the words at the same time to avoid that.
-                    for index in 2..(self.list_arinc_words.len() - 1) {
+                    for index in 2..(self.list_arinc_words.len()) {
                         self.send_volume_control(bus_acp, index);
                     }
-                    if self.id_acp == 2 {
-                        println!("Received amu word after {} ms ", self.duration.as_millis());
-                    }
-
-                    self.duration = Duration::from_millis(0);
-                    // self.index_list_arinc_words = 2;
                 }
             }
 
             let transmission_pb_pushed: bool = self.transmit_channel != self.transmit_pushed;
 
-            if self.vhfs[0].has_changed() || transmission_pb_pushed && self.transmit_pushed == 1 {
-                println!("Updating VHF1 ACP {}", self.id_acp);
+            if self.vhfs[0].has_changed()
+                || transmission_pb_pushed && self.transmit_pushed == TransmitID::VHF1
+            {
                 self.send_volume_control(bus_acp, 2);
-                self.duration = Duration::from_millis(0);
             }
-            if self.vhfs[1].has_changed() || transmission_pb_pushed && self.transmit_pushed == 2 {
+            if self.vhfs[1].has_changed()
+                || transmission_pb_pushed && self.transmit_pushed == TransmitID::VHF2
+            {
                 self.send_volume_control(bus_acp, 3);
             }
-            if self.vhfs[2].has_changed() || transmission_pb_pushed && self.transmit_pushed == 3 {
+            if self.vhfs[2].has_changed()
+                || transmission_pb_pushed && self.transmit_pushed == TransmitID::VHF3
+            {
                 self.send_volume_control(bus_acp, 4);
             }
 
-            if self.comms[0].has_changed() || transmission_pb_pushed && self.transmit_pushed == 4 {
+            if self.comms[0].has_changed()
+                || transmission_pb_pushed && self.transmit_pushed == TransmitID::HF1
+            {
                 self.send_volume_control(bus_acp, 5);
             }
-            if self.comms[1].has_changed() || transmission_pb_pushed && self.transmit_pushed == 5 {
+            if self.comms[1].has_changed()
+                || transmission_pb_pushed && self.transmit_pushed == TransmitID::HF2
+            {
                 self.send_volume_control(bus_acp, 6);
             }
-            if self.comms[2].has_changed() || transmission_pb_pushed && self.transmit_pushed == 6 {
+            if self.comms[2].has_changed()
+                || transmission_pb_pushed && self.transmit_pushed == TransmitID::MECH
+            {
                 self.send_volume_control(bus_acp, 7);
             }
-            if self.comms[3].has_changed() || transmission_pb_pushed && self.transmit_pushed == 7 {
+            if self.comms[3].has_changed()
+                || transmission_pb_pushed && self.transmit_pushed == TransmitID::CAB
+            {
                 self.send_volume_control(bus_acp, 8);
             }
-            if self.comms[4].has_changed() || transmission_pb_pushed && self.transmit_pushed == 8 {
+            if self.comms[4].has_changed()
+                || transmission_pb_pushed && self.transmit_pushed == TransmitID::PA
+            {
                 self.send_volume_control(bus_acp, 9);
             }
 
@@ -459,13 +457,14 @@ impl SimulationElement for AudioControlPanel {
             self.voice_button = reader.read(&self.voice_button_id);
             self.reset_button = reader.read(&self.reset_button_id);
 
-            self.transmit_pushed = reader.read(&self.transmit_pushed_id);
+            let tmp: u32 = reader.read(&self.transmit_pushed_id);
+            self.transmit_pushed = TransmitID::from(tmp);
         }
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
         if self.is_power_supply_powered {
-            writer.write(&self.transmit_channel_id, self.transmit_channel);
+            writer.write(&self.transmit_channel_id, self.transmit_channel as u32);
         }
 
         writer.write(&self.reset_button_id, 0);
@@ -477,14 +476,14 @@ impl SimulationElement for AudioControlPanel {
 }
 
 #[derive(Default)]
-struct CommunicationsTransceiver {
+struct TransceiverACPFacade {
     volume_id: VariableIdentifier,
     knob_id: VariableIdentifier,
     changed: bool,
     knob: bool,
     volume: u32,
 }
-impl CommunicationsTransceiver {
+impl TransceiverACPFacade {
     pub fn new(context: &mut InitContext, id_acp: u32, name: &str) -> Self {
         Self {
             volume_id: context.get_identifier(format!("ACP{}_{}_VOLUME", id_acp, name)),
@@ -497,54 +496,7 @@ impl CommunicationsTransceiver {
         self.changed
     }
 }
-impl SimulationElement for CommunicationsTransceiver {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        visitor.visit(self);
-    }
-
-    fn read(&mut self, reader: &mut SimulatorReader) {
-        let volume: u32 = reader.read(&self.volume_id);
-        let knob: bool = reader.read(&self.knob_id);
-
-        if volume != self.volume {
-            println!("New value! {} {}", self.volume, volume);
-        }
-        self.changed = volume != self.volume || knob != self.knob;
-
-        if volume != self.volume {
-            println!(
-                "New value! {} {} changed = {}",
-                self.volume, volume, self.changed
-            );
-        }
-
-        self.volume = volume;
-        self.knob = knob;
-    }
-}
-
-#[derive(Default)]
-struct NavTransceiver {
-    volume_id: VariableIdentifier,
-    knob_id: VariableIdentifier,
-    changed: bool,
-    knob: bool,
-    volume: u32,
-}
-impl NavTransceiver {
-    pub fn new(context: &mut InitContext, id_acp: u32, name: &str) -> Self {
-        Self {
-            volume_id: context.get_identifier(format!("ACP{}_{}_VOLUME", id_acp, name)),
-            knob_id: context.get_identifier(format!("ACP{}_{}_KNOB_VOLUME_DOWN", id_acp, name)),
-            ..Default::default()
-        }
-    }
-
-    pub fn has_changed(&self) -> bool {
-        self.changed
-    }
-}
-impl SimulationElement for NavTransceiver {
+impl SimulationElement for TransceiverACPFacade {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         visitor.visit(self);
     }
@@ -559,417 +511,3 @@ impl SimulationElement for NavTransceiver {
         self.knob = knob;
     }
 }
-
-// #[derive(Default)]
-// pub struct VHF {
-//     volume_id: VariableIdentifier,
-//     knob_id: VariableIdentifier,
-//     knob: bool,
-//     volume: u8,
-// }
-// impl VHF {
-//     pub fn new_vhf1(context: &mut InitContext, id_acp: u32) -> Self {
-//         Self {
-//             volume_id: context.get_identifier(format!("ACP{}_VHF1_VOLUME", id_acp)),
-//             knob_id: context.get_identifier(format!("ACP{}_VHF1_KNOB_VOLUME_DOWN", id_acp)),
-//             ..Default::default()
-//         }
-//     }
-
-//     pub fn new_vhf2(context: &mut InitContext, id_acp: u32) -> Self {
-//         Self {
-//             volume_id: context.get_identifier(format!("ACP{}_VHF2_VOLUME", id_acp)),
-//             knob_id: context.get_identifier(format!("ACP{}_VHF2_KNOB_VOLUME_DOWN", id_acp)),
-//             ..Default::default()
-//         }
-//     }
-
-//     pub fn new_vhf3(context: &mut InitContext, id_acp: u32) -> Self {
-//         Self {
-//             volume_id: context.get_identifier(format!("ACP{}_VHF3_VOLUME", id_acp)),
-//             knob_id: context.get_identifier(format!("ACP{}_VHF3_KNOB_VOLUME_DOWN", id_acp)),
-//             ..Default::default()
-//         }
-//     }
-
-//     // fn get_volume(&self) -> u8 {
-//     //     self.volume
-//     // }
-//     // fn get_receive(&self) -> bool {
-//     //     self.knob
-//     // }
-// }
-
-// impl SimulationElement for VHF {
-//     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-//         visitor.visit(self);
-//     }
-
-//     fn read(&mut self, reader: &mut SimulatorReader) {
-//         self.volume = reader.read(&self.volume_id);
-//         self.knob = reader.read(&self.knob_id);
-//     }
-
-//     fn write(&self, writer: &mut SimulatorWriter) {
-//         writer.write(&self.volume_id, self.volume);
-//         writer.write(&self.knob_id, self.knob);
-//     }
-// }
-
-// #[derive(Default)]
-// pub struct COMM {
-//     volume_id: VariableIdentifier,
-//     knob_id: VariableIdentifier,
-//     volume: u8,
-//     knob: bool,
-// }
-// impl COMM {
-//     pub fn new_hf1(context: &mut InitContext, id_acp: u32) -> Self {
-//         Self {
-//             volume_id: context.get_identifier(format!("ACP{}_HF1_VOLUME", id_acp)),
-//             knob_id: context.get_identifier(format!("ACP{}_HF1_KNOB_VOLUME_DOWN", id_acp)),
-//             ..Default::default()
-//         }
-//     }
-
-//     pub fn new_hf2(context: &mut InitContext, id_acp: u32) -> Self {
-//         Self {
-//             volume_id: context.get_identifier(format!("ACP{}_HF2_VOLUME", id_acp)),
-//             knob_id: context.get_identifier(format!("ACP{}_HF2_KNOB_VOLUME_DOWN", id_acp)),
-//             ..Default::default()
-//         }
-//     }
-
-//     pub fn new_mech(context: &mut InitContext, id_acp: u32) -> Self {
-//         Self {
-//             volume_id: context.get_identifier(format!("ACP{}_MECH_VOLUME", id_acp)),
-//             knob_id: context.get_identifier(format!("ACP{}_MECH_KNOB_VOLUME_DOWN", id_acp)),
-//             ..Default::default()
-//         }
-//     }
-
-//     pub fn new_cab(context: &mut InitContext, id_acp: u32) -> Self {
-//         Self {
-//             volume_id: context.get_identifier(format!("ACP{}_ATT_VOLUME", id_acp)),
-//             knob_id: context.get_identifier(format!("ACP{}_ATT_KNOB_VOLUME_DOWN", id_acp)),
-//             ..Default::default()
-//         }
-//     }
-
-//     pub fn new_pa(context: &mut InitContext, id_acp: u32) -> Self {
-//         Self {
-//             volume_id: context.get_identifier(format!("ACP{}_PA_VOLUME", id_acp)),
-//             knob_id: context.get_identifier(format!("ACP{}_PA_KNOB_VOLUME_DOWN", id_acp)),
-//             ..Default::default()
-//         }
-//     }
-
-//     // fn get_volume(&self) -> u8 {
-//     //     self.volume
-//     // }
-//     // fn get_receive(&self) -> bool {
-//     //     self.knob
-//     // }
-// }
-
-// impl SimulationElement for COMM {
-//     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-//         visitor.visit(self);
-//     }
-
-//     fn read(&mut self, reader: &mut SimulatorReader) {
-//         self.volume = reader.read(&self.volume_id);
-//         self.knob = reader.read(&self.knob_id);
-//     }
-
-//     fn write(&self, writer: &mut SimulatorWriter) {
-//         writer.write(&self.volume_id, self.volume);
-//         writer.write(&self.knob_id, self.knob);
-//     }
-// }
-
-// #[derive(Default)]
-// pub struct ADF {
-//     volume_id: VariableIdentifier,
-//     knob_id: VariableIdentifier,
-//     volume: u8,
-//     knob: bool,
-// }
-// impl ADF {
-//     pub fn new_adf1(context: &mut InitContext, id_acp: u32) -> Self {
-//         Self {
-//             volume_id: context.get_identifier(format!("ACP{}_ADF1_VOLUME", id_acp)),
-//             knob_id: context.get_identifier(format!("ACP{}_ADF1_KNOB_VOLUME_DOWN", id_acp)),
-//             ..Default::default()
-//         }
-//     }
-
-//     pub fn new_adf2(context: &mut InitContext, id_acp: u32) -> Self {
-//         Self {
-//             volume_id: context.get_identifier(format!("ACP{}_ADF2_VOLUME", id_acp)),
-//             knob_id: context.get_identifier(format!("ACP{}_ADF2_KNOB_VOLUME_DOWN", id_acp)),
-//             ..Default::default()
-//         }
-//     }
-
-//     // fn get_volume(&self) -> u8 {
-//     //     self.volume
-//     // }
-//     // fn get_receive(&self) -> bool {
-//     //     self.knob
-//     // }
-// }
-
-// impl SimulationElement for ADF {
-//     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-//         visitor.visit(self);
-//     }
-
-//     fn read(&mut self, reader: &mut SimulatorReader) {
-//         self.volume = reader.read(&self.volume_id);
-//         self.knob = reader.read(&self.knob_id);
-//     }
-
-//     fn write(&self, writer: &mut SimulatorWriter) {
-//         writer.write(&self.volume_id, self.volume);
-//         writer.write(&self.knob_id, self.knob);
-//     }
-// }
-
-// #[derive(Default)]
-// pub struct VOR {
-//     volume_id: VariableIdentifier,
-//     knob_id: VariableIdentifier,
-//     volume: u8,
-//     knob: bool,
-// }
-// impl VOR {
-//     pub fn new_vor1(context: &mut InitContext, id_acp: u32) -> Self {
-//         Self {
-//             volume_id: context.get_identifier(format!("ACP{}_VOR1_VOLUME", id_acp)),
-//             knob_id: context.get_identifier(format!("ACP{}_VOR1_KNOB_VOLUME_DOWN", id_acp)),
-//             ..Default::default()
-//         }
-//     }
-
-//     pub fn new_vor2(context: &mut InitContext, id_acp: u32) -> Self {
-//         Self {
-//             volume_id: context.get_identifier(format!("ACP{}_VOR2_VOLUME", id_acp)),
-//             knob_id: context.get_identifier(format!("ACP{}_VOR2_KNOB_VOLUME_DOWN", id_acp)),
-//             ..Default::default()
-//         }
-//     }
-
-//     // fn get_volume(&self) -> u8 {
-//     //     self.volume
-//     // }
-//     // fn get_receive(&self) -> bool {
-//     //     self.knob
-//     // }
-// }
-
-// impl SimulationElement for VOR {
-//     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-//         visitor.visit(self);
-//     }
-
-//     fn read(&mut self, reader: &mut SimulatorReader) {
-//         self.volume = reader.read(&self.volume_id);
-//         self.knob = reader.read(&self.knob_id);
-//     }
-
-//     fn write(&self, writer: &mut SimulatorWriter) {
-//         writer.write(&self.volume_id, self.volume);
-//         writer.write(&self.knob_id, self.knob);
-//     }
-// }
-
-// #[derive(Default)]
-// pub struct ILS {
-//     volume_id: VariableIdentifier,
-//     knob_id: VariableIdentifier,
-//     volume: u8,
-//     knob: bool,
-// }
-// impl ILS {
-//     pub fn new_ils(context: &mut InitContext, id_acp: u32) -> Self {
-//         Self {
-//             volume_id: context.get_identifier(format!("ACP{}_ILS_VOLUME", id_acp)),
-//             knob_id: context.get_identifier(format!("ACP{}_ILS_KNOB_VOLUME_DOWN", id_acp)),
-//             ..Default::default()
-//         }
-//     }
-
-//     // fn get_volume(&self) -> u8 {
-//     //     self.volume
-//     // }
-//     // fn get_receive(&self) -> bool {
-//     //     self.knob
-//     // }
-// }
-
-// impl SimulationElement for ILS {
-//     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-//         visitor.visit(self);
-//     }
-
-//     fn read(&mut self, reader: &mut SimulatorReader) {
-//         self.volume = reader.read(&self.volume_id);
-//         self.knob = reader.read(&self.knob_id);
-//     }
-
-//     fn write(&self, writer: &mut SimulatorWriter) {
-//         writer.write(&self.volume_id, self.volume);
-//         writer.write(&self.knob_id, self.knob);
-//     }
-// }
-
-// #[derive(Default)]
-// pub struct GLS {
-//     volume_id: VariableIdentifier,
-//     knob_id: VariableIdentifier,
-//     volume: u8,
-//     knob: bool,
-// }
-// impl GLS {
-//     pub fn new_gls(context: &mut InitContext, id_acp: u32) -> Self {
-//         Self {
-//             // To change to GLS version once flight deck reworked
-//             volume_id: context.get_identifier(format!("ACP{}_MLS_VOLUME", id_acp)),
-//             knob_id: context.get_identifier(format!("ACP{}_MLS_KNOB_VOLUME_DOWN", id_acp)),
-//             ..Default::default()
-//         }
-//     }
-
-//     // fn get_volume(&self) -> u8 {
-//     //     self.volume
-//     // }
-//     // fn get_receive(&self) -> bool {
-//     //     self.knob
-//     // }
-// }
-
-// impl SimulationElement for GLS {
-//     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-//         visitor.visit(self);
-//     }
-
-//     fn read(&mut self, reader: &mut SimulatorReader) {
-//         self.volume = reader.read(&self.volume_id);
-//         self.knob = reader.read(&self.knob_id);
-//     }
-
-//     fn write(&self, writer: &mut SimulatorWriter) {
-//         writer.write(&self.volume_id, self.volume);
-//         writer.write(&self.knob_id, self.knob);
-//     }
-// }
-
-// #[derive(Default)]
-// pub struct MARKERS {
-//     volume_id: VariableIdentifier,
-//     knob_id: VariableIdentifier,
-//     volume: u8,
-//     knob: bool,
-// }
-// impl MARKERS {
-//     pub fn new_markers(context: &mut InitContext, id_acp: u32) -> Self {
-//         Self {
-//             volume_id: context.get_identifier(format!("ACP{}_MKR_VOLUME", id_acp)),
-//             knob_id: context.get_identifier(format!("ACP{}_MKR_KNOB_VOLUME_DOWN", id_acp)),
-//             ..Default::default()
-//         }
-//     }
-
-//     // fn get_volume(&self) -> u8 {
-//     //     self.volume
-//     // }
-//     // fn get_receive(&self) -> bool {
-//     //     self.knob
-//     // }
-// }
-
-// impl SimulationElement for MARKERS {
-//     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-//         visitor.visit(self);
-//     }
-
-//     fn read(&mut self, reader: &mut SimulatorReader) {
-//         self.volume = reader.read(&self.volume_id);
-//         self.knob = reader.read(&self.knob_id);
-//     }
-
-//     fn write(&self, writer: &mut SimulatorWriter) {
-//         writer.write(&self.volume_id, self.volume);
-//         writer.write(&self.knob_id, self.knob);
-//     }
-// }
-
-// #[cfg(test)]
-// mod audio_tests {
-//     use super::*;
-//     use crate::simulation::{
-//         Aircraft,
-//         test::{
-//             ReadByName, SimulationTestBed, TestBed, WriteByName,
-//         },
-//     };
-
-//     pub struct TestAircraft {
-//         receivers: [Receiver; 1],
-//     }
-//     impl TestAircraft {
-//         fn new(context: &mut InitContext) -> Self {
-//             Self {
-//                 receivers: [
-//                     Receiver::new(context, "NAV", 1),
-//                 ],
-//             }
-//         }
-//     }
-
-//     impl SimulationElement for TestAircraft {
-//         fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
-//             accept_iterable!(self.receivers, visitor);
-
-//             visitor.visit(self);
-//         }
-//     }
-
-//     impl Aircraft for TestAircraft {
-//     }
-
-//     struct AudioControlPanelTestBed {
-//         test_bed: SimulationTestBed<TestAircraft>,
-//     }
-//     impl AudioControlPanelTestBed {
-//         fn new() -> Self {
-//             let test_bed = AudioControlPanelTestBed {
-//                 test_bed: SimulationTestBed::new(TestAircraft::new),
-//             };
-//             test_bed
-//         }
-//     }
-
-//     impl TestBed for AudioControlPanelTestBed {
-//         type Aircraft = TestAircraft;
-
-//         fn test_bed(&self) -> &SimulationTestBed<TestAircraft> {
-//             &self.test_bed
-//         }
-
-//         fn test_bed_mut(&mut self) -> &mut SimulationTestBed<TestAircraft> {
-//             &mut self.test_bed
-//         }
-//     }
-
-//     fn test_bed() -> AudioControlPanelTestBed {
-//         AudioControlPanelTestBed::new()
-//     }
-
-//     #[test]
-//     fn aaaa() {
-//         let mut receiver = test_bed();
-//         receiver.run();
-//     }
-// }
