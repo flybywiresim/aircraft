@@ -56,20 +56,6 @@ impl Communications {
                 || self.rmp_cpt.as_ref().unwrap().is_abnormal_mode());
 
         self.previous_side_controlling = context.side_controlling();
-
-        //         // TODO: Use data from future DMC. There's a wire between comms and DMC
-        //         // FCOM compliant: ILS can be listened to only if LS is pressed
-        //         self.receive_ils &= match chosen_panel.get_name() {
-        //             CommunicationPanelSideName::OVHD => match self.audio_switching_knob {
-        //                 AudioSwitchingKnobPosition::NORM | AudioSwitchingKnobPosition::CAPTAIN => {
-        //                     self.ls_fcu1_pressed
-        //                 }
-        //                 AudioSwitchingKnobPosition::FO => self.ls_fcu2_pressed,
-        //             },
-        //             CommunicationPanelSideName::CAPTAIN => self.ls_fcu1_pressed,
-        //             CommunicationPanelSideName::FO => self.ls_fcu2_pressed,
-        //             CommunicationPanelSideName::NONE => false,
-        //         };
     }
 }
 

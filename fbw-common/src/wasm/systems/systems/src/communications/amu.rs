@@ -478,6 +478,8 @@ impl AdaptationBoard {
                                     }
                                     LabelWordAMUACP::Label217VolumeControlILS => {
                                         mixed_audio.volume_ils = volume;
+                                        // TODO: Use data from future DMC. There's a wire between comms and DMC
+                                        // FCOM compliant: ILS can be listened to only if LS is pressed
                                         mixed_audio.receive_ils =
                                             reception != 0 && !voice && ls_fcu_pressed;
                                     }
