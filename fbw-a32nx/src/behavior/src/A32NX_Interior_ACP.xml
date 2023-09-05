@@ -250,14 +250,12 @@
             <ANIM_NAME>#ANIM_NAME_BUTTON_PA#</ANIM_NAME>
             <SEQ1_NODE_ID>#NODE_ID_BUTTON_SEQ1_PA#</SEQ1_NODE_ID>
             <SEQ2_NODE_ID>#NODE_ID_BUTTON_SEQ2_PA#</SEQ2_NODE_ID>
-            <LEFT_SINGLE_CODE type="rnp">
-                (O:A32NX_ACP#ID#_TRANSMIT_CHANNEL_SAVED, number) = (L:A32NX_ACP#ID#_TRANSMIT_CHANNEL, number);
-                (L:A32NX_ACP#ID#_TRANSMIT_CHANNEL, number) = 8;
-                (L:A32NX_UPDATE_COMMS, number) = 1;
+            <LEFT_SINGLE_CODE>
+                (L:A32NX_ACP#ID#_TRANSMIT_CHANNEL) (&gt;O:A32NX_ACP#ID#_TRANSMIT_CHANNEL_SAVED)
+                8 (&gt;L:A32NX_ACP#ID#_TRANSMIT_PUSHED)
             </LEFT_SINGLE_CODE>
-            <LEFT_LEAVE_CODE type="rnp">
-                (L:A32NX_ACP#ID#_TRANSMIT_CHANNEL, number) = (O:A32NX_ACP#ID#_TRANSMIT_CHANNEL_SAVED, number);
-                (L:A32NX_UPDATE_COMMS, number) = 1;
+            <LEFT_LEAVE_CODE>
+                (O:A32NX_ACP#ID#_TRANSMIT_CHANNEL_SAVED) (&gt;L:A32NX_ACP#ID#_TRANSMIT_PUSHED)
             </LEFT_LEAVE_CODE>
             <SEQ1_CODE>
                 (L:A32NX_ACP#ID#_TRANSMIT_CHANNEL) 8 == #EMISSIVE_TEST# or
@@ -271,10 +269,7 @@
             <ANIM_NAME>#ANIM_NAME_PUSH_RECEIVER_VOICE#</ANIM_NAME>
             <SEQ1_NODE_ID>#NODE_ID_BUTTON_VOICE_SEQ1#</SEQ1_NODE_ID>
             <SEQ2_NODE_ID>#NODE_ID_BUTTON_VOICE_SEQ2#</SEQ2_NODE_ID>
-            <LEFT_SINGLE_CODE>
-                (L:A32NX_ACP#ID#_VOICE_BUTTON_DOWN) ! (&gt;L:A32NX_ACP#ID#_VOICE_BUTTON_DOWN)
-                1 (&gt;L:A32NX_UPDATE_COMMS)
-            </LEFT_SINGLE_CODE>
+            <LEFT_SINGLE_CODE>(L:A32NX_ACP#ID#_VOICE_BUTTON_DOWN) ! (&gt;L:A32NX_ACP#ID#_VOICE_BUTTON_DOWN)</LEFT_SINGLE_CODE>
             <WWISE_EVENT_1>fcubutton</WWISE_EVENT_1>
             <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
             <WWISE_EVENT_2>fcubutton</WWISE_EVENT_2>
@@ -411,14 +406,12 @@
                 } els{
                     0 (&gt;L:A32NX_ACP#ID#_TRANSMIT_PUSHED)
                 }
-
-                1 (&gt;L:A32NX_UPDATE_COMMS)
             </LEFT_SINGLE_CODE>
         </DefaultTemplateParameters>
         <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
             <!-- Green light -->
-            <SEQ1_EMISSIVE_CODE>(L:A32NX_ACP#ID#_TRANSMIT_CHANNEL) #TRANSMIT_ID# == #EMISSIVE_TEST# or #EMISSIVE_DIM# *</SEQ1_EMISSIVE_CODE>
-                <!-- Button name light (for example CALL or MECH)-->
+            <SEQ1_EMISSIVE_CODE>#SEQ1_POWERED# (L:A32NX_ACP#ID#_TRANSMIT_CHANNEL) #TRANSMIT_ID# == and #EMISSIVE_TEST# or #EMISSIVE_DIM# *</SEQ1_EMISSIVE_CODE>
+            <!-- Button name light (for example CALL or MECH) -->
             <SEQ2_EMISSIVE_CODE>#SEQ1_POWERED# #EMISSIVE_TEST# and</SEQ2_EMISSIVE_CODE>
             <WWISE_EVENT_1>fcubutton</WWISE_EVENT_1>
             <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
