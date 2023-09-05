@@ -3,7 +3,6 @@ mod audio_management_unit;
 mod radio_management_panel;
 mod receivers;
 
-
 use crate::simulation::{
     InitContext, SideControlling, SimulationElement, SimulationElementVisitor, SimulatorWriter,
     UpdateContext, VariableIdentifier, Write,

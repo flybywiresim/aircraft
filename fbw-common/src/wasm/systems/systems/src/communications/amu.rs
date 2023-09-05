@@ -14,6 +14,7 @@ use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
 use super::acp::AudioControlPanel;
+use super::receivers::Morse;
 
 enum TypeCard {
     SELCAL(SELCAL),
@@ -138,31 +139,20 @@ pub enum AudioSwitchingKnobPosition {
 
 pub struct AMU {
     adaptation_board: AdaptationBoard,
-    // vhfs: [VHF; 3],
-    // comms: [COMM; 5], // Transceivers not simulated due to SDK capabilities. Just to make the knobs rotatable/pushable
-    // adfs: [ADF; 2],
-    // vors: [VOR; 2],
-    // ils: ILS,
-    // gls: GLS,
-    // markers: MARKERS,
+    adfs: [Morse; 2],
+    vors: [Morse; 2],
+    ils: Morse,
+    gls: Morse,
 }
 impl AMU {
     pub fn new(context: &mut InitContext) -> Self {
         Self {
             adaptation_board: AdaptationBoard::new(context),
-            // vhfs: [VHF::new_vhf1(), VHF::new_vhf2(), VHF::new_vhf3()],
-            // comms: [
-            //     COMM::new_hf1(),
-            //     COMM::new_hf1(),
-            //     COMM::new_cids1(),
-            //     COMM::new_cids2(),
-            //     COMM::new_flt_int(),
-            // ],
-            // adfs: [ADF::new_adf1(), ADF::new_adf2()],
-            // vors: [VOR::new_vor1(), VOR::new_vor2()],
-            // ils: ILS::new_ils(),
-            // gls: GLS::new_gls(),
-            // markers: MARKERS::new_markers(),
+
+            adfs: [Morse::new(context, "ADF", 1), Morse::new(context, "ADF", 2)],
+            vors: [Morse::new(context, "NAV", 1), Morse::new(context, "NAV", 2)],
+            ils: Morse::new(context, "NAV", 3),
+            gls: Morse::new(context, "NAV", 4),
         }
     }
 
@@ -220,6 +210,15 @@ impl AMU {
         need_update_from_acp_or_options: bool,
         side_controlling: &SideControlling,
     ) {
+        for adf in self.adfs.iter_mut() {
+            adf.update(context);
+        }
+        for vor in self.vors.iter_mut() {
+            vor.update(context);
+        }
+        self.ils.update(context);
+        self.gls.update(context);
+
         self.adaptation_board
             .update(context, need_update_from_acp_or_options, side_controlling);
     }
@@ -227,22 +226,15 @@ impl AMU {
 
 impl SimulationElement for AMU {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        // for vhf in self.vhfs.iter_mut() {
-        //     vhf.accept(visitor);
-        // }
-        // for comm in self.comms.iter_mut() {
-        //     comm.accept(visitor);
-        // }
-        // for adf in self.adfs.iter_mut() {
-        //     adf.accept(visitor);
-        // }
-        // for vor in self.vors.iter_mut() {
-        //     vor.accept(visitor);
-        // }
+        for adf in self.adfs.iter_mut() {
+            adf.accept(visitor);
+        }
+        for vor in self.vors.iter_mut() {
+            vor.accept(visitor);
+        }
 
-        // self.ils.accept(visitor);
-        // self.gls.accept(visitor);
-        // self.markers.accept(visitor);
+        self.ils.accept(visitor);
+        self.gls.accept(visitor);
 
         self.adaptation_board.accept(visitor);
 
