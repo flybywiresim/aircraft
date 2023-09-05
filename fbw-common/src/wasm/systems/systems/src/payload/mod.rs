@@ -920,8 +920,9 @@ impl<const P: usize, const G: usize, const C: usize> PayloadManager<P, G, C> {
             .play_sound_pax_boarding(self.is_pax_boarding() && !self.is_pax_deboarding());
         self.boarding_sounds
             .play_sound_pax_deboarding(self.is_pax_deboarding() && !self.is_pax_boarding());
-        self.boarding_sounds
-            .play_sound_pax_complete(self.is_pax_loaded() && self.is_boarding_allowed())
+        self.boarding_sounds.play_sound_pax_complete(
+            self.has_pax() && self.is_pax_loaded() && self.is_boarding_allowed(),
+        )
     }
 
     fn stop_boarding_sounds(&mut self) {
