@@ -406,8 +406,6 @@
                 } els{
                     0 (&gt;L:A32NX_ACP#ID#_TRANSMIT_PUSHED)
                 }
-
-                1 (&gt;L:A32NX_UPDATE_COMMS)
             </LEFT_SINGLE_CODE>
         </DefaultTemplateParameters>
         <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
