@@ -1,4 +1,4 @@
-import { FailuresOrchestrator } from '.';
+import { FailuresOrchestrator } from './failures-orchestrator';
 import { getActivateFailureSimVarName, getDeactivateFailureSimVarName } from './sim-vars';
 import { flushPromises } from './test-functions';
 

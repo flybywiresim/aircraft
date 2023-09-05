@@ -1,6 +1,6 @@
 /* eslint-disable function-paren-newline */
 import { useCallback, useRef, useState } from 'react';
-import { BitFlags, SeatFlags } from 'shared/src/bitFlags';
+import { BitFlags, SeatFlags } from '@flybywiresim/fbw-sdk';
 import { useUpdate } from './hooks';
 
 export const useBitFlags = (
