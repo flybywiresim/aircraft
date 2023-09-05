@@ -1,19 +1,23 @@
-use std::time::Duration;
+use std::{marker::PhantomData, time::Duration};
 
 use systems::{
     air_conditioning::{
         acs_controller::{AcscId, AirConditioningStateManager, Pack, ZoneController},
-        AdirsToAirCondInterface, AirConditioningOverheadShared, BulkHeaterSignal, CabinFansSignal,
-        Channel, DuctTemperature, OverheadFlowSelector, PackFlow, VcmShared, ZoneType,
+        cabin_pressure_controller::PressureScheduleManager,
+        outflow_valve_control_module::{CpcsShared, OcsmShared},
+        AdirsToAirCondInterface, Air, AirConditioningOverheadShared, BulkHeaterSignal,
+        CabinFansSignal, Channel, DuctTemperature, OverheadFlowSelector, PackFlow,
+        PressurizationConstants, PressurizationOverheadShared, VcmShared, ZoneType,
     },
     integrated_modular_avionics::core_processing_input_output_module::CoreProcessingInputOutputModule,
     shared::{
-        CabinAltitude, CabinSimulation, CargoDoorLocked, ControllerSignal, EngineCorrectedN1,
-        EngineStartState, LgciuWeightOnWheels, PackFlowValveState, PneumaticBleed,
+        arinc429::Arinc429Word, low_pass_filter::LowPassFilter, CabinAltitude, CabinSimulation,
+        CargoDoorLocked, ControllerSignal, EngineCorrectedN1, EngineStartState,
+        LgciuWeightOnWheels, PackFlowValveState, PneumaticBleed,
     },
     simulation::{
-        InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
-        VariableIdentifier, Write,
+        InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
+        SimulatorWriter, UpdateContext, VariableIdentifier, Write,
     },
 };
 
@@ -21,18 +25,22 @@ use super::local_controllers::trim_air_drive_device::TaddShared;
 
 use uom::si::{
     f64::*,
-    length::foot,
+    length::{foot, meter},
     mass_rate::kilogram_per_second,
+    pressure::{hectopascal, psi},
     ratio::{percent, ratio},
     thermodynamic_temperature::degree_celsius,
+    velocity::{foot_per_minute, meter_per_second},
 };
+
+use super::A380PressurizationConstants;
 
 pub(super) struct CoreProcessingInputOutputModuleB {
     cpiom_are_active: [bool; 4],
     ags_app: AirGenerationSystemApplication,
     tcs_app: TemperatureControlSystemApplication,
     vcs_app: VentilationControlSystemApplication,
-    // cabin_pressure_control_system_app: CabinPressureControllSystemApplication,
+    cpcs_app: CabinPressureControlSystemApplication<A380PressurizationConstants>,
     // avionics_ventilation_system_app: AvionicsVentilationSystemApplication,
 }
 
@@ -43,7 +51,7 @@ impl CoreProcessingInputOutputModuleB {
             ags_app: AirGenerationSystemApplication::new(context),
             tcs_app: TemperatureControlSystemApplication::new(context, cabin_zones),
             vcs_app: VentilationControlSystemApplication::new(context),
-            // cabin_pressure_control_system_app: CabinPressureControllSystemApplication::new(),
+            cpcs_app: CabinPressureControlSystemApplication::new(context),
             // avionics_ventilation_system_app: AvionicsVentilationSystemApplication::new(),
         }
     }
@@ -59,8 +67,9 @@ impl CoreProcessingInputOutputModuleB {
         engines: &[&impl EngineCorrectedN1],
         lgciu: [&impl LgciuWeightOnWheels; 2],
         number_of_passengers: usize,
+        ocsm: [&impl OcsmShared; 4],
         pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
-        pressurization: &impl CabinAltitude,
+        pressurization_overhead: &impl PressurizationOverheadShared,
         local_controllers: &(impl TaddShared + VcmShared),
     ) {
         self.cpiom_are_active = cpiom_b.map(|cpiom| cpiom.is_available());
@@ -75,14 +84,14 @@ impl CoreProcessingInputOutputModuleB {
                 lgciu,
                 number_of_passengers,
                 pneumatic,
-                pressurization,
+                &self.cpcs_app,
             );
             self.tcs_app.update(
                 context,
                 acs_overhead,
                 cabin_temperature,
                 self.cpiom_are_active.iter().any(|c| *c),
-                pressurization,
+                &self.cpcs_app,
                 local_controllers,
             );
             self.vcs_app.update(
@@ -94,7 +103,18 @@ impl CoreProcessingInputOutputModuleB {
                 local_controllers,
                 &self.ags_app,
             );
+            self.cpcs_app.activate();
+        } else {
+            self.cpcs_app.deactivate();
         }
+        self.cpcs_app.update(
+            context,
+            adirs,
+            engines,
+            lgciu,
+            pressurization_overhead,
+            ocsm,
+        );
     }
 
     pub(super) fn should_close_taprv(&self) -> [bool; 2] {
@@ -107,6 +127,25 @@ impl CoreProcessingInputOutputModuleB {
 
     pub(super) fn bulk_heater_on_signal(&self) -> &impl ControllerSignal<BulkHeaterSignal> {
         &self.vcs_app
+    }
+
+    pub(super) fn ofv_open_area(&self) -> Ratio {
+        self.cpcs_app.ofv_total_open_area()
+    }
+
+    #[cfg(test)]
+    pub(super) fn cabin_altitude(&self) -> Length {
+        self.cpcs_app.altitude()
+    }
+
+    #[cfg(test)]
+    pub(super) fn landing_elevation(&self) -> Length {
+        self.cpcs_app.landing_elevation()
+    }
+
+    #[cfg(test)]
+    pub(super) fn reference_pressure(&self) -> Pressure {
+        self.cpcs_app.reference_pressure()
     }
 }
 
@@ -129,6 +168,21 @@ impl PackFlow for CoreProcessingInputOutputModuleB {
 impl DuctTemperature for CoreProcessingInputOutputModuleB {
     fn duct_demand_temperature(&self) -> Vec<ThermodynamicTemperature> {
         self.tcs_app.duct_demand_temperature()
+    }
+}
+
+impl CpcsShared for CoreProcessingInputOutputModuleB {
+    fn cabin_vertical_speed(&self) -> Velocity {
+        self.cpcs_app.cabin_vertical_speed()
+    }
+    fn cabin_target_vertical_speed(&self) -> Option<Velocity> {
+        self.cpcs_app.target_vertical_speed()
+    }
+    fn ofv_open_allowed(&self) -> bool {
+        self.cpcs_app.ofv_open_allowed()
+    }
+    fn should_open_ofv(&self) -> bool {
+        self.cpcs_app.should_open_ofv()
     }
 }
 
@@ -607,5 +661,513 @@ impl SimulationElement for VentilationControlSystemApplication {
             &self.primary_fans_enabled_id,
             self.hp_cabin_fans_are_enabled,
         );
+    }
+}
+
+struct CabinPressureControlSystemApplication<C: PressurizationConstants> {
+    cabin_altitude_id: VariableIdentifier,
+    cabin_vs_id: VariableIdentifier,
+    cabin_delta_pressure_id: VariableIdentifier,
+    fwc_excess_cabin_altitude_id: VariableIdentifier,
+    fwc_excess_residual_pressure_id: VariableIdentifier,
+    fwc_low_diff_pressure_id: VariableIdentifier,
+    outflow_valve_open_percentage_id: [VariableIdentifier; 4],
+
+    landing_elevation_id: VariableIdentifier,
+    destination_qnh_id: VariableIdentifier,
+
+    pressure_schedule_manager: Option<PressureScheduleManager>,
+    exterior_airspeed: Velocity,
+    exterior_pressure: LowPassFilter<Pressure>,
+    exterior_flight_altitude: Length,
+    exterior_vertical_speed: LowPassFilter<Velocity>,
+    reference_pressure: Pressure,
+    previous_reference_pressure: Pressure,
+    cabin_pressure: Pressure,
+    cabin_delta_pressure: Pressure,
+    cabin_altitude: Length,
+    cabin_vertical_speed: Velocity,
+    cabin_filtered_vertical_speed: LowPassFilter<Velocity>,
+    cabin_target_vertical_speed: Velocity,
+    outflow_valve_open_amount: [Ratio; 4],
+
+    landing_elevation: Length,
+    departure_elevation: Length,
+    destination_qnh: Pressure,
+    is_in_man_mode: bool,
+
+    is_active: bool,
+    is_initialised: bool,
+    constants: PhantomData<C>,
+}
+
+impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
+    const VERTICAL_SPEED_FILTER_TIME_CONSTANT: Duration = Duration::from_millis(1500);
+    const AMBIENT_CONDITIONS_FILTER_TIME_CONSTANT: Duration = Duration::from_millis(2000);
+    // Altitude in ft equivalent to 0.1 PSI delta P at sea level
+    const TARGET_LANDING_ALT_DIFF: f64 = 187.818;
+
+    fn new(context: &mut InitContext) -> Self {
+        Self {
+            cabin_altitude_id: context.get_identifier("PRESS_CABIN_ALTITUDE".to_owned()),
+            cabin_vs_id: context.get_identifier("PRESS_CABIN_VS".to_owned()),
+            cabin_delta_pressure_id: context
+                .get_identifier("PRESS_CABIN_DELTA_PRESSURE".to_owned()),
+            fwc_excess_cabin_altitude_id: context.get_identifier("PRESS_EXCESS_CAB_ALT".to_owned()),
+            fwc_excess_residual_pressure_id: context
+                .get_identifier("PRESS_EXCESS_RESIDUAL_PR".to_owned()),
+            fwc_low_diff_pressure_id: context.get_identifier("PRESS_LOW_DIFF_PR".to_owned()),
+
+            landing_elevation_id: context.get_identifier("FM1_LANDING_ELEVATION".to_owned()),
+            destination_qnh_id: context.get_identifier("DESTINATION_QNH".to_owned()),
+            outflow_valve_open_percentage_id: (1..=4)
+                .map(|id| {
+                    context.get_identifier(format!("PRESS_OUTFLOW_VALVE_{}_OPEN_PERCENTAGE", id))
+                })
+                .collect::<Vec<_>>()
+                .try_into()
+                .unwrap_or_else(|v: Vec<_>| {
+                    panic!("Expected a Vec of length {} but it was {}", 4, v.len())
+                }),
+
+            pressure_schedule_manager: Some(PressureScheduleManager::new()),
+            exterior_airspeed: Velocity::default(),
+            exterior_pressure: LowPassFilter::new_with_init_value(
+                Self::AMBIENT_CONDITIONS_FILTER_TIME_CONSTANT,
+                Pressure::new::<hectopascal>(Air::P_0),
+            ),
+            exterior_flight_altitude: Length::default(),
+            exterior_vertical_speed: LowPassFilter::new_with_init_value(
+                Self::AMBIENT_CONDITIONS_FILTER_TIME_CONSTANT,
+                Velocity::default(),
+            ),
+            reference_pressure: Pressure::new::<hectopascal>(Air::P_0),
+            previous_reference_pressure: Pressure::new::<hectopascal>(Air::P_0),
+            cabin_pressure: Pressure::new::<hectopascal>(Air::P_0),
+            cabin_delta_pressure: Pressure::default(),
+            cabin_altitude: Length::default(),
+            cabin_vertical_speed: Velocity::default(),
+            cabin_filtered_vertical_speed: LowPassFilter::new(
+                Self::VERTICAL_SPEED_FILTER_TIME_CONSTANT,
+            ),
+            cabin_target_vertical_speed: Velocity::default(),
+            outflow_valve_open_amount: [Ratio::new::<percent>(100.); 4],
+
+            landing_elevation: Length::default(),
+            departure_elevation: Length::default(),
+            destination_qnh: Pressure::default(),
+            is_in_man_mode: false,
+
+            is_active: false,
+            is_initialised: false,
+            constants: PhantomData,
+        }
+    }
+
+    fn update(
+        &mut self,
+        context: &UpdateContext,
+        adirs: &impl AdirsToAirCondInterface,
+        engines: &[&impl EngineCorrectedN1],
+        lgciu: [&impl LgciuWeightOnWheels; 2],
+        press_overhead: &impl PressurizationOverheadShared,
+        ocsm: [&impl OcsmShared; 4],
+    ) {
+        self.update_ambient_conditions(context, adirs);
+        self.cabin_pressure = ocsm[0].cabin_pressure(); // TODO Add check for failure
+        self.cabin_delta_pressure = ocsm[0].cabin_delta_pressure(); // TODO Add check for failure
+        (0..=3).for_each(|id| {
+            self.outflow_valve_open_amount[id] = ocsm[id].outflow_valve_open_amount()
+        });
+
+        if let Some(manager) = self.pressure_schedule_manager.take() {
+            self.pressure_schedule_manager = Some(manager.update(
+                context,
+                self.exterior_airspeed,
+                self.exterior_pressure.output(),
+                engines,
+                lgciu.iter().all(|a| a.left_and_right_gear_compressed(true)),
+                self.exterior_flight_altitude,
+                self.exterior_vertical_speed.output(),
+            ));
+        }
+        self.cabin_target_vertical_speed = self.calculate_cabin_target_vs();
+
+        let new_reference_pressure = self.calculate_reference_pressure(adirs, press_overhead);
+        let new_cabin_alt = self.calculate_altitude(self.cabin_pressure, new_reference_pressure);
+
+        self.cabin_vertical_speed =
+            self.calculate_vertical_speed(context, new_cabin_alt, new_reference_pressure);
+        self.cabin_filtered_vertical_speed
+            .update(context.delta(), self.cabin_vertical_speed);
+        self.cabin_altitude = new_cabin_alt;
+        self.reference_pressure = new_reference_pressure;
+        self.departure_elevation = self.calculate_departure_elevation();
+
+        self.is_in_man_mode = press_overhead.is_alt_man_sel() || press_overhead.is_vs_man_sel();
+    }
+
+    pub fn update_ambient_conditions(
+        &mut self,
+        context: &UpdateContext,
+        adirs: &impl AdirsToAirCondInterface,
+    ) {
+        let (adirs_airspeed, adirs_ambient_pressure) = self.adirs_values_calculation(adirs);
+        let new_exterior_altitude: Length;
+        self.exterior_airspeed = adirs_airspeed.unwrap_or_default();
+
+        if !self.is_initialised {
+            self.exterior_pressure.reset(
+                adirs_ambient_pressure.unwrap_or_else(|| Pressure::new::<hectopascal>(Air::P_0)),
+            );
+            new_exterior_altitude =
+                self.calculate_altitude(self.exterior_pressure.output(), self.reference_pressure);
+            self.is_initialised = true;
+        } else {
+            self.exterior_pressure.update(
+                context.delta(),
+                adirs_ambient_pressure.unwrap_or_else(|| Pressure::new::<hectopascal>(Air::P_0)),
+            );
+
+            new_exterior_altitude =
+                self.calculate_altitude(self.exterior_pressure.output(), self.reference_pressure);
+            // When the reference pressure changes, we skip the update to the external
+            // V/S to avoid a jump
+            if (self.previous_reference_pressure.get::<hectopascal>()
+                - self.reference_pressure.get::<hectopascal>())
+            .abs()
+                < f64::EPSILON
+            {
+                self.exterior_vertical_speed.update(
+                    context.delta(),
+                    self.calculate_exterior_vertical_speed(context, new_exterior_altitude),
+                );
+            }
+        }
+
+        self.exterior_flight_altitude = new_exterior_altitude;
+        self.previous_reference_pressure = self.reference_pressure;
+    }
+
+    fn adirs_values_calculation(
+        &self,
+        adirs: &impl AdirsToAirCondInterface,
+    ) -> (Option<Velocity>, Option<Pressure>) {
+        // TODO: Each CPC has a different order for checking the ADIRS
+        let adiru_check_order = [1, 2, 3];
+        let adirs_airspeed = adiru_check_order
+            .iter()
+            .find_map(|&adiru_number| adirs.true_airspeed(adiru_number).normal_value());
+        let adirs_ambient_pressure = adiru_check_order
+            .iter()
+            .find_map(|&adiru_number| adirs.ambient_static_pressure(adiru_number).normal_value());
+        (adirs_airspeed, adirs_ambient_pressure)
+    }
+
+    fn calculate_exterior_vertical_speed(
+        &self,
+        context: &UpdateContext,
+        new_altitude: Length,
+    ) -> Velocity {
+        Velocity::new::<meter_per_second>(
+            (new_altitude.get::<meter>() - self.exterior_flight_altitude.get::<meter>())
+                / context.delta_as_secs_f64(),
+        )
+    }
+
+    /// Calculation of altidude based on a pressure and reference pressure
+    /// This uses the hydrostatic equation with linear temp changes and constant R, g
+    fn calculate_altitude(&self, pressure: Pressure, reference_pressure: Pressure) -> Length {
+        let pressure_ratio = (pressure / reference_pressure).get::<ratio>();
+
+        // Hydrostatic equation with linear temp changes and constant R, g
+        let altitude: f64 =
+            ((Air::T_0 / pressure_ratio.powf((Air::L * Air::R) / Air::G)) - Air::T_0) / Air::L;
+        Length::new::<meter>(altitude)
+    }
+
+    fn calculate_vertical_speed(
+        &self,
+        context: &UpdateContext,
+        new_cabin_alt: Length,
+        new_reference_pressure: Pressure,
+    ) -> Velocity {
+        // When the reference pressure changes, V/S is the same as previous to avoid a jump
+        if (new_reference_pressure.get::<hectopascal>()
+            - self.reference_pressure.get::<hectopascal>())
+        .abs()
+            > f64::EPSILON
+        {
+            self.cabin_vertical_speed
+        } else {
+            // Distance over time :)
+            Velocity::new::<meter_per_second>(
+                (new_cabin_alt.get::<meter>() - self.cabin_altitude.get::<meter>())
+                    / context.delta_as_secs_f64(),
+            )
+        }
+    }
+
+    fn calculate_cabin_target_vs(&mut self) -> Velocity {
+        let error_margin = Pressure::new::<hectopascal>(1.);
+
+        match self.pressure_schedule_manager {
+            Some(PressureScheduleManager::Ground(_)) => {
+                Velocity::new::<foot_per_minute>(if self.cabin_delta_pressure > error_margin {
+                    C::DEPRESS_RATE
+                } else if self.cabin_delta_pressure < -error_margin {
+                    -C::DEPRESS_RATE
+                } else {
+                    0.
+                })
+            }
+            Some(PressureScheduleManager::TakeOff(_)) => Velocity::new::<foot_per_minute>(
+                if self.cabin_delta_pressure < Pressure::new::<psi>(C::MAX_TAKEOFF_DELTA_P) {
+                    C::TAKEOFF_RATE
+                } else {
+                    0.
+                },
+            ),
+            Some(PressureScheduleManager::ClimbInternal(_)) => {
+                // Formula based on empirical graphs and tables to simulate climb schedule as per the real aircraft
+                let target_vs_fpm = self
+                    .exterior_vertical_speed
+                    .output()
+                    .get::<foot_per_minute>()
+                    * (0.00000525 * self.exterior_flight_altitude.get::<foot>() + 0.09);
+                Velocity::new::<foot_per_minute>(
+                    if self.cabin_delta_pressure >= Pressure::new::<psi>(C::MAX_CLIMB_DELTA_P) {
+                        C::MAX_CLIMB_RATE
+                    } else if self.cabin_altitude
+                        >= Length::new::<foot>(C::MAX_CLIMB_CABIN_ALTITUDE)
+                    {
+                        0.
+                    } else if target_vs_fpm <= C::MAX_DESCENT_RATE {
+                        C::MAX_DESCENT_RATE
+                    } else {
+                        target_vs_fpm
+                    },
+                )
+            }
+            Some(PressureScheduleManager::Cruise(_)) => Velocity::default(),
+            Some(PressureScheduleManager::DescentInternal(_)) => {
+                let ext_diff_with_ldg_elev = self.get_ext_diff_with_ldg_elev().get::<foot>();
+                let target_vs_fpm = self.get_int_diff_with_ldg_elev().get::<foot>()
+                    * self
+                        .exterior_vertical_speed
+                        .output()
+                        .get::<foot_per_minute>()
+                    / ext_diff_with_ldg_elev;
+                Velocity::new::<foot_per_minute>(if ext_diff_with_ldg_elev <= 0. {
+                    0.
+                } else if target_vs_fpm <= C::MAX_DESCENT_RATE {
+                    C::MAX_DESCENT_RATE
+                } else if target_vs_fpm >= C::MAX_CLIMB_RATE_IN_DESCENT {
+                    C::MAX_CLIMB_RATE_IN_DESCENT
+                } else {
+                    target_vs_fpm
+                })
+            }
+            Some(PressureScheduleManager::Abort(_)) => Velocity::new::<foot_per_minute>(
+                if self.cabin_altitude
+                    > self.departure_elevation - Length::new::<foot>(Self::TARGET_LANDING_ALT_DIFF)
+                {
+                    C::MAX_ABORT_DESCENT_RATE
+                } else {
+                    0.
+                },
+            ),
+            None => Velocity::new::<foot_per_minute>(0.),
+        }
+    }
+
+    fn get_ext_diff_with_ldg_elev(&self) -> Length {
+        // TODO: Replace constant target landing alt diff for pressure diff
+        self.exterior_flight_altitude
+            - (self.landing_elevation - Length::new::<foot>(Self::TARGET_LANDING_ALT_DIFF))
+    }
+
+    fn get_int_diff_with_ldg_elev(&self) -> Length {
+        self.cabin_altitude
+            - (self.landing_elevation - Length::new::<foot>(Self::TARGET_LANDING_ALT_DIFF))
+    }
+
+    /// In decent the reference pressure is based on the local QNH when below 5000ft from arrival airport, ISA when above.
+    /// If no QNH data has been entered in the MCDU, the ADIRS baro correction is used.
+    /// In all other phases, ISA is used when the aircraft is higher than 5000ft from departing or landing airfields
+    /// When the system is in manual, the reference pressure is always ISA
+    fn calculate_reference_pressure(
+        &self,
+        adirs: &impl AdirsToAirCondInterface,
+        press_overhead: &impl PressurizationOverheadShared,
+    ) -> Pressure {
+        if press_overhead.is_in_man_mode() {
+            return Pressure::new::<hectopascal>(Air::P_0);
+        }
+
+        // TODO: Each CPC has a different order for checking the ADIRS - CPC1 1-2-3, CPC2 2-1-3
+        let altimeter_setting = [1, 2, 3]
+            .iter()
+            .find_map(|&adiru_number| adirs.baro_correction(adiru_number).normal_value());
+
+        if matches!(
+            self.pressure_schedule_manager,
+            Some(PressureScheduleManager::DescentInternal(_))
+        ) && (self.exterior_flight_altitude - self.landing_elevation)
+            .get::<foot>()
+            .abs()
+            < 5000.
+        {
+            if self.destination_qnh > Pressure::new::<hectopascal>(0.) {
+                self.destination_qnh
+            } else if let Some(alt) = altimeter_setting {
+                alt
+            } else {
+                Pressure::new::<hectopascal>(Air::P_0)
+            }
+        } else if ((self.exterior_flight_altitude - self.departure_elevation)
+            .get::<foot>()
+            .abs()
+            < 5000.
+            || (self.exterior_flight_altitude - self.landing_elevation)
+                .get::<foot>()
+                .abs()
+                < 5000.)
+            && altimeter_setting.is_some()
+            // Avoid coming back to local QNH in turbulence
+            && !(!self.is_ground()
+                && (self.reference_pressure.get::<hectopascal>() - Air::P_0).abs() < f64::EPSILON
+                && (altimeter_setting.unwrap_or_default().get::<hectopascal>() - Air::P_0).abs()
+                    > f64::EPSILON)
+        {
+            altimeter_setting.unwrap()
+        } else {
+            Pressure::new::<hectopascal>(Air::P_0)
+        }
+    }
+
+    fn calculate_departure_elevation(&self) -> Length {
+        if self.is_ground() {
+            self.cabin_altitude
+        } else {
+            self.departure_elevation
+        }
+    }
+
+    fn is_ground(&self) -> bool {
+        matches!(
+            self.pressure_schedule_manager,
+            Some(PressureScheduleManager::Ground(_))
+        )
+    }
+
+    // FWC warning signals
+    pub(super) fn is_excessive_alt(&self) -> bool {
+        self.cabin_altitude > Length::new::<foot>(C::EXCESSIVE_ALT_WARNING)
+            && self.cabin_altitude > (self.departure_elevation + Length::new::<foot>(1000.))
+            && self.cabin_altitude > (self.landing_elevation + Length::new::<foot>(1000.))
+    }
+
+    pub(super) fn is_excessive_residual_pressure(&self) -> bool {
+        self.cabin_delta_pressure > Pressure::new::<psi>(C::EXCESSIVE_RESIDUAL_PRESSURE_WARNING)
+    }
+
+    pub(super) fn is_low_diff_pressure(&self) -> bool {
+        self.cabin_delta_pressure < Pressure::new::<psi>(C::LOW_DIFFERENTIAL_PRESSURE_WARNING)
+            && self.cabin_altitude > (self.landing_elevation + Length::new::<foot>(1500.))
+            && self.exterior_vertical_speed.output() < Velocity::new::<foot_per_minute>(-500.)
+    }
+
+    fn activate(&mut self) {
+        self.is_active = true;
+    }
+
+    fn deactivate(&mut self) {
+        self.is_active = false;
+    }
+
+    fn ofv_total_open_area(&self) -> Ratio {
+        // This can be area or ratio and then multiplied by the ofv area
+        let mut sum = Ratio::default();
+
+        for r in self.outflow_valve_open_amount {
+            sum += r;
+        }
+
+        sum
+    }
+
+    fn ofv_open_allowed(&self) -> bool {
+        self.is_ground() || !(self.cabin_altitude > Length::new::<foot>(15000.))
+    }
+
+    fn should_open_ofv(&self) -> bool {
+        self.is_ground()
+            && self
+                .pressure_schedule_manager
+                .as_ref()
+                .map_or(false, |manager| manager.should_open_outflow_valve())
+    }
+
+    fn cabin_vertical_speed(&self) -> Velocity {
+        self.cabin_vertical_speed
+    }
+
+    fn target_vertical_speed(&self) -> Option<Velocity> {
+        if self.is_active {
+            Some(self.cabin_target_vertical_speed)
+        } else {
+            None
+        }
+    }
+
+    #[cfg(test)]
+    fn landing_elevation(&self) -> Length {
+        self.landing_elevation
+    }
+
+    #[cfg(test)]
+    fn reference_pressure(&self) -> Pressure {
+        self.reference_pressure
+    }
+}
+
+impl<C: PressurizationConstants> CabinAltitude for CabinPressureControlSystemApplication<C> {
+    fn altitude(&self) -> Length {
+        self.cabin_altitude
+    }
+}
+
+impl<C: PressurizationConstants> SimulationElement for CabinPressureControlSystemApplication<C> {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        // Add check for active cpc only
+        writer.write(&self.cabin_altitude_id, self.cabin_altitude);
+        writer.write(
+            &self.cabin_vs_id,
+            self.cabin_vertical_speed().get::<foot_per_minute>(),
+        );
+        for (id, ofv) in self.outflow_valve_open_percentage_id.iter().enumerate() {
+            writer.write(ofv, self.outflow_valve_open_amount[id]);
+        }
+        // writer.write(
+        //     &self.cabin_vs_id,
+        //     self.cabin_vertical_speed().get::<foot_per_minute>(),
+        // );
+        writer.write(&self.cabin_delta_pressure_id, self.cabin_delta_pressure);
+
+        // FWC warning signals
+        writer.write(&self.fwc_excess_cabin_altitude_id, self.is_excessive_alt());
+        writer.write(
+            &self.fwc_excess_residual_pressure_id,
+            self.is_excessive_residual_pressure(),
+        );
+        writer.write(&self.fwc_low_diff_pressure_id, self.is_low_diff_pressure());
+    }
+
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        let landing_elevation_word: Arinc429Word<Length> =
+            reader.read_arinc429(&self.landing_elevation_id);
+        self.landing_elevation = landing_elevation_word.normal_value().unwrap_or_default();
+        self.destination_qnh = Pressure::new::<hectopascal>(reader.read(&self.destination_qnh_id));
     }
 }

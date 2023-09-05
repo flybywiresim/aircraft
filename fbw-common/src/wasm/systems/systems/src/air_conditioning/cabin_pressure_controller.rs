@@ -153,7 +153,7 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
                 context,
                 adirs_airspeed.unwrap_or_default(),
                 self.exterior_pressure.output(),
-                engines,
+                &engines,
                 lgciu_gears_compressed,
                 self.exterior_flight_altitude,
                 self.exterior_vertical_speed.output(),
@@ -603,7 +603,7 @@ impl<C: PressurizationConstants> SimulationElement for CabinPressureController<C
     }
 }
 
-struct OutflowValveController {
+pub(super) struct OutflowValveController {
     is_in_man_mode: bool,
     open_allowed: bool,
     should_open: bool,
@@ -611,7 +611,7 @@ struct OutflowValveController {
 }
 
 impl OutflowValveController {
-    fn new() -> Self {
+    pub(super) fn new() -> Self {
         Self {
             //TODO: add ID for multiple OFV
             is_in_man_mode: false,
@@ -621,7 +621,7 @@ impl OutflowValveController {
         }
     }
 
-    fn update(
+    pub(super) fn update(
         &mut self,
         context: &UpdateContext,
         cabin_vertical_speed: Velocity,
@@ -664,7 +664,7 @@ impl ControllerSignal<OutflowValveSignal> for OutflowValveController {
     }
 }
 
-enum PressureScheduleManager {
+pub enum PressureScheduleManager {
     Ground(PressureSchedule<Ground>),
     TakeOff(PressureSchedule<TakeOff>),
     ClimbInternal(PressureSchedule<ClimbInternal>),
@@ -674,16 +674,16 @@ enum PressureScheduleManager {
 }
 
 impl PressureScheduleManager {
-    fn new() -> Self {
+    pub fn new() -> Self {
         PressureScheduleManager::Ground(PressureSchedule::with_open_outflow_valve())
     }
 
-    fn update(
+    pub fn update(
         mut self,
         context: &UpdateContext,
         adirs_airspeed: Velocity,
         adirs_ambient_pressure: Pressure,
-        engines: [&impl EngineCorrectedN1; 2],
+        engines: &[&impl EngineCorrectedN1],
         lgciu_gears_compressed: bool,
         exterior_flight_altitude: Length,
         exterior_vertical_speed: Velocity,
@@ -722,7 +722,7 @@ impl PressureScheduleManager {
         self
     }
 
-    fn should_open_outflow_valve(&self) -> bool {
+    pub fn should_open_outflow_valve(&self) -> bool {
         match self {
             PressureScheduleManager::Ground(schedule) => schedule.should_open_outflow_valve(),
             _ => false,
@@ -766,7 +766,7 @@ macro_rules! transition_with_ctor {
 }
 
 #[derive(Copy, Clone)]
-struct PressureSchedule<S> {
+pub struct PressureSchedule<S> {
     timer: Duration,
     pressure_schedule: S,
 }
@@ -791,7 +791,7 @@ impl<S> PressureSchedule<S> {
 }
 
 #[derive(Copy, Clone)]
-struct Ground {
+pub struct Ground {
     cpc_switch_reset: bool,
 }
 
@@ -821,7 +821,7 @@ impl PressureSchedule<Ground> {
         context: &UpdateContext,
         adirs_airspeed: Velocity,
         adirs_ambient_pressure: Pressure,
-        engines: [&impl EngineCorrectedN1; 2],
+        engines: &[&impl EngineCorrectedN1],
         lgciu_gears_compressed: bool,
     ) -> PressureScheduleManager {
         if engines
@@ -859,14 +859,14 @@ transition_with_ctor!(DescentInternal, Ground, Ground::reset);
 transition_with_ctor!(Abort, Ground, Ground::reset);
 
 #[derive(Copy, Clone)]
-struct TakeOff;
+pub struct TakeOff;
 
 impl PressureSchedule<TakeOff> {
     fn step(
         self: PressureSchedule<TakeOff>,
         adirs_airspeed: Velocity,
         adirs_ambient_pressure: Pressure,
-        engines: [&impl EngineCorrectedN1; 2],
+        engines: &[&impl EngineCorrectedN1],
         lgciu_gears_compressed: bool,
     ) -> PressureScheduleManager {
         if engines
@@ -889,7 +889,7 @@ impl PressureSchedule<TakeOff> {
 transition!(Ground, TakeOff);
 
 #[derive(Copy, Clone)]
-struct ClimbInternal;
+pub struct ClimbInternal;
 
 impl PressureSchedule<ClimbInternal> {
     fn step(
@@ -937,7 +937,7 @@ transition!(DescentInternal, ClimbInternal);
 transition!(Abort, ClimbInternal);
 
 #[derive(Copy, Clone)]
-struct Cruise;
+pub struct Cruise;
 
 impl PressureSchedule<Cruise> {
     fn step(
@@ -969,7 +969,7 @@ impl PressureSchedule<Cruise> {
 transition!(ClimbInternal, Cruise);
 
 #[derive(Copy, Clone)]
-struct DescentInternal;
+pub struct DescentInternal;
 
 impl PressureSchedule<DescentInternal> {
     fn step(
@@ -999,7 +999,7 @@ transition!(ClimbInternal, DescentInternal);
 transition!(Cruise, DescentInternal);
 
 #[derive(Copy, Clone)]
-struct Abort;
+pub struct Abort;
 
 impl PressureSchedule<Abort> {
     fn step(
