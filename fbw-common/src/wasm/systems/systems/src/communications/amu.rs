@@ -20,12 +20,12 @@ enum TypeCard {
     BITE(BITE),
 }
 
-pub struct AAA {
+pub struct WordAMUACPInfo {
     identification: IdentificationWordAMUACP,
     sdi: u32,
     label: LabelWordAMUACP,
 }
-impl AAA {
+impl WordAMUACPInfo {
     pub fn new(identification: IdentificationWordAMUACP, sdi: u32, label: LabelWordAMUACP) -> Self {
         Self {
             identification,
@@ -408,10 +408,12 @@ impl AdaptationBoard {
         bus: &mut Vec<Arinc429Word<u32>>,
         mixed_audio: &mut MixedAudio,
         acp_id: u32,
+        ls_fcu_pressed: bool,
         transmission_table_acp: &mut u32,
-        can_send_amu_word: &mut bool,
-        acp_to_take_into_account: &u32,
+        acp_to_take_into_account: u32,
     ) {
+        let mut can_send_amu_word = false;
+
         loop {
             match bus.pop() {
                 Some(word) => {
@@ -422,12 +424,9 @@ impl AdaptationBoard {
                         let label = label_option.unwrap();
 
                         if label == LabelWordAMUACP::Label300Request {
-                            if acp_id == 2 {
-                                println!("Received word 0");
-                            }
-                            if word.get_bits(3, 29) != 0 {
-                                *can_send_amu_word = true;
-                            }
+                            // Here the ACP id is available in the word
+                            // but we don't need it for now. Maybe in the future with more information...
+                            can_send_amu_word = true;
                         } else {
                             let sdi = word.get_bits(2, 9) as u8;
                             let transmission_table = word.get_bits(4, 11);
@@ -438,16 +437,9 @@ impl AdaptationBoard {
                             let voice = word.get_bits(1, 26) != 0;
                             let _reset = word.get_bits(1, 27) != 0;
 
-                            if acp_id == 2 {
-                                println!(
-                                    "transmission_table received from ACP{} = {}",
-                                    acp_id, *transmission_table_acp
-                                );
-                            }
-
                             *transmission_table_acp = transmission_table;
 
-                            if *acp_to_take_into_account == acp_id {
+                            if acp_to_take_into_account == acp_id {
                                 // Perform this only if the data currently analyzed is from the chosen acp
                                 match label {
                                     LabelWordAMUACP::Label210VolumeControlVHF => {
@@ -486,7 +478,8 @@ impl AdaptationBoard {
                                     }
                                     LabelWordAMUACP::Label217VolumeControlILS => {
                                         mixed_audio.volume_ils = volume;
-                                        mixed_audio.receive_ils = reception != 0 && !voice;
+                                        mixed_audio.receive_ils =
+                                            reception != 0 && !voice && ls_fcu_pressed;
                                     }
                                     _ => {}
                                 }
@@ -497,16 +490,16 @@ impl AdaptationBoard {
                 _ => break,
             }
         }
+
+        if can_send_amu_word {
+            AdaptationBoard::send_amu_word(bus, transmission_table_acp);
+        }
     }
 
     pub fn send_amu_word(bus_acp: &mut Vec<Arinc429Word<u32>>, transmission_table: &u32) {
         let mut word_arinc: Arinc429Word<u32> = Arinc429Word::new(0, SignStatus::NormalOperation);
 
         word_arinc.set_bits(1, LabelWordAMUACP::Label301AMU as u32);
-        // println!(
-        //     "transmission_table sent via amu word to ACP is {}",
-        //     *transmission_table
-        // );
         word_arinc.set_bits(11, *transmission_table);
 
         bus_acp.push(word_arinc);
@@ -519,7 +512,6 @@ impl AdaptationBoard {
         side_controlling: &SideControlling,
     ) {
         let mut acp_to_take_into_account: u32 = 1;
-        let mut can_send_amu_word: bool = false;
 
         if self.audio_switching_knob != AudioSwitchingKnobPosition::FO
             && side_controlling.to_owned() == SideControlling::FO
@@ -548,16 +540,14 @@ impl AdaptationBoard {
                 &mut self.bus_acp_3rd,
                 &mut self.mixed_audio,
                 3,
+                if context.side_controlling() == SideControlling::CAPTAIN {
+                    self.ls_fcu1_pressed
+                } else {
+                    self.ls_fcu2_pressed
+                },
                 &mut self.transmission_table_acp3,
-                &mut can_send_amu_word,
-                &acp_to_take_into_account,
+                acp_to_take_into_account,
             );
-            if can_send_amu_word {
-                AdaptationBoard::send_amu_word(
-                    &mut self.bus_acp_3rd,
-                    &self.transmission_table_acp3,
-                );
-            }
         } else {
             self.acp_ovhd
                 .update(context, &mut self.bus_acp_avncs, need_update_from_options);
@@ -566,61 +556,65 @@ impl AdaptationBoard {
                 &mut self.bus_acp_avncs,
                 &mut self.mixed_audio,
                 3,
+                if context.side_controlling() == SideControlling::CAPTAIN {
+                    self.ls_fcu1_pressed
+                } else {
+                    self.ls_fcu2_pressed
+                },
                 &mut self.transmission_table_acp3,
-                &mut can_send_amu_word,
-                &acp_to_take_into_account,
+                acp_to_take_into_account,
             );
-            if can_send_amu_word {
-                AdaptationBoard::send_amu_word(
-                    &mut self.bus_acp_avncs,
-                    &self.transmission_table_acp3,
-                );
-            }
         }
-
-        can_send_amu_word = false;
 
         AdaptationBoard::decode_arinc_words(
             &mut self.bus_arinc_bay,
             &mut self.mixed_audio,
             1,
+            self.ls_fcu1_pressed,
             &mut self.transmission_table_acp1,
-            &mut can_send_amu_word,
-            &acp_to_take_into_account,
+            acp_to_take_into_account,
         );
-        if can_send_amu_word {
-            AdaptationBoard::send_amu_word(&mut self.bus_arinc_bay, &self.transmission_table_acp1);
-            can_send_amu_word = false;
-        }
 
         AdaptationBoard::decode_arinc_words(
             &mut self.bus_arinc_3rd,
             &mut self.mixed_audio,
             2,
+            self.ls_fcu2_pressed,
             &mut self.transmission_table_acp2,
-            &mut can_send_amu_word,
-            &acp_to_take_into_account,
+            acp_to_take_into_account,
         );
-        if can_send_amu_word {
-            println!(
-                "Sending amu word with transmission table = {}",
-                self.transmission_table_acp2
-            );
-            AdaptationBoard::send_amu_word(&mut self.bus_arinc_3rd, &self.transmission_table_acp2);
-        }
 
-        // We take into account on VHF1/2/3 as per SDK
+        // We only take into account VHF1/2/3 as per SDK
+        // 4 stands for NONE SDK wise but stand for 4 HF1 for us therefore
+        // we need to have some logic here to filter
         self.pilot_transmit_channel = if acp_to_take_into_account == 1 {
-            self.transmission_table_acp1
+            if self.transmission_table_acp1 == 0 || self.transmission_table_acp1 > 3 {
+                4
+            } else {
+                self.transmission_table_acp1 - 1
+            }
         } else if acp_to_take_into_account == 3 {
-            self.transmission_table_acp3
+            if self.transmission_table_acp3 == 0 || self.transmission_table_acp3 > 3 {
+                4
+            } else {
+                self.transmission_table_acp3 - 1
+            }
         } else {
             4
         };
+
         self.copilot_transmit_channel = if acp_to_take_into_account == 2 {
-            self.transmission_table_acp2
+            if self.transmission_table_acp2 == 0 || self.transmission_table_acp2 > 3 {
+                4
+            } else {
+                self.transmission_table_acp2 - 1
+            }
         } else if acp_to_take_into_account == 3 {
-            self.transmission_table_acp3
+            if self.transmission_table_acp3 == 0 || self.transmission_table_acp3 > 3 {
+                4
+            } else {
+                self.transmission_table_acp3 - 1
+            }
         } else {
             4
         };
