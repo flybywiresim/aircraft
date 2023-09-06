@@ -1237,7 +1237,7 @@ impl GsxDriver {
                 self.performing_board = false;
             }
             GsxState::Completed => {
-                if (self.performing_board) {
+                if self.performing_board {
                     passenger_deck.spawn_all_pax();
                     cargo_deck.spawn_all_cargo();
                 }
@@ -1269,7 +1269,7 @@ impl GsxDriver {
                 self.performing_deboard = false;
             }
             GsxState::Completed => {
-                if (self.performing_deboard) {
+                if self.performing_deboard {
                     passenger_deck.spawn_all_pax();
                     cargo_deck.spawn_all_cargo();
                     cargo_deck.reset_cargo_loaded();
