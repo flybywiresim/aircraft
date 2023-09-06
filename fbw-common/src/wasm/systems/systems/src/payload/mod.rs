@@ -1086,7 +1086,6 @@ pub struct GsxInput {
     deboarding_state_id: VariableIdentifier,
     pax_boarding_id: VariableIdentifier,
     pax_deboarding_id: VariableIdentifier,
-    total_pax_boarded_id: VariableIdentifier,
     cargo_boarding_percent_id: VariableIdentifier,
     cargo_deboarding_percent_id: VariableIdentifier,
 
@@ -1095,7 +1094,6 @@ pub struct GsxInput {
     deboarding_state: GsxState,
     pax_boarding: i32,
     pax_deboarding: i32,
-    total_pax_boarded: i32,
     cargo_boarding_percent: f64,
     cargo_deboarding_percent: f64,
 }
@@ -1109,7 +1107,6 @@ impl GsxInput {
                 .get_identifier("FSDT_GSX_NUMPASSENGERS_BOARDING_TOTAL".to_owned()),
             pax_deboarding_id: context
                 .get_identifier("FSDT_GSX_NUMPASSENGERS_DEBOARDING_TOTAL".to_owned()),
-            total_pax_boarded_id: context.get_identifier("FSDT_GSX_NUMPASSENGERS_TOTAL".to_owned()),
             cargo_boarding_percent_id: context
                 .get_identifier("FSDT_GSX_BOARDING_CARGO_PERCENT".to_owned()),
             cargo_deboarding_percent_id: context
@@ -1119,7 +1116,6 @@ impl GsxInput {
             deboarding_state: GsxState::None,
             pax_boarding: 0,
             pax_deboarding: 0,
-            total_pax_boarded: 0,
             cargo_boarding_percent: 0.0,
             cargo_deboarding_percent: 0.0,
         }
@@ -1144,17 +1140,12 @@ impl GsxInput {
     fn pax_deboarding(&self) -> i32 {
         self.pax_deboarding
     }
-
-    fn total_pax_boarded(&self) -> i32 {
-        self.total_pax_boarded
-    }
 }
 impl SimulationElement for GsxInput {
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.is_enabled = reader.read(&self.is_enabled_id);
         self.pax_boarding = reader.read(&self.pax_boarding_id);
         self.pax_deboarding = reader.read(&self.pax_deboarding_id);
-        self.total_pax_boarded = reader.read(&self.total_pax_boarded_id);
         self.cargo_boarding_percent = reader.read(&self.cargo_boarding_percent_id);
         self.cargo_deboarding_percent = reader.read(&self.cargo_deboarding_percent_id);
         self.boarding_state = reader.read(&self.boarding_state_id);
@@ -1164,11 +1155,17 @@ impl SimulationElement for GsxInput {
 
 pub struct GsxDriver {
     gsx_input: GsxInput,
+    performing_board: bool,
+    performing_deboard: bool,
+    deboarding_total: i32,
 }
 impl GsxDriver {
     pub fn new(context: &mut InitContext) -> Self {
         GsxDriver {
             gsx_input: GsxInput::new(context),
+            performing_board: false,
+            performing_deboard: false,
+            deboarding_total: 0,
         }
     }
 
@@ -1197,10 +1194,6 @@ impl GsxDriver {
 
     fn pax_deboarding(&self) -> i32 {
         self.gsx_input.pax_deboarding()
-    }
-
-    fn total_pax_boarded(&self) -> i32 {
-        self.gsx_input.total_pax_boarded()
     }
 
     fn cargo_boarding_percent(&self) -> f64 {
@@ -1240,13 +1233,20 @@ impl GsxDriver {
             | GsxState::Available
             | GsxState::NotAvailable
             | GsxState::Bypassed
-            | GsxState::Requested => {}
+            | GsxState::Requested => {
+                self.performing_board = false;
+            }
             GsxState::Completed => {
-                cargo_deck.spawn_all_cargo();
+                if (self.performing_board) {
+                    passenger_deck.spawn_all_pax();
+                    cargo_deck.spawn_all_cargo();
+                }
+                self.performing_board = false;
             }
             GsxState::Performing => {
                 passenger_deck.board_pax_until_target(self.pax_boarding());
                 cargo_deck.load_cargo_deck_percent(self.cargo_boarding_percent());
+                self.performing_board = true;
             }
         }
     }
@@ -1257,22 +1257,32 @@ impl GsxDriver {
         cargo_deck: &mut CargoDeck<C>,
     ) {
         match self.deboarding_state() {
-            GsxState::None | GsxState::Available | GsxState::NotAvailable | GsxState::Bypassed => {}
+            GsxState::None | GsxState::Available | GsxState::NotAvailable | GsxState::Bypassed => {
+                self.deboarding_total = 0;
+                self.performing_deboard = false;
+            }
             GsxState::Requested => {
                 cargo_deck.update_cargo_loaded();
                 passenger_deck.target_none();
                 cargo_deck.target_none();
+                self.deboarding_total = passenger_deck.total_pax_num();
+                self.performing_deboard = false;
             }
             GsxState::Completed => {
-                passenger_deck.spawn_all_pax();
-                cargo_deck.spawn_all_cargo();
-                cargo_deck.reset_cargo_loaded();
-                cargo_deck.target_none();
+                if (self.performing_deboard) {
+                    passenger_deck.spawn_all_pax();
+                    cargo_deck.spawn_all_cargo();
+                    cargo_deck.reset_cargo_loaded();
+                    cargo_deck.target_none();
+                }
+                self.deboarding_total = 0;
+                self.performing_deboard = false;
             }
             GsxState::Performing => {
                 passenger_deck
-                    .deboard_pax_until_target(self.total_pax_boarded() - self.pax_deboarding());
+                    .deboard_pax_until_target(self.deboarding_total - self.pax_deboarding());
                 cargo_deck.load_cargo_deck_percent(100. - self.cargo_deboarding_percent());
+                self.performing_deboard = true;
             }
         }
     }
