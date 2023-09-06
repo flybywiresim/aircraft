@@ -408,14 +408,14 @@ class CDUPerformancePage {
         let managedSpeedCell = '';
         if (isPhaseActive) {
             if (mcdu.managedSpeedTarget === mcdu.managedSpeedClimb) {
-                managedSpeedCell = `{small}${mcdu.managedSpeedClimb.toFixed(0)}/${mcdu.managedSpeedClimbMach.toFixed(2).replace('0.', '.')}{end}`;
-            } else if (Simplane.getAutoPilotMachModeActive() || SimVar.GetSimVarValue('K:AP_MANAGED_SPEED_IN_MACH_ON', 'Bool')) {
-                managedSpeedCell = `{small}${mcdu.managedSpeedClimbMach.toFixed(2).replace('0.', '.')}{end}`;
+                managedSpeedCell = `\xa0${mcdu.managedSpeedClimb.toFixed(0)}/${mcdu.managedSpeedClimbMach.toFixed(2).replace('0.', '.')}`;
+            } else if (mcdu.managedSpeedTargetIsMach) {
+                managedSpeedCell = `\xa0${mcdu.managedSpeedClimbMach.toFixed(2).replace('0.', '.')}`;
             } else {
-                managedSpeedCell = `{small}${mcdu.managedSpeedTarget.toFixed(0)}{end}`;
+                managedSpeedCell = `\xa0${mcdu.managedSpeedTarget.toFixed(0)}`;
             }
         } else {
-            managedSpeedCell = `${canClickManagedSpeed ? '*' : ''}${mcdu.managedSpeedClimb > mcdu.climbSpeedLimit ? mcdu.climbSpeedLimit.toFixed(0) : mcdu.managedSpeedClimb.toFixed(0)}`;
+            managedSpeedCell = `${canClickManagedSpeed ? '*' : '\xa0'}${mcdu.managedSpeedClimb > mcdu.climbSpeedLimit ? mcdu.climbSpeedLimit.toFixed(0) : mcdu.managedSpeedClimb.toFixed(0)}`;
 
             mcdu.onLeftInput[3] = (value, scratchpadCallback) => {
                 if (mcdu.trySetPreSelectedClimbSpeed(value)) {
@@ -425,7 +425,7 @@ class CDUPerformancePage {
                 }
             };
         }
-        const [selectedSpeedTitle, selectedSpeedCell] = CDUPerformancePage.getSelectedTitleAndValue(isPhaseActive, isSelected, mcdu.preSelectedClbSpeed);
+        const [selectedSpeedTitle, selectedSpeedCell] = CDUPerformancePage.getClbSelectedTitleAndValue(mcdu, isPhaseActive, isSelected, mcdu.preSelectedClbSpeed);
         mcdu.onLeftInput[1] = (value, scratchpadCallback) => {
             if (mcdu.tryUpdateCostIndex(value)) {
                 CDUPerformancePage.ShowCLBPage(mcdu);
@@ -492,9 +492,9 @@ class CDUPerformancePage {
             ["CI"],
             [`${costIndexCell}[color]cyan`, predToCell, predToLabel],
             ["MANAGED", toDistLabel, toUtcLabel],
-            [`\xa0${managedSpeedCell}[color]green`, !isSelected ? predToDistanceCell : "", !isSelected ? predToTimeCell : ""],
-            [`${selectedSpeedTitle}`],
-            [`${selectedSpeedCell}`, isSelected ? predToDistanceCell : "", isSelected ? predToTimeCell : ""],
+            [`{small}${managedSpeedCell}{end}[color]green`, !isSelected ? predToDistanceCell : "", !isSelected ? predToTimeCell : ""],
+            [selectedSpeedTitle],
+            [selectedSpeedCell, isSelected ? predToDistanceCell : "", isSelected ? predToTimeCell : ""],
             [""],
             isPhaseActive ? ["{small}EXPEDITE{end}[color]green", expeditePredToDistanceCell, expeditePredToTimeCell] : [""],
             bottomRowLabels,
@@ -527,7 +527,7 @@ class CDUPerformancePage {
         let managedSpeedCell = "---/---";
         if (Number.isFinite(mcdu.cruiseFlightLevel) && Number.isFinite(mcdu.managedSpeedCruise) && Number.isFinite(mcdu.managedSpeedCruiseMach)) {
             const shouldShowCruiseMach = mcdu.cruiseFlightLevel > 250;
-            managedSpeedCell = `${canClickManagedSpeed ? "*" : ""}${shouldShowCruiseMach ? mcdu.managedSpeedCruiseMach.toFixed(2).replace("0.", ".") : mcdu.managedSpeedCruise.toFixed(0)}[color]green`;
+            managedSpeedCell = `{small}${canClickManagedSpeed ? "*" : "\xa0"}${shouldShowCruiseMach ? mcdu.managedSpeedCruiseMach.toFixed(2).replace("0.", ".") : mcdu.managedSpeedCruise.toFixed(0)}{end}[color]green`;
         }
         const preselTitle = isPhaseActive ? "" : "PRESEL";
         let preselCell = "";
@@ -621,7 +621,7 @@ class CDUPerformancePage {
             ["CI"],
             [`${costIndexCell}[color]cyan`, toReasonCell],
             ["MANAGED", toDistLabel, toUtcLabel],
-            [`\xa0${managedSpeedCell}`, toDistCell, toTimeCell],
+            [managedSpeedCell, toDistCell, toTimeCell],
             [preselTitle, "DES CABIN RATE"],
             [preselCell, `\xa0{cyan}${desCabinRateCell}{end}{white}{small}FT/MN{end}{end}`],
             [""],
@@ -679,8 +679,7 @@ class CDUPerformancePage {
 
         const managedDescentSpeedCell = `{${econDesMachPilotEntered ? "big" : "small"}}${econDesMach !== undefined ? econDesMach.toFixed(2).replace("0.", ".") : "---"}{end}/{${econDesPilotEntered ? "big" : "small"}}${econDes !== undefined ? econDes.toFixed(0) : "---"}{end}[color]cyan`;
 
-        // The way the arguments are supplied here is a hack to display the correct things
-        const [selectedSpeedTitle, selectedSpeedCell] = CDUPerformancePage.getSelectedTitleAndValue(true, isPhaseActive && isSelected, 0);
+        const [selectedSpeedTitle, selectedSpeedCell] = CDUPerformancePage.getDesSelectedTitleAndValue(mcdu, isPhaseActive, isSelected);
         const timeLabel = isFlying ? "\xa0UTC" : "TIME";
         const [destEfobCell, destTimeCell] = CDUPerformancePage.formatDestEfobAndTime(mcdu, isFlying);
         const [toUtcLabel, toDistLabel] = isPhaseActive ? ["\xa0UTC", "DIST"] : ["", ""];
@@ -746,8 +745,8 @@ class CDUPerformancePage {
             [costIndexCell, predToCell, predToLabel],
             ["MANAGED", toDistLabel, toUtcLabel],
             [`\xa0${managedDescentSpeedCell}[color]cyan`, !isSelected ? predToDistanceCell : "", !isSelected ? predToTimeCell : ""],
-            [`\xa0${selectedSpeedTitle}`],
-            [`\xa0${selectedSpeedCell}`, isSelected ? predToDistanceCell : "", isSelected ? predToTimeCell : ""],
+            [selectedSpeedTitle],
+            [selectedSpeedCell, isSelected ? predToDistanceCell : "", isSelected ? predToTimeCell : ""],
             [""],
             [""],
             bottomRowLabels,
@@ -1089,17 +1088,48 @@ class CDUPerformancePage {
         ]);
     }
 
-    static getSelectedTitleAndValue(_isPhaseActive, _isSelected, _preSel) {
-        if (_isPhaseActive) {
-            return _isSelected
-                ? ["SELECTED", "\xa0" + Math.round(Simplane.getAutoPilotMachModeActive()
-                    ? SimVar.GetGameVarValue('FROM MACH TO KIAS', 'number', Simplane.getAutoPilotMachHoldValue())
-                    : Simplane.getAutoPilotAirspeedHoldValue()) + "[color]green"]
-                : ["", ""];
+    static getClbSelectedTitleAndValue(mcdu, isPhaseActive, isSelected, preSel) {
+        if (!isPhaseActive) {
+            return ["PRESEL", (isFinite(preSel) ? "\xa0" + preSel : "*[ ]") + "[color]cyan"];
+        }
+
+        if (!isSelected) {
+            return ["", ""];
+        }
+
+        const aircraftAltitude = SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet');
+        const selectedSpdMach = SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_SPEED_SELECTED', 'number');
+
+        if (selectedSpdMach < 1) {
+            return ["SELECTED", `\xa0${selectedSpdMach.toFixed(2).replace('0.', '.')}[color]green`];
         } else {
-            return ["PRESEL", (isFinite(_preSel) ? "" + _preSel : "*[ ]") + "[color]cyan"];
+            const machAtManualCrossoverAlt = mcdu.casToMachManualCrossoverCurve.evaluate(selectedSpdMach)
+            const manualCrossoverAltitude = mcdu.computeManualCrossoverAltitude(machAtManualCrossoverAlt);
+            const shouldShowMach = aircraftAltitude < manualCrossoverAltitude && (!mcdu._cruiseEntered || !mcdu.cruiseFlightLevel || manualCrossoverAltitude < mcdu.cruiseFlightLevel * 100);
+
+            return ["SELECTED", `\xa0${Math.round(selectedSpdMach)}${shouldShowMach ? ("{small}/" + machAtManualCrossoverAlt.toFixed(2).replace('0.', '.') + "{end}") : ""}[color]green`];
         }
     }
+
+    static getDesSelectedTitleAndValue(mcdu, isPhaseActive, isSelected) {
+        if (!isPhaseActive || !isSelected) {
+            return ["", ""];
+        }
+
+        const aircraftAltitude = SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet');
+        const selectedSpdMach = SimVar.GetSimVarValue('L:A32NX_AUTOPILOT_SPEED_SELECTED', 'number');
+
+        if (selectedSpdMach < 1) {
+            const casAtCrossoverAltitude = mcdu.machToCasManualCrossoverCurve.evaluate(selectedSpdMach);
+            const manualCrossoverAltitude = mcdu.computeManualCrossoverAltitude(selectedSpdMach);
+            const shouldShowCas = aircraftAltitude > manualCrossoverAltitude;
+
+            return ["SELECTED", `\xa0${shouldShowCas ? "{small}" + Math.round(casAtCrossoverAltitude) + "/{end}" : ""}${selectedSpdMach.toFixed(2).replace('0.', '.')}[color]green`];
+        } else {
+            return ["SELECTED", `\xa0${Math.round(selectedSpdMach)}[color]green`];
+        }
+    }
+
     static formatAltitudeOrLevel(altitudeToFormat, transitionAltitude) {
         if (transitionAltitude >= 100 && altitudeToFormat > transitionAltitude) {
             return `FL${(altitudeToFormat / 100).toFixed(0).toString().padStart(3,"0")}`;

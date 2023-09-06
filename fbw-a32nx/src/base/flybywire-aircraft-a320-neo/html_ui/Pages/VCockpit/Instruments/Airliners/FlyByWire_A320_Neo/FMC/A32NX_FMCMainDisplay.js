@@ -258,15 +258,29 @@ class FMCMainDisplay extends BaseAirliners {
         this.tempCurve.add(700 * 3.28084, -53.57);
         this.tempCurve.add(800 * 3.28084, -74.51);
 
-        this.econDesSpeedCurve = new Avionics.Curve();
-        this.econDesSpeedCurve.interpolationFunction = Avionics.CurveTool.NumberInterpolation;
-        this.econDesSpeedCurve.add(0, 0);
-        this.econDesSpeedCurve.add(100, 0.27928);
-        this.econDesSpeedCurve.add(150, 0.41551);
-        this.econDesSpeedCurve.add(200, 0.54806);
-        this.econDesSpeedCurve.add(250, 0.67633);
-        this.econDesSpeedCurve.add(300, 0.80000);
-        this.econDesSpeedCurve.add(350, 0.82);
+        // This is used to determine the Mach number corresponding to a CAS at the manual crossover altitude
+        // The curve was calculated numerically and approximated using a few interpolated values
+        this.casToMachManualCrossoverCurve = new Avionics.Curve();
+        this.casToMachManualCrossoverCurve.interpolationFunction = Avionics.CurveTool.NumberInterpolation;
+        this.casToMachManualCrossoverCurve.add(0, 0);
+        this.casToMachManualCrossoverCurve.add(100, 0.27928);
+        this.casToMachManualCrossoverCurve.add(150, 0.41551);
+        this.casToMachManualCrossoverCurve.add(200, 0.54806);
+        this.casToMachManualCrossoverCurve.add(250, 0.67633);
+        this.casToMachManualCrossoverCurve.add(300, 0.8);
+        this.casToMachManualCrossoverCurve.add(350, 0.82);
+
+        // This is used to determine the Mach number corresponding to a CAS at the manual crossover altitude
+        // The curve was calculated numerically and approximated using a few interpolated values
+        this.machToCasManualCrossoverCurve = new Avionics.Curve();
+        this.machToCasManualCrossoverCurve.interpolationFunction = Avionics.CurveTool.NumberInterpolation;
+        this.machToCasManualCrossoverCurve.add(0, 0);
+        this.machToCasManualCrossoverCurve.add(0.27928, 100);
+        this.machToCasManualCrossoverCurve.add(0.41551, 150);
+        this.machToCasManualCrossoverCurve.add(0.54806, 200);
+        this.machToCasManualCrossoverCurve.add(0.67633, 250);
+        this.machToCasManualCrossoverCurve.add(0.8, 300);
+        this.machToCasManualCrossoverCurve.add(0.82, 350);
 
         this.cruiseFlightLevel = SimVar.GetGameVarValue("AIRCRAFT CRUISE ALTITUDE", "feet");
         this.cruiseFlightLevel /= 100;
@@ -3715,8 +3729,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (s === FMCMainDisplay.clrValue) {
             this.preSelectedClbSpeed = undefined;
             if (isNextPhase) {
-                SimVar.SetSimVarValue('L:A32NX_MachPreselVal', 'mach', -1);
-                SimVar.SetSimVarValue('L:A32NX_SpeedPreselVal', 'knots', -1);
+                this.updatePreSelSpeedMach(undefined);
             }
             return true;
         }
@@ -3739,8 +3752,7 @@ class FMCMainDisplay extends BaseAirliners {
 
         this.preSelectedClbSpeed = spd;
         if (isNextPhase) {
-            SimVar.SetSimVarValue('L:A32NX_SpeedPreselVal', 'knots', spd);
-            SimVar.SetSimVarValue('L:A32NX_MachPreselVal', 'mach', -1);
+            this.updatePreSelSpeedMach(spd);
         }
 
         return true;
@@ -3751,42 +3763,40 @@ class FMCMainDisplay extends BaseAirliners {
         if (s === FMCMainDisplay.clrValue) {
             this.preSelectedCrzSpeed = undefined;
             if (isNextPhase) {
-                SimVar.SetSimVarValue('L:A32NX_MachPreselVal', 'mach', -1);
-                SimVar.SetSimVarValue('L:A32NX_SpeedPreselVal', 'knots', -1);
+                this.updatePreSelSpeedMach(undefined);
             }
             return true;
         }
+
         const v = parseFloat(s);
-        if (isFinite(v)) {
-            if (v < 1) {
-                const mach = Math.round(v * 100) / 100;
-                if (mach < 0.15 || mach > 0.82) {
-                    this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
-                    return false;
-                }
-
-                this.preSelectedCrzSpeed = mach;
-                if (isNextPhase) {
-                    SimVar.SetSimVarValue('L:A32NX_MachPreselVal', 'mach', mach);
-                    SimVar.SetSimVarValue('L:A32NX_SpeedPreselVal', 'knots', -1);
-                }
-            } else {
-                const spd = Math.round(v);
-                if (spd < 100 || spd > 350) {
-                    this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
-                    return false;
-                }
-
-                this.preSelectedCrzSpeed = spd;
-                if (isNextPhase) {
-                    SimVar.SetSimVarValue('L:A32NX_SpeedPreselVal', 'knots', spd);
-                    SimVar.SetSimVarValue('L:A32NX_MachPreselVal', 'mach', -1);
-                }
-            }
-            return true;
+        if (!Number.isFinite(v)) {
+            this.setScratchpadMessage(NXSystemMessages.formatError);
+            return false;
         }
-        this.setScratchpadMessage(NXSystemMessages.notAllowed);
-        return false;
+
+        if (v < 1) {
+            const mach = Math.round(v * 100) / 100;
+            if (mach < 0.15 || mach > 0.82) {
+                this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+                return false;
+            }
+
+            this.preSelectedCrzSpeed = mach;
+        } else {
+            const spd = Math.round(v);
+            if (spd < 100 || spd > 350) {
+                this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+                return false;
+            }
+
+            this.preSelectedCrzSpeed = spd;
+        }
+
+        if (isNextPhase) {
+            this.updatePreSelSpeedMach(this.preSelectedCrzSpeed);
+        }
+
+        return true;
     }
 
     setPerfApprQNH(s) {
@@ -5130,7 +5140,7 @@ class FMCMainDisplay extends BaseAirliners {
                     return false;
                 }
 
-                const mach = this.econDesSpeedCurve.evaluate(speed)
+                const mach = this.casToMachManualCrossoverCurve.evaluate(speed)
 
                 this.managedSpeedDescendPilot = speed;
                 this.managedSpeedDescendMachPilot = mach;
@@ -5211,6 +5221,17 @@ class FMCMainDisplay extends BaseAirliners {
         if (this.perfDesPredToAltitudePilot !== undefined && currentAlt < this.perfDesPredToAltitudePilot) {
             this.perfDesPredToAltitudePilot = undefined;
         }
+    }
+
+    computeManualCrossoverAltitude(mach) {
+        const maximumCrossoverAltitude = 30594; // Crossover altitude of (300, 0.8)
+        const mmoCrossoverAltitide = 24554; // Crossover altitude of (VMO, MMO)
+
+        if (mach < 0.8) {
+            return maximumCrossoverAltitude;
+        }
+
+        return maximumCrossoverAltitude + (mmoCrossoverAltitide - maximumCrossoverAltitude) * (mach - 0.8) / 0.02;
     }
 }
 
