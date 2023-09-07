@@ -331,11 +331,7 @@ impl AudioControlPanel {
         if self.is_power_supply_powered {
             self.last_complete_cycle_sent += context.delta();
 
-            // Restart full cycle every 160ms as stated in AMM
-            if self.last_complete_cycle_sent.as_millis() > 160 || need_update_from_options {
-                self.send_word_0(bus_acp);
-                self.last_complete_cycle_sent = Duration::from_millis(0);
-            } else if bus_acp.len() != 0 {
+            if bus_acp.len() != 0 {
                 // These will be used later on
                 // Especially "calls" when SELCAL will be
                 // translated into Rust
@@ -358,6 +354,12 @@ impl AudioControlPanel {
                         self.send_volume_control(bus_acp, index);
                     }
                 }
+            }
+
+            // Restart full cycle every 160ms as stated in AMM
+            if self.last_complete_cycle_sent.as_millis() > 160 || need_update_from_options {
+                self.send_word_0(bus_acp);
+                self.last_complete_cycle_sent = Duration::from_millis(0);
             }
 
             let transmission_pb_pushed: bool = self.transmit_channel != self.transmit_pushed;

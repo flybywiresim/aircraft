@@ -14,7 +14,7 @@ use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
 use super::acp::AudioControlPanel;
-use super::receivers::Morse;
+use super::receivers::{CommTransceiver, NavReceiver};
 
 enum TypeCard {
     SELCAL(SELCAL),
@@ -83,7 +83,7 @@ pub enum LabelWordAMUACP {
     Label215VolumeControlINTCAB = 0xB1,
     Label217VolumeControlILS = 0xF1,
 }
-#[derive(Default)]
+#[derive(Copy, Clone)]
 pub struct MixedAudio {
     receive_com1: bool,
     receive_com2: bool,
@@ -92,6 +92,7 @@ pub struct MixedAudio {
     receive_vor1: bool,
     receive_vor2: bool,
     receive_ils: bool,
+    enable_beep: bool,
     receive_markers: bool,
     sound_markers: bool,
 
@@ -103,28 +104,61 @@ pub struct MixedAudio {
     // receive_att: bool,
     // receive_pa: bool,
     //
-    volume_com1: u8,
-    volume_com2: u8,
-    volume_com3: u8,
-    volume_adf1: u8,
-    volume_adf2: u8,
-    volume_vor1: u8,
-    volume_vor2: u8,
-    volume_ils: u8,
+    volume_com1: u32,
+    volume_com2: u32,
+    volume_com3: u32,
+    volume_adf1: u32,
+    volume_adf2: u32,
+    volume_vor1: u32,
+    volume_vor2: u32,
+    volume_ils: u32,
     // FOR FUTURE USE: Not needed for the time being as there's no K event for all this
-    // volume_markers: u8,
-    // volume_hf1: u8,
-    // volume_hf2: u8,
-    // volume_att: u8,
-    // volume_mech: u8,
-    // volume_pa: u8,
+    // volume_markers: u32,
+    // volume_hf1: u32,
+    // volume_hf2: u32,
+    // volume_att: u32,
+    // volume_mech: u32,
+    // volume_pa: u32,
     //
 }
-impl MixedAudio {
-    pub fn new() -> Self {
-        Self {
+impl MixedAudio {}
+impl Default for MixedAudio {
+    fn default() -> MixedAudio {
+        MixedAudio {
+            receive_com1: false,
+            receive_com2: false,
+            receive_adf1: false,
+            receive_adf2: false,
+            receive_vor1: false,
+            receive_vor2: false,
+            receive_ils: false,
+            enable_beep: false,
             receive_markers: true,
-            ..Default::default()
+            sound_markers: false,
+            // FOR FUTURE USE: Not needed for the time being as there's no K event for all this
+            // receive_gls: false,
+            // receive_hf1: false,
+            // receive_hf2: false,
+            // receive_mech: false,
+            // receive_att: false,
+            // receive_pa: false,
+            //
+            volume_com1: 0,
+            volume_com2: 0,
+            volume_com3: 0,
+            volume_adf1: 0,
+            volume_adf2: 0,
+            volume_vor1: 0,
+            volume_vor2: 0,
+            volume_ils: 0,
+            // FOR FUTURE USE: Not needed for the time being as there's no K event for all this
+            // volume_markers: 0,
+            // volume_hf1: 0,
+            // volume_hf2: 0,
+            // volume_att: 0,
+            // volume_mech: 0,
+            // volume_pa: 0,
+            //
         }
     }
 }
@@ -139,103 +173,22 @@ pub enum AudioSwitchingKnobPosition {
 
 pub struct AMU {
     adaptation_board: AdaptationBoard,
-    adfs: [Morse; 2],
-    vors: [Morse; 2],
-    ils: Morse,
-    gls: Morse,
 }
 impl AMU {
     pub fn new(context: &mut InitContext) -> Self {
         Self {
             adaptation_board: AdaptationBoard::new(context),
-
-            adfs: [Morse::new(context, "ADF", 1), Morse::new(context, "ADF", 2)],
-            vors: [Morse::new(context, "NAV", 1), Morse::new(context, "NAV", 2)],
-            ils: Morse::new(context, "NAV", 3),
-            gls: Morse::new(context, "NAV", 4),
         }
     }
 
-    // pub fn is_vhf1_powered(&self) -> bool {
-    //     self.vhfs[0].is_powered()
-    // }
-
-    // pub fn is_vhf2_powered(&self) -> bool {
-    //     self.vhfs[1].is_powered()
-    // }
-
-    // pub fn is_vhf3_powered(&self) -> bool {
-    //     self.vhfs[2].is_powered()
-    // }
-
-    // pub fn is_hf1_powered(&self) -> bool {
-    //     self.comms[0].is_powered()
-    // }
-
-    // pub fn is_hf2_powered(&self) -> bool {
-    //     self.comms[1].is_powered()
-    // }
-
-    // pub fn is_cids1_powered(&self) -> bool {
-    //     self.comms[2].is_powered()
-    // }
-
-    // pub fn is_cids2_powered(&self) -> bool {
-    //     self.comms[3].is_powered()
-    // }
-
-    // pub fn is_flit_int_powered(&self) -> bool {
-    //     self.comms[4].is_powered()
-    // }
-
-    // pub fn is_vor1_powered(&self) -> bool {
-    //     self.vors[0].is_powered()
-    // }
-
-    // pub fn is_vor2_powered(&self) -> bool {
-    //     self.vors[1].is_powered()
-    // }
-
-    // pub fn is_adf1_powered(&self) -> bool {
-    //     self.adfs[0].is_powered()
-    // }
-
-    // pub fn is_adf2_powered(&self) -> bool {
-    //     self.adfs[1].is_powered()
-    // }
-
-    pub fn update(
-        &mut self,
-        context: &UpdateContext,
-        need_update_from_acp_or_options: bool,
-        side_controlling: &SideControlling,
-    ) {
-        for adf in self.adfs.iter_mut() {
-            adf.update(context);
-        }
-        for vor in self.vors.iter_mut() {
-            vor.update(context);
-        }
-        self.ils.update(context);
-        self.gls.update(context);
-
+    pub fn update(&mut self, context: &UpdateContext, need_update_from_acp_or_options: bool) {
         self.adaptation_board
-            .update(context, need_update_from_acp_or_options, side_controlling);
+            .update(context, need_update_from_acp_or_options);
     }
 }
 
 impl SimulationElement for AMU {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        for adf in self.adfs.iter_mut() {
-            adf.accept(visitor);
-        }
-        for vor in self.vors.iter_mut() {
-            vor.accept(visitor);
-        }
-
-        self.ils.accept(visitor);
-        self.gls.accept(visitor);
-
         self.adaptation_board.accept(visitor);
 
         visitor.visit(self);
@@ -251,6 +204,8 @@ pub struct AdaptationBoard {
 
     computer_a: Computer,
     computer_b: Computer,
+
+    mixed_audio: MixedAudio,
 
     receive_com1_id: VariableIdentifier,
     receive_com2_id: VariableIdentifier,
@@ -298,10 +253,10 @@ pub struct AdaptationBoard {
     pilot_transmit_id: VariableIdentifier,
     copilot_transmit_id: VariableIdentifier,
 
-    mixed_audio: MixedAudio,
-    transmission_table_acp1: u32,
-    transmission_table_acp2: u32,
-    transmission_table_acp3: u32,
+    vhfs: [CommTransceiver; 2],
+    adfs: [NavReceiver; 2],
+    vors: [NavReceiver; 2],
+    ils: NavReceiver,
 
     is_flt_int_powered: bool,
     is_calls_card_powered: bool,
@@ -329,6 +284,8 @@ impl AdaptationBoard {
 
             computer_a: Computer::new_cpt_and_avncs(context),
             computer_b: Computer::new_fo_and_ovhd(context),
+
+            mixed_audio: Default::default(),
 
             // Needed to update the K events
             receive_com1_id: context.get_identifier("COM1_RECEIVE".to_owned()),
@@ -376,10 +333,34 @@ impl AdaptationBoard {
             pilot_transmit_id: context.get_identifier("PILOT_TRANSMIT_CHANNEL".to_owned()),
             copilot_transmit_id: context.get_identifier("COPILOT_TRANSMIT_CHANNEL".to_owned()),
 
-            mixed_audio: MixedAudio::new(),
-            transmission_table_acp1: 1,
-            transmission_table_acp2: 1,
-            transmission_table_acp3: 1,
+            vhfs: [
+                CommTransceiver::new(ElectricalBusType::DirectCurrentEssential),
+                CommTransceiver::new(ElectricalBusType::DirectCurrent(2)),
+            ],
+            adfs: [
+                NavReceiver::new(
+                    context,
+                    "ADF",
+                    1,
+                    ElectricalBusType::AlternatingCurrentEssentialShed,
+                ),
+                NavReceiver::new(context, "ADF", 2, ElectricalBusType::AlternatingCurrent(2)),
+            ],
+            vors: [
+                NavReceiver::new(
+                    context,
+                    "NAV",
+                    1,
+                    ElectricalBusType::AlternatingCurrentEssential,
+                ),
+                NavReceiver::new(context, "NAV", 2, ElectricalBusType::AlternatingCurrent(2)),
+            ],
+            ils: NavReceiver::new(
+                context,
+                "NAV",
+                3,
+                ElectricalBusType::AlternatingCurrentEssential,
+            ),
 
             pilot_transmit_channel: 1,
             copilot_transmit_channel: 1,
@@ -396,100 +377,6 @@ impl AdaptationBoard {
         }
     }
 
-    pub fn decode_arinc_words(
-        bus: &mut Vec<Arinc429Word<u32>>,
-        mixed_audio: &mut MixedAudio,
-        acp_id: u32,
-        ls_fcu_pressed: bool,
-        transmission_table_acp: &mut u32,
-        acp_to_take_into_account: u32,
-    ) {
-        let mut can_send_amu_word = false;
-
-        loop {
-            match bus.pop() {
-                Some(word) => {
-                    let label_option: Option<LabelWordAMUACP> =
-                        FromPrimitive::from_u32(word.get_bits(8, 1));
-
-                    if label_option.is_some() {
-                        let label = label_option.unwrap();
-
-                        if label == LabelWordAMUACP::Label300Request {
-                            // Here the ACP id is available in the word
-                            // but we don't need it for now. Maybe in the future with more information...
-                            can_send_amu_word = true;
-                        } else {
-                            let sdi = word.get_bits(2, 9) as u8;
-                            let transmission_table = word.get_bits(4, 11);
-                            let _int = word.get_bits(1, 15) != 0;
-                            let _rad = word.get_bits(1, 16) != 0;
-                            let volume = word.get_bits(8, 17) as u8;
-                            let reception = word.get_bits(1, 25) as u8;
-                            let voice = word.get_bits(1, 26) != 0;
-                            let _reset = word.get_bits(1, 27) != 0;
-
-                            *transmission_table_acp = transmission_table;
-
-                            if acp_to_take_into_account == acp_id {
-                                // Perform this only if the data currently analyzed is from the chosen acp
-                                match label {
-                                    LabelWordAMUACP::Label210VolumeControlVHF => {
-                                        if sdi == 1 {
-                                            mixed_audio.volume_com1 = volume;
-                                            mixed_audio.receive_com1 = reception != 0;
-                                        } else if sdi == 2 {
-                                            mixed_audio.volume_com2 = volume;
-                                            mixed_audio.receive_com2 = reception != 0;
-                                        } else if sdi == 3 {
-                                            mixed_audio.volume_com3 = volume;
-                                            // Comment due to vPilot that needs com3 to be received all the time
-                                            //mixed_audio.receive_com3 = reception != 0;
-                                        }
-                                    }
-                                    LabelWordAMUACP::Label213VolumeControlVORMKR => {
-                                        if sdi == 1 {
-                                            mixed_audio.volume_vor1 = volume;
-                                            mixed_audio.receive_vor1 = reception != 0 && !voice;
-                                        } else if sdi == 2 {
-                                            mixed_audio.volume_vor2 = volume;
-                                            mixed_audio.receive_vor2 = reception != 0 && !voice;
-                                        } else if sdi == 3 {
-                                            mixed_audio.receive_markers = reception != 0;
-                                        }
-                                    }
-                                    LabelWordAMUACP::Label212VolumeControlADFPA => {
-                                        // PA should be here but not simulated
-                                        if sdi == 1 {
-                                            mixed_audio.volume_adf1 = volume;
-                                            mixed_audio.receive_adf1 = reception != 0 && !voice;
-                                        } else if sdi == 2 {
-                                            mixed_audio.volume_adf2 = volume;
-                                            mixed_audio.receive_adf2 = reception != 0 && !voice;
-                                        }
-                                    }
-                                    LabelWordAMUACP::Label217VolumeControlILS => {
-                                        mixed_audio.volume_ils = volume;
-                                        // TODO: Use data from future DMC. There's a wire between comms and DMC
-                                        // FCOM compliant: ILS can be listened to only if LS is pressed
-                                        mixed_audio.receive_ils =
-                                            reception != 0 && !voice && ls_fcu_pressed;
-                                    }
-                                    _ => {}
-                                }
-                            }
-                        }
-                    }
-                }
-                _ => break,
-            }
-        }
-
-        if can_send_amu_word {
-            AdaptationBoard::send_amu_word(bus, transmission_table_acp);
-        }
-    }
-
     pub fn send_amu_word(bus_acp: &mut Vec<Arinc429Word<u32>>, transmission_table: &u32) {
         let mut word_arinc: Arinc429Word<u32> = Arinc429Word::new(0, SignStatus::NormalOperation);
 
@@ -499,22 +386,17 @@ impl AdaptationBoard {
         bus_acp.push(word_arinc);
     }
 
-    pub fn update(
-        &mut self,
-        context: &UpdateContext,
-        need_update_from_options: bool,
-        side_controlling: &SideControlling,
-    ) {
+    pub fn update(&mut self, context: &UpdateContext, need_update_from_options: bool) {
         let mut acp_to_take_into_account: u32 = 1;
 
         if self.audio_switching_knob != AudioSwitchingKnobPosition::FO
-            && side_controlling.to_owned() == SideControlling::FO
+            && context.side_controlling() == SideControlling::FO
         {
             acp_to_take_into_account = 2;
         } else if self.audio_switching_knob == AudioSwitchingKnobPosition::FO
-            && side_controlling.to_owned() == SideControlling::FO
+            && context.side_controlling() == SideControlling::FO
             || self.audio_switching_knob == AudioSwitchingKnobPosition::CAPTAIN
-                && side_controlling.to_owned() == SideControlling::CAPTAIN
+                && context.side_controlling() == SideControlling::CAPTAIN
         {
             acp_to_take_into_account = 3;
         }
@@ -527,87 +409,57 @@ impl AdaptationBoard {
         // 3rd ACP is connected to Board B by default
         // hence if audio switching knob is NOT on FO, data can be wired to default board
         if self.audio_switching_knob != AudioSwitchingKnobPosition::FO {
+            self.bus_acp_3rd.append(&mut self.bus_arinc_3rd);
             self.acp_ovhd
                 .update(context, &mut self.bus_acp_3rd, need_update_from_options);
-
-            AdaptationBoard::decode_arinc_words(
-                &mut self.bus_acp_3rd,
-                &mut self.mixed_audio,
-                3,
-                if context.side_controlling() == SideControlling::CAPTAIN {
-                    self.ls_fcu1_pressed
-                } else {
-                    self.ls_fcu2_pressed
-                },
-                &mut self.transmission_table_acp3,
-                acp_to_take_into_account,
-            );
         } else {
+            self.bus_acp_avncs.append(&mut self.bus_arinc_bay);
             self.acp_ovhd
                 .update(context, &mut self.bus_acp_avncs, need_update_from_options);
-
-            AdaptationBoard::decode_arinc_words(
-                &mut self.bus_acp_avncs,
-                &mut self.mixed_audio,
-                3,
-                if context.side_controlling() == SideControlling::CAPTAIN {
-                    self.ls_fcu1_pressed
-                } else {
-                    self.ls_fcu2_pressed
-                },
-                &mut self.transmission_table_acp3,
-                acp_to_take_into_account,
-            );
         }
-
-        AdaptationBoard::decode_arinc_words(
-            &mut self.bus_arinc_bay,
-            &mut self.mixed_audio,
-            1,
-            self.ls_fcu1_pressed,
-            &mut self.transmission_table_acp1,
-            acp_to_take_into_account,
-        );
-
-        AdaptationBoard::decode_arinc_words(
-            &mut self.bus_arinc_3rd,
-            &mut self.mixed_audio,
-            2,
-            self.ls_fcu2_pressed,
-            &mut self.transmission_table_acp2,
-            acp_to_take_into_account,
-        );
 
         // We only take into account VHF1/2/3 as per SDK
         // 4 stands for NONE SDK wise but stand for 4 HF1 for us therefore
         // we need to have some logic here to filter
         self.pilot_transmit_channel = if acp_to_take_into_account == 1 {
-            if self.transmission_table_acp1 == 0 || self.transmission_table_acp1 > 3 {
+            self.mixed_audio = self.computer_a.get_mixed_audio_acp();
+
+            let transmission_table = self.computer_a.get_transmission_table_acp();
+            if transmission_table == 0 || transmission_table > 3 {
                 4
             } else {
-                self.transmission_table_acp1 - 1
+                transmission_table - 1
             }
         } else if acp_to_take_into_account == 3 {
-            if self.transmission_table_acp3 == 0 || self.transmission_table_acp3 > 3 {
+            self.mixed_audio = self.computer_b.get_mixed_audio_acp3();
+
+            let transmission_table = self.computer_b.get_transmission_table_acp3();
+            if transmission_table == 0 || transmission_table > 3 {
                 4
             } else {
-                self.transmission_table_acp3 - 1
+                transmission_table - 1
             }
         } else {
             4
         };
 
         self.copilot_transmit_channel = if acp_to_take_into_account == 2 {
-            if self.transmission_table_acp2 == 0 || self.transmission_table_acp2 > 3 {
+            self.mixed_audio = self.computer_b.get_mixed_audio_acp();
+
+            let transmission_table = self.computer_b.get_transmission_table_acp();
+            if transmission_table == 0 || transmission_table > 3 {
                 4
             } else {
-                self.transmission_table_acp2 - 1
+                transmission_table - 1
             }
         } else if acp_to_take_into_account == 3 {
-            if self.transmission_table_acp3 == 0 || self.transmission_table_acp3 > 3 {
+            self.mixed_audio = self.computer_a.get_mixed_audio_acp3();
+
+            let transmission_table = self.computer_a.get_transmission_table_acp3();
+            if transmission_table == 0 || transmission_table > 3 {
                 4
             } else {
-                self.transmission_table_acp3 - 1
+                transmission_table - 1
             }
         } else {
             4
@@ -619,11 +471,39 @@ impl AdaptationBoard {
         } else {
             self.pilot_transmit_channel = 4;
         }
+
+        for adf in self.adfs.iter_mut() {
+            adf.update(context, !self.mixed_audio.enable_beep);
+        }
+        for vor in self.vors.iter_mut() {
+            vor.update(context, !self.mixed_audio.enable_beep);
+        }
+        self.ils.update(
+            context,
+            if context.side_controlling() == SideControlling::CAPTAIN {
+                self.ls_fcu1_pressed
+            } else {
+                self.ls_fcu2_pressed
+            },
+        );
     }
 }
 
 impl SimulationElement for AdaptationBoard {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        for vhf in self.vhfs.iter_mut() {
+            vhf.accept(visitor);
+        }
+
+        for adf in self.adfs.iter_mut() {
+            adf.accept(visitor);
+        }
+        for vor in self.vors.iter_mut() {
+            vor.accept(visitor);
+        }
+
+        self.ils.accept(visitor);
+
         self.acp_ovhd.accept(visitor);
         self.computer_a.accept(visitor);
         self.computer_b.accept(visitor);
@@ -660,13 +540,34 @@ impl SimulationElement for AdaptationBoard {
         writer.write(&self.pilot_transmit_id, self.pilot_transmit_channel);
         writer.write(&self.copilot_transmit_id, self.copilot_transmit_channel);
 
-        writer.write(&self.receive_com1_id, self.mixed_audio.receive_com1);
-        writer.write(&self.receive_com2_id, self.mixed_audio.receive_com2);
-        writer.write(&self.receive_adf1_id, self.mixed_audio.receive_adf1);
-        writer.write(&self.receive_adf2_id, self.mixed_audio.receive_adf2);
-        writer.write(&self.receive_vor1_id, self.mixed_audio.receive_vor1);
-        writer.write(&self.receive_vor2_id, self.mixed_audio.receive_vor2);
-        writer.write(&self.receive_ils_id, self.mixed_audio.receive_ils);
+        writer.write(
+            &self.receive_com1_id,
+            self.mixed_audio.receive_com1 && self.vhfs[0].is_powered(),
+        );
+        writer.write(
+            &self.receive_com2_id,
+            self.mixed_audio.receive_com2 && self.vhfs[1].is_powered(),
+        );
+        writer.write(
+            &self.receive_adf1_id,
+            self.mixed_audio.receive_adf1 && self.adfs[0].is_powered(),
+        );
+        writer.write(
+            &self.receive_adf2_id,
+            self.mixed_audio.receive_adf2 && self.adfs[1].is_powered(),
+        );
+        writer.write(
+            &self.receive_vor1_id,
+            self.mixed_audio.receive_vor1 && self.vors[0].is_powered(),
+        );
+        writer.write(
+            &self.receive_vor2_id,
+            self.mixed_audio.receive_vor2 && self.vors[1].is_powered(),
+        );
+        writer.write(
+            &self.receive_ils_id,
+            self.mixed_audio.receive_ils && self.ils.is_powered(),
+        );
 
         // FOR FUTURE USE: Not needed for the time being as there's no K event for all this
         // writer.write(&self.receive_gls_id, self.mixed_audio.receive_gls);
@@ -735,10 +636,28 @@ impl Computer {
         bus: &mut Vec<Arinc429Word<u32>>,
         need_update_from_acp_or_options: bool,
     ) {
-        if self.is_power_supply_powered {
-            self.audio_card
-                .update(context, bus, need_update_from_acp_or_options);
-        }
+        self.audio_card.update(
+            context,
+            bus,
+            need_update_from_acp_or_options,
+            self.is_power_supply_powered,
+        );
+    }
+
+    pub fn get_mixed_audio_acp(&self) -> MixedAudio {
+        self.audio_card.get_mixed_audio_acp()
+    }
+
+    pub fn get_mixed_audio_acp3(&self) -> MixedAudio {
+        self.audio_card.get_mixed_audio_acp3()
+    }
+
+    pub fn get_transmission_table_acp(&self) -> u32 {
+        self.audio_card.get_transmission_table_acp()
+    }
+
+    pub fn get_transmission_table_acp3(&self) -> u32 {
+        self.audio_card.get_transmission_table_acp3()
     }
 }
 
@@ -757,6 +676,10 @@ impl SimulationElement for Computer {
 pub struct AudioCard {
     bus_acp: Vec<Arinc429Word<u32>>,
     acp: AudioControlPanel,
+    mixed_audio_acp: MixedAudio,
+    mixed_audio_acp3: MixedAudio,
+    transmission_table_acp: u32,
+    transmission_table_acp3: u32,
 }
 
 impl AudioCard {
@@ -764,6 +687,10 @@ impl AudioCard {
         Self {
             bus_acp: Vec::new(),
             acp: AudioControlPanel::new(context, id_acp, ElectricalBusType::DirectCurrentEssential),
+            mixed_audio_acp: Default::default(),
+            mixed_audio_acp3: Default::default(),
+            transmission_table_acp: 0,
+            transmission_table_acp3: 0,
         }
     }
 
@@ -772,14 +699,134 @@ impl AudioCard {
         context: &UpdateContext,
         bus_from_adaptation_card: &mut Vec<Arinc429Word<u32>>,
         need_update_from_acp_or_options: bool,
+        is_powered: bool,
     ) {
-        self.bus_acp.append(bus_from_adaptation_card);
-        bus_from_adaptation_card.clear();
+        if is_powered {
+            self.acp
+                .update(context, &mut self.bus_acp, need_update_from_acp_or_options);
 
-        self.acp
-            .update(context, &mut self.bus_acp, need_update_from_acp_or_options);
+            AudioCard::decode_arinc_words_from_acp(
+                &mut self.bus_acp,
+                &mut self.mixed_audio_acp,
+                &mut self.transmission_table_acp,
+            );
 
-        bus_from_adaptation_card.append(&mut self.bus_acp);
+            AudioCard::decode_arinc_words_from_acp(
+                bus_from_adaptation_card,
+                &mut self.mixed_audio_acp3,
+                &mut self.transmission_table_acp3,
+            );
+        } else {
+            self.mixed_audio_acp = Default::default();
+            self.mixed_audio_acp3 = Default::default();
+
+            self.bus_acp.clear();
+            bus_from_adaptation_card.clear();
+        }
+    }
+
+    pub fn decode_arinc_words_from_acp(
+        bus: &mut Vec<Arinc429Word<u32>>,
+        mixed_audio: &mut MixedAudio,
+        transmission_table_acp: &mut u32,
+    ) {
+        let mut can_send_amu_word = false;
+
+        loop {
+            match bus.pop() {
+                Some(word) => {
+                    let label_option: Option<LabelWordAMUACP> =
+                        FromPrimitive::from_u32(word.get_bits(8, 1));
+
+                    if label_option.is_some() {
+                        let label = label_option.unwrap();
+
+                        if label == LabelWordAMUACP::Label300Request {
+                            // Here the ACP id is available in the word
+                            // but we don't need it for now. Maybe in the future with more information...
+                            can_send_amu_word = true;
+                        } else {
+                            let sdi = word.get_bits(2, 9) as u8;
+                            let transmission_table = word.get_bits(4, 11);
+                            let _int = word.get_bits(1, 15) != 0;
+                            let _rad = word.get_bits(1, 16) != 0;
+                            let volume = word.get_bits(8, 17);
+                            let reception = word.get_bits(1, 25);
+                            mixed_audio.enable_beep = word.get_bits(1, 26) != 0;
+                            let _reset = word.get_bits(1, 27) != 0;
+
+                            *transmission_table_acp = transmission_table;
+
+                            // Perform this only if the data currently analyzed is from the chosen acp
+                            match label {
+                                LabelWordAMUACP::Label210VolumeControlVHF => {
+                                    if sdi == 1 {
+                                        mixed_audio.volume_com1 = volume;
+                                        mixed_audio.receive_com1 = reception != 0;
+                                    } else if sdi == 2 {
+                                        mixed_audio.volume_com2 = volume;
+                                        mixed_audio.receive_com2 = reception != 0;
+                                    } else if sdi == 3 {
+                                        mixed_audio.volume_com3 = volume;
+                                        // Comment due to vPilot that needs com3 to be received all the time
+                                        //mixed_audio.receive_com3 = reception != 0;
+                                    }
+                                }
+                                LabelWordAMUACP::Label213VolumeControlVORMKR => {
+                                    if sdi == 1 {
+                                        mixed_audio.volume_vor1 = volume;
+                                        mixed_audio.receive_vor1 = reception != 0;
+                                    } else if sdi == 2 {
+                                        mixed_audio.volume_vor2 = volume;
+                                        mixed_audio.receive_vor2 = reception != 0;
+                                    } else if sdi == 3 {
+                                        mixed_audio.receive_markers = reception != 0;
+                                    }
+                                }
+                                LabelWordAMUACP::Label212VolumeControlADFPA => {
+                                    // PA should be here but not simulated
+                                    if sdi == 1 {
+                                        mixed_audio.volume_adf1 = volume;
+                                        mixed_audio.receive_adf1 = reception != 0;
+                                    } else if sdi == 2 {
+                                        mixed_audio.volume_adf2 = volume;
+                                        mixed_audio.receive_adf2 = reception != 0;
+                                    }
+                                }
+                                LabelWordAMUACP::Label217VolumeControlILS => {
+                                    mixed_audio.volume_ils = volume;
+                                    // TODO: Use data from future DMC. There's a wire between comms and DMC
+                                    // FCOM compliant: ILS can be listened to only if LS is pressed
+                                    mixed_audio.receive_ils = reception != 0;
+                                }
+                                _ => {}
+                            }
+                        }
+                    }
+                }
+                _ => break,
+            }
+        }
+
+        if can_send_amu_word {
+            AdaptationBoard::send_amu_word(bus, transmission_table_acp);
+        }
+    }
+
+    pub fn get_mixed_audio_acp(&self) -> MixedAudio {
+        self.mixed_audio_acp
+    }
+
+    pub fn get_mixed_audio_acp3(&self) -> MixedAudio {
+        self.mixed_audio_acp3
+    }
+
+    pub fn get_transmission_table_acp(&self) -> u32 {
+        self.transmission_table_acp
+    }
+
+    pub fn get_transmission_table_acp3(&self) -> u32 {
+        self.transmission_table_acp3
     }
 }
 

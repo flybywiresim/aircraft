@@ -1,38 +1,23 @@
 use crate::{
     shared::{ElectricalBusType, ElectricalBuses},
     simulation::{
-        InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
-        SimulatorWriter, UpdateContext, VariableIdentifier, Write,
+        InitContext, Read, SimulationElement, SimulatorReader, SimulatorWriter, UpdateContext,
+        VariableIdentifier, Write,
     },
 };
 
 use std::time::Duration;
 use uom::num::pow;
 
-#[derive(Clone)]
-pub struct VHF {
+pub struct CommTransceiver {
     is_power_supply_powered: bool,
     powered_by: ElectricalBusType,
 }
-impl VHF {
-    pub fn new_vhf1() -> Self {
+impl CommTransceiver {
+    pub fn new(powered_by: ElectricalBusType) -> Self {
         Self {
             is_power_supply_powered: false,
-            powered_by: ElectricalBusType::DirectCurrentEssential,
-        }
-    }
-
-    pub fn new_vhf2() -> Self {
-        Self {
-            is_power_supply_powered: false,
-            powered_by: ElectricalBusType::DirectCurrent(2),
-        }
-    }
-
-    pub fn new_vhf3() -> Self {
-        Self {
-            is_power_supply_powered: false,
-            powered_by: ElectricalBusType::DirectCurrent(1),
+            powered_by,
         }
     }
 
@@ -41,230 +26,100 @@ impl VHF {
     }
 }
 
-impl SimulationElement for VHF {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        visitor.visit(self);
-    }
-
+impl SimulationElement for CommTransceiver {
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
         self.is_power_supply_powered = buses.is_powered(self.powered_by);
     }
 }
 
-#[derive(Clone)]
-pub struct COMM {
-    is_power_supply_powered: bool,
-    powered_by: ElectricalBusType,
-}
-impl COMM {
-    pub fn new_hf1() -> Self {
-        Self {
-            is_power_supply_powered: false,
-            powered_by: ElectricalBusType::AlternatingCurrentEssentialShed,
-        }
-    }
-
-    pub fn new_hf2() -> Self {
-        Self {
-            is_power_supply_powered: false,
-            powered_by: ElectricalBusType::AlternatingCurrent(2),
-        }
-    }
-
-    pub fn new_cids1() -> Self {
-        Self {
-            is_power_supply_powered: false,
-            powered_by: ElectricalBusType::DirectCurrentEssential,
-        }
-    }
-
-    pub fn new_cids2() -> Self {
-        Self {
-            is_power_supply_powered: false,
-            powered_by: ElectricalBusType::DirectCurrentEssential,
-        }
-    }
-
-    pub fn new_flt_int() -> Self {
-        Self {
-            is_power_supply_powered: false,
-            powered_by: ElectricalBusType::DirectCurrentEssential,
-        }
-    }
-
-    pub fn is_powered(&self) -> bool {
-        self.is_power_supply_powered
-    }
-}
-
-impl SimulationElement for COMM {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        visitor.visit(self);
-    }
-
-    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
-        self.is_power_supply_powered = buses.is_powered(self.powered_by);
-    }
-}
-
-#[derive(Clone)]
-pub struct ADF {
-    is_power_supply_powered: bool,
-    powered_by: ElectricalBusType,
-}
-impl ADF {
-    pub fn new_adf1() -> Self {
-        Self {
-            is_power_supply_powered: false,
-            powered_by: ElectricalBusType::AlternatingCurrentEssentialShed,
-        }
-    }
-
-    pub fn new_adf2() -> Self {
-        Self {
-            is_power_supply_powered: false,
-            powered_by: ElectricalBusType::AlternatingCurrent(2),
-        }
-    }
-
-    pub fn is_powered(&self) -> bool {
-        self.is_power_supply_powered
-    }
-}
-
-impl SimulationElement for ADF {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        visitor.visit(self);
-    }
-
-    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
-        self.is_power_supply_powered = buses.is_powered(self.powered_by);
-    }
-}
-
-#[derive(Clone)]
-pub struct VOR {
-    is_power_supply_powered: bool,
-    powered_by: ElectricalBusType,
-}
-impl VOR {
-    pub fn new_vor1() -> Self {
-        Self {
-            is_power_supply_powered: false,
-            powered_by: ElectricalBusType::AlternatingCurrentEssential,
-        }
-    }
-
-    pub fn new_vor2() -> Self {
-        Self {
-            is_power_supply_powered: false,
-            powered_by: ElectricalBusType::AlternatingCurrent(2),
-        }
-    }
-
-    pub fn is_powered(&self) -> bool {
-        self.is_power_supply_powered
-    }
-}
-
-impl SimulationElement for VOR {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        visitor.visit(self);
-    }
-
-    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
-        self.is_power_supply_powered = buses.is_powered(self.powered_by);
-    }
-}
-
-#[derive(Clone)]
-pub struct ILS {
-    is_power_supply_powered: bool,
-    powered_by: ElectricalBusType,
-}
-impl ILS {
-    pub fn new_ils() -> Self {
-        Self {
-            is_power_supply_powered: false,
-            powered_by: ElectricalBusType::DirectCurrent(1),
-        }
-    }
-
-    pub fn is_powered(&self) -> bool {
-        self.is_power_supply_powered
-    }
-}
-
-impl SimulationElement for ILS {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        visitor.visit(self);
-    }
-
-    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
-        self.is_power_supply_powered = buses.is_powered(self.powered_by);
-    }
-}
-
-#[derive(Clone)]
-pub struct GLS {
-    is_power_supply_powered: bool,
-    powered_by: ElectricalBusType,
-}
-impl GLS {
-    pub fn new_gls() -> Self {
-        Self {
-            is_power_supply_powered: false,
-            powered_by: ElectricalBusType::DirectCurrent(1),
-        }
-    }
-
-    pub fn is_powered(&self) -> bool {
-        self.is_power_supply_powered
-    }
-}
-
-impl SimulationElement for GLS {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        visitor.visit(self);
-    }
-
-    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
-        self.is_power_supply_powered = buses.is_powered(self.powered_by);
-    }
-}
-
-#[derive(Clone)]
-pub struct MARKERS {
-    is_power_supply_powered: bool,
-    powered_by: ElectricalBusType,
-}
-impl MARKERS {
-    pub fn new_markers() -> Self {
-        Self {
-            is_power_supply_powered: false,
-            powered_by: ElectricalBusType::DirectCurrent(1),
-        }
-    }
-
-    pub fn is_powered(&self) -> bool {
-        self.is_power_supply_powered
-    }
-}
-
-impl SimulationElement for MARKERS {
-    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        visitor.visit(self);
-    }
-
-    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
-        self.is_power_supply_powered = buses.is_powered(self.powered_by);
-    }
-}
-
-pub struct Morse {
-    ident_active_id: VariableIdentifier,
-    ident_id: VariableIdentifier,
+pub struct NavReceiver {
     beep_id: VariableIdentifier,
+
+    is_power_supply_powered: bool,
+    powered_by: ElectricalBusType,
+
+    morse: Morse,
+
+    ok_to_beep: bool,
+}
+impl NavReceiver {
+    pub fn new(
+        context: &mut InitContext,
+        name: &str,
+        id: usize,
+        powered_by: ElectricalBusType,
+    ) -> Self {
+        Self {
+            beep_id: context.get_identifier(format!("ACP_BEEP_IDENT_{}{}", name, id)),
+            is_power_supply_powered: false,
+            powered_by,
+            morse: Morse::new(context, name, id),
+            // Always true to VORs and ADFs.
+            // Used for ILS
+            // Called in update()
+            ok_to_beep: false,
+        }
+    }
+
+    pub fn is_powered(&self) -> bool {
+        self.is_power_supply_powered
+    }
+
+    pub fn update(&mut self, context: &UpdateContext, ok_to_beep: bool) {
+        // We keep updating the morse even though the receiver is not powered
+        // because in real life, the signal is external (obviously)
+        self.ok_to_beep = ok_to_beep;
+        self.morse.update(context);
+    }
+}
+
+impl SimulationElement for NavReceiver {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(
+            &self.beep_id,
+            if self.is_power_supply_powered && self.ok_to_beep {
+                self.morse.get_state()
+            } else {
+                false
+            },
+        );
+    }
+
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        self.is_power_supply_powered = buses.is_powered(self.powered_by);
+    }
+}
+
+// #[derive(Clone)]
+// pub struct MARKERS {
+//     is_power_supply_powered: bool,
+//     powered_by: ElectricalBusType,
+// }
+// impl MARKERS {
+//     pub fn new_markers() -> Self {
+//         Self {
+//             is_power_supply_powered: false,
+//             powered_by: ElectricalBusType::DirectCurrent(1),
+//         }
+//     }
+
+//     pub fn is_powered(&self) -> bool {
+//         self.is_power_supply_powered
+//     }
+// }
+
+// impl SimulationElement for MARKERS {
+//     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+//         visitor.visit(self);
+//     }
+
+//     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+//         self.is_power_supply_powered = buses.is_powered(self.powered_by);
+//     }
+// }
+
+struct Morse {
+    ident_id: VariableIdentifier,
     ident_new: usize,
     ident_current: usize,
     morse: String,
@@ -283,9 +138,7 @@ pub struct Morse {
 impl Morse {
     pub fn new(context: &mut InitContext, name: &str, id: usize) -> Self {
         Self {
-            ident_active_id: context.get_identifier(format!("{} SOUND:{}", name, id)),
             ident_id: context.get_identifier(format!("{}{}_IDENT_PACKED", name, id)),
-            beep_id: context.get_identifier(format!("ACP_BEEP_IDENT_{}{}", name, id)),
             ident_new: 0,
             ident_current: 0,
             morse: "".to_owned(),
@@ -441,15 +294,14 @@ impl Morse {
             self.beep = false;
         }
     }
+
+    pub fn get_state(&self) -> bool {
+        self.beep
+    }
 }
 
 impl SimulationElement for Morse {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.ident_active = reader.read(&self.ident_active_id);
         self.ident_new = reader.read(&self.ident_id);
-    }
-
-    fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.beep_id, self.beep);
     }
 }
