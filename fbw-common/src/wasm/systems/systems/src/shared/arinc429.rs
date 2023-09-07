@@ -57,7 +57,7 @@ impl Arinc429Word<u32> {
     }
 
     pub fn get_bits(&self, nb_bits: u8, from_bit: u8) -> u32 {
-        (self.value >> from_bit - 1) & ((1 << nb_bits) - 1)
+        (self.value >> (from_bit - 1)) & ((1 << nb_bits) - 1)
     }
 }
 impl From<f64> for Arinc429Word<u32> {

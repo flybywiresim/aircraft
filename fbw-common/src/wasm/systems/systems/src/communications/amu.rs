@@ -165,10 +165,10 @@ impl Default for MixedAudio {
 
 #[derive(Default, PartialEq, Eq)]
 pub enum AudioSwitchingKnobPosition {
-    CAPTAIN,
+    Captain,
     #[default]
-    NORM,
-    FO,
+    Norm,
+    Fo,
 }
 
 pub struct AMU {
@@ -389,13 +389,13 @@ impl AdaptationBoard {
     pub fn update(&mut self, context: &UpdateContext, need_update_from_options: bool) {
         let mut acp_to_take_into_account: u32 = 1;
 
-        if self.audio_switching_knob != AudioSwitchingKnobPosition::FO
+        if self.audio_switching_knob != AudioSwitchingKnobPosition::Fo
             && context.side_controlling() == SideControlling::FO
         {
             acp_to_take_into_account = 2;
-        } else if self.audio_switching_knob == AudioSwitchingKnobPosition::FO
+        } else if self.audio_switching_knob == AudioSwitchingKnobPosition::Fo
             && context.side_controlling() == SideControlling::FO
-            || self.audio_switching_knob == AudioSwitchingKnobPosition::CAPTAIN
+            || self.audio_switching_knob == AudioSwitchingKnobPosition::Captain
                 && context.side_controlling() == SideControlling::CAPTAIN
         {
             acp_to_take_into_account = 3;
@@ -408,7 +408,7 @@ impl AdaptationBoard {
 
         // 3rd ACP is connected to Board B by default
         // hence if audio switching knob is NOT on FO, data can be wired to default board
-        if self.audio_switching_knob != AudioSwitchingKnobPosition::FO {
+        if self.audio_switching_knob != AudioSwitchingKnobPosition::Fo {
             self.bus_acp_3rd.append(&mut self.bus_arinc_3rd);
             self.acp_ovhd
                 .update(context, &mut self.bus_acp_3rd, need_update_from_options);
@@ -522,9 +522,9 @@ impl SimulationElement for AdaptationBoard {
         let ls_fcu2_pressed = reader.read(&self.ls_fcu2_pressed_id);
 
         let audio_switching_knob = match reader.read(&self.audio_switching_knob_id) {
-            0 => AudioSwitchingKnobPosition::CAPTAIN,
-            2 => AudioSwitchingKnobPosition::FO,
-            _ => AudioSwitchingKnobPosition::NORM,
+            0 => AudioSwitchingKnobPosition::Captain,
+            2 => AudioSwitchingKnobPosition::Fo,
+            _ => AudioSwitchingKnobPosition::Norm,
         };
 
         self.need_update = self.audio_switching_knob != audio_switching_knob

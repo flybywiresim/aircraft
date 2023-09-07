@@ -64,8 +64,8 @@ impl RadioManagementPanel {
 
             power_supply: ElectricalBusType::DirectCurrentEssential,
 
-            toggle_switch_id: context.get_identifier(format!("RMP_L_TOGGLE_SWITCH").to_string()),
-            selected_mode_id: context.get_identifier(format!("RMP_L_SELECTED_MODE").to_string()),
+            toggle_switch_id: context.get_identifier("RMP_L_TOGGLE_SWITCH".to_string()),
+            selected_mode_id: context.get_identifier("RMP_L_SELECTED_MODE".to_string()),
         }
     }
 
@@ -80,8 +80,8 @@ impl RadioManagementPanel {
             toggle_switch: false,
             is_power_supply_powered: false,
 
-            toggle_switch_id: context.get_identifier(format!("RMP_R_TOGGLE_SWITCH").to_string()),
-            selected_mode_id: context.get_identifier(format!("RMP_R_SELECTED_MODE").to_string()),
+            toggle_switch_id: context.get_identifier("RMP_R_TOGGLE_SWITCH".to_string()),
+            selected_mode_id: context.get_identifier("RMP_R_SELECTED_MODE".to_string()),
         }
     }
 
