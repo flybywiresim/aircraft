@@ -15,30 +15,30 @@ use std::time::Duration;
 // Foundable in XML behaviors for MECH
 //pub const TRANSMIT_ID_INT: u8 = 6;
 
-#[derive(PartialEq, Copy, Clone)]
+#[derive(PartialEq, Copy, Clone, Eq)]
 pub enum TransmitID {
-    NONE = 0,
-    VHF1,
-    VHF2,
-    VHF3,
-    HF1,
-    HF2,
-    MECH,
-    CAB,
-    PA,
+    None = 0,
+    Vhf1,
+    VHf2,
+    Vhf3,
+    Hf1,
+    Hf2,
+    Mech,
+    Cab,
+    Pa,
 }
 impl From<u32> for TransmitID {
     fn from(value: u32) -> Self {
         match value {
-            0 => TransmitID::NONE,
-            1 => TransmitID::VHF1,
-            2 => TransmitID::VHF2,
-            3 => TransmitID::VHF3,
-            4 => TransmitID::HF1,
-            5 => TransmitID::HF2,
-            6 => TransmitID::MECH,
-            7 => TransmitID::CAB,
-            8 => TransmitID::PA,
+            0 => TransmitID::None,
+            1 => TransmitID::Vhf1,
+            2 => TransmitID::VHf2,
+            3 => TransmitID::Vhf3,
+            4 => TransmitID::Hf1,
+            5 => TransmitID::Hf2,
+            6 => TransmitID::Mech,
+            7 => TransmitID::Cab,
+            8 => TransmitID::Pa,
             i => {
                 println!("Unknow Transmit ID {}", i);
                 panic!();
@@ -94,8 +94,8 @@ impl AudioControlPanel {
             voice_button: false,
             reset_button: false,
 
-            transmit_channel: TransmitID::VHF1,
-            transmit_pushed: TransmitID::VHF1,
+            transmit_channel: TransmitID::Vhf1,
+            transmit_pushed: TransmitID::Vhf1,
             int_rad_switch: Self::DEFAULT_INT_RAD_SWITCH,
 
             vhfs: [
@@ -127,82 +127,82 @@ impl AudioControlPanel {
 
             list_arinc_words: Vec::from([
                 WordAMUACPInfo::new(
-                    IdentificationWordAMUACP::WORD0,
+                    IdentificationWordAMUACP::Word0,
                     0,
                     LabelWordAMUACP::Label300Request,
                 ),
                 WordAMUACPInfo::new(
-                    IdentificationWordAMUACP::WORDAMU,
+                    IdentificationWordAMUACP::Wordamu,
                     0,
                     LabelWordAMUACP::Label301AMU,
                 ),
                 WordAMUACPInfo::new(
-                    IdentificationWordAMUACP::WORD01,
+                    IdentificationWordAMUACP::Word01,
                     1,
                     LabelWordAMUACP::Label210VolumeControlVHF,
                 ),
                 WordAMUACPInfo::new(
-                    IdentificationWordAMUACP::WORD02,
+                    IdentificationWordAMUACP::Word02,
                     2,
                     LabelWordAMUACP::Label210VolumeControlVHF,
                 ),
                 WordAMUACPInfo::new(
-                    IdentificationWordAMUACP::WORD03,
+                    IdentificationWordAMUACP::Word03,
                     3,
                     LabelWordAMUACP::Label210VolumeControlVHF,
                 ),
                 WordAMUACPInfo::new(
-                    IdentificationWordAMUACP::WORD04,
+                    IdentificationWordAMUACP::Word04,
                     1,
                     LabelWordAMUACP::Label211VolumeControlHF,
                 ),
                 WordAMUACPInfo::new(
-                    IdentificationWordAMUACP::WORD05,
+                    IdentificationWordAMUACP::Word05,
                     2,
                     LabelWordAMUACP::Label211VolumeControlHF,
                 ),
                 WordAMUACPInfo::new(
-                    IdentificationWordAMUACP::WORD06,
+                    IdentificationWordAMUACP::Word06,
                     1,
                     LabelWordAMUACP::Label215VolumeControlINTCAB,
                 ),
                 WordAMUACPInfo::new(
-                    IdentificationWordAMUACP::WORD07,
+                    IdentificationWordAMUACP::Word07,
                     2,
                     LabelWordAMUACP::Label215VolumeControlINTCAB,
                 ),
                 WordAMUACPInfo::new(
-                    IdentificationWordAMUACP::WORD08,
+                    IdentificationWordAMUACP::Word08,
                     3,
                     LabelWordAMUACP::Label212VolumeControlADFPA,
                 ),
                 WordAMUACPInfo::new(
-                    IdentificationWordAMUACP::WORD09,
+                    IdentificationWordAMUACP::Word09,
                     1,
                     LabelWordAMUACP::Label213VolumeControlVORMKR,
                 ),
                 WordAMUACPInfo::new(
-                    IdentificationWordAMUACP::WORD10,
+                    IdentificationWordAMUACP::Word10,
                     2,
                     LabelWordAMUACP::Label213VolumeControlVORMKR,
                 ),
                 WordAMUACPInfo::new(
-                    IdentificationWordAMUACP::WORD11,
+                    IdentificationWordAMUACP::Word11,
                     3,
                     LabelWordAMUACP::Label213VolumeControlVORMKR,
                 ),
                 WordAMUACPInfo::new(
-                    IdentificationWordAMUACP::WORD12,
+                    IdentificationWordAMUACP::Word12,
                     0,
                     LabelWordAMUACP::Label217VolumeControlILS,
                 ),
                 WordAMUACPInfo::new(
-                    IdentificationWordAMUACP::WORD15,
+                    IdentificationWordAMUACP::Word15,
                     1,
                     LabelWordAMUACP::Label212VolumeControlADFPA,
                 ),
                 WordAMUACPInfo::new(
-                    IdentificationWordAMUACP::WORD16,
+                    IdentificationWordAMUACP::Word16,
                     2,
                     LabelWordAMUACP::Label212VolumeControlADFPA,
                 ),
@@ -230,59 +230,59 @@ impl AudioControlPanel {
         word_arinc.set_bit(16, self.int_rad_switch == Self::TRANSMIT_ID_INT);
 
         match self.list_arinc_words[index].get_identification() {
-            IdentificationWordAMUACP::WORD01 => {
+            IdentificationWordAMUACP::Word01 => {
                 word_arinc.set_bits(17, self.vhfs[0].volume);
                 word_arinc.set_bit(25, self.vhfs[0].knob);
             }
-            IdentificationWordAMUACP::WORD02 => {
+            IdentificationWordAMUACP::Word02 => {
                 word_arinc.set_bits(17, self.vhfs[1].volume);
                 word_arinc.set_bit(25, self.vhfs[1].knob);
             }
-            IdentificationWordAMUACP::WORD03 => {
+            IdentificationWordAMUACP::Word03 => {
                 word_arinc.set_bits(17, self.vhfs[2].volume);
                 word_arinc.set_bit(25, self.vhfs[2].knob);
             }
-            IdentificationWordAMUACP::WORD04 => {
+            IdentificationWordAMUACP::Word04 => {
                 word_arinc.set_bits(17, self.comms[0].volume);
                 word_arinc.set_bit(25, self.comms[0].knob);
             }
-            IdentificationWordAMUACP::WORD05 => {
+            IdentificationWordAMUACP::Word05 => {
                 word_arinc.set_bits(17, self.comms[1].volume);
                 word_arinc.set_bit(25, self.comms[1].knob);
             }
-            IdentificationWordAMUACP::WORD06 => {
+            IdentificationWordAMUACP::Word06 => {
                 word_arinc.set_bits(17, self.comms[2].volume);
                 word_arinc.set_bit(25, self.comms[2].knob);
             }
-            IdentificationWordAMUACP::WORD07 => {
+            IdentificationWordAMUACP::Word07 => {
                 word_arinc.set_bits(17, self.comms[3].volume);
                 word_arinc.set_bit(25, self.comms[3].knob);
             }
-            IdentificationWordAMUACP::WORD08 => {
+            IdentificationWordAMUACP::Word08 => {
                 word_arinc.set_bits(17, self.comms[4].volume);
                 word_arinc.set_bit(25, self.comms[4].knob);
             }
-            IdentificationWordAMUACP::WORD09 => {
+            IdentificationWordAMUACP::Word09 => {
                 word_arinc.set_bits(17, self.vors[0].volume);
                 word_arinc.set_bit(25, self.vors[0].knob);
             }
-            IdentificationWordAMUACP::WORD10 => {
+            IdentificationWordAMUACP::Word10 => {
                 word_arinc.set_bits(17, self.vors[1].volume);
                 word_arinc.set_bit(25, self.vors[1].knob);
             }
-            IdentificationWordAMUACP::WORD11 => {
+            IdentificationWordAMUACP::Word11 => {
                 word_arinc.set_bits(17, self.markers.volume);
                 word_arinc.set_bit(25, self.markers.knob);
             }
-            IdentificationWordAMUACP::WORD12 => {
+            IdentificationWordAMUACP::Word12 => {
                 word_arinc.set_bits(17, self.ils.volume);
                 word_arinc.set_bit(25, self.ils.knob);
             }
-            IdentificationWordAMUACP::WORD15 => {
+            IdentificationWordAMUACP::Word15 => {
                 word_arinc.set_bits(17, self.adfs[0].volume);
                 word_arinc.set_bit(25, self.adfs[0].knob);
             }
-            IdentificationWordAMUACP::WORD16 => {
+            IdentificationWordAMUACP::Word16 => {
                 word_arinc.set_bits(17, self.adfs[1].volume);
                 word_arinc.set_bit(25, self.adfs[1].knob);
             }
@@ -331,7 +331,7 @@ impl AudioControlPanel {
         if self.is_power_supply_powered {
             self.last_complete_cycle_sent += context.delta();
 
-            if bus_acp.len() != 0 {
+            if !bus_acp.is_empty() {
                 // These will be used later on
                 // Especially "calls" when SELCAL will be
                 // translated into Rust
@@ -365,43 +365,43 @@ impl AudioControlPanel {
             let transmission_pb_pushed: bool = self.transmit_channel != self.transmit_pushed;
 
             if self.vhfs[0].has_changed()
-                || transmission_pb_pushed && self.transmit_pushed == TransmitID::VHF1
+                || transmission_pb_pushed && self.transmit_pushed == TransmitID::Vhf1
             {
                 self.send_volume_control(bus_acp, 2);
             }
             if self.vhfs[1].has_changed()
-                || transmission_pb_pushed && self.transmit_pushed == TransmitID::VHF2
+                || transmission_pb_pushed && self.transmit_pushed == TransmitID::VHf2
             {
                 self.send_volume_control(bus_acp, 3);
             }
             if self.vhfs[2].has_changed()
-                || transmission_pb_pushed && self.transmit_pushed == TransmitID::VHF3
+                || transmission_pb_pushed && self.transmit_pushed == TransmitID::Vhf3
             {
                 self.send_volume_control(bus_acp, 4);
             }
 
             if self.comms[0].has_changed()
-                || transmission_pb_pushed && self.transmit_pushed == TransmitID::HF1
+                || transmission_pb_pushed && self.transmit_pushed == TransmitID::Hf1
             {
                 self.send_volume_control(bus_acp, 5);
             }
             if self.comms[1].has_changed()
-                || transmission_pb_pushed && self.transmit_pushed == TransmitID::HF2
+                || transmission_pb_pushed && self.transmit_pushed == TransmitID::Hf2
             {
                 self.send_volume_control(bus_acp, 6);
             }
             if self.comms[2].has_changed()
-                || transmission_pb_pushed && self.transmit_pushed == TransmitID::MECH
+                || transmission_pb_pushed && self.transmit_pushed == TransmitID::Mech
             {
                 self.send_volume_control(bus_acp, 7);
             }
             if self.comms[3].has_changed()
-                || transmission_pb_pushed && self.transmit_pushed == TransmitID::CAB
+                || transmission_pb_pushed && self.transmit_pushed == TransmitID::Cab
             {
                 self.send_volume_control(bus_acp, 8);
             }
             if self.comms[4].has_changed()
-                || transmission_pb_pushed && self.transmit_pushed == TransmitID::PA
+                || transmission_pb_pushed && self.transmit_pushed == TransmitID::Pa
             {
                 self.send_volume_control(bus_acp, 9);
             }

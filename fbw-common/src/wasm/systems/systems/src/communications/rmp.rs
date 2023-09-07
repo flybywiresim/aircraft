@@ -6,35 +6,35 @@ use crate::simulation::{
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd)]
 enum SelectedMode {
-    VHF1 = 1,
-    VHF2,
-    VHF3,
-    HF1,
-    HF2,
-    VOR,
-    ILS,
-    MLS,
-    ADF,
-    BFO,
-    AM,
-    NAV,
+    Vhf1 = 1,
+    Vhf2,
+    Vhf3,
+    Hf1,
+    Hf2,
+    Vor,
+    Ils,
+    Mls,
+    Adf,
+    Bfo,
+    Am,
+    Nav,
 }
 
 impl From<f64> for SelectedMode {
     fn from(value: f64) -> Self {
         match value as u8 {
-            2 => Self::VHF2,
-            3 => Self::VHF3,
-            4 => Self::HF1,
-            5 => Self::HF2,
-            6 => Self::VOR,
-            7 => Self::ILS,
-            8 => Self::MLS,
-            9 => Self::ADF,
-            10 => Self::BFO,
-            11 => Self::AM,
-            12 => Self::NAV,
-            _ => Self::VHF1,
+            2 => Self::Vhf2,
+            3 => Self::Vhf3,
+            4 => Self::Hf1,
+            5 => Self::Hf2,
+            6 => Self::Vor,
+            7 => Self::Ils,
+            8 => Self::Mls,
+            9 => Self::Adf,
+            10 => Self::Bfo,
+            11 => Self::Am,
+            12 => Self::Nav,
+            _ => Self::Vhf1,
         }
     }
 }
@@ -57,15 +57,15 @@ impl RadioManagementPanel {
         Self {
             id_rmp: 1,
 
-            selected_mode: SelectedMode::VHF1,
+            selected_mode: SelectedMode::Vhf1,
 
             toggle_switch: false,
             is_power_supply_powered: false,
 
             power_supply: ElectricalBusType::DirectCurrentEssential,
 
-            toggle_switch_id: context.get_identifier(format!("RMP_L_TOGGLE_SWITCH")),
-            selected_mode_id: context.get_identifier(format!("RMP_L_SELECTED_MODE")),
+            toggle_switch_id: context.get_identifier(format!("RMP_L_TOGGLE_SWITCH").to_string()),
+            selected_mode_id: context.get_identifier(format!("RMP_L_SELECTED_MODE").to_string()),
         }
     }
 
@@ -73,15 +73,15 @@ impl RadioManagementPanel {
         Self {
             id_rmp: 2,
 
-            selected_mode: SelectedMode::VHF2,
+            selected_mode: SelectedMode::Vhf2,
 
             power_supply: ElectricalBusType::DirectCurrent(2),
 
             toggle_switch: false,
             is_power_supply_powered: false,
 
-            toggle_switch_id: context.get_identifier(format!("RMP_R_TOGGLE_SWITCH")),
-            selected_mode_id: context.get_identifier(format!("RMP_R_SELECTED_MODE")),
+            toggle_switch_id: context.get_identifier(format!("RMP_R_TOGGLE_SWITCH").to_string()),
+            selected_mode_id: context.get_identifier(format!("RMP_R_SELECTED_MODE").to_string()),
         }
     }
 
@@ -89,12 +89,12 @@ impl RadioManagementPanel {
 
     pub fn is_abnormal_mode(&self) -> bool {
         self.is_powered()
-            && ((self.selected_mode == SelectedMode::VHF3
-                || self.selected_mode == SelectedMode::HF1
-                || self.selected_mode == SelectedMode::HF2)
+            && ((self.selected_mode == SelectedMode::Vhf3
+                || self.selected_mode == SelectedMode::Hf1
+                || self.selected_mode == SelectedMode::Hf2)
                 && (self.id_rmp == 1 || self.id_rmp == 2))
-            || (self.selected_mode == SelectedMode::VHF1 && (self.id_rmp == 2 || self.id_rmp == 3))
-            || (self.selected_mode == SelectedMode::VHF2 && (self.id_rmp == 1 || self.id_rmp == 3))
+            || (self.selected_mode == SelectedMode::Vhf1 && (self.id_rmp == 2 || self.id_rmp == 3))
+            || (self.selected_mode == SelectedMode::Vhf2 && (self.id_rmp == 1 || self.id_rmp == 3))
     }
 
     pub fn is_powered(&self) -> bool {

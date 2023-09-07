@@ -17,8 +17,8 @@ use super::acp::AudioControlPanel;
 use super::receivers::{CommTransceiver, NavReceiver};
 
 enum TypeCard {
-    SELCAL(SELCAL),
-    BITE(BITE),
+    Selcal(Selcal),
+    Bite(Bite),
 }
 
 pub struct WordAMUACPInfo {
@@ -50,25 +50,25 @@ impl WordAMUACPInfo {
 
 #[derive(Eq, PartialEq, PartialOrd, Copy, Clone)]
 pub enum IdentificationWordAMUACP {
-    WORD0,
-    WORDAMU,
-    WORD01,
-    WORD02,
-    WORD03,
-    WORD04,
-    WORD05,
-    WORD06,
-    WORD07,
-    WORD08,
-    WORD09,
-    WORD10,
-    WORD11,
-    WORD12,
-    // SATCOM but not used for now
-    // WORD13(LabelArinc429Comms, i32 ),
-    // WORD14(LabelArinc429Comms, i32 ),
-    WORD15,
-    WORD16,
+    Word0,
+    Wordamu,
+    Word01,
+    Word02,
+    Word03,
+    Word04,
+    Word05,
+    Word06,
+    Word07,
+    Word08,
+    Word09,
+    Word10,
+    Word11,
+    Word12,
+    // Satcom but not used for now
+    // Word13(LabelArinc429Comms, i32 ),
+    // Word14(LabelArinc429Comms, i32 ),
+    Word15,
+    Word16,
 }
 
 #[repr(u32)]
@@ -616,7 +616,7 @@ impl Computer {
         Self {
             audio_card: AudioCard::new(context, 1),
             // Not used for now
-            _second_card: TypeCard::SELCAL(SELCAL::new()),
+            _second_card: TypeCard::Selcal(Selcal::new()),
             is_power_supply_powered: false,
         }
     }
@@ -625,7 +625,7 @@ impl Computer {
         Self {
             audio_card: AudioCard::new(context, 2),
             // Not used for now
-            _second_card: TypeCard::BITE(BITE::new()),
+            _second_card: TypeCard::Bite(Bite::new()),
             is_power_supply_powered: false,
         }
     }
@@ -732,79 +732,72 @@ impl AudioCard {
     ) {
         let mut can_send_amu_word = false;
 
-        loop {
-            match bus.pop() {
-                Some(word) => {
-                    let label_option: Option<LabelWordAMUACP> =
-                        FromPrimitive::from_u32(word.get_bits(8, 1));
+        while let Some(word) = bus.pop() {
+            let label_option: Option<LabelWordAMUACP> =
+                FromPrimitive::from_u32(word.get_bits(8, 1));
 
-                    if label_option.is_some() {
-                        let label = label_option.unwrap();
+            if let Some(label) = label_option {
+                if label == LabelWordAMUACP::Label300Request {
+                    // Here the ACP id is available in the word
+                    // but we don't need it for now. Maybe in the future with more information...
+                    can_send_amu_word = true;
+                } else {
+                    let sdi = word.get_bits(2, 9) as u8;
+                    let transmission_table = word.get_bits(4, 11);
+                    let _int = word.get_bits(1, 15) != 0;
+                    let _rad = word.get_bits(1, 16) != 0;
+                    let volume = word.get_bits(8, 17);
+                    let reception = word.get_bits(1, 25);
+                    mixed_audio.enable_beep = word.get_bits(1, 26) != 0;
+                    let _reset = word.get_bits(1, 27) != 0;
 
-                        if label == LabelWordAMUACP::Label300Request {
-                            // Here the ACP id is available in the word
-                            // but we don't need it for now. Maybe in the future with more information...
-                            can_send_amu_word = true;
-                        } else {
-                            let sdi = word.get_bits(2, 9) as u8;
-                            let transmission_table = word.get_bits(4, 11);
-                            let _int = word.get_bits(1, 15) != 0;
-                            let _rad = word.get_bits(1, 16) != 0;
-                            let volume = word.get_bits(8, 17);
-                            let reception = word.get_bits(1, 25);
-                            mixed_audio.enable_beep = word.get_bits(1, 26) != 0;
-                            let _reset = word.get_bits(1, 27) != 0;
+                    *transmission_table_acp = transmission_table;
 
-                            *transmission_table_acp = transmission_table;
-
-                            // Perform this only if the data currently analyzed is from the chosen acp
-                            match label {
-                                LabelWordAMUACP::Label210VolumeControlVHF => {
-                                    if sdi == 1 {
-                                        mixed_audio.volume_com1 = volume;
-                                        mixed_audio.receive_com1 = reception != 0;
-                                    } else if sdi == 2 {
-                                        mixed_audio.volume_com2 = volume;
-                                        mixed_audio.receive_com2 = reception != 0;
-                                    } else if sdi == 3 {
-                                        mixed_audio.volume_com3 = volume;
-                                        // Comment due to vPilot that needs com3 to be received all the time
-                                        //mixed_audio.receive_com3 = reception != 0;
-                                    }
-                                }
-                                LabelWordAMUACP::Label213VolumeControlVORMKR => {
-                                    if sdi == 1 {
-                                        mixed_audio.volume_vor1 = volume;
-                                        mixed_audio.receive_vor1 = reception != 0;
-                                    } else if sdi == 2 {
-                                        mixed_audio.volume_vor2 = volume;
-                                        mixed_audio.receive_vor2 = reception != 0;
-                                    } else if sdi == 3 {
-                                        mixed_audio.receive_markers = reception != 0;
-                                    }
-                                }
-                                LabelWordAMUACP::Label212VolumeControlADFPA => {
-                                    // PA should be here but not simulated
-                                    if sdi == 1 {
-                                        mixed_audio.volume_adf1 = volume;
-                                        mixed_audio.receive_adf1 = reception != 0;
-                                    } else if sdi == 2 {
-                                        mixed_audio.volume_adf2 = volume;
-                                        mixed_audio.receive_adf2 = reception != 0;
-                                    }
-                                }
-                                LabelWordAMUACP::Label217VolumeControlILS => {
-                                    mixed_audio.volume_ils = volume;
-                                    // TODO: Use data from future DMC. There's a wire between comms and DMC
-                                    // FCOM compliant: ILS can be listened to only if LS is pressed
-                                    mixed_audio.receive_ils = reception != 0;
-                                }
-                                _ => {}
+                    // Perform this only if the data currently analyzed is from the chosen acp
+                    match label {
+                        LabelWordAMUACP::Label210VolumeControlVHF => {
+                            if sdi == 1 {
+                                mixed_audio.volume_com1 = volume;
+                                mixed_audio.receive_com1 = reception != 0;
+                            } else if sdi == 2 {
+                                mixed_audio.volume_com2 = volume;
+                                mixed_audio.receive_com2 = reception != 0;
+                            } else if sdi == 3 {
+                                mixed_audio.volume_com3 = volume;
+                                // Comment due to vPilot that needs com3 to be received all the time
+                                //mixed_audio.receive_com3 = reception != 0;
                             }
                         }
+                        LabelWordAMUACP::Label213VolumeControlVORMKR => {
+                            if sdi == 1 {
+                                mixed_audio.volume_vor1 = volume;
+                                mixed_audio.receive_vor1 = reception != 0;
+                            } else if sdi == 2 {
+                                mixed_audio.volume_vor2 = volume;
+                                mixed_audio.receive_vor2 = reception != 0;
+                            } else if sdi == 3 {
+                                mixed_audio.receive_markers = reception != 0;
+                            }
+                        }
+                        LabelWordAMUACP::Label212VolumeControlADFPA => {
+                            // PA should be here but not simulated
+                            if sdi == 1 {
+                                mixed_audio.volume_adf1 = volume;
+                                mixed_audio.receive_adf1 = reception != 0;
+                            } else if sdi == 2 {
+                                mixed_audio.volume_adf2 = volume;
+                                mixed_audio.receive_adf2 = reception != 0;
+                            }
+                        }
+                        LabelWordAMUACP::Label217VolumeControlILS => {
+                            mixed_audio.volume_ils = volume;
+                            // TODO: Use data from future DMC. There's a wire between comms and DMC
+                            // FCOM compliant: ILS can be listened to only if LS is pressed
+                            mixed_audio.receive_ils = reception != 0;
+                        }
+                        _ => {}
                     }
                 }
-                _ => break,
             }
         }
 
@@ -838,14 +831,14 @@ impl SimulationElement for AudioCard {
     }
 }
 
-pub struct SELCAL {}
-impl SELCAL {
+pub struct Selcal {}
+impl Selcal {
     pub fn new() -> Self {
         Self {}
     }
 }
-pub struct BITE {}
-impl BITE {
+pub struct Bite {}
+impl Bite {
     pub fn new() -> Self {
         Self {}
     }
