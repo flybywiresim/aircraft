@@ -214,7 +214,7 @@ impl Morse {
             };
 
             copy.push_str(code);
-            copy.push_str(" ");
+            copy.push(' ');
 
             // +3 to take into account the space between letters
             total_elements += elements + 3;
