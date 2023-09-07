@@ -215,7 +215,6 @@ impl BoardingTestBed {
             max_pax += test_bed().query(|a| a.max_pax(ps)) as i32;
         }
         self.write_by_name("FSDT_GSX_NUMPASSENGERS_BOARDING_TOTAL", max_pax / 2);
-        self.write_by_name("FSDT_GSX_NUMPASSENGERS_TOTAL", max_pax / 2);
         self
     }
 
@@ -225,13 +224,11 @@ impl BoardingTestBed {
             max_pax += test_bed().query(|a| a.max_pax(ps)) as i32;
         }
         self.write_by_name("FSDT_GSX_NUMPASSENGERS_BOARDING_TOTAL", max_pax);
-        self.write_by_name("FSDT_GSX_NUMPASSENGERS_TOTAL", max_pax);
         self
     }
 
-    fn deboard_gsx_pax_from(mut self, pax_deboard: i32, boarded: i32) -> Self {
+    fn deboard_gsx_pax(mut self, pax_deboard: i32) -> Self {
         self.write_by_name("FSDT_GSX_NUMPASSENGERS_DEBOARDING_TOTAL", pax_deboard);
-        self.write_by_name("FSDT_GSX_NUMPASSENGERS_TOTAL", boarded);
         self
     }
 
@@ -1467,7 +1464,7 @@ fn gsx_deboarding_initial_state() {
         .gsx_requested_deboard_state()
         .and_run()
         .gsx_performing_deboard_state()
-        .deboard_gsx_pax_from(10, 100)
+        .deboard_gsx_pax(10)
         .and_run();
 
     // Check that pax moves and cargo remain the same when GSX has started performing
@@ -1492,11 +1489,11 @@ fn gsx_deboarding_full_pax() {
         .gsx_requested_deboard_state()
         .and_run()
         .gsx_performing_deboard_state()
-        .deboard_gsx_pax_from(87, 174)
+        .deboard_gsx_pax(87)
         .deboard_gsx_cargo_half()
         .and_run()
         .and_stabilize()
-        .deboard_gsx_pax_from(174, 174)
+        .deboard_gsx_pax(174)
         .deboard_gsx_cargo_full()
         .and_run()
         .gsx_complete_deboard_state();
@@ -1521,11 +1518,11 @@ fn gsx_deboarding_half_pax() {
         .gsx_requested_deboard_state()
         .and_run()
         .gsx_performing_deboard_state()
-        .deboard_gsx_pax_from(0, 87)
+        .deboard_gsx_pax(0)
         .deboard_gsx_cargo_half()
         .and_run()
         .and_stabilize()
-        .deboard_gsx_pax_from(87, 87)
+        .deboard_gsx_pax(87)
         .deboard_gsx_cargo_full()
         .and_run()
         .gsx_complete_deboard_state();
@@ -1560,7 +1557,7 @@ fn gsx_deboarding_full_pax_partial() {
 
     // SET GSX values to half and run
     let mut test_bed = test_bed
-        .deboard_gsx_pax_from(87, 174)
+        .deboard_gsx_pax(87)
         .deboard_gsx_cargo_half()
         .and_run()
         .and_stabilize();
@@ -1569,7 +1566,7 @@ fn gsx_deboarding_full_pax_partial() {
     test_bed.has_half_cargo();
 
     let mut test_bed = test_bed
-        .deboard_gsx_pax_from(0, 174)
+        .deboard_gsx_pax(0)
         .deboard_gsx_cargo_full()
         .and_run()
         .and_stabilize()
