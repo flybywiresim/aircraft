@@ -65,7 +65,7 @@ impl From<usize> for A320Cargo {
 }
 
 pub struct A320Payload {
-    payload_manager: PayloadManager<4, 2, 4>,
+    payload_manager: PayloadManager<4, 3, 4>,
 }
 impl A320Payload {
     // Note: These constants reflect flight_model.cfg values and will have to be updated in sync with the configuration
@@ -153,11 +153,24 @@ impl A320Payload {
             )
         });
         let boarding_agents = [
-            BoardingAgent::new([0, 1, 2, 3]),
-            BoardingAgent::new([3, 2, 1, 0]),
+            BoardingAgent::new(
+                context.get_identifier("INTERACTIVE_POINT_0_OPEN_REQ".to_owned()),
+                true,
+                [0, 1, 2, 3],
+            ),
+            BoardingAgent::new(
+                context.get_identifier("INTERACTIVE_POINT_1_OPEN_REQ".to_owned()),
+                false,
+                [0, 1, 2, 3],
+            ),
+            BoardingAgent::new(
+                context.get_identifier("INTERACTIVE_POINT_2_OPEN_REQ".to_owned()),
+                false,
+                [3, 2, 1, 0],
+            ),
         ];
 
-        let passenger_deck = PassengerDeck::new(context, pax, boarding_agents);
+        let passenger_deck = PassengerDeck::new(pax, boarding_agents);
         let cargo_deck = CargoDeck::new(cargo);
 
         A320Payload {

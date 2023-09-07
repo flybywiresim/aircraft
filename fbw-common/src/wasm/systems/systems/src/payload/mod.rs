@@ -62,21 +62,42 @@ pub trait CargoPayload {
 
 #[derive(Debug)]
 pub struct BoardingAgent<const P: usize> {
+    door_id: VariableIdentifier,
+    door_open_percent: f64,
     order: [usize; P],
+    is_default: bool,
 }
 impl<const P: usize> BoardingAgent<P> {
-    pub fn new(order: [usize; P]) -> Self {
-        BoardingAgent { order }
+    pub fn new(door_id: VariableIdentifier, is_default: bool, order: [usize; P]) -> Self {
+        BoardingAgent {
+            door_id,
+            order,
+            door_open_percent: 0.,
+            is_default,
+        }
     }
 
     pub fn handle_one_pax(&self, pax: &mut [Pax; P]) {
         for ps in self.order {
-            if pax[ps].pax_is_target() {
-                continue;
+            if self.is_default || self.door_open_percent >= 1.0 {
+                if pax[ps].pax_is_target() {
+                    continue;
+                }
+                pax[ps].move_one_pax();
+                break;
             }
-            pax[ps].move_one_pax();
-            break;
         }
+    }
+
+    pub fn handle_num_pax(&self, num_to_move: i32, pax: &mut [Pax; P]) {
+        for _ in 0..num_to_move {
+            self.handle_one_pax(pax);
+        }
+    }
+}
+impl<const P: usize> SimulationElement for BoardingAgent<P> {
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.door_open_percent = reader.read(&self.door_id);
     }
 }
 
@@ -84,21 +105,12 @@ impl<const P: usize> BoardingAgent<P> {
 pub struct PassengerDeck<const N: usize, const G: usize> {
     pax: [Pax; N],
     boarding_agents: [BoardingAgent<N>; G],
-
-    boarding_gates_id: VariableIdentifier,
-    boarding_gates: usize,
 }
 impl<const N: usize, const G: usize> PassengerDeck<N, G> {
-    pub fn new(
-        context: &mut InitContext,
-        pax: [Pax; N],
-        boarding_agents: [BoardingAgent<N>; G],
-    ) -> Self {
+    pub fn new(pax: [Pax; N], boarding_agents: [BoardingAgent<N>; G]) -> Self {
         PassengerDeck {
             pax,
             boarding_agents,
-            boarding_gates_id: context.get_identifier("NUM_BOARDING_GATES".to_owned()),
-            boarding_gates: 0,
         }
     }
 
@@ -155,7 +167,7 @@ impl<const N: usize, const G: usize> PassengerDeck<N, G> {
     }
 
     fn num_boarding_points(&self) -> usize {
-        min(self.boarding_agents.len(), max(1, self.boarding_gates))
+        self.boarding_agents.len()
     }
 
     fn override_payload(&mut self, ps: usize, payload: Mass) {
@@ -187,13 +199,8 @@ impl<const N: usize, const G: usize> PassengerDeck<N, G> {
         let pax_diff = pax_target - self.total_pax_num();
         if pax_diff > 0 {
             for _ in 0..pax_diff {
-                for ps in &mut self.pax {
-                    if ps.pax_is_target() {
-                        continue;
-                    }
-                    ps.move_one_pax();
-                    break;
-                }
+                // let i = (n % self.num_boarding_points() as i32) as usize;
+                self.boarding_agents[0].handle_num_pax(pax_diff, &mut self.pax);
             }
         }
     }
@@ -201,26 +208,15 @@ impl<const N: usize, const G: usize> PassengerDeck<N, G> {
     fn deboard_pax_until_target(&mut self, pax_target: i32) {
         let pax_diff = self.total_pax_num() - pax_target;
         if pax_diff > 0 {
-            for _ in 0..pax_diff {
-                for ps in &mut self.pax {
-                    if ps.pax_is_target() {
-                        continue;
-                    }
-                    ps.move_one_pax();
-                    break;
-                }
-            }
+            self.boarding_agents[0].handle_num_pax(pax_diff, &mut self.pax);
         }
     }
 }
 
 impl<const N: usize, const G: usize> SimulationElement for PassengerDeck<N, G> {
-    fn read(&mut self, reader: &mut SimulatorReader) {
-        self.boarding_gates = reader.read(&self.boarding_gates_id);
-    }
-
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         accept_iterable!(self.pax, visitor);
+        accept_iterable!(self.boarding_agents, visitor);
 
         visitor.visit(self);
     }
