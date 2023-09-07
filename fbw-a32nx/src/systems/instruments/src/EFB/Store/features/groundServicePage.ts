@@ -10,37 +10,43 @@ enum ServiceButtonState {
 }
 
 interface ButtonSelectionState {
-    cabinDoorButtonState: ServiceButtonState
+    cabinLeftDoorButtonState: ServiceButtonState
+    cabinRightDoorButtonState: ServiceButtonState
     jetWayButtonState: ServiceButtonState
     fuelTruckButtonState: ServiceButtonState
     gpuButtonState: ServiceButtonState
     cargoDoorButtonState: ServiceButtonState
     baggageButtonState: ServiceButtonState
-    aftDoorButtonState: ServiceButtonState
+    aftLeftDoorButtonState: ServiceButtonState
+    aftRightDoorButtonState: ServiceButtonState
     cateringButtonState: ServiceButtonState
 }
 
 // hack to fix initialization issue for ACE/vite
 let initialState: ButtonSelectionState = {
-    cabinDoorButtonState: ServiceButtonState.DISABLED,
+    cabinLeftDoorButtonState: ServiceButtonState.DISABLED,
+    cabinRightDoorButtonState: ServiceButtonState.DISABLED,
     jetWayButtonState: ServiceButtonState.DISABLED,
     fuelTruckButtonState: ServiceButtonState.DISABLED,
     gpuButtonState: ServiceButtonState.DISABLED,
     cargoDoorButtonState: ServiceButtonState.DISABLED,
     baggageButtonState: ServiceButtonState.DISABLED,
-    aftDoorButtonState: ServiceButtonState.DISABLED,
+    aftLeftDoorButtonState: ServiceButtonState.DISABLED,
+    aftRightDoorButtonState: ServiceButtonState.DISABLED,
     cateringButtonState: ServiceButtonState.DISABLED,
 };
 
 const setInitialState = () => {
     initialState = {
-        cabinDoorButtonState: (SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:0', 'Percent over 100') === 1.0 ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE),
+        cabinLeftDoorButtonState: (SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:0', 'Percent over 100') === 1.0 ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE),
+        cabinRightDoorButtonState: (SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:1', 'Percent over 100') === 1.0 ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE),
         jetWayButtonState: ServiceButtonState.INACTIVE,
         fuelTruckButtonState: (SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:9', 'Percent over 100') === 1.0 ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE),
         gpuButtonState: (SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:8', 'Percent over 100') === 1.0 ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE),
         cargoDoorButtonState: (SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:5', 'Percent over 100') === 1.0 ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE),
         baggageButtonState: ServiceButtonState.INACTIVE,
-        aftDoorButtonState: (SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:3', 'Percent over 100') === 1.0 ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE),
+        aftLeftDoorButtonState: (SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:2', 'Percent over 100') === 1.0 ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE),
+        aftRightDoorButtonState: (SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:3', 'Percent over 100') === 1.0 ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE),
         cateringButtonState: ServiceButtonState.INACTIVE,
     };
 };
@@ -56,8 +62,11 @@ export const buttonsSlice = createSlice({
     name: 'ground',
     initialState,
     reducers: {
-        setCabinDoorButtonState: (state, action: PayloadAction<ServiceButtonState>) => {
-            state.cabinDoorButtonState = action.payload;
+        setCabinLeftDoorButtonState: (state, action: PayloadAction<ServiceButtonState>) => {
+            state.cabinLeftDoorButtonState = action.payload;
+        },
+        setCabinRightDoorButtonState: (state, action: PayloadAction<ServiceButtonState>) => {
+            state.cabinRightDoorButtonState = action.payload;
         },
         setJetWayButtonState: (state, action: PayloadAction<ServiceButtonState>) => {
             state.jetWayButtonState = action.payload;
@@ -74,8 +83,11 @@ export const buttonsSlice = createSlice({
         setBaggageButtonState: (state, action: PayloadAction<ServiceButtonState>) => {
             state.baggageButtonState = action.payload;
         },
-        setAftDoorButtonState: (state, action: PayloadAction<ServiceButtonState>) => {
-            state.aftDoorButtonState = action.payload;
+        setAftLeftDoorButtonState: (state, action: PayloadAction<ServiceButtonState>) => {
+            state.aftLeftDoorButtonState = action.payload;
+        },
+        setAftRightDoorButtonState: (state, action: PayloadAction<ServiceButtonState>) => {
+            state.aftRightDoorButtonState = action.payload;
         },
         setCateringButtonState: (state, action: PayloadAction<ServiceButtonState>) => {
             state.cateringButtonState = action.payload;
@@ -84,13 +96,15 @@ export const buttonsSlice = createSlice({
 });
 
 export const {
-    setCabinDoorButtonState,
+    setCabinLeftDoorButtonState,
+    setCabinRightDoorButtonState,
     setJetWayButtonState,
     setFuelTruckButtonState,
     setGpuButtonState,
     setCargoDoorButtonState,
     setBaggageButtonState,
-    setAftDoorButtonState,
+    setAftLeftDoorButtonState,
+    setAftRightDoorButtonState,
     setCateringButtonState,
 } = buttonsSlice.actions;
 

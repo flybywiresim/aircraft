@@ -20,9 +20,11 @@ import { t } from '../../translation';
 import { GroundServiceOutline } from '../../Assets/GroundServiceOutline';
 import { useAppDispatch, useAppSelector } from '../../Store/store';
 import {
-    setAftDoorButtonState,
+    setAftRightDoorButtonState,
+    setAftLeftDoorButtonState,
     setBaggageButtonState,
-    setCabinDoorButtonState,
+    setCabinLeftDoorButtonState,
+    setCabinRightDoorButtonState,
     setCargoDoorButtonState,
     setCateringButtonState,
     setFuelTruckButtonState,
@@ -48,13 +50,15 @@ const ServiceButtonWrapper: FC<ServiceButtonWrapperProps> = ({ children, classNa
 );
 
 enum ServiceButton {
-    CabinDoor,
+    CabinLeftDoor,
+    CabinRightDoor,
     JetBridge,
     FuelTruck,
     Gpu,
     CargoDoor,
     BaggageTruck,
-    AftDoor,
+    AftLeftDoor,
+    AftRightDoor,
     CateringTruck
 }
 
@@ -112,8 +116,10 @@ export const ServicesPage = () => {
     const groundServicesAvailable = simOnGround && aircraftIsStationary && !pushBackAttached;
 
     // Ground Services
-    const [cabinDoorOpen] = useSimVar('A:INTERACTIVE POINT OPEN:0', 'Percent over 100', 100);
-    const [aftDoorOpen] = useSimVar('A:INTERACTIVE POINT OPEN:3', 'Percent over 100', 100);
+    const [cabinLeftDoorOpen] = useSimVar('A:INTERACTIVE POINT OPEN:0', 'Percent over 100', 100);
+    const [cabinRightDoorOpen] = useSimVar('A:INTERACTIVE POINT OPEN:1', 'Percent over 100', 100);
+    const [aftLeftDoorOpen] = useSimVar('A:INTERACTIVE POINT OPEN:2', 'Percent over 100', 100);
+    const [aftRightDoorOpen] = useSimVar('A:INTERACTIVE POINT OPEN:3', 'Percent over 100', 100);
     const [cargoDoorOpen] = useSimVar('A:INTERACTIVE POINT OPEN:5', 'Percent over 100', 100);
     const [gpuActive] = useSimVar('A:INTERACTIVE POINT OPEN:8', 'Percent over 100', 100);
     const [fuelingActive] = useSimVar('A:INTERACTIVE POINT OPEN:9', 'Percent over 100', 100);
@@ -126,27 +132,31 @@ export const ServicesPage = () => {
     const conesVisible = conesEnabled && isGroundEquipmentVisible;
 
     // Service events
-    const toggleCabinDoor = () => SimVar.SetSimVarValue('K:TOGGLE_AIRCRAFT_EXIT', 'enum', 1);
+    const toggleCabinLeftDoor = () => SimVar.SetSimVarValue('K:TOGGLE_AIRCRAFT_EXIT', 'enum', 1);
+    const toggleCabinRightDoor = () => SimVar.SetSimVarValue('K:TOGGLE_AIRCRAFT_EXIT', 'enum', 2);
     const toggleJetBridgeAndStairs = () => {
         SimVar.SetSimVarValue('K:TOGGLE_JETWAY', 'bool', false);
         SimVar.SetSimVarValue('K:TOGGLE_RAMPTRUCK', 'bool', false);
     };
     const toggleCargoDoor = () => SimVar.SetSimVarValue('K:TOGGLE_AIRCRAFT_EXIT', 'enum', 6);
     const toggleBaggageTruck = () => SimVar.SetSimVarValue('K:REQUEST_LUGGAGE', 'bool', true);
-    const toggleAftDoor = () => SimVar.SetSimVarValue('K:TOGGLE_AIRCRAFT_EXIT', 'enum', 4);
+    const toggleAftLeftDoor = () => SimVar.SetSimVarValue('K:TOGGLE_AIRCRAFT_EXIT', 'enum', 3);
+    const toggleAftRightDoor = () => SimVar.SetSimVarValue('K:TOGGLE_AIRCRAFT_EXIT', 'enum', 4);
     const toggleCateringTruck = () => SimVar.SetSimVarValue('K:REQUEST_CATERING', 'bool', true);
     const toggleFuelTruck = () => SimVar.SetSimVarValue('K:REQUEST_FUEL_KEY', 'bool', true);
     const toggleGpu = () => SimVar.SetSimVarValue('K:REQUEST_POWER_SUPPLY', 'bool', true);
 
     // Button states
     const {
-        cabinDoorButtonState,
+        cabinLeftDoorButtonState,
+        cabinRightDoorButtonState,
         jetWayButtonState,
         fuelTruckButtonState,
         gpuButtonState,
         cargoDoorButtonState,
         baggageButtonState,
-        aftDoorButtonState,
+        aftLeftDoorButtonState,
+        aftRightDoorButtonState,
         cateringButtonState,
     } = useAppSelector((state) => state.groundServicePage);
 
@@ -265,17 +275,25 @@ export const ServicesPage = () => {
     // Centralized handler for managing clicks to any button
     const handleButtonClick = (id: ServiceButton) => {
         switch (id) {
-        case ServiceButton.CabinDoor:
-            handleDoors(cabinDoorButtonState, setCabinDoorButtonState);
-            toggleCabinDoor();
+        case ServiceButton.CabinLeftDoor:
+            handleDoors(cabinLeftDoorButtonState, setCabinLeftDoorButtonState);
+            toggleCabinLeftDoor();
+            break;
+        case ServiceButton.CabinRightDoor:
+            handleDoors(cabinRightDoorButtonState, setCabinRightDoorButtonState);
+            toggleCabinRightDoor();
             break;
         case ServiceButton.CargoDoor:
             handleDoors(cargoDoorButtonState, setCargoDoorButtonState);
             toggleCargoDoor();
             break;
-        case ServiceButton.AftDoor:
-            handleDoors(aftDoorButtonState, setAftDoorButtonState);
-            toggleAftDoor();
+        case ServiceButton.AftLeftDoor:
+            handleDoors(aftLeftDoorButtonState, setAftLeftDoorButtonState);
+            toggleAftLeftDoor();
+            break;
+        case ServiceButton.AftRightDoor:
+            handleDoors(aftRightDoorButtonState, setAftRightDoorButtonState);
+            toggleAftRightDoor();
             break;
         case ServiceButton.FuelTruck:
             handleSimpleService(ServiceButton.FuelTruck, fuelTruckButtonState, setFuelTruckButtonState);
@@ -288,8 +306,8 @@ export const ServicesPage = () => {
         case ServiceButton.JetBridge:
             handleComplexService(ServiceButton.JetBridge,
                 jetWayButtonStateRef, setJetWayButtonState,
-                cabinDoorButtonState, setCabinDoorButtonState,
-                cabinDoorOpen);
+                cabinLeftDoorButtonState, setCabinLeftDoorButtonState,
+                cabinLeftDoorOpen);
             toggleJetBridgeAndStairs();
             break;
         case ServiceButton.BaggageTruck:
@@ -302,8 +320,8 @@ export const ServicesPage = () => {
         case ServiceButton.CateringTruck:
             handleComplexService(ServiceButton.CateringTruck,
                 cateringButtonStateRef, setCateringButtonState,
-                aftDoorButtonState, setAftDoorButtonState,
-                aftDoorOpen);
+                aftRightDoorButtonState, setAftRightDoorButtonState,
+                aftRightDoorOpen);
             toggleCateringTruck();
             break;
         default:
@@ -383,10 +401,12 @@ export const ServicesPage = () => {
 
     // Doors
     useEffect(() => {
-        simpleServiceListenerHandling(cabinDoorButtonState, setCabinDoorButtonState, cabinDoorOpen);
+        simpleServiceListenerHandling(cabinLeftDoorButtonState, setCabinLeftDoorButtonState, cabinLeftDoorOpen);
+        simpleServiceListenerHandling(cabinRightDoorButtonState, setCabinRightDoorButtonState, cabinRightDoorOpen);
         simpleServiceListenerHandling(cargoDoorButtonState, setCargoDoorButtonState, cargoDoorOpen);
-        simpleServiceListenerHandling(aftDoorButtonState, setAftDoorButtonState, aftDoorOpen);
-    }, [cabinDoorOpen, cargoDoorOpen, aftDoorOpen]);
+        simpleServiceListenerHandling(aftLeftDoorButtonState, setAftLeftDoorButtonState, aftLeftDoorOpen);
+        simpleServiceListenerHandling(aftRightDoorButtonState, setAftRightDoorButtonState, aftRightDoorOpen);
+    }, [cabinRightDoorOpen, cabinLeftDoorOpen, cargoDoorOpen, aftLeftDoorOpen, aftRightDoorOpen]);
 
     // Fuel
     useEffect(() => {
@@ -403,11 +423,11 @@ export const ServicesPage = () => {
         complexServiceListenerHandling(
             jetWayButtonStateRef,
             setJetWayButtonState,
-            cabinDoorButtonState,
-            setCabinDoorButtonState,
-            cabinDoorOpen,
+            cabinLeftDoorButtonState,
+            setCabinLeftDoorButtonState,
+            cabinLeftDoorOpen,
         );
-    }, [cabinDoorOpen]);
+    }, [cabinLeftDoorOpen]);
 
     // Cargo Door listener for Baggage Button
     useEffect(() => {
@@ -420,33 +440,41 @@ export const ServicesPage = () => {
         );
     }, [cargoDoorOpen]);
 
-    // Aft Cabin Door listener fo rCatering Button
+    // Aft Cabin Door listener for Catering Button
     useEffect(() => {
         complexServiceListenerHandling(
             cateringButtonStateRef,
             setCateringButtonState,
-            aftDoorButtonState,
-            setAftDoorButtonState,
-            aftDoorOpen,
+            aftRightDoorButtonState,
+            setAftRightDoorButtonState,
+            aftRightDoorOpen,
         );
-    }, [aftDoorOpen]);
+    }, [aftRightDoorOpen]);
 
     // Pushback or movement start --> disable buttons and close doors
     // Enable buttons if all have been disabled before
     useEffect(() => {
         if (!groundServicesAvailable) {
-            dispatch(setCabinDoorButtonState(ServiceButtonState.DISABLED));
+            dispatch(setCabinLeftDoorButtonState(ServiceButtonState.DISABLED));
+            dispatch(setCabinRightDoorButtonState(ServiceButtonState.DISABLED));
             dispatch(setJetWayButtonState(ServiceButtonState.DISABLED));
             dispatch(setFuelTruckButtonState(ServiceButtonState.DISABLED));
             dispatch(setGpuButtonState(ServiceButtonState.DISABLED));
             dispatch(setCargoDoorButtonState(ServiceButtonState.DISABLED));
             dispatch(setBaggageButtonState(ServiceButtonState.DISABLED));
-            dispatch(setAftDoorButtonState(ServiceButtonState.DISABLED));
+            dispatch(setAftLeftDoorButtonState(ServiceButtonState.DISABLED));
+            dispatch(setAftRightDoorButtonState(ServiceButtonState.DISABLED));
             dispatch(setCateringButtonState(ServiceButtonState.DISABLED));
-            if (cabinDoorOpen === 1) {
+            if (cabinLeftDoorOpen === 1) {
                 SimVar.SetSimVarValue('K:TOGGLE_AIRCRAFT_EXIT', 'enum', 1);
             }
-            if (aftDoorOpen === 1) {
+            if (cabinRightDoorOpen === 1) {
+                SimVar.SetSimVarValue('K:TOGGLE_AIRCRAFT_EXIT', 'enum', 2);
+            }
+            if (aftLeftDoorOpen === 1) {
+                SimVar.SetSimVarValue('K:TOGGLE_AIRCRAFT_EXIT', 'enum', 3);
+            }
+            if (aftRightDoorOpen === 1) {
                 SimVar.SetSimVarValue('K:TOGGLE_AIRCRAFT_EXIT', 'enum', 4);
             }
             if (cargoDoorOpen === 1) {
@@ -459,17 +487,20 @@ export const ServicesPage = () => {
                 gpuButtonState,
                 cargoDoorButtonState,
                 baggageButtonState,
-                aftDoorButtonState,
+                aftLeftDoorButtonState,
+                aftRightDoorButtonState,
                 cateringButtonState]
                 .every((buttonState) => buttonState === ServiceButtonState.DISABLED)
         ) {
-            dispatch(setCabinDoorButtonState(ServiceButtonState.INACTIVE));
+            dispatch(setCabinLeftDoorButtonState(ServiceButtonState.INACTIVE));
+            dispatch(setCabinRightDoorButtonState(ServiceButtonState.INACTIVE));
             dispatch(setJetWayButtonState(ServiceButtonState.INACTIVE));
             dispatch(setFuelTruckButtonState(ServiceButtonState.INACTIVE));
             dispatch(setGpuButtonState(ServiceButtonState.INACTIVE));
             dispatch(setCargoDoorButtonState(ServiceButtonState.INACTIVE));
             dispatch(setBaggageButtonState(ServiceButtonState.INACTIVE));
-            dispatch(setAftDoorButtonState(ServiceButtonState.INACTIVE));
+            dispatch(setAftLeftDoorButtonState(ServiceButtonState.INACTIVE));
+            dispatch(setAftRightDoorButtonState(ServiceButtonState.INACTIVE));
             dispatch(setCateringButtonState(ServiceButtonState.INACTIVE));
         }
     }, [groundServicesAvailable]);
@@ -480,13 +511,13 @@ export const ServicesPage = () => {
         <div className="relative h-content-section-reduced">
             <GroundServiceOutline className="inset-x-0 mx-auto w-full h-full text-theme-text" />
 
-            <ServiceButtonWrapper xr={880} y={64}>
+            <ServiceButtonWrapper xr={880} y={24}>
 
                 {/* CABIN DOOR */}
                 <GroundServiceButton
                     name={t('Ground.Services.DoorFwd')}
-                    state={cabinDoorButtonState}
-                    onClick={() => handleButtonClick(ServiceButton.CabinDoor)}
+                    state={cabinLeftDoorButtonState}
+                    onClick={() => handleButtonClick(ServiceButton.CabinLeftDoor)}
                 >
                     <DoorClosedFill size={36} />
                 </GroundServiceButton>
@@ -511,7 +542,16 @@ export const ServicesPage = () => {
 
             </ServiceButtonWrapper>
 
-            <ServiceButtonWrapper xl={850} y={64} className="">
+            <ServiceButtonWrapper xl={850} y={24} className="">
+
+                {/* CABIN DOOR */}
+                <GroundServiceButton
+                    name={t('Ground.Services.DoorFwd')}
+                    state={cabinRightDoorButtonState}
+                    onClick={() => handleButtonClick(ServiceButton.CabinRightDoor)}
+                >
+                    <DoorClosedFill size={36} />
+                </GroundServiceButton>
 
                 {/* GPU */}
                 <GroundServiceButton
@@ -547,8 +587,8 @@ export const ServicesPage = () => {
                 {/* AFT DOOR */}
                 <GroundServiceButton
                     name={t('Ground.Services.DoorAft')}
-                    state={aftDoorButtonState}
-                    onClick={() => handleButtonClick(ServiceButton.AftDoor)}
+                    state={aftRightDoorButtonState}
+                    onClick={() => handleButtonClick(ServiceButton.AftRightDoor)}
                 >
                     <DoorClosedFill size={36} />
                 </GroundServiceButton>
@@ -562,6 +602,17 @@ export const ServicesPage = () => {
                     <ArchiveFill size={36} />
                 </GroundServiceButton>
 
+            </ServiceButtonWrapper>
+
+            <ServiceButtonWrapper xr={880} y={600} className="">
+                {/* AFT DOOR */}
+                <GroundServiceButton
+                    name={t('Ground.Services.DoorAft')}
+                    state={aftLeftDoorButtonState}
+                    onClick={() => handleButtonClick(ServiceButton.AftLeftDoor)}
+                >
+                    <DoorClosedFill size={36} />
+                </GroundServiceButton>
             </ServiceButtonWrapper>
 
             {/* Wheel Chocks and Security Cones are only visual information. To reuse styling */}
@@ -599,7 +650,7 @@ export const ServicesPage = () => {
                     TUG
                 </div>
             )}
-            {!!cabinDoorOpen && (
+            {!!cabinLeftDoorOpen && (
                 <div
                     className={serviceIndicationCss}
                     style={{ position: 'absolute', left: 500, right: 0, top: 100 }}
@@ -607,7 +658,23 @@ export const ServicesPage = () => {
                     CABIN
                 </div>
             )}
-            {!!aftDoorOpen && (
+            {!!cabinRightDoorOpen && (
+                <div
+                    className={serviceIndicationCss}
+                    style={{ position: 'absolute', left: 700, right: 0, top: 100 }}
+                >
+                    CABIN
+                </div>
+            )}
+            {!!aftLeftDoorOpen && (
+                <div
+                    className={serviceIndicationCss}
+                    style={{ position: 'absolute', left: 500, right: 0, top: 665 }}
+                >
+                    CABIN
+                </div>
+            )}
+            {!!aftRightDoorOpen && (
                 <div
                     className={serviceIndicationCss}
                     style={{ position: 'absolute', left: 700, right: 0, top: 665 }}
