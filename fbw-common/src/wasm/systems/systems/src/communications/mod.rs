@@ -47,8 +47,7 @@ impl Communications {
     pub fn update(&mut self, context: &UpdateContext) {
         self.update_comms |= context.side_controlling() != self.previous_side_controlling;
 
-        self.amu
-            .update(context, self.update_comms, &context.side_controlling());
+        self.amu.update(context, self.update_comms);
 
         self.sel_light = (self.rmp_cpt.as_ref().unwrap().is_powered()
             && self.rmp_fo.as_ref().unwrap().is_powered())
