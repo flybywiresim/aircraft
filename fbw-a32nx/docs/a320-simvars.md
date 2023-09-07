@@ -2920,6 +2920,13 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - 1
         - 2
 
+- A32NX_PNEU_ENG_{number}_STARTER_PRESSURIZED:
+    - Indicates whether enough bleed air is supplied to the starter to start the engine
+    - Bool
+    - {number}
+        - 1
+        - 2
+
 - A32NX_PNEU_ENG_{number}_TRANSFER_TRANSDUCER_PRESSURE
     - Pressure measured at the transfer pressure transducer, -1 if no output
     - psi
@@ -2960,8 +2967,8 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - 1
         - 2
 
-- A32NX_PNEU_ENG_{number}_PRECOOLER_OUTLET_TEMPERATURE:
-    - Temperature at the precooler outlet for engine bleed system
+- A32NX_PNEU_ENG_{number}_BLEED_TEMPERATURE_SENSOR_TEMPERATURE:
+    - Temperature measured by the bleed temperature sensor at the precooler outlet, -100 if no output
     - Degree celsius
     - {number}
         - 1
@@ -3002,8 +3009,12 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - 1
         - 2
 
-- A32NX_PNEU_XBLEED_VALVE_OPEN:
-    - Indicates whether the cross bleed air valve is open
+- A32NX_PNEU_XBLEED_VALVE_FULLY_OPEN:
+    - Indicates whether the cross bleed air valve is fully open
+    - Bool
+
+- A32NX_PNEU_XBLEED_VALVE_FULLY_CLOSED:
+    - Indicates whether the cross bleed air valve is fully closed
     - Bool
 
 - A32NX_PNEU_PACK_{number}_FLOW_VALVE_FLOW_RATE:
@@ -3016,6 +3027,27 @@ In the variables below, {number} should be replaced with one item in the set: { 
 - A32NX_OVHD_PNEU_ENG_{number}_BLEED_PB_IS_AUTO:
     - Indicates whether the engine bleed air is on
     - Is aliased from aircraft variable A:BLEED AIR ENGINE
+    - Bool
+    - {number}
+        - 1
+        - 2
+
+- A32NX_PNEU_ENG_{number}_LOW_TEMPERATURE:
+    - Indicates whether the engine bleed air temperature is low
+    - Bool
+    - {number}
+        - 1
+        - 2
+
+- A32NX_PNEU_ENG_{number}_OVERHEAT:
+    - Indicates whether an an engine bleed air overheat is detected
+    - Bool
+    - {number}
+        - 1
+        - 2
+
+- A32NX_PNEU_ENG_{number}_OVERPRESSURE:
+    - Indicates whether an engine bleed overpressure is detected
     - Bool
     - {number}
         - 1
