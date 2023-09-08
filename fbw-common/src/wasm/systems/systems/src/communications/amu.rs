@@ -383,6 +383,13 @@ impl AdaptationBoard {
         word_arinc.set_bits(1, LabelWordAMUACP::Label301AMU as u32);
         word_arinc.set_bits(11, *transmission_table);
 
+        // Will have to be used when SELCAL will be written in Rust
+        // word_arinc.set_bits(25, (calls > 4) & 1);
+        // word_arinc.set_bits(26, (calls > 3) & 1);
+        // word_arinc.set_bits(27, (calls > 2) & 1);
+        // word_arinc.set_bits(28, (calls > 1) & 1);
+        // word_arinc.set_bits(29, calls & 1);
+
         bus_acp.push(word_arinc);
     }
 
@@ -744,12 +751,14 @@ impl AudioCard {
                 } else {
                     let sdi = word.get_bits(2, 9) as u8;
                     let transmission_table = word.get_bits(4, 11);
-                    let _int = word.get_bits(1, 15) != 0;
-                    let _rad = word.get_bits(1, 16) != 0;
                     let volume = word.get_bits(8, 17);
                     let reception = word.get_bits(1, 25);
                     mixed_audio.enable_beep = word.get_bits(1, 26) != 0;
-                    let _reset = word.get_bits(1, 27) != 0;
+
+                    // No not used so far
+                    // let _int = word.get_bits(1, 15) != 0;
+                    // let _rad = word.get_bits(1, 16) != 0;
+                    // let _reset = word.get_bits(1, 27) != 0;
 
                     *transmission_table_acp = transmission_table;
 
