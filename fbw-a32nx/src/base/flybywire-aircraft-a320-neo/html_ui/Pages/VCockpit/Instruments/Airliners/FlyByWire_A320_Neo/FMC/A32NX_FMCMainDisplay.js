@@ -1495,6 +1495,10 @@ class FMCMainDisplay extends BaseAirliners {
             return Infinity;
         }
 
+        return this.getNavModeSpeedConstraint();
+    }
+
+    getNavModeSpeedConstraint() {
         const activeLegIndex = this.guidanceController.activeTransIndex >= 0 ? this.guidanceController.activeTransIndex : this.guidanceController.activeLegIndex;
         const constraints = this.managedProfile.get(activeLegIndex);
         if (constraints) {

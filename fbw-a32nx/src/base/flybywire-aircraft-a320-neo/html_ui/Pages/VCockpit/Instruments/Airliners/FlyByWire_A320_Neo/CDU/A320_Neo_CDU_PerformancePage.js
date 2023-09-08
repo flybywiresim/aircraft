@@ -415,7 +415,12 @@ class CDUPerformancePage {
                 managedSpeedCell = `\xa0${mcdu.managedSpeedTarget.toFixed(0)}`;
             }
         } else {
-            managedSpeedCell = `${canClickManagedSpeed ? '*' : '\xa0'}${mcdu.managedSpeedClimb > mcdu.climbSpeedLimit ? mcdu.climbSpeedLimit.toFixed(0) : mcdu.managedSpeedClimb.toFixed(0)}`;
+            let climbSpeed = Math.min(mcdu.managedSpeedClimb, mcdu.getNavModeSpeedConstraint());
+            if (mcdu.climbSpeedLimit !== undefined && SimVar.GetSimVarValue("INDICATED ALTITUDE", "feet") < mcdu.climbSpeedLimitAlt) {
+                climbSpeed = Math.min(climbSpeed, mcdu.climbSpeedLimit);
+            }
+
+            managedSpeedCell = `${canClickManagedSpeed ? '*' : '\xa0'}${climbSpeed.toFixed(0)}`;
 
             mcdu.onLeftInput[3] = (value, scratchpadCallback) => {
                 if (mcdu.trySetPreSelectedClimbSpeed(value)) {
