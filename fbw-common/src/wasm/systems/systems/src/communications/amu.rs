@@ -304,6 +304,8 @@ impl AdaptationBoard {
             volume_com1_id: context.get_identifier("VHF1_VOLUME".to_owned()),
             volume_com2_id: context.get_identifier("VHF2_VOLUME".to_owned()),
             volume_com3_id: context.get_identifier("VHF3_VOLUME".to_owned()),
+
+            // Have to use custom Nav volume due to impossibility to overwrite native morse code playing
             volume_adf1_id: context.get_identifier("ADF_VOLUME:1".to_owned()),
             volume_adf2_id: context.get_identifier("ADF_VOLUME:2".to_owned()),
             volume_vor1_id: context.get_identifier("NAV_VOLUME:1".to_owned()),

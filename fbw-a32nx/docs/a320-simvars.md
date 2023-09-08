@@ -475,27 +475,27 @@
 
 - A32NX_HF{1,2}_VOLUME
     - Number
-    - The HF1/2 volume equal to one of the ACPs (or all) depending on the controlling mode
+    - The HF1/2 volume equal to one of the ACPs depending on the controlling mode
 
 - A32NX_ACP_MECH_VOLUME
     - Number
-    - The MECH volume equal to one of the ACPs (or all) depending on the controlling mode
+    - The MECH volume equal to one of the ACPs depending on the controlling mode
 
 - A32NX_ACP_ATT_VOLUME
     - Number
-    - The CABIN volume equal to one of the ACPs(or all) depending on the controlling mode
+    - The CABIN volume equal to one of the ACPs depending on the controlling mode
 
 - A32NX_ACP_PA_VOLUME
     - Number
-    - The PA volume equal to one of the ACPs (or all) depending on the controlling mode
+    - The PA volume equal to one of the ACPs depending on the controlling mode
 
-- A32NX_ACP_NAV{1,2,3,4}_MORSE_VOLUME
+- A32NX_NAV_VOLUME:{1,2,3}
     - Number
-    - The CABIN volume equal to one of the ACPs(or all) depending on the controlling mode
+    - The Morse volume for the corresponding nav transceiver equal to one of the ACPs depending on the controlling mode
 
-- A32NX_ACP_ADF{1,2,3,4}_MORSE_VOLUME
+- A32NX_ADF_VOLUME:{1,2}
     - Number
-    - The CABIN volume equal to one of the ACPs(or all) depending on the controlling mode
+    - The Morse volume for the corresponding adf transceiver equal to one of the ACPs depending on the controlling mode
 
 - A32NX_ACP{1,2,3}_VHF{1,2,3}_KNOB_VOLUME_DOWN
     - Bool
@@ -560,10 +560,6 @@
 - A32NX_ACP{1,2,3}_SWITCH_INT
     - Number
     - Set to 0 whenever on RAD position. 100 whenever neutral position. 200 whenever in INT position
-
-- A32NX_IS_EMITTING_ON_FREQUENCY
-    - Bool
-    - True if the INTRAD switch on the ACPs (depending on controlling mode) is on RAD thus transmitting
 
 - A32NX_SIDE_CONTROLLING
     - Enum
