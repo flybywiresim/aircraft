@@ -171,10 +171,10 @@ pub enum AudioSwitchingKnobPosition {
     Fo,
 }
 
-pub struct AMU {
+pub struct Amu {
     adaptation_board: AdaptationBoard,
 }
-impl AMU {
+impl Amu {
     pub fn new(context: &mut InitContext) -> Self {
         Self {
             adaptation_board: AdaptationBoard::new(context),
@@ -187,7 +187,7 @@ impl AMU {
     }
 }
 
-impl SimulationElement for AMU {
+impl SimulationElement for Amu {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.adaptation_board.accept(visitor);
 

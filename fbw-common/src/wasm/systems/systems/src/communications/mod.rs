@@ -8,11 +8,11 @@ use crate::simulation::{
     SimulatorReader, SimulatorWriter, UpdateContext, VariableIdentifier, Write,
 };
 
-use self::amu::AMU;
+use self::amu::Amu;
 use self::rmp::RadioManagementPanel;
 
 pub struct Communications {
-    amu: AMU,
+    amu: Amu,
 
     rmp_cpt: Option<RadioManagementPanel>,
     rmp_fo: Option<RadioManagementPanel>,
@@ -29,7 +29,7 @@ pub struct Communications {
 impl Communications {
     pub fn new(context: &mut InitContext) -> Self {
         Self {
-            amu: AMU::new(context),
+            amu: Amu::new(context),
 
             rmp_cpt: Some(RadioManagementPanel::new_cpt(context)),
             rmp_fo: Some(RadioManagementPanel::new_fo(context)),
