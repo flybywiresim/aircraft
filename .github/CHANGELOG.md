@@ -43,6 +43,9 @@
 1. [FMS] Load procedures that reference a runway correctly - @tracernz (Mike)
 1. [MCDU/ND] Corrected altitude formatting with respect to transition altitude and transition level - @tracernz (Mike)
 1. [PFD] Adjusted size of pitch trim messages - @tracernz (Mike)
+1. [BLEED] Allow engine start from crossbleed air - @BlueberryKing (BlueberryKing)
+1. [BLEED] Improve bleed page visuals on the SD - @BlueberryKing (BlueberryKing)
+1. [BLEED] Use more accurate pneumatic valves and sensors - @BlueberryKing (BlueberryKing)
 1. [COMMS] Enabled all components of comms panels - @Julian [Z+2 fr en esp]#8476 (Julian Sebline) 
 
 ## 0.10.0
