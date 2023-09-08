@@ -182,6 +182,11 @@ impl A320Payload {
         self.payload_manager.pax_num(ps)
     }
 
+    #[cfg(test)]
+    fn total_pax_num(&self) -> i32 {
+        self.payload_manager.total_pax_num()
+    }
+
     fn total_passenger_load(&self) -> Mass {
         self.payload_manager.total_passenger_load()
     }

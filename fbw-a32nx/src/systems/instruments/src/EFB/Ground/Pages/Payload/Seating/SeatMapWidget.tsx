@@ -37,27 +37,27 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
 
     const seatEmptyImg = useRef(getImageFromComponent(<Seat fill="none" stroke={theme[0]} opacity="1.0" />));
     const seatMinusImg = useRef(getImageFromComponent(<Seat fill={theme[0]} stroke="none" opacity="0.25" />));
-    const seatAddImg = useRef(getImageFromComponent(<Seat fill={theme[1]} stroke="none" opacity="0.6" />));
+    const seatAddImg = useRef(getImageFromComponent(<Seat fill={theme[1]} stroke="none" opacity="0.4" />));
     const seatFilledImg = useRef(getImageFromComponent(<Seat fill={theme[1]} stroke="none" opacity="1.0" />));
 
     const bizLeftSeatEmptyImg = useRef(getImageFromComponent(<BusinessSeatLeft fill="none" stroke={theme[0]} opacity="1.0" />));
     const bizLeftSeatMinusImg = useRef(getImageFromComponent(<BusinessSeatLeft fill={theme[0]} stroke={theme[0]} opacity="0.25" />));
-    const bizLeftSeatAddImg = useRef(getImageFromComponent(<BusinessSeatLeft fill={theme[1]} stroke={theme[0]} opacity="0.6" />));
+    const bizLeftSeatAddImg = useRef(getImageFromComponent(<BusinessSeatLeft fill={theme[1]} stroke={theme[0]} opacity="0.4" />));
     const bizLeftSeatFilledImg = useRef(getImageFromComponent(<BusinessSeatLeft fill={theme[1]} stroke={theme[0]} opacity="1.0" />));
 
     const bizRightSeatEmptyImg = useRef(getImageFromComponent(<BusinessSeatRight fill="none" stroke={theme[0]} opacity="1.0" />));
     const bizRightSeatMinusImg = useRef(getImageFromComponent(<BusinessSeatRight fill={theme[0]} stroke={theme[0]} opacity="0.25" />));
-    const bizRightSeatAddImg = useRef(getImageFromComponent(<BusinessSeatRight fill={theme[1]} stroke={theme[0]} opacity="0.6" />));
+    const bizRightSeatAddImg = useRef(getImageFromComponent(<BusinessSeatRight fill={theme[1]} stroke={theme[0]} opacity="0.4" />));
     const bizRightSeatFilledImg = useRef(getImageFromComponent(<BusinessSeatRight fill={theme[1]} stroke={theme[0]} opacity="1.0" />));
 
     const suiteRightSeatEmptyImg = useRef(getImageFromComponent(<SuiteRight fill="none" stroke={theme[0]} opacity="1.0" />));
     const suiteRightSeatMinusImg = useRef(getImageFromComponent(<SuiteRight fill={theme[0]} stroke={theme[0]} opacity="0.25" />));
-    const suiteRightSeatAddImg = useRef(getImageFromComponent(<SuiteRight fill={theme[1]} stroke={theme[0]} opacity="0.6" />));
+    const suiteRightSeatAddImg = useRef(getImageFromComponent(<SuiteRight fill={theme[1]} stroke={theme[0]} opacity="0.4" />));
     const suiteRightSeatFilledImg = useRef(getImageFromComponent(<SuiteRight fill={theme[1]} stroke={theme[0]} opacity="1.0" />));
 
     const suiteLeftSeatEmptyImg = useRef(getImageFromComponent(<SuiteLeft fill="none" stroke={theme[0]} opacity="1.0" />));
     const suiteLeftSeatMinusImg = useRef(getImageFromComponent(<SuiteLeft fill={theme[0]} stroke={theme[0]} opacity="0.25" />));
-    const suiteLeftSeatAddImg = useRef(getImageFromComponent(<SuiteLeft fill={theme[1]} stroke={theme[0]} opacity="0.6" />));
+    const suiteLeftSeatAddImg = useRef(getImageFromComponent(<SuiteLeft fill={theme[1]} stroke={theme[0]} opacity="0.4" />));
     const suiteLeftSeatFilledImg = useRef(getImageFromComponent(<SuiteLeft fill={theme[1]} stroke={theme[0]} opacity="1.0" />));
 
     const [xYMap, setXYMap] = useState<number[][][]>([]);
