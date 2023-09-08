@@ -18,7 +18,7 @@ export const OverviewPage = () => {
         );
     default:
         return (
-            <A380Overview />
+            <A320Overview />
         );
     }
 }
