@@ -54,14 +54,12 @@ pub struct AudioControlPanel {
     transmit_pushed_id: VariableIdentifier,
     voice_button_id: VariableIdentifier,
     reset_button_id: VariableIdentifier,
-    int_rad_switch_id: VariableIdentifier,
 
     voice_button: bool,
     reset_button: bool,
 
     transmit_channel: TransmitID,
     transmit_pushed: TransmitID,
-    int_rad_switch: u8,
 
     vhfs: [TransceiverACPFacade; 3],
     comms: [TransceiverACPFacade; 5], // TransceiverACPFacades not simulated due to SDK capabilities. Just to make the knobs rotatable/pushable
@@ -78,9 +76,6 @@ pub struct AudioControlPanel {
     last_complete_cycle_sent: Duration,
 }
 impl AudioControlPanel {
-    const DEFAULT_INT_RAD_SWITCH: u8 = 100;
-    const TRANSMIT_ID_INT: u8 = 200;
-
     pub fn new(context: &mut InitContext, id_acp: u32, power_supply: ElectricalBusType) -> Self {
         Self {
             id_acp,
@@ -89,14 +84,12 @@ impl AudioControlPanel {
             transmit_pushed_id: context.get_identifier(format!("ACP{}_TRANSMIT_PUSHED", id_acp)),
             voice_button_id: context.get_identifier(format!("ACP{}_VOICE_BUTTON_DOWN", id_acp)),
             reset_button_id: context.get_identifier(format!("ACP{}_RESET_BUTTON_DOWN", id_acp)),
-            int_rad_switch_id: context.get_identifier(format!("ACP{}_SWITCH_INT", id_acp)),
 
             voice_button: false,
             reset_button: false,
 
             transmit_channel: TransmitID::Vhf1,
             transmit_pushed: TransmitID::Vhf1,
-            int_rad_switch: Self::DEFAULT_INT_RAD_SWITCH,
 
             vhfs: [
                 TransceiverACPFacade::new(context, id_acp, "VHF1"),
@@ -226,8 +219,10 @@ impl AudioControlPanel {
         word_arinc.set_bits(9, self.list_arinc_words[index].get_sdi());
 
         word_arinc.set_bits(11, self.transmit_pushed as u32);
-        word_arinc.set_bit(15, self.int_rad_switch <= Self::DEFAULT_INT_RAD_SWITCH);
-        word_arinc.set_bit(16, self.int_rad_switch == Self::TRANSMIT_ID_INT);
+
+        // Not used so far
+        // word_arinc.set_bit(15, self.int_rad_switch <= Self::DEFAULT_INT_RAD_SWITCH);
+        // word_arinc.set_bit(16, self.int_rad_switch == Self::TRANSMIT_ID_INT);
 
         match self.list_arinc_words[index].get_identification() {
             IdentificationWordAMUACP::Word01 => {
@@ -455,7 +450,6 @@ impl SimulationElement for AudioControlPanel {
 
     fn read(&mut self, reader: &mut SimulatorReader) {
         if self.is_power_supply_powered {
-            self.int_rad_switch = reader.read(&self.int_rad_switch_id);
             self.voice_button = reader.read(&self.voice_button_id);
             self.reset_button = reader.read(&self.reset_button_id);
 
