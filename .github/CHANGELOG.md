@@ -42,6 +42,7 @@
 1. [FWC] Added "twenty five hundred" and "two thousand" callouts - @tracernz (Mike)
 1. [FMS] Load procedures that reference a runway correctly - @tracernz (Mike)
 1. [MCDU/ND] Corrected altitude formatting with respect to transition altitude and transition level - @tracernz (Mike)
+1. [PAYLOAD] Allow for multi-gate boarding when multiple doors are open - @2hwk (2cas)
 
 ## 0.10.0
 
