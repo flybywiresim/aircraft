@@ -3,15 +3,18 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React from 'react';
-import { useArinc429Var, useSimVar } from '@flybywiresim/fbw-sdk';
+import { useArinc429Var, usePersistentProperty, useSimVar } from '@flybywiresim/fbw-sdk';
+import { UnitType } from '@microsoft/msfs-sdk';
 import { SvgGroup } from '../../Common/SvgGroup';
 import Valve from './Valve';
-
 import '../../Common/CommonStyles.scss';
 
 export const CondPage = () => {
     // Display trim valve position for each zone
-    const gaugeOffset = -43; // Gauges range is from -43 degree to +43 degree
+    const gaugeOffset = -43; // This the range of travel for each 'zones' respective gauge is -43->+43 degrees.
+    // These gauges denote the Physical position of the valve. No relation to air temperature or set point!
+
+    const [unit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
 
     const acsc1DiscreteWord1 = useArinc429Var('L:A32NX_COND_ACSC_1_DISCRETE_WORD_1');
     const acsc2DiscreteWord1 = useArinc429Var('L:A32NX_COND_ACSC_2_DISCRETE_WORD_1');
@@ -20,16 +23,16 @@ export const CondPage = () => {
     // TODO: If both Sign Status are Failure Warning or No Computed Data, the whole page should display XX's
 
     const [cockpitTrimAirValve] = useSimVar('L:A32NX_COND_CKPT_TRIM_AIR_VALVE_POSITION', 'number', 100);
-    const [cockpitTrimTemp] = useSimVar('L:A32NX_COND_CKPT_DUCT_TEMP', 'celsius', 100);
-    const [cockpitCabinTemp] = useSimVar('L:A32NX_COND_CKPT_TEMP', 'celsius', 1000);
+    let [cockpitTrimTemp] = useSimVar('L:A32NX_COND_CKPT_DUCT_TEMP', 'celsius', 100);
+    let [cockpitCabinTemp] = useSimVar('L:A32NX_COND_CKPT_TEMP', 'celsius', 1000);
 
     const [fwdTrimAirValve] = useSimVar('L:A32NX_COND_FWD_TRIM_AIR_VALVE_POSITION', 'number', 100);
-    const [fwdTrimTemp] = useSimVar('L:A32NX_COND_FWD_DUCT_TEMP', 'celsius', 100);
-    const [fwdCabinTemp] = useSimVar('L:A32NX_COND_FWD_TEMP', 'celsius', 1000);
+    let [fwdTrimTemp] = useSimVar('L:A32NX_COND_FWD_DUCT_TEMP', 'celsius', 100);
+    let [fwdCabinTemp] = useSimVar('L:A32NX_COND_FWD_TEMP', 'celsius', 1000);
 
     const [aftTrimAirValve] = useSimVar('L:A32NX_COND_AFT_TRIM_AIR_VALVE_POSITION', 'number', 100);
-    const [aftTrimTemp] = useSimVar('L:A32NX_COND_AFT_DUCT_TEMP', 'celsius', 100);
-    const [aftCabinTemp] = useSimVar('L:A32NX_COND_AFT_TEMP', 'celsius', 1000);
+    let [aftTrimTemp] = useSimVar('L:A32NX_COND_AFT_DUCT_TEMP', 'celsius', 100);
+    let [aftCabinTemp] = useSimVar('L:A32NX_COND_AFT_TEMP', 'celsius', 1000);
 
     const hotAirOpen = !acscDiscreteWord1.getBitValueOr(20, false);
     const hotAirPositionDisagrees = acsc1DiscreteWord1.getBitValueOr(27, false) && acsc2DiscreteWord1.getBitValueOr(27, false);
@@ -38,6 +41,15 @@ export const CondPage = () => {
     const cabFanHasFault1 = acscDiscreteWord1.getBitValueOr(25, false);
     const cabFanHasFault2 = acscDiscreteWord1.getBitValueOr(26, false);
 
+    if (unit === '0') { //  converting to F if 'lbs' selected in EFB
+        cockpitTrimTemp = UnitType.CELSIUS.convertTo(cockpitTrimTemp, UnitType.FAHRENHEIT);
+        cockpitCabinTemp = UnitType.CELSIUS.convertTo(cockpitCabinTemp, UnitType.FAHRENHEIT);
+        fwdTrimTemp = UnitType.CELSIUS.convertTo(fwdTrimTemp, UnitType.FAHRENHEIT);
+        fwdCabinTemp = UnitType.CELSIUS.convertTo(fwdCabinTemp, UnitType.FAHRENHEIT);
+        aftTrimTemp = UnitType.CELSIUS.convertTo(aftTrimTemp, UnitType.FAHRENHEIT);
+        aftCabinTemp = UnitType.CELSIUS.convertTo(aftCabinTemp, UnitType.FAHRENHEIT);
+    }
+
     return (
         <svg id="cond-page" className="ecam-common-styles" viewBox="0 0 768 768" style={{ marginTop: '-60px' }} xmlns="http://www.w3.org/2000/svg">
             {/* Title and unit */}
@@ -45,7 +57,7 @@ export const CondPage = () => {
                 <text className="Title UnderlineWhite" x="7" y="33">COND</text>
                 <text className="Huge" x="630" y="32">TEMP</text>
                 <text className="Huge" x="715" y="32">:</text>
-                <text id="CondTempUnit" className="Standard Cyan" x="726" y="31">°C</text>
+                <text id="CondTempUnit" className="Standard Cyan" x="726" y="31">{unit === '1' ? '°C' : '°F'}</text>
                 <text id="LeftFanWarning" className={`Large Amber ${cabFanHasFault1 ? 'Show' : 'Hide'}`} x="180" y="75">FAN</text>
                 <text id="RightFanWarning" className={`Large Amber ${cabFanHasFault2 ? 'Show' : 'Hide'}`} x="510" y="75">FAN</text>
             </g>

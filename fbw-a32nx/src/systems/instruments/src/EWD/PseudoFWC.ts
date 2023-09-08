@@ -1138,10 +1138,10 @@ export class PseudoFWC {
 
         this.lavGalleyFanFault.set(this.acsc1DiscreteWord1.bitValueOr(24, false) || this.acsc2DiscreteWord1.bitValueOr(24, false));
 
-        const crossfeed = SimVar.GetSimVarValue('L:A32NX_PNEU_XBLEED_VALVE_OPEN', 'bool');
-        const eng1Bleed = SimVar.GetSimVarValue('A:BLEED AIR ENGINE:1', 'bool');
+        const crossbleedFullyClosed = SimVar.GetSimVarValue('L:A32NX_PNEU_XBLEED_VALVE_FULLY_CLOSED', 'bool');
+        const eng1Bleed = SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_1_BLEED_PB_IS_AUTO', 'bool');
         const eng1BleedPbFault = SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_1_BLEED_PB_HAS_FAULT', 'bool');
-        const eng2Bleed = SimVar.GetSimVarValue('A:BLEED AIR ENGINE:2', 'bool');
+        const eng2Bleed = SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_1_BLEED_PB_IS_AUTO', 'bool');
         const eng2BleedPbFault = SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_2_BLEED_PB_HAS_FAULT', 'bool');
         const pack1Fault = SimVar.GetSimVarValue('L:A32NX_OVHD_COND_PACK_1_PB_HAS_FAULT', 'bool');
         const pack2Fault = SimVar.GetSimVarValue('L:A32NX_OVHD_COND_PACK_2_PB_HAS_FAULT', 'bool');
@@ -1155,8 +1155,8 @@ export class PseudoFWC {
         this.cabAltSetResetState2.set(
             this.cabAltSetReset2.write(pressureAltitude > 16000 && this.excessPressure.get(), this.excessPressure.get() && [3, 10].includes(this.fwcFlightPhase.get())),
         );
-        this.packOffBleedAvailable1.write((eng1Bleed === 1 && !eng1BleedPbFault) || crossfeed === 1, deltaTime);
-        this.packOffBleedAvailable2.write((eng2Bleed === 1 && !eng2BleedPbFault) || crossfeed === 1, deltaTime);
+        this.packOffBleedAvailable1.write((eng1Bleed === 1 && !eng1BleedPbFault) || !crossbleedFullyClosed, deltaTime);
+        this.packOffBleedAvailable2.write((eng2Bleed === 1 && !eng2BleedPbFault) || !crossbleedFullyClosed, deltaTime);
         this.packOffNotFailed1Status.set(this.packOffNotFailed1.write(!this.pack1On.get() && !pack1Fault && this.packOffBleedAvailable1.read() && this.fwcFlightPhase.get() === 6, deltaTime));
         this.packOffNotFailed2Status.set(this.packOffNotFailed2.write(!this.pack2On.get() && !pack2Fault && this.packOffBleedAvailable2.read() && this.fwcFlightPhase.get() === 6, deltaTime));
         this.pack1And2Fault.set(acscBothFault || (this.packOffNotFailed1Status.get() && this.acsc2Fault.get()) || (this.packOffNotFailed2Status.get() && this.acsc1Fault.get()));
