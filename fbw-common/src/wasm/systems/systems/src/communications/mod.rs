@@ -4,8 +4,8 @@ mod receivers;
 mod rmp;
 
 use crate::simulation::{
-    InitContext, Read, SideControlling, SimulationElement, SimulationElementVisitor,
-    SimulatorReader, SimulatorWriter, UpdateContext, VariableIdentifier, Write,
+    InitContext, SideControlling, SimulationElement, SimulationElementVisitor, SimulatorWriter,
+    UpdateContext, VariableIdentifier, Write,
 };
 
 use self::amu::Amu;
@@ -18,12 +18,10 @@ pub struct Communications {
     rmp_fo: Option<RadioManagementPanel>,
 
     sel_light_id: VariableIdentifier,
-    update_comms_id: VariableIdentifier,
 
     previous_side_controlling: SideControlling,
 
     sel_light: bool,
-    update_comms: bool,
 }
 
 impl Communications {
@@ -35,19 +33,15 @@ impl Communications {
             rmp_fo: Some(RadioManagementPanel::new_fo(context)),
 
             sel_light_id: context.get_identifier("RMP_SEL_LIGHT_ON".to_owned()),
-            update_comms_id: context.get_identifier("UPDATE_COMMS".to_owned()),
 
             previous_side_controlling: SideControlling::CAPTAIN,
 
             sel_light: false,
-            update_comms: false,
         }
     }
 
     pub fn update(&mut self, context: &UpdateContext) {
-        self.update_comms |= context.side_controlling() != self.previous_side_controlling;
-
-        self.amu.update(context, self.update_comms);
+        self.amu.update(context);
 
         self.sel_light = (self.rmp_cpt.as_ref().unwrap().is_powered()
             && self.rmp_fo.as_ref().unwrap().is_powered())
@@ -68,12 +62,7 @@ impl SimulationElement for Communications {
         visitor.visit(self);
     }
 
-    fn read(&mut self, reader: &mut SimulatorReader) {
-        self.update_comms = reader.read(&self.update_comms_id);
-    }
-
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.update_comms_id, 0);
         writer.write(&self.sel_light_id, self.sel_light);
     }
 }
