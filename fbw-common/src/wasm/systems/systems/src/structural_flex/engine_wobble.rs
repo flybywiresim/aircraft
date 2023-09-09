@@ -145,11 +145,11 @@ impl<const N: usize> EnginesFlexiblePhysics<N> {
         self.engines_flex_updater.update(context);
 
         for cur_time_step in self.engines_flex_updater {
-            for (idx, engine_flex) in &mut self.engines_flex.iter_mut().enumerate() {
-                engine_flex.update(
-                    &context.with_delta(cur_time_step),
-                    pylons_accelerations[idx],
-                );
+            for (engine_flex, pylons_acceleration) in
+                &mut self.engines_flex.iter_mut().zip(pylons_accelerations)
+            {
+                engine_flex.update(&context.with_delta(cur_time_step), pylons_acceleration);
+            }
             }
         }
     }
