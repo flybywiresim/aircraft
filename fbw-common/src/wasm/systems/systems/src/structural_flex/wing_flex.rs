@@ -94,44 +94,35 @@ impl LandingGearWeightOnWheelsEstimator {
     }
 
     fn weight_on_wheel(&self, wheel_id: GearStrutId) -> Mass {
-        match wheel_id {
-            GearStrutId::Nose => Mass::new::<kilogram>(
-                Self::NOSE_GEAR_X_COEFF
-                    * self
-                        .center_compression
-                        .get::<percent>()
-                        .powf(Self::NOSE_GEAR_Y_POW),
+        let (coeff, compression, exponent) = match wheel_id {
+            GearStrutId::Nose => (
+                Self::NOSE_GEAR_X_COEFF,
+                self.center_compression,
+                Self::NOSE_GEAR_Y_POW,
             ),
-            GearStrutId::LeftWing => Mass::new::<kilogram>(
-                Self::WING_GEAR_X_COEFF
-                    * self
-                        .left_wing_compression
-                        .get::<percent>()
-                        .powf(Self::WING_GEAR_Y_POW),
+            GearStrutId::LeftWing => (
+                Self::WING_GEAR_X_COEFF,
+                self.left_wing_compression,
+                Self::WING_GEAR_Y_POW,
             ),
-            GearStrutId::RightWing => Mass::new::<kilogram>(
-                Self::WING_GEAR_X_COEFF
-                    * self
-                        .right_wing_compression
-                        .get::<percent>()
-                        .powf(Self::WING_GEAR_Y_POW),
+            GearStrutId::RightWing => (
+                Self::WING_GEAR_X_COEFF,
+                self.right_wing_compression,
+                Self::WING_GEAR_Y_POW,
             ),
-            GearStrutId::LeftBody => Mass::new::<kilogram>(
-                Self::BODY_GEAR_X_COEFF
-                    * self
-                        .left_body_compression
-                        .get::<percent>()
-                        .powf(Self::BODY_GEAR_Y_POW),
+            GearStrutId::LeftBody => (
+                Self::BODY_GEAR_X_COEFF,
+                self.left_body_compression,
+                Self::BODY_GEAR_Y_POW,
             ),
-            GearStrutId::RightBody => Mass::new::<kilogram>(
-                Self::BODY_GEAR_X_COEFF
-                    * self
-                        .right_body_compression
-                        .get::<percent>()
-                        .powf(Self::BODY_GEAR_Y_POW),
+            GearStrutId::RightBody => (
+                Self::BODY_GEAR_X_COEFF,
+                self.right_body_compression,
+                Self::BODY_GEAR_Y_POW,
             ),
-        }
-    }
+        };
+
+        Mass::new::<kilogram>(coeff * compression.get::<percent>().powf(exponent))
 }
 impl SimulationElement for LandingGearWeightOnWheelsEstimator {
     fn read(&mut self, reader: &mut SimulatorReader) {
