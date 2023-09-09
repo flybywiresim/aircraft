@@ -253,7 +253,6 @@
                 <LEFT_SINGLE_CODE>
                     #RMP_POWERED# if{
                         (&gt;H:A32NX_RMP_#SIDE#_#BASE_NAME#_BUTTON_PRESSED)
-                        1 (&gt;L:A32NX_UPDATE_COMMS)
                     }
                 </LEFT_SINGLE_CODE>
             </UseTemplate>

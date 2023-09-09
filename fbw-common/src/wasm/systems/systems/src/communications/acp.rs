@@ -317,12 +317,7 @@ impl AudioControlPanel {
         ret
     }
 
-    pub fn update(
-        &mut self,
-        context: &UpdateContext,
-        bus_acp: &mut Vec<Arinc429Word<u32>>,
-        need_update_from_options: bool,
-    ) {
+    pub fn update(&mut self, context: &UpdateContext, bus_acp: &mut Vec<Arinc429Word<u32>>) {
         if self.is_power_supply_powered {
             self.last_complete_cycle_sent += context.delta();
 
@@ -352,7 +347,7 @@ impl AudioControlPanel {
             }
 
             // Restart full cycle every 160ms as stated in AMM
-            if self.last_complete_cycle_sent.as_millis() > 160 || need_update_from_options {
+            if self.last_complete_cycle_sent.as_millis() > 160 {
                 self.send_word_0(bus_acp);
                 self.last_complete_cycle_sent = Duration::from_millis(0);
             }
