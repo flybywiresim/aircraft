@@ -62,7 +62,6 @@ impl SimulationElement for Communications {
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.update_comms_id, 0);
         writer.write(&self.sel_light_id, self.sel_light);
     }
 }
