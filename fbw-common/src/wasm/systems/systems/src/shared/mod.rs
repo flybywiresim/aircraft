@@ -229,8 +229,9 @@ pub trait EngineBleedPushbutton<const N: usize> {
 
 pub trait PackFlowValveState {
     /// Pack flow valve id is 1, 2, 3 or 4
-    fn pack_flow_valve_is_open(&self, pfv_id: usize) -> bool;
-    fn pack_flow_valve_air_flow(&self, pfv_id: usize) -> MassRate;
+    fn pack_flow_valve_is_open(&self, pack_id: usize) -> bool;
+    fn pack_flow_valve_air_flow(&self, pack_id: usize) -> MassRate;
+    fn pack_flow_valve_inlet_pressure(&self, pack_id: usize) -> Option<Pressure>;
 }
 
 pub trait AdirsMeasurementOutputs {

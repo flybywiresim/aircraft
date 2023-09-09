@@ -1,6 +1,7 @@
 extern crate systems;
 
 mod air_conditioning;
+mod airframe;
 mod avionics_data_communication_network;
 mod control_display_system;
 mod electrical;
@@ -8,6 +9,7 @@ mod fuel;
 pub mod hydraulic;
 mod icing;
 mod navigation;
+mod payload;
 mod pneumatic;
 mod power_consumption;
 mod structural_flex;
@@ -20,13 +22,16 @@ use self::{
     pneumatic::{A380Pneumatic, A380PneumaticOverheadPanel},
     structural_flex::A380StructuralFlex,
 };
+use airframe::A380Airframe;
 use electrical::{
     A380Electrical, A380ElectricalOverheadPanel, A380EmergencyElectricalOverheadPanel,
     APU_START_MOTOR_BUS_TYPE,
 };
+use fuel::FuelLevel;
 use hydraulic::{A380Hydraulic, A380HydraulicOverheadPanel};
 use icing::Icing;
 use navigation::A380RadioAltimeters;
+use payload::A380Payload;
 use power_consumption::A380PowerConsumption;
 use uom::si::{f64::Length, length::nautical_mile};
 
@@ -62,6 +67,8 @@ pub struct A380 {
     pressurization_overhead: A380PressurizationOverheadPanel,
     electrical_overhead: A380ElectricalOverheadPanel,
     emergency_electrical_overhead: A380EmergencyElectricalOverheadPanel,
+    payload: A380Payload,
+    airframe: A380Airframe,
     fuel: A380Fuel,
     engine_1: TrentEngine,
     engine_2: TrentEngine,
@@ -102,6 +109,8 @@ impl A380 {
             pressurization_overhead: A380PressurizationOverheadPanel::new(context),
             electrical_overhead: A380ElectricalOverheadPanel::new(context),
             emergency_electrical_overhead: A380EmergencyElectricalOverheadPanel::new(context),
+            payload: A380Payload::new(context),
+            airframe: A380Airframe::new(context),
             fuel: A380Fuel::new(context),
             engine_1: TrentEngine::new(context, 1),
             engine_2: TrentEngine::new(context, 2),
@@ -163,7 +172,7 @@ impl Aircraft for A380 {
                 && !(self.electrical_overhead.external_power_is_on(1)
                     && self.electrical_overhead.external_power_is_available(1)),
             self.pneumatic.apu_bleed_air_valve(),
-            self.fuel.left_inner_tank_has_fuel_remaining(),
+            self.fuel.feed_one_tank_has_fuel(),
         );
 
         self.electrical.update(
@@ -188,6 +197,9 @@ impl Aircraft for A380 {
             .update_after_electrical(&self.electrical, electricity);
         self.emergency_electrical_overhead
             .update_after_electrical(context, &self.electrical);
+        self.payload.update(context);
+        self.airframe
+            .update(&self.fuel, &self.payload, &self.payload);
     }
 
     fn update_after_power_distribution(&mut self, context: &UpdateContext) {
@@ -295,6 +307,8 @@ impl SimulationElement for A380 {
         self.electrical_overhead.accept(visitor);
         self.emergency_electrical_overhead.accept(visitor);
         self.fuel.accept(visitor);
+        self.payload.accept(visitor);
+        self.airframe.accept(visitor);
         self.pneumatic_overhead.accept(visitor);
         self.pressurization_overhead.accept(visitor);
         self.engine_1.accept(visitor);
