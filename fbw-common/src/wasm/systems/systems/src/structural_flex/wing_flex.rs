@@ -77,11 +77,11 @@ impl LandingGearWeightOnWheelsEstimator {
             right_body_compression_id: context
                 .get_identifier(Self::GEAR_RIGHT_BODY_COMPRESSION.to_owned()),
 
-            center_compression: Ratio::new::<percent>(0.),
-            left_wing_compression: Ratio::new::<percent>(0.),
-            right_wing_compression: Ratio::new::<percent>(0.),
-            left_body_compression: Ratio::new::<percent>(0.),
-            right_body_compression: Ratio::new::<percent>(0.),
+            center_compression: Ratio::default(),
+            left_wing_compression: Ratio::default(),
+            right_wing_compression: Ratio::default(),
+            left_body_compression: Ratio::default(),
+            right_body_compression: Ratio::default(),
         }
     }
 
