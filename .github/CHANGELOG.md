@@ -42,6 +42,10 @@
 1. [FWC] Added "twenty five hundred" and "two thousand" callouts - @tracernz (Mike)
 1. [FMS] Load procedures that reference a runway correctly - @tracernz (Mike)
 1. [MCDU/ND] Corrected altitude formatting with respect to transition altitude and transition level - @tracernz (Mike)
+1. [PFD] Adjusted size of pitch trim messages - @tracernz (Mike)
+1. [BLEED] Allow engine start from crossbleed air - @BlueberryKing (BlueberryKing)
+1. [BLEED] Improve bleed page visuals on the SD - @BlueberryKing (BlueberryKing)
+1. [BLEED] Use more accurate pneumatic valves and sensors - @BlueberryKing (BlueberryKing)
 
 ## 0.10.0
 

@@ -238,7 +238,6 @@ impl Aircraft for A320 {
             &self.engine_fire_overhead,
             &self.payload,
             &self.pneumatic,
-            &self.pneumatic_overhead,
             &self.pressurization_overhead,
             [self.lgcius.lgciu1(), self.lgcius.lgciu2()],
         );
