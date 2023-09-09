@@ -150,7 +150,6 @@ impl<const N: usize> EnginesFlexiblePhysics<N> {
             {
                 engine_flex.update(&context.with_delta(cur_time_step), pylons_acceleration);
             }
-            }
         }
     }
 }
