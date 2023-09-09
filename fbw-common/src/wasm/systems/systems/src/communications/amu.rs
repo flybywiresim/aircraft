@@ -181,9 +181,8 @@ impl Amu {
         }
     }
 
-    pub fn update(&mut self, context: &UpdateContext, need_update_from_acp_or_options: bool) {
-        self.adaptation_board
-            .update(context, need_update_from_acp_or_options);
+    pub fn update(&mut self, context: &UpdateContext) {
+        self.adaptation_board.update(context);
     }
 }
 
@@ -395,7 +394,7 @@ impl AdaptationBoard {
         bus_acp.push(word_arinc);
     }
 
-    pub fn update(&mut self, context: &UpdateContext, need_update_from_options: bool) {
+    pub fn update(&mut self, context: &UpdateContext) {
         let mut acp_to_take_into_account: u32 = 1;
 
         if self.audio_switching_knob != AudioSwitchingKnobPosition::Fo
@@ -410,21 +409,17 @@ impl AdaptationBoard {
             acp_to_take_into_account = 3;
         }
 
-        self.computer_a
-            .update(context, &mut self.bus_arinc_bay, need_update_from_options);
-        self.computer_b
-            .update(context, &mut self.bus_arinc_3rd, need_update_from_options);
+        self.computer_a.update(context, &mut self.bus_arinc_bay);
+        self.computer_b.update(context, &mut self.bus_arinc_3rd);
 
         // 3rd ACP is connected to Board B by default
         // hence if audio switching knob is NOT on FO, data can be wired to default board
         if self.audio_switching_knob != AudioSwitchingKnobPosition::Fo {
             self.bus_acp_3rd.append(&mut self.bus_arinc_3rd);
-            self.acp_ovhd
-                .update(context, &mut self.bus_acp_3rd, need_update_from_options);
+            self.acp_ovhd.update(context, &mut self.bus_acp_3rd);
         } else {
             self.bus_acp_avncs.append(&mut self.bus_arinc_bay);
-            self.acp_ovhd
-                .update(context, &mut self.bus_acp_avncs, need_update_from_options);
+            self.acp_ovhd.update(context, &mut self.bus_acp_avncs);
         }
 
         // We only take into account VHF1/2/3 as per SDK
@@ -639,18 +634,9 @@ impl Computer {
         }
     }
 
-    pub fn update(
-        &mut self,
-        context: &UpdateContext,
-        bus: &mut Vec<Arinc429Word<u32>>,
-        need_update_from_acp_or_options: bool,
-    ) {
-        self.audio_card.update(
-            context,
-            bus,
-            need_update_from_acp_or_options,
-            self.is_power_supply_powered,
-        );
+    pub fn update(&mut self, context: &UpdateContext, bus: &mut Vec<Arinc429Word<u32>>) {
+        self.audio_card
+            .update(context, bus, self.is_power_supply_powered);
     }
 
     pub fn get_mixed_audio_acp(&self) -> MixedAudio {
@@ -707,12 +693,10 @@ impl AudioCard {
         &mut self,
         context: &UpdateContext,
         bus_from_adaptation_card: &mut Vec<Arinc429Word<u32>>,
-        need_update_from_acp_or_options: bool,
         is_powered: bool,
     ) {
         if is_powered {
-            self.acp
-                .update(context, &mut self.bus_acp, need_update_from_acp_or_options);
+            self.acp.update(context, &mut self.bus_acp);
 
             AudioCard::decode_arinc_words_from_acp(
                 &mut self.bus_acp,
