@@ -8,10 +8,10 @@ import { IconPlane } from '@tabler/icons';
 import { CloudArrowDown } from 'react-bootstrap-icons';
 import { usePersistentProperty } from '@flybywiresim/fbw-sdk';
 import { toast } from 'react-toastify';
-import { fetchSimbriefDataAction, isSimbriefDataLoaded } from '../../Store/features/simBrief';
-import { useAppSelector, useAppDispatch } from '../../Store/store';
 import { getAirframeType } from 'instruments/src/EFB/Efb';
 import { AC_TYPE } from 'instruments/src/EFB/Enum/Airframe';
+import { fetchSimbriefDataAction, isSimbriefDataLoaded } from '../../Store/features/simBrief';
+import { useAppSelector, useAppDispatch } from '../../Store/store';
 
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
 import { t } from '../../translation';
