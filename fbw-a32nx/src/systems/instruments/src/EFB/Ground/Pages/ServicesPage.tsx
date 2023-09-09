@@ -515,15 +515,15 @@ export const ServicesPage = () => {
             {airframe === 'A380_842' ? <A380GroundServiceOutline className="inset-x-0 mx-auto w-full h-full text-theme-text" />
                 : (
                     <GroundServiceOutline
-                        cabinLeftStatus={!!cabinLeftDoorOpen}
-                        cabinRightStatus={!!cabinRightDoorOpen}
-                        aftLeftStatus={!!aftLeftDoorOpen}
-                        aftRightStatus={!!aftRightDoorOpen}
+                        cabinLeftStatus={cabinLeftDoorOpen >= 1.0}
+                        cabinRightStatus={cabinRightDoorOpen >= 1.0}
+                        aftLeftStatus={aftLeftDoorOpen >= 1.0}
+                        aftRightStatus={aftRightDoorOpen >= 1.0}
                         className="inset-x-0 mx-auto w-full h-full text-theme-text"
                     />
                 )}
 
-            <ServiceButtonWrapper xr={880} y={24}>
+            <ServiceButtonWrapper xr={930} y={24}>
 
                 {/* CABIN DOOR */}
                 <GroundServiceButton
@@ -554,7 +554,18 @@ export const ServicesPage = () => {
 
             </ServiceButtonWrapper>
 
-            <ServiceButtonWrapper xl={850} y={24} className="">
+            <ServiceButtonWrapper xr={930} y={600} className="">
+                {/* AFT DOOR */}
+                <GroundServiceButton
+                    name={t('Ground.Services.DoorAft')}
+                    state={aftLeftDoorButtonState}
+                    onClick={() => handleButtonClick(ServiceButton.AftLeftDoor)}
+                >
+                    <DoorClosedFill size={36} />
+                </GroundServiceButton>
+            </ServiceButtonWrapper>
+
+            <ServiceButtonWrapper xl={900} y={24} className="">
 
                 {/* CABIN DOOR */}
                 <GroundServiceButton
@@ -594,7 +605,7 @@ export const ServicesPage = () => {
 
             </ServiceButtonWrapper>
 
-            <ServiceButtonWrapper xl={850} y={600} className="">
+            <ServiceButtonWrapper xl={900} y={600} className="">
 
                 {/* AFT DOOR */}
                 <GroundServiceButton
@@ -614,17 +625,6 @@ export const ServicesPage = () => {
                     <ArchiveFill size={36} />
                 </GroundServiceButton>
 
-            </ServiceButtonWrapper>
-
-            <ServiceButtonWrapper xr={880} y={600} className="">
-                {/* AFT DOOR */}
-                <GroundServiceButton
-                    name={t('Ground.Services.DoorAft')}
-                    state={aftLeftDoorButtonState}
-                    onClick={() => handleButtonClick(ServiceButton.AftLeftDoor)}
-                >
-                    <DoorClosedFill size={36} />
-                </GroundServiceButton>
             </ServiceButtonWrapper>
 
             {/* Wheel Chocks and Security Cones are only visual information. To reuse styling */}
@@ -662,7 +662,7 @@ export const ServicesPage = () => {
                     TUG
                 </div>
             )}
-            {!!cabinLeftDoorOpen && (
+            {cabinLeftDoorOpen >= 1.0 && (
                 <div
                     className={serviceIndicationCss}
                     style={{ position: 'absolute', left: 500, right: 0, top: 100 }}
@@ -670,7 +670,7 @@ export const ServicesPage = () => {
                     CABIN
                 </div>
             )}
-            {!!cabinRightDoorOpen && (
+            {cabinRightDoorOpen >= 1.0 && (
                 <div
                     className={serviceIndicationCss}
                     style={{ position: 'absolute', left: 700, right: 0, top: 100 }}
@@ -678,7 +678,7 @@ export const ServicesPage = () => {
                     CABIN
                 </div>
             )}
-            {!!aftLeftDoorOpen && (
+            {aftLeftDoorOpen >= 1.0 && (
                 <div
                     className={serviceIndicationCss}
                     style={{ position: 'absolute', left: 500, right: 0, top: 665 }}
@@ -686,7 +686,7 @@ export const ServicesPage = () => {
                     CABIN
                 </div>
             )}
-            {!!aftRightDoorOpen && (
+            {aftRightDoorOpen >= 1.0 && (
                 <div
                     className={serviceIndicationCss}
                     style={{ position: 'absolute', left: 700, right: 0, top: 665 }}
@@ -694,7 +694,7 @@ export const ServicesPage = () => {
                     CABIN
                 </div>
             )}
-            {!!cargoDoorOpen && (
+            {cargoDoorOpen >= 1.0 && (
                 <div
                     className={serviceIndicationCss}
                     style={{ position: 'absolute', left: 700, right: 0, top: 165 }}

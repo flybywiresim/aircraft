@@ -171,9 +171,9 @@ export const GroundServiceOutline = ({ className, cabinLeftStatus, cabinRightSta
                         className="cls-2"
                         d="M352.06 650.21h5.13c1.55 0 2.74-1.36 2.54-2.9l-1.55-11.75a2.558 2.558 0 0 0-2.54-2.23h-6.16"
                         style={{
-                            stroke: aftLeftStatus ? '#6bbe45' : 'none',
+                            stroke: '#6bbe45',
                             strokeWidth: 2,
-                            fill: 'none',
+                            fill: aftLeftStatus ? '#6bbe45' : 'none',
                             strokeMiterlimit: 10,
                         }}
                     />
@@ -182,9 +182,9 @@ export const GroundServiceOutline = ({ className, cabinLeftStatus, cabinRightSta
                         className="cls-2"
                         d="M424.48 650.21h-5.13c-1.55 0-2.74-1.36-2.54-2.9l1.55-11.75a2.558 2.558 0 0 1 2.54-2.23h6.16"
                         style={{
-                            stroke: aftRightStatus ? '#6bbe45' : 'none',
+                            stroke: '#6bbe45',
                             strokeWidth: 2,
-                            fill: 'none',
+                            fill: aftRightStatus ? '#6bbe45' : 'none',
                             strokeMiterlimit: 10,
                         }}
                     />
@@ -194,21 +194,45 @@ export const GroundServiceOutline = ({ className, cabinLeftStatus, cabinRightSta
                         id="AFT_Left_EMG"
                         className="cls-2"
                         d="M346.2 337.61h3.14c.95 0 1.72-.77 1.72-1.72v-7.61c0-.95-.77-1.72-1.72-1.72h-3.14"
+                        style={{
+                            stroke: '#6bbe45',
+                            strokeWidth: 2,
+                            fill: 'none',
+                            strokeMiterlimit: 10,
+                        }}
                     />
                     <path
                         id="FWD_Left_EMG"
                         className="cls-2"
                         d="M346.2 319.32h3.14c.95 0 1.72-.77 1.72-1.72v-7.61c0-.95-.77-1.72-1.72-1.72h-3.14"
+                        style={{
+                            stroke: '#6bbe45',
+                            strokeWidth: 2,
+                            fill: 'none',
+                            strokeMiterlimit: 10,
+                        }}
                     />
                     <path
                         id="AFT_Right_EMG"
                         className="cls-2"
                         d="M430.28 337.61h-3.14c-.95 0-1.72-.77-1.72-1.72v-7.61c0-.95.77-1.72 1.72-1.72h3.14"
+                        style={{
+                            stroke: '#6bbe45',
+                            strokeWidth: 2,
+                            fill: 'none',
+                            strokeMiterlimit: 10,
+                        }}
                     />
                     <path
                         id="FWD_Right_EMG"
                         className="cls-2"
                         d="M430.28 319.32h-3.14c-.95 0-1.72-.77-1.72-1.72v-7.61c0-.95.77-1.72 1.72-1.72h3.14"
+                        style={{
+                            stroke: '#6bbe45',
+                            strokeWidth: 2,
+                            fill: 'none',
+                            strokeMiterlimit: 10,
+                        }}
                     />
                 </g>
                 <g id="Front_Doors">
@@ -217,9 +241,9 @@ export const GroundServiceOutline = ({ className, cabinLeftStatus, cabinRightSta
                         className="cls-2"
                         d="M430.28 118.06h-9.08a2.67 2.67 0 0 1-2.67-2.67v-11.72a2.67 2.67 0 0 1 2.67-2.67h8.38"
                         style={{
-                            stroke: cabinRightStatus ? '#6bbe45' : 'none',
+                            stroke: '#6bbe45',
                             strokeWidth: 2,
-                            fill: 'none',
+                            fill: cabinRightStatus ? '#6bbe45' : 'none',
                             strokeMiterlimit: 10,
                         }}
                     />
@@ -228,9 +252,9 @@ export const GroundServiceOutline = ({ className, cabinLeftStatus, cabinRightSta
                         className="cls-2"
                         d="M346.2 118.06h9.08a2.67 2.67 0 0 0 2.67-2.67v-11.72a2.67 2.67 0 0 0-2.67-2.67h-8.38"
                         style={{
-                            stroke: cabinLeftStatus ? '#6bbe45' : 'none',
+                            stroke: '#6bbe45',
                             strokeWidth: 2,
-                            fill: 'none',
+                            fill: cabinLeftStatus ? '#6bbe45' : 'none',
                             strokeMiterlimit: 10,
                         }}
                     />
@@ -795,6 +819,20 @@ export const A380GroundServiceOutline = ({ className }: {className: string}) => 
             <path className="cls-3" d="m449.64,76.04l-4.2.2c-.07,0-.13-.03-.17-.08l-1.23-1.78s-.02-.02-.03-.04l-1.34-1.19c-.08-.07-.09-.19-.02-.27l1.69-2.04c.05-.06.13-.08.2-.06l1.54.4s.08.03.1.07l3.61,4.48c.1.13.02.31-.14.32Z" />
             <path className="cls-3" d="m441.41,71.79l-7-3.72c-.06-.03-.1-.1-.1-.17v-2.86c0-.13.12-.22.24-.19l3.33.77s.05.02.07.03l4.76,3.46c.06.04.09.12.08.19l-.25,1.64s-.03.09-.07.12l-.84.7c-.06.05-.15.06-.22.02Z" />
             <path className="cls-3" d="m451.14,77.88l-3.43-.46c-.51-.07-.84.54-.49.92l1.69,1.89s.05.05.08.07l3.97,3.06c.33.25.81.07.89-.33l.2-1c.03-.15,0-.3-.09-.43l-2.42-3.49c-.09-.13-.23-.21-.38-.24Z" />
+        </g>
+        <g id="Doors">
+            <path
+                className="cls-2"
+                d="M 399.316 115.998 L 404.916 115.998 C 406.076 115.998 407.006 115.418 407.006 114.698 L 407.006 108.988 C 407.006 108.268 406.066 107.688 404.916 107.688 L 400.566 107.688 Z"
+            />
+            <path
+                className="cls-2"
+                d="M 393.846 214.601 L 401.876 214.601 C 402.946 214.601 403.816 214.021 403.816 213.301 L 403.816 207.591 C 403.816 206.871 402.946 206.291 401.876 206.291 L 393.846 206.291"
+            />
+            <path
+                className="cls-2"
+                d="m 398.45673,250.75815 h 7.80785 c 1.04712,0 1.88937,-0.57173 1.88937,-1.28147 v -5.62861 c 0,-0.70974 -0.84225,-1.28147 -1.88937,-1.28147 h -7.80785 z"
+            />
         </g>
     </svg>
 );
