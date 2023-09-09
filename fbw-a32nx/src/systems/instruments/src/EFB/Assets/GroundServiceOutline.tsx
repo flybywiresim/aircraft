@@ -1,7 +1,7 @@
 /* eslint-disable max-len */
 import * as React from 'react';
 // viewBox="0 0 777 814"
-export const GroundServiceOutline = ({ className }: {className: string}) => (
+export const GroundServiceOutline = ({ className, cabinLeftStatus, cabinRightStatus, aftLeftStatus, aftRightStatus }: {className: string, cabinLeftStatus: boolean, cabinRightStatus: boolean, aftLeftStatus: boolean, aftRightStatus: boolean}) => (
     <svg
         id="SVG"
         className={className}
@@ -170,11 +170,23 @@ export const GroundServiceOutline = ({ className }: {className: string}) => (
                         id="AFT_Left_PS_PSS"
                         className="cls-2"
                         d="M352.06 650.21h5.13c1.55 0 2.74-1.36 2.54-2.9l-1.55-11.75a2.558 2.558 0 0 0-2.54-2.23h-6.16"
+                        style={{
+                            stroke: aftLeftStatus ? '#6bbe45' : 'none',
+                            strokeWidth: 2,
+                            fill: 'none',
+                            strokeMiterlimit: 10,
+                        }}
                     />
                     <path
                         id="AFT_Right_CAT"
                         className="cls-2"
                         d="M424.48 650.21h-5.13c-1.55 0-2.74-1.36-2.54-2.9l1.55-11.75a2.558 2.558 0 0 1 2.54-2.23h6.16"
+                        style={{
+                            stroke: aftRightStatus ? '#6bbe45' : 'none',
+                            strokeWidth: 2,
+                            fill: 'none',
+                            strokeMiterlimit: 10,
+                        }}
                     />
                 </g>
                 <g id="Emergency_Doors">
@@ -204,11 +216,23 @@ export const GroundServiceOutline = ({ className }: {className: string}) => (
                         id="FWD_Right_CAT"
                         className="cls-2"
                         d="M430.28 118.06h-9.08a2.67 2.67 0 0 1-2.67-2.67v-11.72a2.67 2.67 0 0 1 2.67-2.67h8.38"
+                        style={{
+                            stroke: cabinRightStatus ? '#6bbe45' : 'none',
+                            strokeWidth: 2,
+                            fill: 'none',
+                            strokeMiterlimit: 10,
+                        }}
                     />
                     <path
                         id="FWD_Left_PS_PSS"
                         className="cls-2"
                         d="M346.2 118.06h9.08a2.67 2.67 0 0 0 2.67-2.67v-11.72a2.67 2.67 0 0 0-2.67-2.67h-8.38"
+                        style={{
+                            stroke: cabinLeftStatus ? '#6bbe45' : 'none',
+                            strokeWidth: 2,
+                            fill: 'none',
+                            strokeMiterlimit: 10,
+                        }}
                     />
                 </g>
                 <g id="Cargo_Doors">

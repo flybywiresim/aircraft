@@ -513,7 +513,15 @@ export const ServicesPage = () => {
     return (
         <div className="relative h-content-section-reduced">
             {airframe === 'A380_842' ? <A380GroundServiceOutline className="inset-x-0 mx-auto w-full h-full text-theme-text" />
-                : <GroundServiceOutline className="inset-x-0 mx-auto w-full h-full text-theme-text" /> }
+                : (
+                    <GroundServiceOutline
+                        cabinLeftStatus={!!cabinLeftDoorOpen}
+                        cabinRightStatus={!!cabinRightDoorOpen}
+                        aftLeftStatus={!!aftLeftDoorOpen}
+                        aftRightStatus={!!aftRightDoorOpen}
+                        className="inset-x-0 mx-auto w-full h-full text-theme-text"
+                    />
+                )}
 
             <ServiceButtonWrapper xr={880} y={24}>
 
