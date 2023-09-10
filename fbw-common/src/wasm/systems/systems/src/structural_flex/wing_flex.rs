@@ -492,18 +492,19 @@ enum A380fuelTanks {
 }
 impl fmt::Display for A380fuelTanks {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            A380fuelTanks::LeftInner => write!(f, "FUELSYSTEM TANK QUANTITY:4"),
-            A380fuelTanks::LeftFeed2 => write!(f, "FUELSYSTEM TANK QUANTITY:5"),
-            A380fuelTanks::LeftMid => write!(f, "FUELSYSTEM TANK QUANTITY:3"),
-            A380fuelTanks::LeftFeed1 => write!(f, "FUELSYSTEM TANK QUANTITY:2"),
-            A380fuelTanks::LeftOuter => write!(f, "FUELSYSTEM TANK QUANTITY:1"),
-            A380fuelTanks::RightInner => write!(f, "FUELSYSTEM TANK QUANTITY:7"),
-            A380fuelTanks::RightFeed3 => write!(f, "FUELSYSTEM TANK QUANTITY:6"),
-            A380fuelTanks::RightMid => write!(f, "FUELSYSTEM TANK QUANTITY:8"),
-            A380fuelTanks::RightFeed4 => write!(f, "FUELSYSTEM TANK QUANTITY:9"),
-            A380fuelTanks::RightOuter => write!(f, "FUELSYSTEM TANK QUANTITY:10"),
-        }
+        let tank_nr = match self {
+            A380fuelTanks::LeftInner => 4,
+            A380fuelTanks::LeftFeed2 => 5,
+            A380fuelTanks::LeftMid => 3,
+            A380fuelTanks::LeftFeed1 => 2,
+            A380fuelTanks::LeftOuter => 1,
+            A380fuelTanks::RightInner => 7,
+            A380fuelTanks::RightFeed3 => 6,
+            A380fuelTanks::RightMid => 8,
+            A380fuelTanks::RightFeed4 => 9,
+            A380fuelTanks::RightOuter => 10,
+        };
+        write!(f, "FUELSYSTEM TANK QUANTITY:{tank_nr}")
     }
 }
 
