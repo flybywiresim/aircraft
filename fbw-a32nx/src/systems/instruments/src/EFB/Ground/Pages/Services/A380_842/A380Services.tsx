@@ -553,7 +553,7 @@ export const A380Services: React.FC = () => {
 
             </ServiceButtonWrapper>
 
-            <ServiceButtonWrapper xr={930} y={600} className="">
+            <ServiceButtonWrapper xr={930} y={620} className="">
                 {/* CABIN DOOR */}
                 <GroundServiceButton
                     name={t('Ground.Services.DoorFwd')}
@@ -604,7 +604,7 @@ export const A380Services: React.FC = () => {
 
             </ServiceButtonWrapper>
 
-            <ServiceButtonWrapper xl={900} y={600} className="">
+            <ServiceButtonWrapper xl={900} y={620} className="">
 
                 {/* AFT DOOR */}
                 <GroundServiceButton
