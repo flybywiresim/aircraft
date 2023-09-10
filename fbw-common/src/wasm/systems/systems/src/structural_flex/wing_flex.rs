@@ -994,34 +994,19 @@ impl<const NODE_NUMBER: usize, const LINK_NUMBER: usize> FlexPhysicsNG<NODE_NUMB
         springness: [f64; LINK_NUMBER],
         damping: [f64; LINK_NUMBER],
     ) -> Self {
-        let mut nodes_array = vec![];
+        let nodes_array = empty_mass.map(WingSectionNode::new);
 
-        for mass in empty_mass.iter().take(NODE_NUMBER) {
-            nodes_array.push(WingSectionNode::new(*mass));
-        }
-
-        let mut links_array = vec![];
-        for idx in 0..LINK_NUMBER {
-            links_array.push(FlexibleConstraint::new(
-                springness[idx],
-                damping[idx],
-                false,
-                Some(1.4),
-            ));
-        }
-
+        let links_array = springness
+            .iter()
+            .zip(damping)
+            .map(|(springness, damping)| {
+                FlexibleConstraint::new(*springness, damping, false, Some(1.4))
+            })
+            .collect::<Vec<_>>();
         Self {
             updater_max_step: MaxStepLoop::new(Self::MIN_PHYSICS_SOLVER_TIME_STEP),
 
-            nodes: nodes_array
-                .try_into()
-                .unwrap_or_else(|v: Vec<WingSectionNode>| {
-                    panic!(
-                        "Expected a Vec of length {} but it was {}",
-                        NODE_NUMBER,
-                        v.len()
-                    )
-                }),
+            nodes: nodes_array,
             flex_constraints: links_array.try_into().unwrap_or_else(
                 |v: Vec<FlexibleConstraint>| {
                     panic!(
