@@ -173,7 +173,8 @@ impl BoardingTestBed {
     }
 
     fn double_gate_boarding(mut self) -> Self {
-        self.write_by_name("NUM_BOARDING_GATES", 2);
+        self.write_by_name("INTERACTIVE_POINT_0_OPEN_REQ", 1);
+        self.write_by_name("INTERACTIVE_POINT_2_OPEN_REQ", 1);
         self
     }
 

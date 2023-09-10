@@ -65,21 +65,19 @@ pub struct BoardingAgent<const P: usize> {
     door_id: VariableIdentifier,
     door_open_percent: f64,
     order: [usize; P],
-    is_default: bool,
 }
 impl<const P: usize> BoardingAgent<P> {
-    pub fn new(door_id: VariableIdentifier, is_default: bool, order: [usize; P]) -> Self {
+    pub fn new(door_id: VariableIdentifier, order: [usize; P]) -> Self {
         BoardingAgent {
             door_id,
             order,
             door_open_percent: 0.,
-            is_default,
         }
     }
 
     pub fn handle_one_pax(&self, pax: &mut [Pax; P]) {
         for ps in self.order {
-            if self.is_default || self.door_open_percent >= 1.0 {
+            if self.is_door_open() {
                 if pax[ps].pax_is_target() {
                     continue;
                 }
@@ -89,10 +87,24 @@ impl<const P: usize> BoardingAgent<P> {
         }
     }
 
-    pub fn handle_num_pax(&self, num_to_move: i32, pax: &mut [Pax; P]) {
-        for _ in 0..num_to_move {
-            self.handle_one_pax(pax);
+    pub fn force_one_pax(&self, pax: &mut [Pax; P]) {
+        for ps in self.order {
+            if pax[ps].pax_is_target() {
+                continue;
+            }
+            pax[ps].move_one_pax();
+            break;
         }
+    }
+
+    pub fn force_num_pax(&self, num_to_move: i32, pax: &mut [Pax; P]) {
+        for _ in 0..num_to_move {
+            self.force_one_pax(pax);
+        }
+    }
+
+    pub fn is_door_open(&self) -> bool {
+        self.door_open_percent >= 1.0
     }
 }
 impl<const P: usize> SimulationElement for BoardingAgent<P> {
@@ -166,10 +178,6 @@ impl<const N: usize, const G: usize> PassengerDeck<N, G> {
         self.pax.iter().all(|ps| ps.pax_is_target())
     }
 
-    fn num_boarding_points(&self) -> usize {
-        self.boarding_agents.len()
-    }
-
     fn override_payload(&mut self, ps: usize, payload: Mass) {
         self.pax[ps].override_payload(payload);
     }
@@ -181,8 +189,14 @@ impl<const N: usize, const G: usize> PassengerDeck<N, G> {
     }
 
     fn update_one_tick(&mut self) {
-        for ai in 0..self.num_boarding_points() {
-            self.boarding_agents[ai].handle_one_pax(&mut self.pax);
+        let doors_open = self.boarding_agents.iter().any(|ba| ba.is_door_open());
+        if doors_open {
+            for boarding_agent in &mut self.boarding_agents {
+                boarding_agent.handle_one_pax(&mut self.pax);
+            }
+        } else {
+            // assume first agent as default
+            self.boarding_agents[0].force_one_pax(&mut self.pax);
         }
     }
 
@@ -198,9 +212,18 @@ impl<const N: usize, const G: usize> PassengerDeck<N, G> {
     fn board_pax_until_target(&mut self, pax_target: i32) {
         let pax_diff = pax_target - self.total_pax_num();
         if pax_diff > 0 {
-            for _ in 0..pax_diff {
-                // let i = (n % self.num_boarding_points() as i32) as usize;
-                self.boarding_agents[0].handle_num_pax(pax_diff, &mut self.pax);
+            let available_agents: Vec<&BoardingAgent<N>> = self
+                .boarding_agents
+                .iter()
+                .filter(|ba| ba.is_door_open())
+                .collect();
+
+            if available_agents.len() > 0 {
+                for boarding_agent in available_agents.iter().cycle().take(pax_diff as usize) {
+                    boarding_agent.handle_one_pax(&mut self.pax);
+                }
+            } else {
+                self.boarding_agents[0].force_num_pax(pax_diff, &mut self.pax);
             }
         }
     }
@@ -208,7 +231,7 @@ impl<const N: usize, const G: usize> PassengerDeck<N, G> {
     fn deboard_pax_until_target(&mut self, pax_target: i32) {
         let pax_diff = self.total_pax_num() - pax_target;
         if pax_diff > 0 {
-            self.boarding_agents[0].handle_num_pax(pax_diff, &mut self.pax);
+            self.boarding_agents[0].force_num_pax(pax_diff, &mut self.pax);
         }
     }
 }

@@ -155,17 +155,14 @@ impl A320Payload {
         let boarding_agents = [
             BoardingAgent::new(
                 context.get_identifier("INTERACTIVE_POINT_0_OPEN_REQ".to_owned()),
-                true,
                 [0, 1, 2, 3],
             ),
             BoardingAgent::new(
                 context.get_identifier("INTERACTIVE_POINT_1_OPEN_REQ".to_owned()),
-                false,
                 [0, 1, 2, 3],
             ),
             BoardingAgent::new(
                 context.get_identifier("INTERACTIVE_POINT_2_OPEN_REQ".to_owned()),
-                false,
                 [3, 2, 1, 0],
             ),
         ];
