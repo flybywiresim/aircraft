@@ -460,7 +460,7 @@ impl WingLift {
     // Outputs the fraction of the weight of the plane that is applied on ground.
     //      0-> Plane not on ground  0.5-> half the weight of the plane on ground ...
     fn ground_weight_ratio(&self) -> Ratio {
-        Ratio::new::<ratio>(self.ground_weight_ratio.get::<ratio>().max(0.).min(1.))
+        Ratio::new::<ratio>(self.ground_weight_ratio.get::<ratio>().clamp(0., 1.))
     }
 }
 impl SimulationElement for WingLift {
