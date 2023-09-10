@@ -382,13 +382,13 @@ impl AdaptationBoard {
         let mut acp_to_take_into_account: u32 = 1;
 
         if self.audio_switching_knob != AudioSwitchingKnobPosition::Fo
-            && context.side_controlling() == SideControlling::FO
+            && context.side_controlling() == SideControlling::Fo
         {
             acp_to_take_into_account = 2;
         } else if self.audio_switching_knob == AudioSwitchingKnobPosition::Fo
-            && context.side_controlling() == SideControlling::FO
+            && context.side_controlling() == SideControlling::Fo
             || self.audio_switching_knob == AudioSwitchingKnobPosition::Captain
-                && context.side_controlling() == SideControlling::CAPTAIN
+                && context.side_controlling() == SideControlling::Captain
         {
             acp_to_take_into_account = 3;
         }
