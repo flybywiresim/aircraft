@@ -398,13 +398,13 @@ impl AdaptationBoard {
         let mut acp_to_take_into_account: u32 = 1;
 
         if self.audio_switching_knob != AudioSwitchingKnobPosition::Fo
-            && context.side_controlling() == SideControlling::FO
+            && context.side_controlling() == SideControlling::Fo
         {
             acp_to_take_into_account = 2;
         } else if self.audio_switching_knob == AudioSwitchingKnobPosition::Fo
-            && context.side_controlling() == SideControlling::FO
+            && context.side_controlling() == SideControlling::Fo
             || self.audio_switching_knob == AudioSwitchingKnobPosition::Captain
-                && context.side_controlling() == SideControlling::CAPTAIN
+                && context.side_controlling() == SideControlling::Captain
         {
             acp_to_take_into_account = 3;
         }
@@ -470,7 +470,7 @@ impl AdaptationBoard {
         };
 
         // 4 is NONE according to the SDK
-        if context.side_controlling() == SideControlling::CAPTAIN {
+        if context.side_controlling() == SideControlling::Captain {
             self.copilot_transmit_channel = 4;
         } else {
             self.pilot_transmit_channel = 4;
@@ -484,7 +484,7 @@ impl AdaptationBoard {
         }
         self.ils.update(
             context,
-            if context.side_controlling() == SideControlling::CAPTAIN {
+            if context.side_controlling() == SideControlling::Captain {
                 self.ls_fcu1_pressed
             } else {
                 self.ls_fcu2_pressed
