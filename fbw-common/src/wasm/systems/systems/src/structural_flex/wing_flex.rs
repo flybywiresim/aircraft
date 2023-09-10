@@ -123,6 +123,7 @@ impl LandingGearWeightOnWheelsEstimator {
         };
 
         Mass::new::<kilogram>(coeff * compression.get::<percent>().powf(exponent))
+    }
 }
 impl SimulationElement for LandingGearWeightOnWheelsEstimator {
     fn read(&mut self, reader: &mut SimulatorReader) {
