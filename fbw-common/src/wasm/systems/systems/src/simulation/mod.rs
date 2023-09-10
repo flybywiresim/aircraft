@@ -25,8 +25,14 @@ pub mod test;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum SideControlling {
-    CAPTAIN,
-    FO,
+    Captain,
+    Fo,
+}
+
+impl Default for SideControlling {
+    fn default() -> SideControlling {
+        SideControlling::Captain
+    }
 }
 
 read_write_enum!(SideControlling);
@@ -34,8 +40,8 @@ read_write_enum!(SideControlling);
 impl From<f64> for SideControlling {
     fn from(value: f64) -> Self {
         match value as u8 {
-            0 => SideControlling::CAPTAIN,
-            _ => SideControlling::FO,
+            0 => SideControlling::Captain,
+            _ => SideControlling::Fo,
         }
     }
 }
