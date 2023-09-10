@@ -46,7 +46,7 @@ export const A380Overview = () => {
 
     return (
         <div className="overflow-hidden p-6 mr-3 w-min h-content-section-reduced rounded-lg border-2 border-theme-accent">
-            <h1 className="font-bold">Airbus A320neo</h1>
+            <h1 className="font-bold">Airbus A380-800</h1>
             <p>{airline}</p>
 
             <div className="flex justify-center items-center mt-6">
@@ -76,7 +76,7 @@ export const A380Overview = () => {
                     </InformationEntry>
                 </div>
                 <div className="flex flex-col space-y-8">
-                    <InformationEntry title={t('Dispatch.Overview.Engines')} info="RB211 Trent 972-84">
+                    <InformationEntry title={t('Dispatch.Overview.Engines')} info="RR Trent 972-84">
                         <LightningFill size={23} />
                     </InformationEntry>
 
