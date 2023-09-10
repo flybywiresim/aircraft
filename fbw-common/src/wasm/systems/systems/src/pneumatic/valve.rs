@@ -612,7 +612,7 @@ mod tests {
         electrical::Electricity,
         pneumatic::{DefaultValve, PneumaticContainer, PneumaticPipe},
         shared::{ControllerSignal, InternationalStandardAtmosphere, MachNumber},
-        simulation::{test::TestVariableRegistry, InitContext, SideControlling},
+        simulation::{test::TestVariableRegistry, InitContext},
     };
 
     use std::time::Duration;
