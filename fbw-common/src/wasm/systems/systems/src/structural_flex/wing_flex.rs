@@ -1112,13 +1112,8 @@ impl<const NODE_NUMBER: usize, const LINK_NUMBER: usize> FlexPhysicsNG<NODE_NUMB
     fn nodes_height_meters(&self) -> [f64; NODE_NUMBER] {
         let mut all_heights_meters = [0.; NODE_NUMBER];
 
-        for (idx, height) in all_heights_meters
-            .iter_mut()
-            .enumerate()
-            .take(NODE_NUMBER)
-            .skip(1)
-        {
-            *height = self.nodes[idx].position().get::<meter>();
+        for (height, node) in all_heights_meters[1..].iter_mut().zip(&self.nodes[1..]) {
+            *height = node.position().get::<meter>();
         }
         all_heights_meters
     }
