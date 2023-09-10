@@ -276,25 +276,11 @@ impl A380WingLiftModifier {
     }
 
     fn compute_lift_modifiers(&mut self, total_lift: Force) {
-        let wing_base_left_spoilers =
-            (self.spoilers_left_position[0] + self.spoilers_left_position[1]) / 2.;
-        let wing_mid_left_spoilers = (self.spoilers_left_position[2]
-            + self.spoilers_left_position[3]
-            + self.spoilers_left_position[4]
-            + self.spoilers_left_position[5]
-            + self.spoilers_left_position[6]
-            + self.spoilers_left_position[7])
-            / 6.;
+        let wing_base_left_spoilers = self.spoilers_left_position[0..=1].iter().sum::<f64>() / 2.;
+        let wing_mid_left_spoilers = self.spoilers_left_position[2..=7].iter().sum::<f64>() / 6.;
 
-        let wing_base_right_spoilers =
-            (self.spoilers_right_position[0] + self.spoilers_right_position[1]) / 2.;
-        let wing_mid_right_spoilers = (self.spoilers_right_position[2]
-            + self.spoilers_right_position[3]
-            + self.spoilers_right_position[4]
-            + self.spoilers_right_position[5]
-            + self.spoilers_right_position[6]
-            + self.spoilers_right_position[7])
-            / 6.;
+        let wing_base_right_spoilers = self.spoilers_right_position[0..=1].iter().sum::<f64>() / 2.;
+        let wing_mid_right_spoilers = self.spoilers_right_position[2..=7].iter().sum::<f64>() / 6.;
 
         let left_ailerons_mid = ((self.ailerons_left_position[0] - 0.5) * 2.
             + (self.ailerons_left_position[1] - 0.5) * 2.)
