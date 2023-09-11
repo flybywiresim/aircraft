@@ -67,7 +67,7 @@ export const useSeatFlags = (
                 setSeatFlags(new SeatFlags(newValue, totalSeats));
             }
         }
-    }, [name, refreshInterval, totalSeats, seatFlags]);
+    }, [name, refreshInterval, totalSeats, stateValue]);
 
     useUpdate(updateCallback);
 
@@ -75,9 +75,10 @@ export const useSeatFlags = (
         lastUpdate.current = Date.now();
         // Note: as of SU XI 1.29.30.0 - Beyond (2^24) The BehaviourDebug window will incorrectly show this as its real value + 1.
         // console.log(`[SetSimVarValue] ${name} => ${value.toString()}`);
-        SimVar.SetSimVarValue(name, 'string', value.toString()).catch(console.error).then();
+        SimVar.SetSimVarValue(name, 'string', value.toString()).catch(console.error);
         setStateValue(value.toNumber());
-    }, [name, totalSeats, stateValue]);
+        setSeatFlags(new SeatFlags(value.toNumber(), totalSeats));
+    }, [name, totalSeats]);
 
     return [
         seatFlags,

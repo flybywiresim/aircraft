@@ -199,7 +199,7 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
         }
     };
 
-    const mouseEvent = useMemo(() => (e) => {
+    const mouseEvent = (e) => {
         let selectedStation = -1;
         let selectedSeat = -1;
         let shortestDistance = Number.POSITIVE_INFINITY;
@@ -217,7 +217,7 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
         if (selectedStation !== -1 && selectedSeat !== -1) {
             onClickSeat(selectedStation, selectedSeat);
         }
-    }, [ctx, ...activeFlags, ...desiredFlags, isMainDeck]);
+    };
 
     useCanvasEvent(canvasRef.current, 'click', mouseEvent);
 
@@ -235,6 +235,7 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
     }, []);
 
     useEffect(() => {
+        // work around rendering bug
         setTimeout(() => draw(), 10);
     }, [ctx]);
 
