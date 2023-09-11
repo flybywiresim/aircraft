@@ -282,12 +282,10 @@ impl A380WingLiftModifier {
         let wing_base_right_spoilers = self.spoilers_right_position[0..=1].iter().sum::<f64>() / 2.;
         let wing_mid_right_spoilers = self.spoilers_right_position[2..=7].iter().sum::<f64>() / 6.;
 
-        let left_ailerons_mid = ((self.ailerons_left_position[0] - 0.5) * 2.
-            + (self.ailerons_left_position[1] - 0.5) * 2.)
-            / 2.;
-        let right_ailerons_mid = ((self.ailerons_right_position[0] - 0.5) * 2.
-            + (self.ailerons_right_position[1] - 0.5) * 2.)
-            / 2.;
+        // Aileron position is converted from [0 1] to [-1 1] then we take the mean value
+        // ((position1 - 0.5) * 2. + (position2 - 0.5) * 2.) / 2. <=> position1+position2 - 1
+        let left_ailerons_mid = self.ailerons_left_position[0..=1].iter().sum::<f64>() - 1.;
+        let right_ailerons_mid = self.ailerons_right_position[0..=1].iter().sum::<f64>() - 1.;
 
         let left_ailerons_tip = (self.ailerons_left_position[2] - 0.5) * 2.;
         let right_ailerons_tip = (self.ailerons_right_position[2] - 0.5) * 2.;
