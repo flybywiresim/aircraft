@@ -6,9 +6,10 @@
 import React, { useEffect, useState } from 'react';
 import { usePersistentNumberProperty, useSimVar } from '@flybywiresim/fbw-sdk';
 import { ExclamationCircleFill } from 'react-bootstrap-icons';
+import { getAirframeType } from 'instruments/src/EFB/Efb';
 import { t } from '../../translation';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
-import { SelectItem, VerticalSelectGroup } from '../../UtilComponents/Form/Select';
+import { SelectGroup, SelectItem, VerticalSelectGroup } from '../../UtilComponents/Form/Select';
 
 import { BaseThrottleConfig } from './BaseThrottleConfig';
 import { ThrottleSimvar } from './ThrottleSimVar';
@@ -20,11 +21,13 @@ interface ThrottleConfigProps {
 }
 
 export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
-    const [isDualAxis, setDualAxis] = usePersistentNumberProperty('THROTTLE_DUAL_AXIS', 1);
+    const [axisNum, setAxisNum] = usePersistentNumberProperty('THROTTLE_AXIS', 2);
 
     const [selectedIndex, setSelectedIndex] = useState(0);
     const [validConfig, setValidConfig] = useState(true);
     const [validationError, setValidationError] = useState<string>();
+
+    const [airframe] = useState(getAirframeType());
 
     const [reverserOnAxis1, setReverserOnAxis1] = useSimVar('L:A32NX_THROTTLE_MAPPING_USE_REVERSE_ON_AXIS:1', 'number', 1000);
     const [, setReverserOnAxis2] = useSimVar('L:A32NX_THROTTLE_MAPPING_USE_REVERSE_ON_AXIS:2', 'number', 1000);
@@ -49,6 +52,22 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
         new ThrottleSimvar('Climb', 'L:A32NX_THROTTLE_MAPPING_CLIMB_', 2),
         new ThrottleSimvar('Flex', 'L:A32NX_THROTTLE_MAPPING_FLEXMCT_', 2),
         new ThrottleSimvar('TOGA', 'L:A32NX_THROTTLE_MAPPING_TOGA_', 2),
+    ];
+    const mappingsAxisThree: Array<ThrottleSimvar> = [
+        new ThrottleSimvar('Reverse Full', 'L:A32NX_THROTTLE_MAPPING_REVERSE_', 3),
+        new ThrottleSimvar('Reverse Idle', 'L:A32NX_THROTTLE_MAPPING_REVERSE_IDLE_', 3),
+        new ThrottleSimvar('Idle', 'L:A32NX_THROTTLE_MAPPING_IDLE_', 3),
+        new ThrottleSimvar('Climb', 'L:A32NX_THROTTLE_MAPPING_CLIMB_', 3),
+        new ThrottleSimvar('Flex', 'L:A32NX_THROTTLE_MAPPING_FLEXMCT_', 3),
+        new ThrottleSimvar('TOGA', 'L:A32NX_THROTTLE_MAPPING_TOGA_', 3),
+    ];
+    const mappingsAxisFour: Array<ThrottleSimvar> = [
+        new ThrottleSimvar('Reverse Full', 'L:A32NX_THROTTLE_MAPPING_REVERSE_', 4),
+        new ThrottleSimvar('Reverse Idle', 'L:A32NX_THROTTLE_MAPPING_REVERSE_IDLE_', 4),
+        new ThrottleSimvar('Idle', 'L:A32NX_THROTTLE_MAPPING_IDLE_', 4),
+        new ThrottleSimvar('Climb', 'L:A32NX_THROTTLE_MAPPING_CLIMB_', 4),
+        new ThrottleSimvar('Flex', 'L:A32NX_THROTTLE_MAPPING_FLEXMCT_', 4),
+        new ThrottleSimvar('TOGA', 'L:A32NX_THROTTLE_MAPPING_TOGA_', 4),
     ];
 
     const { showModal } = useModals();
@@ -130,63 +149,139 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
         </VerticalSelectGroup>
     );
 
+    const axisSelectGroup = (
+        <SelectGroup>
+            <SelectItem
+                selected={axisNum === 1}
+                onSelect={() => setAxisNum(1)}
+            >
+                1
+            </SelectItem>
+            <SelectItem
+                selected={axisNum === 2}
+                onSelect={() => setAxisNum(2)}
+            >
+                2
+            </SelectItem>
+            <SelectItem
+                selected={axisNum === 4}
+                onSelect={() => setAxisNum(4)}
+            >
+                4
+            </SelectItem>
+        </SelectGroup>
+    );
+
+    const fourAxis = (
+        <div className="flex flex-row mx-16">
+            <BaseThrottleConfig
+                mappingsAxisOne={mappingsAxisOne}
+                throttleNumber={1}
+                displayNumber
+                activeIndex={selectedIndex}
+                reverseDisabled
+            />
+            <BaseThrottleConfig
+                mappingsAxisOne={mappingsAxisTwo}
+                throttleNumber={2}
+                displayNumber
+                activeIndex={selectedIndex}
+            />
+            <div className="m-auto text-center">
+                {navigationBar}
+            </div>
+            <BaseThrottleConfig
+                mappingsAxisOne={mappingsAxisThree}
+                throttleNumber={3}
+                displayNumber
+                activeIndex={selectedIndex}
+            />
+            <BaseThrottleConfig
+                mappingsAxisOne={mappingsAxisFour}
+                throttleNumber={4}
+                displayNumber
+                activeIndex={selectedIndex}
+                reverseDisabled
+            />
+        </div>
+    );
+
+    const twoAxis = (
+        <div className="flex flex-row mx-32">
+            <BaseThrottleConfig
+                mappingsAxisOne={mappingsAxisOne}
+                throttleNumber={1}
+                displayNumber
+                activeIndex={selectedIndex}
+            />
+            <div className="m-auto text-center">
+                {navigationBar}
+            </div>
+            <BaseThrottleConfig
+                mappingsAxisOne={mappingsAxisTwo}
+                throttleNumber={2}
+                displayNumber
+                activeIndex={selectedIndex}
+            />
+        </div>
+    );
+
+    const oneAxis = (
+        <div className="flex flex-row justify-center rounded-xl">
+            <BaseThrottleConfig
+                mappingsAxisOne={mappingsAxisOne}
+                mappingsAxisTwo={mappingsAxisTwo}
+                throttleNumber={1}
+                displayNumber={false}
+                activeIndex={selectedIndex}
+            />
+            <div className="mt-auto mb-auto ml-8 text-center">
+                {navigationBar}
+            </div>
+        </div>
+    );
+
+    const getAxis = () => {
+        switch (axisNum) {
+        case 4:
+            if (airframe === 'A380_842') {
+                return fourAxis;
+            }
+        // eslint-disable-next-line no-fallthrough
+        case 2:
+            return twoAxis;
+        case 1:
+        default:
+            return oneAxis;
+        }
+    };
+
     if (!isShown) return null;
 
     return (
         <div className="flex flex-col justify-between h-content-section-full">
-            <div className="space-y-6">
+            <div className="space-y-2">
                 <div>
-                    <div className="flex flex-row justify-center p-4 mt-auto mb-8 space-x-16 w-full rounded-lg border-2 border-theme-accent">
-                        <div className="flex flex-row space-x-4">
+                    <div className="flex flex-row justify-center items-center p-4 mt-auto mb-8 space-x-16 w-full rounded-lg border-2 border-theme-accent">
+                        <div className="flex flex-row justify-center items-center space-x-4">
                             <div>{t('Settings.ThrottleConfig.ReverserOnAxis')}</div>
                             <Toggle value={!!reverserOnAxis1} onToggle={(value) => setReversersOnAxis(value ? 1 : 0)} />
                         </div>
-                        <div className="flex flex-row space-x-4">
+                        <div className="flex flex-row justify-center items-center space-x-4">
                             <div>{t('Settings.ThrottleConfig.IndependentAxis')}</div>
-                            <Toggle
-                                value={!!isDualAxis}
-                                onToggle={(value) => {
-                                    setDualAxis(value ? 1 : 0);
-                                }}
-                            />
+                            {airframe === 'A380_842' ? (
+                                axisSelectGroup
+                            ) : (
+                                <Toggle
+                                    value={axisNum >= 2}
+                                    onToggle={(state) => {
+                                        setAxisNum(state ? 2 : 1);
+                                    }}
+                                />
+                            )}
                         </div>
                     </div>
-
-                    {isDualAxis ? (
-                        <div className="flex flex-row justify-between rounded-xl">
-                            <BaseThrottleConfig
-                                mappingsAxisOne={mappingsAxisOne}
-                                disabled={false}
-                                throttleNumber={1}
-                                throttleCount={isDualAxis ? 1 : 2}
-                                activeIndex={selectedIndex}
-                            />
-                            <div className="m-auto">
-                                {navigationBar}
-                            </div>
-                            <BaseThrottleConfig
-                                mappingsAxisOne={mappingsAxisTwo}
-                                disabled={false}
-                                throttleNumber={2}
-                                throttleCount={1}
-                                activeIndex={selectedIndex}
-                            />
-                        </div>
-                    ) : (
-                        <div className="flex flex-row justify-center rounded-xl">
-                            <BaseThrottleConfig
-                                mappingsAxisOne={mappingsAxisOne}
-                                mappingsAxisTwo={mappingsAxisTwo}
-                                disabled={false}
-                                throttleNumber={1}
-                                throttleCount={2}
-                                activeIndex={selectedIndex}
-                            />
-                            <div className="mt-auto mb-auto ml-8">
-                                {navigationBar}
-                            </div>
-                        </div>
-                    )}
+                    {getAxis()}
                 </div>
 
                 {!validConfig && (
@@ -206,7 +301,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                     <button
                         type="button"
                         onClick={onClose}
-                        className="py-2.5 px-5 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
+                        className="py-2.5 px-5 rounded-md border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
                     >
                         {t('Settings.ThrottleConfig.Back')}
                     </button>
@@ -225,7 +320,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                                 />,
                             );
                         }}
-                        className="py-2.5 px-5 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
+                        className="py-2.5 px-5 rounded-md border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
                     >
                         {t('Settings.ThrottleConfig.ResetToDefaults')}
                     </button>
@@ -234,7 +329,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                         onClick={() => {
                             syncToThrottle(1);
                         }}
-                        className="py-2.5 px-5 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
+                        className="py-2.5 px-5 rounded-md border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
                     >
                         {t('Settings.ThrottleConfig.LoadFromFile')}
                     </button>
