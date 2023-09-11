@@ -5,6 +5,7 @@
 - [A320neo Local SimVars](#a320neo-local-simvars)
   - [Contents](#contents)
   - [Uncategorized](#uncategorized)
+  - [Model/XML Interface](#modelxml-interface)
   - [EIS Display System](#eis-display-system)
   - [ADIRS](#adirs)
   - [Radio Receivers](#radio-receivers)
@@ -1230,6 +1231,47 @@
     - Persistent
     - Enables developer-specific options like direct payload adjustments
 
+- A32NX_FWC_RADIO_AUTO_CALL_OUT_PINS
+    - Flags
+    - Radio altitude automatic call out pin programs
+    - | Bit   | Meaning                   |
+      |-------|---------------------------|
+      | 0     | Two Thousand Five Hundred |
+      | 1     | Twenty Five Hundred       |
+      | 2     | Two Thousand              |
+      | 3     | One Thousand              |
+      | 4     | Five Hundred              |
+      | 5     | Four Hundred              |
+      | 6     | Three Hundred             |
+      | 7     | Two Hundred               |
+      | 8     | One Hundred               |
+      | 9     | Fifty                     |
+      | 10    | Forty                     |
+      | 11    | Thirty                    |
+      | 12    | Twenty                    |
+      | 13    | Ten                       |
+      | 14    | Five                      |
+
+## Model/XML Interface
+
+These variables are the interface between the 3D model and the systems/code.
+
+- A32NX_OVHD_INTLT_ANN
+    - Enum
+    - ANN LT TEST Switch On the Overhead Panel (25VU)
+    Value | Meaning
+    --- | ---
+    0 | TEST
+    1 | BRT
+    2 | DIM
+
+- A32NX_MCDU_{side}_BRIGHTNESS
+    - Boolean
+    - MCDU display emissive brightness. Non-linear to account for MSFS emissive behaviour, and max brightness can change from time to time with sim updates.
+    - {side}
+        - L
+        - R
+
 ## EIS Display System
 
 - A32NX_EFIS_{side}_NAVAID_{1|2}_MODE
@@ -1411,6 +1453,14 @@
 - A32NX_BOARDING_STARTED_BY_USR
     - Bool
     - Indicates current pax/cargo loading state
+
+- A32NX_AIRFRAME_ZFW_DESIRED
+    - Kg
+    - Indicates the desired ZFW when boarding
+
+- A32NX_AIRFRAME_ZFW_CG_PERCENT_MAC_DESIRED
+    - % MAC
+    - Indicates the desired ZFW CoG when boarding
 
 - A32NX_PAX_{station}
     - Bitwise Field
@@ -2568,11 +2618,11 @@ In the variables below, {number} should be replaced with one item in the set: { 
     - Number (lbs)
     - Previous deltaTime fuel for the center tank
 
-- A32NX_ENGINE_TOTAL_OIL:{index}
+- A32NX_ENGINE_OIL_TOTAL:{index}
     - Number (quarts)
     - Total engine {index} oil quantity in the oil system (tank + circuit)
 
-- A32NX_ENGINE_TANK_OIL:{index}
+- A32NX_ENGINE_OIL_QTY:{index}
     - Number (quarts)
     - Total engine {index} oil quantity in the oil tank
 
@@ -2739,6 +2789,13 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - 1
         - 2
 
+- A32NX_PNEU_ENG_{number}_STARTER_PRESSURIZED:
+    - Indicates whether enough bleed air is supplied to the starter to start the engine
+    - Bool
+    - {number}
+        - 1
+        - 2
+
 - A32NX_PNEU_ENG_{number}_TRANSFER_TRANSDUCER_PRESSURE
     - Pressure measured at the transfer pressure transducer, -1 if no output
     - psi
@@ -2779,8 +2836,8 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - 1
         - 2
 
-- A32NX_PNEU_ENG_{number}_PRECOOLER_OUTLET_TEMPERATURE:
-    - Temperature at the precooler outlet for engine bleed system
+- A32NX_PNEU_ENG_{number}_BLEED_TEMPERATURE_SENSOR_TEMPERATURE:
+    - Temperature measured by the bleed temperature sensor at the precooler outlet, -100 if no output
     - Degree celsius
     - {number}
         - 1
@@ -2821,8 +2878,12 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - 1
         - 2
 
-- A32NX_PNEU_XBLEED_VALVE_OPEN:
-    - Indicates whether the cross bleed air valve is open
+- A32NX_PNEU_XBLEED_VALVE_FULLY_OPEN:
+    - Indicates whether the cross bleed air valve is fully open
+    - Bool
+
+- A32NX_PNEU_XBLEED_VALVE_FULLY_CLOSED:
+    - Indicates whether the cross bleed air valve is fully closed
     - Bool
 
 - A32NX_PNEU_PACK_{number}_FLOW_VALVE_FLOW_RATE:
@@ -2835,6 +2896,27 @@ In the variables below, {number} should be replaced with one item in the set: { 
 - A32NX_OVHD_PNEU_ENG_{number}_BLEED_PB_IS_AUTO:
     - Indicates whether the engine bleed air is on
     - Is aliased from aircraft variable A:BLEED AIR ENGINE
+    - Bool
+    - {number}
+        - 1
+        - 2
+
+- A32NX_PNEU_ENG_{number}_LOW_TEMPERATURE:
+    - Indicates whether the engine bleed air temperature is low
+    - Bool
+    - {number}
+        - 1
+        - 2
+
+- A32NX_PNEU_ENG_{number}_OVERHEAT:
+    - Indicates whether an an engine bleed air overheat is detected
+    - Bool
+    - {number}
+        - 1
+        - 2
+
+- A32NX_PNEU_ENG_{number}_OVERPRESSURE:
+    - Indicates whether an engine bleed overpressure is detected
     - Bool
     - {number}
         - 1

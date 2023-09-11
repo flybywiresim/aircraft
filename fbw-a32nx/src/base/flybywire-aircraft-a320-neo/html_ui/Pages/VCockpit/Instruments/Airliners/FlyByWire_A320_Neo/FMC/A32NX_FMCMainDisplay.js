@@ -40,8 +40,8 @@ class FMCMainDisplay extends BaseAirliners {
         this._toFlexChecked = undefined;
         this.toRunway = undefined;
         this.vApp = undefined;
-        this.perfApprMDA = undefined;
-        this.perfApprDH = undefined;
+        this.perfApprMDA = null;
+        this.perfApprDH = null;
         this.perfApprFlaps3 = undefined;
         this._debug = undefined;
         this._checkFlightPlan = undefined;
@@ -185,6 +185,8 @@ class FMCMainDisplay extends BaseAirliners {
         this.arincMissedThrustReductionAltitude = FmArinc429OutputWord.empty("MISSED_THR_RED_ALT");
         this.arincMissedAccelerationAltitude = FmArinc429OutputWord.empty("MISSED_ACC_ALT");
         this.arincMissedEoAccelerationAltitude = FmArinc429OutputWord.empty("MISSED_EO_ACC_ALT");
+        /** contains fm messages (not yet implemented) and nodh bit */
+        this.arincEisWord2 = FmArinc429OutputWord.empty("EIS_DISCRETE_WORD_2");
 
         /** These arinc words will be automatically written to the bus, and automatically set to 0/NCD when the FMS resets */
         this.arincBusOutputs = [
@@ -202,6 +204,7 @@ class FMCMainDisplay extends BaseAirliners {
             this.arincMissedThrustReductionAltitude,
             this.arincMissedAccelerationAltitude,
             this.arincMissedEoAccelerationAltitude,
+            this.arincEisWord2,
         ];
     }
     Init() {
@@ -337,8 +340,8 @@ class FMCMainDisplay extends BaseAirliners {
         this._toFlexChecked = true;
         this.toRunway = "";
         this.vApp = NaN;
-        this.perfApprMDA = NaN;
-        this.perfApprDH = NaN;
+        this.perfApprMDA = null;
+        this.perfApprDH = null;
         this.perfApprFlaps3 = false;
         this._debug = 0;
         this._checkFlightPlan = 0;
@@ -557,6 +560,8 @@ class FMCMainDisplay extends BaseAirliners {
         });
 
         this.toSpeedsChecks(true);
+
+        this.setRequest('FMGC');
     }
 
     onUpdate(_deltaTime) {
@@ -566,6 +571,7 @@ class FMCMainDisplay extends BaseAirliners {
         const flightPlanChanged = this.flightPlanManager.currentFlightPlanVersion !== this.lastFlightPlanVersion;
         if (flightPlanChanged) {
             this.lastFlightPlanVersion = this.flightPlanManager.currentFlightPlanVersion;
+            this.setRequest("FMGC");
         }
 
         Fmgc.updateFmgcLoop(_deltaTime);
@@ -652,6 +658,8 @@ class FMCMainDisplay extends BaseAirliners {
     onFlightPhaseChanged(prevPhase, nextPhase) {
         this.updateConstraints();
         this.updateManagedSpeed();
+
+        this.setRequest("FMGC");
 
         SimVar.SetSimVarValue("L:A32NX_CABIN_READY", "Bool", 0);
 
@@ -1601,11 +1609,18 @@ class FMCMainDisplay extends BaseAirliners {
 
     updateMinimums() {
         const inRange = this.shouldTransmitMinimums();
-        const MDAssm = inRange && this.perfApprMDA ? Arinc429Word.SignStatusMatrix.NormalOperation : Arinc429Word.SignStatusMatrix.NoComputedData;
-        const DHssm = inRange && this.perfApprDH ? Arinc429Word.SignStatusMatrix.NormalOperation : Arinc429Word.SignStatusMatrix.NoComputedData
 
-        this.arincMDA.setBnrValue(this.perfApprMDA ? this.perfApprMDA : 0, MDAssm, 17, 131072, 0);
-        this.arincDH.setBnrValue(this.perfApprDH ? this.perfApprDH : 0, DHssm, 16, 8192, 0);
+        const mdaValid = inRange && this.perfApprMDA !== null;
+        const dhValid = !mdaValid && inRange && typeof this.perfApprDH === 'number';
+
+        const mdaSsm = mdaValid ? Arinc429Word.SignStatusMatrix.NormalOperation : Arinc429Word.SignStatusMatrix.NoComputedData;
+        const dhSsm = dhValid ? Arinc429Word.SignStatusMatrix.NormalOperation : Arinc429Word.SignStatusMatrix.NoComputedData
+
+        this.arincMDA.setBnrValue(mdaValid ? this.perfApprMDA : 0, mdaSsm, 17, 131072, 0);
+        this.arincDH.setBnrValue(dhValid ? this.perfApprDH : 0, dhSsm, 16, 8192, 0);
+        this.arincEisWord2.setBitValue(29, inRange && this.perfApprDH === "NO DH");
+        // FIXME we need to handle these better
+        this.arincEisWord2.ssm = Arinc429Word.SignStatusMatrix.NormalOperation;
     }
 
     shouldTransmitMinimums() {
@@ -2105,7 +2120,7 @@ class FMCMainDisplay extends BaseAirliners {
             if (this.isMinDestFobInRange(value)) {
                 this._minDestFobEntered = true;
                 if (value < this._minDestFob) {
-                    this.setScratchpadMessage(NXSystemMessages.checkMinDestFob);
+                    this.addMessageToQueue(NXSystemMessages.checkMinDestFob);
                 }
                 this._minDestFob = value;
                 return true;
@@ -2119,7 +2134,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     async tryUpdateAltDestination(altDestIdent) {
-        if (altDestIdent === "NONE" || altDestIdent === FMCMainDisplay.clrValue) {
+        if (!altDestIdent || altDestIdent === "NONE" || altDestIdent === FMCMainDisplay.clrValue) {
             this.atsu.resetAtisAutoUpdate();
             this.altDestination = undefined;
             this._DistanceToAlt = 0;
@@ -3144,10 +3159,10 @@ class FMCMainDisplay extends BaseAirliners {
     thrustReductionAccelerationChecks() {
         const activePlan = this.flightPlanManager.activeFlightPlan;
         if (activePlan.reconcileAccelerationWithConstraints()) {
-            this.setScratchpadMessage(NXSystemMessages.newAccAlt.getModifiedMessage(activePlan.accelerationAltitude.toFixed(0)));
+            this.addMessageToQueue(NXSystemMessages.newAccAlt.getModifiedMessage(activePlan.accelerationAltitude.toFixed(0)));
         }
         if (activePlan.reconcileThrustReductionWithConstraints()) {
-            this.setScratchpadMessage(NXSystemMessages.newThrRedAlt.getModifiedMessage(activePlan.thrustReductionAltitude.toFixed(0)));
+            this.addMessageToQueue(NXSystemMessages.newThrRedAlt.getModifiedMessage(activePlan.thrustReductionAltitude.toFixed(0)));
         }
     }
 
@@ -3889,7 +3904,7 @@ class FMCMainDisplay extends BaseAirliners {
 
     setPerfApprMDA(s) {
         if (s === FMCMainDisplay.clrValue) {
-            this.perfApprMDA = NaN;
+            this.perfApprMDA = null;
             SimVar.SetSimVarValue("L:AIRLINER_MINIMUM_DESCENT_ALTITUDE", "feet", 0);
             return true;
         } else if (s.match(/^[0-9]{1,5}$/) !== null) {
@@ -3918,7 +3933,7 @@ class FMCMainDisplay extends BaseAirliners {
 
     setPerfApprDH(s) {
         if (s === FMCMainDisplay.clrValue) {
-            this.perfApprDH = NaN;
+            this.perfApprDH = null;
             SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "feet", -1);
             return true;
         }

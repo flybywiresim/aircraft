@@ -2,6 +2,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     constructor() {
         super(...arguments);
 
+        this.MIN_BRIGHTNESS = 0.5;
+        this.MAX_BRIGHTNESS = 8;
+
         this.minPageUpdateThrottler = new UpdateThrottler(100);
         this.mcduServerConnectUpdateThrottler = new UpdateThrottler(1000);
         this.powerCheckUpdateThrottler = new UpdateThrottler(500);
@@ -14,13 +17,50 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this._labels = [];
         this._lines = [];
         this._keypad = new Keypad(this);
-        this.scratchpad = null;
+        this.scratchpadDisplay = null;
+        this._scratchpad = null;
+        /** @type {Record<'MCDU' | 'FMGC' | 'ATSU' | 'AIDS' | 'CFDS', ScratchpadDataLink>} */
+        this.scratchpads = {};
         this._arrows = [false, false, false, false];
+        this.annunciators = {
+            left: {
+                // note these must match the base names in the model xml
+                fmgc: false,
+                fail: false,
+                mcdu_menu: false,
+                fm1: false,
+                ind: false,
+                rdy: false,
+                blank: false,
+                fm2: false,
+            },
+            right: {
+                fmgc: false,
+                fail: false,
+                mcdu_menu: false,
+                fm1: false,
+                ind: false,
+                rdy: false,
+                blank: false,
+                fm2: false,
+            }
+        };
+        /** MCDU request flags from subsystems */
+        this.requests = {
+            AIDS: false,
+            ATSU: false,
+            CFDS: false,
+            FMGC: false,
+        }
+        this._lastAtsuMessageCount = 0;
+        this.leftBrightness = 0;
+        this.rightBrightness = 0;
         this.onLeftInput = [];
         this.onRightInput = [];
         this.leftInputDelay = [];
         this.rightInputDelay = [];
-        this.activeSystem = 'FMGC';
+        /** @type {'FMGC' | 'ATSU' | 'AIDS' | 'CFDS'} */
+        this._activeSystem = 'FMGC';
         this.inFocus = false;
         this.lastInput = 0;
         this.clrStop = false;
@@ -141,11 +181,24 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             title: '',
             titleLeft: '',
             page: '',
-            arrows: [false, false, false, false]
+            arrows: [false, false, false, false],
+            annunciators: {
+                fmgc: false,
+                fail: false,
+                mcdu_menu: false,
+                fm1: false,
+                ind: false,
+                rdy: false,
+                blank: false,
+                fm2: false,
+            },
+            displayBrightness: 0,
+            integralBrightness: 0,
         };
 
     }
 
+    // TODO this really belongs in the FMCMainDisplay, not the CDU
     setupFmgcTriggers() {
         Coherent.on('A32NX_FMGC_SEND_MESSAGE_TO_MCDU', (message) => {
             this.addMessageToQueue(new TypeIIMessage(message.text, message.color === 'Amber'), () => false , () => {
@@ -224,13 +277,18 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
         this.generateHTMLLayout(this.getChildById("Mainframe") || this);
 
-        const display = new ScratchpadDisplay(this.getChildById("in-out"));
-        this.scratchpad = new ScratchpadDataLink(this, display);
+        this.scratchpadDisplay = new ScratchpadDisplay(this, this.getChildById("in-out"));
+        this.scratchpads["MCDU"] = new ScratchpadDataLink(this, this.scratchpadDisplay, 'MCDU', false);
+        this.scratchpads["FMGC"] = new ScratchpadDataLink(this, this.scratchpadDisplay, 'FMGC');
+        this.scratchpads["ATSU"] = new ScratchpadDataLink(this, this.scratchpadDisplay, 'ATSU');
+        this.scratchpads["AIDS"] = new ScratchpadDataLink(this, this.scratchpadDisplay, 'AIDS');
+        this.scratchpads["CFDS"] = new ScratchpadDataLink(this, this.scratchpadDisplay, 'CFDS');
+        this.activateMcduScratchpad();
 
         try {
             // note: without this, resetting mcdu kills camera
-            if (this.scratchpad && this.scratchpad.guid) {
-                Coherent.trigger('UNFOCUS_INPUT_FIELD', this.scratchpad.guid);
+            if (this.scratchpadDisplay && this.scratchpadDisplay.guid) {
+                Coherent.trigger('UNFOCUS_INPUT_FIELD', this.scratchpadDisplay.guid);
             }
         } catch (e) {
             console.error(e);
@@ -298,6 +356,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
 
         this.mcduServerClient = new SimBridgeClient.McduServerClient();
 
+        // sync annunciator simvar state
+        this.updateAnnunciators(true);
     }
 
     requestUpdate() {
@@ -364,10 +424,23 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     /* MCDU UPDATE */
 
     /**
+     * Updates the MCDU state.
+     */
+    updateMCDU() {
+        this.updateAnnunciators();
+
+        this.updateBrightness();
+
+        this.updateInitBFuelPred();
+
+        this.updateAtsuRequest();
+    }
+
+    /**
      * Checks whether INIT page B is open and an engine is being started, if so:
      * The INIT page B reverts to the FUEL PRED page 15 seconds after the first engine start and cannot be accessed after engine start.
      */
-    updateMCDU() {
+    updateInitBFuelPred() {
         if (this.isAnEngineOn()) {
             if (!this.initB) {
                 this.initB = true;
@@ -379,6 +452,82 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             }
         } else {
             this.initB = false;
+        }
+    }
+
+    updateAnnunciators(forceWrite = false) {
+        const lightTestPowered = SimVar.GetSimVarValue("L:A32NX_ELEC_DC_2_BUS_IS_POWERED", "bool");
+        const lightTest = lightTestPowered && SimVar.GetSimVarValue("L:A32NX_OVHD_INTLT_ANN", "number") === 0;
+
+        // lights are AC1, MCDU is ACC ESS SHED
+        const leftAnnuncPower = SimVar.GetSimVarValue("L:A32NX_ELEC_AC_1_BUS_IS_POWERED", "bool") && SimVar.GetSimVarValue("L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED", "bool");
+        this.updateAnnunciatorsForSide("left", lightTest, leftAnnuncPower, forceWrite);
+
+        // lights and MCDU are both AC2
+        const rightAnnuncPower = SimVar.GetSimVarValue("L:A32NX_ELEC_AC_2_BUS_IS_POWERED", "bool");
+        this.updateAnnunciatorsForSide("right", lightTest, rightAnnuncPower, forceWrite);
+    }
+
+    updateBrightness() {
+        const left = SimVar.GetSimVarValue("L:A32NX_MCDU_L_BRIGHTNESS", "number");
+        const right = SimVar.GetSimVarValue("L:A32NX_MCDU_R_BRIGHTNESS", "number");
+
+        let updateNeeded = false;
+
+        if (left !== this.leftBrightness) {
+            this.leftBrightness = left;
+            updateNeeded = true;
+        }
+
+        if (right !== this.rightBrightness) {
+            this.rightBrightness = right;
+            updateNeeded = true;
+        }
+
+        if (updateNeeded) {
+            this.sendUpdate();
+        }
+    }
+
+    updateAtsuRequest() {
+        // the ATSU currently doesn't have the MCDU request signal, so we just check for messages and set it's flag
+        const msgs = SimVar.GetSimVarValue('L:A32NX_COMPANY_MSG_COUNT', 'number');
+        if (msgs > this._lastAtsuMessageCount) {
+            this.setRequest('ATSU');
+        }
+        this._lastAtsuMessageCount = msgs;
+    }
+
+    /**
+     * Updates the annunciator light states for one MCDU.
+     * @param {'left' | 'right'} side Which MCDU to update.
+     * @param {boolean} lightTest Whether ANN LT TEST is active.
+     * @param {boolean} powerOn Whether annunciator LED power is available.
+     */
+    updateAnnunciatorsForSide(side, lightTest, powerOn, forceWrite = false) {
+        let updateNeeded = false;
+
+        const simVarSide = side.toUpperCase().charAt(0);
+
+        const states = this.annunciators[side];
+        for (const [annunc, state] of Object.entries(states)) {
+            let newState = !!(lightTest && powerOn);
+
+            if (annunc === 'fm') {
+                newState = newState || this.isSubsystemRequesting('FMGC');
+            } else if (annunc === 'mcdu_menu') {
+                newState = newState || this.isSubsystemRequesting('AIDS') || this.isSubsystemRequesting('ATSU') || this.isSubsystemRequesting('CFDS');
+            }
+
+            if (newState !== state || forceWrite) {
+                states[annunc] = newState;
+                SimVar.SetSimVarValue(`L:A32NX_MCDU_${simVarSide}_ANNUNC_${annunc.toUpperCase()}`, 'bool', newState);
+                updateNeeded = true;
+            }
+        }
+
+        if (updateNeeded) {
+            this.sendUpdate();
         }
     }
 
@@ -734,6 +883,109 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.updateRequest = false;
     }
 
+    /**
+     * Set the active subsystem
+     * @param {'AIDS' | 'ATSU' | 'CFDS' | 'FMGC'} subsystem
+     */
+    set activeSystem(subsystem) {
+        this._activeSystem = subsystem;
+        this.scratchpad = this.scratchpads[subsystem];
+        this._clearRequest(subsystem);
+    }
+
+    get activeSystem() {
+        return this._activeSystem;
+    }
+
+    set scratchpad(sp) {
+        if (sp === this._scratchpad) {
+            return;
+        }
+
+        // pause the old scratchpad so it stops writing to the display
+        if (this._scratchpad) {
+            this._scratchpad.pause();
+        }
+
+        // set the new scratchpad and resume it to update the display
+        this._scratchpad = sp;
+        this._scratchpad.resume();
+    }
+
+    get scratchpad() {
+        return this._scratchpad;
+    }
+
+    get mcduScratchpad() {
+        return this.scratchpads['MCDU'];
+    }
+
+    get fmgcScratchpad() {
+        return this.scratchpads['FMGC'];
+    }
+
+    get atsuScratchpad() {
+        return this.scratchpads['ATSU'];
+    }
+
+    get aidsScratchpad() {
+        return this.scratchpads['AIDS'];
+    }
+
+    get cfdsScratchpad() {
+        return this.scratchpads['CFDS'];
+    }
+
+    activateMcduScratchpad() {
+        this.scratchpad = this.scratchpads['MCDU'];
+    }
+
+    /**
+     * Check if there is an active request from a subsystem to the MCDU
+     * @param {'AIDS' | 'ATSU' | 'CFDS' | 'FMGC'} subsystem
+     * @returns true if an active request exists
+     */
+    isSubsystemRequesting(subsystem) {
+        return this.requests[subsystem] === true;
+    }
+
+    /**
+     * Set a request from a subsystem to the MCDU
+     * @param {'AIDS' | 'ATSU' | 'CFDS' | 'FMGC'} subsystem
+     */
+    setRequest(subsystem) {
+        if (!(subsystem in this.requests) || this.activeSystem === subsystem) {
+            return;
+        }
+        if (!this.requests[subsystem]) {
+            this.requests[subsystem] = true;
+
+            // refresh the menu page if active
+            if (this.page.Current === this.page.MenuPage) {
+                CDUMenuPage.ShowPage(this);
+            }
+        }
+    }
+
+    /**
+     * Clear a request from a subsystem to the MCDU
+     * @param {'AIDS' | 'ATSU' | 'CFDS' | 'FMGC'} subsystem
+     */
+    _clearRequest(subsystem) {
+        if (!(subsystem in this.requests)) {
+            return;
+        }
+
+        if (this.requests[subsystem]) {
+            this.requests[subsystem] = false;
+
+            // refresh the menu page if active
+            if (this.page.Current === this.page.MenuPage) {
+                CDUMenuPage.ShowPage(this);
+            }
+        }
+    }
+
     generateHTMLLayout(parent) {
         while (parent.children.length > 0) {
             parent.removeChild(parent.children[0]);
@@ -832,11 +1084,11 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         this.inFocus = false;
         this.allSelected = false;
         try {
-            Coherent.trigger('UNFOCUS_INPUT_FIELD', this.scratchpad.guid);
+            Coherent.trigger('UNFOCUS_INPUT_FIELD', this.scratchpadDisplay.guid);
         } catch (e) {
             console.error(e);
         }
-        this.scratchpad.setDisplayStyle(null);
+        this.scratchpadDisplay.setStyle(null);
         this.getChildById("header").style = null;
         if (this.check_focus) {
             clearInterval(this.check_focus);
@@ -856,9 +1108,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 this.inFocus = !this.inFocus;
                 if (this.inFocus && (isPoweredL || isPoweredR)) {
                     this.getChildById("header").style = "background: linear-gradient(180deg, rgba(2,182,217,1.0) 65%, rgba(255,255,255,0.0) 65%);";
-                    this.scratchpad.setDisplayStyle("display: inline-block; width:87%; background: rgba(255,255,255,0.2);");
+                    this.scratchpadDisplay.setStyle("display: inline-block; width:87%; background: rgba(255,255,255,0.2);");
                     try {
-                        Coherent.trigger('FOCUS_INPUT_FIELD', this.scratchpad.guid, '', '', '', false);
+                        Coherent.trigger('FOCUS_INPUT_FIELD', this.scratchpadDisplay.guid, '', '', '', false);
                     } catch (e) {
                         console.error(e);
                     }
@@ -893,7 +1145,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     this.clearFocus();
                 } else if (e.ctrlKey && keycode === KeyCode.KEY_A) {
                     this.allSelected = !this.allSelected;
-                    this.scratchpad.setDisplayStyle(`display: inline-block; width:87%; background: ${this.allSelected ? 'rgba(235,64,52,1.0)' : 'rgba(255,255,255,0.2)'};`);
+                    this.scratchpadDisplay.setStyle(`display: inline-block; width:87%; background: ${this.allSelected ? 'rgba(235,64,52,1.0)' : 'rgba(255,255,255,0.2)'};`);
                 } else if (e.shiftKey && e.ctrlKey && keycode === KeyCode.KEY_BACK_SPACE) {
                     this.setScratchpadText("");
                 } else if (e.ctrlKey && keycode === KeyCode.KEY_BACK_SPACE) {
@@ -989,17 +1241,18 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     /* MCDU MESSAGE SYSTEM */
 
     /**
-     * Display a type I message on the scratch pad
+     * Display a type I message on the active subsystem's scratch pad
      * @param message {TypeIMessage}
      */
     setScratchpadMessage(message) {
+        if (typeof message === 'TypeIIMessage') {
+            console.error('Type II message passed to setScratchpadMessage!', message);
+            return;
+        }
+
         if (this.scratchpad) {
             this.scratchpad.setMessage(message);
         }
-    }
-
-    removeScratchpadMessage(value) {
-        this.scratchpad.removeMessage(value);
     }
 
     setScratchpadText(value) {
@@ -1020,51 +1273,54 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
      * @param code ATSU status code
      */
     addNewAtsuMessage(code) {
+        if (!this.atsuScratchpad) {
+            return;
+        }
         switch (code) {
             case AtsuCommon.AtsuStatusCodes.CallsignInUse:
-                this.setScratchpadMessage(NXFictionalMessages.fltNbrInUse);
+                this.atsuScratchpad.setMessage(NXFictionalMessages.fltNbrInUse);
                 break;
             case AtsuCommon.AtsuStatusCodes.NoHoppieConnection:
-                this.setScratchpadMessage(NXFictionalMessages.noHoppieConnection);
+                this.atsuScratchpad.setMessage(NXFictionalMessages.noHoppieConnection);
                 break;
             case AtsuCommon.AtsuStatusCodes.ComFailed:
-                this.setScratchpadMessage(NXSystemMessages.comUnavailable);
+                this.atsuScratchpad.setMessage(NXSystemMessages.comUnavailable);
                 break;
             case AtsuCommon.AtsuStatusCodes.NoAtc:
-                this.setScratchpadMessage(NXSystemMessages.noAtc);
+                this.atsuScratchpad.setMessage(NXSystemMessages.noAtc);
                 break;
             case AtsuCommon.AtsuStatusCodes.MailboxFull:
-                this.setScratchpadMessage(NXSystemMessages.dcduFileFull);
+                this.atsuScratchpad.setMessage(NXSystemMessages.dcduFileFull);
                 break;
             case AtsuCommon.AtsuStatusCodes.UnknownMessage:
-                this.setScratchpadMessage(NXFictionalMessages.unknownAtsuMessage);
+                this.atsuScratchpad.setMessage(NXFictionalMessages.unknownAtsuMessage);
                 break;
             case AtsuCommon.AtsuStatusCodes.ProxyError:
-                this.setScratchpadMessage(NXFictionalMessages.reverseProxy);
+                this.atsuScratchpad.setMessage(NXFictionalMessages.reverseProxy);
                 break;
             case AtsuCommon.AtsuStatusCodes.NoTelexConnection:
-                this.setScratchpadMessage(NXFictionalMessages.telexNotEnabled);
+                this.atsuScratchpad.setMessage(NXFictionalMessages.telexNotEnabled);
                 break;
             case AtsuCommon.AtsuStatusCodes.OwnCallsign:
-                this.setScratchpadMessage(NXSystemMessages.noAtc);
+                this.atsuScratchpad.setMessage(NXSystemMessages.noAtc);
                 break;
             case AtsuCommon.AtsuStatusCodes.SystemBusy:
-                this.setScratchpadMessage(NXSystemMessages.systemBusy);
+                this.atsuScratchpad.setMessage(NXSystemMessages.systemBusy);
                 break;
             case AtsuCommon.AtsuStatusCodes.NewAtisReceived:
-                this.setScratchpadMessage(NXSystemMessages.newAtisReceived);
+                this.atsuScratchpad.setMessage(NXSystemMessages.newAtisReceived);
                 break;
             case AtsuCommon.AtsuStatusCodes.NoAtisReceived:
-                this.setScratchpadMessage(NXSystemMessages.noAtisReceived);
+                this.atsuScratchpad.setMessage(NXSystemMessages.noAtisReceived);
                 break;
             case AtsuCommon.AtsuStatusCodes.EntryOutOfRange:
-                this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+                this.atsuScratchpad.setMessage(NXSystemMessages.entryOutOfRange);
                 break;
             case AtsuCommon.AtsuStatusCodes.FormatError:
-                this.setScratchpadMessage(NXSystemMessages.formatError);
+                this.atsuScratchpad.setMessage(NXSystemMessages.formatError);
                 break;
             case AtsuCommon.AtsuStatusCodes.NotInDatabase:
-                this.setScratchpadMessage(NXSystemMessages.notInDatabase);
+                this.atsuScratchpad.setMessage(NXSystemMessages.notInDatabase);
             default:
                 break;
         }
@@ -1085,9 +1341,12 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             return;
         }
 
-        if (_event.indexOf("1_BTN_") !== -1 || _event.indexOf("2_BTN_") !== -1 || _event.indexOf("BTN_") !== -1) {
+        const isLeftMcduEvent = _event.indexOf("1_BTN_") !== -1;
+        const isRightMcduEvent = _event.indexOf("2_BTN_") !== -1;
+
+        if (isLeftMcduEvent || isRightMcduEvent || _event.indexOf("BTN_") !== -1) {
             const input = _event.replace("1_BTN_", "").replace("2_BTN_", "").replace("BTN_", "");
-            if (this._keypad.onKeyPress(input)) {
+            if (this._keypad.onKeyPress(input, isRightMcduEvent ? 'R' : 'L')) {
                 return;
             }
 
@@ -1123,6 +1382,16 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                 }
             }, fncActionDelay());
         }, 100);
+    }
+
+    /**
+     * Handle brightness key events
+     * @param {'L' | 'R'} side
+     * @param {-1 | 1} sign
+     */
+    onBrightnessKey(side, sign) {
+        const oldBrightness = side === "R" ? this.rightBrightness : this.leftBrightness;
+        SimVar.SetSimVarValue(`L:A32NX_MCDU_${side}_BRIGHTNESS`, "number", Math.max(this.MIN_BRIGHTNESS, Math.min(this.MAX_BRIGHTNESS, oldBrightness + sign * 0.2 * oldBrightness)));
     }
 
     /* END OF MCDU EVENTS */
@@ -1262,9 +1531,15 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
             return;
         }
         let left = this.emptyLines;
-        let right = left;
-        if (SimVar.GetSimVarValue("L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED", "bool")) {
-            left = {
+        let right = this.emptyLines;
+
+        const mcdu1Powered = SimVar.GetSimVarValue("L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED", "bool");
+        const mcdu2Powered = SimVar.GetSimVarValue("L:A32NX_ELEC_AC_2_BUS_IS_POWERED", "bool");
+        const integralLightsPowered = SimVar.GetSimVarValue("L:A32NX_ELEC_AC_1_BUS_IS_POWERED", "bool");
+
+        let screenState;
+        if (mcdu1Powered || mcdu2Powered) {
+            screenState = {
                 lines: [
                     this._labels[0],
                     this._lines[0],
@@ -1279,17 +1554,27 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
                     this._labels[5],
                     this._lines[5],
                 ],
-                scratchpad: `{${this.scratchpad.getColor()}}${this.scratchpad.getDisplayText()}{end}`,
+                scratchpad: `{${this.scratchpadDisplay.getColor()}}${this.scratchpadDisplay.getText()}{end}`,
                 title: this._title,
                 titleLeft: `{small}${this._titleLeft}{end}`,
                 page: this._pageCount > 0 ? `{small}${this._pageCurrent}/${this._pageCount}{end}` : '',
-                arrows: this._arrows
+                arrows: this._arrows,
+                integralBrightness: integralLightsPowered ? SimVar.GetSimVarValue("A:LIGHT POTENTIOMETER:85", "percent over 100") : 0,
             };
         }
 
-        if (SimVar.GetSimVarValue("L:A32NX_ELEC_AC_2_BUS_IS_POWERED", "bool")) {
-            right = left;
+        if (mcdu1Powered) {
+            left = Object.assign({}, screenState);
+            left.annunciators = this.annunciators.left;
+            left.displayBrightness = this.leftBrightness / this.MAX_BRIGHTNESS;
         }
+
+        if (mcdu2Powered) {
+            right = Object.assign({}, screenState);
+            right.annunciators = this.annunciators.right;
+            right.displayBrightness = this.rightBrightness / this.MAX_BRIGHTNESS;
+        }
+
         const content = {right, left};
         this.sendToMcduServerClient(`update:${JSON.stringify(content)}`);
     }

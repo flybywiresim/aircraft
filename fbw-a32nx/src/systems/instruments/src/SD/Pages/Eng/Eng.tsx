@@ -13,13 +13,14 @@ import './Eng.scss';
 
 export const EngPage: FC = () => {
     const [weightUnit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
-    const [engSelectorPosition] = useSimVar('L:XMLVAR_ENG_MODE_SEL', 'Enum', 1000);
-
+    const [engSelectorPosition] = useSimVar('L:XMLVAR_ENG_MODE_SEL', 'Enum');
+    const [fadec1On] = useSimVar('L:A32NX_FADEC_POWERED_ENG1', 'bool');
+    const [fadec2On] = useSimVar('L:A32NX_FADEC_POWERED_ENG2', 'bool');
     return (
         <EcamPage name="main-eng">
             <PageTitle x={6} y={18} text="ENGINE" />
 
-            <EngineColumn x={90} y={40} engineNumber={1} />
+            <EngineColumn x={90} y={40} engineNumber={1} fadecOn={fadec1On} />
 
             <line className="Indicator" x1={250} y1={75} x2={225} y2={77} />
             <text x={300} y={75} className="FillWhite FontMedium TextCenter">F.USED</text>
@@ -50,7 +51,7 @@ export const EngPage: FC = () => {
                 <line className="Indicator" x1={350} y1={488} x2={375} y2={490} />
             </SvgGroup>
 
-            <EngineColumn x={210} y={40} engineNumber={2} />
+            <EngineColumn x={210} y={40} engineNumber={2} fadecOn={fadec2On} />
         </EcamPage>
     );
 };
@@ -66,10 +67,11 @@ function getNeedleValue(value: any, max: number): number {
 interface ComponentPositionProps {
     x: number,
     y: number,
-    engineNumber: number
+    engineNumber: number,
+    fadecOn: boolean
 }
 
-const PressureGauge = ({ x, y, engineNumber }: ComponentPositionProps) => {
+const PressureGauge = ({ x, y, engineNumber, fadecOn }: ComponentPositionProps) => {
     const [engineOilPressure] = useSimVar(`ENG OIL PRESSURE:${engineNumber}`, 'psi', 100);
     const displayedEngineOilPressure = Math.round(engineOilPressure / 2) * 2; // Engine oil pressure has a step of 2
     const OIL_PSI_MAX = 130;
@@ -81,7 +83,13 @@ const PressureGauge = ({ x, y, engineNumber }: ComponentPositionProps) => {
     const [pressureBelowLow, setPressureBelowLow] = useState(false);
     const [shouldPressurePulse, setShouldPressurePulse] = useState(false);
     const [n2Percent] = useSimVar(`ENG N2 RPM:${engineNumber}`, 'percent', 50);
+    const [engine1State] = useSimVar('L:A32NX_ENGINE_STATE:1', 'number');
+    const [engine2State] = useSimVar('L:A32NX_ENGINE_STATE:2', 'number');
 
+    const engineRunning = engine1State > 0 || engine2State > 0;
+
+    const activeVisibility = fadecOn ? 'visible' : 'hidden';
+    const inactiveVisibility = fadecOn ? 'hidden' : 'visible';
     /* Controls different styling of pressure needle and digital readout according to certain critical, or cautionary ranges.
     */
     useEffect(() => {
@@ -130,28 +138,33 @@ const PressureGauge = ({ x, y, engineNumber }: ComponentPositionProps) => {
             <line className="GaugeMarking" x1={x} y1={y} x2={x} y2={y + 5} />
             <line className="GaugeMarking" x1={x + 45} y1={y + 50} x2={x + 51} y2={y + 50} />
             <Arc x={x} y={y + 50} radius={50} toValue={100} scaleMax={100} className="WhiteLine NoFill" />
-            <Arc x={x} y={y + 50} radius={50} toValue={OIL_PSI_VLOW_LIMIT} scaleMax={100} className="RedLine NoFill" />
-            <Needle
-                x={x}
-                y={y + 50}
-                length={60}
-                scaleMax={100}
-                value={getNeedleValue(engineOilPressure, OIL_PSI_MAX)}
-                className={`NoFill ${needleClassName}`}
-                dashOffset={-40}
-            />
-            <text
-                x={x}
-                y={y + 45}
-                className={`FontLarge TextCenter ${textClassName}`}
-            >
-                {displayedEngineOilPressure}
-            </text>
+            <g visibility={activeVisibility}>
+                <Arc x={x} y={y + 50} radius={50} toValue={OIL_PSI_VLOW_LIMIT} scaleMax={100} className={`RedLine NoFill ${!engineRunning && 'Hidden'}`} />
+                <Needle
+                    x={x}
+                    y={y + 50}
+                    length={60}
+                    scaleMax={100}
+                    value={getNeedleValue(engineOilPressure, OIL_PSI_MAX)}
+                    className={`NoFill ${needleClassName}`}
+                    dashOffset={-40}
+                />
+                <text
+                    x={x}
+                    y={y + 45}
+                    className={`FontLarge TextCenter ${textClassName}`}
+                >
+                    {displayedEngineOilPressure}
+                </text>
+            </g>
+            <g visibility={inactiveVisibility}>
+                <text x={x} y={y + 45} className="FontLarge TextCenter FillAmber">XX</text>
+            </g>
         </SvgGroup>
     );
 };
 
-const QuantityGauge = ({ x, y, engineNumber }: ComponentPositionProps) => {
+const QuantityGauge = ({ x, y, engineNumber, fadecOn }: ComponentPositionProps) => {
     const [engineOilQuantity] = useSimVar(`ENG OIL QUANTITY:${engineNumber}`, 'percent', 100);
     const OIL_QTY_MAX = 24.25;
     const OIL_QTY_LOW_ADVISORY = 1.35;
@@ -159,6 +172,8 @@ const QuantityGauge = ({ x, y, engineNumber }: ComponentPositionProps) => {
     const [quantityAtOrBelowLow, setQuantityAtOrBelowLow] = useState(false);
     const [shouldQuantityPulse, setShouldQuantityPulse] = useState(false);
 
+    const activeVisibility = fadecOn ? 'visible' : 'hidden';
+    const inactiveVisibility = fadecOn ? 'hidden' : 'visible';
     // Sets engine oil quantity's pulsation based on advisory value constant, this should be changed in the future as its calculated on the fly in NEOs
     useEffect(() => {
         if (displayedEngineOilQuantity <= OIL_QTY_LOW_ADVISORY) {
@@ -178,51 +193,66 @@ const QuantityGauge = ({ x, y, engineNumber }: ComponentPositionProps) => {
             <line className="GaugeMarking" x1={x} y1={y - 50} x2={x} y2={y - 45} />
             <line className="GaugeMarking" x1={x + 45} y1={y} x2={x + 51} y2={y} />
             <Arc x={x} y={y} radius={50} toValue={100} scaleMax={100} className="WhiteLine NoFill" />
-            <Needle
-                x={x}
-                y={y}
-                length={60}
-                scaleMax={100}
-                value={getNeedleValue(engineOilQuantity, OIL_QTY_MAX)}
-                className={`NoFill ${displayedEngineOilQuantity === 0 && 'Hidden'} ${shouldQuantityPulse ? 'LinePulse' : 'GreenLine '}`}
-                dashOffset={-40}
-            />
-            <Needle
-                x={x}
-                y={y}
-                length={60}
-                scaleMax={100}
-                value={getNeedleValue(OIL_QTY_LOW_ADVISORY, OIL_QTY_MAX) - 3}
-                className="NoFill AmberHeavy"
-                dashOffset={-50}
-            />
-            <Needle
-                x={x}
-                y={y}
-                length={50}
-                scaleMax={100}
-                value={getNeedleValue(OIL_QTY_LOW_ADVISORY, OIL_QTY_MAX) - 2}
-                className="NoFill AmberLine"
-                dashOffset={-45}
-            />
-            <text x={x + 5} y={y} className={`FontLarge TextCenter ${shouldQuantityPulse ? 'FillPulse' : 'FillGreen'}`}>
-                <tspan className="FontLarge">{displayedEngineOilQuantity.toFixed(1).split('.')[0]}</tspan>
-                <tspan className="FontSmall">.</tspan>
-                <tspan className="FontSmall">{displayedEngineOilQuantity.toFixed(1).split('.')[1]}</tspan>
-            </text>
+            <g visibility={activeVisibility}>
+                <Needle
+                    x={x}
+                    y={y}
+                    length={60}
+                    scaleMax={100}
+                    value={getNeedleValue(engineOilQuantity, OIL_QTY_MAX)}
+                    className={`NoFill ${displayedEngineOilQuantity === 0 && 'Hidden'} ${shouldQuantityPulse ? 'LinePulse' : 'GreenLine '}`}
+                    dashOffset={-40}
+                />
+                <Needle
+                    x={x}
+                    y={y}
+                    length={60}
+                    scaleMax={100}
+                    value={getNeedleValue(OIL_QTY_LOW_ADVISORY, OIL_QTY_MAX) - 3}
+                    className="NoFill AmberHeavy"
+                    dashOffset={-50}
+                />
+                <Needle
+                    x={x}
+                    y={y}
+                    length={50}
+                    scaleMax={100}
+                    value={getNeedleValue(OIL_QTY_LOW_ADVISORY, OIL_QTY_MAX) - 2}
+                    className="NoFill AmberLine"
+                    dashOffset={-45}
+                />
+                <text x={x + 5} y={y} className={`FontLarge TextCenter ${shouldQuantityPulse ? 'FillPulse' : 'FillGreen'}`}>
+                    <tspan className="FontLarge">{displayedEngineOilQuantity.toFixed(1).split('.')[0]}</tspan>
+                    <tspan className="FontSmall">.</tspan>
+                    <tspan className="FontSmall">{displayedEngineOilQuantity.toFixed(1).split('.')[1]}</tspan>
+                </text>
+            </g>
+            <g visibility={inactiveVisibility}>
+                <text x={x} y={y} className="FontLarge TextCenter FillAmber">XX</text>
+            </g>
         </SvgGroup>
     );
 };
 
-const ValveGroup = ({ x, y, engineNumber }: ComponentPositionProps) => {
+const ValveGroup = ({ x, y, engineNumber, fadecOn }: ComponentPositionProps) => {
     const [isValveOpen, setIsValveOpen] = useState(false);
     const [n2Percent] = useSimVar(`ENG N2 RPM:${engineNumber}`, 'percent', 50);
     const [isEngineStarting] = useSimVar(`GENERAL ENG STARTER:${engineNumber}`, 'bool', 300);
-    const [engSelectorPosition] = useSimVar('L:XMLVAR_ENG_MODE_SEL', 'Enum', 1000);
+    const [engSelectorPosition] = useSimVar('L:XMLVAR_ENG_MODE_SEL', 'Enum');
     const [igniterAactive] = useSimVar(`L:A32NX_FADEC_IGNITER_A_ACTIVE_ENG${engineNumber}`, 'bool', 300);
     const [igniterBactive] = useSimVar(`L:A32NX_FADEC_IGNITER_B_ACTIVE_ENG${engineNumber}`, 'bool', 300);
-    const [apuBleedPressure] = useSimVar('L:APU_BLEED_PRESSURE', 'psi', 250);
+    const [precoolerInletPressure] = useSimVar(`L:A32NX_PNEU_ENG_${engineNumber}_REGULATED_TRANSDUCER_PRESSURE`, 'psi', 250);
+    const [bleedOverpressure] = useSimVar(`L:A32NX_PNEU_ENG_${engineNumber}_OVERPRESSURE`, 'bool', 250);
 
+    // From a document
+    const LOW_BLEED_PRESSURE_THRESHOLD = 21;
+    // TODO: Should be ARINC429. For now, -1 indicates a failed state
+    const pressureIsValid = precoolerInletPressure >= 0;
+    const precoolerInletPressureTwo = Math.max(0, Math.min(512, 2 * Math.round(precoolerInletPressure / 2)));
+    const pressureIndicationAmber = !pressureIsValid || (precoolerInletPressureTwo < LOW_BLEED_PRESSURE_THRESHOLD && n2Percent >= 10 && isValveOpen) || bleedOverpressure;
+
+    const activeVisibility = fadecOn ? 'visible' : 'hidden';
+    const inactiveVisibility = fadecOn ? 'hidden' : 'visible';
     // This useEffect ensures that the valve is only opened if the engine mode selector is set to IGN/START, the engine is starting, and n2% is below 50
     useEffect(() => {
         if (isEngineStarting && n2Percent < 50 && engSelectorPosition === 2) {
@@ -247,16 +277,21 @@ const ValveGroup = ({ x, y, engineNumber }: ComponentPositionProps) => {
             <g className="StartValveDiagram">
                 {/* 375 to 30 */}
                 <circle r={14} cx={x} cy={y + 30} />
-                <line x1={x} y1={y + 10} x2={x} y2={y + 43} className={`${!isValveOpen && 'Hidden'}`} />
-                <line x1={x - 14} y1={y + 30} x2={x + 14} y2={y + 30} className={`${isValveOpen && 'Hidden'}`} />
+                <g visibility={activeVisibility}>
+                    <line x1={x} y1={y + 10} x2={x} y2={y + 43} className={`${!isValveOpen && 'Hidden'}`} />
+                    <line x1={x - 14} y1={y + 30} x2={x + 14} y2={y + 30} className={`${isValveOpen && 'Hidden'}`} />
+                </g>
+                <g visibility={inactiveVisibility}>
+                    <text x={x + 1} y={y + 31} className="FillAmber FontSmall TextCenter" stroke="none">XX</text>
+                </g>
                 <line x1={x} y1={y + 43} x2={x} y2={y + 50} />
             </g>
-            <text x={x} y={y + 65} className="FillGreen FontLarge TextCenter">{apuBleedPressure}</text>
+            <text x={x} y={y + 65} className={`${pressureIndicationAmber ? 'FillAmber' : 'FillGreen'} FontLarge TextCenter`}>{pressureIsValid ? precoolerInletPressureTwo : 'XX'}</text>
         </SvgGroup>
     );
 };
 
-const EngineColumn = ({ x, y, engineNumber }: ComponentPositionProps) => {
+const EngineColumn = ({ x, y, engineNumber, fadecOn }: ComponentPositionProps) => {
     // Fuel used has a step of 10 when in Kilograms and 20 when in imperial pounds
     const [weightUnit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
     const [fuelUsed] = useSimVar(`L:A32NX_FUEL_USED:${engineNumber}`, 'number', 500);
@@ -274,6 +309,9 @@ const EngineColumn = ({ x, y, engineNumber }: ComponentPositionProps) => {
     const [n1Vibration] = useSimVar(`TURB ENG VIBRATION:${engineNumber}`, 'Number');
 
     const [n2Vibration] = useSimVar(`TURB ENG VIBRATION:${engineNumber}`, 'Number'); // FIXME TODO: should have a different value than N1, currently API limited
+
+    const activeVisibility = fadecOn ? 'visible' : 'hidden';
+    const inactiveVisibility = fadecOn ? 'hidden' : 'visible';
 
     useEffect(() => {
         if (displayedEngineOilTemperature >= OIL_TEMP_HIGH_ADVISORY) {
@@ -319,25 +357,31 @@ const EngineColumn = ({ x, y, engineNumber }: ComponentPositionProps) => {
         <SvgGroup x={x} y={y}>
             <text x={x} y={y} className="FillGreen FontLarge TextCenter">{displayedFuelUsed}</text>
 
-            <QuantityGauge x={x} y={y + 85} engineNumber={engineNumber} />
+            <QuantityGauge x={x} y={y + 85} engineNumber={engineNumber} fadecOn={fadecOn} />
 
-            <PressureGauge x={x} y={y + 110} engineNumber={engineNumber} />
+            <PressureGauge x={x} y={y + 110} engineNumber={engineNumber} fadecOn={fadecOn} />
+            <g visibility={activeVisibility}>
+                <text x={x} y={y + 220} className={`FontLarge TextCenter ${textClassName}`}>{displayedEngineOilTemperature}</text>
 
-            <text x={x} y={y + 220} className={`FontLarge TextCenter ${textClassName}`}>{displayedEngineOilTemperature}</text>
+                <text x={x} y={y + 270} className="FillGreen TextCenter">
+                    <tspan className="FontLarge">{n1Vibration.toFixed(1).toString().split('.')[0]}</tspan>
+                    <tspan className="FontSmall">.</tspan>
+                    <tspan className="FontSmall">{n1Vibration.toFixed(1).toString().split('.')[1]}</tspan>
+                </text>
 
-            <text x={x} y={y + 270} className="FillGreen TextCenter">
-                <tspan className="FontLarge">{n1Vibration.toFixed(1).toString().split('.')[0]}</tspan>
-                <tspan className="FontSmall">.</tspan>
-                <tspan className="FontSmall">{n1Vibration.toFixed(1).toString().split('.')[1]}</tspan>
-            </text>
+                <text x={x} y={y + 300} className="FillGreen TextCenter">
+                    <tspan className="FontLarge">{n2Vibration.toFixed(1).toString().split('.')[0]}</tspan>
+                    <tspan className="FontSmall">.</tspan>
+                    <tspan className="FontSmall">{n2Vibration.toFixed(1).toString().split('.')[1]}</tspan>
+                </text>
+            </g>
+            <g visibility={inactiveVisibility}>
+                <text x={x} y={y + 220} className="FontLarge TextCenter FillAmber">XX</text>
+                <text x={x} y={y + 270} className="FontLarge FillAmber TextCenter">XX</text>
+                <text x={x} y={y + 300} className="FontLarge FillAmber TextCenter">XX</text>
+            </g>
 
-            <text x={x} y={y + 300} className="FillGreen TextCenter">
-                <tspan className="FontLarge">{n2Vibration.toFixed(1).toString().split('.')[0]}</tspan>
-                <tspan className="FontSmall">.</tspan>
-                <tspan className="FontSmall">{n2Vibration.toFixed(1).toString().split('.')[1]}</tspan>
-            </text>
-
-            <ValveGroup x={x} y={y + 345} engineNumber={engineNumber} />
+            <ValveGroup x={x} y={y + 345} engineNumber={engineNumber} fadecOn={fadecOn} />
         </SvgGroup>
     );
 };
