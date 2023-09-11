@@ -612,13 +612,7 @@ impl WingFlexA380 {
     const WING_NODES_X_COORDINATES: [f64; WING_FLEX_NODE_NUMBER] = [0., 11.5, 22.05, 29., 36.85];
 
     pub fn new(context: &mut InitContext) -> Self {
-        let empty_mass = [
-            Mass::new::<kilogram>(Self::EMPTY_MASS_KG[0]),
-            Mass::new::<kilogram>(Self::EMPTY_MASS_KG[1]),
-            Mass::new::<kilogram>(Self::EMPTY_MASS_KG[2]),
-            Mass::new::<kilogram>(Self::EMPTY_MASS_KG[3]),
-            Mass::new::<kilogram>(Self::EMPTY_MASS_KG[4]),
-        ];
+        let empty_mass = Self::EMPTY_MASS_KG.map(Mass::new::<kilogram>);
 
         Self {
             left_flex_inboard_id: context.get_identifier("WING_FLEX_LEFT_INBOARD".to_owned()),
