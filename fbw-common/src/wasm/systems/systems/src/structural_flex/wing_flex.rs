@@ -689,12 +689,9 @@ impl WingFlexA380 {
 
     // Accelerations (vertical) of engines pylons from eng1 to eng4
     pub fn accelerations_at_engines_pylons(&self) -> [Acceleration; 4] {
-        [
-            self.flex_physics[0].acceleration_at_node_idx(2),
-            self.flex_physics[0].acceleration_at_node_idx(1),
-            self.flex_physics[1].acceleration_at_node_idx(1),
-            self.flex_physics[1].acceleration_at_node_idx(2),
-        ]
+        [(0, 2), (0, 1), (1, 1), (1, 2)].map(|(phys_idx, node_idx)| {
+            self.flex_physics[phys_idx].acceleration_at_node_idx(node_idx)
+        })
     }
 }
 impl SimulationElement for WingFlexA380 {
