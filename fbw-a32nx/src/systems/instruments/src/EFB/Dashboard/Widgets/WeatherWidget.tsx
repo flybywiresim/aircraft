@@ -220,6 +220,18 @@ export const WeatherWidget: FC<WeatherWidgetProps> = ({ name, simbriefIcao, user
                                                 ) : t('Dashboard.ImportantInformation.Weather.NotAvailableShort')}
                                             </div>
                                             <div className="flex flex-col items-center space-y-1">
+                                                <ThermometerHalf size={35} />
+                                                <p className="text-center">{t('Dashboard.ImportantInformation.Weather.Temperature')}</p>
+                                                {metar.raw_text
+                                                    ? (
+                                                        <>
+                                                            {metar.temperature.celsius.toFixed(0)}
+                                                            {' '}
+                                                            &deg;C
+                                                        </>
+                                                    ) : t('Dashboard.ImportantInformation.Weather.NotAvailableShort')}
+                                            </div>
+                                            <div className="flex flex-col items-center space-y-1">
                                                 <Wind size={35} />
                                                 <p className="text-center">{t('Dashboard.ImportantInformation.Weather.WindSpeed')}</p>
                                                 {metar.raw_text
@@ -233,18 +245,6 @@ export const WeatherWidget: FC<WeatherWidgetProps> = ({ name, simbriefIcao, user
                                                             {metar.wind.speed_kts.toFixed(0)}
                                                             {' '}
                                                             kts
-                                                        </>
-                                                    ) : t('Dashboard.ImportantInformation.Weather.NotAvailableShort')}
-                                            </div>
-                                            <div className="flex flex-col items-center space-y-1">
-                                                <ThermometerHalf size={35} />
-                                                <p className="text-center">{t('Dashboard.ImportantInformation.Weather.Temperature')}</p>
-                                                {metar.raw_text
-                                                    ? (
-                                                        <>
-                                                            {metar.temperature.celsius.toFixed(0)}
-                                                            {' '}
-                                                            &deg;C
                                                         </>
                                                     ) : t('Dashboard.ImportantInformation.Weather.NotAvailableShort')}
                                             </div>
