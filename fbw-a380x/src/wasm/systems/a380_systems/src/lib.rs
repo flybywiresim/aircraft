@@ -287,6 +287,9 @@ impl Aircraft for A380 {
                 self.hydraulic.right_elevator_aero_torques(),
             ],
             self.hydraulic.up_down_rudder_aero_torques(),
+            self.hydraulic.spoiler_positions(),
+            self.hydraulic.aileron_positions(),
+            self.hydraulic.flap_positions(),
         );
         self.cds.update();
 

@@ -39,6 +39,9 @@ impl A380StructuralFlex {
         context: &UpdateContext,
         outer_inner_elevator_aero_torques: [(Torque, Torque); 2],
         up_down_rudder_aero_torques: (Torque, Torque),
+        spoiler_positions: ([Ratio; 8], [Ratio; 8]),
+        aileron_positions: ([Ratio; 3], [Ratio; 3]),
+        flaps_positions: ([Ratio; 1], [Ratio; 1]),
     ) {
         self.elevators_flex_physics.update(
             context,
@@ -50,6 +53,9 @@ impl A380StructuralFlex {
         self.wing_flex.update(
             context,
             self.surface_vibrations.surface_vibration_acceleration(),
+            spoiler_positions,
+            aileron_positions,
+            flaps_positions,
         );
 
         self.engines_flex_physics

@@ -271,12 +271,30 @@ impl A380WingLiftModifier {
         }
     }
 
-    fn update(&mut self, total_lift: Force) {
-        self.compute_lift_modifiers(total_lift);
+    fn update(
+        &mut self,
+        total_lift: Force,
+        spoiler_positions: ([Ratio; 8], [Ratio; 8]),
+        aileron_positions: ([Ratio; 3], [Ratio; 3]),
+        flaps_positions: ([Ratio; 1], [Ratio; 1]),
+    ) {
+        self.compute_lift_modifiers(
+            total_lift,
+            spoiler_positions,
+            aileron_positions,
+            flaps_positions,
+        );
     }
 
-    fn compute_lift_modifiers(&mut self, total_lift: Force) {
-        let wing_base_left_spoilers = self.spoilers_left_position[0..=1].iter().sum::<f64>() / 2.;
+    fn compute_lift_modifiers(
+        &mut self,
+        total_lift: Force,
+        spoiler_positions: ([Ratio; 8], [Ratio; 8]),
+        aileron_positions: ([Ratio; 3], [Ratio; 3]),
+        flaps_positions: ([Ratio; 1], [Ratio; 1]),
+    ) {
+        let wing_base_left_spoilers =
+            spoiler_positions.0[0..=1].iter().sum::<f64>() / Ratio::new::<ratio>(2.);
         let wing_mid_left_spoilers = self.spoilers_left_position[2..=7].iter().sum::<f64>() / 6.;
 
         let wing_base_right_spoilers = self.spoilers_right_position[0..=1].iter().sum::<f64>() / 2.;
@@ -654,10 +672,17 @@ impl WingFlexA380 {
         &mut self,
         context: &UpdateContext,
         surface_vibration_acceleration: Acceleration,
+        spoiler_positions: ([Ratio; 8], [Ratio; 8]),
+        aileron_positions: ([Ratio; 3], [Ratio; 3]),
+        flaps_positions: ([Ratio; 1], [Ratio; 1]),
     ) {
         self.wing_lift.update(context);
-        self.wing_lift_dynamic
-            .update(self.wing_lift.total_plane_lift());
+        self.wing_lift_dynamic.update(
+            self.wing_lift.total_plane_lift(),
+            spoiler_positions,
+            aileron_positions,
+            flaps_positions,
+        );
 
         self.left_right_wing_root_position[0].update(context);
         self.left_right_wing_root_position[1].update(context);

@@ -2801,6 +2801,24 @@ impl A380Hydraulic {
     pub fn gear_system(&self) -> &impl GearSystemSensors {
         &self.gear_system
     }
+
+    pub fn aileron_positions(&self) -> ([Ratio; 3], [Ratio; 3]) {
+        (
+            self.left_aileron.positions(),
+            self.right_aileron.positions(),
+        )
+    }
+
+    pub fn spoiler_positions(&self) -> ([Ratio; 8], [Ratio; 8]) {
+        (
+            self.left_spoilers.positions(),
+            self.right_spoilers.positions(),
+        )
+    }
+
+    pub fn flap_positions(&self) -> ([Ratio; 1], [Ratio; 1]) {
+        self.flap_system.positions()
+    }
 }
 impl SimulationElement for A380Hydraulic {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
@@ -6105,6 +6123,10 @@ impl AileronAssembly {
             self.positions[idx] = self.hydraulic_assemblies[idx].position_normalized();
         }
     }
+
+    fn positions(&self) -> [Ratio; 3] {
+        self.positions
+    }
 }
 impl SimulationElement for AileronAssembly {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
@@ -6378,6 +6400,10 @@ impl SpoilerElement {
 
         self.position = self.hydraulic_assembly.position_normalized();
     }
+
+    fn position(&self) -> Ratio {
+        self.position
+    }
 }
 impl SimulationElement for SpoilerElement {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
@@ -6462,6 +6488,19 @@ impl SpoilerGroup {
 
     fn actuator(&mut self, spoiler_idx: usize) -> &mut impl Actuator {
         self.spoilers[spoiler_idx].actuator()
+    }
+
+    fn positions(&self) -> [Ratio; 8] {
+        [
+            self.spoilers[0].position(),
+            self.spoilers[1].position(),
+            self.spoilers[2].position(),
+            self.spoilers[3].position(),
+            self.spoilers[4].position(),
+            self.spoilers[5].position(),
+            self.spoilers[6].position(),
+            self.spoilers[7].position(),
+        ]
     }
 }
 impl SimulationElement for SpoilerGroup {
