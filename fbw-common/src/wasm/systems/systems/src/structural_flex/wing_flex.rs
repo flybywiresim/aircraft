@@ -545,25 +545,17 @@ impl WingMassA380 {
     }
 
     fn left_tanks_masses(&self) -> [Mass; 5] {
-        let mut masses = [Mass::default(); 5];
-
-        for (idx, mass) in masses.iter_mut().enumerate() {
-            *mass = self.left_tank_volumes[idx]
-                * MassDensity::new::<kilogram_per_cubic_meter>(Self::FUEL_MASS_DENSITY_KG_M3);
-        }
-
-        masses
+        Self::tanks_masses(&self.left_tank_volumes)
     }
 
     fn right_tanks_masses(&self) -> [Mass; 5] {
-        let mut masses = [Mass::default(); 5];
+        Self::tanks_masses(&self.right_tank_volumes)
+    }
 
-        for (idx, mass) in masses.iter_mut().enumerate() {
-            *mass = self.right_tank_volumes[idx]
-                * MassDensity::new::<kilogram_per_cubic_meter>(Self::FUEL_MASS_DENSITY_KG_M3);
-        }
-
-        masses
+    fn tanks_masses<const N: usize>(tank_volumes: &[Volume; N]) -> [Mass; N] {
+        tank_volumes.map(|volume| {
+            volume * MassDensity::new::<kilogram_per_cubic_meter>(Self::FUEL_MASS_DENSITY_KG_M3)
+        })
     }
 }
 impl SimulationElement for WingMassA380 {
