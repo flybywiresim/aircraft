@@ -49,7 +49,7 @@ struct LandingGearWeightOnWheelsEstimator {
     right_body_compression: Ratio,
 }
 impl LandingGearWeightOnWheelsEstimator {
-    const GEAR_CENTER_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION";
+    const GEAR_CENTER_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION:0";
     const GEAR_LEFT_BODY_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION:1";
     const GEAR_RIGHT_BODY_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION:2";
     const GEAR_LEFT_WING_COMPRESSION: &'static str = "CONTACT POINT COMPRESSION:3";
