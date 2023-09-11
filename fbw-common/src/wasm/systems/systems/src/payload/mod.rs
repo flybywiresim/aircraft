@@ -1,9 +1,4 @@
-use std::{
-    cell::Cell,
-    cmp::{max, min},
-    rc::Rc,
-    time::Duration,
-};
+use std::{cell::Cell, rc::Rc, time::Duration};
 
 use crate::{
     shared::random_from_range,
@@ -218,7 +213,7 @@ impl<const N: usize, const G: usize> PassengerDeck<N, G> {
                 .filter(|ba| ba.is_door_open())
                 .collect();
 
-            if available_agents.len() > 0 {
+            if !available_agents.is_empty() {
                 for boarding_agent in available_agents.iter().cycle().take(pax_diff as usize) {
                     boarding_agent.handle_one_pax(&mut self.pax);
                 }
