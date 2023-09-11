@@ -645,10 +645,8 @@ impl WingFlexA380 {
                 )
             }),
 
-            left_right_wing_root_position: [
-                WingRootAcceleration::new(Vector3::new(-3.33668, -0.273, 6.903)),
-                WingRootAcceleration::new(Vector3::new(3.33668, -0.273, 6.903)),
-            ],
+            left_right_wing_root_position: [-1., 1.]
+                .map(|xneg| WingRootAcceleration::new(Vector3::new(xneg * 3.33668, -0.273, 6.903))),
         }
     }
 
