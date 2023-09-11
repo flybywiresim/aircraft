@@ -289,8 +289,8 @@ impl A380WingLiftModifier {
             + (self.ailerons_right_position[1] - 0.5) * 2.)
             / 2.;
 
-        let left_ailerons_tip = (self.ailerons_left_position[2] - 0.5) * 2.;
-        let right_ailerons_tip = (self.ailerons_right_position[2] - 0.5) * 2.;
+        let left_ailerons_tip = 2. * self.ailerons_left_position[2] - 1.;
+        let right_ailerons_tip = 2. * self.ailerons_right_position[2] - 1.;
 
         self.lateral_offset = Ratio::new::<ratio>(
             ((wing_base_right_spoilers - wing_base_left_spoilers)
