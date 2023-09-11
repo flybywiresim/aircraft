@@ -72,8 +72,7 @@ interface BatteryStatus {
 
 export const usePower = () => React.useContext(PowerContext);
 
-export const getAirframeType = () => airframeType;
-export const airframeType = new URL(document.querySelectorAll('vcockpit-panel > *')[0].getAttribute('url')).searchParams.get('Airframe');
+export const getAirframeType = () => new URL(document.querySelectorAll('vcockpit-panel > *')[0].getAttribute('url')).searchParams.get('Airframe');
 
 const Efb = () => {
     const [powerState, setPowerState] = useState<PowerStates>(PowerStates.SHUTOFF);

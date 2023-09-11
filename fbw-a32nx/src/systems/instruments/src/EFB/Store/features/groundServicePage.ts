@@ -1,5 +1,4 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { airframeType } from '../../Efb';
 
 enum ServiceButtonState {
     HIDDEN,
@@ -38,33 +37,18 @@ let initialState: ButtonSelectionState = {
 };
 
 const setInitialState = () => {
-    if (airframeType === 'A380-842') {
-        initialState = {
-            boarding1DoorButtonState: (SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:0', 'Percent over 100') === 1.0 ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE),
-            boarding2DoorButtonState: (SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:2', 'Percent over 100') === 1.0 ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE),
-            boarding3DoorButtonState: (SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:10', 'Percent over 100') === 1.0 ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE),
-            serviceDoorButtonState: (SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:9', 'Percent over 100') === 1.0 ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE),
-            cargo1DoorButtonState: (SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:16', 'Percent over 100') === 1.0 ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE),
-            fuelTruckButtonState: (SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:18', 'Percent over 100') === 1.0 ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE),
-            gpuButtonState: (SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:19', 'Percent over 100') === 1.0 ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE),
-            jetWayButtonState: ServiceButtonState.INACTIVE,
-            baggageButtonState: ServiceButtonState.INACTIVE,
-            cateringButtonState: ServiceButtonState.INACTIVE,
-        };
-    } else {
-        initialState = {
-            boarding1DoorButtonState: (SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:0', 'Percent over 100') === 1.0 ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE),
-            boarding2DoorButtonState: (SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:1', 'Percent over 100') === 1.0 ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE),
-            boarding3DoorButtonState: (SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:2', 'Percent over 100') === 1.0 ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE),
-            cargo1DoorButtonState: (SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:5', 'Percent over 100') === 1.0 ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE),
-            serviceDoorButtonState: (SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:3', 'Percent over 100') === 1.0 ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE),
-            fuelTruckButtonState: (SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:9', 'Percent over 100') === 1.0 ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE),
-            gpuButtonState: (SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:8', 'Percent over 100') === 1.0 ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE),
-            jetWayButtonState: ServiceButtonState.INACTIVE,
-            baggageButtonState: ServiceButtonState.INACTIVE,
-            cateringButtonState: ServiceButtonState.INACTIVE,
-        };
-    }
+    initialState = {
+        boarding1DoorButtonState: (SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:0', 'Percent over 100') === 1.0 ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE),
+        boarding2DoorButtonState: (SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:1', 'Percent over 100') === 1.0 ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE),
+        boarding3DoorButtonState: (SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:2', 'Percent over 100') === 1.0 ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE),
+        cargo1DoorButtonState: (SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:5', 'Percent over 100') === 1.0 ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE),
+        serviceDoorButtonState: (SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:3', 'Percent over 100') === 1.0 ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE),
+        fuelTruckButtonState: (SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:9', 'Percent over 100') === 1.0 ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE),
+        gpuButtonState: (SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:8', 'Percent over 100') === 1.0 ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE),
+        jetWayButtonState: ServiceButtonState.INACTIVE,
+        baggageButtonState: ServiceButtonState.INACTIVE,
+        cateringButtonState: ServiceButtonState.INACTIVE,
+    };
 };
 
 // hack to fix initialization issue for ACE/vite
