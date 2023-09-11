@@ -636,20 +636,14 @@ impl WingFlexA380 {
             fuel_mapper: WingFuelNodeMapper::new(Self::FUEL_MAPPING),
             animation_mapper: WingAnimationMapper::new(Self::WING_NODES_X_COORDINATES),
 
-            flex_physics: [
+            flex_physics: [1, 2].map(|_| {
                 FlexPhysicsNG::new(
                     context,
                     empty_mass,
                     Self::FLEX_COEFFICIENTS,
                     Self::DAMPING_COEFFICIENTS,
-                ),
-                FlexPhysicsNG::new(
-                    context,
-                    empty_mass,
-                    Self::FLEX_COEFFICIENTS,
-                    Self::DAMPING_COEFFICIENTS,
-                ),
-            ],
+                )
+            }),
 
             left_right_wing_root_position: [
                 WingRootAcceleration::new(Vector3::new(-3.33668, -0.273, 6.903)),
