@@ -73,6 +73,7 @@ jobs:
           ./scripts/dev-env/run.sh node ./scripts/install-source_a32nx.js
       - name: Upload PR artifact
         uses: actions/upload-artifact@v2
+        if: github.event.pull_request.auto_merge == false
         with:
           name: A32NX
           path: ./fbw-a32nx/out/flybywire-aircraft-a320-neo/
