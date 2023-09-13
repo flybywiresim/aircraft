@@ -282,7 +282,7 @@ class CDUVerticalRevisionPage {
         mcdu.onRightInput[2] = async (value, scratchpadCallback) => {
             if (value === FMCMainDisplay.clrValue) {
                 await mcdu.flightPlanService.setAltitudeDescriptionAt(wpIndex, 0, false, forPlan, inAlternate);
-                await mcdu.flightPlanService.setAltitudeAt(wpIndex, 0, forPlan, false, inAlternate);
+                await mcdu.flightPlanService.setAltitudeAt(wpIndex, undefined, constraintType === WaypointConstraintType.DES, forPlan, inAlternate);
 
                 mcdu.updateConstraints();
                 mcdu.guidanceController.vnavDriver.invalidateFlightPlanProfile();
