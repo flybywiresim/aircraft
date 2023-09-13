@@ -1,11 +1,11 @@
-import { FlightLevel } from '@fmgc/guidance/vnav/verticalFlightPlan/VerticalFlightPlan';
 import { FlightPlanManager } from '@fmgc/wtsdk';
+import { Arinc429SignStatusMatrix, Arinc429Word } from '@flybywiresim/fbw-sdk';
 import { FmgcComponent } from './FmgcComponent';
 
 export class EfisLabels implements FmgcComponent {
     private lastTransitionAltitude: Feet;
 
-    private lastTransitionLevel: FlightLevel;
+    private lastTransitionLevel: number;
 
     private flightPlanManager: FlightPlanManager;
 
@@ -17,14 +17,25 @@ export class EfisLabels implements FmgcComponent {
         const transitionAltitude = this.flightPlanManager.originTransitionAltitude;
         const transitionLevel = this.flightPlanManager.destinationTransitionLevel;
 
-        // FIXME ARINC429 when the PR adding a TS impl. lands...
         if (transitionAltitude !== this.lastTransitionAltitude) {
-            SimVar.SetSimVarValue('L:AIRLINER_TRANS_ALT', 'Number', transitionAltitude ?? 0);
+            Arinc429Word.toSimVarValue(
+                'L:A32NX_FM1_TRANS_ALT', transitionAltitude ?? 0, transitionAltitude !== undefined ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
+            );
+            Arinc429Word.toSimVarValue(
+                'L:A32NX_FM2_TRANS_ALT', transitionAltitude ?? 0, transitionAltitude !== undefined ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
+            );
+
             this.lastTransitionAltitude = transitionAltitude;
         }
 
         if (transitionLevel !== this.lastTransitionLevel) {
-            SimVar.SetSimVarValue('L:AIRLINER_APPR_TRANS_ALT', 'Number', (transitionLevel ?? 0) * 100);
+            Arinc429Word.toSimVarValue(
+                'L:A32NX_FM1_TRANS_LVL', transitionLevel ?? 0, transitionLevel !== undefined ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
+            );
+            Arinc429Word.toSimVarValue(
+                'L:A32NX_FM2_TRANS_LVL', transitionLevel ?? 0, transitionLevel !== undefined ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
+            );
+
             this.lastTransitionLevel = transitionLevel;
         }
     }

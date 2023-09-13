@@ -309,9 +309,9 @@ class RadioAltAndDH extends DisplayComponent<{ bus: ArincEventBus, filteredRadio
 
     private radioAltitude = new Arinc429Word(0);
 
-    private transAlt = 0;
+    private transAltAr = Arinc429Word.empty();
 
-    private transAltAppr = 0;
+    private transLvlAr = Arinc429Word.empty();
 
     private fmgcFlightPhase = 0;
 
@@ -334,12 +334,12 @@ class RadioAltAndDH extends DisplayComponent<{ bus: ArincEventBus, filteredRadio
             this.roll = roll;
         });
 
-        sub.on('transAlt').whenChanged().handle((ta) => {
-            this.transAlt = ta;
+        sub.on('fmTransAltRaw').whenChanged().handle((ta) => {
+            this.transAltAr = new Arinc429Word(ta);
         });
 
-        sub.on('transAltAppr').whenChanged().handle((ta) => {
-            this.transAltAppr = ta;
+        sub.on('fmTransLvlRaw').whenChanged().handle((tl) => {
+            this.transLvlAr = new Arinc429Word(tl);
         });
 
         sub.on('fmgcFlightPhase').whenChanged().handle((fp) => {
@@ -357,8 +357,10 @@ class RadioAltAndDH extends DisplayComponent<{ bus: ArincEventBus, filteredRadio
                 const raHasData = !this.radioAltitude.isNoComputedData();
                 const raValue = this.filteredRadioAltitude;
                 const verticalOffset = calculateVerticalOffsetFromRoll(this.roll.value);
-                const chosenTransalt = this.fmgcFlightPhase <= 3 ? this.transAlt : this.transAltAppr;
-                const belowTransitionAltitude = chosenTransalt !== 0 && (!this.altitude.isNoComputedData() && !this.altitude.isNoComputedData()) && this.altitude.value < chosenTransalt;
+                const useTransAltVsLvl = this.fmgcFlightPhase <= 3;
+                const chosenTransalt = useTransAltVsLvl ? this.transAltAr : this.transLvlAr;
+                const belowTransitionAltitude = chosenTransalt.isNormalOperation() && (!this.altitude.isNoComputedData() && !this.altitude.isNoComputedData())
+                    && this.altitude.value < (useTransAltVsLvl ? chosenTransalt.value : chosenTransalt.value * 100);
                 let size = 'FontLarge';
                 const dh = this.dh.get();
                 const DHValid = dh.value >= 0 && (!dh.isNoComputedData() && !dh.isFailureWarning());

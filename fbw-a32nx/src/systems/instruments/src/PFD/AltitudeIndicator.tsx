@@ -541,9 +541,9 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
 
     private unit = '';
 
-    private transAlt = 0;
+    private transAltAr = Arinc429Word.empty();
 
-    private transAltAppr = 0;
+    private transLvlAr = Arinc429Word.empty();
 
     private flightPhase = 0;
 
@@ -556,7 +556,7 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<PFDSimvars & SimplaneValues>();
+        const sub = this.props.bus.getArincSubscriber<PFDSimvars & SimplaneValues & Arinc429Values>();
 
         sub.on('baroMode').whenChanged().handle((m) => {
             if (m === 'QFE') {
@@ -589,15 +589,15 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
             this.handleBlink();
         });
 
-        sub.on('transAlt').whenChanged().handle((ta) => {
-            this.transAlt = ta;
+        sub.on('fmTransAltRaw').whenChanged().handle((ta) => {
+            this.transAltAr = new Arinc429Word(ta);
 
             this.handleBlink();
             this.getText();
         });
 
-        sub.on('transAltAppr').whenChanged().handle((ta) => {
-            this.transAltAppr = ta;
+        sub.on('fmTransLvlRaw').whenChanged().handle((tl) => {
+            this.transLvlAr = new Arinc429Word(tl);
 
             this.handleBlink();
             this.getText();
@@ -620,12 +620,12 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
 
     private handleBlink() {
         if (this.mode.get() === 'STD') {
-            if (this.flightPhase > 3 && this.transAltAppr > this.props.altitude.get() && this.transAltAppr !== 0) {
+            if (this.flightPhase > 3 && this.transLvlAr.isNormalOperation() && 100 * this.transLvlAr.value > this.props.altitude.get()) {
                 this.stdGroup.instance.classList.add('BlinkInfinite');
             } else {
                 this.stdGroup.instance.classList.remove('BlinkInfinite');
             }
-        } else if (this.flightPhase <= 3 && this.transAlt < this.props.altitude.get() && this.transAlt !== 0) {
+        } else if (this.flightPhase <= 3 && this.transAltAr.isNormalOperation() && this.transAltAr.value < this.props.altitude.get()) {
             this.qfeGroup.instance.classList.add('BlinkInfinite');
         } else {
             this.qfeGroup.instance.classList.remove('BlinkInfinite');
