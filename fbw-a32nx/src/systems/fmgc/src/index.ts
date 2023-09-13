@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ApproachType } from 'msfs-navdata';
+import { ApproachUtils } from '@flybywiresim/fbw-sdk';
 import { FlightPlanService } from './flightplanning/new/FlightPlanService';
 import { NavigationDatabase, NavigationDatabaseBackend } from './NavigationDatabase';
 import { FlightPhaseManager, getFlightPhaseManager } from './flightphase';
@@ -27,6 +28,7 @@ function updateFmgcLoop(deltaTime: number): void {
 }
 
 export {
+    ApproachUtils,
     ApproachType,
     FlightPlanService,
     NavigationDatabase,

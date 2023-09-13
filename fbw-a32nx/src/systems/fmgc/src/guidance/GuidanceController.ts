@@ -13,7 +13,7 @@ import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { GeometryFactory } from '@fmgc/guidance/geometry/GeometryFactory';
 import { FlightPlanIndex } from '@fmgc/flightplanning/new/FlightPlanManager';
 import { HMLeg } from '@fmgc/guidance/lnav/legs/HX';
-import { SimVarString } from '@flybywiresim/fbw-sdk';
+import { ApproachUtils, SimVarString } from '@flybywiresim/fbw-sdk';
 import { getFlightPhaseManager } from '@fmgc/flightphase';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { ApproachType, LegType } from 'msfs-navdata';
@@ -256,7 +256,7 @@ export class GuidanceController {
 
             // TODO fms-v2: port getDistanceToDestination and appr.longName
             if (phase > FmgcFlightPhase.Cruise || (phase === FmgcFlightPhase.Cruise /* && this.flightPlanManager.getDistanceToDestination(FlightPlans.Active) < 250) */)) {
-                apprMsg = appr.ident;
+                apprMsg = ApproachUtils.longApproachName(appr);
             }
         }
 
