@@ -16,25 +16,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- * translates MSFS navdata approach type to honeywell ordering
- */
 const ApproachTypeOrder = Object.freeze([
-    // MLS
-    ApproachType.APPROACH_TYPE_ILS,
-    // GLS
-    // IGS
-    ApproachType.APPROACH_TYPE_LOCALIZER,
-    ApproachType.APPROACH_TYPE_LOCALIZER_BACK_COURSE,
-    ApproachType.APPROACH_TYPE_LDA,
-    ApproachType.APPROACH_TYPE_SDF,
-    ApproachType.APPROACH_TYPE_GPS,
-    ApproachType.APPROACH_TYPE_RNAV,
-    ApproachType.APPROACH_TYPE_VORDME,
-    ApproachType.APPROACH_TYPE_VOR,
-    ApproachType.APPROACH_TYPE_NDBDME,
-    ApproachType.APPROACH_TYPE_NDB,
-    ApproachType.APPROACH_TYPE_UNKNOWN, // should be "runway by itself"...
+    ApproachType.Mls,
+    ApproachType.MlsTypeA,
+    ApproachType.MlsTypeBC,
+    ApproachType.Ils,
+    ApproachType.Gls,
+    ApproachType.Igs,
+    ApproachType.Loc,
+    ApproachType.LocBackcourse,
+    ApproachType.Lda,
+    ApproachType.Sdf,
+    ApproachType.Fms,
+    ApproachType.Gps,
+    ApproachType.Rnav,
+    ApproachType.VorDme,
+    ApproachType.Vor,
+    ApproachType.Vortac,
+    ApproachType.Tacan,
+    ApproachType.Ndb,
+    ApproachType.NdbDme,
+    ApproachType.Unknown,
 ]);
 
 const ArrivalPagination = Object.freeze(
