@@ -1089,10 +1089,12 @@ export abstract class BaseFlightPlan implements ReadonlyFlightPlan {
         element.definition.altitude1 = value;
         this.syncLegDefinitionChange(index);
 
-        if (isDescentConstraint && element.constraintType === WaypointConstraintType.Unknown) {
-            this.setFirstDesConstraintWaypoint(index);
-        } else {
-            this.setLastClbConstraintWaypoint(index);
+        if (element.constraintType === WaypointConstraintType.Unknown) {
+            if (isDescentConstraint) {
+                this.setFirstDesConstraintWaypoint(index);
+            } else {
+                this.setLastClbConstraintWaypoint(index);
+            }
         }
 
         this.incrementVersion();
