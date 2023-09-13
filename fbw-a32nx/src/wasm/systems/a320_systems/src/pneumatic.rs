@@ -1,11 +1,12 @@
-use core::panic;
-use std::{f64::consts::PI, time::Duration};
+use std::time::Duration;
 
 use uom::si::{
     f64::*,
+    length::foot,
     pressure::psi,
     ratio::ratio,
     thermodynamic_temperature::degree_celsius,
+    velocity::foot_per_minute,
     volume::{cubic_meter, gallon},
 };
 
@@ -15,18 +16,20 @@ use systems::{
     overhead::{AutoOffFaultPushButton, OnOffFaultPushButton},
     pneumatic::{
         valve::*, BleedMonitoringComputerChannelOperationMode,
-        BleedMonitoringComputerIsAliveSignal, CompressionChamber, ControllablePneumaticValve,
-        CrossBleedValveSelectorKnob, CrossBleedValveSelectorMode, DifferentialPressureTransducer,
-        EngineCompressionChamberController, EngineModeSelector, EngineState, PneumaticContainer,
-        PneumaticPipe, PneumaticValveSignal, Precooler, PressureTransducer,
-        PressurisedReservoirWithExhaustValve, PressurizeableReservoir,
-        TargetPressureTemperatureSignal, VariableVolumeContainer, WingAntiIcePushButton,
+        BleedMonitoringComputerIsAliveSignal, BleedTemperatureSensor, CompressionChamber,
+        ControllablePneumaticValve, CrossBleedValveSelectorKnob, CrossBleedValveSelectorMode,
+        DifferentialPressureTransducer, EngineCompressionChamberController, EngineModeSelector,
+        EngineState, PneumaticContainer, PneumaticPipe, PneumaticValveSignal, Precooler,
+        PressureTransducer, PressurisedReservoirWithExhaustValve, PressurizeableReservoir,
+        SolenoidSignal, TargetPressureTemperatureSignal, VariableVolumeContainer,
+        WingAntiIcePushButton, WingAntiIceSelected,
     },
     shared::{
-        pid::PidController, update_iterator::MaxStepLoop, ControllerSignal, ElectricalBusType,
-        ElectricalBuses, EngineBleedPushbutton, EngineCorrectedN1, EngineCorrectedN2,
-        EngineFirePushButtons, EngineStartState, HydraulicColor, LgciuWeightOnWheels,
-        PackFlowValveState, PneumaticBleed, PneumaticValve, ReservoirAirPressure,
+        pid::PidController, update_iterator::MaxStepLoop, ControllerSignal, DelayedTrueLogicGate,
+        ElectricalBusType, ElectricalBuses, EngineBleedPushbutton, EngineCorrectedN1,
+        EngineCorrectedN2, EngineFirePushButtons, EngineStartState, HydraulicColor,
+        LgciuWeightOnWheels, PackFlowValveState, PneumaticBleed, PneumaticValve,
+        ReservoirAirPressure,
     },
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -49,10 +52,6 @@ macro_rules! valve_signal_implementation {
             }
         }
     };
-}
-
-struct HighPressureValveSignal {
-    target_open_amount: Ratio,
 }
 
 struct PressureRegulatingValveSignal {
@@ -102,7 +101,6 @@ struct PackFlowValveSignal {
     target_open_amount: Ratio,
 }
 
-valve_signal_implementation!(HighPressureValveSignal);
 valve_signal_implementation!(PressureRegulatingValveSignal);
 valve_signal_implementation!(EngineStarterValveSignal);
 valve_signal_implementation!(FanAirValveSignal);
@@ -111,7 +109,8 @@ valve_signal_implementation!(PackFlowValveSignal);
 pub struct A320Pneumatic {
     physics_updater: MaxStepLoop,
 
-    cross_bleed_valve_open_id: VariableIdentifier,
+    cross_bleed_valve_fully_open_id: VariableIdentifier,
+    cross_bleed_valve_fully_closed_id: VariableIdentifier,
     apu_bleed_air_valve_open_id: VariableIdentifier,
     bleed_monitoring_computers: [BleedMonitoringComputer; 2],
     engine_systems: [EngineBleedAirSystem; 2],
@@ -139,17 +138,25 @@ pub struct A320Pneumatic {
     packs: [PackComplex; 2],
 }
 impl A320Pneumatic {
-    const PNEUMATIC_SIM_MAX_TIME_STEP: Duration = Duration::from_millis(100);
+    const PNEUMATIC_SIM_MAX_TIME_STEP: Duration = Duration::from_millis(10);
 
     pub fn new(context: &mut InitContext) -> Self {
         Self {
             physics_updater: MaxStepLoop::new(Self::PNEUMATIC_SIM_MAX_TIME_STEP),
-            cross_bleed_valve_open_id: context.get_identifier("PNEU_XBLEED_VALVE_OPEN".to_owned()),
+            cross_bleed_valve_fully_open_id: context
+                .get_identifier("PNEU_XBLEED_VALVE_FULLY_OPEN".to_owned()),
+            cross_bleed_valve_fully_closed_id: context
+                .get_identifier("PNEU_XBLEED_VALVE_FULLY_CLOSED".to_owned()),
             apu_bleed_air_valve_open_id: context
                 .get_identifier("APU_BLEED_AIR_VALVE_OPEN".to_owned()),
             bleed_monitoring_computers: [
-                BleedMonitoringComputer::new(1, 2, ElectricalBusType::DirectCurrentEssentialShed),
-                BleedMonitoringComputer::new(2, 1, ElectricalBusType::DirectCurrent(2)),
+                BleedMonitoringComputer::new(
+                    context,
+                    1,
+                    2,
+                    ElectricalBusType::DirectCurrentEssentialShed,
+                ),
+                BleedMonitoringComputer::new(context, 2, 1, ElectricalBusType::DirectCurrent(2)),
             ],
             engine_systems: [
                 EngineBleedAirSystem::new(
@@ -159,7 +166,7 @@ impl A320Pneumatic {
                 ),
                 EngineBleedAirSystem::new(context, 2, ElectricalBusType::DirectCurrent(2)),
             ],
-            cross_bleed_valve: CrossBleedValve::new(),
+            cross_bleed_valve: CrossBleedValve::new(Ratio::new::<ratio>(0.4)),
             fadec: FullAuthorityDigitalEngineControl::new(context),
             engine_starter_valve_controllers: [
                 EngineStarterValveController::new(1),
@@ -210,7 +217,11 @@ impl A320Pneumatic {
                 Pressure::new::<psi>(75.),
                 6e-2,
             ),
-            packs: [PackComplex::new(context, 1), PackComplex::new(context, 2)],
+            packs: [
+                // TODO: Figure out the correct electrical busses for all PACK components
+                PackComplex::new(context, 1, ElectricalBusType::DirectCurrent(1)),
+                PackComplex::new(context, 2, ElectricalBusType::DirectCurrent(2)),
+            ],
         }
     }
 
@@ -260,6 +271,7 @@ impl A320Pneumatic {
                 engine_fire_push_buttons,
                 &self.cross_bleed_valve,
                 &self.fadec,
+                &self.wing_anti_ice,
             );
 
             // I am not exactly sure if both BMCs should actually control this valve all the time.
@@ -388,6 +400,9 @@ impl PackFlowValveState for A320Pneumatic {
     fn pack_flow_valve_air_flow(&self, pack_id: usize) -> MassRate {
         self.packs[pack_id - 1].pack_flow_valve_air_flow()
     }
+    fn pack_flow_valve_inlet_pressure(&self, pack_id: usize) -> Option<Pressure> {
+        self.packs[pack_id - 1].pack_flow_valve_inlet_pressure()
+    }
 }
 impl SimulationElement for A320Pneumatic {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
@@ -408,8 +423,12 @@ impl SimulationElement for A320Pneumatic {
 
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(
-            &self.cross_bleed_valve_open_id,
-            self.cross_bleed_valve.is_open(),
+            &self.cross_bleed_valve_fully_open_id,
+            self.cross_bleed_valve.is_fully_open(),
+        );
+        writer.write(
+            &self.cross_bleed_valve_fully_closed_id,
+            self.cross_bleed_valve.is_fully_closed(),
         );
         writer.write(
             &self.apu_bleed_air_valve_open_id,
@@ -438,7 +457,9 @@ struct EngineStarterValveController {
 impl ControllerSignal<EngineStarterValveSignal> for EngineStarterValveController {
     fn signal(&self) -> Option<EngineStarterValveSignal> {
         match self.engine_state {
-            EngineState::Starting => Some(EngineStarterValveSignal::new_open()),
+            EngineState::Starting | EngineState::Restarting => {
+                Some(EngineStarterValveSignal::new_open())
+            }
             _ => Some(EngineStarterValveSignal::new_closed()),
         }
     }
@@ -466,6 +487,7 @@ struct BleedMonitoringComputer {
 }
 impl BleedMonitoringComputer {
     fn new(
+        context: &mut InitContext,
         main_channel_engine_number: usize,
         backup_channel_engine_number: usize,
         powered_by: ElectricalBusType,
@@ -474,10 +496,12 @@ impl BleedMonitoringComputer {
             main_channel_engine_number,
             backup_channel_engine_number,
             main_channel: BleedMonitoringComputerChannel::new(
+                context,
                 main_channel_engine_number,
                 BleedMonitoringComputerChannelOperationMode::Master,
             ),
             backup_channel: BleedMonitoringComputerChannel::new(
+                context,
                 backup_channel_engine_number,
                 BleedMonitoringComputerChannelOperationMode::Slave,
             ),
@@ -495,25 +519,28 @@ impl BleedMonitoringComputer {
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         cross_bleed_valve: &impl PneumaticValve,
         fadec: &FullAuthorityDigitalEngineControl,
+        wing_anti_ice: &impl WingAntiIceSelected,
     ) {
         self.main_channel.update(
             context,
             &sensors[self.main_channel_engine_number - 1],
-            engine_fire_push_buttons.is_released(self.main_channel_engine_number),
+            engine_fire_push_buttons,
             apu_bleed_valve,
             cross_bleed_valve,
             overhead_panel,
             fadec,
+            wing_anti_ice,
         );
 
         self.backup_channel.update(
             context,
             &sensors[self.backup_channel_engine_number - 1],
-            engine_fire_push_buttons.is_released(self.backup_channel_engine_number),
+            engine_fire_push_buttons,
             apu_bleed_valve,
             cross_bleed_valve,
             overhead_panel,
             fadec,
+            wing_anti_ice,
         );
     }
 
@@ -563,6 +590,13 @@ impl BleedMonitoringComputer {
     }
 }
 impl SimulationElement for BleedMonitoringComputer {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.main_channel.accept(visitor);
+        self.backup_channel.accept(visitor);
+
+        visitor.visit(self);
+    }
+
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
         self.is_powered = buses.is_powered(self.powered_by)
     }
@@ -577,28 +611,56 @@ impl ControllerSignal<BleedMonitoringComputerIsAliveSignal> for BleedMonitoringC
     }
 }
 
+fn hysteresis(signal: bool, [low, high]: [f64; 2], value: f64) -> bool {
+    if signal && value < low || !signal && value > high {
+        !signal
+    } else {
+        signal
+    }
+}
+
 struct BleedMonitoringComputerChannel {
     engine_number: usize,
     operation_mode: BleedMonitoringComputerChannelOperationMode,
     pressure_regulating_valve_is_closed: bool,
-    high_pressure_compressor_pressure: Pressure,
+    intermediate_compressor_pressure: Pressure,
     transfer_pressure: Pressure,
-    engine_starter_valve_is_open: bool,
-    is_engine_bleed_pushbutton_auto: bool,
-    is_engine_fire_pushbutton_released: bool,
     is_apu_bleed_valve_open: bool,
-    is_apu_bleed_on: bool,
-    high_pressure_valve_pid: PidController,
     pressure_regulating_valve_pid: PidController,
     fan_air_valve_pid: PidController,
     cross_bleed_valve_selector: CrossBleedValveSelectorMode,
-    cross_bleed_valve_is_open: bool,
+    should_use_ip_vs_hp_valve: bool,
+    overheat_monitor: BleedOverheatMonitor,
+    overpressure_monitor: BleedOverpressureMonitor,
+    has_low_bleed_temperature: bool,
+    is_in_dual_bleed_config: bool,
+    flight_phase_loop: FlightPhaseLoop,
+    low_temperature_regulation_active: DelayedTrueLogicGate,
+    should_command_onside_prv_closed: bool,
+
+    low_temperature_id: VariableIdentifier,
+    overheat_id: VariableIdentifier,
+    overpressure_id: VariableIdentifier,
 }
 impl BleedMonitoringComputerChannel {
     const PRESSURE_REGULATING_VALVE_SINGLE_BLEED_CONFIG_TARGET_PSI: f64 = 50.;
     const PRESSURE_REGULATING_VALVE_DUAL_BLEED_CONFIG_TARGET_PSI: f64 = 42.;
 
+    const LOW_BLEED_TEMPERATURE_THRESHOLD_C: f64 = 150.;
+    const FORCE_HP_BLEED_WAI_THRESHOLD_C: f64 = 185.;
+    const FORCE_HP_BLEED_ISOLATION_C: f64 = 510.;
+    const FORCE_HP_BLEED_ISOLATION_PS3_PSI: f64 = 110.;
+
+    const DUAL_BLEED_WAI_OFF_HP_IP_SWITCHING_THRESHOLDS: [f64; 2] = [33.3, 38.9];
+    const DUAL_BLEED_WAI_ON_HP_IP_SWITCHING_THRESHOLDS: [f64; 2] = [36.4, 43.2];
+    const SINGLE_BLEED_WAI_OFF_HP_IP_SWITCHING_THRESHOLDS: [f64; 2] = [40.4, 48.2];
+    const SINGLE_BLEED_WAI_ON_HP_IP_SWITCHING_THRESHOLDS: [f64; 2] = [47.5, 60.5];
+
+    const HIGH_TEMPERATURE_REGULATION_SETPOINT: f64 = 200.;
+    const LOW_TEMPERATURE_REGULATION_THRESHOLD: f64 = 160.;
+
     fn new(
+        context: &mut InitContext,
         engine_number: usize,
         operation_mode: BleedMonitoringComputerChannelOperationMode,
     ) -> Self {
@@ -606,14 +668,9 @@ impl BleedMonitoringComputerChannel {
             engine_number,
             operation_mode,
             pressure_regulating_valve_is_closed: false,
-            high_pressure_compressor_pressure: Pressure::new::<psi>(0.),
-            transfer_pressure: Pressure::new::<psi>(0.),
-            engine_starter_valve_is_open: false,
-            is_engine_bleed_pushbutton_auto: true,
-            is_engine_fire_pushbutton_released: false,
+            intermediate_compressor_pressure: Pressure::default(),
+            transfer_pressure: Pressure::new::<psi>(14.7),
             is_apu_bleed_valve_open: false,
-            is_apu_bleed_on: false,
-            high_pressure_valve_pid: PidController::new(0.02, 0.003, 0., 0., 1., 65., 1.),
             pressure_regulating_valve_pid: PidController::new(
                 0.05,
                 0.01,
@@ -623,9 +680,21 @@ impl BleedMonitoringComputerChannel {
                 Self::PRESSURE_REGULATING_VALVE_DUAL_BLEED_CONFIG_TARGET_PSI,
                 1.,
             ),
-            fan_air_valve_pid: PidController::new(-0.005, -0.001, 0., 0., 1., 200., 1.),
+            fan_air_valve_pid: PidController::new(-0.02, 0., 0., 0., 1., 200., 1.),
             cross_bleed_valve_selector: CrossBleedValveSelectorMode::Auto,
-            cross_bleed_valve_is_open: false,
+            should_use_ip_vs_hp_valve: false,
+            overheat_monitor: BleedOverheatMonitor::new(),
+            overpressure_monitor: BleedOverpressureMonitor::new(),
+            has_low_bleed_temperature: false,
+            flight_phase_loop: FlightPhaseLoop::new(),
+            low_temperature_regulation_active: DelayedTrueLogicGate::new(Duration::from_secs(20)),
+            should_command_onside_prv_closed: false,
+            is_in_dual_bleed_config: false,
+            low_temperature_id: context
+                .get_identifier(format!("PNEU_ENG_{}_LOW_TEMPERATURE", engine_number)),
+            overheat_id: context.get_identifier(format!("PNEU_ENG_{}_OVERHEAT", engine_number)),
+            overpressure_id: context
+                .get_identifier(format!("PNEU_ENG_{}_OVERPRESSURE", engine_number)),
         }
     }
 
@@ -633,55 +702,119 @@ impl BleedMonitoringComputerChannel {
         &mut self,
         context: &UpdateContext,
         sensors: &EngineBleedAirSystem,
-        is_engine_fire_pushbutton_released: bool,
+        engine_fire_pushbuttons: &impl EngineFirePushButtons,
         apu_bleed_valve: &impl PneumaticValve,
         cross_bleed_valve: &impl PneumaticValve,
         overhead_panel: &A320PneumaticOverheadPanel,
         fadec: &FullAuthorityDigitalEngineControl,
+        wing_anti_ice: &impl WingAntiIceSelected,
     ) {
-        self.high_pressure_compressor_pressure = sensors.high_pressure();
-        self.transfer_pressure = sensors.transfer_pressure();
+        // READ IN SENSORS
 
-        self.pressure_regulating_valve_pid.change_setpoint(
-            if fadec.is_single_vs_dual_bleed_config() {
-                Self::PRESSURE_REGULATING_VALVE_SINGLE_BLEED_CONFIG_TARGET_PSI
-            } else {
-                Self::PRESSURE_REGULATING_VALVE_DUAL_BLEED_CONFIG_TARGET_PSI
-            },
-        );
+        // Should come from EIU I think
+        self.intermediate_compressor_pressure =
+            sensors.intermediate_pressure() - context.ambient_pressure();
+        self.transfer_pressure = sensors.transfer_pressure() - context.ambient_pressure();
+
+        self.is_apu_bleed_valve_open = apu_bleed_valve.is_open();
+        self.cross_bleed_valve_selector = overhead_panel.cross_bleed_mode();
 
         self.pressure_regulating_valve_is_closed = !sensors.pressure_regulating_valve_is_open();
 
-        if let Some(transfer_pressure_signal) = sensors.transfer_pressure_transducer_pressure() {
-            self.high_pressure_valve_pid
-                .next_control_output(transfer_pressure_signal.get::<psi>(), Some(context.delta()));
-        }
+        // UPDATE STATE
+
+        self.flight_phase_loop.update(context);
+        self.update_dual_vs_single_bleed_operation(
+            sensors,
+            overhead_panel,
+            engine_fire_pushbuttons,
+            cross_bleed_valve,
+            fadec,
+        );
+        self.update_low_temperature_regulation(context, wing_anti_ice);
+
+        // UPDATE SETPOINTS
+
+        self.fan_air_valve_pid
+            .change_setpoint(self.determine_temperature_setpoint());
+
+        self.pressure_regulating_valve_pid
+            .change_setpoint(if self.is_in_dual_bleed_config {
+                Self::PRESSURE_REGULATING_VALVE_DUAL_BLEED_CONFIG_TARGET_PSI
+            } else {
+                Self::PRESSURE_REGULATING_VALVE_SINGLE_BLEED_CONFIG_TARGET_PSI
+            });
+
+        self.update_low_temperature(context, sensors, wing_anti_ice);
 
         if let Some(regulated_pressure_signal) = sensors.regulated_pressure_transducer_pressure() {
             self.pressure_regulating_valve_pid.next_control_output(
                 regulated_pressure_signal.get::<psi>(),
                 Some(context.delta()),
             );
+
+            self.overpressure_monitor
+                .update(context, regulated_pressure_signal);
         }
 
-        self.fan_air_valve_pid.next_control_output(
-            sensors
-                .precooler_outlet_temperature()
-                .get::<degree_celsius>(),
-            Some(context.delta()),
-        );
+        let mut force_hp_bleed = false;
+        let mut force_ip_bleed = false;
 
-        self.engine_starter_valve_is_open = sensors.engine_starter_valve_is_open();
+        if let Some(precooler_outlet_temperature) = sensors.bleed_temperature_sensor_temperature() {
+            self.fan_air_valve_pid.next_control_output(
+                precooler_outlet_temperature
+                    .get::<degree_celsius>()
+                    .max(self.fan_air_valve_pid.setpoint()),
+                Some(context.delta()),
+            );
 
-        self.is_engine_bleed_pushbutton_auto =
-            overhead_panel.engine_bleed_pb_is_auto(self.engine_number);
-        self.is_engine_fire_pushbutton_released = is_engine_fire_pushbutton_released;
+            self.overheat_monitor
+                .update(context, precooler_outlet_temperature);
 
-        self.is_apu_bleed_valve_open = apu_bleed_valve.is_open();
-        self.is_apu_bleed_on = overhead_panel.apu_bleed_is_on();
+            force_hp_bleed = (wing_anti_ice.is_wai_selected()
+                && precooler_outlet_temperature.get::<degree_celsius>()
+                    < Self::FORCE_HP_BLEED_WAI_THRESHOLD_C)
+                || (context.pressure_altitude().get::<foot>() < 7000.
+                    && !context.is_on_ground()
+                    && !self.flight_phase_loop.is_climb_active()
+                    && !self.flight_phase_loop.is_hold_active());
 
-        self.cross_bleed_valve_selector = overhead_panel.cross_bleed_mode();
-        self.cross_bleed_valve_is_open = cross_bleed_valve.is_open();
+            force_ip_bleed = precooler_outlet_temperature.get::<degree_celsius>()
+                > Self::FORCE_HP_BLEED_ISOLATION_C
+                || (sensors.high_pressure().get::<psi>() > Self::FORCE_HP_BLEED_ISOLATION_PS3_PSI
+                    && context.pressure_altitude().get::<foot>() > 25000.
+                    && (self.is_in_dual_bleed_config || !wing_anti_ice.is_wai_selected()));
+        }
+
+        self.should_use_ip_vs_hp_valve = force_ip_bleed
+            || (!force_hp_bleed
+                && hysteresis(
+                    self.should_use_ip_vs_hp_valve,
+                    self.get_switching_thresholds(
+                        !self.is_in_dual_bleed_config,
+                        wing_anti_ice.is_wai_selected(),
+                    ),
+                    self.intermediate_compressor_pressure.get::<psi>(),
+                ));
+    }
+
+    fn update_low_temperature(
+        &mut self,
+        context: &UpdateContext,
+        sensors: &EngineBleedAirSystem,
+        wing_anti_ice: &impl WingAntiIceSelected,
+    ) {
+        self.has_low_bleed_temperature = if let Some(precooler_outlet_temperature) =
+            sensors.bleed_temperature_sensor_temperature()
+        {
+            precooler_outlet_temperature.get::<degree_celsius>()
+                < Self::LOW_BLEED_TEMPERATURE_THRESHOLD_C
+                && wing_anti_ice.is_wai_selected()
+                && self.pressure_regulating_valve_is_closed
+                && context.is_in_flight() // TODO: Figure out where this signal comes from.
+        } else {
+            false
+        }
     }
 
     fn operation_mode(&self) -> BleedMonitoringComputerChannelOperationMode {
@@ -699,35 +832,128 @@ impl BleedMonitoringComputerChannel {
         }
     }
 
-    fn should_close_pressure_regulating_valve_because_apu_bleed_is_on(&self) -> bool {
-        self.is_apu_bleed_on
+    fn should_close_pressure_regulating_valve_because_apu_bleed_is_on(
+        &self,
+        engine_number: usize,
+        overhead_panel: &A320PneumaticOverheadPanel,
+        cross_bleed_valve: &impl PneumaticValve,
+    ) -> bool {
+        overhead_panel.apu_bleed_is_on()
             && self.is_apu_bleed_valve_open
-            && (self.engine_number == 1 || self.cross_bleed_valve_is_open)
+            && (engine_number == 1 || cross_bleed_valve.is_open())
     }
 
-    fn should_command_prv_closed(&self) -> bool {
-        !self.is_engine_bleed_pushbutton_auto
-            || self.is_engine_fire_pushbutton_released
-            || self.should_close_pressure_regulating_valve_because_apu_bleed_is_on()
-            || self.engine_starter_valve_is_open
+    fn should_command_prv_closed(
+        &self,
+        engine_number: usize,
+        overhead_panel: &A320PneumaticOverheadPanel,
+        engine_fire_pushbuttons: &impl EngineFirePushButtons,
+        cross_bleed_valve: &impl PneumaticValve,
+    ) -> bool {
+        !overhead_panel.engine_bleed_pb_is_auto(engine_number)
+            || engine_fire_pushbuttons.is_released(engine_number)
+            || self.should_close_pressure_regulating_valve_because_apu_bleed_is_on(
+                engine_number,
+                overhead_panel,
+                cross_bleed_valve,
+            )
+    }
+
+    fn get_switching_thresholds(&self, is_single_vs_dual_bleed: bool, is_wai_on: bool) -> [f64; 2] {
+        match (is_single_vs_dual_bleed, is_wai_on) {
+            (false, false) => Self::DUAL_BLEED_WAI_OFF_HP_IP_SWITCHING_THRESHOLDS,
+            (false, true) => Self::DUAL_BLEED_WAI_ON_HP_IP_SWITCHING_THRESHOLDS,
+            (true, false) => Self::SINGLE_BLEED_WAI_OFF_HP_IP_SWITCHING_THRESHOLDS,
+            (true, true) => Self::SINGLE_BLEED_WAI_ON_HP_IP_SWITCHING_THRESHOLDS,
+        }
+    }
+
+    fn has_low_temperature(&self) -> bool {
+        self.has_low_bleed_temperature
+    }
+
+    fn has_overpressure(&self) -> bool {
+        self.overpressure_monitor.has_overpressure()
+    }
+
+    fn has_overheat(&self) -> bool {
+        self.overheat_monitor.has_overheat()
+    }
+
+    fn determine_temperature_setpoint(&self) -> f64 {
+        if self.low_temperature_regulation_active.output() {
+            Self::LOW_TEMPERATURE_REGULATION_THRESHOLD
+        } else {
+            Self::HIGH_TEMPERATURE_REGULATION_SETPOINT
+        }
+    }
+
+    fn update_dual_vs_single_bleed_operation(
+        &mut self,
+        sensors: &EngineBleedAirSystem,
+        overhead_panel: &A320PneumaticOverheadPanel,
+        engine_fire_pushbuttons: &impl EngineFirePushButtons,
+        cross_bleed_valve: &impl PneumaticValve,
+        fadec: &FullAuthorityDigitalEngineControl,
+    ) {
+        self.should_command_onside_prv_closed = self.should_command_prv_closed(
+            self.engine_number,
+            overhead_panel,
+            engine_fire_pushbuttons,
+            cross_bleed_valve,
+        ) || sensors.engine_starter_valve_is_open()
+            || self.overpressure_monitor.has_overpressure()
+            || self.overheat_monitor.has_overheat();
+
+        let should_command_offside_prv_closed = self.should_command_prv_closed(
+            self.engine_number % 2 + 1,
+            overhead_panel,
+            engine_fire_pushbuttons,
+            cross_bleed_valve,
+        );
+
+        self.is_in_dual_bleed_config = !fadec.is_single_vs_dual_bleed_config()
+            && !self.should_command_onside_prv_closed
+            && !should_command_offside_prv_closed;
+    }
+
+    fn update_low_temperature_regulation(
+        &mut self,
+        context: &UpdateContext,
+        wing_anti_ice: &impl WingAntiIceSelected,
+    ) {
+        let both_bleed_sources_active = self.is_in_dual_bleed_config;
+
+        self.low_temperature_regulation_active.update(
+            context,
+            !wing_anti_ice.is_wai_selected()
+                && both_bleed_sources_active
+                && (self.flight_phase_loop.is_climb_active()
+                    || self.flight_phase_loop.is_hold_active()),
+        )
+    }
+
+    #[cfg(test)]
+    fn is_in_low_temperature_regulation(&self) -> bool {
+        self.low_temperature_regulation_active.output()
     }
 }
-impl ControllerSignal<HighPressureValveSignal> for BleedMonitoringComputerChannel {
-    fn signal(&self) -> Option<HighPressureValveSignal> {
-        if self.should_command_prv_closed()
-            || self.high_pressure_compressor_pressure < Pressure::new::<psi>(18.)
-        {
-            Some(HighPressureValveSignal::new_closed())
-        } else {
-            Some(HighPressureValveSignal::new(Ratio::new::<ratio>(
-                self.high_pressure_valve_pid.output(),
-            )))
-        }
+impl ControllerSignal<SolenoidSignal> for BleedMonitoringComputerChannel {
+    fn signal(&self) -> Option<SolenoidSignal> {
+        Some(
+            match self.should_command_onside_prv_closed || self.should_use_ip_vs_hp_valve {
+                true => SolenoidSignal::deenergized(),
+                false => SolenoidSignal::energized(),
+            },
+        )
     }
 }
 impl ControllerSignal<PressureRegulatingValveSignal> for BleedMonitoringComputerChannel {
     fn signal(&self) -> Option<PressureRegulatingValveSignal> {
-        if self.transfer_pressure < Pressure::new::<psi>(15.) || self.should_command_prv_closed() {
+        // TODO: The pressure condition should be pneumatically simulated
+        if self.transfer_pressure < Pressure::new::<psi>(15.)
+            || self.should_command_onside_prv_closed
+        {
             Some(PressureRegulatingValveSignal::new_closed())
         } else {
             Some(PressureRegulatingValveSignal::new(Ratio::new::<ratio>(
@@ -738,9 +964,15 @@ impl ControllerSignal<PressureRegulatingValveSignal> for BleedMonitoringComputer
 }
 impl ControllerSignal<FanAirValveSignal> for BleedMonitoringComputerChannel {
     fn signal(&self) -> Option<FanAirValveSignal> {
-        Some(FanAirValveSignal::new(Ratio::new::<ratio>(
-            self.fan_air_valve_pid.output(),
-        )))
+        if self.transfer_pressure < Pressure::new::<psi>(15.)
+            || self.should_command_onside_prv_closed
+        {
+            Some(FanAirValveSignal::new_closed())
+        } else {
+            Some(FanAirValveSignal::new(Ratio::new::<ratio>(
+                self.fan_air_valve_pid.output(),
+            )))
+        }
     }
 }
 impl ControllerSignal<CrossBleedValveSignal> for BleedMonitoringComputerChannel {
@@ -766,6 +998,19 @@ impl ControllerSignal<CrossBleedValveSignal> for BleedMonitoringComputerChannel 
         }
     }
 }
+impl SimulationElement for BleedMonitoringComputerChannel {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        visitor.visit(self);
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        if self.operation_mode() == BleedMonitoringComputerChannelOperationMode::Master {
+            writer.write(&self.low_temperature_id, self.has_low_temperature());
+            writer.write(&self.overheat_id, self.has_overheat());
+            writer.write(&self.overpressure_id, self.has_overpressure());
+        }
+    }
+}
 
 struct EngineBleedAirSystem {
     intermediate_pressure_id: VariableIdentifier,
@@ -775,7 +1020,7 @@ struct EngineBleedAirSystem {
     high_temperature_id: VariableIdentifier,
     transfer_temperature_id: VariableIdentifier,
     precooler_inlet_temperature_id: VariableIdentifier,
-    precooler_outlet_temperature_id: VariableIdentifier,
+    bleed_temperature_sensor_temperature_id: VariableIdentifier,
     starter_container_temperature_id: VariableIdentifier,
     intermediate_pressure_valve_open_id: VariableIdentifier,
     high_pressure_valve_open_id: VariableIdentifier,
@@ -784,6 +1029,7 @@ struct EngineBleedAirSystem {
     transfer_pressure_transducer_pressure_id: VariableIdentifier,
     regulated_pressure_transducer_pressure_id: VariableIdentifier,
     differential_pressure_transducer_pressure_id: VariableIdentifier,
+    engine_starter_pressurized_id: VariableIdentifier,
 
     number: usize,
     fan_compression_chamber_controller: EngineCompressionChamberController, // Controls pressure just behind the main fan
@@ -793,14 +1039,17 @@ struct EngineBleedAirSystem {
     intermediate_pressure_compression_chamber: CompressionChamber,
     high_pressure_compression_chamber: CompressionChamber,
     intermediate_pressure_valve: PurelyPneumaticValve,
-    high_pressure_valve: ElectroPneumaticValve,
+    high_pressure_valve: SolenoidValve<2>,
     pressure_regulating_valve: ElectroPneumaticValve,
+    overpressure_valve: OverpressureValve<2>,
     transfer_pressure_pipe: PneumaticPipe,
+    regulated_pressure_pipe: PneumaticPipe,
     precooler_inlet_pipe: PneumaticPipe,
     precooler_outlet_pipe: PneumaticPipe,
     precooler_supply_pipe: PneumaticPipe,
     engine_starter_exhaust: PneumaticExhaust,
     engine_starter_container: PneumaticPipe,
+    engine_starter_pressurized: bool,
     engine_starter_valve: DefaultValve,
     fan_air_valve: ElectroPneumaticValve,
     precooler: Precooler,
@@ -808,8 +1057,12 @@ struct EngineBleedAirSystem {
     transfer_pressure_transducer: PressureTransducer,
     regulated_pressure_transducer: PressureTransducer,
     differential_pressure_transducer: DifferentialPressureTransducer,
+    bleed_temperature_sensor: BleedTemperatureSensor,
 }
 impl EngineBleedAirSystem {
+    const MIN_ENGINE_START_CONTAINER_PRESSURE_PSIG_HIGH: f64 = 10.;
+    const MIN_ENGINE_START_CONTAINER_PRESSURE_PSIG_LOW: f64 = 5.;
+
     fn new(context: &mut InitContext, number: usize, powered_by: ElectricalBusType) -> Self {
         Self {
             number,
@@ -826,8 +1079,10 @@ impl EngineBleedAirSystem {
                 .get_identifier(format!("PNEU_ENG_{}_TRANSFER_TEMPERATURE", number)),
             precooler_inlet_temperature_id: context
                 .get_identifier(format!("PNEU_ENG_{}_PRECOOLER_INLET_TEMPERATURE", number)),
-            precooler_outlet_temperature_id: context
-                .get_identifier(format!("PNEU_ENG_{}_PRECOOLER_OUTLET_TEMPERATURE", number)),
+            bleed_temperature_sensor_temperature_id: context.get_identifier(format!(
+                "PNEU_ENG_{}_BLEED_TEMPERATURE_SENSOR_TEMPERATURE",
+                number
+            )),
             starter_container_temperature_id: context
                 .get_identifier(format!("PNEU_ENG_{}_STARTER_CONTAINER_TEMPERATURE", number)),
             intermediate_pressure_valve_open_id: context
@@ -846,11 +1101,15 @@ impl EngineBleedAirSystem {
                 "PNEU_ENG_{}_DIFFERENTIAL_TRANSDUCER_PRESSURE",
                 number
             )),
-            fan_compression_chamber_controller: EngineCompressionChamberController::new(1., 0., 2.),
+            engine_starter_pressurized_id: context
+                .get_identifier(format!("PNEU_ENG_{}_STARTER_PRESSURIZED", number)),
+            fan_compression_chamber_controller: EngineCompressionChamberController::new(2., 0.),
+            // Maximum IP bleed pressure output should be about 150 psig
             intermediate_pressure_compression_chamber_controller:
-                EngineCompressionChamberController::new(3., 0., 1.5), // Maximum IP bleed pressure output should be about 150 psig
+                EngineCompressionChamberController::new(2.51457, 0.116127),
+            // Maximum HP bleed pressure output should be about 660 psig
             high_pressure_compression_chamber_controller: EngineCompressionChamberController::new(
-                3., 2., 3.5, // Maximum IP bleed pressure output should be about 660 psig
+                2.86121, 1.23509,
             ),
             fan_compression_chamber: CompressionChamber::new(Volume::new::<cubic_meter>(1.)),
             intermediate_pressure_compression_chamber: CompressionChamber::new(Volume::new::<
@@ -860,16 +1119,38 @@ impl EngineBleedAirSystem {
                 1.,
             )),
             intermediate_pressure_valve: PurelyPneumaticValve::new(),
-            high_pressure_valve: ElectroPneumaticValve::new(powered_by),
+            high_pressure_valve: SolenoidValve::new(
+                PneumaticValveCharacteristics::new(
+                    Pressure::new::<psi>(15.), // psig
+                    [35., 75.],                // psig
+                    [1., 0.],
+                    0.25, // -> 1 / 0.25 = 4 seconds to open
+                ),
+                powered_by,
+            ),
             pressure_regulating_valve: ElectroPneumaticValve::new(powered_by),
+            overpressure_valve: OverpressureValve::new(
+                PneumaticValveCharacteristics::new(
+                    Pressure::new::<psi>(0.), // psig
+                    [43., 59.],               // psig
+                    [1., 0.],
+                    0.5, // -> 1 / 0.5 = 2 seconds to open
+                ),
+                Pressure::new::<psi>(80.),
+            ),
             fan_air_valve: ElectroPneumaticValve::new(powered_by),
             transfer_pressure_pipe: PneumaticPipe::new(
                 Volume::new::<cubic_meter>(1.),
                 Pressure::new::<psi>(14.7),
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
+            regulated_pressure_pipe: PneumaticPipe::new(
+                Volume::new::<cubic_meter>(1.0),
+                Pressure::new::<psi>(14.7),
+                ThermodynamicTemperature::new::<degree_celsius>(15.),
+            ),
             precooler_inlet_pipe: PneumaticPipe::new(
-                Volume::new::<cubic_meter>(0.5),
+                Volume::new::<cubic_meter>(1.),
                 Pressure::new::<psi>(14.7),
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
@@ -884,23 +1165,26 @@ impl EngineBleedAirSystem {
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
             engine_starter_container: PneumaticPipe::new(
-                Volume::new::<cubic_meter>(0.5),
+                Volume::new::<cubic_meter>(0.3),
                 Pressure::new::<psi>(14.7),
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
-            engine_starter_exhaust: PneumaticExhaust::new(3e-2, 3e-2, Pressure::new::<psi>(0.)),
+            engine_starter_pressurized: false,
+            engine_starter_exhaust: PneumaticExhaust::new(10., 10., Pressure::new::<psi>(0.)),
             engine_starter_valve: DefaultValve::new_closed(),
-            precooler: Precooler::new(180. * 2.),
+            precooler: Precooler::new(900. * 2.),
             transfer_pressure_transducer: PressureTransducer::new(powered_by),
+            // Should be powered by 801PP for engine 1 and 202PP for engine 2
             regulated_pressure_transducer: PressureTransducer::new(powered_by),
             differential_pressure_transducer: DifferentialPressureTransducer::new(powered_by),
+            bleed_temperature_sensor: BleedTemperatureSensor::new(powered_by),
         }
     }
 
     fn update(
         &mut self,
         context: &UpdateContext,
-        high_pressure_valve_controller: &impl ControllerSignal<HighPressureValveSignal>,
+        high_pressure_valve_controller: &impl ControllerSignal<SolenoidSignal>,
         pressure_regulating_valve_controller: &impl ControllerSignal<PressureRegulatingValveSignal>,
         engine_starter_valve_controller: &impl ControllerSignal<EngineStarterValveSignal>,
         fan_air_valve_controller: &impl ControllerSignal<FanAirValveSignal>,
@@ -922,7 +1206,7 @@ impl EngineBleedAirSystem {
             .update(&self.high_pressure_compression_chamber_controller);
 
         self.high_pressure_valve
-            .update_open_amount(high_pressure_valve_controller);
+            .update_solenoid(high_pressure_valve_controller);
         self.pressure_regulating_valve
             .update_open_amount(pressure_regulating_valve_controller);
         self.engine_starter_valve
@@ -948,6 +1232,11 @@ impl EngineBleedAirSystem {
         self.pressure_regulating_valve.update_move_fluid(
             context,
             &mut self.transfer_pressure_pipe,
+            &mut self.regulated_pressure_pipe,
+        );
+        self.overpressure_valve.update_move_fluid(
+            context,
+            &mut self.regulated_pressure_pipe,
             &mut self.precooler_inlet_pipe,
         );
         self.precooler.update(
@@ -956,20 +1245,38 @@ impl EngineBleedAirSystem {
             &mut self.precooler_supply_pipe,
             &mut self.precooler_outlet_pipe,
         );
-        self.engine_starter_valve.update_move_fluid(
-            context,
-            &mut self.precooler_inlet_pipe,
-            &mut self.engine_starter_container,
-        );
+        self.engine_starter_valve
+            .update_move_fluid_with_transfer_speed(
+                context,
+                &mut self.precooler_inlet_pipe,
+                &mut self.engine_starter_container,
+                10.,
+            );
         self.engine_starter_exhaust
             .update_move_fluid(context, &mut self.engine_starter_container);
+        self.update_engine_start_pressurization(context);
 
         self.transfer_pressure_transducer
             .update(context, &self.transfer_pressure_pipe);
         self.regulated_pressure_transducer
-            .update(context, &self.precooler_inlet_pipe);
+            .update(context, &self.regulated_pressure_pipe);
         self.differential_pressure_transducer
             .update(&self.precooler_inlet_pipe, &self.precooler_outlet_pipe);
+
+        self.bleed_temperature_sensor
+            .update(&self.precooler_outlet_pipe);
+    }
+
+    fn update_engine_start_pressurization(&mut self, context: &UpdateContext) {
+        let starter_container_pressure_psig =
+            self.engine_starter_container.pressure() - context.ambient_pressure();
+
+        self.engine_starter_pressurized = (!self.engine_starter_pressurized
+            && starter_container_pressure_psig.get::<psi>()
+                > Self::MIN_ENGINE_START_CONTAINER_PRESSURE_PSIG_HIGH)
+            || (self.engine_starter_pressurized
+                && starter_container_pressure_psig.get::<psi>()
+                    > Self::MIN_ENGINE_START_CONTAINER_PRESSURE_PSIG_LOW);
     }
 
     fn intermediate_pressure(&self) -> Pressure {
@@ -982,6 +1289,11 @@ impl EngineBleedAirSystem {
 
     fn transfer_pressure(&self) -> Pressure {
         self.transfer_pressure_pipe.pressure()
+    }
+
+    #[cfg(test)]
+    fn regulated_pressure(&self) -> Pressure {
+        self.regulated_pressure_pipe.pressure()
     }
 
     #[cfg(test)]
@@ -1006,10 +1318,16 @@ impl EngineBleedAirSystem {
         self.transfer_pressure_pipe.temperature()
     }
 
+    #[cfg(test)]
+    fn regulated_temperature(&self) -> ThermodynamicTemperature {
+        self.regulated_pressure_pipe.temperature()
+    }
+
     fn precooler_inlet_temperature(&self) -> ThermodynamicTemperature {
         self.precooler_inlet_pipe.temperature()
     }
 
+    #[cfg(test)]
     fn precooler_outlet_temperature(&self) -> ThermodynamicTemperature {
         self.precooler_outlet_pipe.temperature()
     }
@@ -1033,6 +1351,10 @@ impl EngineBleedAirSystem {
     fn differential_pressure_transducer_pressure(&self) -> Option<Pressure> {
         self.differential_pressure_transducer.signal()
     }
+
+    fn bleed_temperature_sensor_temperature(&self) -> Option<ThermodynamicTemperature> {
+        self.bleed_temperature_sensor.signal()
+    }
 }
 impl SimulationElement for EngineBleedAirSystem {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
@@ -1043,6 +1365,7 @@ impl SimulationElement for EngineBleedAirSystem {
         self.transfer_pressure_transducer.accept(visitor);
         self.regulated_pressure_transducer.accept(visitor);
         self.differential_pressure_transducer.accept(visitor);
+        self.bleed_temperature_sensor.accept(visitor);
 
         visitor.visit(self);
     }
@@ -1053,12 +1376,12 @@ impl SimulationElement for EngineBleedAirSystem {
         writer.write(
             &self.transfer_pressure_transducer_pressure_id,
             self.transfer_pressure_transducer_pressure()
-                .map_or(-1., |p| p.get::<psi>()),
+                .map_or(-1., |p| p.get::<psi>().clamp(0., 512.)),
         );
         writer.write(
             &self.regulated_pressure_transducer_pressure_id,
             self.regulated_pressure_transducer_pressure()
-                .map_or(-1., |p| p.get::<psi>()),
+                .map_or(-1., |p| p.get::<psi>().clamp(0., 512.)),
         );
         writer.write(
             &self.differential_pressure_transducer_pressure_id,
@@ -1080,8 +1403,9 @@ impl SimulationElement for EngineBleedAirSystem {
             self.precooler_inlet_temperature(),
         );
         writer.write(
-            &self.precooler_outlet_temperature_id,
-            self.precooler_outlet_temperature(),
+            &self.bleed_temperature_sensor_temperature_id,
+            self.bleed_temperature_sensor_temperature()
+                .map_or(-100., |t| t.get::<degree_celsius>()),
         );
         writer.write(
             &self.starter_container_temperature_id,
@@ -1102,6 +1426,10 @@ impl SimulationElement for EngineBleedAirSystem {
         writer.write(
             &self.starter_valve_open_id,
             self.engine_starter_valve.is_open(),
+        );
+        writer.write(
+            &self.engine_starter_pressurized_id,
+            self.engine_starter_pressurized,
         );
     }
 }
@@ -1137,6 +1465,62 @@ impl PneumaticContainer for EngineBleedAirSystem {
 
     fn update_temperature(&mut self, temperature: TemperatureInterval) {
         self.precooler_outlet_pipe.update_temperature(temperature);
+    }
+}
+
+struct BleedOverheatMonitor {
+    temperature_over_257_for_55s: DelayedTrueLogicGate,
+    temperature_over_270_for_15s: DelayedTrueLogicGate,
+    temperature_over_290_for_5s: DelayedTrueLogicGate,
+}
+impl BleedOverheatMonitor {
+    fn new() -> Self {
+        Self {
+            temperature_over_257_for_55s: DelayedTrueLogicGate::new(Duration::from_secs(55)),
+            temperature_over_270_for_15s: DelayedTrueLogicGate::new(Duration::from_secs(15)),
+            temperature_over_290_for_5s: DelayedTrueLogicGate::new(Duration::from_secs(5)),
+        }
+    }
+
+    fn update(&mut self, context: &UpdateContext, temperature: ThermodynamicTemperature) {
+        self.temperature_over_257_for_55s.update(
+            context,
+            temperature > ThermodynamicTemperature::new::<degree_celsius>(257.),
+        );
+        self.temperature_over_270_for_15s.update(
+            context,
+            temperature > ThermodynamicTemperature::new::<degree_celsius>(270.),
+        );
+        self.temperature_over_290_for_5s.update(
+            context,
+            temperature > ThermodynamicTemperature::new::<degree_celsius>(290.),
+        );
+    }
+
+    fn has_overheat(&self) -> bool {
+        self.temperature_over_257_for_55s.output()
+            || self.temperature_over_270_for_15s.output()
+            || self.temperature_over_290_for_5s.output()
+    }
+}
+
+struct BleedOverpressureMonitor {
+    pressure_over_60_psig_for_15s: DelayedTrueLogicGate,
+}
+impl BleedOverpressureMonitor {
+    fn new() -> Self {
+        Self {
+            pressure_over_60_psig_for_15s: DelayedTrueLogicGate::new(Duration::from_secs(15)),
+        }
+    }
+
+    fn update(&mut self, context: &UpdateContext, pressure: Pressure) {
+        self.pressure_over_60_psig_for_15s
+            .update(context, pressure > Pressure::new::<psi>(60.));
+    }
+
+    fn has_overpressure(&self) -> bool {
+        self.pressure_over_60_psig_for_15s.output()
     }
 }
 
@@ -1247,21 +1631,23 @@ pub struct PackComplex {
     pack_container: PneumaticPipe,
     exhaust: PneumaticExhaust,
     pack_flow_valve: DefaultValve,
+    pack_inlet_pressure_sensor: PressureTransducer,
 }
 impl PackComplex {
-    fn new(context: &mut InitContext, engine_number: usize) -> Self {
+    fn new(context: &mut InitContext, engine_number: usize, powered_by: ElectricalBusType) -> Self {
         Self {
             engine_number,
             pack_flow_valve_id: context.get_identifier(Self::pack_flow_valve_id(engine_number)),
             pack_flow_valve_flow_rate_id: context
                 .get_identifier(format!("PNEU_PACK_{}_FLOW_VALVE_FLOW_RATE", engine_number)),
             pack_container: PneumaticPipe::new(
-                Volume::new::<cubic_meter>(2.),
+                Volume::new::<cubic_meter>(1.),
                 Pressure::new::<psi>(14.7),
                 ThermodynamicTemperature::new::<degree_celsius>(15.),
             ),
             exhaust: PneumaticExhaust::new(0.3, 0.3, Pressure::new::<psi>(0.)),
             pack_flow_valve: DefaultValve::new_closed(),
+            pack_inlet_pressure_sensor: PressureTransducer::new(powered_by),
         }
     }
 
@@ -1275,6 +1661,8 @@ impl PackComplex {
         from: &mut impl PneumaticContainer,
         pack_flow_valve_signals: &impl PackFlowControllers,
     ) {
+        self.pack_inlet_pressure_sensor.update(context, from);
+
         self.pack_flow_valve
             .update_open_amount(pack_flow_valve_signals.pack_flow_controller(self.engine_number));
 
@@ -1291,6 +1679,10 @@ impl PackComplex {
 
     fn pack_flow_valve_air_flow(&self) -> MassRate {
         self.pack_flow_valve.fluid_flow()
+    }
+
+    fn pack_flow_valve_inlet_pressure(&self) -> Option<Pressure> {
+        self.pack_inlet_pressure_sensor.signal()
     }
 }
 impl PneumaticContainer for PackComplex {
@@ -1325,6 +1717,16 @@ impl PneumaticContainer for PackComplex {
     }
 }
 impl SimulationElement for PackComplex {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T)
+    where
+        Self: Sized,
+    {
+        self.pack_inlet_pressure_sensor.accept(visitor);
+        self.pack_flow_valve.accept(visitor);
+
+        visitor.visit(self);
+    }
+
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.pack_flow_valve_id, self.pack_flow_valve_is_open());
         writer.write(
@@ -1340,16 +1742,18 @@ pub struct CrossBleedValve {
     connector: PneumaticContainerConnector,
     is_powered_for_manual_control: bool,
     is_powered_for_automatic_control: bool,
+    target_open_amount: Ratio,
+    valve_speed: Ratio,
 }
 impl CrossBleedValve {
-    const SPRING_CHARACTERISTIC: f64 = 1.;
-
-    pub fn new() -> Self {
+    pub fn new(valve_speed: Ratio) -> Self {
         Self {
-            open_amount: Ratio::new::<ratio>(0.),
+            open_amount: Ratio::default(),
             connector: PneumaticContainerConnector::new(),
             is_powered_for_manual_control: false,
             is_powered_for_automatic_control: false,
+            target_open_amount: Ratio::default(),
+            valve_speed,
         }
     }
 
@@ -1359,24 +1763,19 @@ impl CrossBleedValve {
         container_one: &mut impl PneumaticContainer,
         container_two: &mut impl PneumaticContainer,
     ) {
-        if !self.is_powered_for_manual_control && !self.is_powered_for_automatic_control {
-            self.set_open_amount_from_pressure_difference(
-                container_one.pressure() - container_two.pressure(),
-            )
-        }
+        let open_amount_change = context.delta_as_secs_f64() * self.valve_speed;
+
+        self.open_amount = if self.target_open_amount > self.open_amount {
+            self.target_open_amount
+                .min(self.open_amount + open_amount_change)
+        } else {
+            self.target_open_amount
+                .max(self.open_amount - open_amount_change)
+        };
 
         self.connector
             .with_transfer_speed_factor(self.open_amount)
             .update_move_fluid(context, container_one, container_two);
-    }
-
-    fn set_open_amount_from_pressure_difference(&mut self, pressure_difference: Pressure) {
-        self.open_amount = Ratio::new::<ratio>(
-            2. / PI
-                * (pressure_difference.get::<psi>() * Self::SPRING_CHARACTERISTIC)
-                    .atan()
-                    .max(0.),
-        );
     }
 
     fn update_open_amount(&mut self, controller: &impl ControllerSignal<CrossBleedValveSignal>) {
@@ -1386,14 +1785,27 @@ impl CrossBleedValve {
                 || signal.signal_type == CrossBleedValveSignalType::Automatic
                     && self.is_powered_for_automatic_control
             {
-                self.open_amount = signal.target_open_amount()
+                self.target_open_amount = signal.target_open_amount()
             }
         }
+
+        // If neither of the motors is powered, there is a braking system to hold the valve in place,
+        // so we don't do anything here
     }
 }
 impl PneumaticValve for CrossBleedValve {
     fn is_open(&self) -> bool {
-        self.open_amount.get::<ratio>() > 0.
+        !self.is_fully_closed()
+    }
+}
+impl FullyOpen for CrossBleedValve {
+    fn is_fully_open(&self) -> bool {
+        self.open_amount.get::<ratio>() > 1. - 1e-4
+    }
+}
+impl FullyClosed for CrossBleedValve {
+    fn is_fully_closed(&self) -> bool {
+        self.open_amount.get::<ratio>() < 1e-4
     }
 }
 impl SimulationElement for CrossBleedValve {
@@ -1405,8 +1817,62 @@ impl SimulationElement for CrossBleedValve {
     }
 }
 
+struct FlightPhaseLoop {
+    is_climb_active: bool,
+    is_hold_active: bool,
+
+    vertical_speed_greater_140: DelayedTrueLogicGate,
+    vertical_speed_less_80: DelayedTrueLogicGate,
+    vertical_speed_within_140: DelayedTrueLogicGate,
+}
+impl FlightPhaseLoop {
+    pub fn new() -> Self {
+        Self {
+            is_climb_active: false,
+            is_hold_active: false,
+
+            vertical_speed_greater_140: DelayedTrueLogicGate::new(Duration::from_secs(10)),
+            vertical_speed_less_80: DelayedTrueLogicGate::new(Duration::from_secs(10)),
+            vertical_speed_within_140: DelayedTrueLogicGate::new(Duration::from_secs(10)),
+        }
+    }
+
+    pub fn update(&mut self, context: &UpdateContext) {
+        // TODO: Use correct signals here
+        let is_on_ground = context.is_on_ground();
+        let altitude_selected = context.pressure_altitude();
+        let vertical_speed = context.vertical_speed();
+
+        self.vertical_speed_greater_140
+            .update(context, vertical_speed.get::<foot_per_minute>() >= 140.);
+        self.vertical_speed_less_80
+            .update(context, vertical_speed.get::<foot_per_minute>() < 80.);
+        self.vertical_speed_within_140.update(
+            context,
+            vertical_speed.get::<foot_per_minute>().abs() <= 140.,
+        );
+
+        self.is_climb_active = (self.vertical_speed_greater_140.output() || self.is_climb_active)
+            && (!self.vertical_speed_less_80.output() || !self.is_climb_active)
+            && !is_on_ground;
+
+        self.is_hold_active = !is_on_ground
+            && altitude_selected.get::<foot>() < 25000.
+            && self.vertical_speed_within_140.output();
+    }
+
+    pub fn is_climb_active(&self) -> bool {
+        self.is_climb_active
+    }
+
+    pub fn is_hold_active(&self) -> bool {
+        self.is_hold_active
+    }
+}
+
 #[cfg(test)]
-mod tests {
+pub mod tests {
+    use ntest::assert_about_eq;
     use systems::{
         air_conditioning::{AdirsToAirCondInterface, PackFlowControllers, ZoneType},
         electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
@@ -1419,8 +1885,8 @@ mod tests {
         },
         shared::{
             arinc429::{Arinc429Word, SignStatus},
-            ApuBleedAirValveSignal, CabinAltitude, CabinSimulation, ControllerSignal,
-            ElectricalBusType, ElectricalBuses, EmergencyElectricalState, EngineBleedPushbutton,
+            interpolation, ApuBleedAirValveSignal, CabinAltitude, CabinSimulation,
+            ControllerSignal, ElectricalBusType, ElectricalBuses, EmergencyElectricalState,
             EngineCorrectedN1, EngineFirePushButtons, EngineStartState, HydraulicColor,
             InternationalStandardAtmosphere, LgciuWeightOnWheels, MachNumber, PackFlowValveState,
             PneumaticBleed, PneumaticValve, PotentialOrigin,
@@ -1434,8 +1900,13 @@ mod tests {
     use std::{fs, fs::File, time::Duration};
 
     use uom::si::{
-        f64::*, length::foot, mass_rate::kilogram_per_second, pressure::psi, ratio::ratio,
-        thermodynamic_temperature::degree_celsius, velocity::knot,
+        f64::*,
+        length::foot,
+        mass_rate::kilogram_per_second,
+        pressure::psi,
+        ratio::ratio,
+        thermodynamic_temperature::degree_celsius,
+        velocity::{foot_per_minute, knot},
     };
 
     use crate::air_conditioning::{A320AirConditioningSystem, A320PressurizationOverheadPanel};
@@ -1470,7 +1941,6 @@ mod tests {
             engines: [&impl EngineCorrectedN1; 2],
             engine_fire_push_buttons: &impl EngineFirePushButtons,
             pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
-            pneumatic_overhead: &impl EngineBleedPushbutton<2>,
             lgciu: [&impl LgciuWeightOnWheels; 2],
         ) {
             self.a320_air_conditioning_system.update(
@@ -1480,7 +1950,6 @@ mod tests {
                 engines,
                 engine_fire_push_buttons,
                 pneumatic,
-                pneumatic_overhead,
                 &self.pressurization,
                 &self.pressurization_overhead,
                 lgciu,
@@ -1794,7 +2263,6 @@ mod tests {
                 [&self.engine_1, &self.engine_2],
                 &self.fire_pushbuttons,
                 &self.pneumatic,
-                &self.pneumatic_overhead_panel,
                 [&self.lgciu; 2],
             )
         }
@@ -1826,6 +2294,9 @@ mod tests {
         }
     }
     impl PneumaticTestBed {
+        const N1_BREAKPOINTS: [f64; 2] = [0.2, 0.87];
+        const N2_BREAKPOINTS: [f64; 2] = [0.7, 1.05];
+
         fn new() -> Self {
             let mut test_bed = Self {
                 test_bed: SimulationTestBed::<PneumaticTestAircraft>::new(|context| {
@@ -1849,6 +2320,10 @@ mod tests {
             self
         }
 
+        fn run_multiple_frames(&mut self, duration: Duration) {
+            self.test_bed.run_multiple_frames(duration);
+        }
+
         fn mach_number(mut self, mach: MachNumber) -> Self {
             self.write_by_name("AIRSPEED MACH", mach);
 
@@ -1856,6 +2331,7 @@ mod tests {
         }
 
         fn in_isa_atmosphere(mut self, altitude: Length) -> Self {
+            self.set_pressure_altitude(altitude);
             self.set_ambient_pressure(InternationalStandardAtmosphere::pressure_at_altitude(
                 altitude,
             ));
@@ -1868,7 +2344,7 @@ mod tests {
 
         fn idle_eng1(mut self) -> Self {
             self.write_by_name("GENERAL ENG STARTER ACTIVE:1", true);
-            self.write_by_name("TURB ENG CORRECTED N2:1", Ratio::new::<ratio>(0.55));
+            self.write_by_name("TURB ENG CORRECTED N2:1", Ratio::new::<ratio>(0.7));
             self.write_by_name("TURB ENG CORRECTED N1:1", Ratio::new::<ratio>(0.2));
             self.write_by_name("ENGINE_STATE:1", EngineState::On);
 
@@ -1877,7 +2353,7 @@ mod tests {
 
         fn idle_eng2(mut self) -> Self {
             self.write_by_name("GENERAL ENG STARTER ACTIVE:2", true);
-            self.write_by_name("TURB ENG CORRECTED N2:2", Ratio::new::<ratio>(0.55));
+            self.write_by_name("TURB ENG CORRECTED N2:2", Ratio::new::<ratio>(0.7));
             self.write_by_name("TURB ENG CORRECTED N1:2", Ratio::new::<ratio>(0.2));
             self.write_by_name("ENGINE_STATE:2", EngineState::On);
 
@@ -1886,8 +2362,8 @@ mod tests {
 
         fn toga_eng1(mut self) -> Self {
             self.write_by_name("GENERAL ENG STARTER ACTIVE:1", true);
-            self.write_by_name("TURB ENG CORRECTED N2:1", Ratio::new::<ratio>(0.65));
-            self.write_by_name("TURB ENG CORRECTED N1:1", Ratio::new::<ratio>(0.99));
+            self.write_by_name("TURB ENG CORRECTED N2:1", Ratio::new::<ratio>(1.05));
+            self.write_by_name("TURB ENG CORRECTED N1:1", Ratio::new::<ratio>(0.87));
             self.write_by_name("ENGINE_STATE:1", EngineState::On);
 
             self
@@ -1895,9 +2371,55 @@ mod tests {
 
         fn toga_eng2(mut self) -> Self {
             self.write_by_name("GENERAL ENG STARTER ACTIVE:2", true);
-            self.write_by_name("TURB ENG CORRECTED N2:2", Ratio::new::<ratio>(0.65));
-            self.write_by_name("TURB ENG CORRECTED N1:2", Ratio::new::<ratio>(0.99));
+            self.write_by_name("TURB ENG CORRECTED N2:2", Ratio::new::<ratio>(1.05));
+            self.write_by_name("TURB ENG CORRECTED N1:2", Ratio::new::<ratio>(0.87));
             self.write_by_name("ENGINE_STATE:2", EngineState::On);
+
+            self
+        }
+
+        fn eng1_n1(mut self, n1: f64) -> Self {
+            self.write_by_name("GENERAL ENG STARTER ACTIVE:1", true);
+            self.write_by_name("TURB ENG CORRECTED N1:1", Ratio::new::<ratio>(n1));
+            self.write_by_name("ENGINE_STATE:1", EngineState::On);
+
+            self
+        }
+
+        fn eng1_n2(mut self, n2: f64) -> Self {
+            self.write_by_name("TURB ENG CORRECTED N2:1", Ratio::new::<ratio>(n2));
+
+            self
+        }
+
+        fn eng2_n1(mut self, n1: f64) -> Self {
+            self.write_by_name("GENERAL ENG STARTER ACTIVE:2", true);
+            self.write_by_name("TURB ENG CORRECTED N1:2", Ratio::new::<ratio>(n1));
+            self.write_by_name("ENGINE_STATE:2", EngineState::On);
+
+            self
+        }
+
+        fn eng2_n2(mut self, n2: f64) -> Self {
+            self.write_by_name("TURB ENG CORRECTED N2:2", Ratio::new::<ratio>(n2));
+
+            self
+        }
+
+        fn and_eng1_n2_based_on_n1(mut self) -> Self {
+            let n1 = self.read_by_name("TURB ENG CORRECTED N1:1");
+            let n2 = interpolation(&Self::N1_BREAKPOINTS, &Self::N2_BREAKPOINTS, n1);
+
+            self.write_by_name("TURB ENG CORRECTED N2:1", Ratio::new::<ratio>(n2));
+
+            self
+        }
+
+        fn and_eng2_n2_based_on_n1(mut self) -> Self {
+            let n1 = self.read_by_name("TURB ENG CORRECTED N1:2");
+            let n2 = interpolation(&Self::N1_BREAKPOINTS, &Self::N2_BREAKPOINTS, n1);
+
+            self.write_by_name("TURB ENG CORRECTED N2:2", Ratio::new::<ratio>(n2));
 
             self
         }
@@ -1970,6 +2492,10 @@ mod tests {
             self.query(|a| a.pneumatic.engine_systems[number - 1].transfer_pressure())
         }
 
+        fn regulated_pressure(&self, number: usize) -> Pressure {
+            self.query(|a| a.pneumatic.engine_systems[number - 1].regulated_pressure())
+        }
+
         fn precooler_inlet_pressure(&self, number: usize) -> Pressure {
             self.query(|a| a.pneumatic.engine_systems[number - 1].precooler_inlet_pressure())
         }
@@ -1993,6 +2519,15 @@ mod tests {
         fn differential_pressure_transducer_signal(&self, number: usize) -> Option<Pressure> {
             self.query(|a| {
                 a.pneumatic.engine_systems[number - 1].differential_pressure_transducer_pressure()
+            })
+        }
+
+        fn bleed_temperature_sensor_temperature(
+            &self,
+            number: usize,
+        ) -> Option<ThermodynamicTemperature> {
+            self.query(|a| {
+                a.pneumatic.engine_systems[number - 1].bleed_temperature_sensor_temperature()
             })
         }
 
@@ -2024,6 +2559,10 @@ mod tests {
             self.query(|a| a.pneumatic.engine_systems[number - 1].transfer_temperature())
         }
 
+        fn regulated_temperature(&self, number: usize) -> ThermodynamicTemperature {
+            self.query(|a| a.pneumatic.engine_systems[number - 1].regulated_temperature())
+        }
+
         fn precooler_inlet_temperature(&self, number: usize) -> ThermodynamicTemperature {
             self.query(|a| a.pneumatic.engine_systems[number - 1].precooler_inlet_temperature())
         }
@@ -2045,6 +2584,14 @@ mod tests {
                 a.pneumatic.engine_systems[number - 1]
                     .engine_starter_container
                     .temperature()
+            })
+        }
+
+        fn ip_valve_is_open(&self, number: usize) -> bool {
+            self.query(|a| {
+                a.pneumatic.engine_systems[number - 1]
+                    .intermediate_pressure_valve
+                    .is_open()
             })
         }
 
@@ -2102,12 +2649,19 @@ mod tests {
             self
         }
 
+        fn set_engine_bleed_push_button_auto(mut self, number: usize) -> Self {
+            self.write_by_name(&format!("OVHD_PNEU_ENG_{}_BLEED_PB_IS_AUTO", number), true);
+
+            self
+        }
+
         fn set_apu_bleed_valve_signal(mut self, signal: ApuBleedAirValveSignal) -> Self {
             self.command(|a| a.apu.set_bleed_air_valve_signal(signal));
 
             self
         }
 
+        /// For test cases where APU bleed is supposed to be on, call `set_bleed_air_running()`
         fn set_apu_bleed_air_pb(mut self, is_on: bool) -> Self {
             self.write_by_name("OVHD_APU_BLEED_PB_IS_ON", is_on);
 
@@ -2115,11 +2669,11 @@ mod tests {
         }
 
         fn set_bleed_air_running(mut self) -> Self {
-            self.command(|a| a.apu.set_bleed_air_pressure(Pressure::new::<psi>(42.)));
+            self.command(|a| a.apu.set_bleed_air_pressure(Pressure::new::<psi>(50.)));
             self.command(|a| {
                 a.apu
                     .set_bleed_air_temperature(ThermodynamicTemperature::new::<degree_celsius>(
-                        250.,
+                        165.,
                     ))
             });
 
@@ -2220,6 +2774,14 @@ mod tests {
             self.query(|a| a.pneumatic.fadec.is_single_vs_dual_bleed_config())
         }
 
+        fn bmc_in_low_temperature_regulation(&self, bmc_number: usize) -> bool {
+            self.query(|a| {
+                a.pneumatic.bleed_monitoring_computers[bmc_number - 1]
+                    .main_channel
+                    .is_in_low_temperature_regulation()
+            })
+        }
+
         fn pack_flow_valve_flow(&self, engine_number: usize) -> MassRate {
             self.query(|a| {
                 a.pneumatic.packs[engine_number - 1]
@@ -2233,6 +2795,14 @@ mod tests {
                 a.pneumatic.packs[engine_number - 1]
                     .pack_container
                     .pressure()
+            })
+        }
+
+        fn pack_temperature(&self, engine_number: usize) -> ThermodynamicTemperature {
+            self.query(|a| {
+                a.pneumatic.packs[engine_number - 1]
+                    .pack_container
+                    .temperature()
             })
         }
 
@@ -2354,30 +2924,40 @@ mod tests {
     #[ignore]
     fn full_graphing_test() {
         let alt = Length::new::<foot>(0.);
+        let ambient_pressure = InternationalStandardAtmosphere::pressure_at_altitude(alt);
+        println!("Ambient pressure: {} psi", ambient_pressure.get::<psi>());
 
         let mut test_bed = test_bed_with()
-            .idle_eng1()
-            .idle_eng2()
             .in_isa_atmosphere(alt)
-            .set_bleed_air_running()
+            .stop_eng1()
+            .idle_eng2()
+            .mach_number(MachNumber(0.0))
             .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Auto)
-            .both_packs_auto();
+            .set_pack_flow_pb_is_auto(1, true)
+            .set_pack_flow_pb_is_auto(2, false);
+
+        test_bed.set_on_ground(true);
+        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(0.));
 
         let mut time_points = Vec::new();
         let mut high_pressures = Vec::new();
         let mut intermediate_pressures = Vec::new();
         let mut transfer_pressures = Vec::new(); // Transfer pressure (before PRV)
+        let mut regulated_pressures = Vec::new(); // Precooler inlet pressure
         let mut precooler_inlet_pressures = Vec::new(); // Precooler inlet pressure
         let mut precooler_outlet_pressures = Vec::new(); // Precooler outlet pressure
         let mut precooler_supply_pressures = Vec::new(); // Precooler cooling air pressure
         let mut engine_starter_container_pressures = Vec::new(); // Precooler cooling air pressure
+        let mut pack_container_pressures = Vec::new();
         let mut intermediate_pressure_compressor_temperatures = Vec::new();
         let mut high_pressure_compressor_temperatures = Vec::new(); // Transfer temperature (before PRV)
         let mut transfer_temperatures = Vec::new(); // Precooler inlet temperature
+        let mut regulated_temperatures = Vec::new(); // Precooler inlet temperature
         let mut precooler_inlet_temperatures = Vec::new(); // Precooler outlet temperature
         let mut precooler_outlet_temperatures = Vec::new(); // Precooler cooling air temperature
         let mut precooler_supply_temperatures = Vec::new();
         let mut engine_starter_container_temperatures = Vec::new();
+        let mut pack_container_temperatures = Vec::new();
         let mut high_pressure_valve_open_amounts = Vec::new();
         let mut pressure_regulating_valve_open_amounts = Vec::new();
         let mut intermediate_pressure_valve_open_amounts = Vec::new();
@@ -2385,23 +2965,51 @@ mod tests {
         let mut apu_bleed_valve_open_amounts = Vec::new();
         let mut fan_air_valve_open_amounts = Vec::new();
 
-        for i in 1..6000 {
-            time_points.push(i as f64 * 16.);
+        let update_step_ms = 32;
+        let num_steps = 5000;
 
-            high_pressures.push(test_bed.hp_pressure(1).get::<psi>());
-            intermediate_pressures.push(test_bed.ip_pressure(1).get::<psi>());
-            transfer_pressures.push(test_bed.transfer_pressure(1).get::<psi>());
-            precooler_inlet_pressures.push(test_bed.precooler_inlet_pressure(1).get::<psi>());
-            precooler_outlet_pressures.push(test_bed.precooler_outlet_pressure(1).get::<psi>());
-            precooler_supply_pressures.push(test_bed.precooler_supply_pressure(1).get::<psi>());
-            engine_starter_container_pressures
-                .push(test_bed.engine_starter_container_pressure(1).get::<psi>());
+        let set_toga_thrust_at_step = 1500;
+        // 8s * 1000 steps / 16 ms = 500 steps
+        let n1_profile_timesteps: [f64; 2] = [set_toga_thrust_at_step as f64, 2750.];
+        // let n1_profile: [f64; 2] = [0.2, 0.87];
+        let n1_profile: [f64; 2] = [0.2, 0.87];
+
+        for i in 1..num_steps {
+            time_points.push((i * update_step_ms) as f64);
+
+            if i > set_toga_thrust_at_step {
+                let n1 = interpolation(&n1_profile_timesteps, &n1_profile, i as f64);
+                test_bed = test_bed
+                    .eng1_n1(n1)
+                    .and_eng1_n2_based_on_n1()
+                    .eng2_n1(n1)
+                    .and_eng2_n2_based_on_n1()
+            }
+
+            high_pressures.push((test_bed.hp_pressure(1) - ambient_pressure).get::<psi>());
+            intermediate_pressures.push((test_bed.ip_pressure(1) - ambient_pressure).get::<psi>());
+            transfer_pressures
+                .push((test_bed.transfer_pressure(1) - ambient_pressure).get::<psi>());
+            regulated_pressures
+                .push((test_bed.regulated_pressure(1) - ambient_pressure).get::<psi>());
+            precooler_inlet_pressures
+                .push((test_bed.precooler_inlet_pressure(1) - ambient_pressure).get::<psi>());
+            precooler_outlet_pressures
+                .push((test_bed.precooler_outlet_pressure(1) - ambient_pressure).get::<psi>());
+            precooler_supply_pressures
+                .push((test_bed.precooler_supply_pressure(1) - ambient_pressure).get::<psi>());
+            engine_starter_container_pressures.push(
+                (test_bed.engine_starter_container_pressure(1) - ambient_pressure).get::<psi>(),
+            );
+            pack_container_pressures
+                .push((test_bed.pack_pressure(1) - ambient_pressure).get::<psi>());
 
             intermediate_pressure_compressor_temperatures
                 .push(test_bed.ip_temperature(1).get::<degree_celsius>());
             high_pressure_compressor_temperatures
                 .push(test_bed.hp_temperature(1).get::<degree_celsius>());
             transfer_temperatures.push(test_bed.transfer_temperature(1).get::<degree_celsius>());
+            regulated_temperatures.push(test_bed.regulated_temperature(1).get::<degree_celsius>());
             precooler_inlet_temperatures.push(
                 test_bed
                     .precooler_inlet_temperature(1)
@@ -2422,6 +3030,7 @@ mod tests {
                     .engine_starter_container_temperature(1)
                     .get::<degree_celsius>(),
             );
+            pack_container_temperatures.push(test_bed.pack_temperature(1).get::<degree_celsius>());
 
             high_pressure_valve_open_amounts.push(test_bed.query(|aircraft| {
                 aircraft.pneumatic.engine_systems[0]
@@ -2464,12 +3073,33 @@ mod tests {
                     .get::<ratio>()
             }));
 
-            test_bed.run_with_delta(Duration::from_millis(32));
+            test_bed.run_with_delta(Duration::from_millis(update_step_ms));
         }
 
-        assert!(test_bed.hp_valve_is_powered(1));
-        assert!(test_bed.pr_valve_is_powered(1));
-        assert!(test_bed.fan_air_valve_is_powered(1));
+        println!(
+            "Final IP pressure: {:.2} psig",
+            (test_bed.ip_pressure(1) - ambient_pressure).get::<psi>()
+        );
+
+        println!(
+            "Final regulated pressure: {:.2} psig",
+            test_bed
+                .regulated_pressure_transducer_signal(1)
+                .unwrap()
+                .get::<psi>()
+        );
+        println!(
+            "Final outlet temperature: {:.2} °C",
+            test_bed
+                .bleed_temperature_sensor_temperature(1)
+                .unwrap()
+                .get::<degree_celsius>()
+        );
+
+        println!(
+            "Final PS3 pressure: {:.2} psia",
+            test_bed.hp_pressure(1).get::<psi>()
+        );
 
         // If anyone is wondering, I am using python to plot pressure curves. This will be removed once the model is complete.
         let data = vec![
@@ -2477,17 +3107,21 @@ mod tests {
             high_pressures,
             intermediate_pressures,
             transfer_pressures,
+            regulated_pressures,
             precooler_inlet_pressures,
             precooler_outlet_pressures,
             precooler_supply_pressures,
             engine_starter_container_pressures,
+            pack_container_pressures,
             high_pressure_compressor_temperatures,
             intermediate_pressure_compressor_temperatures,
             transfer_temperatures,
+            regulated_temperatures,
             precooler_inlet_temperatures,
             precooler_outlet_temperatures,
             precooler_supply_temperatures,
             engine_starter_container_temperatures,
+            pack_container_temperatures,
             high_pressure_valve_open_amounts,
             pressure_regulating_valve_open_amounts,
             intermediate_pressure_valve_open_amounts,
@@ -2496,8 +3130,8 @@ mod tests {
             fan_air_valve_open_amounts,
         ];
 
-        if fs::create_dir_all("../a320_pneumatic_simulation_graph_data").is_ok() {
-            let mut file = File::create("../a320_pneumatic_simulation_graph_data/generic_data.txt")
+        if fs::create_dir_all("../a320_pneumatic_simulation_graphs/out").is_ok() {
+            let mut file = File::create("../a320_pneumatic_simulation_graphs/out/generic_data.txt")
                 .expect("Could not create file");
 
             use std::io::Write;
@@ -2540,9 +3174,9 @@ mod tests {
         // If anyone is wondering, I am using python to plot pressure curves. This will be removed once the model is complete.
         let data = vec![ts, green_pressures, blue_pressures, yellow_pressures];
 
-        if fs::create_dir_all("../a320_pneumatic_simulation_graph_data").is_ok() {
+        if fs::create_dir_all("../a320_pneumatic_simulation_graphs/out").is_ok() {
             let mut file = File::create(
-                "../a320_pneumatic_simulation_graph_data/hydraulic_reservoir_pressures_data.txt",
+                "../a320_pneumatic_simulation_graphs/out/hydraulic_reservoir_pressures_data.txt",
             )
             .expect("Could not create file");
 
@@ -2581,9 +3215,9 @@ mod tests {
         // If anyone is wondering, I am using python to plot pressure curves. This will be removed once the model is complete.
         let data = vec![ts, left_pressures, right_pressures];
 
-        if fs::create_dir_all("../a320_pneumatic_simulation_graph_data").is_ok() {
+        if fs::create_dir_all("../a320_pneumatic_simulation_graphs/out").is_ok() {
             let mut file =
-                File::create("../a320_pneumatic_simulation_graph_data/pack_pressures_data.txt")
+                File::create("../a320_pneumatic_simulation_graphs/out/pack_pressures_data.txt")
                     .expect("Could not create file");
 
             use std::io::Write;
@@ -2745,6 +3379,91 @@ mod tests {
     }
 
     #[test]
+    fn apu_bleed_engine_start() {
+        let mut test_bed = test_bed_with()
+            .start_eng1()
+            .stop_eng2()
+            .set_bleed_air_running()
+            .and_stabilize();
+
+        assert!(test_bed.apu_bleed_valve_is_open());
+
+        assert!(test_bed.es_valve_is_open(1));
+        assert!(!test_bed.es_valve_is_open(2));
+
+        assert!(
+            // 21 psi because that's where the ECAM indication turns amber, which we don't want in normal ops
+            test_bed.regulated_pressure_transducer_signal(1).unwrap() > Pressure::new::<psi>(21.),
+        );
+
+        test_bed = test_bed.idle_eng1().start_eng2().and_stabilize();
+
+        assert!(!test_bed.es_valve_is_open(1));
+        assert!(test_bed.es_valve_is_open(2));
+
+        assert!(
+            // 21 psi because that's where the ECAM indication turns amber, which we don't want in normal ops
+            test_bed.regulated_pressure_transducer_signal(2).unwrap() > Pressure::new::<psi>(21.),
+        );
+    }
+
+    #[test]
+    fn cross_bleed_engine_start() {
+        let mut test_bed = test_bed_with()
+            .start_eng1()
+            .eng2_n1(0.3)
+            .eng2_n2(0.75)
+            .set_engine_bleed_push_button_off(1)
+            .set_engine_bleed_push_button_auto(2)
+            .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Open)
+            .and_stabilize();
+
+        // APU bleed should not be on
+        assert!(!test_bed.apu_bleed_valve_is_open());
+
+        assert!(test_bed.es_valve_is_open(1));
+        assert!(!test_bed.es_valve_is_open(2));
+
+        println!(
+            "Precooler inlet pressure #1: {:.2} psig",
+            test_bed
+                .regulated_pressure_transducer_signal(1)
+                .unwrap()
+                .get::<psi>()
+        );
+
+        assert!(
+            // 21 psi because that's where the ECAM indication turns amber, which we don't want in normal ops
+            test_bed.regulated_pressure_transducer_signal(1).unwrap() > Pressure::new::<psi>(21.),
+        );
+
+        test_bed = test_bed
+            .eng1_n1(0.3)
+            .eng1_n2(0.75)
+            .start_eng2()
+            .set_engine_bleed_push_button_auto(1)
+            .set_engine_bleed_push_button_off(2)
+            .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Open)
+            .and_stabilize();
+
+        assert!(!test_bed.es_valve_is_open(1));
+        assert!(test_bed.es_valve_is_open(2));
+
+        println!(
+            "Precooler inlet pressure #2: {:.2} psig",
+            test_bed
+                .regulated_pressure_transducer_signal(2)
+                .unwrap()
+                .get::<psi>()
+        );
+
+        assert!(
+            // 21 psi because that's where the ECAM indication turns amber, which we don't want in normal ops
+            test_bed.regulated_pressure_transducer_signal(2).unwrap() > Pressure::new::<psi>(21.),
+        );
+    }
+
+    #[test]
     fn cross_bleed_valve_opens_when_apu_bleed_valve_opens() {
         let mut test_bed = test_bed_with()
             .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Auto)
@@ -2828,8 +3547,12 @@ mod tests {
         assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_PRECOOLER_INLET_TEMPERATURE"));
         assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_PRECOOLER_INLET_TEMPERATURE"));
 
-        assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_PRECOOLER_OUTLET_TEMPERATURE"));
-        assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_PRECOOLER_OUTLET_TEMPERATURE"));
+        assert!(
+            test_bed.contains_variable_with_name("PNEU_ENG_1_BLEED_TEMPERATURE_SENSOR_TEMPERATURE")
+        );
+        assert!(
+            test_bed.contains_variable_with_name("PNEU_ENG_2_BLEED_TEMPERATURE_SENSOR_TEMPERATURE")
+        );
 
         assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_STARTER_CONTAINER_TEMPERATURE"));
         assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_STARTER_CONTAINER_TEMPERATURE"));
@@ -2858,7 +3581,17 @@ mod tests {
         assert!(test_bed.contains_variable_with_name("OVHD_PNEU_ENG_1_BLEED_PB_IS_AUTO"));
         assert!(test_bed.contains_variable_with_name("OVHD_PNEU_ENG_2_BLEED_PB_IS_AUTO"));
 
-        assert!(test_bed.contains_variable_with_name("PNEU_XBLEED_VALVE_OPEN"));
+        assert!(test_bed.contains_variable_with_name("PNEU_XBLEED_VALVE_FULLY_OPEN"));
+        assert!(test_bed.contains_variable_with_name("PNEU_XBLEED_VALVE_FULLY_CLOSED"));
+
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_LOW_TEMPERATURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_LOW_TEMPERATURE"));
+
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_OVERHEAT"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_OVERHEAT"));
+
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_1_OVERPRESSURE"));
+        assert!(test_bed.contains_variable_with_name("PNEU_ENG_2_OVERPRESSURE"));
     }
 
     #[test]
@@ -3227,6 +3960,9 @@ mod tests {
         assert!(test_bed.pr_valve_is_powered(1));
         assert!(test_bed.pr_valve_is_powered(2));
 
+        assert!(test_bed.fan_air_valve_is_powered(1));
+        assert!(test_bed.fan_air_valve_is_powered(2));
+
         test_bed = test_bed.set_dc_ess_shed_bus_power(false).and_run();
 
         assert!(!test_bed.hp_valve_is_powered(1));
@@ -3242,6 +3978,9 @@ mod tests {
 
         assert!(!test_bed.pr_valve_is_powered(1));
         assert!(!test_bed.pr_valve_is_powered(2));
+
+        assert!(!test_bed.fan_air_valve_is_powered(1));
+        assert!(!test_bed.fan_air_valve_is_powered(2));
     }
 
     #[test]
@@ -3350,14 +4089,14 @@ mod tests {
 
     #[test]
     fn pr_valve_regulates_to_42_psig_in_dual_bleed_config() {
-        let mut test_bed = test_bed_with()
-            .idle_eng1()
-            .idle_eng2()
+        let test_bed = test_bed_with()
+            .eng1_n1(0.30) // Put on a bit of power to make sure we have enough pressure
+            .eng1_n2(0.82)
+            .eng2_n1(0.30)
+            .eng2_n2(0.82)
             .mach_number(MachNumber(0.))
-            .both_packs_auto();
-
-        // We need a bit of time to get into an equilibrium state
-        test_bed.run_with_delta(Duration::from_secs(30));
+            .both_packs_auto()
+            .and_stabilize(); // We need a bit of time to get into an equilibrium state
 
         let eng1_pressure = test_bed.regulated_pressure_transducer_signal(1).unwrap();
         let eng2_pressure = test_bed.regulated_pressure_transducer_signal(2).unwrap();
@@ -3373,14 +4112,13 @@ mod tests {
 
     #[test]
     fn pr_valve_regulates_to_50_psig_in_single_bleed_config() {
-        let mut test_bed = test_bed_with()
+        let test_bed = test_bed_with()
             .stop_eng1()
-            .idle_eng2()
+            .eng2_n1(0.4)
+            .and_eng2_n2_based_on_n1() // Not quite idle to make sure we have enough upstream pressure
             .mach_number(MachNumber(0.))
-            .both_packs_auto();
-
-        // We need a bit of time to get into an equilibrium state
-        test_bed.run_with_delta(Duration::from_secs(30));
+            .both_packs_auto()
+            .and_stabilize();
 
         let eng1_pressure = test_bed.regulated_pressure_transducer_signal(1).unwrap();
         let eng2_pressure = test_bed.regulated_pressure_transducer_signal(2).unwrap();
@@ -3427,6 +4165,383 @@ mod tests {
                     < Pressure::new::<psi>(0.1)
             );
         }
+    }
+
+    #[test]
+    fn maximum_hp_pressure_660_psig() {
+        let altitude = Length::new::<foot>(0.);
+        let ambient_pressure = InternationalStandardAtmosphere::pressure_at_altitude(altitude);
+
+        // The state doesn't really matter here
+        let test_bed = test_bed_with()
+            .toga_eng1()
+            .toga_eng2()
+            .mach_number(MachNumber(0.))
+            .and_stabilize();
+
+        for i in 1..2 {
+            println!(
+                "Final HP #{} pressure: {} psig.",
+                i,
+                (test_bed.hp_pressure(i) - ambient_pressure).get::<psi>()
+            );
+
+            assert!(test_bed.hp_pressure(i) - ambient_pressure > Pressure::new::<psi>(600.));
+            assert!(test_bed.hp_pressure(i) - ambient_pressure < Pressure::new::<psi>(670.));
+        }
+    }
+
+    #[test]
+    fn maximum_ip_pressure_150_psig() {
+        let altitude = Length::new::<foot>(0.);
+        let ambient_pressure = InternationalStandardAtmosphere::pressure_at_altitude(altitude);
+
+        // The state doesn't really matter here
+        let test_bed = test_bed_with()
+            .toga_eng1()
+            .toga_eng2()
+            .mach_number(MachNumber(0.))
+            .and_stabilize();
+
+        for i in 1..2 {
+            println!(
+                "Final IP #{} pressure: {} psig.",
+                i,
+                (test_bed.ip_pressure(i) - ambient_pressure).get::<psi>()
+            );
+
+            assert!(test_bed.ip_pressure(i) - ambient_pressure > Pressure::new::<psi>(120.));
+            assert!(test_bed.ip_pressure(i) - ambient_pressure < Pressure::new::<psi>(165.));
+        }
+    }
+
+    #[test]
+    fn ip_hp_switching_wai_off_dual_bleed() {
+        let altitude = Length::new::<foot>(0.);
+        let ambient_pressure = InternationalStandardAtmosphere::pressure_at_altitude(altitude);
+
+        let mut test_bed = test_bed_with()
+            .idle_eng1()
+            .idle_eng2()
+            .mach_number(MachNumber(0.))
+            .wing_anti_ice_push_button(WingAntiIcePushButtonMode::Off)
+            .and_stabilize();
+
+        for i in 1..2 {
+            // Below the switching threshold
+            assert!(test_bed.ip_pressure(i) - ambient_pressure < Pressure::new::<psi>(38.9));
+
+            // Check HP pressure is used
+            assert!(!test_bed.ip_valve_is_open(i));
+            assert!(test_bed.hp_valve_is_open(i));
+        }
+
+        // Spool up engines to increase IP pressure
+        test_bed = test_bed
+            .eng1_n1(0.5)
+            .and_eng1_n2_based_on_n1()
+            .eng2_n1(0.5)
+            .and_eng2_n2_based_on_n1()
+            .and_stabilize();
+
+        for i in 1..2 {
+            // Above the switching threshold
+            assert!(test_bed.ip_pressure(i) - ambient_pressure > Pressure::new::<psi>(38.9));
+
+            // Check IP pressure is used
+            assert!(test_bed.ip_valve_is_open(i));
+            assert!(!test_bed.hp_valve_is_open(i));
+        }
+    }
+
+    #[test]
+    fn ip_hp_switching_wai_on_dual_bleed() {
+        let altitude = Length::new::<foot>(0.);
+        let ambient_pressure = InternationalStandardAtmosphere::pressure_at_altitude(altitude);
+
+        let mut test_bed = test_bed_with()
+            .idle_eng1()
+            .idle_eng2()
+            .mach_number(MachNumber(0.))
+            .wing_anti_ice_push_button(WingAntiIcePushButtonMode::On)
+            .and_stabilize();
+
+        for i in 1..2 {
+            // Below the switching threshold
+            assert!(test_bed.ip_pressure(i) - ambient_pressure < Pressure::new::<psi>(43.2));
+
+            // Check HP pressure is used
+            assert!(test_bed.hp_valve_is_open(i));
+        }
+
+        // Spool up engines to increase IP pressure
+        test_bed = test_bed
+            .eng1_n1(0.6)
+            .and_eng1_n2_based_on_n1()
+            .eng2_n1(0.6)
+            .and_eng2_n2_based_on_n1()
+            .and_stabilize();
+
+        for i in 1..2 {
+            // Above the switching threshold
+            assert!(test_bed.ip_pressure(i) - ambient_pressure > Pressure::new::<psi>(43.2));
+
+            // Check IP pressure is used
+            assert!(test_bed.ip_valve_is_open(i));
+            assert!(!test_bed.hp_valve_is_open(i));
+        }
+    }
+
+    #[test]
+    fn ip_hp_switching_wai_off_single_bleed() {
+        let altitude = Length::new::<foot>(0.);
+        let ambient_pressure = InternationalStandardAtmosphere::pressure_at_altitude(altitude);
+
+        let mut test_bed = test_bed_with()
+            .idle_eng1()
+            .stop_eng2()
+            .mach_number(MachNumber(0.))
+            .wing_anti_ice_push_button(WingAntiIcePushButtonMode::Off)
+            .both_packs_auto()
+            .and_stabilize();
+
+        // Below the switching threshold
+        assert!(test_bed.ip_pressure(1) - ambient_pressure < Pressure::new::<psi>(48.2));
+
+        // Check HP pressure is used
+        assert!(test_bed.hp_valve_is_open(1));
+
+        // Spool up engines to increase IP pressure
+        test_bed = test_bed
+            .eng1_n1(0.8)
+            .and_eng1_n2_based_on_n1()
+            .and_stabilize();
+
+        // Above the switching threshold
+        assert!(test_bed.ip_pressure(1) - ambient_pressure > Pressure::new::<psi>(48.2));
+
+        // Check IP pressure is used
+        assert!(!test_bed.hp_valve_is_open(1));
+    }
+
+    #[test]
+    fn ip_hp_switching_wai_on_single_bleed() {
+        let altitude = Length::new::<foot>(0.);
+        let ambient_pressure = InternationalStandardAtmosphere::pressure_at_altitude(altitude);
+
+        let mut test_bed = test_bed_with()
+            .idle_eng1()
+            .idle_eng2()
+            .mach_number(MachNumber(0.))
+            .wing_anti_ice_push_button(WingAntiIcePushButtonMode::On)
+            .and_stabilize();
+
+        // Below the switching threshold
+        assert!(test_bed.ip_pressure(1) - ambient_pressure < Pressure::new::<psi>(60.5));
+
+        // Check HP pressure is used
+        assert!(test_bed.hp_valve_is_open(1));
+
+        // Spool up engines to increase IP pressure
+        test_bed = test_bed
+            .eng1_n1(0.8)
+            .and_eng1_n2_based_on_n1()
+            .eng2_n1(0.8)
+            .and_eng2_n2_based_on_n1()
+            .and_stabilize();
+
+        // Above the switching threshold
+        assert!(test_bed.ip_pressure(1) - ambient_pressure > Pressure::new::<psi>(60.5));
+
+        // Check IP pressure is used
+        assert!(!test_bed.hp_valve_is_open(1));
+    }
+
+    #[test]
+    fn bleed_temperature_sensor() {
+        let test_bed = test_bed_with().idle_eng1().idle_eng2().and_stabilize();
+
+        assert_about_eq!(
+            test_bed
+                .precooler_outlet_temperature(1)
+                .get::<degree_celsius>(),
+            test_bed
+                .bleed_temperature_sensor_temperature(1)
+                .unwrap()
+                .get::<degree_celsius>(),
+            1.
+        );
+        assert_about_eq!(
+            test_bed
+                .precooler_outlet_temperature(2)
+                .get::<degree_celsius>(),
+            test_bed
+                .bleed_temperature_sensor_temperature(2)
+                .unwrap()
+                .get::<degree_celsius>(),
+            1.
+        );
+    }
+
+    #[test]
+    fn forced_hp_bleed_with_wai_on() {
+        let altitude = Length::new::<foot>(0.);
+
+        let mut test_bed = test_bed_with()
+            .in_isa_atmosphere(altitude)
+            .eng1_n1(0.5)
+            .and_eng1_n2_based_on_n1()
+            .eng2_n1(0.5)
+            .and_eng2_n2_based_on_n1()
+            .both_packs_auto()
+            .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Auto);
+
+        test_bed.set_on_ground(true);
+        test_bed = test_bed.and_stabilize();
+
+        assert!(!test_bed.hp_valve_is_open(1));
+        assert!(!test_bed.hp_valve_is_open(2));
+
+        assert!(
+            test_bed
+                .bleed_temperature_sensor_temperature(1)
+                .unwrap()
+                .get::<degree_celsius>()
+                < 185.
+        );
+        assert!(
+            test_bed
+                .bleed_temperature_sensor_temperature(2)
+                .unwrap()
+                .get::<degree_celsius>()
+                < 185.
+        );
+
+        test_bed = test_bed
+            .wing_anti_ice_push_button(WingAntiIcePushButtonMode::On)
+            .and_run();
+
+        assert!(test_bed.hp_valve_is_open(1));
+        assert!(test_bed.hp_valve_is_open(2));
+    }
+
+    #[test]
+    fn precooler_inlet_pressure_drop_starter_valve_open() {
+        let mut test_bed = test_bed_with()
+            .stop_eng1()
+            .stop_eng2()
+            .set_bleed_air_running()
+            .set_pack_flow_pb_is_auto(1, false)
+            .set_pack_flow_pb_is_auto(2, false)
+            .and_stabilize();
+
+        // Create some pressure in both precooler inlets
+        assert!(
+            test_bed.regulated_pressure_transducer_signal(1).unwrap() > Pressure::new::<psi>(24.)
+        );
+        assert!(
+            test_bed.regulated_pressure_transducer_signal(2).unwrap() > Pressure::new::<psi>(24.)
+        );
+
+        assert!(!test_bed.pr_valve_is_open(1));
+        assert!(!test_bed.pr_valve_is_open(2));
+
+        test_bed = test_bed
+            .set_apu_bleed_valve_signal(ApuBleedAirValveSignal::new_closed())
+            .set_apu_bleed_air_pb(false);
+        test_bed.run_multiple_frames(Duration::from_secs(1));
+
+        // At this point, the air should be trapped between the bleed valve and the precooler
+        assert!(!test_bed.apu_bleed_valve_is_open());
+        assert!(!test_bed.pack_flow_valve_is_open(1));
+        assert!(!test_bed.pack_flow_valve_is_open(2));
+
+        // Make sure bleed pressure does not drop significantly
+        test_bed.run_multiple_frames(Duration::from_secs(20));
+
+        assert!(
+            test_bed.regulated_pressure_transducer_signal(1).unwrap() > Pressure::new::<psi>(20.)
+        );
+        assert!(
+            test_bed.regulated_pressure_transducer_signal(2).unwrap() > Pressure::new::<psi>(20.)
+        );
+
+        // This will open the starter valve
+        test_bed = test_bed.start_eng2().and_stabilize();
+
+        // Check starter valve has opened
+        assert!(test_bed.es_valve_is_open(2));
+        // Check pressure has dropped below 5 psig as air escaped through the starter valve
+
+        println!(
+            "Precooler inlet pressure #2: {:.2} psig",
+            test_bed
+                .regulated_pressure_transducer_signal(2)
+                .unwrap()
+                .get::<psi>()
+        );
+        assert!(
+            test_bed.regulated_pressure_transducer_signal(2).unwrap() < Pressure::new::<psi>(10.)
+        );
+    }
+
+    #[test]
+    fn bmc_climb_phase_detection() {
+        let mut test_bed = test_bed_with()
+            .eng1_n1(0.8)
+            .and_eng1_n2_based_on_n1()
+            .eng2_n1(0.8)
+            .and_eng2_n2_based_on_n1();
+
+        test_bed.set_on_ground(false);
+        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(500.));
+        test_bed.run_multiple_frames(Duration::from_secs(5));
+        // >25000 ft, so we don't trigger the HOLD phase
+        test_bed = test_bed.in_isa_atmosphere(Length::new::<foot>(26000.));
+
+        // Should not be in climb phase yet
+        assert!(!test_bed.bmc_in_low_temperature_regulation(1));
+        assert!(!test_bed.bmc_in_low_temperature_regulation(2));
+
+        // Enter climb phase
+        test_bed.run_multiple_frames(Duration::from_secs(30));
+
+        assert!(test_bed.bmc_in_low_temperature_regulation(1));
+        assert!(test_bed.bmc_in_low_temperature_regulation(2));
+
+        // No longer in climb phase if VS < 140 for 10s or more
+        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(0.));
+        test_bed.run_multiple_frames(Duration::from_secs(15));
+
+        assert!(!test_bed.bmc_in_low_temperature_regulation(1));
+        assert!(!test_bed.bmc_in_low_temperature_regulation(2));
+    }
+
+    #[test]
+    fn bmc_hold_phase_detection() {
+        let mut test_bed = test_bed_with()
+            .in_isa_atmosphere(Length::new::<foot>(20000.))
+            .eng1_n1(0.7)
+            .and_eng1_n2_based_on_n1()
+            .eng2_n1(0.7)
+            .and_eng2_n2_based_on_n1();
+
+        test_bed.set_on_ground(false);
+        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(0.));
+
+        // Should be in hold phase
+        test_bed.run_multiple_frames(Duration::from_secs(60));
+
+        assert!(test_bed.bmc_in_low_temperature_regulation(1));
+        assert!(test_bed.bmc_in_low_temperature_regulation(2));
+
+        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(-500.));
+
+        // Should no longer be in hold phase
+        test_bed.run_multiple_frames(Duration::from_secs(1));
+
+        assert!(!test_bed.bmc_in_low_temperature_regulation(1));
+        assert!(!test_bed.bmc_in_low_temperature_regulation(2));
     }
 
     mod wing_anti_ice {

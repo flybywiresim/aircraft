@@ -96,6 +96,7 @@ export const A380SeatOutlineUpperBg = ({ stroke, highlight }: SeatOutlineBgProps
         <g
             data-name="BASE SVG"
             transform="rotate(-90,232.02035,273.88408)"
+            opacity="0.75"
         >
             <g stroke={stroke} strokeWidth={1}>
                 <g strokeWidth={2}>
