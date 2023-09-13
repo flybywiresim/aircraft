@@ -254,7 +254,7 @@ class CDUVerticalRevisionPage {
                 return;
             }
 
-            if (value.match(/^[0-9]{1,3}$/ === null)) {
+            if (value.match(/^[0-9]{1,3}$/) === null) {
                 mcdu.setScratchpadMessage(NXSystemMessages.formatError);
                 scratchpadCallback();
                 return;
