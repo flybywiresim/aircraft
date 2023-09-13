@@ -65,6 +65,7 @@ jobs:
           ./scripts/dev-env/run.sh ./scripts/build.sh --no-tty -j 4
           rm -rf fbw-a32nx/src
       - name: Generate install.json
+        if: github.event.pull_request.auto_merge == false
         run: |
           df -h
           ./scripts/dev-env/run.sh node ./scripts/fragment_a32nx.js
