@@ -41,6 +41,13 @@
 1. [EFB/FWC] Auto Call Outs selectable - @tracernz (Mike)
 1. [FWC] Added "twenty five hundred" and "two thousand" callouts - @tracernz (Mike)
 1. [FMS] Load procedures that reference a runway correctly - @tracernz (Mike)
+1. [MCDU/ND] Corrected altitude formatting with respect to transition altitude and transition level - @tracernz (Mike)
+1. [PFD] Adjusted size of pitch trim messages - @tracernz (Mike)
+1. [BLEED] Allow engine start from crossbleed air - @BlueberryKing (BlueberryKing)
+1. [BLEED] Improve bleed page visuals on the SD - @BlueberryKing (BlueberryKing)
+1. [BLEED] Use more accurate pneumatic valves and sensors - @BlueberryKing (BlueberryKing)
+1. [EFB] flyPad OS 3.2 - Cosmetic changes for throttle configuration settings and support for multiple airframes - @2hwk (2cas)
+1. [SD] Connect SD BLEED page APU bleed pressure indication to correct ADRs - @BlueberryKing (BlueberryKing)
 
 ## 0.10.0
 
@@ -1303,3 +1310,4 @@
 1. [ISIS] Fixed issue where ISIS was allowing a bug to be set while in the OFF state - Patrick Macken (@Pat M on
    Discord)
 1. [EFB] Restructured APIs and made Navigraph Auth a reusable component - @MicahBCode (Mischa Binder)
+1. [ECAM] Added F units to CRZ and COND pages for Cabin temps.  Currently tied to kg/lbs  option in EFB -Patrick Macken  (@PatM on Discord)
