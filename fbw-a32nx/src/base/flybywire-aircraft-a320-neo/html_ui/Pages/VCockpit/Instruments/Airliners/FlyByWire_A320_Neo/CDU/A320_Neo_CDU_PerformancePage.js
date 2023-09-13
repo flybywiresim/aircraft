@@ -901,8 +901,9 @@ class CDUPerformancePage {
         }
 
         let titleCell = `${"\xa0".repeat(5)}{${titleColor}}APPR{end}\xa0`;
-        if (approach && approach.name) {
-            titleCell += `{green}${approach.name}{end}` + "\xa0".repeat(24 - 10 - approach.name.length);
+        if (approach) {
+            const approachName = Fmgc.ApproachUtils.shortApproachName(approach);
+            titleCell += `{green}${approachName}{end}` + "\xa0".repeat(24 - 10 - approachName.length);
         } else {
             titleCell += "\xa0".repeat(24 - 10);
         }

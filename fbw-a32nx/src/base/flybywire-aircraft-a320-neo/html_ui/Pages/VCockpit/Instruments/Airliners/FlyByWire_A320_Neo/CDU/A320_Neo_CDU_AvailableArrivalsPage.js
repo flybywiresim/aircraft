@@ -69,7 +69,7 @@ class CDUAvailableArrivalsPage {
         const selectedApproach = targetPlan.approach;
 
         if (selectedApproach && selectedApproach.ident) {
-            selectedApproachCell = Fmgc.NavigationDatabase.formatShortApproachIdent(selectedApproach);
+            selectedApproachCell = Fmgc.ApproachUtils.shortApproachName(selectedApproach);
             selectedApproachCellColor = flightPlanAccentColor;
 
             const selectedApproachTransition = targetPlan.approachVia;
@@ -131,7 +131,7 @@ class CDUAvailableArrivalsPage {
 
                     }
 
-                    rows[2 * i] = [`{cyan}{${Fmgc.NavigationDatabase.formatShortApproachIdent(approach)}{end}`, "", "{sp}{sp}{sp}{sp}" + runwayLength + "{small}M{end}[color]cyan"];
+                    rows[2 * i] = [`{cyan}{${Fmgc.ApproachUtils.shortApproachName(approach)}{end}`, "", "{sp}{sp}{sp}{sp}" + runwayLength + "{small}M{end}[color]cyan"];
                     rows[2 * i + 1] = ["{sp}{sp}{sp}{sp}" + runwayCourse + "[color]cyan"];
 
                     mcdu.onLeftInput[i + 2] = async () => {

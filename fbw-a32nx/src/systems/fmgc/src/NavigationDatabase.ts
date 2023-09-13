@@ -136,14 +136,6 @@ export class NavigationDatabase {
         }
     }
 
-    static formatShortApproachIdent(approach: Approach): string {
-        const ident = this.formatLongApproachIdent(approach);
-        if (ident.startsWith('RNAV')) {
-            return `RNV${ident.substring(4)}`;
-        }
-        return ident;
-    }
-
     static formatLongRunwayIdent(airportIdent: string, runwayIdent: string): string {
         return `${airportIdent}${this.formatShortRunwayIdent(runwayIdent)}`;
     }
