@@ -135,7 +135,7 @@ export class LandingSystemSelectionManager {
             return false;
         }
 
-        const frequencies = await this.flightPlanService.navigationDatabase.backendDatabase.getIlsAtAirport(airport.ident);
+        const frequencies = await NavigationDatabaseService.activeDatabase.backendDatabase.getIlsAtAirport(airport.ident);
         const runwayFrequencies = frequencies.filter((it) => it.runwayIdent === runway.ident);
 
         for (const frequency of runwayFrequencies) {
@@ -176,10 +176,10 @@ export class LandingSystemSelectionManager {
         }
 
         if (checkRunwayFrequencies) {
-            const runways = await this.flightPlanService.navigationDatabase.backendDatabase.getRunways(airport.ident);
+            const runways = await NavigationDatabaseService.activeDatabase.backendDatabase.getRunways(airport.ident);
             const runway = runways.find((it) => it.ident === approach.runwayIdent);
 
-            if (runway && await this.setIlsFromRunway(airport, runway, finalLeg.waypoint.databaseId, true)) {
+            if (runway && await this.setIlsFromRunway(airport, runway, finalLeg.recommendedNavaid.databaseId, true)) {
                 return true;
             }
         }
