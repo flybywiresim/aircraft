@@ -32,8 +32,23 @@ class CDUFlightPlanPage {
             return [runwayText, runwayAlt];
         }
 
-        function formatAltitudeOrLevel(altitudeToFormat) {
-            if (mcdu.flightPlanManager.getOriginTransitionAltitude() >= 100 && altitudeToFormat > mcdu.flightPlanManager.getOriginTransitionAltitude()) {
+        /**
+         * Formats an altitude as an altitude or flight level for display.
+         * @param {number} altitudeToFormat  The altitude in feet.
+         * @param {boolean} useTransAlt Whether to use transition altitude, otherwise transition level is used.
+         * @returns {string} The formatted altitude/level.
+         */
+        function formatAltitudeOrLevel(altitudeToFormat, useTransAlt) {
+            let isFl = false;
+            if (useTransAlt) {
+                const transAlt = mcdu.flightPlanManager.getOriginTransitionAltitude();
+                isFl = transAlt !== undefined && altitudeToFormat > transAlt;
+            } else {
+                const transLevel = mcdu.flightPlanManager.getDestinationTransitionLevel();
+                isFl = transLevel !== undefined && altitudeToFormat >= (transLevel * 100);
+            }
+
+            if (isFl) {
                 return `FL${(altitudeToFormat / 100).toFixed(0).padStart(3,"0")}`;
             }
 
@@ -142,6 +157,9 @@ class CDUFlightPlanPage {
                 waypointsAndMarkers.push({ marker: Markers.NO_ALTN_FPLN, fpIndex: i});
             }
         }
+
+        const tocIndex = waypointsAndMarkers.findIndex(({ pwp }) => pwp && pwp.ident === '(T/C)');
+
         // TODO: Alt F-PLAN
 
         // Render F-PLAN Display
@@ -165,6 +183,9 @@ class CDUFlightPlanPage {
         } else {
             rowsCount = waypointsAndMarkers.length;
         }
+
+        /** Whether to use transition altitude or transition level for formatting altitudes. */
+        let useTransitionAltitude = false;
 
         // Only examine first 5 (or less) waypoints/markers
         const scrollWindow = [];
@@ -197,6 +218,16 @@ class CDUFlightPlanPage {
                         break;
                 }
             }
+
+            const constraintType = wp ? CDUVerticalRevisionPage.constraintType(mcdu, wp) : WaypointConstraintType.Unknown;
+            if (constraintType === WaypointConstraintType.CLB) {
+                useTransitionAltitude = true;
+            } else if (constraintType === WaypointConstraintType.DES) {
+                useTransitionAltitude = false;
+            } else if (tocIndex >= 0) {
+                // FIXME Guess because VNAV doesn't tell us whether altitudes are climb or not \o/
+                useTransitionAltitude = winI <= tocIndex;
+            } // else we stick with the last time we were sure...
 
             if (wp) {
                 // Waypoint
@@ -362,7 +393,7 @@ class CDUFlightPlanPage {
                             altitudeToFormat = verticalWaypoint.altitude;
                         }
 
-                        altitudeConstraint = formatAltitudeOrLevel(altitudeToFormat);
+                        altitudeConstraint = formatAltitudeOrLevel(altitudeToFormat, useTransitionAltitude);
 
                         if (verticalWaypoint) {
                             altPrefix = verticalWaypoint.isAltitudeConstraintMet ? "{magenta}*{end}" : "{amber}*{end}";
@@ -374,7 +405,7 @@ class CDUFlightPlanPage {
                     // In this case `altitudeConstraint is actually just the predictedAltitude`
                     } else if (vnavPredictionsMapByWaypoint && !hasAltConstraint) {
                         if (verticalWaypoint && verticalWaypoint.altitude) {
-                            altitudeConstraint = formatAltitudeOrLevel(verticalWaypoint.altitude);
+                            altitudeConstraint = formatAltitudeOrLevel(verticalWaypoint.altitude, useTransitionAltitude);
                         } else {
                             altitudeConstraint = "-----";
                         }
@@ -523,7 +554,7 @@ class CDUFlightPlanPage {
                 };
                 let altColor = "white";
                 if (!shouldHidePredictions && Number.isFinite(pwp.flightPlanInfo.altitude)) {
-                    altitudeConstraint.alt = formatAltitudeOrLevel(pwp.flightPlanInfo.altitude);
+                    altitudeConstraint.alt = formatAltitudeOrLevel(pwp.flightPlanInfo.altitude, useTransitionAltitude);
                     altColor = color;
                 }
 
