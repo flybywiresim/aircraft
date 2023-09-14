@@ -28,6 +28,7 @@ impl Communications {
     pub fn new(context: &mut InitContext) -> Self {
         Self {
             amu: AudioManagementUnit::new(context),
+            
             rmp_cpt: Some(RadioManagementPanel::new_cpt(context)),
             rmp_fo: Some(RadioManagementPanel::new_fo(context)),
 
