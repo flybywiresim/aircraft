@@ -10,7 +10,7 @@ use uom::si::{
     velocity::{foot_per_minute, foot_per_second, meter_per_second},
 };
 
-use super::{Read, SimulatorReader};
+use super::{ExternalData, Read, SimulatorReader};
 use crate::{
     shared::{low_pass_filter::LowPassFilter, MachNumber},
     simulation::{InitContext, SideControlling, VariableIdentifier},
@@ -198,6 +198,7 @@ pub struct UpdateContext {
     precipitation_rate: Length,
     in_cloud: bool,
     side_controlling: SideControlling,
+    external_data: ExternalData,
 }
 impl UpdateContext {
     pub(crate) const IS_READY_KEY: &'static str = "IS_READY";
@@ -344,6 +345,7 @@ impl UpdateContext {
             precipitation_rate: Length::default(),
             in_cloud: false,
             side_controlling,
+            external_data: Default::default(),
         }
     }
 
@@ -425,6 +427,7 @@ impl UpdateContext {
             total_yaw_inertia_slug_foot_squared: 1.,
             precipitation_rate: Length::default(),
             in_cloud: false,
+            external_data: Default::default(),
         }
     }
 
@@ -434,6 +437,7 @@ impl UpdateContext {
         reader: &mut SimulatorReader,
         delta: Duration,
         simulation_time: f64,
+        external_data: &ExternalData,
     ) {
         self.ambient_temperature = reader.read(&self.ambient_temperature_id);
         self.indicated_airspeed = reader.read(&self.indicated_airspeed_id);
@@ -497,6 +501,8 @@ impl UpdateContext {
         self.update_relative_wind();
 
         self.update_local_acceleration_plane_reference(delta);
+
+        self.external_data = *external_data;
     }
 
     // Computes local acceleration including world gravity and plane acceleration
@@ -675,6 +681,10 @@ impl UpdateContext {
 
     pub fn side_controlling(&self) -> SideControlling {
         self.side_controlling
+    }
+
+    pub fn external_data(&self) -> ExternalData {
+        self.external_data
     }
 
     pub fn with_delta(&self, delta: Duration) -> Self {

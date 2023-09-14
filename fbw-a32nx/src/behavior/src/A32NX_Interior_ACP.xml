@@ -83,7 +83,7 @@
             <ANIM_NAME>#ANIM_NAME_BUTTON_VHF_L#</ANIM_NAME>
             <NODE_ID_SEQ1>#NODE_ID_BUTTON_SEQ1_VHF_L#</NODE_ID_SEQ1>
             <NODE_ID_SEQ2>#NODE_ID_BUTTON_SEQ2_VHF_L#</NODE_ID_SEQ2>
-            <TRANSMIT_ID>0</TRANSMIT_ID>
+            <TRANSMIT_ID>1</TRANSMIT_ID>
             <BLINK_ID>1</BLINK_ID>
             <TOOLTIP_PB>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_VHF_L</TOOLTIP_PB>
         </UseTemplate>
@@ -108,7 +108,7 @@
             <ANIM_NAME>#ANIM_NAME_BUTTON_VHF_C#</ANIM_NAME>
             <NODE_ID_SEQ1>#NODE_ID_BUTTON_SEQ1_VHF_C#</NODE_ID_SEQ1>
             <NODE_ID_SEQ2>#NODE_ID_BUTTON_SEQ2_VHF_C#</NODE_ID_SEQ2>
-            <TRANSMIT_ID>1</TRANSMIT_ID>
+            <TRANSMIT_ID>2</TRANSMIT_ID>
             <BLINK_ID>2</BLINK_ID>
             <TOOLTIP>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_VHF_C</TOOLTIP>
         </UseTemplate>
@@ -133,7 +133,7 @@
             <ANIM_NAME>#ANIM_NAME_BUTTON_VHF_R#</ANIM_NAME>
             <NODE_ID_SEQ1>#NODE_ID_BUTTON_SEQ1_VHF_R#</NODE_ID_SEQ1>
             <NODE_ID_SEQ2>#NODE_ID_BUTTON_SEQ2_VHF_R#</NODE_ID_SEQ2>
-            <TRANSMIT_ID>2</TRANSMIT_ID>
+            <TRANSMIT_ID>3</TRANSMIT_ID>
             <BLINK_ID>4</BLINK_ID>
             <TOOLTIP>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_VHF_R</TOOLTIP>
         </UseTemplate>
@@ -158,7 +158,7 @@
             <ANIM_NAME>#ANIM_NAME_BUTTON_HF1#</ANIM_NAME>
             <NODE_ID_SEQ1>#NODE_ID_BUTTON_SEQ1_HF1#</NODE_ID_SEQ1>
             <NODE_ID_SEQ2>#NODE_ID_BUTTON_SEQ2_HF1#</NODE_ID_SEQ2>
-            <TRANSMIT_ID>3</TRANSMIT_ID>
+            <TRANSMIT_ID>4</TRANSMIT_ID>
             <BLINK_ID>8</BLINK_ID>
             <TOOLTIP>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_HF_L</TOOLTIP>
         </UseTemplate>
@@ -210,7 +210,7 @@
             <NODE_ID_SEQ2>#NODE_ID_BUTTON_SEQ2_MECH#</NODE_ID_SEQ2>
             <TRANSMIT_ID>6</TRANSMIT_ID>
             <BLINK_ID>32</BLINK_ID>
-            <BLINK_VAR>(L:A32NX_ACP_MECH_CALLING)</BLINK_VAR>
+            <BLINK_VAR>(L:A32NX_ACP#ID#_MECH_CALLING)</BLINK_VAR>
             <TOOLTIP>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_INT</TOOLTIP>
         </UseTemplate>
 
@@ -236,7 +236,7 @@
             <NODE_ID_SEQ2>#NODE_ID_BUTTON_SEQ2_ATT#</NODE_ID_SEQ2>
             <TRANSMIT_ID>7</TRANSMIT_ID>
             <BLINK_ID>64</BLINK_ID>
-            <BLINK_VAR>(L:A32NX_ACP_ATT_CALLING)</BLINK_VAR>
+            <BLINK_VAR>(L:A32NX_ACP#ID#_ATT_CALLING)</BLINK_VAR>
             <TOOLTIP>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_CAB</TOOLTIP>
         </UseTemplate>
 
@@ -409,7 +409,7 @@
 
     <Template Name="FBW_AIRLINER_Audio_Push_Transmit_Template">
         <DefaultTemplateParameters>
-            <BLINK_VAR>(L:A32NX_ACP_SELCAL)</BLINK_VAR>
+            <BLINK_VAR>(L:A32NX_ACP#ID#_SELCAL)</BLINK_VAR>
             <LEFT_SINGLE_CODE>
                 #TRANSMIT_ID# (L:A32NX_ACP#ID#_TRANSMIT_PUSHED) != if{
                     #TRANSMIT_ID# (&gt;L:A32NX_ACP#ID#_TRANSMIT_PUSHED)
@@ -424,13 +424,13 @@
                 <!-- Green light -->
                 <SEQ1_EMISSIVE_CODE>
                     #SEQ1_POWERED# if{
-                        (L:A32NX_ACP#ID#_TRANSMIT_CHANNEL) #TRANSMIT_ID# == (L:A32NX_OVHD_INTLT_ANN) 0 == or #EMISSIVE_DIM# *
+                        (L:A32NX_ACP#ID#_TRANSMIT_CHANNEL) #TRANSMIT_ID# == #EMISSIVE_TEST# or #EMISSIVE_DIM# *
                     }
                 </SEQ1_EMISSIVE_CODE>
                     <!-- Button name light (for example CALL or MECH)-->
                 <SEQ2_EMISSIVE_CODE>
                     #SEQ1_POWERED# if{
-                        (L:A32NX_ACP#ID#_TRANSMIT_CHANNEL) #TRANSMIT_ID# == #BLINK_ID# #BLINK_VAR# == ^ (L:A32NX_OVHD_INTLT_ANN) 0 == or #EMISSIVE_DIM# *
+                        (L:A32NX_ACP#ID#_TRANSMIT_CHANNEL) #TRANSMIT_ID# == #BLINK_ID# #BLINK_VAR# == ^ #EMISSIVE_TEST# or #EMISSIVE_DIM# *
                     }
                 </SEQ2_EMISSIVE_CODE>
             </True>
@@ -438,13 +438,13 @@
                 <!-- Green light -->
                 <SEQ1_EMISSIVE_CODE>
                     #SEQ1_POWERED# if{
-                        (L:A32NX_ACP#ID#_TRANSMIT_CHANNEL) #TRANSMIT_ID# == (L:A32NX_OVHD_INTLT_ANN) 0 == or #EMISSIVE_DIM# *
+                        (L:A32NX_ACP#ID#_TRANSMIT_CHANNEL) #TRANSMIT_ID# == #EMISSIVE_TEST# or #EMISSIVE_DIM# *
                     }
                 </SEQ1_EMISSIVE_CODE>
                     <!-- Button name light (for example CALL or MECH)-->
                 <SEQ2_EMISSIVE_CODE>
                     #SEQ1_POWERED# if{
-                        (L:A32NX_ACP#ID#_TRANSMIT_CHANNEL) #TRANSMIT_ID# == (L:A32NX_OVHD_INTLT_ANN) 0 == or #EMISSIVE_DIM# *
+                        (L:A32NX_ACP#ID#_TRANSMIT_CHANNEL) #TRANSMIT_ID# == #EMISSIVE_TEST# or #EMISSIVE_DIM# *
                     }
                 </SEQ2_EMISSIVE_CODE>
             </False>

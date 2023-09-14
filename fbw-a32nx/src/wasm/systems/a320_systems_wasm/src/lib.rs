@@ -341,6 +341,9 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_named_variable("FSDT_GSX_BOARDING_CARGO_PERCENT")?
     .provides_named_variable("FSDT_GSX_DEBOARDING_CARGO_PERCENT")?
     .provides_aircraft_variable("MARKER SOUND", "Bool", 0)?
+    .provides_aircraft_variable("COM_VOLUME", "number", 1)?
+    .provides_aircraft_variable("COM_VOLUME", "number", 2)?
+    .provides_aircraft_variable("COM_VOLUME", "number", 3)?
     .with_aspect(|builder| {
         builder.copy(
             Variable::aircraft("APU GENERATOR SWITCH", "Bool", 0),

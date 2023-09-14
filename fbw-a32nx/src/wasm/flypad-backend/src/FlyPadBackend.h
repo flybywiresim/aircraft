@@ -38,8 +38,6 @@ enum ClientData {
 // Local data structure for simconnect data
 struct SimulationData {
   double simulationTime;
-  INT64 volumeCOM1;
-  INT64 volumeCOM2;
 };
 
 // Data structure for PushbackDataID
@@ -57,17 +55,6 @@ struct ATCServicesData {
   uint8_t volumeCOM2;
 };
 
-struct ATCServicesDataIVAO {
-  uint8_t selcal;
-  uint8_t volumeCOM1;
-  uint8_t volumeCOM2;
-};
-
-struct ATCServicesDataVPILOT {
-  uint8_t loaded;  // Set to 1 if the aircraft is loaded. 0 once unloaded. If loaded, vPilot does not play the SELCAL sound
-  uint8_t selcal;
-};
-
 enum Events {
   KEY_TUG_HEADING_EVENT,
   KEY_TUG_SPEED_EVENT,
@@ -77,9 +64,6 @@ enum Events {
 class LightPreset;
 class AircraftPreset;
 class Pushback;
-class ATCServices;
-struct ATCServicesDataIVAO;
-struct ATCServicesDataVPILOT;
 
 class FlyPadBackend {
  private:
@@ -101,7 +85,6 @@ class FlyPadBackend {
   std::unique_ptr<LightPreset> lightPresetPtr;
   std::unique_ptr<AircraftPreset> aircraftPresetPtr;
   std::unique_ptr<Pushback> pushbackPtr;
-  std::unique_ptr<ATCServices> ATCServicesPtr;
 
  public:
   /**

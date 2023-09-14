@@ -356,11 +356,14 @@ impl AudioControlPanel {
 
             if self.vhfs[0].has_changed()
                 || transmission_pb_pushed && self.transmit_pushed == TransmitID::Vhf1
+                || self.vhfs[0].update_vhf1(context)
             {
                 self.send_volume_control(bus_acp, 2);
             }
+
             if self.vhfs[1].has_changed()
                 || transmission_pb_pushed && self.transmit_pushed == TransmitID::VHf2
+                || self.vhfs[1].update_vhf2(context)
             {
                 self.send_volume_control(bus_acp, 3);
             }
@@ -483,6 +486,28 @@ impl TransceiverACPFacade {
         }
     }
 
+    pub fn update_vhf1(&mut self, context: &UpdateContext) -> bool {
+        if self.volume != context.external_data().get_volume_com1() as u32 {
+            self.volume = context.external_data().get_volume_com1() as u32;
+            self.changed = true;
+
+            true
+        } else {
+            false
+        }
+    }
+
+    pub fn update_vhf2(&mut self, context: &UpdateContext) -> bool {
+        if self.volume != context.external_data().get_volume_com2() as u32 {
+            self.volume = context.external_data().get_volume_com2() as u32;
+            self.changed = true;
+
+            true
+        } else {
+            false
+        }
+    }
+
     pub fn has_changed(&self) -> bool {
         self.changed
     }
@@ -500,5 +525,11 @@ impl SimulationElement for TransceiverACPFacade {
 
         self.volume = volume;
         self.knob = knob;
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        if self.has_changed() {
+            writer.write(&self.volume_id, self.volume);
+        }
     }
 }
