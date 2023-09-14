@@ -520,6 +520,15 @@ impl SimulationElement for AdaptationBoard {
         self.is_calls_card_powered = buses.is_powered(ElectricalBusType::DirectCurrent(1));
     }
 
+    fn export_to_external_software(&self, data: &mut crate::simulation::ExternalData) {
+        data.set_ivao(
+            0,
+            self.mixed_audio.volume_com1 as u8,
+            self.mixed_audio.volume_com2 as u8,
+        );
+        data.set_vpilot(1, 0);
+    }
+
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.mixed_audio.sound_markers = reader.read(&self.sound_markers_id);
         let ls_fcu1_pressed = reader.read(&self.ls_fcu1_pressed_id);

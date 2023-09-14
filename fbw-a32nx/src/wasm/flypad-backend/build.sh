@@ -44,13 +44,11 @@ clang++ \
   -I "${DIR}/src/Lighting" \
   -I "${DIR}/src/Aircraft" \
   -I "${DIR}/src/Pushback" \
-  -I "${DIR}/src/ATCServices" \
   "${DIR}/src/FlyPadBackend.cpp" \
   "${DIR}/src/Lighting/LightPreset.cpp" \
   "${DIR}/src/Aircraft/AircraftPreset.cpp" \
   "${DIR}/src/Pushback/Pushback.cpp" \
-  "${DIR}/src/Pushback/InertialDampener.cpp" \
-  "${DIR}/src/ATCServices/ATCServices.cpp"
+  "${DIR}/src/Pushback/InertialDampener.cpp"
 
 # restore directory
 popd

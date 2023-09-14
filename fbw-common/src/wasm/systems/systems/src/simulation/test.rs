@@ -18,7 +18,7 @@ use crate::{
 };
 
 use super::{
-    Aircraft, Read, Reader, Simulation, SimulationElement, SimulationElementVisitor,
+    Aircraft, ExternalData, Read, Reader, Simulation, SimulationElement, SimulationElementVisitor,
     SimulationToSimulatorVisitor, SimulatorReaderWriter, SimulatorWriter, UpdateContext, Write,
     Writer,
 };
@@ -288,7 +288,10 @@ impl<T: Aircraft> SimulationTestBed<T> {
     }
 
     pub fn run_with_delta(&mut self, delta: Duration) {
-        self.simulation.tick(delta, 100., &mut self.reader_writer);
+        let mut data: ExternalData = ExternalData::new();
+
+        self.simulation
+            .tick(delta, 100., &mut data, &mut self.reader_writer);
     }
 
     /// Runs a multiple [Simulation] ticks by subdividing given delta on the contained [Aircraft].
@@ -302,11 +305,13 @@ impl<T: Aircraft> SimulationTestBed<T> {
         while executed_duration < delta {
             // Randomly set delta for 12 to 200ms, giving a simulated 83 to 5 fps refresh
             let current_delta = Duration::from_millis(rng.gen_range(12..200));
+            let mut data: ExternalData = ExternalData::new();
 
             if executed_duration + current_delta > delta {
                 self.simulation.tick(
                     (executed_duration + current_delta) - delta,
                     10. + executed_duration.as_secs_f64(),
+                    &mut data,
                     &mut self.reader_writer,
                 );
                 break;
@@ -314,6 +319,7 @@ impl<T: Aircraft> SimulationTestBed<T> {
                 self.simulation.tick(
                     current_delta,
                     10. + executed_duration.as_secs_f64(),
+                    &mut data,
                     &mut self.reader_writer,
                 );
             }
