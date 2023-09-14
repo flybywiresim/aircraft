@@ -1,18 +1,18 @@
-mod acp;
-mod amu;
+mod audio_control_panel;
+mod audio_management_unit;
+mod radio_management_panel;
 mod receivers;
-mod rmp;
 
 use crate::simulation::{
     InitContext, SideControlling, SimulationElement, SimulationElementVisitor, SimulatorWriter,
     UpdateContext, VariableIdentifier, Write,
 };
 
-use self::amu::Amu;
-use self::rmp::RadioManagementPanel;
+use self::audio_management_unit::AudioManagementUnit;
+use self::radio_management_panel::RadioManagementPanel;
 
 pub struct Communications {
-    amu: Amu,
+    amu: AudioManagementUnit,
 
     rmp_cpt: Option<RadioManagementPanel>,
     rmp_fo: Option<RadioManagementPanel>,
@@ -27,7 +27,7 @@ pub struct Communications {
 impl Communications {
     pub fn new(context: &mut InitContext) -> Self {
         Self {
-            amu: Amu::new(context),
+            amu: AudioManagementUnit::new(context),
 
             rmp_cpt: Some(RadioManagementPanel::new_cpt(context)),
             rmp_fo: Some(RadioManagementPanel::new_fo(context)),

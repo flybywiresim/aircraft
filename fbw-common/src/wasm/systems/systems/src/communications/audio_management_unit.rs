@@ -13,7 +13,7 @@ use crate::{
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 
-use super::acp::AudioControlPanel;
+use super::audio_control_panel::AudioControlPanel;
 use super::receivers::{CommTransceiver, NavReceiver};
 
 enum TypeCard {
@@ -171,10 +171,10 @@ pub enum AudioSwitchingKnobPosition {
     Fo,
 }
 
-pub struct Amu {
+pub struct AudioManagementUnit {
     adaptation_board: AdaptationBoard,
 }
-impl Amu {
+impl AudioManagementUnit {
     pub fn new(context: &mut InitContext) -> Self {
         Self {
             adaptation_board: AdaptationBoard::new(context),
@@ -186,7 +186,7 @@ impl Amu {
     }
 }
 
-impl SimulationElement for Amu {
+impl SimulationElement for AudioManagementUnit {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.adaptation_board.accept(visitor);
 
