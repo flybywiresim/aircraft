@@ -10,7 +10,7 @@ ATCServices::ATCServices(HANDLE hSimConnect) : _hSimConnect(hSimConnect) {}
 void ATCServices::initialize() {
   _isInitialized = true;
 
-  notifyATCServicesStart();
+  // notifyATCServicesStart();
 
   std::cout << "FLYPAD_BACKEND (ATCServices): ATCServices initialized" << std::endl;
 }
@@ -157,7 +157,7 @@ void ATCServices::notifyATCServicesShutdown() {
   // MSFS's start/stop sequence, fires start and stop events twice therefore
   // we have to uninit it to make notifyATCServicesStart ineffective
   _isInitialized = false;
-  setATCServicesDataVPILOT(false, false);
+  // setATCServicesDataVPILOT(false, false);
 
   // No need to notify IVAO as it detects unloading itself
   // setATCServicesDataIVAO(false, 0, 0);
@@ -170,7 +170,7 @@ void ATCServices::notifyATCServicesShutdown() {
 void ATCServices::notifyATCServicesStart() const {
   if (_isInitialized) {
     // notifying vPilot the aircraft is loaded
-    setATCServicesDataVPILOT(true, false);
+    // setATCServicesDataVPILOT(true, false);
 
     // No need to notify IVAO as it detects loading itself
     // setATCServicesDataIVAO(false, 80, 40);
