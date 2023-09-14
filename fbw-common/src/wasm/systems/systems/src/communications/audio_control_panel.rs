@@ -1,4 +1,4 @@
-use super::amu::{IdentificationWordAMUACP, LabelWordAMUACP, WordAMUACPInfo};
+use super::audio_management_unit::{IdentificationWordAMUACP, LabelWordAMUACP, WordAMUACPInfo};
 use crate::{
     shared::{
         arinc429::{Arinc429Word, SignStatus},
@@ -11,9 +11,6 @@ use crate::{
 };
 use num_traits::FromPrimitive;
 use std::time::Duration;
-
-// Foundable in XML behaviors for MECH
-//pub const TRANSMIT_ID_INT: u8 = 6;
 
 #[derive(PartialEq, Copy, Clone, Eq)]
 pub enum TransmitID {
