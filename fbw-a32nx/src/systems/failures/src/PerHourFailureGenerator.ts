@@ -21,11 +21,9 @@ export class FailureGeneratorPerHour {
         const failureGeneratorSetting = NXDataStore.get(FailureGeneratorPerHour.settingName, '');
 
         if (!FailureGeneratorPerHour.didOnce) {
-            // console.info(`${FailureGeneratorPerHour.settingName} ${failureGeneratorSetting}`);
             const generatorNumber = Math.floor(failureGeneratorSetting.split(',').length / FailureGeneratorPerHour.numberOfSettingsPerGenerator);
             for (let i = 0; i < generatorNumber; i++) FailureGeneratorPerHour.failureGeneratorArmed[i] = false;
             FailureGeneratorPerHour.didOnce = true;
-            // console.info(`Initialized ${generatorNumber.toString()} generators`);
         }
 
         const currentTime = Date.now();
@@ -40,9 +38,7 @@ export class FailureGeneratorPerHour {
             if (FailureGeneratorPerHour.failureGeneratorArmed[i] && chanceSetting > 0) {
                 const chancePerSecond = chanceSetting / 3600;
                 const rollDice = Math.random();
-                // console.info(`timeStep:${(currentTime - FailureGeneratorPerHour.timePrev).toString()} dice:${rollDice.toString()} chancePerSec:${chancePerSecond.toString()}`);
                 if (rollDice < chancePerSecond * (currentTime - FailureGeneratorPerHour.timePrev) / 1000) {
-                    // console.info('Generator failure triggered');
                     const activeFailures = failureOrchestrator.getActiveFailures();
                     const numberOfFailureToActivate = Math.min(settings[i * FailureGeneratorPerHour.numberOfSettingsPerGenerator + FailuresAtOnceIndex],
                         settings[i * FailureGeneratorPerHour.numberOfSettingsPerGenerator + MaxFailuresIndex] - activeFailures.size);
@@ -63,7 +59,6 @@ export class FailureGeneratorPerHour {
                     || (settings[i * FailureGeneratorPerHour.numberOfSettingsPerGenerator + ArmingIndex] === 2 && RandomFailureGen.getFailureFlightPhase() === FailurePhases.FLIGHT)
                     || settings[i * FailureGeneratorPerHour.numberOfSettingsPerGenerator + ArmingIndex] === 3)) {
                     FailureGeneratorPerHour.failureGeneratorArmed[i] = true;
-                    // console.info('Generator Armed');
                 }
             } else
             if (settings[i * FailureGeneratorPerHour.numberOfSettingsPerGenerator + ArmingIndex] === 0) FailureGeneratorPerHour.failureGeneratorArmed[i] = false;

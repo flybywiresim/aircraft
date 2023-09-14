@@ -35,11 +35,9 @@ export class FailureGeneratorTakeOff {
         const failureGeneratorSetting = NXDataStore.get(FailureGeneratorTakeOff.settingName, '');
 
         if (!FailureGeneratorTakeOff.didOnce) {
-            // console.info(`${FailureGeneratorTakeOff.settingName} ${failureGeneratorSetting}`);
             const generatorNumber = Math.floor(failureGeneratorSetting.split(',').length / FailureGeneratorTakeOff.numberOfSettingsPerGenerator);
             for (let i = 0; i < generatorNumber; i++) FailureGeneratorTakeOff.failureGeneratorArmed[i] = false;
             FailureGeneratorTakeOff.didOnce = true;
-            // console.info(`Initialized ${generatorNumber.toString()} generators`);
         }
 
         const settings : number[] = failureGeneratorSetting.split(',').map(((it) => parseFloat(it)));
@@ -51,8 +49,6 @@ export class FailureGeneratorTakeOff {
         let change = false;
 
         for (let i = 0; i < nbGenerator; i++) {
-            /* console.info(`alt:${altitude.toString()}/${FailureGeneratorTakeOff.failureTakeOffAltitudeThreshold[i]} gs:${
-                gs.toString()}/${FailureGeneratorTakeOff.failureTakeOffSpeedThreshold[i]} ${RandomFailureGen.getFailureFlightPhase().toString()}`); */
             if (FailureGeneratorTakeOff.failureGeneratorArmed[i]
                 && ((altitude >= FailureGeneratorTakeOff.failureTakeOffAltitudeThreshold[i] && FailureGeneratorTakeOff.failureTakeOffAltitudeThreshold[i] !== -1)
                 || (gs >= FailureGeneratorTakeOff.failureTakeOffSpeedThreshold[i] && FailureGeneratorTakeOff.failureTakeOffSpeedThreshold[i] !== -1))) {
@@ -60,7 +56,6 @@ export class FailureGeneratorTakeOff {
                 const numberOfFailureToActivate = Math.min(settings[i * FailureGeneratorTakeOff.numberOfSettingsPerGenerator + FailuresAtOnceIndex],
                     settings[i * FailureGeneratorTakeOff.numberOfSettingsPerGenerator + MaxFailuresIndex] - activeFailures.size);
                 if (numberOfFailureToActivate > 0) {
-                    // console.info('Generator failure triggered');
                     RandomFailureGen.activateRandomFailure(RandomFailureGen.getGeneratorFailurePool(failureOrchestrator, FailureGeneratorTakeOff.uniqueGenPrefix + i.toString()),
                         failureOrchestrator, activeFailures, numberOfFailureToActivate);
                     FailureGeneratorTakeOff.failureGeneratorArmed[i] = false;
@@ -73,10 +68,8 @@ export class FailureGeneratorTakeOff {
 
             const minFailureTakeOffSpeed : number = settings[i * FailureGeneratorTakeOff.numberOfSettingsPerGenerator + FailureGeneratorTakeOff.minSpeedIndex];
             if (!FailureGeneratorTakeOff.failureGeneratorArmed[i]) {
-                // console.info('Not armed');
                 if (settings[i * FailureGeneratorTakeOff.numberOfSettingsPerGenerator + ArmingIndex] > 0) {
                     if (gs < minFailureTakeOffSpeed && RandomFailureGen.getFailureFlightPhase() === FailurePhases.TAKEOFF) {
-                        // console.info('Taking off');
                         if (Math.random() < settings[i * FailureGeneratorTakeOff.numberOfSettingsPerGenerator + FailureGeneratorTakeOff.chancePerTakeOffIndex]) {
                             const chanceFailureLowTakeOffRegime : number = settings[i * FailureGeneratorTakeOff.numberOfSettingsPerGenerator + FailureGeneratorTakeOff.chanceLowIndex];
                             const chanceFailureMediumTakeOffRegime : number = settings[i * FailureGeneratorTakeOff.numberOfSettingsPerGenerator
@@ -90,19 +83,16 @@ export class FailureGeneratorTakeOff {
                                 const temp = Math.random() * (lowMedTakeOffSpeed - minFailureTakeOffSpeed) + minFailureTakeOffSpeed;
                                 FailureGeneratorTakeOff.failureTakeOffAltitudeThreshold[i] = -1;
                                 FailureGeneratorTakeOff.failureTakeOffSpeedThreshold[i] = temp;
-                                // console.info(`Generator Armed at ${temp} knots`);
                             } else if (rolledDice < chanceFailureMediumTakeOffRegime + chanceFailureLowTakeOffRegime) {
                                 // Medium Speed Take Off
                                 const temp = Math.random() * (medHighTakeOffSpeed - lowMedTakeOffSpeed) + lowMedTakeOffSpeed;
                                 FailureGeneratorTakeOff.failureTakeOffAltitudeThreshold[i] = -1;
                                 FailureGeneratorTakeOff.failureTakeOffSpeedThreshold[i] = temp;
-                                // console.info(`Generator Armed at ${temp} knots`);
                             } else {
                                 // High Speed Take Off
                                 const temp = altitude + 10 + Math.random() * takeOffDeltaAltitudeEnd;
                                 FailureGeneratorTakeOff.failureTakeOffAltitudeThreshold[i] = temp;
                                 FailureGeneratorTakeOff.failureTakeOffSpeedThreshold[i] = -1;
-                                // console.info(`Generator Armed at ${temp} feet`);
                             }
                             FailureGeneratorTakeOff.failureGeneratorArmed[i] = true;
                         }

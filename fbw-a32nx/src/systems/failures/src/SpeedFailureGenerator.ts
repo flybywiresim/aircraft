@@ -29,14 +29,12 @@ export class FailureGeneratorSpeed {
         const failureGeneratorSetting = NXDataStore.get(FailureGeneratorSpeed.settingName, '');
 
         if (!FailureGeneratorSpeed.didOnce) {
-            // console.info(`${FailureGeneratorSpeed.settingName} ${failureGeneratorSetting}`);
             const generatorNumber = Math.floor(failureGeneratorSetting.split(',').length / FailureGeneratorSpeed.numberOfSettingsPerGenerator);
             for (let i = 0; i < generatorNumber; i++) {
                 FailureGeneratorSpeed.failureGeneratorArmed[i] = false;
                 FailureGeneratorSpeed.doNotRepeatUntilTakeOff[i] = false;
             }
             FailureGeneratorSpeed.didOnce = true;
-            // console.info(`Initialized ${generatorNumber.toString()} generators`);
         }
 
         const settings : number[] = failureGeneratorSetting.split(',').map(((it) => parseFloat(it)));
@@ -46,12 +44,10 @@ export class FailureGeneratorSpeed {
 
         let change = false;
 
-        // console.info(altitude.toString());
         for (let i = 0; i < nbGenerator; i++) {
             const speedMax = settings[i * FailureGeneratorSpeed.numberOfSettingsPerGenerator + FailureGeneratorSpeed.speedMaxIndex];
             const speedMin = settings[i * FailureGeneratorSpeed.numberOfSettingsPerGenerator + FailureGeneratorSpeed.speedMinIndex];
             const speedCondition = settings[i * FailureGeneratorSpeed.numberOfSettingsPerGenerator + FailureGeneratorSpeed.speedConditionIndex];
-            // console.info(`alt:${altitude.toString()} min:${speedMin.toString()} max:${speedMax.toString()} mode:${speedCondition.toString()}`);
             if (FailureGeneratorSpeed.failureGeneratorArmed[i]) {
                 const failureSpeed = (speedMin + FailureGeneratorSpeed.rolledDice[i] * (speedMax - speedMin));
                 if ((gs > failureSpeed && speedCondition === 0) || (gs < failureSpeed && speedCondition === 1)) {
@@ -76,7 +72,6 @@ export class FailureGeneratorSpeed {
                 || (settings[i * FailureGeneratorSpeed.numberOfSettingsPerGenerator + ArmingIndex] === 2 && RandomFailureGen.getFailureFlightPhase() === FailurePhases.TAKEOFF)
                 || settings[i * FailureGeneratorSpeed.numberOfSettingsPerGenerator + ArmingIndex] === 3)) {
                 FailureGeneratorSpeed.doNotRepeatUntilTakeOff[i] = false;
-                // console.info('Generator Take Off inhibition removed');
             }
 
             if (!FailureGeneratorSpeed.failureGeneratorArmed[i]) {

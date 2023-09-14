@@ -83,12 +83,9 @@ export class RandomFailureGen {
 
     static update(failureOrchestrator : FailuresOrchestrator) {
         const absoluteTime = Date.now();
-        // console.info(`delta : ${(absoluteTime - RandomFailureGen.absoluteTimePrev).toString()}`);
         if (absoluteTime - RandomFailureGen.absoluteTimePrev >= 100.0) {
-            // console.info('100ms');
             RandomFailureGen.basicDataUpdate();
             for (let i = 0; i < RandomFailureGen.failureGeneratorsUpdaters.length; i++) {
-                // console.info('Gen');
                 RandomFailureGen.failureGeneratorsUpdaters[i](failureOrchestrator);
             }
             RandomFailureGen.absoluteTimePrev = absoluteTime;
