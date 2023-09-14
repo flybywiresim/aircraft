@@ -46,6 +46,9 @@
 1. [BLEED] Allow engine start from crossbleed air - @BlueberryKing (BlueberryKing)
 1. [BLEED] Improve bleed page visuals on the SD - @BlueberryKing (BlueberryKing)
 1. [BLEED] Use more accurate pneumatic valves and sensors - @BlueberryKing (BlueberryKing)
+1. [EFB] flyPad OS 3.2 - Cosmetic changes for throttle configuration settings and support for multiple airframes - @2hwk (2cas)
+1. [SD] Connect SD BLEED page APU bleed pressure indication to correct ADRs - @BlueberryKing (BlueberryKing)
+1. [FMS] Use station declination when appropriate for fix info and place/bearing radials - @tracernz (Mike)
 1. [COMMS] Enabled all components of comms panels - @Julian [Z+2 fr en esp]#8476 (Julian Sebline) 
 
 ## 0.10.0
