@@ -544,6 +544,7 @@ impl UpdateContext {
 
             rotation_accel: Vector3::default(),
             rotation_vel: Vector3::default(),
+
             external_data: Default::default(),
         }
     }
