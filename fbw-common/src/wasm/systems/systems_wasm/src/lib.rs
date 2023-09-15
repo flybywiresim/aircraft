@@ -728,7 +728,7 @@ impl Ivao {
     fn new(sim_connect: &mut SimConnect) {
         sim_connect.request_client_data::<Ivao>(
             MsfsHandler::CLIENT_DATA_REQUEST_ID_IVAO,
-            "IVAO Altitude Data",
+            ATCServices::AREA_IVAO,
         );
     }
 }
@@ -741,10 +741,10 @@ pub struct VPilot {
 
 impl VPilot {
     fn new(sim_connect: &mut SimConnect) {
-        sim_connect.create_client_data::<VPilot>("vPILOT FBW");
+        sim_connect.create_client_data::<VPilot>(ATCServices::AREA_VPILOT);
         sim_connect.request_client_data::<VPilot>(
             MsfsHandler::CLIENT_DATA_REQUEST_ID_VPILOT,
-            "vPILOT FBW",
+            ATCServices::AREA_VPILOT,
         );
     }
 }
