@@ -58,7 +58,7 @@ pub trait CargoPayload {
 #[derive(Debug)]
 pub struct BoardingAgent<const P: usize> {
     door_id: VariableIdentifier,
-    door_open_percent: f64,
+    door_open_ratio: Ratio,
     order: [usize; P],
 }
 impl<const P: usize> BoardingAgent<P> {
@@ -207,14 +207,14 @@ impl<const N: usize, const G: usize> PassengerDeck<N, G> {
     fn board_pax_until_target(&mut self, pax_target: i32) {
         let pax_diff = pax_target - self.total_pax_num();
         if pax_diff > 0 {
-            let available_agents: Vec<&BoardingAgent<N>> = self
+            let mut available_agents = self
                 .boarding_agents
                 .iter()
                 .filter(|ba| ba.is_door_open())
-                .collect();
+                .peekable();
 
-            if !available_agents.is_empty() {
-                for boarding_agent in available_agents.iter().cycle().take(pax_diff as usize) {
+            if available_agents.peek().is_some() {
+                for boarding_agent in available_agents.cycle().take(pax_diff as usize) {
                     boarding_agent.handle_one_pax(&mut self.pax);
                 }
             } else {
