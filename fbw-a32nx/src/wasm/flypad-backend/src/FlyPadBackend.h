@@ -48,17 +48,9 @@ struct PushbackData {
   FLOAT64 rotAccelBodyX;
 };
 
-struct ATCServicesData {
-  uint8_t loaded;
-  uint8_t selcal;
-  uint8_t volumeCOM1;
-  uint8_t volumeCOM2;
-};
-
 enum Events {
   KEY_TUG_HEADING_EVENT,
   KEY_TUG_SPEED_EVENT,
-  SIMSTOP,
 };
 
 class LightPreset;
