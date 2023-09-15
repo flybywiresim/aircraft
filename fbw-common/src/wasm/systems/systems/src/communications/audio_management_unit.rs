@@ -17,7 +17,7 @@ use super::audio_control_panel::AudioControlPanel;
 use super::receivers::{CommTransceiver, NavReceiver};
 
 enum TypeCard {
-    Selcal(Selcal),
+    Calls(Calls),
     Bite(Bite),
 }
 
@@ -628,8 +628,7 @@ impl Computer {
     pub fn new_cpt_and_avncs(context: &mut InitContext) -> Self {
         Self {
             audio_card: AudioCard::new(context, 1),
-            // Not used for now
-            _second_card: TypeCard::Selcal(Selcal::new()),
+            _second_card: TypeCard::Calls(Calls::new()),
             is_power_supply_powered: false,
         }
     }
@@ -731,6 +730,7 @@ impl AudioCard {
         bus: &mut Vec<Arinc429Word<u32>>,
         mixed_audio: &mut MixedAudio,
         transmission_table_acp: &mut u32,
+        reset: &mut bool,
     ) {
         let mut can_send_amu_word = false;
 
@@ -753,7 +753,8 @@ impl AudioCard {
                     // No not used so far
                     // let _int = word.get_bits(1, 15) != 0;
                     // let _rad = word.get_bits(1, 16) != 0;
-                    // let _reset = word.get_bits(1, 27) != 0;
+
+                    *reset = word.get_bits(1, 27) != 0;
 
                     *transmission_table_acp = transmission_table;
 
@@ -835,10 +836,21 @@ impl SimulationElement for AudioCard {
     }
 }
 
-pub struct Selcal {}
-impl Selcal {
+#[derive(Default)]
+pub struct Calls {
+    selcal: bool,
+    mech: bool,
+    att: bool,
+}
+impl Calls {
     pub fn new() -> Self {
-        Self {}
+        Self {
+            ..Default::default()
+        }
+    }
+
+    pub fn update(&mut self, context: &UpdateContext) {
+        self.selcal = context.external_data().get_selcal();
     }
 }
 pub struct Bite {}
