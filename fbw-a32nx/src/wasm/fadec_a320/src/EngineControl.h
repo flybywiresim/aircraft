@@ -666,6 +666,8 @@ class EngineControl {
     double b = 0;
     double fuelBurn1 = 0;
     double fuelBurn2 = 0;
+    double apuBurn1 = 0;
+    double apuBurn2 = 0;
 
     double refuelRate = simVars->getRefuelRate();
     double refuelStartedByUser = simVars->getRefuelStartedByUser();
@@ -864,6 +866,16 @@ class EngineControl {
         fuelRightPre = 0;
       }
 
+      /// apu fuel consumption for this frame in pounds
+      double apuFuelConsumption = simVars->getLineFlow(18) * fuelWeightGallon * deltaTime;
+      if (xFeedValve == 0.0) {
+          apuBurn1 = apuFuelConsumption;
+          apuBurn2 = 0;
+      } else {
+          apuBurn1 = apuFuelConsumption * 0.5;
+          apuBurn2 = apuBurn1;
+       }
+
       //--------------------------------------------
       // Fuel used accumulators
       fuelUsedLeft += fuelBurn1;
@@ -877,14 +889,20 @@ class EngineControl {
         case 1:
           fuelBurn2 = fuelBurn1 + fuelBurn2;
           fuelBurn1 = 0;
+          apuBurn1 = 0;
+          apuBurn2 = apuFuelConsumption;
           break;
         case 2:
           fuelBurn1 = fuelBurn1 + fuelBurn2;
           fuelBurn2 = 0;
+          apuBurn1 = apuFuelConsumption;
+          apuBurn2 = 0;
           break;
         case 3:
           fuelBurn1 = 0;
           fuelBurn2 = 0;
+          apuBurn1 = 0;
+          apuBurn2 = 0;
           break;
         default:
           break;
@@ -905,13 +923,10 @@ class EngineControl {
       else if (xfrValveCenterRightOpen)
         xfrCenterToRight = fuelCenterPre - centerQuantity;
 
-      /// apu fuel consumption for this frame in pounds
-      double apuFuelConsumption = simVars->getLineFlow(18) * fuelWeightGallon * deltaTime;
-
       //--------------------------------------------
       // Final Fuel levels for left and right inner tanks
-      fuelLeft = (fuelLeftPre - (fuelBurn1 * KGS_TO_LBS)) + xfrAuxLeft + xfrCenterToLeft - apuFuelConsumption;  // LBS
-      fuelRight = (fuelRightPre - (fuelBurn2 * KGS_TO_LBS)) + xfrAuxRight + xfrCenterToRight;                   // LBS
+      fuelLeft = (fuelLeftPre - (fuelBurn1 * KGS_TO_LBS)) + xfrAuxLeft + xfrCenterToLeft - apuBurn1;  // LBS
+      fuelRight = (fuelRightPre - (fuelBurn2 * KGS_TO_LBS)) + xfrAuxRight + xfrCenterToRight - apuBurn2;                   // LBS
 
       //--------------------------------------------
       // Setting new pre-cycle conditions
