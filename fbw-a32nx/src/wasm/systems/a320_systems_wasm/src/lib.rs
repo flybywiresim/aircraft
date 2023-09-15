@@ -287,6 +287,8 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("GPS GROUND TRUE TRACK", "Degrees", 0)?
     .provides_aircraft_variable("INDICATED ALTITUDE", "Feet", 0)?
     .provides_aircraft_variable("INTERACTIVE POINT OPEN:0", "Percent", 0)?
+    .provides_aircraft_variable("INTERACTIVE POINT OPEN", "Percent", 1)?
+    .provides_aircraft_variable("INTERACTIVE POINT OPEN", "Percent", 2)?
     .provides_aircraft_variable("INTERACTIVE POINT OPEN", "Percent", 3)?
     .provides_aircraft_variable("KOHLSMAN SETTING MB", "Millibars", 1)?
     .provides_aircraft_variable("LIGHT BEACON", "Bool", 0)?

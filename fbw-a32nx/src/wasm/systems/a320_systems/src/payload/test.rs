@@ -8,7 +8,9 @@ use rand::seq::IteratorRandom;
 use rand::SeedableRng;
 use systems::electrical::Electricity;
 use systems::payload::{BoardingRate, GsxState};
+use uom::si::f64::Ratio;
 use uom::si::mass::pound;
+use uom::si::ratio::percent;
 
 use super::*;
 use crate::payload::A320Payload;
@@ -173,8 +175,8 @@ impl BoardingTestBed {
     }
 
     fn double_gate_boarding(mut self) -> Self {
-        self.write_by_name("INTERACTIVE_POINT_0_OPEN_REQ", 1);
-        self.write_by_name("INTERACTIVE_POINT_2_OPEN_REQ", 1);
+        self.write_by_name("INTERACTIVE POINT OPEN:0", Ratio::new::<percent>(100.));
+        self.write_by_name("INTERACTIVE POINT OPEN:1", Ratio::new::<percent>(100.));
         self
     }
 

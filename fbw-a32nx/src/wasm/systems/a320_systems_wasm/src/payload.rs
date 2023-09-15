@@ -39,22 +39,6 @@ pub(super) fn payload(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Err
         Variable::aircraft("PAYLOAD STATION WEIGHT", "Pounds", 8),
         Variable::aspect("PAYLOAD_STATION_8_REQ"),
     );
-    builder.copy(
-        Variable::aircraft("INTERACTIVE POINT OPEN", "percent", 0),
-        Variable::aspect("INTERACTIVE_POINT_0_OPEN_REQ"),
-    );
-    builder.copy(
-        Variable::aircraft("INTERACTIVE POINT OPEN", "percent", 1),
-        Variable::aspect("INTERACTIVE_POINT_1_OPEN_REQ"),
-    );
-    builder.copy(
-        Variable::aircraft("INTERACTIVE POINT OPEN", "percent", 2),
-        Variable::aspect("INTERACTIVE_POINT_2_OPEN_REQ"),
-    );
-    builder.copy(
-        Variable::aircraft("INTERACTIVE POINT OPEN", "percent", 3),
-        Variable::aspect("INTERACTIVE_POINT_3_OPEN_REQ"),
-    );
 
     builder.variables_to_object(Box::new(Payload {
         payload_station_1: 0.,

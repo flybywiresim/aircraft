@@ -1,4 +1,5 @@
 use std::{cell::Cell, rc::Rc, time::Duration};
+use uom::si::{f64::Ratio, ratio::percent};
 
 use crate::{
     shared::random_from_range,
@@ -66,7 +67,7 @@ impl<const P: usize> BoardingAgent<P> {
         BoardingAgent {
             door_id,
             order,
-            door_open_percent: 0.,
+            door_open_ratio: Ratio::default(),
         }
     }
 
@@ -99,12 +100,12 @@ impl<const P: usize> BoardingAgent<P> {
     }
 
     pub fn is_door_open(&self) -> bool {
-        self.door_open_percent >= 1.0
+        self.door_open_ratio >= Ratio::new::<percent>(100.)
     }
 }
 impl<const P: usize> SimulationElement for BoardingAgent<P> {
     fn read(&mut self, reader: &mut SimulatorReader) {
-        self.door_open_percent = reader.read(&self.door_id);
+        self.door_open_ratio = reader.read(&self.door_id);
     }
 }
 
@@ -296,9 +297,9 @@ impl<const N: usize> CargoDeck<N> {
         }
     }
 
-    fn load_cargo_deck_percent(&mut self, percent: f64) {
+    fn load_cargo_deck_percent(&mut self, p: f64) {
         for cs in &mut self.cargo {
-            cs.load_cargo_percent(percent);
+            cs.load_cargo_percent(p);
         }
     }
 
@@ -599,11 +600,11 @@ impl Cargo {
         self.load_payload();
     }
 
-    pub fn load_cargo_percent(&mut self, percent: f64) {
+    pub fn load_cargo_percent(&mut self, p: f64) {
         if self.cargo_loaded.get::<kilogram>() > 0. {
-            self.cargo = self.cargo_loaded * (percent / 100.)
+            self.cargo = self.cargo_loaded * (p / 100.)
         } else {
-            self.cargo = (percent / 100.) * self.cargo_target;
+            self.cargo = (p / 100.) * self.cargo_target;
         }
         self.load_payload();
     }
