@@ -81,8 +81,8 @@ impl ExternalData {
     pub fn get_loaded(&self) -> u8 {
         self.loaded as u8
     }
-    pub fn get_selcal(&self) -> u8 {
-        self.selcal
+    pub fn get_selcal(&self) -> bool {
+        self.selcal == 1
     }
 }
 

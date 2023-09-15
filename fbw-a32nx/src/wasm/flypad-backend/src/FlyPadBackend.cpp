@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
 #include "FlyPadBackend.h"
-#include <unistd.h>
 #include "Aircraft/AircraftPreset.h"
 #include "Lighting/LightPreset.h"
 #include "Pushback/Pushback.h"

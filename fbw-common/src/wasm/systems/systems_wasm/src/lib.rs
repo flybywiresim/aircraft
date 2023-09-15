@@ -667,7 +667,7 @@ impl ATCServices {
             || previous_external_data.get_volume_com2() != new_external_data.get_volume_com2()
         {
             let ivao: Ivao = Ivao {
-                selcal: new_external_data.get_selcal(),
+                selcal: new_external_data.get_selcal() as u8,
                 volume_com1: new_external_data.get_volume_com1(),
                 volume_com2: new_external_data.get_volume_com2(),
             };
@@ -687,7 +687,7 @@ impl ATCServices {
         {
             let vpilot: VPilot = VPilot {
                 loaded: new_external_data.get_loaded(),
-                selcal: new_external_data.get_selcal(),
+                selcal: new_external_data.get_selcal() as u8,
             };
 
             let area = sim_connect
