@@ -25,14 +25,15 @@
 #include <string>
 
 // IDs for data structures - must be mapped to data structs
-enum DataStructureIDs { SimulationDataID, PushbackDataID, IVAODataID, VPILOTDataID };
+enum DataStructureIDs {
+  SimulationDataID,
+  PushbackDataID,
+};
 
 // IDs for data structures - must be mapped to data structs
-enum DataStructureRequestIDs { SimulationDataRequestID, PushbackDataRequestID, IVAORequestID, VPILOTRequestID };
-
-enum ClientData {
-  IVAO,
-  VPILOT,
+enum DataStructureRequestIDs {
+  SimulationDataRequestID,
+  PushbackDataRequestID,
 };
 
 // Local data structure for simconnect data
