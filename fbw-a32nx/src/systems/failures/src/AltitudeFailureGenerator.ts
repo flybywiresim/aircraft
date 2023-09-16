@@ -1,4 +1,5 @@
 import { NXDataStore } from '@flybywiresim/fbw-sdk';
+
 import { ArmingIndex, FailurePhases, FailuresAtOnceIndex, MaxFailuresIndex, RandomFailureGen } from './RandomFailureGen';
 import { FailuresOrchestrator } from './failures-orchestrator';
 
