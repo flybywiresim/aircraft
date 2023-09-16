@@ -1,7 +1,7 @@
 // Copyright (c) 2021-2023 FlyByWire Simulations
 //
 // SPDX-License-Identifier: GPL-3.0
-import React from 'react';
+import React, { useState } from 'react';
 import { A320Overview } from 'instruments/src/EFB/Dispatch/Pages/Overview/A320_251N/A320Overview';
 import { A380Overview } from 'instruments/src/EFB/Dispatch/Pages/Overview/A380_842/A380Overview';
 import { getAirframeType } from '../../Efb';
