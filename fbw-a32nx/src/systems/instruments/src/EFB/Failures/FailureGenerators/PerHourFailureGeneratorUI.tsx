@@ -46,7 +46,7 @@ const daysPerYear = 365.24219 * 24;
 
 const generatorSettingComponents = (genNumber: number, generatorSettings: FailureGenData, failureGenContext: FailureGenContext) => {
     const settings = generatorSettings.settings;
-    const MTTFDisplay = () => {
+    const MttfDisplay = () => {
         if (settings[genNumber * numberOfSettingsPerGenerator + FailurePerHourIndex] <= 0) return t('Failures.Generators.Disabled');
         const meanTimeToFailure = 1 / settings[genNumber * numberOfSettingsPerGenerator + FailurePerHourIndex];
         if (meanTimeToFailure >= daysPerYear * 2) return `${Math.round(meanTimeToFailure / daysPerYear)} ${t('Failures.Generators.years')}`;
@@ -61,7 +61,7 @@ const generatorSettingComponents = (genNumber: number, generatorSettings: Failur
             settings[genNumber * numberOfSettingsPerGenerator + FailurePerHourIndex], 1,
             setNewSetting, generatorSettings, genNumber, FailurePerHourIndex, failureGenContext),
         FailureGeneratorText(t('Failures.Generators.MeanTimeToFailure'), '',
-            MTTFDisplay()),
+            MttfDisplay()),
     ];
     return settingTable;
 };
