@@ -28,16 +28,16 @@ const ActiveFailureCard: FC<ActiveFailureCardProps> = ({ ata, name }) => {
             onClick={() => {
                 dispatch(setSearchQuery(name.toUpperCase()));
 
-                const lastFailurePath = findLatestSeenPathname(history, '/failures/failureslist');
+                const lastFailurePath = findLatestSeenPathname(history, '/failures/failure-list');
 
                 if (!ata) {
-                    history.push('/failures/failureslist/compact');
+                    history.push('/failures/failure-list/compact');
                 }
 
                 if (!lastFailurePath || lastFailurePath.includes('comfort')) {
-                    history.push(`/failures/failureslist/comfort/${ata}`);
+                    history.push(`/failures/failure-list/comfort/${ata}`);
                 } else {
-                    history.push('/failures/failureslist/compact');
+                    history.push('/failures/failure-list/compact');
                 }
             }}
         >
@@ -52,7 +52,7 @@ export const MaintenanceReminder = () => {
     const { allFailures, activeFailures } = useFailuresOrchestrator();
 
     return (
-        <RemindersSection title={t('Dashboard.ImportantInformation.Maintenance.Title')} pageLinkPath="/failures/failureslist">
+        <RemindersSection title={t('Dashboard.ImportantInformation.Maintenance.Title')} pageLinkPath="/failures/failure-list">
             <div className="flex flex-row flex-wrap">
                 {Array
                     .from(activeFailures)

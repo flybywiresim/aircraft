@@ -28,7 +28,7 @@ const ATAChapterCard = ({ ataNumber, description, title }: ATAChapterCardProps) 
 
     return (
         <Link
-            to={`/failures/failureslist/comfort/${pathify(ataNumber.toString())}`}
+            to={`/failures/failure-list/comfort/${pathify(ataNumber.toString())}`}
             className="flex flex-row p-2 space-x-4 rounded-md border-2 border-transparent transition duration-100 hover:border-theme-highlight"
         >
             <div
@@ -65,7 +65,7 @@ interface ComfortUIProps {
 
 export const ComfortUI = ({ filteredChapters, allChapters, failures }: ComfortUIProps) => (
     <>
-        <Route exact path="/failures/failureslist/comfort">
+        <Route exact path="/failures/failure-list/comfort">
             <ScrollableContainer height={48}>
                 {filteredChapters.map((chapter) => (
                     <ATAChapterCard
@@ -85,7 +85,7 @@ export const ComfortUI = ({ filteredChapters, allChapters, failures }: ComfortUI
         {allChapters.map((chapter) => (
             <Route
                 key={chapter}
-                path={`/failures/failureslist/comfort/${chapter.toString()}`}
+                path={`/failures/failure-list/comfort/${chapter.toString()}`}
             >
                 <AtaChapterPage chapter={chapter} failures={failures} />
             </Route>

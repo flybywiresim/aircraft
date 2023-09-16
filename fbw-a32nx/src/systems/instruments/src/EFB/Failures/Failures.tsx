@@ -21,7 +21,7 @@ import { FailureGeneratorsUI } from './FailureGenerators/FailureGeneratorsUI';
 
 export const FailuresHome = () => {
     const tabs: PageLink[] = [
-        { name: 'FailuresList', alias: t('Failures.Title'), component: <Failures /> },
+        { name: 'Failure-list', alias: t('Failures.Title'), component: <Failures /> },
         { name: 'FailureGenerators', alias: t('Failures.Generators.Title'), component: <FailureGeneratorsUI /> },
     ];
 
@@ -35,7 +35,7 @@ export const FailuresHome = () => {
                 </div>
                 <Navbar basePath="/failures" tabs={tabs} className="flex flex-row items-center" />
             </div>
-            <Route path="/failures/failureslist">
+            <Route path="/failures/failure-list">
                 <Failures />
             </Route>
 
@@ -83,21 +83,21 @@ export const Failures = () => {
                         value={searchQuery}
                         onChange={(value) => dispatch(setSearchQuery(value.toUpperCase()))}
                     />
-                    <Navbar basePath="/failures/failureslist" tabs={tabs} />
+                    <Navbar basePath="/failures/failure-list" tabs={tabs} />
                 </div>
 
-                <Route path="/failures/failureslist/comfort">
+                <Route path="/failures/failure-list/comfort">
                     <ComfortUI filteredChapters={filteredChapters} allChapters={chapters} failures={filteredFailures} />
                 </Route>
 
                 <ScrollableContainer height={48}>
-                    <Route path="/failures/failureslist/compact">
+                    <Route path="/failures/failure-list/compact">
                         <CompactUI chapters={filteredChapters} failures={filteredFailures} />
                     </Route>
                 </ScrollableContainer>
             </div>
 
-            <PageRedirect basePath="/failures/failureslist" tabs={tabs} />
+            <PageRedirect basePath="/failures/failure-list" tabs={tabs} />
         </>
     );
 };
