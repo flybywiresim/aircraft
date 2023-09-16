@@ -20,7 +20,7 @@ const SpeedConditionIndex = 3;
 const SpeedMinIndex = 4;
 const SpeedMaxIndex = 5;
 
-export const failureGenConfigSpeed: ()=>FailureGenData = () => {
+export const failureGenConfigSpeed: () => FailureGenData = () => {
     const [setting, setSetting] = usePersistentProperty(settingName);
     const settings = useMemo(() => {
         const splitString = setting?.split(',');

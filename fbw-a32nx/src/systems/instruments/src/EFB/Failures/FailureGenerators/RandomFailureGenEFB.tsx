@@ -32,7 +32,7 @@ export type FailureGenData = {
     failureGeneratorArmed: boolean[],
     genName: string,
     generatorSettingComponents: (genNumber: number, generatorSettings: FailureGenData, failureGenContext: FailureGenContext) => JSX.Element[],
-    alias: ()=>string,
+    alias: () => string,
     disableTakeOffRearm: boolean
 }
 
@@ -44,7 +44,7 @@ export type FailureGenContext = {
     allFailures: readonly Readonly<Failure>[],
     chapters: AtaChapterNumber[],
     modalContext: ModalContext,
-    setModalContext: (modalContext: ModalContext)=>void,
+    setModalContext: (modalContext: ModalContext) => void,
     failureGenModalType: ModalGenType
     setFailureGenModalType: (type: ModalGenType) => void,
 }

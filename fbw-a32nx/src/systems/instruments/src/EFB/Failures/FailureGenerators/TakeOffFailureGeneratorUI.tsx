@@ -24,7 +24,7 @@ const MediumSpeedIndex = 7;
 const MaxSpeedIndex = 8;
 const AltitudeIndex = 9;
 
-export const failureGenConfigTakeOff: ()=>FailureGenData = () => {
+export const failureGenConfigTakeOff: () => FailureGenData = () => {
     const [setting, setSetting] = usePersistentProperty(settingName);
     const settings = useMemo(() => {
         const splitString = setting?.split(',');

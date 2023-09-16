@@ -18,7 +18,7 @@ const rolledDice: number[] = [];
 const DelayMinIndex = 3;
 const DelayMaxIndex = 4;
 
-export const failureGenConfigTimer: ()=>FailureGenData = () => {
+export const failureGenConfigTimer: () => FailureGenData = () => {
     const [setting, setSetting] = usePersistentProperty(settingName);
     const settings = useMemo(() => {
         const splitString = setting?.split(',');

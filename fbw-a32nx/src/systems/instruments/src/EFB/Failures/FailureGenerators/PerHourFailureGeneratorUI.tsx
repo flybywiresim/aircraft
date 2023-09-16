@@ -15,7 +15,7 @@ const alias = () => t('Failures.Generators.GenPerHour');
 const disableTakeOffRearm = false;
 const FailurePerHourIndex = 3;
 
-export const failureGenConfigPerHour: ()=>FailureGenData = () => {
+export const failureGenConfigPerHour: () => FailureGenData = () => {
     const [setting, setSetting] = usePersistentProperty(settingName);
     const settings = useMemo(() => {
         const splitString = setting?.split(',');

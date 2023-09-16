@@ -22,7 +22,7 @@ const AltitudeConditionIndex = 3;
 const AltitudeMinIndex = 4;
 const AltitudeMaxIndex = 5;
 
-export const failureGenConfigAltitude: ()=>FailureGenData = () => {
+export const failureGenConfigAltitude: () => FailureGenData = () => {
     const [setting, setSetting] = usePersistentProperty(settingName);
     const settings = useMemo(() => {
         const splitString = setting?.split(',');
