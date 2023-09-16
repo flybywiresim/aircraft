@@ -9,13 +9,13 @@ export class FailureGeneratorAltitude {
 
     private static uniqueGenPrefix = 'A';
 
-    private static failureGeneratorArmed :boolean[] = [];
+    private static failureGeneratorArmed: boolean[] = [];
 
     private static doNotRepeatUntilTakeOff: boolean[] = [];
 
-    private static rolledDice:number[] = [];
+    private static rolledDice: number[] = [];
 
-    private static didOnce : boolean = false;
+    private static didOnce: boolean = false;
 
     private static altitudeConditionIndex = 3;
 
