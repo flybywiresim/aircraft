@@ -69,7 +69,7 @@ export class FailureGeneratorTakeOff {
             const minFailureTakeOffSpeed : number = settings[i * FailureGeneratorTakeOff.numberOfSettingsPerGenerator + FailureGeneratorTakeOff.minSpeedIndex];
             if (!FailureGeneratorTakeOff.failureGeneratorArmed[i]) {
                 if (settings[i * FailureGeneratorTakeOff.numberOfSettingsPerGenerator + ArmingIndex] > 0) {
-                    if (gs < minFailureTakeOffSpeed && RandomFailureGen.getFailureFlightPhase() === FailurePhases.TAKEOFF) {
+                    if (gs < minFailureTakeOffSpeed && RandomFailureGen.getFailureFlightPhase() === FailurePhases.TakeOff) {
                         if (Math.random() < settings[i * FailureGeneratorTakeOff.numberOfSettingsPerGenerator + FailureGeneratorTakeOff.chancePerTakeOffIndex]) {
                             const chanceFailureLowTakeOffRegime : number = settings[i * FailureGeneratorTakeOff.numberOfSettingsPerGenerator + FailureGeneratorTakeOff.chanceLowIndex];
                             const chanceFailureMediumTakeOffRegime : number = settings[i * FailureGeneratorTakeOff.numberOfSettingsPerGenerator

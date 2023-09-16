@@ -11,10 +11,10 @@ export const FailuresAtOnceIndex = 1;
 export const MaxFailuresIndex = 2;
 
 export enum FailurePhases {
-    DORMANT= 0,
-    TAKEOFF= 1,
-    INITIALCLIMB= 2,
-    FLIGHT= 3,
+    Dormant,
+    TakeOff,
+    InitialClimb,
+    Flight,
 }
 export class RandomFailureGen {
     static failureGeneratorsUpdaters : ((failureOrchestrator : FailuresOrchestrator) => void)[] = [
@@ -75,10 +75,10 @@ export class RandomFailureGen {
         const maxThrottleMode = Math.max(Simplane.getEngineThrottleMode(0), Simplane.getEngineThrottleMode(1));
         const throttleTakeOff = maxThrottleMode === ThrottleMode.FLEX_MCT || maxThrottleMode === ThrottleMode.TOGA;
         if (isOnGround) {
-            if (throttleTakeOff) RandomFailureGen.failureFlightPhase = FailurePhases.TAKEOFF;
-            else RandomFailureGen.failureFlightPhase = FailurePhases.DORMANT;
-        } else if (throttleTakeOff) RandomFailureGen.failureFlightPhase = FailurePhases.INITIALCLIMB;
-        else RandomFailureGen.failureFlightPhase = FailurePhases.FLIGHT;
+            if (throttleTakeOff) RandomFailureGen.failureFlightPhase = FailurePhases.TakeOff;
+            else RandomFailureGen.failureFlightPhase = FailurePhases.Dormant;
+        } else if (throttleTakeOff) RandomFailureGen.failureFlightPhase = FailurePhases.InitialClimb;
+        else RandomFailureGen.failureFlightPhase = FailurePhases.TakeOff;
     }
 
     static update(failureOrchestrator : FailuresOrchestrator) {

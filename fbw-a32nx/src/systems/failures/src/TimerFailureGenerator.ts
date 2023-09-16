@@ -60,7 +60,7 @@ export class FailureGeneratorTimer {
 
             if (!FailureGeneratorTimer.failureGeneratorArmed[i]) {
                 if (settings[i * FailureGeneratorTimer.numberOfSettingsPerGenerator + ArmingIndex] === 1
-                || (RandomFailureGen.getFailureFlightPhase() === FailurePhases.TAKEOFF && settings[i * FailureGeneratorTimer.numberOfSettingsPerGenerator + ArmingIndex] === 2)
+                || (RandomFailureGen.getFailureFlightPhase() === FailurePhases.TakeOff && settings[i * FailureGeneratorTimer.numberOfSettingsPerGenerator + ArmingIndex] === 2)
                 || settings[i * FailureGeneratorTimer.numberOfSettingsPerGenerator + ArmingIndex] === 3) {
                     FailureGeneratorTimer.failureGeneratorArmed[i] = true;
                     FailureGeneratorTimer.rolledDice[i] = Math.random();

@@ -71,7 +71,7 @@ export class FailureGeneratorAltitude {
 
             if (FailureGeneratorAltitude.doNotRepeatUntilTakeOff[i]
                     && (settings[i * FailureGeneratorAltitude.numberOfSettingsPerGenerator + ArmingIndex] === 1
-                    || (settings[i * FailureGeneratorAltitude.numberOfSettingsPerGenerator + ArmingIndex] === 2 && RandomFailureGen.getFailureFlightPhase() === FailurePhases.TAKEOFF)
+                    || (settings[i * FailureGeneratorAltitude.numberOfSettingsPerGenerator + ArmingIndex] === 2 && RandomFailureGen.getFailureFlightPhase() === FailurePhases.TakeOff)
                     || settings[i * FailureGeneratorAltitude.numberOfSettingsPerGenerator + ArmingIndex] === 3)) {
                 FailureGeneratorAltitude.doNotRepeatUntilTakeOff[i] = false;
             }

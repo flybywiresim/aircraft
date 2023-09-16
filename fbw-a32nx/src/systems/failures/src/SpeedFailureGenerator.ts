@@ -69,7 +69,7 @@ export class FailureGeneratorSpeed {
 
             if (FailureGeneratorSpeed.doNotRepeatUntilTakeOff[i]
                 && (settings[i * FailureGeneratorSpeed.numberOfSettingsPerGenerator + ArmingIndex] === 1
-                || (settings[i * FailureGeneratorSpeed.numberOfSettingsPerGenerator + ArmingIndex] === 2 && RandomFailureGen.getFailureFlightPhase() === FailurePhases.TAKEOFF)
+                || (settings[i * FailureGeneratorSpeed.numberOfSettingsPerGenerator + ArmingIndex] === 2 && RandomFailureGen.getFailureFlightPhase() === FailurePhases.TakeOff)
                 || settings[i * FailureGeneratorSpeed.numberOfSettingsPerGenerator + ArmingIndex] === 3)) {
                 FailureGeneratorSpeed.doNotRepeatUntilTakeOff[i] = false;
             }

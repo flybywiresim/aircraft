@@ -67,10 +67,10 @@ export const flatten = (settings : number[]) => {
 };
 
 export enum FailurePhases {
-    DORMANT= 0,
-    TAKEOFF= 1,
-    INITIALCLIMB= 2,
-    FLIGHT= 3,
+    Dormant,
+    TakeOff,
+    InitialClimb,
+    Flight,
 }
 
 export const basicData = () => {
@@ -79,11 +79,11 @@ export const basicData = () => {
     const throttleTakeOff = useMemo(() => (maxThrottleMode === ThrottleMode.FLEX_MCT || maxThrottleMode === ThrottleMode.TOGA), [maxThrottleMode]);
     const failureFlightPhase = useMemo(() => {
         if (isOnGround) {
-            if (throttleTakeOff) return FailurePhases.TAKEOFF;
-            return FailurePhases.DORMANT;
+            if (throttleTakeOff) return FailurePhases.TakeOff;
+            return FailurePhases.Dormant;
         }
-        if (throttleTakeOff) return FailurePhases.INITIALCLIMB;
-        return FailurePhases.FLIGHT;
+        if (throttleTakeOff) return FailurePhases.InitialClimb;
+        return FailurePhases.Flight;
     }, [throttleTakeOff, isOnGround]);
     return { isOnGround, maxThrottleMode, throttleTakeOff, failureFlightPhase };
 };

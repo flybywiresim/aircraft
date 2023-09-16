@@ -56,7 +56,7 @@ export class FailureGeneratorPerHour {
 
             if (!FailureGeneratorPerHour.failureGeneratorArmed[i]) {
                 if ((settings[i * FailureGeneratorPerHour.numberOfSettingsPerGenerator + ArmingIndex] === 1
-                    || (settings[i * FailureGeneratorPerHour.numberOfSettingsPerGenerator + ArmingIndex] === 2 && RandomFailureGen.getFailureFlightPhase() === FailurePhases.FLIGHT)
+                    || (settings[i * FailureGeneratorPerHour.numberOfSettingsPerGenerator + ArmingIndex] === 2 && RandomFailureGen.getFailureFlightPhase() === FailurePhases.Flight)
                     || settings[i * FailureGeneratorPerHour.numberOfSettingsPerGenerator + ArmingIndex] === 3)) {
                     FailureGeneratorPerHour.failureGeneratorArmed[i] = true;
                 }
