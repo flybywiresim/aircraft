@@ -15,7 +15,7 @@ export class FailureGeneratorTakeOff {
 
     private static failureTakeOffAltitudeThreshold: number[] = [];
 
-    private static didOnce: boolean = false;
+    private static didInitialize: boolean = false;
 
     private static chancePerTakeOffIndex = 3;
 
@@ -34,10 +34,10 @@ export class FailureGeneratorTakeOff {
     static updateFailure(failureOrchestrator : FailuresOrchestrator): void {
         const failureGeneratorSetting = NXDataStore.get(FailureGeneratorTakeOff.settingName, '');
 
-        if (!FailureGeneratorTakeOff.didOnce) {
+        if (!FailureGeneratorTakeOff.didInitialize) {
             const generatorNumber = Math.floor(failureGeneratorSetting.split(',').length / FailureGeneratorTakeOff.numberOfSettingsPerGenerator);
             for (let i = 0; i < generatorNumber; i++) FailureGeneratorTakeOff.failureGeneratorArmed[i] = false;
-            FailureGeneratorTakeOff.didOnce = true;
+            FailureGeneratorTakeOff.didInitialize = true;
         }
 
         const settings: number[] = failureGeneratorSetting.split(',').map(((it) => parseFloat(it)));

@@ -15,7 +15,7 @@ export class FailureGeneratorTimer {
 
     private static rolledDice: number[] = [];
 
-    private static didOnce: boolean = false;
+    private static didInitialize: boolean = false;
 
     private static delayMinIndex = 3;
 
@@ -24,10 +24,10 @@ export class FailureGeneratorTimer {
     static updateFailure(failureOrchestrator: FailuresOrchestrator): void {
         const failureGeneratorSetting = NXDataStore.get(FailureGeneratorTimer.settingName, '');
 
-        if (!FailureGeneratorTimer.didOnce) {
+        if (!FailureGeneratorTimer.didInitialize) {
             const generatorNumber = Math.floor(failureGeneratorSetting.split(',').length / FailureGeneratorTimer.numberOfSettingsPerGenerator);
             for (let i = 0; i < generatorNumber; i++) FailureGeneratorTimer.failureGeneratorArmed[i] = false;
-            FailureGeneratorTimer.didOnce = true;
+            FailureGeneratorTimer.didInitialize = true;
         }
 
         const settings: number[] = failureGeneratorSetting.split(',').map(((it) => parseFloat(it)));

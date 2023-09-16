@@ -16,7 +16,7 @@ export class FailureGeneratorAltitude {
 
     private static rolledDice: number[] = [];
 
-    private static didOnce: boolean = false;
+    private static didInitialize: boolean = false;
 
     private static altitudeConditionIndex = 3;
 
@@ -29,13 +29,13 @@ export class FailureGeneratorAltitude {
     static updateFailure(failureOrchestrator: FailuresOrchestrator): void {
         const failureGeneratorSetting = NXDataStore.get(FailureGeneratorAltitude.settingName, '');
 
-        if (!FailureGeneratorAltitude.didOnce) {
+        if (!FailureGeneratorAltitude.didInitialize) {
             const generatorNumber = Math.floor(failureGeneratorSetting.split(',').length / FailureGeneratorAltitude.numberOfSettingsPerGenerator);
             for (let i = 0; i < generatorNumber; i++) {
                 FailureGeneratorAltitude.failureGeneratorArmed[i] = false;
                 FailureGeneratorAltitude.doNotRepeatUntilTakeOff[i] = false;
             }
-            FailureGeneratorAltitude.didOnce = true;
+            FailureGeneratorAltitude.didInitialize = true;
         }
 
         const settings: number[] = failureGeneratorSetting.split(',').map(((it) => parseFloat(it)));

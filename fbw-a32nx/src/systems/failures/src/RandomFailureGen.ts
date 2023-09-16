@@ -39,10 +39,10 @@ export class RandomFailureGen {
     static getSetOfGeneratorFailuresSettings(allFailures: readonly Readonly<Failure>[]): Map<number, string> {
         const generatorFailuresGetters: Map<number, string> = new Map();
         if (allFailures.length > 0) {
-            allFailures.forEach((failure) => {
+            for (const failure of allFailures) {
                 const generatorSetting = NXDataStore.get(`EFB_FAILURE_${failure.identifier.toString()}_GENERATORS`, '');
                 generatorFailuresGetters.set(failure.identifier, generatorSetting);
-            });
+            }
         }
         return generatorFailuresGetters;
     }
@@ -101,17 +101,17 @@ export class RandomFailureGen {
         const allFailures = failureOrchestrator.getAllFailures();
         const setOfGeneratorFailuresSettings = RandomFailureGen.getSetOfGeneratorFailuresSettings(allFailures);
         if (allFailures.length > 0) {
-            allFailures.forEach((failure) => {
+            for (const failure of allFailures) {
                 const generatorSetting = setOfGeneratorFailuresSettings.get(failure.identifier);
                 if (generatorSetting) {
                     const failureGeneratorsTable = generatorSetting.split(',');
                     if (failureGeneratorsTable.length > 0) {
-                        failureGeneratorsTable.forEach((generator) => {
+                        for (const generator of failureGeneratorsTable) {
                             if (generator === generatorUniqueID) failureIDs.push(failure);
-                        });
+                        }
                     }
                 }
-            });
+            }
         }
         return failureIDs;
     }

@@ -13,17 +13,17 @@ export class FailureGeneratorPerHour {
 
     private static timePrev: number = Date.now();
 
-    private static didOnce: boolean = false;
+    private static didInitialize: boolean = false;
 
     private static failurePerHourIndex = 3;
 
     static updateFailure(failureOrchestrator: FailuresOrchestrator): void {
         const failureGeneratorSetting = NXDataStore.get(FailureGeneratorPerHour.settingName, '');
 
-        if (!FailureGeneratorPerHour.didOnce) {
+        if (!FailureGeneratorPerHour.didInitialize) {
             const generatorNumber = Math.floor(failureGeneratorSetting.split(',').length / FailureGeneratorPerHour.numberOfSettingsPerGenerator);
             for (let i = 0; i < generatorNumber; i++) FailureGeneratorPerHour.failureGeneratorArmed[i] = false;
-            FailureGeneratorPerHour.didOnce = true;
+            FailureGeneratorPerHour.didInitialize = true;
         }
 
         const currentTime = Date.now();

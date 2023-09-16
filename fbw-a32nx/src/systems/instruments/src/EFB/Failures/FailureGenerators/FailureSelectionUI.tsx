@@ -2,17 +2,17 @@ import { Failure } from 'failures/src/failures-orchestrator';
 import { FailureGenContext, FailureGenData } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
 
 export function selectAllFailureChapter(chapter: number, failureGenContext: FailureGenContext, genIDToChange: string, value: boolean): void {
-    failureGenContext.allFailures.forEach((failure) => {
+    for (const failure of failureGenContext.allFailures) {
         if (failure.ata === chapter) {
             setSelectedFailure(failure, genIDToChange, failureGenContext, value);
         }
-    });
+    }
 }
 
 export function selectAllFailures(failureGenContext: FailureGenContext, genIDToChange: string, value: boolean): void {
-    failureGenContext.allFailures.forEach((failure) => {
+    for (const failure of failureGenContext.allFailures) {
         setSelectedFailure(failure, genIDToChange, failureGenContext, value);
-    });
+    }
 }
 
 export const setSelectedFailure = (failure: Failure, genIDToChange: string, failureGenContext: FailureGenContext, value: boolean) => {
@@ -30,7 +30,7 @@ export const setSelectedFailure = (failure: Failure, genIDToChange: string, fail
         } else
         if (generatorsForFailure.length > 0) {
             let first = true;
-            generatorsForFailure.forEach((generatorID) => {
+            for (const generatorID of generatorsForFailure) {
                 const letterTable = generatorID.match(regexLetter);
                 const numberTable = generatorID.match(regexNumber);
                 if (letterTable && letterTable.length > 0 && numberTable && numberTable.length > 0 && generatorID === `${letterTable[0]}${numberTable[0]}`) {
@@ -44,7 +44,7 @@ export const setSelectedFailure = (failure: Failure, genIDToChange: string, fail
                         }
                     }
                 }
-            });
+            }
         }
         failureGenContext.generatorFailuresSetters.get(failure.identifier)(newSetting);
     }
@@ -72,14 +72,14 @@ export const deleteGeneratorFailures = (generatorSettings: FailureGenData, failu
         const removedLetter = letterTable[0];
         const removedNumber = parseInt(numberTable[0]);
         if (failureGenContext.allFailures.length > 0) {
-            failureGenContext.allFailures.forEach((failure) => {
+            for (const failure of failureGenContext.allFailures) {
                 let first = true;
                 const generatorListString = failureGenContext.generatorFailuresGetters.get(failure.identifier);
                 let newString = '';
                 if (generatorListString) {
                     const failureGeneratorsTable = generatorListString.split(',');
                     if (failureGeneratorsTable.length > 0) {
-                        failureGeneratorsTable.forEach((generator) => {
+                        for (const generator of failureGeneratorsTable) {
                             const genLetterTable = generator.match(regexLetter);
                             const genNumberTable = generator.match(regexNumber);
                             if (genLetterTable && genLetterTable.length === 1 && genNumberTable && genNumberTable.length === 1) {
@@ -97,11 +97,11 @@ export const deleteGeneratorFailures = (generatorSettings: FailureGenData, failu
                                     }
                                 }
                             }
-                        });
+                        }
                         failureGenContext.generatorFailuresSetters.get(failure.identifier)(newString);
                     }
                 }
-            });
+            }
         }
     }
 };

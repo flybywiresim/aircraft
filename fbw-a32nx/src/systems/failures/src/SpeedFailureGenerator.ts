@@ -15,7 +15,7 @@ export class FailureGeneratorSpeed {
 
     private static rolledDice: number[] = [];
 
-    private static didOnce: boolean = false;
+    private static didInitialize: boolean = false;
 
     private static speedConditionIndex = 3;
 
@@ -28,13 +28,13 @@ export class FailureGeneratorSpeed {
     static updateFailure(failureOrchestrator: FailuresOrchestrator): void {
         const failureGeneratorSetting = NXDataStore.get(FailureGeneratorSpeed.settingName, '');
 
-        if (!FailureGeneratorSpeed.didOnce) {
+        if (!FailureGeneratorSpeed.didInitialize) {
             const generatorNumber = Math.floor(failureGeneratorSetting.split(',').length / FailureGeneratorSpeed.numberOfSettingsPerGenerator);
             for (let i = 0; i < generatorNumber; i++) {
                 FailureGeneratorSpeed.failureGeneratorArmed[i] = false;
                 FailureGeneratorSpeed.doNotRepeatUntilTakeOff[i] = false;
             }
-            FailureGeneratorSpeed.didOnce = true;
+            FailureGeneratorSpeed.didInitialize = true;
         }
 
         const settings: number[] = failureGeneratorSetting.split(',').map(((it) => parseFloat(it)));

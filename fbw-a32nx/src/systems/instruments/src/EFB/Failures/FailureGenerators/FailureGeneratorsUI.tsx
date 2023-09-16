@@ -83,12 +83,13 @@ export const FailureGeneratorsUI = () => {
 export const generatorsCardList: (settings: FailureGenContext)
 => JSX.Element[] = (settings: FailureGenContext) => {
     const temp: JSX.Element[] = [];
-    settings.allGenSettings.forEach((generatorSetting) => {
+    for (const element of settings.allGenSettings) {
+        const generatorSetting = element[1];
         const nbGenerator = Math.floor(generatorSetting.settings.length / generatorSetting.numberOfSettingsPerGenerator);
         for (let i = 0; i < nbGenerator; i++) {
             temp.push(FailureGeneratorCardTemplateUI(i, generatorSetting, settings));
         }
-    });
+    }
     return temp;
 };
 
@@ -102,13 +103,13 @@ function FailureShortList(failureGenContext: FailureGenContext, uniqueID: string
     if (listOfSelectedFailures.length === 0) return <div className="p-1 mb-1 rounded-md bg-theme-accent">{t('Failures.Generators.NoFailure')}</div>;
 
     const chaptersFullySelected: AtaChapterNumber[] = [];
-    failureGenContext.chapters.forEach((chapter) => {
+    for (const chapter of failureGenContext.chapters) {
         const failuresActiveInChapter = listOfSelectedFailures.filter((failure) => failure.ata === chapter);
         if (failuresActiveInChapter.length === failureGenContext.allFailures.filter((failure) => failure.ata === chapter).length) {
             chaptersFullySelected.push(chapter);
             listOfSelectedFailures = listOfSelectedFailures.filter((failure) => failure.ata !== chapter);
         }
-    });
+    }
 
     const subSetOfChapters = chaptersFullySelected.slice(0, Math.min(maxNumberOfFailureToDisplay, chaptersFullySelected.length));
     const subSetOfSelectedFailures = listOfSelectedFailures.slice(0, Math.min(maxNumberOfFailureToDisplay - subSetOfChapters.length, listOfSelectedFailures.length));
