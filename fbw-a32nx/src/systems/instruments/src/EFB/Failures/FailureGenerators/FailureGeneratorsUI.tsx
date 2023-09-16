@@ -83,8 +83,7 @@ export const FailureGeneratorsUI = () => {
 export const generatorsCardList: (settings: FailureGenContext)
 => JSX.Element[] = (settings: FailureGenContext) => {
     const temp: JSX.Element[] = [];
-    for (const element of settings.allGenSettings) {
-        const generatorSetting = element[1];
+    for (const [, generatorSetting] of settings.allGenSettings) {
         const nbGenerator = Math.floor(generatorSetting.settings.length / generatorSetting.numberOfSettingsPerGenerator);
         for (let i = 0; i < nbGenerator; i++) {
             temp.push(FailureGeneratorCardTemplateUI(i, generatorSetting, settings));
