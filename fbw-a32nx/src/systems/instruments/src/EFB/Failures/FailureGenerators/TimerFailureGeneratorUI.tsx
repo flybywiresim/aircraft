@@ -8,21 +8,21 @@ const settingName = 'EFB_FAILURE_GENERATOR_SETTING_TIMER';
 const additionalSetting = [2, 1, 2, 300, 600];
 const numberOfSettingsPerGenerator = 5;
 const uniqueGenPrefix = 'D';
-const failureGeneratorArmed :boolean[] = [];
-const failureStartTime:number[] = [];
+const failureGeneratorArmed: boolean[] = [];
+const failureStartTime: number[] = [];
 const genName = 'Timer';
 const alias = () => t('Failures.Generators.GenTimer');
 const disableTakeOffRearm = false;
-const rolledDice:number[] = [];
+const rolledDice: number[] = [];
 
 const DelayMinIndex = 3;
 const DelayMaxIndex = 4;
 
-export const failureGenConfigTimer : ()=>FailureGenData = () => {
+export const failureGenConfigTimer: ()=>FailureGenData = () => {
     const [setting, setSetting] = usePersistentProperty(settingName);
     const settings = useMemo(() => {
         const splitString = setting?.split(',');
-        if (splitString) return splitString.map(((it : string) => parseFloat(it)));
+        if (splitString) return splitString.map(((it: string) => parseFloat(it)));
         return [];
     }, [setting]);
     return {
@@ -40,12 +40,12 @@ export const failureGenConfigTimer : ()=>FailureGenData = () => {
     };
 };
 
-const onErase = (genNumber : number) => {
+const onErase = (genNumber: number) => {
     failureStartTime.splice(genNumber, 1);
     rolledDice.splice(genNumber, 1);
 };
 
-const generatorSettingComponents = (genNumber: number, generatorSettings : FailureGenData, failureGenContext : FailureGenContext) => {
+const generatorSettingComponents = (genNumber: number, generatorSettings: FailureGenData, failureGenContext: FailureGenContext) => {
     const settings = generatorSettings.settings;
     const settingTable = [
         FailureGeneratorSingleSetting(t('Failures.Generators.DelayAfterArmingMin'), t('Failures.Generators.seconds'), 0, settings[genNumber * numberOfSettingsPerGenerator + DelayMaxIndex],

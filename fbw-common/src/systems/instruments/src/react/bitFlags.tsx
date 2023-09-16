@@ -1,5 +1,6 @@
 /* eslint-disable function-paren-newline */
 import { BitFlags, SeatFlags } from '@flybywiresim/fbw-sdk';
+
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { useSimVarList } from './simVars';
 import { useUpdate } from './hooks';

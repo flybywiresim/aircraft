@@ -9,9 +9,9 @@ const settingName = 'EFB_FAILURE_GENERATOR_SETTING_TAKEOFF';
 const numberOfSettingsPerGenerator = 10;
 const uniqueGenPrefix = 'E';
 const additionalSetting = [3, 1, 2, 1, 0.33, 0.33, 30, 95, 140, 40];
-const failureGeneratorArmed :boolean[] = [];
-const failureTakeOffSpeedThreshold :number[] = [];
-const failureTakeOffAltitudeThreshold :number[] = [];
+const failureGeneratorArmed: boolean[] = [];
+const failureTakeOffSpeedThreshold: number[] = [];
+const failureTakeOffAltitudeThreshold: number[] = [];
 const genName = 'TakeOff';
 const alias = () => t('Failures.Generators.GenTakeOff');
 const disableTakeOffRearm = true;
@@ -24,11 +24,11 @@ const MediumSpeedIndex = 7;
 const MaxSpeedIndex = 8;
 const AltitudeIndex = 9;
 
-export const failureGenConfigTakeOff : ()=>FailureGenData = () => {
+export const failureGenConfigTakeOff: ()=>FailureGenData = () => {
     const [setting, setSetting] = usePersistentProperty(settingName);
     const settings = useMemo(() => {
         const splitString = setting?.split(',');
-        if (splitString) return splitString.map(((it : string) => parseFloat(it)));
+        if (splitString) return splitString.map(((it: string) => parseFloat(it)));
         return [];
     }, [setting]);
     return {
@@ -46,12 +46,12 @@ export const failureGenConfigTakeOff : ()=>FailureGenData = () => {
     };
 };
 
-const onErase = (genID : number) => {
+const onErase = (genID: number) => {
     failureTakeOffSpeedThreshold.splice(genID, 1);
     failureTakeOffAltitudeThreshold.splice(genID, 1);
 };
 
-const generatorSettingComponents = (genNumber: number, generatorSettings : FailureGenData, failureGenContext : FailureGenContext) => {
+const generatorSettingComponents = (genNumber: number, generatorSettings: FailureGenData, failureGenContext: FailureGenContext) => {
     const settings = generatorSettings.settings;
     const chanceClimbing = Math.round(10000 * (1 - settings[genNumber * numberOfSettingsPerGenerator + ChanceLowIndex]
         - settings[genNumber * numberOfSettingsPerGenerator + ChanceMediumIndex])) / 100;

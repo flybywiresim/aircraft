@@ -9,17 +9,17 @@ const settingName = 'EFB_FAILURE_GENERATOR_SETTING_PERHOUR';
 const additionalSetting = [3, 1, 2, 0.1];
 const numberOfSettingsPerGenerator = 4;
 const uniqueGenPrefix = 'C';
-const failureGeneratorArmed :boolean[] = [];
+const failureGeneratorArmed: boolean[] = [];
 const genName = 'PerHour';
 const alias = () => t('Failures.Generators.GenPerHour');
 const disableTakeOffRearm = false;
 const FailurePerHourIndex = 3;
 
-export const failureGenConfigPerHour : ()=>FailureGenData = () => {
+export const failureGenConfigPerHour: ()=>FailureGenData = () => {
     const [setting, setSetting] = usePersistentProperty(settingName);
     const settings = useMemo(() => {
         const splitString = setting?.split(',');
-        if (splitString) return splitString.map(((it : string) => parseFloat(it)));
+        if (splitString) return splitString.map(((it: string) => parseFloat(it)));
         return [];
     }, [setting]);
     return {
@@ -38,13 +38,13 @@ export const failureGenConfigPerHour : ()=>FailureGenData = () => {
     };
 };
 
-const onErase = (_genID : number) => {
+const onErase = (_genID: number) => {
 };
 
 const daysPerMonth = 30.4368 * 24;
 const daysPerYear = 365.24219 * 24;
 
-const generatorSettingComponents = (genNumber: number, generatorSettings : FailureGenData, failureGenContext : FailureGenContext) => {
+const generatorSettingComponents = (genNumber: number, generatorSettings: FailureGenData, failureGenContext: FailureGenContext) => {
     const settings = generatorSettings.settings;
     const MTTFDisplay = () => {
         if (settings[genNumber * numberOfSettingsPerGenerator + FailurePerHourIndex] <= 0) return t('Failures.Generators.Disabled');

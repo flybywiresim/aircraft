@@ -23,41 +23,41 @@ export const failureGeneratorCommonFunction = () => {
 };
 
 export type FailureGenData = {
-    setSetting : (value: string) => void,
-    settings : number[],
-    numberOfSettingsPerGenerator : number,
-    uniqueGenPrefix : string,
-    additionalSetting : number[],
-    onErase : (genID : number) => void,
-    failureGeneratorArmed:boolean[],
-    genName : string,
-    generatorSettingComponents : (genNumber: number, generatorSettings: FailureGenData, failureGenContext : FailureGenContext) => JSX.Element[],
-    alias : ()=>string,
-    disableTakeOffRearm : boolean
+    setSetting: (value: string) => void,
+    settings: number[],
+    numberOfSettingsPerGenerator: number,
+    uniqueGenPrefix: string,
+    additionalSetting: number[],
+    onErase: (genID: number) => void,
+    failureGeneratorArmed: boolean[],
+    genName: string,
+    generatorSettingComponents: (genNumber: number, generatorSettings: FailureGenData, failureGenContext: FailureGenContext) => JSX.Element[],
+    alias: ()=>string,
+    disableTakeOffRearm: boolean
 }
 
 export type FailureGenContext = {
     allGenSettings: Map<string, FailureGenData>,
     modals: ModalContextInterface,
-    generatorFailuresGetters : Map<number, string>,
-    generatorFailuresSetters : Map<number, (value: string) => void>,
+    generatorFailuresGetters: Map<number, string>,
+    generatorFailuresSetters: Map<number, (value: string) => void>,
     allFailures: readonly Readonly<Failure>[],
-    chapters : AtaChapterNumber[],
-    modalContext : ModalContext,
-    setModalContext : (modalContext : ModalContext)=>void,
-    failureGenModalType : ModalGenType
-    setFailureGenModalType : (type : ModalGenType) => void,
+    chapters: AtaChapterNumber[],
+    modalContext: ModalContext,
+    setModalContext: (modalContext: ModalContext)=>void,
+    failureGenModalType: ModalGenType
+    setFailureGenModalType: (type: ModalGenType) => void,
 }
 
 export type ModalContext = {
-    failureGenData : FailureGenData,
-    genNumber : number,
-    genUniqueID : string,
+    failureGenData: FailureGenData,
+    genNumber: number,
+    genUniqueID: string,
 }
 
 export enum ModalGenType {None, Settings, Failures}
 
-export const flatten = (settings : number[]) => {
+export const flatten = (settings: number[]) => {
     let settingString = '';
     for (let i = 0; i < settings.length; i++) {
         settingString += settings[i].toString();
@@ -88,12 +88,12 @@ export const basicData = () => {
     return { isOnGround, maxThrottleMode, throttleTakeOff, failureFlightPhase };
 };
 
-export const failureGeneratorsSettings : () => FailureGenContext = () => {
+export const failureGeneratorsSettings: () => FailureGenContext = () => {
     const modals = useModals();
     const { allFailures } = failureGeneratorCommonFunction();
     const { generatorFailuresGetters, generatorFailuresSetters } = allGeneratorFailures(allFailures);
-    const allGenSettings : Map<string, FailureGenData> = new Map();
-    const chapters = useMemo(() => Array.from(new Set<AtaChapterNumber>(allFailures.map((it : Failure) => it.ata))).sort((a: AtaChapterNumber, b: AtaChapterNumber) => a - b), [allFailures]);
+    const allGenSettings: Map<string, FailureGenData> = new Map();
+    const chapters = useMemo(() => Array.from(new Set<AtaChapterNumber>(allFailures.map((it: Failure) => it.ata))).sort((a: AtaChapterNumber, b: AtaChapterNumber) => a - b), [allFailures]);
     const [failureGenModalType, setFailureGenModalType] = useState<ModalGenType>(ModalGenType.None);
     const [modalContext, setModalContext] = useState<ModalContext | undefined >(undefined);
 
@@ -117,8 +117,8 @@ export const failureGeneratorsSettings : () => FailureGenContext = () => {
     };
 };
 
-export const failureGeneratorAdd = (generatorSettings : FailureGenData, failureGenContext: FailureGenContext) => {
-    let genNumber : number;
+export const failureGeneratorAdd = (generatorSettings: FailureGenData, failureGenContext: FailureGenContext) => {
+    let genNumber: number;
 
     if (generatorSettings.settings === undefined || generatorSettings.settings.length % generatorSettings.numberOfSettingsPerGenerator !== 0 || generatorSettings.settings.length === 0) {
         generatorSettings.setSetting(flatten(generatorSettings.additionalSetting));
@@ -132,7 +132,7 @@ export const failureGeneratorAdd = (generatorSettings : FailureGenData, failureG
     selectAllFailures(failureGenContext, genID, true);
 };
 
-export function setNewNumberOfFailureSetting(newSetting: number, generatorSettings : FailureGenData, genID : number) {
+export function setNewNumberOfFailureSetting(newSetting: number, generatorSettings: FailureGenData, genID: number) {
     const settings = generatorSettings.settings;
     settings[genID * generatorSettings.numberOfSettingsPerGenerator + FailuresAtOnceIndex] = newSetting;
     settings[genID * generatorSettings.numberOfSettingsPerGenerator + MaxFailuresIndex] = Math.max(settings[genID * generatorSettings.numberOfSettingsPerGenerator + MaxFailuresIndex],
@@ -140,21 +140,21 @@ export function setNewNumberOfFailureSetting(newSetting: number, generatorSettin
     generatorSettings.setSetting(flatten(settings));
 }
 
-export function setNewSettingAndResetArm(newSetting: number, generatorSettings : FailureGenData, genID : number, settingIndex : number) {
+export function setNewSettingAndResetArm(newSetting: number, generatorSettings: FailureGenData, genID: number, settingIndex: number) {
     const settings = generatorSettings.settings;
     settings[genID * generatorSettings.numberOfSettingsPerGenerator + settingIndex] = newSetting;
     generatorSettings.failureGeneratorArmed[genID] = false;
     generatorSettings.setSetting(flatten(settings));
 }
 
-export function setNewSetting(newSetting: number, generatorSettings : FailureGenData, genID : number, settingIndex : number) {
+export function setNewSetting(newSetting: number, generatorSettings: FailureGenData, genID: number, settingIndex: number) {
     const settings = generatorSettings.settings;
     settings[genID * generatorSettings.numberOfSettingsPerGenerator + settingIndex] = newSetting;
     generatorSettings.setSetting(flatten(settings));
 }
 
-export const eraseGenerator :(genID : number, generatorSettings : FailureGenData, failureGenContext : FailureGenContext) =>
-void = (genID : number, generatorSettings : FailureGenData, failureGenContext : FailureGenContext) => {
+export const eraseGenerator: (genID: number, generatorSettings: FailureGenData, failureGenContext: FailureGenContext) =>
+void = (genID: number, generatorSettings: FailureGenData, failureGenContext: FailureGenContext) => {
     generatorSettings.settings.splice(genID * generatorSettings.numberOfSettingsPerGenerator, generatorSettings.numberOfSettingsPerGenerator);
     generatorSettings.setSetting(flatten(generatorSettings.settings));
     // arming
@@ -164,9 +164,9 @@ void = (genID : number, generatorSettings : FailureGenData, failureGenContext : 
     deleteGeneratorFailures(generatorSettings, failureGenContext, `${generatorSettings.uniqueGenPrefix}${genID}`);
 };
 
-export const allGeneratorFailures = (allFailures : readonly Readonly<Failure>[]) => {
-    const generatorFailuresGetters : Map<number, string> = new Map();
-    const generatorFailuresSetters : Map<number, (value: string) => void> = new Map();
+export const allGeneratorFailures = (allFailures: readonly Readonly<Failure>[]) => {
+    const generatorFailuresGetters: Map<number, string> = new Map();
+    const generatorFailuresSetters: Map<number, (value: string) => void> = new Map();
     if (allFailures.length > 0) {
         allFailures.forEach((failure) => {
             const [generatorSetting, setGeneratorSetting] = usePersistentProperty(`EFB_FAILURE_${failure.identifier.toString()}_GENERATORS`, '');
@@ -177,8 +177,8 @@ export const allGeneratorFailures = (allFailures : readonly Readonly<Failure>[])
     return { generatorFailuresGetters, generatorFailuresSetters };
 };
 
-export const findGeneratorFailures = (allFailures : readonly Readonly<Failure>[], generatorFailuresGetters : Map<number, string>, generatorUniqueID: string) => {
-    const failureIDs : Failure[] = [];
+export const findGeneratorFailures = (allFailures: readonly Readonly<Failure>[], generatorFailuresGetters: Map<number, string>, generatorUniqueID: string) => {
+    const failureIDs: Failure[] = [];
     if (allFailures.length > 0) {
         allFailures.forEach((failure) => {
             const generatorSetting = generatorFailuresGetters.get(failure.identifier);

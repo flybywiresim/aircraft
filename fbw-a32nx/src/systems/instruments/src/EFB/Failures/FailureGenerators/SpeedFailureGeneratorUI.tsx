@@ -10,21 +10,21 @@ const settingName = 'EFB_FAILURE_GENERATOR_SETTING_SPEED';
 const additionalSetting = [2, 1, 2, 0, 200, 300];
 const numberOfSettingsPerGenerator = 6;
 const uniqueGenPrefix = 'B';
-const failureGeneratorArmed :boolean[] = [];
+const failureGeneratorArmed: boolean[] = [];
 const genName = 'Speed';
 const alias = () => t('Failures.Generators.GenSpeed');
 const disableTakeOffRearm = false;
-const rolledDice:number[] = [];
+const rolledDice: number[] = [];
 
 const SpeedConditionIndex = 3;
 const SpeedMinIndex = 4;
 const SpeedMaxIndex = 5;
 
-export const failureGenConfigSpeed : ()=>FailureGenData = () => {
+export const failureGenConfigSpeed: ()=>FailureGenData = () => {
     const [setting, setSetting] = usePersistentProperty(settingName);
     const settings = useMemo(() => {
         const splitString = setting?.split(',');
-        if (splitString) return splitString.map(((it : string) => parseFloat(it)));
+        if (splitString) return splitString.map(((it: string) => parseFloat(it)));
         return [];
     }, [setting]);
     return {
@@ -42,11 +42,11 @@ export const failureGenConfigSpeed : ()=>FailureGenData = () => {
     };
 };
 
-const onErase = (genNumber : number) => {
+const onErase = (genNumber: number) => {
     rolledDice.splice(genNumber, 1);
 };
 
-const generatorSettingComponents = (genNumber: number, generatorSettings : FailureGenData, failureGenContext : FailureGenContext) => {
+const generatorSettingComponents = (genNumber: number, generatorSettings: FailureGenData, failureGenContext: FailureGenContext) => {
     const settings = generatorSettings.settings;
     const settingTable = [
         FailureGeneratorChoiceSetting(t('Failures.Generators.SpeedCondition'), settings[genNumber * numberOfSettingsPerGenerator + SpeedConditionIndex], accelDecelMode,
