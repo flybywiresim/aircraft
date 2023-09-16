@@ -60,6 +60,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
         (ElectricalBusType::DirectCurrentGndFltService, 15),
     ])?
     .with_auxiliary_power_unit(Variable::named("OVHD_APU_START_PB_IS_AVAILABLE"), 8, 7)?
+    .with_engines(2)?
     .with_failures(vec![
         (24_000, FailureType::TransformerRectifier(1)),
         (24_001, FailureType::TransformerRectifier(2)),
@@ -342,16 +343,6 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
             Variable::aircraft("APU GENERATOR SWITCH", "Bool", 0),
             Variable::aspect("OVHD_ELEC_APU_GEN_PB_IS_ON"),
         );
-
-        builder.copy(
-            Variable::aircraft("BLEED AIR ENGINE", "Bool", 1),
-            Variable::aspect("OVHD_PNEU_ENG_1_BLEED_PB_IS_AUTO"),
-        );
-        builder.copy(
-            Variable::aircraft("BLEED AIR ENGINE", "Bool", 2),
-            Variable::aspect("OVHD_PNEU_ENG_2_BLEED_PB_IS_AUTO"),
-        );
-
         builder.copy(
             Variable::aircraft("EXTERNAL POWER AVAILABLE", "Bool", 1),
             Variable::aspect("OVHD_ELEC_EXT_PWR_PB_IS_AVAILABLE"),
