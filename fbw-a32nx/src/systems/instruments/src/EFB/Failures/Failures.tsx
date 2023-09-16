@@ -52,7 +52,7 @@ export const Failures = () => {
     const chapters = Array.from(new Set<AtaChapterNumber>(allFailures.map((it : Failure) => it.ata))).sort((a: AtaChapterNumber, b: AtaChapterNumber) => a - b);
 
     const dispatch = useAppDispatch();
-    const { searchQuery } = useAppSelector((state : any) => state.failuresPage);
+    const { searchQuery } = useAppSelector((state) => state.failuresPage);
 
     const filteredFailures = allFailures.filter((failure : Failure) => {
         if (searchQuery === '') {
