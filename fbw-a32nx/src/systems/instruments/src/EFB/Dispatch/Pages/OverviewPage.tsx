@@ -7,7 +7,8 @@ import { A380Overview } from 'instruments/src/EFB/Dispatch/Pages/Overview/A380_8
 import { getAirframeType } from '../../Efb';
 
 export const OverviewPage = () => {
-    switch (getAirframeType()) {
+    const [airframe] = useState(getAirframeType());
+    switch ((airframe !== null ? airframe : 'A320_251N')) {
     case 'A320_251N':
         return (
             <A320Overview />

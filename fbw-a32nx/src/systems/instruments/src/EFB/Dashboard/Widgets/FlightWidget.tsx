@@ -15,6 +15,7 @@ import { useAppSelector, useAppDispatch } from '../../Store/store';
 
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
 import { t } from '../../translation';
+import { getAirframeType } from '../../Efb';
 
 interface InformationEntryProps {
     title: string;
@@ -53,7 +54,7 @@ const NoSimBriefDataOverlay = ({ simbriefDataLoaded, simbriefDataPending, fetchD
                             <button
                                 type="button"
                                 onClick={fetchData}
-                                className="flex justify-center items-center p-2 space-x-4 w-full text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
+                                className="flex justify-center items-center p-2 space-x-4 w-full rounded-md border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
                             >
                                 <CloudArrowDown size={26} />
                                 <p className="text-current">{t('Dashboard.YourFlight.ImportSimBriefData')}</p>
@@ -70,6 +71,7 @@ export const FlightWidget = () => {
     const { data } = useAppSelector((state) => state.simbrief);
     const [simbriefDataPending, setSimbriefDataPending] = useState(false);
     const [simbriefUserId] = usePersistentProperty('CONFIG_SIMBRIEF_USERID');
+    const [airframe] = useState(getAirframeType());
 
     const {
         schedIn,
@@ -136,11 +138,11 @@ export const FlightWidget = () => {
                         {' '}
                         |
                         {' '}
-                        {AC_TYPE[getAirframeType()]}
+                        {(airframe !== null ? AC_TYPE[airframe] : 'A320-251N')}
                     </h1>
                 )}
             </div>
-            <div className="overflow-hidden relative p-6 w-full h-content-section-reduced rounded-lg border-2 border-theme-accent">
+            <div className="overflow-hidden relative p-6 w-full rounded-lg border-2 h-content-section-reduced border-theme-accent">
                 <div className="flex flex-col justify-between h-full">
                     <div className="space-y-8">
                         <div className="flex flex-row justify-between">
@@ -159,12 +161,12 @@ export const FlightWidget = () => {
                                     {schedOutParsed}
                                 </p>
                                 <div className="flex relative flex-row mx-6 w-full h-1">
-                                    <div className="absolute inset-x-0 border-b-4 border-theme-text border-dashed" />
+                                    <div className="absolute inset-x-0 border-b-4 border-dashed border-theme-text" />
 
                                     <div className="relative w-full bg-theme-highlight" style={{ width: `${flightPlanProgress}%` }}>
                                         {!!flightPlanProgress && (
                                             <IconPlane
-                                                className="absolute right-0 text-theme-highlight transform translate-x-1/2 -translate-y-1/2 fill-current"
+                                                className="absolute right-0 transform translate-x-1/2 -translate-y-1/2 fill-current text-theme-highlight"
                                                 size={50}
                                                 strokeLinejoin="miter"
                                             />
@@ -217,7 +219,7 @@ export const FlightWidget = () => {
                     <button
                         type="button"
                         onClick={fetchData}
-                        className="flex justify-center items-center p-2 space-x-4 w-full text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-lg border-2 border-theme-highlight transition duration-100"
+                        className="flex justify-center items-center p-2 space-x-4 w-full rounded-lg border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
                     >
                         <CloudArrowDown size={26} />
                         <p className="text-current">{t('Dashboard.YourFlight.ImportSimBriefData')}</p>
