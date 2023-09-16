@@ -79,8 +79,8 @@ export function ArmedState(generatorSettings: FailureGenData, genNumber: number)
 }
 
 export function RearmSettingsUI(generatorSettings: FailureGenData, genID: number,
-    setNewSetting : (newSetting: number, generatorSettings : FailureGenData, genID : number, settingIndex : number) => void,
-    failureGenContext : FailureGenContext) {
+    setNewSetting: (newSetting: number, generatorSettings: FailureGenData, genID: number, settingIndex: number) => void,
+    failureGenContext: FailureGenContext) {
     return (
         <SettingItem name={t('Failures.Generators.Arming')}>
             <SelectGroup>
@@ -107,14 +107,14 @@ export function RearmSettingsUI(generatorSettings: FailureGenData, genID: number
 }
 
 export type ButtonIcon = {
-    settingVar : number,
-    icon : JSX.Element,
-    setting : string,
+    settingVar: number,
+    icon: JSX.Element,
+    setting: string,
 }
 
-export function FailureGeneratorChoiceSetting(title:string, value: number, multiChoice : (ButtonIcon)[],
-    setNewSetting : (newSetting: number, generatorSettings: FailureGenData, genID: number, settingIndex: number) => void,
-    generatorSettings : FailureGenData, genIndex : number, settingIndex : number, failureGenContext : FailureGenContext) {
+export function FailureGeneratorChoiceSetting(title: string, value: number, multiChoice: (ButtonIcon)[],
+    setNewSetting: (newSetting: number, generatorSettings: FailureGenData, genID: number, settingIndex: number) => void,
+    generatorSettings: FailureGenData, genIndex: number, settingIndex: number, failureGenContext: FailureGenContext) {
     return (
         <SettingItem name={title}>
             <SelectGroup>
@@ -135,11 +135,11 @@ export function FailureGeneratorChoiceSetting(title:string, value: number, multi
     );
 }
 
-export function FailureGeneratorSingleSettingShortcut(title:string,
-    unit : string, shortCutText : string, shortCutValue : number, min:number, max:number,
-    value: number, mult : number,
-    setNewSetting : (newSetting: number, generatorSettings: FailureGenData, genID: number, settingIndex: number) => void,
-    generatorSettings : FailureGenData, genIndex : number, settingIndex : number, failureGenContext : FailureGenContext) {
+export function FailureGeneratorSingleSettingShortcut(title: string,
+    unit: string, shortCutText: string, shortCutValue: number, min:number, max:number,
+    value: number, mult: number,
+    setNewSetting: (newSetting: number, generatorSettings: FailureGenData, genID: number, settingIndex: number) => void,
+    generatorSettings: FailureGenData, genIndex: number, settingIndex: number, failureGenContext: FailureGenContext) {
     const multCheck = mult === 0 ? 1 : mult;
     return (
         <SettingItem name={`${title}${unit === '' ? '' : ` (${unit})`}`}>
@@ -174,11 +174,11 @@ export function FailureGeneratorSingleSettingShortcut(title:string,
     );
 }
 
-export function FailureGeneratorSingleSetting(title:string,
-    unit : string, min:number, max:number,
-    value: number, mult : number,
-    setNewSetting : (newSetting: number, generatorSettings: FailureGenData, genID: number, settingIndex: number) => void,
-    generatorSettings : FailureGenData, genIndex : number, settingIndex : number, failureGenContext : FailureGenContext) {
+export function FailureGeneratorSingleSetting(title: string,
+    unit: string, min: number, max: number,
+    value: number, mult: number,
+    setNewSetting: (newSetting: number, generatorSettings: FailureGenData, genID: number, settingIndex: number) => void,
+    generatorSettings: FailureGenData, genIndex: number, settingIndex: number, failureGenContext: FailureGenContext) {
     const multCheck = mult === 0 ? 1 : mult;
     return (
         <SettingItem name={`${title}${unit === '' ? '' : ` (${unit})`}`}>
@@ -200,7 +200,7 @@ export function FailureGeneratorSingleSetting(title:string,
     );
 }
 
-export function FailureGeneratorText(title:string, unit : string, text: string) {
+export function FailureGeneratorText(title:string, unit: string, text: string) {
     return (
         <>
             <SettingItem name={`${title}${unit === '' ? '' : ` (${unit})`}`}>

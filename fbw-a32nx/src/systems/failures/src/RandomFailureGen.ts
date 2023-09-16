@@ -17,7 +17,7 @@ export enum FailurePhases {
     Flight,
 }
 export class RandomFailureGen {
-    static failureGeneratorsUpdaters : ((failureOrchestrator : FailuresOrchestrator) => void)[] = [
+    static failureGeneratorsUpdaters: ((failureOrchestrator: FailuresOrchestrator) => void)[] = [
         FailureGeneratorAltitude.updateFailure,
         FailureGeneratorSpeed.updateFailure,
         FailureGeneratorPerHour.updateFailure,
@@ -25,9 +25,9 @@ export class RandomFailureGen {
         FailureGeneratorTakeOff.updateFailure,
     ];
 
-    static absoluteTimePrev : number = Date.now();
+    static absoluteTimePrev: number = Date.now();
 
-    static flatten(settings : number[]) : string {
+    static flatten(settings: number[]): string {
         let settingString = '';
         for (let i = 0; i < settings.length; i++) {
             settingString += settings[i].toString();
@@ -36,8 +36,8 @@ export class RandomFailureGen {
         return settingString;
     }
 
-    static getSetOfGeneratorFailuresSettings(allFailures : readonly Readonly<Failure>[]) : Map<number, string> {
-        const generatorFailuresGetters : Map<number, string> = new Map();
+    static getSetOfGeneratorFailuresSettings(allFailures: readonly Readonly<Failure>[]): Map<number, string> {
+        const generatorFailuresGetters: Map<number, string> = new Map();
         if (allFailures.length > 0) {
             allFailures.forEach((failure) => {
                 const generatorSetting = NXDataStore.get(`EFB_FAILURE_${failure.identifier.toString()}_GENERATORS`, '');
@@ -47,8 +47,8 @@ export class RandomFailureGen {
         return generatorFailuresGetters;
     }
 
-    static activateRandomFailure(failureList : readonly Readonly<Failure>[], failureOrchestrator : FailuresOrchestrator,
-        activeFailures : Set<number>, failuresAtOnce : number) {
+    static activateRandomFailure(failureList: readonly Readonly<Failure>[], failureOrchestrator: FailuresOrchestrator,
+        activeFailures: Set<number>, failuresAtOnce: number) {
         let failuresOffMap = failureList.filter((failure) => !activeFailures.has(failure.identifier)).map((failure) => failure.identifier);
         const maxNumber = Math.min(failuresAtOnce, failuresOffMap.length);
         for (let i = 0; i < maxNumber; i++) {
@@ -64,13 +64,13 @@ export class RandomFailureGen {
         }
     }
 
-    private static failureFlightPhase : FailurePhases;
+    private static failureFlightPhase: FailurePhases;
 
-    static getFailureFlightPhase() : FailurePhases {
+    static getFailureFlightPhase(): FailurePhases {
         return RandomFailureGen.failureFlightPhase;
     }
 
-    static basicDataUpdate() : void {
+    static basicDataUpdate(): void {
         const isOnGround = Simplane.getIsGrounded();
         const maxThrottleMode = Math.max(Simplane.getEngineThrottleMode(0), Simplane.getEngineThrottleMode(1));
         const throttleTakeOff = maxThrottleMode === ThrottleMode.FLEX_MCT || maxThrottleMode === ThrottleMode.TOGA;
@@ -81,7 +81,7 @@ export class RandomFailureGen {
         else RandomFailureGen.failureFlightPhase = FailurePhases.TakeOff;
     }
 
-    static update(failureOrchestrator : FailuresOrchestrator) {
+    static update(failureOrchestrator: FailuresOrchestrator) {
         const absoluteTime = Date.now();
         if (absoluteTime - RandomFailureGen.absoluteTimePrev >= 100.0) {
             RandomFailureGen.basicDataUpdate();
@@ -92,8 +92,8 @@ export class RandomFailureGen {
         }
     }
 
-    static getGeneratorFailurePool(failureOrchestrator : FailuresOrchestrator, generatorUniqueID: string) : Failure[] {
-        const failureIDs : Failure[] = [];
+    static getGeneratorFailurePool(failureOrchestrator: FailuresOrchestrator, generatorUniqueID: string): Failure[] {
+        const failureIDs: Failure[] = [];
         const allFailures = failureOrchestrator.getAllFailures();
         const setOfGeneratorFailuresSettings = RandomFailureGen.getSetOfGeneratorFailuresSettings(allFailures);
         if (allFailures.length > 0) {

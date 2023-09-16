@@ -26,7 +26,7 @@ export const FailureGeneratorsUI = () => {
     if (settings.failureGenModalType === ModalGenType.Settings) {
         settings.modals.showModal(FailureGeneratorDetailsModalUI(settings));
     }
-    const generatorList = Array.from(settings.allGenSettings.values()).map((genSetting : FailureGenData) => ({
+    const generatorList = Array.from(settings.allGenSettings.values()).map((genSetting: FailureGenData) => ({
         value: genSetting.genName,
         displayValue: `${genSetting.alias()}`,
     }));
@@ -80,9 +80,9 @@ export const FailureGeneratorsUI = () => {
     );
 };
 
-export const generatorsCardList : (settings : FailureGenContext)
-=> JSX.Element[] = (settings : FailureGenContext) => {
-    const temp : JSX.Element[] = [];
+export const generatorsCardList: (settings: FailureGenContext)
+=> JSX.Element[] = (settings: FailureGenContext) => {
+    const temp: JSX.Element[] = [];
     settings.allGenSettings.forEach((generatorSetting) => {
         const nbGenerator = Math.floor(generatorSetting.settings.length / generatorSetting.numberOfSettingsPerGenerator);
         for (let i = 0; i < nbGenerator; i++) {
@@ -92,7 +92,7 @@ export const generatorsCardList : (settings : FailureGenContext)
     return temp;
 };
 
-function FailureShortList(failureGenContext: FailureGenContext, uniqueID : string) {
+function FailureShortList(failureGenContext: FailureGenContext, uniqueID: string) {
     const maxNumberOfFailureToDisplay = 4;
     let listOfSelectedFailures = findGeneratorFailures(failureGenContext.allFailures, failureGenContext.generatorFailuresGetters, uniqueID);
 
@@ -101,7 +101,7 @@ function FailureShortList(failureGenContext: FailureGenContext, uniqueID : strin
     }
     if (listOfSelectedFailures.length === 0) return <div className="p-1 mb-1 rounded-md bg-theme-accent">{t('Failures.Generators.NoFailure')}</div>;
 
-    const chaptersFullySelected : AtaChapterNumber[] = [];
+    const chaptersFullySelected: AtaChapterNumber[] = [];
     failureGenContext.chapters.forEach((chapter) => {
         const failuresActiveInChapter = listOfSelectedFailures.filter((failure) => failure.ata === chapter);
         if (failuresActiveInChapter.length === failureGenContext.allFailures.filter((failure) => failure.ata === chapter).length) {
@@ -137,8 +137,8 @@ function FailureShortList(failureGenContext: FailureGenContext, uniqueID : strin
 }
 
 export function FailureGeneratorCardTemplateUI(
-    genNumber : number,
-    failureGenData : FailureGenData,
+    genNumber: number,
+    failureGenData: FailureGenData,
     failureGenContext: FailureGenContext,
 ) {
     const genUniqueID = `${failureGenData.uniqueGenPrefix}${genNumber.toString()}`;
@@ -146,7 +146,7 @@ export function FailureGeneratorCardTemplateUI(
         <div className="flex flex-row justify-between px-2 pt-2 m-1 text-center rounded-md border-2 border-solid border-theme-accent">
             <div className="flex flex-col mr-4 text-left grow max-w-[86%] align-left">
                 <h2 className="pb-2 truncate break-words max-w-[100%]">
-                    {`${genUniqueID} : ${failureGenData.alias()}`}
+                    {`${genUniqueID}: ${failureGenData.alias()}`}
                 </h2>
                 {FailureShortList(failureGenContext, genUniqueID)}
             </div>
@@ -167,7 +167,7 @@ export function FailureGeneratorCardTemplateUI(
                         border-theme-accent hover:text-theme-body hover:bg-theme-highlight"
                         onClick={() => {
                             failureGenContext.setFailureGenModalType(ModalGenType.Settings);
-                            const test : ModalContext = { failureGenData, genNumber, genUniqueID };
+                            const test: ModalContext = { failureGenData, genNumber, genUniqueID };
                             failureGenContext.setModalContext(test);
                         }}
                     >
@@ -178,7 +178,7 @@ export function FailureGeneratorCardTemplateUI(
                         border-theme-accent hover:text-theme-body hover:bg-theme-highlight"
                         onClick={() => {
                             failureGenContext.setFailureGenModalType(ModalGenType.Failures);
-                            const test : ModalContext = { failureGenData, genNumber, genUniqueID };
+                            const test: ModalContext = { failureGenData, genNumber, genUniqueID };
                             failureGenContext.setModalContext(test);
                         }}
                     >

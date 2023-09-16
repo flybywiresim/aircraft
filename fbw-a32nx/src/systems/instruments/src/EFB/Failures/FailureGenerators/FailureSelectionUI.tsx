@@ -1,7 +1,7 @@
 import { Failure } from 'failures/src/failures-orchestrator';
 import { FailureGenContext, FailureGenData } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
 
-export function selectAllFailureChapter(chapter: number, failureGenContext : FailureGenContext, genIDToChange : string, value : boolean): void {
+export function selectAllFailureChapter(chapter: number, failureGenContext: FailureGenContext, genIDToChange: string, value: boolean): void {
     failureGenContext.allFailures.forEach((failure) => {
         if (failure.ata === chapter) {
             setSelectedFailure(failure, genIDToChange, failureGenContext, value);
@@ -9,16 +9,16 @@ export function selectAllFailureChapter(chapter: number, failureGenContext : Fai
     });
 }
 
-export function selectAllFailures(failureGenContext : FailureGenContext, genIDToChange : string, value : boolean): void {
+export function selectAllFailures(failureGenContext: FailureGenContext, genIDToChange: string, value: boolean): void {
     failureGenContext.allFailures.forEach((failure) => {
         setSelectedFailure(failure, genIDToChange, failureGenContext, value);
     });
 }
 
-export const setSelectedFailure = (failure : Failure, genIDToChange : string, failureGenContext :FailureGenContext, value : boolean) => {
+export const setSelectedFailure = (failure: Failure, genIDToChange: string, failureGenContext: FailureGenContext, value: boolean) => {
     const initialString = failureGenContext.generatorFailuresGetters.get(failure.identifier);
     const generatorsForFailure = initialString.split(',');
-    let newSetting : string = '';
+    let newSetting: string = '';
     const genIncludedInSetting = generatorsForFailure.includes(genIDToChange);
     if (genIncludedInSetting !== value) {
         if (value === true) {
@@ -53,19 +53,19 @@ export const setSelectedFailure = (failure : Failure, genIDToChange : string, fa
 const regexLetter = /\D{1,2}/;
 const regexNumber = /\d{1,2}/;
 
-export function ExtractFirstLetter(generatorUniqueID : string) {
+export function ExtractFirstLetter(generatorUniqueID: string) {
     const letterTable = generatorUniqueID.match(regexLetter);
     if (letterTable && letterTable.length > 0) return letterTable[0];
     return '';
 }
 
-export function ExtractFirstNumber(generatorUniqueID : string) {
+export function ExtractFirstNumber(generatorUniqueID: string) {
     const numberTable = generatorUniqueID.match(regexNumber);
     if (numberTable && numberTable.length > 0) return parseInt(numberTable[0]);
     return undefined;
 }
 
-export const deleteGeneratorFailures = (generatorSettings : FailureGenData, failureGenContext:FailureGenContext, generatorUniqueIDRemoved: string) => {
+export const deleteGeneratorFailures = (generatorSettings: FailureGenData, failureGenContext: FailureGenContext, generatorUniqueIDRemoved: string) => {
     const letterTable = generatorUniqueIDRemoved.match(regexLetter);
     const numberTable = generatorUniqueIDRemoved.match(regexNumber);
     if (letterTable && letterTable.length > 0 && numberTable && numberTable.length > 0) {

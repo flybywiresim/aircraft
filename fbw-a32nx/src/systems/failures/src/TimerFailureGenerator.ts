@@ -9,19 +9,19 @@ export class FailureGeneratorTimer {
 
     private static uniqueGenPrefix = 'D';
 
-    private static failureGeneratorArmed :boolean[] = [];
+    private static failureGeneratorArmed: boolean[] = [];
 
-    private static failureStartTime:number[] = [];
+    private static failureStartTime: number[] = [];
 
-    private static rolledDice:number[] = [];
+    private static rolledDice: number[] = [];
 
-    private static didOnce : boolean = false;
+    private static didOnce: boolean = false;
 
     private static delayMinIndex = 3;
 
     private static delayMaxIndex = 4;
 
-    static updateFailure(failureOrchestrator : FailuresOrchestrator) : void {
+    static updateFailure(failureOrchestrator: FailuresOrchestrator): void {
         const failureGeneratorSetting = NXDataStore.get(FailureGeneratorTimer.settingName, '');
 
         if (!FailureGeneratorTimer.didOnce) {
@@ -30,9 +30,9 @@ export class FailureGeneratorTimer {
             FailureGeneratorTimer.didOnce = true;
         }
 
-        const settings : number[] = failureGeneratorSetting.split(',').map(((it) => parseFloat(it)));
+        const settings: number[] = failureGeneratorSetting.split(',').map(((it) => parseFloat(it)));
         const nbGenerator = Math.floor(settings.length / FailureGeneratorTimer.numberOfSettingsPerGenerator);
-        const tempSettings : number[] = Array.from(settings);
+        const tempSettings: number[] = Array.from(settings);
         const currentTime = Date.now();
 
         let change = false;

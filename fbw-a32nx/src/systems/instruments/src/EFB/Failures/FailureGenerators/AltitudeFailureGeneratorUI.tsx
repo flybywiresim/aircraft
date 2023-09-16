@@ -12,21 +12,21 @@ const settingName = 'EFB_FAILURE_GENERATOR_SETTING_ALTITUDE';
 const additionalSetting = [2, 1, 2, 0, 80, 250];
 const numberOfSettingsPerGenerator = 6;
 const uniqueGenPrefix = 'A';
-const failureGeneratorArmed :boolean[] = [];
+const failureGeneratorArmed: boolean[] = [];
 const genName = 'Altitude';
 const alias = () => t('Failures.Generators.GenAlt');
 const disableTakeOffRearm = false;
-const rolledDice:number[] = [];
+const rolledDice: number[] = [];
 
 const AltitudeConditionIndex = 3;
 const AltitudeMinIndex = 4;
 const AltitudeMaxIndex = 5;
 
-export const failureGenConfigAltitude : ()=>FailureGenData = () => {
+export const failureGenConfigAltitude: ()=>FailureGenData = () => {
     const [setting, setSetting] = usePersistentProperty(settingName);
     const settings = useMemo(() => {
         const splitString = setting?.split(',');
-        if (splitString) return splitString.map(((it : string) => parseFloat(it)));
+        if (splitString) return splitString.map(((it: string) => parseFloat(it)));
         return [];
     }, [setting]);
     return {
@@ -44,11 +44,11 @@ export const failureGenConfigAltitude : ()=>FailureGenData = () => {
     };
 };
 
-const onErase = (genNumber : number) => {
+const onErase = (genNumber: number) => {
     rolledDice.splice(genNumber, 1);
 };
 
-const generatorSettingComponents = (genNumber: number, generatorSettings : FailureGenData, failureGenContext : FailureGenContext) => {
+const generatorSettingComponents = (genNumber: number, generatorSettings: FailureGenData, failureGenContext: FailureGenContext) => {
     const settings = generatorSettings.settings;
     const settingTable = [
         FailureGeneratorChoiceSetting(t('Failures.Generators.AltitudeCondition'), settings[genNumber * numberOfSettingsPerGenerator + AltitudeConditionIndex], climbDescentMode,

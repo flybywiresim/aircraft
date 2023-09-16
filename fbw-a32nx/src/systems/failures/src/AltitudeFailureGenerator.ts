@@ -25,7 +25,7 @@ export class FailureGeneratorAltitude {
 
     private static resetMargin = 100;
 
-    static updateFailure(failureOrchestrator : FailuresOrchestrator) : void {
+    static updateFailure(failureOrchestrator: FailuresOrchestrator): void {
         const failureGeneratorSetting = NXDataStore.get(FailureGeneratorAltitude.settingName, '');
 
         if (!FailureGeneratorAltitude.didOnce) {
@@ -37,10 +37,10 @@ export class FailureGeneratorAltitude {
             FailureGeneratorAltitude.didOnce = true;
         }
 
-        const settings : number[] = failureGeneratorSetting.split(',').map(((it) => parseFloat(it)));
+        const settings: number[] = failureGeneratorSetting.split(',').map(((it) => parseFloat(it)));
         const nbGenerator = Math.floor(settings.length / FailureGeneratorAltitude.numberOfSettingsPerGenerator);
         const altitude = Simplane.getAltitude();
-        const tempSettings : number[] = Array.from(settings);
+        const tempSettings: number[] = Array.from(settings);
 
         let change = false;
 

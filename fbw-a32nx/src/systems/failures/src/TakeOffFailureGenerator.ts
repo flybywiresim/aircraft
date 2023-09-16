@@ -9,13 +9,13 @@ export class FailureGeneratorTakeOff {
 
     private static uniqueGenPrefix = 'E';
 
-    private static failureGeneratorArmed :boolean[] = [];
+    private static failureGeneratorArmed: boolean[]= [];
 
-    private static failureTakeOffSpeedThreshold :number[] = [];
+    private static failureTakeOffSpeedThreshold: number[] = [];
 
-    private static failureTakeOffAltitudeThreshold :number[] = [];
+    private static failureTakeOffAltitudeThreshold: number[] = [];
 
-    private static didOnce : boolean = false;
+    private static didOnce: boolean = false;
 
     private static chancePerTakeOffIndex = 3;
 
@@ -31,7 +31,7 @@ export class FailureGeneratorTakeOff {
 
     private static altitudeIndex = 9;
 
-    static updateFailure(failureOrchestrator : FailuresOrchestrator) : void {
+    static updateFailure(failureOrchestrator : FailuresOrchestrator): void {
         const failureGeneratorSetting = NXDataStore.get(FailureGeneratorTakeOff.settingName, '');
 
         if (!FailureGeneratorTakeOff.didOnce) {
@@ -40,9 +40,9 @@ export class FailureGeneratorTakeOff {
             FailureGeneratorTakeOff.didOnce = true;
         }
 
-        const settings : number[] = failureGeneratorSetting.split(',').map(((it) => parseFloat(it)));
+        const settings: number[] = failureGeneratorSetting.split(',').map(((it) => parseFloat(it)));
         const nbGenerator = Math.floor(settings.length / FailureGeneratorTakeOff.numberOfSettingsPerGenerator);
-        const tempSettings : number[] = Array.from(settings);
+        const tempSettings: number[] = Array.from(settings);
         const altitude = Simplane.getAltitude();
         const gs = Simplane.getGroundSpeed();
 
@@ -66,17 +66,17 @@ export class FailureGeneratorTakeOff {
                 }
             }
 
-            const minFailureTakeOffSpeed : number = settings[i * FailureGeneratorTakeOff.numberOfSettingsPerGenerator + FailureGeneratorTakeOff.minSpeedIndex];
+            const minFailureTakeOffSpeed: number = settings[i * FailureGeneratorTakeOff.numberOfSettingsPerGenerator + FailureGeneratorTakeOff.minSpeedIndex];
             if (!FailureGeneratorTakeOff.failureGeneratorArmed[i]) {
                 if (settings[i * FailureGeneratorTakeOff.numberOfSettingsPerGenerator + ArmingIndex] > 0) {
                     if (gs < minFailureTakeOffSpeed && RandomFailureGen.getFailureFlightPhase() === FailurePhases.TakeOff) {
                         if (Math.random() < settings[i * FailureGeneratorTakeOff.numberOfSettingsPerGenerator + FailureGeneratorTakeOff.chancePerTakeOffIndex]) {
-                            const chanceFailureLowTakeOffRegime : number = settings[i * FailureGeneratorTakeOff.numberOfSettingsPerGenerator + FailureGeneratorTakeOff.chanceLowIndex];
-                            const chanceFailureMediumTakeOffRegime : number = settings[i * FailureGeneratorTakeOff.numberOfSettingsPerGenerator
+                            const chanceFailureLowTakeOffRegime: number = settings[i * FailureGeneratorTakeOff.numberOfSettingsPerGenerator + FailureGeneratorTakeOff.chanceLowIndex];
+                            const chanceFailureMediumTakeOffRegime: number = settings[i * FailureGeneratorTakeOff.numberOfSettingsPerGenerator
                                     + FailureGeneratorTakeOff.chanceMediumIndex];
-                            const lowMedTakeOffSpeed : number = settings[i * FailureGeneratorTakeOff.numberOfSettingsPerGenerator + FailureGeneratorTakeOff.mediumSpeedIndex];
-                            const medHighTakeOffSpeed : number = settings[i * FailureGeneratorTakeOff.numberOfSettingsPerGenerator + FailureGeneratorTakeOff.maxSpeedIndex];
-                            const takeOffDeltaAltitudeEnd : number = 100 * settings[i * FailureGeneratorTakeOff.numberOfSettingsPerGenerator + FailureGeneratorTakeOff.altitudeIndex];
+                            const lowMedTakeOffSpeed: number = settings[i * FailureGeneratorTakeOff.numberOfSettingsPerGenerator + FailureGeneratorTakeOff.mediumSpeedIndex];
+                            const medHighTakeOffSpeed: number = settings[i * FailureGeneratorTakeOff.numberOfSettingsPerGenerator + FailureGeneratorTakeOff.maxSpeedIndex];
+                            const takeOffDeltaAltitudeEnd: number = 100 * settings[i * FailureGeneratorTakeOff.numberOfSettingsPerGenerator + FailureGeneratorTakeOff.altitudeIndex];
                             const rolledDice = Math.random();
                             if (rolledDice < chanceFailureLowTakeOffRegime) {
                                 // Low Speed Take Off

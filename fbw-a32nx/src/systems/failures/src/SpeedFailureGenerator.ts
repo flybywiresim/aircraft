@@ -9,13 +9,13 @@ export class FailureGeneratorSpeed {
 
     private static uniqueGenPrefix = 'B';
 
-    private static failureGeneratorArmed :boolean[] = [];
+    private static failureGeneratorArmed: boolean[] = [];
 
     private static doNotRepeatUntilTakeOff: boolean[] = [];
 
-    private static rolledDice:number[] = [];
+    private static rolledDice: number[] = [];
 
-    private static didOnce : boolean = false;
+    private static didOnce: boolean = false;
 
     private static speedConditionIndex = 3;
 
@@ -25,7 +25,7 @@ export class FailureGeneratorSpeed {
 
     private static resetMargin = 5;
 
-    static updateFailure(failureOrchestrator : FailuresOrchestrator) : void {
+    static updateFailure(failureOrchestrator: FailuresOrchestrator): void {
         const failureGeneratorSetting = NXDataStore.get(FailureGeneratorSpeed.settingName, '');
 
         if (!FailureGeneratorSpeed.didOnce) {
@@ -37,10 +37,10 @@ export class FailureGeneratorSpeed {
             FailureGeneratorSpeed.didOnce = true;
         }
 
-        const settings : number[] = failureGeneratorSetting.split(',').map(((it) => parseFloat(it)));
+        const settings: number[] = failureGeneratorSetting.split(',').map(((it) => parseFloat(it)));
         const nbGenerator = Math.floor(settings.length / FailureGeneratorSpeed.numberOfSettingsPerGenerator);
         const gs = Simplane.getGroundSpeed();
-        const tempSettings : number[] = Array.from(settings);
+        const tempSettings: number[] = Array.from(settings);
 
         let change = false;
 

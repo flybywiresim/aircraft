@@ -9,15 +9,15 @@ export class FailureGeneratorPerHour {
 
     private static uniqueGenPrefix = 'C';
 
-    private static failureGeneratorArmed :boolean[] = [];
+    private static failureGeneratorArmed: boolean[] = [];
 
-    private static timePrev:number = Date.now();
+    private static timePrev: number = Date.now();
 
-    private static didOnce : boolean = false;
+    private static didOnce: boolean = false;
 
     private static failurePerHourIndex = 3;
 
-    static updateFailure(failureOrchestrator : FailuresOrchestrator) : void {
+    static updateFailure(failureOrchestrator: FailuresOrchestrator): void {
         const failureGeneratorSetting = NXDataStore.get(FailureGeneratorPerHour.settingName, '');
 
         if (!FailureGeneratorPerHour.didOnce) {
@@ -27,9 +27,9 @@ export class FailureGeneratorPerHour {
         }
 
         const currentTime = Date.now();
-        const settings : number[] = failureGeneratorSetting.split(',').map(((it) => parseFloat(it)));
+        const settings: number[] = failureGeneratorSetting.split(',').map(((it) => parseFloat(it)));
         const nbGenerator = Math.floor(settings.length / FailureGeneratorPerHour.numberOfSettingsPerGenerator);
-        const tempSettings : number[] = Array.from(settings);
+        const tempSettings: number[] = Array.from(settings);
 
         let change = false;
 
