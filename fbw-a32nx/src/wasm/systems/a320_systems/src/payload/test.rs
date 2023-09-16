@@ -379,10 +379,40 @@ impl BoardingTestBed {
         assert!(pax_ambience);
     }
 
+    fn has_sound_pax_boarding(&mut self) {
+        let pax_boarding: bool = self.read_by_name("SOUND_PAX_BOARDING");
+        assert!(pax_boarding);
+        assert!(self.sound_pax_boarding());
+    }
+
+    fn has_sound_pax_deboarding(&mut self) {
+        let pax_deboarding: bool = self.read_by_name("SOUND_PAX_DEBOARDING");
+        assert!(pax_deboarding);
+        assert!(self.sound_pax_deboarding());
+    }
+
+    fn has_sound_pax_complete(&mut self) {
+        let pax_complete_sound: bool = self.read_by_name("SOUND_BOARDING_COMPLETE");
+        assert!(pax_complete_sound);
+        assert!(self.sound_pax_complete());
+    }
+
     fn has_no_sound_pax_ambience(&mut self) {
         let pax_ambience: bool = self.read_by_name("SOUND_PAX_AMBIENCE");
         assert!(!self.sound_pax_ambience());
         assert!(!pax_ambience);
+    }
+
+    fn has_no_sound_pax_boarding(&mut self) {
+        let pax_boarding: bool = self.read_by_name("SOUND_PAX_BOARDING");
+        assert!(!pax_boarding);
+        assert!(!self.sound_pax_boarding());
+    }
+
+    fn has_no_sound_pax_deboarding(&mut self) {
+        let pax_boarding: bool = self.read_by_name("SOUND_PAX_DEBOARDING");
+        assert!(!pax_boarding);
+        assert!(!self.sound_pax_deboarding());
     }
 
     fn with_pax(mut self, ps: usize, pax_qty: i8) -> Self {
@@ -1398,6 +1428,8 @@ fn disable_if_gsx_enabled() {
 
     test_bed = test_bed.and_run();
     test_bed.has_no_sound_pax_ambience();
+    test_bed.has_no_sound_pax_boarding();
+    test_bed.has_no_sound_pax_deboarding();
     test_bed.sound_boarding_complete_reset();
 }
 
@@ -1413,16 +1445,21 @@ fn gsx_boarding_half_pax() {
         .gsx_performing_board_state()
         .board_gsx_pax_half()
         .board_gsx_cargo_half()
-        .and_run()
-        .gsx_complete_board_state()
-        .and_stabilize();
+        .and_run();
+
+    test_bed.has_sound_pax_boarding();
+    test_bed.has_no_sound_pax_deboarding();
+
+    let mut test_bed = test_bed.gsx_complete_board_state().and_stabilize();
 
     test_bed.has_all_stations_half_pax();
     test_bed.has_all_stations_half_cargo();
 
     test_bed = test_bed.and_run();
     test_bed.has_sound_pax_ambience();
-    test_bed.sound_boarding_complete_reset();
+    test_bed.has_no_sound_pax_boarding();
+    test_bed.has_no_sound_pax_deboarding();
+    test_bed.sound_pax_complete();
 }
 
 #[test]
@@ -1449,7 +1486,9 @@ fn gsx_boarding_full_pax() {
 
     test_bed = test_bed.and_run();
     test_bed.has_sound_pax_ambience();
-    test_bed.sound_boarding_complete_reset();
+    test_bed.has_no_sound_pax_boarding();
+    test_bed.has_no_sound_pax_deboarding();
+    test_bed.has_sound_pax_complete();
 }
 
 #[test]
@@ -1506,6 +1545,8 @@ fn gsx_deboarding_full_pax() {
 
     test_bed = test_bed.and_run();
     test_bed.has_no_sound_pax_ambience();
+    test_bed.has_no_sound_pax_boarding();
+    test_bed.has_no_sound_pax_deboarding();
     test_bed.sound_boarding_complete_reset();
 }
 
@@ -1524,17 +1565,28 @@ fn gsx_deboarding_half_pax() {
         .deboard_gsx_pax(0)
         .deboard_gsx_cargo_half()
         .and_run()
-        .and_stabilize()
+        .and_stabilize();
+
+    test_bed.has_sound_pax_ambience();
+    test_bed.has_sound_pax_deboarding();
+    test_bed.has_no_sound_pax_boarding();
+
+    let mut test_bed = test_bed
+        .target_no_pax()
+        .target_no_cargo()
         .deboard_gsx_pax(87)
         .deboard_gsx_cargo_full()
         .and_run()
-        .gsx_complete_deboard_state();
+        .gsx_complete_deboard_state()
+        .and_run()
+        .and_stabilize();
 
     test_bed.has_no_pax();
     test_bed.has_no_cargo();
 
-    test_bed = test_bed.and_run();
     test_bed.has_no_sound_pax_ambience();
+    test_bed.has_no_sound_pax_boarding();
+    test_bed.has_no_sound_pax_deboarding();
     test_bed.sound_boarding_complete_reset();
 }
 
@@ -1557,6 +1609,8 @@ fn gsx_deboarding_full_pax_partial() {
     // Check that cargo and pax remain the same when GSX has started performing
     test_bed.has_full_pax();
     test_bed.has_full_cargo();
+    test_bed.has_sound_pax_deboarding();
+    test_bed.has_no_sound_pax_boarding();
 
     // SET GSX values to half and run
     let mut test_bed = test_bed
@@ -1567,6 +1621,8 @@ fn gsx_deboarding_full_pax_partial() {
 
     test_bed.has_half_pax();
     test_bed.has_half_cargo();
+    test_bed.has_sound_pax_deboarding();
+    test_bed.has_no_sound_pax_boarding();
 
     let mut test_bed = test_bed
         .deboard_gsx_pax(0)
@@ -1582,5 +1638,7 @@ fn gsx_deboarding_full_pax_partial() {
 
     test_bed = test_bed.and_run();
     test_bed.has_no_sound_pax_ambience();
+    test_bed.has_no_sound_pax_deboarding();
+    test_bed.has_no_sound_pax_boarding();
     test_bed.sound_boarding_complete_reset();
 }

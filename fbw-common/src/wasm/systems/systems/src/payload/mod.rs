@@ -1225,17 +1225,20 @@ impl GsxDriver {
         cargo_deck: &mut CargoDeck<C>,
         boarding_sounds: &mut BoardingSounds,
     ) {
-        self.update_ambient_sound(passenger_deck, boarding_sounds);
+        self.update_boarding_sounds(passenger_deck, boarding_sounds);
         self.update_boarding(passenger_deck, cargo_deck);
         self.update_deboarding(passenger_deck, cargo_deck);
     }
 
-    fn update_ambient_sound<const P: usize, const G: usize>(
+    fn update_boarding_sounds<const P: usize, const G: usize>(
         &mut self,
         passenger_deck: &PassengerDeck<P, G>,
         boarding_sounds: &mut BoardingSounds,
     ) {
+        boarding_sounds.play_sound_pax_boarding(self.boarding_state() == GsxState::Performing);
+        boarding_sounds.play_sound_pax_deboarding(self.deboarding_state() == GsxState::Performing);
         boarding_sounds.play_sound_pax_ambience(self.has_pax(passenger_deck));
+        boarding_sounds.play_sound_pax_complete(self.boarding_state() == GsxState::Completed)
     }
 
     fn update_boarding<const P: usize, const G: usize, const C: usize>(
