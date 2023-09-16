@@ -783,7 +783,6 @@ class FMCMainDisplay extends BaseAirliners {
                 SimVar.SetSimVarValue("L:A32NX_GOAROUND_HDG_MODE", "bool", 0);
                 SimVar.SetSimVarValue("L:A32NX_GOAROUND_NAV_MODE", "bool", 0);
                 SimVar.SetSimVarValue("L:A32NX_GOAROUND_INIT_SPEED", "number", Simplane.getIndicatedSpeed());
-                SimVar.SetSimVarValue("L:A32NX_GOAROUND_INIT_APP_SPEED", "number", this.getVApp());
                 //delete override logic when we have valid nav data -aka goaround path- after goaround!
                 SimVar.SetSimVarValue("L:A32NX_GOAROUND_NAV_OVERRIDE", "bool", 0);
 
@@ -1170,7 +1169,7 @@ class FMCMainDisplay extends BaseAirliners {
                             this.computedVls + (engineOut ? 15 : 25),
                             Math.max(
                                 SimVar.GetSimVarValue("L:A32NX_GOAROUND_INIT_SPEED", "number"),
-                                SimVar.GetSimVarValue("L:A32NX_GOAROUND_INIT_APP_SPEED", "number")
+                                this.getVApp(),
                             ),
                             SimVar.GetSimVarValue("L:A32NX_SPEEDS_VMAX", "number") - 5,
                         );
