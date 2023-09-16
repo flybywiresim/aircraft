@@ -47,6 +47,7 @@
 1. [BLEED] Improve bleed page visuals on the SD - @BlueberryKing (BlueberryKing)
 1. [BLEED] Use more accurate pneumatic valves and sensors - @BlueberryKing (BlueberryKing)
 1. [EFB] flyPad OS 3.2 - Cosmetic changes for throttle configuration settings and support for multiple airframes - @2hwk (2cas)
+1. [PAYLOAD] Re-enabled FBW sounds when using GSX Integration
 1. [SD] Connect SD BLEED page APU bleed pressure indication to correct ADRs - @BlueberryKing (BlueberryKing)
 1. [FMS] Use station declination when appropriate for fix info and place/bearing radials - @tracernz (Mike)
 
