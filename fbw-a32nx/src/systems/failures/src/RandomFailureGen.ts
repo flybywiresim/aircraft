@@ -47,8 +47,12 @@ export class RandomFailureGen {
         return generatorFailuresGetters;
     }
 
-    static activateRandomFailure(failureList: readonly Readonly<Failure>[], failureOrchestrator: FailuresOrchestrator,
-        activeFailures: Set<number>, failuresAtOnce: number) {
+    static activateRandomFailure(
+        failureList: readonly Readonly<Failure>[],
+        failureOrchestrator: FailuresOrchestrator,
+        activeFailures: Set<number>,
+        failuresAtOnce: number,
+    ) {
         let failuresOffMap = failureList.filter((failure) => !activeFailures.has(failure.identifier)).map((failure) => failure.identifier);
         const maxNumber = Math.min(failuresAtOnce, failuresOffMap.length);
         for (let i = 0; i < maxNumber; i++) {
