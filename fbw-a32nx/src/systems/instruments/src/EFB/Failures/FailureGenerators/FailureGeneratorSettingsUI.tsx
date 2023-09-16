@@ -4,7 +4,7 @@ import {
     FailureGenContext, FailureGenData, ModalGenType, findGeneratorFailures,
     setNewNumberOfFailureSetting, setNewSetting,
 } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
-import { ExtractFirstNumber } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelectionUI';
+import { extractFirstNumber } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelectionUI';
 import { Airplane, ArrowBarUp, Repeat, Repeat1, ToggleOff } from 'react-bootstrap-icons';
 import { SelectGroup, SelectItem } from 'instruments/src/EFB/UtilComponents/Form/Select';
 import { SimpleInput } from 'instruments/src/EFB/UtilComponents/Form/SimpleInput/SimpleInput';
@@ -24,7 +24,7 @@ export const failureActivationMode: (ButtonType & SettingVar)[] = [
 export function FailureGeneratorDetailsModalUI(
     failureGenContext: FailureGenContext,
 ) {
-    const genNumber = ExtractFirstNumber(failureGenContext.modalContext.genUniqueID);
+    const genNumber = extractFirstNumber(failureGenContext.modalContext.genUniqueID);
     failureGenContext.setFailureGenModalType(ModalGenType.None);
     const numberOfSelectedFailures = findGeneratorFailures(failureGenContext.allFailures, failureGenContext.generatorFailuresGetters,
         failureGenContext.modalContext.genUniqueID).length;
