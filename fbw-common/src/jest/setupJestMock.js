@@ -38,8 +38,6 @@ global.SimVar.SetSimVarValue = jest.fn((name, _, value, __) => {
     });
 });
 
-
-
 global.RunwayDesignator = jest.mock();
 global.Avionics = jest.mock();
 global.Avionics = jest.mock();
