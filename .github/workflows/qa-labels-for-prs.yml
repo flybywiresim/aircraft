@@ -9,7 +9,7 @@ jobs:
       pull-requests: write # For adding labels, otherwise set to 'read'
     steps:
       - name: "PR QA Comments Helper"
-        uses: "auroraisluna/qa-labels-for-prs@v1.0.1" # Make sure to use the latest version available!
+        uses: "auroraisluna/qa-labels-for-prs@v1.0.2" # Make sure to use the latest version available!
         with:
           repo-owner: "${{ github.event.repository.owner.login }}" 
           repo-name: "${{ github.event.repository.name }}" 
