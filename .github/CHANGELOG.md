@@ -51,6 +51,8 @@
 1. [PAYLOAD] Re-enabled FBW sounds when using GSX Integration
 1. [SD] Connect SD BLEED page APU bleed pressure indication to correct ADRs - @BlueberryKing (BlueberryKing)
 1. [FMS] Use station declination when appropriate for fix info and place/bearing radials - @tracernz (Mike)
+1. [COMMS] Enabled all components of comms panels - @Julian [Z+2 fr en esp]#8476 (Julian Sebline)
+1. [MISC] Support of SELCAL - @Julian [Z+2 fr en esp]#8476 (Julian Sebline)
 
 ## 0.10.0
 
@@ -176,7 +178,6 @@
 1. [EFB] Added pause at T/D function - @2hwk (2Cas#1022)
 1. [LIGHTS] Fixed trim decal emissive and floods - @FinalLightNL (FinalLight#2113)
 1. [FLIGHTMODEL/FUEL] Fix outer tank transfer behaviour - @donstim (donbikes#4084)
-
 
 ## 0.9.0
 

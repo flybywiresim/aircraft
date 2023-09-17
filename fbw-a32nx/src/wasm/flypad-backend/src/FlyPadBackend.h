@@ -27,7 +27,13 @@
 // IDs for data structures - must be mapped to data structs
 enum DataStructureIDs {
   SimulationDataID,
-  PushbackDataID
+  PushbackDataID,
+};
+
+// IDs for data structures - must be mapped to data structs
+enum DataStructureRequestIDs {
+  SimulationDataRequestID,
+  PushbackDataRequestID,
 };
 
 // Local data structure for simconnect data
@@ -45,7 +51,7 @@ struct PushbackData {
 
 enum Events {
   KEY_TUG_HEADING_EVENT,
-  KEY_TUG_SPEED_EVENT
+  KEY_TUG_SPEED_EVENT,
 };
 
 class LightPreset;
@@ -53,7 +59,7 @@ class AircraftPreset;
 class Pushback;
 
 class FlyPadBackend {
-private:
+ private:
   HANDLE hSimConnect;
 
   // Instance of local data structure for simconnect data
@@ -73,7 +79,7 @@ private:
   std::unique_ptr<AircraftPreset> aircraftPresetPtr;
   std::unique_ptr<Pushback> pushbackPtr;
 
-public:
+ public:
   /**
    * Initialize the gauge (instead of a constructor).
    * Sets up data for the gauge and also connect to SimConnect.
@@ -95,7 +101,7 @@ public:
    */
   bool shutdown();
 
-private:
+ private:
   /**
    * Requests simconnect data in preparation of reading it into a local data structure.
    * @return true if request was successful, false otherwise
@@ -121,6 +127,18 @@ private:
    * @param data
    */
   void simConnectProcessSimObjectData(const SIMCONNECT_RECV_SIMOBJECT_DATA* data);
+
+  /**
+   * Process received simconnect client data
+   * @param data
+   */
+  void simConnectProcessClientData(const SIMCONNECT_RECV_CLIENT_DATA* data);
+
+  /**
+   * Process received subscribed events
+   * @param data
+   */
+  void simConnectProcessRecvSubscribedEvent(const SIMCONNECT_RECV_EVENT* data);
 
   /**
    * Returns human-readable descriptions of simconnect exceptions

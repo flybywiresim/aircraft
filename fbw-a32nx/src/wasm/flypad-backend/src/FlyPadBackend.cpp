@@ -53,32 +53,43 @@ bool FlyPadBackend::initialize() {
   HRESULT result = S_OK;
   result &= SimConnect_AddToDataDefinition(hSimConnect, DataStructureIDs::SimulationDataID, "SIMULATION TIME", "NUMBER");
 
-  result &= SimConnect_AddToDataDefinition(hSimConnect, DataStructureIDs::PushbackDataID, "Pushback Wait", "BOOLEAN", SIMCONNECT_DATATYPE_INT64);
-  result &= SimConnect_AddToDataDefinition(hSimConnect, DataStructureIDs::PushbackDataID, "VELOCITY BODY Z", "FEET/SECOND", SIMCONNECT_DATATYPE_FLOAT64);
-  result &= SimConnect_AddToDataDefinition(hSimConnect, DataStructureIDs::PushbackDataID, "ROTATION VELOCITY BODY Y", "FEET/SECOND", SIMCONNECT_DATATYPE_FLOAT64);
-  result &= SimConnect_AddToDataDefinition(hSimConnect, DataStructureIDs::PushbackDataID, "ROTATION ACCELERATION BODY X", "RADIANS PER SECOND SQUARED", SIMCONNECT_DATATYPE_FLOAT64);
+  result &=
+      SimConnect_AddToDataDefinition(hSimConnect, DataStructureIDs::PushbackDataID, "Pushback Wait", "BOOLEAN", SIMCONNECT_DATATYPE_INT64);
+  result &= SimConnect_AddToDataDefinition(hSimConnect, DataStructureIDs::PushbackDataID, "VELOCITY BODY Z", "FEET/SECOND",
+                                           SIMCONNECT_DATATYPE_FLOAT64);
+  result &= SimConnect_AddToDataDefinition(hSimConnect, DataStructureIDs::PushbackDataID, "ROTATION VELOCITY BODY Y", "FEET/SECOND",
+                                           SIMCONNECT_DATATYPE_FLOAT64);
+  result &= SimConnect_AddToDataDefinition(hSimConnect, DataStructureIDs::PushbackDataID, "ROTATION ACCELERATION BODY X",
+                                           "RADIANS PER SECOND SQUARED", SIMCONNECT_DATATYPE_FLOAT64);
   if (result != S_OK) {
     std::cout << "FLYPAD_BACKEND: Data definition failed! " << std::endl;
+    return false;
   }
 
   result &= SimConnect_MapClientEventToSimEvent(hSimConnect, Events::KEY_TUG_HEADING_EVENT, "KEY_TUG_HEADING");
   result &= SimConnect_MapClientEventToSimEvent(hSimConnect, Events::KEY_TUG_SPEED_EVENT, "KEY_TUG_SPEED");
 
-  // initialize submodules
-  lightPresetPtr->initialize();
-  aircraftPresetPtr->initialize();
-  pushbackPtr->initialize();
+  if (result != S_OK) {
+    std::cout << "FLYPAD_BACKEND: MapClient Events definition failed! " << std::endl;
+    return false;
+  }
 
-  // read simulation data from simconnect
-  simConnectRequestData();
+  if (result == S_OK) {
+    // initialize submodules
+    lightPresetPtr->initialize();
+    aircraftPresetPtr->initialize();
+    pushbackPtr->initialize();
 
-  std::cout << "FLYPAD_BACKEND: SimConnect connected." << std::endl;
+    std::cout << "FLYPAD_BACKEND: SimConnect connected." << std::endl;
+  } else {
+    std::cout << "FLYPAD_BACKEND: Connection to SimConnect failed." << std::endl;
+  }
+
   return (result == S_OK);
 }
 
 bool FlyPadBackend::onUpdate(double deltaTime) {
   if (isConnected) {
-
     simConnectProcessMessages();
 
     // detect pause
@@ -100,7 +111,7 @@ bool FlyPadBackend::onUpdate(double deltaTime) {
 bool FlyPadBackend::shutdown() {
   std::cout << "FLYPAD_BACKEND: Disconnecting ..." << std::endl;
 
-  // shutdown submodules
+  // shutdown suib modules
   lightPresetPtr->shutdown();
   aircraftPresetPtr->shutdown();
   pushbackPtr->shutdown();
@@ -115,14 +126,12 @@ bool FlyPadBackend::simConnectRequestData() const {
   HRESULT result = S_OK;
 
   // Request data for each data structure - remember to increase the request id.
-  result &= SimConnect_RequestDataOnSimObject(hSimConnect, 0, DataStructureIDs::SimulationDataID, SIMCONNECT_OBJECT_ID_USER, SIMCONNECT_PERIOD_VISUAL_FRAME);
-  result &= SimConnect_RequestDataOnSimObject(hSimConnect, 1, DataStructureIDs::PushbackDataID, SIMCONNECT_OBJECT_ID_USER, SIMCONNECT_PERIOD_VISUAL_FRAME);
+  result &= SimConnect_RequestDataOnSimObject(hSimConnect, DataStructureRequestIDs::SimulationDataRequestID,
+                                              DataStructureIDs::SimulationDataID, SIMCONNECT_OBJECT_ID_USER, SIMCONNECT_PERIOD_ONCE);
+  result &= SimConnect_RequestDataOnSimObject(hSimConnect, DataStructureRequestIDs::PushbackDataRequestID, DataStructureIDs::PushbackDataID,
+                                              SIMCONNECT_OBJECT_ID_USER, SIMCONNECT_PERIOD_ONCE);
 
-  if (result != S_OK) {
-    return false;
-  }
-
-  return true;
+  return result == S_OK;
 }
 
 void FlyPadBackend::simConnectProcessMessages() {
@@ -136,19 +145,39 @@ void FlyPadBackend::simConnectProcessMessages() {
 void FlyPadBackend::simConnectProcessSimObjectData(const SIMCONNECT_RECV_SIMOBJECT_DATA* data) {
   // process depending on request id from SimConnect_RequestDataOnSimObject()
   switch (data->dwRequestID) {
-    case 0:
+    case DataStructureRequestIDs::SimulationDataRequestID:
       // store aircraft data in local data structure
-      simulationData = *((SimulationData*) &data->dwData);
+      simulationData = *((SimulationData*)&data->dwData);
       return;
 
-    case 1:
+    case DataStructureRequestIDs::PushbackDataRequestID:
       // store aircraft data in local data structure
-      pushbackData = *((PushbackData*) &data->dwData);
+      pushbackData = *((PushbackData*)&data->dwData);
       return;
 
     default:
-      std::cout << "FLYPAD_BACKEND: Unknown request id in SimConnect connection: ";
+      std::cout << "FLYPAD_BACKEND: Unknown request id in simConnectProcessSimObjectData(): ";
       std::cout << data->dwRequestID << std::endl;
+      return;
+  }
+}
+
+void FlyPadBackend::simConnectProcessClientData(const SIMCONNECT_RECV_CLIENT_DATA* data) {
+  // process depending on request id from SimConnect_RequestClientData()
+  switch (data->dwRequestID) {
+    default:
+      std::cout << "FLYPAD_BACKEND: Unknown Client Request id in simConnectProcessClientData(): ";
+      std::cout << data->dwRequestID << std::endl;
+      return;
+  }
+}
+
+void FlyPadBackend::simConnectProcessRecvSubscribedEvent(const SIMCONNECT_RECV_EVENT* data) {
+  // process depending on request id from SimConnect_SubscribeToSystemEvent()
+  switch (data->uEventID) {
+    default:
+      std::cout << "FLYPAD_BACKEND: Unknown Client Request id in simConnectProcessRecvEvent(): ";
+      std::cout << data->uEventID << std::endl;
       return;
   }
 }
@@ -167,15 +196,23 @@ void FlyPadBackend::simConnectProcessDispatchMessage(SIMCONNECT_RECV* pData, DWO
       simConnectProcessSimObjectData(static_cast<SIMCONNECT_RECV_SIMOBJECT_DATA*>(pData));
       break;
 
+    case SIMCONNECT_RECV_ID_CLIENT_DATA:
+      simConnectProcessClientData(static_cast<SIMCONNECT_RECV_CLIENT_DATA*>(pData));
+      break;
+
+    case SIMCONNECT_RECV_ID_EVENT:
+      simConnectProcessRecvSubscribedEvent(static_cast<SIMCONNECT_RECV_EVENT*>(pData));
+      break;
+
     case SIMCONNECT_RECV_ID_EXCEPTION:
       std::cout << "FLYPAD_BACKEND: Exception in SimConnect connection: ";
       std::cout << getSimConnectExceptionString(
-        static_cast<SIMCONNECT_EXCEPTION>(
-          static_cast<SIMCONNECT_RECV_EXCEPTION*>(pData)->dwException));
+          static_cast<SIMCONNECT_EXCEPTION>(static_cast<SIMCONNECT_RECV_EXCEPTION*>(pData)->dwException));
       std::cout << std::endl;
       break;
 
     default:
+      std::cout << "FLYPAD_BACKEND: Unknown received in simConnectProcessDispatchMessage (" << pData->dwID << ")" << std::endl;
       break;
   }
 }

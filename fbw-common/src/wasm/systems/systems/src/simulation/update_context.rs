@@ -10,10 +10,10 @@ use uom::si::{
     velocity::{foot_per_minute, foot_per_second, meter_per_second},
 };
 
-use super::{Read, SimulatorReader};
+use super::{ExternalData, Read, SimulatorReader};
 use crate::{
     shared::{low_pass_filter::LowPassFilter, MachNumber},
-    simulation::{InitContext, VariableIdentifier},
+    simulation::{InitContext, SideControlling, VariableIdentifier},
 };
 use nalgebra::{Rotation3, Vector3};
 
@@ -167,7 +167,7 @@ pub struct UpdateContext {
     total_yaw_inertia_id: VariableIdentifier,
     precipitation_rate_id: VariableIdentifier,
     in_cloud_id: VariableIdentifier,
-
+    side_controlling_id: VariableIdentifier,
     delta: Delta,
     simulation_time: f64,
     is_ready: bool,
@@ -192,14 +192,13 @@ pub struct UpdateContext {
     true_heading: Angle,
     plane_height_over_ground: Length,
     latitude: Angle,
-
     total_weight: Mass,
     total_yaw_inertia_slug_foot_squared: f64,
-
     // From msfs in millimeters
     precipitation_rate: Length,
-
     in_cloud: bool,
+    side_controlling: SideControlling,
+    external_data: ExternalData,
 }
 impl UpdateContext {
     pub(crate) const IS_READY_KEY: &'static str = "IS_READY";
@@ -231,6 +230,7 @@ impl UpdateContext {
     pub(crate) const LATITUDE_KEY: &'static str = "PLANE LATITUDE";
     pub(crate) const TOTAL_WEIGHT_KEY: &'static str = "TOTAL WEIGHT";
     pub(crate) const TOTAL_YAW_INERTIA: &'static str = "TOTAL WEIGHT YAW MOI";
+    pub(crate) const SIDE_CONTROLLING: &'static str = "SIDE_CONTROLLING";
 
     // Plane accelerations can become crazy with msfs collision handling.
     // Having such filtering limits high frequencies transients in accelerations used for physics
@@ -259,6 +259,7 @@ impl UpdateContext {
         bank: Angle,
         mach_number: MachNumber,
         latitude: Angle,
+        side_controlling: SideControlling,
     ) -> UpdateContext {
         UpdateContext {
             is_ready_id: context.get_identifier(Self::IS_READY_KEY.to_owned()),
@@ -294,6 +295,7 @@ impl UpdateContext {
             total_yaw_inertia_id: context.get_identifier(Self::TOTAL_YAW_INERTIA.to_owned()),
             precipitation_rate_id: context.get_identifier(Self::AMBIENT_PRECIP_RATE_KEY.to_owned()),
             in_cloud_id: context.get_identifier(Self::IN_CLOUD_KEY.to_owned()),
+            side_controlling_id: context.get_identifier(Self::SIDE_CONTROLLING.to_owned()),
 
             delta: delta.into(),
             simulation_time,
@@ -342,6 +344,8 @@ impl UpdateContext {
             total_yaw_inertia_slug_foot_squared: 10.,
             precipitation_rate: Length::default(),
             in_cloud: false,
+            side_controlling,
+            external_data: Default::default(),
         }
     }
 
@@ -376,6 +380,7 @@ impl UpdateContext {
             total_yaw_inertia_id: context.get_identifier("TOTAL WEIGHT YAW MOI".to_owned()),
             precipitation_rate_id: context.get_identifier("AMBIENT PRECIP RATE".to_owned()),
             in_cloud_id: context.get_identifier("AMBIENT IN CLOUD".to_owned()),
+            side_controlling_id: context.get_identifier("SIDE_CONTROLLING".to_owned()),
 
             delta: Default::default(),
             simulation_time: Default::default(),
@@ -389,6 +394,7 @@ impl UpdateContext {
             is_on_ground: Default::default(),
             vertical_speed: Default::default(),
             local_acceleration: Default::default(),
+            side_controlling: Default::default(),
 
             local_acceleration_plane_reference_filtered:
                 LowPassFilter::<Vector3<f64>>::new_with_init_value(
@@ -421,6 +427,7 @@ impl UpdateContext {
             total_yaw_inertia_slug_foot_squared: 1.,
             precipitation_rate: Length::default(),
             in_cloud: false,
+            external_data: Default::default(),
         }
     }
 
@@ -430,6 +437,7 @@ impl UpdateContext {
         reader: &mut SimulatorReader,
         delta: Duration,
         simulation_time: f64,
+        external_data: &ExternalData,
     ) {
         self.ambient_temperature = reader.read(&self.ambient_temperature_id);
         self.indicated_airspeed = reader.read(&self.indicated_airspeed_id);
@@ -488,9 +496,13 @@ impl UpdateContext {
 
         self.in_cloud = reader.read(&self.in_cloud_id);
 
+        self.side_controlling = reader.read(&self.side_controlling_id);
+
         self.update_relative_wind();
 
         self.update_local_acceleration_plane_reference(delta);
+
+        self.external_data = *external_data;
     }
 
     // Computes local acceleration including world gravity and plane acceleration
@@ -665,6 +677,14 @@ impl UpdateContext {
 
     pub fn mach_number(&self) -> MachNumber {
         self.mach_number
+    }
+
+    pub fn side_controlling(&self) -> SideControlling {
+        self.side_controlling
+    }
+
+    pub fn external_data(&self) -> ExternalData {
+        self.external_data
     }
 
     pub fn with_delta(&self, delta: Duration) -> Self {

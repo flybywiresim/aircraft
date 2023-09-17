@@ -18,6 +18,7 @@
     <Include RelativeFile="../generated/A32NX_Interior_Misc.xml"/>
     <Include RelativeFile="../generated/A32NX_Interior_Handling.xml"/>
     <Include RelativeFile="../generated/A32NX_Interior_Printer.xml"/>
+    <Include RelativeFile="../generated/A32NX_Interior_ACP.xml"/>
     <Include RelativeFile="../generated/A32NX_Interior_RMP.xml"/>
     <Include RelativeFile="../generated/A32NX_Interior_Sidestick.xml"/>
     <Include RelativeFile="../generated/A32NX_Windshield.xml"/>
