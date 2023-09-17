@@ -164,10 +164,12 @@ export function FailureGeneratorSingleSettingShortcut(title: string,
                 max={max}
                 value={value * multCheck}
                 onBlur={(x: string) => {
-                    if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
+                    if (!Number.isNaN(parseFloat(x))) {
                         setNewSetting(parseFloat(x) / multCheck, generatorSettings, genIndex, settingIndex);
-                        failureGenContext.setFailureGenModalType(ModalGenType.Settings);
+                    } else {
+                        setNewSetting(min, generatorSettings, genIndex, settingIndex);
                     }
+                    failureGenContext.setFailureGenModalType(ModalGenType.Settings);
                 }}
             />
         </SettingItem>
@@ -190,10 +192,12 @@ export function FailureGeneratorSingleSetting(title: string,
                 max={max}
                 value={value * multCheck}
                 onBlur={(x: string) => {
-                    if (!Number.isNaN(parseFloat(x) || parseFloat(x) === 0)) {
+                    if (!Number.isNaN(parseFloat(x))) {
                         setNewSetting(parseFloat(x) / multCheck, generatorSettings, genIndex, settingIndex);
-                        failureGenContext.setFailureGenModalType(ModalGenType.Settings);
+                    } else {
+                        setNewSetting(min, generatorSettings, genIndex, settingIndex);
                     }
+                    failureGenContext.setFailureGenModalType(ModalGenType.Settings);
                 }}
             />
         </SettingItem>
