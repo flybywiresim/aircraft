@@ -133,6 +133,9 @@ export class FailureGeneratorAltitude {
             } else if (settings[i * FailureGeneratorAltitude.numberOfSettingsPerGenerator + ArmingModeIndex] === 0) {
                 FailureGeneratorAltitude.failureGeneratorArmed[i] = false;
                 tempSettings[i * FailureGeneratorAltitude.numberOfSettingsPerGenerator + ReadyDisplayIndex] = 0;
+                FailureGeneratorAltitude.waitForAltitudeReset[i] = true;
+                FailureGeneratorAltitude.waitForTakeOff[i] = true;
+                FailureGeneratorAltitude.waitForStopped[i] = true;
                 change = true;
             }
             FailureGeneratorAltitude.previousAltitudeCondition[i] = altitudeCondition;

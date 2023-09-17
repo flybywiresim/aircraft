@@ -11,9 +11,15 @@ export class FailureGeneratorTimer {
 
     private static failureGeneratorArmed: boolean[] = [];
 
+    private static waitForTakeOff: boolean[] = [];
+
+    private static waitForStopped: boolean[] = [];
+
     private static failureStartTime: number[] = [];
 
     private static rolledDice: number[] = [];
+
+    private static previousArmingMode: number[] = [];
 
     private static didInitialize: boolean = false;
 
@@ -36,6 +42,8 @@ export class FailureGeneratorTimer {
             for (let i = 0; i < generatorNumber; i++) {
                 FailureGeneratorTimer.failureGeneratorArmed[i] = false;
                 tempSettings[i * FailureGeneratorTimer.numberOfSettingsPerGenerator + ReadyDisplayIndex] = 0;
+                FailureGeneratorTimer.waitForTakeOff[i] = true;
+                FailureGeneratorTimer.waitForStopped[i] = true;
             }
             FailureGeneratorTimer.didInitialize = true;
             change = true;
@@ -44,6 +52,25 @@ export class FailureGeneratorTimer {
         for (let i = 0; i < nbGenerator; i++) {
             const timerMax = settings[i * FailureGeneratorTimer.numberOfSettingsPerGenerator + FailureGeneratorTimer.delayMaxIndex] * 1000;
             const timerMin = settings[i * FailureGeneratorTimer.numberOfSettingsPerGenerator + FailureGeneratorTimer.delayMinIndex] * 1000;
+
+            if (FailureGeneratorTimer.previousArmingMode[i] !== tempSettings[i * FailureGeneratorTimer.numberOfSettingsPerGenerator
+                + ArmingModeIndex]) {
+                FailureGeneratorTimer.waitForTakeOff[i] = true;
+                FailureGeneratorTimer.waitForStopped[i] = true;
+                FailureGeneratorTimer.failureGeneratorArmed[i] = false;
+                tempSettings[i * FailureGeneratorTimer.numberOfSettingsPerGenerator + ReadyDisplayIndex] = 0;
+                change = true;
+            }
+
+            if (FailureGeneratorTimer.waitForStopped[i] && gs < 1) {
+                FailureGeneratorTimer.waitForStopped[i] = false;
+            }
+
+            if (FailureGeneratorTimer.waitForTakeOff[i] && !FailureGeneratorTimer.waitForStopped[i]
+            && RandomFailureGen.getFailureFlightPhase() === FailurePhases.TakeOff && gs > 1) {
+                FailureGeneratorTimer.waitForTakeOff[i] = false;
+            }
+
             if (FailureGeneratorTimer.failureGeneratorArmed[i]) {
                 const failureDelay = timerMin + FailureGeneratorTimer.rolledDice[i] * (timerMax - timerMin);
                 if (currentTime > FailureGeneratorTimer.failureStartTime[i] + failureDelay) {
@@ -55,6 +82,8 @@ export class FailureGeneratorTimer {
                             failureOrchestrator, activeFailures, numberOfFailureToActivate);
                         FailureGeneratorTimer.failureGeneratorArmed[i] = false;
                         tempSettings[i * FailureGeneratorTimer.numberOfSettingsPerGenerator + ReadyDisplayIndex] = 0;
+                        FailureGeneratorTimer.waitForTakeOff[i] = true;
+                        FailureGeneratorTimer.waitForStopped[i] = true;
                         change = true;
                         if (tempSettings[i * FailureGeneratorTimer.numberOfSettingsPerGenerator + ArmingModeIndex] === 1) {
                             tempSettings[i * FailureGeneratorTimer.numberOfSettingsPerGenerator + ArmingModeIndex] = 0;
@@ -65,9 +94,8 @@ export class FailureGeneratorTimer {
 
             if (!FailureGeneratorTimer.failureGeneratorArmed[i]) {
                 if (settings[i * FailureGeneratorTimer.numberOfSettingsPerGenerator + ArmingModeIndex] === 1
-                || (RandomFailureGen.getFailureFlightPhase() === FailurePhases.TakeOff
-                && gs >= 1
-                && settings[i * FailureGeneratorTimer.numberOfSettingsPerGenerator + ArmingModeIndex] === 2)
+                || (settings[i * FailureGeneratorTimer.numberOfSettingsPerGenerator + ArmingModeIndex] === 2
+                    && !FailureGeneratorTimer.waitForTakeOff[i])
                 || settings[i * FailureGeneratorTimer.numberOfSettingsPerGenerator + ArmingModeIndex] === 3) {
                     change = true;
                     FailureGeneratorTimer.failureGeneratorArmed[i] = true;
@@ -79,8 +107,11 @@ export class FailureGeneratorTimer {
             if (settings[i * FailureGeneratorTimer.numberOfSettingsPerGenerator + ArmingModeIndex] === 0) {
                 FailureGeneratorTimer.failureGeneratorArmed[i] = false;
                 tempSettings[i * FailureGeneratorTimer.numberOfSettingsPerGenerator + ReadyDisplayIndex] = 0;
+                FailureGeneratorTimer.waitForTakeOff[i] = true;
+                FailureGeneratorTimer.waitForStopped[i] = true;
                 change = true;
             }
+            FailureGeneratorTimer.previousArmingMode[i] = settings[i * FailureGeneratorTimer.numberOfSettingsPerGenerator + ArmingModeIndex];
         }
         if (change) {
             NXDataStore.set(FailureGeneratorTimer.settingName, RandomFailureGen.flatten(tempSettings));

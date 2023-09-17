@@ -132,6 +132,9 @@ export class FailureGeneratorSpeed {
             } else if (settings[i * FailureGeneratorSpeed.numberOfSettingsPerGenerator + ArmingModeIndex] === 0) {
                 FailureGeneratorSpeed.failureGeneratorArmed[i] = false;
                 tempSettings[i * FailureGeneratorSpeed.numberOfSettingsPerGenerator + ReadyDisplayIndex] = 0;
+                FailureGeneratorSpeed.waitForSpeedReset[i] = true;
+                FailureGeneratorSpeed.waitForTakeOff[i] = true;
+                FailureGeneratorSpeed.waitForStopped[i] = true;
                 change = true;
             }
             FailureGeneratorSpeed.previousSpeedCondition[i] = speedCondition;
