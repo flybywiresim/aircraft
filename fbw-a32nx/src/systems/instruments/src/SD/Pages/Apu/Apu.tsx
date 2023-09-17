@@ -144,8 +144,12 @@ const ApuBleed = ({ x, y } : ComponentPositionProps) => {
     const [apuBleedOpen] = useSimVar('L:A32NX_APU_BLEED_AIR_VALVE_OPEN', 'Bool', 1000);
     const [apuBleedPressure] = useSimVar('L:APU_BLEED_PRESSURE', 'PSI', 1000);
     const displayedBleedPressure = Math.round(apuBleedPressure / 2) * 2; // APU bleed pressure is shown in steps of two.
-    const correctedAverageStaticPressure = useArinc429Var('A32NX_ADIRS_ADR_1_CORRECTED_AVERAGE_STATIC_PRESSURE');
+    // This assumes that the SD is displayed by DMC 1, which is the case during normal operation.
+    const [attHdgPosition] = useSimVar('L:A32NX_ATT_HDG_SWITCHING_KNOB', 'Position', 100);
+    const adrSource = attHdgPosition === 0 ? 3 : 1;
+    const correctedAverageStaticPressure = useArinc429Var(`L:A32NX_ADIRS_ADR_${adrSource}_CORRECTED_AVERAGE_STATIC_PRESSURE`, 100);
     const apuN = useArinc429Var('L:A32NX_APU_N', 100);
+
     useEffect(() => {
         if (apuBleedPbOn) {
             const timeout = setTimeout(() => {
@@ -157,6 +161,7 @@ const ApuBleed = ({ x, y } : ComponentPositionProps) => {
 
         return () => {};
     }, [apuBleedPbOn]);
+
     // FIXME should be APU bleed absolute pressure label from SDAC
     const apuBleedPressAvailable = apuN.isNormalOperation() && correctedAverageStaticPressure.isNormalOperation();
     return (
