@@ -372,16 +372,40 @@ impl BoardingTestBed {
         assert!(!pax_complete_sound);
     }
 
+    fn has_sound_pax_complete(&mut self) {
+        let pax_complete_sound: bool = self.read_by_name("SOUND_BOARDING_COMPLETE");
+        assert!(pax_complete_sound);
+        assert!(self.sound_pax_complete());
+    }
+
     fn has_sound_pax_ambience(&mut self) {
         let pax_ambience: bool = self.read_by_name("SOUND_PAX_AMBIENCE");
         assert!(self.sound_pax_ambience());
         assert!(pax_ambience);
     }
 
+    fn has_sound_pax_boarding(&mut self) {
+        let pax_boarding: bool = self.read_by_name("SOUND_PAX_BOARDING");
+        assert!(pax_boarding);
+        assert!(self.sound_pax_boarding());
+    }
+
     fn has_no_sound_pax_ambience(&mut self) {
         let pax_ambience: bool = self.read_by_name("SOUND_PAX_AMBIENCE");
         assert!(!self.sound_pax_ambience());
         assert!(!pax_ambience);
+    }
+
+    fn has_no_sound_pax_boarding(&mut self) {
+        let pax_boarding: bool = self.read_by_name("SOUND_PAX_BOARDING");
+        assert!(!pax_boarding);
+        assert!(!self.sound_pax_boarding());
+    }
+
+    fn has_no_sound_pax_deboarding(&mut self) {
+        let pax_boarding: bool = self.read_by_name("SOUND_PAX_DEBOARDING");
+        assert!(!pax_boarding);
+        assert!(!self.sound_pax_deboarding());
     }
 
     fn with_pax(mut self, ps: usize, pax_qty: i8) -> Self {
@@ -1564,16 +1588,21 @@ fn gsx_boarding_half_pax() {
         .gsx_performing_board_state()
         .board_gsx_pax_half()
         .board_gsx_cargo_half()
-        .and_run()
-        .gsx_complete_board_state()
-        .and_stabilize();
+        .and_run();
+
+    test_bed.has_sound_pax_boarding();
+    test_bed.has_no_sound_pax_deboarding();
+
+    let mut test_bed = test_bed.gsx_complete_board_state().and_stabilize();
 
     test_bed.has_all_stations_half_pax();
     test_bed.has_all_stations_half_cargo();
 
     test_bed = test_bed.and_run();
     test_bed.has_sound_pax_ambience();
-    test_bed.sound_boarding_complete_reset();
+    test_bed.has_no_sound_pax_boarding();
+    test_bed.has_no_sound_pax_deboarding();
+    test_bed.sound_pax_complete();
 }
 
 #[test]
@@ -1600,7 +1629,7 @@ fn gsx_boarding_full_pax() {
 
     test_bed = test_bed.and_run();
     test_bed.has_sound_pax_ambience();
-    test_bed.sound_boarding_complete_reset();
+    test_bed.has_sound_pax_complete();
 }
 
 #[test]
