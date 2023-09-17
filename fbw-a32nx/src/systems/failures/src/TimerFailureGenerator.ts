@@ -1,11 +1,11 @@
 import { NXDataStore } from '@flybywiresim/fbw-sdk';
-import { ArmingIndex, FailurePhases, FailuresAtOnceIndex, MaxFailuresIndex, RandomFailureGen } from './RandomFailureGen';
+import { ArmingModeIndex, FailurePhases, FailuresAtOnceIndex, MaxFailuresIndex, RandomFailureGen, ReadyDisplayIndex } from './RandomFailureGen';
 import { FailuresOrchestrator } from './failures-orchestrator';
 
 export class FailureGeneratorTimer {
     private static settingName = 'EFB_FAILURE_GENERATOR_SETTING_TIMER';
 
-    private static numberOfSettingsPerGenerator = 5;
+    private static numberOfSettingsPerGenerator = 6;
 
     private static uniqueGenPrefix = 'D';
 
@@ -17,25 +17,29 @@ export class FailureGeneratorTimer {
 
     private static didInitialize: boolean = false;
 
-    private static delayMinIndex = 3;
+    private static delayMinIndex = 4;
 
-    private static delayMaxIndex = 4;
+    private static delayMaxIndex = 5;
 
     static updateFailure(failureOrchestrator: FailuresOrchestrator): void {
         const failureGeneratorSetting = NXDataStore.get(FailureGeneratorTimer.settingName, '');
-
-        if (!FailureGeneratorTimer.didInitialize) {
-            const generatorNumber = Math.floor(failureGeneratorSetting.split(',').length / FailureGeneratorTimer.numberOfSettingsPerGenerator);
-            for (let i = 0; i < generatorNumber; i++) FailureGeneratorTimer.failureGeneratorArmed[i] = false;
-            FailureGeneratorTimer.didInitialize = true;
-        }
-
         const settings: number[] = failureGeneratorSetting.split(',').map(((it) => parseFloat(it)));
         const nbGenerator = Math.floor(settings.length / FailureGeneratorTimer.numberOfSettingsPerGenerator);
+        const gs = Simplane.getGroundSpeed();
         const tempSettings: number[] = Array.from(settings);
         const currentTime = Date.now();
 
         let change = false;
+
+        if (!FailureGeneratorTimer.didInitialize) {
+            const generatorNumber = Math.floor(failureGeneratorSetting.split(',').length / FailureGeneratorTimer.numberOfSettingsPerGenerator);
+            for (let i = 0; i < generatorNumber; i++) {
+                FailureGeneratorTimer.failureGeneratorArmed[i] = false;
+                tempSettings[i * FailureGeneratorTimer.numberOfSettingsPerGenerator + ReadyDisplayIndex] = 0;
+            }
+            FailureGeneratorTimer.didInitialize = true;
+            change = true;
+        }
 
         for (let i = 0; i < nbGenerator; i++) {
             const timerMax = settings[i * FailureGeneratorTimer.numberOfSettingsPerGenerator + FailureGeneratorTimer.delayMaxIndex] * 1000;
@@ -50,24 +54,33 @@ export class FailureGeneratorTimer {
                         RandomFailureGen.activateRandomFailure(RandomFailureGen.getGeneratorFailurePool(failureOrchestrator, FailureGeneratorTimer.uniqueGenPrefix + i.toString()),
                             failureOrchestrator, activeFailures, numberOfFailureToActivate);
                         FailureGeneratorTimer.failureGeneratorArmed[i] = false;
+                        tempSettings[i * FailureGeneratorTimer.numberOfSettingsPerGenerator + ReadyDisplayIndex] = 0;
                         change = true;
-                        if (tempSettings[i * FailureGeneratorTimer.numberOfSettingsPerGenerator + ArmingIndex] === 1) {
-                            tempSettings[i * FailureGeneratorTimer.numberOfSettingsPerGenerator + ArmingIndex] = 0;
+                        if (tempSettings[i * FailureGeneratorTimer.numberOfSettingsPerGenerator + ArmingModeIndex] === 1) {
+                            tempSettings[i * FailureGeneratorTimer.numberOfSettingsPerGenerator + ArmingModeIndex] = 0;
                         }
                     }
                 }
             }
 
             if (!FailureGeneratorTimer.failureGeneratorArmed[i]) {
-                if (settings[i * FailureGeneratorTimer.numberOfSettingsPerGenerator + ArmingIndex] === 1
-                || (RandomFailureGen.getFailureFlightPhase() === FailurePhases.TakeOff && settings[i * FailureGeneratorTimer.numberOfSettingsPerGenerator + ArmingIndex] === 2)
-                || settings[i * FailureGeneratorTimer.numberOfSettingsPerGenerator + ArmingIndex] === 3) {
+                if (settings[i * FailureGeneratorTimer.numberOfSettingsPerGenerator + ArmingModeIndex] === 1
+                || (RandomFailureGen.getFailureFlightPhase() === FailurePhases.TakeOff
+                && gs >= 1
+                && settings[i * FailureGeneratorTimer.numberOfSettingsPerGenerator + ArmingModeIndex] === 2)
+                || settings[i * FailureGeneratorTimer.numberOfSettingsPerGenerator + ArmingModeIndex] === 3) {
+                    change = true;
                     FailureGeneratorTimer.failureGeneratorArmed[i] = true;
+                    tempSettings[i * FailureGeneratorTimer.numberOfSettingsPerGenerator + ReadyDisplayIndex] = 1;
                     FailureGeneratorTimer.rolledDice[i] = Math.random();
                     FailureGeneratorTimer.failureStartTime[i] = currentTime;
                 }
             } else
-            if (settings[i * FailureGeneratorTimer.numberOfSettingsPerGenerator + ArmingIndex] === 0) FailureGeneratorTimer.failureGeneratorArmed[i] = false;
+            if (settings[i * FailureGeneratorTimer.numberOfSettingsPerGenerator + ArmingModeIndex] === 0) {
+                FailureGeneratorTimer.failureGeneratorArmed[i] = false;
+                tempSettings[i * FailureGeneratorTimer.numberOfSettingsPerGenerator + ReadyDisplayIndex] = 0;
+                change = true;
+            }
         }
         if (change) {
             NXDataStore.set(FailureGeneratorTimer.settingName, RandomFailureGen.flatten(tempSettings));

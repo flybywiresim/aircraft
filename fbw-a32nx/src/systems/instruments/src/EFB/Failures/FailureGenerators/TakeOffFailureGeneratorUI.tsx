@@ -6,9 +6,9 @@ import { t } from 'instruments/src/EFB/translation';
 import { FailureGeneratorSingleSetting, FailureGeneratorText } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorSettingsUI';
 
 const settingName = 'EFB_FAILURE_GENERATOR_SETTING_TAKEOFF';
-const numberOfSettingsPerGenerator = 10;
+const numberOfSettingsPerGenerator = 11;
 const uniqueGenPrefix = 'E';
-const additionalSetting = [3, 1, 2, 1, 0.33, 0.33, 30, 95, 140, 40];
+const additionalSetting = [3, 1, 2, 0, 1, 0.33, 0.33, 30, 95, 140, 40];
 const failureGeneratorArmed: boolean[] = [];
 const failureTakeOffSpeedThreshold: number[] = [];
 const failureTakeOffAltitudeThreshold: number[] = [];
@@ -16,13 +16,13 @@ const genName = 'TakeOff';
 const alias = () => t('Failures.Generators.GenTakeOff');
 const disableTakeOffRearm = true;
 
-const ChancePerTakeOffIndex = 3;
-const ChanceLowIndex = 4;
-const ChanceMediumIndex = 5;
-const MinSpeedIndex = 6;
-const MediumSpeedIndex = 7;
-const MaxSpeedIndex = 8;
-const AltitudeIndex = 9;
+const ChancePerTakeOffIndex = 4;
+const ChanceLowIndex = 5;
+const ChanceMediumIndex = 6;
+const MinSpeedIndex = 7;
+const MediumSpeedIndex = 8;
+const MaxSpeedIndex = 9;
+const AltitudeIndex = 10;
 
 export const failureGenConfigTakeOff: () => FailureGenData = () => {
     const [setting, setSetting] = usePersistentProperty(settingName);

@@ -6,14 +6,14 @@ import { t } from 'instruments/src/EFB/translation';
 import { FailureGeneratorSingleSetting, FailureGeneratorText } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorSettingsUI';
 
 const settingName = 'EFB_FAILURE_GENERATOR_SETTING_PERHOUR';
-const additionalSetting = [3, 1, 2, 0.1];
-const numberOfSettingsPerGenerator = 4;
+const additionalSetting = [3, 1, 2, 0, 0.1];
+const numberOfSettingsPerGenerator = 5;
 const uniqueGenPrefix = 'C';
 const failureGeneratorArmed: boolean[] = [];
 const genName = 'PerHour';
 const alias = () => t('Failures.Generators.GenPerHour');
 const disableTakeOffRearm = false;
-const FailurePerHourIndex = 3;
+const FailurePerHourIndex = 4;
 
 export const failureGenConfigPerHour: () => FailureGenData = () => {
     const [setting, setSetting] = usePersistentProperty(settingName);

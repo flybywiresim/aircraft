@@ -7,8 +7,8 @@ import { ArrowDownRight, ArrowUpRight } from 'react-bootstrap-icons';
 import { ButtonIcon, FailureGeneratorChoiceSetting, FailureGeneratorSingleSetting } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorSettingsUI';
 
 const settingName = 'EFB_FAILURE_GENERATOR_SETTING_SPEED';
-const additionalSetting = [2, 1, 2, 0, 200, 300];
-const numberOfSettingsPerGenerator = 6;
+const additionalSetting = [2, 1, 2, 0, 0, 200, 300];
+const numberOfSettingsPerGenerator = 7;
 const uniqueGenPrefix = 'B';
 const failureGeneratorArmed: boolean[] = [];
 const genName = 'Speed';
@@ -16,9 +16,9 @@ const alias = () => t('Failures.Generators.GenSpeed');
 const disableTakeOffRearm = false;
 const rolledDice: number[] = [];
 
-const SpeedConditionIndex = 3;
-const SpeedMinIndex = 4;
-const SpeedMaxIndex = 5;
+const SpeedConditionIndex = 4;
+const SpeedMinIndex = 5;
+const SpeedMaxIndex = 6;
 
 export const failureGenConfigSpeed: () => FailureGenData = () => {
     const [setting, setSetting] = usePersistentProperty(settingName);

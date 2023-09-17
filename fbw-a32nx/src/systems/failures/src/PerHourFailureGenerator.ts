@@ -1,11 +1,11 @@
 import { NXDataStore } from '@flybywiresim/fbw-sdk';
-import { ArmingIndex, FailurePhases, FailuresAtOnceIndex, MaxFailuresIndex, RandomFailureGen } from './RandomFailureGen';
+import { ArmingModeIndex, FailurePhases, FailuresAtOnceIndex, MaxFailuresIndex, RandomFailureGen, ReadyDisplayIndex } from './RandomFailureGen';
 import { FailuresOrchestrator } from './failures-orchestrator';
 
 export class FailureGeneratorPerHour {
     private static settingName = 'EFB_FAILURE_GENERATOR_SETTING_PERHOUR';
 
-    private static numberOfSettingsPerGenerator = 4;
+    private static numberOfSettingsPerGenerator = 5;
 
     private static uniqueGenPrefix = 'C';
 
@@ -15,23 +15,26 @@ export class FailureGeneratorPerHour {
 
     private static didInitialize: boolean = false;
 
-    private static failurePerHourIndex = 3;
+    private static failurePerHourIndex = 4;
 
     static updateFailure(failureOrchestrator: FailuresOrchestrator): void {
         const failureGeneratorSetting = NXDataStore.get(FailureGeneratorPerHour.settingName, '');
-
-        if (!FailureGeneratorPerHour.didInitialize) {
-            const generatorNumber = Math.floor(failureGeneratorSetting.split(',').length / FailureGeneratorPerHour.numberOfSettingsPerGenerator);
-            for (let i = 0; i < generatorNumber; i++) FailureGeneratorPerHour.failureGeneratorArmed[i] = false;
-            FailureGeneratorPerHour.didInitialize = true;
-        }
-
         const currentTime = Date.now();
         const settings: number[] = failureGeneratorSetting.split(',').map(((it) => parseFloat(it)));
         const nbGenerator = Math.floor(settings.length / FailureGeneratorPerHour.numberOfSettingsPerGenerator);
         const tempSettings: number[] = Array.from(settings);
 
         let change = false;
+
+        if (!FailureGeneratorPerHour.didInitialize) {
+            const generatorNumber = Math.floor(failureGeneratorSetting.split(',').length / FailureGeneratorPerHour.numberOfSettingsPerGenerator);
+            for (let i = 0; i < generatorNumber; i++) {
+                FailureGeneratorPerHour.failureGeneratorArmed[i] = false;
+                tempSettings[i * FailureGeneratorPerHour.numberOfSettingsPerGenerator + ReadyDisplayIndex] = 0;
+            }
+            FailureGeneratorPerHour.didInitialize = true;
+            change = true;
+        }
 
         for (let i = 0; i < nbGenerator; i++) {
             const chanceSetting = settings[i * FailureGeneratorPerHour.numberOfSettingsPerGenerator + FailureGeneratorPerHour.failurePerHourIndex];
@@ -46,22 +49,29 @@ export class FailureGeneratorPerHour {
                         RandomFailureGen.activateRandomFailure(RandomFailureGen.getGeneratorFailurePool(failureOrchestrator, FailureGeneratorPerHour.uniqueGenPrefix + i.toString()),
                             failureOrchestrator, activeFailures, numberOfFailureToActivate);
                         FailureGeneratorPerHour.failureGeneratorArmed[i] = false;
+                        tempSettings[i * FailureGeneratorPerHour.numberOfSettingsPerGenerator + ReadyDisplayIndex] = 0;
                         change = true;
-                        if (tempSettings[i * FailureGeneratorPerHour.numberOfSettingsPerGenerator + ArmingIndex] === 1) {
-                            tempSettings[i * FailureGeneratorPerHour.numberOfSettingsPerGenerator + ArmingIndex] = 0;
+                        if (tempSettings[i * FailureGeneratorPerHour.numberOfSettingsPerGenerator + ArmingModeIndex] === 1) {
+                            tempSettings[i * FailureGeneratorPerHour.numberOfSettingsPerGenerator + ArmingModeIndex] = 0;
                         }
                     }
                 }
             }
 
             if (!FailureGeneratorPerHour.failureGeneratorArmed[i]) {
-                if ((settings[i * FailureGeneratorPerHour.numberOfSettingsPerGenerator + ArmingIndex] === 1
-                    || (settings[i * FailureGeneratorPerHour.numberOfSettingsPerGenerator + ArmingIndex] === 2 && RandomFailureGen.getFailureFlightPhase() === FailurePhases.Flight)
-                    || settings[i * FailureGeneratorPerHour.numberOfSettingsPerGenerator + ArmingIndex] === 3)) {
+                if ((settings[i * FailureGeneratorPerHour.numberOfSettingsPerGenerator + ArmingModeIndex] === 1
+                    || (settings[i * FailureGeneratorPerHour.numberOfSettingsPerGenerator + ArmingModeIndex] === 2 && RandomFailureGen.getFailureFlightPhase() === FailurePhases.Flight)
+                    || settings[i * FailureGeneratorPerHour.numberOfSettingsPerGenerator + ArmingModeIndex] === 3)) {
                     FailureGeneratorPerHour.failureGeneratorArmed[i] = true;
+                    tempSettings[i * FailureGeneratorPerHour.numberOfSettingsPerGenerator + ReadyDisplayIndex] = 1;
+                    change = true;
                 }
             } else
-            if (settings[i * FailureGeneratorPerHour.numberOfSettingsPerGenerator + ArmingIndex] === 0) FailureGeneratorPerHour.failureGeneratorArmed[i] = false;
+            if (settings[i * FailureGeneratorPerHour.numberOfSettingsPerGenerator + ArmingModeIndex] === 0) {
+                FailureGeneratorPerHour.failureGeneratorArmed[i] = false;
+                tempSettings[i * FailureGeneratorPerHour.numberOfSettingsPerGenerator + ReadyDisplayIndex] = 0;
+                change = true;
+            }
         }
         if (change) {
             NXDataStore.set(FailureGeneratorPerHour.settingName, RandomFailureGen.flatten(tempSettings));

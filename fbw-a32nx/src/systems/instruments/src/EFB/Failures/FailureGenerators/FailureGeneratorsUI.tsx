@@ -8,13 +8,15 @@ import {
 import { ExclamationDiamond, InfoCircle, PlusLg, Sliders2Vertical, Trash } from 'react-bootstrap-icons';
 import { AtaChapterNumber, AtaChaptersTitle } from '@flybywiresim/fbw-sdk';
 import { FailureGeneratorInfoModalUI } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorInfo';
+import { TooltipWrapper } from 'instruments/src/EFB/UtilComponents/TooltipWrapper';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
 import { GeneratorFailureSelection } from './GeneratorFailureSelectionUI';
 import { FailureGeneratorDetailsModalUI, ArmedState } from './FailureGeneratorSettingsUI';
 
-export const ArmingIndex = 0;
+export const ArmingModeIndex = 0;
 export const FailuresAtOnceIndex = 1;
 export const MaxFailuresIndex = 2;
+export const ReadyDisplayIndex = 3;
 
 export const FailureGeneratorsUI = () => {
     const [chosenGen, setChosenGen] = useState<string>();
@@ -141,12 +143,14 @@ export function FailureGeneratorCardTemplateUI(
     failureGenData: FailureGenData,
     failureGenContext: FailureGenContext,
 ) {
-    const genUniqueID = `${failureGenData.uniqueGenPrefix}${genNumber.toString()}`;
+    const genUniqueID = `${failureGenData.uniqueGenPrefix}${(genNumber).toString()}`;
+    const genUniqueIDDisplayed = `${failureGenData.uniqueGenPrefix}${(genNumber + 1).toString()}`;
+    const isArmed : Boolean = failureGenData.settings[genNumber * failureGenData.numberOfSettingsPerGenerator + ReadyDisplayIndex] === 1;
     return (
         <div className="flex flex-row justify-between px-2 pt-2 m-1 text-center rounded-md border-2 border-solid border-theme-accent">
             <div className="flex flex-col mr-4 text-left grow max-w-[86%] align-left">
                 <h2 className="pb-2 truncate break-words max-w-[100%]">
-                    {`${genUniqueID}: ${failureGenData.alias()}`}
+                    {`${genUniqueIDDisplayed}: ${failureGenData.alias()}`}
                 </h2>
                 {FailureShortList(failureGenContext, genUniqueID)}
             </div>
@@ -159,31 +163,35 @@ export function FailureGeneratorCardTemplateUI(
                     <Trash size={20} />
                 </div>
                 <div className="flex flex-col justify-end items-center">
-                    <div className="flex-none p-2 mt-2 text-theme-text bg-theme-body">
+                    <div className={`flex-none p-2 mt-2 ${isArmed ? 'text-theme-highlight' : 'text-theme-text'} bg-theme-body`}>
                         {ArmedState(failureGenData, genNumber)}
                     </div>
-                    <div
-                        className="flex-none p-2 mt-2 rounded-md transition duration-100 border-2 text-theme-text bg-theme-accent
+                    <TooltipWrapper text={t('Failures.Generators.ToolTipGeneratorSettings')}>
+                        <div
+                            className="flex-none p-2 mt-2 rounded-md transition duration-100 border-2 text-theme-text bg-theme-accent
                         border-theme-accent hover:text-theme-body hover:bg-theme-highlight"
-                        onClick={() => {
-                            failureGenContext.setFailureGenModalType(ModalGenType.Settings);
-                            const test: ModalContext = { failureGenData, genNumber, genUniqueID };
-                            failureGenContext.setModalContext(test);
-                        }}
-                    >
-                        <Sliders2Vertical size={20} />
-                    </div>
-                    <div
-                        className="flex-none p-2 my-2 rounded-md transition duration-100 border-2 text-theme-text bg-theme-accent
+                            onClick={() => {
+                                failureGenContext.setFailureGenModalType(ModalGenType.Settings);
+                                const test: ModalContext = { failureGenData, genNumber, genUniqueID };
+                                failureGenContext.setModalContext(test);
+                            }}
+                        >
+                            <Sliders2Vertical size={20} />
+                        </div>
+                    </TooltipWrapper>
+                    <TooltipWrapper text={t('Failures.Generators.ToolTipFailureList')}>
+                        <div
+                            className="flex-none p-2 my-2 rounded-md transition duration-100 border-2 text-theme-text bg-theme-accent
                         border-theme-accent hover:text-theme-body hover:bg-theme-highlight"
-                        onClick={() => {
-                            failureGenContext.setFailureGenModalType(ModalGenType.Failures);
-                            const test: ModalContext = { failureGenData, genNumber, genUniqueID };
-                            failureGenContext.setModalContext(test);
-                        }}
-                    >
-                        <ExclamationDiamond size={20} />
-                    </div>
+                            onClick={() => {
+                                failureGenContext.setFailureGenModalType(ModalGenType.Failures);
+                                const test: ModalContext = { failureGenData, genNumber, genUniqueID };
+                                failureGenContext.setModalContext(test);
+                            }}
+                        >
+                            <ExclamationDiamond size={20} />
+                        </div>
+                    </TooltipWrapper>
                 </div>
             </div>
         </div>

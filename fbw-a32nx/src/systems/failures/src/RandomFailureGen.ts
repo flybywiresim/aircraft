@@ -6,9 +6,10 @@ import { FailureGeneratorSpeed } from './SpeedFailureGenerator';
 import { FailureGeneratorTakeOff } from './TakeOffFailureGenerator';
 import { FailureGeneratorTimer } from './TimerFailureGenerator';
 
-export const ArmingIndex = 0;
+export const ArmingModeIndex = 0;
 export const FailuresAtOnceIndex = 1;
 export const MaxFailuresIndex = 2;
+export const ReadyDisplayIndex = 3;
 
 export enum FailurePhases {
     Dormant,

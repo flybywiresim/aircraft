@@ -172,6 +172,12 @@
       "SpeedTransMedHigh": "Vitesse de transition moyen-rapide",
       "SplitOverPhases": "Répartis dans ces phases",
       "TakeOff": "Décollage",
+      "ToolTipFailureList": "Ouvre la page de choix des pannes déclenchables par ce générateur",
+      "ToolTipGeneratorSettings": "Ouvre la page des régales du générateur de pannes",
+      "ToolTipOff": "Aucune panne ne va survenir",
+      "ToolTipRepeat": "Des pannes se déclencheront à chaque fois que les conditions sont réunies",
+      "ToolTipRepeat1": "Des pannes se déclencheront un seule fois dès que les conditions sont réunies",
+      "ToolTipTakeOff": "Des pannes se déclencheront un seule fois par décollage dès que les conditions sont réunies",
       "Title": "Générateur de panne",
       "years": "années",
       "Legends": {

@@ -11,6 +11,8 @@ import { SimpleInput } from 'instruments/src/EFB/UtilComponents/Form/SimpleInput
 import { ButtonType, SettingItem } from 'instruments/src/EFB/Settings/Settings';
 import { FailuresAtOnceIndex, MaxFailuresIndex } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
 import { ScrollableContainer } from 'instruments/src/EFB/UtilComponents/ScrollableContainer';
+import { TooltipWrapper } from 'instruments/src/EFB/UtilComponents/TooltipWrapper';
+import { ArmingModeIndex, ReadyDisplayIndex } from 'failures/src/RandomFailureGen';
 
 export type SettingVar = {
     settingVar: number,
@@ -64,16 +66,29 @@ export function FailureGeneratorDetailsModalUI(
     );
 }
 export function ArmedState(generatorSettings: FailureGenData, genNumber: number) {
-    switch (generatorSettings.settings[generatorSettings.numberOfSettingsPerGenerator * genNumber]) {
-    case 0: return (<ToggleOff size={20} />);
-    case 1: return (<Repeat1 size={20} />);
+    const readyDisplay:boolean = generatorSettings.settings[generatorSettings.numberOfSettingsPerGenerator * genNumber + ReadyDisplayIndex] === 1;
+    switch (generatorSettings.settings[generatorSettings.numberOfSettingsPerGenerator * genNumber + ArmingModeIndex]) {
+    case 0: return (
+        <TooltipWrapper text={`${t('Failures.Generators.ToolTipOff')} - ${readyDisplay ? t('Failures.Generators.ToolTipReady') : t('Failures.Generators.ToolTipStandby')}`}>
+            <ToggleOff size={20} />
+        </TooltipWrapper>
+    );
+    case 1: return (
+        <TooltipWrapper text={`${t('Failures.Generators.ToolTipRepeat1')} - ${readyDisplay ? t('Failures.Generators.ToolTipReady') : t('Failures.Generators.ToolTipStandby')}`}>
+            <Repeat1 size={20} />
+        </TooltipWrapper>
+    );
     case 2: return (
-        <>
+        <TooltipWrapper text={t('Failures.Generators.ToolTipTakeOff')}>
             <Airplane size={20} />
             <ArrowBarUp size={20} />
-        </>
+        </TooltipWrapper>
     );
-    case 3: return (<Repeat size={20} />);
+    case 3: return (
+        <TooltipWrapper text={`${t('Failures.Generators.ToolTipRepeat')} - ${readyDisplay ? t('Failures.Generators.ToolTipReady') : t('Failures.Generators.ToolTipStandby')}`}>
+            <Repeat size={20} />
+        </TooltipWrapper>
+    );
     default: return (<></>);
     }
 }

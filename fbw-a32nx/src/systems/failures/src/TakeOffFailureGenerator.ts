@@ -1,11 +1,11 @@
 import { NXDataStore } from '@flybywiresim/fbw-sdk';
-import { ArmingIndex, FailurePhases, FailuresAtOnceIndex, MaxFailuresIndex, RandomFailureGen } from './RandomFailureGen';
+import { ArmingModeIndex, FailurePhases, FailuresAtOnceIndex, MaxFailuresIndex, RandomFailureGen, ReadyDisplayIndex } from './RandomFailureGen';
 import { FailuresOrchestrator } from './failures-orchestrator';
 
 export class FailureGeneratorTakeOff {
     private static settingName = 'EFB_FAILURE_GENERATOR_SETTING_TAKEOFF';
 
-    private static numberOfSettingsPerGenerator = 10;
+    private static numberOfSettingsPerGenerator = 11;
 
     private static uniqueGenPrefix = 'E';
 
@@ -17,29 +17,22 @@ export class FailureGeneratorTakeOff {
 
     private static didInitialize: boolean = false;
 
-    private static chancePerTakeOffIndex = 3;
+    private static chancePerTakeOffIndex = 4;
 
-    private static chanceLowIndex = 4;
+    private static chanceLowIndex = 5;
 
-    private static chanceMediumIndex = 5;
+    private static chanceMediumIndex = 6;
 
-    private static minSpeedIndex = 6;
+    private static minSpeedIndex = 7;
 
-    private static mediumSpeedIndex = 7;
+    private static mediumSpeedIndex = 8;
 
-    private static maxSpeedIndex = 8;
+    private static maxSpeedIndex = 9;
 
-    private static altitudeIndex = 9;
+    private static altitudeIndex = 10;
 
     static updateFailure(failureOrchestrator : FailuresOrchestrator): void {
         const failureGeneratorSetting = NXDataStore.get(FailureGeneratorTakeOff.settingName, '');
-
-        if (!FailureGeneratorTakeOff.didInitialize) {
-            const generatorNumber = Math.floor(failureGeneratorSetting.split(',').length / FailureGeneratorTakeOff.numberOfSettingsPerGenerator);
-            for (let i = 0; i < generatorNumber; i++) FailureGeneratorTakeOff.failureGeneratorArmed[i] = false;
-            FailureGeneratorTakeOff.didInitialize = true;
-        }
-
         const settings: number[] = failureGeneratorSetting.split(',').map(((it) => parseFloat(it)));
         const nbGenerator = Math.floor(settings.length / FailureGeneratorTakeOff.numberOfSettingsPerGenerator);
         const tempSettings: number[] = Array.from(settings);
@@ -47,6 +40,16 @@ export class FailureGeneratorTakeOff {
         const gs = Simplane.getGroundSpeed();
 
         let change = false;
+
+        if (!FailureGeneratorTakeOff.didInitialize) {
+            const generatorNumber = Math.floor(failureGeneratorSetting.split(',').length / FailureGeneratorTakeOff.numberOfSettingsPerGenerator);
+            for (let i = 0; i < generatorNumber; i++) {
+                FailureGeneratorTakeOff.failureGeneratorArmed[i] = false;
+                tempSettings[i * FailureGeneratorTakeOff.numberOfSettingsPerGenerator + ReadyDisplayIndex] = 0;
+            }
+            FailureGeneratorTakeOff.didInitialize = true;
+            change = true;
+        }
 
         for (let i = 0; i < nbGenerator; i++) {
             if (FailureGeneratorTakeOff.failureGeneratorArmed[i]
@@ -59,16 +62,17 @@ export class FailureGeneratorTakeOff {
                     RandomFailureGen.activateRandomFailure(RandomFailureGen.getGeneratorFailurePool(failureOrchestrator, FailureGeneratorTakeOff.uniqueGenPrefix + i.toString()),
                         failureOrchestrator, activeFailures, numberOfFailureToActivate);
                     FailureGeneratorTakeOff.failureGeneratorArmed[i] = false;
+                    tempSettings[i * FailureGeneratorTakeOff.numberOfSettingsPerGenerator + ReadyDisplayIndex] = 0;
                     change = true;
-                    if (tempSettings[i * FailureGeneratorTakeOff.numberOfSettingsPerGenerator + ArmingIndex] === 1) {
-                        tempSettings[i * FailureGeneratorTakeOff.numberOfSettingsPerGenerator + ArmingIndex] = 0;
+                    if (tempSettings[i * FailureGeneratorTakeOff.numberOfSettingsPerGenerator + ArmingModeIndex] === 1) {
+                        tempSettings[i * FailureGeneratorTakeOff.numberOfSettingsPerGenerator + ArmingModeIndex] = 0;
                     }
                 }
             }
 
             const minFailureTakeOffSpeed: number = settings[i * FailureGeneratorTakeOff.numberOfSettingsPerGenerator + FailureGeneratorTakeOff.minSpeedIndex];
             if (!FailureGeneratorTakeOff.failureGeneratorArmed[i]) {
-                if (settings[i * FailureGeneratorTakeOff.numberOfSettingsPerGenerator + ArmingIndex] > 0) {
+                if (settings[i * FailureGeneratorTakeOff.numberOfSettingsPerGenerator + ArmingModeIndex] > 0) {
                     if (gs < minFailureTakeOffSpeed && RandomFailureGen.getFailureFlightPhase() === FailurePhases.TakeOff) {
                         if (Math.random() < settings[i * FailureGeneratorTakeOff.numberOfSettingsPerGenerator + FailureGeneratorTakeOff.chancePerTakeOffIndex]) {
                             const chanceFailureLowTakeOffRegime: number = settings[i * FailureGeneratorTakeOff.numberOfSettingsPerGenerator + FailureGeneratorTakeOff.chanceLowIndex];
@@ -95,10 +99,16 @@ export class FailureGeneratorTakeOff {
                                 FailureGeneratorTakeOff.failureTakeOffSpeedThreshold[i] = -1;
                             }
                             FailureGeneratorTakeOff.failureGeneratorArmed[i] = true;
+                            tempSettings[i * FailureGeneratorTakeOff.numberOfSettingsPerGenerator + ReadyDisplayIndex] = 1;
+                            change = true;
                         }
                     }
                 }
-            } else if (settings[i * FailureGeneratorTakeOff.numberOfSettingsPerGenerator + ArmingIndex] === 0) FailureGeneratorTakeOff.failureGeneratorArmed[i] = false;
+            } else if (settings[i * FailureGeneratorTakeOff.numberOfSettingsPerGenerator + ArmingModeIndex] === 0) {
+                FailureGeneratorTakeOff.failureGeneratorArmed[i] = false;
+                tempSettings[i * FailureGeneratorTakeOff.numberOfSettingsPerGenerator + ReadyDisplayIndex] = 0;
+                change = true;
+            }
         }
 
         if (change) {

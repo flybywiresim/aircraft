@@ -5,8 +5,8 @@ import { t } from 'instruments/src/EFB/translation';
 import { FailureGeneratorSingleSetting } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorSettingsUI';
 
 const settingName = 'EFB_FAILURE_GENERATOR_SETTING_TIMER';
-const additionalSetting = [2, 1, 2, 300, 600];
-const numberOfSettingsPerGenerator = 5;
+const additionalSetting = [2, 1, 2, 0, 300, 600];
+const numberOfSettingsPerGenerator = 6;
 const uniqueGenPrefix = 'D';
 const failureGeneratorArmed: boolean[] = [];
 const failureStartTime: number[] = [];
@@ -15,8 +15,8 @@ const alias = () => t('Failures.Generators.GenTimer');
 const disableTakeOffRearm = false;
 const rolledDice: number[] = [];
 
-const DelayMinIndex = 3;
-const DelayMaxIndex = 4;
+const DelayMinIndex = 4;
+const DelayMaxIndex = 5;
 
 export const failureGenConfigTimer: () => FailureGenData = () => {
     const [setting, setSetting] = usePersistentProperty(settingName);
