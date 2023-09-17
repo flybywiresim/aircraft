@@ -159,21 +159,22 @@ interface BoardingInputProps {
     boardingStarted: boolean,
     totalPax: number,
     totalCargo: number,
-    setBoardingStarted: (boardingStarted: boolean) => void,
+    handleBoarding: () => void,
     handleDeboarding: () => void,
+    gsxPayloadSyncEnabled: boolean
 }
 
-export const BoardingInput: React.FC<BoardingInputProps> = ({ boardingStatusClass, boardingStarted, totalPax, totalCargo, setBoardingStarted, handleDeboarding }) => (
+export const BoardingInput: React.FC<BoardingInputProps> = ({ boardingStatusClass, boardingStarted, totalPax, totalCargo, handleBoarding, handleDeboarding, gsxPayloadSyncEnabled }) => (
     <>
         <TooltipWrapper text={t('Ground.Payload.TT.StartBoarding')}>
             <button
                 type="button"
                 className={`flex justify-center rounded-lg items-center ml-auto w-24 h-12 ${boardingStatusClass} bg-current`}
-                onClick={() => setBoardingStarted(!boardingStarted)}
+                onClick={() => handleBoarding()}
             >
                 <div className="text-theme-body">
                     <ArrowLeftRight size={32} className={boardingStarted ? 'hidden' : ''} />
-                    <StopCircleFill size={32} className={boardingStarted ? '' : 'hidden'} />
+                    {(!gsxPayloadSyncEnabled) && <StopCircleFill size={32} className={boardingStarted ? '' : 'hidden'} />}
                 </div>
             </button>
         </TooltipWrapper>

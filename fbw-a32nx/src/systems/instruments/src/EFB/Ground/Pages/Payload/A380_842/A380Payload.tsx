@@ -571,7 +571,7 @@ export const A380Payload: React.FC<A380Props> = ({
                                         setBagWeight={setPaxBagWeight}
                                     />
                                     {gsxPayloadSyncEnabled !== 1 && (
-                                        <BoardingInput boardingStatusClass={boardingStatusClass} boardingStarted={boardingStarted} totalPax={totalPax} totalCargo={totalCargo} setBoardingStarted={setBoardingStarted} handleDeboarding={handleDeboarding} />
+                                        <BoardingInput boardingStatusClass={boardingStatusClass} boardingStarted={boardingStarted} totalPax={totalPax} totalCargo={totalCargo} handleBoarding={() => setBoardingStarted(!boardingStarted)} handleDeboarding={handleDeboarding} gsxPayloadSyncEnabled={(gsxPayloadSyncEnabled === 1)} />
                                     )}
                                 </div>
                             </Card>

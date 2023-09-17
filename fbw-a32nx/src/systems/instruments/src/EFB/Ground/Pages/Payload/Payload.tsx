@@ -11,7 +11,17 @@ import { A380Payload } from './A380_842/A380Payload';
 import { useAppSelector } from '../../../Store/store';
 import { isSimbriefDataLoaded } from '../../../Store/features/simBrief';
 
-export const Payload = () => {
+interface PayloadProps {
+    gsxMenuCurrentState: Number,
+    setGsxMenuCurrentState: (state: number) => void,
+    selectGsxMenuChoice: (choice: number) => void,
+}
+
+export const Payload: React.FC<PayloadProps> = ({
+    gsxMenuCurrentState,
+    setGsxMenuCurrentState,
+    selectGsxMenuChoice,
+}) => {
     const simbriefUnits = useAppSelector((state) => state.simbrief.data.units);
     const simbriefBagWeight = parseInt(useAppSelector((state) => state.simbrief.data.weights.bagWeight));
     const simbriefPaxWeight = parseInt(useAppSelector((state) => state.simbrief.data.weights.passengerWeight));
@@ -63,6 +73,9 @@ export const Payload = () => {
                 boardingRate={boardingRate}
                 setBoardingStarted={setBoardingStarted}
                 setBoardingRate={setBoardingRate}
+                gsxMenuCurrentState={gsxMenuCurrentState}
+                setGsxMenuCurrentState={setGsxMenuCurrentState}
+                selectGsxMenuChoice={selectGsxMenuChoice}
             />
         );
     }

@@ -14,6 +14,7 @@ import Card from '../../../../UtilComponents/Card/Card';
 import { SelectGroup, SelectItem } from '../../../../UtilComponents/Form/Select';
 import { SeatMapWidget } from '../Seating/SeatMapWidget';
 import { PromptModal, useModals } from '../../../../UtilComponents/Modals/Modals';
+import { GsxMenuPrepChoices, GsxMenuStates } from '../../../Ground';
 
 interface A320Props {
     simbriefUnits: string,
@@ -30,6 +31,10 @@ interface A320Props {
     boardingRate: string,
     setBoardingStarted: (boardingStarted: any) => void,
     setBoardingRate: (boardingRate: any) => void,
+
+    gsxMenuCurrentState: Number,
+    setGsxMenuCurrentState: (state: number) => void,
+    selectGsxMenuChoice: (choice: number) => void,
 }
 export const A320Payload: React.FC<A320Props> = ({
     simbriefUnits,
@@ -45,6 +50,9 @@ export const A320Payload: React.FC<A320Props> = ({
     boardingRate,
     setBoardingStarted,
     setBoardingRate,
+    gsxMenuCurrentState,
+    setGsxMenuCurrentState,
+    selectGsxMenuChoice,
 }) => {
     const { showModal } = useModals();
 
@@ -126,9 +134,16 @@ export const A320Payload: React.FC<A320Props> = ({
 
     // GSX
     const [gsxPayloadSyncEnabled] = usePersistentNumberProperty('GSX_PAYLOAD_SYNC', 0);
-    const [_, setGsxNumPassengers] = useSimVar('L:FSDT_GSX_NUMPASSENGERS', 'Number', 223);
+
     const [gsxBoardingState] = useSimVar('L:FSDT_GSX_BOARDING_STATE', 'Number', 227);
     const [gsxDeBoardingState] = useSimVar('L:FSDT_GSX_DEBOARDING_STATE', 'Number', 229);
+
+    const [, setGsxNumPassengers] = useSimVar('L:FSDT_GSX_NUMPASSENGERS', 'Number', 223);
+    const [, setGsxPilotsNotBoarding] = useSimVar('L:FSDT_GSX_PILOTS_NOT_BOARDING', 'Number', 223);
+    const [, setGsxPilotsNotDeBoarding] = useSimVar('L:FSDT_GSX_PILOTS_NOT_DEBOARDING', 'Number', 223);
+    const [, setGsxCrewNotBoarding] = useSimVar('L:FSDT_GSX_CREW_NOT_BOARDING', 'Number', 223);
+    const [, setGsxCrewNotDeBoarding] = useSimVar('L:FSDT_GSX_CREW_NOT_DEBOARDING', 'Number', 223);
+
     const gsxStates = {
         AVAILABLE: 1,
         NOT_AVAILABLE: 2,
@@ -275,6 +290,42 @@ export const A320Payload: React.FC<A320Props> = ({
         totalPaxDesired,
     ]);
 
+    const handleGsxCrewAndPilotsBoarding = (isNotBoarding: boolean) => {
+        setGsxPilotsNotBoarding(isNotBoarding ? 1 : 0);
+        setGsxPilotsNotDeBoarding(isNotBoarding ? 1 : 0);
+        setGsxCrewNotBoarding(isNotBoarding ? 1 : 0);
+        setGsxCrewNotDeBoarding(isNotBoarding ? 1 : 0);
+    };
+
+    const handleGsxBoardingConfirmation = (isNotBoarding: boolean) => {
+        console.log(`GSX: Crew and Pilots isNotBoardingStatus: ${isNotBoarding}`);
+        handleGsxCrewAndPilotsBoarding(isNotBoarding);
+        if (gsxMenuCurrentState === GsxMenuStates.PREP) {
+            console.log('GSX: setting menus state from PREP to OPERATOR_SELECT');
+            setGsxMenuCurrentState(GsxMenuStates.OPERATOR_SELECT);
+            console.log('GSX: Requesting Boarding.');
+            selectGsxMenuChoice(GsxMenuPrepChoices.RQST_BOARD);
+        }
+    };
+
+    const handleBoarding = () => {
+        if (gsxPayloadSyncEnabled !== 1) {
+            console.log(`GSX Payload is disabled, setting boarding state to opposite of ${boardingStarted}`);
+            setBoardingStarted(!boardingStarted);
+            return;
+        }
+        showModal(
+            <PromptModal
+                title={`${t('Ground.Payload.GsxCrewBoardConfirmationTitle')}`}
+                bodyText=""
+                confirmText={`${t('Ground.Payload.GsxCrewBoardConfirm')}`}
+                cancelText={`${t('Ground.Payload.GsxCrewBoardCancel')}`}
+                onCancel={() => handleGsxBoardingConfirmation(true)}
+                onConfirm={() => handleGsxBoardingConfirmation(false)}
+            />,
+        );
+    };
+
     const handleDeboarding = useCallback(() => {
         if (!boardingStarted) {
             showModal(
@@ -294,6 +345,7 @@ export const A320Payload: React.FC<A320Props> = ({
             );
             return;
         }
+        console.log('Deboarding triggered, setting boarding to false');
         setBoardingStarted(false);
     }, [totalPaxDesired, totalPax, totalCargo, boardingStarted, totalCargoDesired]);
 
@@ -382,6 +434,7 @@ export const A320Payload: React.FC<A320Props> = ({
                 break;
             case gsxStates.COMPLETED:
                 // If deboarding is completed
+                console.log('GSX: GSX Deboarding state is completed, setting boarding started to false');
                 setBoardingStarted(false);
                 break;
             default:
@@ -521,9 +574,15 @@ export const A320Payload: React.FC<A320Props> = ({
                                         setPaxWeight={setPaxWeight}
                                         setBagWeight={setPaxBagWeight}
                                     />
-                                    {gsxPayloadSyncEnabled !== 1 && (
-                                        <BoardingInput boardingStatusClass={boardingStatusClass} boardingStarted={boardingStarted} totalPax={totalPax} totalCargo={totalCargo} setBoardingStarted={setBoardingStarted} handleDeboarding={handleDeboarding} />
-                                    )}
+                                    <BoardingInput
+                                        boardingStatusClass={boardingStatusClass}
+                                        boardingStarted={boardingStarted}
+                                        totalPax={totalPax}
+                                        totalCargo={totalCargo}
+                                        handleBoarding={handleBoarding}
+                                        handleDeboarding={handleDeboarding}
+                                        gsxPayloadSyncEnabled={(gsxPayloadSyncEnabled === 1)}
+                                    />
                                 </div>
                             </Card>
                             {showSimbriefButton
