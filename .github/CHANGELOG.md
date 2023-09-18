@@ -6,7 +6,7 @@
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
 ## 0.11.0
-
+1. [SYSTEM] Fix ORIGIN/DEST not being reported to API - @nathaninnes (Sabes)
 1. [FMS] Implement vertical navigation functions - @BlueberryKing (BlueberryKing)
 1. [EFB] Added pause at T/D function - @2hwk (2Cas#1022)
 1. [FMS] Add a default RNP of 0.3 for RNP AR procedure legs - @tracernz (Mike)
@@ -54,7 +54,6 @@
 
 ## 0.10.0
 
-1. [SYSTEM] Fix ORIGIN/DEST not being reported to API - @nathaninnes (Sabes)
 1. [PFD] Corrected low VLS near max flight level - @lukecologne (luke)
 1. [FMGC] Fix loading VHF navaids without region - @tracernz (Mike)
 1. [EFB] Added pretty release name to flyPad about page - @frankkopp (Frank Kopp)
