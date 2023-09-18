@@ -22,9 +22,13 @@ export class FailureGeneratorPerHour {
         const currentTime = Date.now();
         const settings: number[] = failureGeneratorSetting.split(',').map(((it) => parseFloat(it)));
         const nbGenerator = Math.floor(settings.length / FailureGeneratorPerHour.numberOfSettingsPerGenerator);
-        const tempSettings: number[] = Array.from(settings);
+        let tempSettings: number[] = Array.from(settings);
 
         let change = false;
+
+        if (tempSettings === undefined || tempSettings.length % FailureGeneratorPerHour.numberOfSettingsPerGenerator !== 0) {
+            tempSettings = [];
+        }
 
         if (!FailureGeneratorPerHour.didInitialize) {
             const generatorNumber = Math.floor(failureGeneratorSetting.split(',').length / FailureGeneratorPerHour.numberOfSettingsPerGenerator);

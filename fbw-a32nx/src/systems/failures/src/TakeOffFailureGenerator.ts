@@ -35,11 +35,15 @@ export class FailureGeneratorTakeOff {
         const failureGeneratorSetting = NXDataStore.get(FailureGeneratorTakeOff.settingName, '');
         const settings: number[] = failureGeneratorSetting.split(',').map(((it) => parseFloat(it)));
         const nbGenerator = Math.floor(settings.length / FailureGeneratorTakeOff.numberOfSettingsPerGenerator);
-        const tempSettings: number[] = Array.from(settings);
+        let tempSettings: number[] = Array.from(settings);
         const altitude = Simplane.getAltitude();
         const gs = Simplane.getGroundSpeed();
 
         let change = false;
+
+        if (tempSettings === undefined || tempSettings.length % FailureGeneratorTakeOff.numberOfSettingsPerGenerator !== 0) {
+            tempSettings = [];
+        }
 
         if (!FailureGeneratorTakeOff.didInitialize) {
             const generatorNumber = Math.floor(failureGeneratorSetting.split(',').length / FailureGeneratorTakeOff.numberOfSettingsPerGenerator);

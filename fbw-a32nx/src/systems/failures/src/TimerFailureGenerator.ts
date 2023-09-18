@@ -32,10 +32,14 @@ export class FailureGeneratorTimer {
         const settings: number[] = failureGeneratorSetting.split(',').map(((it) => parseFloat(it)));
         const nbGenerator = Math.floor(settings.length / FailureGeneratorTimer.numberOfSettingsPerGenerator);
         const gs = Simplane.getGroundSpeed();
-        const tempSettings: number[] = Array.from(settings);
+        let tempSettings: number[] = Array.from(settings);
         const currentTime = Date.now();
 
         let change = false;
+
+        if (tempSettings === undefined || tempSettings.length % FailureGeneratorTimer.numberOfSettingsPerGenerator !== 0) {
+            tempSettings = [];
+        }
 
         if (!FailureGeneratorTimer.didInitialize) {
             const generatorNumber = Math.floor(failureGeneratorSetting.split(',').length / FailureGeneratorTimer.numberOfSettingsPerGenerator);

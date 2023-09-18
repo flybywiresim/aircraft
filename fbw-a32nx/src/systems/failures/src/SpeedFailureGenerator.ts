@@ -38,10 +38,14 @@ export class FailureGeneratorSpeed {
         const failureGeneratorSetting = NXDataStore.get(FailureGeneratorSpeed.settingName, '');
         const settings: number[] = failureGeneratorSetting.split(',').map(((it) => parseFloat(it)));
         const nbGenerator = Math.floor(settings.length / FailureGeneratorSpeed.numberOfSettingsPerGenerator);
-        const tempSettings: number[] = Array.from(settings);
+        let tempSettings: number[] = Array.from(settings);
         const gs = Simplane.getGroundSpeed();
 
         let change = false;
+
+        if (tempSettings === undefined || tempSettings.length % FailureGeneratorSpeed.numberOfSettingsPerGenerator !== 0) {
+            tempSettings = [];
+        }
 
         if (!FailureGeneratorSpeed.didInitialize) {
             const generatorNumber = Math.floor(failureGeneratorSetting.split(',').length / FailureGeneratorSpeed.numberOfSettingsPerGenerator);

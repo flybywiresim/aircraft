@@ -40,9 +40,13 @@ export class FailureGeneratorAltitude {
         const nbGenerator = Math.floor(settings.length / FailureGeneratorAltitude.numberOfSettingsPerGenerator);
         const altitude = Simplane.getAltitude();
         const gs = Simplane.getGroundSpeed();
-        const tempSettings: number[] = Array.from(settings);
+        let tempSettings: number[] = Array.from(settings);
 
         let change = false;
+
+        if (tempSettings === undefined || tempSettings.length % FailureGeneratorAltitude.numberOfSettingsPerGenerator !== 0) {
+            tempSettings = [];
+        }
 
         if (!FailureGeneratorAltitude.didInitialize) {
             const generatorNumber = Math.floor(failureGeneratorSetting.split(',').length / FailureGeneratorAltitude.numberOfSettingsPerGenerator);
