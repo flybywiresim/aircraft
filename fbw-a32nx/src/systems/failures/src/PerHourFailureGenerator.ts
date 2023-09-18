@@ -11,7 +11,13 @@ export class FailureGeneratorPerHour {
 
     private static failureGeneratorArmed: boolean[] = [];
 
+    private static waitForTakeOff: boolean[] = [];
+
+    private static waitForStopped: boolean[] = [];
+
     private static timePrev: number = Date.now();
+
+    private static previousArmingMode: number[] = [];
 
     private static didInitialize: boolean = false;
 
@@ -22,6 +28,7 @@ export class FailureGeneratorPerHour {
         const currentTime = Date.now();
         const settings: number[] = failureGeneratorSetting.split(',').map(((it) => parseFloat(it)));
         const nbGenerator = Math.floor(settings.length / FailureGeneratorPerHour.numberOfSettingsPerGenerator);
+        const gs = Simplane.getGroundSpeed();
         let tempSettings: number[] = Array.from(settings);
 
         let change = false;
@@ -42,6 +49,25 @@ export class FailureGeneratorPerHour {
 
         for (let i = 0; i < nbGenerator; i++) {
             const chanceSetting = settings[i * FailureGeneratorPerHour.numberOfSettingsPerGenerator + FailureGeneratorPerHour.failurePerHourIndex];
+
+            if (FailureGeneratorPerHour.previousArmingMode[i] !== tempSettings[i * FailureGeneratorPerHour.numberOfSettingsPerGenerator
+                + ArmingModeIndex]) {
+                FailureGeneratorPerHour.waitForTakeOff[i] = true;
+                FailureGeneratorPerHour.waitForStopped[i] = true;
+                FailureGeneratorPerHour.failureGeneratorArmed[i] = false;
+                tempSettings[i * FailureGeneratorPerHour.numberOfSettingsPerGenerator + ReadyDisplayIndex] = 0;
+                change = true;
+            }
+
+            if (FailureGeneratorPerHour.waitForStopped[i] && gs < 1) {
+                FailureGeneratorPerHour.waitForStopped[i] = false;
+            }
+
+            if (FailureGeneratorPerHour.waitForTakeOff[i] && !FailureGeneratorPerHour.waitForStopped[i]
+            && RandomFailureGen.getFailureFlightPhase() === FailurePhases.TakeOff && gs > 1) {
+                FailureGeneratorPerHour.waitForTakeOff[i] = false;
+            }
+
             if (FailureGeneratorPerHour.failureGeneratorArmed[i] && chanceSetting > 0) {
                 const chancePerSecond = chanceSetting / 3600;
                 const rollDice = Math.random();
@@ -54,6 +80,8 @@ export class FailureGeneratorPerHour {
                             failureOrchestrator, activeFailures, numberOfFailureToActivate);
                         FailureGeneratorPerHour.failureGeneratorArmed[i] = false;
                         tempSettings[i * FailureGeneratorPerHour.numberOfSettingsPerGenerator + ReadyDisplayIndex] = 0;
+                        FailureGeneratorPerHour.waitForTakeOff[i] = true;
+                        FailureGeneratorPerHour.waitForStopped[i] = true;
                         change = true;
                         if (tempSettings[i * FailureGeneratorPerHour.numberOfSettingsPerGenerator + ArmingModeIndex] === 1) {
                             tempSettings[i * FailureGeneratorPerHour.numberOfSettingsPerGenerator + ArmingModeIndex] = 0;
@@ -64,7 +92,8 @@ export class FailureGeneratorPerHour {
 
             if (!FailureGeneratorPerHour.failureGeneratorArmed[i]) {
                 if ((settings[i * FailureGeneratorPerHour.numberOfSettingsPerGenerator + ArmingModeIndex] === 1
-                    || (settings[i * FailureGeneratorPerHour.numberOfSettingsPerGenerator + ArmingModeIndex] === 2 && RandomFailureGen.getFailureFlightPhase() === FailurePhases.Flight)
+                    || (settings[i * FailureGeneratorPerHour.numberOfSettingsPerGenerator + ArmingModeIndex] === 2
+                        && !FailureGeneratorPerHour.waitForTakeOff[i])
                     || settings[i * FailureGeneratorPerHour.numberOfSettingsPerGenerator + ArmingModeIndex] === 3)) {
                     FailureGeneratorPerHour.failureGeneratorArmed[i] = true;
                     tempSettings[i * FailureGeneratorPerHour.numberOfSettingsPerGenerator + ReadyDisplayIndex] = 1;
@@ -74,8 +103,11 @@ export class FailureGeneratorPerHour {
             if (settings[i * FailureGeneratorPerHour.numberOfSettingsPerGenerator + ArmingModeIndex] === 0) {
                 FailureGeneratorPerHour.failureGeneratorArmed[i] = false;
                 tempSettings[i * FailureGeneratorPerHour.numberOfSettingsPerGenerator + ReadyDisplayIndex] = 0;
+                FailureGeneratorPerHour.waitForTakeOff[i] = true;
+                FailureGeneratorPerHour.waitForStopped[i] = true;
                 change = true;
             }
+            FailureGeneratorPerHour.previousArmingMode[i] = settings[i * FailureGeneratorPerHour.numberOfSettingsPerGenerator + ArmingModeIndex];
         }
         if (change) {
             NXDataStore.set(FailureGeneratorPerHour.settingName, RandomFailureGen.flatten(tempSettings));
