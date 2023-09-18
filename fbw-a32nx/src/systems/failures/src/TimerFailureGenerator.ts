@@ -96,7 +96,6 @@ export class FailureGeneratorTimer {
                     }
                 }
             }
-
             if (!FailureGeneratorTimer.failureGeneratorArmed[i]) {
                 if (settings[i * FailureGeneratorTimer.numberOfSettingsPerGenerator + ArmingModeIndex] === 1
                 || (settings[i * FailureGeneratorTimer.numberOfSettingsPerGenerator + ArmingModeIndex] === 2
