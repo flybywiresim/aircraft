@@ -43,6 +43,7 @@ export class FailureGeneratorTakeOff {
 
         if (tempSettings === undefined || tempSettings.length % FailureGeneratorTakeOff.numberOfSettingsPerGenerator !== 0) {
             tempSettings = [];
+            change = true;
         }
 
         if (!FailureGeneratorTakeOff.didInitialize) {

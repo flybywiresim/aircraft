@@ -46,6 +46,7 @@ export class FailureGeneratorAltitude {
 
         if (tempSettings === undefined || tempSettings.length % FailureGeneratorAltitude.numberOfSettingsPerGenerator !== 0) {
             tempSettings = [];
+            change = true;
         }
 
         if (!FailureGeneratorAltitude.didInitialize) {

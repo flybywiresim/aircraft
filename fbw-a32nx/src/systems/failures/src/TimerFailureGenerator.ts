@@ -39,6 +39,7 @@ export class FailureGeneratorTimer {
 
         if (tempSettings === undefined || tempSettings.length % FailureGeneratorTimer.numberOfSettingsPerGenerator !== 0) {
             tempSettings = [];
+            change = true;
         }
 
         if (!FailureGeneratorTimer.didInitialize) {

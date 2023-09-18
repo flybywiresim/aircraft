@@ -45,6 +45,7 @@ export class FailureGeneratorSpeed {
 
         if (tempSettings === undefined || tempSettings.length % FailureGeneratorSpeed.numberOfSettingsPerGenerator !== 0) {
             tempSettings = [];
+            change = true;
         }
 
         if (!FailureGeneratorSpeed.didInitialize) {

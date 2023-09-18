@@ -35,6 +35,7 @@ export class FailureGeneratorPerHour {
 
         if (tempSettings === undefined || tempSettings.length % FailureGeneratorPerHour.numberOfSettingsPerGenerator !== 0) {
             tempSettings = [];
+            change = true;
         }
 
         if (!FailureGeneratorPerHour.didInitialize) {
