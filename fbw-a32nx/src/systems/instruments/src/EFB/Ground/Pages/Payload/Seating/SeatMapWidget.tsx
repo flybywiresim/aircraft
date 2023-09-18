@@ -241,7 +241,7 @@ export const SeatMapWidget: React.FC<SeatMapProps> = ({ seatMap, desiredFlags, a
 
     useEffect(() => {
         draw();
-    }, [seatMap, desiredFlags, activeFlags, canvasX, canvasY]);
+    }, [seatMap, isMainDeck, desiredFlags, activeFlags, canvasX, canvasY]);
 
     const distSquared = useMemo(() => (x1: number, y1: number, x2: number, y2: number): number => {
         const diffX = x1 - x2;
