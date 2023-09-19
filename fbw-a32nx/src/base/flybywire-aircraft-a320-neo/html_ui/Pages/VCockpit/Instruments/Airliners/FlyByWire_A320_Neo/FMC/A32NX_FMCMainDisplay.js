@@ -270,8 +270,8 @@ class FMCMainDisplay extends BaseAirliners {
         this.casToMachManualCrossoverCurve.add(300, 0.8);
         this.casToMachManualCrossoverCurve.add(350, 0.82);
 
-        // This is used to determine the Mach number corresponding to a CAS at the manual crossover altitude
-        // The curve was calculated numerically and approximated using a few interpolated values
+        // This is used to determine the CAS corresponding to a Mach number at the manual crossover altitude
+        // Effectively, the manual crossover altitude is FL305 up to M.80, then decreases linearly to the crossover altitude of (VMO, MMO)
         this.machToCasManualCrossoverCurve = new Avionics.Curve();
         this.machToCasManualCrossoverCurve.interpolationFunction = Avionics.CurveTool.NumberInterpolation;
         this.machToCasManualCrossoverCurve.add(0, 0);
@@ -5121,6 +5121,7 @@ class FMCMainDisplay extends BaseAirliners {
             const speed = parseInt(match[2]);
             if (Number.isFinite(speed)) {
                 if (speed < 100 || speed > 350) {
+                    this.setScratchpadText(NXSystemMessages.entryOutOfRange);
                     return false;
                 }
 
@@ -5130,6 +5131,7 @@ class FMCMainDisplay extends BaseAirliners {
             const mach = Math.round(parseFloat(match[1]) * 1000) / 1000;
             if (Number.isFinite(mach)) {
                 if (mach < 0.15 || mach > 0.82) {
+                    this.setScratchpadText(NXSystemMessages.entryOutOfRange);
                     return false
                 }
 
@@ -5141,10 +5143,13 @@ class FMCMainDisplay extends BaseAirliners {
             const speed = parseInt(value);
             if (Number.isFinite(speed)) {
                 if (speed < 100 || speed > 350) {
+                    this.setScratchpadText(NXSystemMessages.entryOutOfRange);
                     return false;
                 }
 
-                const mach = this.casToMachManualCrossoverCurve.evaluate(speed)
+                // This is the maximum managed Mach number you can get, even with CI 100.
+                // Through direct testing by a pilot, it was also determined that the plane gives Mach 0.80 for all of the tested CAS entries.
+                const mach = 0.8;
 
                 this.managedSpeedDescendPilot = speed;
                 this.managedSpeedDescendMachPilot = mach;
@@ -5153,6 +5158,7 @@ class FMCMainDisplay extends BaseAirliners {
             }
         }
 
+        this.setScratchpadText(NXSystemMessages.formatError);
         return false;
     }
 
