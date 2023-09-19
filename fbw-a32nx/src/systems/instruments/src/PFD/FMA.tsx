@@ -1245,7 +1245,7 @@ const getBC3Message = (
     } else if (false) {
         text = 'MORE DRAG';
         className = 'FontMedium White';
-    } else if (checkSpeedMode) {
+    } else if (checkSpeedMode && !isAttExcessive) {
         text = 'CHECK SPEED MODE';
         className = 'FontMedium White';
     } else if (false) {
