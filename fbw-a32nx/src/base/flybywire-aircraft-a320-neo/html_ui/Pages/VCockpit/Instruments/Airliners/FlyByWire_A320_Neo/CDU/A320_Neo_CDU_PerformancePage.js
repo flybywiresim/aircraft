@@ -682,7 +682,11 @@ class CDUPerformancePage {
         const econDesMachPilotEntered = mcdu.managedSpeedDescendMachPilot !== undefined;
         const econDesMach = econDesMachPilotEntered ? mcdu.managedSpeedDescendMachPilot : mcdu.managedSpeedDescendMach;
 
-        const managedDescentSpeedCell = `{${econDesMachPilotEntered ? "big" : "small"}}${econDesMach !== undefined ? econDesMach.toFixed(2).replace("0.", ".") : "---"}{end}/{${econDesPilotEntered ? "big" : "small"}}${econDes !== undefined ? econDes.toFixed(0) : "---"}{end}[color]cyan`;
+        const managedDescentSpeedCellMach = `{${econDesMachPilotEntered ? "big" : "small"}}${econDesMach !== undefined ? econDesMach.toFixed(2).replace("0.", ".") : "---"}{end}`;
+        const managedDescentSpeedCellSpeed = `{${econDesPilotEntered ? "big" : "small"}}${econDes !== undefined ? econDes.toFixed(0) : "---"}{end}`;
+        const managedDescentSpeedCellSlash = `{${(econDesMachPilotEntered || econDesPilotEntered) ? "big" : "small"}}/{end}`;
+
+        const managedDescentSpeedCell = `${managedDescentSpeedCellMach}${managedDescentSpeedCellSlash}${managedDescentSpeedCellSpeed}[color]cyan`;
 
         const [selectedSpeedTitle, selectedSpeedCell] = CDUPerformancePage.getDesSelectedTitleAndValue(mcdu, isPhaseActive, isSelected);
         const timeLabel = isFlying ? "\xa0UTC" : "TIME";
