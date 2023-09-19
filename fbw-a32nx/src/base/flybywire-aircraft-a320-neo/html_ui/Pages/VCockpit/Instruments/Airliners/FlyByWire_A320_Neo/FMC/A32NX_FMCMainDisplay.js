@@ -3738,7 +3738,8 @@ class FMCMainDisplay extends BaseAirliners {
             return true;
         }
 
-        if (s.includes(".")) {
+        const SPD_REGEX = /\d{1,3}/;
+        if (s.match(SPD_REGEX) === null) {
             this.setScratchpadMessage(NXSystemMessages.formatError);
             return false;
         }
@@ -3749,7 +3750,7 @@ class FMCMainDisplay extends BaseAirliners {
             return false
         }
 
-        if (spd < 100 && spd > 350) {
+        if (spd < 100 || spd > 350) {
             this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
             return false;
         }
@@ -3770,6 +3771,12 @@ class FMCMainDisplay extends BaseAirliners {
                 this.updatePreSelSpeedMach(undefined);
             }
             return true;
+        }
+
+        const MACH_OR_SPD_REGEX = /^(\.\d{1,2}|\d{1,3})$/;
+        if (s.match(MACH_OR_SPD_REGEX) === null) {
+            this.setScratchpadMessage(NXSystemMessages.formatError);
+            return false;
         }
 
         const v = parseFloat(s);
@@ -5114,8 +5121,8 @@ class FMCMainDisplay extends BaseAirliners {
             return true;
         }
 
-        const regex = /^(\.\d{1,2})?\/(\d{3})?$/;
-        const match = value.match(regex)
+        const MACH_SLASH_SPD_REGEX = /^(\.\d{1,2})?\/(\d{3})?$/;
+        const match = value.match(MACH_SLASH_SPD_REGEX);
 
         if (match !== null) {
             const speed = parseInt(match[2]);
