@@ -824,14 +824,14 @@ class EngineControl {
       // isTankClosed = 3, left & right tanks do not supply fuel
       // isTankClosed = 4, both tanks supply fuel
       if (xFeedValve > 0.0) {
-        isTankClosed = 4;
-        if (leftPump1 == 0 && leftPump2 == 0)
-          isTankClosed = 1;
-        if (rightPump1 == 0 && rightPump2 == 0)
-          isTankClosed = 2;
         if (leftPump1 == 0 && leftPump2 == 0 && rightPump1 == 0 && rightPump2 == 0)
           isTankClosed = 3;
-
+        else if (leftPump1 == 0 && leftPump2 == 0)
+          isTankClosed = 1;
+        else if (rightPump1 == 0 && rightPump2 == 0)
+          isTankClosed = 2;
+        else
+          isTankClosed = 4;
       }
 
       //--------------------------------------------
@@ -897,6 +897,8 @@ class EngineControl {
         case 3:
           fuelBurn1 = 0;
           fuelBurn2 = 0;
+          apuBurn1 = apuFuelConsumption * 0.5;
+          apuBurn2 = apuFuelConsumption * 0.5;
           break;
         case 4:
           apuBurn1 = apuFuelConsumption*0.5;
