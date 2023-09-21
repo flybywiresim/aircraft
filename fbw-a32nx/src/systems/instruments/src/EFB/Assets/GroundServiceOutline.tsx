@@ -1,7 +1,7 @@
 /* eslint-disable max-len */
 import * as React from 'react';
 // viewBox="0 0 777 814"
-export const GroundServiceOutline = ({ className }: {className: string}) => (
+export const GroundServiceOutline = ({ className, cabinLeftStatus, cabinRightStatus, aftLeftStatus, aftRightStatus }: {className: string, cabinLeftStatus: boolean, cabinRightStatus: boolean, aftLeftStatus: boolean, aftRightStatus: boolean}) => (
     <svg
         id="SVG"
         className={className}
@@ -170,11 +170,23 @@ export const GroundServiceOutline = ({ className }: {className: string}) => (
                         id="AFT_Left_PS_PSS"
                         className="cls-2"
                         d="M352.06 650.21h5.13c1.55 0 2.74-1.36 2.54-2.9l-1.55-11.75a2.558 2.558 0 0 0-2.54-2.23h-6.16"
+                        style={{
+                            stroke: '#6bbe45',
+                            strokeWidth: 2,
+                            fill: aftLeftStatus ? '#6bbe45' : 'none',
+                            strokeMiterlimit: 10,
+                        }}
                     />
                     <path
                         id="AFT_Right_CAT"
                         className="cls-2"
                         d="M424.48 650.21h-5.13c-1.55 0-2.74-1.36-2.54-2.9l1.55-11.75a2.558 2.558 0 0 1 2.54-2.23h6.16"
+                        style={{
+                            stroke: '#6bbe45',
+                            strokeWidth: 2,
+                            fill: aftRightStatus ? '#6bbe45' : 'none',
+                            strokeMiterlimit: 10,
+                        }}
                     />
                 </g>
                 <g id="Emergency_Doors">
@@ -182,21 +194,45 @@ export const GroundServiceOutline = ({ className }: {className: string}) => (
                         id="AFT_Left_EMG"
                         className="cls-2"
                         d="M346.2 337.61h3.14c.95 0 1.72-.77 1.72-1.72v-7.61c0-.95-.77-1.72-1.72-1.72h-3.14"
+                        style={{
+                            stroke: '#6bbe45',
+                            strokeWidth: 2,
+                            fill: 'none',
+                            strokeMiterlimit: 10,
+                        }}
                     />
                     <path
                         id="FWD_Left_EMG"
                         className="cls-2"
                         d="M346.2 319.32h3.14c.95 0 1.72-.77 1.72-1.72v-7.61c0-.95-.77-1.72-1.72-1.72h-3.14"
+                        style={{
+                            stroke: '#6bbe45',
+                            strokeWidth: 2,
+                            fill: 'none',
+                            strokeMiterlimit: 10,
+                        }}
                     />
                     <path
                         id="AFT_Right_EMG"
                         className="cls-2"
                         d="M430.28 337.61h-3.14c-.95 0-1.72-.77-1.72-1.72v-7.61c0-.95.77-1.72 1.72-1.72h3.14"
+                        style={{
+                            stroke: '#6bbe45',
+                            strokeWidth: 2,
+                            fill: 'none',
+                            strokeMiterlimit: 10,
+                        }}
                     />
                     <path
                         id="FWD_Right_EMG"
                         className="cls-2"
                         d="M430.28 319.32h-3.14c-.95 0-1.72-.77-1.72-1.72v-7.61c0-.95.77-1.72 1.72-1.72h3.14"
+                        style={{
+                            stroke: '#6bbe45',
+                            strokeWidth: 2,
+                            fill: 'none',
+                            strokeMiterlimit: 10,
+                        }}
                     />
                 </g>
                 <g id="Front_Doors">
@@ -204,11 +240,23 @@ export const GroundServiceOutline = ({ className }: {className: string}) => (
                         id="FWD_Right_CAT"
                         className="cls-2"
                         d="M430.28 118.06h-9.08a2.67 2.67 0 0 1-2.67-2.67v-11.72a2.67 2.67 0 0 1 2.67-2.67h8.38"
+                        style={{
+                            stroke: '#6bbe45',
+                            strokeWidth: 2,
+                            fill: cabinRightStatus ? '#6bbe45' : 'none',
+                            strokeMiterlimit: 10,
+                        }}
                     />
                     <path
                         id="FWD_Left_PS_PSS"
                         className="cls-2"
                         d="M346.2 118.06h9.08a2.67 2.67 0 0 0 2.67-2.67v-11.72a2.67 2.67 0 0 0-2.67-2.67h-8.38"
+                        style={{
+                            stroke: '#6bbe45',
+                            strokeWidth: 2,
+                            fill: cabinLeftStatus ? '#6bbe45' : 'none',
+                            strokeMiterlimit: 10,
+                        }}
                     />
                 </g>
                 <g id="Cargo_Doors">
@@ -573,7 +621,7 @@ export const GroundServiceOutline = ({ className }: {className: string}) => (
     </svg>
 );
 
-export const A380GroundServiceOutline = ({ className }: {className: string}) => (
+export const A380GroundServiceOutline = ({ className, main1LeftStatus, main2LeftStatus, main4RightStatus, upper1LeftStatus }: {className: string, main1LeftStatus: boolean, main2LeftStatus: boolean, main4RightStatus: boolean, upper1LeftStatus: boolean}) => (
     <svg id="BASE_SVG" className={className} data-name="BASE SVG" width="864" height="864" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 864 864">
         <defs>
             <style>
@@ -582,6 +630,20 @@ export const A380GroundServiceOutline = ({ className }: {className: string}) => 
                 }
             </style>
         </defs>
+        <g
+            id="SVG_Upper_Deck"
+        >
+            <path
+                className="cls-1"
+                d="m 408.61363,104.752 -6.4676,54.39712 0.69296,413.69532 3.92676,52.66473"
+                id="Upper_Left"
+            />
+            <path
+                className="cls-1"
+                d="m 459.53078,104.64768 6.29436,53.93515 -0.69296,413.69532 -3.92676,52.66473"
+                id="Upper_Right"
+            />
+        </g>
         <path id="Fuselage" className="cls-2" d="m431.03,789.53h-2.69c-3.94-12.17-9.25-29.88-11.11-41.86s-4.22-48.22-10.44-72.44c-11.33-39.33-12.89-79.56-12.89-98.67,0,0,0-401.75,0-401.78,0-8.18,2.13-45.6,8.44-76.22,6.22-30.25,21.04-53.67,31.08-53.67h.05c10.04,0,24.87,23.42,31.09,53.67,6.3,30.63,8.44,68.04,8.44,76.22,0,.03,0,401.78,0,401.78,0,19.11-1.56,59.33-12.89,98.67-6.22,24.22-8.52,60.1-10.44,72.44-1.87,11.98-7.17,29.69-11.11,41.86h-2.69" />
         <g id="Wide_Fuselage" data-name="Wide Fuselage">
             <path id="L_Wide_Fuselage" data-name="L Wide Fuselage" className="cls-1" d="m393.89,503.17c-.68-3.22-1.76-7.84-2.48-13.47-2.91-22.78-3.39-37.64-3.36-48.04.08-30.96.12-46.44.95-66.21.89-21.14,2.35-48.81,4.89-81.51" />
@@ -771,6 +833,190 @@ export const A380GroundServiceOutline = ({ className }: {className: string}) => 
             <path className="cls-3" d="m449.64,76.04l-4.2.2c-.07,0-.13-.03-.17-.08l-1.23-1.78s-.02-.02-.03-.04l-1.34-1.19c-.08-.07-.09-.19-.02-.27l1.69-2.04c.05-.06.13-.08.2-.06l1.54.4s.08.03.1.07l3.61,4.48c.1.13.02.31-.14.32Z" />
             <path className="cls-3" d="m441.41,71.79l-7-3.72c-.06-.03-.1-.1-.1-.17v-2.86c0-.13.12-.22.24-.19l3.33.77s.05.02.07.03l4.76,3.46c.06.04.09.12.08.19l-.25,1.64s-.03.09-.07.12l-.84.7c-.06.05-.15.06-.22.02Z" />
             <path className="cls-3" d="m451.14,77.88l-3.43-.46c-.51-.07-.84.54-.49.92l1.69,1.89s.05.05.08.07l3.97,3.06c.33.25.81.07.89-.33l.2-1c.03-.15,0-.3-.09-.43l-2.42-3.49c-.09-.13-.23-.21-.38-.24Z" />
+        </g>
+        <g
+            id="MainDeckDoors"
+        >
+
+            <g
+                id="Foward_Doors"
+            >
+                <path
+                    id="FWD_R_Door"
+                    d="M 468.137 115.921 L 463.188 115.921 C 462.139 115.921 461.298 115.335 461.298 114.607 L 461.298 108.837 C 461.298 108.109 462.148 107.523 463.188 107.523 L 466.762 107.523"
+                    style={{
+                        stroke: '#6bbe45',
+                        strokeWidth: 2,
+                        fill: 'none',
+                        strokeMiterlimit: 10,
+                    }}
+                />
+                <path
+                    id="FWD_L_Door"
+                    d="M 399.649 115.901 L 404.948 115.901 C 406.045 115.901 406.925 115.318 406.925 114.594 L 406.925 108.85 C 406.925 108.126 406.036 107.543 404.948 107.543 L 400.831 107.543"
+                    style={{
+                        stroke: '#6bbe45',
+                        strokeWidth: 2,
+                        fill: main1LeftStatus ? '#6bbe45' : 'none',
+                        strokeMiterlimit: 10,
+                    }}
+                />
+            </g>
+            <g
+                id="Mid_Foward_Doors"
+            >
+                <path
+                    id="MID-FWD_R_Door"
+                    d="M 473.644 213.235 L 467.382 213.235 C 466.535 213.235 465.846 212.641 465.846 211.904 L 465.846 206.057 C 465.846 205.319 466.535 204.725 467.382 204.725 L 473.644 204.725"
+                    style={{
+                        stroke: '#6bbe45',
+                        strokeWidth: 2,
+                        fill: 'none',
+                        strokeMiterlimit: 10,
+                    }}
+                />
+                <path
+                    id="MID-FWD_L_Door"
+                    d="M 394.349 213.22 L 400.935 213.22 C 401.812 213.22 402.526 212.628 402.526 211.894 L 402.526 206.067 C 402.526 205.332 401.812 204.74 400.935 204.74 L 394.349 204.74"
+                    style={{
+                        stroke: '#6bbe45',
+                        strokeWidth: 2,
+                        fill: main2LeftStatus ? '#6bbe45' : 'none',
+                        strokeMiterlimit: 10,
+                    }}
+                />
+            </g>
+            <g
+                id="Mid_Aft_Doors"
+            >
+                <path
+                    id="MID-AFT_R_Door"
+                    d="M 473.407 518.471 L 467.051 518.471 C 466.192 518.471 465.493 517.878 465.493 517.141 L 465.493 511.303 C 465.493 510.566 466.192 509.973 467.051 509.973 L 473.407 509.973"
+                    style={{
+                        stroke: '#6bbe45',
+                        strokeWidth: 2,
+                        fill: 'none',
+                        strokeMiterlimit: 10,
+                    }}
+                />
+                <path
+                    id="MID-AFT_L_Door"
+                    d="M 394.115 518.465 L 400.659 518.465 C 401.531 518.465 402.24 517.873 402.24 517.137 L 402.24 511.307 C 402.24 510.571 401.531 509.979 400.659 509.979 L 394.115 509.979"
+                    style={{
+                        stroke: '#6bbe45',
+                        strokeWidth: 2,
+                        fill: 'none',
+                        strokeMiterlimit: 10,
+                    }}
+                />
+            </g>
+            <g
+                id="Aft_Doors"
+            >
+                <path
+                    id="AFT_R_Door"
+                    d="M 471.609 614.707 L 464.803 614.707 C 463.768 614.707 462.938 614.12 462.938 613.391 L 462.938 607.613 C 462.938 606.884 463.777 606.297 464.803 606.297 L 472.243 606.297"
+                    style={{
+                        stroke: '#6bbe45',
+                        strokeWidth: 2,
+                        fill: main4RightStatus ? '#6bbe45' : 'none',
+                        strokeMiterlimit: 10,
+                    }}
+                />
+                <path
+                    id="AFT_L_Door"
+                    d="M 395.958 614.687 L 403.083 614.687 C 404.168 614.687 405.038 614.102 405.038 613.377 L 405.038 607.627 C 405.038 606.902 404.159 606.317 403.083 606.317 L 395.303 606.317"
+                    style={{
+                        stroke: '#6bbe45',
+                        strokeWidth: 2,
+                        fill: 'none',
+                        strokeMiterlimit: 10,
+                    }}
+                />
+            </g>
+        </g>
+        <g
+            id="UpperDeckDoors"
+        >
+            <g
+                id="Forward_Upper_Doors"
+            >
+                <path
+                    id="FWD-UPP_R_Door"
+                    className="cls-5"
+                    d="M 465.576 250.91 L 459.258 250.91 C 458.397 250.91 457.704 250.33 457.704 249.61 L 457.704 243.9 C 457.704 243.179 458.397 242.599 459.258 242.599 L 465.576 242.599"
+                    style={{
+                        stroke: '#6bbe45',
+                        strokeWidth: 2,
+                        fill: 'none',
+                        strokeMiterlimit: 10,
+                    }}
+                />
+                <path
+                    id="FWD-UPP_L_Door"
+                    className="cls-5"
+                    d="M 402.351 250.91 L 408.771 250.91 C 409.632 250.91 410.325 250.33 410.325 249.61 L 410.325 243.9 C 410.325 243.179 409.632 242.599 408.771 242.599 L 402.351 242.599"
+                    style={{
+                        stroke: '#6bbe45',
+                        strokeWidth: 2,
+                        fill: upper1LeftStatus ? '#6bbe45' : 'none',
+                        strokeMiterlimit: 10,
+                    }}
+                />
+            </g>
+            <g
+                id="Mid_Upper_Doors"
+            >
+                <path
+                    id="MID-UPP_R_Door"
+                    className="cls-5"
+                    d="M 465.576 463.696 L 459.258 463.696 C 458.397 463.696 457.704 463.116 457.704 462.396 L 457.704 456.685 C 457.704 455.965 458.397 455.385 459.258 455.385 L 465.576 455.385"
+                    style={{
+                        stroke: '#6bbe45',
+                        strokeWidth: 2,
+                        fill: 'none',
+                        strokeMiterlimit: 10,
+                    }}
+                />
+                <path
+                    id="MID-UPP_L_Door"
+                    className="cls-5"
+                    d="M 402.351 463.696 L 408.771 463.696 C 409.632 463.696 410.325 463.116 410.325 462.396 L 410.325 456.685 C 410.325 455.965 409.632 455.385 408.771 455.385 L 402.351 455.385"
+                    style={{
+                        stroke: '#6bbe45',
+                        strokeWidth: 2,
+                        fill: 'none',
+                        strokeMiterlimit: 10,
+                    }}
+                />
+            </g>
+            <g
+                id="Aft_Upper_Doors"
+            >
+                <path
+                    id="AFT-UPP_R_Door"
+                    className="cls-5"
+                    d="M 465.576 562.508 L 459.258 562.508 C 458.397 562.508 457.704 561.928 457.704 561.208 L 457.704 555.497 C 457.704 554.777 458.397 554.197 459.258 554.197 L 465.576 554.197"
+                    style={{
+                        stroke: '#6bbe45',
+                        strokeWidth: 2,
+                        fill: 'none',
+                        strokeMiterlimit: 10,
+                    }}
+                />
+                <path
+                    id="AFT-UPP_L_Door"
+                    data-name="AFT-UPP L Door"
+                    className="cls-5"
+                    d="M 402.351 562.508 L 408.771 562.508 C 409.632 562.508 410.325 561.928 410.325 561.208 L 410.325 555.497 C 410.325 554.777 409.632 554.197 408.771 554.197 L 402.351 554.197"
+                    style={{
+                        stroke: '#6bbe45',
+                        strokeWidth: 2,
+                        fill: 'none',
+                        strokeMiterlimit: 10,
+                    }}
+                />
+            </g>
         </g>
     </svg>
 );
