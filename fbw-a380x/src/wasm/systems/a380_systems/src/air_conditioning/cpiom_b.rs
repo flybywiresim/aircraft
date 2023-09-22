@@ -67,9 +67,7 @@ impl CoreProcessingInputOutputModuleB {
         engines: &[&impl EngineCorrectedN1],
         lgciu: [&impl LgciuWeightOnWheels; 2],
         number_of_passengers: usize,
-        ocsm: [&impl OcsmShared; 4],
         pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
-        pressurization_overhead: &impl PressurizationOverheadShared,
         local_controllers: &(impl TaddShared + VcmShared),
     ) {
         self.cpiom_are_active = cpiom_b.map(|cpiom| cpiom.is_available());
@@ -107,6 +105,17 @@ impl CoreProcessingInputOutputModuleB {
         } else {
             self.cpcs_app.deactivate();
         }
+    }
+
+    pub(super) fn update_cpcs(
+        &mut self,
+        context: &UpdateContext,
+        adirs: &impl AdirsToAirCondInterface,
+        engines: &[&impl EngineCorrectedN1],
+        lgciu: [&impl LgciuWeightOnWheels; 2],
+        ocsm: [&impl OcsmShared; 4],
+        pressurization_overhead: &impl PressurizationOverheadShared,
+    ) {
         self.cpcs_app.update(
             context,
             adirs,
@@ -115,6 +124,14 @@ impl CoreProcessingInputOutputModuleB {
             pressurization_overhead,
             ocsm,
         );
+    }
+
+    pub(super) fn update_cpcs_ambient_conditions(
+        &mut self,
+        context: &UpdateContext,
+        adirs: &impl AdirsToAirCondInterface,
+    ) {
+        self.cpcs_app.update_ambient_conditions(context, adirs);
     }
 
     pub(super) fn should_close_taprv(&self) -> [bool; 2] {
@@ -191,6 +208,7 @@ impl SimulationElement for CoreProcessingInputOutputModuleB {
         self.ags_app.accept(visitor);
         self.tcs_app.accept(visitor);
         self.vcs_app.accept(visitor);
+        self.cpcs_app.accept(visitor);
 
         visitor.visit(self);
     }
@@ -666,7 +684,9 @@ impl SimulationElement for VentilationControlSystemApplication {
 
 struct CabinPressureControlSystemApplication<C: PressurizationConstants> {
     cabin_altitude_id: VariableIdentifier,
+    cabin_altitude_target_id: VariableIdentifier,
     cabin_vs_id: VariableIdentifier,
+    cabin_vs_target_id: VariableIdentifier,
     cabin_delta_pressure_id: VariableIdentifier,
     fwc_excess_cabin_altitude_id: VariableIdentifier,
     fwc_excess_residual_pressure_id: VariableIdentifier,
@@ -686,9 +706,11 @@ struct CabinPressureControlSystemApplication<C: PressurizationConstants> {
     cabin_pressure: Pressure,
     cabin_delta_pressure: Pressure,
     cabin_altitude: Length,
+    cabin_target_altitude: Length,
     cabin_vertical_speed: Velocity,
     cabin_filtered_vertical_speed: LowPassFilter<Velocity>,
     cabin_target_vertical_speed: Velocity,
+    cabin_target_vertical_speed_ocsm: Velocity,
     outflow_valve_open_amount: [Ratio; 4],
 
     landing_elevation: Length,
@@ -710,7 +732,10 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
     fn new(context: &mut InitContext) -> Self {
         Self {
             cabin_altitude_id: context.get_identifier("PRESS_CABIN_ALTITUDE".to_owned()),
+            cabin_altitude_target_id: context
+                .get_identifier("PRESS_CABIN_ALTITUDE_TARGET".to_owned()),
             cabin_vs_id: context.get_identifier("PRESS_CABIN_VS".to_owned()),
+            cabin_vs_target_id: context.get_identifier("PRESS_CABIN_VS_TARGET".to_owned()),
             cabin_delta_pressure_id: context
                 .get_identifier("PRESS_CABIN_DELTA_PRESSURE".to_owned()),
             fwc_excess_cabin_altitude_id: context.get_identifier("PRESS_EXCESS_CAB_ALT".to_owned()),
@@ -746,11 +771,13 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
             cabin_pressure: Pressure::new::<hectopascal>(Air::P_0),
             cabin_delta_pressure: Pressure::default(),
             cabin_altitude: Length::default(),
+            cabin_target_altitude: Length::default(),
             cabin_vertical_speed: Velocity::default(),
             cabin_filtered_vertical_speed: LowPassFilter::new(
                 Self::VERTICAL_SPEED_FILTER_TIME_CONSTANT,
             ),
             cabin_target_vertical_speed: Velocity::default(),
+            cabin_target_vertical_speed_ocsm: Velocity::default(),
             outflow_valve_open_amount: [Ratio::new::<percent>(100.); 4],
 
             landing_elevation: Length::default(),
@@ -773,12 +800,25 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
         press_overhead: &impl PressurizationOverheadShared,
         ocsm: [&impl OcsmShared; 4],
     ) {
-        self.update_ambient_conditions(context, adirs);
+        // self.update_ambient_conditions(context, adirs);
         self.cabin_pressure = ocsm[0].cabin_pressure(); // TODO Add check for failure
         self.cabin_delta_pressure = ocsm[0].cabin_delta_pressure(); // TODO Add check for failure
         (0..=3).for_each(|id| {
             self.outflow_valve_open_amount[id] = ocsm[id].outflow_valve_open_amount()
         });
+
+        // println!(
+        //     "Airspeed: {}, adirs airspeed: {}, exterior vs: {}",
+        //     self.exterior_airspeed.get::<knot>(),
+        //     adirs
+        //         .true_airspeed(1)
+        //         .normal_value()
+        //         .unwrap_or_default()
+        //         .get::<knot>(),
+        //     self.exterior_vertical_speed
+        //         .output()
+        //         .get::<foot_per_minute>(),
+        // );
 
         if let Some(manager) = self.pressure_schedule_manager.take() {
             self.pressure_schedule_manager = Some(manager.update(
@@ -792,12 +832,24 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
             ));
         }
         self.cabin_target_vertical_speed = self.calculate_cabin_target_vs();
+        // Fixme: This should check if the ocsm is failed
+        self.cabin_target_vertical_speed_ocsm = ocsm[0].cabin_target_vertical_speed();
+        self.cabin_target_altitude = self.calculate_cabin_target_altitude(ocsm);
 
         let new_reference_pressure = self.calculate_reference_pressure(adirs, press_overhead);
         let new_cabin_alt = self.calculate_altitude(self.cabin_pressure, new_reference_pressure);
 
         self.cabin_vertical_speed =
             self.calculate_vertical_speed(context, new_cabin_alt, new_reference_pressure);
+        // println!(
+        //     "Cabin pressure {}, cab alt: {}, vs: {}, ofv 1: {}, ofv 2: {}, ofv 3: {}",
+        //     self.cabin_pressure.get::<hectopascal>(),
+        //     new_cabin_alt.get::<foot>(),
+        //     self.cabin_vertical_speed.get::<foot_per_minute>(),
+        //     self.outflow_valve_open_amount[0].get::<percent>(),
+        //     self.outflow_valve_open_amount[1].get::<percent>(),
+        //     self.outflow_valve_open_amount[2].get::<percent>(),
+        // );
         self.cabin_filtered_vertical_speed
             .update(context.delta(), self.cabin_vertical_speed);
         self.cabin_altitude = new_cabin_alt;
@@ -805,6 +857,28 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
         self.departure_elevation = self.calculate_departure_elevation();
 
         self.is_in_man_mode = press_overhead.is_alt_man_sel() || press_overhead.is_vs_man_sel();
+
+        // println!(
+        //     "Target vs: {}, is in man: {}, is climb: {}, is cruise: {}, is ground: {}, is takeoff: {}",
+        //     self.cabin_target_vertical_speed.get::<foot_per_minute>(),
+        //     self.is_in_man_mode,
+        //     matches!(
+        //         self.pressure_schedule_manager,
+        //         Some(PressureScheduleManager::ClimbInternal(_))
+        //     ),
+        //     matches!(
+        //         self.pressure_schedule_manager,
+        //         Some(PressureScheduleManager::Cruise(_))
+        //     ),
+        //     matches!(
+        //         self.pressure_schedule_manager,
+        //         Some(PressureScheduleManager::Ground(_))
+        //     ),
+        //     matches!(
+        //         self.pressure_schedule_manager,
+        //         Some(PressureScheduleManager::TakeOff(_))
+        //     ),
+        // );
     }
 
     pub fn update_ambient_conditions(
@@ -981,6 +1055,24 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
         }
     }
 
+    fn calculate_cabin_target_altitude(&self, ocsm: [&impl OcsmShared; 4]) -> Length {
+        // TODO: This function needs to be redone!
+        if ocsm.iter().any(|o| o.cabin_target_altitude().is_some()) {
+            // Fixme: This should check if the ocsm is failed
+            ocsm[0].cabin_target_altitude().unwrap_or_default()
+        } else {
+            match self.pressure_schedule_manager {
+                Some(PressureScheduleManager::Ground(_)) => self.departure_elevation,
+                Some(PressureScheduleManager::TakeOff(_)) => Length::default(),
+                Some(PressureScheduleManager::ClimbInternal(_)) => Length::new::<foot>(8000.),
+                Some(PressureScheduleManager::Cruise(_)) => self.cabin_target_altitude,
+                Some(PressureScheduleManager::DescentInternal(_)) => self.landing_elevation,
+                Some(PressureScheduleManager::Abort(_)) => self.departure_elevation,
+                None => Length::default(),
+            }
+        }
+    }
+
     fn get_ext_diff_with_ldg_elev(&self) -> Length {
         // TODO: Replace constant target landing alt diff for pressure diff
         self.exterior_flight_altitude
@@ -1109,8 +1201,24 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
                 .map_or(false, |manager| manager.should_open_outflow_valve())
     }
 
-    fn cabin_vertical_speed(&self) -> Velocity {
-        self.cabin_vertical_speed
+    pub fn cabin_vertical_speed(&self) -> Velocity {
+        // When on the ground with outflow valve open, V/S is always zero
+        // Vertical speed word range is from -6400 to +6400 fpm (AMM)
+        if self.is_ground()
+            && self
+                .outflow_valve_open_amount
+                .iter()
+                .all(|amount| *amount == Ratio::new::<percent>(100.))
+        {
+            Velocity::default()
+        } else {
+            Velocity::new::<foot_per_minute>(
+                self.cabin_filtered_vertical_speed
+                    .output()
+                    .get::<foot_per_minute>()
+                    .clamp(-6400., 6400.),
+            )
+        }
     }
 
     fn target_vertical_speed(&self) -> Option<Velocity> {
@@ -1140,19 +1248,20 @@ impl<C: PressurizationConstants> CabinAltitude for CabinPressureControlSystemApp
 
 impl<C: PressurizationConstants> SimulationElement for CabinPressureControlSystemApplication<C> {
     fn write(&self, writer: &mut SimulatorWriter) {
-        // Add check for active cpc only
         writer.write(&self.cabin_altitude_id, self.cabin_altitude);
+        writer.write(&self.cabin_altitude_target_id, self.cabin_target_altitude);
         writer.write(
             &self.cabin_vs_id,
             self.cabin_vertical_speed().get::<foot_per_minute>(),
         );
+        writer.write(
+            &self.cabin_vs_target_id,
+            self.cabin_target_vertical_speed_ocsm
+                .get::<foot_per_minute>(),
+        );
         for (id, ofv) in self.outflow_valve_open_percentage_id.iter().enumerate() {
             writer.write(ofv, self.outflow_valve_open_amount[id]);
         }
-        // writer.write(
-        //     &self.cabin_vs_id,
-        //     self.cabin_vertical_speed().get::<foot_per_minute>(),
-        // );
         writer.write(&self.cabin_delta_pressure_id, self.cabin_delta_pressure);
 
         // FWC warning signals

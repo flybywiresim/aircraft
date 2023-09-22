@@ -27,6 +27,8 @@ pub trait CpcsShared {
 
 pub trait OcsmShared {
     fn cabin_pressure(&self) -> Pressure;
+    fn cabin_target_vertical_speed(&self) -> Velocity;
+    fn cabin_target_altitude(&self) -> Option<Length>;
     fn cabin_delta_pressure(&self) -> Pressure;
     fn outflow_valve_open_amount(&self) -> Ratio;
 }
@@ -123,6 +125,12 @@ impl OcsmShared for OutflowValveControlModule {
     fn cabin_pressure(&self) -> Pressure {
         self.epp.cabin_pressure()
     }
+    fn cabin_target_vertical_speed(&self) -> Velocity {
+        self.epp.cabin_target_vertical_speed()
+    }
+    fn cabin_target_altitude(&self) -> Option<Length> {
+        self.sop.manual_cabin_target_altitude()
+    }
     fn cabin_delta_pressure(&self) -> Pressure {
         self.epp.differential_pressure()
     }
@@ -167,7 +175,7 @@ struct SafetyAndOverridePartition {
     cabin_altitude: Length,
     is_alt_man_sel: bool,
     is_vs_man_sel: bool,
-    pre_selected_altitude: Length,
+    selected_altitude: Length,
 }
 
 impl SafetyAndOverridePartition {
@@ -181,7 +189,7 @@ impl SafetyAndOverridePartition {
             cabin_altitude: Length::default(),
             is_alt_man_sel: false,
             is_vs_man_sel: false,
-            pre_selected_altitude: Length::default(),
+            selected_altitude: Length::default(),
         }
     }
 
@@ -191,9 +199,8 @@ impl SafetyAndOverridePartition {
         pressurization_overhead: &impl PressurizationOverheadShared,
     ) {
         self.cabin_altitude = self.cabin_altitude_calculation(cabin_pressure);
-        if !self.is_alt_man_sel && pressurization_overhead.is_alt_man_sel() {
-            self.pre_selected_altitude = pressurization_overhead.alt_knob_value()
-        }
+
+        self.selected_altitude = pressurization_overhead.alt_knob_value();
         self.is_alt_man_sel = pressurization_overhead.is_alt_man_sel();
         self.is_vs_man_sel = pressurization_overhead.is_vs_man_sel();
 
@@ -201,7 +208,7 @@ impl SafetyAndOverridePartition {
             self.target_vertical_speed_determination(self.cabin_altitude, pressurization_overhead);
     }
 
-    /// Calculation of altidude based on a pressure and reference pressure
+    /// Calculation of altitude based on a pressure and reference pressure
     /// This uses the hydrostatic equation with linear temp changes and constant R, g
     fn cabin_altitude_calculation(&self, pressure: Pressure) -> Length {
         // Manual mode uses ISA as reference pressure
@@ -253,6 +260,14 @@ impl SafetyAndOverridePartition {
     fn manual_target_vertical_speed(&self) -> Option<Velocity> {
         self.cabin_target_vertical_speed
     }
+
+    fn manual_cabin_target_altitude(&self) -> Option<Length> {
+        if self.is_alt_man_sel {
+            Some(self.selected_altitude)
+        } else {
+            None
+        }
+    }
 }
 
 /// The Emergency Pressurization Partition (EPP) is responsible for:
@@ -263,6 +278,7 @@ impl SafetyAndOverridePartition {
 /// - The limitation of the maximum negative differential pressure
 struct EmergencyPressurizationPartition {
     cabin_pressure: Pressure,
+    cabin_target_vertical_speed: Velocity,
     exterior_pressure: LowPassFilter<Pressure>,
     differential_pressure: Pressure,
     is_initialised: bool,
@@ -272,10 +288,13 @@ struct EmergencyPressurizationPartition {
 
 impl EmergencyPressurizationPartition {
     const AMBIENT_CONDITIONS_FILTER_TIME_CONSTANT: Duration = Duration::from_millis(2000);
+    const OFV_CONTROLLER_KP: f64 = 1.;
+    const OFV_CONTROLLER_KI: f64 = 1.;
 
     fn new() -> Self {
         Self {
             cabin_pressure: Pressure::new::<hectopascal>(Air::P_0),
+            cabin_target_vertical_speed: Velocity::default(),
             exterior_pressure: LowPassFilter::new_with_init_value(
                 Self::AMBIENT_CONDITIONS_FILTER_TIME_CONSTANT,
                 Pressure::new::<hectopascal>(Air::P_0),
@@ -283,7 +302,10 @@ impl EmergencyPressurizationPartition {
             differential_pressure: Pressure::default(),
             is_initialised: false,
 
-            outflow_valve_controller: OutflowValveController::new(),
+            outflow_valve_controller: OutflowValveController::new(
+                Self::OFV_CONTROLLER_KP,
+                Self::OFV_CONTROLLER_KI,
+            ),
         }
     }
 
@@ -300,6 +322,7 @@ impl EmergencyPressurizationPartition {
     ) {
         self.update_ambient_conditions(context, adirs);
         self.cabin_pressure = cabin_simulation.cabin_pressure();
+        self.cabin_target_vertical_speed = cabin_target_vs;
         self.differential_pressure = self.differential_pressure_calculation();
         self.outflow_valve_controller.update(
             context,
@@ -352,6 +375,10 @@ impl EmergencyPressurizationPartition {
 
     fn cabin_pressure(&self) -> Pressure {
         self.cabin_pressure
+    }
+
+    fn cabin_target_vertical_speed(&self) -> Velocity {
+        self.cabin_target_vertical_speed
     }
 
     fn differential_pressure(&self) -> Pressure {

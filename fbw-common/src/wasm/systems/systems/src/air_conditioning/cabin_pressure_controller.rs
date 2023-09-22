@@ -75,6 +75,8 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
     const AMBIENT_CONDITIONS_FILTER_TIME_CONSTANT: Duration = Duration::from_millis(2000);
     // Altitude in ft equivalent to 0.1 PSI delta P at sea level
     const TARGET_LANDING_ALT_DIFF: f64 = 187.818;
+    const OFV_CONTROLLER_KP: f64 = 0.0001;
+    const OFV_CONTROLLER_KI: f64 = 6.5;
 
     pub fn new(context: &mut InitContext) -> Self {
         Self {
@@ -95,7 +97,10 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
             destination_qnh_id: context.get_identifier("DESTINATION_QNH".to_owned()),
 
             pressure_schedule_manager: Some(PressureScheduleManager::new()),
-            outflow_valve_controller: OutflowValveController::new(),
+            outflow_valve_controller: OutflowValveController::new(
+                Self::OFV_CONTROLLER_KP,
+                Self::OFV_CONTROLLER_KI,
+            ),
             exterior_pressure: LowPassFilter::new_with_init_value(
                 Self::AMBIENT_CONDITIONS_FILTER_TIME_CONSTANT,
                 Pressure::new::<hectopascal>(Self::P_0),
@@ -611,13 +616,13 @@ pub(super) struct OutflowValveController {
 }
 
 impl OutflowValveController {
-    pub(super) fn new() -> Self {
+    pub(super) fn new(kp: f64, ki: f64) -> Self {
         Self {
             //TODO: add ID for multiple OFV
             is_in_man_mode: false,
             open_allowed: true,
             should_open: true,
-            pid: PidController::new(0.0001, 6.5, 0., 0., 100., 0., 1.),
+            pid: PidController::new(kp, ki, 0., 0., 100., 0., 1.),
         }
     }
 
