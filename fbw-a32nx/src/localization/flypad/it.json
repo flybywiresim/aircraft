@@ -130,7 +130,7 @@
       "Completed": "Completato",
       "Defueling": "Svuotando",
       "EstimatedDuration": "Durata stimata (minuti)",
-      "EstimatedTime": "Estimated Time",
+      "EstimatedTime": "Tempo stimato",
       "LeftInnerTank": "Serbatoio Interno Sinistro",
       "LeftOuterTank": "Serbatoio Esterno Sinistro",
       "ReadyToStart": "Pronto per Iniziare",
@@ -158,7 +158,7 @@
       "EstimatedDurationUnit": "minuti",
       "GW": "GW",
       "GWCG": "GW CG",
-      "LoadingTime": "Loading Time",
+      "LoadingTime": "Tempo di caricamento",
       "Passengers": "Passeggeri",
       "Planned": "Pianificato",
       "TT": {
@@ -345,7 +345,7 @@
         "MinAltitude": "Altitudine Min.",
         "RemoveLast": "Rimuovi Ultimo",
         "Sync": "SYNC",
-        "Title": "Ground Speed",
+        "Title": "Velocità al suolo",
         "UnitKnots": "nodi",
         "UnitKt": "kt"
       },
@@ -642,7 +642,7 @@
     "Sep": "Set",
     "Sun": "Dom",
     "TT": {
-      "Brightness": "Click to change Brightness",
+      "Brightness": "Fare clic per modificare la luminosità",
       "ConnectedToLocalApi": "Connesso a SimBridge",
       "DisconnectedFromLocalApi": "Disconnesso da SimBridge",
       "QuickControls": "Clicca per aprire i Controlli Rapidi",
