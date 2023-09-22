@@ -13,11 +13,13 @@ import { isSimbriefDataLoaded } from '../../../Store/features/simBrief';
 
 interface PayloadProps {
     gsxMenuCurrentState: Number,
+    gsxPayloadSyncEnabled: boolean,
     setGsxMenuCurrentState: (state: number) => void,
     selectGsxMenuChoice: (choice: number) => void,
 }
 
 export const Payload: React.FC<PayloadProps> = ({
+    gsxPayloadSyncEnabled,
     gsxMenuCurrentState,
     setGsxMenuCurrentState,
     selectGsxMenuChoice,
@@ -76,6 +78,7 @@ export const Payload: React.FC<PayloadProps> = ({
                 gsxMenuCurrentState={gsxMenuCurrentState}
                 setGsxMenuCurrentState={setGsxMenuCurrentState}
                 selectGsxMenuChoice={selectGsxMenuChoice}
+                gsxPayloadSyncEnabled={gsxPayloadSyncEnabled}
             />
         );
     }

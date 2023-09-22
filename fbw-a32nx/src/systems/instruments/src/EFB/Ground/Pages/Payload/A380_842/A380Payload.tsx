@@ -663,7 +663,7 @@ export const A380Payload: React.FC<A380Props> = ({
                         )}
                         {gsxPayloadSyncEnabled === 1 && (
                             <div className="pt-6 pl-2">
-                                {t('Ground.Payload.GSXPayloadSyncEnabled')}
+                                {t('Ground.Payload.Gsx.PayloadSyncEnabled')}
                             </div>
                         )}
                     </div>

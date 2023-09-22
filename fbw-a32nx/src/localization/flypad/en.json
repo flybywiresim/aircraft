@@ -157,10 +157,12 @@
       "DeboardConfirmationConfirm": "Deboard",
       "DeboardConfirmationTitle": "Deboard all Passengers?",
       "EstimatedDurationUnit": "minutes",
-      "GSXPayloadSyncEnabled": "GSX Payload Sync Enabled",
-      "GsxCrewBoardConfirmationTitle": "Would you like to board crew?",
-      "GsxCrewBoardConfirm": "Yes",
-      "GsxCrewBoardCancel": "No",
+      "Gsx": {
+        "PayloadSyncEnabled": "GSX Payload Sync Enabled",
+        "CrewBoardConfirmationTitle": "Would you like to board crew?",
+        "CrewBoardConfirm": "Yes",
+        "CrewBoardCancel": "No"
+      },
       "GW": "GW",
       "GWCG": "GW CG",
       "LoadingTime": "Loading Time",
@@ -455,7 +457,16 @@
     "TugDirection": "Tug Direction",
     "TugInTransit": "Waiting for Tug/Pin",
     "TugSpeed": "Tug Speed",
-    "UseControllerInput": "Use Controller Input"
+    "UseControllerInput": "Use Controller Input",
+    "Gsx": {
+      "RequestPushback": "Request Pushback",
+      "NoseRight": "Nose Right/Tail Left",
+      "NoseLeft": "Nose Left/Tail Right",
+      "Straight": "Straight",
+      "ConfirmEngineStart": "Confirm Good Engine Start",
+      "AbortPushback": "Abort Pushback",
+      "StopPushback": "Stop Pushback"
+    }
   },
   "QuickControls": {
     "AlignAdirs": "Align ADIRS",
@@ -588,6 +599,7 @@
     "ThirdPartyOptions": {
       "GsxFuelEnabled": "GSX Fueling Synchronization",
       "GsxPayloadEnabled": "GSX Payload Synchronization",
+      "GsxPushbackEnabled": "GSX Pushback Enabled",
       "Title": "3rd Party Options"
     },
     "ThrottleConfig": {

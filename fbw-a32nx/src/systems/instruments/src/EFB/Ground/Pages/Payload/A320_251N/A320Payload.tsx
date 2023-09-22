@@ -1,7 +1,7 @@
 /* eslint-disable max-len */
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { CloudArrowDown } from 'react-bootstrap-icons';
-import { SeatFlags, Units, usePersistentNumberProperty, usePersistentProperty, useSeatFlags, useSimVar } from '@flybywiresim/fbw-sdk';
+import { SeatFlags, Units, usePersistentProperty, useSeatFlags, useSimVar } from '@flybywiresim/fbw-sdk';
 import { SeatOutlineBg } from 'instruments/src/EFB/Assets/SeatOutlineBg';
 import { BoardingInput, MiscParamsInput, PayloadInputTable } from '../PayloadElements';
 import { CargoWidget } from './CargoWidget';
@@ -35,6 +35,7 @@ interface A320Props {
     gsxMenuCurrentState: Number,
     setGsxMenuCurrentState: (state: number) => void,
     selectGsxMenuChoice: (choice: number) => void,
+    gsxPayloadSyncEnabled: boolean
 }
 export const A320Payload: React.FC<A320Props> = ({
     simbriefUnits,
@@ -53,6 +54,7 @@ export const A320Payload: React.FC<A320Props> = ({
     gsxMenuCurrentState,
     setGsxMenuCurrentState,
     selectGsxMenuChoice,
+    gsxPayloadSyncEnabled,
 }) => {
     const { showModal } = useModals();
 
@@ -133,8 +135,6 @@ export const A320Payload: React.FC<A320Props> = ({
     const [displayZfw, setDisplayZfw] = useState(true);
 
     // GSX
-    const [gsxPayloadSyncEnabled] = usePersistentNumberProperty('GSX_PAYLOAD_SYNC', 0);
-
     const [gsxBoardingState] = useSimVar('L:FSDT_GSX_BOARDING_STATE', 'Number', 227);
     const [gsxDeBoardingState] = useSimVar('L:FSDT_GSX_DEBOARDING_STATE', 'Number', 229);
 
@@ -256,7 +256,7 @@ export const A320Payload: React.FC<A320Props> = ({
     }, [emptyWeight, paxWeight, paxBagWeight, maxPax, maxCargo, gw, zfw]);
 
     const onClickCargo = useCallback((cargoStation, e) => {
-        if (gsxPayloadSyncEnabled === 1 && boardingStarted) {
+        if (gsxPayloadSyncEnabled && boardingStarted) {
             return;
         }
         const cargoPercent = Math.min(Math.max(0, e.nativeEvent.offsetX / cargoMap[cargoStation].progressBarWidth), 1);
@@ -264,7 +264,7 @@ export const A320Payload: React.FC<A320Props> = ({
     }, [cargoMap]);
 
     const onClickSeat = useCallback((stationIndex: number, seatId: number) => {
-        if (gsxPayloadSyncEnabled === 1 && boardingStarted) {
+        if (gsxPayloadSyncEnabled && boardingStarted) {
             return;
         }
 
@@ -301,25 +301,23 @@ export const A320Payload: React.FC<A320Props> = ({
         console.log(`GSX: Crew and Pilots isNotBoardingStatus: ${isNotBoarding}`);
         handleGsxCrewAndPilotsBoarding(isNotBoarding);
         if (gsxMenuCurrentState === GsxMenuStates.PREP) {
-            console.log('GSX: setting menus state from PREP to OPERATOR_SELECT');
-            setGsxMenuCurrentState(GsxMenuStates.OPERATOR_SELECT);
             console.log('GSX: Requesting Boarding.');
             selectGsxMenuChoice(GsxMenuPrepChoices.RQST_BOARD);
         }
     };
 
     const handleBoarding = () => {
-        if (gsxPayloadSyncEnabled !== 1) {
+        if (!gsxPayloadSyncEnabled) {
             console.log(`GSX Payload is disabled, setting boarding state to opposite of ${boardingStarted}`);
             setBoardingStarted(!boardingStarted);
             return;
         }
         showModal(
             <PromptModal
-                title={`${t('Ground.Payload.GsxCrewBoardConfirmationTitle')}`}
+                title={`${t('Ground.Payload.Gsx.CrewBoardConfirmationTitle')}`}
                 bodyText=""
-                confirmText={`${t('Ground.Payload.GsxCrewBoardConfirm')}`}
-                cancelText={`${t('Ground.Payload.GsxCrewBoardCancel')}`}
+                confirmText={`${t('Ground.Payload.Gsx.GsxCrewBoardConfirm')}`}
+                cancelText={`${t('Ground.Payload.Gsx.GsxCrewBoardCancel')}`}
                 onCancel={() => handleGsxBoardingConfirmation(true)}
                 onConfirm={() => handleGsxBoardingConfirmation(false)}
             />,
@@ -423,7 +421,7 @@ export const A320Payload: React.FC<A320Props> = ({
     }, [coldAndDark, boardingRate]);
 
     useEffect(() => {
-        if (gsxPayloadSyncEnabled === 1) {
+        if (gsxPayloadSyncEnabled) {
             switch (gsxBoardingState) {
             // If boarding has been requested, performed or completed
             case gsxStates.REQUESTED:
@@ -438,7 +436,7 @@ export const A320Payload: React.FC<A320Props> = ({
     }, [gsxBoardingState]);
 
     useEffect(() => {
-        if (gsxPayloadSyncEnabled === 1) {
+        if (gsxPayloadSyncEnabled) {
             switch (gsxDeBoardingState) {
             case gsxStates.REQUESTED:
                 // If Deboarding has been requested, set target pax to 0 for boarding backend
@@ -483,7 +481,7 @@ export const A320Payload: React.FC<A320Props> = ({
             );
         }
 
-        if (gsxPayloadSyncEnabled === 1) {
+        if (gsxPayloadSyncEnabled) {
             if (boardingStarted) {
                 setShowSimbriefButton(false);
                 return;
@@ -553,7 +551,7 @@ export const A320Payload: React.FC<A320Props> = ({
                                     loadsheet={Loadsheet}
                                     emptyWeight={emptyWeight}
                                     massUnitForDisplay={massUnitForDisplay}
-                                    gsxPayloadSyncEnabled={gsxPayloadSyncEnabled === 1}
+                                    gsxPayloadSyncEnabled={gsxPayloadSyncEnabled}
                                     displayZfw={displayZfw}
                                     boardingStarted={boardingStarted}
                                     totalPax={totalPax}
@@ -579,7 +577,7 @@ export const A320Payload: React.FC<A320Props> = ({
                                 <hr className="mb-4 border-gray-700" />
                                 <div className="flex flex-row justify-start items-center">
                                     <MiscParamsInput
-                                        disable={gsxPayloadSyncEnabled === 1 && boardingStarted}
+                                        disable={gsxPayloadSyncEnabled && boardingStarted}
                                         minPaxWeight={Math.round(Loadsheet.specs.pax.minPaxWeight)}
                                         maxPaxWeight={Math.round(Loadsheet.specs.pax.maxPaxWeight)}
                                         defaultPaxWeight={Math.round(Loadsheet.specs.pax.defaultPaxWeight)}
@@ -599,7 +597,7 @@ export const A320Payload: React.FC<A320Props> = ({
                                         totalCargo={totalCargo}
                                         handleBoarding={handleBoarding}
                                         handleDeboarding={handleDeboarding}
-                                        gsxPayloadSyncEnabled={(gsxPayloadSyncEnabled === 1)}
+                                        gsxPayloadSyncEnabled={gsxPayloadSyncEnabled}
                                     />
                                 </div>
                             </Card>
@@ -617,7 +615,7 @@ export const A320Payload: React.FC<A320Props> = ({
                                     </TooltipWrapper>
                                 )}
                         </div>
-                        {(gsxPayloadSyncEnabled !== 1) && (
+                        {(!gsxPayloadSyncEnabled) && (
                             <div className="flex flex-row mt-4">
                                 <Card className="w-full h-full" childrenContainerClassName="flex flex-col w-full h-full">
                                     <div className="flex flex-row justify-between items-center">
@@ -666,9 +664,9 @@ export const A320Payload: React.FC<A320Props> = ({
                                 </Card>
                             </div>
                         )}
-                        {gsxPayloadSyncEnabled === 1 && (
+                        {gsxPayloadSyncEnabled && (
                             <div className="pt-6 pl-2">
-                                {t('Ground.Payload.GSXPayloadSyncEnabled')}
+                                {t('Ground.Payload.Gsx.PayloadSyncEnabled')}
                             </div>
                         )}
                     </div>

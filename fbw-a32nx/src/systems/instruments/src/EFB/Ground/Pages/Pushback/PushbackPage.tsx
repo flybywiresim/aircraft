@@ -19,11 +19,11 @@ import {
 } from 'react-bootstrap-icons';
 import Slider from 'rc-slider';
 import { toast } from 'react-toastify';
-import { t } from '../../translation';
-import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
-import { PromptModal, useModals } from '../../UtilComponents/Modals/Modals';
+import { t } from '../../../translation';
+import { TooltipWrapper } from '../../../UtilComponents/TooltipWrapper';
+import { PromptModal, useModals } from '../../../UtilComponents/Modals/Modals';
 import { PushbackMap } from './PushbackMap';
-import { Toggle } from '../../UtilComponents/Form/Toggle';
+import { Toggle } from '../../../UtilComponents/Form/Toggle';
 
 export const PushbackPage = () => {
     const { showModal } = useModals();
