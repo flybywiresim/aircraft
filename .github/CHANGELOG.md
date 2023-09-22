@@ -53,6 +53,7 @@
 1. [FMS] Use station declination when appropriate for fix info and place/bearing radials - @tracernz (Mike)
 1. [MCDU] Fixed the FMGC annunciator light not illuminating - @tracernz (Mike)
 1. [COND] Add Air Conditioning systems failures - @mjuhe (Miquel Juhe)
+1. [EFB] Translations for the Italian language completed - @bitpredator - (Francesco)
 
 ## 0.10.0
 
