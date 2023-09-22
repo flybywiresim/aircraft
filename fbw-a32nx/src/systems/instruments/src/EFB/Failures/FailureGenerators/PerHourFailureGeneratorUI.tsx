@@ -9,7 +9,6 @@ const settingName = 'EFB_FAILURE_GENERATOR_SETTING_PERHOUR';
 const additionalSetting = [3, 1, 2, 0, 0.1];
 const numberOfSettingsPerGenerator = 5;
 const uniqueGenPrefix = 'C';
-const failureGeneratorArmed: boolean[] = [];
 const genName = 'PerHour';
 const alias = () => t('Failures.Generators.GenPerHour');
 const disableTakeOffRearm = false;
@@ -29,16 +28,11 @@ export const failureGenConfigPerHour: () => FailureGenData = () => {
         numberOfSettingsPerGenerator,
         uniqueGenPrefix,
         additionalSetting,
-        onErase,
-        failureGeneratorArmed,
         genName,
         alias,
         disableTakeOffRearm,
         generatorSettingComponents,
     };
-};
-
-const onErase = (_genID: number) => {
 };
 
 const daysPerMonth = 30.4368 * 24;

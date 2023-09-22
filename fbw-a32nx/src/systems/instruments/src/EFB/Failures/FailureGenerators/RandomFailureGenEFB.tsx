@@ -11,8 +11,8 @@ import { failureGenConfigTakeOff }
     from 'instruments/src/EFB/Failures/FailureGenerators/TakeOffFailureGeneratorUI';
 import { failureGenConfigTimer } from 'instruments/src/EFB/Failures/FailureGenerators/TimerFailureGeneratorUI';
 import { ModalContextInterface, useModals } from 'instruments/src/EFB/UtilComponents/Modals/Modals';
-import { deleteGeneratorFailures, selectAllFailures } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelectionUI';
-import { FailuresAtOnceIndex, MaxFailuresIndex } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
+import { selectAllFailures } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelectionUI';
+import { ArmingModeIndex, FailuresAtOnceIndex, MaxFailuresIndex } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
 import { useFailuresOrchestrator } from '../../failures-orchestrator-provider';
 
 export const failureGeneratorCommonFunction = () => {
@@ -28,12 +28,10 @@ export type FailureGenData = {
     numberOfSettingsPerGenerator: number,
     uniqueGenPrefix: string,
     additionalSetting: number[],
-    onErase: (genID: number) => void,
-    failureGeneratorArmed: boolean[],
     genName: string,
     generatorSettingComponents: (genNumber: number, generatorSettings: FailureGenData, failureGenContext: FailureGenContext) => JSX.Element[],
     alias: () => string,
-    disableTakeOffRearm: boolean
+disableTakeOffRearm: boolean
 }
 
 export type FailureGenContext = {
@@ -119,15 +117,27 @@ export const failureGeneratorsSettings: () => FailureGenContext = () => {
 
 export const failureGeneratorAdd = (generatorSettings: FailureGenData, failureGenContext: FailureGenContext) => {
     let genNumber: number;
-
-    if (generatorSettings.settings === undefined || generatorSettings.settings.length % generatorSettings.numberOfSettingsPerGenerator !== 0 || generatorSettings.settings.length === 0) {
-        generatorSettings.setSetting(flatten(generatorSettings.additionalSetting));
-        genNumber = 0;
-    } else {
-        generatorSettings.setSetting(flatten(generatorSettings.settings.concat(generatorSettings.additionalSetting)));
-        genNumber = Math.floor(generatorSettings.settings.length / generatorSettings.numberOfSettingsPerGenerator);
+    let didFindADisabledGen = false;
+    for (let i = 0; i < generatorSettings.settings.length / generatorSettings.numberOfSettingsPerGenerator; i++) {
+        if (generatorSettings.settings[i * generatorSettings.numberOfSettingsPerGenerator + ArmingModeIndex] === -1 && !didFindADisabledGen) {
+            for (let j = 0; j < generatorSettings.numberOfSettingsPerGenerator; j++) {
+                generatorSettings.settings[i * generatorSettings.numberOfSettingsPerGenerator + j] = generatorSettings.additionalSetting[j];
+            }
+            didFindADisabledGen = true;
+            genNumber = i;
+        }
     }
-
+    if (didFindADisabledGen === false) {
+        if (generatorSettings.settings === undefined || generatorSettings.settings.length % generatorSettings.numberOfSettingsPerGenerator !== 0 || generatorSettings.settings.length === 0) {
+            generatorSettings.setSetting(flatten(generatorSettings.additionalSetting));
+            genNumber = 0;
+        } else {
+            generatorSettings.setSetting(flatten(generatorSettings.settings.concat(generatorSettings.additionalSetting)));
+            genNumber = Math.floor(generatorSettings.settings.length / generatorSettings.numberOfSettingsPerGenerator);
+        }
+    } else {
+        generatorSettings.setSetting(flatten(generatorSettings.settings));
+    }
     const genID = `${generatorSettings.uniqueGenPrefix}${genNumber}`;
     selectAllFailures(failureGenContext, genID, true);
 };
@@ -143,7 +153,6 @@ export function setNewNumberOfFailureSetting(newSetting: number, generatorSettin
 export function setNewSettingAndResetArm(newSetting: number, generatorSettings: FailureGenData, genID: number, settingIndex: number) {
     const settings = generatorSettings.settings;
     settings[genID * generatorSettings.numberOfSettingsPerGenerator + settingIndex] = newSetting;
-    generatorSettings.failureGeneratorArmed[genID] = false;
     generatorSettings.setSetting(flatten(settings));
 }
 
@@ -154,14 +163,15 @@ export function setNewSetting(newSetting: number, generatorSettings: FailureGenD
 }
 
 export const eraseGenerator: (genID: number, generatorSettings: FailureGenData, failureGenContext: FailureGenContext) =>
-void = (genID: number, generatorSettings: FailureGenData, failureGenContext: FailureGenContext) => {
-    generatorSettings.settings.splice(genID * generatorSettings.numberOfSettingsPerGenerator, generatorSettings.numberOfSettingsPerGenerator);
-    generatorSettings.setSetting(flatten(generatorSettings.settings));
-    // arming
-    generatorSettings.failureGeneratorArmed.splice(genID * generatorSettings.numberOfSettingsPerGenerator, generatorSettings.numberOfSettingsPerGenerator);
-    generatorSettings.onErase(genID);
-
-    deleteGeneratorFailures(generatorSettings, failureGenContext, `${generatorSettings.uniqueGenPrefix}${genID}`);
+void = (genID: number, generatorSettings: FailureGenData, _failureGenContext: FailureGenContext) => {
+    const generatorNumber = generatorSettings.settings.length / generatorSettings.numberOfSettingsPerGenerator;
+    if (genID === generatorNumber - 1) {
+        generatorSettings.settings.splice(genID * generatorSettings.numberOfSettingsPerGenerator, generatorSettings.numberOfSettingsPerGenerator);
+        generatorSettings.setSetting(flatten(generatorSettings.settings));
+    } else {
+        generatorSettings.settings[genID * generatorSettings.numberOfSettingsPerGenerator + ArmingModeIndex] = -1;
+        generatorSettings.setSetting(flatten(generatorSettings.settings));
+    }
 };
 
 export const allGeneratorFailures = (allFailures: readonly Readonly<Failure>[]) => {

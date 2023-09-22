@@ -9,9 +9,6 @@ const settingName = 'EFB_FAILURE_GENERATOR_SETTING_TAKEOFF';
 const numberOfSettingsPerGenerator = 11;
 const uniqueGenPrefix = 'E';
 const additionalSetting = [3, 1, 2, 0, 1, 0.33, 0.33, 30, 95, 140, 40];
-const failureGeneratorArmed: boolean[] = [];
-const failureTakeOffSpeedThreshold: number[] = [];
-const failureTakeOffAltitudeThreshold: number[] = [];
 const genName = 'TakeOff';
 const alias = () => t('Failures.Generators.GenTakeOff');
 const disableTakeOffRearm = true;
@@ -37,18 +34,11 @@ export const failureGenConfigTakeOff: () => FailureGenData = () => {
         numberOfSettingsPerGenerator,
         uniqueGenPrefix,
         additionalSetting,
-        onErase,
-        failureGeneratorArmed,
         genName,
         generatorSettingComponents,
         alias,
         disableTakeOffRearm,
     };
-};
-
-const onErase = (genID: number) => {
-    failureTakeOffSpeedThreshold.splice(genID, 1);
-    failureTakeOffAltitudeThreshold.splice(genID, 1);
 };
 
 const generatorSettingComponents = (genNumber: number, generatorSettings: FailureGenData, failureGenContext: FailureGenContext) => {

@@ -12,11 +12,9 @@ const settingName = 'EFB_FAILURE_GENERATOR_SETTING_ALTITUDE';
 const additionalSetting = [2, 1, 2, 0, 0, 80, 250];
 const numberOfSettingsPerGenerator = 7;
 const uniqueGenPrefix = 'A';
-const failureGeneratorArmed: boolean[] = [];
 const genName = 'Altitude';
 const alias = () => t('Failures.Generators.GenAlt');
 const disableTakeOffRearm = false;
-const rolledDice: number[] = [];
 
 const AltitudeConditionIndex = 4;
 const AltitudeMinIndex = 5;
@@ -35,17 +33,11 @@ export const failureGenConfigAltitude: () => FailureGenData = () => {
         numberOfSettingsPerGenerator,
         uniqueGenPrefix,
         additionalSetting,
-        onErase,
-        failureGeneratorArmed,
         genName,
         alias,
         disableTakeOffRearm,
         generatorSettingComponents,
     };
-};
-
-const onErase = (genNumber: number) => {
-    rolledDice.splice(genNumber, 1);
 };
 
 const generatorSettingComponents = (genNumber: number, generatorSettings: FailureGenData, failureGenContext: FailureGenContext) => {

@@ -88,7 +88,9 @@ export const generatorsCardList: (settings: FailureGenContext)
     for (const [, generatorSetting] of settings.allGenSettings) {
         const nbGenerator = Math.floor(generatorSetting.settings.length / generatorSetting.numberOfSettingsPerGenerator);
         for (let i = 0; i < nbGenerator; i++) {
-            temp.push(FailureGeneratorCardTemplateUI(i, generatorSetting, settings));
+            if (generatorSetting.settings[i * generatorSetting.numberOfSettingsPerGenerator + ArmingModeIndex] !== -1) {
+                temp.push(FailureGeneratorCardTemplateUI(i, generatorSetting, settings));
+            }
         }
     }
     return temp;

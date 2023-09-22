@@ -8,12 +8,9 @@ const settingName = 'EFB_FAILURE_GENERATOR_SETTING_TIMER';
 const additionalSetting = [2, 1, 2, 0, 300, 600];
 const numberOfSettingsPerGenerator = 6;
 const uniqueGenPrefix = 'D';
-const failureGeneratorArmed: boolean[] = [];
-const failureStartTime: number[] = [];
 const genName = 'Timer';
 const alias = () => t('Failures.Generators.GenTimer');
 const disableTakeOffRearm = false;
-const rolledDice: number[] = [];
 
 const DelayMinIndex = 4;
 const DelayMaxIndex = 5;
@@ -31,18 +28,11 @@ export const failureGenConfigTimer: () => FailureGenData = () => {
         numberOfSettingsPerGenerator,
         uniqueGenPrefix,
         additionalSetting,
-        onErase,
-        failureGeneratorArmed,
         genName,
         generatorSettingComponents,
         alias,
         disableTakeOffRearm,
     };
-};
-
-const onErase = (genNumber: number) => {
-    failureStartTime.splice(genNumber, 1);
-    rolledDice.splice(genNumber, 1);
 };
 
 const generatorSettingComponents = (genNumber: number, generatorSettings: FailureGenData, failureGenContext: FailureGenContext) => {
