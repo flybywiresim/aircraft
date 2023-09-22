@@ -24,6 +24,7 @@ use reversers::reversers;
 use rudder::rudder;
 use spoilers::spoilers;
 use std::error::Error;
+use systems::air_conditioning::{acs_controller::AcscId, Channel, ZoneType};
 use systems::failures::FailureType;
 use systems::shared::{
     AirbusElectricPumpId, AirbusEngineDrivenPumpId, ElectricalBusType, GearActuatorId,
@@ -62,6 +63,33 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .with_auxiliary_power_unit(Variable::named("OVHD_APU_START_PB_IS_AVAILABLE"), 8, 7)?
     .with_engines(2)?
     .with_failures(vec![
+        (
+            21_000,
+            FailureType::Acsc(AcscId::Acsc1(Channel::ChannelOne)),
+        ),
+        (
+            21_001,
+            FailureType::Acsc(AcscId::Acsc1(Channel::ChannelTwo)),
+        ),
+        (
+            21_002,
+            FailureType::Acsc(AcscId::Acsc2(Channel::ChannelOne)),
+        ),
+        (
+            21_003,
+            FailureType::Acsc(AcscId::Acsc2(Channel::ChannelTwo)),
+        ),
+        (21_004, FailureType::HotAir(1)),
+        (21_005, FailureType::TrimAirHighPressure),
+        (21_006, FailureType::TrimAirFault(ZoneType::Cockpit)),
+        (21_007, FailureType::TrimAirFault(ZoneType::Cabin(1))),
+        (21_008, FailureType::TrimAirFault(ZoneType::Cabin(2))),
+        (21_009, FailureType::TrimAirOverheat(ZoneType::Cockpit)),
+        (21_010, FailureType::TrimAirOverheat(ZoneType::Cabin(1))),
+        (21_011, FailureType::TrimAirOverheat(ZoneType::Cabin(2))),
+        (21_012, FailureType::CabinFan(1)),
+        (21_013, FailureType::CabinFan(2)),
+        (21_014, FailureType::GalleyFans),
         (24_000, FailureType::TransformerRectifier(1)),
         (24_001, FailureType::TransformerRectifier(2)),
         (24_002, FailureType::TransformerRectifier(3)),
