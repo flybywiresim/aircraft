@@ -626,8 +626,10 @@ export const A380Services: React.FC = () => {
 
             </ServiceButtonWrapper>
 
+            {/* TODO FIXME: Redesign chocks and security cones UI */}
             {/* Wheel Chocks and Security Cones are only visual information. To reuse styling */}
             {/* the ServiceButtonWrapper has been re-used. */}
+            {/*
             <ServiceButtonWrapper xr={800} y={600} className="border-0 divide-y-0">
                 {!!wheelChocksEnabled && (
                     <div className={`flex flex-row items-center space-x-6 py-6 px-6 cursor-pointer ${(wheelChocksVisible) ? 'text-green-500' : 'text-gray-500'}`}>
@@ -651,6 +653,7 @@ export const A380Services: React.FC = () => {
                     </div>
                 )}
             </ServiceButtonWrapper>
+            */}
 
             {/* Visual indications for tug and doors */}
             {!!pushBackAttached && (
