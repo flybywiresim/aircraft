@@ -1,5 +1,6 @@
 import { Failure, FailuresOrchestrator } from '@failures';
 import { NXDataStore } from '@flybywiresim/fbw-sdk';
+import { GenericGenerator } from 'failures/src/GenericGenerator';
 import { FailureGeneratorAltitude } from './AltitudeFailureGenerator';
 import { FailureGeneratorPerHour } from './PerHourFailureGenerator';
 import { FailureGeneratorSpeed } from './SpeedFailureGenerator';
@@ -18,12 +19,12 @@ export enum FailurePhases {
     Flight,
 }
 export class RandomFailureGen {
-    static failureGeneratorsUpdaters: ((failureOrchestrator: FailuresOrchestrator) => void)[] = [
-        FailureGeneratorAltitude.updateFailure,
-        FailureGeneratorSpeed.updateFailure,
-        FailureGeneratorPerHour.updateFailure,
-        FailureGeneratorTimer.updateFailure,
-        FailureGeneratorTakeOff.updateFailure,
+    static failureGenerators: GenericGenerator[] = [
+        new FailureGeneratorAltitude(),
+        new FailureGeneratorSpeed(),
+        new FailureGeneratorTimer(),
+        new FailureGeneratorPerHour(),
+        new FailureGeneratorTakeOff(),
     ];
 
     static absoluteTimePrev: number = Date.now();
@@ -90,8 +91,8 @@ export class RandomFailureGen {
         const absoluteTime = Date.now();
         if (absoluteTime - RandomFailureGen.absoluteTimePrev >= 100.0) {
             RandomFailureGen.basicDataUpdate();
-            for (let i = 0; i < RandomFailureGen.failureGeneratorsUpdaters.length; i++) {
-                RandomFailureGen.failureGeneratorsUpdaters[i](failureOrchestrator);
+            for (let i = 0; i < RandomFailureGen.failureGenerators.length; i++) {
+                RandomFailureGen.failureGenerators[i].updateFailure(failureOrchestrator);
             }
             RandomFailureGen.absoluteTimePrev = absoluteTime;
         }

@@ -1,151 +1,67 @@
-import { NXDataStore } from '@flybywiresim/fbw-sdk';
+import { GenericGenerator } from 'failures/src/GenericGenerator';
+import { ReadyDisplayIndex } from './RandomFailureGen';
 
-import { ArmingModeIndex, FailurePhases, FailuresAtOnceIndex, MaxFailuresIndex, RandomFailureGen, ReadyDisplayIndex } from './RandomFailureGen';
-import { FailuresOrchestrator } from './failures-orchestrator';
+export class FailureGeneratorSpeed extends GenericGenerator {
+    settingName = 'EFB_FAILURE_GENERATOR_SETTING_SPEED';
 
-export class FailureGeneratorSpeed {
-    private static settingName = 'EFB_FAILURE_GENERATOR_SETTING_SPEED';
+    numberOfSettingsPerGenerator = 7;
 
-    private static numberOfSettingsPerGenerator = 7;
+    uniqueGenPrefix = 'B';
 
-    private static uniqueGenPrefix = 'B';
+    private rolledDice: number[] = [];
 
-    private static failureGeneratorArmed: boolean[] = [];
+    private previousSpeedCondition: number[] = [];
 
-    private static waitForSpeedReset: boolean[] = [];
+    private speedConditionIndex = 4;
 
-    private static waitForTakeOff: boolean[] = [];
+    private speedMinIndex = 5;
 
-    private static waitForStopped: boolean[] = [];
+    private speedMaxIndex = 6;
 
-    private static rolledDice: number[] = [];
+    private resetMargin = 5;
 
-    private static previousSpeedCondition: number[] = [];
+    additionalInitActions(genNumber: number): void {
+        this.previousSpeedCondition[genNumber] = this.newSettings[genNumber * this.numberOfSettingsPerGenerator
+                + this.speedConditionIndex];
+    }
 
-    private static previousArmingMode: number[] = [];
+    generatorSpecificActions(genNumber: number): void {
+        console.info(`${this.failureGeneratorArmed[genNumber] ? 'Armed' : 'NotArmed'} - ${
+            this.settings[genNumber * this.numberOfSettingsPerGenerator + ReadyDisplayIndex].toString()} - waitstop: ${
+            this.waitForStopped[genNumber]} - waittakeoff: ${
+            this.waitForTakeOff[genNumber]} - altOK: ${
+            this.conditionToArm(genNumber)}`);
+        const speedCondition = this.settings[genNumber * this.numberOfSettingsPerGenerator + this.speedConditionIndex];
 
-    private static previousNbGenerator: number=0;
-
-    private static speedConditionIndex = 4;
-
-    private static speedMinIndex = 5;
-
-    private static speedMaxIndex = 6;
-
-    private static resetMargin = 5;
-
-    static updateFailure(failureOrchestrator: FailuresOrchestrator): void {
-        const failureGeneratorSetting = NXDataStore.get(FailureGeneratorSpeed.settingName, '');
-        const settings: number[] = failureGeneratorSetting.split(',').map(((it) => parseFloat(it)));
-        const nbGenerator = Math.floor(settings.length / FailureGeneratorSpeed.numberOfSettingsPerGenerator);
-        let tempSettings: number[] = Array.from(settings);
-        const gs = Simplane.getGroundSpeed();
-
-        let change = false;
-
-        if (tempSettings === undefined || tempSettings.length % FailureGeneratorSpeed.numberOfSettingsPerGenerator !== 0) {
-            tempSettings = [];
-            change = true;
+        if (this.previousSpeedCondition[genNumber] !== speedCondition) {
+            this.disarm(genNumber);
         }
+    }
 
-        for (let i = FailureGeneratorSpeed.previousNbGenerator; i < nbGenerator; i++) {
-            FailureGeneratorSpeed.failureGeneratorArmed[i] = false;
-            tempSettings[i * FailureGeneratorSpeed.numberOfSettingsPerGenerator + ReadyDisplayIndex] = 0;
-            FailureGeneratorSpeed.previousSpeedCondition[i] = tempSettings[i * FailureGeneratorSpeed.numberOfSettingsPerGenerator
-                    + FailureGeneratorSpeed.speedConditionIndex];
-            FailureGeneratorSpeed.previousArmingMode[i] = tempSettings[i * FailureGeneratorSpeed.numberOfSettingsPerGenerator
-                        + ArmingModeIndex];
-            FailureGeneratorSpeed.waitForSpeedReset[i] = true;
-            FailureGeneratorSpeed.waitForTakeOff[i] = true;
-            FailureGeneratorSpeed.waitForStopped[i] = true;
-            change = true;
-        }
+    conditionToTriggerFailure(genNumber: number): boolean {
+        const speedMax = this.settings[genNumber * this.numberOfSettingsPerGenerator + this.speedMaxIndex];
+        const speedMin = this.settings[genNumber * this.numberOfSettingsPerGenerator + this.speedMinIndex];
+        const speedCondition = this.settings[genNumber * this.numberOfSettingsPerGenerator + this.speedConditionIndex];
+        const failureAltitude = (speedMin + this.rolledDice[genNumber] * (speedMax - speedMin));
 
-        for (let i = 0; i < nbGenerator; i++) {
-            if (settings[i * FailureGeneratorSpeed.numberOfSettingsPerGenerator + ArmingModeIndex] >= 0) {
-                const speedMax = settings[i * FailureGeneratorSpeed.numberOfSettingsPerGenerator + FailureGeneratorSpeed.speedMaxIndex];
-                const speedMin = settings[i * FailureGeneratorSpeed.numberOfSettingsPerGenerator + FailureGeneratorSpeed.speedMinIndex];
-                const speedCondition = settings[i * FailureGeneratorSpeed.numberOfSettingsPerGenerator + FailureGeneratorSpeed.speedConditionIndex];
+        return ((this.gs > failureAltitude && speedCondition === 0)
+        || (this.gs < failureAltitude && speedCondition === 1));
+    }
 
-                if (FailureGeneratorSpeed.previousSpeedCondition[i] !== speedCondition) {
-                    FailureGeneratorSpeed.waitForSpeedReset[i] = true;
-                    FailureGeneratorSpeed.failureGeneratorArmed[i] = false;
-                    tempSettings[i * FailureGeneratorSpeed.numberOfSettingsPerGenerator + ReadyDisplayIndex] = 0;
-                    change = true;
-                }
+    conditionToArm(genNumber: number): boolean {
+        const speedMax = this.settings[genNumber * this.numberOfSettingsPerGenerator + this.speedMaxIndex];
+        const speedMin = this.settings[genNumber * this.numberOfSettingsPerGenerator + this.speedMinIndex];
+        const speedCondition = this.settings[genNumber * this.numberOfSettingsPerGenerator + this.speedConditionIndex];
+        return ((this.gs < speedMin - this.resetMargin && speedCondition === 0)
+        || (this.gs > speedMax + this.resetMargin && speedCondition === 1));
+    }
 
-                if (FailureGeneratorSpeed.previousArmingMode[i] !== tempSettings[i * FailureGeneratorSpeed.numberOfSettingsPerGenerator
-                + ArmingModeIndex]) {
-                    FailureGeneratorSpeed.waitForTakeOff[i] = true;
-                    FailureGeneratorSpeed.waitForStopped[i] = true;
-                    FailureGeneratorSpeed.failureGeneratorArmed[i] = false;
-                    tempSettings[i * FailureGeneratorSpeed.numberOfSettingsPerGenerator + ReadyDisplayIndex] = 0;
-                    change = true;
-                }
+    additionalArmingActions(genNumber: number): void {
+        this.rolledDice[genNumber] = Math.random();
+    }
 
-                if (FailureGeneratorSpeed.waitForSpeedReset[i]
-                && ((gs < speedMin - FailureGeneratorSpeed.resetMargin && speedCondition === 0)
-                || (gs > speedMax + FailureGeneratorSpeed.resetMargin && speedCondition === 1))) {
-                    FailureGeneratorSpeed.waitForSpeedReset[i] = false;
-                }
-
-                if (FailureGeneratorSpeed.waitForStopped[i] && gs < 1) {
-                    FailureGeneratorSpeed.waitForStopped[i] = false;
-                }
-
-                if (FailureGeneratorSpeed.waitForTakeOff[i] && !FailureGeneratorSpeed.waitForStopped[i]
-            && RandomFailureGen.getFailureFlightPhase() === FailurePhases.TakeOff) {
-                    FailureGeneratorSpeed.waitForTakeOff[i] = false;
-                }
-
-                if (FailureGeneratorSpeed.failureGeneratorArmed[i]) {
-                    const failureSpeed = (speedMin + FailureGeneratorSpeed.rolledDice[i] * (speedMax - speedMin));
-                    if ((gs > failureSpeed && speedCondition === 0)
-                        || (gs < failureSpeed && speedCondition === 1)
-                    ) {
-                        const activeFailures = failureOrchestrator.getActiveFailures();
-                        const numberOfFailureToActivate = Math.min(settings[i * FailureGeneratorSpeed.numberOfSettingsPerGenerator + FailuresAtOnceIndex],
-                            settings[i * FailureGeneratorSpeed.numberOfSettingsPerGenerator + MaxFailuresIndex] - activeFailures.size);
-                        if (numberOfFailureToActivate > 0) {
-                            RandomFailureGen.activateRandomFailure(RandomFailureGen.getGeneratorFailurePool(failureOrchestrator, FailureGeneratorSpeed.uniqueGenPrefix + i.toString()),
-                                failureOrchestrator, activeFailures, numberOfFailureToActivate);
-                            FailureGeneratorSpeed.failureGeneratorArmed[i] = false;
-                            tempSettings[i * FailureGeneratorSpeed.numberOfSettingsPerGenerator + ReadyDisplayIndex] = 0;
-                            FailureGeneratorSpeed.waitForSpeedReset[i] = true;
-                            FailureGeneratorSpeed.waitForTakeOff[i] = true;
-                            FailureGeneratorSpeed.waitForStopped[i] = true;
-                            change = true;
-                            if (tempSettings[i * FailureGeneratorSpeed.numberOfSettingsPerGenerator + ArmingModeIndex] === 1) {
-                                tempSettings[i * FailureGeneratorSpeed.numberOfSettingsPerGenerator + ArmingModeIndex] = 0;
-                            }
-                        }
-                    }
-                }
-
-                if (!FailureGeneratorSpeed.failureGeneratorArmed[i]
-                    && !FailureGeneratorSpeed.waitForSpeedReset[i]
-                    && (settings[i * FailureGeneratorSpeed.numberOfSettingsPerGenerator + ArmingModeIndex] === 1
-                    || (settings[i * FailureGeneratorSpeed.numberOfSettingsPerGenerator + ArmingModeIndex] === 2 && !FailureGeneratorSpeed.waitForTakeOff[i])
-                    || settings[i * FailureGeneratorSpeed.numberOfSettingsPerGenerator + ArmingModeIndex] === 3)) {
-                    FailureGeneratorSpeed.failureGeneratorArmed[i] = true;
-                    tempSettings[i * FailureGeneratorSpeed.numberOfSettingsPerGenerator + ReadyDisplayIndex] = 1;
-                    change = true;
-                    FailureGeneratorSpeed.rolledDice[i] = Math.random();
-                } else if (settings[i * FailureGeneratorSpeed.numberOfSettingsPerGenerator + ArmingModeIndex] === 0) {
-                    FailureGeneratorSpeed.failureGeneratorArmed[i] = false;
-                    tempSettings[i * FailureGeneratorSpeed.numberOfSettingsPerGenerator + ReadyDisplayIndex] = 0;
-                    FailureGeneratorSpeed.waitForSpeedReset[i] = true;
-                    FailureGeneratorSpeed.waitForTakeOff[i] = true;
-                    FailureGeneratorSpeed.waitForStopped[i] = true;
-                    change = true;
-                }
-                FailureGeneratorSpeed.previousSpeedCondition[i] = speedCondition;
-                FailureGeneratorSpeed.previousArmingMode[i] = settings[i * FailureGeneratorSpeed.numberOfSettingsPerGenerator + ArmingModeIndex];
-            }
-        }
-        FailureGeneratorSpeed.previousNbGenerator = nbGenerator;
-        if (change) {
-            NXDataStore.set(FailureGeneratorSpeed.settingName, RandomFailureGen.flatten(tempSettings));
-        }
+    additionalGenEndActions(genNumber: number): void {
+        this.previousSpeedCondition[genNumber] = this.newSettings[genNumber * this.numberOfSettingsPerGenerator
+            + this.speedConditionIndex];
     }
 }
