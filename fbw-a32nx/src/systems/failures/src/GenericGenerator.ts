@@ -9,11 +9,6 @@ import { NXDataStore } from '@flybywiresim/fbw-sdk';
 import { ArmingModeIndex, FailurePhases, FailuresAtOnceIndex, MaxFailuresIndex, RandomFailureGen } from './RandomFailureGen';
 import { FailuresOrchestrator } from './failures-orchestrator';
 
-export interface FailureGenFeedbackEvent {
-    expectedMode: number[];
-    armingDisplayStatus: boolean[];
-  }
-
 export abstract class GenericGenerator {
     settingName: string= 'EFB_FAILURE_GENERATOR_SETTING_[GENERATORNAMEHERE]';
 
@@ -31,9 +26,11 @@ export abstract class GenericGenerator {
 
     previousNbGenerator: number = 0;
 
-    gs: number = 0;
+    previousArmedState: boolean[] = [];
 
-    feedbackChange: boolean = false;
+    previousRequestedMode: number[] = [];
+
+    gs: number = 0;
 
     settings: number[] = [];
 
@@ -44,14 +41,12 @@ export abstract class GenericGenerator {
 
     arm(genNumber: number): void {
         this.failureGeneratorArmed[genNumber] = true;
-        this.feedbackChange = true;
-        console.info('ARMED');
+        // console.info('ARMED');
     }
 
     disarm(genNumber: number): void {
         this.failureGeneratorArmed[genNumber] = false;
-        this.feedbackChange = true;
-        console.info('DISARMED');
+        // console.info('DISARMED');
     }
 
     reset(genNumber: number): void {
@@ -96,8 +91,12 @@ export abstract class GenericGenerator {
         //
     }
 
-    sendFeedback(): void {
-        // console.info('Lala');
+    sendFeedbackModeRequest(): void {
+        //
+    }
+
+    sendFeedbackArmedDisplay(): void {
+        //
     }
 
     updateFailure(failureOrchestrator: FailuresOrchestrator): void {
@@ -107,30 +106,26 @@ export abstract class GenericGenerator {
         this.gs = Simplane.getGroundSpeed();
         this.loopStartAction();
 
-        this.feedbackChange = false;
-
+        // console.info(failureGeneratorSetting);
         if (this.requestedMode === undefined) {
             this.requestedMode = [];
-            this.feedbackChange = true;
-            console.info('DECLARE');
+            // console.info('DECLARE');
         }
 
         for (let i = this.previousNbGenerator; i < nbGenerator; i++) {
             this.reset(i);
             this.additionalGenInitActions(i);
             this.requestedMode[i] = -1;
-            this.feedbackChange = true;
-            console.info('INIT');
+            // console.info('INIT');
         }
         for (let i = 0; i < nbGenerator; i++) {
             if (this.requestedMode[i] === 0 && this.settings[i * this.numberOfSettingsPerGenerator + ArmingModeIndex] <= 0) {
                 this.requestedMode[i] = -1;
-                this.feedbackChange = true;
-                console.info('REQUEST RESET');
+                // console.info('REQUEST RESET');
             }
             if (this.settings[i * this.numberOfSettingsPerGenerator + ArmingModeIndex] >= 0) {
                 if (this.previousArmingMode[i] !== this.settings[i * this.numberOfSettingsPerGenerator + ArmingModeIndex]) {
-                    console.info('RESETTING - ArmingModeChanged');
+                    // console.info('RESETTING - ArmingModeChanged');
                     this.reset(i);
                 }
                 if (this.waitForStopped[i] && this.gs < 1) {
@@ -144,11 +139,11 @@ export abstract class GenericGenerator {
                     if (this.settings[i * this.numberOfSettingsPerGenerator + ArmingModeIndex] === 2 && this.gs < 1) {
                         this.reset(i);
                     } else if (this.conditionToTriggerFailure(i)) {
-                        console.info('FAILURE');
                         const activeFailures = failureOrchestrator.getActiveFailures();
                         const numberOfFailureToActivate = Math.min(this.settings[i * this.numberOfSettingsPerGenerator + FailuresAtOnceIndex],
                             this.settings[i * this.numberOfSettingsPerGenerator + MaxFailuresIndex] - activeFailures.size);
                         if (numberOfFailureToActivate > 0) {
+                            // console.info('FAILURE');
                             this.randomFailuresGen.activateRandomFailure(this.randomFailuresGen.getGeneratorFailurePool(failureOrchestrator, this.uniqueGenPrefix + i.toString()),
                                 failureOrchestrator, activeFailures, numberOfFailureToActivate);
                             this.reset(i);
@@ -164,13 +159,13 @@ export abstract class GenericGenerator {
                 || (this.settings[i * this.numberOfSettingsPerGenerator + ArmingModeIndex] === 2
                     && !this.waitForTakeOff[i])
                 || this.settings[i * this.numberOfSettingsPerGenerator + ArmingModeIndex] === 3) && this.conditionToArm(i)) {
-                        console.info('ARMING');
+                        // console.info('ARMING');
                         this.arm(i);
                         this.additionalArmingActions(i);
                     }
                 } else
                 if (this.settings[i * this.numberOfSettingsPerGenerator + ArmingModeIndex] === 0) {
-                    console.info('RESETTING - Generator is OFF');
+                    // console.info('RESETTING - Generator is OFF');
                     this.reset(i);
                 }
             } else if (this.failureGeneratorArmed[i] || this.requestedMode[i] === 0) {
@@ -181,9 +176,27 @@ export abstract class GenericGenerator {
             this.additionalGenEndActions(i);
         }
         this.previousNbGenerator = nbGenerator;
-        if (this.feedbackChange) {
-            this.sendFeedback();
+        let feedbackChange: boolean = false;
+        for (let i = 0; i < nbGenerator; i++) {
+            if (this.previousArmedState[i] !== this.failureGeneratorArmed[i]) {
+                feedbackChange = true;
+            }
         }
+        if (feedbackChange) {
+            this.sendFeedbackArmedDisplay();
+        }
+        feedbackChange = false;
+        for (let i = 0; i < nbGenerator; i++) {
+            if (this.previousRequestedMode[i] !== this.requestedMode[i] && this.requestedMode[i] >= 0) {
+                feedbackChange = true;
+            }
+        }
+        if (feedbackChange) {
+            this.sendFeedbackModeRequest();
+        }
+        this.previousArmedState = Array.from(this.failureGeneratorArmed);
+        this.previousRequestedMode = Array.from(this.requestedMode);
+        this.previousNbGenerator = nbGenerator;
         this.loopEndAction();
     }
 }

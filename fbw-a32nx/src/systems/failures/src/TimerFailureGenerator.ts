@@ -2,10 +2,18 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { FailureGenFeedbackEvent, GenericGenerator } from 'failures/src/GenericGenerator';
+import { GenericGenerator } from 'failures/src/GenericGenerator';
 
-export interface FailureGenTimerFeedbackEvent extends FailureGenFeedbackEvent {
+export interface FailureGenFeedbackEvent {
+    expectedModeTimer: number[];
+    armingDisplayStatusTimer: boolean[];
+  }
 
+// this interface is a placeHolder for when the bus will be used for comm from UI to the system
+export interface FailureGenEvent {
+    armingMode: number[];
+    failuresAtOnce : number[];
+    maxFailures : number[];
   }
 
 export class FailureGeneratorTimer extends GenericGenerator {
@@ -25,21 +33,26 @@ export class FailureGeneratorTimer extends GenericGenerator {
 
     private currentTime: number = 0;
 
-    sendFeedback(): void {
-        this.bus.getPublisher<FailureGenTimerFeedbackEvent>().pub('expectedMode', this.requestedMode, true);
-        this.bus.getPublisher<FailureGenTimerFeedbackEvent>().pub('armingDisplayStatus', this.failureGeneratorArmed, true);
+    sendFeedbackModeRequest(): void {
+        this.bus.getPublisher<FailureGenFeedbackEvent>().pub('expectedModeTimer', this.requestedMode, true);
+        // console.info(`ModeRequest sent - size: ${this.requestedMode.length.toString()}}`);
+    }
+
+    sendFeedbackArmedDisplay(): void {
+        this.bus.getPublisher<FailureGenFeedbackEvent>().pub('armingDisplayStatusTimer', this.failureGeneratorArmed, true);
+        // console.info(`ArmedDisplay sent - size: ${this.failureGeneratorArmed.length.toString()}`);
     }
 
     loopStartAction(): void {
         this.currentTime = Date.now();
     }
 
-    generatorSpecificActions(genNumber: number): void {
+    /* generatorSpecificActions(genNumber: number): void {
         console.info(`${this.failureGeneratorArmed[genNumber] ? 'Armed' : 'NotArmed'} - ${
             this.requestedMode[genNumber].toString()} - waitstop: ${
             this.waitForStopped[genNumber]} - waittakeoff: ${
             this.waitForTakeOff[genNumber]}`);
-    }
+    } */
 
     conditionToTriggerFailure(genNumber: number): boolean {
         const timerMax = this.settings[genNumber * this.numberOfSettingsPerGenerator + this.delayMaxIndex] * 1000;

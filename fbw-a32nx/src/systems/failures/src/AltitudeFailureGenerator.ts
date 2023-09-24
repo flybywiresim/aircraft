@@ -2,10 +2,11 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { FailureGenFeedbackEvent, GenericGenerator } from 'failures/src/GenericGenerator';
+import { GenericGenerator } from 'failures/src/GenericGenerator';
 
-export interface FailureGenAltitudeFeedbackEvent extends FailureGenFeedbackEvent{
-
+export interface FailureGenFeedbackEvent {
+    expectedModeAltitude: number[];
+    armingDisplayStatusAltitude: boolean[];
   }
 
 export class FailureGeneratorAltitude extends GenericGenerator {
@@ -29,10 +30,14 @@ export class FailureGeneratorAltitude extends GenericGenerator {
 
     private altitude: number;
 
-    sendFeedback(): void {
-        this.bus.getPublisher<FailureGenAltitudeFeedbackEvent>().pub('expectedMode', this.requestedMode, true);
-        this.bus.getPublisher<FailureGenAltitudeFeedbackEvent>().pub('armingDisplayStatus', this.failureGeneratorArmed, true);
-        console.info(`Feedbacks sizes: ${this.requestedMode.length.toString()} ${this.failureGeneratorArmed.length.toString()}`);
+    sendFeedbackModeRequest(): void {
+        this.bus.getPublisher<FailureGenFeedbackEvent>().pub('expectedModeAltitude', this.requestedMode, true);
+        // console.info(`ModeRequest sent - size: ${this.requestedMode.length.toString()}}`);
+    }
+
+    sendFeedbackArmedDisplay(): void {
+        this.bus.getPublisher<FailureGenFeedbackEvent>().pub('armingDisplayStatusAltitude', this.failureGeneratorArmed, true);
+        // console.info(`ArmedDisplay sent - size: ${this.failureGeneratorArmed.length.toString()}`);
     }
 
     loopStartAction(): void {
@@ -45,11 +50,12 @@ export class FailureGeneratorAltitude extends GenericGenerator {
     }
 
     generatorSpecificActions(genNumber: number): void {
+        /*
         console.info(`${this.failureGeneratorArmed[genNumber] ? 'Armed' : 'NotArmed'} - ${
             this.requestedMode[genNumber].toString()} - waitstop: ${
             this.waitForStopped[genNumber]} - waittakeoff: ${
             this.waitForTakeOff[genNumber]} - altOK: ${
-            this.conditionToArm(genNumber)}`);
+            this.conditionToArm(genNumber)}`); */
         const altitudeCondition = this.settings[genNumber * this.numberOfSettingsPerGenerator + this.altitudeConditionIndex];
 
         if (this.previousAltitudeCondition[genNumber] !== altitudeCondition) {

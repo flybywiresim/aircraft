@@ -15,11 +15,6 @@ import { selectAllFailures } from 'instruments/src/EFB/Failures/FailureGenerator
 import { ArmingModeIndex, FailuresAtOnceIndex, MaxFailuresIndex } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
 import { useFailuresOrchestrator } from '../../failures-orchestrator-provider';
 
-export interface FailureGenFeedbackEvent {
-    expectedMode: number[];
-    armingDisplayStatus: boolean[];
-  }
-
 export const failureGeneratorCommonFunction = () => {
     const { changingFailures, activeFailures, allFailures, activate } = useFailuresOrchestrator();
 
@@ -37,7 +32,6 @@ export type FailureGenData = {
     generatorSettingComponents: (genNumber: number, generatorSettings: FailureGenData, failureGenContext: FailureGenContext) => JSX.Element[],
     alias: () => string,
     disableTakeOffRearm: boolean,
-    expectedMode: number[],
     armedState: boolean[],
 }
 

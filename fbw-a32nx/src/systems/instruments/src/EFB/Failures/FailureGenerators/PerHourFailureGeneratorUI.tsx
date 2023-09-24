@@ -5,9 +5,10 @@
 import { usePersistentProperty } from '@flybywiresim/fbw-sdk';
 
 import { useEffect, useMemo, useState } from 'react';
-import { FailureGenContext, FailureGenData, FailureGenFeedbackEvent, setNewSetting } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
+import { FailureGenContext, FailureGenData, flatten, setNewSetting } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
 import { t } from 'instruments/src/EFB/translation';
 import { FailureGeneratorSingleSetting, FailureGeneratorText } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorSettingsUI';
+import { ArmingModeIndex } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
 import { useEventBus } from '../../event-bus-provider';
 
 const settingName = 'EFB_FAILURE_GENERATOR_SETTING_PERHOUR';
@@ -19,15 +20,15 @@ const alias = () => t('Failures.Generators.GenPerHour');
 const disableTakeOffRearm = false;
 const FailurePerHourIndex = 3;
 
-export interface FailureGenPerHourFeedbackEvent extends FailureGenFeedbackEvent{
-
-}
+export interface FailureGenFeedbackEvent {
+    expectedModePerHour: number[];
+    armingDisplayStatusPerHour: boolean[];
+  }
 
 export const failureGenConfigPerHour: () => FailureGenData = () => {
     const bus = useEventBus();
 
     const [setting, setSetting] = usePersistentProperty(settingName);
-    const [expectedMode, setExpectedMode] = useState<number[]>();
     const [armedState, setArmedState] = useState<boolean[]>();
     const settings = useMemo(() => {
         const splitString = setting?.split(',');
@@ -36,13 +37,23 @@ export const failureGenConfigPerHour: () => FailureGenData = () => {
     }, [setting]);
 
     useEffect(() => {
-        const sub1 = bus.getSubscriber<FailureGenPerHourFeedbackEvent>().on('expectedMode').handle((table) => {
-            setExpectedMode(table);
-            console.info('received expectedMode');
+        const sub1 = bus.getSubscriber<FailureGenFeedbackEvent>().on('expectedModePerHour').handle((table) => {
+            const nbGenerator = Math.floor(settings.length / numberOfSettingsPerGenerator);
+            let changeNeeded = false;
+            for (let i = 0; i < nbGenerator; i++) {
+                if (settings[i * numberOfSettingsPerGenerator + ArmingModeIndex] !== -1) {
+                    if (i < table?.length && table[i] === 0) {
+                        settings[i * numberOfSettingsPerGenerator + ArmingModeIndex] = 0;
+                        changeNeeded = true;
+                    }
+                }
+            }
+            if (changeNeeded) setSetting(flatten(settings));
+            // console.info('received expectedMode');
         });
-        const sub2 = bus.getSubscriber<FailureGenPerHourFeedbackEvent>().on('armingDisplayStatus').handle((table) => {
+        const sub2 = bus.getSubscriber<FailureGenFeedbackEvent>().on('armingDisplayStatusPerHour').handle((table) => {
             setArmedState(table);
-            console.info('received received arming states');
+            // console.info('received received arming states');
         });
         return () => {
             sub1.destroy();
@@ -61,7 +72,6 @@ export const failureGenConfigPerHour: () => FailureGenData = () => {
         alias,
         disableTakeOffRearm,
         generatorSettingComponents,
-        expectedMode,
         armedState,
     };
 };

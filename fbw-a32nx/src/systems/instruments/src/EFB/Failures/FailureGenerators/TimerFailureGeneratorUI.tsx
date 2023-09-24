@@ -5,9 +5,10 @@
 import { usePersistentProperty } from '@flybywiresim/fbw-sdk';
 
 import { useEffect, useMemo, useState } from 'react';
-import { FailureGenContext, FailureGenData, FailureGenFeedbackEvent, setNewSetting } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
+import { FailureGenContext, FailureGenData, flatten, setNewSetting } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
 import { t } from 'instruments/src/EFB/translation';
 import { FailureGeneratorSingleSetting } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorSettingsUI';
+import { ArmingModeIndex } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
 import { useEventBus } from '../../event-bus-provider';
 
 const settingName = 'EFB_FAILURE_GENERATOR_SETTING_TIMER';
@@ -21,15 +22,15 @@ const disableTakeOffRearm = false;
 const DelayMinIndex = 3;
 const DelayMaxIndex = 4;
 
-export interface FailureGenTimerFeedbackEvent extends FailureGenFeedbackEvent{
-
-}
+export interface FailureGenFeedbackEvent {
+    expectedModeTimer: number[];
+    armingDisplayStatusTimer: boolean[];
+  }
 
 export const failureGenConfigTimer: () => FailureGenData = () => {
     const bus = useEventBus();
 
     const [setting, setSetting] = usePersistentProperty(settingName);
-    const [expectedMode, setExpectedMode] = useState<number[]>();
     const [armedState, setArmedState] = useState<boolean[]>();
     const settings = useMemo(() => {
         const splitString = setting?.split(',');
@@ -37,13 +38,23 @@ export const failureGenConfigTimer: () => FailureGenData = () => {
         return [];
     }, [setting]);
     useEffect(() => {
-        const sub1 = bus.getSubscriber<FailureGenTimerFeedbackEvent>().on('expectedMode').handle((table) => {
-            setExpectedMode(table);
-            console.info('received expectedMode');
+        const sub1 = bus.getSubscriber<FailureGenFeedbackEvent>().on('expectedModeTimer').handle((table) => {
+            const nbGenerator = Math.floor(settings.length / numberOfSettingsPerGenerator);
+            let changeNeeded = false;
+            for (let i = 0; i < nbGenerator; i++) {
+                if (settings[i * numberOfSettingsPerGenerator + ArmingModeIndex] !== -1) {
+                    if (i < table?.length && table[i] === 0) {
+                        settings[i * numberOfSettingsPerGenerator + ArmingModeIndex] = 0;
+                        changeNeeded = true;
+                    }
+                }
+            }
+            if (changeNeeded) setSetting(flatten(settings));
+            // console.info('received expectedMode');
         });
-        const sub2 = bus.getSubscriber<FailureGenTimerFeedbackEvent>().on('armingDisplayStatus').handle((table) => {
+        const sub2 = bus.getSubscriber<FailureGenFeedbackEvent>().on('armingDisplayStatusTimer').handle((table) => {
             setArmedState(table);
-            console.info('received received arming states');
+            // console.info('received arming states');
         });
         return () => {
             sub1.destroy();
@@ -60,7 +71,6 @@ export const failureGenConfigTimer: () => FailureGenData = () => {
         generatorSettingComponents,
         alias,
         disableTakeOffRearm,
-        expectedMode,
         armedState,
     };
 };

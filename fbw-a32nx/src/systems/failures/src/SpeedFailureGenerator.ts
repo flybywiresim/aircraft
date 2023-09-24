@@ -2,10 +2,11 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { FailureGenFeedbackEvent, GenericGenerator } from 'failures/src/GenericGenerator';
+import { GenericGenerator } from 'failures/src/GenericGenerator';
 
-export interface FailureGenSpeedFeedbackEvent extends FailureGenFeedbackEvent{
-
+export interface FailureGenFeedbackEvent {
+    expectedModeSpeed: number[];
+    armingDisplayStatusSpeed: boolean[];
   }
 
 export class FailureGeneratorSpeed extends GenericGenerator {
@@ -27,9 +28,14 @@ export class FailureGeneratorSpeed extends GenericGenerator {
 
     private resetMargin = 5;
 
-    sendFeedback(): void {
-        this.bus.getPublisher<FailureGenSpeedFeedbackEvent>().pub('expectedMode', this.requestedMode, true);
-        this.bus.getPublisher<FailureGenSpeedFeedbackEvent>().pub('armingDisplayStatus', this.failureGeneratorArmed, true);
+    sendFeedbackModeRequest(): void {
+        this.bus.getPublisher<FailureGenFeedbackEvent>().pub('expectedModeSpeed', this.requestedMode, true);
+        // console.info(`ModeRequest sent - size: ${this.requestedMode.length.toString()}}`);
+    }
+
+    sendFeedbackArmedDisplay(): void {
+        this.bus.getPublisher<FailureGenFeedbackEvent>().pub('armingDisplayStatusSpeed', this.failureGeneratorArmed, true);
+        // console.info(`ArmedDisplay sent - size: ${this.failureGeneratorArmed.length.toString()}`);
     }
 
     additionalInitActions(genNumber: number): void {
@@ -38,11 +44,11 @@ export class FailureGeneratorSpeed extends GenericGenerator {
     }
 
     generatorSpecificActions(genNumber: number): void {
-        console.info(`${this.failureGeneratorArmed[genNumber] ? 'Armed' : 'NotArmed'} - ${
+        /* console.info(`${this.failureGeneratorArmed[genNumber] ? 'Armed' : 'NotArmed'} - ${
             this.requestedMode[genNumber].toString()} - waitstop: ${
             this.waitForStopped[genNumber]} - waittakeoff: ${
             this.waitForTakeOff[genNumber]} - altOK: ${
-            this.conditionToArm(genNumber)}`);
+            this.conditionToArm(genNumber)}`); */
         const speedCondition = this.settings[genNumber * this.numberOfSettingsPerGenerator + this.speedConditionIndex];
 
         if (this.previousSpeedCondition[genNumber] !== speedCondition) {

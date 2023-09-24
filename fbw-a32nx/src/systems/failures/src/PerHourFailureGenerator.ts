@@ -2,11 +2,12 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { FailureGenFeedbackEvent, GenericGenerator } from 'failures/src/GenericGenerator';
+import { GenericGenerator } from 'failures/src/GenericGenerator';
 
-export interface FailureGenPerHourFeedbackEvent extends FailureGenFeedbackEvent {
-
-}
+export interface FailureGenFeedbackEvent {
+    expectedModePerHour: number[];
+    armingDisplayStatusPerHour: boolean[];
+  }
 
 export class FailureGeneratorPerHour extends GenericGenerator {
     settingName = 'EFB_FAILURE_GENERATOR_SETTING_PERHOUR';
@@ -21,21 +22,26 @@ export class FailureGeneratorPerHour extends GenericGenerator {
 
     private failurePerHourIndex = 3;
 
-    sendFeedback(): void {
-        this.bus.getPublisher<FailureGenPerHourFeedbackEvent>().pub('expectedMode', this.requestedMode, true);
-        this.bus.getPublisher<FailureGenPerHourFeedbackEvent>().pub('armingDisplayStatus', this.failureGeneratorArmed, true);
+    sendFeedbackModeRequest(): void {
+        this.bus.getPublisher<FailureGenFeedbackEvent>().pub('expectedModePerHour', this.requestedMode, true);
+        // console.info(`ModeRequest sent - size: ${this.requestedMode.length.toString()}}`);
+    }
+
+    sendFeedbackArmedDisplay(): void {
+        this.bus.getPublisher<FailureGenFeedbackEvent>().pub('armingDisplayStatusPerHour', this.failureGeneratorArmed, true);
+        // console.info(`ArmedDisplay sent - size: ${this.failureGeneratorArmed.length.toString()}`);
     }
 
     loopStartAction(): void {
         this.currentTime = Date.now();
     }
 
-    generatorSpecificActions(genNumber: number): void {
+    /* generatorSpecificActions(genNumber: number): void {
         console.info(`${this.failureGeneratorArmed[genNumber] ? 'Armed' : 'NotArmed'} - ${
             this.requestedMode[genNumber].toString()} - waitstop: ${
             this.waitForStopped[genNumber]} - waittakeoff: ${
             this.waitForTakeOff[genNumber]}`);
-    }
+    } */
 
     conditionToTriggerFailure(genNumber: number): boolean {
         const chanceSetting = this.settings[genNumber * this.numberOfSettingsPerGenerator + this.failurePerHourIndex];

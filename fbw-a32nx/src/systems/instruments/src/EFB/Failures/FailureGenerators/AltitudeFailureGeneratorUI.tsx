@@ -5,14 +5,11 @@
 import { usePersistentProperty } from '@flybywiresim/fbw-sdk';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import {
-    FailureGenContext, FailureGenData,
-    FailureGenFeedbackEvent,
-    setNewSetting, setNewSettingAndResetArm,
-} from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
+import { FailureGenContext, FailureGenData, flatten, setNewSetting, setNewSettingAndResetArm } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
 import { t } from 'instruments/src/EFB/translation';
 import { ArrowDownRight, ArrowUpRight } from 'react-bootstrap-icons';
 import { ButtonIcon, FailureGeneratorChoiceSetting, FailureGeneratorSingleSetting } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorSettingsUI';
+import { ArmingModeIndex } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
 import { useEventBus } from '../../event-bus-provider';
 
 const settingName = 'EFB_FAILURE_GENERATOR_SETTING_ALTITUDE';
@@ -27,15 +24,15 @@ const AltitudeConditionIndex = 3;
 const AltitudeMinIndex = 4;
 const AltitudeMaxIndex = 5;
 
-export interface FailureGenAltitudeFeedbackEvent extends FailureGenFeedbackEvent{
-
+export interface FailureGenFeedbackEvent {
+    expectedModeAltitude: number[];
+    armingDisplayStatusAltitude: boolean[];
   }
 
 export const failureGenConfigAltitude: () => FailureGenData = () => {
     const bus = useEventBus();
 
     const [setting, setSetting] = usePersistentProperty(settingName);
-    const [expectedMode, setExpectedMode] = useState<number[]>();
     const [armedState, setArmedState] = useState<boolean[]>();
     const settings = useMemo(() => {
         const splitString = setting?.split(',');
@@ -44,13 +41,23 @@ export const failureGenConfigAltitude: () => FailureGenData = () => {
     }, [setting]);
 
     useEffect(() => {
-        const sub1 = bus.getSubscriber<FailureGenAltitudeFeedbackEvent>().on('expectedMode').handle((table) => {
-            setExpectedMode(table);
-            console.info('received expectedMode');
+        const sub1 = bus.getSubscriber<FailureGenFeedbackEvent>().on('expectedModeAltitude').handle((table) => {
+            const nbGenerator = Math.floor(settings.length / numberOfSettingsPerGenerator);
+            let changeNeeded = false;
+            for (let i = 0; i < nbGenerator; i++) {
+                if (settings[i * numberOfSettingsPerGenerator + ArmingModeIndex] !== -1) {
+                    if (i < table?.length && table[i] === 0) {
+                        settings[i * numberOfSettingsPerGenerator + ArmingModeIndex] = 0;
+                        changeNeeded = true;
+                    }
+                }
+            }
+            if (changeNeeded) setSetting(flatten(settings));
+            // console.info('received expectedMode');
         });
-        const sub2 = bus.getSubscriber<FailureGenAltitudeFeedbackEvent>().on('armingDisplayStatus').handle((table) => {
+        const sub2 = bus.getSubscriber<FailureGenFeedbackEvent>().on('armingDisplayStatusAltitude').handle((table) => {
             setArmedState(table);
-            console.info('received received arming states');
+            // console.info('received arming states');
         });
         return () => {
             sub1.destroy();
@@ -68,7 +75,6 @@ export const failureGenConfigAltitude: () => FailureGenData = () => {
         alias,
         disableTakeOffRearm,
         generatorSettingComponents,
-        expectedMode,
         armedState,
     };
 };
