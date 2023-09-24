@@ -6,14 +6,14 @@ import React, { FC, useEffect, useRef } from 'react';
 import { useSimVar } from '@flybywiresim/fbw-sdk';
 import {
     ArchiveFill,
-    ConeStriped,
+    // ConeStriped,
     DoorClosedFill,
     HandbagFill,
     PersonPlusFill,
     PlugFill,
-    TriangleFill as Chock,
+    // TriangleFill as Chock,
     Truck,
-    VinylFill as Wheel,
+    // VinylFill as Wheel,
 } from 'react-bootstrap-icons';
 import { ActionCreatorWithOptionalPayload } from '@reduxjs/toolkit';
 import { t } from '../../../../translation';
@@ -126,11 +126,14 @@ export const A380Services: React.FC = () => {
     const [gpuActive] = useSimVar('A:INTERACTIVE POINT OPEN:19', 'Percent over 100', 200);
 
     // Wheel Chocks and Cones
+    // TODO FIXME: Reenable
+    /*
     const [isGroundEquipmentVisible] = useSimVar('L:A32NX_GND_EQP_IS_VISIBLE', 'bool', 500);
     const [wheelChocksEnabled] = useSimVar('L:A32NX_MODEL_WHEELCHOCKS_ENABLED', 'bool', 500);
     const [conesEnabled] = useSimVar('L:A32NX_MODEL_CONES_ENABLED', 'bool', 500);
     const wheelChocksVisible = wheelChocksEnabled && isGroundEquipmentVisible;
     const conesVisible = conesEnabled && isGroundEquipmentVisible;
+    */
 
     // Service events
     const toggleMain1LeftDoor = () => SimVar.SetSimVarValue('K:TOGGLE_AIRCRAFT_EXIT', 'enum', 1);
