@@ -1,33 +1,56 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { usePersistentProperty } from '@flybywiresim/fbw-sdk';
-import { FailureGenContext, FailureGenData, setNewSetting } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
+import { FailureGenContext, FailureGenData, FailureGenFeedbackEvent, setNewSetting } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
 
 import { t } from 'instruments/src/EFB/translation';
 import { FailureGeneratorSingleSetting, FailureGeneratorText } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorSettingsUI';
+import { EventBus } from '@microsoft/msfs-sdk';
 
 const settingName = 'EFB_FAILURE_GENERATOR_SETTING_TAKEOFF';
-const numberOfSettingsPerGenerator = 11;
+const numberOfSettingsPerGenerator = 10;
 const uniqueGenPrefix = 'E';
-const additionalSetting = [3, 1, 2, 0, 1, 0.33, 0.33, 30, 95, 140, 40];
+const additionalSetting = [3, 1, 2, 1, 0.33, 0.33, 30, 95, 140, 40];
 const genName = 'TakeOff';
 const alias = () => t('Failures.Generators.GenTakeOff');
 const disableTakeOffRearm = true;
 
-const ChancePerTakeOffIndex = 4;
-const ChanceLowIndex = 5;
-const ChanceMediumIndex = 6;
-const MinSpeedIndex = 7;
-const MediumSpeedIndex = 8;
-const MaxSpeedIndex = 9;
-const AltitudeIndex = 10;
+const ChancePerTakeOffIndex = 3;
+const ChanceLowIndex = 4;
+const ChanceMediumIndex = 5;
+const MinSpeedIndex = 6;
+const MediumSpeedIndex = 7;
+const MaxSpeedIndex = 8;
+const AltitudeIndex = 9;
+
+export interface FailureGenTakeOffFeedbackEvent extends FailureGenFeedbackEvent{
+
+}
+
+const bus = new EventBus();
 
 export const failureGenConfigTakeOff: () => FailureGenData = () => {
     const [setting, setSetting] = usePersistentProperty(settingName);
+    const [expectedMode, setExpectedMode] = useState<number[]>();
+    const [armedState, setArmedState] = useState<boolean[]>();
     const settings = useMemo(() => {
         const splitString = setting?.split(',');
         if (splitString) return splitString.map(((it: string) => parseFloat(it)));
         return [];
     }, [setting]);
+    useEffect(() => {
+        const sub1 = bus.getSubscriber<FailureGenTakeOffFeedbackEvent>().on('expectedMode').handle((table) => {
+            setExpectedMode(table);
+            console.info('received expectedMode');
+        });
+        const sub2 = bus.getSubscriber<FailureGenTakeOffFeedbackEvent>().on('armingDisplayStatus').handle((table) => {
+            setArmedState(table);
+            console.info('received received arming states');
+        });
+        return () => {
+            sub1.destroy();
+            sub2.destroy();
+        };
+    }, []);
     return {
         setSetting,
         settings,
@@ -38,6 +61,8 @@ export const failureGenConfigTakeOff: () => FailureGenData = () => {
         generatorSettingComponents,
         alias,
         disableTakeOffRearm,
+        expectedMode,
+        armedState,
     };
 };
 

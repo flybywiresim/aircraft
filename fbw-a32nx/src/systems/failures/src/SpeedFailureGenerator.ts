@@ -1,10 +1,13 @@
-import { GenericGenerator } from 'failures/src/GenericGenerator';
-import { ReadyDisplayIndex } from './RandomFailureGen';
+import { FailureGenFeedbackEvent, GenericGenerator } from 'failures/src/GenericGenerator';
+
+export interface FailureGenSpeedFeedbackEvent extends FailureGenFeedbackEvent{
+
+  }
 
 export class FailureGeneratorSpeed extends GenericGenerator {
     settingName = 'EFB_FAILURE_GENERATOR_SETTING_SPEED';
 
-    numberOfSettingsPerGenerator = 7;
+    numberOfSettingsPerGenerator = 6;
 
     uniqueGenPrefix = 'B';
 
@@ -12,22 +15,27 @@ export class FailureGeneratorSpeed extends GenericGenerator {
 
     private previousSpeedCondition: number[] = [];
 
-    private speedConditionIndex = 4;
+    private speedConditionIndex = 3;
 
-    private speedMinIndex = 5;
+    private speedMinIndex = 4;
 
-    private speedMaxIndex = 6;
+    private speedMaxIndex = 5;
 
     private resetMargin = 5;
 
+    sendFeedback(): void {
+        this.eventBus.getPublisher<FailureGenSpeedFeedbackEvent>().pub('expectedMode', this.requestedMode, true);
+        this.eventBus.getPublisher<FailureGenSpeedFeedbackEvent>().pub('armingDisplayStatus', this.failureGeneratorArmed, true);
+    }
+
     additionalInitActions(genNumber: number): void {
-        this.previousSpeedCondition[genNumber] = this.newSettings[genNumber * this.numberOfSettingsPerGenerator
+        this.previousSpeedCondition[genNumber] = this.settings[genNumber * this.numberOfSettingsPerGenerator
                 + this.speedConditionIndex];
     }
 
     generatorSpecificActions(genNumber: number): void {
         console.info(`${this.failureGeneratorArmed[genNumber] ? 'Armed' : 'NotArmed'} - ${
-            this.settings[genNumber * this.numberOfSettingsPerGenerator + ReadyDisplayIndex].toString()} - waitstop: ${
+            this.requestedMode[genNumber].toString()} - waitstop: ${
             this.waitForStopped[genNumber]} - waittakeoff: ${
             this.waitForTakeOff[genNumber]} - altOK: ${
             this.conditionToArm(genNumber)}`);
@@ -61,7 +69,7 @@ export class FailureGeneratorSpeed extends GenericGenerator {
     }
 
     additionalGenEndActions(genNumber: number): void {
-        this.previousSpeedCondition[genNumber] = this.newSettings[genNumber * this.numberOfSettingsPerGenerator
+        this.previousSpeedCondition[genNumber] = this.settings[genNumber * this.numberOfSettingsPerGenerator
             + this.speedConditionIndex];
     }
 }

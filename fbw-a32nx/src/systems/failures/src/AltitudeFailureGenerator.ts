@@ -1,10 +1,13 @@
-import { GenericGenerator } from 'failures/src/GenericGenerator';
-import { ReadyDisplayIndex } from './RandomFailureGen';
+import { FailureGenFeedbackEvent, GenericGenerator } from 'failures/src/GenericGenerator';
+
+export interface FailureGenAltitudeFeedbackEvent extends FailureGenFeedbackEvent{
+
+  }
 
 export class FailureGeneratorAltitude extends GenericGenerator {
     settingName = 'EFB_FAILURE_GENERATOR_SETTING_ALTITUDE';
 
-    numberOfSettingsPerGenerator = 7;
+    numberOfSettingsPerGenerator = 6;
 
     uniqueGenPrefix = 'A';
 
@@ -12,28 +15,34 @@ export class FailureGeneratorAltitude extends GenericGenerator {
 
     private previousAltitudeCondition: number[] = [];
 
-    private altitudeConditionIndex = 4;
+    private altitudeConditionIndex = 3;
 
-    private altitudeMinIndex = 5;
+    private altitudeMinIndex = 4;
 
-    private altitudeMaxIndex = 6;
+    private altitudeMaxIndex = 5;
 
     private resetMargin = 100;
 
     private altitude: number;
+
+    sendFeedback(): void {
+        this.eventBus.getPublisher<FailureGenAltitudeFeedbackEvent>().pub('expectedMode', this.requestedMode, true);
+        this.eventBus.getPublisher<FailureGenAltitudeFeedbackEvent>().pub('armingDisplayStatus', this.failureGeneratorArmed, true);
+        console.info(`Feedbacks sizes: ${this.requestedMode.length.toString()} ${this.failureGeneratorArmed.length.toString()}`);
+    }
 
     loopStartAction(): void {
         this.altitude = Simplane.getAltitude();
     }
 
     additionalInitActions(genNumber: number): void {
-        this.previousAltitudeCondition[genNumber] = this.newSettings[genNumber * this.numberOfSettingsPerGenerator
+        this.previousAltitudeCondition[genNumber] = this.settings[genNumber * this.numberOfSettingsPerGenerator
                 + this.altitudeConditionIndex];
     }
 
     generatorSpecificActions(genNumber: number): void {
         console.info(`${this.failureGeneratorArmed[genNumber] ? 'Armed' : 'NotArmed'} - ${
-            this.settings[genNumber * this.numberOfSettingsPerGenerator + ReadyDisplayIndex].toString()} - waitstop: ${
+            this.requestedMode[genNumber].toString()} - waitstop: ${
             this.waitForStopped[genNumber]} - waittakeoff: ${
             this.waitForTakeOff[genNumber]} - altOK: ${
             this.conditionToArm(genNumber)}`);
@@ -67,7 +76,7 @@ export class FailureGeneratorAltitude extends GenericGenerator {
     }
 
     additionalGenEndActions(genNumber: number): void {
-        this.previousAltitudeCondition[genNumber] = this.newSettings[genNumber * this.numberOfSettingsPerGenerator
+        this.previousAltitudeCondition[genNumber] = this.settings[genNumber * this.numberOfSettingsPerGenerator
             + this.altitudeConditionIndex];
     }
 }

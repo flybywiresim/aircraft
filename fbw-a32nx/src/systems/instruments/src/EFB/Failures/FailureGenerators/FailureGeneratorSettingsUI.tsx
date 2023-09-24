@@ -12,7 +12,7 @@ import { ButtonType, SettingItem } from 'instruments/src/EFB/Settings/Settings';
 import { FailuresAtOnceIndex, MaxFailuresIndex } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
 import { ScrollableContainer } from 'instruments/src/EFB/UtilComponents/ScrollableContainer';
 import { TooltipWrapper } from 'instruments/src/EFB/UtilComponents/TooltipWrapper';
-import { ArmingModeIndex, ReadyDisplayIndex } from 'failures/src/RandomFailureGen';
+import { ArmingModeIndex } from 'failures/src/RandomFailureGen';
 
 export type SettingVar = {
     settingVar: number,
@@ -66,7 +66,7 @@ export function FailureGeneratorDetailsModalUI(
     );
 }
 export function ArmedState(generatorSettings: FailureGenData, genNumber: number) {
-    const readyDisplay:boolean = generatorSettings.settings[generatorSettings.numberOfSettingsPerGenerator * genNumber + ReadyDisplayIndex] === 1;
+    const readyDisplay:boolean = (genNumber < generatorSettings.armedState?.length) ? generatorSettings.armedState[genNumber] : false;
     switch (generatorSettings.settings[generatorSettings.numberOfSettingsPerGenerator * genNumber + ArmingModeIndex]) {
     case 0: return (
         <TooltipWrapper text={`${t('Failures.Generators.ToolTipOff')} - ${readyDisplay ? t('Failures.Generators.ToolTipReady') : t('Failures.Generators.ToolTipStandby')}`}>

@@ -16,7 +16,9 @@ import { FailureGeneratorDetailsModalUI, ArmedState } from './FailureGeneratorSe
 export const ArmingModeIndex = 0;
 export const FailuresAtOnceIndex = 1;
 export const MaxFailuresIndex = 2;
-export const ReadyDisplayIndex = 3;
+
+export const NumberOfFeedbacks = 2;
+export const ReadyDisplayIndex = 1;
 
 export const FailureGeneratorsUI = () => {
     const [chosenGen, setChosenGen] = useState<string>();
@@ -89,6 +91,9 @@ export const generatorsCardList: (settings: FailureGenContext)
         const nbGenerator = Math.floor(generatorSetting.settings.length / generatorSetting.numberOfSettingsPerGenerator);
         for (let i = 0; i < nbGenerator; i++) {
             if (generatorSetting.settings[i * generatorSetting.numberOfSettingsPerGenerator + ArmingModeIndex] !== -1) {
+                if (i < generatorSetting.expectedMode?.length && generatorSetting.expectedMode[i] === 0) {
+                    generatorSetting.settings[i * generatorSetting.numberOfSettingsPerGenerator + ArmingModeIndex] = 0;
+                }
                 temp.push(FailureGeneratorCardTemplateUI(i, generatorSetting, settings));
             }
         }
@@ -147,7 +152,7 @@ export function FailureGeneratorCardTemplateUI(
 ) {
     const genUniqueID = `${failureGenData.uniqueGenPrefix}${(genNumber).toString()}`;
     const genUniqueIDDisplayed = `${failureGenData.uniqueGenPrefix}${(genNumber + 1).toString()}`;
-    const isArmed : Boolean = failureGenData.settings[genNumber * failureGenData.numberOfSettingsPerGenerator + ReadyDisplayIndex] === 1;
+    const isArmed : Boolean = (genNumber < failureGenData.armedState?.length ? failureGenData.armedState[genNumber] : false);
     return (
         <div className="flex flex-row justify-between px-2 pt-2 m-1 text-center rounded-md border-2 border-solid border-theme-accent">
             <div className="flex flex-col mr-4 text-left grow max-w-[86%] align-left">

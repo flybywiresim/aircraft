@@ -1,10 +1,13 @@
-import { GenericGenerator } from 'failures/src/GenericGenerator';
-import { ReadyDisplayIndex } from 'failures/src/RandomFailureGen';
+import { FailureGenFeedbackEvent, GenericGenerator } from 'failures/src/GenericGenerator';
+
+export interface FailureGenTakeOffFeedbackEvent extends FailureGenFeedbackEvent{
+
+  }
 
 export class FailureGeneratorTakeOff extends GenericGenerator {
     settingName = 'EFB_FAILURE_GENERATOR_SETTING_TAKEOFF';
 
-    numberOfSettingsPerGenerator = 11;
+    numberOfSettingsPerGenerator = 10;
 
     uniqueGenPrefix = 'E';
 
@@ -16,21 +19,26 @@ export class FailureGeneratorTakeOff extends GenericGenerator {
 
     private rolledDiceTakeOff = 0;
 
-    private chancePerTakeOffIndex = 4;
+    private chancePerTakeOffIndex = 3;
 
-    private chanceLowIndex = 5;
+    private chanceLowIndex = 4;
 
-    private chanceMediumIndex = 6;
+    private chanceMediumIndex = 5;
 
-    private minSpeedIndex = 7;
+    private minSpeedIndex = 6;
 
-    private mediumSpeedIndex = 8;
+    private mediumSpeedIndex = 7;
 
-    private maxSpeedIndex = 9;
+    private maxSpeedIndex = 8;
 
-    private altitudeIndex = 10;
+    private altitudeIndex = 9;
 
     private altitude: number = 0;
+
+    sendFeedback(): void {
+        this.eventBus.getPublisher<FailureGenTakeOffFeedbackEvent>().pub('expectedMode', this.requestedMode, true);
+        this.eventBus.getPublisher<FailureGenTakeOffFeedbackEvent>().pub('armingDisplayStatus', this.failureGeneratorArmed, true);
+    }
 
     loopStartAction(): void {
         this.altitude = Simplane.getAltitude();
@@ -38,7 +46,7 @@ export class FailureGeneratorTakeOff extends GenericGenerator {
 
     generatorSpecificActions(genNumber: number): void {
         console.info(`${this.failureGeneratorArmed[genNumber] ? 'Armed' : 'NotArmed'} - ${
-            this.settings[genNumber * this.numberOfSettingsPerGenerator + ReadyDisplayIndex].toString()} - waitstop: ${
+            this.requestedMode[genNumber].toString()} - waitstop: ${
             this.waitForStopped[genNumber]} - waittakeoff: ${
             this.waitForTakeOff[genNumber]} - altThd: ${
             this.failureTakeOffAltitudeThreshold[genNumber]} - spdThd: ${
@@ -66,8 +74,7 @@ export class FailureGeneratorTakeOff extends GenericGenerator {
         const minFailureTakeOffSpeed: number = this.settings[genNumber * this.numberOfSettingsPerGenerator + this.minSpeedIndex];
         const medHighTakeOffSpeed: number = this.settings[genNumber * this.numberOfSettingsPerGenerator + this.maxSpeedIndex];
         const chanceFailureLowTakeOffRegime: number = this.settings[genNumber * this.numberOfSettingsPerGenerator + this.chanceLowIndex];
-        const chanceFailureMediumTakeOffRegime: number = this.settings[genNumber * this.numberOfSettingsPerGenerator
-                                    + this.chanceMediumIndex];
+        const chanceFailureMediumTakeOffRegime: number = this.settings[genNumber * this.numberOfSettingsPerGenerator + this.chanceMediumIndex];
         const takeOffDeltaAltitudeEnd: number = 100 * this.settings[genNumber * this.numberOfSettingsPerGenerator + this.altitudeIndex];
         const lowMedTakeOffSpeed: number = this.settings[genNumber * this.numberOfSettingsPerGenerator + this.mediumSpeedIndex];
         this.rolledDiceTakeOff = Math.random();

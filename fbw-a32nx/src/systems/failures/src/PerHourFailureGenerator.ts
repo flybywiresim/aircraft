@@ -1,10 +1,13 @@
-import { GenericGenerator } from 'failures/src/GenericGenerator';
-import { ReadyDisplayIndex } from './RandomFailureGen';
+import { FailureGenFeedbackEvent, GenericGenerator } from 'failures/src/GenericGenerator';
+
+export interface FailureGenPerHourFeedbackEvent extends FailureGenFeedbackEvent {
+
+  }
 
 export class FailureGeneratorPerHour extends GenericGenerator {
     settingName = 'EFB_FAILURE_GENERATOR_SETTING_PERHOUR';
 
-    numberOfSettingsPerGenerator = 5;
+    numberOfSettingsPerGenerator = 4;
 
     uniqueGenPrefix = 'C';
 
@@ -12,7 +15,12 @@ export class FailureGeneratorPerHour extends GenericGenerator {
 
     private currentTime: number = 0;
 
-    private failurePerHourIndex = 4;
+    private failurePerHourIndex = 3;
+
+    sendFeedback(): void {
+        this.eventBus.getPublisher<FailureGenPerHourFeedbackEvent>().pub('expectedMode', this.requestedMode, true);
+        this.eventBus.getPublisher<FailureGenPerHourFeedbackEvent>().pub('armingDisplayStatus', this.failureGeneratorArmed, true);
+    }
 
     loopStartAction(): void {
         this.currentTime = Date.now();
@@ -20,7 +28,7 @@ export class FailureGeneratorPerHour extends GenericGenerator {
 
     generatorSpecificActions(genNumber: number): void {
         console.info(`${this.failureGeneratorArmed[genNumber] ? 'Armed' : 'NotArmed'} - ${
-            this.settings[genNumber * this.numberOfSettingsPerGenerator + ReadyDisplayIndex].toString()} - waitstop: ${
+            this.requestedMode[genNumber].toString()} - waitstop: ${
             this.waitForStopped[genNumber]} - waittakeoff: ${
             this.waitForTakeOff[genNumber]}`);
     }

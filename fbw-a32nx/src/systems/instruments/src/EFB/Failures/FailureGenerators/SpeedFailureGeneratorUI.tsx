@@ -1,30 +1,53 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { usePersistentProperty } from '@flybywiresim/fbw-sdk';
-import { FailureGenContext, FailureGenData, setNewSetting, setNewSettingAndResetArm } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
+import { FailureGenContext, FailureGenData, FailureGenFeedbackEvent, setNewSetting, setNewSettingAndResetArm } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
 
 import { t } from 'instruments/src/EFB/translation';
 import { ArrowDownRight, ArrowUpRight } from 'react-bootstrap-icons';
 import { ButtonIcon, FailureGeneratorChoiceSetting, FailureGeneratorSingleSetting } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorSettingsUI';
+import { EventBus } from '@microsoft/msfs-sdk';
 
 const settingName = 'EFB_FAILURE_GENERATOR_SETTING_SPEED';
-const additionalSetting = [2, 1, 2, 0, 0, 200, 300];
-const numberOfSettingsPerGenerator = 7;
+const additionalSetting = [2, 1, 2, 0, 200, 300];
+const numberOfSettingsPerGenerator = 6;
 const uniqueGenPrefix = 'B';
 const genName = 'Speed';
 const alias = () => t('Failures.Generators.GenSpeed');
 const disableTakeOffRearm = false;
 
-const SpeedConditionIndex = 4;
-const SpeedMinIndex = 5;
-const SpeedMaxIndex = 6;
+const SpeedConditionIndex = 3;
+const SpeedMinIndex = 4;
+const SpeedMaxIndex = 5;
+
+export interface FailureGenSpeedFeedbackEvent extends FailureGenFeedbackEvent{
+
+}
+
+const bus = new EventBus();
 
 export const failureGenConfigSpeed: () => FailureGenData = () => {
     const [setting, setSetting] = usePersistentProperty(settingName);
+    const [expectedMode, setExpectedMode] = useState<number[]>();
+    const [armedState, setArmedState] = useState<boolean[]>();
     const settings = useMemo(() => {
         const splitString = setting?.split(',');
         if (splitString) return splitString.map(((it: string) => parseFloat(it)));
         return [];
     }, [setting]);
+    useEffect(() => {
+        const sub1 = bus.getSubscriber<FailureGenSpeedFeedbackEvent>().on('expectedMode').handle((table) => {
+            setExpectedMode(table);
+            console.info('received expectedMode');
+        });
+        const sub2 = bus.getSubscriber<FailureGenSpeedFeedbackEvent>().on('armingDisplayStatus').handle((table) => {
+            setArmedState(table);
+            console.info('received received arming states');
+        });
+        return () => {
+            sub1.destroy();
+            sub2.destroy();
+        };
+    }, []);
     return {
         setSetting,
         settings,
@@ -35,6 +58,8 @@ export const failureGenConfigSpeed: () => FailureGenData = () => {
         generatorSettingComponents,
         alias,
         disableTakeOffRearm,
+        expectedMode,
+        armedState,
     };
 };
 

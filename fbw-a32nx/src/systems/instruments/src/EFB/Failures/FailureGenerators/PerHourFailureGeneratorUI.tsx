@@ -1,26 +1,51 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { usePersistentProperty } from '@flybywiresim/fbw-sdk';
-import { FailureGenContext, FailureGenData, setNewSetting } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
+import { FailureGenContext, FailureGenData, FailureGenFeedbackEvent, setNewSetting } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
 
 import { t } from 'instruments/src/EFB/translation';
 import { FailureGeneratorSingleSetting, FailureGeneratorText } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorSettingsUI';
+import { EventBus } from '@microsoft/msfs-sdk';
 
 const settingName = 'EFB_FAILURE_GENERATOR_SETTING_PERHOUR';
-const additionalSetting = [3, 1, 2, 0, 0.1];
-const numberOfSettingsPerGenerator = 5;
+const additionalSetting = [3, 1, 2, 0.1];
+const numberOfSettingsPerGenerator = 4;
 const uniqueGenPrefix = 'C';
 const genName = 'PerHour';
 const alias = () => t('Failures.Generators.GenPerHour');
 const disableTakeOffRearm = false;
-const FailurePerHourIndex = 4;
+const FailurePerHourIndex = 3;
+
+export interface FailureGenPerHourFeedbackEvent extends FailureGenFeedbackEvent{
+
+}
+
+const bus = new EventBus();
 
 export const failureGenConfigPerHour: () => FailureGenData = () => {
     const [setting, setSetting] = usePersistentProperty(settingName);
+    const [expectedMode, setExpectedMode] = useState<number[]>();
+    const [armedState, setArmedState] = useState<boolean[]>();
     const settings = useMemo(() => {
         const splitString = setting?.split(',');
         if (splitString) return splitString.map(((it: string) => parseFloat(it)));
         return [];
     }, [setting]);
+
+    useEffect(() => {
+        const sub1 = bus.getSubscriber<FailureGenPerHourFeedbackEvent>().on('expectedMode').handle((table) => {
+            setExpectedMode(table);
+            console.info('received expectedMode');
+        });
+        const sub2 = bus.getSubscriber<FailureGenPerHourFeedbackEvent>().on('armingDisplayStatus').handle((table) => {
+            setArmedState(table);
+            console.info('received received arming states');
+        });
+        return () => {
+            sub1.destroy();
+            sub2.destroy();
+        };
+    }, []);
+
     return {
         setting,
         setSetting,
@@ -32,6 +57,8 @@ export const failureGenConfigPerHour: () => FailureGenData = () => {
         alias,
         disableTakeOffRearm,
         generatorSettingComponents,
+        expectedMode,
+        armedState,
     };
 };
 
