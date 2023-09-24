@@ -1,3 +1,8 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
+import { EventBus } from '@microsoft/msfs-sdk';
 import { FailuresOrchestrator } from './failures-orchestrator';
 import { getActivateFailureSimVarName, getDeactivateFailureSimVarName } from './sim-vars';
 import { flushPromises } from './test-functions';
@@ -86,7 +91,7 @@ const identifier = 123;
 const name = 'test';
 
 function orchestrator() {
-    return new FailuresOrchestrator(prefix, [[0, identifier, name]]);
+    return new FailuresOrchestrator(new EventBus(), prefix, [[0, identifier, name]]);
 }
 
 function activateFailure(o: FailuresOrchestrator) {

@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { FailureGenFeedbackEvent, GenericGenerator } from 'failures/src/GenericGenerator';
 
 export interface FailureGenAltitudeFeedbackEvent extends FailureGenFeedbackEvent{
@@ -26,8 +30,8 @@ export class FailureGeneratorAltitude extends GenericGenerator {
     private altitude: number;
 
     sendFeedback(): void {
-        this.eventBus.getPublisher<FailureGenAltitudeFeedbackEvent>().pub('expectedMode', this.requestedMode, true);
-        this.eventBus.getPublisher<FailureGenAltitudeFeedbackEvent>().pub('armingDisplayStatus', this.failureGeneratorArmed, true);
+        this.bus.getPublisher<FailureGenAltitudeFeedbackEvent>().pub('expectedMode', this.requestedMode, true);
+        this.bus.getPublisher<FailureGenAltitudeFeedbackEvent>().pub('armingDisplayStatus', this.failureGeneratorArmed, true);
         console.info(`Feedbacks sizes: ${this.requestedMode.length.toString()} ${this.failureGeneratorArmed.length.toString()}`);
     }
 

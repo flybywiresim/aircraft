@@ -1,5 +1,11 @@
-import { NXDataStore } from '@flybywiresim/fbw-sdk';
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { EventBus } from '@microsoft/msfs-sdk';
+
+import { NXDataStore } from '@flybywiresim/fbw-sdk';
+
 import { ArmingModeIndex, FailurePhases, FailuresAtOnceIndex, MaxFailuresIndex, RandomFailureGen } from './RandomFailureGen';
 import { FailuresOrchestrator } from './failures-orchestrator';
 
@@ -33,7 +39,8 @@ export abstract class GenericGenerator {
 
     requestedMode: number[] = [];
 
-    readonly eventBus = new EventBus();
+    constructor(private readonly randomFailuresGen: RandomFailureGen, protected readonly bus: EventBus) {
+    }
 
     arm(genNumber: number): void {
         this.failureGeneratorArmed[genNumber] = true;
@@ -129,7 +136,7 @@ export abstract class GenericGenerator {
                 if (this.waitForStopped[i] && this.gs < 1) {
                     this.waitForStopped[i] = false;
                 }
-                if (this.waitForTakeOff[i] && !this.waitForStopped[i] && RandomFailureGen.getFailureFlightPhase() === FailurePhases.TakeOff && this.gs > 1) {
+                if (this.waitForTakeOff[i] && !this.waitForStopped[i] && this.randomFailuresGen.getFailureFlightPhase() === FailurePhases.TakeOff && this.gs > 1) {
                     this.waitForTakeOff[i] = false;
                 }
                 this.generatorSpecificActions(i);
@@ -142,7 +149,7 @@ export abstract class GenericGenerator {
                         const numberOfFailureToActivate = Math.min(this.settings[i * this.numberOfSettingsPerGenerator + FailuresAtOnceIndex],
                             this.settings[i * this.numberOfSettingsPerGenerator + MaxFailuresIndex] - activeFailures.size);
                         if (numberOfFailureToActivate > 0) {
-                            RandomFailureGen.activateRandomFailure(RandomFailureGen.getGeneratorFailurePool(failureOrchestrator, this.uniqueGenPrefix + i.toString()),
+                            this.randomFailuresGen.activateRandomFailure(this.randomFailuresGen.getGeneratorFailurePool(failureOrchestrator, this.uniqueGenPrefix + i.toString()),
                                 failureOrchestrator, activeFailures, numberOfFailureToActivate);
                             this.reset(i);
                             if (this.settings[i * this.numberOfSettingsPerGenerator + ArmingModeIndex] === 1) {

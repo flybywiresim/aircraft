@@ -1,8 +1,12 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { FailureGenFeedbackEvent, GenericGenerator } from 'failures/src/GenericGenerator';
 
 export interface FailureGenPerHourFeedbackEvent extends FailureGenFeedbackEvent {
 
-  }
+}
 
 export class FailureGeneratorPerHour extends GenericGenerator {
     settingName = 'EFB_FAILURE_GENERATOR_SETTING_PERHOUR';
@@ -18,8 +22,8 @@ export class FailureGeneratorPerHour extends GenericGenerator {
     private failurePerHourIndex = 3;
 
     sendFeedback(): void {
-        this.eventBus.getPublisher<FailureGenPerHourFeedbackEvent>().pub('expectedMode', this.requestedMode, true);
-        this.eventBus.getPublisher<FailureGenPerHourFeedbackEvent>().pub('armingDisplayStatus', this.failureGeneratorArmed, true);
+        this.bus.getPublisher<FailureGenPerHourFeedbackEvent>().pub('expectedMode', this.requestedMode, true);
+        this.bus.getPublisher<FailureGenPerHourFeedbackEvent>().pub('armingDisplayStatus', this.failureGeneratorArmed, true);
     }
 
     loopStartAction(): void {

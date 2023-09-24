@@ -1,9 +1,14 @@
-import { useEffect, useMemo, useState } from 'react';
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { usePersistentProperty } from '@flybywiresim/fbw-sdk';
+
+import { useEffect, useMemo, useState } from 'react';
 import { FailureGenContext, FailureGenData, FailureGenFeedbackEvent, setNewSetting } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
 import { t } from 'instruments/src/EFB/translation';
 import { FailureGeneratorSingleSetting } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorSettingsUI';
-import { EventBus } from '@microsoft/msfs-sdk';
+import { useEventBus } from '../../event-bus-provider';
 
 const settingName = 'EFB_FAILURE_GENERATOR_SETTING_TIMER';
 const additionalSetting = [2, 1, 2, 300, 600];
@@ -20,9 +25,9 @@ export interface FailureGenTimerFeedbackEvent extends FailureGenFeedbackEvent{
 
 }
 
-const bus = new EventBus();
-
 export const failureGenConfigTimer: () => FailureGenData = () => {
+    const bus = useEventBus();
+
     const [setting, setSetting] = usePersistentProperty(settingName);
     const [expectedMode, setExpectedMode] = useState<number[]>();
     const [armedState, setArmedState] = useState<boolean[]>();

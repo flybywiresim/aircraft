@@ -1,10 +1,14 @@
-import { useEffect, useMemo, useState } from 'react';
-import { usePersistentProperty } from '@flybywiresim/fbw-sdk';
-import { FailureGenContext, FailureGenData, FailureGenFeedbackEvent, setNewSetting } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
 
+import { usePersistentProperty } from '@flybywiresim/fbw-sdk';
+
+import { useEffect, useMemo, useState } from 'react';
+import { FailureGenContext, FailureGenData, FailureGenFeedbackEvent, setNewSetting } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
 import { t } from 'instruments/src/EFB/translation';
 import { FailureGeneratorSingleSetting, FailureGeneratorText } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorSettingsUI';
-import { EventBus } from '@microsoft/msfs-sdk';
+import { useEventBus } from '../../event-bus-provider';
 
 const settingName = 'EFB_FAILURE_GENERATOR_SETTING_PERHOUR';
 const additionalSetting = [3, 1, 2, 0.1];
@@ -19,9 +23,9 @@ export interface FailureGenPerHourFeedbackEvent extends FailureGenFeedbackEvent{
 
 }
 
-const bus = new EventBus();
-
 export const failureGenConfigPerHour: () => FailureGenData = () => {
+    const bus = useEventBus();
+
     const [setting, setSetting] = usePersistentProperty(settingName);
     const [expectedMode, setExpectedMode] = useState<number[]>();
     const [armedState, setArmedState] = useState<boolean[]>();

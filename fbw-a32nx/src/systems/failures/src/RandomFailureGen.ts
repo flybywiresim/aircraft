@@ -1,5 +1,12 @@
-import { Failure, FailuresOrchestrator } from '@failures';
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
+import { EventBus } from '@microsoft/msfs-sdk';
+
 import { NXDataStore } from '@flybywiresim/fbw-sdk';
+
+import { Failure, FailuresOrchestrator } from '@failures';
 import { GenericGenerator } from 'failures/src/GenericGenerator';
 import { FailureGeneratorAltitude } from './AltitudeFailureGenerator';
 import { FailureGeneratorPerHour } from './PerHourFailureGenerator';
@@ -18,17 +25,21 @@ export enum FailurePhases {
     Flight,
 }
 export class RandomFailureGen {
-    static failureGenerators: GenericGenerator[] = [
-        new FailureGeneratorAltitude(),
-        new FailureGeneratorSpeed(),
-        new FailureGeneratorTimer(),
-        new FailureGeneratorPerHour(),
-        new FailureGeneratorTakeOff(),
-    ];
+    failureGenerators: GenericGenerator[];
 
-    static absoluteTimePrev: number = Date.now();
+    constructor(private readonly bus: EventBus) {
+        this.failureGenerators = [
+            new FailureGeneratorAltitude(this, this.bus),
+            new FailureGeneratorSpeed(this, this.bus),
+            new FailureGeneratorTimer(this, this.bus),
+            new FailureGeneratorPerHour(this, this.bus),
+            new FailureGeneratorTakeOff(this, this.bus),
+        ];
+    }
 
-    static flatten(settings: number[]): string {
+    absoluteTimePrev: number = Date.now();
+
+    flatten(settings: number[]): string {
         let settingString = '';
         for (let i = 0; i < settings.length; i++) {
             settingString += settings[i].toString();
@@ -37,7 +48,7 @@ export class RandomFailureGen {
         return settingString;
     }
 
-    static getSetOfGeneratorFailuresSettings(allFailures: readonly Readonly<Failure>[]): Map<number, string> {
+    getSetOfGeneratorFailuresSettings(allFailures: readonly Readonly<Failure>[]): Map<number, string> {
         const generatorFailuresGetters: Map<number, string> = new Map();
         if (allFailures.length > 0) {
             for (const failure of allFailures) {
@@ -48,7 +59,7 @@ export class RandomFailureGen {
         return generatorFailuresGetters;
     }
 
-    static activateRandomFailure(
+    activateRandomFailure(
         failureList: readonly Readonly<Failure>[],
         failureOrchestrator: FailuresOrchestrator,
         activeFailures: Set<number>,
@@ -69,38 +80,39 @@ export class RandomFailureGen {
         }
     }
 
-    private static failureFlightPhase: FailurePhases;
+    private failureFlightPhase: FailurePhases;
 
-    static getFailureFlightPhase(): FailurePhases {
-        return RandomFailureGen.failureFlightPhase;
+    getFailureFlightPhase(): FailurePhases {
+        return this.failureFlightPhase;
     }
 
-    static basicDataUpdate(): void {
+    basicDataUpdate(): void {
         const isOnGround = Simplane.getIsGrounded();
         const maxThrottleMode = Math.max(Simplane.getEngineThrottleMode(0), Simplane.getEngineThrottleMode(1));
         const throttleTakeOff = maxThrottleMode === ThrottleMode.FLEX_MCT || maxThrottleMode === ThrottleMode.TOGA;
         if (isOnGround) {
-            if (throttleTakeOff) RandomFailureGen.failureFlightPhase = FailurePhases.TakeOff;
-            else RandomFailureGen.failureFlightPhase = FailurePhases.Dormant;
-        } else if (throttleTakeOff) RandomFailureGen.failureFlightPhase = FailurePhases.InitialClimb;
-        else RandomFailureGen.failureFlightPhase = FailurePhases.TakeOff;
+            if (throttleTakeOff) this.failureFlightPhase = FailurePhases.TakeOff;
+            else this.failureFlightPhase = FailurePhases.Dormant;
+        } else if (throttleTakeOff) this.failureFlightPhase = FailurePhases.InitialClimb;
+        else this.failureFlightPhase = FailurePhases.TakeOff;
     }
 
-    static update(failureOrchestrator: FailuresOrchestrator) {
+    update(failureOrchestrator: FailuresOrchestrator) {
         const absoluteTime = Date.now();
-        if (absoluteTime - RandomFailureGen.absoluteTimePrev >= 100.0) {
-            RandomFailureGen.basicDataUpdate();
-            for (let i = 0; i < RandomFailureGen.failureGenerators.length; i++) {
-                RandomFailureGen.failureGenerators[i].updateFailure(failureOrchestrator);
+        if (absoluteTime - this.absoluteTimePrev >= 100.0) {
+            this.basicDataUpdate();
+            for (let i = 0; i < this.failureGenerators.length; i++) {
+                this.failureGenerators[i].updateFailure(failureOrchestrator);
             }
-            RandomFailureGen.absoluteTimePrev = absoluteTime;
+            this.absoluteTimePrev = absoluteTime;
         }
     }
 
-    static getGeneratorFailurePool(failureOrchestrator: FailuresOrchestrator, generatorUniqueID: string): Failure[] {
+    getGeneratorFailurePool(failureOrchestrator: FailuresOrchestrator, generatorUniqueID: string): Failure[] {
         const failureIDs: Failure[] = [];
         const allFailures = failureOrchestrator.getAllFailures();
-        const setOfGeneratorFailuresSettings = RandomFailureGen.getSetOfGeneratorFailuresSettings(allFailures);
+        const setOfGeneratorFailuresSettings = this.getSetOfGeneratorFailuresSettings(allFailures);
+
         if (allFailures.length > 0) {
             for (const failure of allFailures) {
                 const generatorSetting = setOfGeneratorFailuresSettings.get(failure.identifier);

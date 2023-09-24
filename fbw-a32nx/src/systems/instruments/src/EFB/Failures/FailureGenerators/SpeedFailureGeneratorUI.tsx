@@ -1,11 +1,15 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { usePersistentProperty } from '@flybywiresim/fbw-sdk';
-import { FailureGenContext, FailureGenData, FailureGenFeedbackEvent, setNewSetting, setNewSettingAndResetArm } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
 
+import { usePersistentProperty } from '@flybywiresim/fbw-sdk';
+
+import React, { useEffect, useMemo, useState } from 'react';
+import { FailureGenContext, FailureGenData, FailureGenFeedbackEvent, setNewSetting, setNewSettingAndResetArm } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
 import { t } from 'instruments/src/EFB/translation';
 import { ArrowDownRight, ArrowUpRight } from 'react-bootstrap-icons';
 import { ButtonIcon, FailureGeneratorChoiceSetting, FailureGeneratorSingleSetting } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorSettingsUI';
-import { EventBus } from '@microsoft/msfs-sdk';
+import { useEventBus } from '../../event-bus-provider';
 
 const settingName = 'EFB_FAILURE_GENERATOR_SETTING_SPEED';
 const additionalSetting = [2, 1, 2, 0, 200, 300];
@@ -23,9 +27,9 @@ export interface FailureGenSpeedFeedbackEvent extends FailureGenFeedbackEvent{
 
 }
 
-const bus = new EventBus();
-
 export const failureGenConfigSpeed: () => FailureGenData = () => {
+    const bus = useEventBus();
+
     const [setting, setSetting] = usePersistentProperty(settingName);
     const [expectedMode, setExpectedMode] = useState<number[]>();
     const [armedState, setArmedState] = useState<boolean[]>();

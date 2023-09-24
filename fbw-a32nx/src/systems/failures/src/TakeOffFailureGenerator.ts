@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { FailureGenFeedbackEvent, GenericGenerator } from 'failures/src/GenericGenerator';
 
 export interface FailureGenTakeOffFeedbackEvent extends FailureGenFeedbackEvent{
@@ -36,8 +40,8 @@ export class FailureGeneratorTakeOff extends GenericGenerator {
     private altitude: number = 0;
 
     sendFeedback(): void {
-        this.eventBus.getPublisher<FailureGenTakeOffFeedbackEvent>().pub('expectedMode', this.requestedMode, true);
-        this.eventBus.getPublisher<FailureGenTakeOffFeedbackEvent>().pub('armingDisplayStatus', this.failureGeneratorArmed, true);
+        this.bus.getPublisher<FailureGenTakeOffFeedbackEvent>().pub('expectedMode', this.requestedMode, true);
+        this.bus.getPublisher<FailureGenTakeOffFeedbackEvent>().pub('armingDisplayStatus', this.failureGeneratorArmed, true);
     }
 
     loopStartAction(): void {

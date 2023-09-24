@@ -2,7 +2,10 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
+import { EventBus } from '@microsoft/msfs-sdk';
+
 import { AtaChapterNumber } from '@flybywiresim/fbw-sdk';
+
 import { RandomFailureGen } from './RandomFailureGen';
 import { QueuedSimVarWriter, SimVarReaderWriter } from './communication';
 import { getActivateFailureSimVarName, getDeactivateFailureSimVarName } from './sim-vars';
@@ -21,6 +24,8 @@ export interface Failure {
 export class FailuresOrchestrator {
     private failures: Failure[] = [];
 
+    private randomFailureGe: RandomFailureGen;
+
     private activeFailures = new Set<number>();
 
     private changingFailures = new Set<number>();
@@ -29,7 +34,8 @@ export class FailuresOrchestrator {
 
     private deactivateFailureQueue: QueuedSimVarWriter;
 
-    constructor(simVarPrefix: string, failures: [AtaChapterNumber, number, string][]) {
+    constructor(bus: EventBus, simVarPrefix: string, failures: [AtaChapterNumber, number, string][]) {
+        this.randomFailureGe = new RandomFailureGen(bus);
         this.activateFailureQueue = new QueuedSimVarWriter(new SimVarReaderWriter(getActivateFailureSimVarName(simVarPrefix)));
         this.deactivateFailureQueue = new QueuedSimVarWriter(new SimVarReaderWriter(getDeactivateFailureSimVarName(simVarPrefix)));
         failures.forEach((failure) => {
@@ -42,9 +48,9 @@ export class FailuresOrchestrator {
     }
 
     update() {
+        this.randomFailureGe.update(this);
         this.activateFailureQueue.update();
         this.deactivateFailureQueue.update();
-        RandomFailureGen.update(this);
     }
 
     /**

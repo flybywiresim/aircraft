@@ -1,10 +1,14 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { usePersistentProperty } from '@flybywiresim/fbw-sdk';
-import { FailureGenContext, FailureGenData, FailureGenFeedbackEvent, setNewSetting } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
 
+import { usePersistentProperty } from '@flybywiresim/fbw-sdk';
+
+import React, { useEffect, useMemo, useState } from 'react';
+import { FailureGenContext, FailureGenData, FailureGenFeedbackEvent, setNewSetting } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
 import { t } from 'instruments/src/EFB/translation';
 import { FailureGeneratorSingleSetting, FailureGeneratorText } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorSettingsUI';
-import { EventBus } from '@microsoft/msfs-sdk';
+import { useEventBus } from '../../event-bus-provider';
 
 const settingName = 'EFB_FAILURE_GENERATOR_SETTING_TAKEOFF';
 const numberOfSettingsPerGenerator = 10;
@@ -26,9 +30,9 @@ export interface FailureGenTakeOffFeedbackEvent extends FailureGenFeedbackEvent{
 
 }
 
-const bus = new EventBus();
-
 export const failureGenConfigTakeOff: () => FailureGenData = () => {
+    const bus = useEventBus();
+
     const [setting, setSetting] = usePersistentProperty(settingName);
     const [expectedMode, setExpectedMode] = useState<number[]>();
     const [armedState, setArmedState] = useState<boolean[]>();

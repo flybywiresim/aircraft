@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { FailureGenFeedbackEvent, GenericGenerator } from 'failures/src/GenericGenerator';
 
 export interface FailureGenTimerFeedbackEvent extends FailureGenFeedbackEvent {
@@ -22,8 +26,8 @@ export class FailureGeneratorTimer extends GenericGenerator {
     private currentTime: number = 0;
 
     sendFeedback(): void {
-        this.eventBus.getPublisher<FailureGenTimerFeedbackEvent>().pub('expectedMode', this.requestedMode, true);
-        this.eventBus.getPublisher<FailureGenTimerFeedbackEvent>().pub('armingDisplayStatus', this.failureGeneratorArmed, true);
+        this.bus.getPublisher<FailureGenTimerFeedbackEvent>().pub('expectedMode', this.requestedMode, true);
+        this.bus.getPublisher<FailureGenTimerFeedbackEvent>().pub('armingDisplayStatus', this.failureGeneratorArmed, true);
     }
 
     loopStartAction(): void {

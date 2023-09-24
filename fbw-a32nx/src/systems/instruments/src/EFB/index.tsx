@@ -22,6 +22,7 @@ import { readSettingsFromPersistentStorage } from './Settings/sync';
 import { migrateSettings } from './Settings/Migration';
 import { store } from './Store/store';
 import { Error } from './Assets/Error';
+import { EventBusContextProvider } from './event-bus-provider';
 
 const EFBLoad = () => {
     const [, setSessionId] = usePersistentProperty('A32NX_SENTRY_SESSION_ID');
@@ -72,7 +73,7 @@ export const ErrorFallback = ({ resetErrorBoundary }: ErrorFallbackProps) => {
                         </>
                     )}
 
-                    <div className="py-4 px-8 w-full rounded-md border-2 transition duration-100 text-theme-body hover:text-utility-red bg-utility-red hover:bg-theme-body border-utility-red" onClick={resetErrorBoundary}>
+                    <div className="py-4 px-8 w-full text-theme-body hover:text-utility-red bg-utility-red hover:bg-theme-body rounded-md border-2 border-utility-red transition duration-100" onClick={resetErrorBoundary}>
                         <h2 className="font-bold text-center text-current">Reset Display</h2>
                     </div>
                 </div>
@@ -103,6 +104,10 @@ if (process.env.VITE_BUILD) {
 }
 
 render(
-    <FailuresOrchestratorProvider><EFBLoad /></FailuresOrchestratorProvider>,
+    <EventBusContextProvider>
+        <FailuresOrchestratorProvider>
+            <EFBLoad />
+        </FailuresOrchestratorProvider>
+    </EventBusContextProvider>,
     true, true,
 );
