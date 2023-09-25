@@ -9,6 +9,17 @@ import { NXDataStore } from '@flybywiresim/fbw-sdk';
 import { ArmingModeIndex, FailurePhases, FailuresAtOnceIndex, MaxFailuresIndex, RandomFailureGen } from './RandomFailureGen';
 import { FailuresOrchestrator } from './failures-orchestrator';
 
+export interface FailureGenFeedbackEvent {
+    expectedMode: { generatorType: string, mode: number[] };
+    armingDisplayStatus: { generatorType: string, status: boolean[] };
+  }
+
+// this interface is a placeHolder for when the bus will be used for comm from UI to the system
+export interface FailureGenEvent {
+    armingMode: number[];
+    failuresAtOnce : number[];
+    maxFailures : number[];
+  }
 export abstract class GenericGenerator {
     settingName: string= 'EFB_FAILURE_GENERATOR_SETTING_[GENERATORNAMEHERE]';
 
@@ -92,11 +103,17 @@ export abstract class GenericGenerator {
     }
 
     sendFeedbackModeRequest(): void {
-        //
+        const generatorType = this.uniqueGenPrefix;
+        const mode = this.requestedMode;
+        this.bus.getPublisher<FailureGenFeedbackEvent>().pub('expectedMode', { generatorType, mode }, true);
+        // console.info(`ModeRequest sent - size: ${this.requestedMode.length.toString()}}`);
     }
 
     sendFeedbackArmedDisplay(): void {
-        //
+        const generatorType = this.uniqueGenPrefix;
+        const status = this.failureGeneratorArmed;
+        this.bus.getPublisher<FailureGenFeedbackEvent>().pub('armingDisplayStatus', { generatorType, status }, true);
+        // console.info(`ArmedDisplay sent - size: ${this.failureGeneratorArmed.length.toString()}`);
     }
 
     updateFailure(failureOrchestrator: FailuresOrchestrator): void {

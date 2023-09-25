@@ -4,17 +4,12 @@
 
 import { GenericGenerator } from 'failures/src/GenericGenerator';
 
-export interface FailureGenFeedbackEvent {
-    expectedModeAltitude: number[];
-    armingDisplayStatusAltitude: boolean[];
-  }
-
 export class FailureGeneratorAltitude extends GenericGenerator {
     settingName = 'EFB_FAILURE_GENERATOR_SETTING_ALTITUDE';
 
     numberOfSettingsPerGenerator = 6;
 
-    uniqueGenPrefix = 'A';
+    uniqueGenPrefix: string = 'A';
 
     private rolledDice: number[] = [];
 
@@ -29,16 +24,6 @@ export class FailureGeneratorAltitude extends GenericGenerator {
     private resetMargin = 100;
 
     private altitude: number;
-
-    sendFeedbackModeRequest(): void {
-        this.bus.getPublisher<FailureGenFeedbackEvent>().pub('expectedModeAltitude', this.requestedMode, true);
-        // console.info(`ModeRequest sent - size: ${this.requestedMode.length.toString()}}`);
-    }
-
-    sendFeedbackArmedDisplay(): void {
-        this.bus.getPublisher<FailureGenFeedbackEvent>().pub('armingDisplayStatusAltitude', this.failureGeneratorArmed, true);
-        // console.info(`ArmedDisplay sent - size: ${this.failureGeneratorArmed.length.toString()}`);
-    }
 
     loopStartAction(): void {
         this.altitude = Simplane.getAltitude();

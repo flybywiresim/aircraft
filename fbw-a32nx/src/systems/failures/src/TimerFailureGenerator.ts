@@ -4,18 +4,6 @@
 
 import { GenericGenerator } from 'failures/src/GenericGenerator';
 
-export interface FailureGenFeedbackEvent {
-    expectedModeTimer: number[];
-    armingDisplayStatusTimer: boolean[];
-  }
-
-// this interface is a placeHolder for when the bus will be used for comm from UI to the system
-export interface FailureGenEvent {
-    armingMode: number[];
-    failuresAtOnce : number[];
-    maxFailures : number[];
-  }
-
 export class FailureGeneratorTimer extends GenericGenerator {
     settingName = 'EFB_FAILURE_GENERATOR_SETTING_TIMER';
 
@@ -32,16 +20,6 @@ export class FailureGeneratorTimer extends GenericGenerator {
     private delayMaxIndex = 4;
 
     private currentTime: number = 0;
-
-    sendFeedbackModeRequest(): void {
-        this.bus.getPublisher<FailureGenFeedbackEvent>().pub('expectedModeTimer', this.requestedMode, true);
-        // console.info(`ModeRequest sent - size: ${this.requestedMode.length.toString()}}`);
-    }
-
-    sendFeedbackArmedDisplay(): void {
-        this.bus.getPublisher<FailureGenFeedbackEvent>().pub('armingDisplayStatusTimer', this.failureGeneratorArmed, true);
-        // console.info(`ArmedDisplay sent - size: ${this.failureGeneratorArmed.length.toString()}`);
-    }
 
     loopStartAction(): void {
         this.currentTime = Date.now();

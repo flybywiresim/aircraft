@@ -4,11 +4,6 @@
 
 import { GenericGenerator } from 'failures/src/GenericGenerator';
 
-export interface FailureGenFeedbackEvent {
-    expectedModeSpeed: number[];
-    armingDisplayStatusSpeed: boolean[];
-  }
-
 export class FailureGeneratorSpeed extends GenericGenerator {
     settingName = 'EFB_FAILURE_GENERATOR_SETTING_SPEED';
 
@@ -27,16 +22,6 @@ export class FailureGeneratorSpeed extends GenericGenerator {
     private speedMaxIndex = 5;
 
     private resetMargin = 5;
-
-    sendFeedbackModeRequest(): void {
-        this.bus.getPublisher<FailureGenFeedbackEvent>().pub('expectedModeSpeed', this.requestedMode, true);
-        // console.info(`ModeRequest sent - size: ${this.requestedMode.length.toString()}}`);
-    }
-
-    sendFeedbackArmedDisplay(): void {
-        this.bus.getPublisher<FailureGenFeedbackEvent>().pub('armingDisplayStatusSpeed', this.failureGeneratorArmed, true);
-        // console.info(`ArmedDisplay sent - size: ${this.failureGeneratorArmed.length.toString()}`);
-    }
 
     additionalInitActions(genNumber: number): void {
         this.previousSpeedCondition[genNumber] = this.settings[genNumber * this.numberOfSettingsPerGenerator

@@ -4,11 +4,6 @@
 
 import { GenericGenerator } from 'failures/src/GenericGenerator';
 
-export interface FailureGenFeedbackEvent {
-    expectedModeTakeOff: number[];
-    armingDisplayStatusTakeOff: boolean[];
-  }
-
 export class FailureGeneratorTakeOff extends GenericGenerator {
     settingName = 'EFB_FAILURE_GENERATOR_SETTING_TAKEOFF';
 
@@ -39,16 +34,6 @@ export class FailureGeneratorTakeOff extends GenericGenerator {
     private altitudeIndex = 9;
 
     private altitude: number = 0;
-
-    sendFeedbackModeRequest(): void {
-        this.bus.getPublisher<FailureGenFeedbackEvent>().pub('expectedModeTakeOff', this.requestedMode, true);
-        // console.info(`ModeRequest sent - size: ${this.requestedMode.length.toString()}}`);
-    }
-
-    sendFeedbackArmedDisplay(): void {
-        this.bus.getPublisher<FailureGenFeedbackEvent>().pub('armingDisplayStatusTakeOff', this.failureGeneratorArmed, true);
-        // console.info(`ArmedDisplay sent - size: ${this.failureGeneratorArmed.length.toString()}`);
-    }
 
     loopStartAction(): void {
         this.altitude = Simplane.getAltitude();

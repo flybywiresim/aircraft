@@ -4,11 +4,6 @@
 
 import { GenericGenerator } from 'failures/src/GenericGenerator';
 
-export interface FailureGenFeedbackEvent {
-    expectedModePerHour: number[];
-    armingDisplayStatusPerHour: boolean[];
-  }
-
 export class FailureGeneratorPerHour extends GenericGenerator {
     settingName = 'EFB_FAILURE_GENERATOR_SETTING_PERHOUR';
 
@@ -21,16 +16,6 @@ export class FailureGeneratorPerHour extends GenericGenerator {
     private currentTime: number = 0;
 
     private failurePerHourIndex = 3;
-
-    sendFeedbackModeRequest(): void {
-        this.bus.getPublisher<FailureGenFeedbackEvent>().pub('expectedModePerHour', this.requestedMode, true);
-        // console.info(`ModeRequest sent - size: ${this.requestedMode.length.toString()}}`);
-    }
-
-    sendFeedbackArmedDisplay(): void {
-        this.bus.getPublisher<FailureGenFeedbackEvent>().pub('armingDisplayStatusPerHour', this.failureGeneratorArmed, true);
-        // console.info(`ArmedDisplay sent - size: ${this.failureGeneratorArmed.length.toString()}`);
-    }
 
     loopStartAction(): void {
         this.currentTime = Date.now();
