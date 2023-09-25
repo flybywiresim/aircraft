@@ -631,7 +631,7 @@ class AB3Cell extends DisplayComponent<CellProps> {
                 const text = Math.round(this.speedPreselVal);
                 this.textSub.set(`SPEED SEL: ${text}`);
             } else if (this.machPreselVal !== -1 && this.speedPreselVal === -1) {
-                this.textSub.set(`MACH SEL ${this.machPreselVal.toFixed(2)}`);
+                this.textSub.set(`MACH SEL: ${this.machPreselVal.toFixed(2)}`);
             } else if (this.machPreselVal === -1 && this.speedPreselVal === -1) {
                 this.textSub.set('');
             }
