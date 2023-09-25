@@ -36,7 +36,7 @@ export class FailureGeneratorTakeOff extends GenericGenerator {
     private altitude: number = 0;
 
     loopStartAction(): void {
-        this.altitude = Simplane.getAltitude();
+        this.altitude = SimVar.GetSimVarValue('INDICATED ALTITUDE', 'Feet') || '0';
     }
 
     generatorSpecificActions(genNumber: number): void {

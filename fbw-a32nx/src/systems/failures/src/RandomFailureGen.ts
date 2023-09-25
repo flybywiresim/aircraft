@@ -87,7 +87,7 @@ export class RandomFailureGen {
     }
 
     basicDataUpdate(): void {
-        const isOnGround = Simplane.getIsGrounded();
+        const isOnGround = SimVar.GetSimVarValue('SIM ON GROUND', 'Bool');
         const maxThrottleMode = Math.max(Simplane.getEngineThrottleMode(0), Simplane.getEngineThrottleMode(1));
         const throttleTakeOff = maxThrottleMode === ThrottleMode.FLEX_MCT || maxThrottleMode === ThrottleMode.TOGA;
         if (isOnGround) {

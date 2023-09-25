@@ -16,6 +16,7 @@ export interface FailureGenFeedbackEvent {
 
 // this interface is a placeHolder for when the bus will be used for comm from UI to the system
 export interface FailureGenEvent {
+    refreshData: number[];
     armingMode: number[];
     failuresAtOnce : number[];
     maxFailures : number[];
@@ -47,7 +48,26 @@ export abstract class GenericGenerator {
 
     requestedMode: number[] = [];
 
+    armingMode: number[] = [];
+
+    failuresAtOnce : number[] = [];
+
+    maxFailures : number[] = [];
+
     constructor(private readonly randomFailuresGen: RandomFailureGen, protected readonly bus: EventBus) {
+        bus.getSubscriber<FailureGenEvent>().on('refreshData').handle((_value) => {
+            this.sendFeedbackArmedDisplay();
+            this.sendFeedbackModeRequest();
+        });
+        bus.getSubscriber<FailureGenEvent>().on('armingMode').handle((table) => {
+            this.armingMode = Array.from(table);
+        });
+        bus.getSubscriber<FailureGenEvent>().on('failuresAtOnce').handle((table) => {
+            this.failuresAtOnce = Array.from(table);
+        });
+        bus.getSubscriber<FailureGenEvent>().on('maxFailures').handle((table) => {
+            this.maxFailures = Array.from(table);
+        });
     }
 
     arm(genNumber: number): void {
@@ -106,21 +126,21 @@ export abstract class GenericGenerator {
         const generatorType = this.uniqueGenPrefix;
         const mode = this.requestedMode;
         this.bus.getPublisher<FailureGenFeedbackEvent>().pub('expectedMode', { generatorType, mode }, true);
-        // console.info(`ModeRequest sent - size: ${this.requestedMode.length.toString()}}`);
+        console.info(`expectedMode sent: ${`${generatorType} - ${mode.toString()}`}`);
     }
 
     sendFeedbackArmedDisplay(): void {
         const generatorType = this.uniqueGenPrefix;
         const status = this.failureGeneratorArmed;
         this.bus.getPublisher<FailureGenFeedbackEvent>().pub('armingDisplayStatus', { generatorType, status }, true);
-        // console.info(`ArmedDisplay sent - size: ${this.failureGeneratorArmed.length.toString()}`);
+        console.info(`ArmedDisplay sent: ${`${generatorType} - ${status.toString()}`}`);
     }
 
     updateFailure(failureOrchestrator: FailuresOrchestrator): void {
         const failureGeneratorSetting = NXDataStore.get(this.settingName, '');
         this.settings = failureGeneratorSetting.split(',').map(((it) => parseFloat(it)));
         const nbGenerator = Math.floor(this.settings.length / this.numberOfSettingsPerGenerator);
-        this.gs = Simplane.getGroundSpeed();
+        this.gs = SimVar.GetSimVarValue('GPS GROUND SPEED', 'Knots') || '0';
         this.loopStartAction();
 
         // console.info(failureGeneratorSetting);

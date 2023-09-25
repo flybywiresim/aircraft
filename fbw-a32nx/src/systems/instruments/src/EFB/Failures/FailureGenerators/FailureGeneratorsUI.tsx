@@ -60,7 +60,7 @@ export const FailureGeneratorsUI = () => {
                                     failureGeneratorAdd(settings.allGenSettings.get(chosenGen), settings);
                                 }
                             }}
-                            className="flex-none py-2 px-2 mr-4 text-center rounded-md bg-theme-accent hover:text-theme-body hover:bg-theme-highlight"
+                            className="flex-none py-2 px-2 text-center rounded-md bg-theme-accent hover:text-theme-body hover:bg-theme-highlight"
                         >
                             <PlusLg />
                         </div>

@@ -5,7 +5,7 @@
 import { usePersistentProperty } from '@flybywiresim/fbw-sdk';
 
 import { useEffect, useMemo, useState } from 'react';
-import { FailureGenContext, FailureGenData, flatten, setNewSetting } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
+import { FailureGenContext, FailureGenData, FailureGenEvent, FailureGenFeedbackEvent, flatten, setNewSetting } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
 import { t } from 'instruments/src/EFB/translation';
 import { FailureGeneratorSingleSetting, FailureGeneratorText } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorSettingsUI';
 import { ArmingModeIndex } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
@@ -20,11 +20,6 @@ const alias = () => t('Failures.Generators.GenPerHour');
 const disableTakeOffRearm = false;
 const FailurePerHourIndex = 3;
 
-export interface FailureGenFeedbackEvent {
-    expectedModePerHour: number[];
-    armingDisplayStatusPerHour: boolean[];
-  }
-
 export const failureGenConfigPerHour: () => FailureGenData = () => {
     const bus = useEventBus();
 
@@ -37,24 +32,30 @@ export const failureGenConfigPerHour: () => FailureGenData = () => {
     }, [setting]);
 
     useEffect(() => {
-        const sub1 = bus.getSubscriber<FailureGenFeedbackEvent>().on('expectedModePerHour').handle((table) => {
-            const nbGenerator = Math.floor(settings.length / numberOfSettingsPerGenerator);
-            let changeNeeded = false;
-            for (let i = 0; i < nbGenerator; i++) {
-                if (settings[i * numberOfSettingsPerGenerator + ArmingModeIndex] !== -1) {
-                    if (i < table?.length && table[i] === 0) {
-                        settings[i * numberOfSettingsPerGenerator + ArmingModeIndex] = 0;
-                        changeNeeded = true;
+        const sub1 = bus.getSubscriber<FailureGenFeedbackEvent>().on('expectedMode').handle(({ generatorType, mode }) => {
+            if (generatorType === uniqueGenPrefix) {
+                const nbGenerator = Math.floor(settings.length / numberOfSettingsPerGenerator);
+                let changeNeeded = false;
+                for (let i = 0; i < nbGenerator; i++) {
+                    if (settings[i * numberOfSettingsPerGenerator + ArmingModeIndex] !== -1) {
+                        if (i < mode?.length && mode[i] === 0) {
+                            settings[i * numberOfSettingsPerGenerator + ArmingModeIndex] = 0;
+                            changeNeeded = true;
+                        }
                     }
                 }
+                if (changeNeeded) setSetting(flatten(settings));
             }
-            if (changeNeeded) setSetting(flatten(settings));
             // console.info('received expectedMode');
         });
-        const sub2 = bus.getSubscriber<FailureGenFeedbackEvent>().on('armingDisplayStatusPerHour').handle((table) => {
-            setArmedState(table);
-            // console.info('received received arming states');
+        const sub2 = bus.getSubscriber<FailureGenFeedbackEvent>().on('armingDisplayStatus').handle(({ generatorType, status }) => {
+            if (generatorType === uniqueGenPrefix) {
+                setArmedState(status);
+            // console.info('received arming states');
+            }
         });
+        bus.getPublisher<FailureGenEvent>().pub('refreshData', true, true);
+        console.info('requesting refresh');
         return () => {
             sub1.destroy();
             sub2.destroy();
