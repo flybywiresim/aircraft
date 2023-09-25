@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { GenericGenerator } from 'failures/src/GenericGenerator';
+import { GenericGenerator } from './GenericGenerator';
 
 export class FailureGeneratorSpeed extends GenericGenerator {
     settingName = 'EFB_FAILURE_GENERATOR_SETTING_SPEED';
