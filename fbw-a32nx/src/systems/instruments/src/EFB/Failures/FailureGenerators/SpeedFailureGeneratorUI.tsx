@@ -7,7 +7,7 @@ import { usePersistentProperty } from '@flybywiresim/fbw-sdk';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
     FailureGenContext, FailureGenData, FailureGenEvent, FailureGenFeedbackEvent,
-    flatten, setNewSetting, setNewSettingAndResetArm,
+    flatten, setNewSetting,
 } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
 import { t } from 'instruments/src/EFB/translation';
 import { ArrowDownRight, ArrowUpRight } from 'react-bootstrap-icons';
@@ -80,6 +80,7 @@ export const failureGenConfigSpeed: () => FailureGenData = () => {
         alias,
         disableTakeOffRearm,
         armedState,
+        bus,
     };
 };
 
@@ -87,7 +88,7 @@ const generatorSettingComponents = (genNumber: number, generatorSettings: Failur
     const settings = generatorSettings.settings;
     const settingTable = [
         FailureGeneratorChoiceSetting(t('Failures.Generators.SpeedCondition'), settings[genNumber * numberOfSettingsPerGenerator + SpeedConditionIndex], accelDecelMode,
-            setNewSettingAndResetArm, generatorSettings, genNumber, SpeedConditionIndex, failureGenContext),
+            setNewSetting, generatorSettings, genNumber, SpeedConditionIndex, failureGenContext),
         FailureGeneratorSingleSetting(t('Failures.Generators.MinimumGroundSpeed'), t('Failures.Generators.knots'), 0,
             settings[genNumber * numberOfSettingsPerGenerator + SpeedMaxIndex],
             settings[genNumber * numberOfSettingsPerGenerator + SpeedMinIndex], 1,

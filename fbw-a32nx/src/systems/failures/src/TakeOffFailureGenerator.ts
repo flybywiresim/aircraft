@@ -5,8 +5,6 @@
 import { GenericGenerator } from './GenericGenerator';
 
 export class FailureGeneratorTakeOff extends GenericGenerator {
-    settingName = 'EFB_FAILURE_GENERATOR_SETTING_TAKEOFF';
-
     numberOfSettingsPerGenerator = 10;
 
     uniqueGenPrefix = 'E';

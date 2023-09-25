@@ -5,9 +5,7 @@
 import { GenericGenerator } from './GenericGenerator';
 
 export class FailureGeneratorSpeed extends GenericGenerator {
-    settingName = 'EFB_FAILURE_GENERATOR_SETTING_SPEED';
-
-    numberOfSettingsPerGenerator = 6;
+numberOfSettingsPerGenerator = 6;
 
     uniqueGenPrefix = 'B';
 

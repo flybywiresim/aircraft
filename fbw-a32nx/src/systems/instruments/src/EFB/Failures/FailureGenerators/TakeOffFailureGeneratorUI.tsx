@@ -80,6 +80,7 @@ export const failureGenConfigTakeOff: () => FailureGenData = () => {
         alias,
         disableTakeOffRearm,
         armedState,
+        bus,
     };
 };
 

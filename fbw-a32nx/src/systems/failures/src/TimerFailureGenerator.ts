@@ -5,8 +5,6 @@
 import { GenericGenerator } from './GenericGenerator';
 
 export class FailureGeneratorTimer extends GenericGenerator {
-    settingName = 'EFB_FAILURE_GENERATOR_SETTING_TIMER';
-
     numberOfSettingsPerGenerator = 5;
 
     uniqueGenPrefix = 'D';

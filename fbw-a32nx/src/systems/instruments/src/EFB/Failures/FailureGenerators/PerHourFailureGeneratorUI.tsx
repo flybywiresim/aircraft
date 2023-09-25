@@ -74,6 +74,7 @@ export const failureGenConfigPerHour: () => FailureGenData = () => {
         disableTakeOffRearm,
         generatorSettingComponents,
         armedState,
+        bus,
     };
 };
 

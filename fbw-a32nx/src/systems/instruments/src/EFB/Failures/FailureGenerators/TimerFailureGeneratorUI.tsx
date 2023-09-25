@@ -5,7 +5,10 @@
 import { usePersistentProperty } from '@flybywiresim/fbw-sdk';
 
 import { useEffect, useMemo, useState } from 'react';
-import { FailureGenContext, FailureGenData, FailureGenEvent, FailureGenFeedbackEvent, flatten, setNewSetting } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
+import {
+    FailureGenContext, FailureGenData, FailureGenEvent, FailureGenFeedbackEvent,
+    flatten, sendSettings, setNewSetting,
+} from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
 import { t } from 'instruments/src/EFB/translation';
 import { FailureGeneratorSingleSetting } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorSettingsUI';
 import { ArmingModeIndex } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
@@ -36,7 +39,7 @@ export const failureGenConfigTimer: () => FailureGenData = () => {
     useEffect(() => {
         const sub1 = bus.getSubscriber<FailureGenFeedbackEvent>().on('expectedMode').handle(({ generatorType, mode }) => {
             if (generatorType === uniqueGenPrefix) {
-                console.info(`TIM expectedMode received: ${generatorType}===${uniqueGenPrefix} - ${mode.toString()}`);
+                console.info(`TIM expectedMode received: ${generatorType} - ${mode.toString()}`);
                 const nbGenerator = Math.floor(settings.length / numberOfSettingsPerGenerator);
                 let changeNeeded = false;
                 for (let i = 0; i < nbGenerator; i++) {
@@ -47,7 +50,11 @@ export const failureGenConfigTimer: () => FailureGenData = () => {
                         }
                     }
                 }
-                if (changeNeeded) setSetting(flatten(settings));
+                if (changeNeeded) {
+                    const flattenedString = flatten(settings);
+                    setSetting(flattenedString);
+                    sendSettings(uniqueGenPrefix, flattenedString, bus);
+                }
             }
             // console.info('received expectedMode');
         });
@@ -77,6 +84,7 @@ export const failureGenConfigTimer: () => FailureGenData = () => {
         alias,
         disableTakeOffRearm,
         armedState,
+        bus,
     };
 };
 

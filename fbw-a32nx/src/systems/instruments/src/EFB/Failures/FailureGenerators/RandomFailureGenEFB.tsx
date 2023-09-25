@@ -13,6 +13,7 @@ import { failureGenConfigTimer } from 'instruments/src/EFB/Failures/FailureGener
 import { ModalContextInterface, useModals } from 'instruments/src/EFB/UtilComponents/Modals/Modals';
 import { selectAllFailures } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelectionUI';
 import { ArmingModeIndex, FailuresAtOnceIndex, MaxFailuresIndex } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
+import { EventBus } from '@microsoft/msfs-sdk';
 import { useFailuresOrchestrator } from '../../failures-orchestrator-provider';
 
 export interface FailureGenFeedbackEvent {
@@ -22,9 +23,7 @@ export interface FailureGenFeedbackEvent {
 
 export interface FailureGenEvent {
     refreshData: boolean;
-    armingMode: number[];
-    failuresAtOnce : number[];
-    maxFailures : number[];
+    settings: {generatorType: string, settingsString: string}
   }
 
 export const failureGeneratorCommonFunction = () => {
@@ -45,6 +44,7 @@ export type FailureGenData = {
     alias: () => string,
     disableTakeOffRearm: boolean,
     armedState: boolean[],
+    bus: EventBus,
 }
 
 export type FailureGenContext = {
@@ -163,16 +163,18 @@ export function setNewNumberOfFailureSetting(newSetting: number, generatorSettin
     generatorSettings.setSetting(flatten(settings));
 }
 
-export function setNewSettingAndResetArm(newSetting: number, generatorSettings: FailureGenData, genID: number, settingIndex: number) {
-    const settings = generatorSettings.settings;
-    settings[genID * generatorSettings.numberOfSettingsPerGenerator + settingIndex] = newSetting;
-    generatorSettings.setSetting(flatten(settings));
-}
-
 export function setNewSetting(newSetting: number, generatorSettings: FailureGenData, genID: number, settingIndex: number) {
     const settings = generatorSettings.settings;
     settings[genID * generatorSettings.numberOfSettingsPerGenerator + settingIndex] = newSetting;
-    generatorSettings.setSetting(flatten(settings));
+    const settingsString = flatten(settings);
+    generatorSettings.setSetting(settingsString);
+    sendSettings(generatorSettings.uniqueGenPrefix, settingsString, generatorSettings.bus);
+}
+
+export function sendSettings(uniqueGenPrefix: string, settingsString: string, bus: EventBus) {
+    const generatorType = uniqueGenPrefix;
+    console.info(`settings sent: ${generatorType} - ${settingsString}`);
+    bus.getPublisher<FailureGenEvent>().pub('settings', { generatorType, settingsString }, true);
 }
 
 export const eraseGenerator: (genID: number, generatorSettings: FailureGenData, failureGenContext: FailureGenContext) =>

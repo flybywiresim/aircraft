@@ -5,10 +5,7 @@
 import { usePersistentProperty } from '@flybywiresim/fbw-sdk';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import {
-    FailureGenContext, FailureGenData, FailureGenEvent, FailureGenFeedbackEvent, flatten,
-    setNewSetting, setNewSettingAndResetArm,
-} from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
+import { FailureGenContext, FailureGenData, FailureGenEvent, FailureGenFeedbackEvent, flatten, setNewSetting } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
 import { t } from 'instruments/src/EFB/translation';
 import { ArrowDownRight, ArrowUpRight } from 'react-bootstrap-icons';
 import { ButtonIcon, FailureGeneratorChoiceSetting, FailureGeneratorSingleSetting } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorSettingsUI';
@@ -82,6 +79,7 @@ export const failureGenConfigAltitude: () => FailureGenData = () => {
         disableTakeOffRearm,
         generatorSettingComponents,
         armedState,
+        bus,
     };
 };
 
@@ -89,7 +87,7 @@ const generatorSettingComponents = (genNumber: number, generatorSettings: Failur
     const settings = generatorSettings.settings;
     const settingTable = [
         FailureGeneratorChoiceSetting(t('Failures.Generators.AltitudeCondition'), settings[genNumber * numberOfSettingsPerGenerator + AltitudeConditionIndex], climbDescentMode,
-            setNewSettingAndResetArm, generatorSettings, genNumber, AltitudeConditionIndex, failureGenContext),
+            setNewSetting, generatorSettings, genNumber, AltitudeConditionIndex, failureGenContext),
         FailureGeneratorSingleSetting(t('Failures.Generators.AltitudeMin'),
             t('Failures.Generators.feet'), 0, settings[genNumber * numberOfSettingsPerGenerator + AltitudeMaxIndex] * 100,
             settings[genNumber * numberOfSettingsPerGenerator + AltitudeMinIndex], 100,

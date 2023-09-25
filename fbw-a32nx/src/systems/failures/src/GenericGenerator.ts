@@ -4,8 +4,6 @@
 
 import { EventBus } from '@microsoft/msfs-sdk';
 
-import { NXDataStore } from '@flybywiresim/fbw-sdk';
-
 import { ArmingModeIndex, FailurePhases, FailuresAtOnceIndex, MaxFailuresIndex, RandomFailureGen } from './RandomFailureGen';
 import { FailuresOrchestrator } from './failures-orchestrator';
 
@@ -16,14 +14,10 @@ export interface FailureGenFeedbackEvent {
 
 // this interface is a placeHolder for when the bus will be used for comm from UI to the system
 export interface FailureGenEvent {
-    refreshData: number[];
-    armingMode: number[];
-    failuresAtOnce : number[];
-    maxFailures : number[];
+    refreshData: boolean;
+    settings: {generatorType: string, settingsString: string}
   }
 export abstract class GenericGenerator {
-    settingName: string= 'EFB_FAILURE_GENERATOR_SETTING_[GENERATORNAMEHERE]';
-
     numberOfSettingsPerGenerator: number= 3;
 
     uniqueGenPrefix: string = 'UNIQUE LETTER HERE';
@@ -59,14 +53,12 @@ export abstract class GenericGenerator {
             this.sendFeedbackArmedDisplay();
             this.sendFeedbackModeRequest();
         });
-        bus.getSubscriber<FailureGenEvent>().on('armingMode').handle((table) => {
-            this.armingMode = Array.from(table);
-        });
-        bus.getSubscriber<FailureGenEvent>().on('failuresAtOnce').handle((table) => {
-            this.failuresAtOnce = Array.from(table);
-        });
-        bus.getSubscriber<FailureGenEvent>().on('maxFailures').handle((table) => {
-            this.maxFailures = Array.from(table);
+        bus.getSubscriber<FailureGenEvent>().on('settings').handle(({ generatorType, settingsString }) => {
+            // console.info('DISARMED');
+            if (generatorType === this.uniqueGenPrefix) {
+                console.info(`settings received: ${generatorType} - ${settingsString}`);
+                this.settings = settingsString.split(',').map(((it) => parseFloat(it)));
+            }
         });
     }
 
@@ -137,8 +129,6 @@ export abstract class GenericGenerator {
     }
 
     updateFailure(failureOrchestrator: FailuresOrchestrator): void {
-        const failureGeneratorSetting = NXDataStore.get(this.settingName, '');
-        this.settings = failureGeneratorSetting.split(',').map(((it) => parseFloat(it)));
         const nbGenerator = Math.floor(this.settings.length / this.numberOfSettingsPerGenerator);
         this.gs = SimVar.GetSimVarValue('GPS GROUND SPEED', 'Knots') || '0';
         this.loopStartAction();
@@ -224,7 +214,7 @@ export abstract class GenericGenerator {
         }
         feedbackChange = false;
         for (let i = 0; i < nbGenerator; i++) {
-            if (this.previousRequestedMode[i] !== this.requestedMode[i] && this.requestedMode[i] >= 0) {
+            if (this.previousRequestedMode[i] !== this.requestedMode[i]) {
                 feedbackChange = true;
             }
         }

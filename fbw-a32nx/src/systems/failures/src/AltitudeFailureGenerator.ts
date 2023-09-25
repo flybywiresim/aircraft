@@ -5,8 +5,6 @@
 import { GenericGenerator } from './GenericGenerator';
 
 export class FailureGeneratorAltitude extends GenericGenerator {
-    settingName = 'EFB_FAILURE_GENERATOR_SETTING_ALTITUDE';
-
     numberOfSettingsPerGenerator = 6;
 
     uniqueGenPrefix: string = 'A';
