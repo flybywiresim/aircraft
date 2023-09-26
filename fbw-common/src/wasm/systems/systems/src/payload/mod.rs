@@ -1,9 +1,5 @@
-use std::{
-    cell::Cell,
-    cmp::{max, min},
-    rc::Rc,
-    time::Duration,
-};
+use std::{cell::Cell, rc::Rc, time::Duration};
+use uom::si::{f64::Ratio, ratio::percent};
 
 use crate::{
     shared::random_from_range,
@@ -62,14 +58,32 @@ pub trait CargoPayload {
 
 #[derive(Debug)]
 pub struct BoardingAgent<const P: usize> {
+    door_id: VariableIdentifier,
+    door_open_ratio: Ratio,
     order: [usize; P],
 }
 impl<const P: usize> BoardingAgent<P> {
-    pub fn new(order: [usize; P]) -> Self {
-        BoardingAgent { order }
+    pub fn new(door_id: VariableIdentifier, order: [usize; P]) -> Self {
+        BoardingAgent {
+            door_id,
+            order,
+            door_open_ratio: Ratio::default(),
+        }
     }
 
     pub fn handle_one_pax(&self, pax: &mut [Pax; P]) {
+        for ps in self.order {
+            if self.is_door_open() {
+                if pax[ps].pax_is_target() {
+                    continue;
+                }
+                pax[ps].move_one_pax();
+                break;
+            }
+        }
+    }
+
+    pub fn force_one_pax(&self, pax: &mut [Pax; P]) {
         for ps in self.order {
             if pax[ps].pax_is_target() {
                 continue;
@@ -78,27 +92,33 @@ impl<const P: usize> BoardingAgent<P> {
             break;
         }
     }
+
+    pub fn force_num_pax(&self, num_to_move: i32, pax: &mut [Pax; P]) {
+        for _ in 0..num_to_move {
+            self.force_one_pax(pax);
+        }
+    }
+
+    pub fn is_door_open(&self) -> bool {
+        self.door_open_ratio >= Ratio::new::<percent>(100.)
+    }
+}
+impl<const P: usize> SimulationElement for BoardingAgent<P> {
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.door_open_ratio = reader.read(&self.door_id);
+    }
 }
 
 #[derive(Debug)]
 pub struct PassengerDeck<const N: usize, const G: usize> {
     pax: [Pax; N],
     boarding_agents: [BoardingAgent<N>; G],
-
-    boarding_gates_id: VariableIdentifier,
-    boarding_gates: usize,
 }
 impl<const N: usize, const G: usize> PassengerDeck<N, G> {
-    pub fn new(
-        context: &mut InitContext,
-        pax: [Pax; N],
-        boarding_agents: [BoardingAgent<N>; G],
-    ) -> Self {
+    pub fn new(pax: [Pax; N], boarding_agents: [BoardingAgent<N>; G]) -> Self {
         PassengerDeck {
             pax,
             boarding_agents,
-            boarding_gates_id: context.get_identifier("NUM_BOARDING_GATES".to_owned()),
-            boarding_gates: 0,
         }
     }
 
@@ -154,10 +174,6 @@ impl<const N: usize, const G: usize> PassengerDeck<N, G> {
         self.pax.iter().all(|ps| ps.pax_is_target())
     }
 
-    fn num_boarding_points(&self) -> usize {
-        min(self.boarding_agents.len(), max(1, self.boarding_gates))
-    }
-
     fn override_payload(&mut self, ps: usize, payload: Mass) {
         self.pax[ps].override_payload(payload);
     }
@@ -169,8 +185,14 @@ impl<const N: usize, const G: usize> PassengerDeck<N, G> {
     }
 
     fn update_one_tick(&mut self) {
-        for ai in 0..self.num_boarding_points() {
-            self.boarding_agents[ai].handle_one_pax(&mut self.pax);
+        let doors_open = self.boarding_agents.iter().any(|ba| ba.is_door_open());
+        if doors_open {
+            for boarding_agent in &mut self.boarding_agents {
+                boarding_agent.handle_one_pax(&mut self.pax);
+            }
+        } else {
+            // assume first agent as default
+            self.boarding_agents[0].force_one_pax(&mut self.pax);
         }
     }
 
@@ -186,14 +208,18 @@ impl<const N: usize, const G: usize> PassengerDeck<N, G> {
     fn board_pax_until_target(&mut self, pax_target: i32) {
         let pax_diff = pax_target - self.total_pax_num();
         if pax_diff > 0 {
-            for _ in 0..pax_diff {
-                for ps in &mut self.pax {
-                    if ps.pax_is_target() {
-                        continue;
-                    }
-                    ps.move_one_pax();
-                    break;
+            let mut available_agents = self
+                .boarding_agents
+                .iter()
+                .filter(|ba| ba.is_door_open())
+                .peekable();
+
+            if available_agents.peek().is_some() {
+                for boarding_agent in available_agents.cycle().take(pax_diff as usize) {
+                    boarding_agent.handle_one_pax(&mut self.pax);
                 }
+            } else {
+                self.boarding_agents[0].force_num_pax(pax_diff, &mut self.pax);
             }
         }
     }
@@ -201,26 +227,15 @@ impl<const N: usize, const G: usize> PassengerDeck<N, G> {
     fn deboard_pax_until_target(&mut self, pax_target: i32) {
         let pax_diff = self.total_pax_num() - pax_target;
         if pax_diff > 0 {
-            for _ in 0..pax_diff {
-                for ps in &mut self.pax {
-                    if ps.pax_is_target() {
-                        continue;
-                    }
-                    ps.move_one_pax();
-                    break;
-                }
-            }
+            self.boarding_agents[0].force_num_pax(pax_diff, &mut self.pax);
         }
     }
 }
 
 impl<const N: usize, const G: usize> SimulationElement for PassengerDeck<N, G> {
-    fn read(&mut self, reader: &mut SimulatorReader) {
-        self.boarding_gates = reader.read(&self.boarding_gates_id);
-    }
-
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         accept_iterable!(self.pax, visitor);
+        accept_iterable!(self.boarding_agents, visitor);
 
         visitor.visit(self);
     }
@@ -282,9 +297,9 @@ impl<const N: usize> CargoDeck<N> {
         }
     }
 
-    fn load_cargo_deck_percent(&mut self, percent: f64) {
+    fn load_cargo_deck_percent(&mut self, p: f64) {
         for cs in &mut self.cargo {
-            cs.load_cargo_percent(percent);
+            cs.load_cargo_percent(p);
         }
     }
 
@@ -585,11 +600,11 @@ impl Cargo {
         self.load_payload();
     }
 
-    pub fn load_cargo_percent(&mut self, percent: f64) {
+    pub fn load_cargo_percent(&mut self, p: f64) {
         if self.cargo_loaded.get::<kilogram>() > 0. {
-            self.cargo = self.cargo_loaded * (percent / 100.)
+            self.cargo = self.cargo_loaded * (p / 100.)
         } else {
-            self.cargo = (percent / 100.) * self.cargo_target;
+            self.cargo = (p / 100.) * self.cargo_target;
         }
         self.load_payload();
     }
