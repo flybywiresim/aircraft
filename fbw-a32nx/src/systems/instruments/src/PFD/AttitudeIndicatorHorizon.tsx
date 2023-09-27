@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ClockEvents, ConsumerSubject, DisplayComponent, FSComponent, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import { Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
+import { Arinc429Register, Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
 
 import { Arinc429RegisterSubject } from 'instruments/src/MsfsAvionicsCommon/Arinc429RegisterSubject';
 import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
@@ -309,9 +309,9 @@ class RadioAltAndDH extends DisplayComponent<{ bus: ArincEventBus, filteredRadio
 
     private radioAltitude = new Arinc429Word(0);
 
-    private transAltAr = Arinc429Word.empty();
+    private transAltAr = Arinc429Register.empty();
 
-    private transLvlAr = Arinc429Word.empty();
+    private transLvlAr = Arinc429Register.empty();
 
     private fmgcFlightPhase = 0;
 
@@ -335,11 +335,11 @@ class RadioAltAndDH extends DisplayComponent<{ bus: ArincEventBus, filteredRadio
         });
 
         sub.on('fmTransAltRaw').whenChanged().handle((ta) => {
-            this.transAltAr = new Arinc429Word(ta);
+            this.transAltAr.set(ta);
         });
 
         sub.on('fmTransLvlRaw').whenChanged().handle((tl) => {
-            this.transLvlAr = new Arinc429Word(tl);
+            this.transLvlAr.set(tl);
         });
 
         sub.on('fmgcFlightPhase').whenChanged().handle((fp) => {
