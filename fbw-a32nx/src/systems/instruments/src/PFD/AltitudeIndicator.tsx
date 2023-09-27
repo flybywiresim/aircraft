@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ClockEvents, DisplayComponent, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import { Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
+import { Arinc429Register, Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
 import { VerticalMode } from '@shared/autopilot';
 import { Arinc429RegisterSubject } from 'instruments/src/MsfsAvionicsCommon/Arinc429RegisterSubject';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
@@ -541,9 +541,9 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
 
     private unit = '';
 
-    private transAltAr = Arinc429Word.empty();
+    private transAltAr = Arinc429Register.empty();
 
-    private transLvlAr = Arinc429Word.empty();
+    private transLvlAr = Arinc429Register.empty();
 
     private flightPhase = 0;
 
@@ -590,14 +590,14 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
         });
 
         sub.on('fmTransAltRaw').whenChanged().handle((ta) => {
-            this.transAltAr = new Arinc429Word(ta);
+            this.transAltAr.set(ta);
 
             this.handleBlink();
             this.getText();
         });
 
         sub.on('fmTransLvlRaw').whenChanged().handle((tl) => {
-            this.transLvlAr = new Arinc429Word(tl);
+            this.transLvlAr.set(tl);
 
             this.handleBlink();
             this.getText();

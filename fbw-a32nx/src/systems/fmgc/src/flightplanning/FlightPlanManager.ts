@@ -1853,7 +1853,7 @@ export class FlightPlanManager {
      * The transition altitude for the origin in the *active* flight plan
      */
     get originTransitionAltitude(): number | undefined {
-        return this.getOriginTransitionAltitude(0);
+        return this.getOriginTransitionAltitude(FlightPlans.Active);
     }
 
     public getOriginTransitionAltitudeIsFromDb(flightPlanIndex: number = 0): boolean {
@@ -1865,7 +1865,7 @@ export class FlightPlanManager {
      * Is the transition altitude for the origin in the *active* flight plan from the database?
      */
     get originTransitionAltitudeIsFromDb(): boolean {
-        return this.getOriginTransitionAltitudeIsFromDb(0);
+        return this.getOriginTransitionAltitudeIsFromDb(FlightPlans.Active);
     }
 
     /**
@@ -1893,7 +1893,7 @@ export class FlightPlanManager {
      * The transition level for the destination in the *active* flight plan
      */
     get destinationTransitionLevel(): FlightLevel | undefined {
-        return this.getDestinationTransitionLevel(0);
+        return this.getDestinationTransitionLevel(FlightPlans.Active);
     }
 
     public getDestinationTransitionLevelIsFromDb(flightPlanIndex: number = this._currentFlightPlanIndex): boolean {
