@@ -1905,7 +1905,7 @@ export class FlightPlanManager {
      * Is the transition level for the destination in the *active* flight plan from the database?
      */
     get destinationTransitionLevelIsFromDb(): boolean {
-        return this.getDestinationTransitionLevelIsFromDb(0);
+        return this.getDestinationTransitionLevelIsFromDb(FlightPlans.Active);
     }
 
     /**
