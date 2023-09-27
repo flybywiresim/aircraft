@@ -14,6 +14,7 @@ import { ModalContextInterface, useModals } from 'instruments/src/EFB/UtilCompon
 import { selectAllFailures } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelectionUI';
 import { ArmingModeIndex, FailuresAtOnceIndex, MaxFailuresIndex } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
 import { EventBus } from '@microsoft/msfs-sdk';
+import { useEventBus } from 'instruments/src/EFB/event-bus-provider';
 import { useFailuresOrchestrator } from '../../failures-orchestrator-provider';
 
 export interface FailureGenFeedbackEvent {
@@ -58,6 +59,7 @@ export type FailureGenContext = {
     setModalContext: (modalContext: ModalContext) => void,
     failureGenModalType: ModalGenType
     setFailureGenModalType: (type: ModalGenType) => void,
+    bus: EventBus,
 }
 
 export type ModalContext = {
@@ -99,8 +101,16 @@ export const basicData = () => {
     return { isOnGround, maxThrottleMode, throttleTakeOff, failureFlightPhase };
 };
 
+export const updateSettings: (settings: number[], setSetting: (value: string) => void, bus: EventBus, uniqueGenPrefix: string)
+=> void = (settings: number[], setSetting: (value: string) => void, bus: EventBus, uniqueGenPrefix: string) => {
+    const flattenedData = flatten(settings);
+    sendSettings(uniqueGenPrefix, flattenedData, bus);
+    setSetting(flattenedData);
+};
+
 export const failureGeneratorsSettings: () => FailureGenContext = () => {
     const modals = useModals();
+    const bus = useEventBus();
     const { allFailures } = failureGeneratorCommonFunction();
     const { generatorFailuresGetters, generatorFailuresSetters } = allGeneratorFailures(allFailures);
     const allGenSettings: Map<string, FailureGenData> = new Map();
@@ -125,6 +135,7 @@ export const failureGeneratorsSettings: () => FailureGenContext = () => {
         setFailureGenModalType,
         modalContext,
         setModalContext,
+        bus,
     };
 };
 
@@ -142,15 +153,16 @@ export const failureGeneratorAdd = (generatorSettings: FailureGenData, failureGe
     }
     if (didFindADisabledGen === false) {
         if (generatorSettings.settings === undefined || generatorSettings.settings.length % generatorSettings.numberOfSettingsPerGenerator !== 0 || generatorSettings.settings.length === 0) {
-            generatorSettings.setSetting(flatten(generatorSettings.additionalSetting));
+            updateSettings(generatorSettings.additionalSetting, generatorSettings.setSetting, generatorSettings.bus, generatorSettings.uniqueGenPrefix);
             genNumber = 0;
         } else {
-            generatorSettings.setSetting(flatten(generatorSettings.settings.concat(generatorSettings.additionalSetting)));
+            updateSettings(generatorSettings.settings.concat(generatorSettings.additionalSetting), generatorSettings.setSetting, generatorSettings.bus, generatorSettings.uniqueGenPrefix);
             genNumber = Math.floor(generatorSettings.settings.length / generatorSettings.numberOfSettingsPerGenerator);
         }
     } else {
-        generatorSettings.setSetting(flatten(generatorSettings.settings));
+        updateSettings(generatorSettings.settings, generatorSettings.setSetting, generatorSettings.bus, generatorSettings.uniqueGenPrefix);
     }
+    sendRefresh(generatorSettings.bus);
     const genID = `${generatorSettings.uniqueGenPrefix}${genNumber}`;
     selectAllFailures(failureGenContext, genID, true);
 };
@@ -160,18 +172,24 @@ export function setNewNumberOfFailureSetting(newSetting: number, generatorSettin
     settings[genID * generatorSettings.numberOfSettingsPerGenerator + FailuresAtOnceIndex] = newSetting;
     settings[genID * generatorSettings.numberOfSettingsPerGenerator + MaxFailuresIndex] = Math.max(settings[genID * generatorSettings.numberOfSettingsPerGenerator + MaxFailuresIndex],
         newSetting);
-    generatorSettings.setSetting(flatten(settings));
+    updateSettings(generatorSettings.settings, generatorSettings.setSetting, generatorSettings.bus, generatorSettings.uniqueGenPrefix);
 }
 
 export function setNewSetting(newSetting: number, generatorSettings: FailureGenData, genID: number, settingIndex: number) {
     const settings = generatorSettings.settings;
     settings[genID * generatorSettings.numberOfSettingsPerGenerator + settingIndex] = newSetting;
-    const settingsString = flatten(settings);
-    generatorSettings.setSetting(settingsString);
-    sendSettings(generatorSettings.uniqueGenPrefix, settingsString, generatorSettings.bus);
+    updateSettings(generatorSettings.settings, generatorSettings.setSetting, generatorSettings.bus, generatorSettings.uniqueGenPrefix);
 }
 
-export function sendSettings(uniqueGenPrefix: string, settingsString: string, bus: EventBus) {
+export function sendRefresh(bus: EventBus) {
+    bus.getPublisher<FailureGenEvent>().pub('refreshData', true, true);
+    console.info('requesting refresh');
+}
+
+export function sendSettings(uniqueGenPrefix: string, stringTosend: string, bus: EventBus) {
+    let settingsString: string;
+    if (stringTosend === undefined) settingsString = '';
+    else settingsString = stringTosend;
     const generatorType = uniqueGenPrefix;
     console.info(`settings sent: ${generatorType} - ${settingsString}`);
     bus.getPublisher<FailureGenEvent>().pub('settings', { generatorType, settingsString }, true);
@@ -182,10 +200,10 @@ void = (genID: number, generatorSettings: FailureGenData, _failureGenContext: Fa
     const generatorNumber = generatorSettings.settings.length / generatorSettings.numberOfSettingsPerGenerator;
     if (genID === generatorNumber - 1) {
         generatorSettings.settings.splice(genID * generatorSettings.numberOfSettingsPerGenerator, generatorSettings.numberOfSettingsPerGenerator);
-        generatorSettings.setSetting(flatten(generatorSettings.settings));
+        updateSettings(generatorSettings.settings, generatorSettings.setSetting, generatorSettings.bus, generatorSettings.uniqueGenPrefix);
     } else {
         generatorSettings.settings[genID * generatorSettings.numberOfSettingsPerGenerator + ArmingModeIndex] = -1;
-        generatorSettings.setSetting(flatten(generatorSettings.settings));
+        updateSettings(generatorSettings.settings, generatorSettings.setSetting, generatorSettings.bus, generatorSettings.uniqueGenPrefix);
     }
 };
 

@@ -44,14 +44,16 @@ export abstract class GenericGenerator {
 
     armingMode: number[] = [];
 
-    failuresAtOnce : number[] = [];
+    failuresAtOnce: number[] = [];
 
-    maxFailures : number[] = [];
+    maxFailures: number[] = [];
+
+    refreshRequest: boolean= false;
 
     constructor(private readonly randomFailuresGen: RandomFailureGen, protected readonly bus: EventBus) {
         bus.getSubscriber<FailureGenEvent>().on('refreshData').handle((_value) => {
-            this.sendFeedbackArmedDisplay();
-            this.sendFeedbackModeRequest();
+            this.refreshRequest = true;
+            console.info(`refresh request received: ${this.uniqueGenPrefix}`);
         });
         bus.getSubscriber<FailureGenEvent>().on('settings').handle(({ generatorType, settingsString }) => {
             // console.info('DISARMED');
@@ -209,8 +211,9 @@ export abstract class GenericGenerator {
                 feedbackChange = true;
             }
         }
-        if (feedbackChange) {
+        if (feedbackChange || this.refreshRequest) {
             this.sendFeedbackArmedDisplay();
+            this.refreshRequest = false;
         }
         feedbackChange = false;
         for (let i = 0; i < nbGenerator; i++) {

@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { SelectInput } from 'instruments/src/EFB/UtilComponents/Form/SelectInput/SelectInput';
 import { t } from 'instruments/src/EFB/translation';
 import {
-    eraseGenerator, FailureGenContext, FailureGenData,
-    failureGeneratorAdd, failureGeneratorsSettings, findGeneratorFailures, ModalContext, ModalGenType,
+    eraseGenerator, FailureGenContext, FailureGenData, failureGeneratorAdd,
+    failureGeneratorsSettings, findGeneratorFailures, ModalContext, ModalGenType,
 } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
 import { ExclamationDiamond, InfoCircle, PlusLg, Sliders2Vertical, Trash } from 'react-bootstrap-icons';
 import { AtaChapterNumber, AtaChaptersTitle } from '@flybywiresim/fbw-sdk';
@@ -38,6 +38,7 @@ export const FailureGeneratorsUI = () => {
         value: 'default',
         displayValue: `<${t('Failures.Generators.SelectInList')}>`,
     });
+
     return (
         <>
             <div className="flex flex-col">
@@ -149,6 +150,10 @@ export function FailureGeneratorCardTemplateUI(
 ) {
     const genUniqueID = `${failureGenData.uniqueGenPrefix}${(genNumber).toString()}`;
     const genUniqueIDDisplayed = `${failureGenData.uniqueGenPrefix}${(genNumber + 1).toString()}`;
+    /* const isArmed : Boolean = useMemo(
+        () => (genNumber < failureGenData.armedState?.length ? failureGenData.armedState[genNumber] : false),
+        [failureGenData.armedState],
+    ); */
     const isArmed : Boolean = (genNumber < failureGenData.armedState?.length ? failureGenData.armedState[genNumber] : false);
     return (
         <div className="flex flex-row justify-between px-2 pt-2 m-1 text-center rounded-md border-2 border-solid border-theme-accent">

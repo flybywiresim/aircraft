@@ -5,7 +5,10 @@
 import { usePersistentProperty } from '@flybywiresim/fbw-sdk';
 
 import React, { useEffect, useMemo, useState } from 'react';
-import { FailureGenContext, FailureGenData, FailureGenEvent, FailureGenFeedbackEvent, flatten, setNewSetting } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
+import {
+    FailureGenContext, FailureGenData, FailureGenFeedbackEvent,
+    sendRefresh, sendSettings, setNewSetting, updateSettings,
+} from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
 import { t } from 'instruments/src/EFB/translation';
 import { ArrowDownRight, ArrowUpRight } from 'react-bootstrap-icons';
 import { ButtonIcon, FailureGeneratorChoiceSetting, FailureGeneratorSingleSetting } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorSettingsUI';
@@ -38,7 +41,7 @@ export const failureGenConfigAltitude: () => FailureGenData = () => {
     useEffect(() => {
         const sub1 = bus.getSubscriber<FailureGenFeedbackEvent>().on('expectedMode').handle(({ generatorType, mode }) => {
             if (generatorType === uniqueGenPrefix) {
-                console.info(`ALT expectedMode received: ${generatorType}===${uniqueGenPrefix} - ${mode.toString()}`);
+                console.info(`ALT expectedMode received: ${generatorType} - ${mode.toString()}`);
                 const nbGenerator = Math.floor(settings.length / numberOfSettingsPerGenerator);
                 let changeNeeded = false;
                 for (let i = 0; i < nbGenerator; i++) {
@@ -49,7 +52,7 @@ export const failureGenConfigAltitude: () => FailureGenData = () => {
                         }
                     }
                 }
-                if (changeNeeded) setSetting(flatten(settings));
+                if (changeNeeded) updateSettings(settings, setSetting, bus, uniqueGenPrefix);
             }
             // console.info('received expectedMode');
         });
@@ -60,8 +63,8 @@ export const failureGenConfigAltitude: () => FailureGenData = () => {
             // console.info('received arming states');
             }
         });
-        bus.getPublisher<FailureGenEvent>().pub('refreshData', true, true);
-        console.info('requesting refresh');
+        sendSettings(uniqueGenPrefix, setting, bus);
+        sendRefresh(bus);
         return () => {
             sub1.destroy();
             sub2.destroy();

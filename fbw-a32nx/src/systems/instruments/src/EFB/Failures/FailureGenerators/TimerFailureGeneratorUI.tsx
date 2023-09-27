@@ -6,8 +6,8 @@ import { usePersistentProperty } from '@flybywiresim/fbw-sdk';
 
 import { useEffect, useMemo, useState } from 'react';
 import {
-    FailureGenContext, FailureGenData, FailureGenEvent, FailureGenFeedbackEvent,
-    flatten, sendSettings, setNewSetting,
+    FailureGenContext, FailureGenData, FailureGenFeedbackEvent,
+    sendRefresh, sendSettings, setNewSetting, updateSettings,
 } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
 import { t } from 'instruments/src/EFB/translation';
 import { FailureGeneratorSingleSetting } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorSettingsUI';
@@ -51,9 +51,7 @@ export const failureGenConfigTimer: () => FailureGenData = () => {
                     }
                 }
                 if (changeNeeded) {
-                    const flattenedString = flatten(settings);
-                    setSetting(flattenedString);
-                    sendSettings(uniqueGenPrefix, flattenedString, bus);
+                    if (changeNeeded) updateSettings(settings, setSetting, bus, uniqueGenPrefix);
                 }
             }
             // console.info('received expectedMode');
@@ -65,8 +63,8 @@ export const failureGenConfigTimer: () => FailureGenData = () => {
             // console.info('received arming states');
             }
         });
-        bus.getPublisher<FailureGenEvent>().pub('refreshData', true, true);
-        console.info('requesting refresh');
+        sendSettings(uniqueGenPrefix, setting, bus);
+        sendRefresh(bus);
         return () => {
             sub1.destroy();
             sub2.destroy();
