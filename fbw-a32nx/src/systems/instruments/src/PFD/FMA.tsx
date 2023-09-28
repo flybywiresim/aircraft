@@ -888,6 +888,8 @@ class B2Cell extends DisplayComponent<CellProps> {
 
     private classSub = Subject.create('');
 
+    private xposSub = Subject.create(0);
+
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
@@ -905,6 +907,7 @@ class B2Cell extends DisplayComponent<CellProps> {
             let color1 = 'Cyan';
             if (clbArmed) {
                 text1 = 'CLB';
+                this.xposSub.set(49.921795);
             } else if (desArmed) {
                 text1 = 'DES';
             } else if (altCstArmed) {
@@ -925,17 +928,19 @@ class B2Cell extends DisplayComponent<CellProps> {
                 text2 = '';
             }
 
+            // CLB armed should be centered, other modes are aligned to the left on newer DMCs
+            this.xposSub.set(clbArmed ? 49.921795 : 41.477474);
             this.text1Sub.set(text1);
             this.text2Sub.set(text2);
-            this.classSub.set(`FontMedium MiddleAlign ${color1}`);
+            this.classSub.set(`FontMediumSmaller MiddleAlign ${color1}`);
         });
     }
 
     render(): VNode {
         return (
             <g>
-                <text class={this.classSub} x="41.477474" y="14.329653">{this.text1Sub}</text>
-                <text class="FontMedium MiddleAlign Cyan" x="54.59803" y="14.382949">{this.text2Sub}</text>
+                <text class={this.classSub} x={this.xposSub} y="14.329653">{this.text1Sub}</text>
+                <text class="FontMediumSmaller MiddleAlign Cyan" x="54.59803" y="14.382949">{this.text2Sub}</text>
             </g>
         );
     }
@@ -1118,7 +1123,7 @@ class C2Cell extends DisplayComponent<CellProps> {
 
     render(): VNode {
         return (
-            <text class="FontMedium MiddleAlign Cyan" x="84.734184" y="14.440415">{this.textSub}</text>
+            <text class="FontMediumSmaller MiddleAlign Cyan" x="84.734184" y="14.440415">{this.textSub}</text>
         );
     }
 }
