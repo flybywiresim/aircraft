@@ -1,13 +1,19 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import React from 'react';
 import { t } from 'instruments/src/EFB/translation';
-import { FailureGenContext } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
 import { Airplane, ArrowBarUp, ArrowDownRight, ArrowUpRight, ExclamationDiamond, Repeat, Repeat1, Sliders2Vertical, ToggleOff, Trash } from 'react-bootstrap-icons';
+import { useModals } from '../../UtilComponents/Modals/Modals';
 
-export function FailureGeneratorInfoModalUI(
-    failureGenContext: FailureGenContext,
-) {
+export const FailureGeneratorInfoModalUI: React.FC = () => {
+    const { popModal } = useModals();
+
     return (
-        <div className="flex flex-col items-stretch px-4 pt-4 w-1/2 text-center rounded-md border-2 border-solid bg-theme-body border-theme-accent">
+        <div
+            className="flex flex-col items-stretch px-4 pt-4 w-1/2 text-center bg-theme-body rounded-md border-2 border-theme-accent border-solid"
+        >
             <div className="flex flex-row flex-1 justify-between items-stretch">
                 <h2 className="mr-4 font-bold text-left text-current grow align-left">
                     {t('Failures.Generators.Legends.InfoTitle')}
@@ -15,9 +21,9 @@ export function FailureGeneratorInfoModalUI(
                 <div />
                 <div
                     className="flex-none justify-center items-center py-2 px-4 text-center rounded-md border-2
-                    text-theme-body hover:text-utility-red bg-utility-red hover:bg-theme-body border-utility-red transition duration-100
-                    "
-                    onClick={() => failureGenContext.modals.popModal()}
+                        text-theme-body hover:text-utility-red bg-utility-red hover:bg-theme-body border-utility-red transition duration-100
+                        "
+                    onClick={() => popModal()}
                 >
                     X
                 </div>
@@ -105,7 +111,7 @@ export function FailureGeneratorInfoModalUI(
             </div>
         </div>
     );
-}
+};
 
 export type ButtonIcon = {
     settingVar : number,

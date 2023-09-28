@@ -1,17 +1,24 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import React, { useState } from 'react';
 import { SelectInput } from 'instruments/src/EFB/UtilComponents/Form/SelectInput/SelectInput';
 import { t } from 'instruments/src/EFB/translation';
 import {
-    eraseGenerator, FailureGenContext, FailureGenData, failureGeneratorAdd,
-    failureGeneratorsSettings, findGeneratorFailures, ModalContext, ModalGenType,
+    eraseGenerator, FailureGenContext, FailureGenData,
+    useFailureGeneratorsSettings, findGeneratorFailures, ModalContext, ModalGenType, updateSettings, sendRefresh,
 } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
 import { ExclamationDiamond, InfoCircle, PlusLg, Sliders2Vertical, Trash } from 'react-bootstrap-icons';
-import { AtaChapterNumber, AtaChaptersTitle } from '@flybywiresim/fbw-sdk';
+import { AtaChapterNumber, AtaChapterNumbers, AtaChaptersTitle } from '@flybywiresim/fbw-sdk';
 import { FailureGeneratorInfoModalUI } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorInfo';
 import { TooltipWrapper } from 'instruments/src/EFB/UtilComponents/TooltipWrapper';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
 import { GeneratorFailureSelection } from './GeneratorFailureSelectionUI';
 import { FailureGeneratorDetailsModalUI, ArmedState } from './FailureGeneratorSettingsUI';
+import { useFailuresOrchestrator } from '../../failures-orchestrator-provider';
+import { setSelectedFailure } from './FailureSelectionUI';
+import { useModals } from '../../UtilComponents/Modals/Modals';
 
 export const ArmingModeIndex = 0;
 export const FailuresAtOnceIndex = 1;
@@ -21,14 +28,17 @@ export const NumberOfFeedbacks = 2;
 export const ReadyDisplayIndex = 1;
 
 export const FailureGeneratorsUI = () => {
+    const { allFailures } = useFailuresOrchestrator();
+    const { showModal } = useModals();
+
     const [chosenGen, setChosenGen] = useState<string>();
-    const settings = failureGeneratorsSettings();
+    const settings = useFailureGeneratorsSettings();
 
     if (settings.failureGenModalType === ModalGenType.Failures) {
-        settings.modals.showModal(GeneratorFailureSelection(settings));
+        showModal(<GeneratorFailureSelection failureGenContext={settings} />);
     }
     if (settings.failureGenModalType === ModalGenType.Settings) {
-        settings.modals.showModal(FailureGeneratorDetailsModalUI(settings));
+        showModal(<FailureGeneratorDetailsModalUI failureGenContext={settings} />);
     }
     const generatorList = Array.from(settings.allGenSettings.values()).map((genSetting: FailureGenData) => ({
         value: genSetting.genName,
@@ -38,6 +48,37 @@ export const FailureGeneratorsUI = () => {
         value: 'default',
         displayValue: `<${t('Failures.Generators.SelectInList')}>`,
     });
+
+    const failureGeneratorAdd = (generatorSettings: FailureGenData, failureGenContext: FailureGenContext) => {
+        let genNumber: number;
+        let didFindADisabledGen = false;
+        for (let i = 0; i < generatorSettings.settings.length / generatorSettings.numberOfSettingsPerGenerator; i++) {
+            if (generatorSettings.settings[i * generatorSettings.numberOfSettingsPerGenerator + ArmingModeIndex] === -1 && !didFindADisabledGen) {
+                for (let j = 0; j < generatorSettings.numberOfSettingsPerGenerator; j++) {
+                    generatorSettings.settings[i * generatorSettings.numberOfSettingsPerGenerator + j] = generatorSettings.additionalSetting[j];
+                }
+                didFindADisabledGen = true;
+                genNumber = i;
+            }
+        }
+        if (didFindADisabledGen === false) {
+            if (generatorSettings.settings.length % generatorSettings.numberOfSettingsPerGenerator !== 0 || generatorSettings.settings.length === 0) {
+                updateSettings(generatorSettings.additionalSetting, generatorSettings.setSetting, generatorSettings.bus, generatorSettings.uniqueGenPrefix);
+                genNumber = 0;
+            } else {
+                updateSettings(generatorSettings.settings.concat(generatorSettings.additionalSetting), generatorSettings.setSetting, generatorSettings.bus, generatorSettings.uniqueGenPrefix);
+                genNumber = Math.floor(generatorSettings.settings.length / generatorSettings.numberOfSettingsPerGenerator);
+            }
+        } else {
+            updateSettings(generatorSettings.settings, generatorSettings.setSetting, generatorSettings.bus, generatorSettings.uniqueGenPrefix);
+        }
+        sendRefresh(generatorSettings.bus);
+        const genID = `${generatorSettings.uniqueGenPrefix}${genNumber}`;
+
+        for (const failure of allFailures) {
+            setSelectedFailure(failure, genID, failureGenContext, true);
+        }
+    };
 
     return (
         <>
@@ -61,15 +102,15 @@ export const FailureGeneratorsUI = () => {
                                     failureGeneratorAdd(settings.allGenSettings.get(chosenGen), settings);
                                 }
                             }}
-                            className="flex-none py-2 px-2 text-center rounded-md bg-theme-accent hover:text-theme-body hover:bg-theme-highlight"
+                            className="flex-none py-2 px-2 text-center hover:text-theme-body bg-theme-accent hover:bg-theme-highlight rounded-md"
                         >
                             <PlusLg />
                         </div>
                     </div>
                     <div className="flex flex-row flex-1 justify-end py-2">
                         <div
-                            onClick={() => settings.modals.showModal(FailureGeneratorInfoModalUI(settings))}
-                            className="flex-none py-2 px-2 text-center rounded-md bg-theme-accent hover:text-theme-body hover:bg-theme-highlight"
+                            onClick={() => showModal(<FailureGeneratorInfoModalUI />)}
+                            className="flex-none py-2 px-2 text-center hover:text-theme-body bg-theme-accent hover:bg-theme-highlight rounded-md"
                         >
                             <InfoCircle />
                         </div>
@@ -99,19 +140,27 @@ export const generatorsCardList: (settings: FailureGenContext)
     return temp;
 };
 
-function FailureShortList(failureGenContext: FailureGenContext, uniqueID: string) {
-    const maxNumberOfFailureToDisplay = 4;
-    let listOfSelectedFailures = findGeneratorFailures(failureGenContext.allFailures, failureGenContext.generatorFailuresGetters, uniqueID);
+interface FailureShortListProps {
+    failureGenContext: FailureGenContext,
+    uniqueID: string
+}
 
-    if (listOfSelectedFailures.length === failureGenContext.allFailures.length) {
-        return <div className="p-1 mb-1 rounded-md bg-theme-accent">{t('Failures.Generators.AllSystems')}</div>;
+const FailureShortList: React.FC<FailureShortListProps> = ({ failureGenContext, uniqueID }) => {
+    const { allFailures } = useFailuresOrchestrator();
+
+    const maxNumberOfFailureToDisplay = 4;
+
+    let listOfSelectedFailures = findGeneratorFailures(allFailures, failureGenContext.generatorFailuresGetters, uniqueID);
+
+    if (listOfSelectedFailures.length === allFailures.length) {
+        return <div className="p-1 mb-1 bg-theme-accent rounded-md">{t('Failures.Generators.AllSystems')}</div>;
     }
-    if (listOfSelectedFailures.length === 0) return <div className="p-1 mb-1 rounded-md bg-theme-accent">{t('Failures.Generators.NoFailure')}</div>;
+    if (listOfSelectedFailures.length === 0) return <div className="p-1 mb-1 bg-theme-accent rounded-md">{t('Failures.Generators.NoFailure')}</div>;
 
     const chaptersFullySelected: AtaChapterNumber[] = [];
-    for (const chapter of failureGenContext.chapters) {
+    for (const chapter of AtaChapterNumbers) {
         const failuresActiveInChapter = listOfSelectedFailures.filter((failure) => failure.ata === chapter);
-        if (failuresActiveInChapter.length === failureGenContext.allFailures.filter((failure) => failure.ata === chapter).length) {
+        if (failuresActiveInChapter.length === allFailures.filter((failure) => failure.ata === chapter).length) {
             chaptersFullySelected.push(chapter);
             listOfSelectedFailures = listOfSelectedFailures.filter((failure) => failure.ata !== chapter);
         }
@@ -120,12 +169,12 @@ function FailureShortList(failureGenContext: FailureGenContext, uniqueID: string
     const subSetOfChapters = chaptersFullySelected.slice(0, Math.min(maxNumberOfFailureToDisplay, chaptersFullySelected.length));
     const subSetOfSelectedFailures = listOfSelectedFailures.slice(0, Math.min(maxNumberOfFailureToDisplay - subSetOfChapters.length, listOfSelectedFailures.length));
     const chaptersToDisplay = subSetOfChapters.map((chapter) => (
-        <div className="p-1 mb-1 rounded-md grow bg-theme-accent">
+        <div className="p-1 mb-1 bg-theme-accent rounded-md grow">
             {AtaChaptersTitle[chapter]}
         </div>
     ));
     const singleFailuresToDisplay = subSetOfSelectedFailures.map((failure) => (
-        <div className="p-1 mb-1 rounded-md grow bg-theme-accent">
+        <div className="p-1 mb-1 bg-theme-accent rounded-md grow">
             {failure.name}
         </div>
     ));
@@ -141,7 +190,7 @@ function FailureShortList(failureGenContext: FailureGenContext, uniqueID: string
             ) : <></>}
         </div>
     );
-}
+};
 
 export function FailureGeneratorCardTemplateUI(
     genNumber: number,
@@ -156,12 +205,12 @@ export function FailureGeneratorCardTemplateUI(
     ); */
     const isArmed : Boolean = (genNumber < failureGenData.armedState?.length ? failureGenData.armedState[genNumber] : false);
     return (
-        <div className="flex flex-row justify-between px-2 pt-2 m-1 text-center rounded-md border-2 border-solid border-theme-accent">
-            <div className="flex flex-col mr-4 text-left grow max-w-[86%] align-left">
-                <h2 className="pb-2 truncate break-words max-w-[100%]">
+        <div className="flex flex-row justify-between px-2 pt-2 m-1 text-center rounded-md border-2 border-theme-accent border-solid">
+            <div className="flex flex-col mr-4 max-w-[86%] text-left grow align-left">
+                <h2 className="pb-2 max-w-[100%] truncate break-words">
                     {`${genUniqueIDDisplayed}: ${failureGenData.alias()}`}
                 </h2>
-                {FailureShortList(failureGenContext, genUniqueID)}
+                <FailureShortList failureGenContext={failureGenContext} uniqueID={genUniqueID} />
             </div>
             <div className="flex flex-col justify-between items-center">
                 <div
@@ -177,8 +226,8 @@ export function FailureGeneratorCardTemplateUI(
                     </div>
                     <TooltipWrapper text={t('Failures.Generators.ToolTipGeneratorSettings')}>
                         <div
-                            className="flex-none p-2 mt-2 rounded-md transition duration-100 border-2 text-theme-text bg-theme-accent
-                        border-theme-accent hover:text-theme-body hover:bg-theme-highlight"
+                            className="                        border-theme-accent hover:text-theme-body hover:bg-theme-highlight
+flex-none p-2 mt-2 rounded-md transition duration-100 border-2 text-theme-text bg-theme-accent"
                             onClick={() => {
                                 failureGenContext.setFailureGenModalType(ModalGenType.Settings);
                                 const test: ModalContext = { failureGenData, genNumber, genUniqueID };
@@ -190,8 +239,8 @@ export function FailureGeneratorCardTemplateUI(
                     </TooltipWrapper>
                     <TooltipWrapper text={t('Failures.Generators.ToolTipFailureList')}>
                         <div
-                            className="flex-none p-2 my-2 rounded-md transition duration-100 border-2 text-theme-text bg-theme-accent
-                        border-theme-accent hover:text-theme-body hover:bg-theme-highlight"
+                            className="                        border-theme-accent hover:text-theme-body hover:bg-theme-highlight
+flex-none p-2 my-2 rounded-md transition duration-100 border-2 text-theme-text bg-theme-accent"
                             onClick={() => {
                                 failureGenContext.setFailureGenModalType(ModalGenType.Failures);
                                 const test: ModalContext = { failureGenData, genNumber, genUniqueID };

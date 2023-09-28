@@ -1,19 +1,9 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { Failure } from 'failures/src/failures-orchestrator';
 import { FailureGenContext } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
-
-export function selectAllFailureChapter(chapter: number, failureGenContext: FailureGenContext, genIDToChange: string, value: boolean): void {
-    for (const failure of failureGenContext.allFailures) {
-        if (failure.ata === chapter) {
-            setSelectedFailure(failure, genIDToChange, failureGenContext, value);
-        }
-    }
-}
-
-export function selectAllFailures(failureGenContext: FailureGenContext, genIDToChange: string, value: boolean): void {
-    for (const failure of failureGenContext.allFailures) {
-        setSelectedFailure(failure, genIDToChange, failureGenContext, value);
-    }
-}
 
 export const setSelectedFailure = (failure: Failure, genIDToChange: string, failureGenContext: FailureGenContext, value: boolean) => {
     const initialString = failureGenContext.generatorFailuresGetters.get(failure.identifier);

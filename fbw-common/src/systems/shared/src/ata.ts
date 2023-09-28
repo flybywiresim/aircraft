@@ -104,3 +104,5 @@ export const AtaChaptersDescription = Object.freeze({
 });
 
 export type AtaChapterNumber = keyof typeof AtaChaptersTitle;
+
+export const AtaChapterNumbers: AtaChapterNumber[] = Object.keys(AtaChaptersTitle).map((it) => parseInt(it)) as AtaChapterNumber[];

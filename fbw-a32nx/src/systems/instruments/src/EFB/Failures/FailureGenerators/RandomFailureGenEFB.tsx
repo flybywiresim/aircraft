@@ -1,20 +1,17 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { useMemo, useState } from 'react';
 import { Failure } from '@failures';
-import { AtaChapterNumber, usePersistentProperty, useSimVar } from '@flybywiresim/fbw-sdk';
-import { failureGenConfigAltitude }
-    from 'instruments/src/EFB/Failures/FailureGenerators/AltitudeFailureGeneratorUI';
-import { failureGenConfigPerHour }
-    from 'instruments/src/EFB/Failures/FailureGenerators/PerHourFailureGeneratorUI';
-import { failureGenConfigSpeed }
-    from 'instruments/src/EFB/Failures/FailureGenerators/SpeedFailureGeneratorUI';
-import { failureGenConfigTakeOff }
-    from 'instruments/src/EFB/Failures/FailureGenerators/TakeOffFailureGeneratorUI';
+import { usePersistentProperty, useSimVar } from '@flybywiresim/fbw-sdk';
+import { failureGenConfigAltitude } from 'instruments/src/EFB/Failures/FailureGenerators/AltitudeFailureGeneratorUI';
+import { failureGenConfigPerHour } from 'instruments/src/EFB/Failures/FailureGenerators/PerHourFailureGeneratorUI';
+import { failureGenConfigSpeed } from 'instruments/src/EFB/Failures/FailureGenerators/SpeedFailureGeneratorUI';
+import { failureGenConfigTakeOff } from 'instruments/src/EFB/Failures/FailureGenerators/TakeOffFailureGeneratorUI';
 import { failureGenConfigTimer } from 'instruments/src/EFB/Failures/FailureGenerators/TimerFailureGeneratorUI';
-import { ModalContextInterface, useModals } from 'instruments/src/EFB/UtilComponents/Modals/Modals';
-import { selectAllFailures } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelectionUI';
 import { ArmingModeIndex, FailuresAtOnceIndex, MaxFailuresIndex } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
 import { EventBus } from '@microsoft/msfs-sdk';
-import { useEventBus } from 'instruments/src/EFB/event-bus-provider';
 import { useFailuresOrchestrator } from '../../failures-orchestrator-provider';
 
 export interface FailureGenFeedbackEvent {
@@ -25,41 +22,68 @@ export interface FailureGenFeedbackEvent {
 export interface FailureGenEvent {
     refreshData: boolean;
     settings: {generatorType: string, settingsString: string}
-  }
+}
 
-export const failureGeneratorCommonFunction = () => {
-    const { changingFailures, activeFailures, allFailures, activate } = useFailuresOrchestrator();
-
-    const totalActiveFailures = useMemo(() => changingFailures.size + activeFailures.size, [changingFailures, activeFailures]);
-    return { changingFailures, activeFailures, totalActiveFailures, allFailures, activate };
-};
-
+/**
+ * Data for a generator
+ *
+ * TODO confirm
+ */
 export type FailureGenData = {
+    /**
+     * TODO replace with redux action
+     */
     setSetting: (value: string) => void,
+    /**
+     * TODO put in redux
+     */
     settings: number[],
+    /**
+     * TODO confirm - does this vary per generator?
+     */
     numberOfSettingsPerGenerator: number,
+    /**
+     * TODO put in redux
+     */
     uniqueGenPrefix: string,
+    /**
+     * TODO put in redux, confirm - what even is this for?
+     */
     additionalSetting: number[],
+    /**
+     * TODO put in redux
+     */
     genName: string,
+    /**
+     * TODO move this to a react component
+     */
     generatorSettingComponents: (genNumber: number, generatorSettings: FailureGenData, failureGenContext: FailureGenContext) => JSX.Element[],
+    /**
+     * TODO confirm - what is this for?
+     */
     alias: () => string,
+    /**
+     * TODO put in redux
+     */
     disableTakeOffRearm: boolean,
+    /**
+     * TODO put in redux
+     */
     armedState: boolean[],
+    /**
+     * TODO remove
+     */
     bus: EventBus,
 }
 
 export type FailureGenContext = {
     allGenSettings: Map<string, FailureGenData>,
-    modals: ModalContextInterface,
     generatorFailuresGetters: Map<number, string>,
     generatorFailuresSetters: Map<number, (value: string) => void>,
-    allFailures: readonly Readonly<Failure>[],
-    chapters: AtaChapterNumber[],
     modalContext: ModalContext,
     setModalContext: (modalContext: ModalContext) => void,
     failureGenModalType: ModalGenType
     setFailureGenModalType: (type: ModalGenType) => void,
-    bus: EventBus,
 }
 
 export type ModalContext = {
@@ -108,13 +132,10 @@ export const updateSettings: (settings: number[], setSetting: (value: string) =>
     setSetting(flattenedData);
 };
 
-export const failureGeneratorsSettings: () => FailureGenContext = () => {
-    const modals = useModals();
-    const bus = useEventBus();
-    const { allFailures } = failureGeneratorCommonFunction();
+export const useFailureGeneratorsSettings: () => FailureGenContext = () => {
+    const { allFailures } = useFailuresOrchestrator();
     const { generatorFailuresGetters, generatorFailuresSetters } = allGeneratorFailures(allFailures);
     const allGenSettings: Map<string, FailureGenData> = new Map();
-    const chapters = useMemo(() => Array.from(new Set<AtaChapterNumber>(allFailures.map((it: Failure) => it.ata))).sort((a: AtaChapterNumber, b: AtaChapterNumber) => a - b), [allFailures]);
     const [failureGenModalType, setFailureGenModalType] = useState<ModalGenType>(ModalGenType.None);
     const [modalContext, setModalContext] = useState<ModalContext | undefined >(undefined);
 
@@ -126,47 +147,14 @@ export const failureGeneratorsSettings: () => FailureGenContext = () => {
 
     return {
         allGenSettings,
-        modals,
         generatorFailuresGetters,
         generatorFailuresSetters,
-        allFailures,
-        chapters,
         failureGenModalType,
         setFailureGenModalType,
         modalContext,
         setModalContext,
-        bus,
     };
 };
-
-export const failureGeneratorAdd = (generatorSettings: FailureGenData, failureGenContext: FailureGenContext) => {
-    let genNumber: number;
-    let didFindADisabledGen = false;
-    for (let i = 0; i < generatorSettings.settings.length / generatorSettings.numberOfSettingsPerGenerator; i++) {
-        if (generatorSettings.settings[i * generatorSettings.numberOfSettingsPerGenerator + ArmingModeIndex] === -1 && !didFindADisabledGen) {
-            for (let j = 0; j < generatorSettings.numberOfSettingsPerGenerator; j++) {
-                generatorSettings.settings[i * generatorSettings.numberOfSettingsPerGenerator + j] = generatorSettings.additionalSetting[j];
-            }
-            didFindADisabledGen = true;
-            genNumber = i;
-        }
-    }
-    if (didFindADisabledGen === false) {
-        if (generatorSettings.settings === undefined || generatorSettings.settings.length % generatorSettings.numberOfSettingsPerGenerator !== 0 || generatorSettings.settings.length === 0) {
-            updateSettings(generatorSettings.additionalSetting, generatorSettings.setSetting, generatorSettings.bus, generatorSettings.uniqueGenPrefix);
-            genNumber = 0;
-        } else {
-            updateSettings(generatorSettings.settings.concat(generatorSettings.additionalSetting), generatorSettings.setSetting, generatorSettings.bus, generatorSettings.uniqueGenPrefix);
-            genNumber = Math.floor(generatorSettings.settings.length / generatorSettings.numberOfSettingsPerGenerator);
-        }
-    } else {
-        updateSettings(generatorSettings.settings, generatorSettings.setSetting, generatorSettings.bus, generatorSettings.uniqueGenPrefix);
-    }
-    sendRefresh(generatorSettings.bus);
-    const genID = `${generatorSettings.uniqueGenPrefix}${genNumber}`;
-    selectAllFailures(failureGenContext, genID, true);
-};
-
 export function setNewNumberOfFailureSetting(newSetting: number, generatorSettings: FailureGenData, genID: number) {
     const settings = generatorSettings.settings;
     settings[genID * generatorSettings.numberOfSettingsPerGenerator + FailuresAtOnceIndex] = newSetting;
@@ -222,6 +210,7 @@ export const allGeneratorFailures = (allFailures: readonly Readonly<Failure>[]) 
 
 export const findGeneratorFailures = (allFailures: readonly Readonly<Failure>[], generatorFailuresGetters: Map<number, string>, generatorUniqueID: string) => {
     const failureIDs: Failure[] = [];
+
     if (allFailures.length > 0) {
         for (const failure of allFailures) {
             const generatorSetting = generatorFailuresGetters.get(failure.identifier);
@@ -235,5 +224,6 @@ export const findGeneratorFailures = (allFailures: readonly Readonly<Failure>[],
             }
         }
     }
+
     return failureIDs;
 };

@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import React from 'react';
 import { t } from 'instruments/src/EFB/translation';
 import {
@@ -13,6 +17,8 @@ import { FailuresAtOnceIndex, MaxFailuresIndex } from 'instruments/src/EFB/Failu
 import { ScrollableContainer } from 'instruments/src/EFB/UtilComponents/ScrollableContainer';
 import { TooltipWrapper } from 'instruments/src/EFB/UtilComponents/TooltipWrapper';
 import { ArmingModeIndex } from 'failures/src/RandomFailureGen';
+import { useFailuresOrchestrator } from '../../failures-orchestrator-provider';
+import { useModals } from '../../UtilComponents/Modals/Modals';
 
 export type SettingVar = {
     settingVar: number,
@@ -23,15 +29,17 @@ export const failureActivationMode: (ButtonType & SettingVar)[] = [
     { name: 'All', setting: 'All', settingVar: 1 },
 ];
 
-export function FailureGeneratorDetailsModalUI(
-    failureGenContext: FailureGenContext,
-) {
+export const FailureGeneratorDetailsModalUI: React.FC<{ failureGenContext: FailureGenContext }> = ({ failureGenContext }) => {
+    const { allFailures } = useFailuresOrchestrator();
+    const { popModal } = useModals();
+
     const genNumber = extractFirstNumber(failureGenContext.modalContext.genUniqueID);
     failureGenContext.setFailureGenModalType(ModalGenType.None);
-    const numberOfSelectedFailures = findGeneratorFailures(failureGenContext.allFailures, failureGenContext.generatorFailuresGetters,
+    const numberOfSelectedFailures = findGeneratorFailures(allFailures, failureGenContext.generatorFailuresGetters,
         failureGenContext.modalContext.genUniqueID).length;
+
     return (
-        <div className="flex flex-col items-stretch px-4 pt-4 w-1/2 text-center rounded-md border-2 border-solid bg-theme-body border-theme-accent">
+        <div className="flex flex-col items-stretch px-4 pt-4 w-1/2 text-center bg-theme-body rounded-md border-2 border-theme-accent border-solid">
             <div className="flex flex-row flex-1 justify-between items-stretch">
                 <h2 className="mr-4 font-bold text-left text-current grow align-left">
                     {t('Failures.Generators.SettingsTitle')}
@@ -41,7 +49,7 @@ export function FailureGeneratorDetailsModalUI(
                     className="flex-none justify-center items-center px-4 text-center rounded-md border-2
                     text-theme-body hover:text-utility-red bg-utility-red hover:bg-theme-body border-utility-red transition duration-100
                     "
-                    onClick={() => failureGenContext.modals.popModal()}
+                    onClick={() => popModal()}
                 >
                     X
                 </div>
@@ -64,7 +72,7 @@ export function FailureGeneratorDetailsModalUI(
             </ScrollableContainer>
         </div>
     );
-}
+};
 export function ArmedState(generatorSettings: FailureGenData, genNumber: number) {
     const readyDisplay:boolean = (genNumber < generatorSettings.armedState?.length) ? generatorSettings.armedState[genNumber] : false;
     switch (generatorSettings.settings[generatorSettings.numberOfSettingsPerGenerator * genNumber + ArmingModeIndex]) {
