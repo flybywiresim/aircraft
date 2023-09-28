@@ -80,24 +80,51 @@ export const failureGenConfigSpeed: () => FailureGenData = () => {
         alias,
         disableTakeOffRearm,
         armedState,
-        bus,
     };
 };
 
 const generatorSettingComponents = (genNumber: number, generatorSettings: FailureGenData, failureGenContext: FailureGenContext) => {
     const settings = generatorSettings.settings;
+
     const settingTable = [
-        FailureGeneratorChoiceSetting(t('Failures.Generators.SpeedCondition'), settings[genNumber * numberOfSettingsPerGenerator + SpeedConditionIndex], accelDecelMode,
-            setNewSetting, generatorSettings, genNumber, SpeedConditionIndex, failureGenContext),
-        FailureGeneratorSingleSetting(t('Failures.Generators.MinimumGroundSpeed'), t('Failures.Generators.knots'), 0,
-            settings[genNumber * numberOfSettingsPerGenerator + SpeedMaxIndex],
-            settings[genNumber * numberOfSettingsPerGenerator + SpeedMinIndex], 1,
-            setNewSetting, generatorSettings, genNumber, SpeedMinIndex, failureGenContext),
-        FailureGeneratorSingleSetting(t('Failures.Generators.MaximumGroundSpeed'), t('Failures.Generators.knots'),
-            settings[genNumber * numberOfSettingsPerGenerator + SpeedMinIndex], 400,
-            settings[genNumber * numberOfSettingsPerGenerator + SpeedMaxIndex], 1,
-            setNewSetting, generatorSettings, genNumber, SpeedMaxIndex, failureGenContext),
+        <FailureGeneratorChoiceSetting
+            title={t('Failures.Generators.SpeedCondition')}
+            failureGenContext={failureGenContext}
+            generatorSettings={generatorSettings}
+            multiChoice={accelDecelMode}
+            setNewSetting={setNewSetting}
+            genIndex={genNumber}
+            settingIndex={SpeedConditionIndex}
+            value={settings[genNumber * numberOfSettingsPerGenerator + SpeedConditionIndex]}
+        />,
+        <FailureGeneratorSingleSetting
+            title={t('Failures.Generators.MinimumGroundSpeed')}
+            unit={t('Failures.Generators.knots')}
+            min={0}
+            max={settings[genNumber * numberOfSettingsPerGenerator + SpeedMaxIndex]}
+            value={settings[genNumber * numberOfSettingsPerGenerator + SpeedMinIndex]}
+            mult={1}
+            setNewSetting={setNewSetting}
+            generatorSettings={generatorSettings}
+            genIndex={genNumber}
+            settingIndex={SpeedMinIndex}
+            failureGenContext={failureGenContext}
+        />,
+        <FailureGeneratorSingleSetting
+            title={t('Failures.Generators.MaximumGroundSpeed')}
+            unit={t('Failures.Generators.knots')}
+            min={settings[genNumber * numberOfSettingsPerGenerator + SpeedMinIndex]}
+            max={400}
+            value={settings[genNumber * numberOfSettingsPerGenerator + SpeedMaxIndex]}
+            mult={1}
+            setNewSetting={setNewSetting}
+            generatorSettings={generatorSettings}
+            genIndex={genNumber}
+            settingIndex={SpeedMaxIndex}
+            failureGenContext={failureGenContext}
+        />,
     ];
+
     return settingTable;
 };
 

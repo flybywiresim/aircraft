@@ -70,10 +70,6 @@ export type FailureGenData = {
      * TODO put in redux
      */
     armedState: boolean[],
-    /**
-     * TODO remove
-     */
-    bus: EventBus,
 }
 
 export type FailureGenContext = {
@@ -155,18 +151,11 @@ export const useFailureGeneratorsSettings: () => FailureGenContext = () => {
         setModalContext,
     };
 };
-export function setNewNumberOfFailureSetting(newSetting: number, generatorSettings: FailureGenData, genID: number) {
-    const settings = generatorSettings.settings;
-    settings[genID * generatorSettings.numberOfSettingsPerGenerator + FailuresAtOnceIndex] = newSetting;
-    settings[genID * generatorSettings.numberOfSettingsPerGenerator + MaxFailuresIndex] = Math.max(settings[genID * generatorSettings.numberOfSettingsPerGenerator + MaxFailuresIndex],
-        newSetting);
-    updateSettings(generatorSettings.settings, generatorSettings.setSetting, generatorSettings.bus, generatorSettings.uniqueGenPrefix);
-}
 
-export function setNewSetting(newSetting: number, generatorSettings: FailureGenData, genID: number, settingIndex: number) {
+export function setNewSetting(bus: EventBus, newSetting: number, generatorSettings: FailureGenData, genID: number, settingIndex: number) {
     const settings = generatorSettings.settings;
     settings[genID * generatorSettings.numberOfSettingsPerGenerator + settingIndex] = newSetting;
-    updateSettings(generatorSettings.settings, generatorSettings.setSetting, generatorSettings.bus, generatorSettings.uniqueGenPrefix);
+    updateSettings(generatorSettings.settings, generatorSettings.setSetting, bus, generatorSettings.uniqueGenPrefix);
 }
 
 export function sendRefresh(bus: EventBus) {
@@ -182,18 +171,6 @@ export function sendSettings(uniqueGenPrefix: string, stringTosend: string, bus:
     console.info(`settings sent: ${generatorType} - ${settingsString}`);
     bus.getPublisher<FailureGenEvent>().pub('settings', { generatorType, settingsString }, true);
 }
-
-export const eraseGenerator: (genID: number, generatorSettings: FailureGenData, failureGenContext: FailureGenContext) =>
-void = (genID: number, generatorSettings: FailureGenData, _failureGenContext: FailureGenContext) => {
-    const generatorNumber = generatorSettings.settings.length / generatorSettings.numberOfSettingsPerGenerator;
-    if (genID === generatorNumber - 1) {
-        generatorSettings.settings.splice(genID * generatorSettings.numberOfSettingsPerGenerator, generatorSettings.numberOfSettingsPerGenerator);
-        updateSettings(generatorSettings.settings, generatorSettings.setSetting, generatorSettings.bus, generatorSettings.uniqueGenPrefix);
-    } else {
-        generatorSettings.settings[genID * generatorSettings.numberOfSettingsPerGenerator + ArmingModeIndex] = -1;
-        updateSettings(generatorSettings.settings, generatorSettings.setSetting, generatorSettings.bus, generatorSettings.uniqueGenPrefix);
-    }
-};
 
 export const allGeneratorFailures = (allFailures: readonly Readonly<Failure>[]) => {
     const generatorFailuresGetters: Map<number, string> = new Map();

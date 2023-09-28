@@ -83,7 +83,6 @@ export const failureGenConfigTakeOff: () => FailureGenData = () => {
         alias,
         disableTakeOffRearm,
         armedState,
-        bus,
     };
 };
 
@@ -91,38 +90,93 @@ const generatorSettingComponents = (genNumber: number, generatorSettings: Failur
     const settings = generatorSettings.settings;
     const chanceClimbing = Math.round(10000 * (1 - settings[genNumber * numberOfSettingsPerGenerator + ChanceLowIndex]
         - settings[genNumber * numberOfSettingsPerGenerator + ChanceMediumIndex])) / 100;
-    const settingTable = [FailureGeneratorSingleSetting(`${t('Failures.Generators.FailureChancePerTakeOff')}`, '%', 0, 100,
-        settings[genNumber * numberOfSettingsPerGenerator + ChancePerTakeOffIndex], 100,
-        setNewSetting, generatorSettings, genNumber, ChancePerTakeOffIndex, failureGenContext),
-    (
-        <div className="pl-10 w-full divide-y-2 divide-theme-accent">
-            {[FailureGeneratorText(`${t('Failures.Generators.SplitOverPhases')}:`, '', ''),
-                FailureGeneratorSingleSetting(t('Failures.Generators.LowSpeedChance'), '%', 0,
-                    100 - settings[genNumber * numberOfSettingsPerGenerator + ChanceMediumIndex] * 100,
-                    settings[genNumber * numberOfSettingsPerGenerator + ChanceLowIndex], 100,
-                    setNewSetting, generatorSettings, genNumber, ChanceLowIndex, failureGenContext),
-                FailureGeneratorSingleSetting(t('Failures.Generators.MedSpeedChance'), '%', 0,
-                    100 - settings[genNumber * numberOfSettingsPerGenerator + ChanceLowIndex] * 100,
-                    settings[genNumber * numberOfSettingsPerGenerator + ChanceMediumIndex], 100,
-                    setNewSetting, generatorSettings, genNumber, ChanceMediumIndex, failureGenContext),
-                FailureGeneratorText(t('Failures.Generators.ClimbingChance'), '%',
-                    chanceClimbing.toString())]}
-        </div>),
-    FailureGeneratorSingleSetting(t('Failures.Generators.MinimumGroundSpeed'), t('Failures.Generators.knots'),
-        0, settings[genNumber * numberOfSettingsPerGenerator + MediumSpeedIndex],
-        settings[genNumber * numberOfSettingsPerGenerator + MinSpeedIndex], 1,
-        setNewSetting, generatorSettings, genNumber, MinSpeedIndex, failureGenContext),
-    FailureGeneratorSingleSetting(t('Failures.Generators.SpeedTransLowMed'), t('Failures.Generators.knots'),
-        settings[genNumber * numberOfSettingsPerGenerator + MinSpeedIndex],
-        settings[genNumber * numberOfSettingsPerGenerator + MaxSpeedIndex],
-        settings[genNumber * numberOfSettingsPerGenerator + MediumSpeedIndex], 1,
-        setNewSetting, generatorSettings, genNumber, MediumSpeedIndex, failureGenContext),
-    FailureGeneratorSingleSetting(t('Failures.Generators.SpeedTransMedHigh'), t('Failures.Generators.knots'),
-        settings[genNumber * numberOfSettingsPerGenerator + MediumSpeedIndex], 300,
-        settings[genNumber * numberOfSettingsPerGenerator + MaxSpeedIndex], 1,
-        setNewSetting, generatorSettings, genNumber, MaxSpeedIndex, failureGenContext),
-    FailureGeneratorSingleSetting(t('Failures.Generators.MaxHeightAboveRunway'), t('Failures.Generators.feet'), 0, 10000,
-        settings[genNumber * numberOfSettingsPerGenerator + AltitudeIndex], 100,
-        setNewSetting, generatorSettings, genNumber, AltitudeIndex, failureGenContext)];
+
+    const settingTable = [
+        <FailureGeneratorSingleSetting
+            title={t('Failures.Generators.FailureChancePerTakeOff')}
+            unit="%"
+            min={0}
+            max={100}
+            value={settings[genNumber * numberOfSettingsPerGenerator + ChancePerTakeOffIndex]}
+            mult={100}
+            setNewSetting={setNewSetting}
+            generatorSettings={generatorSettings}
+            genIndex={genNumber}
+            settingIndex={ChancePerTakeOffIndex}
+            failureGenContext={failureGenContext}
+        />,
+        (
+            <div className="pl-10 w-full divide-y-2 divide-theme-accent">
+                <FailureGeneratorText title={`${t('Failures.Generators.SplitOverPhases')}:`} unit="" text="" />
+                <FailureGeneratorSingleSetting
+                    title={t('Failures.Generators.LowSpeedChance')}
+                    unit="%"
+                    min={0}
+                    max={100 - settings[genNumber * numberOfSettingsPerGenerator + ChanceMediumIndex] * 100}
+                    value={settings[genNumber * numberOfSettingsPerGenerator + ChanceLowIndex]}
+                    mult={100}
+                    setNewSetting={setNewSetting}
+                    generatorSettings={generatorSettings}
+                    genIndex={genNumber}
+                    settingIndex={ChanceLowIndex}
+                    failureGenContext={failureGenContext}
+                />
+                <FailureGeneratorSingleSetting
+                    title={t('Failures.Generators.MedSpeedChance')}
+                    unit="%"
+                    min={0}
+                    max={100 - settings[genNumber * numberOfSettingsPerGenerator + ChanceLowIndex] * 100}
+                    value={settings[genNumber * numberOfSettingsPerGenerator + ChanceMediumIndex]}
+                    mult={100}
+                    setNewSetting={setNewSetting}
+                    generatorSettings={generatorSettings}
+                    genIndex={genNumber}
+                    settingIndex={ChanceMediumIndex}
+                    failureGenContext={failureGenContext}
+                />
+                <FailureGeneratorText title={t('Failures.Generators.ClimbingChance')} unit="%" text={chanceClimbing.toString()} />
+            </div>
+        ),
+        <FailureGeneratorSingleSetting
+            title={t('Failures.Generators.MinimumGroundSpeed')}
+            unit={t('Failures.Generators.knots')}
+            min={0}
+            max={settings[genNumber * numberOfSettingsPerGenerator + MediumSpeedIndex]}
+            value={settings[genNumber * numberOfSettingsPerGenerator + MinSpeedIndex]}
+            mult={1}
+            setNewSetting={setNewSetting}
+            generatorSettings={generatorSettings}
+            genIndex={genNumber}
+            settingIndex={MinSpeedIndex} // TODO confirm - is this index right?
+            failureGenContext={failureGenContext}
+        />,
+        <FailureGeneratorSingleSetting
+            title={t('Failures.Generators.SpeedTransLowMed')}
+            unit={t('Failures.Generators.knots')}
+            min={settings[genNumber * numberOfSettingsPerGenerator + MinSpeedIndex]}
+            max={settings[genNumber * numberOfSettingsPerGenerator + MaxSpeedIndex]}
+            value={settings[genNumber * numberOfSettingsPerGenerator + MediumSpeedIndex]}
+            mult={1}
+            setNewSetting={setNewSetting}
+            generatorSettings={generatorSettings}
+            genIndex={genNumber}
+            settingIndex={MediumSpeedIndex} // TODO confirm - is this index right?
+            failureGenContext={failureGenContext}
+        />,
+        <FailureGeneratorSingleSetting
+            title={t('Failures.Generators.SpeedTransMedHigh')}
+            unit={t('Failures.Generators.knots')}
+            min={0}
+            max={10_000}
+            value={settings[genNumber * numberOfSettingsPerGenerator + AltitudeIndex]}
+            mult={1}
+            setNewSetting={setNewSetting}
+            generatorSettings={generatorSettings}
+            genIndex={genNumber}
+            settingIndex={AltitudeIndex} // TODO confirm - is this index right?
+            failureGenContext={failureGenContext}
+        />,
+    ];
+
     return settingTable;
 };

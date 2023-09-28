@@ -4,14 +4,17 @@
 
 import { usePersistentProperty } from '@flybywiresim/fbw-sdk';
 
-import { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
     FailureGenContext, FailureGenData, FailureGenFeedbackEvent, sendRefresh,
     sendSettings, setNewSetting, updateSettings,
 } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
 import { t } from 'instruments/src/EFB/translation';
 import { FailureGeneratorSingleSetting, FailureGeneratorText } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorSettingsUI';
-import { ArmingModeIndex } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
+import {
+    ArmingModeIndex,
+    FailuresAtOnceIndex, MaxFailuresIndex,
+} from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
 import { useEventBus } from '../../event-bus-provider';
 
 const settingName = 'EFB_FAILURE_GENERATOR_SETTING_PERHOUR';
@@ -77,7 +80,6 @@ export const failureGenConfigPerHour: () => FailureGenData = () => {
         disableTakeOffRearm,
         generatorSettingComponents,
         armedState,
-        bus,
     };
 };
 
@@ -96,12 +98,23 @@ const generatorSettingComponents = (genNumber: number, generatorSettings: Failur
         if (meanTimeToFailure > 5 / 60) return `${Math.round(meanTimeToFailure * 60)} ${t('Failures.Generators.minutes')}`;
         return `${Math.round(meanTimeToFailure * 60 * 60)} ${t('Failures.Generators.seconds')}`;
     };
+
     const settingTable = [
-        FailureGeneratorSingleSetting(t('Failures.Generators.FailurePerHour'), '', 0, 60,
-            settings[genNumber * numberOfSettingsPerGenerator + FailurePerHourIndex], 1,
-            setNewSetting, generatorSettings, genNumber, FailurePerHourIndex, failureGenContext),
-        FailureGeneratorText(t('Failures.Generators.MeanTimeToFailure'), '',
-            MttfDisplay()),
+        <FailureGeneratorSingleSetting
+            title={t('Failures.Generators.FailurePerHour')}
+            unit=""
+            min={0}
+            max={60}
+            value={settings[genNumber * numberOfSettingsPerGenerator + FailurePerHourIndex]}
+            mult={1}
+            setNewSetting={setNewSetting}
+            generatorSettings={generatorSettings}
+            genIndex={genNumber}
+            settingIndex={FailurePerHourIndex}
+            failureGenContext={failureGenContext}
+        />,
+        <FailureGeneratorText title={t('Failures.Generators.MeanTimeToFailure')} unit="" text={MttfDisplay()} />,
     ];
+
     return settingTable;
 };

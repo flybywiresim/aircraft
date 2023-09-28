@@ -82,23 +82,48 @@ export const failureGenConfigAltitude: () => FailureGenData = () => {
         disableTakeOffRearm,
         generatorSettingComponents,
         armedState,
-        bus,
     };
 };
 
 const generatorSettingComponents = (genNumber: number, generatorSettings: FailureGenData, failureGenContext: FailureGenContext) => {
     const settings = generatorSettings.settings;
     const settingTable = [
-        FailureGeneratorChoiceSetting(t('Failures.Generators.AltitudeCondition'), settings[genNumber * numberOfSettingsPerGenerator + AltitudeConditionIndex], climbDescentMode,
-            setNewSetting, generatorSettings, genNumber, AltitudeConditionIndex, failureGenContext),
-        FailureGeneratorSingleSetting(t('Failures.Generators.AltitudeMin'),
-            t('Failures.Generators.feet'), 0, settings[genNumber * numberOfSettingsPerGenerator + AltitudeMaxIndex] * 100,
-            settings[genNumber * numberOfSettingsPerGenerator + AltitudeMinIndex], 100,
-            setNewSetting, generatorSettings, genNumber, AltitudeMinIndex, failureGenContext),
-        FailureGeneratorSingleSetting(t('Failures.Generators.AltitudeMax'),
-            t('Failures.Generators.feet'), settings[genNumber * numberOfSettingsPerGenerator + AltitudeMinIndex] * 100, 40000,
-            settings[genNumber * numberOfSettingsPerGenerator + AltitudeMaxIndex], 100,
-            setNewSetting, generatorSettings, genNumber, AltitudeMaxIndex, failureGenContext),
+        <FailureGeneratorChoiceSetting
+            title={t('Failures.Generators.AltitudeCondition')}
+            failureGenContext={failureGenContext}
+            generatorSettings={generatorSettings}
+            multiChoice={climbDescentMode}
+            setNewSetting={setNewSetting}
+            genIndex={genNumber}
+            settingIndex={AltitudeConditionIndex}
+            value={settings[genNumber * numberOfSettingsPerGenerator + AltitudeConditionIndex]}
+        />,
+        <FailureGeneratorSingleSetting
+            title={t('Failures.Generators.AltitudeMin')}
+            unit={t('Failures.Generators.feet')}
+            min={settings[genNumber * numberOfSettingsPerGenerator + AltitudeMaxIndex] * 100}
+            max={settings[genNumber * numberOfSettingsPerGenerator + AltitudeMinIndex]}
+            value={100}
+            mult={100}
+            setNewSetting={setNewSetting}
+            generatorSettings={generatorSettings}
+            genIndex={genNumber}
+            settingIndex={AltitudeMinIndex}
+            failureGenContext={failureGenContext}
+        />,
+        <FailureGeneratorSingleSetting
+            title={t('Failures.Generators.AltitudeMax')}
+            unit={t('Failures.Generators.feet')}
+            min={settings[genNumber * numberOfSettingsPerGenerator + AltitudeMinIndex] * 100}
+            max={40000}
+            value={settings[genNumber * numberOfSettingsPerGenerator + AltitudeMaxIndex]}
+            mult={100}
+            setNewSetting={setNewSetting}
+            generatorSettings={generatorSettings}
+            genIndex={genNumber}
+            settingIndex={AltitudeMaxIndex}
+            failureGenContext={failureGenContext}
+        />,
     ];
     return settingTable;
 };
