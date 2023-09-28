@@ -4,7 +4,7 @@
 
 import { usePersistentProperty } from '@flybywiresim/fbw-sdk';
 
-import { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
     FailureGenContext, FailureGenData, FailureGenFeedbackEvent,
     sendRefresh, sendSettings, setNewSetting, updateSettings,
@@ -82,19 +82,40 @@ export const failureGenConfigTimer: () => FailureGenData = () => {
         alias,
         disableTakeOffRearm,
         armedState,
-        bus,
     };
 };
 
 const generatorSettingComponents = (genNumber: number, generatorSettings: FailureGenData, failureGenContext: FailureGenContext) => {
     const settings = generatorSettings.settings;
+
     const settingTable = [
-        FailureGeneratorSingleSetting(t('Failures.Generators.DelayAfterArmingMin'), t('Failures.Generators.seconds'), 0, settings[genNumber * numberOfSettingsPerGenerator + DelayMaxIndex],
-            settings[genNumber * numberOfSettingsPerGenerator + DelayMinIndex], 1,
-            setNewSetting, generatorSettings, genNumber, DelayMinIndex, failureGenContext),
-        FailureGeneratorSingleSetting(t('Failures.Generators.DelayAfterArmingMax'), t('Failures.Generators.seconds'), settings[genNumber * numberOfSettingsPerGenerator + DelayMinIndex], 10000,
-            settings[genNumber * numberOfSettingsPerGenerator + DelayMaxIndex], 1,
-            setNewSetting, generatorSettings, genNumber, DelayMaxIndex, failureGenContext),
+        <FailureGeneratorSingleSetting
+            title={t('Failures.Generators.DelayAfterArmingMin')}
+            unit={t('Failures.Generators.seconds')}
+            min={0}
+            max={settings[genNumber * numberOfSettingsPerGenerator + DelayMaxIndex]}
+            value={settings[genNumber * numberOfSettingsPerGenerator + DelayMinIndex]}
+            mult={1}
+            setNewSetting={setNewSetting}
+            generatorSettings={generatorSettings}
+            genIndex={genNumber}
+            settingIndex={DelayMinIndex}
+            failureGenContext={failureGenContext}
+        />,
+        <FailureGeneratorSingleSetting
+            title={t('Failures.Generators.DelayAfterArmingMax')}
+            unit={t('Failures.Generators.seconds')}
+            min={settings[genNumber * numberOfSettingsPerGenerator + DelayMinIndex]}
+            max={10_000}
+            value={settings[genNumber * numberOfSettingsPerGenerator + DelayMaxIndex]}
+            mult={1}
+            setNewSetting={setNewSetting}
+            generatorSettings={generatorSettings}
+            genIndex={genNumber}
+            settingIndex={DelayMaxIndex}
+            failureGenContext={failureGenContext}
+        />,
     ];
+
     return settingTable;
 };

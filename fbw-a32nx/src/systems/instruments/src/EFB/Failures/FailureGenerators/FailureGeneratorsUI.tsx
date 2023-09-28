@@ -6,8 +6,8 @@ import React, { useState } from 'react';
 import { SelectInput } from 'instruments/src/EFB/UtilComponents/Form/SelectInput/SelectInput';
 import { t } from 'instruments/src/EFB/translation';
 import {
-    eraseGenerator, FailureGenContext, FailureGenData,
-    useFailureGeneratorsSettings, findGeneratorFailures, ModalContext, ModalGenType, updateSettings, sendRefresh,
+    FailureGenContext, FailureGenData, useFailureGeneratorsSettings, findGeneratorFailures, ModalContext,
+    ModalGenType, updateSettings, sendRefresh,
 } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
 import { ExclamationDiamond, InfoCircle, PlusLg, Sliders2Vertical, Trash } from 'react-bootstrap-icons';
 import { AtaChapterNumber, AtaChapterNumbers, AtaChaptersTitle } from '@flybywiresim/fbw-sdk';
@@ -19,6 +19,7 @@ import { FailureGeneratorDetailsModalUI, ArmedState } from './FailureGeneratorSe
 import { useFailuresOrchestrator } from '../../failures-orchestrator-provider';
 import { setSelectedFailure } from './FailureSelectionUI';
 import { useModals } from '../../UtilComponents/Modals/Modals';
+import { useEventBus } from '../../event-bus-provider';
 
 export const ArmingModeIndex = 0;
 export const FailuresAtOnceIndex = 1;
@@ -28,6 +29,7 @@ export const NumberOfFeedbacks = 2;
 export const ReadyDisplayIndex = 1;
 
 export const FailureGeneratorsUI = () => {
+    const bus = useEventBus();
     const { allFailures } = useFailuresOrchestrator();
     const { showModal } = useModals();
 
@@ -63,16 +65,16 @@ export const FailureGeneratorsUI = () => {
         }
         if (didFindADisabledGen === false) {
             if (generatorSettings.settings.length % generatorSettings.numberOfSettingsPerGenerator !== 0 || generatorSettings.settings.length === 0) {
-                updateSettings(generatorSettings.additionalSetting, generatorSettings.setSetting, generatorSettings.bus, generatorSettings.uniqueGenPrefix);
+                updateSettings(generatorSettings.additionalSetting, generatorSettings.setSetting, bus, generatorSettings.uniqueGenPrefix);
                 genNumber = 0;
             } else {
-                updateSettings(generatorSettings.settings.concat(generatorSettings.additionalSetting), generatorSettings.setSetting, generatorSettings.bus, generatorSettings.uniqueGenPrefix);
+                updateSettings(generatorSettings.settings.concat(generatorSettings.additionalSetting), generatorSettings.setSetting, bus, generatorSettings.uniqueGenPrefix);
                 genNumber = Math.floor(generatorSettings.settings.length / generatorSettings.numberOfSettingsPerGenerator);
             }
         } else {
-            updateSettings(generatorSettings.settings, generatorSettings.setSetting, generatorSettings.bus, generatorSettings.uniqueGenPrefix);
+            updateSettings(generatorSettings.settings, generatorSettings.setSetting, bus, generatorSettings.uniqueGenPrefix);
         }
-        sendRefresh(generatorSettings.bus);
+        sendRefresh(bus);
         const genID = `${generatorSettings.uniqueGenPrefix}${genNumber}`;
 
         for (const failure of allFailures) {
@@ -126,84 +128,31 @@ export const FailureGeneratorsUI = () => {
     );
 };
 
-export const generatorsCardList: (settings: FailureGenContext)
-=> JSX.Element[] = (settings: FailureGenContext) => {
-    const temp: JSX.Element[] = [];
-    for (const [, generatorSetting] of settings.allGenSettings) {
-        const nbGenerator = Math.floor(generatorSetting.settings.length / generatorSetting.numberOfSettingsPerGenerator);
-        for (let i = 0; i < nbGenerator; i++) {
-            if (generatorSetting.settings[i * generatorSetting.numberOfSettingsPerGenerator + ArmingModeIndex] !== -1) {
-                temp.push(FailureGeneratorCardTemplateUI(i, generatorSetting, settings));
-            }
-        }
-    }
-    return temp;
-};
-
-interface FailureShortListProps {
-    failureGenContext: FailureGenContext,
-    uniqueID: string
-}
-
-const FailureShortList: React.FC<FailureShortListProps> = ({ failureGenContext, uniqueID }) => {
-    const { allFailures } = useFailuresOrchestrator();
-
-    const maxNumberOfFailureToDisplay = 4;
-
-    let listOfSelectedFailures = findGeneratorFailures(allFailures, failureGenContext.generatorFailuresGetters, uniqueID);
-
-    if (listOfSelectedFailures.length === allFailures.length) {
-        return <div className="p-1 mb-1 bg-theme-accent rounded-md">{t('Failures.Generators.AllSystems')}</div>;
-    }
-    if (listOfSelectedFailures.length === 0) return <div className="p-1 mb-1 bg-theme-accent rounded-md">{t('Failures.Generators.NoFailure')}</div>;
-
-    const chaptersFullySelected: AtaChapterNumber[] = [];
-    for (const chapter of AtaChapterNumbers) {
-        const failuresActiveInChapter = listOfSelectedFailures.filter((failure) => failure.ata === chapter);
-        if (failuresActiveInChapter.length === allFailures.filter((failure) => failure.ata === chapter).length) {
-            chaptersFullySelected.push(chapter);
-            listOfSelectedFailures = listOfSelectedFailures.filter((failure) => failure.ata !== chapter);
-        }
-    }
-
-    const subSetOfChapters = chaptersFullySelected.slice(0, Math.min(maxNumberOfFailureToDisplay, chaptersFullySelected.length));
-    const subSetOfSelectedFailures = listOfSelectedFailures.slice(0, Math.min(maxNumberOfFailureToDisplay - subSetOfChapters.length, listOfSelectedFailures.length));
-    const chaptersToDisplay = subSetOfChapters.map((chapter) => (
-        <div className="p-1 mb-1 bg-theme-accent rounded-md grow">
-            {AtaChaptersTitle[chapter]}
-        </div>
-    ));
-    const singleFailuresToDisplay = subSetOfSelectedFailures.map((failure) => (
-        <div className="p-1 mb-1 bg-theme-accent rounded-md grow">
-            {failure.name}
-        </div>
-    ));
-    return (
-        <div className="flex flex-col">
-            {chaptersToDisplay}
-            {singleFailuresToDisplay}
-            {listOfSelectedFailures.length + chaptersFullySelected.length > maxNumberOfFailureToDisplay ? (
-                <div className="p-1 mb-1 grow">
-                    ...+
-                    {Math.max(0, listOfSelectedFailures.length + chaptersFullySelected.length - maxNumberOfFailureToDisplay)}
-                </div>
-            ) : <></>}
-        </div>
-    );
-};
-
-export function FailureGeneratorCardTemplateUI(
+export interface FailureGeneratorCardTemplateUIProps {
     genNumber: number,
     failureGenData: FailureGenData,
     failureGenContext: FailureGenContext,
-) {
+}
+
+export const FailureGeneratorCardTemplateUI: React.FC<FailureGeneratorCardTemplateUIProps> = ({ genNumber, failureGenData, failureGenContext }) => {
+    const bus = useEventBus();
+
     const genUniqueID = `${failureGenData.uniqueGenPrefix}${(genNumber).toString()}`;
     const genUniqueIDDisplayed = `${failureGenData.uniqueGenPrefix}${(genNumber + 1).toString()}`;
-    /* const isArmed : Boolean = useMemo(
-        () => (genNumber < failureGenData.armedState?.length ? failureGenData.armedState[genNumber] : false),
-        [failureGenData.armedState],
-    ); */
-    const isArmed : Boolean = (genNumber < failureGenData.armedState?.length ? failureGenData.armedState[genNumber] : false);
+    const isArmed = (genNumber < failureGenData.armedState?.length ? failureGenData.armedState[genNumber] : false);
+
+    const eraseGenerator: (genID: number, generatorSettings: FailureGenData, failureGenContext: FailureGenContext) =>
+        void = (genID: number, generatorSettings: FailureGenData, _failureGenContext: FailureGenContext) => {
+            const generatorNumber = generatorSettings.settings.length / generatorSettings.numberOfSettingsPerGenerator;
+            if (genID === generatorNumber - 1) {
+                generatorSettings.settings.splice(genID * generatorSettings.numberOfSettingsPerGenerator, generatorSettings.numberOfSettingsPerGenerator);
+                updateSettings(generatorSettings.settings, generatorSettings.setSetting, bus, generatorSettings.uniqueGenPrefix);
+            } else {
+                generatorSettings.settings[genID * generatorSettings.numberOfSettingsPerGenerator + ArmingModeIndex] = -1;
+                updateSettings(generatorSettings.settings, generatorSettings.setSetting, bus, generatorSettings.uniqueGenPrefix);
+            }
+        };
+
     return (
         <div className="flex flex-row justify-between px-2 pt-2 m-1 text-center rounded-md border-2 border-theme-accent border-solid">
             <div className="flex flex-col mr-4 max-w-[86%] text-left grow align-left">
@@ -253,6 +202,76 @@ flex-none p-2 my-2 rounded-md transition duration-100 border-2 text-theme-text b
                 </div>
             </div>
         </div>
-
     );
+};
+
+export const generatorsCardList = (settings: FailureGenContext) => {
+    const temp: JSX.Element[] = [];
+
+    for (const [, generatorSetting] of settings.allGenSettings) {
+        const nbGenerator = Math.floor(generatorSetting.settings.length / generatorSetting.numberOfSettingsPerGenerator);
+
+        for (let i = 0; i < nbGenerator; i++) {
+            if (generatorSetting.settings[i * generatorSetting.numberOfSettingsPerGenerator + ArmingModeIndex] !== -1) {
+                temp.push(<FailureGeneratorCardTemplateUI genNumber={i} failureGenData={generatorSetting} failureGenContext={settings} />);
+            }
+        }
+    }
+
+    return temp;
+};
+
+interface FailureShortListProps {
+    failureGenContext: FailureGenContext,
+    uniqueID: string
 }
+
+const FailureShortList: React.FC<FailureShortListProps> = ({ failureGenContext, uniqueID }) => {
+    const { allFailures } = useFailuresOrchestrator();
+
+    const maxNumberOfFailureToDisplay = 4;
+
+    let listOfSelectedFailures = findGeneratorFailures(allFailures, failureGenContext.generatorFailuresGetters, uniqueID);
+
+    if (listOfSelectedFailures.length === allFailures.length) {
+        return <div className="p-1 mb-1 bg-theme-accent rounded-md">{t('Failures.Generators.AllSystems')}</div>;
+    }
+    if (listOfSelectedFailures.length === 0) return <div className="p-1 mb-1 bg-theme-accent rounded-md">{t('Failures.Generators.NoFailure')}</div>;
+
+    const chaptersFullySelected: AtaChapterNumber[] = [];
+
+    for (const chapter of AtaChapterNumbers) {
+        const failuresActiveInChapter = listOfSelectedFailures.filter((failure) => failure.ata === chapter);
+        if (failuresActiveInChapter.length === allFailures.filter((failure) => failure.ata === chapter).length) {
+            chaptersFullySelected.push(chapter);
+            listOfSelectedFailures = listOfSelectedFailures.filter((failure) => failure.ata !== chapter);
+        }
+    }
+
+    const subSetOfChapters = chaptersFullySelected.slice(0, Math.min(maxNumberOfFailureToDisplay, chaptersFullySelected.length));
+    const subSetOfSelectedFailures = listOfSelectedFailures.slice(0, Math.min(maxNumberOfFailureToDisplay - subSetOfChapters.length, listOfSelectedFailures.length));
+    const chaptersToDisplay = subSetOfChapters.map((chapter) => (
+        <div className="p-1 mb-1 bg-theme-accent rounded-md grow">
+            {AtaChaptersTitle[chapter]}
+        </div>
+    ));
+
+    const singleFailuresToDisplay = subSetOfSelectedFailures.map((failure) => (
+        <div className="p-1 mb-1 bg-theme-accent rounded-md grow">
+            {failure.name}
+        </div>
+    ));
+
+    return (
+        <div className="flex flex-col">
+            {chaptersToDisplay}
+            {singleFailuresToDisplay}
+            {listOfSelectedFailures.length + chaptersFullySelected.length > maxNumberOfFailureToDisplay ? (
+                <div className="p-1 mb-1 grow">
+                    ...+
+                    {Math.max(0, listOfSelectedFailures.length + chaptersFullySelected.length - maxNumberOfFailureToDisplay)}
+                </div>
+            ) : <></>}
+        </div>
+    );
+};
