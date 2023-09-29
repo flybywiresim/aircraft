@@ -40,6 +40,7 @@ export type FailureGenData = {
     settings: number[],
     /**
      * TODO confirm - does this vary per generator?
+     * Yes, this varies a lot. As soon as you change a setting of the generator (min altitude, speed, mode...)
      */
     numberOfSettingsPerGenerator: number,
     /**
@@ -48,6 +49,8 @@ export type FailureGenData = {
     uniqueGenPrefix: string,
     /**
      * TODO put in redux, confirm - what even is this for?
+     * --> This is to identify the type of generator in the events, on the UI and in the stored memory.
+     * Each generator has its own letter A --> E. It is common to all generator instances within the same type. It never changes
      */
     additionalSetting: number[],
     /**
@@ -60,6 +63,7 @@ export type FailureGenData = {
     generatorSettingComponents: (genNumber: number, generatorSettings: FailureGenData, failureGenContext: FailureGenContext) => JSX.Element[],
     /**
      * TODO confirm - what is this for?
+     * this is the tailored list of react components specific to this kind of generator that will be displayed in the setting page.
      */
     alias: () => string,
     /**
