@@ -1,6 +1,7 @@
 use systems::{
     accept_iterable,
     air_conditioning::{
+        acs_controller::Pack,
         cabin_air::CabinAirSimulation,
         cabin_pressure_controller::CabinPressureController,
         full_digital_agu_controller::FullDigitalAGUController,
@@ -369,18 +370,22 @@ impl A380AirConditioningSystem {
 
             cabin_fans: [
                 CabinFan::new(
+                    1,
                     VolumeRate::new::<liter_per_second>(Self::CAB_FAN_DESIGN_FLOW_RATE_L_S),
                     ElectricalBusType::AlternatingCurrent(1),
                 ), // Left Hand - 100XP1
                 CabinFan::new(
+                    2,
                     VolumeRate::new::<liter_per_second>(Self::CAB_FAN_DESIGN_FLOW_RATE_L_S),
                     ElectricalBusType::AlternatingCurrent(2),
                 ), // Left Hand - 100XP2
                 CabinFan::new(
+                    3,
                     VolumeRate::new::<liter_per_second>(Self::CAB_FAN_DESIGN_FLOW_RATE_L_S),
                     ElectricalBusType::AlternatingCurrent(3),
                 ), // Right Hand - 200XP3
                 CabinFan::new(
+                    4,
                     VolumeRate::new::<liter_per_second>(Self::CAB_FAN_DESIGN_FLOW_RATE_L_S),
                     ElectricalBusType::AlternatingCurrent(4),
                 ), // Right Hand - 200XP4
@@ -388,12 +393,13 @@ impl A380AirConditioningSystem {
             cargo_air_heater: AirHeater::new(ElectricalBusType::AlternatingCurrent(2)), // 200XP4
             mixer_unit: MixerUnit::new(cabin_zones),
             packs: [
-                AirConditioningPack::new(context, 1),
-                AirConditioningPack::new(context, 2),
+                AirConditioningPack::new(context, Pack(1)),
+                AirConditioningPack::new(context, Pack(2)),
             ],
             trim_air_system: TrimAirSystem::new(
                 context,
                 cabin_zones,
+                &[1, 2],
                 Volume::new::<cubic_meter>(7.),
                 Volume::new::<cubic_meter>(0.2),
             ),
@@ -433,10 +439,9 @@ impl A380AirConditioningSystem {
             &self.air_conditioning_overhead,
             cpiom_b,
             &self.trim_air_system,
-            engines,
             pneumatic,
-            pneumatic_overhead,
             cpiom_b.should_close_taprv(),
+            &self.trim_air_system,
         );
 
         self.vcm.iter_mut().for_each(|module| {
@@ -448,7 +453,13 @@ impl A380AirConditioningSystem {
         let pack_flow: [MassRate; 2] = [self.fdac[0].pack_flow(), self.fdac[1].pack_flow()];
 
         for (id, pack) in self.packs.iter_mut().enumerate() {
-            pack.update(pack_flow[id], &cpiom_b.duct_demand_temperature())
+            // TODO: Failures
+            pack.update(
+                context,
+                pack_flow[id],
+                &cpiom_b.duct_demand_temperature(),
+                false,
+            )
         }
 
         let mut mixer_intakes: Vec<&dyn OutletAir> = vec![&self.packs[0], &self.packs[1]];
@@ -457,8 +468,15 @@ impl A380AirConditioningSystem {
         }
         self.mixer_unit.update(mixer_intakes);
 
-        self.trim_air_system
-            .update(context, &self.mixer_unit, &self.tadd);
+        self.trim_air_system.update(
+            context,
+            &self.mixer_unit,
+            &[
+                &self.tadd.taprv_controller()[0],
+                &self.tadd.taprv_controller()[1],
+            ],
+            &[&self.tadd; 18],
+        );
 
         // For the bulk cargo, air flows from the LD and is warmed up by an electric heater
         self.cargo_air_heater.update(
@@ -1050,6 +1068,7 @@ mod tests {
         pneumatic::{
             valve::{DefaultValve, ElectroPneumaticValve, PneumaticExhaust},
             ControllablePneumaticValve, EngineModeSelector, EngineState, PneumaticPipe, Precooler,
+            PressureTransducer,
         },
         shared::{
             arinc429::{Arinc429Word, SignStatus},
@@ -1253,7 +1272,7 @@ mod tests {
         engine_bleed: [TestEngineBleed; 2],
         cross_bleed_valve: DefaultValve,
         fadec: TestFadec,
-        pub packs: [TestPneumaticPackComplex; 2],
+        packs: [TestPneumaticPackComplex; 2],
     }
 
     impl TestPneumatic {
@@ -1335,6 +1354,14 @@ mod tests {
                 self.packs[id].right_pack_flow_valve_air_flow()
             } else {
                 self.packs[id].left_pack_flow_valve_air_flow()
+            }
+        }
+        fn pack_flow_valve_inlet_pressure(&self, fcv_id: usize) -> Option<Pressure> {
+            let id = A380AirConditioning::fcv_to_pack_id(fcv_id);
+            if fcv_id % 2 == 0 {
+                self.packs[id].right_pack_flow_valve_inlet_pressure()
+            } else {
+                self.packs[id].left_pack_flow_valve_inlet_pressure()
             }
         }
     }
@@ -1445,6 +1472,8 @@ mod tests {
         exhaust: PneumaticExhaust,
         left_pack_flow_valve: ElectroPneumaticValve,
         right_pack_flow_valve: ElectroPneumaticValve,
+        left_inlet_pressure_sensor: PressureTransducer,
+        right_inlet_pressure_sensor: PressureTransducer,
     }
     impl TestPneumaticPackComplex {
         fn new(pack_number: usize) -> Self {
@@ -1462,6 +1491,12 @@ mod tests {
                 right_pack_flow_valve: ElectroPneumaticValve::new(
                     ElectricalBusType::DirectCurrentEssential,
                 ),
+                left_inlet_pressure_sensor: PressureTransducer::new(
+                    ElectricalBusType::DirectCurrentEssentialShed,
+                ),
+                right_inlet_pressure_sensor: PressureTransducer::new(
+                    ElectricalBusType::DirectCurrentEssentialShed,
+                ),
             }
         }
         fn update(
@@ -1470,6 +1505,10 @@ mod tests {
             from: &mut impl PneumaticContainer,
             pack_flow_valve_signals: &impl PackFlowControllers,
         ) {
+            // TODO: Should come from two different sources
+            self.left_inlet_pressure_sensor.update(context, from);
+            self.right_inlet_pressure_sensor.update(context, from);
+
             self.left_pack_flow_valve.update_open_amount(
                 pack_flow_valve_signals
                     .pack_flow_controller(1 + ((self.pack_number == 2) as usize * 2)),
@@ -1500,6 +1539,12 @@ mod tests {
         }
         fn right_pack_flow_valve_air_flow(&self) -> MassRate {
             self.right_pack_flow_valve.fluid_flow()
+        }
+        fn left_pack_flow_valve_inlet_pressure(&self) -> Option<Pressure> {
+            self.left_inlet_pressure_sensor.signal()
+        }
+        fn right_pack_flow_valve_inlet_pressure(&self) -> Option<Pressure> {
+            self.right_inlet_pressure_sensor.signal()
         }
     }
     impl PneumaticContainer for TestPneumaticPackComplex {
@@ -1537,6 +1582,8 @@ mod tests {
         fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
             self.left_pack_flow_valve.accept(visitor);
             self.right_pack_flow_valve.accept(visitor);
+            self.left_inlet_pressure_sensor.accept(visitor);
+            self.right_inlet_pressure_sensor.accept(visitor);
 
             visitor.visit(self);
         }
@@ -4983,13 +5030,13 @@ mod tests {
             fn fwd_cargo_lowers_pack_outlet_to_cool_zone() {
                 let mut test_bed = test_bed()
                     .on_ground()
-                    .ambient_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(-30.))
+                    .ambient_temperature_of(ThermodynamicTemperature::new::<degree_celsius>(30.))
                     .command_measured_temperature(ThermodynamicTemperature::new::<degree_celsius>(
-                        5.,
+                        24.,
                     ))
                     .command_cargo_selected_temperature(ThermodynamicTemperature::new::<
                         degree_celsius,
-                    >(10.))
+                    >(15.))
                     .iterate(500);
 
                 assert!(test_bed.measured_temperature().get::<degree_celsius>() > 20.);
@@ -4997,7 +5044,7 @@ mod tests {
                     (test_bed
                         .fwd_cargo_measured_temperature()
                         .get::<degree_celsius>()
-                        - 10.)
+                        - 15.)
                         .abs()
                         < 2.
                 );
