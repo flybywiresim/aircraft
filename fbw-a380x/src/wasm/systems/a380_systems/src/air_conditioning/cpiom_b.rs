@@ -2,11 +2,11 @@ use std::time::Duration;
 
 use systems::{
     air_conditioning::{
-        acs_controller::{ACSCActiveComputer, AirConditioningStateManager, Pack, ZoneController},
+        acs_controller::{AcscId, AirConditioningStateManager, Pack, ZoneController},
         trim_air_drive_device::TaddShared,
         ventilation_control_module::VcmShared,
         AdirsToAirCondInterface, AirConditioningOverheadShared, BulkHeaterSignal, CabinFansSignal,
-        DuctTemperature, OverheadFlowSelector, PackFlow, ZoneType,
+        Channel, DuctTemperature, OverheadFlowSelector, PackFlow, ZoneType,
     },
     integrated_modular_avionics::core_processing_input_output_module::CoreProcessingInputOutputModule,
     shared::{
@@ -407,20 +407,15 @@ impl TemperatureControlSystemApplication {
         pressurization: &impl CabinAltitude,
         trim_air_drive_device: &impl TaddShared,
     ) {
-        // ACSCActive computer is only relevant to the A320 but we use it here to signify CPIOM B being powered
-        let active_computer = if cpiom_b_powered {
-            ACSCActiveComputer::Primary
-        } else {
-            ACSCActiveComputer::None
-        };
-
-        for (index, zone) in self.zone_controllers.iter_mut().enumerate() {
+        for zone in self.zone_controllers.iter_mut() {
+            // Acsc is irrelevant for the A380 so we set it to 1
             zone.update(
                 context,
+                AcscId::Acsc1(Channel::ChannelOne),
                 acs_overhead,
-                cabin_temperature.cabin_temperature()[index],
+                cpiom_b_powered,
+                cabin_temperature.cabin_temperature(),
                 pressurization,
-                &active_computer,
             );
         }
 

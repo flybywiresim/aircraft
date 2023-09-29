@@ -76,8 +76,8 @@ impl VentilationControlModule {
                 .get_identifier(format!("VENT_{}_VCM_CHANNEL_FAILURE", id)),
 
             id,
-            active_channel: OperatingChannel::new(1, powered_by[0]),
-            stand_by_channel: OperatingChannel::new(2, powered_by[1]),
+            active_channel: OperatingChannel::new(1, None, &[powered_by[0]]),
+            stand_by_channel: OperatingChannel::new(2, None, &[powered_by[1]]),
             hp_cabin_fans_are_enabled: false,
 
             fcvcs: ForwardCargoVentilationControlSystem::new(),
@@ -116,22 +116,20 @@ impl VentilationControlModule {
     }
 
     fn fault_determination(&mut self) {
-        self.fault = match self.active_channel.has_fault() {
-            true => {
-                if self.stand_by_channel.has_fault() {
-                    Some(VcmFault::BothChannelsFault)
-                } else {
-                    self.switch_active_channel();
-                    Some(VcmFault::OneChannelFault)
-                }
+        self.active_channel.update_fault();
+        self.stand_by_channel.update_fault();
+
+        self.fault = if self.active_channel.has_fault() {
+            if self.stand_by_channel.has_fault() {
+                Some(VcmFault::BothChannelsFault)
+            } else {
+                self.switch_active_channel();
+                Some(VcmFault::OneChannelFault)
             }
-            false => {
-                if self.stand_by_channel.has_fault() {
-                    Some(VcmFault::OneChannelFault)
-                } else {
-                    None
-                }
-            }
+        } else if self.stand_by_channel.has_fault() {
+            Some(VcmFault::OneChannelFault)
+        } else {
+            None
         };
     }
 

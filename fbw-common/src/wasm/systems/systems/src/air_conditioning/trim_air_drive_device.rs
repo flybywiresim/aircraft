@@ -1,8 +1,5 @@
 use crate::{
-    shared::{
-        ElectricalBusType, EngineBleedPushbutton, EngineCorrectedN1, EngineStartState,
-        PackFlowValveState, PneumaticBleed,
-    },
+    shared::{ElectricalBusType, EngineStartState, PackFlowValveState, PneumaticBleed},
     simulation::{
         InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
         VariableIdentifier, Write,
@@ -10,11 +7,10 @@ use crate::{
 };
 
 use super::{
-    acs_controller::TrimAirValveController, AirConditioningOverheadShared, DuctTemperature,
-    OperatingChannel, TrimAirControllers,
+    acs_controller::{TrimAirPressureRegulatingValveController, TrimAirValveController},
+    AirConditioningOverheadShared, DuctTemperature, OperatingChannel, TrimAirControllers,
+    TrimAirSystem,
 };
-
-use uom::si::{f64::*, ratio::percent};
 
 #[derive(Debug)]
 enum TaddFault {
@@ -33,7 +29,8 @@ pub struct TrimAirDriveDevice<const ZONES: usize, const ENGINES: usize> {
     active_channel: OperatingChannel,
     stand_by_channel: OperatingChannel,
     hot_air_is_enabled: [bool; 2],
-    should_open_taprv: [bool; 2],
+    hot_air_is_open: [bool; 2],
+    taprv_controllers: [TrimAirPressureRegulatingValveController; 2],
     trim_air_valve_controllers: [TrimAirValveController; ZONES],
 
     fault: Option<TaddFault>,
@@ -44,10 +41,11 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirDriveDevice<ZONES, ENGINES
         Self {
             tadd_channel_failure_id: context.get_identifier("COND_TADD_CHANNEL_FAILURE".to_owned()),
 
-            active_channel: OperatingChannel::new(1, powered_by[0]),
-            stand_by_channel: OperatingChannel::new(2, powered_by[1]),
+            active_channel: OperatingChannel::new(1, None, &[powered_by[0]]),
+            stand_by_channel: OperatingChannel::new(2, None, &[powered_by[1]]),
             hot_air_is_enabled: [false; 2],
-            should_open_taprv: [false; 2],
+            hot_air_is_open: [false; 2],
+            taprv_controllers: [TrimAirPressureRegulatingValveController::new(); 2],
             trim_air_valve_controllers: [TrimAirValveController::new(); ZONES],
 
             fault: None,
@@ -60,10 +58,9 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirDriveDevice<ZONES, ENGINES
         acs_overhead: &impl AirConditioningOverheadShared,
         duct_demand_temperature: &impl DuctTemperature,
         duct_temperature: &impl DuctTemperature,
-        engines: [&impl EngineCorrectedN1; ENGINES],
         pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
-        pneumatic_overhead: &impl EngineBleedPushbutton<ENGINES>,
         should_close_taprv: [bool; 2],
+        trim_air_system: &TrimAirSystem<ZONES, ENGINES>,
     ) {
         self.fault_determination();
 
@@ -72,18 +69,17 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirDriveDevice<ZONES, ENGINES
                 acs_overhead,
                 should_close_taprv[id - 1],
                 id,
+                pneumatic,
             )
         });
 
-        self.should_open_taprv = [1, 2].map(|id| {
-            self.trim_air_pressure_regulating_valve_is_open_determination(
-                self.hot_air_is_enabled[id - 1],
-                engines,
-                pneumatic,
-                pneumatic_overhead,
-                id,
-            )
-        });
+        self.taprv_controllers
+            .iter_mut()
+            .enumerate()
+            .for_each(|(id, controller)| controller.update(self.hot_air_is_enabled[id]));
+
+        self.hot_air_is_open =
+            [1, 2].map(|id| trim_air_system.trim_air_pressure_regulating_valve_is_open(id));
 
         if !matches!(self.fault, Some(TaddFault::BothChannelsFault))
             && !self.active_channel.has_fault()
@@ -91,7 +87,7 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirDriveDevice<ZONES, ENGINES
             for (id, tav_controller) in self.trim_air_valve_controllers.iter_mut().enumerate() {
                 tav_controller.update(
                     context,
-                    self.should_open_taprv.iter().any(|&taprv| taprv),
+                    self.hot_air_is_open.iter().any(|&hot_air| hot_air),
                     duct_temperature.duct_temperature()[id],
                     duct_demand_temperature.duct_demand_temperature()[id],
                 )
@@ -100,22 +96,20 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirDriveDevice<ZONES, ENGINES
     }
 
     fn fault_determination(&mut self) {
-        self.fault = match self.active_channel.has_fault() {
-            true => {
-                if self.stand_by_channel.has_fault() {
-                    Some(TaddFault::BothChannelsFault)
-                } else {
-                    self.switch_active_channel();
-                    Some(TaddFault::OneChannelFault)
-                }
+        self.active_channel.update_fault();
+        self.stand_by_channel.update_fault();
+
+        self.fault = if self.active_channel.has_fault() {
+            if self.stand_by_channel.has_fault() {
+                Some(TaddFault::BothChannelsFault)
+            } else {
+                self.switch_active_channel();
+                Some(TaddFault::OneChannelFault)
             }
-            false => {
-                if self.stand_by_channel.has_fault() {
-                    Some(TaddFault::OneChannelFault)
-                } else {
-                    None
-                }
-            }
+        } else if self.stand_by_channel.has_fault() {
+            Some(TaddFault::OneChannelFault)
+        } else {
+            None
         };
     }
 
@@ -128,41 +122,18 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirDriveDevice<ZONES, ENGINES
         acs_overhead: &impl AirConditioningOverheadShared,
         should_close_taprv: bool,
         hot_air_id: usize,
+        pneumatic: &impl PackFlowValveState,
     ) -> bool {
         acs_overhead.hot_air_pushbutton_is_on(hot_air_id)
             && !self.active_channel.has_fault()
-            && !matches!(self.fault, Some(TaddFault::BothChannelsFault))
+            && ((pneumatic.pack_flow_valve_is_open(1)) || (pneumatic.pack_flow_valve_is_open(2)))
             && !should_close_taprv
+        // && !self.duct_overheat_monitor()
+        // && !any_tav_has_fault
     }
 
-    fn trim_air_pressure_regulating_valve_is_open_determination(
-        &self,
-        hot_air_is_enabled: bool,
-        engines: [&impl EngineCorrectedN1; ENGINES],
-        pneumatic: &(impl PneumaticBleed + EngineStartState),
-        pneumatic_overhead: &impl EngineBleedPushbutton<ENGINES>,
-        taprv_id: usize,
-    ) -> bool {
-        let engine_id = if taprv_id == 1 { [0, 1] } else { [2, 3] };
-        // The trim air pressure regulating valves opens when there's bleed air
-        // Bleed can come from either onboard engine being on, or from any engine if xfeed is on
-        ((engine_id.iter().any(|id| {
-            engines[*id].corrected_n1() >= Ratio::new::<percent>(15.)
-                && pneumatic_overhead.engine_bleed_pushbuttons_are_auto()[*id]
-        }) || (engines
-            .iter()
-            .any(|e| e.corrected_n1() >= Ratio::new::<percent>(15.))
-            && pneumatic_overhead
-                .engine_bleed_pushbuttons_are_auto()
-                .iter()
-                .any(|pb| pb == &true)
-            && pneumatic.engine_crossbleed_is_on()))
-            || pneumatic.apu_bleed_is_on())
-            && hot_air_is_enabled
-    }
-
-    pub fn trim_air_valve_controllers(&self, zone_id: usize) -> TrimAirValveController {
-        self.trim_air_valve_controllers[zone_id]
+    pub fn taprv_controller(&self) -> [TrimAirPressureRegulatingValveController; 2] {
+        self.taprv_controllers
     }
 }
 
@@ -171,7 +142,7 @@ impl<const ZONES: usize, const ENGINES: usize> TaddShared for TrimAirDriveDevice
         self.hot_air_is_enabled[hot_air_id - 1]
     }
     fn trim_air_pressure_regulating_valve_is_open(&self, taprv_id: usize) -> bool {
-        self.should_open_taprv[taprv_id - 1]
+        self.hot_air_is_open[taprv_id - 1]
     }
 }
 

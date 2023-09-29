@@ -42,8 +42,8 @@ pub struct FullDigitalAGUController<const ENGINES: usize> {
 impl<const ENGINES: usize> FullDigitalAGUController<ENGINES> {
     pub fn new(fdac_id: usize, powered_by: Vec<ElectricalBusType>) -> Self {
         Self {
-            active_channel: OperatingChannel::new(1, powered_by[0]),
-            stand_by_channel: OperatingChannel::new(2, powered_by[1]),
+            active_channel: OperatingChannel::new(1, None, &[powered_by[0]]),
+            stand_by_channel: OperatingChannel::new(2, None, &[powered_by[1]]),
             flow_control: FDACFlowControl::new(fdac_id),
             // agu_control
             fault: None,
@@ -82,22 +82,20 @@ impl<const ENGINES: usize> FullDigitalAGUController<ENGINES> {
     }
 
     fn fault_determination(&mut self) {
-        self.fault = match self.active_channel.has_fault() {
-            true => {
-                if self.stand_by_channel.has_fault() {
-                    Some(FdacFault::BothChannelsFault)
-                } else {
-                    self.switch_active_channel();
-                    Some(FdacFault::OneChannelFault)
-                }
+        self.active_channel.update_fault();
+        self.stand_by_channel.update_fault();
+
+        self.fault = if self.active_channel.has_fault() {
+            if self.stand_by_channel.has_fault() {
+                Some(FdacFault::BothChannelsFault)
+            } else {
+                self.switch_active_channel();
+                Some(FdacFault::OneChannelFault)
             }
-            false => {
-                if self.stand_by_channel.has_fault() {
-                    Some(FdacFault::OneChannelFault)
-                } else {
-                    None
-                }
-            }
+        } else if self.stand_by_channel.has_fault() {
+            Some(FdacFault::OneChannelFault)
+        } else {
+            None
         };
     }
 
