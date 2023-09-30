@@ -19,13 +19,14 @@ const NoSimBriefDataOverlay = () => {
     const simbriefDataLoaded = isSimbriefDataLoaded();
 
     const [simbriefDataPending, setSimbriefDataPending] = useState(false);
-    const [simbriefUserId] = usePersistentProperty('CONFIG_SIMBRIEF_USERID');
+    const [navigraphUsername] = usePersistentProperty('NAVIGRAPH_USERNAME');
+    const [overrideSimBriefUserID] = usePersistentProperty('CONFIG_OVERRIDE_SIMBRIEF_USERID');
 
     const fetchData = async () => {
         setSimbriefDataPending(true);
 
         try {
-            const action = await fetchSimbriefDataAction(simbriefUserId ?? '');
+            const action = await fetchSimbriefDataAction(navigraphUsername ?? '', overrideSimBriefUserID ?? '');
 
             dispatch(action);
             dispatch(setOfpScroll(0));
