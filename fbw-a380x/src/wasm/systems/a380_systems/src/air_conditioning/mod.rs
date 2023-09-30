@@ -1,15 +1,15 @@
 use systems::{
     accept_iterable,
     air_conditioning::{
-        acs_controller::{AirConditioningSystemController, Pack},
+        acs_controller::{AcscId, AirConditioningSystemController, Pack},
         cabin_air::CabinAirSimulation,
         cabin_pressure_controller::CabinPressureController,
         full_digital_agu_controller::FullDigitalAGUController,
         pressure_valve::{OutflowValve, SafetyValve},
         AdirsToAirCondInterface, Air, AirConditioningOverheadShared, AirConditioningPack, CabinFan,
-        DuctTemperature, MixerUnit, OutflowValveSignal, OutletAir, OverheadFlowSelector, PackFlow,
-        PackFlowControllers, PressurizationConstants, PressurizationOverheadShared, TrimAirSystem,
-        ZoneType,
+        Channel, DuctTemperature, MixerUnit, OutflowValveSignal, OutletAir, OverheadFlowSelector,
+        PackFlow, PackFlowControllers, PressurizationConstants, PressurizationOverheadShared,
+        TrimAirSystem, ZoneType,
     },
     overhead::{
         AutoManFaultPushButton, NormalOnPushButton, OnOffFaultPushButton, OnOffPushButton,
@@ -319,14 +319,17 @@ impl A380AirConditioningSystem {
         Self {
             acsc: AirConditioningSystemController::new(
                 context,
+                AcscId::Acsc1(Channel::ChannelOne),
                 cabin_zones,
-                vec![
-                    ElectricalBusType::DirectCurrent(1),
-                    ElectricalBusType::AlternatingCurrent(1),
-                ],
-                vec![
-                    ElectricalBusType::DirectCurrent(2),
-                    ElectricalBusType::AlternatingCurrent(2),
+                [
+                    [
+                        ElectricalBusType::AlternatingCurrent(1), // 103XP
+                        ElectricalBusType::DirectCurrent(1),      // 101PP
+                    ],
+                    [
+                        ElectricalBusType::AlternatingCurrent(2),  // 202XP
+                        ElectricalBusType::DirectCurrentEssential, // 4PP
+                    ],
                 ],
             ),
             fdac: [
@@ -345,10 +348,16 @@ impl A380AirConditioningSystem {
                     ],
                 ),
             ],
-            cabin_fans: [CabinFan::new(ElectricalBusType::AlternatingCurrent(1)); 2],
+            cabin_fans: [
+                CabinFan::new(1, ElectricalBusType::AlternatingCurrent(1)),
+                CabinFan::new(2, ElectricalBusType::AlternatingCurrent(1)),
+            ],
             mixer_unit: MixerUnit::new(cabin_zones),
-            packs: [AirConditioningPack::new(), AirConditioningPack::new()],
-            trim_air_system: TrimAirSystem::new(context, cabin_zones),
+            packs: [
+                AirConditioningPack::new(Pack(1)),
+                AirConditioningPack::new(Pack(2)),
+            ],
+            trim_air_system: TrimAirSystem::new(context, cabin_zones, &[1]),
 
             air_conditioning_overhead: A380AirConditioningSystemOverhead::new(context),
         }
@@ -377,7 +386,6 @@ impl A380AirConditioningSystem {
             engines,
             engine_fire_push_buttons,
             pneumatic,
-            pneumatic_overhead,
             pressurization,
             pressurization_overhead,
             lgciu,
@@ -402,13 +410,15 @@ impl A380AirConditioningSystem {
             fan.update(cabin_simulation, &self.acsc.cabin_fans_controller())
         }
 
-        let pack_flow: [MassRate; 2] = [
-            self.acsc.individual_pack_flow(Pack(1)),
-            self.acsc.individual_pack_flow(Pack(2)),
-        ];
+        let pack_flow = [self.fdac[0].pack_flow(), self.fdac[1].pack_flow()];
         let duct_demand_temperature = self.acsc.duct_demand_temperature();
         for (id, pack) in self.packs.iter_mut().enumerate() {
-            pack.update(pack_flow[id], &duct_demand_temperature)
+            pack.update(
+                context,
+                pack_flow[id],
+                &duct_demand_temperature,
+                self.acsc.both_channels_failure(),
+            )
         }
 
         let mut mixer_intakes: Vec<&dyn OutletAir> = vec![&self.packs[0], &self.packs[1]];
@@ -417,8 +427,12 @@ impl A380AirConditioningSystem {
         }
         self.mixer_unit.update(mixer_intakes);
 
-        self.trim_air_system
-            .update(context, &self.mixer_unit, &self.acsc);
+        self.trim_air_system.update(
+            context,
+            &self.mixer_unit,
+            &[&self.acsc.trim_air_pressure_regulating_valve_controller(); 18],
+            &[&self.acsc; 18],
+        );
 
         self.air_conditioning_overhead
             .set_pack_pushbutton_fault(self.pack_fault_determination());
@@ -458,9 +472,8 @@ impl DuctTemperature for A380AirConditioningSystem {
 impl OutletAir for A380AirConditioningSystem {
     fn outlet_air(&self) -> Air {
         let mut outlet_air = Air::new();
-        outlet_air.set_flow_rate(
-            self.acsc.individual_pack_flow(Pack(1)) + self.acsc.individual_pack_flow(Pack(2)),
-        );
+        outlet_air
+            .set_flow_rate(self.acsc.individual_pack_flow() + self.acsc.individual_pack_flow());
         outlet_air.set_pressure(self.trim_air_system.trim_air_outlet_pressure());
         outlet_air.set_temperature(self.duct_temperature().iter().average());
 
@@ -909,6 +922,7 @@ mod tests {
         pneumatic::{
             valve::{DefaultValve, ElectroPneumaticValve, PneumaticExhaust},
             ControllablePneumaticValve, EngineModeSelector, EngineState, PneumaticPipe, Precooler,
+            PressureTransducer,
         },
         shared::{
             arinc429::{Arinc429Word, SignStatus},
@@ -1111,7 +1125,7 @@ mod tests {
         engine_bleed: [TestEngineBleed; 2],
         cross_bleed_valve: DefaultValve,
         fadec: TestFadec,
-        pub packs: [TestPneumaticPackComplex; 2],
+        packs: [TestPneumaticPackComplex; 2],
     }
 
     impl TestPneumatic {
@@ -1189,6 +1203,14 @@ mod tests {
                 self.packs[id].right_pack_flow_valve_air_flow()
             } else {
                 self.packs[id].left_pack_flow_valve_air_flow()
+            }
+        }
+        fn pack_flow_valve_inlet_pressure(&self, fcv_id: usize) -> Option<Pressure> {
+            let id = A380AirConditioning::fcv_to_pack_id(fcv_id);
+            if fcv_id % 2 == 0 {
+                self.packs[id].right_pack_flow_valve_inlet_pressure()
+            } else {
+                self.packs[id].left_pack_flow_valve_inlet_pressure()
             }
         }
     }
@@ -1299,6 +1321,8 @@ mod tests {
         exhaust: PneumaticExhaust,
         left_pack_flow_valve: ElectroPneumaticValve,
         right_pack_flow_valve: ElectroPneumaticValve,
+        left_inlet_pressure_sensor: PressureTransducer,
+        right_inlet_pressure_sensor: PressureTransducer,
     }
     impl TestPneumaticPackComplex {
         fn new(pack_number: usize) -> Self {
@@ -1316,6 +1340,12 @@ mod tests {
                 right_pack_flow_valve: ElectroPneumaticValve::new(
                     ElectricalBusType::DirectCurrentEssential,
                 ),
+                left_inlet_pressure_sensor: PressureTransducer::new(
+                    ElectricalBusType::DirectCurrentEssentialShed,
+                ),
+                right_inlet_pressure_sensor: PressureTransducer::new(
+                    ElectricalBusType::DirectCurrentEssentialShed,
+                ),
             }
         }
         fn update(
@@ -1324,6 +1354,10 @@ mod tests {
             from: &mut impl PneumaticContainer,
             pack_flow_valve_signals: &impl PackFlowControllers,
         ) {
+            // TODO: Should come from two different sources
+            self.left_inlet_pressure_sensor.update(context, from);
+            self.right_inlet_pressure_sensor.update(context, from);
+
             self.left_pack_flow_valve.update_open_amount(
                 pack_flow_valve_signals
                     .pack_flow_controller(1 + ((self.pack_number == 2) as usize * 2)),
@@ -1354,6 +1388,12 @@ mod tests {
         }
         fn right_pack_flow_valve_air_flow(&self) -> MassRate {
             self.right_pack_flow_valve.fluid_flow()
+        }
+        fn left_pack_flow_valve_inlet_pressure(&self) -> Option<Pressure> {
+            self.left_inlet_pressure_sensor.signal()
+        }
+        fn right_pack_flow_valve_inlet_pressure(&self) -> Option<Pressure> {
+            self.right_inlet_pressure_sensor.signal()
         }
     }
     impl PneumaticContainer for TestPneumaticPackComplex {
@@ -1391,6 +1431,8 @@ mod tests {
         fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
             self.left_pack_flow_valve.accept(visitor);
             self.right_pack_flow_valve.accept(visitor);
+            self.left_inlet_pressure_sensor.accept(visitor);
+            self.right_inlet_pressure_sensor.accept(visitor);
 
             visitor.visit(self);
         }

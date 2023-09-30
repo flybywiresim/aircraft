@@ -26,6 +26,7 @@ export enum EfisOption {
 }
 
 export enum NdSymbolTypeFlags {
+    None = 0,
     Vor = 1 << 0,
     VorDme = 1 << 1,
     Ndb = 1 << 2,

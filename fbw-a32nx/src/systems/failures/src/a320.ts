@@ -1,6 +1,22 @@
 // One can rightfully argue that this constant shouldn't be located in @flybywiresim/failures.
 // Once we create an A320 specific package, such as @flybywiresim/a320, we can move it there.
 export const A320Failure = Object.freeze({
+    Acsc1Lane1: 21000,
+    Acsc1Lane2: 21001,
+    Acsc2Lane1: 21002,
+    Acsc2Lane2: 21003,
+    HotAir: 21004,
+    TrimAirHighPressure: 21005,
+    CkptTrimAirFailure: 21006,
+    FwdTrimAirFailure: 21007,
+    AftTrimAirFailure: 21008,
+    CkptDuctOvht: 21009,
+    FwdDuctOvht: 21010,
+    AftDuctOvht: 21011,
+    CabinFan1Failure: 21012,
+    CabinFan2Failure: 21013,
+    LabGalleyFan: 21014,
+
     Fac1Failure: 22000,
     Fac2Failure: 22001,
 

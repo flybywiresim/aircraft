@@ -36,7 +36,7 @@ export class GeoMath {
    * @param referenceCoordinates The reference coordinates to calculate from.
    * @returns The calculated coordinates.
    */
-  public static relativeBearingDistanceToCoords(course: number, distanceInNM: number, referenceCoordinates: LatLongAlt): LatLongAlt {
+  public static relativeBearingDistanceToCoords(course: number, distanceInNM: number, referenceCoordinates: Coordinates): LatLongAlt {
       const courseRadians = course * Avionics.Utils.DEG2RAD;
       const distanceRadians = (Math.PI / (180 * 60)) * distanceInNM;
 

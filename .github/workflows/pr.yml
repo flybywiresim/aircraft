@@ -63,14 +63,18 @@ jobs:
         run: |
           ./scripts/dev-env/run.sh ./scripts/setup.sh
           ./scripts/dev-env/run.sh ./scripts/build.sh --no-tty -j 4
+          rm -rf fbw-a32nx/src
       - name: Generate install.json
+        if: github.event.pull_request.auto_merge == false
         run: |
+          df -h
           ./scripts/dev-env/run.sh node ./scripts/fragment_a32nx.js
 
           cp ./fbw-a32nx/out/build-modules/modules.json ./fbw-a32nx/out/flybywire-aircraft-a320-neo/install.json
           ./scripts/dev-env/run.sh node ./scripts/install-source_a32nx.js
       - name: Upload PR artifact
         uses: actions/upload-artifact@v2
+        if: github.event.pull_request.auto_merge == false
         with:
           name: A32NX
           path: ./fbw-a32nx/out/flybywire-aircraft-a320-neo/
