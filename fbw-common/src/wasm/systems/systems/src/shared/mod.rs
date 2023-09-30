@@ -336,6 +336,16 @@ impl Display for AirbusElectricPumpId {
     }
 }
 
+/// Access to all aircraft surfaces positions
+pub trait SurfacesPositions {
+    fn left_spoilers_positions(&self) -> &[f64];
+    fn right_spoilers_positions(&self) -> &[f64];
+    fn left_ailerons_positions(&self) -> &[f64];
+    fn right_ailerons_positions(&self) -> &[f64];
+    fn left_flaps_positions(&self) -> &[f64];
+    fn right_flaps_positions(&self) -> &[f64];
+}
+
 /// The common types of electrical buses within Airbus aircraft.
 /// These include types such as AC, DC, AC ESS, etc.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]

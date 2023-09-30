@@ -6,7 +6,7 @@ use crate::simulation::{
     SimulatorWriter, UpdateContext, VariableIdentifier, Write,
 };
 
-use crate::shared::local_acceleration_at_plane_coordinate;
+use crate::shared::{local_acceleration_at_plane_coordinate, SurfacesPositions};
 
 use uom::si::{
     acceleration::meter_per_second_squared,
@@ -136,45 +136,7 @@ impl SimulationElement for LandingGearWeightOnWheelsEstimator {
 }
 
 struct A380WingLiftModifier {
-    spoiler_left_1_position_id: VariableIdentifier,
-    spoiler_left_2_position_id: VariableIdentifier,
-    spoiler_left_3_position_id: VariableIdentifier,
-    spoiler_left_4_position_id: VariableIdentifier,
-    spoiler_left_5_position_id: VariableIdentifier,
-    spoiler_left_6_position_id: VariableIdentifier,
-    spoiler_left_7_position_id: VariableIdentifier,
-    spoiler_left_8_position_id: VariableIdentifier,
-
-    spoiler_right_1_position_id: VariableIdentifier,
-    spoiler_right_2_position_id: VariableIdentifier,
-    spoiler_right_3_position_id: VariableIdentifier,
-    spoiler_right_4_position_id: VariableIdentifier,
-    spoiler_right_5_position_id: VariableIdentifier,
-    spoiler_right_6_position_id: VariableIdentifier,
-    spoiler_right_7_position_id: VariableIdentifier,
-    spoiler_right_8_position_id: VariableIdentifier,
-
-    aileron_left_1_position_id: VariableIdentifier,
-    aileron_left_2_position_id: VariableIdentifier,
-    aileron_left_3_position_id: VariableIdentifier,
-
-    aileron_right_1_position_id: VariableIdentifier,
-    aileron_right_2_position_id: VariableIdentifier,
-    aileron_right_3_position_id: VariableIdentifier,
-
-    flaps_left_position_id: VariableIdentifier,
-    flaps_right_position_id: VariableIdentifier,
-
     lateral_offset: Ratio,
-
-    spoilers_left_position: [f64; 8],
-    spoilers_right_position: [f64; 8],
-
-    ailerons_left_position: [f64; 3],
-    ailerons_right_position: [f64; 3],
-
-    left_flaps_position: Ratio,
-    right_flaps_position: Ratio,
 
     left_wing_lift: Force,
     right_wing_lift: Force,
@@ -195,72 +157,11 @@ impl A380WingLiftModifier {
     const AILERON_SURFACES_SPOIL_GAIN: f64 = 0.2;
     const FLAPS_SURFACES_SPOIL_GAIN: f64 = 0.3;
 
-    fn new(context: &mut InitContext) -> Self {
+    fn default() -> Self {
         assert!(Vector5::from(Self::NOMINAL_WING_LIFT_SPREAD_RATIOS).sum() == 1.);
 
         Self {
-            spoiler_left_1_position_id: context
-                .get_identifier("HYD_SPOILER_1_LEFT_DEFLECTION".to_owned()),
-            spoiler_left_2_position_id: context
-                .get_identifier("HYD_SPOILER_2_LEFT_DEFLECTION".to_owned()),
-            spoiler_left_3_position_id: context
-                .get_identifier("HYD_SPOILER_3_LEFT_DEFLECTION".to_owned()),
-            spoiler_left_4_position_id: context
-                .get_identifier("HYD_SPOILER_4_LEFT_DEFLECTION".to_owned()),
-            spoiler_left_5_position_id: context
-                .get_identifier("HYD_SPOILER_5_LEFT_DEFLECTION".to_owned()),
-            spoiler_left_6_position_id: context
-                .get_identifier("HYD_SPOILER_6_LEFT_DEFLECTION".to_owned()),
-            spoiler_left_7_position_id: context
-                .get_identifier("HYD_SPOILER_7_LEFT_DEFLECTION".to_owned()),
-            spoiler_left_8_position_id: context
-                .get_identifier("HYD_SPOILER_8_LEFT_DEFLECTION".to_owned()),
-
-            spoiler_right_1_position_id: context
-                .get_identifier("HYD_SPOILER_1_RIGHT_DEFLECTION".to_owned()),
-            spoiler_right_2_position_id: context
-                .get_identifier("HYD_SPOILER_2_RIGHT_DEFLECTION".to_owned()),
-            spoiler_right_3_position_id: context
-                .get_identifier("HYD_SPOILER_3_RIGHT_DEFLECTION".to_owned()),
-            spoiler_right_4_position_id: context
-                .get_identifier("HYD_SPOILER_4_RIGHT_DEFLECTION".to_owned()),
-            spoiler_right_5_position_id: context
-                .get_identifier("HYD_SPOILER_5_RIGHT_DEFLECTION".to_owned()),
-            spoiler_right_6_position_id: context
-                .get_identifier("HYD_SPOILER_6_RIGHT_DEFLECTION".to_owned()),
-            spoiler_right_7_position_id: context
-                .get_identifier("HYD_SPOILER_7_RIGHT_DEFLECTION".to_owned()),
-            spoiler_right_8_position_id: context
-                .get_identifier("HYD_SPOILER_8_RIGHT_DEFLECTION".to_owned()),
-
-            aileron_left_1_position_id: context
-                .get_identifier("HYD_AIL_LEFT_INWARD_DEFLECTION".to_owned()),
-            aileron_left_2_position_id: context
-                .get_identifier("HYD_AIL_LEFT_MIDDLE_DEFLECTION".to_owned()),
-            aileron_left_3_position_id: context
-                .get_identifier("HYD_AIL_LEFT_OUTWARD_DEFLECTION".to_owned()),
-
-            aileron_right_1_position_id: context
-                .get_identifier("HYD_AIL_RIGHT_INWARD_DEFLECTION".to_owned()),
-            aileron_right_2_position_id: context
-                .get_identifier("HYD_AIL_RIGHT_MIDDLE_DEFLECTION".to_owned()),
-            aileron_right_3_position_id: context
-                .get_identifier("HYD_AIL_RIGHT_OUTWARD_DEFLECTION".to_owned()),
-
-            flaps_left_position_id: context
-                .get_identifier("LEFT_FLAPS_POSITION_PERCENT".to_owned()),
-            flaps_right_position_id: context
-                .get_identifier("RIGHT_FLAPS_POSITION_PERCENT".to_owned()),
             lateral_offset: Ratio::default(),
-
-            spoilers_left_position: [0.; 8],
-            spoilers_right_position: [0.; 8],
-
-            ailerons_left_position: [0.5; 3],
-            ailerons_right_position: [0.5; 3],
-
-            left_flaps_position: Ratio::default(),
-            right_flaps_position: Ratio::default(),
 
             left_wing_lift: Force::default(),
             right_wing_lift: Force::default(),
@@ -271,42 +172,46 @@ impl A380WingLiftModifier {
         }
     }
 
-    fn update(
-        &mut self,
-        total_lift: Force,
-        spoiler_positions: ([Ratio; 8], [Ratio; 8]),
-        aileron_positions: ([Ratio; 3], [Ratio; 3]),
-        flaps_positions: ([Ratio; 1], [Ratio; 1]),
-    ) {
-        self.compute_lift_modifiers(
-            total_lift,
-            spoiler_positions,
-            aileron_positions,
-            flaps_positions,
-        );
+    fn update(&mut self, total_lift: Force, surfaces_positions: &impl SurfacesPositions) {
+        self.compute_lift_modifiers(total_lift, surfaces_positions);
     }
 
     fn compute_lift_modifiers(
         &mut self,
         total_lift: Force,
-        spoiler_positions: ([Ratio; 8], [Ratio; 8]),
-        aileron_positions: ([Ratio; 3], [Ratio; 3]),
-        flaps_positions: ([Ratio; 1], [Ratio; 1]),
+        surfaces_positions: &impl SurfacesPositions,
     ) {
-        let wing_base_left_spoilers =
-            spoiler_positions.0[0..=1].iter().sum::<f64>() / Ratio::new::<ratio>(2.);
-        let wing_mid_left_spoilers = self.spoilers_left_position[2..=7].iter().sum::<f64>() / 6.;
+        let wing_base_left_spoilers = surfaces_positions.left_spoilers_positions()[0..=1]
+            .iter()
+            .sum::<f64>()
+            / 2.;
+        let wing_mid_left_spoilers = surfaces_positions.left_spoilers_positions()[2..=7]
+            .iter()
+            .sum::<f64>()
+            / 6.;
 
-        let wing_base_right_spoilers = self.spoilers_right_position[0..=1].iter().sum::<f64>() / 2.;
-        let wing_mid_right_spoilers = self.spoilers_right_position[2..=7].iter().sum::<f64>() / 6.;
+        let wing_base_right_spoilers = surfaces_positions.left_spoilers_positions()[0..=1]
+            .iter()
+            .sum::<f64>()
+            / 2.;
+        let wing_mid_right_spoilers = surfaces_positions.left_spoilers_positions()[2..=7]
+            .iter()
+            .sum::<f64>()
+            / 6.;
 
         // Aileron position is converted from [0 1] to [-1 1] then we take the mean value
         // ((position1 - 0.5) * 2. + (position2 - 0.5) * 2.) / 2. <=> position1+position2 - 1
-        let left_ailerons_mid = self.ailerons_left_position[0..=1].iter().sum::<f64>() - 1.;
-        let right_ailerons_mid = self.ailerons_right_position[0..=1].iter().sum::<f64>() - 1.;
+        let left_ailerons_mid = surfaces_positions.left_ailerons_positions()[0..=1]
+            .iter()
+            .sum::<f64>()
+            - 1.;
+        let right_ailerons_mid = surfaces_positions.right_ailerons_positions()[0..=1]
+            .iter()
+            .sum::<f64>()
+            - 1.;
 
-        let left_ailerons_tip = 2. * self.ailerons_left_position[2] - 1.;
-        let right_ailerons_tip = 2. * self.ailerons_right_position[2] - 1.;
+        let left_ailerons_tip = 2. * surfaces_positions.left_ailerons_positions()[2] - 1.;
+        let right_ailerons_tip = 2. * surfaces_positions.right_ailerons_positions()[2] - 1.;
 
         self.lateral_offset = Ratio::new::<ratio>(
             ((wing_base_right_spoilers - wing_base_left_spoilers)
@@ -321,8 +226,8 @@ impl A380WingLiftModifier {
         self.left_wing_lift = 0.5 * (total_lift + self.lateral_offset() * total_lift);
         self.right_wing_lift = total_lift - self.left_wing_lift;
 
-        let left_flap_lift_factor = self.left_flaps_position.get::<ratio>();
-        let right_flap_lift_factor = self.right_flaps_position.get::<ratio>();
+        let left_flap_lift_factor = surfaces_positions.left_flaps_positions()[0];
+        let right_flap_lift_factor = surfaces_positions.right_flaps_positions()[0];
 
         // Lift factor is 1 - spoil factor. We consider positive position for a surface is spoiling lift
         // Spoiler panel deployed will be 1. Aileron Up will be 1. Aileron down will be -1 thus (1 - -1) = 2 adds lift
@@ -369,46 +274,6 @@ impl A380WingLiftModifier {
 
     fn per_node_lift_right_wing_newton(&self) -> Vector5<f64> {
         self.lift_right_table_newton
-    }
-}
-impl SimulationElement for A380WingLiftModifier {
-    fn read(&mut self, reader: &mut SimulatorReader) {
-        self.spoilers_left_position = [
-            reader.read(&self.spoiler_left_1_position_id),
-            reader.read(&self.spoiler_left_2_position_id),
-            reader.read(&self.spoiler_left_3_position_id),
-            reader.read(&self.spoiler_left_4_position_id),
-            reader.read(&self.spoiler_left_5_position_id),
-            reader.read(&self.spoiler_left_6_position_id),
-            reader.read(&self.spoiler_left_7_position_id),
-            reader.read(&self.spoiler_left_8_position_id),
-        ];
-
-        self.spoilers_right_position = [
-            reader.read(&self.spoiler_right_1_position_id),
-            reader.read(&self.spoiler_right_2_position_id),
-            reader.read(&self.spoiler_right_3_position_id),
-            reader.read(&self.spoiler_right_4_position_id),
-            reader.read(&self.spoiler_right_5_position_id),
-            reader.read(&self.spoiler_right_6_position_id),
-            reader.read(&self.spoiler_right_7_position_id),
-            reader.read(&self.spoiler_right_8_position_id),
-        ];
-
-        self.ailerons_left_position = [
-            reader.read(&self.aileron_left_1_position_id),
-            reader.read(&self.aileron_left_2_position_id),
-            reader.read(&self.aileron_left_3_position_id),
-        ];
-
-        self.ailerons_right_position = [
-            reader.read(&self.aileron_right_1_position_id),
-            reader.read(&self.aileron_right_2_position_id),
-            reader.read(&self.aileron_right_3_position_id),
-        ];
-
-        self.left_flaps_position = reader.read(&self.flaps_left_position_id);
-        self.right_flaps_position = reader.read(&self.flaps_right_position_id);
     }
 }
 
@@ -648,7 +513,7 @@ impl WingFlexA380 {
             right_flex_outboard_id: context.get_identifier("WING_FLEX_RIGHT_OUTBOARD".to_owned()),
 
             wing_lift: WingLift::new(context),
-            wing_lift_dynamic: A380WingLiftModifier::new(context),
+            wing_lift_dynamic: A380WingLiftModifier::default(),
             wing_mass: WingMassA380::new(context),
 
             fuel_mapper: WingFuelNodeMapper::new(Self::FUEL_MAPPING),
@@ -672,17 +537,11 @@ impl WingFlexA380 {
         &mut self,
         context: &UpdateContext,
         surface_vibration_acceleration: Acceleration,
-        spoiler_positions: ([Ratio; 8], [Ratio; 8]),
-        aileron_positions: ([Ratio; 3], [Ratio; 3]),
-        flaps_positions: ([Ratio; 1], [Ratio; 1]),
+        surfaces_positions: &impl SurfacesPositions,
     ) {
         self.wing_lift.update(context);
-        self.wing_lift_dynamic.update(
-            self.wing_lift.total_plane_lift(),
-            spoiler_positions,
-            aileron_positions,
-            flaps_positions,
-        );
+        self.wing_lift_dynamic
+            .update(self.wing_lift.total_plane_lift(), surfaces_positions);
 
         self.left_right_wing_root_position[0].update(context);
         self.left_right_wing_root_position[1].update(context);
@@ -722,7 +581,7 @@ impl WingFlexA380 {
 impl SimulationElement for WingFlexA380 {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.wing_lift.accept(visitor);
-        self.wing_lift_dynamic.accept(visitor);
+
         self.wing_mass.accept(visitor);
 
         // Calling only left wing as this is only used for dev purpose : live tuning of flex properties
@@ -1226,19 +1085,92 @@ mod tests {
 
     use ntest::assert_about_eq;
 
+    struct TestSurfacesPositions {
+        left_ailerons: [f64; 3],
+        right_ailerons: [f64; 3],
+        left_spoilers: [f64; 8],
+        right_spoilers: [f64; 8],
+        left_flaps: [f64; 1],
+        right_flaps: [f64; 1],
+    }
+    impl TestSurfacesPositions {
+        fn default() -> Self {
+            Self {
+                left_ailerons: [0.5; 3],
+                right_ailerons: [0.5; 3],
+                left_spoilers: [0.; 8],
+                right_spoilers: [0.; 8],
+                left_flaps: [0.; 1],
+                right_flaps: [0.; 1],
+            }
+        }
+    }
+    impl SurfacesPositions for TestSurfacesPositions {
+        fn left_ailerons_positions(&self) -> &[f64] {
+            &self.left_ailerons
+        }
+
+        fn right_ailerons_positions(&self) -> &[f64] {
+            &self.right_ailerons
+        }
+
+        fn left_spoilers_positions(&self) -> &[f64] {
+            &self.left_spoilers
+        }
+
+        fn right_spoilers_positions(&self) -> &[f64] {
+            &self.right_spoilers
+        }
+
+        fn left_flaps_positions(&self) -> &[f64] {
+            &self.left_flaps
+        }
+
+        fn right_flaps_positions(&self) -> &[f64] {
+            &self.right_flaps
+        }
+    }
+
     struct WingFlexTestAircraft {
         wing_flex: WingFlexA380,
+        surfaces_position: TestSurfacesPositions,
     }
     impl WingFlexTestAircraft {
         fn new(context: &mut InitContext) -> Self {
             Self {
                 wing_flex: WingFlexA380::new(context),
+                surfaces_position: TestSurfacesPositions::default(),
             }
+        }
+
+        fn set_left_flaps(&mut self, position: f64) {
+            self.surfaces_position.left_flaps = [position];
+        }
+
+        fn set_right_flaps(&mut self, position: f64) {
+            self.surfaces_position.right_flaps = [position];
+        }
+
+        fn set_left_spoilers(&mut self, positions: [f64; 8]) {
+            self.surfaces_position.left_spoilers = positions;
+        }
+
+        fn set_right_spoilers(&mut self, positions: [f64; 8]) {
+            self.surfaces_position.right_spoilers = positions;
+        }
+
+        fn set_left_ailerons(&mut self, positions: [f64; 3]) {
+            self.surfaces_position.left_ailerons = positions;
+        }
+
+        fn set_right_ailerons(&mut self, positions: [f64; 3]) {
+            self.surfaces_position.right_ailerons = positions;
         }
     }
     impl Aircraft for WingFlexTestAircraft {
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
-            self.wing_flex.update(context, Acceleration::default());
+            self.wing_flex
+                .update(context, Acceleration::default(), &self.surfaces_position);
 
             println!(
                 "WING HEIGHTS L/O\\R => {:.2}_{:.2}_{:.2}_{:.2}_{:.2}/O\\{:.2}_{:.2}_{:.2}_{:.2}_{:.2}",
@@ -1391,7 +1323,8 @@ mod tests {
             self.write_by_name("CONTACT POINT COMPRESSION:1", 30.);
             self.write_by_name("CONTACT POINT COMPRESSION:2", 30.);
 
-            self.write_by_name("LEFT_FLAPS_POSITION_PERCENT", 50.);
+            self.command(|a| a.set_left_flaps(0.5));
+            self.command(|a| a.set_right_flaps(0.5));
             self
         }
 
@@ -1421,103 +1354,43 @@ mod tests {
         }
 
         fn left_turn_ailerons(mut self) -> Self {
-            self.write_by_name("HYD_AIL_LEFT_INWARD_DEFLECTION", 0.8);
-            self.write_by_name("HYD_AIL_LEFT_MIDDLE_DEFLECTION", 0.8);
-            self.write_by_name("HYD_AIL_LEFT_OUTWARD_DEFLECTION", 0.8);
-
-            self.write_by_name("HYD_AIL_RIGHT_INWARD_DEFLECTION", 0.2);
-            self.write_by_name("HYD_AIL_RIGHT_MIDDLE_DEFLECTION", 0.2);
-            self.write_by_name("HYD_AIL_RIGHT_OUTWARD_DEFLECTION", 0.2);
+            self.command(|a| a.set_right_ailerons([0.2, 0.2, 0.2]));
+            self.command(|a| a.set_left_ailerons([0.8, 0.8, 0.8]));
 
             self
         }
 
         fn right_turn_ailerons(mut self) -> Self {
-            self.write_by_name("HYD_AIL_LEFT_INWARD_DEFLECTION", 0.2);
-            self.write_by_name("HYD_AIL_LEFT_MIDDLE_DEFLECTION", 0.2);
-            self.write_by_name("HYD_AIL_LEFT_OUTWARD_DEFLECTION", 0.2);
-
-            self.write_by_name("HYD_AIL_RIGHT_INWARD_DEFLECTION", 0.8);
-            self.write_by_name("HYD_AIL_RIGHT_MIDDLE_DEFLECTION", 0.8);
-            self.write_by_name("HYD_AIL_RIGHT_OUTWARD_DEFLECTION", 0.8);
+            self.command(|a| a.set_left_ailerons([0.2, 0.2, 0.2]));
+            self.command(|a| a.set_right_ailerons([0.8, 0.8, 0.8]));
 
             self
         }
 
         fn neutral_ailerons(mut self) -> Self {
-            self.write_by_name("HYD_AIL_LEFT_INWARD_DEFLECTION", 0.5);
-            self.write_by_name("HYD_AIL_LEFT_MIDDLE_DEFLECTION", 0.5);
-            self.write_by_name("HYD_AIL_LEFT_OUTWARD_DEFLECTION", 0.5);
-
-            self.write_by_name("HYD_AIL_RIGHT_INWARD_DEFLECTION", 0.5);
-            self.write_by_name("HYD_AIL_RIGHT_MIDDLE_DEFLECTION", 0.5);
-            self.write_by_name("HYD_AIL_RIGHT_OUTWARD_DEFLECTION", 0.5);
+            self.command(|a| a.set_left_ailerons([0.5, 0.5, 0.5]));
+            self.command(|a| a.set_right_ailerons([0.5, 0.5, 0.5]));
 
             self
         }
 
         fn spoilers_retracted(mut self) -> Self {
-            self.write_by_name("HYD_SPOILER_1_RIGHT_DEFLECTION", 0.);
-            self.write_by_name("HYD_SPOILER_2_RIGHT_DEFLECTION", 0.);
-            self.write_by_name("HYD_SPOILER_3_RIGHT_DEFLECTION", 0.);
-            self.write_by_name("HYD_SPOILER_4_RIGHT_DEFLECTION", 0.);
-            self.write_by_name("HYD_SPOILER_5_RIGHT_DEFLECTION", 0.);
-            self.write_by_name("HYD_SPOILER_6_RIGHT_DEFLECTION", 0.);
-            self.write_by_name("HYD_SPOILER_7_RIGHT_DEFLECTION", 0.);
-            self.write_by_name("HYD_SPOILER_8_RIGHT_DEFLECTION", 0.);
-
-            self.write_by_name("HYD_SPOILER_1_LEFT_DEFLECTION", 0.);
-            self.write_by_name("HYD_SPOILER_2_LEFT_DEFLECTION", 0.);
-            self.write_by_name("HYD_SPOILER_3_LEFT_DEFLECTION", 0.);
-            self.write_by_name("HYD_SPOILER_4_LEFT_DEFLECTION", 0.);
-            self.write_by_name("HYD_SPOILER_5_LEFT_DEFLECTION", 0.);
-            self.write_by_name("HYD_SPOILER_6_LEFT_DEFLECTION", 0.);
-            self.write_by_name("HYD_SPOILER_7_LEFT_DEFLECTION", 0.);
-            self.write_by_name("HYD_SPOILER_8_LEFT_DEFLECTION", 0.);
+            self.command(|a| a.set_left_spoilers([0., 0., 0., 0., 0., 0., 0., 0.]));
+            self.command(|a| a.set_right_spoilers([0., 0., 0., 0., 0., 0., 0., 0.]));
 
             self
         }
 
         fn spoilers_left_turn(mut self) -> Self {
-            self.write_by_name("HYD_SPOILER_1_RIGHT_DEFLECTION", 0.);
-            self.write_by_name("HYD_SPOILER_2_RIGHT_DEFLECTION", 0.);
-            self.write_by_name("HYD_SPOILER_3_RIGHT_DEFLECTION", 0.);
-            self.write_by_name("HYD_SPOILER_4_RIGHT_DEFLECTION", 0.);
-            self.write_by_name("HYD_SPOILER_5_RIGHT_DEFLECTION", 0.);
-            self.write_by_name("HYD_SPOILER_6_RIGHT_DEFLECTION", 0.);
-            self.write_by_name("HYD_SPOILER_7_RIGHT_DEFLECTION", 0.);
-            self.write_by_name("HYD_SPOILER_8_RIGHT_DEFLECTION", 0.);
-
-            self.write_by_name("HYD_SPOILER_1_LEFT_DEFLECTION", 0.);
-            self.write_by_name("HYD_SPOILER_2_LEFT_DEFLECTION", 0.);
-            self.write_by_name("HYD_SPOILER_3_LEFT_DEFLECTION", 0.);
-            self.write_by_name("HYD_SPOILER_4_LEFT_DEFLECTION", 0.5);
-            self.write_by_name("HYD_SPOILER_5_LEFT_DEFLECTION", 0.5);
-            self.write_by_name("HYD_SPOILER_6_LEFT_DEFLECTION", 0.5);
-            self.write_by_name("HYD_SPOILER_7_LEFT_DEFLECTION", 0.5);
-            self.write_by_name("HYD_SPOILER_8_LEFT_DEFLECTION", 0.5);
+            self.command(|a| a.set_left_spoilers([0., 0., 0., 0.5, 0.5, 0.5, 0.5, 0.5]));
+            self.command(|a| a.set_right_spoilers([0., 0., 0., 0., 0., 0., 0., 0.]));
 
             self
         }
 
         fn spoilers_right_turn(mut self) -> Self {
-            self.write_by_name("HYD_SPOILER_1_RIGHT_DEFLECTION", 0.);
-            self.write_by_name("HYD_SPOILER_2_RIGHT_DEFLECTION", 0.);
-            self.write_by_name("HYD_SPOILER_3_RIGHT_DEFLECTION", 0.);
-            self.write_by_name("HYD_SPOILER_4_RIGHT_DEFLECTION", 0.5);
-            self.write_by_name("HYD_SPOILER_5_RIGHT_DEFLECTION", 0.5);
-            self.write_by_name("HYD_SPOILER_6_RIGHT_DEFLECTION", 0.5);
-            self.write_by_name("HYD_SPOILER_7_RIGHT_DEFLECTION", 0.5);
-            self.write_by_name("HYD_SPOILER_8_RIGHT_DEFLECTION", 0.5);
-
-            self.write_by_name("HYD_SPOILER_1_LEFT_DEFLECTION", 0.);
-            self.write_by_name("HYD_SPOILER_2_LEFT_DEFLECTION", 0.);
-            self.write_by_name("HYD_SPOILER_3_LEFT_DEFLECTION", 0.);
-            self.write_by_name("HYD_SPOILER_4_LEFT_DEFLECTION", 0.);
-            self.write_by_name("HYD_SPOILER_5_LEFT_DEFLECTION", 0.);
-            self.write_by_name("HYD_SPOILER_6_LEFT_DEFLECTION", 0.);
-            self.write_by_name("HYD_SPOILER_7_LEFT_DEFLECTION", 0.);
-            self.write_by_name("HYD_SPOILER_8_LEFT_DEFLECTION", 0.);
+            self.command(|a| a.set_right_spoilers([0., 0., 0., 0.5, 0.5, 0.5, 0.5, 0.5]));
+            self.command(|a| a.set_left_spoilers([0., 0., 0., 0., 0., 0., 0., 0.]));
 
             self
         }
