@@ -37,7 +37,7 @@ pub struct TrimAirDriveDevice<const ZONES: usize, const ENGINES: usize> {
 }
 
 impl<const ZONES: usize, const ENGINES: usize> TrimAirDriveDevice<ZONES, ENGINES> {
-    pub fn new(context: &mut InitContext, powered_by: Vec<ElectricalBusType>) -> Self {
+    pub fn new(context: &mut InitContext, powered_by: [ElectricalBusType; 2]) -> Self {
         Self {
             tadd_channel_failure_id: context.get_identifier("COND_TADD_CHANNEL_FAILURE".to_owned()),
 

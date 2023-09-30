@@ -438,11 +438,10 @@ impl TemperatureControlSystemApplication {
 
 impl DuctTemperature for TemperatureControlSystemApplication {
     fn duct_demand_temperature(&self) -> Vec<ThermodynamicTemperature> {
-        let mut duct_demand_temperature = Vec::new();
-        for controller in self.zone_controllers.iter() {
-            duct_demand_temperature.extend(&controller.duct_demand_temperature())
-        }
-        duct_demand_temperature
+        self.zone_controllers
+            .iter()
+            .flat_map(|controller| controller.duct_demand_temperature())
+            .collect()
     }
 }
 

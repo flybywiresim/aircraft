@@ -741,7 +741,7 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystem<ZONES, ENGINES> {
             / (pack_container[0].mass().get::<kilogram>()
                 + pack_container[1].mass().get::<kilogram>());
         self.pack_mixer_container = PneumaticPipe::new(
-            pack_container[0].volume() + pack_container[1].volume(),
+            pack_container.iter().map(|pc| pc.volume()).sum(),
             Pressure::new::<hectopascal>(combined_pressure),
             ThermodynamicTemperature::new::<kelvin>(combined_temperature),
         );
@@ -1105,15 +1105,16 @@ impl AirHeater {
         // TODO: This should come only from the lower deck. The error will be minimal by taking the whole average.
         self.outlet_air
             .set_temperature(cabin_simulation.cabin_temperature().iter().average());
-        if !self.is_powered || !matches!(controller.signal(), Some(BulkHeaterSignal::On)) {
-            self.is_on = false;
-        } else {
-            self.is_on = true;
-            let heater_flow_rate = self.mass_flow_calculation();
+        self.is_on =
+            if !self.is_powered || !matches!(controller.signal(), Some(BulkHeaterSignal::On)) {
+                false
+            } else {
+                let heater_flow_rate = self.mass_flow_calculation();
 
-            self.outlet_air
-                .set_temperature(self.heater_work_temperature_calculation(heater_flow_rate));
-        }
+                self.outlet_air
+                    .set_temperature(self.heater_work_temperature_calculation(heater_flow_rate));
+                true
+            }
     }
 
     fn mass_flow_calculation(&self) -> MassRate {

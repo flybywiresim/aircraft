@@ -70,7 +70,7 @@ pub struct VentilationControlModule {
 }
 
 impl VentilationControlModule {
-    pub fn new(context: &mut InitContext, id: VcmId, powered_by: Vec<ElectricalBusType>) -> Self {
+    pub fn new(context: &mut InitContext, id: VcmId, powered_by: [ElectricalBusType; 2]) -> Self {
         Self {
             vcm_channel_failure_id: context
                 .get_identifier(format!("VENT_{}_VCM_CHANNEL_FAILURE", id)),

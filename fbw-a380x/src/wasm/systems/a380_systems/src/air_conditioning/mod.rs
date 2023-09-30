@@ -344,7 +344,7 @@ impl A380AirConditioningSystem {
             ],
             tadd: TrimAirDriveDevice::new(
                 context,
-                vec![
+                [
                     ElectricalBusType::AlternatingCurrent(2), // 117XP
                     ElectricalBusType::AlternatingCurrent(4), // 206XP
                 ],
@@ -353,7 +353,7 @@ impl A380AirConditioningSystem {
                 VentilationControlModule::new(
                     context,
                     VcmId::Fwd,
-                    vec![
+                    [
                         ElectricalBusType::DirectCurrent(1),       // 411PP
                         ElectricalBusType::DirectCurrentEssential, // 109PP
                     ],
@@ -361,7 +361,7 @@ impl A380AirConditioningSystem {
                 VentilationControlModule::new(
                     context,
                     VcmId::Aft,
-                    vec![
+                    [
                         ElectricalBusType::DirectCurrent(2),       // 214PP
                         ElectricalBusType::DirectCurrentEssential, // 109PP
                     ],
@@ -369,27 +369,19 @@ impl A380AirConditioningSystem {
             ],
 
             cabin_fans: [
+                1, // Left Hand - 100XP1
+                2, // Left Hand - 100XP2
+                3, // Right Hand - 200XP3
+                4, // Right Hand - 200XP4
+            ]
+            .map(|id| {
                 CabinFan::new(
-                    1,
+                    id,
                     VolumeRate::new::<liter_per_second>(Self::CAB_FAN_DESIGN_FLOW_RATE_L_S),
-                    ElectricalBusType::AlternatingCurrent(1),
-                ), // Left Hand - 100XP1
-                CabinFan::new(
-                    2,
-                    VolumeRate::new::<liter_per_second>(Self::CAB_FAN_DESIGN_FLOW_RATE_L_S),
-                    ElectricalBusType::AlternatingCurrent(2),
-                ), // Left Hand - 100XP2
-                CabinFan::new(
-                    3,
-                    VolumeRate::new::<liter_per_second>(Self::CAB_FAN_DESIGN_FLOW_RATE_L_S),
-                    ElectricalBusType::AlternatingCurrent(3),
-                ), // Right Hand - 200XP3
-                CabinFan::new(
-                    4,
-                    VolumeRate::new::<liter_per_second>(Self::CAB_FAN_DESIGN_FLOW_RATE_L_S),
-                    ElectricalBusType::AlternatingCurrent(4),
-                ), // Right Hand - 200XP4
-            ],
+                    ElectricalBusType::AlternatingCurrent(id),
+                )
+            }),
+
             cargo_air_heater: AirHeater::new(ElectricalBusType::AlternatingCurrent(2)), // 200XP4
             mixer_unit: MixerUnit::new(cabin_zones),
             packs: [
@@ -450,13 +442,15 @@ impl A380AirConditioningSystem {
 
         self.fan_update(cabin_simulation, cpiom_b);
 
-        let pack_flow: [MassRate; 2] = [self.fdac[0].pack_flow(), self.fdac[1].pack_flow()];
-
-        for (id, pack) in self.packs.iter_mut().enumerate() {
+        for (pack, pack_flow) in self
+            .packs
+            .iter_mut()
+            .zip(self.fdac.iter().map(|fdac| fdac.pack_flow()))
+        {
             // TODO: Failures
             pack.update(
                 context,
-                pack_flow[id],
+                pack_flow,
                 &cpiom_b.duct_demand_temperature(),
                 false,
             )
