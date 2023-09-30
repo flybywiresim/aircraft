@@ -329,14 +329,14 @@ impl A380AirConditioningSystem {
             fdac: [
                 FullDigitalAGUController::new(
                     1,
-                    vec![
+                    [
                         ElectricalBusType::AlternatingCurrentEssential, // 403XP
                         ElectricalBusType::AlternatingCurrent(2),       // 117XP
                     ],
                 ),
                 FullDigitalAGUController::new(
                     2,
-                    vec![
+                    [
                         ElectricalBusType::AlternatingCurrentEssential, // 403XP
                         ElectricalBusType::AlternatingCurrent(4),       // 204XP
                     ],
@@ -412,6 +412,42 @@ impl A380AirConditioningSystem {
         pneumatic_overhead: &impl EngineBleedPushbutton<4>,
         pressurization_overhead: &A380PressurizationOverheadPanel,
     ) {
+        self.update_local_controllers(
+            context,
+            cpiom_b,
+            engines,
+            engine_fire_push_buttons,
+            number_of_open_doors,
+            pneumatic,
+            pneumatic_overhead,
+            pressurization_overhead,
+        );
+
+        self.update_fans(cabin_simulation, cpiom_b);
+
+        self.update_packs(context, cpiom_b);
+
+        self.update_mixer_unit();
+
+        self.update_trim_air_system(context);
+
+        self.update_cargo_heater(cabin_simulation, cpiom_b);
+
+        self.air_conditioning_overhead
+            .set_pack_pushbutton_fault(self.pack_fault_determination());
+    }
+
+    fn update_local_controllers(
+        &mut self,
+        context: &UpdateContext,
+        cpiom_b: &CoreProcessingInputOutputModuleB,
+        engines: [&impl EngineCorrectedN1; 4],
+        engine_fire_push_buttons: &impl EngineFirePushButtons,
+        number_of_open_doors: u8,
+        pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
+        pneumatic_overhead: &impl EngineBleedPushbutton<4>,
+        pressurization_overhead: &A380PressurizationOverheadPanel,
+    ) {
         self.fdac.iter_mut().for_each(|controller| {
             controller.update(
                 context,
@@ -439,9 +475,13 @@ impl A380AirConditioningSystem {
         self.vcm.iter_mut().for_each(|module| {
             module.update(&self.air_conditioning_overhead, pressurization_overhead)
         });
+    }
 
-        self.fan_update(cabin_simulation, cpiom_b);
-
+    fn update_packs(
+        &mut self,
+        context: &UpdateContext,
+        cpiom_b: &CoreProcessingInputOutputModuleB,
+    ) {
         for (pack, pack_flow) in self
             .packs
             .iter_mut()
@@ -455,13 +495,17 @@ impl A380AirConditioningSystem {
                 false,
             )
         }
+    }
 
+    fn update_mixer_unit(&mut self) {
         let mut mixer_intakes: Vec<&dyn OutletAir> = vec![&self.packs[0], &self.packs[1]];
         for fan in self.cabin_fans.iter() {
             mixer_intakes.push(fan)
         }
         self.mixer_unit.update(mixer_intakes);
+    }
 
+    fn update_trim_air_system(&mut self, context: &UpdateContext) {
         self.trim_air_system.update(
             context,
             &self.mixer_unit,
@@ -471,16 +515,19 @@ impl A380AirConditioningSystem {
             ],
             &[&self.tadd; 18],
         );
+    }
 
+    fn update_cargo_heater(
+        &mut self,
+        cabin_simulation: &impl CabinSimulation,
+        cpiom_b: &CoreProcessingInputOutputModuleB,
+    ) {
         // For the bulk cargo, air flows from the LD and is warmed up by an electric heater
         self.cargo_air_heater.update(
             cabin_simulation,
             &self.trim_air_system,
             cpiom_b.bulk_heater_on_signal(),
         );
-
-        self.air_conditioning_overhead
-            .set_pack_pushbutton_fault(self.pack_fault_determination());
     }
 
     fn pack_fault_determination(&self) -> [bool; 2] {
@@ -490,7 +537,7 @@ impl A380AirConditioningSystem {
         ]
     }
 
-    fn fan_update(
+    fn update_fans(
         &mut self,
         cabin_simulation: &impl CabinSimulation,
         cpiom_b: &CoreProcessingInputOutputModuleB,

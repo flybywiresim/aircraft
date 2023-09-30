@@ -40,7 +40,7 @@ pub struct FullDigitalAGUController<const ENGINES: usize> {
 }
 
 impl<const ENGINES: usize> FullDigitalAGUController<ENGINES> {
-    pub fn new(fdac_id: usize, powered_by: Vec<ElectricalBusType>) -> Self {
+    pub fn new(fdac_id: usize, powered_by: [ElectricalBusType; 2]) -> Self {
         Self {
             active_channel: OperatingChannel::new(1, None, &[powered_by[0]]),
             stand_by_channel: OperatingChannel::new(2, None, &[powered_by[1]]),
