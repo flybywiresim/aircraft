@@ -226,8 +226,8 @@ impl A380WingLiftModifier {
         self.left_wing_lift = 0.5 * (total_lift + self.lateral_offset() * total_lift);
         self.right_wing_lift = total_lift - self.left_wing_lift;
 
-        let left_flap_lift_factor = surfaces_positions.left_flaps_positions()[0];
-        let right_flap_lift_factor = surfaces_positions.right_flaps_positions()[0];
+        let left_flap_lift_factor = surfaces_positions.left_flaps_position();
+        let right_flap_lift_factor = surfaces_positions.right_flaps_position();
 
         // Lift factor is 1 - spoil factor. We consider positive position for a surface is spoiling lift
         // Spoiler panel deployed will be 1. Aileron Up will be 1. Aileron down will be -1 thus (1 - -1) = 2 adds lift
@@ -1090,8 +1090,8 @@ mod tests {
         right_ailerons: [f64; 3],
         left_spoilers: [f64; 8],
         right_spoilers: [f64; 8],
-        left_flaps: [f64; 1],
-        right_flaps: [f64; 1],
+        left_flaps: f64,
+        right_flaps: f64,
     }
     impl TestSurfacesPositions {
         fn default() -> Self {
@@ -1100,8 +1100,8 @@ mod tests {
                 right_ailerons: [0.5; 3],
                 left_spoilers: [0.; 8],
                 right_spoilers: [0.; 8],
-                left_flaps: [0.; 1],
-                right_flaps: [0.; 1],
+                left_flaps: 0.,
+                right_flaps: 0.,
             }
         }
     }
@@ -1122,12 +1122,12 @@ mod tests {
             &self.right_spoilers
         }
 
-        fn left_flaps_positions(&self) -> &[f64] {
-            &self.left_flaps
+        fn left_flaps_position(&self) -> f64 {
+            self.left_flaps
         }
 
-        fn right_flaps_positions(&self) -> &[f64] {
-            &self.right_flaps
+        fn right_flaps_position(&self) -> f64 {
+            self.right_flaps
         }
     }
 
@@ -1144,11 +1144,11 @@ mod tests {
         }
 
         fn set_left_flaps(&mut self, position: f64) {
-            self.surfaces_position.left_flaps = [position];
+            self.surfaces_position.left_flaps = position;
         }
 
         fn set_right_flaps(&mut self, position: f64) {
-            self.surfaces_position.right_flaps = [position];
+            self.surfaces_position.right_flaps = position;
         }
 
         fn set_left_spoilers(&mut self, positions: [f64; 8]) {

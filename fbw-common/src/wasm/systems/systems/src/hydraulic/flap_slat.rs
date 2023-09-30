@@ -479,8 +479,12 @@ impl FlapSlatAssembly {
         self.speed.abs().get::<radian_per_second>() > Self::MIN_ANGULAR_SPEED_TO_REPORT_MOVING
     }
 
-    pub fn positions(&self) -> ([Ratio; 1], [Ratio; 1]) {
-        ([self.left_position], [self.right_position])
+    pub fn left_position(&self) -> f64 {
+        self.left_position.get::<ratio>()
+    }
+
+    pub fn right_position(&self) -> f64 {
+        self.right_position.get::<ratio>()
     }
 }
 impl SimulationElement for FlapSlatAssembly {

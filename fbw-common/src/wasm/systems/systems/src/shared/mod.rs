@@ -342,8 +342,8 @@ pub trait SurfacesPositions {
     fn right_spoilers_positions(&self) -> &[f64];
     fn left_ailerons_positions(&self) -> &[f64];
     fn right_ailerons_positions(&self) -> &[f64];
-    fn left_flaps_positions(&self) -> &[f64];
-    fn right_flaps_positions(&self) -> &[f64];
+    fn left_flaps_position(&self) -> f64;
+    fn right_flaps_position(&self) -> f64;
 }
 
 /// The common types of electrical buses within Airbus aircraft.
