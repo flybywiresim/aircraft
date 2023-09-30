@@ -131,6 +131,7 @@
       "Defueling": "Avtankning",
       "EstimatedDuration": "Beräknad varaktighet (minuter)",
       "EstimatedTime": "Uppskattad tid",
+      "GSXFuelSyncEnabled": "GSX bränslesynkronisering aktiverad",
       "LeftInnerTank": "Vänster innertank",
       "LeftOuterTank": "Vänster yttertank",
       "ReadyToStart": "Redo för start",
@@ -156,6 +157,7 @@
       "DeboardConfirmationConfirm": "Avbordstigning",
       "DeboardConfirmationTitle": "Släppa alla passagerare?",
       "EstimatedDurationUnit": "minuter",
+      "GSXPayloadSyncEnabled": "Synkronisering av GSX-nyttolast aktiverad",
       "GW": "GW",
       "GWCG": "GW CG",
       "LoadingTime": "Loading Time",
@@ -224,6 +226,10 @@
     "Navigraph": {
       "AirportDoesNotExist": "Flygplats existerar inte",
       "AuthenticateWithNavigraph": "Autentisera med Navigraph",
+      "GoToThirdPartyOptions": {
+        "Button": "Inställningar för tredje part",
+        "Title": "Go to 3rd Party Options to link Navigraph account"
+      },
       "InsufficientEnv": "Otillräcklig .env-fil",
       "IntoYourBrowserAndEnterTheCodeBelow": "i din webbläsare och ange koden nedan\n",
       "LoadingMsg": "Laddar",
@@ -576,7 +582,26 @@
     "ThirdPartyOptions": {
       "GsxFuelEnabled": "GSX Fueling Synkronisering",
       "GsxPayloadEnabled": "GSX-nyttolastsynkronisering",
-      "Title": "Inställningar för tredje part"
+      "NavigraphAccountLink": {
+        "Connected": "Ansluten",
+        "Link": "Link Account",
+        "LoginPage": {
+          "Title": "Navigraph Account Login"
+        },
+        "SettingTitle": "Navigraph Account Link",
+        "SubscriptionStatus": {
+          "None": "Ingen",
+          "Unlimited": "Navigraph Unlimited"
+        },
+        "Unlink": "Unlink Account"
+      },
+      "OverrideSimBriefUserID": "Override SimBrief User ID",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Please check that you have correctly entered your SimBrief username or pilot ID.",
+      "TT": {
+        "OverrideSimBriefUserID": "Alternative SimBrief user ID to use instead of the linked Navigraph Account"
+      },
+      "Title": "Inställningar för tredje part",
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "The override SimBrief PilotID has been validated and updated to"
     },
     "ThrottleConfig": {
       "Apply": "Spara",

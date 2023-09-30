@@ -131,6 +131,7 @@
       "Defueling": "배유중",
       "EstimatedDuration": "예상 시간 (분)",
       "EstimatedTime": "예상 시간",
+      "GSXFuelSyncEnabled": "GSX 연료 동기화 활성화",
       "LeftInnerTank": "좌측 내부 탱크",
       "LeftOuterTank": "좌측 외부 탱크",
       "ReadyToStart": "급유 준비 완료",
@@ -156,6 +157,7 @@
       "DeboardConfirmationConfirm": "하차",
       "DeboardConfirmationTitle": "모든 승객을 하차시키겠습니까?",
       "EstimatedDurationUnit": "분",
+      "GSXPayloadSyncEnabled": "GSX 수화물 동기화 활성화",
       "GW": "GW",
       "GWCG": "GW CG",
       "LoadingTime": "탑승 시간",
@@ -224,6 +226,10 @@
     "Navigraph": {
       "AirportDoesNotExist": "공항이 존재하지 않습니다",
       "AuthenticateWithNavigraph": "Navigraph 인증",
+      "GoToThirdPartyOptions": {
+        "Button": "써드 파티 옵션",
+        "Title": "써드 파티 옵션에서 Navigraph 계정을 연결해주세요."
+      },
       "InsufficientEnv": "불충분한 .env 파일",
       "IntoYourBrowserAndEnterTheCodeBelow": "브라우저에서 아래 코드를 입력하세요",
       "LoadingMsg": "로딩 중...",
@@ -576,7 +582,26 @@
     "ThirdPartyOptions": {
       "GsxFuelEnabled": "GSX 연료 공급 동기화",
       "GsxPayloadEnabled": "GSX 페이로드 동기화",
-      "Title": "써드 파티 옵션"
+      "NavigraphAccountLink": {
+        "Connected": "연결됨",
+        "Link": "계정 연결",
+        "LoginPage": {
+          "Title": "Navigraph 계정 로그인"
+        },
+        "SettingTitle": "Navigraph 계정 연결",
+        "SubscriptionStatus": {
+          "None": "없음",
+          "Unlimited": "Navigraph Unlimited"
+        },
+        "Unlink": "계정 연결 해제"
+      },
+      "OverrideSimBriefUserID": "SimBrief 사용자 아이디 덮어쓰기",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "SimBrief 사용자 이름이나 조종사 아이디를 제대로 입력했는지 확인해주세요.",
+      "TT": {
+        "OverrideSimBriefUserID": "연결된 Navigraph 계정 대신 사용할 대체 SimBrief 사용자 ID"
+      },
+      "Title": "써드 파티 옵션",
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "SimBrief 조종사 아이디가 검증 및 업데이트 되었습니다: "
     },
     "ThrottleConfig": {
       "Apply": "적용",
