@@ -51,7 +51,7 @@ export class ConstraintReader {
     public finalDescentAngle = -3;
 
     // If you change this property here, make sure you also reset it properly in `reset`
-    public fafDistanceToEnd = 1000 / Math.tan(-this.finalDescentAngle * MathUtils.DEGREES_TO_RADIANS) / 6076.12;
+    public fafDistanceToEnd = 1000 / Math.tan(-this.finalDescentAngle * MathUtils.DEGREES_TO_RADIANS) / MathUtils.DIV_FEET_TO_NAUTICAL_MILES;
 
     public get distanceToPresentPosition(): NauticalMiles {
         return this.totalFlightPlanDistance - this.distanceToEnd;
@@ -210,7 +210,7 @@ export class ConstraintReader {
         if (approach && approach.type !== ApproachType.Unknown) {
             for (const leg of approach.legs) {
                 if (leg.approachWaypointDescriptor === ApproachWaypointDescriptor.MissedApproachPoint && Number.isFinite(leg.altitude1)) {
-                    this.finalAltitude = leg.altitude2;
+                    this.finalAltitude = leg.altitude1;
 
                     return;
                 }
@@ -249,7 +249,7 @@ export class ConstraintReader {
         this.totalFlightPlanDistance = 0;
         this.distanceToEnd = 0;
         this.finalDescentAngle = -3;
-        this.fafDistanceToEnd = 1000 / Math.tan(-this.finalDescentAngle * MathUtils.DEGREES_TO_RADIANS) / 6076.12;
+        this.fafDistanceToEnd = 1000 / Math.tan(-this.finalDescentAngle * MathUtils.DEGREES_TO_RADIANS) / MathUtils.DIV_FEET_TO_NAUTICAL_MILES;
         this.finalAltitude = 50;
     }
 
