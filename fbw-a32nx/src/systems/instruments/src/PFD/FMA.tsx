@@ -264,7 +264,7 @@ class Row2 extends DisplayComponent<{ bus: ArincEventBus, isAttExcessive: Subscr
 class A2Cell extends DisplayComponent<{ bus: ArincEventBus }> {
     private text = Subject.create('');
 
-    private className = Subject.create('FontMedium MiddleAlign Cyan');
+    private className = Subject.create('FontMediumSmaller MiddleAlign Cyan');
 
     private autoBrkRef = FSComponent.createRef<SVGTextElement>();
 
@@ -577,7 +577,7 @@ class A3Cell extends DisplayComponent<A3CellProps> {
     private handleAutobrakeMode() {
         if (this.autobrakeMode === 3 && !this.AB3Message) {
             this.textSub.set('BRK MAX');
-            this.classSub.set('FontMedium MiddleAlign Cyan');
+            this.classSub.set('FontMediumSmaller MiddleAlign Cyan');
         } else {
             this.textSub.set('');
         }
@@ -907,7 +907,6 @@ class B2Cell extends DisplayComponent<CellProps> {
             let color1 = 'Cyan';
             if (clbArmed) {
                 text1 = 'CLB';
-                this.xposSub.set(50.601795);
             } else if (desArmed) {
                 text1 = 'DES';
             } else if (altCstArmed) {
@@ -929,10 +928,10 @@ class B2Cell extends DisplayComponent<CellProps> {
             }
 
             // CLB armed should be centered, other modes are aligned to the left on newer DMCs
-            this.xposSub.set(clbArmed ? 50.601795 : 41.477474);
+            this.xposSub.set(clbArmed ? 50.801795 : 41.477474);
             this.text1Sub.set(text1);
             this.text2Sub.set(text2);
-            this.classSub.set(`FontMedium MiddleAlign ${color1}`);
+            this.classSub.set(`FontMediumSmaller MiddleAlign ${color1}`);
         });
     }
 
@@ -940,7 +939,7 @@ class B2Cell extends DisplayComponent<CellProps> {
         return (
             <g>
                 <text class={this.classSub} x={this.xposSub} y="14.329653">{this.text1Sub}</text>
-                <text class="FontMedium MiddleAlign Cyan" x="54.59803" y="14.382949">{this.text2Sub}</text>
+                <text class="FontMediumSmaller MiddleAlign Cyan" x="54.59803" y="14.382949">{this.text2Sub}</text>
             </g>
         );
     }
@@ -1123,7 +1122,7 @@ class C2Cell extends DisplayComponent<CellProps> {
 
     render(): VNode {
         return (
-            <text class="FontMedium MiddleAlign Cyan" x="84.734184" y="14.440415">{this.textSub}</text>
+            <text class="FontMediumSmaller MiddleAlign Cyan" x="84.734184" y="14.440415">{this.textSub}</text>
         );
     }
 }
