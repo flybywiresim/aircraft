@@ -81,34 +81,25 @@ class CDUVerticalRevisionPage {
         const transAltLevel = constraintType === WaypointConstraintType.DES ? targetPlan.performanceData.transitionLevel.get() * 100 : targetPlan.performanceData.transitionAltitude.get();
         let altitudeConstraint = "";
         switch (waypoint.definition.altitudeDescriptor) {
-            case '@': // at altitude specified in Altitude1 field
-            case 'G': // Glide Slope altitude (MSL) specified in Altitude2 field and at altitude specified in Altitude1 field
-            case 'I': // Glide Slope Intercept Altitude specified in Altitude2 field and at altitude specified in Altitude1 field
-            case 'X': { // at altitude on the coded vertical angle in Altitude2 field and at altitude specified in Altitude1 field
+            case '@': {
                 altitudeConstraint = this.formatFl(Math.round(waypoint.definition.altitude1), transAltLevel);
                 break;
             }
-            case '+': // "at or above altitude specified in Altitude1 field"
-            case 'H': // Glide Slope altitude (MSL) specified in Altitude2 field and at or above altitude specified in Altitude1 field
-            case 'J': // Glide Slope Intercept Altitude specified in Altitude2 field and at or above altitude specified in Altitude1 field
-            case 'V': { // at altitude on the coded vertical angle in the Altitude2 field and at or above altitude specified in Altitude1 field
-                altitudeConstraint = `+${this.formatFl(Math.round(waypoint.definition.altitude1), transAltLevel)}`;
+            case '+': {
+                altitudeConstraint = "+" + this.formatFl(Math.round(waypoint.definition.altitude1), transAltLevel);
                 break;
             }
-            case 'C': { // at or above altitude specified in Altitude2 field
-                altitudeConstraint = `+${this.formatFl(Math.round(waypoint.definition.altitude2), transAltLevel)}`;
+            case '-': {
+                altitudeConstraint = "-" + this.formatFl(Math.round(waypoint.definition.altitude1), transAltLevel);
                 break;
             }
-            case '-': // at or below altitude specified in Altitude1 field
-            case 'Y': { // at altitude on the coded vertical angle in Altitude2 field and at or below altitude specified in the Altitude1 field
-                altitudeConstraint = `-${this.formatFl(Math.round(waypoint.definition.altitude1), transAltLevel)}`;
-                break;
-            }
-            case 'B': { // at or above to at or below altitudes in Altitude1 field and Altitude2 field
+            case 'B': {
                 if (waypoint.definition.altitude1 < waypoint.definition.altitude2) {
-                    altitudeConstraint = `+${this.formatFl(Math.round(waypoint.definition.altitude1), transAltLevel)}/-${this.formatFl(Math.round(waypoint.definition.altitude2), transAltLevel)}`;
+                    altitudeConstraint = "+" + this.formatFl(Math.round(waypoint.definition.altitude1), transAltLevel)
+                        + "/-" + this.formatFl(Math.round(waypoint.definition.altitude2), transAltLevel);
                 } else {
-                    altitudeConstraint = `+${this.formatFl(Math.round(waypoint.definition.altitude2), transAltLevel)}/-${this.formatFl(Math.round(waypoint.definition.altitude1), transAltLevel)}`;
+                    altitudeConstraint = "+" + this.formatFl(Math.round(waypoint.definition.altitude2), transAltLevel)
+                        + "/-" + this.formatFl(Math.round(waypoint.definition.altitude1), transAltLevel);
                 }
                 break;
             }
