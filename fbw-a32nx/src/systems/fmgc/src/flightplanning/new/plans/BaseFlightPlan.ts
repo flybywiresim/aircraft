@@ -807,7 +807,7 @@ export abstract class BaseFlightPlan implements ReadonlyFlightPlan {
     glideslopeIntercept(): number | undefined {
         for (const leg of this.approachSegment.allLegs) {
             if (leg.isDiscontinuity === false
-                && leg.definition.approachWaypointDescriptor === ApproachWaypointDescriptor.FinalApproachCourseFix
+                && leg.definition.approachWaypointDescriptor === ApproachWaypointDescriptor.FinalApproachFix
                 && (leg.definition.altitudeDescriptor === AltitudeDescriptor.AtAlt1GsMslAlt2 || leg.definition.altitudeDescriptor === AltitudeDescriptor.AtOrAboveAlt1GsMslAlt2)) {
                 return leg.definition.altitude2;
             }
