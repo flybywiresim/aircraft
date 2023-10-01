@@ -1,15 +1,15 @@
 use std::fmt::Display;
 
-use crate::{
+use systems::{
+    air_conditioning::{
+        AirConditioningOverheadShared, CabinFansSignal, OperatingChannel,
+        PressurizationOverheadShared, VcmShared,
+    },
     shared::{ControllerSignal, ElectricalBusType},
     simulation::{
         InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter,
         VariableIdentifier, Write,
     },
-};
-
-use super::{
-    AirConditioningOverheadShared, CabinFansSignal, OperatingChannel, PressurizationOverheadShared,
 };
 
 #[derive(Debug)]
@@ -30,27 +30,6 @@ impl Display for VcmId {
             VcmId::Fwd => write!(f, "FWD"),
             VcmId::Aft => write!(f, "AFT"),
         }
-    }
-}
-
-pub trait VcmShared {
-    fn hp_cabin_fans_are_enabled(&self) -> bool {
-        false
-    }
-    fn fwd_extraction_fan_is_on(&self) -> bool {
-        false
-    }
-    fn fwd_isolation_valves_open_allowed(&self) -> bool {
-        false
-    }
-    fn bulk_duct_heater_on_allowed(&self) -> bool {
-        false
-    }
-    fn bulk_extraction_fan_is_on(&self) -> bool {
-        false
-    }
-    fn bulk_isolation_valves_open_allowed(&self) -> bool {
-        false
     }
 }
 

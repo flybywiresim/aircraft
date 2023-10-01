@@ -3,10 +3,8 @@ use std::time::Duration;
 use systems::{
     air_conditioning::{
         acs_controller::{AcscId, AirConditioningStateManager, Pack, ZoneController},
-        trim_air_drive_device::TaddShared,
-        ventilation_control_module::VcmShared,
         AdirsToAirCondInterface, AirConditioningOverheadShared, BulkHeaterSignal, CabinFansSignal,
-        Channel, DuctTemperature, OverheadFlowSelector, PackFlow, ZoneType,
+        Channel, DuctTemperature, OverheadFlowSelector, PackFlow, VcmShared, ZoneType,
     },
     integrated_modular_avionics::core_processing_input_output_module::CoreProcessingInputOutputModule,
     shared::{
@@ -18,6 +16,8 @@ use systems::{
         VariableIdentifier, Write,
     },
 };
+
+use super::local_controllers::trim_air_drive_device::TaddShared;
 
 use uom::si::{
     f64::*,

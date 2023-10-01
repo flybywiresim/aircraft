@@ -1343,14 +1343,14 @@ pub struct TrimAirValveController {
 }
 
 impl TrimAirValveController {
-    pub(crate) fn new() -> Self {
+    pub fn new() -> Self {
         Self {
             tav_open_allowed: false,
             pid: PidController::new(0.0002, 0.005, 0., 0., 1., 24., 1.),
         }
     }
 
-    pub(crate) fn update(
+    pub fn update(
         &mut self,
         context: &UpdateContext,
         open_allowed: bool,
@@ -1379,6 +1379,12 @@ impl ControllerSignal<TrimAirValveSignal> for TrimAirValveController {
         } else {
             Some(TrimAirValveSignal::new_closed())
         }
+    }
+}
+
+impl Default for TrimAirValveController {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -1417,8 +1423,8 @@ mod acs_controller_tests {
     use super::*;
     use crate::{
         air_conditioning::{
-            cabin_air::CabinAirSimulation, ventilation_control_module::VcmShared, Air,
-            AirConditioningPack, CabinFan, MixerUnit, OutletAir, PressurizationConstants,
+            cabin_air::CabinAirSimulation, Air, AirConditioningPack, CabinFan, MixerUnit,
+            OutletAir, PressurizationConstants, VcmShared,
         },
         electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
         overhead::{

@@ -34,10 +34,7 @@ use uom::si::{
 pub mod acs_controller;
 pub mod cabin_air;
 pub mod cabin_pressure_controller;
-pub mod full_digital_agu_controller;
 pub mod pressure_valve;
-pub mod trim_air_drive_device;
-pub mod ventilation_control_module;
 
 pub trait DuctTemperature {
     fn duct_temperature(&self) -> Vec<ThermodynamicTemperature> {
@@ -135,6 +132,27 @@ pub trait PressurizationOverheadShared {
     fn ditching_is_on(&self) -> bool;
     fn ldg_elev_is_auto(&self) -> bool;
     fn ldg_elev_knob_value(&self) -> f64;
+}
+
+pub trait VcmShared {
+    fn hp_cabin_fans_are_enabled(&self) -> bool {
+        false
+    }
+    fn fwd_extraction_fan_is_on(&self) -> bool {
+        false
+    }
+    fn fwd_isolation_valves_open_allowed(&self) -> bool {
+        false
+    }
+    fn bulk_duct_heater_on_allowed(&self) -> bool {
+        false
+    }
+    fn bulk_extraction_fan_is_on(&self) -> bool {
+        false
+    }
+    fn bulk_isolation_valves_open_allowed(&self) -> bool {
+        false
+    }
 }
 
 /// Cabin Zones with double digit IDs are specific to the A380
@@ -273,7 +291,7 @@ impl From<usize> for Channel {
     }
 }
 
-struct OperatingChannel {
+pub struct OperatingChannel {
     channel_id: Channel,
     powered_by: Vec<ElectricalBusType>,
     is_powered: bool,
@@ -282,7 +300,11 @@ struct OperatingChannel {
 }
 
 impl OperatingChannel {
-    fn new(id: usize, failure_type: Option<FailureType>, powered_by: &[ElectricalBusType]) -> Self {
+    pub fn new(
+        id: usize,
+        failure_type: Option<FailureType>,
+        powered_by: &[ElectricalBusType],
+    ) -> Self {
         Self {
             channel_id: id.into(),
             powered_by: powered_by.to_vec(),
@@ -292,7 +314,7 @@ impl OperatingChannel {
         }
     }
 
-    fn update_fault(&mut self) {
+    pub fn update_fault(&mut self) {
         let failure_is_active = if self.failure.is_some() {
             self.failure.as_ref().unwrap().is_active()
         } else {
@@ -306,11 +328,11 @@ impl OperatingChannel {
         };
     }
 
-    fn has_fault(&self) -> bool {
+    pub fn has_fault(&self) -> bool {
         matches!(self.fault, OperatingChannelFault::Fault)
     }
 
-    fn id(&self) -> Channel {
+    pub fn id(&self) -> Channel {
         self.channel_id
     }
 }
@@ -768,7 +790,7 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystem<ZONES, ENGINES> {
         self.outlet_air.pressure() > Pressure::new::<psi>(20.)
     }
 
-    fn trim_air_pressure_regulating_valve_is_open(&self, id: usize) -> bool {
+    pub fn trim_air_pressure_regulating_valve_is_open(&self, id: usize) -> bool {
         self.trim_air_pressure_regulating_valves[id - 1].is_open()
     }
 

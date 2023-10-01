@@ -4,14 +4,11 @@ use systems::{
         acs_controller::Pack,
         cabin_air::CabinAirSimulation,
         cabin_pressure_controller::CabinPressureController,
-        full_digital_agu_controller::FullDigitalAGUController,
         pressure_valve::{OutflowValve, SafetyValve},
-        trim_air_drive_device::{TaddShared, TrimAirDriveDevice},
-        ventilation_control_module::{VcmId, VcmShared, VentilationControlModule},
         AdirsToAirCondInterface, Air, AirConditioningOverheadShared, AirConditioningPack,
         AirHeater, CabinFan, DuctTemperature, MixerUnit, OutflowValveSignal, OutletAir,
         OverheadFlowSelector, PackFlow, PackFlowControllers, PressurizationConstants,
-        PressurizationOverheadShared, TrimAirSystem, ZoneType,
+        PressurizationOverheadShared, TrimAirSystem, VcmShared, ZoneType,
     },
     overhead::{
         AutoManFaultPushButton, NormalOnPushButton, OnOffFaultPushButton, OnOffPushButton,
@@ -38,9 +35,17 @@ use uom::si::{
 
 use crate::avionics_data_communication_network::CoreProcessingInputOutputModuleShared;
 
-use self::cpiom_b::CoreProcessingInputOutputModuleB;
+use self::{
+    cpiom_b::CoreProcessingInputOutputModuleB,
+    local_controllers::{
+        full_digital_agu_controller::FullDigitalAGUController,
+        trim_air_drive_device::{TaddShared, TrimAirDriveDevice},
+        ventilation_control_module::{VcmId, VentilationControlModule},
+    },
+};
 
 mod cpiom_b;
+mod local_controllers;
 
 pub(super) struct A380AirConditioning {
     a380_cabin: A380Cabin,

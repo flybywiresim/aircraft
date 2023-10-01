@@ -1,7 +1,4 @@
-use super::{
-    ventilation_control_module::VcmShared, Air, DuctTemperature, OutletAir,
-    PressurizationConstants, ZoneType,
-};
+use super::{Air, DuctTemperature, OutletAir, PressurizationConstants, VcmShared, ZoneType};
 use crate::{
     shared::{AverageExt, CabinSimulation},
     simulation::{
