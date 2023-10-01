@@ -1,7 +1,8 @@
-const dotenv = require('dotenv');
+const dotenv = require("dotenv");
 const path = require("path");
 const childProcess = require("child_process");
 const fs = require("fs");
+const ts = require("typescript");
 
 function defineEnvVars() {
     dotenv.config({ path: '.env.local' });
@@ -85,31 +86,55 @@ function typecheckingPlugin() {
          * @param build {import('esbuild').PluginBuild}
          */
         setup(build) {
-            if (!(process.env.FBW_TYPECHECK === '1' || process.env.FBW_TYPECHECK?.toLowerCase() === 'true')) {
-                return;
-            }
+            build.onStart(() => {
+                if (!(process.env.FBW_TYPECHECK === '1' || process.env.FBW_TYPECHECK?.toLowerCase() === 'true')) {
+                    return;
+                }
 
-            const { entryPoints } = build.initialOptions;
-            const entryPointDir = path.dirname(entryPoints[0]);
+                const { entryPoints } = build.initialOptions;
+                const entryPointDir = path.dirname(entryPoints[0]);
 
-            const tsConfigInEntryPointDir = fs.existsSync(path.join(entryPointDir, 'tsconfig.json'));
+                const tsConfigInEntryPointDir = fs.existsSync(path.join(entryPointDir, 'tsconfig.json'));
 
-            let tsConfigPath;
-            if (tsConfigInEntryPointDir) {
-                tsConfigPath = entryPointDir;
-            } else if (build.initialOptions.tsconfig !== undefined) {
-                tsConfigPath = path.dirname(build.initialOptions.tsconfig);
-            }
+                let tsConfigDir;
+                if (tsConfigInEntryPointDir) {
+                    tsConfigDir = entryPointDir;
+                } else if (build.initialOptions.tsconfig !== undefined) {
+                    tsConfigDir = path.dirname(build.initialOptions.tsconfig);
+                }
 
-            if (tsConfigPath === undefined) {
-                throw new Error(`Cannot run typechecking: no tsconfig.json file found in '${entryPointDir}' and tsconfig path not specified`);
-            }
+                if (tsConfigDir === undefined) {
+                    throw new Error(`Cannot run typechecking: no tsconfig.json file found in '${entryPointDir}' and tsconfig path not specified`);
+                }
 
-            try {
-                childProcess.execSync('npx tsc --noEmit -p .', { cwd: tsConfigPath, stdio: 'inherit' });
-            } catch (e) {
-                throw new Error('Errors during type checking');
-            }
+                /**
+                 * @type {import('esbuild').PartialMessage[]}
+                 */
+                const errors = []
+
+                try {
+                    childProcess.execSync('npx tsc --noEmit -p .', { cwd: tsConfigDir });
+                } catch (e) {
+                    const tscErrors = e.stdout.toString().split('\n').filter((err) => err.trim() !== '');
+
+                    errors.push(...tscErrors.map((err) => {
+                        const match = /(.+)\((\d+),(\d+)\):\s+(.+)/.exec(err.trim());
+
+                        if (match) {
+                            const [, file, line, column, text] = match;
+
+                            const filePath = path.resolve(tsConfigDir, file);
+                            const lineText = fs.readFileSync(filePath).toString().split('\n')[line - 1];
+
+                            return { text, location: { file, line: parseInt(line), column: parseInt(column) - 1, lineText } }
+                        } else {
+                            return { text: err };
+                        }
+                    }));
+                }
+
+                return { errors };
+            })
         }
     }
 }
