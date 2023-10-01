@@ -67,19 +67,20 @@ jobs:
         # uses: actions/upload-release-asset@v1.0.2
         # env:
         #   GITHUB_TOKEN: ${{ github.token }}
-        run: gh release upload ${{ env.MASTER_PRE_RELEASE_TAG }} '*'
+        run: gh release upload ${{ env.MASTER_PRE_RELEASE_TAG }} ./${{ env.BUILD_DIR_NAME }}/${{ env.MASTER_ZIP_NAME }}
         #with:
         #  upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ env.MASTER_PRE_RELEASE_ID }}/assets{?name,label}
         #  asset_path: ./${{ env.BUILD_DIR_NAME }}/${{ env.MASTER_ZIP_NAME }}
         #  asset_name: ${{ env.MASTER_ZIP_NAME }}
         #  asset_content_type: application/zip
-    #  - name: Upload fragments to GitHub Pre-Release Assets
-    #    uses: dwenegar/upload-release-assets@v1
-    #    env:
-    #      GITHUB_TOKEN: ${{ github.token }}
-    #    with:
-    #      release_id: ${{ env.MASTER_PRE_RELEASE_ID }}
-    #      assets_path: ./fbw-a32nx/out/build-modules
+      - name: Upload fragments to GitHub Pre-Release Assets
+        #uses: dwenegar/upload-release-assets@v1
+        run: gh release upload ${{ env.MASTER_PRE_RELEASE_TAG }} ./fbw-a32nx/out/build-modules/*
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        # with:
+        #   release_id: ${{ env.MASTER_PRE_RELEASE_ID }}
+        #   assets_path: ./fbw-a32nx/out/build-modules
     #  - name: Update GitHub Pre-Release Body
     #    run: |
     #      curl --request PATCH \
