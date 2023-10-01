@@ -27,30 +27,6 @@ class CDUFlightPlanPage {
             mcdu.onRightInput[index] = callback;
         }
 
-        /**
-         * @param runway {import('msfs-navdata').Runway}
-         */
-        function getRunwayInfo(runway) {
-            return ['', ''];
-            let runwayText, runwayAlt;
-            if (runway) {
-                runwayText = runway.ident.substring(2);
-                runwayAlt = (runway.elevation * 3.280).toFixed(0);
-            }
-            return [runwayText, runwayAlt];
-        }
-
-        function formatAltitudeOrLevel(altitudeToFormat) {
-            const activePlan = mcdu.flightPlanService.active;
-            const transitionAltitude = activePlan.performanceData.transitionAltitude.get();
-
-            if (transitionAltitude >= 100 && altitudeToFormat > transitionAltitude) {
-                return `FL${(altitudeToFormat / 100).toFixed(0).padStart(3, "0")}`;
-            }
-
-            return (10 * Math.round(altitudeToFormat / 10)).toFixed(0).padStart(5, "\xa0");
-        }
-
         //mcdu.flightPlanManager.updateWaypointDistances(false /* approach */);
         //mcdu.flightPlanManager.updateWaypointDistances(true /* approach */);
         mcdu.clearDisplay();
@@ -379,26 +355,24 @@ class CDUFlightPlanPage {
                 const hasAltConstraint = legHasAltConstraint(wp);
                 let altitudeConstraint = "-----";
                 let altPrefix = "\xa0";
-                if (!inAlternate && fpIndex === targetPlan.destinationLegIndex && wp.waypointDescriptor === 3 /* Runway */ && targetPlan.destinationRunway) {
-                    altColor = "white";
-                    const [rwTxt, rwAlt] = getRunwayInfo(targetPlan.destinationRunway);
-
-                    if (rwTxt && rwAlt) {
-                        altPrefix = "{magenta}*{end}";
-                        ident += rwTxt;
-                        altitudeConstraint = (Math.round((parseInt(rwAlt) + 50) / 10) * 10).toString();
+                if (!inAlternate && fpIndex === targetPlan.destinationLegIndex) {
+                    if (targetPlan.destinationRunway && Number.isFinite(targetPlan.destinationRunway.thresholdCrossingHeight)) {
+                        altitudeConstraint = formatAlt(targetPlan.destinationRunway.thresholdCrossingHeight);
+                        altColor = color;
+                    } else if (targetPlan.destinationAirport && Number.isFinite(targetPlan.destinationAirport.location.alt)) {
+                        // TODO: https://github.com/flybywiresim/msfs-navdata/issues/22
+                        altitudeConstraint = formatAlt(targetPlan.destinationAirport.location.alt * 3.281);
                         altColor = color;
                     }
-                    altitudeConstraint = altitudeConstraint.padStart(5,"\xa0");
-
-                } else if (fpIndex === targetPlan.originLegIndex && targetPlan.originRunway) {
-                    const [rwTxt, rwAlt] = getRunwayInfo(targetPlan.originRunway);
-                    if (rwTxt && rwAlt) {
-                        ident += rwTxt;
-                        altitudeConstraint = rwAlt;
+                } else if (fpIndex === targetPlan.originLegIndex) {
+                    if (targetPlan.originRunway && Number.isFinite(targetPlan.originRunway.location.alt)) {
+                        altitudeConstraint = formatAlt(targetPlan.originRunway.location.alt);
+                        altColor = color;
+                    } else if (targetPlan.originAirport && Number.isFinite(targetPlan.originAirport.location.alt)) {
+                        // TODO: https://github.com/flybywiresim/msfs-navdata/issues/22
+                        altitudeConstraint = formatAlt(targetPlan.originAirport.location.alt * 3.281);
                         altColor = color;
                     }
-                    altitudeConstraint = altitudeConstraint.padStart(5,"\xa0");
                 } else if (targetPlan.index !== Fmgc.FlightPlanIndex.Temporary) {
                     let altitudeToFormat = wp.definition.altitude1;
 
@@ -957,9 +931,30 @@ function legHasAltConstraint(leg) {
     return !!leg.definition.altitudeDescriptor && leg.definition.altitudeDescriptor !== 'G' && leg.definition.altitudeDescriptor !== 'H';
 }
 
+/**
+ * Format a numerical altitude to a string of the form "NNNNN" or "FLNNN" dpeending on the transition altitude
+ * @param {Number} alt The altitude to format
+ * @returns {String} The formatted altitude string
+ */
+function formatAltitudeOrLevel(alt) {
+    const activePlan = mcdu.flightPlanService.active;
+    // TODO: Consider transition level
+    const transitionAltitude = activePlan.performanceData.transitionAltitude.get();
+
+    if (transitionAltitude >= 100 && alt > transitionAltitude) {
+        return `FL${(alt / 100).toFixed(0).padStart(3, "0")}`;
+    }
+
+    return formatAlt(alt);
+}
+
+/**
+ * Formats a numberical altitude to a string to be displayed in the altitude column. Does not format FLs, use {@link formatAltitudeOrLevel} for this purpose
+ * @param {Number} alt The altitude to format
+ * @returns {String} The formatted altitude string
+ */
 function formatAlt(alt) {
-    // TODO FLs
-    return (Math.round(alt / 10) * 10).toString().padStart(5, '\xa0');
+    return (Math.round(alt / 10) * 10).toFixed(0).padStart(5, '\xa0');
 }
 
 function formatLegAltConstraint(leg) {
