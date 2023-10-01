@@ -123,6 +123,8 @@ pub struct A320Pneumatic {
     apu_compression_chamber: CompressionChamber,
     apu_bleed_air_valve: DefaultValve,
 
+    air_starter_unit_compression_chamber: CompressionChamber,
+
     wing_anti_ice: WingAntiIceComplex,
 
     hydraulic_reservoir_bleed_air_valves: [PurelyPneumaticValve; 2],
@@ -174,6 +176,9 @@ impl A320Pneumatic {
             ],
             apu_compression_chamber: CompressionChamber::new(Volume::new::<cubic_meter>(5.)),
             apu_bleed_air_valve: DefaultValve::new_closed(),
+            air_starter_unit_compression_chamber: CompressionChamber::new(
+                Volume::new::<cubic_meter>(5.),
+            ),
             wing_anti_ice: WingAntiIceComplex::new(context),
             hydraulic_reservoir_bleed_air_valves: [
                 PurelyPneumaticValve::new(),
