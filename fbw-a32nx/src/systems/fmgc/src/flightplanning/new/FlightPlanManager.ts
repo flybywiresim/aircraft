@@ -142,7 +142,7 @@ export class FlightPlanManager {
 
     deleteAll(notify = true) {
         for (const plan of this.plans) {
-            plan.destroy();
+            plan?.destroy();
         }
 
         this.plans.length = 0;
