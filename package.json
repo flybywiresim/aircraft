@@ -75,6 +75,7 @@
     "*.{json,yml,css,scss}": "prettier --write"
   },
   "devDependencies": {
+    "@jgoz/esbuild-plugin-typecheck": "^3.1.0",
     "@babel/core": "^7.12.3",
     "@babel/eslint-parser": "^7.12.1",
     "@babel/plugin-proposal-class-properties": "~7.12.1",
@@ -141,8 +142,8 @@
     "tailwindcss": "^3.0.23",
     "ts-jest": "^27.0.4",
     "ts-loader": "^9.2.2",
-    "typescript": "^4.3.2",
-    "vite": "^2.8.6",
+    "typescript": "^5.2.2",
+    "vite": "^4.4.9",
     "vite-plugin-replace": "^0.1.1",
     "vite-tsconfig-paths": "^3.4.1",
     "webpack": "^5.12.2",

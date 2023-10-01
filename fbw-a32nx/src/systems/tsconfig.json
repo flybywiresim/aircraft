@@ -3,9 +3,9 @@
     "target": "ESNext",
     "baseUrl": ".",
     "resolveJsonModule" : true,
+    "skipLibCheck": true,
     "typeRoots": [
-      "../../../fbw-common/src/typings",
-      "../../../node_modules/@types"
+      "../../../fbw-common/src/typings"
     ],
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
