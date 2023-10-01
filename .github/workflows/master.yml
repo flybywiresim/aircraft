@@ -7,7 +7,7 @@ on:
 jobs:
   build:
     # Prevent running this on forks
-    if: github.repository_owner == 'flybywiresim'
+    #if: github.repository_owner == 'flybywiresim'
     runs-on: ubuntu-latest
     env:
       A32NX_PRODUCTION_BUILD: 1
