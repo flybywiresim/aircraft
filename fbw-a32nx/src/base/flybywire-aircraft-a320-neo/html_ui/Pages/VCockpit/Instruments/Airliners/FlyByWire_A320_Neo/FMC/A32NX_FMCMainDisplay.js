@@ -5122,23 +5122,26 @@ class FMCMainDisplay extends BaseAirliners {
         }
 
         const MACH_SLASH_SPD_REGEX = /^(\.\d{1,2})?\/(\d{3})?$/;
-        const match = value.match(MACH_SLASH_SPD_REGEX);
+        const machSlashSpeedMatch = value.match(MACH_SLASH_SPD_REGEX);
 
-        if (match !== null) {
-            const speed = parseInt(match[2]);
+        const MACH_REGEX = /^\.\d{1,2}$/;
+        const SPD_REGEX = /^\d{1,3}$/;
+
+        if (machSlashSpeedMatch !== null /* ".NN/" or "/NNN" entry */) {
+            const speed = parseInt(machSlashSpeedMatch[2]);
             if (Number.isFinite(speed)) {
                 if (speed < 100 || speed > 350) {
-                    this.setScratchpadText(NXSystemMessages.entryOutOfRange);
+                    this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
                     return false;
                 }
 
                 this.managedSpeedDescendPilot = speed;
             }
 
-            const mach = Math.round(parseFloat(match[1]) * 1000) / 1000;
+            const mach = Math.round(parseFloat(machSlashSpeedMatch[1]) * 1000) / 1000;
             if (Number.isFinite(mach)) {
                 if (mach < 0.15 || mach > 0.82) {
-                    this.setScratchpadText(NXSystemMessages.entryOutOfRange);
+                    this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
                     return false
                 }
 
@@ -5146,11 +5149,24 @@ class FMCMainDisplay extends BaseAirliners {
             }
 
             return true;
-        } else if (this.representsDecimalNumber(value)) {
+        } else if (value.match(MACH_REGEX) !== null /* ".NN" */) {
+            // Entry of a Mach number only without a slash is allowed
+            const mach = Math.round(parseFloat(value) * 1000) / 1000;
+            if (Number.isFinite(mach)) {
+                if (mach < 0.15 || mach > 0.82) {
+                    this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+                    return false
+                }
+
+                this.managedSpeedDescendMachPilot = mach;
+            }
+
+            return true;
+        } else if (value.match(SPD_REGEX) !== null /* "NNN" */) {
             const speed = parseInt(value);
             if (Number.isFinite(speed)) {
                 if (speed < 100 || speed > 350) {
-                    this.setScratchpadText(NXSystemMessages.entryOutOfRange);
+                    this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
                     return false;
                 }
 
@@ -5165,7 +5181,7 @@ class FMCMainDisplay extends BaseAirliners {
             }
         }
 
-        this.setScratchpadText(NXSystemMessages.formatError);
+        this.setScratchpadMessage(NXSystemMessages.formatError);
         return false;
     }
 
