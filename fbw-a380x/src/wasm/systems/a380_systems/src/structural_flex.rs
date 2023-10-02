@@ -1,4 +1,5 @@
 use systems::{
+    fuel::FuelPayload,
     shared::SurfacesPositions,
     simulation::{
         InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
@@ -41,6 +42,7 @@ impl A380StructuralFlex {
         outer_inner_elevator_aero_torques: [(Torque, Torque); 2],
         up_down_rudder_aero_torques: (Torque, Torque),
         surfaces_positions: &impl SurfacesPositions,
+        fuel_mass: &impl FuelPayload,
     ) {
         self.elevators_flex_physics.update(
             context,
@@ -53,6 +55,7 @@ impl A380StructuralFlex {
             context,
             self.surface_vibrations.surface_vibration_acceleration(),
             surfaces_positions,
+            fuel_mass,
         );
 
         self.engines_flex_physics

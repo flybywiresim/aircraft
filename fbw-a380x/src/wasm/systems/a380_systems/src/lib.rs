@@ -288,6 +288,7 @@ impl Aircraft for A380 {
             ],
             self.hydraulic.up_down_rudder_aero_torques(),
             &self.hydraulic,
+            &self.fuel,
         );
         self.cds.update();
 

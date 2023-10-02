@@ -1,12 +1,12 @@
 use crate::shared::low_pass_filter::LowPassFilter;
 use crate::shared::update_iterator::MaxStepLoop;
+use crate::shared::{local_acceleration_at_plane_coordinate, SurfacesPositions};
 
+use crate::fuel::FuelPayload;
 use crate::simulation::{
     InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
     SimulatorWriter, UpdateContext, VariableIdentifier, Write,
 };
-
-use crate::shared::{local_acceleration_at_plane_coordinate, SurfacesPositions};
 
 use uom::si::{
     acceleration::meter_per_second_squared,
@@ -15,13 +15,11 @@ use uom::si::{
     force::newton,
     length::meter,
     mass::kilogram,
-    mass_density::kilogram_per_cubic_meter,
     ratio::percent,
     ratio::ratio,
     velocity::{knot, meter_per_second},
 };
 
-use std::fmt;
 use std::time::Duration;
 
 use nalgebra::{Vector2, Vector3, Vector5};
@@ -359,102 +357,18 @@ impl<const FUEL_TANK_NUMBER: usize, const NODE_NUMBER: usize>
     }
 }
 
-enum A380fuelTanks {
-    LeftInner,
-    LeftFeed2,
-    LeftMid,
-    LeftFeed1,
+enum A380FuelTankType {
     LeftOuter,
+    FeedOne,
+    LeftMid,
+    LeftInner,
+    FeedTwo,
+    FeedThree,
     RightInner,
-    RightFeed3,
     RightMid,
-    RightFeed4,
+    FeedFour,
     RightOuter,
-}
-impl fmt::Display for A380fuelTanks {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let tank_nr = match self {
-            A380fuelTanks::LeftInner => 4,
-            A380fuelTanks::LeftFeed2 => 5,
-            A380fuelTanks::LeftMid => 3,
-            A380fuelTanks::LeftFeed1 => 2,
-            A380fuelTanks::LeftOuter => 1,
-            A380fuelTanks::RightInner => 7,
-            A380fuelTanks::RightFeed3 => 6,
-            A380fuelTanks::RightMid => 8,
-            A380fuelTanks::RightFeed4 => 9,
-            A380fuelTanks::RightOuter => 10,
-        };
-        write!(f, "FUELSYSTEM TANK QUANTITY:{tank_nr}")
-    }
-}
-
-struct WingMassA380 {
-    left_tank_1_id: VariableIdentifier,
-    left_tank_2_id: VariableIdentifier,
-    left_tank_3_id: VariableIdentifier,
-    left_tank_4_id: VariableIdentifier,
-    left_tank_5_id: VariableIdentifier,
-
-    right_tank_1_id: VariableIdentifier,
-    right_tank_2_id: VariableIdentifier,
-    right_tank_3_id: VariableIdentifier,
-    right_tank_4_id: VariableIdentifier,
-    right_tank_5_id: VariableIdentifier,
-
-    left_tank_volumes: [Volume; 5],
-    right_tank_volumes: [Volume; 5],
-}
-impl WingMassA380 {
-    const FUEL_MASS_DENSITY_KG_M3: f64 = 800.;
-
-    fn new(context: &mut InitContext) -> Self {
-        Self {
-            left_tank_1_id: context.get_identifier(A380fuelTanks::LeftInner.to_string()),
-            left_tank_2_id: context.get_identifier(A380fuelTanks::LeftFeed2.to_string()),
-            left_tank_3_id: context.get_identifier(A380fuelTanks::LeftMid.to_string()),
-            left_tank_4_id: context.get_identifier(A380fuelTanks::LeftFeed1.to_string()),
-            left_tank_5_id: context.get_identifier(A380fuelTanks::LeftOuter.to_string()),
-
-            right_tank_1_id: context.get_identifier(A380fuelTanks::RightInner.to_string()),
-            right_tank_2_id: context.get_identifier(A380fuelTanks::RightFeed3.to_string()),
-            right_tank_3_id: context.get_identifier(A380fuelTanks::RightMid.to_string()),
-            right_tank_4_id: context.get_identifier(A380fuelTanks::RightFeed4.to_string()),
-            right_tank_5_id: context.get_identifier(A380fuelTanks::RightOuter.to_string()),
-
-            left_tank_volumes: [Volume::default(); 5],
-            right_tank_volumes: [Volume::default(); 5],
-        }
-    }
-
-    fn left_tanks_masses(&self) -> [Mass; 5] {
-        Self::tanks_masses(&self.left_tank_volumes)
-    }
-
-    fn right_tanks_masses(&self) -> [Mass; 5] {
-        Self::tanks_masses(&self.right_tank_volumes)
-    }
-
-    fn tanks_masses<const N: usize>(tank_volumes: &[Volume; N]) -> [Mass; N] {
-        tank_volumes.map(|volume| {
-            volume * MassDensity::new::<kilogram_per_cubic_meter>(Self::FUEL_MASS_DENSITY_KG_M3)
-        })
-    }
-}
-impl SimulationElement for WingMassA380 {
-    fn read(&mut self, reader: &mut SimulatorReader) {
-        self.left_tank_volumes[0] = reader.read(&self.left_tank_1_id);
-        self.left_tank_volumes[1] = reader.read(&self.left_tank_2_id);
-        self.left_tank_volumes[2] = reader.read(&self.left_tank_3_id);
-        self.left_tank_volumes[3] = reader.read(&self.left_tank_4_id);
-        self.left_tank_volumes[4] = reader.read(&self.left_tank_5_id);
-
-        self.right_tank_volumes[0] = reader.read(&self.right_tank_1_id);
-        self.right_tank_volumes[1] = reader.read(&self.right_tank_2_id);
-        self.right_tank_volumes[2] = reader.read(&self.right_tank_3_id);
-        self.right_tank_volumes[3] = reader.read(&self.right_tank_4_id);
-        self.right_tank_volumes[4] = reader.read(&self.right_tank_5_id);
-    }
+    _Trim,
 }
 
 const WING_FLEX_NODE_NUMBER: usize = 5;
@@ -474,7 +388,9 @@ pub struct WingFlexA380 {
 
     wing_lift: WingLift,
     wing_lift_dynamic: A380WingLiftModifier,
-    wing_mass: WingMassA380,
+
+    left_wing_fuel_mass: [Mass; FUEL_TANKS_NUMBER],
+    right_wing_fuel_mass: [Mass; FUEL_TANKS_NUMBER],
 
     fuel_mapper: WingFuelNodeMapper<FUEL_TANKS_NUMBER, WING_FLEX_NODE_NUMBER>,
     animation_mapper: WingAnimationMapper<WING_FLEX_NODE_NUMBER>,
@@ -514,7 +430,9 @@ impl WingFlexA380 {
 
             wing_lift: WingLift::new(context),
             wing_lift_dynamic: A380WingLiftModifier::default(),
-            wing_mass: WingMassA380::new(context),
+
+            left_wing_fuel_mass: [Mass::default(); FUEL_TANKS_NUMBER],
+            right_wing_fuel_mass: [Mass::default(); FUEL_TANKS_NUMBER],
 
             fuel_mapper: WingFuelNodeMapper::new(Self::FUEL_MAPPING),
             animation_mapper: WingAnimationMapper::new(Self::WING_NODES_X_COORDINATES),
@@ -533,11 +451,29 @@ impl WingFlexA380 {
         }
     }
 
+    fn update_fuel_masses(&mut self, fuel_mass: &impl FuelPayload) {
+        self.left_wing_fuel_mass = [
+            fuel_mass.tank_mass(A380FuelTankType::LeftInner as usize),
+            fuel_mass.tank_mass(A380FuelTankType::FeedTwo as usize),
+            fuel_mass.tank_mass(A380FuelTankType::LeftMid as usize),
+            fuel_mass.tank_mass(A380FuelTankType::FeedOne as usize),
+            fuel_mass.tank_mass(A380FuelTankType::LeftOuter as usize),
+        ];
+        self.right_wing_fuel_mass = [
+            fuel_mass.tank_mass(A380FuelTankType::RightInner as usize),
+            fuel_mass.tank_mass(A380FuelTankType::FeedThree as usize),
+            fuel_mass.tank_mass(A380FuelTankType::RightMid as usize),
+            fuel_mass.tank_mass(A380FuelTankType::FeedFour as usize),
+            fuel_mass.tank_mass(A380FuelTankType::RightOuter as usize),
+        ];
+    }
+
     pub fn update(
         &mut self,
         context: &UpdateContext,
         surface_vibration_acceleration: Acceleration,
         surfaces_positions: &impl SurfacesPositions,
+        fuel_mass: &impl FuelPayload,
     ) {
         self.wing_lift.update(context);
         self.wing_lift_dynamic
@@ -546,13 +482,14 @@ impl WingFlexA380 {
         self.left_right_wing_root_position[0].update(context);
         self.left_right_wing_root_position[1].update(context);
 
+        self.update_fuel_masses(fuel_mass);
+
         self.flex_physics[0].update(
             context,
             self.wing_lift_dynamic
                 .per_node_lift_left_wing_newton()
                 .as_slice(),
-            self.fuel_mapper
-                .fuel_masses(self.wing_mass.left_tanks_masses()),
+            self.fuel_mapper.fuel_masses(self.left_wing_fuel_mass),
             surface_vibration_acceleration + self.left_right_wing_root_position[0].acceleration(),
         );
 
@@ -561,8 +498,7 @@ impl WingFlexA380 {
             self.wing_lift_dynamic
                 .per_node_lift_right_wing_newton()
                 .as_slice(),
-            self.fuel_mapper
-                .fuel_masses(self.wing_mass.right_tanks_masses()),
+            self.fuel_mapper.fuel_masses(self.right_wing_fuel_mass),
             surface_vibration_acceleration + self.left_right_wing_root_position[1].acceleration(),
         );
     }
@@ -581,8 +517,6 @@ impl WingFlexA380 {
 impl SimulationElement for WingFlexA380 {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.wing_lift.accept(visitor);
-
-        self.wing_mass.accept(visitor);
 
         // Calling only left wing as this is only used for dev purpose : live tuning of flex properties
         self.flex_physics[0].accept(visitor);
@@ -1080,7 +1014,6 @@ mod tests {
     use crate::simulation::{Aircraft, SimulationElement, SimulationElementVisitor};
     use std::time::Duration;
 
-    use uom::si::volume::liter;
     use uom::si::{angle::degree, length::meter, velocity::knot};
 
     use ntest::assert_about_eq;
@@ -1131,15 +1064,45 @@ mod tests {
         }
     }
 
+    struct TestFuelPayload {
+        fuel_mass: [Mass; 11],
+    }
+    impl TestFuelPayload {
+        fn default() -> Self {
+            Self {
+                fuel_mass: [Mass::default(); 11],
+            }
+        }
+
+        fn set_fuel(&mut self, tank_id: A380FuelTankType, mass: Mass) {
+            self.fuel_mass[tank_id as usize] = mass;
+        }
+    }
+    impl FuelPayload for TestFuelPayload {
+        fn fore_aft_center_of_gravity(&self) -> f64 {
+            0.
+        }
+
+        fn total_load(&self) -> Mass {
+            Mass::default()
+        }
+
+        fn tank_mass(&self, t: usize) -> Mass {
+            self.fuel_mass[t]
+        }
+    }
+
     struct WingFlexTestAircraft {
         wing_flex: WingFlexA380,
         surfaces_position: TestSurfacesPositions,
+        fuel_payload: TestFuelPayload,
     }
     impl WingFlexTestAircraft {
         fn new(context: &mut InitContext) -> Self {
             Self {
                 wing_flex: WingFlexA380::new(context),
                 surfaces_position: TestSurfacesPositions::default(),
+                fuel_payload: TestFuelPayload::default(),
             }
         }
 
@@ -1166,11 +1129,19 @@ mod tests {
         fn set_right_ailerons(&mut self, positions: [f64; 3]) {
             self.surfaces_position.right_ailerons = positions;
         }
+
+        fn set_fuel(&mut self, tank_id: A380FuelTankType, mass: Mass) {
+            self.fuel_payload.set_fuel(tank_id, mass);
+        }
     }
     impl Aircraft for WingFlexTestAircraft {
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
-            self.wing_flex
-                .update(context, Acceleration::default(), &self.surfaces_position);
+            self.wing_flex.update(
+                context,
+                Acceleration::default(),
+                &self.surfaces_position,
+                &self.fuel_payload,
+            );
 
             println!(
                 "WING HEIGHTS L/O\\R => {:.2}_{:.2}_{:.2}_{:.2}_{:.2}/O\\{:.2}_{:.2}_{:.2}_{:.2}_{:.2}",
@@ -1266,52 +1237,25 @@ mod tests {
         }
 
         fn with_max_fuel(mut self) -> Self {
-            self.write_by_name(
-                A380fuelTanks::LeftInner.to_string().as_str(),
-                Volume::new::<liter>(40000.),
-            );
-            self.write_by_name(
-                A380fuelTanks::LeftFeed2.to_string().as_str(),
-                Volume::new::<liter>(25000.),
-            );
-            self.write_by_name(
-                A380fuelTanks::LeftMid.to_string().as_str(),
-                Volume::new::<liter>(35000.),
-            );
-            self.write_by_name(
-                A380fuelTanks::LeftFeed1.to_string().as_str(),
-                Volume::new::<liter>(25000.),
-            );
-            self.write_by_name(
-                A380fuelTanks::LeftOuter.to_string().as_str(),
-                Volume::new::<liter>(9000.),
-            );
+            self.command(|a| {
+                a.set_fuel(A380FuelTankType::LeftInner, Mass::new::<kilogram>(32000.))
+            });
+            self.command(|a| a.set_fuel(A380FuelTankType::FeedTwo, Mass::new::<kilogram>(20000.)));
+            self.command(|a| a.set_fuel(A380FuelTankType::LeftMid, Mass::new::<kilogram>(28000.)));
+            self.command(|a| a.set_fuel(A380FuelTankType::FeedOne, Mass::new::<kilogram>(20000.)));
+            self.command(|a| a.set_fuel(A380FuelTankType::LeftOuter, Mass::new::<kilogram>(7200.)));
 
-            self.write_by_name(
-                A380fuelTanks::RightInner.to_string().as_str(),
-                Volume::new::<liter>(40000.),
-            );
-            self.write_by_name(
-                A380fuelTanks::RightFeed3.to_string().as_str(),
-                Volume::new::<liter>(25000.),
-            );
-            self.write_by_name(
-                A380fuelTanks::RightMid.to_string().as_str(),
-                Volume::new::<liter>(35000.),
-            );
-            self.write_by_name(
-                A380fuelTanks::RightFeed4.to_string().as_str(),
-                Volume::new::<liter>(25000.),
-            );
-            self.write_by_name(
-                A380fuelTanks::RightOuter.to_string().as_str(),
-                Volume::new::<liter>(9000.),
-            );
-
-            self.write_by_name(
-                "TOTAL WEIGHT",
-                Mass::new::<kilogram>(Self::NOMINAL_WEIGHT_KG + 215000.),
-            );
+            self.command(|a| {
+                a.set_fuel(A380FuelTankType::RightInner, Mass::new::<kilogram>(32000.))
+            });
+            self.command(|a| {
+                a.set_fuel(A380FuelTankType::FeedThree, Mass::new::<kilogram>(20000.))
+            });
+            self.command(|a| a.set_fuel(A380FuelTankType::RightMid, Mass::new::<kilogram>(28000.)));
+            self.command(|a| a.set_fuel(A380FuelTankType::FeedFour, Mass::new::<kilogram>(20000.)));
+            self.command(|a| {
+                a.set_fuel(A380FuelTankType::RightOuter, Mass::new::<kilogram>(7200.))
+            });
 
             self
         }
@@ -1442,7 +1386,7 @@ mod tests {
                 <= 0.1
         );
 
-        test_bed.write_by_name(A380fuelTanks::LeftInner.to_string().as_str(), 1000.);
+        test_bed.command(|a| a.set_fuel(A380FuelTankType::LeftInner, Mass::new::<kilogram>(3000.)));
 
         test_bed.run_with_delta(Duration::from_secs(1));
 
@@ -1470,7 +1414,8 @@ mod tests {
         );
         assert!(node1_mass.get::<kilogram>() >= 3000. && node1_mass.get::<kilogram>() <= 3100.);
 
-        test_bed.write_by_name(A380fuelTanks::LeftFeed2.to_string().as_str(), 1000.);
+        test_bed.command(|a| a.set_fuel(A380FuelTankType::FeedTwo, Mass::new::<kilogram>(3000.)));
+
         test_bed.run_with_delta(Duration::from_secs(1));
 
         node0_mass = test_bed.query(|a| a.wing_flex.flex_physics[0].nodes[0].fuel_mass);
@@ -1530,7 +1475,7 @@ mod tests {
                 <= 0.1
         );
 
-        test_bed.write_by_name(A380fuelTanks::LeftMid.to_string().as_str(), 1000.);
+        test_bed.command(|a| a.set_fuel(A380FuelTankType::LeftMid, Mass::new::<kilogram>(3000.)));
 
         test_bed.run_with_delta(Duration::from_secs(1));
 
@@ -1558,7 +1503,8 @@ mod tests {
         );
         assert!(node2_mass.get::<kilogram>() >= 3000. && node2_mass.get::<kilogram>() <= 3100.);
 
-        test_bed.write_by_name(A380fuelTanks::LeftFeed1.to_string().as_str(), 1000.);
+        test_bed.command(|a| a.set_fuel(A380FuelTankType::FeedOne, Mass::new::<kilogram>(3000.)));
+
         test_bed.run_with_delta(Duration::from_secs(1));
 
         node0_mass = test_bed.query(|a| a.wing_flex.flex_physics[0].nodes[0].fuel_mass);
@@ -1618,7 +1564,7 @@ mod tests {
                 <= 0.1
         );
 
-        test_bed.write_by_name(A380fuelTanks::LeftOuter.to_string().as_str(), 1000.);
+        test_bed.command(|a| a.set_fuel(A380FuelTankType::LeftOuter, Mass::new::<kilogram>(3000.)));
 
         test_bed.run_with_delta(Duration::from_secs(1));
 
