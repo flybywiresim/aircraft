@@ -696,14 +696,13 @@ class CDUPerformancePage {
         const econDesMach = econDesMachPilotEntered ? mcdu.managedSpeedDescendMachPilot : mcdu.managedSpeedDescendMach;
 
         // TODO: Figure out correct condition
-        const showManagedSpeed = hasFromToPair && mcdu.costIndexSet && Number.isFinite(mcdu.costIndex);
-        const managedDescentSpeedCellMach = `{${econDesMachPilotEntered ? "big" : "small"}}${econDesMach !== undefined ? econDesMach.toFixed(2).replace("0.", ".") : "---"}{end}`;
-        const managedDescentSpeedCellSpeed = `{${econDesPilotEntered ? "big" : "small"}}${econDes !== undefined ? econDes.toFixed(0) : "---"}{end}`;
-        const managedDescentSpeedCellSlash = `{${(econDesMachPilotEntered || econDesPilotEntered) ? "big" : "small"}}/{end}`;
+        const showManagedSpeed = hasFromToPair && mcdu.costIndexSet && Number.isFinite(mcdu.costIndex) && econDesMach !== undefined && econDes !== undefined;
+        const managedDescentSpeedCellMach = `{${econDesMachPilotEntered ? "big" : "small"}}${econDesMach.toFixed(2).replace("0.", ".")}{end}`;
+        const managedDescentSpeedCellSpeed = `{${econDesPilotEntered ? "big" : "small"}}/${econDes.toFixed(0)}{end}`;
 
         const managedDescentSpeedCell = showManagedSpeed
-            ? `\xa0${managedDescentSpeedCellMach}${managedDescentSpeedCellSlash}${managedDescentSpeedCellSpeed}[color]cyan`
-            : "{small}\xa0---/---{end}[color]white";
+            ? `\xa0${managedDescentSpeedCellMach}${managedDescentSpeedCellSpeed}[color]cyan`
+            : "\xa0{small}---/---{end}[color]white";
 
         const [selectedSpeedTitle, selectedSpeedCell] = CDUPerformancePage.getDesSelectedTitleAndValue(mcdu, isPhaseActive, isSelected);
         const timeLabel = isFlying ? "\xa0UTC" : "TIME";
