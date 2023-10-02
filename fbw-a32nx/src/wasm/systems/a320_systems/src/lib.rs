@@ -30,8 +30,9 @@ use uom::si::{f64::Length, length::nautical_mile};
 
 use systems::{
     apu::{
-        Aps3200ApuGenerator, Aps3200StartMotor, AuxiliaryPowerUnit, AuxiliaryPowerUnitFactory,
-        AuxiliaryPowerUnitFireOverheadPanel, AuxiliaryPowerUnitOverheadPanel,
+        AirStarterUnit, Aps3200ApuGenerator, Aps3200StartMotor, AuxiliaryPowerUnit,
+        AuxiliaryPowerUnitFactory, AuxiliaryPowerUnitFireOverheadPanel,
+        AuxiliaryPowerUnitOverheadPanel,
     },
     electrical::{Electricity, ElectricitySource, ExternalPowerSource},
     engine::{leap_engine::LeapEngine, reverser_thrust::ReverserForce, EngineFireOverheadPanel},
@@ -49,6 +50,7 @@ pub struct A320 {
     adirs_overhead: AirDataInertialReferenceSystemOverheadPanel,
     air_conditioning: A320AirConditioning,
     apu: AuxiliaryPowerUnit<Aps3200ApuGenerator, Aps3200StartMotor, 1>,
+    asu: AirStarterUnit,
     apu_fire_overhead: AuxiliaryPowerUnitFireOverheadPanel,
     apu_overhead: AuxiliaryPowerUnitOverheadPanel,
     pneumatic_overhead: A320PneumaticOverheadPanel,
@@ -87,6 +89,7 @@ impl A320 {
                 ElectricalBusType::DirectCurrentBattery,
                 ElectricalBusType::DirectCurrentBattery,
             ),
+            asu: AirStarterUnit::new(context),
             apu_fire_overhead: AuxiliaryPowerUnitFireOverheadPanel::new(context),
             apu_overhead: AuxiliaryPowerUnitOverheadPanel::new(context),
             pneumatic_overhead: A320PneumaticOverheadPanel::new(context),
@@ -178,6 +181,8 @@ impl Aircraft for A320 {
         self.apu.update_after_power_distribution();
         self.apu_overhead.update_after_apu(&self.apu);
 
+        self.asu.update();
+
         self.lgcius.update(
             context,
             &self.landing_gear,
@@ -226,6 +231,7 @@ impl Aircraft for A320 {
             &self.pneumatic_overhead,
             &self.engine_fire_overhead,
             &self.apu,
+            &self.asu,
             &self.air_conditioning,
             [self.lgcius.lgciu1(), self.lgcius.lgciu2()],
         );
@@ -251,6 +257,7 @@ impl SimulationElement for A320 {
         self.adirs_overhead.accept(visitor);
         self.air_conditioning.accept(visitor);
         self.apu.accept(visitor);
+        self.asu.accept(visitor);
         self.apu_fire_overhead.accept(visitor);
         self.apu_overhead.accept(visitor);
         self.payload.accept(visitor);

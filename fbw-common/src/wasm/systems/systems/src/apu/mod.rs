@@ -5,19 +5,22 @@ use self::{
 use crate::{
     electrical::{ElectricalElement, ElectricitySource, ProvideFrequency, ProvidePotential},
     overhead::{FirePushButton, OnOffAvailablePushButton, OnOffFaultPushButton},
-    pneumatic::{ControllablePneumaticValve, TargetPressureTemperatureSignal},
+    pneumatic::{
+        ControllablePneumaticValve, PneumaticValveSignal, TargetPressureTemperatureSignal,
+    },
     shared::{
-        ApuAvailable, ApuBleedAirValveSignal, ApuMaster, ApuStart, AuxiliaryPowerUnitElectrical,
-        ContactorSignal, ControllerSignal, ElectricalBusType,
+        ApuAvailable, ApuBleedAirValveSignal, ApuMaster, ApuStart, AsuBleedAirValveSignal,
+        AuxiliaryPowerUnitElectrical, ContactorSignal, ControllerSignal, ElectricalBusType,
     },
     simulation::{
-        SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext, Write,
+        Read, SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter,
+        UpdateContext, Write,
     },
 };
 #[cfg(test)]
 use std::time::Duration;
-use uom::si::f64::*;
 use uom::si::thermodynamic_temperature::degree_celsius;
+use uom::si::{f64::*, pressure::psi};
 
 mod air_intake_flap;
 mod aps3200;
@@ -364,6 +367,55 @@ impl SimulationElement for AuxiliaryPowerUnitOverheadPanel {
         self.start.accept(visitor);
 
         visitor.visit(self);
+    }
+}
+
+pub struct AirStarterUnit {
+    bleed_air_valve_signal: AsuBleedAirValveSignal,
+    bleed_air_pressure: Pressure,
+    bleed_air_temperature: ThermodynamicTemperature,
+    turned_on_id: VariableIdentifier,
+    turned_on: bool,
+}
+impl AirStarterUnit {
+    pub fn new(context: &mut InitContext) -> AirStarterUnit {
+        AirStarterUnit {
+            bleed_air_valve_signal: AsuBleedAirValveSignal::new_closed(),
+            bleed_air_pressure: Pressure::new::<psi>(14.7),
+            bleed_air_temperature: ThermodynamicTemperature::new::<degree_celsius>(15.),
+            turned_on_id: context.get_identifier("ASU_Turned_ON".to_owned()),
+            turned_on: false,
+        }
+    }
+
+    pub fn update(&mut self) {
+        if self.turned_on {
+            self.bleed_air_valve_signal = AsuBleedAirValveSignal::new_open();
+            self.bleed_air_pressure = Pressure::new::<psi>(50.0);
+            self.bleed_air_temperature = ThermodynamicTemperature::new::<degree_celsius>(165.);
+        } else {
+            self.bleed_air_valve_signal = AsuBleedAirValveSignal::new_closed();
+            self.bleed_air_pressure = Pressure::new::<psi>(14.7);
+            self.bleed_air_temperature = ThermodynamicTemperature::new::<degree_celsius>(15.);
+        }
+    }
+}
+impl ControllerSignal<AsuBleedAirValveSignal> for AirStarterUnit {
+    fn signal(&self) -> Option<AsuBleedAirValveSignal> {
+        Some(self.bleed_air_valve_signal)
+    }
+}
+impl ControllerSignal<TargetPressureTemperatureSignal> for AirStarterUnit {
+    fn signal(&self) -> Option<TargetPressureTemperatureSignal> {
+        Some(TargetPressureTemperatureSignal::new(
+            self.bleed_air_pressure,
+            self.bleed_air_temperature,
+        ))
+    }
+}
+impl SimulationElement for AirStarterUnit {
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        self.turned_on = reader.read(&self.turned_on_id)
     }
 }
 

@@ -25,34 +25,21 @@ use systems::{
         WingAntiIcePushButton, WingAntiIceSelected,
     },
     shared::{
-        pid::PidController, update_iterator::MaxStepLoop, ControllerSignal, DelayedTrueLogicGate,
-        ElectricalBusType, ElectricalBuses, EngineBleedPushbutton, EngineCorrectedN1,
-        EngineCorrectedN2, EngineFirePushButtons, EngineStartState, HydraulicColor,
-        LgciuWeightOnWheels, PackFlowValveState, PneumaticBleed, PneumaticValve,
+        pid::PidController, update_iterator::MaxStepLoop, AsuBleedAirValveSignal, ControllerSignal,
+        DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses, EngineBleedPushbutton,
+        EngineCorrectedN1, EngineCorrectedN2, EngineFirePushButtons, EngineStartState,
+        HydraulicColor, LgciuWeightOnWheels, PackFlowValveState, PneumaticBleed, PneumaticValve,
         ReservoirAirPressure,
     },
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
         SimulatorWriter, UpdateContext, VariableIdentifier, Write,
     },
+    valve_signal_implementation,
 };
 
 mod wing_anti_ice;
 use wing_anti_ice::*;
-
-macro_rules! valve_signal_implementation {
-    ($signal_type: ty) => {
-        impl PneumaticValveSignal for $signal_type {
-            fn new(target_open_amount: Ratio) -> Self {
-                Self { target_open_amount }
-            }
-
-            fn target_open_amount(&self) -> Ratio {
-                self.target_open_amount
-            }
-        }
-    };
-}
 
 struct PressureRegulatingValveSignal {
     target_open_amount: Ratio,
@@ -124,6 +111,7 @@ pub struct A320Pneumatic {
     apu_bleed_air_valve: DefaultValve,
 
     air_starter_unit_compression_chamber: CompressionChamber,
+    air_starter_unit_bleed_air_valve: DefaultValve,
 
     wing_anti_ice: WingAntiIceComplex,
 
@@ -179,6 +167,7 @@ impl A320Pneumatic {
             air_starter_unit_compression_chamber: CompressionChamber::new(
                 Volume::new::<cubic_meter>(5.),
             ),
+            air_starter_unit_bleed_air_valve: DefaultValve::new_closed(),
             wing_anti_ice: WingAntiIceComplex::new(context),
             hydraulic_reservoir_bleed_air_valves: [
                 PurelyPneumaticValve::new(),
@@ -237,6 +226,8 @@ impl A320Pneumatic {
         overhead_panel: &A320PneumaticOverheadPanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         apu: &impl ControllerSignal<TargetPressureTemperatureSignal>,
+        asu: &(impl ControllerSignal<TargetPressureTemperatureSignal>
+              + ControllerSignal<AsuBleedAirValveSignal>),
         pack_flow_valve_signals: &impl PackFlowControllers,
         lgciu: [&impl LgciuWeightOnWheels; 2],
     ) {
@@ -249,6 +240,7 @@ impl A320Pneumatic {
                 overhead_panel,
                 engine_fire_push_buttons,
                 apu,
+                asu,
                 pack_flow_valve_signals,
                 lgciu,
             );
@@ -262,10 +254,17 @@ impl A320Pneumatic {
         overhead_panel: &A320PneumaticOverheadPanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         apu: &impl ControllerSignal<TargetPressureTemperatureSignal>,
+        asu: &(impl ControllerSignal<TargetPressureTemperatureSignal>
+              + ControllerSignal<AsuBleedAirValveSignal>),
         pack_flow_valve_signals: &impl PackFlowControllers,
         lgciu: [&impl LgciuWeightOnWheels; 2],
     ) {
         self.apu_compression_chamber.update(apu);
+        self.air_starter_unit_compression_chamber.update(asu);
+        self.air_starter_unit_bleed_air_valve
+            .update_open_amount::<AsuBleedAirValveSignal,dyn ControllerSignal<AsuBleedAirValveSignal>>(
+                asu,
+            );
 
         for bleed_monitoring_computer in self.bleed_monitoring_computers.iter_mut() {
             bleed_monitoring_computer.update(
@@ -333,6 +332,11 @@ impl A320Pneumatic {
         self.apu_bleed_air_valve.update_move_fluid(
             context,
             &mut self.apu_compression_chamber,
+            left_system,
+        );
+        self.air_starter_unit_bleed_air_valve.update_move_fluid(
+            context,
+            &mut self.air_starter_unit_compression_chamber,
             left_system,
         );
 
@@ -1890,11 +1894,11 @@ pub mod tests {
         },
         shared::{
             arinc429::{Arinc429Word, SignStatus},
-            interpolation, ApuBleedAirValveSignal, CabinAltitude, CabinSimulation,
-            ControllerSignal, ElectricalBusType, ElectricalBuses, EmergencyElectricalState,
-            EngineCorrectedN1, EngineFirePushButtons, EngineStartState, HydraulicColor,
-            InternationalStandardAtmosphere, LgciuWeightOnWheels, MachNumber, PackFlowValveState,
-            PneumaticBleed, PneumaticValve, PotentialOrigin,
+            interpolation, ApuBleedAirValveSignal, AsuBleedAirValveSignal, CabinAltitude,
+            CabinSimulation, ControllerSignal, ElectricalBusType, ElectricalBuses,
+            EmergencyElectricalState, EngineCorrectedN1, EngineFirePushButtons, EngineStartState,
+            HydraulicColor, InternationalStandardAtmosphere, LgciuWeightOnWheels, MachNumber,
+            PackFlowValveState, PneumaticBleed, PneumaticValve, PotentialOrigin,
         },
         simulation::{
             test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
@@ -2110,6 +2114,50 @@ pub mod tests {
         }
     }
 
+    struct TestAsu {
+        bleed_air_valve_signal: AsuBleedAirValveSignal,
+        bleed_air_pressure: Pressure,
+        bleed_air_temperature: ThermodynamicTemperature,
+    }
+    impl TestAsu {
+        fn new() -> Self {
+            Self {
+                bleed_air_valve_signal: AsuBleedAirValveSignal::new_closed(),
+                bleed_air_pressure: Pressure::new::<psi>(14.7),
+                bleed_air_temperature: ThermodynamicTemperature::new::<degree_celsius>(165.),
+            }
+        }
+
+        fn update(&self, bleed_valve: &mut impl ControllablePneumaticValve) {
+            bleed_valve.update_open_amount::<AsuBleedAirValveSignal, Self>(self);
+        }
+
+        fn set_bleed_air_pressure(&mut self, pressure: Pressure) {
+            self.bleed_air_pressure = pressure;
+        }
+
+        fn set_bleed_air_temperature(&mut self, temperature: ThermodynamicTemperature) {
+            self.bleed_air_temperature = temperature;
+        }
+
+        fn set_bleed_air_valve_signal(&mut self, signal: AsuBleedAirValveSignal) {
+            self.bleed_air_valve_signal = signal;
+        }
+    }
+    impl ControllerSignal<AsuBleedAirValveSignal> for TestAsu {
+        fn signal(&self) -> Option<AsuBleedAirValveSignal> {
+            Some(self.bleed_air_valve_signal)
+        }
+    }
+    impl ControllerSignal<TargetPressureTemperatureSignal> for TestAsu {
+        fn signal(&self) -> Option<TargetPressureTemperatureSignal> {
+            Some(TargetPressureTemperatureSignal::new(
+                self.bleed_air_pressure,
+                self.bleed_air_temperature,
+            ))
+        }
+    }
+
     struct TestEngineFirePushButtons {
         is_released: [bool; 2],
     }
@@ -2163,6 +2211,7 @@ pub mod tests {
         air_conditioning: TestAirConditioning,
         lgciu: TestLgciu,
         apu: TestApu,
+        asu: TestAsu,
         engine_1: LeapEngine,
         engine_2: LeapEngine,
         pneumatic_overhead_panel: A320PneumaticOverheadPanel,
@@ -2189,6 +2238,7 @@ pub mod tests {
                 air_conditioning: TestAirConditioning::new(context),
                 lgciu: TestLgciu::new(true),
                 apu: TestApu::new(),
+                asu: TestAsu::new(),
                 engine_1: LeapEngine::new(context, 1),
                 engine_2: LeapEngine::new(context, 2),
                 pneumatic_overhead_panel: A320PneumaticOverheadPanel::new(context),
@@ -2264,6 +2314,7 @@ pub mod tests {
                 &self.pneumatic_overhead_panel,
                 &self.fire_pushbuttons,
                 &self.apu,
+                &self.asu,
                 &self.air_conditioning,
                 [&self.lgciu; 2],
             );
