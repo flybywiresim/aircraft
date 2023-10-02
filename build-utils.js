@@ -2,7 +2,6 @@ const dotenv = require("dotenv");
 const path = require("path");
 const childProcess = require("child_process");
 const fs = require("fs");
-const ts = require("typescript");
 
 function defineEnvVars() {
     dotenv.config({ path: '.env.local' });
