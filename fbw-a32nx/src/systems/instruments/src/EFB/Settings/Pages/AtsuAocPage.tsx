@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable max-len */
-import React, { useState } from 'react';
+import React from 'react';
 
 import { usePersistentProperty } from '@flybywiresim/fbw-sdk';
 
@@ -24,68 +24,12 @@ export const AtsuAocPage = () => {
     const [tafSource, setTafSource] = usePersistentProperty('CONFIG_TAF_SRC', 'NOAA');
     const [telexEnabled, setTelexEnabled] = usePersistentProperty('CONFIG_ONLINE_FEATURES_STATUS', 'DISABLED');
 
-    const [simbriefUserId, setSimbriefUserId] = usePersistentProperty('CONFIG_SIMBRIEF_USERID');
-    const [simbriefDisplay, setSimbriefDisplay] = useState(simbriefUserId);
-
     const [autoSimbriefImport, setAutoSimbriefImport] = usePersistentProperty('CONFIG_AUTO_SIMBRIEF_IMPORT', 'DISABLED');
 
     const [hoppieEnabled, setHoppieEnabled] = usePersistentProperty('CONFIG_HOPPIE_ENABLED', 'DISABLED');
     const [hoppieUserId, setHoppieUserId] = usePersistentProperty('CONFIG_HOPPIE_USERID');
 
     const [sentryEnabled, setSentryEnabled] = usePersistentProperty(SENTRY_CONSENT_KEY, SentryConsentState.Refused);
-
-    const getSimbriefUserData = (value: string): Promise<any> => {
-        const SIMBRIEF_URL = 'http://www.simbrief.com/api/xml.fetcher.php?json=1';
-
-        if (!value) {
-            throw new Error('No SimBrief username/pilot ID provided');
-        }
-
-        // The SimBrief API will try both username and pilot ID if either one
-        // isn't valid, so request both if the input is plausibly a pilot ID.
-        let apiUrl = `${SIMBRIEF_URL}&username=${value}`;
-        if (/^\d{1,8}$/.test(value)) {
-            apiUrl += `&userid=${value}`;
-        }
-
-        return fetch(apiUrl)
-            .then((response) => {
-                // 400 status means request was invalid, probably invalid username so preserve to display error properly
-                if (!response.ok && response.status !== 400) {
-                    throw new Error(`Error when making fetch request to SimBrief API. Response status code: ${response.status}`);
-                }
-
-                return response.json();
-            });
-    };
-
-    const getSimbriefUserId = (value: string):Promise<any> => new Promise((resolve, reject) => {
-        if (!value) {
-            reject(new Error('No SimBrief username/pilot ID provided'));
-        }
-        getSimbriefUserData(value)
-            .then((data) => {
-                if (data.fetch.status === 'Error: Unknown UserID') {
-                    reject(new Error('Error: Unknown UserID'));
-                }
-                resolve(data.fetch.userid);
-            })
-            .catch((_error) => {
-                reject(_error);
-            });
-    });
-
-    const handleUsernameInput = (value: string) => {
-        getSimbriefUserId(value).then((response) => {
-            toast.success(`${t('Settings.AtsuAoc.YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo')} ${response}`);
-
-            setSimbriefUserId(response);
-            setSimbriefDisplay(response);
-        }).catch(() => {
-            setSimbriefDisplay(simbriefUserId);
-            toast.error(t('Settings.AtsuAoc.PleaseCheckThatYouHaveCorrectlyEnteredYourSimbBriefUsernameOrPilotId'));
-        });
-    };
 
     const getHoppieResponse = (value: string): Promise<any> => new Promise((resolve, reject) => {
         if (!value || value === '') {
@@ -268,15 +212,6 @@ export const AtsuAocPage = () => {
                     value={hoppieUserId}
                     onBlur={(value) => handleHoppieUsernameInput(value.replace(/\s/g, ''))}
                     onChange={(value) => setHoppieUserId(value)}
-                />
-            </SettingItem>
-
-            <SettingItem name={t('Settings.AtsuAoc.SimBriefUsernamePilotId')}>
-                <SimpleInput
-                    className="text-center w-30"
-                    value={simbriefDisplay}
-                    onBlur={(value) => handleUsernameInput(value.replace(/\s/g, ''))}
-                    onChange={(value) => setSimbriefDisplay(value)}
                 />
             </SettingItem>
         </SettingsPage>

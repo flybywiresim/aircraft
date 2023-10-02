@@ -225,6 +225,10 @@
     },
     "Navigraph": {
       "AirportDoesNotExist": "Airport Does Not Exist",
+      "GoToThirdPartyOptions": {
+        "Title": "Go to 3rd Party Options to link Navigraph account",
+        "Button": "3rd Party Options"
+      },
       "AuthenticateWithNavigraph": "Authenticate with Navigraph",
       "InsufficientEnv": "Insufficient .env File",
       "IntoYourBrowserAndEnterTheCodeBelow": "into your browser and enter the code below\n",
@@ -583,6 +587,26 @@
       "inHg": "inHg"
     },
     "ThirdPartyOptions": {
+      "TT": {
+        "OverrideSimBriefUserID": "Alternative SimBrief user ID to use instead of the linked Navigraph Account"
+      },
+      "NavigraphAccountLink": {
+        "SettingTitle": "Navigraph Account Link",
+        "Connected": "Connected",
+        "Link": "Link Account",
+        "Unlink": "Unlink Account",
+        "SubscriptionStatus": {
+          "None": "None",
+          "Unlimited": "Navigraph Unlimited",
+          "Unknown": "Unknown"
+        },
+        "LoginPage": {
+          "Title": "Navigraph Account Login"
+        }
+      },
+      "OverrideSimBriefUserID": "Override SimBrief User ID",
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "The override SimBrief PilotID has been validated and updated to",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Please check that you have correctly entered your SimBrief username or pilot ID.",
       "GsxFuelEnabled": "GSX Fueling Synchronization",
       "GsxPayloadEnabled": "GSX Payload Synchronization",
       "Title": "3rd Party Options"
