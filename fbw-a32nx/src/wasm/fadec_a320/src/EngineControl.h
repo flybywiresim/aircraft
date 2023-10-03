@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include "RegPolynomials.h"
 #include "SimVars.h"
 #include "Tables.h"
@@ -54,6 +55,9 @@ class EngineControl {
   double engineState;
   double engineStarter;
   double engineIgniter;
+  double engineStarterPressurized;
+  double engineStarterToggled;
+  double engineFuelValveOpen;
 
   double packs;
   double nai;
@@ -1164,7 +1168,7 @@ class EngineControl {
   /// <summary>
   /// Update cycle at deltaTime
   /// </summary>
-  void update(double deltaTime, double simulationTime) {
+  void update(double deltaTime, double simulationTime, EventsTriggered eventsTriggered) {
     double prevAnimationDeltaTime;
     double simN1highest = 0;
 
@@ -1210,11 +1214,29 @@ class EngineControl {
         deltaN2 = simN2 - simN2LeftPre;
         simN2LeftPre = simN2;
         timer = simVars->getEngine1Timer();
+        engineStarterPressurized = simVars->getLeftSystemPressure();
+        engineFuelValveOpen = simVars->getValve(1);
+        engineStarterToggled = eventsTriggered.Engine1StarterToggled;
       } else {
         engineState = simVars->getEngine2State();
         deltaN2 = simN2 - simN2RightPre;
         simN2RightPre = simN2;
         timer = simVars->getEngine2Timer();
+        engineStarterPressurized = simVars->getRightSystemPressure();
+        engineFuelValveOpen = simVars->getValve(2);
+        engineStarterToggled = eventsTriggered.Engine2StarterToggled;
+      }
+      if (!engineStarter && engineStarterToggled && engineFuelValveOpen && engineStarterPressurized >= 27) {
+        std::string command = engine == 1 ? "1 (>K:SET_STARTER1_HELD)" : "1 (>K:SET_STARTER2_HELD)";
+
+        execute_calculator_code(command.c_str(), nullptr, nullptr, nullptr);
+      } else if (engineStarter && engineStarterToggled && engineFuelValveOpen < 1) {
+        std::string command1 = engine == 1 ? "0 (>K:SET_STARTER1_HELD)" : "0 (>K:SET_STARTER2_HELD)";
+
+        execute_calculator_code(command1.c_str(), nullptr, nullptr, nullptr);
+        std::string command2 = engine == 1 ? "0 (>K:STARTER1_SET)" : "0 (>K:STARTER2_SET)";
+
+        execute_calculator_code(command2.c_str(), nullptr, nullptr, nullptr);
       }
 
       switch (int(engineState)) {

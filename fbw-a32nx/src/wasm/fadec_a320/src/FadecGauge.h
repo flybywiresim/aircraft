@@ -36,6 +36,7 @@ class FadecGauge {
   double previousSimulationTime = 0;
   SimulationData simulationData = {};
   SimulationDataLivery simulationDataLivery = {};
+  EventsTriggered eventsTriggered = {};
 
   /// <summary>
   /// Initializes the connection to SimConnect
@@ -69,6 +70,9 @@ class FadecGauge {
       SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::SimulationDataTypeId, "SIMULATION RATE", "NUMBER");
 
       SimConnect_AddToDataDefinition(hSimConnect, DataTypesID::AcftInfo, "ATC ID", NULL, SIMCONNECT_DATATYPE_STRING32);
+      // SimConnect Input Event Definitions
+      addInputDataDefinition(hSimConnect, 0, Events::Engine1StarterToggled, "TOGGLE_STARTER1", true);
+      addInputDataDefinition(hSimConnect, 0, Events::Engine2StarterToggled, "TOGGLE_STARTER2", true);
 
       std::cout << "FADEC: SimConnect registrations complete." << std::endl;
       return true;
@@ -77,6 +81,35 @@ class FadecGauge {
     std::cout << "FADEC: SimConnect failed." << std::endl;
 
     return false;
+  }
+
+  bool addInputDataDefinition(const HANDLE connectionHandle,
+                              const SIMCONNECT_DATA_DEFINITION_ID groupId,
+                              const SIMCONNECT_CLIENT_EVENT_ID eventId,
+                              const std::string& eventName,
+                              const bool maskEvent) {
+    HRESULT result = SimConnect_MapClientEventToSimEvent(connectionHandle, eventId, eventName.c_str());
+
+    if (result != S_OK) {
+      // failed -> abort
+      return false;
+    }
+
+    result = SimConnect_AddClientEventToNotificationGroup(connectionHandle, groupId, eventId, maskEvent ? TRUE : FALSE);
+    if (result != S_OK) {
+      // failed -> abort
+      return false;
+    }
+
+    result = SimConnect_SetNotificationGroupPriority(connectionHandle, groupId, SIMCONNECT_GROUP_PRIORITY_HIGHEST_MASKABLE);
+
+    if (result != S_OK) {
+      // failed -> abort
+      return false;
+    }
+
+    // success
+    return true;
   }
 
   bool isRegistrationFound() { return simulationDataLivery.atc_id[0] != 0; }
@@ -105,6 +138,9 @@ class FadecGauge {
   bool onUpdate(double deltaTime) {
     if (isConnected == true) {
       // read simulation data from simconnect
+      eventsTriggered.Engine1StarterToggled = false;
+      eventsTriggered.Engine2StarterToggled = false;
+
       simConnectReadData();
       // detect pause
       if ((simulationData.simulationTime == previousSimulationTime) || (simulationData.simulationTime < 0.2)) {
@@ -116,7 +152,7 @@ class FadecGauge {
       // store previous simulation time
       previousSimulationTime = simulationData.simulationTime;
       // update engines
-      EngineControlInstance.update(calculatedSampleTime, simulationData.simulationTime);
+      EngineControlInstance.update(calculatedSampleTime, simulationData.simulationTime, eventsTriggered);
     }
 
     return true;
@@ -181,6 +217,11 @@ class FadecGauge {
         // connection lost
         std::cout << "FADEC: Received SimConnect connection quit message" << std::endl;
         break;
+      case SIMCONNECT_RECV_ID_EVENT:
+        // get event
+        std::cout << "FADEC: Received SimConnect event capture message" << std::endl;
+        simConnectProcessEvent(static_cast<SIMCONNECT_RECV_EVENT*>(pData));
+        break;
 
       case SIMCONNECT_RECV_ID_SIMOBJECT_DATA:
         // process data
@@ -195,6 +236,23 @@ class FadecGauge {
         std::cout << std::endl;
         break;
 
+      default:
+        break;
+    }
+  }
+
+  void simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* event) {
+    switch (event->uEventID) {
+      case Events::Engine1StarterToggled: {
+        eventsTriggered.Engine1StarterToggled = true;
+        std::cout << "FADEC: Engine 1 Starter Toggle received" << std::endl;
+        break;
+      }
+      case Events::Engine2StarterToggled: {
+        eventsTriggered.Engine2StarterToggled = true;
+        std::cout << "FADEC: Engine 2 Starter Toggle received" << std::endl;
+        break;
+      }
       default:
         break;
     }
