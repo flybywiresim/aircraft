@@ -7,6 +7,7 @@ import { FlightPlanElement, FlightPlanLeg } from '@fmgc/flightplanning/new/legs/
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 import { ProcedureSegment } from '@fmgc/flightplanning/new/segments/ProcedureSegment';
+import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
 
 export class DepartureEnrouteTransitionSegment extends ProcedureSegment<ProcedureTransition> {
     class = SegmentClass.Departure
@@ -54,7 +55,9 @@ export class DepartureEnrouteTransitionSegment extends ProcedureSegment<Procedur
 
         this.allLegs.length = 0;
 
-        const mappedOriginEnrouteTransitionLegs = matchingOriginEnrouteTransition.legs.map((leg) => FlightPlanLeg.fromProcedureLeg(this, leg, matchingOriginEnrouteTransition.ident));
+        const mappedOriginEnrouteTransitionLegs = matchingOriginEnrouteTransition.legs.map(
+            (leg) => FlightPlanLeg.fromProcedureLeg(this, leg, matchingOriginEnrouteTransition.ident, WaypointConstraintType.CLB),
+        );
         this.allLegs.push(...mappedOriginEnrouteTransitionLegs);
         this.strung = false;
 

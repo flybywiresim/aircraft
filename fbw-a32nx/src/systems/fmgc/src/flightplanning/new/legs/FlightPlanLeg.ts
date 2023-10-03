@@ -14,7 +14,6 @@ import { EnrouteSegment } from '@fmgc/flightplanning/new/segments/EnrouteSegment
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
 import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
-import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { MagVar } from '@microsoft/msfs-sdk';
 
 /**
@@ -28,6 +27,7 @@ export interface SerializedFlightPlanLeg {
     effectiveType: LegType,
     modifiedHold: HoldData | undefined,
     defaultHold: HoldData | undefined,
+    constraintType: WaypointConstraintType | undefined,
     cruiseStep: CruiseStepEntry | undefined,
 }
 
@@ -77,6 +77,7 @@ export class FlightPlanLeg {
             modifiedHold: this.modifiedHold ? JSON.parse(JSON.stringify(this.modifiedHold)) : undefined,
             defaultHold: this.defaultHold ? JSON.parse(JSON.stringify(this.defaultHold)) : undefined,
             cruiseStep: this.cruiseStep ? JSON.parse(JSON.stringify(this.cruiseStep)) : undefined,
+            constraintType: this.constraintType,
         };
     }
 
@@ -92,6 +93,7 @@ export class FlightPlanLeg {
         leg.type = serialized.effectiveType;
         leg.modifiedHold = serialized.modifiedHold;
         leg.defaultHold = serialized.defaultHold;
+        leg.constraintType = serialized.constraintType;
         leg.cruiseStep = serialized.cruiseStep;
 
         return leg;
@@ -208,19 +210,10 @@ export class FlightPlanLeg {
         }, waypoint.ident, '', undefined, undefined, false);
     }
 
-    static fromProcedureLeg(segment: FlightPlanSegment, procedureLeg: ProcedureLeg, procedureIdent: string): FlightPlanLeg {
+    static fromProcedureLeg(segment: FlightPlanSegment, procedureLeg: ProcedureLeg, procedureIdent: string, constraintType?: WaypointConstraintType): FlightPlanLeg {
         const [ident, annotation] = procedureLegIdentAndAnnotation(procedureLeg, procedureIdent);
 
         const flightPlanLeg = new FlightPlanLeg(segment, procedureLeg, ident, annotation, undefined, procedureLeg.rnp, procedureLeg.overfly);
-
-        let constraintType: WaypointConstraintType;
-        if (segment.class === SegmentClass.Departure) {
-            constraintType = WaypointConstraintType.CLB;
-        } else if (segment.class === SegmentClass.Arrival) {
-            constraintType = WaypointConstraintType.DES;
-        } else {
-            constraintType = WaypointConstraintType.Unknown;
-        }
 
         flightPlanLeg.constraintType = constraintType;
 
