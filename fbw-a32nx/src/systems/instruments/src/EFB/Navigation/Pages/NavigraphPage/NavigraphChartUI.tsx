@@ -1,5 +1,11 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import React, { useEffect, useState } from 'react';
 import { ArrowReturnRight } from 'react-bootstrap-icons';
+import { emptyNavigraphCharts, NavigraphAirportCharts } from '@flybywiresim/fbw-sdk';
+import { useNavigraph } from '../../../Apis/Navigraph/Navigraph';
 import { t } from '../../../translation';
 import { NavigraphChartSelector, OrganizedChart } from './NavigraphChartSelector';
 import { NavigationTab, editTabProperty } from '../../../Store/features/navigationPage';
@@ -8,7 +14,6 @@ import { useAppDispatch, useAppSelector } from '../../../Store/store';
 import { SelectGroup, SelectItem } from '../../../UtilComponents/Form/Select';
 import { SimpleInput } from '../../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { ScrollableContainer } from '../../../UtilComponents/ScrollableContainer';
-import { useNavigraph, emptyNavigraphCharts, NavigraphAirportCharts } from '../../../Apis/Navigraph/Navigraph';
 import { ChartViewer } from '../../Navigation';
 
 export const NavigraphChartUI = () => {

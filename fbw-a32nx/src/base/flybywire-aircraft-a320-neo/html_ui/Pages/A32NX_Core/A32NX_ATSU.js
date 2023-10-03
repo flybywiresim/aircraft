@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 function translateAtsuMessageType(type) {
     switch (type) {
         case AtsuCommon.AtsuMessageType.Freetext:
@@ -38,18 +42,19 @@ const lbsToKg = (value) => {
  * @param {() => void} updateView
  */
 const getSimBriefOfp = (mcdu, updateView, callback = () => {}) => {
-    const simBriefUserId = NXDataStore.get("CONFIG_SIMBRIEF_USERID", "");
+    const navigraphUsername = NXDataStore.get("NAVIGRAPH_USERNAME", "");
+    const overrideSimBriefUserID = NXDataStore.get('CONFIG_OVERRIDE_SIMBRIEF_USERID', '');
 
-    if (!simBriefUserId) {
-        mcdu.setScratchpadMessage(NXFictionalMessages.noSimBriefUser);
-        throw new Error("No SimBrief pilot ID provided");
+    if (!navigraphUsername && !overrideSimBriefUserID) {
+        mcdu.setScratchpadMessage(NXFictionalMessages.noNavigraphUser);
+        throw new Error("No Navigraph username provided");
     }
 
     mcdu.simbrief["sendStatus"] = "REQUESTING";
 
     updateView();
 
-    return SimBriefApi.getSimBriefOfp(simBriefUserId)
+    return SimBriefApi.getSimBriefOfp(navigraphUsername, overrideSimBriefUserID)
         .then(data => {
             mcdu.simbrief["units"] = data.params.units;
             mcdu.simbrief["route"] = data.general.route;
