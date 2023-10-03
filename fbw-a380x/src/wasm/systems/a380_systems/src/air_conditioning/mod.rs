@@ -514,9 +514,9 @@ impl A380AirConditioningSystem {
         self.trim_air_system.update(
             context,
             &self.mixer_unit,
-            &[
-                &self.tadd.taprv_controller()[0],
-                &self.tadd.taprv_controller()[1],
+            [
+                self.tadd.taprv_controller()[0],
+                self.tadd.taprv_controller()[1],
             ],
             &[&self.tadd; 18],
         );

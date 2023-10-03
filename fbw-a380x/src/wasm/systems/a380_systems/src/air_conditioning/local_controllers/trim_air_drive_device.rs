@@ -98,17 +98,18 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirDriveDevice<ZONES, ENGINES
         self.active_channel.update_fault();
         self.stand_by_channel.update_fault();
 
-        self.fault = if self.active_channel.has_fault() {
-            if self.stand_by_channel.has_fault() {
-                Some(TaddFault::BothChannelsFault)
-            } else {
-                self.switch_active_channel();
+        self.fault = match (
+            self.active_channel.has_fault(),
+            self.stand_by_channel.has_fault(),
+        ) {
+            (true, true) => Some(TaddFault::BothChannelsFault),
+            (false, false) => None,
+            (ac, _) => {
+                if ac {
+                    self.switch_active_channel();
+                }
                 Some(TaddFault::OneChannelFault)
             }
-        } else if self.stand_by_channel.has_fault() {
-            Some(TaddFault::OneChannelFault)
-        } else {
-            None
         };
     }
 
@@ -125,7 +126,7 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirDriveDevice<ZONES, ENGINES
     ) -> bool {
         acs_overhead.hot_air_pushbutton_is_on(hot_air_id)
             && !self.active_channel.has_fault()
-            && ((pneumatic.pack_flow_valve_is_open(1)) || (pneumatic.pack_flow_valve_is_open(2)))
+            && (pneumatic.pack_flow_valve_is_open(1) || pneumatic.pack_flow_valve_is_open(2))
             && !should_close_taprv
         // && !self.duct_overheat_monitor()
         // && !any_tav_has_fault

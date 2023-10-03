@@ -315,11 +315,10 @@ impl OperatingChannel {
     }
 
     pub fn update_fault(&mut self) {
-        let failure_is_active = if self.failure.is_some() {
-            self.failure.as_ref().unwrap().is_active()
-        } else {
-            false
-        };
+        let failure_is_active = self
+            .failure
+            .as_ref()
+            .map_or(false, |failure| failure.is_active());
 
         self.fault = if !self.is_powered || failure_is_active {
             OperatingChannelFault::Fault
@@ -339,8 +338,8 @@ impl OperatingChannel {
 
 impl SimulationElement for OperatingChannel {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-        if self.failure.is_some() {
-            self.failure.as_mut().unwrap().accept(visitor);
+        if let Some(failure) = &mut self.failure {
+            failure.accept(visitor);
         }
         visitor.visit(self);
     }
@@ -674,7 +673,7 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystem<ZONES, ENGINES> {
         let trim_air_pressure_regulating_valves = taprv_ids
             .iter()
             .map(|id| TrimAirPressureRegulatingValve::new(*id))
-            .collect::<Vec<TrimAirPressureRegulatingValve>>();
+            .collect();
 
         Self {
             duct_temperature_id,
@@ -698,29 +697,39 @@ impl<const ZONES: usize, const ENGINES: usize> TrimAirSystem<ZONES, ENGINES> {
         &mut self,
         context: &UpdateContext,
         mixer_air: &MixerUnit<ZONES>,
-        taprv_controller: &[&impl ControllerSignal<TrimAirValveSignal>],
+        taprv_controller: [impl ControllerSignal<TrimAirValveSignal>; 2],
         tav_controller: &[&impl TrimAirControllers],
     ) {
-        self.trim_air_pressure_regulating_valves
-            .iter_mut()
-            .for_each(|taprv| {
-                taprv.update(
-                    context,
-                    &mut self.pack_mixer_container,
-                    *taprv_controller
-                        .iter()
-                        .min_by_key(|signal| {
-                            signal
-                                .signal()
-                                .unwrap_or_default()
-                                .target_open_amount()
-                                .get::<percent>() as u64
-                        })
-                        .unwrap(),
-                )
-            });
+        // This section needs to be modified if in the future this code is used for an aircaft
+        // with more than one TAPRV with a non matching number of TAPRV controllers
+        if self.trim_air_pressure_regulating_valves.len() == taprv_controller.len() {
+            self.trim_air_pressure_regulating_valves
+                .iter_mut()
+                .zip(taprv_controller)
+                .for_each(|(taprv, controller)| {
+                    taprv.update(context, &mut self.pack_mixer_container, &controller)
+                })
+        } else {
+            self.trim_air_pressure_regulating_valves
+                .iter_mut()
+                .for_each(|taprv| {
+                    taprv.update(
+                        context,
+                        &mut self.pack_mixer_container,
+                        taprv_controller
+                            .iter()
+                            .min_by_key(|signal| {
+                                signal
+                                    .signal()
+                                    .unwrap_or_default()
+                                    .target_open_amount()
+                                    .get::<percent>() as u64
+                            })
+                            .unwrap(),
+                    )
+                });
+        }
 
-        // Fixme: A380 will need to take both TAPRV
         for (id, tav) in self.trim_air_valves.iter_mut().enumerate() {
             tav.update(
                 context,

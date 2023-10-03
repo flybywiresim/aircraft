@@ -185,17 +185,18 @@ impl<const ZONES: usize, const ENGINES: usize> AirConditioningSystemController<Z
         self.active_channel.update_fault();
         self.stand_by_channel.update_fault();
 
-        self.internal_failure = if self.active_channel.has_fault() {
-            if self.stand_by_channel.has_fault() {
-                Some(AcscFault::BothChannelsFault)
-            } else {
-                self.switch_active_channel();
+        self.internal_failure = match (
+            self.active_channel.has_fault(),
+            self.stand_by_channel.has_fault(),
+        ) {
+            (true, true) => Some(AcscFault::BothChannelsFault),
+            (false, false) => None,
+            (ac, _) => {
+                if ac {
+                    self.switch_active_channel();
+                }
                 Some(AcscFault::OneChannelFault)
             }
-        } else if self.stand_by_channel.has_fault() {
-            Some(AcscFault::OneChannelFault)
-        } else {
-            None
         };
     }
 
@@ -667,7 +668,7 @@ impl ZoneController {
         self.duct_demand_temperature =
             if self.galley_fan_failure.is_active() && matches!(acsc_id, AcscId::Acsc2(_)) {
                 // Cabin zone temperature sensors are ventilated by air extracted by this fan, cabin temperature regulation is lost
-                // Cabin inlet duct is constant at 15C, cockpit air is unnafected
+                // Cabin inlet duct is constant at 15C, cockpit air is unaffected
                 ThermodynamicTemperature::new::<degree_celsius>(15.)
             } else {
                 self.calculate_duct_temp_demand(
@@ -1303,7 +1304,7 @@ impl PneumaticValveSignal for TrimAirValveSignal {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Default)]
 pub struct TrimAirPressureRegulatingValveController {
     should_open_taprv: bool,
 }
@@ -1327,12 +1328,6 @@ impl ControllerSignal<TrimAirValveSignal> for TrimAirPressureRegulatingValveCont
         } else {
             Some(TrimAirValveSignal::new_closed())
         }
-    }
-}
-
-impl Default for TrimAirPressureRegulatingValveController {
-    fn default() -> Self {
-        Self::new()
     }
 }
 
@@ -2521,9 +2516,9 @@ mod acs_controller_tests {
             self.trim_air_system.update(
                 context,
                 &self.mixer_unit,
-                &[
-                    &self.acsc[0].trim_air_pressure_regulating_valve_controller(),
-                    &self.acsc[1].trim_air_pressure_regulating_valve_controller(),
+                [
+                    self.acsc[0].trim_air_pressure_regulating_valve_controller(),
+                    self.acsc[1].trim_air_pressure_regulating_valve_controller(),
                 ],
                 &[&self.acsc[0], &self.acsc[1]],
             );

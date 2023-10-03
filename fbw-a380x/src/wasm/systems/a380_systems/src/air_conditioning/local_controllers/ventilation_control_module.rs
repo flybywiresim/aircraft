@@ -98,17 +98,18 @@ impl VentilationControlModule {
         self.active_channel.update_fault();
         self.stand_by_channel.update_fault();
 
-        self.fault = if self.active_channel.has_fault() {
-            if self.stand_by_channel.has_fault() {
-                Some(VcmFault::BothChannelsFault)
-            } else {
-                self.switch_active_channel();
+        self.fault = match (
+            self.active_channel.has_fault(),
+            self.stand_by_channel.has_fault(),
+        ) {
+            (true, true) => Some(VcmFault::BothChannelsFault),
+            (false, false) => None,
+            (ac, _) => {
+                if ac {
+                    self.switch_active_channel();
+                }
                 Some(VcmFault::OneChannelFault)
             }
-        } else if self.stand_by_channel.has_fault() {
-            Some(VcmFault::OneChannelFault)
-        } else {
-            None
         };
     }
 

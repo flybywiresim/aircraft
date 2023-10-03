@@ -440,9 +440,9 @@ impl A320AirConditioningSystem {
         self.trim_air_system.update(
             context,
             &self.mixer_unit,
-            &[
-                &self.acsc[0].trim_air_pressure_regulating_valve_controller(),
-                &self.acsc[1].trim_air_pressure_regulating_valve_controller(),
+            [
+                self.acsc[0].trim_air_pressure_regulating_valve_controller(),
+                self.acsc[1].trim_air_pressure_regulating_valve_controller(),
             ],
             &[&self.acsc[0], &self.acsc[1], &self.acsc[1]],
         );
