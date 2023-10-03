@@ -381,7 +381,7 @@ class CDUFlightPlanPage {
                             altitudeToFormat = verticalWaypoint.altitude;
                         }
 
-                        altitudeConstraint = formatAltitudeOrLevel(altitudeToFormat);
+                        altitudeConstraint = formatAltitudeOrLevel(mcdu, altitudeToFormat);
 
                         if (verticalWaypoint) {
                             altPrefix = verticalWaypoint.isAltitudeConstraintMet ? "{magenta}*{end}" : "{amber}*{end}";
@@ -393,7 +393,7 @@ class CDUFlightPlanPage {
                     // In this case `altitudeConstraint is actually just the predictedAltitude`
                     } else if (vnavPredictionsMapByWaypoint && !hasAltConstraint) {
                         if (verticalWaypoint && verticalWaypoint.altitude) {
-                            altitudeConstraint = formatAltitudeOrLevel(verticalWaypoint.altitude);
+                            altitudeConstraint = formatAltitudeOrLevel(mcdu, verticalWaypoint.altitude);
                         } else {
                             altitudeConstraint = "-----";
                         }
@@ -538,7 +538,7 @@ class CDUFlightPlanPage {
                 };
                 let altColor = "white";
                 if (!shouldHidePredictions && Number.isFinite(pwp.flightPlanInfo.altitude)) {
-                    altitudeConstraint.alt = formatAltitudeOrLevel(pwp.flightPlanInfo.altitude);
+                    altitudeConstraint.alt = formatAltitudeOrLevel(mcdu, pwp.flightPlanInfo.altitude);
                     altColor = color;
                 }
 
@@ -933,10 +933,11 @@ function legHasAltConstraint(leg) {
 
 /**
  * Format a numerical altitude to a string of the form "NNNNN" or "FLNNN" dpeending on the transition altitude
+ * @param {*} mcdu Reference to the MCDU instance
  * @param {Number} alt The altitude to format
  * @returns {String} The formatted altitude string
  */
-function formatAltitudeOrLevel(alt) {
+function formatAltitudeOrLevel(mcdu, alt) {
     const activePlan = mcdu.flightPlanService.active;
     // TODO: Consider transition level
     const transitionAltitude = activePlan.performanceData.transitionAltitude.get();
