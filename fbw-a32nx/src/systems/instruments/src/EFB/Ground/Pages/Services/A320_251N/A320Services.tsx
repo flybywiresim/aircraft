@@ -560,6 +560,30 @@ export const A320Services: React.FC = () => {
                 >
                     <DoorClosedFill size={36} />
                 </GroundServiceButton>
+
+                {/* Wheel Chocks and Security Cones are only visual information. To reuse styling */}
+                {/* the ServiceButtonWrapper has been re-used. */}
+                {!!wheelChocksEnabled && (
+                    <div className={`flex flex-row items-center space-x-6 py-6 px-6 cursor-pointer ${(wheelChocksVisible) ? 'text-green-500' : 'text-gray-500'}`}>
+                        <div className={`flex justify-center items-end -ml-2 -mr-[2px] ${(wheelChocksVisible) ? 'text-green-500' : 'text-gray-500'}`}>
+                            <Chock size="12" stroke="4" />
+                            <Wheel size="36" stroke="5" className="-mx-0.5" />
+                            <Chock size="12" stroke="4" />
+                        </div>
+                        <h1 className="flex-shrink-0 text-2xl font-medium text-current">
+                            {t('Ground.Services.WheelChocks')}
+                        </h1>
+                    </div>
+                )}
+
+                {!!conesEnabled && (
+                    <div className={`flex flex-row items-center space-x-6 py-6 px-6 cursor-pointer ${(conesVisible) ? 'text-green-500' : 'text-gray-500'}`}>
+                        <ConeStriped size="38" stroke="1.5" className="mr-2" />
+                        <h1 className="flex-shrink-0 text-2xl font-medium text-current">
+                            {t('Ground.Services.Cones')}
+                        </h1>
+                    </div>
+                )}
             </ServiceButtonWrapper>
 
             <ServiceButtonWrapper xl={900} y={24} className="">
@@ -622,32 +646,6 @@ export const A320Services: React.FC = () => {
                     <ArchiveFill size={36} />
                 </GroundServiceButton>
 
-            </ServiceButtonWrapper>
-
-            {/* Wheel Chocks and Security Cones are only visual information. To reuse styling */}
-            {/* the ServiceButtonWrapper has been re-used. */}
-            <ServiceButtonWrapper xr={800} y={600} className="border-0 divide-y-0">
-                {!!wheelChocksEnabled && (
-                    <div className={`flex flex-row items-center space-x-6 py-6 px-6 cursor-pointer ${(wheelChocksVisible) ? 'text-green-500' : 'text-gray-500'}`}>
-                        <div className={`flex justify-center items-end -ml-2 -mr-[2px] ${(wheelChocksVisible) ? 'text-green-500' : 'text-gray-500'}`}>
-                            <Chock size="12" stroke="4" />
-                            <Wheel size="36" stroke="5" className="-mx-0.5" />
-                            <Chock size="12" stroke="4" />
-                        </div>
-                        <h1 className="flex-shrink-0 text-2xl font-medium text-current">
-                            {t('Ground.Services.WheelChocks')}
-                        </h1>
-                    </div>
-                )}
-
-                {!!conesEnabled && (
-                    <div className={`flex flex-row items-center space-x-6 py-6 px-6 cursor-pointer ${(conesVisible) ? 'text-green-500' : 'text-gray-500'}`}>
-                        <ConeStriped size="38" stroke="1.5" className="mr-2" />
-                        <h1 className="flex-shrink-0 text-2xl font-medium text-current">
-                            {t('Ground.Services.Cones')}
-                        </h1>
-                    </div>
-                )}
             </ServiceButtonWrapper>
 
             {/* Visual indications for tug and doors */}
