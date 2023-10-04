@@ -13,4 +13,4 @@ const outFile = 'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/fbw-a32nx/
 
 const srcDir = '../fbw-common/src/systems/datalink/common';
 
-esbuild.build(createModuleBuild('fbw-a32nx', 'AtsuCommon', path.join(rootDir, srcDir, '/src/index.ts'), outFile, srcDir));
+esbuild.build(createModuleBuild('fbw-a32nx', 'AtsuCommon', path.join(rootDir, srcDir, '/src/index.ts'), outFile, 'fbw-common/src/systems/datalink/common'));

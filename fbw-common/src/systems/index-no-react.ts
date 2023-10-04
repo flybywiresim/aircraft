@@ -1,3 +1,2 @@
-export * from './instruments/src/react';
 export * from './instruments/src';
 export * from './shared/src';

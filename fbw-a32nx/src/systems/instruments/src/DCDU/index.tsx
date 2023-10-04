@@ -78,7 +78,7 @@ const DCDU: React.FC = () => {
     const [state, setState] = useState((isColdAndDark) ? DcduState.Off : DcduState.On);
     const [systemStatusMessage, setSystemStatusMessage] = useState(MailboxStatusMessage.NoMessage);
     const [systemStatusTimer, setSystemStatusTimer] = useState<number | null>(null);
-    const [screenTimeout, setScreenTimeout] = useState<NodeJS.Timeout | null>(null);
+    const [screenTimeout, setScreenTimeout] = useState<number | null>(null);
     const [messages, setMessages] = useState(new Map<number, DcduMessageBlock>());
     const publisherRef = useRef<Publisher<AtsuMailboxMessages> | null>();
     const messagesRef = useRef<Map<number, DcduMessageBlock>>();

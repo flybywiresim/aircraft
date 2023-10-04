@@ -16,7 +16,7 @@ import { Geo } from '@fmgc/utils/Geo';
 import { PathVector, pathVectorLength, PathVectorType } from '@fmgc/guidance/lnav/PathVector';
 import { CourseChange } from '@fmgc/guidance/lnav/transitions/utilss/CourseChange';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
-import { TurnDirection } from '@fmgc/types/fstypes/FSEnums';
+import { TurnDirection } from '@flybywiresim/fbw-sdk';
 import {
     arcLength,
     getIntermediatePoint,

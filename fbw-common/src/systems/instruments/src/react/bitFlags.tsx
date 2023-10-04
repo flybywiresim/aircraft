@@ -1,43 +1,7 @@
-/* eslint-disable function-paren-newline */
-import { BitFlags, SeatFlags } from 'shared/src/bitFlags';
+import { SeatFlags } from "../../../shared/src";
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { useSimVarList } from './simVars';
 import { useUpdate } from './hooks';
-
-export const useBitFlags = (
-    name: string,
-    refreshInterval: number = 200,
-): [
-    BitFlags,
-    (setter: BitFlags) => void
-] => {
-    const lastUpdate = useRef(Date.now() - refreshInterval - 1);
-
-    const [stateValue, setStateValue] = useState<number>(() => SimVar.GetSimVarValue(`L:${name}`, 'number'));
-
-    const updateCallback = useCallback(() => {
-        const delta = Date.now() - lastUpdate.current;
-
-        if (delta >= refreshInterval) {
-            lastUpdate.current = Date.now();
-
-            const newValue = SimVar.GetSimVarValue(`L:${name}`, 'number');
-            if (newValue !== stateValue) {
-                setStateValue(newValue);
-                setter(new BitFlags(newValue));
-            }
-        }
-    }, [name, stateValue, refreshInterval]);
-
-    useUpdate(updateCallback);
-
-    const setter = useCallback((value: BitFlags) => {
-        SimVar.SetSimVarValue(`L:${name}`, 'string', value.toString()).catch(console.error).then();
-        setStateValue(value.toNumber());
-    }, [name, stateValue]);
-
-    return [new BitFlags(stateValue), setter];
-};
 
 export const useSeatFlags = (
     name: string,

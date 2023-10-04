@@ -24,7 +24,7 @@
       "@shared/*": ["./shared/src/*"],
       "@tcas/*": ["./tcas/src/*"],
       "@typings/*": ["../../../fbw-common/src/typings/*"],
-      "@flybywiresim/fbw-sdk": ["../../../fbw-common/src/systems/index.ts"]
+      "@flybywiresim/fbw-sdk": ["../../../fbw-common/src/systems/index.ts"],
     }
   },
 }

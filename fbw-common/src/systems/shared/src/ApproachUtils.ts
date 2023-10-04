@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { RunwayUtils } from '@flybywiresim/fbw-sdk';
+import { ExtendedApproachType } from "@microsoft/msfs-sdk";
 
 export type ApproachNameComponents = {
     // the approach type, e.g. ILS or RNAV
@@ -117,7 +118,7 @@ export class ApproachUtils {
         (approach: RawApproach): string;
     } = ApproachUtils.formatLongApproachName;
 
-    public static approachTypeString(type: ApproachType): string {
+    public static approachTypeString(type: ExtendedApproachType): string {
         switch (type) {
         case ApproachType.APPROACH_TYPE_GPS:
             return 'GPS';

@@ -6,10 +6,10 @@
 import { FlightPhaseManager, getFlightPhaseManager } from '@fmgc/flightphase';
 import { FlightPlans } from '@fmgc/flightplanning/FlightPlanManager';
 import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
-import { LegType } from '@fmgc/types/fstypes/FSEnums';
 import { FlightPlanManager } from '@fmgc/wtsdk';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { bearingTo, distanceTo } from 'msfs-geo';
+import { LegType } from "@flybywiresim/fbw-sdk";
 
 interface IlsCourseSlopeData {
     course: number | null,

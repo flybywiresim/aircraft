@@ -13,7 +13,7 @@ import { GuidanceParameters } from '@fmgc/guidance/ControlLaws';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { CILeg } from '@fmgc/guidance/lnav/legs/CI';
 import { arcDistanceToGo, arcGuidance, arcLength, maxBank, minBank } from '@fmgc/guidance/lnav/CommonGeometry';
-import { TurnDirection } from '@fmgc/types/fstypes/FSEnums';
+import { TurnDirection } from '@flybywiresim/fbw-sdk';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { Geo } from '@fmgc/utils/Geo';
 import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
