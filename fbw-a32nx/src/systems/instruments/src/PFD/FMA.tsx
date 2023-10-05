@@ -376,7 +376,7 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
             this.displayModeChangedPath(true);
             text = `
                                 <path class="NormalStroke White" d="m25.114 1.8143v13.506h-16.952v-13.506z" />
-                                <text class="FontMedium MiddleAlign White" x="16.782249" y="7.1280665">MAN</text>
+                                <text class="FontMedium MiddleAlign White" x="17.052249" y="7.1280665">MAN</text>
                                 <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">TOGA</text>
                             `;
             break;
@@ -384,7 +384,7 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
             this.displayModeChangedPath(true);
             text = `<g>
                                 <path class="NormalStroke White" d="m31.521 1.8143v13.506h-30.217v-13.506z" />
-                                <text class="FontMedium MiddleAlign White" x="16.782249" y="7.1280665">MAN</text>
+                                <text class="FontMedium MiddleAlign White" x="17.052249" y="7.1280665">MAN</text>
                                 <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">GA SOFT</text>
                             </g>`;
             break;
@@ -393,11 +393,11 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
             const FlexTemp = Math.round(this.flexTemp);
             const FlexText = FlexTemp >= 0 ? (`+${FlexTemp}`) : FlexTemp.toString();
             text = `<g>
-                                <path class="NormalStroke White" d="m30.521 1.8143v13.506h-27.217v-13.506z"></path>
+                                <path class="NormalStroke White" d="m30.521 1.8143v13.506h-27.217v-13.506z" />
                                 <text class="FontMedium MiddleAlign White" x="17.052249" y="7.1280665">MAN</text>
                                 <text class="FontMedium MiddleAlign White" x="9.669141" y="14.351689">FLX</text>
                                 <text class="FontMedium MiddleAlign Cyan" x="24.099141" y="14.351689">
-                                <tspan>${FlexText}</tspan>
+                               ${FlexText}
                                 </text>
                             </g>`;
 
@@ -406,7 +406,7 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
             this.displayModeChangedPath(true);
             text = `<g>
                                 <path class="NormalStroke White" d="m25.114 1.8143v13.506h-16.952v-13.506z" />
-                                <text class="FontMedium MiddleAlign White" x="16.782249" y="7.1280665">MAN</text>
+                                <text class="FontMedium MiddleAlign White" x="17.052249" y="7.1280665">MAN</text>
                                 <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">DTO</text>
                             </g>`;
             break;
@@ -414,7 +414,7 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
             this.displayModeChangedPath(true);
             text = `<g>
                                 <path class="NormalStroke White" d="m25.114 1.8143v13.506h-16.952v-13.506z" />
-                                <text class="FontMedium MiddleAlign White" x="16.782249" y="7.1280665">MAN</text>
+                                <text class="FontMedium MiddleAlign White" x="17.052249" y="7.1280665">MAN</text>
                                 <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">MCT</text>
                             </g>`;
             break;
@@ -422,7 +422,7 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
             this.displayModeChangedPath(true);
             text = `<g>
                                 <path class="NormalStroke Amber" d="m25.114 1.8143v13.506h-16.952v-13.506z" />
-                                <text class="FontMedium MiddleAlign White" x="16.782249" y="7.1280665">MAN</text>
+                                <text class="FontMedium MiddleAlign White" x="17.052249" y="7.1280665">MAN</text>
                                 <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">THR</text>
                             </g>`;
             break;
