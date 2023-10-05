@@ -1,4 +1,7 @@
-import { FlightLevel } from '@fmgc/guidance/vnav/verticalFlightPlan/VerticalFlightPlan';
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { FlightPlanManager } from '@fmgc/wtsdk';
 import { FmgcComponent } from './FmgcComponent';
 

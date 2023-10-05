@@ -18,7 +18,8 @@ import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
 import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { GuidanceController, GuidanceComponent } from '@fmgc/guidance';
+import { GuidanceController } from '../GuidanceController';
+import { GuidanceComponent } from '../GuidanceComponent';
 
 /**
  * Represents the current turn state of the LNAV driver

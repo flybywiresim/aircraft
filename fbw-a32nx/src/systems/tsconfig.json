@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
+    "target": "ES2017",
     "baseUrl": ".",
     "resolveJsonModule" : true,
     "skipLibCheck": true,

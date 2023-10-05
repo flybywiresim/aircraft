@@ -1,14 +1,15 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
+    "target": "ES2017",
     "baseUrl": ".",
     "resolveJsonModule" : true,
     "typeRoots": [
-      "../typings",
+      "../typings"
     ],
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "jsx": "react",
+    "skipLibCheck": true,
     "paths": {
       "@datalink/aoc": ["datalink/aoc/src/index.ts"],
       "@datalink/atc": ["datalink/atc/src/index.ts"],
