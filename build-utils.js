@@ -114,6 +114,10 @@ function typecheckingPlugin() {
                 try {
                     childProcess.execSync('npx tsc --noEmit -p .', { cwd: tsConfigDir });
                 } catch (e) {
+                    if (!('stdout' in e) || !e.stdout) {
+                        throw e;
+                    }
+
                     const tscErrors = e.stdout.toString().split('\n').filter((err) => err.trim() !== '');
 
                     errors.push(...tscErrors.map((err) => {
