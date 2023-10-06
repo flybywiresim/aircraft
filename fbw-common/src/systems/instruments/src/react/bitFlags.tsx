@@ -9,7 +9,9 @@ export const useSeatFlags = (
     refreshInterval: number = 200,
 ): [
     SeatFlags,
-    (setter: SeatFlags) => void
+    (
+        setter: SeatFlags
+    ) => void
 ] => {
     const lastUpdate = useRef(Date.now() - refreshInterval - 1);
 
@@ -55,8 +57,14 @@ export const useSeatMap = (
 ) : [
         SeatFlags[],
         SeatFlags[],
-        ((setter: SeatFlags, index: number) => void),
-        ((setter: SeatFlags, index: number) => void),
+        (
+            setter: SeatFlags,
+            index: number
+        ) => void,
+        (
+            setter: SeatFlags,
+            index: number
+        ) => void,
     ] => {
     const [
         desiredVarNames, desiredVarUnits,
