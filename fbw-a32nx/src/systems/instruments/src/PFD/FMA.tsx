@@ -522,7 +522,7 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
     render(): VNode {
         return (
             <>
-                <path ref={this.modeChangedPathRef} visibility="hidden" class="NormalStroke White" d="m0.70556 1.8143h30.927v6.0476h-30.927z" />
+                <path ref={this.modeChangedPathRef} visibility="hidden" class="NormalStroke White" d="m3.3 1.8143h27.127v6.0476h-27.127z" />
                 <g ref={this.cellRef} />
             </>
         );
