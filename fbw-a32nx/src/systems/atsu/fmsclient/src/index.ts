@@ -490,6 +490,8 @@ export class FmsClient {
             return this.datalinkStatus.satellite;
         case 'hf':
             return this.datalinkStatus.hf;
+        default:
+            return DatalinkStatusCode.NotInstalled;
         }
     }
 
@@ -501,6 +503,8 @@ export class FmsClient {
             return this.datalinkMode.satellite;
         case 'hf':
             return this.datalinkMode.hf;
+        default:
+            return DatalinkModeCode.None;
         }
     }
 }
