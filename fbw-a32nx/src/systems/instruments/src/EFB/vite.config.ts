@@ -27,29 +27,28 @@ export default defineConfig({
         react({ jsxRuntime: 'classic' }),
         tsconfigPaths({ root: '../../../' }),
         replaceCodePlugin([
-                {
+            {
+                filter: /\.tsx?$/,
+                replace: {
+                    from: 'process.env.VITE_BUILD',
+                    to: 'true',
+                },
+            },
+            ...envVarsToReplace.map((it) => {
+                const value = process.env[it];
+
+                if (!value) {
+                    throw new Error(`Not env value for ${it}.`);
+                }
+
+                return ({
                     filter: /\.tsx?$/,
                     replace: {
-                        from: 'process.env.VITE_BUILD',
-                        to: 'true',
+                        from: `process.env.${it}`,
+                        to: `'${value}'`,
                     },
-                },
-                ...envVarsToReplace.map((it) => {
-                    const value = process.env[it];
-
-                    if (!value) {
-                        throw new Error(`Not env value for ${it}.`);
-                    }
-
-                    return ({
-                        filter: /\.tsx?$/,
-                        replace: {
-                            from: `process.env.${it}`,
-                            to: `'${value}'`,
-                        },
-                    });
-                }),
-            ],
-        ),
+                });
+            }),
+        ]),
     ],
 });

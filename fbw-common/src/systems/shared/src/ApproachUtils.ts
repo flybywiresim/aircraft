@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { RunwayUtils } from '@flybywiresim/fbw-sdk';
-import { ExtendedApproachType } from "@microsoft/msfs-sdk";
+import { ExtendedApproachType } from '@microsoft/msfs-sdk';
 
 export type ApproachNameComponents = {
     // the approach type, e.g. ILS or RNAV

@@ -8,7 +8,7 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-console */
 import { MathUtils, Arinc429Word, GenericDataListenerSync, NXDataStore, UpdateThrottler, LocalSimVar } from '@flybywiresim/fbw-sdk';
-import { Coordinates } from "msfs-geo";
+import { Coordinates } from 'msfs-geo';
 import { TcasComponent } from '../lib/TcasComponent';
 import {
     TCAS_CONST as TCAS, JS_NPCPlane,

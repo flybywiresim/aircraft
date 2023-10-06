@@ -1,5 +1,5 @@
-import { SeatFlags } from "../../../shared/src";
 import { useCallback, useMemo, useRef, useState } from 'react';
+import { SeatFlags } from '../../../shared/src';
 import { useSimVarList } from './simVars';
 import { useUpdate } from './hooks';
 

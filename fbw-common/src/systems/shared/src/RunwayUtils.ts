@@ -1,7 +1,7 @@
 // Copyright (c) 2023 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { RunwayDesignatorChar } from "./navdata";
+import { RunwayDesignatorChar } from './navdata';
 
 export class RunwayUtils {
     public static runwayString(runwayNumber: number, runwayDesignator: RunwayDesignatorChar): string {

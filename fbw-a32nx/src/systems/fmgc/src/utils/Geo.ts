@@ -16,7 +16,7 @@ import {
 } from 'msfs-geo';
 import { AFLeg } from '@fmgc/guidance/lnav/legs/AF';
 import { TFLeg } from '@fmgc/guidance/lnav/legs/TF';
-import { XFLeg } from "@fmgc/guidance/lnav/legs/XF";
+import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
 
 const sin = (input: Degrees) => Math.sin(input * (Math.PI / 180));
 
