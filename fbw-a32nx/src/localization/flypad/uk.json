@@ -157,12 +157,7 @@
       "DeboardConfirmationConfirm": "Deboard",
       "DeboardConfirmationTitle": "Deboard all Passengers?",
       "EstimatedDurationUnit": "minutes",
-      "Gsx": {
-        "PayloadSyncEnabled": "GSX Payload Sync Enabled",
-        "CrewBoardConfirmationTitle": "Would you like to board crew?",
-        "CrewBoardConfirm": "Yes",
-        "CrewBoardCancel": "No"
-      },
+      "GSXPayloadSyncEnabled": "GSX Payload Sync Enabled",
       "GW": "GW",
       "GWCG": "GW CG",
       "LoadingTime": "Loading Time",
@@ -230,11 +225,11 @@
     },
     "Navigraph": {
       "AirportDoesNotExist": "Airport Does Not Exist",
-      "GoToThirdPartyOptions": {
-        "Title": "Go to 3rd Party Options to link Navigraph account",
-        "Button": "3rd Party Options"
-      },
       "AuthenticateWithNavigraph": "Authenticate with Navigraph",
+      "GoToThirdPartyOptions": {
+        "Button": "3rd Party Options",
+        "Title": "Go to 3rd Party Options to link Navigraph account"
+      },
       "InsufficientEnv": "Insufficient .env File",
       "IntoYourBrowserAndEnterTheCodeBelow": "into your browser and enter the code below\n",
       "LoadingMsg": "Loading",
@@ -461,16 +456,7 @@
     "TugDirection": "Tug Direction",
     "TugInTransit": "Waiting for Tug/Pin",
     "TugSpeed": "Tug Speed",
-    "UseControllerInput": "Use Controller Input",
-    "Gsx": {
-      "RequestPushback": "Request Pushback",
-      "NoseRight": "Nose Right",
-      "NoseLeft": "Nose Left",
-      "Straight": "Straight",
-      "ConfirmEngineStart": "Confirm Good Start",
-      "AbortPushback": "Abort Pushback",
-      "StopPushback": "Stop Pushback"
-    }
+    "UseControllerInput": "Use Controller Input"
   },
   "QuickControls": {
     "AlignAdirs": "Align ADIRS",
@@ -507,16 +493,9 @@
       "PaxSigns": "PAX Signs",
       "RmpVhfSpacing": "RMP VHF Spacing",
       "Satcom": "Satcom",
-      "Select": "Select",
       "ThrustReductionHeight": "Thrust Reduction Height (ft)",
       "Title": "Aircraft Options / Pin Programs",
       "WeightUnit": "Weight Unit"
-    },
-    "AutomaticCallOuts": {
-      "Title": "Automatic Call Outs",
-      "FiveHundredGlide": "Inhibited When Glideslope Captured",
-      "ResetStandardConfig": "Reset To Standard Configuration",
-      "Reset": "Reset"
     },
     "AtsuAoc": {
       "AtisAtcSource": "ATIS/ATC Source",
@@ -601,30 +580,28 @@
       "inHg": "inHg"
     },
     "ThirdPartyOptions": {
+      "GsxFuelEnabled": "GSX Fueling Synchronization",
+      "GsxPayloadEnabled": "GSX Payload Synchronization",
+      "NavigraphAccountLink": {
+        "Connected": "Connected",
+        "Link": "Link Account",
+        "LoginPage": {
+          "Title": "Navigraph Account Login"
+        },
+        "SettingTitle": "Navigraph Account Link",
+        "SubscriptionStatus": {
+          "None": "None",
+          "Unlimited": "Navigraph Unlimited"
+        },
+        "Unlink": "Unlink Account"
+      },
+      "OverrideSimBriefUserID": "Override SimBrief User ID",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Please check that you have correctly entered your SimBrief username or pilot ID.",
       "TT": {
         "OverrideSimBriefUserID": "Alternative SimBrief user ID to use instead of the linked Navigraph Account"
       },
-      "NavigraphAccountLink": {
-        "SettingTitle": "Navigraph Account Link",
-        "Connected": "Connected",
-        "Link": "Link Account",
-        "Unlink": "Unlink Account",
-        "SubscriptionStatus": {
-          "None": "None",
-          "Unlimited": "Navigraph Unlimited",
-          "Unknown": "Unknown"
-        },
-        "LoginPage": {
-          "Title": "Navigraph Account Login"
-        }
-      },
-      "OverrideSimBriefUserID": "Override SimBrief User ID",
-      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "The override SimBrief PilotID has been validated and updated to",
-      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Please check that you have correctly entered your SimBrief username or pilot ID.",
-      "GsxFuelEnabled": "GSX Fueling Synchronization",
-      "GsxPayloadEnabled": "GSX Payload Synchronization",
-      "GsxPushbackEnabled": "GSX Pushback Enabled",
-      "Title": "3rd Party Options"
+      "Title": "3rd Party Options",
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "The override SimBrief PilotID has been validated and updated to"
     },
     "ThrottleConfig": {
       "Apply": "Apply",
@@ -638,7 +615,7 @@
       "ErrorOverlapMsg": "overlaps with",
       "IndependentAxis": "Independent Axis",
       "LoadFromFile": "Load from File",
-      "PleaseEnterAValidDeadzone": "Please enter a valid deadzone",
+      "PleaseEnterAValidDeadzone": "Please enter a valid deadband",
       "ResetToDefaults": "Reset to Defaults",
       "ReverseFull": "Reverse Full",
       "ReverseIdle": "Reverse Idle",
