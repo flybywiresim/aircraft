@@ -33,12 +33,6 @@ class A32NX_APU {
         // Until everything that depends on the APU is moved into WASM,
         // we still need to synchronise some of the WASM state with the sim's state.
         const simApuBleedAirOn = SimVar.GetSimVarValue("BLEED AIR APU", "Bool");
-        if (psi > 0 && !simApuBleedAirOn) {
-            // This event will open the sim's APU bleed air valve.
-            //SimVar.SetSimVarValue("K:APU_BLEED_AIR_SOURCE_TOGGLE", "Number", 0);
-        } else if (psi === 0 && simApuBleedAirOn) {
-            // This event will close the sim's APU bleed air valve.
-            //SimVar.SetSimVarValue("K:APU_BLEED_AIR_SOURCE_TOGGLE", "Number", 0);
-        }
     }
+
 }

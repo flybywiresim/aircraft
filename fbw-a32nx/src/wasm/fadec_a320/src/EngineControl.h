@@ -1,13 +1,14 @@
 #pragma once
 
 #include <string>
+#include "Arinc429Utils.h"
 #include "RegPolynomials.h"
 #include "SimVars.h"
 #include "Tables.h"
 #include "ThrustLimits.h"
 #include "common.h"
 
-#include "ini_type_conversion.h"
+#include <ini_type_conversion.h>
 
 #define FILENAME_FADEC_CONF_DIRECTORY "\\work\\AircraftStates\\"
 #define FILENAME_FADEC_CONF_FILE_EXTENSION ".ini"
@@ -735,6 +736,9 @@ class EngineControl {
     double rightPump1 = simVars->getPump(3);
     double rightPump2 = simVars->getPump(6);
 
+    base_arinc_429 apuNpercentWord = Arinc429Utils::fromSimVar(simVars->getAPUrpmPercent());
+    double apuNpercent = Arinc429Utils::valueOr(apuNpercentWord, 0);
+
     // Check Ready & Development State for UI
     isReady = simVars->getIsReady();
     devState = simVars->getDeveloperState();
@@ -911,6 +915,11 @@ class EngineControl {
 
       /// apu fuel consumption for this frame in pounds
       double apuFuelConsumption = simVars->getLineFlow(18) * fuelWeightGallon * deltaTime;
+
+      // check if APU is actually running instead of just the ASU which doesnt consume fuel
+      if (apuNpercent <= 0.0) {
+        apuFuelConsumption = 0.0;
+      }
 
       //--------------------------------------------
       // Final Fuel levels for left and right inner tanks

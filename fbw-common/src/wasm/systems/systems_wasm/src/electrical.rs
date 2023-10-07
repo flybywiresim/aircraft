@@ -41,8 +41,6 @@ pub(super) fn auxiliary_power_unit(
     is_available_variable: Variable,
     apu_fuel_valve_number: u8,
     apu_fuel_pump_number: u8,
-    asu_fuel_valve_number: u8,
-    asu_fuel_pump_number: u8,
 ) -> impl FnOnce(&mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
     move |builder: &mut MsfsAspectBuilder| {
         builder.on_change(
@@ -61,31 +59,19 @@ pub(super) fn auxiliary_power_unit(
                 let asu_turned_on = to_bool(values[3]);
                 let apu_bleed_valve_open = to_bool(values[4]);
 
-                if is_available {
-                    set_fuel_valve_and_pump(apu_fuel_valve_number, apu_fuel_pump_number, true);
-                } else {
-                    set_fuel_valve_and_pump(apu_fuel_valve_number, apu_fuel_pump_number, false);
-                }
-
-              /*   if asu_turned_on {
-
-                } else {
-
-                } */
-
                 if (is_available || asu_turned_on) && !msfs_apu_is_on {
                     println!(
                         "Starting MSFS APU with asu:{} apu_available:{} msfs_apu:{} msfs apu raw:{}",
                         asu_turned_on, is_available, msfs_apu_is_on,values[1]
                     );
-                    set_fuel_valve_and_pump(asu_fuel_valve_number, asu_fuel_pump_number, true);
+                    set_fuel_valve_and_pump(apu_fuel_valve_number, apu_fuel_pump_number, true);
                     start_apu();
                 } else if !is_available && !asu_turned_on && msfs_apu_is_on {
                     println!(
                         "Stopping MSFS APU with asu:{} apu_available:{} msfs_apu:{} msfs apu raw:{}",
                         asu_turned_on, is_available, msfs_apu_is_on,values[1]
                     );
-                    set_fuel_valve_and_pump(asu_fuel_valve_number, asu_fuel_pump_number, false);
+                    set_fuel_valve_and_pump(apu_fuel_valve_number, apu_fuel_pump_number, false);
                     stop_apu();
                 }
 
