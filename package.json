@@ -2,6 +2,9 @@
   "name": "a32nx",
   "version": "0.11.0",
   "edition": "development",
+  "imports": {
+    "#build-utils": "./build-utils.js"
+  },
   "scripts": {
     "====== A320 =================": "==========================================",
 

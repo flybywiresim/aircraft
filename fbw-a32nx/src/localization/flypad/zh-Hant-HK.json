@@ -131,6 +131,7 @@
       "Defueling": "減油",
       "EstimatedDuration": "預計需要時間 (分鐘)",
       "EstimatedTime": "估計時間",
+      "GSXFuelSyncEnabled": "GSX Fuel Sync Enabled",
       "LeftInnerTank": "左內油箱",
       "LeftOuterTank": "左外油箱",
       "ReadyToStart": "預備開始",
@@ -156,6 +157,7 @@
       "DeboardConfirmationConfirm": "Deboard",
       "DeboardConfirmationTitle": "Deboard all Passengers?",
       "EstimatedDurationUnit": "minutes",
+      "GSXPayloadSyncEnabled": "GSX Payload Sync Enabled",
       "GW": "GW",
       "GWCG": "GW CG",
       "LoadingTime": "Loading Time",
@@ -224,6 +226,10 @@
     "Navigraph": {
       "AirportDoesNotExist": "無此機場",
       "AuthenticateWithNavigraph": "Navigraph 驗證",
+      "GoToThirdPartyOptions": {
+        "Button": "3rd Party Options",
+        "Title": "Go to 3rd Party Options to link Navigraph account"
+      },
       "InsufficientEnv": ".env 文件不足",
       "IntoYourBrowserAndEnterTheCodeBelow": "進入您的瀏覽器，然後輸入下面的代碼\n",
       "LoadingMsg": "載入中...",
@@ -576,7 +582,26 @@
     "ThirdPartyOptions": {
       "GsxFuelEnabled": "GSX Fueling Synchronization",
       "GsxPayloadEnabled": "GSX Payload Synchronization",
-      "Title": "3rd Party Options"
+      "NavigraphAccountLink": {
+        "Connected": "Connected",
+        "Link": "Link Account",
+        "LoginPage": {
+          "Title": "Navigraph Account Login"
+        },
+        "SettingTitle": "Navigraph Account Link",
+        "SubscriptionStatus": {
+          "None": "None",
+          "Unlimited": "Navigraph Unlimited"
+        },
+        "Unlink": "Unlink Account"
+      },
+      "OverrideSimBriefUserID": "Override SimBrief User ID",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Please check that you have correctly entered your SimBrief username or pilot ID.",
+      "TT": {
+        "OverrideSimBriefUserID": "Alternative SimBrief user ID to use instead of the linked Navigraph Account"
+      },
+      "Title": "3rd Party Options",
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "The override SimBrief PilotID has been validated and updated to"
     },
     "ThrottleConfig": {
       "Apply": "應用",
