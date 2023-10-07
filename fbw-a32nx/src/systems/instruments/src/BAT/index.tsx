@@ -4,8 +4,8 @@
 
 import './style.scss';
 import React, { useCallback, useRef, useState } from 'react';
-import { render } from '@instruments/common/index';
 import { useSimVar, useUpdate } from '@flybywiresim/fbw-sdk';
+import { render } from '@instruments/common/index';
 
 const BASE_DELAY_MS = 1_000;
 const DIGIT_REFRESH_INTERVAL_MS = 130;
