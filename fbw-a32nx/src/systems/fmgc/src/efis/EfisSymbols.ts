@@ -223,7 +223,8 @@ export class EfisSymbols {
                 if (DEBUG) {
                     console.time(`upsert symbol ${symbol.databaseId}`);
                 }
-                const symbolIdx = symbols.findIndex((s) => s.databaseId === symbol.databaseId);
+                // for symbols with no databaseId, we don't bother trying to de-duplicate as we cannot do it safely
+                const symbolIdx = symbol.databaseId ? symbols.findIndex((s) => s.databaseId === symbol.databaseId) : -1;
                 if (symbolIdx !== -1) {
                     const oldSymbol = symbols.splice(symbolIdx, 1)[0];
                     symbol.constraints = symbol.constraints ?? oldSymbol.constraints;

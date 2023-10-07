@@ -939,7 +939,7 @@ function legHasAltConstraint(leg) {
  */
 function formatAltitudeOrLevel(mcdu, alt) {
     const activePlan = mcdu.flightPlanService.active;
-    // TODO: Consider transition level
+    // TODO: Consider transition level (fms-v2)
     const transitionAltitude = activePlan.performanceData.transitionAltitude.get();
 
     if (transitionAltitude >= 100 && alt > transitionAltitude) {

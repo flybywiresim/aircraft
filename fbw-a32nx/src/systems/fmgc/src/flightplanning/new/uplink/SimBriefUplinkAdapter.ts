@@ -309,8 +309,13 @@ export class SimBriefUplinkAdapter {
         fms.onUplinkDone();
     }
 
-    static async downloadOfpForUserID(userID: string): Promise<ISimbriefData> {
-        const url = `${SIMBRIEF_API_URL}&userid=${userID}`;
+    static async downloadOfpForUserID(username: string, userID?: string): Promise<ISimbriefData> {
+        let url = `${SIMBRIEF_API_URL}`;
+        if (userID) {
+            url += `&userid=${userID}`;
+        } else {
+            url += `&username=${username}`;
+        }
 
         let ofp: ISimbriefData;
         try {
