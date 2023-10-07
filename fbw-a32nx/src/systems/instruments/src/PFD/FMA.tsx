@@ -611,7 +611,7 @@ class A3Cell extends DisplayComponent<A3CellProps> {
 
     render(): VNode {
         return (
-            <text class={this.classSub} x="16.989958" y="21.641243">{this.textSub}</text>
+            <text class={this.classSub} x="16.989958" y="20.341243">{this.textSub}</text>
         );
     }
 }
@@ -938,7 +938,7 @@ class B2Cell extends DisplayComponent<CellProps> {
     render(): VNode {
         return (
             <g>
-                <text class={this.classSub} x={this.xposSub} y="14.329653">{this.text1Sub}</text>
+                <text class={this.classSub} x={this.xposSub} y="13.629653">{this.text1Sub}</text>
                 <text class="FontMediumSmaller MiddleAlign Cyan" x="54.59803" y="14.382949">{this.text2Sub}</text>
             </g>
         );
@@ -1122,7 +1122,7 @@ class C2Cell extends DisplayComponent<CellProps> {
 
     render(): VNode {
         return (
-            <text class="FontMediumSmaller MiddleAlign Cyan" x="84.734184" y="14.440415">{this.textSub}</text>
+            <text class="FontMediumSmaller MiddleAlign Cyan" x="84.234184" y="13.629653">{this.textSub}</text>
         );
     }
 }
