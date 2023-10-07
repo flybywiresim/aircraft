@@ -10,11 +10,12 @@ import { A320Payload } from './A320_251N/A320Payload';
 import { A380Payload } from './A380_842/A380Payload';
 import { useAppSelector } from '../../../Store/store';
 import { isSimbriefDataLoaded } from '../../../Store/features/simBrief';
+import { GsxMenuStates } from '../../Ground';
 
 interface PayloadProps {
-    gsxMenuCurrentState: Number,
+    gsxMenuCurrentState: GsxMenuStates,
     gsxPayloadSyncEnabled: boolean,
-    setGsxMenuCurrentState: (state: number) => void,
+    setGsxMenuCurrentState: (state: GsxMenuStates) => void,
     selectGsxMenuChoice: (choice: number) => void,
 }
 

@@ -32,8 +32,8 @@ interface A320Props {
     setBoardingStarted: (boardingStarted: any) => void,
     setBoardingRate: (boardingRate: any) => void,
 
-    gsxMenuCurrentState: Number,
-    setGsxMenuCurrentState: (state: number) => void,
+    gsxMenuCurrentState: GsxMenuStates,
+    setGsxMenuCurrentState: (state: GsxMenuStates) => void,
     selectGsxMenuChoice: (choice: number) => void,
     gsxPayloadSyncEnabled: boolean
 }
@@ -316,8 +316,8 @@ export const A320Payload: React.FC<A320Props> = ({
             <PromptModal
                 title={`${t('Ground.Payload.Gsx.CrewBoardConfirmationTitle')}`}
                 bodyText=""
-                confirmText={`${t('Ground.Payload.Gsx.GsxCrewBoardConfirm')}`}
-                cancelText={`${t('Ground.Payload.Gsx.GsxCrewBoardCancel')}`}
+                confirmText={`${t('Ground.Payload.Gsx.CrewBoardConfirm')}`}
+                cancelText={`${t('Ground.Payload.Gsx.CrewBoardCancel')}`}
                 onCancel={() => handleGsxBoardingConfirmation(true)}
                 onConfirm={() => handleGsxBoardingConfirmation(false)}
             />,

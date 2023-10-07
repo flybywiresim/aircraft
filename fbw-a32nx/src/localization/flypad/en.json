@@ -460,10 +460,10 @@
     "UseControllerInput": "Use Controller Input",
     "Gsx": {
       "RequestPushback": "Request Pushback",
-      "NoseRight": "Nose Right/Tail Left",
-      "NoseLeft": "Nose Left/Tail Right",
+      "NoseRight": "Nose Right",
+      "NoseLeft": "Nose Left",
       "Straight": "Straight",
-      "ConfirmEngineStart": "Confirm Good Engine Start",
+      "ConfirmEngineStart": "Confirm Good Start",
       "AbortPushback": "Abort Pushback",
       "StopPushback": "Stop Pushback"
     }

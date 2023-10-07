@@ -17,9 +17,12 @@ export interface StatefulButton {
 }
 
 export enum GsxMenuStates {
-    PREP,
-    PREFLIGHT_ADD_SERV,
-    BOARDING
+    PREP = 'prep',
+    PUSHBACK_REQ = 'pushback requested',
+    PUSHBACK_DIR = 'pushback direction',
+    PUSHBACK = 'pushback in progress',
+    ENGINE_START = 'confirm engine start',
+    PUSHBACK_DONE = 'pushback complete'
 }
 
 export enum GsxMenuPrepChoices {
@@ -33,6 +36,16 @@ export enum GsxMenuPrepChoices {
     ADD_SERV= 7,
 }
 
+export const fetchGsxTooltip = () => fetch('../../../ingamepanels/fsdt_gsx_panel/tooltip')
+    .then((response) => response.text())
+    .then((text) => text.split(/\r?\n/))
+    .catch((error) => console.error(`Failed to open GSX Tooltip due to ${error}`));
+
+export const fetchGsxMenu = () => fetch('../../../ingamepanels/fsdt_gsx_panel/menu')
+    .then((response) => response.text())
+    .then((text) => text.split(/\r?\n/))
+    .catch((error) => console.error(`Failed to open GSX Menu due to ${error}`));
+
 export const Ground = () => {
     // GSX states
     const [gsxPayloadSyncEnabled] = usePersistentNumberProperty('GSX_PAYLOAD_SYNC', 0);
@@ -42,7 +55,7 @@ export const Ground = () => {
     const [, setGsxMenuOpen] = useSimVar('L:FSDT_GSX_MENU_OPEN', 'Number', 223);
     const [, setGsxMenuChoice] = useSimVar('L:FSDT_GSX_MENU_CHOICE', 'Number', 223);
     const [gsxExternalToggle, setGsxExternalToggle] = useSimVar('K:EXTERNAL_SYSTEM_TOGGLE', '', 223);
-    const [gsxMenuCurrentState, setGsxMenuCurrentState] = useState<Number>(GsxMenuStates.PREP);
+    const [gsxState, setGsxState] = useState<GsxMenuStates>(GsxMenuStates.PREP);
     const [gsxCallback, setGsxCallback] = useState(() => () => {});
     const [isGsxCalledBack, setIsGsxCalledBack] = useState(true);
     const [checkIfOperatorActive, setCheckIfOperatorActive] = useState(false);
@@ -70,9 +83,7 @@ export const Ground = () => {
         console.log('GSX: Opening menu');
         setGsxMenuOpen(1);
         setTimeout(() => {
-            fetch('../../../ingamepanels/fsdt_gsx_panel/menu')
-                .then((response) => response.text())
-                .then((text) => text.split(/\r?\n/))
+            fetchGsxMenu()
                 .then((lines) => {
                     if (lines[0] === 'Select handling operator' || lines[0] === 'Select catering operator') {
                         console.log('GSX: operator/caterer menu is active, selecting GSX choice');
@@ -80,12 +91,13 @@ export const Ground = () => {
                         setTimeout(() => {
                             console.log('GSX: setting menu choice to -1');
                             setGsxMenuChoice(-1);
+                            console.log('GSX: resetting external toggle');
+                            setGsxExternalToggle(0);
                         }, 150);
                         return;
                     }
                     console.log('GSX: operator/caterer menu is not active, moving on');
-                })
-                .catch((e) => console.error(`Failed to open GSX Menu due to: ${e}`));
+                });
         }, 150);
     };
 
@@ -99,6 +111,7 @@ export const Ground = () => {
                         gsxCallback();
                         setCheckIfOperatorActive(true);
                         setIsGsxCalledBack(true);
+                        console.log('GSX: resetting external toggle');
                         setGsxExternalToggle(0);
                     }, 150);
 
@@ -131,9 +144,9 @@ export const Ground = () => {
             alias: t('Ground.Payload.Title'),
             component: <Payload
                 gsxPayloadSyncEnabled={gsxPayloadSyncEnabled === 1}
-                gsxMenuCurrentState={gsxMenuCurrentState}
+                gsxMenuCurrentState={gsxState}
                 selectGsxMenuChoice={selectGsxMenuChoice}
-                setGsxMenuCurrentState={setGsxMenuCurrentState}
+                setGsxMenuCurrentState={setGsxState}
             />,
         },
         {
@@ -141,7 +154,14 @@ export const Ground = () => {
             alias: t('Ground.Pushback.Title'),
             component:
                 gsxPushbackEnabled === 1
-                    ? <GsxPushbackPage selectGsxMenuChoice={selectGsxMenuChoice} />
+                    ? (
+                        <GsxPushbackPage
+                            selectGsxMenuChoice={selectGsxMenuChoice}
+                            gsxState={gsxState}
+                            setGsxState={setGsxState}
+                            gsxExternalToggle={gsxExternalToggle}
+                        />
+                    )
                     : <PushbackPage />,
         },
     ];
