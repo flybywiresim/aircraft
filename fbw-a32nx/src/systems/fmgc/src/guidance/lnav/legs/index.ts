@@ -6,7 +6,7 @@
 import { HALeg, HFLeg, HMLeg } from '@fmgc/guidance/lnav/legs/HX';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { PILeg } from '@fmgc/guidance/lnav/legs/PI';
-import { TurnDirection } from '@fmgc/types/fstypes/FSEnums';
+import { TurnDirection } from '@flybywiresim/fbw-sdk';
 
 export enum AltitudeConstraintType {
     at,
