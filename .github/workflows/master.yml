@@ -35,7 +35,7 @@ jobs:
           echo VITE_BUILD=false >> .env
       - name: Build A32NX
         run: |
-          ./scripts/dev-env/run.sh ./scripts/setup.sh
+          ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
           ./scripts/dev-env/run.sh ./scripts/build_a32nx.sh --no-tty -j 4
           rm -rf fbw-a32nx/src
       - name: Build ZIP files
