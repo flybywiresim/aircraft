@@ -801,7 +801,7 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
             this.speedProtectionPathRef.instance.setAttribute('visibility', 'hidden');
         }
 
-        const boxPathString = this.activeVerticalModeSub.get() === 50 && this.tcasModeDisarmed ? 'm34.656 1.8143h29.918v13.506h-29.918z' : 'm34.656 1.8143h29.918v6.0476h-29.918z';
+        const boxPathString = this.activeVerticalModeSub.get() === 50 && this.tcasModeDisarmed ? 'm36.056 1.8143h27.118v13.506h-27.118z' : 'm36.056 1.8143h27.118v6.0476h-27.118z';
 
         this.boxPathStringSub.set(boxPathString);
 
@@ -868,8 +868,8 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
 
                 <path ref={this.modeChangedPathRef} class={this.boxClassSub} visibility="hidden" d={this.boxPathStringSub} />
 
-                <path ref={this.speedProtectionPathRef} class="NormalStroke Amber BlinkInfinite" d="m34.656 1.8143h29.918v6.0476h-29.918z" />
-                <path ref={this.inModeReversionPathRef} class="NormalStroke White BlinkInfinite" d="m34.656 1.8143h29.918v6.0476h-29.918z" />
+                <path ref={this.speedProtectionPathRef} class="NormalStroke Amber BlinkInfinite" d="m36.056 1.8143h27.118v6.0476h-27.118z" />
+                <path ref={this.inModeReversionPathRef} class="NormalStroke White BlinkInfinite" d="m36.056 1.8143h27.118v6.0476h-27.118z" />
 
                 <text ref={this.fmaTextRef} style="white-space: pre" class="FontMedium MiddleAlign Green" x="49.921795" y="7.1040988">
 
@@ -928,7 +928,7 @@ class B2Cell extends DisplayComponent<CellProps> {
             }
 
             // CLB armed should be centered, other modes are aligned to the left on newer DMCs
-            this.xposSub.set(clbArmed ? 50.801795 : 40.977474);
+            this.xposSub.set(clbArmed ? 50.801795 : 41.977474);
             this.text1Sub.set(text1);
             this.text2Sub.set(text2);
             this.classSub.set(`FontMediumSmaller MiddleAlign ${color1}`);
@@ -1222,7 +1222,7 @@ const getBC3Message = (
         className = 'FontMedium PulseAmber9Seconds Amber';
     } else if (TCASArmed && !isAttExcessive) {
         text = '  TCAS               ';
-        className = 'FontMedium Cyan';
+        className = 'FontMediumSmaller Cyan';
     } else if (false) {
         text = 'DISCONNECT AP FOR LDG';
         className = 'FontMedium PulseAmber9Seconds Amber';
