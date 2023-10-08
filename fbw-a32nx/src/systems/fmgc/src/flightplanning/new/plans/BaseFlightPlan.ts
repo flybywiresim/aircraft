@@ -205,18 +205,14 @@ export abstract class BaseFlightPlan implements ReadonlyFlightPlan {
     sequence() {
         this.incrementVersion();
 
-        if (this.activeLegIndex + 1 >= this.firstMissedApproachLegIndex) {
+        if (this.activeLeg.isDiscontinuity === false && this.activeLeg.definition.approachWaypointDescriptor === ApproachWaypointDescriptor.MissedApproachPoint) {
             this.enrouteSegment.allLegs.length = 0;
 
-            const missedApproachPointLeg = this.approachSegment.allLegs[this.approachSegment.allLegs.length - 1];
-            const cloneMissedApproachPointLeg = missedApproachPointLeg.isDiscontinuity === false ? missedApproachPointLeg.clone(this.enrouteSegment) : missedApproachPointLeg;
+            const cloneMissedApproachPointLeg = this.activeLeg.clone(this.enrouteSegment);
             const clonedMissedApproachLegs = this.missedApproachSegment.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(this.enrouteSegment) : it));
 
-            if (cloneMissedApproachPointLeg.isDiscontinuity === false) {
-                cloneMissedApproachPointLeg.type = LegType.IF;
-
-                this.enrouteSegment.allLegs.push(cloneMissedApproachPointLeg);
-            }
+            cloneMissedApproachPointLeg.type = LegType.IF;
+            this.enrouteSegment.allLegs.push(cloneMissedApproachPointLeg);
             this.enrouteSegment.allLegs.push(...clonedMissedApproachLegs);
             this.enrouteSegment.allLegs.push({ isDiscontinuity: true });
             this.enrouteSegment.strung = true;

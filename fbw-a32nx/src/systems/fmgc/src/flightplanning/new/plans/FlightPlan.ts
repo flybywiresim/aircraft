@@ -123,7 +123,7 @@ export class FlightPlan extends BaseFlightPlan {
         const magneticCourse = MagVar.trueToMagnetic(trueTrack, magVar);
 
         const turningPoint = FlightPlanLeg.turningPoint(this.enrouteSegment, ppos, magneticCourse);
-        const turnEnd = FlightPlanLeg.directToTurnEnd(this.enrouteSegment, targetLeg.definition.waypoint);
+        const turnEnd = FlightPlanLeg.directToTurnEnd(this.enrouteSegment, targetLeg.definition.waypoint, targetLeg.definition.approachWaypointDescriptor);
 
         turningPoint.flags |= FlightPlanLegFlags.DirectToTurningPoint;
 

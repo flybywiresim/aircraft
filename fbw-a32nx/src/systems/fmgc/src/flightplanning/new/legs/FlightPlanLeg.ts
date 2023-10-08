@@ -5,7 +5,7 @@
 
 import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { Coordinates } from 'msfs-geo';
-import { Airport, EnrouteSubsectionCode, Fix, LegType, ProcedureLeg, Runway, SectionCode, WaypointArea, WaypointDescriptor } from 'msfs-navdata';
+import { Airport, ApproachWaypointDescriptor, EnrouteSubsectionCode, Fix, LegType, ProcedureLeg, Runway, SectionCode, WaypointArea, WaypointDescriptor } from 'msfs-navdata';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/new/legs/FlightPlanLegDefinition';
 import { procedureLegIdentAndAnnotation } from '@fmgc/flightplanning/new/legs/FlightPlanLegNaming';
 import { WaypointFactory } from '@fmgc/flightplanning/new/waypoints/WaypointFactory';
@@ -188,12 +188,13 @@ export class FlightPlanLeg {
         }, '', '', undefined, undefined, false);
     }
 
-    static directToTurnEnd(segment: EnrouteSegment, targetWaypoint: Fix): FlightPlanLeg {
+    static directToTurnEnd(segment: EnrouteSegment, targetWaypoint: Fix, approachWaypointDescriptor: ApproachWaypointDescriptor): FlightPlanLeg {
         return new FlightPlanLeg(segment, {
             procedureIdent: '',
             type: LegType.DF,
             overfly: false,
             waypoint: targetWaypoint,
+            approachWaypointDescriptor,
         }, targetWaypoint.ident, '', undefined, undefined, false);
     }
 
