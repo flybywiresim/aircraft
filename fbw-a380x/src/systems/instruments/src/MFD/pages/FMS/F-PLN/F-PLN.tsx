@@ -326,6 +326,10 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             const leg = this.loadedFlightPlan.allLegs.concat(this.loadedFlightPlan.alternateFlightPlan.allLegs)[originalLegIndex];
 
             const altnFlightPlan = originalLegIndex > (this.loadedFlightPlan.allLegs.length - 1);
+            this.props.fmService.revisedWaypointIndex.set(originalLegIndex);
+            this.props.fmService.revisedWaypointPlanIndex.set(this.loadedFlightPlanIndex.get());
+            this.props.fmService.revisedWaypointIsAltn.set(altnFlightPlan);
+
             if (leg instanceof FlightPlanLeg) {
                 let type: FplnRevisionsMenuType = FplnRevisionsMenuType.Waypoint;
                 if (leg.segment.class === SegmentClass.Departure) {
@@ -334,10 +338,6 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                     type = FplnRevisionsMenuType.Arrival;
                 }
 
-                this.props.fmService.revisedWaypointIndex.set(originalLegIndex);
-                this.props.fmService.revisedWaypointPlanIndex.set(this.loadedFlightPlanIndex.get());
-                console.log(`<o${this.loadedFlightPlanIndex.get()}`);
-                this.props.fmService.revisedWaypointIsAltn.set(altnFlightPlan);
                 this.revisionsMenuValues.set(getRevisionsMenu(this, type));
                 this.revisionsMenuRef.instance.display(195, 183);
             } else {
