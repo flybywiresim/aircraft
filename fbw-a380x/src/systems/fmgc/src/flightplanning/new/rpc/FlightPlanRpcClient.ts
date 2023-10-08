@@ -9,6 +9,7 @@ import { EventBus } from '@microsoft/msfs-sdk';
 import { v4 } from 'uuid';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
+import { FlightPlanServerRpcEvents } from '@fmgc/flightplanning/new/rpc/FlightPlanRpcServer';
 import { Fix } from '../segments/enroute/WaypointLoading';
 import { FlightPlanLegDefinition } from '../legs/FlightPlanLegDefinition';
 import { FixInfoEntry } from '../plans/FixInfo';
@@ -25,6 +26,9 @@ export interface FlightPlanRemoteClientRpcEvents {
 
 export class FlightPlanRpcClient implements FlightPlanInterface {
     constructor(private readonly bus: EventBus) {
+        this.bus.getSubscriber<FlightPlanServerRpcEvents>().on('flightPlanServer_rpcCommandResponse').handle(([id, response]) => {
+            this.handleRpcCommandResponse(id, response);
+        });
     }
 
     private readonly flightPlanManager = new FlightPlanManager(this.bus, Math.round(Math.random() * 10_000), false);
@@ -33,12 +37,14 @@ export class FlightPlanRpcClient implements FlightPlanInterface {
 
     private rpcCommandsSent = new Map<string, [PromiseFn, PromiseFn]>();
 
+    private rpcCommandsSentTimeouts = new Map<string, number>();
+
     private async callFunctionViaRpc<T extends keyof FunctionsOnlyAndUnwrapPromises<FlightPlanInterface> & string>(
         funcName: T, ...args: Parameters<FunctionsOnlyAndUnwrapPromises<FlightPlanInterface>[T]>
     ): Promise<ReturnType<FunctionsOnlyAndUnwrapPromises<FlightPlanInterface>[T]>> {
         const id = v4();
 
-        this.pub.pub('flightPlanRemoteClient_rpcCommand', [funcName, id, ...args]);
+        this.pub.pub('flightPlanRemoteClient_rpcCommand', [funcName, id, ...args], true);
 
         const result = await this.waitForRpcCommandResponse<ReturnType<FunctionsOnlyAndUnwrapPromises<FlightPlanInterface>[T]>>(id);
 
@@ -48,7 +54,27 @@ export class FlightPlanRpcClient implements FlightPlanInterface {
     private waitForRpcCommandResponse<T>(id: string): Promise<T> {
         return new Promise((resolve, reject) => {
             this.rpcCommandsSent.set(id, [resolve, reject]);
+            this.rpcCommandsSentTimeouts.set(id, setTimeout(() => {
+                this.rpcCommandsSent.delete(id);
+                this.rpcCommandsSentTimeouts.delete(id);
+                reject(new Error(`[FlightPlanRpcClient](waitForRpcCommandResponse) Timed out while waiting for response to RPC command with id: ${id}`));
+            }, 5_000) as unknown as number);
         });
+    }
+
+    private handleRpcCommandResponse(id: string, response: any): void {
+        const commandResolveFn = this.rpcCommandsSent.get(id);
+
+        if (!commandResolveFn) {
+            throw new Error(`[FlightPlanRpcClient](handleRpcCommandResponse) Could not find handlers for response with id: ${id}`);
+        }
+
+        const commandResolveTimeout = this.rpcCommandsSentTimeouts.get(id);
+        this.rpcCommandsSentTimeouts.delete(id);
+
+        clearTimeout(commandResolveTimeout);
+
+        commandResolveFn[0](response);
     }
 
     get(index: number): FlightPlan {
