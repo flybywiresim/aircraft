@@ -16,28 +16,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-const ApproachTypeOrder = Object.freeze([
-    Fmgc.ApproachType.Mls,
-    Fmgc.ApproachType.MlsTypeA,
-    Fmgc.ApproachType.MlsTypeBC,
-    Fmgc.ApproachType.Ils,
-    Fmgc.ApproachType.Gls,
-    Fmgc.ApproachType.Igs,
-    Fmgc.ApproachType.Loc,
-    Fmgc.ApproachType.LocBackcourse,
-    Fmgc.ApproachType.Lda,
-    Fmgc.ApproachType.Sdf,
-    Fmgc.ApproachType.Fms,
-    Fmgc.ApproachType.Gps,
-    Fmgc.ApproachType.Rnav,
-    Fmgc.ApproachType.VorDme,
-    Fmgc.ApproachType.Vor,
-    Fmgc.ApproachType.Vortac,
-    Fmgc.ApproachType.Tacan,
-    Fmgc.ApproachType.Ndb,
-    Fmgc.ApproachType.NdbDme,
-    Fmgc.ApproachType.Unknown,
-]);
+const ApproachTypeOrder = Object.freeze({
+    [Fmgc.ApproachType.Mls]: 0,
+    [Fmgc.ApproachType.MlsTypeA]: 1,
+    [Fmgc.ApproachType.MlsTypeBC]: 2,
+    [Fmgc.ApproachType.Ils]: 3,
+    [Fmgc.ApproachType.Gls]: 4,
+    [Fmgc.ApproachType.Igs]: 5,
+    [Fmgc.ApproachType.Loc]: 6,
+    [Fmgc.ApproachType.LocBackcourse]: 7,
+    [Fmgc.ApproachType.Lda]: 8,
+    [Fmgc.ApproachType.Sdf]: 9,
+    [Fmgc.ApproachType.Fms]: 10,
+    [Fmgc.ApproachType.Gps]: 11,
+    [Fmgc.ApproachType.Rnav]: 12,
+    [Fmgc.ApproachType.VorDme]: 13,
+    [Fmgc.ApproachType.Vortac]: 13, // VORTAC and VORDME are intentionally the same
+    [Fmgc.ApproachType.Vor]: 14,
+    [Fmgc.ApproachType.NdbDme]: 15,
+    [Fmgc.ApproachType.Ndb]: 16,
+    [Fmgc.ApproachType.Unknown]: 17,
+});
 
 const ArrivalPagination = Object.freeze(
     {
@@ -108,7 +107,9 @@ class CDUAvailableArrivalsPage {
         }
 
         // Sort the approaches in Honeywell's documented order
-        const sortedApproaches = approaches.slice().sort((a, b) => ApproachTypeOrder.indexOf(a.type) - ApproachTypeOrder.indexOf(b.type));
+        const sortedApproaches = approaches.slice()
+            .filter(({ type }) => type !== Fmgc.ApproachType.TACAN)
+            .sort((a, b) => ApproachTypeOrder[a.type] - ApproachTypeOrder[b.type]);
         const rows = [[""], [""], [""], [""], [""], [""], [""], [""]];
 
         /**
