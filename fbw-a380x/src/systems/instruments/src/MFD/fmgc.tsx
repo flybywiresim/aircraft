@@ -366,4 +366,32 @@ export class FmgcDataInterface implements Fmgc {
     getDestinationElevation(): Feet {
         return this.flightPlanService.has(FlightPlanIndex.Active) ? this.flightPlanService?.active?.destinationRunway?.thresholdLocation?.alt : undefined;
     }
+
+    activatePreSelSpeedMach(preSel: number) {
+        if (preSel) {
+            if (preSel < 1) {
+                SimVar.SetSimVarValue('H:A320_Neo_FCU_USE_PRE_SEL_MACH', 'number', 1);
+            } else {
+                SimVar.SetSimVarValue('H:A320_Neo_FCU_USE_PRE_SEL_SPEED', 'number', 1);
+            }
+        }
+    }
+
+    updatePreSelSpeedMach(preSel: number) {
+        // The timeout is required to create a delay for the current value to be read and the new one to be set
+        setTimeout(() => {
+            if (preSel) {
+                if (preSel > 1) {
+                    SimVar.SetSimVarValue('L:A32NX_SpeedPreselVal', 'knots', preSel);
+                    SimVar.SetSimVarValue('L:A32NX_MachPreselVal', 'mach', -1);
+                } else {
+                    SimVar.SetSimVarValue('L:A32NX_SpeedPreselVal', 'knots', -1);
+                    SimVar.SetSimVarValue('L:A32NX_MachPreselVal', 'mach', preSel);
+                }
+            } else {
+                SimVar.SetSimVarValue('L:A32NX_SpeedPreselVal', 'knots', -1);
+                SimVar.SetSimVarValue('L:A32NX_MachPreselVal', 'mach', -1);
+            }
+        }, 200);
+    }
 }

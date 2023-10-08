@@ -34,7 +34,7 @@ import { MfdFmsFplnArr } from 'instruments/src/MFD/pages/FMS/F-PLN/ARRIVAL';
 import { MfdFmsFplnDirectTo } from 'instruments/src/MFD/pages/FMS/F-PLN/DIRECT-TO';
 import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
-import { Coordinates } from 'msfs-geo';
+import { Coordinates, distanceTo } from 'msfs-geo';
 import { EfisSymbols } from '@fmgc/efis/EfisSymbols';
 import { NavaidTuner } from '@fmgc/navigation/NavaidTuner';
 import { NavaidSelectionManager } from '@fmgc/navigation/NavaidSelectionManager';
@@ -52,6 +52,9 @@ import { FmgcDataInterface } from 'instruments/src/MFD/fmgc';
 import { MfdFmsFplnAirways } from 'instruments/src/MFD/pages/FMS/F-PLN/AIRWAYS';
 import { MfdFmsPositionIrs } from 'instruments/src/MFD/pages/FMS/POSITION/IRS';
 import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
+import { getFlightPhaseManager } from '@fmgc/flightphase';
+import { FmgcFlightPhase } from '@shared/flightphase';
+import { NXDataStore } from '@flybywiresim/fbw-sdk';
 import { MfdSimvars } from './shared/MFDSimvarPublisher';
 import { DisplayUnit } from '../MsfsAvionicsCommon/displayUnit';
 
@@ -76,6 +79,8 @@ export interface FmsErrorMessage {
     message: string;
     backgroundColor: 'none' | 'amber' | 'cyan'; // Whether the message should be colored. White text on black background if 'none'
     cleared: boolean; // If message has been cleared from footer
+    isResolvedOverride: () => void;
+    onClearOverride: () => void;
 }
 export class MfdComponent extends DisplayComponent<MfdComponentProps> implements DisplayInterface, DataInterface {
     private uiService = new MfdUIService();
@@ -115,6 +120,8 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
 
     private efisSymbols = new EfisSymbols(this.guidanceController, this.flightPlanService, this.navaidTuner);
 
+    private flightPhaseManager = getFlightPhaseManager();
+
     private fmService = new MfdFlightManagementService(this, this.flightPlanService, this.guidanceController, this.fmgc, this.navigationProvider);
 
     public fmsErrors = ArraySubject.create<FmsErrorMessage>();
@@ -142,6 +149,8 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
     private duplicateNamesOpened = Subject.create<boolean>(false);
 
     private duplicateNamesRef = FSComponent.createRef<MfdFmsFplnDuplicateNames>();
+
+    private destDataChecked = false;
 
     // Necessary to enable mouse interaction
     get isInteractive(): boolean {
@@ -188,7 +197,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
         this.flightPlanService.active.performanceData.v2.set(150); */
     }
 
-    private initVariables() {
+    private init() {
         // Reset SimVars
         SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_PFD', 'knots', 0);
         SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_ATHR', 'knots', 0);
@@ -226,6 +235,18 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
             SimVar.SetSimVarValue('K:TOGGLE_GPS_DRIVES_NAV1', 'Bool', 0);
         }
         SimVar.SetSimVarValue('K:VS_SLOT_INDEX_SET', 'number', 1);
+
+        // Start the check routine for system health and status
+        setInterval(() => {
+            if (this.flightPhaseManager.phase === FmgcFlightPhase.Cruise && !this.destDataChecked) {
+                const dest = this.flightPlanService.active.destinationAirport;
+                const distanceFromPpos = distanceTo(this.navigationProvider.getPpos(), dest.location);
+                if (dest && distanceFromPpos < 180) {
+                    this.destDataChecked = true;
+                    this.checkDestData();
+                }
+            }
+        }, 15000);
     }
 
     /**
@@ -241,7 +262,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
     onUplinkDone() {
         this.fmService.fmgc.data.cpnyFplnUplinkInProgress.set(false);
         this.fmService.fmgc.data.cpnyFplnAvailable.set(true);
-        this.showFmsErrorMessageFreeText({ message: 'UPLINK F-PLN AVAILABLE FOR INSERT.', backgroundColor: 'none', cleared: false });
+        this.showFmsErrorMessageFreeText({ message: 'UPLINK F-PLN AVAILABLE FOR INSERT.', backgroundColor: 'none', cleared: false, onClearOverride: () => {}, isResolvedOverride: () => {} });
     }
 
     /**
@@ -272,7 +293,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
             break;
         }
 
-        const msg: FmsErrorMessage = { message: messageStr, cleared: false, backgroundColor: 'none' };
+        const msg: FmsErrorMessage = { message: messageStr, cleared: false, backgroundColor: 'none', onClearOverride: () => {}, isResolvedOverride: () => {} };
         const exists = this.fmsErrors.getArray().findIndex((el) => el.message === messageStr && el.cleared === true);
         if (exists !== -1) {
             this.fmsErrors.removeAt(exists);
@@ -298,6 +319,10 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
 
             this.fmsErrors.set(arr);
         }
+    }
+
+    public updateFmsErrorMessages() {
+        // TODO go through all messages, check if conditions still apply
     }
 
     public openMessageList() {
@@ -371,17 +396,195 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
         return newWpt;
     }
 
+    /**
+     * This method is called by the FlightPhaseManager after a flight phase change
+     * This method initializes AP States, initiates CDUPerformancePage changes and other set other required states
+     * @param prevPhase {FmgcFlightPhases} Previous FmgcFlightPhase
+     * @param nextPhase {FmgcFlightPhases} New FmgcFlightPhase
+     */
+    onFlightPhaseChanged(prevPhase: FmgcFlightPhase, nextPhase: FmgcFlightPhase) {
+        // this.updateConstraints();
+        // this.updateManagedSpeed();
+
+        SimVar.SetSimVarValue('L:A32NX_CABIN_READY', 'Bool', 0);
+
+        switch (nextPhase) {
+        case FmgcFlightPhase.Takeoff: {
+            this.destDataChecked = false;
+
+            const plan = this.flightPlanService.active;
+
+            if (plan.performanceData.accelerationAltitude.get() === undefined) {
+                // it's important to set this immediately as we don't want to immediately sequence to the climb phase
+                plan.performanceData.pilotAccelerationAltitude.set(SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') + parseInt(NXDataStore.get('CONFIG_ACCEL_ALT', '1500')));
+                // this.updateThrustReductionAcceleration();
+            }
+            if (plan.performanceData.engineOutAccelerationAltitude.get() === undefined) {
+                // it's important to set this immediately as we don't want to immediately sequence to the climb phase
+                plan.performanceData.pilotEngineOutAccelerationAltitude.set(SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') + parseInt(NXDataStore.get('CONFIG_ACCEL_ALT', '1500')));
+                // this.updateThrustReductionAcceleration();
+            }
+
+            /** Arm preselected speed/mach for next flight phase */
+            this.fmgc.updatePreSelSpeedMach(this.fmgc.data.climbPreSelSpeed.get());
+
+            break;
+        }
+
+        case FmgcFlightPhase.Climb: {
+            this.destDataChecked = false;
+
+            /** Activate pre selected speed/mach */
+            if (prevPhase === FmgcFlightPhase.Takeoff) {
+                this.fmgc.activatePreSelSpeedMach(this.fmgc.data.climbPreSelSpeed.get());
+            }
+
+            /** Arm preselected speed/mach for next flight phase */
+            this.fmgc.updatePreSelSpeedMach(this.fmgc.data.cruisePreSelMach.get() ?? this.fmgc.data.cruisePreSelSpeed.get());
+
+            if (!this.flightPlanService.active.performanceData.cruiseFlightLevel.get()) {
+                this.flightPlanService.active.performanceData.cruiseFlightLevel.set(Simplane.getAutoPilotDisplayedAltitudeLockValue('feet') / 100);
+            }
+
+            break;
+        }
+
+        case FmgcFlightPhase.Cruise: {
+            SimVar.SetSimVarValue('L:A32NX_GOAROUND_PASSED', 'bool', 0);
+            Coherent.call('GENERAL_ENG_THROTTLE_MANAGED_MODE_SET', ThrottleMode.AUTO).catch(console.error).catch(console.error);
+
+            /** Activate pre selected speed/mach */
+            if (prevPhase === FmgcFlightPhase.Climb) {
+                this.fmgc.activatePreSelSpeedMach(this.fmgc.data.cruisePreSelMach.get() ?? this.fmgc.data.cruisePreSelSpeed.get());
+            }
+
+            /** Arm preselected speed/mach for next flight phase */
+            this.fmgc.updatePreSelSpeedMach(this.fmgc.data.descentPreSelSpeed.get());
+
+            // This checks against the pilot defined cruise altitude and the automatically populated cruise altitude
+            if (this.flightPlanService.active.performanceData.cruiseFlightLevel.get() !== SimVar.GetGameVarValue('AIRCRAFT CRUISE ALTITUDE', 'feet')) {
+                SimVar.SetGameVarValue('AIRCRAFT CRUISE ALTITUDE', 'feet', this.flightPlanService.active.performanceData.cruiseFlightLevel.get());
+                // this.addMessageToQueue(NXSystemMessages.newCrzAlt.getModifiedMessage(this._cruiseFlightLevel * 100));
+            }
+
+            break;
+        }
+
+        case FmgcFlightPhase.Descent: {
+            this.checkDestData();
+
+            Coherent.call('GENERAL_ENG_THROTTLE_MANAGED_MODE_SET', ThrottleMode.AUTO).catch(console.error).catch(console.error);
+
+            /** Activate pre selected speed/mach */
+            if (prevPhase === FmgcFlightPhase.Cruise) {
+                this.fmgc.activatePreSelSpeedMach(this.fmgc.data.descentPreSelSpeed.get());
+            }
+
+            /** Clear pre selected speed/mach */
+            this.fmgc.updatePreSelSpeedMach(undefined);
+
+            this.flightPlanService.active.performanceData.cruiseFlightLevel.set(undefined);
+
+            break;
+        }
+
+        case FmgcFlightPhase.Approach: {
+            Coherent.call('GENERAL_ENG_THROTTLE_MANAGED_MODE_SET', ThrottleMode.AUTO).catch(console.error);
+            SimVar.SetSimVarValue('L:A32NX_GOAROUND_PASSED', 'bool', 0);
+
+            this.checkDestData();
+
+            break;
+        }
+
+        case FmgcFlightPhase.GoAround: {
+            SimVar.SetSimVarValue('L:A32NX_GOAROUND_GATRK_MODE', 'bool', 0);
+            SimVar.SetSimVarValue('L:A32NX_GOAROUND_HDG_MODE', 'bool', 0);
+            SimVar.SetSimVarValue('L:A32NX_GOAROUND_NAV_MODE', 'bool', 0);
+            SimVar.SetSimVarValue('L:A32NX_GOAROUND_INIT_SPEED', 'number', Simplane.getIndicatedSpeed());
+            SimVar.SetSimVarValue('L:A32NX_GOAROUND_INIT_APP_SPEED', 'number', this.fmgc.getApproachSpeed());
+            // delete override logic when we have valid nav data -aka goaround path- after goaround!
+            SimVar.SetSimVarValue('L:A32NX_GOAROUND_NAV_OVERRIDE', 'bool', 0);
+
+            if (SimVar.GetSimVarValue('AUTOPILOT MASTER', 'Bool') === 1) {
+                SimVar.SetSimVarValue('K:AP_LOC_HOLD_ON', 'number', 1); // Turns AP localizer hold !!ON/ARMED!! and glide-slope hold mode !!OFF!!
+                SimVar.SetSimVarValue('K:AP_LOC_HOLD_OFF', 'number', 1); // Turns !!OFF!! localizer hold mode
+                SimVar.SetSimVarValue('K:AUTOPILOT_OFF', 'number', 1);
+                SimVar.SetSimVarValue('K:AUTOPILOT_ON', 'number', 1);
+                SimVar.SetSimVarValue('L:A32NX_AUTOPILOT_APPR_MODE', 'bool', 0);
+                SimVar.SetSimVarValue('L:A32NX_AUTOPILOT_LOC_MODE', 'bool', 0);
+            } else if (SimVar.GetSimVarValue('AUTOPILOT MASTER', 'Bool') === 0 && SimVar.GetSimVarValue('AUTOPILOT APPROACH HOLD', 'boolean') === 1) {
+                SimVar.SetSimVarValue('AP_APR_HOLD_OFF', 'number', 1);
+                SimVar.SetSimVarValue('L:A32NX_AUTOPILOT_APPR_MODE', 'bool', 0);
+                SimVar.SetSimVarValue('L:A32NX_AUTOPILOT_LOC_MODE', 'bool', 0);
+            }
+
+            const currentHeading = Simplane.getHeadingMagnetic();
+            Coherent.call('HEADING_BUG_SET', 1, currentHeading).catch(console.error);
+
+            const activePlan = this.flightPlanService.active;
+
+            if (activePlan.performanceData.missedAccelerationAltitude.get() === undefined) {
+                // it's important to set this immediately as we don't want to immediately sequence to the climb phase
+                activePlan.performanceData.pilotMissedAccelerationAltitude.set(
+                    SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') + parseInt(NXDataStore.get('CONFIG_ENG_OUT_ACCEL_ALT', '1500')),
+                );
+                // this.updateThrustReductionAcceleration();
+            }
+            if (activePlan.performanceData.missedEngineOutAccelerationAltitude.get() === undefined) {
+                // it's important to set this immediately as we don't want to immediately sequence to the climb phase
+                activePlan.performanceData.pilotMissedEngineOutAccelerationAltitude.set(
+                    SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') + parseInt(NXDataStore.get('CONFIG_ENG_OUT_ACCEL_ALT', '1500')),
+                );
+                // this.updateThrustReductionAcceleration();
+            }
+
+            break;
+        }
+
+        case FmgcFlightPhase.Done:
+            this.uiService.navigateTo('fms/data/status');
+
+            this.flightPlanService.reset().then(() => {
+                this.init();
+                this.fmService.deleteAllStoredWaypoints();
+                this.clearLatestFmsErrorMessage();
+                SimVar.SetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool', true).then(() => {
+                    this.uiService.navigateTo('fms/data/status');
+                });
+            }).catch(console.error);
+            break;
+
+        default:
+            break;
+        }
+    }
+
+    checkDestData() {
+        this.showFmsErrorMessageFreeText({
+            backgroundColor: 'amber',
+            cleared: false,
+            message: 'CHECK DEST DATA',
+            isResolvedOverride: () => (Number.isFinite(this.fmgc.getApproachQnh())
+                && Number.isFinite(this.fmgc.getApproachTemperature())
+                && Number.isFinite(this.fmgc.getApproachWind().direction)
+                && Number.isFinite(this.fmgc.getApproachWind().speed)),
+            onClearOverride: () => {},
+        });
+    }
+
     public async onAfterRender(node: VNode): Promise<void> {
         super.onAfterRender(node);
 
         await this.initializeFlightPlans();
         this.navaidTuner.init();
         this.efisSymbols.init();
+        this.flightPhaseManager.init();
         this.guidanceController.init();
 
         let lastUpdateTime = Date.now();
 
-        this.initVariables();
+        this.init();
 
         setInterval(() => {
             const now = Date.now();
@@ -391,6 +594,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
             this.landingSystemSelectionManager.update(dt);
             this.navaidTuner.update(dt);
             this.efisSymbols.update(dt);
+            this.flightPhaseManager.shouldActivateNextPhase(dt);
             this.guidanceController.update(dt);
             this.fmgc.updateFromSimVars();
 

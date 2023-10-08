@@ -36,6 +36,12 @@ export class MfdFlightManagementService {
 
     public pbxStoredWaypoints: Waypoint[] = [];
 
+    public deleteAllStoredWaypoints() {
+        this.latLongStoredWaypoints = [];
+        this.pbdStoredWaypoints = [];
+        this.pbxStoredWaypoints = [];
+    }
+
     constructor(
         public mfd: MfdComponent,
         public flightPlanService: FlightPlanService,
