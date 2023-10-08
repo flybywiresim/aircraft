@@ -611,7 +611,7 @@ class A3Cell extends DisplayComponent<A3CellProps> {
 
     render(): VNode {
         return (
-            <text class={this.classSub} x="16.989958" y="20.341243">{this.textSub}</text>
+            <text class={this.classSub} x="16.989958" y="21.641243">{this.textSub}</text>
         );
     }
 }
