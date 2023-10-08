@@ -172,6 +172,8 @@ class CDUFlightPlanPage {
             waypointsAndMarkers.push({ marker: Markers.NO_ALTN_FPLN, fpIndex: targetPlan.legCount + 1, inAlternate: true });
         }
 
+        const tocIndex = waypointsAndMarkers.findIndex(({ pwp }) => pwp && pwp.ident === '(T/C)');
+
         // Render F-PLAN Display
 
         // fprow:   1      | 2     | 3 4   | 5 6   | 7 8   | 9 10  | 11 12   |
@@ -193,6 +195,8 @@ class CDUFlightPlanPage {
         } else {
             rowsCount = waypointsAndMarkers.length;
         }
+
+        let useTransitionAltitude = false;
 
         // Only examine first 5 (or less) waypoints/markers
         const scrollWindow = [];
@@ -238,6 +242,16 @@ class CDUFlightPlanPage {
             //             break;
             //     }
             // }
+
+            const constraintType = wp ? CDUVerticalRevisionPage.constraintType(mcdu, fpIndex, targetPlan.index, inAlternate) : WaypointConstraintType.Unknown;
+            if (constraintType === WaypointConstraintType.CLB) {
+                useTransitionAltitude = true;
+            } else if (constraintType === WaypointConstraintType.DES) {
+                useTransitionAltitude = false;
+            } else if (tocIndex >= 0) {
+                // FIXME Guess because VNAV doesn't tell us whether altitudes are climb or not \o/
+                useTransitionAltitude = winI <= tocIndex;
+            } // else we stick with the last time we were sure...
 
             if (wp && wp.isDiscontinuity === false) {
                 // Waypoint
@@ -381,7 +395,7 @@ class CDUFlightPlanPage {
                             altitudeToFormat = verticalWaypoint.altitude;
                         }
 
-                        altitudeConstraint = formatAltitudeOrLevel(mcdu, altitudeToFormat);
+                        altitudeConstraint = formatAltitudeOrLevel(mcdu, altitudeToFormat, useTransitionAltitude);
 
                         if (verticalWaypoint) {
                             altPrefix = verticalWaypoint.isAltitudeConstraintMet ? "{magenta}*{end}" : "{amber}*{end}";
@@ -393,7 +407,7 @@ class CDUFlightPlanPage {
                     // In this case `altitudeConstraint is actually just the predictedAltitude`
                     } else if (vnavPredictionsMapByWaypoint && !hasAltConstraint) {
                         if (verticalWaypoint && verticalWaypoint.altitude) {
-                            altitudeConstraint = formatAltitudeOrLevel(mcdu, verticalWaypoint.altitude);
+                            altitudeConstraint = formatAltitudeOrLevel(mcdu, verticalWaypoint.altitude, useTransitionAltitude);
                         } else {
                             altitudeConstraint = "-----";
                         }
@@ -538,7 +552,7 @@ class CDUFlightPlanPage {
                 };
                 let altColor = "white";
                 if (!shouldHidePredictions && Number.isFinite(pwp.flightPlanInfo.altitude)) {
-                    altitudeConstraint.alt = formatAltitudeOrLevel(mcdu, pwp.flightPlanInfo.altitude);
+                    altitudeConstraint.alt = formatAltitudeOrLevel(mcdu, pwp.flightPlanInfo.altitude, useTransitionAltitude);
                     altColor = color;
                 }
 
@@ -932,18 +946,26 @@ function legHasAltConstraint(leg) {
 }
 
 /**
- * Format a numerical altitude to a string of the form "NNNNN" or "FLNNN" dpeending on the transition altitude
+ * Formats an altitude as an altitude or flight level for display.
  * @param {*} mcdu Reference to the MCDU instance
- * @param {Number} alt The altitude to format
- * @returns {String} The formatted altitude string
+ * @param {number} altitudeToFormat  The altitude in feet.
+ * @param {boolean} useTransAlt Whether to use transition altitude, otherwise transition level is used.
+ * @returns {string} The formatted altitude/level.
  */
-function formatAltitudeOrLevel(mcdu, alt) {
+function formatAltitudeOrLevel(mcdu, alt, useTransAlt) {
     const activePlan = mcdu.flightPlanService.active;
-    // TODO: Consider transition level (fms-v2)
-    const transitionAltitude = activePlan.performanceData.transitionAltitude.get();
 
-    if (transitionAltitude >= 100 && alt > transitionAltitude) {
-        return `FL${(alt / 100).toFixed(0).padStart(3, "0")}`;
+    let isFl = false;
+    if (useTransAlt) {
+        const transAlt = activePlan.performanceData.transitionAltitude.get();
+        isFl = transAlt !== undefined && alt > transAlt;
+    } else {
+        const transLevel = activePlan.performanceData.transitionLevel.get();
+        isFl = transLevel !== undefined && alt >= (transLevel * 100);
+    }
+
+    if (isFl) {
+        return `FL${(alt / 100).toFixed(0).padStart(3,"0")}`;
     }
 
     return formatAlt(alt);
