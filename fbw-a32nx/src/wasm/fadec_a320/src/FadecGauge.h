@@ -36,7 +36,6 @@ class FadecGauge {
   double previousSimulationTime = 0;
   SimulationData simulationData = {};
   SimulationDataLivery simulationDataLivery = {};
-  EventsTriggered eventsTriggered = {};
 
   /// <summary>
   /// Initializes the connection to SimConnect
@@ -138,8 +137,6 @@ class FadecGauge {
   bool onUpdate(double deltaTime) {
     if (isConnected == true) {
       // read simulation data from simconnect
-      eventsTriggered.Engine1StarterToggled = false;
-      eventsTriggered.Engine2StarterToggled = false;
 
       simConnectReadData();
       // detect pause
@@ -152,7 +149,7 @@ class FadecGauge {
       // store previous simulation time
       previousSimulationTime = simulationData.simulationTime;
       // update engines
-      EngineControlInstance.update(calculatedSampleTime, simulationData.simulationTime, eventsTriggered);
+      EngineControlInstance.update(calculatedSampleTime, simulationData.simulationTime);
     }
 
     return true;
@@ -243,14 +240,11 @@ class FadecGauge {
 
   void simConnectProcessEvent(const SIMCONNECT_RECV_EVENT* event) {
     switch (event->uEventID) {
+      // we just want to mask the events, not actually do anything with the information
       case Events::Engine1StarterToggled: {
-        eventsTriggered.Engine1StarterToggled = true;
-        std::cout << "FADEC: Engine 1 Starter Toggle received" << std::endl;
         break;
       }
       case Events::Engine2StarterToggled: {
-        eventsTriggered.Engine2StarterToggled = true;
-        std::cout << "FADEC: Engine 2 Starter Toggle received" << std::endl;
         break;
       }
       default:

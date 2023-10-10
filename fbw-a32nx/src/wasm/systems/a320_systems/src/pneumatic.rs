@@ -99,6 +99,7 @@ pub struct A320Pneumatic {
     cross_bleed_valve_fully_open_id: VariableIdentifier,
     cross_bleed_valve_fully_closed_id: VariableIdentifier,
     apu_bleed_air_valve_open_id: VariableIdentifier,
+    apu_bleed_air_pressure_id: VariableIdentifier,
     bleed_monitoring_computers: [BleedMonitoringComputer; 2],
     engine_systems: [EngineBleedAirSystem; 2],
 
@@ -139,6 +140,8 @@ impl A320Pneumatic {
                 .get_identifier("PNEU_XBLEED_VALVE_FULLY_CLOSED".to_owned()),
             apu_bleed_air_valve_open_id: context
                 .get_identifier("APU_BLEED_AIR_VALVE_OPEN".to_owned()),
+            apu_bleed_air_pressure_id: context
+                .get_identifier("PNEU_APU_BLEED_CONTAINER_PRESSURE".to_owned()),
             bleed_monitoring_computers: [
                 BleedMonitoringComputer::new(
                     context,
@@ -442,6 +445,10 @@ impl SimulationElement for A320Pneumatic {
         writer.write(
             &self.apu_bleed_air_valve_open_id,
             self.apu_bleed_air_valve.is_open(),
+        );
+        writer.write(
+            &self.apu_bleed_air_pressure_id,
+            self.apu_compression_chamber.pressure(),
         );
     }
 }

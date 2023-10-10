@@ -28,7 +28,7 @@ class A32NX_APU {
                 psi = 35;
             }
         }
-        SimVar.SetSimVarValue("L:APU_BLEED_PRESSURE", "PSI", psi);
+        //SimVar.SetSimVarValue("L:APU_BLEED_PRESSURE", "PSI", psi);
 
         // Until everything that depends on the APU is moved into WASM,
         // we still need to synchronise some of the WASM state with the sim's state.

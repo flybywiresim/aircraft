@@ -56,9 +56,6 @@ class EngineControl {
   double engineState;
   double engineStarter;
   double engineIgniter;
-  double engineStarterPressurized;
-  double engineStarterToggled;
-  double engineFuelValveOpen;
 
   double packs;
   double nai;
@@ -1177,9 +1174,14 @@ class EngineControl {
   /// <summary>
   /// Update cycle at deltaTime
   /// </summary>
-  void update(double deltaTime, double simulationTime, EventsTriggered eventsTriggered) {
+  void update(double deltaTime, double simulationTime) {
     double prevAnimationDeltaTime;
     double simN1highest = 0;
+
+    double engineStarterPressurized;
+    double engineStarterToggled;
+    double engineFuelValveOpen;
+    double fbwN2;
 
     // animationDeltaTimes being used to detect a Paused situation
     prevAnimationDeltaTime = animationDeltaTime;
@@ -1225,7 +1227,8 @@ class EngineControl {
         timer = simVars->getEngine1Timer();
         engineStarterPressurized = simVars->getLeftSystemPressure();
         engineFuelValveOpen = simVars->getValve(1);
-        engineStarterToggled = eventsTriggered.Engine1StarterToggled;
+        fbwN2 = simVars->getEngine1N2();
+
       } else {
         engineState = simVars->getEngine2State();
         deltaN2 = simN2 - simN2RightPre;
@@ -1233,13 +1236,15 @@ class EngineControl {
         timer = simVars->getEngine2Timer();
         engineStarterPressurized = simVars->getRightSystemPressure();
         engineFuelValveOpen = simVars->getValve(2);
-        engineStarterToggled = eventsTriggered.Engine2StarterToggled;
+        fbwN2 = simVars->getEngine2N2();
       }
-      if (!engineStarter && engineStarterToggled && engineFuelValveOpen && engineStarterPressurized >= 27) {
+      // starts engines if Engine Master is turned on and pressure is above 20 psi
+      if (!engineStarter && engineFuelValveOpen && engineStarterPressurized >= 20) {
         std::string command = engine == 1 ? "1 (>K:SET_STARTER1_HELD)" : "1 (>K:SET_STARTER2_HELD)";
 
         execute_calculator_code(command.c_str(), nullptr, nullptr, nullptr);
-      } else if (engineStarter && engineStarterToggled && engineFuelValveOpen < 1) {
+      }  // shuts off engines if Engine Master is turned off or pressure falls below 20 psi while N2 is below 50 %
+      else if (engineStarter && (engineFuelValveOpen < 1 || (engineFuelValveOpen && engineStarterPressurized < 20 && fbwN2 < 50))) {
         std::string command1 = engine == 1 ? "0 (>K:SET_STARTER1_HELD)" : "0 (>K:SET_STARTER2_HELD)";
 
         execute_calculator_code(command1.c_str(), nullptr, nullptr, nullptr);

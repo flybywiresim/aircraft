@@ -33,11 +33,6 @@ enum Events {
   Engine2StarterToggled,
 };
 
-struct EventsTriggered {
-  bool Engine1StarterToggled;
-  bool Engine2StarterToggled;
-};
-
 /// <summary>
 /// A collection of SimVar unit enums.
 /// </summary>
