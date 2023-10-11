@@ -145,11 +145,17 @@ void ThrottleAxisMapping::onEventThrottleSet(long value) {
   if (!useReverseOnAxis && !isReverseToggleActive) {
     isReverseToggleKeyActive = false;
   }
+  if (!useTogaOnAxis) {
+    isTogaActive = false;
+  }
   setCurrentValue(value / 16384.0);
 }
 
 void ThrottleAxisMapping::onEventThrottleFull() {
   setCurrentValue(1.0);
+  if (!useTogaOnAxis) {
+    isTogaActive = true;
+  }
 }
 
 void ThrottleAxisMapping::onEventThrottleCut() {
@@ -233,6 +239,8 @@ void ThrottleAxisMapping::setCurrentValue(double value) {
   double newTLA = 0;
   if (!useReverseOnAxis && (isReverseToggleActive || isReverseToggleKeyActive)) {
     newTLA = (TLA_REVERSE / 2.0) * (value + 1.0);
+  } else if (!useTogaOnAxis && isTogaActive) {
+    newTLA = TLA_TOGA;
   } else {
     newTLA = thrustLeverAngleMapping.get(value);
   }
@@ -271,6 +279,9 @@ void ThrottleAxisMapping::decreaseThrottleBy(double value) {
     if (currentValue == -1.0) {
       isReverseToggleKeyActive = !isReverseToggleKeyActive;
     }
+  }
+  if (!useTogaOnAxis && isTogaActive) {
+    isTogaActive = false;
   }
   if (isReverseToggleActive | isReverseToggleKeyActive) {
     setCurrentValue(fmin(1.0, currentValue + value));

@@ -93,6 +93,7 @@ class ThrottleAxisMapping {
   bool inFlight = false;
   bool isReverseToggleActive = false;
   bool isReverseToggleKeyActive = false;
+  bool isTogaActive = false;
 
   double idleValue = 0.0;
   double currentValue = 0.0;
