@@ -16,6 +16,7 @@ ThrottleAxisMapping::ThrottleAxisMapping(unsigned int id) {
   LVAR_THRUST_LEVER_ANGLE = LVAR_THRUST_LEVER_ANGLE.append(stringId);
   LVAR_LOAD_CONFIG = LVAR_LOAD_CONFIG.append(stringId);
   LVAR_USE_REVERSE_ON_AXIS = LVAR_USE_REVERSE_ON_AXIS.append(stringId);
+  LVAR_USE_TOGA_ON_AXIS = LVAR_USE_TOGA_ON_AXIS.append(stringId);
   LVAR_DETENT_REVERSE_LOW = LVAR_DETENT_REVERSE_LOW.append(stringId);
   LVAR_DETENT_REVERSE_HIGH = LVAR_DETENT_REVERSE_HIGH.append(stringId);
   LVAR_DETENT_REVERSEIDLE_LOW = LVAR_DETENT_REVERSEIDLE_LOW.append(stringId);
@@ -34,6 +35,7 @@ ThrottleAxisMapping::ThrottleAxisMapping(unsigned int id) {
   idThrustLeverAngle = std::make_unique<LocalVariable>(LVAR_THRUST_LEVER_ANGLE.c_str());
   idUsingConfig = std::make_unique<LocalVariable>(LVAR_LOAD_CONFIG.c_str());
   idUseReverseOnAxis = std::make_unique<LocalVariable>(LVAR_USE_REVERSE_ON_AXIS.c_str());
+  idUseTogaOnAxis = std::make_unique<LocalVariable>(LVAR_USE_TOGA_ON_AXIS.c_str());
   idIncrementNormal = std::make_unique<LocalVariable>(LVAR_INCREMENT_NORMAL.c_str());
   idIncrementSmall = std::make_unique<LocalVariable>(LVAR_INCREMENT_SMALL.c_str());
   idDetentReverseLow = std::make_unique<LocalVariable>(LVAR_DETENT_REVERSE_LOW.c_str());
@@ -280,6 +282,7 @@ void ThrottleAxisMapping::decreaseThrottleBy(double value) {
 ThrottleAxisMapping::Configuration ThrottleAxisMapping::getDefaultConfiguration() {
   return {
       true,   // use reverse on axis
+      true,   // use toga on axis
       0.05,   // increment normal
       0.025,  // increment small
       -1.00,  // reverse low
@@ -299,14 +302,15 @@ ThrottleAxisMapping::Configuration ThrottleAxisMapping::getDefaultConfiguration(
 
 ThrottleAxisMapping::Configuration ThrottleAxisMapping::loadConfigurationFromLocalVariables() {
   idUsingConfig->set(true);
-  return {idUseReverseOnAxis->get() == 1, idIncrementNormal->get(),      idIncrementSmall->get(),        idDetentReverseLow->get(),
-          idDetentReverseHigh->get(),     idDetentReverseIdleLow->get(), idDetentReverseIdleHigh->get(), idDetentIdleLow->get(),
-          idDetentIdleHigh->get(),        idDetentClimbLow->get(),       idDetentClimbHigh->get(),       idDetentFlexMctLow->get(),
-          idDetentFlexMctHigh->get(),     idDetentTogaLow->get(),        idDetentTogaHigh->get()};
+  return {idUseReverseOnAxis->get() == 1, idUseTogaOnAxis->get() == 1, idIncrementNormal->get(),      idIncrementSmall->get(),
+          idDetentReverseLow->get(),      idDetentReverseHigh->get(),  idDetentReverseIdleLow->get(), idDetentReverseIdleHigh->get(),
+          idDetentIdleLow->get(),         idDetentIdleHigh->get(),     idDetentClimbLow->get(),       idDetentClimbHigh->get(),
+          idDetentFlexMctLow->get(),      idDetentFlexMctHigh->get(),  idDetentTogaLow->get(),        idDetentTogaHigh->get()};
 }
 
 void ThrottleAxisMapping::storeConfigurationInLocalVariables(const Configuration& configuration) {
   idUseReverseOnAxis->set(configuration.useReverseOnAxis);
+  idUseTogaOnAxis->set(configuration.useTogaOnAxis);
   idIncrementNormal->set(configuration.incrementNormal);
   idIncrementSmall->set(configuration.incrementSmall);
   if (configuration.useReverseOnAxis) {
@@ -326,14 +330,20 @@ void ThrottleAxisMapping::storeConfigurationInLocalVariables(const Configuration
   idDetentClimbHigh->set(configuration.climbHigh);
   idDetentFlexMctLow->set(configuration.flxMctLow);
   idDetentFlexMctHigh->set(configuration.flxMctHigh);
-  idDetentTogaLow->set(configuration.togaLow);
-  idDetentTogaHigh->set(configuration.togaHigh);
+  if (configuration.useTogaOnAxis) {
+    idDetentTogaLow->set(configuration.togaLow);
+    idDetentTogaHigh->set(configuration.togaHigh);
+  } else {
+    idDetentTogaLow->set(0.0);
+    idDetentTogaHigh->set(0.0);
+  }
 }
 
 ThrottleAxisMapping::Configuration ThrottleAxisMapping::loadConfigurationFromIniStructure(const INIStructure& structure) {
   idUsingConfig->set(true);
   return {
       INITypeConversion::getBoolean(structure, CONFIGURATION_SECTION_COMMON, "REVERSE_ON_AXIS", false),
+      INITypeConversion::getBoolean(structure, CONFIGURATION_SECTION_COMMON, "TOGA_ON_AXIS", false),
       INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_COMMON, "KEY_INCREMENT_NORMAL", 0.05),
       INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_COMMON, "KEY_INCREMENT_SMALL", 0.025),
       INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_AXIS, "REVERSE_LOW", -1.00),
@@ -353,6 +363,7 @@ ThrottleAxisMapping::Configuration ThrottleAxisMapping::loadConfigurationFromIni
 
 void ThrottleAxisMapping::storeConfigurationInIniStructure(INIStructure& structure, const Configuration& configuration) {
   structure[CONFIGURATION_SECTION_COMMON]["REVERSE_ON_AXIS"] = configuration.useReverseOnAxis ? "true" : "false";
+  structure[CONFIGURATION_SECTION_COMMON]["TOGA_ON_AXIS"] = configuration.useTogaOnAxis ? "true" : "false";
   structure[CONFIGURATION_SECTION_COMMON]["KEY_INCREMENT_NORMAL"] = std::to_string(configuration.incrementNormal);
   structure[CONFIGURATION_SECTION_COMMON]["KEY_INCREMENT_SMALL"] = std::to_string(configuration.incrementSmall);
   structure[CONFIGURATION_SECTION_AXIS]["REVERSE_LOW"] = std::to_string(configuration.reverseLow);
@@ -372,6 +383,9 @@ void ThrottleAxisMapping::storeConfigurationInIniStructure(INIStructure& structu
 void ThrottleAxisMapping::updateMappingFromConfiguration(const Configuration& configuration) {
   // update use reverse on axis
   useReverseOnAxis = configuration.useReverseOnAxis;
+
+  // update use reverse on axis
+  useTogaOnAxis = configuration.useTogaOnAxis;
 
   // update increments
   incrementNormal = configuration.incrementNormal;
@@ -397,12 +411,14 @@ void ThrottleAxisMapping::updateMappingFromConfiguration(const Configuration& co
   // flex / mct
   mappingTable.emplace_back(configuration.flxMctLow, TLA_FLEX_MCT);
   mappingTable.emplace_back(configuration.flxMctHigh, TLA_FLEX_MCT);
-  // toga
-  mappingTable.emplace_back(configuration.togaLow, TLA_TOGA);
-  mappingTable.emplace_back(configuration.togaHigh, TLA_TOGA);
+  if (configuration.useTogaOnAxis) {
+    // toga
+    mappingTable.emplace_back(configuration.togaLow, TLA_TOGA);
+    mappingTable.emplace_back(configuration.togaHigh, TLA_TOGA);
+  }
 
   // update interpolation lookup table
-  thrustLeverAngleMapping.initialize(mappingTable, useReverseOnAxis ? TLA_REVERSE : TLA_IDLE, TLA_TOGA);
+  thrustLeverAngleMapping.initialize(mappingTable, useReverseOnAxis ? TLA_REVERSE : TLA_IDLE, useTogaOnAxis ? TLA_TOGA : TLA_FLEX_MCT);
 
   // remember idle setting
   idleValue = configuration.idleLow;

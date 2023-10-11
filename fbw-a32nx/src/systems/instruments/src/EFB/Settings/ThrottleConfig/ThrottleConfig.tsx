@@ -32,6 +32,9 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
     const [reverserOnAxis1, setReverserOnAxis1] = useSimVar('L:A32NX_THROTTLE_MAPPING_USE_REVERSE_ON_AXIS:1', 'number', 1000);
     const [, setReverserOnAxis2] = useSimVar('L:A32NX_THROTTLE_MAPPING_USE_REVERSE_ON_AXIS:2', 'number', 1000);
 
+    const [togaOnAxis1, setTogaOnAxis1] = useSimVar('L:A32NX_THROTTLE_MAPPING_USE_TOGA_ON_AXIS:1', 'number', 1000);
+    const [, setTogaOnAxis2] = useSimVar('L:A32NX_THROTTLE_MAPPING_USE_TOGA_ON_AXIS:2', 'number', 1000);
+
     const [, syncToDisk] = useSimVar('K:A32NX.THROTTLE_MAPPING_SAVE_TO_FILE', 'number', 1000);
     const [, defaultsToThrottle] = useSimVar('K:A32NX.THROTTLE_MAPPING_SET_DEFAULTS', 'number', 100);
     const [, syncToThrottle] = useSimVar('K:A32NX.THROTTLE_MAPPING_LOAD_FROM_FILE', 'number', 100);
@@ -76,15 +79,18 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
         if (reverserOnAxis1 === 0 && selectedIndex < 2) {
             setSelectedIndex(2);
         }
+        if (togaOnAxis1 === 0 && selectedIndex > 4) {
+            setSelectedIndex(4);
+        }
     }, [reverserOnAxis1, selectedIndex]);
 
     const getOverlapErrors = (mappingsAxis: ThrottleSimvar[]) => {
         const overlapErrors: string[] = [];
 
-        for (let index = reverserOnAxis1 ? 0 : 2; index < mappingsAxis.length; index++) {
+        for (let index = reverserOnAxis1 ? 0 : 2; index < (togaOnAxis1 ? mappingsAxis.length : mappingsAxis.length - 1); index++) {
             const element = mappingsAxis[index];
 
-            for (let nextIndex = index + 1; nextIndex < mappingsAxis.length; nextIndex++) {
+            for (let nextIndex = index + 1; nextIndex < (togaOnAxis1 ? mappingsAxis.length : mappingsAxis.length - 1); nextIndex++) {
                 const nextElement = mappingsAxis[nextIndex];
                 if (element.getHiGetter() >= nextElement.getLowGetter() || element.getLowGetter() >= nextElement.getHiGetter()) {
                     overlapErrors.push(`${element.readableName} (${element.getLowGetter().toFixed(2)}) ${t('Settings.ThrottleConfig.ErrorOverlapMsg')} ${nextElement.readableName} (${nextElement.getLowGetter().toFixed(2)})`);
@@ -110,6 +116,14 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
         }
     };
 
+    const setTogaOnAxis = (togaOnAxis: number) => {
+        setTogaOnAxis1(togaOnAxis);
+        setTogaOnAxis2(togaOnAxis);
+        if (togaOnAxis === 0 && selectedIndex > 4) {
+            setSelectedIndex(4);
+        }
+    };
+
     const switchDetent = (index: number) => {
         if (index >= 0 && index <= 5) {
             setSelectedIndex(index);
@@ -118,7 +132,18 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
 
     const navigationBar = (
         <VerticalSelectGroup>
-            <SelectItem onSelect={() => switchDetent(5)} selected={selectedIndex === 5}>TO/GA</SelectItem>
+            <SelectItem
+                disabled={!togaOnAxis1}
+                className={`${togaOnAxis1 ? '' : 'opacity-30'}`}
+                onSelect={() => {
+                    if (togaOnAxis1) {
+                        switchDetent(5);
+                    }
+                }}
+                selected={selectedIndex === 5}
+            >
+                TO/GA
+            </SelectItem>
             <SelectItem onSelect={() => switchDetent(4)} selected={selectedIndex === 4}>FLX</SelectItem>
             <SelectItem onSelect={() => switchDetent(3)} selected={selectedIndex === 3}>CLB</SelectItem>
             <SelectItem onSelect={() => switchDetent(2)} selected={selectedIndex === 2}>Idle</SelectItem>
@@ -263,6 +288,10 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
             <div className="space-y-2">
                 <div>
                     <div className="flex flex-row justify-center items-center p-4 mt-auto mb-8 space-x-16 w-full rounded-lg border-2 border-theme-accent">
+                        <div className="flex flex-row justify-center items-center space-x-4">
+                            <div>TO/GA On Axis</div>
+                            <Toggle value={!!togaOnAxis1} onToggle={(value) => setTogaOnAxis(value ? 1 : 0)} />
+                        </div>
                         <div className="flex flex-row justify-center items-center space-x-4">
                             <div>{t('Settings.ThrottleConfig.ReverserOnAxis')}</div>
                             <Toggle value={!!reverserOnAxis1} onToggle={(value) => setReversersOnAxis(value ? 1 : 0)} />
