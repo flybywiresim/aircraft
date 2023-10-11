@@ -1225,6 +1225,9 @@ class EngineControl {
         deltaN2 = simN2 - simN2LeftPre;
         simN2LeftPre = simN2;
         timer = simVars->getEngine1Timer();
+        // FIXME should be pressure behind the starter valve
+        // but since starter valve only opens once the engine state is starting
+        // we dont have that avaiable here yet
         engineStarterPressurized = simVars->getLeftSystemPressure();
         engineFuelValveOpen = simVars->getValve(1);
         fbwN2 = simVars->getEngine1N2();
@@ -1234,6 +1237,7 @@ class EngineControl {
         deltaN2 = simN2 - simN2RightPre;
         simN2RightPre = simN2;
         timer = simVars->getEngine2Timer();
+        // FIXME same as above
         engineStarterPressurized = simVars->getRightSystemPressure();
         engineFuelValveOpen = simVars->getValve(2);
         fbwN2 = simVars->getEngine2N2();

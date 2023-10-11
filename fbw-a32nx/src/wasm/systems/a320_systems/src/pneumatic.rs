@@ -1891,6 +1891,7 @@ pub mod tests {
     use ntest::assert_about_eq;
     use systems::{
         air_conditioning::{AdirsToAirCondInterface, PackFlowControllers, ZoneType},
+        apu::AirStarterUnit,
         electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
         engine::leap_engine::LeapEngine,
         failures::FailureType,
@@ -2121,50 +2122,6 @@ pub mod tests {
         }
     }
 
-    struct TestAsu {
-        bleed_air_valve_signal: AsuBleedAirValveSignal,
-        bleed_air_pressure: Pressure,
-        bleed_air_temperature: ThermodynamicTemperature,
-    }
-    impl TestAsu {
-        fn new() -> Self {
-            Self {
-                bleed_air_valve_signal: AsuBleedAirValveSignal::new_closed(),
-                bleed_air_pressure: Pressure::new::<psi>(14.7),
-                bleed_air_temperature: ThermodynamicTemperature::new::<degree_celsius>(165.),
-            }
-        }
-
-        fn update(&self, bleed_valve: &mut impl ControllablePneumaticValve) {
-            bleed_valve.update_open_amount::<AsuBleedAirValveSignal, Self>(self);
-        }
-
-        fn set_bleed_air_pressure(&mut self, pressure: Pressure) {
-            self.bleed_air_pressure = pressure;
-        }
-
-        fn set_bleed_air_temperature(&mut self, temperature: ThermodynamicTemperature) {
-            self.bleed_air_temperature = temperature;
-        }
-
-        fn set_bleed_air_valve_signal(&mut self, signal: AsuBleedAirValveSignal) {
-            self.bleed_air_valve_signal = signal;
-        }
-    }
-    impl ControllerSignal<AsuBleedAirValveSignal> for TestAsu {
-        fn signal(&self) -> Option<AsuBleedAirValveSignal> {
-            Some(self.bleed_air_valve_signal)
-        }
-    }
-    impl ControllerSignal<TargetPressureTemperatureSignal> for TestAsu {
-        fn signal(&self) -> Option<TargetPressureTemperatureSignal> {
-            Some(TargetPressureTemperatureSignal::new(
-                self.bleed_air_pressure,
-                self.bleed_air_temperature,
-            ))
-        }
-    }
-
     struct TestEngineFirePushButtons {
         is_released: [bool; 2],
     }
@@ -2218,7 +2175,7 @@ pub mod tests {
         air_conditioning: TestAirConditioning,
         lgciu: TestLgciu,
         apu: TestApu,
-        asu: TestAsu,
+        asu: AirStarterUnit,
         engine_1: LeapEngine,
         engine_2: LeapEngine,
         pneumatic_overhead_panel: A320PneumaticOverheadPanel,
@@ -2245,7 +2202,7 @@ pub mod tests {
                 air_conditioning: TestAirConditioning::new(context),
                 lgciu: TestLgciu::new(true),
                 apu: TestApu::new(),
-                asu: TestAsu::new(),
+                asu: AirStarterUnit::new(context),
                 engine_1: LeapEngine::new(context, 1),
                 engine_2: LeapEngine::new(context, 2),
                 pneumatic_overhead_panel: A320PneumaticOverheadPanel::new(context),
@@ -2337,6 +2294,7 @@ pub mod tests {
     impl SimulationElement for PneumaticTestAircraft {
         fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
             self.electrical.accept(visitor);
+            self.asu.accept(visitor);
             self.pneumatic.accept(visitor);
             self.engine_1.accept(visitor);
             self.engine_2.accept(visitor);
@@ -2686,6 +2644,10 @@ pub mod tests {
             self.query(|a| a.pneumatic.apu_bleed_air_valve.is_open())
         }
 
+        fn asu_bleed_valve_is_open(&self) -> bool {
+            self.query(|a| a.pneumatic.air_starter_unit_bleed_air_valve.is_open())
+        }
+
         fn hp_valve_is_powered(&self, number: usize) -> bool {
             self.query(|a| {
                 a.pneumatic.engine_systems[number - 1]
@@ -2967,6 +2929,12 @@ pub mod tests {
 
         fn right_exhaust_flow(&self) -> MassRate {
             self.query(|a| a.pneumatic.wing_anti_ice.wai_mass_flow(1))
+        }
+
+        fn set_asu(mut self, value: bool) -> Self {
+            self.write_by_name("ASU_TURNED_ON", value);
+
+            self
         }
     }
 
@@ -3475,6 +3443,35 @@ pub mod tests {
     }
 
     #[test]
+    fn asu_bleed_engine_start() {
+        let mut test_bed = test_bed_with()
+            .start_eng1()
+            .stop_eng2()
+            .set_asu(true)
+            .and_stabilize();
+
+        assert!(test_bed.asu_bleed_valve_is_open());
+
+        assert!(test_bed.es_valve_is_open(1));
+        assert!(!test_bed.es_valve_is_open(2));
+
+        assert!(
+            // 21 psi because that's where the ECAM indication turns amber, which we don't want in normal ops
+            test_bed.regulated_pressure_transducer_signal(1).unwrap() > Pressure::new::<psi>(21.),
+        );
+
+        test_bed = test_bed.idle_eng1().start_eng2().and_stabilize();
+
+        assert!(!test_bed.es_valve_is_open(1));
+        assert!(test_bed.es_valve_is_open(2));
+
+        assert!(
+            // 21 psi because that's where the ECAM indication turns amber, which we don't want in normal ops
+            test_bed.regulated_pressure_transducer_signal(2).unwrap() > Pressure::new::<psi>(21.),
+        );
+    }
+
+    #[test]
     fn cross_bleed_engine_start() {
         let mut test_bed = test_bed_with()
             .start_eng1()
@@ -3826,6 +3823,26 @@ pub mod tests {
     }
 
     #[test]
+    fn asu_bleed_provides_at_least_35_psi_with_open_cross_bleed_valve() {
+        let test_bed = test_bed_with()
+            .stop_eng1()
+            .stop_eng2()
+            .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Open)
+            .set_asu(true)
+            .set_pack_flow_pb_is_auto(1, false)
+            .set_pack_flow_pb_is_auto(2, false)
+            .and_stabilize();
+
+        assert!(test_bed.cross_bleed_valve_is_open());
+
+        assert!(!test_bed.pr_valve_is_open(1));
+        assert!(!test_bed.pr_valve_is_open(2));
+
+        assert!(test_bed.precooler_outlet_pressure(1) > Pressure::new::<psi>(35.));
+        assert!(test_bed.precooler_outlet_pressure(2) > Pressure::new::<psi>(35.));
+    }
+
+    #[test]
     fn hydraulic_reservoirs_get_pressurized() {
         let test_bed = test_bed_with()
             .stop_eng1()
@@ -3896,6 +3913,24 @@ pub mod tests {
             .stop_eng2()
             .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Shut)
             .set_bleed_air_running()
+            .set_pack_flow_pb_is_auto(1, false)
+            .set_pack_flow_pb_is_auto(2, false)
+            .and_stabilize();
+
+        assert!(!test_bed.pr_valve_is_open(1));
+        assert!(!test_bed.cross_bleed_valve_is_open());
+
+        assert!(test_bed.precooler_outlet_pressure(1) > Pressure::new::<psi>(35.));
+        assert!(!test_bed.precooler_outlet_pressure(2).is_nan());
+    }
+
+    #[test]
+    fn asu_bleed_provides_at_least_35_psi_to_left_system_with_closed_cross_bleed_valve() {
+        let test_bed = test_bed_with()
+            .stop_eng1()
+            .stop_eng2()
+            .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Shut)
+            .set_asu(true)
             .set_pack_flow_pb_is_auto(1, false)
             .set_pack_flow_pb_is_auto(2, false)
             .and_stabilize();

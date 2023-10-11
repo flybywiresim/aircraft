@@ -60,17 +60,9 @@ pub(super) fn auxiliary_power_unit(
                 let apu_bleed_valve_open = to_bool(values[4]);
 
                 if (is_available || asu_turned_on) && !msfs_apu_is_on {
-                    println!(
-                        "Starting MSFS APU with asu:{} apu_available:{} msfs_apu:{} msfs apu raw:{}",
-                        asu_turned_on, is_available, msfs_apu_is_on,values[1]
-                    );
                     set_fuel_valve_and_pump(apu_fuel_valve_number, apu_fuel_pump_number, true);
                     start_apu();
                 } else if !is_available && !asu_turned_on && msfs_apu_is_on {
-                    println!(
-                        "Stopping MSFS APU with asu:{} apu_available:{} msfs_apu:{} msfs apu raw:{}",
-                        asu_turned_on, is_available, msfs_apu_is_on,values[1]
-                    );
                     set_fuel_valve_and_pump(apu_fuel_valve_number, apu_fuel_pump_number, false);
                     stop_apu();
                 }
