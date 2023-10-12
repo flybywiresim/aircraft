@@ -65,15 +65,16 @@ jobs:
           ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
           ./scripts/dev-env/run.sh ./scripts/build.sh --no-tty -j 4
           rm -rf fbw-a32nx/src
-          du -Sh | sort -rh | head -5
+          du -Sh / | sort -rh | head -5
       - name: Generate install.json
         if: github.event.pull_request.auto_merge == false
         run: |
+          docker system prune -af
           df -h
-          ./scripts/dev-env/run.sh node ./scripts/fragment_a32nx.js
+          node ./scripts/fragment_a32nx.js
 
           cp ./fbw-a32nx/out/build-modules/modules.json ./fbw-a32nx/out/flybywire-aircraft-a320-neo/install.json
-          ./scripts/dev-env/run.sh node ./scripts/install-source_a32nx.js
+          node ./scripts/install-source_a32nx.js
       - name: Upload PR artifact
         uses: actions/upload-artifact@v2
         if: github.event.pull_request.auto_merge == false
