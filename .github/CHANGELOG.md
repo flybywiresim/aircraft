@@ -53,6 +53,7 @@
 1. [FMS] Use station declination when appropriate for fix info and place/bearing radials - @tracernz (Mike)
 1. [MCDU] Fixed the FMGC annunciator light not illuminating - @tracernz (Mike)
 1. [COND] Add Air Conditioning systems failures - @mjuhe (Miquel Juhe)
+1. [EFB/FBW] Added option for TO/GA off axis for devices where the TO/GA button is built into the throttle - @ImmortalCake
 
 ## 0.10.0
 
