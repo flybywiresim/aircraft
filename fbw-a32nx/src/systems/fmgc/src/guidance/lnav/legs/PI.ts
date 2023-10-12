@@ -10,7 +10,7 @@ import { CFLeg } from '@fmgc/guidance/lnav/legs/CF';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { DebugPointColour, PathVector, PathVectorType } from '@fmgc/guidance/lnav/PathVector';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
-import { TurnDirection } from '@fmgc/types/fstypes/FSEnums';
+import { TurnDirection } from '@flybywiresim/fbw-sdk';
 import { SegmentType } from '@fmgc/wtsdk';
 import { bearingTo, distanceTo, smallCircleGreatCircleIntersection } from 'msfs-geo';
 

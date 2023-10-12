@@ -15,7 +15,7 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v2
       - name: install
-        run: ./scripts/dev-env/run.sh ./scripts/setup.sh
+        run: ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
       - name: npm run lint
         run: ./scripts/dev-env/run.sh npm run lint
       - name: lint-rust.sh
@@ -37,7 +37,7 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v2
       - name: npm install
-        run: ./scripts/dev-env/run.sh ./scripts/setup.sh
+        run: ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
       - name: npm test
         run: npm test
   build:
@@ -52,6 +52,7 @@ jobs:
       - name: Create .env file
         run: |
           echo A32NX_PRODUCTION_BUILD=1 >> fbw-a32nx/.env
+          echo FBW_TYPECHECK=1 >> fbw-a32nx/.env
           echo CLIENT_ID=\"${{ secrets.NAVIGRAPH_CLIENT_ID }}\" >> fbw-a32nx/.env
           echo CLIENT_SECRET=\"${{ secrets.NAVIGRAPH_CLIENT_SECRET }}\" >> fbw-a32nx/.env
           echo CHARTFOX_SECRET=\"${{ secrets.CHARTFOX_SECRET }}\" >> fbw-a32nx/.env
@@ -61,7 +62,7 @@ jobs:
           cat fbw-a32nx/.env
       - name: Build A32NX
         run: |
-          ./scripts/dev-env/run.sh ./scripts/setup.sh
+          ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
           ./scripts/dev-env/run.sh ./scripts/build.sh --no-tty -j 4
           rm -rf fbw-a32nx/src
       - name: Generate install.json
