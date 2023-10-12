@@ -152,10 +152,8 @@ void ThrottleAxisMapping::onEventThrottleSet(long value) {
 }
 
 void ThrottleAxisMapping::onEventThrottleFull() {
+  isTogaActive = true;
   setCurrentValue(1.0);
-  if (!useTogaOnAxis) {
-    isTogaActive = true;
-  }
 }
 
 void ThrottleAxisMapping::onEventThrottleCut() {
@@ -165,10 +163,20 @@ void ThrottleAxisMapping::onEventThrottleCut() {
 }
 
 void ThrottleAxisMapping::onEventThrottleIncrease() {
+  if (!useTogaOnAxis && currentValue == 1.0) {
+    // Specific binding for activating TO/GA when not on axis.
+    isTogaActive = true;
+  }
   increaseThrottleBy(incrementNormal);
 }
 
 void ThrottleAxisMapping::onEventThrottleIncreaseSmall() {
+  if (!useTogaOnAxis) {
+    // Specific binding for deactivating TO/GA when not on axis.
+    // Not using onEventThrottleDecrease because of a bug in MSFS preventing
+    // use of a key on press and a key on release for the same function.
+    isTogaActive = false;
+  }
   increaseThrottleBy(incrementSmall);
 }
 
@@ -279,9 +287,6 @@ void ThrottleAxisMapping::decreaseThrottleBy(double value) {
     if (currentValue == -1.0) {
       isReverseToggleKeyActive = !isReverseToggleKeyActive;
     }
-  }
-  if (!useTogaOnAxis && isTogaActive) {
-    isTogaActive = false;
   }
   if (isReverseToggleActive | isReverseToggleKeyActive) {
     setCurrentValue(fmin(1.0, currentValue + value));
