@@ -6,8 +6,7 @@ import { LandingSystemSelectionManager } from '@fmgc/navigation/LandingSystemSel
 import { NavaidSelectionManager, VorSelectionReason } from '@fmgc/navigation/NavaidSelectionManager';
 import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
 import { NavRadioUtils } from '@fmgc/navigation/NavRadioUtils';
-import { VorType } from '@fmgc/types/fstypes/FSEnums';
-import { Arinc429SignStatusMatrix, Arinc429Word } from '@flybywiresim/fbw-sdk';
+import { Arinc429SignStatusMatrix, Arinc429Word, VorType } from '@flybywiresim/fbw-sdk';
 import { FmgcFlightPhase } from '@shared/flightphase';
 
 interface NavRadioTuningStatus {

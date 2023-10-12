@@ -3,5 +3,12 @@
 set -ex
 
 cd /external
-rm -rf node_modules
+
+for arg in "$@"; do
+  if [ "$arg" = "--clean" ]; then
+    echo "Removing node_modules..."
+    rm -rf node_modules/
+  fi
+done
+
 npm ci
