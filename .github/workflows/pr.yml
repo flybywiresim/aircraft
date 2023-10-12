@@ -68,12 +68,13 @@ jobs:
       - name: Generate install.json
         if: github.event.pull_request.auto_merge == false
         run: |
-          df -h
+          #df -h
           du -sh .[^.]* * | grep -E "\dG"
-          ./scripts/dev-env/run.sh node ./scripts/fragment_a32nx.js
+          ls -la
+          #./scripts/dev-env/run.sh node ./scripts/fragment_a32nx.js
 
-          cp ./fbw-a32nx/out/build-modules/modules.json ./fbw-a32nx/out/flybywire-aircraft-a320-neo/install.json
-          ./scripts/dev-env/run.sh node ./scripts/install-source_a32nx.js
+          #cp ./fbw-a32nx/out/build-modules/modules.json ./fbw-a32nx/out/flybywire-aircraft-a320-neo/install.json
+          #./scripts/dev-env/run.sh node ./scripts/install-source_a32nx.js
       - name: Upload PR artifact
         uses: actions/upload-artifact@v2
         if: github.event.pull_request.auto_merge == false
