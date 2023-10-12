@@ -78,12 +78,12 @@ export class TrackBug extends DisplayComponent<TrackBugProps> {
                 transform={this.transformSubject}
             >
                 <path
-                    d="M384,128 L378,138 L384,148 L390,138 L384,128"
+                    d={this.ndMode.map((ndMode) => (ndMode !== EfisNdMode.ARC ? 'M384,134 L379,143 L384,152 L389,143 L384,134' : 'M384,128 L378,138 L384,148 L390,138 L384,128'))}
                     class="rounded shadow"
                     stroke-width={4.5}
                 />
                 <path
-                    d="M384,128 L378,138 L384,148 L390,138 L384,128"
+                    d={this.ndMode.map((ndMode) => (ndMode !== EfisNdMode.ARC ? 'M384,134 L379,143 L384,152 L389,143 L384,134' : 'M384,128 L378,138 L384,148 L390,138 L384,128'))}
                     class="rounded Green"
                     stroke-width={3}
                 />
