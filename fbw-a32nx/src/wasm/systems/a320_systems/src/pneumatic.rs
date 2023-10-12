@@ -1902,11 +1902,11 @@ pub mod tests {
         },
         shared::{
             arinc429::{Arinc429Word, SignStatus},
-            interpolation, ApuBleedAirValveSignal, AsuBleedAirValveSignal, CabinAltitude,
-            CabinSimulation, ControllerSignal, ElectricalBusType, ElectricalBuses,
-            EmergencyElectricalState, EngineCorrectedN1, EngineFirePushButtons, EngineStartState,
-            HydraulicColor, InternationalStandardAtmosphere, LgciuWeightOnWheels, MachNumber,
-            PackFlowValveState, PneumaticBleed, PneumaticValve, PotentialOrigin,
+            interpolation, ApuBleedAirValveSignal, CabinAltitude, CabinSimulation,
+            ControllerSignal, ElectricalBusType, ElectricalBuses, EmergencyElectricalState,
+            EngineCorrectedN1, EngineFirePushButtons, EngineStartState, HydraulicColor,
+            InternationalStandardAtmosphere, LgciuWeightOnWheels, MachNumber, PackFlowValveState,
+            PneumaticBleed, PneumaticValve, PotentialOrigin,
         },
         simulation::{
             test::{ReadByName, SimulationTestBed, TestBed, WriteByName},
