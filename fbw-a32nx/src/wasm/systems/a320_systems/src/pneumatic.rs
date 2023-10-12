@@ -2272,6 +2272,7 @@ pub mod tests {
             self.electrical.update(context);
 
             self.apu.update(self.pneumatic.apu_bleed_air_valve());
+            self.asu.update();
             self.pneumatic.update(
                 context,
                 [&self.engine_1, &self.engine_2],
@@ -3460,7 +3461,11 @@ pub mod tests {
             test_bed.regulated_pressure_transducer_signal(1).unwrap() > Pressure::new::<psi>(21.),
         );
 
-        test_bed = test_bed.idle_eng1().start_eng2().and_stabilize();
+        test_bed = test_bed
+            .stop_eng1()
+            .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Open)
+            .start_eng2()
+            .and_stabilize();
 
         assert!(!test_bed.es_valve_is_open(1));
         assert!(test_bed.es_valve_is_open(2));

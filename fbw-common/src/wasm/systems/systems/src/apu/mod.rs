@@ -383,7 +383,7 @@ impl AirStarterUnit {
             bleed_air_valve_signal: AsuBleedAirValveSignal::new_closed(),
             bleed_air_pressure: Pressure::new::<psi>(14.7),
             bleed_air_temperature: ThermodynamicTemperature::new::<degree_celsius>(15.),
-            turned_on_id: context.get_identifier("ASU_Turned_ON".to_owned()),
+            turned_on_id: context.get_identifier("ASU_TURNED_ON".to_owned()),
             turned_on: false,
         }
     }
