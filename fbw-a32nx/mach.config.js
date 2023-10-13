@@ -3,6 +3,9 @@ const postCssPlugin = require('esbuild-style-plugin');
 const tailwind = require('tailwindcss');
 const postCssColorFunctionalNotation = require('postcss-color-functional-notation');
 const postCssInset = require('postcss-inset');
+const { typecheckingPlugin } = require("#build-utils");
+
+// process.env.FBW_TYPECHECK = "1";
 
 /** @type { import('@synaptic-simulations/mach').MachConfig } */
 module.exports = {
@@ -24,6 +27,7 @@ module.exports = {
                 ],
             }
         }),
+        typecheckingPlugin(),
     ],
     instruments: [
         msfsAvionicsInstrument('PFD'),

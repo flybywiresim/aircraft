@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ControlLaw, LateralMode, VerticalMode } from '@shared/autopilot';
-import { MathUtils } from '@flybywiresim/fbw-sdk';
+import { MathUtils, TurnDirection } from '@flybywiresim/fbw-sdk';
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
@@ -13,13 +13,13 @@ import { Transition } from '@fmgc/guidance/lnav/Transition';
 import { FixedRadiusTransition } from '@fmgc/guidance/lnav/transitions/FixedRadiusTransition';
 import { PathCaptureTransition } from '@fmgc/guidance/lnav/transitions/PathCaptureTransition';
 import { CourseCaptureTransition } from '@fmgc/guidance/lnav/transitions/CourseCaptureTransition';
-import { TurnDirection } from '@fmgc/types/fstypes/FSEnums';
 import { GuidanceConstants } from '@fmgc/guidance/GuidanceConstants';
 import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
 import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { GuidanceController, GuidanceComponent } from '@fmgc/guidance';
+import { GuidanceController } from '../GuidanceController';
+import { GuidanceComponent } from '../GuidanceComponent';
 
 /**
  * Represents the current turn state of the LNAV driver

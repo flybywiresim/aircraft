@@ -47,13 +47,13 @@ export class Router {
 
     private firstPollHoppie = true;
 
-    private transmissionSimulationTimeouts: NodeJS.Timeout[] = [];
+    private transmissionSimulationTimeouts: number[] = [];
 
     private poweredUp: boolean = false;
 
     private lastUpdateTime: number = -1;
 
-    private removeTransmissionTimeout(timeout: NodeJS.Timeout): void {
+    private removeTransmissionTimeout(timeout: number): void {
         const index = this.transmissionSimulationTimeouts.findIndex((value) => value === timeout);
         if (index >= 0) this.transmissionSimulationTimeouts.splice(index, 1);
     }
@@ -66,7 +66,7 @@ export class Router {
                 if (message.Message.length !== 0) {
                     const transmissionTime = this.vdl.enqueueInboundMessage(message);
 
-                    const timeout = setTimeout(() => {
+                    const timeout = window.setTimeout(() => {
                         this.vdl.dequeueInboundMessage(transmissionTime);
 
                         if (this.poweredUp) {
@@ -243,7 +243,7 @@ export class Router {
         return new Promise((resolve, _reject) => {
             // simulate the request transmission
             const requestTimeout = this.vdl.enqueueOutboundPacket();
-            let timeout = setTimeout(() => {
+            let timeout = window.setTimeout(() => {
                 this.vdl.dequeueOutboundMessage(requestTimeout);
                 this.removeTransmissionTimeout(timeout);
 
@@ -254,12 +254,12 @@ export class Router {
                 const processingTimeout = 300 + Math.floor(Math.random() * 500);
 
                 // simulate some remote processing time
-                timeout = setTimeout(() => {
+                timeout = window.setTimeout(() => {
                     this.removeTransmissionTimeout(timeout);
 
                     // simulate the response transmission
                     const responseTimeout = this.vdl.enqueueInboundMessage(data[1]);
-                    timeout = setTimeout(() => {
+                    timeout = window.setTimeout(() => {
                         this.vdl.dequeueInboundMessage(responseTimeout);
                         this.removeTransmissionTimeout(timeout);
 
@@ -303,7 +303,7 @@ export class Router {
         return new Promise<AtsuStatusCodes>((resolve, _reject) => {
             const transmissionTime = this.vdl.enqueueOutboundMessage(message);
 
-            const timeout = setTimeout(() => {
+            const timeout = window.setTimeout(() => {
                 this.vdl.dequeueOutboundMessage(transmissionTime);
                 this.removeTransmissionTimeout(timeout);
 

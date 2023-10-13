@@ -1,5 +1,7 @@
-// Copyright (c) 2020-2021 Working Title, FlyByWire Simulations
-// SPDX-License-Identifier: MIT
+export enum WaypointConstraintType {
+    CLB = 1,
+    DES = 2,
+}
 
 export enum AirportClass {
     Unknown = 0,
