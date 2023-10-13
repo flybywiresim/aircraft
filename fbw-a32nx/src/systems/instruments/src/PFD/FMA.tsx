@@ -939,7 +939,7 @@ class B2Cell extends DisplayComponent<CellProps> {
             }
 
             // CLB armed should be centered, other modes are aligned to the left on newer DMCs
-            this.xposSub.set(clbArmed ? 50.801795 : 41.977474);
+            this.xposSub.set(clbArmed ? 50.801795 : 40.777474);
             this.text1Sub.set(text1);
             this.text2Sub.set(text2);
             this.classSub.set(`FontMediumSmaller MiddleAlign ${color1}`);
@@ -950,7 +950,7 @@ class B2Cell extends DisplayComponent<CellProps> {
         return (
             <g>
                 <text class={this.classSub} x={this.xposSub} y="13.629653">{this.text1Sub}</text>
-                <text class="FontMediumSmaller MiddleAlign Cyan" x="55.09803" y="13.629653">{this.text2Sub}</text>
+                <text class="FontMediumSmaller MiddleAlign Cyan" x="57.19803" y="13.629653">{this.text2Sub}</text>
             </g>
         );
     }
