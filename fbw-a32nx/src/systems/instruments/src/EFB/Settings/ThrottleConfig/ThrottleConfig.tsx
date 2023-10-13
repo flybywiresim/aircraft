@@ -289,7 +289,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                 <div>
                     <div className="flex flex-row justify-center items-center p-4 mt-auto mb-8 space-x-16 w-full rounded-lg border-2 border-theme-accent">
                         <div className="flex flex-row justify-center items-center space-x-4">
-                            <div>TO/GA On Axis</div>
+                            <div>{t('Settings.ThrottleConfig.TogaOnAxis')}</div>
                             <Toggle value={!!togaOnAxis1} onToggle={(value) => setTogaOnAxis(value ? 1 : 0)} />
                         </div>
                         <div className="flex flex-row justify-center items-center space-x-4">
