@@ -801,7 +801,7 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
             this.speedProtectionPathRef.instance.setAttribute('visibility', 'hidden');
         }
 
-        const boxPathString = this.activeVerticalModeSub.get() === 50 && this.tcasModeDisarmed ? 'm36.056 1.8143h27.118v13.506h-27.118z' : 'm36.056 1.8143h27.118v6.0476h-27.118z';
+        const boxPathString = this.activeVerticalModeSub.get() === 50 && this.tcasModeDisarmed ? 'm35.756 1.8143h27.918v13.506h-27.918z' : 'm35.756 1.8143h27.918v6.0476h-27.918z';
 
         this.boxPathStringSub.set(boxPathString);
 
@@ -868,8 +868,8 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
 
                 <path ref={this.modeChangedPathRef} class={this.boxClassSub} visibility="hidden" d={this.boxPathStringSub} />
 
-                <path ref={this.speedProtectionPathRef} class="NormalStroke Amber BlinkInfinite" d="m36.056 1.8143h27.118v6.0476h-27.118z" />
-                <path ref={this.inModeReversionPathRef} class="NormalStroke White BlinkInfinite" d="m36.056 1.8143h27.118v6.0476h-27.118z" />
+                <path ref={this.speedProtectionPathRef} class="NormalStroke Amber BlinkInfinite" d="m35.756 1.8143h27.918v6.0476h-27.918z" />
+                <path ref={this.inModeReversionPathRef} class="NormalStroke White BlinkInfinite" d="m35.756 1.8143h27.918v6.0476h-27.918z" />
 
                 <text ref={this.fmaTextRef} style="white-space: pre" class="FontMedium MiddleAlign Green" x="49.921795" y="7.1040988">
 
@@ -1060,7 +1060,7 @@ class C1Cell extends ShowForSecondsComponent<CellProps> {
 
         return (
             <g>
-                <path ref={this.modeChangedPathRef} class="NormalStroke White" visibility="hidden" d="m100.87 1.8143v6.0476h-33.075l1e-6 -6.0476z" />
+                <path ref={this.modeChangedPathRef} class="NormalStroke White" visibility="hidden" d="m99.87 1.8143v6.0476h-31.075l1e-6 -6.0476z" />
                 <text class="FontMedium MiddleAlign Green" x="84.856567" y="6.9873109">{this.textSub}</text>
             </g>
         );
