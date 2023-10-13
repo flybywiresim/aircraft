@@ -280,6 +280,14 @@ impl<const ZONES: usize, const ENGINES: usize> AirConditioningSystemController<Z
 impl<const ZONES: usize, const ENGINES: usize> DuctTemperature
     for AirConditioningSystemController<ZONES, ENGINES>
 {
+    /// This function needs to return a Vector of size ZONES.
+    ///
+    /// Because the `ZoneController` is different for each ACSC, we create a vector with "dummy" data for the zones
+    /// not being calculated by the relevant ACSC.
+    ///
+    /// ACSC1 calculates the duct demand temperature of the cockpit.
+    ///
+    /// ACSC2 caluclates the duct demand temperature of the fwd and aft cabin zones.
     fn duct_demand_temperature(&self) -> Vec<ThermodynamicTemperature> {
         let demand_temperature: Vec<ThermodynamicTemperature> = self
             .zone_controller
