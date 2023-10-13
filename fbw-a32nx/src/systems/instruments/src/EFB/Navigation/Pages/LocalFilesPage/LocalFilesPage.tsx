@@ -50,7 +50,7 @@ export const LocalFilesPage = () => {
 
     const setConnectedState = async () => {
         if (!ClientState.getInstance().isAvailable()) {
-            setTimeout(() => {
+            window.setTimeout(() => {
                 setConnectionState(ConnectionState.FAILED);
             }, 500);
             return;
