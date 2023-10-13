@@ -359,7 +359,7 @@ ThrottleAxisMapping::Configuration ThrottleAxisMapping::loadConfigurationFromIni
   idUsingConfig->set(true);
   return {
       INITypeConversion::getBoolean(structure, CONFIGURATION_SECTION_COMMON, "REVERSE_ON_AXIS", false),
-      INITypeConversion::getBoolean(structure, CONFIGURATION_SECTION_COMMON, "TOGA_ON_AXIS", false),
+      INITypeConversion::getBoolean(structure, CONFIGURATION_SECTION_COMMON, "TOGA_ON_AXIS", true),
       INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_COMMON, "KEY_INCREMENT_NORMAL", 0.05),
       INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_COMMON, "KEY_INCREMENT_SMALL", 0.025),
       INITypeConversion::getDouble(structure, CONFIGURATION_SECTION_AXIS, "REVERSE_LOW", -1.00),
