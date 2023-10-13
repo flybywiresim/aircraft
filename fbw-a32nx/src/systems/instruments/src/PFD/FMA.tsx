@@ -767,14 +767,14 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
             text = 'ALT CRZ';
             break; */
         case VerticalMode.FPA: {
-            const FPAText = `${(this.FPA >= 0 ? '+' : '')}${(Math.round(this.FPA * 10) / 10).toFixed(1)}°`;
+            const FPAText = `${(this.FPA > 0 ? '+' : '')}${(Math.round(this.FPA * 10) / 10).toFixed(1)}°`;
 
             text = 'FPA';
             additionalText = FPAText;
             break;
         }
         case VerticalMode.VS: {
-            const VSText = `${(this.selectedVS >= 0 ? '+' : '')}${Math.round(this.selectedVS).toString()}`.padStart(5, ' ');
+            const VSText = `${(this.selectedVS > 0 ? '+' : '')}${Math.round(this.selectedVS).toString()}`.padStart(5, ' ');
 
             text = 'V/S';
 
