@@ -675,6 +675,8 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
 
     private activeVerticalModeSub = Subject.create(0);
 
+    private activeVerticalModeClassSub = Subject.create('');
+
     private speedProtectionPathRef = FSComponent.createRef<SVGPathElement>();
 
     private inModeReversionPathRef = FSComponent.createRef<SVGPathElement>();
@@ -767,9 +769,13 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
             text = 'ALT CRZ';
             break; */
         case VerticalMode.FPA: {
-            const FPAText = `${(this.FPA > 0 ? '+' : '')}${(Math.round(this.FPA * 10) / 10).toFixed(1)}°`;
+            const FPAText = `${(this.FPA > 0 ? '+' : '')}${(Math.round(this.FPA * 10) / 10).toFixed(1)}°`; // empty space when 0 to align the box
 
             text = 'FPA';
+            // if FPA is 0 give it an empty space for where the '+' and '-' will be.
+            if (this.FPA === 0) {
+                text += ' ';
+            }
             additionalText = FPAText;
             break;
         }
@@ -804,6 +810,11 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
         const boxPathString = this.activeVerticalModeSub.get() === 50 && this.tcasModeDisarmed ? 'm35.756 1.8143h27.918v13.506h-27.918z' : 'm35.756 1.8143h27.918v6.0476h-27.918z';
 
         this.boxPathStringSub.set(boxPathString);
+
+        // VS FPA has a smaller font than the other active modes
+        const VsFPA = this.activeVerticalModeSub.get() === 14 || this.activeVerticalModeSub.get() === 15;
+
+        this.activeVerticalModeClassSub.set(VsFPA ? 'FontMediumSmaller MiddleAlign Green' : 'FontMedium MiddleAlign Green');
 
         this.fmaTextRef.instance.innerHTML = `<tspan>${text}</tspan><tspan xml:space="preserve" class=${inSpeedProtection ? 'PulseCyanFill' : 'Cyan'}>${additionalText}</tspan>`;
 
@@ -871,7 +882,7 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
                 <path ref={this.speedProtectionPathRef} class="NormalStroke Amber BlinkInfinite" d="m35.756 1.8143h27.918v6.0476h-27.918z" />
                 <path ref={this.inModeReversionPathRef} class="NormalStroke White BlinkInfinite" d="m35.756 1.8143h27.918v6.0476h-27.918z" />
 
-                <text ref={this.fmaTextRef} style="white-space: pre" class="FontMedium MiddleAlign Green" x="49.921795" y="7.1040988">
+                <text ref={this.fmaTextRef} style="white-space: pre" class={this.activeVerticalModeClassSub} x="49.921795" y="7.1040988">
 
                     {/* set directly via innerhtml as tspan was invisble for some reason when set here */}
 
