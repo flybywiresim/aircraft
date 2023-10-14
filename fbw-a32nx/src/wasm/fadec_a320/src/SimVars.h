@@ -159,8 +159,8 @@ class SimVars {
   ID ThrustLimitMct;
   ID PacksState1;
   ID PacksState2;
-  ID LeftSystemPressure;
-  ID RightSystemPressure;
+  ID Eng1StarterPressurized;
+  ID Eng2StarterPressurized;
   ID APUrpmPercent;
 
   SimVars() { this->initializeVars(); }
@@ -208,8 +208,8 @@ class SimVars {
     Engine2Timer = register_named_variable("A32NX_ENGINE_TIMER:2");
     PumpStateLeft = register_named_variable("A32NX_PUMP_STATE:1");
     PumpStateRight = register_named_variable("A32NX_PUMP_STATE:2");
-    LeftSystemPressure = register_named_variable("A32NX_PNEU_ENG_1_REGULATED_TRANSDUCER_PRESSURE");
-    RightSystemPressure = register_named_variable("A32NX_PNEU_ENG_2_REGULATED_TRANSDUCER_PRESSURE");
+    Eng1StarterPressurized = register_named_variable("A32NX_PNEU_ENG_1_STARTER_PRESSURIZED");
+    Eng2StarterPressurized = register_named_variable("A32NX_PNEU_ENG_2_STARTER_PRESSURIZED");
     APUrpmPercent = register_named_variable("A32NX_APU_N");
 
     ThrustLimitType = register_named_variable("A32NX_AUTOTHRUST_THRUST_LIMIT_TYPE");
@@ -354,8 +354,11 @@ class SimVars {
   FLOAT64 getPacksState1() { return get_named_variable_value(PacksState1); }
   FLOAT64 getPacksState2() { return get_named_variable_value(PacksState2); }
   FLOAT64 getThrustLimitType() { return get_named_variable_value(ThrustLimitType); }
-  FLOAT64 getLeftSystemPressure() { return get_named_variable_value(LeftSystemPressure); }
-  FLOAT64 getRightSystemPressure() { return get_named_variable_value(RightSystemPressure); }
+  FLOAT64 getStarterPressurized(int engine) {
+    ID variable = engine == 1 ? Eng1StarterPressurized : Eng2StarterPressurized;
+    return get_named_variable_value(variable);
+  }
+  FLOAT64 getRightSystemPressure() { return get_named_variable_value(Eng2StarterPressurized); }
   FLOAT64 getAPUrpmPercent() { return get_named_variable_value(APUrpmPercent); }
 
   FLOAT64 getCN1(int index) { return aircraft_varget(CorrectedN1, m_Units->Percent, index); }
