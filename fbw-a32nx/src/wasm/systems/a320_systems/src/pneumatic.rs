@@ -25,10 +25,10 @@ use systems::{
         WingAntiIcePushButton, WingAntiIceSelected,
     },
     shared::{
-        pid::PidController, update_iterator::MaxStepLoop, AsuBleedAirValveSignal, ControllerSignal,
-        DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses, EngineBleedPushbutton,
-        EngineCorrectedN1, EngineCorrectedN2, EngineFirePushButtons, EngineStartState,
-        HydraulicColor, LgciuWeightOnWheels, PackFlowValveState, PneumaticBleed, PneumaticValve,
+        pid::PidController, update_iterator::MaxStepLoop, ControllerSignal, DelayedTrueLogicGate,
+        ElectricalBusType, ElectricalBuses, EngineBleedPushbutton, EngineCorrectedN1,
+        EngineCorrectedN2, EngineFirePushButtons, EngineStartState, HydraulicColor,
+        LgciuWeightOnWheels, PackFlowValveState, PneumaticBleed, PneumaticValve,
         ReservoirAirPressure,
     },
     simulation::{
@@ -112,7 +112,7 @@ pub struct A320Pneumatic {
     apu_bleed_air_valve: DefaultValve,
 
     air_starter_unit_compression_chamber: CompressionChamber,
-    air_starter_unit_bleed_air_valve: DefaultValve,
+    air_starter_unit_bleed_air_valve: PurelyPneumaticValve,
 
     wing_anti_ice: WingAntiIceComplex,
 
@@ -170,7 +170,7 @@ impl A320Pneumatic {
             air_starter_unit_compression_chamber: CompressionChamber::new(
                 Volume::new::<cubic_meter>(5.),
             ),
-            air_starter_unit_bleed_air_valve: DefaultValve::new_closed(),
+            air_starter_unit_bleed_air_valve: PurelyPneumaticValve::default(),
             wing_anti_ice: WingAntiIceComplex::new(context),
             hydraulic_reservoir_bleed_air_valves: [
                 PurelyPneumaticValve::new(),
@@ -229,8 +229,7 @@ impl A320Pneumatic {
         overhead_panel: &A320PneumaticOverheadPanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         apu: &impl ControllerSignal<TargetPressureTemperatureSignal>,
-        asu: &(impl ControllerSignal<TargetPressureTemperatureSignal>
-              + ControllerSignal<AsuBleedAirValveSignal>),
+        asu: &impl ControllerSignal<TargetPressureTemperatureSignal>,
         pack_flow_valve_signals: &impl PackFlowControllers,
         lgciu: [&impl LgciuWeightOnWheels; 2],
     ) {
@@ -257,17 +256,12 @@ impl A320Pneumatic {
         overhead_panel: &A320PneumaticOverheadPanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         apu: &impl ControllerSignal<TargetPressureTemperatureSignal>,
-        asu: &(impl ControllerSignal<TargetPressureTemperatureSignal>
-              + ControllerSignal<AsuBleedAirValveSignal>),
+        asu: &impl ControllerSignal<TargetPressureTemperatureSignal>,
         pack_flow_valve_signals: &impl PackFlowControllers,
         lgciu: [&impl LgciuWeightOnWheels; 2],
     ) {
         self.apu_compression_chamber.update(apu);
         self.air_starter_unit_compression_chamber.update(asu);
-        self.air_starter_unit_bleed_air_valve
-            .update_open_amount::<AsuBleedAirValveSignal,dyn ControllerSignal<AsuBleedAirValveSignal>>(
-                asu,
-            );
 
         for bleed_monitoring_computer in self.bleed_monitoring_computers.iter_mut() {
             bleed_monitoring_computer.update(

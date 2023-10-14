@@ -471,13 +471,8 @@ macro_rules! valve_signal_implementation {
 pub struct ApuBleedAirValveSignal {
     target_open_amount: Ratio,
 }
-#[derive(Clone, Copy)]
-pub struct AsuBleedAirValveSignal {
-    target_open_amount: Ratio,
-}
 
 valve_signal_implementation!(ApuBleedAirValveSignal);
-valve_signal_implementation!(AsuBleedAirValveSignal);
 
 pub trait PneumaticValve {
     fn is_open(&self) -> bool;
