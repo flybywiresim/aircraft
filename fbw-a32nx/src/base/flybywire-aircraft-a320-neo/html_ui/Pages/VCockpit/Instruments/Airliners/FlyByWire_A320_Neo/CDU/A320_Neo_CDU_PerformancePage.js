@@ -552,7 +552,7 @@ class CDUPerformancePage {
             if (hasPreselectedSpeedOrMach) {
                 preselCell = `\xa0${mcdu.preSelectedCrzSpeed < 1 ? mcdu.preSelectedCrzSpeed.toFixed(2).replace("0.", ".") : mcdu.preSelectedCrzSpeed.toFixed(0)}[color]cyan`;
             } else {
-                preselCell = "*[ ][color]cyan";
+                preselCell = "{small}*{end}[ ][color]cyan";
             }
         }
 
