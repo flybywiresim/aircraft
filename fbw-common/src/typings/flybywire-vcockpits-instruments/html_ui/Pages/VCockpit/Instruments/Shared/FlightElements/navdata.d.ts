@@ -1,7 +1,6 @@
 // Copyright (c) 2020-2021 Working Title, FlyByWire Simulations
 // SPDX-License-Identifier: MIT
 
-import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
 import {
     AirportClass,
     AirportPrivateType,
@@ -18,8 +17,8 @@ import {
     RunwaySurface,
     TurnDirection,
     VorClass,
-    VorType,
-} from './FSEnums';
+    VorType, WaypointConstraintType,
+} from './enums';
 
 declare global {
     class WayPoint {
@@ -57,12 +56,12 @@ declare global {
 
         /**
          * These are the default MS types but for some reason we changed
-        altDesc: number;
+         altDesc: number;
 
-        altitude1: number;
+         altitude1: number;
 
-        altitude2: number;
-        */
+         altitude2: number;
+         */
 
         legAltitudeDescription: AltitudeDescriptor;
 
@@ -285,6 +284,8 @@ declare global {
         name: string;
         lat: number;
         lon: number;
+        // added for a32nx
+        additionalData: { [key: string]: any }
         __Type: string;
     }
 
@@ -403,3 +404,5 @@ declare global {
 
     function RegisterViewListener(handler: string): ViewListener.ViewListener
 }
+
+export {};
