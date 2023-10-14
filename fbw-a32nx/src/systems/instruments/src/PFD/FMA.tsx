@@ -950,7 +950,7 @@ class B2Cell extends DisplayComponent<CellProps> {
         return (
             <g>
                 <text class={this.classSub} x={this.xposSub} y="13.629653">{this.text1Sub}</text>
-                <text class="FontMediumSmaller MiddleAlign Cyan" x="57.19803" y="13.629653">{this.text2Sub}</text>
+                <text class="FontMediumSmaller MiddleAlign Cyan" x="56.19803" y="13.629653">{this.text2Sub}</text>
             </g>
         );
     }
