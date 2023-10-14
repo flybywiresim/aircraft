@@ -622,7 +622,8 @@
       "ReverserOnAxis": "Reverser Pada Axis",
       "SaveAndApply": "Simpan dan Terapkan",
       "SetFromThrottle": "Atur dari Throttle",
-      "ThrottleConfigurationReset": "Reset Konfigurasi Throttle"
+      "ThrottleConfigurationReset": "Reset Konfigurasi Throttle",
+      "TogaOnAxis": "TogaOnAxis"
     },
     "Title": "Pengaturan",
     "Unrealistic": "Tidak Realistis",

@@ -622,7 +622,8 @@
       "ReverserOnAxis": "Inversor pe axă",
       "SaveAndApply": "Salvare și aplicare",
       "SetFromThrottle": "Setați de la accelerație",
-      "ThrottleConfigurationReset": "Reset configurație accelerație"
+      "ThrottleConfigurationReset": "Reset configurație accelerație",
+      "TogaOnAxis": "TogaOnAxis"
     },
     "Title": "Setări",
     "Unrealistic": "Nerealist",

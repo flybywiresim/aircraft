@@ -622,7 +622,8 @@
       "ReverserOnAxis": "Reversa en el eje",
       "SaveAndApply": "Guardar y aplicar",
       "SetFromThrottle": "Aplica desde Throttle",
-      "ThrottleConfigurationReset": "Reinicio de la configuración del Throttle"
+      "ThrottleConfigurationReset": "Reinicio de la configuración del Throttle",
+      "TogaOnAxis": "TogaOnAxis"
     },
     "Title": "Ajustes",
     "Unrealistic": "No realista",

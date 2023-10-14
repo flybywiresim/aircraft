@@ -622,7 +622,8 @@
       "ReverserOnAxis": "Atbulinė trauka ant ašies",
       "SaveAndApply": "Išsaugoti ir taikyti",
       "SetFromThrottle": "Nustatyti iš droselio",
-      "ThrottleConfigurationReset": "Droselio konfiguracijos atstatymas"
+      "ThrottleConfigurationReset": "Droselio konfiguracijos atstatymas",
+      "TogaOnAxis": "TogaOnAxis"
     },
     "Title": "Nustatymai",
     "Unrealistic": "Nerealistiška",

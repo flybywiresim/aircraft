@@ -622,7 +622,8 @@
       "ReverserOnAxis": "Moottorijarrutus akselilla",
       "SaveAndApply": "Tallenna ja käytä",
       "SetFromThrottle": "Aseta kaasukahvasta",
-      "ThrottleConfigurationReset": "Nollaa kaasun määritys"
+      "ThrottleConfigurationReset": "Nollaa kaasun määritys",
+      "TogaOnAxis": "TogaOnAxis"
     },
     "Title": "Asetukset",
     "Unrealistic": "Epärealistinen",

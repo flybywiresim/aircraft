@@ -622,7 +622,8 @@
       "ReverserOnAxis": "Reverser na os",
       "SaveAndApply": "Uložiť a použiť",
       "SetFromThrottle": "Nastav od škrtiacej klapky",
-      "ThrottleConfigurationReset": "Reset konfigurácie škrtiacej klapky"
+      "ThrottleConfigurationReset": "Reset konfigurácie škrtiacej klapky",
+      "TogaOnAxis": "TogaOnAxis"
     },
     "Title": "Nastavenia",
     "Unrealistic": "Nereálne",

@@ -622,7 +622,8 @@
       "ReverserOnAxis": "逆噴射を軸に設定",
       "SaveAndApply": "保存して適用",
       "SetFromThrottle": "現在のスロットル値をセット",
-      "ThrottleConfigurationReset": "スロットル構成のリセット"
+      "ThrottleConfigurationReset": "スロットル構成のリセット",
+      "TogaOnAxis": "TogaOnAxis"
     },
     "Title": "設定",
     "Unrealistic": "非現実的",

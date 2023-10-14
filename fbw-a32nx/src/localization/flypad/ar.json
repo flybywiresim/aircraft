@@ -622,7 +622,8 @@
       "ReverserOnAxis": "Reverser On Axis",
       "SaveAndApply": "حفظ وتطبيق",
       "SetFromThrottle": "Set from Throttle",
-      "ThrottleConfigurationReset": "اعادة اعدادات دفة تحكم النفاثات "
+      "ThrottleConfigurationReset": "اعادة اعدادات دفة تحكم النفاثات ",
+      "TogaOnAxis": "TogaOnAxis"
     },
     "Title": "الإعدادات",
     "Unrealistic": "غير واقعي",

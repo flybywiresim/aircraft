@@ -622,7 +622,8 @@
       "ReverserOnAxis": "軸上設有反推杆",
       "SaveAndApply": "儲存並應用",
       "SetFromThrottle": "從油門設置",
-      "ThrottleConfigurationReset": "重置油門設定"
+      "ThrottleConfigurationReset": "重置油門設定",
+      "TogaOnAxis": "TogaOnAxis"
     },
     "Title": "設定",
     "Unrealistic": "唔真實",

@@ -622,7 +622,8 @@
       "ReverserOnAxis": "Reverse op as",
       "SaveAndApply": "Opslaan en toepassen",
       "SetFromThrottle": "Zet van throttle",
-      "ThrottleConfigurationReset": "Throttle configuratie herstellen"
+      "ThrottleConfigurationReset": "Throttle configuratie herstellen",
+      "TogaOnAxis": "TogaOnAxis"
     },
     "Title": "Instellingen",
     "Unrealistic": "Onrealistisch",

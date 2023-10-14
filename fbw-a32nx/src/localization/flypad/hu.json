@@ -622,7 +622,8 @@
       "ReverserOnAxis": "Sugárfordító a tengelyen",
       "SaveAndApply": "Mentés és alkalmazás",
       "SetFromThrottle": "Beállítás gázkarról",
-      "ThrottleConfigurationReset": "Gázkar beállítások visszaállítása"
+      "ThrottleConfigurationReset": "Gázkar beállítások visszaállítása",
+      "TogaOnAxis": "TogaOnAxis"
     },
     "Title": "Beállítások",
     "Unrealistic": "Nem realisztikus",

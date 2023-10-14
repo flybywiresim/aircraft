@@ -622,7 +622,8 @@
       "ReverserOnAxis": "Baglæns på akse",
       "SaveAndApply": "Gem og anvend",
       "SetFromThrottle": "Sæt fra throttle",
-      "ThrottleConfigurationReset": "Nulstilling af throttle indstillinger"
+      "ThrottleConfigurationReset": "Nulstilling af throttle indstillinger",
+      "TogaOnAxis": "TogaOnAxis"
     },
     "Title": "Indstillinger",
     "Unrealistic": "Urealistisk",

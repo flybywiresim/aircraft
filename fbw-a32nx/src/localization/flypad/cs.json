@@ -622,7 +622,8 @@
       "ReverserOnAxis": "Zpětný tah na ose",
       "SaveAndApply": "Uložit a použít",
       "SetFromThrottle": "Nastavit z plynové páky",
-      "ThrottleConfigurationReset": "Reset konfigurace plynových pák"
+      "ThrottleConfigurationReset": "Reset konfigurace plynových pák",
+      "TogaOnAxis": "TogaOnAxis"
     },
     "Title": "Nastavení",
     "Unrealistic": "Nerealistické",

@@ -622,7 +622,8 @@
       "ReverserOnAxis": "Đảo ngược trên trục",
       "SaveAndApply": "Lưu và áp dụng",
       "SetFromThrottle": "Đặt từ cần ga",
-      "ThrottleConfigurationReset": "Khôi phục lại cấu hình cần ga"
+      "ThrottleConfigurationReset": "Khôi phục lại cấu hình cần ga",
+      "TogaOnAxis": "TogaOnAxis"
     },
     "Title": "Cài đặt",
     "Unrealistic": "Không thực tế",

@@ -622,7 +622,8 @@
       "ReverserOnAxis": "Eixo de reverso",
       "SaveAndApply": "Salvar e aplicar",
       "SetFromThrottle": "Definir através do acelerador",
-      "ThrottleConfigurationReset": "Redefinir configuração do acelerador"
+      "ThrottleConfigurationReset": "Redefinir configuração do acelerador",
+      "TogaOnAxis": "TogaOnAxis"
     },
     "Title": "Configurações",
     "Unrealistic": "Irrealista",

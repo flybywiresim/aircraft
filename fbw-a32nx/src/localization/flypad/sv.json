@@ -622,7 +622,8 @@
       "ReverserOnAxis": "Omvänd dragkraft på axel",
       "SaveAndApply": "Spara och tillämpa",
       "SetFromThrottle": "Spara från gasreglage",
-      "ThrottleConfigurationReset": "Återställning av gasreglagets kalibrering"
+      "ThrottleConfigurationReset": "Återställning av gasreglagets kalibrering",
+      "TogaOnAxis": "TogaOnAxis"
     },
     "Title": "Inställningar",
     "Unrealistic": "Orealistiskt",

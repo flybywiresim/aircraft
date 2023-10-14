@@ -622,7 +622,8 @@
       "ReverserOnAxis": "Ανάστροφη στον Άξονα",
       "SaveAndApply": "Αποθήκευση και Εφαρμογή",
       "SetFromThrottle": "Θέστε από Γκάζι",
-      "ThrottleConfigurationReset": "Επαναφορά Ρύθμισης Γκαζιού"
+      "ThrottleConfigurationReset": "Επαναφορά Ρύθμισης Γκαζιού",
+      "TogaOnAxis": "TogaOnAxis"
     },
     "Title": "Ρυθμίσεις",
     "Unrealistic": "Μη Ρεαλιστικό",

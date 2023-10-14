@@ -622,7 +622,8 @@
       "ReverserOnAxis": "Umkehrschub auf Achsenbereich",
       "SaveAndApply": "Speichern und Anwenden",
       "SetFromThrottle": "Hebelposition speichern",
-      "ThrottleConfigurationReset": "Schubhebelkalibrierung zurücksetzen"
+      "ThrottleConfigurationReset": "Schubhebelkalibrierung zurücksetzen",
+      "TogaOnAxis": "TogaOnAxis"
     },
     "Title": "Einstellungen",
     "Unrealistic": "Unrealistisch",

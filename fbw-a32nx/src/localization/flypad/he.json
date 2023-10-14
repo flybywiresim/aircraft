@@ -622,7 +622,8 @@
       "ReverserOnAxis": "דחף אחורי על ציר",
       "SaveAndApply": "שמור והחל",
       "SetFromThrottle": "הגדר מהמצערת",
-      "ThrottleConfigurationReset": "איפוס תצורת מצערת"
+      "ThrottleConfigurationReset": "איפוס תצורת מצערת",
+      "TogaOnAxis": "TogaOnAxis"
     },
     "Title": "הגדרות",
     "Unrealistic": "לא מציאותי",

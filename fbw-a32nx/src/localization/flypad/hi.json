@@ -622,7 +622,8 @@
       "ReverserOnAxis": "एक्सिस पर रिवर्सर",
       "SaveAndApply": "सहेजें और लागू करें",
       "SetFromThrottle": "थ्रॉटल से सेट करें",
-      "ThrottleConfigurationReset": "थ्रॉटल कॉन्फ़िगरेशन रीसेट"
+      "ThrottleConfigurationReset": "थ्रॉटल कॉन्फ़िगरेशन रीसेट",
+      "TogaOnAxis": "TogaOnAxis"
     },
     "Title": "सेटिंग",
     "Unrealistic": "अवास्तविक",
