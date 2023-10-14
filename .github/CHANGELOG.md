@@ -1321,3 +1321,4 @@
    Discord)
 1. [EFB] Restructured APIs and made Navigraph Auth a reusable component - @MicahBCode (Mischa Binder)
 1. [ECAM] Added F units to CRZ and COND pages for Cabin temps.  Currently tied to kg/lbs  option in EFB -Patrick Macken  (@PatM on Discord)
+1. [ND] Fix ND ETA of TO waypoint display prior to takeoff and after landing. - Alex Milshtein (@alexm1987 on Discord)

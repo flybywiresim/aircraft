@@ -666,6 +666,8 @@ class ToWaypointIndicator extends DisplayComponent<ToWaypointIndicatorProps> {
 
     private readonly visibleSub = Subject.create(false);
 
+    private readonly noseGearCompressed = ConsumerSubject.create(null, true);
+
     private readonly bearingContainerVisible = MappedSubject.create(
         ([trueRef, bearing, trueBearing, isNormalOperation]) => {
             return isNormalOperation && Number.isFinite(trueRef ? trueBearing : bearing);
@@ -692,6 +694,8 @@ class ToWaypointIndicator extends DisplayComponent<ToWaypointIndicatorProps> {
     private readonly distanceNmUnitVisible = Subject.create(false);
 
     private readonly etaValue = Subject.create('');
+
+    private readonly toWptEtaVisible = Subject.create(false);
 
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
@@ -723,6 +727,9 @@ class ToWaypointIndicator extends DisplayComponent<ToWaypointIndicatorProps> {
         this.sub.on('simTime').whenChangedBy(100).handle(() => {
             this.refreshToWptIdent();
         });
+
+        this.noseGearCompressed.setConsumer(this.sub.on('noseGearCompressed').whenChanged());
+        this.noseGearCompressed.sub((onGround) => this.toWptEtaVisible.set(!onGround));
     }
 
     private handleVisibility() {
@@ -815,7 +822,7 @@ class ToWaypointIndicator extends DisplayComponent<ToWaypointIndicatorProps> {
                     NM
                 </text>
 
-                <text x={72} y={66} class="Green FontIntermediate EndAlign">{this.etaValue}</text>
+                <text x={72} y={66} class="Green FontIntermediate EndAlign" visibility={this.toWptEtaVisible.map(this.visibilityFn)}>{this.etaValue}</text>
             </Layer>
         );
     }
