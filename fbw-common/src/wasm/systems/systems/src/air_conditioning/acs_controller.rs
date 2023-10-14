@@ -287,7 +287,7 @@ impl<const ZONES: usize, const ENGINES: usize> DuctTemperature
     ///
     /// ACSC1 calculates the duct demand temperature of the cockpit.
     ///
-    /// ACSC2 caluclates the duct demand temperature of the fwd and aft cabin zones.
+    /// ACSC2 calculates the duct demand temperature of the fwd and aft cabin zones.
     fn duct_demand_temperature(&self) -> Vec<ThermodynamicTemperature> {
         let demand_temperature: Vec<ThermodynamicTemperature> = self
             .zone_controller
