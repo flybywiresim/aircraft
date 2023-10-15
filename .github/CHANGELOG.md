@@ -54,6 +54,12 @@
 1. [MCDU] Fixed the FMGC annunciator light not illuminating - @tracernz (Mike)
 1. [COND] Add Air Conditioning systems failures - @mjuhe (Miquel Juhe)
 1. [COND] Fixed Temp-Indication on CRZ page showing cockpit temperature for fwd and aft cabin - @cptnuss-ops (Lukas)
+1. [PFD] Decreased font size of armed FMAs - @BravoMike99 (bruno_pt99)
+1. [PFD] Changed CLB armed FMA position acoording to newer DMCs - @BravoMike99 (bruno_pt99)
+1. [PFD] Corrected mode change FMA boxes length for thrust/autobrake, vertical and lateral modes - @BravoMike99 (bruno_pt99)
+1. [PFD] Reworked FLX FMA  & "MAN" text alignment in remaining thrust modes - @BravoMike99 (bruno_pt99)
+1. [PFD] Hide '+' sign on V/S & FPA FMA if selected value is 0 - @BravoMike99 (bruno_pt99)
+1. [PFD] Decreased font size of THR IDLE, V/S & FPA FMA - @BravoMike99 (bruno_pt99)
 
 ## 0.10.0
 
