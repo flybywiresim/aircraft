@@ -1217,7 +1217,6 @@ class EngineControl {
 
       // simulates delay to start valve open through fuel valve travel time
       bool engineMasterTurnedOn = prevEngineMasterPos[engine - 1] < 1 && engineFuelValveOpen >= 1;
-
       bool engineMasterTurnedOff = prevEngineMasterPos[engine - 1] == 1 && engineFuelValveOpen < 1;
 
       if (engine == 1) {
@@ -1241,10 +1240,8 @@ class EngineControl {
       }  // shuts off engines if Engine Master is turned off or starter is depressurized while N2 is below 50 %
       else if (engineStarter && (engineFuelValveOpen < 1 || (engineFuelValveOpen && !engineStarterPressurized && simN2 < 20))) {
         std::string command1 = engine == 1 ? "0 (>K:SET_STARTER1_HELD)" : "0 (>K:SET_STARTER2_HELD)";
-
         execute_calculator_code(command1.c_str(), nullptr, nullptr, nullptr);
         std::string command2 = engine == 1 ? "0 (>K:STARTER1_SET)" : "0 (>K:STARTER2_SET)";
-
         execute_calculator_code(command2.c_str(), nullptr, nullptr, nullptr);
         engineStarter = 0;
       }

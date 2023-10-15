@@ -355,8 +355,7 @@ class SimVars {
   FLOAT64 getPacksState2() { return get_named_variable_value(PacksState2); }
   FLOAT64 getThrustLimitType() { return get_named_variable_value(ThrustLimitType); }
   FLOAT64 getStarterPressurized(int engine) {
-    ID variable = engine == 1 ? Eng1StarterPressurized : Eng2StarterPressurized;
-    return get_named_variable_value(variable);
+    return get_named_variable_value(engine == 1 ? Eng1StarterPressurized : Eng2StarterPressurized);
   }
   FLOAT64 getRightSystemPressure() { return get_named_variable_value(Eng2StarterPressurized); }
   FLOAT64 getAPUrpmPercent() { return get_named_variable_value(APUrpmPercent); }

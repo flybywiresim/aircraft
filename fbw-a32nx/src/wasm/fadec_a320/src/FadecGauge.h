@@ -94,7 +94,7 @@ class FadecGauge {
       return false;
     }
 
-    result = SimConnect_AddClientEventToNotificationGroup(connectionHandle, groupId, eventId, maskEvent ? TRUE : FALSE);
+    result = SimConnect_AddClientEventToNotificationGroup(connectionHandle, groupId, eventId, maskEvent);
     if (result != S_OK) {
       // failed -> abort
       return false;
