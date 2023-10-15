@@ -185,6 +185,7 @@
       "Title": "Työntö"
     },
     "Services": {
+      "AirStarterUnit": "Air Starter Unit",
       "BaggageTruck": "Matkatavarat",
       "CateringTruck": "Ateriapalvelut",
       "Cones": "Varoituskartiot",

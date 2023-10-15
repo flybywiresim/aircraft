@@ -185,6 +185,7 @@
       "Title": "Pushback"
     },
     "Services": {
+      "AirStarterUnit": "Air Starter Unit",
       "BaggageTruck": "Bagasjebil",
       "CateringTruck": "Cateringbil",
       "Cones": "Sikkerhet kjegler",

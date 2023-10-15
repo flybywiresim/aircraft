@@ -185,6 +185,7 @@
       "Title": "Pushback"
     },
     "Services": {
+      "AirStarterUnit": "Luftstartereinheit",
       "BaggageTruck": "Gepäckabfertigung",
       "CateringTruck": "Catering",
       "Cones": "Sicherheitskegel",
@@ -623,7 +624,7 @@
       "SaveAndApply": "Speichern und Anwenden",
       "SetFromThrottle": "Hebelposition speichern",
       "ThrottleConfigurationReset": "Schubhebelkalibrierung zurücksetzen",
-      "TogaOnAxis": "TogaOnAxis"
+      "TogaOnAxis": "TO/GA auf Achsenbereich"
     },
     "Title": "Einstellungen",
     "Unrealistic": "Unrealistisch",

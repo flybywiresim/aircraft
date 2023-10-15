@@ -185,6 +185,7 @@
       "Title": "プッシュバック"
     },
     "Services": {
+      "AirStarterUnit": "Air Starter Unit",
       "BaggageTruck": "手荷物トラック",
       "CateringTruck": "機内食トラック",
       "Cones": "セーフティコーン",

@@ -185,6 +185,7 @@
       "Title": "Pushback"
     },
     "Services": {
+      "AirStarterUnit": "Air Starter Unit",
       "BaggageTruck": "Veicolo Bagagli",
       "CateringTruck": "Veicolo Catering",
       "Cones": "Coni di Sicurezza",

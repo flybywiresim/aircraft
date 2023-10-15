@@ -185,6 +185,7 @@
       "Title": "Vlačilec"
     },
     "Services": {
+      "AirStarterUnit": "Air Starter Unit",
       "BaggageTruck": "Tovornjak za prtljago",
       "CateringTruck": "Gostinski tovornjak",
       "Cones": "Varnostni stožci",

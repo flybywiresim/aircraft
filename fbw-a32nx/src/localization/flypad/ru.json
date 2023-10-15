@@ -185,6 +185,7 @@
       "Title": "Откат"
     },
     "Services": {
+      "AirStarterUnit": "Air Starter Unit",
       "BaggageTruck": "Багажный грузовик",
       "CateringTruck": "Кейтеринг грузовик",
       "Cones": "Предохранительные конусы",
