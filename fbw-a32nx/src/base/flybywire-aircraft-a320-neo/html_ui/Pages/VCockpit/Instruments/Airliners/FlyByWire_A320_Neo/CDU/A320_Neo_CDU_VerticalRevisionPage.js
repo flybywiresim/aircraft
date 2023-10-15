@@ -73,37 +73,9 @@ class CDUVerticalRevisionPage {
             }
         }
 
-        let speedConstraint = 0;
-        if (waypoint.definition.speed > 10) {
-            speedConstraint = waypoint.definition.speed.toFixed(0);
-        }
-
+        const speedConstraint = waypoint.speedConstraint ? Math.round(waypoint.speedConstraint.speed).toFixed(0) : undefined;
         const transAltLevel = constraintType === WaypointConstraintType.DES ? targetPlan.performanceData.transitionLevel.get() * 100 : targetPlan.performanceData.transitionAltitude.get();
-        let altitudeConstraint = "";
-        switch (waypoint.definition.altitudeDescriptor) {
-            case '@': {
-                altitudeConstraint = this.formatFl(Math.round(waypoint.definition.altitude1), transAltLevel);
-                break;
-            }
-            case '+': {
-                altitudeConstraint = "+" + this.formatFl(Math.round(waypoint.definition.altitude1), transAltLevel);
-                break;
-            }
-            case '-': {
-                altitudeConstraint = "-" + this.formatFl(Math.round(waypoint.definition.altitude1), transAltLevel);
-                break;
-            }
-            case 'B': {
-                if (waypoint.definition.altitude1 < waypoint.definition.altitude2) {
-                    altitudeConstraint = "+" + this.formatFl(Math.round(waypoint.definition.altitude1), transAltLevel)
-                        + "/-" + this.formatFl(Math.round(waypoint.definition.altitude2), transAltLevel);
-                } else {
-                    altitudeConstraint = "+" + this.formatFl(Math.round(waypoint.definition.altitude2), transAltLevel)
-                        + "/-" + this.formatFl(Math.round(waypoint.definition.altitude1), transAltLevel);
-                }
-                break;
-            }
-        }
+        const altitudeConstraint = this.formatAltConstraint(waypoint.altitudeConstraint, transAltLevel);
 
         let r3Title = "ALT CSTR\xa0";
         let r3Cell = "{cyan}[\xa0\xa0\xa0\xa0]*{end}";
@@ -246,7 +218,7 @@ class CDUVerticalRevisionPage {
         mcdu.onRightInput[1] = () => {}; // RTA
         mcdu.onLeftInput[2] = async (value, scratchpadCallback) => {
             if (value === FMCMainDisplay.clrValue) {
-                await mcdu.flightPlanService.setSpeedAt(wpIndex, -1, false, forPlan, inAlternate);
+                await mcdu.flightPlanService.setPilotEnteredSpeedConstraintAt(wpIndex, constraintType === WaypointConstraintType.DES, undefined, forPlan, inAlternate);
 
                 mcdu.guidanceController.vnavDriver.invalidateFlightPlanProfile();
 
@@ -273,7 +245,7 @@ class CDUVerticalRevisionPage {
                 return;
             }
 
-            await mcdu.flightPlanService.setSpeedAt(wpIndex, speed, constraintType === WaypointConstraintType.DES, forPlan, inAlternate);
+            await mcdu.flightPlanService.setPilotEnteredSpeedConstraintAt(wpIndex, constraintType === WaypointConstraintType.DES, { speed }, forPlan, inAlternate);
 
             mcdu.guidanceController.vnavDriver.invalidateFlightPlanProfile();
 
@@ -281,8 +253,7 @@ class CDUVerticalRevisionPage {
         }; // SPD CSTR
         mcdu.onRightInput[2] = async (value, scratchpadCallback) => {
             if (value === FMCMainDisplay.clrValue) {
-                await mcdu.flightPlanService.setAltitudeDescriptionAt(wpIndex, 0, false, forPlan, inAlternate);
-                await mcdu.flightPlanService.setAltitudeAt(wpIndex, undefined, constraintType === WaypointConstraintType.DES, forPlan, inAlternate);
+                await mcdu.flightPlanService.setPilotEnteredAltitudeConstraintAt(wpIndex, constraintType === WaypointConstraintType.DES, undefined, forPlan, inAlternate);
 
                 mcdu.updateConstraints();
                 mcdu.guidanceController.vnavDriver.invalidateFlightPlanProfile();
@@ -314,8 +285,10 @@ class CDUVerticalRevisionPage {
                 return;
             }
 
-            await mcdu.flightPlanService.setAltitudeDescriptionAt(wpIndex, code, false, forPlan, inAlternate);
-            await mcdu.flightPlanService.setAltitudeAt(wpIndex, altitude, false, forPlan, inAlternate);
+            await mcdu.flightPlanService.setPilotEnteredAltitudeConstraintAt(wpIndex, constraintType === WaypointConstraintType.DES, {
+                type: code,
+                altitude1: altitude,
+            }, forPlan, inAlternate);
 
             mcdu.updateConstraints();
             mcdu.guidanceController.vnavDriver.invalidateFlightPlanProfile();
@@ -345,7 +318,7 @@ class CDUVerticalRevisionPage {
         } else {
             mcdu.onLeftInput[5] = async () => {
                 if (Number.isFinite(confirmSpeed)) {
-                    await mcdu.flightPlanService.setSpeedAt(wpIndex, confirmSpeed, false, forPlan, inAlternate);
+                    await mcdu.flightPlanService.setPilotEnteredSpeedConstraintAt(wpIndex, false, { speed: confirmSpeed }, forPlan, inAlternate);
 
                     mcdu.guidanceController.vnavDriver.invalidateFlightPlanProfile();
 
@@ -353,8 +326,10 @@ class CDUVerticalRevisionPage {
                 }
 
                 if (Number.isFinite(confirmAlt)) {
-                    await mcdu.flightPlanService.setAltitudeDescriptionAt(wpIndex, confirmCode, false, forPlan, inAlternate);
-                    await mcdu.flightPlanService.setAltitudeAt(wpIndex, confirmAlt, false, forPlan, inAlternate);
+                    await mcdu.flightPlanService.setPilotEnteredAltitudeConstraintAt(wpIndex, false, {
+                        type: confirmCode,
+                        altitude1: confirmAlt,
+                    }, forPlan, inAlternate);
 
                     mcdu.guidanceController.vnavDriver.invalidateFlightPlanProfile();
 
@@ -364,15 +339,17 @@ class CDUVerticalRevisionPage {
 
             mcdu.onRightInput[5] = async () => {
                 if (Number.isFinite(confirmSpeed)) {
-                    await mcdu.flightPlanService.setSpeedAt(wpIndex, confirmSpeed, true, forPlan, inAlternate);
+                    await mcdu.flightPlanService.setPilotEnteredSpeedConstraintAt(wpIndex, true, { speed: confirmSpeed }, forPlan, inAlternate);
 
                     mcdu.guidanceController.vnavDriver.invalidateFlightPlanProfile();
 
                     this.ShowPage(mcdu, waypoint, wpIndex, verticalWaypoint, verticalWaypoint, undefined, undefined, undefined, forPlan, inAlternate);
                 }
                 if (Number.isFinite(confirmAlt)) {
-                    await mcdu.flightPlanService.setAltitudeDescriptionAt(wpIndex, confirmCode, true, forPlan, inAlternate);
-                    await mcdu.flightPlanService.setAltitudeAt(wpIndex, confirmAlt, forPlan, true, inAlternate);
+                    await mcdu.flightPlanService.setPilotEnteredAltitudeConstraintAt(wpIndex, true, {
+                        type: confirmCode,
+                        altitude1: confirmAlt,
+                    }, forPlan, inAlternate);
 
                     mcdu.guidanceController.vnavDriver.invalidateFlightPlanProfile();
 
@@ -387,6 +364,29 @@ class CDUVerticalRevisionPage {
             return "FL" + Math.round(constraint / 100);
         }
         return constraint;
+    }
+
+    static formatAltConstraint(constraint, transAltLvl) {
+        if (!constraint) {
+            return '';
+        }
+
+        switch (constraint.type) {
+            case '@': // at
+                return this.formatFl(Math.round(constraint.altitude1), transAltLvl);
+            case '+': // atOrAbove
+                return "+" + this.formatFl(Math.round(constraint.altitude1), transAltLvl);
+            case '-': // atOrBelow
+                return "-" + this.formatFl(Math.round(constraint.altitude1), transAltLvl);
+            case 'B': // range
+                if (constraint.altitude1 < constraint.altitude2) {
+                    return "+" + this.formatFl(Math.round(constraint.altitude1), transAltLevel) + "/-" + this.formatFl(Math.round(constraint.altitude2), transAltLevel);
+                } else {
+                    return "+" + this.formatFl(Math.round(constraint.altitude2), transAltLevel) + "/-" + this.formatFl(Math.round(altitude1), transAltLevel);
+                }
+            default:
+                return ''
+        }
     }
 
     /**
@@ -411,6 +411,19 @@ class CDUVerticalRevisionPage {
 
     // constraints can be set directly by LSK on f-pln page
     static async setConstraints(mcdu, leg, legIndex, verticalWaypoint, value, scratchpadCallback, offset = 0, forPlan = 0, inAlternate = false) {
+        const type = CDUVerticalRevisionPage.constraintType(mcdu, legIndex, forPlan, inAlternate);
+        const isDescentConstraint = type === WaypointConstraintType.DES;
+
+        if (value === FMCMainDisplay.clrValue) {
+            await mcdu.flightPlanService.setPilotEnteredAltitudeConstraintAt(legIndex, isDescentConstraint, undefined, forPlan, inAlternate);
+            await mcdu.flightPlanService.setPilotEnteredSpeedConstraintAt(legIndex, isDescentConstraint, undefined, forPlan, inAlternate);
+
+            mcdu.guidanceController.vnavDriver.invalidateFlightPlanProfile();
+
+            CDUFlightPlanPage.ShowPage(mcdu, offset);
+            return;
+        }
+
         const matchResult = value.match(/^(([0-9]{1,3})\/?)?(\/([+-])?(((FL)?([0-9]{1,3}))|([0-9]{4,5})))?$/);
         if (matchResult === null) {
             mcdu.setScratchpadMessage(NXSystemMessages.formatError);
@@ -441,15 +454,13 @@ class CDUVerticalRevisionPage {
             return;
         }
 
-        const type = CDUVerticalRevisionPage.constraintType(mcdu, legIndex, forPlan, inAlternate);
-
         if (type === WaypointConstraintType.Unknown) {
             CDUVerticalRevisionPage.ShowPage(mcdu, leg, legIndex, verticalWaypoint, speed, alt, code, forPlan, inAlternate);
             return;
         }
 
         if (speed !== undefined) {
-            await mcdu.flightPlanService.setSpeedAt(legIndex, speed, type === WaypointConstraintType.DES, forPlan, inAlternate);
+            await mcdu.flightPlanService.setPilotEnteredSpeedConstraintAt(legIndex, isDescentConstraint, { speed }, forPlan, inAlternate);
 
             mcdu.guidanceController.vnavDriver.invalidateFlightPlanProfile();
 
@@ -457,8 +468,10 @@ class CDUVerticalRevisionPage {
         }
 
         if (alt !== undefined) {
-            await mcdu.flightPlanService.setAltitudeDescriptionAt(legIndex, code, type === WaypointConstraintType.DES, forPlan, inAlternate);
-            await mcdu.flightPlanService.setAltitudeAt(legIndex, alt, type === WaypointConstraintType.DES, forPlan, inAlternate);
+            await mcdu.flightPlanService.setPilotEnteredAltitudeConstraintAt(legIndex, isDescentConstraint, {
+                type: code,
+                altitude1: alt,
+            }, forPlan, inAlternate);
 
             mcdu.guidanceController.vnavDriver.invalidateFlightPlanProfile();
 
@@ -474,7 +487,7 @@ class CDUVerticalRevisionPage {
         }
 
         // No constraint
-        if (waypoint.legAltitudeDescription === 0 || verticalWaypoint.isAltitudeConstraintMet) {
+        if (!verticalWaypoint.altitudeConstraint || verticalWaypoint.isAltitudeConstraintMet) {
             return empty;
         }
 

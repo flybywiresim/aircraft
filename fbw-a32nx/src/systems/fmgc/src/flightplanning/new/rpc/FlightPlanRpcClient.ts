@@ -3,12 +3,13 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { FlightPlanInterface } from '@fmgc/flightplanning/new/FlightPlanInterface';
-import { AltitudeDescriptor, Waypoint } from 'msfs-navdata';
+import { Waypoint } from 'msfs-navdata';
 import { FlightPlanIndex, FlightPlanManager } from '@fmgc/flightplanning/new/FlightPlanManager';
 import { EventBus } from '@microsoft/msfs-sdk';
 import { v4 } from 'uuid';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
+import { AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
 import { Fix } from '../segments/enroute/WaypointLoading';
 import { FlightPlanLegDefinition } from '../legs/FlightPlanLegDefinition';
 import { FixInfoEntry } from '../plans/FixInfo';
@@ -187,16 +188,12 @@ export class FlightPlanRpcClient implements FlightPlanInterface {
         return this.callFunctionViaRpc('enableAltn', atIndexInAlternate, planIndex);
     }
 
-    setAltitudeDescriptionAt(atIndex: number, altDesc: AltitudeDescriptor, isDescentConstraint: boolean, planIndex?: FlightPlanIndex, alternate?: boolean): Promise<void> {
-        return this.callFunctionViaRpc('setAltitudeDescriptionAt', atIndex, altDesc, isDescentConstraint, planIndex, alternate);
+    setPilotEnteredAltitudeConstraintAt(atIndex: number, isDescentConstraint: boolean, constraint?: AltitudeConstraint, planIndex?: FlightPlanIndex, alternate?: boolean): Promise<void> {
+        return this.callFunctionViaRpc('setPilotEnteredAltitudeConstraintAt', atIndex, isDescentConstraint, constraint, planIndex, alternate);
     }
 
-    setAltitudeAt(atIndex: number, altitude: number, isDescentConstraint: boolean, planIndex?: FlightPlanIndex, alternate?: boolean): Promise<void> {
-        return this.callFunctionViaRpc('setAltitudeAt', atIndex, altitude, isDescentConstraint, planIndex, alternate);
-    }
-
-    setSpeedAt(atIndex: number, speed: number, isDescentConstraint: boolean, planIndex?: FlightPlanIndex, alternate?: boolean): Promise<void> {
-        return this.callFunctionViaRpc('setSpeedAt', atIndex, speed, isDescentConstraint, planIndex, alternate);
+    setPilotEnteredSpeedConstraintAt(atIndex: number, isDescentConstraint: boolean, constraint?: SpeedConstraint, planIndex?: FlightPlanIndex, alternate?: boolean): Promise<void> {
+        return this.callFunctionViaRpc('setPilotEnteredSpeedConstraintAt', atIndex, isDescentConstraint, constraint, planIndex, alternate);
     }
 
     addOrUpdateCruiseStep(atIndex: number, toAltitude: number, planIndex?: FlightPlanIndex): Promise<void> {

@@ -9,12 +9,6 @@ import {
     MaxSpeedConstraint,
 } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { Geometry } from '@fmgc/guidance/Geometry';
-import {
-    altitudeConstraintFromProcedureLeg,
-    AltitudeConstraintType,
-    pathAngleConstraintFromProcedureLeg,
-    speedConstraintFromProcedureLeg,
-} from '@fmgc/guidance/lnav/legs';
 import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
 import { IFLeg } from '@fmgc/guidance/lnav/legs/IF';
 import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
@@ -26,6 +20,7 @@ import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { ApproachType, ApproachWaypointDescriptor, LegType } from 'msfs-navdata';
 import { distanceTo } from 'msfs-geo';
+import { AltitudeConstraintType } from '@fmgc/flightplanning/data/constraint';
 
 /**
  * This entire class essentially represents an interface to the flightplan.
@@ -97,9 +92,8 @@ export class ConstraintReader {
                 }
             }
 
-            const altConstraint = altitudeConstraintFromProcedureLeg(leg.definition);
-            const speedConstraint = speedConstraintFromProcedureLeg(leg.definition);
-            const pathAngleConstraint = pathAngleConstraintFromProcedureLeg(leg.definition);
+            const altConstraint = leg.altitudeConstraint;
+            const speedConstraint = leg.speedConstraint;
 
             if (leg.constraintType === WaypointConstraintType.CLB) {
                 if (altConstraint && altConstraint.type !== AltitudeConstraintType.atOrAbove) {
@@ -133,8 +127,8 @@ export class ConstraintReader {
                 }
             }
 
-            if (i === plan.destinationLegIndex && pathAngleConstraint) {
-                this.finalDescentAngle = pathAngleConstraint;
+            if (i === plan.destinationLegIndex && leg.definition.verticalAngle) {
+                this.finalDescentAngle = leg.definition.verticalAngle;
             }
 
             if (leg.definition.approachWaypointDescriptor === ApproachWaypointDescriptor.FinalApproachFix) {

@@ -393,8 +393,11 @@ export class PseudoWaypoints implements GuidanceComponent {
 
     private createPseudoWaypointFromVerticalCheckpoint(geometry: Geometry, wptCount: number, totalDistance: number, checkpoint: VerticalCheckpoint): PseudoWaypoint | undefined {
         let [efisSymbolLla, distanceFromLegTermination, alongLegIndex] = [undefined, undefined, undefined];
+
+        const isLatAutoControlArmedOrActive = this.guidanceController.vnavDriver.isLatAutoControlActive() || this.guidanceController.vnavDriver.isLatAutoControlArmedWithIntercept();
+
         // We want the decel point and T/D to be drawn along the track line even if not in NAV mode
-        if (this.guidanceController.vnavDriver.isLatAutoControlActive() || isCheckpointForMcduPwp(checkpoint)) {
+        if (isLatAutoControlArmedOrActive || isCheckpointForMcduPwp(checkpoint)) {
             const pwp = this.pointFromEndOfPath(geometry, wptCount, totalDistance - checkpoint?.distanceFromStart, checkpoint.reason);
             if (!pwp) {
                 return undefined;
@@ -585,8 +588,9 @@ export class PseudoWaypoints implements GuidanceComponent {
                 sequencingType: PseudoWaypointSequencingAction.APPROACH_PHASE_AUTO_ENGAGE,
                 alongLegIndex,
                 distanceFromLegTermination,
+                // Decel point is shown in magenta if speed is managed and NAV is armed or active
                 efisSymbolFlag: NdSymbolTypeFlags.PwpDecel
-                    | (Simplane.getAutoPilotAirspeedManaged() && this.guidanceController.vnavDriver.isLatAutoControlActive() ? NdSymbolTypeFlags.MagentaColor : 0),
+                    | (Simplane.getAutoPilotAirspeedManaged() && isLatAutoControlArmedOrActive ? NdSymbolTypeFlags.MagentaColor : 0),
                 efisSymbolLla,
                 distanceFromStart: checkpoint.distanceFromStart,
                 displayedOnMcdu: true,

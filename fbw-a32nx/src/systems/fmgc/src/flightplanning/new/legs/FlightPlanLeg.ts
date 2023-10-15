@@ -5,7 +5,19 @@
 
 import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { Coordinates } from 'msfs-geo';
-import { Airport, ApproachWaypointDescriptor, EnrouteSubsectionCode, Fix, LegType, ProcedureLeg, Runway, SectionCode, WaypointArea, WaypointDescriptor } from 'msfs-navdata';
+import {
+    Airport,
+    AltitudeDescriptor,
+    ApproachWaypointDescriptor,
+    EnrouteSubsectionCode,
+    Fix,
+    LegType,
+    ProcedureLeg,
+    Runway,
+    SectionCode,
+    WaypointArea,
+    WaypointDescriptor,
+} from 'msfs-navdata';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/new/legs/FlightPlanLegDefinition';
 import { procedureLegIdentAndAnnotation } from '@fmgc/flightplanning/new/legs/FlightPlanLegNaming';
 import { WaypointFactory } from '@fmgc/flightplanning/new/waypoints/WaypointFactory';
@@ -15,6 +27,7 @@ import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
 import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
 import { MagVar } from '@microsoft/msfs-sdk';
+import { AltitudeConstraint, ConstraintUtils, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
 
 /**
  * A serialized flight plan leg, to be sent across FMSes
@@ -29,6 +42,8 @@ export interface SerializedFlightPlanLeg {
     defaultHold: HoldData | undefined,
     constraintType: WaypointConstraintType | undefined,
     cruiseStep: CruiseStepEntry | undefined,
+    pilotEnteredAltitudeConstraint: AltitudeConstraint | undefined;
+    pilotEnteredSpeedConstraint: SpeedConstraint | undefined;
 }
 
 export enum FlightPlanLegFlags {
@@ -67,6 +82,10 @@ export class FlightPlanLeg {
 
     cruiseStep: CruiseStepEntry | undefined;
 
+    pilotEnteredAltitudeConstraint: AltitudeConstraint | undefined;
+
+    pilotEnteredSpeedConstraint: SpeedConstraint | undefined;
+
     serialize(): SerializedFlightPlanLeg {
         return {
             ident: this.ident,
@@ -78,6 +97,8 @@ export class FlightPlanLeg {
             defaultHold: this.defaultHold ? JSON.parse(JSON.stringify(this.defaultHold)) : undefined,
             cruiseStep: this.cruiseStep ? JSON.parse(JSON.stringify(this.cruiseStep)) : undefined,
             constraintType: this.constraintType,
+            pilotEnteredAltitudeConstraint: this.pilotEnteredAltitudeConstraint ? JSON.parse(JSON.stringify(this.pilotEnteredAltitudeConstraint)) : undefined,
+            pilotEnteredSpeedConstraint: this.pilotEnteredSpeedConstraint ? JSON.parse(JSON.stringify(this.pilotEnteredSpeedConstraint)) : undefined,
         };
     }
 
@@ -95,12 +116,34 @@ export class FlightPlanLeg {
         leg.defaultHold = serialized.defaultHold;
         leg.constraintType = serialized.constraintType;
         leg.cruiseStep = serialized.cruiseStep;
+        leg.pilotEnteredAltitudeConstraint = serialized.pilotEnteredAltitudeConstraint;
+        leg.pilotEnteredSpeedConstraint = serialized.pilotEnteredSpeedConstraint;
 
         return leg;
     }
 
     get waypointDescriptor() {
         return this.definition.waypointDescriptor;
+    }
+
+    get altitudeConstraint(): AltitudeConstraint | undefined {
+        if (this.hasPilotEnteredAltitudeConstraint()) {
+            return this.pilotEnteredAltitudeConstraint;
+        } if (this.hasDatabaseAltitudeConstraint()) {
+            return ConstraintUtils.parseAltConstraintFromLegDefinition(this.definition);
+        }
+
+        return undefined;
+    }
+
+    get speedConstraint(): SpeedConstraint | undefined {
+        if (this.hasPilotEnteredSpeedConstraint()) {
+            return this.pilotEnteredSpeedConstraint;
+        } if (this.hasDatabaseSpeedConstraint()) {
+            return ConstraintUtils.parseSpeedConstraintFromLegDefinition(this.definition);
+        }
+
+        return undefined;
     }
 
     /**
@@ -163,6 +206,26 @@ export class FlightPlanLeg {
 
         // FIXME use databaseId when tracer fixes it
         return this.definition.waypoint.ident === waypoint.ident && this.definition.waypoint.icaoCode === waypoint.icaoCode;
+    }
+
+    hasPilotEnteredAltitudeConstraint(): boolean {
+        return this.pilotEnteredAltitudeConstraint !== undefined;
+    }
+
+    hasDatabaseAltitudeConstraint(): boolean {
+        return this.definition.altitudeDescriptor !== undefined
+            && this.definition.altitudeDescriptor !== AltitudeDescriptor.None
+            // These types of constraints are not considered by the FMS
+            && this.definition.altitudeDescriptor !== AltitudeDescriptor.AtAlt1GsMslAlt2
+            && this.definition.altitudeDescriptor !== AltitudeDescriptor.AtOrAboveAlt1GsIntcptAlt2;
+    }
+
+    hasPilotEnteredSpeedConstraint(): boolean {
+        return this.pilotEnteredSpeedConstraint !== undefined;
+    }
+
+    hasDatabaseSpeedConstraint(): boolean {
+        return this.definition.speedDescriptor !== undefined;
     }
 
     static turningPoint(segment: EnrouteSegment, location: Coordinates, magneticCourse: DegreesMagnetic): FlightPlanLeg {

@@ -43,6 +43,7 @@ import { FlightPlanLegDefinition } from '@fmgc/flightplanning/new/legs/FlightPla
 import { PendingAirways } from '@fmgc/flightplanning/new/plans/PendingAirways';
 import { SerializedFlightPlanPerformanceData } from '@fmgc/flightplanning/new/plans/performance/FlightPlanPerformanceData';
 import { ReadonlyFlightPlan } from '@fmgc/flightplanning/new/plans/ReadonlyFlightPlan';
+import { AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
 
 export enum FlightPlanQueuedOperation {
     Restring,
@@ -1060,6 +1061,55 @@ export abstract class BaseFlightPlan implements ReadonlyFlightPlan {
         this.incrementVersion();
 
         this.syncLegDefinitionChange(index);
+    }
+
+    setPilotEnteredAltitudeConstraintAt(index: number, isDescentConstraint: boolean, constraint?: AltitudeConstraint) {
+        const element = this.elementAt(index);
+
+        if (element.isDiscontinuity === true) {
+            return;
+        }
+
+        element.pilotEnteredAltitudeConstraint = constraint;
+        if (!constraint) {
+            element.definition.altitudeDescriptor = AltitudeDescriptor.None;
+            element.definition.altitude1 = undefined;
+            element.definition.altitude2 = undefined;
+        }
+
+        this.syncLegDefinitionChange(index);
+
+        if (isDescentConstraint) {
+            this.setFirstDesConstraintWaypoint(index);
+        } else {
+            this.setLastClbConstraintWaypoint(index);
+        }
+
+        this.incrementVersion();
+    }
+
+    setPilotEnteredSpeedConstraintAt(index: number, isDescentConstraint: boolean, constraint?: SpeedConstraint) {
+        const element = this.elementAt(index);
+
+        if (element.isDiscontinuity === true) {
+            return;
+        }
+
+        element.pilotEnteredSpeedConstraint = constraint;
+        if (!constraint) {
+            element.definition.speedDescriptor = undefined;
+            element.definition.speed = undefined;
+        }
+
+        this.syncLegDefinitionChange(index);
+
+        if (isDescentConstraint) {
+            this.setFirstDesConstraintWaypoint(index);
+        } else {
+            this.setLastClbConstraintWaypoint(index);
+        }
+
+        this.incrementVersion();
     }
 
     setAltitudeDescriptionAt(index: number, value: AltitudeDescriptor) {

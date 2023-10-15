@@ -6,7 +6,7 @@
 import { FlightPlanIndex, FlightPlanManager } from '@fmgc/flightplanning/new/FlightPlanManager';
 import { FpmConfig, FpmConfigs } from '@fmgc/flightplanning/new/FpmConfig';
 import { FlightPlanLegFlags } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
-import { AltitudeDescriptor, Fix, Waypoint } from 'msfs-navdata';
+import { Fix, Waypoint } from 'msfs-navdata';
 import { NavigationDatabase } from '@fmgc/NavigationDatabase';
 import { Coordinates, Degrees } from 'msfs-geo';
 import { EventBus } from '@microsoft/msfs-sdk';
@@ -14,6 +14,7 @@ import { FixInfoEntry } from '@fmgc/flightplanning/new/plans/FixInfo';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/new/legs/FlightPlanLegDefinition';
 import { FlightPlanInterface } from '@fmgc/flightplanning/new/FlightPlanInterface';
+import { AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
 
 export class FlightPlanService implements FlightPlanInterface {
     private readonly bus = new EventBus();
@@ -316,28 +317,20 @@ export class FlightPlanService implements FlightPlanInterface {
         await plan.enableAltn(atIndexInAlternate);
     }
 
-    async setAltitudeDescriptionAt(atIndex: number, altDesc: AltitudeDescriptor, isDescentConstraint: boolean, planIndex?: FlightPlanIndex, alternate?: boolean): Promise<void> {
+    async setPilotEnteredAltitudeConstraintAt(atIndex: number, isDescentConstraint: boolean, constraint?: AltitudeConstraint, planIndex?: FlightPlanIndex, alternate?: boolean): Promise<void> {
         const finalIndex = this.config.TMPY_ON_CONSTRAINT_EDIT ? this.prepareDestructiveModification(planIndex) : planIndex;
 
         const plan = alternate ? this.flightPlanManager.get(finalIndex).alternateFlightPlan : this.flightPlanManager.get(finalIndex);
 
-        plan.setAltitudeDescriptionAt(atIndex, altDesc);
+        plan.setPilotEnteredAltitudeConstraintAt(atIndex, isDescentConstraint, constraint);
     }
 
-    async setAltitudeAt(atIndex: number, altitude: number, isDescentConstraint: boolean, planIndex?: FlightPlanIndex, alternate?: boolean) {
+    async setPilotEnteredSpeedConstraintAt(atIndex: number, isDescentConstraint: boolean, constraint?: SpeedConstraint, planIndex?: FlightPlanIndex, alternate?: boolean): Promise<void> {
         const finalIndex = this.config.TMPY_ON_CONSTRAINT_EDIT ? this.prepareDestructiveModification(planIndex) : planIndex;
 
         const plan = alternate ? this.flightPlanManager.get(finalIndex).alternateFlightPlan : this.flightPlanManager.get(finalIndex);
 
-        plan.setAltitudeAt(atIndex, altitude, isDescentConstraint);
-    }
-
-    async setSpeedAt(atIndex: number, speed: number, isDescentConstraint: boolean, planIndex = FlightPlanIndex.Active, alternate = false) {
-        const finalIndex = this.config.TMPY_ON_CONSTRAINT_EDIT ? this.prepareDestructiveModification(planIndex) : planIndex;
-
-        const plan = alternate ? this.flightPlanManager.get(finalIndex).alternateFlightPlan : this.flightPlanManager.get(finalIndex);
-
-        plan.setSpeedAt(atIndex, speed, isDescentConstraint);
+        plan.setPilotEnteredSpeedConstraintAt(atIndex, isDescentConstraint, constraint);
     }
 
     async addOrUpdateCruiseStep(atIndex: number, toAltitude: number, planIndex = FlightPlanIndex.Active): Promise<void> {

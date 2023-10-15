@@ -5,16 +5,9 @@
 import { BaseGeometryProfile } from '@fmgc/guidance/vnav/profile/BaseGeometryProfile';
 import { ConstraintReader } from '@fmgc/guidance/vnav/ConstraintReader';
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
-import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { isAltitudeConstraintMet } from '@fmgc/guidance/vnav/descent/DescentPathBuilder';
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
-import {
-    AltitudeConstraint, altitudeConstraintFromProcedureLeg,
-    AltitudeConstraintType,
-    PathAngleConstraint,
-    SpeedConstraint, speedConstraintFromProcedureLeg,
-    SpeedConstraintType,
-} from '../../lnav/legs';
+import { AltitudeConstraint, AltitudeConstraintType, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
 
 // TODO: Merge this with VerticalCheckpoint
 export interface VerticalWaypointPrediction {
@@ -126,11 +119,6 @@ export interface DescentAltitudeConstraint {
     constraint: AltitudeConstraint,
 }
 
-export interface ApproachPathAngleConstraint {
-    distanceFromStart: NauticalMiles,
-    pathAngle: PathAngleConstraint,
-}
-
 export interface GeographicCruiseStep {
     distanceFromStart: NauticalMiles,
     toAltitude: Feet,
@@ -226,8 +214,8 @@ export class NavGeometryProfile extends BaseGeometryProfile {
             const distanceFromStart = this.getDistanceFromStart(this.constraintReader.legDistancesToEnd[i]);
             const { secondsFromPresent, altitude, speed, mach, remainingFuelOnBoard } = this.interpolateEverythingFromStart(distanceFromStart);
 
-            const altitudeConstraint = altitudeConstraintFromProcedureLeg(leg.definition);
-            const speedConstraint = speedConstraintFromProcedureLeg(leg.definition);
+            const altitudeConstraint = leg.altitudeConstraint;
+            const speedConstraint = leg.speedConstraint;
 
             predictions.set(i, {
                 waypointIndex: i,
@@ -254,17 +242,7 @@ export class NavGeometryProfile extends BaseGeometryProfile {
             return true;
         }
 
-        switch (constraint.type) {
-        case SpeedConstraintType.at:
-            return Math.abs(speed - constraint.speed) < 5;
-        case SpeedConstraintType.atOrBelow:
-            return speed - constraint.speed < 5;
-        case SpeedConstraintType.atOrAbove:
-            return speed - constraint.speed > -5;
-        default:
-            console.error('Invalid speed constraint type');
-            return null;
-        }
+        return speed - constraint.speed < 5;
     }
 
     private computeAltError(predictedAltitude: Feet, constraint?: AltitudeConstraint): number {

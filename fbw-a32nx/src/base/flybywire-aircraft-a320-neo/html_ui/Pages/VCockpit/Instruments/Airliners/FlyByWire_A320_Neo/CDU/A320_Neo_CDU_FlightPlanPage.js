@@ -282,7 +282,7 @@ class CDUFlightPlanPage {
                 }
 
                 // Time
-                let timeCell = "----[s-text]";
+                let timeCell = "----";
                 let timeColor = "white";
                 if (verticalWaypoint && isFinite(verticalWaypoint.secondsFromPresent)) {
                     const utcTime = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
@@ -353,10 +353,14 @@ class CDUFlightPlanPage {
                     if (verticalWaypoint && verticalWaypoint.speed) {
                         speedConstraint = verticalWaypoint.speed < 1 ? formatMachNumber(verticalWaypoint.speed) : Math.round(verticalWaypoint.speed);
 
-                        if (wp.definition.speed > 100) {
-                            speedPrefix = verticalWaypoint.isSpeedConstraintMet ? "{magenta}*{end}" : "{amber}*{end}";
+                        if (verticalWaypoint.speedConstraint) {
+                            speedPrefix = `{big}${verticalWaypoint.isSpeedConstraintMet ? "{magenta}" : "{amber}"}*{end}{end}`;
                         }
-                    } else if (wp.definition.speed > 100) {
+                    } else if (wp.hasPilotEnteredSpeedConstraint()) {
+                        speedConstraint = "{big}" + Math.round(wp.pilotEnteredSpeedConstraint.speed) + "{end}";
+                        spdColor = "magenta";
+                        slashColor = "magenta";
+                    } else if (wp.hasDatabaseSpeedConstraint()) {
                         speedConstraint = Math.round(wp.definition.speed);
                         spdColor = "magenta";
                         slashColor = "magenta";
@@ -368,7 +372,6 @@ class CDUFlightPlanPage {
                 // Altitude
                 const hasAltConstraint = legHasAltConstraint(wp);
                 let altitudeConstraint = "-----";
-                let altPrefix = "\xa0";
                 if (!inAlternate && fpIndex === targetPlan.destinationLegIndex) {
                     if (targetPlan.destinationRunway && Number.isFinite(targetPlan.destinationRunway.thresholdCrossingHeight)) {
                         altitudeConstraint = formatAlt(targetPlan.destinationRunway.thresholdCrossingHeight);
@@ -376,7 +379,7 @@ class CDUFlightPlanPage {
                     } else if (targetPlan.destinationAirport && Number.isFinite(targetPlan.destinationAirport.location.alt)) {
                         // TODO: https://github.com/flybywiresim/msfs-navdata/issues/22
                         altitudeConstraint = formatAlt(targetPlan.destinationAirport.location.alt * 3.281);
-                        altColor = color;
+                        altColor = color
                     }
                 } else if (fpIndex === targetPlan.originLegIndex) {
                     if (targetPlan.originRunway && Number.isFinite(targetPlan.originRunway.location.alt)) {
@@ -388,41 +391,35 @@ class CDUFlightPlanPage {
                         altColor = color;
                     }
                 } else if (targetPlan.index !== Fmgc.FlightPlanIndex.Temporary) {
-                    let altitudeToFormat = wp.definition.altitude1;
-
                     if (hasAltConstraint) {
                         if (verticalWaypoint && verticalWaypoint.altitude) {
-                            altitudeToFormat = verticalWaypoint.altitude;
-                        }
-
-                        altitudeConstraint = formatAltitudeOrLevel(mcdu, altitudeToFormat, useTransitionAltitude);
-
-                        if (verticalWaypoint) {
-                            altPrefix = verticalWaypoint.isAltitudeConstraintMet ? "{magenta}*{end}" : "{amber}*{end}";
+                            altitudeConstraint = `{big}${verticalWaypoint.isAltitudeConstraintMet ? "{magenta}*{end}" : "{amber}*{end}"}{end}${formatAltitudeOrLevel(mcdu, verticalWaypoint.altitude, useTransitionAltitude).padStart(5, "\xa0")}`;
                         } else {
+                            altitudeConstraint = wp.hasPilotEnteredAltitudeConstraint()
+                                ? "{big}" + formatAltConstraint(mcdu, wp.altitudeConstraint, useTransitionAltitude).padStart(6, "\xa0") + "{end}"
+                                : formatAltConstraint(mcdu, wp.altitudeConstraint, useTransitionAltitude).padStart(6, "\xa0");
+
                             altColor = "magenta";
                             slashColor = "magenta";
                         }
                     // Waypoint with no alt constraint.
                     // In this case `altitudeConstraint is actually just the predictedAltitude`
-                    } else if (vnavPredictionsMapByWaypoint && !hasAltConstraint) {
-                        if (verticalWaypoint && verticalWaypoint.altitude) {
-                            altitudeConstraint = formatAltitudeOrLevel(mcdu, verticalWaypoint.altitude, useTransitionAltitude);
-                        } else {
-                            altitudeConstraint = "-----";
-                        }
+                    } else if (!hasAltConstraint && vnavPredictionsMapByWaypoint && verticalWaypoint && verticalWaypoint.altitude) {
+                        altitudeConstraint = formatAltitudeOrLevel(mcdu, verticalWaypoint.altitude, useTransitionAltitude);
                     }
                 }
 
                 if (speedConstraint === "---") {
                     spdColor = "white";
+                    speedConstraint = "{big}---{end}"
                 }
 
                 if (altitudeConstraint === "-----") {
                     altColor = "white";
+                    altitudeConstraint = "{big}\xa0-----{end}"
                 }
 
-                if (timeCell !== "----[s-text]") {
+                if (timeCell !== "----") {
                     timeColor = color;
                 } else {
                     timeColor = "white";
@@ -451,7 +448,7 @@ class CDUFlightPlanPage {
                     spdColor,
                     speedConstraint,
                     altColor,
-                    altitudeConstraint: {alt: altitudeConstraint, altPrefix: altPrefix},
+                    altitudeConstraint,
                     timeCell,
                     timeColor,
                     fixAnnotation: fixAnnotation ? fixAnnotation : "",
@@ -513,8 +510,6 @@ class CDUFlightPlanPage {
                     (value, scratchpadCallback) => {
                         if (value === "") {
                             CDUVerticalRevisionPage.ShowPage(mcdu, wp, fpIndex, verticalWaypoint, undefined, undefined, undefined, forPlan, inAlternate);
-                        } else if (value === FMCMainDisplay.clrValue) {
-                            mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
                         } else {
                             CDUVerticalRevisionPage.setConstraints(mcdu, wp, fpIndex, verticalWaypoint, value, scratchpadCallback, offset, forPlan, inAlternate);
                         }
@@ -528,7 +523,7 @@ class CDUFlightPlanPage {
                 // Like this, they are still there, but have dashes for predictions.
                 const shouldHidePredictions = !fmsGeometryProfile || !fmsGeometryProfile.isReadyToDisplay || !pwp.flightPlanInfo;
 
-                let timeCell = "----[s-text]";
+                let timeCell = "{big}----{end}";
                 let timeColor = "white";
                 if (!shouldHidePredictions && Number.isFinite(pwp.flightPlanInfo.secondsFromPresent)) {
                     const utcTime = SimVar.GetGlobalVarValue("ZULU TIME", "seconds");
@@ -539,20 +534,23 @@ class CDUFlightPlanPage {
                         : `${FMCMainDisplay.secondsTohhmm(pwp.flightPlanInfo.secondsFromPresent)}[s-text]`;
                 }
 
-                let speed = "---";
+                let speed = "{big}---{end}";
                 let spdColor = "white";
                 if (!shouldHidePredictions && Number.isFinite(pwp.flightPlanInfo.speed)) {
-                    speed = pwp.flightPlanInfo.speed < 1 ? formatMachNumber(pwp.flightPlanInfo.speed) : Math.round(pwp.flightPlanInfo.speed).toFixed(0);
+                    speed = `${pwp.flightPlanInfo.speed < 1 ? formatMachNumber(pwp.flightPlanInfo.speed) : Math.round(pwp.flightPlanInfo.speed).toFixed(0)}`;
+
+                    if (pwp.flightPlanInfo.speedConstraint) {
+                        const isMet = pwp.flightPlanInfo.speed < pwp.flightPlanInfo.speedConstraint + 5;
+                        speed = `{big}${isMet ? "{magenta}" : "{amber}"}*{end}{end}` + speed;
+                    }
+
                     spdColor = color;
                 }
 
-                const altitudeConstraint = {
-                    alt: "-----",
-                    altPrefix: "\xa0"
-                };
+                let altitudeConstraint = "{big}-----{end}";
                 let altColor = "white";
                 if (!shouldHidePredictions && Number.isFinite(pwp.flightPlanInfo.altitude)) {
-                    altitudeConstraint.alt = formatAltitudeOrLevel(mcdu, pwp.flightPlanInfo.altitude, useTransitionAltitude);
+                    altitudeConstraint = formatAltitudeOrLevel(mcdu, pwp.flightPlanInfo.altitude, useTransitionAltitude);
                     altColor = color;
                 }
 
@@ -688,13 +686,11 @@ class CDUFlightPlanPage {
                         if (rowI === firstWp) {
                             showNm = true;
                         }
-                        if (cSpd !== "---" && cSpd === pSpd) {
+                        if (cSpd !== "{big}---{end}" && cSpd === pSpd) {
                             spdRpt = true;
                         }
 
-                        if (cAlt.alt !== "-----" &&
-                            cAlt.alt === pAlt.alt &&
-                            cAlt.altPrefix === pAlt.altPrefix) {
+                        if (cAlt !== "{big}\xa0-----{end}" && cAlt === pAlt) {
                             altRpt = true;
                         }
                     // If previous row is a marker, clear all headers unless it's a speed limit
@@ -741,7 +737,7 @@ class CDUFlightPlanPage {
                 }
             }
             let destTimeCell = "----";
-            let destDistCell = "---";
+            let destDistCell = "----";
             let destEFOBCell = "-----";
 
             if (targetPlan.destinationAirport) {
@@ -892,7 +888,7 @@ function renderFixContent(rowObj, spdRepeat = false, altRepeat = false) {
 
     return [
         `${ident}${isOverfly ? FMCMainDisplay.ovfyValue : ""}[color]${color}`,
-        `{${spdColor}}${spdRepeat ? "\xa0\"\xa0" : speedConstraint}{end}{${altColor}}{${slashColor}}/{end}${altRepeat ? "\xa0\xa0\xa0\"\xa0\xa0" : altitudeConstraint.altPrefix + altitudeConstraint.alt}{end}[s-text]`,
+        `{${spdColor}}${spdRepeat ? "\xa0\"\xa0" : speedConstraint}{end}{${altColor}}{${slashColor}}/{end}${altRepeat ? "\xa0\xa0\xa0\"\xa0\xa0" : altitudeConstraint.padStart(6, "\xa0")}{end}[s-text]`,
         `${timeCell}{sp}{sp}{sp}{sp}[color]${timeColor}`
     ];
 }
@@ -942,7 +938,7 @@ function formatMachNumber(rawNumber) {
  * @return {boolean}
  */
 function legHasAltConstraint(leg) {
-    return !!leg.definition.altitudeDescriptor && leg.definition.altitudeDescriptor !== 'G' && leg.definition.altitudeDescriptor !== 'H';
+    return leg.hasPilotEnteredAltitudeConstraint() || leg.hasDatabaseAltitudeConstraint();
 }
 
 /**
@@ -977,24 +973,21 @@ function formatAltitudeOrLevel(mcdu, alt, useTransAlt) {
  * @returns {String} The formatted altitude string
  */
 function formatAlt(alt) {
-    return (Math.round(alt / 10) * 10).toFixed(0).padStart(5, '\xa0');
+    return (Math.round(alt / 10) * 10).toFixed(0);
 }
 
-function formatLegAltConstraint(leg) {
-    // always return the minimum altitude?
-    switch (leg.definition.altitudeDescriptor) {
-        case '@':
-        case '+':
-        case '-':
-        case 'B':
-        case 'I':
-        case 'J':
-        case 'V':
-        case 'X':
-        case 'Y':
-            return formatAlt(leg.definition.altitude1);
-        case 'C':
-            return formatAlt(leg.definition.altitude2);
+function formatAltConstraint(mcdu, constraint, useTransAlt) {
+    // Altitude constraint types "G" and "H" are not shown in the flight plan
+    switch (constraint.type) {
+        case '@': // at
+            return formatAltitudeOrLevel(mcdu, constraint.altitude1, useTransAlt);
+        case '+': // atOrAbove
+            return "+" + formatAltitudeOrLevel(mcdu, constraint.altitude1, useTransAlt);
+        case '-': // atOrBelow
+            return "-" + formatAltitudeOrLevel(mcdu, constraint.altitude1, useTransAlt);
+        case 'B': // range
+            return "WINDOW";
     }
+
     return '';
 }

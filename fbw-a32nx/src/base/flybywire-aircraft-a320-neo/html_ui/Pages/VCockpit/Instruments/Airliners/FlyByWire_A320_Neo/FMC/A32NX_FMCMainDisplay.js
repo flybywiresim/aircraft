@@ -1461,8 +1461,8 @@ class FMCMainDisplay extends BaseAirliners {
             }
 
             if (leg.constraintType === 2 /** DES */) {
-                if (leg.definition.speed > 0) {
-                    currentSpeedConstraint = Math.min(currentSpeedConstraint, Math.round(leg.definition.speed));
+                if (leg.speedConstraint) {
+                    currentSpeedConstraint = Math.min(currentSpeedConstraint, Math.round(leg.speedConstraint.speed));
                 }
             }
 
@@ -1492,31 +1492,39 @@ class FMCMainDisplay extends BaseAirliners {
                 continue;
             }
 
+            const altConstraint = leg.altitudeConstraint;
+            const speedConstraint = leg.speedConstraint;
+
             if (leg.constraintType === 1 /** CLB */) {
-                if (leg.definition.speed > 0) {
-                    currentSpeedConstraint = Math.min(currentSpeedConstraint, Math.round(leg.definition.speed));
+                if (speedConstraint) {
+                    currentSpeedConstraint = Math.min(currentSpeedConstraint, Math.round(speedConstraint.speed));
                 }
 
-                switch (leg.definition.altitudeDescriptor) {
-                    case "@": // at alt 1
-                    case "-": // at or below alt 1
-                    case "B": // between alt 1 and alt 2
-                        currentClbConstraint = Math.min(currentClbConstraint, Math.round(leg.definition.altitude1));
+
+                if (altConstraint) {
+                    switch (altConstraint.type) {
+                        case "@": // at alt 1
+                        case "-": // at or below alt 1
+                        case "B": // between alt 1 and alt 2
+                        currentClbConstraint = Math.min(currentClbConstraint, Math.round(altConstraint.altitude1));
                         break;
-                    default:
-                    // not constraining
+                        default:
+                            // not constraining
+                    }
                 }
             } else if (leg.segment.class === 2 /** DES */) {
-                switch (leg.definition.altitudeDescriptor) {
-                    case "@": // at alt 1
-                    case "+": // at or above alt 1
-                        currentDesConstraint = Math.max(currentDesConstraint, Math.round(leg.definition.altitude1));
+                if (altConstraint) {
+                    switch (altConstraint.type) {
+                        case "@": // at alt 1
+                        case "+": // at or above alt 1
+                        currentDesConstraint = Math.max(currentDesConstraint, Math.round(altConstraint.altitude1));
                         break;
-                    case "B": // between alt 1 and alt 2
-                        currentDesConstraint = Math.max(currentDesConstraint, Math.round(leg.definition.altitude2));
+                        case "B": // between alt 1 and alt 2
+                        currentDesConstraint = Math.max(currentDesConstraint, Math.round(altConstraint.altitude2));
                         break;
-                    default:
-                    // not constraining
+                        default:
+                            // not constraining
+                    }
                 }
             }
 
