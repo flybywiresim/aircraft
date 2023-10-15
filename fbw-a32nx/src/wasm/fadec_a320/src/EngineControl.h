@@ -1220,9 +1220,6 @@ class EngineControl {
 
       bool engineMasterTurnedOff = prevEngineMasterPos[engine - 1] == 1 && engineFuelValveOpen < 1;
 
-      std::cout << "EngineControl: preEngineMasterPos[" << engine - 1 << "] = " << prevEngineMasterPos[engine - 1]
-                << " engineFuelValveOpen = " << engineFuelValveOpen;
-
       if (engine == 1) {
         deltaN2 = simN2 - simN2LeftPre;
         simN2LeftPre = simN2;
