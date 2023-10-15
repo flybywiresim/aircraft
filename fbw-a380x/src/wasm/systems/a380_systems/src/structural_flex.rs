@@ -110,21 +110,6 @@ impl A380WingLiftModifier {
     const AILERON_SURFACES_SPOIL_GAIN: f64 = 0.2;
     const FLAPS_SURFACES_SPOIL_GAIN: f64 = 0.3;
 
-    fn default() -> Self {
-        assert!(Vector5::from(Self::NOMINAL_WING_LIFT_SPREAD_RATIOS).sum() == 1.);
-
-        Self {
-            lateral_offset: Ratio::default(),
-
-            left_wing_lift: Force::default(),
-            right_wing_lift: Force::default(),
-
-            standard_lift_spread: Vector5::from(Self::NOMINAL_WING_LIFT_SPREAD_RATIOS),
-            lift_left_table_newton: Vector5::default(),
-            lift_right_table_newton: Vector5::default(),
-        }
-    }
-
     fn update(&mut self, total_lift: Force, surfaces_positions: &impl SurfacesPositions) {
         self.compute_lift_modifiers(total_lift, surfaces_positions);
     }
@@ -227,6 +212,22 @@ impl A380WingLiftModifier {
 
     fn per_node_lift_right_wing_newton(&self) -> Vector5<f64> {
         self.lift_right_table_newton
+    }
+}
+impl Default for A380WingLiftModifier {
+    fn default() -> Self {
+        assert!(Vector5::from(Self::NOMINAL_WING_LIFT_SPREAD_RATIOS).sum() == 1.);
+
+        Self {
+            lateral_offset: Ratio::default(),
+
+            left_wing_lift: Force::default(),
+            right_wing_lift: Force::default(),
+
+            standard_lift_spread: Vector5::from(Self::NOMINAL_WING_LIFT_SPREAD_RATIOS),
+            lift_left_table_newton: Vector5::default(),
+            lift_right_table_newton: Vector5::default(),
+        }
     }
 }
 
