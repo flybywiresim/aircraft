@@ -769,7 +769,7 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
             text = 'ALT CRZ';
             break; */
         case VerticalMode.FPA: {
-            const FPAText = `${(this.FPA > 0 ? '+' : '')}${(Math.round(this.FPA * 10) / 10).toFixed(1)}°`; // empty space when 0 to align the box
+            const FPAText = `${(this.FPA > 0 ? '+' : '')}${(Math.round(this.FPA * 10) / 10).toFixed(1)}°`;
 
             text = 'FPA';
             // if FPA is 0 give it an empty space for where the '+' and '-' will be.
