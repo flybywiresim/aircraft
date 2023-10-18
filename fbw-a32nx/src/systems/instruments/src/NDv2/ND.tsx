@@ -327,7 +327,7 @@ export class NDComponent extends DisplayComponent<NDProps> {
                     />
 
                     <TrackLine bus={this.props.bus} isUsingTrackUpMode={this.isUsingTrackUpMode} />
-                    <TrackBug bus={this.props.bus} isUsingTrackUpMode={this.isUsingTrackUpMode} />
+                    <TrackBug bus={this.props.bus} isUsingTrackUpMode={this.isUsingTrackUpMode} ndMode={this.currentPageMode} />
 
                     <WindIndicator bus={this.props.bus} />
                     <SpeedIndicator bus={this.props.bus} />
