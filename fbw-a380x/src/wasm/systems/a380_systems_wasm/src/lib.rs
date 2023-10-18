@@ -262,6 +262,11 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("AMBIENT WIND Y", "meter per second", 0)?
     .provides_aircraft_variable("AMBIENT WIND Z", "meter per second", 0)?
     .provides_aircraft_variable("ANTISKID BRAKES ACTIVE", "Bool", 0)?
+    .provides_aircraft_variable("CONTACT POINT COMPRESSION", "Percent", 0)?
+    .provides_aircraft_variable("CONTACT POINT COMPRESSION", "Percent", 1)?
+    .provides_aircraft_variable("CONTACT POINT COMPRESSION", "Percent", 2)?
+    .provides_aircraft_variable("CONTACT POINT COMPRESSION", "Percent", 3)?
+    .provides_aircraft_variable("CONTACT POINT COMPRESSION", "Percent", 4)?
     .provides_aircraft_variable("EXTERNAL POWER AVAILABLE", "Bool", 1)?
     .provides_aircraft_variable("FUEL TOTAL QUANTITY WEIGHT", "Pounds", 0)?
     .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 1)?
@@ -278,6 +283,8 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 0)?
     .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 1)?
     .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 2)?
+    .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 3)?
+    .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 4)?
     .provides_aircraft_variable("GEAR CENTER POSITION", "Percent", 0)?
     .provides_aircraft_variable("GEAR LEFT POSITION", "Percent", 0)?
     .provides_aircraft_variable("GEAR RIGHT POSITION", "Percent", 0)?
@@ -286,6 +293,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("GPS GROUND SPEED", "Knots", 0)?
     .provides_aircraft_variable("GPS GROUND MAGNETIC TRACK", "Degrees", 0)?
     .provides_aircraft_variable("GPS GROUND TRUE TRACK", "Degrees", 0)?
+    .provides_aircraft_variable("INCIDENCE ALPHA", "Degrees", 0)?
     .provides_aircraft_variable("INDICATED ALTITUDE", "Feet", 0)?
     .provides_aircraft_variable("INTERACTIVE POINT OPEN:0", "Percent", 0)?
     .provides_aircraft_variable("INTERACTIVE POINT OPEN", "Percent", 2)?
@@ -306,7 +314,9 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("PUSHBACK ANGLE", "Radians", 0)?
     .provides_aircraft_variable("SEA LEVEL PRESSURE", "Millibars", 0)?
     .provides_aircraft_variable("SIM ON GROUND", "Bool", 0)?
+    .provides_aircraft_variable("SURFACE TYPE", "Enum", 0)?
     .provides_aircraft_variable("TOTAL AIR TEMPERATURE", "celsius", 0)?
+    .provides_aircraft_variable("TOTAL WEIGHT", "Pounds", 0)?
     .provides_aircraft_variable("TRAILING EDGE FLAPS LEFT PERCENT", "Percent", 0)?
     .provides_aircraft_variable("TRAILING EDGE FLAPS RIGHT PERCENT", "Percent", 0)?
     .provides_aircraft_variable("TURB ENG CORRECTED N1", "Percent", 1)?
@@ -323,10 +333,24 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("VELOCITY BODY Y", "feet per second", 0)?
     .provides_aircraft_variable("VELOCITY BODY Z", "feet per second", 0)?
     .provides_aircraft_variable("VELOCITY WORLD Y", "feet per minute", 0)?
-    .provides_aircraft_variable("INCIDENCE ALPHA", "degree", 0)?
     .provides_aircraft_variable("ROTATION VELOCITY BODY X", "degree per second", 0)?
     .provides_aircraft_variable("ROTATION VELOCITY BODY Y", "degree per second", 0)?
     .provides_aircraft_variable("ROTATION VELOCITY BODY Z", "degree per second", 0)?
+    .provides_aircraft_variable(
+        "ROTATION ACCELERATION BODY X",
+        "radian per second squared",
+        0,
+    )?
+    .provides_aircraft_variable(
+        "ROTATION ACCELERATION BODY Y",
+        "radian per second squared",
+        0,
+    )?
+    .provides_aircraft_variable(
+        "ROTATION ACCELERATION BODY Z",
+        "radian per second squared",
+        0,
+    )?
     .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 1)?
     .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 2)?
     .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 3)?

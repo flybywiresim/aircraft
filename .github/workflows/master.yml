@@ -38,12 +38,13 @@ jobs:
           ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
           ./scripts/dev-env/run.sh ./scripts/build_a32nx.sh --no-tty -j 4
           rm -rf fbw-a32nx/src
+          docker system prune -af
       - name: Build ZIP files
         run: |
           df -h
-          ./scripts/dev-env/run.sh node ./scripts/fragment_a32nx.js
+          node ./scripts/fragment_a32nx.js
           cp ./fbw-a32nx/out/build-modules/modules.json ./fbw-a32nx/out/flybywire-aircraft-a320-neo/install.json
-          ./scripts/dev-env/run.sh node ./scripts/install-source_a32nx.js
+          node ./scripts/install-source_a32nx.js
           mkdir ./${{ env.BUILD_DIR_NAME }}
           cd ./fbw-a32nx/out/
           zip -r ../../${{ env.BUILD_DIR_NAME }}/${{ env.MASTER_ZIP_NAME }} ./flybywire-aircraft-a320-neo/

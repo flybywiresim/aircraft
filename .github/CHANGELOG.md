@@ -54,6 +54,7 @@
 1. [MCDU] Fixed the FMGC annunciator light not illuminating - @tracernz (Mike)
 1. [COND] Add Air Conditioning systems failures - @mjuhe (Miquel Juhe)
 1. [EFB/FBW] Added option for TOGA off axis for devices where the TOGA button is built into the throttle - @ImmortalCake
+1. [COND] Fixed Temp-Indication on CRZ page showing cockpit temperature for fwd and aft cabin - @cptnuss-ops (Lukas)
 
 ## 0.10.0
 
