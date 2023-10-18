@@ -336,6 +336,16 @@ impl Display for AirbusElectricPumpId {
     }
 }
 
+/// Access to all aircraft surfaces positions
+pub trait SurfacesPositions {
+    fn left_spoilers_positions(&self) -> &[f64];
+    fn right_spoilers_positions(&self) -> &[f64];
+    fn left_ailerons_positions(&self) -> &[f64];
+    fn right_ailerons_positions(&self) -> &[f64];
+    fn left_flaps_position(&self) -> f64;
+    fn right_flaps_position(&self) -> f64;
+}
+
 /// The common types of electrical buses within Airbus aircraft.
 /// These include types such as AC, DC, AC ESS, etc.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
@@ -703,6 +713,40 @@ pub fn height_over_ground(
         * (context.attitude().bank_rotation_transform().inverse() * offset_from_plane_reference);
 
     Length::new::<meter>(offset_including_plane_rotation[1]) + context.plane_height_over_ground()
+}
+
+// Gets the local acceleration at a point away from plane reference point, including rotational effects (tangential/centripetal)
+// Warning: It EXLCLUDES PLANE LOCAL CG ACCELERATION. Add to plane acceleration to have total local acceleration at this point
+//
+// For reference rotational velocity and acceleration from MSFS are:
+//      X axis pitch up negative
+//      Y axis yaw left negative
+//      Z axis roll right negative
+//
+// Acceleration returned is local to plane reference with
+//      X negative left positive right
+//      Y negative down positive up
+//      Z negative aft positive forward
+pub fn local_acceleration_at_plane_coordinate(
+    context: &UpdateContext,
+    offset_from_plane_reference: Vector3<f64>,
+) -> Vector3<f64> {
+    // If less than 10cm from center of rotation we don't consider rotational effect
+    if offset_from_plane_reference.norm() < 0.01 {
+        return Vector3::default();
+    }
+
+    let tangential_velocity_of_point =
+        offset_from_plane_reference.cross(&-context.rotation_velocity_rad_s());
+    let tangential_acceleration_of_point =
+        offset_from_plane_reference.cross(&-context.rotation_acceleration_rad_s2());
+
+    let radial_norm_vector = -offset_from_plane_reference.normalize();
+
+    let centripetal_acceleration = radial_norm_vector
+        * (tangential_velocity_of_point.norm().powi(2) / offset_from_plane_reference.norm());
+
+    centripetal_acceleration + tangential_acceleration_of_point
 }
 
 pub struct InternationalStandardAtmosphere;
@@ -1659,5 +1703,186 @@ mod height_over_ground {
         test_bed.write_by_name("PLANE ALT ABOVE GROUND", Length::new::<meter>(10.));
 
         test_bed.run_with_delta(Duration::from_secs(0));
+    }
+}
+
+#[cfg(test)]
+mod local_acceleration_at_plane_coordinate {
+    use uom::si::angular_velocity::{degree_per_second, radian_per_second};
+
+    use super::*;
+
+    use crate::simulation::{
+        test::{ElementCtorFn, SimulationTestBed, WriteByName},
+        SimulationElement,
+    };
+
+    #[derive(Default)]
+    struct RotatingObject {
+        local_accel: Vector3<f64>,
+        rotating_point_position: Vector3<f64>,
+    }
+    impl RotatingObject {
+        fn default() -> Self {
+            Self {
+                local_accel: Vector3::default(),
+                rotating_point_position: Vector3::default(),
+            }
+        }
+
+        fn update(&mut self, context: &UpdateContext) {
+            self.local_accel =
+                local_acceleration_at_plane_coordinate(context, self.rotating_point_position);
+        }
+
+        fn set_point_position(&mut self, rotating_point_position: Vector3<f64>) {
+            self.rotating_point_position = rotating_point_position;
+        }
+    }
+    impl SimulationElement for RotatingObject {}
+
+    #[test]
+    fn pilot_cabin_acceleration_pitch_rotations() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|_| RotatingObject::default()))
+            .with_update_after_power_distribution(|e, context| {
+                e.update(context);
+            });
+
+        // Assuming pilot cabin is 1m forward for simplicity
+        let cabin_position = Vector3::new(0., 0., 1.);
+        test_bed.command_element(|e| e.set_point_position(cabin_position));
+
+        test_bed.run_with_delta(Duration::from_secs(0));
+        assert!(test_bed.query_element(|e| e.local_accel == Vector3::default()));
+
+        // Pitch up accel
+        test_bed.write_by_name("ROTATION VELOCITY BODY X", 0.);
+        test_bed.write_by_name("ROTATION ACCELERATION BODY X", -1.);
+
+        test_bed.run_with_delta(Duration::from_secs(0));
+        assert!(test_bed.query_element(|e| e.local_accel == Vector3::new(0., 1., 0.)));
+
+        // Pitch up accel with velocity adds centripetal force
+        test_bed.write_by_name(
+            "ROTATION VELOCITY BODY X",
+            AngularVelocity::new::<radian_per_second>(-1.).get::<degree_per_second>(),
+        );
+        test_bed.write_by_name("ROTATION ACCELERATION BODY X", -1.);
+
+        test_bed.run_with_delta(Duration::from_secs(0));
+        assert!(test_bed.query_element(|e| e.local_accel == Vector3::new(0., 1., -1.)));
+    }
+
+    #[test]
+    fn pilot_cabin_acceleration_yaw_rotations() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|_| RotatingObject::default()))
+            .with_update_after_power_distribution(|e, context| {
+                e.update(context);
+            });
+
+        // Assuming pilot cabin is 1m forward for simplicity
+        let cabin_position = Vector3::new(0., 0., 1.);
+        test_bed.command_element(|e| e.set_point_position(cabin_position));
+
+        test_bed.run_with_delta(Duration::from_secs(0));
+        assert!(test_bed.query_element(|e| e.local_accel == Vector3::default()));
+
+        // Yaw right accel
+        test_bed.write_by_name("ROTATION VELOCITY BODY Y", 0.);
+        test_bed.write_by_name("ROTATION ACCELERATION BODY Y", 1.);
+
+        test_bed.run_with_delta(Duration::from_secs(0));
+        assert!(test_bed.query_element(|e| e.local_accel == Vector3::new(1., 0., 0.)));
+
+        // Yaw right accel with velocity adds centripetal force
+        test_bed.write_by_name(
+            "ROTATION VELOCITY BODY Y",
+            AngularVelocity::new::<radian_per_second>(1.).get::<degree_per_second>(),
+        );
+        test_bed.write_by_name("ROTATION ACCELERATION BODY Y", 1.);
+
+        test_bed.run_with_delta(Duration::from_secs(0));
+        assert!(test_bed.query_element(|e| e.local_accel == Vector3::new(1., 0., -1.)));
+
+        // Yaw left accel
+        test_bed.write_by_name("ROTATION VELOCITY BODY Y", 0.);
+        test_bed.write_by_name("ROTATION ACCELERATION BODY Y", -1.);
+
+        test_bed.run_with_delta(Duration::from_secs(0));
+        assert!(test_bed.query_element(|e| e.local_accel == Vector3::new(-1., 0., 0.)));
+
+        // Yaw left accel with velocity adds centripetal force
+        test_bed.write_by_name(
+            "ROTATION VELOCITY BODY Y",
+            AngularVelocity::new::<radian_per_second>(-1.).get::<degree_per_second>(),
+        );
+        test_bed.write_by_name("ROTATION ACCELERATION BODY Y", -1.);
+
+        test_bed.run_with_delta(Duration::from_secs(0));
+        assert!(test_bed.query_element(|e| e.local_accel == Vector3::new(-1., 0., -1.)));
+    }
+
+    #[test]
+    fn pilot_cabin_acceleration_roll_rotations() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|_| RotatingObject::default()))
+            .with_update_after_power_distribution(|e, context| {
+                e.update(context);
+            });
+
+        // Assuming pilot cabin is 1m forward for simplicity
+        let cabin_position = Vector3::new(0., 0., 1.);
+        test_bed.command_element(|e| e.set_point_position(cabin_position));
+
+        test_bed.run_with_delta(Duration::from_secs(0));
+        assert!(test_bed.query_element(|e| e.local_accel == Vector3::default()));
+
+        // roll right accel -> Aligned on roll axis we expect no effect
+        test_bed.write_by_name("ROTATION VELOCITY BODY Z", 0.);
+        test_bed.write_by_name("ROTATION ACCELERATION BODY Z", -1.);
+
+        test_bed.run_with_delta(Duration::from_secs(0));
+        assert!(test_bed.query_element(|e| e.local_accel == Vector3::default()));
+
+        // roll right accel with velocity -> Aligned on roll axis we expect no effect
+        test_bed.write_by_name(
+            "ROTATION VELOCITY BODY Z",
+            AngularVelocity::new::<radian_per_second>(-1.).get::<degree_per_second>(),
+        );
+        test_bed.write_by_name("ROTATION ACCELERATION BODY Z", -1.);
+
+        test_bed.run_with_delta(Duration::from_secs(0));
+        assert!(test_bed.query_element(|e| e.local_accel == Vector3::default()));
+    }
+
+    #[test]
+    fn right_wing_acceleration_roll_rotations() {
+        let mut test_bed = SimulationTestBed::from(ElementCtorFn(|_| RotatingObject::default()))
+            .with_update_after_power_distribution(|e, context| {
+                e.update(context);
+            });
+
+        // Assuming right wing is 1m right for simplicity
+        let right_wing_position = Vector3::new(1., 0., 0.);
+        test_bed.command_element(|e| e.set_point_position(right_wing_position));
+
+        test_bed.run_with_delta(Duration::from_secs(0));
+        assert!(test_bed.query_element(|e| e.local_accel == Vector3::default()));
+
+        // roll right accel -> expect down accel
+        test_bed.write_by_name("ROTATION VELOCITY BODY Z", 0.);
+        test_bed.write_by_name("ROTATION ACCELERATION BODY Z", -1.);
+
+        test_bed.run_with_delta(Duration::from_secs(0));
+        assert!(test_bed.query_element(|e| e.local_accel == Vector3::new(0., -1., 0.)));
+
+        // roll right accel with velocity -> Down Force plus centripetal left
+        test_bed.write_by_name(
+            "ROTATION VELOCITY BODY Z",
+            AngularVelocity::new::<radian_per_second>(-1.).get::<degree_per_second>(),
+        );
+        test_bed.write_by_name("ROTATION ACCELERATION BODY Z", -1.);
+
+        test_bed.run_with_delta(Duration::from_secs(0));
+        assert!(test_bed.query_element(|e| e.local_accel == Vector3::new(-1., -1., 0.)));
     }
 }

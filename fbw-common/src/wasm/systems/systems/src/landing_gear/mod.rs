@@ -154,9 +154,9 @@ impl LandingGear {
             left_compression_id: context.get_identifier(Self::GEAR_LEFT_COMPRESSION.to_owned()),
             right_compression_id: context.get_identifier(Self::GEAR_RIGHT_COMPRESSION.to_owned()),
 
-            center_compression: Ratio::new::<percent>(0.),
-            left_compression: Ratio::new::<percent>(0.),
-            right_compression: Ratio::new::<percent>(0.),
+            center_compression: Ratio::default(),
+            left_compression: Ratio::default(),
+            right_compression: Ratio::default(),
         }
     }
 
