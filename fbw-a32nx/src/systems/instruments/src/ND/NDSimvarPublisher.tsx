@@ -19,7 +19,6 @@ export type NDSimvars = AdirsSimVars & SwitchingPanelVSimVars & {
     pposLat: Degrees;
     pposLong: Degrees;
     absoluteTime: Seconds;
-    noseGearCompressed: boolean;
   }
 
 export enum NDVars {
@@ -34,7 +33,6 @@ export enum NDVars {
     pposLat = 'PLANE LATITUDE', // TODO replace with fm position
     pposLong = 'PLANE LONGITUDE', // TODO replace with fm position
     absoluteTime = 'E:ABSOLUTE TIME',
-    noseGearCompressed = 'L:A32NX_LGCIU_1_NOSE_GEAR_COMPRESSED',
 }
 
 /** A publisher to poll and publish nav/com simvars. */
@@ -53,7 +51,6 @@ export class NDSimvarPublisher extends UpdatableSimVarPublisher<NDSimvars> {
         ['pposLat', { name: NDVars.pposLat, type: SimVarValueType.Degree }],
         ['pposLong', { name: NDVars.pposLong, type: SimVarValueType.Degree }],
         ['absoluteTime', { name: NDVars.absoluteTime, type: SimVarValueType.Seconds }],
-        ['noseGearCompressed', { name: NDVars.noseGearCompressed, type: SimVarValueType.Bool }],
     ])
 
     public constructor(bus: EventBus) {
