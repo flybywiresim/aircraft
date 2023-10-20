@@ -7,7 +7,7 @@ import { Arinc429Register, Arinc429WordData } from '@flybywiresim/fbw-sdk';
 import { EfisNdMode, rangeSettings } from '@shared/NavigationDisplay';
 import { FcuSimVars } from 'instruments/src/MsfsAvionicsCommon/providers/FcuBusPublisher';
 import { PlanModeUnderlay } from './PlanModeUnderlay';
-import { MapParameters } from '../../../ND/utils/MapParameters';
+import { MapParameters } from '../../shared/utils/MapParameters';
 import { NDPage } from '../NDPage';
 import { NDControlEvents } from '../../NDControlEvents';
 import { NDSimvars } from '../../NDSimvarPublisher';

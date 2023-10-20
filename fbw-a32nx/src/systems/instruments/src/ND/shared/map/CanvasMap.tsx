@@ -11,7 +11,7 @@ import { TaRaIntrusion } from '@tcas/lib/TcasConstants';
 import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { FcuSimVars } from 'instruments/src/MsfsAvionicsCommon/providers/FcuBusPublisher';
 import { FmsSymbolsData } from '../../FmsSymbolsPublisher';
-import { MapParameters } from '../../../ND/utils/MapParameters';
+import { MapParameters } from '../utils/MapParameters';
 import { NDSimvars } from '../../NDSimvarPublisher';
 import { WaypointLayer } from './WaypointLayer';
 import { ConstraintsLayer } from './ConstraintsLayer';
