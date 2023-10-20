@@ -1,4 +1,7 @@
-use crate::{shared::random_from_normal_distribution, simulation::UpdateContext};
+use crate::{
+    shared::local_acceleration_at_plane_coordinate, shared::random_from_normal_distribution,
+    simulation::UpdateContext,
+};
 
 use uom::si::{f64::*, mass::kilogram};
 
@@ -53,6 +56,7 @@ impl SpringPhysics {
 pub enum GravityEffect {
     NoGravity,
     GravityFiltered,
+    ExternalAccelerationOnly,
 }
 
 pub struct WobblePhysics {
@@ -101,20 +105,36 @@ impl WobblePhysics {
         }
     }
 
-    pub fn update(&mut self, context: &UpdateContext) {
-        let acceleration = self.update_forces(context) / self.virtual_mass.get::<kilogram>();
+    pub fn update(
+        &mut self,
+        context: &UpdateContext,
+        external_acceleration: Vector3<f64>,
+        offset_point_coordinates: Vector3<f64>,
+    ) {
+        let acceleration =
+            self.update_forces(context, external_acceleration, offset_point_coordinates)
+                / self.virtual_mass.get::<kilogram>();
 
         self.cg_speed += acceleration * context.delta_as_secs_f64();
 
         self.cg_position += self.cg_speed * context.delta_as_secs_f64();
     }
 
-    fn update_forces(&mut self, context: &UpdateContext) -> Vector3<f64> {
+    fn update_forces(
+        &mut self,
+        context: &UpdateContext,
+        external_acceleration: Vector3<f64>,
+        offset_point_coordinates: Vector3<f64>,
+    ) -> Vector3<f64> {
         let local_acceleration = match self.gravity_effect {
-            GravityEffect::NoGravity => context.local_acceleration_without_gravity(),
-            GravityEffect::GravityFiltered => {
-                context.acceleration_plane_reference_filtered_ms2_vector()
+            GravityEffect::NoGravity => {
+                context.local_acceleration_without_gravity() + external_acceleration
+                    - local_acceleration_at_plane_coordinate(context, offset_point_coordinates)
             }
+            GravityEffect::GravityFiltered => {
+                context.acceleration_plane_reference_filtered_ms2_vector() + external_acceleration
+            }
+            GravityEffect::ExternalAccelerationOnly => external_acceleration,
         };
 
         let acceleration_force = local_acceleration * self.virtual_mass.get::<kilogram>();

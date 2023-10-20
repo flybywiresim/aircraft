@@ -202,6 +202,7 @@
       "Defueling": "Déavitaillement",
       "EstimatedDuration": "Durée estimée (minutes)",
       "EstimatedTime": "Durée Estimée",
+      "GSXFuelSyncEnabled": "GSX Fuel Sync activé",
       "LeftInnerTank": "Réservoir Intérieur Gauche",
       "LeftOuterTank": "Réservoir Extérieur Gauche",
       "ReadyToStart": "Prêt à commencer",
@@ -227,6 +228,7 @@
       "DeboardConfirmationConfirm": "Débarquement",
       "DeboardConfirmationTitle": "Débarquer tous les passagers?",
       "EstimatedDurationUnit": "minutes",
+      "GSXPayloadSyncEnabled": "Synchronisation de la charge utile GSX activée",
       "GW": "GW",
       "GWCG": "Centre de gravité GW",
       "LoadingTime": "Loading Time",
@@ -295,6 +297,10 @@
     "Navigraph": {
       "AirportDoesNotExist": "L'aéroport n'existe pas",
       "AuthenticateWithNavigraph": "S'authentifier avec Navigraph",
+      "GoToThirdPartyOptions": {
+        "Button": "3rd Party Options",
+        "Title": "Go to 3rd Party Options to link Navigraph account"
+      },
       "InsufficientEnv": "Fichier .env insuffisant",
       "IntoYourBrowserAndEnterTheCodeBelow": "dans votre navigateur et saisissez le code ci-dessous\n",
       "LoadingMsg": "Chargement",
@@ -647,7 +653,26 @@
     "ThirdPartyOptions": {
       "GsxFuelEnabled": "Synchronisation du ravitaillement GSX",
       "GsxPayloadEnabled": "Synchronisation de la charge utile GSX",
-      "Title": "Options logiciels tiers"
+      "NavigraphAccountLink": {
+        "Connected": "Connected",
+        "Link": "Link Account",
+        "LoginPage": {
+          "Title": "Navigraph Account Login"
+        },
+        "SettingTitle": "Navigraph Account Link",
+        "SubscriptionStatus": {
+          "None": "None",
+          "Unlimited": "Navigraph Unlimited"
+        },
+        "Unlink": "Unlink Account"
+      },
+      "OverrideSimBriefUserID": "Override SimBrief User ID",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Please check that you have correctly entered your SimBrief username or pilot ID.",
+      "TT": {
+        "OverrideSimBriefUserID": "Alternative SimBrief user ID to use instead of the linked Navigraph Account"
+      },
+      "Title": "Options logiciels tiers",
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "The override SimBrief PilotID has been validated and updated to"
     },
     "ThrottleConfig": {
       "Apply": "Appliquer",

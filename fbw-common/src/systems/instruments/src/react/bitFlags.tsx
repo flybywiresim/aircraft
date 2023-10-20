@@ -2,43 +2,9 @@
 import { BitFlags, SeatFlags } from '@flybywiresim/fbw-sdk';
 
 import { useCallback, useMemo, useRef, useState } from 'react';
+import { SeatFlags } from '../../../shared/src';
 import { useSimVarList } from './simVars';
 import { useUpdate } from './hooks';
-
-export const useBitFlags = (
-    name: string,
-    refreshInterval: number = 200,
-): [
-    BitFlags,
-    (setter: BitFlags) => void
-] => {
-    const lastUpdate = useRef(Date.now() - refreshInterval - 1);
-
-    const [stateValue, setStateValue] = useState<number>(() => SimVar.GetSimVarValue(`L:${name}`, 'number'));
-
-    const updateCallback = useCallback(() => {
-        const delta = Date.now() - lastUpdate.current;
-
-        if (delta >= refreshInterval) {
-            lastUpdate.current = Date.now();
-
-            const newValue = SimVar.GetSimVarValue(`L:${name}`, 'number');
-            if (newValue !== stateValue) {
-                setStateValue(newValue);
-                setter(new BitFlags(newValue));
-            }
-        }
-    }, [name, stateValue, refreshInterval]);
-
-    useUpdate(updateCallback);
-
-    const setter = useCallback((value: BitFlags) => {
-        SimVar.SetSimVarValue(`L:${name}`, 'string', value.toString()).catch(console.error).then();
-        setStateValue(value.toNumber());
-    }, [name, stateValue]);
-
-    return [new BitFlags(stateValue), setter];
-};
 
 export const useSeatFlags = (
     name: string,
@@ -46,7 +12,9 @@ export const useSeatFlags = (
     refreshInterval: number = 200,
 ): [
     SeatFlags,
-    (setter: SeatFlags) => void
+    (
+        setter: SeatFlags
+    ) => void
 ] => {
     const lastUpdate = useRef(Date.now() - refreshInterval - 1);
 
@@ -92,8 +60,14 @@ export const useSeatMap = (
 ) : [
         SeatFlags[],
         SeatFlags[],
-        ((setter: SeatFlags, index: number) => void),
-        ((setter: SeatFlags, index: number) => void),
+        (
+            setter: SeatFlags,
+            index: number
+        ) => void,
+        (
+            setter: SeatFlags,
+            index: number
+        ) => void,
     ] => {
     const [
         desiredVarNames, desiredVarUnits,
