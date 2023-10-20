@@ -1862,6 +1862,7 @@ mod tests {
     use std::time::Duration;
     use uom::si::{
         angle::degree,
+        angular_velocity::radian_per_second,
         length::foot,
         ratio::percent,
         thermodynamic_temperature::degree_celsius,
@@ -3551,8 +3552,8 @@ mod tests {
                     .body_pitch_rate(adiru_number)
                     .normal_value()
                     .unwrap()
-                    .get::<degree_per_second>(),
-                -rate.get::<degree_per_second>()
+                    .get::<radian_per_second>(),
+                -rate.get::<radian_per_second>()
             );
         }
 
