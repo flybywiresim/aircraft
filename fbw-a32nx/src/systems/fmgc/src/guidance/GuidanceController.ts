@@ -217,7 +217,7 @@ export class GuidanceController {
     private updateEfisData(activeLeg: Leg) {
         const gs = SimVar.GetSimVarValue('GPS GROUND SPEED', 'Knots');
         const flightPhase = getFlightPhaseManager().phase;
-        const etaComputable = flightPhase >= FmgcFlightPhase.Takeoff && gs > 95;
+        const etaComputable = flightPhase >= FmgcFlightPhase.Takeoff && gs > 100;
         if (activeLeg) {
             const termination = activeLeg instanceof XFLeg ? activeLeg.fix.infos.coordinates : activeLeg.getPathEndPoint();
             const ppos = this.lnavDriver.ppos;
