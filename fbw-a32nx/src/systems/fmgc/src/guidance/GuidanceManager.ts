@@ -12,7 +12,7 @@ import { Transition } from '@fmgc/guidance/lnav/Transition';
 import { SegmentType } from '@fmgc/wtsdk';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { CALeg } from '@fmgc/guidance/lnav/legs/CA';
-import { LegType } from '@fmgc/types/fstypes/FSEnums';
+import { LegType } from '@flybywiresim/fbw-sdk';
 import { TransitionPicker } from '@fmgc/guidance/lnav/TransitionPicker';
 import { IFLeg } from '@fmgc/guidance/lnav/legs/IF';
 import { DFLeg } from '@fmgc/guidance/lnav/legs/DF';

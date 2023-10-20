@@ -131,6 +131,7 @@
       "Defueling": "燃料の取り出し中",
       "EstimatedDuration": "推定所要時間(分)",
       "EstimatedTime": "Estimated Time",
+      "GSXFuelSyncEnabled": "GSX給油同期有効",
       "LeftInnerTank": "左内側タンク",
       "LeftOuterTank": "左外側タンク",
       "ReadyToStart": "準備完了",
@@ -156,6 +157,7 @@
       "DeboardConfirmationConfirm": "降機",
       "DeboardConfirmationTitle": "乗客を全て降機させますか？",
       "EstimatedDurationUnit": "分",
+      "GSXPayloadSyncEnabled": "GSX積載物同期有効",
       "GW": "GW",
       "GWCG": "GW CG",
       "LoadingTime": "積込時間",
@@ -224,6 +226,10 @@
     "Navigraph": {
       "AirportDoesNotExist": "空港が存在しません",
       "AuthenticateWithNavigraph": "Navigraphで認証する",
+      "GoToThirdPartyOptions": {
+        "Button": "サードパーティーオプション",
+        "Title": "サードパーティーオプションからNavigraphアカウントをリンクする"
+      },
       "InsufficientEnv": ".envファイルが不足しています",
       "IntoYourBrowserAndEnterTheCodeBelow": "このURLをブラウザに入力し、以下のコードを入力してください\n",
       "LoadingMsg": "読み込み中…",
@@ -450,7 +456,7 @@
     "TugDirection": "牽引方向",
     "TugInTransit": "牽引車/ピンの取り外しを準備中",
     "TugSpeed": "牽引速度",
-    "UseControllerInput": "操作の入力を使用"
+    "UseControllerInput": "コントローラー入力を使用"
   },
   "QuickControls": {
     "AlignAdirs": "ADIRSの調整完了",
@@ -576,7 +582,26 @@
     "ThirdPartyOptions": {
       "GsxFuelEnabled": "GSX給油同期",
       "GsxPayloadEnabled": "GSX積載物同期",
-      "Title": "サードパーティーオプション"
+      "NavigraphAccountLink": {
+        "Connected": "接続完了",
+        "Link": "アカウントを連携する",
+        "LoginPage": {
+          "Title": "Navigraphアカウントにログインする"
+        },
+        "SettingTitle": "Navigraphアカウント連携",
+        "SubscriptionStatus": {
+          "None": "サブスクリプション無し",
+          "Unlimited": "Navigraph Unlimited"
+        },
+        "Unlink": "アカウントの連携を解除"
+      },
+      "OverrideSimBriefUserID": "SimBriefユーザーIDの上書き",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "SimBriefのユーザー名、またはパイロットIDが正しく入力されているか確認してください。",
+      "TT": {
+        "OverrideSimBriefUserID": "連携されたNavigraphアカウントの代わりに使用するSimBriefユーザー ID"
+      },
+      "Title": "サードパーティーオプション",
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "上書きするSimBriefパイロットIDが検証され、次のように更新されました。"
     },
     "ThrottleConfig": {
       "Apply": "適用",

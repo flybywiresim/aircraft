@@ -6,29 +6,11 @@
 
 const esbuild = require('esbuild');
 const path = require('path');
+const { createModuleBuild } = require('#build-utils');
 
-const rootDir = path.join(__dirname, '..', '..', '..', '..');
-const outFile = 'out/flybywire-aircraft-a320-neo/html_ui/JS/fbw-a32nx/atsu/common.js';
+const rootDir = path.join(__dirname, '..', '..', '..', '..', '..');
+const outFile = 'fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/fbw-a32nx/atsu/common.js';
 
-const isProductionBuild = process.env.A32NX_PRODUCTION_BUILD === '1';
+const srcDir = 'fbw-common/src/systems/datalink/common';
 
-esbuild.build({
-    absWorkingDir: __dirname,
-
-    define: { DEBUG: 'false' },
-
-    entryPoints: [path.join(rootDir, '../fbw-common/src/systems/datalink/common/src/index.ts')],
-    bundle: true,
-    treeShaking: false,
-    minify: isProductionBuild,
-
-    outfile: path.join(rootDir, outFile),
-
-    format: 'iife',
-    globalName: 'AtsuCommon',
-
-    sourcemap: isProductionBuild ? 'linked' : undefined,
-
-    // Target approximate CoherentGT WebKit version
-    target: 'safari11',
-});
+esbuild.build(createModuleBuild('fbw-a32nx', 'AtsuCommon', path.join(rootDir, srcDir, '/src/index.ts'), outFile, path.join(rootDir, srcDir)));
