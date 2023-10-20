@@ -222,7 +222,7 @@ class CDUVerticalRevisionPage {
 
                 mcdu.guidanceController.vnavDriver.invalidateFlightPlanProfile();
 
-                this.ShowPage(mcdu, waypoint, wpIndex, verticalWaypoint, forPlan, inAlternate);
+                this.ShowPage(mcdu, waypoint, wpIndex, verticalWaypoint, undefined, undefined, undefined, forPlan, inAlternate);
                 return;
             }
 
@@ -249,7 +249,7 @@ class CDUVerticalRevisionPage {
 
             mcdu.guidanceController.vnavDriver.invalidateFlightPlanProfile();
 
-            this.ShowPage(mcdu, waypoint, wpIndex, verticalWaypoint, verticalWaypoint, undefined, undefined, undefined, forPlan, inAlternate);
+            this.ShowPage(mcdu, waypoint, wpIndex, verticalWaypoint, undefined, undefined, undefined, forPlan, inAlternate);
         }; // SPD CSTR
         mcdu.onRightInput[2] = async (value, scratchpadCallback) => {
             if (value === FMCMainDisplay.clrValue) {
@@ -258,7 +258,7 @@ class CDUVerticalRevisionPage {
                 mcdu.updateConstraints();
                 mcdu.guidanceController.vnavDriver.invalidateFlightPlanProfile();
 
-                this.ShowPage(mcdu, waypoint, wpIndex, verticalWaypoint, verticalWaypoint, undefined, undefined, undefined, forPlan, inAlternate);
+                this.ShowPage(mcdu, waypoint, wpIndex, verticalWaypoint, undefined, undefined, undefined, forPlan, inAlternate);
 
                 return;
             }
@@ -293,7 +293,7 @@ class CDUVerticalRevisionPage {
             mcdu.updateConstraints();
             mcdu.guidanceController.vnavDriver.invalidateFlightPlanProfile();
 
-            this.ShowPage(mcdu, waypoint, wpIndex, verticalWaypoint, verticalWaypoint, undefined, undefined, undefined, forPlan, inAlternate);
+            this.ShowPage(mcdu, waypoint, wpIndex, verticalWaypoint, undefined, undefined, undefined, forPlan, inAlternate);
         }; // ALT CSTR
         mcdu.onLeftInput[4] = () => {
             //TODO: show appropriate wind page based on waypoint
@@ -322,7 +322,7 @@ class CDUVerticalRevisionPage {
 
                     mcdu.guidanceController.vnavDriver.invalidateFlightPlanProfile();
 
-                    this.ShowPage(mcdu, waypoint, wpIndex, verticalWaypoint, verticalWaypoint, undefined, undefined, undefined, forPlan, inAlternate);
+                    this.ShowPage(mcdu, waypoint, wpIndex, verticalWaypoint, undefined, undefined, undefined, forPlan, inAlternate);
                 }
 
                 if (Number.isFinite(confirmAlt)) {
@@ -333,7 +333,7 @@ class CDUVerticalRevisionPage {
 
                     mcdu.guidanceController.vnavDriver.invalidateFlightPlanProfile();
 
-                    this.ShowPage(mcdu, waypoint, wpIndex, verticalWaypoint, verticalWaypoint, undefined, undefined, undefined, forPlan, inAlternate);
+                    this.ShowPage(mcdu, waypoint, wpIndex, verticalWaypoint, undefined, undefined, undefined, forPlan, inAlternate);
                 }
             };
 
@@ -343,7 +343,7 @@ class CDUVerticalRevisionPage {
 
                     mcdu.guidanceController.vnavDriver.invalidateFlightPlanProfile();
 
-                    this.ShowPage(mcdu, waypoint, wpIndex, verticalWaypoint, verticalWaypoint, undefined, undefined, undefined, forPlan, inAlternate);
+                    this.ShowPage(mcdu, waypoint, wpIndex, verticalWaypoint, undefined, undefined, undefined, forPlan, inAlternate);
                 }
                 if (Number.isFinite(confirmAlt)) {
                     await mcdu.flightPlanService.setPilotEnteredAltitudeConstraintAt(wpIndex, true, {
@@ -353,7 +353,7 @@ class CDUVerticalRevisionPage {
 
                     mcdu.guidanceController.vnavDriver.invalidateFlightPlanProfile();
 
-                    this.ShowPage(mcdu, waypoint, wpIndex, verticalWaypoint, verticalWaypoint, undefined, undefined, undefined, forPlan, inAlternate);
+                    this.ShowPage(mcdu, waypoint, wpIndex, verticalWaypoint, undefined, undefined, undefined, forPlan, inAlternate);
                 }
             };
         }

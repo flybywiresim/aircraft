@@ -1210,7 +1210,7 @@ export abstract class BaseFlightPlan implements ReadonlyFlightPlan {
     }
 
     private setLastClbConstraintWaypoint(index: number) {
-        for (let i = index; i >= 0; i--) {
+        for (let i = index; i >= (index >= this.firstMissedApproachLegIndex ? this.firstMissedApproachLegIndex : 0); i--) {
             const element = this.elementAt(i);
 
             if (element && element.isDiscontinuity === false) {
@@ -1220,7 +1220,7 @@ export abstract class BaseFlightPlan implements ReadonlyFlightPlan {
     }
 
     private setFirstDesConstraintWaypoint(index: number) {
-        for (let i = index; i < this.legCount; i++) {
+        for (let i = index; i < this.firstMissedApproachLegIndex; i++) {
             const element = this.elementAt(i);
 
             if (element && element.isDiscontinuity === false) {
