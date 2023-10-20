@@ -24,9 +24,8 @@
  */
 
 import { HoldData, WaypointStats } from '@fmgc/flightplanning/data/flightplan';
-import { NXDataStore } from '@flybywiresim/fbw-sdk';
+import { NXDataStore, AltitudeDescriptor, FixTypeFlags, LegType } from '@flybywiresim/fbw-sdk';
 import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
-import { AltitudeDescriptor, FixTypeFlags, LegType } from '../types/fstypes/FSEnums';
 import { FlightPlanSegment, SegmentType } from './FlightPlanSegment';
 import { LegsProcedure } from './LegsProcedure';
 import { RawDataMapper } from './RawDataMapper';
@@ -35,6 +34,7 @@ import { ProcedureDetails } from './ProcedureDetails';
 import { DirectTo } from './DirectTo';
 import { GeoMath } from './GeoMath';
 import { WaypointBuilder } from './WaypointBuilder';
+import { WaypointConstraintType } from "./FlightPlanManager";
 
 /**
  * A flight plan managed by the FlightPlanManager.
