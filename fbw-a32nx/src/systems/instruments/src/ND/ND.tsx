@@ -8,12 +8,12 @@ import { EfisNdMode, EfisNdRangeValue, EfisSide, rangeSettings } from '@shared/N
 import { DmcEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 import { clampAngle } from 'msfs-geo';
 import { ArincEventBus } from 'instruments/src/MsfsAvionicsCommon/ArincEventBus';
-import { CrossTrackError } from 'instruments/src/NDv2/shared/CrossTrackError';
+import { CrossTrackError } from 'instruments/src/ND/shared/CrossTrackError';
 import { FmsVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
 import { FcuSimVars } from 'instruments/src/MsfsAvionicsCommon/providers/FcuBusPublisher';
-import { RadioNeedle } from 'instruments/src/NDv2/shared/RadioNeedle';
+import { RadioNeedle } from 'instruments/src/ND/shared/RadioNeedle';
 import { getSmallestAngle } from 'instruments/src/PFD/PFDUtils';
-import { SelectedHeadingBug } from 'instruments/src/NDv2/pages/arc/SelectedHeadingBug';
+import { SelectedHeadingBug } from 'instruments/src/ND/pages/arc/SelectedHeadingBug';
 import { DisplayUnit } from '../MsfsAvionicsCommon/displayUnit';
 import { AdirsSimVars } from '../MsfsAvionicsCommon/SimVarTypes';
 import { NDSimvars } from './NDSimvarPublisher';
@@ -327,7 +327,7 @@ export class NDComponent extends DisplayComponent<NDProps> {
                     />
 
                     <TrackLine bus={this.props.bus} isUsingTrackUpMode={this.isUsingTrackUpMode} />
-                    <TrackBug bus={this.props.bus} isUsingTrackUpMode={this.isUsingTrackUpMode} />
+                    <TrackBug bus={this.props.bus} isUsingTrackUpMode={this.isUsingTrackUpMode} ndMode={this.currentPageMode} />
 
                     <WindIndicator bus={this.props.bus} />
                     <SpeedIndicator bus={this.props.bus} />

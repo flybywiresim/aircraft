@@ -54,7 +54,7 @@ use systems::{
         AirbusElectricPumpId, AirbusEngineDrivenPumpId, CargoDoorLocked, DelayedFalseLogicGate,
         DelayedPulseTrueLogicGate, DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses,
         EngineFirePushButtons, GearWheel, HydraulicColor, LandingGearHandle, LgciuInterface,
-        LgciuWeightOnWheels, ReservoirAirPressure, SectionPressure,
+        LgciuWeightOnWheels, ReservoirAirPressure, SectionPressure, SurfacesPositions,
     },
     simulation::{
         InitContext, Read, Reader, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -738,15 +738,15 @@ impl A380ElevatorFactory {
     /// Builds an aileron control surface body for A380-800
     fn a380_elevator_body(
         init_drooped_down: bool,
-        is_outter: bool,
+        is_outer: bool,
     ) -> LinearActuatedRigidBodyOnHingeAxis {
-        let size = if is_outter {
+        let size = if is_outer {
             Vector3::new(9., 0.405, 2.23)
         } else {
             Vector3::new(5., 0.405, 2.49)
         };
 
-        let mass = if is_outter {
+        let mass = if is_outer {
             Mass::new::<kilogram>(243.)
         } else {
             Mass::new::<kilogram>(189.)
@@ -786,9 +786,9 @@ impl A380ElevatorFactory {
         context: &mut InitContext,
         init_drooped_down: bool,
         powered_by: Option<ElectricalBusType>,
-        is_outter: bool,
+        is_outer: bool,
     ) -> HydraulicLinearActuatorAssembly<2> {
-        let elevator_body = Self::a380_elevator_body(init_drooped_down, is_outter);
+        let elevator_body = Self::a380_elevator_body(init_drooped_down, is_outer);
 
         let elevator_actuator_outboard =
             Self::a380_elevator_actuator(context, &elevator_body, None);
@@ -834,10 +834,10 @@ impl A380ElevatorFactory {
         )
     }
 
-    fn new_a380_elevator_aero_model(is_outter: bool) -> AerodynamicModel {
-        let body = Self::a380_elevator_body(true, is_outter);
+    fn new_a380_elevator_aero_model(is_outer: bool) -> AerodynamicModel {
+        let body = Self::a380_elevator_body(true, is_outer);
 
-        let area_coeff = if is_outter {
+        let area_coeff = if is_outer {
             Ratio::new::<ratio>(0.723)
         } else {
             Ratio::new::<ratio>(0.822)
@@ -2007,11 +2007,11 @@ impl A380Hydraulic {
     }
 
     pub fn left_elevator_aero_torques(&self) -> (Torque, Torque) {
-        self.left_elevator.aerodynamic_torques_outter_inner()
+        self.left_elevator.aerodynamic_torques_outer_inner()
     }
 
     pub fn right_elevator_aero_torques(&self) -> (Torque, Torque) {
-        self.right_elevator.aerodynamic_torques_outter_inner()
+        self.right_elevator.aerodynamic_torques_outer_inner()
     }
 
     pub fn up_down_rudder_aero_torques(&self) -> (Torque, Torque) {
@@ -2802,6 +2802,33 @@ impl A380Hydraulic {
         &self.gear_system
     }
 }
+
+impl SurfacesPositions for A380Hydraulic {
+    fn left_ailerons_positions(&self) -> &[f64] {
+        self.left_aileron.positions()
+    }
+
+    fn right_ailerons_positions(&self) -> &[f64] {
+        self.right_aileron.positions()
+    }
+
+    fn left_spoilers_positions(&self) -> &[f64] {
+        self.left_spoilers.positions()
+    }
+
+    fn right_spoilers_positions(&self) -> &[f64] {
+        self.right_spoilers.positions()
+    }
+
+    fn left_flaps_position(&self) -> f64 {
+        self.flap_system.left_position()
+    }
+
+    fn right_flaps_position(&self) -> f64 {
+        self.flap_system.right_position()
+    }
+}
+
 impl CargoDoorLocked for A380Hydraulic {
     fn fwd_cargo_door_locked(&self) -> bool {
         self.forward_cargo_door.is_locked()
@@ -2810,6 +2837,7 @@ impl CargoDoorLocked for A380Hydraulic {
         self.aft_cargo_door.is_locked()
     }
 }
+
 impl SimulationElement for A380Hydraulic {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.engine_driven_pump_1a.accept(visitor);
@@ -6029,7 +6057,7 @@ struct AileronAssembly {
     position_mid_id: VariableIdentifier,
     position_in_id: VariableIdentifier,
 
-    positions: [Ratio; 3],
+    positions: [f64; 3],
     aerodynamic_models: [AerodynamicModel; 3],
 }
 impl AileronAssembly {
@@ -6039,7 +6067,7 @@ impl AileronAssembly {
         outward_hydraulic_assembly: HydraulicLinearActuatorAssembly<2>,
         middle_hydraulic_assembly: HydraulicLinearActuatorAssembly<2>,
         inward_hydraulic_assembly: HydraulicLinearActuatorAssembly<2>,
-        aerodynamic_model_outter: AerodynamicModel,
+        aerodynamic_model_outer: AerodynamicModel,
         aerodynamic_model_middle: AerodynamicModel,
         aerodynamic_model_inner: AerodynamicModel,
     ) -> Self {
@@ -6073,9 +6101,9 @@ impl AileronAssembly {
                     context.get_identifier("HYD_AIL_RIGHT_INWARD_DEFLECTION".to_owned())
                 }
             },
-            positions: [Ratio::new::<ratio>(0.); 3],
+            positions: [0.; 3],
             aerodynamic_models: [
-                aerodynamic_model_outter,
+                aerodynamic_model_outer,
                 aerodynamic_model_middle,
                 aerodynamic_model_inner,
             ],
@@ -6110,8 +6138,14 @@ impl AileronAssembly {
                 ],
             );
 
-            self.positions[idx] = self.hydraulic_assemblies[idx].position_normalized();
+            self.positions[idx] = self.hydraulic_assemblies[idx]
+                .position_normalized()
+                .get::<ratio>();
         }
+    }
+
+    fn positions(&self) -> &[f64; 3] {
+        &self.positions
     }
 }
 impl SimulationElement for AileronAssembly {
@@ -6122,9 +6156,9 @@ impl SimulationElement for AileronAssembly {
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(&self.position_out_id, self.positions[0].get::<ratio>());
-        writer.write(&self.position_mid_id, self.positions[1].get::<ratio>());
-        writer.write(&self.position_in_id, self.positions[2].get::<ratio>());
+        writer.write(&self.position_out_id, self.positions[0]);
+        writer.write(&self.position_mid_id, self.positions[1]);
+        writer.write(&self.position_in_id, self.positions[2]);
     }
 }
 
@@ -6144,7 +6178,7 @@ impl ElevatorAssembly {
         id: ActuatorSide,
         outward_hydraulic_assembly: HydraulicLinearActuatorAssembly<2>,
         inward_hydraulic_assembly: HydraulicLinearActuatorAssembly<2>,
-        aerodynamic_model_outter: AerodynamicModel,
+        aerodynamic_model_outer: AerodynamicModel,
         aerodynamic_model_inner: AerodynamicModel,
     ) -> Self {
         Self {
@@ -6167,7 +6201,7 @@ impl ElevatorAssembly {
             },
 
             positions: [Ratio::new::<ratio>(0.); 2],
-            aerodynamic_models: [aerodynamic_model_outter, aerodynamic_model_inner],
+            aerodynamic_models: [aerodynamic_model_outer, aerodynamic_model_inner],
         }
     }
 
@@ -6204,8 +6238,8 @@ impl ElevatorAssembly {
         }
     }
 
-    // Returns aerodynamic torques for (outter,inner) control surfaces
-    fn aerodynamic_torques_outter_inner(&self) -> (Torque, Torque) {
+    // Returns aerodynamic torques for (outer,inner) control surfaces
+    fn aerodynamic_torques_outer_inner(&self) -> (Torque, Torque) {
         (
             self.hydraulic_assemblies[0].aerodynamic_torque(),
             self.hydraulic_assemblies[1].aerodynamic_torque(),
@@ -6386,6 +6420,10 @@ impl SpoilerElement {
 
         self.position = self.hydraulic_assembly.position_normalized();
     }
+
+    fn position(&self) -> f64 {
+        self.position.get::<ratio>()
+    }
 }
 impl SimulationElement for SpoilerElement {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
@@ -6402,6 +6440,7 @@ impl SimulationElement for SpoilerElement {
 struct SpoilerGroup {
     spoilers: [SpoilerElement; 8],
     hydraulic_controllers: [SpoilerController; 8],
+    spoiler_positions: [f64; 8],
 }
 impl SpoilerGroup {
     fn new(context: &mut InitContext, spoiler_side: &str, spoilers: [SpoilerElement; 8]) -> Self {
@@ -6417,6 +6456,7 @@ impl SpoilerGroup {
                 SpoilerController::new(context, spoiler_side, 7),
                 SpoilerController::new(context, spoiler_side, 8),
             ],
+            spoiler_positions: [0.; 8],
         }
     }
 
@@ -6466,10 +6506,25 @@ impl SpoilerGroup {
             &self.hydraulic_controllers[7],
             green_section.pressure_downstream_leak_valve(),
         );
+
+        self.spoiler_positions = [
+            self.spoilers[0].position(),
+            self.spoilers[1].position(),
+            self.spoilers[2].position(),
+            self.spoilers[3].position(),
+            self.spoilers[4].position(),
+            self.spoilers[5].position(),
+            self.spoilers[6].position(),
+            self.spoilers[7].position(),
+        ];
     }
 
     fn actuator(&mut self, spoiler_idx: usize) -> &mut impl Actuator {
         self.spoilers[spoiler_idx].actuator()
+    }
+
+    fn positions(&self) -> &[f64; 8] {
+        &self.spoiler_positions
     }
 }
 impl SimulationElement for SpoilerGroup {

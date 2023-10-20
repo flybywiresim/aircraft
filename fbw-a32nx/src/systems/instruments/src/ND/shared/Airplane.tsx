@@ -89,7 +89,7 @@ export class Airplane extends DisplayComponent<{ bus: EventBus, ndMode: Subscrib
                     />
                 </Layer>
 
-                <LubberLine bus={this.props.bus} visible={this.lubberVisibility} rotation={this.rotation} />
+                <LubberLine bus={this.props.bus} visible={this.lubberVisibility} rotation={this.rotation} ndMode={this.props.ndMode} />
             </>
         );
     }

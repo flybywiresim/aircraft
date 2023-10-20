@@ -12,6 +12,7 @@ mod navigation;
 mod payload;
 mod pneumatic;
 mod power_consumption;
+mod structural_flex;
 
 use self::{
     air_conditioning::{A380AirConditioning, A380PressurizationOverheadPanel},
@@ -19,6 +20,7 @@ use self::{
     control_display_system::A380ControlDisplaySystem,
     fuel::A380Fuel,
     pneumatic::{A380Pneumatic, A380PneumaticOverheadPanel},
+    structural_flex::A380StructuralFlex,
 };
 use airframe::A380Airframe;
 use electrical::{
@@ -40,7 +42,6 @@ use systems::{
         AuxiliaryPowerUnitFireOverheadPanel, AuxiliaryPowerUnitOverheadPanel,
     },
     electrical::{Electricity, ElectricitySource, ExternalPowerSource},
-    engine::engine_wing_flex::EnginesFlexiblePhysics,
     engine::{trent_engine::TrentEngine, EngineFireOverheadPanel},
     enhanced_gpwc::EnhancedGroundProximityWarningComputer,
     hydraulic::brake_circuit::AutobrakePanel,
@@ -52,7 +53,6 @@ use systems::{
     simulation::{
         Aircraft, InitContext, SimulationElement, SimulationElementVisitor, UpdateContext,
     },
-    structural_flex::elevator_flex::FlexibleElevators,
 };
 
 pub struct A380 {
@@ -85,11 +85,10 @@ pub struct A380 {
     landing_gear: LandingGear,
     pneumatic: A380Pneumatic,
     radio_altimeters: A380RadioAltimeters,
-    engines_flex_physics: EnginesFlexiblePhysics<4>,
-    elevators_flex_physics: FlexibleElevators,
     cds: A380ControlDisplaySystem,
     egpwc: EnhancedGroundProximityWarningComputer,
     icing_simulation: Icing,
+    structural_flex: A380StructuralFlex,
 }
 impl A380 {
     pub fn new(context: &mut InitContext) -> A380 {
@@ -132,8 +131,6 @@ impl A380 {
             landing_gear: LandingGear::new(context),
             pneumatic: A380Pneumatic::new(context),
             radio_altimeters: A380RadioAltimeters::new(context),
-            engines_flex_physics: EnginesFlexiblePhysics::new(context),
-            elevators_flex_physics: FlexibleElevators::new(context),
             cds: A380ControlDisplaySystem::new(context),
             egpwc: EnhancedGroundProximityWarningComputer::new(
                 context,
@@ -152,6 +149,7 @@ impl A380 {
             ),
 
             icing_simulation: Icing::new(context),
+            structural_flex: A380StructuralFlex::new(context),
         }
     }
 }
@@ -279,14 +277,19 @@ impl Aircraft for A380 {
             [self.lgcius.lgciu1(), self.lgcius.lgciu2()],
         );
 
-        self.engines_flex_physics.update(context);
-        self.elevators_flex_physics.update(
+        self.cds.update();
+
+        self.egpwc.update(&self.adirs, self.lgcius.lgciu1());
+
+        self.structural_flex.update(
             context,
             [
                 self.hydraulic.left_elevator_aero_torques(),
                 self.hydraulic.right_elevator_aero_torques(),
             ],
             self.hydraulic.up_down_rudder_aero_torques(),
+            &self.hydraulic,
+            &self.fuel,
         );
         self.cds.update();
 
@@ -326,11 +329,10 @@ impl SimulationElement for A380 {
         self.hydraulic_overhead.accept(visitor);
         self.landing_gear.accept(visitor);
         self.pneumatic.accept(visitor);
-        self.elevators_flex_physics.accept(visitor);
-        self.engines_flex_physics.accept(visitor);
         self.cds.accept(visitor);
         self.egpwc.accept(visitor);
         self.icing_simulation.accept(visitor);
+        self.structural_flex.accept(visitor);
 
         visitor.visit(self);
     }

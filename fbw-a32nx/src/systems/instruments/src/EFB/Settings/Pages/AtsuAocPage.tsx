@@ -84,7 +84,7 @@ export const AtsuAocPage = () => {
     ];
 
     const metarSourceButtons: ButtonType[] = [
-        { name: 'MeteoBlue', setting: 'MSFS' },
+        { name: 'MSFS', setting: 'MSFS' },
         { name: 'PilotEdge', setting: 'PILOTEDGE' },
         { name: 'IVAO', setting: 'IVAO' },
         { name: 'VATSIM', setting: 'VATSIM' },
@@ -208,7 +208,7 @@ export const AtsuAocPage = () => {
 
             <SettingItem name={t('Settings.AtsuAoc.HoppieUserId')}>
                 <SimpleInput
-                    className="text-center w-30"
+                    className="w-30 text-center"
                     value={hoppieUserId}
                     onBlur={(value) => handleHoppieUsernameInput(value.replace(/\s/g, ''))}
                     onChange={(value) => setHoppieUserId(value)}

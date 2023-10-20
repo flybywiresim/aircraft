@@ -6,7 +6,7 @@ import { NdSymbol, NdSymbolTypeFlags } from '@shared/NavigationDisplay';
 import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { BitFlags } from '@microsoft/msfs-sdk';
 import { MapLayer } from './MapLayer';
-import { MapParameters } from '../../../ND/utils/MapParameters';
+import { MapParameters } from '../utils/MapParameters';
 import { PaintUtils } from './PaintUtils';
 import { CanvasMap } from './CanvasMap';
 
