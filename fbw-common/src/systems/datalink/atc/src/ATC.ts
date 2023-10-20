@@ -46,7 +46,7 @@ export class Atc {
 
     private poweredUp: boolean = false;
 
-    private handoverInterval: NodeJS.Timer = null;
+    private handoverInterval: number = null;
 
     private handoverOngoing = false;
 
@@ -62,7 +62,7 @@ export class Atc {
 
     private printAtisReport = false;
 
-    private atisAutoUpdateIcaos: [string, AtisType, NodeJS.Timer][] = [];
+    private atisAutoUpdateIcaos: [string, AtisType, number][] = [];
 
     private atisMessages: Map<string, [number, AtisMessage[]]> = new Map();
 
@@ -72,7 +72,7 @@ export class Atc {
 
     private automaticPositionReport: boolean = false;
 
-    private messageWatchdogInterval: NodeJS.Timer = null;
+    private messageWatchdogInterval: number = null;
 
     public messageMonitoring: UplinkMessageMonitoring = null;
 
@@ -217,7 +217,7 @@ export class Atc {
         this.messageMonitoring = new UplinkMessageMonitoring(this);
         this.mailboxBus.reset();
 
-        this.messageWatchdogInterval = setInterval(() => {
+        this.messageWatchdogInterval = window.setInterval(() => {
             const ids = this.messageMonitoring.checkMessageConditions();
             ids.forEach((id) => {
                 const message = this.messageQueue.find((element) => id === element.UniqueMessageID);
@@ -440,7 +440,7 @@ export class Atc {
 
         return new Promise((resolve, _reject) => {
             // add an interval to check if all messages are answered or sent to ATC
-            this.handoverInterval = setInterval(() => {
+            this.handoverInterval = window.setInterval(() => {
                 if (!this.mailboxBus.openMessagesForStation(this.currentAtc)) {
                     clearInterval(this.handoverInterval);
                     this.handoverInterval = null;
@@ -919,7 +919,7 @@ export class Atc {
 
     public activateAtisAutoUpdate(data: { icao: string; type: AtisType }): void {
         if (this.atisAutoUpdateIcaos.find((elem) => elem[0] === data.icao) === undefined) {
-            const updater = setInterval(() => this.automaticAtisUpdater(data.icao, data.type), 60000);
+            const updater = window.setInterval(() => this.automaticAtisUpdater(data.icao, data.type), 60000);
             this.atisAutoUpdateIcaos.push([data.icao, data.type, updater]);
 
             const icaos: string[] = [];
