@@ -359,7 +359,7 @@ class RadioAltAndDH extends DisplayComponent<{ bus: ArincEventBus, filteredRadio
                 const verticalOffset = calculateVerticalOffsetFromRoll(this.roll.value);
                 const useTransAltVsLvl = this.fmgcFlightPhase <= 3;
                 const chosenTransalt = useTransAltVsLvl ? this.transAltAr : this.transLvlAr;
-                const belowTransitionAltitude = chosenTransalt.isNormalOperation() && (!this.altitude.isNoComputedData() && !this.altitude.isNoComputedData())
+                const belowTransitionAltitude = chosenTransalt.isNormalOperation() && !this.altitude.isNoComputedData()
                     && this.altitude.value < (useTransAltVsLvl ? chosenTransalt.value : chosenTransalt.value * 100);
                 let size = 'FontLarge';
                 const dh = this.dh.get();
