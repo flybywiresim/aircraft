@@ -262,6 +262,7 @@ impl Aircraft for A380 {
         self.air_conditioning.update(
             context,
             &self.adirs,
+            &self.hydraulic,
             &self.adcn,
             [
                 &self.engine_1,
