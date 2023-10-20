@@ -3,11 +3,12 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React from 'react';
-import { FailureGenContext, ModalGenType, findGeneratorFailures } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
-import { setSelectedFailure } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelectionUI';
+import { FailureGenContext, ModalGenType, findGeneratorFailures, sendFailurePool } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
+import { getGeneratorFailurePool, setSelectedFailure } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelectionUI';
 import { Failure } from 'failures/src/failures-orchestrator';
 import { AtaChapterNumber, AtaChapterNumbers, AtaChaptersTitle } from '@flybywiresim/fbw-sdk';
 import { t } from 'instruments/src/EFB/translation';
+import { useEventBus } from 'instruments/src/EFB/event-bus-provider';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
 import { useFailuresOrchestrator } from '../../failures-orchestrator-provider';
@@ -21,6 +22,15 @@ interface FailureAtaListProps {
 
 const FailureAtaList: React.FC<FailureAtaListProps> = ({ failureGenContext, chapter, generatorFailureTable }) => {
     const { allFailures } = useFailuresOrchestrator();
+    const bus = useEventBus();
+
+    const selectOneFailure = (failure: Failure, failureGenContext: FailureGenContext, active: boolean): void => {
+        setSelectedFailure(failure, failureGenContext.modalContext.genUniqueID, failureGenContext, active);
+        sendFailurePool(failureGenContext.modalContext.genLetter,
+            failureGenContext.modalContext.genNumber,
+            getGeneratorFailurePool(failureGenContext.modalContext, Array.from(allFailures)),
+            bus);
+    };
 
     const ATAList: JSX.Element[] = allFailures.map<JSX.Element>((failure) => {
         if (failure.ata === chapter) {
@@ -33,7 +43,7 @@ const FailureAtaList: React.FC<FailureAtaListProps> = ({ failureGenContext, chap
                     <Toggle
                         value={active}
                         onToggle={() => {
-                            setSelectedFailure(failure, failureGenContext.modalContext.genUniqueID, failureGenContext, !active);
+                            selectOneFailure(failure, failureGenContext, !active);
                             failureGenContext.setFailureGenModalType(ModalGenType.Failures);
                         }}
                     />
@@ -58,27 +68,36 @@ export interface GeneratorFailureSelectionProps {
 export const GeneratorFailureSelection: React.FC<GeneratorFailureSelectionProps> = ({ failureGenContext }): JSX.Element => {
     const { allFailures } = useFailuresOrchestrator();
     const { popModal } = useModals();
+    const bus = useEventBus();
 
     const generatorFailureTable: Failure[] = findGeneratorFailures(allFailures, failureGenContext.generatorFailuresGetters, failureGenContext.modalContext.genUniqueID);
 
     failureGenContext.setFailureGenModalType(ModalGenType.None);
 
-    const selectAllFailures = (failureGenContext: FailureGenContext, genIDToChange: string, value: boolean): void => {
+    const selectAllFailures = (failureGenContext: FailureGenContext, value: boolean): void => {
         for (const failure of allFailures) {
-            setSelectedFailure(failure, genIDToChange, failureGenContext, value);
+            setSelectedFailure(failure, failureGenContext.modalContext.genUniqueID, failureGenContext, value);
         }
+        sendFailurePool(failureGenContext.modalContext.genLetter,
+            failureGenContext.modalContext.genNumber,
+            getGeneratorFailurePool(failureGenContext.modalContext, Array.from(allFailures)),
+            bus);
     };
 
-    const selectAllFailureChapter = (chapter: number, failureGenContext: FailureGenContext, genIDToChange: string, value: boolean): void => {
+    const selectAllFailureChapter = (chapter: number, failureGenContext: FailureGenContext, value: boolean): void => {
         for (const failure of allFailures) {
             if (failure.ata === chapter) {
-                setSelectedFailure(failure, genIDToChange, failureGenContext, value);
+                setSelectedFailure(failure, failureGenContext.modalContext.genUniqueID, failureGenContext, value);
             }
         }
+        sendFailurePool(failureGenContext.modalContext.genLetter,
+            failureGenContext.modalContext.genNumber,
+            getGeneratorFailurePool(failureGenContext.modalContext, Array.from(allFailures)),
+            bus);
     };
 
     return (
-        <div className="flex flex-col justify-between items-stretch py-2 px-8 w-3/4 bg-theme-body border-2 border-theme-accent">
+        <div className="flex flex-col justify-between items-stretch py-2 px-8 w-3/4 border-2 bg-theme-body border-theme-accent">
             <div className="flex flex-row justify-between items-start bg-theme-body ">
                 <div className="space-x-3 text-left">
                     <h1 className="font-bold text-current">
@@ -104,7 +123,7 @@ export const GeneratorFailureSelection: React.FC<GeneratorFailureSelectionProps>
                     <div
                         className="mx-2"
                         onClick={() => {
-                            selectAllFailures(failureGenContext, failureGenContext.modalContext.genUniqueID, true);
+                            selectAllFailures(failureGenContext, true);
                             failureGenContext.setFailureGenModalType(ModalGenType.Failures);
                         }}
                     >
@@ -112,9 +131,9 @@ export const GeneratorFailureSelection: React.FC<GeneratorFailureSelectionProps>
                     </div>
                     <div><h2>/</h2></div>
                     <div
-                        className="mx-2 hover:text-theme-highlight"
+                        className="mx-2"
                         onClick={() => {
-                            selectAllFailures(failureGenContext, failureGenContext.modalContext.genUniqueID, false);
+                            selectAllFailures(failureGenContext, false);
                             failureGenContext.setFailureGenModalType(ModalGenType.Failures);
                         }}
                     >
@@ -133,23 +152,23 @@ export const GeneratorFailureSelection: React.FC<GeneratorFailureSelectionProps>
                                 <div><h1>{AtaChaptersTitle[chapter]}</h1></div>
                                 <div className="ml-2"><h2>(</h2></div>
                                 <div
-                                    className="mx-2 hover:text-theme-highlight"
+                                    className="mx-2"
                                     onClick={() => {
-                                        selectAllFailureChapter(chapter, failureGenContext, failureGenContext.modalContext.genUniqueID, true);
+                                        selectAllFailureChapter(chapter, failureGenContext, true);
                                         failureGenContext.setFailureGenModalType(ModalGenType.Failures);
                                     }}
                                 >
-                                    <h2><u>{t('Failures.Generators.All')}</u></h2>
+                                    <h2 className="hover:text-theme-highlight"><u>{t('Failures.Generators.All')}</u></h2>
                                 </div>
                                 <div><h2>/</h2></div>
                                 <div
-                                    className="mx-2 hover:text-theme-highlight"
+                                    className="mx-2"
                                     onClick={() => {
-                                        selectAllFailureChapter(chapter, failureGenContext, failureGenContext.modalContext.genUniqueID, false);
+                                        selectAllFailureChapter(chapter, failureGenContext, false);
                                         failureGenContext.setFailureGenModalType(ModalGenType.Failures);
                                     }}
                                 >
-                                    <h2><u>{t('Failures.Generators.None')}</u></h2>
+                                    <h2 className="hover:text-theme-highlight"><u>{t('Failures.Generators.None')}</u></h2>
                                 </div>
                                 <div className="mr-2"><h2>)</h2></div>
                             </div>

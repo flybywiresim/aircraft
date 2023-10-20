@@ -7,6 +7,7 @@ import { usePersistentProperty } from '@flybywiresim/fbw-sdk';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
     FailureGenContext, FailureGenData, FailureGenFeedbackEvent,
+    sendFailurePool,
     sendRefresh, sendSettings, setNewSetting, updateSettings,
 } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
 import { t } from 'instruments/src/EFB/translation';

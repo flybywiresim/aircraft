@@ -2,8 +2,48 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
+import { NXDataStore } from '@flybywiresim/fbw-sdk';
 import { Failure } from 'failures/src/failures-orchestrator';
-import { FailureGenContext } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
+import { FailureGenContext, ModalContext } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
+
+export const getGeneratorFailurePool = (modalContext : ModalContext, allFailures:Readonly<Failure>[]): string => {
+    let failureIDs: string = '';
+    let first = true;
+    const setOfGeneratorFailuresSettings = getSetOfGeneratorFailuresSettings(allFailures);
+
+    if (allFailures.length > 0) {
+        for (const failure of allFailures) {
+            const generatorSetting = setOfGeneratorFailuresSettings.get(failure.identifier);
+            if (generatorSetting) {
+                const failureGeneratorsTable = generatorSetting.split(',');
+                if (failureGeneratorsTable.length > 0) {
+                    for (const generator of failureGeneratorsTable) {
+                        if (generator === modalContext.genUniqueID) {
+                            if (first) {
+                                failureIDs += failure.identifier.toString();
+                                first = false;
+                            } else failureIDs += `,${failure.identifier.toString()}`;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return failureIDs;
+};
+
+const getSetOfGeneratorFailuresSettings: (allFailures: readonly Readonly<Failure>[]) => Map<number, string> = (allFailures: readonly Readonly<Failure>[]) => {
+    const generatorFailuresGetters: Map<number, string> = new Map();
+    if (allFailures.length > 0) {
+        for (const failure of allFailures) {
+            // TODO
+            // Another way of storing settings on the EFB tablet will need to be used when tablet will not be part of the sim
+            const generatorSetting = NXDataStore.get(`EFB_FAILURE_${failure.identifier.toString()}_GENERATORS`, '');
+            generatorFailuresGetters.set(failure.identifier, generatorSetting);
+        }
+    }
+    return generatorFailuresGetters;
+};
 
 export const setSelectedFailure = (failure: Failure, genIDToChange: string, failureGenContext: FailureGenContext, value: boolean) => {
     const initialString = failureGenContext.generatorFailuresGetters.get(failure.identifier);

@@ -4,8 +4,6 @@
 
 import { EventBus } from '@microsoft/msfs-sdk';
 
-import { NXDataStore } from '@flybywiresim/fbw-sdk';
-
 import { Failure, FailuresOrchestrator } from '@failures';
 import { GenericGenerator } from 'failures/src/GenericGenerator';
 import { FailureGeneratorAltitude } from './AltitudeFailureGenerator';
@@ -46,17 +44,6 @@ export class RandomFailureGen {
             if (i < settings.length - 1) settingString += ',';
         }
         return settingString;
-    }
-
-    getSetOfGeneratorFailuresSettings(allFailures: readonly Readonly<Failure>[]): Map<number, string> {
-        const generatorFailuresGetters: Map<number, string> = new Map();
-        if (allFailures.length > 0) {
-            for (const failure of allFailures) {
-                const generatorSetting = NXDataStore.get(`EFB_FAILURE_${failure.identifier.toString()}_GENERATORS`, '');
-                generatorFailuresGetters.set(failure.identifier, generatorSetting);
-            }
-        }
-        return generatorFailuresGetters;
     }
 
     activateRandomFailure(
@@ -106,26 +93,5 @@ export class RandomFailureGen {
             }
             this.absoluteTimePrev = absoluteTime;
         }
-    }
-
-    getGeneratorFailurePool(failureOrchestrator: FailuresOrchestrator, generatorUniqueID: string): Failure[] {
-        const failureIDs: Failure[] = [];
-        const allFailures = failureOrchestrator.getAllFailures();
-        const setOfGeneratorFailuresSettings = this.getSetOfGeneratorFailuresSettings(allFailures);
-
-        if (allFailures.length > 0) {
-            for (const failure of allFailures) {
-                const generatorSetting = setOfGeneratorFailuresSettings.get(failure.identifier);
-                if (generatorSetting) {
-                    const failureGeneratorsTable = generatorSetting.split(',');
-                    if (failureGeneratorsTable.length > 0) {
-                        for (const generator of failureGeneratorsTable) {
-                            if (generator === generatorUniqueID) failureIDs.push(failure);
-                        }
-                    }
-                }
-            }
-        }
-        return failureIDs;
     }
 }

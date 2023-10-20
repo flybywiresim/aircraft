@@ -11,10 +11,7 @@ import {
 } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
 import { t } from 'instruments/src/EFB/translation';
 import { FailureGeneratorSingleSetting, FailureGeneratorText } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorSettingsUI';
-import {
-    ArmingModeIndex,
-    FailuresAtOnceIndex, MaxFailuresIndex,
-} from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
+import { ArmingModeIndex } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
 import { useEventBus } from '../../event-bus-provider';
 
 const settingName = 'EFB_FAILURE_GENERATOR_SETTING_PERHOUR';

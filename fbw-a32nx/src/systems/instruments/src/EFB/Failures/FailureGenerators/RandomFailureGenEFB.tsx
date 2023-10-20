@@ -10,9 +10,12 @@ import { failureGenConfigPerHour } from 'instruments/src/EFB/Failures/FailureGen
 import { failureGenConfigSpeed } from 'instruments/src/EFB/Failures/FailureGenerators/SpeedFailureGeneratorUI';
 import { failureGenConfigTakeOff } from 'instruments/src/EFB/Failures/FailureGenerators/TakeOffFailureGeneratorUI';
 import { failureGenConfigTimer } from 'instruments/src/EFB/Failures/FailureGenerators/TimerFailureGeneratorUI';
-import { ArmingModeIndex, FailuresAtOnceIndex, MaxFailuresIndex } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
 import { EventBus } from '@microsoft/msfs-sdk';
 import { useFailuresOrchestrator } from '../../failures-orchestrator-provider';
+
+export interface FailureGenFailureList {
+    failurePool: { generatorType: string, generatorNumber: number, failureString: string };
+  }
 
 export interface FailureGenFeedbackEvent {
     expectedMode: { generatorType: string, mode: number[] };
@@ -90,6 +93,7 @@ export type ModalContext = {
     failureGenData: FailureGenData,
     genNumber: number,
     genUniqueID: string,
+    genLetter: string,
 }
 
 export enum ModalGenType {None, Settings, Failures}
@@ -156,6 +160,16 @@ export const useFailureGeneratorsSettings: () => FailureGenContext = () => {
     };
 };
 
+// TODO
+// Function to send all settings once
+/* export function sendAllSettings(failureGenContext : FailureGenContext, bus: EventBus)
+{
+    for (const gen of failureGenContext.allGenSettings.values()) {
+        sendSettings(gen.uniqueGenPrefix,,bus);
+        sendFailurePool(gen.uniqueGenPrefix,,,bus);
+    }
+} */
+
 export function setNewSetting(bus: EventBus, newSetting: number, generatorSettings: FailureGenData, genID: number, settingIndex: number) {
     const settings = generatorSettings.settings;
     settings[genID * generatorSettings.numberOfSettingsPerGenerator + settingIndex] = newSetting;
@@ -167,12 +181,16 @@ export function sendRefresh(bus: EventBus) {
     console.info('requesting refresh');
 }
 
-export function sendSettings(uniqueGenPrefix: string, stringTosend: string, bus: EventBus) {
+export function sendFailurePool(generatorType: string, generatorNumber:number, failureString: string, bus: EventBus) {
+    console.info(`failure pool sent: ${generatorType}${generatorNumber} - ${failureString}`);
+    bus.getPublisher<FailureGenFailureList>().pub('failurePool', { generatorType, generatorNumber, failureString }, true);
+}
+
+export function sendSettings(generatorType: string, stringTosend: string, bus: EventBus) {
     let settingsString: string;
     if (stringTosend === undefined) settingsString = '';
     else settingsString = stringTosend;
-    const generatorType = uniqueGenPrefix;
-    console.info(`settings sent: ${generatorType} - ${settingsString}`);
+    // console.info(`settings sent: ${generatorType} - ${settingsString}`);
     bus.getPublisher<FailureGenEvent>().pub('settings', { generatorType, settingsString }, true);
 }
 

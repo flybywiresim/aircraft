@@ -5,14 +5,17 @@
 import { EventBus } from '@microsoft/msfs-sdk';
 
 import { ArmingModeIndex, FailurePhases, FailuresAtOnceIndex, MaxFailuresIndex, RandomFailureGen } from './RandomFailureGen';
-import { FailuresOrchestrator } from './failures-orchestrator';
+import { Failure, FailuresOrchestrator } from './failures-orchestrator';
+
+export interface FailureGenFailureList {
+    failurePool: { generatorType: string, generatorNumber: number, failureString: string };
+  }
 
 export interface FailureGenFeedbackEvent {
     expectedMode: { generatorType: string, mode: number[] };
     armingDisplayStatus: { generatorType: string, status: boolean[] };
   }
 
-// this interface is a placeHolder for when the bus will be used for comm from UI to the system
 export interface FailureGenEvent {
     refreshData: boolean;
     settings: {generatorType: string, settingsString: string}
@@ -50,6 +53,25 @@ export abstract class GenericGenerator {
 
     refreshRequest: boolean= false;
 
+    failurePool: string[]= [];
+
+    getGeneratorFailurePool(failureOrchestrator: FailuresOrchestrator, genNumber: number): Failure[] {
+        const failureIDs: Failure[] = [];
+        const allFailures = failureOrchestrator.getAllFailures();
+        // const setOfGeneratorFailuresSettings = this.getSetOfGeneratorFailuresSettings(allFailures, genNumber);
+
+        if (allFailures.length > 0) {
+            const failureGeneratorsTable = this.failurePool[genNumber].split(',');
+            for (const failureID of failureGeneratorsTable) {
+                if (failureGeneratorsTable.length > 0) {
+                    const temp = allFailures.find((value) => value.identifier.toString() === failureID);
+                    if (temp !== undefined) failureIDs.push(temp);
+                }
+            }
+        }
+        return failureIDs;
+    }
+
     constructor(private readonly randomFailuresGen: RandomFailureGen, protected readonly bus: EventBus) {
         bus.getSubscriber<FailureGenEvent>().on('refreshData').handle((_value) => {
             this.refreshRequest = true;
@@ -60,6 +82,12 @@ export abstract class GenericGenerator {
             if (generatorType === this.uniqueGenPrefix) {
                 console.info(`settings received: ${generatorType} - ${settingsString}`);
                 this.settings = settingsString.split(',').map(((it) => parseFloat(it)));
+            }
+        });
+        bus.getSubscriber<FailureGenFailureList>().on('failurePool').handle(({ generatorType, generatorNumber, failureString }) => {
+            if (generatorType === this.uniqueGenPrefix) {
+                console.info(`settings received: ${generatorType}${generatorNumber}`);
+                this.failurePool[generatorNumber] = failureString;
             }
         });
     }
@@ -173,7 +201,7 @@ export abstract class GenericGenerator {
                             this.settings[i * this.numberOfSettingsPerGenerator + MaxFailuresIndex] - activeFailures.size);
                         if (numberOfFailureToActivate > 0) {
                             // console.info('FAILURE');
-                            this.randomFailuresGen.activateRandomFailure(this.randomFailuresGen.getGeneratorFailurePool(failureOrchestrator, this.uniqueGenPrefix + i.toString()),
+                            this.randomFailuresGen.activateRandomFailure(this.getGeneratorFailurePool(failureOrchestrator, i),
                                 failureOrchestrator, activeFailures, numberOfFailureToActivate);
                             this.reset(i);
                             if (this.settings[i * this.numberOfSettingsPerGenerator + ArmingModeIndex] === 1) {
