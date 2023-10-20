@@ -4,12 +4,12 @@
 
 import { NdSymbol, NdSymbolTypeFlags } from '@shared/NavigationDisplay';
 import { EventBus } from '@microsoft/msfs-sdk';
-import { NDSimvars } from 'instruments/src/NDv2/NDSimvarPublisher';
+import { NDSimvars } from 'instruments/src/ND/NDSimvarPublisher';
 import { Arinc429ConsumerSubject } from 'instruments/src/MsfsAvionicsCommon/Arinc429ConsumerSubject';
 import { Arinc429Register, MathUtils } from '@flybywiresim/fbw-sdk';
 import { DmcEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 import { MapLayer } from './MapLayer';
-import { MapParameters } from '../../../ND/utils/MapParameters';
+import { MapParameters } from '../utils/MapParameters';
 import { PaintUtils } from './PaintUtils';
 
 // eslint-disable-next-line max-len
