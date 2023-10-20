@@ -1,4 +1,4 @@
-//  Copyright (c) 2021 FlyByWire Simulations
+//  Copyright (c) 2021, 2023 FlyByWire Simulations
 //  SPDX-License-Identifier: GPL-3.0
 
 import {
@@ -17,6 +17,7 @@ import {
 } from '@datalink/common';
 import { NXDataStore } from '@flybywiresim/fbw-sdk';
 import { EventBus } from '@microsoft/msfs-sdk';
+import { MsfsConnector } from './msfs/MsfsConnector';
 import { Vdl } from './vhf/VDL';
 import { HoppieConnector } from './webinterfaces/HoppieConnector';
 import { NXApiConnector } from './webinterfaces/NXApiConnector';
@@ -230,7 +231,13 @@ export class Router {
 
         if (index < icaos.length) {
             if (requestMetar === true) {
-                retval = await NXApiConnector.receiveMetar(icaos[index], message).then(() => this.receiveWeatherData(requestMetar, icaos, index + 1, message));
+                const storedMetarSrc = NXDataStore.get('CONFIG_METAR_SRC', 'MSFS');
+
+                if (storedMetarSrc === 'MSFS') {
+                    retval = await MsfsConnector.receiveMsfsMetar(icaos[index], message).then(() => this.receiveWeatherData(requestMetar, icaos, index + 1, message));
+                } else {
+                    retval = await NXApiConnector.receiveMetar(icaos[index], message).then(() => this.receiveWeatherData(requestMetar, icaos, index + 1, message));
+                }
             } else {
                 retval = await NXApiConnector.receiveTaf(icaos[index], message).then(() => this.receiveWeatherData(requestMetar, icaos, index + 1, message));
             }
