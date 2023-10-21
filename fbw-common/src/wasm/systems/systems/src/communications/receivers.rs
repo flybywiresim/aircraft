@@ -136,7 +136,7 @@ struct Morse {
 }
 
 impl Morse {
-    pub fn new(context: &mut InitContext, name: &str, id: usize) -> Self {
+    fn new(context: &mut InitContext, name: &str, id: usize) -> Self {
         Self {
             ident_id: context.get_identifier(format!("{}{}_IDENT_PACKED", name, id)),
             ident_new: 0,
@@ -242,7 +242,7 @@ impl Morse {
         copy.chars().rev().collect::<String>()
     }
 
-    pub fn update(&mut self, context: &UpdateContext) {
+    fn update(&mut self, context: &UpdateContext) {
         self.duration_current += context.delta();
 
         // Manage new ident
@@ -295,7 +295,7 @@ impl Morse {
         }
     }
 
-    pub fn get_state(&self) -> bool {
+    fn get_state(&self) -> bool {
         self.beep
     }
 }
