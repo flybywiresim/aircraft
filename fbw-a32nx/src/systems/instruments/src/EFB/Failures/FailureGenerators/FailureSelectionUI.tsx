@@ -4,9 +4,9 @@
 
 import { NXDataStore } from '@flybywiresim/fbw-sdk';
 import { Failure } from 'failures/src/failures-orchestrator';
-import { FailureGenContext, ModalContext } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
+import { FailureGenContext } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
 
-export const getGeneratorFailurePool = (modalContext : ModalContext, allFailures:Readonly<Failure>[]): string => {
+export const getGeneratorFailurePool = (genUniqueID : string, allFailures:Readonly<Failure>[]): string => {
     let failureIDs: string = '';
     let first = true;
     const setOfGeneratorFailuresSettings = getSetOfGeneratorFailuresSettings(allFailures);
@@ -18,7 +18,7 @@ export const getGeneratorFailurePool = (modalContext : ModalContext, allFailures
                 const failureGeneratorsTable = generatorSetting.split(',');
                 if (failureGeneratorsTable.length > 0) {
                     for (const generator of failureGeneratorsTable) {
-                        if (generator === modalContext.genUniqueID) {
+                        if (generator === genUniqueID) {
                             if (first) {
                                 failureIDs += failure.identifier.toString();
                                 first = false;

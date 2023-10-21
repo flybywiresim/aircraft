@@ -28,7 +28,7 @@ const FailureAtaList: React.FC<FailureAtaListProps> = ({ failureGenContext, chap
         setSelectedFailure(failure, failureGenContext.modalContext.genUniqueID, failureGenContext, active);
         sendFailurePool(failureGenContext.modalContext.genLetter,
             failureGenContext.modalContext.genNumber,
-            getGeneratorFailurePool(failureGenContext.modalContext, Array.from(allFailures)),
+            getGeneratorFailurePool(failureGenContext.modalContext.genUniqueID, Array.from(allFailures)),
             bus);
     };
 
@@ -80,7 +80,7 @@ export const GeneratorFailureSelection: React.FC<GeneratorFailureSelectionProps>
         }
         sendFailurePool(failureGenContext.modalContext.genLetter,
             failureGenContext.modalContext.genNumber,
-            getGeneratorFailurePool(failureGenContext.modalContext, Array.from(allFailures)),
+            getGeneratorFailurePool(failureGenContext.modalContext.genUniqueID, Array.from(allFailures)),
             bus);
     };
 
@@ -92,7 +92,7 @@ export const GeneratorFailureSelection: React.FC<GeneratorFailureSelectionProps>
         }
         sendFailurePool(failureGenContext.modalContext.genLetter,
             failureGenContext.modalContext.genNumber,
-            getGeneratorFailurePool(failureGenContext.modalContext, Array.from(allFailures)),
+            getGeneratorFailurePool(failureGenContext.modalContext.genUniqueID, Array.from(allFailures)),
             bus);
     };
 

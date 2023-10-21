@@ -66,9 +66,9 @@ export const failureGenConfigPerHour: () => FailureGenData = () => {
     }, []);
 
     return {
-        setting,
         setSetting,
         settings,
+        setting,
         numberOfSettingsPerGenerator,
         uniqueGenPrefix,
         additionalSetting,

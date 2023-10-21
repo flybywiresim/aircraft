@@ -74,6 +74,7 @@ export const failureGenConfigTimer: () => FailureGenData = () => {
     return {
         setSetting,
         settings,
+        setting,
         numberOfSettingsPerGenerator,
         uniqueGenPrefix,
         additionalSetting,

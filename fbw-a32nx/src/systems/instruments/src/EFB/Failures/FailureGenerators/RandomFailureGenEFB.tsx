@@ -42,6 +42,10 @@ export type FailureGenData = {
      */
     settings: number[],
     /**
+     * TODO put in redux
+     */
+    setting: string,
+    /**
      * TODO confirm - does this vary per generator?
      * Yes, this varies a lot. As soon as you change a setting of the generator (min altitude, speed, mode...)
      */

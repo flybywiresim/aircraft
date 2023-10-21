@@ -7,7 +7,7 @@ import { usePersistentProperty } from '@flybywiresim/fbw-sdk';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
     FailureGenContext, FailureGenData, FailureGenFeedbackEvent,
-    sendRefresh, sendSettings, setNewSetting, updateSettings,
+    sendRefresh, setNewSetting, updateSettings,
 } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
 import { t } from 'instruments/src/EFB/translation';
 import { ArrowDownRight, ArrowUpRight } from 'react-bootstrap-icons';
@@ -63,7 +63,6 @@ export const failureGenConfigAltitude: () => FailureGenData = () => {
             // console.info('received arming states');
             }
         });
-        sendSettings(uniqueGenPrefix, setting, bus);
         sendRefresh(bus);
         return () => {
             sub1.destroy();
@@ -74,6 +73,7 @@ export const failureGenConfigAltitude: () => FailureGenData = () => {
     return {
         setSetting,
         settings,
+        setting,
         numberOfSettingsPerGenerator,
         uniqueGenPrefix,
         additionalSetting,

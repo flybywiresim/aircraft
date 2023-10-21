@@ -7,6 +7,7 @@ import { Redirect, Route, Switch, useHistory } from 'react-router-dom';
 import { Battery } from 'react-bootstrap-icons';
 import { toast, ToastContainer } from 'react-toastify';
 import { distanceTo } from 'msfs-geo';
+import { FailureGeneratorsInit } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsInit';
 import { Tooltip } from './UtilComponents/TooltipWrapper';
 import { FbwLogo } from './UtilComponents/FbwLogo';
 import { AlertModal, ModalContainer, useModals } from './UtilComponents/Modals/Modals';
@@ -296,7 +297,11 @@ const Efb = () => {
     switch (powerState) {
     case PowerStates.SHUTOFF:
     case PowerStates.STANDBY:
-        return <div className="w-screen h-screen" onClick={offToLoaded} />;
+        return (
+            <div className="w-screen h-screen" onClick={offToLoaded}>
+                <FailureGeneratorsInit />
+            </div>
+        );
     case PowerStates.LOADING:
     case PowerStates.SHUTDOWN:
         return <LoadingScreen />;
