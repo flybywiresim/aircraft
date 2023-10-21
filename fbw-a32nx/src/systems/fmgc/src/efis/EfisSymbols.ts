@@ -295,10 +295,8 @@ export class EfisSymbols {
             }
 
             const formatConstraintAlt = (alt: number, descent: boolean, prefix: string = '') => {
-                // const transAlt = activeFp?.originTransitionAltitudePilot ?? activeFp?.originTransitionAltitudeDb;
-                // const transFl = activeFp?.destinationTransitionLevelPilot ?? activeFp?.destinationTransitionLevelDb;
-                const transAlt = 18_000;
-                const transFl = 180;
+                const transAlt = this.flightPlanService.active?.performanceData.transitionAltitude.get();
+                const transFl = this.flightPlanService.active?.performanceData.transitionLevel.get();
 
                 if (descent) {
                     const fl = Math.round(alt / 100);
@@ -560,8 +558,8 @@ export class EfisSymbols {
 
             const altConstraint = leg.altitudeConstraint;
 
-            if ((isInLatAutoControl || isLatAutoControlArmed) && !isFromLeg && altConstraint) {
-                if (!isSelectedVerticalModeActive && shouldShowConstraintCircleInPhase(flightPhase, leg)) {
+            if ((isInLatAutoControl || isLatAutoControlArmed) && !isFromLeg && altConstraint && shouldShowConstraintCircleInPhase(flightPhase, leg)) {
+                if (!isSelectedVerticalModeActive) {
                     type |= NdSymbolTypeFlags.Constraint;
 
                     const predictionAtWaypoint = waypointPredictions?.get(i);
@@ -577,7 +575,7 @@ export class EfisSymbols {
             }
 
             if (efisOption === EfisOption.Constraints) {
-                const descent = leg.segment.class === SegmentClass.Arrival;
+                const descent = leg.constraintType === WaypointConstraintType.DES;
                 switch (altConstraint?.type) {
                 case AltitudeConstraintType.at:
                     constraints.push(formatConstraintAlt(altConstraint.altitude1, descent));
