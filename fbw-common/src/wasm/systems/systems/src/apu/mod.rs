@@ -377,7 +377,7 @@ pub struct AirStarterUnit {
 impl AirStarterUnit {
     pub fn new(context: &mut InitContext) -> AirStarterUnit {
         AirStarterUnit {
-            bleed_air_pressure: Pressure::new::<psi>(14.7),
+            bleed_air_pressure: Pressure::new::<psi>(0.1),
             bleed_air_temperature: ThermodynamicTemperature::new::<degree_celsius>(15.),
             turned_on_id: context.get_identifier("ASU_TURNED_ON".to_owned()),
             turned_on: false,
@@ -389,7 +389,7 @@ impl AirStarterUnit {
             self.bleed_air_pressure = Pressure::new::<psi>(50.0);
             self.bleed_air_temperature = ThermodynamicTemperature::new::<degree_celsius>(165.);
         } else {
-            self.bleed_air_pressure = Pressure::new::<psi>(14.7);
+            self.bleed_air_pressure = Pressure::new::<psi>(0.1);
             self.bleed_air_temperature = ThermodynamicTemperature::new::<degree_celsius>(15.);
         }
     }
