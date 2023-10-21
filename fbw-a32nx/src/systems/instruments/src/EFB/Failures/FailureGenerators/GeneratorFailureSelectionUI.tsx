@@ -6,7 +6,7 @@ import React from 'react';
 import { FailureGenContext, ModalGenType, findGeneratorFailures, sendFailurePool } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
 import { getGeneratorFailurePool, setSelectedFailure } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelectionUI';
 import { Failure } from 'failures/src/failures-orchestrator';
-import { AtaChapterNumber, AtaChapterNumbers, AtaChaptersTitle } from '@flybywiresim/fbw-sdk';
+import { AtaChapterNumber, AtaChaptersTitle } from '@flybywiresim/fbw-sdk';
 import { t } from 'instruments/src/EFB/translation';
 import { useEventBus } from 'instruments/src/EFB/event-bus-provider';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
@@ -144,7 +144,7 @@ export const GeneratorFailureSelection: React.FC<GeneratorFailureSelectionProps>
             </div>
             <ScrollableContainer height={48}>
                 <div className="grid grid-cols-2 grid-flow-dense">
-                    {AtaChapterNumbers.map<JSX.Element>((chapter) => (
+                    {failureGenContext.reducedAtaChapterNumbers.map<JSX.Element>((chapter) => (
                         <div>
                             <div
                                 className="flex flex-row justify-start pt-4 ml-10"
