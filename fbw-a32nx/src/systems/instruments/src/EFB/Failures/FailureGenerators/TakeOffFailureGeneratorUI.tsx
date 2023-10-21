@@ -7,7 +7,7 @@ import { usePersistentProperty } from '@flybywiresim/fbw-sdk';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
     FailureGenContext, FailureGenData, FailureGenFeedbackEvent, sendRefresh,
-    sendSettings, setNewSetting, updateSettings,
+    setNewSetting, updateSettings,
 } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
 import { t } from 'instruments/src/EFB/translation';
 import { FailureGeneratorSingleSetting, FailureGeneratorText } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorSettingsUI';
@@ -64,7 +64,6 @@ export const failureGenConfigTakeOff: () => FailureGenData = () => {
             // console.info('received arming states');
             }
         });
-        sendSettings(uniqueGenPrefix, setting, bus);
         sendRefresh(bus);
         return () => {
             sub1.destroy();
@@ -107,7 +106,7 @@ const generatorSettingComponents = (genNumber: number, generatorSettings: Failur
             failureGenContext={failureGenContext}
         />,
         (
-            <div className="pl-10 w-full divide-y-2 divide-theme-accent">
+            <div className="divide-theme-accent w-full divide-y-2 pl-10">
                 <FailureGeneratorText title={`${t('Failures.Generators.SplitOverPhases')}:`} unit="" text="" />
                 <FailureGeneratorSingleSetting
                     title={t('Failures.Generators.LowSpeedChance')}

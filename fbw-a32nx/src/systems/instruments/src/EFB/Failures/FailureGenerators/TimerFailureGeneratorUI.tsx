@@ -7,7 +7,7 @@ import { usePersistentProperty } from '@flybywiresim/fbw-sdk';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
     FailureGenContext, FailureGenData, FailureGenFeedbackEvent,
-    sendRefresh, sendSettings, setNewSetting, updateSettings,
+    sendRefresh, setNewSetting, updateSettings,
 } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
 import { t } from 'instruments/src/EFB/translation';
 import { FailureGeneratorSingleSetting } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorSettingsUI';
@@ -32,7 +32,11 @@ export const failureGenConfigTimer: () => FailureGenData = () => {
     const [armedState, setArmedState] = useState<boolean[]>();
     const settings = useMemo(() => {
         const splitString = setting?.split(',');
-        if (splitString) return splitString.map(((it: string) => parseFloat(it)));
+        if (splitString) {
+            const newSettings = splitString.map(((it: string) => parseFloat(it)));
+            console.info(`TIM update of setting array:${newSettings.toString()}`);
+            return newSettings;
+        }
         return [];
     }, [setting]);
 
@@ -42,9 +46,10 @@ export const failureGenConfigTimer: () => FailureGenData = () => {
                 console.info(`TIM expectedMode received: ${generatorType} - ${mode.toString()}`);
                 const nbGenerator = Math.floor(settings.length / numberOfSettingsPerGenerator);
                 let changeNeeded = false;
-                for (let i = 0; i < nbGenerator; i++) {
+                for (let i = 0; i < nbGenerator && i < mode?.length; i++) {
                     if (settings[i * numberOfSettingsPerGenerator + ArmingModeIndex] !== -1) {
                         if (i < mode?.length && mode[i] === 0) {
+                            console.info(`TIM gen ${i.toString()} switched off`);
                             settings[i * numberOfSettingsPerGenerator + ArmingModeIndex] = 0;
                             changeNeeded = true;
                         }
@@ -63,7 +68,6 @@ export const failureGenConfigTimer: () => FailureGenData = () => {
             // console.info('received arming states');
             }
         });
-        sendSettings(uniqueGenPrefix, setting, bus);
         sendRefresh(bus);
         return () => {
             sub1.destroy();

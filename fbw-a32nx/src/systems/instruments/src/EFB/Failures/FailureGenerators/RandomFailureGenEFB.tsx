@@ -138,6 +138,7 @@ export const updateSettings: (settings: number[], setSetting: (value: string) =>
 => void = (settings: number[], setSetting: (value: string) => void, bus: EventBus, uniqueGenPrefix: string) => {
     const flattenedData = flatten(settings);
     sendSettings(uniqueGenPrefix, flattenedData, bus);
+    console.info(`new permanent setting:${flattenedData}`);
     setSetting(flattenedData);
 };
 
