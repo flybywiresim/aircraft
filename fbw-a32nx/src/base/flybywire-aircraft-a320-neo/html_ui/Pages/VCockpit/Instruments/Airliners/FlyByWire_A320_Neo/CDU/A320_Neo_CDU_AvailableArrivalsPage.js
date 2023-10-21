@@ -347,7 +347,7 @@ class CDUAvailableArrivalsPage {
         const selectedApproachVia = targetPlan.approachVia;
 
         if (selectedApproach) {
-            selectedApproachCell = selectedApproach.ident;
+            selectedApproachCell = Fmgc.ApproachUtils.shortApproachName(selectedApproach);
             selectedApproachCellColor = planColor;
 
             if (selectedApproachVia) {
