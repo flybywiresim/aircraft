@@ -33,6 +33,17 @@ use systems::{
     },
 };
 
+struct Events {
+    event_id_simstop: sys::DWORD,
+}
+impl Events {
+    pub fn new(sim_connect: &mut SimConnect) -> Result<Self, Box<dyn Error>> {
+        Ok(Self {
+            event_id_simstop: sim_connect.subscribe_to_system_event("SIMSTOP")?,
+        })
+    }
+}
+
 /// Type used to configure and build a simulation and a handler which acts as a bridging layer
 /// between the simulation and Microsoft Flight Simulator.
 pub struct MsfsSimulationBuilder<'a, 'b> {
@@ -165,6 +176,7 @@ pub struct MsfsHandler {
     failures: Option<Failures>,
     time: Time,
     external_data: ExternalData,
+    events: Events,
 }
 impl MsfsHandler {
     const SIMOBJECT_DATA_REQUEST_ID_SIMULATION_TIME: sys::DWORD = 0;
@@ -186,6 +198,7 @@ impl MsfsHandler {
             failures,
             time: Time::new(sim_connect)?,
             external_data: ExternalData::new(),
+            events: Events::new(sim_connect)?,
         })
     }
 
@@ -241,8 +254,8 @@ impl MsfsHandler {
                     let vpilot: &VPilot = data.into::<VPilot>(sim_connect).unwrap();
                     self.external_data.set_vpilot(vpilot.loaded, vpilot.selcal);
                 }
-                SimConnectRecv::Event(e) if e.id() == ATCServices::EVENT_SIMSTOP => {
-                    ATCServices::disconnect_atc_services(sim_connect);
+                SimConnectRecv::Event(e) if e.id() == self.events.event_id_simstop => {
+                    ATCServices::disconnect(sim_connect);
                 }
                 _ => {
                     self.handle_message(&message);
@@ -643,18 +656,14 @@ impl Time {
     }
 }
 
-struct ATCServices {}
+struct ATCServices;
 impl ATCServices {
     const AREA_IVAO: &'static str = "IVAO Altitude Data";
     const AREA_VPILOT: &'static str = "vPILOT FBW";
 
-    const EVENT_SIMSTOP: sys::DWORD = 0;
-
     fn new(sim_connect: &mut SimConnect) {
         Ivao::new(sim_connect);
         VPilot::new(sim_connect);
-
-        sim_connect.subscribe_to_system_event(ATCServices::EVENT_SIMSTOP, "SIMSTOP");
     }
 
     pub fn write_to_ivao(
@@ -697,7 +706,7 @@ impl ATCServices {
         }
     }
 
-    pub fn disconnect_atc_services(sim_connect: &mut SimConnect) {
+    pub fn disconnect(sim_connect: &mut SimConnect) {
         let ivao: Ivao = Ivao {
             selcal: 0,
             volume_com1: 0,

@@ -2092,7 +2092,7 @@
 			</Requires>
 		</Sound>
 
-        <Sound WwiseData="true" WwiseEvent="selcalbeep" NodeName="WIPER_BASE_L" ViewPoint="Inside" LocalVar="A32NX_ACP_SELCAL">
+        <Sound WwiseData="true" WwiseEvent="selcalbeep" NodeName="WIPER_BASE_L" ViewPoint="Inside" LocalVar="A32NX_ACP_SELCAL_RECEIVED">
             <Range LowerBound="1" />
 
         </Sound>

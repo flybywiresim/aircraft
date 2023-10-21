@@ -84,7 +84,7 @@
             <NODE_ID_SEQ1>#NODE_ID_BUTTON_SEQ1_VHF_L#</NODE_ID_SEQ1>
             <NODE_ID_SEQ2>#NODE_ID_BUTTON_SEQ2_VHF_L#</NODE_ID_SEQ2>
             <TRANSMIT_ID>1</TRANSMIT_ID>
-            <BLINK_ID>1</BLINK_ID>
+            <SELCAL_SHIFT>0</SELCAL_SHIFT>
             <TOOLTIP_PB>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_VHF_L</TOOLTIP_PB>
         </UseTemplate>
 
@@ -109,7 +109,7 @@
             <NODE_ID_SEQ1>#NODE_ID_BUTTON_SEQ1_VHF_C#</NODE_ID_SEQ1>
             <NODE_ID_SEQ2>#NODE_ID_BUTTON_SEQ2_VHF_C#</NODE_ID_SEQ2>
             <TRANSMIT_ID>2</TRANSMIT_ID>
-            <BLINK_ID>2</BLINK_ID>
+            <SELCAL_SHIFT>1</SELCAL_SHIFT>
             <TOOLTIP>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_VHF_C</TOOLTIP>
         </UseTemplate>
 
@@ -134,7 +134,7 @@
             <NODE_ID_SEQ1>#NODE_ID_BUTTON_SEQ1_VHF_R#</NODE_ID_SEQ1>
             <NODE_ID_SEQ2>#NODE_ID_BUTTON_SEQ2_VHF_R#</NODE_ID_SEQ2>
             <TRANSMIT_ID>3</TRANSMIT_ID>
-            <BLINK_ID>4</BLINK_ID>
+            <SELCAL_SHIFT>2</SELCAL_SHIFT>
             <TOOLTIP>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_VHF_R</TOOLTIP>
         </UseTemplate>
 
@@ -159,7 +159,7 @@
             <NODE_ID_SEQ1>#NODE_ID_BUTTON_SEQ1_HF1#</NODE_ID_SEQ1>
             <NODE_ID_SEQ2>#NODE_ID_BUTTON_SEQ2_HF1#</NODE_ID_SEQ2>
             <TRANSMIT_ID>4</TRANSMIT_ID>
-            <BLINK_ID>8</BLINK_ID>
+            <SELCAL_SHIFT>3</SELCAL_SHIFT>
             <TOOLTIP>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_HF_L</TOOLTIP>
         </UseTemplate>
 
@@ -184,7 +184,7 @@
             <NODE_ID_SEQ1>#NODE_ID_BUTTON_SEQ1_HF2#</NODE_ID_SEQ1>
             <NODE_ID_SEQ2>#NODE_ID_BUTTON_SEQ2_HF2#</NODE_ID_SEQ2>
             <TRANSMIT_ID>5</TRANSMIT_ID>
-            <BLINK_ID>16</BLINK_ID>
+            <SELCAL_SHIFT>4</SELCAL_SHIFT>
             <TOOLTIP>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_HF_R</TOOLTIP>
         </UseTemplate>
 
@@ -209,8 +209,7 @@
             <NODE_ID_SEQ1>#NODE_ID_BUTTON_SEQ1_MECH#</NODE_ID_SEQ1>
             <NODE_ID_SEQ2>#NODE_ID_BUTTON_SEQ2_MECH#</NODE_ID_SEQ2>
             <TRANSMIT_ID>6</TRANSMIT_ID>
-            <BLINK_ID>32</BLINK_ID>
-            <BLINK_VAR>(L:A32NX_ACP#ID#_MECH_CALLING)</BLINK_VAR>
+            <SELCAL_VAR>(L:A32NX_ACP#ID#_MECH_CALLING)</SELCAL_VAR>
             <TOOLTIP>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_INT</TOOLTIP>
         </UseTemplate>
 
@@ -235,8 +234,7 @@
             <NODE_ID_SEQ1>#NODE_ID_BUTTON_SEQ1_ATT#</NODE_ID_SEQ1>
             <NODE_ID_SEQ2>#NODE_ID_BUTTON_SEQ2_ATT#</NODE_ID_SEQ2>
             <TRANSMIT_ID>7</TRANSMIT_ID>
-            <BLINK_ID>64</BLINK_ID>
-            <BLINK_VAR>(L:A32NX_ACP#ID#_ATT_CALLING)</BLINK_VAR>
+            <SELCAL_VAR>(L:A32NX_ACP#ID#_ATT_CALLING)</SELCAL_VAR>
             <TOOLTIP>TT:COCKPIT.TOOLTIPS.TRANSMITTER_SELECT_CAB</TOOLTIP>
         </UseTemplate>
 
@@ -291,7 +289,7 @@
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
             <NODE_ID>#NODE_ID_RECEIVER_RESET#</NODE_ID>
             <ANIM_NAME>#ANIM_NAME_PUSH_RECEIVER_RESET#</ANIM_NAME>
-            <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_ACP_RESET)</LEFT_SINGLE_CODE>
+            <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_ACP#ID#_RESET_BUTTON_DOWN)</LEFT_SINGLE_CODE>
             <WWISE_EVENT_1>fcubutton</WWISE_EVENT_1>
             <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
             <WWISE_EVENT_2>fcubutton</WWISE_EVENT_2>
@@ -409,7 +407,8 @@
 
     <Template Name="FBW_AIRLINER_Audio_Push_Transmit_Template">
         <DefaultTemplateParameters>
-            <BLINK_VAR>(L:A32NX_ACP#ID#_SELCAL)</BLINK_VAR>
+            <SEQ2_NOT_DIMMABLE>1</SEQ2_NOT_DIMMABLE>
+            <SELCAL_VAR>(L:A32NX_ACP#ID#_SELCAL)</SELCAL_VAR>
             <LEFT_SINGLE_CODE>
                 #TRANSMIT_ID# (L:A32NX_ACP#ID#_TRANSMIT_PUSHED) != if{
                     #TRANSMIT_ID# (&gt;L:A32NX_ACP#ID#_TRANSMIT_PUSHED)
@@ -419,36 +418,32 @@
             </LEFT_SINGLE_CODE>
         </DefaultTemplateParameters>
         <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
-        <Condition Check="BLINK_ID">
-            <True>
-                <!-- Green light -->
-                <SEQ1_EMISSIVE_CODE>
-                    #SEQ1_POWERED# if{
-                        (L:A32NX_ACP#ID#_TRANSMIT_CHANNEL) #TRANSMIT_ID# == #EMISSIVE_TEST# or #EMISSIVE_DIM# *
-                    }
-                </SEQ1_EMISSIVE_CODE>
-                    <!-- Button name light (for example CALL or MECH)-->
-                <SEQ2_EMISSIVE_CODE>
-                    #SEQ1_POWERED# if{
-                        (L:A32NX_ACP#ID#_TRANSMIT_CHANNEL) #TRANSMIT_ID# == #BLINK_ID# #BLINK_VAR# == ^ #EMISSIVE_TEST# or #EMISSIVE_DIM# *
-                    }
-                </SEQ2_EMISSIVE_CODE>
-            </True>
-            <False>
-                <!-- Green light -->
-                <SEQ1_EMISSIVE_CODE>
-                    #SEQ1_POWERED# if{
-                        (L:A32NX_ACP#ID#_TRANSMIT_CHANNEL) #TRANSMIT_ID# == #EMISSIVE_TEST# or #EMISSIVE_DIM# *
-                    }
-                </SEQ1_EMISSIVE_CODE>
-                    <!-- Button name light (for example CALL or MECH)-->
-                <SEQ2_EMISSIVE_CODE>
-                    #SEQ1_POWERED# if{
-                        (L:A32NX_ACP#ID#_TRANSMIT_CHANNEL) #TRANSMIT_ID# == #EMISSIVE_TEST# or #EMISSIVE_DIM# *
-                    }
-                </SEQ2_EMISSIVE_CODE>
-            </False>
-        </Condition>
+            <Condition Check="SELCAL_SHIFT">
+                <True>
+                    <!-- Green light -->
+                    <SEQ1_EMISSIVE_CODE>
+                        #SEQ1_POWERED# if{
+                            (L:A32NX_ACP#ID#_TRANSMIT_CHANNEL) #TRANSMIT_ID# == #EMISSIVE_TEST# or #EMISSIVE_DIM# *
+                        }
+                    </SEQ1_EMISSIVE_CODE>
+                        <!-- Button name light (for example CALL or MECH)-->
+                    <SEQ2_EMISSIVE_CODE>#SELCAL_VAR# #SELCAL_SHIFT# &gt;&gt; 1 &amp;</SEQ2_EMISSIVE_CODE>
+                </True>
+                <False>
+                    <!-- Green light -->
+                    <SEQ1_EMISSIVE_CODE>
+                        #SEQ1_POWERED# if{
+                            (L:A32NX_ACP#ID#_TRANSMIT_CHANNEL) #TRANSMIT_ID# == #EMISSIVE_TEST# or #EMISSIVE_DIM# *
+                        }
+                    </SEQ1_EMISSIVE_CODE>
+                        <!-- Button name light (for example CALL or MECH)-->
+                    <SEQ2_EMISSIVE_CODE>
+                        #SEQ1_POWERED# if{
+                            (L:A32NX_ACP#ID#_TRANSMIT_CHANNEL) #TRANSMIT_ID# == #EMISSIVE_TEST# or #EMISSIVE_DIM# *
+                        }
+                    </SEQ2_EMISSIVE_CODE>
+                </False>
+            </Condition>
 
             <WWISE_EVENT_1>fcubutton</WWISE_EVENT_1>
             <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>

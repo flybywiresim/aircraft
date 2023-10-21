@@ -9,17 +9,12 @@ use crate::{
         SimulatorReader, SimulatorWriter, UpdateContext, VariableIdentifier, Write,
     },
 };
-
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
+use std::time::Duration;
 
 use super::audio_control_panel::AudioControlPanel;
 use super::receivers::{CommTransceiver, NavReceiver};
-
-enum TypeCard {
-    Calls(Calls),
-    Bite(Bite),
-}
 
 pub struct WordAMUACPInfo {
     identification: IdentificationWordAMUACP,
@@ -257,9 +252,6 @@ pub struct AdaptationBoard {
     vors: [NavReceiver; 2],
     ils: NavReceiver,
 
-    is_flt_int_powered: bool,
-    is_calls_card_powered: bool,
-
     audio_switching_knob_id: VariableIdentifier,
     audio_switching_knob: AudioSwitchingKnobPosition,
 
@@ -366,9 +358,6 @@ impl AdaptationBoard {
             pilot_transmit_channel: 1,
             copilot_transmit_channel: 1,
 
-            is_flt_int_powered: false,
-            is_calls_card_powered: false,
-
             audio_switching_knob: AudioSwitchingKnobPosition::default(),
 
             ls_fcu1_pressed: false,
@@ -376,22 +365,6 @@ impl AdaptationBoard {
 
             need_update: false,
         }
-    }
-
-    pub fn send_amu_word(bus_acp: &mut Vec<Arinc429Word<u32>>, transmission_table: &u32) {
-        let mut word_arinc: Arinc429Word<u32> = Arinc429Word::new(0, SignStatus::NormalOperation);
-
-        word_arinc.set_bits(1, LabelWordAMUACP::Label301AMU as u32);
-        word_arinc.set_bits(11, *transmission_table);
-
-        // Will have to be used when SELCAL will be written in Rust
-        // word_arinc.set_bits(25, (calls > 4) & 1);
-        // word_arinc.set_bits(26, (calls > 3) & 1);
-        // word_arinc.set_bits(27, (calls > 2) & 1);
-        // word_arinc.set_bits(28, (calls > 1) & 1);
-        // word_arinc.set_bits(29, calls & 1);
-
-        bus_acp.push(word_arinc);
     }
 
     pub fn update(&mut self, context: &UpdateContext) {
@@ -410,7 +383,11 @@ impl AdaptationBoard {
         }
 
         self.computer_a.update(context, &mut self.bus_arinc_bay);
-        self.computer_b.update(context, &mut self.bus_arinc_3rd);
+        self.computer_b.update_with_other_card(
+            context,
+            &mut self.bus_arinc_3rd,
+            self.computer_a.get_second_card_mut(),
+        );
 
         // 3rd ACP is connected to Board B by default
         // hence if audio switching knob is NOT on FO, data can be wired to default board
@@ -515,18 +492,24 @@ impl SimulationElement for AdaptationBoard {
         visitor.visit(self);
     }
 
-    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
-        self.is_flt_int_powered = buses.is_powered(ElectricalBusType::DirectCurrentEssential);
-        self.is_calls_card_powered = buses.is_powered(ElectricalBusType::DirectCurrent(1));
-    }
-
     fn export_to_external_software(&self, data: &mut crate::simulation::ExternalData) {
         data.set_ivao(
-            0,
+            self.computer_a
+                .get_second_card()
+                .as_ref()
+                .unwrap()
+                .get_selcal(),
             self.mixed_audio.volume_com1 as u8,
             self.mixed_audio.volume_com2 as u8,
         );
-        data.set_vpilot(1, 0);
+        data.set_vpilot(
+            1,
+            self.computer_a
+                .get_second_card()
+                .as_ref()
+                .unwrap()
+                .get_selcal(),
+        );
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
@@ -619,7 +602,7 @@ impl SimulationElement for AdaptationBoard {
 
 pub struct Computer {
     audio_card: AudioCard,
-    _second_card: TypeCard,
+    second_card: Option<Calls>,
 
     is_power_supply_powered: bool,
 }
@@ -628,7 +611,7 @@ impl Computer {
     pub fn new_cpt_and_avncs(context: &mut InitContext) -> Self {
         Self {
             audio_card: AudioCard::new(context, 1),
-            _second_card: TypeCard::Calls(Calls::new()),
+            second_card: Some(Calls::new(context)),
             is_power_supply_powered: false,
         }
     }
@@ -636,15 +619,35 @@ impl Computer {
     pub fn new_fo_and_ovhd(context: &mut InitContext) -> Self {
         Self {
             audio_card: AudioCard::new(context, 2),
-            // Not used for now
-            _second_card: TypeCard::Bite(Bite::new()),
+            // Not used for now.
+            // Should be BITE card but is it going to be implemented?
+            second_card: None,
             is_power_supply_powered: false,
         }
     }
 
     pub fn update(&mut self, context: &UpdateContext, bus: &mut Vec<Arinc429Word<u32>>) {
+        if self.second_card.is_some() {
+            self.second_card.as_mut().unwrap().update(context);
+        }
+
+        self.audio_card.update(
+            context,
+            bus,
+            self.is_power_supply_powered,
+            &mut self.second_card,
+        );
+    }
+
+    // Not intended to be called for computer_a as the calls card is attached to computer_a
+    pub fn update_with_other_card(
+        &mut self,
+        context: &UpdateContext,
+        bus: &mut Vec<Arinc429Word<u32>>,
+        calls_card: &mut Option<Calls>,
+    ) {
         self.audio_card
-            .update(context, bus, self.is_power_supply_powered);
+            .update(context, bus, self.is_power_supply_powered, calls_card);
     }
 
     pub fn get_mixed_audio_acp(&self) -> MixedAudio {
@@ -662,10 +665,20 @@ impl Computer {
     pub fn get_transmission_table_acp3(&self) -> u32 {
         self.audio_card.get_transmission_table_acp3()
     }
+    pub fn get_second_card_mut(&mut self) -> &mut Option<Calls> {
+        &mut self.second_card
+    }
+
+    pub fn get_second_card(&self) -> &Option<Calls> {
+        &self.second_card
+    }
 }
 
 impl SimulationElement for Computer {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        if self.second_card.is_some() {
+            self.second_card.as_mut().unwrap().accept(visitor);
+        }
         self.audio_card.accept(visitor);
 
         visitor.visit(self);
@@ -683,6 +696,8 @@ pub struct AudioCard {
     mixed_audio_acp3: MixedAudio,
     transmission_table_acp: u32,
     transmission_table_acp3: u32,
+    reset_acp: bool,
+    reset_acp3: bool,
 }
 
 impl AudioCard {
@@ -694,6 +709,8 @@ impl AudioCard {
             mixed_audio_acp3: Default::default(),
             transmission_table_acp: 0,
             transmission_table_acp3: 0,
+            reset_acp: false,
+            reset_acp3: false,
         }
     }
 
@@ -702,21 +719,43 @@ impl AudioCard {
         context: &UpdateContext,
         bus_from_adaptation_card: &mut Vec<Arinc429Word<u32>>,
         is_powered: bool,
+        calls_card: &mut Option<Calls>,
     ) {
         if is_powered {
             self.acp.update(context, &mut self.bus_acp);
 
-            AudioCard::decode_arinc_words_from_acp(
+            let result_acp = AudioCard::decode_arinc_words_from_acp(
                 &mut self.bus_acp,
                 &mut self.mixed_audio_acp,
                 &mut self.transmission_table_acp,
+                &mut self.reset_acp,
             );
-
-            AudioCard::decode_arinc_words_from_acp(
+            let result_acp3 = AudioCard::decode_arinc_words_from_acp(
                 bus_from_adaptation_card,
                 &mut self.mixed_audio_acp3,
                 &mut self.transmission_table_acp3,
+                &mut self.reset_acp3,
             );
+
+            calls_card
+                .as_mut()
+                .unwrap()
+                .set_reset(self.reset_acp || self.reset_acp3);
+
+            if result_acp {
+                AudioCard::send_amu_word(
+                    &mut self.bus_acp,
+                    self.transmission_table_acp,
+                    calls_card.as_ref().unwrap().get_selcal(),
+                );
+            }
+            if result_acp3 {
+                AudioCard::send_amu_word(
+                    bus_from_adaptation_card,
+                    self.transmission_table_acp3,
+                    calls_card.as_ref().unwrap().get_selcal(),
+                );
+            }
         } else {
             self.mixed_audio_acp = Default::default();
             self.mixed_audio_acp3 = Default::default();
@@ -731,7 +770,7 @@ impl AudioCard {
         mixed_audio: &mut MixedAudio,
         transmission_table_acp: &mut u32,
         reset: &mut bool,
-    ) {
+    ) -> bool {
         let mut can_send_amu_word = false;
 
         while let Some(word) = bus.pop() {
@@ -806,9 +845,21 @@ impl AudioCard {
             }
         }
 
-        if can_send_amu_word {
-            AdaptationBoard::send_amu_word(bus, transmission_table_acp);
-        }
+        can_send_amu_word
+    }
+
+    pub fn send_amu_word(
+        bus_acp: &mut Vec<Arinc429Word<u32>>,
+        transmission_table: u32,
+        selcal: u8,
+    ) {
+        let mut word_arinc: Arinc429Word<u32> = Arinc429Word::new(0, SignStatus::NormalOperation);
+
+        word_arinc.set_bits(1, LabelWordAMUACP::Label301AMU as u32);
+        word_arinc.set_bits(11, transmission_table);
+        word_arinc.set_bits(25, selcal as u32);
+
+        bus_acp.push(word_arinc);
     }
 
     pub fn get_mixed_audio_acp(&self) -> MixedAudio {
@@ -838,24 +889,81 @@ impl SimulationElement for AudioCard {
 
 #[derive(Default)]
 pub struct Calls {
-    selcal: bool,
-    mech: bool,
-    att: bool,
+    selcal_id: VariableIdentifier,
+
+    selcal: u8,
+
+    reset: bool,
+    is_powered: bool,
+
+    base_time_vhf1: Duration,
+    base_time_vhf2: Duration,
 }
 impl Calls {
-    pub fn new() -> Self {
+    const SELCAL_TIMEOUT_SECONDS: u64 = 60;
+
+    fn new(context: &mut InitContext) -> Self {
         Self {
+            selcal_id: context.get_identifier("ACP_SELCAL_RECEIVED".to_owned()),
             ..Default::default()
         }
     }
 
-    pub fn update(&mut self, context: &UpdateContext) {
-        self.selcal = context.external_data().get_selcal();
+    fn update(&mut self, context: &UpdateContext) {
+        if !self.reset && self.is_powered {
+            let mut selcal: u8 = context.external_data().get_selcal();
+
+            if (selcal & 0x1) == 1 && self.base_time_vhf1.is_zero() {
+                self.base_time_vhf1 += context.delta();
+            } else if !self.base_time_vhf1.is_zero() {
+                self.base_time_vhf1 += context.delta();
+                if self.base_time_vhf1.as_secs() >= Self::SELCAL_TIMEOUT_SECONDS {
+                    self.base_time_vhf1 = Duration::from_secs(0);
+                    selcal &= 0b1111_1110;
+                }
+            }
+
+            if ((selcal >> 1) & 0x1) == 1 && self.base_time_vhf2.is_zero() {
+                self.base_time_vhf2 += context.delta();
+            } else if !self.base_time_vhf2.is_zero() {
+                self.base_time_vhf2 += context.delta();
+                if self.base_time_vhf2.as_secs() >= Self::SELCAL_TIMEOUT_SECONDS {
+                    self.base_time_vhf2 = Duration::from_secs(0);
+                    selcal &= 0b1111_1101;
+                }
+            }
+
+            self.selcal = selcal;
+        } else {
+            self.selcal = 0;
+            self.reset = false;
+            self.base_time_vhf1 = Duration::from_secs(0);
+            self.base_time_vhf2 = Duration::from_secs(0);
+        }
+    }
+
+    fn get_selcal(&self) -> u8 {
+        self.selcal
+    }
+
+    fn set_reset(&mut self, reset: bool) {
+        self.reset = reset;
+        if reset {
+            self.selcal = 0;
+        }
     }
 }
-pub struct Bite {}
-impl Bite {
-    pub fn new() -> Self {
-        Self {}
+
+impl SimulationElement for Calls {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        visitor.visit(self);
+    }
+
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.selcal_id, self.selcal != 0);
+    }
+
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        self.is_powered = buses.is_powered(ElectricalBusType::DirectCurrent(1));
     }
 }

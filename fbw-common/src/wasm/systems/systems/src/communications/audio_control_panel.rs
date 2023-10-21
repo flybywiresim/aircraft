@@ -51,6 +51,7 @@ pub struct AudioControlPanel {
     transmit_pushed_id: VariableIdentifier,
     voice_button_id: VariableIdentifier,
     reset_button_id: VariableIdentifier,
+    selcal_id: VariableIdentifier,
 
     voice_button: bool,
     reset_button: bool,
@@ -66,11 +67,18 @@ pub struct AudioControlPanel {
     gls: TransceiverACPFacade,
     markers: TransceiverACPFacade,
 
+    // The selcal received from external software
+    selcal: u8,
+    // The selcal altered to make the buttons blink
+    selcal_to_blink: u8,
+
     power_supply: ElectricalBusType,
     is_power_supply_powered: bool,
 
     list_arinc_words: Vec<WordAMUACPInfo>,
     last_complete_cycle_sent: Duration,
+    last_blink_vhf1: Duration,
+    last_blink_vhf2: Duration,
 }
 impl AudioControlPanel {
     pub fn new(context: &mut InitContext, id_acp: u32, power_supply: ElectricalBusType) -> Self {
@@ -81,6 +89,7 @@ impl AudioControlPanel {
             transmit_pushed_id: context.get_identifier(format!("ACP{}_TRANSMIT_PUSHED", id_acp)),
             voice_button_id: context.get_identifier(format!("ACP{}_VOICE_BUTTON_DOWN", id_acp)),
             reset_button_id: context.get_identifier(format!("ACP{}_RESET_BUTTON_DOWN", id_acp)),
+            selcal_id: context.get_identifier(format!("ACP{}_SELCAL", id_acp)),
 
             voice_button: false,
             reset_button: false,
@@ -111,6 +120,9 @@ impl AudioControlPanel {
             ils: TransceiverACPFacade::new(context, id_acp, "ILS"),
             gls: TransceiverACPFacade::new(context, id_acp, "MLS"),
             markers: TransceiverACPFacade::new(context, id_acp, "MKR"),
+
+            selcal: 0,
+            selcal_to_blink: 0,
 
             power_supply,
             is_power_supply_powered: false,
@@ -198,6 +210,8 @@ impl AudioControlPanel {
                 ),
             ]),
             last_complete_cycle_sent: Duration::from_millis(0),
+            last_blink_vhf1: Duration::from_millis(0),
+            last_blink_vhf2: Duration::from_millis(0),
         }
     }
 
@@ -295,7 +309,7 @@ impl AudioControlPanel {
         transmission_table: &mut TransmitID,
         call_mech: &mut bool,
         call_att: &mut bool,
-        calls: &mut u32,
+        selcal: &mut u8,
     ) -> bool {
         let mut ret: bool = false;
         let label_option: Option<LabelWordAMUACP> = FromPrimitive::from_u32(bus[0].get_bits(8, 1));
@@ -306,7 +320,7 @@ impl AudioControlPanel {
                 *transmission_table = TransmitID::from(word.get_bits(4, 11));
                 *call_mech = word.get_bit(15);
                 *call_att = word.get_bit(16);
-                *calls = word.get_bits(5, 25);
+                *selcal = word.get_bits(5, 25) as u8;
                 ret = true;
             }
         }
@@ -319,26 +333,25 @@ impl AudioControlPanel {
             self.last_complete_cycle_sent += context.delta();
 
             if !bus_acp.is_empty() {
-                // These will be used later on
-                // Especially "calls" when SELCAL will be
-                // translated into Rust
+                // These will be used later on, maybe
                 let mut call_mech: bool = false;
                 let mut call_att: bool = false;
-                let mut calls: u32 = 0;
 
                 if AudioControlPanel::decode_amu_word(
                     bus_acp,
                     &mut self.transmit_channel,
                     &mut call_mech,
                     &mut call_att,
-                    &mut calls,
+                    &mut self.selcal,
                 ) {
                     // Volume control word should be sent every 10ms
                     // but due to sim capabilities, refresh rate turns out to be not high enough
-                    // which leads to actions on the ACP ending up very slow.
-                    // Therefore I took the decision to send all the words at the same time to avoid that.
+                    // which leads to ACPs' slow response.
+                    // I took the decision to send all the words at the same time to avoid that.
                     for index in 2..(self.list_arinc_words.len()) {
                         self.send_volume_control(bus_acp, index);
+
+                        self.reset_button = false;
                     }
                 }
             }
@@ -417,6 +430,36 @@ impl AudioControlPanel {
             if self.adfs[1].has_changed() {
                 self.send_volume_control(bus_acp, 15);
             }
+
+            if self.selcal != 0 {
+                // selcal on vhf1
+                if self.selcal & 0x1 == 1 {
+                    if self.last_blink_vhf1.as_millis() > 300 {
+                        // Toggle the bit to make it blink
+                        self.selcal_to_blink ^= 0b0000_0001;
+                        self.last_blink_vhf1 = Duration::from_secs(0);
+                    }
+                    self.last_blink_vhf1 += context.delta();
+                } else {
+                    self.selcal_to_blink &= 0b1111_1110;
+                }
+
+                // selcal on vhf2
+                if (self.selcal >> 1) & 0x1 == 1 {
+                    if self.last_blink_vhf2.as_millis() > 300 {
+                        // Toggle the bit to make it blink
+                        self.selcal_to_blink ^= 0b0000_0010;
+                        self.last_blink_vhf2 = Duration::from_secs(0);
+                    }
+                    self.last_blink_vhf2 += context.delta();
+                } else {
+                    self.selcal_to_blink &= 0b1111_1101;
+                }
+            } else {
+                self.selcal_to_blink = 0;
+            }
+        } else {
+            self.selcal_to_blink = 0;
         }
     }
 }
@@ -446,7 +489,11 @@ impl SimulationElement for AudioControlPanel {
     fn read(&mut self, reader: &mut SimulatorReader) {
         if self.is_power_supply_powered {
             self.voice_button = reader.read(&self.voice_button_id);
-            self.reset_button = reader.read(&self.reset_button_id);
+
+            let reset_button = reader.read(&self.reset_button_id);
+            if reset_button {
+                self.reset_button = reset_button;
+            }
 
             let tmp: u32 = reader.read(&self.transmit_pushed_id);
             self.transmit_pushed = TransmitID::from(tmp);
@@ -456,8 +503,8 @@ impl SimulationElement for AudioControlPanel {
     fn write(&self, writer: &mut SimulatorWriter) {
         if self.is_power_supply_powered {
             writer.write(&self.transmit_channel_id, self.transmit_channel as u32);
+            writer.write(&self.selcal_id, self.selcal_to_blink);
         }
-
         writer.write(&self.reset_button_id, 0);
     }
 
