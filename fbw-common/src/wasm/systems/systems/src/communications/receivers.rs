@@ -200,7 +200,7 @@ impl Morse {
         copy.chars().rev().collect::<String>()
     }
 
-    pub fn update(&mut self, context: &UpdateContext) {
+    fn update(&mut self, context: &UpdateContext) {
         self.duration_current += context.delta();
 
         // Manage new ident
@@ -251,7 +251,7 @@ impl Morse {
         }
     }
 
-    pub fn get_state(&self) -> bool {
+    fn get_state(&self) -> bool {
         self.beep
     }
 }
