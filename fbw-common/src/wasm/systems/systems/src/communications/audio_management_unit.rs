@@ -16,33 +16,6 @@ use std::time::Duration;
 use super::audio_control_panel::AudioControlPanel;
 use super::receivers::{CommTransceiver, NavReceiver};
 
-pub struct WordAMUACPInfo {
-    identification: IdentificationWordAMUACP,
-    sdi: u32,
-    label: LabelWordAMUACP,
-}
-impl WordAMUACPInfo {
-    pub fn new(identification: IdentificationWordAMUACP, sdi: u32, label: LabelWordAMUACP) -> Self {
-        Self {
-            identification,
-            sdi,
-            label,
-        }
-    }
-
-    pub fn get_identification(&self) -> IdentificationWordAMUACP {
-        self.identification
-    }
-
-    pub fn get_sdi(&self) -> u32 {
-        self.sdi
-    }
-
-    pub fn get_label(&self) -> LabelWordAMUACP {
-        self.label
-    }
-}
-
 #[derive(Eq, PartialEq, PartialOrd, Copy, Clone)]
 pub enum IdentificationWordAMUACP {
     Word0,
@@ -79,7 +52,7 @@ pub enum LabelWordAMUACP {
     Label217VolumeControlILS = 0xF1,
 }
 #[derive(Copy, Clone)]
-pub struct MixedAudio {
+struct MixedAudio {
     receive_com1: bool,
     receive_com2: bool,
     receive_adf1: bool,
@@ -189,7 +162,7 @@ impl SimulationElement for AudioManagementUnit {
     }
 }
 
-pub struct AdaptationBoard {
+struct AdaptationBoard {
     acp_ovhd: AudioControlPanel,
     bus_acp_3rd: Vec<Arinc429Word<u32>>,
     bus_acp_avncs: Vec<Arinc429Word<u32>>,
@@ -265,7 +238,7 @@ pub struct AdaptationBoard {
 }
 
 impl AdaptationBoard {
-    pub fn new(context: &mut InitContext) -> Self {
+    fn new(context: &mut InitContext) -> Self {
         Self {
             acp_ovhd: AudioControlPanel::new(context, 3, ElectricalBusType::DirectCurrent(1)),
             bus_acp_3rd: Vec::new(),
@@ -367,7 +340,7 @@ impl AdaptationBoard {
         }
     }
 
-    pub fn update(&mut self, context: &UpdateContext) {
+    fn update(&mut self, context: &UpdateContext) {
         let mut acp_to_take_into_account: u32 = 1;
 
         if self.audio_switching_knob != AudioSwitchingKnobPosition::Fo
@@ -600,7 +573,7 @@ impl SimulationElement for AdaptationBoard {
     }
 }
 
-pub struct Computer {
+struct Computer {
     audio_card: AudioCard,
     second_card: Option<Calls>,
 
@@ -608,7 +581,7 @@ pub struct Computer {
 }
 
 impl Computer {
-    pub fn new_cpt_and_avncs(context: &mut InitContext) -> Self {
+    fn new_cpt_and_avncs(context: &mut InitContext) -> Self {
         Self {
             audio_card: AudioCard::new(context, 1),
             second_card: Some(Calls::new(context)),
@@ -616,7 +589,7 @@ impl Computer {
         }
     }
 
-    pub fn new_fo_and_ovhd(context: &mut InitContext) -> Self {
+    fn new_fo_and_ovhd(context: &mut InitContext) -> Self {
         Self {
             audio_card: AudioCard::new(context, 2),
             // Not used for now.
@@ -626,7 +599,7 @@ impl Computer {
         }
     }
 
-    pub fn update(&mut self, context: &UpdateContext, bus: &mut Vec<Arinc429Word<u32>>) {
+    fn update(&mut self, context: &UpdateContext, bus: &mut Vec<Arinc429Word<u32>>) {
         if self.second_card.is_some() {
             self.second_card.as_mut().unwrap().update(context);
         }
@@ -640,7 +613,7 @@ impl Computer {
     }
 
     // Not intended to be called for computer_a as the calls card is attached to computer_a
-    pub fn update_with_other_card(
+    fn update_with_other_card(
         &mut self,
         context: &UpdateContext,
         bus: &mut Vec<Arinc429Word<u32>>,
@@ -650,26 +623,27 @@ impl Computer {
             .update(context, bus, self.is_power_supply_powered, calls_card);
     }
 
-    pub fn get_mixed_audio_acp(&self) -> MixedAudio {
+    fn get_mixed_audio_acp(&self) -> MixedAudio {
         self.audio_card.get_mixed_audio_acp()
     }
 
-    pub fn get_mixed_audio_acp3(&self) -> MixedAudio {
+    fn get_mixed_audio_acp3(&self) -> MixedAudio {
         self.audio_card.get_mixed_audio_acp3()
     }
 
-    pub fn get_transmission_table_acp(&self) -> u32 {
+    fn get_transmission_table_acp(&self) -> u32 {
         self.audio_card.get_transmission_table_acp()
     }
 
-    pub fn get_transmission_table_acp3(&self) -> u32 {
+    fn get_transmission_table_acp3(&self) -> u32 {
         self.audio_card.get_transmission_table_acp3()
     }
-    pub fn get_second_card_mut(&mut self) -> &mut Option<Calls> {
+
+    fn get_second_card_mut(&mut self) -> &mut Option<Calls> {
         &mut self.second_card
     }
 
-    pub fn get_second_card(&self) -> &Option<Calls> {
+    fn get_second_card(&self) -> &Option<Calls> {
         &self.second_card
     }
 }
@@ -688,8 +662,7 @@ impl SimulationElement for Computer {
         self.is_power_supply_powered = buses.is_powered(ElectricalBusType::DirectCurrentEssential);
     }
 }
-
-pub struct AudioCard {
+struct AudioCard {
     bus_acp: Vec<Arinc429Word<u32>>,
     acp: AudioControlPanel,
     mixed_audio_acp: MixedAudio,
@@ -701,7 +674,7 @@ pub struct AudioCard {
 }
 
 impl AudioCard {
-    pub fn new(context: &mut InitContext, id_acp: u32) -> Self {
+    fn new(context: &mut InitContext, id_acp: u32) -> Self {
         Self {
             bus_acp: Vec::new(),
             acp: AudioControlPanel::new(context, id_acp, ElectricalBusType::DirectCurrentEssential),
@@ -714,7 +687,7 @@ impl AudioCard {
         }
     }
 
-    pub fn update(
+    fn update(
         &mut self,
         context: &UpdateContext,
         bus_from_adaptation_card: &mut Vec<Arinc429Word<u32>>,
@@ -765,7 +738,7 @@ impl AudioCard {
         }
     }
 
-    pub fn decode_arinc_words_from_acp(
+    fn decode_arinc_words_from_acp(
         bus: &mut Vec<Arinc429Word<u32>>,
         mixed_audio: &mut MixedAudio,
         transmission_table_acp: &mut u32,
@@ -848,11 +821,7 @@ impl AudioCard {
         can_send_amu_word
     }
 
-    pub fn send_amu_word(
-        bus_acp: &mut Vec<Arinc429Word<u32>>,
-        transmission_table: u32,
-        selcal: u8,
-    ) {
+    fn send_amu_word(bus_acp: &mut Vec<Arinc429Word<u32>>, transmission_table: u32, selcal: u8) {
         let mut word_arinc: Arinc429Word<u32> = Arinc429Word::new(0, SignStatus::NormalOperation);
 
         word_arinc.set_bits(1, LabelWordAMUACP::Label301AMU as u32);
@@ -862,19 +831,19 @@ impl AudioCard {
         bus_acp.push(word_arinc);
     }
 
-    pub fn get_mixed_audio_acp(&self) -> MixedAudio {
+    fn get_mixed_audio_acp(&self) -> MixedAudio {
         self.mixed_audio_acp
     }
 
-    pub fn get_mixed_audio_acp3(&self) -> MixedAudio {
+    fn get_mixed_audio_acp3(&self) -> MixedAudio {
         self.mixed_audio_acp3
     }
 
-    pub fn get_transmission_table_acp(&self) -> u32 {
+    fn get_transmission_table_acp(&self) -> u32 {
         self.transmission_table_acp
     }
 
-    pub fn get_transmission_table_acp3(&self) -> u32 {
+    fn get_transmission_table_acp3(&self) -> u32 {
         self.transmission_table_acp3
     }
 }
