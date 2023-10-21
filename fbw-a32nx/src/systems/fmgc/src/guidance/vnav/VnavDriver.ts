@@ -130,7 +130,12 @@ export class VnavDriver implements GuidanceComponent {
         this.headingProfile.updateGeometry(geometry);
         this.currentMcduSpeedProfile?.update(this.constraintReader.distanceToPresentPosition);
 
-        this.profileManager.computeTacticalMcduPath();
+        // No predictions in go around phase
+        if (newParameters.flightPhase !== FmgcFlightPhase.GoAround) {
+            this.profileManager.computeTacticalMcduPath();
+        } else if (this.mcduProfile?.isReadyToDisplay) {
+            this.mcduProfile.invalidate();
+        }
 
         const newLegs = new Map(geometry?.legs ?? []);
         if (this.shouldUpdateDescentProfile(newParameters, newLegs) || this.requestDescentProfileRecomputation) {
