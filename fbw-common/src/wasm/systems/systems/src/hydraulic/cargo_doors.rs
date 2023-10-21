@@ -236,7 +236,7 @@ impl CargoDoor {
         self.position
     }
 
-    fn is_locked(&self) -> bool {
+    pub fn is_locked(&self) -> bool {
         self.is_locked
     }
 

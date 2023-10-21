@@ -1,10 +1,11 @@
 import { FSComponent, DisplayComponent, VNode, EventBus, Subscribable } from '@microsoft/msfs-sdk';
+import { EfisNdMode } from '@shared/NavigationDisplay';
 
 export interface LubberLineProps {
     bus: EventBus,
 
     visible: Subscribable<boolean>,
-
+    ndMode: Subscribable<EfisNdMode>,
     rotation: Subscribable<number>,
 }
 
@@ -19,9 +20,9 @@ export class LubberLine extends DisplayComponent<LubberLineProps> {
             >
                 <line
                     x1={384}
-                    y1={116}
+                    y1={this.props.ndMode.map((mode) => (mode === EfisNdMode.ARC ? 108 : 116))}
                     x2={384}
-                    y2={152}
+                    y2={this.props.ndMode.map((mode) => (mode === EfisNdMode.ARC ? 148 : 152))}
                     class="shadow"
                     stroke-width={5.5}
                     stroke-linejoin="round"
@@ -29,9 +30,9 @@ export class LubberLine extends DisplayComponent<LubberLineProps> {
                 />
                 <line
                     x1={384}
-                    y1={116}
+                    y1={this.props.ndMode.map((mode) => (mode === EfisNdMode.ARC ? 108 : 116))}
                     x2={384}
-                    y2={152}
+                    y2={this.props.ndMode.map((mode) => (mode === EfisNdMode.ARC ? 148 : 152))}
                     class="Yellow"
                     stroke-width={5}
                     stroke-linejoin="round"
