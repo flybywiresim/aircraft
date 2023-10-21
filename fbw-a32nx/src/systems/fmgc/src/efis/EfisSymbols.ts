@@ -564,7 +564,7 @@ export class EfisSymbols {
                 if (!isSelectedVerticalModeActive && shouldShowConstraintCircleInPhase(flightPhase, leg)) {
                     type |= NdSymbolTypeFlags.Constraint;
 
-                    const predictionAtWaypoint = waypointPredictions.get(i);
+                    const predictionAtWaypoint = waypointPredictions?.get(i);
 
                     if (predictionAtWaypoint?.isAltitudeConstraintMet) {
                         type |= NdSymbolTypeFlags.MagentaColor;
