@@ -4,7 +4,7 @@
 
 import { useMemo, useState } from 'react';
 import { Failure } from '@failures';
-import { usePersistentProperty, useSimVar } from '@flybywiresim/fbw-sdk';
+import { AtaChapterNumber, AtaChapterNumbers, AtaChaptersTitle, usePersistentProperty, useSimVar } from '@flybywiresim/fbw-sdk';
 import { failureGenConfigAltitude } from 'instruments/src/EFB/Failures/FailureGenerators/AltitudeFailureGeneratorUI';
 import { failureGenConfigPerHour } from 'instruments/src/EFB/Failures/FailureGenerators/PerHourFailureGeneratorUI';
 import { failureGenConfigSpeed } from 'instruments/src/EFB/Failures/FailureGenerators/SpeedFailureGeneratorUI';
@@ -91,6 +91,7 @@ export type FailureGenContext = {
     setModalContext: (modalContext: ModalContext) => void,
     failureGenModalType: ModalGenType
     setFailureGenModalType: (type: ModalGenType) => void,
+    reducedAtaChapterNumbers: AtaChapterNumber[],
 }
 
 export type ModalContext = {
@@ -153,6 +154,18 @@ export const useFailureGeneratorsSettings: () => FailureGenContext = () => {
     allGenSettings.set(failureGenConfigTimer().genName, failureGenConfigTimer());
     allGenSettings.set(failureGenConfigTakeOff().genName, failureGenConfigTakeOff());
 
+    const reducedAtaChapterNumbers:AtaChapterNumber[] = useMemo(() => {
+        const tempChapters:AtaChapterNumber[] = [];
+        for (const failure of allFailures) {
+            const foundChapter = tempChapters.find((value) => value === failure.ata);
+            if (foundChapter === undefined) {
+                tempChapters.push(failure.ata);
+                console.info(`Adding chapter ${AtaChaptersTitle[failure.ata]}`);
+            }
+        }
+        return tempChapters;
+    }, [AtaChapterNumbers]);
+
     return {
         allGenSettings,
         generatorFailuresGetters,
@@ -161,6 +174,7 @@ export const useFailureGeneratorsSettings: () => FailureGenContext = () => {
         setFailureGenModalType,
         modalContext,
         setModalContext,
+        reducedAtaChapterNumbers,
     };
 };
 

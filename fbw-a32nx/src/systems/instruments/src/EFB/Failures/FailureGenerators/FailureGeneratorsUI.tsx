@@ -10,7 +10,7 @@ import {
     ModalGenType, updateSettings, sendRefresh,
 } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
 import { ExclamationDiamond, InfoCircle, PlusLg, Sliders2Vertical, Trash } from 'react-bootstrap-icons';
-import { AtaChapterNumber, AtaChapterNumbers, AtaChaptersTitle } from '@flybywiresim/fbw-sdk';
+import { AtaChapterNumber, AtaChaptersTitle } from '@flybywiresim/fbw-sdk';
 import { FailureGeneratorInfoModalUI } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorInfo';
 import { TooltipWrapper } from 'instruments/src/EFB/UtilComponents/TooltipWrapper';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
@@ -159,7 +159,7 @@ export const FailureGeneratorCardTemplateUI: React.FC<FailureGeneratorCardTempla
                 <h2 className="pb-2 truncate break-words max-w-[100%]">
                     {`${genUniqueIDDisplayed}: ${failureGenData.alias()}`}
                 </h2>
-                <FailureShortList failureGenContext={failureGenContext} uniqueID={genUniqueID} />
+                <FailureShortList failureGenContext={failureGenContext} uniqueID={genUniqueID} reducedAtaChapterNumbers={failureGenContext.reducedAtaChapterNumbers} />
             </div>
             <div className="flex flex-col justify-between items-center">
                 <div
@@ -225,10 +225,11 @@ export const generatorsCardList = (settings: FailureGenContext) => {
 
 interface FailureShortListProps {
     failureGenContext: FailureGenContext,
-    uniqueID: string
+    uniqueID: string,
+    reducedAtaChapterNumbers: AtaChapterNumber[]
 }
 
-const FailureShortList: React.FC<FailureShortListProps> = ({ failureGenContext, uniqueID }) => {
+const FailureShortList: React.FC<FailureShortListProps> = ({ failureGenContext, uniqueID, reducedAtaChapterNumbers }) => {
     const { allFailures } = useFailuresOrchestrator();
 
     const maxNumberOfFailureToDisplay = 4;
@@ -242,7 +243,7 @@ const FailureShortList: React.FC<FailureShortListProps> = ({ failureGenContext, 
 
     const chaptersFullySelected: AtaChapterNumber[] = [];
 
-    for (const chapter of AtaChapterNumbers) {
+    for (const chapter of reducedAtaChapterNumbers) {
         const failuresActiveInChapter = listOfSelectedFailures.filter((failure) => failure.ata === chapter);
         if (failuresActiveInChapter.length === allFailures.filter((failure) => failure.ata === chapter).length) {
             chaptersFullySelected.push(chapter);
