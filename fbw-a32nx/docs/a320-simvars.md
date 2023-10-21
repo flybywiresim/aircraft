@@ -1949,7 +1949,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - 1 - captain's side FMGC
         - 2 - f/o's side FMGC
 
- - A32NX_FM{number}_DECISION_HEIGHT
+- A32NX_FM{number}_DECISION_HEIGHT
     - ARINC429<number>
     - The decision height for an approach in feet, as entered on the PERF page.
     - Value | Meaning
@@ -1961,9 +1961,23 @@ In the variables below, {number} should be replaced with one item in the set: { 
         - 1 - captain's side FMGC
         - 2 - f/o's side FMGC
 
- - A32NX_FM{number}_MINIMUM_DESCENT_ALTITUDE
+- A32NX_FM{number}_MINIMUM_DESCENT_ALTITUDE
     - ARINC429<number>
     - The minimum descent altitude for a non-precision approach in feet, as entered on the PERF page.
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+
+- A32NX_FM{number}_TRANS_ALT
+    - Arinc429<number>
+    - The transition altitude at the origin in feet
+    - {number}
+        - 1 - captain's side FMGC
+        - 2 - f/o's side FMGC
+
+- A32NX_FM{number}_TRANS_LVL
+    - Arinc429<number>
+    - The transition level the destination as a flight level
     - {number}
         - 1 - captain's side FMGC
         - 2 - f/o's side FMGC

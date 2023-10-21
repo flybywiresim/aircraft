@@ -11,6 +11,7 @@ use crate::{
 
 use nalgebra::Vector3;
 use std::fmt::Debug;
+use uom::si::{acceleration::meter_per_second_squared, f64::*};
 
 /// Solves a basic mass connected to a static point through a spring damper system
 /// Mass center of gravity position reacting to external accelerations is then used to model engine wobbling movement
@@ -45,26 +46,34 @@ impl EngineFlexPhysics {
             dev_mode_enable_id: context.get_identifier("ENGINE_WOBBLE_DEV_ENABLE".to_owned()),
 
             wobble_physics: WobblePhysics::new(
-                GravityEffect::NoGravity,
+                GravityEffect::ExternalAccelerationOnly,
                 Vector3::default(),
                 2000.,
                 100.,
                 800000.,
                 50000.,
-                500.,
-                20.,
-                Vector3::new(500., 500., 500.),
+                1500.,
+                100.,
+                Vector3::new(1000., 1000., 1000.),
                 50.,
             ),
 
-            position_output_gain: 90.,
+            position_output_gain: 70.,
 
             animation_position: 0.5,
         }
     }
 
-    pub fn update(&mut self, context: &UpdateContext) {
-        self.wobble_physics.update(context);
+    pub fn update(&mut self, context: &UpdateContext, wing_pylon_acceleration: Acceleration) {
+        self.wobble_physics.update(
+            context,
+            Vector3::new(
+                0.,
+                wing_pylon_acceleration.get::<meter_per_second_squared>(),
+                0.,
+            ),
+            Vector3::default(),
+        );
 
         self.update_animation_position();
     }
@@ -132,12 +141,14 @@ impl<const N: usize> EnginesFlexiblePhysics<N> {
         }
     }
 
-    pub fn update(&mut self, context: &UpdateContext) {
+    pub fn update(&mut self, context: &UpdateContext, pylons_accelerations: [Acceleration; N]) {
         self.engines_flex_updater.update(context);
 
         for cur_time_step in self.engines_flex_updater {
-            for engine_flex in &mut self.engines_flex {
-                engine_flex.update(&context.with_delta(cur_time_step));
+            for (engine_flex, pylons_acceleration) in
+                &mut self.engines_flex.iter_mut().zip(pylons_accelerations)
+            {
+                engine_flex.update(&context.with_delta(cur_time_step), pylons_acceleration);
             }
         }
     }
@@ -173,7 +184,8 @@ mod tests {
         }
 
         fn update(&mut self, context: &UpdateContext) {
-            self.engines_flex.update(context);
+            self.engines_flex
+                .update(context, [Acceleration::default(); 4]);
         }
     }
     impl Aircraft for EngineFlexTestAircraft {
