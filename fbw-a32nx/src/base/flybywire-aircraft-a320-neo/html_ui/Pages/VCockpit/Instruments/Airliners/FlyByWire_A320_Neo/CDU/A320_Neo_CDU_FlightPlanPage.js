@@ -623,6 +623,7 @@ class CDUFlightPlanPage {
                 addLskAt(rowI, 0, (value, scratchpadCallback) => {
                     if (value === FMCMainDisplay.clrValue) {
                         CDUFlightPlanPage.clearElement(mcdu, fpIndex, offset, forPlan, inAlternate, scratchpadCallback);
+                        return;
                     }
 
                     CDUHoldAtPage.ShowPage(mcdu, fpIndex, forPlan, inAlternate);
