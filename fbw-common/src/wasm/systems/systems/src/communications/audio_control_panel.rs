@@ -11,11 +11,39 @@ use crate::{
         SimulatorWriter, UpdateContext, VariableIdentifier, Write,
     },
 };
+
 use num_traits::FromPrimitive;
 use std::time::Duration;
 
+struct WordAMUACPInfo {
+    identification: IdentificationWordAMUACP,
+    sdi: u32,
+    label: LabelWordAMUACP,
+}
+impl WordAMUACPInfo {
+    fn new(identification: IdentificationWordAMUACP, sdi: u32, label: LabelWordAMUACP) -> Self {
+        Self {
+            identification,
+            sdi,
+            label,
+        }
+    }
+
+    fn get_identification(&self) -> IdentificationWordAMUACP {
+        self.identification
+    }
+
+    fn get_sdi(&self) -> u32 {
+        self.sdi
+    }
+
+    fn get_label(&self) -> LabelWordAMUACP {
+        self.label
+    }
+}
+
 #[derive(PartialEq, Copy, Clone, Eq)]
-pub enum TransmitID {
+enum TransmitID {
     None = 0,
     Vhf1,
     VHf2,
@@ -292,7 +320,7 @@ impl AudioControlPanel {
         bus_acp.push(word_arinc);
     }
 
-    pub fn decode_amu_word(
+    fn decode_amu_word(
         bus: &mut Vec<Arinc429Word<u32>>,
         transmission_table: &mut TransmitID,
         call_mech: &mut bool,
@@ -476,7 +504,7 @@ struct TransceiverACPFacade {
     volume: u32,
 }
 impl TransceiverACPFacade {
-    pub fn new(context: &mut InitContext, id_acp: u32, name: &str) -> Self {
+    fn new(context: &mut InitContext, id_acp: u32, name: &str) -> Self {
         Self {
             volume_id: context.get_identifier(format!("ACP{}_{}_VOLUME", id_acp, name)),
             knob_id: context.get_identifier(format!("ACP{}_{}_KNOB_VOLUME_DOWN", id_acp, name)),
@@ -484,7 +512,7 @@ impl TransceiverACPFacade {
         }
     }
 
-    pub fn update_vhf1(&mut self, context: &UpdateContext) -> bool {
+    fn update_vhf1(&mut self, context: &UpdateContext) -> bool {
         if self.volume != context.external_data().get_volume_com1() as u32 {
             self.volume = context.external_data().get_volume_com1() as u32;
             self.changed = true;
@@ -495,7 +523,7 @@ impl TransceiverACPFacade {
         }
     }
 
-    pub fn update_vhf2(&mut self, context: &UpdateContext) -> bool {
+    fn update_vhf2(&mut self, context: &UpdateContext) -> bool {
         if self.volume != context.external_data().get_volume_com2() as u32 {
             self.volume = context.external_data().get_volume_com2() as u32;
             self.changed = true;
@@ -506,7 +534,7 @@ impl TransceiverACPFacade {
         }
     }
 
-    pub fn has_changed(&self) -> bool {
+    fn has_changed(&self) -> bool {
         self.changed
     }
 }
