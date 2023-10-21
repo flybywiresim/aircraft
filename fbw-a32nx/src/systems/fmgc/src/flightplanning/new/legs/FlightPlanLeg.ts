@@ -217,7 +217,7 @@ export class FlightPlanLeg {
             && this.definition.altitudeDescriptor !== AltitudeDescriptor.None
             // These types of constraints are not considered by the FMS
             && this.definition.altitudeDescriptor !== AltitudeDescriptor.AtAlt1GsMslAlt2
-            && this.definition.altitudeDescriptor !== AltitudeDescriptor.AtOrAboveAlt1GsIntcptAlt2;
+            && this.definition.altitudeDescriptor !== AltitudeDescriptor.AtOrAboveAlt1GsMslAlt2;
     }
 
     hasPilotEnteredSpeedConstraint(): boolean {
