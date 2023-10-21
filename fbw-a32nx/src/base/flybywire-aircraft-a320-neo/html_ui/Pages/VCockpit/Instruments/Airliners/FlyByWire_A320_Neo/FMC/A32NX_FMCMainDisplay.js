@@ -1512,7 +1512,7 @@ class FMCMainDisplay extends BaseAirliners {
                             // not constraining
                     }
                 }
-            } else if (leg.segment.class === 2 /** DES */) {
+            } else if (leg.constraintType === 2 /** DES */) {
                 if (altConstraint) {
                     switch (altConstraint.type) {
                         case "@": // at alt 1
