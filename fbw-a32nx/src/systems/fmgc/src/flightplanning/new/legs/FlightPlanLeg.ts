@@ -251,14 +251,25 @@ export class FlightPlanLeg {
         }, '', '', undefined, undefined, false);
     }
 
-    static directToTurnEnd(segment: EnrouteSegment, targetWaypoint: Fix, approachWaypointDescriptor: ApproachWaypointDescriptor): FlightPlanLeg {
-        return new FlightPlanLeg(segment, {
+    static directToTurnEnd(segment: EnrouteSegment, targetLeg: FlightPlanLeg): FlightPlanLeg {
+        const leg = new FlightPlanLeg(segment, {
             procedureIdent: '',
             type: LegType.DF,
             overfly: false,
-            waypoint: targetWaypoint,
-            approachWaypointDescriptor,
-        }, targetWaypoint.ident, '', undefined, undefined, false);
+            waypoint: targetLeg.definition.waypoint,
+            verticalAngle: targetLeg.definition.verticalAngle,
+            altitudeDescriptor: targetLeg.definition.altitudeDescriptor,
+            altitude1: targetLeg.definition.altitude1,
+            altitude2: targetLeg.definition.altitude2,
+            speedDescriptor: targetLeg.definition.speedDescriptor,
+            speed: targetLeg.definition.speed,
+        }, targetLeg.definition.waypoint.ident, '', undefined, undefined, false);
+
+        leg.pilotEnteredAltitudeConstraint = targetLeg.pilotEnteredAltitudeConstraint;
+        leg.pilotEnteredSpeedConstraint = targetLeg.pilotEnteredSpeedConstraint;
+        leg.constraintType = targetLeg.constraintType;
+
+        return leg;
     }
 
     static manualHold(segment: FlightPlanSegment, waypoint: Fix, hold: HoldData): FlightPlanLeg {
