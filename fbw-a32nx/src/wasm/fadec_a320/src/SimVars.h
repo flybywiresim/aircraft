@@ -210,7 +210,7 @@ class SimVars {
     PumpStateRight = register_named_variable("A32NX_PUMP_STATE:2");
     Eng1StarterPressurized = register_named_variable("A32NX_PNEU_ENG_1_STARTER_PRESSURIZED");
     Eng2StarterPressurized = register_named_variable("A32NX_PNEU_ENG_2_STARTER_PRESSURIZED");
-    APUrpmPercent = register_named_variable("A32NX_APU_N");
+    APUrpmPercent = register_named_variable("A32NX_APU_N_RAW");
 
     ThrustLimitType = register_named_variable("A32NX_AUTOTHRUST_THRUST_LIMIT_TYPE");
     ThrustLimitIdle = register_named_variable("A32NX_AUTOTHRUST_THRUST_LIMIT_IDLE");

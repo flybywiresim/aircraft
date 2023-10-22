@@ -87,8 +87,8 @@ class EngineControl {
   double imbalance;
   int engineImbalanced;
   double paramImbalance;
-  double prevEngineMasterPos[2] = {0};
-  bool prevEngineStarterState[2] = {0};
+  double prevEngineMasterPos[2] = {0, 0};
+  bool prevEngineStarterState[2] = {false, false};
 
   const double LBS_TO_KGS = 0.4535934;
   const double KGS_TO_LBS = 1 / 0.4535934;
@@ -228,7 +228,6 @@ class EngineControl {
           engineState = 0;
         }
       }
-
       // Present State ON
       else if (engineState == 1 || engineState == 11) {
         if (engineStarter == 1) {
@@ -237,7 +236,6 @@ class EngineControl {
           engineState = 4;
         }
       }
-
       // Present State Starting.
       else if (engineState == 2 || engineState == 12) {
         if (engineStarter == 1 && simN2 >= (idleN2 - 0.1)) {
@@ -250,7 +248,6 @@ class EngineControl {
           engineState = 2;
         }
       }
-
       // Present State Re-Starting.
       else if (engineState == 3 || engineState == 13) {
         if (engineStarter == 1 && simN2 >= (idleN2 - 0.1)) {
@@ -263,10 +260,9 @@ class EngineControl {
           engineState = 3;
         }
       }
-
       // Present State Shutting
       else if (engineState == 4 || engineState == 14) {
-        if (engineIgniter == 2 && engineMasterTurnedOn == 1) {
+        if (engineIgniter == 2 && engineMasterTurnedOn) {
           engineState = 3;
           resetTimer = 1;
         } else if (engineStarter == 0 && simN2 < 0.05 && egtFbw <= ambientTemp) {
@@ -731,8 +727,7 @@ class EngineControl {
     double rightPump1 = simVars->getPump(3);
     double rightPump2 = simVars->getPump(6);
 
-    base_arinc_429 apuNpercentWord = Arinc429Utils::fromSimVar(simVars->getAPUrpmPercent());
-    double apuNpercent = Arinc429Utils::valueOr(apuNpercentWord, 0);
+    double apuNpercent = simVars->getAPUrpmPercent();
 
     // Check Ready & Development State for UI
     isReady = simVars->getIsReady();
@@ -872,12 +867,12 @@ class EngineControl {
 
       /// apu fuel consumption for this frame in pounds
       double apuFuelConsumption = simVars->getLineFlow(18) * fuelWeightGallon * deltaTime;
-      
+
       // check if APU is actually running instead of just the ASU which doesnt consume fuel
       if (apuNpercent <= 0.0) {
         apuFuelConsumption = 0.0;
       }
-      
+
       apuBurn1 = apuFuelConsumption;
       apuBurn2 = 0;
 
@@ -908,8 +903,8 @@ class EngineControl {
           apuBurn2 = apuFuelConsumption * 0.5;
           break;
         case 4:
-          apuBurn1 = apuFuelConsumption*0.5;
-          apuBurn2 = apuFuelConsumption*0.5;
+          apuBurn1 = apuFuelConsumption * 0.5;
+          apuBurn2 = apuFuelConsumption * 0.5;
           break;
         default:
           break;
@@ -930,11 +925,10 @@ class EngineControl {
       else if (xfrValveCenterRightOpen)
         xfrCenterToRight = fuelCenterPre - centerQuantity;
 
-
       //--------------------------------------------
       // Final Fuel levels for left and right inner tanks
-      fuelLeft = (fuelLeftPre - (fuelBurn1 * KGS_TO_LBS)) + xfrAuxLeft + xfrCenterToLeft - apuBurn1;  // LBS
-      fuelRight = (fuelRightPre - (fuelBurn2 * KGS_TO_LBS)) + xfrAuxRight + xfrCenterToRight - apuBurn2;                   // LBS
+      fuelLeft = (fuelLeftPre - (fuelBurn1 * KGS_TO_LBS)) + xfrAuxLeft + xfrCenterToLeft - apuBurn1;      // LBS
+      fuelRight = (fuelRightPre - (fuelBurn2 * KGS_TO_LBS)) + xfrAuxRight + xfrCenterToRight - apuBurn2;  // LBS
 
       //--------------------------------------------
       // Setting new pre-cycle conditions
