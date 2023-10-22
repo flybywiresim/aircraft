@@ -85,6 +85,7 @@ export const AtsuAocPage = () => {
 
     const metarSourceButtons: ButtonType[] = [
         { name: 'MSFS', setting: 'MSFS' },
+        { name: 'NOAA', setting: 'NOAA' },
         { name: 'PilotEdge', setting: 'PILOTEDGE' },
         { name: 'IVAO', setting: 'IVAO' },
         { name: 'VATSIM', setting: 'VATSIM' },
