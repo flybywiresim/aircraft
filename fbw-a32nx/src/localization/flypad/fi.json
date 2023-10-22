@@ -131,6 +131,7 @@
       "Defueling": "Tyhjennetään polttoainetta",
       "EstimatedDuration": "Arvioitu kesto (minuuttia)",
       "EstimatedTime": "Estimated Time",
+      "GSXFuelSyncEnabled": "GSX polttoaineen synkronointi päällä",
       "LeftInnerTank": "Vasen sisempi tankki",
       "LeftOuterTank": "Vasen ulkoisempi tankki",
       "ReadyToStart": "Valmiina aloittamaan",
@@ -149,33 +150,34 @@
     },
     "Payload": {
       "BoardingTime": "Koneeseennousun kesto",
-      "Cargo": "Cargo",
-      "Current": "Current",
+      "Cargo": "Rahti",
+      "Current": "Tämänhetkinen",
       "DeboardConfirmationBody": "Vahvista kaikkien matkustajien poisto",
       "DeboardConfirmationCancel": "Peruuta",
       "DeboardConfirmationConfirm": "Poista matkustajat",
       "DeboardConfirmationTitle": "Poista kaikki matkustajat?",
       "EstimatedDurationUnit": "minuuttia",
+      "GSXPayloadSyncEnabled": "GSX hyötykuorman synkronointi käytössä",
       "GW": "GW",
       "GWCG": "GW CG",
       "LoadingTime": "Loading Time",
-      "Passengers": "Passengers",
-      "Planned": "Planned",
+      "Passengers": "Matkustajat",
+      "Planned": "Suunniteltu",
       "TT": {
-        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
-        "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
-        "MaxCargo": "Max Cargo",
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Lentokoneen tulee olla maassa moottorit sammutettuina, jotta voit vaihtaa lastaiksen kestoa",
+        "FillPayloadFromSimbrief": "Täytä hyötykuorman tiedot Simbriefistä",
+        "MaxCargo": "Rahdin enimmäispaino",
         "MaxGW": "Suurin GW",
         "MaxGWCG": "Suurin GW CG",
         "MaxPassengers": "Suurin mahdollinen matkustajamäärä",
         "MaxZFW": "Maximum ZFW",
         "MaxZFWCG": "Maximum ZFWCG",
-        "PerPaxBagWeight": "Per Passenger Bag Weight",
-        "PerPaxWeight": "Per Passenger Weight",
-        "StartBoarding": "Begin Boarding",
+        "PerPaxBagWeight": "Matkustajakohtainen matkatavaroiden paino",
+        "PerPaxWeight": "Matkustajakohtainen paino",
+        "StartBoarding": "Aloita lastaus",
         "StartDeboarding": "Aloita matkustajien poisto"
       },
-      "Title": "Payload",
+      "Title": "Hyötykuorma",
       "ZFW": "ZFW",
       "ZFWCG": "ZFWCG"
     },
@@ -224,6 +226,10 @@
     "Navigraph": {
       "AirportDoesNotExist": "Lentokenttää ei ole olemassa",
       "AuthenticateWithNavigraph": "Tunnistaudu Navigraphissa",
+      "GoToThirdPartyOptions": {
+        "Button": "3rd Party Options",
+        "Title": "Go to 3rd Party Options to link Navigraph account"
+      },
       "InsufficientEnv": "Puutteellinen .env-tiedosto",
       "IntoYourBrowserAndEnterTheCodeBelow": "selaimeesi ja kirjoita alla oleva koodi",
       "LoadingMsg": "Ladataan",
@@ -536,7 +542,7 @@
       "HomeCockpitMode": "Kotiohjaamo-tila",
       "McduFocusTimeout": "Lentotietokone poissa käytöstä tarkennuksen aikana (sekunteina)",
       "McduKeyboardInput": "MCDU näppäimistö syöttö",
-      "PauseAtTod": "T/D Pause",
+      "PauseAtTod": "T/D tauko",
       "PauseAtTodDistance": "T/D Pause Distance (nm)",
       "PilotAvatar": "Näytä lentäjän hahmo",
       "SeparateTillerFromRudderInputs": "Erota nokkapyörän ohjaus peräsimestä",
@@ -554,7 +560,7 @@
       "Copilot": "Lentoperämies",
       "DefaultBarometerUnit": "Paineen oletusyksikkö",
       "DynamicRegistrationDecal": "Dynaaminen rekisteröintimerkintä",
-      "EnableSimBridge": "Yhdistä SimBridgeen (yhdistysyritykset loppuvat 5 minuutin kuluttua, jos yhdistäminen ei onnistu)",
+      "EnableSimBridge": "Yhdistä Simbridgeen (yhdistysyritykset loppuvat 5 minuutin kuluttua, jos yhdistäminen ei onnistu)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Ota lentotietokoneen palvelinyhteys käyttöön (yhdistysyritykset loppuvat 5 minuutin kuluttua, jos yhdistäminen ei onnistu)",
       "ExternalMcduServerPort": "Ulkoinen lentotietokoneen palvelinyhteys",
       "Hpa": "hPa",
@@ -575,8 +581,27 @@
     },
     "ThirdPartyOptions": {
       "GsxFuelEnabled": "GSX tankkauksen synkronisointi",
-      "GsxPayloadEnabled": "GSX rahdin synkronointi",
-      "Title": "Kolmannen osapuolen asetukset"
+      "GsxPayloadEnabled": "GSX hyötykuorman synkronointi",
+      "NavigraphAccountLink": {
+        "Connected": "Connected",
+        "Link": "Link Account",
+        "LoginPage": {
+          "Title": "Navigraph Account Login"
+        },
+        "SettingTitle": "Navigraph Account Link",
+        "SubscriptionStatus": {
+          "None": "None",
+          "Unlimited": "Navigraph Unlimited"
+        },
+        "Unlink": "Unlink Account"
+      },
+      "OverrideSimBriefUserID": "Override SimBrief User ID",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Please check that you have correctly entered your SimBrief username or pilot ID.",
+      "TT": {
+        "OverrideSimBriefUserID": "Alternative SimBrief user ID to use instead of the linked Navigraph Account"
+      },
+      "Title": "Kolmannen osapuolen asetukset",
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "The override SimBrief PilotID has been validated and updated to"
     },
     "ThrottleConfig": {
       "Apply": "Käytä",
@@ -586,7 +611,7 @@
       "ConfigureEnd": "Määritä loppu",
       "ConfigureStart": "Määritä alku",
       "CurrentValue": "Nykyinen arvo",
-      "Deadband": "Neutraali alue",
+      "Deadband": "Neutraalialue",
       "ErrorOverlapMsg": "on päällekkäin",
       "IndependentAxis": "Akselit yksittäin",
       "LoadFromFile": "Lataa tiedostosta",

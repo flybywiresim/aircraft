@@ -4,11 +4,11 @@
     "ChangeATISATCSourceButton": "Ubah sumber ATIS/ATC",
     "ConnectHoppieACARS": "Hubungkan Hoppie ACARS",
     "NoInformationAvailableForThisFrequency": "Tidak ada informasi yang tersedia untuk frekuensi ini",
-    "SearchPlaceholder": "Search",
-    "SelectCorrectATISATCSource": "Halaman ini hanya tersedia apabila IVAO atau VATSIM telah terpilih sebagai ATIS/ATC di bagian pengaturan.",
+    "SearchPlaceholder": "Cari",
+    "SelectCorrectATISATCSource": "Halaman ini hanya tersedia apabila IVAO atau VATSIM telah dipilih sebagai ATIS/ATC di halaman pengaturan.",
     "SetActive": "Aktifkan",
     "SetStandby": "Setel Standby",
-    "ShowAll": "All",
+    "ShowAll": "Semua",
     "ShowApproach": "Approach",
     "ShowAtis": "ATIS",
     "ShowDelivery": "Delivery",
@@ -18,8 +18,8 @@
     "ShowTower": "Tower",
     "Standby": "Standby",
     "TT": {
-      "AtcCallSignSearch": "ATC Call-sign Search",
-      "AtcTypeFilter": "Filter for"
+      "AtcCallSignSearch": "Cari Callsign ATC",
+      "AtcTypeFilter": "Filter untuk"
     },
     "Title": "Air Traffic Control"
   },
@@ -131,6 +131,7 @@
       "Defueling": "Mengurangi Bahan Bakar",
       "EstimatedDuration": "Perkiraan Waktu (menit)",
       "EstimatedTime": "Estimated Time",
+      "GSXFuelSyncEnabled": "Sinkronisasi Bahan Bakar GSX Diaktifkan",
       "LeftInnerTank": "Tangki Kiri Dalam",
       "LeftOuterTank": "Tangki Kiri Luar",
       "ReadyToStart": "Siap Untuk Diisi",
@@ -148,32 +149,33 @@
       "Unavailable": "Tidak tersedia"
     },
     "Payload": {
-      "BoardingTime": "Boarding Time",
-      "Cargo": "Cargo",
+      "BoardingTime": "Waktu Boarding",
+      "Cargo": "Kargo",
       "Current": "Current",
-      "DeboardConfirmationBody": "Please confirm deboarding all passengers",
-      "DeboardConfirmationCancel": "Cancel",
+      "DeboardConfirmationBody": "Silahkan konfirmasi deboarding semua penumpang",
+      "DeboardConfirmationCancel": "Batalkan",
       "DeboardConfirmationConfirm": "Deboard",
-      "DeboardConfirmationTitle": "Deboard all Passengers?",
-      "EstimatedDurationUnit": "minutes",
+      "DeboardConfirmationTitle": "Deboard Semua Penumpang?",
+      "EstimatedDurationUnit": "menit",
+      "GSXPayloadSyncEnabled": "Sinkronisasi Muatan GSX Diaktifkan",
       "GW": "GW",
       "GWCG": "GW CG",
       "LoadingTime": "Loading Time",
-      "Passengers": "Passengers",
+      "Passengers": "Penumpang",
       "Planned": "Planned",
       "TT": {
-        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
-        "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
-        "MaxCargo": "Max Cargo",
-        "MaxGW": "Maximum GW",
-        "MaxGWCG": "Maximum GW CG",
-        "MaxPassengers": "Maximum Passengers",
-        "MaxZFW": "Maximum ZFW",
-        "MaxZFWCG": "Maximum ZFWCG",
-        "PerPaxBagWeight": "Per Passenger Bag Weight",
-        "PerPaxWeight": "Per Passenger Weight",
-        "StartBoarding": "Begin Boarding",
-        "StartDeboarding": "Begin Deboarding"
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Pesawat Harus Berada di Daratan dan Mematikan Mesin untuk Mengubah Durasi Boarding",
+        "FillPayloadFromSimbrief": "Masukkan Informasi Muatan dari Simbrief",
+        "MaxCargo": "Maksimal Kargo",
+        "MaxGW": "GW Maksimum",
+        "MaxGWCG": "GW CG Maksimum",
+        "MaxPassengers": "Maksimal Penumpang",
+        "MaxZFW": "Maksimal ZFW",
+        "MaxZFWCG": "Maksimal ZFWCG",
+        "PerPaxBagWeight": "Per Muatan Tas Penumpang",
+        "PerPaxWeight": "Per Berat Penumpang",
+        "StartBoarding": "Mulai Boarding",
+        "StartDeboarding": "Mulai Deboarding"
       },
       "Title": "Payload",
       "ZFW": "ZFW",
@@ -187,9 +189,9 @@
       "CateringTruck": "Truk Katering",
       "Cones": "Safety Cones",
       "DoorAft": "Pintu Belakang",
-      "DoorCargo": "Cargo Door",
+      "DoorCargo": "Pintu Kargo",
       "DoorFwd": "Pintu Depan",
-      "ExternalPower": "Daya Eksternal",
+      "ExternalPower": "Unit Daya Tanah",
       "FuelTruck": "Truk Bahan Bakar",
       "JetBridge": "Garbarata",
       "Title": "Layanan",
@@ -207,10 +209,10 @@
     "Altn": "Alternatif",
     "ExitFullscreenMode": "Keluar dari Mode Layar Penuh",
     "From": "Asal",
-    "LoadingImage": "Loading Image",
-    "LoadingImageFailed": "Loading Image failed",
-    "LoadingPdf": "Loading PDF",
-    "LoadingPdfFailed": "Loading PDF failed",
+    "LoadingImage": "Memuat Gambar",
+    "LoadingImageFailed": "Gagal Memuat Gambar",
+    "LoadingPdf": "Memuat PDF",
+    "LoadingPdfFailed": "Gagal Memuat PDF",
     "LocalFiles": {
       "Both": "Keduanya",
       "EstablishingConnection": "Menghubungkan Koneksi",
@@ -224,6 +226,10 @@
     "Navigraph": {
       "AirportDoesNotExist": "Bandara Tidak Ditemukan",
       "AuthenticateWithNavigraph": "Autentikasi dengan Navigraph",
+      "GoToThirdPartyOptions": {
+        "Button": "3rd Party Options",
+        "Title": "Go to 3rd Party Options to link Navigraph account"
+      },
       "InsufficientEnv": "File .env tidak memadai",
       "IntoYourBrowserAndEnterTheCodeBelow": "pada browser anda dan masukkan kode dibawah ini",
       "LoadingMsg": "Memuat",
@@ -370,7 +376,7 @@
       "ConfirmationDialogMsg": "Harap konfirmasi pemuatan preset.",
       "CurrentProcedureStep": "Langkah Prosedur Saat ini",
       "PleaseConfirmLoadingOfPreset": "Harap konfirmasi pemuatan preset.",
-      "Powered": "Powered",
+      "Powered": "Bertenaga",
       "ReadyPushback": "Siap untuk Pushback",
       "ReadyTakeoff": "Siap untuk Lepas Landas",
       "ReadyTaxi": "Siap untuk Taxi",
@@ -383,12 +389,12 @@
     "InteriorLighting": {
       "AircraftNeedsToBePoweredToLoadPresets": "Pesawat Perlu Diberi Daya untuk Memuat Preset",
       "AircraftNeedsToBePoweredToSavePresets": "Pesawat Perlu Diberi Daya untuk Menyimpan Preset",
-      "AutoLoadDawnDusk": "Dawn/Dusk:",
-      "AutoLoadDay": "Day:",
-      "AutoLoadLightingHelpTitle": "Automatic Preset Loading",
-      "AutoLoadLightingPreset": "Enable automatic loading of lighting presets:",
-      "AutoLoadNight": "Night:",
-      "AutoLoadNoneSelection": "None",
+      "AutoLoadDawnDusk": "Fajar/Senja:",
+      "AutoLoadDay": "Siang:",
+      "AutoLoadLightingHelpTitle": "Muat Preset Otomatis",
+      "AutoLoadLightingPreset": "Aktifkan pemuatan otomatis preset pencahayaan:",
+      "AutoLoadNight": "Malam:",
+      "AutoLoadNoneSelection": "Tidak Ada",
       "LoadPreset": "Muat Preset",
       "LoadingPreset": "Memuat Preset",
       "NewNameConfirmationDialogMsg": "Mohon konfirmasi nama baru untuk preset cahaya",
@@ -414,7 +420,7 @@
     "CallTug": "Panggil Tug",
     "DisableSystemMessageBody": "Apakah anda yakin ingin menonaktifkan Sistem Pushback? Ini juga akan melepaskan tug.",
     "DisableSystemMessageTitle": "Nonaktifkan Sistem Pushback",
-    "EnableSystemMessageBody": "Sistem Pushback FlyPadOS 3 baru belum selesai. Sistemnya tidak kompatibel dengan add-on Pushback lainnya dan dapat menyebabkan masalah lain.",
+    "EnableSystemMessageBody": "Sistem Pushback flyPadOS 3 yang baru dapat menyebabkan konflik dengan addon lain dan disarankan untuk tidak digunakan jika anda menggunakan addon pushback lain.",
     "EnableSystemMessageTitle": "Aktifkan Sistem Pushback",
     "Forward": "Maju",
     "Halt": "Jeda",
@@ -442,7 +448,7 @@
       "SliderSpeed": "Pindah untuk kecepatan yang diinginkan",
       "SystemEnabledOff": "Klik untuk menyalakan sistem pushback.",
       "SystemEnabledOn": "Klik untuk mematikan sistem pushback sepenuhnya.",
-      "UseControllerInput": "Turn controller input from rudder and elevator on/off",
+      "UseControllerInput": "Nyalakan/matikan input kontroller dari rudder dan elevator",
       "ZoomIn": "Perbesar",
       "ZoomOut": "Perkecil"
     },
@@ -450,29 +456,29 @@
     "TugDirection": "Arah Tug",
     "TugInTransit": "Menunggu Tug/Pin",
     "TugSpeed": "Kecepatan Tug",
-    "UseControllerInput": "Use Controller Input"
+    "UseControllerInput": "Gunakan Input Kontroller"
   },
   "QuickControls": {
-    "AlignAdirs": "Align ADIRS",
-    "FinishBoarding": "Finish Boarding",
-    "OnScreenKeyboard": "OnScreen Keyboard",
+    "AlignAdirs": "Sejajarkan ADIRS",
+    "FinishBoarding": "Selesaikan Pemuatan Penumpang",
+    "OnScreenKeyboard": "Keyboard Dalam Layar",
     "SimBridge": "SimBridge",
-    "SimBridgeConnected": "Connected",
-    "SimBridgeConnecting": "Connecting...",
-    "SimBridgeOff": "Off",
-    "SimBridgeOffline": "Not Available",
+    "SimBridgeConnected": "Terhubung",
+    "SimBridgeConnecting": "Menghubungkan...",
+    "SimBridgeOff": "Mati",
+    "SimBridgeOffline": "Tidak Tersedia",
     "TT": {
-      "AlignAdirs": "Instantly align ADIRS",
-      "AutoBrightness": "Turn Auto Brightness On/Off",
-      "Brightness": "Set flyPad brightness",
-      "FinishBoarding": "Instantly finish boarding",
-      "OnScreenKeyboard": "Turn OnScreen Keyboard On/Off",
-      "PowerButton": "Power Off",
-      "Settings": "Go to flyPad Settings page",
-      "SimBridge": "Control SimBridge Connection",
+      "AlignAdirs": "Sejajarkan ADIRS secara Instan",
+      "AutoBrightness": "Menyalakan/Mematikan Kecerahan Otomatis",
+      "Brightness": "Atur Kecerahan flyPad",
+      "FinishBoarding": "Selesaikan Boarding secara Instan",
+      "OnScreenKeyboard": "Menyalakan/Mematikan Keyboard Dalam Layar",
+      "PowerButton": "Matikan Daya",
+      "Settings": "Pergi ke Halaman Pengaturan flyPad",
+      "SimBridge": "Kontrol Koneksi SimBridge",
       "Sleep": "Standby"
     },
-    "Title": "Quick Controls"
+    "Title": "Kontrol Cepat"
   },
   "Settings": {
     "About": {
@@ -486,7 +492,7 @@
       "LatLonExtendedFormat": "Format FMGC Lat/Lon Waypoint",
       "PaxSigns": "PAX Signs",
       "RmpVhfSpacing": "Jarak VHF RMP",
-      "Satcom": "Satcom",
+      "Satcom": "Komunikasi Satelit ",
       "ThrustReductionHeight": "Ketinggian Pengurangan Dorongan (ft)",
       "Title": "Opsi Pesawat / Tandai Program",
       "WeightUnit": "Satuan Berat"
@@ -532,29 +538,29 @@
       "AutofillChecklists": "Ceklis Otomatis Terisi",
       "BoardingTime": "Waktu Boarding",
       "DmcSelfTestTime": "Waktu Pencobaan Mandiri DMC",
-      "FirstOfficerAvatar": "Show First Officer Avatar",
+      "FirstOfficerAvatar": "Tampilkan First Officer",
       "HomeCockpitMode": "Mode Kokpit Rumah",
       "McduFocusTimeout": "Batas Waktu Fokus MCDU (detik)",
       "McduKeyboardInput": "Input Keyboard MCDU",
-      "PauseAtTod": "T/D Pause",
-      "PauseAtTodDistance": "T/D Pause Distance (nm)",
-      "PilotAvatar": "Show Pilot Avatar",
+      "PauseAtTod": "Jeda T/D",
+      "PauseAtTodDistance": "Jarak Jeda T/D (nm)",
+      "PilotAvatar": "Tampilkan avatar Pilot",
       "SeparateTillerFromRudderInputs": "Pisahkan Tiller dari Input Rudder",
-      "SyncEfis": "Sync EFIS controls between Captain and FO",
+      "SyncEfis": "Sinkronkan kontrol EFIS antara Kapten dan FO",
       "Title": "Realisme"
     },
     "SimOptions": {
       "Active": "Aktif",
       "Auto": "Otomatis",
-      "Both": "Synchronized",
+      "Both": "Tersinkron",
       "Calibrate": "Kalibrasi",
-      "Captain": "Captain",
-      "CockpitSeatUsedToControl": "Cockpit Seat Used To Control",
+      "Captain": "Kapten",
+      "CockpitSeatUsedToControl": "Kursi Kokpit yang Digunakan untuk Mengontrol",
       "ConesEnabled": "Safety Cones",
-      "Copilot": "Copilot",
+      "Copilot": "Kopilot",
       "DefaultBarometerUnit": "Standar Satuan Barometer",
       "DynamicRegistrationDecal": "Nomor Registrasi Pesawat",
-      "EnableSimBridge": "Aktifkan Koneksi Server MCDU (Otomatis dinonaktifkan setelah 5 menit jika tidak ada koneksi yang berhasil)",
+      "EnableSimBridge": "Aktifkan Koneksi SimBridge (Akan putus otomatis setelah 5 menit jika koneksi tidak berhasil)",
       "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Aktifkan Koneksi Server MCDU (Otomatis dinonaktifkan setelah 5 menit jika tidak ada koneksi yang berhasil)",
       "ExternalMcduServerPort": "Port Server MCDU Eksternal",
       "Hpa": "hPa",
@@ -564,8 +570,8 @@
       "Off": "Mati",
       "Save": "Simpan",
       "Side": "Side",
-      "SimBridgeIp": "External SimBridge Host Address",
-      "SimBridgePort": "Port Server MCDU Eksternal",
+      "SimBridgeIp": "Alamat Host SimBridge External",
+      "SimBridgePort": "Port SimBridge Eksternal",
       "SyncMsfsFlightPlan": "Sinkronkan dengan Flight Plan MSFS",
       "ThrottleDetents": "Penahan Throttle",
       "Title": "Opsi Sim",
@@ -574,9 +580,28 @@
       "inHg": "inHg"
     },
     "ThirdPartyOptions": {
-      "GsxFuelEnabled": "GSX Fueling Synchronization",
-      "GsxPayloadEnabled": "GSX Payload Synchronization",
-      "Title": "3rd Party Options"
+      "GsxFuelEnabled": "Sinkronisasi pemuatan bahan bakar GSX",
+      "GsxPayloadEnabled": "Sinkronisasi Payload GSX",
+      "NavigraphAccountLink": {
+        "Connected": "Connected",
+        "Link": "Link Account",
+        "LoginPage": {
+          "Title": "Navigraph Account Login"
+        },
+        "SettingTitle": "Navigraph Account Link",
+        "SubscriptionStatus": {
+          "None": "None",
+          "Unlimited": "Navigraph Unlimited"
+        },
+        "Unlink": "Unlink Account"
+      },
+      "OverrideSimBriefUserID": "Override SimBrief User ID",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Please check that you have correctly entered your SimBrief username or pilot ID.",
+      "TT": {
+        "OverrideSimBriefUserID": "Alternative SimBrief user ID to use instead of the linked Navigraph Account"
+      },
+      "Title": "Opsi 3rd Party",
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "The override SimBrief PilotID has been validated and updated to"
     },
     "ThrottleConfig": {
       "Apply": "Terapkan",
@@ -590,7 +615,7 @@
       "ErrorOverlapMsg": "tumpang tindih dengan",
       "IndependentAxis": "Axis Independen",
       "LoadFromFile": "Muat dari File",
-      "PleaseEnterAValidDeadzone": "Silahkan masukkan deadzone yang valid",
+      "PleaseEnterAValidDeadzone": "Harap masukkan deadzone yang valid",
       "ResetToDefaults": "Ubah ke Settingan Awal",
       "ReverseFull": "Reverse Penuh",
       "ReverseIdle": "Reverse Mati",
@@ -604,7 +629,7 @@
     "flyPad": {
       "AutoBrightness": "Kecerahan Otomatis",
       "AutomaticallyShowOnscreenKeyboard": "Otomatis Menampilkan Keyboard Pada Layar",
-      "BatteryLifeEnabled": "Battery Life Simulated",
+      "BatteryLifeEnabled": "Daya Tahan Baterai Simulasi",
       "Blue": "Biru",
       "Brightness": "Kecerahan",
       "Dark": "Gelap",
@@ -643,9 +668,9 @@
     "Sun": "Ming",
     "TT": {
       "Brightness": "Click to change Brightness",
-      "ConnectedToLocalApi": "Terhubung ke API Lokal",
-      "DisconnectedFromLocalApi": "Terputus dari API Lokal",
-      "QuickControls": "Click to open Quick Controls",
+      "ConnectedToLocalApi": "Terhubung ke SimBridge",
+      "DisconnectedFromLocalApi": "Terputus dari SimBridge",
+      "QuickControls": "Klik untuk membuka Kontrol Cepat",
       "TurnOffOrShutdownEfb": "Matikan EFB"
     },
     "Thu": "Kam",
@@ -653,13 +678,13 @@
     "Wed": "Rab"
   },
   "VersionCheck": {
-    "CurrentVersionText": "You are using the $edition edition with version:",
-    "LatestVersionText": "Latest $edition version is",
-    "RecommendationText": "Please update your aircraft using the FlyByWire Installer.",
-    "StatusBarWarning": "Outdated Aircraft Version",
+    "CurrentVersionText": "Anda menggunakan edisi $edition dengan versi:",
+    "LatestVersionText": "Versi $edition terbaru adalah",
+    "RecommendationText": "Harap perbarui pesawat Anda menggunakan FlyByWire Installer.",
+    "StatusBarWarning": "Versi Pesawat Lama",
     "TT": {
-      "StatusBarWarning": "Please update your aircraft using the FlyByWire Installer."
+      "StatusBarWarning": "Mohon perbarui pesawat anda menggunakan FlyByWire Installer"
     },
-    "Title": "New Version Available"
+    "Title": "Versi Baru Tersedia"
   }
 }

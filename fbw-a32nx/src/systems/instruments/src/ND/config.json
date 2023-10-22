@@ -1,7 +1,4 @@
 {
-  "index": "./index.tsx",
-  "isInteractive": false,
-  "additionalImports": [
-    "/JS/fbw-a32nx/fmgc/LzUtf8.js"
-  ]
+  "index": "./instrument.tsx",
+  "isInteractive": false
 }

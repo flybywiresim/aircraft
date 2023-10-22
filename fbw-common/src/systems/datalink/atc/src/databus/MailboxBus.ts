@@ -51,7 +51,7 @@ export class MailboxBus {
 
     private lastClosedMessage: [MailboxMessage[], number] = null;
 
-    private atcRingInterval: NodeJS.Timer = null;
+    private atcRingInterval: number = null;
 
     private poweredUp: boolean = false;
 
@@ -209,7 +209,7 @@ export class MailboxBus {
             if (message !== undefined) {
                 this.publisher.pub('systemStatus', MailboxStatusMessage.Printing, true, false);
                 this.atc.digitalOutputs.sendPrintMessage(message);
-                setTimeout(() => {
+                window.setTimeout(() => {
                     if (this.currentMessageStatus(uid) === MailboxStatusMessage.Printing) {
                         this.publisher.pub('systemStatus', MailboxStatusMessage.NoMessage, true, false);
                     }
@@ -339,7 +339,7 @@ export class MailboxBus {
         this.atc.digitalOutputs.activateAtcRing();
 
         // start the ring tone interval
-        this.atcRingInterval = setInterval(() => this.atc.digitalOutputs.activateAtcRing(), this.estimateRingInterval());
+        this.atcRingInterval = window.setInterval(() => this.atc.digitalOutputs.activateAtcRing(), this.estimateRingInterval());
     }
 
     public powerUp(): void {

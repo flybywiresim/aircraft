@@ -8,7 +8,7 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-console */
 import { MathUtils, Arinc429Word, GenericDataListenerSync, NXDataStore, UpdateThrottler, LocalSimVar } from '@flybywiresim/fbw-sdk';
-import { LatLongData } from '@typings/fs-base-ui/html_ui/JS/Types';
+import { Coordinates } from 'msfs-geo';
 import { TcasComponent } from '../lib/TcasComponent';
 import {
     TCAS_CONST as TCAS, JS_NPCPlane,
@@ -113,7 +113,7 @@ export class TcasTraffic {
 
     secondsSinceLastTa: number;
 
-    constructor(tf: JS_NPCPlane, ppos: LatLongData, alt: number) {
+    constructor(tf: JS_NPCPlane, ppos: Coordinates, alt: number) {
         this.alive = true;
         this.seen = 0;
         this.ID = tf.uId.toFixed(0); // 7 Digit = NPC; 20 digit = player

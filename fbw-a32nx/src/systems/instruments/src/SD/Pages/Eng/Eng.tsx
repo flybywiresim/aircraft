@@ -255,13 +255,14 @@ const ValveGroup = ({ x, y, engineNumber, fadecOn }: ComponentPositionProps) => 
     const inactiveVisibility = fadecOn ? 'hidden' : 'visible';
     // This useEffect ensures that the valve is only opened if the engine mode selector is set to IGN/START, the engine is starting, and n2% is below 50
     useEffect(() => {
+        let timeout: number;
         if (isEngineStarting && n2Percent < 50 && engSelectorPosition === 2) {
-            setTimeout(() => setIsValveOpen(true), 1200);
+            timeout = setTimeout(() => setIsValveOpen(true), 1200);
         } else {
-            setTimeout(() => setIsValveOpen(false), 1200);
+            timeout = setTimeout(() => setIsValveOpen(false), 1200);
         }
 
-        return () => clearTimeout();
+        return () => clearTimeout(timeout);
     }, [isEngineStarting, engSelectorPosition]);
 
     useEffect(() => {
@@ -326,18 +327,21 @@ const EngineColumn = ({ x, y, engineNumber, fadecOn }: ComponentPositionProps) =
             setTempAmber(false);
         }
 
+        let timeout: number;
         if (engineOilTemperature > OIL_TEMP_HIGH_ADVISORY) {
-            setTimeout(() => {
+            timeout = setTimeout(() => {
                 if (engineOilTemperature > OIL_TEMP_HIGH_ADVISORY) {
                     setTempBeenAboveAdvisory(true);
                 }
             }, 900_000);
         } else {
-            clearTimeout();
+            if (timeout) {
+                clearTimeout(timeout);
+            }
             setTempBeenAboveAdvisory(false);
         }
 
-        return () => clearTimeout();
+        return () => clearTimeout(timeout);
     }, [engineOilTemperature]);
 
     useEffect(() => {

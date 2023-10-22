@@ -297,6 +297,11 @@ export const A320Payload: React.FC<A320Props> = ({
         setBoardingStarted(false);
     }, [totalPaxDesired, totalPax, totalCargo, boardingStarted, totalCargoDesired]);
 
+    // Note: will need to be looked into when doors can be opened on this page.
+    const [cabinLeftDoorOpen] = useState(SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:0', 'Percent over 100'));
+    const [cabinRightDoorOpen] = useState(SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:1', 'Percent over 100'));
+    const [aftLeftDoorOpen] = useState(SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:2', 'Percent over 100'));
+
     const calculateBoardingTime = useMemo(() => {
         // factors taken from payload.rs TODO: Simvar
         let boardingRateMultiplier = 0;
@@ -305,6 +310,19 @@ export const A320Payload: React.FC<A320Props> = ({
         } else if (boardingRate === 'FAST') {
             boardingRateMultiplier = 1;
         }
+
+        let boardingDoorsOpen = 0;
+        if (cabinLeftDoorOpen) {
+            boardingDoorsOpen++;
+        }
+        if (cabinRightDoorOpen) {
+            boardingDoorsOpen++;
+        }
+        if (aftLeftDoorOpen) {
+            boardingDoorsOpen++;
+        }
+        boardingDoorsOpen = Math.max(boardingDoorsOpen, 1);
+        boardingRateMultiplier /= boardingDoorsOpen;
 
         // factors taken from payload.rs TODO: Simvar
         const cargoWeightPerWeightStep = 60;
@@ -316,7 +334,7 @@ export const A320Payload: React.FC<A320Props> = ({
         const estimatedCargoLoadingSeconds = (differentialCargo / cargoWeightPerWeightStep) * boardingRateMultiplier;
 
         return Math.max(estimatedPaxBoardingSeconds, estimatedCargoLoadingSeconds);
-    }, [totalPaxDesired, totalPax, totalCargoDesired, totalCargo, boardingRate]);
+    }, [totalPaxDesired, totalPax, totalCargoDesired, totalCargo, cabinLeftDoorOpen, cabinRightDoorOpen, aftLeftDoorOpen, boardingRate]);
 
     const boardingStatusClass = useMemo(() => {
         if (!boardingStarted) {

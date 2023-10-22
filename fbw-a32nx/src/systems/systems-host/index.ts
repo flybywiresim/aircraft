@@ -49,6 +49,11 @@ class SystemsHost extends BaseInstrument {
 
         this.powerSupply.connectedCallback();
         this.atsu.connectedCallback();
+
+        // Needed to fetch METARs from the sim
+        RegisterViewListener('JS_LISTENER_FACILITY', () => {
+            console.log('JS_LISTENER_FACILITY registered.');
+        }, true);
     }
 
     public Update(): void {

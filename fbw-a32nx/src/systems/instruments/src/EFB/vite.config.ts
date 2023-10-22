@@ -1,7 +1,11 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tsconfigPaths from 'vite-tsconfig-paths';
-import { replaceCodePlugin } from 'vite-plugin-replace';
+import replaceCodePlugin from 'vite-plugin-filter-replace';
 import autoprefixer from 'autoprefixer';
 import tailwindcss from 'tailwindcss';
 import dotenv from 'dotenv';
@@ -22,25 +26,29 @@ export default defineConfig({
     plugins: [
         react({ jsxRuntime: 'classic' }),
         tsconfigPaths({ root: '../../../' }),
-        replaceCodePlugin({
-            replacements: [
-                {
+        replaceCodePlugin([
+            {
+                filter: /\.tsx?$/,
+                replace: {
                     from: 'process.env.VITE_BUILD',
                     to: 'true',
                 },
-                ...envVarsToReplace.map((it) => {
-                    const value = process.env[it];
+            },
+            ...envVarsToReplace.map((it) => {
+                const value = process.env[it];
 
-                    if (!value) {
-                        throw new Error(`Not env value for ${it}.`);
-                    }
+                if (!value) {
+                    throw new Error(`Not env value for ${it}.`);
+                }
 
-                    return ({
+                return ({
+                    filter: /\.tsx?$/,
+                    replace: {
                         from: `process.env.${it}`,
                         to: `'${value}'`,
-                    });
-                }),
-            ],
-        }),
+                    },
+                });
+            }),
+        ]),
     ],
 });

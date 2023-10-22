@@ -7,6 +7,7 @@ declare global {
     type Latitude = number;
     type Longitude = number;
     type Feet = number;
+    type FlightLevel = number;
     type Knots = number;
     type FeetPerMinute = number;
     type Metres = number;
@@ -31,6 +32,14 @@ declare global {
     type Millibar = number;
     type PressurePerSquareInch = number;
 
+    namespace Facilities {
+        function getMagVar(lat: Degrees, long: Degrees): Degrees;
+    }
+
+    const process: {
+        env: Record<string, string | undefined>
+    }
+
     interface Window {
         /**
          * Present if the instrument is running in [ACE](https://github.com/flybywiresim/ace)
@@ -51,7 +60,6 @@ declare global {
     namespace Fmgc {
         const FlightPhaseManager: typeof FlightPhaseManager_
     }
-
 }
 
 export {};

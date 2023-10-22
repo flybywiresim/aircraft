@@ -232,12 +232,21 @@ impl A380Payload {
             )
         });
         let boarding_agents = [
-            BoardingAgent::new([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]),
-            BoardingAgent::new([10, 11, 12, 13, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9]),
-            BoardingAgent::new([2, 3, 4, 5, 6, 7, 8, 9, 13, 12, 11, 10, 1, 0]),
+            BoardingAgent::new(
+                context.get_identifier("INTERACTIVE POINT OPEN:0".to_owned()),
+                [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13],
+            ),
+            BoardingAgent::new(
+                context.get_identifier("INTERACTIVE POINT OPEN:2".to_owned()),
+                [10, 11, 12, 13, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+            ),
+            BoardingAgent::new(
+                context.get_identifier("INTERACTIVE POINT OPEN:10".to_owned()),
+                [2, 3, 4, 5, 6, 7, 8, 9, 13, 12, 11, 10, 1, 0],
+            ),
         ];
 
-        let passenger_deck = PassengerDeck::new(context, pax, boarding_agents);
+        let passenger_deck = PassengerDeck::new(pax, boarding_agents);
         let cargo_deck = CargoDeck::new(cargo);
 
         A380Payload {

@@ -2,11 +2,12 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import './style.scss';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useSimVar, useSplitSimVar, useInteractionEvent, useUpdate } from '@flybywiresim/fbw-sdk';
 import { TcasComputer } from '@tcas/index';
 import { render } from '@instruments/common/index';
+
+import './style.scss';
 
 const getDigitsFromBco16 = (code: number): number[] => {
     let codeCopy = code;

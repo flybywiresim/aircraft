@@ -54,7 +54,7 @@ export const ErrorFallback = ({ resetErrorBoundary }: ErrorFallbackProps) => {
     const [sentryEnabled] = usePersistentProperty(SENTRY_CONSENT_KEY, SentryConsentState.Refused);
 
     return (
-        <div className="flex justify-center items-center w-full h-screen bg-theme-body">
+        <div className="bg-theme-body flex h-screen w-full items-center justify-center">
             <div className="max-w-4xl">
                 <Error />
                 <div className="mt-6 space-y-12">
@@ -68,12 +68,12 @@ export const ErrorFallback = ({ resetErrorBoundary }: ErrorFallbackProps) => {
                                 You have opted into anonymous error reporting and this issue has been relayed to us. If you want immediate support, please share the following code to a member of staff in the #support channel on the FlyByWire Discord server:
                             </h2>
 
-                            <h1 className="text-4xl font-extrabold tracking-wider text-center">{sessionId}</h1>
+                            <h1 className="text-center text-4xl font-extrabold tracking-wider">{sessionId}</h1>
                         </>
                     )}
 
-                    <div className="py-4 px-8 w-full text-theme-body hover:text-utility-red bg-utility-red hover:bg-theme-body rounded-md border-2 border-utility-red transition duration-100" onClick={resetErrorBoundary}>
-                        <h2 className="font-bold text-center text-current">Reset Display</h2>
+                    <div className="text-theme-body hover:text-utility-red bg-utility-red hover:bg-theme-body border-utility-red w-full rounded-md border-2 px-8 py-4 transition duration-100" onClick={resetErrorBoundary}>
+                        <h2 className="text-center font-bold text-current">Reset Display</h2>
                     </div>
                 </div>
             </div>
@@ -94,6 +94,11 @@ const setup = () => {
     readSettingsFromPersistentStorage();
     migrateSettings();
     setSessionId();
+
+    // Needed to fetch METARs from the sim
+    RegisterViewListener('JS_LISTENER_FACILITY', () => {
+        console.log('JS_LISTENER_FACILITY registered.');
+    }, true);
 };
 
 if (process.env.VITE_BUILD) {

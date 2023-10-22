@@ -25,7 +25,7 @@
 
 import { HoldData, HoldType } from '@fmgc/flightplanning/data/flightplan';
 import { firstSmallCircleIntersection } from 'msfs-geo';
-import { AltitudeDescriptor, FixTypeFlags, LegType } from '../types/fstypes/FSEnums';
+import { AltitudeDescriptor, FixTypeFlags, LegType } from '@flybywiresim/fbw-sdk';
 import { FixNamingScheme } from './FixNamingScheme';
 import { GeoMath } from './GeoMath';
 import { RawDataMapper } from './RawDataMapper';

@@ -131,6 +131,7 @@
       "Defueling": "Üzemanyag leszívása",
       "EstimatedDuration": "Becsült időtartam (perc)",
       "EstimatedTime": "Estimated Time",
+      "GSXFuelSyncEnabled": "GSX üzemanyag szinkronizálás bekapcsolva",
       "LeftInnerTank": "Bal belső tartály",
       "LeftOuterTank": "Bal külső tartály",
       "ReadyToStart": "Indításra kész",
@@ -156,6 +157,7 @@
       "DeboardConfirmationConfirm": "Leszállítás",
       "DeboardConfirmationTitle": "Összes utas leszállítása?",
       "EstimatedDurationUnit": "perc",
+      "GSXPayloadSyncEnabled": "GSX súlyadatok szinkronizálása bekapcsolva",
       "GW": "GW",
       "GWCG": "GW CG",
       "LoadingTime": "Loading Time",
@@ -224,6 +226,10 @@
     "Navigraph": {
       "AirportDoesNotExist": "A repülőtér nem létezik",
       "AuthenticateWithNavigraph": "Navigraph Hitelesítése ",
+      "GoToThirdPartyOptions": {
+        "Button": "3. féltől származó beállítások",
+        "Title": "Navigraph csatlakoztatásához navigálj a 3. féltől származó beállításokhoz"
+      },
       "InsufficientEnv": "Nem megfelelő .env fájl",
       "IntoYourBrowserAndEnterTheCodeBelow": "a böngészőbe, és írja be a kódot \n",
       "LoadingMsg": "Betöltés…",
@@ -576,7 +582,26 @@
     "ThirdPartyOptions": {
       "GsxFuelEnabled": "GSX üzemanyag-szinkronizálás",
       "GsxPayloadEnabled": "GSX hasznos teher szinkronizálás",
-      "Title": "Harmadik fél opciói"
+      "NavigraphAccountLink": {
+        "Connected": "Csatlakoztatva",
+        "Link": "Fiók összekapcsolása",
+        "LoginPage": {
+          "Title": "Navigraph fiók bejelentkezés"
+        },
+        "SettingTitle": "Navigraph fiók link",
+        "SubscriptionStatus": {
+          "None": "Egyik sem",
+          "Unlimited": "Navigraph Korlátlan "
+        },
+        "Unlink": "Fiók szétkapcsoltása"
+      },
+      "OverrideSimBriefUserID": "SimBrief felhasználói azonsító felülírása",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Kérlek ellenőrizd, hogy megfelelően adtad-e meg a SimBrief felhasználóneved vagy azonosítód.",
+      "TT": {
+        "OverrideSimBriefUserID": "SimBrief azonosító használata a csatlakoztatott Navigraph fiók helyett"
+      },
+      "Title": "Harmadik fél opciói",
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "A SimBrief PilotID ellenőrizve lett és frissítve lett erre"
     },
     "ThrottleConfig": {
       "Apply": "Alkalmaz",

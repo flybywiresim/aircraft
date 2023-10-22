@@ -62,8 +62,6 @@ export type PFDSimvars = AdirsSimVars & SwitchingPanelVSimVars & {
     isAltManaged: boolean;
     targetSpeedManaged: number;
     flapHandleIndex: number;
-    transAlt: number;
-    transAltAppr: number;
     selectedHeading: number;
     showSelectedHeading: number;
     altConstraint: number;
@@ -156,6 +154,10 @@ export type PFDSimvars = AdirsSimVars & SwitchingPanelVSimVars & {
     fm2DhRaw: number;
     fm1HealthyDiscrete: number;
     fm2HealthyDiscrete: number;
+    fm1TransAltRaw: number;
+    fm2TransAltRaw: number;
+    fm1TransLvlRaw: number;
+    fm2TransLvlRaw: number
   }
 
 export enum PFDVars {
@@ -214,8 +216,6 @@ export enum PFDVars {
     targetSpeedManaged = 'L:A32NX_SPEEDS_MANAGED_PFD',
     mach = 'L:A32NX_ADIRS_ADR_1_MACH',
     flapHandleIndex = 'L:A32NX_FLAPS_HANDLE_INDEX',
-    transAlt = 'L:AIRLINER_TRANS_ALT',
-    transAltAppr = 'L:AIRLINER_APPR_TRANS_ALT',
     magTrackRaw = 'L:A32NX_ADIRS_IR_1_TRACK',
     selectedHeading = 'L:A32NX_FCU_HEADING_SELECTED',
     showSelectedHeading = 'L:A320_FCU_SHOW_SELECTED_HEADING',
@@ -310,6 +310,10 @@ export enum PFDVars {
     fm2DhRaw = 'L:A32NX_FM1_DECISION_HEIGHT',
     fm1HealthyDiscrete = 'L:A32NX_FM1_HEALTHY_DISCRETE',
     fm2HealthyDiscrete = 'L:A32NX_FM2_HEALTHY_DISCRETE',
+    fm1TransAltRaw = 'L:A32NX_FM1_TRANS_ALT',
+    fm2TransAltRaw = 'L:A32NX_FM2_TRANS_ALT',
+    fm1TransLvlRaw = 'L:A32NX_FM1_TRANS_LVL',
+    fm2TransLvlRaw = 'L:A32NX_FM2_TRANS_LVL',
   }
 
 /** A publisher to poll and publish nav/com simvars. */
@@ -371,8 +375,6 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
         ['targetSpeedManaged', { name: PFDVars.targetSpeedManaged, type: SimVarValueType.Knots }],
         ['mach', { name: PFDVars.mach, type: SimVarValueType.Number }],
         ['flapHandleIndex', { name: PFDVars.flapHandleIndex, type: SimVarValueType.Number }],
-        ['transAlt', { name: PFDVars.transAlt, type: SimVarValueType.Number }],
-        ['transAltAppr', { name: PFDVars.transAltAppr, type: SimVarValueType.Number }],
         ['magTrackRaw', { name: PFDVars.magTrackRaw, type: SimVarValueType.Number }],
         ['selectedHeading', { name: PFDVars.selectedHeading, type: SimVarValueType.Degree }],
         ['showSelectedHeading', { name: PFDVars.showSelectedHeading, type: SimVarValueType.Number }],
@@ -465,6 +467,10 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
         ['fm2DhRaw', { name: PFDVars.fm2DhRaw, type: SimVarValueType.Number }],
         ['fm1HealthyDiscrete', { name: PFDVars.fm1HealthyDiscrete, type: SimVarValueType.Number }],
         ['fm2HealthyDiscrete', { name: PFDVars.fm2HealthyDiscrete, type: SimVarValueType.Number }],
+        ['fm1TransAltRaw', { name: PFDVars.fm1TransAltRaw, type: SimVarValueType.Number }],
+        ['fm2TransAltRaw', { name: PFDVars.fm2TransAltRaw, type: SimVarValueType.Number }],
+        ['fm1TransLvlRaw', { name: PFDVars.fm1TransLvlRaw, type: SimVarValueType.Number }],
+        ['fm2TransLvlRaw', { name: PFDVars.fm2TransLvlRaw, type: SimVarValueType.Number }],
     ])
 
     public constructor(bus: ArincEventBus) {

@@ -1,14 +1,14 @@
 use systems::{
     accept_iterable,
     air_conditioning::{
-        acs_controller::{AirConditioningSystemController, Pack},
+        acs_controller::{AcscId, AirConditioningSystemController, Pack},
         cabin_air::CabinAirSimulation,
         cabin_pressure_controller::CabinPressureController,
         pressure_valve::{OutflowValve, SafetyValve},
         AdirsToAirCondInterface, Air, AirConditioningOverheadShared, AirConditioningPack, CabinFan,
-        DuctTemperature, MixerUnit, OutflowValveSignal, OutletAir, OverheadFlowSelector,
+        Channel, DuctTemperature, MixerUnit, OutflowValveSignal, OutletAir, OverheadFlowSelector,
         PackFlowControllers, PressurizationConstants, PressurizationOverheadShared, TrimAirSystem,
-        ZoneType,
+        VcmShared, ZoneType,
     },
     overhead::{
         AutoManFaultPushButton, NormalOnPushButton, OnOffFaultPushButton, OnOffPushButton,
@@ -17,9 +17,12 @@ use systems::{
     payload::NumberOfPassengers,
     pneumatic::PneumaticContainer,
     shared::{
-        random_number, update_iterator::MaxStepLoop, AverageExt, CabinAltitude, CabinSimulation,
-        ControllerSignal, ElectricalBusType, EngineCorrectedN1, EngineFirePushButtons,
-        EngineStartState, LgciuWeightOnWheels, PackFlowValveState, PneumaticBleed,
+        arinc429::{Arinc429Word, SignStatus},
+        random_number,
+        update_iterator::MaxStepLoop,
+        AverageExt, CabinAltitude, CabinSimulation, ControllerSignal, ElectricalBusType,
+        EngineCorrectedN1, EngineFirePushButtons, EngineStartState, LgciuWeightOnWheels,
+        PackFlowValveState, PneumaticBleed,
     },
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
@@ -30,7 +33,7 @@ use systems::{
 use std::time::Duration;
 use uom::si::{
     f64::*, pressure::hectopascal, ratio::percent, thermodynamic_temperature::degree_celsius,
-    velocity::knot,
+    velocity::knot, volume::cubic_meter, volume_rate::liter_per_second,
 };
 
 use crate::payload::A320Pax;
@@ -174,7 +177,7 @@ impl A320Cabin {
     fn update(
         &mut self,
         context: &UpdateContext,
-        air_conditioning_system: &(impl OutletAir + DuctTemperature),
+        air_conditioning_system: &(impl OutletAir + DuctTemperature + VcmShared),
         lgciu: [&impl LgciuWeightOnWheels; 2],
         number_of_passengers: &impl NumberOfPassengers,
         pressurization: &A320PressurizationSystem,
@@ -237,7 +240,8 @@ impl SimulationElement for A320Cabin {
 }
 
 pub struct A320AirConditioningSystem {
-    acsc: AirConditioningSystemController<3, 2>,
+    acs_interface: [AirConditioningSystemInterfaceUnit; 2],
+    acsc: [AirConditioningSystemController<3, 2>; 2],
     cabin_fans: [CabinFan; 2],
     mixer_unit: MixerUnit<3>,
     // Temporary structure until packs are simulated
@@ -248,24 +252,78 @@ pub struct A320AirConditioningSystem {
 }
 
 impl A320AirConditioningSystem {
+    const CAB_FAN_DESIGN_FLOW_RATE_L_S: f64 = 325.; // litres/sec
+
     pub(crate) fn new(context: &mut InitContext, cabin_zones: &[ZoneType; 3]) -> Self {
         Self {
-            acsc: AirConditioningSystemController::new(
+            acs_interface: [
+                AirConditioningSystemInterfaceUnit::new(
+                    context,
+                    AcscId::Acsc1(Channel::ChannelOne),
+                    cabin_zones,
+                ),
+                AirConditioningSystemInterfaceUnit::new(
+                    context,
+                    AcscId::Acsc2(Channel::ChannelOne),
+                    cabin_zones,
+                ),
+            ],
+            acsc: [
+                AirConditioningSystemController::new(
+                    context,
+                    AcscId::Acsc1(Channel::ChannelOne),
+                    cabin_zones,
+                    [
+                        [
+                            ElectricalBusType::AlternatingCurrent(1), // 103XP
+                            ElectricalBusType::DirectCurrent(1),      // 101PP
+                        ],
+                        [
+                            ElectricalBusType::AlternatingCurrent(2),  // 202XP
+                            ElectricalBusType::DirectCurrentEssential, // 4PP
+                        ],
+                    ],
+                ),
+                AirConditioningSystemController::new(
+                    context,
+                    AcscId::Acsc2(Channel::ChannelOne),
+                    cabin_zones,
+                    [
+                        [
+                            ElectricalBusType::AlternatingCurrent(1), // 101XP
+                            ElectricalBusType::DirectCurrent(1),      // 103PP
+                        ],
+                        [
+                            ElectricalBusType::AlternatingCurrent(2), // 204XP
+                            ElectricalBusType::DirectCurrent(2),      // 206PP
+                        ],
+                    ],
+                ),
+            ],
+            cabin_fans: [
+                CabinFan::new(
+                    1,
+                    VolumeRate::new::<liter_per_second>(Self::CAB_FAN_DESIGN_FLOW_RATE_L_S),
+                    ElectricalBusType::AlternatingCurrent(1),
+                ),
+                CabinFan::new(
+                    2,
+                    VolumeRate::new::<liter_per_second>(Self::CAB_FAN_DESIGN_FLOW_RATE_L_S),
+                    ElectricalBusType::AlternatingCurrent(2),
+                ),
+            ],
+            mixer_unit: MixerUnit::new(cabin_zones),
+            packs: [
+                AirConditioningPack::new(context, Pack(1)),
+                AirConditioningPack::new(context, Pack(2)),
+            ],
+            trim_air_system: TrimAirSystem::new(
                 context,
                 cabin_zones,
-                vec![
-                    ElectricalBusType::DirectCurrent(1),
-                    ElectricalBusType::AlternatingCurrent(1),
-                ],
-                vec![
-                    ElectricalBusType::DirectCurrent(2),
-                    ElectricalBusType::AlternatingCurrent(2),
-                ],
+                &[1],
+                Volume::new::<cubic_meter>(4.),
+                Volume::new::<cubic_meter>(0.03),
             ),
-            cabin_fans: [CabinFan::new(ElectricalBusType::AlternatingCurrent(1)); 2],
-            mixer_unit: MixerUnit::new(cabin_zones),
-            packs: [AirConditioningPack::new(), AirConditioningPack::new()],
-            trim_air_system: TrimAirSystem::new(context, cabin_zones),
 
             air_conditioning_overhead: A320AirConditioningSystemOverhead::new(context, cabin_zones),
         }
@@ -283,10 +341,9 @@ impl A320AirConditioningSystem {
         pressurization_overhead: &A320PressurizationOverheadPanel,
         lgciu: [&impl LgciuWeightOnWheels; 2],
     ) {
-        self.acsc.update(
+        self.update_acsc(
             context,
             adirs,
-            &self.air_conditioning_overhead,
             cabin_simulation,
             engines,
             engine_fire_push_buttons,
@@ -294,37 +351,119 @@ impl A320AirConditioningSystem {
             pressurization,
             pressurization_overhead,
             lgciu,
-            &self.trim_air_system,
         );
 
+        self.update_fans(cabin_simulation);
+
+        self.update_packs(context);
+
+        self.update_mixer_unit();
+
+        self.update_trim_air_system(context);
+
+        self.update_acsc_interface();
+
+        self.air_conditioning_overhead
+            .set_pack_pushbutton_fault(self.pack_fault_determination());
+        self.air_conditioning_overhead.set_hot_air_pushbutton_fault(
+            self.acsc[0].hot_air_pb_fault_light_determination()
+                || self.acsc[1].hot_air_pb_fault_light_determination(),
+        );
+    }
+
+    fn update_acsc(
+        &mut self,
+        context: &UpdateContext,
+        adirs: &impl AdirsToAirCondInterface,
+        cabin_simulation: &impl CabinSimulation,
+        engines: [&impl EngineCorrectedN1; 2],
+        engine_fire_push_buttons: &impl EngineFirePushButtons,
+        pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
+        pressurization: &impl CabinAltitude,
+        pressurization_overhead: &A320PressurizationOverheadPanel,
+        lgciu: [&impl LgciuWeightOnWheels; 2],
+    ) {
+        for acsc in self.acsc.iter_mut() {
+            acsc.update(
+                context,
+                adirs,
+                &self.air_conditioning_overhead,
+                cabin_simulation,
+                engines,
+                engine_fire_push_buttons,
+                pneumatic,
+                pressurization,
+                pressurization_overhead,
+                lgciu,
+                &self.trim_air_system,
+            );
+        }
+    }
+
+    fn update_fans(&mut self, cabin_simulation: &impl CabinSimulation) {
         for fan in self.cabin_fans.iter_mut() {
-            fan.update(cabin_simulation, &self.acsc.cabin_fans_controller())
+            fan.update(cabin_simulation, &self.acsc[1].cabin_fans_controller())
         }
+    }
 
+    fn update_packs(&mut self, context: &UpdateContext) {
         let pack_flow: [MassRate; 2] = [
-            self.acsc.individual_pack_flow(Pack(1)),
-            self.acsc.individual_pack_flow(Pack(2)),
+            self.acsc[0].individual_pack_flow(),
+            self.acsc[1].individual_pack_flow(),
         ];
-        let duct_demand_temperature = self.acsc.duct_demand_temperature();
-        for (id, pack) in self.packs.iter_mut().enumerate() {
-            pack.update(pack_flow[id], &duct_demand_temperature)
-        }
 
+        let duct_demand_temperature = vec![
+            self.acsc[0].duct_demand_temperature()[0],
+            self.acsc[1].duct_demand_temperature()[1],
+            self.acsc[1].duct_demand_temperature()[2],
+        ];
+
+        [0, 1].iter().for_each(|&id| {
+            self.packs[id].update(
+                context,
+                pack_flow[id],
+                &duct_demand_temperature,
+                self.acsc[id].both_channels_failure(),
+            )
+        });
+    }
+
+    fn update_mixer_unit(&mut self) {
         let mut mixer_intakes: Vec<&dyn OutletAir> = vec![&self.packs[0], &self.packs[1]];
         for fan in self.cabin_fans.iter() {
             mixer_intakes.push(fan)
         }
         self.mixer_unit.update(mixer_intakes);
+    }
 
-        self.trim_air_system
-            .update(context, &self.mixer_unit, &self.acsc);
+    fn update_trim_air_system(&mut self, context: &UpdateContext) {
+        self.trim_air_system.update(
+            context,
+            &self.mixer_unit,
+            [
+                self.acsc[0].trim_air_pressure_regulating_valve_controller(),
+                self.acsc[1].trim_air_pressure_regulating_valve_controller(),
+            ],
+            &[&self.acsc[0], &self.acsc[1], &self.acsc[1]],
+        );
+    }
 
-        self.air_conditioning_overhead
-            .set_pack_pushbutton_fault(self.pack_fault_determination());
+    fn update_acsc_interface(&mut self) {
+        for (index, interface) in self.acs_interface.iter_mut().enumerate() {
+            interface.update(
+                &self.air_conditioning_overhead,
+                &self.acsc[index],
+                &self.cabin_fans,
+                &self.trim_air_system,
+            )
+        }
     }
 
     pub fn pack_fault_determination(&self) -> [bool; 2] {
-        self.acsc.pack_fault_determination()
+        [
+            self.acsc[0].pack_fault_determination(),
+            self.acsc[1].pack_fault_determination(),
+        ]
     }
 
     pub fn mix_packs_air_update(&mut self, pack_container: &mut [impl PneumaticContainer; 2]) {
@@ -337,7 +476,8 @@ impl PackFlowControllers for A320AirConditioningSystem {
         <AirConditioningSystemController<3, 2> as PackFlowControllers>::PackFlowControllerSignal;
 
     fn pack_flow_controller(&self, pack_id: usize) -> &Self::PackFlowControllerSignal {
-        self.acsc.pack_flow_controller(pack_id)
+        // // Pack ID 1 or 2
+        self.acsc[pack_id - 1].pack_flow_controller(pack_id - 1)
     }
 }
 
@@ -351,24 +491,112 @@ impl OutletAir for A320AirConditioningSystem {
     fn outlet_air(&self) -> Air {
         let mut outlet_air = Air::new();
         outlet_air.set_flow_rate(
-            self.acsc.individual_pack_flow(Pack(1)) + self.acsc.individual_pack_flow(Pack(2)),
+            self.acsc[0].individual_pack_flow() + self.acsc[1].individual_pack_flow(),
         );
         outlet_air.set_pressure(self.trim_air_system.trim_air_outlet_pressure());
         outlet_air.set_temperature(self.duct_temperature().iter().average());
 
         outlet_air
+
+        // TODO: This should use self.trim_air_system.outlet_air()
     }
 }
 
+// This is not used in the A320
+impl VcmShared for A320AirConditioningSystem {}
+
 impl SimulationElement for A320AirConditioningSystem {
     fn accept<V: SimulationElementVisitor>(&mut self, visitor: &mut V) {
-        self.acsc.accept(visitor);
+        accept_iterable!(self.acs_interface, visitor);
+        accept_iterable!(self.acsc, visitor);
         self.trim_air_system.accept(visitor);
         accept_iterable!(self.cabin_fans, visitor);
+        accept_iterable!(self.packs, visitor);
 
         self.air_conditioning_overhead.accept(visitor);
 
         visitor.visit(self);
+    }
+}
+
+struct AirConditioningSystemInterfaceUnit {
+    discrete_word_1_id: VariableIdentifier,
+    discrete_word_2_id: VariableIdentifier,
+
+    cabin_zones: [ZoneType; 3],
+    discrete_word_1: Arinc429Word<u32>,
+    discrete_word_2: Arinc429Word<u32>,
+}
+
+impl AirConditioningSystemInterfaceUnit {
+    fn new(context: &mut InitContext, acsc_id: AcscId, cabin_zones: &[ZoneType; 3]) -> Self {
+        Self {
+            discrete_word_1_id: context
+                .get_identifier(format!("COND_ACSC_{}_DISCRETE_WORD_1", acsc_id)),
+            discrete_word_2_id: context
+                .get_identifier(format!("COND_ACSC_{}_DISCRETE_WORD_2", acsc_id)),
+
+            cabin_zones: *cabin_zones,
+            discrete_word_1: Arinc429Word::new(0, SignStatus::NoComputedData),
+            discrete_word_2: Arinc429Word::new(0, SignStatus::NoComputedData),
+        }
+    }
+
+    fn update(
+        &mut self,
+        acs_overhead: &impl AirConditioningOverheadShared,
+        acsc: &AirConditioningSystemController<3, 2>,
+        cabin_fans: &[CabinFan; 2],
+        trim_air_system: &TrimAirSystem<3, 2>,
+    ) {
+        let duct_overheat = self.cabin_zones.map(|zone| acsc.duct_overheat(zone.id()));
+        let trim_air_valve_fault = self
+            .cabin_zones
+            .map(|zone| trim_air_system.trim_air_valve_has_fault(zone.id()));
+
+        if acsc.both_channels_failure() {
+            self.discrete_word_1 = Arinc429Word::new(0, SignStatus::FailureWarning);
+            self.discrete_word_2 = Arinc429Word::new(0, SignStatus::FailureWarning);
+        } else {
+            self.discrete_word_1 = Arinc429Word::new(0, SignStatus::NormalOperation);
+            self.discrete_word_2 = Arinc429Word::new(0, SignStatus::NormalOperation);
+
+            self.discrete_word_1.set_bit(11, duct_overheat[0]);
+            self.discrete_word_1.set_bit(12, duct_overheat[1]);
+            self.discrete_word_1.set_bit(13, duct_overheat[2]);
+            self.discrete_word_1
+                .set_bit(18, trim_air_system.trim_air_high_pressure());
+            self.discrete_word_1.set_bit(19, acsc.active_channel_1());
+            self.discrete_word_1
+                .set_bit(20, !acsc.trim_air_pressure_regulating_valve_is_open());
+            self.discrete_word_1.set_bit(21, acsc.channel_1_inop());
+            self.discrete_word_1.set_bit(22, acsc.channel_2_inop());
+            self.discrete_word_1
+                .set_bit(23, acs_overhead.hot_air_pushbutton_is_on(1));
+            self.discrete_word_1.set_bit(24, acsc.galley_fan_fault());
+            self.discrete_word_1.set_bit(25, cabin_fans[0].has_fault());
+            self.discrete_word_1.set_bit(26, cabin_fans[1].has_fault());
+            self.discrete_word_1
+                .set_bit(27, acsc.taprv_position_disagrees());
+            self.discrete_word_1.set_bit(
+                28,
+                trim_air_valve_fault.iter().any(|&t| t) || trim_air_system.trim_air_high_pressure(),
+            );
+            self.discrete_word_1.set_bit(29, true); // Permanently true
+
+            self.discrete_word_2.set_bit(18, trim_air_valve_fault[0]);
+            self.discrete_word_2.set_bit(19, trim_air_valve_fault[1]);
+            self.discrete_word_2.set_bit(20, trim_air_valve_fault[2]);
+            // 23 - Both packs off
+            // 24 - One pack operation
+        }
+    }
+}
+
+impl SimulationElement for AirConditioningSystemInterfaceUnit {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(&self.discrete_word_1_id, self.discrete_word_1);
+        writer.write(&self.discrete_word_2_id, self.discrete_word_2);
     }
 }
 
@@ -412,6 +640,10 @@ impl<const ZONES: usize> A320AirConditioningSystemOverhead<ZONES> {
             .enumerate()
             .for_each(|(index, pushbutton)| pushbutton.set_fault(pb_has_fault[index]));
     }
+
+    fn set_hot_air_pushbutton_fault(&mut self, hot_air_pb_has_fault: bool) {
+        self.hot_air_pb.set_fault(hot_air_pb_has_fault);
+    }
 }
 
 impl<const ZONES: usize> AirConditioningOverheadShared
@@ -427,7 +659,7 @@ impl<const ZONES: usize> AirConditioningOverheadShared
         self.pack_pbs.iter().map(|pack| pack.is_on()).collect()
     }
 
-    fn hot_air_pushbutton_is_on(&self) -> bool {
+    fn hot_air_pushbutton_is_on(&self, _hot_air_id: usize) -> bool {
         self.hot_air_pb.is_on()
     }
 
@@ -618,8 +850,10 @@ struct A320PressurizationConstants;
 
 impl PressurizationConstants for A320PressurizationConstants {
     // Volume data from A320 AIRCRAFT CHARACTERISTICS - AIRPORT AND MAINTENANCE PLANNING
-    const CABIN_VOLUME_CUBIC_METER: f64 = 139.; // m3
+    const CABIN_ZONE_VOLUME_CUBIC_METER: f64 = 139.; // m3
     const COCKPIT_VOLUME_CUBIC_METER: f64 = 9.; // m3
+    const FWD_CARGO_ZONE_VOLUME_CUBIC_METER: f64 = 0.; // m3 Not used in A320
+    const BULK_CARGO_ZONE_VOLUME_CUBIC_METER: f64 = 0.; // m3 Not used in A320
     const PRESSURIZED_FUSELAGE_VOLUME_CUBIC_METER: f64 = 330.; // m3
     const CABIN_LEAKAGE_AREA: f64 = 0.0003; // m2
     const OUTFLOW_VALVE_SIZE: f64 = 0.05; // m2

@@ -13,7 +13,7 @@ on:
 
 jobs:
   build-ingamepanels-checklist-fix:
-    # Prevent running this on forks 
+    # Prevent running this on forks
     if: github.repository_owner == 'flybywiresim'
     name: 'Build InGamePanels Checklist Fix'
     runs-on: ubuntu-latest
@@ -38,7 +38,7 @@ jobs:
           echo LOCALAZY_READ_KEY=${{ secrets.LOCALAZY_READ_KEY }} >> .env
       - name: Build In-Game Panels Checklist Fix
         run: |
-          ./scripts/dev-env/run.sh ./scripts/setup.sh
+          ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
           ./scripts/dev-env/run.sh ./scripts/build_ingamepanels_checklist_fix.sh --no-tty -j 4
       - name: Build ZIP files
         run: |

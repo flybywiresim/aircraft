@@ -224,6 +224,10 @@ impl FuelPayload for A380Fuel {
     fn fore_aft_center_of_gravity(&self) -> f64 {
         self.fore_aft_center_of_gravity()
     }
+
+    fn tank_mass(&self, t: usize) -> Mass {
+        self.fuel_system.tank_mass(t)
+    }
 }
 impl FuelCG for A380Fuel {
     fn center_of_gravity(&self) -> Vector3<f64> {

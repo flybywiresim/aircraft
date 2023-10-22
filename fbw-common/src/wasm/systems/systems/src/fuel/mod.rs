@@ -11,6 +11,9 @@ pub const FUEL_GALLONS_TO_KG: f64 = 3.039075693483925;
 pub trait FuelPayload {
     fn total_load(&self) -> Mass;
     fn fore_aft_center_of_gravity(&self) -> f64;
+    fn tank_mass(&self, _t: usize) -> Mass {
+        Mass::default()
+    }
 }
 
 pub trait FuelCG {
@@ -95,6 +98,10 @@ impl<const N: usize> FuelSystem<N> {
         } else {
             Vector3::zeros()
         }
+    }
+
+    pub fn tank_mass(&self, t: usize) -> Mass {
+        self.fuel_tanks[t].quantity()
     }
 }
 impl<const N: usize> SimulationElement for FuelSystem<N> {
