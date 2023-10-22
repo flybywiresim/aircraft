@@ -58,6 +58,7 @@
 1. [EFB/ATSU] Use MSFS METAR data rather than FSX cloud data from FBW API - @tracernz (Mike)
 1. [APU] Added xfeed APU fuel capabilities - @Taz5150 (TazX [Z+1]#0405)
 1. [EFB/ATSU] Added NOAA (aviationweather.gov) as a METAR source - @tracernz (Mike)
+1. [EFB] Fixed the main page and landing calculator to use the selected METAR source - @tracernz (Mike)
 
 ## 0.10.0
 

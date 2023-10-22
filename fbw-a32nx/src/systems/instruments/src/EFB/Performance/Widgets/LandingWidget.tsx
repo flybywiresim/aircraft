@@ -30,7 +30,9 @@
  */
 
 import React, { FC, useState } from 'react';
-import { Units, MetarParserType, useSimVar, usePersistentProperty, parseMetar } from '@flybywiresim/fbw-sdk';
+import { Metar as FbwApiMetar } from '@flybywiresim/api-client';
+import { Metar as MsfsMetar } from '@microsoft/msfs-sdk';
+import { Units, MetarParserType, useSimVar, usePersistentProperty, parseMetar, ConfigWeatherMap } from '@flybywiresim/fbw-sdk';
 import { toast } from 'react-toastify';
 import { Calculator, CloudArrowDown, Trash } from 'react-bootstrap-icons';
 import { t } from '../../translation';
@@ -78,6 +80,7 @@ export const LandingWidget = () => {
 
     const [totalWeight] = useSimVar('TOTAL WEIGHT', 'Pounds', 1000);
     const [autoFillSource, setAutoFillSource] = useState<'METAR' | 'OFP'>('OFP');
+    const [metarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
 
     const { usingMetric } = Units;
 
@@ -157,28 +160,45 @@ export const LandingWidget = () => {
     const syncValuesWithApiMetar = async (icao: string): Promise<void> => {
         if (!isValidIcao(icao)) return;
 
-        fetch(`https://api.flybywiresim.com/metar/${icao}`)
-            .then((res) => {
-                if (res.ok) {
-                    return res.json();
+        let parsedMetar: MetarParserType | undefined = undefined;
+
+        // Comes from the sim rather than the FBW API
+        if (metarSource === 'MSFS') {
+            let metar: MsfsMetar;
+            try {
+                metar = await Coherent.call('GET_METAR_BY_IDENT', icao);
+                if (metar.icao !== icao.toUpperCase()) {
+                    throw new Error('No METAR available');
                 }
-                return res.json().then((json) => {
-                    throw new Error(json.message);
-                });
-            }).then((json) => {
-                const parsedMetar: MetarParserType = parseMetar(json.metar);
+                parsedMetar = parseMetar(metar.metarString);
+            } catch (err) {
+                toast.error(err.message);
+            }
+        } else {
+            try {
+                const response = await FbwApiMetar.get(icao, ConfigWeatherMap[metarSource]);
+                if (!response.metar) {
+                    throw new Error('No METAR available');
+                }
+                parsedMetar = parseMetar(response.metar);
+            } catch (err) {
+                toast.error(err.message);
+            }
+        }
 
-                const weightKgs = Math.round(Units.poundToKilogram(totalWeight));
+        if (parsedMetar === undefined) {
+            return;
+        }
 
-                dispatch(setLandingValues({
-                    weight: weightKgs,
-                    windDirection: parsedMetar.wind.degrees,
-                    windMagnitude: parsedMetar.wind.speed_kts,
-                    temperature: parsedMetar.temperature.celsius,
-                    pressure: parsedMetar.barometer.mb,
-                }));
-            })
-            .catch((err) => toast.error(err.message));
+        const weightKgs = Math.round(Units.poundToKilogram(totalWeight));
+
+        dispatch(setLandingValues({
+            weight: weightKgs,
+            windDirection: parsedMetar.wind.degrees,
+            windMagnitude: parsedMetar.wind.speed_kts,
+            temperature: parsedMetar.temperature.celsius,
+            pressure: parsedMetar.barometer.mb,
+        }));
     };
 
     const isValidIcao = (icao: string): boolean => icao.length === 4;
