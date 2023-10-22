@@ -11,6 +11,7 @@ use crate::{
         ContactorSignal, ControllerSignal, ElectricalBusType, ElectricalBuses, PneumaticValve,
     },
     simulation::{SimulationElement, SimulatorWriter, UpdateContext, Write},
+    failures::{Failure, FailureType},
 };
 use std::time::Duration;
 use uom::si::{
@@ -47,6 +48,7 @@ pub(super) struct ElectronicControlBox {
     egt_warning_temperature: ThermodynamicTemperature,
     n_above_95_duration: Duration,
     fire_button_is_released: bool,
+    start_motor_failure: Failure,
 }
 impl ElectronicControlBox {
     const RUNNING_WARNING_EGT: f64 = 682.;
@@ -75,6 +77,7 @@ impl ElectronicControlBox {
             master_is_on: false,
             start_is_on: false,
             start_motor_is_powered: false,
+            start_motor_failure: Failure::new(FailureType::ApuStartMotorFailure),
             n: Ratio::new::<percent>(0.),
             bleed_is_on: false,
             bleed_air_valve_last_open_time_ago: Duration::from_secs(1000),
@@ -273,7 +276,11 @@ impl ControllerSignal<ContactorSignal> for ElectronicControlBox {
                     self.master_is_on && self.start_is_on && self.air_intake_flap_is_fully_open()
                 } =>
             {
-                Some(ContactorSignal::Close)
+                if !self.start_motor_failure.is_active() {
+                    Some(ContactorSignal::Close)
+                } else {
+                    None // TODO: Activate FAULT light
+                }
             }
             TurbineState::Starting
                 if {
@@ -281,7 +288,11 @@ impl ControllerSignal<ContactorSignal> for ElectronicControlBox {
                         && self.n.get::<percent>() < Self::START_MOTOR_POWERED_UNTIL_N
                 } =>
             {
-                Some(ContactorSignal::Close)
+                if !self.start_motor_failure.is_active() {
+                    Some(ContactorSignal::Close)
+                } else {
+                    None // TODO: Activate FAULT light
+                }
             }
             _ => Some(ContactorSignal::Open),
         }
@@ -346,6 +357,10 @@ impl ControllerSignal<ApuBleedAirValveSignal> for ElectronicControlBox {
     }
 }
 impl SimulationElement for ElectronicControlBox {
+    fn accept<T: crate::simulation::SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        self.start_motor_failure.accept(visitor);
+        visitor.visit(self);
+    }
     fn write(&self, writer: &mut SimulatorWriter) {
         let ssm = if self.is_on() {
             SignStatus::NormalOperation
@@ -405,4 +420,5 @@ enum ApuFault {
     ApuFire,
     FuelLowPressure,
     DcPowerLoss,
+    ApuStartMotorFailure,
 }
