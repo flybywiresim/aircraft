@@ -87,12 +87,10 @@ export const AtsuAocPage = () => {
         { name: 'MSFS', setting: 'MSFS' },
         { name: 'NOAA', setting: 'NOAA' },
         { name: 'PilotEdge', setting: 'PILOTEDGE' },
-        { name: 'IVAO', setting: 'IVAO' },
         { name: 'VATSIM', setting: 'VATSIM' },
     ];
 
     const tafSourceButtons: ButtonType[] = [
-        { name: 'IVAO', setting: 'IVAO' },
         { name: 'NOAA', setting: 'NOAA' },
     ];
 
