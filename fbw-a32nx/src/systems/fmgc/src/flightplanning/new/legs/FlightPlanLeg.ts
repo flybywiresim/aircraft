@@ -28,6 +28,7 @@ import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
 import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
 import { MagVar } from '@microsoft/msfs-sdk';
 import { AltitudeConstraint, ConstraintUtils, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
+import { HoldUtils } from '@fmgc/flightplanning/data/hold';
 
 /**
  * A serialized flight plan leg, to be sent across FMSes
@@ -72,6 +73,10 @@ export class FlightPlanLeg {
 
     isDiscontinuity: false = false
 
+    /**
+     * This should always correspond to the fields in the definition
+     * FIXME: Think about removing this or making it a getter only
+     */
     defaultHold: HoldData | undefined = undefined;
 
     modifiedHold: HoldData | undefined = undefined;
@@ -290,6 +295,7 @@ export class FlightPlanLeg {
 
         const flightPlanLeg = new FlightPlanLeg(segment, procedureLeg, ident, annotation, undefined, procedureLeg.rnp, procedureLeg.overfly);
 
+        flightPlanLeg.defaultHold = HoldUtils.parseHoldFromProcedureLeg(procedureLeg);
         flightPlanLeg.constraintType = constraintType;
 
         return flightPlanLeg;
