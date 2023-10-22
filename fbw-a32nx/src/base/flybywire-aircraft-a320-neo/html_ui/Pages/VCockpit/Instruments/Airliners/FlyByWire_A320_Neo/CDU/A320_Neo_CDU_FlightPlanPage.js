@@ -8,7 +8,7 @@ const Markers = {
     FPLN_DISCONTINUITY: ["---F-PLN DISCONTINUITY--"],
     END_OF_FPLN:        ["------END OF F-PLN------"],
     NO_ALTN_FPLN:       ["-----NO ALTN F-PLN------"],
-    END_OF_ALTN_FPLN:   ["---END OF ALT F-PLN----"],
+    END_OF_ALTN_FPLN:   ["---END OF ALTN F-PLN----"],
     TOO_STEEP_PATH:     ["-----TOO STEEP PATH-----"]
 };
 
