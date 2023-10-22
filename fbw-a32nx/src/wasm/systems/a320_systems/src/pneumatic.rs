@@ -1885,7 +1885,7 @@ pub mod tests {
     use ntest::assert_about_eq;
     use systems::{
         air_conditioning::{AdirsToAirCondInterface, PackFlowControllers, ZoneType},
-        apu::AirStarterUnit,
+        air_starter_unit::AirStarterUnit,
         electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
         engine::leap_engine::LeapEngine,
         failures::FailureType,

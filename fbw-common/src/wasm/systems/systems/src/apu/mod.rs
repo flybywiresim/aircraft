@@ -11,14 +11,13 @@ use crate::{
         ContactorSignal, ControllerSignal, ElectricalBusType,
     },
     simulation::{
-        Read, SimulationElement, SimulationElementVisitor, SimulatorReader, SimulatorWriter,
-        UpdateContext, Write,
+        SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext, Write,
     },
 };
 #[cfg(test)]
 use std::time::Duration;
+use uom::si::f64::*;
 use uom::si::thermodynamic_temperature::degree_celsius;
-use uom::si::{f64::*, pressure::psi};
 
 mod air_intake_flap;
 mod aps3200;
