@@ -133,6 +133,10 @@ impl ElectronicControlBox {
         {
             self.fault = Some(ApuFault::DcPowerLoss);
         }
+
+        if self.start_motor_failure.is_active() && self.master_is_on && self.start_is_on && self.n.get::<percent>() < Self::START_MOTOR_POWERED_UNTIL_N {
+            self.fault = Some(ApuFault::ApuStartMotorFailure);
+        }
     }
 
     pub fn update(&mut self, context: &UpdateContext, turbine: &dyn Turbine) {
@@ -273,26 +277,18 @@ impl ControllerSignal<ContactorSignal> for ElectronicControlBox {
         match self.turbine_state {
             TurbineState::Shutdown
                 if {
-                    self.master_is_on && self.start_is_on && self.air_intake_flap_is_fully_open()
+                    self.master_is_on && self.start_is_on && self.air_intake_flap_is_fully_open() && !self.start_motor_failure.is_active()
                 } =>
             {
-                if !self.start_motor_failure.is_active() {
-                    Some(ContactorSignal::Close)
-                } else {
-                    None // TODO: Activate FAULT light
-                }
+                Some(ContactorSignal::Close)
             }
             TurbineState::Starting
                 if {
                     self.turbine_state == TurbineState::Starting
-                        && self.n.get::<percent>() < Self::START_MOTOR_POWERED_UNTIL_N
+                        && self.n.get::<percent>() < Self::START_MOTOR_POWERED_UNTIL_N && !self.start_motor_failure.is_active()
                 } =>
             {
-                if !self.start_motor_failure.is_active() {
-                    Some(ContactorSignal::Close)
-                } else {
-                    None // TODO: Activate FAULT light
-                }
+                Some(ContactorSignal::Close)
             }
             _ => Some(ContactorSignal::Open),
         }
