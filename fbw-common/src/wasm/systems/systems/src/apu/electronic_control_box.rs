@@ -77,7 +77,7 @@ impl ElectronicControlBox {
             master_is_on: false,
             start_is_on: false,
             start_motor_is_powered: false,
-            start_motor_failure: Failure::new(FailureType::ApuStartMotorFailure),
+            start_motor_failure: Failure::new(FailureType::ApuStartMotor),
             n: Ratio::new::<percent>(0.),
             bleed_is_on: false,
             bleed_air_valve_last_open_time_ago: Duration::from_secs(1000),
@@ -135,7 +135,7 @@ impl ElectronicControlBox {
         }
 
         if self.start_motor_failure.is_active() && self.master_is_on && self.start_is_on && self.n.get::<percent>() < Self::START_MOTOR_POWERED_UNTIL_N {
-            self.fault = Some(ApuFault::ApuStartMotorFailure);
+            self.fault = Some(ApuFault::ApuStartMotor);
         }
     }
 
@@ -416,5 +416,5 @@ enum ApuFault {
     ApuFire,
     FuelLowPressure,
     DcPowerLoss,
-    ApuStartMotorFailure,
+    ApuStartMotor,
 }

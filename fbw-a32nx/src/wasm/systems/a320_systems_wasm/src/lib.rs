@@ -277,7 +277,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
         (32_150, FailureType::BrakeAccumulatorGasLeak),
         (34_000, FailureType::RadioAltimeter(1)),
         (34_001, FailureType::RadioAltimeter(2)),
-        (49_000, FailureType::ApuStartMotorFailure),
+        (49_000, FailureType::ApuStartMotor),
     ])
     .provides_aircraft_variable("ACCELERATION BODY X", "feet per second squared", 0)?
     .provides_aircraft_variable("ACCELERATION BODY Y", "feet per second squared", 0)?
