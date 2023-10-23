@@ -58,6 +58,8 @@
 1. [EFB/ATSU] Use MSFS METAR data rather than FSX cloud data from FBW API - @tracernz (Mike)
 1. [APU] Added xfeed APU fuel capabilities - @Taz5150 (TazX [Z+1]#0405)
 1. [BLEED] Add Air starter unit to enable ground starts - @Maximilian-Reuter (\_Chaoz_)
+1. [ATSU] Fix ATIS Auto Update LSK6L to ATIS page instead of ATC MENU - @BravoMike99 (bruno_pt99)
+
 
 ## 0.10.0
 
