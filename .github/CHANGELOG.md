@@ -5,6 +5,11 @@
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
+## 0.12.0
+
+1. [PFD] Graphical improvements and updates to the FMA - @BravoMike99 (bruno_pt99)
+1. [PFD] Hide '+' sign on V/S & FPA FMA if selected value is 0 - @BravoMike99 (bruno_pt99)
+
 ## 0.11.0
 
 1. [FMS] Implement vertical navigation functions - @BlueberryKing (BlueberryKing)
@@ -54,12 +59,10 @@
 1. [MCDU] Fixed the FMGC annunciator light not illuminating - @tracernz (Mike)
 1. [COND] Add Air Conditioning systems failures - @mjuhe (Miquel Juhe)
 1. [COND] Fixed Temp-Indication on CRZ page showing cockpit temperature for fwd and aft cabin - @cptnuss-ops (Lukas)
-1. [PFD] Decreased font size of armed FMAs - @BravoMike99 (bruno_pt99)
-1. [PFD] Changed CLB armed FMA position acoording to newer DMCs - @BravoMike99 (bruno_pt99)
-1. [PFD] Corrected mode change FMA boxes length for thrust/autobrake, vertical and lateral modes - @BravoMike99 (bruno_pt99)
-1. [PFD] Reworked FLX FMA  & "MAN" text alignment in remaining thrust modes - @BravoMike99 (bruno_pt99)
-1. [PFD] Hide '+' sign on V/S & FPA FMA if selected value is 0 - @BravoMike99 (bruno_pt99)
-1. [PFD] Decreased font size of THR IDLE, V/S & FPA FMA - @BravoMike99 (bruno_pt99)
+1. [FMS] Show ILS ident and frequency on ARRIVAL page - @tracernz (Mike)
+1. [EFB/ATSU] Use MSFS METAR data rather than FSX cloud data from FBW API - @tracernz (Mike)
+1. [APU] Added xfeed APU fuel capabilities - @Taz5150 (TazX [Z+1]#0405)
+1. [ATSU] Fix ATIS Auto Update LSK6L to ATIS page instead of ATC MENU - @BravoMike99 (bruno_pt99)
 
 ## 0.10.0
 

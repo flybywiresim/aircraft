@@ -5,7 +5,7 @@
 import { NdSymbol, NdSymbolTypeFlags } from '@shared/NavigationDisplay';
 import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { MapLayer } from './MapLayer';
-import { MapParameters } from '../../../ND/utils/MapParameters';
+import { MapParameters } from '../utils/MapParameters';
 import { PaintUtils } from './PaintUtils';
 
 export class RunwayLayer implements MapLayer<NdSymbol> {

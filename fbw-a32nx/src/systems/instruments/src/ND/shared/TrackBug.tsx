@@ -3,6 +3,7 @@ import {
     DisplayComponent,
     EventBus,
     FSComponent,
+    MappedSubject,
     Subject,
     Subscribable,
     VNode,
@@ -17,6 +18,7 @@ import { FcuSimVars } from '../../MsfsAvionicsCommon/providers/FcuBusPublisher';
 export interface TrackBugProps {
     bus: EventBus,
     isUsingTrackUpMode: Subscribable<boolean>,
+    ndMode: Subscribable<EfisNdMode>,
 }
 
 export class TrackBug extends DisplayComponent<TrackBugProps> {
@@ -29,6 +31,10 @@ export class TrackBug extends DisplayComponent<TrackBugProps> {
     private readonly diffSubject = Subject.create(0);
 
     private readonly bugShown = Subject.create(false);
+
+    private readonly transformSubject = MappedSubject.create(([diff, ndMode]) => {
+        return `rotate(${diff} 384 ${ndMode === EfisNdMode.ARC ? 620 : 384})`;
+    }, this.diffSubject, this.props.ndMode);
 
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
@@ -69,16 +75,16 @@ export class TrackBug extends DisplayComponent<TrackBugProps> {
         return (
             <g
                 visibility={this.bugShown.map((v) => (v ? 'inherit' : 'hidden'))}
-                transform={this.diffSubject.map((diff) => `rotate(${diff} 384 620)`)}
+                transform={this.transformSubject}
             >
                 <path
-                    d="M384,128 L378,138 L384,148 L390,138 L384,128"
+                    d={this.ndMode.map((ndMode) => (ndMode !== EfisNdMode.ARC ? 'M384,134 L379,143 L384,152 L389,143 L384,134' : 'M384,128 L378,138 L384,148 L390,138 L384,128'))}
                     class="rounded shadow"
                     stroke-width={4.5}
                 />
                 <path
-                    d="M384,128 L378,138 L384,148 L390,138 L384,128"
-                    class="rounded Green"
+                    d={this.ndMode.map((ndMode) => (ndMode !== EfisNdMode.ARC ? 'M384,134 L379,143 L384,152 L389,143 L384,134' : 'M384,128 L378,138 L384,148 L390,138 L384,128'))}
+                    class="Green rounded"
                     stroke-width={3}
                 />
             </g>
