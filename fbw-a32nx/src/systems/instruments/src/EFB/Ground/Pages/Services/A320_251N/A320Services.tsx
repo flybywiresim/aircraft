@@ -14,6 +14,7 @@ import {
     TriangleFill as Chock,
     Truck,
     VinylFill as Wheel,
+    Fan,
 } from 'react-bootstrap-icons';
 import { ActionCreatorWithOptionalPayload } from '@reduxjs/toolkit';
 import { t } from '../../../../translation';
@@ -572,7 +573,7 @@ export const A320Services: React.FC = () => {
                     state={asuButtonState}
                     onClick={() => handleButtonClick(ServiceButton.AirStarterUnit)}
                 >
-                    <PlugFill size={36} />
+                    <Fan size={36} />
                 </GroundServiceButton>
 
             </ServiceButtonWrapper>
