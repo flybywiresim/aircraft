@@ -1,9 +1,13 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import React from 'react';
 import { NavigraphAuthUIWrapper } from '../../../Apis/Navigraph/Components/Authentication';
 import { NavigraphChartUI } from './NavigraphChartUI';
 
 export const NavigraphPage = () => (
-    <NavigraphAuthUIWrapper>
+    <NavigraphAuthUIWrapper showLogin={false}>
         <NavigraphChartUI />
     </NavigraphAuthUIWrapper>
 );

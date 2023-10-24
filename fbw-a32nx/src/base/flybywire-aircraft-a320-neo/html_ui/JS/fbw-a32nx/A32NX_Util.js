@@ -170,6 +170,20 @@ A32NX_Util.getIsaTempDeviation = (alt = Simplane.getAltitude(), sat = Simplane.g
 };
 
 /**
+* Get the magvar to use for radials from a wp.
+* @param {WayPoint} wp The waypoint.
+*/
+A32NX_Util.getRadialMagVar = (wp) => {
+   if (wp.infos.icao.charAt(0) === "V") {
+       if (wp.infos.magneticVariation !== undefined) {
+           return 360 - wp.infos.magneticVariation;
+       }
+   }
+
+   return Facilities.getMagVar(wp.infos.coordinates.lat, wp.infos.coordinates.long);
+}
+
+/**
  * Utility class to throttle instrument updates
  */
 class UpdateThrottler {

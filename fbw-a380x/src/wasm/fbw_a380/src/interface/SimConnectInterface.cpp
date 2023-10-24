@@ -1108,26 +1108,6 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
   return SUCCEEDED(result);
 }
 
-bool SimConnectInterface::requestReadData() {
-  // check if we are connected
-  if (!isConnected) {
-    return false;
-  }
-
-  // request data
-  if (!requestData()) {
-    return false;
-  }
-
-  // read data
-  if (!readData()) {
-    return false;
-  }
-
-  // success
-  return true;
-}
-
 bool SimConnectInterface::requestData() {
   // check if we are connected
   if (!isConnected) {
@@ -1135,7 +1115,7 @@ bool SimConnectInterface::requestData() {
   }
 
   // request data
-  HRESULT result = SimConnect_RequestDataOnSimObject(hSimConnect, 0, 0, SIMCONNECT_OBJECT_ID_USER, SIMCONNECT_PERIOD_ONCE);
+  HRESULT result = SimConnect_RequestDataOnSimObject(hSimConnect, 0, 0, SIMCONNECT_OBJECT_ID_USER, SIMCONNECT_PERIOD_VISUAL_FRAME);
 
   // check result of data request
   if (result != S_OK) {

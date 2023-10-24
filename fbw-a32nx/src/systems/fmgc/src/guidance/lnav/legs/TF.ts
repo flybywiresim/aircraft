@@ -37,7 +37,7 @@ export class TFLeg extends XFLeg {
         this.from = from;
         this.to = to;
         this.segment = segment;
-        this.constraintType = to.constraintType;
+        this.constraintType = to.additionalData.constraintType;
         this.course = Avionics.Utils.computeGreatCircleHeading(
             this.from.infos.coordinates,
             this.to.infos.coordinates,

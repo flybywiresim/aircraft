@@ -241,19 +241,28 @@ const ValveGroup = ({ x, y, engineNumber, fadecOn }: ComponentPositionProps) => 
     const [engSelectorPosition] = useSimVar('L:XMLVAR_ENG_MODE_SEL', 'Enum');
     const [igniterAactive] = useSimVar(`L:A32NX_FADEC_IGNITER_A_ACTIVE_ENG${engineNumber}`, 'bool', 300);
     const [igniterBactive] = useSimVar(`L:A32NX_FADEC_IGNITER_B_ACTIVE_ENG${engineNumber}`, 'bool', 300);
-    const [apuBleedPressure] = useSimVar('L:APU_BLEED_PRESSURE', 'psi', 250);
+    const [precoolerInletPressure] = useSimVar(`L:A32NX_PNEU_ENG_${engineNumber}_REGULATED_TRANSDUCER_PRESSURE`, 'psi', 250);
+    const [bleedOverpressure] = useSimVar(`L:A32NX_PNEU_ENG_${engineNumber}_OVERPRESSURE`, 'bool', 250);
+
+    // From a document
+    const LOW_BLEED_PRESSURE_THRESHOLD = 21;
+    // TODO: Should be ARINC429. For now, -1 indicates a failed state
+    const pressureIsValid = precoolerInletPressure >= 0;
+    const precoolerInletPressureTwo = Math.max(0, Math.min(512, 2 * Math.round(precoolerInletPressure / 2)));
+    const pressureIndicationAmber = !pressureIsValid || (precoolerInletPressureTwo < LOW_BLEED_PRESSURE_THRESHOLD && n2Percent >= 10 && isValveOpen) || bleedOverpressure;
 
     const activeVisibility = fadecOn ? 'visible' : 'hidden';
     const inactiveVisibility = fadecOn ? 'hidden' : 'visible';
     // This useEffect ensures that the valve is only opened if the engine mode selector is set to IGN/START, the engine is starting, and n2% is below 50
     useEffect(() => {
+        let timeout: number;
         if (isEngineStarting && n2Percent < 50 && engSelectorPosition === 2) {
-            setTimeout(() => setIsValveOpen(true), 1200);
+            timeout = setTimeout(() => setIsValveOpen(true), 1200);
         } else {
-            setTimeout(() => setIsValveOpen(false), 1200);
+            timeout = setTimeout(() => setIsValveOpen(false), 1200);
         }
 
-        return () => clearTimeout();
+        return () => clearTimeout(timeout);
     }, [isEngineStarting, engSelectorPosition]);
 
     useEffect(() => {
@@ -278,7 +287,7 @@ const ValveGroup = ({ x, y, engineNumber, fadecOn }: ComponentPositionProps) => 
                 </g>
                 <line x1={x} y1={y + 43} x2={x} y2={y + 50} />
             </g>
-            <text x={x} y={y + 65} className="FillGreen FontLarge TextCenter">{apuBleedPressure}</text>
+            <text x={x} y={y + 65} className={`${pressureIndicationAmber ? 'FillAmber' : 'FillGreen'} FontLarge TextCenter`}>{pressureIsValid ? precoolerInletPressureTwo : 'XX'}</text>
         </SvgGroup>
     );
 };
@@ -318,18 +327,21 @@ const EngineColumn = ({ x, y, engineNumber, fadecOn }: ComponentPositionProps) =
             setTempAmber(false);
         }
 
+        let timeout: number;
         if (engineOilTemperature > OIL_TEMP_HIGH_ADVISORY) {
-            setTimeout(() => {
+            timeout = setTimeout(() => {
                 if (engineOilTemperature > OIL_TEMP_HIGH_ADVISORY) {
                     setTempBeenAboveAdvisory(true);
                 }
             }, 900_000);
         } else {
-            clearTimeout();
+            if (timeout) {
+                clearTimeout(timeout);
+            }
             setTempBeenAboveAdvisory(false);
         }
 
-        return () => clearTimeout();
+        return () => clearTimeout(timeout);
     }, [engineOilTemperature]);
 
     useEffect(() => {

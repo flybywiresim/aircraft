@@ -6,23 +6,27 @@ import React, { FC, useState } from 'react';
 import { PencilSquare } from 'react-bootstrap-icons';
 import { useSimVar } from '@flybywiresim/fbw-sdk';
 import { t } from '../../translation';
-import DetentConfig from './DetentConfig';
+import { DetentConfig, DummyDetentConfig } from './DetentConfig';
 import { ThrottleSimvar } from './ThrottleSimVar';
 
 interface BaseThrottleConfigProps {
+    className?: string;
     throttleNumber: number;
-    throttleCount: number;
+    displayNumber: boolean;
     mappingsAxisOne: ThrottleSimvar[];
     mappingsAxisTwo?: ThrottleSimvar[];
     activeIndex: number;
+    reverseDisabled?: boolean;
 }
 
 export const BaseThrottleConfig: FC<BaseThrottleConfigProps> = ({
+    className,
     throttleNumber,
-    throttleCount,
+    displayNumber,
     mappingsAxisOne,
     mappingsAxisTwo,
     activeIndex,
+    reverseDisabled,
 }) => {
     const [throttlePosition] = useSimVar(`L:A32NX_THROTTLE_MAPPING_INPUT:${throttleNumber}`, 'number', 30);
     const [expertMode, setExpertMode] = useState(false);
@@ -31,7 +35,25 @@ export const BaseThrottleConfig: FC<BaseThrottleConfigProps> = ({
         <DetentConfig
             key={activeIndex}
             index={activeIndex}
-            barPosition={throttleNumber === 1 ? 'right' : 'left'}
+            throttlePosition={throttlePosition}
+            upperBoundDetentSetter={mappingsAxisTwo
+                ? [mappingsAxisOne[activeIndex].getHiSetter(), mappingsAxisTwo[activeIndex].getHiSetter()]
+                : [mappingsAxisOne[activeIndex].getHiSetter()]}
+            lowerBoundDetentSetter={mappingsAxisTwo
+                ? [mappingsAxisOne[activeIndex].getLowSetter(), mappingsAxisTwo[activeIndex].getLowSetter()]
+                : [mappingsAxisOne[activeIndex].getLowSetter()]}
+            lowerBoundDetentGetter={mappingsAxisOne[activeIndex].getLowGetter()}
+            upperBoundDetentGetter={mappingsAxisOne[activeIndex].getHiGetter()}
+            detentValue={mappingsAxisOne[activeIndex].getLowGetter()}
+            throttleNumber={throttleNumber}
+            expertMode={expertMode}
+        />
+    );
+
+    const dummyDetent = (
+        <DummyDetentConfig
+            key={activeIndex}
+            index={activeIndex}
             throttlePosition={throttlePosition}
             upperBoundDetentSetter={mappingsAxisTwo
                 ? [mappingsAxisOne[activeIndex].getHiSetter(), mappingsAxisTwo[activeIndex].getHiSetter()]
@@ -48,26 +70,27 @@ export const BaseThrottleConfig: FC<BaseThrottleConfigProps> = ({
     );
 
     return (
-        <div className="w-50">
-            <h1 className="mb-4 text-center">
+        <div className={className}>
+            <h1 className="mb-2 text-center">
                 {t('Settings.ThrottleConfig.Axis')}
                 {' '}
-                {throttleCount === 1 ? throttleNumber : '1 & 2'}
+                {displayNumber ? throttleNumber : ''}
             </h1>
-            <div className="px-4 pt-5 mt-4 rounded-lg border-2 border-theme-accent">
-                <div className="flex flex-row justify-center items-center space-x-2">
+            <div className="flex flex-col justify-center items-center px-2 pt-5 mt-4">
+                <div className="flex flex-row justify-center items-center space-x-2 w-60">
                     <p>
                         {t('Settings.ThrottleConfig.CurrentValue')}
                         :
                         {' '}
                         {throttlePosition.toFixed(2)}
                     </p>
-                    <PencilSquare className="text-theme-highlight" onMouseDown={() => setExpertMode(!expertMode)} size="1.5rem" stroke="1.5" />
+                    {!reverseDisabled || activeIndex >= 2 ? (
+                        <PencilSquare className="text-theme-highlight" onMouseDown={() => setExpertMode(!expertMode)} stroke="1.5" />
+                    ) : null}
                 </div>
-
                 <div className="flex flex-row">
                     <div className="flex flex-col justify-between items-center">
-                        {currentDetent}
+                        {(!reverseDisabled) || (activeIndex >= 2) ? currentDetent : dummyDetent}
                     </div>
                 </div>
             </div>

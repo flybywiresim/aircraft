@@ -20,3 +20,8 @@ Module to handle loading of passengers and cargo payload.
     |--------|--------------|--------------------|
     | 31     | 11111        | OXX XXX            |
     | 1983   | 011110111111 | XXX XXX<br>OXX XXO |
+
+
+## Pax Boarding Agents
+ - You can define multiple pax boarding agents, list the order of passenger stations in which each agent will prioritise boarding.
+ - i.e. for boarding from a door from the front of the aircraft, stations at the front will be prioritised => [0, 1, 2, 3, ...]

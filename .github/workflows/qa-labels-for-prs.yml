@@ -1,0 +1,22 @@
+on: issue_comment
+
+jobs:
+  pr_commented:
+    name: "QA Labels for PRs"
+    if: ${{ github.event.issue.pull_request }} # This job only runs for pull request comments 
+    runs-on: "ubuntu-latest" 
+    permissions: # This is required for the action to be able to add labels to the pull request
+      pull-requests: write # For adding labels, otherwise set to 'read'
+    steps:
+      - name: "PR QA Comments Helper"
+        uses: "auroraisluna/qa-labels-for-prs@v1.0.5" # Make sure to use the latest version available!
+        with:
+          repo-owner: "${{ github.event.repository.owner.login }}" 
+          repo-name: "${{ github.event.repository.name }}" 
+          pr-number: "${{ github.event.issue.number }}" 
+          github-token: "${{ secrets.GITHUB_TOKEN }}" 
+          label-pass: "QA Passed" # The label to add if the QA report comment contains the string "QA Passed"
+          label-fail: "QA Failed" # The label to add if the QA report comment contains the string "QA Failed"
+          label-rtt: "QA Ready to Test" # The label to add if the QA report comment contains the string "QA Ready to Test"
+          # fail-action-if-no-qacomment: true # Uncomment this line if you want the action to fail if there is no QA report comment
+          # fail-action-if-qa-failed: true # Uncomment this line if you want the action to fail if the QA report comment contains the string "QA Failed"

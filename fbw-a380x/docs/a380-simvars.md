@@ -92,6 +92,8 @@
         - UPPER_DECK_5
         - UPPER_DECK_6
         - UPPER_DECK_7
+        - CARGO_FWD
+        - CARGO_BULK
 
 - A32NX_COND_{id}_DUCT_TEMP
     - Degree Celsius
@@ -99,11 +101,62 @@
     - {id}
         - Same as A32NX_COND_{id}_TEMP
 
+- A32NX_COND_PACK_{id}_IS_OPERATING
+    - Bool
+    - True when the pack operates normally (at least one FCV is open)
+    - {id} 1 or 2
+
+- A32NX_COND_PACK_{id}_OUTLET_TEMPERATURE
+    - Degree Celsius
+    - Outlet temperature of the packs
+    - {id} 1 or 2
+
 - A32NX_COND_{id}_TRIM_AIR_VALVE_POSITION
     - Percentage
     - Percentage opening of each trim air valve (hot air)
     - {id}
         - Same as A32NX_COND_{id}_TEMP
+
+- A32NX_COND_HOT_AIR_VALVE_{id}_IS_ENABLED
+    - Bool
+    - True if the hot air valve {1 or 2} is enabled
+
+- A32NX_COND_HOT_AIR_VALVE_{id}_IS_OPEN
+    - Bool
+    - True if the hot air valve {1 or 2} is open
+
+- A32NX_COND_TADD_CHANNEL_FAILURE
+    - Number
+        - 0 if no failure
+        - 1 or 2 if single channel failure (for failed channel id)
+        - 3 if dual channel failure
+
+- A32NX_VENT_PRIMARY_FANS_ENABLED
+    - Bool
+    - True if the primary (high pressure) fans are enabled and operating normally
+
+- A32NX_VENT_{id}_EXTRACTION_FAN_ON
+    - Bool
+    - True when the the extraction fans of the fwd/bulk cargo compartment operate normally
+    - {id}
+        - FWD
+        - BULK
+
+- A32NX_VENT_{id}_ISOLATION_VALVE_OPEN
+    - Bool
+    - True when the isolation valves of the fwd/bulk cargo compartment are open
+    - {id}
+        - FWD
+        - BULK
+
+- A32NX_VENT_{id}_VCM_CHANNEL_FAILURE
+    - Number
+        - 0 if no failure
+        - 1 or 2 if single channel failure (for failed channel id)
+        - 3 if dual channel failure
+    - {id}
+        - FWD
+        - AFT
 
 - A32NX_OVHD_COND_{id}_SELECTOR_KNOB
     - Number (0 to 300)

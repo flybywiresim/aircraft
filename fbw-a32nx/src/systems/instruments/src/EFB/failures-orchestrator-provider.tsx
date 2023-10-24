@@ -15,6 +15,22 @@ interface FailuresOrchestratorContext {
 }
 
 const createOrchestrator = () => new FailuresOrchestrator('A32NX', [
+    [21, A320Failure.Acsc1Lane1, 'ACSC 1 Lane 1'],
+    [21, A320Failure.Acsc1Lane2, 'ACSC 1 Lane 2'],
+    [21, A320Failure.Acsc2Lane1, 'ACSC 2 Lane 1'],
+    [21, A320Failure.Acsc2Lane2, 'ACSC 2 Lane 2'],
+    [21, A320Failure.HotAir, 'Trim Air Pressure Regulating Valve'],
+    [21, A320Failure.TrimAirHighPressure, 'Trim Air System High Pressure'],
+    [21, A320Failure.CkptTrimAirFailure, 'Cockpit Trim Air Valve'],
+    [21, A320Failure.FwdTrimAirFailure, 'Forward Zone Trim Air Valve'],
+    [21, A320Failure.AftTrimAirFailure, 'Aft Zone Trim Air Valve'],
+    [21, A320Failure.CkptDuctOvht, 'Cockpit Duct Overheat'],
+    [21, A320Failure.FwdDuctOvht, 'Forward Zone Duct Overheat'],
+    [21, A320Failure.AftDuctOvht, 'Aft Zone Duct Overheat'],
+    [21, A320Failure.CabinFan1Failure, 'Cabin Fan 1'],
+    [21, A320Failure.CabinFan2Failure, 'Cabin Fan 2'],
+    [21, A320Failure.LabGalleyFan, 'Extraction Fan of lavatory and galley'],
+
     [22, A320Failure.Fac1Failure, 'FAC 1'],
     [22, A320Failure.Fac2Failure, 'FAC 2'],
 

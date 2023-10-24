@@ -299,7 +299,6 @@ pub struct EngineCompressionChamberController {
     target_temperature: ThermodynamicTemperature,
     n1_contribution_factor: f64,
     n2_contribution_factor: f64,
-    compression_factor: f64,
 }
 impl ControllerSignal<TargetPressureTemperatureSignal> for EngineCompressionChamberController {
     fn signal(&self) -> Option<TargetPressureTemperatureSignal> {
@@ -311,18 +310,15 @@ impl ControllerSignal<TargetPressureTemperatureSignal> for EngineCompressionCham
 }
 impl EngineCompressionChamberController {
     const HEAT_CAPACITY_RATIO: f64 = 1.4; // Adiabatic index of dry air
+    const INTAKE_EFFICIENCY: f64 = 0.93;
+    const COMPRESSOR_EFFICIENCY: f64 = 0.8;
 
-    pub fn new(
-        n1_contribution_factor: f64,
-        n2_contribution_factor: f64,
-        compression_factor: f64,
-    ) -> Self {
+    pub fn new(n1_contribution_factor: f64, n2_contribution_factor: f64) -> Self {
         Self {
             target_pressure: Pressure::default(),
             target_temperature: ThermodynamicTemperature::default(),
             n1_contribution_factor,
             n2_contribution_factor,
-            compression_factor,
         }
     }
 
@@ -331,23 +327,27 @@ impl EngineCompressionChamberController {
         context: &UpdateContext,
         engine: &(impl EngineCorrectedN1 + EngineCorrectedN2),
     ) {
-        let n1 = engine.corrected_n1().get::<ratio>();
-        let n2 = engine.corrected_n2().get::<ratio>();
+        // From https://liu.diva-portal.org/smash/get/diva2:1682001/FULLTEXT01.pdf
+        // The paper uses constant compression factors, the dependence on N1/N2 is made up.
+        let lp_cpr = (self.n1_contribution_factor * engine.corrected_n1().get::<ratio>()).exp();
+        let hp_cpr = (self.n2_contribution_factor * engine.corrected_n2().get::<ratio>()).exp();
 
-        let corrected_mach = f64::from(context.mach_number())
-            + self.n1_contribution_factor * n1
-            + self.n2_contribution_factor * n2;
+        let exponent = Self::HEAT_CAPACITY_RATIO / (Self::HEAT_CAPACITY_RATIO - 1.);
 
-        // Static pressure + compressionfactor * dynamic pressure
-        // Dynamic pressure from here: https://en.wikipedia.org/wiki/Mach_number
-        let total_pressure = (1.
-            + (self.compression_factor * Self::HEAT_CAPACITY_RATIO * corrected_mach.powi(2)) / 2.)
-            * context.ambient_pressure();
+        let relative_ram_rise =
+            (Self::HEAT_CAPACITY_RATIO - 1.) * f64::from(context.mach_number()).powi(2) / 2.;
 
-        self.target_temperature = context.ambient_temperature()
-            * (context.ambient_pressure().get::<pascal>() / total_pressure.get::<pascal>())
-                .powf(1. / Self::HEAT_CAPACITY_RATIO - 1.);
-        self.target_pressure = total_pressure;
+        let inlet_pressure = context.ambient_pressure()
+            * (1. + Self::INTAKE_EFFICIENCY * relative_ram_rise).powf(exponent);
+        let inlet_temperature = context.ambient_temperature() * (1. + relative_ram_rise);
+
+        let lpc_outlet_pressure = inlet_pressure * lp_cpr;
+        let lpc_outlet_temperature = inlet_temperature
+            * (1. + (lp_cpr.powf(1. / exponent) - 1.) / Self::COMPRESSOR_EFFICIENCY);
+
+        self.target_temperature = lpc_outlet_temperature
+            * (1. + (hp_cpr.powf(1. / exponent) - 1.) / Self::COMPRESSOR_EFFICIENCY);
+        self.target_pressure = hp_cpr * lpc_outlet_pressure;
     }
 }
 
@@ -849,6 +849,103 @@ impl ControllerSignal<Pressure> for DifferentialPressureTransducer {
     }
 }
 
+pub struct SolenoidSignal {
+    should_energize: bool,
+}
+impl SolenoidSignal {
+    pub fn energized() -> Self {
+        Self {
+            should_energize: true,
+        }
+    }
+
+    pub fn deenergized() -> Self {
+        Self {
+            should_energize: false,
+        }
+    }
+}
+
+pub struct BleedTemperatureSensor {
+    temperature_output: Option<ThermodynamicTemperature>,
+
+    powered_by: ElectricalBusType,
+    is_powered: bool,
+}
+impl BleedTemperatureSensor {
+    pub fn new(powered_by: ElectricalBusType) -> Self {
+        Self {
+            temperature_output: None,
+            powered_by,
+            is_powered: false,
+        }
+    }
+
+    pub fn update(&mut self, container: &impl PneumaticContainer) {
+        self.temperature_output = self.is_powered.then_some(container.temperature());
+    }
+}
+impl SimulationElement for BleedTemperatureSensor {
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        self.is_powered = buses.is_powered(self.powered_by);
+    }
+}
+impl ControllerSignal<ThermodynamicTemperature> for BleedTemperatureSensor {
+    fn signal(&self) -> Option<ThermodynamicTemperature> {
+        self.temperature_output
+    }
+}
+
+struct Solenoid {
+    is_energized: bool,
+    is_powered: bool,
+    powered_by: ElectricalBusType,
+}
+impl Solenoid {
+    fn new(powered_by: ElectricalBusType) -> Self {
+        Self {
+            is_energized: false,
+            is_powered: false,
+            powered_by,
+        }
+    }
+
+    fn update(&mut self, controller: &impl ControllerSignal<SolenoidSignal>) {
+        self.is_energized = if !self.is_powered {
+            false
+        } else if let Some(signal) = controller.signal() {
+            signal.should_energize
+        } else {
+            false
+        };
+    }
+
+    pub fn is_powered(&self) -> bool {
+        self.is_powered
+    }
+
+    fn is_energized(&self) -> bool {
+        self.is_energized
+    }
+}
+impl SimulationElement for Solenoid {
+    fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+        visitor.visit(self);
+    }
+
+    fn receive_power(&mut self, buses: &impl ElectricalBuses) {
+        self.is_powered = buses.is_powered(self.powered_by);
+
+        if !self.is_powered {
+            self.is_energized = false;
+        }
+    }
+}
+
+pub trait WingAntiIceSelected {
+    fn is_wai_selected(&self) -> bool;
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1006,8 +1103,7 @@ mod tests {
 
     #[test]
     fn engine_compression_chamber_signal_n1_dependence() {
-        let mut compression_chamber_controller =
-            EngineCompressionChamberController::new(1., 0., 1.);
+        let mut compression_chamber_controller = EngineCompressionChamberController::new(1., 0.);
         let engine = TestEngine::new(Ratio::new::<ratio>(0.2), Ratio::new::<ratio>(0.));
 
         let context = context(Duration::from_millis(1000), Length::new::<foot>(0.));
@@ -1027,8 +1123,7 @@ mod tests {
 
     #[test]
     fn engine_compression_chamber_signal_n2_dependence() {
-        let mut compression_chamber_controller =
-            EngineCompressionChamberController::new(0., 1., 1.);
+        let mut compression_chamber_controller = EngineCompressionChamberController::new(0., 1.);
         let engine = TestEngine::new(Ratio::new::<ratio>(0.), Ratio::new::<ratio>(0.2));
 
         let context = context(Duration::from_millis(1000), Length::new::<foot>(0.));
@@ -1049,8 +1144,7 @@ mod tests {
     #[test]
     fn engine_compression_chamber_pressure_cold_and_dark() {
         let engine = TestEngine::cold_dark();
-        let mut compression_chamber_controller =
-            EngineCompressionChamberController::new(0.5, 0.5, 2.);
+        let mut compression_chamber_controller = EngineCompressionChamberController::new(0.5, 0.5);
         let context = context(Duration::from_millis(1000), Length::new::<foot>(0.));
 
         compression_chamber_controller.update(&context, &engine);
@@ -1067,8 +1161,7 @@ mod tests {
     #[test]
     fn engine_compression_chamber_pressure_toga() {
         let engine = TestEngine::toga();
-        let mut compression_chamber_controller =
-            EngineCompressionChamberController::new(1., 1., 1.);
+        let mut compression_chamber_controller = EngineCompressionChamberController::new(1., 1.);
         let context = context(Duration::from_millis(1000), Length::new::<foot>(0.));
 
         compression_chamber_controller.update(&context, &engine);
@@ -1085,8 +1178,7 @@ mod tests {
     #[test]
     fn engine_compression_chamber_pressure_idle() {
         let engine = TestEngine::idle();
-        let mut compression_chamber_controller =
-            EngineCompressionChamberController::new(1., 1., 1.);
+        let mut compression_chamber_controller = EngineCompressionChamberController::new(1., 1.);
         let context = context(Duration::from_millis(1000), Length::new::<foot>(0.));
 
         compression_chamber_controller.update(&context, &engine);
@@ -1103,8 +1195,7 @@ mod tests {
     #[test]
     fn engine_compression_chamber_stabilises() {
         let engine = TestEngine::toga();
-        let mut compression_chamber_controller =
-            EngineCompressionChamberController::new(1., 1., 1.);
+        let mut compression_chamber_controller = EngineCompressionChamberController::new(1., 1.);
         let mut compression_chamber = CompressionChamber::new(Volume::new::<cubic_meter>(1.));
         let context = context(Duration::from_millis(1000), Length::new::<foot>(0.));
 
@@ -1118,7 +1209,7 @@ mod tests {
                 .target_pressure()
                 .get::<psi>(),
             compression_chamber.pressure().get::<psi>(),
-            1e-1
+            1.
         );
     }
 

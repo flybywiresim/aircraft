@@ -131,6 +131,7 @@
       "Defueling": "Odčerpávání",
       "EstimatedDuration": "Odhadovaná délka (min)",
       "EstimatedTime": "Odhadovaný čas",
+      "GSXFuelSyncEnabled": "GSX synchronizace zapnuta",
       "LeftInnerTank": "Levá vnitřní nádrž",
       "LeftOuterTank": "Levá vnější nádrž",
       "ReadyToStart": "Připraveno",
@@ -156,6 +157,7 @@
       "DeboardConfirmationConfirm": "Vyložit",
       "DeboardConfirmationTitle": "Vyložit všechny cestující?",
       "EstimatedDurationUnit": "minut",
+      "GSXPayloadSyncEnabled": "GSX synchronizace nákladu zapnuta",
       "GW": "GW",
       "GWCG": "GW CG",
       "LoadingTime": "Loading Time",
@@ -224,6 +226,10 @@
     "Navigraph": {
       "AirportDoesNotExist": "Letiště neexistuje",
       "AuthenticateWithNavigraph": "Navigraph autentizace",
+      "GoToThirdPartyOptions": {
+        "Button": "Možnosti třetích stran",
+        "Title": "Přejděte na Možnosti třetích stran pro propojení Navigraph účtu"
+      },
       "InsufficientEnv": "Nedostatečný soubor .env",
       "IntoYourBrowserAndEnterTheCodeBelow": "ve vašem prohlížeči a vložte následující kód\n",
       "LoadingMsg": "Načítání",
@@ -576,7 +582,26 @@
     "ThirdPartyOptions": {
       "GsxFuelEnabled": "GSX synchronizace paliva",
       "GsxPayloadEnabled": "GSX synchronizace cestujících a nákladu",
-      "Title": "Možnosti třetích stran"
+      "NavigraphAccountLink": {
+        "Connected": "Připojeno",
+        "Link": "Propojit účet",
+        "LoginPage": {
+          "Title": "Přihlášení k účtu Navigraph"
+        },
+        "SettingTitle": "Propojení s účtem Navigraph",
+        "SubscriptionStatus": {
+          "None": "Žádný",
+          "Unlimited": "Navigraph Unlimited"
+        },
+        "Unlink": "Odpojit účet"
+      },
+      "OverrideSimBriefUserID": "Přepsat uživatelské ID SimBrief",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Zkontrolujte prosím, zda jste správně zadali své SimBrief uživatelské jméno nebo ID pilota.",
+      "TT": {
+        "OverrideSimBriefUserID": "Alternativní SimBrief uživatelské ID, které se použije místo propojeného účtu Navigraph"
+      },
+      "Title": "Možnosti třetích stran",
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "Přednostní SimBrief PilotID bylo ověřeno a změněno na"
     },
     "ThrottleConfig": {
       "Apply": "Použít",
@@ -586,11 +611,11 @@
       "ConfigureEnd": "Horní hranice",
       "ConfigureStart": "Spodní hranice",
       "CurrentValue": "Aktuální hodnota",
-      "Deadband": "Rozsah",
+      "Deadband": "Mrtvá zóna",
       "ErrorOverlapMsg": "se překrývá s",
       "IndependentAxis": "Nezávislé osy",
       "LoadFromFile": "Načíst ze souboru",
-      "PleaseEnterAValidDeadzone": "Prosím zadejte platný rozsah",
+      "PleaseEnterAValidDeadzone": "Prosím zadejte platnou mrtvou zónu",
       "ResetToDefaults": "Obnovit výchozí",
       "ReverseFull": "Reverse Full",
       "ReverseIdle": "Reverse Idle",

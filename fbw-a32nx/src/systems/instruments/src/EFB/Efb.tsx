@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { useEffect, useState } from 'react';
-import { useSimVar, useInterval, useInteractionEvent, usePersistentNumberProperty, usePersistentProperty } from '@flybywiresim/fbw-sdk';
+import { useSimVar, useInterval, useInteractionEvent, usePersistentNumberProperty, usePersistentProperty, NavigraphClient } from '@flybywiresim/fbw-sdk';
 import { Redirect, Route, Switch, useHistory } from 'react-router-dom';
 import { Battery } from 'react-bootstrap-icons';
 import { toast, ToastContainer } from 'react-toastify';
@@ -10,7 +10,7 @@ import { distanceTo } from 'msfs-geo';
 import { Tooltip } from './UtilComponents/TooltipWrapper';
 import { FbwLogo } from './UtilComponents/FbwLogo';
 import { AlertModal, ModalContainer, useModals } from './UtilComponents/Modals/Modals';
-import NavigraphClient, { NavigraphContext } from './Apis/Navigraph/Navigraph';
+import { NavigraphContext } from './Apis/Navigraph/Navigraph';
 import { StatusBar } from './StatusBar/StatusBar';
 import { ToolBar } from './ToolBar/ToolBar';
 import { Dashboard } from './Dashboard/Dashboard';
@@ -72,6 +72,8 @@ interface BatteryStatus {
 
 export const usePower = () => React.useContext(PowerContext);
 
+export const getAirframeType = () => new URL(document.querySelectorAll('vcockpit-panel > *')[0].getAttribute('url')).searchParams.get('Airframe');
+
 const Efb = () => {
     const [powerState, setPowerState] = useState<PowerStates>(PowerStates.SHUTOFF);
     const [absoluteTime] = useSimVar('E:ABSOLUTE TIME', 'seconds', 5000);
@@ -84,7 +86,8 @@ const Efb = () => {
 
     const dispatch = useAppDispatch();
     const simbriefData = useAppSelector((state) => state.simbrief.data);
-    const [simbriefUserId] = usePersistentProperty('CONFIG_SIMBRIEF_USERID');
+    const [navigraphUsername] = usePersistentProperty('NAVIGRAPH_USERNAME');
+    const [overrideSimBriefUserID] = usePersistentProperty('CONFIG_OVERRIDE_SIMBRIEF_USERID');
     const [autoSimbriefImport] = usePersistentProperty('CONFIG_AUTO_SIMBRIEF_IMPORT');
 
     const [dc2BusIsPowered] = useSimVar('L:A32NX_ELEC_DC_2_BUS_IS_POWERED', 'bool');
@@ -197,7 +200,7 @@ const Efb = () => {
             }
 
             if ((!simbriefData || !isSimbriefDataLoaded()) && autoSimbriefImport === 'ENABLED') {
-                fetchSimbriefDataAction(simbriefUserId ?? '').then((action) => {
+                fetchSimbriefDataAction(navigraphUsername ?? '', overrideSimBriefUserID ?? '').then((action) => {
                     dispatch(action);
                 }).catch((e) => {
                     toast.error(e.message);

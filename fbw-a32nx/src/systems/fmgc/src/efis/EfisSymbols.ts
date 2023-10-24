@@ -3,19 +3,19 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
+import { GenericDataListenerSync, LegType, RunwaySurface, TurnDirection, VorType } from '@flybywiresim/fbw-sdk';
+
 import { FlightPlanManager, WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
 import { EfisOption, EfisNdMode, NdSymbol, NdSymbolTypeFlags, EfisNdRangeValue, rangeSettings } from '@shared/NavigationDisplay';
 import { GuidanceManager } from '@fmgc/guidance/GuidanceManager';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { SegmentType } from '@fmgc/wtsdk';
-import { GenericDataListenerSync } from '@flybywiresim/fbw-sdk';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { NearbyFacilities } from '@fmgc/navigation/NearbyFacilities';
 import { NavaidTuner } from '@fmgc/navigation/NavaidTuner';
 import { getFlightPhaseManager } from '@fmgc/flightphase';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { LegType, RunwaySurface, TurnDirection, VorType } from '../types/fstypes/FSEnums';
 
 export class EfisSymbols {
     /** these types of legs are current not integrated into the normal symbol drawing routines */
@@ -178,7 +178,8 @@ export class EfisSymbols {
                 if (DEBUG) {
                     console.time(`upsert symbol ${symbol.databaseId}`);
                 }
-                const symbolIdx = symbols.findIndex((s) => s.databaseId === symbol.databaseId);
+                // for symbols with no databaseId, we don't bother trying to de-duplicate as we cannot do it safely
+                const symbolIdx = symbol.databaseId ? symbols.findIndex((s) => s.databaseId === symbol.databaseId) : -1;
                 if (symbolIdx !== -1) {
                     const oldSymbol = symbols.splice(symbolIdx, 1)[0];
                     symbol.constraints = symbol.constraints ?? oldSymbol.constraints;
@@ -395,7 +396,7 @@ export class EfisSymbols {
                     }
 
                     if (efisOption === EfisOption.Constraints && !isFromWp) {
-                        const descent = wp.constraintType === WaypointConstraintType.DES;
+                        const descent = wp.additionalData.constraintType === WaypointConstraintType.DES;
                         switch (wp.legAltitudeDescription) {
                         case 1:
                             constraints.push(formatConstraintAlt(wp.legAltitude1, descent));
@@ -468,7 +469,7 @@ export class EfisSymbols {
                         databaseId: airport.icao,
                         ident: airport.ident,
                         location: airport.infos.coordinates,
-                        type: NdSymbolTypeFlags.Airport,
+                        type: NdSymbolTypeFlags.Airport | NdSymbolTypeFlags.FlightPlan,
                     });
                 }
             }

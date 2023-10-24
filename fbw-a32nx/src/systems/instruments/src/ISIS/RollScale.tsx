@@ -12,7 +12,7 @@ const RollScaleTick: React.FC<RollScaleTickProps> = ({ radius, angle }) => {
     const cosine = Math.cos(angle * Math.PI / 180);
 
     const x = 256 + radius * sine;
-    const y = 256 - radius * cosine;
+    const y = 269 - radius * cosine;
     const dx = tickLength * sine;
     const dy = -tickLength * cosine;
 
@@ -29,11 +29,11 @@ export const RollScale: React.FC = React.memo(() => {
 
     return (
         <g id="RollScale">
-            <path className="white-line" d={`M ${256 - dx} ${256 - dy} a ${radiusForMarkers} ${radiusForMarkers} 0 0 1 ${2 * dx} 0`} />
+            <path className="white-line" strokeLinecap="square" d={`M ${256 - dx} ${269 - dy} a ${radiusForMarkers} ${radiusForMarkers} 0 0 1 ${2 * dx} 0`} />
             <g>
                 {markerAngles.map((angle) => (<RollScaleTick radius={radiusForMarkers} angle={angle} />))}
             </g>
-            <path className="FillYellow StrokeYellow" d="M 256 116 l 10 -18 h-20z" />
+            <path className="FillYellow" d="M 256 130 l -15 -22 h 30 z" />
         </g>
     );
 });

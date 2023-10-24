@@ -3,19 +3,19 @@
     "Active": "Aktyvus",
     "ChangeATISATCSourceButton": "Pakeisti ATIS/ATC šaltinį",
     "ConnectHoppieACARS": "Prijungti Hoppie ACARS",
-    "NoInformationAvailableForThisFrequency": "Jokia informacija nėra pasiekiama šiame dažnyje",
+    "NoInformationAvailableForThisFrequency": "Šiame dažnyje nėra informacijos",
     "SearchPlaceholder": "Paieška",
     "SelectCorrectATISATCSource": "Šis puslapis pasiekiamas tik pasirinkus IVAO arba VATSIM kaip ATIS/ATC šaltinį nustatymų puslapyje.",
     "SetActive": "Aktyvus",
     "SetStandby": "Atsarginis",
     "ShowAll": "Visi",
-    "ShowApproach": "Atvykimas",
+    "ShowApproach": "Approach",
     "ShowAtis": "ATIS",
-    "ShowDelivery": "Pristatymas",
-    "ShowDeparture": "Išvykimas",
-    "ShowGround": "Paslaugos",
-    "ShowRadar": "Radaras",
-    "ShowTower": "Bokštelis",
+    "ShowDelivery": "Delivery",
+    "ShowDeparture": "Departure",
+    "ShowGround": "Ground",
+    "ShowRadar": "Radar",
+    "ShowTower": "Tower",
     "Standby": "Atsarginis",
     "TT": {
       "AtcCallSignSearch": "Skrydžių valdymo centro šaukinio paieška",
@@ -26,9 +26,9 @@
   "Checklists": {
     "AreYouSureYouWantToResetAllChecklists": "Ar tikrai norite atstatyti visus patikrinimo sąrašus?",
     "AreYouSureYouWantToResetChecklists": "Ar tikrai norite atstatyti visus patikrinimo sąrašus?",
-    "ChecklistResetWarning": "Patikrinimų sąrašo atstatymo perspėjimas",
-    "MarkChecklistAsComplete": "Pažymėti patikrinimų sąrašą baigtu",
-    "MarkItemAsComplete": "Pažymėti punktą atliktu",
+    "ChecklistResetWarning": "Atstatymo Perspėjimas",
+    "MarkChecklistAsComplete": "Pažymėti sąrašą baigtu",
+    "MarkItemAsComplete": "Atlikta",
     "ProceedToNextChecklist": "Pereiti į kitą patikrinimų sąrašą",
     "ResetAll": "Viską atstatyti",
     "ResetChecklist": "Atstatyti sąrašą",
@@ -48,7 +48,7 @@
         "Title": "Techninė priežiūra"
       },
       "PinnedCharts": {
-        "NoPinnedCharts": "Jokių prisegtų dokumentų",
+        "NoPinnedCharts": "Nėra prisegtų dokumentų",
         "Title": "Prisegti dokumentai"
       },
       "TT": {
@@ -115,10 +115,10 @@
   },
   "Failures": {
     "Comfort": {
-      "Title": "Komfortas"
+      "Title": "Platus"
     },
     "Compact": {
-      "Title": "Kompaktinis"
+      "Title": "Paprastas"
     },
     "FullSimulationOfTheFailuresBelowIsntYetGuaranteed": "Pilna gedimų simuliacija dar negali būti užtikrinta",
     "Search": "Paieška",
@@ -131,6 +131,7 @@
       "Defueling": "Kuras išpylamas",
       "EstimatedDuration": "Numatoma trukmė (min)",
       "EstimatedTime": "Estimated Time",
+      "GSXFuelSyncEnabled": "GSX Fuel Sync Enabled",
       "LeftInnerTank": "Kairysis vidinis kuro bakas",
       "LeftOuterTank": "Kairysis išorinis kuro bakas",
       "ReadyToStart": "Pasiruošę pradėti",
@@ -156,6 +157,7 @@
       "DeboardConfirmationConfirm": "Išlaipinimas",
       "DeboardConfirmationTitle": "Išlaipinti visus keleivius?",
       "EstimatedDurationUnit": "min",
+      "GSXPayloadSyncEnabled": "GSX Payload Sync Enabled",
       "GW": "GW",
       "GWCG": "GW CG",
       "LoadingTime": "Loading Time",
@@ -165,8 +167,8 @@
         "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Norint pakeisti laipinimo trukmę, orlaivis turi būti ant žemės, užgesintais varikliais",
         "FillPayloadFromSimbrief": "Užpildyti informaciją apie krovinį iš Simbrief",
         "MaxCargo": "Maksimalus krovinys",
-        "MaxGW": "Maximum GW",
-        "MaxGWCG": "Maximum GW CG",
+        "MaxGW": "Maksimalus GW",
+        "MaxGWCG": "Maksimalus GW CG",
         "MaxPassengers": "Maksimalus keleivių skaičius",
         "MaxZFW": "Maksimalus ZFW",
         "MaxZFWCG": "Maximalus ZFWCG",
@@ -224,6 +226,10 @@
     "Navigraph": {
       "AirportDoesNotExist": "Oro uostas neegzistuoja",
       "AuthenticateWithNavigraph": "Autentifikuoti su Navigraph",
+      "GoToThirdPartyOptions": {
+        "Button": "3rd Party Options",
+        "Title": "Go to 3rd Party Options to link Navigraph account"
+      },
       "InsufficientEnv": "Nepakankamas .env failas",
       "IntoYourBrowserAndEnterTheCodeBelow": "savo naršyklėje ir įveskite žemiau esantį kodą.",
       "LoadingMsg": "Įkeliama",
@@ -422,9 +428,9 @@
     "Left": "Kairėn",
     "Moving": "Juda",
     "ParkingBrake": {
-      "Off": "Išjungta",
-      "On": "Įjungta",
-      "Title": "Stovėjimo stabdys"
+      "Off": "išjungti",
+      "On": "įjungti",
+      "Title": "Stovėjimo stabdžiai"
     },
     "Right": "Dešinėn",
     "SystemEnabledOff": "Išstumimo sistema išjungta",
@@ -437,7 +443,7 @@
       "Left": "Dešinėn",
       "PausePushback": "Pristabdyti ar atstabdyti išstumimą",
       "Right": "Dešinėn",
-      "SetReleaseParkingBrake": "Užtraukti ar atleisti stovėjimo stabdį",
+      "SetReleaseParkingBrake": "Užtraukti ar atleisti stovėjimo stabdžius",
       "SliderDirection": "Pasirinkite norimą kryptį",
       "SliderSpeed": "Pasirinkite norimą greitį",
       "SystemEnabledOff": "Paspauskite norint įjungti išstumimo sistemą.",
@@ -502,14 +508,14 @@
       "MetarSource": "METAR šaltinis",
       "OptionalA32nxErrorReporting": "Pasirinktinis A32NX klaidų pranešimas",
       "PleaseCheckThatYouHaveCorrectlyEnteredYourSimbBriefUsernameOrPilotId": "Prašome patikrinti ar jūsų įvestas SimBrief naudotojo vardas arba piloto ID yra teisingas",
-      "SimBriefUsernamePilotId": "SimBrief Naudotojo vardas/Piloto ID",
+      "SimBriefUsernamePilotId": "SimBrief Naudotojo vardas/piloto ID",
       "TafSource": "TAF šaltinis",
       "Telex": "TELEX",
       "TelexEnablesFreeTextAndLiveMap": "TELEX įgalina nepriklausomą tekstą ir tiesioginį žemėlapį. Jei įjungta, orlaivio padėties duomenys skelbiami skrydžio metu. Pranešimai yra vieši ir netvarkomi. NAUDOKITE ŠIA FUNKCIJĄ SU RIZIKA. Norėdami sužinoti daugiau apie TELEX ir jo teikiamas funkcijas, apsilankykite adresu https://docs.flybywiresim.com/telex.",
       "TelexWarning": "TELEX pranešimas",
       "ThereWasAnErrorEncounteredWhenValidatingYourHoppieID": "Įvyko klaida tikrinant jūsų Hoppie-ID kodą",
       "Title": "ATSU / AOC",
-      "YouAreAbleToOptIntoAnonymousErrorReporting": "Galite pasirinkti anoniminį klaidų ataskaitų teikimą, kuris leis mums greičiau diagnozuoti, stebėti problemas ir jas išspręsti. Ši funkcija yra visiškai neprivaloma ir mes niekada nerinksime jūsų asmeninių duomenų, bet galime lengviau gauti palaikymą ir greičiau išspręsti iškilusias problemas.",
+      "YouAreAbleToOptIntoAnonymousErrorReporting": "Galite pasirinkti anoniminį klaidų ataskaitų teikimą, kuris leis mums greičiau diagnozuoti, stebėti problemas ir jas išspręsti. Ši funkcija yra visiškai neprivaloma ir mes niekada nerinksime jūsų asmeninių duomenų, bet tai gali leisti jums lengviau ir greičiau gauti pagalbos, ir išspręsti iškilusias problemas.",
       "YourHoppieIdHasBeenRemoved": "Jūsų Hoppie-ID kodas buvo pašalintas",
       "YourHoppieIdHasBeenValidated": "Jūsų Hoppie-ID kodas buvo patikrintas",
       "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "Jūsų SimBrief piloto ID buvo patikrintas ir pakeistas į"
@@ -564,19 +570,38 @@
       "Off": "Išjungta",
       "Save": "Išsaugoti",
       "Side": "Side",
-      "SimBridgeIp": "External SimBridge Host Address",
+      "SimBridgeIp": "Išorinis SimBridge bazės adresas",
       "SimBridgePort": "Išorinis SimBridge serverio port",
       "SyncMsfsFlightPlan": "Sinchronizuoti MSFS Skrydžio Planą",
       "ThrottleDetents": "Droselio detentai",
-      "Title": "Simuliatoriaus nustatymai",
+      "Title": "Simuliatoriaus parinktys",
       "UseCalculatedIlsSignals": "Naudoti apskaičiuotus ILS signalus",
       "WheelChocksEnabled": "Ratų atrama",
       "inHg": "inHg"
     },
     "ThirdPartyOptions": {
-      "GsxFuelEnabled": "GSX Fueling Synchronization",
-      "GsxPayloadEnabled": "GSX Payload Synchronization",
-      "Title": "3rd Party Options"
+      "GsxFuelEnabled": "GSX kuro tiekimo sinchronizavimas",
+      "GsxPayloadEnabled": "GSX krovinio sinchronizavimas",
+      "NavigraphAccountLink": {
+        "Connected": "Connected",
+        "Link": "Link Account",
+        "LoginPage": {
+          "Title": "Navigraph Account Login"
+        },
+        "SettingTitle": "Navigraph Account Link",
+        "SubscriptionStatus": {
+          "None": "None",
+          "Unlimited": "Navigraph Unlimited"
+        },
+        "Unlink": "Unlink Account"
+      },
+      "OverrideSimBriefUserID": "Override SimBrief User ID",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Please check that you have correctly entered your SimBrief username or pilot ID.",
+      "TT": {
+        "OverrideSimBriefUserID": "Alternative SimBrief user ID to use instead of the linked Navigraph Account"
+      },
+      "Title": "Trečiųjų šalių parinktys",
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "The override SimBrief PilotID has been validated and updated to"
     },
     "ThrottleConfig": {
       "Apply": "Taikyti",
@@ -658,7 +683,7 @@
     "RecommendationText": "Prašome atnaujinti lėktuvą į naują versiją naudojant FlyByWire programą.",
     "StatusBarWarning": "Pasenusi lėktuvo versija",
     "TT": {
-      "StatusBarWarning": "Please update your aircraft using the FlyByWire Installer."
+      "StatusBarWarning": "Prašome atnaujinti jūsų orlaivį naudojant FlyByWire programą."
     },
     "Title": "Pasiekiama nauja versija"
   }

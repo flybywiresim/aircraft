@@ -150,7 +150,7 @@ export const FuelPage = () => {
         if (refuelStartedByUser) {
             setRefuelStartedByUser(false);
         }
-        return `(${t('Ground.Fuel.Unavailable')})`;
+        return gsxFuelSyncEnabled === 1 ? `(${t('Ground.Fuel.GSXFuelSyncEnabled')})` : `(${t('Ground.Fuel.Unavailable')})`;
     };
 
     const formatRefuelStatusClass = () => {

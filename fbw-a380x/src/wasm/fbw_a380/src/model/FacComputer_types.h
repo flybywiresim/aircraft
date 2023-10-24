@@ -262,6 +262,7 @@ struct base_elac_out_bus
   base_arinc_429 roll_spoiler_command_deg;
   base_arinc_429 yaw_damper_command_deg;
   base_arinc_429 elevator_double_pressurization_command_deg;
+  base_arinc_429 speedbrake_extension_deg;
   base_arinc_429 discrete_status_word_1;
   base_arinc_429 discrete_status_word_2;
 };
@@ -325,6 +326,8 @@ struct base_fac_adr_computation_data
   real_T V_tas_kn;
   real_T mach;
   real_T alpha_deg;
+  real_T p_s_c_hpa;
+  real_T altitude_corrected_ft;
 };
 
 #endif
@@ -398,9 +401,14 @@ struct base_fac_flight_envelope_outputs
   real_T v_ls_kn;
   real_T v_stall_kn;
   real_T v_3_kn;
+  boolean_T v_3_visible;
   real_T v_4_kn;
+  boolean_T v_4_visible;
   real_T v_man_kn;
+  boolean_T v_man_visible;
   real_T v_max_kn;
+  real_T v_fe_next_kn;
+  boolean_T v_fe_next_visible;
   real_T v_c_trend_kn;
 };
 
@@ -493,6 +501,37 @@ struct struct_fAEsrEZhvvruiP1ICEwvRC
   struct_2OohiAWrazWy5wDS5iisgF discrete_word_5;
   struct_2OohiAWrazWy5wDS5iisgF delta_r_rudder_trim_deg;
   struct_2OohiAWrazWy5wDS5iisgF rudder_trim_pos_deg;
+};
+
+#endif
+
+#ifndef DEFINED_TYPEDEF_FOR_struct_NHciy9HFthvyJ1C8wWfWlB_
+#define DEFINED_TYPEDEF_FOR_struct_NHciy9HFthvyJ1C8wWfWlB_
+
+struct struct_NHciy9HFthvyJ1C8wWfWlB
+{
+  real_T estimated_beta_deg;
+  real_T beta_target_deg;
+  boolean_T beta_target_visible;
+  boolean_T alpha_floor_condition;
+  real_T alpha_filtered_deg;
+  real_T computed_weight_lbs;
+  real_T computed_cg_percent;
+  real_T v_alpha_max_kn;
+  real_T v_alpha_prot_kn;
+  real_T v_stall_warn_kn;
+  real_T v_ls_kn;
+  real_T v_stall_kn;
+  real_T v_3_kn;
+  boolean_T v_3_visible;
+  real_T v_4_kn;
+  boolean_T v_4_visible;
+  real_T v_man_kn;
+  boolean_T v_man_visible;
+  real_T v_max_kn;
+  real_T v_fe_next_kn;
+  real_T v_fe_next_visible;
+  real_T v_c_trend_kn;
 };
 
 #endif

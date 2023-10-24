@@ -3,6 +3,7 @@ import React from 'react';
 export type ProgressBarProps = {
     completed: string | number;
     displayBar?: boolean;
+    className?: string;
     completedBarBegin?: number;
     completedBarBeginValue?: string;
     completionValue?: number
@@ -27,6 +28,7 @@ export type ProgressBarProps = {
 
 export const ProgressBar: React.FC<ProgressBarProps> = ({
     bgcolor = '#6a1b9a',
+    className,
     completed,
     displayBar = false,
     completedBarEnd,
@@ -134,8 +136,8 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
     };
 
     return (
-        <div className="flex flex-row">
-            {vertical && (
+        <div className={`flex flex-row ${className}`}>
+            {vertical && displayBar && (
                 <div
                     className="mr-2 text-xl"
                     style={vertical
@@ -174,11 +176,12 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
                     )}
                 </div>
             </div>
-            {vertical && (
+            {vertical && displayBar && (
                 <div
                     className="ml-2 text-xl"
                     style={vertical
-                        ? { marginTop: `${formatBar((completedBarEnd ?? 0) + 2 || 0)}`, width: fillerStyles.width } : { marginLeft: `${formatBar(completedBarEnd || 0)}` }}
+                        ? { marginTop: `${formatBar((completedBarEnd ?? 0) + 2 || 0)}`, width: fillerStyles.width }
+                        : { marginLeft: `${formatBar(completedBarEnd || 0)}` }}
                 >
                     {(completedBarEnd !== 0 ? ((completedBarEnd ?? 0) / 50 - 1) : 0.00).toFixed(2)}
                 </div>

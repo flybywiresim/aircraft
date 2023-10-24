@@ -16,6 +16,7 @@ use systems::{
     pneumatic::{
         valve::DefaultValve, valve::PneumaticExhaust, ControllablePneumaticValve,
         PneumaticContainer, PneumaticPipe, PneumaticValveSignal, WingAntiIcePushButtonMode,
+        WingAntiIceSelected,
     },
     shared::{
         pid::PidController, random_from_normal_distribution, ControllerSignal, ElectricalBusType,
@@ -325,8 +326,8 @@ pub struct WingAntiIceSystem {
 impl WingAntiIceSystem {
     const WAI_MIN_PRESSURE: f64 = 1.; //BAR
     const WAI_MAX_PRESSURE: f64 = 2.1; //BAR
-    const WAI_EXHAUST_SPEED: f64 = 0.1285; // Regulate wing_anti_ice_tweak_exhaust
-    const WAI_VALVE_TRANSFER_SPEED: f64 = 1.3; // Regulate wing_anti_ice_tweak_time_to_open
+    const WAI_EXHAUST_SPEED: f64 = 0.128; // Regulate wing_anti_ice_tweak_exhaust
+    const WAI_VALVE_TRANSFER_SPEED: f64 = 1.2; // Regulate wing_anti_ice_tweak_time_to_open
 
     // Each WAI duct is made of
     // Flow Trimming Restrictor 47mm diameter
@@ -600,7 +601,11 @@ impl WingAntiIceComplex {
         self.wai_selected = wai_mode == WingAntiIcePushButtonMode::On;
     }
 }
-
+impl WingAntiIceSelected for WingAntiIceComplex {
+    fn is_wai_selected(&self) -> bool {
+        self.wai_selected
+    }
+}
 impl SimulationElement for WingAntiIceComplex {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         accept_iterable!(self.wai_systems, visitor);

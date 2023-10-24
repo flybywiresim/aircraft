@@ -30,8 +30,8 @@ export const PitchScale: React.FC<PitchScaleProps> = React.memo(({ pitchDegPixel
         }
         markers.push(
             <g>
-                <text x={220} y={y} fontSize={32} className="TextWhite" textAnchor="end" alignmentBaseline="middle">{Math.abs(d).toFixed(0)}</text>
-                <line x1={232} x2={280} y1={y} y2={y} className="StrokeWhite" />
+                <text x={225} y={y} fontSize={28} className="TextWhite" textAnchor="end" alignmentBaseline="middle">{Math.abs(d).toFixed(0)}</text>
+                <line x1={231.843} x2={280.157} y1={y} y2={y} className="StrokeWhite" />
             </g>,
         );
     }
@@ -39,21 +39,14 @@ export const PitchScale: React.FC<PitchScaleProps> = React.memo(({ pitchDegPixel
     for (let d = -25; d <= 25; d += 10) {
         const y = center - d * pitchDegPixels;
         markers.push(
-            <line x1={242} x2={270} y1={y} y2={y} className="StrokeWhite" />,
+            <line x1={243.5} x2={268.5} y1={y} y2={y} className="StrokeWhite" />,
         );
     }
 
-    for (let d = -27.5; d <= 22.5; d += 10) {
+    for (let d = -27.5; d <= 27.5; d += 5) {
         const y = center - d * pitchDegPixels;
         markers.push(
-            <line x1={248} x2={264} y1={y} y2={y} className="StrokeWhite" />,
-        );
-    }
-
-    for (let d = -22.5; d <= 27.5; d += 10) {
-        const y = center - d * pitchDegPixels;
-        markers.push(
-            <line x1={248} x2={264} y1={y} y2={y} className="StrokeWhite" />,
+            <line x1={248.5} x2={263.5} y1={y} y2={y} className="StrokeWhite" />,
         );
     }
 

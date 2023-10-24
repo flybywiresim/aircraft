@@ -1,4 +1,13 @@
-export const TYPE = Object.freeze({ NB_ECO: 0, NB_ECO_EMERG: 1, WB_ECO: 2, WB_ECO_EMERG: 3 });
+export enum SeatType {
+    NarrowbodyEconomy = 0,
+    NarrowbodyEconomyEmergency = 1,
+    WidebodyEconomy = 2,
+    WidebodyEconomyEmergency = 3,
+    WidebodyBusinessFlatRight = 4,
+    WidebodyBusinessFlatLeft = 5,
+    WidebodySuiteRight = 6,
+    WidebodySuiteLeft = 7,
+}
 
 export const CanvasConst = Object.freeze({
     width: 1000,
@@ -27,6 +36,7 @@ export interface PaxStationInfo {
     fill: number,
     stationIndex: number,
     position: number,
+    deck: number
 }
 
 export interface CargoStationInfo {
@@ -39,37 +49,69 @@ export interface CargoStationInfo {
 }
 
 export const SeatConstants = Object.freeze({
-    [TYPE.NB_ECO]: {
-        len: 19.2,
+    [SeatType.NarrowbodyEconomy]: {
+        len: 25.4,
         wid: 19.2,
-        padX: 13,
+        padX: 6.8,
         padY: 0,
         imageX: 25.4,
         imageY: 19.2,
     },
-    [TYPE.NB_ECO_EMERG]: {
-        len: 19.2,
+    [SeatType.NarrowbodyEconomyEmergency]: {
+        len: 25.4,
         wid: 19.2,
-        padX: 20,
+        padX: 13.8,
         padY: 0,
         imageX: 25.4,
         imageY: 19.2,
     },
-    [TYPE.WB_ECO]: {
-        len: 11.52,
-        wid: 11.52,
-        padX: 7.8,
+    [SeatType.WidebodyEconomy]: {
+        len: 16,
+        wid: 12.125,
+        padX: 2,
         padY: 0,
-        imageX: 15.24,
-        imageY: 11.52,
+        imageX: 16,
+        imageY: 12.125,
     },
-    [TYPE.WB_ECO_EMERG]: {
-        len: 11.52,
-        wid: 11.52,
-        padX: 12,
+    [SeatType.WidebodyEconomyEmergency]: {
+        len: 16,
+        wid: 12.125,
+        padX: 2,
         padY: 0,
-        imageX: 15.24,
-        imageY: 11.52,
+        imageX: 16,
+        imageY: 12.125,
+    },
+    [SeatType.WidebodyBusinessFlatRight]: {
+        len: 24,
+        wid: 23.22,
+        padX: 1,
+        padY: 0,
+        imageX: 24,
+        imageY: 23.22,
+    },
+    [SeatType.WidebodyBusinessFlatLeft]: {
+        len: 24,
+        wid: 23.22,
+        padX: 1,
+        padY: 0,
+        imageX: 24,
+        imageY: 23.22,
+    },
+    [SeatType.WidebodySuiteRight]: {
+        len: 35,
+        wid: 20,
+        padX: 2,
+        padY: 0,
+        imageX: 50,
+        imageY: 50,
+    },
+    [SeatType.WidebodySuiteLeft]: {
+        len: 35,
+        wid: 20,
+        padX: 5,
+        padY: 0,
+        imageX: 50,
+        imageY: 50,
     },
 });
 

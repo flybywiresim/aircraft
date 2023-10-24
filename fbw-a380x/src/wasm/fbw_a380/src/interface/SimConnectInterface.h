@@ -211,8 +211,6 @@ class SimConnectInterface {
 
   void setSampleTime(double sampleTime);
 
-  bool requestReadData();
-
   bool requestData();
 
   bool readData();

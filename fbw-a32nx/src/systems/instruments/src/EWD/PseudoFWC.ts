@@ -2,10 +2,11 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Subject, Subscribable, MappedSubject, DebounceTimer } from '@microsoft/msfs-sdk';
+import { Subject, Subscribable, MappedSubject, DebounceTimer, ConsumerValue, EventBus, ConsumerSubject } from '@microsoft/msfs-sdk';
 
 import { Arinc429Register, Arinc429Word, NXDataStore, NXLogicClockNode, NXLogicConfirmNode, NXLogicMemoryNode, NXLogicPulseNode, NXLogicTriggeredMonostableNode } from '@flybywiresim/fbw-sdk';
 import { VerticalMode } from '@shared/autopilot';
+import { FuelSystemEvents } from '../MsfsAvionicsCommon/providers/FuelSystemPublisher';
 
 export function xor(a: boolean, b: boolean): boolean {
     return !!((a ? 1 : 0) ^ (b ? 1 : 0));
@@ -92,7 +93,15 @@ export class PseudoFWC {
         this.fireActive,
     );
 
-    /* PRESSURIZATION */
+    /* 21 - AIR CONDITIONING AND PRESSURIZATION */
+
+    private readonly acsc1DiscreteWord1 = Arinc429Register.empty();
+
+    private readonly acsc1DiscreteWord2 = Arinc429Register.empty();
+
+    private readonly acsc2DiscreteWord1 = Arinc429Register.empty();
+
+    private readonly acsc2DiscreteWord2 = Arinc429Register.empty();
 
     private readonly apuBleedValveOpen = Subject.create(false);
 
@@ -104,7 +113,57 @@ export class PseudoFWC {
 
     private readonly cabAltSetResetState2 = Subject.create(false);
 
+    private readonly cabFanHasFault1 = Subject.create(false);
+
+    private readonly cabFanHasFault2 = Subject.create(false);
+
     private readonly excessPressure = Subject.create(false);
+
+    private readonly acsc1Lane1Fault = Subject.create(false);
+
+    private readonly acsc1Lane2Fault = Subject.create(false);
+
+    private readonly acsc2Lane1Fault = Subject.create(false);
+
+    private readonly acsc2Lane2Fault = Subject.create(false);
+
+    private readonly acsc1Fault = Subject.create(false);
+
+    private readonly acsc2Fault = Subject.create(false);
+
+    private readonly pack1And2Fault = Subject.create(false);
+
+    private readonly ramAirOn = Subject.create(false);
+
+    private readonly hotAirDisagrees = Subject.create(false);
+
+    private readonly hotAirOpen = Subject.create(false);
+
+    private readonly hotAirPbOn = Subject.create(false);
+
+    private readonly trimAirFault = Subject.create(false);
+
+    private readonly ckptTrimFault = Subject.create(false);
+
+    private readonly fwdTrimFault = Subject.create(false);
+
+    private readonly aftTrimFault = Subject.create(false);
+
+    private readonly trimAirHighPressure = Subject.create(false);
+
+    private readonly ckptDuctOvht = Subject.create(false);
+
+    private readonly fwdDuctOvht = Subject.create(false);
+
+    private readonly aftDuctOvht = Subject.create(false);
+
+    private readonly anyDuctOvht = Subject.create(false);
+
+    private readonly lavGalleyFanFault = Subject.create(false);
+
+    private readonly pack1On = Subject.create(false);
+
+    private readonly pack2On = Subject.create(false);
 
     private readonly packOffBleedAvailable1 = new NXLogicConfirmNode(5, false);
 
@@ -320,37 +379,39 @@ export class PseudoFWC {
 
     /* FUEL */
 
-    private readonly centerFuelPump1Auto = Subject.create(false);
+    private readonly centerFuelPump1Auto = ConsumerValue.create(null, false);
 
-    private readonly centerFuelPump2Auto = Subject.create(false);
+    private readonly centerFuelPump2Auto = ConsumerValue.create(null, false);
 
     private readonly centerFuelQuantity = Subject.create(0);
 
     private readonly fuelXFeedPBOn = Subject.create(false);
 
-    private readonly leftOuterInnerValve = Subject.create(0);
+    private readonly leftOuterInnerValve = ConsumerSubject.create(null, 0);
 
     private readonly leftFuelLow = Subject.create(false);
 
     private readonly leftFuelLowConfirm = new NXLogicConfirmNode(30, true);
 
-    private readonly leftFuelPump1Auto = Subject.create(false);
+    private readonly leftFuelPump1Auto = ConsumerValue.create(null, false);
 
-    private readonly leftFuelPump2Auto = Subject.create(false);
+    private readonly leftFuelPump2Auto = ConsumerValue.create(null, false);
 
     private readonly lrTankLow = Subject.create(false);
 
     private readonly lrTankLowConfirm = new NXLogicConfirmNode(30, true);
 
-    private readonly rightOuterInnerValve = Subject.create(0);
+    private readonly rightOuterInnerValve = ConsumerSubject.create(null, 0);
 
     private readonly rightFuelLow = Subject.create(false);
 
     private readonly rightFuelLowConfirm = new NXLogicConfirmNode(30, true);
 
-    private readonly rightFuelPump1Auto = Subject.create(false);
+    private readonly rightFuelPump1Auto = ConsumerValue.create(null, false);
 
-    private readonly rightFuelPump2Auto = Subject.create(false);
+    private readonly rightFuelPump2Auto = ConsumerValue.create(null, false);
+
+    private readonly fuelCtrTankModeSelMan = ConsumerValue.create(null, false);
 
     /* HYDRAULICS */
 
@@ -557,9 +618,9 @@ export class PseudoFWC {
 
     private readonly throttle2Position = Subject.create(0);
 
-    private readonly engine1ValueSwitch = Subject.create(false);
+    private readonly engine1ValueSwitch = ConsumerValue.create(null, false);
 
-    private readonly engine2ValueSwitch = Subject.create(false);
+    private readonly engine2ValueSwitch = ConsumerValue.create(null, false);
 
     private readonly autoThrustStatus = Subject.create(0);
 
@@ -685,7 +746,7 @@ export class PseudoFWC {
 
     private readonly configPortableDevices = Subject.create(false);
 
-    constructor() {
+    constructor(private readonly bus: EventBus, private readonly instrument: BaseInstrument) {
         this.ewdMessageLinesLeft.forEach((ls, i) => ls.sub((l) => {
             SimVar.SetSimVarValue(PseudoFWC.ewdMessageSimVarsLeft[i], 'string', l ?? '');
         }));
@@ -712,6 +773,20 @@ export class PseudoFWC {
             SimVar.SetSimVarValue('L:A32NX_MASTER_WARNING', 'Bool', warning);
             SimVar.SetSimVarValue('L:Generic_Master_Warning_Active', 'Bool', warning);
         });
+
+        const sub = this.bus.getSubscriber<FuelSystemEvents>();
+
+        this.fuelCtrTankModeSelMan.setConsumer(sub.on('fuel_ctr_tk_mode_sel_man'));
+        this.engine1ValueSwitch.setConsumer(sub.on('fuel_valve_switch_1'));
+        this.engine2ValueSwitch.setConsumer(sub.on('fuel_valve_switch_2'));
+        this.centerFuelPump1Auto.setConsumer(sub.on('fuel_pump_switch_1'));
+        this.centerFuelPump2Auto.setConsumer(sub.on('fuel_pump_switch_4'));
+        this.leftOuterInnerValve.setConsumer(sub.on('fuel_valve_open_4'));
+        this.leftFuelPump1Auto.setConsumer(sub.on('fuel_pump_switch_2'));
+        this.leftFuelPump2Auto.setConsumer(sub.on('fuel_pump_switch_5'));
+        this.rightOuterInnerValve.setConsumer(sub.on('fuel_valve_open_5'));
+        this.rightFuelPump1Auto.setConsumer(sub.on('fuel_pump_switch_3'));
+        this.rightFuelPump2Auto.setConsumer(sub.on('fuel_pump_switch_6'));
     }
 
     mapOrder(array, order): [] {
@@ -790,9 +865,10 @@ export class PseudoFWC {
 
     /**
      * Periodic update
-     * @param deltaTime Time since the last update in ms
      */
-    onUpdate(deltaTime: number) {
+    onUpdate() {
+        const deltaTime = this.instrument.deltaTime;
+
         // Inputs update
 
         this.flightPhaseEndedPulseNode.write(false, deltaTime);
@@ -883,8 +959,6 @@ export class PseudoFWC {
         this.eng2AntiIce.set(SimVar.GetSimVarValue('ENG ANTI ICE:2', 'bool'));
         this.throttle1Position.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:1', 'number'));
         this.throttle2Position.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_TLA:2', 'number'));
-        this.engine1ValueSwitch.set(SimVar.GetSimVarValue('FUELSYSTEM VALVE SWITCH:1', 'bool'));
-        this.engine2ValueSwitch.set(SimVar.GetSimVarValue('FUELSYSTEM VALVE SWITCH:2', 'bool'));
         this.autoThrustStatus.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_STATUS', 'enum'));
         this.autothrustLeverWarningFlex.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_FLEX', 'bool'));
         this.autothrustLeverWarningToga.set(SimVar.GetSimVarValue('L:A32NX_AUTOTHRUST_THRUST_LEVER_WARNING_TOGA', 'bool'));
@@ -1023,17 +1097,56 @@ export class PseudoFWC {
         this.ac2BusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_AC_2_BUS_IS_POWERED', 'bool'));
         this.acESSBusPowered.set(SimVar.GetSimVarValue('L:A32NX_ELEC_AC_ESS_BUS_IS_POWERED', 'bool'));
 
-        /* AIR CONDITIONING */
+        /* 21 - AIR CONDITIONING AND PRESSURIZATION */
 
-        const crossfeed = SimVar.GetSimVarValue('L:A32NX_PNEU_XBLEED_VALVE_OPEN', 'bool');
-        const eng1Bleed = SimVar.GetSimVarValue('A:BLEED AIR ENGINE:1', 'bool');
+        // FIXME: Should take both words
+        this.acsc1DiscreteWord1.setFromSimVar('L:A32NX_COND_ACSC_1_DISCRETE_WORD_1');
+        this.acsc1DiscreteWord2.setFromSimVar('L:A32NX_COND_ACSC_1_DISCRETE_WORD_2');
+        this.acsc2DiscreteWord1.setFromSimVar('L:A32NX_COND_ACSC_2_DISCRETE_WORD_1');
+        this.acsc2DiscreteWord2.setFromSimVar('L:A32NX_COND_ACSC_2_DISCRETE_WORD_2');
+
+        this.acsc1Lane1Fault.set(this.acsc1DiscreteWord1.bitValueOr(21, false));
+        this.acsc1Lane2Fault.set(this.acsc1DiscreteWord1.bitValueOr(22, false));
+        this.acsc2Lane1Fault.set(this.acsc2DiscreteWord1.bitValueOr(21, false));
+        this.acsc2Lane2Fault.set(this.acsc2DiscreteWord1.bitValueOr(22, false));
+
+        const acsc1FT = this.acsc1DiscreteWord1.isFailureWarning();
+        const acsc2FT = this.acsc2DiscreteWord1.isFailureWarning();
+        this.acsc1Fault.set(acsc1FT && !acsc2FT);
+        this.acsc2Fault.set(!acsc1FT && acsc2FT);
+        const acscBothFault = acsc1FT && acsc2FT;
+
+        this.ramAirOn.set(SimVar.GetSimVarValue('L:A32NX_AIRCOND_RAMAIR_TOGGLE', 'bool'));
+
+        this.cabFanHasFault1.set(this.acsc1DiscreteWord1.bitValueOr(25, false) || this.acsc2DiscreteWord1.bitValueOr(25, false));
+        this.cabFanHasFault2.set(this.acsc1DiscreteWord1.bitValueOr(26, false) || this.acsc2DiscreteWord1.bitValueOr(26, false));
+
+        this.hotAirDisagrees.set(this.acsc1DiscreteWord1.bitValueOr(27, false) && this.acsc2DiscreteWord1.bitValueOr(27, false));
+        this.hotAirOpen.set(!this.acsc1DiscreteWord1.bitValueOr(20, false) || !this.acsc2DiscreteWord1.bitValueOr(20, false));
+        this.hotAirPbOn.set(this.acsc1DiscreteWord1.bitValueOr(23, false) || this.acsc2DiscreteWord1.bitValueOr(23, false));
+
+        this.trimAirFault.set(this.acsc1DiscreteWord1.bitValueOr(28, false) || this.acsc2DiscreteWord1.bitValueOr(28, false));
+        this.ckptTrimFault.set(this.acsc1DiscreteWord2.bitValueOr(18, false) || this.acsc2DiscreteWord2.bitValueOr(18, false));
+        this.fwdTrimFault.set(this.acsc1DiscreteWord2.bitValueOr(19, false) || this.acsc2DiscreteWord2.bitValueOr(19, false));
+        this.aftTrimFault.set(this.acsc1DiscreteWord2.bitValueOr(20, false) || this.acsc2DiscreteWord2.bitValueOr(20, false));
+        this.trimAirHighPressure.set(this.acsc1DiscreteWord1.bitValueOr(18, false) || this.acsc2DiscreteWord1.bitValueOr(18, false));
+
+        this.ckptDuctOvht.set(this.acsc1DiscreteWord1.bitValueOr(11, false) || this.acsc2DiscreteWord1.bitValueOr(11, false));
+        this.fwdDuctOvht.set(this.acsc1DiscreteWord1.bitValueOr(12, false) || this.acsc2DiscreteWord1.bitValueOr(12, false));
+        this.aftDuctOvht.set(this.acsc1DiscreteWord1.bitValueOr(13, false) || this.acsc2DiscreteWord1.bitValueOr(13, false));
+        this.anyDuctOvht.set(this.ckptDuctOvht.get() || this.fwdDuctOvht.get() || this.aftDuctOvht.get());
+
+        this.lavGalleyFanFault.set(this.acsc1DiscreteWord1.bitValueOr(24, false) || this.acsc2DiscreteWord1.bitValueOr(24, false));
+
+        const crossbleedFullyClosed = SimVar.GetSimVarValue('L:A32NX_PNEU_XBLEED_VALVE_FULLY_CLOSED', 'bool');
+        const eng1Bleed = SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_1_BLEED_PB_IS_AUTO', 'bool');
         const eng1BleedPbFault = SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_1_BLEED_PB_HAS_FAULT', 'bool');
-        const eng2Bleed = SimVar.GetSimVarValue('A:BLEED AIR ENGINE:2', 'bool');
+        const eng2Bleed = SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_1_BLEED_PB_IS_AUTO', 'bool');
         const eng2BleedPbFault = SimVar.GetSimVarValue('L:A32NX_OVHD_PNEU_ENG_2_BLEED_PB_HAS_FAULT', 'bool');
         const pack1Fault = SimVar.GetSimVarValue('L:A32NX_OVHD_COND_PACK_1_PB_HAS_FAULT', 'bool');
         const pack2Fault = SimVar.GetSimVarValue('L:A32NX_OVHD_COND_PACK_2_PB_HAS_FAULT', 'bool');
-        const pack1On = SimVar.GetSimVarValue('L:A32NX_OVHD_COND_PACK_1_PB_IS_ON', 'bool');
-        const pack2On = SimVar.GetSimVarValue('L:A32NX_OVHD_COND_PACK_2_PB_IS_ON', 'bool');
+        this.pack1On.set(SimVar.GetSimVarValue('L:A32NX_OVHD_COND_PACK_1_PB_IS_ON', 'bool'));
+        this.pack2On.set(SimVar.GetSimVarValue('L:A32NX_OVHD_COND_PACK_2_PB_IS_ON', 'bool'));
 
         this.excessPressure.set(SimVar.GetSimVarValue('L:A32NX_PRESS_EXCESS_CAB_ALT', 'bool'));
         this.cabAltSetResetState1.set(
@@ -1042,10 +1155,11 @@ export class PseudoFWC {
         this.cabAltSetResetState2.set(
             this.cabAltSetReset2.write(pressureAltitude > 16000 && this.excessPressure.get(), this.excessPressure.get() && [3, 10].includes(this.fwcFlightPhase.get())),
         );
-        this.packOffBleedAvailable1.write((eng1Bleed === 1 && !eng1BleedPbFault) || crossfeed === 1, deltaTime);
-        this.packOffBleedAvailable2.write((eng2Bleed === 1 && !eng2BleedPbFault) || crossfeed === 1, deltaTime);
-        this.packOffNotFailed1Status.set(this.packOffNotFailed1.write(!pack1On && !pack1Fault && this.packOffBleedAvailable1.read() && this.fwcFlightPhase.get() === 6, deltaTime));
-        this.packOffNotFailed2Status.set(this.packOffNotFailed2.write(!pack2On && !pack2Fault && this.packOffBleedAvailable2.read() && this.fwcFlightPhase.get() === 6, deltaTime));
+        this.packOffBleedAvailable1.write((eng1Bleed === 1 && !eng1BleedPbFault) || !crossbleedFullyClosed, deltaTime);
+        this.packOffBleedAvailable2.write((eng2Bleed === 1 && !eng2BleedPbFault) || !crossbleedFullyClosed, deltaTime);
+        this.packOffNotFailed1Status.set(this.packOffNotFailed1.write(!this.pack1On.get() && !pack1Fault && this.packOffBleedAvailable1.read() && this.fwcFlightPhase.get() === 6, deltaTime));
+        this.packOffNotFailed2Status.set(this.packOffNotFailed2.write(!this.pack2On.get() && !pack2Fault && this.packOffBleedAvailable2.read() && this.fwcFlightPhase.get() === 6, deltaTime));
+        this.pack1And2Fault.set(acscBothFault || (this.packOffNotFailed1Status.get() && this.acsc2Fault.get()) || (this.packOffNotFailed2Status.get() && this.acsc1Fault.get()));
 
         /* OTHER STUFF */
 
@@ -1070,16 +1184,8 @@ export class PseudoFWC {
 
         /* FUEL */
         const fuelGallonsToKg = SimVar.GetSimVarValue('FUEL WEIGHT PER GALLON', 'kilogram');
-        this.centerFuelPump1Auto.set(SimVar.GetSimVarValue('FUELSYSTEM PUMP SWITCH:1', 'Enum'));
-        this.centerFuelPump2Auto.set(SimVar.GetSimVarValue('FUELSYSTEM PUMP SWITCH:4', 'Enum'));
         this.centerFuelQuantity.set(SimVar.GetSimVarValue('FUEL TANK CENTER QUANTITY', 'gallons') * fuelGallonsToKg);
         this.fuelXFeedPBOn.set(SimVar.GetSimVarValue('L:XMLVAR_Momentary_PUSH_OVHD_FUEL_XFEED_Pressed', 'bool'));
-        this.leftOuterInnerValve.set(SimVar.GetSimVarValue('FUELSYSTEM VALVE OPEN:4', 'Bool'));
-        this.leftFuelPump1Auto.set(SimVar.GetSimVarValue('FUELSYSTEM PUMP SWITCH:2', 'Enum'));
-        this.leftFuelPump2Auto.set(SimVar.GetSimVarValue('FUELSYSTEM PUMP SWITCH:5', 'Enum'));
-        this.rightOuterInnerValve.set(SimVar.GetSimVarValue('FUELSYSTEM VALVE OPEN:5', 'Bool'));
-        this.rightFuelPump1Auto.set(SimVar.GetSimVarValue('FUELSYSTEM PUMP SWITCH:3', 'Enum'));
-        this.rightFuelPump2Auto.set(SimVar.GetSimVarValue('FUELSYSTEM PUMP SWITCH:6', 'Enum'));
 
         const leftInnerFuelQuantity = SimVar.GetSimVarValue('FUEL TANK LEFT MAIN QUANTITY', 'gallons') * fuelGallonsToKg;
         const rightInnerFuelQuantity = SimVar.GetSimVarValue('FUEL TANK RIGHT MAIN QUANTITY', 'gallons') * fuelGallonsToKg;
@@ -2161,6 +2267,191 @@ export class PseudoFWC {
             sysPage: 2,
             side: 'LEFT',
         },
+        2161206: { // PACK 1+2 FAULT
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: this.pack1And2Fault,
+            whichCodeToReturn: () => [
+                0,
+                this.pack1On.get() ? 1 : null,
+                this.pack2On.get() ? 2 : null,
+                !this.aircraftOnGround.get() && !this.ramAirOn.get() ? 3 : null,
+                !this.aircraftOnGround.get() && !this.ramAirOn.get() ? 4 : null,
+                !this.aircraftOnGround.get() && !this.ramAirOn.get() ? 5 : null,
+                !this.aircraftOnGround.get() && !this.ramAirOn.get() ? 6 : null,
+                !this.aircraftOnGround.get() ? 7 : null,
+            ],
+            codesToReturn: ['216120601', '216120602', '216120603', '216120604', '216120605', '216120606', '216120607', '216120608'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: 1,
+            side: 'LEFT',
+        },
+        2161202: { // PACK 1 FAULT
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: this.acsc1Fault,
+            whichCodeToReturn: () => [
+                0,
+                this.pack1On.get() ? 1 : null,
+            ],
+            codesToReturn: ['216120201', '216120202'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: 1,
+            side: 'LEFT',
+        },
+        2161203: { // PACK 2 FAULT
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: this.acsc2Fault,
+            whichCodeToReturn: () => [
+                0,
+                this.pack2On.get() ? 1 : null,
+            ],
+            codesToReturn: ['216120301', '216120302'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: 1,
+            side: 'LEFT',
+        },
+        2161207: { // PACK 1 ABNORMALLY OFF
+            flightPhaseInhib: [1, 2, 3, 4, 5, 7, 8, 9, 10],
+            simVarIsActive: this.packOffNotFailed1Status,
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['216120701'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: 1,
+            side: 'LEFT',
+        },
+        2161208: { // PACK 2 ABNORMALLY OFF
+            flightPhaseInhib: [1, 2, 3, 4, 5, 7, 8, 9, 10],
+            simVarIsActive: this.packOffNotFailed2Status,
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['216120801'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: 1,
+            side: 'LEFT',
+        },
+        2161291: { // COND CTL 1-A FAULT
+            flightPhaseInhib: [2, 3, 4, 5, 6, 7, 8, 9],
+            simVarIsActive: MappedSubject.create(([acsc1Lane1Fault, acsc1Lane2Fault]) => acsc1Lane1Fault && !acsc1Lane2Fault, this.acsc1Lane1Fault, this.acsc1Lane2Fault),
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['216129101'],
+            memoInhibit: () => false,
+            failure: 1,
+            sysPage: -1,
+            side: 'LEFT',
+        },
+        2161297: { // COND CTL 1-B FAULT
+            flightPhaseInhib: [2, 3, 4, 5, 6, 7, 8, 9],
+            simVarIsActive: MappedSubject.create(([acsc1Lane1Fault, acsc1Lane2Fault]) => !acsc1Lane1Fault && acsc1Lane2Fault, this.acsc1Lane1Fault, this.acsc1Lane2Fault),
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['216129701'],
+            memoInhibit: () => false,
+            failure: 1,
+            sysPage: -1,
+            side: 'LEFT',
+        },
+        2161294: { // COND CTL 2-A FAULT
+            flightPhaseInhib: [2, 3, 4, 5, 6, 7, 8, 9],
+            simVarIsActive: MappedSubject.create(([acsc2Lane1Fault, acsc2Lane2Fault]) => acsc2Lane1Fault && !acsc2Lane2Fault, this.acsc2Lane1Fault, this.acsc2Lane2Fault),
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['216129401'],
+            memoInhibit: () => false,
+            failure: 1,
+            sysPage: -1,
+            side: 'LEFT',
+        },
+        2161298: { // COND CTL 2-B FAULT
+            flightPhaseInhib: [2, 3, 4, 5, 6, 7, 8, 9],
+            simVarIsActive: MappedSubject.create(([acsc2Lane1Fault, acsc2Lane2Fault]) => !acsc2Lane1Fault && acsc2Lane2Fault, this.acsc2Lane1Fault, this.acsc2Lane2Fault),
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['216129801'],
+            memoInhibit: () => false,
+            failure: 1,
+            sysPage: -1,
+            side: 'LEFT',
+        },
+        2163210: { // CKPT DUCT OVHT
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: this.ckptDuctOvht,
+            whichCodeToReturn: () => [0, 1, null, 3], // TODO: Add support for Fahrenheit
+            codesToReturn: ['216321001', '216321002', '216321003', '216321004'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: 7,
+            side: 'LEFT',
+        },
+        2163211: { // FWD DUCT OVHT
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: this.fwdDuctOvht,
+            whichCodeToReturn: () => [0, 1, null, 3], // TODO: Add support for Fahrenheit
+            codesToReturn: ['216321101', '216321102', '216321103', '216321104'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: 7,
+            side: 'LEFT',
+        },
+        2163212: { // AFT DUCT OVHT
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: this.aftDuctOvht,
+            whichCodeToReturn: () => [0, 1, null, 3], // TODO: Add support for Fahrenheit
+            codesToReturn: ['216321201', '216321202', '216321203', '216321204'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: 7,
+            side: 'LEFT',
+        },
+        2163218: { // L+R CAB FAN FAULT
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: MappedSubject.create(([cabFanHasFault1, cabFanHasFault2]) => cabFanHasFault1 && cabFanHasFault2, this.cabFanHasFault1, this.cabFanHasFault2),
+            whichCodeToReturn: () => [0, 1],
+            codesToReturn: ['216321801', '216321802'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: 7,
+            side: 'LEFT',
+        },
+        2163260: { // LAV+GALLEY FAN FAULT
+            flightPhaseInhib: [3, 4, 5, 7, 8, 9],
+            simVarIsActive: this.lavGalleyFanFault,
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['216326001'],
+            memoInhibit: () => false,
+            failure: 1,
+            sysPage: -1,
+            side: 'LEFT',
+        },
+        2163290: { // HOT AIR FAULT
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: this.hotAirDisagrees,
+            whichCodeToReturn: () => [0,
+                this.hotAirPbOn.get() ? 1 : null,
+                (this.anyDuctOvht.get() && this.hotAirPbOn.get()) ? 2 : null,
+                (this.anyDuctOvht.get() && this.pack1On.get()) ? 3 : null,
+                (this.anyDuctOvht.get() && this.pack2On.get()) ? 4 : null,
+            ],
+            codesToReturn: ['216329001', '216329002', '216329003', '216329004', '216329005'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: 7,
+            side: 'LEFT',
+        },
+        2163305: { // TRIM AIR SYS FAULT
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: this.trimAirFault,
+            whichCodeToReturn: () => [0,
+                this.ckptTrimFault.get() ? 1 : null,
+                this.fwdTrimFault.get() ? 2 : null,
+                this.aftTrimFault.get() ? 3 : null,
+                this.trimAirHighPressure.get() ? 4 : null,
+            ],
+            codesToReturn: ['216330501', '216330502', '216330503', '216330504', '216330505'],
+            memoInhibit: () => false,
+            failure: 1,
+            sysPage: -1,
+            side: 'LEFT',
+        },
         2600150: { // SMOKE FWD CARGO SMOKE
             flightPhaseInhib: [4, 5, 7, 8],
             simVarIsActive: this.cargoFireTest,
@@ -2196,26 +2487,6 @@ export class PseudoFWC {
             memoInhibit: () => false,
             failure: 2,
             sysPage: -1,
-            side: 'LEFT',
-        },
-        2161207: { // PACK 1 ABNORMALLY OFF
-            flightPhaseInhib: [1, 2, 3, 4, 5, 7, 8, 9, 10],
-            simVarIsActive: this.packOffNotFailed1Status,
-            whichCodeToReturn: () => [0],
-            codesToReturn: ['216120701'],
-            memoInhibit: () => false,
-            failure: 2,
-            sysPage: 1,
-            side: 'LEFT',
-        },
-        2161208: { // PACK 2 ABNORMALLY OFF
-            flightPhaseInhib: [1, 2, 3, 4, 5, 7, 8, 9, 10],
-            simVarIsActive: this.packOffNotFailed2Status,
-            whichCodeToReturn: () => [0],
-            codesToReturn: ['216120801'],
-            memoInhibit: () => false,
-            failure: 2,
-            sysPage: 1,
             side: 'LEFT',
         },
         3200060: { // NW ANTI SKID INACTIVE
@@ -2460,7 +2731,7 @@ export class PseudoFWC {
             simVarIsActive: this.leftFuelLow,
             whichCodeToReturn: () => [
                 0,
-                1,
+                !this.fuelCtrTankModeSelMan.get() ? 1 : null,
                 !this.fuelXFeedPBOn.get() ? 2 : null,
                 !this.fuelXFeedPBOn.get() ? 3 : null,
                 !this.fuelXFeedPBOn.get() ? 4 : null,
@@ -2478,7 +2749,7 @@ export class PseudoFWC {
             simVarIsActive: this.rightFuelLow,
             whichCodeToReturn: () => [
                 0,
-                1,
+                !this.fuelCtrTankModeSelMan.get() ? 1 : null,
                 !this.fuelXFeedPBOn.get() ? 2 : null,
                 !this.fuelXFeedPBOn.get() ? 3 : null,
                 !this.fuelXFeedPBOn.get() ? 4 : null,

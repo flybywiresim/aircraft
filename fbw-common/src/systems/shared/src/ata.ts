@@ -93,6 +93,7 @@ export const AtaChaptersTitle = {
 };
 
 export const AtaChaptersDescription = Object.freeze({
+    21: 'The air conditioning system regulates the temperature, air flow and pressure inside the aircraft. Its main function is to supply a high level of comfort to the passengers and crew and protect the aircraft systems like the avionics.',
     22: 'The Autoflight systems are responsible for a multitude of functions, including but not limited to: Flight Guidance (AP, FD, A/THR), Flight Management, Flight Augmentation (yaw damper, etc.), and Flight Envelope (Speed scale, Alpha floor, etc.).',
     24: 'All things related to the electrical system. The electrical system supplies power from the engines, APU, batteries, or emergency generator to all cockpit instruments.',
     27: 'The flight controls contain the various systems used to control the aircraft in flight, such as control surfaces, but also flight control computers. Failure of these systems may lead to loss of control over the aircraft, and/or loss of information about the status of the flight controls.',

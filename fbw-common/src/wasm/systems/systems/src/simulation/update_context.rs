@@ -2,6 +2,8 @@ use std::time::Duration;
 use uom::si::{
     acceleration::meter_per_second_squared,
     angle::radian,
+    angular_acceleration::radian_per_second_squared,
+    angular_velocity::{degree_per_second, radian_per_second},
     f64::*,
     length::millimeter,
     mass_density::kilogram_per_cubic_meter,
@@ -47,6 +49,65 @@ impl Attitude {
 
     fn bank(&self) -> Angle {
         self.bank
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
+pub enum SurfaceTypeMsfs {
+    Concrete = 0,
+    Grass = 1,
+    Water = 2,
+    GrassBumpy = 3,
+    Asphalt = 4,
+    ShortGrass = 5,
+    LongGrass = 6,
+    HardTurf = 7,
+    Snow = 8,
+    Ice = 9,
+    Urban = 10,
+    Forest = 11,
+    Dirt = 12,
+    Coral = 13,
+    Gravel = 14,
+    OilTreated = 15,
+    SteelMats = 16,
+    Bituminus = 17,
+    Brick = 18,
+    Macadam = 19,
+    Planks = 20,
+    Sand = 21,
+    Shale = 22,
+    Tarmac = 23,
+}
+impl From<f64> for SurfaceTypeMsfs {
+    fn from(value: f64) -> Self {
+        match value.floor() as u32 {
+            0 => SurfaceTypeMsfs::Concrete,
+            1 => SurfaceTypeMsfs::Grass,
+            2 => SurfaceTypeMsfs::Water,
+            3 => SurfaceTypeMsfs::GrassBumpy,
+            4 => SurfaceTypeMsfs::Asphalt,
+            5 => SurfaceTypeMsfs::ShortGrass,
+            6 => SurfaceTypeMsfs::LongGrass,
+            7 => SurfaceTypeMsfs::HardTurf,
+            8 => SurfaceTypeMsfs::Snow,
+            9 => SurfaceTypeMsfs::Ice,
+            10 => SurfaceTypeMsfs::Urban,
+            11 => SurfaceTypeMsfs::Forest,
+            12 => SurfaceTypeMsfs::Dirt,
+            13 => SurfaceTypeMsfs::Coral,
+            14 => SurfaceTypeMsfs::Gravel,
+            15 => SurfaceTypeMsfs::OilTreated,
+            16 => SurfaceTypeMsfs::SteelMats,
+            17 => SurfaceTypeMsfs::Bituminus,
+            18 => SurfaceTypeMsfs::Brick,
+            19 => SurfaceTypeMsfs::Macadam,
+            20 => SurfaceTypeMsfs::Planks,
+            21 => SurfaceTypeMsfs::Sand,
+            22 => SurfaceTypeMsfs::Shale,
+            23 => SurfaceTypeMsfs::Tarmac,
+            i => panic!("Cannot convert from {} to SurfaceTypeMsfs.", i),
+        }
     }
 }
 
@@ -167,6 +228,13 @@ pub struct UpdateContext {
     total_yaw_inertia_id: VariableIdentifier,
     precipitation_rate_id: VariableIdentifier,
     in_cloud_id: VariableIdentifier,
+    surface_id: VariableIdentifier,
+    rotation_acc_x_id: VariableIdentifier,
+    rotation_acc_y_id: VariableIdentifier,
+    rotation_acc_z_id: VariableIdentifier,
+    rotation_vel_x_id: VariableIdentifier,
+    rotation_vel_y_id: VariableIdentifier,
+    rotation_vel_z_id: VariableIdentifier,
 
     delta: Delta,
     simulation_time: f64,
@@ -181,6 +249,7 @@ pub struct UpdateContext {
     vertical_speed: Velocity,
 
     local_acceleration: LocalAcceleration,
+    local_acceleration_plane_reference: Vector3<f64>,
     local_acceleration_plane_reference_filtered: LowPassFilter<Vector3<f64>>,
 
     world_ambient_wind: Velocity3D,
@@ -200,6 +269,11 @@ pub struct UpdateContext {
     precipitation_rate: Length,
 
     in_cloud: bool,
+
+    surface: SurfaceTypeMsfs,
+
+    rotation_accel: Vector3<AngularAcceleration>,
+    rotation_vel: Vector3<AngularVelocity>,
 }
 impl UpdateContext {
     pub(crate) const IS_READY_KEY: &'static str = "IS_READY";
@@ -231,6 +305,13 @@ impl UpdateContext {
     pub(crate) const LATITUDE_KEY: &'static str = "PLANE LATITUDE";
     pub(crate) const TOTAL_WEIGHT_KEY: &'static str = "TOTAL WEIGHT";
     pub(crate) const TOTAL_YAW_INERTIA: &'static str = "TOTAL WEIGHT YAW MOI";
+    pub(crate) const SURFACE_KEY: &'static str = "SURFACE TYPE";
+    pub(crate) const ROTATION_ACCEL_X_KEY: &'static str = "ROTATION ACCELERATION BODY X";
+    pub(crate) const ROTATION_ACCEL_Y_KEY: &'static str = "ROTATION ACCELERATION BODY Y";
+    pub(crate) const ROTATION_ACCEL_Z_KEY: &'static str = "ROTATION ACCELERATION BODY Z";
+    pub(crate) const ROTATION_VEL_X_KEY: &'static str = "ROTATION VELOCITY BODY X";
+    pub(crate) const ROTATION_VEL_Y_KEY: &'static str = "ROTATION VELOCITY BODY Y";
+    pub(crate) const ROTATION_VEL_Z_KEY: &'static str = "ROTATION VELOCITY BODY Z";
 
     // Plane accelerations can become crazy with msfs collision handling.
     // Having such filtering limits high frequencies transients in accelerations used for physics
@@ -295,6 +376,14 @@ impl UpdateContext {
             precipitation_rate_id: context.get_identifier(Self::AMBIENT_PRECIP_RATE_KEY.to_owned()),
             in_cloud_id: context.get_identifier(Self::IN_CLOUD_KEY.to_owned()),
 
+            surface_id: context.get_identifier(Self::SURFACE_KEY.to_owned()),
+            rotation_acc_x_id: context.get_identifier(Self::ROTATION_ACCEL_X_KEY.to_owned()),
+            rotation_acc_y_id: context.get_identifier(Self::ROTATION_ACCEL_Y_KEY.to_owned()),
+            rotation_acc_z_id: context.get_identifier(Self::ROTATION_ACCEL_Z_KEY.to_owned()),
+            rotation_vel_x_id: context.get_identifier(Self::ROTATION_VEL_X_KEY.to_owned()),
+            rotation_vel_y_id: context.get_identifier(Self::ROTATION_VEL_Y_KEY.to_owned()),
+            rotation_vel_z_id: context.get_identifier(Self::ROTATION_VEL_Z_KEY.to_owned()),
+
             delta: delta.into(),
             simulation_time,
             is_ready: true,
@@ -311,6 +400,7 @@ impl UpdateContext {
                 vertical_acceleration,
                 longitudinal_acceleration,
             ),
+            local_acceleration_plane_reference: Vector3::new(0., -9.8, 0.),
             local_acceleration_plane_reference_filtered:
                 LowPassFilter::<Vector3<f64>>::new_with_init_value(
                     Self::PLANE_ACCELERATION_FILTERING_TIME_CONSTANT,
@@ -342,6 +432,11 @@ impl UpdateContext {
             total_yaw_inertia_slug_foot_squared: 10.,
             precipitation_rate: Length::default(),
             in_cloud: false,
+
+            surface: SurfaceTypeMsfs::Asphalt,
+
+            rotation_accel: Vector3::default(),
+            rotation_vel: Vector3::default(),
         }
     }
 
@@ -377,6 +472,15 @@ impl UpdateContext {
             precipitation_rate_id: context.get_identifier("AMBIENT PRECIP RATE".to_owned()),
             in_cloud_id: context.get_identifier("AMBIENT IN CLOUD".to_owned()),
 
+            surface_id: context.get_identifier("SURFACE TYPE".to_owned()),
+
+            rotation_acc_x_id: context.get_identifier(Self::ROTATION_ACCEL_X_KEY.to_owned()),
+            rotation_acc_y_id: context.get_identifier(Self::ROTATION_ACCEL_Y_KEY.to_owned()),
+            rotation_acc_z_id: context.get_identifier(Self::ROTATION_ACCEL_Z_KEY.to_owned()),
+            rotation_vel_x_id: context.get_identifier(Self::ROTATION_VEL_X_KEY.to_owned()),
+            rotation_vel_y_id: context.get_identifier(Self::ROTATION_VEL_Y_KEY.to_owned()),
+            rotation_vel_z_id: context.get_identifier(Self::ROTATION_VEL_Z_KEY.to_owned()),
+
             delta: Default::default(),
             simulation_time: Default::default(),
             is_ready: Default::default(),
@@ -389,7 +493,7 @@ impl UpdateContext {
             is_on_ground: Default::default(),
             vertical_speed: Default::default(),
             local_acceleration: Default::default(),
-
+            local_acceleration_plane_reference: Vector3::new(0., -9.8, 0.),
             local_acceleration_plane_reference_filtered:
                 LowPassFilter::<Vector3<f64>>::new_with_init_value(
                     Self::PLANE_ACCELERATION_FILTERING_TIME_CONSTANT,
@@ -421,6 +525,11 @@ impl UpdateContext {
             total_yaw_inertia_slug_foot_squared: 1.,
             precipitation_rate: Length::default(),
             in_cloud: false,
+
+            surface: SurfaceTypeMsfs::Asphalt,
+
+            rotation_accel: Vector3::default(),
+            rotation_vel: Vector3::default(),
         }
     }
 
@@ -488,6 +597,27 @@ impl UpdateContext {
 
         self.in_cloud = reader.read(&self.in_cloud_id);
 
+        let surface_read: f64 = reader.read(&self.surface_id);
+        self.surface = surface_read.into();
+
+        self.rotation_accel = Vector3::new(
+            AngularAcceleration::new::<radian_per_second_squared>(
+                reader.read(&self.rotation_acc_x_id),
+            ),
+            AngularAcceleration::new::<radian_per_second_squared>(
+                reader.read(&self.rotation_acc_y_id),
+            ),
+            AngularAcceleration::new::<radian_per_second_squared>(
+                reader.read(&self.rotation_acc_z_id),
+            ),
+        );
+
+        self.rotation_vel = Vector3::new(
+            AngularVelocity::new::<degree_per_second>(reader.read(&self.rotation_vel_x_id)),
+            AngularVelocity::new::<degree_per_second>(reader.read(&self.rotation_vel_y_id)),
+            AngularVelocity::new::<degree_per_second>(reader.read(&self.rotation_vel_z_id)),
+        );
+
         self.update_relative_wind();
 
         self.update_local_acceleration_plane_reference(delta);
@@ -506,12 +636,12 @@ impl UpdateContext {
 
         // Total acceleration in plane reference is the gravity in world reference rotated to plane reference. To this we substract
         // the local plane reference to get final local acceleration (if plane falling at 1G final local accel is 1G of gravity - 1G local accel = 0G)
-        let total_acceleration_plane_reference = (pitch_rotation
+        self.local_acceleration_plane_reference = (pitch_rotation
             * (bank_rotation * gravity_acceleration_world_reference))
             - plane_acceleration_plane_reference;
 
         self.local_acceleration_plane_reference_filtered
-            .update(delta, total_acceleration_plane_reference);
+            .update(delta, self.local_acceleration_plane_reference);
     }
 
     /// Relative wind could be directly read from simvar RELATIVE WIND VELOCITY XYZ.
@@ -631,8 +761,14 @@ impl UpdateContext {
         self.local_acceleration.vert_accel()
     }
 
+    pub fn surface_type(&self) -> SurfaceTypeMsfs {
+        self.surface
+    }
+
     pub fn local_acceleration_without_gravity(&self) -> Vector3<f64> {
-        self.local_acceleration.to_ms2_vector()
+        // Gives the local acceleration in plane reference. If msfs local accel is free falling -9.81
+        //      then it's locally a up acceleration.
+        -self.local_acceleration.to_ms2_vector()
     }
 
     pub fn local_relative_wind(&self) -> Velocity3D {
@@ -643,12 +779,12 @@ impl UpdateContext {
         self.local_velocity
     }
 
-    pub fn acceleration(&self) -> LocalAcceleration {
-        self.local_acceleration
-    }
-
     pub fn acceleration_plane_reference_filtered_ms2_vector(&self) -> Vector3<f64> {
         self.local_acceleration_plane_reference_filtered.output()
+    }
+
+    pub fn acceleration_plane_reference_unfiltered_ms2_vector(&self) -> Vector3<f64> {
+        self.local_acceleration_plane_reference
     }
 
     pub fn pitch(&self) -> Angle {
@@ -689,6 +825,22 @@ impl UpdateContext {
     pub fn total_yaw_inertia_kg_m2(&self) -> f64 {
         self.total_yaw_inertia_slug_foot_squared
             * Self::SLUG_FOOT_SQUARED_TO_KG_METER_SQUARED_CONVERSION
+    }
+
+    pub fn rotation_acceleration_rad_s2(&self) -> Vector3<f64> {
+        Vector3::new(
+            self.rotation_accel[0].get::<radian_per_second_squared>(),
+            self.rotation_accel[1].get::<radian_per_second_squared>(),
+            self.rotation_accel[2].get::<radian_per_second_squared>(),
+        )
+    }
+
+    pub fn rotation_velocity_rad_s(&self) -> Vector3<f64> {
+        Vector3::new(
+            self.rotation_vel[0].get::<radian_per_second>(),
+            self.rotation_vel[1].get::<radian_per_second>(),
+            self.rotation_vel[2].get::<radian_per_second>(),
+        )
     }
 }
 

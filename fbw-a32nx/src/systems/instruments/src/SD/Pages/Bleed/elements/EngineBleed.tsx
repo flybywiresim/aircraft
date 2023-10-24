@@ -21,14 +21,23 @@ interface EngineBleedProps {
 }
 
 const EngineBleed: FC<EngineBleedProps> = ({ x, y, engine, sdacDatum, enginePRValveOpen, packFlowValveOpen, onGround, wingAntiIceOn, wingAntiIceTimer }) => {
+    // TODO: Should come from ECU
     const [engineN1] = useSimVar(`L:A32NX_ENGINE_N1:${engine}`, 'percent', 100);
     const [engineN1Idle] = useSimVar('L:A32NX_ENGINE_IDLE_N1', 'percent', 500);
     const engineN1BelowIdle = (engineN1 + 2) < engineN1Idle;
+    const [engineN1BelowIdleValid] = useSimVar(`L:A32NX_FADEC_POWERED_ENG${engine}`, 'bool', 500);
+
     const [engineHPValveOpen] = useSimVar(`L:A32NX_PNEU_ENG_${engine}_HP_VALVE_OPEN`, 'bool', 500);
-    const [precoolerOutletTemp] = useSimVar(`L:A32NX_PNEU_ENG_${engine}_PRECOOLER_OUTLET_TEMPERATURE`, 'celsius', 100);
+    const [precoolerOutletTemp] = useSimVar(`L:A32NX_PNEU_ENG_${engine}_BLEED_TEMPERATURE_SENSOR_TEMPERATURE`, 'celsius', 100);
+
     const precoolerOutletTempFive = Math.round(precoolerOutletTemp / 5) * 5;
-    const [precoolerInletPress] = useSimVar(`L:A32NX_PNEU_ENG_${engine}_REGULATED_TRANSDUCER_PRESSURE`, 'psi', 10);
+    const isPrecoolerOutletTempValid = precoolerOutletTemp > -100;
+    const [precoolerOutletLowTemperature] = useSimVar(`L:A32NX_PNEU_ENG_${engine}_LOW_TEMPERATURE`, 'bool', 100);
+    const [precoolerOutletOverheat] = useSimVar(`L:A32NX_PNEU_ENG_${engine}_OVERHEAT`, 'bool', 100);
+
+    const [precoolerInletPress] = useSimVar(`L:A32NX_PNEU_ENG_${engine}_REGULATED_TRANSDUCER_PRESSURE`, 'psi', 100);
     const precoolerInletPressTwo = Math.round(precoolerInletPress / 2) * 2;
+    const [precoolerInletOverpressure] = useSimVar(`L:A32NX_PNEU_ENG_${engine}_OVERPRESSURE`, 'bool', 100);
 
     const [wingAntiIceValveClosed] = useSimVar(`L:A32NX_PNEU_WING_ANTI_ICE_${engine}_VALVE_CLOSED`, 'bool', 500);
     const [wingAntiIceHighPressure] = useSimVar(`L:A32NX_PNEU_WING_ANTI_ICE_${engine}_HIGH_PRESSURE`, 'bool', 500);
@@ -85,7 +94,7 @@ const EngineBleed: FC<EngineBleedProps> = ({ x, y, engine, sdacDatum, enginePRVa
             <text
                 x={x}
                 y={y + 270}
-                className={`Large Center ${!sdacDatum || precoolerInletPressTwo <= 4 || precoolerInletPressTwo > 60 ? 'Amber' : 'Green'}`}
+                className={`Large Center ${!sdacDatum || precoolerInletPressTwo <= 4 || precoolerInletOverpressure ? 'Amber' : 'Green'}`}
             >
                 {!sdacDatum ? 'XX' : precoolerInletPressTwo}
             </text>
@@ -93,9 +102,9 @@ const EngineBleed: FC<EngineBleedProps> = ({ x, y, engine, sdacDatum, enginePRVa
             <text
                 x={sdacDatum ? x + 20 : x + 14}
                 y={y + 295}
-                className={`Large End ${!sdacDatum || precoolerOutletTempFive < 150 || precoolerOutletTempFive > 257 ? 'Amber' : 'Green'}`}
+                className={`Large End ${!sdacDatum || !isPrecoolerOutletTempValid || precoolerOutletLowTemperature || precoolerOutletOverheat ? 'Amber' : 'Green'}`}
             >
-                {!sdacDatum ? 'XX' : precoolerOutletTempFive}
+                {!sdacDatum || !isPrecoolerOutletTempValid ? 'XX' : precoolerOutletTempFive}
             </text>
 
             {/* Pressure regulating valve */}
@@ -110,7 +119,7 @@ const EngineBleed: FC<EngineBleedProps> = ({ x, y, engine, sdacDatum, enginePRVa
             <text x={engine === 1 ? x + 95 : x - 90} y={y + 433} className="White Center Standard">HP</text>
             <path className={engineHPValveOpen === 1 || !sdacDatum ? 'GreenLine' : 'Hide'} d={`M ${engine === 1 ? x + 33 : x - 33},${y + 398} l ${engine === 1 ? '-33' : '33'},0`} />
 
-            <text x={engine === 1 ? x - 61 : x + 58} y={423} className={`Huge ${engineN1BelowIdle ? 'Amber' : 'White'}`}>{engine}</text>
+            <text x={engine === 1 ? x - 61 : x + 58} y={423} className={`Huge ${engineN1BelowIdle && engineN1BelowIdleValid ? 'Amber' : 'White'}`}>{engine}</text>
         </g>
     );
 };
