@@ -63,7 +63,6 @@
 1. [APU] Added xfeed APU fuel capabilities - @Taz5150 (TazX [Z+1]#0405)
 1. [ATSU] Fix ATIS Auto Update LSK6L to ATIS page instead of ATC MENU - @BravoMike99 (bruno_pt99)
 
-
 ## 0.10.0
 
 1. [PFD] Corrected low VLS near max flight level - @lukecologne (luke)
