@@ -920,6 +920,9 @@ export class PseudoFWC {
 
         this.computedAirSpeed.set(Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_1_COMPUTED_AIRSPEED'));
 
+        // needs to happen before dual eng failure check
+        this.aircraftOnGround.set(SimVar.GetSimVarValue('SIM ON GROUND', 'Bool'));
+
         /* ENGINE AND THROTTLE */
 
         this.engine1State.set(SimVar.GetSimVarValue('L:A32NX_ENGINE_STATE:1', 'Enum'));
@@ -1021,7 +1024,7 @@ export class PseudoFWC {
         // const [right1LandingGear] = useSimVar('L:A32NX_LGCIU_1_RIGHT_GEAR_COMPRESSED', 'bool', 500);
         // const aircraftOnGround = left1LandingGear === 1 || right1LandingGear === 1;
         // FIXME The landing gear triggers the dual engine failure on loading
-        this.aircraftOnGround.set(SimVar.GetSimVarValue('SIM ON GROUND', 'Bool'));
+
         this.antiskidActive.set(SimVar.GetSimVarValue('ANTISKID BRAKES ACTIVE', 'bool'));
         this.brakeFan.set(SimVar.GetSimVarValue('L:A32NX_BRAKE_FAN', 'bool'));
         this.brakesHot.set(SimVar.GetSimVarValue('L:A32NX_BRAKES_HOT', 'bool'));
@@ -1594,9 +1597,11 @@ export class PseudoFWC {
                     }
 
                     if (value.failure === 3) {
+                        console.log(`Playing Master warning Source:${key}`);
                         this.masterWarning.set(true);
                     }
                     if (value.failure === 2) {
+                        console.log(`Playing Master caution Source:${key}`);
                         this.masterCaution.set(true);
                     }
                 }
