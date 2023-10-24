@@ -7,6 +7,8 @@
 
 ## 0.12.0
 
+1. [RA] Realistic RA model based on a probe mesh implementation - @Taz5150 (TazX [Z+2]#0405)
+
 ## 0.11.0
 
 1. [FMS] Implement vertical navigation functions - @BlueberryKing (BlueberryKing)

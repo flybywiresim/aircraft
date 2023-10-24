@@ -29,6 +29,7 @@
     "build-a32nx:tcas": "node fbw-a32nx/src/systems/tcas/build.js",
 
     "build-a32nx:fadec": "cd fbw-a32nx/src/wasm/fadec_a320 && ./build.sh && wasm-opt -O1 -o /external/fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fadec.wasm /external/fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fadec.wasm",
+	"build-a32nx:radalt": "cd fbw-a32nx/src/wasm/radalt_a320 && ./build.sh && wasm-opt -O1 -o /external/fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/radalt.wasm /external/fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/radalt.wasm",
     "build-a32nx:fbw": "cd fbw-a32nx/src/wasm/fbw_a320 && ./build.sh && wasm-opt -O1 -o /external/fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fbw.wasm /external/fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fbw.wasm",
     "build-a32nx:flypad-backend": "cd fbw-a32nx/src/wasm/flypad-backend && ./build.sh && wasm-opt -O1 -o /external/fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/flypad-backend.wasm /external/fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/flypad-backend.wasm",
     "build-a32nx:systems": "cargo build -p a320_systems_wasm --target wasm32-wasi --release && wasm-opt -O1 -o /external/fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/systems.wasm /external/target/wasm32-wasi/release/a320_systems_wasm.wasm",
@@ -50,6 +51,8 @@
     "serve:efb": "cd fbw-a32nx/src/systems/instruments/src/EFB/ && vite --port 9696",
     "build:instruments": "rollup --max-old-space-size=8192 -c src/systems/instruments/buildSrc/simulatorBuild.mjs",
     "watch:instruments": "rollup --max-old-space-size=8192 -wc src/systems/instruments/buildSrc/simulatorBuild.mjs",
+    "prettier": "prettier --write **/*.json **/*.yml fbw-a32nx/src/systems/instruments/**/*.css",
+    "build-a32nx:all": "npm run build-a32nx:copy-base-files && npm run build-a32nx:efb-translation && npm run build-a32nx:model && npm run build-a32nx:behavior && npm run build-a32nx:atsu-common && npm run build-a32nx:atsu-fms-client && npm run build-a32nx:systems-host && npm run build-a32nx:failures && npm run build-a32nx:fmgc && npm run build-a32nx:sentry-client && npm run build-a32nx:simbridge-client && npm run build-a32nx:tcas && npm run build-a32nx:pfd && npm run build-a32nx:systems && npm run build-a32nx:fadec && npm run build-a32nx:radalt && npm run build-a32nx:fbw && npm run build-a32nx:flypad-backend && npm run build-a32nx:metadata && npm run build-a32nx:manifest",
 
     "====== A380 =================": "==========================================",
     "build-a380x:copy-base-files": "mkdir -p fbw-a380x/out/flybywire-aircraft-a380-842 && (rsync -a fbw-a380x/src/base/flybywire-aircraft-a380-842 fbw-a380x/out/ || cp -a -u fbw-a380x/src/base/flybywire-aircraft-a380-842 fbw-a380x/out/)",

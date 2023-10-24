@@ -118,6 +118,12 @@ export default new TaskOfTasks("all", [
                     "fbw-common/src/wasm/fadec_common",
                     "fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fadec.wasm"
                 ]),
+			new ExecTask("systems-radalt",
+                "npm run build-a32nx:radalt",
+                [
+                    "fbw-a32nx/src/wasm/radalt_a320",
+                    "fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/radalt.wasm"
+                ]),
             new ExecTask("systems-fbw",
                 "npm run build-a32nx:fbw",
                 [
