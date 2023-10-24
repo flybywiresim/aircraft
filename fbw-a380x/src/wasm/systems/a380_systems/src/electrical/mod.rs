@@ -200,8 +200,8 @@ impl A380Electrical {
             .emergency_generator_contactor_is_closed()
     }
 
-    fn ac_ess_bus_is_powered(&self, electricity: &Electricity) -> bool {
-        self.alternating_current.ac_ess_bus_is_powered(electricity)
+    fn ac_emer_bus_is_powered(&self, electricity: &Electricity) -> bool {
+        self.alternating_current.ac_emer_bus_is_powered(electricity)
     }
 
     fn galley_is_shed(&self) -> bool {
@@ -348,7 +348,7 @@ impl A380ElectricalOverheadPanel {
         electricity: &Electricity,
     ) {
         self.ac_ess_feed
-            .set_fault(!electrical.ac_ess_bus_is_powered(electricity));
+            .set_fault(!electrical.ac_emer_bus_is_powered(electricity));
 
         self.generators
             .iter_mut()
@@ -2479,8 +2479,11 @@ mod a380_electrical_circuit_tests {
     }
 
     #[test]
-    fn when_ac_ess_bus_is_unpowered_ac_ess_feed_has_fault() {
-        let mut test_bed = test_bed_with().airspeed(Velocity::default()).run();
+    fn when_ac_emer_bus_is_unpowered_ac_ess_feed_has_fault() {
+        let mut test_bed = test_bed_with()
+            .airspeed(Velocity::default())
+            .all_bats_off()
+            .run();
 
         assert!(test_bed.ac_ess_feed_has_fault());
     }

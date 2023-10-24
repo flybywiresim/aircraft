@@ -8,9 +8,9 @@ import { NavaidTuner } from '@fmgc/navigation/NavaidTuner';
 import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
 import { NearbyFacilities } from '@fmgc/navigation/NearbyFacilities';
 import { RequiredPerformance } from '@fmgc/navigation/RequiredPerformance';
-import { VorType } from '@fmgc/types/fstypes/FSEnums';
 import { Arinc429Register } from '@flybywiresim/fbw-sdk';
 import { Coordinates } from 'msfs-geo';
+import { VorType } from '@microsoft/msfs-sdk';
 
 export enum SelectedNavaidType {
     None,

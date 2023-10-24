@@ -83,7 +83,7 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
             this.needsUpdate = true;
         });
 
-        sub.on('realTime').handle((_r) => {
+        sub.on('simTime').handle((_r) => {
             if (this.needsUpdate) {
                 if (this.tcasState.tcasState === 2) {
                     this.needleColour.set('White');
@@ -92,7 +92,7 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
             }
         });
 
-        sub.on('vs').withArinc429Precision(2).handle((vs) => {
+        sub.on('vs').withArinc429Precision(3).handle((vs) => {
             const filteredVS = this.lagFilter.step(vs.value, this.props.instrument.deltaTime / 1000);
 
             const absVSpeed = Math.abs(filteredVS);
@@ -189,9 +189,9 @@ export class VerticalSpeedIndicator extends DisplayComponent<VerticalSpeedIndica
 }
 
 class VSpeedNeedle extends DisplayComponent<{ yOffset: Subscribable<number>, needleColour: Subscribable<string> }> {
-    private outLineRef = FSComponent.createRef<SVGPathElement>();
-
     private indicatorRef = FSComponent.createRef<SVGPathElement>();
+
+    private readonly pathSub = Subject.create('');
 
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
@@ -204,8 +204,7 @@ class VSpeedNeedle extends DisplayComponent<{ yOffset: Subscribable<number>, nee
         this.props.yOffset.sub((yOffset) => {
             const path = `m${centerX - dxBorder} ${centerY + dxBorder / dxFull * yOffset} l ${dxBorder - dxFull} ${(1 - dxBorder / dxFull) * yOffset}`;
 
-            this.outLineRef.instance.setAttribute('d', path);
-            this.indicatorRef.instance.setAttribute('d', path);
+            this.pathSub.set(path);
         });
 
         this.props.needleColour.sub((colour) => {
@@ -216,8 +215,8 @@ class VSpeedNeedle extends DisplayComponent<{ yOffset: Subscribable<number>, nee
     render(): VNode | null {
         return (
             <>
-                <path ref={this.outLineRef} class="HugeOutline" />
-                <path ref={this.indicatorRef} id="VSpeedIndicator" />
+                <path d={this.pathSub} class="HugeOutline" />
+                <path d={this.pathSub} ref={this.indicatorRef} id="VSpeedIndicator" />
             </>
         );
     }
@@ -228,19 +227,21 @@ class VSpeedText extends DisplayComponent<{ bus: ArincEventBus, yOffset: Subscri
 
     private groupRef = FSComponent.createRef<SVGGElement>();
 
+    private visibilitySub = Subject.create('hidden');
+
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<Arinc429Values>();
+        const sub = this.props.bus.getArincSubscriber<Arinc429Values>();
 
-        sub.on('vs').handle((vs) => {
+        sub.on('vs').withArinc429Precision(2).handle((vs) => {
             const absVSpeed = Math.abs(vs.value);
 
             if (absVSpeed < 200) {
-                this.groupRef.instance.setAttribute('visibility', 'hidden');
-                return;
+                this.visibilitySub.set('hidden');
+            } else {
+                this.visibilitySub.set('visible');
             }
-            this.groupRef.instance.setAttribute('visibility', 'visible');
 
             const sign = Math.sign(vs.value);
 
@@ -248,7 +249,7 @@ class VSpeedText extends DisplayComponent<{ bus: ArincEventBus, yOffset: Subscri
 
             const text = (Math.round(absVSpeed / 100) < 10 ? '0' : '') + Math.round(absVSpeed / 100).toString();
             this.vsTextRef.instance.textContent = text;
-            this.groupRef.instance.setAttribute('transform', `translate(0 ${textOffset})`);
+            this.groupRef.instance.style.transform = `translate3d(0px, ${textOffset}px, 0px)`;
         });
 
         this.props.textColour.sub((colour) => {
@@ -259,7 +260,7 @@ class VSpeedText extends DisplayComponent<{ bus: ArincEventBus, yOffset: Subscri
 
     render(): VNode {
         return (
-            <g ref={this.groupRef} id="VSpeedTextGroup">
+            <g ref={this.groupRef} visibility={this.visibilitySub} id="VSpeedTextGroup">
                 <path class="BackgroundFill" d="m158.4 83.011h-7.0514v-4.3989h7.0514z" />
                 <text ref={this.vsTextRef} id="VSpeedText" x="155.14055" y="82.554756" />
             </g>

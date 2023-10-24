@@ -4,12 +4,12 @@
 
 import { ConsumerSubject, MathUtils, Publisher, Subscription } from '@microsoft/msfs-sdk';
 import { getDisplayIndex } from 'instruments/src/PFD/PFD';
-import { Arinc429Word } from '@flybywiresim/fbw-sdk';
+import { Arinc429Register, Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
 import { PFDSimvars } from './PFDSimvarPublisher';
 import { ArincEventBus } from '../../MsfsAvionicsCommon/ArincEventBus';
 
 export interface Arinc429Values {
-    pitchAr: Arinc429Word;
+    pitchAr: Arinc429WordData;
     rollAr: Arinc429Word;
     altitudeAr: Arinc429Word;
     magTrack: Arinc429Word;
@@ -52,11 +52,13 @@ export interface Arinc429Values {
     fmEisDiscreteWord2Raw: number;
     fmMdaRaw: number;
     fmDhRaw: number;
+    fmTransAltRaw: number;
+    fmTransLvlRaw: number;
 }
 export class ArincValueProvider {
     private roll = new Arinc429Word(0);
 
-    private pitch = new Arinc429Word(0);
+    private pitch = Arinc429Register.empty();
 
     private magTrack = new Arinc429Word(0);
 
@@ -124,7 +126,7 @@ export class ArincValueProvider {
         const subscriber = this.bus.getSubscriber<PFDSimvars>();
 
         subscriber.on('pitch').handle((p) => {
-            this.pitch = new Arinc429Word(p);
+            this.pitch.set(p);
             publisher.pub('pitchAr', this.pitch);
         });
         subscriber.on('roll').handle((p) => {
@@ -502,6 +504,10 @@ export class ArincValueProvider {
         this.fm2Subs.push(subscriber.on('fm2MdaRaw').handle((raw) => publisher.pub('fmMdaRaw', raw), true));
         this.fm1Subs.push(subscriber.on('fm1DhRaw').handle((raw) => publisher.pub('fmDhRaw', raw), true));
         this.fm2Subs.push(subscriber.on('fm2DhRaw').handle((raw) => publisher.pub('fmDhRaw', raw), true));
+        this.fm1Subs.push(subscriber.on('fm1TransAltRaw').handle((raw) => publisher.pub('fmTransAltRaw', raw), true));
+        this.fm2Subs.push(subscriber.on('fm2TransAltRaw').handle((raw) => publisher.pub('fmTransAltRaw', raw), true));
+        this.fm1Subs.push(subscriber.on('fm1TransLvlRaw').handle((raw) => publisher.pub('fmTransLvlRaw', raw), true));
+        this.fm2Subs.push(subscriber.on('fm2TransLvlRaw').handle((raw) => publisher.pub('fmTransLvlRaw', raw), true));
 
         this.fm1Healthy.setConsumer(subscriber.on('fm1HealthyDiscrete'));
         this.fm2Healthy.setConsumer(subscriber.on('fm2HealthyDiscrete'));

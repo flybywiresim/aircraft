@@ -63,10 +63,10 @@
         "MetarParsingError": "METAR đã nhận không thể phân tích được",
         "NoIcaoProvided": "Chưa cung cấp mã ICAO",
         "NotAvailableShort": "Không có",
-        "Raw": "Nguyên",
+        "Raw": "Thô",
         "TT": {
           "SwitchToIconView": "Chuyển sang Chế độ biểu tượng",
-          "SwitchToRawMetarView": "Chuyển sang Chế độ xem METAR nguyên"
+          "SwitchToRawMetarView": "Chuyển sang Chế độ xem METAR thô"
         },
         "Temperature": "Nhiệt độ",
         "Title": "Thời tiết",
@@ -131,6 +131,7 @@
       "Defueling": "Khử nhiên liệu",
       "EstimatedDuration": "Thời lượng ước tính (phút)",
       "EstimatedTime": "Thời gian dự tính",
+      "GSXFuelSyncEnabled": "Đã bật đồng bộ hóa nhiên liệu từ GSX",
       "LeftInnerTank": "Bình phía trái trong cùng",
       "LeftOuterTank": "Bình phía trái ngoài cùng",
       "ReadyToStart": "Sẵn sàng bắt đầu",
@@ -156,6 +157,7 @@
       "DeboardConfirmationConfirm": "Cho hành khách xuống máy bay",
       "DeboardConfirmationTitle": "Cho mọi hành khách xuống tàu?",
       "EstimatedDurationUnit": "phút",
+      "GSXPayloadSyncEnabled": "Đã bật đồng bộ hóa tải trọng từ GSX",
       "GW": "Tổng trọng lượng",
       "GWCG": "GW CG",
       "LoadingTime": "Loading Time",
@@ -224,12 +226,16 @@
     "Navigraph": {
       "AirportDoesNotExist": "Sân bay không tồn tại",
       "AuthenticateWithNavigraph": "Xác thực với Navigraph",
+      "GoToThirdPartyOptions": {
+        "Button": "Tùy chọn bên thứ 3",
+        "Title": "Hãy vào phần Tùy chọn bên thứ 3 để liên kết tải khoản Navigraph"
+      },
       "InsufficientEnv": "Tệp .env không đủ",
       "IntoYourBrowserAndEnterTheCodeBelow": "vào trình duyệt của bạn và nhập mã dưới đây\n",
       "LoadingMsg": "Đang tải",
       "NoAirportSelected": "Không có sân bay nào được chọn",
       "ResetNavigraphAuthentication": "Đặt lại xác thực Navigraph",
-      "ScanTheQrCodeOrOpen": "Quét mã QR hoặc Mở",
+      "ScanTheQrCodeOrOpen": "Quét mã QR hoặc mở",
       "Title": "Navigraph"
     },
     "PinnedCharts": {
@@ -437,7 +443,7 @@
       "Left": "Rẽ trái",
       "PausePushback": "Tạm dừng hoặc tiếp tục đẩy lùi",
       "Right": "Rẽ phải",
-      "SetReleaseParkingBrake": "Cài hoặc nhả phanh tay",
+      "SetReleaseParkingBrake": "Cài hoặc nhả phanh đỗ",
       "SliderDirection": "Di chuyển thanh trượt cho hướng mong muốn",
       "SliderSpeed": "Di chuyển thanh trượt cho tốc độ mong muốn",
       "SystemEnabledOff": "Nhấp để bật hệ thống đẩy lùi.",
@@ -576,7 +582,26 @@
     "ThirdPartyOptions": {
       "GsxFuelEnabled": "Đồng bộ hoá hệ thống nhiên liệu của GSX",
       "GsxPayloadEnabled": "Đồng bộ hoá hệ thống tải trọng của GSX",
-      "Title": "Tùy chọn bên thứ 3"
+      "NavigraphAccountLink": {
+        "Connected": "Đã kết nối",
+        "Link": "Liên kết tài khoản",
+        "LoginPage": {
+          "Title": "Đăng nhập tài khoản Navigraph"
+        },
+        "SettingTitle": "Liên kết tài khoản Navigraph",
+        "SubscriptionStatus": {
+          "None": "Không",
+          "Unlimited": "Navigraph Unlimited"
+        },
+        "Unlink": "Hủy liên kết tài khoản"
+      },
+      "OverrideSimBriefUserID": "Ghi đè ID SimBrief",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Vui lòng kiểm tra xem bạn đã nhập đúng tên người dùng SimBrief hoặc ID của mình chưa.",
+      "TT": {
+        "OverrideSimBriefUserID": "ID SimBrief để sử dụng thay cho tải khoản Navigraph đã được liên kết"
+      },
+      "Title": "Tùy chọn bên thứ 3",
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "SimBrief PilotID ghi đè đã được xác thực và cập nhật thành"
     },
     "ThrottleConfig": {
       "Apply": "Áp dụng",
@@ -613,7 +638,7 @@
       "Local": "Cục bộ",
       "LocalTimeFormat": "Định dạng thời gian cục bộ",
       "OnscreenKeyboardLayout": "Bố cục bàn phím trên màn hình",
-      "ShowColoredRawMetar": "Hiển thị METAR nguyên có màu",
+      "ShowColoredRawMetar": "Hiển thị METAR thô có màu",
       "ShowStatusBarFlightProgressIndicator": "Hiển thị thanh trạng thái chuyến bay",
       "Theme": "Giao diện",
       "TimeDisplayed": "Thời gian hiển thị",
@@ -656,7 +681,7 @@
     "CurrentVersionText": "Bạn đang sử dụng bản $edition với phiên bản:",
     "LatestVersionText": "Phiên bản $edition mới nhất là",
     "RecommendationText": "Vui lòng cập nhật máy bay của bạn bằng cách sử dụng Trình cài đặt FlyByWire.",
-    "StatusBarWarning": "Phiên bản máy bay cũ",
+    "StatusBarWarning": "Phiên bản máy bay đã cũ",
     "TT": {
       "StatusBarWarning": "Vui lòng cập nhật bằng trình cài đặt FlyByWire."
     },

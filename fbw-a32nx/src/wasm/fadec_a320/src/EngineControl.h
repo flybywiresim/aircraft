@@ -552,7 +552,7 @@ class EngineControl {
       outFlow = 0;
     } else {
       outFlow = max(0, (correctedFuelFlow * LBS_TO_KGS * ratios->delta2(mach, ambientPressure) * sqrt(ratios->theta2(mach, ambientTemp))) -
-                paramImbalance);
+                           paramImbalance);
     }
 
     if (engine == 1) {
@@ -587,13 +587,13 @@ class EngineControl {
       thermalEnergy = thermalEnergy1;
       oilTemperaturePre = oilTemperatureLeftPre;
       oilQtyActual = simVars->getEngine1Oil();
-      oilTotalActual = simVars->getEngine1TotalOil();
+      oilTotalActual = simVars->getEngine1OilTotal();
     } else {
       steadyTemperature = simVars->getEngine2EGT();
       thermalEnergy = thermalEnergy2;
       oilTemperaturePre = oilTemperatureRightPre;
       oilQtyActual = simVars->getEngine2Oil();
-      oilTotalActual = simVars->getEngine2TotalOil();
+      oilTotalActual = simVars->getEngine2OilTotal();
     }
 
     //--------------------------------------------
@@ -643,7 +643,7 @@ class EngineControl {
       thermalEnergy1 = thermalEnergy;
       oilTemperatureLeftPre = oilTemperature;
       simVars->setEngine1Oil(oilQtyActual);
-      simVars->setEngine1TotalOil(oilTotalActual);
+      simVars->setEngine1OilTotal(oilTotalActual);
       SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilTempLeft, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
                                     &oilTemperature);
       SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilPsiLeft, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &oilPressure);
@@ -651,22 +651,23 @@ class EngineControl {
       thermalEnergy2 = thermalEnergy;
       oilTemperatureRightPre = oilTemperature;
       simVars->setEngine2Oil(oilQtyActual);
-      simVars->setEngine2TotalOil(oilTotalActual);
+      simVars->setEngine2OilTotal(oilTotalActual);
       SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilTempRight, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double),
                                     &oilTemperature);
       SimConnect_SetDataOnSimObject(hSimConnect, DataTypesID::OilPsiRight, SIMCONNECT_OBJECT_ID_USER, 0, 0, sizeof(double), &oilPressure);
     }
   }
 
-  /// <summary>
-  /// FBW Fuel Consumption and Tankering
+  /// @brief FBW Fuel Consumption and Tankering
   /// Updates Fuel Consumption with realistic values
-  /// </summary>
-  void updateFuel(double deltaTime) {
+  /// @param deltaTimeSeconds Frame delta time in seconds
+  void updateFuel(double deltaTimeSeconds) {
     double m = 0;
     double b = 0;
     double fuelBurn1 = 0;
     double fuelBurn2 = 0;
+    double apuBurn1 = 0;
+    double apuBurn2 = 0;
 
     double refuelRate = simVars->getRefuelRate();
     double refuelStartedByUser = simVars->getRefuelStartedByUser();
@@ -692,6 +693,7 @@ class EngineControl {
     double engine1FF = simVars->getEngine1FF();        // KG/H
     double engine2FF = simVars->getEngine2FF();        // KG/H
 
+    /// weight of one gallon of fuel in pounds
     double fuelWeightGallon = simVars->getFuelWeightGallon();
     double fuelUsedLeft = simVars->getFuelUsedLeft();    // Kg
     double fuelUsedRight = simVars->getFuelUsedRight();  // Kg
@@ -706,7 +708,9 @@ class EngineControl {
     double leftAuxQuantity = simVars->getFuelTankQuantity(4) * fuelWeightGallon;   // LBS
     double rightAuxQuantity = simVars->getFuelTankQuantity(5) * fuelWeightGallon;  // LBS
     double centerQuantity = simVars->getFuelTankQuantity(1) * fuelWeightGallon;    // LBS
-    double fuelLeft = 0;                                                           // LBS
+    /// Left inner tank fuel quantity in pounds
+    double fuelLeft = 0;
+    /// Right inner tank fuel quantity in pounds
     double fuelRight = 0;
     double fuelLeftAux = 0;
     double fuelRightAux = 0;
@@ -717,7 +721,7 @@ class EngineControl {
     double xfrAuxRight = 0;
     double fuelTotalActual = leftQuantity + rightQuantity + leftAuxQuantity + rightAuxQuantity + centerQuantity;  // LBS
     double fuelTotalPre = fuelLeftPre + fuelRightPre + fuelAuxLeftPre + fuelAuxRightPre + fuelCenterPre;          // LBS
-    double deltaFuelRate = abs(fuelTotalActual - fuelTotalPre) / (fuelWeightGallon * deltaTime);                  // LBS/ sec
+    double deltaFuelRate = abs(fuelTotalActual - fuelTotalPre) / (fuelWeightGallon * deltaTimeSeconds);           // LBS/ sec
 
     double engine1State = simVars->getEngine1State();
     double engine2State = simVars->getEngine2State();
@@ -733,7 +737,8 @@ class EngineControl {
     isReady = simVars->getIsReady();
     devState = simVars->getDeveloperState();
 
-    deltaTime = deltaTime / 3600;
+    /// Delta time for this update in hours
+    double deltaTime = deltaTimeSeconds / 3600;
 
     // Pump State Logic for Left Wing
     if (pumpStateLeft == 0 && (timerLeft.elapsed() == 0 || timerLeft.elapsed() >= 1000)) {
@@ -813,17 +818,20 @@ class EngineControl {
       }
       //-----------------------------------------------------------
       // Cross-feed Logic
-      // isTankClosed = 0, both tanks can supply fuel
+      // isTankClosed = 0, x-feed valve closed
       // isTankClosed = 1, left tank does not supply fuel
       // isTankClosed = 2, right tank does not supply fuel
       // isTankClosed = 3, left & right tanks do not supply fuel
+      // isTankClosed = 4, both tanks supply fuel
       if (xFeedValve > 0.0) {
-        if (leftPump1 == 0 && leftPump2 == 0)
-          isTankClosed = 1;
-        if (rightPump1 == 0 && rightPump2 == 0)
-          isTankClosed = 2;
         if (leftPump1 == 0 && leftPump2 == 0 && rightPump1 == 0 && rightPump2 == 0)
           isTankClosed = 3;
+        else if (leftPump1 == 0 && leftPump2 == 0)
+          isTankClosed = 1;
+        else if (rightPump1 == 0 && rightPump2 == 0)
+          isTankClosed = 2;
+        else
+          isTankClosed = 4;
       }
 
       //--------------------------------------------
@@ -861,6 +869,11 @@ class EngineControl {
         fuelRightPre = 0;
       }
 
+      /// apu fuel consumption for this frame in pounds
+      double apuFuelConsumption = simVars->getLineFlow(18) * fuelWeightGallon * deltaTime;
+      apuBurn1 = apuFuelConsumption;
+      apuBurn2 = 0;
+
       //--------------------------------------------
       // Fuel used accumulators
       fuelUsedLeft += fuelBurn1;
@@ -874,6 +887,8 @@ class EngineControl {
         case 1:
           fuelBurn2 = fuelBurn1 + fuelBurn2;
           fuelBurn1 = 0;
+          apuBurn1 = 0;
+          apuBurn2 = apuFuelConsumption;
           break;
         case 2:
           fuelBurn1 = fuelBurn1 + fuelBurn2;
@@ -882,6 +897,12 @@ class EngineControl {
         case 3:
           fuelBurn1 = 0;
           fuelBurn2 = 0;
+          apuBurn1 = apuFuelConsumption * 0.5;
+          apuBurn2 = apuFuelConsumption * 0.5;
+          break;
+        case 4:
+          apuBurn1 = apuFuelConsumption*0.5;
+          apuBurn2 = apuFuelConsumption*0.5;
           break;
         default:
           break;
@@ -904,8 +925,8 @@ class EngineControl {
 
       //--------------------------------------------
       // Final Fuel levels for left and right inner tanks
-      fuelLeft = (fuelLeftPre - (fuelBurn1 * KGS_TO_LBS)) + xfrAuxLeft + xfrCenterToLeft;      // LBS
-      fuelRight = (fuelRightPre - (fuelBurn2 * KGS_TO_LBS)) + xfrAuxRight + xfrCenterToRight;  // LBS
+      fuelLeft = (fuelLeftPre - (fuelBurn1 * KGS_TO_LBS)) + xfrAuxLeft + xfrCenterToLeft - apuBurn1;  // LBS
+      fuelRight = (fuelRightPre - (fuelBurn2 * KGS_TO_LBS)) + xfrAuxRight + xfrCenterToRight - apuBurn2;                   // LBS
 
       //--------------------------------------------
       // Setting new pre-cycle conditions
@@ -1097,9 +1118,9 @@ class EngineControl {
 
       // Setting initial Oil
       if (engine == 1) {
-        simVars->setEngine1TotalOil(idleOil - paramImbalance);
+        simVars->setEngine1OilTotal(idleOil - paramImbalance);
       } else {
-        simVars->setEngine2TotalOil(idleOil - paramImbalance);
+        simVars->setEngine2OilTotal(idleOil - paramImbalance);
       }
     }
 

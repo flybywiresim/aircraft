@@ -64,9 +64,9 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus, isAttExcessive: 
 
     private fwcFlightPhase = 0;
 
-    private firstBorderRef = FSComponent.createRef<SVGPathElement>();
+    private firstBorderSub = Subject.create('');
 
-    private secondBorderRef = FSComponent.createRef<SVGPathElement>();
+    private secondBorderSub = Subject.create('');
 
     private AB3Message = Subject.create(false);
 
@@ -97,8 +97,8 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus, isAttExcessive: 
         }
 
         this.AB3Message.set(AB3Message);
-        this.firstBorderRef.instance.setAttribute('d', firstBorder);
-        this.secondBorderRef.instance.setAttribute('d', secondBorder);
+        this.firstBorderSub.set(firstBorder);
+        this.secondBorderSub.set(secondBorder);
     }
 
     onAfterRender(node: VNode): void {
@@ -149,7 +149,7 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus, isAttExcessive: 
             this.handleFMABorders();
         });
 
-        sub.on('fcdcDiscreteWord1').whenChanged().handle((fcdcDiscreteWord1) => {
+        sub.on('fcdcDiscreteWord1').atFrequency(1).handle((fcdcDiscreteWord1) => {
             this.fcdcDiscreteWord1 = fcdcDiscreteWord1;
             this.handleFMABorders();
         });
@@ -168,8 +168,8 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus, isAttExcessive: 
         return (
             <g id="FMA">
                 <g class="NormalStroke Grey">
-                    <path ref={this.firstBorderRef} />
-                    <path ref={this.secondBorderRef} />
+                    <path d={this.firstBorderSub} />
+                    <path d={this.secondBorderSub} />
                     <path d="m102.52 0.33732v20.864" />
                     <path d="m133.72 0.33732v20.864" />
                 </g>
@@ -1206,54 +1206,55 @@ const getBC3Message = (
         && !fcdcWord1.getBitValue(13)
         && !fcdcWord1.getBitValue(15)
         && !fcdcWord1.isFailureWarning()
-        && flightPhaseForWarning) {
+        && flightPhaseForWarning
+    ) {
         text = 'MAN PITCH TRIM ONLY';
-        className = 'Red Blink9Seconds';
+        className = 'FontSmall Red Blink9Seconds';
     } else if (fcdcWord1.getBitValue(15) && !fcdcWord1.isFailureWarning() && flightPhaseForWarning) {
         text = 'USE MAN PITCH TRIM';
-        className = 'PulseAmber9Seconds Amber';
+        className = 'FontSmall PulseAmber9Seconds Amber';
     } else if (false) {
         text = 'FOR GA: SET TOGA';
-        className = 'PulseAmber9Seconds Amber';
+        className = 'FontMedium PulseAmber9Seconds Amber';
     } else if (TCASArmed && !isAttExcessive) {
         text = '  TCAS               ';
-        className = 'Cyan';
+        className = 'FontMedium Cyan';
     } else if (false) {
         text = 'DISCONNECT AP FOR LDG';
-        className = 'PulseAmber9Seconds Amber';
+        className = 'FontMedium PulseAmber9Seconds Amber';
     } else if (tcasRaInhibited && !isAttExcessive) {
         text = 'TCAS RA INHIBITED';
-        className = 'White';
+        className = 'FontMedium White';
     } else if (trkFpaDeselectedTCAS && !isAttExcessive) {
         text = 'TRK FPA DESELECTED';
-        className = 'White';
+        className = 'FontMedium White';
     } else if (false) {
         text = 'SET GREEN DOT SPEED';
-        className = 'White';
+        className = 'FontMedium White';
     } else if (tdReached) {
         text = 'T/D REACHED';
-        className = 'White';
+        className = 'FontMedium White';
     } else if (false) {
         text = 'MORE DRAG';
-        className = 'White';
+        className = 'FontMedium White';
     } else if (false) {
         text = 'CHECK SPEED MODE';
-        className = 'White';
+        className = 'FontMedium White';
     } else if (false) {
         text = 'CHECK APPR SELECTION';
-        className = 'White';
+        className = 'FontMedium White';
     } else if (false) {
         text = 'TURN AREA EXCEEDANCE';
-        className = 'White';
+        className = 'FontMedium White';
     } else if (setHoldSpeed) {
         text = 'SET HOLD SPEED';
-        className = 'White';
+        className = 'FontMedium White';
     } else if (false) {
         text = 'VERT DISCONT AHEAD';
-        className = 'Amber';
+        className = 'FontMedium Amber';
     } else if (false) {
         text = 'FINAL APP SELECTED';
-        className = 'White';
+        className = 'FontSmall White';
     } else {
         return [null, null];
     }
@@ -1286,7 +1287,7 @@ class BC3Cell extends DisplayComponent<{ isAttExcessive: Subscribable<boolean>, 
         const [text, className] = getBC3Message(
             this.isAttExcessive, this.armedVerticalMode, this.setHoldSpeed, this.trkFpaDeselected, this.tcasRaInhibited, this.fcdcDiscreteWord1, this.fwcFlightPhase, this.tdReached,
         );
-        this.classNameSub.set(`FontMedium MiddleAlign ${className}`);
+        this.classNameSub.set(`MiddleAlign ${className}`);
         if (text !== null) {
             this.bc3Cell.instance.innerHTML = text;
         } else {
@@ -1324,7 +1325,7 @@ class BC3Cell extends DisplayComponent<{ isAttExcessive: Subscribable<boolean>, 
             this.fillBC3Cell();
         });
 
-        sub.on('fcdcDiscreteWord1').whenChanged().handle((fcdcDiscreteWord1) => {
+        sub.on('fcdcDiscreteWord1').atFrequency(1).handle((fcdcDiscreteWord1) => {
             this.fcdcDiscreteWord1 = fcdcDiscreteWord1;
             this.fillBC3Cell();
         });

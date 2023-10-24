@@ -131,6 +131,7 @@
       "Defueling": "Aftankning",
       "EstimatedDuration": "Estimeret varighed (minutter)",
       "EstimatedTime": "Estimeret tid",
+      "GSXFuelSyncEnabled": "GSX brændstofsynkronisering aktiveret",
       "LeftInnerTank": "Venstre Indvendig tank",
       "LeftOuterTank": "Venstre Ydre tank",
       "ReadyToStart": "Klar til start",
@@ -151,11 +152,12 @@
       "BoardingTime": "Boarding tid",
       "Cargo": "Cargo",
       "Current": "Current",
-      "DeboardConfirmationBody": "Please confirm deboarding all passengers",
+      "DeboardConfirmationBody": "Bekræft venligst deboarding af alle passagerer",
       "DeboardConfirmationCancel": "Annuller",
       "DeboardConfirmationConfirm": "Deboard",
-      "DeboardConfirmationTitle": "Deboard all Passengers?",
-      "EstimatedDurationUnit": "minutes",
+      "DeboardConfirmationTitle": "Skal alle passagerer afmønstre?",
+      "EstimatedDurationUnit": "minutter",
+      "GSXPayloadSyncEnabled": "GSX-nyttelastsynkronisering aktiveret",
       "GW": "GW",
       "GWCG": "GW CG",
       "LoadingTime": "Loading Time",
@@ -165,15 +167,15 @@
         "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Aircraft Must Be On the Ground and Have Engines Shutdown to Change Boarding Duration",
         "FillPayloadFromSimbrief": "Fill Payload Information from Simbrief",
         "MaxCargo": "Max Cargo",
-        "MaxGW": "Maximum GW",
-        "MaxGWCG": "Maximum GW CG",
+        "MaxGW": "Maksimal GW",
+        "MaxGWCG": "Maksimal GW CG",
         "MaxPassengers": "Maksimal antal passagerer",
         "MaxZFW": "Maximum ZFW",
         "MaxZFWCG": "Maximum ZFWCG",
         "PerPaxBagWeight": "Per Passenger Bag Weight",
         "PerPaxWeight": "Per Passenger Weight",
         "StartBoarding": "Begin Boarding",
-        "StartDeboarding": "Begin Deboarding"
+        "StartDeboarding": "Begynd deboarding"
       },
       "Title": "Payload",
       "ZFW": "ZFW",
@@ -224,6 +226,10 @@
     "Navigraph": {
       "AirportDoesNotExist": "Lufthavn findes ikke",
       "AuthenticateWithNavigraph": "Autentificering med Navigraph",
+      "GoToThirdPartyOptions": {
+        "Button": "3rd Party Options",
+        "Title": "Go to 3rd Party Options to link Navigraph account"
+      },
       "InsufficientEnv": "Utilstrækkelig .env-fil",
       "IntoYourBrowserAndEnterTheCodeBelow": "ind i din browser og indtast koden nedenfor\n",
       "LoadingMsg": "Indlæser",
@@ -370,7 +376,7 @@
       "ConfirmationDialogMsg": "Bekræft indlæsning af forudindstillet.",
       "CurrentProcedureStep": "Nuværende Procedure Trin",
       "PleaseConfirmLoadingOfPreset": "Bekræft indlæsning af forudindstillet.",
-      "Powered": "Powered",
+      "Powered": "Drevet",
       "ReadyPushback": "Klar til Pushback",
       "ReadyTakeoff": "Klar til afgang ",
       "ReadyTaxi": "Klar til taxi",
@@ -453,23 +459,23 @@
     "UseControllerInput": "Brug controller input"
   },
   "QuickControls": {
-    "AlignAdirs": "Align ADIRS",
-    "FinishBoarding": "Finish Boarding",
-    "OnScreenKeyboard": "OnScreen Keyboard",
+    "AlignAdirs": "Juster ADIRS",
+    "FinishBoarding": "Afslut boarding",
+    "OnScreenKeyboard": "Skærmtastatur",
     "SimBridge": "SimBridge",
-    "SimBridgeConnected": "Connected",
-    "SimBridgeConnecting": "Connecting...",
+    "SimBridgeConnected": "Tilsluttet",
+    "SimBridgeConnecting": "Tilslutning...",
     "SimBridgeOff": "Fra",
-    "SimBridgeOffline": "Not Available",
+    "SimBridgeOffline": "Ikke tilgængelig",
     "TT": {
-      "AlignAdirs": "Instantly align ADIRS",
-      "AutoBrightness": "Turn Auto Brightness On/Off",
-      "Brightness": "Set flyPad brightness",
-      "FinishBoarding": "Instantly finish boarding",
-      "OnScreenKeyboard": "Turn OnScreen Keyboard On/Off",
-      "PowerButton": "Power Off",
-      "Settings": "Go to flyPad Settings page",
-      "SimBridge": "Control SimBridge Connection",
+      "AlignAdirs": "Juster øjeblikkeligt ADIRS",
+      "AutoBrightness": "Slå automatisk lysstyrke til/fra",
+      "Brightness": "Indstil flyPad lysstyrke",
+      "FinishBoarding": "Afslut ombordstigning øjeblikkeligt",
+      "OnScreenKeyboard": "Slå skærmtastatur til/fra",
+      "PowerButton": "Sluk",
+      "Settings": "Gå til siden med flyPad-indstillinger",
+      "SimBridge": "Styring af SimBridge-forbindelse",
       "Sleep": "Standby"
     },
     "Title": "Quick Controls"
@@ -546,10 +552,10 @@
     "SimOptions": {
       "Active": "Aktiv",
       "Auto": "Automatisk",
-      "Both": "Synchronized",
+      "Both": "Synkroniseret",
       "Calibrate": "Kalibrering",
-      "Captain": "Captain",
-      "CockpitSeatUsedToControl": "Cockpit Seat Used To Control",
+      "Captain": "Kaptajn",
+      "CockpitSeatUsedToControl": "Cockpitsæde bruges til at styre",
       "ConesEnabled": "Sikkerhed kegler",
       "Copilot": "Copilot",
       "DefaultBarometerUnit": "Standard Barometer enhed",
@@ -564,7 +570,7 @@
       "Off": "Fra",
       "Save": "Gem",
       "Side": "Side",
-      "SimBridgeIp": "External SimBridge Host Address",
+      "SimBridgeIp": "Ekstern SimBridge-værtsadresse",
       "SimBridgePort": "Ekstern SimBridge serverport",
       "SyncMsfsFlightPlan": "Synkroniser MSFS-flyveplan",
       "ThrottleDetents": "Gashåndtagspositioner",
@@ -574,9 +580,28 @@
       "inHg": "inHg"
     },
     "ThirdPartyOptions": {
-      "GsxFuelEnabled": "GSX Fueling Synchronization",
-      "GsxPayloadEnabled": "GSX Payload Synchronization",
-      "Title": "3rd Party Options"
+      "GsxFuelEnabled": "GSX Brændstofsynkronisering",
+      "GsxPayloadEnabled": "GSX nyttelast synkronisering",
+      "NavigraphAccountLink": {
+        "Connected": "Connected",
+        "Link": "Link Account",
+        "LoginPage": {
+          "Title": "Navigraph Account Login"
+        },
+        "SettingTitle": "Navigraph Account Link",
+        "SubscriptionStatus": {
+          "None": "None",
+          "Unlimited": "Navigraph Unlimited"
+        },
+        "Unlink": "Unlink Account"
+      },
+      "OverrideSimBriefUserID": "Override SimBrief User ID",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Please check that you have correctly entered your SimBrief username or pilot ID.",
+      "TT": {
+        "OverrideSimBriefUserID": "Alternative SimBrief user ID to use instead of the linked Navigraph Account"
+      },
+      "Title": "Optioner fra tredjepart",
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "The override SimBrief PilotID has been validated and updated to"
     },
     "ThrottleConfig": {
       "Apply": "Anvend",
@@ -645,7 +670,7 @@
       "Brightness": "Click to change Brightness",
       "ConnectedToLocalApi": "Tilsluttet til SimBridge",
       "DisconnectedFromLocalApi": "Afbrudt fra SimBridge",
-      "QuickControls": "Click to open Quick Controls",
+      "QuickControls": "Klik for at åbne Quick Controls",
       "TurnOffOrShutdownEfb": "Slå EFB fra eller luk ned"
     },
     "Thu": "Tor",
@@ -653,13 +678,13 @@
     "Wed": "Ons"
   },
   "VersionCheck": {
-    "CurrentVersionText": "You are using the $edition edition with version:",
-    "LatestVersionText": "Latest $edition version is",
-    "RecommendationText": "Please update your aircraft using the FlyByWire Installer.",
-    "StatusBarWarning": "Outdated Aircraft Version",
+    "CurrentVersionText": "Du bruger $edition-udgaven med version:",
+    "LatestVersionText": "Seneste $edition version er",
+    "RecommendationText": "Opdater venligst dit fly ved hjælp af FlyByWire Installer.",
+    "StatusBarWarning": "Forældet flyversion",
     "TT": {
-      "StatusBarWarning": "Please update your aircraft using the FlyByWire Installer."
+      "StatusBarWarning": "Opdater venligst dit fly ved hjælp af FlyByWire Installer."
     },
-    "Title": "New Version Available"
+    "Title": "Ny version tilgængelig"
   }
 }

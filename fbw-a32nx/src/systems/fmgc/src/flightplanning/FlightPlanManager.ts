@@ -24,7 +24,7 @@
  */
 
 import { NXDataStore } from '@flybywiresim/fbw-sdk';
-import { LegType } from '@fmgc/types/fstypes/FSEnums';
+import { LegType } from '@flybywiresim/fbw-sdk';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { ApproachStats, HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { SegmentType } from '@fmgc/wtsdk';
@@ -197,8 +197,6 @@ export class FlightPlanManager {
      * Loads the flight plans from data storage.
      */
     public _loadFlightPlans(): void {
-        this._getFlightPlan();
-
         if (this._flightPlans.length === 0) {
             const newFpln = new ManagedFlightPlan();
             newFpln.setParentInstrument(this._parentInstrument);
@@ -593,7 +591,7 @@ export class FlightPlanManager {
     /**
      * Gets the currently selected departure information for the current flight plan.
      */
-    public getDeparture(flightPlanIndex = NaN): WayPoint | undefined {
+    public getDeparture(flightPlanIndex = NaN): RawDeparture | undefined {
         const origin = this.getOrigin();
         if (Number.isNaN(flightPlanIndex)) {
             flightPlanIndex = this._currentFlightPlanIndex;
@@ -1771,32 +1769,6 @@ export class FlightPlanManager {
         return null;
     }
 
-    /**
-     * Gets the current stored flight plan
-     */
-    public _getFlightPlan(): void {
-        if (!LnavConfig.DEBUG_SAVE_FPLN_LOCAL_STORAGE) {
-            return;
-        }
-        const fpln = window.localStorage.getItem(FlightPlanManager.FlightPlanKey);
-        if (fpln === null || fpln === '') {
-            this._flightPlans = [];
-            const initFpln = new ManagedFlightPlan();
-            initFpln.setParentInstrument(this._parentInstrument);
-            this._flightPlans.push(initFpln);
-        } else if (window.localStorage.getItem(FlightPlanManager.FlightPlanCompressedKey) === '1') {
-            this._flightPlans = JSON.parse(LZUTF8.decompress(fpln, { inputEncoding: 'StorageBinaryString' }));
-        } else {
-            try {
-                this._flightPlans = JSON.parse(fpln);
-            } catch (e) {
-                // Assume we failed because compression status did not match up. Try to decompress anyway.
-
-                this._flightPlans = JSON.parse(LZUTF8.decompress(fpln, { inputEncoding: 'StorageBinaryString' }));
-            }
-        }
-    }
-
     public getCurrentFlightPlan(): ManagedFlightPlan {
         return this._flightPlans[this._currentFlightPlanIndex];
     }
@@ -1813,16 +1785,6 @@ export class FlightPlanManager {
             return;
         }
 
-        if (LnavConfig.DEBUG_SAVE_FPLN_LOCAL_STORAGE) {
-            let fpJson = JSON.stringify(this._flightPlans.map((fp) => fp.serialize()));
-            if (fpJson.length > 2500000) {
-                fpJson = LZUTF8.compress(fpJson, { outputEncoding: 'StorageBinaryString' });
-                window.localStorage.setItem(FlightPlanManager.FlightPlanCompressedKey, '1');
-            } else {
-                window.localStorage.setItem(FlightPlanManager.FlightPlanCompressedKey, '0');
-            }
-            window.localStorage.setItem(FlightPlanManager.FlightPlanKey, fpJson);
-        }
         SimVar.SetSimVarValue(FlightPlanManager.FlightPlanVersionKey, 'number', ++this._currentFlightPlanVersion);
         if (NXDataStore.get('FP_SYNC', 'LOAD') === 'SAVE') {
             FlightPlanAsoboSync.SaveToGame(this).catch(console.error);
@@ -1853,7 +1815,7 @@ export class FlightPlanManager {
      * The transition altitude for the origin in the *active* flight plan
      */
     get originTransitionAltitude(): number | undefined {
-        return this.getOriginTransitionAltitude(0);
+        return this.getOriginTransitionAltitude(FlightPlans.Active);
     }
 
     public getOriginTransitionAltitudeIsFromDb(flightPlanIndex: number = 0): boolean {
@@ -1865,7 +1827,7 @@ export class FlightPlanManager {
      * Is the transition altitude for the origin in the *active* flight plan from the database?
      */
     get originTransitionAltitudeIsFromDb(): boolean {
-        return this.getOriginTransitionAltitudeIsFromDb(0);
+        return this.getOriginTransitionAltitudeIsFromDb(FlightPlans.Active);
     }
 
     /**
@@ -1893,7 +1855,7 @@ export class FlightPlanManager {
      * The transition level for the destination in the *active* flight plan
      */
     get destinationTransitionLevel(): FlightLevel | undefined {
-        return this.getDestinationTransitionLevel(0);
+        return this.getDestinationTransitionLevel(FlightPlans.Active);
     }
 
     public getDestinationTransitionLevelIsFromDb(flightPlanIndex: number = this._currentFlightPlanIndex): boolean {
@@ -1905,7 +1867,7 @@ export class FlightPlanManager {
      * Is the transition level for the destination in the *active* flight plan from the database?
      */
     get destinationTransitionLevelIsFromDb(): boolean {
-        return this.getDestinationTransitionLevelIsFromDb(0);
+        return this.getDestinationTransitionLevelIsFromDb(FlightPlans.Active);
     }
 
     /**

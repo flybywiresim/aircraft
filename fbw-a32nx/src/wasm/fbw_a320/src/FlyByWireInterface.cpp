@@ -31,12 +31,22 @@ bool FlyByWireInterface::connect() {
   // initialize flight data recorder
   flightDataRecorder.initialize();
 
+  
+
   // connect to sim connect
-  return simConnectInterface.connect(clientDataEnabled, autopilotStateMachineEnabled, autopilotLawsEnabled, flyByWireEnabled, elacDisabled,
+  bool success = simConnectInterface.connect(clientDataEnabled, autopilotStateMachineEnabled, autopilotLawsEnabled, flyByWireEnabled, elacDisabled,
                                      secDisabled, facDisabled, throttleAxis, spoilersHandler, flightControlsKeyChangeAileron,
                                      flightControlsKeyChangeElevator, flightControlsKeyChangeRudder,
                                      disableXboxCompatibilityRudderAxisPlusMinus, enableRudder2AxisMode, idMinimumSimulationRate->get(),
                                      idMaximumSimulationRate->get(), limitSimulationRateByPerformance);
+
+  // request data
+  if (!simConnectInterface.requestData()) {
+    std::cout << "WASM: Request data failed!" << std::endl;
+    return false;
+  }
+
+  return success;
 }
 
 void FlyByWireInterface::disconnect() {
@@ -445,10 +455,14 @@ void FlyByWireInterface::setupLocalVariables() {
   engineEngineIdleEGT = std::make_unique<LocalVariable>("A32NX_ENGINE_IDLE_EGT");
   engineEngine1EGT = std::make_unique<LocalVariable>("A32NX_ENGINE_EGT:1");
   engineEngine2EGT = std::make_unique<LocalVariable>("A32NX_ENGINE_EGT:2");
-  engineEngine1Oil = std::make_unique<LocalVariable>("A32NX_ENGINE_TANK_OIL:1");
-  engineEngine2Oil = std::make_unique<LocalVariable>("A32NX_ENGINE_TANK_OIL:2");
-  engineEngine1TotalOil = std::make_unique<LocalVariable>("A32NX_ENGINE_TOTAL_OIL:1");
-  engineEngine2TotalOil = std::make_unique<LocalVariable>("A32NX_ENGINE_TOTAL_OIL:2");
+  engineEngine1Oil = std::make_unique<LocalVariable>("A32NX_ENGINE_OIL_QTY:1");
+  engineEngine2Oil = std::make_unique<LocalVariable>("A32NX_ENGINE_OIL_QTY:2");
+  engineEngine1OilTotal = std::make_unique<LocalVariable>("A32NX_ENGINE_OIL_TOTAL:1");
+  engineEngine2OilTotal = std::make_unique<LocalVariable>("A32NX_ENGINE_OIL_TOTAL:2");
+  engineEngine1VibN1 = std::make_unique<LocalVariable>("A32NX_ENGINE_VIB_N1:1");
+  engineEngine2VibN1 = std::make_unique<LocalVariable>("A32NX_ENGINE_VIB_N1:2");
+  engineEngine1VibN2 = std::make_unique<LocalVariable>("A32NX_ENGINE_VIB_N2:1");
+  engineEngine2VibN2 = std::make_unique<LocalVariable>("A32NX_ENGINE_VIB_N2:2");
   engineEngine1FF = std::make_unique<LocalVariable>("A32NX_ENGINE_FF:1");
   engineEngine2FF = std::make_unique<LocalVariable>("A32NX_ENGINE_FF:2");
   engineEngine1PreFF = std::make_unique<LocalVariable>("A32NX_ENGINE_PRE_FF:1");
@@ -793,11 +807,7 @@ bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
   simConnectInterface.setLoggingFlightControlsEnabled(idLoggingFlightControlsEnabled->get() == 1);
   simConnectInterface.setLoggingThrottlesEnabled(idLoggingThrottlesEnabled->get() == 1);
 
-  // request data
-  if (!simConnectInterface.requestData()) {
-    std::cout << "WASM: Request data failed!" << std::endl;
-    return false;
-  }
+
 
   // read data
   if (!simConnectInterface.readData()) {
@@ -1117,8 +1127,16 @@ bool FlyByWireInterface::updateEngineData(double sampleTime) {
   engineData.engineEngine2EGT = engineEngine2EGT->get();
   engineData.engineEngine1Oil = engineEngine1Oil->get();
   engineData.engineEngine2Oil = engineEngine2Oil->get();
-  engineData.engineEngine1TotalOil = engineEngine1TotalOil->get();
-  engineData.engineEngine2TotalOil = engineEngine2TotalOil->get();
+  engineData.engineEngine1OilTotal = engineEngine1OilTotal->get();
+  engineData.engineEngine2OilTotal = engineEngine2OilTotal->get();
+  engineData.engineEngine1VibN1 = engineEngine1VibN1->get();
+  engineData.engineEngine2VibN1 = engineEngine2VibN1->get();
+  engineData.engineEngine1VibN2 = engineEngine1VibN2->get();
+  engineData.engineEngine2VibN2 = engineEngine2VibN2->get();
+  engineData.engineEngineOilTemperature_1 = simData.engineEngineOilTemperature_1;
+  engineData.engineEngineOilTemperature_2 = simData.engineEngineOilTemperature_2;
+  engineData.engineEngineOilPressure_1 = simData.engineEngineOilPressure_1;
+  engineData.engineEngineOilPressure_2 = simData.engineEngineOilPressure_2;
   engineData.engineEngine1FF = engineEngine1FF->get();
   engineData.engineEngine2FF = engineEngine2FF->get();
   engineData.engineEngine1PreFF = engineEngine1PreFF->get();

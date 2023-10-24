@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { CruisePathBuilder } from '@fmgc/guidance/vnav/cruise/CruisePathBuilder';
 import { DescentPathBuilder } from '@fmgc/guidance/vnav/descent/DescentPathBuilder';
 import { NavGeometryProfile, VerticalCheckpointReason } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
@@ -76,6 +80,8 @@ export class CruiseToDescentCoordinator {
             // Geometric and idle
             this.descentPathBuilder.computeManagedDescentPath(descentPath, profile, speedProfile, descentWinds, this.cruisePathBuilder.getFinalCruiseAltitude(profile.cruiseSteps));
 
+            // @ts-ignore TS thinks it can narrow descentPath.lastCheckpoint.reason to VerticalCheckpointReason.Decel because
+            // of line 71, but this is wrong, as computeManagedDescentPath changes descentPath.
             if (descentPath.lastCheckpoint.reason !== VerticalCheckpointReason.TopOfDescent) {
                 console.error('[FMS/VNAV] Approach path did not end in T/D. Discarding descent profile.');
                 return;

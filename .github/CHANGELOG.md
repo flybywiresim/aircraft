@@ -5,6 +5,10 @@
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
+## 0.12.0
+
+1. [RA] Realistic RA model based on a probe mesh implementation - @Taz5150 (TazX [Z+2]#0405)
+
 ## 0.11.0
 
 1. [FMS] Implement vertical navigation functions - @BlueberryKing (BlueberryKing)
@@ -23,7 +27,41 @@
 1. [MCDU] The remote MCDU protocol now sends the display and integral light brightness - @tracernz (Mike)
 1. [MCDU] The remote MCDU protocol now supports the BRT/DIM keys - @tracernz (Mike)
 1. [PFD] Corrected the NO DH logic in the FMS and PFD - @tracernz (Mike)
-1. [RA] Realistic RA model based on a probe mesh implementation - @Taz5150 (TazX [Z+2]#0405)
+1. [FDR] Add secondary engine parameters to FDR - @Taz5150 (TazX [Z+2]#0405)
+1. [FLIGHTMODEL] Fix outer to inner tank transfer valve closure - @donstim (donbikes)
+1. [SD] Corrected thickness and position of lower ECAM fuel page lines - @robertxing2004 (robeet)
+1. [SD] Corrected position of outer tank fuel quantity values - @robertxing2004 (robeet)
+1. [ISIS] Fixed the ISIS alt tape order for negative altitudes - @aweissoertel (Alex)
+1. [MCDU] Add basic annunciator support - @tracernz (Mike)
+1. [MCDU] Add basic MCDU MENU functionality - @tracernz (Mike)
+1. [MCDU] Split subsystem scratchpads - @tracernz (Mike)
+1. [APU] APU can now consume fuel - @tracernz (Mike)
+1. [EFB] Added UI message on fuel/payload page when GSX is activated - @frankkopp (Frank Kopp)
+1. [FWC] WING TANK LO LVL message now considers centre tank mode selector - @tracernz (Mike)
+1. [MCDU] PERF APPR page no longer demands QNH and TEMP when outside 180NM from destination - @robertxing2004 (robeet)
+1. [FMS] Add basic support for FA legs - @tracernz (Mike)
+1. [MCDU] Don't calculate V-speeds when FoB not available - @tracernz (Mike)
+1. [MCDU] ZFW/ZFWCG auto-fill uses desired values when boarding in progress - @tracernz (Mike)
+1. [EFB/FWC] Auto Call Outs selectable - @tracernz (Mike)
+1. [FWC] Added "twenty five hundred" and "two thousand" callouts - @tracernz (Mike)
+1. [FMS] Load procedures that reference a runway correctly - @tracernz (Mike)
+1. [MCDU/ND] Corrected altitude formatting with respect to transition altitude and transition level - @tracernz (Mike)
+1. [PFD] Adjusted size of pitch trim messages - @tracernz (Mike)
+1. [BLEED] Allow engine start from crossbleed air - @BlueberryKing (BlueberryKing)
+1. [BLEED] Improve bleed page visuals on the SD - @BlueberryKing (BlueberryKing)
+1. [BLEED] Use more accurate pneumatic valves and sensors - @BlueberryKing (BlueberryKing)
+1. [EFB] flyPad OS 3.2 - Cosmetic changes for throttle configuration settings and support for multiple airframes - @2hwk (2cas)
+1. [EFB/PAYLOAD] flyPad OS 3.2 - Allow for multi-gate boarding when multiple doors are open - @2hwk (2cas)
+1. [PAYLOAD] Re-enabled FBW sounds when using GSX Integration
+1. [SD] Connect SD BLEED page APU bleed pressure indication to correct ADRs - @BlueberryKing (BlueberryKing)
+1. [FMS] Use station declination when appropriate for fix info and place/bearing radials - @tracernz (Mike)
+1. [MCDU] Fixed the FMGC annunciator light not illuminating - @tracernz (Mike)
+1. [COND] Add Air Conditioning systems failures - @mjuhe (Miquel Juhe)
+1. [COND] Fixed Temp-Indication on CRZ page showing cockpit temperature for fwd and aft cabin - @cptnuss-ops (Lukas)
+1. [FMS] Show ILS ident and frequency on ARRIVAL page - @tracernz (Mike)
+1. [EFB/ATSU] Use MSFS METAR data rather than FSX cloud data from FBW API - @tracernz (Mike)
+1. [APU] Added xfeed APU fuel capabilities - @Taz5150 (TazX [Z+1]#0405)
+1. [ATSU] Fix ATIS Auto Update LSK6L to ATIS page instead of ATC MENU - @BravoMike99 (bruno_pt99)
 
 ## 0.10.0
 
@@ -1286,3 +1324,4 @@
 1. [ISIS] Fixed issue where ISIS was allowing a bug to be set while in the OFF state - Patrick Macken (@Pat M on
    Discord)
 1. [EFB] Restructured APIs and made Navigraph Auth a reusable component - @MicahBCode (Mischa Binder)
+1. [ECAM] Added F units to CRZ and COND pages for Cabin temps.  Currently tied to kg/lbs  option in EFB -Patrick Macken  (@PatM on Discord)

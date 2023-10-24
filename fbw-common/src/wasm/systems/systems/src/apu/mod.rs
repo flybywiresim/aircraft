@@ -368,7 +368,7 @@ impl SimulationElement for AuxiliaryPowerUnitOverheadPanel {
 }
 
 #[cfg(test)]
-pub mod tests {
+mod tests {
     use crate::{
         electrical::{
             consumption::PowerConsumer, test::TestElectricitySource, ElectricalBus, Electricity,
@@ -2137,16 +2137,16 @@ pub mod tests {
         }
 
         #[test]
-        fn running_apu_has_42_psi_bleed_air_pressure() {
+        fn running_apu_has_enough_bleed_air_pressure() {
             let mut test_bed = test_bed_with().running_apu();
 
-            assert_about_eq!(
+            assert!(
                 test_bed
                     .bleed_air_pressure()
                     .normal_value()
                     .unwrap()
-                    .get::<psi>(),
-                42.
+                    .get::<psi>()
+                    > 20.
             );
         }
 

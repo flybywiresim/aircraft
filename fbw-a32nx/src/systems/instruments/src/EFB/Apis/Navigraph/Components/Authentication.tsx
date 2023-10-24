@@ -7,9 +7,45 @@ import React, { useEffect, useState } from 'react';
 import { CloudArrowDown, ShieldLock } from 'react-bootstrap-icons';
 import { toast } from 'react-toastify';
 import QRCode from 'qrcode.react';
-import { usePersistentProperty } from '@flybywiresim/fbw-sdk';
+import { NavigraphClient, NavigraphSubscriptionStatus, usePersistentProperty } from '@flybywiresim/fbw-sdk';
+import { useHistory } from 'react-router-dom';
 import { t } from '../../../translation';
-import NavigraphClient, { useNavigraph } from '../Navigraph';
+import { useNavigraph } from '../Navigraph';
+
+export type NavigraphAuthInfo = {
+    loggedIn: false,
+} | {
+    loggedIn: true,
+
+    username: string,
+
+    subscriptionStatus: NavigraphSubscriptionStatus,
+}
+
+export const useNavigraphAuthInfo = (): NavigraphAuthInfo => {
+    const navigraph = useNavigraph();
+
+    const [tokenAvail, setTokenAvail] = useState(false);
+    const [subscriptionStatus, setSubscriptionStatus] = useState<NavigraphSubscriptionStatus>(NavigraphSubscriptionStatus.Unknown);
+    const [username] = usePersistentProperty('NAVIGRAPH_USERNAME');
+
+    useInterval(() => {
+        if ((tokenAvail !== navigraph.hasToken) && navigraph.hasToken) {
+            navigraph.fetchSubscriptionStatus()
+                .then(setSubscriptionStatus)
+                .catch(() => setSubscriptionStatus(NavigraphSubscriptionStatus.Unknown));
+        } else if (!navigraph.hasToken) {
+            setSubscriptionStatus(NavigraphSubscriptionStatus.None);
+        }
+
+        setTokenAvail(navigraph.hasToken);
+    }, 1000, { runOnStart: true });
+
+    if (tokenAvail) {
+        return { loggedIn: tokenAvail, username, subscriptionStatus };
+    }
+    return { loggedIn: false };
+};
 
 const Loading = () => {
     const navigraph = useNavigraph();
@@ -86,7 +122,7 @@ export const NavigraphAuthUI = () => {
     }, []);
 
     return (
-        <div className="flex overflow-x-hidden justify-center items-center p-6 w-full h-content-section-reduced bg-theme-accent rounded-lg">
+        <div className="flex overflow-x-hidden justify-center items-center p-6 w-full h-full bg-theme-accent rounded-lg">
             <div className="flex flex-col justify-center items-center">
                 <ShieldLock className="mr-2" size={40} />
 
@@ -126,29 +162,70 @@ export const NavigraphAuthUI = () => {
     );
 };
 
-export const NavigraphAuthUIWrapper = (props) => {
-    const { children } = props;
+export interface NavigraphAuthUIWrapperProps {
+    showLogin: boolean,
+    onSuccessfulLogin?: () => void,
+}
+
+export const NavigraphAuthUIWrapper: React.FC<NavigraphAuthUIWrapperProps> = ({ showLogin, onSuccessfulLogin, children }) => {
     const [tokenAvail, setTokenAvail] = useState(false);
 
     const navigraph = useNavigraph();
 
     useInterval(() => {
+        if (!tokenAvail && navigraph.hasToken) {
+            onSuccessfulLogin?.();
+        }
+
         setTokenAvail(navigraph.hasToken);
     }, 1000, { runOnStart: true });
+
+    let ui: React.ReactNode;
+    if (tokenAvail) {
+        ui = children;
+    } else if (showLogin) {
+        ui = <NavigraphAuthUI />;
+    } else {
+        ui = <NavigraphAuthRedirectUI />;
+    }
 
     return (
         NavigraphClient.hasSufficientEnv
             ? (
                 <>
-                    {tokenAvail
-                        ? children
-                        : <NavigraphAuthUI />}
+                    {ui}
                 </>
             )
             : (
-                <div className="flex overflow-x-hidden justify-center items-center mr-4 w-full h-content-section-reduced rounded-lg bh-theme-secondard">
-                    <p className="pt-6 mb-6 text-3xl">Insufficient .env file</p>
+                <div className="flex overflow-x-hidden justify-center items-center mr-4 w-full h-content-section-reduced">
+                    <p className="pt-6 mb-6 text-3xl">{t('NavigationAndCharts.Navigraph.InsufficientEnv')}</p>
                 </div>
             )
+    );
+};
+
+export const NavigraphAuthRedirectUI = () => {
+    const history = useHistory();
+
+    const handleGoToThirdPartySettings = () => {
+        history.push('/settings/3rd-party-options');
+    };
+
+    return (
+        <div className="flex justify-center items-center h-content-section-reduced rounded-lg border-2 border-theme-accent">
+            <div className="flex flex-col justify-center items-center space-y-4">
+                <h1>{t('NavigationAndCharts.Navigraph.GoToThirdPartyOptions.Title')}</h1>
+
+                <button
+                    type="button"
+                    className="flex justify-center items-center py-2 space-x-4 w-52 text-theme-body
+                         hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body rounded-md border-2
+                         border-theme-highlight transition duration-100"
+                    onClick={handleGoToThirdPartySettings}
+                >
+                    {t('NavigationAndCharts.Navigraph.GoToThirdPartyOptions.Button')}
+                </button>
+            </div>
+        </div>
     );
 };

@@ -131,6 +131,7 @@
       "Defueling": "Svuotando",
       "EstimatedDuration": "Durata stimata (minuti)",
       "EstimatedTime": "Estimated Time",
+      "GSXFuelSyncEnabled": "Sincronizzazione GSX Carburante Abilitata",
       "LeftInnerTank": "Serbatoio Interno Sinistro",
       "LeftOuterTank": "Serbatoio Esterno Sinistro",
       "ReadyToStart": "Pronto per Iniziare",
@@ -156,6 +157,7 @@
       "DeboardConfirmationConfirm": "Sbarca",
       "DeboardConfirmationTitle": "Sbarcare tutti i Passeggeri?",
       "EstimatedDurationUnit": "minuti",
+      "GSXPayloadSyncEnabled": "Sincronizzazione GSX Carico Pagante Abilitata",
       "GW": "GW",
       "GWCG": "GW CG",
       "LoadingTime": "Loading Time",
@@ -224,6 +226,10 @@
     "Navigraph": {
       "AirportDoesNotExist": "Aeroporto Inesistente",
       "AuthenticateWithNavigraph": "Autenticati con Navigraph",
+      "GoToThirdPartyOptions": {
+        "Button": "3rd Party Options",
+        "Title": "Vai a Opzioni di terze parti per collegare l'account Navigraph"
+      },
       "InsufficientEnv": "File .env Insufficiente",
       "IntoYourBrowserAndEnterTheCodeBelow": "nel tuo browser e inserisci il codice riportato sotto",
       "LoadingMsg": "Caricamento",
@@ -576,7 +582,26 @@
     "ThirdPartyOptions": {
       "GsxFuelEnabled": "Sincronizzazione Rifornimento GSX",
       "GsxPayloadEnabled": "Sincronizzazione Carico Utile GSX",
-      "Title": "Opzioni di terze parti"
+      "NavigraphAccountLink": {
+        "Connected": "Connected",
+        "Link": "Collega account",
+        "LoginPage": {
+          "Title": "Accesso all'account Navigraph"
+        },
+        "SettingTitle": "Link all'account Navigraph",
+        "SubscriptionStatus": {
+          "None": "None",
+          "Unlimited": "Navigraph illimitato"
+        },
+        "Unlink": "Scollega account"
+      },
+      "OverrideSimBriefUserID": "Oltrepassa ID utente SimBrief",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Please check that you have correctly entered your SimBrief username or pilot ID.",
+      "TT": {
+        "OverrideSimBriefUserID": "ID utente SimBrief alternativo da utilizzare al posto dell'account Navigraph collegato"
+      },
+      "Title": "Opzioni di terze parti",
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "The override SimBrief PilotID has been validated and updated to"
     },
     "ThrottleConfig": {
       "Apply": "Applica",
@@ -590,7 +615,7 @@
       "ErrorOverlapMsg": "confligge con",
       "IndependentAxis": "Assi Separate",
       "LoadFromFile": "Carica da File",
-      "PleaseEnterAValidDeadzone": "Prego inserisci una zona morta valida",
+      "PleaseEnterAValidDeadzone": "Prego inserisci una zona neutra valida",
       "ResetToDefaults": "Ripristina Predefiniti",
       "ReverseFull": "Reverse Full",
       "ReverseIdle": "Reverse Idle",

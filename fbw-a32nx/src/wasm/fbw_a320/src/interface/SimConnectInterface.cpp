@@ -204,6 +204,10 @@ bool SimConnectInterface::prepareSimDataSimConnectDataDefinitions() {
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "TURB ENG N1:2", "PERCENT");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "TURB ENG CORRECTED N1:1", "PERCENT");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "TURB ENG CORRECTED N1:2", "PERCENT");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "GENERAL ENG OIL TEMPERATURE:1", "CELSIUS");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "GENERAL ENG OIL TEMPERATURE:2", "CELSIUS");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "GENERAL ENG OIL PRESSURE:1", "PSI");
+  result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_FLOAT64, "GENERAL ENG OIL PRESSURE:2", "PSI");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "ENG COMBUSTION:1", "BOOL");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "ENG COMBUSTION:2", "BOOL");
   result &= addDataDefinition(hSimConnect, 0, SIMCONNECT_DATATYPE_INT64, "AUTOPILOT MANAGED SPEED IN MACH", "BOOL");
@@ -1086,26 +1090,6 @@ bool SimConnectInterface::prepareClientDataDefinitions() {
   return SUCCEEDED(result);
 }
 
-bool SimConnectInterface::requestReadData() {
-  // check if we are connected
-  if (!isConnected) {
-    return false;
-  }
-
-  // request data
-  if (!requestData()) {
-    return false;
-  }
-
-  // read data
-  if (!readData()) {
-    return false;
-  }
-
-  // success
-  return true;
-}
-
 bool SimConnectInterface::requestData() {
   // check if we are connected
   if (!isConnected) {
@@ -1113,7 +1097,7 @@ bool SimConnectInterface::requestData() {
   }
 
   // request data
-  HRESULT result = SimConnect_RequestDataOnSimObject(hSimConnect, 0, 0, SIMCONNECT_OBJECT_ID_USER, SIMCONNECT_PERIOD_ONCE);
+  HRESULT result = SimConnect_RequestDataOnSimObject(hSimConnect, 0, 0, SIMCONNECT_OBJECT_ID_USER, SIMCONNECT_PERIOD_VISUAL_FRAME);
 
   // check result of data request
   if (result != S_OK) {

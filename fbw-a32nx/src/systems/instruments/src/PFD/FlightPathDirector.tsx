@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ClockEvents, DisplayComponent, FSComponent, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import { Arinc429Word } from '@flybywiresim/fbw-sdk';
+import { Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
 import { getDisplayIndex } from './PFD';
 import { calculateHorizonOffsetFromPitch } from './PFDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
@@ -14,10 +14,10 @@ const DistanceSpacing = 15;
 const ValueSpacing = 10;
 
 interface FlightPathVectorData {
-    roll: Arinc429Word;
-    pitch: Arinc429Word;
-    fpa: Arinc429Word;
-    da: Arinc429Word;
+    roll: Arinc429WordData;
+    pitch: Arinc429WordData;
+    fpa: Arinc429WordData;
+    da: Arinc429WordData;
     activeVerticalMode: number;
     activeLateralMode: number;
     fdRoll: number;
