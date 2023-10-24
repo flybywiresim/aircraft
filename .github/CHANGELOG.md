@@ -7,8 +7,10 @@
 
 ## 0.12.0
 
-## 0.11.0
 1. [SYSTEM] Fix ORIGIN/DEST not being reported to API - @nathaninnes (Sabes)
+
+## 0.11.0
+
 1. [FMS] Implement vertical navigation functions - @BlueberryKing (BlueberryKing)
 1. [EFB] Added pause at T/D function - @2hwk (2Cas#1022)
 1. [FMS] Add a default RNP of 0.3 for RNP AR procedure legs - @tracernz (Mike)
