@@ -5,6 +5,8 @@
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
+## 0.12.0
+
 ## 0.11.0
 1. [SYSTEM] Fix ORIGIN/DEST not being reported to API - @nathaninnes (Sabes)
 1. [FMS] Implement vertical navigation functions - @BlueberryKing (BlueberryKing)
@@ -51,6 +53,13 @@
 1. [PAYLOAD] Re-enabled FBW sounds when using GSX Integration
 1. [SD] Connect SD BLEED page APU bleed pressure indication to correct ADRs - @BlueberryKing (BlueberryKing)
 1. [FMS] Use station declination when appropriate for fix info and place/bearing radials - @tracernz (Mike)
+1. [MCDU] Fixed the FMGC annunciator light not illuminating - @tracernz (Mike)
+1. [COND] Add Air Conditioning systems failures - @mjuhe (Miquel Juhe)
+1. [COND] Fixed Temp-Indication on CRZ page showing cockpit temperature for fwd and aft cabin - @cptnuss-ops (Lukas)
+1. [FMS] Show ILS ident and frequency on ARRIVAL page - @tracernz (Mike)
+1. [EFB/ATSU] Use MSFS METAR data rather than FSX cloud data from FBW API - @tracernz (Mike)
+1. [APU] Added xfeed APU fuel capabilities - @Taz5150 (TazX [Z+1]#0405)
+1. [ATSU] Fix ATIS Auto Update LSK6L to ATIS page instead of ATC MENU - @BravoMike99 (bruno_pt99)
 
 ## 0.10.0
 

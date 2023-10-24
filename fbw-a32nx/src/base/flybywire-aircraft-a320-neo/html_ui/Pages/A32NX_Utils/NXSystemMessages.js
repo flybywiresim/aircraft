@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 class McduMessage {
     constructor(text, isAmber = false, replace = "") {
         this.text = text;
@@ -102,7 +106,7 @@ const NXSystemMessages = {
 };
 
 const NXFictionalMessages = {
-    noSimBriefUser:         new TypeIMessage("NO SIMBRIEF USER"),
+    noNavigraphUser:         new TypeIMessage("NO NAVIGRAPH USER"),
     noAirportSpecified:     new TypeIMessage("NO AIRPORT SPECIFIED"),
     fltNbrInUse:            new TypeIMessage("FLT NBR IN USE"),
     fltNbrMissing:          new TypeIMessage("ENTER ATC FLT NBR"),
