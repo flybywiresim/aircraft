@@ -7,6 +7,8 @@
 
 ## 0.12.0
 
+1. [APU] Added APU start motor failure - @uX-Pizza (pizza187)
+
 ## 0.11.0
 
 1. [FMS] Implement vertical navigation functions - @BlueberryKing (BlueberryKing)
