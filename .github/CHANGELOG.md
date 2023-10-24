@@ -7,6 +7,8 @@
 
 ## 0.12.0
 
+1. [GPWS] Fixed behaviour and trigger conditions for GPWS Mode 4 submodes - @LeechCZ (Leech)
+
 ## 0.11.0
 
 1. [FMS] Implement vertical navigation functions - @BlueberryKing (BlueberryKing)
