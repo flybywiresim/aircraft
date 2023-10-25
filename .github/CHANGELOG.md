@@ -8,6 +8,8 @@
 ## 0.12.0
 
 1. [APU] Added APU start motor failure - @uX-Pizza (pizza187)
+1. [EFB/ATSU] Added NOAA (aviationweather.gov) as a METAR source - @tracernz (Mike)
+1. [EFB] Fixed the main page and landing calculator to use the selected METAR source - @tracernz (Mike)
 
 ## 0.11.0
 
