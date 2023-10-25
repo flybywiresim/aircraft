@@ -7,7 +7,6 @@ import {
     MathUtils,
     Airport,
     AltitudeDescriptor,
-    ApproachWaypointDescriptor,
     EnrouteSubsectionCode,
     Fix,
     LegType,
@@ -53,6 +52,21 @@ export enum FlightPlanLegFlags {
     DirectToTurningPoint = 1 << 0,
 }
 
+interface LegCalculations {
+    /** The leg's total distance in nautical miles, not cut short by ingress/egress turn radii. */
+    distance: number;
+    /** The cumulative distance in nautical miles up to this point in the flight plan. */
+    cumulativeDistance: number;
+    /** The cumulative distance in nautical miles from this point to the missed approach point. */
+    cumulativeDistanceToEnd: number;
+    /** The leg's total distance in nautical miles, with leg transition turns take into account. */
+    distanceWithTransitions: number;
+    /** The cumulative distance in nautical miles up to this point, with leg transition turns taken into account. */
+    cumulativeDistanceWithTransitions: number;
+    /** The cumulative distance in nautical miles from this point to the missed approach point, with leg transition turns taken into account. */
+    cumulativeDistanceToEndWithTransitions: number;
+}
+
 /**
  * A leg in a flight plan. Not to be confused with a geometry leg or a procedure leg
  */
@@ -92,6 +106,8 @@ export class FlightPlanLeg {
     pilotEnteredAltitudeConstraint: AltitudeConstraint | undefined;
 
     pilotEnteredSpeedConstraint: SpeedConstraint | undefined;
+
+    calculated: LegCalculations | undefined;
 
     serialize(): SerializedFlightPlanLeg {
         return {

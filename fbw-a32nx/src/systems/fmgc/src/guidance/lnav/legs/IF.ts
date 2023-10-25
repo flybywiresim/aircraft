@@ -12,6 +12,7 @@ import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
 import { Guidable } from '@fmgc/guidance/Guidable';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { Waypoint, WaypointDescriptor } from '@flybywiresim/fbw-sdk';
+import { distanceTo } from 'msfs-geo';
 
 export class IFLeg extends XFLeg {
     constructor(
@@ -67,6 +68,10 @@ export class IFLeg extends XFLeg {
 
     getDistanceToGo(_ppos: Coordinates): NauticalMiles | undefined {
         return undefined;
+    }
+
+    getAlongTrackDistanceToGo(ppos: Coordinates, _trueTrack: number): number {
+        return distanceTo(ppos, this.fix.location);
     }
 
     getGuidanceParameters(ppos: Coordinates, trueTrack: Degrees, tas: Knots, gs: Knots): GuidanceParameters | undefined {

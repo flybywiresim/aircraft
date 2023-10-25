@@ -105,6 +105,10 @@ export class VMLeg extends Leg {
         return undefined;
     }
 
+    getAlongTrackDistanceToGo(ppos: Coordinates, trueTrack: number): NauticalMiles | undefined {
+        return this.outboundGuidable?.getAlongTrackDistanceToGo(ppos, trueTrack);
+    }
+
     isAbeam(_ppos: LatLongAlt): boolean {
         return true;
     }

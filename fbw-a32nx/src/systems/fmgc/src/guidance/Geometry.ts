@@ -21,6 +21,9 @@ import { CRLeg } from '@fmgc/guidance/lnav/legs/CR';
 import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
 import { TransitionPicker } from '@fmgc/guidance/lnav/TransitionPicker';
 import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
+import { distanceTo } from 'msfs-geo';
+import { BaseFlightPlan } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
+import { IFLeg } from '@fmgc/guidance/lnav/legs/IF';
 import { ControlLaw, CompletedGuidanceParameters, LateralPathGuidance } from './ControlLaws';
 
 function isGuidableCapturingPath(guidable: Guidable): boolean {
@@ -473,6 +476,72 @@ export class Geometry {
     }
 
     /**
+     * Calculate leg distances and cumulative distances for all flight plan legs
+     * @param plan the flight plan
+     */
+    updateDistances(plan: BaseFlightPlan): void {
+        let cumulativeDistance = 0;
+        let cumulativeDistanceWithTransitions = 0;
+
+        const flightPlanLegs = plan.allLegs;
+
+        for (let i = 0; i < flightPlanLegs.length; i++) {
+            const flightPlanLeg = flightPlanLegs[i];
+            const geometryLeg = this.legs.get(i);
+
+            if (!flightPlanLeg) {
+                continue;
+            } else if (flightPlanLeg.isDiscontinuity === true) {
+                const previousLeg = this.legs.get(i - 1);
+                const nextLeg = this.legs.get(i + 1);
+
+                if (nextLeg instanceof IFLeg) {
+                    const directDistanceInDisco = previousLeg instanceof VMLeg
+                        ? distanceTo(previousLeg.getPathStartPoint(), nextLeg.fix.location)
+                        : distanceTo(previousLeg.getPathEndPoint(), nextLeg.fix.location);
+
+                    cumulativeDistance += directDistanceInDisco;
+                    cumulativeDistanceWithTransitions += directDistanceInDisco;
+                }
+
+                continue;
+            } else if (!geometryLeg) {
+                // It's expected that we don't find a geometry leg for legs behind the active leg.
+                // Anything else should be logged the first time it happens.
+                if (flightPlanLeg.calculated && i >= plan.activeLegIndex) {
+                    console.warn(`[FMS/Geometry] No geometry leg found for flight plan leg ${flightPlanLeg.ident}`);
+                    flightPlanLeg.calculated = undefined;
+                }
+
+                continue;
+            }
+
+            const [inboundDistance, distance, outboundDistance] = Geometry.completeLegPathLengths(geometryLeg, this.transitions.get(i - 1), this.transitions.get(i));
+
+            cumulativeDistance += distance;
+            cumulativeDistanceWithTransitions += distance + inboundDistance + outboundDistance;
+
+            flightPlanLeg.calculated = {
+                ...flightPlanLeg.calculated,
+                distance,
+                distanceWithTransitions: distance + inboundDistance + outboundDistance,
+                cumulativeDistance,
+                cumulativeDistanceWithTransitions,
+            };
+        }
+
+        // Iterate again to compute distance to end using using the previously computed total distance
+        for (const leg of flightPlanLegs) {
+            if (!leg || leg.isDiscontinuity === true || !leg.calculated) {
+                continue;
+            }
+
+            leg.calculated.cumulativeDistanceToEnd = cumulativeDistance - leg.calculated.cumulativeDistance;
+            leg.calculated.cumulativeDistanceToEndWithTransitions = cumulativeDistanceWithTransitions - leg.calculated.cumulativeDistanceWithTransitions;
+        }
+    }
+
+    /**
      * Returns DTG for a complete leg path, taking into account transitions (including split FXR)
      *
      * @param ppos      present position
@@ -501,6 +570,38 @@ export class Geometry {
         }
 
         return (leg.getDistanceToGo(ppos) - (outbound && outbound instanceof FixedRadiusTransition ? outbound.unflownDistance : 0)) + outboundTransLength;
+    }
+
+    /**
+     * Returns DTG for a complete leg path, taking into account transitions (including split FXR)
+     *
+     * @param ppos      present position
+     * @param leg       the leg guidable
+     * @param inbound   the inbound transition guidable, if present
+     * @param outbound  the outbound transition guidable, if present
+     */
+    static completeLegAlongTrackPathDistanceToGo(
+        ppos: LatLongData,
+        trueTrack: number,
+        leg: Leg,
+        inbound?: Transition,
+        outbound?: Transition,
+    ) {
+        const [, legPartLength, outboundTransLength] = Geometry.completeLegPathLengths(
+            leg,
+            inbound,
+            outbound,
+        );
+
+        if (outbound && outbound.isAbeam(ppos)) {
+            return outbound.getAlongTrackDistanceToGo(ppos, trueTrack) - outbound.distance / 2; // Remove half of the transition length, since it is split (Type I)
+        }
+
+        if (inbound && inbound.isAbeam(ppos)) {
+            return inbound.getAlongTrackDistanceToGo(ppos, trueTrack) + legPartLength + outboundTransLength;
+        }
+
+        return (leg.getAlongTrackDistanceToGo(ppos, trueTrack) - (outbound && outbound instanceof FixedRadiusTransition ? outbound.unflownDistance : 0)) + outboundTransLength;
     }
 
     /**

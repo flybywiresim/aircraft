@@ -112,9 +112,17 @@ export class GuidanceController {
 
     activeLegDtg: NauticalMiles;
 
+    /** Used for lateral guidance */
     activeLegCompleteLegPathDtg: NauticalMiles;
 
     displayActiveLegCompleteLegPathDtg: NauticalMiles;
+
+    /**
+     * Used for predictions and vertical guidance.
+     * This is distinctly different from {@link activeLegCompleteLegPathDtg}. For example, path capture transitions use dtg = 1 for lateral guidance,
+     * but vertical guidance and predictions need an accurate distance.
+     */
+    activeLegAlongTrackCompletePathDtg: NauticalMiles;
 
     focusedWaypointCoordinates: Coordinates = { lat: 0, long: 0 };
 
@@ -479,6 +487,8 @@ export class GuidanceController {
             plan.activeLegIndex,
             plan.activeLegIndex, // TODO active transition index for temporary plan...?
         );
+
+        geometry.updateDistances(plan);
     }
 
     /**

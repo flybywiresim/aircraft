@@ -12,8 +12,6 @@ import { Geometry } from '@fmgc/guidance/Geometry';
 import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
 import { IFLeg } from '@fmgc/guidance/lnav/legs/IF';
 import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
-import { PathCaptureTransition } from '@fmgc/guidance/lnav/transitions/PathCaptureTransition';
-import { FixedRadiusTransition } from '@fmgc/guidance/lnav/transitions/FixedRadiusTransition';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { MathUtils, ApproachType, ApproachWaypointDescriptor, LegType } from '@flybywiresim/fbw-sdk';
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
@@ -175,14 +173,7 @@ export class ConstraintReader {
         } else if (activeTransIndex === activeLegIndex - 1) {
             // On an inbound transition
             const trueTrack = SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree');
-
-            let transitionDistanceToGo = inboundTransition.getDistanceToGo(ppos);
-
-            if (inboundTransition instanceof PathCaptureTransition) {
-                transitionDistanceToGo = inboundTransition.getActualDistanceToGo(ppos, trueTrack);
-            } else if (inboundTransition instanceof FixedRadiusTransition && inboundTransition.isReverted) {
-                transitionDistanceToGo = inboundTransition.revertTo.getActualDistanceToGo(ppos, trueTrack);
-            }
+            const transitionDistanceToGo = inboundTransition.getAlongTrackDistanceToGo(ppos, trueTrack);
 
             this.distanceToEnd = transitionDistanceToGo + legDistance + outboundLength + (nextLeg ? nextLegDistanceToEnd : 0);
         } else {
