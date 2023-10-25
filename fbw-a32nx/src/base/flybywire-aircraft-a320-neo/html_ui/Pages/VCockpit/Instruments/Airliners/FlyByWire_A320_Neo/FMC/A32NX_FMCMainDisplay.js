@@ -4749,7 +4749,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     getV2Speed() {
-        return SimVar.GetSimVarValue("L:AIRLINER_V2_SPEED", "knots");
+        return this.v2Speed;
     }
 
     getTropoPause() {
