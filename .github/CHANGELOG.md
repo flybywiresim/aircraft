@@ -7,6 +7,8 @@
 
 ## 0.12.0
 
+1. [EFB/ATSU] Added NOAA (aviationweather.gov) as a METAR source - @tracernz (Mike)
+1. [EFB] Fixed the main page and landing calculator to use the selected METAR source - @tracernz (Mike)
 1. [BLEED] Add Air starter unit to enable ground starts - @Maximilian-Reuter (\_Chaoz_)
 
 ## 0.11.0
