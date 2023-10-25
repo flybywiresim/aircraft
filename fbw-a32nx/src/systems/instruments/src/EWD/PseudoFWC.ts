@@ -1597,11 +1597,9 @@ export class PseudoFWC {
                     }
 
                     if (value.failure === 3) {
-                        console.log(`Playing Master warning Source:${key}`);
                         this.masterWarning.set(true);
                     }
                     if (value.failure === 2) {
-                        console.log(`Playing Master caution Source:${key}`);
                         this.masterCaution.set(true);
                     }
                 }
