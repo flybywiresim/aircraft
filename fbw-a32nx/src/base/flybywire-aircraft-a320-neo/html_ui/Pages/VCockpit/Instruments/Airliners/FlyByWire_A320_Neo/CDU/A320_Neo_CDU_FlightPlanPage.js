@@ -377,8 +377,7 @@ class CDUFlightPlanPage {
                         altitudeConstraint = formatAlt(targetPlan.destinationRunway.thresholdCrossingHeight);
                         altColor = color;
                     } else if (targetPlan.destinationAirport && Number.isFinite(targetPlan.destinationAirport.location.alt)) {
-                        // TODO: https://github.com/flybywiresim/msfs-navdata/issues/22
-                        altitudeConstraint = formatAlt(targetPlan.destinationAirport.location.alt * 3.281);
+                        altitudeConstraint = formatAlt(targetPlan.destinationAirport.location.alt);
                         altColor = color
                     }
                 } else if (fpIndex === targetPlan.originLegIndex) {
@@ -386,8 +385,7 @@ class CDUFlightPlanPage {
                         altitudeConstraint = formatAlt(targetPlan.originRunway.location.alt);
                         altColor = color;
                     } else if (targetPlan.originAirport && Number.isFinite(targetPlan.originAirport.location.alt)) {
-                        // TODO: https://github.com/flybywiresim/msfs-navdata/issues/22
-                        altitudeConstraint = formatAlt(targetPlan.originAirport.location.alt * 3.281);
+                        altitudeConstraint = formatAlt(targetPlan.originAirport.location.alt);
                         altColor = color;
                     }
                 } else if (targetPlan.index !== Fmgc.FlightPlanIndex.Temporary) {
