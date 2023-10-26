@@ -1,4 +1,4 @@
-import { MapParameters } from '../../../ND/utils/MapParameters';
+import { MapParameters } from '../utils/MapParameters';
 
 export interface MapLayer<T> {
     data: T[];

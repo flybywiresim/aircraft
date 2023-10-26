@@ -5,7 +5,7 @@
 import { NdSymbol } from '@shared/NavigationDisplay';
 import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { MapLayer } from './MapLayer';
-import { MapParameters } from '../../../ND/utils/MapParameters';
+import { MapParameters } from '../utils/MapParameters';
 
 const FIX_INFO_DASHES = [15, 12];
 const NO_DASHES = [];

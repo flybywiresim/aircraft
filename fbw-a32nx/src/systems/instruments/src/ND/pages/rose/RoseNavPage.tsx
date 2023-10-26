@@ -1,7 +1,7 @@
 import { ConsumerSubject, FSComponent, MappedSubject, Subject, VNode } from '@microsoft/msfs-sdk';
 import { EfisNdMode, rangeSettings } from '@shared/NavigationDisplay';
 import { FcuSimVars } from 'instruments/src/MsfsAvionicsCommon/providers/FcuBusPublisher';
-import { LsCourseBug } from 'instruments/src/NDv2/pages/arc/LsCourseBug';
+import { LsCourseBug } from 'instruments/src/ND/pages/arc/LsCourseBug';
 import { getSmallestAngle } from 'instruments/src/PFD/PFDUtils';
 import { Flag } from '../../shared/Flag';
 import { RoseMode } from './RoseMode';
