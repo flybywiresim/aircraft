@@ -11,6 +11,7 @@
 1. [EFB] Fixed the main page and landing calculator to use the selected METAR source - @tracernz (Mike)
 1. [FMS] Improve layout of PERF CLB, PERF CRZ and PERF DES pages according to H3 - @BlueberryKing (BlueberryKing)
 1. [FMS] Implement CHECK SPEED MODE message - @BlueberryKing (BlueberryKing)
+1. [PFD] The ILS frequency is now visible even when a LOC is not received - @tracernz (Mike)
 
 ## 0.11.0
 
