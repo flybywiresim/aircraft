@@ -38,7 +38,7 @@ class FlyByWireInterface {
  private:
   const std::string CONFIGURATION_FILEPATH = "\\work\\ModelConfiguration.ini";
 
-  static constexpr double MAX_ACCEPTABLE_SAMPLE_TIME = 0.11;
+  static constexpr double MAX_ACCEPTABLE_SAMPLE_TIME = 0.22;
   static constexpr uint32_t LOW_PERFORMANCE_TIMER_THRESHOLD = 10;
   uint32_t lowPerformanceTimer = 0;
 
