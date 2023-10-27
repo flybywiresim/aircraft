@@ -12,6 +12,7 @@
 1. [FMS] Improve layout of PERF CLB, PERF CRZ and PERF DES pages according to H3 - @BlueberryKing (BlueberryKing)
 1. [FMS] Implement CHECK SPEED MODE message - @BlueberryKing (BlueberryKing)
 1. [PFD] The ILS frequency is now visible even when a LOC is not received - @tracernz (Mike)
+1. [MCDU] Dash alternate time predictions if alternate fuel is manually inserted @BravoMike99 (bruno_pt99)
 
 ## 0.11.0
 
