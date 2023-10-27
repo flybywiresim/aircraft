@@ -6,7 +6,6 @@ export enum DatalinkStatusCode {
     DlkNotAvail = 1,
     Inop = -1,
     NotInstalled = 0
-
 }
 
 export enum DatalinkModeCode {

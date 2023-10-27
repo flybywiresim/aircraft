@@ -1,8 +1,8 @@
 // Copyright (c) 2021 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
+import { NearestSearchType } from '@flybywiresim/fbw-sdk';
 import { Coordinates } from 'msfs-geo';
-import { NearestSearchType } from '../types/fstypes/FSEnums';
 
 // WARNING: this is a temporary implementation until the new nav database is complete
 // Do not write any code which depends on it

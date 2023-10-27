@@ -11,8 +11,7 @@ import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
 import { PathCaptureTransition } from '@fmgc/guidance/lnav/transitions/PathCaptureTransition';
 import { FixedRadiusTransition } from '@fmgc/guidance/lnav/transitions/FixedRadiusTransition';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
-import { MathUtils } from '@flybywiresim/fbw-sdk';
-import { FixTypeFlags } from '@fmgc/types/fstypes/FSEnums';
+import { MathUtils, FixTypeFlags } from '@flybywiresim/fbw-sdk';
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
 

@@ -2,9 +2,10 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { FC, useEffect, useState } from 'react';
-import { Metar } from '@flybywiresim/api-client';
+import { Metar as FbwApiMetar } from '@flybywiresim/api-client';
 import { Droplet, Speedometer2, ThermometerHalf, Wind } from 'react-bootstrap-icons';
-import { MetarParserType, parseMetar, useInterval, usePersistentNumberProperty, usePersistentProperty } from '@flybywiresim/fbw-sdk';
+import { ConfigWeatherMap, MetarParserType, parseMetar, useInterval, usePersistentNumberProperty, usePersistentProperty } from '@flybywiresim/fbw-sdk';
+import { Metar as MsfsMetar } from '@microsoft/msfs-sdk';
 import { t } from '../../translation';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { ColoredMetar } from './ColorMetar';
@@ -76,7 +77,7 @@ export const WeatherWidget: FC<WeatherWidgetProps> = ({ name, simbriefIcao, user
     const [metarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
     const [metarError, setErrorMetar] = useState('');
     const [usingColoredMetar] = usePersistentNumberProperty('EFB_USING_COLOREDMETAR', 1);
-    const source = metarSource === 'MSFS' ? 'MS' : metarSource;
+    const source = metarSource;
 
     const getBaroTypeForAirport = (icao: string) => (['K', 'C', 'M', 'P', 'RJ', 'RO', 'TI', 'TJ']
         .some((r) => icao.toUpperCase().startsWith(r)) ? 'IN HG' : 'HPA');
@@ -120,15 +121,39 @@ export const WeatherWidget: FC<WeatherWidgetProps> = ({ name, simbriefIcao, user
         }
     };
 
-    function getMetar(icao: any, source: any) {
+    async function getMetar(icao: string, source: string): Promise<void> {
         if (icao.length !== 4 || icao === '----') {
-            return new Promise(() => {
-                setErrorMetar(t('Dashboard.ImportantInformation.Weather.NoIcaoProvided'));
-                dispatch(setMetar(MetarParserTypeProp));
-            });
+            setErrorMetar(t('Dashboard.ImportantInformation.Weather.NoIcaoProvided'));
+            dispatch(setMetar(MetarParserTypeProp));
+            return Promise.resolve();
         }
 
-        return Metar.get(icao, source)
+        // Comes from the sim rather than the FBW API
+        if (source === 'MSFS') {
+            let metar: MsfsMetar;
+            // Catch parsing error separately
+            try {
+                metar = await Coherent.call('GET_METAR_BY_IDENT', icao);
+                if (metar.icao !== icao.toUpperCase()) {
+                    throw new Error('No METAR available');
+                }
+            } catch (err) {
+                console.log(`Error while retrieving Metar: ${err}`);
+                setErrorMetar(`${err.toString()}`);
+                dispatch(setMetar(MetarParserTypeProp));
+            }
+            try {
+                const metarParse = parseMetar(metar.metarString);
+                dispatch(setMetar(metarParse));
+            } catch (err) {
+                console.log(`Error while parsing Metar ("${metar.metarString}"): ${err}`);
+                setErrorMetar(`${t('Dashboard.ImportantInformation.Weather.MetarParsingError')}: ${err.toString().replace(/^Error: /, '').toUpperCase()}`);
+                dispatch(setMetar(MetarParserTypeProp));
+            }
+            return Promise.resolve();
+        }
+
+        return FbwApiMetar.get(icao, ConfigWeatherMap[source])
             .then((result) => {
                 // For METAR source Microsoft result.metar is undefined without throwing an error.
                 // For the other METAR sources an error is thrown (Request failed with status code 404)
@@ -184,9 +209,9 @@ export const WeatherWidget: FC<WeatherWidgetProps> = ({ name, simbriefIcao, user
                 ? <p>{t('Dashboard.ImportantInformation.Weather.Loading')}</p>
                 : (
                     <>
-                        <div className="flex flex-row justify-between items-center">
+                        <div className="flex flex-row items-center justify-between">
                             <SimpleInput
-                                className="w-32 !text-2xl font-medium text-center uppercase"
+                                className="w-32 text-center !text-2xl font-medium uppercase"
                                 placeholder={simbriefIcao || 'ICAO'}
                                 value={userIcao ?? simbriefIcao}
                                 onChange={(value) => handleIcao(value)}
@@ -208,7 +233,7 @@ export const WeatherWidget: FC<WeatherWidgetProps> = ({ name, simbriefIcao, user
                                 ? (
                                     <>
                                         <div
-                                            className="flex flex-row justify-between items-center mt-4 w-full"
+                                            className="mt-4 flex w-full flex-row items-center justify-between"
                                         >
                                             <div className="flex flex-col items-center space-y-1">
                                                 <Speedometer2 size={35} />

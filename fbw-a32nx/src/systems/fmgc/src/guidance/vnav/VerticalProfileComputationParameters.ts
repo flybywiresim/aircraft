@@ -44,7 +44,6 @@ export interface VerticalProfileComputationParameters {
     flightPhase: FmgcFlightPhase,
     preselectedClbSpeed: Knots,
     preselectedCruiseSpeed: Knots,
-    preselectedDescentSpeed: Knots,
     takeoffFlapsSetting?: FlapConf
     estimatedDestinationFuel: Pounds,
 
@@ -106,7 +105,6 @@ export class VerticalProfileComputationParametersObserver {
             flightPhase: this.fmgc.getFlightPhase(),
             preselectedClbSpeed: this.fmgc.getPreSelectedClbSpeed(),
             preselectedCruiseSpeed: this.fmgc.getPreSelectedCruiseSpeed(),
-            preselectedDescentSpeed: this.fmgc.getPreSelectedDescentSpeed(),
             takeoffFlapsSetting: this.fmgc.getTakeoffFlapsSetting(),
             estimatedDestinationFuel: UnitType.TONNE.convertTo(this.fmgc.getDestEFOB(false), UnitType.POUND),
 
