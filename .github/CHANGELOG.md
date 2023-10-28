@@ -13,7 +13,6 @@
 1. [FMS] Implement CHECK SPEED MODE message - @BlueberryKing (BlueberryKing)
 1. [BLEED] Add Air starter unit to enable ground starts - @Maximilian-Reuter (\_Chaoz_)
 
-
 ## 0.11.0
 
 1. [FMS] Implement vertical navigation functions - @BlueberryKing (BlueberryKing)
