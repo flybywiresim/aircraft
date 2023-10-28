@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { FlightPlanElement, FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
-import { ProcedureTransition } from 'msfs-navdata';
+import { ProcedureTransition } from '@flybywiresim/fbw-sdk';
 import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { ProcedureSegment } from '@fmgc/flightplanning/new/segments/ProcedureSegment';

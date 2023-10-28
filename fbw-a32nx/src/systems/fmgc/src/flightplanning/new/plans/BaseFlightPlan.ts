@@ -15,7 +15,7 @@ import {
     ProcedureTransition,
     Runway,
     WaypointDescriptor,
-} from 'msfs-navdata';
+} from '@flybywiresim/fbw-sdk';
 import { OriginSegment } from '@fmgc/flightplanning/new/segments/OriginSegment';
 import { FlightPlanElement, FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { DepartureSegment } from '@fmgc/flightplanning/new/segments/DepartureSegment';

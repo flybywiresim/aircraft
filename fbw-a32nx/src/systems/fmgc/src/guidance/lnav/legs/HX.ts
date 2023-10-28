@@ -12,9 +12,8 @@ import { arcDistanceToGo, arcGuidance, courseToFixDistanceToGo, courseToFixGuida
 import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
 import { EntryState, HoldEntryTransition } from '@fmgc/guidance/lnav/transitions/HoldEntryTransition';
-import { AltitudeDescriptor, TurnDirection, Waypoint } from 'msfs-navdata';
+import { AltitudeDescriptor, TurnDirection, Waypoint, MathUtils } from '@flybywiresim/fbw-sdk';
 import { placeBearingDistance } from 'msfs-geo';
-import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { PathVector, PathVectorType } from '../PathVector';
 
 interface HxGeometry {

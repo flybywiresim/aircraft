@@ -11,7 +11,7 @@ import { PathVector } from '@fmgc/guidance/lnav/PathVector';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
 import { Guidable } from '@fmgc/guidance/Guidable';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
-import { Waypoint, WaypointDescriptor } from 'msfs-navdata';
+import { Waypoint, WaypointDescriptor } from '@flybywiresim/fbw-sdk';
 
 export class IFLeg extends XFLeg {
     constructor(

@@ -1,5 +1,5 @@
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/new/legs/FlightPlanLegDefinition';
-import { AltitudeDescriptor, SpeedDescriptor } from 'msfs-navdata';
+import { AltitudeDescriptor, SpeedDescriptor } from '@flybywiresim/fbw-sdk';
 
 export enum AltitudeConstraintType {
     at = '@',

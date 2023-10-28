@@ -19,7 +19,7 @@ import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { VerticalCheckpoint, VerticalCheckpointReason } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
 import { IFLeg } from '@fmgc/guidance/lnav/legs/IF';
-import { LegType } from 'msfs-navdata';
+import { LegType } from '@flybywiresim/fbw-sdk';
 import { distanceTo } from 'msfs-geo';
 
 const PWP_IDENT_TOC = '(T/C)';

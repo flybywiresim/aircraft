@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Airport, ApproachType, Fix } from 'msfs-navdata';
+import { Airport, ApproachType, Fix, NXDataStore } from '@flybywiresim/fbw-sdk';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/new/plans/AlternateFlightPlan';
 import { EventBus, MagVar, UnitType } from '@microsoft/msfs-sdk';
 import { FixInfoEntry } from '@fmgc/flightplanning/new/plans/FixInfo';
@@ -12,7 +12,7 @@ import { Coordinates, Degrees } from 'msfs-geo';
 import { FlightPlanLeg, FlightPlanLegFlags } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { FlightArea } from '@fmgc/navigation/FlightArea';
-import { NXDataStore } from '@flybywiresim/fbw-sdk';
+
 import { FlightPlanPerformanceData } from './performance/FlightPlanPerformanceData';
 import { BaseFlightPlan, FlightPlanQueuedOperation, SerializedFlightPlan } from './BaseFlightPlan';
 

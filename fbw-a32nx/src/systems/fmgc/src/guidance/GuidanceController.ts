@@ -13,10 +13,10 @@ import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { GeometryFactory } from '@fmgc/guidance/geometry/GeometryFactory';
 import { FlightPlanIndex } from '@fmgc/flightplanning/new/FlightPlanManager';
 import { HMLeg } from '@fmgc/guidance/lnav/legs/HX';
-import { ApproachUtils, SimVarString } from '@flybywiresim/fbw-sdk';
+import { ApproachUtils, SimVarString, ApproachType, LegType } from '@flybywiresim/fbw-sdk';
 import { getFlightPhaseManager } from '@fmgc/flightphase';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { ApproachType, LegType } from 'msfs-navdata';
+
 import { BaseFlightPlan } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vnav/VerticalProfileComputationParameters';
 import { SpeedLimit } from '@fmgc/guidance/vnav/SpeedLimit';

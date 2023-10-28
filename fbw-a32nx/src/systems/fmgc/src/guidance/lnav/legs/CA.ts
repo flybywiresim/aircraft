@@ -12,7 +12,7 @@ import { courseToFixDistanceToGo, courseToFixGuidance } from '@fmgc/guidance/lna
 import { IFLeg } from '@fmgc/guidance/lnav/legs/IF';
 import { distanceTo, placeBearingDistance } from 'msfs-geo';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
-import { WaypointDescriptor } from 'msfs-navdata';
+import { WaypointDescriptor } from '@flybywiresim/fbw-sdk';
 import { PathVector, PathVectorType } from '../PathVector';
 
 export class CALeg extends Leg {

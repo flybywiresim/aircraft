@@ -3,15 +3,10 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import fetch from 'node-fetch';
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { setupNavigraphDatabase } from '@fmgc/flightplanning/new/test/Database';
 import { SimBriefUplinkAdapter } from '@fmgc/flightplanning/new/uplink/SimBriefUplinkAdapter';
 import { dumpFlightPlan } from '@fmgc/flightplanning/new/test/FlightPlan';
-
-if (!globalThis.fetch) {
-    globalThis.fetch = fetch;
-}
 
 jest.setTimeout(120_000);
 

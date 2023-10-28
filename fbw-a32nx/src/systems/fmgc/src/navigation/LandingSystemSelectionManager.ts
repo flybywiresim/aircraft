@@ -3,14 +3,13 @@
 
 /* eslint-disable no-underscore-dangle */
 
-import { UpdateThrottler } from '@flybywiresim/fbw-sdk';
+import { UpdateThrottler, Airport, Approach, ApproachType, IlsNavaid, Runway } from '@flybywiresim/fbw-sdk';
 import { FlightPhaseManager, getFlightPhaseManager } from '@fmgc/flightphase';
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/new/NavigationDatabaseService';
 import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { distanceTo } from 'msfs-geo';
-import { Airport, Approach, ApproachType, IlsNavaid, Runway } from 'msfs-navdata';
 
 export class LandingSystemSelectionManager {
     private static readonly DESTINATION_TUNING_DISTANCE = 300;

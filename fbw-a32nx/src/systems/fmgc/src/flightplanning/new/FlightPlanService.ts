@@ -6,7 +6,7 @@
 import { FlightPlanIndex, FlightPlanManager } from '@fmgc/flightplanning/new/FlightPlanManager';
 import { FpmConfig, FpmConfigs } from '@fmgc/flightplanning/new/FpmConfig';
 import { FlightPlanLegFlags } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
-import { Fix, Waypoint } from 'msfs-navdata';
+import { Fix, Waypoint } from '@flybywiresim/fbw-sdk';
 import { NavigationDatabase } from '@fmgc/NavigationDatabase';
 import { Coordinates, Degrees } from 'msfs-geo';
 import { EventBus } from '@microsoft/msfs-sdk';

@@ -1,5 +1,5 @@
 import { HoldData, HoldType } from '@fmgc/flightplanning/data/flightplan';
-import { LegType, ProcedureLeg } from 'msfs-navdata';
+import { LegType, ProcedureLeg } from '@flybywiresim/fbw-sdk';
 
 export class HoldUtils {
     static parseHoldFromProcedureLeg(defintion: ProcedureLeg): HoldData | undefined {

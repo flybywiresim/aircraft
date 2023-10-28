@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { DatabaseItem, Waypoint } from 'msfs-navdata';
+import { DatabaseItem, Waypoint } from '@flybywiresim/fbw-sdk';
 import { FmsErrorType } from '@fmgc/FmsError';
 
 export interface DisplayInterface {

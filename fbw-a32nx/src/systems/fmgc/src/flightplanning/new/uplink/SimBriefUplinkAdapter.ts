@@ -8,7 +8,7 @@
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { FlightPlanIndex } from '@fmgc/flightplanning/new/FlightPlanManager';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/new/NavigationDatabaseService';
-import { Airway, Fix } from 'msfs-navdata';
+import { Airway, Fix } from '@flybywiresim/fbw-sdk';
 import { Coordinates, distanceTo } from 'msfs-geo';
 import { DisplayInterface } from '@fmgc/flightplanning/new/interface/DisplayInterface';
 import { ISimbriefData, simbriefDataParser } from '../../../../../instruments/src/EFB/Apis/Simbrief';

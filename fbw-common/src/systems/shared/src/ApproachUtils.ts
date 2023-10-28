@@ -1,8 +1,7 @@
 // Copyright (c) 2023 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { RunwayUtils } from '@flybywiresim/fbw-sdk';
-import { Approach, ApproachType } from 'msfs-navdata';
+import { RunwayUtils, Approach, ApproachType } from '@flybywiresim/fbw-sdk';
 
 export type ApproachNameComponents = {
     // the approach type, e.g. ILS or RNAV

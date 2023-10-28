@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Airport } from 'msfs-navdata';
+import { Airport } from '@flybywiresim/fbw-sdk';
 import { BaseFlightPlan } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 import { DestinationSegment } from '@fmgc/flightplanning/new/segments/DestinationSegment';
 import { OriginSegment } from '@fmgc/flightplanning/new/segments/OriginSegment';

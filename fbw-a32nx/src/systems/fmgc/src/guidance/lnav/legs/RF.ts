@@ -9,10 +9,9 @@ import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { arcDistanceToGo, arcGuidance, arcLength } from '@fmgc/guidance/lnav/CommonGeometry';
 import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
-import { Waypoint } from 'msfs-navdata';
+import { Waypoint, MathUtils } from '@flybywiresim/fbw-sdk';
 import { TurnDirection } from '@fmgc/types/fstypes/FSEnums';
 import { bearingTo, distanceTo } from 'msfs-geo';
-import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { PathVector, PathVectorType } from '../PathVector';
 
 export class RFLeg extends XFLeg {

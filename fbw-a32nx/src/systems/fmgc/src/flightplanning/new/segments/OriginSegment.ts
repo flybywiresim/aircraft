@@ -3,13 +3,12 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Airport, Runway } from 'msfs-navdata';
+import { Airport, Runway, MathUtils } from '@flybywiresim/fbw-sdk';
 import { FlightPlanSegment } from '@fmgc/flightplanning/new/segments/FlightPlanSegment';
 import { loadAirport, loadAllDepartures, loadAllRunways, loadRunway } from '@fmgc/flightplanning/new/DataLoading';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 import { bearingTo } from 'msfs-geo';
-import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { FlightPlanElement, FlightPlanLeg } from '../legs/FlightPlanLeg';
 import { NavigationDatabaseService } from '../NavigationDatabaseService';
 

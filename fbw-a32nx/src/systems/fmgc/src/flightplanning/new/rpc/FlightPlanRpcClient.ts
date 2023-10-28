@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { FlightPlanInterface } from '@fmgc/flightplanning/new/FlightPlanInterface';
-import { Waypoint } from 'msfs-navdata';
+import { Waypoint } from '@flybywiresim/fbw-sdk';
 import { FlightPlanIndex, FlightPlanManager } from '@fmgc/flightplanning/new/FlightPlanManager';
 import { EventBus } from '@microsoft/msfs-sdk';
 import { v4 } from 'uuid';

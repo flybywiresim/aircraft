@@ -1,13 +1,12 @@
 // Copyright (c) 2023 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { arrayFlat, UpdateThrottler } from '@flybywiresim/fbw-sdk';
+import { arrayFlat, UpdateThrottler, ApproachType, NavaidSubsectionCode, NdbNavaid, VhfNavaid, VhfNavaidType } from '@flybywiresim/fbw-sdk';
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
 import { NearbyFacilities } from '@fmgc/navigation/NearbyFacilities';
 import { bearingTo, diffAngle, distanceTo, EARTH_RADIUS } from 'msfs-geo';
-import { ApproachType, NavaidSubsectionCode, NdbNavaid, VhfNavaid, VhfNavaidType } from 'msfs-navdata';
 
 type VorFacilityWithDistance = VhfNavaid & { distance: number };
 

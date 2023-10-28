@@ -15,10 +15,9 @@ import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
 import { PathCaptureTransition } from '@fmgc/guidance/lnav/transitions/PathCaptureTransition';
 import { FixedRadiusTransition } from '@fmgc/guidance/lnav/transitions/FixedRadiusTransition';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
-import { MathUtils } from '@flybywiresim/fbw-sdk';
+import { MathUtils, ApproachType, ApproachWaypointDescriptor, LegType } from '@flybywiresim/fbw-sdk';
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
-import { ApproachType, ApproachWaypointDescriptor, LegType } from 'msfs-navdata';
 import { distanceTo } from 'msfs-geo';
 import { AltitudeConstraintType } from '@fmgc/flightplanning/data/constraint';
 

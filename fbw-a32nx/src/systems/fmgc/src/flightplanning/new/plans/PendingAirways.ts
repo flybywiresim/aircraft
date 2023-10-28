@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Airway, AirwayDirection, Fix, Waypoint } from 'msfs-navdata';
+import { Airway, AirwayDirection, Fix, Waypoint } from '@flybywiresim/fbw-sdk';
 import { FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 import { EnrouteSegment } from '@fmgc/flightplanning/new/segments/EnrouteSegment';

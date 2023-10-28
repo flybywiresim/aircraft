@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Airport, Approach, Arrival, Departure, ProcedureTransition, Runway } from 'msfs-navdata';
+import { Airport, Approach, Arrival, Departure, ProcedureTransition, Runway } from '@flybywiresim/fbw-sdk';
 import { FlightPlanSegment } from '@fmgc/flightplanning/new/segments/FlightPlanSegment';
 import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
 import { FlightPlanElement, FlightPlanLeg } from '../legs/FlightPlanLeg';

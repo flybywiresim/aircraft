@@ -3,13 +3,8 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import fetch from 'node-fetch';
 import { setupNavigraphDatabase } from '@fmgc/flightplanning/new/test/Database';
 import { FlightPlanManager } from './FlightPlanManager';
-
-if (!globalThis.fetch) {
-    globalThis.fetch = fetch;
-}
 
 describe('FlightPlanManager', () => {
     beforeEach(() => {

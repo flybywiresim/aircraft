@@ -3,12 +3,11 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Approach, Runway } from 'msfs-navdata';
+import { Approach, Runway, ApproachUtils } from '@flybywiresim/fbw-sdk';
 import { FlightPlanElement, FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { ProcedureSegment } from '@fmgc/flightplanning/new/segments/ProcedureSegment';
-import { ApproachUtils } from '@flybywiresim/fbw-sdk';
 import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
 import { NavigationDatabaseService } from '../NavigationDatabaseService';
 

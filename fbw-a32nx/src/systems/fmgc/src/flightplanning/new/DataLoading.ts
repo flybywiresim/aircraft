@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Airport, Approach, Arrival, Departure, Runway } from 'msfs-navdata';
+import { Airport, Approach, Arrival, Departure, Runway } from '@flybywiresim/fbw-sdk';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/new/NavigationDatabaseService';
 
 /**

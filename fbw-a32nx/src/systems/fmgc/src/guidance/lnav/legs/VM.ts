@@ -9,7 +9,7 @@ import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { PathVector, PathVectorType } from '@fmgc/guidance/lnav/PathVector';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
-import { Waypoint } from 'msfs-navdata';
+import { Waypoint } from '@flybywiresim/fbw-sdk';
 import { placeBearingDistance } from 'msfs-geo';
 
 /**

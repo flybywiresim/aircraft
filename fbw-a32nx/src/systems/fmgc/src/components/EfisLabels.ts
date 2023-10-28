@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { FlightLevel } from 'msfs-navdata';
+import { FlightLevel } from '@flybywiresim/fbw-sdk';
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { FmgcComponent } from './FmgcComponent';
 

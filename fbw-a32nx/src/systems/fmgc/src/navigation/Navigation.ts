@@ -8,9 +8,8 @@ import { NavaidTuner } from '@fmgc/navigation/NavaidTuner';
 import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
 import { NearbyFacilities } from '@fmgc/navigation/NearbyFacilities';
 import { RequiredPerformance } from '@fmgc/navigation/RequiredPerformance';
-import { Arinc429Register } from '@flybywiresim/fbw-sdk';
+import { Arinc429Register, IlsNavaid, NdbNavaid, VhfNavaid, VhfNavaidType } from '@flybywiresim/fbw-sdk';
 import { Coordinates } from 'msfs-geo';
-import { IlsNavaid, NdbNavaid, VhfNavaid, VhfNavaidType } from 'msfs-navdata';
 import { Icao } from '@shared/Icao';
 
 export enum SelectedNavaidType {
