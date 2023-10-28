@@ -2389,7 +2389,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     onUplinkDone() {
-        this.removeScratchpadMessage(NXSystemMessages.uplinkInsertInProg);
+        this.removeMessageFromQueue(NXSystemMessages.uplinkInsertInProg.text);
         this.setScratchpadMessage(NXSystemMessages.aocActFplnUplink);
     }
 
