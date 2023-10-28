@@ -102,7 +102,6 @@ class FMCMainDisplay extends BaseAirliners {
         this._progBrgDist = undefined;
         this.preSelectedClbSpeed = undefined;
         this.preSelectedCrzSpeed = undefined;
-        this.preSelectedDesSpeed = undefined;
         this.managedSpeedTarget = undefined;
         this.managedSpeedTargetIsMach = undefined;
         this.climbSpeedLimit = undefined;
@@ -120,8 +119,9 @@ class FMCMainDisplay extends BaseAirliners {
         this.managedSpeedCruiseMach = undefined;
         // this.managedSpeedCruiseMachIsPilotEntered = undefined;
         this.managedSpeedDescend = undefined;
-        this.managedSpeedDescendIsPilotEntered = undefined;
+        this.managedSpeedDescendPilot = undefined;
         this.managedSpeedDescendMach = undefined;
+        this.managedSpeedDescendMachPilot = undefined;
         // this.managedSpeedDescendMachIsPilotEntered = undefined;
         this.cruiseFlightLevelTimeOut = undefined;
         /** @type {0 | 1 | 2 | 3 | null} Takeoff config entered on PERF TO */
@@ -155,6 +155,9 @@ class FMCMainDisplay extends BaseAirliners {
         this.destinationLongitude = undefined;
         /** Speed in KCAS when the first engine failed during takeoff */
         this.takeoffEngineOutSpeed = undefined;
+        this.checkSpeedModeMessageActive = undefined;
+        this.perfClbPredToAltitudePilot = undefined;
+        this.perfDesPredToAltitudePilot = undefined;
 
         // ATSU data
         this.atsu = undefined;
@@ -254,6 +257,30 @@ class FMCMainDisplay extends BaseAirliners {
         this.tempCurve.add(600 * 3.28084, -26.13);
         this.tempCurve.add(700 * 3.28084, -53.57);
         this.tempCurve.add(800 * 3.28084, -74.51);
+
+        // This is used to determine the Mach number corresponding to a CAS at the manual crossover altitude
+        // The curve was calculated numerically and approximated using a few interpolated values
+        this.casToMachManualCrossoverCurve = new Avionics.Curve();
+        this.casToMachManualCrossoverCurve.interpolationFunction = Avionics.CurveTool.NumberInterpolation;
+        this.casToMachManualCrossoverCurve.add(0, 0);
+        this.casToMachManualCrossoverCurve.add(100, 0.27928);
+        this.casToMachManualCrossoverCurve.add(150, 0.41551);
+        this.casToMachManualCrossoverCurve.add(200, 0.54806);
+        this.casToMachManualCrossoverCurve.add(250, 0.67633);
+        this.casToMachManualCrossoverCurve.add(300, 0.8);
+        this.casToMachManualCrossoverCurve.add(350, 0.82);
+
+        // This is used to determine the CAS corresponding to a Mach number at the manual crossover altitude
+        // Effectively, the manual crossover altitude is FL305 up to M.80, then decreases linearly to the crossover altitude of (VMO, MMO)
+        this.machToCasManualCrossoverCurve = new Avionics.Curve();
+        this.machToCasManualCrossoverCurve.interpolationFunction = Avionics.CurveTool.NumberInterpolation;
+        this.machToCasManualCrossoverCurve.add(0, 0);
+        this.machToCasManualCrossoverCurve.add(0.27928, 100);
+        this.machToCasManualCrossoverCurve.add(0.41551, 150);
+        this.machToCasManualCrossoverCurve.add(0.54806, 200);
+        this.machToCasManualCrossoverCurve.add(0.67633, 250);
+        this.machToCasManualCrossoverCurve.add(0.8, 300);
+        this.machToCasManualCrossoverCurve.add(0.82, 350);
 
         this.cruiseFlightLevel = SimVar.GetGameVarValue("AIRCRAFT CRUISE ALTITUDE", "feet");
         this.cruiseFlightLevel /= 100;
@@ -454,7 +481,6 @@ class FMCMainDisplay extends BaseAirliners {
         this._progBrgDist = undefined;
         this.preSelectedClbSpeed = undefined;
         this.preSelectedCrzSpeed = undefined;
-        this.preSelectedDesSpeed = undefined;
         this.managedSpeedTarget = NaN;
         this.managedSpeedTargetIsMach = false;
         this.climbSpeedLimit = 250;
@@ -472,8 +498,9 @@ class FMCMainDisplay extends BaseAirliners {
         this.managedSpeedCruiseMach = 0.78;
         // this.managedSpeedCruiseMachIsPilotEntered = false;
         this.managedSpeedDescend = 290;
-        this.managedSpeedDescendIsPilotEntered = false;
+        this.managedSpeedDescendPilot = undefined;
         this.managedSpeedDescendMach = 0.78;
+        this.managedSpeedDescendMachPilot = undefined;
         // this.managedSpeedDescendMachIsPilotEntered = false;
         this.cruiseFlightLevelTimeOut = undefined;
         this.altDestination = undefined;
@@ -498,6 +525,9 @@ class FMCMainDisplay extends BaseAirliners {
         this.toSpeedsTooLow = false;
         this.vSpeedDisagree = false;
         this.takeoffEngineOutSpeed = undefined;
+        this.checkSpeedModeMessageActive = false;
+        this.perfClbPredToAltitudePilot = undefined;
+        this.perfDesPredToAltitudePilot = undefined;
 
         this.onAirport = () => {};
 
@@ -605,6 +635,7 @@ class FMCMainDisplay extends BaseAirliners {
             this.updateTransitionAltitudeLevel();
             this.updateMinimums();
             this.updateIlsCourse();
+            this.updatePerfPageAltPredictions();
         }
 
         this.A32NXCore.update();
@@ -733,6 +764,7 @@ class FMCMainDisplay extends BaseAirliners {
 
                 /** Activate pre selected speed/mach */
                 if (prevPhase === FmgcFlightPhases.CLIMB) {
+                    this.triggerCheckSpeedModeMessage(this.preSelectedCrzSpeed);
                     this.activatePreSelSpeedMach(this.preSelectedCrzSpeed);
                 }
 
@@ -759,13 +791,7 @@ class FMCMainDisplay extends BaseAirliners {
 
                 Coherent.call("GENERAL_ENG_THROTTLE_MANAGED_MODE_SET", ThrottleMode.AUTO).catch(console.error).catch(console.error);
 
-                /** Activate pre selected speed/mach */
-                if (prevPhase === FmgcFlightPhases.CRUISE) {
-                    this.activatePreSelSpeedMach(this.preSelectedDesSpeed);
-                }
-
-                /** Clear pre selected speed/mach */
-                this.updatePreSelSpeedMach(undefined);
+                this.triggerCheckSpeedModeMessage(undefined);
 
                 this.cruiseFlightLevel = undefined;
 
@@ -848,6 +874,32 @@ class FMCMainDisplay extends BaseAirliners {
                     });
                 }).catch(console.error);
                 break;
+        }
+    }
+
+    triggerCheckSpeedModeMessage(preselectedSpeed) {
+        const isSpeedSelected = !Simplane.getAutoPilotAirspeedManaged();
+        const hasPreselectedSpeed = preselectedSpeed !== undefined;
+
+        if (!this.checkSpeedModeMessageActive && isSpeedSelected && !hasPreselectedSpeed) {
+            this.checkSpeedModeMessageActive = true;
+            this.addMessageToQueue(
+                NXSystemMessages.checkSpeedMode,
+                () => !this.checkSpeedModeMessageActive,
+                () => {
+                    this.checkSpeedModeMessageActive = false;
+                    SimVar.SetSimVarValue("L:A32NX_PFD_MSG_CHECK_SPEED_MODE", "bool", false);
+                },
+            );
+            SimVar.SetSimVarValue("L:A32NX_PFD_MSG_CHECK_SPEED_MODE", "bool", true);
+        }
+    }
+
+    clearCheckSpeedModeMessage() {
+        if (this.checkSpeedModeMessageActive && Simplane.getAutoPilotAirspeedManaged()) {
+            this.checkSpeedModeMessageActive = false;
+            this.removeMessageFromQueue(NXSystemMessages.checkSpeedMode.text);
+            SimVar.SetSimVarValue("L:A32NX_PFD_MSG_CHECK_SPEED_MODE", "bool", false);
         }
     }
 
@@ -1065,9 +1117,8 @@ class FMCMainDisplay extends BaseAirliners {
         if (!this.managedSpeedCruiseIsPilotEntered) {
             this.managedSpeedCruise = this.getCrzManagedSpeedFromCostIndex();
         }
-        if (!this.managedSpeedDescendIsPilotEntered) {
-            this.managedSpeedDescend = this.getDesManagedSpeedFromCostIndex();
-        }
+
+        this.managedSpeedDescend = this.getDesManagedSpeedFromCostIndex();
     }
 
     updateManagedSpeed() {
@@ -1075,6 +1126,7 @@ class FMCMainDisplay extends BaseAirliners {
         let isMach = false;
 
         this.updateHoldingSpeed();
+        this.clearCheckSpeedModeMessage();
 
         if (SimVar.GetSimVarValue("L:A32NX_FMA_EXPEDITE_MODE", "number") === 1) {
             const verticalMode = SimVar.GetSimVarValue("L:A32NX_FMA_VERTICAL_MODE", "number");
@@ -1156,7 +1208,7 @@ class FMCMainDisplay extends BaseAirliners {
 
                     // Whether to use Mach or not should be based on the original managed speed, not whatever VNAV uses under the hood to vary it.
                     // Also, VNAV already does the conversion from Mach if necessary
-                    isMach = this.getManagedTargets(this.managedSpeedDescend, this.managedSpeedDescendMach)[1];
+                    isMach = this.getManagedTargets(this.getManagedDescentSpeed(), this.getManagedDescentSpeedMach())[1];
                     break;
                 }
                 case FmgcFlightPhases.APPROACH: {
@@ -1443,6 +1495,10 @@ class FMCMainDisplay extends BaseAirliners {
             return Infinity;
         }
 
+        return this.getNavModeSpeedConstraint();
+    }
+
+    getNavModeSpeedConstraint() {
         const activeLegIndex = this.guidanceController.activeTransIndex >= 0 ? this.guidanceController.activeTransIndex : this.guidanceController.activeLegIndex;
         const constraints = this.managedProfile.get(activeLegIndex);
         if (constraints) {
@@ -1452,7 +1508,7 @@ class FMCMainDisplay extends BaseAirliners {
 
             if (this.flightPhaseManager.phase > FmgcFlightPhases.CRUISE && this.flightPhaseManager.phase < FmgcFlightPhases.GOAROUND) {
                 // FIXME proper decel calc
-                if (this.guidanceController.activeLegDtg < this.calculateDecelDist(Math.min(constraints.previousDescentSpeed, this.managedSpeedDescend), constraints.descentSpeed)) {
+                if (this.guidanceController.activeLegDtg < this.calculateDecelDist(Math.min(constraints.previousDescentSpeed, this.getManagedDescentSpeed()), constraints.descentSpeed)) {
                     return constraints.descentSpeed;
                 } else {
                     return constraints.previousDescentSpeed;
@@ -1543,7 +1599,7 @@ class FMCMainDisplay extends BaseAirliners {
                 }
                 wp.additionalData.predictedAltitude = Math.min(profilePoint.climbAltitude, this._cruiseFlightLevel * 100);
             } else if (wp.additionalData.constraintType === 2 /* DES */) {
-                wp.additionalData.predictedSpeed = Math.min(profilePoint.descentSpeed, this.managedSpeedDescend);
+                wp.additionalData.predictedSpeed = Math.min(profilePoint.descentSpeed, this.getManagedDescentSpeed());
                 if (this.descentSpeedLimitAlt && profilePoint.climbAltitude < this.descentSpeedLimitAlt) {
                     wp.additionalData.predictedSpeed = Math.min(wp.additionalData.predictedSpeed, this.descentSpeedLimit);
                 }
@@ -3677,30 +3733,34 @@ class FMCMainDisplay extends BaseAirliners {
         if (s === FMCMainDisplay.clrValue) {
             this.preSelectedClbSpeed = undefined;
             if (isNextPhase) {
-                SimVar.SetSimVarValue("L:A32NX_MachPreselVal", "mach", -1);
-                SimVar.SetSimVarValue("L:A32NX_SpeedPreselVal", "knots", -1);
+                this.updatePreSelSpeedMach(undefined);
             }
             return true;
         }
-        const v = parseFloat(s);
-        if (isFinite(v)) {
-            if (v < 1) {
-                this.preSelectedClbSpeed = v;
-                if (isNextPhase) {
-                    SimVar.SetSimVarValue("L:A32NX_MachPreselVal", "mach", v);
-                    SimVar.SetSimVarValue("L:A32NX_SpeedPreselVal", "knots", -1);
-                }
-            } else {
-                this.preSelectedClbSpeed = Math.round(v);
-                if (isNextPhase) {
-                    SimVar.SetSimVarValue("L:A32NX_SpeedPreselVal", "knots", this.preSelectedClbSpeed);
-                    SimVar.SetSimVarValue("L:A32NX_MachPreselVal", "mach", -1);
-                }
-            }
-            return true;
+
+        const SPD_REGEX = /\d{1,3}/;
+        if (s.match(SPD_REGEX) === null) {
+            this.setScratchpadMessage(NXSystemMessages.formatError);
+            return false;
         }
-        this.setScratchpadMessage(NXSystemMessages.notAllowed);
-        return false;
+
+        const spd = parseInt(s);
+        if (!Number.isFinite(spd)) {
+            this.setScratchpadMessage(NXSystemMessages.formatError);
+            return false
+        }
+
+        if (spd < 100 || spd > 350) {
+            this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+            return false;
+        }
+
+        this.preSelectedClbSpeed = spd;
+        if (isNextPhase) {
+            this.updatePreSelSpeedMach(spd);
+        }
+
+        return true;
     }
 
     trySetPreSelectedCruiseSpeed(s) {
@@ -3708,61 +3768,46 @@ class FMCMainDisplay extends BaseAirliners {
         if (s === FMCMainDisplay.clrValue) {
             this.preSelectedCrzSpeed = undefined;
             if (isNextPhase) {
-                SimVar.SetSimVarValue("L:A32NX_MachPreselVal", "mach", -1);
-                SimVar.SetSimVarValue("L:A32NX_SpeedPreselVal", "knots", -1);
+                this.updatePreSelSpeedMach(undefined);
             }
             return true;
         }
-        const v = parseFloat(s);
-        if (isFinite(v)) {
-            if (v < 1) {
-                this.preSelectedCrzSpeed = v;
-                if (isNextPhase) {
-                    SimVar.SetSimVarValue("L:A32NX_MachPreselVal", "mach", v);
-                    SimVar.SetSimVarValue("L:A32NX_SpeedPreselVal", "knots", -1);
-                }
-            } else {
-                this.preSelectedCrzSpeed = Math.round(v);
-                if (isNextPhase) {
-                    SimVar.SetSimVarValue("L:A32NX_SpeedPreselVal", "knots", this.preSelectedCrzSpeed);
-                    SimVar.SetSimVarValue("L:A32NX_MachPreselVal", "mach", -1);
-                }
-            }
-            return true;
-        }
-        this.setScratchpadMessage(NXSystemMessages.notAllowed);
-        return false;
-    }
 
-    trySetPreSelectedDescentSpeed(s) {
-        const isNextPhase = this.flightPhaseManager.phase === FmgcFlightPhases.CRUISE;
-        if (s === FMCMainDisplay.clrValue) {
-            this.preSelectedDesSpeed = undefined;
-            if (isNextPhase) {
-                SimVar.SetSimVarValue("L:A32NX_MachPreselVal", "mach", -1);
-                SimVar.SetSimVarValue("L:A32NX_SpeedPreselVal", "knots", -1);
-            }
-            return true;
+        const MACH_OR_SPD_REGEX = /^(\.\d{1,2}|\d{1,3})$/;
+        if (s.match(MACH_OR_SPD_REGEX) === null) {
+            this.setScratchpadMessage(NXSystemMessages.formatError);
+            return false;
         }
+
         const v = parseFloat(s);
-        if (isFinite(v)) {
-            if (v < 1) {
-                this.preSelectedDesSpeed = v;
-                if (isNextPhase) {
-                    SimVar.SetSimVarValue("L:A32NX_MachPreselVal", "mach", v);
-                    SimVar.SetSimVarValue("L:A32NX_SpeedPreselVal", "knots", -1);
-                }
-            } else {
-                this.preSelectedDesSpeed = Math.round(v);
-                if (isNextPhase) {
-                    SimVar.SetSimVarValue("L:A32NX_SpeedPreselVal", "knots", this.preSelectedDesSpeed);
-                    SimVar.SetSimVarValue("L:A32NX_MachPreselVal", "mach", -1);
-                }
-            }
-            return true;
+        if (!Number.isFinite(v)) {
+            this.setScratchpadMessage(NXSystemMessages.formatError);
+            return false;
         }
-        this.setScratchpadMessage(NXSystemMessages.notAllowed);
-        return false;
+
+        if (v < 1) {
+            const mach = Math.round(v * 100) / 100;
+            if (mach < 0.15 || mach > 0.82) {
+                this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+                return false;
+            }
+
+            this.preSelectedCrzSpeed = mach;
+        } else {
+            const spd = Math.round(v);
+            if (spd < 100 || spd > 350) {
+                this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+                return false;
+            }
+
+            this.preSelectedCrzSpeed = spd;
+        }
+
+        if (isNextPhase) {
+            this.updatePreSelSpeedMach(this.preSelectedCrzSpeed);
+        }
+
+        return true;
     }
 
     setPerfApprQNH(s) {
@@ -4986,54 +5031,65 @@ class FMCMainDisplay extends BaseAirliners {
     getFlightPhase() {
         return this.flightPhaseManager.phase;
     }
+
     getClimbSpeedLimit() {
         return {
             speed: this.climbSpeedLimit,
             underAltitude: this.climbSpeedLimitAlt,
         };
     }
+
     getDescentSpeedLimit() {
         return {
             speed: this.descentSpeedLimit,
             underAltitude: this.descentSpeedLimitAlt,
         };
     }
+
     getPreSelectedClbSpeed() {
         return this.preSelectedClbSpeed;
     }
+
     getPreSelectedCruiseSpeed() {
         return this.preSelectedCrzSpeed;
     }
-    getPreSelectedDescentSpeed() {
-        return this.preSelectedDesSpeed;
-    }
+
     getTakeoffFlapsSetting() {
         return this.flaps;
     }
+
     getManagedDescentSpeed() {
-        return this.managedSpeedDescend;
+        return this.managedSpeedDescendPilot !== undefined ? this.managedSpeedDescendPilot : this.managedSpeedDescend;
     }
+
     getManagedDescentSpeedMach() {
-        return this.managedSpeedDescendMach;
+        return this.managedSpeedDescendMachPilot !== undefined ? this.managedSpeedDescendMachPilot : this.managedSpeedDescendMach;
     }
+
     getApproachSpeed() {
         return this.approachSpeeds && this.approachSpeeds.valid ? this.approachSpeeds.vapp : 0;
     }
+
     getFlapRetractionSpeed() {
         return this.approachSpeeds && this.approachSpeeds.valid ? this.approachSpeeds.f : 0;
     }
+
     getSlatRetractionSpeed() {
         return this.approachSpeeds && this.approachSpeeds.valid ? this.approachSpeeds.s : 0;
     }
+
     getCleanSpeed() {
         return this.approachSpeeds && this.approachSpeeds.valid ? this.approachSpeeds.gd : 0;
     }
+
     getTripWind() {
         return this.averageWind;
     }
+
     getWinds() {
         return this.winds;
     }
+
     getApproachWind() {
         const destination = this.flightPlanManager.getDestination();
         if (!destination || !destination.infos && !destination.infos.coordinates || !isFinite(this.perfApprWindHeading)) {
@@ -5045,14 +5101,170 @@ class FMCMainDisplay extends BaseAirliners {
 
         return { direction: trueHeading, speed: this.perfApprWindSpeed };
     }
+
     getApproachQnh() {
         return this.perfApprQNH;
     }
+
     getApproachTemperature() {
         return this.perfApprTemp;
     }
+
     getDestinationElevation() {
         return Number.isFinite(this.landingElevation) ? this.landingElevation : 0;
+    }
+
+    trySetManagedDescentSpeed(value) {
+        if (value === FMCMainDisplay.clrValue) {
+            this.managedSpeedDescendPilot = undefined;
+            this.managedSpeedDescendMachPilot = undefined;
+            return true;
+        }
+
+        const MACH_SLASH_SPD_REGEX = /^(\.\d{1,2})?\/(\d{3})?$/;
+        const machSlashSpeedMatch = value.match(MACH_SLASH_SPD_REGEX);
+
+        const MACH_REGEX = /^\.\d{1,2}$/;
+        const SPD_REGEX = /^\d{1,3}$/;
+
+        if (machSlashSpeedMatch !== null /* ".NN/" or "/NNN" entry */) {
+            const speed = parseInt(machSlashSpeedMatch[2]);
+            if (Number.isFinite(speed)) {
+                if (speed < 100 || speed > 350) {
+                    this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+                    return false;
+                }
+
+                this.managedSpeedDescendPilot = speed;
+            }
+
+            const mach = Math.round(parseFloat(machSlashSpeedMatch[1]) * 1000) / 1000;
+            if (Number.isFinite(mach)) {
+                if (mach < 0.15 || mach > 0.82) {
+                    this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+                    return false
+                }
+
+                this.managedSpeedDescendMachPilot = mach;
+            }
+
+            return true;
+        } else if (value.match(MACH_REGEX) !== null /* ".NN" */) {
+            // Entry of a Mach number only without a slash is allowed
+            const mach = Math.round(parseFloat(value) * 1000) / 1000;
+            if (Number.isFinite(mach)) {
+                if (mach < 0.15 || mach > 0.82) {
+                    this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+                    return false
+                }
+
+                this.managedSpeedDescendMachPilot = mach;
+            }
+
+            return true;
+        } else if (value.match(SPD_REGEX) !== null /* "NNN" */) {
+            const speed = parseInt(value);
+            if (Number.isFinite(speed)) {
+                if (speed < 100 || speed > 350) {
+                    this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+                    return false;
+                }
+
+                // This is the maximum managed Mach number you can get, even with CI 100.
+                // Through direct testing by a pilot, it was also determined that the plane gives Mach 0.80 for all of the tested CAS entries.
+                const mach = 0.8;
+
+                this.managedSpeedDescendPilot = speed;
+                this.managedSpeedDescendMachPilot = mach;
+
+                return true;
+            }
+        }
+
+        this.setScratchpadMessage(NXSystemMessages.formatError);
+        return false;
+    }
+
+    trySetPerfClbPredToAltitude(value) {
+        if (value === FMCMainDisplay.clrValue) {
+            this.perfClbPredToAltitudePilot = undefined;
+            return true;
+        }
+
+        const currentAlt = SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet');
+        const match = value.match(/^(FL\d{3}|\d{1,5})$/);
+        if (match === null || match.length < 1) {
+            this.setScratchpadMessage(NXSystemMessages.formatError);
+            return false;
+        }
+
+        const altOrFlString = match[1].replace("FL", "");
+        const altitude = altOrFlString.length < 4 ? 100 * parseInt(altOrFlString) : parseInt(altOrFlString);
+
+        if (!Number.isFinite(altitude)) {
+            this.setScratchpadMessage(NXSystemMessages.formatError);
+            return false;
+        }
+
+        if (altitude < currentAlt || (this._cruiseEntered && altitude > this.cruiseFlightLevel * 100)) {
+            this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+            return false;
+        }
+
+        this.perfClbPredToAltitudePilot = altitude;
+        return true;
+    }
+
+    trySetPerfDesPredToAltitude(value) {
+        if (value === FMCMainDisplay.clrValue) {
+            this.perfDesPredToAltitudePilot = undefined;
+            return true;
+        }
+
+        const currentAlt = SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet');
+        const match = value.match(/^(FL\d{3}|\d{1,5})$/);
+        if (match === null || match.length < 1) {
+            this.setScratchpadMessage(NXSystemMessages.formatError);
+            return false;
+        }
+
+        const altOrFlString = match[1].replace("FL", "");
+        const altitude = altOrFlString.length < 4 ? 100 * parseInt(altOrFlString) : parseInt(altOrFlString);
+
+        if (!Number.isFinite(altitude)) {
+            this.setScratchpadMessage(NXSystemMessages.formatError);
+            return false;
+        }
+
+        if (altitude > currentAlt) {
+            this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+            return false;
+        }
+
+        this.perfDesPredToAltitudePilot = altitude;
+        return true;
+    }
+
+    updatePerfPageAltPredictions() {
+        const currentAlt = SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet');
+        if (this.perfClbPredToAltitudePilot !== undefined && currentAlt > this.perfClbPredToAltitudePilot) {
+            this.perfClbPredToAltitudePilot = undefined;
+        }
+
+        if (this.perfDesPredToAltitudePilot !== undefined && currentAlt < this.perfDesPredToAltitudePilot) {
+            this.perfDesPredToAltitudePilot = undefined;
+        }
+    }
+
+    computeManualCrossoverAltitude(mach) {
+        const maximumCrossoverAltitude = 30594; // Crossover altitude of (300, 0.8)
+        const mmoCrossoverAltitide = 24554; // Crossover altitude of (VMO, MMO)
+
+        if (mach < 0.8) {
+            return maximumCrossoverAltitude;
+        }
+
+        return maximumCrossoverAltitude + (mmoCrossoverAltitide - maximumCrossoverAltitude) * (mach - 0.8) / 0.02;
     }
 }
 

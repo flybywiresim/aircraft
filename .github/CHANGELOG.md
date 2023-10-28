@@ -7,6 +7,10 @@
 
 ## 0.12.0
 
+1. [EFB/ATSU] Added NOAA (aviationweather.gov) as a METAR source - @tracernz (Mike)
+1. [EFB] Fixed the main page and landing calculator to use the selected METAR source - @tracernz (Mike)
+1. [FMS] Improve layout of PERF CLB, PERF CRZ and PERF DES pages according to H3 - @BlueberryKing (BlueberryKing)
+1. [FMS] Implement CHECK SPEED MODE message - @BlueberryKing (BlueberryKing)
 1. [BLEED] Add Air starter unit to enable ground starts - @Maximilian-Reuter (\_Chaoz_)
 
 ## 0.11.0
@@ -187,7 +191,6 @@
 1. [EFB] Added pause at T/D function - @2hwk (2Cas#1022)
 1. [LIGHTS] Fixed trim decal emissive and floods - @FinalLightNL (FinalLight#2113)
 1. [FLIGHTMODEL/FUEL] Fix outer tank transfer behaviour - @donstim (donbikes#4084)
-
 
 ## 0.9.0
 
