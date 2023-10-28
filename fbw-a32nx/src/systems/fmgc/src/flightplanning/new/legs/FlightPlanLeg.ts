@@ -30,6 +30,7 @@ import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
 import { MagVar } from '@microsoft/msfs-sdk';
 import { AltitudeConstraint, ConstraintUtils, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
 import { HoldUtils } from '@fmgc/flightplanning/data/hold';
+import { OriginSegment } from '@fmgc/flightplanning/new/segments/OriginSegment';
 
 /**
  * A serialized flight plan leg, to be sent across FMSes
@@ -324,12 +325,12 @@ export class FlightPlanLeg {
         }, `${airport.ident}${runway ? runway.ident.replace('RW', '') : ''}`, procedureIdent, undefined, undefined, false);
     }
 
-    static originExtendedCenterline(segment: FlightPlanSegment, runwayLeg: FlightPlanLeg): FlightPlanLeg {
-        const altitude = runwayLeg.definition.altitude1 ? runwayLeg.definition.altitude1 + 1500 : 1500;
+    static originExtendedCenterline(segment: OriginSegment, runwayLeg: FlightPlanLeg): FlightPlanLeg {
+        const altitude = Number.isFinite(segment?.runway?.thresholdLocation?.alt) ? 10 * Math.round(segment.runway.thresholdLocation.alt / 10) + 1500 : 1500;
 
         // TODO magvar
         const annotation = runwayLeg.ident.substring(0, 3) + Math.round(runwayLeg.definition.magneticCourse).toString().padStart(3, '0');
-        const ident = Math.round(altitude).toString().substring(0, 4);
+        const ident = Math.round(altitude).toFixed(0);
 
         return new FlightPlanLeg(segment, {
             procedureIdent: '',
