@@ -14,6 +14,8 @@ import { FcuSimVars } from 'instruments/src/MsfsAvionicsCommon/providers/FcuBusP
 import { RadioNeedle } from 'instruments/src/ND/shared/RadioNeedle';
 import { getSmallestAngle } from 'instruments/src/PFD/PFDUtils';
 import { SelectedHeadingBug } from 'instruments/src/ND/pages/arc/SelectedHeadingBug';
+import { LnavStatus } from 'instruments/src/ND/shared/LnavStatus';
+import { VnavStatus } from 'instruments/src/ND/shared/VnavStatus';
 import { DisplayUnit } from '../MsfsAvionicsCommon/displayUnit';
 import { AdirsSimVars } from '../MsfsAvionicsCommon/SimVarTypes';
 import { NDSimvars } from './NDSimvarPublisher';
@@ -335,6 +337,9 @@ export class NDComponent extends DisplayComponent<NDProps> {
                     <SpeedIndicator bus={this.props.bus} />
                     <ToWaypointIndicator bus={this.props.bus} isNormalOperation={this.pposLatWord.map((it) => it.isNormalOperation())} />
                     <TopMessages bus={this.props.bus} ndMode={this.currentPageMode} />
+
+                    {false && <LnavStatus />}
+                    {true && <VnavStatus />}
 
                     <Flag visible={Subject.create(false)} x={350} y={84} class="Amber FontSmall">
                         DISPLAY SYSTEM VERSION

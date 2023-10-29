@@ -22,6 +22,7 @@ import { FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { AltitudeConstraintType } from '@fmgc/flightplanning/data/constraint';
+import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 
 export class EfisSymbols {
     private blockUpdate = false;
@@ -599,6 +600,11 @@ export class EfisSymbols {
                 if (speedConstraint) {
                     constraints.push(formatConstraintSpeed(speedConstraint.speed));
                 }
+            }
+
+            if (VnavConfig.DEBUG_GUIDANCE && leg.calculated) {
+                constraints.push(`${Math.round(leg.calculated.cumulativeDistanceWithTransitions)}NM`);
+                constraints.push(`${Math.round(leg.calculated.cumulativeDistanceToEndWithTransitions)}NM`);
             }
 
             ret.push({
