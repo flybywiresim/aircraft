@@ -574,7 +574,7 @@ export class EfisSymbols {
                 }
             }
 
-            if (efisOption === EfisOption.Constraints) {
+            if (efisOption === EfisOption.Constraints && !isFromLeg) {
                 const descent = leg.constraintType === WaypointConstraintType.DES;
                 switch (altConstraint?.type) {
                 case AltitudeConstraintType.at:
