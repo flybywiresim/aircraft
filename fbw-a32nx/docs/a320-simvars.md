@@ -1781,7 +1781,7 @@ In the variables below, {number} should be replaced with one item in the set: { 
        15,16,17 | ALIGN_7_10_MINUTES
        16,17 | ALIGN_6_MINUTES
        15,17 | ALIGN_5_MINUTES
-       16 | ALIGN_4_MINUTES
+       17 | ALIGN_4_MINUTES
        15,16 | ALIGN_3_MINUTES
        16 | ALIGN_2_MINUTES
        15 | ALIGN_1_MINUTES
