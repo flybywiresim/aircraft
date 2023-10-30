@@ -361,7 +361,7 @@ export class SimBriefUplinkAdapter {
             } else if (lastInstruction?.instruction === 'procedure' && lastInstruction.ident === fix.via_airway) {
                 // SID TRANS
                 instructions.push({ instruction: 'sidEnrouteTransition', ident: fix.ident, locationHint: { lat: parseFloat(fix.pos_lat), long: parseFloat(fix.pos_long) } });
-            } else if (fix.via_airway === 'DCT') {
+            } else if (fix.via_airway === 'DCT' || fix.via_airway.match(/^NAT[A-Z]$/)) {
                 if (fix.type === 'ltlg') {
                     // LAT/LONG Waypoint
                     instructions.push({ instruction: 'latlong', lat: parseFloat(fix.pos_lat), long: parseFloat(fix.pos_long) });
