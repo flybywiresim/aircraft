@@ -4,7 +4,7 @@ use uom::si::{
     f64::*,
     length::foot,
     pressure::psi,
-    ratio::ratio,
+    ratio::{percent, ratio},
     thermodynamic_temperature::degree_celsius,
     velocity::foot_per_minute,
     volume::{cubic_meter, gallon},
@@ -463,11 +463,12 @@ impl ReservoirAirPressure for A320Pneumatic {
 struct EngineStarterValveController {
     number: usize,
     engine_state: EngineState,
+    engine_n2_percent: f64,
 }
 impl ControllerSignal<EngineStarterValveSignal> for EngineStarterValveController {
     fn signal(&self) -> Option<EngineStarterValveSignal> {
         match self.engine_state {
-            EngineState::Starting | EngineState::Restarting => {
+            EngineState::Starting | EngineState::Restarting if self.engine_n2_percent < 50. => {
                 Some(EngineStarterValveSignal::new_open())
             }
             _ => Some(EngineStarterValveSignal::new_closed()),
@@ -479,11 +480,13 @@ impl EngineStarterValveController {
         Self {
             number,
             engine_state: EngineState::Off,
+            engine_n2_percent: 0.,
         }
     }
 
     fn update(&mut self, fadec: &FullAuthorityDigitalEngineControl) {
         self.engine_state = fadec.engine_state(self.number);
+        self.engine_n2_percent = fadec.engine_n2_percent(self.number);
     }
 }
 
@@ -1589,12 +1592,16 @@ impl SimulationElement for A320PneumaticOverheadPanel {
 pub struct FullAuthorityDigitalEngineControl {
     engine_1_state_id: VariableIdentifier,
     engine_2_state_id: VariableIdentifier,
-
     engine_1_state: EngineState,
     engine_2_state: EngineState,
 
     engine_mode_selector1_id: VariableIdentifier,
     engine_mode_selector1_position: EngineModeSelector,
+
+    engine_1_n2_percent_id: VariableIdentifier,
+    engine_2_n2_percent_id: VariableIdentifier,
+    engine_1_n2_percent: Ratio,
+    engine_2_n2_percent: Ratio,
 }
 impl FullAuthorityDigitalEngineControl {
     fn new(context: &mut InitContext) -> Self {
@@ -1606,6 +1613,10 @@ impl FullAuthorityDigitalEngineControl {
             engine_mode_selector1_id: context
                 .get_identifier("TURB ENG IGNITION SWITCH EX1:1".to_owned()),
             engine_mode_selector1_position: EngineModeSelector::Norm,
+            engine_1_n2_percent_id: context.get_identifier("ENGINE_N2:1".to_owned()),
+            engine_2_n2_percent_id: context.get_identifier("ENGINE_N2:2".to_owned()),
+            engine_1_n2_percent: Ratio::new::<percent>(0.),
+            engine_2_n2_percent: Ratio::new::<percent>(0.),
         }
     }
 
@@ -1613,6 +1624,14 @@ impl FullAuthorityDigitalEngineControl {
         match number {
             1 => self.engine_1_state,
             2 => self.engine_2_state,
+            _ => panic!("Invalid engine number"),
+        }
+    }
+
+    fn engine_n2_percent(&self, number: usize) -> f64 {
+        match number {
+            1 => self.engine_1_n2_percent.get::<percent>(),
+            2 => self.engine_2_n2_percent.get::<percent>(),
             _ => panic!("Invalid engine number"),
         }
     }
@@ -1630,6 +1649,8 @@ impl SimulationElement for FullAuthorityDigitalEngineControl {
         self.engine_1_state = reader.read(&self.engine_1_state_id);
         self.engine_2_state = reader.read(&self.engine_2_state_id);
         self.engine_mode_selector1_position = reader.read(&self.engine_mode_selector1_id);
+        self.engine_1_n2_percent = Ratio::new::<percent>(reader.read(&self.engine_1_n2_percent_id));
+        self.engine_2_n2_percent = Ratio::new::<percent>(reader.read(&self.engine_2_n2_percent_id));
     }
 }
 
