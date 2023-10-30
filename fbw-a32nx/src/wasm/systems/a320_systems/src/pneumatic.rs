@@ -468,7 +468,8 @@ struct EngineStarterValveController {
 impl ControllerSignal<EngineStarterValveSignal> for EngineStarterValveController {
     fn signal(&self) -> Option<EngineStarterValveSignal> {
         match self.engine_state {
-            EngineState::Starting | EngineState::Restarting if self.engine_n2_percent < 50. => {
+            //FIXME should start at around 60% N2 and complete at 65% N2 because of traveltime of valve
+            EngineState::Starting | EngineState::Restarting if self.engine_n2_percent < 65. => {
                 Some(EngineStarterValveSignal::new_open())
             }
             _ => Some(EngineStarterValveSignal::new_closed()),
