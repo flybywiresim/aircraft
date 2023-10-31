@@ -666,6 +666,8 @@ class EngineControl {
     double b = 0;
     double fuelBurn1 = 0;
     double fuelBurn2 = 0;
+    double apuBurn1 = 0;
+    double apuBurn2 = 0;
 
     double refuelRate = simVars->getRefuelRate();
     double refuelStartedByUser = simVars->getRefuelStartedByUser();
@@ -816,17 +818,20 @@ class EngineControl {
       }
       //-----------------------------------------------------------
       // Cross-feed Logic
-      // isTankClosed = 0, both tanks can supply fuel
+      // isTankClosed = 0, x-feed valve closed
       // isTankClosed = 1, left tank does not supply fuel
       // isTankClosed = 2, right tank does not supply fuel
       // isTankClosed = 3, left & right tanks do not supply fuel
+      // isTankClosed = 4, both tanks supply fuel
       if (xFeedValve > 0.0) {
-        if (leftPump1 == 0 && leftPump2 == 0)
-          isTankClosed = 1;
-        if (rightPump1 == 0 && rightPump2 == 0)
-          isTankClosed = 2;
         if (leftPump1 == 0 && leftPump2 == 0 && rightPump1 == 0 && rightPump2 == 0)
           isTankClosed = 3;
+        else if (leftPump1 == 0 && leftPump2 == 0)
+          isTankClosed = 1;
+        else if (rightPump1 == 0 && rightPump2 == 0)
+          isTankClosed = 2;
+        else
+          isTankClosed = 4;
       }
 
       //--------------------------------------------
@@ -864,6 +869,11 @@ class EngineControl {
         fuelRightPre = 0;
       }
 
+      /// apu fuel consumption for this frame in pounds
+      double apuFuelConsumption = simVars->getLineFlow(18) * fuelWeightGallon * deltaTime;
+      apuBurn1 = apuFuelConsumption;
+      apuBurn2 = 0;
+
       //--------------------------------------------
       // Fuel used accumulators
       fuelUsedLeft += fuelBurn1;
@@ -877,6 +887,8 @@ class EngineControl {
         case 1:
           fuelBurn2 = fuelBurn1 + fuelBurn2;
           fuelBurn1 = 0;
+          apuBurn1 = 0;
+          apuBurn2 = apuFuelConsumption;
           break;
         case 2:
           fuelBurn1 = fuelBurn1 + fuelBurn2;
@@ -885,6 +897,12 @@ class EngineControl {
         case 3:
           fuelBurn1 = 0;
           fuelBurn2 = 0;
+          apuBurn1 = apuFuelConsumption * 0.5;
+          apuBurn2 = apuFuelConsumption * 0.5;
+          break;
+        case 4:
+          apuBurn1 = apuFuelConsumption*0.5;
+          apuBurn2 = apuFuelConsumption*0.5;
           break;
         default:
           break;
@@ -905,13 +923,10 @@ class EngineControl {
       else if (xfrValveCenterRightOpen)
         xfrCenterToRight = fuelCenterPre - centerQuantity;
 
-      /// apu fuel consumption for this frame in pounds
-      double apuFuelConsumption = simVars->getLineFlow(18) * fuelWeightGallon * deltaTime;
-
       //--------------------------------------------
       // Final Fuel levels for left and right inner tanks
-      fuelLeft = (fuelLeftPre - (fuelBurn1 * KGS_TO_LBS)) + xfrAuxLeft + xfrCenterToLeft - apuFuelConsumption;  // LBS
-      fuelRight = (fuelRightPre - (fuelBurn2 * KGS_TO_LBS)) + xfrAuxRight + xfrCenterToRight;                   // LBS
+      fuelLeft = (fuelLeftPre - (fuelBurn1 * KGS_TO_LBS)) + xfrAuxLeft + xfrCenterToLeft - apuBurn1;  // LBS
+      fuelRight = (fuelRightPre - (fuelBurn2 * KGS_TO_LBS)) + xfrAuxRight + xfrCenterToRight - apuBurn2;                   // LBS
 
       //--------------------------------------------
       // Setting new pre-cycle conditions

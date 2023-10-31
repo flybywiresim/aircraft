@@ -84,7 +84,7 @@ export class TrackBug extends DisplayComponent<TrackBugProps> {
                 />
                 <path
                     d={this.ndMode.map((ndMode) => (ndMode !== EfisNdMode.ARC ? 'M384,134 L379,143 L384,152 L389,143 L384,134' : 'M384,128 L378,138 L384,148 L390,138 L384,128'))}
-                    class="rounded Green"
+                    class="Green rounded"
                     stroke-width={3}
                 />
             </g>

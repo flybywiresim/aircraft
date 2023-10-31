@@ -1,6 +1,6 @@
 import { NdSymbol, NdSymbolTypeFlags } from '@shared/NavigationDisplay';
 import { MapLayer } from './MapLayer';
-import { MapParameters } from '../../../ND/utils/MapParameters';
+import { MapParameters } from '../utils/MapParameters';
 
 export class ConstraintsLayer implements MapLayer<NdSymbol> {
     data: NdSymbol[] = [];

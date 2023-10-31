@@ -51,7 +51,7 @@ use systems::{
     overhead::{AutoOffFaultPushButton, AutoOnFaultPushButton},
     shared::{
         interpolation, random_from_range, update_iterator::MaxStepLoop, AdirsDiscreteOutputs,
-        AirbusElectricPumpId, AirbusEngineDrivenPumpId, DelayedFalseLogicGate,
+        AirbusElectricPumpId, AirbusEngineDrivenPumpId, CargoDoorLocked, DelayedFalseLogicGate,
         DelayedPulseTrueLogicGate, DelayedTrueLogicGate, ElectricalBusType, ElectricalBuses,
         EngineFirePushButtons, GearWheel, HydraulicColor, LandingGearHandle, LgciuInterface,
         LgciuWeightOnWheels, ReservoirAirPressure, SectionPressure, SurfacesPositions,
@@ -2802,6 +2802,7 @@ impl A380Hydraulic {
         &self.gear_system
     }
 }
+
 impl SurfacesPositions for A380Hydraulic {
     fn left_ailerons_positions(&self) -> &[f64] {
         self.left_aileron.positions()
@@ -2827,6 +2828,16 @@ impl SurfacesPositions for A380Hydraulic {
         self.flap_system.right_position()
     }
 }
+
+impl CargoDoorLocked for A380Hydraulic {
+    fn fwd_cargo_door_locked(&self) -> bool {
+        self.forward_cargo_door.is_locked()
+    }
+    fn aft_cargo_door_locked(&self) -> bool {
+        self.aft_cargo_door.is_locked()
+    }
+}
+
 impl SimulationElement for A380Hydraulic {
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.engine_driven_pump_1a.accept(visitor);
