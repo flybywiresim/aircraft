@@ -5,6 +5,19 @@
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
+
+## 0.12.0
+
+1. [EFB/ATSU] Added NOAA (aviationweather.gov) as a METAR source - @tracernz (Mike)
+1. [EFB] Fixed the main page and landing calculator to use the selected METAR source - @tracernz (Mike)
+1. [FMS] Improve layout of PERF CLB, PERF CRZ and PERF DES pages according to H3 - @BlueberryKing (BlueberryKing)
+1. [FMS] Implement CHECK SPEED MODE message - @BlueberryKing (BlueberryKing)
+
+
+## 0.11.1
+1. [PFD] The ILS frequency is now visible even when a LOC is not received - @tracernz (Mike)
+
+
 ## 0.11.0
 
 1. [FMS] Implement vertical navigation functions - @BlueberryKing (BlueberryKing)
