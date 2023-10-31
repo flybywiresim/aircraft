@@ -2,92 +2,71 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { DisplayComponent, FSComponent, HEvent, Subject, VNode } from '@microsoft/msfs-sdk';
+import { ConsumerSubject, DisplayComponent, FSComponent, HEvent, MappedSubject, MathUtils, Subject, Subscribable, SubscribableMapFunctions, Subscription, VNode } from '@microsoft/msfs-sdk';
 import { getDisplayIndex } from 'instruments/src/PFD/PFD';
-import { Arinc429Register, Arinc429Word } from '@flybywiresim/fbw-sdk';
+import { Arinc429RegisterSubject } from 'instruments/src/MsfsAvionicsCommon/Arinc429RegisterSubject';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { LagFilter } from './PFDUtils';
 import { ArincEventBus } from '../MsfsAvionicsCommon/ArincEventBus';
 
-// TODO true ref
+// FIXME true ref
 export class LandingSystem extends DisplayComponent<{ bus: ArincEventBus, instrument: BaseInstrument }> {
-    private lsButtonPressedVisibility = false;
+    private readonly lsVisible = ConsumerSubject.create(null, false);
 
-    private xtkValid = Subject.create(false);
+    private readonly lsHidden = this.lsVisible.map(SubscribableMapFunctions.not());
 
-    private ldevRequest = false;
+    private readonly xtk = ConsumerSubject.create(null, 0);
 
-    private lsGroupRef = FSComponent.createRef<SVGGElement>();
+    // FIXME this seems like a dubious test...
+    private readonly xtkValid = this.xtk.map((v) => Math.abs(v) > 0);
 
-    private gsReferenceLine = FSComponent.createRef<SVGPathElement>();
+    private readonly ldevRequest = ConsumerSubject.create(null, false);
 
-    private deviationGroup = FSComponent.createRef<SVGGElement>();
+    private readonly altitude2 = Arinc429RegisterSubject.createEmpty();
 
-    private ldevRef = FSComponent.createRef<SVGGElement>();
+    private readonly isGsReferenceLineHidden = MappedSubject.create(
+        ([lsVisible, altitude]) => !lsVisible && !altitude.isNormalOperation(),
+        this.lsVisible,
+        this.altitude2,
+    );
 
-    private vdevRef = FSComponent.createRef<SVGGElement>();
+    private readonly isLDevHidden = MappedSubject.create(
+        ([request, xtkValid]) => !request || !xtkValid,
+        this.ldevRequest,
+        this.xtkValid,
+    );
 
-    private altitude = Arinc429Word.empty();
-
-    private handleGsReferenceLine() {
-        if (this.lsButtonPressedVisibility || (this.altitude.isNormalOperation())) {
-            this.gsReferenceLine.instance.style.display = 'inline';
-        } else if (!this.lsButtonPressedVisibility) {
-            this.gsReferenceLine.instance.style.display = 'none';
-        }
-    }
+    private readonly isVDevHidden = Subject.create(true);
 
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
         const sub = this.props.bus.getSubscriber<PFDSimvars & HEvent & Arinc429Values>();
 
+        // FIXME clean this up.. should be handled by an IE in the XML
         sub.on('hEvent').handle((eventName) => {
             if (eventName === `A320_Neo_PFD_BTN_LS_${getDisplayIndex()}`) {
-                this.lsButtonPressedVisibility = !this.lsButtonPressedVisibility;
-                SimVar.SetSimVarValue(`L:BTN_LS_${getDisplayIndex()}_FILTER_ACTIVE`, 'Bool', this.lsButtonPressedVisibility);
-
-                this.lsGroupRef.instance.style.display = this.lsButtonPressedVisibility ? 'inline' : 'none';
-                this.handleGsReferenceLine();
+                SimVar.SetSimVarValue(`L:BTN_LS_${getDisplayIndex()}_FILTER_ACTIVE`, 'Bool', !this.lsVisible.get());
             }
         });
 
-        sub.on(getDisplayIndex() === 1 ? 'ls1Button' : 'ls2Button').whenChanged().handle((lsButton) => {
-            this.lsButtonPressedVisibility = lsButton;
-            this.lsGroupRef.instance.style.display = this.lsButtonPressedVisibility ? 'inline' : 'none';
-            this.deviationGroup.instance.style.display = this.lsButtonPressedVisibility ? 'none' : 'inline';
-            this.handleGsReferenceLine();
+        this.lsVisible.setConsumer(sub.on(getDisplayIndex() === 1 ? 'ls1Button' : 'ls2Button'));
+
+        sub.on('baroCorrectedAltitude').handle((altitude) => {
+            this.altitude2.setWord(altitude);
         });
 
-        sub.on('altitudeAr').handle((altitude) => {
-            this.altitude = altitude;
-            this.handleGsReferenceLine();
-        });
+        this.ldevRequest.setConsumer(sub.on(getDisplayIndex() === 1 ? 'ldevRequestLeft' : 'ldevRequestRight'));
 
-        sub.on(getDisplayIndex() === 1 ? 'ldevRequestLeft' : 'ldevRequestRight').whenChanged().handle((ldevRequest) => {
-            this.ldevRequest = ldevRequest;
-            this.updateLdevVisibility();
-        });
-
-        sub.on('xtk').whenChanged().handle((xtk) => {
-            this.xtkValid.set(Math.abs(xtk) > 0);
-        });
-
-        this.xtkValid.sub(() => {
-            this.updateLdevVisibility();
-        });
-    }
-
-    updateLdevVisibility() {
-        this.ldevRef.instance.style.display = this.ldevRequest && this.xtkValid ? 'inline' : 'none';
+        this.xtk.setConsumer(sub.on('xtk'));
     }
 
     render(): VNode {
         return (
             <>
-                <g id="LSGroup" ref={this.lsGroupRef} style="display: none">
-                    <LandingSystemInfo bus={this.props.bus} />
+                <g id="LSGroup" class={{ HiddenElement: this.lsHidden }}>
+                    <LandingSystemInfo bus={this.props.bus} isVisible={this.lsVisible} />
 
                     <g id="LSGroup">
                         <LocalizerIndicator bus={this.props.bus} instrument={this.props.instrument} />
@@ -95,128 +74,220 @@ export class LandingSystem extends DisplayComponent<{ bus: ArincEventBus, instru
                         <MarkerBeaconIndicator bus={this.props.bus} />
                     </g>
 
-                    <path ref={this.gsReferenceLine} class="Yellow Fill" d="m 114.84887,80.06669 v 1.51188 h -8.43284 v -1.51188 z" />
+                    <path
+                        class={{
+                            Yellow: true,
+                            Fill: true,
+                            HiddenElement: this.isGsReferenceLineHidden,
+                        }}
+                        d="m 114.84887,80.06669 v 1.51188 h -8.43284 v -1.51188 z"
+                    />
                 </g>
-                <g id="DeviationGroup" ref={this.deviationGroup} style="display: none">
-                    <g id="LateralDeviationGroup" ref={this.ldevRef} style="display: none">
+                <g id="DeviationGroup" class={{ HiddenElement: this.lsVisible }}>
+                    <g id="LateralDeviationGroup" class={{ HiddenElement: this.isLDevHidden }}>
                         <LDevIndicator bus={this.props.bus} />
                     </g>
-                    <g id="VerticalDeviationGroup" ref={this.vdevRef} style="display: none">
+                    <g id="VerticalDeviationGroup" class={{ HiddenElement: this.isVDevHidden }}>
                         <VDevIndicator bus={this.props.bus} />
                     </g>
                 </g>
-                <path ref={this.gsReferenceLine} class="Yellow Fill" d="m 114.84887,80.06669 v 1.51188 h -8.43284 v -1.51188 z" />
+                <path
+                    class={{
+                        Yellow: true,
+                        Fill: true,
+                        HiddenElement: this.isGsReferenceLineHidden,
+                    }}
+                    d="m 114.84887,80.06669 v 1.51188 h -8.43284 v -1.51188 z"
+                />
             </>
         );
     }
 }
 
-class LandingSystemInfo extends DisplayComponent<{ bus: ArincEventBus }> {
-    private hasDme = false;
+interface LandingSystemInfoProps {
+    bus: ArincEventBus,
+    isVisible: Subscribable<boolean>,
+}
 
-    private identText = Subject.create('');
+class LandingSystemInfo extends DisplayComponent<LandingSystemInfoProps> {
+    // source data
 
-    private freqTextLeading = Subject.create('');
+    private readonly lsAlive = ConsumerSubject.create(null, false);
 
-    private freqTextTrailing = Subject.create('');
+    private readonly lsFrequency = ConsumerSubject.create(null, 0);
 
-    private navFreq = 0;
+    private readonly lsIdent = ConsumerSubject.create(null, '');
 
-    private dme = 0;
+    private readonly dmeAlive = ConsumerSubject.create(null, false);
 
-    private fm1NavDiscrete = Arinc429Register.empty();
+    private readonly dmeDistance = ConsumerSubject.create(null, 0);
 
-    private dmeAvailable = false;
+    private readonly fm1NavDiscrete = Arinc429RegisterSubject.createEmpty();
 
-    private dmeVisibilitySub = Subject.create('hidden');
+    // derived subjects
 
-    private destRef = FSComponent.createRef<SVGTextElement>();
+    private readonly lsIdentText = Subject.create('');
 
-    private lsInfoGroup = FSComponent.createRef<SVGGElement>();
+    private readonly lsIdentPipe = this.lsIdent.pipe(this.lsIdentText, true);
+
+    private readonly freqTextLeading = this.lsFrequency.map((v) => Math.trunc(v).toString()).pause();
+
+    private readonly freqTextTrailing = this.lsFrequency.map((v) => `.${Math.round((v - Math.trunc(v)) * 100).toString().padStart(2, '0')}`).pause();
+
+    private readonly isLsIdentHidden = MappedSubject.create(
+        ([ident, isAlive]) => ident.length === 0 || !isAlive,
+        this.lsIdent,
+        this.lsAlive,
+    );
+
+    private readonly isLsFreqHidden = this.lsFrequency.map((v) => v < 108 || v > 112);
+
+    // FIXME major hack: when the FM is not tuning the VORs and MMRs, the DME receiver is not tuned (goes into standby)
+    // Since we use the sim radios at the moment we can't tell that... instead we look at the FM tuning state
+    private isDmeAvailable = MappedSubject.create(
+        ([dmeAlive, fmNavDiscrete]) => dmeAlive && fmNavDiscrete.isNormalOperation(),
+        this.dmeAlive,
+        this.fm1NavDiscrete,
+    );
+
+    private readonly dmeDistanceRounded = this.dmeDistance.map((v) => MathUtils.round(v, 0.1));
+
+    private readonly dmeTextLeading = this.dmeDistanceRounded.map((v) => (v < 20 ? Math.trunc(v).toString() : Math.round(v).toString())).pause();
+
+    private readonly dmeTextTrailing = this.dmeDistanceRounded.map((v) => (v < 20 ? `.${Math.round((v - Math.trunc(v)) * 10).toString()}` : '')).pause();
+
+    private readonly pausable: (ConsumerSubject<unknown> | Subscription)[] = [
+        this.lsAlive,
+        this.lsFrequency,
+        this.lsIdent,
+        this.dmeAlive,
+        this.dmeDistance,
+    ];
 
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
         const sub = this.props.bus.getSubscriber<PFDSimvars>();
 
-        // normally the ident and freq should be always displayed when an ILS freq is set, but currently it only show when we have a signal
-        sub.on('hasLoc').whenChanged().handle((hasLoc) => {
-            if (hasLoc) {
-                this.lsInfoGroup.instance.style.display = 'inline';
+        this.lsAlive.setConsumer(sub.on('hasLoc'));
+
+        this.lsIdent.setConsumer(sub.on('navIdent'));
+
+        this.lsFrequency.setConsumer(sub.on('navFreq'));
+
+        this.dmeAlive.setConsumer(sub.on('hasDme'));
+
+        this.dmeDistance.setConsumer(sub.on('dme'));
+
+        this.pausable.push(sub.on('fm1NavDiscrete').whenChanged().handle((fm1NavDiscrete) => {
+            this.fm1NavDiscrete.setWord(fm1NavDiscrete);
+        }));
+
+        this.isLsFreqHidden.sub((hidden) => {
+            console.log('isLsFreqHidden', hidden, this.lsFrequency.get());
+            if (hidden) {
+                this.freqTextLeading.pause();
+                this.freqTextTrailing.pause();
             } else {
-                this.lsInfoGroup.instance.style.display = 'none';
+                this.freqTextLeading.resume();
+                this.freqTextTrailing.resume();
+            }
+        }, true);
+
+        this.isLsIdentHidden.sub((hidden) => {
+            if (hidden) {
+                this.lsIdentPipe.pause();
+            } else {
+                this.lsIdentPipe.resume(true);
             }
         });
 
-        sub.on('hasDme').whenChanged().handle((hasDme) => {
-            this.hasDme = hasDme;
-            this.updateContents();
-        });
+        this.isDmeAvailable.sub((available) => {
+            if (available) {
+                this.dmeTextLeading.resume();
+                this.dmeTextTrailing.resume();
+            } else {
+                this.dmeTextLeading.pause();
+                this.dmeTextTrailing.pause();
+            }
+        }, true);
 
-        sub.on('navIdent').whenChanged().handle((navIdent) => {
-            this.identText.set(navIdent);
-            this.updateContents();
-        });
-
-        sub.on('navFreq').whenChanged().handle((navFreq) => {
-            this.navFreq = navFreq;
-            this.updateContents();
-        });
-
-        sub.on('dme').whenChanged().handle((dme) => {
-            this.dme = dme;
-            this.updateContents();
-        });
-
-        // FIXME major hack: when the FM is not tuning the VORs and MMRs, the DME receiver is not tuned (goes into standby)
-        // Since we use the sim radios at the moment we can't tell that... instead we look at the FM tuning state
-        sub.on('fm1NavDiscrete').whenChanged().handle((fm1NavDiscrete) => {
-            this.fm1NavDiscrete.set(fm1NavDiscrete);
-            this.dmeAvailable = this.fm1NavDiscrete.isNormalOperation();
-            this.updateContents();
+        this.props.isVisible.sub((v) => {
+            if (v) {
+                this.resume();
+            } else {
+                this.pause();
+            }
         });
     }
 
-    private updateContents() {
-        const freqTextSplit = (Math.round(this.navFreq * 1000) / 1000).toString().split('.');
-        this.freqTextLeading.set(freqTextSplit[0] === '0' ? '' : freqTextSplit[0]);
-        if (freqTextSplit[1]) {
-            this.freqTextTrailing.set(`.${freqTextSplit[1].padEnd(2, '0')}`);
-        } else {
-            this.freqTextTrailing.set('');
+    public pause(): void {
+        for (const sub of this.pausable) {
+            sub.pause();
         }
+    }
 
-        let distLeading = '';
-        let distTrailing = '';
-        if (this.hasDme && this.dmeAvailable) {
-            this.dmeVisibilitySub.set('display: inline');
-            const dist = Math.round(this.dme * 10) / 10;
-
-            if (dist < 20) {
-                const distSplit = dist.toString().split('.');
-
-                distLeading = distSplit[0];
-                distTrailing = `.${distSplit.length > 1 ? distSplit[1] : '0'}`;
-            } else {
-                distLeading = Math.round(dist).toString();
-                distTrailing = '';
-            }
-            // eslint-disable-next-line max-len
-            this.destRef.instance.innerHTML = `<tspan id="ILSDistLeading" class="FontLarge StartAlign">${distLeading}</tspan><tspan id="ILSDistTrailing" class="FontSmallest StartAlign">${distTrailing}</tspan>`;
-        } else {
-            this.dmeVisibilitySub.set('display: none');
+    public resume(): void {
+        for (const sub of this.pausable) {
+            sub.resume(true);
         }
     }
 
     render(): VNode {
         return (
-            <g id="LSInfoGroup" ref={this.lsInfoGroup}>
-                <text id="ILSIdent" class="Magenta FontLarge AlignLeft" x="1.184" y="145.11522">{this.identText}</text>
-                <text id="ILSFreqLeading" class="Magenta FontLarge AlignLeft" x="1.3610243" y="151.11575">{this.freqTextLeading}</text>
-                <text id="ILSFreqTrailing" class="Magenta FontSmallest AlignLeft" x="12.964463" y="151.24084">{this.freqTextTrailing}</text>
+            <g
+                id="LSInfoGroup"
+                class={{ HiddenElement: this.props.isVisible.map((v) => !v) }}
+            >
+                <text
+                    id="ILSIdent"
+                    class={{
+                        Magenta: true,
+                        FontLarge: true,
+                        AlignLeft: true,
+                        HiddenElement: this.isLsIdentHidden,
+                    }}
+                    x="1.184"
+                    y="145.11522"
+                >
+                    {this.lsIdentText}
+                </text>
+                <text
+                    id="ILSFreqLeading"
+                    class={{
+                        Magenta: true,
+                        FontLarge: true,
+                        AlignLeft: true,
+                        HiddenElement: this.isLsFreqHidden,
+                    }}
+                    x="1.3610243"
+                    y="151.11575"
+                >
+                    {this.freqTextLeading}
+                </text>
+                <text
+                    id="ILSFreqTrailing"
+                    class={{
+                        Magenta: true,
+                        FontSmallest: true,
+                        AlignLeft: true,
+                        HiddenElement: this.isLsFreqHidden,
+                    }}
+                    x="12.964463"
+                    y="151.24084"
+                >
+                    {this.freqTextTrailing}
+                </text>
 
-                <g id="ILSDistGroup" style={this.dmeVisibilitySub}>
-                    <text ref={this.destRef} class="Magenta AlignLeft" x="1.3685881" y="157.26602" />
+                <g id="ILSDistGroup" class={{ HiddenElement: this.isDmeAvailable.map((v) => !v) }}>
+                    <text class="Magenta AlignLeft" x="1.3685881" y="157.26602">
+                        <tspan id="ILSDistLeading" class="FontLarge StartAlign">
+                            {this.dmeTextLeading}
+                        </tspan>
+                        <tspan id="ILSDistTrailing" class="FontSmallest StartAlign">
+                            {this.dmeTextTrailing}
+                        </tspan>
+                    </text>
                     <text class="Cyan FontSmallest AlignLeft" x="17.159119" y="157.22606">NM</text>
                 </g>
 
