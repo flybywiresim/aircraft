@@ -2155,7 +2155,7 @@ class FMCMainDisplay extends BaseAirliners {
             if (this.isAltFuelInRange(value)) {
                 this._routeAltFuelEntered = true;
                 this._routeAltFuelWeight = value;
-                this._routeAltFuelTime = 0;
+                this._routeAltFuelTime = null;
                 return true;
             } else {
                 this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
@@ -2242,7 +2242,7 @@ class FMCMainDisplay extends BaseAirliners {
             const deviation = (this.zeroFuelWeight + this._routeFinalFuelWeight - A32NX_FuelPred.refWeight) * A32NX_FuelPred.computeNumbers(airDistance, placeholderFl, A32NX_FuelPred.computations.CORRECTIONS, true);
             if ((20 < airDistance && airDistance < 200) && (100 < placeholderFl && placeholderFl < 290)) { //This will always be true until we can setup alternate routes
                 this._routeAltFuelWeight = (A32NX_FuelPred.computeNumbers(airDistance, placeholderFl, A32NX_FuelPred.computations.FUEL, true) + deviation) / 1000;
-                this._routeAltFuelTime = this._routeAltFuelEntered ? 0 : A32NX_FuelPred.computeNumbers(airDistance, placeholderFl, A32NX_FuelPred.computations.TIME, true);
+                this._routeAltFuelTime = this._routeAltFuelEntered ? null : A32NX_FuelPred.computeNumbers(airDistance, placeholderFl, A32NX_FuelPred.computations.TIME, true);
             }
         }
     }
