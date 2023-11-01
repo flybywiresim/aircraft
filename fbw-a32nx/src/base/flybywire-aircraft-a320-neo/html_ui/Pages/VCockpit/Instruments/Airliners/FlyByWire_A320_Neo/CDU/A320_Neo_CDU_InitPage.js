@@ -143,42 +143,45 @@ class CDUInitPage {
                     alignOption = "IRS INIT>";
                 }
 
-                mcdu.onLeftInput[1] = async (value, scratchpadCallback) => {
-                    switch (altDest.raw) {
-                        case "NONE":
-                            if (value === "") {
-                                CDUAvailableFlightPlanPage.ShowPage(mcdu);
-                            } else {
-                                if (await mcdu.tryUpdateAltDestination(value)) {
-                                    CDUInitPage.ShowPage1(mcdu);
-                                } else {
-                                    scratchpadCallback();
-                                }
-                            }
-                            break;
-                        default:
-                            if (value === "") {
-                                CDUAvailableFlightPlanPage.ShowPage(mcdu);
-                            } else {
-                                if (await mcdu.tryUpdateAltDestination(value)) {
-                                    CDUInitPage.ShowPage1(mcdu);
-                                } else {
-                                    scratchpadCallback();
-                                }
-                            }
-                            break;
-                    }
+                altDest.update(altnAirport ? altnAirport.ident : "NONE", Column.cyan);
+
+                // TODO: Port over (fms-v2)
+                // mcdu.onLeftInput[1] = async (value, scratchpadCallback) => {
+                //     switch (altDest.raw) {
+                //         case "NONE":
+                //             if (value === "") {
+                //                 CDUAvailableFlightPlanPage.ShowPage(mcdu);
+                //             } else {
+                //                 if (await mcdu.tryUpdateAltDestination(value)) {
+                //                     CDUInitPage.ShowPage1(mcdu);
+                //                 } else {
+                //                     scratchpadCallback();
+                //                 }
+                //             }
+                //             break;
+                //         default:
+                //             if (value === "") {
+                //                 CDUAvailableFlightPlanPage.ShowPage(mcdu);
+                //             } else {
+                //                 if (await mcdu.tryUpdateAltDestination(value)) {
+                //                     CDUInitPage.ShowPage1(mcdu);
+                //                 } else {
+                //                     scratchpadCallback();
+                //                 }
+                //             }
+                //             break;
+                //     }
+                // };
+
+                mcdu.onLeftInput[1] = (value, scratchpadCallback) => {
+                    mcdu.flightPlanService.setAlternate(value).then(() => {
+                        CDUInitPage.ShowPage1(mcdu);
+                    }).catch(() => scratchpadCallback());
                 };
             }
         }
 
         mcdu.onLeftInput[0] = coRouteAction;
-
-        mcdu.onLeftInput[1] = (value, scratchpadCallback) => {
-            mcdu.flightPlanService.setAlternate(value).then(() => {
-                CDUInitPage.ShowPage1(mcdu);
-            }).catch(() => scratchpadCallback());
-        };
 
         if (mcdu.tropo) {
             tropo.update("" + mcdu.tropo, Column.big);
