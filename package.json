@@ -1,6 +1,6 @@
 {
   "name": "a32nx",
-  "version": "0.11.0",
+  "version": "0.12.0",
   "edition": "development",
   "imports": {
     "#build-utils": "./build-utils.js"
@@ -155,7 +155,7 @@
     "i18next": "^21.6.14",
     "lodash": "^4.17.20",
     "msfs-geo": "^0.1.0-alpha3",
-    "@microsoft/msfs-sdk": "^0.4.0",
+    "@microsoft/msfs-sdk": "^0.6.0",
     "nanoid": "^3.3.1",
     "network": "^0.6.1",
     "qrcode.react": "^1.0.1",
