@@ -127,7 +127,7 @@ export default new TaskOfTasks("all", [
                 ]),
             new ExecTask("systems-terronnd", [
                 "fbw-common/src/wasm/terronnd/build.sh",
-                "wasm-opt -O1 -o fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/terronnd.wasm fbw-common/src/wasm/terronnd/out/terronnd.wasm"
+                "wasm-opt -O1 --signext-lowering -o fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/terronnd.wasm fbw-common/src/wasm/terronnd/out/terronnd.wasm"
             ], [
                 "fbw-common/src/wasm/terronnd",
                 "fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/terronnd.wasm",
