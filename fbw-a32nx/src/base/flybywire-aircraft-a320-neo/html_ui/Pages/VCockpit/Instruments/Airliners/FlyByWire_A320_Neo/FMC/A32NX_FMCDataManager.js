@@ -16,6 +16,7 @@ const IcaoSearchFilter = Object.freeze({
     Ndbs: 4,
 });
 
+// TODO: Clean this up (fms-v2). A lot of this code is no longer used.
 class FMCDataManager {
     constructor(_fmc) {
         this.fmc = _fmc;
@@ -31,8 +32,7 @@ class FMCDataManager {
         if (stored !== null) {
             JSON.parse(stored).forEach((wp) => {
                 if (wp) {
-                    // TODO port fms-v2)
-                    this.storedWaypoints.push(Fmgc.WaypointBuilder.fromCoordinates(wp.ident, new LatLongAlt(wp.coordinates), this.fmc, wp.additionalData));
+                    this.storedWaypoints.push(Fmgc.WaypointFactory.fromLocation(wp.ident, wp.coordinates));
                 } else {
                     this.storedWaypoints.push(undefined);
                 }
@@ -400,9 +400,8 @@ class FMCDataManager {
      * @param {OneWayRunway} runway
      */
     createRunwayWaypoint(airport, runway) {
-        const ident = `${airport.ident}${Avionics.Utils.formatRunway(runway.designation)}`;
-        // TODO should this be threshold co-ordinates?
-        // TODO port fms-v2)
+        const ident = `${airport.ident}${Avionics.Utisls.formatRunway(runway.designation)}`;
+        // TODO remove this. It lives in WaypointEntryUtils now
         const wp = Fmgc.WaypointBuilder.fromCoordinates(ident, runway.beginningCoordinates, this.fmc.instrument);
         wp.icao = `R${airport.icao.substring(1, 4)}${airport.icao.substring(7, 11)}RW${Avionics.Utils.formatRunway(runway.designation)}`;
         wp.infos.icao = wp.icao;
