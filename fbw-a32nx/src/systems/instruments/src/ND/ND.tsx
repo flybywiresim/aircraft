@@ -282,7 +282,8 @@ export class NDComponent extends DisplayComponent<NDProps> {
                         trueTrackWord={this.trueTrackWord}
                         rangeValue={this.mapRangeRadius}
                         isUsingTrackUpMode={this.isUsingTrackUpMode}
-                        index={this.props.side === 'L' ? 1 : 2}
+                        /* Capt ND shows ILS2  */
+                        index={this.props.side === 'L' ? 2 : 1}
                     />
                     <RoseVorPage
                         bus={this.props.bus}
@@ -293,6 +294,7 @@ export class NDComponent extends DisplayComponent<NDProps> {
                         trueTrackWord={this.trueTrackWord}
                         rangeValue={this.mapRangeRadius}
                         isUsingTrackUpMode={this.isUsingTrackUpMode}
+                        /* Capt ND shows VOR1  */
                         index={this.props.side === 'L' ? 1 : 2}
                     />
                     <RoseNavPage
