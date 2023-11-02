@@ -215,7 +215,7 @@ export class GuidanceController {
         const gs = SimVar.GetSimVarValue('GPS GROUND SPEED', 'Knots');
         const flightPhase = getFlightPhaseManager().phase;
         const etaComputable = flightPhase >= FmgcFlightPhase.Takeoff && gs > 100;
-        const activeLeg = this.activeGeometry.legs.get(this.activeLegIndex);
+        const activeLeg = this.activeGeometry?.legs.get(this.activeLegIndex);
         if (activeLeg) {
             const termination = activeLeg instanceof XFLeg ? activeLeg.fix.infos.coordinates : activeLeg.getPathEndPoint();
             const ppos = this.lnavDriver.ppos;
