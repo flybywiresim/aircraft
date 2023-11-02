@@ -93,7 +93,6 @@ export class LnavDriver implements GuidanceComponent {
                 if (LnavConfig.DEBUG_GUIDANCE) {
                     console.log('[FMS/LNAV] No leg at activeLegIdx!');
                 }
-                this.guidanceController.lastActiveLeg = null;
                 return;
             }
 
@@ -119,7 +118,6 @@ export class LnavDriver implements GuidanceComponent {
             this.guidanceController.activeLegDtg = dtg;
             this.guidanceController.activeLegCompleteLegPathDtg = completeLegPathDtg;
             this.guidanceController.displayActiveLegCompleteLegPathDtg = completeDisplayLegPathDtg;
-            this.guidanceController.lastActiveLeg = activeLeg;
 
             // Update activeTransIndex in GuidanceController
             if (inboundTrans && inboundTrans.isAbeam(this.ppos)) {

@@ -25,7 +25,6 @@ import { LnavDriver } from './lnav/LnavDriver';
 import { FlightPlanManager, FlightPlans } from '../flightplanning/FlightPlanManager';
 import { GuidanceManager } from './GuidanceManager';
 import { VnavDriver } from './vnav/VnavDriver';
-import { Leg } from './lnav/legs/Leg';
 import { XFLeg } from './lnav/legs/XF';
 import { VMLeg } from './lnav/legs/VM';
 
@@ -114,8 +113,6 @@ export class GuidanceController {
     taskQueue = new TaskQueue();
 
     verticalProfileComputationParametersObserver: VerticalProfileComputationParametersObserver;
-
-    lastActiveLeg: Leg | null;
 
     private listener = RegisterViewListener('JS_LISTENER_SIMVARS', null, true);
 
@@ -214,10 +211,11 @@ export class GuidanceController {
         }
     }
 
-    private updateEfisData(activeLeg: Leg) {
+    private updateEfisData() {
         const gs = SimVar.GetSimVarValue('GPS GROUND SPEED', 'Knots');
         const flightPhase = getFlightPhaseManager().phase;
         const etaComputable = flightPhase >= FmgcFlightPhase.Takeoff && gs > 100;
+        const activeLeg = this.activeGeometry.legs.get(this.activeLegIndex);
         if (activeLeg) {
             const termination = activeLeg instanceof XFLeg ? activeLeg.fix.infos.coordinates : activeLeg.getPathEndPoint();
             const ppos = this.lnavDriver.ppos;
@@ -379,7 +377,7 @@ export class GuidanceController {
             console.error(e);
         }
 
-        this.updateEfisData(this.lastActiveLeg);
+        this.updateEfisData();
 
         try {
             this.vnavDriver.update(deltaTime);
