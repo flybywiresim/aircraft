@@ -83,7 +83,8 @@ export class IFLeg extends XFLeg {
     }
 
     getPseudoWaypointLocation(_distanceBeforeTerminator: NauticalMiles): Coordinates | undefined {
-        return undefined;
+        // If a PWP lies in a discontinuity before an IF leg, the PWP should lie on the fix of the IF.
+        return this.fix.location;
     }
 
     isAbeam(_ppos: Coordinates): boolean {

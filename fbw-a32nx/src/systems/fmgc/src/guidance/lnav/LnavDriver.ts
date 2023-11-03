@@ -86,7 +86,6 @@ export class LnavDriver implements GuidanceComponent {
         const trueTrack = SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree');
 
         const geometry = this.guidanceController.activeGeometry;
-
         const activeLegIdx = this.guidanceController.activeLegIndex;
 
         if (geometry && geometry.legs.size > 0) {

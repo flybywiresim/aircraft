@@ -25,7 +25,7 @@ import {
     maxBank,
     reciprocal,
 } from '../CommonGeometry';
-import { DebugPointColour, PathVector, PathVectorType } from '../PathVector';
+import { DebugPointColour, PathVector, PathVectorType, pathVectorLength } from '../PathVector';
 
 enum EntryType {
     Null,
@@ -82,6 +82,11 @@ export class HoldEntryTransition extends Transition {
 
     get distance(): NauticalMiles {
         return 0; // 0 so no PWPs
+    }
+
+    /** When the hold is active, this should be considered in the distance calculation and PWP can be placed on it */
+    get distanceWhenActive(): NauticalMiles {
+        return this.predictedPath.reduce((dist, vector) => dist + pathVectorLength(vector), 0);
     }
 
     getDistanceToGo(_ppos: LatLongData): NauticalMiles {

@@ -211,7 +211,7 @@ export class NavGeometryProfile extends BaseGeometryProfile {
                 continue;
             }
 
-            const distanceFromStart = this.getDistanceFromStart(this.constraintReader.legDistancesToEnd[i]);
+            const distanceFromStart = leg.calculated?.cumulativeDistanceWithTransitions;
             const { secondsFromPresent, altitude, speed, mach, remainingFuelOnBoard } = this.interpolateEverythingFromStart(distanceFromStart);
 
             const altitudeConstraint = leg.altitudeConstraint;

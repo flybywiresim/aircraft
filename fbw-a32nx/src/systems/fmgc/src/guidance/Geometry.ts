@@ -20,10 +20,12 @@ import { CILeg } from '@fmgc/guidance/lnav/legs/CI';
 import { CRLeg } from '@fmgc/guidance/lnav/legs/CR';
 import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
 import { TransitionPicker } from '@fmgc/guidance/lnav/TransitionPicker';
-import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
 import { distanceTo } from 'msfs-geo';
 import { BaseFlightPlan } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 import { IFLeg } from '@fmgc/guidance/lnav/legs/IF';
+import { FlightPlanElement } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
+import { HALeg, HFLeg, HMLeg } from '@fmgc/guidance/lnav/legs/HX';
+import { HoldEntryTransition } from '@fmgc/guidance/lnav/transitions/HoldEntryTransition';
 import { ControlLaw, CompletedGuidanceParameters, LateralPathGuidance } from './ControlLaws';
 
 function isGuidableCapturingPath(guidable: Guidable): boolean {
@@ -479,59 +481,116 @@ export class Geometry {
      * Calculate leg distances and cumulative distances for all flight plan legs
      * @param plan the flight plan
      */
-    updateDistances(plan: BaseFlightPlan): void {
+    updateDistances(plan: BaseFlightPlan, fromIndex: number, toIndex: number): void {
         let cumulativeDistance = 0;
         let cumulativeDistanceWithTransitions = 0;
 
         const flightPlanLegs = plan.allLegs;
 
-        for (let i = 0; i < flightPlanLegs.length; i++) {
+        // Set calculated distances on downpath leg
+        for (let i = fromIndex; i < toIndex; i++) {
             const flightPlanLeg = flightPlanLegs[i];
             const geometryLeg = this.legs.get(i);
 
-            if (!flightPlanLeg) {
-                continue;
+            if (i === plan.firstMissedApproachLegIndex) {
+                cumulativeDistance = 0;
+                cumulativeDistanceWithTransitions = 0;
+            }
+
+            if (i === plan.activeLegIndex - 1) {
+                this.setCalculatedDistancesOnFromLeg(flightPlanLeg, geometryLeg);
             } else if (flightPlanLeg.isDiscontinuity === true) {
-                const previousLeg = this.legs.get(i - 1);
-                const nextLeg = this.legs.get(i + 1);
+                const directDistance = this.computeDistanceInDiscontinuity(i);
 
-                if (nextLeg instanceof IFLeg) {
-                    const directDistanceInDisco = previousLeg instanceof VMLeg
-                        ? distanceTo(previousLeg.getPathStartPoint(), nextLeg.fix.location)
-                        : distanceTo(previousLeg.getPathEndPoint(), nextLeg.fix.location);
-
-                    cumulativeDistance += directDistanceInDisco;
-                    cumulativeDistanceWithTransitions += directDistanceInDisco;
-                }
-
-                continue;
+                cumulativeDistance += directDistance;
+                cumulativeDistanceWithTransitions += directDistance;
             } else if (!geometryLeg) {
-                // It's expected that we don't find a geometry leg for legs behind the active leg.
-                // Anything else should be logged the first time it happens.
-                if (flightPlanLeg.calculated && i >= plan.activeLegIndex) {
-                    console.warn(`[FMS/Geometry] No geometry leg found for flight plan leg ${flightPlanLeg.ident}`);
+                if (flightPlanLeg.calculated) {
                     flightPlanLeg.calculated = undefined;
                 }
 
-                continue;
+                if (LnavConfig.DEBUG_GEOMETRY) {
+                    console.warn(`[FMS/Geometry] No geometry leg found for flight plan leg ${flightPlanLeg.ident}`);
+                }
+            } else {
+                const [distance, distanceWithTransitions] = i === plan.activeLegIndex && isHold(geometryLeg)
+                    ? this.computeActiveHoldDistance(geometryLeg, this.transitions.get(i - 1), this.transitions.get(i))
+                    : this.computeLegDistances(geometryLeg, this.transitions.get(i - 1), this.transitions.get(i));
+
+                cumulativeDistance += distance;
+                cumulativeDistanceWithTransitions += distanceWithTransitions;
+
+                flightPlanLeg.calculated = {
+                    distance,
+                    distanceWithTransitions,
+                    cumulativeDistance,
+                    cumulativeDistanceWithTransitions,
+                    cumulativeDistanceToEnd: undefined,
+                    cumulativeDistanceToEndWithTransitions: undefined,
+                };
+
+                geometryLeg.calculated = flightPlanLeg.calculated;
             }
-
-            const [inboundDistance, distance, outboundDistance] = Geometry.completeLegPathLengths(geometryLeg, this.transitions.get(i - 1), this.transitions.get(i));
-
-            cumulativeDistance += distance;
-            cumulativeDistanceWithTransitions += distance + inboundDistance + outboundDistance;
-
-            flightPlanLeg.calculated = {
-                ...flightPlanLeg.calculated,
-                distance,
-                distanceWithTransitions: distance + inboundDistance + outboundDistance,
-                cumulativeDistance,
-                cumulativeDistanceWithTransitions,
-            };
         }
 
         // Iterate again to compute distance to end using using the previously computed total distance
-        for (const leg of flightPlanLegs) {
+        this.reflowDistancesToEnd(plan, cumulativeDistance, cumulativeDistanceWithTransitions, fromIndex, toIndex);
+    }
+
+    private setCalculatedDistancesOnFromLeg(flightPlanLeg: FlightPlanElement, geometryLeg: Leg) {
+        if (flightPlanLeg.isDiscontinuity === true) {
+            return;
+        }
+
+        flightPlanLeg.calculated = {
+            distance: 0,
+            distanceWithTransitions: 0,
+            cumulativeDistance: 0,
+            cumulativeDistanceWithTransitions: 0,
+            cumulativeDistanceToEnd: undefined,
+            cumulativeDistanceToEndWithTransitions: undefined,
+        };
+
+        if (geometryLeg) {
+            geometryLeg.calculated = flightPlanLeg.calculated;
+        }
+    }
+
+    private computeActiveHoldDistance(leg: HALeg | HFLeg | HMLeg, inboundTransition: Transition, outboundTransition: Transition): [NauticalMiles, NauticalMiles] {
+        const [defaultInboundDistance, _, outboundDistance] = Geometry.completeLegPathLengths(leg, inboundTransition, outboundTransition);
+
+        const distance = leg.distanceWhenActive;
+        const inboundDistance = inboundTransition instanceof HoldEntryTransition
+            ? inboundTransition.distanceWhenActive
+            : defaultInboundDistance;
+
+        return [distance, distance + inboundDistance + outboundDistance];
+    }
+
+    private computeLegDistances(leg: Leg, inboundTransition: Transition, outboundTransition: Transition): [NauticalMiles, NauticalMiles] {
+        const [inboundDistance, distance, outboundDistance] = Geometry.completeLegPathLengths(leg, inboundTransition, outboundTransition);
+
+        return [distance, distance + inboundDistance + outboundDistance];
+    }
+
+    private computeDistanceInDiscontinuity(discoIndex: number): NauticalMiles {
+        const previousLeg = this.legs.get(discoIndex - 1);
+        const nextLeg = this.legs.get(discoIndex + 1);
+
+        if (nextLeg instanceof IFLeg) {
+            const directDistanceInDisco = previousLeg instanceof VMLeg
+                ? distanceTo(previousLeg.getPathStartPoint(), nextLeg.fix.location)
+                : distanceTo(previousLeg.getPathEndPoint(), nextLeg.fix.location);
+
+            return directDistanceInDisco;
+        }
+
+        return 0;
+    }
+
+    private reflowDistancesToEnd(plan: BaseFlightPlan, cumulativeDistance: NauticalMiles, cumulativeDistanceWithTransitions: NauticalMiles, fromIndex: number, toIndex: number) {
+        for (let i = fromIndex; i < toIndex; i++) {
+            const leg = plan.allLegs[i];
             if (!leg || leg.isDiscontinuity === true || !leg.calculated) {
                 continue;
             }
@@ -618,7 +677,6 @@ export class Geometry {
     ): [number, number, number] {
         let inboundLength = 0;
         let outboundLength = 0;
-        let legDistance = leg.distance;
 
         if (outbound) {
             if (outbound instanceof FixedRadiusTransition && !outbound.isReverted) {
@@ -634,14 +692,8 @@ export class Geometry {
             } else {
                 inboundLength = inbound.distance;
             }
-
-            // TODO: This is a hack. In the situation where we have a TF -> FixedRadius -> CF and the FixedRadius reverts to PathCapture such that it overshoots the fix of the CF,
-            // the CF's distance is the distance between where the transition intercepts the next leg and the fix of the CF, but the AC will not fly this distance
-            if (leg instanceof XFLeg && leg.overshot && leg.distance > 0) {
-                legDistance = -leg.distance;
-            }
         }
 
-        return [inboundLength, legDistance, outboundLength];
+        return [inboundLength, leg.distance, outboundLength];
     }
 }

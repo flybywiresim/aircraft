@@ -51,6 +51,14 @@ export abstract class XFLeg extends Leg {
         return side === PointSide.After;
     }
 
+    get distance(): NauticalMiles {
+        if (this.overshot) {
+            return 0;
+        }
+
+        return super.distance;
+    }
+
     get distanceToTermination(): NauticalMiles {
         const startPoint = this.getPathStartPoint();
 

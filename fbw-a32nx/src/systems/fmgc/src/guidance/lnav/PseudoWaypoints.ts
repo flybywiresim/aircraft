@@ -13,13 +13,9 @@ import { Geometry } from '@fmgc/guidance/Geometry';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { LateralMode } from '@shared/autopilot';
-import { FixedRadiusTransition } from '@fmgc/guidance/lnav/transitions/FixedRadiusTransition';
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { VerticalCheckpoint, VerticalCheckpointReason } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
-import { IFLeg } from '@fmgc/guidance/lnav/legs/IF';
-import { LegType } from '@flybywiresim/fbw-sdk';
-import { distanceTo } from 'msfs-geo';
 
 const PWP_IDENT_TOC = '(T/C)';
 const PWP_IDENT_STEP_CLIMB = '(S/C)';
@@ -256,83 +252,41 @@ export class PseudoWaypoints implements GuidanceComponent {
             return undefined;
         }
 
-        let accumulator = 0;
-
         if (DEBUG) {
             console.log(`[FMS/PWP] Starting placement of PWP '${debugString}': dist: ${distanceFromEnd.toFixed(2)}nm`);
         }
 
-        const plan = this.flightPlanService.active;
-        const destination = this.flightPlanService.active.destinationAirport;
+        const activeLegIndex = this.guidanceController.activeLegIndex;
 
-        for (let i = wptCount - 1; i > 0; i--) {
-            const planLeg = plan.maybeElementAt(i);
+        for (let i = activeLegIndex - 1; i < wptCount; i++) {
             const geometryLeg = path.legs.get(i);
 
-            if (!planLeg || planLeg.isDiscontinuity === true || !geometryLeg || geometryLeg.isNull) {
+            if (!geometryLeg || geometryLeg.isNull || !geometryLeg.calculated) {
                 continue;
             }
 
-            const previousPlanLeg = plan.maybeElementAt(i - 1);
-            const nextPlanLeg = plan.maybeElementAt(i + 1);
-            const nextNextPlanLeg = plan.maybeElementAt(i + 2);
+            const accumulator = geometryLeg.calculated.cumulativeDistanceToEndWithTransitions;
 
-            let distanceInDiscontinuity = 0;
+            if (accumulator < distanceFromEnd) {
+                const inboundTrans = path.transitions.get(i - 1);
+                const outboundTrans = path.transitions.get(i);
 
-            if (planLeg.isXF() && nextPlanLeg?.isDiscontinuity === true) {
-                if (nextNextPlanLeg && nextNextPlanLeg.isDiscontinuity === false && nextNextPlanLeg.isXF()) {
-                    distanceInDiscontinuity = distanceTo(planLeg.terminationWaypoint().location, nextNextPlanLeg.terminationWaypoint().location);
-                }
-            } else if (planLeg.isVectors() && previousPlanLeg.isDiscontinuity === false && nextNextPlanLeg.isDiscontinuity === false) {
-                if (previousPlanLeg.isXF() && nextNextPlanLeg.isXF()) {
-                    distanceInDiscontinuity = distanceTo(previousPlanLeg.terminationWaypoint().location, nextNextPlanLeg.terminationWaypoint().location);
-                }
-            }
+                const [inboundTransLength, legPartLength, outboundTransLength] = Geometry.completeLegPathLengths(geometryLeg, inboundTrans, outboundTrans);
+                const totalLegPathLength = inboundTransLength + legPartLength + outboundTransLength;
 
-            accumulator += distanceInDiscontinuity;
+                const distanceFromEndOfLeg = distanceFromEnd - accumulator;
 
-            const inboundTrans = path.transitions.get(i - 1);
-            const outboundTrans = path.transitions.get(i);
-
-            const [inboundTransLength, legPartLength, outboundTransLength] = Geometry.completeLegPathLengths(
-                geometryLeg,
-                inboundTrans,
-                (outboundTrans instanceof FixedRadiusTransition) ? outboundTrans : null,
-            );
-
-            const totalLegPathLength = inboundTransLength + legPartLength + outboundTransLength;
-            accumulator += totalLegPathLength;
-
-            if (DEBUG) {
-                const inb = inboundTransLength.toFixed(2);
-                const legd = legPartLength.toFixed(2);
-                const outb = outboundTransLength.toFixed(2);
-                const acc = accumulator.toFixed(2);
-
-                console.log(`[FMS/PWP] Trying to place PWP '${debugString}' ${distanceFromEnd.toFixed(2)} along leg #${i}; inb: ${inb}, leg: ${legd}, outb: ${outb}, acc: ${acc}`);
-            }
-
-            if (accumulator > distanceFromEnd) {
-                if (distanceInDiscontinuity > 0 && accumulator - totalLegPathLength > distanceFromEnd) {
-                    // Points lies on discontinuity (on the direct line between the two fixes)
-                    // In this case, we don't want to place the PWP unless we force placement. In this case, we place it on the termination
-                    if (nextPlanLeg instanceof IFLeg) {
-                        // If the point lies on a discontinuity, we place it on the next leg.
-                        return [nextPlanLeg.fix.location, distanceFromEnd - (accumulator - totalLegPathLength), i + 1];
-                    } if (!nextPlanLeg && destination?.location) {
-                        // Hack until destination airport is properly handled (should exist as IF leg in geometry.)
-                        return [destination.location, distanceFromEnd, i + 1];
+                let lla: Coordinates | undefined;
+                if (distanceFromEndOfLeg > totalLegPathLength) {
+                    // PWP in disco
+                    if (DEBUG) {
+                        console.log(`[FMS/PWP] Placed PWP '${debugString}' in discontinuity before leg #${i} (${distanceFromEndOfLeg.toFixed(2)}nm before end)`);
                     }
 
-                    return undefined;
-                }
-
-                const distanceFromEndOfLeg = distanceFromEnd - (accumulator - totalLegPathLength);
-
-                let lla;
-                if (distanceFromEndOfLeg < outboundTransLength) {
+                    lla = geometryLeg.getPseudoWaypointLocation(distanceFromEndOfLeg);
+                } else if (distanceFromEndOfLeg < outboundTransLength) {
                     // Point is in outbound transition segment
-                    const distanceBeforeTerminator = (outboundTrans.distance / 2) + distanceFromEndOfLeg;
+                    const distanceBeforeTerminator = distanceFromEndOfLeg;
 
                     if (DEBUG) {
                         console.log(`[FMS/PWP] Placed PWP '${debugString}' on leg #${i} outbound segment (${distanceFromEndOfLeg.toFixed(2)}nm before end)`);

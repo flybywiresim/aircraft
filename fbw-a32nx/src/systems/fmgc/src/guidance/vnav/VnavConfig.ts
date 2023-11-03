@@ -29,7 +29,7 @@ export const VnavConfig = {
     /**
      * Whether to print guidance debug information on the ND
      */
-    DEBUG_GUIDANCE: true,
+    DEBUG_GUIDANCE: false,
 
     /**
      * Whether to use debug simvars (VNAV_DEBUG_*) to determine aircraft position and state.

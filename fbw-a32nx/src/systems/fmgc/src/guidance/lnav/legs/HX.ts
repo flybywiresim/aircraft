@@ -15,7 +15,7 @@ import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
 import { EntryState, HoldEntryTransition } from '@fmgc/guidance/lnav/transitions/HoldEntryTransition';
 import { AltitudeDescriptor, TurnDirection, Waypoint, MathUtils } from '@flybywiresim/fbw-sdk';
 import { placeBearingDistance } from 'msfs-geo';
-import { PathVector, PathVectorType } from '../PathVector';
+import { PathVector, PathVectorType, pathVectorLength } from '../PathVector';
 
 interface HxGeometry {
     fixA: Coordinates,
@@ -197,6 +197,11 @@ abstract class HXLeg extends XFLeg {
 
     get distance(): NauticalMiles {
         return 0; // 0 so no PWPs
+    }
+
+    /** When the hold is active, this should be considered in the distance calculation and PWP can be placed on it */
+    get distanceWhenActive(): NauticalMiles {
+        return this.predictedPath.reduce((dist, vector) => dist + pathVectorLength(vector), 0);
     }
 
     get inboundCourse(): Degrees {

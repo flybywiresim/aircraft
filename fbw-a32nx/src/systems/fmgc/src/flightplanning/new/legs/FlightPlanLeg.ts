@@ -52,7 +52,7 @@ export enum FlightPlanLegFlags {
     DirectToTurningPoint = 1 << 0,
 }
 
-interface LegCalculations {
+export interface LegCalculations {
     /** The leg's total distance in nautical miles, not cut short by ingress/egress turn radii. */
     distance: number;
     /** The cumulative distance in nautical miles up to this point in the flight plan. */
