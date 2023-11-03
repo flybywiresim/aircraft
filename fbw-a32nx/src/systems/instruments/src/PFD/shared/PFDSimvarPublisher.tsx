@@ -207,7 +207,7 @@ export enum PFDVars {
     hasLoc = 'L:A32NX_RADIO_RECEIVER_LOC_IS_VALID',
     hasDme = 'NAV HAS DME:3',
     navIdent = 'NAV IDENT:3',
-    navFreq = 'NAV ACTIVE FREQUENCY:3',
+    navFreq = 'NAV FREQUENCY:3',
     dme = 'NAV DME:3',
     navRadialError = 'L:A32NX_RADIO_RECEIVER_LOC_DEVIATION',
     hasGlideslope = 'L:A32NX_RADIO_RECEIVER_GS_IS_VALID',
