@@ -27,11 +27,6 @@ numberOfSettingsPerGenerator = 6;
     }
 
     generatorSpecificActions(genNumber: number): void {
-        /* console.info(`${this.failureGeneratorArmed[genNumber] ? 'Armed' : 'NotArmed'} - ${
-            this.requestedMode[genNumber].toString()} - waitstop: ${
-            this.waitForStopped[genNumber]} - waittakeoff: ${
-            this.waitForTakeOff[genNumber]} - altOK: ${
-            this.conditionToArm(genNumber)}`); */
         const speedCondition = this.settings[genNumber * this.numberOfSettingsPerGenerator + this.speedConditionIndex];
 
         if (this.previousSpeedCondition[genNumber] !== speedCondition) {

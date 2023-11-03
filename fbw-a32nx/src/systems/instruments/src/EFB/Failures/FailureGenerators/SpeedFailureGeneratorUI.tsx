@@ -4,16 +4,11 @@
 
 import { usePersistentProperty } from '@flybywiresim/fbw-sdk';
 
-import React, { useEffect, useMemo, useState } from 'react';
-import {
-    FailureGenContext, FailureGenData, FailureGenFeedbackEvent, sendRefresh,
-    setNewSetting, updateSettings,
-} from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
+import React, { useMemo, useState } from 'react';
+import { FailureGenContext, FailureGenData, setNewSetting } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
 import { t } from 'instruments/src/EFB/translation';
 import { ArrowDownRight, ArrowUpRight } from 'react-bootstrap-icons';
 import { ButtonIcon, FailureGeneratorChoiceSetting, FailureGeneratorSingleSetting } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorSettingsUI';
-import { ArmingModeIndex } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
-import { useEventBus } from '../../event-bus-provider';
 
 const settingName = 'EFB_FAILURE_GENERATOR_SETTING_SPEED';
 const additionalSetting = [2, 1, 2, 0, 200, 300];
@@ -28,8 +23,6 @@ const SpeedMinIndex = 4;
 const SpeedMaxIndex = 5;
 
 export const failureGenConfigSpeed: () => FailureGenData = () => {
-    const bus = useEventBus();
-
     const [setting, setSetting] = usePersistentProperty(settingName);
     const [armedState, setArmedState] = useState<boolean[]>();
     const settings = useMemo(() => {
@@ -37,36 +30,6 @@ export const failureGenConfigSpeed: () => FailureGenData = () => {
         if (splitString) return splitString.map(((it: string) => parseFloat(it)));
         return [];
     }, [setting]);
-
-    useEffect(() => {
-        const sub1 = bus.getSubscriber<FailureGenFeedbackEvent>().on('expectedMode').handle(({ generatorType, mode }) => {
-            if (generatorType === uniqueGenPrefix) {
-                const nbGenerator = Math.floor(settings.length / numberOfSettingsPerGenerator);
-                let changeNeeded = false;
-                for (let i = 0; i < nbGenerator; i++) {
-                    if (settings[i * numberOfSettingsPerGenerator + ArmingModeIndex] !== -1) {
-                        if (i < mode?.length && mode[i] === 0) {
-                            settings[i * numberOfSettingsPerGenerator + ArmingModeIndex] = 0;
-                            changeNeeded = true;
-                        }
-                    }
-                }
-                if (changeNeeded) updateSettings(settings, setSetting, bus, uniqueGenPrefix);
-            }
-            // console.info('received expectedMode');
-        });
-        const sub2 = bus.getSubscriber<FailureGenFeedbackEvent>().on('armingDisplayStatus').handle(({ generatorType, status }) => {
-            if (generatorType === uniqueGenPrefix) {
-                setArmedState(status);
-            // console.info('received arming states');
-            }
-        });
-        sendRefresh(bus);
-        return () => {
-            sub1.destroy();
-            sub2.destroy();
-        };
-    }, []);
 
     return {
         setSetting,
@@ -80,6 +43,7 @@ export const failureGenConfigSpeed: () => FailureGenData = () => {
         alias,
         disableTakeOffRearm,
         armedState,
+        setArmedState,
     };
 };
 

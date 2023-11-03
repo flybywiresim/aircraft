@@ -33,12 +33,6 @@ export class FailureGeneratorAltitude extends GenericGenerator {
     }
 
     generatorSpecificActions(genNumber: number): void {
-        /*
-        console.info(`${this.failureGeneratorArmed[genNumber] ? 'Armed' : 'NotArmed'} - ${
-            this.requestedMode[genNumber].toString()} - waitstop: ${
-            this.waitForStopped[genNumber]} - waittakeoff: ${
-            this.waitForTakeOff[genNumber]} - altOK: ${
-            this.conditionToArm(genNumber)}`); */
         const altitudeCondition = this.settings[genNumber * this.numberOfSettingsPerGenerator + this.altitudeConditionIndex];
 
         if (this.previousAltitudeCondition[genNumber] !== altitudeCondition) {

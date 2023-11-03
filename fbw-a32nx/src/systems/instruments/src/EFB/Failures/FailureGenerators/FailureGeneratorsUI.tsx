@@ -2,12 +2,12 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { SelectInput } from 'instruments/src/EFB/UtilComponents/Form/SelectInput/SelectInput';
 import { t } from 'instruments/src/EFB/translation';
 import {
     FailureGenContext, FailureGenData, useFailureGeneratorsSettings, findGeneratorFailures, ModalContext,
-    ModalGenType, updateSettings, sendRefresh,
+    ModalGenType, updateSettings, sendRefresh, FailureGenFeedbackEvent,
 } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
 import { ExclamationDiamond, InfoCircle, PlusLg, Sliders2Vertical, Trash } from 'react-bootstrap-icons';
 import { AtaChapterNumber, AtaChaptersTitle } from '@flybywiresim/fbw-sdk';
@@ -82,16 +82,56 @@ export const FailureGeneratorsUI = () => {
         }
     };
 
+    useEffect(() => {
+        // console.info('subscribing to events');
+        const sub1 = bus.getSubscriber<FailureGenFeedbackEvent>().on('expectedMode').handle(({ generatorType, mode }) => {
+            for (const generator of settings.allGenSettings.values()) {
+                if (generatorType === generator.uniqueGenPrefix) {
+                    // console.info(`gen ${generator.uniqueGenPrefix} expectedMode received: ${generatorType} - ${mode.toString()}`);
+                    const nbGenerator = Math.floor(generator.settings.length / generator.numberOfSettingsPerGenerator);
+                    let changeNeeded = false;
+                    for (let i = 0; i < nbGenerator && i < mode?.length; i++) {
+                        if (generator.settings[i * generator.numberOfSettingsPerGenerator + ArmingModeIndex] !== -1) {
+                            if (i < mode?.length && mode[i] === 0 && generator.settings[i * generator.numberOfSettingsPerGenerator + ArmingModeIndex] !== 0) {
+                                // console.info(`gen ${generator.uniqueGenPrefix} ${i.toString()} switched off`);
+                                // console.info(`reminder of previous memory state: ${generator.settings[i * generator.numberOfSettingsPerGenerator + ArmingModeIndex]}`);
+                                generator.settings[i * generator.numberOfSettingsPerGenerator + ArmingModeIndex] = 0;
+                                changeNeeded = true;
+                            }
+                        }
+                    }
+                    if (changeNeeded) {
+                        updateSettings(generator.settings, generator.setSetting, bus, generator.uniqueGenPrefix);
+                    }
+                }
+            }
+        // console.info('received expectedMode');
+        });
+        const sub2 = bus.getSubscriber<FailureGenFeedbackEvent>().on('armingDisplayStatus').handle(({ generatorType, status }) => {
+            for (const generator of settings.allGenSettings.values()) {
+                if (generatorType === generator.uniqueGenPrefix) {
+                    // console.info(`gen ${generator.uniqueGenPrefix} ArmedDisplay received: ${`${generatorType} - ${status.toString()}`}`);
+                    generator.setArmedState(status);
+                    // console.info('received arming states');
+                }
+            }
+        });
+        return () => {
+            sub1.destroy();
+            sub2.destroy();
+        };
+    }, [settings]);
+
     return (
         <>
             <div className="flex flex-col">
-                <div className="flex flex-row flex-1 justify-between">
-                    <div className="flex flex-row flex-1 justify-start py-2 space-x-4">
+                <div className="flex flex-1 flex-row justify-between">
+                    <div className="flex flex-1 flex-row justify-start space-x-4 py-2">
                         <h2 className="flex-none">
                             {`${t('Failures.Generators.GeneratorToAdd')}:`}
                         </h2>
                         <SelectInput
-                            className="flex-none w-96 h-10"
+                            className="h-10 w-96 flex-none"
                             value={chosenGen}
                             defaultValue="default"
                             onChange={(value) => setChosenGen(value as string)}
@@ -104,22 +144,22 @@ export const FailureGeneratorsUI = () => {
                                     failureGeneratorAdd(settings.allGenSettings.get(chosenGen), settings);
                                 }
                             }}
-                            className="flex-none py-2 px-2 text-center rounded-md hover:text-theme-body bg-theme-accent hover:bg-theme-highlight"
+                            className="hover:text-theme-body bg-theme-accent hover:bg-theme-highlight flex-none rounded-md p-2 text-center"
                         >
                             <PlusLg />
                         </div>
                     </div>
-                    <div className="flex flex-row flex-1 justify-end py-2">
+                    <div className="flex flex-1 flex-row justify-end py-2">
                         <div
                             onClick={() => showModal(<FailureGeneratorInfoModalUI />)}
-                            className="flex-none py-2 px-2 text-center rounded-md hover:text-theme-body bg-theme-accent hover:bg-theme-highlight"
+                            className="hover:text-theme-body bg-theme-accent hover:bg-theme-highlight flex-none rounded-md p-2 text-center"
                         >
                             <InfoCircle />
                         </div>
                     </div>
                 </div>
                 <ScrollableContainer height={48}>
-                    <div className="grid grid-cols-3 grid-flow-row">
+                    <div className="grid grid-flow-row grid-cols-3">
                         {generatorsCardList(settings)}
                     </div>
                 </ScrollableContainer>
@@ -154,29 +194,29 @@ export const FailureGeneratorCardTemplateUI: React.FC<FailureGeneratorCardTempla
         };
 
     return (
-        <div className="flex flex-row justify-between px-2 pt-2 m-1 text-center rounded-md border-2 border-solid border-theme-accent">
-            <div className="flex flex-col mr-4 text-left max-w-[86%] grow align-left">
-                <h2 className="pb-2 truncate break-words max-w-[100%]">
+        <div className="border-theme-accent m-1 flex flex-row justify-between rounded-md border-2 border-solid px-2 pt-2 text-center">
+            <div className="align-left mr-4 flex max-w-[86%] grow flex-col text-left">
+                <h2 className="max-w-[100%] truncate break-words pb-2">
                     {`${genUniqueIDDisplayed}: ${failureGenData.alias()}`}
                 </h2>
                 <FailureShortList failureGenContext={failureGenContext} uniqueID={genUniqueID} reducedAtaChapterNumbers={failureGenContext.reducedAtaChapterNumbers} />
             </div>
-            <div className="flex flex-col justify-between items-center">
+            <div className="flex flex-col items-center justify-between">
                 <div
                     onClick={() => eraseGenerator(genNumber, failureGenData, failureGenContext)}
-                    className="flex-none p-2 rounded-md transition duration-100 border-2
-                    text-theme-body hover:text-utility-red bg-utility-red hover:bg-theme-body border-utility-red"
+                    className="text-theme-body hover:text-utility-red bg-utility-red hover:bg-theme-body border-utility-red flex-none
+                    rounded-md border-2 p-2 transition duration-100"
                 >
                     <Trash size={20} />
                 </div>
-                <div className="flex flex-col justify-end items-center">
-                    <div className={`flex-none p-2 mt-2 ${isArmed ? 'text-theme-highlight' : 'text-theme-text'} bg-theme-body`}>
+                <div className="flex flex-col items-center justify-end">
+                    <div className={`mt-2 flex-none p-2 ${isArmed ? 'text-theme-highlight' : 'text-theme-text'} bg-theme-body`}>
                         {ArmedState(failureGenData, genNumber)}
                     </div>
                     <TooltipWrapper text={t('Failures.Generators.ToolTipGeneratorSettings')}>
                         <div
-                            className="flex-none p-2 mt-2 rounded-md border-2 transition duration-100 border-theme-accent
-                            hover:text-theme-body hover:bg-theme-highlight text-theme-text bg-theme-accent"
+                            className="border-theme-accent hover:text-theme-body hover:bg-theme-highlight text-theme-text bg-theme-accent mt-2 flex-none rounded-md
+                            border-2 p-2 transition duration-100"
                             onClick={() => {
                                 failureGenContext.setFailureGenModalType(ModalGenType.Settings);
                                 const genLetter = failureGenData.uniqueGenPrefix;
@@ -189,8 +229,8 @@ export const FailureGeneratorCardTemplateUI: React.FC<FailureGeneratorCardTempla
                     </TooltipWrapper>
                     <TooltipWrapper text={t('Failures.Generators.ToolTipFailureList')}>
                         <div
-                            className="flex-none p-2 my-2 rounded-md border-2 transition duration-100 border-theme-accent
-                            hover:text-theme-body hover:bg-theme-highlight text-theme-text bg-theme-accent"
+                            className="border-theme-accent hover:text-theme-body hover:bg-theme-highlight text-theme-text bg-theme-accent my-2 flex-none rounded-md
+                            border-2 p-2 transition duration-100"
                             onClick={() => {
                                 failureGenContext.setFailureGenModalType(ModalGenType.Failures);
                                 const genLetter = failureGenData.uniqueGenPrefix;
@@ -237,9 +277,9 @@ const FailureShortList: React.FC<FailureShortListProps> = ({ failureGenContext, 
     let listOfSelectedFailures = findGeneratorFailures(allFailures, failureGenContext.generatorFailuresGetters, uniqueID);
 
     if (listOfSelectedFailures.length === allFailures.length) {
-        return <div className="p-1 mb-1 rounded-md bg-theme-accent">{t('Failures.Generators.AllSystems')}</div>;
+        return <div className="bg-theme-accent mb-1 rounded-md p-1">{t('Failures.Generators.AllSystems')}</div>;
     }
-    if (listOfSelectedFailures.length === 0) return <div className="p-1 mb-1 rounded-md bg-theme-accent">{t('Failures.Generators.NoFailure')}</div>;
+    if (listOfSelectedFailures.length === 0) return <div className="bg-theme-accent mb-1 rounded-md p-1">{t('Failures.Generators.NoFailure')}</div>;
 
     const chaptersFullySelected: AtaChapterNumber[] = [];
 
@@ -254,13 +294,13 @@ const FailureShortList: React.FC<FailureShortListProps> = ({ failureGenContext, 
     const subSetOfChapters = chaptersFullySelected.slice(0, Math.min(maxNumberOfFailureToDisplay, chaptersFullySelected.length));
     const subSetOfSelectedFailures = listOfSelectedFailures.slice(0, Math.min(maxNumberOfFailureToDisplay - subSetOfChapters.length, listOfSelectedFailures.length));
     const chaptersToDisplay = subSetOfChapters.map((chapter) => (
-        <div className="p-1 mb-1 rounded-md bg-theme-accent grow">
+        <div className="bg-theme-accent mb-1 grow rounded-md p-1">
             {AtaChaptersTitle[chapter]}
         </div>
     ));
 
     const singleFailuresToDisplay = subSetOfSelectedFailures.map((failure) => (
-        <div className="p-1 mb-1 rounded-md bg-theme-accent grow">
+        <div className="bg-theme-accent mb-1 grow rounded-md p-1">
             {failure.name}
         </div>
     ));
@@ -270,7 +310,7 @@ const FailureShortList: React.FC<FailureShortListProps> = ({ failureGenContext, 
             {chaptersToDisplay}
             {singleFailuresToDisplay}
             {listOfSelectedFailures.length + chaptersFullySelected.length > maxNumberOfFailureToDisplay ? (
-                <div className="p-1 mb-1 grow">
+                <div className="mb-1 grow p-1">
                     ...+
                     {Math.max(0, listOfSelectedFailures.length + chaptersFullySelected.length - maxNumberOfFailureToDisplay)}
                 </div>

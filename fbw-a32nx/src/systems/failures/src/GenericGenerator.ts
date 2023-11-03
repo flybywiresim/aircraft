@@ -75,18 +75,18 @@ export abstract class GenericGenerator {
     constructor(private readonly randomFailuresGen: RandomFailureGen, protected readonly bus: EventBus) {
         bus.getSubscriber<FailureGenEvent>().on('refreshData').handle((_value) => {
             this.refreshRequest = true;
-            console.info(`refresh request received: ${this.uniqueGenPrefix}`);
+            // console.info(`refresh request received: ${this.uniqueGenPrefix}`);
         });
         bus.getSubscriber<FailureGenEvent>().on('settings').handle(({ generatorType, settingsString }) => {
             // console.info('DISARMED');
             if (generatorType === this.uniqueGenPrefix) {
-                console.info(`settings received: ${generatorType} - ${settingsString}`);
+                // console.info(`settings received: ${generatorType} - ${settingsString}`);
                 this.settings = settingsString.split(',').map(((it) => parseFloat(it)));
             }
         });
         bus.getSubscriber<FailureGenFailureList>().on('failurePool').handle(({ generatorType, generatorNumber, failureString }) => {
             if (generatorType === this.uniqueGenPrefix) {
-                console.info(`settings received: ${generatorType}${generatorNumber}`);
+                // console.info(`settings received: ${generatorType}${generatorNumber}`);
                 this.failurePool[generatorNumber] = failureString;
             }
         });
@@ -147,15 +147,15 @@ export abstract class GenericGenerator {
     sendFeedbackModeRequest(): void {
         const generatorType = this.uniqueGenPrefix;
         const mode = this.requestedMode;
+        // console.info(`expectedMode sent: ${`${generatorType} - ${mode.toString()}`}`);
         this.bus.getPublisher<FailureGenFeedbackEvent>().pub('expectedMode', { generatorType, mode }, true);
-        console.info(`expectedMode sent: ${`${generatorType} - ${mode.toString()}`}`);
     }
 
     sendFeedbackArmedDisplay(): void {
         const generatorType = this.uniqueGenPrefix;
         const status = this.failureGeneratorArmed;
+        // console.info(`ArmedDisplay sent: ${`${generatorType} - ${status.toString()}`}`);
         this.bus.getPublisher<FailureGenFeedbackEvent>().pub('armingDisplayStatus', { generatorType, status }, true);
-        console.info(`ArmedDisplay sent: ${`${generatorType} - ${status.toString()}`}`);
     }
 
     updateFailure(failureOrchestrator: FailuresOrchestrator): void {

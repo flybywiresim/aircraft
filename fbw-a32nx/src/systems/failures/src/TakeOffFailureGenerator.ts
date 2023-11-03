@@ -38,13 +38,6 @@ export class FailureGeneratorTakeOff extends GenericGenerator {
     }
 
     generatorSpecificActions(genNumber: number): void {
-        /* console.info(`${this.failureGeneratorArmed[genNumber] ? 'Armed' : 'NotArmed'} - ${
-            this.requestedMode[genNumber].toString()} - waitstop: ${
-            this.waitForStopped[genNumber]} - waittakeoff: ${
-            this.waitForTakeOff[genNumber]} - altThd: ${
-            this.failureTakeOffAltitudeThreshold[genNumber]} - spdThd: ${
-            this.failureTakeOffSpeedThreshold[genNumber]}`); */
-
         const medHighTakeOffSpeed: number = this.settings[genNumber * this.numberOfSettingsPerGenerator + this.maxSpeedIndex];
         if (this.failureGeneratorArmed[genNumber]
             && ((this.altitude >= this.failureTakeOffAltitudeEnd[genNumber] && this.gs >= medHighTakeOffSpeed)

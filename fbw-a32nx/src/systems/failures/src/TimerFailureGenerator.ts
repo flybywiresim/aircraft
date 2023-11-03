@@ -23,13 +23,6 @@ export class FailureGeneratorTimer extends GenericGenerator {
         this.currentTime = Date.now();
     }
 
-    /* generatorSpecificActions(genNumber: number): void {
-        console.info(`${this.failureGeneratorArmed[genNumber] ? 'Armed' : 'NotArmed'} - ${
-            this.requestedMode[genNumber].toString()} - waitstop: ${
-            this.waitForStopped[genNumber]} - waittakeoff: ${
-            this.waitForTakeOff[genNumber]}`);
-    } */
-
     conditionToTriggerFailure(genNumber: number): boolean {
         const timerMax = this.settings[genNumber * this.numberOfSettingsPerGenerator + this.delayMaxIndex] * 1000;
         const timerMin = this.settings[genNumber * this.numberOfSettingsPerGenerator + this.delayMinIndex] * 1000;

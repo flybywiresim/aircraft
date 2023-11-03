@@ -19,13 +19,6 @@ export class FailureGeneratorPerHour extends GenericGenerator {
         this.currentTime = Date.now();
     }
 
-    /* generatorSpecificActions(genNumber: number): void {
-        console.info(`${this.failureGeneratorArmed[genNumber] ? 'Armed' : 'NotArmed'} - ${
-            this.requestedMode[genNumber].toString()} - waitstop: ${
-            this.waitForStopped[genNumber]} - waittakeoff: ${
-            this.waitForTakeOff[genNumber]}`);
-    } */
-
     conditionToTriggerFailure(genNumber: number): boolean {
         const chanceSetting = this.settings[genNumber * this.numberOfSettingsPerGenerator + this.failurePerHourIndex];
         const chancePerSecond = chanceSetting / 3600;

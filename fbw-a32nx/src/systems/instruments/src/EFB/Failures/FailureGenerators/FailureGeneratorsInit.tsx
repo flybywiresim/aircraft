@@ -11,7 +11,7 @@ export const FailureGeneratorsInit = () => {
     const settings = useFailureGeneratorsSettings();
 
     useEffect(() => {
-        console.info('Broadcasting all Failure Gen data once');
+        // console.info('Broadcasting all Failure Gen data once');
         for (const gen of settings.allGenSettings.values()) {
             sendSettings(gen.uniqueGenPrefix, gen.setting, bus);
             const nbGenerator = Math.floor(gen.settings.length / gen.numberOfSettingsPerGenerator);

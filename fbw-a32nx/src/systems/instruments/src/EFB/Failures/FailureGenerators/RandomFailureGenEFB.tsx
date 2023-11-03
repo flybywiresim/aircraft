@@ -2,15 +2,16 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Failure } from '@failures';
-import { AtaChapterNumber, AtaChapterNumbers, AtaChaptersTitle, usePersistentProperty, useSimVar } from '@flybywiresim/fbw-sdk';
+import { AtaChapterNumber, AtaChapterNumbers, usePersistentProperty, useSimVar } from '@flybywiresim/fbw-sdk';
 import { failureGenConfigAltitude } from 'instruments/src/EFB/Failures/FailureGenerators/AltitudeFailureGeneratorUI';
 import { failureGenConfigPerHour } from 'instruments/src/EFB/Failures/FailureGenerators/PerHourFailureGeneratorUI';
 import { failureGenConfigSpeed } from 'instruments/src/EFB/Failures/FailureGenerators/SpeedFailureGeneratorUI';
 import { failureGenConfigTakeOff } from 'instruments/src/EFB/Failures/FailureGenerators/TakeOffFailureGeneratorUI';
 import { failureGenConfigTimer } from 'instruments/src/EFB/Failures/FailureGenerators/TimerFailureGeneratorUI';
 import { EventBus } from '@microsoft/msfs-sdk';
+import { useEventBus } from 'instruments/src/EFB/event-bus-provider';
 import { useFailuresOrchestrator } from '../../failures-orchestrator-provider';
 
 export interface FailureGenFailureList {
@@ -37,6 +38,10 @@ export type FailureGenData = {
      * TODO replace with redux action
      */
     setSetting: (value: string) => void,
+    /**
+     * TODO replace with redux action
+     */
+    setArmedState: (value: boolean[]) => void,
     /**
      * TODO put in redux
      */
@@ -138,11 +143,12 @@ export const updateSettings: (settings: number[], setSetting: (value: string) =>
 => void = (settings: number[], setSetting: (value: string) => void, bus: EventBus, uniqueGenPrefix: string) => {
     const flattenedData = flatten(settings);
     sendSettings(uniqueGenPrefix, flattenedData, bus);
-    console.info(`new permanent setting:${flattenedData}`);
+    // console.info(`new permanent setting:${flattenedData}`);
     setSetting(flattenedData);
 };
 
 export const useFailureGeneratorsSettings: () => FailureGenContext = () => {
+    const bus = useEventBus();
     const { allFailures } = useFailuresOrchestrator();
     const { generatorFailuresGetters, generatorFailuresSetters } = allGeneratorFailures(allFailures);
     const allGenSettings: Map<string, FailureGenData> = new Map();
@@ -161,11 +167,15 @@ export const useFailureGeneratorsSettings: () => FailureGenContext = () => {
             const foundChapter = tempChapters.find((value) => value === failure.ata);
             if (foundChapter === undefined) {
                 tempChapters.push(failure.ata);
-                console.info(`Adding chapter ${AtaChaptersTitle[failure.ata]}`);
+                // console.info(`Adding chapter ${AtaChaptersTitle[failure.ata]}`);
             }
         }
         return tempChapters;
     }, [AtaChapterNumbers]);
+
+    useEffect(() => {
+        sendRefresh(bus);
+    }, []);
 
     return {
         allGenSettings,
@@ -197,11 +207,11 @@ export function setNewSetting(bus: EventBus, newSetting: number, generatorSettin
 
 export function sendRefresh(bus: EventBus) {
     bus.getPublisher<FailureGenEvent>().pub('refreshData', true, true);
-    console.info('requesting refresh');
+    // console.info('requesting refresh');
 }
 
 export function sendFailurePool(generatorType: string, generatorNumber:number, failureString: string, bus: EventBus) {
-    console.info(`failure pool sent: ${generatorType}${generatorNumber} - ${failureString}`);
+    // console.info(`failure pool sent: ${generatorType}${generatorNumber} - ${failureString}`);
     bus.getPublisher<FailureGenFailureList>().pub('failurePool', { generatorType, generatorNumber, failureString }, true);
 }
 
