@@ -80,7 +80,7 @@ pub(super) fn payload(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Err
         Variable::aspect("PAYLOAD_STATION_18_REQ"),
     );
 
-    builder.variables_to_object(Box::new(Payload::default()));
+    builder.variables_to_object(Box::<Payload>::default());
 
     Ok(())
 }
