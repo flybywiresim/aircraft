@@ -73,7 +73,7 @@ export const failureGenConfigTimer: () => FailureGenData = () => {
             sub1.destroy();
             sub2.destroy();
         };
-    }, []);
+    }, [settings]);
 
     return {
         setSetting,
