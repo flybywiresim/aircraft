@@ -56,7 +56,7 @@ export const failureGenConfigTimer: () => FailureGenData = () => {
                     }
                 }
                 if (changeNeeded) {
-                    if (changeNeeded) updateSettings(settings, setSetting, bus, uniqueGenPrefix);
+                    updateSettings(settings, setSetting, bus, uniqueGenPrefix);
                 }
             }
             // console.info('received expectedMode');
