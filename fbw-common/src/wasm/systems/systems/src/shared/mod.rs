@@ -586,12 +586,7 @@ impl DelayedPulseTrueLogicGate {
 
         let gate_out = self.true_delayed_gate.output();
 
-        if gate_out && !self.last_gate_output {
-            self.output = true;
-        } else {
-            self.output = false;
-        }
-
+        self.output = gate_out && !self.last_gate_output;
         self.last_gate_output = gate_out;
     }
 
