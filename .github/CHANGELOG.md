@@ -13,6 +13,7 @@
 1. [FMS] Implement CHECK SPEED MODE message - @BlueberryKing (BlueberryKing)
 1. [PFD] The ILS frequency is now visible even when a LOC is not received - @tracernz (Mike)
 1. [ATSU] Fixed GROUND REQ page not updating after successful station insert - @BravoMike99 (bruno_pt99)
+1. [MCDU] Dash alternate time predictions if alternate fuel is manually inserted @BravoMike99 (bruno_pt99)
 
 ## 0.11.0
 
