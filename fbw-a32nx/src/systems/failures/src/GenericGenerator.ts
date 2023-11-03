@@ -73,23 +73,25 @@ export abstract class GenericGenerator {
     }
 
     constructor(private readonly randomFailuresGen: RandomFailureGen, protected readonly bus: EventBus) {
-        bus.getSubscriber<FailureGenEvent>().on('refreshData').handle((_value) => {
-            this.refreshRequest = true;
+        if (bus != null) {
+            bus.getSubscriber<FailureGenEvent>().on('refreshData').handle((_value) => {
+                this.refreshRequest = true;
             // console.info(`refresh request received: ${this.uniqueGenPrefix}`);
-        });
-        bus.getSubscriber<FailureGenEvent>().on('settings').handle(({ generatorType, settingsString }) => {
+            });
+            bus.getSubscriber<FailureGenEvent>().on('settings').handle(({ generatorType, settingsString }) => {
             // console.info('DISARMED');
-            if (generatorType === this.uniqueGenPrefix) {
+                if (generatorType === this.uniqueGenPrefix) {
                 // console.info(`settings received: ${generatorType} - ${settingsString}`);
-                this.settings = settingsString.split(',').map(((it) => parseFloat(it)));
-            }
-        });
-        bus.getSubscriber<FailureGenFailureList>().on('failurePool').handle(({ generatorType, generatorNumber, failureString }) => {
-            if (generatorType === this.uniqueGenPrefix) {
+                    this.settings = settingsString.split(',').map(((it) => parseFloat(it)));
+                }
+            });
+            bus.getSubscriber<FailureGenFailureList>().on('failurePool').handle(({ generatorType, generatorNumber, failureString }) => {
+                if (generatorType === this.uniqueGenPrefix) {
                 // console.info(`settings received: ${generatorType}${generatorNumber}`);
-                this.failurePool[generatorNumber] = failureString;
-            }
-        });
+                    this.failurePool[generatorNumber] = failureString;
+                }
+            });
+        }
     }
 
     arm(genNumber: number): void {
