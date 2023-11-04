@@ -5,6 +5,7 @@ import { FlightPhaseManager as FlightPhaseManager_ } from "../../../fbw-a32nx/sr
 import { WaypointFactory as WaypointFactory_ } from "../../../fbw-a32nx/src/systems/fmgc/src";
 import { WaypointEntryUtils as WaypointEntryUtils_ } from "../../../fbw-a32nx/src/systems/fmgc/src";
 import { SimBriefUplinkAdapter as SimBriefUplinkAdapter_ } from "../../../fbw-a32nx/src/systems/fmgc/src";
+import { ApproachUtils as ApproachUtils_ } from "../../../fbw-a32nx/src/systems/fmgc/src";
 
 declare global {
     type NauticalMiles = number;
