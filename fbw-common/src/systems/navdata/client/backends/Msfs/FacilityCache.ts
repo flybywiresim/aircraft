@@ -4,8 +4,21 @@
 /* eslint-disable camelcase */
 /* eslint-disable no-underscore-dangle */
 
+import {
+    FacilitySearchType, NearestAirportSearchSession,
+    NearestIntersectionSearchSession,
+    NearestSearchResults,
+    NearestSearchSession, NearestVorSearchSession,
+} from '@microsoft/msfs-sdk';
 import { IcaoSearchFilter, JS_Facility, JS_FacilityAirport, JS_FacilityIntersection, JS_FacilityNDB, JS_FacilityVOR } from './FsTypes';
-import { Waypoint } from '../../../shared';
+import { Airport, NdbNavaid, VhfNavaid, Waypoint } from '../../../shared';
+
+// @microsoft/msfs-sdk does not export this, so we declare it
+declare class CoherentNearestSearchSession implements NearestSearchSession<string, string> {
+    public searchNearest(lat: number, lon: number, radius: number, maxItems: number): Promise<NearestSearchResults<string, string>>;
+
+    public onSearchCompleted(results: NearestSearchResults<string, string>): void;
+}
 
 export enum LoadType {
     Airport = 'A',
@@ -28,7 +41,7 @@ type FacilityType<T> =
     T extends LoadType.Vor ? JS_FacilityVOR :
     never;
 
-type SearchedFacilityTypeMap = {
+export type SearchedFacilityTypeMap = {
     [IcaoSearchFilter.Airports]: never,
     [IcaoSearchFilter.Intersections]: JS_FacilityIntersection[],
     [IcaoSearchFilter.Ndbs]: JS_FacilityNDB[],
@@ -37,10 +50,46 @@ type SearchedFacilityTypeMap = {
     [IcaoSearchFilter.None]: (JS_FacilityAirport | JS_FacilityIntersection | JS_FacilityNDB | JS_FacilityVOR)[],
 }
 
+export type SupportedFacilitySearchType =
+    | FacilitySearchType.Airport
+    | FacilitySearchType.Intersection
+    | FacilitySearchType.Vor
+    | FacilitySearchType.Ndb
+
+type FacilitySearchTypeToSessionClass = {
+    [FacilitySearchType.Airport]: NearestAirportSearchSession,
+    [FacilitySearchType.Intersection]: NearestIntersectionSearchSession,
+    [FacilitySearchType.Vor]: NearestVorSearchSession,
+    [FacilitySearchType.Ndb]: CoherentNearestSearchSession,
+}
+
+export type FacilitySearchTypeToDatabaseItem = {
+    [FacilitySearchType.Airport]: Airport,
+    [FacilitySearchType.Intersection]: Waypoint,
+    [FacilitySearchType.Vor]: VhfNavaid,
+    [FacilitySearchType.Ndb]: NdbNavaid,
+}
+
 export class FacilityCache {
+    public static readonly FACILITY_SEARCH_TYPE_TO_SESSION_CLASS: Record<SupportedFacilitySearchType, new(sessionID: number) => CoherentNearestSearchSession> = {
+        [FacilitySearchType.Airport]: NearestAirportSearchSession,
+        [FacilitySearchType.Intersection]: NearestIntersectionSearchSession,
+        [FacilitySearchType.Vor]: NearestVorSearchSession,
+        [FacilitySearchType.Ndb]: NearestIntersectionSearchSession,
+    };
+
+    public static readonly FACILITY_SEARCH_TYPE_TO_LOAD_TYPE: Record<SupportedFacilitySearchType, LoadType> = {
+        [FacilitySearchType.Airport]: LoadType.Airport,
+        [FacilitySearchType.Intersection]: LoadType.Intersection,
+        [FacilitySearchType.Vor]: LoadType.Vor,
+        [FacilitySearchType.Ndb]: LoadType.Ndb,
+    }
+
     private static cacheSize = 1000;
 
     private listener; // TODO type
+
+    private searchSessions = new Map<number, NearestSearchSession<any, any>>([]);
 
     private facilityCache = new Map<string, JS_Facility>();
 
@@ -55,6 +104,7 @@ export class FacilityCache {
         Coherent.on('SendIntersection', this.receiveFacility.bind(this));
         Coherent.on('SendNdb', this.receiveFacility.bind(this));
         Coherent.on('SendVor', this.receiveFacility.bind(this));
+        Coherent.on('NearestSearchCompleted', this.receiveNearestSearchResults.bind(this));
 
         setInterval(() => {
             console.log(
@@ -65,7 +115,19 @@ export class FacilityCache {
         }, 60000);
     }
 
-    public async getFacilities<T extends LoadType>(icaos: string[], loadType: T, timeout = 500): Promise<Map<string, FacilityType<T>>> {
+    public async startNearestSearchSession<T extends SupportedFacilitySearchType>(type: T): Promise<FacilitySearchTypeToSessionClass[T]> {
+        return new Promise((resolve) => {
+            Coherent.call('START_NEAREST_SEARCH_SESSION', type).then((sessionId: number) => {
+                const _sessionClass = FacilityCache.FACILITY_SEARCH_TYPE_TO_SESSION_CLASS[type];
+                const session = new _sessionClass(sessionId) as any;
+
+                this.searchSessions.set(sessionId, session);
+                resolve(session);
+            });
+        });
+    }
+
+    public async getFacilities<T extends LoadType>(icaos: readonly string[], loadType: T, timeout = 500): Promise<Map<string, FacilityType<T>>> {
         const toFetch = [];
         const fetched = new Map<string, FacilityType<T>>();
 
@@ -198,6 +260,16 @@ export class FacilityCache {
 
         const key = FacilityCache.key(facility.icao, loadType);
         this.insert(key, facility);
+    }
+
+    private receiveNearestSearchResults(results: NearestSearchResults<any, any>): void {
+        const session = this.searchSessions.get(results.sessionId);
+
+        if (!session) {
+            return;
+        }
+
+        (session as CoherentNearestSearchSession).onSearchCompleted(results);
     }
 
     static validFacilityIcao(icao: string, type?: 'A' | 'N' | 'V' | 'W'): boolean {
