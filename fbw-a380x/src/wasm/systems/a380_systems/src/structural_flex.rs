@@ -38,7 +38,7 @@ impl A380StructuralFlex {
             elevators_flex_physics: FlexibleElevators::new(context),
             wing_flex: WingFlexA380::new(context),
 
-            surface_vibrations: SurfaceVibrationGenerator::default(),
+            surface_vibrations: SurfaceVibrationGenerator::default_generator(),
         }
     }
 

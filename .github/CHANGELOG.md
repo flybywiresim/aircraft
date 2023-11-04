@@ -7,6 +7,13 @@
 
 ## 0.12.0
 
+1. [EFB/ATSU] Added NOAA (aviationweather.gov) as a METAR source - @tracernz (Mike)
+1. [EFB] Fixed the main page and landing calculator to use the selected METAR source - @tracernz (Mike)
+1. [FMS] Improve layout of PERF CLB, PERF CRZ and PERF DES pages according to H3 - @BlueberryKing (BlueberryKing)
+1. [FMS] Implement CHECK SPEED MODE message - @BlueberryKing (BlueberryKing)
+1. [PFD] The ILS frequency is now visible even when a LOC is not received - @tracernz (Mike)
+1. [ATSU] Fixed GROUND REQ page not updating after successful station insert - @BravoMike99 (bruno_pt99)
+1. [MCDU] Dash alternate time predictions if alternate fuel is manually inserted @BravoMike99 (bruno_pt99)
 1. [COMMS] Enabled all components of comms panels - @Julian [Z+2 fr en esp]#8476 (Julian Sebline)
 
 ## 0.11.0

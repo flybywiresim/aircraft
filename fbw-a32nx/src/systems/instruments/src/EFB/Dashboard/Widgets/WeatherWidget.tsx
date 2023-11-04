@@ -4,7 +4,7 @@
 import React, { FC, useEffect, useState } from 'react';
 import { Metar as FbwApiMetar } from '@flybywiresim/api-client';
 import { Droplet, Speedometer2, ThermometerHalf, Wind } from 'react-bootstrap-icons';
-import { MetarParserType, parseMetar, useInterval, usePersistentNumberProperty, usePersistentProperty } from '@flybywiresim/fbw-sdk';
+import { ConfigWeatherMap, MetarParserType, parseMetar, useInterval, usePersistentNumberProperty, usePersistentProperty } from '@flybywiresim/fbw-sdk';
 import { Metar as MsfsMetar } from '@microsoft/msfs-sdk';
 import { t } from '../../translation';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
@@ -153,7 +153,7 @@ export const WeatherWidget: FC<WeatherWidgetProps> = ({ name, simbriefIcao, user
             return Promise.resolve();
         }
 
-        return FbwApiMetar.get(icao, source)
+        return FbwApiMetar.get(icao, ConfigWeatherMap[source])
             .then((result) => {
                 // For METAR source Microsoft result.metar is undefined without throwing an error.
                 // For the other METAR sources an error is thrown (Request failed with status code 404)

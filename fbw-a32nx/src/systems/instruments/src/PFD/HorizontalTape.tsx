@@ -75,7 +75,7 @@ export class HorizontalTape extends DisplayComponent<HorizontalTapeProps> {
                 result.ticks.push(<path class="NormalStroke White" d={`m68.913 145.34v${tickLength}`} style={`transform: translate3d(${dX}px, 0px, 0px)`} />);
                 result.ticks.unshift(<path class="NormalStroke White" d={`m68.913 145.34v${tickLength}`} style={`transform: translate3d(${-dX}px, 0px, 0px)`} />);
             } else {
-                result.ticks.push(<path class="NormalStroke White" d={`m68.913 145.34v${tickLength * 0.42}`} style={`transform: translate3d(${dX}px, 0p,x 0px)`} />);
+                result.ticks.push(<path class="NormalStroke White" d={`m68.913 145.34v${tickLength * 0.42}`} style={`transform: translate3d(${dX}px, 0px, 0px)`} />);
                 result.ticks.unshift(<path class="NormalStroke White" d={`m68.913 145.34v${tickLength * 0.42}`} style={`transform: translate3d(${-dX}px, 0px, 0px)`} />);
             }
 

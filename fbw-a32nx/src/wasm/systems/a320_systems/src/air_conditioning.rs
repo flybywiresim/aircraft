@@ -2127,7 +2127,7 @@ mod tests {
 
             test_bed = test_bed.command_ditching_pb_on().iterate(5);
 
-            assert!(!(test_bed.outflow_valve_open_amount() > Ratio::new::<percent>(99.)));
+            assert!(test_bed.outflow_valve_open_amount() <= Ratio::new::<percent>(99.));
             assert!(test_bed.outflow_valve_open_amount() < Ratio::new::<percent>(1.));
         }
 

@@ -123,7 +123,7 @@ impl<const N: usize, const G: usize> PassengerDeck<N, G> {
     }
 
     fn pax_num(&self, ps: usize) -> i8 {
-        self.pax[ps].pax_num() as i8
+        self.pax[ps].pax_num()
     }
 
     fn total_pax_num(&self) -> i32 {

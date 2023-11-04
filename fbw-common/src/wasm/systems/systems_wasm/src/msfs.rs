@@ -1,5 +1,5 @@
-///! Module declared to be able to compile documentation.
-///! Does not provide any meaningful functionality.
+//! Module declared to be able to compile documentation.
+//! Does not provide any meaningful functionality.
 #[cfg(not(target_arch = "wasm32"))]
 pub(crate) mod legacy {
     use std::cell::Cell;

@@ -2986,15 +2986,10 @@ impl A320BlueElectricPumpController {
     ) {
         let mut should_pressurise_if_powered = false;
         if overhead_panel.blue_epump_push_button.is_auto() {
-            if !lgciu1.nose_gear_compressed(false)
+            should_pressurise_if_powered = !lgciu1.nose_gear_compressed(false)
                 || engine1.is_above_minimum_idle()
                 || engine2.is_above_minimum_idle()
-                || overhead_panel.blue_epump_override_push_button_is_on()
-            {
-                should_pressurise_if_powered = true;
-            } else {
-                should_pressurise_if_powered = false;
-            }
+                || overhead_panel.blue_epump_override_push_button_is_on();
         } else if overhead_panel.blue_epump_push_button_is_off() {
             should_pressurise_if_powered = false;
         }
@@ -3075,7 +3070,7 @@ impl A320BlueElectricPumpController {
     }
 
     fn has_overheat_fault(&self) -> bool {
-        self.has_low_level_fault
+        self.has_overheat_fault
     }
 }
 impl PumpController for A320BlueElectricPumpController {

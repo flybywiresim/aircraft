@@ -1630,7 +1630,7 @@ mod tests {
                 .and()
                 .unpowered_dc_bat_bus()
                 .run(Duration::from_secs(1));
-            assert!(matches!(test_bed.close_start_contactors_signal(), None));
+            assert!(test_bed.close_start_contactors_signal().is_none());
         }
 
         #[test]

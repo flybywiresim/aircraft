@@ -30,7 +30,9 @@
  */
 
 import React, { FC, useState } from 'react';
-import { Units, MetarParserType, useSimVar, usePersistentProperty, parseMetar } from '@flybywiresim/fbw-sdk';
+import { Metar as FbwApiMetar } from '@flybywiresim/api-client';
+import { Metar as MsfsMetar } from '@microsoft/msfs-sdk';
+import { Units, MetarParserType, useSimVar, usePersistentProperty, parseMetar, ConfigWeatherMap } from '@flybywiresim/fbw-sdk';
 import { toast } from 'react-toastify';
 import { Calculator, CloudArrowDown, Trash } from 'react-bootstrap-icons';
 import { t } from '../../translation';
@@ -51,8 +53,8 @@ interface OutputDisplayProps {
 }
 
 const OutputDisplay = (props: OutputDisplayProps) => (
-    <div className={`flex flex-col justify-center items-center py-2 w-full ${props.error ? 'bg-red-800' : ''}`}>
-        <p className="flex-shrink-0 font-bold">{props.label}</p>
+    <div className={`flex w-full flex-col items-center justify-center py-2 ${props.error ? 'bg-red-800' : ''}`}>
+        <p className="shrink-0 font-bold">{props.label}</p>
         <p>
             {props.value}
         </p>
@@ -65,7 +67,7 @@ interface LabelProps {
 }
 
 const Label: FC<LabelProps> = ({ text, className, children }) => (
-    <div className="flex flex-row justify-between items-center">
+    <div className="flex flex-row items-center justify-between">
         <p className={`text-theme-text mr-4 ${className}`}>{text}</p>
         {children}
     </div>
@@ -78,6 +80,7 @@ export const LandingWidget = () => {
 
     const [totalWeight] = useSimVar('TOTAL WEIGHT', 'Pounds', 1000);
     const [autoFillSource, setAutoFillSource] = useState<'METAR' | 'OFP'>('OFP');
+    const [metarSource] = usePersistentProperty('CONFIG_METAR_SRC', 'MSFS');
 
     const { usingMetric } = Units;
 
@@ -157,28 +160,45 @@ export const LandingWidget = () => {
     const syncValuesWithApiMetar = async (icao: string): Promise<void> => {
         if (!isValidIcao(icao)) return;
 
-        fetch(`https://api.flybywiresim.com/metar/${icao}`)
-            .then((res) => {
-                if (res.ok) {
-                    return res.json();
+        let parsedMetar: MetarParserType | undefined = undefined;
+
+        // Comes from the sim rather than the FBW API
+        if (metarSource === 'MSFS') {
+            let metar: MsfsMetar;
+            try {
+                metar = await Coherent.call('GET_METAR_BY_IDENT', icao);
+                if (metar.icao !== icao.toUpperCase()) {
+                    throw new Error('No METAR available');
                 }
-                return res.json().then((json) => {
-                    throw new Error(json.message);
-                });
-            }).then((json) => {
-                const parsedMetar: MetarParserType = parseMetar(json.metar);
+                parsedMetar = parseMetar(metar.metarString);
+            } catch (err) {
+                toast.error(err.message);
+            }
+        } else {
+            try {
+                const response = await FbwApiMetar.get(icao, ConfigWeatherMap[metarSource]);
+                if (!response.metar) {
+                    throw new Error('No METAR available');
+                }
+                parsedMetar = parseMetar(response.metar);
+            } catch (err) {
+                toast.error(err.message);
+            }
+        }
 
-                const weightKgs = Math.round(Units.poundToKilogram(totalWeight));
+        if (parsedMetar === undefined) {
+            return;
+        }
 
-                dispatch(setLandingValues({
-                    weight: weightKgs,
-                    windDirection: parsedMetar.wind.degrees,
-                    windMagnitude: parsedMetar.wind.speed_kts,
-                    temperature: parsedMetar.temperature.celsius,
-                    pressure: parsedMetar.barometer.mb,
-                }));
-            })
-            .catch((err) => toast.error(err.message));
+        const weightKgs = Math.round(Units.poundToKilogram(totalWeight));
+
+        dispatch(setLandingValues({
+            weight: weightKgs,
+            windDirection: parsedMetar.wind.degrees,
+            windMagnitude: parsedMetar.wind.speed_kts,
+            temperature: parsedMetar.temperature.celsius,
+            pressure: parsedMetar.barometer.mb,
+        }));
     };
 
     const isValidIcao = (icao: string): boolean => icao.length === 4;
@@ -423,19 +443,19 @@ export const LandingWidget = () => {
     };
 
     return (
-        <div className="flex overflow-hidden flex-row justify-between space-x-10 h-content-section-reduced">
+        <div className="h-content-section-reduced flex flex-row justify-between space-x-10 overflow-hidden">
             <div className="w-full">
-                <div className="flex flex-col justify-between w-full h-full">
+                <div className="flex h-full w-full flex-col justify-between">
                     <div className="mb-4">
-                        <div className="mt-4 mb-8">
+                        <div className="mb-8 mt-4">
                             <p>{t('Performance.Landing.AirportIcao')}</p>
-                            <div className="flex flex-row justify-between mt-4">
+                            <div className="mt-4 flex flex-row justify-between">
                                 <SimpleInput className="w-64 uppercase" value={icao} placeholder="ICAO" onChange={handleICAOChange} maxLength={4} />
                                 <div className="flex flex-row">
                                     <TooltipWrapper text={fillDataTooltip()}>
                                         <button
                                             onClick={isAutoFillIcaoValid() ? handleAutoFill : undefined}
-                                            className={`rounded-md rounded-r-none flex flex-row justify-center items-center px-8 py-2 space-x-4 text-theme-body transition duration-100 border-2 border-theme-highlight bg-theme-highlight outline-none ${!isAutoFillIcaoValid() ? 'opacity-50' : 'hover:text-theme-highlight hover:bg-theme-body'}`}
+                                            className={`text-theme-body border-theme-highlight bg-theme-highlight flex flex-row items-center justify-center space-x-4 rounded-md rounded-r-none border-2 px-8 py-2 outline-none transition duration-100 ${!isAutoFillIcaoValid() ? 'opacity-50' : 'hover:text-theme-highlight hover:bg-theme-body'}`}
                                             type="button"
                                         >
                                             <CloudArrowDown size={26} />
@@ -481,7 +501,7 @@ export const LandingWidget = () => {
                                     />
                                 </Label>
                                 <Label text={t('Performance.Landing.Temperature')}>
-                                    <div className="flex flex-row w-64">
+                                    <div className="flex w-64 flex-row">
                                         <SimpleInput
                                             className="w-full rounded-r-none"
                                             value={getVariableUnitDisplayValue<'C' | 'F'>(temperature, temperatureUnit as 'C' | 'F', 'F', Units.celsiusToFahrenheit)}
@@ -504,7 +524,7 @@ export const LandingWidget = () => {
                                     </div>
                                 </Label>
                                 <Label text={t('Performance.Landing.Qnh')}>
-                                    <div className="flex flex-row w-64">
+                                    <div className="flex w-64 flex-row">
                                         <SimpleInput
                                             className="w-full rounded-r-none"
                                             value={getVariableUnitDisplayValue<'hPa' | 'inHg'>(pressure, pressureUnit as 'hPa' | 'inHg', 'inHg', Units.hectopascalToInchOfMercury)}
@@ -583,7 +603,7 @@ export const LandingWidget = () => {
                                     />
                                 </Label>
                                 <Label text={t('Performance.Landing.RunwayLda')}>
-                                    <div className="flex flex-row w-64">
+                                    <div className="flex w-64 flex-row">
                                         <SimpleInput
                                             className="w-full rounded-r-none"
                                             value={getVariableUnitDisplayValue<'ft' | 'm'>(runwayLength, distanceUnit as 'ft' | 'm', 'ft', Units.metreToFoot)}
@@ -618,7 +638,7 @@ export const LandingWidget = () => {
                                     />
                                 </Label>
                                 <Label text={t('Performance.Landing.Weight')}>
-                                    <div className="flex flex-row w-64">
+                                    <div className="flex w-64 flex-row">
                                         <SimpleInput
                                             className="w-full rounded-r-none"
                                             value={getVariableUnitDisplayValue<'kg' | 'lb'>(weight, weightUnit as 'kg' | 'lb', 'lb', Units.kilogramToPound)}
@@ -690,10 +710,10 @@ export const LandingWidget = () => {
                                 </Label>
                             </div>
                         </div>
-                        <div className="flex flex-row mt-14 space-x-8">
+                        <div className="mt-14 flex flex-row space-x-8">
                             <button
                                 onClick={handleCalculateLanding}
-                                className={`rounded-md flex flex-row justify-center items-center py-2 space-x-4 w-full bg-theme-highlight outline-none border-2 border-theme-highlight text-theme-body hover:text-theme-highlight hover:bg-theme-body ${!areInputsValid() && 'opacity-50 pointer-events-none'}`}
+                                className={`bg-theme-highlight border-theme-highlight text-theme-body hover:text-theme-highlight hover:bg-theme-body flex w-full flex-row items-center justify-center space-x-4 rounded-md border-2 py-2 outline-none ${!areInputsValid() && 'pointer-events-none opacity-50'}`}
                                 type="button"
                                 disabled={!areInputsValid()}
                             >
@@ -702,7 +722,7 @@ export const LandingWidget = () => {
                             </button>
                             <button
                                 onClick={handleClearInputs}
-                                className="flex flex-row justify-center items-center py-2 space-x-4 w-full text-theme-body hover:text-utility-red bg-utility-red hover:bg-theme-body rounded-md border-2 border-utility-red outline-none"
+                                className="text-theme-body hover:text-utility-red bg-utility-red hover:bg-theme-body border-utility-red flex w-full flex-row items-center justify-center space-x-4 rounded-md border-2 py-2 outline-none"
                                 type="button"
                             >
                                 <Trash size={26} />
@@ -710,7 +730,7 @@ export const LandingWidget = () => {
                             </button>
                         </div>
                     </div>
-                    <div className="flex overflow-hidden flex-row w-full rounded-lg border-2 border-theme-accent divide-x-2 divide-theme-accent">
+                    <div className="border-theme-accent divide-theme-accent flex w-full flex-row divide-x-2 overflow-hidden rounded-lg border-2">
                         <OutputDisplay
                             label={t('Performance.Landing.MaximumManual')}
                             value={distanceUnit === 'ft'

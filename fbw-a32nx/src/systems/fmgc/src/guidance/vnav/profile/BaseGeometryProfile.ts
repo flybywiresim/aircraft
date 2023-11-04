@@ -15,7 +15,7 @@ import {
 import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 
-export interface PerfClbToAltPrediction {
+export interface PerfToAltPrediction {
     altitude: Feet,
     distanceFromStart: NauticalMiles,
     secondsFromPresent: Seconds,
@@ -377,19 +377,46 @@ export abstract class BaseGeometryProfile {
         this.isReadyToDisplay = true;
     }
 
-    computePredictionToFcuAltitude(fcuAltitude: Feet): PerfClbToAltPrediction | undefined {
-        const maxAltitude = this.checkpoints.reduce((currentMax, checkpoint) => Math.max(currentMax, checkpoint.altitude), 0);
+    computeClimbPredictionToAltitude(altitude: Feet): PerfToAltPrediction | undefined {
+        const [minAlt, maxAlt] = this.checkpoints.reduce(
+            ([currentMin, currentMax], checkpoint) => [Math.min(currentMin, checkpoint.altitude), Math.max(currentMax, checkpoint.altitude)], [Infinity, -Infinity],
+        );
 
-        if (fcuAltitude < this.checkpoints[0].altitude || fcuAltitude > maxAltitude) {
+        if (altitude < minAlt || altitude > maxAlt) {
             return undefined;
         }
 
-        const distanceToFcuAltitude = this.interpolateFromCheckpoints(fcuAltitude, (checkpoint) => checkpoint.altitude, (checkpoint) => checkpoint.distanceFromStart);
+        const distanceToFcuAltitude = this.interpolateFromCheckpoints(altitude, (checkpoint) => checkpoint.altitude, (checkpoint) => checkpoint.distanceFromStart);
         const timeToFcuAltitude = this.interpolateTimeAtDistance(distanceToFcuAltitude);
 
         return {
-            altitude: fcuAltitude,
+            altitude,
             distanceFromStart: distanceToFcuAltitude,
+            secondsFromPresent: timeToFcuAltitude,
+        };
+    }
+
+    computeDescentPredictionToAltitude(altitude: Feet): PerfToAltPrediction | undefined {
+        const [minAlt, maxAlt] = this.checkpoints.reduce(
+            ([currentMin, currentMax], checkpoint) => [Math.min(currentMin, checkpoint.altitude), Math.max(currentMax, checkpoint.altitude)], [Infinity, -Infinity],
+        );
+
+        if (altitude < minAlt || altitude > maxAlt) {
+            return undefined;
+        }
+
+        const ppos = this.findVerticalCheckpoint(VerticalCheckpointReason.PresentPosition);
+        if (!ppos) {
+            return undefined;
+        }
+
+        // TODO: Do this in one call
+        const distanceToFcuAltitude = this.interpolateFromCheckpointsBackwards(altitude, (checkpoint) => checkpoint.altitude, (checkpoint) => checkpoint.distanceFromStart, true);
+        const timeToFcuAltitude = this.interpolateFromCheckpointsBackwards(altitude, (checkpoint) => checkpoint.altitude, (checkpoint) => checkpoint.secondsFromPresent, true);
+
+        return {
+            altitude,
+            distanceFromStart: distanceToFcuAltitude - ppos.distanceFromStart,
             secondsFromPresent: timeToFcuAltitude,
         };
     }

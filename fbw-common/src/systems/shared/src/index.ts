@@ -4,6 +4,7 @@ export * from './arinc429';
 export * from './ata';
 export * from './array';
 export * from './bitFlags';
+export * from './config';
 export * from './Constants';
 export * from './GenericDataListenerSync';
 export * from './logic';

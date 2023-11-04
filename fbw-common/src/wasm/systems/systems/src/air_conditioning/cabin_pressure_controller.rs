@@ -177,7 +177,7 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
             self.cabin_vertical_speed,
             self.cabin_target_vs,
             press_overhead,
-            self.is_ground() || !(self.cabin_altitude() > Length::new::<foot>(15000.)),
+            self.is_ground() || (self.cabin_altitude() <= Length::new::<foot>(15000.)),
             self.is_ground() && self.should_open_outflow_valve(),
         );
 
