@@ -3,6 +3,7 @@
 
 import { UpdateThrottler, Airport, NdbNavaid, VhfNavaid, Waypoint } from '@flybywiresim/fbw-sdk';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/new/NavigationDatabaseService';
+import { NearestSearchType } from '@flybywiresim/fbw-sdk';
 import { Coordinates } from 'msfs-geo';
 
 export class NearbyFacilities {

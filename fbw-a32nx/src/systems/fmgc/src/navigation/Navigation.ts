@@ -10,6 +10,7 @@ import { NearbyFacilities } from '@fmgc/navigation/NearbyFacilities';
 import { RequiredPerformance } from '@fmgc/navigation/RequiredPerformance';
 import { Arinc429Register, IlsNavaid, NdbNavaid, VhfNavaid, VhfNavaidType } from '@flybywiresim/fbw-sdk';
 import { Coordinates } from 'msfs-geo';
+import { VorType } from '@microsoft/msfs-sdk';
 import { Icao } from '@shared/Icao';
 
 export enum SelectedNavaidType {

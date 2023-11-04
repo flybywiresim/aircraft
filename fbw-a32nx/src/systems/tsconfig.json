@@ -1,11 +1,11 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
+    "target": "ES2017",
     "baseUrl": ".",
     "resolveJsonModule" : true,
+    "skipLibCheck": true,
     "typeRoots": [
-      "../../../fbw-common/src/typings",
-      "../../../node_modules/@types"
+      "../../../fbw-common/src/typings"
     ],
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
@@ -24,7 +24,7 @@
       "@shared/*": ["./shared/src/*"],
       "@tcas/*": ["./tcas/src/*"],
       "@typings/*": ["../../../fbw-common/src/typings/*"],
-      "@flybywiresim/fbw-sdk": ["../../../fbw-common/src/systems/index.ts"]
+      "@flybywiresim/fbw-sdk": ["../../../fbw-common/src/systems/index.ts"],
     }
   },
 }

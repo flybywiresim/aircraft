@@ -8,7 +8,7 @@ import { FlightPhaseManager, getFlightPhaseManager } from '@fmgc/flightphase';
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/new/NavigationDatabaseService';
 import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
-import { FmgcFlightPhase } from '@shared/flightphase';
+import { FlightPlanManager } from '@fmgc/wtsdk';
 import { distanceTo } from 'msfs-geo';
 
 export class LandingSystemSelectionManager {

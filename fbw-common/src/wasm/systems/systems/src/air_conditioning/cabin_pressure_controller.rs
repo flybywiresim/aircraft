@@ -177,7 +177,7 @@ impl<C: PressurizationConstants> CabinPressureController<C> {
             self.cabin_vertical_speed,
             self.cabin_target_vs,
             press_overhead,
-            self.is_ground() || !(self.cabin_altitude() > Length::new::<foot>(15000.)),
+            self.is_ground() || (self.cabin_altitude() <= Length::new::<foot>(15000.)),
             self.is_ground() && self.should_open_outflow_valve(),
         );
 
@@ -1030,6 +1030,7 @@ transition!(ClimbInternal, Abort);
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::air_conditioning::VcmShared;
     use crate::shared::ElectricalBusType;
     use crate::simulation::{Aircraft, InitContext, SimulationElement, SimulationElementVisitor};
     use crate::{
@@ -1131,6 +1132,8 @@ mod tests {
             outlet_air
         }
     }
+
+    impl VcmShared for TestAirConditioningSystem {}
 
     struct TestEngine {
         corrected_n1: Ratio,
@@ -1263,8 +1266,10 @@ mod tests {
     struct TestConstants;
 
     impl PressurizationConstants for TestConstants {
-        const CABIN_VOLUME_CUBIC_METER: f64 = 139.; // m3
+        const CABIN_ZONE_VOLUME_CUBIC_METER: f64 = 139.; // m3
         const COCKPIT_VOLUME_CUBIC_METER: f64 = 9.; // m3
+        const FWD_CARGO_ZONE_VOLUME_CUBIC_METER: f64 = 89.4; // m3
+        const BULK_CARGO_ZONE_VOLUME_CUBIC_METER: f64 = 14.3; // m3
         const PRESSURIZED_FUSELAGE_VOLUME_CUBIC_METER: f64 = 330.; // m3
         const CABIN_LEAKAGE_AREA: f64 = 0.0003; // m2
         const OUTFLOW_VALVE_SIZE: f64 = 0.05; // m2

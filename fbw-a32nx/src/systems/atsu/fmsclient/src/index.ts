@@ -482,7 +482,7 @@ export class FmsClient {
         });
     }
 
-    public getDatalinkStatus(value: string): DatalinkStatusCode {
+    public getDatalinkStatus(value: 'vhf' | 'satcom' | 'hf'): DatalinkStatusCode {
         switch (value) {
         case 'vhf':
             return this.datalinkStatus.vhf;
@@ -491,11 +491,11 @@ export class FmsClient {
         case 'hf':
             return this.datalinkStatus.hf;
         default:
-            return 99;
+            return DatalinkStatusCode.NotInstalled;
         }
     }
 
-    public getDatalinkMode(value: string): DatalinkModeCode {
+    public getDatalinkMode(value: 'vhf' | 'satcom' | 'hf'): DatalinkModeCode {
         switch (value) {
         case 'vhf':
             return this.datalinkMode.vhf;
@@ -504,7 +504,7 @@ export class FmsClient {
         case 'hf':
             return this.datalinkMode.hf;
         default:
-            return 99;
+            return DatalinkModeCode.None;
         }
     }
 }

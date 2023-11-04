@@ -1,5 +1,10 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
+import { NavigraphBoundingBox } from '@flybywiresim/fbw-sdk';
+
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { NavigraphBoundingBox } from '../../Apis/Navigraph/Navigraph';
 import { store, RootState } from '../store';
 import { PinSort } from '../../Navigation/Pages/PinnedChartsPage';
 

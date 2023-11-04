@@ -90,7 +90,7 @@ export class VMLeg extends Leg {
         return undefined;
     }
 
-    getGuidanceParameters(_ppos: LatLongData, _trueTrack: Track): GuidanceParameters {
+    getGuidanceParameters(_ppos: LatLongData, _trueTrack: Track, _tas: Knots, _gs: Knots): GuidanceParameters {
         return {
             law: ControlLaw.HEADING,
             heading: this.heading,

@@ -129,20 +129,20 @@ class CDUFuelPredPage {
                 };
 
                 if (mcdu.altDestination) {
-                    if (mcdu._routeAltFuelEntered) {
-                        if (isFinite(mcdu.getRouteAltFuelWeight())) {
-                            altFuelCell = "{sp}{sp}" + (NXUnits.kgToUser(mcdu.getRouteAltFuelWeight())).toFixed(1);
-                            altFuelTimeCell = "{small}" + FMCMainDisplay.minutesTohhmm(mcdu.getRouteAltFuelTime()) + "{end}";
-                            altTimeColor = "{green}";
-                            altFuelColor = "[color]cyan";
-                        }
-                    } else {
+                    const altnFuelEntered = mcdu._routeAltFuelEntered;
+                    if (!altnFuelEntered) {
                         mcdu.tryUpdateRouteAlternate();
-                        if (isFinite(mcdu.getRouteAltFuelWeight())) {
-                            altFuelCell = "{sp}{sp}{small}" + (NXUnits.kgToUser(mcdu.getRouteAltFuelWeight())).toFixed(1);
-                            altFuelTimeCell = FMCMainDisplay.minutesTohhmm(mcdu.getRouteAltFuelTime()) + "{end}";
+                    }
+                    if (isFinite(mcdu.getRouteAltFuelWeight())) {
+                        altFuelCell = "{sp}{sp}" + (altnFuelEntered ? "" : "{small}") + (NXUnits.kgToUser(mcdu.getRouteAltFuelWeight())).toFixed(1);
+                        altFuelColor = "[color]cyan";
+                        const time = mcdu.getRouteAltFuelTime();
+                        if (time) {
+                            altFuelTimeCell = "{small}" + FMCMainDisplay.minutesTohhmm(time) + "{end}";
                             altTimeColor = "{green}";
-                            altFuelColor = "[color]cyan";
+                        } else {
+                            altFuelTimeCell = "----";
+                            altTimeColor = "{white}";
                         }
                     }
                 } else {
@@ -162,7 +162,6 @@ class CDUFuelPredPage {
                     altIdentCell = mcdu.altDestination.ident;
                     altEFOBCell = (NXUnits.kgToUser(mcdu.getAltEFOB(true))).toFixed(1);
                     altEFOBCellColor = mcdu.getAltEFOB(true) < mcdu._minDestFob ? "[color]amber" : "[color]green";
-                    altTimeCellColor = "[color]green";
                 }
 
                 mcdu.tryUpdateRouteTrip(isFlying);
@@ -176,10 +175,18 @@ class CDUFuelPredPage {
                 // Should we use predicted values or liveETATo and liveUTCto?
                 destTimeCell = isFlying ? FMCMainDisplay.secondsToUTC(utcTime + FMCMainDisplay.minuteToSeconds(mcdu._routeTripTime))
                     : destTimeCell = FMCMainDisplay.minutesTohhmm(mcdu._routeTripTime);
+
                 if (mcdu.altDestination) {
-                    altTimeCell = isFlying ? FMCMainDisplay.secondsToUTC(utcTime + FMCMainDisplay.minuteToSeconds(mcdu._routeTripTime) + FMCMainDisplay.minuteToSeconds(mcdu.getRouteAltFuelTime()))
+                    if (mcdu.getRouteAltFuelTime()) {
+                        altTimeCell = isFlying ? FMCMainDisplay.secondsToUTC(utcTime + FMCMainDisplay.minuteToSeconds(mcdu._routeTripTime) + FMCMainDisplay.minuteToSeconds(mcdu.getRouteAltFuelTime()))
                         : FMCMainDisplay.minutesTohhmm(mcdu.getRouteAltFuelTime());
+                        altTimeCellColor = "[color]green";
+                    } else {
+                        altTimeCell = "----";
+                        altTimeCellColor = "[color]white";
+                    }
                 }
+
                 destEFOBCellColor = "[color]green";
                 destTimeCellColor = "[color]green";
 

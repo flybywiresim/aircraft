@@ -38,6 +38,7 @@ class CDUAtcDepartReq {
 
     static ShowPage1(mcdu, store = CDUAtcDepartReq.CreateDataBlock()) {
         mcdu.clearDisplay();
+        mcdu.page.Current = mcdu.page.ATCDepartReq;
 
         if (store.firstCall && store.callsign === "") {
             if (mcdu.atsu.flightNumber().length !== 0) {

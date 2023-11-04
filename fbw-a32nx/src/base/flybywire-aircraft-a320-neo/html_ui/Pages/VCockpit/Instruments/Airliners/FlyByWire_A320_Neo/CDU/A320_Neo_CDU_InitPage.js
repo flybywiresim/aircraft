@@ -597,19 +597,21 @@ class CDUInitPage {
                 };
 
                 if (mcdu.altDestination) {
-                    if (mcdu._routeAltFuelEntered) {
-                        if (isFinite(mcdu.getRouteAltFuelWeight())) {
-                            altnWeightCell.update(NXUnits.kgToUser(mcdu.getRouteAltFuelWeight()).toFixed(1), Column.cyan);
-                            altnTimeCell.update(FMCMainDisplay.minutesTohhmm(mcdu.getRouteAltFuelTime()), Column.green, Column.small);
-                        }
-                    } else {
+                    const altFuelEntered = mcdu._routeAltFuelEntered;
+                    if (!altFuelEntered) {
                         mcdu.tryUpdateRouteAlternate();
-                        if (isFinite(mcdu.getRouteAltFuelWeight())) {
-                            altnWeightCell.update(NXUnits.kgToUser(mcdu.getRouteAltFuelWeight()).toFixed(1), Column.cyan, Column.small);
+                    }
+                    if (isFinite(mcdu.getRouteAltFuelWeight())) {
+                        altnWeightCell.update(NXUnits.kgToUser(mcdu.getRouteAltFuelWeight()).toFixed(1), Column.cyan, altFuelEntered? Column.big : Column.small);
+                        const time = mcdu.getRouteAltFuelTime();
+                        if (time) {
                             altnTimeCell.update(FMCMainDisplay.minutesTohhmm(mcdu.getRouteAltFuelTime()), Column.green, Column.small);
+                            altnCellDivider.updateAttributes(Column.green, Column.small);
+                        } else {
+                            altnTimeCell.update('----',Column.white);
+                            altnCellDivider.updateAttributes(Column.white, altFuelEntered? Column.big : Column.small);
                         }
                     }
-                    altnCellDivider.updateAttributes(Column.green, Column.small);
                 } else {
                     altnWeightCell.update("0.0", Column.green, Column.small);
                 }
