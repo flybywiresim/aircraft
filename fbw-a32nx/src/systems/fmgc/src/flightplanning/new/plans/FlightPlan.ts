@@ -280,7 +280,7 @@ export class FlightPlan extends BaseFlightPlan {
      * @param airport the origin airport
      */
     private static setOriginDefaultPerformanceData(plan: FlightPlan, airport: Airport | undefined): void {
-        const referenceAltitude = UnitType.FOOT.convertFrom(airport?.location.alt, UnitType.METER); // TODO fix in msfs-navdata (fms-v2)
+        const referenceAltitude = airport?.location.alt;
 
         if (referenceAltitude !== undefined) {
             plan.performanceData.defaultThrustReductionAltitude.set(referenceAltitude + parseInt(NXDataStore.get('CONFIG_THR_RED_ALT', '1500')));
@@ -304,7 +304,7 @@ export class FlightPlan extends BaseFlightPlan {
      * @param airport the destination airport
      */
     private static setDestinationDefaultPerformanceData(plan: FlightPlan, airport: Airport): void {
-        const referenceAltitude = UnitType.FOOT.convertFrom(airport?.location.alt, UnitType.METER); // TODO fix in msfs-navdata (fms-v2)
+        const referenceAltitude = airport?.location.alt;
 
         if (referenceAltitude !== undefined) {
             plan.performanceData.defaultMissedThrustReductionAltitude.set(referenceAltitude + parseInt(NXDataStore.get('CONFIG_THR_RED_ALT', '1500')));
