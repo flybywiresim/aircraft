@@ -18,7 +18,7 @@ export abstract class FXLeg extends Leg {
     from: WayPoint;
 }
 
-export function isHold(leg: Leg): leg is HALeg | HFLeg | HMLeg {
+export function isHold(leg: Leg): boolean {
     return leg instanceof HALeg || leg instanceof HFLeg || leg instanceof HMLeg;
 }
 

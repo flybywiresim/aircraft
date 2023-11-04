@@ -24,8 +24,6 @@ import { distanceTo } from 'msfs-geo';
 import { BaseFlightPlan } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 import { IFLeg } from '@fmgc/guidance/lnav/legs/IF';
 import { FlightPlanElement } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
-import { HALeg, HFLeg, HMLeg } from '@fmgc/guidance/lnav/legs/HX';
-import { HoldEntryTransition } from '@fmgc/guidance/lnav/transitions/HoldEntryTransition';
 import { ControlLaw, CompletedGuidanceParameters, LateralPathGuidance } from './ControlLaws';
 
 function isGuidableCapturingPath(guidable: Guidable): boolean {
@@ -513,9 +511,7 @@ export class Geometry {
                     console.warn(`[FMS/Geometry] No geometry leg found for flight plan leg ${flightPlanLeg.ident}`);
                 }
             } else {
-                const [distance, distanceWithTransitions] = i === plan.activeLegIndex && isHold(geometryLeg)
-                    ? this.computeActiveHoldDistance(geometryLeg, this.transitions.get(i - 1), this.transitions.get(i))
-                    : this.computeLegDistances(geometryLeg, this.transitions.get(i - 1), this.transitions.get(i));
+                const [distance, distanceWithTransitions] = this.computeLegDistances(geometryLeg, this.transitions.get(i - 1), this.transitions.get(i));
 
                 cumulativeDistance += distance;
                 cumulativeDistanceWithTransitions += distanceWithTransitions;
@@ -554,17 +550,6 @@ export class Geometry {
         if (geometryLeg) {
             geometryLeg.calculated = flightPlanLeg.calculated;
         }
-    }
-
-    private computeActiveHoldDistance(leg: HALeg | HFLeg | HMLeg, inboundTransition: Transition, outboundTransition: Transition): [NauticalMiles, NauticalMiles] {
-        const [defaultInboundDistance, _, outboundDistance] = Geometry.completeLegPathLengths(leg, inboundTransition, outboundTransition);
-
-        const distance = leg.distanceWhenActive;
-        const inboundDistance = inboundTransition instanceof HoldEntryTransition
-            ? inboundTransition.distanceWhenActive
-            : defaultInboundDistance;
-
-        return [distance, distance + inboundDistance + outboundDistance];
     }
 
     private computeLegDistances(leg: Leg, inboundTransition: Transition, outboundTransition: Transition): [NauticalMiles, NauticalMiles] {
