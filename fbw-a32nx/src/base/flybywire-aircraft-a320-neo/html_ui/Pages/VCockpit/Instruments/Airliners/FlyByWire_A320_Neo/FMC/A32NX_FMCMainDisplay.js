@@ -3155,14 +3155,14 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     updateTransitionAltitudeLevel() {
-        const originTransitionAltitude = this.flightPlanManager.originTransitionAltitude;
+        const originTransitionAltitude = this.getOriginTransitionAltitude();
         this.arincTransitionAltitude.setBnrValue(
             originTransitionAltitude !== undefined ? originTransitionAltitude : 0,
             originTransitionAltitude !== undefined ? Arinc429Word.SignStatusMatrix.NormalOperation : Arinc429Word.SignStatusMatrix.NoComputedData,
             17, 131072, 0,
         )
 
-        const destinationTansitionLevel = this.flightPlanManager.destinationTransitionLevel;
+        const destinationTansitionLevel = this.getDestinationTransitionLevel();
         this.arincTransitionLevel.setBnrValue(
             destinationTansitionLevel !== undefined ? destinationTansitionLevel : 0,
             destinationTansitionLevel !== undefined ? Arinc429Word.SignStatusMatrix.NormalOperation : Arinc429Word.SignStatusMatrix.NoComputedData,
