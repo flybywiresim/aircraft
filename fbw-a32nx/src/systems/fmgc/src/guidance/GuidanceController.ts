@@ -432,7 +432,9 @@ export class GuidanceController {
     tryUpdateFlightPlanGeometry(flightPlanIndex: number, alternate = false, force = false) {
         const geometryPIndex = (alternate ? 100 : 0) + flightPlanIndex;
 
-        const lastVersion = this.lastFlightPlanVersions.get(flightPlanIndex);
+        // Use geometry index here because main and alternate flight plans have the same indices
+        // but different versions. Otherwise, we keep recomputing the geometry because their versions will not be the same
+        const lastVersion = this.lastFlightPlanVersions.get(geometryPIndex);
 
         if (!this.flightPlanService.has(flightPlanIndex)) {
             this.flightPlanGeometries.delete(geometryPIndex);
@@ -447,7 +449,7 @@ export class GuidanceController {
             return;
         }
 
-        this.lastFlightPlanVersions.set(flightPlanIndex, currentVersion);
+        this.lastFlightPlanVersions.set(geometryPIndex, currentVersion);
 
         const geometry = this.flightPlanGeometries.get(geometryPIndex);
 
