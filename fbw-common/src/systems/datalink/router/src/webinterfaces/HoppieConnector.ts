@@ -388,6 +388,8 @@ export class HoppieConnector {
     }
 
     public static pollInterval(): number {
-        return 5000;
+        //To comply with Hoppie rate limits, we choose a random number between 60 and 75, as recommend by Hoppie. Ref to: https://www.hoppie.nl/acars/system/tech.html   
+        const pollTimeSeconds = Math.floor(Math.random() * (75 - 60 + 1)) + 60;
+        return pollTimeSeconds * 1000;
     }
 }
