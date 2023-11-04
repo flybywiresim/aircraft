@@ -212,6 +212,12 @@ export default new TaskOfTasks("all", [
                 ]),
             new TaskOfTasks("instruments", getA380XInstrumentsIgniterTasks(), true),
         ], true),
+
+        // Create final package meta files.
+        new TaskOfTasks("dist", [
+            new ExecTask("metadata", "npm run build-a380x:metadata"),
+            new ExecTask("manifests", "npm run build-a380x:manifest")
+        ])
     ]),
 
     // InGamePanels Checklist Fix Tasks
