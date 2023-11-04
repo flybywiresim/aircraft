@@ -8,8 +8,8 @@ import { FlightPhaseManager, getFlightPhaseManager } from '@fmgc/flightphase';
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/new/NavigationDatabaseService';
 import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
-import { FlightPlanManager } from '@fmgc/wtsdk';
 import { distanceTo } from 'msfs-geo';
+import { FmgcFlightPhase } from '@shared/flightphase';
 
 export class LandingSystemSelectionManager {
     private static readonly DESTINATION_TUNING_DISTANCE = 300;

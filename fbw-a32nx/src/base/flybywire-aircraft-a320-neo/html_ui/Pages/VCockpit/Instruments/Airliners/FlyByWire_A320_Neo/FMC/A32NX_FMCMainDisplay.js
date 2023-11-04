@@ -4873,6 +4873,16 @@ class FMCMainDisplay extends BaseAirliners {
         return undefined;
     }
 
+    getDestinationTransitionLevel() {
+        const plan = this.currFlightPlanService.active;
+
+        if (plan) {
+            return plan.performanceData.transitionLevel.get();
+        }
+
+        return undefined;
+    }
+
     getCruiseAltitude() {
         return this.cruiseFlightLevel * 100;
     }

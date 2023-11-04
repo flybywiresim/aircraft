@@ -390,7 +390,7 @@ class CDUPerformancePage {
             }
         };
 
-        const hasFromToPair = mcdu.flightPlanManager.getPersistentOrigin() && mcdu.flightPlanManager.getDestination();
+        const hasFromToPair = mcdu.flightPlanService.active.originAirport && mcdu.flightPlanService.active.destinationAirport; // TODO use the right flight plan
         const showManagedSpeed = hasFromToPair && mcdu.costIndexSet && Number.isFinite(mcdu.costIndex);
         const isPhaseActive = mcdu.flightPhaseManager.phase === FmgcFlightPhases.CLIMB;
         const isTakeoffOrClimbActive = isPhaseActive || (mcdu.flightPhaseManager.phase === FmgcFlightPhases.TAKEOFF);
@@ -407,10 +407,8 @@ class CDUPerformancePage {
         const fcuAltitude = SimVar.GetSimVarValue("AUTOPILOT ALTITUDE LOCK VAR:3", "feet");
         const altitudeToPredict = Math.min(cruiseAltitude, fcuAltitude);
 
-        const predToCell = CDUPerformancePage.formatAltitudeOrLevel(altitudeToPredict, mcdu.getOriginTransitionAltitude()) + "[color]cyan";
-
         const predToLabel = isTakeoffOrClimbActive ? "\xa0\xa0\xa0\xa0\xa0{small}PRED TO{end}" : "";
-        const predToCell = isTakeoffOrClimbActive ? `${CDUPerformancePage.formatAltitudeOrLevel(altitudeToPredict, mcdu.flightPlanManager.getOriginTransitionAltitude())}[color]cyan` : "";
+        const predToCell = isTakeoffOrClimbActive ? `${CDUPerformancePage.formatAltitudeOrLevel(altitudeToPredict, mcdu.getOriginTransitionAltitude())}[color]cyan` : "";
 
         let predToDistanceCell = "";
         let predToTimeCell = "";
@@ -544,7 +542,7 @@ class CDUPerformancePage {
             }
         };
 
-        const hasFromToPair = mcdu.flightPlanManager.getPersistentOrigin() && mcdu.flightPlanManager.getDestination();
+        const hasFromToPair = mcdu.flightPlanService.active.originAirport && mcdu.flightPlanService.active.destinationAirport; // TODO use the right flight plan
         const isPhaseActive = mcdu.flightPhaseManager.phase === FmgcFlightPhases.CRUISE;
         const titleColor = isPhaseActive ? "green" : "white";
         const isSelected = (isPhaseActive && Simplane.getAutoPilotAirspeedSelected()) || (!isPhaseActive && mcdu.preSelectedCrzSpeed !== undefined);
@@ -681,7 +679,7 @@ class CDUPerformancePage {
             }
         };
 
-        const hasFromToPair = mcdu.flightPlanManager.getPersistentOrigin() && mcdu.flightPlanManager.getDestination();
+        const hasFromToPair = mcdu.flightPlanService.active.originAirport && mcdu.flightPlanService.active.destinationAirport; // TODO use the right flight plan
         const isPhaseActive = mcdu.flightPhaseManager.phase === FmgcFlightPhases.DESCENT;
         const titleColor = isPhaseActive ? "green" : "white";
         const isFlying = mcdu.flightPhaseManager.phase >= FmgcFlightPhases.TAKEOFF;
@@ -694,7 +692,7 @@ class CDUPerformancePage {
         const altitudeToPredict = mcdu.perfDesPredToAltitudePilot !== undefined ? mcdu.perfDesPredToAltitudePilot : fcuAltitude;
 
         const predToLabel = isPhaseActive ? "\xa0\xa0\xa0\xa0\xa0{small}PRED TO{end}" : "";
-        const predToCell = isPhaseActive ? `${CDUPerformancePage.formatAltitudeOrLevel(altitudeToPredict, mcdu.flightPlanManager.getDestinationTransitionLevel() * 100)}[color]cyan` : "";
+        const predToCell = isPhaseActive ? `${CDUPerformancePage.formatAltitudeOrLevel(altitudeToPredict, mcdu.getDestinationTransitionLevel() * 100)}[color]cyan` : "";
 
         let predToDistanceCell = "";
         let predToTimeCell = "";

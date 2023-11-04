@@ -129,7 +129,6 @@ class CDUAvailableArrivalsPage {
                     if (runway) {
                         runwayLength = runway.length.toFixed(0); // TODO imperial length pin program
                         runwayCourse = Utils.leadingZeros(Math.round(runway.magneticBearing), 3);
-
                     }
 
                     rows[2 * i] = [`{cyan}{${Fmgc.ApproachUtils.shortApproachName(approach)}{end}`, "", "{sp}{sp}{sp}{sp}" + runwayLength + "{small}M{end}[color]cyan"];
