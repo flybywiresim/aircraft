@@ -405,7 +405,7 @@ class CDUPerformancePage {
 
         const cruiseAltitude = mcdu.cruiseFlightLevel * 100;
         const fcuAltitude = SimVar.GetSimVarValue("AUTOPILOT ALTITUDE LOCK VAR:3", "feet");
-        const altitudeToPredict = Math.min(cruiseAltitude, fcuAltitude);
+        const altitudeToPredict = mcdu.perfClbPredToAltitudePilot !== undefined ? mcdu.perfClbPredToAltitudePilot : Math.min(cruiseAltitude, fcuAltitude);
 
         const predToLabel = isTakeoffOrClimbActive ? "\xa0\xa0\xa0\xa0\xa0{small}PRED TO{end}" : "";
         const predToCell = isTakeoffOrClimbActive ? `${CDUPerformancePage.formatAltitudeOrLevel(altitudeToPredict, mcdu.getOriginTransitionAltitude())}[color]cyan` : "";
