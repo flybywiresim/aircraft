@@ -372,7 +372,25 @@ class CDUFlightPlanPage {
                 const hasAltConstraint = legHasAltConstraint(wp);
                 let altitudeConstraint = Altitude.NoPrediction;
                 let altSize = "big";
-                if (fpIndex === targetPlan.destinationLegIndex) {
+                if (inAlternate && fpIndex === targetPlan.alternateFlightPlan.destinationLegIndex) {
+                    if (targetPlan.alternateFlightPlan.destinationRunway && Number.isFinite(targetPlan.alternateFlightPlan.destinationRunway.thresholdCrossingHeight)) {
+                        altitudeConstraint = formatAlt(targetPlan.alternateFlightPlan.destinationRunway.thresholdCrossingHeight);
+                        altColor = color;
+                        altSize = "small";
+                    } else if (targetPlan.alternateFlightPlan.destinationAirport && Number.isFinite(targetPlan.alternateFlightPlan.destinationAirport.location.alt)) {
+                        altitudeConstraint = formatAlt(targetPlan.alternateFlightPlan.destinationAirport.location.alt);
+                        altColor = color
+                        altSize = "small";
+                    }
+                } else if (inAlternate && fpIndex === targetPlan.alternateFlightPlan.originLegIndex) {
+                    if (targetPlan.alternateFlightPlan.originRunway && Number.isFinite(targetPlan.alternateFlightPlan.originRunway.location.alt)) {
+                        altitudeConstraint = formatAlt(targetPlan.alternateFlightPlan.originRunway.location.alt);
+                        altColor = color;
+                    } else if (targetPlan.alternateFlightPlan.originAirport && Number.isFinite(targetPlan.alternateFlightPlan.originAirport.location.alt)) {
+                        altitudeConstraint = formatAlt(targetPlan.alternateFlightPlan.originAirport.location.alt);
+                        altColor = color;
+                    }
+                } else if (!inAlternate && fpIndex === targetPlan.destinationLegIndex) {
                     if (targetPlan.destinationRunway && Number.isFinite(targetPlan.destinationRunway.thresholdCrossingHeight)) {
                         altitudeConstraint = formatAlt(targetPlan.destinationRunway.thresholdCrossingHeight);
                         altColor = color;
@@ -382,7 +400,7 @@ class CDUFlightPlanPage {
                         altColor = color
                         altSize = "small";
                     }
-                } else if (fpIndex === targetPlan.originLegIndex) {
+                } else if (!inAlternate && fpIndex === targetPlan.originLegIndex) {
                     if (targetPlan.originRunway && Number.isFinite(targetPlan.originRunway.location.alt)) {
                         altitudeConstraint = formatAlt(targetPlan.originRunway.location.alt);
                         altColor = color;
