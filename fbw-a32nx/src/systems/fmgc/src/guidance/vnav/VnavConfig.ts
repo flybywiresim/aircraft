@@ -27,6 +27,11 @@ export const VnavConfig = {
     DEBUG_PROFILE: false,
 
     /**
+     * Whether to print guidance debug information on the ND
+     */
+    DEBUG_GUIDANCE: false,
+
+    /**
      * Whether to use debug simvars (VNAV_DEBUG_*) to determine aircraft position and state.
      * This is useful for testing VNAV without having to fly the aircraft. This lets you put the aircraft some distance before destination at a given altitude and speed.
      * The following simvars can be used:

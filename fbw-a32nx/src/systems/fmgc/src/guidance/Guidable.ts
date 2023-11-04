@@ -98,6 +98,18 @@ export abstract class Guidable {
      */
     abstract getDistanceToGo(ppos: Coordinates): NauticalMiles | undefined;
 
+    /**
+     * Calculates the distance to go along track.
+     * This is used for predictions, not for guidance.
+     * For guidance, see {@link getDistanceToGo}.
+     *
+     * @param ppos the current position of the aircraft
+     * @param _trueTrack the true track of the aircraft
+     */
+    getAlongTrackDistanceToGo(ppos: Coordinates, _trueTrack: number): NauticalMiles | undefined {
+        return this.getDistanceToGo(ppos);
+    }
+
     abstract isAbeam(ppos: Coordinates): boolean;
 
     /**

@@ -22,7 +22,7 @@ export class StepAhead implements FMMessageSelector {
     }
 
     process(_: number): FMMessageUpdate {
-        const distanceToEnd = this.guidanceController.vnavDriver.distanceToEnd;
+        const distanceToEnd = this.guidanceController.alongTrackDistanceToDestination;
 
         if (!this.guidanceController.vnavDriver.mcduProfile?.isReadyToDisplay || distanceToEnd <= 0) {
             return FMMessageUpdate.NO_ACTION;
@@ -34,11 +34,11 @@ export class StepAhead implements FMMessageSelector {
         for (let i = activePlan.activeLegIndex; i < activePlan.legCount; i++) {
             const leg = activePlan.maybeElementAt(i);
 
-            if (!leg || leg.isDiscontinuity === true || !leg.cruiseStep || leg.cruiseStep.isIgnored) {
+            if (!leg || leg.isDiscontinuity === true || !leg.calculated || !leg.cruiseStep || leg.cruiseStep.isIgnored) {
                 continue;
             }
 
-            const legDistanceToEnd = this.guidanceController.vnavDriver.constraintReader.legDistancesToEnd[i];
+            const legDistanceToEnd = leg.calculated.cumulativeDistanceToEndWithTransitions;
 
             if (distanceToEnd - legDistanceToEnd < 20) {
                 newState = true;

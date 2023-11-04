@@ -288,6 +288,14 @@ export class FixedRadiusTransition extends Transition {
         return arcDistanceToGo(ppos, itp, this.centre, this.sweepAngle);
     }
 
+    getAlongTrackDistanceToGo(ppos: Coordinates, trueTrack: number): NauticalMiles | undefined {
+        if (this.revertTo) {
+            return this.revertTo.getAlongTrackDistanceToGo(ppos, trueTrack);
+        }
+
+        return this.getDistanceToGo(ppos);
+    }
+
     getGuidanceParameters(ppos: LatLongAlt, trueTrack: number, tas: Knots, gs: Knots): GuidanceParameters | null {
         if (this.revertTo) {
             return this.revertTo.getGuidanceParameters(ppos, trueTrack, tas, gs);

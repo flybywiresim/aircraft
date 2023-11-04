@@ -5,7 +5,7 @@
 
 import { Airport, ApproachType, Fix, NXDataStore } from '@flybywiresim/fbw-sdk';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/new/plans/AlternateFlightPlan';
-import { EventBus, MagVar, UnitType } from '@microsoft/msfs-sdk';
+import { EventBus, MagVar } from '@microsoft/msfs-sdk';
 import { FixInfoEntry } from '@fmgc/flightplanning/new/plans/FixInfo';
 import { loadAllDepartures, loadAllRunways } from '@fmgc/flightplanning/new/DataLoading';
 import { Coordinates, Degrees } from 'msfs-geo';

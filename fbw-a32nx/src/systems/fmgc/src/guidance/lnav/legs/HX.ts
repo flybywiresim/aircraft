@@ -6,14 +6,13 @@
 
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { GuidanceParameters, LateralPathGuidance } from '@fmgc/guidance/ControlLaws';
-import { AltitudeDescriptor, TurnDirection } from '@flybywiresim/fbw-sdk';
+import { AltitudeDescriptor, TurnDirection, Waypoint, MathUtils } from '@flybywiresim/fbw-sdk';
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { SegmentType } from '@fmgc/wtsdk';
 import { arcDistanceToGo, arcGuidance, courseToFixDistanceToGo, courseToFixGuidance, maxBank, reciprocal } from '@fmgc/guidance/lnav/CommonGeometry';
 import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
 import { EntryState, HoldEntryTransition } from '@fmgc/guidance/lnav/transitions/HoldEntryTransition';
-import { AltitudeDescriptor, TurnDirection, Waypoint, MathUtils } from '@flybywiresim/fbw-sdk';
 import { placeBearingDistance } from 'msfs-geo';
 import { PathVector, PathVectorType } from '../PathVector';
 

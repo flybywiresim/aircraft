@@ -487,9 +487,7 @@ export class PathCaptureTransition extends Transition {
         return `PATH CAPTURE(${this.previousLeg.repr} TO ${this.nextLeg.repr})`;
     }
 
-    // This is for VNAV to estimate the amount of track miles left
-    // TODO: I'm not sure this is really used IRL. I think it does it through the direct distance to fix and TAE.
-    getActualDistanceToGo(ppos: LatLongData, trueTrack: number): NauticalMiles {
+    getAlongTrackDistanceToGo(ppos: Coordinates, trueTrack: number): NauticalMiles {
         let dtg = 0;
 
         for (const path of this.predictedPath) {
