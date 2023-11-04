@@ -237,7 +237,7 @@ impl Morse {
 
         // Compute to remaining time between end of ident and the next 10 seconds
         self.duration_end_of_ident =
-            Duration::from_millis((10000 - (time_base as u64 * total_elements)) as u64);
+            Duration::from_millis(10000 - (time_base as u64 * total_elements));
 
         copy.chars().rev().collect::<String>()
     }
