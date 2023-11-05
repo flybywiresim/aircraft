@@ -201,6 +201,9 @@ impl CpcsShared for CoreProcessingInputOutputModuleB {
     fn should_open_ofv(&self) -> bool {
         self.cpcs_app.should_open_ofv()
     }
+    fn should_close_aft_ofv(&self) -> bool {
+        self.cpcs_app.should_close_aft_ofv()
+    }
 }
 
 impl SimulationElement for CoreProcessingInputOutputModuleB {
@@ -1079,6 +1082,10 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
             - (self.landing_elevation - Length::new::<foot>(Self::TARGET_LANDING_ALT_DIFF))
     }
 
+    fn get_ext_diff_with_take_off_elev(&self) -> Length {
+        self.exterior_flight_altitude - self.departure_elevation
+    }
+
     fn get_int_diff_with_ldg_elev(&self) -> Length {
         self.cabin_altitude
             - (self.landing_elevation - Length::new::<foot>(Self::TARGET_LANDING_ALT_DIFF))
@@ -1199,6 +1206,14 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
                 .pressure_schedule_manager
                 .as_ref()
                 .map_or(false, |manager| manager.should_open_outflow_valve())
+    }
+
+    fn should_close_aft_ofv(&self) -> bool {
+        matches!(
+            self.pressure_schedule_manager,
+            Some(PressureScheduleManager::TakeOff(_))
+                | Some(PressureScheduleManager::ClimbInternal(_))
+        ) && self.get_ext_diff_with_take_off_elev() < Length::new::<foot>(1000.)
     }
 
     pub fn cabin_vertical_speed(&self) -> Velocity {

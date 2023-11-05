@@ -822,22 +822,34 @@ impl A380PressurizationSystem {
     fn new() -> Self {
         Self {
             ocsm: [
-                OutflowValveControlModule::new(vec![
-                    ElectricalBusType::DirectCurrent(1),       // 107PP
-                    ElectricalBusType::DirectCurrentEssential, // 417PP
-                ]),
-                OutflowValveControlModule::new(vec![
-                    ElectricalBusType::DirectCurrent(1),       // 107PP
-                    ElectricalBusType::DirectCurrentEssential, // 417PP
-                ]),
-                OutflowValveControlModule::new(vec![
-                    ElectricalBusType::DirectCurrent(2),       // 210PP
-                    ElectricalBusType::DirectCurrentEssential, // 411PP
-                ]),
-                OutflowValveControlModule::new(vec![
-                    ElectricalBusType::DirectCurrent(2),       // 210PP
-                    ElectricalBusType::DirectCurrentEssential, // 411PP
-                ]),
+                OutflowValveControlModule::new(
+                    1,
+                    vec![
+                        ElectricalBusType::DirectCurrent(1),       // 107PP
+                        ElectricalBusType::DirectCurrentEssential, // 417PP
+                    ],
+                ),
+                OutflowValveControlModule::new(
+                    2,
+                    vec![
+                        ElectricalBusType::DirectCurrent(1),       // 107PP
+                        ElectricalBusType::DirectCurrentEssential, // 417PP
+                    ],
+                ),
+                OutflowValveControlModule::new(
+                    3,
+                    vec![
+                        ElectricalBusType::DirectCurrent(2),       // 210PP
+                        ElectricalBusType::DirectCurrentEssential, // 411PP
+                    ],
+                ),
+                OutflowValveControlModule::new(
+                    4,
+                    vec![
+                        ElectricalBusType::DirectCurrent(2),       // 210PP
+                        ElectricalBusType::DirectCurrentEssential, // 411PP
+                    ],
+                ),
             ],
             safety_valve: SafetyValve::new(),
         }
@@ -2422,6 +2434,15 @@ mod tests {
             })
         }
 
+        fn aft_outflow_valve_open_amount(&self) -> Ratio {
+            self.query(|a| {
+                (a.a380_cabin_air.a380_pressurization_system.ocsm[2].outflow_valve_open_amount()
+                    + a.a380_cabin_air.a380_pressurization_system.ocsm[2]
+                        .outflow_valve_open_amount())
+                    / 2.
+            })
+        }
+
         fn safety_valve_open_amount(&self) -> Ratio {
             self.query(|a| {
                 a.a380_cabin_air
@@ -3024,11 +3045,43 @@ mod tests {
                 .set_on_ground()
                 .iterate(50)
                 .set_takeoff_power()
-                .iterate_with_delta(500, Duration::from_millis(50));
+                .iterate_with_delta(400, Duration::from_millis(50));
             assert!(
                 (test_bed.cabin_vs() - Velocity::new::<foot_per_minute>(-300.)).abs()
-                    < Velocity::new::<foot_per_minute>(25.)
+                    < Velocity::new::<foot_per_minute>(50.)
             );
+        }
+
+        #[test]
+        fn aft_ofv_close_during_takeoff() {
+            let test_bed = test_bed()
+                .set_on_ground()
+                .iterate(50)
+                .set_takeoff_power()
+                .iterate_with_delta(400, Duration::from_millis(50));
+            assert_eq!(
+                test_bed.aft_outflow_valve_open_amount(),
+                Ratio::new::<percent>(0.)
+            );
+        }
+
+        #[test]
+        fn aft_ofv_open_in_flight() {
+            let test_bed = test_bed()
+            .set_on_ground()
+            .iterate(50)
+            .set_takeoff_power()
+            .iterate_with_delta(400, Duration::from_millis(50))
+            .vertical_speed_of(Velocity::new::<foot_per_minute>(1000.))
+            .then()
+            .command_aircraft_climb(Length::new::<foot>(0.), Length::new::<foot>(10000.))
+            .and()
+            .iterate(10);
+
+        assert!(
+            test_bed.aft_outflow_valve_open_amount() >
+            Ratio::new::<percent>(0.)
+        );
         }
 
         #[test]

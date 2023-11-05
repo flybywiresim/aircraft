@@ -23,6 +23,7 @@ pub trait CpcsShared {
     fn cabin_target_vertical_speed(&self) -> Option<Velocity>;
     fn ofv_open_allowed(&self) -> bool;
     fn should_open_ofv(&self) -> bool;
+    fn should_close_aft_ofv(&self) -> bool;
 }
 
 pub trait OcsmShared {
@@ -39,7 +40,6 @@ enum OcsmFault {
 }
 
 pub struct OutflowValveControlModule {
-    // Write outflow valve open percentage
     active_channel: OperatingChannel,
     stand_by_channel: OperatingChannel,
     acp: AutomaticControlPartition,
@@ -50,11 +50,11 @@ pub struct OutflowValveControlModule {
 }
 
 impl OutflowValveControlModule {
-    pub fn new(powered_by: Vec<ElectricalBusType>) -> Self {
+    pub fn new(outflow_valve_id: usize, powered_by: Vec<ElectricalBusType>) -> Self {
         Self {
             active_channel: OperatingChannel::new(1, None, &[powered_by[0]]),
             stand_by_channel: OperatingChannel::new(2, None, &[powered_by[1]]),
-            acp: AutomaticControlPartition::new(),
+            acp: AutomaticControlPartition::new(outflow_valve_id),
             sop: SafetyAndOverridePartition::new(),
             epp: EmergencyPressurizationPartition::new(),
             outflow_valve: OutflowValve::new(
@@ -75,7 +75,7 @@ impl OutflowValveControlModule {
     ) {
         self.fault_determination();
 
-        self.acp.update(cpiom_b.cabin_target_vertical_speed());
+        self.acp.update(cpiom_b);
 
         self.sop.update(self.epp.cabin_pressure(), press_overhead);
 
@@ -88,7 +88,7 @@ impl OutflowValveControlModule {
                 .manual_target_vertical_speed()
                 .unwrap_or_else(|| self.acp.auto_vertical_speed()),
             press_overhead,
-            cpiom_b.ofv_open_allowed(),
+            cpiom_b.ofv_open_allowed() && !self.acp.should_close_ofv(),
             cpiom_b.should_open_ofv(),
         );
 
@@ -150,22 +150,32 @@ impl SimulationElement for OutflowValveControlModule {
 }
 
 struct AutomaticControlPartition {
+    outflow_valve_id: usize,
     cabin_target_vertical_speed: Velocity,
+    should_close_ofv: bool,
 }
 
 impl AutomaticControlPartition {
-    fn new() -> Self {
+    fn new(outflow_valve_id: usize) -> Self {
         Self {
+            outflow_valve_id,
             cabin_target_vertical_speed: Velocity::default(),
+            should_close_ofv: false,
         }
     }
 
-    fn update(&mut self, cabin_target_vs: Option<Velocity>) {
-        self.cabin_target_vertical_speed = cabin_target_vs.unwrap_or_default();
+    fn update(&mut self, cpiom_b: &impl CpcsShared) {
+        self.cabin_target_vertical_speed =
+            cpiom_b.cabin_target_vertical_speed().unwrap_or_default();
+        self.should_close_ofv = self.outflow_valve_id > 2 && cpiom_b.should_close_aft_ofv();
     }
 
     fn auto_vertical_speed(&self) -> Velocity {
         self.cabin_target_vertical_speed
+    }
+
+    fn should_close_ofv(&self) -> bool {
+        self.should_close_ofv
     }
 }
 
