@@ -4,6 +4,8 @@
 
 import { GenericGenerator } from './GenericGenerator';
 
+enum Direction {Climb = 0, Descent = 1}
+
 export class FailureGeneratorAltitude extends GenericGenerator {
     numberOfSettingsPerGenerator = 6;
 
@@ -46,16 +48,16 @@ export class FailureGeneratorAltitude extends GenericGenerator {
         const altitudeCondition = this.settings[genNumber * this.numberOfSettingsPerGenerator + this.altitudeConditionIndex];
         const failureAltitude = (altitudeMin + this.rolledDice[genNumber] * (altitudeMax - altitudeMin));
 
-        return ((this.altitude > failureAltitude && altitudeCondition === 0)
-        || (this.altitude < failureAltitude && altitudeCondition === 1));
+        return ((this.altitude > failureAltitude && altitudeCondition === Direction.Climb)
+        || (this.altitude < failureAltitude && altitudeCondition === Direction.Descent));
     }
 
     conditionToArm(genNumber: number): boolean {
         const altitudeMax = this.settings[genNumber * this.numberOfSettingsPerGenerator + this.altitudeMaxIndex] * 100;
         const altitudeMin = this.settings[genNumber * this.numberOfSettingsPerGenerator + this.altitudeMinIndex] * 100;
         const altitudeCondition = this.settings[genNumber * this.numberOfSettingsPerGenerator + this.altitudeConditionIndex];
-        return ((this.altitude < altitudeMin - this.resetMargin && altitudeCondition === 0)
-        || (this.altitude > altitudeMax + this.resetMargin && altitudeCondition === 1));
+        return ((this.altitude < altitudeMin - this.resetMargin && altitudeCondition === Direction.Climb)
+        || (this.altitude > altitudeMax + this.resetMargin && altitudeCondition === Direction.Descent));
     }
 
     additionalArmingActions(genNumber: number): void {

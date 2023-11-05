@@ -7,6 +7,8 @@ import { EventBus } from '@microsoft/msfs-sdk';
 import { ArmingModeIndex, FailurePhases, FailuresAtOnceIndex, MaxFailuresIndex, RandomFailureGen } from './RandomFailureGen';
 import { Failure, FailuresOrchestrator } from './failures-orchestrator';
 
+export enum FailureGenMode {FailureGenAny = -1, FailureGenOff = 0, FailureGenOnce = 1, FailureGenTakeOff = 2, FailureGenRepeat = 3}
+
 export interface FailureGenFailureList {
     failurePool: { generatorType: string, generatorNumber: number, failureString: string };
   }
@@ -174,12 +176,12 @@ export abstract class GenericGenerator {
         for (let i = this.previousNbGenerator; i < nbGenerator; i++) {
             this.reset(i);
             this.additionalGenInitActions(i);
-            this.requestedMode[i] = -1;
+            this.requestedMode[i] = FailureGenMode.FailureGenAny;
             // console.info('INIT');
         }
         for (let i = 0; i < nbGenerator; i++) {
-            if (this.requestedMode[i] === 0 && this.settings[i * this.numberOfSettingsPerGenerator + ArmingModeIndex] <= 0) {
-                this.requestedMode[i] = -1;
+            if (this.requestedMode[i] === FailureGenMode.FailureGenOff && this.settings[i * this.numberOfSettingsPerGenerator + ArmingModeIndex] <= 0) {
+                this.requestedMode[i] = FailureGenMode.FailureGenAny;
                 // console.info('REQUEST RESET');
             }
             if (this.settings[i * this.numberOfSettingsPerGenerator + ArmingModeIndex] >= 0) {
@@ -195,7 +197,7 @@ export abstract class GenericGenerator {
                 }
                 this.generatorSpecificActions(i);
                 if (this.failureGeneratorArmed[i]) {
-                    if (this.settings[i * this.numberOfSettingsPerGenerator + ArmingModeIndex] === 2 && this.gs < 1) {
+                    if (this.settings[i * this.numberOfSettingsPerGenerator + ArmingModeIndex] === FailureGenMode.FailureGenTakeOff && this.gs < 1) {
                         this.reset(i);
                     } else if (this.conditionToTriggerFailure(i)) {
                         const activeFailures = failureOrchestrator.getActiveFailures();
@@ -206,28 +208,28 @@ export abstract class GenericGenerator {
                             this.randomFailuresGen.activateRandomFailure(this.getGeneratorFailurePool(failureOrchestrator, i),
                                 failureOrchestrator, activeFailures, numberOfFailureToActivate);
                             this.reset(i);
-                            if (this.settings[i * this.numberOfSettingsPerGenerator + ArmingModeIndex] === 1) {
-                                this.requestedMode[i] = 0;
+                            if (this.settings[i * this.numberOfSettingsPerGenerator + ArmingModeIndex] === FailureGenMode.FailureGenOnce) {
+                                this.requestedMode[i] = FailureGenMode.FailureGenOff;
                             }
                             this.additionalFailureTriggeredActions(i);
                         }
                     }
                 }
-                if (!this.failureGeneratorArmed[i] && this.requestedMode[i] !== 0) {
-                    if ((this.settings[i * this.numberOfSettingsPerGenerator + ArmingModeIndex] === 1
-                || (this.settings[i * this.numberOfSettingsPerGenerator + ArmingModeIndex] === 2
+                if (!this.failureGeneratorArmed[i] && this.requestedMode[i] !== FailureGenMode.FailureGenOff) {
+                    if ((this.settings[i * this.numberOfSettingsPerGenerator + ArmingModeIndex] === FailureGenMode.FailureGenOnce
+                || (this.settings[i * this.numberOfSettingsPerGenerator + ArmingModeIndex] === FailureGenMode.FailureGenTakeOff
                     && !this.waitForTakeOff[i])
-                || this.settings[i * this.numberOfSettingsPerGenerator + ArmingModeIndex] === 3) && this.conditionToArm(i)) {
+                || this.settings[i * this.numberOfSettingsPerGenerator + ArmingModeIndex] === FailureGenMode.FailureGenRepeat) && this.conditionToArm(i)) {
                         // console.info('ARMING');
                         this.arm(i);
                         this.additionalArmingActions(i);
                     }
                 } else
-                if (this.settings[i * this.numberOfSettingsPerGenerator + ArmingModeIndex] === 0) {
+                if (this.settings[i * this.numberOfSettingsPerGenerator + ArmingModeIndex] === FailureGenMode.FailureGenOff) {
                     // console.info('RESETTING - Generator is OFF');
                     this.reset(i);
                 }
-            } else if (this.failureGeneratorArmed[i] || this.requestedMode[i] === 0) {
+            } else if (this.failureGeneratorArmed[i] || this.requestedMode[i] === FailureGenMode.FailureGenOff) {
             // console.info('RESETTING - Generator removed');
                 this.reset(i);
             }

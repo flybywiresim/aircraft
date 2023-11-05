@@ -4,6 +4,8 @@
 
 import { GenericGenerator } from './GenericGenerator';
 
+enum Direction {Acceleration = 0, Deceleration = 1}
+
 export class FailureGeneratorSpeed extends GenericGenerator {
 numberOfSettingsPerGenerator = 6;
 
@@ -40,16 +42,16 @@ numberOfSettingsPerGenerator = 6;
         const speedCondition = this.settings[genNumber * this.numberOfSettingsPerGenerator + this.speedConditionIndex];
         const failureAltitude = (speedMin + this.rolledDice[genNumber] * (speedMax - speedMin));
 
-        return ((this.gs > failureAltitude && speedCondition === 0)
-        || (this.gs < failureAltitude && speedCondition === 1));
+        return ((this.gs > failureAltitude && speedCondition === Direction.Acceleration)
+        || (this.gs < failureAltitude && speedCondition === Direction.Deceleration));
     }
 
     conditionToArm(genNumber: number): boolean {
         const speedMax = this.settings[genNumber * this.numberOfSettingsPerGenerator + this.speedMaxIndex];
         const speedMin = this.settings[genNumber * this.numberOfSettingsPerGenerator + this.speedMinIndex];
         const speedCondition = this.settings[genNumber * this.numberOfSettingsPerGenerator + this.speedConditionIndex];
-        return ((this.gs < speedMin - this.resetMargin && speedCondition === 0)
-        || (this.gs > speedMax + this.resetMargin && speedCondition === 1));
+        return ((this.gs < speedMin - this.resetMargin && speedCondition === Direction.Acceleration)
+        || (this.gs > speedMax + this.resetMargin && speedCondition === Direction.Deceleration));
     }
 
     additionalArmingActions(genNumber: number): void {
