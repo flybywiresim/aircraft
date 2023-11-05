@@ -89,7 +89,7 @@
   },
   "Dispatch": {
     "Ofp": {
-      "ImportSimBriefData": "Importera SimBrief Data",
+      "ImportSimBriefData": "Importera SimBrief-data",
       "TT": {
         "IncreaseFontSize": "Öka teckenstorlek",
         "ReduceFontSize": "Minska teckenstorlek"
@@ -141,8 +141,8 @@
       "RightInnerTank": "Höger innertank",
       "RightOuterTank": "Höger yttertank",
       "TT": {
-        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Ändring av tankningstiden endast på marken med avstängda motorer",
-        "FillBlockFuelFromSimBrief": "Fyll block bränsle från SimBrief"
+        "AircraftMustBeColdAndDarkToChangeRefuelTimes": "Ändring av tankningstiden är endast möjligt på marken med avstängda motorer",
+        "FillBlockFuelFromSimBrief": "Fyll block-bränsle från SimBrief"
       },
       "Title": "Bränsle",
       "TotalFuel": "Totalt bränsle",
@@ -155,7 +155,7 @@
       "DeboardConfirmationBody": "Bekräfta avstigning av alla passagerare",
       "DeboardConfirmationCancel": "Avbryt",
       "DeboardConfirmationConfirm": "Avbordstigning",
-      "DeboardConfirmationTitle": "Släppa alla passagerare?",
+      "DeboardConfirmationTitle": "Avborda passagerare?",
       "EstimatedDurationUnit": "minuter",
       "GSXPayloadSyncEnabled": "Synkronisering av GSX-nyttolast aktiverad",
       "GW": "GW",
@@ -164,7 +164,7 @@
       "Passengers": "Passagerare",
       "Planned": "Planerad",
       "TT": {
-        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Flygplan måste vara på marken och ha motorer avstängning för att ändra ombordstigningens varaktighet",
+        "AircraftMustBeColdAndDarkToChangeBoardingTimes": "Flygplan måste vara på marken och ha motorer avstängda för att ändra ombordstigningens hastighet",
         "FillPayloadFromSimbrief": "Fyll nyttolastinformation från Simbrief",
         "MaxCargo": "Max frakt",
         "MaxGW": "Maximalt GW",
@@ -201,7 +201,7 @@
   },
   "Modals": {
     "Cancel": "Avbryt",
-    "Confirm": "Godkänn",
+    "Confirm": "Bekräfta",
     "Okay": "OK"
   },
   "NavigationAndCharts": {
@@ -210,9 +210,9 @@
     "ExitFullscreenMode": "Lämna fullskärmsläge",
     "From": "Från",
     "LoadingImage": "Laddar bild",
-    "LoadingImageFailed": "Misslyckades ladda bilden",
+    "LoadingImageFailed": "Laddning av bilden misslyckades",
     "LoadingPdf": "Laddar PDF",
-    "LoadingPdfFailed": "Misslyckades ladda PDF",
+    "LoadingPdfFailed": "Laddning av PDF misslyckades",
     "LocalFiles": {
       "Both": "Båda",
       "EstablishingConnection": "Upprättar anslutning",
@@ -228,13 +228,13 @@
       "AuthenticateWithNavigraph": "Autentisera med Navigraph",
       "GoToThirdPartyOptions": {
         "Button": "Inställningar för tredje part",
-        "Title": "Go to 3rd Party Options to link Navigraph account"
+        "Title": "Gå till inställningar för tredje part för att länka Navigraph-konto"
       },
       "InsufficientEnv": "Otillräcklig .env-fil",
       "IntoYourBrowserAndEnterTheCodeBelow": "i din webbläsare och ange koden nedan\n",
       "LoadingMsg": "Laddar",
       "NoAirportSelected": "Ingen flygplats vald",
-      "ResetNavigraphAuthentication": "Återställ Navigraph autentisering",
+      "ResetNavigraphAuthentication": "Återställ Navigraph-autentisering",
       "ScanTheQrCodeOrOpen": "Skanna QR-koden eller öppna",
       "Title": "Navigraph"
     },
@@ -243,7 +243,7 @@
       "Edit": "Redigera",
       "NoItemsFound": "Inga hittades",
       "SearchPlaceholder": "Sök",
-      "ShowingChartsFromAllProviders": "Visar diagram från alla leverantörer",
+      "ShowingChartsFromAllProviders": "Visar charts från alla leverantörer",
       "SortMethods": {
         "AlphabeticalAZ": "Alfabetisk - A -> Ö",
         "AlphabeticalZA": "Alfabetisk - Ö -> A",
@@ -279,7 +279,7 @@
     "Data": "Data",
     "Landing": {
       "AirportIcao": "Flygplats ICAO",
-      "ApproachSpeed": "Approach-hastighet",
+      "ApproachSpeed": "Inflygningshastighet",
       "ApproachSpeedUnit": "kts",
       "AutoLand": "Autoland",
       "Calculate": "Beräkna",
@@ -287,11 +287,11 @@
       "DropDownNo": "Nej",
       "DropDownYes": "Ja",
       "FillDataFrom": "Fyll i data från",
-      "FlapsConfiguration": "Konfigurering av klaffar",
+      "FlapsConfiguration": "Konfigurering av vingklaffar",
       "Low": "Låg",
       "MaximumManual": "Maximal Manuell",
       "Medium": "Medium",
-      "MetarErrorDialogMessage": "METAR från din OFP kunde inte tolkas framgångsrikt. Vill du fylla i data automatiskt med hjälp av en hämtad METAR istället?",
+      "MetarErrorDialogMessage": "METAR från din OFP kunde inte tolkas korrekt. Vill du fylla i data automatiskt med hjälp av en hämtad METAR istället?",
       "MetarErrorDialogTitle": "Fel vid tolkning av OFP METAR",
       "OverweightProcedure": "Överviktsprocedur",
       "Qnh": "QNH",
@@ -396,12 +396,12 @@
       "AutoLoadNight": "Natt:",
       "AutoLoadNoneSelection": "Ingen",
       "LoadPreset": "Ladda förval",
-      "LoadingPreset": "Laddar förval …",
+      "LoadingPreset": "Laddar förval…",
       "NewNameConfirmationDialogMsg": "Bekräfta det nya namnet på belysningsförinställningen",
       "NoName": "Namnlös",
       "PleaseConfirmSavingPreset": "Bekräfta att spara förinställning",
       "SavePreset": "Spara förval",
-      "SavingPreset": "Sparar förval …",
+      "SavingPreset": "Sparar förval…",
       "SelectAnInteriorLightingPresetToLoadOrSave": "Välj en förinställning för innerbelysning som du vill ladda eller spara.",
       "TT": {
         "AircraftMustBePowered": "Flygplanet måste ha ström",
@@ -418,10 +418,10 @@
     "AvailableOnlyOnGround": "Pushback-kontroller är endast tillgängliga på marken",
     "Backward": "Bakåt",
     "CallTug": "Ring dragare",
-    "DisableSystemMessageBody": "Är du säker på att du vill inaktivera pushback-systemet? Detta kommer också att släppa dragare.",
-    "DisableSystemMessageTitle": "Inaktivera pushback-systemet",
+    "DisableSystemMessageBody": "Är du säker på att du vill inaktivera pushbacksystemet? Detta kommer också att släppa dragare.",
+    "DisableSystemMessageTitle": "Inaktivera pushbacksystemet",
     "EnableSystemMessageBody": "Det nya flyPadOS 3 Pushback-systemet kan orsaka konflikter med andra pushback-tillägg. Vi rekommenderar att du inte aktiverar systemet om du planerar att använda ett annat pushback-tillägg. ",
-    "EnableSystemMessageTitle": "Aktivera pushback system",
+    "EnableSystemMessageTitle": "Aktivera pushbacksystem",
     "Forward": "Framåt",
     "Halt": "Pausad",
     "LeavePageMessage": "Pausa pushback",
@@ -433,22 +433,22 @@
       "Title": "Parkeringsbroms"
     },
     "Right": "Höger",
-    "SystemEnabledOff": "Pushback system av",
-    "SystemEnabledOn": "Pushback system på",
+    "SystemEnabledOff": "Pushbacksystem av",
+    "SystemEnabledOn": "Pushbacksystem på",
     "TT": {
       "CallReleaseTug": "Ring eller släpp dragare",
       "CenterPlaneMode": "Center karta på planet On/Off",
       "DecreaseSpeed": "Bakåt eller långsammare framåt",
       "IncreaseSpeed": "Framåt eller långsammare bakåt",
-      "Left": "Gå till vänster",
-      "PausePushback": "Pausa eller avpaus pushback",
-      "Right": "Gå till höger",
-      "SetReleaseParkingBrake": "Ställ in eller lossa parkeringsbromsen",
-      "SliderDirection": "Flytta för önskad riktning",
-      "SliderSpeed": "Flytta för önskad hastighet",
-      "SystemEnabledOff": "Klicka för att slå på pushback-systemet.",
-      "SystemEnabledOn": "Klicka för att stänga av pushback-systemet helt.",
-      "UseControllerInput": "Slå på/av spelkontrollen ingång från roder och höjdrodret",
+      "Left": "Sväng till vänster",
+      "PausePushback": "Pausa eller fortsätt pushback",
+      "Right": "Sväng till höger",
+      "SetReleaseParkingBrake": "Aktivera eller lossa parkeringsbromsen",
+      "SliderDirection": "Dra för önskad riktning",
+      "SliderSpeed": "Dra för önskad hastighet",
+      "SystemEnabledOff": "Klicka för att slå på pushbacksystemet.",
+      "SystemEnabledOn": "Klicka för att stänga av pushbacksystemet helt.",
+      "UseControllerInput": "Slå på eller av styrning av hastighet och riktning med spelkontroll.",
       "ZoomIn": "Zooma in",
       "ZoomOut": "Zooma ut"
     },
@@ -456,11 +456,11 @@
     "TugDirection": "Dragarriktning",
     "TugInTransit": "Väntar på dragare/pin",
     "TugSpeed": "Dragarhastighet",
-    "UseControllerInput": "Använda spelkontrollen som indata"
+    "UseControllerInput": "Använd spelkontrollen som indata"
   },
   "QuickControls": {
     "AlignAdirs": "Justera ADIRS",
-    "FinishBoarding": "Avsluta Boarding",
+    "FinishBoarding": "Avsluta Ombordstign.",
     "OnScreenKeyboard": "Skärmtangentbord",
     "SimBridge": "SimBridge",
     "SimBridgeConnected": "Ansluten",
@@ -474,7 +474,7 @@
       "FinishBoarding": "Avsluta ombordstigningen omedelbart",
       "OnScreenKeyboard": "Slå på/av skärmtangentbordet",
       "PowerButton": "Stäng av",
-      "Settings": "Gå till flyPad inställningar",
+      "Settings": "Gå till flyPadinställningar",
       "SimBridge": "Styr SimBridge-anslutning",
       "Sleep": "Standby"
     },
@@ -487,18 +487,18 @@
     "AircraftOptionsPinPrograms": {
       "AccelerationHeight": "Accelerationshöjd (ft)",
       "EngineOutAccelerationHeight": "Accelerationshöjd för motorfel (ft)",
-      "IsisBaroUnit": "ISIS Baro-enhet",
+      "IsisBaroUnit": "ISIS Baroenhet",
       "IsisMetricAltitude": "ISIS metrisk höjd",
       "LatLonExtendedFormat": "FMGC Lat/Lon Waypoint-format",
       "PaxSigns": "Passagerarskyltar",
       "RmpVhfSpacing": "RMP VHF-avstånd",
       "Satcom": "Visa Satcom",
-      "ThrustReductionHeight": "Höjd för dragkraftsreduktion (ft)",
-      "Title": "Flygplan Inställningar / Pin-Program",
+      "ThrustReductionHeight": "Höjd för motorkraftreduktion (ft)",
+      "Title": "Flygplasinställningar / Pin-Program",
       "WeightUnit": "Viktenhet"
     },
     "AtsuAoc": {
-      "AtisAtcSource": "ATIS/ATC Källa",
+      "AtisAtcSource": "ATIS/ATC-källa",
       "AutomaticallyImportSimBriefData": "Importera SimBrief-data automatiskt",
       "Enable": "Aktivera",
       "EnableTelex": "Aktivera TELEX",
@@ -507,7 +507,7 @@
       "HoppieUserId": "Hoppie användar-ID",
       "MetarSource": "METAR-källa",
       "OptionalA32nxErrorReporting": "Frivillig felrapportering för A32NX",
-      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimbBriefUsernameOrPilotId": "Kontrollera att du har angett ditt SimBrief-användarnamn eller pilot-ID korrekt.",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimbBriefUsernameOrPilotId": "Kontrollera att ditt SimBrief-användarnamn eller pilot-ID är korrekt.",
       "SimBriefUsernamePilotId": "SimBrief Användarnamn/Pilot-ID",
       "TafSource": "TAF-källa",
       "Telex": "TELEX",
@@ -521,7 +521,7 @@
       "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "Ditt SimBrief PilotID har validerats och uppdaterats till"
     },
     "Audio": {
-      "Announcements": "Tillkännagivanden",
+      "Announcements": "Utrop",
       "BoardingMusic": "Boardingmusik",
       "EngineInteriorVolume": "Motorns ljudstyrka inne",
       "ExteriorMasterVolume": "Huvudljudstyrka ute",
@@ -532,7 +532,7 @@
     },
     "Fast": "Snabb",
     "Instant": "Omedelbar",
-    "Real": "Verklig",
+    "Real": "Realistisk",
     "Realism": {
       "AdirsAlignTime": "ADIRS-justeringstid",
       "AutofillChecklists": "Auto-fyll checklistor",
@@ -555,13 +555,13 @@
       "Both": "Synkroniserad",
       "Calibrate": "Kalibrera",
       "Captain": "Captain",
-      "CockpitSeatUsedToControl": "Cockpit stol som används för att styra",
+      "CockpitSeatUsedToControl": "Cockpitstol som används för att styra",
       "ConesEnabled": "Säkerhetskoner",
       "Copilot": "Copilot",
       "DefaultBarometerUnit": "Standardbarometerenhet",
       "DynamicRegistrationDecal": "Dynamisk registreringsdekal",
-      "EnableSimBridge": "Aktivera SimBridge-serveranslutning (inaktiveras automatiskt efter 5 minuter om anslutningen inte lyckas).",
-      "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Aktivera MCDU-serveranslutning (inaktiveras automatiskt efter 5 minuter om anslutningen inte lyckas).",
+      "EnableSimBridge": "Aktivera SimBridge-serveranslutning (inaktiveras automatiskt efter 5 minuter om ingen anslutning hittats).",
+      "EnabledMcduServerConnectionAutoDeactivatesAfter5MinutesIfNoSuccessfulConnection": "Aktivera MCDU-serveranslutning (inaktiveras automatiskt efter 5 minuter om ingen anslutning hittats).",
       "ExternalMcduServerPort": "Extern MCDU-serverport",
       "Hpa": "hPa",
       "Inactive": "Inaktiv",
@@ -580,32 +580,32 @@
       "inHg": "inHg"
     },
     "ThirdPartyOptions": {
-      "GsxFuelEnabled": "GSX Fueling Synkronisering",
-      "GsxPayloadEnabled": "GSX-nyttolastsynkronisering",
+      "GsxFuelEnabled": "Synkronisera bränsle med GSX",
+      "GsxPayloadEnabled": "Synkronisera last med GSX",
       "NavigraphAccountLink": {
         "Connected": "Ansluten",
-        "Link": "Link Account",
+        "Link": "Anslut konto",
         "LoginPage": {
-          "Title": "Navigraph Account Login"
+          "Title": "Inloggning Navigraph-konto"
         },
-        "SettingTitle": "Navigraph Account Link",
+        "SettingTitle": "Navigraph kontoanslutning",
         "SubscriptionStatus": {
           "None": "Ingen",
           "Unlimited": "Navigraph Unlimited"
         },
-        "Unlink": "Unlink Account"
+        "Unlink": "Koppla bort konto"
       },
-      "OverrideSimBriefUserID": "Override SimBrief User ID",
-      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Please check that you have correctly entered your SimBrief username or pilot ID.",
+      "OverrideSimBriefUserID": "Tvinga SimBrief Användar-ID.",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Säkerställ att du angett rätt Simbrief-användarnamn- eller ID.",
       "TT": {
-        "OverrideSimBriefUserID": "Alternative SimBrief user ID to use instead of the linked Navigraph Account"
+        "OverrideSimBriefUserID": "Alternativt Simbrief-ID att använda istället för kopplat Navigraph-konto"
       },
       "Title": "Inställningar för tredje part",
-      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "The override SimBrief PilotID has been validated and updated to"
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "Det åsidosatta Simbrief-ID som angetts har validerats och är nu aktivt."
     },
     "ThrottleConfig": {
       "Apply": "Spara",
-      "AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates": "Ska de aktuella inställningarna för kalibreringen av dragspaken återställas? Denna åtgärd kan inte göras ogjord.",
+      "AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates": "Ska de aktuella inställningarna för kalibreringen av dragspaken återställas? Denna åtgärd kan inte ångras.",
       "Axis": "Axel",
       "Back": "Tillbaka",
       "ConfigureEnd": "Toleransområde slut",
@@ -639,7 +639,7 @@
       "LocalTimeFormat": "Lokalt tidsformat",
       "OnscreenKeyboardLayout": "Tangentbordslayout",
       "ShowColoredRawMetar": "Visa färgad METAR rådata",
-      "ShowStatusBarFlightProgressIndicator": "Visa status bar flygförloppsindikator",
+      "ShowStatusBarFlightProgressIndicator": "Visa flygförloppsindikator",
       "Theme": "Tema",
       "TimeDisplayed": "Visad tid",
       "Title": "flyPad",
@@ -667,9 +667,9 @@
     "Sep": "Sep",
     "Sun": "Sön",
     "TT": {
-      "Brightness": "Click to change Brightness",
-      "ConnectedToLocalApi": "Ansluten till SimBridge",
-      "DisconnectedFromLocalApi": "Avklopplad från SimBridge",
+      "Brightness": "Klicka för att ändra ljusstyrka",
+      "ConnectedToLocalApi": "SimBriege anslutet",
+      "DisconnectedFromLocalApi": "SimBridge frånkopplat",
       "QuickControls": "Klicka för att öppna snabbinställningar",
       "TurnOffOrShutdownEfb": "Stäng av EFB"
     },
@@ -680,10 +680,10 @@
   "VersionCheck": {
     "CurrentVersionText": "Du använder $edition utgåvan med version:",
     "LatestVersionText": "Senaste $edition versionen är",
-    "RecommendationText": "Vänligen uppdatera ditt flygplan via FlyByWire Installatören.",
+    "RecommendationText": "Vänligen uppdatera ditt flygplan via FlyByWires installationsprogram.",
     "StatusBarWarning": "Inaktuell Flygplansversion",
     "TT": {
-      "StatusBarWarning": "Vänligen uppdatera ditt flygplan via FlyByWire Installatören."
+      "StatusBarWarning": "Vänligen uppdatera ditt flygplan via FlyByWires installationsprogram."
     },
     "Title": "Ny version tillgänglig"
   }
