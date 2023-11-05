@@ -185,7 +185,7 @@
       "Title": "Đẩy lùi"
     },
     "Services": {
-      "AirStarterUnit": "Air Starter Unit",
+      "AirStarterUnit": "Bộ khởi động không khí",
       "BaggageTruck": "Xe tải chở hành lý",
       "CateringTruck": "Xe cung cấp thức ăn",
       "Cones": "Chóp nón An toàn",
@@ -624,7 +624,7 @@
       "SaveAndApply": "Lưu và áp dụng",
       "SetFromThrottle": "Đặt từ cần ga",
       "ThrottleConfigurationReset": "Khôi phục lại cấu hình cần ga",
-      "TogaOnAxis": "TogaOnAxis"
+      "TogaOnAxis": ""
     },
     "Title": "Cài đặt",
     "Unrealistic": "Không thực tế",
