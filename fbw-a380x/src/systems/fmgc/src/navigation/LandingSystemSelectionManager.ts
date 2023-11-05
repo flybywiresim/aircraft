@@ -3,14 +3,13 @@
 
 /* eslint-disable no-underscore-dangle */
 
-import { UpdateThrottler } from '@flybywiresim/fbw-sdk';
+import { UpdateThrottler, Airport, Approach, ApproachType, IlsNavaid, Runway } from '@flybywiresim/fbw-sdk';
 import { FlightPhaseManager, getFlightPhaseManager } from '@fmgc/flightphase';
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/new/NavigationDatabaseService';
 import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
-import { FmgcFlightPhase } from '@shared/flightphase';
 import { distanceTo } from 'msfs-geo';
-import { Airport, Approach, ApproachType, IlsNavaid, Runway } from 'msfs-navdata';
+import { FmgcFlightPhase } from '@shared/flightphase';
 
 export class LandingSystemSelectionManager {
     private static readonly DESTINATION_TUNING_DISTANCE = 300;
@@ -135,7 +134,7 @@ export class LandingSystemSelectionManager {
             return false;
         }
 
-        const frequencies = await this.flightPlanService.navigationDatabase.backendDatabase.getIlsAtAirport(airport.ident);
+        const frequencies = await NavigationDatabaseService.activeDatabase.backendDatabase.getIlsAtAirport(airport.ident);
         const runwayFrequencies = frequencies.filter((it) => it.runwayIdent === runway.ident);
 
         for (const frequency of runwayFrequencies) {
@@ -176,10 +175,10 @@ export class LandingSystemSelectionManager {
         }
 
         if (checkRunwayFrequencies) {
-            const runways = await this.flightPlanService.navigationDatabase.backendDatabase.getRunways(airport.ident);
+            const runways = await NavigationDatabaseService.activeDatabase.backendDatabase.getRunways(airport.ident);
             const runway = runways.find((it) => it.ident === approach.runwayIdent);
 
-            if (runway && await this.setIlsFromRunway(airport, runway, finalLeg.waypoint.databaseId, true)) {
+            if (runway && await this.setIlsFromRunway(airport, runway, finalLeg.recommendedNavaid.databaseId, true)) {
                 return true;
             }
         }

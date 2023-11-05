@@ -1,21 +1,20 @@
 // Copyright (c) 2021, 2023 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { UpdateThrottler } from '@flybywiresim/fbw-sdk';
+import { UpdateThrottler, Airport, NdbNavaid, VhfNavaid, Waypoint } from '@flybywiresim/fbw-sdk';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/new/NavigationDatabaseService';
 import { Coordinates } from 'msfs-geo';
-import { Airport, NdbNavaid, VhfNavaid, Waypoint } from 'msfs-navdata';
 
 export class NearbyFacilities {
     private static instance: NearbyFacilities;
 
-    private nearbyAirports: Airport[] = [];
+    private nearbyAirports: readonly Airport[] = [];
 
-    private nearbyNdbNavaids: NdbNavaid[] = [];
+    private nearbyNdbNavaids: readonly NdbNavaid[] = [];
 
-    private nearbyVhfNavaids: VhfNavaid[] = [];
+    private nearbyVhfNavaids: readonly VhfNavaid[] = [];
 
-    private nearbyWaypoints: Waypoint[] = [];
+    private nearbyWaypoints: readonly Waypoint[] = [];
 
     version: number = 0;
 

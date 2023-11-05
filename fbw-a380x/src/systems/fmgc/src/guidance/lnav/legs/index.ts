@@ -5,94 +5,17 @@
 
 import { HALeg, HFLeg, HMLeg } from '@fmgc/guidance/lnav/legs/HX';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
-import { AltitudeDescriptor, SpeedDescriptor } from 'msfs-navdata';
 import { PILeg } from '@fmgc/guidance/lnav/legs/PI';
-import { TurnDirection } from '@fmgc/types/fstypes/FSEnums';
+import { TurnDirection } from '@flybywiresim/fbw-sdk';
 import { FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/new/legs/FlightPlanLegDefinition';
 import { MissedApproachSegment } from '@fmgc/flightplanning/new/segments/MissedApproachSegment';
-
-export enum AltitudeConstraintType {
-    at,
-    atOrAbove,
-    atOrBelow,
-    range,
-}
-
-// TODO at and atOrAbove do not exist in the airbus (former interpreted as atOrBelow, latter discarded)
-export enum SpeedConstraintType {
-    at,
-    atOrAbove,
-    atOrBelow,
-}
-
-export interface AltitudeConstraint {
-    type: AltitudeConstraintType,
-    altitude1: Feet,
-    altitude2: Feet | undefined,
-}
-
-export interface SpeedConstraint {
-    type: SpeedConstraintType,
-    speed: Knots,
-}
+import { AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
 
 export type PathAngleConstraint = Degrees;
 
 export abstract class FXLeg extends Leg {
     from: WayPoint;
-}
-
-export function altitudeConstraintFromProcedureLeg(definition: FlightPlanLegDefinition): AltitudeConstraint | undefined {
-    if (definition.altitudeDescriptor !== undefined && definition.altitude1 !== undefined) {
-        const ac: Partial<AltitudeConstraint> = {};
-
-        ac.type = AltitudeConstraintType.at; // TODO temporary workaround for VNAV now knowing about all constraint types (fms-v2)
-        ac.altitude1 = definition.altitude1;
-        ac.altitude2 = undefined;
-
-        switch (definition.altitudeDescriptor) {
-        case AltitudeDescriptor.AtAlt1:
-            ac.type = AltitudeConstraintType.at;
-            break;
-        case AltitudeDescriptor.AtOrAboveAlt1:
-            ac.type = AltitudeConstraintType.atOrAbove;
-            break;
-        case AltitudeDescriptor.AtOrBelowAlt1:
-            ac.type = AltitudeConstraintType.atOrBelow;
-            break;
-        case AltitudeDescriptor.BetweenAlt1Alt2:
-            ac.type = AltitudeConstraintType.range;
-            ac.altitude2 = definition.altitude2;
-            break;
-        default:
-            break;
-        }
-        return ac as AltitudeConstraint;
-    }
-
-    return undefined;
-}
-
-export function speedConstraintFromProcedureLeg(definition: FlightPlanLegDefinition): SpeedConstraint | undefined {
-    if (definition.speedDescriptor !== undefined) {
-        let type;
-        if (definition.speedDescriptor === SpeedDescriptor.Minimum) {
-            type = SpeedConstraintType.atOrAbove;
-        } else if (definition.speedDescriptor === SpeedDescriptor.Mandatory) {
-            type = SpeedConstraintType.at;
-        } else if (definition.speedDescriptor === SpeedDescriptor.Maximum) {
-            type = SpeedConstraintType.atOrBelow;
-        }
-
-        return { type, speed: definition.speed! };
-    }
-
-    return undefined;
-}
-
-export function pathAngleConstraintFromProcedureLeg(definition: FlightPlanLegDefinition): PathAngleConstraint | undefined {
-    return definition.verticalAngle;
 }
 
 export function isHold(leg: Leg): boolean {
@@ -156,9 +79,9 @@ export interface LegMetadata {
 }
 
 export function legMetadataFromFlightPlanLeg(leg: FlightPlanLeg): LegMetadata {
-    const altitudeConstraint = altitudeConstraintFromProcedureLeg(leg.definition);
-    const speedConstraint = speedConstraintFromProcedureLeg(leg.definition);
-    const pathAngleConstraint = pathAngleConstraintFromProcedureLeg(leg.definition);
+    const altitudeConstraint = leg.altitudeConstraint;
+    const speedConstraint = leg.speedConstraint;
+    const pathAngleConstraint = leg.definition?.verticalAngle;
 
     let turnDirection = TurnDirection.Either;
     if (leg.definition.turnDirection === 'L') {

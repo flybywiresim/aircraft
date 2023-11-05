@@ -86,16 +86,15 @@ export class McduSpeedProfile implements SpeedProfile {
     }
 
     getTarget(distanceFromStart: NauticalMiles, altitude: Feet, managedSpeedType: ManagedSpeedType): Knots {
-        const { fcuSpeed, flightPhase, preselectedClbSpeed, preselectedCruiseSpeed, preselectedDescentSpeed } = this.parameters.get();
+        const { fcuSpeed, flightPhase, preselectedClbSpeed, preselectedCruiseSpeed } = this.parameters.get();
 
         let preselectedSpeed = -1;
         if (flightPhase < FmgcFlightPhase.Climb && preselectedClbSpeed > 100) {
             preselectedSpeed = preselectedClbSpeed;
         } else if (flightPhase < FmgcFlightPhase.Cruise && preselectedCruiseSpeed > 100) {
             preselectedSpeed = preselectedCruiseSpeed;
-        } else if (flightPhase < FmgcFlightPhase.Descent && preselectedDescentSpeed > 100) {
-            preselectedSpeed = preselectedDescentSpeed;
         }
+
         const hasPreselectedSpeed = preselectedSpeed > 0;
 
         const isPredictingForCurrentPhase = managedSpeedType === ManagedSpeedType.Climb && flightPhase === FmgcFlightPhase.Climb

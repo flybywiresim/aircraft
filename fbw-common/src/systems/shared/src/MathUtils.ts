@@ -21,10 +21,6 @@ export class MathUtils {
 
    private static optiPow10 = [];
 
-   public static clampAngle(a: number) {
-       return clampAngle(a);
-   }
-
    public static fastToFixed(val: number, fraction: number): string {
        if (fraction <= 0) {
            return Math.round(val).toString();

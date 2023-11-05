@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { MathUtils, Constants } from '@flybywiresim/fbw-sdk';
+import { Constants, MathUtils, TurnDirection } from '@flybywiresim/fbw-sdk';
 import { DFLeg } from '@fmgc/guidance/lnav/legs/DF';
 import { PILeg } from '@fmgc/guidance/lnav/legs/PI';
 import { TFLeg } from '@fmgc/guidance/lnav/legs/TF';
@@ -13,7 +13,6 @@ import { GuidanceParameters } from '@fmgc/guidance/ControlLaws';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { CILeg } from '@fmgc/guidance/lnav/legs/CI';
 import { arcDistanceToGo, arcGuidance, arcLength, maxBank, minBank } from '@fmgc/guidance/lnav/CommonGeometry';
-import { TurnDirection } from '@fmgc/types/fstypes/FSEnums';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { Geo } from '@fmgc/utils/Geo';
 import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
@@ -287,6 +286,14 @@ export class FixedRadiusTransition extends Transition {
         const [itp] = this.getTurningPoints();
 
         return arcDistanceToGo(ppos, itp, this.centre, this.sweepAngle);
+    }
+
+    getAlongTrackDistanceToGo(ppos: Coordinates, trueTrack: number): NauticalMiles | undefined {
+        if (this.revertTo) {
+            return this.revertTo.getAlongTrackDistanceToGo(ppos, trueTrack);
+        }
+
+        return this.getDistanceToGo(ppos);
     }
 
     getGuidanceParameters(ppos: LatLongAlt, trueTrack: number, tas: Knots, gs: Knots): GuidanceParameters | null {

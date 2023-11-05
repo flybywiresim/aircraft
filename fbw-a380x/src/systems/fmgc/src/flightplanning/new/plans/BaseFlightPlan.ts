@@ -15,7 +15,7 @@ import {
     ProcedureTransition,
     Runway,
     WaypointDescriptor,
-} from 'msfs-navdata';
+} from '@flybywiresim/fbw-sdk';
 import { OriginSegment } from '@fmgc/flightplanning/new/segments/OriginSegment';
 import { FlightPlanElement, FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { DepartureSegment } from '@fmgc/flightplanning/new/segments/DepartureSegment';
@@ -43,6 +43,7 @@ import { FlightPlanLegDefinition } from '@fmgc/flightplanning/new/legs/FlightPla
 import { PendingAirways } from '@fmgc/flightplanning/new/plans/PendingAirways';
 import { SerializedFlightPlanPerformanceData } from '@fmgc/flightplanning/new/plans/performance/FlightPlanPerformanceData';
 import { ReadonlyFlightPlan } from '@fmgc/flightplanning/new/plans/ReadonlyFlightPlan';
+import { AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
 
 export enum FlightPlanQueuedOperation {
     Restring,
@@ -63,6 +64,9 @@ export abstract class BaseFlightPlan implements ReadonlyFlightPlan {
         const subs = this.bus.getSubscriber<FlightPlanSyncEvents>();
 
         const isAlternatePlan = this instanceof AlternateFlightPlan;
+
+        // FIXME we need to destroy those subscriptions, this is a memory leak
+        // FIXME we should not be doing this here anyway...
 
         this.subscriptions.push(subs.on('flightPlan.setActiveLegIndex').handle((event) => {
             if (!this.ignoreSync) {
@@ -202,18 +206,14 @@ export abstract class BaseFlightPlan implements ReadonlyFlightPlan {
     sequence() {
         this.incrementVersion();
 
-        if (this.activeLegIndex + 1 >= this.firstMissedApproachLegIndex) {
+        if (this.activeLeg.isDiscontinuity === false && this.activeLeg.definition.approachWaypointDescriptor === ApproachWaypointDescriptor.MissedApproachPoint) {
             this.enrouteSegment.allLegs.length = 0;
 
-            const missedApproachPointLeg = this.approachSegment.allLegs[this.approachSegment.allLegs.length - 1];
-            const cloneMissedApproachPointLeg = missedApproachPointLeg.isDiscontinuity === false ? missedApproachPointLeg.clone(this.enrouteSegment) : missedApproachPointLeg;
+            const cloneMissedApproachPointLeg = this.activeLeg.clone(this.enrouteSegment);
             const clonedMissedApproachLegs = this.missedApproachSegment.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(this.enrouteSegment) : it));
 
-            if (cloneMissedApproachPointLeg.isDiscontinuity === false) {
-                cloneMissedApproachPointLeg.type = LegType.IF;
-
-                this.enrouteSegment.allLegs.push(cloneMissedApproachPointLeg);
-            }
+            cloneMissedApproachPointLeg.type = LegType.IF;
+            this.enrouteSegment.allLegs.push(cloneMissedApproachPointLeg);
             this.enrouteSegment.allLegs.push(...clonedMissedApproachLegs);
             this.enrouteSegment.allLegs.push({ isDiscontinuity: true });
             this.enrouteSegment.strung = true;
@@ -804,7 +804,7 @@ export abstract class BaseFlightPlan implements ReadonlyFlightPlan {
     glideslopeIntercept(): number | undefined {
         for (const leg of this.approachSegment.allLegs) {
             if (leg.isDiscontinuity === false
-                && leg.definition.approachWaypointDescriptor === ApproachWaypointDescriptor.FinalApproachCourseFix
+                && leg.definition.approachWaypointDescriptor === ApproachWaypointDescriptor.FinalApproachFix
                 && (leg.definition.altitudeDescriptor === AltitudeDescriptor.AtAlt1GsMslAlt2 || leg.definition.altitudeDescriptor === AltitudeDescriptor.AtOrAboveAlt1GsMslAlt2)) {
                 return leg.definition.altitude2;
             }
@@ -1063,6 +1063,55 @@ export abstract class BaseFlightPlan implements ReadonlyFlightPlan {
         this.syncLegDefinitionChange(index);
     }
 
+    setPilotEnteredAltitudeConstraintAt(index: number, isDescentConstraint: boolean, constraint?: AltitudeConstraint) {
+        const element = this.elementAt(index);
+
+        if (element.isDiscontinuity === true) {
+            return;
+        }
+
+        element.pilotEnteredAltitudeConstraint = constraint;
+        if (!constraint) {
+            element.definition.altitudeDescriptor = AltitudeDescriptor.None;
+            element.definition.altitude1 = undefined;
+            element.definition.altitude2 = undefined;
+        }
+
+        this.syncLegDefinitionChange(index);
+
+        if (isDescentConstraint) {
+            this.setFirstDesConstraintWaypoint(index);
+        } else {
+            this.setLastClbConstraintWaypoint(index);
+        }
+
+        this.incrementVersion();
+    }
+
+    setPilotEnteredSpeedConstraintAt(index: number, isDescentConstraint: boolean, constraint?: SpeedConstraint) {
+        const element = this.elementAt(index);
+
+        if (element.isDiscontinuity === true) {
+            return;
+        }
+
+        element.pilotEnteredSpeedConstraint = constraint;
+        if (!constraint) {
+            element.definition.speedDescriptor = undefined;
+            element.definition.speed = undefined;
+        }
+
+        this.syncLegDefinitionChange(index);
+
+        if (isDescentConstraint) {
+            this.setFirstDesConstraintWaypoint(index);
+        } else {
+            this.setLastClbConstraintWaypoint(index);
+        }
+
+        this.incrementVersion();
+    }
+
     setAltitudeDescriptionAt(index: number, value: AltitudeDescriptor) {
         const element = this.elementAt(index);
 
@@ -1086,10 +1135,12 @@ export abstract class BaseFlightPlan implements ReadonlyFlightPlan {
         element.definition.altitude1 = value;
         this.syncLegDefinitionChange(index);
 
-        if (isDescentConstraint && element.constraintType === WaypointConstraintType.Unknown) {
-            this.setFirstDesConstraintWaypoint(index);
-        } else {
-            this.setLastClbConstraintWaypoint(index);
+        if (element.constraintType === WaypointConstraintType.Unknown) {
+            if (isDescentConstraint) {
+                this.setFirstDesConstraintWaypoint(index);
+            } else {
+                this.setLastClbConstraintWaypoint(index);
+            }
         }
 
         this.incrementVersion();
@@ -1159,7 +1210,7 @@ export abstract class BaseFlightPlan implements ReadonlyFlightPlan {
     }
 
     private setLastClbConstraintWaypoint(index: number) {
-        for (let i = index; i >= 0; i--) {
+        for (let i = index; i >= (index >= this.firstMissedApproachLegIndex ? this.firstMissedApproachLegIndex : 0); i--) {
             const element = this.elementAt(i);
 
             if (element && element.isDiscontinuity === false) {
@@ -1169,7 +1220,7 @@ export abstract class BaseFlightPlan implements ReadonlyFlightPlan {
     }
 
     private setFirstDesConstraintWaypoint(index: number) {
-        for (let i = index; i < this.legCount; i++) {
+        for (let i = index; i < this.firstMissedApproachLegIndex; i++) {
             const element = this.elementAt(i);
 
             if (element && element.isDiscontinuity === false) {

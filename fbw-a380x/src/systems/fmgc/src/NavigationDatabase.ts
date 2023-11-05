@@ -9,12 +9,12 @@ import {
     Approach,
     ApproachType,
     Database,
-    ExternalBackend, Fix,
+    Fix,
     MsfsBackend,
     NdbNavaid,
     VhfNavaid,
     Waypoint,
-} from 'msfs-navdata';
+} from '@flybywiresim/fbw-sdk';
 
 /**
  * The backend for a navigation database
@@ -37,10 +37,8 @@ export class NavigationDatabase {
     ) {
         if (backend === NavigationDatabaseBackend.Msfs) {
             this.backendDatabase = new Database(new MsfsBackend() as any);
-        } else if (backend === NavigationDatabaseBackend.Navigraph) {
-            this.backendDatabase = new Database(new ExternalBackend('http://localhost:5000'));
         } else {
-            throw new Error('[FMS/DB] Cannot instantiate NavigationDatabase with backend other than \'Msfs\' or \'Navigraph\'');
+            throw new Error('[FMS/DB] Cannot instantiate NavigationDatabase with backend other than \'Msfs\'');
         }
     }
 
@@ -134,14 +132,6 @@ export class NavigationDatabase {
         default:
             return `???${suffix}`;
         }
-    }
-
-    static formatShortApproachIdent(approach: Approach): string {
-        const ident = this.formatLongApproachIdent(approach);
-        if (ident.startsWith('RNAV')) {
-            return `RNV${ident.substring(4)}`;
-        }
-        return ident;
     }
 
     static formatLongRunwayIdent(airportIdent: string, runwayIdent: string): string {

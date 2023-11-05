@@ -3,17 +3,12 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import fetch from 'node-fetch';
 import { loadSingleWaypoint } from '@fmgc/flightplanning/new/segments/enroute/WaypointLoading';
 import { loadAirwayLegs } from '@fmgc/flightplanning/new/segments/enroute/AirwayLoading';
 import { FlightPlan } from '@fmgc/flightplanning/new/plans/FlightPlan';
 import { FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { setupNavigraphDatabase } from '@fmgc/flightplanning/new/test/Database';
 import { emptyFlightPlan } from '@fmgc/flightplanning/new/test/FlightPlan';
-
-if (!globalThis.fetch) {
-    globalThis.fetch = fetch;
-}
 
 describe('an enroute segment', () => {
     beforeAll(() => {
@@ -40,9 +35,9 @@ describe('an enroute segment', () => {
         const e2 = segment.allLegs[2];
         expect(e2.isDiscontinuity).toBeFalsy();
 
-        expect((e0 as FlightPlanLeg).ident).toEqual('NOSUS');
-        expect((e1 as FlightPlanLeg).ident).toEqual('NAPEE');
-        expect((e2 as FlightPlanLeg).ident).toEqual('PBERG');
+        expect((e0 as FlightPlanLeg).ident).toBe('NOSUS');
+        expect((e1 as FlightPlanLeg).ident).toBe('NAPEE');
+        expect((e2 as FlightPlanLeg).ident).toBe('PBERG');
     });
 
     it('should insert airway', async () => {
@@ -60,7 +55,7 @@ describe('an enroute segment', () => {
 
         const endLeg = airwayLegs[airwayLegs.length - 1];
 
-        expect(endLeg.ident).toEqual('PONCT');
+        expect(endLeg.ident).toBe('PONCT');
 
         segment.insertLegs(...airwayLegs);
 

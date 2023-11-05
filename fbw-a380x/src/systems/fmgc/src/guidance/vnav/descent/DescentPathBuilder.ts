@@ -12,9 +12,9 @@ import { DescentStrategy, IdleDescentStrategy } from '@fmgc/guidance/vnav/descen
 import { StepResults } from '@fmgc/guidance/vnav/Predictions';
 import { HeadwindProfile } from '@fmgc/guidance/vnav/wind/HeadwindProfile';
 import { TemporaryCheckpointSequence } from '@fmgc/guidance/vnav/profile/TemporaryCheckpointSequence';
-import { AltitudeConstraint, AltitudeConstraintType } from '@fmgc/guidance/lnav/legs';
 import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { SpeedLimit } from '@fmgc/guidance/vnav/SpeedLimit';
+import { AltitudeConstraint, AltitudeConstraintType } from '@fmgc/flightplanning/data/constraint';
 
 export class DescentPathBuilder {
     private geometricPathBuilder: GeometricPathBuilder;

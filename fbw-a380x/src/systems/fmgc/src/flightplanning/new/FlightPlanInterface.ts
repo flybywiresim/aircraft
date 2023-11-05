@@ -3,13 +3,14 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { FpmConfig } from '@fmgc/flightplanning/new/FpmConfig';
-import { AltitudeDescriptor, Fix, Waypoint } from 'msfs-navdata';
+import { Fix, Waypoint } from '@flybywiresim/fbw-sdk';
 import { Coordinates, Degrees } from 'msfs-geo';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/new/legs/FlightPlanLegDefinition';
 import { FixInfoEntry } from '@fmgc/flightplanning/new/plans/FixInfo';
 import { FlightPlan } from '@fmgc/flightplanning/new/plans/FlightPlan';
 import { FlightPlanIndex } from '@fmgc/flightplanning/new/FlightPlanManager';
+import { AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
 
 /**
  * Interface for querying, modifying and creating flight plans.
@@ -220,11 +221,9 @@ export interface FlightPlanInterface {
 
     enableAltn(atIndexInAlternate: number, planIndex: number): Promise<void>;
 
-    setAltitudeDescriptionAt(atIndex: number, altDesc: AltitudeDescriptor, isDescentConstraint: boolean, planIndex?: FlightPlanIndex, alternate?: boolean): Promise<void>;
+    setPilotEnteredSpeedConstraintAt(atIndex: number, isDescentConstraint: boolean, constraint?: SpeedConstraint, planIndex?: FlightPlanIndex, alternate?: boolean): Promise<void>;
 
-    setAltitudeAt(atIndex: number, altitude: number, isDescentConstraint: boolean, planIndex?: FlightPlanIndex, alternate?: boolean): Promise<void>;
-
-    setSpeedAt(atIndex: number, speed: number, isDescentConstraint: boolean, planIndex?: FlightPlanIndex, alternate?: boolean): Promise<void>;
+    setPilotEnteredAltitudeConstraintAt(atIndex: number, isDescentConstraint: boolean, constraint?: AltitudeConstraint, planIndex?: FlightPlanIndex, alternate?: boolean): Promise<void>;
 
     addOrUpdateCruiseStep(atIndex: number, toAltitude: number, planIndex?: FlightPlanIndex): Promise<void>;
 

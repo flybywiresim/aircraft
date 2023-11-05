@@ -65,6 +65,11 @@ export class AircraftToDescentProfileRelation {
             return;
         }
 
+        if (!Number.isFinite(distanceToEnd)) {
+            this.invalidate();
+            return;
+        }
+
         this.distanceToEnd = distanceToEnd;
     }
 

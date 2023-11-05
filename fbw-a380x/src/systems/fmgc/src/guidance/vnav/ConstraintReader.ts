@@ -8,24 +8,12 @@ import {
     MaxAltitudeConstraint,
     MaxSpeedConstraint,
 } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
-import { Geometry } from '@fmgc/guidance/Geometry';
-import {
-    altitudeConstraintFromProcedureLeg,
-    AltitudeConstraintType,
-    pathAngleConstraintFromProcedureLeg,
-    speedConstraintFromProcedureLeg,
-} from '@fmgc/guidance/lnav/legs';
 import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
-import { IFLeg } from '@fmgc/guidance/lnav/legs/IF';
-import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
-import { PathCaptureTransition } from '@fmgc/guidance/lnav/transitions/PathCaptureTransition';
-import { FixedRadiusTransition } from '@fmgc/guidance/lnav/transitions/FixedRadiusTransition';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
-import { MathUtils } from '@flybywiresim/fbw-sdk';
+import { MathUtils, ApproachType, ApproachWaypointDescriptor } from '@flybywiresim/fbw-sdk';
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
-import { ApproachType, ApproachWaypointDescriptor, LegType } from 'msfs-navdata';
-import { distanceTo } from 'msfs-geo';
+import { AltitudeConstraintType } from '@fmgc/flightplanning/data/constraint';
 
 /**
  * This entire class essentially represents an interface to the flightplan.
@@ -43,15 +31,19 @@ export class ConstraintReader {
 
     public totalFlightPlanDistance = 0;
 
-    public readonly legDistancesToEnd: number[] = [];
+    public get distanceToEnd(): NauticalMiles {
+        if (VnavConfig.ALLOW_DEBUG_PARAMETER_INJECTION) {
+            return SimVar.GetSimVarValue('L:A32NX_FM_VNAV_DEBUG_DISTANCE_TO_END', 'nautical miles');
+        }
 
-    public distanceToEnd: NauticalMiles = 0;
+        return this.guidanceController.alongTrackDistanceToDestination;
+    }
 
     // If you change this property here, make sure you also reset it properly in `reset`
     public finalDescentAngle = -3;
 
     // If you change this property here, make sure you also reset it properly in `reset`
-    public fafDistanceToEnd = 1000 / Math.tan(-this.finalDescentAngle * MathUtils.DEGREES_TO_RADIANS) / 6076.12;
+    public fafDistanceToEnd = 1000 / Math.tan(-this.finalDescentAngle * MathUtils.DEGREES_TO_RADIANS) / MathUtils.DIV_FEET_TO_NAUTICAL_MILES;
 
     public get distanceToPresentPosition(): NauticalMiles {
         return this.totalFlightPlanDistance - this.distanceToEnd;
@@ -63,9 +55,9 @@ export class ConstraintReader {
         this.reset();
     }
 
-    updateGeometry(geometry: Geometry, ppos: LatLongAlt) {
+    updateFlightPlan() {
         this.reset();
-        this.updateDistancesToEnd(geometry);
+        this.updateDistancesToEnd();
 
         let maxSpeed = Infinity;
 
@@ -78,14 +70,15 @@ export class ConstraintReader {
                 continue;
             }
 
-            const legDistanceToEnd = this.legDistancesToEnd[i];
+            const legDistanceToEnd = leg.calculated?.cumulativeDistanceToEndWithTransitions ?? this.totalFlightPlanDistance;
+            const legDistanceFromStart = leg.calculated?.cumulativeDistanceWithTransitions ?? 0;
 
             if (leg.cruiseStep && !leg.cruiseStep.isIgnored) {
                 if (i >= plan.activeLegIndex) {
                     const { waypointIndex, toAltitude, distanceBeforeTermination } = leg.cruiseStep;
 
                     this.cruiseSteps.push({
-                        distanceFromStart: this.totalFlightPlanDistance - legDistanceToEnd - distanceBeforeTermination,
+                        distanceFromStart: legDistanceFromStart - distanceBeforeTermination,
                         toAltitude,
                         waypointIndex,
                         isIgnored: false,
@@ -97,28 +90,27 @@ export class ConstraintReader {
                 }
             }
 
-            const altConstraint = altitudeConstraintFromProcedureLeg(leg.definition);
-            const speedConstraint = speedConstraintFromProcedureLeg(leg.definition);
-            const pathAngleConstraint = pathAngleConstraintFromProcedureLeg(leg.definition);
+            const altConstraint = leg.altitudeConstraint;
+            const speedConstraint = leg.speedConstraint;
 
             if (leg.constraintType === WaypointConstraintType.CLB) {
                 if (altConstraint && altConstraint.type !== AltitudeConstraintType.atOrAbove) {
                     this.climbAlitudeConstraints.push({
-                        distanceFromStart: this.totalFlightPlanDistance - legDistanceToEnd,
+                        distanceFromStart: legDistanceFromStart,
                         maxAltitude: altConstraint.altitude1,
                     });
                 }
 
                 if (speedConstraint && speedConstraint.speed > 100) {
                     this.climbSpeedConstraints.push({
-                        distanceFromStart: this.totalFlightPlanDistance - legDistanceToEnd,
+                        distanceFromStart: legDistanceFromStart,
                         maxSpeed: speedConstraint.speed,
                     });
                 }
             } else if (leg.constraintType === WaypointConstraintType.DES) {
                 if (altConstraint) {
                     this.descentAltitudeConstraints.push({
-                        distanceFromStart: this.totalFlightPlanDistance - legDistanceToEnd,
+                        distanceFromStart: legDistanceFromStart,
                         constraint: altConstraint,
                     });
                 }
@@ -127,14 +119,14 @@ export class ConstraintReader {
                     maxSpeed = Math.min(maxSpeed, speedConstraint.speed);
 
                     this.descentSpeedConstraints.push({
-                        distanceFromStart: this.totalFlightPlanDistance - legDistanceToEnd,
+                        distanceFromStart: legDistanceFromStart,
                         maxSpeed,
                     });
                 }
             }
 
-            if (i === plan.destinationLegIndex && pathAngleConstraint) {
-                this.finalDescentAngle = pathAngleConstraint;
+            if (i === plan.destinationLegIndex && leg.definition.verticalAngle) {
+                this.finalDescentAngle = leg.definition.verticalAngle;
             }
 
             if (leg.definition.approachWaypointDescriptor === ApproachWaypointDescriptor.FinalApproachFix) {
@@ -143,62 +135,6 @@ export class ConstraintReader {
         }
 
         this.updateFinalAltitude();
-        this.updateDistanceToEnd(ppos);
-    }
-
-    public updateDistanceToEnd(ppos: LatLongAlt) {
-        if (VnavConfig.ALLOW_DEBUG_PARAMETER_INJECTION) {
-            this.distanceToEnd = SimVar.GetSimVarValue('L:A32NX_FM_VNAV_DEBUG_DISTANCE_TO_END', 'nautical miles');
-            return;
-        }
-
-        const geometry = this.guidanceController.activeGeometry;
-        const activeLegIndex = this.guidanceController.activeLegIndex;
-        const activeTransIndex = this.guidanceController.activeTransIndex;
-
-        const leg = geometry.legs.get(activeLegIndex);
-
-        const nextLeg = leg instanceof VMLeg
-            ? this.flightPlanService.active.maybeElementAt(activeLegIndex + 2)
-            : this.flightPlanService.active.maybeElementAt(activeLegIndex);
-        const nextLegDistanceToEnd = this.legDistancesToEnd[leg instanceof VMLeg ? activeLegIndex + 2 : activeLegIndex];
-
-        if (!leg || leg.isNull) {
-            return;
-        }
-
-        const inboundTransition = geometry.transitions.get(activeLegIndex - 1);
-        const outboundTransition = geometry.transitions.get(activeLegIndex);
-
-        const [_, legDistance, outboundLength] = Geometry.completeLegPathLengths(
-            leg, (inboundTransition?.isNull || !inboundTransition?.isComputed) ? null : inboundTransition, outboundTransition,
-        );
-
-        if (activeTransIndex === activeLegIndex) {
-            // On an outbound transition
-            // We subtract `outboundLength` because getDistanceToGo will include the entire distance while we only want the part that's on this leg.
-            // For a FixedRadiusTransition, there's also a part on the next leg.
-            this.distanceToEnd = outboundTransition.getDistanceToGo(ppos) - outboundLength + (nextLeg ? nextLegDistanceToEnd : 0);
-        } else if (activeTransIndex !== -1 && activeTransIndex === activeLegIndex - 1) {
-            // On an inbound transition
-            const trueTrack = SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree');
-
-            let transitionDistanceToGo = inboundTransition.getDistanceToGo(ppos);
-
-            if (inboundTransition instanceof PathCaptureTransition) {
-                transitionDistanceToGo = inboundTransition.getActualDistanceToGo(ppos, trueTrack);
-            } else if (inboundTransition instanceof FixedRadiusTransition && inboundTransition.isReverted) {
-                transitionDistanceToGo = inboundTransition.revertTo.getActualDistanceToGo(ppos, trueTrack);
-            }
-
-            this.distanceToEnd = transitionDistanceToGo + legDistance + outboundLength + (nextLeg ? nextLegDistanceToEnd : 0);
-        } else {
-            const distanceToGo = (leg instanceof VMLeg || leg instanceof IFLeg) && nextLeg && nextLeg.isDiscontinuity === false && nextLeg.isXF()
-                ? distanceTo(ppos, nextLeg.terminationWaypoint().location)
-                : leg.getDistanceToGo(ppos);
-
-            this.distanceToEnd = distanceToGo + outboundLength + (nextLeg ? nextLegDistanceToEnd : 0);
-        }
     }
 
     private updateFinalAltitude(): void {
@@ -210,7 +146,7 @@ export class ConstraintReader {
         if (approach && approach.type !== ApproachType.Unknown) {
             for (const leg of approach.legs) {
                 if (leg.approachWaypointDescriptor === ApproachWaypointDescriptor.MissedApproachPoint && Number.isFinite(leg.altitude1)) {
-                    this.finalAltitude = leg.altitude2;
+                    this.finalAltitude = leg.altitude1;
 
                     return;
                 }
@@ -247,58 +183,24 @@ export class ConstraintReader {
         this.cruiseSteps = [];
 
         this.totalFlightPlanDistance = 0;
-        this.distanceToEnd = 0;
         this.finalDescentAngle = -3;
-        this.fafDistanceToEnd = 1000 / Math.tan(-this.finalDescentAngle * MathUtils.DEGREES_TO_RADIANS) / 6076.12;
+        this.fafDistanceToEnd = 1000 / Math.tan(-this.finalDescentAngle * MathUtils.DEGREES_TO_RADIANS) / MathUtils.DIV_FEET_TO_NAUTICAL_MILES;
         this.finalAltitude = 50;
     }
 
-    private updateDistancesToEnd(geometry: Geometry) {
-        const { legs, transitions } = geometry;
-
+    private updateDistancesToEnd() {
         this.totalFlightPlanDistance = 0;
 
         const plan = this.flightPlanService.active;
 
-        for (let i = plan.firstMissedApproachLegIndex - 1; i >= plan.activeLegIndex - 1 && i >= 0; i--) {
-            const leg = legs.get(i);
-            const waypoint = plan.elementAt(i);
-            const nextWaypoint = plan.maybeElementAt(i + 1);
-            const nextNextWaypoint = plan.maybeElementAt(i + 2);
-
-            if (waypoint.isDiscontinuity === false && nextWaypoint?.isDiscontinuity === true && nextNextWaypoint?.isDiscontinuity === false) {
-                const startingPointOfDisco = !(waypoint.type !== LegType.VM && waypoint.type !== LegType.FM)
-                    ? legs.get(i - 1) // MANUAL
-                    : leg;
-
-                if (!startingPointOfDisco.isNull) {
-                    const termination = startingPointOfDisco.terminationWaypoint;
-
-                    if (termination) {
-                        const terminationPoint = 'ident' in termination ? termination.location : termination;
-
-                        this.totalFlightPlanDistance += distanceTo(terminationPoint, nextNextWaypoint.terminationWaypoint().location);
-                    }
-                }
-            }
-
-            this.legDistancesToEnd[i] = this.totalFlightPlanDistance;
-
-            if (!leg || leg.isNull) {
+        for (let i = Math.max(0, plan.activeLegIndex - 1); i < plan.firstMissedApproachLegIndex; i++) {
+            const leg = plan.maybeElementAt(i);
+            if (!leg || leg.isDiscontinuity === true || !leg.calculated) {
                 continue;
             }
 
-            const inboundTransition = transitions.get(i - 1);
-            const outboundTransition = transitions.get(i);
-
-            const [inboundLength, legDistance, outboundLength] = Geometry.completeLegPathLengths(
-                leg, (inboundTransition?.isNull || !inboundTransition?.isComputed) ? null : inboundTransition, outboundTransition,
-            );
-
-            const correctedInboundLength = Number.isNaN(inboundLength) ? 0 : inboundLength;
-            const totalLegLength = legDistance + correctedInboundLength + outboundLength;
-
-            this.totalFlightPlanDistance += totalLegLength;
+            this.totalFlightPlanDistance = leg.calculated.cumulativeDistanceToEndWithTransitions;
+            return;
         }
     }
 

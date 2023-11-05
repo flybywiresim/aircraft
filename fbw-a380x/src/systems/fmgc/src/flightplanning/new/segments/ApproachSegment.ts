@@ -3,12 +3,12 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Approach, Runway, WaypointDescriptor } from 'msfs-navdata';
+import { Approach, Runway, ApproachUtils } from '@flybywiresim/fbw-sdk';
 import { FlightPlanElement, FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { ProcedureSegment } from '@fmgc/flightplanning/new/segments/ProcedureSegment';
-import { ApproachUtils } from '@flybywiresim/fbw-sdk';
+import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
 import { NavigationDatabaseService } from '../NavigationDatabaseService';
 
 export class ApproachSegment extends ProcedureSegment<Approach> {
@@ -63,9 +63,11 @@ export class ApproachSegment extends ProcedureSegment<Approach> {
             return;
         }
 
-        const shortApproachName = ApproachUtils.shortApproachName(matchingProcedure.ident);
+        const shortApproachName = ApproachUtils.shortApproachName(matchingProcedure);
 
-        this.allLegs = this.createLegSet(matchingProcedure, matchingProcedure.legs.map((leg) => FlightPlanLeg.fromProcedureLeg(this, leg, shortApproachName)));
+        this.allLegs = this.createLegSet(matchingProcedure, matchingProcedure.legs.map(
+            (leg) => FlightPlanLeg.fromProcedureLeg(this, leg, shortApproachName, WaypointConstraintType.DES),
+        ));
         this.strung = false;
 
         // Set plan destination runway
@@ -76,7 +78,9 @@ export class ApproachSegment extends ProcedureSegment<Approach> {
             await this.flightPlan.destinationSegment.setDestinationRunway(procedureRunwayIdent.startsWith('R') ? procedureRunwayIdent : `RW${procedureRunwayIdent}`, true);
         }
 
-        const mappedMissedApproachLegs = matchingProcedure.missedLegs.map((leg) => FlightPlanLeg.fromProcedureLeg(this.flightPlan.missedApproachSegment, leg, shortApproachName));
+        const mappedMissedApproachLegs = matchingProcedure.missedLegs.map(
+            (leg) => FlightPlanLeg.fromProcedureLeg(this.flightPlan.missedApproachSegment, leg, shortApproachName, WaypointConstraintType.CLB),
+        );
         this.flightPlan.missedApproachSegment.setMissedApproachLegs(mappedMissedApproachLegs);
 
         // Clear flight plan approach via if the new approach is different
@@ -97,7 +101,7 @@ export class ApproachSegment extends ProcedureSegment<Approach> {
         const airport = this.flightPlan.destinationAirport;
         const runway = this.flightPlan.destinationRunway;
 
-        const shortApproachName = procedure ? ApproachUtils.shortApproachName(procedure.ident) : '';
+        const shortApproachName = procedure ? ApproachUtils.shortApproachName(procedure) : '';
 
         if (approachLegs.length === 0 && this.flightPlan.destinationAirport && this.flightPlan.destinationSegment.destinationRunway) {
             const cf = FlightPlanLeg.destinationExtendedCenterline(

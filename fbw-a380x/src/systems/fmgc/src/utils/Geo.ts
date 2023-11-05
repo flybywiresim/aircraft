@@ -83,7 +83,7 @@ export class Geo {
         const intersections1 = placeBearingIntersection(
             from,
             MathUtils.clampAngle(bearing),
-            'fix' in leg ? (leg as XFLeg).fix.location : leg.getPathEndPoint(),
+            leg instanceof XFLeg ? (leg as XFLeg).fix.location : leg.getPathEndPoint(),
             MathUtils.clampAngle(leg.outboundCourse - 180),
         );
 

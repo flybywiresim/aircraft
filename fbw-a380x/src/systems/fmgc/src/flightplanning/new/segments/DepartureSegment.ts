@@ -3,11 +3,12 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Departure } from 'msfs-navdata';
+import { Departure } from '@flybywiresim/fbw-sdk';
 import { FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 import { ProcedureSegment } from '@fmgc/flightplanning/new/segments/ProcedureSegment';
+import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
 import { NavigationDatabaseService } from '../NavigationDatabaseService';
 
 export class DepartureSegment extends ProcedureSegment<Departure> {
@@ -61,7 +62,7 @@ export class DepartureSegment extends ProcedureSegment<Departure> {
             return;
         }
 
-        this.allLegs = matchingProcedure.commonLegs.map((leg) => FlightPlanLeg.fromProcedureLeg(this, leg, matchingProcedure.ident));
+        this.allLegs = matchingProcedure.commonLegs.map((leg) => FlightPlanLeg.fromProcedureLeg(this, leg, matchingProcedure.ident, WaypointConstraintType.CLB));
         this.strung = false;
 
         await this.flightPlan.departureRunwayTransitionSegment.setProcedure(this.flightPlan.originRunway.ident);

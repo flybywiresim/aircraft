@@ -22,4 +22,6 @@
  * SOFTWARE.
  */
 
-declare const LZUTF8;
+import { SegmentType } from './flightplanning/FlightPlanSegment';
+
+export { SegmentType };

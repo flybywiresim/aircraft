@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ControlLaw, LateralMode, VerticalMode } from '@shared/autopilot';
-import { MathUtils } from '@flybywiresim/fbw-sdk';
+import { MathUtils, TurnDirection } from '@flybywiresim/fbw-sdk';
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
@@ -13,7 +13,6 @@ import { Transition } from '@fmgc/guidance/lnav/Transition';
 import { FixedRadiusTransition } from '@fmgc/guidance/lnav/transitions/FixedRadiusTransition';
 import { PathCaptureTransition } from '@fmgc/guidance/lnav/transitions/PathCaptureTransition';
 import { CourseCaptureTransition } from '@fmgc/guidance/lnav/transitions/CourseCaptureTransition';
-import { TurnDirection } from '@fmgc/types/fstypes/FSEnums';
 import { GuidanceConstants } from '@fmgc/guidance/GuidanceConstants';
 import { VMLeg } from '@fmgc/guidance/lnav/legs/VM';
 import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
@@ -80,15 +79,24 @@ export class LnavDriver implements GuidanceComponent {
     update(_: number): void {
         let available = false;
 
+        // TODO FIXME: Use FM position
         this.ppos.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude');
         this.ppos.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude');
 
-        const geometry = this.guidanceController.activeGeometry;
+        const trueTrack = SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree');
 
+        const geometry = this.guidanceController.activeGeometry;
         const activeLegIdx = this.guidanceController.activeLegIndex;
 
         if (geometry && geometry.legs.size > 0) {
             const dtg = geometry.getDistanceToGo(this.guidanceController.activeLegIndex, this.ppos);
+
+            const activeLegAlongTrackCompletePathDtg = this.computeAlongTrackDistanceToGo(geometry, activeLegIdx, trueTrack);
+            if (activeLegAlongTrackCompletePathDtg === undefined && this.guidanceController.activeLegAlongTrackCompletePathDtg !== undefined) {
+                console.log('[FMS/LNAV] No reference leg found to compute alongTrackDistanceToGo');
+            }
+
+            this.guidanceController.activeLegAlongTrackCompletePathDtg = activeLegAlongTrackCompletePathDtg;
 
             const inboundTrans = geometry.transitions.get(activeLegIdx - 1);
             const activeLeg = geometry.legs.get(activeLegIdx);
@@ -164,10 +172,6 @@ export class LnavDriver implements GuidanceComponent {
             }
 
             // Leg sequencing
-
-            // TODO FIXME: Use FM position
-
-            const trueTrack = SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree');
 
             // this is not the correct groundspeed to use, but it will suffice for now
             const tas = SimVar.GetSimVarValue('AIRSPEED TRUE', 'Knots');
@@ -397,6 +401,40 @@ export class LnavDriver implements GuidanceComponent {
             this.lastPhi = null;
             this.turnState = LnavTurnState.Normal;
         }
+    }
+
+    /**
+     *
+     * @param geometry active geometry
+     * @param activeLegIdx index of active leg in the geometry
+     * @param trueTrack true track of the aircraft
+     * @returns distance to go along the active leg
+     */
+    private computeAlongTrackDistanceToGo(geometry: Geometry, activeLegIdx: number, trueTrack: DegreesTrue): NauticalMiles {
+        // Iterate over the upcoming legs until we find one that has a distance to go.
+        // If we sequence a discontinuity for example, there is no geometry leg for the active leg, so we iterate downpath until we find one.
+        // This will typically be an IF leg
+        for (let i = activeLegIdx ?? 0; geometry.legs.has(i) || geometry.legs.has(i + 1); i++) {
+            const leg = geometry.legs.get(i);
+            if (!leg || leg instanceof VMLeg) {
+                continue;
+            }
+
+            const inboundTrans = geometry.transitions.get(i - 1);
+            const outboundTrans = geometry.transitions.get(i);
+
+            const completeLegAlongTrackPathDtg = Geometry.completeLegAlongTrackPathDistanceToGo(
+                this.ppos,
+                trueTrack,
+                leg,
+                inboundTrans,
+                outboundTrans,
+            );
+
+            return completeLegAlongTrackPathDtg;
+        }
+
+        return undefined;
     }
 
     /**

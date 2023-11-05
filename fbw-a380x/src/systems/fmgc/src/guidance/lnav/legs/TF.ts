@@ -4,17 +4,16 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { GuidanceParameters } from '@fmgc/guidance/ControlLaws';
-import { MathUtils } from '@flybywiresim/fbw-sdk';
-import { AltitudeConstraint, SpeedConstraint } from '@fmgc/guidance/lnav/legs';
+import { MathUtils, Waypoint, WaypointDescriptor } from '@flybywiresim/fbw-sdk';
 import { SegmentType } from '@fmgc/wtsdk';
 import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { XFLeg } from '@fmgc/guidance/lnav/legs/XF';
 import { courseToFixDistanceToGo, fixToFixGuidance, getIntermediatePoint } from '@fmgc/guidance/lnav/CommonGeometry';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
-import { Waypoint, WaypointDescriptor } from 'msfs-navdata';
 import { bearingTo, distanceTo } from 'msfs-geo';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
+import { AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
 import { PathVector, PathVectorType } from '../PathVector';
 
 export class TFLeg extends XFLeg {
@@ -24,8 +23,10 @@ export class TFLeg extends XFLeg {
 
     private computedPath: PathVector[] = [];
 
+    // TODO: Figure out what this is for
     altitudeConstraint: AltitudeConstraint | undefined
 
+    // TODO: Figure out what this is for
     speedConstraint: SpeedConstraint | undefined
 
     constructor(

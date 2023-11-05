@@ -9,7 +9,7 @@ import { BaseFlightPlan } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { Transition } from '@fmgc/guidance/lnav/Transition';
 import { FlightPlanElement, FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
-import { LegType } from 'msfs-navdata';
+import { LegType } from '@flybywiresim/fbw-sdk';
 import { TFLeg } from '@fmgc/guidance/lnav/legs/TF';
 import { SegmentType } from '@fmgc/flightplanning/FlightPlanSegment';
 import { IFLeg } from '@fmgc/guidance/lnav/legs/IF';
@@ -145,7 +145,7 @@ export namespace GeometryFactory {
                 const prevLeg = geometry.legs.get(i - 1);
 
                 const oldInboundTransition = geometry.transitions.get(i - 1);
-                const newInboundTransition = prevLeg && newLeg && TransitionPicker.forLegs(prevLeg, newLeg);
+                const newInboundTransition = TransitionPicker.forLegs(prevLeg, newLeg);
 
                 const transitionsMatch = oldInboundTransition?.repr === newInboundTransition?.repr;
 

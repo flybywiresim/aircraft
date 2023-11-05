@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Airway, AirwayDirection, Fix, Waypoint } from 'msfs-navdata';
+import { Airway, AirwayDirection, Fix, Waypoint } from '@flybywiresim/fbw-sdk';
 import { FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 import { EnrouteSegment } from '@fmgc/flightplanning/new/segments/EnrouteSegment';
@@ -81,7 +81,7 @@ export class PendingAirways {
                     taiLElement.to = matchInCurrent;
                     taiLElement.isAutoConnected = true;
 
-                    const reversed = i + 1 < taiLElement.fromIndex;
+                    const reversed = i + 1 <= taiLElement.fromIndex;
                     const fixesArray = reversed ? taiLElement.airway.fixes.slice().reverse() : taiLElement.airway.fixes;
 
                     let start;
@@ -153,7 +153,7 @@ export class PendingAirways {
             return false;
         }
 
-        const reversed = endWaypointIndex + 1 < taiLElement.fromIndex;
+        const reversed = endWaypointIndex + 1 <= taiLElement.fromIndex;
         const fixesArray = reversed ? taiLElement.airway.fixes.slice().reverse() : taiLElement.airway.fixes;
 
         let start;
