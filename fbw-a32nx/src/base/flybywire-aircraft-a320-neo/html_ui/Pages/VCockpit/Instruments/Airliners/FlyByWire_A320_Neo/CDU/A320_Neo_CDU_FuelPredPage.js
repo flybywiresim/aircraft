@@ -269,12 +269,12 @@ class CDUFuelPredPage {
             [""],
             [altIdentCell + "[color]green", altEFOBCell + altEFOBCellColor, altTimeCell + altTimeCellColor],
             ["RTE RSV/%", "ZFW/ZFWCG"],
-            [rteRsvWeightCell + rteRsvPctColor + "/" + rteRsvPercentCell + "{end}" + rteRSvCellColor, zfwCell + "/" + zfwCgCell + zfwColor],
-            ["ALTN\xa0\xa0/TIME", "FOB{sp}{sp}{sp}{sp}{sp}"],
-            [altFuelCell + altTimeColor + "/" + altFuelTimeCell + "{end}" + altFuelColor, fobCell + "/" + fobOtherCell + "{sp}{sp}" + fobCellColor],
-            ["FINAL\xa0/TIME", "GW/{sp}{sp} CG"],
-            [finalFuelCell + "/" + finalTimeCell + finalColor, gwCell + "/  " + cgCell + gwCgCellColor],
-            ["MIN DEST FOB", "EXTRA TIME"],
+            [rteRsvWeightCell + rteRsvPctColor + "/" + rteRsvPercentCell + "{end}" + rteRSvCellColor, zfwCell + "/" + zfwCgCell + "{sp}" + zfwColor],
+            ["ALTN\xa0/TIME", "FOB{sp}{sp}{sp}{sp}{sp}{sp}"],
+            [altFuelCell + altTimeColor + "/" + altFuelTimeCell + "{end}" + altFuelColor, fobCell + "/" + fobOtherCell + "{sp}{sp}{sp}" + fobCellColor],
+            ["FINAL/TIME", "GW/{sp}{sp} CG"],
+            [finalFuelCell + "/" + finalTimeCell + finalColor, gwCell + "/ " + cgCell + gwCgCellColor],
+            ["MIN DEST FOB", "EXTRA/TIME"],
             [minDestFobCell + minDestFobCellColor, extraFuelCell + extraTimeColor + "/" + extraTimeCell + "{end}" + extraCellColor]
         ]);
 
