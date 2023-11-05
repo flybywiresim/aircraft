@@ -352,7 +352,7 @@
           </Test>
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_FUEL_MODE">
-         <CheckpointDesc SubjectTT="TT:Fuel Mode Selector" ExpectationTT="TT:MANUAL" />
+         <CheckpointDesc SubjectTT="TT:Fuel Mode Selector" ExpectationTT="TT:CHECK AUTO" />
       </Checkpoint>
       <Checkpoint Id="A320_CPREP1_FUEL_PUMPS">
          <CheckpointDesc SubjectTT="TT:Fuel Pumps" ExpectationTT="TT:CHECK" />
