@@ -1,14 +1,13 @@
 // Copyright (c) 2021-2023 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { GenericDataListenerSync, MathUtils } from '@flybywiresim/fbw-sdk';
+import { GenericDataListenerSync, MathUtils, Airport, LegType, Runway, RunwaySurfaceType, VhfNavaidType, WaypointDescriptor } from '@flybywiresim/fbw-sdk';
 import { EfisOption, EfisNdMode, NdSymbol, NdSymbolTypeFlags, rangeSettings, EfisNdRangeValue } from '@shared/NavigationDisplay';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { bearingTo, distanceTo } from 'msfs-geo';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
-import { Airport, AltitudeDescriptor, LegType, Runway, RunwaySurfaceType, VhfNavaidType, WaypointDescriptor } from 'msfs-navdata';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { NavigationDatabase } from '@fmgc/NavigationDatabase';
 import { FlightPlan } from '@fmgc/flightplanning/new/plans/FlightPlan';
@@ -22,14 +21,8 @@ import { FmgcFlightPhase } from '@shared/flightphase';
 import { FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
-
-const VALID_ALTITUDE_CONSTRAINT_TYPES_FOR_EFIS = [
-    AltitudeDescriptor.AtAlt1,
-    AltitudeDescriptor.AtOrAboveAlt1,
-    AltitudeDescriptor.AtOrBelowAlt1,
-    AltitudeDescriptor.BetweenAlt1Alt2,
-    AltitudeDescriptor.AtOrAboveAlt2,
-];
+import { AltitudeConstraintType } from '@fmgc/flightplanning/data/constraint';
+import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 
 export class EfisSymbols {
     private blockUpdate = false;
@@ -223,7 +216,8 @@ export class EfisSymbols {
                 if (DEBUG) {
                     console.time(`upsert symbol ${symbol.databaseId}`);
                 }
-                const symbolIdx = symbols.findIndex((s) => s.databaseId === symbol.databaseId);
+                // for symbols with no databaseId, we don't bother trying to de-duplicate as we cannot do it safely
+                const symbolIdx = symbol.databaseId ? symbols.findIndex((s) => s.databaseId === symbol.databaseId) : -1;
                 if (symbolIdx !== -1) {
                     const oldSymbol = symbols.splice(symbolIdx, 1)[0];
                     symbol.constraints = symbol.constraints ?? oldSymbol.constraints;
@@ -301,10 +295,8 @@ export class EfisSymbols {
             }
 
             const formatConstraintAlt = (alt: number, descent: boolean, prefix: string = '') => {
-                // const transAlt = activeFp?.originTransitionAltitudePilot ?? activeFp?.originTransitionAltitudeDb;
-                // const transFl = activeFp?.destinationTransitionLevelPilot ?? activeFp?.destinationTransitionLevelDb;
-                const transAlt = 18_000;
-                const transFl = 180;
+                const transAlt = this.flightPlanService.active?.performanceData.transitionAltitude.get();
+                const transFl = this.flightPlanService.active?.performanceData.transitionLevel.get();
 
                 if (descent) {
                     const fl = Math.round(alt / 100);
@@ -472,6 +464,7 @@ export class EfisSymbols {
         formatConstraintSpeed: (speed: number, prefix?: string) => string,
     ): NdSymbol[] {
         const isInLatAutoControl = this.guidanceController.vnavDriver.isLatAutoControlActive();
+        const isLatAutoControlArmed = this.guidanceController.vnavDriver.isLatAutoControlArmedWithIntercept();
         const waypointPredictions = this.guidanceController.vnavDriver.mcduProfile?.waypointPredictions;
         const isSelectedVerticalModeActive = this.guidanceController.vnavDriver.isSelectedVerticalModeActive();
         const flightPhase = getFlightPhaseManager().phase;
@@ -563,11 +556,13 @@ export class EfisSymbols {
                 continue;
             }
 
-            if (isInLatAutoControl && !isFromLeg && VALID_ALTITUDE_CONSTRAINT_TYPES_FOR_EFIS.includes(leg.definition.altitudeDescriptor)) {
-                if (!isSelectedVerticalModeActive && shouldShowConstraintCircleInPhase(flightPhase, leg)) {
+            const altConstraint = leg.altitudeConstraint;
+
+            if ((isInLatAutoControl || isLatAutoControlArmed) && !isFromLeg && altConstraint && shouldShowConstraintCircleInPhase(flightPhase, leg)) {
+                if (!isSelectedVerticalModeActive) {
                     type |= NdSymbolTypeFlags.Constraint;
 
-                    const predictionAtWaypoint = waypointPredictions.get(i);
+                    const predictionAtWaypoint = waypointPredictions?.get(i);
 
                     if (predictionAtWaypoint?.isAltitudeConstraintMet) {
                         type |= NdSymbolTypeFlags.MagentaColor;
@@ -579,30 +574,37 @@ export class EfisSymbols {
                 }
             }
 
-            if (efisOption === EfisOption.Constraints) {
-                const descent = leg.segment.class === SegmentClass.Arrival;
-                switch (leg.definition.altitudeDescriptor) {
-                case AltitudeDescriptor.AtAlt1:
-                    constraints.push(formatConstraintAlt(leg.definition.altitude1, descent));
+            if (efisOption === EfisOption.Constraints && !isFromLeg) {
+                const descent = leg.constraintType === WaypointConstraintType.DES;
+                switch (altConstraint?.type) {
+                case AltitudeConstraintType.at:
+                    constraints.push(formatConstraintAlt(altConstraint.altitude1, descent));
                     break;
-                case AltitudeDescriptor.AtOrAboveAlt1:
-                    constraints.push(formatConstraintAlt(leg.definition.altitude1, descent, '+'));
+                case AltitudeConstraintType.atOrAbove:
+                    constraints.push(formatConstraintAlt(altConstraint.altitude1, descent, '+'));
                     break;
-                case AltitudeDescriptor.AtOrBelowAlt1:
-                    constraints.push(formatConstraintAlt(leg.definition.altitude1, descent, '-'));
+                case AltitudeConstraintType.atOrBelow:
+                    constraints.push(formatConstraintAlt(altConstraint.altitude1, descent, '-'));
                     break;
-                case AltitudeDescriptor.BetweenAlt1Alt2:
-                    constraints.push(formatConstraintAlt(leg.definition.altitude1, descent, '-'));
-                    constraints.push(formatConstraintAlt(leg.definition.altitude2, descent, '+'));
+                case AltitudeConstraintType.range:
+                    constraints.push(formatConstraintAlt(altConstraint.altitude1, descent, '-'));
+                    constraints.push(formatConstraintAlt(altConstraint.altitude2, descent, '+'));
                     break;
                 default:
-                    // FIXME do the rest
+                    // No constraint
                     break;
                 }
 
-                if (leg.definition.speed > 0) {
-                    constraints.push(formatConstraintSpeed(leg.definition.speed));
+                const speedConstraint = leg.speedConstraint;
+
+                if (speedConstraint) {
+                    constraints.push(formatConstraintSpeed(speedConstraint.speed));
                 }
+            }
+
+            if (VnavConfig.DEBUG_GUIDANCE && leg.calculated) {
+                constraints.push(`${Math.round(leg.calculated.cumulativeDistanceWithTransitions)}NM`);
+                constraints.push(`${Math.round(leg.calculated.cumulativeDistanceToEndWithTransitions)}NM`);
             }
 
             ret.push({
@@ -613,6 +615,20 @@ export class EfisSymbols {
                 constraints: constraints.length > 0 ? constraints : undefined,
                 direction,
             });
+        }
+
+        // we can only send 2 constraint predictions, so filter out any past the 2 close to the AC
+        let constraintPredictions = 0;
+        const constraintFlags = NdSymbolTypeFlags.Constraint | NdSymbolTypeFlags.MagentaColor | NdSymbolTypeFlags.AmberColor;
+        for (let i = ret.length - 1; i >= 0; i--) {
+            if ((ret[i].type & constraintFlags) === 0) {
+                continue;
+            }
+            if (constraintPredictions >= 2) {
+                ret[i].type &= ~constraintFlags;
+            } else {
+                constraintPredictions++;
+            }
         }
 
         // FP airports/runways
@@ -752,7 +768,7 @@ export class EfisSymbols {
 }
 
 const shouldShowConstraintCircleInPhase = (phase: FmgcFlightPhase, leg: FlightPlanLeg) => (
-    (phase === FmgcFlightPhase.Takeoff || phase === FmgcFlightPhase.Climb) && leg.constraintType === WaypointConstraintType.CLB
+    (phase <= FmgcFlightPhase.Climb) && leg.constraintType === WaypointConstraintType.CLB
 ) || (
     (phase === FmgcFlightPhase.Cruise || phase === FmgcFlightPhase.Descent || phase === FmgcFlightPhase.Approach) && leg.constraintType === WaypointConstraintType.DES
 );

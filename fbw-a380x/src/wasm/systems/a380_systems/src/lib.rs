@@ -1,6 +1,7 @@
 extern crate systems;
 
 mod air_conditioning;
+mod airframe;
 mod avionics_data_communication_network;
 mod control_display_system;
 mod electrical;
@@ -8,8 +9,10 @@ mod fuel;
 pub mod hydraulic;
 mod icing;
 mod navigation;
+mod payload;
 mod pneumatic;
 mod power_consumption;
+mod structural_flex;
 
 use self::{
     air_conditioning::{A380AirConditioning, A380PressurizationOverheadPanel},
@@ -17,14 +20,18 @@ use self::{
     control_display_system::A380ControlDisplaySystem,
     fuel::A380Fuel,
     pneumatic::{A380Pneumatic, A380PneumaticOverheadPanel},
+    structural_flex::A380StructuralFlex,
 };
+use airframe::A380Airframe;
 use electrical::{
     A380Electrical, A380ElectricalOverheadPanel, A380EmergencyElectricalOverheadPanel,
     APU_START_MOTOR_BUS_TYPE,
 };
+use fuel::FuelLevel;
 use hydraulic::{A380Hydraulic, A380HydraulicOverheadPanel};
 use icing::Icing;
 use navigation::A380RadioAltimeters;
+use payload::A380Payload;
 use power_consumption::A380PowerConsumption;
 use uom::si::{f64::Length, length::nautical_mile};
 
@@ -35,7 +42,6 @@ use systems::{
         AuxiliaryPowerUnitFireOverheadPanel, AuxiliaryPowerUnitOverheadPanel,
     },
     electrical::{Electricity, ElectricitySource, ExternalPowerSource},
-    engine::engine_wing_flex::EnginesFlexiblePhysics,
     engine::{trent_engine::TrentEngine, EngineFireOverheadPanel},
     enhanced_gpwc::EnhancedGroundProximityWarningComputer,
     hydraulic::brake_circuit::AutobrakePanel,
@@ -47,7 +53,6 @@ use systems::{
     simulation::{
         Aircraft, InitContext, SimulationElement, SimulationElementVisitor, UpdateContext,
     },
-    structural_flex::elevator_flex::FlexibleElevators,
 };
 
 pub struct A380 {
@@ -62,6 +67,8 @@ pub struct A380 {
     pressurization_overhead: A380PressurizationOverheadPanel,
     electrical_overhead: A380ElectricalOverheadPanel,
     emergency_electrical_overhead: A380EmergencyElectricalOverheadPanel,
+    payload: A380Payload,
+    airframe: A380Airframe,
     fuel: A380Fuel,
     engine_1: TrentEngine,
     engine_2: TrentEngine,
@@ -78,11 +85,10 @@ pub struct A380 {
     landing_gear: LandingGear,
     pneumatic: A380Pneumatic,
     radio_altimeters: A380RadioAltimeters,
-    engines_flex_physics: EnginesFlexiblePhysics<4>,
-    elevators_flex_physics: FlexibleElevators,
     cds: A380ControlDisplaySystem,
     egpwc: EnhancedGroundProximityWarningComputer,
     icing_simulation: Icing,
+    structural_flex: A380StructuralFlex,
 }
 impl A380 {
     pub fn new(context: &mut InitContext) -> A380 {
@@ -103,6 +109,8 @@ impl A380 {
             pressurization_overhead: A380PressurizationOverheadPanel::new(context),
             electrical_overhead: A380ElectricalOverheadPanel::new(context),
             emergency_electrical_overhead: A380EmergencyElectricalOverheadPanel::new(context),
+            payload: A380Payload::new(context),
+            airframe: A380Airframe::new(context),
             fuel: A380Fuel::new(context),
             engine_1: TrentEngine::new(context, 1),
             engine_2: TrentEngine::new(context, 2),
@@ -123,8 +131,6 @@ impl A380 {
             landing_gear: LandingGear::new(context),
             pneumatic: A380Pneumatic::new(context),
             radio_altimeters: A380RadioAltimeters::new(context),
-            engines_flex_physics: EnginesFlexiblePhysics::new(context),
-            elevators_flex_physics: FlexibleElevators::new(context),
             cds: A380ControlDisplaySystem::new(context),
             egpwc: EnhancedGroundProximityWarningComputer::new(
                 context,
@@ -143,6 +149,7 @@ impl A380 {
             ),
 
             icing_simulation: Icing::new(context),
+            structural_flex: A380StructuralFlex::new(context),
         }
     }
 }
@@ -165,7 +172,7 @@ impl Aircraft for A380 {
                 && !(self.electrical_overhead.external_power_is_on(1)
                     && self.electrical_overhead.external_power_is_available(1)),
             self.pneumatic.apu_bleed_air_valve(),
-            self.fuel.left_inner_tank_has_fuel_remaining(),
+            self.fuel.feed_one_tank_has_fuel(),
         );
 
         self.electrical.update(
@@ -190,6 +197,9 @@ impl Aircraft for A380 {
             .update_after_electrical(&self.electrical, electricity);
         self.emergency_electrical_overhead
             .update_after_electrical(context, &self.electrical);
+        self.payload.update(context);
+        self.airframe
+            .update(&self.fuel, &self.payload, &self.payload);
     }
 
     fn update_after_power_distribution(&mut self, context: &UpdateContext) {
@@ -252,6 +262,7 @@ impl Aircraft for A380 {
         self.air_conditioning.update(
             context,
             &self.adirs,
+            &self.hydraulic,
             &self.adcn,
             [
                 &self.engine_1,
@@ -266,14 +277,19 @@ impl Aircraft for A380 {
             [self.lgcius.lgciu1(), self.lgcius.lgciu2()],
         );
 
-        self.engines_flex_physics.update(context);
-        self.elevators_flex_physics.update(
+        self.cds.update();
+
+        self.egpwc.update(&self.adirs, self.lgcius.lgciu1());
+
+        self.structural_flex.update(
             context,
             [
                 self.hydraulic.left_elevator_aero_torques(),
                 self.hydraulic.right_elevator_aero_torques(),
             ],
             self.hydraulic.up_down_rudder_aero_torques(),
+            &self.hydraulic,
+            &self.fuel,
         );
         self.cds.update();
 
@@ -294,6 +310,8 @@ impl SimulationElement for A380 {
         self.electrical_overhead.accept(visitor);
         self.emergency_electrical_overhead.accept(visitor);
         self.fuel.accept(visitor);
+        self.payload.accept(visitor);
+        self.airframe.accept(visitor);
         self.pneumatic_overhead.accept(visitor);
         self.pressurization_overhead.accept(visitor);
         self.engine_1.accept(visitor);
@@ -311,11 +329,10 @@ impl SimulationElement for A380 {
         self.hydraulic_overhead.accept(visitor);
         self.landing_gear.accept(visitor);
         self.pneumatic.accept(visitor);
-        self.elevators_flex_physics.accept(visitor);
-        self.engines_flex_physics.accept(visitor);
         self.cds.accept(visitor);
         self.egpwc.accept(visitor);
         self.icing_simulation.accept(visitor);
+        self.structural_flex.accept(visitor);
 
         visitor.visit(self);
     }

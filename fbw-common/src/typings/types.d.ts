@@ -5,6 +5,7 @@ import { FlightPhaseManager as FlightPhaseManager_ } from "../../../fbw-a32nx/sr
 import { WaypointFactory as WaypointFactory_ } from "../../../fbw-a32nx/src/systems/fmgc/src";
 import { WaypointEntryUtils as WaypointEntryUtils_ } from "../../../fbw-a32nx/src/systems/fmgc/src";
 import { SimBriefUplinkAdapter as SimBriefUplinkAdapter_ } from "../../../fbw-a32nx/src/systems/fmgc/src";
+import { ApproachUtils as ApproachUtils_ } from "../../../fbw-a32nx/src/systems/fmgc/src";
 
 declare global {
     type NauticalMiles = number;
@@ -13,6 +14,7 @@ declare global {
     type Latitude = number;
     type Longitude = number;
     type Feet = number;
+    type FlightLevel = number;
     type Knots = number;
     type FeetPerMinute = number;
     type Metres = number;
@@ -36,6 +38,14 @@ declare global {
     type InchesOfMercury = number;
     type Millibar = number;
     type PressurePerSquareInch = number;
+
+    namespace Facilities {
+        function getMagVar(lat: Degrees, long: Degrees): Degrees;
+    }
+
+    const process: {
+        env: Record<string, string | undefined>
+    }
 
     interface Window {
         /**
@@ -75,7 +85,6 @@ declare global {
 
         function getFlightPhaseManager(): FlightPhaseManager_
     }
-
 }
 
 export {};

@@ -37,6 +37,7 @@
 # Project folders
 
 /fbw-a32nx/*
+/fbw-a32nx/.env.local
 !/fbw-a32nx/README.md
 !/fbw-a32nx/mach.config.js
 !/fbw-a32nx/.env
@@ -60,6 +61,7 @@
 /fbw-a32nx/src/wasm/systems/a320_pneumatic_simulation_graph_data/*.txt
 
 /fbw-a380x/*
+/fbw-a380x/.env.local
 !/fbw-a380x/README.md
 !/fbw-a380x/mach.config.js
 !/fbw-a380x/.env
@@ -81,6 +83,8 @@
 /fbw-ingamepanels-checklist-fix/out
 
 !/scripts/**
+
+!/build-utils.js
 
 !/tools/**
 /tools/fdr2csv/*.exe

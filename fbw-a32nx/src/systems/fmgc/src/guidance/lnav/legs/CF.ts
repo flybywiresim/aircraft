@@ -12,10 +12,9 @@ import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { Transition } from '@fmgc/guidance/lnav/Transition';
 import { DmeArcTransition } from '@fmgc/guidance/lnav/transitions/DmeArcTransition';
 import { placeBearingDistance, placeBearingIntersection } from 'msfs-geo';
-import { Waypoint } from 'msfs-navdata';
+import { Waypoint, MathUtils } from '@flybywiresim/fbw-sdk';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
 import { IFLeg } from '@fmgc/guidance/lnav/legs/IF';
-import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { PathVector, PathVectorType } from '../PathVector';
 import { FixedRadiusTransition } from '../transitions/FixedRadiusTransition';
 

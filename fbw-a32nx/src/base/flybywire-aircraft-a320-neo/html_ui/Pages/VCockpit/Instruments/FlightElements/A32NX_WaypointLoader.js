@@ -193,7 +193,6 @@ class FacilityLoader {
                     });
             case 'R':
                 const airportIcao = `A      ${icao.substring(3, 7)}`;
-                console.log(airportIcao);
                 return new Promise((resolve) => {
                     this.getAirportData(airportIcao).then((airport) => {
                         resolve(this.createRunwayFromAirport(icao, airport));
@@ -1276,7 +1275,7 @@ class FacilityLoader {
     /** @param {string} icao */
     loadRunwayCfFix(icao) {
         return new Promise((resolve, reject) => {
-            const airportIdent = icao.substring(3, 7);
+            const airportIdent = WayPoint.formatIdentFromIcao(rawAirport.icao);
             const airportIcao = `A      ${airportIdent} `;
             const runwayDesignation = icao.substring(9, 12).trim();
             this.getFacilityRaw(airportIcao).then((rawAirport) => {

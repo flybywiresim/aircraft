@@ -8,8 +8,9 @@ import {
     LegType,
     SpeedDescriptor,
     TurnDirection, WaypointDescriptor,
-} from 'msfs-navdata/dist/shared/types/ProcedureLeg';
-import { Waypoint, VhfNavaid, NdbNavaid, Fix } from 'msfs-navdata';
+    Waypoint, VhfNavaid, NdbNavaid, Fix,
+} from '@flybywiresim/fbw-sdk';
+
 import { Minutes } from 'msfs-geo';
 
 export interface FlightPlanLegDefinition {

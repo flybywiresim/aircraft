@@ -16,26 +16,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- * translates MSFS navdata approach type to honeywell ordering
- */
-const ApproachTypeOrder = Object.freeze([
-    // MLS
-    ApproachType.APPROACH_TYPE_ILS,
-    // GLS
-    // IGS
-    ApproachType.APPROACH_TYPE_LOCALIZER,
-    ApproachType.APPROACH_TYPE_LOCALIZER_BACK_COURSE,
-    ApproachType.APPROACH_TYPE_LDA,
-    ApproachType.APPROACH_TYPE_SDF,
-    ApproachType.APPROACH_TYPE_GPS,
-    ApproachType.APPROACH_TYPE_RNAV,
-    ApproachType.APPROACH_TYPE_VORDME,
-    ApproachType.APPROACH_TYPE_VOR,
-    ApproachType.APPROACH_TYPE_NDBDME,
-    ApproachType.APPROACH_TYPE_NDB,
-    ApproachType.APPROACH_TYPE_UNKNOWN, // should be "runway by itself"...
-]);
+const ApproachTypeOrder = Object.freeze({
+    [Fmgc.ApproachType.Mls]: 0,
+    [Fmgc.ApproachType.MlsTypeA]: 1,
+    [Fmgc.ApproachType.MlsTypeBC]: 2,
+    [Fmgc.ApproachType.Ils]: 3,
+    [Fmgc.ApproachType.Gls]: 4,
+    [Fmgc.ApproachType.Igs]: 5,
+    [Fmgc.ApproachType.Loc]: 6,
+    [Fmgc.ApproachType.LocBackcourse]: 7,
+    [Fmgc.ApproachType.Lda]: 8,
+    [Fmgc.ApproachType.Sdf]: 9,
+    [Fmgc.ApproachType.Fms]: 10,
+    [Fmgc.ApproachType.Gps]: 11,
+    [Fmgc.ApproachType.Rnav]: 12,
+    [Fmgc.ApproachType.VorDme]: 13,
+    [Fmgc.ApproachType.Vortac]: 13, // VORTAC and VORDME are intentionally the same
+    [Fmgc.ApproachType.Vor]: 14,
+    [Fmgc.ApproachType.NdbDme]: 15,
+    [Fmgc.ApproachType.Ndb]: 16,
+    [Fmgc.ApproachType.Unknown]: 17,
+});
 
 const ArrivalPagination = Object.freeze(
     {
@@ -67,7 +68,7 @@ class CDUAvailableArrivalsPage {
         const selectedApproach = targetPlan.approach;
 
         if (selectedApproach && selectedApproach.ident) {
-            selectedApproachCell = Fmgc.NavigationDatabase.formatShortApproachIdent(selectedApproach);
+            selectedApproachCell = Fmgc.ApproachUtils.shortApproachName(selectedApproach);
             selectedApproachCellColor = flightPlanAccentColor;
 
             const selectedApproachTransition = targetPlan.approachVia;
@@ -106,7 +107,9 @@ class CDUAvailableArrivalsPage {
         }
 
         // Sort the approaches in Honeywell's documented order
-        const sortedApproaches = approaches.slice().sort((a, b) => ApproachTypeOrder.indexOf(a.type) - ApproachTypeOrder.indexOf(b.type));
+        const sortedApproaches = approaches.slice()
+            .filter(({ type }) => type !== Fmgc.ApproachType.TACAN)
+            .sort((a, b) => ApproachTypeOrder[a.type] - ApproachTypeOrder[b.type]);
         const rows = [[""], [""], [""], [""], [""], [""], [""], [""]];
 
         /**
@@ -122,14 +125,13 @@ class CDUAvailableArrivalsPage {
                     let runwayLength = '----';
                     let runwayCourse = '---';
 
-                    const runway = mcdu.flightPlanService.active.availableDestinationRunways.find((rw) => rw.ident === approach.runwayIdent);
+                    const runway = targetPlan.availableDestinationRunways.find((rw) => rw.ident === approach.runwayIdent);
                     if (runway) {
                         runwayLength = runway.length.toFixed(0); // TODO imperial length pin program
                         runwayCourse = Utils.leadingZeros(Math.round(runway.magneticBearing), 3);
-
                     }
 
-                    rows[2 * i] = [`{cyan}{${Fmgc.NavigationDatabase.formatShortApproachIdent(approach)}{end}`, "", "{sp}{sp}{sp}{sp}" + runwayLength + "{small}M{end}[color]cyan"];
+                    rows[2 * i] = [`{cyan}{${Fmgc.ApproachUtils.shortApproachName(approach)}{end}`, "", "{sp}{sp}{sp}{sp}" + runwayLength + "{small}M{end}[color]cyan"];
                     rows[2 * i + 1] = ["{sp}{sp}{sp}{sp}" + runwayCourse + "[color]cyan"];
 
                     mcdu.onLeftInput[i + 2] = async () => {
@@ -344,7 +346,7 @@ class CDUAvailableArrivalsPage {
         const selectedApproachVia = targetPlan.approachVia;
 
         if (selectedApproach) {
-            selectedApproachCell = selectedApproach.ident;
+            selectedApproachCell = Fmgc.ApproachUtils.shortApproachName(selectedApproach);
             selectedApproachCellColor = planColor;
 
             if (selectedApproachVia) {
@@ -395,7 +397,7 @@ class CDUAvailableArrivalsPage {
                 mcdu.insertTemporaryFlightPlan(() => {
                     mcdu.updateTowerHeadwind();
                     mcdu.updateConstraints();
-                    CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
+                    CDUFlightPlanPage.ShowPage(mcdu, 0, forPlan);
                 });
             };
         } else {

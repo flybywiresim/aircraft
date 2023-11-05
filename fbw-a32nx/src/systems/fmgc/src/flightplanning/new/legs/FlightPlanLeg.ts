@@ -3,9 +3,21 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { MathUtils } from '@flybywiresim/fbw-sdk';
+import {
+    MathUtils,
+    Airport,
+    AltitudeDescriptor,
+    EnrouteSubsectionCode,
+    Fix,
+    LegType,
+    ProcedureLeg,
+    Runway,
+    SectionCode,
+    WaypointArea,
+    WaypointDescriptor,
+} from '@flybywiresim/fbw-sdk';
 import { Coordinates } from 'msfs-geo';
-import { Airport, EnrouteSubsectionCode, Fix, LegType, ProcedureLeg, Runway, SectionCode, WaypointArea, WaypointDescriptor } from 'msfs-navdata';
+
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/new/legs/FlightPlanLegDefinition';
 import { procedureLegIdentAndAnnotation } from '@fmgc/flightplanning/new/legs/FlightPlanLegNaming';
 import { WaypointFactory } from '@fmgc/flightplanning/new/waypoints/WaypointFactory';
@@ -14,8 +26,10 @@ import { EnrouteSegment } from '@fmgc/flightplanning/new/segments/EnrouteSegment
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
 import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
-import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { MagVar } from '@microsoft/msfs-sdk';
+import { AltitudeConstraint, ConstraintUtils, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
+import { HoldUtils } from '@fmgc/flightplanning/data/hold';
+import { OriginSegment } from '@fmgc/flightplanning/new/segments/OriginSegment';
 
 /**
  * A serialized flight plan leg, to be sent across FMSes
@@ -28,11 +42,29 @@ export interface SerializedFlightPlanLeg {
     effectiveType: LegType,
     modifiedHold: HoldData | undefined,
     defaultHold: HoldData | undefined,
+    constraintType: WaypointConstraintType | undefined,
     cruiseStep: CruiseStepEntry | undefined,
+    pilotEnteredAltitudeConstraint: AltitudeConstraint | undefined;
+    pilotEnteredSpeedConstraint: SpeedConstraint | undefined;
 }
 
 export enum FlightPlanLegFlags {
     DirectToTurningPoint = 1 << 0,
+}
+
+export interface LegCalculations {
+    /** The leg's total distance in nautical miles, not cut short by ingress/egress turn radii. */
+    distance: number;
+    /** The cumulative distance in nautical miles up to this point in the flight plan. */
+    cumulativeDistance: number;
+    /** The cumulative distance in nautical miles from this point to the missed approach point. */
+    cumulativeDistanceToEnd: number;
+    /** The leg's total distance in nautical miles, with leg transition turns take into account. */
+    distanceWithTransitions: number;
+    /** The cumulative distance in nautical miles up to this point, with leg transition turns taken into account. */
+    cumulativeDistanceWithTransitions: number;
+    /** The cumulative distance in nautical miles from this point to the missed approach point, with leg transition turns taken into account. */
+    cumulativeDistanceToEndWithTransitions: number;
 }
 
 /**
@@ -57,6 +89,10 @@ export class FlightPlanLeg {
 
     isDiscontinuity: false = false
 
+    /**
+     * This should always correspond to the fields in the definition
+     * FIXME: Think about removing this or making it a getter only
+     */
     defaultHold: HoldData | undefined = undefined;
 
     modifiedHold: HoldData | undefined = undefined;
@@ -66,6 +102,12 @@ export class FlightPlanLeg {
     constraintType: WaypointConstraintType | undefined;
 
     cruiseStep: CruiseStepEntry | undefined;
+
+    pilotEnteredAltitudeConstraint: AltitudeConstraint | undefined;
+
+    pilotEnteredSpeedConstraint: SpeedConstraint | undefined;
+
+    calculated: LegCalculations | undefined;
 
     serialize(): SerializedFlightPlanLeg {
         return {
@@ -77,6 +119,9 @@ export class FlightPlanLeg {
             modifiedHold: this.modifiedHold ? JSON.parse(JSON.stringify(this.modifiedHold)) : undefined,
             defaultHold: this.defaultHold ? JSON.parse(JSON.stringify(this.defaultHold)) : undefined,
             cruiseStep: this.cruiseStep ? JSON.parse(JSON.stringify(this.cruiseStep)) : undefined,
+            constraintType: this.constraintType,
+            pilotEnteredAltitudeConstraint: this.pilotEnteredAltitudeConstraint ? JSON.parse(JSON.stringify(this.pilotEnteredAltitudeConstraint)) : undefined,
+            pilotEnteredSpeedConstraint: this.pilotEnteredSpeedConstraint ? JSON.parse(JSON.stringify(this.pilotEnteredSpeedConstraint)) : undefined,
         };
     }
 
@@ -92,13 +137,36 @@ export class FlightPlanLeg {
         leg.type = serialized.effectiveType;
         leg.modifiedHold = serialized.modifiedHold;
         leg.defaultHold = serialized.defaultHold;
+        leg.constraintType = serialized.constraintType;
         leg.cruiseStep = serialized.cruiseStep;
+        leg.pilotEnteredAltitudeConstraint = serialized.pilotEnteredAltitudeConstraint;
+        leg.pilotEnteredSpeedConstraint = serialized.pilotEnteredSpeedConstraint;
 
         return leg;
     }
 
     get waypointDescriptor() {
         return this.definition.waypointDescriptor;
+    }
+
+    get altitudeConstraint(): AltitudeConstraint | undefined {
+        if (this.hasPilotEnteredAltitudeConstraint()) {
+            return this.pilotEnteredAltitudeConstraint;
+        } if (this.hasDatabaseAltitudeConstraint()) {
+            return ConstraintUtils.parseAltConstraintFromLegDefinition(this.definition);
+        }
+
+        return undefined;
+    }
+
+    get speedConstraint(): SpeedConstraint | undefined {
+        if (this.hasPilotEnteredSpeedConstraint()) {
+            return this.pilotEnteredSpeedConstraint;
+        } if (this.hasDatabaseSpeedConstraint()) {
+            return ConstraintUtils.parseSpeedConstraintFromLegDefinition(this.definition);
+        }
+
+        return undefined;
     }
 
     /**
@@ -163,6 +231,26 @@ export class FlightPlanLeg {
         return this.definition.waypoint.ident === waypoint.ident && this.definition.waypoint.icaoCode === waypoint.icaoCode;
     }
 
+    hasPilotEnteredAltitudeConstraint(): boolean {
+        return this.pilotEnteredAltitudeConstraint !== undefined;
+    }
+
+    hasDatabaseAltitudeConstraint(): boolean {
+        return this.definition.altitudeDescriptor !== undefined
+            && this.definition.altitudeDescriptor !== AltitudeDescriptor.None
+            // These types of constraints are not considered by the FMS
+            && this.definition.altitudeDescriptor !== AltitudeDescriptor.AtAlt1GsMslAlt2
+            && this.definition.altitudeDescriptor !== AltitudeDescriptor.AtOrAboveAlt1GsMslAlt2;
+    }
+
+    hasPilotEnteredSpeedConstraint(): boolean {
+        return this.pilotEnteredSpeedConstraint !== undefined;
+    }
+
+    hasDatabaseSpeedConstraint(): boolean {
+        return this.definition.speedDescriptor !== undefined;
+    }
+
     static turningPoint(segment: EnrouteSegment, location: Coordinates, magneticCourse: DegreesMagnetic): FlightPlanLeg {
         return new FlightPlanLeg(segment, {
             procedureIdent: '',
@@ -186,13 +274,25 @@ export class FlightPlanLeg {
         }, '', '', undefined, undefined, false);
     }
 
-    static directToTurnEnd(segment: EnrouteSegment, targetWaypoint: Fix): FlightPlanLeg {
-        return new FlightPlanLeg(segment, {
+    static directToTurnEnd(segment: EnrouteSegment, targetLeg: FlightPlanLeg): FlightPlanLeg {
+        const leg = new FlightPlanLeg(segment, {
             procedureIdent: '',
             type: LegType.DF,
             overfly: false,
-            waypoint: targetWaypoint,
-        }, targetWaypoint.ident, '', undefined, undefined, false);
+            waypoint: targetLeg.definition.waypoint,
+            verticalAngle: targetLeg.definition.verticalAngle,
+            altitudeDescriptor: targetLeg.definition.altitudeDescriptor,
+            altitude1: targetLeg.definition.altitude1,
+            altitude2: targetLeg.definition.altitude2,
+            speedDescriptor: targetLeg.definition.speedDescriptor,
+            speed: targetLeg.definition.speed,
+        }, targetLeg.definition.waypoint.ident, '', undefined, undefined, false);
+
+        leg.pilotEnteredAltitudeConstraint = targetLeg.pilotEnteredAltitudeConstraint;
+        leg.pilotEnteredSpeedConstraint = targetLeg.pilotEnteredSpeedConstraint;
+        leg.constraintType = targetLeg.constraintType;
+
+        return leg;
     }
 
     static manualHold(segment: FlightPlanSegment, waypoint: Fix, hold: HoldData): FlightPlanLeg {
@@ -208,20 +308,12 @@ export class FlightPlanLeg {
         }, waypoint.ident, '', undefined, undefined, false);
     }
 
-    static fromProcedureLeg(segment: FlightPlanSegment, procedureLeg: ProcedureLeg, procedureIdent: string): FlightPlanLeg {
+    static fromProcedureLeg(segment: FlightPlanSegment, procedureLeg: ProcedureLeg, procedureIdent: string, constraintType?: WaypointConstraintType): FlightPlanLeg {
         const [ident, annotation] = procedureLegIdentAndAnnotation(procedureLeg, procedureIdent);
 
         const flightPlanLeg = new FlightPlanLeg(segment, procedureLeg, ident, annotation, undefined, procedureLeg.rnp, procedureLeg.overfly);
 
-        let constraintType: WaypointConstraintType;
-        if (segment.class === SegmentClass.Departure) {
-            constraintType = WaypointConstraintType.CLB;
-        } else if (segment.class === SegmentClass.Arrival) {
-            constraintType = WaypointConstraintType.DES;
-        } else {
-            constraintType = WaypointConstraintType.Unknown;
-        }
-
+        flightPlanLeg.defaultHold = HoldUtils.parseHoldFromProcedureLeg(procedureLeg);
         flightPlanLeg.constraintType = constraintType;
 
         return flightPlanLeg;
@@ -249,12 +341,12 @@ export class FlightPlanLeg {
         }, `${airport.ident}${runway ? runway.ident.replace('RW', '') : ''}`, procedureIdent, undefined, undefined, false);
     }
 
-    static originExtendedCenterline(segment: FlightPlanSegment, runwayLeg: FlightPlanLeg): FlightPlanLeg {
-        const altitude = runwayLeg.definition.altitude1 ? runwayLeg.definition.altitude1 + 1500 : 1500;
+    static originExtendedCenterline(segment: OriginSegment, runwayLeg: FlightPlanLeg): FlightPlanLeg {
+        const altitude = Number.isFinite(segment?.runway?.thresholdLocation?.alt) ? 10 * Math.round(segment.runway.thresholdLocation.alt / 10) + 1500 : 1500;
 
         // TODO magvar
         const annotation = runwayLeg.ident.substring(0, 3) + Math.round(runwayLeg.definition.magneticCourse).toString().padStart(3, '0');
-        const ident = Math.round(altitude).toString().substring(0, 4);
+        const ident = Math.round(altitude).toFixed(0);
 
         return new FlightPlanLeg(segment, {
             procedureIdent: '',

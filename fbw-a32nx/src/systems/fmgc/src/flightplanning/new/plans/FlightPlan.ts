@@ -3,16 +3,16 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Airport, ApproachType, Fix } from 'msfs-navdata';
+import { Airport, ApproachType, Fix, NXDataStore } from '@flybywiresim/fbw-sdk';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/new/plans/AlternateFlightPlan';
-import { EventBus, MagVar, UnitType } from '@microsoft/msfs-sdk';
+import { EventBus, MagVar } from '@microsoft/msfs-sdk';
 import { FixInfoEntry } from '@fmgc/flightplanning/new/plans/FixInfo';
 import { loadAllDepartures, loadAllRunways } from '@fmgc/flightplanning/new/DataLoading';
 import { Coordinates, Degrees } from 'msfs-geo';
 import { FlightPlanLeg, FlightPlanLegFlags } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { FlightArea } from '@fmgc/navigation/FlightArea';
-import { NXDataStore } from '@flybywiresim/fbw-sdk';
+
 import { FlightPlanPerformanceData } from './performance/FlightPlanPerformanceData';
 import { BaseFlightPlan, FlightPlanQueuedOperation, SerializedFlightPlan } from './BaseFlightPlan';
 
@@ -123,7 +123,7 @@ export class FlightPlan extends BaseFlightPlan {
         const magneticCourse = MagVar.trueToMagnetic(trueTrack, magVar);
 
         const turningPoint = FlightPlanLeg.turningPoint(this.enrouteSegment, ppos, magneticCourse);
-        const turnEnd = FlightPlanLeg.directToTurnEnd(this.enrouteSegment, targetLeg.definition.waypoint);
+        const turnEnd = FlightPlanLeg.directToTurnEnd(this.enrouteSegment, targetLeg);
 
         turningPoint.flags |= FlightPlanLegFlags.DirectToTurningPoint;
 
@@ -280,7 +280,7 @@ export class FlightPlan extends BaseFlightPlan {
      * @param airport the origin airport
      */
     private static setOriginDefaultPerformanceData(plan: FlightPlan, airport: Airport | undefined): void {
-        const referenceAltitude = UnitType.FOOT.convertFrom(airport?.location.alt, UnitType.METER); // TODO fix in msfs-navdata (fms-v2)
+        const referenceAltitude = airport?.location.alt;
 
         if (referenceAltitude !== undefined) {
             plan.performanceData.defaultThrustReductionAltitude.set(referenceAltitude + parseInt(NXDataStore.get('CONFIG_THR_RED_ALT', '1500')));
@@ -304,7 +304,7 @@ export class FlightPlan extends BaseFlightPlan {
      * @param airport the destination airport
      */
     private static setDestinationDefaultPerformanceData(plan: FlightPlan, airport: Airport): void {
-        const referenceAltitude = UnitType.FOOT.convertFrom(airport?.location.alt, UnitType.METER); // TODO fix in msfs-navdata (fms-v2)
+        const referenceAltitude = airport?.location.alt;
 
         if (referenceAltitude !== undefined) {
             plan.performanceData.defaultMissedThrustReductionAltitude.set(referenceAltitude + parseInt(NXDataStore.get('CONFIG_THR_RED_ALT', '1500')));

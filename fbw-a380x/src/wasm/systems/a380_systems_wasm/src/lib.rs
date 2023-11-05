@@ -6,6 +6,7 @@ mod elevators;
 mod flaps;
 mod gear;
 mod nose_wheel_steering;
+mod payload;
 mod rudder;
 mod spoilers;
 mod trimmable_horizontal_stabilizer;
@@ -19,6 +20,7 @@ use elevators::elevators;
 use flaps::flaps;
 use gear::gear;
 use nose_wheel_steering::nose_wheel_steering;
+use payload::payload;
 use rudder::rudder;
 use spoilers::spoilers;
 use std::error::Error;
@@ -260,11 +262,29 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("AMBIENT WIND Y", "meter per second", 0)?
     .provides_aircraft_variable("AMBIENT WIND Z", "meter per second", 0)?
     .provides_aircraft_variable("ANTISKID BRAKES ACTIVE", "Bool", 0)?
+    .provides_aircraft_variable("CONTACT POINT COMPRESSION", "Percent", 0)?
+    .provides_aircraft_variable("CONTACT POINT COMPRESSION", "Percent", 1)?
+    .provides_aircraft_variable("CONTACT POINT COMPRESSION", "Percent", 2)?
+    .provides_aircraft_variable("CONTACT POINT COMPRESSION", "Percent", 3)?
+    .provides_aircraft_variable("CONTACT POINT COMPRESSION", "Percent", 4)?
     .provides_aircraft_variable("EXTERNAL POWER AVAILABLE", "Bool", 1)?
-    .provides_aircraft_variable("FUEL TANK LEFT MAIN QUANTITY", "Pounds", 0)?
+    .provides_aircraft_variable("FUEL TOTAL QUANTITY WEIGHT", "Pounds", 0)?
+    .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 1)?
+    .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 2)?
+    .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 3)?
+    .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 4)?
+    .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 5)?
+    .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 6)?
+    .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 7)?
+    .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 8)?
+    .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 9)?
+    .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 10)?
+    .provides_aircraft_variable("FUELSYSTEM TANK QUANTITY", "gallons", 11)?
     .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 0)?
     .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 1)?
     .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 2)?
+    .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 3)?
+    .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 4)?
     .provides_aircraft_variable("GEAR CENTER POSITION", "Percent", 0)?
     .provides_aircraft_variable("GEAR LEFT POSITION", "Percent", 0)?
     .provides_aircraft_variable("GEAR RIGHT POSITION", "Percent", 0)?
@@ -273,9 +293,12 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("GPS GROUND SPEED", "Knots", 0)?
     .provides_aircraft_variable("GPS GROUND MAGNETIC TRACK", "Degrees", 0)?
     .provides_aircraft_variable("GPS GROUND TRUE TRACK", "Degrees", 0)?
+    .provides_aircraft_variable("INCIDENCE ALPHA", "Degrees", 0)?
     .provides_aircraft_variable("INDICATED ALTITUDE", "Feet", 0)?
     .provides_aircraft_variable("INTERACTIVE POINT OPEN:0", "Percent", 0)?
+    .provides_aircraft_variable("INTERACTIVE POINT OPEN", "Percent", 2)?
     .provides_aircraft_variable("INTERACTIVE POINT OPEN", "Percent", 3)?
+    .provides_aircraft_variable("INTERACTIVE POINT OPEN", "Percent", 10)?
     .provides_aircraft_variable("KOHLSMAN SETTING MB", "Millibars", 1)?
     .provides_aircraft_variable("LIGHT BEACON", "Bool", 0)?
     .provides_aircraft_variable("LIGHT BEACON ON", "Bool", 0)?
@@ -291,7 +314,9 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("PUSHBACK ANGLE", "Radians", 0)?
     .provides_aircraft_variable("SEA LEVEL PRESSURE", "Millibars", 0)?
     .provides_aircraft_variable("SIM ON GROUND", "Bool", 0)?
+    .provides_aircraft_variable("SURFACE TYPE", "Enum", 0)?
     .provides_aircraft_variable("TOTAL AIR TEMPERATURE", "celsius", 0)?
+    .provides_aircraft_variable("TOTAL WEIGHT", "Pounds", 0)?
     .provides_aircraft_variable("TRAILING EDGE FLAPS LEFT PERCENT", "Percent", 0)?
     .provides_aircraft_variable("TRAILING EDGE FLAPS RIGHT PERCENT", "Percent", 0)?
     .provides_aircraft_variable("TURB ENG CORRECTED N1", "Percent", 1)?
@@ -308,10 +333,48 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("VELOCITY BODY Y", "feet per second", 0)?
     .provides_aircraft_variable("VELOCITY BODY Z", "feet per second", 0)?
     .provides_aircraft_variable("VELOCITY WORLD Y", "feet per minute", 0)?
-    .provides_aircraft_variable("INCIDENCE ALPHA", "degree", 0)?
     .provides_aircraft_variable("ROTATION VELOCITY BODY X", "degree per second", 0)?
     .provides_aircraft_variable("ROTATION VELOCITY BODY Y", "degree per second", 0)?
     .provides_aircraft_variable("ROTATION VELOCITY BODY Z", "degree per second", 0)?
+    .provides_aircraft_variable(
+        "ROTATION ACCELERATION BODY X",
+        "radian per second squared",
+        0,
+    )?
+    .provides_aircraft_variable(
+        "ROTATION ACCELERATION BODY Y",
+        "radian per second squared",
+        0,
+    )?
+    .provides_aircraft_variable(
+        "ROTATION ACCELERATION BODY Z",
+        "radian per second squared",
+        0,
+    )?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 1)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 2)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 3)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 4)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 5)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 6)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 7)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 8)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 9)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 10)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 11)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 12)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 13)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 14)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 15)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 16)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 17)?
+    .provides_aircraft_variable("PAYLOAD STATION WEIGHT", "Pounds", 18)?
+    .provides_named_variable("FSDT_GSX_BOARDING_STATE")?
+    .provides_named_variable("FSDT_GSX_DEBOARDING_STATE")?
+    .provides_named_variable("FSDT_GSX_NUMPASSENGERS_BOARDING_TOTAL")?
+    .provides_named_variable("FSDT_GSX_NUMPASSENGERS_DEBOARDING_TOTAL")?
+    .provides_named_variable("FSDT_GSX_BOARDING_CARGO_PERCENT")?
+    .provides_named_variable("FSDT_GSX_DEBOARDING_CARGO_PERCENT")?
     .with_aspect(|builder| {
         for i in 1..=2 {
             builder.copy(
@@ -353,6 +416,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .with_aspect(elevators)?
     .with_aspect(rudder)?
     .with_aspect(gear)?
+    .with_aspect(payload)?
     .with_aspect(trimmable_horizontal_stabilizer)?
     .build(A380::new)?;
 

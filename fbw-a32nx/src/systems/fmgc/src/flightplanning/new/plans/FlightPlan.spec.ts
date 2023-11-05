@@ -3,20 +3,14 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import fetch from 'node-fetch';
-
 import { setupNavigraphDatabase } from '@fmgc/flightplanning/new/test/Database';
 import { FlightPlan } from '@fmgc/flightplanning/new/plans/FlightPlan';
 import { loadSingleWaypoint } from '@fmgc/flightplanning/new/segments/enroute/WaypointLoading';
 import { FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { assertDiscontinuity, assertNotDiscontinuity } from '@fmgc/flightplanning/new/test/LegUtils';
-import { LegType, WaypointDescriptor } from 'msfs-navdata';
+import { LegType, WaypointDescriptor } from '@flybywiresim/fbw-sdk';
 import { loadAirwayLegs } from '@fmgc/flightplanning/new/segments/enroute/AirwayLoading';
 import { emptyFlightPlan } from '@fmgc/flightplanning/new/test/FlightPlan';
-
-if (!globalThis.fetch) {
-    globalThis.fetch = fetch;
-}
 
 describe('a base flight plan', () => {
     beforeAll(() => {
@@ -43,7 +37,7 @@ describe('a base flight plan', () => {
 
         const fpLeg = assertNotDiscontinuity(fp.allLegs[4]);
 
-        expect(fpLeg.ident).toEqual('NOSUS');
+        expect(fpLeg.ident).toBe('NOSUS');
         expect(fp.allLegs[5].isDiscontinuity).toBeTruthy();
 
         expect(fp.allLegs).toHaveLength(23);
@@ -101,7 +95,7 @@ describe('a base flight plan', () => {
             expect(flightPlan.departureRunwayTransitionSegment.allLegs).toHaveLength(4);
 
             const lastLegOfTruncatedDeparture = assertNotDiscontinuity(flightPlan.departureRunwayTransitionSegment.allLegs[3]);
-            expect(lastLegOfTruncatedDeparture.ident).toEqual('DUVKO');
+            expect(lastLegOfTruncatedDeparture.ident).toBe('DUVKO');
 
             expect(flightPlan.departureSegment.allLegs).toHaveLength(0);
 
@@ -110,7 +104,7 @@ describe('a base flight plan', () => {
             expect(flightPlan.enrouteSegment.allLegs).toHaveLength(2);
 
             const firstLegOfEnroute = assertNotDiscontinuity(flightPlan.enrouteSegment.allLegs[0]);
-            expect(firstLegOfEnroute.ident).toEqual('AVSEP');
+            expect(firstLegOfEnroute.ident).toBe('AVSEP');
         });
 
         it('should insert a discontinuity when deleting a leg', async () => {
@@ -148,15 +142,15 @@ describe('a base flight plan', () => {
             const l3 = assertNotDiscontinuity(flightPlan.allLegs[2]);
             const l4 = assertNotDiscontinuity(flightPlan.allLegs[3]);
 
-            expect(l1.ident).toEqual('NOSUS');
-            expect(l2.ident).toEqual('NAPEE');
-            expect(l3.ident).toEqual('PBERG');
-            expect(l4.ident).toEqual('HOVOB');
+            expect(l1.ident).toBe('NOSUS');
+            expect(l2.ident).toBe('NAPEE');
+            expect(l3.ident).toBe('PBERG');
+            expect(l4.ident).toBe('HOVOB');
 
             flightPlan.insertElementAfter(0, FlightPlanLeg.fromEnrouteFix(segment, w4));
 
             expect(flightPlan.allLegs).toHaveLength(2);
-            expect(assertNotDiscontinuity(flightPlan.allLegs[1]).ident).toEqual('HOVOB');
+            expect(assertNotDiscontinuity(flightPlan.allLegs[1]).ident).toBe('HOVOB');
         });
 
         it('should collapse waypoints across segments', async () => {
@@ -182,8 +176,8 @@ describe('a base flight plan', () => {
             flightPlan.insertElementAfter(4, FlightPlanLeg.fromEnrouteFix(enroute, w1));
 
             expect(flightPlan.allLegs).toHaveLength(6);
-            expect(assertNotDiscontinuity(flightPlan.allLegs[4]).ident).toEqual('QN852');
-            expect(assertNotDiscontinuity(flightPlan.allLegs[5]).ident).toEqual('PEDPO');
+            expect(assertNotDiscontinuity(flightPlan.allLegs[4]).ident).toBe('QN852');
+            expect(assertNotDiscontinuity(flightPlan.allLegs[5]).ident).toBe('PEDPO');
         });
     });
 

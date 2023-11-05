@@ -24,6 +24,7 @@ use reversers::reversers;
 use rudder::rudder;
 use spoilers::spoilers;
 use std::error::Error;
+use systems::air_conditioning::{acs_controller::AcscId, Channel, ZoneType};
 use systems::failures::FailureType;
 use systems::shared::{
     AirbusElectricPumpId, AirbusEngineDrivenPumpId, ElectricalBusType, GearActuatorId,
@@ -60,7 +61,35 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
         (ElectricalBusType::DirectCurrentGndFltService, 15),
     ])?
     .with_auxiliary_power_unit(Variable::named("OVHD_APU_START_PB_IS_AVAILABLE"), 8, 7)?
+    .with_engines(2)?
     .with_failures(vec![
+        (
+            21_000,
+            FailureType::Acsc(AcscId::Acsc1(Channel::ChannelOne)),
+        ),
+        (
+            21_001,
+            FailureType::Acsc(AcscId::Acsc1(Channel::ChannelTwo)),
+        ),
+        (
+            21_002,
+            FailureType::Acsc(AcscId::Acsc2(Channel::ChannelOne)),
+        ),
+        (
+            21_003,
+            FailureType::Acsc(AcscId::Acsc2(Channel::ChannelTwo)),
+        ),
+        (21_004, FailureType::HotAir(1)),
+        (21_005, FailureType::TrimAirHighPressure),
+        (21_006, FailureType::TrimAirFault(ZoneType::Cockpit)),
+        (21_007, FailureType::TrimAirFault(ZoneType::Cabin(1))),
+        (21_008, FailureType::TrimAirFault(ZoneType::Cabin(2))),
+        (21_009, FailureType::TrimAirOverheat(ZoneType::Cockpit)),
+        (21_010, FailureType::TrimAirOverheat(ZoneType::Cabin(1))),
+        (21_011, FailureType::TrimAirOverheat(ZoneType::Cabin(2))),
+        (21_012, FailureType::CabinFan(1)),
+        (21_013, FailureType::CabinFan(2)),
+        (21_014, FailureType::GalleyFans),
         (24_000, FailureType::TransformerRectifier(1)),
         (24_001, FailureType::TransformerRectifier(2)),
         (24_002, FailureType::TransformerRectifier(3)),
@@ -267,7 +296,12 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("AMBIENT WIND Z", "meter per second", 0)?
     .provides_aircraft_variable("ANTISKID BRAKES ACTIVE", "Bool", 0)?
     .provides_aircraft_variable("EXTERNAL POWER AVAILABLE", "Bool", 1)?
-    .provides_aircraft_variable("FUEL TANK LEFT MAIN QUANTITY", "Pounds", 0)?
+    .provides_aircraft_variable("FUEL TANK CENTER QUANTITY", "gallons", 0)?
+    .provides_aircraft_variable("FUEL TANK LEFT MAIN QUANTITY", "gallons", 0)?
+    .provides_aircraft_variable("FUEL TANK LEFT AUX QUANTITY", "gallons", 0)?
+    .provides_aircraft_variable("FUEL TANK RIGHT MAIN QUANTITY", "gallons", 0)?
+    .provides_aircraft_variable("FUEL TANK RIGHT AUX QUANTITY", "gallons", 0)?
+    .provides_aircraft_variable("FUEL TOTAL QUANTITY WEIGHT", "Pounds", 0)?
     .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 0)?
     .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 1)?
     .provides_aircraft_variable("GEAR ANIMATION POSITION", "Percent", 2)?
@@ -281,6 +315,8 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_aircraft_variable("GPS GROUND TRUE TRACK", "Degrees", 0)?
     .provides_aircraft_variable("INDICATED ALTITUDE", "Feet", 0)?
     .provides_aircraft_variable("INTERACTIVE POINT OPEN:0", "Percent", 0)?
+    .provides_aircraft_variable("INTERACTIVE POINT OPEN", "Percent", 1)?
+    .provides_aircraft_variable("INTERACTIVE POINT OPEN", "Percent", 2)?
     .provides_aircraft_variable("INTERACTIVE POINT OPEN", "Percent", 3)?
     .provides_aircraft_variable("KOHLSMAN SETTING MB", "Millibars", 1)?
     .provides_aircraft_variable("LIGHT BEACON", "Bool", 0)?
@@ -332,21 +368,26 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_named_variable("FSDT_GSX_NUMPASSENGERS_DEBOARDING_TOTAL")?
     .provides_named_variable("FSDT_GSX_BOARDING_CARGO_PERCENT")?
     .provides_named_variable("FSDT_GSX_DEBOARDING_CARGO_PERCENT")?
+    .provides_aircraft_variable(
+        "ROTATION ACCELERATION BODY X",
+        "radian per second squared",
+        0,
+    )?
+    .provides_aircraft_variable(
+        "ROTATION ACCELERATION BODY Y",
+        "radian per second squared",
+        0,
+    )?
+    .provides_aircraft_variable(
+        "ROTATION ACCELERATION BODY Z",
+        "radian per second squared",
+        0,
+    )?
     .with_aspect(|builder| {
         builder.copy(
             Variable::aircraft("APU GENERATOR SWITCH", "Bool", 0),
             Variable::aspect("OVHD_ELEC_APU_GEN_PB_IS_ON"),
         );
-
-        builder.copy(
-            Variable::aircraft("BLEED AIR ENGINE", "Bool", 1),
-            Variable::aspect("OVHD_PNEU_ENG_1_BLEED_PB_IS_AUTO"),
-        );
-        builder.copy(
-            Variable::aircraft("BLEED AIR ENGINE", "Bool", 2),
-            Variable::aspect("OVHD_PNEU_ENG_2_BLEED_PB_IS_AUTO"),
-        );
-
         builder.copy(
             Variable::aircraft("EXTERNAL POWER AVAILABLE", "Bool", 1),
             Variable::aspect("OVHD_ELEC_EXT_PWR_PB_IS_AVAILABLE"),

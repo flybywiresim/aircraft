@@ -20,5 +20,8 @@ export enum SegmentType {
   Missed,
 
   /** The destination airfield segment. */
-  Destination
+  Destination,
+
+  /** An empty segment */
+  Empty = -1,
 }

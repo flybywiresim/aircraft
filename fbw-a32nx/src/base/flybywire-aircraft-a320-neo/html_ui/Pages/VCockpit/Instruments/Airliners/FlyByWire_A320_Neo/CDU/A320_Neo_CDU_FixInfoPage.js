@@ -95,10 +95,8 @@ class CDUFixInfoPage {
                         const degrees = parseInt(value);
 
                         if (degrees <= 360) {
-                            const magvar = Facilities.getMagVar(fixInfo.fix.location.lat, fixInfo.fix.location.long);
-
                             mcdu.flightPlanService.editFixInfoEntry(page, (fixInfo) => {
-                                fixInfo.radials[i] = { magneticBearing: degrees, trueBearing: A32NX_Util.magneticToTrue(degrees, magvar) };
+                                fixInfo.radials[i] = { magneticBearing: degrees, trueBearing: A32NX_Util.magneticToTrue(degrees, A32NX_Util.getRadialMagVar(fixInfo.fix)) };
                             });
 
                             CDUFixInfoPage.ShowPage(mcdu, page);

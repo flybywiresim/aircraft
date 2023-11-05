@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { LegType, Runway, TurnDirection } from 'msfs-navdata';
+import { LegType, Runway, TurnDirection } from '@flybywiresim/fbw-sdk';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/new/legs/FlightPlanLegDefinition';
 
 export function runwayIdent(runway: Runway) {

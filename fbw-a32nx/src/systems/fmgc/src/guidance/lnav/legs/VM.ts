@@ -9,7 +9,7 @@ import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { PathVector, PathVectorType } from '@fmgc/guidance/lnav/PathVector';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
-import { Waypoint } from 'msfs-navdata';
+import { Waypoint } from '@flybywiresim/fbw-sdk';
 import { placeBearingDistance } from 'msfs-geo';
 
 /**
@@ -90,7 +90,7 @@ export class VMLeg extends Leg {
         return undefined;
     }
 
-    getGuidanceParameters(_ppos: LatLongData, _trueTrack: Track): GuidanceParameters {
+    getGuidanceParameters(_ppos: LatLongData, _trueTrack: Track, _tas: Knots, _gs: Knots): GuidanceParameters {
         return {
             law: ControlLaw.HEADING,
             heading: this.heading,
@@ -103,6 +103,10 @@ export class VMLeg extends Leg {
 
     getDistanceToGo(_ppos: LatLongData): NauticalMiles {
         return undefined;
+    }
+
+    getAlongTrackDistanceToGo(ppos: Coordinates, trueTrack: number): NauticalMiles | undefined {
+        return this.outboundGuidable?.getAlongTrackDistanceToGo(ppos, trueTrack);
     }
 
     isAbeam(_ppos: LatLongAlt): boolean {

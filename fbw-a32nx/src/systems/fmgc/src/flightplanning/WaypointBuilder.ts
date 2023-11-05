@@ -22,6 +22,11 @@
  * SOFTWARE.
  */
 
+import { Minutes } from 'msfs-geo';
+import { FlightPlanManager } from './FlightPlanManager';
+import { GeoMath } from './GeoMath';
+import { LegType, TurnDirection } from "@flybywiresim/fbw-sdk";
+
 /**
  * Creating a new waypoint to be added to a flight plan.
  */

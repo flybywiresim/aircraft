@@ -10,37 +10,43 @@ enum ServiceButtonState {
 }
 
 interface ButtonSelectionState {
-    cabinDoorButtonState: ServiceButtonState
+    boarding1DoorButtonState: ServiceButtonState
+    boarding2DoorButtonState: ServiceButtonState
+    boarding3DoorButtonState: ServiceButtonState
+    serviceDoorButtonState: ServiceButtonState
+    cargo1DoorButtonState: ServiceButtonState
     jetWayButtonState: ServiceButtonState
     fuelTruckButtonState: ServiceButtonState
     gpuButtonState: ServiceButtonState
-    cargoDoorButtonState: ServiceButtonState
     baggageButtonState: ServiceButtonState
-    aftDoorButtonState: ServiceButtonState
     cateringButtonState: ServiceButtonState
 }
 
 // hack to fix initialization issue for ACE/vite
 let initialState: ButtonSelectionState = {
-    cabinDoorButtonState: ServiceButtonState.DISABLED,
-    jetWayButtonState: ServiceButtonState.DISABLED,
+    boarding1DoorButtonState: ServiceButtonState.DISABLED,
+    boarding2DoorButtonState: ServiceButtonState.DISABLED,
+    boarding3DoorButtonState: ServiceButtonState.DISABLED,
+    serviceDoorButtonState: ServiceButtonState.DISABLED,
+    cargo1DoorButtonState: ServiceButtonState.DISABLED,
     fuelTruckButtonState: ServiceButtonState.DISABLED,
     gpuButtonState: ServiceButtonState.DISABLED,
-    cargoDoorButtonState: ServiceButtonState.DISABLED,
+    jetWayButtonState: ServiceButtonState.DISABLED,
     baggageButtonState: ServiceButtonState.DISABLED,
-    aftDoorButtonState: ServiceButtonState.DISABLED,
     cateringButtonState: ServiceButtonState.DISABLED,
 };
 
 const setInitialState = () => {
     initialState = {
-        cabinDoorButtonState: (SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:0', 'Percent over 100') === 1.0 ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE),
-        jetWayButtonState: ServiceButtonState.INACTIVE,
+        boarding1DoorButtonState: (SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:0', 'Percent over 100') === 1.0 ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE),
+        boarding2DoorButtonState: (SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:1', 'Percent over 100') === 1.0 ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE),
+        boarding3DoorButtonState: (SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:2', 'Percent over 100') === 1.0 ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE),
+        cargo1DoorButtonState: (SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:5', 'Percent over 100') === 1.0 ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE),
+        serviceDoorButtonState: (SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:3', 'Percent over 100') === 1.0 ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE),
         fuelTruckButtonState: (SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:9', 'Percent over 100') === 1.0 ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE),
         gpuButtonState: (SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:8', 'Percent over 100') === 1.0 ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE),
-        cargoDoorButtonState: (SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:5', 'Percent over 100') === 1.0 ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE),
+        jetWayButtonState: ServiceButtonState.INACTIVE,
         baggageButtonState: ServiceButtonState.INACTIVE,
-        aftDoorButtonState: (SimVar.GetSimVarValue('A:INTERACTIVE POINT OPEN:3', 'Percent over 100') === 1.0 ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE),
         cateringButtonState: ServiceButtonState.INACTIVE,
     };
 };
@@ -56,8 +62,20 @@ export const buttonsSlice = createSlice({
     name: 'ground',
     initialState,
     reducers: {
-        setCabinDoorButtonState: (state, action: PayloadAction<ServiceButtonState>) => {
-            state.cabinDoorButtonState = action.payload;
+        setBoarding1DoorButtonState: (state, action: PayloadAction<ServiceButtonState>) => {
+            state.boarding1DoorButtonState = action.payload;
+        },
+        setBoarding2DoorButtonState: (state, action: PayloadAction<ServiceButtonState>) => {
+            state.boarding2DoorButtonState = action.payload;
+        },
+        setBoarding3DoorButtonState: (state, action: PayloadAction<ServiceButtonState>) => {
+            state.boarding3DoorButtonState = action.payload;
+        },
+        setServiceDoorButtonState: (state, action: PayloadAction<ServiceButtonState>) => {
+            state.serviceDoorButtonState = action.payload;
+        },
+        setCargo1DoorButtonState: (state, action: PayloadAction<ServiceButtonState>) => {
+            state.cargo1DoorButtonState = action.payload;
         },
         setJetWayButtonState: (state, action: PayloadAction<ServiceButtonState>) => {
             state.jetWayButtonState = action.payload;
@@ -68,14 +86,8 @@ export const buttonsSlice = createSlice({
         setGpuButtonState: (state, action: PayloadAction<ServiceButtonState>) => {
             state.gpuButtonState = action.payload;
         },
-        setCargoDoorButtonState: (state, action: PayloadAction<ServiceButtonState>) => {
-            state.cargoDoorButtonState = action.payload;
-        },
         setBaggageButtonState: (state, action: PayloadAction<ServiceButtonState>) => {
             state.baggageButtonState = action.payload;
-        },
-        setAftDoorButtonState: (state, action: PayloadAction<ServiceButtonState>) => {
-            state.aftDoorButtonState = action.payload;
         },
         setCateringButtonState: (state, action: PayloadAction<ServiceButtonState>) => {
             state.cateringButtonState = action.payload;
@@ -84,13 +96,15 @@ export const buttonsSlice = createSlice({
 });
 
 export const {
-    setCabinDoorButtonState,
+    setBoarding1DoorButtonState,
+    setBoarding2DoorButtonState,
+    setBoarding3DoorButtonState,
+    setServiceDoorButtonState,
+    setCargo1DoorButtonState,
     setJetWayButtonState,
     setFuelTruckButtonState,
     setGpuButtonState,
-    setCargoDoorButtonState,
     setBaggageButtonState,
-    setAftDoorButtonState,
     setCateringButtonState,
 } = buttonsSlice.actions;
 

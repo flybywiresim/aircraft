@@ -8,7 +8,7 @@
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { FlightPlanIndex } from '@fmgc/flightplanning/new/FlightPlanManager';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/new/NavigationDatabaseService';
-import { Airway, Fix } from 'msfs-navdata';
+import { Airway, Fix } from '@flybywiresim/fbw-sdk';
 import { Coordinates, distanceTo } from 'msfs-geo';
 import { DisplayInterface } from '@fmgc/flightplanning/new/interface/DisplayInterface';
 import { ISimbriefData, simbriefDataParser } from '../../../../../instruments/src/EFB/Apis/Simbrief';
@@ -309,8 +309,13 @@ export class SimBriefUplinkAdapter {
         fms.onUplinkDone();
     }
 
-    static async downloadOfpForUserID(userID: string): Promise<ISimbriefData> {
-        const url = `${SIMBRIEF_API_URL}&userid=${userID}`;
+    static async downloadOfpForUserID(username: string, userID?: string): Promise<ISimbriefData> {
+        let url = `${SIMBRIEF_API_URL}`;
+        if (userID) {
+            url += `&userid=${userID}`;
+        } else {
+            url += `&username=${username}`;
+        }
 
         let ofp: ISimbriefData;
         try {
@@ -356,7 +361,7 @@ export class SimBriefUplinkAdapter {
             } else if (lastInstruction?.instruction === 'procedure' && lastInstruction.ident === fix.via_airway) {
                 // SID TRANS
                 instructions.push({ instruction: 'sidEnrouteTransition', ident: fix.ident, locationHint: { lat: parseFloat(fix.pos_lat), long: parseFloat(fix.pos_long) } });
-            } else if (fix.via_airway === 'DCT') {
+            } else if (fix.via_airway === 'DCT' || fix.via_airway.match(/^NAT[A-Z]$/)) {
                 if (fix.type === 'ltlg') {
                     // LAT/LONG Waypoint
                     instructions.push({ instruction: 'latlong', lat: parseFloat(fix.pos_lat), long: parseFloat(fix.pos_long) });

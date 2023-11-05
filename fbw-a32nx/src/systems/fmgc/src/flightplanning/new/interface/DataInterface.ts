@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { Coordinates, DegreesTrue } from 'msfs-geo';
-import { Waypoint } from 'msfs-navdata';
+import { Waypoint } from '@flybywiresim/fbw-sdk';
 
 export interface DataInterface {
     createLatLonWaypoint(coordinates: Coordinates, stored: boolean): Waypoint;

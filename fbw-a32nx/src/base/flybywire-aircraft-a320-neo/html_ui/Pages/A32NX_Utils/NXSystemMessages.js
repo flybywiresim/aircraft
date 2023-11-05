@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 class McduMessage {
     constructor(text, isAmber = false, replace = "") {
         this.text = text;
@@ -60,6 +64,7 @@ const NXSystemMessages = {
     awyWptMismatch:         new TypeIMessage("AWY/WPT MISMATCH"),
     cancelAtisUpdate:       new TypeIMessage("CANCEL UPDATE BEFORE"),
     checkMinDestFob:        new TypeIIMessage("CHECK MIN DEST FOB"),
+    checkSpeedMode:         new TypeIIMessage("CHECK SPEED MODE"),
     checkToData:            new TypeIIMessage("CHECK TAKE OFF DATA", true),
     checkWeight:            new TypeIIMessage("CHECK WEIGHT", true),
     comUnavailable:         new TypeIMessage("COM UNAVAILABLE"),
@@ -102,8 +107,8 @@ const NXSystemMessages = {
 };
 
 const NXFictionalMessages = {
-    internalError:          new TypeIMessage('INTERNAL ERROR'),
-    noSimBriefUser:         new TypeIMessage("NO SIMBRIEF USER"),
+    noNavigraphUser:         new TypeIMessage("NO NAVIGRAPH USER"),
+    internalError:          new TypeIMessage("INTERNAL ERROR"),
     noAirportSpecified:     new TypeIMessage("NO AIRPORT SPECIFIED"),
     fltNbrInUse:            new TypeIMessage("FLT NBR IN USE"),
     fltNbrMissing:          new TypeIMessage("ENTER ATC FLT NBR"),

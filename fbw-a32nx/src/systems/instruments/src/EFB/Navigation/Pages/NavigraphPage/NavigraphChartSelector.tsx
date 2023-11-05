@@ -1,3 +1,9 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
+import { NavigraphChart } from '@flybywiresim/fbw-sdk';
+
 import React, { useState, useEffect } from 'react';
 import { CloudArrowDown, PinFill, Pin } from 'react-bootstrap-icons';
 import { t } from '../../../translation';
@@ -13,7 +19,6 @@ import {
     addPinnedChart,
 } from '../../../Store/features/navigationPage';
 import { navigationTabs } from '../../Navigation';
-import { NavigraphChart } from '../../../Apis/Navigraph/Navigraph';
 
 interface NavigraphChartSelectorProps {
     selectedTab: OrganizedChart;

@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { GlsNavaid, IlsNavaid, NdbNavaid, VhfNavaid, Waypoint } from 'msfs-navdata';
+import { GlsNavaid, IlsNavaid, NdbNavaid, VhfNavaid, Waypoint } from '@flybywiresim/fbw-sdk';
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { NavigationDatabaseService } from '../../NavigationDatabaseService';
 

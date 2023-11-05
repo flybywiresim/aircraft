@@ -11,7 +11,8 @@ import { PathVector } from '@fmgc/guidance/lnav/PathVector';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
 import { Guidable } from '@fmgc/guidance/Guidable';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
-import { Waypoint, WaypointDescriptor } from 'msfs-navdata';
+import { Waypoint, WaypointDescriptor } from '@flybywiresim/fbw-sdk';
+import { distanceTo } from 'msfs-geo';
 
 export class IFLeg extends XFLeg {
     constructor(
@@ -69,6 +70,10 @@ export class IFLeg extends XFLeg {
         return undefined;
     }
 
+    getAlongTrackDistanceToGo(ppos: Coordinates, _trueTrack: number): number {
+        return distanceTo(ppos, this.fix.location);
+    }
+
     getGuidanceParameters(ppos: Coordinates, trueTrack: Degrees, tas: Knots, gs: Knots): GuidanceParameters | undefined {
         return this.outboundGuidable?.getGuidanceParameters(ppos, trueTrack, tas, gs) ?? undefined;
     }
@@ -78,7 +83,8 @@ export class IFLeg extends XFLeg {
     }
 
     getPseudoWaypointLocation(_distanceBeforeTerminator: NauticalMiles): Coordinates | undefined {
-        return undefined;
+        // If a PWP lies in a discontinuity before an IF leg, the PWP should lie on the fix of the IF.
+        return this.fix.location;
     }
 
     isAbeam(_ppos: Coordinates): boolean {

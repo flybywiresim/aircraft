@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 const A32NX_Util = {};
 
 let nxNotificationsListener;
@@ -167,6 +171,20 @@ A32NX_Util.getIsaTemp = (alt = Simplane.getAltitude()) => {
  */
 A32NX_Util.getIsaTempDeviation = (alt = Simplane.getAltitude(), sat = Simplane.getAmbientTemperature()) => {
     return sat - A32NX_Util.getIsaTemp(alt);
+};
+
+/**
+* Get the magvar to use for radials from a wp.
+ * @param {VhfNavaid} facility The waypoint.
+*/
+A32NX_Util.getRadialMagVar = (facility) => {
+    if (facility.subSectionCode === 0 /* VhfNavaid */) {
+        if (facility.stationDeclination !== undefined) {
+            return 360 - facility.stationDeclination;
+        }
+    }
+
+    return Facilities.getMagVar(facility.location.lat, facility.location.long);
 };
 
 /**

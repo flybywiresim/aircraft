@@ -56,6 +56,8 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus, isAttExcessive: 
 
     private tdReached = false;
 
+    private checkSpeedMode = false;
+
     private tcasRaInhibited = Subject.create(false);
 
     private trkFpaDeselected = Subject.create(false);
@@ -74,7 +76,7 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus, isAttExcessive: 
         const sharedModeActive = this.activeLateralMode === 32 || this.activeLateralMode === 33
             || this.activeLateralMode === 34 || (this.activeLateralMode === 20 && this.activeVerticalMode === 24);
         const BC3Message = getBC3Message(this.props.isAttExcessive.get(), this.armedVerticalModeSub.get(),
-            this.setHoldSpeed, this.trkFpaDeselected.get(), this.tcasRaInhibited.get(), this.fcdcDiscreteWord1, this.fwcFlightPhase, this.tdReached)[0] !== null;
+            this.setHoldSpeed, this.trkFpaDeselected.get(), this.tcasRaInhibited.get(), this.fcdcDiscreteWord1, this.fwcFlightPhase, this.tdReached, this.checkSpeedMode)[0] !== null;
 
         const engineMessage = this.athrModeMessage;
         const AB3Message = (this.machPreselVal !== -1
@@ -160,6 +162,11 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus, isAttExcessive: 
 
         sub.on('tdReached').whenChanged().handle((tdr) => {
             this.tdReached = tdr;
+            this.handleFMABorders();
+        });
+
+        sub.on('checkSpeedMode').whenChanged().handle((csm) => {
+            this.checkSpeedMode = csm;
             this.handleFMABorders();
         });
     }
@@ -1192,6 +1199,7 @@ const getBC3Message = (
     fcdcWord1: Arinc429Word,
     fwcFlightPhase: number,
     tdReached: boolean,
+    checkSpeedMode: boolean,
 ) => {
     const armedVerticalBitmask = armedVerticalMode;
     const TCASArmed = (armedVerticalBitmask >> 6) & 1;
@@ -1206,54 +1214,55 @@ const getBC3Message = (
         && !fcdcWord1.getBitValue(13)
         && !fcdcWord1.getBitValue(15)
         && !fcdcWord1.isFailureWarning()
-        && flightPhaseForWarning) {
+        && flightPhaseForWarning
+    ) {
         text = 'MAN PITCH TRIM ONLY';
-        className = 'Red Blink9Seconds';
+        className = 'FontSmall Red Blink9Seconds';
     } else if (fcdcWord1.getBitValue(15) && !fcdcWord1.isFailureWarning() && flightPhaseForWarning) {
         text = 'USE MAN PITCH TRIM';
-        className = 'PulseAmber9Seconds Amber';
+        className = 'FontSmall PulseAmber9Seconds Amber';
     } else if (false) {
         text = 'FOR GA: SET TOGA';
-        className = 'PulseAmber9Seconds Amber';
+        className = 'FontMedium PulseAmber9Seconds Amber';
     } else if (TCASArmed && !isAttExcessive) {
         text = '  TCAS               ';
-        className = 'Cyan';
+        className = 'FontMedium Cyan';
     } else if (false) {
         text = 'DISCONNECT AP FOR LDG';
-        className = 'PulseAmber9Seconds Amber';
+        className = 'FontMedium PulseAmber9Seconds Amber';
     } else if (tcasRaInhibited && !isAttExcessive) {
         text = 'TCAS RA INHIBITED';
-        className = 'White';
+        className = 'FontMedium White';
     } else if (trkFpaDeselectedTCAS && !isAttExcessive) {
         text = 'TRK FPA DESELECTED';
-        className = 'White';
+        className = 'FontMedium White';
     } else if (false) {
         text = 'SET GREEN DOT SPEED';
-        className = 'White';
+        className = 'FontMedium White';
     } else if (tdReached) {
         text = 'T/D REACHED';
-        className = 'White';
+        className = 'FontMedium White';
     } else if (false) {
         text = 'MORE DRAG';
-        className = 'White';
-    } else if (false) {
+        className = 'FontMedium White';
+    } else if (checkSpeedMode && !isAttExcessive) {
         text = 'CHECK SPEED MODE';
-        className = 'White';
+        className = 'FontMedium White';
     } else if (false) {
         text = 'CHECK APPR SELECTION';
-        className = 'White';
+        className = 'FontMedium White';
     } else if (false) {
         text = 'TURN AREA EXCEEDANCE';
-        className = 'White';
+        className = 'FontMedium White';
     } else if (setHoldSpeed) {
         text = 'SET HOLD SPEED';
-        className = 'White';
+        className = 'FontMedium White';
     } else if (false) {
         text = 'VERT DISCONT AHEAD';
-        className = 'Amber';
+        className = 'FontMedium Amber';
     } else if (false) {
         text = 'FINAL APP SELECTED';
-        className = 'White';
+        className = 'FontSmall White';
     } else {
         return [null, null];
     }
@@ -1282,11 +1291,21 @@ class BC3Cell extends DisplayComponent<{ isAttExcessive: Subscribable<boolean>, 
 
     private tdReached = false;
 
+    private checkSpeedMode = false;
+
     private fillBC3Cell() {
         const [text, className] = getBC3Message(
-            this.isAttExcessive, this.armedVerticalMode, this.setHoldSpeed, this.trkFpaDeselected, this.tcasRaInhibited, this.fcdcDiscreteWord1, this.fwcFlightPhase, this.tdReached,
+            this.isAttExcessive,
+            this.armedVerticalMode,
+            this.setHoldSpeed,
+            this.trkFpaDeselected,
+            this.tcasRaInhibited,
+            this.fcdcDiscreteWord1,
+            this.fwcFlightPhase,
+            this.tdReached,
+            this.checkSpeedMode,
         );
-        this.classNameSub.set(`FontMedium MiddleAlign ${className}`);
+        this.classNameSub.set(`MiddleAlign ${className}`);
         if (text !== null) {
             this.bc3Cell.instance.innerHTML = text;
         } else {
@@ -1335,6 +1354,11 @@ class BC3Cell extends DisplayComponent<{ isAttExcessive: Subscribable<boolean>, 
 
         sub.on('tdReached').whenChanged().handle((tdr) => {
             this.tdReached = tdr;
+            this.fillBC3Cell();
+        });
+
+        sub.on('checkSpeedMode').whenChanged().handle((csm) => {
+            this.checkSpeedMode = csm;
             this.fillBC3Cell();
         });
     }

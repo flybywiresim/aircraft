@@ -4,18 +4,13 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { jest } from '@jest/globals';
-import fetch from 'node-fetch';
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { FlightPlanIndex } from '@fmgc/flightplanning/new/FlightPlanManager';
 import { loadSingleWaypoint } from '@fmgc/flightplanning/new/segments/enroute/WaypointLoading';
 import { assertNotDiscontinuity } from '@fmgc/flightplanning/new/test/LegUtils';
 import { setupNavigraphDatabase } from '@fmgc/flightplanning/new/test/Database';
 import { placeBearingDistance } from 'msfs-geo';
-import { LegType } from 'msfs-navdata';
-
-if (!globalThis.fetch) {
-    globalThis.fetch = fetch;
-}
+import { LegType } from '@flybywiresim/fbw-sdk';
 
 jest.setTimeout(120_000);
 
@@ -70,11 +65,11 @@ describe('the flight plan service', () => {
 
                 const leg4 = assertNotDiscontinuity(FlightPlanService.active.allLegs[4]);
 
-                expect(leg4.ident).toEqual('ERBUS');
+                expect(leg4.ident).toBe('ERBUS');
 
                 const leg5 = assertNotDiscontinuity(FlightPlanService.active.allLegs[5]);
 
-                expect(leg5.ident).toEqual('SELAP');
+                expect(leg5.ident).toBe('SELAP');
             });
 
             it('without duplicate', async () => {
@@ -86,11 +81,11 @@ describe('the flight plan service', () => {
 
                 const leg4 = assertNotDiscontinuity(FlightPlanService.active.allLegs[4]);
 
-                expect(leg4.ident).toEqual('ERBUS');
+                expect(leg4.ident).toBe('ERBUS');
 
                 const leg5 = assertNotDiscontinuity(FlightPlanService.active.allLegs[5]);
 
-                expect(leg5.ident).toEqual('DULPA');
+                expect(leg5.ident).toBe('DULPA');
             });
         });
 

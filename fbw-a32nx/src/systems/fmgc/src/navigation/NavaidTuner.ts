@@ -6,9 +6,8 @@ import { LandingSystemSelectionManager } from '@fmgc/navigation/LandingSystemSel
 import { NavaidSelectionManager, VorSelectionReason } from '@fmgc/navigation/NavaidSelectionManager';
 import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
 import { NavRadioUtils } from '@fmgc/navigation/NavRadioUtils';
-import { Arinc429SignStatusMatrix, Arinc429Word, NotificationManager } from '@flybywiresim/fbw-sdk';
+import { Arinc429SignStatusMatrix, Arinc429Word, NotificationManager, IlsNavaid, NdbNavaid, VhfNavaid, VhfNavaidType } from '@flybywiresim/fbw-sdk';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { IlsNavaid, NdbNavaid, VhfNavaid, VhfNavaidType } from 'msfs-navdata';
 
 interface NavRadioTuningStatus {
     frequency: number | null,

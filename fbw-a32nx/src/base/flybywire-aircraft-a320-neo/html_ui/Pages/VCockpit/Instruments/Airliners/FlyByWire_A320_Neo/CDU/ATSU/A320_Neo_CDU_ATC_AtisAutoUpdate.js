@@ -69,7 +69,7 @@ class CDUAtcAtisAutoUpdate {
             [""],
             [""],
             [""],
-            ["\xa0ATC MENU"],
+            ["\xa0ATIS MENU"],
             ["<RETURN"]
         ]);
 
@@ -77,7 +77,7 @@ class CDUAtcAtisAutoUpdate {
             return mcdu.getDelaySwitchPage();
         };
         mcdu.onLeftInput[5] = () => {
-            CDUAtcMenu.ShowPage(mcdu);
+            CDUAtcAtisMenu.ShowPage(mcdu);
         };
 
         mcdu.rightInputDelay[1] = () => {

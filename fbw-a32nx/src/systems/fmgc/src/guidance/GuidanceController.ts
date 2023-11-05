@@ -13,10 +13,10 @@ import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { GeometryFactory } from '@fmgc/guidance/geometry/GeometryFactory';
 import { FlightPlanIndex } from '@fmgc/flightplanning/new/FlightPlanManager';
 import { HMLeg } from '@fmgc/guidance/lnav/legs/HX';
-import { SimVarString } from '@flybywiresim/fbw-sdk';
+import { ApproachUtils, SimVarString, ApproachType, LegType } from '@flybywiresim/fbw-sdk';
 import { getFlightPhaseManager } from '@fmgc/flightphase';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { ApproachType, LegType } from 'msfs-navdata';
+
 import { BaseFlightPlan } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vnav/VerticalProfileComputationParameters';
 import { SpeedLimit } from '@fmgc/guidance/vnav/SpeedLimit';
@@ -48,7 +48,6 @@ export interface Fmgc {
     getDescentSpeedLimit(): SpeedLimit,
     getPreSelectedClbSpeed(): Knots,
     getPreSelectedCruiseSpeed(): Knots,
-    getPreSelectedDescentSpeed(): Knots,
     getTakeoffFlapsSetting(): FlapConf | undefined
     getManagedDescentSpeed(): Knots,
     getManagedDescentSpeedMach(): Mach,
@@ -113,9 +112,20 @@ export class GuidanceController {
 
     activeLegDtg: NauticalMiles;
 
+    /** Used for lateral guidance */
     activeLegCompleteLegPathDtg: NauticalMiles;
 
     displayActiveLegCompleteLegPathDtg: NauticalMiles;
+
+    /**
+     * Used for display in the MCDU and vertical guidance.
+     * This is distinctly different from {@link activeLegCompleteLegPathDtg}. For example, path capture transitions use dtg = 1 for lateral guidance,
+     * but vertical guidance and predictions need an accurate distance.
+     */
+    activeLegAlongTrackCompletePathDtg: NauticalMiles;
+
+    /** * Used for vertical guidance */
+    alongTrackDistanceToDestination: NauticalMiles;
 
     focusedWaypointCoordinates: Coordinates = { lat: 0, long: 0 };
 
@@ -256,7 +266,7 @@ export class GuidanceController {
 
             // TODO fms-v2: port getDistanceToDestination and appr.longName
             if (phase > FmgcFlightPhase.Cruise || (phase === FmgcFlightPhase.Cruise /* && this.flightPlanManager.getDistanceToDestination(FlightPlans.Active) < 250) */)) {
-                apprMsg = appr.ident;
+                apprMsg = ApproachUtils.longApproachName(appr);
             }
         }
 
@@ -433,7 +443,9 @@ export class GuidanceController {
     tryUpdateFlightPlanGeometry(flightPlanIndex: number, alternate = false, force = false) {
         const geometryPIndex = (alternate ? 100 : 0) + flightPlanIndex;
 
-        const lastVersion = this.lastFlightPlanVersions.get(flightPlanIndex);
+        // Use geometry index here because main and alternate flight plans have the same indices
+        // but different versions. Otherwise, we keep recomputing the geometry because their versions will not be the same
+        const lastVersion = this.lastFlightPlanVersions.get(geometryPIndex);
 
         if (!this.flightPlanService.has(flightPlanIndex)) {
             this.flightPlanGeometries.delete(geometryPIndex);
@@ -448,7 +460,7 @@ export class GuidanceController {
             return;
         }
 
-        this.lastFlightPlanVersions.set(flightPlanIndex, currentVersion);
+        this.lastFlightPlanVersions.set(geometryPIndex, currentVersion);
 
         const geometry = this.flightPlanGeometries.get(geometryPIndex);
 
@@ -478,6 +490,11 @@ export class GuidanceController {
             plan.activeLegIndex,
             plan.activeLegIndex, // TODO active transition index for temporary plan...?
         );
+
+        // Update distance to destination
+        geometry.updateDistances(plan, Math.max(0, plan.activeLegIndex - 1), plan.firstMissedApproachLegIndex);
+        // Update distances in missed approach segment
+        geometry.updateDistances(plan, Math.max(plan.firstMissedApproachLegIndex), plan.legCount);
     }
 
     /**

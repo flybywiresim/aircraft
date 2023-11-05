@@ -12,9 +12,8 @@ import { courseToFixDistanceToGo, fixToFixGuidance } from '@fmgc/guidance/lnav/C
 import { Transition } from '@fmgc/guidance/lnav/Transition';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { bearingTo, placeBearingDistance } from 'msfs-geo';
-import { Waypoint } from 'msfs-navdata';
+import { Waypoint, MathUtils } from '@flybywiresim/fbw-sdk';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
-import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { PathVector, PathVectorType } from '../PathVector';
 
 export class DFLeg extends XFLeg {

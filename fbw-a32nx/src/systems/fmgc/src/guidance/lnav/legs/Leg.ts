@@ -7,8 +7,9 @@ import { SegmentType } from '@fmgc/flightplanning/FlightPlanSegment';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { Guidable } from '@fmgc/guidance/Guidable';
 import { distanceTo } from 'msfs-geo';
-import { Waypoint } from 'msfs-navdata';
+import { Waypoint } from '@flybywiresim/fbw-sdk';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
+import { LegCalculations } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 
 export abstract class Leg extends Guidable {
     segment: SegmentType;
@@ -34,6 +35,8 @@ export abstract class Leg extends Guidable {
     predictedTas: Knots
 
     predictedGs: Knots
+
+    calculated?: LegCalculations
 
     get disableAutomaticSequencing(): boolean {
         return false;

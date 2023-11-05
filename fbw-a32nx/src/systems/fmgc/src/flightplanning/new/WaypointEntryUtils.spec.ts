@@ -4,20 +4,15 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { jest } from '@jest/globals';
-import fetch from 'node-fetch';
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { setupNavigraphDatabase } from '@fmgc/flightplanning/new/test/Database';
 import { WaypointEntryUtils } from '@fmgc/flightplanning/new/WaypointEntryUtils';
 import { DisplayInterface } from '@fmgc/flightplanning/new/interface/DisplayInterface';
-import { DatabaseItem, Waypoint } from 'msfs-navdata';
+import { DatabaseItem, Waypoint } from '@flybywiresim/fbw-sdk';
 import { FmsErrorType } from '@fmgc/FmsError';
 import { Coordinates, placeBearingDistance, placeBearingIntersection } from 'msfs-geo';
 import { WaypointFactory } from '@fmgc/flightplanning/new/waypoints/WaypointFactory';
 import { DataInterface } from './interface/DataInterface';
-
-if (!globalThis.fetch) {
-    globalThis.fetch = fetch;
-}
 
 jest.setTimeout(120_000);
 

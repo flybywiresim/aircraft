@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { NdbNavaid, VhfNavaid, Waypoint } from 'msfs-navdata';
+import { NdbNavaid, VhfNavaid, Waypoint } from '@flybywiresim/fbw-sdk';
 
 export interface FixInfoRadial {
     trueBearing: DegreesTrue,

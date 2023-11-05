@@ -98,11 +98,11 @@ class CDUHoldAtPage {
         const rows = [];
         rows.push([`${currentHold.type !== HoldType.Modified ? defaultTitle : ''}HOLD\xa0{small}AT{end}\xa0{green}${ident}{end}`]);
         rows.push(['INB CRS', '', '']);
-        rows.push([`{${tmpy ? 'yellow' : 'cyan'}}${modifiedHold.inboundMagneticCourse !== undefined ? '{big}' : '{small}'}${currentHold.inboundMagneticCourse.toFixed(0).padStart(3, '0')}°{end}{end}`]);
+        rows.push([`{${tmpy ? 'yellow' : 'cyan'}}${modifiedHold && modifiedHold.inboundMagneticCourse !== undefined ? '{big}' : '{small}'}${currentHold.inboundMagneticCourse.toFixed(0).padStart(3, '0')}°{end}{end}`]);
         rows.push(['TURN', currentHold.type === HoldType.Modified ? 'REVERT TO' : '']);
-        rows.push([`{${tmpy ? 'yellow' : 'cyan'}}${modifiedHold.turnDirection !== undefined ? '{big}' : '{small}'}${currentHold.turnDirection === TurnDirection.Left ? 'L' : 'R'}{end}`, `{cyan}${currentHold.type === HoldType.Modified ? defaultRevert : ''}{end}`]);
+        rows.push([`{${tmpy ? 'yellow' : 'cyan'}}${modifiedHold && modifiedHold.turnDirection !== undefined ? '{big}' : '{small}'}${currentHold.turnDirection === TurnDirection.Left ? 'L' : 'R'}{end}`, `{cyan}${currentHold.type === HoldType.Modified ? defaultRevert : ''}{end}`]);
         rows.push(['TIME/DIST']);
-        rows.push([`{${tmpy ? 'yellow' : 'cyan'}}${modifiedHold.time !== undefined ? '{big}' : '{small}'}${displayTime.toFixed(1).padStart(4, '\xa0')}{end}/${modifiedHold.distance !== undefined ? '{big}' : '{small}'}${displayDistance.toFixed(1)}{end}{end}`]);
+        rows.push([`{${tmpy ? 'yellow' : 'cyan'}}${modifiedHold && modifiedHold.time !== undefined ? '{big}' : '{small}'}${displayTime.toFixed(1).padStart(4, '\xa0')}{end}/${modifiedHold && modifiedHold.distance !== undefined ? '{big}' : '{small}'}${displayDistance.toFixed(1)}{end}{end}`]);
         rows.push(['', '', '\xa0LAST EXIT']);
         rows.push(['', '', '{small}UTC\xa0\xa0\xa0FUEL{end}']);
         rows.push(['', '', '----\xa0\xa0----']);
@@ -180,15 +180,6 @@ class CDUHoldAtPage {
             mcdu.onRightInput[1] = async () => {
                 mcdu.flightPlanService.revertHoldToComputed(waypointIndexFP);
 
-                await mcdu.flightPlanService.addOrEditManualHold(
-                    waypointIndexFP,
-                    CDUHoldAtPage.computeDesiredHold(leg.additionalData),
-                    leg.additionalData.modifiedHold,
-                    leg.additionalData.defaultHold,
-                    forPlan,
-                    inAlternate,
-                );
-
                 CDUHoldAtPage.DrawPage(mcdu, waypointIndexFP, originalFpIndex, forPlan, inAlternate);
             };
         }
@@ -216,11 +207,11 @@ class CDUHoldAtPage {
         const modifiedHold = leg.modifiedHold;
         const defaultHold = leg.defaultHold;
 
-        const pilotTimeOrDistance = modifiedHold.time !== undefined || modifiedHold.distance !== undefined;
+        const pilotTimeOrDistance = modifiedHold && (modifiedHold.time !== undefined || modifiedHold.distance !== undefined);
 
         return {
-            inboundMagneticCourse: modifiedHold.inboundMagneticCourse !== undefined ? modifiedHold.inboundMagneticCourse : defaultHold.inboundMagneticCourse,
-            turnDirection: modifiedHold.turnDirection !== undefined ? modifiedHold.turnDirection : defaultHold.turnDirection,
+            inboundMagneticCourse: modifiedHold && modifiedHold.inboundMagneticCourse !== undefined ? modifiedHold.inboundMagneticCourse : defaultHold.inboundMagneticCourse,
+            turnDirection: modifiedHold && modifiedHold.turnDirection !== undefined ? modifiedHold.turnDirection : defaultHold.turnDirection,
             distance: pilotTimeOrDistance ? modifiedHold.distance : defaultHold.distance,
             time: pilotTimeOrDistance ? modifiedHold.time : defaultHold.time,
             type: modifiedHold !== undefined ? modifiedHold.type : defaultHold.type,
@@ -228,6 +219,10 @@ class CDUHoldAtPage {
     }
 
     static async modifyHold(mcdu, waypointIndexFP, /** @type {FlightPlanLeg} */ waypointData, param, value, forPlan, inAlternate) {
+        if (waypointData.modifiedHold === undefined) {
+            waypointData.modifiedHold = {};
+        }
+
         waypointData.modifiedHold.type = HoldType.Modified;
 
         if (param === 'time') {

@@ -4,6 +4,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { GaugeComponent, GaugeMarkerComponent, splitDecimals } from '@instruments/common/gauges';
+import { UnitType } from '@microsoft/msfs-sdk';
 import { useSimVar, usePersistentProperty } from '@flybywiresim/fbw-sdk';
 import { fuelForDisplay } from '../../Common/FuelFunctions';
 
@@ -213,9 +214,16 @@ export const PressureComponent = () => {
 };
 
 export const CondComponent = () => {
-    const [cockpitCabinTemp] = useSimVar('L:A32NX_COND_CKPT_TEMP', 'celsius', 1000);
-    const [fwdCabinTemp] = useSimVar('L:A32NX_COND_FWD_TEMP', 'celsius', 1000);
-    const [aftCabinTemp] = useSimVar('L:A32NX_COND_AFT_TEMP', 'celsius', 1000);
+    const [unit] = usePersistentProperty('CONFIG_USING_METRIC_UNIT', '1');
+    let [cockpitCabinTemp] = useSimVar('L:A32NX_COND_CKPT_TEMP', 'celsius', 1000);
+    let [fwdCabinTemp] = useSimVar('L:A32NX_COND_FWD_TEMP', 'celsius', 1000);
+    let [aftCabinTemp] = useSimVar('L:A32NX_COND_AFT_TEMP', 'celsius', 1000);
+
+    if (unit === '0') { //  converting to F if 'lbs' selected in EFB
+        cockpitCabinTemp = UnitType.CELSIUS.convertTo(cockpitCabinTemp, UnitType.FAHRENHEIT);
+        fwdCabinTemp = UnitType.CELSIUS.convertTo(fwdCabinTemp, UnitType.FAHRENHEIT);
+        aftCabinTemp = UnitType.CELSIUS.convertTo(aftCabinTemp, UnitType.FAHRENHEIT);
+    }
 
     return (
         <>
@@ -227,7 +235,7 @@ export const CondComponent = () => {
             <text id="ForwardTemp" className="Standard Green" x="150" y="448">{fwdCabinTemp.toFixed(0)}</text>
             <text className="Standard" x="245" y="425">AFT</text>
             <text id="AftTemp" className="Standard Green" x="235" y="448">{aftCabinTemp.toFixed(0)}</text>
-            <text className="Medium Cyan" x="310" y="455">°C</text>
+            <text className="Medium Cyan" x="310" y="455">{unit === '1' ? '°C' : '°F'}</text>
         </>
     );
 };

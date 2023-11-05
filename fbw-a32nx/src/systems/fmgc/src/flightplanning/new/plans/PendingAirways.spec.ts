@@ -3,16 +3,11 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import fetch from 'node-fetch';
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { setupNavigraphDatabase } from '@fmgc/flightplanning/new/test/Database';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/new/NavigationDatabaseService';
 import { loadSingleWaypoint } from '@fmgc/flightplanning/new/segments/enroute/WaypointLoading';
 import { dumpFlightPlan } from '@fmgc/flightplanning/new/test/FlightPlan';
-
-if (!globalThis.fetch) {
-    globalThis.fetch = fetch;
-}
 
 describe('pending airways entry', () => {
     beforeEach(() => {

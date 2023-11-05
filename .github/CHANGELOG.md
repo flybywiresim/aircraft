@@ -5,6 +5,16 @@
 <!-- Use the following format below -->
 <!--  1. [Changed Area] Title of changes - @github username (Name)  -->
 
+## 0.12.0
+
+1. [EFB/ATSU] Added NOAA (aviationweather.gov) as a METAR source - @tracernz (Mike)
+1. [EFB] Fixed the main page and landing calculator to use the selected METAR source - @tracernz (Mike)
+1. [FMS] Improve layout of PERF CLB, PERF CRZ and PERF DES pages according to H3 - @BlueberryKing (BlueberryKing)
+1. [FMS] Implement CHECK SPEED MODE message - @BlueberryKing (BlueberryKing)
+1. [PFD] The ILS frequency is now visible even when a LOC is not received - @tracernz (Mike)
+1. [ATSU] Fixed GROUND REQ page not updating after successful station insert - @BravoMike99 (bruno_pt99)
+1. [MCDU] Dash alternate time predictions if alternate fuel is manually inserted @BravoMike99 (bruno_pt99)
+
 ## 0.11.0
 
 1. [FMS] Implement vertical navigation functions - @BlueberryKing (BlueberryKing)
@@ -40,6 +50,24 @@
 1. [MCDU] ZFW/ZFWCG auto-fill uses desired values when boarding in progress - @tracernz (Mike)
 1. [EFB/FWC] Auto Call Outs selectable - @tracernz (Mike)
 1. [FWC] Added "twenty five hundred" and "two thousand" callouts - @tracernz (Mike)
+1. [FMS] Load procedures that reference a runway correctly - @tracernz (Mike)
+1. [MCDU/ND] Corrected altitude formatting with respect to transition altitude and transition level - @tracernz (Mike)
+1. [PFD] Adjusted size of pitch trim messages - @tracernz (Mike)
+1. [BLEED] Allow engine start from crossbleed air - @BlueberryKing (BlueberryKing)
+1. [BLEED] Improve bleed page visuals on the SD - @BlueberryKing (BlueberryKing)
+1. [BLEED] Use more accurate pneumatic valves and sensors - @BlueberryKing (BlueberryKing)
+1. [EFB] flyPad OS 3.2 - Cosmetic changes for throttle configuration settings and support for multiple airframes - @2hwk (2cas)
+1. [EFB/PAYLOAD] flyPad OS 3.2 - Allow for multi-gate boarding when multiple doors are open - @2hwk (2cas)
+1. [PAYLOAD] Re-enabled FBW sounds when using GSX Integration
+1. [SD] Connect SD BLEED page APU bleed pressure indication to correct ADRs - @BlueberryKing (BlueberryKing)
+1. [FMS] Use station declination when appropriate for fix info and place/bearing radials - @tracernz (Mike)
+1. [MCDU] Fixed the FMGC annunciator light not illuminating - @tracernz (Mike)
+1. [COND] Add Air Conditioning systems failures - @mjuhe (Miquel Juhe)
+1. [COND] Fixed Temp-Indication on CRZ page showing cockpit temperature for fwd and aft cabin - @cptnuss-ops (Lukas)
+1. [FMS] Show ILS ident and frequency on ARRIVAL page - @tracernz (Mike)
+1. [EFB/ATSU] Use MSFS METAR data rather than FSX cloud data from FBW API - @tracernz (Mike)
+1. [APU] Added xfeed APU fuel capabilities - @Taz5150 (TazX [Z+1]#0405)
+1. [ATSU] Fix ATIS Auto Update LSK6L to ATIS page instead of ATC MENU - @BravoMike99 (bruno_pt99)
 
 ## 0.10.0
 
@@ -165,7 +193,6 @@
 1. [EFB] Added pause at T/D function - @2hwk (2Cas#1022)
 1. [LIGHTS] Fixed trim decal emissive and floods - @FinalLightNL (FinalLight#2113)
 1. [FLIGHTMODEL/FUEL] Fix outer tank transfer behaviour - @donstim (donbikes#4084)
-
 
 ## 0.9.0
 
@@ -1302,3 +1329,4 @@
 1. [ISIS] Fixed issue where ISIS was allowing a bug to be set while in the OFF state - Patrick Macken (@Pat M on
    Discord)
 1. [EFB] Restructured APIs and made Navigraph Auth a reusable component - @MicahBCode (Mischa Binder)
+1. [ECAM] Added F units to CRZ and COND pages for Cabin temps.  Currently tied to kg/lbs  option in EFB -Patrick Macken  (@PatM on Discord)

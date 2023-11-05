@@ -16,8 +16,7 @@ import { CFLeg } from '@fmgc/guidance/lnav/legs/CF';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { AFLeg } from '@fmgc/guidance/lnav/legs/AF';
 import { bearingTo, placeBearingDistance } from 'msfs-geo';
-import { TurnDirection } from 'msfs-navdata';
-import { MathUtils } from '@flybywiresim/fbw-sdk';
+import { TurnDirection, MathUtils } from '@flybywiresim/fbw-sdk';
 import {
     arcDistanceToGo,
     arcGuidance,
