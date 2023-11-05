@@ -5,12 +5,16 @@
 import { usePersistentProperty } from '@flybywiresim/fbw-sdk';
 
 import React, { useMemo, useState } from 'react';
-import { FailureGenContext, FailureGenData, setNewSetting } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
+import { FailureGenContext, FailureGenData, FailureGenMode, setNewSetting } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
 import { t } from 'instruments/src/EFB/translation';
 import { FailureGeneratorSingleSetting } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorSettingsUI';
 
 const settingName = 'EFB_FAILURE_GENERATOR_SETTING_TIMER';
-const additionalSetting = [2, 1, 2, 300, 600];
+const defaultNumberOfFailuresAtOnce = 1;
+const defaultMaxNumberOfFailures = 2;
+const defaultMinDelay = 300;
+const defaultMaxDelay = 600;
+const additionalSetting = [FailureGenMode.FailureGenTakeOff, defaultNumberOfFailuresAtOnce, defaultMaxNumberOfFailures, defaultMinDelay, defaultMaxDelay];
 const numberOfSettingsPerGenerator = 5;
 const uniqueGenPrefix = 'D';
 const genName = 'Timer';

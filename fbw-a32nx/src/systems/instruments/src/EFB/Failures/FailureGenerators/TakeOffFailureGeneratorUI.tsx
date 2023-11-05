@@ -5,14 +5,24 @@
 import { usePersistentProperty } from '@flybywiresim/fbw-sdk';
 
 import React, { useMemo, useState } from 'react';
-import { FailureGenContext, FailureGenData, setNewSetting } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
+import { FailureGenContext, FailureGenData, FailureGenMode, setNewSetting } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
 import { t } from 'instruments/src/EFB/translation';
 import { FailureGeneratorSingleSetting, FailureGeneratorText } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorSettingsUI';
 
 const settingName = 'EFB_FAILURE_GENERATOR_SETTING_TAKEOFF';
 const numberOfSettingsPerGenerator = 10;
 const uniqueGenPrefix = 'E';
-const additionalSetting = [3, 1, 2, 1, 0.33, 0.33, 30, 95, 140, 40];
+const defaultNumberOfFailuresAtOnce = 1;
+const defaultMaxNumberOfFailures = 2;
+const defaultChancePerTakeOff = 1;
+const defaultProbabilityLowSpeed = 0.33;
+const defaultProbabilityMedSpeed = 0.33;
+const defaultMinSpeed = 30;
+const defaultMinMedSpeed = 95;
+const defaultMedHighSpeed = 140;
+const defaultHGLMaxHundredsFeet = 40;
+const additionalSetting = [FailureGenMode.FailureGenRepeat, defaultNumberOfFailuresAtOnce, defaultMaxNumberOfFailures, defaultChancePerTakeOff, defaultProbabilityLowSpeed,
+    defaultProbabilityMedSpeed, defaultMinSpeed, defaultMinMedSpeed, defaultMedHighSpeed, defaultHGLMaxHundredsFeet];
 const genName = 'TakeOff';
 const alias = () => t('Failures.Generators.GenTakeOff');
 const disableTakeOffRearm = true;

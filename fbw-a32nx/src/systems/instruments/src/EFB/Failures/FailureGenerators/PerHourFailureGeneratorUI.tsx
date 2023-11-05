@@ -5,12 +5,15 @@
 import { usePersistentProperty } from '@flybywiresim/fbw-sdk';
 
 import React, { useMemo, useState } from 'react';
-import { FailureGenContext, FailureGenData, setNewSetting } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
+import { FailureGenContext, FailureGenData, FailureGenMode, setNewSetting } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
 import { t } from 'instruments/src/EFB/translation';
 import { FailureGeneratorSingleSetting, FailureGeneratorText } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorSettingsUI';
 
 const settingName = 'EFB_FAILURE_GENERATOR_SETTING_PERHOUR';
-const additionalSetting = [3, 1, 2, 0.1];
+const defaultNumberOfFailuresAtOnce = 1;
+const defaultMaxNumberOfFailures = 2;
+const defaultProbabilityPerHour = 0.1;
+const additionalSetting = [FailureGenMode.FailureGenRepeat, defaultNumberOfFailuresAtOnce, defaultMaxNumberOfFailures, defaultProbabilityPerHour];
 const numberOfSettingsPerGenerator = 4;
 const uniqueGenPrefix = 'C';
 const genName = 'PerHour';

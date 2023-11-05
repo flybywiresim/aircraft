@@ -14,6 +14,8 @@ import { EventBus } from '@microsoft/msfs-sdk';
 import { useEventBus } from 'instruments/src/EFB/event-bus-provider';
 import { useFailuresOrchestrator } from '../../failures-orchestrator-provider';
 
+export enum FailureGenMode {FailureGenOff = 0, FailureGenOnce = 1, FailureGenTakeOff = 2, FailureGenRepeat = 3}
+
 export interface FailureGenFailureList {
     failurePool: { generatorType: string, generatorNumber: number, failureString: string };
   }

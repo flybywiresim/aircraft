@@ -5,13 +5,20 @@
 import { usePersistentProperty } from '@flybywiresim/fbw-sdk';
 
 import React, { useMemo, useState } from 'react';
-import { FailureGenContext, FailureGenData, setNewSetting } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
+import { FailureGenContext, FailureGenData, FailureGenMode, setNewSetting } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
 import { t } from 'instruments/src/EFB/translation';
 import { ArrowDownRight, ArrowUpRight } from 'react-bootstrap-icons';
 import { ButtonIcon, FailureGeneratorChoiceSetting, FailureGeneratorSingleSetting } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorSettingsUI';
 
+enum Direction {Climb=0, Descent=1}
+
 const settingName = 'EFB_FAILURE_GENERATOR_SETTING_ALTITUDE';
-const additionalSetting = [2, 1, 2, 0, 80, 250];
+const defaultNumberOfFailuresAtOnce = 1;
+const defaultMaxNumberOfFailures = 2;
+const defaultMinAltitudeHundredsFeet = 80;
+const defaultMaxAltitudeHundredsFeet = 250;
+const additionalSetting = [FailureGenMode.FailureGenTakeOff, defaultNumberOfFailuresAtOnce, defaultMaxNumberOfFailures, Direction.Climb,
+    defaultMinAltitudeHundredsFeet, defaultMaxAltitudeHundredsFeet];
 const numberOfSettingsPerGenerator = 6;
 const uniqueGenPrefix = 'A';
 const genName = 'Altitude';
