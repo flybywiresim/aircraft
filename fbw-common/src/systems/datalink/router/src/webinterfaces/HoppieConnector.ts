@@ -387,6 +387,11 @@ export class HoppieConnector {
         }
     }
 
+    /**
+     * Gets the interval to poll the Hoppie API in milliseconds.
+     * Warning: This will return a different random time on each invocation!
+     * @returns The polling interval in milliseconds.
+     */
     public static pollInterval(): number {
         // To comply with Hoppie rate limits, we choose a random number between 45 and 75, as recommend by Hoppie. Ref to: https://www.hoppie.nl/acars/system/tech.html
         const pollTimeSeconds = Math.floor(Math.random() * (75 - 45 + 1)) + 45;
