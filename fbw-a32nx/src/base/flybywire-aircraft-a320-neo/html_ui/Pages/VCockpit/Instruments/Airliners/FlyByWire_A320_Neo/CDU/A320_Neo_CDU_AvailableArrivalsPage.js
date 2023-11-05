@@ -282,7 +282,7 @@ class CDUAvailableArrivalsPage {
         }
         let up = false;
         let down = false;
-        const maxPage = starSelection ? (selectedArrival ? Math.max(Math.ceil(selectedArrival.enrouteTransitions.length / ArrivalPagination.TRNS_PAGE) - 1, Math.ceil(matchingArrivals.length / ArrivalPagination.ARR_PAGE) - 1) : Math.ceil(matchingArrivals.length / ArrivalPagination.ARR_PAGE) - 1) : (pageCurrent, Math.ceil(approaches.length / ArrivalPagination.ARR_PAGE) - 1);
+        const maxPage = starSelection ? (selectedArrival ? Math.max(Math.ceil(selectedArrival.enrouteTransitions.length / ArrivalPagination.TRNS_PAGE) - 1, Math.ceil((matchingArrivals.length + 1) / ArrivalPagination.ARR_PAGE) - 1) : Math.ceil((matchingArrivals.length + 1) / ArrivalPagination.ARR_PAGE) - 1) : (pageCurrent, Math.ceil(approaches.length / ArrivalPagination.ARR_PAGE) - 1);
         if (pageCurrent < maxPage) {
             mcdu.onUp = () => {
                 pageCurrent++;
