@@ -204,12 +204,6 @@ export default new TaskOfTasks("all", [
 
         // Group all typescript and react build tasks together.
         new TaskOfTasks("build", [
-            new ExecTask("fmgc",
-                "npm run build-a380x:fmgc",
-                [
-                    "fbw-a380x/src/systems/fmgc",
-                    "fbw-a380x/out/flybywire-aircraft-a380-842/html_ui/JS/fbw-a32nx/fmgc"
-                ]),
             new TaskOfTasks("instruments", getA380XInstrumentsIgniterTasks(), true),
         ], true),
 

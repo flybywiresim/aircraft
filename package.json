@@ -61,11 +61,10 @@
     "build-a380x:metadata": "node scripts/metadata.js fbw-a380x/out/flybywire-aircraft-a380-842 a380x",
     "build-a380x:manifest": "node scripts/build_a380x.js",
     
-    "build-a380x:fmgc": "node fbw-a380x/src/systems/fmgc/build.js",
     "build-a380x:instruments": "mach build --config fbw-a380x/mach.config.js --work-in-config-dir",
 
-    "build-a380x:all": "npm run build-a380x:copy-base-files && npm run build-a380x:systems && npm run build-a380x:fadec && npm run build-a380x:fbw && npm run build-a380x:flypad-backend && npm run build-a380x:fmgc && npm run build-a380x:instruments && npm run build-a380x:metadata && npm run build-a380x:manifest",
 
+    "build-a380x:all": "npm run build-a380x:copy-base-files && npm run build-a380x:systems && npm run build-a380x:fadec && npm run build-a380x:fbw && npm run build-a380x:flypad-backend && npm run build-a380x:instruments && npm run build-a380x:metadata && npm run build-a380x:manifest",
     "====== INGAMEPANELS CHECKLIST FIX ====": "==========================================",
     "build-ingamepanels-checklist-fix:copy-base-package": "mkdir -p fbw-ingamepanels-checklist-fix/out/flybywire-ingamepanels-checklist-fix && (rsync -a fbw-ingamepanels-checklist-fix/src/base/flybywire-ingamepanels-checklist-fix fbw-ingamepanels-checklist-fix/out/ || cp -a -u fbw-ingamepanels-checklist-fix/src/base/flybywire-ingamepanels-checklist-fix fbw-ingamepanels-checklist-fix/out/)",
     "build-ingamepanels-checklist-fix:copy-base-files": "npm run build-ingamepanels-checklist-fix:copy-base-package",
