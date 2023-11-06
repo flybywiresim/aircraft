@@ -2293,16 +2293,14 @@ class FMCMainDisplay extends BaseAirliners {
      * @returns {number}
      */
     tryGetExtraFuel(useFOB = false) {
-        const isFlying = parseInt(SimVar.GetSimVarValue("GROUND VELOCITY", "knots")) > 30;
-
         if (useFOB) {
-            return this.getFOB() - this.getTotalTripFuelCons() - this._minDestFob - this.taxiFuelWeight - (isFlying ? 0 : this.getRouteReservedWeight());
+            return this.getFOB() - this.getTotalTripFuelCons() - this._minDestFob - this.taxiFuelWeight - (this.getRouteReservedWeight());
         } else {
-            return this.blockFuel - this.getTotalTripFuelCons() - this._minDestFob - this.taxiFuelWeight - (isFlying ? 0 : this.getRouteReservedWeight());
+            return this.blockFuel - this.getTotalTripFuelCons() - this._minDestFob - this.taxiFuelWeight - (this.getRouteReservedWeight());
         }
     }
 
-    /**
+    /**getRouteReservedWeight
      * EXPERIMENTAL
      * Attempts to calculate the extra time
      */
@@ -3456,6 +3454,9 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     getRouteReservedWeight() {
+        if (this.isFlying()) {
+            return 0;
+        }
         if (!this.routeReservedEntered() && (this._rteFinalCoeffecient !== 0)) {
             const fivePercentWeight = this._routeReservedPercent * this._routeTripFuelWeight / 100;
             const fiveMinuteHoldingWeight = (5 * this._rteFinalCoeffecient) / 1000;
@@ -3470,6 +3471,9 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     getRouteReservedPercent() {
+        if (this.isFlying()) {
+            return 0;
+        }
         if (isFinite(this._routeReservedWeight) && isFinite(this.blockFuel) && this._routeReservedWeight !== 0) {
             return this._routeReservedWeight / this._routeTripFuelWeight * 100;
         }
@@ -4847,6 +4851,10 @@ class FMCMainDisplay extends BaseAirliners {
 
     isOnGround() {
         return SimVar.GetSimVarValue("L:A32NX_LGCIU_1_NOSE_GEAR_COMPRESSED", "Number") === 1 || SimVar.GetSimVarValue("L:A32NX_LGCIU_2_NOSE_GEAR_COMPRESSED", "Number") === 1;
+    }
+
+    isFlying() {
+        return this.flightPhaseManager.phase >= FmgcFlightPhases.TAKEOFF && this.flightPhaseManager.phase < FmgcFlightPhases.DONE;
     }
     /**
      * Returns the maximum cruise FL for ISA temp and GW
