@@ -10,7 +10,7 @@ class CDUAocMenu {
             ["<OFP DATA", "BOARDING"],
             ["FUEL", "DELAY"],
             ["DIVERSION", "FREE TEXT"],
-            ["EMER ASSIST[color]magenta"]
+            ["EMER ASSIST[color]magenta"],
             ["\xa0SENT"],
             ["MESSAGES"],
             ["\xa0RECEIVED"],
