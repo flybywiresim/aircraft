@@ -144,13 +144,15 @@ export namespace GeometryFactory {
 
                 const prevLeg = geometry.legs.get(i - 1);
 
-                const oldInboundTransition = geometry.transitions.get(i - 1);
-                const newInboundTransition = TransitionPicker.forLegs(prevLeg, newLeg);
+                if (prevLeg && newLeg) {
+                    const oldInboundTransition = geometry.transitions.get(i - 1);
+                    const newInboundTransition = TransitionPicker.forLegs(prevLeg, newLeg);
 
-                const transitionsMatch = oldInboundTransition?.repr === newInboundTransition?.repr;
+                    const transitionsMatch = oldInboundTransition?.repr === newInboundTransition?.repr;
 
-                if (!transitionsMatch && doGenerateTransitions && doGenerateTransitionsForLeg(newLeg, i, flightPlan)) {
-                    geometry.transitions.set(i - 1, newInboundTransition);
+                    if (!transitionsMatch && doGenerateTransitions && doGenerateTransitionsForLeg(newLeg, i, flightPlan)) {
+                        geometry.transitions.set(i - 1, newInboundTransition);
+                    }
                 }
             } else {
                 if (LnavConfig.DEBUG_GEOMETRY) {

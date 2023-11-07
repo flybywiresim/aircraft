@@ -17,13 +17,17 @@ import { FlightPlanInterface } from '@fmgc/flightplanning/new/FlightPlanInterfac
 import { AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
 
 export class FlightPlanService implements FlightPlanInterface {
-    private readonly bus = new EventBus();
-
-    private readonly flightPlanManager = new FlightPlanManager(this.bus, Math.round(Math.random() * 10_000), true);
+    private readonly flightPlanManager: FlightPlanManager;
 
     private config: FpmConfig = FpmConfigs.A320_HONEYWELL_H3;
 
     navigationDatabase: NavigationDatabase;
+
+    constructor(
+        private readonly bus: EventBus,
+    ) {
+        this.flightPlanManager = new FlightPlanManager(this.bus, Math.round(Math.random() * 10_000), true);
+    }
 
     createFlightPlans() {
         this.flightPlanManager.create(FlightPlanIndex.Active);
