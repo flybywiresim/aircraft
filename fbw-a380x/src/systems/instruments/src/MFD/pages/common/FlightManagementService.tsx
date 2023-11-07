@@ -18,7 +18,9 @@ export class MfdFlightManagementService {
     public revisedWaypointIsAltn = Subject.create<boolean>(false);
 
     public revisedWaypoint(): Fix | undefined {
-        if (this.revisedWaypointIndex.get() && this.flightPlanService.has(this.revisedWaypointPlanIndex.get())) {
+        if (this.revisedWaypointIndex.get()
+        && this.flightPlanService.has(this.revisedWaypointPlanIndex.get())
+    && this.flightPlanService.get(this.revisedWaypointPlanIndex.get()).elementAt(this.revisedWaypointIndex.get()).isDiscontinuity === false) {
             return this.flightPlanService.get(this.revisedWaypointPlanIndex.get()).legElementAt(this.revisedWaypointIndex.get())?.definition?.waypoint;
         }
         return undefined;

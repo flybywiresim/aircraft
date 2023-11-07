@@ -77,7 +77,9 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
             },
         },
         {
-            title: (!altnFlightPlan && fpln.loadedFlightPlan.legElementAt(realLegIndex).overfly === true) ? 'DELETE OVERFLY *' : 'OVERFLY *',
+            title: (!altnFlightPlan
+                && ![FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type)
+                && fpln.loadedFlightPlan.legElementAt(realLegIndex).overfly === true) ? 'DELETE OVERFLY *' : 'OVERFLY *',
             disabled: altnFlightPlan || [FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type),
             onSelectCallback: () => fpln.props.fmService.flightPlanService.toggleOverfly(legIndex, planIndex),
         },

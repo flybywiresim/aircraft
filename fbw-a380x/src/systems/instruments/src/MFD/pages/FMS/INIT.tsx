@@ -128,7 +128,13 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
         const simBriefUserId = NXDataStore.get('CONFIG_SIMBRIEF_USERID', '');
 
         if (!simBriefUserId) {
-            this.props.fmService.mfd.showFmsErrorMessageFreeText({ message: 'NO SIMBRIEF PILOT ID PROVIDED', backgroundColor: 'none', cleared: false });
+            this.props.fmService.mfd.showFmsErrorMessageFreeText({
+                message: 'NO SIMBRIEF PILOT ID PROVIDED',
+                backgroundColor: 'none',
+                cleared: false,
+                isResolvedOverride: () => {},
+                onClearOverride: () => {},
+            });
         }
 
         this.simBriefOfp = await SimBriefUplinkAdapter.downloadOfpForUserID(simBriefUserId);

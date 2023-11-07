@@ -477,7 +477,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                 <div class="mfd-label-value-container">
                                     <span class="mfd-label mfd-spacing-right">T.O SHIFT</span>
                                     <InputField<number>
-                                        dataEntryFormat={new LengthFormat(Subject.create(1), this.originRunwayLength)} // TODO replace 4000 with length of RWY
+                                        dataEntryFormat={new LengthFormat(Subject.create(1), this.originRunwayLength)}
                                         mandatory={Subject.create(false)}
                                         value={this.toShift}
                                     />

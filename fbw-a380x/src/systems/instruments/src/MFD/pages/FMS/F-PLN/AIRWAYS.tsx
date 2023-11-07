@@ -197,7 +197,13 @@ class AirwayLine extends DisplayComponent<AirwayLineProps> {
                             if (success === true) {
                                 this.viaFieldDisabled.set(true);
                             } else {
-                                this.props.fmService.mfd.showFmsErrorMessageFreeText({ message: 'NOT ALLOWED', backgroundColor: 'none', cleared: false });
+                                this.props.fmService.mfd.showFmsErrorMessageFreeText({
+                                    message: 'NOT ALLOWED',
+                                    backgroundColor: 'none',
+                                    cleared: false,
+                                    isResolvedOverride: () => {},
+                                    onClearOverride: () => {},
+                                });
                             }
                             return success;
                         }}
@@ -236,7 +242,13 @@ class AirwayLine extends DisplayComponent<AirwayLineProps> {
                                 this.toFieldDisabled.set(true);
                                 this.props.nextLineCallback(chosenFix);
                             } else {
-                                this.props.fmService.mfd.showFmsErrorMessageFreeText({ message: 'NO INTERSECTION FOUND', backgroundColor: 'none', cleared: false });
+                                this.props.fmService.mfd.showFmsErrorMessageFreeText({
+                                    message: 'NO INTERSECTION FOUND',
+                                    backgroundColor: 'none',
+                                    cleared: false,
+                                    isResolvedOverride: () => {},
+                                    onClearOverride: () => {},
+                                });
                             }
                             return success;
                         }}

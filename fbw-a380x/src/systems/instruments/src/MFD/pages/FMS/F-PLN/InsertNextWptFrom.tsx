@@ -28,14 +28,13 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
 
     private async onModified(idx: number, text: string): Promise<void> {
         if (idx >= 0) {
-            if (this.props.availableWaypoints.get(idx)) {
+            const fpln = this.props.fmService.flightPlanService.get(this.props.fmService.revisedWaypointPlanIndex.get());
+            if (this.props.availableWaypoints.get(idx) && fpln.elementAt(this.props.fmService.revisedWaypointIndex.get() + idx + 1).isDiscontinuity === false) {
                 this.selectedWaypointIndex.set(idx);
                 this.props.visible.set(false);
                 await this.props.fmService.flightPlanService.nextWaypoint(
                     this.props.fmService.revisedWaypointIndex.get(),
-                    this.props.fmService.flightPlanService.get(
-                        this.props.fmService.revisedWaypointPlanIndex.get(),
-                    ).legElementAt(this.props.fmService.revisedWaypointIndex.get() + idx + 1).definition.waypoint,
+                    fpln.legElementAt(this.props.fmService.revisedWaypointIndex.get() + idx + 1).definition.waypoint,
                     this.props.fmService.revisedWaypointPlanIndex.get(),
                     this.props.fmService.revisedWaypointIsAltn.get(),
                 );
@@ -63,10 +62,14 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
         }, true));
 
         this.subs.push(this.props.fmService.revisedWaypointIndex.sub((wptIdx) => {
-            const wpt = this.props.fmService.flightPlanService.get(this.props.fmService.revisedWaypointPlanIndex.get()).legElementAt(wptIdx);
-            this.identRef.instance.innerText = wpt.ident;
-            this.coordinatesRef.instance.innerText = coordinateToString(wpt.definition.waypoint.location, false);
-            this.selectedWaypointIndex.set(undefined);
+            const fpln = this.props.fmService.flightPlanService.get(this.props.fmService.revisedWaypointPlanIndex.get());
+
+            if (fpln.elementAt(wptIdx).isDiscontinuity === false) {
+                const wpt = fpln.legElementAt(wptIdx);
+                this.identRef.instance.innerText = wpt.ident;
+                this.coordinatesRef.instance.innerText = coordinateToString(wpt.definition.waypoint.location, false);
+                this.selectedWaypointIndex.set(undefined);
+            }
         }));
     }
 
@@ -92,7 +95,9 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
                             <span ref={this.identRef} class="mfd-value-green bigger">
                                 {this.props.fmService.flightPlanService.get(
                                     this.props.fmService.revisedWaypointPlanIndex?.get(),
-                                )?.legElementAt(this.props.fmService.revisedWaypointIndex.get()).definition.waypoint.ident ?? ''}
+                                )?.elementAt(this.props.fmService.revisedWaypointIndex.get()).isDiscontinuity === false && (this.props.fmService.flightPlanService.get(
+                                    this.props.fmService.revisedWaypointPlanIndex?.get(),
+                                )?.legElementAt(this.props.fmService.revisedWaypointIndex.get()).definition.waypoint.ident ?? '')}
                             </span>
                         </span>
                         <span style="margin-left: 50px; margin-top: 10px;">

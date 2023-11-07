@@ -50,12 +50,12 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
         }
 
         let wpt: Fix;
+        const fpln = this.props.fmService.flightPlanService.get(this.loadedFlightPlanIndex.get());
         if (idx >= 0) {
-            if (this.availableWaypoints.get(idx)) {
+            if (this.availableWaypoints.get(idx)
+            && fpln.elementAt(this.props.fmService.flightPlanService.get(this.loadedFlightPlanIndex.get()).activeLegIndex + idx + 1).isDiscontinuity === false) {
                 this.selectedWaypointIndex.set(idx);
-                wpt = this.props.fmService.flightPlanService.get(
-                    this.loadedFlightPlanIndex.get(),
-                ).legElementAt(this.props.fmService.flightPlanService.get(this.loadedFlightPlanIndex.get()).activeLegIndex + idx + 1).definition.waypoint;
+                wpt = fpln.legElementAt(this.props.fmService.flightPlanService.get(this.loadedFlightPlanIndex.get()).activeLegIndex + idx + 1).definition.waypoint;
             }
         } else {
             wpt = await WaypointEntryUtils.getOrCreateWaypoint(this.props.fmService.mfd, text, true);

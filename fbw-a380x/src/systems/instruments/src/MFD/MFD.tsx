@@ -166,6 +166,15 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
         // Intialize from MSFS flight data
         // this.flightPlanService.active.performanceData.cruiseFlightLevel.set(SimVar.GetGameVarValue('AIRCRAFT CRUISE ALTITUDE', 'feet'));
 
+        // Build EDDM08R GIVMI6E GIVMI DCT DKB DCT ILS25L EDDF25L
+        await this.flightPlanService.newCityPair('EDDM', 'EDDF', 'EBBR');
+        await this.flightPlanService.setOriginRunway('RW08R');
+        await this.flightPlanService.setDepartureProcedure('GIVM6E');
+        await this.flightPlanService.nextWaypoint(4, (await db.searchAllFix('DKB'))[0]);
+        await this.flightPlanService.setDestinationRunway('RW25L');
+        await this.flightPlanService.setApproach('I25L');
+        await this.flightPlanService.temporaryInsert();
+
         // Build EGLL/27R N0411F250 MAXI1F MAXIT DCT HARDY UM605 BIBAX BIBA9X LFPG/09L
         /* await this.flightPlanService.newCityPair('EGLL', 'LFPG', 'EBBR');
         await this.flightPlanService.setOriginRunway('RW27R');
@@ -186,15 +195,22 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
         // await this.flightPlanService.setArrival('BIBA9X');
 
         await this.flightPlanService.temporaryInsert();
-        await this.flightPlanService.deleteElementAt(12);
+        await this.flightPlanService.deleteElementAt(12); */
 
         // Default performance values
         this.flightPlanService.active.performanceData.pilotAccelerationAltitude.set(1_500);
         this.flightPlanService.active.performanceData.pilotThrustReductionAltitude.set(1_500);
-        this.flightPlanService.active.performanceData.pilotTransitionAltitude.set(1_500);
-        this.flightPlanService.active.performanceData.cruiseFlightLevel.set(32_000);
+        this.flightPlanService.active.performanceData.pilotTransitionAltitude.set(5_000);
         this.flightPlanService.active.performanceData.pilotEngineOutAccelerationAltitude.set(1_500);
-        this.flightPlanService.active.performanceData.v2.set(150); */
+        this.flightPlanService.active.performanceData.v1.set(120);
+        this.flightPlanService.active.performanceData.vr.set(140);
+        this.flightPlanService.active.performanceData.v2.set(145);
+        this.fmService.fmgc.data.approachSpeed.set(145);
+        this.fmService.fmgc.data.zeroFuelWeight.set(300_000);
+        this.fmService.fmgc.data.zeroFuelWeightCenterOfGravity.set(26);
+        this.fmService.fmgc.data.blockFuel.set(50_000);
+        this.fmService.fmgc.data.costIndex.set(69);
+        this.flightPlanService.active.performanceData.cruiseFlightLevel.set(24_000);
     }
 
     private init() {

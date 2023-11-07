@@ -164,18 +164,21 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
         // Construct leg data for all legs
         const jointFlightPlan: FlightPlanElement[] = this.loadedFlightPlan.allLegs.concat(this.loadedFlightPlan.alternateFlightPlan.allLegs);
+        lastDistanceFromStart = 0;
         for (let i = 0; i < jointFlightPlan.length; i++) {
             const leg = jointFlightPlan[i];
             let reduceDistanceBy = 0;
 
             if (pseudoWptMap.has(i) === true && pseudoWptMap.get(i).displayedOnMcdu) {
                 const pwp = pseudoWptMap.get(i);
-                reduceDistanceBy = pwp.flightPlanInfo.distanceFromLastFix;
+                reduceDistanceBy = pwp.flightPlanInfo.distanceFromStart - lastDistanceFromStart;
+                lastDistanceFromStart = pwp.flightPlanInfo.distanceFromStart;
                 const data: FplnLineWaypointDisplayData = {
                     type: FplnLineType.Waypoint,
                     originalLegIndex: undefined,
                     isPseudoWaypoint: true,
                     isAltnWaypoint: i > (this.loadedFlightPlan.allLegs.length - 1),
+                    isMissedAppchWaypoint: i >= this.loadedFlightPlan.firstMissedApproachLegIndex,
                     ident: pwp.mcduIdent ?? pwp.ident,
                     overfly: false,
                     annotation: pwp.mcduHeader ?? '',
@@ -190,7 +193,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                     efobPrediction: this.props.fmService.guidanceController.vnavDriver.mcduProfile?.waypointPredictions?.get(i)?.estimatedFuelOnBoard ?? 0,
                     windPrediction: this.derivedFplnLegData[i].windPrediction,
                     trackFromLastWpt: this.derivedFplnLegData[i].trackFromLastWpt,
-                    distFromLastWpt: pwp.flightPlanInfo.distanceFromLastFix,
+                    distFromLastWpt: pwp.flightPlanInfo.distanceFromStart - lastDistanceFromStart,
                     fpa: undefined,
                 };
                 this.lineData.push(data);
@@ -211,6 +214,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                     originalLegIndex: i,
                     isPseudoWaypoint: false,
                     isAltnWaypoint: i > (this.loadedFlightPlan.allLegs.length - 1),
+                    isMissedAppchWaypoint: i >= this.loadedFlightPlan.firstMissedApproachLegIndex,
                     ident: leg.ident,
                     overfly: leg.overfly,
                     annotation: leg.annotation,
@@ -650,6 +654,7 @@ export interface FplnLineWaypointDisplayData extends FplnLineTypeDiscriminator {
     // type: FplnLineType.Waypoint;
     isPseudoWaypoint: boolean;
     isAltnWaypoint: boolean;
+    isMissedAppchWaypoint: boolean;
     ident: string;
     overfly: boolean;
     annotation: string;
@@ -694,7 +699,7 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
     private selectedForRevision = Subject.create(false);
 
     private lineColor = MappedSubject.create(([color, data]) => {
-        if (isWaypoint(data) && data.isAltnWaypoint === true) {
+        if (isWaypoint(data) && (data.isAltnWaypoint === true || data.isMissedAppchWaypoint === true)) {
             return FplnLineColor.Alternate;
         }
         return color;
