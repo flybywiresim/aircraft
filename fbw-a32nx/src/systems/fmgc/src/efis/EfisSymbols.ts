@@ -316,7 +316,7 @@ export class EfisSymbols {
             // eslint-disable-next-line no-lone-blocks
 
             // ALTN
-            if (this.flightPlanService.hasActive) {
+            if (this.flightPlanService.hasActive && this.guidanceController.activeGeometry) {
                 const symbols = this.getFlightPlanSymbols(
                     true,
                     this.flightPlanService.active,
@@ -333,7 +333,7 @@ export class EfisSymbols {
                 }
 
                 // ACTIVE ALTN
-                if (this.flightPlanService.active.alternateFlightPlan.legCount > 0) {
+                if (this.flightPlanService.active.alternateFlightPlan.legCount > 0 && this.guidanceController.getGeometryForFlightPlan(FlightPlanIndex.Active, true)) {
                     const symbols = this.getFlightPlanSymbols(
                         true,
                         this.flightPlanService.active.alternateFlightPlan,
@@ -352,7 +352,9 @@ export class EfisSymbols {
             }
 
             // TMPY
-            if (this.flightPlanService.hasTemporary) {
+            if (this.flightPlanService.hasTemporary && this.guidanceController.temporaryGeometry) {
+                const b = this.guidanceController.getGeometryForFlightPlan(FlightPlanIndex.Temporary);
+                console.log(b);
                 const symbols = this.getFlightPlanSymbols(
                     true,
                     this.flightPlanService.temporary,
@@ -370,7 +372,7 @@ export class EfisSymbols {
             }
 
             // SEC
-            if (this.flightPlanService.hasSecondary(1)) {
+            if (this.flightPlanService.hasSecondary(1) && this.guidanceController.secondaryGeometry) {
                 const symbols = this.getFlightPlanSymbols(
                     false,
                     this.flightPlanService.secondary(1),
@@ -387,7 +389,7 @@ export class EfisSymbols {
                 }
 
                 // SEC ALTN
-                if (this.flightPlanService.secondary((1)).alternateFlightPlan.legCount > 0) {
+                if (this.flightPlanService.secondary((1)).alternateFlightPlan.legCount > 0 && this.guidanceController.getGeometryForFlightPlan(FlightPlanIndex.FirstSecondary, true)) {
                     const symbols = this.getFlightPlanSymbols(
                         true,
                         this.flightPlanService.secondary(1).alternateFlightPlan,
