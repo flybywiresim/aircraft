@@ -724,6 +724,10 @@ class FMCMainDisplay extends BaseAirliners {
                 /** Arm preselected speed/mach for next flight phase */
                 this.updatePreSelSpeedMach(this.preSelectedClbSpeed);
 
+                this._rteRsvPercentOOR = false;
+                this._rteReservedWeightEntered = false;
+                this._rteReservedPctEntered = false;
+
                 break;
             }
 
@@ -3481,39 +3485,41 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     trySetRouteReservedPercent(s) {
-        if (s) {
-            if (s === FMCMainDisplay.clrValue) {
-                this._rteReservedWeightEntered = false;
-                this._rteReservedPctEntered = false;
-                this._routeReservedWeight = 0;
-                this._routeReservedPercent = 5;
-                this._rteRsvPercentOOR = false;
-                return true;
-            }
-            // Percentage entry must start with '/'
-            if (s.startsWith("/")) {
-                const enteredValue = s.slice(1);
-
-                if (!this.representsDecimalNumber(enteredValue)) {
-                    this.setScratchpadMessage(NXSystemMessages.formatError);
-                    return false;
-                }
-
-                const rteRsvPercent = parseFloat(enteredValue);
-
-                if (!this.isRteRsvPercentInRange(rteRsvPercent)) {
-                    this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
-                    return false;
-                }
-
-                this._rteRsvPercentOOR = false;
-                this._rteReservedPctEntered = true;
-                this._rteReservedWeightEntered = false;
-
-                if (isFinite(rteRsvPercent)) {
-                    this._routeReservedWeight = NaN;
-                    this._routeReservedPercent = rteRsvPercent;
+        if (!this.isFlying()) {
+            if (s) {
+                if (s === FMCMainDisplay.clrValue) {
+                    this._rteReservedWeightEntered = false;
+                    this._rteReservedPctEntered = false;
+                    this._routeReservedWeight = 0;
+                    this._routeReservedPercent = 5;
+                    this._rteRsvPercentOOR = false;
                     return true;
+                }
+                // Percentage entry must start with '/'
+                if (s.startsWith("/")) {
+                    const enteredValue = s.slice(1);
+
+                    if (!this.representsDecimalNumber(enteredValue)) {
+                        this.setScratchpadMessage(NXSystemMessages.formatError);
+                        return false;
+                    }
+
+                    const rteRsvPercent = parseFloat(enteredValue);
+
+                    if (!this.isRteRsvPercentInRange(rteRsvPercent)) {
+                        this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+                        return false;
+                    }
+
+                    this._rteRsvPercentOOR = false;
+                    this._rteReservedPctEntered = true;
+                    this._rteReservedWeightEntered = false;
+
+                    if (isFinite(rteRsvPercent)) {
+                        this._routeReservedWeight = NaN;
+                        this._routeReservedPercent = rteRsvPercent;
+                        return true;
+                    }
                 }
             }
         }
@@ -3581,47 +3587,49 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     trySetRouteReservedFuel(s) {
-        if (s) {
-            if (s === FMCMainDisplay.clrValue) {
-                this._rteReservedWeightEntered = false;
-                this._rteReservedPctEntered = false;
-                this._routeReservedWeight = 0;
-                this._routeReservedPercent = 5;
-                this._rteRsvPercentOOR = false;
-                return true;
-            }
-            // Percentage entry must start with '/'
-            if (s.startsWith("/")) {
-                return this.trySetRouteReservedPercent(s);
-            } else {
-                // If not percentage, try to parse as weight
-                // Weight can be entered with optional trailing slash, if so remove it before parsing the value
-                const enteredValue = s.endsWith("/") ? s.slice(0, -1) : s;
-
-                if (!this.representsDecimalNumber(enteredValue)) {
-                    this.setScratchpadMessage(NXSystemMessages.formatError);
-                    return false;
+        if (!this.isFlying()) {
+            if (s) {
+                if (s === FMCMainDisplay.clrValue) {
+                    this._rteReservedWeightEntered = false;
+                    this._rteReservedPctEntered = false;
+                    this._routeReservedWeight = 0;
+                    this._routeReservedPercent = 5;
+                    this._rteRsvPercentOOR = false;
+                    return true;
                 }
+                // Percentage entry must start with '/'
+                if (s.startsWith("/")) {
+                    return this.trySetRouteReservedPercent(s);
+                } else {
+                    // If not percentage, try to parse as weight
+                    // Weight can be entered with optional trailing slash, if so remove it before parsing the value
+                    const enteredValue = s.endsWith("/") ? s.slice(0, -1) : s;
 
-                const rteRsvWeight = NXUnits.userToKg(parseFloat(enteredValue));
-
-                if (!this.isRteRsvFuelInRange(rteRsvWeight)) {
-                    this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
-                    return false;
-                }
-
-                this._rteReservedWeightEntered = true;
-                this._rteReservedPctEntered = false;
-
-                if (isFinite(rteRsvWeight)) {
-                    this._routeReservedWeight = rteRsvWeight;
-                    this._routeReservedPercent = 0;
-
-                    if (!this.isRteRsvPercentInRange(this.getRouteReservedPercent())) { // Bit of a hacky method due previous tight coupling of weight and percentage calculations
-                        this._rteRsvPercentOOR = true;
+                    if (!this.representsDecimalNumber(enteredValue)) {
+                        this.setScratchpadMessage(NXSystemMessages.formatError);
+                        return false;
                     }
 
-                    return true;
+                    const rteRsvWeight = NXUnits.userToKg(parseFloat(enteredValue));
+
+                    if (!this.isRteRsvFuelInRange(rteRsvWeight)) {
+                        this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+                        return false;
+                    }
+
+                    this._rteReservedWeightEntered = true;
+                    this._rteReservedPctEntered = false;
+
+                    if (isFinite(rteRsvWeight)) {
+                        this._routeReservedWeight = rteRsvWeight;
+                        this._routeReservedPercent = 0;
+
+                        if (!this.isRteRsvPercentInRange(this.getRouteReservedPercent())) { // Bit of a hacky method due previous tight coupling of weight and percentage calculations
+                            this._rteRsvPercentOOR = true;
+                        }
+
+                        return true;
+                    }
                 }
             }
         }

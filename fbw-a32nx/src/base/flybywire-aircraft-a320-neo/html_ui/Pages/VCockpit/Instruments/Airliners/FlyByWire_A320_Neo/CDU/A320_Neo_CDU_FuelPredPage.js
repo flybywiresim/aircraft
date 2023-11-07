@@ -4,7 +4,7 @@ class CDUFuelPredPage {
         mcdu.page.Current = mcdu.page.FuelPredPage;
         mcdu.pageRedrawCallback = () => CDUFuelPredPage.ShowPage(mcdu);
         mcdu.activeSystem = 'FMGC';
-        const isFlying = parseInt(SimVar.GetSimVarValue("GROUND VELOCITY", "knots")) > 30;
+        const isFlying = mcdu.isFlying();
         let destIdentCell = "NONE";
         let destTimeCell = "----";
         let destTimeCellColor = "[color]white";
@@ -187,42 +187,33 @@ class CDUFuelPredPage {
                 destEFOBCellColor = "[color]green";
                 destTimeCellColor = "[color]green";
 
-                if (isFlying) {
-                    rteRsvWeightCell = "{small}0.0{end}";
+
+                rteRsvWeightCell = "{sp}{sp}" + (NXUnits.kgToUser(mcdu.getRouteReservedWeight())).toFixed(1);
+                if (!mcdu._rteReservedWeightEntered) {
+                    rteRsvWeightCell = "{small}" + rteRsvWeightCell + "{end}";
+                }
+
+                if (mcdu._rteRsvPercentOOR) {
                     rteRsvPercentCell = "--.-";
-                    rteRSvCellColor = "[color]green";
+                    rteRSvCellColor = "[color]cyan";
                     rteRsvPctColor = "{white}";
                 } else {
-                    rteRsvWeightCell = "{sp}{sp}" + (NXUnits.kgToUser(mcdu.getRouteReservedWeight())).toFixed(1);
-                    if (!mcdu._rteReservedWeightEntered) {
-                        rteRsvWeightCell = "{small}" + rteRsvWeightCell + "{end}";
+                    rteRsvPercentCell = mcdu.getRouteReservedPercent().toFixed(1);
+                    if (isFlying || (!mcdu._rteReservedPctEntered && mcdu.routeReservedEntered()) ) {
+                        rteRsvPercentCell = "{small}" + rteRsvPercentCell + "{end}";
                     }
-
-                    if (mcdu._rteRsvPercentOOR) {
-                        rteRsvPercentCell = "--.-";
-                        rteRSvCellColor = "[color]cyan";
-                        rteRsvPctColor = "{white}";
-                    } else {
-                        rteRsvPercentCell = mcdu.getRouteReservedPercent().toFixed(1);
-                        const needsPadding = rteRsvPercentCell.length <= 3;
-                        if (!mcdu._rteReservedPctEntered && mcdu.routeReservedEntered()) {
-                            rteRsvPercentCell = "{small}" + rteRsvPercentCell + "{end}";
-                        }
-                        if (needsPadding) {
-                            rteRsvPercentCell = "{sp}" + rteRsvPercentCell;
-                        }
-                        rteRsvPctColor = "{cyan}";
-                    }
-                    rteRSvCellColor = "[color]cyan";
-
-                    mcdu.onLeftInput[2] = async (value, scratchpadCallback) => {
-                        if (await mcdu.trySetRouteReservedFuel(value)) {
-                            CDUFuelPredPage.ShowPage(mcdu);
-                        } else {
-                            scratchpadCallback();
-                        }
-                    };
+                    rteRsvPctColor = isFlying? "{green}" : "{cyan}";
+                    rteRSvCellColor = isFlying? "[color]green" : "[color]cyan";
                 }
+
+
+                mcdu.onLeftInput[2] = async (value, scratchpadCallback) => {
+                    if (await mcdu.trySetRouteReservedFuel(value)) {
+                        CDUFuelPredPage.ShowPage(mcdu);
+                    } else {
+                        scratchpadCallback();
+                    }
+                };
 
                 if (mcdu._minDestFobEntered) {
                     minDestFobCell = "{sp}{sp}" + (NXUnits.kgToUser(mcdu._minDestFob)).toFixed(1);
