@@ -1,0 +1,216 @@
+@import "../Common/definitions";
+@import "../Common/gauges";
+
+.EWDWarningTextLeft {
+    fill: white;
+    font-size: 1.55em;
+    letter-spacing: 0.047em;
+}
+
+tspan {
+  white-space: pre;
+}
+
+.XSmall, .F19 {
+    font-size: 19px !important;
+}
+
+.Small, .F21 {
+    font-size: 21px !important;
+}
+
+.Medium, .F22 {
+    font-size: 22px !important;
+}
+
+.Large, .F23 {
+    font-size: 23px !important;
+}
+
+.VLarge, .F24 {
+    font-size: 24px !important;
+}
+
+.F25 {
+    font-size: 25px !important;
+}
+
+.F26 {
+    font-size: 26px !important;
+}
+
+.XLarge, .F27 {
+    font-size: 27px !important;
+}
+
+.F28 {
+    font-size: 28px !important;
+}
+
+.F29 {
+    font-size: 29px !important;
+}
+
+.Huge, .F30 {
+    font-size: 30px !important;
+}
+
+.F32 {
+    font-size: 32px !important;
+}
+
+.F34 {
+    font-size: 34px !important;
+}
+
+.F35 {
+    font-size: 35px !important;
+}
+
+.F36 {
+    font-size: 36px !important;
+}
+
+text, tspan {
+    fill: $display-white;
+    stroke: none !important;
+
+    &.EWDWarn {
+        font-size: 24px;
+        letter-spacing: 1.75px;
+    }
+    
+    &.Cyan {
+        fill: $display-cyan !important;
+    }
+
+    &.Green {
+        fill: $display-green !important;
+    }
+
+    &.Amber {
+        fill: $display-amber;
+    }
+
+    &.Red {
+        fill: $display-red;
+    }
+
+    &.Magenta {
+        fill: $display-magenta;
+    }
+
+    &.Center {
+        text-anchor: middle !important;
+    }
+
+    &.End {
+        text-anchor: end !important;
+    }
+
+    &.Underline {
+        text-decoration: underline;
+        text-decoration-color: $display-amber;
+    }
+}
+
+.Separator {
+  stroke: $display-light-grey;
+  stroke-width: 3;
+  fill: none;
+}
+
+.SeparatorMemo {
+    stroke: $display-light-grey;
+    stroke-width: 2;
+    fill: none;
+  }
+
+.AmberLine {
+    stroke: $display-amber !important;
+    stroke-width: 2;
+    fill: none;
+}
+
+.GreenLine {
+    stroke: $display-green !important;
+    stroke-width: 2;
+    fill: none;
+}
+
+.WhiteLine {
+    stroke: $display-white !important;
+    stroke-width: 2;
+    fill: none;
+}
+
+.RedLine {
+    stroke: $display-red !important;
+    stroke-width: 2;
+    fill: none;
+}
+
+.ThickRedLine {
+    stroke: $display-red !important;
+    stroke-width: 6 !important;
+    fill: $display-red;
+}
+
+.LightGreyLine {
+    stroke: $display-light-grey !important;
+    stroke-width: 3;
+    fill: none;
+    stroke-linecap: round;
+}
+
+
+.BackgroundLine {
+    stroke: $display-background !important;
+    stroke-width: 2;
+    fill: $display-background;
+}
+
+.BackgroundFill {
+    fill: $display-background !important;
+}
+
+.Show {
+    display:block;
+}
+
+.Hide {
+    display: none;
+}
+
+.Spread {
+    letter-spacing: 1.6px;
+}
+
+.DonutThrottleIndicator {
+    fill: none;
+    stroke-width: 2px;
+    stroke: $display-cyan;
+}
+
+
+.DarkGreyBox {
+    stroke: $display-grey;
+    fill: none;
+    stroke-width: 2;
+}
+
+.AmberBox {
+    stroke: $display-amber;
+    fill: none;
+    stroke-width: 2;
+}
+
+.LightGreyBox {
+    stroke: none;
+    fill: $display-light-grey;
+    opacity: 0.2
+}
+
+
+
+
