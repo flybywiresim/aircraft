@@ -87,6 +87,7 @@ export type PFDSimvars = AdirsSimVars & SwitchingPanelVSimVars & {
     tdReached: boolean;
     trkFpaDeselectedTCAS: boolean;
     tcasRaInhibited: boolean;
+    checkSpeedMode: boolean;
     radioAltitude1: number;
     radioAltitude2: number;
     crzAltMode: boolean;
@@ -206,7 +207,7 @@ export enum PFDVars {
     hasLoc = 'L:A32NX_RADIO_RECEIVER_LOC_IS_VALID',
     hasDme = 'NAV HAS DME:3',
     navIdent = 'NAV IDENT:3',
-    navFreq = 'NAV FREQUENCY:3',
+    navFreq = 'NAV ACTIVE FREQUENCY:3',
     dme = 'NAV DME:3',
     navRadialError = 'L:A32NX_RADIO_RECEIVER_LOC_DEVIATION',
     hasGlideslope = 'L:A32NX_RADIO_RECEIVER_GS_IS_VALID',
@@ -241,6 +242,7 @@ export enum PFDVars {
     trkFpaDeselectedTCAS = 'L:A32NX_AUTOPILOT_TCAS_MESSAGE_TRK_FPA_DESELECTION',
     tdReached = 'L:A32NX_PFD_MSG_TD_REACHED',
     tcasRaInhibited = 'L:A32NX_AUTOPILOT_TCAS_MESSAGE_RA_INHIBITED',
+    checkSpeedMode = 'L:A32NX_PFD_MSG_CHECK_SPEED_MODE',
     radioAltitude1 = 'L:A32NX_RA_1_RADIO_ALTITUDE',
     radioAltitude2 = 'L:A32NX_RA_2_RADIO_ALTITUDE',
     crzAltMode = 'L:A32NX_FMA_CRUISE_ALT_MODE',
@@ -400,6 +402,7 @@ export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
         ['tdReached', { name: PFDVars.tdReached, type: SimVarValueType.Bool }],
         ['trkFpaDeselectedTCAS', { name: PFDVars.trkFpaDeselectedTCAS, type: SimVarValueType.Bool }],
         ['tcasRaInhibited', { name: PFDVars.tcasRaInhibited, type: SimVarValueType.Bool }],
+        ['checkSpeedMode', { name: PFDVars.checkSpeedMode, type: SimVarValueType.Bool }],
         ['radioAltitude1', { name: PFDVars.radioAltitude1, type: SimVarValueType.Number }],
         ['radioAltitude2', { name: PFDVars.radioAltitude2, type: SimVarValueType.Number }],
         ['crzAltMode', { name: PFDVars.crzAltMode, type: SimVarValueType.Bool }],

@@ -24,7 +24,7 @@ class A32NX_FADEC {
             this.lastActiveIgniterAutostart ^= 1; // toggles Igniter
         }
 
-        this.igniting = ignitionState && (engineState === 2 || engineState === 3) && n2Percent > 18 && n2Percent < 55;
+        this.igniting = ignitionState && (engineState === 2 || engineState === 3) && n2Percent > 25 && n2Percent < 55;
 
         if (this.lastIgnitionState !== ignitionState && !ignitionState) {
             this.fadecTimer = Math.max(30, this.fadecTimer);

@@ -9,11 +9,6 @@ class A32NX_Core {
                 updateInterval: 100,
             },
             {
-                name: 'APU',
-                module: new A32NX_APU(),
-                updateInterval: 100,
-            },
-            {
                 name: 'BaroSelector',
                 module: new A32NX_BaroSelector(),
                 updateInterval: 300,
