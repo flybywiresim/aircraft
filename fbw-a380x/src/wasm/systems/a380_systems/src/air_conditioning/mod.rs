@@ -912,13 +912,13 @@ impl PressurizationConstants for A380PressurizationConstants {
     const SAFETY_VALVE_SIZE: f64 = 0.1; // m2
     const DOOR_OPENING_AREA: f64 = 1.5; // m2
 
-    const MAX_CLIMB_RATE: f64 = 750.; // fpm
+    const MAX_CLIMB_RATE: f64 = 1000.; // fpm
     const MAX_CLIMB_RATE_IN_DESCENT: f64 = 500.; // fpm
-    const MAX_DESCENT_RATE: f64 = -750.; // fpm
+    const MAX_DESCENT_RATE: f64 = -300.; // fpm
     const MAX_ABORT_DESCENT_RATE: f64 = -500.; //fpm
     const MAX_TAKEOFF_DELTA_P: f64 = 0.1; // PSI
-    const MAX_CLIMB_DELTA_P: f64 = 8.06; // PSI
-    const MAX_CLIMB_CABIN_ALTITUDE: f64 = 8050.; // feet
+    const MAX_CLIMB_DELTA_P: f64 = 8.6; // PSI
+    const MAX_CLIMB_CABIN_ALTITUDE: f64 = 7500.; // feet
     const MAX_SAFETY_DELTA_P: f64 = 8.1; // PSI
     const MIN_SAFETY_DELTA_P: f64 = -0.5; // PSI
     const TAKEOFF_RATE: f64 = -300.;
@@ -2740,7 +2740,7 @@ mod tests {
 
             assert!(test_bed.outflow_valve_open_amount() < Ratio::new::<percent>(99.));
 
-            test_bed = test_bed.iterate(5);
+            test_bed = test_bed.iterate(10);
 
             assert!(test_bed.outflow_valve_open_amount() > Ratio::new::<percent>(99.));
 
@@ -2759,7 +2759,7 @@ mod tests {
 
             assert!(test_bed.outflow_valve_open_amount() < Ratio::new::<percent>(99.));
 
-            test_bed = test_bed.iterate(5);
+            test_bed = test_bed.iterate(10);
 
             assert!(test_bed.outflow_valve_open_amount() > Ratio::new::<percent>(99.));
 
@@ -3068,20 +3068,17 @@ mod tests {
         #[test]
         fn aft_ofv_open_in_flight() {
             let test_bed = test_bed()
-            .set_on_ground()
-            .iterate(50)
-            .set_takeoff_power()
-            .iterate_with_delta(400, Duration::from_millis(50))
-            .vertical_speed_of(Velocity::new::<foot_per_minute>(1000.))
-            .then()
-            .command_aircraft_climb(Length::new::<foot>(0.), Length::new::<foot>(10000.))
-            .and()
-            .iterate(10);
+                .set_on_ground()
+                .iterate(50)
+                .set_takeoff_power()
+                .iterate_with_delta(400, Duration::from_millis(50))
+                .vertical_speed_of(Velocity::new::<foot_per_minute>(1000.))
+                .then()
+                .command_aircraft_climb(Length::new::<foot>(0.), Length::new::<foot>(10000.))
+                .and()
+                .iterate(10);
 
-        assert!(
-            test_bed.aft_outflow_valve_open_amount() >
-            Ratio::new::<percent>(0.)
-        );
+            assert!(test_bed.aft_outflow_valve_open_amount() > Ratio::new::<percent>(0.));
         }
 
         #[test]
@@ -3173,7 +3170,7 @@ mod tests {
         }
 
         #[test]
-        fn cabin_delta_p_does_not_exceed_8_06_psi_in_climb() {
+        fn cabin_delta_p_does_not_exceed_8_6_psi_in_climb() {
             let test_bed = test_bed()
                 .and_run()
                 .with()
@@ -3185,7 +3182,7 @@ mod tests {
                 .vertical_speed_of(Velocity::default())
                 .iterate(10);
 
-            assert!(test_bed.cabin_delta_p() < Pressure::new::<psi>(8.06));
+            assert!(test_bed.cabin_delta_p() < Pressure::new::<psi>(8.6));
         }
 
         #[test]

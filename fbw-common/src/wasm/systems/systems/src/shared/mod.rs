@@ -778,6 +778,17 @@ impl InternationalStandardAtmosphere {
                 )
     }
 
+    pub fn altitude_from_pressure(pressure: Pressure) -> Length {
+        Length::new::<meter>(
+            Self::GROUND_TEMPERATURE_KELVIN
+                / ((pressure.get::<pascal>() / Self::GROUND_PRESSURE_PASCAL).powf(
+                    -Self::TEMPERATURE_LAPSE_RATE * Self::GAS_CONSTANT_DRY_AIR
+                        / Self::GRAVITY_ACCELERATION,
+                ))
+                - Self::GROUND_TEMPERATURE_KELVIN,
+        ) / (-Self::TEMPERATURE_LAPSE_RATE)
+    }
+
     pub fn temperature_at_altitude(altitude: Length) -> ThermodynamicTemperature {
         ThermodynamicTemperature::new::<kelvin>(
             Self::GROUND_TEMPERATURE_KELVIN
