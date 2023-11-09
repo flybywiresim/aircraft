@@ -2472,6 +2472,40 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     /**
+     * Shows a scratchpad message based on the FMS error thrown
+     * @param type
+     */
+    showFmsErrorMessage(type) {
+        switch (type) {
+            case 0: // NotInDatabase
+                this.setScratchpadMessage(NXSystemMessages.notInDatabase);
+                break;
+            case 1: // NotYetImplemented
+                this.setScratchpadMessage(NXSystemMessages.notYetImplemented);
+                break;
+            case 2: // FormatError
+                this.setScratchpadMessage(NXSystemMessages.formatError);
+                break;
+            case 3: // EntryOutOfRange
+                this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+                break;
+        }
+    }
+
+    createNewWaypoint(ident) {
+        return new Promise((resolve, reject) => {
+            CDUNewWaypoint.ShowPage(this, (waypoint) => {
+                if (waypoint) {
+                    resolve(waypoint);
+                } else {
+                    reject();
+                }
+            }, { ident });
+        });
+
+    }
+
+    /**
      * @param coordinates {import('msfs-geo').Coordinates}
      * @param stored {boolean}
      */
@@ -4455,28 +4489,15 @@ class FMCMainDisplay extends BaseAirliners {
             return callback(true);
         }
 
-        try {
-            Fmgc.WaypointEntryUtils.getOrCreateWaypoint(this, s, false).then((wp) => {
-                // FIXME wp.additionalData.temporary
-                const temporary = false;
-                this._setProgLocation(temporary ? "ENTRY" : wp.ident, wp.location, wp.databaseId);
-                return callback(true);
-            }).catch((err) => {
-                if (err instanceof McduMessage) {
-                    this.setScratchpadMessage(err);
-                } else if (err) {
-                    console.error(err);
-                }
-                return callback(false);
-            });
-        } catch (err) {
-            if (err instanceof McduMessage) {
-                this.setScratchpadMessage(err);
-            } else {
-                console.error(err);
-            }
+        Fmgc.WaypointEntryUtils.getOrCreateWaypoint(this, s, false).then((wp) => {
+            // FIXME wp.additionalData.temporary
+            const temporary = false;
+            this._setProgLocation(temporary ? "ENTRY" : wp.ident, wp.location, wp.databaseId);
+            return callback(true);
+        }).catch((err) => {
+            this.showFmsErrorMessage(err.type);
             return callback(false);
-        }
+        });
     }
 
     /**

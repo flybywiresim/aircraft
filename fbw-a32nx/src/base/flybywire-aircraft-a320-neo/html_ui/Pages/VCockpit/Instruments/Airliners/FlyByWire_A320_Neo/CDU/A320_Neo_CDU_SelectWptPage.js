@@ -38,20 +38,11 @@ class A320_Neo_CDU_SelectWptPage {
         for (let i = 0; i < 5; i++) {
             const w = orderedWaypoints[i + 5 * page];
             if (w) {
-                const t = "";
-                const freq = "";
+                let freq = "";
 
-                // FIXME port over
-                // if (w.databaseId[0] === "V") {
-                //     t = " VOR";
-                //     freq = (w.infos.frequencyMHz) ? fastToFixed(w.infos.frequencyMHz, 2).toString() : " ";
-                // } else if (w.databaseId[0] === "N") {
-                //     t = " NDB";
-                //     freq = (w.infos.frequencyMHz) ? fastToFixed(w.infos.frequencyMHz, 2).toString() : " ";
-                // } else if (w.databaseId[0] === "A") {
-                //     t = " AIRPORT";
-                //     freq = " ";
-                // }
+                if (w.databaseId[0] === "V" || w.databaseId[0] === "N") {
+                    freq = w.frequency ? fastToFixed(w.frequency, 2).toString() : " ";
+                }
 
                 const latString = (w.location.lat.toFixed(0) >= 0) ? `${w.location.lat.toFixed(0).toString().padStart(2, "0")}N` : `${Math.abs(w.location.lat.toFixed(0)).toString().padStart(2, "0")}S`;
                 const longString = (w.location.long.toFixed(0) >= 0) ? `${w.location.long.toFixed(0).toString().padStart(3, "0")}E` : `${Math.abs(w.location.long.toFixed(0)).toString().padStart(3, "0")}W`;

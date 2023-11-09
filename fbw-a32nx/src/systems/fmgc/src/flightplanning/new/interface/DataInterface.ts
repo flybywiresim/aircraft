@@ -4,12 +4,12 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { Coordinates, DegreesTrue } from 'msfs-geo';
-import { Waypoint } from '@flybywiresim/fbw-sdk';
+import { Fix, Waypoint } from '@flybywiresim/fbw-sdk';
 
 export interface DataInterface {
     createLatLonWaypoint(coordinates: Coordinates, stored: boolean): Waypoint;
 
-    createPlaceBearingPlaceBearingWaypoint(place1: Waypoint, bearing1: DegreesTrue, place2: Waypoint, bearing2: DegreesTrue, stored: boolean): Waypoint;
+    createPlaceBearingPlaceBearingWaypoint(place1: Fix, bearing1: DegreesTrue, place2: Fix, bearing2: DegreesTrue, stored: boolean): Waypoint;
 
-    createPlaceBearingDistWaypoint(place: Waypoint, bearing: DegreesTrue, distance: NauticalMiles, stored: boolean): Waypoint;
+    createPlaceBearingDistWaypoint(place: Fix, bearing: DegreesTrue, distance: NauticalMiles, stored: boolean): Waypoint;
 }

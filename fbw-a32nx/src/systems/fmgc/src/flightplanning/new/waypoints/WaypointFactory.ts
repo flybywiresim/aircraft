@@ -61,4 +61,12 @@ export namespace WaypointFactory {
         };
     }
 
+    export function fromAirport(airport: Airport): Waypoint {
+        return {
+            ...airport,
+            sectionCode: SectionCode.Enroute,
+            subSectionCode: EnrouteSubsectionCode.Waypoints,
+            area: WaypointArea.Terminal,
+        };
+    }
 }

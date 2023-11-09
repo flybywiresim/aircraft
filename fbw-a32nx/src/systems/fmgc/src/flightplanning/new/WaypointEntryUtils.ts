@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Waypoint } from '@flybywiresim/fbw-sdk';
+import { Fix, NdbNavaid, VhfNavaid, Waypoint } from '@flybywiresim/fbw-sdk';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/new/NavigationDatabaseService';
 import { WaypointFactory } from '@fmgc/flightplanning/new/waypoints/WaypointFactory';
 import { runwayIdent } from '@fmgc/flightplanning/new/legs/FlightPlanLegNaming';
@@ -18,40 +18,28 @@ export class WaypointEntryUtils {
      * Gets or creates a waypoint based on user input
      *
      * @param fms    the FMS
-     * @param s      the user input string
+     * @param place  the user input string
      * @param stored whether a created waypoint is to be stored
      *
      * @returns a waypoint, or `undefined` if the operation is cancelled
      */
-    static async getOrCreateWaypoint(fms: DataInterface & DisplayInterface, s, stored = true): Promise<Waypoint | undefined> {
-        if (WaypointEntryUtils.isLatLonFormat(s)) {
-            const coordinates = WaypointEntryUtils.parseLatLon(s);
+    static async getOrCreateWaypoint(fms: DataInterface & DisplayInterface, place: string, stored = true): Promise<Fix | undefined> {
+        if (WaypointEntryUtils.isLatLonFormat(place)) {
+            const coordinates = WaypointEntryUtils.parseLatLon(place);
 
             return fms.createLatLonWaypoint(coordinates, stored);
-        } if (WaypointEntryUtils.isPbxFormat(s)) {
-            const [place1, bearing1, place2, bearing2] = await this.parsePbx(fms, s);
+        } if (WaypointEntryUtils.isPbxFormat(place)) {
+            const [place1, bearing1, place2, bearing2] = await this.parsePbx(fms, place);
 
             return fms.createPlaceBearingPlaceBearingWaypoint(place1, bearing1, place2, bearing2, stored);
-        } if (WaypointEntryUtils.isPdFormat(s)) {
+        } if (WaypointEntryUtils.isPdFormat(place)) {
             throw new FmsError(FmsErrorType.NotYetImplemented);
-        } else if (WaypointEntryUtils.isPbdFormat(s)) {
-            const [wp, bearing, dist] = await WaypointEntryUtils.parsePbd(fms, s);
+        } else if (WaypointEntryUtils.isPbdFormat(place)) {
+            const [wp, bearing, dist] = await WaypointEntryUtils.parsePbd(fms, place);
 
             return fms.createPlaceBearingDistWaypoint(wp, bearing, dist, stored);
-        } else if (WaypointEntryUtils.isPlaceFormat(s)) {
-            try {
-                return await WaypointEntryUtils.parsePlace(fms, s);
-            } catch (err) {
-                if (err instanceof FmsError) {
-                    fms.showFmsErrorMessage(err.type);
-
-                    if (err.type === FmsErrorType.NotInDatabase) {
-                        return fms.createNewWaypoint(s);
-                    }
-                }
-            }
-        } else {
-            throw new FmsError(FmsErrorType.FormatError);
+        } else if (WaypointEntryUtils.isPlaceFormat(place)) {
+            return WaypointEntryUtils.parsePlace(fms, place).then((fix) => fix ?? fms.createNewWaypoint(place));
         }
 
         throw new FmsError(FmsErrorType.FormatError);
@@ -60,20 +48,33 @@ export class WaypointEntryUtils {
     /**
      * Parse a place string into a position
      */
-    static async parsePlace(fms: DisplayInterface, place: string): Promise<Waypoint> {
+    static async parsePlace(fms: DisplayInterface, place: string): Promise<Fix> {
         if (WaypointEntryUtils.isRunwayFormat(place)) {
             return WaypointEntryUtils.parseRunway(place);
+        } if (WaypointEntryUtils.isAirportFormat(place)) {
+            return WaypointEntryUtils.parseAirport(place);
         }
 
-        const items = await NavigationDatabaseService.activeDatabase.searchWaypoint(place);
+        const waypoints = await NavigationDatabaseService.activeDatabase.searchWaypoint(place);
+        const navaids = await NavigationDatabaseService.activeDatabase.searchAllNavaid(place);
 
-        if (items.length === 0) {
-            throw new Error('NOT IN DATABASE');
+        // Sometimes navaids also exist as waypoints/intersections in the navdata (when they live on airways)
+        // In this case, we only want to return the actual VOR facility
+        const items = WaypointEntryUtils.mergeNavaidsWithWaypoints(navaids, waypoints);
+
+        return fms.deduplicateFacilities(items);
+    }
+
+    static mergeNavaidsWithWaypoints(navaids: (VhfNavaid | NdbNavaid)[], waypoints: Waypoint[]): Fix[] {
+        const items: Fix[] = [...navaids];
+
+        for (const wp of waypoints) {
+            if (items.findIndex((item) => item.ident === wp.ident) === -1) {
+                items.push(wp);
+            }
         }
 
-        const chosen = await fms.deduplicateFacilities(items);
-
-        return chosen;
+        return items;
     }
 
     /**
@@ -101,7 +102,20 @@ export class WaypointEntryUtils {
             }
         }
 
-        throw new Error('NOT IN DATABASE');
+        throw new FmsError(FmsErrorType.NotInDatabase);
+    }
+
+    /**
+     * Parse an airport
+     * Returns undefined if invalid format or not in database
+     */
+    static async parseAirport(place: string): Promise<Waypoint> {
+        const airport = await NavigationDatabaseService.activeDatabase.searchAirport(place);
+        if (airport === undefined) {
+            throw new FmsError(FmsErrorType.NotInDatabase);
+        }
+
+        return WaypointFactory.fromAirport(airport);
     }
 
     /**
@@ -123,11 +137,11 @@ export class WaypointEntryUtils {
             const lonM = parseFloat(latlon[5].substring(latlon[5].length - lonDigits));
 
             if (latB.length !== 1 || lonB.length !== 1 || !Number.isFinite(latM) || !Number.isFinite(lonM)) {
-                throw new Error('FORMAT ERROR');
+                throw new FmsError(FmsErrorType.FormatError);
             }
 
             if (latD > 90 || latM > 59.9 || lonD > 180 || lonM > 59.9) {
-                throw new Error('ENTRY OUT OF RANGE');
+                throw new FmsError(FmsErrorType.EntryOutOfRange);
             }
 
             const lat = (latD + latM / 60) * (latB === 'S' ? -1 : 1);
@@ -136,7 +150,7 @@ export class WaypointEntryUtils {
             return { lat, long };
         }
 
-        throw new Error('FORMAT ERROR');
+        throw new FmsError(FmsErrorType.FormatError);
     }
 
     /**
@@ -147,18 +161,18 @@ export class WaypointEntryUtils {
      *
      * @returns place and true bearing * 2
      */
-    static async parsePbx(fms: DisplayInterface, str: string): Promise<[Waypoint, number, Waypoint, number]> {
+    static async parsePbx(fms: DisplayInterface, str: string): Promise<[Fix, number, Fix, number]> {
         const pbx = str.match(/^([^\-/]+)-([0-9]{1,3})\/([^\-/]+)-([0-9]{1,3})$/);
 
         if (pbx === null) {
-            throw new Error('FORMAT ERROR');
+            throw new FmsError(FmsErrorType.FormatError);
         }
 
         const brg1 = parseInt(pbx[2]);
         const brg2 = parseInt(pbx[4]);
 
         if (brg1 > 360 || brg2 > 360) {
-            throw new Error('ENTRY OUT OF RANGE');
+            throw new FmsError(FmsErrorType.EntryOutOfRange);
         }
 
         const place1 = await WaypointEntryUtils.parsePlace(fms, pbx[1]);
@@ -174,11 +188,11 @@ export class WaypointEntryUtils {
      * @param fms the FMS
      * @param {string} s
      */
-    static async parsePbd(fms: DataInterface & DisplayInterface, s: string): Promise<[wp: Waypoint, trueBearing: number, dist: number]> {
+    static async parsePbd(fms: DataInterface & DisplayInterface, s: string): Promise<[wp: Fix, trueBearing: number, dist: number]> {
         const [place, brg, dist] = WaypointEntryUtils.splitPbd(s);
 
         if (brg > 360 || dist > 999.9) {
-            throw new Error('ENTRY OUT OF RANGE');
+            throw new FmsError(FmsErrorType.EntryOutOfRange);
         }
 
         if (WaypointEntryUtils.isPlaceFormat(place)) {
@@ -188,7 +202,7 @@ export class WaypointEntryUtils {
             return [wp, MagVar.magneticToTrue(brg, magVar), dist];
         }
 
-        throw new Error('FORMAT ERROR');
+        throw new FmsError(FmsErrorType.FormatError);
     }
 
     /**
@@ -261,5 +275,9 @@ export class WaypointEntryUtils {
         const pd = s.match(/^([^/]+)\/([0-9]{1,3}(\.[0-9])?)$/);
 
         return pd !== null && this.isPlaceFormat(pd[1]);
+    }
+
+    private static isAirportFormat(str: string) {
+        return str.match(/^[A-Z]{4}$/) !== null;
     }
 }

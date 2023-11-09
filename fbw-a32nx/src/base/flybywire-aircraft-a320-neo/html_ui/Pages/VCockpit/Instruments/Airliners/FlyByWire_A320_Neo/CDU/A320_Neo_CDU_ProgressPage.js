@@ -113,11 +113,11 @@ class CDUProgressPage {
         mcdu.rightInputDelay[3] = () => 0;
         mcdu.onRightInput[3] = (input, scratchpadCallback) => {
             mcdu.trySetProgWaypoint(input, (success) => {
-                if (success) {
-                    CDUProgressPage.ShowPage(mcdu);
-                } else {
+                if (!success) {
                     scratchpadCallback(input);
                 }
+
+                CDUProgressPage.ShowPage(mcdu);
             });
         };
 
