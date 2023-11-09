@@ -33,6 +33,7 @@ import { ConfirmationDialog } from 'instruments/src/MFD/pages/common/Confirmatio
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { TakeoffDerated, TakeoffPowerSetting } from 'instruments/src/MFD/fmgc';
+import { ConditionalComponent } from 'instruments/src/MFD/pages/common/ConditionalComponent';
 
 interface MfdFmsPerfProps extends AbstractMfdPageProps {
 }
@@ -476,10 +477,21 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                 </div>
                                 <div class="mfd-label-value-container">
                                     <span class="mfd-label mfd-spacing-right">T.O SHIFT</span>
-                                    <InputField<number>
-                                        dataEntryFormat={new LengthFormat(Subject.create(1), this.originRunwayLength)}
-                                        mandatory={Subject.create(false)}
-                                        value={this.toShift}
+                                    <ConditionalComponent
+                                        condition={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
+                                        componentIfFalse={(
+                                            <InputField<number>
+                                                dataEntryFormat={new LengthFormat(Subject.create(1), this.originRunwayLength)}
+                                                mandatory={Subject.create(false)}
+                                                value={this.toShift}
+                                            />
+                                        )}
+                                        componentIfTrue={(
+                                            <div class="mfd-label-value-container">
+                                                <span class="mfd-value-green">{this.toShift}</span>
+                                                <span class="mfd-label-unit mfd-unit-trailing">M</span>
+                                            </div>
+                                        )}
                                     />
                                 </div>
                             </div>
@@ -487,13 +499,25 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                 <div class="mfd-fms-perf-to-v-speeds">
                                     <div class="mfd-label-value-container">
                                         <span class="mfd-label mfd-spacing-right">V1</span>
-                                        <InputField<number>
-                                            dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
-                                            dataHandlerDuringValidation={async (v) => this.loadedFlightPlan.performanceData.v1.set(v)}
-                                            mandatory={Subject.create(true)}
-                                            value={this.toV1}
-                                            alignText="flex-end"
+                                        <ConditionalComponent
+                                            condition={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
+                                            componentIfFalse={(
+                                                <InputField<number>
+                                                    dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
+                                                    dataHandlerDuringValidation={async (v) => this.loadedFlightPlan.performanceData.v1.set(v)}
+                                                    mandatory={Subject.create(true)}
+                                                    value={this.toV1}
+                                                    alignText="flex-end"
+                                                />
+                                            )}
+                                            componentIfTrue={(
+                                                <div class="mfd-label-value-container">
+                                                    <span class="mfd-value-green">{this.toV1}</span>
+                                                    <span class="mfd-label-unit mfd-unit-trailing">KT</span>
+                                                </div>
+                                            )}
                                         />
+
                                     </div>
                                     <div class="mfd-label-value-container">
                                         <span class="mfd-label mfd-spacing-right">F</span>
@@ -502,12 +526,23 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     </div>
                                     <div class="mfd-label-value-container">
                                         <span class="mfd-label mfd-spacing-right">VR</span>
-                                        <InputField<number>
-                                            dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
-                                            dataHandlerDuringValidation={async (v) => this.loadedFlightPlan.performanceData.vr.set(v)}
-                                            mandatory={Subject.create(true)}
-                                            value={this.toVR}
-                                            alignText="flex-end"
+                                        <ConditionalComponent
+                                            condition={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
+                                            componentIfFalse={(
+                                                <InputField<number>
+                                                    dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
+                                                    dataHandlerDuringValidation={async (v) => this.loadedFlightPlan.performanceData.vr.set(v)}
+                                                    mandatory={Subject.create(true)}
+                                                    value={this.toVR}
+                                                    alignText="flex-end"
+                                                />
+                                            )}
+                                            componentIfTrue={(
+                                                <div class="mfd-label-value-container">
+                                                    <span class="mfd-value-green">{this.toVR}</span>
+                                                    <span class="mfd-label-unit mfd-unit-trailing">KT</span>
+                                                </div>
+                                            )}
                                         />
                                     </div>
                                     <div class="mfd-label-value-container">
@@ -517,12 +552,23 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     </div>
                                     <div class="mfd-label-value-container">
                                         <span class="mfd-label mfd-spacing-right">V2</span>
-                                        <InputField<number>
-                                            dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
-                                            dataHandlerDuringValidation={async (v) => this.loadedFlightPlan.performanceData.v2.set(v)}
-                                            mandatory={Subject.create(true)}
-                                            value={this.toV2}
-                                            alignText="flex-end"
+                                        <ConditionalComponent
+                                            condition={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
+                                            componentIfFalse={(
+                                                <InputField<number>
+                                                    dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
+                                                    dataHandlerDuringValidation={async (v) => this.loadedFlightPlan.performanceData.v2.set(v)}
+                                                    mandatory={Subject.create(true)}
+                                                    value={this.toV2}
+                                                    alignText="flex-end"
+                                                />
+                                            )}
+                                            componentIfTrue={(
+                                                <div class="mfd-label-value-container">
+                                                    <span class="mfd-value-green">{this.toV2}</span>
+                                                    <span class="mfd-label-unit mfd-unit-trailing">KT</span>
+                                                </div>
+                                            )}
                                         />
                                     </div>
                                     <div class="mfd-label-value-container">
@@ -560,32 +606,51 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                 </div>
                                 <div class="mfd-fms-perf-to-flex-toga" style="width: 125px;">
                                     <div class="mfd-label-value-container" style="margin-top: 60px;" ref={this.toFlexInputRef}>
-                                        <InputField<number>
-                                            dataEntryFormat={new TemperatureFormat(Subject.create(0), Subject.create(99))}
-                                            dataHandlerDuringValidation={async (v) => {
-                                                // Special case: 0 means no FLEX, 0.1 means FLEX TEMP of 0
-                                                await SimVar.SetSimVarValue('L:AIRLINER_TO_FLEX_TEMP', 'Number', v === 0 ? 0.1 : v);
-                                                this.props.fmService.fmgc.data.takeoffFlexTemp.set(v);
-                                            }}
-                                            mandatory={Subject.create(false)}
-                                            value={this.toFlexTemp}
+                                        <ConditionalComponent
+                                            condition={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
+                                            componentIfFalse={(
+                                                <InputField<number>
+                                                    dataEntryFormat={new TemperatureFormat(Subject.create(0), Subject.create(99))}
+                                                    dataHandlerDuringValidation={async (v) => {
+                                                        // Special case: 0 means no FLEX, 0.1 means FLEX TEMP of 0
+                                                        await SimVar.SetSimVarValue('L:AIRLINER_TO_FLEX_TEMP', 'Number', v === 0 ? 0.1 : v);
+                                                        this.props.fmService.fmgc.data.takeoffFlexTemp.set(v);
+                                                    }}
+                                                    mandatory={Subject.create(false)}
+                                                    value={this.toFlexTemp}
+                                                />
+                                            )}
+                                            componentIfTrue={(
+                                                <div class="mfd-label-value-container">
+                                                    <span class="mfd-value-green">{this.toFlexTemp}</span>
+                                                    <span class="mfd-label-unit mfd-unit-trailing">°C</span>
+                                                </div>
+                                            )}
                                         />
                                     </div>
                                     <div style="margin-top: 0px" ref={this.toDeratedInputRef}>
-                                        <DropdownMenu
-                                            values={this.toDeratedThrustOptions}
-                                            selectedIndex={this.toSelectedDeratedIndex}
-                                            onModified={(val) => {
-                                                this.toDeratedThrustPrevious = this.toSelectedDeratedIndex.get();
-                                                this.toDeratedThrustNext = val;
-                                                this.toDeratedDialogTitle.set(`DERATED ${this.toDeratedThrustOptions.get(val)}`);
-                                                this.toDeratedThrustSelected();
-                                            }}
-                                            idPrefix="deratedDropdown"
-                                            freeTextAllowed={false}
-                                            containerStyle="width: 100px;"
-                                            numberOfDigitsForInputField={3}
-                                            alignLabels="flex-start"
+                                        <ConditionalComponent
+                                            condition={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
+                                            componentIfFalse={(
+                                                <DropdownMenu
+                                                    values={this.toDeratedThrustOptions}
+                                                    selectedIndex={this.toSelectedDeratedIndex}
+                                                    onModified={(val) => {
+                                                        this.toDeratedThrustPrevious = this.toSelectedDeratedIndex.get();
+                                                        this.toDeratedThrustNext = val;
+                                                        this.toDeratedDialogTitle.set(`DERATED ${this.toDeratedThrustOptions.get(val)}`);
+                                                        this.toDeratedThrustSelected();
+                                                    }}
+                                                    idPrefix="deratedDropdown"
+                                                    freeTextAllowed={false}
+                                                    containerStyle="width: 100px;"
+                                                    numberOfDigitsForInputField={3}
+                                                    alignLabels="flex-start"
+                                                />
+                                            )}
+                                            componentIfTrue={(
+                                                <span class="mfd-value-green">{this.toSelectedDeratedIndex.map((it) => this.toDeratedThrustOptions.get(it))}</span>
+                                            )}
                                         />
                                     </div>
                                 </div>
@@ -597,45 +662,80 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                 <div><span class="mfd-label">PACKS</span></div>
                                 <div><span class="mfd-label">ANTI ICE</span></div>
                                 <div style="margin-top: 15px;">
-                                    <DropdownMenu
-                                        values={ArraySubject.create(['1', '2', '3'])}
-                                        selectedIndex={this.toSelectedFlapsIndex}
-                                        idPrefix="flapDropdown"
-                                        freeTextAllowed={false}
-                                        containerStyle="width: 75px;"
-                                        numberOfDigitsForInputField={1}
-                                        alignLabels="center"
+                                    <ConditionalComponent
+                                        condition={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
+                                        componentIfFalse={(
+                                            <DropdownMenu
+                                                values={ArraySubject.create(['1', '2', '3'])}
+                                                selectedIndex={this.toSelectedFlapsIndex}
+                                                idPrefix="flapDropdown"
+                                                freeTextAllowed={false}
+                                                containerStyle="width: 75px;"
+                                                numberOfDigitsForInputField={1}
+                                                alignLabels="center"
+                                            />
+                                        )}
+                                        componentIfTrue={(
+                                            <span class="mfd-value-green">{this.toSelectedFlapsIndex.map((it) => ['1', '2', '3'][it])}</span>
+                                        )}
                                     />
                                 </div>
                                 <div style="margin-top: 15px; align-self: center;">
-                                    <InputField<number>
-                                        dataEntryFormat={new PercentageFormat(Subject.create(0), Subject.create(99.9))}
-                                        dataHandlerDuringValidation={async (v) => this.props.fmService.fmgc.data.takeoffThsFor.set(v)}
-                                        mandatory={Subject.create(true)}
-                                        value={this.props.fmService.fmgc.data.takeoffThsFor}
-                                        alignText="flex-end"
+                                    <ConditionalComponent
+                                        condition={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
+                                        componentIfFalse={(
+                                            <InputField<number>
+                                                dataEntryFormat={new PercentageFormat(Subject.create(0), Subject.create(99.9))}
+                                                dataHandlerDuringValidation={async (v) => this.props.fmService.fmgc.data.takeoffThsFor.set(v)}
+                                                mandatory={Subject.create(true)}
+                                                value={this.props.fmService.fmgc.data.takeoffThsFor}
+                                                alignText="flex-end"
+                                            />
+                                        )}
+                                        componentIfTrue={(
+                                            <div class="mfd-label-value-container">
+                                                <span class="mfd-value-green">{this.props.fmService.fmgc.data.takeoffThsFor.map((it) => (it ? it.toFixed(1) : ''))}</span>
+                                                <span class="mfd-label-unit mfd-unit-trailing">%</span>
+                                            </div>
+                                        )}
                                     />
                                 </div>
                                 <div style="margin-top: 15px;">
-                                    <DropdownMenu
-                                        values={ArraySubject.create(['OFF/APU', 'ON'])}
-                                        selectedIndex={this.props.fmService.fmgc.data.takeoffPacks}
-                                        idPrefix="packsDropdown"
-                                        freeTextAllowed={false}
-                                        numberOfDigitsForInputField={8}
-                                        alignLabels="center"
-                                        containerStyle="width: 200px;"
+                                    <ConditionalComponent
+                                        condition={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
+                                        componentIfFalse={(
+                                            <DropdownMenu
+                                                values={ArraySubject.create(['OFF/APU', 'ON'])}
+                                                selectedIndex={this.props.fmService.fmgc.data.takeoffPacks}
+                                                idPrefix="packsDropdown"
+                                                freeTextAllowed={false}
+                                                numberOfDigitsForInputField={8}
+                                                alignLabels="center"
+                                                containerStyle="width: 200px;"
+                                            />
+                                        )}
+                                        componentIfTrue={(
+                                            <span class="mfd-value-green">{this.props.fmService.fmgc.data.takeoffPacks.map((it) => ['OFF/APU', 'ON'][it])}</span>
+                                        )}
                                     />
                                 </div>
                                 <div style="margin-top: 15px;">
-                                    <DropdownMenu
-                                        values={ArraySubject.create(['OFF', 'ENG ONLY', 'ENG + WING'])}
-                                        selectedIndex={this.props.fmService.fmgc.data.takeoffAntiIce}
-                                        idPrefix="antiIceDropdown"
-                                        freeTextAllowed={false}
-                                        numberOfDigitsForInputField={10}
-                                        alignLabels="center"
-                                        containerStyle="width: 225px;"
+                                    <ConditionalComponent
+                                        condition={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
+                                        componentIfFalse={(
+                                            <DropdownMenu
+                                                values={ArraySubject.create(['OFF', 'ENG ONLY', 'ENG + WING'])}
+                                                selectedIndex={this.props.fmService.fmgc.data.takeoffAntiIce}
+                                                idPrefix="antiIceDropdown"
+                                                freeTextAllowed={false}
+                                                numberOfDigitsForInputField={10}
+                                                alignLabels="center"
+                                                containerStyle="width: 225px;"
+                                            />
+                                        )}
+                                        componentIfTrue={(
+                                            <span class="mfd-value-green">{this.props.fmService.fmgc.data.takeoffPacks.map((it) => ['OFF', 'ENG ONLY', 'ENG + WING'][it])}</span>
+                                        )}
                                     />
                                 </div>
                             </div>
@@ -644,16 +744,34 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     <span class="mfd-label">THR RED</span>
                                 </div>
                                 <div style="margin-bottom: 15px;">
-                                    <InputField<number>
-                                        dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
-                                        dataHandlerDuringValidation={async (v) => {
-                                            this.loadedFlightPlan.performanceData.pilotThrustReductionAltitude.set(v || undefined);
-                                        }}
-                                        mandatory={Subject.create(false)}
-                                        enteredByPilot={this.thrRedAltIsPilotEntered}
-                                        value={this.thrRedAlt}
-                                        containerStyle="width: 150px;"
-                                        alignText="flex-end"
+                                    <ConditionalComponent
+                                        condition={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
+                                        componentIfFalse={(
+                                            <InputField<number>
+                                                dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
+                                                dataHandlerDuringValidation={async (v) => {
+                                                    this.loadedFlightPlan.performanceData.pilotThrustReductionAltitude.set(v || undefined);
+                                                }}
+                                                mandatory={Subject.create(false)}
+                                                enteredByPilot={this.thrRedAltIsPilotEntered}
+                                                value={this.thrRedAlt}
+                                                containerStyle="width: 150px;"
+                                                alignText="flex-end"
+                                            />
+                                        )}
+                                        componentIfTrue={(
+                                            <div class="mfd-label-value-container">
+                                                <span class="mfd-label-unit mfd-unit-leading">
+                                                    {this.thrRedAlt.map((it) => (new AltitudeOrFlightLevelFormat(this.transAlt)).format(it)[1])}
+                                                </span>
+                                                <span class="mfd-value-green">
+                                                    {this.thrRedAlt.map((it) => (new AltitudeOrFlightLevelFormat(this.transAlt)).format(it)[0])}
+                                                </span>
+                                                <span class="mfd-label-unit mfd-unit-trailing">
+                                                    {this.thrRedAlt.map((it) => (new AltitudeOrFlightLevelFormat(this.transAlt)).format(it)[2])}
+                                                </span>
+                                            </div>
+                                        )}
                                     />
                                 </div>
                                 <div>
@@ -666,12 +784,23 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                 </div>
                                 <div>
                                     <div ref={this.toNoiseFieldsRefs[1]} style="margin-bottom: 15px;">
-                                        <InputField<number>
-                                            dataEntryFormat={new PercentageFormat(Subject.create(40), Subject.create(110))}
-                                            mandatory={Subject.create(false)}
-                                            value={this.props.fmService.fmgc.data.noiseN1}
-                                            containerStyle="width: 110px;"
-                                            alignText="flex-end"
+                                        <ConditionalComponent
+                                            condition={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
+                                            componentIfFalse={(
+                                                <InputField<number>
+                                                    dataEntryFormat={new PercentageFormat(Subject.create(40), Subject.create(110))}
+                                                    mandatory={Subject.create(false)}
+                                                    value={this.props.fmService.fmgc.data.noiseN1}
+                                                    containerStyle="width: 110px;"
+                                                    alignText="flex-end"
+                                                />
+                                            )}
+                                            componentIfTrue={(
+                                                <div class="mfd-label-value-container">
+                                                    <span class="mfd-value-green">{this.props.fmService.fmgc.data.noiseN1.map((it) => (it ? it.toFixed(0) : ''))}</span>
+                                                    <span class="mfd-label-unit mfd-unit-trailing">%</span>
+                                                </div>
+                                            )}
                                         />
                                     </div>
                                 </div>
@@ -684,14 +813,32 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     <span class="mfd-label">ACCEL</span>
                                 </div>
                                 <div style="margin-bottom: 15px;">
-                                    <InputField<number>
-                                        dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
-                                        dataHandlerDuringValidation={async (v) => this.loadedFlightPlan.performanceData.pilotAccelerationAltitude.set(v || undefined)}
-                                        mandatory={Subject.create(false)}
-                                        enteredByPilot={this.accelRedAltIsPilotEntered}
-                                        value={this.accelAlt}
-                                        containerStyle="width: 150px;"
-                                        alignText="flex-end"
+                                    <ConditionalComponent
+                                        condition={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
+                                        componentIfFalse={(
+                                            <InputField<number>
+                                                dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
+                                                dataHandlerDuringValidation={async (v) => this.loadedFlightPlan.performanceData.pilotAccelerationAltitude.set(v || undefined)}
+                                                mandatory={Subject.create(false)}
+                                                enteredByPilot={this.accelRedAltIsPilotEntered}
+                                                value={this.accelAlt}
+                                                containerStyle="width: 150px;"
+                                                alignText="flex-end"
+                                            />
+                                        )}
+                                        componentIfTrue={(
+                                            <div class="mfd-label-value-container">
+                                                <span class="mfd-label-unit mfd-unit-leading">
+                                                    {this.accelAlt.map((it) => (new AltitudeOrFlightLevelFormat(this.transAlt)).format(it)[1])}
+                                                </span>
+                                                <span class="mfd-value-green">
+                                                    {this.accelAlt.map((it) => (new AltitudeOrFlightLevelFormat(this.transAlt)).format(it)[0])}
+                                                </span>
+                                                <span class="mfd-label-unit mfd-unit-trailing">
+                                                    {this.accelAlt.map((it) => (new AltitudeOrFlightLevelFormat(this.transAlt)).format(it)[2])}
+                                                </span>
+                                            </div>
+                                        )}
                                     />
                                 </div>
                                 <div>
@@ -704,12 +851,23 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                 </div>
                                 <div>
                                     <div ref={this.toNoiseFieldsRefs[4]} style="margin-bottom: 15px;">
-                                        <InputField<number>
-                                            dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
-                                            mandatory={Subject.create(false)}
-                                            value={this.props.fmService.fmgc.data.noiseSpeed}
-                                            containerStyle="width: 110px;"
-                                            alignText="flex-end"
+                                        <ConditionalComponent
+                                            condition={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
+                                            componentIfFalse={(
+                                                <InputField<number>
+                                                    dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
+                                                    mandatory={Subject.create(false)}
+                                                    value={this.props.fmService.fmgc.data.noiseSpeed}
+                                                    containerStyle="width: 110px;"
+                                                    alignText="flex-end"
+                                                />
+                                            )}
+                                            componentIfTrue={(
+                                                <div class="mfd-label-value-container">
+                                                    <span class="mfd-value-green">{this.props.fmService.fmgc.data.noiseSpeed}</span>
+                                                    <span class="mfd-label-unit mfd-unit-trailing">KT</span>
+                                                </div>
+                                            )}
                                         />
                                     </div>
                                 </div>
@@ -723,12 +881,30 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         </Button>
                                     </div>
                                     <div ref={this.toNoiseEndInputRef}>
-                                        <InputField<number>
-                                            dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
-                                            mandatory={Subject.create(false)}
-                                            value={this.noiseEndAlt}
-                                            containerStyle="width: 150px;"
-                                            alignText="flex-end"
+                                        <ConditionalComponent
+                                            condition={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
+                                            componentIfFalse={(
+                                                <InputField<number>
+                                                    dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
+                                                    mandatory={Subject.create(false)}
+                                                    value={this.noiseEndAlt}
+                                                    containerStyle="width: 150px;"
+                                                    alignText="flex-end"
+                                                />
+                                            )}
+                                            componentIfTrue={(
+                                                <div class="mfd-label-value-container">
+                                                    <span class="mfd-label-unit mfd-unit-leading">
+                                                        {this.noiseEndAlt.map((it) => (new AltitudeOrFlightLevelFormat(this.transAlt)).format(it)[1])}
+                                                    </span>
+                                                    <span class="mfd-value-green">
+                                                        {this.noiseEndAlt.map((it) => (new AltitudeOrFlightLevelFormat(this.transAlt)).format(it)[0])}
+                                                    </span>
+                                                    <span class="mfd-label-unit mfd-unit-trailing">
+                                                        {this.noiseEndAlt.map((it) => (new AltitudeOrFlightLevelFormat(this.transAlt)).format(it)[2])}
+                                                    </span>
+                                                </div>
+                                            )}
                                         />
                                     </div>
                                 </div>
@@ -752,14 +928,32 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                 </div>
                                 <div class="mfd-label-value-container">
                                     <span class="mfd-label mfd-spacing-right">EO ACCEL</span>
-                                    <InputField<number>
-                                        dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
-                                        dataHandlerDuringValidation={async (v) => this.loadedFlightPlan.performanceData.pilotEngineOutAccelerationAltitude.set(v || undefined)}
-                                        mandatory={Subject.create(false)}
-                                        enteredByPilot={this.eoAccelAltIsPilotEntered}
-                                        value={this.eoAccelAlt}
-                                        containerStyle="width: 150px;"
-                                        alignText="flex-end"
+                                    <ConditionalComponent
+                                        condition={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
+                                        componentIfFalse={(
+                                            <InputField<number>
+                                                dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
+                                                dataHandlerDuringValidation={async (v) => this.loadedFlightPlan.performanceData.pilotEngineOutAccelerationAltitude.set(v || undefined)}
+                                                mandatory={Subject.create(false)}
+                                                enteredByPilot={this.eoAccelAltIsPilotEntered}
+                                                value={this.eoAccelAlt}
+                                                containerStyle="width: 150px;"
+                                                alignText="flex-end"
+                                            />
+                                        )}
+                                        componentIfTrue={(
+                                            <div class="mfd-label-value-container">
+                                                <span class="mfd-label-unit mfd-unit-leading">
+                                                    {this.eoAccelAlt.map((it) => (new AltitudeOrFlightLevelFormat(this.transAlt)).format(it)[1])}
+                                                </span>
+                                                <span class="mfd-value-green">
+                                                    {this.eoAccelAlt.map((it) => (new AltitudeOrFlightLevelFormat(this.transAlt)).format(it)[0])}
+                                                </span>
+                                                <span class="mfd-label-unit mfd-unit-trailing">
+                                                    {this.eoAccelAlt.map((it) => (new AltitudeOrFlightLevelFormat(this.transAlt)).format(it)[2])}
+                                                </span>
+                                            </div>
+                                        )}
                                     />
                                 </div>
                                 <div>
@@ -782,14 +976,22 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                 </div>
                                 <div class="mfd-label-value-container">
                                     <span class="mfd-label mfd-spacing-right">DERATED CLB</span>
-                                    <DropdownMenu
-                                        values={ArraySubject.create(['NONE', '01', '02', '03', '04', '05'])}
-                                        selectedIndex={this.props.fmService.fmgc.data.climbDerated}
-                                        idPrefix="deratedClbDropdown"
-                                        freeTextAllowed={false}
-                                        containerStyle="width: 125px;"
-                                        numberOfDigitsForInputField={4}
-                                        alignLabels="center"
+                                    <ConditionalComponent
+                                        condition={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Climb)}
+                                        componentIfFalse={(
+                                            <DropdownMenu
+                                                values={ArraySubject.create(['NONE', '01', '02', '03', '04', '05'])}
+                                                selectedIndex={this.props.fmService.fmgc.data.climbDerated}
+                                                idPrefix="deratedClbDropdown"
+                                                freeTextAllowed={false}
+                                                containerStyle="width: 125px;"
+                                                numberOfDigitsForInputField={4}
+                                                alignLabels="center"
+                                            />
+                                        )}
+                                        componentIfTrue={(
+                                            <span class="mfd-value-green">{this.props.fmService.fmgc.data.climbDerated.map((it) => ['NONE', '01', '02', '03', '04', '05'][it])}</span>
+                                        )}
                                     />
                                 </div>
                             </div>
@@ -805,23 +1007,42 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell">
                                     <div class="mfd-label">PRED TO </div>
-                                    <InputField<number>
-                                        dataEntryFormat={new AltitudeOrFlightLevelFormat(Subject.create(0), Subject.create(maxCertifiedAlt), this.transAlt)}
-                                        mandatory={Subject.create(false)}
-                                        value={this.clbPredictionsReference}
-                                        containerStyle="width: 150px; margin-left: 15px;"
-                                        alignText="flex-end"
+                                    <ConditionalComponent
+                                        condition={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Climb)}
+                                        componentIfFalse={(
+                                            <InputField<number>
+                                                dataEntryFormat={new AltitudeOrFlightLevelFormat(Subject.create(0), Subject.create(maxCertifiedAlt), this.transAlt)}
+                                                mandatory={Subject.create(false)}
+                                                value={this.clbPredictionsReference}
+                                                containerStyle="width: 150px; margin-left: 15px;"
+                                                alignText="flex-end"
+                                            />
+                                        )}
+                                        componentIfTrue={(
+                                            <span class="mfd-value-green">{this.clbPredictionsReference}</span>
+                                        )}
                                     />
                                 </div>
                                 <div class="mfd-fms-perf-speed-presel-managed-table-cell">
                                     <div class="mfd-label">PRESEL</div>
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell">
-                                    <InputField<number>
-                                        dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
-                                        mandatory={Subject.create(false)}
-                                        value={this.props.fmService.fmgc.data.climbPreSelSpeed}
-                                        alignText="flex-end"
+                                    <ConditionalComponent
+                                        condition={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Climb)}
+                                        componentIfFalse={(
+                                            <InputField<number>
+                                                dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
+                                                mandatory={Subject.create(false)}
+                                                value={this.props.fmService.fmgc.data.climbPreSelSpeed}
+                                                alignText="flex-end"
+                                            />
+                                        )}
+                                        componentIfTrue={(
+                                            <div class="mfd-label-value-container">
+                                                <span class="mfd-value-green">{this.props.fmService.fmgc.data.climbPreSelSpeed}</span>
+                                                <span class="mfd-label-unit mfd-unit-trailing">KT</span>
+                                            </div>
+                                        )}
                                     />
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell" />
@@ -862,14 +1083,32 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     <span class="mfd-label">THR RED</span>
                                 </div>
                                 <div style="margin-bottom: 15px;">
-                                    <InputField<number>
-                                        dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
-                                        mandatory={Subject.create(false)}
-                                        enteredByPilot={this.thrRedAltIsPilotEntered}
-                                        value={this.thrRedAlt}
-                                        dataHandlerDuringValidation={async (v) => this.loadedFlightPlan?.performanceData.pilotThrustReductionAltitude.set(v || undefined)}
-                                        containerStyle="width: 150px;"
-                                        alignText="flex-end"
+                                    <ConditionalComponent
+                                        condition={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Climb)}
+                                        componentIfFalse={(
+                                            <InputField<number>
+                                                dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
+                                                mandatory={Subject.create(false)}
+                                                enteredByPilot={this.thrRedAltIsPilotEntered}
+                                                value={this.thrRedAlt}
+                                                dataHandlerDuringValidation={async (v) => this.loadedFlightPlan?.performanceData.pilotThrustReductionAltitude.set(v || undefined)}
+                                                containerStyle="width: 150px;"
+                                                alignText="flex-end"
+                                            />
+                                        )}
+                                        componentIfTrue={(
+                                            <div class="mfd-label-value-container">
+                                                <span class="mfd-label-unit mfd-unit-leading">
+                                                    {this.thrRedAlt.map((it) => (new AltitudeOrFlightLevelFormat(this.transAlt)).format(it)[1])}
+                                                </span>
+                                                <span class="mfd-value-green">
+                                                    {this.thrRedAlt.map((it) => (new AltitudeOrFlightLevelFormat(this.transAlt)).format(it)[0])}
+                                                </span>
+                                                <span class="mfd-label-unit mfd-unit-trailing">
+                                                    {this.thrRedAlt.map((it) => (new AltitudeOrFlightLevelFormat(this.transAlt)).format(it)[2])}
+                                                </span>
+                                            </div>
+                                        )}
                                     />
                                 </div>
                                 <div>
@@ -882,12 +1121,23 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                 </div>
                                 <div>
                                     <div ref={this.clbNoiseFieldsRefs[1]} style="margin-bottom: 15px;">
-                                        <InputField<number>
-                                            dataEntryFormat={new PercentageFormat(Subject.create(40), Subject.create(110))}
-                                            mandatory={Subject.create(false)}
-                                            value={this.props.fmService.fmgc.data.noiseN1}
-                                            containerStyle="width: 110px;"
-                                            alignText="flex-end"
+                                        <ConditionalComponent
+                                            condition={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Climb)}
+                                            componentIfFalse={(
+                                                <InputField<number>
+                                                    dataEntryFormat={new PercentageFormat(Subject.create(40), Subject.create(110))}
+                                                    mandatory={Subject.create(false)}
+                                                    value={this.props.fmService.fmgc.data.noiseN1}
+                                                    containerStyle="width: 110px;"
+                                                    alignText="flex-end"
+                                                />
+                                            )}
+                                            componentIfTrue={(
+                                                <div class="mfd-label-value-container">
+                                                    <span class="mfd-value-green">{this.props.fmService.fmgc.data.noiseN1.map((it) => (it ? it.toFixed(0) : ''))}</span>
+                                                    <span class="mfd-label-unit mfd-unit-trailing">%</span>
+                                                </div>
+                                            )}
                                         />
                                     </div>
                                 </div>
@@ -900,14 +1150,32 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     <span class="mfd-label">ACCEL</span>
                                 </div>
                                 <div style="margin-bottom: 15px;">
-                                    <InputField<number>
-                                        dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
-                                        mandatory={Subject.create(false)}
-                                        enteredByPilot={this.accelRedAltIsPilotEntered}
-                                        value={this.accelAlt}
-                                        dataHandlerDuringValidation={async (v) => this.loadedFlightPlan?.performanceData.pilotAccelerationAltitude.set(v || undefined)}
-                                        containerStyle="width: 150px;"
-                                        alignText="flex-end"
+                                    <ConditionalComponent
+                                        condition={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Climb)}
+                                        componentIfFalse={(
+                                            <InputField<number>
+                                                dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
+                                                mandatory={Subject.create(false)}
+                                                enteredByPilot={this.accelRedAltIsPilotEntered}
+                                                value={this.accelAlt}
+                                                dataHandlerDuringValidation={async (v) => this.loadedFlightPlan?.performanceData.pilotAccelerationAltitude.set(v || undefined)}
+                                                containerStyle="width: 150px;"
+                                                alignText="flex-end"
+                                            />
+                                        )}
+                                        componentIfTrue={(
+                                            <div class="mfd-label-value-container">
+                                                <span class="mfd-label-unit mfd-unit-leading">
+                                                    {this.accelAlt.map((it) => (new AltitudeOrFlightLevelFormat(this.transAlt)).format(it)[1])}
+                                                </span>
+                                                <span class="mfd-value-green">
+                                                    {this.accelAlt.map((it) => (new AltitudeOrFlightLevelFormat(this.transAlt)).format(it)[0])}
+                                                </span>
+                                                <span class="mfd-label-unit mfd-unit-trailing">
+                                                    {this.accelAlt.map((it) => (new AltitudeOrFlightLevelFormat(this.transAlt)).format(it)[2])}
+                                                </span>
+                                            </div>
+                                        )}
                                     />
                                 </div>
                                 <div>
@@ -920,12 +1188,23 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                 </div>
                                 <div>
                                     <div ref={this.clbNoiseFieldsRefs[4]} style="margin-bottom: 15px;">
-                                        <InputField<number>
-                                            dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
-                                            mandatory={Subject.create(false)}
-                                            value={this.props.fmService.fmgc.data.noiseSpeed}
-                                            containerStyle="width: 110px;"
-                                            alignText="flex-end"
+                                        <ConditionalComponent
+                                            condition={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Climb)}
+                                            componentIfFalse={(
+                                                <InputField<number>
+                                                    dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
+                                                    mandatory={Subject.create(false)}
+                                                    value={this.props.fmService.fmgc.data.noiseSpeed}
+                                                    containerStyle="width: 110px;"
+                                                    alignText="flex-end"
+                                                />
+                                            )}
+                                            componentIfTrue={(
+                                                <div class="mfd-label-value-container">
+                                                    <span class="mfd-value-green">{this.props.fmService.fmgc.data.noiseSpeed}</span>
+                                                    <span class="mfd-label-unit mfd-unit-trailing">KT</span>
+                                                </div>
+                                            )}
                                         />
                                     </div>
                                 </div>
@@ -946,12 +1225,30 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         </div>
                                     </div>
                                     <div ref={this.clbNoiseEndInputRef}>
-                                        <InputField<number>
-                                            dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
-                                            mandatory={Subject.create(false)}
-                                            value={this.noiseEndAlt}
-                                            containerStyle="width: 150px;"
-                                            alignText="flex-end"
+                                        <ConditionalComponent
+                                            condition={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Climb)}
+                                            componentIfFalse={(
+                                                <InputField<number>
+                                                    dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
+                                                    mandatory={Subject.create(false)}
+                                                    value={this.noiseEndAlt}
+                                                    containerStyle="width: 150px;"
+                                                    alignText="flex-end"
+                                                />
+                                            )}
+                                            componentIfTrue={(
+                                                <div class="mfd-label-value-container">
+                                                    <span class="mfd-label-unit mfd-unit-leading">
+                                                        {this.noiseEndAlt.map((it) => (new AltitudeOrFlightLevelFormat(this.transAlt)).format(it)[1])}
+                                                    </span>
+                                                    <span class="mfd-value-green">
+                                                        {this.noiseEndAlt.map((it) => (new AltitudeOrFlightLevelFormat(this.transAlt)).format(it)[0])}
+                                                    </span>
+                                                    <span class="mfd-label-unit mfd-unit-trailing">
+                                                        {this.noiseEndAlt.map((it) => (new AltitudeOrFlightLevelFormat(this.transAlt)).format(it)[2])}
+                                                    </span>
+                                                </div>
+                                            )}
                                         />
                                     </div>
                                 </div>
@@ -1020,19 +1317,40 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     <div class="mfd-label">PRESEL</div>
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell">
-                                    <InputField<number>
-                                        dataEntryFormat={new SpeedMachFormat(Subject.create(0.1), Subject.create(Mmo))}
-                                        mandatory={Subject.create(false)}
-                                        value={this.props.fmService.fmgc.data.cruisePreSelMach}
-                                        alignText="flex-end"
+                                    <ConditionalComponent
+                                        condition={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Cruise)}
+                                        componentIfFalse={(
+                                            <InputField<number>
+                                                dataEntryFormat={new SpeedMachFormat(Subject.create(0.1), Subject.create(Mmo))}
+                                                mandatory={Subject.create(false)}
+                                                value={this.props.fmService.fmgc.data.cruisePreSelMach}
+                                                alignText="flex-end"
+                                            />
+                                        )}
+                                        componentIfTrue={(
+                                            <div class="mfd-label-value-container">
+                                                <span class="mfd-value-green">{this.props.fmService.fmgc.data.cruisePreSelMach.map((it) => (new SpeedMachFormat()).format(it)[0])}</span>
+                                            </div>
+                                        )}
                                     />
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell">
-                                    <InputField<number>
-                                        dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
-                                        mandatory={Subject.create(false)}
-                                        value={this.props.fmService.fmgc.data.cruisePreSelSpeed}
-                                        alignText="flex-end"
+                                    <ConditionalComponent
+                                        condition={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Cruise)}
+                                        componentIfFalse={(
+                                            <InputField<number>
+                                                dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
+                                                mandatory={Subject.create(false)}
+                                                value={this.props.fmService.fmgc.data.cruisePreSelSpeed}
+                                                alignText="flex-end"
+                                            />
+                                        )}
+                                        componentIfTrue={(
+                                            <div class="mfd-label-value-container">
+                                                <span class="mfd-value-green">{this.props.fmService.fmgc.data.cruisePreSelMach}</span>
+                                                <span class="mfd-label-unit mfd-unit-trailing">KT</span>
+                                            </div>
+                                        )}
                                     />
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell" />
@@ -1113,22 +1431,43 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                             <div style="display: flex; justify-content: space-between;">
                                 <div class="mfd-label-value-container" style="padding: 15px;">
                                     <span class="mfd-label mfd-spacing-right">CI</span>
-                                    <InputField<number>
-                                        dataEntryFormat={new CostIndexFormat()}
-                                        mandatory={Subject.create(false)}
-                                        value={this.props.fmService.fmgc.data.costIndex}
-                                        containerStyle="width: 75px;"
-                                        alignText="center"
+                                    <ConditionalComponent
+                                        condition={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Cruise)}
+                                        componentIfFalse={(
+                                            <InputField<number>
+                                                dataEntryFormat={new CostIndexFormat()}
+                                                mandatory={Subject.create(false)}
+                                                value={this.props.fmService.fmgc.data.costIndex}
+                                                containerStyle="width: 75px;"
+                                                alignText="center"
+                                            />
+                                        )}
+                                        componentIfTrue={(
+                                            <div class="mfd-label-value-container">
+                                                <span class="mfd-value-green">{this.props.fmService.fmgc.data.costIndex}</span>
+                                            </div>
+                                        )}
                                     />
                                 </div>
                                 <div class="mfd-label-value-container" style="padding: 15px;">
                                     <span class="mfd-label mfd-spacing-right">DES CABIN RATE</span>
-                                    <InputField<number>
-                                        dataEntryFormat={new DescentRateFormat(Subject.create(-999), Subject.create(-100))}
-                                        mandatory={Subject.create(false)}
-                                        value={this.props.fmService.fmgc.data.descentCabinRate}
-                                        containerStyle="width: 175px;"
-                                        alignText="flex-end"
+                                    <ConditionalComponent
+                                        condition={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Cruise)}
+                                        componentIfFalse={(
+                                            <InputField<number>
+                                                dataEntryFormat={new DescentRateFormat(Subject.create(-999), Subject.create(-100))}
+                                                mandatory={Subject.create(false)}
+                                                value={this.props.fmService.fmgc.data.descentCabinRate}
+                                                containerStyle="width: 175px;"
+                                                alignText="flex-end"
+                                            />
+                                        )}
+                                        componentIfTrue={(
+                                            <div class="mfd-label-value-container">
+                                                <span class="mfd-value-green">{this.props.fmService.fmgc.data.descentCabinRate.map((it) => (new DescentRateFormat().format(it)[0]))}</span>
+                                                <span class="mfd-label-unit mfd-unit-trailing">FT/MN</span>
+                                            </div>
+                                        )}
                                     />
                                 </div>
                             </div>
@@ -1156,21 +1495,42 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     <div class="mfd-label green biggest">MANAGED</div>
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell">
-                                    <InputField<number>
-                                        disabled={Subject.create(true)}
-                                        dataEntryFormat={new SpeedMachFormat(Subject.create(0.1), Subject.create(Mmo))}
-                                        mandatory={Subject.create(false)}
-                                        value={this.desManagedMachTarget}
-                                        alignText="flex-end"
+                                    <ConditionalComponent
+                                        condition={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Cruise)}
+                                        componentIfFalse={(
+                                            <InputField<number>
+                                                disabled={Subject.create(true)}
+                                                dataEntryFormat={new SpeedMachFormat(Subject.create(0.1), Subject.create(Mmo))}
+                                                mandatory={Subject.create(false)}
+                                                value={this.desManagedMachTarget}
+                                                alignText="flex-end"
+                                            />
+                                        )}
+                                        componentIfTrue={(
+                                            <div class="mfd-label-value-container">
+                                                <span class="mfd-value-green">{this.desManagedMachTarget.map((it) => (new SpeedMachFormat().format(it)[0]))}</span>
+                                            </div>
+                                        )}
                                     />
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell">
-                                    <InputField<number>
-                                        disabled={Subject.create(true)}
-                                        dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
-                                        mandatory={Subject.create(false)}
-                                        value={this.desManagedSpdTarget}
-                                        alignText="flex-end"
+                                    <ConditionalComponent
+                                        condition={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Cruise)}
+                                        componentIfFalse={(
+                                            <InputField<number>
+                                                disabled={Subject.create(true)}
+                                                dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
+                                                mandatory={Subject.create(false)}
+                                                value={this.desManagedSpdTarget}
+                                                alignText="flex-end"
+                                            />
+                                        )}
+                                        componentIfTrue={(
+                                            <div class="mfd-label-value-container">
+                                                <span class="mfd-value-green">{this.desManagedSpdTarget}</span>
+                                                <span class="mfd-label-unit mfd-unit-trailing">KT</span>
+                                            </div>
+                                        )}
                                     />
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell">
