@@ -4297,8 +4297,10 @@ class FMCMainDisplay extends BaseAirliners {
      * Check if a place is the correct format for a runway
      * @param {string} s
      * @returns true if valid runway format
+     * @deprecated use {@link Fmgc.WaypointEntryUtils.isRunwayFormat}
      */
     isRunwayFormat(s) {
+        return Fmgc.WaypointEntryUtils.isRunwayFormat(s);
         return s.match(/^([A-Z]{4})([0-9]{2}[RCL]?)$/) !== null;
     }
 
@@ -4306,8 +4308,10 @@ class FMCMainDisplay extends BaseAirliners {
      * Check if a place is the correct format for a latitude/longitude
      * @param {string} s
      * @returns true if valid lat/lon format
+     * @deprecated use {@link Fmgc.WaypointEntryUtils.isLatLonFormat}
      */
     isLatLonFormat(s) {
+        return Fmgc.WaypointEntryUtils.isLatLonFormat(s);
         return s.match(/^(N|S)?([0-9]{2,4}\.[0-9])(N|S)?\/(E|W)?([0-9]{2,5}\.[0-9])(E|W)?$/) !== null;
     }
 
@@ -4316,8 +4320,10 @@ class FMCMainDisplay extends BaseAirliners {
      * @param {string} place
      * @throws {McduMessage}
      * @returns {LatLongAlt}
+     * @deprecated use {@link Fmgc.WaypointEntryUtils.parseLatLon}
      */
     parseLatLon(place) {
+        return Fmgc.WaypointEntryUtils.parseLatLon(place);
         const latlon = place.match(/^(N|S)?([0-9]{2,4}\.[0-9])(N|S)?\/(E|W)?([0-9]{2,5}\.[0-9])(E|W)?$/);
         if (latlon !== null) {
             const latB = (latlon[1] || "") + (latlon[3] || "");
@@ -4345,8 +4351,10 @@ class FMCMainDisplay extends BaseAirliners {
      * Check if a place is the correct format
      * @param {string} s
      * @returns true if valid place format
+     * @deprecated use {@link Fmgc.WaypointEntryUtils.isPlaceFormat}
      */
     isPlaceFormat(s) {
+        return Fmgc.WaypointEntryUtils.isPlaceFormat(s);
         return s.match(/^[A-Z0-9]{2,7}$/) !== null || this.isRunwayFormat(s);
     }
 
@@ -4355,8 +4363,10 @@ class FMCMainDisplay extends BaseAirliners {
      * @param {string} place
      * @throws {McduMessage}
      * @returns {WayPoint}
+     * @deprecated use {@link Fmgc.WaypointEntryUtils.parsePlace}
      */
     async parsePlace(place) {
+        return Fmgc.WaypointEntryUtils.parsePlace(this, place);
         if (this.isRunwayFormat(place)) {
             return Fmgc.WaypointEntryUtils.parseRunway(place);
         }
@@ -4376,8 +4386,10 @@ class FMCMainDisplay extends BaseAirliners {
      * Check if a string is a valid place-bearing/place-bearing format
      * @param {string} s
      * @returns true if valid place format
+     * @deprecated use {@link Fmgc.WaypointEntryUtils.isPbxFormat}
      */
     isPbxFormat(s) {
+        return Fmgc.WaypointEntryUtils.isPbxFormat(s);
         const pbx = s.match(/^([^\-\/]+)\-([0-9]{1,3})\/([^\-\/]+)\-([0-9]{1,3})$/);
         return pbx !== null && this.isPlaceFormat(pbx[1]) && this.isPlaceFormat(pbx[3]);
     }
@@ -4387,8 +4399,10 @@ class FMCMainDisplay extends BaseAirliners {
      * @param {string} s place-bearing/place-bearing
      * @throws {McduMessage}
      * @returns {[WayPoint, number, WayPoint, number]} place and true bearing * 2
+     * @deprecated use {@link Fmgc.WaypointEntryUtils.parsePbx}
      */
     async parsePbx(s) {
+        return Fmgc.WaypointEntryUtils.parsePbx(this, s);
         const pbx = s.match(/^([^\-\/]+)\-([0-9]{1,3})\/([^\-\/]+)\-([0-9]{1,3})$/);
         if (pbx === null) {
             throw NXSystemMessages.formatError;
@@ -4410,8 +4424,10 @@ class FMCMainDisplay extends BaseAirliners {
      * Check if string is in place/bearing/distance format
      * @param {String} s
      * @returns true if pbd
+     * @deprecated use {@link Fmgc.WaypointEntryUtils.isPbdFormat}
      */
     isPbdFormat(s) {
+        return Fmgc.WaypointEntryUtils.isPbdFormat(s);
         const pbd = s.match(/^([^\/]+)\/([0-9]{1,3})\/([0-9]{1,3}(\.[0-9])?)$/);
         return pbd !== null && this.isPlaceFormat(pbd[1]);
     }
@@ -4420,8 +4436,10 @@ class FMCMainDisplay extends BaseAirliners {
      * Split PBD format into components
      * @param {String} s PBD format string
      * @returns [{string} place, {number} bearing, {number} distance]
+     * @deprecated use {@link Fmgc.WaypointEntryUtils.splitPbd}
      */
     splitPbd(s) {
+        return Fmgc.WaypointEntryUtils.splitPbd(s);
         let [place, brg, dist] = s.split("/");
         brg = parseInt(brg);
         dist = parseFloat(dist);
@@ -4429,11 +4447,12 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     /**
-     *
      * @param {string} s
      * @returns [wp: WayPoint, trueBearing: number, dist: number]
+     * @deprecated use {@link Fmgc.WaypointEntryUtils.parsePbd}
      */
     async parsePbd(s) {
+        return Fmgc.WaypointEntryUtils.parsePbd(this, s);
         const [place, brg, dist] = this.splitPbd(s);
         if (brg > 360 || dist > 999.9) {
             throw NXSystemMessages.entryOutOfRange;
@@ -4446,17 +4465,16 @@ class FMCMainDisplay extends BaseAirliners {
         throw NXSystemMessages.formatError;
     }
 
+    /**
+     *
+     * @param {string} s
+     * @returns {boolean} true if valid place/bearing format
+     * @deprecated use {@link Fmgc.WaypointEntryUtils.isPbFormat}
+     */
     isPdFormat(s) {
+        return Fmgc.WaypointEntryUtils.isPdFormat(s);
         const pd = s.match(/^([^\/]+)\/([0-9]{1,3}(\.[0-9])?)$/);
         return pd !== null && this.isPlaceFormat(pd[1]);
-    }
-
-    parsePlaceDist(s) {
-        let [place, dist] = s.split('/');
-        dist = parseInt(dist);
-        // TODO get waypoint in flightplan
-        //Fmgc.WaypointBuilder.fromPlaceAlongFlightPlan(ident: string, placeIndex: number, distance: number, instrument: BaseInstrument, fpm: FlightPlanManager);
-        throw NXFictionalMessages.notYetImplemented;
     }
 
     /**

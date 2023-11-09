@@ -209,7 +209,7 @@ export class WaypointEntryUtils {
      * Split PBD format into components
      * @param {String} s PBD format string
      */
-    private static splitPbd(s: string): [string, number, number] {
+    static splitPbd(s: string): [string, number, number] {
         const [place, brgStr, distStr] = s.split('/');
 
         const brg = parseInt(brgStr);
@@ -223,7 +223,7 @@ export class WaypointEntryUtils {
      *
      * @returns true if valid place format
      */
-    private static isPlaceFormat(str: string) {
+    static isPlaceFormat(str: string) {
         return str.match(/^[A-Z0-9]{2,7}$/) !== null || WaypointEntryUtils.isRunwayFormat(str);
     }
 
@@ -232,7 +232,7 @@ export class WaypointEntryUtils {
      *
      * @returns true if valid runway format
      */
-    private static isRunwayFormat(str: string) {
+    static isRunwayFormat(str: string) {
         return str.match(/^([A-Z]{4})([0-9]{2}[RCL]?)$/) !== null;
     }
 
@@ -241,7 +241,7 @@ export class WaypointEntryUtils {
      *
      * @returns true if valid lat/lon format
      */
-    private static isLatLonFormat(str: string) {
+    static isLatLonFormat(str: string) {
         return str.match(/^([NS])?([0-9]{2,4}\.[0-9])([NS])?\/([EW])?([0-9]{2,5}\.[0-9])([EW])?$/) !== null;
     }
 
@@ -250,7 +250,7 @@ export class WaypointEntryUtils {
      *
      * @returns true if valid place format
      */
-    private static isPbxFormat(str: string) {
+    static isPbxFormat(str: string) {
         const pbx = str.match(/^([^\-/]+)-([0-9]{1,3})\/([^\-/]+)-([0-9]{1,3})$/);
 
         return pbx !== null && this.isPlaceFormat(pbx[1]) && this.isPlaceFormat(pbx[3]);
@@ -261,7 +261,7 @@ export class WaypointEntryUtils {
      * @param {String} s
      * @returns true if pbd
      */
-    private static isPbdFormat(s) {
+    static isPbdFormat(s: string) {
         const pbd = s.match(/^([^/]+)\/([0-9]{1,3})\/([0-9]{1,3}(\.[0-9])?)$/);
 
         return pbd !== null && this.isPlaceFormat(pbd[1]);
@@ -271,13 +271,13 @@ export class WaypointEntryUtils {
      * Check if string is in place/distance format
      * @param s
      */
-    private static isPdFormat(s) {
+    static isPdFormat(s: string) {
         const pd = s.match(/^([^/]+)\/([0-9]{1,3}(\.[0-9])?)$/);
 
         return pd !== null && this.isPlaceFormat(pd[1]);
     }
 
-    private static isAirportFormat(str: string) {
+    static isAirportFormat(str: string) {
         return str.match(/^[A-Z]{4}$/) !== null;
     }
 }
