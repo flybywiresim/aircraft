@@ -51,12 +51,15 @@ export class WaypointEntryUtils {
     static async parsePlace(fms: DisplayInterface, place: string): Promise<Fix> {
         if (WaypointEntryUtils.isRunwayFormat(place)) {
             return WaypointEntryUtils.parseRunway(place);
-        } if (WaypointEntryUtils.isAirportFormat(place)) {
-            return WaypointEntryUtils.parseAirport(place);
         }
 
+        const airport = await NavigationDatabaseService.activeDatabase.searchAirport(place);
         const waypoints = await NavigationDatabaseService.activeDatabase.searchWaypoint(place);
         const navaids = await NavigationDatabaseService.activeDatabase.searchAllNavaid(place);
+
+        if (airport !== undefined) {
+            waypoints.push(WaypointFactory.fromAirport(airport));
+        }
 
         // Sometimes navaids also exist as waypoints/intersections in the navdata (when they live on airways)
         // In this case, we only want to return the actual VOR facility
@@ -69,7 +72,7 @@ export class WaypointEntryUtils {
         const items: Fix[] = [...navaids];
 
         for (const wp of waypoints) {
-            if (items.findIndex((item) => item.ident === wp.ident) === -1) {
+            if (items.findIndex((item) => item.databaseId === wp.databaseId) === -1) {
                 items.push(wp);
             }
         }
@@ -103,19 +106,6 @@ export class WaypointEntryUtils {
         }
 
         throw new FmsError(FmsErrorType.NotInDatabase);
-    }
-
-    /**
-     * Parse an airport
-     * Returns undefined if invalid format or not in database
-     */
-    static async parseAirport(place: string): Promise<Waypoint> {
-        const airport = await NavigationDatabaseService.activeDatabase.searchAirport(place);
-        if (airport === undefined) {
-            throw new FmsError(FmsErrorType.NotInDatabase);
-        }
-
-        return WaypointFactory.fromAirport(airport);
     }
 
     /**
@@ -275,9 +265,5 @@ export class WaypointEntryUtils {
         const pd = s.match(/^([^/]+)\/([0-9]{1,3}(\.[0-9])?)$/);
 
         return pd !== null && this.isPlaceFormat(pd[1]);
-    }
-
-    static isAirportFormat(str: string) {
-        return str.match(/^[A-Z]{4}$/) !== null;
     }
 }
