@@ -254,8 +254,8 @@ class CDUFuelPredPage {
         }
 
         mcdu.setTemplate([
-            ["FUEL PRED"],
-            ["\xa0AT", "EFOB", isFlying ? "UTC" : "TIME"],
+            ["FUEL PRED{sp}"],
+            ["\xa0AT", "EFOB", isFlying ? "{sp}UTC" : "TIME"],
             [destIdentCell + "[color]green", destEFOBCell + destEFOBCellColor, destTimeCell + destTimeCellColor],
             [""],
             [altIdentCell + "[color]green", altEFOBCell + altEFOBCellColor, altTimeCell + altTimeCellColor],
