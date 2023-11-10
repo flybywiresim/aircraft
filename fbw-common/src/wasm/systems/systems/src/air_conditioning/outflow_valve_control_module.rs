@@ -1,10 +1,14 @@
 use super::{
-    cabin_pressure_controller::OutflowValveController, pressure_valve::OutflowValve,
+    cabin_pressure_controller::OutflowValveController,
+    pressure_valve::{OutflowValve, PressureValveSignal},
     AdirsToAirCondInterface, Air, OperatingChannel, PressurizationOverheadShared,
 };
 
 use crate::{
-    shared::{low_pass_filter::LowPassFilter, CabinSimulation, ElectricalBusType},
+    shared::{
+        low_pass_filter::LowPassFilter, CabinSimulation, ControllerSignal, ElectricalBusType,
+        InternationalStandardAtmosphere,
+    },
     simulation::{SimulationElement, SimulationElementVisitor, UpdateContext},
 };
 
@@ -13,8 +17,8 @@ use std::time::Duration;
 use uom::si::{
     f64::*,
     length::{foot, meter},
-    pressure::hectopascal,
-    ratio::ratio,
+    pressure::{hectopascal, psi},
+    ratio::{percent, ratio},
     velocity::foot_per_minute,
 };
 
@@ -72,6 +76,7 @@ impl OutflowValveControlModule {
         cabin_simulation: &impl CabinSimulation,
         cpiom_b: &impl CpcsShared,
         press_overhead: &impl PressurizationOverheadShared,
+        safety_valve_open_amount: Ratio,
     ) {
         self.fault_determination();
 
@@ -90,6 +95,7 @@ impl OutflowValveControlModule {
             press_overhead,
             cpiom_b.ofv_open_allowed() && !self.acp.should_close_ofv(),
             cpiom_b.should_open_ofv(),
+            safety_valve_open_amount,
         );
 
         self.outflow_valve
@@ -118,6 +124,10 @@ impl OutflowValveControlModule {
 
     fn switch_active_channel(&mut self) {
         std::mem::swap(&mut self.stand_by_channel, &mut self.active_channel);
+    }
+
+    pub fn negative_relief_valve_trigger(&self) -> &impl ControllerSignal<PressureValveSignal> {
+        &self.epp
     }
 }
 
@@ -208,7 +218,8 @@ impl SafetyAndOverridePartition {
         cabin_pressure: Pressure,
         pressurization_overhead: &impl PressurizationOverheadShared,
     ) {
-        self.cabin_altitude = self.cabin_altitude_calculation(cabin_pressure);
+        self.cabin_altitude =
+            InternationalStandardAtmosphere::altitude_from_pressure(cabin_pressure);
 
         self.selected_altitude = pressurization_overhead.alt_knob_value();
         self.is_alt_man_sel = pressurization_overhead.is_alt_man_sel();
@@ -216,18 +227,6 @@ impl SafetyAndOverridePartition {
 
         self.cabin_target_vertical_speed =
             self.target_vertical_speed_determination(self.cabin_altitude, pressurization_overhead);
-    }
-
-    /// Calculation of altitude based on a pressure and reference pressure
-    /// This uses the hydrostatic equation with linear temp changes and constant R, g
-    fn cabin_altitude_calculation(&self, pressure: Pressure) -> Length {
-        // Manual mode uses ISA as reference pressure
-        let pressure_ratio = (pressure / Pressure::new::<hectopascal>(Air::P_0)).get::<ratio>();
-
-        // Hydrostatic equation with linear temp changes and constant R, g
-        let altitude: f64 =
-            ((Air::T_0 / pressure_ratio.powf((Air::L * Air::R) / Air::G)) - Air::T_0) / Air::L;
-        Length::new::<meter>(altitude)
     }
 
     fn target_vertical_speed_determination(
@@ -294,12 +293,15 @@ struct EmergencyPressurizationPartition {
     is_initialised: bool,
 
     outflow_valve_controller: OutflowValveController,
+    safety_valve_open_amount: Ratio,
 }
 
 impl EmergencyPressurizationPartition {
     const AMBIENT_CONDITIONS_FILTER_TIME_CONSTANT: Duration = Duration::from_millis(2000);
     const OFV_CONTROLLER_KP: f64 = 1.;
     const OFV_CONTROLLER_KI: f64 = 1.;
+    const MIN_SAFETY_DELTA_P: f64 = -0.725; // PSI
+    const MAX_SAFETY_DELTA_P: f64 = 9.; // PSI
 
     fn new() -> Self {
         Self {
@@ -316,6 +318,7 @@ impl EmergencyPressurizationPartition {
                 Self::OFV_CONTROLLER_KP,
                 Self::OFV_CONTROLLER_KI,
             ),
+            safety_valve_open_amount: Ratio::default(),
         }
     }
 
@@ -329,15 +332,18 @@ impl EmergencyPressurizationPartition {
         press_overhead: &impl PressurizationOverheadShared,
         open_allowed: bool,
         should_open_ofv: bool,
+        safety_valve_open_amount: Ratio,
     ) {
         self.update_ambient_conditions(context, adirs);
         self.cabin_pressure = cabin_simulation.cabin_pressure();
-        self.cabin_target_vertical_speed = cabin_target_vs;
+        self.cabin_target_vertical_speed =
+            self.emergency_control_cabin_vs(cabin_target_vs, cabin_vertical_speed);
         self.differential_pressure = self.differential_pressure_calculation();
+        self.safety_valve_open_amount = safety_valve_open_amount;
         self.outflow_valve_controller.update(
             context,
             cabin_vertical_speed,
-            cabin_target_vs,
+            self.cabin_target_vertical_speed,
             press_overhead,
             open_allowed,
             should_open_ofv,
@@ -379,6 +385,24 @@ impl EmergencyPressurizationPartition {
         (adirs_airspeed, adirs_ambient_pressure)
     }
 
+    fn emergency_control_cabin_vs(
+        &self,
+        cabin_target_vs: Velocity,
+        cabin_vertical_speed: Velocity,
+    ) -> Velocity {
+        if self.differential_pressure > Pressure::new::<psi>(Self::MAX_SAFETY_DELTA_P - 0.2) {
+            if self.differential_pressure > Pressure::new::<psi>(Self::MAX_SAFETY_DELTA_P) {
+                Velocity::new::<foot_per_minute>(6400.)
+            } else if cabin_vertical_speed > Velocity::new::<foot_per_minute>(200.) {
+                Velocity::new::<foot_per_minute>(6400.)
+            } else {
+                cabin_target_vs
+            }
+        } else {
+            cabin_target_vs
+        }
+    }
+
     fn differential_pressure_calculation(&self) -> Pressure {
         self.cabin_pressure - self.exterior_pressure.output()
     }
@@ -397,5 +421,30 @@ impl EmergencyPressurizationPartition {
 
     fn outflow_valve_controller(&self) -> &OutflowValveController {
         &self.outflow_valve_controller
+    }
+}
+
+/// Negative relieve valves signal. This returns a controller signal, but the valves are mechanical assemblies
+impl ControllerSignal<PressureValveSignal> for EmergencyPressurizationPartition {
+    fn signal(&self) -> Option<PressureValveSignal> {
+        let open = Some(PressureValveSignal::Open(
+            Ratio::new::<percent>(100.),
+            Duration::from_secs(1),
+        ));
+        let closed = Some(PressureValveSignal::Close(
+            Ratio::new::<percent>(0.),
+            Duration::from_secs(1),
+        ));
+        if self.differential_pressure < Pressure::new::<psi>(Self::MIN_SAFETY_DELTA_P + 0.2) {
+            if self.differential_pressure < Pressure::new::<psi>(Self::MIN_SAFETY_DELTA_P) {
+                open
+            } else {
+                Some(PressureValveSignal::Neutral)
+            }
+        } else if self.safety_valve_open_amount > Ratio::new::<percent>(0.) {
+            closed
+        } else {
+            Some(PressureValveSignal::Neutral)
+        }
     }
 }

@@ -815,7 +815,7 @@ impl SimulationElement for A380AirConditioningSystemOverhead {
 struct A380PressurizationSystem {
     ocsm: [OutflowValveControlModule; 4],
 
-    safety_valve: SafetyValve,
+    negative_relief_valves: SafetyValve,
 }
 
 impl A380PressurizationSystem {
@@ -851,7 +851,7 @@ impl A380PressurizationSystem {
                     ],
                 ),
             ],
-            safety_valve: SafetyValve::new(),
+            negative_relief_valves: SafetyValve::new(),
         }
     }
 
@@ -864,12 +864,23 @@ impl A380PressurizationSystem {
         cabin_simulation: &impl CabinSimulation,
     ) {
         for controller in self.ocsm.iter_mut() {
-            controller.update(context, adirs, cabin_simulation, cpiom_b, press_overhead);
+            controller.update(
+                context,
+                adirs,
+                cabin_simulation,
+                cpiom_b,
+                press_overhead,
+                self.negative_relief_valves.open_amount(),
+            );
         }
+
+        // Fixme - check for failed OCSM
+        self.negative_relief_valves
+            .update(context, self.ocsm[0].negative_relief_valve_trigger());
     }
 
     fn safety_valve_open_amount(&self) -> Ratio {
-        self.safety_valve.open_amount()
+        self.negative_relief_valves.open_amount()
     }
 
     fn outflow_valve_control_module(&self) -> [&impl OcsmShared; 4] {
@@ -968,7 +979,7 @@ impl PressurizationOverheadShared for A380PressurizationOverheadPanel {
     }
 
     fn vs_knob_value(&self) -> Velocity {
-        Velocity::new::<foot_per_minute>(self.vertical_speed_knob.value())
+        Velocity::new::<foot_per_minute>(self.vertical_speed_knob.value().clamp(-1500., 2500.))
     }
 
     fn extract_is_forced_open(&self) -> bool {
@@ -2447,7 +2458,7 @@ mod tests {
             self.query(|a| {
                 a.a380_cabin_air
                     .a380_pressurization_system
-                    .safety_valve
+                    .negative_relief_valves
                     .open_amount()
             })
         }
@@ -3264,93 +3275,66 @@ mod tests {
         //     );
         // }
 
-        // #[test]
-        // #[ignore]
-        // fn safety_valve_stays_closed_when_delta_p_is_less_than_8_6_psi() {
-        //     let test_bed = test_bed()
-        //         .ambient_pressure_of(
-        //             InternationalStandardAtmosphere::pressure_at_altitude(Length::default())
-        //                 - Pressure::new::<psi>(8.6),
-        //         )
-        //         .and_run();
+        #[test]
+        fn outflow_valve_opens_when_delta_p_above_9_psi() {
+            let mut test_bed = test_bed()
+                .and_run()
+                .with()
+                .vertical_speed_of(Velocity::new::<foot_per_minute>(1000.))
+                .iterate(5)
+                .then()
+                .command_aircraft_climb(Length::new::<foot>(1000.), Length::new::<foot>(30000.))
+                .with()
+                .vertical_speed_of(Velocity::default())
+                .iterate(10);
 
-        //     assert_eq!(test_bed.safety_valve_open_amount(), Ratio::default());
-        // }
+            assert!(test_bed.cabin_vs() < Velocity::new::<foot_per_minute>(2000.));
 
-        // #[test]
-        // #[ignore]
-        // fn safety_valve_stays_closed_when_delta_p_is_less_than_minus_1_psi() {
-        //     let test_bed = test_bed()
-        //         .ambient_pressure_of(
-        //             InternationalStandardAtmosphere::pressure_at_altitude(Length::default())
-        //                 + Pressure::new::<psi>(1.),
-        //         )
-        //         .and_run();
+            test_bed = test_bed
+                .ambient_pressure_of(
+                    InternationalStandardAtmosphere::pressure_at_altitude(Length::new::<foot>(30000.))
+                        - Pressure::new::<psi>(4.),
+                )
+                .iterate(10);
 
-        //     assert_eq!(test_bed.safety_valve_open_amount(), Ratio::default());
-        // }
+            assert!(test_bed.cabin_vs() > Velocity::new::<foot_per_minute>(2000.));
+        }
 
-        // #[test]
-        // #[ignore]
-        // fn safety_valve_opens_when_delta_p_above_8_6_psi() {
-        //     let test_bed = test_bed()
-        //         .command_mode_sel_pb_man()
-        //         .and_run()
-        //         .command_man_vs_switch_position(2)
-        //         .command_packs_on_off(false)
-        //         .iterate(100)
-        //         .ambient_pressure_of(
-        //             InternationalStandardAtmosphere::pressure_at_altitude(Length::default())
-        //                 - Pressure::new::<psi>(10.),
-        //         )
-        //         .iterate(10);
+        #[test]
+        fn negative_relief_valves_open_when_delta_p_below_minus_0725_psi() {
+            let test_bed = test_bed()
+                .command_packs_on_off(false)
+                .iterate(100)
+                .ambient_pressure_of(
+                    InternationalStandardAtmosphere::pressure_at_altitude(Length::default())
+                        + Pressure::new::<psi>(4.),
+                )
+                .iterate(2);
 
-        //     assert!(test_bed.safety_valve_open_amount() > Ratio::default());
-        // }
+            assert!(test_bed.safety_valve_open_amount() > Ratio::default());
+        }
 
-        // #[test]
-        // #[ignore]
-        // fn safety_valve_opens_when_delta_p_below_minus_1_psi() {
-        //     let test_bed = test_bed()
-        //         .command_mode_sel_pb_man()
-        //         .and_run()
-        //         .command_man_vs_switch_position(2)
-        //         .command_packs_on_off(false)
-        //         .iterate(100)
-        //         .ambient_pressure_of(
-        //             InternationalStandardAtmosphere::pressure_at_altitude(Length::default())
-        //                 + Pressure::new::<psi>(2.),
-        //         )
-        //         .iterate(2);
+        #[test]
+        fn negative_relief_valves_close_when_condition_is_not_met() {
+            let mut test_bed = test_bed()
+                .command_packs_on_off(false)
+                .iterate(100)
+                .ambient_pressure_of(
+                    InternationalStandardAtmosphere::pressure_at_altitude(Length::default())
+                        + Pressure::new::<psi>(4.),
+                )
+                .iterate(2);
 
-        //     assert!(test_bed.safety_valve_open_amount() > Ratio::default());
-        // }
+            assert!(test_bed.safety_valve_open_amount() > Ratio::default());
 
-        // #[test]
-        // #[ignore]
-        // fn safety_valve_closes_when_condition_is_not_met() {
-        //     let mut test_bed = test_bed()
-        //         .command_mode_sel_pb_man()
-        //         .and_run()
-        //         .command_man_vs_switch_position(2)
-        //         .command_packs_on_off(false)
-        //         .iterate(100)
-        //         .ambient_pressure_of(
-        //             InternationalStandardAtmosphere::pressure_at_altitude(Length::default())
-        //                 + Pressure::new::<psi>(2.),
-        //         )
-        //         .iterate(2);
+            test_bed = test_bed
+                .ambient_pressure_of(InternationalStandardAtmosphere::pressure_at_altitude(
+                    Length::default(),
+                ))
+                .iterate(20);
 
-        //     assert!(test_bed.safety_valve_open_amount() > Ratio::default());
-
-        //     test_bed = test_bed
-        //         .ambient_pressure_of(InternationalStandardAtmosphere::pressure_at_altitude(
-        //             Length::default(),
-        //         ))
-        //         .iterate(20);
-
-        //     assert_eq!(test_bed.safety_valve_open_amount(), Ratio::default());
-        // }
+            assert_eq!(test_bed.safety_valve_open_amount(), Ratio::default());
+        }
 
         #[test]
         fn opening_doors_affects_cabin_pressure() {
