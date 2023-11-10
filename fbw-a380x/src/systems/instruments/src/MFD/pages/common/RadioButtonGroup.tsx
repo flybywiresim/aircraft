@@ -3,7 +3,7 @@ import './style.scss';
 
 interface RadioButtonGroupProps extends ComponentProps {
     values: string[];
-    valuesDisabled?: Subject<boolean[]>;
+    valuesDisabled?: Subscribable<boolean[]>;
     selectedIndex: Subject<number>;
     idPrefix: string;
     onModified?: (newSelectedIndex: number) => void;

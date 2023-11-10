@@ -141,6 +141,8 @@ export class FmgcData {
 
     public readonly cleanSpeed = Subject.create<Knots>(190);
 
+    public readonly takeoffShift = Subject.create<number>(undefined);
+
     public readonly takeoffPowerSetting = Subject.create<TakeoffPowerSetting>(TakeoffPowerSetting.TOGA);
 
     public readonly takeoffFlexTemp = Subject.create<number>(undefined);

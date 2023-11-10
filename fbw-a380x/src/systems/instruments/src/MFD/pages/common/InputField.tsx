@@ -7,10 +7,11 @@ export const emptyMandatoryCharacter = (selected: boolean) => `<svg width="16" h
 
 interface InputFieldProps<T> extends ComponentProps {
     dataEntryFormat: DataEntryFormat<T>;
-    mandatory?: Subscribable<boolean>;
-    disabled?: Subscribable<boolean>;
+    mandatory?: Subscribable<boolean>; // Renders empty values with orange rectangles
+    inactive?: Subscribable<boolean>; // If inactive, will be rendered as static value (green text)
+    disabled?: Subscribable<boolean>; // Whether value can be set (if disabled, rendered as input field but greyed out)
     canBeCleared?: Subscribable<boolean>;
-    enteredByPilot?: Subscribable<boolean>;
+    enteredByPilot?: Subscribable<boolean>; // Value will be displayed in smaller font, if not entered by pilot (i.e. computed)
     canOverflow?: boolean;
     value: Subject<T> | Subscribable<T>;
     /**
@@ -188,7 +189,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
     }
 
     public onFocus() {
-        if (this.isFocused.get() === false && this.isValidating.get() === false && this.props.disabled.get() === false) {
+        if (this.isFocused.get() === false && this.isValidating.get() === false && this.props.disabled.get() === false && this.props.inactive.get() === false) {
             this.isFocused.set(true);
             Coherent.trigger('FOCUS_INPUT_FIELD');
             this.textInputRef.getOrDefault().classList.add('valueSelected');
@@ -203,7 +204,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
     }
 
     public async onBlur(validateAndUpdate: boolean = true) {
-        if (this.props.disabled.get() === false && this.isFocused.get() === true) {
+        if (this.props.disabled.get() === false && this.props.inactive.get() === false && this.isFocused.get() === true) {
             this.isFocused.set(false);
             Coherent.trigger('UNFOCUS_INPUT_FIELD');
             this.textInputRef.getOrDefault().classList.remove('valueSelected');
@@ -236,7 +237,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
         this.leadingUnit.set(unitLeading);
         this.trailingUnit.set(unitTrailing);
 
-        if (this.props.mandatory.get() === true && this.props.disabled.get() === false) {
+        if (this.props.mandatory.get() === true && this.props.inactive.get() === false && this.props.disabled.get() === false) {
             this.textInputRef.getOrDefault().innerHTML = formatted.replace(/-/gi, emptyMandatoryCharacter(this.isFocused.get()));
         } else {
             this.textInputRef.getOrDefault().innerText = formatted;
@@ -287,6 +288,9 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
         if (this.props.mandatory === undefined) {
             this.props.mandatory = Subject.create(false);
         }
+        if (this.props.inactive === undefined) {
+            this.props.inactive = Subject.create(false);
+        }
         if (this.props.disabled === undefined) {
             this.props.disabled = Subject.create(false);
         }
@@ -312,8 +316,6 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
         // Aspect ratio for font: 2:3 WxH
         this.spanningDivRef.instance.style.minWidth = `${Math.round(this.props.dataEntryFormat.maxDigits * 27.0 / 1.5)}px`;
 
-        // Align text
-
         // Hide caret
         this.caretRef.instance.style.display = 'none';
         this.caretRef.instance.innerText = '';
@@ -327,6 +329,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
                 this.textInputRef.getOrDefault().classList.remove('validating');
             }
         }));
+
         this.subs.push(this.props.mandatory.sub((val) => {
             if (val === true && !this.props.value.get()) {
                 this.textInputRef.getOrDefault().classList.add('mandatory');
@@ -336,23 +339,41 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
             this.updateDisplayElement();
         }, true));
 
-        this.subs.push(this.props.disabled.sub((val) => {
+        this.subs.push(this.props.inactive.sub((val) => {
             if (val === true) {
-                // Disable click listeners
+                this.containerRef.getOrDefault().classList.add('inactive');
+                this.textInputRef.getOrDefault().classList.add('inactive');
+
                 this.textInputRef.getOrDefault().tabIndex = null;
-
-                this.containerRef.getOrDefault().classList.add('disabled');
-                this.textInputRef.getOrDefault().classList.add('disabled');
-
-                if (this.props.mandatory.get() === true && !this.props.value.get()) {
-                    this.textInputRef.getOrDefault().classList.remove('mandatory');
-                }
             } else {
-                this.containerRef.getOrDefault().classList.remove('disabled');
-                this.textInputRef.getOrDefault().classList.remove('disabled');
+                this.containerRef.getOrDefault().classList.remove('inactive');
+                this.textInputRef.getOrDefault().classList.remove('inactive');
 
-                if (this.props.mandatory.get() === true && !this.props.value.get()) {
-                    this.textInputRef.getOrDefault().classList.add('mandatory');
+                if (this.props.disabled.get() === false) {
+                    this.textInputRef.getOrDefault().tabIndex = -1;
+                }
+            }
+            this.updateDisplayElement();
+        }, true));
+
+        this.subs.push(this.props.disabled.sub((val) => {
+            if (this.props.inactive.get() !== true) {
+                if (val === true) {
+                    this.textInputRef.getOrDefault().tabIndex = null;
+                    this.containerRef.getOrDefault().classList.add('disabled');
+                    this.textInputRef.getOrDefault().classList.add('disabled');
+
+                    if (this.props.mandatory.get() === true && !this.props.value.get()) {
+                        this.textInputRef.getOrDefault().classList.remove('mandatory');
+                    }
+                } else {
+                    this.textInputRef.getOrDefault().tabIndex = -1;
+                    this.containerRef.getOrDefault().classList.remove('disabled');
+                    this.textInputRef.getOrDefault().classList.remove('disabled');
+
+                    if (this.props.mandatory.get() === true && !this.props.value.get()) {
+                        this.textInputRef.getOrDefault().classList.add('mandatory');
+                    }
                 }
             }
             this.updateDisplayElement();

@@ -160,7 +160,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
     private async initializeFlightPlans() {
         const db = new NavigationDatabase(NavigationDatabaseBackend.Msfs);
         NavigationDatabaseService.activeDatabase = db;
-        await new Promise((r) => setTimeout(r, 1000));
+        await new Promise((r) => setTimeout(r, 2000));
         this.flightPlanService.createFlightPlans();
 
         // Intialize from MSFS flight data
@@ -198,8 +198,8 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
         await this.flightPlanService.deleteElementAt(12); */
 
         // Default performance values
-        this.flightPlanService.active.performanceData.pilotAccelerationAltitude.set(1_500);
-        this.flightPlanService.active.performanceData.pilotThrustReductionAltitude.set(1_500);
+        this.flightPlanService.active.performanceData.pilotAccelerationAltitude.set(2_900);
+        this.flightPlanService.active.performanceData.pilotThrustReductionAltitude.set(1_900);
         this.flightPlanService.active.performanceData.pilotTransitionAltitude.set(5_000);
         this.flightPlanService.active.performanceData.pilotEngineOutAccelerationAltitude.set(1_500);
         this.flightPlanService.active.performanceData.v1.set(120);

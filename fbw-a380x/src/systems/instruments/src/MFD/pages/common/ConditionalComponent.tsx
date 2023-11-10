@@ -5,6 +5,8 @@ interface ConditionalComponentProps extends ComponentProps {
     componentIfTrue: VNode;
     componentIfFalse: VNode;
     condition: Subscribable<boolean>;
+    width?: number; // Fixed width in pixel. If not set, positioning might not be consistent
+    height?: number; // Fixed height in pixels. If not set, positioning might not be consistent
 }
 
 /*
@@ -13,6 +15,8 @@ interface ConditionalComponentProps extends ComponentProps {
 export class ConditionalComponent extends DisplayComponent<ConditionalComponentProps> {
     // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
     private subs = [] as Subscription[];
+
+    private containerRef = FSComponent.createRef<HTMLDivElement>();
 
     private trueComponentRef = FSComponent.createRef<HTMLDivElement>();
 
@@ -36,7 +40,12 @@ export class ConditionalComponent extends DisplayComponent<ConditionalComponentP
 
     render(): VNode {
         return (
-            <div>
+            <div
+                ref={this.containerRef}
+                style={`display: flex; justify-content: center; align-items: center;
+                ${this.props.width !== undefined ? ` width: ${this.props.width.toFixed(0)}px;` : ''}
+                ${this.props.height !== undefined ? ` height: ${this.props.height.toFixed(0)}px;` : ''}`}
+            >
                 <div ref={this.trueComponentRef}>
                     {this.props.componentIfTrue}
                 </div>

@@ -13,6 +13,7 @@ interface DropdownMenuProps extends ComponentProps {
      * If defined, this component does not update the selectedIndex prop, but rather calls this method.
      */
     onModified?: (newSelectedIndex: number, freeTextEntry: string) => void;
+    inactive?: Subscribable<boolean>;
     containerStyle?: string;
     alignLabels?: 'flex-start' | 'center' | 'flex-end';
     numberOfDigitsForInputField?: number;
@@ -32,6 +33,8 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
 
     private dropdownInnerRef = FSComponent.createRef<HTMLDivElement>();
 
+    private dropdownArrowRef = FSComponent.createRef<HTMLDivElement>();
+
     // private dropdownSelectorLabelRef = FSComponent.createRef<HTMLSpanElement>();
 
     private dropdownMenuRef = FSComponent.createRef<HTMLDivElement>();
@@ -49,18 +52,20 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
     private renderedDropdownOptionsIndices: number[] = [];
 
     clickHandler(i: number, thisArg: DropdownMenu) {
-        this.freeTextEntered = false;
-        if (thisArg.props.onModified) {
-            thisArg.props.onModified(this.renderedDropdownOptionsIndices[i], '');
-        } else {
-            thisArg.props.selectedIndex.set(this.renderedDropdownOptionsIndices[i]);
+        if (this.props.inactive.get() === false) {
+            this.freeTextEntered = false;
+            if (thisArg.props.onModified) {
+                thisArg.props.onModified(this.renderedDropdownOptionsIndices[i], '');
+            } else {
+                thisArg.props.selectedIndex.set(this.renderedDropdownOptionsIndices[i]);
+            }
+            thisArg.dropdownIsOpened.set(false);
+            this.filterList('');
         }
-        thisArg.dropdownIsOpened.set(false);
-        this.filterList('');
     }
 
     private onFieldSubmit(text: string) {
-        if (this.props.freeTextAllowed && this.props.onModified) {
+        if (this.props.freeTextAllowed && this.props.onModified && this.props.inactive.get() === false) {
             // selected index of -1 marks free text entry
             this.props.onModified(-1, text);
 
@@ -89,6 +94,9 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
+        if (this.props.inactive === undefined) {
+            this.props.inactive = Subject.create(false);
+        }
         if (this.props.tmpyActive === undefined) {
             this.props.tmpyActive = Subject.create(false);
         }
@@ -164,6 +172,16 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
             }
         }));
 
+        this.subs.push(this.props.inactive.sub((val) => {
+            if (val === true) {
+                this.dropdownSelectorRef.getOrDefault().classList.add('inactive');
+                this.dropdownArrowRef.getOrDefault().classList.add('inactive');
+            } else {
+                this.dropdownSelectorRef.getOrDefault().classList.remove('inactive');
+                this.dropdownArrowRef.getOrDefault().classList.remove('inactive');
+            }
+        }, true));
+
         // TODO add KCCU events
     }
 
@@ -188,11 +206,12 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
                             canOverflow={this.props.freeTextAllowed}
                             onModified={(text) => this.onFieldSubmit(text)}
                             onInput={(text) => this.onFieldChanged(text)}
+                            inactive={this.props.inactive}
                             handleFocusBlurExternally
                             tmpyActive={this.props.tmpyActive}
                         />
                     </div>
-                    <div class="mfd-dropdown-arrow">
+                    <div ref={this.dropdownArrowRef} class="mfd-dropdown-arrow">
                         <svg height="15" width="15">
                             <polygon points="0,0 15,0 7.5,15" style="fill: white" />
                         </svg>
