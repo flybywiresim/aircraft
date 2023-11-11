@@ -222,7 +222,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.A32NXCore = new A32NX_Core();
         this.A32NXCore.init(this._lastTime);
 
-        this.dataManager = new FMCDataManager(this);
+        this.dataManager = new Fmgc.DataManager(this);
 
         this.guidanceController = new Fmgc.GuidanceController(this, this.currFlightPlanService);
         this.navigation = new Fmgc.Navigation(this.flightPlanService, this.facilityLoader);
@@ -2213,7 +2213,10 @@ class FMCMainDisplay extends BaseAirliners {
             this._DistanceToAlt = 0;
             return true;
         }
-        const airportAltDest = await this.dataManager.GetAirportByIdent(altDestIdent).catch(console.error);
+
+        // TODO port over (fms-v2)
+        const airportAltDest = undefined;
+        // const airportAltDest = await this.dataManager.GetAirportByIdent(altDestIdent).catch(console.error);
         if (airportAltDest) {
             this.atsu.resetAtisAutoUpdate();
             this.altDestination = airportAltDest;
@@ -2489,6 +2492,9 @@ class FMCMainDisplay extends BaseAirliners {
             case 3: // EntryOutOfRange
                 this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
                 break;
+            case 4: // ListOf99InUse
+                this.setScratchpadMessage(NXSystemMessages.listOf99InUse);
+                break;
         }
     }
 
@@ -2521,6 +2527,10 @@ class FMCMainDisplay extends BaseAirliners {
      */
     createPlaceBearingDistWaypoint(place, bearing, distance, stored) {
         return this.dataManager.createPlaceBearingDistWaypoint(place, bearing, distance, stored);
+    }
+
+    getStoredWaypointsByIdent(ident) {
+        return this.dataManager.getStoredWaypointsByIdent(ident);
     }
 
     //-----------------------------------------------------------------------------------
@@ -4513,6 +4523,11 @@ class FMCMainDisplay extends BaseAirliners {
             this._setProgLocation(temporary ? "ENTRY" : wp.ident, wp.location, wp.databaseId);
             return callback(true);
         }).catch((err) => {
+            // Rethrow if error is not an FMS message to display
+            if (!err.type) {
+                throw err;
+            }
+
             this.showFmsErrorMessage(err.type);
             return callback(false);
         });
@@ -4556,14 +4571,9 @@ class FMCMainDisplay extends BaseAirliners {
      * @param wpt {import('msfs-navdata').Waypoint}
      */
     isWaypointInUse(wpt) {
-        if (this.flightPlanService.isWaypointInUse(wpt)) {
-            return true;
-        }
-        // TODO check tuned navaids
-        if (this._progBrgDist && this._progBrgDist.icao === wpt.databaseId) {
-            return true;
-        }
-        return false;
+        return this.flightPlanService.isWaypointInUse(wpt).then((inUseByFlightPlan) =>
+            inUseByFlightPlan || (this._progBrgDist && this._progBrgDist.icao === wpt.databaseId)
+        );
     }
 
     setGroundTempFromOrigin() {

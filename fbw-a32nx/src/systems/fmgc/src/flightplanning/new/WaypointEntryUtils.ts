@@ -48,7 +48,7 @@ export class WaypointEntryUtils {
     /**
      * Parse a place string into a position
      */
-    static async parsePlace(fms: DisplayInterface, place: string): Promise<Fix> {
+    static async parsePlace(fms: DisplayInterface & DataInterface, place: string): Promise<Fix> {
         if (WaypointEntryUtils.isRunwayFormat(place)) {
             return WaypointEntryUtils.parseRunway(place);
         }
@@ -60,6 +60,9 @@ export class WaypointEntryUtils {
         if (airport !== undefined) {
             waypoints.push(WaypointFactory.fromAirport(airport));
         }
+
+        const storedWaypoints = fms.getStoredWaypointsByIdent(place).map((stored) => stored.waypoint);
+        waypoints.push(...storedWaypoints);
 
         // Sometimes navaids also exist as waypoints/intersections in the navdata (when they live on airways)
         // In this case, we only want to return the actual VOR facility
@@ -151,7 +154,7 @@ export class WaypointEntryUtils {
      *
      * @returns place and true bearing * 2
      */
-    static async parsePbx(fms: DisplayInterface, str: string): Promise<[Fix, number, Fix, number]> {
+    static async parsePbx(fms: DisplayInterface & DataInterface, str: string): Promise<[Fix, number, Fix, number]> {
         const pbx = str.match(/^([^\-/]+)-([0-9]{1,3})\/([^\-/]+)-([0-9]{1,3})$/);
 
         if (pbx === null) {

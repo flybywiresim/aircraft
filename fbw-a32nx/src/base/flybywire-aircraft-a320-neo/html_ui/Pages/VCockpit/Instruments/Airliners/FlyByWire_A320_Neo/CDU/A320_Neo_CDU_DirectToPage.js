@@ -56,7 +56,7 @@ class CDUDirectToPage {
                 return;
             }
 
-            mcdu.getOrSelectWaypointByIdent(value, (w) => {
+            Fmgc.WaypointEntryUtils.getOrCreateWaypoint(mcdu, value, false).then((w) => {
                 if (w) {
                     mcdu.eraseTemporaryFlightPlan(() => {
                         // FIXME fm pos
@@ -78,6 +78,14 @@ class CDUDirectToPage {
                 } else {
                     mcdu.setScratchpadMessage(NXSystemMessages.notInDatabase);
                 }
+            }).catch((err) => {
+                // Rethrow if error is not an FMS message to display
+                if (!err.type) {
+                    throw err;
+                }
+
+                mcdu.showFmsErrorMessage(err.type);
+                return callback(false);
             });
         };
 

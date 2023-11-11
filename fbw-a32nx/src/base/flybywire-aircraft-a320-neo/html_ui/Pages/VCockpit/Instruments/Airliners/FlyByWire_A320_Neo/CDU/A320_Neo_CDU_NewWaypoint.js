@@ -39,25 +39,25 @@ class CDUNewWaypoint {
 
         switch (_inProgressData.type) {
             case StoredWaypointType.LatLon:
-                template[4][0] = `{cyan}${CDUPilotsWaypoint.formatLatLong(_inProgressData.wp.infos.coordinates)}{end}`;
+                template[4][0] = `{cyan}${CDUPilotsWaypoint.formatLatLong(_inProgressData.wp.waypoint.location)}{end}`;
                 template[5].length = 0;
                 template[6].length = 0;
                 template[7].length = 0;
                 template[8].length = 0;
                 break;
             case StoredWaypointType.Pbd:
-                template[4][0] = `{cyan}{small}${CDUPilotsWaypoint.formatLatLong(_inProgressData.wp.infos.coordinates)}{end}{end}`;
+                template[4][0] = `{cyan}{small}${CDUPilotsWaypoint.formatLatLong(_inProgressData.wp.waypoint.location)}{end}{end}`;
                 template[5][0] = 'PLACE\xa0\xa0/BRG\xa0/DIST';
-                template[6][0] = `{cyan}${_inProgressData.place.ident.padEnd(7, '\xa0')}/${CDUPilotsWaypoint.formatBearing(_inProgressData.wp, _inProgressData.bearing)}/${_inProgressData.distance.toFixed(1)}{end}`;
+                template[6][0] = `{cyan}${_inProgressData.place.ident.padEnd(7, '\xa0')}/${CDUPilotsWaypoint.formatBearing(_inProgressData.wp.waypoint, _inProgressData.bearing)}/${_inProgressData.distance.toFixed(1)}{end}`;
                 template[7].length = 0;
                 template[8].length = 0;
                 break;
             case StoredWaypointType.Pbx:
-                template[4][0] = `{cyan}{small}${CDUPilotsWaypoint.formatLatLong(_inProgressData.wp.infos.coordinates)}{end}{end}`;
+                template[4][0] = `{cyan}{small}${CDUPilotsWaypoint.formatLatLong(_inProgressData.wp.waypoint.location)}{end}{end}`;
                 template[5].length = 0;
                 template[6].length = 0;
                 template[7][0] = 'PLACE-BRG\xa0\xa0/PLACE-BRG';
-                template[8][0] = `{cyan}${_inProgressData.place1.ident.padEnd(5, '\xa0')}-${CDUPilotsWaypoint.formatBearing(_inProgressData.wp, _inProgressData.bearing1)}/${_inProgressData.place2.ident.padEnd(5, '\xa0')}-${CDUPilotsWaypoint.formatBearing(_inProgressData.wp, _inProgressData.bearing2)}{end}`;
+                template[8][0] = `{cyan}${_inProgressData.place1.ident.padEnd(5, '\xa0')}-${CDUPilotsWaypoint.formatBearing(_inProgressData.wp.waypoint, _inProgressData.bearing1)}/${_inProgressData.place2.ident.padEnd(5, '\xa0')}-${CDUPilotsWaypoint.formatBearing(_inProgressData.wp.waypoint, _inProgressData.bearing2)}{end}`;
                 break;
             default:
         }
@@ -217,7 +217,7 @@ class CDUNewWaypoint {
                     if (doneCallback !== undefined) {
                         doneCallback(wp);
                     } else {
-                        CDUPilotsWaypoint.ShowPage(mcdu, wp.additionalData.storedIndex);
+                        CDUPilotsWaypoint.ShowPage(mcdu, wp.storedIndex);
                     }
                 });
             };

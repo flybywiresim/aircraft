@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ApproachType, ApproachUtils } from '@flybywiresim/fbw-sdk';
+import { DataManager } from '@fmgc/flightplanning/new/DataManager';
 import { FlightPlanService } from './flightplanning/new/FlightPlanService';
 import { NavigationDatabase, NavigationDatabaseBackend } from './NavigationDatabase';
 import { FlightPhaseManager, getFlightPhaseManager } from './flightphase';
@@ -49,4 +50,5 @@ export {
     WaypointFactory,
     WaypointEntryUtils,
     SimBriefUplinkAdapter,
+    DataManager,
 };
