@@ -1,7 +1,7 @@
 #pragma once
 
-#include <ini.h>
 #include <string>
+#include "ini.h"
 
 namespace mINI {
 class INITypeConversion {
