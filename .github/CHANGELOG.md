@@ -15,6 +15,7 @@
 1. [ATSU] Fixed GROUND REQ page not updating after successful station insert - @BravoMike99 (bruno_pt99)
 1. [MCDU] Dash alternate time predictions if alternate fuel is manually inserted @BravoMike99 (bruno_pt99)
 1. [BLEED] Add Air starter unit to enable ground starts - @Maximilian-Reuter (\_Chaoz_)
+1. [MCDU] FUEL PRED layout improvemnts @BravoMike99 (bruno_pt99)
 
 ## 0.11.0
 
