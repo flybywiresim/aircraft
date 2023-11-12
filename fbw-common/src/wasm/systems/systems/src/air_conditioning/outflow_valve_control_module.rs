@@ -9,16 +9,19 @@ use crate::{
         low_pass_filter::LowPassFilter, CabinSimulation, ControllerSignal, ElectricalBusType,
         InternationalStandardAtmosphere,
     },
-    simulation::{SimulationElement, SimulationElementVisitor, UpdateContext},
+    simulation::{
+        InitContext, SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext,
+        VariableIdentifier, Write,
+    },
 };
 
 use std::time::Duration;
 
 use uom::si::{
     f64::*,
-    length::{foot, meter},
+    length::foot,
     pressure::{hectopascal, psi},
-    ratio::{percent, ratio},
+    ratio::percent,
     velocity::foot_per_minute,
 };
 
@@ -36,6 +39,7 @@ pub trait OcsmShared {
     fn cabin_target_altitude(&self) -> Option<Length>;
     fn cabin_delta_pressure(&self) -> Pressure;
     fn outflow_valve_open_amount(&self) -> Ratio;
+    fn overpressure_relief_valve_inhibit(&self) -> bool;
 }
 
 enum OcsmFault {
@@ -44,6 +48,8 @@ enum OcsmFault {
 }
 
 pub struct OutflowValveControlModule {
+    ocsm_channel_failure_id: VariableIdentifier,
+
     active_channel: OperatingChannel,
     stand_by_channel: OperatingChannel,
     acp: AutomaticControlPartition,
@@ -54,8 +60,15 @@ pub struct OutflowValveControlModule {
 }
 
 impl OutflowValveControlModule {
-    pub fn new(outflow_valve_id: usize, powered_by: Vec<ElectricalBusType>) -> Self {
+    pub fn new(
+        context: &mut InitContext,
+        outflow_valve_id: usize,
+        powered_by: Vec<ElectricalBusType>,
+    ) -> Self {
         Self {
+            ocsm_channel_failure_id: context
+                .get_identifier(format!("PRESS_{}_OCSM_CHANNEL_FAILURE", outflow_valve_id)),
+
             active_channel: OperatingChannel::new(1, None, &[powered_by[0]]),
             stand_by_channel: OperatingChannel::new(2, None, &[powered_by[1]]),
             acp: AutomaticControlPartition::new(outflow_valve_id),
@@ -147,9 +160,21 @@ impl OcsmShared for OutflowValveControlModule {
     fn outflow_valve_open_amount(&self) -> Ratio {
         self.outflow_valve.open_amount()
     }
+    fn overpressure_relief_valve_inhibit(&self) -> bool {
+        false //Fixme
+    }
 }
 
 impl SimulationElement for OutflowValveControlModule {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        let failure_count = match self.fault {
+            None => 0,
+            Some(OcsmFault::OneChannelFault) => self.stand_by_channel.id().into(),
+            Some(OcsmFault::BothChannelsFault) => 3,
+        };
+        writer.write(&self.ocsm_channel_failure_id, failure_count);
+    }
+
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         self.active_channel.accept(visitor);
         self.stand_by_channel.accept(visitor);
@@ -282,9 +307,9 @@ impl SafetyAndOverridePartition {
 /// The Emergency Pressurization Partition (EPP) is responsible for:
 /// - The computation of cabin pressure and differential pressure *
 /// - The OFV motor computation based on position demands from the ACP and/or SOP *
-/// - The protection of positive differential pressure and cabin altitude limits against inadvertent function from the ACP and/or SOP,
+/// - The protection of positive differential pressure and cabin altitude limits against inadvertent function from the ACP and/or SOP, **
 /// - The warnings to the FWS in case of strong system malfunction
-/// - The limitation of the maximum negative differential pressure
+/// - The limitation of the maximum negative differential pressure *
 struct EmergencyPressurizationPartition {
     cabin_pressure: Pressure,
     cabin_target_vertical_speed: Velocity,
@@ -340,12 +365,13 @@ impl EmergencyPressurizationPartition {
             self.emergency_control_cabin_vs(cabin_target_vs, cabin_vertical_speed);
         self.differential_pressure = self.differential_pressure_calculation();
         self.safety_valve_open_amount = safety_valve_open_amount;
+        let cabin_altitude_protection = !self.emergency_cabin_altitude(self.cabin_pressure);
         self.outflow_valve_controller.update(
             context,
             cabin_vertical_speed,
             self.cabin_target_vertical_speed,
             press_overhead,
-            open_allowed,
+            open_allowed && cabin_altitude_protection,
             should_open_ofv,
         );
     }
@@ -401,6 +427,11 @@ impl EmergencyPressurizationPartition {
         } else {
             cabin_target_vs
         }
+    }
+
+    fn emergency_cabin_altitude(&self, cabin_pressure: Pressure) -> bool {
+        InternationalStandardAtmosphere::altitude_from_pressure(cabin_pressure)
+            > Length::new::<foot>(22000.)
     }
 
     fn differential_pressure_calculation(&self) -> Pressure {

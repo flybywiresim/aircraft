@@ -22,7 +22,7 @@ use systems::{
     },
     simulation::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
-        UpdateContext, VariableIdentifier,
+        SimulatorWriter, UpdateContext, VariableIdentifier, Write,
     },
 };
 
@@ -84,7 +84,7 @@ impl A380AirConditioning {
         Self {
             a380_cabin: A380Cabin::new(context, &cabin_zones),
             a380_air_conditioning_system: A380AirConditioningSystem::new(context, &cabin_zones),
-            a380_pressurization_system: A380PressurizationSystem::new(),
+            a380_pressurization_system: A380PressurizationSystem::new(context),
 
             cpiom_b: CoreProcessingInputOutputModuleB::new(context, &cabin_zones),
 
@@ -132,6 +132,8 @@ impl A380AirConditioning {
             engines,
             engine_fire_push_buttons,
             self.a380_cabin.number_of_open_doors(),
+            self.a380_pressurization_system
+                .outflow_valve_control_module(),
             pneumatic,
             pneumatic_overhead,
             pressurization_overhead,
@@ -264,7 +266,8 @@ impl A380Cabin {
             context,
             air_conditioning_system,
             pressurization.ofv_total_open_area(),
-            pressurization.safety_valve_open_amount(),
+            pressurization.safety_valve_open_amount()
+                + air_conditioning_system.overpressure_relief_valve_open_amount(),
             lgciu_gears_compressed,
             self.number_of_passengers,
             self.number_of_open_doors(),
@@ -422,6 +425,7 @@ impl A380AirConditioningSystem {
         engines: [&impl EngineCorrectedN1; 4],
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         number_of_open_doors: u8,
+        ocsm: [&impl OcsmShared; 4],
         pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
         pneumatic_overhead: &impl EngineBleedPushbutton<4>,
         pressurization_overhead: &A380PressurizationOverheadPanel,
@@ -432,6 +436,7 @@ impl A380AirConditioningSystem {
             engines,
             engine_fire_push_buttons,
             number_of_open_doors,
+            ocsm,
             pneumatic,
             pneumatic_overhead,
             pressurization_overhead,
@@ -458,6 +463,7 @@ impl A380AirConditioningSystem {
         engines: [&impl EngineCorrectedN1; 4],
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         number_of_open_doors: u8,
+        ocsm: [&impl OcsmShared; 4],
         pneumatic: &(impl EngineStartState + PackFlowValveState + PneumaticBleed),
         pneumatic_overhead: &impl EngineBleedPushbutton<4>,
         pressurization_overhead: &A380PressurizationOverheadPanel,
@@ -487,7 +493,11 @@ impl A380AirConditioningSystem {
         );
 
         self.vcm.iter_mut().for_each(|module| {
-            module.update(&self.air_conditioning_overhead, pressurization_overhead)
+            module.update(
+                &self.air_conditioning_overhead,
+                ocsm,
+                pressurization_overhead,
+            )
         });
     }
 
@@ -648,6 +658,9 @@ impl VcmShared for A380AirConditioningSystem {
     }
     fn bulk_isolation_valves_open_allowed(&self) -> bool {
         self.vcm[1].bulk_isolation_valves_open_allowed()
+    }
+    fn overpressure_relief_valve_open_amount(&self) -> Ratio {
+        self.vcm[1].overpressure_relief_valve_open_amount()
     }
 }
 
@@ -815,14 +828,16 @@ impl SimulationElement for A380AirConditioningSystemOverhead {
 struct A380PressurizationSystem {
     ocsm: [OutflowValveControlModule; 4],
 
+    negative_relief_valves_id: VariableIdentifier,
     negative_relief_valves: SafetyValve,
 }
 
 impl A380PressurizationSystem {
-    fn new() -> Self {
+    fn new(context: &mut InitContext) -> Self {
         Self {
             ocsm: [
                 OutflowValveControlModule::new(
+                    context,
                     1,
                     vec![
                         ElectricalBusType::DirectCurrent(1),       // 107PP
@@ -830,6 +845,7 @@ impl A380PressurizationSystem {
                     ],
                 ),
                 OutflowValveControlModule::new(
+                    context,
                     2,
                     vec![
                         ElectricalBusType::DirectCurrent(1),       // 107PP
@@ -837,6 +853,7 @@ impl A380PressurizationSystem {
                     ],
                 ),
                 OutflowValveControlModule::new(
+                    context,
                     3,
                     vec![
                         ElectricalBusType::DirectCurrent(2),       // 210PP
@@ -844,6 +861,7 @@ impl A380PressurizationSystem {
                     ],
                 ),
                 OutflowValveControlModule::new(
+                    context,
                     4,
                     vec![
                         ElectricalBusType::DirectCurrent(2),       // 210PP
@@ -851,6 +869,9 @@ impl A380PressurizationSystem {
                     ],
                 ),
             ],
+
+            negative_relief_valves_id: context
+                .get_identifier("PRESS_SAFETY_VALVE_OPEN_PERCENTAGE".to_owned()),
             negative_relief_valves: SafetyValve::new(),
         }
     }
@@ -900,6 +921,13 @@ impl A380PressurizationSystem {
 }
 
 impl SimulationElement for A380PressurizationSystem {
+    fn write(&self, writer: &mut SimulatorWriter) {
+        writer.write(
+            &self.negative_relief_valves_id,
+            self.safety_valve_open_amount(),
+        );
+    }
+
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
         accept_iterable!(self.ocsm, visitor);
 
@@ -1949,11 +1977,6 @@ mod tests {
             self
         }
 
-        fn run_with_delta_of(mut self, delta: Duration) -> Self {
-            self.run_with_vertical_speed(delta);
-            self
-        }
-
         fn and_run(mut self) -> Self {
             self.run_with_vertical_speed(Duration::from_secs(1));
             self
@@ -2226,8 +2249,8 @@ mod tests {
             self
         }
 
-        fn command_ldg_elev_knob_value(mut self, value: f64) -> Self {
-            self.write_by_name("OVHD_PRESS_LDG_ELEV_KNOB", value);
+        fn command_air_extract_pb_on_normal(mut self, on_off: bool) -> Self {
+            self.write_by_name("OVHD_VENT_AIR_EXTRACT_PB_IS_ON", on_off);
             self
         }
 
@@ -2472,10 +2495,6 @@ mod tests {
                 && self.pack_flow_valve_is_open(2)
                 && self.pack_flow_valve_is_open(3)
                 && self.pack_flow_valve_is_open(4)
-        }
-
-        fn landing_elevation(&self) -> Length {
-            self.query(|a| a.a380_cabin_air.cpiom_b.landing_elevation())
         }
 
         fn duct_demand_temperature(&self) -> Vec<ThermodynamicTemperature> {
@@ -3292,8 +3311,9 @@ mod tests {
 
             test_bed = test_bed
                 .ambient_pressure_of(
-                    InternationalStandardAtmosphere::pressure_at_altitude(Length::new::<foot>(30000.))
-                        - Pressure::new::<psi>(4.),
+                    InternationalStandardAtmosphere::pressure_at_altitude(Length::new::<foot>(
+                        30000.,
+                    )) - Pressure::new::<psi>(4.),
                 )
                 .iterate(10);
 
@@ -3376,6 +3396,46 @@ mod tests {
         }
 
         #[test]
+        fn pushing_air_extract_pb_opens_valve() {
+            let mut test_bed = test_bed()
+                .and_run()
+                .with()
+                .vertical_speed_of(Velocity::new::<foot_per_minute>(1000.))
+                .iterate(5)
+                .then()
+                .command_aircraft_climb(Length::new::<foot>(1000.), Length::new::<foot>(30000.))
+                .with()
+                .vertical_speed_of(Velocity::default())
+                .iterate(50);
+
+            test_bed = test_bed.command_air_extract_pb_on_normal(true).iterate(10);
+
+            assert!(test_bed.cabin_vs() > Velocity::new::<foot_per_minute>(6000.));
+        }
+
+        #[test]
+        fn pushing_air_extract_pb_twice_closes_valve() {
+            let mut test_bed = test_bed()
+                .and_run()
+                .with()
+                .vertical_speed_of(Velocity::new::<foot_per_minute>(1000.))
+                .iterate(5)
+                .then()
+                .command_aircraft_climb(Length::new::<foot>(1000.), Length::new::<foot>(30000.))
+                .with()
+                .vertical_speed_of(Velocity::default())
+                .iterate(50);
+
+            test_bed = test_bed.command_air_extract_pb_on_normal(true).iterate(10);
+
+            assert!(test_bed.cabin_vs() > Velocity::new::<foot_per_minute>(6000.));
+
+            test_bed = test_bed.command_air_extract_pb_on_normal(false).iterate(10);
+
+            assert!(test_bed.cabin_vs() < Velocity::new::<foot_per_minute>(6000.));
+        }
+
+        #[test]
         fn when_on_ground_pressure_diff_is_less_than_excessive() {
             let test_bed = test_bed()
                 .on_ground()
@@ -3388,6 +3448,27 @@ mod tests {
                         A380PressurizationConstants::EXCESSIVE_RESIDUAL_PRESSURE_WARNING
                     )
             );
+        }
+
+        #[test]
+        fn outflow_valve_closes_when_cabin_altitude_excessive() {
+            let mut test_bed = test_bed()
+                .and_run()
+                .with()
+                .vertical_speed_of(Velocity::new::<foot_per_minute>(1000.))
+                .iterate(5)
+                .then()
+                .command_aircraft_climb(Length::new::<foot>(1000.), Length::new::<foot>(30000.))
+                .with()
+                .vertical_speed_of(Velocity::default())
+                .iterate(50);
+
+            assert!(test_bed.cabin_altitude() < Length::new::<foot>(7500.));
+
+            test_bed = test_bed.command_air_extract_pb_on_normal(true).iterate(100);
+
+            assert!(test_bed.cabin_altitude() > Length::new::<foot>(22000.));
+            assert_eq!(test_bed.outflow_valve_open_amount(), Ratio::default());
         }
 
         mod cabin_pressure_controller_tests {

@@ -158,6 +158,17 @@
         - FWD
         - AFT
 
+- A32NX_VENT_OVERPRESSURE_RELIEF_VALVE_IS_OPEN
+    - Bool
+    - True when the Overpressure Relief Valve Dumps are open. There are two valves but just one variable for now as they (mostly) always open and close at the same time.
+
+- A32NX_PRESS_{id}_OCSM_CHANNEL_FAILURE
+    - Number
+        - 0 if no failure
+        - 1 or 2 if single channel failure (for failed channel id)
+        - 3 if dual channel failure
+    - {id} 1 to 4
+
 - A32NX_OVHD_COND_{id}_SELECTOR_KNOB
     - Number (0 to 300)
     - Rotation amount of the overhead temperature selectors for the cockpit and the cabin

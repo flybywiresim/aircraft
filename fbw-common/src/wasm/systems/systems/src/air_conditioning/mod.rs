@@ -175,6 +175,9 @@ pub trait VcmShared {
     fn bulk_isolation_valves_open_allowed(&self) -> bool {
         false
     }
+    fn overpressure_relief_valve_open_amount(&self) -> Ratio {
+        Ratio::default()
+    }
 }
 
 /// Cabin Zones with double digit IDs are specific to the A380
