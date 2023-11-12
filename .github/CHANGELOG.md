@@ -16,6 +16,8 @@
 1. [MCDU] Dash alternate time predictions if alternate fuel is manually inserted @BravoMike99 (bruno_pt99)
 1. [BLEED] Add Air starter unit to enable ground starts - @Maximilian-Reuter (\_Chaoz_)
 1. [MCDU] FUEL PRED layout improvemnts @BravoMike99 (bruno_pt99)
+1. [EFCS] Add precontrol to roll angle controller to improve dynamic response - @lukecologne (luke)
+1. [EFCS] Increase maximum sim rate limit to 8 due to improvements in roll law stability - @lukecologne (luke)
 
 ## 0.11.0
 
