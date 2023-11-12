@@ -413,6 +413,8 @@ export class EfisSymbols {
                     ident: pwp.ident,
                     location: pwp.efisSymbolLla,
                     type: pwp.efisSymbolFlag,
+                    // When in HDG/TRK, this defines where on the track line the PWP lies
+                    distanceFromAirplane: pwp.distanceFromStart,
                 });
             }
 
