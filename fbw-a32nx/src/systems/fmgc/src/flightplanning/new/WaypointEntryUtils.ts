@@ -23,21 +23,21 @@ export class WaypointEntryUtils {
      *
      * @returns a waypoint, or `undefined` if the operation is cancelled
      */
-    static async getOrCreateWaypoint(fms: DataInterface & DisplayInterface, place: string, stored = true): Promise<Fix | undefined> {
+    static async getOrCreateWaypoint(fms: DataInterface & DisplayInterface, place: string, stored: boolean, ident: string): Promise<Fix | undefined> {
         if (WaypointEntryUtils.isLatLonFormat(place)) {
             const coordinates = WaypointEntryUtils.parseLatLon(place);
 
-            return fms.createLatLonWaypoint(coordinates, stored).waypoint;
+            return fms.createLatLonWaypoint(coordinates, stored, ident).waypoint;
         } if (WaypointEntryUtils.isPbxFormat(place)) {
             const [place1, bearing1, place2, bearing2] = await this.parsePbx(fms, place);
 
-            return fms.createPlaceBearingPlaceBearingWaypoint(place1, bearing1, place2, bearing2, stored).waypoint;
+            return fms.createPlaceBearingPlaceBearingWaypoint(place1, bearing1, place2, bearing2, stored, ident).waypoint;
         } if (WaypointEntryUtils.isPdFormat(place)) {
             throw new FmsError(FmsErrorType.NotYetImplemented);
         } else if (WaypointEntryUtils.isPbdFormat(place)) {
             const [wp, bearing, dist] = await WaypointEntryUtils.parsePbd(fms, place);
 
-            return fms.createPlaceBearingDistWaypoint(wp, bearing, dist, stored).waypoint;
+            return fms.createPlaceBearingDistWaypoint(wp, bearing, dist, stored, ident).waypoint;
         } else if (WaypointEntryUtils.isPlaceFormat(place)) {
             return WaypointEntryUtils.parsePlace(fms, place).then((fix) => fix ?? fms.createNewWaypoint(place));
         }

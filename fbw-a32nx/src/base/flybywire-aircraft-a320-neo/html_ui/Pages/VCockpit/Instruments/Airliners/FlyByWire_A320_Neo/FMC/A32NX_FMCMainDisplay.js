@@ -2400,7 +2400,9 @@ class FMCMainDisplay extends BaseAirliners {
                             }
                             this.coRoute["navlog"] = data.navlog.fix;
 
-                            Fmgc.uplinkFlightPlanFromCoRoute(this, this.flightPlanService, this.coRoute);
+                            await Fmgc.CoRouteUplinkAdapter.uplinkFlightPlanFromCoRoute(this, this.flightPlanService, this.coRoute);
+                            await this.flightPlanService.uplinkInsert();
+
                             this.coRoute["routeNumber"] = coRouteNum;
                         } else {
                             this.setScratchpadMessage(NXSystemMessages.notInDatabase);
@@ -2513,22 +2515,16 @@ class FMCMainDisplay extends BaseAirliners {
 
     }
 
-    /**
-     * @param coordinates {import('msfs-geo').Coordinates}
-     * @param stored {boolean}
-     */
-    createLatLonWaypoint(coordinates, stored) {
-        return this.dataManager.createLatLonWaypoint(coordinates, stored);
+    createLatLonWaypoint(coordinates, stored, ident = undefined) {
+        return this.dataManager.createLatLonWaypoint(coordinates, stored, ident);
     }
 
-    /**
-     * @param place {import('msfs-navdata').Waypoint}
-     * @param bearing {DegreesTrue}
-     * @param distance {NauticalMiles}
-     * @param stored {boolean}
-     */
-    createPlaceBearingDistWaypoint(place, bearing, distance, stored) {
-        return this.dataManager.createPlaceBearingDistWaypoint(place, bearing, distance, stored);
+    createPlaceBearingPlaceBearingWaypoint(place1, bearing1, place2, bearing2, stored, ident = undefined) {
+        return this.dataManager.createPlaceBearingPlaceBearingWaypoint(place1, bearing1, place2, bearing2, stored, ident);
+    }
+
+    createPlaceBearingDistWaypoint(place, bearing, distance, stored, ident = undefined) {
+        return this.dataManager.createPlaceBearingDistWaypoint(place, bearing, distance, stored, ident);
     }
 
     getStoredWaypointsByIdent(ident) {
@@ -5193,12 +5189,12 @@ class FMCMainDisplay extends BaseAirliners {
         return maximumCrossoverAltitude + (mmoCrossoverAltitide - maximumCrossoverAltitude) * (mach - 0.8) / 0.02;
     }
 
-    geActivePlanLegCount() {
-        if (!this.flightPlanSerivce.hasActive) {
+    getActivePlanLegCount() {
+        if (!this.flightPlanService.hasActive) {
             return 0;
         }
 
-        return this.flightPlanSerivce.active.legCount;
+        return this.flightPlanService.active.legCount;
     }
 }
 

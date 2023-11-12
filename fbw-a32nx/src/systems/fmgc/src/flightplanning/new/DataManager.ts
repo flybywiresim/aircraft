@@ -236,7 +236,7 @@ export class DataManager {
      * @param ident The ident of the waypoint, if undefined it will be generated
      * @returns The created waypoint
      */
-    createLatLonWaypoint(coordinates: Coordinates, stored: boolean = false, ident: string = undefined): LatLonWaypoint {
+    createLatLonWaypoint(coordinates: Coordinates, stored: boolean, ident: string = undefined): LatLonWaypoint {
         const index = stored ? this.generateStoredWaypointIndex() : -1;
 
         if (ident === undefined) {
