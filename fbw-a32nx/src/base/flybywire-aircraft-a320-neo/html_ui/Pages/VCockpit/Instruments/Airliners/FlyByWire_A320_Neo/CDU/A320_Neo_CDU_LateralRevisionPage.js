@@ -6,34 +6,33 @@ class CDULateralRevisionPage {
     /**
      *
      * @param mcdu
-     * @param waypoint {FlightPlanLeg}
-     * @param waypointIndexFP
+     * @param leg {FlightPlanLeg}
+     * @param legIndexFP
      * @constructor
      */
-    static ShowPage(mcdu, waypoint, waypointIndexFP, forPlan = Fmgc.FlightPlanIndex.Active, inAlternate = false) {
+    static ShowPage(mcdu, leg, legIndexFP, forPlan = Fmgc.FlightPlanIndex.Active, inAlternate = false) {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.LateralRevisionPage;
 
-        const coordinates = "";
-        // TODO port over (fms-v2)
-        // if (waypoint && waypoint.infos && waypoint.infos.coordinates) {
-        //     const lat = CDUInitPage.ConvertDDToDMS(waypoint.infos.coordinates['lat'], false);
-        //     const long = CDUInitPage.ConvertDDToDMS(waypoint.infos.coordinates['long'], true);
-        //     coordinates = `${lat.deg}°${lat.min}.${Math.ceil(Number(lat.sec / 100))}${lat.dir}/${long.deg}°${long.min}.${Math.ceil(Number(long.sec / 100))}${long.dir}[color]green`;
-        // }
+        let coordinates = "";
+        if (leg && leg.definition && leg.definition.waypoint && leg.definition.waypoint.location) {
+            const lat = CDUInitPage.ConvertDDToDMS(leg.definition.waypoint.location['lat'], false);
+            const long = CDUInitPage.ConvertDDToDMS(leg.definition.waypoint.location['long'], true);
+            coordinates = `${lat.deg}°${lat.min}.${Math.ceil(Number(lat.sec / 100))}${lat.dir}/${long.deg}°${long.min}.${Math.ceil(Number(long.sec / 100))}${long.dir}[color]green`;
+        }
         /** @type {BaseFlightPlan} */
         const targetPlan = mcdu.flightPlan(forPlan, inAlternate);
 
-        const isPpos = waypoint === undefined || waypointIndexFP === 0 && waypoint !== targetPlan.originLeg;
-        const isFrom = waypointIndexFP === targetPlan.activeLegIndex - 1;
-        const isDeparture = waypointIndexFP === targetPlan.originLegIndex && !isPpos; // TODO this is bogus... compare icaos
-        const isDestination = waypointIndexFP === targetPlan.destinationLegIndex && !isPpos; // TODO this is bogus... compare icaos
+        const isPpos = leg === undefined || legIndexFP === 0 && leg !== targetPlan.originLeg;
+        const isFrom = legIndexFP === targetPlan.activeLegIndex - 1;
+        const isDeparture = legIndexFP === targetPlan.originLegIndex && !isPpos; // TODO this is bogus... compare icaos
+        const isDestination = legIndexFP === targetPlan.destinationLegIndex && !isPpos; // TODO this is bogus... compare icaos
         const isWaypoint = !isDeparture && !isDestination && !isPpos;
 
         let waypointIdent = isPpos ? "PPOS" : '---';
 
-        if (waypoint) {
-            waypointIdent = waypoint.ident;
+        if (leg) {
+            waypointIdent = leg.ident;
         }
 
         let departureCell = "";
@@ -54,7 +53,7 @@ class CDULateralRevisionPage {
                 return mcdu.getDelaySwitchPage();
             };
             mcdu.onRightInput[0] = () => {
-                CDUAvailableArrivalsPage.ShowPage(mcdu, waypoint, 0, false, forPlan, inAlternate);
+                CDUAvailableArrivalsPage.ShowPage(mcdu, leg, 0, false, forPlan, inAlternate);
             };
         } else if (isDeparture || isPpos || isFrom) {
             arrivalFixInfoCell = "FIX INFO>";
@@ -83,7 +82,7 @@ class CDULateralRevisionPage {
             nextWpt = "[{sp}{sp}{sp}{sp}][color]cyan";
 
             mcdu.onRightInput[2] = async (value, scratchpadCallback) => {
-                mcdu.insertWaypoint(value, forPlan, inAlternate, waypointIndexFP, false, (success) => {
+                mcdu.insertWaypoint(value, forPlan, inAlternate, legIndexFP, false, (success) => {
                     if (!success) {
                         scratchpadCallback();
                     }
@@ -99,12 +98,12 @@ class CDULateralRevisionPage {
                 return mcdu.getDelaySwitchPage();
             };
             mcdu.onLeftInput[2] = () => {
-                const nextLeg = targetPlan.maybeElementAt(waypointIndexFP + 1);
+                const nextLeg = targetPlan.maybeElementAt(legIndexFP + 1);
 
                 if (nextLeg && nextLeg.isDiscontinuity === false && nextLeg.isHX()) {
-                    CDUHoldAtPage.ShowPage(mcdu, waypointIndexFP + 1, forPlan, inAlternate);
+                    CDUHoldAtPage.ShowPage(mcdu, legIndexFP + 1, forPlan, inAlternate);
                 } else {
-                    CDUHoldAtPage.ShowPage(mcdu, waypointIndexFP, forPlan, inAlternate);
+                    CDUHoldAtPage.ShowPage(mcdu, legIndexFP, forPlan, inAlternate);
                 }
             };
         }
@@ -119,7 +118,7 @@ class CDULateralRevisionPage {
                 return mcdu.getDelaySwitchPage();
             };
             mcdu.onLeftInput[3] = async () => {
-                await mcdu.flightPlanService.enableAltn(waypointIndexFP);
+                await mcdu.flightPlanService.enableAltn(legIndexFP);
 
                 CDUFlightPlanPage.ShowPage(mcdu, 0, forPlan);
             };
@@ -132,7 +131,7 @@ class CDULateralRevisionPage {
             newDestCell = "[{sp}{sp}][color]cyan";
 
             mcdu.onRightInput[3] = async (value) => {
-                await mcdu.flightPlanService.newDest(waypointIndexFP, value, forPlan, inAlternate);
+                await mcdu.flightPlanService.newDest(legIndexFP, value, forPlan, inAlternate);
 
                 CDUFlightPlanPage.ShowPage(mcdu, 0, forPlan);
             };
@@ -145,7 +144,7 @@ class CDULateralRevisionPage {
                 return mcdu.getDelaySwitchPage();
             };
             mcdu.onRightInput[4] = () => {
-                A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(mcdu, waypointIndexFP, undefined, undefined, forPlan, inAlternate);
+                A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(mcdu, legIndexFP, undefined, undefined, forPlan, inAlternate);
             };
         }
 
