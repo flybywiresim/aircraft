@@ -64,6 +64,7 @@
 1. [AP] Increased nz limit for SRS mode during go-arounds - @aguther (Andreas Guther)
 1. [AP] Further tuned Autoland in Crosswind Situations - @aguther (Andreas Guther)
 1. [EFB] Automatically unfocus EFB input fields when the camera shifts away from the EFB - @tracernz (Mike)
+1. [MCDU] Make dest fuel amber instead of alternate if below min fuel in FUEL PRED page  - @BravoMike99 (bruno_pt99)
 
 ## 0.11.0
 
