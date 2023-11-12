@@ -165,7 +165,7 @@ class CDUAvailableFlightPlanPage {
                     await mcdu.flightPlanService.uplinkInsert();
 
                     CDUInitPage.ShowPage1(mcdu);
-                }, mcdu.getDelayRouteChange());
+                }, 0 /* No delay because it takes long enough without artificial delay */);
 
             };
         } else {
