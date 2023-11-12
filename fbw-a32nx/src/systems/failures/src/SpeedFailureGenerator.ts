@@ -40,10 +40,10 @@ numberOfSettingsPerGenerator = 6;
         const speedMax = this.settings[genNumber * this.numberOfSettingsPerGenerator + this.speedMaxIndex];
         const speedMin = this.settings[genNumber * this.numberOfSettingsPerGenerator + this.speedMinIndex];
         const speedCondition = this.settings[genNumber * this.numberOfSettingsPerGenerator + this.speedConditionIndex];
-        const failureAltitude = (speedMin + this.rolledDice[genNumber] * (speedMax - speedMin));
-
-        return ((this.gs > failureAltitude && speedCondition === Direction.Acceleration)
-        || (this.gs < failureAltitude && speedCondition === Direction.Deceleration));
+        const failureSpeed = (speedMin + this.rolledDice[genNumber] * (speedMax - speedMin));
+        // console.info(`${this.gs}/${failureSpeed.toString()}`);
+        return ((this.gs > failureSpeed && speedCondition === Direction.Acceleration)
+        || (this.gs < failureSpeed && speedCondition === Direction.Deceleration));
     }
 
     conditionToArm(genNumber: number): boolean {

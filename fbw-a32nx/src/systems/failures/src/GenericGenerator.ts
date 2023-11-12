@@ -60,7 +60,6 @@ export abstract class GenericGenerator {
     getGeneratorFailurePool(failureOrchestrator: FailuresOrchestrator, genNumber: number): Failure[] {
         const failureIDs: Failure[] = [];
         const allFailures = failureOrchestrator.getAllFailures();
-        // const setOfGeneratorFailuresSettings = this.getSetOfGeneratorFailuresSettings(allFailures, genNumber);
 
         if (allFailures.length > 0) {
             const failureGeneratorsTable = this.failurePool[genNumber].split(',');
@@ -78,18 +77,18 @@ export abstract class GenericGenerator {
         if (bus != null) {
             bus.getSubscriber<FailureGenEvent>().on('refreshData').handle((_value) => {
                 this.refreshRequest = true;
-            // console.info(`refresh request received: ${this.uniqueGenPrefix}`);
+                // console.info(`refresh request received: ${this.uniqueGenPrefix}`);
             });
             bus.getSubscriber<FailureGenEvent>().on('settings').handle(({ generatorType, settingsString }) => {
-            // console.info('DISARMED');
+                // console.info('DISARMED');
                 if (generatorType === this.uniqueGenPrefix) {
-                // console.info(`settings received: ${generatorType} - ${settingsString}`);
+                    // console.info(`settings received: ${generatorType} - ${settingsString}`);
                     this.settings = settingsString.split(',').map(((it) => parseFloat(it)));
                 }
             });
             bus.getSubscriber<FailureGenFailureList>().on('failurePool').handle(({ generatorType, generatorNumber, failureString }) => {
                 if (generatorType === this.uniqueGenPrefix) {
-                // console.info(`settings received: ${generatorType}${generatorNumber}`);
+                    // console.info(`failure pool received ${generatorType}${generatorNumber}: ${failureString}`);
                     this.failurePool[generatorNumber] = failureString;
                 }
             });
@@ -167,7 +166,6 @@ export abstract class GenericGenerator {
         this.gs = SimVar.GetSimVarValue('GPS GROUND SPEED', 'Knots') || '0';
         this.loopStartAction();
 
-        // console.info(failureGeneratorSetting);
         if (this.requestedMode === undefined) {
             this.requestedMode = [];
             // console.info('DECLARE');
@@ -230,7 +228,7 @@ export abstract class GenericGenerator {
                     this.reset(i);
                 }
             } else if (this.failureGeneratorArmed[i] || this.requestedMode[i] === FailureGenMode.FailureGenOff) {
-            // console.info('RESETTING - Generator removed');
+                // console.info('RESETTING - Generator removed');
                 this.reset(i);
             }
             this.previousArmingMode[i] = this.settings[i * this.numberOfSettingsPerGenerator + ArmingModeIndex];

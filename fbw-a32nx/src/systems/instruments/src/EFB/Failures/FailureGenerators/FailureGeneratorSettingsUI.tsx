@@ -6,7 +6,7 @@ import React from 'react';
 import { t } from 'instruments/src/EFB/translation';
 import { FailureGenContext, FailureGenData, ModalGenType, findGeneratorFailures, setNewSetting, updateSettings } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
 import { extractFirstNumber } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelectionUI';
-import { Airplane, ArrowBarUp, Repeat, Repeat1, ToggleOff } from 'react-bootstrap-icons';
+import { ArrowBarUp, Repeat, Icon1Circle, ToggleOff } from 'react-bootstrap-icons';
 import { SelectGroup, SelectItem } from 'instruments/src/EFB/UtilComponents/Form/Select';
 import { SimpleInput } from 'instruments/src/EFB/UtilComponents/Form/SimpleInput/SimpleInput';
 import { ButtonType, SettingItem } from 'instruments/src/EFB/Settings/Settings';
@@ -28,11 +28,6 @@ export const failureActivationMode: (ButtonType & SettingVar)[] = [
     { name: 'All', setting: 'All', settingVar: 1 },
 ];
 
-/*
-generatorSettings: FailureGenData, genID: number,
-    setNewSetting: (newSetting: number, generatorSettings: FailureGenData, genID: number, settingIndex: number) => void,
-    failureGenContext: FailureGenContext
- */
 export interface RearmSettingsUIProps {
     generatorSettings: FailureGenData,
     genID: number,
@@ -93,7 +88,7 @@ export const FailureGeneratorSingleSetting: React.FC<FailureGeneratorSingleSetti
     return (
         <SettingItem name={`${title}${unit === '' ? '' : ` (${unit})`}`}>
             <SimpleInput
-                className="w-32 font-mono text-center"
+                className="w-32 text-center font-mono"
                 fontSizeClassName="text-2xl"
                 number
                 min={min}
@@ -150,7 +145,7 @@ export const FailureGeneratorSingleSettingShortcut: React.FC<FailureGeneratorSin
                 {' )'}
             </span>
             <SimpleInput
-                className="w-32 font-mono text-center"
+                className="w-32 text-center font-mono"
                 fontSizeClassName="text-2xl"
                 number
                 min={min}
@@ -188,15 +183,15 @@ export const FailureGeneratorDetailsModalUI: React.FC<{ failureGenContext: Failu
     };
 
     return (
-        <div className="flex flex-col items-stretch px-4 pt-4 w-1/2 text-center bg-theme-body rounded-md border-2 border-theme-accent border-solid">
-            <div className="flex flex-row flex-1 justify-between items-stretch">
-                <h2 className="mr-4 font-bold text-left text-current grow align-left">
+        <div className="bg-theme-body border-theme-accent flex w-1/2 flex-col items-stretch rounded-md border-2 border-solid px-4 pt-4 text-center">
+            <div className="flex flex-1 flex-row items-stretch justify-between">
+                <h2 className="align-left mr-4 grow text-left font-bold text-current">
                     {t('Failures.Generators.SettingsTitle')}
                 </h2>
                 <div />
                 <div
-                    className="flex-none justify-center items-center px-4 text-center rounded-md border-2
-                    text-theme-body hover:text-utility-red bg-utility-red hover:bg-theme-body border-utility-red transition duration-100
+                    className="text-theme-body hover:text-utility-red bg-utility-red hover:bg-theme-body border-utility-red flex-none items-center
+                    justify-center rounded-md border-2 px-4 text-center transition duration-100
                     "
                     onClick={() => popModal()}
                 >
@@ -204,7 +199,7 @@ export const FailureGeneratorDetailsModalUI: React.FC<{ failureGenContext: Failu
                 </div>
             </div>
             <ScrollableContainer height={48}>
-                <div className="pt-4 w-full divide-y-2 divide-theme-accent">
+                <div className="divide-theme-accent w-full divide-y-2 pt-4">
                     <RearmSettingsUI
                         generatorSettings={failureGenContext.modalContext.failureGenData}
                         genID={genNumber}
@@ -263,13 +258,12 @@ export function ArmedState(generatorSettings: FailureGenData, genNumber: number)
         </TooltipWrapper>
     );
     case 1: return (
-        <TooltipWrapper text={`${t('Failures.Generators.ToolTipRepeat1')} - ${readyDisplay ? t('Failures.Generators.ToolTipReady') : t('Failures.Generators.ToolTipStandby')}`}>
-            <Repeat1 size={20} />
+        <TooltipWrapper text={`${t('Failures.Generators.ToolTipOnce')} - ${readyDisplay ? t('Failures.Generators.ToolTipReady') : t('Failures.Generators.ToolTipStandby')}`}>
+            <Icon1Circle size={20} />
         </TooltipWrapper>
     );
     case 2: return (
         <TooltipWrapper text={t('Failures.Generators.ToolTipTakeOff')}>
-            <Airplane size={20} />
             <ArrowBarUp size={20} />
         </TooltipWrapper>
     );
@@ -330,7 +324,7 @@ export interface FailureGeneratorTextProps {
 
 export const FailureGeneratorText: React.FC<FailureGeneratorTextProps> = ({ title, unit, text }) => (
     <SettingItem name={`${title}${unit === '' ? '' : ` (${unit})`}`}>
-        <div className="flex-1 w-32 font-mono text-2xl text-center break-keep">
+        <div className="w-32 flex-1 break-keep text-center font-mono text-2xl">
             {text}
         </div>
     </SettingItem>

@@ -191,16 +191,6 @@ export const useFailureGeneratorsSettings: () => FailureGenContext = () => {
     };
 };
 
-// TODO
-// Function to send all settings once
-/* export function sendAllSettings(failureGenContext : FailureGenContext, bus: EventBus)
-{
-    for (const gen of failureGenContext.allGenSettings.values()) {
-        sendSettings(gen.uniqueGenPrefix,,bus);
-        sendFailurePool(gen.uniqueGenPrefix,,,bus);
-    }
-} */
-
 export function setNewSetting(bus: EventBus, newSetting: number, generatorSettings: FailureGenData, genID: number, settingIndex: number) {
     const settings = generatorSettings.settings;
     settings[genID * generatorSettings.numberOfSettingsPerGenerator + settingIndex] = newSetting;
@@ -213,7 +203,7 @@ export function sendRefresh(bus: EventBus) {
 }
 
 export function sendFailurePool(generatorType: string, generatorNumber:number, failureString: string, bus: EventBus) {
-    // console.info(`failure pool sent: ${generatorType}${generatorNumber} - ${failureString}`);
+    console.info(`failure pool sent ${generatorType}${generatorNumber} : ${failureString}`);
     bus.getPublisher<FailureGenFailureList>().pub('failurePool', { generatorType, generatorNumber, failureString }, true);
 }
 

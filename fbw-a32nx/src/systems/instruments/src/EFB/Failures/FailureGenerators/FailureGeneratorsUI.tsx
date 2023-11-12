@@ -7,7 +7,7 @@ import { SelectInput } from 'instruments/src/EFB/UtilComponents/Form/SelectInput
 import { t } from 'instruments/src/EFB/translation';
 import {
     FailureGenContext, FailureGenData, useFailureGeneratorsSettings, findGeneratorFailures, ModalContext,
-    ModalGenType, updateSettings, sendRefresh, FailureGenFeedbackEvent,
+    ModalGenType, updateSettings, sendRefresh, FailureGenFeedbackEvent, sendFailurePool,
 } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
 import { ExclamationDiamond, InfoCircle, PlusLg, Sliders2Vertical, Trash } from 'react-bootstrap-icons';
 import { AtaChapterNumber, AtaChaptersTitle } from '@flybywiresim/fbw-sdk';
@@ -17,7 +17,7 @@ import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
 import { GeneratorFailureSelection } from './GeneratorFailureSelectionUI';
 import { FailureGeneratorDetailsModalUI, ArmedState } from './FailureGeneratorSettingsUI';
 import { useFailuresOrchestrator } from '../../failures-orchestrator-provider';
-import { setSelectedFailure } from './FailureSelectionUI';
+import { getGeneratorFailurePool, setSelectedFailure } from './FailureSelectionUI';
 import { useModals } from '../../UtilComponents/Modals/Modals';
 import { useEventBus } from '../../event-bus-provider';
 
@@ -80,6 +80,7 @@ export const FailureGeneratorsUI = () => {
         for (const failure of allFailures) {
             setSelectedFailure(failure, genID, failureGenContext, true);
         }
+        sendFailurePool(generatorSettings.uniqueGenPrefix, genNumber, getGeneratorFailurePool(generatorSettings.uniqueGenPrefix + genNumber.toString(), Array.from(allFailures)), bus);
     };
 
     useEffect(() => {
@@ -178,7 +179,7 @@ export const FailureGeneratorCardTemplateUI: React.FC<FailureGeneratorCardTempla
     const bus = useEventBus();
 
     const genUniqueID = `${failureGenData.uniqueGenPrefix}${(genNumber).toString()}`;
-    const genUniqueIDDisplayed = `${failureGenData.uniqueGenPrefix}${(genNumber + 1).toString()}`;
+    const genUniqueIDDisplayed = `${(genNumber + 1).toString()}`;
     const isArmed = (genNumber < failureGenData.armedState?.length ? failureGenData.armedState[genNumber] : false);
 
     const eraseGenerator: (genID: number, generatorSettings: FailureGenData, failureGenContext: FailureGenContext) =>
@@ -197,7 +198,7 @@ export const FailureGeneratorCardTemplateUI: React.FC<FailureGeneratorCardTempla
         <div className="border-theme-accent m-1 flex flex-row justify-between rounded-md border-2 border-solid px-2 pt-2 text-center">
             <div className="align-left mr-4 flex max-w-[86%] grow flex-col text-left">
                 <h2 className="max-w-[100%] truncate break-words pb-2">
-                    {`${genUniqueIDDisplayed}: ${failureGenData.alias()}`}
+                    {`${failureGenData.alias()} ${genUniqueIDDisplayed}`}
                 </h2>
                 <FailureShortList failureGenContext={failureGenContext} uniqueID={genUniqueID} reducedAtaChapterNumbers={failureGenContext.reducedAtaChapterNumbers} />
             </div>
