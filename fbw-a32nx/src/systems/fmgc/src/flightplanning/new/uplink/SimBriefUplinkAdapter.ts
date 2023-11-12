@@ -242,9 +242,9 @@ export class SimBriefUplinkAdapter {
                     setInsertHeadToEndOfEnroute();
                 }
 
-                const fix = fms.createLatLonWaypoint({ lat: chunk.lat, long: chunk.long }, true);
+                const storedWaypoint = fms.createLatLonWaypoint({ lat: chunk.lat, long: chunk.long }, true);
 
-                await flightPlanService.nextWaypoint(insertHead, fix, FlightPlanIndex.Uplink);
+                await flightPlanService.nextWaypoint(insertHead, storedWaypoint.waypoint, FlightPlanIndex.Uplink);
                 insertHead++;
                 break;
             }

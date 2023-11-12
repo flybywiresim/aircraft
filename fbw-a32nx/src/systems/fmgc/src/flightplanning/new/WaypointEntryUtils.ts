@@ -27,17 +27,17 @@ export class WaypointEntryUtils {
         if (WaypointEntryUtils.isLatLonFormat(place)) {
             const coordinates = WaypointEntryUtils.parseLatLon(place);
 
-            return fms.createLatLonWaypoint(coordinates, stored);
+            return fms.createLatLonWaypoint(coordinates, stored).waypoint;
         } if (WaypointEntryUtils.isPbxFormat(place)) {
             const [place1, bearing1, place2, bearing2] = await this.parsePbx(fms, place);
 
-            return fms.createPlaceBearingPlaceBearingWaypoint(place1, bearing1, place2, bearing2, stored);
+            return fms.createPlaceBearingPlaceBearingWaypoint(place1, bearing1, place2, bearing2, stored).waypoint;
         } if (WaypointEntryUtils.isPdFormat(place)) {
             throw new FmsError(FmsErrorType.NotYetImplemented);
         } else if (WaypointEntryUtils.isPbdFormat(place)) {
             const [wp, bearing, dist] = await WaypointEntryUtils.parsePbd(fms, place);
 
-            return fms.createPlaceBearingDistWaypoint(wp, bearing, dist, stored);
+            return fms.createPlaceBearingDistWaypoint(wp, bearing, dist, stored).waypoint;
         } else if (WaypointEntryUtils.isPlaceFormat(place)) {
             return WaypointEntryUtils.parsePlace(fms, place).then((fix) => fix ?? fms.createNewWaypoint(place));
         }
