@@ -1436,9 +1436,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
      */
     getDelayRouteChange() {
         if (this._zeroFuelWeightZFWCGEntered && this._blockFuelEntered) {
-            return Math.pow(this.flightPlanManager.getWaypointsCount(), 2) + (this.flightPlanManager.getDestination().cumulativeDistanceInFP) / 10 + Math.random() * 300;
+            return Math.pow(this.getActivePlanLegCount(), 2) + (this.flightPlanManager.getDestination().cumulativeDistanceInFP) / 10 + Math.random() * 300;
         } else {
-            return 300 + this.flightPlanManager.getWaypointsCount() * Math.random() + this.flightPlanManager.getDestination().cumulativeDistanceInFP * Math.random();
+            return 300 + this.getActivePlanLegCount() * Math.random() + this.flightPlanManager.getDestination().cumulativeDistanceInFP * Math.random();
         }
     }
 
@@ -1447,15 +1447,15 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
      * @returns {number} dynamic delay in ms between 2000ms and 4000ms
      */
     getDelayFuelPred() {
-        return 225 * this.flightPlanManager.getWaypointsCount() + (this.flightPlanManager.getDestination().cumulativeDistanceInFP / 2);
+        return 225 * this.getActivePlanLegCount() + (this.flightPlanManager.getDestination().cumulativeDistanceInFP / 2);
     }
 
     /**
-     * Used to load wind data into fms
+     * Used to load wind data into sfms
      * @returns {number} dynamic delay in ms dependent on amount of waypoints
      */
     getDelayWindLoad() {
-        return Math.pow(this.flightPlanManager.getWaypointsCount(), 2);
+        return Math.pow(this.getActivePlanLegCount(), 2);
     }
 
     /**

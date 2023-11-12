@@ -2400,7 +2400,7 @@ class FMCMainDisplay extends BaseAirliners {
                             }
                             this.coRoute["navlog"] = data.navlog.fix;
 
-                            insertCoRoute(this);
+                            Fmgc.uplinkFlightPlanFromCoRoute(this, this.flightPlanService, this.coRoute);
                             this.coRoute["routeNumber"] = coRouteNum;
                         } else {
                             this.setScratchpadMessage(NXSystemMessages.notInDatabase);
@@ -2429,7 +2429,7 @@ class FMCMainDisplay extends BaseAirliners {
                     this.coRoute.routes.push({
                         originIcao: route.origin.icao_code,
                         destinationIcao: route.destination.icao_code,
-                        alternateIcao: route.alternate ? route.alternate : undefined,
+                        alternateIcao: route.alternate ? route.alternate.icao_code : undefined,
                         route: route.general.route,
                         navlog: route.navlog.fix,
                         routeName: route.name
@@ -5191,6 +5191,14 @@ class FMCMainDisplay extends BaseAirliners {
         }
 
         return maximumCrossoverAltitude + (mmoCrossoverAltitide - maximumCrossoverAltitude) * (mach - 0.8) / 0.02;
+    }
+
+    geActivePlanLegCount() {
+        if (!this.flightPlanSerivce.hasActive) {
+            return 0;
+        }
+
+        return this.flightPlanSerivce.active.legCount;
     }
 }
 
