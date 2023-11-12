@@ -12,6 +12,7 @@ import { defaultTropopauseAlt, maxCertifiedAlt } from 'shared/PerformanceConstan
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { NXDataStore } from '@flybywiresim/fbw-sdk';
 import { SimBriefUplinkAdapter } from '@fmgc/flightplanning/new/uplink/SimBriefUplinkAdapter';
+import { FmgcFlightPhase } from '@shared/flightphase';
 import { ISimbriefData } from '../../../../../../../../fbw-a32nx/src/systems/instruments/src/EFB/Apis/Simbrief';
 
 interface MfdFmsInitProps extends AbstractMfdPageProps {
@@ -68,7 +69,10 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
 
     private costIndex = Subject.create<number>(null);
 
-    private costIndexDisabled = MappedSubject.create(([toIcao, fromIcao]) => !toIcao || !fromIcao, this.fromIcao, this.toIcao);
+    private costIndexDisabled = MappedSubject.create(([toIcao, fromIcao, flightPhase]) => !toIcao || !fromIcao || flightPhase >= FmgcFlightPhase.Descent,
+        this.fromIcao,
+        this.toIcao,
+        this.activeFlightPhase);
 
     private tropoAlt = Subject.create<number>(defaultTropopauseAlt);
 

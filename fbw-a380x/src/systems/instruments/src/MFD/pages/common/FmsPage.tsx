@@ -2,8 +2,10 @@ import { FlightPlanIndex } from '@fmgc/flightplanning/new/FlightPlanManager';
 import { FlightPlan } from '@fmgc/flightplanning/new/plans/FlightPlan';
 import { FlightPlanSyncEvents } from '@fmgc/flightplanning/new/sync/FlightPlanSyncEvents';
 import { DisplayComponent, FSComponent, Subject, Subscription, VNode } from '@microsoft/msfs-sdk';
+import { FmgcFlightPhase } from '@shared/flightphase';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
+import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 
 export abstract class FmsPage<T extends AbstractMfdPageProps> extends DisplayComponent<T> {
     // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
@@ -23,8 +25,16 @@ export abstract class FmsPage<T extends AbstractMfdPageProps> extends DisplayCom
 
     protected secActive = Subject.create<boolean>(false);
 
+    protected activeFlightPhase = Subject.create<FmgcFlightPhase>(FmgcFlightPhase.Preflight);
+
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
+
+        const sub = this.props.bus.getSubscriber<MfdSimvars>();
+
+        this.subs.push(sub.on('flightPhase').whenChanged().handle((val) => {
+            this.activeFlightPhase.set(val);
+        }));
 
         this.subs.push(this.props.uiService.activeUri.sub((val) => {
             this.activePageTitle.set(`${val.category.toUpperCase()}/${this.props.pageTitle}`);

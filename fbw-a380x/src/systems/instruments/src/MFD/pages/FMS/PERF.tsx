@@ -28,7 +28,6 @@ import {
     WindSpeedFormat,
 } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { Mmo, Vmo, maxCertifiedAlt } from 'shared/PerformanceConstants';
-import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { ConfirmationDialog } from 'instruments/src/MFD/pages/common/ConfirmationDialog';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { FmgcFlightPhase } from '@shared/flightphase';
@@ -43,8 +42,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
     // Subjects
     private crzFl = Subject.create<number>(32_000);
-
-    private activeFlightPhase = Subject.create<FmgcFlightPhase>(0);
 
     private flightPhasesSelectedPageIndex = Subject.create(0);
 
@@ -424,11 +421,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
         }
 
         // Get flight phase
-        const sub = this.props.bus.getSubscriber<MfdSimvars>();
-        this.subs.push(sub.on('flightPhase').whenChanged().handle((val) => {
-            console.log(`flight phase: ${val}`);
-            this.activeFlightPhase.set(val);
-
+        this.subs.push(this.activeFlightPhase.sub((val) => {
             if (val === FmgcFlightPhase.Cruise || val === FmgcFlightPhase.Descent) {
                 this.activateApprButton.instance.style.visibility = 'visible';
             } else {

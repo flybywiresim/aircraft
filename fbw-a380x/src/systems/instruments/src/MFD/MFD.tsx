@@ -429,6 +429,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
             this.destDataChecked = false;
 
             const plan = this.flightPlanService.active;
+            const pd = this.fmService.fmgc.data;
 
             if (plan.performanceData.accelerationAltitude.get() === undefined) {
                 // it's important to set this immediately as we don't want to immediately sequence to the climb phase
@@ -440,6 +441,10 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
                 plan.performanceData.pilotEngineOutAccelerationAltitude.set(SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') + parseInt(NXDataStore.get('CONFIG_ACCEL_ALT', '1500')));
                 // this.updateThrustReductionAcceleration();
             }
+
+            pd.taxiFuel.set(null);
+            pd.routeReserveFuelPercentagePilotEntry.set(0.00001);
+            pd.routeReserveFuelWeightPilotEntry.set(0.00001);
 
             /** Arm preselected speed/mach for next flight phase */
             this.fmgc.updatePreSelSpeedMach(this.fmgc.data.climbPreSelSpeed.get());

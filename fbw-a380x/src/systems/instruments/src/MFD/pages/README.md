@@ -89,6 +89,7 @@ Use React-based implementation for now, hence no dev. effort needed here.
 
 ## Known issues / improvements
 | Page / component | Known issue |
+| ------------- | ------------- |
 | PERF | CLB Speed table doesn't change depending on flight phase |
 | PERF | PRED TO not functional |
 | PERF | CRZ Speed table doesn't change depending on flight phase |
@@ -96,19 +97,19 @@ Use React-based implementation for now, hence no dev. effort needed here.
 | PERF | DES: MANAGED speed or mach can't be set |
 | PERF | APPR: LW not set |
 | PERF | MSG LIST: All messages are persistent in msg list, type I / type II not modeled right now |
-| FMS-v2 | NEXT WPT revision: Waypoints in between are not deleted, next wpt is just inserted after revised wpt |
-| FMS-v2 | DIRECT TO: Not possible for waypoints not already sequenced (i.e. no free text entry) |
-| FMS-v2 | Add option to delete flight plans (at least the uplink one) to FlightPlanService |
 | AIRWAYS | Scroll not yet implemented |
 | DUPLICATE NAMES | Scroll not yet implemented |
 | AIRWAYS | Can't delete pending airways (RL behavior to be checked) |
 | FMS-v2 | Can't start airway with DCT via |
+| FMS-v2 | NEXT WPT revision: Waypoints in between are not deleted, next wpt is just inserted after revised wpt |
+| FMS-v2 | DIRECT TO: Not possible for waypoints not already sequenced (i.e. no free text entry) |
+| FMS-v2 | Add option to delete flight plans (at least the uplink one) to FlightPlanService |
 
 ## (Open) questions
 | Page / component | Question | Answer |
 | ------------- | ------------- | ------------- |
-| Input field | Is it possible to input illegal characters into the input fields before validation? I.e. when selecting an altitude field, and pressing „K“ on the KCCU, does it actually display „K“ in the field? | - |
+| Input field | Is it possible to input illegal characters into the input fields before validation? I.e. when selecting an altitude field, and pressing „K“ on the KCCU, does it actually display „K“ in the field? | you can input anything on the keyboard.. the keys are limited and not as many as a QWERTY keyboard. |
 | Confirmation dialog | When triggering a confirmation dialog (e.g. by selecting a derated thrust, or trying to ACTIVATE APPR), are the other fields and buttons outside the dialog still clickable? Are there images available for the ACTIVATE APPR confirmation dialog? Specifically its location within the PERF page. | yes, everything else remains clickable when there is a “starred” prompt waiting to be clicked. (The star means that it will action something and should be cross checked before selecting/activating) |
 | Dropdown menu | When opening a dropdown menu, what are means of selecting and navigating, apart from scroll wheel, keyboard arrows and KCCU cursor? Can you also enter a character or number on the keyboard, and the list jumps to the respective element? | when there is a long list, like waypoints, when you start typing in the drop down, it clears the rest of the drop-down, and searches on the text that you have typed. These results populate a new drop-down (same place as previous one) and the text entry field stays with what you typed. To select one of the ‘found’ entries you need to move the cursor to it and hit enter. |
-| System message area | When you're not in the FMS, and there's no message from any of the systems, how does the system message area look like? | - |
-| Messages list | When you're on the "MESSAGES LIST" page of the FMS, which of the items in the menu bar is marked as selected (with the rectangle outline, ACTIVE, POSITION, ...)? | - |
+| System message area | When you're not in the FMS, and there's no message from any of the systems, how does the system message area look like? | with no messages, the message list is greyed out and not selectable.  |
+| Messages list | When you're on the "MESSAGES LIST" page of the FMS, which of the items in the menu bar is marked as selected (with the rectangle outline, ACTIVE, POSITION, ...)? | when on messages list, whatever page tab you had selected remains boxed.  |

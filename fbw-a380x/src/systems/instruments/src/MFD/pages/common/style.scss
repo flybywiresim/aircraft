@@ -476,6 +476,7 @@ $display-mfd-dark-grey: #3c3c3c;
 }
 
 .mfd-input-field-text-input.inactive {
+  background-color: $display-background !important;
   color: $display-green !important;
 }
 
