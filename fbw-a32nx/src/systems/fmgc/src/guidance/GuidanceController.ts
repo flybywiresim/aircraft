@@ -196,7 +196,7 @@ export class GuidanceController {
             return;
         }
 
-        if (!this.hasGeometryForFlightPlan(focusedWpFpIndex)) {
+        if (!this.hasGeometryForFlightPlan(focusedWpFpIndex, focusedWpInAlternate)) {
             return;
         }
 
