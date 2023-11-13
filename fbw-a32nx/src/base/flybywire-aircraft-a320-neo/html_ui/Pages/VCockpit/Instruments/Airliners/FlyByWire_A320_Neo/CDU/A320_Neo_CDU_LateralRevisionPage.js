@@ -58,7 +58,7 @@ class CDULateralRevisionPage {
         } else if (isDeparture || isPpos || isFrom) {
             arrivalFixInfoCell = "FIX INFO>";
             mcdu.onRightInput[0] = () => {
-                CDUFixInfoPage.ShowPage(mcdu);
+                CDUFixInfoPage.ShowPage(mcdu, () => CDULateralRevisionPage.ShowPage(mcdu, leg, legIndexFP, forPlan, inAlternate));
             };
         }
 
