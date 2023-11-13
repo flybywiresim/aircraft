@@ -91,26 +91,26 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
 
     private guidanceController = new GuidanceController(this.fmgc, this.flightPlanService);
 
-        private navigationProvider: NavigationProvider = {
-            getEpe(): number {
-                return 0.1;
-            },
-            getPpos(): Coordinates | null {
-                const lat = SimVar.GetSimVarValue('PLANE LATITUDE', SimVarValueType.Degree);
-                const long = SimVar.GetSimVarValue('PLANE LONGITUDE', SimVarValueType.Degree);
+    private navigationProvider: NavigationProvider = {
+        getEpe(): number {
+            return 0.1;
+        },
+        getPpos(): Coordinates | null {
+            const lat = SimVar.GetSimVarValue('PLANE LATITUDE', SimVarValueType.Degree);
+            const long = SimVar.GetSimVarValue('PLANE LONGITUDE', SimVarValueType.Degree);
 
-                return { lat, long };
-            },
-            getBaroCorrectedAltitude(): number | null {
-                return 0;
-            },
-            getPressureAltitude(): number | null {
-                return 0;
-            },
-            getRadioHeight(): number | null {
-                return 0;
-            },
-        }
+            return { lat, long };
+        },
+        getBaroCorrectedAltitude(): number | null {
+            return 0;
+        },
+        getPressureAltitude(): number | null {
+            return 0;
+        },
+        getRadioHeight(): number | null {
+            return 0;
+        },
+    }
 
     private navaidSelectionManager = new NavaidSelectionManager(this.flightPlanService, this.navigationProvider);
 
@@ -167,13 +167,13 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
         // this.flightPlanService.active.performanceData.cruiseFlightLevel.set(SimVar.GetGameVarValue('AIRCRAFT CRUISE ALTITUDE', 'feet'));
 
         // Build EDDM08R GIVMI6E GIVMI DCT DKB DCT ILS25L EDDF25L
-        await this.flightPlanService.newCityPair('EDDM', 'EDDF', 'EBBR');
+        /* await this.flightPlanService.newCityPair('EDDM', 'EDDF', 'EBBR');
         await this.flightPlanService.setOriginRunway('RW08R');
         await this.flightPlanService.setDepartureProcedure('GIVM6E');
         await this.flightPlanService.nextWaypoint(4, (await db.searchAllFix('DKB'))[0]);
         await this.flightPlanService.setDestinationRunway('RW25L');
         await this.flightPlanService.setApproach('I25L');
-        await this.flightPlanService.temporaryInsert();
+        await this.flightPlanService.temporaryInsert(); */
 
         // Build EGLL/27R N0411F250 MAXI1F MAXIT DCT HARDY UM605 BIBAX BIBA9X LFPG/09L
         /* await this.flightPlanService.newCityPair('EGLL', 'LFPG', 'EBBR');
@@ -198,7 +198,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
         await this.flightPlanService.deleteElementAt(12); */
 
         // Default performance values
-        this.flightPlanService.active.performanceData.pilotAccelerationAltitude.set(2_900);
+        /* this.flightPlanService.active.performanceData.pilotAccelerationAltitude.set(2_900);
         this.flightPlanService.active.performanceData.pilotThrustReductionAltitude.set(1_900);
         this.flightPlanService.active.performanceData.pilotTransitionAltitude.set(5_000);
         this.flightPlanService.active.performanceData.pilotEngineOutAccelerationAltitude.set(1_500);
@@ -210,7 +210,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
         this.fmService.fmgc.data.zeroFuelWeightCenterOfGravity.set(26);
         this.fmService.fmgc.data.blockFuel.set(50_000);
         this.fmService.fmgc.data.costIndex.set(69);
-        this.flightPlanService.active.performanceData.cruiseFlightLevel.set(24_000);
+        this.flightPlanService.active.performanceData.cruiseFlightLevel.set(24_000); */
     }
 
     private init() {
@@ -446,6 +446,8 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
             pd.routeReserveFuelPercentagePilotEntry.set(0.00001);
             pd.routeReserveFuelWeightPilotEntry.set(0.00001);
 
+            this.fmgc.data.climbPredictionsReferenceAutomatic.set(this.fmService.guidanceController.verticalProfileComputationParametersObserver.get().fcuAltitude);
+
             /** Arm preselected speed/mach for next flight phase */
             this.fmgc.updatePreSelSpeedMach(this.fmgc.data.climbPreSelSpeed.get());
 
@@ -602,10 +604,17 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
         this.efisSymbols.init();
         this.flightPhaseManager.init();
         this.guidanceController.init();
+        this.fmgc.guidanceController = this.guidanceController;
 
         let lastUpdateTime = Date.now();
 
         this.init();
+
+        this.flightPhaseManager.addOnPhaseChanged((prev, next) => this.onFlightPhaseChanged(prev, next));
+
+        // Hack flight phases
+        this.fmService.fmgc.data.costIndex.set(this.flightPhaseManager.phase);
+        SimVar.SetSimVarValue('L:A380X_EFIS_R_ND_RANGE', 'number', 0);
 
         setInterval(() => {
             const now = Date.now();
@@ -618,6 +627,12 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
             this.flightPhaseManager.shouldActivateNextPhase(dt);
             this.guidanceController.update(dt);
             this.fmgc.updateFromSimVars();
+
+            // Hack flight phases
+            const sVar = SimVar.GetSimVarValue('L:A380X_EFIS_R_ND_RANGE', 'number');
+            if (sVar !== this.flightPhaseManager.phase) {
+                this.flightPhaseManager.changePhase(sVar);
+            }
 
             lastUpdateTime = now;
         }, 100);
