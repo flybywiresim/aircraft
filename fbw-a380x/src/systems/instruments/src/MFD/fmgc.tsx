@@ -1,13 +1,13 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
-import { Fmgc } from '@fmgc/guidance/GuidanceController';
+import { Fmgc, GuidanceController } from '@fmgc/guidance/GuidanceController';
 
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { SpeedLimit } from '@fmgc/guidance/vnav/SpeedLimit';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { FmcWindVector, FmcWinds } from '@fmgc/guidance/vnav/wind/types';
-import { MappedSubject, Subject } from '@microsoft/msfs-sdk';
+import { MappedSubject, Subject, UnitType } from '@microsoft/msfs-sdk';
 import { FlightPlanIndex } from '@fmgc/flightplanning/new/FlightPlanManager';
 
 export enum TakeoffPowerSetting {
@@ -44,6 +44,8 @@ export enum ClimbDerated {
     D05 = 5,
 }
 
+type AltitudeValue = Feet | undefined;
+
 /**
  * Temporary place for data which is found nowhere else. Not associated to flight plans right now, which should be the case for some of these values
  */
@@ -53,6 +55,8 @@ export class FmgcData {
     public readonly cpnyFplnUplinkInProgress = Subject.create(false);
 
     public readonly atcCallsign = Subject.create<string>('----------');
+
+    public readonly tripWind = Subject.create<Knots>(undefined);
 
     public readonly zeroFuelWeight = Subject.create<number>(undefined); // in kg
 
@@ -117,13 +121,28 @@ export class FmgcData {
 
     public readonly minimumFuelAtDestinationIsPilotEntered = this.minimumFuelAtDestinationPilotEntry.map((it) => it !== undefined);
 
-    public readonly tropopausePilotEntry = Subject.create<number>(undefined);
+    public readonly tropopausePilotEntry = Subject.create<AltitudeValue>(undefined);
 
     public readonly tropopause = this.tropopausePilotEntry.map((tp) => (tp ?? 36_090)); // in ft
 
     public readonly tropopauseIsPilotEntered = this.tropopausePilotEntry.map((it) => it !== undefined);
 
     public readonly costIndex = Subject.create<number>(undefined);
+
+    /**
+     * V1 speed, to be confirmed after rwy change
+     */
+    readonly v1ToBeConfirmed = Subject.create<Knots>(undefined);
+
+    /**
+     * VR speed, to be confirmed after rwy change
+     */
+    readonly vrToBeConfirmed = Subject.create<Knots>(undefined);
+
+    /**
+     * V2 speed, to be confirmed after rwy change
+     */
+    readonly v2ToBeConfirmed = Subject.create<Knots>(undefined);
 
     public readonly takeoffFlapsSetting = Subject.create<FlapConf>(FlapConf.CONF_1);
 
@@ -141,7 +160,7 @@ export class FmgcData {
 
     public readonly cleanSpeed = Subject.create<Knots>(190);
 
-    public readonly takeoffShift = Subject.create<number>(undefined);
+    public readonly takeoffShift = Subject.create<number>(undefined); // in meters
 
     public readonly takeoffPowerSetting = Subject.create<TakeoffPowerSetting>(TakeoffPowerSetting.TOGA);
 
@@ -161,9 +180,19 @@ export class FmgcData {
 
     public readonly noiseSpeed = Subject.create<Knots>(undefined);
 
-    public readonly noiseEndAltitude = Subject.create<number>(undefined);
+    public readonly noiseEndAltitude = Subject.create<AltitudeValue>(undefined);
 
     public readonly climbDerated = Subject.create<ClimbDerated>(ClimbDerated.NONE);
+
+    public readonly climbPredictionsReferencePilotEntry = Subject.create<AltitudeValue>(undefined); // in ft
+
+    public readonly climbPredictionsReferenceAutomatic = Subject.create<AltitudeValue>(undefined); // in ft
+
+    public readonly climbPredictionsReference = MappedSubject.create(([calc, pe]) => (pe !== undefined ? pe : calc),
+        this.climbPredictionsReferenceAutomatic,
+        this.climbPredictionsReferencePilotEntry);
+
+    public readonly climbPredictionsReferenceIsPilotEntered = this.climbPredictionsReferencePilotEntry.map((it) => it !== undefined);
 
     public readonly climbPreSelSpeed = Subject.create<Knots>(undefined);
 
@@ -201,11 +230,11 @@ export class FmgcData {
 
     public readonly descentSpeedLimit = Subject.create<SpeedLimit>({ speed: 250, underAltitude: 10_000 });
 
-    public readonly descentCabinRate = Subject.create<number>(-350);
+    public readonly descentCabinRate = Subject.create<number>(-350); // ft/min
 
-    public readonly approachBaroMinimum = Subject.create<number>(undefined);
+    public readonly approachBaroMinimum = Subject.create<AltitudeValue>(undefined);
 
-    public readonly approachRadioMinimum = Subject.create<number>(undefined);
+    public readonly approachRadioMinimum = Subject.create<AltitudeValue>(undefined);
 
     public readonly approachVref = Subject.create<Knots>(129);
 
@@ -219,6 +248,8 @@ export class FmgcData {
  */
 export class FmgcDataInterface implements Fmgc {
     public data = new FmgcData();
+
+    public guidanceController: GuidanceController;
 
     constructor(
         private flightPlanService: FlightPlanService,
@@ -338,7 +369,7 @@ export class FmgcDataInterface implements Fmgc {
     }
 
     getTripWind(): number {
-        return 0;
+        return this.data.tripWind.get();
     }
 
     getWinds(): FmcWinds {
@@ -358,7 +389,11 @@ export class FmgcDataInterface implements Fmgc {
     }
 
     getDestEFOB(useFob: boolean): number { // Metric tons
-        return useFob ? 12 : 11;
+        const efob = this.guidanceController?.vnavDriver?.getDestinationPrediction()?.estimatedFuelOnBoard; // in Pounds
+        if (useFob === true && efob !== undefined) {
+            return UnitType.POUND.convertTo(efob, UnitType.TONNE);
+        }
+        return 0;
     }
 
     getDepartureElevation(): Feet {

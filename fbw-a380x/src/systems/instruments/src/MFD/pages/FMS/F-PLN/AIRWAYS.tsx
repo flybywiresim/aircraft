@@ -218,7 +218,6 @@ class AirwayLine extends DisplayComponent<AirwayLineProps> {
                     <InputField<string>
                         dataEntryFormat={new WaypointFormat()}
                         dataHandlerDuringValidation={async (v) => {
-                            console.warn(v);
                             if (!v) {
                                 return false;
                             }

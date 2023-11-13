@@ -60,7 +60,6 @@ export class MfdFlightManagementService {
         const sub = mfd.props.bus.getSubscriber<ClockEvents & MfdSimvars>();
 
         this.subs.push(sub.on('realTime').atFrequency(1).handle((_t) => {
-            console.log(this.enginesWereStarted.get());
             if (this.enginesWereStarted.get() === false) {
                 const flightPhase = fmgc.getFlightPhase();
                 const oneEngineWasStarted = (SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:1', 'number') > 20)

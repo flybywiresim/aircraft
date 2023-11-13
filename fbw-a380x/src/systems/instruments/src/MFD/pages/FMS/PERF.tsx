@@ -4,7 +4,7 @@ import { DropdownMenu } from 'instruments/src/MFD/pages/common/DropdownMenu';
 import { InputField } from 'instruments/src/MFD/pages/common/InputField';
 import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MFD/pages/common/TopTabNavigator';
 
-import { ArraySubject, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+import { ArraySubject, ClockEvents, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 
 import { Button } from 'instruments/src/MFD/pages/common/Button';
 import { RadioButtonGroup } from 'instruments/src/MFD/pages/common/RadioButtonGroup';
@@ -24,6 +24,7 @@ import {
     SpeedKnotsFormat,
     SpeedMachFormat,
     TemperatureFormat,
+    TimeHHMMFormat,
     WindDirectionFormat,
     WindSpeedFormat,
 } from 'instruments/src/MFD/pages/common/DataEntryFormats';
@@ -33,6 +34,8 @@ import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { TakeoffDerated, TakeoffPowerSetting } from 'instruments/src/MFD/fmgc';
 import { ConditionalComponent } from 'instruments/src/MFD/pages/common/ConditionalComponent';
+import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
+import { VerticalCheckpointReason } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 
 interface MfdFmsPerfProps extends AbstractMfdPageProps {
 }
@@ -40,12 +43,12 @@ interface MfdFmsPerfProps extends AbstractMfdPageProps {
 export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
     private activateApprButton = FSComponent.createRef<HTMLDivElement>();
 
+    private managedSpeedActive = Subject.create<boolean>(false);
+
     // Subjects
     private crzFl = Subject.create<number>(32_000);
 
     private flightPhasesSelectedPageIndex = Subject.create(0);
-
-    private costIndex = Subject.create<number>(69);
 
     private transAlt = Subject.create(5000);
 
@@ -60,10 +63,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
     private accelRedAltIsPilotEntered = Subject.create<boolean>(false);
 
     private noiseEndAlt = Subject.create<number>(800);
-
-    private noiseN1 = Subject.create<number>(null);
-
-    private noiseSpd = Subject.create<number>(null);
 
     private showNoiseFields(visible: boolean) {
         if (visible === true) {
@@ -116,6 +115,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
     private toV2 = Subject.create<number>(null);
 
+    private vSpeedsConfirmationRef = FSComponent.createRef<HTMLDivElement>();
+
     private toSelectedThrustSettingIndex = Subject.create<TakeoffPowerSetting>(0);
 
     private toFlexTemp = Subject.create<number>(null);
@@ -125,8 +126,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
     private originRunwayLength = Subject.create<number>(4000);
 
     private toSelectedFlapsIndex = Subject.create(0);
-
-    private toThsFor = Subject.create<number>(null);
 
     private toSelectedPacksIndex = Subject.create(1);
 
@@ -196,12 +195,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
     private toNoiseEndInputRef = FSComponent.createRef<HTMLDivElement>();
 
     // CLB page subjects, refs and methods
-    private clbDeratedClbSelectedIndex = Subject.create(0);
-
-    private clbPredictionsReference = Subject.create<number>(null);
-
-    private clbPreSelSpdTarget = Subject.create<number>(null);
-
     private clbNoiseFieldsRefs = [FSComponent.createRef<HTMLDivElement>(),
         FSComponent.createRef<HTMLDivElement>(),
         FSComponent.createRef<HTMLDivElement>(),
@@ -218,21 +211,97 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
     private clbNoiseEndInputRef = FSComponent.createRef<HTMLDivElement>();
 
+    private clbTableModeLine1 = Subject.create<string>('PRESEL');
+
+    private clbTableSpdLine1 = Subject.create<string>(undefined);
+
+    private clbTableMachLine1 = Subject.create<string>(undefined);
+
+    private clbTablePredLine1 = Subject.create<string>('--:--   ----');
+
+    private clbTableModeLine2 = Subject.create<string>('MANAGED');
+
+    private clbTableSpdLine2 = Subject.create<string>('250');
+
+    private clbTableMachLine2 = Subject.create<string>(undefined);
+
+    private clbTablePredLine2 = Subject.create<string>(undefined);
+
+    private clbTableModeLine3 = Subject.create<string>('ECON');
+
+    private clbTableSpdLine3 = Subject.create<string>('314');
+
+    private clbTableMachLine3 = Subject.create<string>('.82');
+
+    private clbTablePredLine3 = Subject.create<string>(undefined);
+
+    private clbNoiseTableRef = FSComponent.createRef<HTMLDivElement>();
+
     // CRZ page subjects, refs and methods
+    private crzPredStepRef = FSComponent.createRef<HTMLDivElement>();
+
+    private crzPredTdRef = FSComponent.createRef<HTMLDivElement>();
+
+    private crzPredStepAheadRef = FSComponent.createRef<HTMLDivElement>();
+
+    private crzPredDriftDownRef = FSComponent.createRef<HTMLDivElement>();
+
+    private crzPredWaypoint = Subject.create<string>('');
+
+    private crzPredAltitudeTarget = Subject.create<Feet>(null);
+
+    private crzTableModeLine1 = Subject.create<string>('PRESEL');
+
+    private crzTableSpdLine1 = Subject.create<string>(undefined);
+
+    private crzTableMachLine1 = Subject.create<string>(undefined);
+
+    private crzTablePredLine1 = Subject.create<string>(undefined);
+
+    private crzTableModeLine2 = Subject.create<string>('MANAGED');
+
+    private crzTableSpdLine2 = Subject.create<string>('---');
+
+    private crzTableMachLine2 = Subject.create<string>('.82');
+
+    private crzTablePredLine2 = Subject.create<string>('--:--   ----');
+
+    private crzTableModeLine3 = Subject.create<string>(undefined);
+
+    private crzTableSpdLine3 = Subject.create<string>(undefined);
+
+    private crzTableMachLine3 = Subject.create<string>(undefined);
+
+    private crzTablePredLine3 = Subject.create<string>(undefined);
+
     private destAirportIdent = Subject.create<string>('');
 
     private destEta = Subject.create<string>('--:--');
 
-    private destEfob = Subject.create<string>(null);
+    private destEfob = Subject.create<string>('--.-');
 
     // DES page subjects, refs and methods
-    private desCabinDesRate = Subject.create<number>(-850);
-
     private desManagedSpdTarget = Subject.create<number>(276);
 
     private desManagedMachTarget = Subject.create<number>(0.84);
 
     private desPredictionsReference = Subject.create<number>(null);
+
+    private desTableModeLine1 = Subject.create<string>('PRESEL');
+
+    private desTableSpdLine1 = Subject.create<string>(undefined);
+
+    private desTableMachLine1 = Subject.create<string>(undefined);
+
+    private desTablePredLine1 = Subject.create<string>('--:--   ----');
+
+    private desTableModeLine2 = Subject.create<string>('MANAGED');
+
+    private desTableSpdLine2 = Subject.create<string>('250');
+
+    private desTableMachLine2 = Subject.create<string>(undefined);
+
+    private desTablePredLine2 = Subject.create<string>(undefined);
 
     private transFl = Subject.create<number>(5000);
 
@@ -241,21 +310,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
     // APPR page subjects, refs and methods
     private apprIdent = Subject.create<string>('');
 
-    private apprMag = Subject.create<number>(null);
-
-    private apprWind = Subject.create<number>(null);
-
-    private apprOat = Subject.create<number>(null);
-
-    private apprQnh = Subject.create<number>(null);
-
-    private apprMinimumBaro = Subject.create<number>(null);
-
-    private apprMinimumRadio = Subject.create<number>(null);
-
     private apprSelectedFlapsIndex = Subject.create<number>(1);
-
-    private apprVapp = Subject.create<number>(134);
 
     // GA page subjects, refs and methods
 
@@ -284,6 +339,9 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
         if (pd.v2) {
             this.toV2.set(pd.v2.get());
         }
+
+        // V-speeds to be confirmed due to rwy change?
+        // this.vSpeedsConfirmationRef.getOrDefault().style.visibility = (fm.v1ToBeConfirmed.get() !== undefined) ? 'visible' : 'hidden';
 
         if (fm.takeoffPowerSetting) {
             this.toSelectedThrustSettingIndex.set(fm.takeoffPowerSetting.get());
@@ -339,8 +397,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
         }
 
         if (pd.transitionAltitude) {
-            console.log(pd.transitionAltitude.get());
-            console.log(pd.pilotTransitionAltitude.get());
             this.transAlt.set(pd.transitionAltitude.get());
         }
 
@@ -369,8 +425,6 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
         if (this.loadedFlightPlan.destinationAirport) {
             this.destAirportIdent.set(this.loadedFlightPlan.destinationAirport.ident);
-            this.destEta.set('00:00');
-            this.destEfob.set(this.props.fmService.fmgc.getDestEFOB(true).toFixed(1));
         }
 
         if (this.loadedFlightPlan.approach) {
@@ -394,6 +448,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
+
+        const sub = this.props.bus.getSubscriber<ClockEvents & MfdSimvars>();
 
         // If extra parameter for activeUri is given, navigate to flight phase sub-page
         switch (this.props.uiService.activeUri.get().extra) {
@@ -432,6 +488,190 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
         this.subs.push(this.toSelectedFlapsIndex.sub((v) => {
             // Convert to FlapConf
             this.props.fmService.fmgc.data.takeoffFlapsSetting.set(v + 1);
+        }));
+
+        this.subs.push(sub.on('realTime').atFrequency(1).handle((_t) => {
+            const obs = this.props.fmService.guidanceController.verticalProfileComputationParametersObserver.get();
+
+            // CLB PRED TO automatic update
+            if (this.activeFlightPhase.get() === FmgcFlightPhase.Climb) {
+                this.props.fmService.fmgc.data.climbPredictionsReferenceAutomatic.set(this.props.fmService.guidanceController.verticalProfileComputationParametersObserver.get().fcuAltitude);
+            } else {
+                this.props.fmService.fmgc.data.climbPredictionsReferenceAutomatic.set(null);
+            }
+
+            this.managedSpeedActive.set(obs.fcuSpeedManaged);
+
+            // Update CLB speed table
+            const clbSpeedLimit = this.props.fmService.fmgc.getClimbSpeedLimit();
+            if (this.activeFlightPhase.get() < FmgcFlightPhase.Climb) {
+                this.clbTableModeLine1.set('PRESEL');
+                this.clbTableSpdLine1.set(undefined);
+                this.clbTableMachLine1.set(undefined);
+                this.clbTablePredLine1.set(undefined);
+                this.clbTableModeLine2.set('MANAGED');
+                this.clbTableSpdLine2.set(clbSpeedLimit.speed.toFixed(0));
+                this.clbTableMachLine2.set(undefined);
+                this.clbTablePredLine2.set('--:--   ----');
+                this.clbTableModeLine3.set('ECON');
+                this.clbTableSpdLine3.set(this.props.fmService.fmgc.getManagedClimbSpeed().toFixed(0));
+                this.clbTableMachLine3.set(`.${this.props.fmService.fmgc.getManagedClimbSpeedMach().toFixed(2).split('.')[1]}`);
+                this.clbTablePredLine3.set(undefined);
+            } else {
+                if (this.managedSpeedActive.get() === true) {
+                    this.clbTableModeLine1.set('MANAGED');
+                    // TODO add speed restriction (ECON, SPD LIM, ...) in smaller font
+                    if (clbSpeedLimit && SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') < clbSpeedLimit.underAltitude) {
+                        this.clbTableSpdLine1.set(clbSpeedLimit.speed.toFixed(0));
+                        this.clbTableMachLine1.set(`.${(SimVar.GetGameVarValue('FROM KIAS TO MACH', 'number', clbSpeedLimit.speed) as number).toFixed(2).split('.')[1]}`);
+                    } else {
+                        this.clbTableSpdLine1.set(this.props.fmService.fmgc.getManagedClimbSpeed().toFixed(0));
+                        this.clbTableMachLine1.set(`.${this.props.fmService.fmgc.getManagedClimbSpeedMach().toFixed(2).split('.')[1]}`);
+                    }
+                    // TODO add predictions
+                    this.clbTablePredLine1.set(undefined);
+                    this.clbTableModeLine2.set(undefined);
+                    this.clbTableSpdLine2.set(undefined);
+                    this.clbTableMachLine2.set(undefined);
+                    this.clbTablePredLine2.set(undefined);
+                } else {
+                    this.clbTableModeLine1.set('SELECTED');
+                    this.clbTableSpdLine1.set((obs.fcuSpeed < 1) ? undefined : obs.fcuSpeed.toFixed(0));
+                    this.clbTableMachLine1.set((obs.fcuSpeed < 1) ? `.${obs.fcuSpeed.toFixed(2).split('.')[1]}` : undefined);
+                    this.clbTablePredLine1.set(undefined);
+
+                    this.clbTableModeLine2.set('MANAGED');
+                    // TODO add speed restriction (ECON, SPD LIM, ...) in smaller font
+                    if (clbSpeedLimit && SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') < clbSpeedLimit.underAltitude) {
+                        this.clbTableSpdLine2.set(clbSpeedLimit.speed.toFixed(0));
+                        this.clbTableMachLine2.set(`.${(SimVar.GetGameVarValue('FROM KIAS TO MACH', 'number', clbSpeedLimit.speed) as number).toFixed(2).split('.')[1]}`);
+                    } else {
+                        this.clbTableSpdLine2.set(this.props.fmService.fmgc.getManagedClimbSpeed().toFixed(0));
+                        this.clbTableMachLine2.set(`.${this.props.fmService.fmgc.getManagedClimbSpeedMach().toFixed(2).split('.')[1]}`);
+                    }
+                    this.clbTablePredLine2.set(undefined);
+                }
+
+                this.clbTableModeLine3.set(undefined);
+                this.clbTableSpdLine3.set(undefined);
+                this.clbTableMachLine3.set(undefined);
+                this.clbTablePredLine3.set(undefined);
+            }
+            this.clbNoiseTableRef.instance.style.visibility = this.activeFlightPhase.get() >= FmgcFlightPhase.Climb ? 'hidden' : 'visible';
+
+            // Update CRZ prediction
+            const crzPred = this.props.fmService?.guidanceController?.vnavDriver?.getPerfCrzToPrediction();
+            if (crzPred?.reason !== undefined && crzPred.reason === VerticalCheckpointReason.TopOfDescent) {
+                this.crzPredStepRef.getOrDefault().style.display = 'none';
+                this.crzPredDriftDownRef.getOrDefault().style.display = 'none';
+                this.crzPredTdRef.getOrDefault().style.display = 'block';
+                this.crzPredStepAheadRef.getOrDefault().style.display = 'none';
+            } else {
+                this.crzPredTdRef.getOrDefault().style.display = 'none';
+                this.crzPredDriftDownRef.getOrDefault().style.display = 'none';
+                if (crzPred?.distanceFromPresentPosition !== undefined && crzPred.distanceFromPresentPosition < 20) {
+                    this.crzPredStepRef.getOrDefault().style.display = 'none';
+                    this.crzPredStepAheadRef.getOrDefault().style.display = 'block';
+                } else {
+                    this.crzPredStepRef.getOrDefault().style.display = 'block';
+                    this.crzPredStepAheadRef.getOrDefault().style.display = 'none';
+                    this.crzPredWaypoint.set('N/A'); // Where to get this from?
+                    this.crzPredAltitudeTarget.set(0); // Where to get this from?
+                }
+            }
+
+            if (crzPred?.secondsFromPresent !== undefined && crzPred?.distanceFromPresentPosition !== undefined) {
+                if (this.activeFlightPhase.get() < FmgcFlightPhase.Cruise) {
+                    if (this.props.fmService.fmgc.data.cruisePreSelSpeed.get() || this.props.fmService.fmgc.data.cruisePreSelMach.get()) {
+                        this.crzTablePredLine1.set(`${(new TimeHHMMFormat()).format(crzPred.secondsFromPresent / 60)}${crzPred.distanceFromPresentPosition.toFixed(0).padStart(6, ' ')}`);
+                        this.crzTablePredLine2.set('');
+                    } else {
+                        // Managed
+                        this.crzTablePredLine1.set('');
+                        this.crzTablePredLine2.set(`${(new TimeHHMMFormat()).format(crzPred.secondsFromPresent / 60)}${crzPred.distanceFromPresentPosition.toFixed(0).padStart(6, ' ')}`);
+                    }
+                } else {
+                    this.crzTablePredLine1.set(`${(new TimeHHMMFormat()).format(crzPred.secondsFromPresent / 60)}${crzPred.distanceFromPresentPosition.toFixed(0).padStart(6, ' ')}`);
+                    this.crzTablePredLine2.set('');
+                }
+            }
+
+            // Update CZR speed table
+            this.crzTableModeLine3.set(undefined);
+            this.crzTableSpdLine3.set(undefined);
+            this.crzTableMachLine3.set(undefined);
+            this.crzTablePredLine3.set(undefined);
+
+            if (this.activeFlightPhase.get() < FmgcFlightPhase.Cruise) {
+                this.crzTableModeLine1.set('PRESEL');
+                this.crzTableSpdLine1.set(undefined);
+                this.crzTableMachLine1.set(undefined);
+                this.crzTablePredLine1.set(undefined);
+                this.crzTableModeLine2.set('MANAGED');
+                this.crzTableSpdLine2.set('---');
+                this.crzTableMachLine2.set(`.${this.props.fmService.fmgc.getManagedCruiseSpeedMach().toFixed(2).split('.')[1]}`);
+                this.crzTablePredLine2.set('--:--   ----');
+            } else if (this.managedSpeedActive.get() === true) {
+                this.crzTableModeLine1.set('MANAGED');
+                // TODO add speed restriction (ECON, SPD LIM, ...) in smaller font
+                this.crzTableSpdLine1.set(obs.fcuSpeed < 1 ? '---' : this.props.fmService.fmgc.getManagedClimbSpeed().toFixed(0));
+                this.crzTableMachLine1.set(obs.fcuSpeed < 1 ? `.${this.props.fmService.fmgc.getManagedCruiseSpeedMach().toFixed(2).split('.')[1]}` : '.--');
+
+                // TODO add predictions
+                this.crzTablePredLine1.set('--:--   ----');
+                this.crzTableModeLine2.set(undefined);
+                this.crzTableSpdLine2.set(undefined);
+                this.crzTableMachLine2.set(undefined);
+                this.crzTablePredLine2.set(undefined);
+            } else {
+                this.crzTableModeLine1.set('SELECTED');
+                this.crzTableSpdLine1.set((obs.fcuSpeed < 1) ? undefined : obs.fcuSpeed.toFixed(0));
+                this.crzTableMachLine1.set((obs.fcuSpeed < 1) ? `.${obs.fcuSpeed.toFixed(2).split('.')[1]}` : undefined);
+                this.crzTablePredLine1.set(undefined);
+
+                this.crzTableModeLine2.set('MANAGED');
+                // TODO add speed restriction (ECON, SPD LIM, ...) in smaller font
+                this.crzTableSpdLine2.set((obs.fcuSpeed < 1) ? '---' : this.props.fmService.fmgc.getManagedCruiseSpeed().toFixed(0));
+                this.crzTableMachLine2.set((obs.fcuSpeed < 1) ? this.props.fmService.fmgc.getManagedCruiseSpeed().toFixed(0) : '.--');
+                this.crzTablePredLine2.set(undefined);
+            }
+
+            // Update CRZ DEST predictions
+            const destPred = this.props.fmService?.guidanceController?.vnavDriver?.getDestinationPrediction();
+            if (destPred?.secondsFromPresent !== undefined) {
+                this.destEta.set((new TimeHHMMFormat()).format(destPred.secondsFromPresent / 60)[0]);
+                this.destEfob.set(this.props.fmService.fmgc.getDestEFOB(true).toFixed(1));
+            }
+
+            // Update DES speed table
+            if (this.activeFlightPhase.get() < FmgcFlightPhase.Descent) {
+                this.desTableModeLine1.set('MANAGED');
+                this.desTableSpdLine1.set(undefined);
+                this.desTableMachLine1.set(undefined);
+                this.desTablePredLine1.set('--:--  ----');
+                this.desTableModeLine2.set(undefined);
+                this.desTableSpdLine2.set(undefined);
+                this.desTableMachLine2.set(undefined);
+                this.desTablePredLine2.set(undefined);
+            } else if (this.managedSpeedActive.get() === true) {
+                this.desTableModeLine1.set('MANAGED');
+                this.desTableSpdLine1.set(this.props.fmService.fmgc.getManagedDescentSpeed().toFixed(0));
+                this.desTableMachLine1.set(`.${this.props.fmService.fmgc.getManagedDescentSpeedMach().toFixed(2).split('.')[1]}`);
+                this.desTablePredLine1.set('--:--  ----');
+                this.desTableModeLine2.set(undefined);
+                this.desTableSpdLine2.set(undefined);
+                this.desTableMachLine2.set(undefined);
+                this.desTablePredLine2.set(undefined);
+            } else {
+                this.desTableModeLine1.set('SELECTED');
+                this.desTableSpdLine1.set((obs.fcuSpeed < 1) ? undefined : obs.fcuSpeed.toFixed(0));
+                this.desTableMachLine1.set((obs.fcuSpeed < 1) ? `.${obs.fcuSpeed.toFixed(2).split('.')[1]}` : undefined);
+                this.desTablePredLine1.set('--:--  ----');
+                this.desTableModeLine2.set('MANAGED');
+                this.desTableSpdLine2.set(this.props.fmService.fmgc.getManagedDescentSpeed().toFixed(0));
+                this.desTableMachLine2.set(`.${this.props.fmService.fmgc.getManagedDescentSpeedMach().toFixed(2).split('.')[1]}`);
+                this.desTablePredLine2.set(undefined);
+            }
         }));
     }
 
@@ -692,17 +932,17 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     </div>
                                 </div>
                                 <div style="grid-row-start: span 2;">
-                                    <div ref={this.toNoiseFieldsRefs[2]} style=" display: flex; justify-content: center; align-items: center;">
+                                    <div ref={this.toNoiseFieldsRefs[2]} style="display: flex; justify-content: center; align-items: center;">
                                         <ConditionalComponent
                                             width={112}
                                             height={62}
                                             condition={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
                                             componentIfFalse={(
                                                 <Button
-                                                    label="NOISE"
+                                                    label="CANCEL<br />NOISE"
                                                     onClick={() => {
-                                                        this.props.fmService.fmgc.data.noiseEnabled.set(true);
-                                                        this.showNoiseFields(true);
+                                                        this.props.fmService.fmgc.data.noiseEnabled.set(false);
+                                                        this.showNoiseFields(false);
                                                     }}
                                                 >
                                                     NOISE
@@ -818,9 +1058,14 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         width={176}
                                         height={62}
                                         condition={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
-                                        componentIfFalse={
-                                            <Button label="CPNY T.O<br />REQUEST" onClick={() => console.log('CPNY T.O REQUEST')} buttonStyle="padding-left: 30px; padding-right: 30px" />
-                                        }
+                                        componentIfFalse={(
+                                            <Button
+                                                label="CPNY T.O<br />REQUEST"
+                                                disabled={Subject.create(true)}
+                                                onClick={() => console.log('CPNY T.O REQUEST')}
+                                                buttonStyle="padding-left: 30px; padding-right: 30px"
+                                            />
+                                        )}
                                         componentIfTrue={<></>}
                                     />
                                 </div>
@@ -867,51 +1112,70 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     <div class="mfd-label">PRED TO </div>
                                     <InputField<number>
                                         dataEntryFormat={new AltitudeOrFlightLevelFormat(Subject.create(0), Subject.create(maxCertifiedAlt), this.transAlt)}
+                                        dataHandlerDuringValidation={async (v) => this.props.fmService.fmgc.data.climbPredictionsReferencePilotEntry.set(v)}
                                         mandatory={Subject.create(false)}
                                         inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Climb)}
-                                        value={this.clbPredictionsReference}
+                                        enteredByPilot={this.props.fmService.fmgc.data.climbPredictionsReferenceIsPilotEntered}
+                                        value={this.props.fmService.fmgc.data.climbPredictionsReference}
                                         containerStyle="width: 150px; margin-left: 15px;"
                                         alignText="flex-end"
                                     />
                                 </div>
                                 <div class="mfd-fms-perf-speed-presel-managed-table-cell">
-                                    <div class="mfd-label">PRESEL</div>
+                                    <div class="mfd-label bigger">{this.clbTableModeLine1}</div>
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell">
-                                    <InputField<number>
-                                        dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
-                                        mandatory={Subject.create(false)}
-                                        inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Climb)}
-                                        value={this.props.fmService.fmgc.data.climbPreSelSpeed}
-                                        alignText="flex-end"
+                                    <ConditionalComponent
+                                        condition={this.activeFlightPhase.map((it) => it < FmgcFlightPhase.Climb)}
+                                        componentIfTrue={(
+                                            <InputField<number>
+                                                dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
+                                                mandatory={Subject.create(false)}
+                                                inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Climb)}
+                                                value={this.props.fmService.fmgc.data.climbPreSelSpeed}
+                                                alignText="flex-end"
+                                            />
+                                        )}
+                                        componentIfFalse={(
+                                            <div class="mfd-label-value-container">
+                                                <span class="mfd-value-green">{this.clbTableSpdLine1}</span>
+                                                <span class="mfd-label-unit mfd-unit-trailing">KT</span>
+                                            </div>
+                                        )}
                                     />
                                 </div>
-                                <div class="mfd-fms-perf-speed-table-cell" />
-                                <div class="mfd-fms-perf-speed-table-cell" />
+                                <div class="mfd-fms-perf-speed-table-cell">
+                                    <span class="mfd-value-green">{this.clbTableMachLine1}</span>
+                                </div>
+                                <div class="mfd-fms-perf-speed-table-cell">
+                                    <span class="mfd-value-green">{this.clbTablePredLine1}</span>
+                                </div>
                                 <div class="mfd-fms-perf-speed-presel-managed-table-cell">
-                                    <div class="mfd-label green">MANAGED</div>
+                                    <div class="mfd-label">{this.clbTableModeLine2}</div>
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell">
                                     <div class="mfd-label-value-container">
-                                        <span class="mfd-value-green">{this.props.fmService.fmgc.data.climbManagedSpeedFromCostIndex.get().toFixed(0)}</span>
+                                        <span class="mfd-value-green">{this.clbTableSpdLine2}</span>
                                         <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                                     </div>
                                 </div>
-                                <div class="mfd-fms-perf-speed-table-cell" />
                                 <div class="mfd-fms-perf-speed-table-cell">
-                                    <span class="mfd-value-green">--:--   ----</span>
+                                    <span class="mfd-value-green">{this.clbTableMachLine2}</span>
+                                </div>
+                                <div class="mfd-fms-perf-speed-table-cell">
+                                    <span class="mfd-value-green">{this.clbTablePredLine2}</span>
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell br" style="justify-content: flex-end; padding: 5px 15px 5px 15px;">
-                                    <div class="mfd-label">ECON</div>
+                                    <div class="mfd-label">{this.clbTableModeLine3}</div>
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell" style="padding: 5px 15px 5px 15px;">
                                     <div class="mfd-label-value-container">
-                                        <span class="mfd-value-green">---</span>
-                                        <span class="mfd-label-unit mfd-unit-trailing">KT</span>
+                                        <span class="mfd-value-green">{this.clbTableSpdLine3}</span>
+                                        <span class="mfd-label-unit mfd-unit-trailing">{this.clbTableSpdLine3.map((it) => (it ? 'KT' : ''))}</span>
                                     </div>
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell" style="padding: 5px 15px 5px 15px;">
-                                    <span class="mfd-value-green">-.--</span>
+                                    <span class="mfd-value-green">{this.clbTableMachLine3}</span>
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell" style="padding: 5px 15px 5px 15px;" />
                                 <div style="border-right: 1px solid lightgrey; height: 40px;" />
@@ -919,7 +1183,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                 <div />
                                 <div />
                             </div>
-                            <div class="mfd-fms-perf-to-thrred-noise-grid">
+                            <div ref={this.clbNoiseTableRef} class="mfd-fms-perf-to-thrred-noise-grid">
                                 <div class="mfd-fms-perf-to-thrred-noise-grid-cell" style="margin-right: 15px; margin-bottom: 15px; width: 125px;">
                                     <span class="mfd-label">THR RED</span>
                                 </div>
@@ -963,14 +1227,12 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                             condition={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
                                             componentIfFalse={(
                                                 <Button
-                                                    label="NOISE"
+                                                    label="CANCEL<br />NOISE"
                                                     onClick={() => {
-                                                        this.props.fmService.fmgc.data.noiseEnabled.set(true);
-                                                        this.showNoiseFields(true);
+                                                        this.props.fmService.fmgc.data.noiseEnabled.set(false);
+                                                        this.showNoiseFields(false);
                                                     }}
-                                                >
-                                                    NOISE
-                                                </Button>
+                                                />
                                             )}
                                             componentIfTrue={<></>}
                                         />
@@ -1066,6 +1328,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     <InputField<number>
                                         dataEntryFormat={new AltitudeFormat(Subject.create(1), Subject.create(maxCertifiedAlt))}
                                         mandatory={Subject.create(false)}
+                                        inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Climb)}
                                         value={this.transAlt}
                                         containerStyle="width: 150px;"
                                         alignText="flex-end"
@@ -1112,66 +1375,114 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     <div class="mfd-label">SPD</div>
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell" style="flex-direction: column;">
-                                    <div style="display: flex; flex-direction: row; justify-content: center; align-items: center;">
-                                        <div class="mfd-label mfd-spacing-right">AT</div>
-                                        <div class="mfd-value-green bigger">TOKMA</div>
+                                    <div ref={this.crzPredStepRef}>
+                                        <div style="display: flex; flex-direction: row; justify-content: center; align-items: center;">
+                                            <div class="mfd-label mfd-spacing-right">AT</div>
+                                            <div class="mfd-value-green bigger">{this.crzPredWaypoint}</div>
+                                        </div>
+                                        <div style="display: flex; flex-direction: row; justify-content: center; align-items: center;">
+                                            <div class="mfd-label mfd-spacing-right">STEP TO</div>
+                                            <div class="mfd-label-value-container">
+                                                <span class="mfd-label-unit mfd-unit-leading">FL</span>
+                                                <span class="mfd-value-green bigger">{this.crzPredAltitudeTarget}</span>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div style="display: flex; flex-direction: row; justify-content: center; align-items: center;">
-                                        <div class="mfd-label mfd-spacing-right">STEP TO</div>
-                                        <div class="mfd-label-value-container">
-                                            <span class="mfd-label-unit mfd-unit-leading">FL</span>
-                                            <span class="mfd-value-green bigger">360</span>
+                                    <div ref={this.crzPredTdRef}>
+                                        <div style="display: flex; flex-direction: row; justify-content: center; align-items: center;">
+                                            <div class="mfd-label mfd-spacing-right">PRED TO</div>
+                                            <div class="mfd-label-value-container">
+                                                <span class="mfd-value-green bigger">T/D</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div ref={this.crzPredStepAheadRef}>
+                                        <div style="display: flex; flex-direction: row; justify-content: center; align-items: center;">
+                                            <div class="mfd-label mfd-spacing-right green">STEP AHEAD</div>
+                                        </div>
+                                    </div>
+                                    <div ref={this.crzPredDriftDownRef}>
+                                        <div style="display: flex; flex-direction: row; justify-content: center; align-items: center;">
+                                            <div class="mfd-label mfd-spacing-right">DRIFT DOWN</div>
+                                        </div>
+                                        <div style="display: flex; flex-direction: row; justify-content: center; align-items: center;">
+                                            <div class="mfd-label mfd-spacing-right">TO</div>
+                                            <div class="mfd-label-value-container">
+                                                <span class="mfd-label-unit mfd-unit-leading">FL</span>
+                                                <span class="mfd-value-green bigger">{this.crzPredAltitudeTarget}</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="mfd-fms-perf-speed-presel-managed-table-cell">
-                                    <div class="mfd-label">PRESEL</div>
+                                    <div class="mfd-label bigger">{this.crzTableModeLine1}</div>
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell">
-                                    <InputField<number>
-                                        dataEntryFormat={new SpeedMachFormat(Subject.create(0.1), Subject.create(Mmo))}
-                                        mandatory={Subject.create(false)}
-                                        inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Cruise)}
-                                        value={this.props.fmService.fmgc.data.cruisePreSelMach}
-                                        alignText="flex-end"
+                                    <ConditionalComponent
+                                        condition={this.activeFlightPhase.map((it) => it < FmgcFlightPhase.Cruise)}
+                                        componentIfTrue={(
+                                            <InputField<number>
+                                                dataEntryFormat={new SpeedMachFormat(Subject.create(0.1), Subject.create(Mmo))}
+                                                mandatory={Subject.create(false)}
+                                                inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Cruise)}
+                                                value={this.props.fmService.fmgc.data.cruisePreSelMach}
+                                                alignText="flex-end"
+                                            />
+                                        )}
+                                        componentIfFalse={(
+                                            <div class="mfd-label-value-container">
+                                                <span class="mfd-value-green">{this.crzTableMachLine1}</span>
+                                            </div>
+                                        )}
                                     />
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell">
-                                    <InputField<number>
-                                        dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
-                                        mandatory={Subject.create(false)}
-                                        inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Cruise)}
-                                        value={this.props.fmService.fmgc.data.cruisePreSelSpeed}
-                                        alignText="flex-end"
+                                    <ConditionalComponent
+                                        condition={this.activeFlightPhase.map((it) => it < FmgcFlightPhase.Cruise)}
+                                        componentIfTrue={(
+                                            <InputField<number>
+                                                dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
+                                                mandatory={Subject.create(false)}
+                                                inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Cruise)}
+                                                value={this.props.fmService.fmgc.data.cruisePreSelSpeed}
+                                                alignText="flex-end"
+                                            />
+                                        )}
+                                        componentIfFalse={(
+                                            <div class="mfd-label-value-container">
+                                                <span class="mfd-value-green">{this.crzTableSpdLine1}</span>
+                                                <span class="mfd-label-unit mfd-unit-trailing">KT</span>
+                                            </div>
+                                        )}
                                     />
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell" />
                                 <div class="mfd-fms-perf-speed-presel-managed-table-cell">
-                                    <div class="mfd-label green">MANAGED</div>
+                                    <div class="mfd-label">{this.crzTableModeLine2}</div>
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell">
-                                    <span class="mfd-value-green">.82</span>
+                                    <span class="mfd-value-green">{this.crzTableMachLine2}</span>
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell">
                                     <div class="mfd-label-value-container">
-                                        <span class="mfd-value-green">---</span>
-                                        <span class="mfd-label-unit mfd-unit-trailing"> </span>
+                                        <span class="mfd-value-green">{this.crzTableSpdLine2}</span>
+                                        <span class="mfd-label-unit mfd-unit-trailing">{this.crzTableSpdLine2.map((it) => (it ? 'KT' : ''))}</span>
                                     </div>
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell">
-                                    <span class="mfd-value-green">00:45   298</span>
-                                    <span class="mfd-label-unit mfd-unit-trailing">NM</span>
+                                    <span class="mfd-value-green">{this.crzTablePredLine2}</span>
+                                    <span class="mfd-label-unit mfd-unit-trailing">{this.crzTablePredLine2.map((it) => (it ? 'NM' : ''))}</span>
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell br" style="justify-content: flex-end; padding: 5px 15px 5px 15px;">
-                                    <div class="mfd-label">ECON</div>
+                                    <div class="mfd-label">{this.crzTableModeLine3}</div>
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell" style="padding: 5px 15px 5px 15px;">
-                                    <span class="mfd-value-green">.82</span>
+                                    <span class="mfd-value-green">{this.crzTableMachLine3}</span>
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell" style="padding: 5px 15px 5px 15px;">
                                     <div class="mfd-label-value-container">
-                                        <span class="mfd-value-green">314</span>
-                                        <span class="mfd-label-unit mfd-unit-trailing">KT</span>
+                                        <span class="mfd-value-green">{this.crzTableSpdLine3}</span>
+                                        <span class="mfd-label-unit mfd-unit-trailing">{this.crzTableSpdLine3.map((it) => (it ? 'KT' : ''))}</span>
                                     </div>
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell" style="padding: 5px 15px 5px 15px;" />
@@ -1259,41 +1570,75 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     <InputField<number>
                                         dataEntryFormat={new AltitudeOrFlightLevelFormat(Subject.create(0), Subject.create(maxCertifiedAlt), this.transFl)}
                                         mandatory={Subject.create(false)}
+                                        disabled={this.activeFlightPhase.map((it) => it !== FmgcFlightPhase.Descent)}
                                         value={this.desPredictionsReference}
                                         containerStyle="width: 150px; margin-left: 15px;"
                                         alignText="flex-end"
                                     />
                                 </div>
                                 <div class="mfd-fms-perf-speed-presel-managed-table-cell">
-                                    <div class="mfd-label green biggest">MANAGED</div>
+                                    <div class="mfd-label bigger">{this.desTableModeLine1}</div>
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell">
-                                    <InputField<number>
-                                        disabled={Subject.create(true)}
-                                        dataEntryFormat={new SpeedMachFormat(Subject.create(0.1), Subject.create(Mmo))}
-                                        mandatory={Subject.create(false)}
-                                        inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Cruise)}
-                                        value={this.desManagedMachTarget}
-                                        alignText="flex-end"
+                                    <ConditionalComponent
+                                        condition={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Descent)}
+                                        componentIfFalse={(
+                                            <InputField<number>
+                                                disabled={Subject.create(true)}
+                                                dataEntryFormat={new SpeedMachFormat(Subject.create(0.1), Subject.create(Mmo))}
+                                                mandatory={Subject.create(false)}
+                                                inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Cruise)}
+                                                value={this.desManagedMachTarget}
+                                                alignText="flex-end"
+                                            />
+                                        )}
+                                        componentIfTrue={(
+                                            <div class="mfd-label-value-container">
+                                                <span class="mfd-value-green">{this.desTableMachLine1}</span>
+                                            </div>
+                                        )}
                                     />
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell">
-                                    <InputField<number>
-                                        disabled={Subject.create(true)}
-                                        dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
-                                        mandatory={Subject.create(false)}
-                                        inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Cruise)}
-                                        value={this.desManagedSpdTarget}
-                                        alignText="flex-end"
+                                    <ConditionalComponent
+                                        condition={this.activeFlightPhase.map((it) => it < FmgcFlightPhase.Descent)}
+                                        componentIfTrue={(
+                                            <InputField<number>
+                                                disabled={Subject.create(true)}
+                                                dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
+                                                mandatory={Subject.create(false)}
+                                                inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Descent)}
+                                                value={this.desManagedSpdTarget}
+                                                alignText="flex-end"
+                                            />
+                                        )}
+                                        componentIfFalse={(
+                                            <div class="mfd-label-value-container">
+                                                <span class="mfd-value-green">{this.desTableSpdLine1}</span>
+                                                <span class="mfd-label-unit mfd-unit-trailing">KT</span>
+                                            </div>
+                                        )}
                                     />
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell">
                                     <span class="mfd-value-green">--:--   ----</span>
                                 </div>
-                                <div class="mfd-fms-perf-speed-presel-managed-table-cell" style="height: 100px;" />
-                                <div class="mfd-fms-perf-speed-table-cell" />
-                                <div class="mfd-fms-perf-speed-table-cell" />
-                                <div class="mfd-fms-perf-speed-table-cell" />
+                                <div class="mfd-fms-perf-speed-presel-managed-table-cell">
+                                    <div class="mfd-label">{this.desTableModeLine2}</div>
+                                </div>
+                                <div class="mfd-fms-perf-speed-table-cell">
+                                    <span class="mfd-value-green">{this.desTableMachLine2}</span>
+                                </div>
+                                <div class="mfd-fms-perf-speed-table-cell">
+                                    <div class="mfd-label-value-container">
+                                        <span class="mfd-value-green">{this.desTableSpdLine2}</span>
+                                        <span class="mfd-label-unit mfd-unit-trailing">{this.desTableSpdLine2.map((it) => (it ? 'KT' : ''))}</span>
+                                    </div>
+                                </div>
+                                <div class="mfd-fms-perf-speed-table-cell">
+                                    <span class="mfd-value-green">{this.desTablePredLine2}</span>
+                                    <span class="mfd-label-unit mfd-unit-trailing">{this.desTablePredLine2.map((it) => (it ? 'NM' : ''))}</span>
+                                </div>
                                 <div class="mfd-fms-perf-speed-table-cell br" style="border-bottom: none; justify-content: flex-end; height: 75px;" />
                                 <div class="mfd-fms-perf-speed-table-cell" style="border-bottom: none; padding: 5px;" />
                                 <div class="mfd-fms-perf-speed-table-cell" style="border-bottom: none; padding: 5px;" />

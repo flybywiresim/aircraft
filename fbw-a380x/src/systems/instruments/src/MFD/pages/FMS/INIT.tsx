@@ -76,8 +76,6 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
 
     private tropoAlt = Subject.create<number>(defaultTropopauseAlt);
 
-    private tripWind = Subject.create<number>(null); // FIXME missing
-
     private tripWindDisabled = MappedSubject.create(([toIcao, fromIcao]) => !toIcao || !fromIcao, this.fromIcao, this.toIcao);
 
     private cpnyRteMandatory = MappedSubject.create(([toIcao, fromIcao]) => !toIcao || !fromIcao, this.fromIcao, this.toIcao);
@@ -156,7 +154,6 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
         this.props.fmService.fmgc.data.atcCallsign.set(`${this.simBriefOfp.airline}${this.simBriefOfp.flightNumber}`);
         this.props.fmService.fmgc.data.costIndex.set(parseInt(this.simBriefOfp.costIndex));
 
-        console.log(this.simBriefOfp.cruiseAltitude);
         this.props.fmService.flightPlanService.active.performanceData.cruiseFlightLevel.set(this.simBriefOfp.cruiseAltitude);
 
         this.props.fmService.fmgc.data.cpnyFplnAvailable.set(false);
@@ -315,8 +312,8 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                         <InputField<number>
                             dataEntryFormat={new TripWindFormat()}
                             mandatory={Subject.create(false)}
-                            disabled={Subject.create(true)} // TODO
-                            value={this.tripWind}
+                            disabled={this.tripWindDisabled} // TODO
+                            value={this.props.fmService.fmgc.data.tripWind}
                             containerStyle="width: 125px; margin-right: 80px; margin-top: 90px;"
                             alignText="center"
                         />
