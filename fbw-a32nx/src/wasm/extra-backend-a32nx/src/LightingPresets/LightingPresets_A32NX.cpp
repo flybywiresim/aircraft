@@ -42,11 +42,11 @@ bool LightingPresets_A32NX::initialize() {
   saveLightingPresetRequest = dataManager->make_named_var("LIGHTING_PRESET_SAVE", UNITS.Number, UpdateMode::AUTO_READ_WRITE);
 
   // Lighting LVARs - manual update and write when load/saving is requested
-  efbBrightness = dataManager->make_named_var("EFB_BRIGHTNESS", UNITS.Number);
-  dcduLeftLightLevel = dataManager->make_named_var("PANEL_DCDU_L_BRIGHTNESS", UNITS.Number);
-  dcduRightLightLevel = dataManager->make_named_var("PANEL_DCDU_R_BRIGHTNESS", UNITS.Number);
-  mcduLeftLightLevel = dataManager->make_named_var("MCDU_L_BRIGHTNESS", UNITS.Number);
-  mcduRightLightLevel = dataManager->make_named_var("MCDU_R_BRIGHTNESS", UNITS.Number);
+  efbBrightness = dataManager->make_named_var("EFB_BRIGHTNESS");
+  dcduLeftLightLevel = dataManager->make_named_var("PANEL_DCDU_L_BRIGHTNESS");
+  dcduRightLightLevel = dataManager->make_named_var("PANEL_DCDU_R_BRIGHTNESS");
+  mcduLeftLightLevel = dataManager->make_named_var("MCDU_L_BRIGHTNESS");
+  mcduRightLightLevel = dataManager->make_named_var("MCDU_R_BRIGHTNESS");
 
   // Light Potentiometers - manual update and write when load/saving is requested
   lightCabin = dataManager->make_aircraft_var("LIGHT CABIN", 0, "", cabinLightSetEvent, UNITS.Percent);
