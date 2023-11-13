@@ -17,14 +17,15 @@ macro(add_wasm_library)
 
     # wasm build options for debug and release
     if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-        set(WASM_OPT_FLAGS -O0)
         set(WASM_LD_ARGS -O0)
+        set(WASM_OPT_FLAGS -O0)
         # to enable debugging wasm-opt must not run at all
         # we use `cp` to copy the unoptimized wasm file to the output directory
         set(WASM_OPT_FULL_CMD cp ${CMAKE_CURRENT_BINARY_DIR}/${ADD_WASM_LIBRARY_NAME}.wasm ${OUTPUT_DIRECTORY}/)
     else()
-        set(WASM_OPT_FLAGS -O1)
-        set(WASM_LD_ARGS -O3 --lto-O3 --strip-debug)
+        # FIXME: 20231111 setting optimization to other than -o0 causes the wasm to crash
+        set(WASM_LD_ARGS -O2 --lto-O2 --strip-debug)
+        set(WASM_OPT_FLAGS -O1 --signext-lowering)
         set(WASM_OPT_FULL_CMD ${CMAKE_WASM_OPTIMIZER} ${WASM_OPT_FLAGS} -o ${OUTPUT_DIRECTORY}/${ADD_WASM_LIBRARY_NAME}.wasm ${CMAKE_CURRENT_BINARY_DIR}/${ADD_WASM_LIBRARY_NAME}.wasm)
     endif()
 
