@@ -95,7 +95,14 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
         const sub = this.props.bus.getSubscriber<ClockEvents & MfdSimvars>();
 
         this.subs.push(sub.on('realTime').atFrequency(1).handle((_t) => {
-            if (this.props.fmService.enginesWereStarted.get() === true) {
+            this.landingWeight.set(this.props.fmService.getLandingWeight());
+            this.takeoffWeight.set(this.props.fmService.getTakeoffWeight());
+
+            if (this.props.fmService.enginesWereStarted.get() === false) {
+                this.grossWeight.set(null);
+                this.centerOfGravity.set(null);
+                this.fuelOnBoard.set(null);
+            } else {
                 // GW only displayed after engine start. Value received from FQMS, or falls back to ZFW + FOB
                 const gw: number = SimVar.GetSimVarValue('TOTAL WEIGHT', 'pounds') * 0.453592;
                 this.grossWeight.set(gw);
@@ -107,36 +114,6 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                 // FOB only displayed after engine start. Value received from FQMS, or falls back to FOB stored at engine start + fuel used by FADEC
                 const fob = SimVar.GetSimVarValue('FUEL TOTAL QUANTITY', 'gallons') * SimVar.GetSimVarValue('FUEL WEIGHT PER GALLON', 'kilograms');
                 this.fuelOnBoard.set(fob);
-
-                // TOW before engine start: TOW = ZFW + BLOCK - TAXI
-                if (this.props.fmService.fmgc.data.zeroFuelWeight.get() && this.props.fmService.fmgc.data.blockFuel.get() && this.props.fmService.fmgc.data.taxiFuel.get()) {
-                    this.takeoffWeight.set(this.props.fmService.fmgc.data.zeroFuelWeight.get()
-                    + this.props.fmService.fmgc.data.blockFuel.get()
-                    - this.props.fmService.fmgc.data.taxiFuel.get());
-                } else {
-                    this.takeoffWeight.set(null);
-                }
-
-                // LW = TOW - TRIP
-                this.landingWeight.set(this.takeoffWeight.get());
-            } else {
-                this.grossWeight.set(null);
-                this.centerOfGravity.set(null);
-                this.fuelOnBoard.set(null);
-
-                if (this.activeFlightPhase.get() >= FmgcFlightPhase.Takeoff) {
-                    // In flight
-                    // TOW in flight: TOW = GW
-                    this.takeoffWeight.set(SimVar.GetSimVarValue('TOTAL WEIGHT', 'pounds') * 0.453592);
-
-                    // LW = GW - TRIP
-                } else {
-                    // TOW after engine start: TOW = GW - TAXI
-                    this.takeoffWeight.set(SimVar.GetSimVarValue('TOTAL WEIGHT', 'pounds') * 0.453592 - (this.props.fmService.fmgc.data.taxiFuel.get() ?? 0));
-
-                    // LW = GW - TRIP - TAXI
-                    this.landingWeight.set(this.grossWeight.get() - (this.tripFuelWeight.get() ?? 0) - (this.props.fmService.fmgc.data.taxiFuel.get() ?? 0));
-                }
             }
 
             if (this.activeFlightPhase.get() === FmgcFlightPhase.Preflight) {

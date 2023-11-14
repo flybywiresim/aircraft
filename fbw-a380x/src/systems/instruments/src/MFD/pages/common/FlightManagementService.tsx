@@ -76,4 +76,51 @@ export class MfdFlightManagementService {
             }
         }));
     }
+
+    getLandingWeight(): number {
+        if (this.enginesWereStarted.get() === false) {
+            // On ground, engines off
+            // LW = TOW - TRIP
+            return this.getTakeoffWeight() - this.getTripFuel();
+        }
+        if (this.fmgc.getFlightPhase() >= FmgcFlightPhase.Takeoff) {
+            // In flight
+            // LW = GW - TRIP
+            return this.getGrossWeight() - this.getTripFuel();
+        }
+        // Preflight, engines on
+        // LW = GW - TRIP - TAXI
+        return this.getGrossWeight() - this.getTripFuel() - (this.fmgc.data.taxiFuel.get() ?? 0);
+    }
+
+    getGrossWeight(): number {
+        // Value received from FQMS, or falls back to ZFW + FOB
+        return SimVar.GetSimVarValue('TOTAL WEIGHT', 'pounds') * 0.453592;
+    }
+
+    getTakeoffWeight(): number {
+        if (this.enginesWereStarted.get() === false) {
+            // On ground, engines off
+            // TOW before engine start: TOW = ZFW + BLOCK - TAXI
+            if (this.fmgc.getZeroFuelWeight() && this.fmgc.data.blockFuel.get() && this.fmgc.data.taxiFuel.get()) {
+                return (this.fmgc.getZeroFuelWeight()
+                + this.fmgc.data.blockFuel.get()
+                - this.fmgc.data.taxiFuel.get());
+            }
+            return null;
+        }
+        if (this.fmgc.getFlightPhase() >= FmgcFlightPhase.Takeoff) {
+            // In flight
+            // TOW: TOW = GW
+            return SimVar.GetSimVarValue('TOTAL WEIGHT', 'pounds') * 0.453592;
+        }
+        // Preflight, engines on
+        // LW = GW - TRIP - TAXI
+        // TOW after engine start: TOW = GW - TAXI
+        return (SimVar.GetSimVarValue('TOTAL WEIGHT', 'pounds') * 0.453592 - (this.fmgc.data.taxiFuel.get() ?? 0));
+    }
+
+    getTripFuel(): number {
+        return 25_000; // Dummy value
+    }
 }
