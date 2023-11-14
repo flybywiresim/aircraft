@@ -31,14 +31,12 @@ bool FlyByWireInterface::connect() {
   // initialize flight data recorder
   flightDataRecorder.initialize();
 
-  
-
   // connect to sim connect
-  bool success = simConnectInterface.connect(clientDataEnabled, autopilotStateMachineEnabled, autopilotLawsEnabled, flyByWireEnabled, elacDisabled,
-                                     secDisabled, facDisabled, throttleAxis, spoilersHandler, flightControlsKeyChangeAileron,
-                                     flightControlsKeyChangeElevator, flightControlsKeyChangeRudder,
-                                     disableXboxCompatibilityRudderAxisPlusMinus, enableRudder2AxisMode, idMinimumSimulationRate->get(),
-                                     idMaximumSimulationRate->get(), limitSimulationRateByPerformance);
+  bool success = simConnectInterface.connect(
+      clientDataEnabled, autopilotStateMachineEnabled, autopilotLawsEnabled, flyByWireEnabled, elacDisabled, secDisabled, facDisabled,
+      throttleAxis, spoilersHandler, flightControlsKeyChangeAileron, flightControlsKeyChangeElevator, flightControlsKeyChangeRudder,
+      disableXboxCompatibilityRudderAxisPlusMinus, enableRudder2AxisMode, idMinimumSimulationRate->get(), idMaximumSimulationRate->get(),
+      limitSimulationRateByPerformance);
 
   // request data
   if (!simConnectInterface.requestData()) {
@@ -207,7 +205,7 @@ void FlyByWireInterface::loadConfiguration() {
   // --------------------------------------------------------------------------
   // load values - autopilot
   idMinimumSimulationRate->set(INITypeConversion::getDouble(iniStructure, "AUTOPILOT", "MINIMUM_SIMULATION_RATE", 1));
-  idMaximumSimulationRate->set(INITypeConversion::getDouble(iniStructure, "AUTOPILOT", "MAXIMUM_SIMULATION_RATE", 4));
+  idMaximumSimulationRate->set(INITypeConversion::getDouble(iniStructure, "AUTOPILOT", "MAXIMUM_SIMULATION_RATE", 8));
   limitSimulationRateByPerformance = INITypeConversion::getBoolean(iniStructure, "AUTOPILOT", "LIMIT_SIMULATION_RATE_BY_PERFORMANCE", true);
   simulationRateReductionEnabled = INITypeConversion::getBoolean(iniStructure, "AUTOPILOT", "SIMULATION_RATE_REDUCTION_ENABLED", true);
 
@@ -807,8 +805,6 @@ bool FlyByWireInterface::readDataAndLocalVariables(double sampleTime) {
   simConnectInterface.setLoggingFlightControlsEnabled(idLoggingFlightControlsEnabled->get() == 1);
   simConnectInterface.setLoggingThrottlesEnabled(idLoggingThrottlesEnabled->get() == 1);
 
-
-
   // read data
   if (!simConnectInterface.readData()) {
     std::cout << "WASM: Read data failed!" << std::endl;
@@ -1332,7 +1328,8 @@ bool FlyByWireInterface::updateElac(double sampleTime, int elacIndex) {
     if (elacIndex == 0) {
       powerSupplyAvailable =
           idElecDcEssBusPowered->get() ||
-          ((elacsDiscreteOutputs[0].batt_power_supply || secsDiscreteOutputs[0].batt_power_supply) ? idElecBat1HotBusPowered->get() : false);
+          ((elacsDiscreteOutputs[0].batt_power_supply || secsDiscreteOutputs[0].batt_power_supply) ? idElecBat1HotBusPowered->get()
+                                                                                                   : false);
     } else {
       bool elac1OrSec1PowersupplySwitched = elacsDiscreteOutputs[0].batt_power_supply || secsDiscreteOutputs[0].batt_power_supply;
       bool elac2NormalSupplyAvail = idElecDcBus2Powered->get();
@@ -1504,7 +1501,8 @@ bool FlyByWireInterface::updateSec(double sampleTime, int secIndex) {
     if (secIndex == 0) {
       powerSupplyAvailable =
           idElecDcEssBusPowered->get() ||
-          ((secsDiscreteOutputs[0].batt_power_supply || elacsDiscreteOutputs[0].batt_power_supply) ? idElecBat1HotBusPowered->get() : false);
+          ((secsDiscreteOutputs[0].batt_power_supply || elacsDiscreteOutputs[0].batt_power_supply) ? idElecBat1HotBusPowered->get()
+                                                                                                   : false);
     } else {
       powerSupplyAvailable = idElecDcBus2Powered->get();
     }
