@@ -43,12 +43,12 @@
 .mfd-fms-perf-to-v-speeds {
   flex: 5;
   display: grid;
-  grid-template-columns: auto auto;
+  grid-template-columns: auto auto auto;
   justify-content: space-between;
   border-right: 1px solid lightgrey;
   padding-top: 10px;
   margin-top: 5px;
-  padding-right: 20px;
+  padding-right: 10px;
 }
 
 .mfd-fms-perf-to-flex-toga {
@@ -92,12 +92,12 @@
 
 .mfd-fms-perf-clb-grid {
   display: grid;
-  grid-template-columns: 20% 22% 13% 45%;
+  grid-template-columns: 23% 22% 13% 42%;
 }
 
 .mfd-fms-perf-crz-grid {
   display: grid;
-  grid-template-columns: 20% 13% 22% 45%;
+  grid-template-columns: 23% 13% 22% 42%;
 }
 
 .mfd-fms-perf-crz-dest {

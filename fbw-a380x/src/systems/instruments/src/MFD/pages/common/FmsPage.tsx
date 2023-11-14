@@ -70,6 +70,7 @@ export abstract class FmsPage<T extends AbstractMfdPageProps> extends DisplayCom
         }));
 
         this.onFlightPlanChanged();
+        this.onNewDataChecks();
         this.onNewData();
         this.newDataIntervalId = setInterval(() => this.checkIfNewData(), 500);
     }
@@ -77,6 +78,7 @@ export abstract class FmsPage<T extends AbstractMfdPageProps> extends DisplayCom
     protected checkIfNewData() {
         // Check for current flight plan, whether it has changed (TODO switch to Subscribable in the future)
         if (this.loadedFlightPlan.version !== this.currentFlightPlanVersion) {
+            this.onNewDataChecks();
             this.onNewData();
             this.currentFlightPlanVersion = this.loadedFlightPlan.version;
         }
@@ -114,11 +116,39 @@ export abstract class FmsPage<T extends AbstractMfdPageProps> extends DisplayCom
             break;
         }
         this.props.fmService.revisedWaypointPlanIndex.set(this.loadedFlightPlanIndex.get());
+        this.onNewDataChecks();
         this.onNewData();
         this.currentFlightPlanVersion = this.loadedFlightPlan.version;
     }
 
     protected abstract onNewData();
+
+    private onNewDataChecks() {
+        const fm = this.props.fmService.fmgc.data;
+        const pd = this.loadedFlightPlan.performanceData;
+
+        if (this.loadedFlightPlan.originRunway) {
+            if (fm.vSpeedsForRunway.get() === undefined) {
+                fm.vSpeedsForRunway.set(this.loadedFlightPlan.originRunway.ident);
+            } else if (fm.vSpeedsForRunway.get() !== this.loadedFlightPlan.originRunway.ident) {
+                fm.vSpeedsForRunway.set(this.loadedFlightPlan.originRunway.ident);
+                fm.v1ToBeConfirmed.set(pd.v1.get());
+                pd.v1.set(undefined);
+                fm.vrToBeConfirmed.set(pd.vr.get());
+                pd.vr.set(undefined);
+                fm.v2ToBeConfirmed.set(pd.v2.get());
+                pd.v2.set(undefined);
+
+                this.props.fmService.mfd.showFmsErrorMessageFreeText({
+                    message: 'CHECK T.O DATA',
+                    backgroundColor: 'amber',
+                    cleared: false,
+                    isResolvedOverride: () => {},
+                    onClearOverride: () => {},
+                });
+            }
+        }
+    }
 
     public destroy(): void {
         // Destroy all subscriptions to remove all references to this instance.

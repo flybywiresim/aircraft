@@ -130,6 +130,11 @@ export class FmgcData {
     public readonly costIndex = Subject.create<number>(undefined);
 
     /**
+     * For which departure runway the v speeds have been inserted
+     */
+    public readonly vSpeedsForRunway = Subject.create<string>(undefined);
+
+    /**
      * V1 speed, to be confirmed after rwy change
      */
     readonly v1ToBeConfirmed = Subject.create<Knots>(undefined);
