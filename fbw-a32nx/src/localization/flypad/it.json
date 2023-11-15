@@ -583,7 +583,7 @@
       "GsxFuelEnabled": "Sincronizzazione Rifornimento GSX",
       "GsxPayloadEnabled": "Sincronizzazione Carico Utile GSX",
       "NavigraphAccountLink": {
-        "Connected": "Connected",
+        "Connected": "Connesso",
         "Link": "Collega account",
         "LoginPage": {
           "Title": "Accesso all'account Navigraph"
@@ -601,7 +601,7 @@
         "OverrideSimBriefUserID": "ID utente SimBrief alternativo da utilizzare al posto dell'account Navigraph collegato"
       },
       "Title": "Opzioni di terze parti",
-      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "The override SimBrief PilotID has been validated and updated to"
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "Il nuovo SimBrief PilotID è stato validato e aggiornato"
     },
     "ThrottleConfig": {
       "Apply": "Applica",
@@ -667,7 +667,7 @@
     "Sep": "Set",
     "Sun": "Dom",
     "TT": {
-      "Brightness": "Click to change Brightness",
+      "Brightness": "Clicca per cambiare la Luminosità",
       "ConnectedToLocalApi": "Connesso a SimBridge",
       "DisconnectedFromLocalApi": "Disconnesso da SimBridge",
       "QuickControls": "Clicca per aprire i Controlli Rapidi",
