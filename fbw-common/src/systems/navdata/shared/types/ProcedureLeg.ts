@@ -289,6 +289,7 @@ export enum ApproachWaypointDescriptor {
 }
 
 export enum WaypointDescriptor {
+    None,
     Airport,
     Essential,
     OffAirway,

@@ -871,7 +871,7 @@ export class MsfsMapping {
             return WaypointDescriptor.VhfNavaid;
         case ' ':
         case '':
-            return 0;
+            return WaypointDescriptor.None;
         case 'W':
         default:
             return WaypointDescriptor.Essential; // we don't have any info to decide anything more granular
