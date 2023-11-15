@@ -90,34 +90,6 @@ impl SimulationElement for NavReceiver {
     }
 }
 
-// #[derive(Clone)]
-// pub struct MARKERS {
-//     is_power_supply_powered: bool,
-//     powered_by: ElectricalBusType,
-// }
-// impl MARKERS {
-//     pub fn new_markers() -> Self {
-//         Self {
-//             is_power_supply_powered: false,
-//             powered_by: ElectricalBusType::DirectCurrent(1),
-//         }
-//     }
-
-//     pub fn is_powered(&self) -> bool {
-//         self.is_power_supply_powered
-//     }
-// }
-
-// impl SimulationElement for MARKERS {
-//     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
-//         visitor.visit(self);
-//     }
-
-//     fn receive_power(&mut self, buses: &impl ElectricalBuses) {
-//         self.is_power_supply_powered = buses.is_powered(self.powered_by);
-//     }
-// }
-
 struct Morse {
     ident_id: VariableIdentifier,
     ident_new: usize,
