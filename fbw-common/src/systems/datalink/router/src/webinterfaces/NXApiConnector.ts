@@ -217,8 +217,14 @@ export class NXApiConnector {
         return [AtsuStatusCodes.Ok, retval];
     }
 
+    /**
+     * Gets the interval to poll the NX API in milliseconds.
+     * Warning: This will return a different random time on each invocation!
+     * @returns The polling interval in milliseconds.
+     */
     public static pollInterval(): number {
-        return 15000;
+        // To relax the weight on API, we choose a random number between 45 and 75
+        return Math.random() * 30_000 + 45_000;
     }
 }
 
