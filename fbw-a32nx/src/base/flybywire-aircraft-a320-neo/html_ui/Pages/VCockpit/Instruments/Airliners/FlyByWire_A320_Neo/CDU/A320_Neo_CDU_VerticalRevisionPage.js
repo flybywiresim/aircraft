@@ -380,9 +380,9 @@ class CDUVerticalRevisionPage {
                 return "-" + this.formatFl(Math.round(constraint.altitude1), transAltLvl);
             case 'B': // range
                 if (constraint.altitude1 < constraint.altitude2) {
-                    return "+" + this.formatFl(Math.round(constraint.altitude1), transAltLevel) + "/-" + this.formatFl(Math.round(constraint.altitude2), transAltLevel);
+                    return "+" + this.formatFl(Math.round(constraint.altitude1), transAltLvl) + "/-" + this.formatFl(Math.round(constraint.altitude2), transAltLvl);
                 } else {
-                    return "+" + this.formatFl(Math.round(constraint.altitude2), transAltLevel) + "/-" + this.formatFl(Math.round(altitude1), transAltLevel);
+                    return "+" + this.formatFl(Math.round(constraint.altitude2), transAltLvl) + "/-" + this.formatFl(Math.round(constraint.altitude1), transAltLvl);
                 }
             default:
                 return ''
