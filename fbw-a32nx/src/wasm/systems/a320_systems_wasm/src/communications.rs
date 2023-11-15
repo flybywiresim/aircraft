@@ -56,12 +56,6 @@ pub(super) fn communications(builder: &mut MsfsAspectBuilder) -> Result<(), Box<
         "COM3_VOLUME_SET",
     )?;
 
-    // builder.variable_to_event(
-    //     Variable::aspect("MKR_VOLUME"),
-    //     VariableToEventMapping::EventDataRaw,
-    //     VariableToEventWriteOn::Change,
-    //     "MARKER_VOLUME_SET",
-    // )?;
     builder.variable_to_event(
         Variable::aspect("MARKER_IDENT"),
         VariableToEventMapping::EventDataRaw,
