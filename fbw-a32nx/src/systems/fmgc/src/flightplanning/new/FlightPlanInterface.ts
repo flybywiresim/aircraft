@@ -46,11 +46,15 @@ export interface FlightPlanInterface {
 
     get hasUplink(): boolean;
 
+    secondaryDelete(index: number): Promise<void>;
+
     temporaryInsert(): Promise<void>;
 
     temporaryDelete(): Promise<void>;
 
     uplinkInsert(): Promise<void>;
+
+    uplinkDelete(): Promise<void>;
 
     reset(): Promise<void>;
 

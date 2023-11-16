@@ -96,6 +96,10 @@ export class FlightPlanRpcClient implements FlightPlanInterface {
         return this.has(FlightPlanIndex.Uplink);
     }
 
+    secondaryDelete(index: number): Promise<void> {
+        return this.callFunctionViaRpc('secondaryDelete', index);
+    }
+
     temporaryInsert(): Promise<void> {
         return this.callFunctionViaRpc('temporaryInsert');
     }
@@ -106,6 +110,10 @@ export class FlightPlanRpcClient implements FlightPlanInterface {
 
     uplinkInsert(): Promise<void> {
         return this.callFunctionViaRpc('uplinkInsert');
+    }
+
+    uplinkDelete(): Promise<void> {
+        return this.callFunctionViaRpc('uplinkDelete');
     }
 
     reset(): Promise<void> {
