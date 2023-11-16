@@ -15,6 +15,7 @@ import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/new/legs/FlightPlanLegDefinition';
 import { FlightPlanInterface } from '@fmgc/flightplanning/new/FlightPlanInterface';
 import { AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
+import { CopyOptions } from '@fmgc/flightplanning/new/plans/CloningOptions';
 
 export class FlightPlanService implements FlightPlanInterface {
     private readonly bus = new EventBus();
@@ -109,7 +110,7 @@ export class FlightPlanService implements FlightPlanInterface {
             fromLeg.definition.waypoint.location.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'Degrees');
         }
 
-        this.flightPlanManager.copy(FlightPlanIndex.Temporary, FlightPlanIndex.Active);
+        this.flightPlanManager.copy(FlightPlanIndex.Temporary, FlightPlanIndex.Active, CopyOptions.IncludeFixInfos);
         this.flightPlanManager.delete(FlightPlanIndex.Temporary);
     }
 
@@ -456,6 +457,6 @@ export class FlightPlanService implements FlightPlanInterface {
             return;
         }
 
-        this.flightPlanManager.copy(FlightPlanIndex.Active, FlightPlanIndex.Temporary);
+        this.flightPlanManager.copy(FlightPlanIndex.Active, FlightPlanIndex.Temporary, CopyOptions.IncludeFixInfos);
     }
 }

@@ -7,6 +7,7 @@ import { FlightPlan } from '@fmgc/flightplanning/new/plans/FlightPlan';
 import { EventBus, Publisher } from '@microsoft/msfs-sdk';
 import { FlightPlanSyncEvents, FlightPlanSyncResponsePacket } from '@fmgc/flightplanning/new/sync/FlightPlanSyncEvents';
 import { SerializedFlightPlan } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
+import { CopyOptions } from '@fmgc/flightplanning/new/plans/CloningOptions';
 
 export enum FlightPlanIndex {
     Active,
@@ -85,7 +86,7 @@ export class FlightPlanManager {
         subs.on('flightPlanManager.copy').handle((event) => {
             if (!this.ignoreSync) {
                 console.log(`[FpmSync] Copy(${event.planIndex}, ${event.targetPlanIndex})`);
-                this.copy(event.planIndex, event.targetPlanIndex, false);
+                this.copy(event.planIndex, event.targetPlanIndex, event.options, false);
             }
         });
 
@@ -152,10 +153,10 @@ export class FlightPlanManager {
         }
     }
 
-    copy(from: number, to: number, notify = true) {
+    copy(from: number, to: number, options = CopyOptions.Default, notify = true) {
         this.assertFlightPlanExists(from);
 
-        const newPlan = this.get(from).clone(to);
+        const newPlan = this.get(from).clone(to, options);
 
         if (this.has(to)) {
             const old = this.get(to);
@@ -165,7 +166,7 @@ export class FlightPlanManager {
         this.get(to).incrementVersion();
 
         if (notify) {
-            this.sendEvent('flightPlanManager.copy', { planIndex: from, targetPlanIndex: to });
+            this.sendEvent('flightPlanManager.copy', { planIndex: from, targetPlanIndex: to, options });
         }
     }
 

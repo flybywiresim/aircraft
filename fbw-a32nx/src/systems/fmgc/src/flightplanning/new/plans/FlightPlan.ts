@@ -6,13 +6,14 @@
 import { Airport, ApproachType, Fix, NXDataStore } from '@flybywiresim/fbw-sdk';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/new/plans/AlternateFlightPlan';
 import { EventBus, MagVar } from '@microsoft/msfs-sdk';
-import { FixInfoEntry } from '@fmgc/flightplanning/new/plans/FixInfo';
+import { FixInfoData, FixInfoEntry } from '@fmgc/flightplanning/new/plans/FixInfo';
 import { loadAllDepartures, loadAllRunways } from '@fmgc/flightplanning/new/DataLoading';
 import { Coordinates, Degrees } from 'msfs-geo';
 import { FlightPlanLeg, FlightPlanLegFlags } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { FlightArea } from '@fmgc/navigation/FlightArea';
 
+import { CopyOptions } from '@fmgc/flightplanning/new/plans/CloningOptions';
 import { FlightPlanPerformanceData } from './performance/FlightPlanPerformanceData';
 import { BaseFlightPlan, FlightPlanQueuedOperation, SerializedFlightPlan } from './BaseFlightPlan';
 
@@ -42,7 +43,7 @@ export class FlightPlan extends BaseFlightPlan {
         this.alternateFlightPlan.destroy();
     }
 
-    clone(newIndex: number): FlightPlan {
+    clone(newIndex: number, options: number = CopyOptions.Default): FlightPlan {
         const newPlan = FlightPlan.empty(newIndex, this.bus);
 
         newPlan.version = this.version;
@@ -71,6 +72,10 @@ export class FlightPlan extends BaseFlightPlan {
         newPlan.activeLegIndex = this.activeLegIndex;
 
         newPlan.performanceData = this.performanceData.clone();
+
+        if (options & CopyOptions.IncludeFixInfos) {
+            newPlan.fixInfos = this.fixInfos.map((it) => it.clone());
+        }
 
         return newPlan;
     }
@@ -193,10 +198,10 @@ export class FlightPlan extends BaseFlightPlan {
         await this.flushOperationQueue();
     }
 
-    setFixInfoEntry(index: 1 | 2 | 3 | 4, fixInfo: FixInfoEntry | null, notify = true): void {
+    setFixInfoEntry(index: 1 | 2 | 3 | 4, fixInfo: FixInfoData | null, notify = true): void {
         const planFixInfo = this.fixInfos as FixInfoEntry[];
 
-        planFixInfo[index] = fixInfo;
+        planFixInfo[index] = fixInfo ? new FixInfoEntry(fixInfo.fix, fixInfo.radii, fixInfo.radials) : undefined;
 
         if (notify) {
             this.sendEvent('flightPlan.setFixInfoEntry', { planIndex: this.index, forAlternate: false, index, fixInfo });
