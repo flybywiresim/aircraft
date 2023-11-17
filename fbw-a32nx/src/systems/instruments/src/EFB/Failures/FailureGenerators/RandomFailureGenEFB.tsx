@@ -106,6 +106,7 @@ export type ModalContext = {
     genNumber: number,
     genUniqueID: string,
     genLetter: string,
+    chainToFailurePool: boolean,
 }
 
 export enum ModalGenType {None, Settings, Failures}

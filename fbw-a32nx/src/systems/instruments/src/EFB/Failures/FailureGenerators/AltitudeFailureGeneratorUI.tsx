@@ -70,9 +70,9 @@ const generatorSettingComponents = (genNumber: number, generatorSettings: Failur
         <FailureGeneratorSingleSetting
             title={t('Failures.Generators.AltitudeMin')}
             unit={t('Failures.Generators.feet')}
-            min={settings[genNumber * numberOfSettingsPerGenerator + AltitudeMaxIndex] * 100}
-            max={settings[genNumber * numberOfSettingsPerGenerator + AltitudeMinIndex]}
-            value={100}
+            min={0}
+            max={settings[genNumber * numberOfSettingsPerGenerator + AltitudeMaxIndex] * 100}
+            value={settings[genNumber * numberOfSettingsPerGenerator + AltitudeMinIndex]}
             mult={100}
             setNewSetting={setNewSetting}
             generatorSettings={generatorSettings}

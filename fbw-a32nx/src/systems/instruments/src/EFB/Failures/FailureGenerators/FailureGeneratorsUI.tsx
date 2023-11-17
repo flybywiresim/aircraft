@@ -75,12 +75,17 @@ export const FailureGeneratorsUI = () => {
             updateSettings(generatorSettings.settings, generatorSettings.setSetting, bus, generatorSettings.uniqueGenPrefix);
         }
         sendRefresh(bus);
-        const genID = `${generatorSettings.uniqueGenPrefix}${genNumber}`;
+        const genUniqueID = `${generatorSettings.uniqueGenPrefix}${genNumber}`;
 
         for (const failure of allFailures) {
-            setSelectedFailure(failure, genID, failureGenContext, true);
+            setSelectedFailure(failure, genUniqueID, failureGenContext, true);
         }
         sendFailurePool(generatorSettings.uniqueGenPrefix, genNumber, getGeneratorFailurePool(generatorSettings.uniqueGenPrefix + genNumber.toString(), Array.from(allFailures)), bus);
+
+        failureGenContext.setFailureGenModalType(ModalGenType.Settings);
+        const genLetter = generatorSettings.uniqueGenPrefix;
+        const context: ModalContext = { failureGenData: generatorSettings, genNumber, genUniqueID, genLetter, chainToFailurePool: true };
+        failureGenContext.setModalContext(context);
     };
 
     useEffect(() => {
@@ -221,7 +226,7 @@ export const FailureGeneratorCardTemplateUI: React.FC<FailureGeneratorCardTempla
                             onClick={() => {
                                 failureGenContext.setFailureGenModalType(ModalGenType.Settings);
                                 const genLetter = failureGenData.uniqueGenPrefix;
-                                const context: ModalContext = { failureGenData, genNumber, genUniqueID, genLetter };
+                                const context: ModalContext = { failureGenData, genNumber, genUniqueID, genLetter, chainToFailurePool: false };
                                 failureGenContext.setModalContext(context);
                             }}
                         >
@@ -235,7 +240,7 @@ export const FailureGeneratorCardTemplateUI: React.FC<FailureGeneratorCardTempla
                             onClick={() => {
                                 failureGenContext.setFailureGenModalType(ModalGenType.Failures);
                                 const genLetter = failureGenData.uniqueGenPrefix;
-                                const context: ModalContext = { failureGenData, genNumber, genUniqueID, genLetter };
+                                const context: ModalContext = { failureGenData, genNumber, genUniqueID, genLetter, chainToFailurePool: false };
                                 failureGenContext.setModalContext(context);
                             }}
                         >
