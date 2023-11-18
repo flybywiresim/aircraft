@@ -290,7 +290,8 @@ export class FacilityCache {
         }
 
         // we filter for equal idents, because the search returns everything starting with the given string
-        const icaos: string[] = (await Coherent.call('SEARCH_BY_IDENT', ident, type, maxItems)).filter((icao: string) => ident === icao.substring(7).trim() && icao.charAt(0) !== 'A');
+        const icaos = ((await Coherent.call('SEARCH_BY_IDENT', ident, type, maxItems)) as string[])
+            .filter((icao: string) => ident === icao.substring(7).trim() && icao.charAt(0) !== 'A');
 
         if (type === IcaoSearchFilter.Intersections) {
             const intersections = (await this.getFacilities(icaos, LoadType.Intersection)).values();

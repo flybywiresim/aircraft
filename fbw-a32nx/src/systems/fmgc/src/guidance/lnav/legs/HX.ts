@@ -6,7 +6,7 @@
 
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { GuidanceParameters, LateralPathGuidance } from '@fmgc/guidance/ControlLaws';
-import { AltitudeDescriptor, TurnDirection, Waypoint, MathUtils } from '@flybywiresim/fbw-sdk';
+import { AltitudeDescriptor, TurnDirection, Waypoint, MathUtils, Fix } from '@flybywiresim/fbw-sdk';
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { SegmentType } from '@fmgc/wtsdk';
 import { arcDistanceToGo, arcGuidance, courseToFixDistanceToGo, courseToFixGuidance, maxBank, reciprocal } from '@fmgc/guidance/lnav/CommonGeometry';
@@ -74,7 +74,7 @@ abstract class HXLeg extends XFLeg {
     public geometry: HxGeometry;
 
     constructor(
-        fix: Waypoint,
+        fix: Fix,
         public metadata: LegMetadata,
         public segment: SegmentType,
     ) {
@@ -485,7 +485,7 @@ export class HALeg extends HXLeg {
     private readonly targetAltitude: Feet;
 
     constructor(
-        public to: Waypoint,
+        public to: Fix,
         public metadata: LegMetadata,
         public segment: SegmentType,
     ) {

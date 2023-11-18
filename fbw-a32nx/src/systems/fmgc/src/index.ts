@@ -12,7 +12,6 @@ import { GuidanceController } from './guidance/GuidanceController';
 import { EfisSymbols } from './efis/EfisSymbols';
 import { DescentPathBuilder } from './guidance/vnav/descent/DescentPathBuilder';
 import { initComponents, updateComponents, recallMessageById } from './components';
-import { WaypointBuilder } from './flightplanning/WaypointBuilder';
 import { Navigation, SelectedNavaidMode, SelectedNavaidType } from './navigation/Navigation';
 import { WaypointFactory } from './flightplanning/new/waypoints/WaypointFactory';
 import { WaypointEntryUtils } from './flightplanning/new/WaypointEntryUtils';
@@ -44,7 +43,6 @@ export {
     recallMessageById,
     EfisSymbols,
     DescentPathBuilder,
-    WaypointBuilder,
     Navigation,
     SelectedNavaidMode,
     SelectedNavaidType,

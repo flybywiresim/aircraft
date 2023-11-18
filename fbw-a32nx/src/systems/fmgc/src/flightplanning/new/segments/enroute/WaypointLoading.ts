@@ -3,27 +3,15 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { GlsNavaid, IlsNavaid, NdbNavaid, VhfNavaid, Waypoint } from '@flybywiresim/fbw-sdk';
-import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
+import { Fix } from '@flybywiresim/fbw-sdk';
 import { NavigationDatabaseService } from '../../NavigationDatabaseService';
-
-/**
- * Loads waypoints with a specified ident from the nav database, returning all matches
- */
-export async function loadWaypoints(waypointIdent: string): Promise<Fix[]> {
-    const db = NavigationDatabaseService.activeDatabase.backendDatabase;
-
-    const waypoints = await db.getWaypoints([waypointIdent]);
-
-    return waypoints;
-}
 
 /**
  * Loads a particular waypoint with a certain database ID from the nav database
  *
  * @throws if no results are found or none have the specified database ID
  */
-export async function loadSingleWaypoint(waypointIdent: string, databaseId: string): Promise<Waypoint> {
+export async function loadSingleWaypoint(waypointIdent: string, databaseId: string): Promise<Fix> {
     const db = NavigationDatabaseService.activeDatabase.backendDatabase;
 
     const waypoints = await db.getWaypoints([waypointIdent]);
@@ -40,8 +28,6 @@ export async function loadSingleWaypoint(waypointIdent: string, databaseId: stri
 
     return matchingWaypoint;
 }
-
-export type Fix = Waypoint | VhfNavaid | NdbNavaid | IlsNavaid | GlsNavaid
 
 /**
  * Loads fixes (either a waypoint, VHF navaid, NDB, ILS or GLS) with a specified ident from the nav database, returning all matches

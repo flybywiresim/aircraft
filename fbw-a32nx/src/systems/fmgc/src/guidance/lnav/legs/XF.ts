@@ -5,7 +5,7 @@
 
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
-import { Waypoint } from '@flybywiresim/fbw-sdk';
+import { Fix } from '@flybywiresim/fbw-sdk';
 import { distanceTo } from 'msfs-geo';
 import { PointSide, sideOfPointOnCourseToFix } from '@fmgc/guidance/lnav/CommonGeometry';
 import { FixedRadiusTransition } from '@fmgc/guidance/lnav/transitions/FixedRadiusTransition';
@@ -13,7 +13,7 @@ import { DmeArcTransition } from '@fmgc/guidance/lnav/transitions/DmeArcTransiti
 
 export abstract class XFLeg extends Leg {
     protected constructor(
-        public fix: Waypoint,
+        public fix: Fix,
     ) {
         super();
     }
@@ -30,7 +30,7 @@ export abstract class XFLeg extends Leg {
         return this.fix.location;
     }
 
-    get terminationWaypoint(): Waypoint {
+    get terminationWaypoint(): Fix {
         return this.fix;
     }
 

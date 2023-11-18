@@ -7,7 +7,7 @@ import { SegmentType } from '@fmgc/flightplanning/FlightPlanSegment';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { Guidable } from '@fmgc/guidance/Guidable';
 import { distanceTo } from 'msfs-geo';
-import { Waypoint } from '@flybywiresim/fbw-sdk';
+import { Fix, Waypoint } from '@flybywiresim/fbw-sdk';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
 import { LegCalculations } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 
@@ -24,7 +24,7 @@ export abstract class Leg extends Guidable {
 
     abstract get outboundCourse(): Degrees | undefined;
 
-    abstract get terminationWaypoint(): Waypoint | Coordinates | undefined;
+    abstract get terminationWaypoint(): Fix | Coordinates | undefined;
 
     abstract get ident(): string
 
