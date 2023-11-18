@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { EventBus, FSComponent, HEventPublisher, InstrumentBackplane, Subject } from '@microsoft/msfs-sdk';
+import { EventBus, FSComponent, HEventPublisher, InstrumentBackplane } from '@microsoft/msfs-sdk';
 import { Oanc } from './Oanc';
 import { FcuBusPublisher } from '../MsfsAvionicsCommon/providers/FcuBusPublisher';
 
