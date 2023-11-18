@@ -330,11 +330,8 @@ class FMCMainDisplay extends BaseAirliners {
                     lat: NaN,
                     long: NaN
                 };
-                // TODO port over (fms-v2)
-                const stats = this.flightPlanManager.getCurrentFlightPlan().computeWaypointStatistics(ppos);
-                const dest = this.flightPlanManager.getDestination();
-                const destStats = stats.get(this.flightPlanManager.getCurrentFlightPlan().waypoints.length - 1);
-                if (dest && destStats.distanceFromPpos < 180) {
+                const distanceToDestination = this.getDistanceToDestination()
+                if (Number.isFinite(distanceToDestination) && distanceToDestination < 180) {
                     this._destDataChecked = true;
                     this.checkDestData();
                 }
@@ -1700,10 +1697,10 @@ class FMCMainDisplay extends BaseAirliners {
 
     shouldTransmitMinimums() {
         const phase = this.flightPhaseManager.phase;
-        // const distanceToDestination = this.flightPlanManager.getDistanceToDestination(FlightPlans.Active);
-        const distanceToDestination = 0; // TODO port over (fms-v2)
+        const distanceToDestination = this.getDistanceToDestination();
+        const isCloseToDestination = Number.isFinite(distanceToDestination) ? distanceToDestination < 250 : true;
 
-        return (phase > FmgcFlightPhases.CRUISE || (phase === FmgcFlightPhases.CRUISE && distanceToDestination < 250));
+        return (phase > FmgcFlightPhases.CRUISE || (phase === FmgcFlightPhases.CRUISE && isCloseToDestination));
     }
 
     getClbManagedSpeedFromCostIndex() {
@@ -1768,22 +1765,19 @@ class FMCMainDisplay extends BaseAirliners {
             this._onModeManagedHeading();
         }
         if (_event === "MODE_SELECTED_ALTITUDE") {
-            const dist = 201; // TODO port over fms-v2
-            // const dist = this.flightPlanManager.getDistanceToDestination();
+            const dist = Number.isFinite(this.getDistanceToDestination()) ? this.getDistanceToDestination() : -1;
             this.flightPhaseManager.handleFcuAltKnobPushPull(dist);
             this._onModeSelectedAltitude();
             this._onStepClimbDescent();
         }
         if (_event === "MODE_MANAGED_ALTITUDE") {
-            const dist = 201; // TODO port over fms-v2
-            // const dist = this.flightPlanManager.getDistanceToDestination();
+            const dist = Number.isFinite(this.getDistanceToDestination()) ? this.getDistanceToDestination() : -1;
             this.flightPhaseManager.handleFcuAltKnobPushPull(dist);
             this._onModeManagedAltitude();
             this._onStepClimbDescent();
         }
         if (_event === "AP_DEC_ALT" || _event === "AP_INC_ALT") {
-            const dist = 201; // TODO port over fms-v2
-            // const dist = this.flightPlanManager.getDistanceToDestination();
+            const dist = Number.isFinite(this.getDistanceToDestination()) ? this.getDistanceToDestination() : -1;
             this.flightPhaseManager.handleFcuAltKnobTurn(dist);
             this._onTrySetCruiseFlightLevel();
         }
@@ -1795,8 +1789,7 @@ class FMCMainDisplay extends BaseAirliners {
             SimVar.SetSimVarValue("L:A320_FCU_SHOW_SELECTED_HEADING", "number", 1);
         }
         if (_event === "VS") {
-            // const dist = this.flightPlanManager.getDistanceToDestination();
-            const dist = 0; // TODO port over (fms-v2)
+            const dist = Number.isFinite(this.getDistanceToDestination()) ? this.getDistanceToDestination() : -1;
             this.flightPhaseManager.handleFcuVSKnob(dist, this._onStepClimbDescent.bind(this));
         }
     }
@@ -3754,7 +3747,7 @@ class FMCMainDisplay extends BaseAirliners {
     setPerfApprQNH(s) {
         if (s === FMCMainDisplay.clrValue) {
             const dest = this.flightPlanService.active.destinationAirport;
-            const distanceToDestination = 0; // TODO port over (fms-v2)
+            const distanceToDestination = Number.isFinite(this.getDistanceToDestination()) ? this.getDistanceToDestination() : -1;
 
             if (dest && distanceToDestination < 180) {
                 this.setScratchpadMessage(NXSystemMessages.notAllowed);
@@ -5195,6 +5188,10 @@ class FMCMainDisplay extends BaseAirliners {
         }
 
         return this.flightPlanService.active.legCount;
+    }
+
+    getDistanceToDestination() {
+        return this.guidanceController.alongTrackDistanceToDestination;
     }
 }
 

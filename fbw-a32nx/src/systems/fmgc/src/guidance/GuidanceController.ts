@@ -124,7 +124,7 @@ export class GuidanceController {
      */
     activeLegAlongTrackCompletePathDtg: NauticalMiles;
 
-    /** * Used for vertical guidance */
+    /** * Used for vertical guidance and other FMS tasks, such as triggering ENTER DEST DATA */
     alongTrackDistanceToDestination: NauticalMiles;
 
     focusedWaypointCoordinates: Coordinates = { lat: 0, long: 0 };
@@ -264,8 +264,8 @@ export class GuidanceController {
         if (appr && appr.type !== ApproachType.Unknown) {
             const phase = getFlightPhaseManager().phase;
 
-            // TODO fms-v2: port getDistanceToDestination and appr.longName
-            if (phase > FmgcFlightPhase.Cruise || (phase === FmgcFlightPhase.Cruise /* && this.flightPlanManager.getDistanceToDestination(FlightPlans.Active) < 250) */)) {
+            const distanceToDestination = this.alongTrackDistanceToDestination ?? -1;
+            if (phase > FmgcFlightPhase.Cruise || (phase === FmgcFlightPhase.Cruise && distanceToDestination < 250)) {
                 apprMsg = ApproachUtils.longApproachName(appr);
             }
         }

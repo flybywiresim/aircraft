@@ -813,9 +813,8 @@ class CDUPerformancePage {
             }
         };
 
-        const closeToDest = plan.destinationAirport && 0 <= 180; // TODO port over (fms-v2)
-        // const distanceToDest = mcdu.flightPlanManager.getDistanceToDestination();
-        // const closeToDest = distanceToDest !== -1 && distanceToDest <= 180;
+        const distanceToDest = mcdu.getDistanceToDestination();
+        const closeToDest = distanceToDest !== undefined && distanceToDest <= 180;
 
         let qnhCell = "[\xa0\xa0][color]cyan";
         if (isFinite(mcdu.perfApprQNH)) {
