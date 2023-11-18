@@ -1,12 +1,4 @@
-/**
- * This comes from fstypes/FSEnums, TODO change this when we have @microsoft/msfs-types
- */
-enum TurnDirection {
-    Unknown = 0,
-    Left = 1,
-    Right = 2,
-    Either = 3,
-}
+import { TurnDirection } from '../../navdata/shared/types/ProcedureLeg';
 
 export class MathUtils {
    static DEGREES_TO_RADIANS = Math.PI / 180;

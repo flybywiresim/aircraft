@@ -17,7 +17,6 @@ import {
     WaypointDescriptor,
 } from '@flybywiresim/fbw-sdk';
 import { Coordinates } from 'msfs-geo';
-
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/new/legs/FlightPlanLegDefinition';
 import { procedureLegIdentAndAnnotation } from '@fmgc/flightplanning/new/legs/FlightPlanLegNaming';
 import { WaypointFactory } from '@fmgc/flightplanning/new/waypoints/WaypointFactory';
@@ -30,6 +29,7 @@ import { MagVar } from '@microsoft/msfs-sdk';
 import { AltitudeConstraint, ConstraintUtils, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
 import { HoldUtils } from '@fmgc/flightplanning/data/hold';
 import { OriginSegment } from '@fmgc/flightplanning/new/segments/OriginSegment';
+import { ReadonlyFlightPlanLeg } from '@fmgc/flightplanning/new/legs/ReadonlyFlightPlanLeg';
 
 /**
  * A serialized flight plan leg, to be sent across FMSes
@@ -70,7 +70,7 @@ export interface LegCalculations {
 /**
  * A leg in a flight plan. Not to be confused with a geometry leg or a procedure leg
  */
-export class FlightPlanLeg {
+export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
     type: LegType;
 
     flags = 0;
@@ -80,9 +80,7 @@ export class FlightPlanLeg {
         public readonly definition: FlightPlanLegDefinition,
         public ident: string,
         public annotation: string,
-        public readonly airwayIdent: string | undefined,
         public readonly rnp: number | undefined,
-        public readonly overfly: boolean,
     ) {
         this.type = definition.type;
     }
@@ -258,7 +256,7 @@ export class FlightPlanLeg {
             overfly: false,
             waypoint: WaypointFactory.fromLocation('T-P', location),
             magneticCourse,
-        }, 'T-P', '', undefined, undefined, false);
+        }, 'T-P', '', undefined);
     }
 
     static directToTurnStart(segment: EnrouteSegment, location: Coordinates, bearing: DegreesTrue): FlightPlanLeg {
@@ -271,7 +269,7 @@ export class FlightPlanLeg {
             waypoint: WaypointFactory.fromPlaceBearingDistance('T-P', location, 0.1, bearing),
             magneticCourse: MagVar.trueToMagnetic(bearing, magVar),
             length: 0.1,
-        }, '', '', undefined, undefined, false);
+        }, '', '', undefined);
     }
 
     static directToTurnEnd(segment: EnrouteSegment, targetLeg: FlightPlanLeg): FlightPlanLeg {
@@ -286,7 +284,7 @@ export class FlightPlanLeg {
             altitude2: targetLeg.definition.altitude2,
             speedDescriptor: targetLeg.definition.speedDescriptor,
             speed: targetLeg.definition.speed,
-        }, targetLeg.definition.waypoint.ident, '', undefined, undefined, false);
+        }, targetLeg.definition.waypoint.ident, '', undefined);
 
         leg.pilotEnteredAltitudeConstraint = targetLeg.pilotEnteredAltitudeConstraint;
         leg.pilotEnteredSpeedConstraint = targetLeg.pilotEnteredSpeedConstraint;
@@ -305,13 +303,13 @@ export class FlightPlanLeg {
             magneticCourse: hold.inboundMagneticCourse,
             length: hold.distance,
             lengthTime: hold.time,
-        }, waypoint.ident, '', undefined, undefined, false);
+        }, waypoint.ident, '', undefined);
     }
 
     static fromProcedureLeg(segment: FlightPlanSegment, procedureLeg: ProcedureLeg, procedureIdent: string, constraintType?: WaypointConstraintType): FlightPlanLeg {
         const [ident, annotation] = procedureLegIdentAndAnnotation(procedureLeg, procedureIdent);
 
-        const flightPlanLeg = new FlightPlanLeg(segment, procedureLeg, ident, annotation, undefined, procedureLeg.rnp, procedureLeg.overfly);
+        const flightPlanLeg = new FlightPlanLeg(segment, procedureLeg, ident, annotation, procedureLeg.rnp);
 
         flightPlanLeg.defaultHold = HoldUtils.parseHoldFromProcedureLeg(procedureLeg);
         flightPlanLeg.constraintType = constraintType;
@@ -328,7 +326,7 @@ export class FlightPlanLeg {
                 waypoint: WaypointFactory.fromAirportAndRunway(airport, runway),
                 waypointDescriptor: WaypointDescriptor.Runway,
                 magneticCourse: runway?.magneticBearing,
-            }, `${airport.ident}${runway ? runway.ident.replace('RW', '') : ''}`, procedureIdent, undefined, undefined, false);
+            }, `${airport.ident}${runway ? runway.ident.replace('RW', '') : ''}`, procedureIdent, undefined);
         }
 
         return new FlightPlanLeg(segment, {
@@ -338,7 +336,7 @@ export class FlightPlanLeg {
             waypoint: { ...airport, sectionCode: SectionCode.Enroute, subSectionCode: EnrouteSubsectionCode.Waypoints, area: WaypointArea.Terminal },
             waypointDescriptor: WaypointDescriptor.Airport,
             magneticCourse: runway?.magneticBearing,
-        }, `${airport.ident}${runway ? runway.ident.replace('RW', '') : ''}`, procedureIdent, undefined, undefined, false);
+        }, `${airport.ident}${runway ? runway.ident.replace('RW', '') : ''}`, procedureIdent, undefined);
     }
 
     static originExtendedCenterline(segment: OriginSegment, runwayLeg: FlightPlanLeg): FlightPlanLeg {
@@ -355,7 +353,7 @@ export class FlightPlanLeg {
             waypoint: runwayLeg.terminationWaypoint(),
             magneticCourse: runwayLeg.definition.magneticCourse,
             altitude1: altitude,
-        }, ident, annotation, undefined, undefined, false);
+        }, ident, annotation, undefined);
     }
 
     static destinationExtendedCenterline(segment: FlightPlanSegment, airport: Airport, runway?: Runway): FlightPlanLeg {
@@ -371,7 +369,7 @@ export class FlightPlanLeg {
             type: LegType.IF,
             overfly: false,
             waypoint,
-        }, waypoint.ident, '', undefined, undefined, false);
+        }, waypoint.ident, '', undefined);
     }
 
     static fromEnrouteFix(segment: FlightPlanSegment, waypoint: Fix, airwayIdent?: string, type = LegType.TF): FlightPlanLeg {
@@ -380,7 +378,7 @@ export class FlightPlanLeg {
             type,
             overfly: false,
             waypoint,
-        }, waypoint.ident, airwayIdent ?? '', airwayIdent, undefined, false);
+        }, waypoint.ident, airwayIdent ?? '', undefined);
     }
 }
 

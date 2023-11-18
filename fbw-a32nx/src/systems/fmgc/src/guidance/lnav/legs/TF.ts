@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { GuidanceParameters } from '@fmgc/guidance/ControlLaws';
-import { MathUtils, Waypoint, WaypointDescriptor } from '@flybywiresim/fbw-sdk';
+import { Fix, MathUtils, WaypointDescriptor } from '@flybywiresim/fbw-sdk';
 import { SegmentType } from '@fmgc/wtsdk';
 import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
@@ -30,8 +30,8 @@ export class TFLeg extends XFLeg {
     speedConstraint: SpeedConstraint | undefined
 
     constructor(
-        public from: Waypoint,
-        public to: Waypoint,
+        public from: Fix,
+        public to: Fix,
         public readonly metadata: Readonly<LegMetadata>,
         segment: SegmentType,
     ) {
