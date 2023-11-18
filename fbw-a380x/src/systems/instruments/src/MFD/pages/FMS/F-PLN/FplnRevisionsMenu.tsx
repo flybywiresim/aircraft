@@ -94,18 +94,18 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
             onSelectCallback: () => fpln.openNewDestWindow(),
         },
         {
-            title: '(N/A) CONSTRAINTS',
-            disabled: true,
+            title: 'CONSTRAINTS',
+            disabled: altnFlightPlan || [FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type),
             onSelectCallback: () => fpln.props.uiService.navigateTo(`fms/${fpln.props.uiService.activeUri.get().category}/f-pln-vert-rev/alt`),
         },
         {
-            title: '(N/A) CMS',
-            disabled: true,
+            title: 'CMS',
+            disabled: altnFlightPlan || [FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type),
             onSelectCallback: () => fpln.props.uiService.navigateTo(`fms/${fpln.props.uiService.activeUri.get().category}/f-pln-vert-rev/cms`),
         },
         {
-            title: '(N/A) STEP ALTs',
-            disabled: true,
+            title: 'STEP ALTs',
+            disabled: altnFlightPlan || [FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type),
             onSelectCallback: () => fpln.props.uiService.navigateTo(`fms/${fpln.props.uiService.activeUri.get().category}/f-pln-vert-rev/step-alts`),
         },
         {

@@ -318,6 +318,12 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                             return FplnLineColor.Active;
                         }, this.tmpyActive, this.secActive)}
                         revisionsMenuIsOpened={this.revisionsMenuOpened}
+                        callbacks={{
+                            speed: () => this.goToSpeedConstraint(drawIndex),
+                            altitude: () => this.goToAltitudeConstraint(drawIndex),
+                            rta: () => {},
+                            wind: () => {},
+                        }}
                     />
                 );
                 FSComponent.render(node, this.linesDivRef.instance);
@@ -407,6 +413,24 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                 </span>
             </div>
         );
+    }
+
+    private goToSpeedConstraint(lineDataIndex: number) {
+        const data = this.lineData[lineDataIndex];
+        console.warn(data);
+        if (isWaypoint(data)) {
+            this.props.fmService.setRevisedWaypoint(data.originalLegIndex, this.loadedFlightPlanIndex.get(), data.isAltnWaypoint);
+            this.props.uiService.navigateTo(`fms/${this.props.uiService.activeUri.get().category}/f-pln-vert-rev/spd`);
+        }
+    }
+
+    private goToAltitudeConstraint(lineDataIndex: number) {
+        const data = this.lineData[lineDataIndex];
+        console.warn(data);
+        if (isWaypoint(data)) {
+            this.props.fmService.setRevisedWaypoint(data.originalLegIndex, this.loadedFlightPlanIndex.get(), data.isAltnWaypoint);
+            this.props.uiService.navigateTo(`fms/${this.props.uiService.activeUri.get().category}/f-pln-vert-rev/alt`);
+        }
     }
 
     private efobWindButton(): VNode {
@@ -683,6 +707,13 @@ function isSpecial(object: FplnLineDisplayData): object is FplnLineWaypointDispl
     return object.type === FplnLineType.Special;
 }
 
+type lineConstraintsCallbacks = {
+    speed: () => void;
+    rta: () => void;
+    altitude: () => void;
+    wind: () => void;
+}
+
 export interface FplnLegLineProps extends FplnLineCommonProps {
     previousRow: Subscribable<FplnLineDisplayData | null>;
     data: Subscribable<FplnLineDisplayData>;
@@ -690,6 +721,7 @@ export interface FplnLegLineProps extends FplnLineCommonProps {
     displayEfobAndWind: Subscribable<boolean>;
     globalLineColor: Subscribable<FplnLineColor>;
     revisionsMenuIsOpened: Subject<boolean>;
+    callbacks: lineConstraintsCallbacks;
 }
 
 class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
@@ -774,6 +806,10 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
                 }
             });
         }
+
+        if (this.timeRef.getOrDefault()) {
+            this.timeRef.instance.addEventListener('click', () => this.props.callbacks.rta());
+        }
     }
 
     private onNewData(data: FplnLineDisplayData): void {
@@ -848,9 +884,12 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
 
     private renderSpdAltEfobWind(data: FplnLineWaypointDisplayData): void {
         while (this.speedRef.instance.firstChild) {
+            this.speedRef.instance.removeEventListener('click', () => this.props.callbacks.speed());
             this.speedRef.instance.removeChild(this.speedRef.instance.firstChild);
         }
         while (this.altRef.instance.firstChild) {
+            this.altRef.instance.removeEventListener('click', () => this.props.callbacks.altitude());
+            this.altRef.instance.removeEventListener('click', () => this.props.callbacks.wind());
             this.altRef.instance.removeChild(this.altRef.instance.firstChild);
         }
         FSComponent.render(this.efobOrSpeed(data), this.speedRef.instance);
@@ -859,13 +898,16 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
         if (this.props.displayEfobAndWind.get() === true) {
             this.altRef.instance.style.alignSelf = 'flex-end';
             this.altRef.instance.style.paddingRight = '20px';
+            this.altRef.instance.addEventListener('click', () => this.props.callbacks.wind());
             this.speedRef.instance.parentElement.className = 'mfd-fms-fpln-label-small';
             this.speedRef.instance.style.paddingLeft = '10px';
         } else {
             this.altRef.instance.style.alignSelf = null;
             this.altRef.instance.style.paddingRight = null;
+            this.altRef.instance.addEventListener('click', () => this.props.callbacks.altitude());
             this.speedRef.instance.parentElement.className = 'mfd-fms-fpln-label-small-clickable';
             this.speedRef.instance.style.paddingLeft = null;
+            this.speedRef.instance.addEventListener('click', () => this.props.callbacks.speed());
         }
     }
 

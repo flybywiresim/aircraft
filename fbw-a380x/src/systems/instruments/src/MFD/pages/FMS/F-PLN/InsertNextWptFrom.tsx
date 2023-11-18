@@ -62,13 +62,15 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
         }, true));
 
         this.subs.push(this.props.fmService.revisedWaypointIndex.sub((wptIdx) => {
-            const fpln = this.props.fmService.flightPlanService.get(this.props.fmService.revisedWaypointPlanIndex.get());
+            if (this.props.fmService.revisedWaypoint) {
+                const fpln = this.props.fmService.flightPlanService.get(this.props.fmService.revisedWaypointPlanIndex.get());
 
-            if (fpln.elementAt(wptIdx).isDiscontinuity === false) {
-                const wpt = fpln.legElementAt(wptIdx);
-                this.identRef.instance.innerText = wpt.ident;
-                this.coordinatesRef.instance.innerText = coordinateToString(wpt.definition.waypoint.location, false);
-                this.selectedWaypointIndex.set(undefined);
+                if (fpln.elementAt(wptIdx).isDiscontinuity === false) {
+                    const wpt = fpln.legElementAt(wptIdx);
+                    this.identRef.instance.innerText = wpt.ident;
+                    this.coordinatesRef.instance.innerText = coordinateToString(wpt.definition.waypoint.location, false);
+                    this.selectedWaypointIndex.set(undefined);
+                }
             }
         }));
     }

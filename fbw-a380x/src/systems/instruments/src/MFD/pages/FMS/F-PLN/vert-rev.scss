@@ -1,0 +1,13 @@
+﻿@import "../../../../MsfsAvionicsCommon/definitions";
+
+.mfd-vert-rev-spd-cstr-line {
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 50px;
+  padding-left: 10px;
+  padding-bottom: 50px;
+  border-bottom: 2px solid lightgrey;
+}

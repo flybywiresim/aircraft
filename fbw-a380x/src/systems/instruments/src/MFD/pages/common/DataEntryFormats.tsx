@@ -722,8 +722,8 @@ export class TimeHHMMFormat implements DataEntryFormat<number> {
         if (!value) {
             return [this.placeholder, null, null] as FieldFormatTuple;
         }
-        const hours = Math.abs(Math.floor(value / 60)).toFixed(0).toString().padStart(2, '0');
-        const minutes = Math.abs(value % 60).toFixed(0).toString().padStart(2, '0');
+        const hours = Math.abs(Math.floor(value / 60)).toFixed(0).padStart(2, '0');
+        const minutes = Math.abs(value % 60).toFixed(0).padStart(2, '0');
         return [`${hours}:${minutes}`, null, null] as FieldFormatTuple;
     }
 
@@ -740,6 +740,52 @@ export class TimeHHMMFormat implements DataEntryFormat<number> {
         }
 
         const nbr = minutes + hours * 60;
+        if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
+            return nbr;
+        }
+        return undefined;
+    }
+}
+
+// Stored in seconds
+export class TimeHHMMSSFormat implements DataEntryFormat<number> {
+    public placeholder = '--:--:--';
+
+    public maxDigits = 6;
+
+    private minValue = 0;
+
+    private maxValue = 86400;
+
+    public format(value: number) {
+        if (!value) {
+            return [this.placeholder, null, null] as FieldFormatTuple;
+        }
+        const hours = Math.abs(Math.floor(value / 3600)).toFixed(0).padStart(2, '0');
+        const minutes = Math.abs(Math.floor(value / 60) % 60).toFixed(0).padStart(2, '0');
+        const seconds = Math.abs(value % 3600).toFixed(0).padStart(2, '0');
+        return [`${hours}:${minutes}:${seconds}`, null, null] as FieldFormatTuple;
+    }
+
+    public async parse(input: string) {
+        const replacedInput = input.replace(':', '');
+        if (replacedInput.length < 4) {
+            return undefined;
+        }
+
+        let hours = 0;
+        let minutes = 0;
+        let seconds = 0;
+        minutes = Number(replacedInput.slice(2, 4));
+        hours = Number(replacedInput.slice(0, 2));
+        if (replacedInput.length > 4) {
+            seconds = Number(replacedInput.slice(-2));
+        }
+        if (seconds < 0 || seconds > 59 || minutes < 0 || minutes > 59 || hours < 0 || hours > 23) {
+            return undefined;
+        }
+
+        const nbr = seconds + minutes * 60 + hours * 3600;
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
         }

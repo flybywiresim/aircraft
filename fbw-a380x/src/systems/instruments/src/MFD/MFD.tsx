@@ -55,6 +55,7 @@ import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
 import { getFlightPhaseManager } from '@fmgc/flightphase';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { NXDataStore } from '@flybywiresim/fbw-sdk';
+import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/VERT_REV';
 import { MfdSimvars } from './shared/MFDSimvarPublisher';
 import { DisplayUnit } from '../MsfsAvionicsCommon/displayUnit';
 
@@ -122,7 +123,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
 
     private flightPhaseManager = getFlightPhaseManager();
 
-    private fmService = new MfdFlightManagementService(this, this.flightPlanService, this.guidanceController, this.fmgc, this.navigationProvider);
+    private fmService = new MfdFlightManagementService(this, this.flightPlanService, this.guidanceController, this.fmgc, this.navigationProvider, this.flightPhaseManager);
 
     public fmsErrors = ArraySubject.create<FmsErrorMessage>();
 
@@ -838,6 +839,19 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
             this.activePage = (
                 <MfdFmsFplnDirectTo
                     pageTitle="F-PLN/DIRECT-TO"
+                    bus={this.props.bus}
+                    uiService={this.uiService}
+                    fmService={this.fmService}
+                />
+            );
+            break;
+        case 'fms/active/f-pln-vert-rev':
+        case 'fms/sec1/f-pln-vert-rev':
+        case 'fms/sec2/f-pln-vert-rev':
+        case 'fms/sec3/f-pln-vert-rev':
+            this.activePage = (
+                <MfdFmsFplnVertRev
+                    pageTitle="F-PLN/VERT REV"
                     bus={this.props.bus}
                     uiService={this.uiService}
                     fmService={this.fmService}

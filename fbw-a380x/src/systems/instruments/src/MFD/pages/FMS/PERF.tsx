@@ -1462,7 +1462,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         height={40}
                                         condition={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
                                         componentIfFalse={(
-                                            <Button disabled={Subject.create(true)} label="SPD CSTR" onClick={() => this.props.uiService.navigateTo('fms/active/f-pln-vert-rev')}>
+                                            <Button label="SPD CSTR" onClick={() => this.props.uiService.navigateTo('fms/active/f-pln-vert-rev')}>
                                                 SPD CSTR
                                             </Button>
                                         )}
@@ -1670,8 +1670,17 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     <span class="mfd-label-unit mfd-unit-trailing">T</span>
                                 </div>
                                 <div style="display: flex; flex-direction: row;">
-                                    <Button disabled={Subject.create(true)} label="CMS" onClick={() => console.log('CMS')} buttonStyle="margin-right: 10px;" />
-                                    <Button disabled={Subject.create(true)} label="STEP ALTs" onClick={() => this.props.uiService.navigateTo('fms/active/f-pln-vert-rev')} />
+                                    <Button
+                                        disabled={Subject.create(true)}
+                                        label="CMS"
+                                        onClick={() => this.props.uiService.navigateTo('fms/active/f-pln-vert-rev/cms')}
+                                        buttonStyle="margin-right: 10px;"
+                                    />
+                                    <Button
+                                        disabled={Subject.create(true)}
+                                        label="STEP ALTs"
+                                        onClick={() => this.props.uiService.navigateTo('fms/active/f-pln-vert-rev/step-alts')}
+                                    />
                                 </div>
                             </div>
                         </TopTabNavigatorPage>
@@ -2106,7 +2115,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         <span style="display: flex; align-items: center; justify-content: center;">*</span>
                                     </div>,
                                 )}
-                                onClick={() => console.log('ACTIVATE APPR')}
+                                onClick={() => this.props.fmService.flightPhaseManager.tryGoInApproachPhase()}
                                 buttonStyle="color: #e68000; padding-right: 2px;"
                             />
                         </div>

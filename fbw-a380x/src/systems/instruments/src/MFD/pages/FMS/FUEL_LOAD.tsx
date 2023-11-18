@@ -275,7 +275,6 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                                 enteredByPilot={this.props.fmService.fmgc.data.routeReserveFuelIsPilotEntered}
                                 value={this.props.fmService.fmgc.data.routeReserveFuelWeight}
                                 inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
-                                onModified={() => {}} // already handled during data validation
                                 alignText="flex-end"
                                 containerStyle="width: 150px;"
                             />
@@ -288,7 +287,6 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                                 enteredByPilot={this.props.fmService.fmgc.data.routeReserveFuelIsPilotEntered}
                                 value={this.props.fmService.fmgc.data.routeReserveFuelPercentage}
                                 inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
-                                onModified={() => {}} // already handled during data validation
                                 alignText="center"
                                 containerStyle="width: 120px;"
                             />
@@ -313,7 +311,6 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                                 dataHandlerDuringValidation={async (v) => this.props.fmService.fmgc.data.alternateFuelPilotEntry.set(v)}
                                 enteredByPilot={this.props.fmService.fmgc.data.alternateFuelIsPilotEntered}
                                 value={this.props.fmService.fmgc.data.alternateFuel}
-                                onModified={() => {}} // already handled during data validation
                                 alignText="flex-end"
                                 containerStyle="width: 150px;"
                             />
@@ -340,7 +337,6 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                                 }}
                                 enteredByPilot={this.props.fmService.fmgc.data.finalFuelIsPilotEntered}
                                 value={this.props.fmService.fmgc.data.finalFuelWeight}
-                                onModified={() => {}} // already handled during data validation
                                 alignText="flex-end"
                                 containerStyle="width: 150px;"
                             />
@@ -354,7 +350,6 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                                 }}
                                 enteredByPilot={this.props.fmService.fmgc.data.finalFuelIsPilotEntered}
                                 value={this.props.fmService.fmgc.data.finalFuelTime}
-                                onModified={() => {}} // already handled during data validation
                                 alignText="center"
                                 containerStyle="width: 120px;"
                             />
@@ -414,7 +409,6 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                                     dataHandlerDuringValidation={async (v) => this.props.fmService.fmgc.data.minimumFuelAtDestinationPilotEntry.set(v)}
                                     enteredByPilot={this.props.fmService.fmgc.data.minimumFuelAtDestinationIsPilotEntered}
                                     value={this.props.fmService.fmgc.data.minimumFuelAtDestination}
-                                    onModified={() => {}}
                                     alignText="flex-end"
                                     containerStyle="width: 150px;"
                                 />

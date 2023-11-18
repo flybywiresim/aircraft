@@ -1,6 +1,6 @@
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
-import { FlightPlanIndex } from '@fmgc/index';
+import { FlightPhaseManager, FlightPlanIndex } from '@fmgc/index';
 import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
 import { ClockEvents, FSComponent, Subject, Subscription } from '@microsoft/msfs-sdk';
 import { FmgcFlightPhase } from '@shared/flightphase';
@@ -32,6 +32,12 @@ export class MfdFlightManagementService {
         return undefined;
     }
 
+    public setRevisedWaypoint(index: number, planIndex: number, isAltn: boolean) {
+        this.revisedWaypointPlanIndex.set(planIndex);
+        this.revisedWaypointIsAltn.set(isAltn);
+        this.revisedWaypointIndex.set(index);
+    }
+
     public resetRevisedWaypoint(): void {
         this.revisedWaypointIndex.set(undefined);
         this.revisedWaypointIsAltn.set(undefined);
@@ -56,6 +62,7 @@ export class MfdFlightManagementService {
         public guidanceController: GuidanceController,
         public fmgc: FmgcDataInterface,
         public navigationProvider: NavigationProvider,
+        public flightPhaseManager: FlightPhaseManager,
     ) {
         const sub = mfd.props.bus.getSubscriber<ClockEvents & MfdSimvars>();
 

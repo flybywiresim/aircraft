@@ -186,7 +186,9 @@ export class TopTabNavigator extends DisplayComponent<TopTabNavigatorProps> {
             this.populateElements(node, value);
         }, true);
 
-        this.props.activeFlightPhase.sub(() => this.populateElements(node, this.props.selectedPageIndex.get()));
+        if (this.props.activeFlightPhase) {
+            this.props.activeFlightPhase.sub(() => this.populateElements(node, this.props.selectedPageIndex.get()));
+        }
     }
 
     render(): VNode {

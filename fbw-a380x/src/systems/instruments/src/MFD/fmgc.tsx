@@ -246,6 +246,11 @@ export class FmgcData {
     public readonly approachFlapConfig = Subject.create<FlapConf>(FlapConf.CONF_FULL);
 
     public readonly approachVls = Subject.create<Knots>(134);
+
+    /**
+     * Estimated take-off time, in seconds. Displays as HH:mm:ss
+     */
+    public readonly estimatedTakeoffTime = Subject.create<number>(undefined);
 }
 
 /**

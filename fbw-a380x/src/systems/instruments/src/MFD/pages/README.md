@@ -24,7 +24,7 @@ Status legend:
 | ✅ | fms/\*/f-pln-duplicate-names | 1 |
 | ✅ | fms/\*/f-pln-cpny-f-pln-req | 1 |
 | 🟥 | fms/\*/f-pln-hold | 2 |
-| 🟥 | fms/\*/f-pln-vert-rev | 2 |
+| 1️⃣ | fms/\*/f-pln-vert-rev | 2 |
 | 🟥 | fms/\*/f-pln-cpny-wind-data-req | 2 |
 | 🟥 | fms/\*/wind | 2 |
 | 🟥 | fms/\*/f-pln-rte-sel | 3 |
