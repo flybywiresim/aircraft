@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: GPL-3.0
 
 class CDUFixInfoPage {
-    static ShowPage(mcdu, returnToPreviousPage, page = 0) {
+    static ShowPage(mcdu, page = 0) {
         mcdu.clearDisplay();
         mcdu.page.Current = mcdu.page.FixInfoPage;
         mcdu.returnPageCallback = () => {
-            CDUFixInfoPage.ShowPage(mcdu, returnToPreviousPage, page);
+            CDUFixInfoPage.ShowPage(mcdu, page);
         };
         mcdu.activeSystem = 'FMGC';
 
@@ -17,7 +17,7 @@ class CDUFixInfoPage {
                 if (fixInfo.fix) {
                     mcdu.flightPlanService.setFixInfoEntry(page, null);
 
-                    return CDUFixInfoPage.ShowPage(mcdu, returnToPreviousPage, page);
+                    return CDUFixInfoPage.ShowPage(mcdu, page);
                 } else {
                     mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
 
@@ -32,7 +32,7 @@ class CDUFixInfoPage {
                         radials: [],
                     });
 
-                    CDUFixInfoPage.ShowPage(mcdu, returnToPreviousPage, page);
+                    CDUFixInfoPage.ShowPage(mcdu, page);
                 }).catch((message) => {
                     if (message instanceof McduMessage) {
                         mcdu.setScratchpadMessage(message);
@@ -62,7 +62,7 @@ class CDUFixInfoPage {
             [],
             [],
             [],
-            ["<RETURN"],
+            [],
         ];
 
         if (fixInfo && fixInfo.fix) {
@@ -85,7 +85,7 @@ class CDUFixInfoPage {
                                 fixInfo.radials.splice(i);
                             });
 
-                            CDUFixInfoPage.ShowPage(mcdu, returnToPreviousPage, page);
+                            CDUFixInfoPage.ShowPage(mcdu, page);
                         } else {
                             mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
 
@@ -99,7 +99,7 @@ class CDUFixInfoPage {
                                 fixInfo.radials[i] = { magneticBearing: degrees, trueBearing: A32NX_Util.magneticToTrue(degrees, A32NX_Util.getRadialMagVar(fixInfo.fix)) };
                             });
 
-                            CDUFixInfoPage.ShowPage(mcdu, returnToPreviousPage, page);
+                            CDUFixInfoPage.ShowPage(mcdu, page);
                         } else {
                             mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
 
@@ -131,7 +131,7 @@ class CDUFixInfoPage {
                             fixInfo.radii.length = 0;
                         });
 
-                        CDUFixInfoPage.ShowPage(mcdu, returnToPreviousPage, page);
+                        CDUFixInfoPage.ShowPage(mcdu, page);
                     } else {
                         mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
                         scratchpadCallback();
@@ -147,7 +147,7 @@ class CDUFixInfoPage {
                             }
                         });
 
-                        CDUFixInfoPage.ShowPage(mcdu, returnToPreviousPage, page);
+                        CDUFixInfoPage.ShowPage(mcdu, page);
                     } else {
                         mcdu.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
                         scratchpadCallback();
@@ -167,22 +167,20 @@ class CDUFixInfoPage {
             mcdu.onLeftInput[4] = () => mcdu.setScratchpadMessage(NXFictionalMessages.notYetImplemented);
         }
 
-        mcdu.onLeftInput[5] = returnToPreviousPage;
-
         mcdu.setArrows(false, false, true, true);
         mcdu.setTemplate(template);
         mcdu.onPrevPage = () => {
             if (page > 0) {
-                CDUFixInfoPage.ShowPage(mcdu, returnToPreviousPage, page - 1);
+                CDUFixInfoPage.ShowPage(mcdu, page - 1);
             } else {
-                CDUFixInfoPage.ShowPage(mcdu, returnToPreviousPage, 3);
+                CDUFixInfoPage.ShowPage(mcdu, 3);
             }
         };
         mcdu.onNextPage = () => {
             if (page < 3) {
-                CDUFixInfoPage.ShowPage(mcdu, returnToPreviousPage, page + 1);
+                CDUFixInfoPage.ShowPage(mcdu, page + 1);
             } else {
-                CDUFixInfoPage.ShowPage(mcdu, returnToPreviousPage, 0);
+                CDUFixInfoPage.ShowPage(mcdu, 0);
             }
         };
     }
