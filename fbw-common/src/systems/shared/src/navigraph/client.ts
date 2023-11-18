@@ -13,7 +13,7 @@ const NAVIGRAPH_DEFAULT_AUTH_STATE = {
     disabled: false,
 };
 
-const emptyNavigraphCharts = {
+export const emptyNavigraphCharts = {
     arrival: [],
     approach: [],
     airport: [],
@@ -56,9 +56,11 @@ export class NavigraphClient {
             this.pkce = pkce();
 
             const token = NXDataStore.get('NAVIGRAPH_REFRESH_TOKEN');
+            const deviceCode = NXDataStore.get('NAVIGRAPH_DEVICE_CODE');
 
             if (token) {
                 this.refreshToken = token;
+                this.deviceCode = deviceCode || undefined;
                 this.getToken();
             }
         }
@@ -90,6 +92,7 @@ export class NavigraphClient {
                 this.auth.qrLink = json.verification_uri_complete;
                 this.auth.interval = json.interval;
                 this.deviceCode = json.device_code;
+                NXDataStore.set('NAVIGRAPH_DEVICE_CODE', this.deviceCode);
             }
         } catch (_) {
             console.log('Unable to Authorize Device. #NV101');
