@@ -249,6 +249,29 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
         return this.definition.speedDescriptor !== undefined;
     }
 
+    withDefinitionFrom(from: FlightPlanLeg) {
+        this.definition.verticalAngle = from.definition.verticalAngle;
+        this.definition.altitudeDescriptor = from.definition.altitudeDescriptor;
+        this.definition.altitude1 = from.definition.altitude1;
+        this.definition.altitude2 = from.definition.altitude2;
+        this.definition.speedDescriptor = from.definition.speedDescriptor;
+        this.definition.speed = from.definition.speed;
+        this.definition.approachWaypointDescriptor = from.definition.approachWaypointDescriptor;
+
+        return this;
+    }
+
+    withPilotEnteredDataFrom(from: FlightPlanLeg) {
+        this.pilotEnteredAltitudeConstraint = from.pilotEnteredAltitudeConstraint;
+        this.pilotEnteredSpeedConstraint = from.pilotEnteredSpeedConstraint;
+        this.constraintType = from.constraintType;
+        this.cruiseStep = from.cruiseStep;
+        this.defaultHold = from.defaultHold;
+        this.modifiedHold = from.modifiedHold;
+
+        return this;
+    }
+
     static turningPoint(segment: EnrouteSegment, location: Coordinates, magneticCourse: DegreesMagnetic): FlightPlanLeg {
         return new FlightPlanLeg(segment, {
             procedureIdent: '',
@@ -272,25 +295,13 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
         }, '', '', undefined);
     }
 
-    static directToTurnEnd(segment: EnrouteSegment, targetLeg: FlightPlanLeg): FlightPlanLeg {
-        const leg = new FlightPlanLeg(segment, {
+    static directToTurnEnd(segment: EnrouteSegment, waypoint: Fix): FlightPlanLeg {
+        return new FlightPlanLeg(segment, {
             procedureIdent: '',
             type: LegType.DF,
             overfly: false,
-            waypoint: targetLeg.definition.waypoint,
-            verticalAngle: targetLeg.definition.verticalAngle,
-            altitudeDescriptor: targetLeg.definition.altitudeDescriptor,
-            altitude1: targetLeg.definition.altitude1,
-            altitude2: targetLeg.definition.altitude2,
-            speedDescriptor: targetLeg.definition.speedDescriptor,
-            speed: targetLeg.definition.speed,
-        }, targetLeg.definition.waypoint.ident, '', undefined);
-
-        leg.pilotEnteredAltitudeConstraint = targetLeg.pilotEnteredAltitudeConstraint;
-        leg.pilotEnteredSpeedConstraint = targetLeg.pilotEnteredSpeedConstraint;
-        leg.constraintType = targetLeg.constraintType;
-
-        return leg;
+            waypoint,
+        }, waypoint.ident, '', undefined);
     }
 
     static manualHold(segment: FlightPlanSegment, waypoint: Fix, hold: HoldData): FlightPlanLeg {
