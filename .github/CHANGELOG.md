@@ -18,6 +18,7 @@
 1. [MCDU] FUEL PRED layout improvemnts @BravoMike99 (bruno_pt99)
 1. [EFCS] Add precontrol to roll angle controller to improve dynamic response - @lukecologne (luke)
 1. [EFCS] Increase maximum sim rate limit to 8 due to improvements in roll law stability - @lukecologne (luke)
+1. [HOPPIE] Remove ATSU/AOC source checks - @auroraisluna (alepouna)
 
 ## 0.11.0
 
