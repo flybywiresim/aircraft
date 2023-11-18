@@ -1,0 +1,17 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
+.oanc-control-panel {
+    width: 650px;
+    height: 130px;
+
+    position: absolute;
+    right: 0;
+    bottom: 0;
+
+    background-color: rgb(128, 128, 128);
+    border: solid 2px white;
+
+    z-index: 9999;
+}

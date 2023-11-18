@@ -3,44 +3,15 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import {
-    ComponentProps,
-    ConsumerSubject,
-    DebounceTimer,
-    DisplayComponent,
-    EventBus,
-    FSComponent,
-    MappedSubject,
-    Subject,
-    SubscribableArrayEventType, UnitType,
-    VNode,
+    ComponentProps, ConsumerSubject, DebounceTimer, DisplayComponent, EventBus, FSComponent, MappedSubject, Subject, SubscribableArrayEventType,
+    UnitType, VNode,
 } from '@microsoft/msfs-sdk';
-import {
-    AmdbFeatureCollection,
-    AmdbFeatureTypeStrings,
-    AmdbProjection,
-    AmdbProperties,
-    FeatureType,
-    FeatureTypeString,
-    MathUtils,
-    PolygonStructureType,
-} from '@flybywiresim/fbw-sdk';
-import {
-    BBox,
-    bbox,
-    centroid,
-    Feature,
-    featureCollection,
-    FeatureCollection,
-    Geometry,
-    LineString, point,
-    Point,
-    Polygon,
-    Position,
-} from '@turf/turf';
+import { AmdbFeatureCollection, AmdbFeatureTypeStrings, AmdbProjection, AmdbProperties, FeatureType, FeatureTypeString, MathUtils, PolygonStructureType } from '@flybywiresim/fbw-sdk';
+import { BBox, bbox, centroid, Feature, featureCollection, FeatureCollection, Geometry, LineString, Point, Polygon, Position, } from '@turf/turf';
 import { bearingTo, clampAngle, Coordinates, distanceTo, placeBearingDistance } from 'msfs-geo';
 import { reciprocal } from '@fmgc/guidance/lnav/CommonGeometry';
 import { EfisNdMode } from '@shared/NavigationDisplay';
-import { MapParameters } from '../ND/utils/MapParameters';
+import { MapParameters } from '../ND/shared/utils/MapParameters';
 import { STYLE_DATA } from './style-data';
 import { OancMovingModeOverlay, OancStaticModeOverlay } from './OancMovingModeOverlay';
 import { OancAircraftIcon } from './OancAircraftIcon';
@@ -49,6 +20,8 @@ import { OancPositionComputer } from './OancPositionComputer';
 import { NavigraphAmdbClient } from './api/NavigraphAmdbClient';
 import { FcuSimVars } from '../MsfsAvionicsCommon/providers/FcuBusPublisher';
 import { pointAngle, pointDistance } from './OancMapUtils';
+import { ContextMenu, ContextMenuItemData } from './Components/ContextMenu';
+import { ControlPanel } from './Components/ControlPanel';
 
 export const OANC_RENDER_WIDTH = 768;
 export const OANC_RENDER_HEIGHT = 768;
@@ -151,6 +124,29 @@ export class Oanc extends DisplayComponent<OancProps> {
     private readonly zoomOutButtonRef = FSComponent.createRef<HTMLButtonElement>();
 
     private readonly positionTextRef = FSComponent.createRef<HTMLSpanElement>();
+
+    private readonly contextMenuVisible = Subject.create(false);
+
+    private readonly contextMenuX = Subject.create(0);
+
+    private readonly contextMenuY = Subject.create(0);
+
+    private readonly controlPanelVisible = Subject.create(false);
+
+    private readonly contextMenuItems: ContextMenuItemData[] = [
+        { name: 'ADD CROSS', disabled: true },
+        { name: 'ADD FLAG', disabled: true },
+        {
+            name: 'MENU',
+            onPressed: () => {
+                this.controlPanelVisible.set(!this.controlPanelVisible.get());
+                this.contextMenuVisible.set(false);
+            },
+        },
+        { name: 'ERASE ALL CROSSES', disabled: true },
+        { name: 'ERASE ALL FLAGS', disabled: true },
+        { name: 'CENTER ON ACFT', disabled: true },
+    ]
 
     public data: AmdbFeatureCollection | undefined;
 
@@ -761,6 +757,9 @@ export class Oanc extends DisplayComponent<OancProps> {
     }
 
     private handleCursorPanStop(event: MouseEvent): void {
+        this.contextMenuX.set(event.screenX);
+        this.contextMenuY.set(event.screenY);
+        this.contextMenuVisible.set(!this.contextMenuVisible.get());
         this.isPanning = false;
     }
 
@@ -849,6 +848,15 @@ export class Oanc extends DisplayComponent<OancProps> {
                 </div>
 
                 <div ref={this.cursorSurfaceRef} style={`position: absolute; width: ${OANC_RENDER_WIDTH}px; height: ${OANC_RENDER_HEIGHT}px; pointer-events: auto;`} />
+
+                <ContextMenu
+                    isVisible={this.contextMenuVisible}
+                    x={this.contextMenuX}
+                    y={this.contextMenuY}
+                    items={this.contextMenuItems}
+                />
+
+                <ControlPanel isVisible={this.controlPanelVisible} />
 
                 <div
                     style={`position: absolute; width: ${OANC_RENDER_WIDTH}px; height: ${OANC_RENDER_HEIGHT}px; pointer-events: none`}
