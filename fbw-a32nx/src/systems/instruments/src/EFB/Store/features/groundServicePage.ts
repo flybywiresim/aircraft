@@ -20,6 +20,7 @@ interface ButtonSelectionState {
     gpuButtonState: ServiceButtonState
     baggageButtonState: ServiceButtonState
     cateringButtonState: ServiceButtonState
+    asuButtonState: ServiceButtonState
 }
 
 // hack to fix initialization issue for ACE/vite
@@ -34,6 +35,7 @@ let initialState: ButtonSelectionState = {
     jetWayButtonState: ServiceButtonState.DISABLED,
     baggageButtonState: ServiceButtonState.DISABLED,
     cateringButtonState: ServiceButtonState.DISABLED,
+    asuButtonState: ServiceButtonState.DISABLED,
 };
 
 const setInitialState = () => {
@@ -48,6 +50,7 @@ const setInitialState = () => {
         jetWayButtonState: ServiceButtonState.INACTIVE,
         baggageButtonState: ServiceButtonState.INACTIVE,
         cateringButtonState: ServiceButtonState.INACTIVE,
+        asuButtonState: (SimVar.GetSimVarValue('L:A32NX_ASU_TURNED_ON', 'Bool') === 1.0 ? ServiceButtonState.ACTIVE : ServiceButtonState.INACTIVE),
     };
 };
 
@@ -92,6 +95,9 @@ export const buttonsSlice = createSlice({
         setCateringButtonState: (state, action: PayloadAction<ServiceButtonState>) => {
             state.cateringButtonState = action.payload;
         },
+        setAsuButtonState: (state, action: PayloadAction<ServiceButtonState>) => {
+            state.asuButtonState = action.payload;
+        },
     },
 });
 
@@ -106,6 +112,7 @@ export const {
     setGpuButtonState,
     setBaggageButtonState,
     setCateringButtonState,
+    setAsuButtonState,
 } = buttonsSlice.actions;
 
 export default buttonsSlice.reducer;

@@ -1,0 +1,163 @@
+@font-face {
+    font-family: "RMP-10";
+    src: url("/Fonts/FBW-Display-RMP-10.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+}
+@font-face {
+    font-family: "RMP-11";
+    src: url("/Fonts/FBW-Display-RMP-11.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+}
+@font-face {
+    font-family: "RMP-13";
+    src: url("/Fonts/FBW-Display-RMP-13.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+}
+@font-face {
+    font-family: "RMP-16";
+    src: url("/Fonts/FBW-Display-RMP-16.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+}
+@font-face {
+    font-family: "RMP-19";
+    src: url("/Fonts/FBW-Display-RMP-19.ttf") format("truetype");
+    font-weight: normal;
+    font-style: normal;
+}
+
+.rmp {
+    font-family: "RMP-19";
+    font-size: 80px;
+}
+
+.cell {
+    height: 157px;
+    position: relative;
+}
+
+.separator {
+    border-bottom: 2px solid white;
+}
+
+.active-frequency {
+    font-size: 80px;
+    position: absolute;
+    bottom: 3px;
+    left: 10px;
+}
+
+.standby-frequency {
+    position: absolute;
+    bottom: 5%;
+    right: 1%;
+    width: 30%;
+    height: 90%;
+}
+
+.selected {
+    border: 2px solid cyan;
+    box-sizing: border-box;
+}
+
+.standby-frequency-label {
+    font-size: 40px;
+    position: absolute;
+    bottom: 10%;
+    left: 0;
+    width: 100%;
+    text-align: center;
+}
+
+.selected .standby-frequency-label {
+    color: cyan;
+}
+
+.invalid {
+    color: darkorange !important;
+}
+
+.hidden {
+    display: none;
+}
+
+.message-area {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 40px;
+    border-top: 2px solid white;
+    font-size: 30px;
+    padding-left: 10px;
+}
+
+.vhf-transceiver-label {
+    font-size: 40px;
+    position: absolute;
+    bottom: 25%;
+    left: 50%;
+}
+
+.cyan {
+    color: cyan;
+}
+
+.green {
+    color: lime;
+}
+
+.white {
+    color: white;
+}
+
+.text-row {
+    height: 157px;
+    position: relative;
+    font-size: 40px;
+}
+
+.text-row .left {
+    text-align: left;
+    left: 2%;
+}
+
+.text-row .right {
+    text-align: right;
+    right: 2%;
+}
+
+.text-row .center {
+    text-align: center;
+    right: 0;
+    width: 100%;
+}
+
+.text-row div {
+    position: absolute;
+    bottom: 35%;
+}
+
+.sqwk-page .standby-frequency {
+    right: 35%;
+}
+
+/*.sqwk-page .standby-frequency-label {
+    font-size: 40px;
+    bottom: 5%;
+    left: 12%;
+    color: cyan;
+}*/
+
+.standby-frequency-edit-label {
+    position: absolute;
+    top: 15%;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    font-size: 30px;
+    color: white;
+}

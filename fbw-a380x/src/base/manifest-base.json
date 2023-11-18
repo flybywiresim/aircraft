@@ -1,0 +1,23 @@
+{
+  "creator": "FlyByWire Simulations",
+  "release_notes": {
+    "neutral": {
+      "LastUpdate": "",
+      "OlderHistory": ""
+    }
+  },
+  "title": "A380X Instruments",
+  "dependencies": [
+    {
+      "package_version": "0.1.129",
+      "name": "asobo-vcockpits-instruments-airliners"
+    },
+    {
+      "package_version": "0.1.125",
+      "name": "fs-base-aircraft-common"
+    }
+  ],
+  "content_type": "AIRCRAFT",
+  "minimum_game_version": "1.26.5",
+  "manufacturer": "Airbus"
+}

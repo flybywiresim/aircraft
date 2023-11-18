@@ -40,18 +40,6 @@ export class HoppieConnector {
             return;
         }
 
-        const metarSrc = NXDataStore.get('CONFIG_METAR_SRC', 'MSFS');
-        if (metarSrc !== 'VATSIM' && metarSrc !== 'IVAO') {
-            console.log('Invalid METAR source');
-            return;
-        }
-
-        const atisSrc = NXDataStore.get('CONFIG_ATIS_SRC', 'FAA');
-        if (atisSrc !== 'VATSIM' && atisSrc !== 'IVAO') {
-            console.log('Invalid ATIS source');
-            return;
-        }
-
         const body = {
             logon: NXDataStore.get('CONFIG_HOPPIE_USERID', ''),
             from: 'FBWA32NX',

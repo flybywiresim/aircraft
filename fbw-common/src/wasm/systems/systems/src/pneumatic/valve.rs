@@ -283,8 +283,8 @@ impl<const N: usize> OverpressureValve<N> {
             connector: PneumaticContainerConnector::new(),
             characteristics,
             protection_threshold,
-            open_amount: Ratio::default(),
-            is_closing: true,
+            open_amount: Ratio::new::<ratio>(1.0),
+            is_closing: false,
         }
     }
 
@@ -329,7 +329,7 @@ impl<const N: usize> OverpressureValve<N> {
 }
 impl<const N: usize> FullyOpen for OverpressureValve<N> {
     fn is_fully_open(&self) -> bool {
-        self.open_amount.get::<percent>() >= 1.
+        self.open_amount >= Ratio::new::<ratio>(1.0)
     }
 }
 
