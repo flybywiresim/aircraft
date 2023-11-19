@@ -9,7 +9,7 @@ import { PseudoWaypoints } from '@fmgc/guidance/lnav/PseudoWaypoints';
 import { EfisVectors } from '@fmgc/efis/EfisVectors';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { EfisState } from '@fmgc/guidance/FmsState';
-import { EfisSide, EfisNdMode, rangeSettings } from '@shared/NavigationDisplay';
+import { EfisSide, EfisNdMode, rangeSettings } from '@flybywiresim/fbw-sdk';
 import { TaskCategory, TaskQueue } from '@fmgc/guidance/TaskQueue';
 import { HMLeg } from '@fmgc/guidance/lnav/legs/HX';
 import { SimVarString } from '@flybywiresim/fbw-sdk';

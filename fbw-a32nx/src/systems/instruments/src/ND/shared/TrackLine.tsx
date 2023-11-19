@@ -3,14 +3,13 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { FSComponent, DisplayComponent, EventBus, VNode, MappedSubject, Subscribable, ConsumerSubject, Subject } from '@microsoft/msfs-sdk';
-import { MathUtils } from '@flybywiresim/fbw-sdk';
+import { MathUtils, EfisNdMode, Arinc429ConsumerSubject } from '@flybywiresim/fbw-sdk';
+
 import { ArmedLateralMode, isArmed, LateralMode } from '@shared/autopilot';
 import { DmcEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
-import { EfisNdMode } from '@shared/NavigationDisplay';
 import { NDSimvars } from '../NDSimvarPublisher';
 import { FGVars } from '../../MsfsAvionicsCommon/providers/FGDataPublisher';
 import { FcuSimVars } from '../../MsfsAvionicsCommon/providers/FcuBusPublisher';
-import { Arinc429ConsumerSubject } from '../../MsfsAvionicsCommon/Arinc429ConsumerSubject';
 
 export interface TrackLineProps {
     bus: EventBus,

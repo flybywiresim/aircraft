@@ -1,10 +1,14 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { FSComponent, DisplayComponent, VNode, Subject, EventBus, MappedSubject, Subscribable } from '@microsoft/msfs-sdk';
-import { EfisNdMode } from '@shared/NavigationDisplay';
+import { EfisNdMode, Arinc429ConsumerSubject } from '@flybywiresim/fbw-sdk';
+
 import { DmcEvents } from '../../MsfsAvionicsCommon/providers/DmcPublisher';
 import { Layer } from '../../MsfsAvionicsCommon/Layer';
 import { AdirsSimVars } from '../../MsfsAvionicsCommon/SimVarTypes';
 import { NDControlEvents } from '../NDControlEvents';
-import { Arinc429ConsumerSubject } from '../../MsfsAvionicsCommon/Arinc429ConsumerSubject';
 import { LubberLine } from '../pages/arc/LubberLine';
 
 const PLANE_X_OFFSET = -41;

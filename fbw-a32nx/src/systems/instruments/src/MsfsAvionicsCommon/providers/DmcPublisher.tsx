@@ -3,8 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { EventBus, SimVarDefinition, SimVarPublisher, SimVarValueType, Subject } from '@microsoft/msfs-sdk';
-import { Arinc429WordData } from '@flybywiresim/fbw-sdk';
-import { Arinc429RegisterSubject } from '../Arinc429RegisterSubject';
+import { Arinc429WordData, Arinc429RegisterSubject } from '@flybywiresim/fbw-sdk';
 import { AdirsSimVars } from '../SimVarTypes';
 
 export interface DmcLogicEvents {

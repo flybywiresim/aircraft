@@ -1,10 +1,14 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { FSComponent, DisplayComponent, EventBus, MappedSubject, Subject, Subscribable, VNode, DebounceTimer } from '@microsoft/msfs-sdk';
+import { Arinc429RegisterSubject, EfisNdMode, NavAidMode } from '@flybywiresim/fbw-sdk';
+
 import { VorSimVars } from 'instruments/src/MsfsAvionicsCommon/providers/VorBusPublisher';
-import { EfisNdMode, NavAidMode } from '@shared/NavigationDisplay';
 import { DmcEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 import { Layer } from 'instruments/src/MsfsAvionicsCommon/Layer';
 import { FcuSimVars } from 'instruments/src/MsfsAvionicsCommon/providers/FcuBusPublisher';
-import { Arinc429RegisterSubject } from '../../MsfsAvionicsCommon/Arinc429RegisterSubject';
 import { FMBusEvents } from '../../MsfsAvionicsCommon/providers/FMBusPublisher';
 
 export class RadioNavInfo extends DisplayComponent<{ bus: EventBus, index: 1 | 2, mode: Subscribable<EfisNdMode> }> {

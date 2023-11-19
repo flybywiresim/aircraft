@@ -1,11 +1,14 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { FSComponent, DisplayComponent, MappedSubject, Subject, Subscribable, VNode, ConsumerSubject } from '@microsoft/msfs-sdk';
+import { ArincEventBus, EfisNdMode, Arinc429ConsumerSubject } from '@flybywiresim/fbw-sdk';
+
 import { DmcEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
-import { ArincEventBus } from 'instruments/src/MsfsAvionicsCommon/ArincEventBus';
 import { FcuSimVars } from 'instruments/src/MsfsAvionicsCommon/providers/FcuBusPublisher';
-import { EfisNdMode } from '@shared/NavigationDisplay';
 import { NDSimvars } from '../../NDSimvarPublisher';
 import { getSmallestAngle } from '../../../PFD/PFDUtils';
-import { Arinc429ConsumerSubject } from '../../../MsfsAvionicsCommon/Arinc429ConsumerSubject';
 
 export interface LsCourseBugProps {
     bus: ArincEventBus,

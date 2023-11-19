@@ -1,5 +1,9 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { FSComponent, DisplayComponent, VNode, EventBus, Subscribable } from '@microsoft/msfs-sdk';
-import { EfisNdMode } from '@shared/NavigationDisplay';
+import { EfisNdMode } from '@flybywiresim/fbw-sdk';
 
 export interface LubberLineProps {
     bus: EventBus,

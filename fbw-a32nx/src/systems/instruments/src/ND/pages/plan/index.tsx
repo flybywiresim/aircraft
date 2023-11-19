@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { FSComponent, ComponentProps, Subscribable, VNode, Subject, EventBus, ConsumerSubject } from '@microsoft/msfs-sdk';
-import { Arinc429Register, Arinc429WordData } from '@flybywiresim/fbw-sdk';
-import { EfisNdMode, rangeSettings } from '@shared/NavigationDisplay';
+import { Arinc429Register, Arinc429WordData, EfisNdMode, efisRangeSettings } from '@flybywiresim/fbw-sdk';
+
 import { FcuSimVars } from 'instruments/src/MsfsAvionicsCommon/providers/FcuBusPublisher';
 import { PlanModeUnderlay } from './PlanModeUnderlay';
 import { MapParameters } from '../../shared/utils/MapParameters';
@@ -125,7 +125,7 @@ export class PlanModePage extends NDPage<PlanModePageProps> {
     private handleScaleMap() {
         if (this.isVisible.get()) {
             const rangeSetting = this.mapRangeSub.get();
-            const range = rangeSettings[rangeSetting];
+            const range = efisRangeSettings[rangeSetting];
 
             this.controlPublisher.pub('set_map_efis_mode', EfisNdMode.PLAN);
             this.controlPublisher.pub('set_map_pixel_radius', 250);

@@ -3,10 +3,9 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { FSComponent, ComponentProps, ConsumerSubject, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import { Arinc429WordData } from '@flybywiresim/fbw-sdk';
-import { EfisNdMode, rangeSettings } from '@shared/NavigationDisplay';
+import { ArincEventBus, Arinc429WordData, Arinc429RegisterSubject, EfisNdMode, efisRangeSettings } from '@flybywiresim/fbw-sdk';
+
 import { LsCourseBug } from 'instruments/src/ND/pages/arc/LsCourseBug';
-import { ArincEventBus } from 'instruments/src/MsfsAvionicsCommon/ArincEventBus';
 import { FcuSimVars } from 'instruments/src/MsfsAvionicsCommon/providers/FcuBusPublisher';
 import { ArcModeUnderlay } from './ArcModeUnderlay';
 import { getSmallestAngle } from '../../../PFD/PFDUtils';
@@ -14,7 +13,6 @@ import { Flag } from '../../shared/Flag';
 import { NDPage } from '../NDPage';
 import { NDControlEvents } from '../../NDControlEvents';
 import { AdirsSimVars } from '../../../MsfsAvionicsCommon/SimVarTypes';
-import { Arinc429RegisterSubject } from '../../../MsfsAvionicsCommon/Arinc429RegisterSubject';
 
 export interface ArcModePageProps extends ComponentProps {
     bus: ArincEventBus,
@@ -176,7 +174,7 @@ export class ArcModePage extends NDPage<ArcModePageProps> {
 
         publisher.pub('set_map_efis_mode', EfisNdMode.ARC);
         publisher.pub('set_map_pixel_radius', 498);
-        publisher.pub('set_map_range_radius', rangeSettings[this.mapRangeSub.get()]);
+        publisher.pub('set_map_range_radius', efisRangeSettings[this.mapRangeSub.get()]);
         publisher.pub('set_map_center_y_bias', 242);
     }
 

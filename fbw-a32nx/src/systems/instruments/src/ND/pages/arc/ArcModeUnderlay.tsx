@@ -2,10 +2,8 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { DisplayComponent, EventBus, FSComponent, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import { MathUtils } from '@flybywiresim/fbw-sdk';
-import { rangeSettings } from '@shared/NavigationDisplay';
+import { DisplayComponent, EventBus, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import { MathUtils, efisRangeSettings } from '@flybywiresim/fbw-sdk';
 import { FcuSimVars } from 'instruments/src/MsfsAvionicsCommon/providers/FcuBusPublisher';
 import { TcasSimVars } from 'instruments/src/MsfsAvionicsCommon/providers/TcasBusPublisher';
 
@@ -32,7 +30,7 @@ export class ArcModeUnderlay extends DisplayComponent<ArcModeOverlayProps> {
         const sub = this.props.bus.getSubscriber<FcuSimVars & TcasSimVars>();
 
         sub.on('ndRangeSetting').whenChanged().handle((value) => {
-            this.rangeValue.set(rangeSettings[value]);
+            this.rangeValue.set(efisRangeSettings[value]);
 
             this.handleRingVisibilities();
         });

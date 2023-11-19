@@ -1,6 +1,11 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { FSComponent, DisplayComponent, VNode, Subject, EventBus, ConsumerSubject, MappedSubject } from '@microsoft/msfs-sdk';
+import { Arinc429RegisterSubject } from '@flybywiresim/fbw-sdk';
+
 import { FMBusEvents } from 'instruments/src/MsfsAvionicsCommon/providers/FMBusPublisher';
-import { Arinc429RegisterSubject } from 'instruments/src/MsfsAvionicsCommon/Arinc429RegisterSubject';
 import { Layer } from '../../../MsfsAvionicsCommon/Layer';
 import { VorSimVars } from '../../../MsfsAvionicsCommon/providers/VorBusPublisher';
 

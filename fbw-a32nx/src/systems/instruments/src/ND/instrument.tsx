@@ -1,5 +1,10 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { Clock, FsBaseInstrument, FSComponent, FsInstrument, HEventPublisher, InstrumentBackplane, Subject } from '@microsoft/msfs-sdk';
-import { EfisSide } from '@shared/NavigationDisplay';
+import { ArincEventBus, EfisSide } from '@flybywiresim/fbw-sdk';
+
 import { NDComponent } from './ND';
 import { NDSimvarPublisher, NDSimvars } from './NDSimvarPublisher';
 import { AdirsValueProvider } from '../MsfsAvionicsCommon/AdirsValueProvider';
@@ -13,7 +18,6 @@ import { getDisplayIndex } from '../MsfsAvionicsCommon/displayUnit';
 import { EgpwcBusPublisher } from '../MsfsAvionicsCommon/providers/EgpwcBusPublisher';
 import { DmcPublisher } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import { FMBusPublisher } from '../MsfsAvionicsCommon/providers/FMBusPublisher';
-import { ArincEventBus } from '../MsfsAvionicsCommon/ArincEventBus';
 import { FcuBusPublisher } from '../MsfsAvionicsCommon/providers/FcuBusPublisher';
 
 import './style.scss';

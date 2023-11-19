@@ -2,10 +2,9 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { FSComponent, ComponentProps, Subscribable, Subject } from '@microsoft/msfs-sdk';
-import { Arinc429WordData } from '@flybywiresim/fbw-sdk';
-import { EfisNdRangeValue } from '@shared/NavigationDisplay';
-import { ArincEventBus } from 'instruments/src/MsfsAvionicsCommon/ArincEventBus';
+import { ComponentProps, Subscribable, Subject } from '@microsoft/msfs-sdk';
+import { ArincEventBus, Arinc429WordData, EfisNdRangeValue } from '@flybywiresim/fbw-sdk';
+
 import { NDPage } from '../NDPage';
 import { NDControlEvents } from '../../NDControlEvents';
 

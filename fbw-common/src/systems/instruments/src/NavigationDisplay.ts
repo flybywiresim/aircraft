@@ -6,7 +6,12 @@ import { Coordinates } from '@fmgc/flightplanning/data/geo';
 export type EfisSide = 'L' | 'R'
 
 export type EfisNdRangeValue = 10 | 20 | 40 | 80 | 160 | 320;
-export const rangeSettings: EfisNdRangeValue[] = [10, 20, 40, 80, 160, 320];
+
+export const efisRangeSettings: EfisNdRangeValue[] = [10, 20, 40, 80, 160, 320];
+
+export type EfisOansNdRangeValue = -1 | 10 | 20 | 40 | 80 | 160 | 320;
+
+export const efisOansRangeSettings: EfisOansNdRangeValue[] = [-1, 10, 20, 40, 80, 160, 320];
 
 export enum EfisNdMode {
     ROSE_ILS,

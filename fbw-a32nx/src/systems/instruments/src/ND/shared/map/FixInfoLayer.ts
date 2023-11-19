@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { NdSymbol } from '@shared/NavigationDisplay';
+import { NdSymbol } from '@flybywiresim/fbw-sdk';
 import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { MapLayer } from './MapLayer';
 import { MapParameters } from '../utils/MapParameters';

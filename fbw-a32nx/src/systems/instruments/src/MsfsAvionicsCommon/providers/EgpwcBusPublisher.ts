@@ -1,5 +1,9 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { EventBus, SimVarPublisher, SimVarValueType } from '@microsoft/msfs-sdk';
-import { EfisSide } from '@shared/NavigationDisplay';
+import { EfisSide } from '@flybywiresim/fbw-sdk';
 
 export enum TerrainLevelMode {
     PeaksMode = 0,

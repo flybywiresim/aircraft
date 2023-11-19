@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
-import { EfisSide, EfisVectorsGroup } from '@shared/NavigationDisplay';
+import { EfisSide, EfisVectorsGroup } from '@flybywiresim/fbw-sdk';
 import { PathVector, pathVectorLength, pathVectorValid } from '@fmgc/guidance/lnav/PathVector';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { ArmedLateralMode, isArmed, LateralMode } from '@shared/autopilot';

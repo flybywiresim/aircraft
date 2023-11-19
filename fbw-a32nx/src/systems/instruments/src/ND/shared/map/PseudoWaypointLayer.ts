@@ -2,11 +2,10 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { NdSymbol, NdSymbolTypeFlags } from '@shared/NavigationDisplay';
+import { NdSymbol, NdSymbolTypeFlags, Arinc429ConsumerSubject, Arinc429Register, MathUtils } from '@flybywiresim/fbw-sdk';
+
 import { EventBus } from '@microsoft/msfs-sdk';
 import { NDSimvars } from 'instruments/src/ND/NDSimvarPublisher';
-import { Arinc429ConsumerSubject } from 'instruments/src/MsfsAvionicsCommon/Arinc429ConsumerSubject';
-import { Arinc429Register, MathUtils } from '@flybywiresim/fbw-sdk';
 import { DmcEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 import { MapLayer } from './MapLayer';
 import { MapParameters } from '../utils/MapParameters';

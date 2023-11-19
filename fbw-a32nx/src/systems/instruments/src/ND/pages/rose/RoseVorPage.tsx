@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { FSComponent, DisplayComponent, ComponentProps, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import { Arinc429WordData } from '@flybywiresim/fbw-sdk';
+import { Arinc429WordData, Arinc429ConsumerSubject } from '@flybywiresim/fbw-sdk';
+
 import { DmcEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 import { RoseMode, RoseModeProps } from './RoseMode';
 import { RoseModeUnderlay } from './RoseModeUnderlay';
@@ -12,7 +13,6 @@ import { AdirsSimVars } from '../../../MsfsAvionicsCommon/SimVarTypes';
 import { Flag } from '../../shared/Flag';
 import { NDControlEvents } from '../../NDControlEvents';
 import { VorInfoIndicator } from './VorInfoIndicator';
-import { Arinc429ConsumerSubject } from '../../../MsfsAvionicsCommon/Arinc429ConsumerSubject';
 
 export interface RoseVorProps extends RoseModeProps {
     index: 1 | 2,

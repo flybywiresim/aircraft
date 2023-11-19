@@ -1,5 +1,9 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { EventBus, SimVarPublisher, SimVarValueType } from '@microsoft/msfs-sdk';
-import { EfisNdMode, EfisOption, EfisSide, NavAidMode } from '@shared/NavigationDisplay';
+import { EfisNdMode, EfisOption, EfisSide, NavAidMode } from '@flybywiresim/fbw-sdk';
 
 export interface FcuSimVars {
     ndRangeSetting: number,

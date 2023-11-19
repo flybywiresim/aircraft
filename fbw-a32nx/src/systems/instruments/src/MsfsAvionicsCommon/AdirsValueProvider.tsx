@@ -1,7 +1,11 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { SimVarValueType } from '@microsoft/msfs-sdk';
-import { EfisSide } from '@shared/NavigationDisplay';
+import { ArincEventBus, EfisSide } from '@flybywiresim/fbw-sdk';
+
 import { AdirsSimVars, SwitchingPanelVSimVars } from './SimVarTypes';
-import { ArincEventBus } from './ArincEventBus';
 import { UpdatableSimVarPublisher } from './UpdatableSimVarPublisher';
 
 export class AdirsValueProvider<T extends AdirsSimVars> {

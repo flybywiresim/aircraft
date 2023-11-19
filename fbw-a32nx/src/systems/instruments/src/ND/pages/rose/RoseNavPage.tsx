@@ -1,12 +1,16 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { ConsumerSubject, FSComponent, MappedSubject, Subject, VNode } from '@microsoft/msfs-sdk';
-import { EfisNdMode, rangeSettings } from '@shared/NavigationDisplay';
+import { Arinc429RegisterSubject, EfisNdMode, efisRangeSettings } from '@flybywiresim/fbw-sdk';
+
 import { FcuSimVars } from 'instruments/src/MsfsAvionicsCommon/providers/FcuBusPublisher';
 import { LsCourseBug } from 'instruments/src/ND/pages/arc/LsCourseBug';
 import { getSmallestAngle } from 'instruments/src/PFD/PFDUtils';
 import { Flag } from '../../shared/Flag';
 import { RoseMode } from './RoseMode';
 import { RoseModeUnderlay } from './RoseModeUnderlay';
-import { Arinc429RegisterSubject } from '../../../MsfsAvionicsCommon/Arinc429RegisterSubject';
 import { AdirsSimVars } from '../../../MsfsAvionicsCommon/SimVarTypes';
 import { NDControlEvents } from '../../NDControlEvents';
 
@@ -109,7 +113,7 @@ export class RoseNavPage extends RoseMode {
         const publisher = this.props.bus.getPublisher<NDControlEvents>();
 
         const rangeSetting = this.mapRangeSub.get();
-        const range = rangeSettings[rangeSetting];
+        const range = efisRangeSettings[rangeSetting];
 
         publisher.pub('set_map_efis_mode', EfisNdMode.ROSE_NAV);
         publisher.pub('set_map_pixel_radius', 250);

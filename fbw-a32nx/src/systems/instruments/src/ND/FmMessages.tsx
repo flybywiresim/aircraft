@@ -1,6 +1,10 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { ArraySubject, DisplayComponent, EventBus, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { FMMessage, FMMessageTypes } from '@shared/FmMessages';
-import { EfisNdMode } from '@shared/NavigationDisplay';
+import { EfisNdMode } from '@flybywiresim/fbw-sdk';
 import { Layer } from '../MsfsAvionicsCommon/Layer';
 import { FmsVars } from '../MsfsAvionicsCommon/providers/FmsDataPublisher';
 

@@ -1,18 +1,13 @@
-import {
-    ConsumerSubject,
-    DisplayComponent,
-    EventBus,
-    FSComponent,
-    MappedSubject,
-    Subject,
-    Subscribable,
-    VNode,
-} from '@microsoft/msfs-sdk';
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
+import { ConsumerSubject, DisplayComponent, EventBus, FSComponent, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import { EfisNdMode, Arinc429ConsumerSubject } from '@flybywiresim/fbw-sdk';
+
 import { DmcEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
-import { EfisNdMode } from '@shared/NavigationDisplay';
 import { NDSimvars } from '../NDSimvarPublisher';
 import { getSmallestAngle } from '../../PFD/PFDUtils';
-import { Arinc429ConsumerSubject } from '../../MsfsAvionicsCommon/Arinc429ConsumerSubject';
 import { FcuSimVars } from '../../MsfsAvionicsCommon/providers/FcuBusPublisher';
 
 export interface TrackBugProps {

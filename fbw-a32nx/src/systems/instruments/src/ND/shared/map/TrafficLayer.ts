@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { NdTraffic } from '@shared/NavigationDisplay';
+import { NdTraffic } from '@flybywiresim/fbw-sdk';
 // import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { TaRaIntrusion } from '@tcas/lib/TcasConstants';
 import { MapLayer } from './MapLayer';

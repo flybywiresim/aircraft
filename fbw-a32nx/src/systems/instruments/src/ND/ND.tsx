@@ -3,11 +3,10 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ClockEvents, ConsumerSubject, DisplayComponent, EventBus, FSComponent, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import { SimVarString } from '@flybywiresim/fbw-sdk';
-import { EfisNdMode, EfisNdRangeValue, EfisSide, rangeSettings } from '@shared/NavigationDisplay';
+import { ArincEventBus, SimVarString, Arinc429ConsumerSubject, Arinc429RegisterSubject, EfisNdMode, EfisNdRangeValue, EfisSide, efisRangeSettings } from '@flybywiresim/fbw-sdk';
+
 import { DmcEvents } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 import { clampAngle } from 'msfs-geo';
-import { ArincEventBus } from 'instruments/src/MsfsAvionicsCommon/ArincEventBus';
 import { CrossTrackError } from 'instruments/src/ND/shared/CrossTrackError';
 import { FmsVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
 import { FcuSimVars } from 'instruments/src/MsfsAvionicsCommon/providers/FcuBusPublisher';
@@ -31,11 +30,9 @@ import { RoseVorPage } from './pages/rose/RoseVorPage';
 import { NDControlEvents } from './NDControlEvents';
 import { Airplane } from './shared/Airplane';
 import { TcasWxrMessages } from './TcasWxrMessages';
-import { Arinc429RegisterSubject } from '../MsfsAvionicsCommon/Arinc429RegisterSubject';
 import { Chrono } from './Chrono';
 import { WindIndicator } from './shared/WindIndicator';
 import { TerrainMapThresholds } from './TerrainMapThresholds';
-import { Arinc429ConsumerSubject } from '../MsfsAvionicsCommon/Arinc429ConsumerSubject';
 import { TrackLine } from './shared/TrackLine';
 import { TrackBug } from './shared/TrackBug';
 
@@ -169,7 +166,7 @@ export class NDComponent extends DisplayComponent<NDProps> {
         sub.on('trueRefActive').whenChanged().handle((v) => this.trueRefActive.set(v));
 
         sub.on('ndRangeSetting').whenChanged().handle((value) => {
-            this.mapRangeRadius.set(rangeSettings[value]);
+            this.mapRangeRadius.set(efisRangeSettings[value]);
             this.invalidateRange();
         });
 
