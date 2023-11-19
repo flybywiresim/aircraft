@@ -1,0 +1,65 @@
+@import "./definitions.scss";
+
+.GaugeComponent {
+    .Show {
+        display:block;
+    }
+
+    .Hide {
+        display: none;
+    }
+
+    .Gauge {
+        stroke: $display-white;
+        stroke-width: 2;
+        fill: none;
+    }
+
+    .GaugeInactive {
+        stroke: $display-amber;
+        stroke-width: 2;
+        fill: none;
+    }
+
+    .GaugeText {
+        stroke: $display-white;
+        fill: $display-white;
+        font-size: 20px;
+    }
+
+    .GaugeIndicator {
+        stroke: $display-green;
+        stroke-width: 3;
+        fill: none;
+        stroke-linecap: round;
+    }
+
+    .RedGaugeIndicator {
+        stroke: $display-red;
+        stroke-width: 3;
+        fill: none;
+        stroke-linecap: round;
+    }
+
+    .GaugeThrustLimitIndicator {
+        stroke: $display-amber;
+        stroke-width: 3;
+        fill: none;
+    }
+
+    .GaugeThrustLimitIndicatorFill {
+        stroke: $display-amber;
+        stroke-width: 3;
+        fill: $display-amber;
+    }
+
+    .GaugeThrustFill {
+        fill: $display-grey;
+    }
+}
+
+.DonutThrottleIndicator {
+    fill: none;
+    stroke-width: 2px;
+    stroke: $display-cyan;
+}

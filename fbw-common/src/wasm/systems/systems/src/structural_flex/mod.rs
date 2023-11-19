@@ -74,7 +74,7 @@ pub struct SurfaceVibrationGenerator {
     final_bump_accel_filtered: LowPassFilter<Acceleration>,
 }
 impl SurfaceVibrationGenerator {
-    pub fn default() -> Self {
+    pub fn default_generator() -> Self {
         let big_holes = BumpGenerator::new(Duration::from_secs(25), 2., 0.4);
         let small_holes = BumpGenerator::new(Duration::from_secs(5), 1.1, 0.1);
         let vibrations = BumpGenerator::new(Duration::from_millis(20), 0.2, 0.05);
