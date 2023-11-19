@@ -82,7 +82,6 @@ class MsfsHandler {
   // Pause detection
   NamedVariablePtr a32nxPauseDetected;
   ClientEventPtr pauseDetectedEvent;
-  [[maybe_unused]] CallbackID pauseDetectedEventCallbackId;
 
   /**
    * Current simulation time used for pause detection and time stamping variable updates
