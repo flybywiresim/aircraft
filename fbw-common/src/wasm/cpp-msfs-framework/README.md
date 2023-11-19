@@ -86,9 +86,9 @@ It basically provides a callback function the sim calls with different messages
 (service_ids) which will be handled accordingly. 
 
 In this framework the gauge code can be found in the Gauge_Extra_Backend.cpp file:<br/>
-<span style="color:cyan">fbw-a32nx/src/wasm/extra-backend-a32nx/src/Gauge_Extra_Backend.cpp</span><br/>
+<span style="color:cyan">/fbw-a32nx/src/wasm/extra-backend-a32nx/src/Gauge_Extra_Backend.cpp</span><br/>
 or
-<span style="color:cyan">fbw-a380x/src/wasm/extra-backend-a380x/src/Gauge_Extra_Backend.cpp</span>
+<span style="color:cyan">/fbw-a380x/src/wasm/extra-backend-a380x/src/Gauge_Extra_Backend.cpp</span>
 
 Gauges need to be configured into the panel.cfg file:<br/>
 <span style="color:cyan">flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/panel.cfg</span>
@@ -116,7 +116,7 @@ Also see:
 - [MSFS SDK Documentation: C/C++ GAUGES](https://docs.flightsimulator.com/html/Content_Configuration/SimObjects/Aircraft_SimO/Instruments/C_C++_Gauges.htm?rhhlterm=_gauge_callback&rhsearch=_gauge_callback)
 
 ### MsfsHandler
-<span style="color:cyan">src/extra-backend/src/MsfsHandler/MsfsHandler.h</span>
+<span style="color:cyan">fbw-common/src/wasm/cpp-msfs-framework/MsfsHandler/MsfsHandler.h</span>
 
 The MsfsHandler is the central component acts as a dispatcher for the custom 
 modules. It manages the SimConnect connection, all module updates, owns the 
@@ -143,11 +143,10 @@ various sim SDK API elements and data types into C++ objects.
 
 It currently provides the following data types:
 
-- **AircraftVariable:** a variable which is directly mapped to a simvar
-- **NamedVariable**: a variable which is mapped to a LVAR
+- **AircraftVariable:** a variable which is directly mapped to a simvar.
+- **NamedVariable**: a variable which is mapped to a LVAR.
 - **DataDefinitionVariable**: Custom defined SimObjects base on simvars and custom 
-  C++ structs (with SU12 also LVARs can be part of the data definition - this is 
-  not tested yet).
+  C++ structs (with SU12 also LVARs can be part of the data definition).
 - **ClientDataAreaVariable**: Custom defined SimObjects base on memory mapped data to 
   exchange arbitrary data between SimConnect clients.  
 - **StreamingClientDataAreaVariable**: Custom defined SimObjects base on memory mapped
@@ -231,18 +230,15 @@ OBS: A prefix is added to the variable name to distinguish different aircraft
 The prefix is set via the static variable `AIRCRAFT_PREFIX` in the NamedVariable class. 
 It is set by the MsfsHandler class' constructor. 
 
+_Author note: this is done because of a team decision for this convention. The author does not think
+such a preset should be part of the framework API._
+
 ##### AircraftVariable
 The AircraftVariable is a variable which is mapped to an aircraft simvar. As simvars 
 are read-only it is required to use an event to write the variable back to the sim.
 
 It allows to specify either an event-name or an instance of an ClientEvent object to
 write data back to the sim.
-
-One major difference of SimObjects to Named or Aircraft Variables is that SimObjects
-are read asynchronously from the sim. This means that the data is not available at the 
-time of the call to the read function. Instead, the data is received via SimConnect Callback
-in the next tick. Although this is all handled automatically by the DataManager it is
-important to understand this difference.
 
 It is based on the CacheableVariable - see above.
 
@@ -252,13 +248,19 @@ No prefix is added to the variable name.
 
 The SimObjectBase is the base class for all custom SimObjects.
 
+One major difference of SimObjects to Named or Aircraft Variables is that SimObjects
+are read asynchronously from the sim. This means that the data is not available at the
+time of the call to the read function. Instead, the data is received via SimConnect Callback
+in the next tick. Although this is all handled automatically by the DataManager it is
+important to understand this difference.
+
 **Reading**
 
-| method                 | description                                                                                                      |
-|:-----------------------|:-----------------------------------------------------------------------------------------------------------------|
-| requestDataFromSim()   | Sends a data request to the sim                                                                                  |
-| requestUpdateFromSim() | Sends a data request to the sim if update criteria are met (maxAge)                                              |
-| processSimData()       | The callback the DataManager uses when the requested data has been received from the sim                         | 
+| method                 | description                                                                              |
+|:-----------------------|:-----------------------------------------------------------------------------------------|
+| requestDataFromSim()   | Sends a data request to the sim                                                          |
+| requestUpdateFromSim() | Sends a data request to the sim if update criteria are met (maxAge)                      |
+| processSimData()       | The callback the DataManager used when the requested data has been received from the sim | 
 
 See the documentation of CacheableVariable for more details.
 
@@ -412,17 +414,19 @@ Good examples of how to use the framework can be found in the modules:
 Assuming you are able to build the aircraft as a whole this describes how to add
 a new module (classes/headers) to the project.
 
-The framework code is split into two parts:
-- the common framework code which lives in <span style="color:cyan">/fbw-common/src/wasm/extra-backend</span>
-- the aircraft specific gauge and modules which live in <span style="color:cyan">/fbw-a32nx/src/wasm/extra-backend-a320</span> 
-  and <span style="color:cyan">/fbw-a380x/src/wasm/extra-backend-a380</span>
+The framework code is split into three parts:
+- the common c++ framework code which lives in  <span style="color:cyan">/fbw-common/src/wasm/cpp-msfs-framework</span>
+- the instance of a coomon backend using the c++ framework is in <span style="color:cyan">/fbw-common/src/wasm/extra-backend</span>
+- the aircraft specific gauge and modules which live in <span style="color:cyan">/fbw-a32nx/src/wasm/extra-backend-a32nx</span> 
+  and <span style="color:cyan">/fbw-a380x/src/wasm/extra-backend-a380x</span>
 
 When adding new modules please place them in a new folder in the aircraft's extra-backend folder:<br/>
-E.g. <span style="color:cyan">/fbw-a32nx/src/wasm/extra-backend-a320</span>
+E.g. <span style="color:cyan">/fbw-a32nx/src/wasm/extra-backend-a32nx</span>
 
 Add it to the following files:
-- <span style="color:cyan">/fbw-a32nx/src/wasm/extra-backend-a320/CMakeLists.txt</span>
-- <span style="color:cyan">/fbw-a32nx/src/wasm/extra-backend-a320/src/Gauge_Extra_Backend.cpp</span>
+- <span style="color:cyan">/fbw-a32nx/src/wasm/extra-backend-a32nx/CMakeLists.txt</span>
+- <span style="color:cyan">/fbw-a32nx/src/wasm/extra-backend-a32nx/src/Gauge_Extra_Backend.cpp</span>
+(or the A380X equivalents)
 
 To build it separately you can use the following commands:
                                             
