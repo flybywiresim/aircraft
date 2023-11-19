@@ -2,16 +2,99 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-.oanc-control-panel {
-    width: 650px;
-    height: 130px;
+@import "../../Common/definitions";
+
+.oanc-control-panel-container {
+    width: 768px;
+
+    display: flex;
 
     position: absolute;
     right: 0;
     bottom: 0;
 
-    background-color: rgb(128, 128, 128);
-    border: solid 2px white;
-
     z-index: 9999;
+}
+
+.oanc-control-panel-tabs {
+    width: 123px;
+    height: 130px;
+
+    display: flex;
+    flex-direction: column;
+
+    margin-top: auto;
+}
+
+.oanc-control-panel {
+    width: 645px;
+    height: 130px;
+
+    background-color: rgb(128, 128, 128);
+    border: solid 3px white;
+    border-left: none;
+    border-bottom-width: 2px;
+    border-right-width: 2px;
+}
+
+.oanc-control-panel-tabs-dummy {
+    width: 123px;
+    height: calc(100% / 4 + 2px);
+
+    border-right: 3px solid rgb(255, 255, 255);
+}
+
+.oanc-control-panel-tab-button {
+    width: 123px;
+    height: calc(100% / 4);
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    font-size: 18px;
+    color: white;
+
+    border-top: 2px solid rgb(100, 100, 100);
+    border-right: 3px solid rgb(255, 255, 255);
+    border-bottom: 2px solid rgb(100, 100, 100);
+    border-left: 2px solid rgb(100, 100, 100);
+
+    background-color: rgb(20, 20, 20);
+}
+
+.oanc-control-panel-tab-button:not(.oanc-control-panel-tab-button-selected):hover {
+    border-top: 2px solid $display-cyan !important;
+    border-right: 3px solid $display-cyan !important;
+    border-bottom: 2px solid $display-cyan !important;
+    border-left: 2px solid $display-cyan !important;
+
+    background-color: rgb(128, 128, 128);
+}
+
+.oanc-control-panel-tab-button:nth-child(3) {
+    border-top: none;
+    border-bottom: none;
+}
+
+.oanc-control-panel-tabs[data-active-tab-index="2"] .oanc-control-panel-tab-button:nth-child(2) {
+    border-bottom: none;
+    padding-bottom: 1px;
+}
+
+.oanc-control-panel-tabs[data-active-tab-index="2"] .oanc-control-panel-tab-button:nth-child(4) {
+    border-top: none;
+    padding-top: 2px;
+}
+
+.oanc-control-panel-tab-button.oanc-control-panel-tab-button-selected {
+    border-top: 3px solid white;
+    border-left: 3px solid white;
+    border-bottom: 2px solid white;
+    border-right: none;
+    padding-right: 2px;
+
+    background-color: rgb(128, 128, 128);
+    color: $display-cyan;
 }
