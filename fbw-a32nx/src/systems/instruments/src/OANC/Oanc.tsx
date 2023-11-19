@@ -180,6 +180,8 @@ export class Oanc extends DisplayComponent<OancProps> {
         featureCollection([]), // Layer 6: STAND GUIDANCE LINES (scaled width)
     ];
 
+    private amdbClient = new NavigraphAmdbClient();
+
     private labelManager = new OancLabelManager(this);
 
     private positionComputer = new OancPositionComputer(this);
@@ -317,10 +319,8 @@ export class Oanc extends DisplayComponent<OancProps> {
         includeLayers.push(FeatureTypeString.AerodromeReferencePoint);
         includeLayers.push(FeatureTypeString.ParkingStandLocation);
 
-        const client = new NavigraphAmdbClient();
-
-        const data = await client.getAirportData(icao, includeLayers, undefined);
-        const wgs84ArpDat = await client.getAirportData(icao, [FeatureTypeString.AerodromeReferencePoint], undefined, AmdbProjection.Epsg4326);
+        const data = await this.amdbClient.getAirportData(icao, includeLayers, undefined);
+        const wgs84ArpDat = await this.amdbClient.getAirportData(icao, [FeatureTypeString.AerodromeReferencePoint], undefined, AmdbProjection.Epsg4326);
 
         const features = Object.values(data).reduce((acc, it) => [...acc, ...it.features], [] as Feature<Geometry, AmdbProperties>[]);
         const airportMap: AmdbFeatureCollection = featureCollection(features);
@@ -856,7 +856,7 @@ export class Oanc extends DisplayComponent<OancProps> {
                     items={this.contextMenuItems}
                 />
 
-                <ControlPanel isVisible={this.controlPanelVisible} />
+                <ControlPanel amdbClient={this.amdbClient} isVisible={this.controlPanelVisible} />
 
                 <div
                     style={`position: absolute; width: ${OANC_RENDER_WIDTH}px; height: ${OANC_RENDER_HEIGHT}px; pointer-events: none`}

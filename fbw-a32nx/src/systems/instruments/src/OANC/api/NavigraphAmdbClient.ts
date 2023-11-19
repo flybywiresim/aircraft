@@ -2,11 +2,15 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { AmdbProjection, AmdbResponse, FeatureTypeString, NavigraphClient } from '@flybywiresim/fbw-sdk';
+import { AmdbAirportSearchResponse, AmdbProjection, AmdbResponse, FeatureTypeString, NavigraphClient } from '@flybywiresim/fbw-sdk';
 import { AmdbDataInterface } from './AmdbDataInterface';
 
 export class NavigraphAmdbClient implements AmdbDataInterface {
     private readonly navigraphClient = new NavigraphClient();
+
+    async searchForAirports(queryString: string): Promise<AmdbAirportSearchResponse> {
+        return this.navigraphClient.searchAmdbAirports(queryString);
+    }
 
     async getAirportData(
         icao: string,

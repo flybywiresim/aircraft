@@ -1,5 +1,5 @@
 import pkce from '@navigraph/pkce';
-import { AmdbProjection, AmdbResponse, FeatureTypeString } from '../amdb';
+import { AmdbAirportSearchResponse, AmdbProjection, AmdbResponse, FeatureTypeString } from '../amdb';
 import { AirportInfo, AuthType, NavigraphAirportCharts, NavigraphChart, NavigraphSubscriptionStatus } from './types';
 import { NXDataStore } from '../persistence';
 
@@ -310,6 +310,16 @@ export class NavigraphClient {
         }
 
         return null;
+    }
+
+    public async searchAmdbAirports(queryString: string): Promise<AmdbAirportSearchResponse> {
+        let query = 'search';
+
+        query += `?q=${queryString}`;
+
+        const response = await this.amdbCall(query);
+
+        return JSON.parse(response);
     }
 
     public async getAmdbData(

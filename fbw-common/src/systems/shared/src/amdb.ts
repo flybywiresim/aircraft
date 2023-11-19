@@ -1,4 +1,5 @@
 import { FeatureCollection, Geometry } from '@turf/turf';
+import { LatLonInterface } from '@microsoft/msfs-sdk';
 
 export enum AmdbProjection {
     Epsg4326 = 'EPSG:4326',
@@ -177,3 +178,22 @@ export interface AmdbProperties {
 export type AmdbFeatureCollection = FeatureCollection<Geometry, AmdbProperties>
 
 export type AmdbResponse = Partial<Record<FeatureTypeString, AmdbFeatureCollection>>
+
+export interface AmdbAirportSearchResult {
+    /** The airport's ICAO code */
+    idarpt: string,
+
+    /** The airport's IATA code */
+    iata: string,
+
+    /** The airport's human-readable name */
+    name: string,
+
+    /** The airport's location (ARP) */
+    coordinates: LatLonInterface,
+
+    /** The airport's elevation, in metres */
+    elev: number,
+}
+
+export type AmdbAirportSearchResponse = AmdbAirportSearchResult[]
