@@ -14,6 +14,7 @@ import { SelectGroup, SelectItem } from '../../../../UtilComponents/Form/Select'
 import { SeatMapWidget } from '../Seating/SeatMapWidget';
 import { PromptModal, useModals } from '../../../../UtilComponents/Modals/Modals';
 import { A380SeatOutlineBg, A380SeatOutlineUpperBg } from '../../../../Assets/A380SeatOutlineBg';
+import { useSelector } from 'react-redux';
 
 interface A380Props {
     simbriefUnits: string,
@@ -79,6 +80,8 @@ export const A380Payload: React.FC<A380Props> = ({
     const [upperMidBDesired, setUpperMidBDesired] = useSeatFlags(`L:${Loadsheet.seatMap[12].simVar}_DESIRED`, Loadsheet.seatMap[12].capacity, 557);
     const [upperAftDesired, setUpperAftDesired] = useSeatFlags(`L:${Loadsheet.seatMap[13].simVar}_DESIRED`, Loadsheet.seatMap[13].capacity, 571);
 
+    const globalSettingsRedux = useSelector((state:any) => state.globalSettings);
+
     const activeFlags = useMemo(
         () => [mainFwdA, mainFwdB, mainMid1A, mainMid1B, mainMid1C, mainMid2A, mainMid2B, mainMid2C, mainAftA, mainAftB, upperFwd, upperMidA, upperMidB, upperAft],
         [mainFwdA, mainFwdB, mainMid1A, mainMid1B, mainMid1C, mainMid2A, mainMid2B, mainMid2C, mainAftA, mainAftB, upperFwd, upperMidA, upperMidB, upperAft],
@@ -115,6 +118,8 @@ export const A380Payload: React.FC<A380Props> = ({
 
     const maxPax = useMemo(() => seatMap.reduce((a, b) => a + b.capacity, 0), [seatMap]);
     const maxCargo = useMemo(() => cargoMap.reduce((a, b) => a + b.weight, 0), [cargoMap]);
+    
+
 
     // Calculate Total Pax from Pax Flags
     const totalPax = useMemo(() => {
@@ -485,17 +490,27 @@ export const A380Payload: React.FC<A380Props> = ({
     ]);
 
 
-    //If totalPax is 0, deactivate all sounds from the cabin
-     useEffect(() => {
-        let cabinSoundStatus:number = 0;
-        if(totalPax > 0)
-        {
-            cabinSoundStatus = 1;
-        }
+  //If totalPax is 0, deactivate all sounds from the cabin
+  useEffect(() => {
+    let cabinSoundStatus:number = 0;
+    if(totalPax > 0)
+    {
+        cabinSoundStatus = 1;
+    }
+    if(globalSettingsRedux.passengerAmbienceActive)
+    {
         setPassengerAmbienceEnabled(cabinSoundStatus);
+    }
+    if(globalSettingsRedux.cabinAnnouncementsActive)
+    {
         setAnnouncementsEnabled(cabinSoundStatus);
+    }
+    if(globalSettingsRedux.boardindgMusicActive)
+    {
         setBoardingMusicEnabled(cabinSoundStatus);
-    },[totalPax]);
+    }
+    
+},[totalPax]);
 
 
     const remainingTimeString = () => {
