@@ -25,6 +25,7 @@ import { Presets } from './Presets/Presets';
 import { clearEfbState, useAppDispatch, useAppSelector } from './Store/store';
 import { fetchSimbriefDataAction, isSimbriefDataLoaded } from './Store/features/simBrief';
 import { setFlightPlanProgress } from './Store/features/flightProgress';
+import { setPassengerAmbienceActive, setBoardingMusicActive, setCabinAnnouncementsActive } from './Store/features/globalSettings';
 import { Checklists, setAutomaticItemStates } from './Checklists/Checklists';
 import { CHECKLISTS } from './Checklists/Lists';
 import { setChecklistItems } from './Store/features/checklists';
@@ -105,6 +106,12 @@ const Efb = () => {
     const [autoLoadDayLightingPresetID] = usePersistentNumberProperty('LIGHT_PRESET_AUTOLOAD_DAY', 0);
     const [autoLoadDawnDuskLightingPresetID] = usePersistentNumberProperty('LIGHT_PRESET_AUTOLOAD_DAWNDUSK', 0);
     const [autoLoadNightLightingPresetID] = usePersistentNumberProperty('LIGHT_PRESET_AUTOLOAD_NIGHT', 0);
+    
+    //Data for global settings sync after system start
+    const [passengerAmbienceEnabled] = usePersistentNumberProperty('SOUND_PASSENGER_AMBIENCE_ENABLED', 1);
+    const [cabinAnnouncementsEnabled] = usePersistentNumberProperty('SOUND_ANNOUNCEMENTS_ENABLED', 1);
+    const [boardingMusicEnabled] = usePersistentNumberProperty('SOUND_BOARDING_MUSIC_ENABLED', 1);
+    
 
     const [lat] = useSimVar('PLANE LATITUDE', 'degree latitude', 4000);
     const [long] = useSimVar('PLANE LONGITUDE', 'degree longitude', 4000);
@@ -119,6 +126,7 @@ const Efb = () => {
 
     useEffect(() => {
         document.documentElement.classList.add(`theme-${theme}`, 'animationsEnabled');
+        syncGlobalSettings();
     }, []);
 
     useEffect(() => {
@@ -290,6 +298,14 @@ const Efb = () => {
 
     // </Pushback>
     // =========================================================================
+
+    //Writes the initial values fro the global settings
+    const syncGlobalSettings = () => 
+    {
+        dispatch(setPassengerAmbienceActive(passengerAmbienceEnabled === 1 ? true : false));
+        dispatch(setCabinAnnouncementsActive(cabinAnnouncementsEnabled === 1 ? true : false));
+        dispatch(setBoardingMusicActive(boardingMusicEnabled === 1 ? true : false));
+    }
 
     const { offsetY } = useAppSelector((state) => state.keyboard);
 
