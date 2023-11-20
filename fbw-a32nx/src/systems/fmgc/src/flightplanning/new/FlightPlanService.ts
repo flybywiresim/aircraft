@@ -459,4 +459,14 @@ export class FlightPlanService implements FlightPlanInterface {
 
         this.flightPlanManager.copy(FlightPlanIndex.Active, FlightPlanIndex.Temporary, CopyOptions.IncludeFixInfos);
     }
+
+    setCruiseFlightLevel(fl: number, planIndex = FlightPlanIndex.Active) {
+        const newFl = Number(fl >= 1000 ? Math.floor(fl / 100) : fl);
+        this.flightPlanManager.get(planIndex).performanceData.cruiseFlightLevel.set(newFl);
+        SimVar.SetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number', newFl * 100);
+    }
+
+    getCruiseFlightLevel(planIndex = FlightPlanIndex.Active) {
+        return this.flightPlanManager.get(planIndex).performanceData.cruiseFlightLevel.get();
+    }
 }

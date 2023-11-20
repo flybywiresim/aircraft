@@ -5,8 +5,8 @@
 
 import { Airport, ApproachType, Fix, LegType, NXDataStore } from '@flybywiresim/fbw-sdk';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/new/plans/AlternateFlightPlan';
-import { EventBus, MagVar } from '@microsoft/msfs-sdk';
-import { FixInfoData, FixInfoEntry } from '@fmgc/flightplanning/new/plans/FixInfo';
+import { EventBus, MagVar, Subject } from '@microsoft/msfs-sdk';
+import { FixInfoEntry, FixInfoData } from '@fmgc/flightplanning/new/plans/FixInfo';
 import { loadAllDepartures, loadAllRunways } from '@fmgc/flightplanning/new/DataLoading';
 import { Coordinates, Degrees } from 'msfs-geo';
 import { FlightPlanLeg, FlightPlanLegFlags } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
@@ -36,6 +36,8 @@ export class FlightPlan extends BaseFlightPlan {
      * FIX INFO entries
      */
     fixInfos: readonly FixInfoEntry[] = [];
+
+    flightNumber = Subject.create<string>(undefined);
 
     destroy() {
         super.destroy();
@@ -72,6 +74,7 @@ export class FlightPlan extends BaseFlightPlan {
         newPlan.activeLegIndex = this.activeLegIndex;
 
         newPlan.performanceData = this.performanceData.clone();
+        newPlan.flightNumber.set(this.flightNumber.get());
 
         if (options & CopyOptions.IncludeFixInfos) {
             newPlan.fixInfos = this.fixInfos.map((it) => it.clone());
@@ -384,6 +387,7 @@ export class FlightPlan extends BaseFlightPlan {
         newPlan.arrivalEnrouteTransitionSegment.setFromSerializedSegment(serialized.segments.arrivalEnrouteTransitionSegment);
         newPlan.approachSegment.setFromSerializedSegment(serialized.segments.approachSegment);
         newPlan.approachViaSegment.setFromSerializedSegment(serialized.segments.approachViaSegment);
+        // newPlan.performanceData.cruiseFlightLevel.set(serialized.performanceData.cruiseFlightLevel);
 
         return newPlan;
     }

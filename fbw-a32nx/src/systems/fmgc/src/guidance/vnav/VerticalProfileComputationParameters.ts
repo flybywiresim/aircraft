@@ -1,3 +1,4 @@
+import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { Fmgc } from '@fmgc/guidance/GuidanceController';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { SpeedLimit } from '@fmgc/guidance/vnav/SpeedLimit';
@@ -58,7 +59,7 @@ export interface VerticalProfileComputationParameters {
 export class VerticalProfileComputationParametersObserver {
     private parameters: VerticalProfileComputationParameters;
 
-    constructor(private fmgc: Fmgc) {
+    constructor(private fmgc: Fmgc, private flightPlanService: FlightPlanService) {
         this.update();
     }
 
@@ -99,7 +100,7 @@ export class VerticalProfileComputationParametersObserver {
             accelerationAltitude: this.fmgc.getAccelerationAltitude(),
             thrustReductionAltitude: this.fmgc.getThrustReductionAltitude(),
             originTransitionAltitude: this.fmgc.getOriginTransitionAltitude(),
-            cruiseAltitude: Number.isFinite(this.fmgc.getCruiseAltitude()) ? this.fmgc.getCruiseAltitude() : this.parameters.cruiseAltitude,
+            cruiseAltitude: Number.isFinite(this.flightPlanService.getCruiseFlightLevel()) ? this.flightPlanService.getCruiseFlightLevel() : this.parameters.cruiseAltitude,
             climbSpeedLimit: this.fmgc.getClimbSpeedLimit(),
             descentSpeedLimit: this.fmgc.getDescentSpeedLimit(),
             flightPhase: this.fmgc.getFlightPhase(),

@@ -41,13 +41,18 @@ export class FlightPlanPerformanceData {
         cloned.databaseTransitionLevel.set(this.databaseTransitionLevel.get());
         cloned.pilotTransitionLevel.set(this.pilotTransitionLevel.get());
 
+        cloned.cruiseFlightLevel.set(this.cruiseFlightLevel.get());
+        cloned.costIndex.set(this.costIndex.get());
+
         return cloned;
     }
 
     /**
      * Cruise FL
      */
-    readonly cruiseFlightLevel = Subject.create<AltitudeValue>(undefined);
+    readonly cruiseFlightLevel = Subject.create<AltitudeValue>(0);
+
+    readonly costIndex = Subject.create<number>(0);
 
     /**
      * V1 speed

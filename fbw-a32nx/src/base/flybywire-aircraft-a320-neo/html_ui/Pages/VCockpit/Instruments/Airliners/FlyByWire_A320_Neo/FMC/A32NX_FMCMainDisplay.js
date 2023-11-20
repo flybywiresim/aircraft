@@ -16,7 +16,7 @@ class FMCMainDisplay extends BaseAirliners {
         /** Declaration of every variable used (NOT initialization) */
         this.currentFlightPlanWaypointIndex = undefined;
         this.costIndex = undefined;
-        this.costIndexSet = undefined;
+      //  this.costIndexSet = undefined;
         this.maxCruiseFL = undefined;
         this.routeIndex = undefined;
         this.coRoute = { routeNumber: undefined, routes: undefined };
@@ -97,9 +97,7 @@ class FMCMainDisplay extends BaseAirliners {
         this._lastHasReachFlex = undefined;
         this._apMasterStatus = undefined;
         this._lastRequestedFLCModeWaypointIndex = undefined;
-        this._cruiseFlightLevel = undefined;
-        this._activeCruiseFlightLevel = undefined;
-        this._activeCruiseFlightLevelDefaulToFcu = undefined;
+
         this._progBrgDist = undefined;
         this.preSelectedClbSpeed = undefined;
         this.preSelectedCrzSpeed = undefined;
@@ -214,6 +212,47 @@ class FMCMainDisplay extends BaseAirliners {
             this.arincEisWord2,
         ];
     }
+
+    get costIndex() {
+        if(!this.currFlightPlanService) {
+            return 0;
+        }
+        const plan = this.currFlightPlanService.active;
+        return plan.performanceData.costIndex.get();
+    }
+
+    get flightNumber() {
+        if(!this.currFlightPlanService) {
+            return undefined;
+        }
+        const plan = this.currFlightPlanService.active;
+        return plan.flightNumber.get();
+    }
+
+    set flightNumber(flightNumber) {
+        if(!this.currFlightPlanService) {
+            return undefined;
+        }
+        const plan = this.currFlightPlanService.active;
+        plan.flightNumber.set(flightNumber);
+    }
+
+
+    set costIndex(ci) {
+        if(!this.currFlightPlanService) {
+            return;
+        }
+        const plan = this.currFlightPlanService.active;
+        plan.performanceData.costIndex.set(ci);
+    }
+
+    get costIndexSet() {
+        if(!this.currFlightPlanService) {
+            return false;
+        }
+        const plan = this.currFlightPlanService.active;
+        return plan.performanceData.costIndex.get() > 0 ? true : false;
+    }
     Init() {
         super.Init();
         this.initVariables();
@@ -281,9 +320,9 @@ class FMCMainDisplay extends BaseAirliners {
         this.machToCasManualCrossoverCurve.add(0.8, 300);
         this.machToCasManualCrossoverCurve.add(0.82, 350);
 
-        this.cruiseFlightLevel = SimVar.GetGameVarValue("AIRCRAFT CRUISE ALTITUDE", "feet");
+       /*  this.cruiseFlightLevel = SimVar.GetGameVarValue("AIRCRAFT CRUISE ALTITUDE", "feet");
         this.cruiseFlightLevel /= 100;
-        this._cruiseFlightLevel = this.cruiseFlightLevel;
+        this._cruiseFlightLevel = this.cruiseFlightLevel; */
 
         // TODO port over somehow ?
         // this.flightPlanManager.onCurrentGameFlightLoaded(() => {
@@ -338,12 +377,14 @@ class FMCMainDisplay extends BaseAirliners {
         }, 15000);
 
         SimVar.SetSimVarValue('L:A32NX_FM_LS_COURSE', 'number', -1);
+
+
     }
 
     initVariables(resetTakeoffData = true) {
         this.currentFlightPlanWaypointIndex = -1;
         this.costIndex = 0;
-        this.costIndexSet = false;
+        //this.costIndexSet = false;
         this.maxCruiseFL = 390;
         this.routeIndex = 0;
         this.resetCoroute();
@@ -467,8 +508,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.updateAutopilotCooldown = 0;
         this._apMasterStatus = false;
         this._lastRequestedFLCModeWaypointIndex = -1;
-        this._cruiseFlightLevel = undefined;
-        this._activeCruiseFlightLevel = 0;
+
         this._activeCruiseFlightLevelDefaulToFcu = false;
         const payloadConstruct = new A32NX_PayloadConstructor();
         this.paxStations = payloadConstruct.paxStations;
@@ -500,6 +540,7 @@ class FMCMainDisplay extends BaseAirliners {
         // this.managedSpeedDescendMachIsPilotEntered = false;
         this.cruiseFlightLevelTimeOut = undefined;
         this.flightNumber = undefined;
+       // this.flightNumber = undefined;
         this.cruiseTemperature = undefined;
         this.taxiFuelWeight = 0.2;
         this.blockFuel = undefined;
@@ -540,8 +581,8 @@ class FMCMainDisplay extends BaseAirliners {
         SimVar.SetSimVarValue("L:A32NX_MachPreselVal", "mach", -1);
         SimVar.SetSimVarValue("L:A32NX_SpeedPreselVal", "knots", -1);
 
-        SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "feet", -1);
-        SimVar.SetSimVarValue("L:AIRLINER_MINIMUM_DESCENT_ALTITUDE", "feet", 0);
+       // SimVar.SetSimVarValue("L:A32NX_DECISION_HEIGHT", "feet", -1);
+        SimVar.SetSimVarValue("L:A32NX_MINIMUM_DESCENT_ALTITUDE", "feet", 0);
 
         SimVar.SetSimVarValue(
             "L:A32NX_FG_ALTITUDE_CONSTRAINT",
@@ -742,8 +783,8 @@ class FMCMainDisplay extends BaseAirliners {
                 /** Arm preselected speed/mach for next flight phase */
                 this.updatePreSelSpeedMach(this.preSelectedCrzSpeed);
 
-                if (!this.cruiseFlightLevel) {
-                    this.cruiseFlightLevel = Simplane.getAutoPilotDisplayedAltitudeLockValue('feet') / 100;
+                if (!this.currFlightPlanService.getCruiseFlightLevel()) {
+                    this.currFlightPlanService.setCruiseFlightLevel(Simplane.getAutoPilotDisplayedAltitudeLockValue('feet') / 100);
                 }
 
                 break;
@@ -769,10 +810,10 @@ class FMCMainDisplay extends BaseAirliners {
                 this.updatePreSelSpeedMach(this.preSelectedDesSpeed);
 
                 // This checks against the pilot defined cruise altitude and the automatically populated cruise altitude
-                if (this.cruiseFlightLevel !== this._cruiseFlightLevel) {
+             /*    if (this.cruiseFlightLevel !== this._cruiseFlightLevel) {
                     this._cruiseFlightLevel = this.cruiseFlightLevel;
                     this.addMessageToQueue(NXSystemMessages.newCrzAlt.getModifiedMessage(this._cruiseFlightLevel * 100));
-                }
+                } */
 
                 break;
             }
@@ -790,7 +831,7 @@ class FMCMainDisplay extends BaseAirliners {
 
                 this.triggerCheckSpeedModeMessage(undefined);
 
-                this.cruiseFlightLevel = undefined;
+                this.flightPlanService.setCruiseFlightLevel(undefined);
 
                 break;
             }
@@ -1840,13 +1881,12 @@ class FMCMainDisplay extends BaseAirliners {
         const _targetFl = Simplane.getAutoPilotDisplayedAltitudeLockValue() / 100;
 
         if (
-            (this.flightPhaseManager.phase === FmgcFlightPhases.CLIMB && _targetFl > this.cruiseFlightLevel) ||
-            (this.flightPhaseManager.phase === FmgcFlightPhases.CRUISE && _targetFl !== this.cruiseFlightLevel)
+            (this.flightPhaseManager.phase === FmgcFlightPhases.CLIMB && _targetFl >  this.currFlightPlanService.getCruiseFlightLevel()) ||
+            (this.flightPhaseManager.phase === FmgcFlightPhases.CRUISE && _targetFl !== this.currFlightPlanService.getCruiseFlightLevel())
         ) {
-            this.deleteOutdatedCruiseSteps(this.cruiseFlightLevel, _targetFl);
+            this.deleteOutdatedCruiseSteps(this.currFlightPlanService.getCruiseFlightLevel(), _targetFl);
             this.addMessageToQueue(NXSystemMessages.newCrzAlt.getModifiedMessage(_targetFl * 100));
-            this.cruiseFlightLevel = _targetFl;
-            this._cruiseFlightLevel = _targetFl;
+            this.currFlightPlanService.setCruiseFlightLevel(_targetFl);
         }
     }
 
@@ -1888,8 +1928,8 @@ class FMCMainDisplay extends BaseAirliners {
         if ((activeVerticalMode >= 11 && activeVerticalMode <= 15) || (activeVerticalMode >= 21 && activeVerticalMode <= 23)) {
             const fcuFl = Simplane.getAutoPilotDisplayedAltitudeLockValue() / 100;
 
-            if (this.flightPhaseManager.phase === FmgcFlightPhases.CLIMB && fcuFl > this.cruiseFlightLevel ||
-                this.flightPhaseManager.phase === FmgcFlightPhases.CRUISE && fcuFl !== this.cruiseFlightLevel
+            if (this.flightPhaseManager.phase === FmgcFlightPhases.CLIMB && fcuFl > this.currFlightPlanService.getCruiseFlightLevel() ||
+                this.flightPhaseManager.phase === FmgcFlightPhases.CRUISE && fcuFl !== this.currFlightPlanService.getCruiseFlightLevel()
             ) {
                 if (this.cruiseFlightLevelTimeOut) {
                     clearTimeout(this.cruiseFlightLevelTimeOut);
@@ -1899,13 +1939,12 @@ class FMCMainDisplay extends BaseAirliners {
                 this.cruiseFlightLevelTimeOut = setTimeout(() => {
                     if (fcuFl === Simplane.getAutoPilotDisplayedAltitudeLockValue() / 100 &&
                         (
-                            this.flightPhaseManager.phase === FmgcFlightPhases.CLIMB && fcuFl > this.cruiseFlightLevel ||
-                            this.flightPhaseManager.phase === FmgcFlightPhases.CRUISE && fcuFl !== this.cruiseFlightLevel
+                            this.flightPhaseManager.phase === FmgcFlightPhases.CLIMB && fcuFl > this.currFlightPlanService.getCruiseFlightLevel() ||
+                            this.flightPhaseManager.phase === FmgcFlightPhases.CRUISE && fcuFl !== this.currFlightPlanService.getCruiseFlightLevel()
                         )
                     ) {
                         this.addMessageToQueue(NXSystemMessages.newCrzAlt.getModifiedMessage(fcuFl * 100));
-                        this.cruiseFlightLevel = fcuFl;
-                        this._cruiseFlightLevel = fcuFl;
+                        this.currFlightPlanService.setCruiseFlightLevel(fcuFl);
                         if (this.page.Current === this.page.ProgressPage) {
                             CDUProgressPage.ShowPage(this);
                         }
@@ -1958,19 +1997,12 @@ class FMCMainDisplay extends BaseAirliners {
     /* END OF FMS CHECK ROUTINE */
     /* MCDU GET/SET METHODS */
 
-    get cruiseFlightLevel() {
-        return this._activeCruiseFlightLevel;
-    }
-
-    set cruiseFlightLevel(fl) {
-        this._activeCruiseFlightLevel = Math.round(fl);
-        SimVar.SetSimVarValue("L:AIRLINER_CRUISE_ALTITUDE", "number", this._activeCruiseFlightLevel * 100);
-    }
 
     setCruiseFlightLevelAndTemperature(input) {
         if (input === FMCMainDisplay.clrValue) {
-            this.cruiseFlightLevel = undefined;
-            this._cruiseFlightLevel = undefined;
+            this.flightPlanService.setCruiseFlightLevel(undefined);
+          //  this.cruiseFlightLevel = undefined;
+          //  this._cruiseFlightLevel = undefined;
             this.cruiseTemperature = undefined;
             return true;
         }
@@ -1980,7 +2012,7 @@ class FMCMainDisplay extends BaseAirliners {
 
         if (!!flString && !onlyTemp && this.trySetCruiseFl(parseFloat(flString))) {
             if (SimVar.GetSimVarValue("L:A32NX_CRZ_ALT_SET_INITIAL", "bool") === 1 && SimVar.GetSimVarValue("L:A32NX_GOAROUND_PASSED", "bool") === 1) {
-                SimVar.SetSimVarValue("L:A32NX_NEW_CRZ_ALT", "number", this.cruiseFlightLevel);
+                SimVar.SetSimVarValue("L:A32NX_NEW_CRZ_ALT", "number", this.flightPlanService.getCruiseFlightLevel());
             } else {
                 SimVar.SetSimVarValue("L:A32NX_CRZ_ALT_SET_INITIAL", "bool", 1);
             }
@@ -1992,7 +2024,7 @@ class FMCMainDisplay extends BaseAirliners {
             const temp = parseInt(tempString.replace("M", "-"));
             console.log("tS: " + tempString);
             console.log("ti: " + temp);
-            if (isFinite(temp) && this._cruiseEntered) {
+            if (isFinite(temp) && this.currFlightPlanService.getCruiseFlightLevel()) {
                 if (temp > -270 && temp < 100) {
                     this.cruiseTemperature = temp;
                     return true;
@@ -2014,7 +2046,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (isFinite(value)) {
             if (value >= 0) {
                 if (value < 1000) {
-                    this.costIndexSet = true;
+                 //   this.costIndexSet = true;
                     this.costIndex = value;
                     this.updateManagedSpeeds();
                     return true;
@@ -3490,10 +3522,9 @@ class FMCMainDisplay extends BaseAirliners {
             return false;
         }
 
-        this.cruiseFlightLevel = fl;
-        this._cruiseFlightLevel = fl;
+        this.flightPlanService.setCruiseFlightLevel(fl);
+
         this._cruiseEntered = true;
-        this._activeCruiseFlightLevelDefaulToFcu = false;
         this.cruiseTemperature = undefined;
         this.updateConstraints();
 
@@ -3942,7 +3973,7 @@ class FMCMainDisplay extends BaseAirliners {
     setPerfApprDH(s) {
         if (s === FMCMainDisplay.clrValue) {
             this.perfApprDH = null;
-            SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "feet", -1);
+         //   SimVar.SetSimVarValue("L:A32NX_DECISION_HEIGHT", "feet", -1);
             return true;
         }
 
@@ -3954,7 +3985,7 @@ class FMCMainDisplay extends BaseAirliners {
             const value = parseInt(s);
             if (value >= 0 && value <= 5000) {
                 this.perfApprDH = value;
-                SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "feet", this.perfApprDH);
+               // SimVar.SetSimVarValue("L:A32NX_DECISION_HEIGHT", "feet", this.perfApprDH);
                 return true;
             } else {
                 this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
@@ -4932,10 +4963,10 @@ class FMCMainDisplay extends BaseAirliners {
         return undefined;
     }
 
-    getCruiseAltitude() {
+/*     getCruiseAltitude() {
         return this.cruiseFlightLevel * 100;
     }
-
+ */
     getFlightPhase() {
         return this.flightPhaseManager.phase;
     }
@@ -5116,7 +5147,7 @@ class FMCMainDisplay extends BaseAirliners {
             return false;
         }
 
-        if (altitude < currentAlt || (this._cruiseEntered && altitude > this.cruiseFlightLevel * 100)) {
+        if (altitude < currentAlt || (this.currFlightPlanService.getCruiseFlightLevel() && altitude > this.currFlightPlanService.getCruiseFlightLevel() * 100)) {
             this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
             return false;
         }

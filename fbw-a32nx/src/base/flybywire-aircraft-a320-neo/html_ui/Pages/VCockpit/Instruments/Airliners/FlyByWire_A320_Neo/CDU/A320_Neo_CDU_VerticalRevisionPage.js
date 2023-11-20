@@ -134,7 +134,7 @@ class CDUVerticalRevisionPage {
 
             [r4Title, r4Cell] = this.formatAltErrorTitleAndValue(waypoint, verticalWaypoint);
 
-            if (mcdu._cruiseEntered && mcdu._cruiseFlightLevel && (mcdu.flightPhaseManager.phase < FmgcFlightPhases.DESCENT || mcdu.flightPhaseManager.phase > FmgcFlightPhases.GOAROUND)) {
+            if (mcdu.flightPlanService.getCruiseFlightLevel() && mcdu.flightPlanService.getCruiseFlightLevel() && (mcdu.flightPhaseManager.phase < FmgcFlightPhases.DESCENT || mcdu.flightPhaseManager.phase > FmgcFlightPhases.GOAROUND)) {
                 r5Cell = "STEP ALTS>";
             }
         }
@@ -303,7 +303,7 @@ class CDUVerticalRevisionPage {
             CDUWindPage.ShowPage(mcdu);
         }; // WIND
         mcdu.onRightInput[4] = () => {
-            if (!mcdu._cruiseEntered || !mcdu._cruiseFlightLevel) {
+            if (!mcdu.flightPlanService.getCruiseFlightLevel()) {
                 return;
             }
             CDUStepAltsPage.Return = () => {

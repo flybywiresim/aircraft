@@ -17,10 +17,12 @@ import { DataInterface } from '../interface/DataInterface';
 const SIMBRIEF_API_URL = 'https://www.simbrief.com/api/xml.fetcher.php?json=1';
 
 export interface OfpRoute {
-    from: { ident: string, rwy: string },
-    to: { ident: string, rwy: string },
+    from: { ident: string, rwy: string, transAlt: number, },
+    to: { ident: string, rwy: string, transLevel: number },
     altn: string,
+    costIndex: number,
     chunks: OfpRouteChunk[],
+    flightNumber: string,
 }
 
 export interface BaseOfpRouteChunk {
@@ -107,6 +109,12 @@ export class SimBriefUplinkAdapter {
             await flightPlanService.setOriginRunway(`RW${route.from.rwy}`, FlightPlanIndex.Uplink);
             await flightPlanService.setDestinationRunway(`RW${route.to.rwy}`, FlightPlanIndex.Uplink);
         }
+
+        flightPlanService.setCruiseFlightLevel(ofp.cruiseAltitude, FlightPlanIndex.Uplink);
+        flightPlanService.get(FlightPlanIndex.Uplink).performanceData.databaseTransitionAltitude.set(route.from.transAlt);
+        flightPlanService.get(FlightPlanIndex.Uplink).performanceData.databaseTransitionLevel.set(route.to.transLevel / 100);
+        flightPlanService.get(FlightPlanIndex.Uplink).performanceData.costIndex.set(route.costIndex);
+        flightPlanService.get(FlightPlanIndex.Uplink).flightNumber.set(route.flightNumber);
 
         let insertHead = -1;
 
@@ -330,10 +338,12 @@ export class SimBriefUplinkAdapter {
 
     static getRouteFromOfp(ofp: ISimbriefData): OfpRoute {
         return {
-            from: { ident: ofp.origin.icao, rwy: ofp.origin.runway },
-            to: { ident: ofp.destination.icao, rwy: ofp.destination.runway },
+            from: { ident: ofp.origin.icao, rwy: ofp.origin.runway, transAlt: ofp.origin.transAlt },
+            to: { ident: ofp.destination.icao, rwy: ofp.destination.runway, transLevel: ofp.destination.transLevel },
             altn: ofp.alternate.icao,
             chunks: this.generateRouteInstructionsFromNavlog(ofp),
+            costIndex: Number(ofp.costIndex),
+            flightNumber: ofp.airline + ofp.flightNumber,
         };
     }
 

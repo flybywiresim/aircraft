@@ -366,7 +366,7 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
 
     onUpdate(_deltaTime) {
-        super.onUpdate(_deltaTime);
+                super.onUpdate(_deltaTime);
 
         // every 100ms
         if (this.minPageUpdateThrottler.canUpdate(_deltaTime) !== -1 && this.updateRequest) {
@@ -853,8 +853,9 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
     }
 
     clearDisplay(webSocketDraw = false) {
-        this.onUnload();
         this.onUnload = () => {};
+        this.onUnload();
+
         this.setTitle("");
         this.setTitleLeft("");
         this.setPageCurrent(0);
