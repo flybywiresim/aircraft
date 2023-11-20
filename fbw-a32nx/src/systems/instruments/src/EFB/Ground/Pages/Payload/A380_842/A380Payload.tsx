@@ -143,6 +143,11 @@ export const A380Payload: React.FC<A380Props> = ({
     const [gw] = useSimVar('L:A32NX_AIRFRAME_GW', 'number', 1_741);
     const [gwDesired] = useSimVar('L:A32NX_AIRFRAME_GW_DESIRED', 'number', 1_787);
 
+    //Cabin Sounds
+    const [passengerAmbienceEnabled, setPassengerAmbienceEnabled] = usePersistentNumberProperty('SOUND_PASSENGER_AMBIENCE_ENABLED', 1);
+    const [announcementsEnabled, setAnnouncementsEnabled] = usePersistentNumberProperty('SOUND_ANNOUNCEMENTS_ENABLED', 1);
+    const [boardingMusicEnabled, setBoardingMusicEnabled] = usePersistentNumberProperty('SOUND_BOARDING_MUSIC_ENABLED', 1);
+
     // CG MAC
     const [zfwCgMac] = useSimVar('L:A32NX_AIRFRAME_ZFW_CG_PERCENT_MAC', 'number', 1_223);
     const [desiredZfwCgMac] = useSimVar('L:A32NX_AIRFRAME_ZFW_CG_PERCENT_MAC_DESIRED', 'number', 1_279);
@@ -478,6 +483,20 @@ export const A380Payload: React.FC<A380Props> = ({
         boardingStarted,
         gsxPayloadSyncEnabled,
     ]);
+
+
+    //If totalPax is 0, deactivate all sounds from the cabin
+     useEffect(() => {
+        let cabinSoundStatus:number = 0;
+        if(totalPax > 0)
+        {
+            cabinSoundStatus = 1;
+        }
+        setPassengerAmbienceEnabled(cabinSoundStatus);
+        setAnnouncementsEnabled(cabinSoundStatus);
+        setBoardingMusicEnabled(cabinSoundStatus);
+    },[totalPax]);
+
 
     const remainingTimeString = () => {
         const minutes = Math.round(calculateBoardingTime / 60);
