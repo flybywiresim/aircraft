@@ -117,22 +117,16 @@ export class EfisSymbols {
         const planCentreIndex = SimVar.GetSimVarValue('L:A32NX_SELECTED_WAYPOINT_INDEX', 'number');
         const planCentreInAlternate = SimVar.GetSimVarValue('L:A32NX_SELECTED_WAYPOINT_IN_ALTERNATE', 'Bool');
 
-        // FIXME can't have these early returns as it breaks non-fpln stuff
-        if (!this.flightPlanService.has(planCentreFpIndex)) {
-            return;
+        let plan: BaseFlightPlan = undefined;
+        if (this.flightPlanService.has(planCentreFpIndex)) {
+            plan = planCentreInAlternate ? this.flightPlanService.get(planCentreFpIndex).alternateFlightPlan : this.flightPlanService.get(planCentreFpIndex);
         }
 
-        const plan = planCentreInAlternate ? this.flightPlanService.get(planCentreFpIndex).alternateFlightPlan : this.flightPlanService.get(planCentreFpIndex);
+        let planCentre = plan?.maybeElementAt(planCentreIndex);
 
-        // FIXME as above
-        if (!plan.hasElement(planCentreIndex)) {
-            return;
-        }
-
-        let planCentre = plan.elementAt(planCentreIndex);
-
-        if (planCentre?.isDiscontinuity === true) {
-            planCentre = plan.elementAt(Math.max(0, (planCentreIndex - 1)));
+        // Only if we have a planCentre, check if it is a disco. If we don't have a centre at all, don't bother checking anyhthing
+        if (planCentre && planCentre.isDiscontinuity === true) {
+            planCentre = plan?.elementAt(Math.max(0, (planCentreIndex - 1)));
         }
 
         if (planCentre?.isDiscontinuity === true) {

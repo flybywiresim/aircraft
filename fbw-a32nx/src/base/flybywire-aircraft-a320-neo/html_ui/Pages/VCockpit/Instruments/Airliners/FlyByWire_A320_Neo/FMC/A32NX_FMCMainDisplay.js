@@ -128,7 +128,6 @@ class FMCMainDisplay extends BaseAirliners {
         /** @type {0 | 1 | 2 | 3 | null} Takeoff config entered on PERF TO */
         this.flaps = undefined;
         this.ths = undefined;
-        this.altDestination = undefined;
         this.flightNumber = undefined;
         this.cruiseTemperature = undefined;
         this.taxiFuelWeight = undefined;
@@ -500,7 +499,6 @@ class FMCMainDisplay extends BaseAirliners {
         this.managedSpeedDescendMachPilot = undefined;
         // this.managedSpeedDescendMachIsPilotEntered = false;
         this.cruiseFlightLevelTimeOut = undefined;
-        this.altDestination = undefined;
         this.flightNumber = undefined;
         this.cruiseTemperature = undefined;
         this.taxiFuelWeight = 0.2;
@@ -2132,8 +2130,8 @@ class FMCMainDisplay extends BaseAirliners {
 
         if (activePlan && activePlan.destinationAirport && activePlan.alternateDestinationAirport) {
             this._DistanceToAlt = Avionics.Utils.computeGreatCircleDistance(
-                activePlan.destinationAirport,
-                activePlan.alternateDestinationAirport,
+                activePlan.destinationAirport.location,
+                activePlan.alternateDestinationAirport.location,
             );
         } else {
             this._DistanceToAlt = 0;
@@ -2154,7 +2152,7 @@ class FMCMainDisplay extends BaseAirliners {
             this._routeAltFuelEntered = false;
             return true;
         }
-        if (!this.altDestination) {
+        if (!this.flightPlanService || !this.flightPlanService.active || !this.flightPlanService.active.alternateDestinationAirport) {
             this.setScratchpadMessage(NXSystemMessages.notAllowed);
             return false;
         }
@@ -2206,20 +2204,19 @@ class FMCMainDisplay extends BaseAirliners {
     async tryUpdateAltDestination(altDestIdent) {
         if (!altDestIdent || altDestIdent === "NONE" || altDestIdent === FMCMainDisplay.clrValue) {
             this.atsu.resetAtisAutoUpdate();
-            this.altDestination = undefined;
+            this.flightPlanService.setAlternate(undefined)
             this._DistanceToAlt = 0;
             return true;
         }
 
-        // TODO port over (fms-v2)
-        const airportAltDest = undefined;
-        // const airportAltDest = await this.dataManager.GetAirportByIdent(altDestIdent).catch(console.error);
+        const airportAltDest = await this.navigationDatabaseService.activeDatabase.searchAirport(altDestIdent);
         if (airportAltDest) {
             this.atsu.resetAtisAutoUpdate();
-            this.altDestination = airportAltDest;
+            await this.flightPlanService.setAlternate(altDestIdent);
             this.tryUpdateDistanceToAlt();
             return true;
         }
+
         this.setScratchpadMessage(NXSystemMessages.notInDatabase);
         return false;
     }
@@ -2266,9 +2263,8 @@ class FMCMainDisplay extends BaseAirliners {
      */
     tryUpdateRouteTrip(dynamic = false) {
         let airDistance = 0;
-        return;
-        // TODO port over (fms-v2)
-        const groundDistance = dynamic ? this.flightPlanManager.getDistanceToDestination(0) : this.flightPlanManager.getDestination().cumulativeDistanceInFP;
+        // TODO Use static distance for `dynamic = false` (fms-v2)
+        const groundDistance = Number.isFinite(this.getDistanceToDestination()) ? this.getDistanceToDestination() : -1;
         if (this._windDir === this._windDirections.TAILWIND) {
             airDistance = A32NX_FuelPred.computeAirDistance(groundDistance, this.averageWind);
         } else if (this._windDir === this._windDirections.HEADWIND) {
@@ -2332,7 +2328,6 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     getRouteAltFuelTime() {
-
         return this._routeAltFuelTime;
     }
 
@@ -3792,7 +3787,7 @@ class FMCMainDisplay extends BaseAirliners {
     setPerfApprTemp(s) {
         if (s === FMCMainDisplay.clrValue) {
             const dest = this.flightPlanService.active.destinationAirport;
-            const distanceToDestination = 0; // TODO port over (fms-v2)
+            const distanceToDestination = Number.isFinite(this.getDistanceToDestination()) ? this.getDistanceToDestination() : -1;
 
             if (dest && distanceToDestination < 180) {
                 this.setScratchpadMessage(NXSystemMessages.notAllowed);
