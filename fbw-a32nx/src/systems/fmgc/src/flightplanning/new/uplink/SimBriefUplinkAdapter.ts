@@ -110,11 +110,13 @@ export class SimBriefUplinkAdapter {
             await flightPlanService.setDestinationRunway(`RW${route.to.rwy}`, FlightPlanIndex.Uplink);
         }
 
+        const plan = flightPlanService.uplink;
+
         flightPlanService.setCruiseFlightLevel(ofp.cruiseAltitude, FlightPlanIndex.Uplink);
-        flightPlanService.get(FlightPlanIndex.Uplink).performanceData.databaseTransitionAltitude.set(route.from.transAlt);
-        flightPlanService.get(FlightPlanIndex.Uplink).performanceData.databaseTransitionLevel.set(route.to.transLevel / 100);
-        flightPlanService.get(FlightPlanIndex.Uplink).performanceData.costIndex.set(route.costIndex);
-        flightPlanService.get(FlightPlanIndex.Uplink).flightNumber.set(route.flightNumber);
+        plan.performanceData.databaseTransitionAltitude.set(route.from.transAlt);
+        plan.performanceData.databaseTransitionLevel.set(route.to.transLevel / 100);
+        plan.performanceData.costIndex.set(route.costIndex);
+        plan.flightNumber.set(route.flightNumber);
 
         let insertHead = -1;
 
