@@ -15,8 +15,6 @@ class FMCMainDisplay extends BaseAirliners {
 
         /** Declaration of every variable used (NOT initialization) */
         this.currentFlightPlanWaypointIndex = undefined;
-        this.costIndex = undefined;
-      //  this.costIndexSet = undefined;
         this.maxCruiseFL = undefined;
         this.routeIndex = undefined;
         this.coRoute = { routeNumber: undefined, routes: undefined };
@@ -221,6 +219,22 @@ class FMCMainDisplay extends BaseAirliners {
         return plan.performanceData.costIndex.get();
     }
 
+    set costIndex(ci) {
+        if(!this.currFlightPlanService) {
+            return;
+        }
+        const plan = this.currFlightPlanService.active;
+        plan.performanceData.costIndex.set(ci);
+    }
+
+    get costIndexSet() {
+        if(!this.currFlightPlanService) {
+            return false;
+        }
+        const plan = this.currFlightPlanService.active;
+        return plan.performanceData.costIndex.get() > 0;
+    }
+
     get flightNumber() {
         if(!this.currFlightPlanService) {
             return undefined;
@@ -238,21 +252,6 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
 
-    set costIndex(ci) {
-        if(!this.currFlightPlanService) {
-            return;
-        }
-        const plan = this.currFlightPlanService.active;
-        plan.performanceData.costIndex.set(ci);
-    }
-
-    get costIndexSet() {
-        if(!this.currFlightPlanService) {
-            return false;
-        }
-        const plan = this.currFlightPlanService.active;
-        return plan.performanceData.costIndex.get() > 0 ? true : false;
-    }
     Init() {
         super.Init();
         this.initVariables();
@@ -3239,7 +3238,7 @@ class FMCMainDisplay extends BaseAirliners {
             this.perfTOTemp = NaN;
             // In future we probably want a better way of checking this, as 0 is
             // in the valid flex temperature range (-99 to 99).
-            SimVar.SetSimVarValue("L:AIRLINER_TO_FLEX_TEMP", "Number", 0);
+            SimVar.SetSimVarValue("L:A32NX_TO_FLEX_TEMP", "Number", 0);
             return true;
         }
         let value = parseInt(s);
@@ -3258,7 +3257,7 @@ class FMCMainDisplay extends BaseAirliners {
             value = 0.1;
         }
         this.perfTOTemp = value;
-        SimVar.SetSimVarValue("L:AIRLINER_TO_FLEX_TEMP", "Number", value);
+        SimVar.SetSimVarValue("L:A32NX_TO_FLEX_TEMP", "Number", value);
         return true;
     }
 
@@ -3939,7 +3938,7 @@ class FMCMainDisplay extends BaseAirliners {
     setPerfApprMDA(s) {
         if (s === FMCMainDisplay.clrValue) {
             this.perfApprMDA = null;
-            SimVar.SetSimVarValue("L:AIRLINER_MINIMUM_DESCENT_ALTITUDE", "feet", 0);
+            SimVar.SetSimVarValue("L:A32NX_MINIMUM_DESCENT_ALTITUDE", "feet", 0);
             return true;
         } else if (s.match(/^[0-9]{1,5}$/) !== null) {
             const value = parseInt(s);
@@ -3959,7 +3958,7 @@ class FMCMainDisplay extends BaseAirliners {
 
             if (value >= limitLo && value <= limitHi) {
                 this.perfApprMDA = value;
-                SimVar.SetSimVarValue("L:AIRLINER_MINIMUM_DESCENT_ALTITUDE", "feet", this.perfApprMDA);
+                SimVar.SetSimVarValue("L:A32NX_MINIMUM_DESCENT_ALTITUDE", "feet", this.perfApprMDA);
                 return true;
             }
             this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
@@ -3979,7 +3978,7 @@ class FMCMainDisplay extends BaseAirliners {
 
         if (s === "NO" || s === "NO DH" || s === "NODH") {
             this.perfApprDH = "NO DH";
-            SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "feet", -2);
+            SimVar.SetSimVarValue("L:A32NX_DECISION_HEIGHT", "feet", -2);
             return true;
         } else if (s.match(/^[0-9]{1,5}$/) !== null) {
             const value = parseInt(s);

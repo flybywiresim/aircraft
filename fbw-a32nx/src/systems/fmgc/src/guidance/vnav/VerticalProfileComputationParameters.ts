@@ -100,7 +100,7 @@ export class VerticalProfileComputationParametersObserver {
             accelerationAltitude: this.fmgc.getAccelerationAltitude(),
             thrustReductionAltitude: this.fmgc.getThrustReductionAltitude(),
             originTransitionAltitude: this.fmgc.getOriginTransitionAltitude(),
-            cruiseAltitude: Number.isFinite(this.flightPlanService.getCruiseFlightLevel()) ? this.flightPlanService.getCruiseFlightLevel() : this.parameters.cruiseAltitude,
+            cruiseAltitude: Number.isFinite(this.flightPlanService.getCruiseFlightLevel()) ? this.flightPlanService.getCruiseFlightLevel() * 100 : this.parameters.cruiseAltitude,
             climbSpeedLimit: this.fmgc.getClimbSpeedLimit(),
             descentSpeedLimit: this.fmgc.getDescentSpeedLimit(),
             flightPhase: this.fmgc.getFlightPhase(),
