@@ -16,13 +16,13 @@ export const globalSettingsSlice = createSlice({
     initialState:initialState,
     reducers:{
         setCabinAnnouncementsActive:(state:any, action:PayloadAction<boolean>) => {
-            state.value.cabinAnnouncementsActive = action.payload;
+            state.cabinAnnouncementsActive = action.payload;
         },
         setPassengerAmbienceActive:(state:any, action:PayloadAction<boolean>) => {
-            state.value.passengerAmbienceActive = action.payload
+            state.passengerAmbienceActive = action.payload
         },
         setBoardingMusicActive:(state:any, action:PayloadAction<boolean>) => {
-            state.value.boardingMusicActive = action.payload;
+            state.boardingMusicActive = action.payload;
         }
     }
 });
