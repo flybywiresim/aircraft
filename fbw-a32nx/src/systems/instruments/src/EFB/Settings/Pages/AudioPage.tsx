@@ -10,8 +10,8 @@ import { t } from '../../translation';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
 import { SettingItem, SettingsPage } from '../Settings';
-import { useDispatch } from 'react-redux';
 import { setCabinAnnouncementsActive, setPassengerAmbienceActive, setBoardingMusicActive } from '../../Store/features/globalSettings';
+import { useAppDispatch } from '../../Store/store';
 
 
 export const AudioPage = () => {
@@ -31,7 +31,7 @@ export const AudioPage = () => {
     const engineSliderRef = useRef<any>(null);
     const windSliderRef = useRef<any>(null);
 
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
 
 
     return (

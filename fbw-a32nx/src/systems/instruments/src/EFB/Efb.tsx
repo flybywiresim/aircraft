@@ -126,7 +126,7 @@ const Efb = () => {
 
     useEffect(() => {
         document.documentElement.classList.add(`theme-${theme}`, 'animationsEnabled');
-        syncGlobalSettings();
+        //syncGlobalSettings();
     }, []);
 
     useEffect(() => {
@@ -302,9 +302,9 @@ const Efb = () => {
     //Writes the initial values fro the global settings
     const syncGlobalSettings = () => 
     {
-        dispatch(setPassengerAmbienceActive(passengerAmbienceEnabled === 1 ? true : false));
-        dispatch(setCabinAnnouncementsActive(cabinAnnouncementsEnabled === 1 ? true : false));
-        dispatch(setBoardingMusicActive(boardingMusicEnabled === 1 ? true : false));
+       dispatch(setPassengerAmbienceActive(passengerAmbienceEnabled === 1 ? true : false));
+       dispatch(setCabinAnnouncementsActive(cabinAnnouncementsEnabled === 1 ? true : false));
+       dispatch(setBoardingMusicActive(boardingMusicEnabled === 1 ? true : false));
     }
 
     const { offsetY } = useAppSelector((state) => state.keyboard);
