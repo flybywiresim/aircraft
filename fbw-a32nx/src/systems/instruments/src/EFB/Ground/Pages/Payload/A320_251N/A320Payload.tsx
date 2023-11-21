@@ -91,8 +91,6 @@ export const A320Payload: React.FC<A320Props> = ({
     const maxPax = useMemo(() => seatMap.reduce((a, b) => a + b.capacity, 0), [seatMap]);
     const maxCargo = useMemo(() => cargoMap.reduce((a, b) => a + b.weight, 0), [cargoMap]);
 
-    
-
     // Calculate Total Pax from Pax Flags
     const totalPax = useMemo(() => {
         let p = 0;
@@ -120,7 +118,7 @@ export const A320Payload: React.FC<A320Props> = ({
     const [gw] = useSimVar('L:A32NX_AIRFRAME_GW', 'number', 1_741);
     const [gwDesired] = useSimVar('L:A32NX_AIRFRAME_GW_DESIRED', 'number', 1_787);
 
-    //Cabin Sounds
+    // Cabin sounds.
     const [passengerAmbienceEnabled, setPassengerAmbienceEnabled] = usePersistentNumberProperty('SOUND_PASSENGER_AMBIENCE_ENABLED', 1);
     const [announcementsEnabled, setAnnouncementsEnabled] = usePersistentNumberProperty('SOUND_ANNOUNCEMENTS_ENABLED', 1);
     const [boardingMusicEnabled, setBoardingMusicEnabled] = usePersistentNumberProperty('SOUND_BOARDING_MUSIC_ENABLED', 1);
@@ -462,7 +460,7 @@ export const A320Payload: React.FC<A320Props> = ({
         gsxPayloadSyncEnabled,
     ]);
 
-    //If totalPax is 0, deactivate all sounds from the cabin
+    // If totalPax is 0, deactivate all sounds from the cabin.
     useEffect(() => {
         let cabinSoundStatus:number = 0;
         if(totalPax > 0)

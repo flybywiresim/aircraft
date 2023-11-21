@@ -1,9 +1,8 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-//Store for alle settings which should be application global for the EFB application but not neccesary for the simvars
+// Store for all settings which should be global for the EFB but not neccesary for the simvars.
 
-interface GlobalSettingsState
-{
+interface GlobalSettingsState {
     cabinAnnouncementsActive:boolean,
     passengerAmbienceActive:boolean,
     boardingMusicActive:boolean

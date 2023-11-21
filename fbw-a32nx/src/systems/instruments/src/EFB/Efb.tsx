@@ -107,7 +107,7 @@ const Efb = () => {
     const [autoLoadDawnDuskLightingPresetID] = usePersistentNumberProperty('LIGHT_PRESET_AUTOLOAD_DAWNDUSK', 0);
     const [autoLoadNightLightingPresetID] = usePersistentNumberProperty('LIGHT_PRESET_AUTOLOAD_NIGHT', 0);
     
-    //Data for global settings sync after system start
+    // Data for global settings sync after system start.
     const [passengerAmbienceEnabled] = usePersistentNumberProperty('SOUND_PASSENGER_AMBIENCE_ENABLED', 1);
     const [cabinAnnouncementsEnabled] = usePersistentNumberProperty('SOUND_ANNOUNCEMENTS_ENABLED', 1);
     const [boardingMusicEnabled] = usePersistentNumberProperty('SOUND_BOARDING_MUSIC_ENABLED', 1);
@@ -299,7 +299,7 @@ const Efb = () => {
     // </Pushback>
     // =========================================================================
 
-    //Writes the initial values fro the global settings
+    // Writes the initial values from the global settings.
     const syncGlobalSettings = () => 
     {
        dispatch(setPassengerAmbienceActive(passengerAmbienceEnabled === 1 ? true : false));

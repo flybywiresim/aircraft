@@ -32,8 +32,6 @@ export const AudioPage = () => {
     const windSliderRef = useRef<any>(null);
 
     const dispatch = useAppDispatch();
-
-
     return (
         <SettingsPage name={t('Settings.Audio.Title')}>
 
