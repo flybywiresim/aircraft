@@ -462,24 +462,19 @@ export const A320Payload: React.FC<A320Props> = ({
 
     // If totalPax is 0, deactivate all sounds from the cabin.
     useEffect(() => {
-        let cabinSoundStatus:number = 0;
-        if(totalPax > 0)
-        {
-            cabinSoundStatus = 1;
-        }
-        if(globalSettingsRedux.passengerAmbienceActive)
-        {
+        const cabinSoundStatus:number = (totalPax > 0 ? 1 : 0);
+
+        if (globalSettingsRedux.passengerAmbienceActive) {
             setPassengerAmbienceEnabled(cabinSoundStatus);
         }
-        if(globalSettingsRedux.cabinAnnouncementsActive)
-        {
+
+        if (globalSettingsRedux.cabinAnnouncementsActive) {
             setAnnouncementsEnabled(cabinSoundStatus);
         }
-        if(globalSettingsRedux.boardindgMusicActive)
-        {
+
+        if (globalSettingsRedux.boardindgMusicActive) {
             setBoardingMusicEnabled(cabinSoundStatus);
         }
-        
     },[totalPax]);
 
     const remainingTimeString = () => {

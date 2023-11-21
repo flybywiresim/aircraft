@@ -489,26 +489,21 @@ export const A380Payload: React.FC<A380Props> = ({
 
 
   // If totalPax is 0, deactivate all sounds from the cabin.
-  useEffect(() => {
-    let cabinSoundStatus:number = 0;
-    if(totalPax > 0)
-    {
-        cabinSoundStatus = 1;
-    }
-    if(globalSettingsRedux.passengerAmbienceActive)
-    {
-        setPassengerAmbienceEnabled(cabinSoundStatus);
-    }
-    if(globalSettingsRedux.cabinAnnouncementsActive)
-    {
-        setAnnouncementsEnabled(cabinSoundStatus);
-    }
-    if(globalSettingsRedux.boardindgMusicActive)
-    {
-        setBoardingMusicEnabled(cabinSoundStatus);
-    }
-    
-},[totalPax]);
+    useEffect(() => {
+        const cabinSoundStatus:number = (totalPax > 0 ? 1 : 0);
+
+        if (globalSettingsRedux.passengerAmbienceActive) {
+            setPassengerAmbienceEnabled(cabinSoundStatus);
+        }
+
+        if (globalSettingsRedux.cabinAnnouncementsActive) {
+            setAnnouncementsEnabled(cabinSoundStatus);
+        }
+
+        if (globalSettingsRedux.boardindgMusicActive) {
+            setBoardingMusicEnabled(cabinSoundStatus);
+        }
+    },[totalPax]);
 
     const remainingTimeString = () => {
         const minutes = Math.round(calculateBoardingTime / 60);
