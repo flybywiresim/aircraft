@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
-//Store for application global Settings
+//Store for alle settings which should be application global for the EFB application but not neccesary for the simvars
 
 interface GlobalSettingsState
 {

@@ -126,7 +126,7 @@ const Efb = () => {
 
     useEffect(() => {
         document.documentElement.classList.add(`theme-${theme}`, 'animationsEnabled');
-        //syncGlobalSettings();
+        syncGlobalSettings();
     }, []);
 
     useEffect(() => {
