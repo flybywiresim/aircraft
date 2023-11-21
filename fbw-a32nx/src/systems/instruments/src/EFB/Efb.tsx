@@ -300,12 +300,11 @@ const Efb = () => {
     // =========================================================================
 
     // Writes the initial values from the global settings.
-    const syncGlobalSettings = () => 
-    {
+    const syncGlobalSettings = () => {
        dispatch(setPassengerAmbienceActive(passengerAmbienceEnabled === 1 ? true : false));
        dispatch(setCabinAnnouncementsActive(cabinAnnouncementsEnabled === 1 ? true : false));
        dispatch(setBoardingMusicActive(boardingMusicEnabled === 1 ? true : false));
-    }
+    };
 
     const { offsetY } = useAppSelector((state) => state.keyboard);
 

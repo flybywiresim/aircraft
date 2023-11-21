@@ -475,7 +475,7 @@ export const A320Payload: React.FC<A320Props> = ({
         if (globalSettingsRedux.boardindgMusicActive) {
             setBoardingMusicEnabled(cabinSoundStatus);
         }
-    },[totalPax]);
+    }, [totalPax]);
 
     const remainingTimeString = () => {
         const minutes = Math.round(calculateBoardingTime / 60);

@@ -503,7 +503,7 @@ export const A380Payload: React.FC<A380Props> = ({
         if (globalSettingsRedux.boardindgMusicActive) {
             setBoardingMusicEnabled(cabinSoundStatus);
         }
-    },[totalPax]);
+    }, [totalPax]);
 
     const remainingTimeString = () => {
         const minutes = Math.round(calculateBoardingTime / 60);

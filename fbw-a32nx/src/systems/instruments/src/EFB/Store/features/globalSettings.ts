@@ -8,19 +8,19 @@ interface GlobalSettingsState {
     boardingMusicActive:boolean
 }
 
-let initialState:GlobalSettingsState = {cabinAnnouncementsActive:true, passengerAmbienceActive:true, boardingMusicActive:true}
+let initialState:GlobalSettingsState = {cabinAnnouncementsActive: true, passengerAmbienceActive: true, boardingMusicActive: true}
 
 export const globalSettingsSlice = createSlice({
-    name:"globalSettings",
-    initialState:initialState,
-    reducers:{
-        setCabinAnnouncementsActive:(state:any, action:PayloadAction<boolean>) => {
+    name: "globalSettings",
+    initialState: initialState,
+    reducers: {
+        setCabinAnnouncementsActive:(state: any, action: PayloadAction<boolean>) => {
             state.cabinAnnouncementsActive = action.payload;
         },
-        setPassengerAmbienceActive:(state:any, action:PayloadAction<boolean>) => {
+        setPassengerAmbienceActive:(state: any, action: PayloadAction<boolean>) => {
             state.passengerAmbienceActive = action.payload
         },
-        setBoardingMusicActive:(state:any, action:PayloadAction<boolean>) => {
+        setBoardingMusicActive:(state: any, action: PayloadAction<boolean>) => {
             state.boardingMusicActive = action.payload;
         }
     }
