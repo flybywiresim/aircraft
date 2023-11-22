@@ -16,7 +16,6 @@ import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { WindVector } from '@fmgc/guidance/vnav/wind';
 import { PseudoWaypoint } from '@fmgc/guidance/PseudoWaypoint';
 import { Coordinates, bearingTo } from 'msfs-geo';
-import { secondsToHHmmString } from 'instruments/src/MFD/shared/utils';
 import { FmgcFlightPhase } from '@shared/flightphase';
 
 interface MfdFmsFplnProps extends AbstractMfdPageProps {
@@ -165,6 +164,23 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
         // Construct leg data for all legs
         const jointFlightPlan: FlightPlanElement[] = this.loadedFlightPlan.allLegs.concat(this.loadedFlightPlan.alternateFlightPlan.allLegs);
         lastDistanceFromStart = 0;
+        const fmgcFlightPhase = this.props.fmService.fmgc.getFlightPhase();
+
+        const predictionTimestamp = (seconds: number) => {
+            if (seconds === undefined) {
+                return 0;
+            }
+
+            if (fmgcFlightPhase >= FmgcFlightPhase.Takeoff) {
+                const eta = Date.now() + seconds * 1000;
+                return eta;
+            } if (this.props.fmService.fmgc.data.estimatedTakeoffTime.get() !== undefined) {
+                const eta = (this.props.fmService.fmgc.data.estimatedTakeoffTime.get() + seconds) * 1000;
+                return eta;
+            }
+            return seconds * 1000;
+        };
+
         for (let i = 0; i < jointFlightPlan.length; i++) {
             const leg = jointFlightPlan[i];
             let reduceDistanceBy = 0;
@@ -182,7 +198,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                     ident: pwp.mcduIdent ?? pwp.ident,
                     overfly: false,
                     annotation: pwp.mcduHeader ?? '',
-                    etaOrSecondsFromPresent: pwp.flightPlanInfo.secondsFromPresent,
+                    etaOrSecondsFromPresent: predictionTimestamp(pwp.flightPlanInfo.secondsFromPresent),
                     transitionAltitude: (leg instanceof FlightPlanLeg) ? (leg.definition.transitionAltitude ?? 18000) : 18000,
                     altitudePrediction: pwp.flightPlanInfo.altitude,
                     hasAltitudeConstraint: false, // TODO
@@ -218,7 +234,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                     ident: leg.ident,
                     overfly: leg.overfly,
                     annotation: leg.annotation,
-                    etaOrSecondsFromPresent: this.props.fmService.guidanceController.vnavDriver.mcduProfile?.waypointPredictions?.get(i)?.secondsFromPresent ?? 0,
+                    etaOrSecondsFromPresent: predictionTimestamp(this.props.fmService.guidanceController.vnavDriver.mcduProfile?.waypointPredictions?.get(i)?.secondsFromPresent),
                     transitionAltitude: useTransLevel ? transLevel : transAlt,
                     altitudePrediction: this.props.fmService.guidanceController.vnavDriver.mcduProfile?.waypointPredictions?.get(i)?.altitude ?? 0,
                     hasAltitudeConstraint: !!this.props.fmService.guidanceController.vnavDriver.mcduProfile?.waypointPredictions?.get(i)?.altitudeConstraint ?? false,
@@ -682,7 +698,7 @@ export interface FplnLineWaypointDisplayData extends FplnLineTypeDiscriminator {
     ident: string;
     overfly: boolean;
     annotation: string;
-    etaOrSecondsFromPresent: number; // depending on flight phase, before takeoff secondsFromPresent, thereafter eta (in seconds, printed as HH:mm)
+    etaOrSecondsFromPresent: number; // timestamp, will be printed to HH:mm
     transitionAltitude: number;
     altitudePrediction: number;
     hasAltitudeConstraint: boolean;
@@ -808,7 +824,7 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
         }
 
         if (this.timeRef.getOrDefault()) {
-            this.timeRef.instance.addEventListener('click', () => this.props.callbacks.rta());
+            this.timeRef.instance.parentElement.addEventListener('click', () => this.props.callbacks.rta());
         }
     }
 
@@ -838,12 +854,8 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
             // TODO: Time constraint, "HOLD SPD" label
             if (this.props.globalLineColor.get() === FplnLineColor.Active) {
                 if (data.etaOrSecondsFromPresent) {
-                    if (SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Enum') >= FmgcFlightPhase.Takeoff) {
-                        const eta = new Date(Date.now() + data.etaOrSecondsFromPresent * 1000);
-                        this.timeRef.getOrDefault().innerText = `${eta.getHours().toString().padStart(2, '0')}:${eta.getMinutes().toString().padStart(2, '0')}`;
-                    } else {
-                        this.timeRef.getOrDefault().innerText = secondsToHHmmString(data.etaOrSecondsFromPresent);
-                    }
+                    const date = new Date(data.etaOrSecondsFromPresent);
+                    this.timeRef.getOrDefault().innerText = `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
                 }
             } else {
                 this.timeRef.getOrDefault().innerText = '--:--';
@@ -884,12 +896,12 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
 
     private renderSpdAltEfobWind(data: FplnLineWaypointDisplayData): void {
         while (this.speedRef.instance.firstChild) {
-            this.speedRef.instance.removeEventListener('click', () => this.props.callbacks.speed());
+            this.speedRef.instance.parentElement.removeEventListener('click', () => this.props.callbacks.speed());
             this.speedRef.instance.removeChild(this.speedRef.instance.firstChild);
         }
         while (this.altRef.instance.firstChild) {
-            this.altRef.instance.removeEventListener('click', () => this.props.callbacks.altitude());
-            this.altRef.instance.removeEventListener('click', () => this.props.callbacks.wind());
+            this.altRef.instance.parentElement.removeEventListener('click', () => this.props.callbacks.altitude());
+            this.altRef.instance.parentElement.removeEventListener('click', () => this.props.callbacks.wind());
             this.altRef.instance.removeChild(this.altRef.instance.firstChild);
         }
         FSComponent.render(this.efobOrSpeed(data), this.speedRef.instance);
@@ -898,16 +910,16 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
         if (this.props.displayEfobAndWind.get() === true) {
             this.altRef.instance.style.alignSelf = 'flex-end';
             this.altRef.instance.style.paddingRight = '20px';
-            this.altRef.instance.addEventListener('click', () => this.props.callbacks.wind());
+            this.altRef.instance.parentElement.addEventListener('click', () => this.props.callbacks.wind());
             this.speedRef.instance.parentElement.className = 'mfd-fms-fpln-label-small';
             this.speedRef.instance.style.paddingLeft = '10px';
         } else {
             this.altRef.instance.style.alignSelf = null;
             this.altRef.instance.style.paddingRight = null;
-            this.altRef.instance.addEventListener('click', () => this.props.callbacks.altitude());
+            this.altRef.instance.parentElement.addEventListener('click', () => this.props.callbacks.altitude());
             this.speedRef.instance.parentElement.className = 'mfd-fms-fpln-label-small-clickable';
             this.speedRef.instance.style.paddingLeft = null;
-            this.speedRef.instance.addEventListener('click', () => this.props.callbacks.speed());
+            this.speedRef.instance.parentElement.addEventListener('click', () => this.props.callbacks.speed());
         }
     }
 
@@ -1072,11 +1084,11 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
                     <div ref={this.timeRef} class="mfd-fms-fpln-leg-lower-row" />
 
                 </div>
-                <div class="mfd-fms-fpln-label-small-clickable" style="width: 15%; align-items: flex-start; padding-left: 40px;">
+                <div class="mfd-fms-fpln-label-small-clickable" style="width: 15%; align-items: flex-start; padding-left: 40px;" onclick={() => this.props.callbacks.speed()}>
                     {!(FplnLineFlags.FirstLine === (this.props.flags.get() & FplnLineFlags.FirstLine)) && <div class="mfd-fms-fpln-leg-upper-row" />}
                     <div ref={this.speedRef} class="mfd-fms-fpln-leg-lower-row" />
                 </div>
-                <div class="mfd-fms-fpln-label-small-clickable" style="width: 21%; align-items: flex-start; padding-left: 20px;">
+                <div class="mfd-fms-fpln-label-small-clickable" style="width: 21%; align-items: flex-start; padding-left: 20px;" onclick={() => this.props.callbacks.altitude()}>
                     {!(FplnLineFlags.FirstLine === (this.props.flags.get() & FplnLineFlags.FirstLine)) && <div class="mfd-fms-fpln-leg-upper-row" />}
                     <div ref={this.altRef} class="mfd-fms-fpln-leg-lower-row" />
                 </div>

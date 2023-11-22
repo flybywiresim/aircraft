@@ -15,11 +15,11 @@ import { Fix, Waypoint } from 'msfs-navdata';
 export class MfdFlightManagementService {
     protected subs = [] as Subscription[];
 
-    public revisedWaypointIndex = Subject.create<number>(0);
+    public revisedWaypointIndex = Subject.create<number>(undefined);
 
-    public revisedWaypointPlanIndex = Subject.create<FlightPlanIndex>(FlightPlanIndex.Active);
+    public revisedWaypointPlanIndex = Subject.create<FlightPlanIndex>(undefined);
 
-    public revisedWaypointIsAltn = Subject.create<boolean>(false);
+    public revisedWaypointIsAltn = Subject.create<boolean>(undefined);
 
     public enginesWereStarted = Subject.create<boolean>(false);
 

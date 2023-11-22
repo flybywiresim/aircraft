@@ -12,13 +12,15 @@ import './vert-rev.scss';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { InputField } from 'instruments/src/MFD/pages/common/InputField';
-import { SpeedKnotsFormat, TimeHHMMSSFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
+import { AltitudeOrFlightLevelFormat, SpeedKnotsFormat, TimeHHMMSSFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { DropdownMenu } from 'instruments/src/MFD/pages/common/DropdownMenu';
 import { Vmo } from '@shared/PerformanceConstants';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
-import { SpeedConstraintType } from '@fmgc/flightplanning/data/constraint';
+import { AltitudeConstraintType, SpeedConstraintType } from '@fmgc/flightplanning/data/constraint';
 import { FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
+import { RadioButtonGroup } from 'instruments/src/MFD/pages/common/RadioButtonGroup';
+import { Foot } from '../../../../../../../../../fbw-common/src/systems/shared/src';
 
 interface MfdFmsFplnVertRevProps extends AbstractMfdPageProps {
 }
@@ -34,6 +36,8 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
 
     private tmpyInsertButtonDiv = FSComponent.createRef<HTMLDivElement>();
 
+    private transitionAltitude = Subject.create<Foot>(0);
+
     // RTA page
 
     // SPD page
@@ -46,14 +50,25 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
     // CMS page
 
     // ALT page
+    private altitudeMessageArea = Subject.create<string>('TOO STEEP PATH AHEAD');
+
+    private altitudeConstraintInput = Subject.create<Foot>(undefined);
+
+    private altitudeConstraintType = Subject.create<'CLB' | 'DES'>(undefined);
+
+    private selectedAltitudeConstraintOption = Subject.create<number>(undefined);
 
     // STEP ALTs page
 
     protected onNewData(): void {
         console.time('F-PLN/VERT REV:onNewData');
 
-        // const pd = this.loadedFlightPlan.performanceData;
+        const pd = this.loadedFlightPlan.performanceData;
         // const fm = this.props.fmService.fmgc.data;
+
+        if (pd.transitionAltitude.get() !== undefined) {
+            this.transitionAltitude.set(pd.transitionAltitude.get());
+        }
 
         const wpt = this.loadedFlightPlan.allLegs.slice(this.props.fmService.flightPlanService.get(this.loadedFlightPlanIndex.get()).activeLegIndex + 1).map((el) => {
             if (el instanceof FlightPlanLeg) {
@@ -63,26 +78,85 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
         }).filter((el) => el !== null);
         this.availableWaypoints.set(wpt);
 
-        if (this.props.fmService.revisedWaypoint) {
+        if (this.props.fmService.revisedWaypointIndex.get() !== undefined) {
             this.selectedWaypointIndex.set(this.props.fmService.revisedWaypointIndex.get() - this.props.fmService.flightPlanService.get(this.loadedFlightPlanIndex.get()).activeLegIndex - 1);
         }
+
+        this.updateConstraints();
 
         console.timeEnd('F-PLN/VERT REV:onNewData');
     }
 
-    private async onSpdWptDropdownModified(idx: number): Promise<void> {
-        if (this.props.fmService.flightPlanService.hasTemporary) {
-            await this.props.fmService.flightPlanService.temporaryDelete();
-        }
+    private updateConstraints() {
+        if (this.selectedWaypointIndex.get() !== undefined) {
+            const leg = this.loadedFlightPlan.legElementAt(this.props.fmService.flightPlanService.get(this.loadedFlightPlanIndex.get()).activeLegIndex + this.selectedWaypointIndex.get() + 1);
 
+            // Load speed constraints
+            this.speedConstraintInput.set(leg.pilotEnteredSpeedConstraint?.speed);
+            this.speedConstraintType.set(leg.constraintType === WaypointConstraintType.CLB ? 'CLB' : 'DES');
+            this.speedMessageArea.set('');
+
+            // Load altitude constraints
+            switch (leg.altitudeConstraint?.type) {
+            case AltitudeConstraintType.at:
+                this.selectedAltitudeConstraintOption.set(0);
+                break;
+            case AltitudeConstraintType.atOrAbove:
+                this.selectedAltitudeConstraintOption.set(1);
+                break;
+            case AltitudeConstraintType.atOrBelow:
+                this.selectedAltitudeConstraintOption.set(2);
+                break;
+            default:
+                this.selectedAltitudeConstraintOption.set(undefined);
+                break;
+            }
+            this.altitudeConstraintInput.set(leg.pilotEnteredAltitudeConstraint?.altitude1);
+            this.altitudeConstraintType.set(leg.constraintType === WaypointConstraintType.CLB ? 'CLB' : 'DES');
+            this.altitudeMessageArea.set('');
+        }
+    }
+
+    private async onWptDropdownModified(idx: number): Promise<void> {
         this.selectedWaypointIndex.set(idx);
         this.props.fmService.revisedWaypointIndex.set(this.props.fmService.flightPlanService.get(this.loadedFlightPlanIndex.get()).activeLegIndex + idx + 1);
 
-        // Load speed constraints
-        const leg = this.loadedFlightPlan.legElementAt(this.props.fmService.flightPlanService.get(this.loadedFlightPlanIndex.get()).activeLegIndex + idx + 1);
-        this.speedConstraintInput.set(leg.pilotEnteredSpeedConstraint?.speed);
-        this.speedConstraintType.set(leg.constraintType === WaypointConstraintType.CLB ? 'CLB' : 'DES');
-        this.speedMessageArea.set('');
+        this.updateConstraints();
+    }
+
+    private async tryUpdateAltitudeConstraint(newAlt?: number) {
+        const alt = Number.isFinite(newAlt) ? newAlt : this.altitudeConstraintInput.get();
+        if (alt !== undefined && this.selectedAltitudeConstraintOption.get() !== undefined) {
+            const index = this.props.fmService.flightPlanService.get(this.loadedFlightPlanIndex.get()).activeLegIndex
+            + this.selectedWaypointIndex.get() + 1;
+            const fpln = this.props.fmService.flightPlanService.get(this.loadedFlightPlanIndex.get());
+            const leg = fpln.legElementAt(index);
+
+            let option: AltitudeConstraintType;
+
+            switch (this.selectedAltitudeConstraintOption.get()) {
+            case 0:
+                option = AltitudeConstraintType.at;
+                break;
+            case 1:
+                option = AltitudeConstraintType.atOrAbove;
+                break;
+            case 2:
+                option = AltitudeConstraintType.atOrBelow;
+                break;
+
+            default:
+                option = AltitudeConstraintType.at;
+                break;
+            }
+
+            this.props.fmService.flightPlanService.setPilotEnteredAltitudeConstraintAt(index,
+                leg.segment.class === SegmentClass.Arrival,
+                { altitude1: alt, type: option },
+                this.loadedFlightPlanIndex.get(),
+                false);
+            console.warn(leg);
+        }
     }
 
     public onAfterRender(node: VNode): void {
@@ -139,8 +213,8 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                             {/* RTA */}
                             <div style="display: flex; flex-direction: column; justify-content: center; align-items: center;">
                                 <span class="mfd-label">NOT IMPLEMENTED</span>
-                                <div style="display: flex; flex-direction: row; margin-top: 20px;">
-                                    <div class="mfd-label spacing-right">ETT</div>
+                                <div style="display: flex; flex-direction: row; margin-top: 20px; justify-content: center; align-items: center;">
+                                    <div class="mfd-label mfd-spacing-right">ETT</div>
                                     <div>
                                         <InputField<number>
                                             dataEntryFormat={new TimeHHMMSSFormat()}
@@ -166,7 +240,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                                         freeTextAllowed={false}
                                         containerStyle="width: 175px;"
                                         alignLabels="flex-start"
-                                        onModified={(i) => this.onSpdWptDropdownModified(i)}
+                                        onModified={(i) => this.onWptDropdownModified(i)}
                                         numberOfDigitsForInputField={7}
                                         tmpyActive={this.tmpyActive}
                                     />
@@ -175,17 +249,18 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                                     <InputField<number>
                                         dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
                                         dataHandlerDuringValidation={async (val) => {
-                                            const idx = this.selectedWaypointIndex.get();
+                                            const index = this.props.fmService.flightPlanService.get(this.loadedFlightPlanIndex.get()).activeLegIndex + this.selectedWaypointIndex.get() + 1;
                                             const fpln = this.props.fmService.flightPlanService.get(this.loadedFlightPlanIndex.get());
-                                            const leg = fpln.legElementAt(this.props.fmService.flightPlanService.get(this.loadedFlightPlanIndex.get()).activeLegIndex + idx + 1);
+                                            const leg = fpln.legElementAt(index);
 
-                                            this.props.fmService.flightPlanService.setPilotEnteredSpeedConstraintAt(idx,
+                                            this.props.fmService.flightPlanService.setPilotEnteredSpeedConstraintAt(index,
                                                 leg.segment.class === SegmentClass.Arrival,
                                                 { speed: val, type: SpeedConstraintType.atOrBelow },
                                                 this.loadedFlightPlanIndex.get(),
                                                 false);
                                         }}
                                         mandatory={Subject.create(false)}
+                                        disabled={this.selectedWaypointIndex.map((it) => it === undefined)}
                                         value={this.speedConstraintInput}
                                         alignText="flex-end"
                                     />
@@ -201,11 +276,11 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                                             </div>,
                                         )}
                                         onClick={() => {
-                                            const idx = this.selectedWaypointIndex.get();
+                                            const index = this.props.fmService.flightPlanService.get(this.loadedFlightPlanIndex.get()).activeLegIndex + this.selectedWaypointIndex.get() + 1;
                                             const fpln = this.props.fmService.flightPlanService.get(this.loadedFlightPlanIndex.get());
-                                            const leg = fpln.legElementAt(this.props.fmService.flightPlanService.get(this.loadedFlightPlanIndex.get()).activeLegIndex + idx + 1);
+                                            const leg = fpln.legElementAt(index);
 
-                                            this.props.fmService.flightPlanService.setPilotEnteredSpeedConstraintAt(idx,
+                                            this.props.fmService.flightPlanService.setPilotEnteredSpeedConstraintAt(index,
                                                 leg.segment.class === SegmentClass.Arrival,
                                                 undefined,
                                                 this.loadedFlightPlanIndex.get(),
@@ -224,8 +299,70 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                         </TopTabNavigatorPage>
                         <TopTabNavigatorPage>
                             {/* ALT */}
-                            <div style="display: flex; flex-direction: column; justify-content: center; align-items: center;">
-                                <span class="mfd-label">NOT IMPLEMENTED</span>
+                            <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; margin-top: 15px;">
+                                <div><span class="mfd-label biggest amber">{this.altitudeMessageArea}</span></div>
+                                <div style="display: flex; flex-direction: row; justify-content: center; align-items: center; margin-top: 25px;">
+                                    <span class="mfd-label biggest green mfd-spacing-right">{this.altitudeConstraintType}</span>
+                                    <span class="mfd-label bigger mfd-spacing-right">ALT CSTR AT </span>
+                                    <DropdownMenu
+                                        idPrefix="altConstraintWptDropdown"
+                                        selectedIndex={this.selectedWaypointIndex}
+                                        values={this.availableWaypoints}
+                                        freeTextAllowed={false}
+                                        containerStyle="width: 175px;"
+                                        alignLabels="flex-start"
+                                        onModified={(i) => this.onWptDropdownModified(i)}
+                                        numberOfDigitsForInputField={7}
+                                        tmpyActive={this.tmpyActive}
+                                    />
+                                </div>
+                                <div class="mfd-vert-rev-alt-cstr-line">
+                                    <div class="mfd-vert-rev-alt-cstr-rb">
+                                        <RadioButtonGroup
+                                            idPrefix="altCstrRadioButtons"
+                                            selectedIndex={this.selectedAltitudeConstraintOption}
+                                            values={['AT', 'AT OR ABOVE', 'AT OR BELOW']}
+                                            tmpyActive={this.tmpyActive}
+                                            valuesDisabled={this.selectedWaypointIndex.map((it) => Array(3).fill(it === undefined))}
+                                            onModified={(newIdx) => {
+                                                this.selectedAltitudeConstraintOption.set(newIdx);
+                                                this.tryUpdateAltitudeConstraint();
+                                            }}
+                                        />
+                                    </div>
+                                    <InputField<number>
+                                        dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transitionAltitude)}
+                                        dataHandlerDuringValidation={(val) => this.tryUpdateAltitudeConstraint(val)}
+                                        mandatory={Subject.create(false)}
+                                        disabled={this.selectedWaypointIndex.map((it) => it === undefined)}
+                                        value={this.altitudeConstraintInput}
+                                        alignText="flex-end"
+                                    />
+                                    <Button
+                                        label={Subject.create(
+                                            <div style="display: flex; flex-direction: row; justify-content: space-between;">
+                                                <span style="text-align: center; vertical-align: center; margin-right: 10px;">
+                                                    DELETE
+                                                    <br />
+                                                    ALT CSTR
+                                                </span>
+                                                <span style="display: flex; align-items: center; justify-content: center;">*</span>
+                                            </div>,
+                                        )}
+                                        onClick={() => {
+                                            const index = this.props.fmService.flightPlanService.get(this.loadedFlightPlanIndex.get()).activeLegIndex + this.selectedWaypointIndex.get() + 1;
+                                            const fpln = this.props.fmService.flightPlanService.get(this.loadedFlightPlanIndex.get());
+                                            const leg = fpln.legElementAt(index);
+
+                                            this.props.fmService.flightPlanService.setPilotEnteredAltitudeConstraintAt(index,
+                                                leg.segment.class === SegmentClass.Arrival,
+                                                undefined,
+                                                this.loadedFlightPlanIndex.get(),
+                                                false);
+                                        }}
+                                        buttonStyle="adding-right: 2px;"
+                                    />
+                                </div>
                             </div>
                         </TopTabNavigatorPage>
                         <TopTabNavigatorPage>

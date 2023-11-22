@@ -11,3 +11,20 @@
   padding-bottom: 50px;
   border-bottom: 2px solid lightgrey;
 }
+
+.mfd-vert-rev-alt-cstr-line {
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 50px;
+  padding-left: 10px;
+  border-bottom: 2px solid lightgrey;
+}
+
+.mfd-vert-rev-alt-cstr-rb {
+  padding-bottom: 60px;
+  padding-right: 25px;
+  border-right: 2px solid lightgrey;
+}
