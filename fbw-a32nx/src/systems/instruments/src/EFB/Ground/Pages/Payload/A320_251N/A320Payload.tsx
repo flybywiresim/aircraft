@@ -59,7 +59,7 @@ export const A320Payload: React.FC<A320Props> = ({
     const [cFlagsDesired, setCFlagsDesired] = useSeatFlags(`L:${Loadsheet.seatMap[2].simVar}_DESIRED`, Loadsheet.seatMap[2].capacity, 457);
     const [dFlagsDesired, setDFlagsDesired] = useSeatFlags(`L:${Loadsheet.seatMap[3].simVar}_DESIRED`, Loadsheet.seatMap[3].capacity, 499);
 
-    const globalSettingsRedux = useSelector((state:any) => state.globalSettings);
+    const globalSettingsRedux = useAppSelector((state) => state.globalSettings);
 
     const activeFlags = useMemo(() => [aFlags, bFlags, cFlags, dFlags], [aFlags, bFlags, cFlags, dFlags]);
     const desiredFlags = useMemo(() => [aFlagsDesired, bFlagsDesired, cFlagsDesired, dFlagsDesired], [aFlagsDesired, bFlagsDesired, cFlagsDesired, dFlagsDesired]);
@@ -472,7 +472,7 @@ export const A320Payload: React.FC<A320Props> = ({
             setAnnouncementsEnabled(cabinSoundStatus);
         }
 
-        if (globalSettingsRedux.boardindgMusicActive) {
+        if (globalSettingsRedux.boardingMusicActive) {
             setBoardingMusicEnabled(cabinSoundStatus);
         }
     }, [totalPax]);
