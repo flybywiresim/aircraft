@@ -99,8 +99,8 @@ class CDUVerticalRevisionPage {
                 r3Cell = "";
             }
 
-            const closeToDest = false; // TODO fms-v2: port liveDistanceTo (use VNAV?)
-            // const closeToDest = mcdu.flightPlanManager.getDestination() && mcdu.flightPlanManager.getDestination().liveDistanceTo <= 180;
+            const distanceToDest = mcdu.getDistanceToDestination();
+            const closeToDest = distanceToDest !== undefined && distanceToDest <= 180;
             l4Title = "\xa0QNH";
             if (isFinite(mcdu.perfApprQNH)) {
                 if (mcdu.perfApprQNH < 500) {
