@@ -10,7 +10,7 @@ import { t } from '../../translation';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
 import { SettingItem, SettingsPage } from '../Settings';
-import { setCabinAnnouncementsActive, setPassengerAmbienceActive, setBoardingMusicActive } from '../../Store/features/globalSettings';
+import { setCabinAnnouncementsSetting, setPassengerAmbienceSetting, setBoardingMusicSetting } from '../../Store/features/globalSettings';
 import { useAppDispatch } from '../../Store/store';
 
 
@@ -101,21 +101,21 @@ export const AudioPage = () => {
 
             <SettingItem name={t('Settings.Audio.PassengerAmbience')}>
                 <Toggle value={!!passengerAmbienceEnabled} onToggle={(value) => {
-                    dispatch(setPassengerAmbienceActive(value))
+                    dispatch(setPassengerAmbienceSetting(value))
                     setPassengerAmbienceEnabled(value ? 1 : 0)
                     }} />
             </SettingItem>
 
             <SettingItem name={t('Settings.Audio.Announcements')}>
                 <Toggle value={!!announcementsEnabled} onToggle={(value) => {
-                    dispatch(setCabinAnnouncementsActive(value));
+                    dispatch(setCabinAnnouncementsSetting(value));
                     setAnnouncementsEnabled(value ? 1 : 0)
                     }} />
             </SettingItem>
 
             <SettingItem name={t('Settings.Audio.BoardingMusic')}>
                 <Toggle value={!!boardingMusicEnabled} onToggle={(value) => {
-                    dispatch(setBoardingMusicActive(value));
+                    dispatch(setBoardingMusicSetting(value));
                     setBoardingMusicEnabled(value ? 1 : 0)
                     }} />
             </SettingItem>

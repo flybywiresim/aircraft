@@ -3,31 +3,31 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 // Store for all settings which should be global for the EFB but not neccesary for the simvars.
 
 interface GlobalSettingsState {
-    cabinAnnouncementsActive:boolean,
-    passengerAmbienceActive:boolean,
-    boardingMusicActive:boolean
+    cabinAnnouncementsSetting: boolean,
+    passengerAmbienceSetting: boolean,
+    boardingMusicSetting: boolean
 }
 
-let initialState:GlobalSettingsState = {cabinAnnouncementsActive: true, passengerAmbienceActive: true, boardingMusicActive: true}
+const initialState:GlobalSettingsState = {cabinAnnouncementsSetting: true, passengerAmbienceSetting: true, boardingMusicSetting: true}
 
 export const globalSettingsSlice = createSlice({
     name: "globalSettings",
     initialState: initialState,
     reducers: {
-        setCabinAnnouncementsActive:(state: any, action: PayloadAction<boolean>) => {
+        setCabinAnnouncementsSetting:(state: any, action: PayloadAction<boolean>) => {
             state.cabinAnnouncementsActive = action.payload;
         },
-        setPassengerAmbienceActive:(state: any, action: PayloadAction<boolean>) => {
+        setPassengerAmbienceSetting:(state: any, action: PayloadAction<boolean>) => {
             state.passengerAmbienceActive = action.payload
         },
-        setBoardingMusicActive:(state: any, action: PayloadAction<boolean>) => {
+        setBoardingMusicSetting:(state: any, action: PayloadAction<boolean>) => {
             state.boardingMusicActive = action.payload;
         }
     }
 });
 
-export const {setCabinAnnouncementsActive} = globalSettingsSlice.actions;
-export const {setPassengerAmbienceActive} = globalSettingsSlice.actions;
-export const {setBoardingMusicActive} = globalSettingsSlice.actions;
+export const {setCabinAnnouncementsSetting} = globalSettingsSlice.actions;
+export const {setPassengerAmbienceSetting} = globalSettingsSlice.actions;
+export const {setBoardingMusicSetting} = globalSettingsSlice.actions;
 
 export default globalSettingsSlice.reducer;

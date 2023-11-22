@@ -25,7 +25,7 @@ import { Presets } from './Presets/Presets';
 import { clearEfbState, useAppDispatch, useAppSelector } from './Store/store';
 import { fetchSimbriefDataAction, isSimbriefDataLoaded } from './Store/features/simBrief';
 import { setFlightPlanProgress } from './Store/features/flightProgress';
-import { setPassengerAmbienceActive, setBoardingMusicActive, setCabinAnnouncementsActive } from './Store/features/globalSettings';
+import { setPassengerAmbienceSetting, setBoardingMusicSetting, setCabinAnnouncementsSetting } from './Store/features/globalSettings';
 import { Checklists, setAutomaticItemStates } from './Checklists/Checklists';
 import { CHECKLISTS } from './Checklists/Lists';
 import { setChecklistItems } from './Store/features/checklists';
@@ -301,9 +301,9 @@ const Efb = () => {
 
     // Writes the initial values from the global settings.
     const syncGlobalSettings = () => {
-       dispatch(setPassengerAmbienceActive(passengerAmbienceEnabled === 1));
-       dispatch(setCabinAnnouncementsActive(cabinAnnouncementsEnabled === 1));
-       dispatch(setBoardingMusicActive(boardingMusicEnabled === 1));
+       dispatch(setPassengerAmbienceSetting(passengerAmbienceEnabled === 1));
+       dispatch(setCabinAnnouncementsSetting(cabinAnnouncementsEnabled === 1));
+       dispatch(setBoardingMusicSetting(boardingMusicEnabled === 1));
     };
 
     const { offsetY } = useAppSelector((state) => state.keyboard);

@@ -14,7 +14,7 @@ import Card from '../../../../UtilComponents/Card/Card';
 import { SelectGroup, SelectItem } from '../../../../UtilComponents/Form/Select';
 import { SeatMapWidget } from '../Seating/SeatMapWidget';
 import { PromptModal, useModals } from '../../../../UtilComponents/Modals/Modals';
-import { useSelector } from 'react-redux';
+import { useAppSelector } from 'instruments/src/EFB/Store/store';
 
 interface A320Props {
     simbriefUnits: string,
@@ -464,15 +464,15 @@ export const A320Payload: React.FC<A320Props> = ({
     useEffect(() => {
         const cabinSoundStatus:number = (totalPax > 0 ? 1 : 0);
 
-        if (globalSettingsRedux.passengerAmbienceActive) {
+        if (globalSettingsRedux.passengerAmbienceSetting) {
             setPassengerAmbienceEnabled(cabinSoundStatus);
         }
 
-        if (globalSettingsRedux.cabinAnnouncementsActive) {
+        if (globalSettingsRedux.cabinAnnouncementsSetting) {
             setAnnouncementsEnabled(cabinSoundStatus);
         }
 
-        if (globalSettingsRedux.boardingMusicActive) {
+        if (globalSettingsRedux.boardingMusicSetting) {
             setBoardingMusicEnabled(cabinSoundStatus);
         }
     }, [totalPax]);
