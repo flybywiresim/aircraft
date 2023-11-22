@@ -48,6 +48,8 @@ export interface FlightPlanInterface {
 
     secondaryDelete(index: number): Promise<void>;
 
+    secondaryReset(index: number): Promise<void>;
+
     temporaryInsert(): Promise<void>;
 
     temporaryDelete(): Promise<void>;
