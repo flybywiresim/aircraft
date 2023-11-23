@@ -4,7 +4,7 @@ use uom::si::{
     f64::*,
     length::foot,
     pressure::psi,
-    ratio::ratio,
+    ratio::{percent, ratio},
     thermodynamic_temperature::degree_celsius,
     velocity::foot_per_minute,
     volume::{cubic_meter, gallon},
@@ -35,24 +35,11 @@ use systems::{
         InitContext, Read, SimulationElement, SimulationElementVisitor, SimulatorReader,
         SimulatorWriter, UpdateContext, VariableIdentifier, Write,
     },
+    valve_signal_implementation,
 };
 
 mod wing_anti_ice;
 use wing_anti_ice::*;
-
-macro_rules! valve_signal_implementation {
-    ($signal_type: ty) => {
-        impl PneumaticValveSignal for $signal_type {
-            fn new(target_open_amount: Ratio) -> Self {
-                Self { target_open_amount }
-            }
-
-            fn target_open_amount(&self) -> Ratio {
-                self.target_open_amount
-            }
-        }
-    };
-}
 
 struct PressureRegulatingValveSignal {
     target_open_amount: Ratio,
@@ -112,6 +99,7 @@ pub struct A320Pneumatic {
     cross_bleed_valve_fully_open_id: VariableIdentifier,
     cross_bleed_valve_fully_closed_id: VariableIdentifier,
     apu_bleed_air_valve_open_id: VariableIdentifier,
+    apu_bleed_air_pressure_id: VariableIdentifier,
     bleed_monitoring_computers: [BleedMonitoringComputer; 2],
     engine_systems: [EngineBleedAirSystem; 2],
 
@@ -122,6 +110,9 @@ pub struct A320Pneumatic {
 
     apu_compression_chamber: CompressionChamber,
     apu_bleed_air_valve: DefaultValve,
+
+    air_starter_unit_compression_chamber: CompressionChamber,
+    air_starter_unit_bleed_air_valve: PurelyPneumaticValve,
 
     wing_anti_ice: WingAntiIceComplex,
 
@@ -149,6 +140,8 @@ impl A320Pneumatic {
                 .get_identifier("PNEU_XBLEED_VALVE_FULLY_CLOSED".to_owned()),
             apu_bleed_air_valve_open_id: context
                 .get_identifier("APU_BLEED_AIR_VALVE_OPEN".to_owned()),
+            apu_bleed_air_pressure_id: context
+                .get_identifier("PNEU_APU_BLEED_CONTAINER_PRESSURE".to_owned()),
             bleed_monitoring_computers: [
                 BleedMonitoringComputer::new(
                     context,
@@ -174,6 +167,10 @@ impl A320Pneumatic {
             ],
             apu_compression_chamber: CompressionChamber::new(Volume::new::<cubic_meter>(5.)),
             apu_bleed_air_valve: DefaultValve::new_closed(),
+            air_starter_unit_compression_chamber: CompressionChamber::new(
+                Volume::new::<cubic_meter>(5.),
+            ),
+            air_starter_unit_bleed_air_valve: PurelyPneumaticValve::default(),
             wing_anti_ice: WingAntiIceComplex::new(context),
             hydraulic_reservoir_bleed_air_valves: [
                 PurelyPneumaticValve::new(),
@@ -232,6 +229,7 @@ impl A320Pneumatic {
         overhead_panel: &A320PneumaticOverheadPanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         apu: &impl ControllerSignal<TargetPressureTemperatureSignal>,
+        asu: &impl ControllerSignal<TargetPressureTemperatureSignal>,
         pack_flow_valve_signals: &impl PackFlowControllers,
         lgciu: [&impl LgciuWeightOnWheels; 2],
     ) {
@@ -244,6 +242,7 @@ impl A320Pneumatic {
                 overhead_panel,
                 engine_fire_push_buttons,
                 apu,
+                asu,
                 pack_flow_valve_signals,
                 lgciu,
             );
@@ -257,10 +256,12 @@ impl A320Pneumatic {
         overhead_panel: &A320PneumaticOverheadPanel,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         apu: &impl ControllerSignal<TargetPressureTemperatureSignal>,
+        asu: &impl ControllerSignal<TargetPressureTemperatureSignal>,
         pack_flow_valve_signals: &impl PackFlowControllers,
         lgciu: [&impl LgciuWeightOnWheels; 2],
     ) {
         self.apu_compression_chamber.update(apu);
+        self.air_starter_unit_compression_chamber.update(asu);
 
         for bleed_monitoring_computer in self.bleed_monitoring_computers.iter_mut() {
             bleed_monitoring_computer.update(
@@ -328,6 +329,11 @@ impl A320Pneumatic {
         self.apu_bleed_air_valve.update_move_fluid(
             context,
             &mut self.apu_compression_chamber,
+            left_system,
+        );
+        self.air_starter_unit_bleed_air_valve.update_move_fluid(
+            context,
+            &mut self.air_starter_unit_compression_chamber,
             left_system,
         );
 
@@ -434,6 +440,10 @@ impl SimulationElement for A320Pneumatic {
             &self.apu_bleed_air_valve_open_id,
             self.apu_bleed_air_valve.is_open(),
         );
+        writer.write(
+            &self.apu_bleed_air_pressure_id,
+            self.apu_compression_chamber.pressure(),
+        );
     }
 }
 impl ReservoirAirPressure for A320Pneumatic {
@@ -453,11 +463,13 @@ impl ReservoirAirPressure for A320Pneumatic {
 struct EngineStarterValveController {
     number: usize,
     engine_state: EngineState,
+    engine_n2_percent: f64,
 }
 impl ControllerSignal<EngineStarterValveSignal> for EngineStarterValveController {
     fn signal(&self) -> Option<EngineStarterValveSignal> {
         match self.engine_state {
-            EngineState::Starting | EngineState::Restarting => {
+            //FIXME should start at around 60% N2 and complete at 65% N2 because of traveltime of valve
+            EngineState::Starting | EngineState::Restarting if self.engine_n2_percent < 65. => {
                 Some(EngineStarterValveSignal::new_open())
             }
             _ => Some(EngineStarterValveSignal::new_closed()),
@@ -469,11 +481,13 @@ impl EngineStarterValveController {
         Self {
             number,
             engine_state: EngineState::Off,
+            engine_n2_percent: 0.,
         }
     }
 
     fn update(&mut self, fadec: &FullAuthorityDigitalEngineControl) {
         self.engine_state = fadec.engine_state(self.number);
+        self.engine_n2_percent = fadec.engine_n2_percent(self.number);
     }
 }
 
@@ -1579,12 +1593,16 @@ impl SimulationElement for A320PneumaticOverheadPanel {
 pub struct FullAuthorityDigitalEngineControl {
     engine_1_state_id: VariableIdentifier,
     engine_2_state_id: VariableIdentifier,
-
     engine_1_state: EngineState,
     engine_2_state: EngineState,
 
     engine_mode_selector1_id: VariableIdentifier,
     engine_mode_selector1_position: EngineModeSelector,
+
+    engine_1_n2_percent_id: VariableIdentifier,
+    engine_2_n2_percent_id: VariableIdentifier,
+    engine_1_n2_percent: Ratio,
+    engine_2_n2_percent: Ratio,
 }
 impl FullAuthorityDigitalEngineControl {
     fn new(context: &mut InitContext) -> Self {
@@ -1596,6 +1614,10 @@ impl FullAuthorityDigitalEngineControl {
             engine_mode_selector1_id: context
                 .get_identifier("TURB ENG IGNITION SWITCH EX1:1".to_owned()),
             engine_mode_selector1_position: EngineModeSelector::Norm,
+            engine_1_n2_percent_id: context.get_identifier("ENGINE_N2:1".to_owned()),
+            engine_2_n2_percent_id: context.get_identifier("ENGINE_N2:2".to_owned()),
+            engine_1_n2_percent: Ratio::new::<percent>(0.),
+            engine_2_n2_percent: Ratio::new::<percent>(0.),
         }
     }
 
@@ -1603,6 +1625,14 @@ impl FullAuthorityDigitalEngineControl {
         match number {
             1 => self.engine_1_state,
             2 => self.engine_2_state,
+            _ => panic!("Invalid engine number"),
+        }
+    }
+
+    fn engine_n2_percent(&self, number: usize) -> f64 {
+        match number {
+            1 => self.engine_1_n2_percent.get::<percent>(),
+            2 => self.engine_2_n2_percent.get::<percent>(),
             _ => panic!("Invalid engine number"),
         }
     }
@@ -1620,6 +1650,8 @@ impl SimulationElement for FullAuthorityDigitalEngineControl {
         self.engine_1_state = reader.read(&self.engine_1_state_id);
         self.engine_2_state = reader.read(&self.engine_2_state_id);
         self.engine_mode_selector1_position = reader.read(&self.engine_mode_selector1_id);
+        self.engine_1_n2_percent = Ratio::new::<percent>(reader.read(&self.engine_1_n2_percent_id));
+        self.engine_2_n2_percent = Ratio::new::<percent>(reader.read(&self.engine_2_n2_percent_id));
     }
 }
 
@@ -1875,6 +1907,7 @@ pub mod tests {
     use ntest::assert_about_eq;
     use systems::{
         air_conditioning::{AdirsToAirCondInterface, PackFlowControllers, ZoneType},
+        air_starter_unit::AirStarterUnit,
         electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
         engine::leap_engine::LeapEngine,
         failures::FailureType,
@@ -2158,6 +2191,7 @@ pub mod tests {
         air_conditioning: TestAirConditioning,
         lgciu: TestLgciu,
         apu: TestApu,
+        asu: AirStarterUnit,
         engine_1: LeapEngine,
         engine_2: LeapEngine,
         pneumatic_overhead_panel: A320PneumaticOverheadPanel,
@@ -2184,6 +2218,7 @@ pub mod tests {
                 air_conditioning: TestAirConditioning::new(context),
                 lgciu: TestLgciu::new(true),
                 apu: TestApu::new(),
+                asu: AirStarterUnit::new(context),
                 engine_1: LeapEngine::new(context, 1),
                 engine_2: LeapEngine::new(context, 2),
                 pneumatic_overhead_panel: A320PneumaticOverheadPanel::new(context),
@@ -2253,12 +2288,14 @@ pub mod tests {
             self.electrical.update(context);
 
             self.apu.update(self.pneumatic.apu_bleed_air_valve());
+            self.asu.update();
             self.pneumatic.update(
                 context,
                 [&self.engine_1, &self.engine_2],
                 &self.pneumatic_overhead_panel,
                 &self.fire_pushbuttons,
                 &self.apu,
+                &self.asu,
                 &self.air_conditioning,
                 [&self.lgciu; 2],
             );
@@ -2274,6 +2311,7 @@ pub mod tests {
     impl SimulationElement for PneumaticTestAircraft {
         fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
             self.electrical.accept(visitor);
+            self.asu.accept(visitor);
             self.pneumatic.accept(visitor);
             self.engine_1.accept(visitor);
             self.engine_2.accept(visitor);
@@ -2623,6 +2661,10 @@ pub mod tests {
             self.query(|a| a.pneumatic.apu_bleed_air_valve.is_open())
         }
 
+        fn asu_bleed_valve_is_open(&self) -> bool {
+            self.query(|a| a.pneumatic.air_starter_unit_bleed_air_valve.is_open())
+        }
+
         fn hp_valve_is_powered(&self, number: usize) -> bool {
             self.query(|a| {
                 a.pneumatic.engine_systems[number - 1]
@@ -2904,6 +2946,12 @@ pub mod tests {
 
         fn right_exhaust_flow(&self) -> MassRate {
             self.query(|a| a.pneumatic.wing_anti_ice.wai_mass_flow(1))
+        }
+
+        fn set_asu(mut self, value: bool) -> Self {
+            self.write_by_name("ASU_TURNED_ON", value);
+
+            self
         }
     }
 
@@ -3412,6 +3460,39 @@ pub mod tests {
     }
 
     #[test]
+    fn asu_bleed_engine_start() {
+        let mut test_bed = test_bed_with()
+            .start_eng1()
+            .stop_eng2()
+            .set_asu(true)
+            .and_stabilize();
+
+        assert!(test_bed.asu_bleed_valve_is_open());
+
+        assert!(test_bed.es_valve_is_open(1));
+        assert!(!test_bed.es_valve_is_open(2));
+
+        assert!(
+            // 21 psi because that's where the ECAM indication turns amber, which we don't want in normal ops
+            test_bed.regulated_pressure_transducer_signal(1).unwrap() > Pressure::new::<psi>(21.),
+        );
+
+        test_bed = test_bed
+            .stop_eng1()
+            .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Open)
+            .start_eng2()
+            .and_stabilize();
+
+        assert!(!test_bed.es_valve_is_open(1));
+        assert!(test_bed.es_valve_is_open(2));
+
+        assert!(
+            // 21 psi because that's where the ECAM indication turns amber, which we don't want in normal ops
+            test_bed.regulated_pressure_transducer_signal(2).unwrap() > Pressure::new::<psi>(21.),
+        );
+    }
+
+    #[test]
     fn cross_bleed_engine_start() {
         let mut test_bed = test_bed_with()
             .start_eng1()
@@ -3763,6 +3844,26 @@ pub mod tests {
     }
 
     #[test]
+    fn asu_bleed_provides_at_least_35_psi_with_open_cross_bleed_valve() {
+        let test_bed = test_bed_with()
+            .stop_eng1()
+            .stop_eng2()
+            .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Open)
+            .set_asu(true)
+            .set_pack_flow_pb_is_auto(1, false)
+            .set_pack_flow_pb_is_auto(2, false)
+            .and_stabilize();
+
+        assert!(test_bed.cross_bleed_valve_is_open());
+
+        assert!(!test_bed.pr_valve_is_open(1));
+        assert!(!test_bed.pr_valve_is_open(2));
+
+        assert!(test_bed.precooler_outlet_pressure(1) > Pressure::new::<psi>(35.));
+        assert!(test_bed.precooler_outlet_pressure(2) > Pressure::new::<psi>(35.));
+    }
+
+    #[test]
     fn hydraulic_reservoirs_get_pressurized() {
         let test_bed = test_bed_with()
             .stop_eng1()
@@ -3833,6 +3934,24 @@ pub mod tests {
             .stop_eng2()
             .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Shut)
             .set_bleed_air_running()
+            .set_pack_flow_pb_is_auto(1, false)
+            .set_pack_flow_pb_is_auto(2, false)
+            .and_stabilize();
+
+        assert!(!test_bed.pr_valve_is_open(1));
+        assert!(!test_bed.cross_bleed_valve_is_open());
+
+        assert!(test_bed.precooler_outlet_pressure(1) > Pressure::new::<psi>(35.));
+        assert!(!test_bed.precooler_outlet_pressure(2).is_nan());
+    }
+
+    #[test]
+    fn asu_bleed_provides_at_least_35_psi_to_left_system_with_closed_cross_bleed_valve() {
+        let test_bed = test_bed_with()
+            .stop_eng1()
+            .stop_eng2()
+            .cross_bleed_valve_selector_knob(CrossBleedValveSelectorMode::Shut)
+            .set_asu(true)
             .set_pack_flow_pb_is_auto(1, false)
             .set_pack_flow_pb_is_auto(2, false)
             .and_stabilize();

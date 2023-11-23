@@ -1,0 +1,13 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "target": "ESNext",
+    "noEmit": true,
+    "moduleResolution": "node",
+    // Babel assumes isolated modules, therefore enable it here as well.
+    "isolatedModules": true
+  },
+  "include": [
+    "src/**/*",
+  ]
+}

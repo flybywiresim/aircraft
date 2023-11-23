@@ -56,6 +56,8 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus, isAttExcessive: 
 
     private tdReached = false;
 
+    private checkSpeedMode = false;
+
     private tcasRaInhibited = Subject.create(false);
 
     private trkFpaDeselected = Subject.create(false);
@@ -74,7 +76,7 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus, isAttExcessive: 
         const sharedModeActive = this.activeLateralMode === 32 || this.activeLateralMode === 33
             || this.activeLateralMode === 34 || (this.activeLateralMode === 20 && this.activeVerticalMode === 24);
         const BC3Message = getBC3Message(this.props.isAttExcessive.get(), this.armedVerticalModeSub.get(),
-            this.setHoldSpeed, this.trkFpaDeselected.get(), this.tcasRaInhibited.get(), this.fcdcDiscreteWord1, this.fwcFlightPhase, this.tdReached)[0] !== null;
+            this.setHoldSpeed, this.trkFpaDeselected.get(), this.tcasRaInhibited.get(), this.fcdcDiscreteWord1, this.fwcFlightPhase, this.tdReached, this.checkSpeedMode)[0] !== null;
 
         const engineMessage = this.athrModeMessage;
         const AB3Message = (this.machPreselVal !== -1
@@ -160,6 +162,11 @@ export class FMA extends DisplayComponent<{ bus: ArincEventBus, isAttExcessive: 
 
         sub.on('tdReached').whenChanged().handle((tdr) => {
             this.tdReached = tdr;
+            this.handleFMABorders();
+        });
+
+        sub.on('checkSpeedMode').whenChanged().handle((csm) => {
+            this.checkSpeedMode = csm;
             this.handleFMABorders();
         });
     }
@@ -1207,6 +1214,7 @@ const getBC3Message = (
     fcdcWord1: Arinc429Word,
     fwcFlightPhase: number,
     tdReached: boolean,
+    checkSpeedMode: boolean,
 ) => {
     const armedVerticalBitmask = armedVerticalMode;
     const TCASArmed = (armedVerticalBitmask >> 6) & 1;
@@ -1252,7 +1260,7 @@ const getBC3Message = (
     } else if (false) {
         text = 'MORE DRAG';
         className = 'FontMedium White';
-    } else if (false) {
+    } else if (checkSpeedMode && !isAttExcessive) {
         text = 'CHECK SPEED MODE';
         className = 'FontMedium White';
     } else if (false) {
@@ -1298,9 +1306,19 @@ class BC3Cell extends DisplayComponent<{ isAttExcessive: Subscribable<boolean>, 
 
     private tdReached = false;
 
+    private checkSpeedMode = false;
+
     private fillBC3Cell() {
         const [text, className] = getBC3Message(
-            this.isAttExcessive, this.armedVerticalMode, this.setHoldSpeed, this.trkFpaDeselected, this.tcasRaInhibited, this.fcdcDiscreteWord1, this.fwcFlightPhase, this.tdReached,
+            this.isAttExcessive,
+            this.armedVerticalMode,
+            this.setHoldSpeed,
+            this.trkFpaDeselected,
+            this.tcasRaInhibited,
+            this.fcdcDiscreteWord1,
+            this.fwcFlightPhase,
+            this.tdReached,
+            this.checkSpeedMode,
         );
         this.classNameSub.set(`MiddleAlign ${className}`);
         if (text !== null) {
@@ -1351,6 +1369,11 @@ class BC3Cell extends DisplayComponent<{ isAttExcessive: Subscribable<boolean>, 
 
         sub.on('tdReached').whenChanged().handle((tdr) => {
             this.tdReached = tdr;
+            this.fillBC3Cell();
+        });
+
+        sub.on('checkSpeedMode').whenChanged().handle((csm) => {
+            this.checkSpeedMode = csm;
             this.fillBC3Cell();
         });
     }
