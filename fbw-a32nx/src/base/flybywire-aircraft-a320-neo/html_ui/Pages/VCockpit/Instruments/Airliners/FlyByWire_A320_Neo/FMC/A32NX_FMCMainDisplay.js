@@ -5320,6 +5320,7 @@ class FMCMainDisplay extends BaseAirliners {
         }
 
         if (this.perfDesPredToAltitudePilot !== undefined && currentAlt < this.perfDesPredToAltitudePilot) {
+            this.perfDesPredToAltitudePilot = undefined;
         }
     }
 
