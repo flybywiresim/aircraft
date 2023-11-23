@@ -4284,37 +4284,39 @@ class FMCMainDisplay extends BaseAirliners {
             this.tryUpdateMinDestFob();
         }
 
-        const EFOBBelMin = this.isAnEngineOn() ? this.getDestEFOB(true) : this.getDestEFOB(false);
-
-        if(!this._isBelowMinDestFob) {
-            if (EFOBBelMin < this._minDestFob) {
-                this._isBelowMinDestFob = true;
-                // TODO should be in flight only and if fuel is below min dest efob for 2 minutes
-                if (this.isAnEngineOn()) {
-                    setTimeout(() => {
+        if(this._minDestFob) {
+            // round & only use 100kgs precision since thats how it is displayed in fuel pred
+            const EFOBBelMin = Math.round( (this.isAnEngineOn() ? this.getDestEFOB(true) : this.getDestEFOB(false)) * 10) / 10;
+            const roundedMinDestFob =  Math.round(this._minDestFob * 10)/10;
+            if(!this._isBelowMinDestFob) {
+                if (EFOBBelMin < roundedMinDestFob) {
+                    this._isBelowMinDestFob = true;
+                    // TODO should be in flight only and if fuel is below min dest efob for 2 minutes
+                    if (this.isAnEngineOn()) {
+                        setTimeout(() => {
+                            this.addMessageToQueue(NXSystemMessages.destEfobBelowMin, () => {
+                                return this._EfobBelowMinClr === true;
+                            }, () => {
+                                this._EfobBelowMinClr = true;
+                            });
+                        }, 180000);
+                    } else {
                         this.addMessageToQueue(NXSystemMessages.destEfobBelowMin, () => {
                             return this._EfobBelowMinClr === true;
                         }, () => {
                             this._EfobBelowMinClr = true;
                         });
-                    }, 180000);
-                } else {
-                    this.addMessageToQueue(NXSystemMessages.destEfobBelowMin, () => {
-                        return this._EfobBelowMinClr === true;
-                    }, () => {
-                        this._EfobBelowMinClr = true;
-                    });
+                    }
+                }
+            } else {
+                // check if we are at least 300kgs above min dest efob to show green again & the ability to trigger the message
+                if(roundedMinDestFob) {
+                    if(EFOBBelMin - roundedMinDestFob >= 0.3) {
+                        this._isBelowMinDestFob = false;
+                        this.removeMessageFromQueue(NXSystemMessages.destEfobBelowMin)
+                    }
                 }
             }
-        } else {
-            // check if we are at least 300kgs above min dest efob to show green again & the ability to trigger the message
-           if(this._minDestFob) {
-
-                if(EFOBBelMin - this._minDestFob >= 0.3) {
-                    this._isBelowMinDestFob = false;
-                    this.removeMessageFromQueue(NXSystemMessages.destEfobBelowMin)
-                }
-           }
         }
     }
 }
