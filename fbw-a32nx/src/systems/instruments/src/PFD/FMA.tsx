@@ -906,8 +906,6 @@ class B2Cell extends DisplayComponent<CellProps> {
 
     private classSub = Subject.create('');
 
-    private xposSub = Subject.create(0);
-
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
@@ -924,7 +922,7 @@ class B2Cell extends DisplayComponent<CellProps> {
             let text1: string;
             let color1 = 'Cyan';
             if (clbArmed) {
-                text1 = 'CLB';
+                text1 = '      CLB'; // spaces added to center armed FMA as per newer DMC stnadards
             } else if (desArmed) {
                 text1 = 'DES';
             } else if (altCstArmed) {
@@ -945,8 +943,6 @@ class B2Cell extends DisplayComponent<CellProps> {
                 text2 = '';
             }
 
-            // CLB armed should be centered, other modes are aligned to the left on newer DMCs
-            this.xposSub.set(clbArmed ? 50.801795 : 40.777474);
             this.text1Sub.set(text1);
             this.text2Sub.set(text2);
             this.classSub.set(`FontMediumSmaller MiddleAlign ${color1}`);
@@ -956,7 +952,7 @@ class B2Cell extends DisplayComponent<CellProps> {
     render(): VNode {
         return (
             <g>
-                <text class={this.classSub} x={this.xposSub} y="13.629653">{this.text1Sub}</text>
+                <text class={this.classSub} style="white-space: pre" x="40.777474" y="13.629653">{this.text1Sub}</text>
                 <text class="FontMediumSmaller MiddleAlign Cyan" x="56.19803" y="13.629653">{this.text2Sub}</text>
             </g>
         );
