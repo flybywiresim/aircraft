@@ -1,0 +1,13 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "target": "ESNext",
+    "noEmit": true,
+    "typeRoots": ["../../typings", "../node_modules/@types"],
+  },
+  "include": [
+    "src/**/*",
+    "../../typings/**/*.d.ts"
+  ]
+}
