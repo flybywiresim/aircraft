@@ -1236,7 +1236,7 @@ const getBC3Message = (
         text = 'FOR GA: SET TOGA';
         className = 'FontMedium PulseAmber9Seconds Amber';
     } else if (TCASArmed && !isAttExcessive) {
-        text = '  TCAS               ';
+        text = ' TCAS                ';
         className = 'FontMediumSmaller Cyan';
     } else if (false) {
         text = 'DISCONNECT AP FOR LDG';
