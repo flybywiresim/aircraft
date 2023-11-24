@@ -5,9 +5,9 @@
 import { ClockEvents, ConsumerSubject, DisplayComponent, EventBus, FSComponent, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 
 import { clampAngle } from 'msfs-geo';
-import { CrossTrackError } from 'instruments/src/ND/shared/CrossTrackError';
-import { RadioNeedle } from 'instruments/src/ND/shared/RadioNeedle';
-import { SelectedHeadingBug } from 'instruments/src/ND/pages/arc/SelectedHeadingBug';
+import { CrossTrackError } from './shared/CrossTrackError';
+import { RadioNeedle } from './shared/RadioNeedle';
+import { SelectedHeadingBug } from './pages/arc/SelectedHeadingBug';
 import { GenericFmsEvents } from './types/GenericFmsEvents';
 import { GenericAdirsEvents } from './types/GenericAdirsEvents';
 import { NDSimvars } from './NDSimvarPublisher';

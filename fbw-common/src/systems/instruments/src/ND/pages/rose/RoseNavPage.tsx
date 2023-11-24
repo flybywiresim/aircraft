@@ -5,7 +5,7 @@
 import { FSComponent, ConsumerSubject, MappedSubject, Subject, VNode } from '@microsoft/msfs-sdk';
 import { Arinc429RegisterSubject, EfisNdMode, efisRangeSettings, MathUtils } from '@flybywiresim/fbw-sdk';
 
-import { LsCourseBug } from 'instruments/src/ND/pages/arc/LsCourseBug';
+import { LsCourseBug } from '../arc/LsCourseBug';
 import { Flag } from '../../shared/Flag';
 import { RoseMode } from './RoseMode';
 import { RoseModeUnderlay } from './RoseModeUnderlay';

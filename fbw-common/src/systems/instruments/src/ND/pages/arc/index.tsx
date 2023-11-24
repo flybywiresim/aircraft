@@ -5,7 +5,7 @@
 import { FSComponent, ComponentProps, ConsumerSubject, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { ArincEventBus, Arinc429WordData, Arinc429RegisterSubject, EfisNdMode, efisRangeSettings, MathUtils } from '@flybywiresim/fbw-sdk';
 
-import { LsCourseBug } from 'instruments/src/ND/pages/arc/LsCourseBug';
+import { LsCourseBug } from './LsCourseBug';
 import { ArcModeUnderlay } from './ArcModeUnderlay';
 import { Flag } from '../../shared/Flag';
 import { NDPage } from '../NDPage';
