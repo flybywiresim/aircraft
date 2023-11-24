@@ -23,6 +23,7 @@ import { ThirdPartyOptionsPage } from './Pages/ThirdPartyOptionsPage';
 export type ButtonType = {
     name: string,
     setting: string,
+    index?: number,
 }
 
 interface SelectionTabsProps {

@@ -15,7 +15,7 @@ use uom::si::{
 use super::{Read, SimulatorReader};
 use crate::{
     shared::{low_pass_filter::LowPassFilter, MachNumber},
-    simulation::{InitContext, VariableIdentifier},
+    simulation::{InitContext, SideControlling, VariableIdentifier},
 };
 use nalgebra::{Rotation3, Vector3};
 
@@ -228,6 +228,7 @@ pub struct UpdateContext {
     total_yaw_inertia_id: VariableIdentifier,
     precipitation_rate_id: VariableIdentifier,
     in_cloud_id: VariableIdentifier,
+    side_controlling_id: VariableIdentifier,
     surface_id: VariableIdentifier,
     rotation_acc_x_id: VariableIdentifier,
     rotation_acc_y_id: VariableIdentifier,
@@ -261,14 +262,12 @@ pub struct UpdateContext {
     true_heading: Angle,
     plane_height_over_ground: Length,
     latitude: Angle,
-
     total_weight: Mass,
     total_yaw_inertia_slug_foot_squared: f64,
-
     // From msfs in millimeters
     precipitation_rate: Length,
-
     in_cloud: bool,
+    side_controlling: SideControlling,
 
     surface: SurfaceTypeMsfs,
 
@@ -305,6 +304,7 @@ impl UpdateContext {
     pub(crate) const LATITUDE_KEY: &'static str = "PLANE LATITUDE";
     pub(crate) const TOTAL_WEIGHT_KEY: &'static str = "TOTAL WEIGHT";
     pub(crate) const TOTAL_YAW_INERTIA: &'static str = "TOTAL WEIGHT YAW MOI";
+    pub(crate) const SIDE_CONTROLLING: &'static str = "SIDE_CONTROLLING";
     pub(crate) const SURFACE_KEY: &'static str = "SURFACE TYPE";
     pub(crate) const ROTATION_ACCEL_X_KEY: &'static str = "ROTATION ACCELERATION BODY X";
     pub(crate) const ROTATION_ACCEL_Y_KEY: &'static str = "ROTATION ACCELERATION BODY Y";
@@ -340,6 +340,7 @@ impl UpdateContext {
         bank: Angle,
         mach_number: MachNumber,
         latitude: Angle,
+        side_controlling: SideControlling,
     ) -> UpdateContext {
         UpdateContext {
             is_ready_id: context.get_identifier(Self::IS_READY_KEY.to_owned()),
@@ -375,6 +376,7 @@ impl UpdateContext {
             total_yaw_inertia_id: context.get_identifier(Self::TOTAL_YAW_INERTIA.to_owned()),
             precipitation_rate_id: context.get_identifier(Self::AMBIENT_PRECIP_RATE_KEY.to_owned()),
             in_cloud_id: context.get_identifier(Self::IN_CLOUD_KEY.to_owned()),
+            side_controlling_id: context.get_identifier(Self::SIDE_CONTROLLING.to_owned()),
 
             surface_id: context.get_identifier(Self::SURFACE_KEY.to_owned()),
             rotation_acc_x_id: context.get_identifier(Self::ROTATION_ACCEL_X_KEY.to_owned()),
@@ -432,6 +434,7 @@ impl UpdateContext {
             total_yaw_inertia_slug_foot_squared: 10.,
             precipitation_rate: Length::default(),
             in_cloud: false,
+            side_controlling,
 
             surface: SurfaceTypeMsfs::Asphalt,
 
@@ -471,6 +474,7 @@ impl UpdateContext {
             total_yaw_inertia_id: context.get_identifier("TOTAL WEIGHT YAW MOI".to_owned()),
             precipitation_rate_id: context.get_identifier("AMBIENT PRECIP RATE".to_owned()),
             in_cloud_id: context.get_identifier("AMBIENT IN CLOUD".to_owned()),
+            side_controlling_id: context.get_identifier("SIDE_CONTROLLING".to_owned()),
 
             surface_id: context.get_identifier("SURFACE TYPE".to_owned()),
 
@@ -493,6 +497,8 @@ impl UpdateContext {
             is_on_ground: Default::default(),
             vertical_speed: Default::default(),
             local_acceleration: Default::default(),
+            side_controlling: SideControlling::CAPTAIN,
+
             local_acceleration_plane_reference: Vector3::new(0., -9.8, 0.),
             local_acceleration_plane_reference_filtered:
                 LowPassFilter::<Vector3<f64>>::new_with_init_value(
@@ -596,6 +602,8 @@ impl UpdateContext {
         self.precipitation_rate = Length::new::<millimeter>(precipitation_height_millimeter);
 
         self.in_cloud = reader.read(&self.in_cloud_id);
+
+        self.side_controlling = reader.read(&self.side_controlling_id);
 
         let surface_read: f64 = reader.read(&self.surface_id);
         self.surface = surface_read.into();
@@ -801,6 +809,10 @@ impl UpdateContext {
 
     pub fn mach_number(&self) -> MachNumber {
         self.mach_number
+    }
+
+    pub fn side_controlling(&self) -> SideControlling {
+        self.side_controlling
     }
 
     pub fn with_delta(&self, delta: Duration) -> Self {
