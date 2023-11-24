@@ -43,7 +43,7 @@ const PAGE_GENERATION_BASE_DELAY = 500;
 const PAGE_GENERATION_RANDOM_DELAY = 70;
 
 export const getDisplayIndex = () => {
-    const url = document.getElementsByTagName('a32nx-nd')[0].getAttribute('url');
+    const url = document.querySelector('vcockpit-panel > *').getAttribute('url');
     return url ? parseInt(url.substring(url.length - 1), 10) : 0;
 };
 
