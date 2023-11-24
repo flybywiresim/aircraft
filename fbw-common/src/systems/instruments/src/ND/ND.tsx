@@ -54,12 +54,6 @@ export interface NDProps {
 }
 
 export class NDComponent extends DisplayComponent<NDProps> {
-    private displayBrightness = Subject.create(0);
-
-    private displayFailed = Subject.create(false);
-
-    private displayPowered = Subject.create(false);
-
     private readonly pposLatWord = Arinc429RegisterSubject.createEmpty()
 
     private readonly pposLonWord = Arinc429RegisterSubject.createEmpty()
@@ -127,22 +121,12 @@ export class NDComponent extends DisplayComponent<NDProps> {
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
 
-        const isCaptainSide = getDisplayIndex() === 1;
-
         this.currentPageInstance = this.arcPage.instance;
 
         this.currentPageInstance.isVisible.set(true);
         this.currentPageInstance.onShow();
 
         const sub = this.props.bus.getSubscriber<GenericFcuEvents & GenericDisplayManagementEvents & GenericFmsEvents & NDControlEvents & NDSimvars>();
-
-        sub.on(isCaptainSide ? 'potentiometerCaptain' : 'potentiometerFo').whenChanged().handle((value) => {
-            this.displayBrightness.set(value);
-        });
-
-        sub.on(isCaptainSide ? 'elec' : 'elecFo').whenChanged().handle((value) => {
-            this.displayPowered.set(value);
-        });
 
         sub.on('trueHeadingRaw').whenChanged().handle((value) => {
             this.trueHeadingWord.setWord(value);
