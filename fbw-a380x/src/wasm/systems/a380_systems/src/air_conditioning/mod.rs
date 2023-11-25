@@ -1,10 +1,7 @@
 use systems::{
     accept_iterable,
     air_conditioning::{
-        acs_controller::Pack,
-        cabin_air::CabinAirSimulation,
-        outflow_valve_control_module::{OcsmShared, OutflowValveControlModule},
-        pressure_valve::SafetyValve,
+        acs_controller::Pack, cabin_air::CabinAirSimulation, pressure_valve::SafetyValve,
         AdirsToAirCondInterface, Air, AirConditioningOverheadShared, AirConditioningPack,
         AirHeater, CabinFan, DuctTemperature, MixerUnit, OutletAir, OverheadFlowSelector, PackFlow,
         PackFlowControllers, PressurizationConstants, PressurizationOverheadShared, TrimAirSystem,
@@ -38,6 +35,7 @@ use self::{
     cpiom_b::CoreProcessingInputOutputModuleB,
     local_controllers::{
         full_digital_agu_controller::FullDigitalAGUController,
+        outflow_valve_control_module::{OcsmShared, OutflowValveControlModule},
         trim_air_drive_device::{TaddShared, TrimAirDriveDevice},
         ventilation_control_module::{VcmId, VentilationControlModule},
     },
@@ -1030,10 +1028,11 @@ impl SimulationElement for A380PressurizationOverheadPanel {
 
 #[cfg(test)]
 mod tests {
+    use self::local_controllers::outflow_valve_control_module::CpcsShared;
     use super::*;
     use ntest::assert_about_eq;
     use systems::{
-        air_conditioning::{outflow_valve_control_module::CpcsShared, PackFlow},
+        air_conditioning::PackFlow,
         electrical::{test::TestElectricitySource, ElectricalBus, Electricity},
         integrated_modular_avionics::core_processing_input_output_module::CoreProcessingInputOutputModule,
         overhead::AutoOffFaultPushButton,

@@ -34,7 +34,6 @@ use uom::si::{
 pub mod acs_controller;
 pub mod cabin_air;
 pub mod cabin_pressure_controller;
-pub mod outflow_valve_control_module;
 pub mod pressure_valve;
 
 pub trait DuctTemperature {

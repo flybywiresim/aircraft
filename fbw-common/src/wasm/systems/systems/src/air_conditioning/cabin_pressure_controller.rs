@@ -608,7 +608,7 @@ impl<C: PressurizationConstants> SimulationElement for CabinPressureController<C
     }
 }
 
-pub(super) struct OutflowValveController {
+pub struct OutflowValveController {
     is_in_man_mode: bool,
     open_allowed: bool,
     should_open: bool,
@@ -616,7 +616,7 @@ pub(super) struct OutflowValveController {
 }
 
 impl OutflowValveController {
-    pub(super) fn new(kp: f64, ki: f64) -> Self {
+    pub fn new(kp: f64, ki: f64) -> Self {
         Self {
             //TODO: add ID for multiple OFV
             is_in_man_mode: false,
@@ -626,7 +626,7 @@ impl OutflowValveController {
         }
     }
 
-    pub(super) fn update(
+    pub fn update(
         &mut self,
         context: &UpdateContext,
         cabin_vertical_speed: Velocity,

@@ -4,7 +4,6 @@ use systems::{
     air_conditioning::{
         acs_controller::{AcscId, AirConditioningStateManager, Pack, ZoneController},
         cabin_pressure_controller::PressureScheduleManager,
-        outflow_valve_control_module::{CpcsShared, OcsmShared},
         AdirsToAirCondInterface, Air, AirConditioningOverheadShared, BulkHeaterSignal,
         CabinFansSignal, Channel, DuctTemperature, OverheadFlowSelector, PackFlow,
         PressurizationConstants, PressurizationOverheadShared, VcmShared, ZoneType,
@@ -21,7 +20,10 @@ use systems::{
     },
 };
 
-use super::local_controllers::trim_air_drive_device::TaddShared;
+use super::local_controllers::{
+    outflow_valve_control_module::{CpcsShared, OcsmShared},
+    trim_air_drive_device::TaddShared,
+};
 
 use uom::si::{
     f64::*,

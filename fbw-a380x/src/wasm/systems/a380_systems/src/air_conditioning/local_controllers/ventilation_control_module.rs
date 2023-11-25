@@ -1,9 +1,9 @@
+use super::outflow_valve_control_module::OcsmShared;
 use std::fmt::Display;
-
 use systems::{
     air_conditioning::{
-        outflow_valve_control_module::OcsmShared, AirConditioningOverheadShared, CabinFansSignal,
-        OperatingChannel, PressurizationOverheadShared, VcmShared,
+        AirConditioningOverheadShared, CabinFansSignal, OperatingChannel,
+        PressurizationOverheadShared, VcmShared,
     },
     shared::{ControllerSignal, ElectricalBusType},
     simulation::{
