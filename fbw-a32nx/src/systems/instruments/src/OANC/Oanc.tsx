@@ -204,7 +204,12 @@ export class Oanc extends DisplayComponent<OancProps> {
 
     public panOffsetY = Subject.create(0);
 
-    private readonly isMapPanned = MappedSubject.create(([panX, panY]) => panX !== 0 || panY !== 0, this.panOffsetX, this.panOffsetY);
+    public panBeingAnimated = Subject.create(false);
+
+    // eslint-disable-next-line arrow-body-style
+    private readonly isMapPanned = MappedSubject.create(([panX, panY, panBeingAnimated]) => {
+        return (panX !== 0 || panY !== 0) || panBeingAnimated;
+    }, this.panOffsetX, this.panOffsetY, this.panBeingAnimated);
 
     public modeAnimationOffsetX = Subject.create(0);
 
@@ -249,7 +254,7 @@ export class Oanc extends DisplayComponent<OancProps> {
     private readonly ndMOdeSwitchDelayDebouncer = new DebounceTimer();
 
     public getZoomLevelInverseScale() {
-        const multiplier = this.efisNDModeSub.get() === EfisNdMode.ROSE_NAV ? 0.5 : 1;
+        const multiplier = this.overlayNDModeSub.get() === EfisNdMode.ROSE_NAV ? 0.5 : 1;
 
         return ZOOM_LEVEL_SCALES[this.zoomLevelIndex.get()] * multiplier;
     }
@@ -715,7 +720,38 @@ export class Oanc extends DisplayComponent<OancProps> {
         }
     }
 
-    private handleNDModeChange(newMode: EfisNdMode) {
+    private async disablePanningTransitions(): Promise<void> {
+        for (const container of this.panContainerRef) {
+            container.instance.style.transition = 'reset';
+        }
+
+        await Wait.awaitFrames(1);
+
+        this.panBeingAnimated.set(false);
+    }
+
+    private async enablePanningTransitions(): Promise<void> {
+        for (const container of this.panContainerRef) {
+            container.instance.style.transition = `transform ${ZOOM_TRANSITION_TIME_MS}ms linear`;
+        }
+
+        await Wait.awaitFrames(1);
+
+        this.panBeingAnimated.set(true);
+    }
+
+    private async handleNDModeChange(newMode: EfisNdMode) {
+        if (this.panOffsetX.get() !== 0 || this.panOffsetY.get() !== 0) {
+            // We need to first animate to the default position
+            await this.enablePanningTransitions();
+
+            this.panOffsetX.set(0);
+            this.panOffsetY.set(0);
+            await Wait.awaitDelay(ZOOM_TRANSITION_TIME_MS);
+
+            await this.disablePanningTransitions();
+        }
+
         switch (newMode) {
         case EfisNdMode.ROSE_NAV:
             this.modeAnimationOffsetX.set(0);
