@@ -3,9 +3,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { DisplayComponent, EventBus, FSComponent, MappedSubject, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import { Arinc429SignStatusMatrix, Arinc429Word, EfisNdMode } from '@flybywiresim/fbw-sdk';
 
-import { EfisNdMode } from '@shared/NavigationDisplay';
-import { Arinc429SignStatusMatrix, Arinc429Word } from '@flybywiresim/fbw-sdk';
 import { RoseModeUnderlay } from './OancRoseCompass';
 import { OANC_RENDER_HEIGHT, OANC_RENDER_WIDTH } from './Oanc';
 import { ArcModeUnderlay } from './OancArcModeCompass';

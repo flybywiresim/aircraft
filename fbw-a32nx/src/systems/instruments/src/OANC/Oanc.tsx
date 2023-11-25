@@ -6,12 +6,14 @@ import {
     ComponentProps, ConsumerSubject, DebounceTimer, DisplayComponent, EventBus, FSComponent, MappedSubject, Subject, SubscribableArrayEventType,
     UnitType, VNode,
 } from '@microsoft/msfs-sdk';
-import { AmdbFeatureCollection, AmdbFeatureTypeStrings, AmdbProjection, AmdbProperties, FeatureType, FeatureTypeString, MathUtils, PolygonStructureType } from '@flybywiresim/fbw-sdk';
+import {
+    AmdbFeatureCollection, AmdbFeatureTypeStrings, AmdbProjection, AmdbProperties, FeatureType, FeatureTypeString, MathUtils, PolygonStructureType, EfisNdMode,
+    MapParameters,
+} from '@flybywiresim/fbw-sdk';
+
 import { BBox, bbox, centroid, Feature, featureCollection, FeatureCollection, Geometry, LineString, Point, Polygon, Position, } from '@turf/turf';
 import { bearingTo, clampAngle, Coordinates, distanceTo, placeBearingDistance } from 'msfs-geo';
 import { reciprocal } from '@fmgc/guidance/lnav/CommonGeometry';
-import { EfisNdMode } from '@shared/NavigationDisplay';
-import { MapParameters } from '../ND/shared/utils/MapParameters';
 import { STYLE_DATA } from './style-data';
 import { OancMovingModeOverlay, OancStaticModeOverlay } from './OancMovingModeOverlay';
 import { OancAircraftIcon } from './OancAircraftIcon';
