@@ -8,7 +8,7 @@ import { ArraySubject } from '@microsoft/msfs-sdk';
 import { MathUtils } from '@flybywiresim/fbw-sdk';
 import { filterLabel, OancLabelFilter } from './OancLabelFIlter';
 import { Label, LabelStyle, LABEL_VISIBILITY_RULES, Oanc, OANC_RENDER_HEIGHT, OANC_RENDER_WIDTH } from './Oanc';
-import { intersectLineWithRectangle, midPoint, pointAngle, pointDistance } from './OancMapUtils';
+import { intersectLineWithRectangle, isPointInRectangle, midPoint, pointAngle, pointDistance } from './OancMapUtils';
 
 export class OancLabelManager {
     constructor(
@@ -90,25 +90,9 @@ export class OancLabelManager {
                 } else {
                     const runway = label.associatedFeature as Feature<LineString>;
 
-                    const screenAngle = clampAngle(label.rotation - mapCurrentHeading - (label.rotation > 180 ? 90 : -90));
-
-                    const x1 = runway.geometry.coordinates[0][1];
-                    const y1 = runway.geometry.coordinates[0][0];
-                    const hy1 = Math.sqrt(x1 ** 2 + y1 ** 2) * this.oanc.getZoomLevelInverseScale();
-                    const theta1 = clampAngle(Math.atan2(y1, x1) * MathUtils.RADIANS_TO_DEGREES);
-                    const cx1 = hy1 * Math.cos((theta1 - rotate) * MathUtils.DEGREES_TO_RADIANS);
-                    const cy1 = hy1 * Math.sin((theta1 - rotate) * MathUtils.DEGREES_TO_RADIANS);
-                    const sx1 = (OANC_RENDER_WIDTH / 2) + -cx1 + -scaledOffsetX + this.oanc.panOffsetX.get();
-                    const sy1 = (OANC_RENDER_HEIGHT / 2) + cy1 + scaledOffsetY + this.oanc.panOffsetY.get();
-
-                    const x2 = runway.geometry.coordinates[runway.geometry.coordinates.length - 1][1];
-                    const y2 = runway.geometry.coordinates[runway.geometry.coordinates.length - 1][0];
-                    const hy2 = Math.sqrt(x2 ** 2 + y2 ** 2) * this.oanc.getZoomLevelInverseScale();
-                    const theta2 = clampAngle(Math.atan2(y2, x2) * MathUtils.RADIANS_TO_DEGREES);
-                    const cx2 = hy2 * Math.cos((theta2 - rotate) * MathUtils.DEGREES_TO_RADIANS);
-                    const cy2 = hy2 * Math.sin((theta2 - rotate) * MathUtils.DEGREES_TO_RADIANS);
-                    const sx2 = (OANC_RENDER_WIDTH / 2) + -cx2 + -scaledOffsetX + this.oanc.panOffsetX.get();
-                    const sy2 = (OANC_RENDER_HEIGHT / 2) + cy2 + scaledOffsetY + this.oanc.panOffsetY.get();
+                    // Get the screen coordinates of each runway end
+                    const [sx1, sy1] = this.oanc.projectPoint(runway.geometry.coordinates[0]);
+                    const [sx2, sy2] = this.oanc.projectPoint(runway.geometry.coordinates[runway.geometry.coordinates.length - 1]);
 
                     const [lcx, lcy] = midPoint(sx1, sy1, sx2, sy2);
 
@@ -119,6 +103,7 @@ export class OancLabelManager {
 
                     const rwyAngle = clampAngle(pointAngle(sx1, sy1, sx2, sy2) - 90);
 
+                    // Find intersections of the runway with the screen
                     const intersections = intersectLineWithRectangle(sx1, sy1, sx2, sy2, rx, ry, rw, rh);
 
                     let x: number;
@@ -154,8 +139,20 @@ export class OancLabelManager {
                         // x = (intersections[0][0]) - ox;
                         // y = (intersections[0][1]) - oy;
                     } else if (intersections.length > 0) {
-                        x = intersections[0][0];
-                        y = intersections[0][1];
+                        const [px, py] = isPointInRectangle(sx1, sy1, rx, ry, rw, rh) ? [sx1, sy1] : [sx2, sy2];
+
+                        const xLength = intersections[0][0] - px;
+                        const yLength = intersections[0][1] - py;
+
+                        const hypotenuse = Math.sqrt(xLength ** 2 + yLength ** 2);
+                        const newHypotenuse = hypotenuse - 50;
+                        const angle = Math.atan2(yLength, xLength);
+
+                        x = px + Math.cos(angle) * newHypotenuse;
+                        y = py + Math.sin(angle) * newHypotenuse;
+
+                        // x = intersections[0][0];
+                        // y = intersections[0][1];
                     } else {
                         x = -1000;
                         y = -1000;

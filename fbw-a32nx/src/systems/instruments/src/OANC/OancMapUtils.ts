@@ -45,6 +45,11 @@ export function intersectLineWithRectangle(x1: number, y1: number, x2: number, y
     return ret;
 }
 
+export function isPointInRectangle(px: number, py: number, rx: number, ry: number, rw: number, rh: number): boolean {
+    return (px >= rx && px <= (rx + rw))
+    && (ry >= ry && ry <= (ry + rh));
+}
+
 function lineLine(x1: number, y1: number, x2: number, y2: number, x3: number, y3: number, x4: number, y4: number): [number, number] | undefined {
     // calculate the direction of the lines
     const uA = ((x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3)) / ((y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1));

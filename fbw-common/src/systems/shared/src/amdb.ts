@@ -55,7 +55,7 @@ export enum FeatureTypeString {
     RunwayIntersection = 'runwayintersection',
     Threshold = 'threshold',
     RunwayMarking = 'runwaymarking',
-    Centerline = 'centerline',
+    Centerline = 'paintedcenterline',
     Lahso = 'lahso',
     ArrestGear = 'arrestgear',
     RunwayShoulder = 'runwayshoulder',

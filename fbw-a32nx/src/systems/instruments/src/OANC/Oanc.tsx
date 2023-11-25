@@ -4,7 +4,7 @@
 
 import {
     ComponentProps, ConsumerSubject, DebounceTimer, DisplayComponent, EventBus, FSComponent, MappedSubject, Subject, SubscribableArrayEventType,
-    UnitType, VNode,
+    UnitType, VNode, Wait,
 } from '@microsoft/msfs-sdk';
 import {
     AmdbFeatureCollection, AmdbFeatureTypeStrings, AmdbProjection, AmdbProperties, FeatureType, FeatureTypeString, MathUtils, PolygonStructureType, EfisNdMode,
@@ -241,7 +241,7 @@ export class Oanc extends DisplayComponent<OancProps> {
 
     public readonly interpolatedMapHeading = Subject.create(0);
 
-    public readonly zoomLevelIndex = Subject.create(0);
+    public readonly zoomLevelIndex = Subject.create(2);
 
     public readonly canvasCentreReferencedMapParams = new MapParameters();
 
@@ -338,6 +338,7 @@ export class Oanc extends DisplayComponent<OancProps> {
         // Additional stuff we need that isn't handled by the canvas renderer
         includeLayers.push(FeatureTypeString.AerodromeReferencePoint);
         includeLayers.push(FeatureTypeString.ParkingStandLocation);
+        includeLayers.push(FeatureTypeString.Centerline);
 
         const data = await this.amdbClient.getAirportData(icao, includeLayers, undefined);
         const wgs84ArpDat = await this.amdbClient.getAirportData(icao, [FeatureTypeString.AerodromeReferencePoint], undefined, AmdbProjection.Epsg4326);
@@ -831,6 +832,37 @@ export class Oanc extends DisplayComponent<OancProps> {
         this.contextMenuY.set(event.screenY);
         this.contextMenuVisible.set(!this.contextMenuVisible.get());
         this.isPanning = false;
+    }
+
+    public projectPoint(coordinates: Position): [number, number] {
+        const labelX = coordinates[0];
+        const labelY = coordinates[1];
+
+        // eslint-disable-next-line prefer-const
+        let [offsetX, offsetY] = this.arpReferencedMapParams.coordinatesToXYy(this.ppos);
+
+        // TODO figure out how to not need this
+        offsetY *= -1;
+
+        const mapCurrentHeading = this.interpolatedMapHeading.get();
+        const rotate = -mapCurrentHeading;
+
+        const hypotenuse = Math.sqrt(labelX ** 2 + labelY ** 2) * this.getZoomLevelInverseScale();
+        const angle = clampAngle(Math.atan2(labelY, labelX) * MathUtils.RADIANS_TO_DEGREES);
+
+        const rotationAdjustX = hypotenuse * Math.cos((angle - rotate) * MathUtils.DEGREES_TO_RADIANS);
+        const rotationAdjustY = hypotenuse * Math.sin((angle - rotate) * MathUtils.DEGREES_TO_RADIANS);
+
+        const scaledOffsetX = offsetX * this.getZoomLevelInverseScale();
+        const scaledOffsetY = offsetY * this.getZoomLevelInverseScale();
+
+        let labelScreenX = (OANC_RENDER_WIDTH / 2) + rotationAdjustX + -scaledOffsetX + this.panOffsetX.get();
+        let labelScreenY = (OANC_RENDER_HEIGHT / 2) + -rotationAdjustY + scaledOffsetY + this.panOffsetY.get();
+
+        labelScreenX += this.modeAnimationOffsetX.get();
+        labelScreenY += this.modeAnimationOffsetY.get();
+
+        return [labelScreenX, labelScreenY];
     }
 
     render(): VNode | null {
