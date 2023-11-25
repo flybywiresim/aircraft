@@ -10,49 +10,49 @@ Status legend:
 🟥 Not yet started
 
 ### FMS
-| Status      | URI | Sprint/Prio |
-| ------------- | ------------- | ------------- |
-| ✅ | fms/\*/init | 1 |
-| ✅ | fms/\*/fuel-load | 1 |
-| ✅ | fms/\*/perf | 1 |
+| Status      | URI | Sprint/Prio | Missing functionality |
+| ------------- | ------------- | ------------- | ------------- |
+| ✅ | fms/\*/init | 1 | CPNY WIND REQUEST, RTE SEL, ALTN RTE SEL, CPNY T.O REQUEST |
+| ✅ | fms/\*/fuel-load | 1 | RTE RSV, correct fuel calculation, FUEL PLANNING |
+| ✅ | fms/\*/perf | 1 | OPT FL, REC MAX, EO behavior, display of type of speed restriction (when MANAGED), PRED TO |
 |  |  |
-| ✅ | fms/\*/f-pln | 1 |
-| ✅ | fms/\*/f-pln-departure | 1 |
-| ✅ | fms/\*/f-pln-arrival | 1 |
-| ✅ | fms/\*/f-pln-airways | 1 |
-| ✅ | fms/\*/f-pln-direct-to | 1 |
-| ✅ | fms/\*/f-pln-duplicate-names | 1 |
-| ✅ | fms/\*/f-pln-cpny-f-pln-req | 1 |
-| 🟥 | fms/\*/f-pln-hold | 2 |
-| 1️⃣ | fms/\*/f-pln-vert-rev | 2 |
-| 🟥 | fms/\*/f-pln-cpny-wind-data-req | 2 |
-| 🟥 | fms/\*/wind | 2 |
-| 🟥 | fms/\*/f-pln-rte-sel | 3 |
-| 🟥 | fms/\*/f-pln-offset | 3 |
-| 🟥 | fms/\*/f-pln-fix-info | 3 |
-| 🟥 | fms/\*/f-pln-alternate | 3 |
-| 🟥 | fms/\*/f-pln-closest-airports | 3 |
-| 🟥 | fms/\*/f-pln-cpny-to-data-req | 9 |
-| 🟥 | fms/\*/f-pln-cpny-to-data-recv | 9 |
-| 🟥 | fms/\*/f-pln-equi-time-point | 9 |
-| 🟥 | fms/\*/f-pln-ll-xing-time-mkr | 9 |
+| ✅ | fms/\*/f-pln | 1 | F-PLN INFO button |
+| ✅ | fms/\*/f-pln-departure | 1 | - |
+| ✅ | fms/\*/f-pln-arrival | 1 | - |
+| ✅ | fms/\*/f-pln-airways | 1 | not scrollable |
+| ✅ | fms/\*/f-pln-direct-to | 1 | - |
+| ✅ | fms/\*/f-pln-duplicate-names | 1 | not scrollable |
+| ✅ | fms/\*/f-pln-cpny-f-pln-req | 1 | Just SimBrief download right now |
+| 🟥 | fms/\*/f-pln-hold | 2 | tbd |
+| ✅ | fms/\*/f-pln-vert-rev | 2 | RTA (except ETT), CMS, STEP ALTs, setting whether CLB/DES cstr |
+| 🟥 | fms/\*/f-pln-cpny-wind-data-req | 2 | tbd |
+| 🟥 | fms/\*/wind | 2 | tbd |
+| 🟥 | fms/\*/f-pln-rte-sel | 3 | tbd |
+| 🟥 | fms/\*/f-pln-offset | 3 | tbd |
+| 🟥 | fms/\*/f-pln-fix-info | 3 | tbd |
+| 🟥 | fms/\*/f-pln-alternate | 3 | tbd |
+| 🟥 | fms/\*/f-pln-closest-airports | 3 | tbd |
+| 🟥 | fms/\*/f-pln-cpny-to-data-req | 9 | tbd |
+| 🟥 | fms/\*/f-pln-cpny-to-data-recv | 9 | tbd |
+| 🟥 | fms/\*/f-pln-equi-time-point | 9 | tbd |
+| 🟥 | fms/\*/f-pln-ll-xing-time-mkr | 9 | tbd |
+|  |  |  |
+| ✅ | fms/position/irs | 1 | data sources inconsistent |
+| 🟥 | fms/position/navaids | 2 | tbd |
+| 🟥 | fms/position/monitor | 3 | tbd |
+| 🟥 | fms/position/gps | 3 | tbd |
+| 🟥 | fms/position/report | 4 | tbd |
 |  |  |
-| ✅ | fms/position/irs | 1 |
-| 🟥 | fms/position/monitor | 3 |
-| 🟥 | fms/position/gps | 3 |
-| 🟥 | fms/position/navaids | 3 |
-| 🟥 | fms/position/report | 4 |
+| 🟥 | fms/sec/index | 4 | tbd |
 |  |  |
-| 🟥 | fms/sec/index | 4 |
+| 🟥 | fms/data/airport | 2 | tbd |
+| 🟥 | fms/data/navaid | 2 | tbd |
+| 🟥 | fms/data/status | 2 | tbd |
+| 🟥 | fms/data/waypoint | 2 | tbd |
+| 🟥 | fms/data/printer | 4 | tbd |
+| 🟥 | fms/data/route | 3 | tbd |
 |  |  |
-| 🟥 | fms/data/airport | 2 |
-| 🟥 | fms/data/navaid | 2 |
-| 🟥 | fms/data/status | 2 |
-| 🟥 | fms/data/waypoint | 2 |
-| 🟥 | fms/data/printer | 4 |
-| 🟥 | fms/data/route | 3 |
-|  |  |
-| ✅ | fms/data/msg-list | 1 |
+| ✅ | fms/data/msg-list | 1 | messages are not deleted automatically when conditions don't apply anymore |
 
 \* (active | sec1 | sec2 | sec3)
 
@@ -90,15 +90,9 @@ Use React-based implementation for now, hence no dev. effort needed here.
 ## Known issues / improvements
 | Page / component | Known issue |
 | ------------- | ------------- |
-| PERF | CLB Speed table doesn't change depending on flight phase |
 | PERF | PRED TO not functional |
-| PERF | CRZ Speed table doesn't change depending on flight phase |
-| PERF | DES Speed table doesn't change depending on flight phase |
 | PERF | DES: MANAGED speed or mach can't be set |
-| PERF | APPR: LW not set |
 | PERF | MSG LIST: All messages are persistent in msg list, type I / type II not modeled right now |
-| AIRWAYS | Scroll not yet implemented |
-| DUPLICATE NAMES | Scroll not yet implemented |
 | AIRWAYS | Can't delete pending airways (RL behavior to be checked) |
 | FMS-v2 | Can't start airway with DCT via if first entry (set VIA to DCT, enter desired WPT as TO, submit --> nothing happens) |
 | FMS-v2 | NEXT WPT revision if waypoint already in route: Waypoints in between are not deleted, next wpt is just inserted after revised wpt (need to manually delete the waypoints after) |

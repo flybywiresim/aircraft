@@ -595,7 +595,12 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                             <Button
                                 label="DEST"
                                 disabled={this.destButtonDisabled}
-                                onClick={() => this.displayFplnFromLegIndex.set(this.loadedFlightPlan.destinationLegIndex - (this.tmpyActive.get() ? 7 : 8))}
+                                onClick={() => this.displayFplnFromLegIndex.set(
+                                    this.loadedFlightPlan.destinationLegIndex
+                                    // eslint-disable-next-line max-len
+                                    + this.props.fmService.guidanceController.pseudoWaypoints.pseudoWaypoints.filter((it) => it.alongLegIndex < this.loadedFlightPlan.destinationLegIndex).length
+                                    - (this.tmpyActive.get() ? 7 : 8),
+                                )}
                                 buttonStyle="height: 60px; margin-right: 5px; padding: auto 15px auto 15px;"
                             />
                         </div>

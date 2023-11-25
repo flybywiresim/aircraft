@@ -24,7 +24,23 @@
 }
 
 .mfd-vert-rev-alt-cstr-rb {
-  padding-bottom: 60px;
+  padding-bottom: 20px;
   padding-right: 25px;
   border-right: 2px solid lightgrey;
+}
+
+.mfd-vert-rev-alt-window-label {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: 20px;
+  visibility: hidden;
+}
+
+.mfd-vert-rev-alt-window-value {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: 20px;
+  visibility: hidden;
 }

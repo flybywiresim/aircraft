@@ -47,6 +47,8 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
 
     private speedConstraintType = Subject.create<'CLB' | 'DES'>(undefined);
 
+    private spdConstraintDisabled = Subject.create(true);
+
     // CMS page
 
     // ALT page
@@ -56,7 +58,19 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
 
     private altitudeConstraintType = Subject.create<'CLB' | 'DES'>(undefined);
 
+    private altConstraintDisabled = Subject.create(true);
+
     private selectedAltitudeConstraintOption = Subject.create<number>(undefined);
+
+    private altWindowLabelRef = FSComponent.createRef<HTMLDivElement>();
+
+    private altWindowValueRef = FSComponent.createRef<HTMLDivElement>();
+
+    private altWindowUnitLeading = Subject.create<string>('');
+
+    private altWindowUnitValue = Subject.create<string>('EMPTY');
+
+    private altWindowUnitTrailing = Subject.create<string>('');
 
     // STEP ALTs page
 
@@ -92,7 +106,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
             const leg = this.loadedFlightPlan.legElementAt(this.props.fmService.flightPlanService.get(this.loadedFlightPlanIndex.get()).activeLegIndex + this.selectedWaypointIndex.get() + 1);
 
             // Load speed constraints
-            this.speedConstraintInput.set(leg.pilotEnteredSpeedConstraint?.speed);
+            this.speedConstraintInput.set(leg.speedConstraint?.speed);
             this.speedConstraintType.set(leg.constraintType === WaypointConstraintType.CLB ? 'CLB' : 'DES');
             this.speedMessageArea.set('');
 
@@ -111,9 +125,45 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                 this.selectedAltitudeConstraintOption.set(undefined);
                 break;
             }
-            this.altitudeConstraintInput.set(leg.pilotEnteredAltitudeConstraint?.altitude1);
+            this.altitudeConstraintInput.set(leg.altitudeConstraint?.altitude1);
             this.altitudeConstraintType.set(leg.constraintType === WaypointConstraintType.CLB ? 'CLB' : 'DES');
             this.altitudeMessageArea.set('');
+
+            if (leg.altitudeConstraint.altitude2 !== undefined) {
+                const ac = leg.altitudeConstraint;
+                this.altConstraintDisabled.set(true);
+                // ALT window
+                if (ac.altitude1 > this.transitionAltitude.get()) {
+                    // FL
+                    this.altWindowUnitLeading.set('FL');
+                    this.altWindowUnitTrailing.set('');
+                    this.altWindowUnitValue.set(`${(ac.altitude1 / 100).toFixed(0)}-${(ac.altitude2 / 100).toFixed(0)}`);
+                } else {
+                    // altitude
+                    this.altWindowUnitLeading.set('');
+                    this.altWindowUnitTrailing.set('FT');
+                    this.altWindowUnitValue.set(`${(ac.altitude1).toFixed(0)}-${(ac.altitude2).toFixed(0)}`);
+                }
+                this.altWindowLabelRef.instance.style.visibility = 'visible';
+                this.altWindowValueRef.instance.style.visibility = 'visible';
+            } else {
+                this.altConstraintDisabled.set(false);
+                this.altWindowLabelRef.instance.style.visibility = 'hidden';
+                this.altWindowValueRef.instance.style.visibility = 'hidden';
+            }
+
+            // No constraints for airports
+            if (leg.isRunway()) {
+                this.speedMessageArea.set(`SPD CSTR NOT ALLOWED AT ${leg.ident}`);
+                this.spdConstraintDisabled.set(true);
+                this.altitudeMessageArea.set(`ALT CSTR NOT ALLOWED AT ${leg.ident}`);
+                this.altConstraintDisabled.set(true);
+            } else {
+                this.speedMessageArea.set('');
+                this.spdConstraintDisabled.set(false);
+                this.altitudeMessageArea.set('');
+                this.altConstraintDisabled.set(false);
+            }
         }
     }
 
@@ -155,7 +205,6 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                 { altitude1: alt, type: option },
                 this.loadedFlightPlanIndex.get(),
                 false);
-            console.warn(leg);
         }
     }
 
@@ -165,6 +214,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
         const sub = this.props.bus.getSubscriber<ClockEvents & MfdSimvars>();
 
         // If extra parameter for activeUri is given, navigate to flight phase sub-page
+        console.warn(this.props.uiService.activeUri.get().extra);
         switch (this.props.uiService.activeUri.get().extra) {
         case 'rta':
             this.selectedPageIndex.set(0);
@@ -260,7 +310,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                                                 false);
                                         }}
                                         mandatory={Subject.create(false)}
-                                        disabled={this.selectedWaypointIndex.map((it) => it === undefined)}
+                                        disabled={this.spdConstraintDisabled}
                                         value={this.speedConstraintInput}
                                         alignText="flex-end"
                                     />
@@ -286,6 +336,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                                                 this.loadedFlightPlanIndex.get(),
                                                 false);
                                         }}
+                                        disabled={this.spdConstraintDisabled}
                                         buttonStyle="adding-right: 2px;"
                                     />
                                 </div>
@@ -323,21 +374,31 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                                             selectedIndex={this.selectedAltitudeConstraintOption}
                                             values={['AT', 'AT OR ABOVE', 'AT OR BELOW']}
                                             tmpyActive={this.tmpyActive}
-                                            valuesDisabled={this.selectedWaypointIndex.map((it) => Array(3).fill(it === undefined))}
+                                            valuesDisabled={this.altConstraintDisabled.map((it) => Array(3).fill(it))}
                                             onModified={(newIdx) => {
                                                 this.selectedAltitudeConstraintOption.set(newIdx);
                                                 this.tryUpdateAltitudeConstraint();
                                             }}
                                         />
+                                        <div ref={this.altWindowLabelRef} class="mfd-label bigger mfd-vert-rev-alt-window-label">
+                                            WINDOW
+                                        </div>
                                     </div>
-                                    <InputField<number>
-                                        dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transitionAltitude)}
-                                        dataHandlerDuringValidation={(val) => this.tryUpdateAltitudeConstraint(val)}
-                                        mandatory={Subject.create(false)}
-                                        disabled={this.selectedWaypointIndex.map((it) => it === undefined)}
-                                        value={this.altitudeConstraintInput}
-                                        alignText="flex-end"
-                                    />
+                                    <div style="display: flex; flex-direction: column; align-self: flex-end; justify-content: center; align-items: center; padding-bottom: 20px;">
+                                        <InputField<number>
+                                            dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transitionAltitude)}
+                                            dataHandlerDuringValidation={(val) => this.tryUpdateAltitudeConstraint(val)}
+                                            mandatory={Subject.create(false)}
+                                            disabled={this.altConstraintDisabled}
+                                            value={this.altitudeConstraintInput}
+                                            alignText="flex-end"
+                                        />
+                                        <div ref={this.altWindowValueRef} class="mfd-vert-rev-alt-window-value">
+                                            <span class="mfd-label-unit bigger mfd-unit-leading">{this.altWindowUnitLeading}</span>
+                                            <span class="mfd-label green bigger">{this.altWindowUnitValue}</span>
+                                            <span class="mfd-label-unit bigger mfd-unit-trailing">{this.altWindowUnitTrailing}</span>
+                                        </div>
+                                    </div>
                                     <Button
                                         label={Subject.create(
                                             <div style="display: flex; flex-direction: row; justify-content: space-between;">
@@ -360,6 +421,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                                                 this.loadedFlightPlanIndex.get(),
                                                 false);
                                         }}
+                                        disabled={this.altConstraintDisabled}
                                         buttonStyle="adding-right: 2px;"
                                     />
                                 </div>

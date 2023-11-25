@@ -97,9 +97,9 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
                             <span ref={this.identRef} class="mfd-value-green bigger">
                                 {this.props.fmService.flightPlanService.get(
                                     this.props.fmService.revisedWaypointPlanIndex?.get(),
-                                )?.elementAt(this.props.fmService.revisedWaypointIndex.get()).isDiscontinuity === false && (this.props.fmService.flightPlanService.get(
+                                )?.elementAt(this.props.fmService.revisedWaypointIndex.get())?.isDiscontinuity === false && (this.props.fmService.flightPlanService.get(
                                     this.props.fmService.revisedWaypointPlanIndex?.get(),
-                                )?.legElementAt(this.props.fmService.revisedWaypointIndex.get()).definition.waypoint.ident ?? '')}
+                                )?.legElementAt(this.props.fmService.revisedWaypointIndex.get())?.definition.waypoint.ident ?? '')}
                             </span>
                         </span>
                         <span style="margin-left: 50px; margin-top: 10px;">
