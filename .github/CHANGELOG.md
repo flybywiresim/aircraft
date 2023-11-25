@@ -19,6 +19,7 @@
 1. [EFCS] Add precontrol to roll angle controller to improve dynamic response - @lukecologne (luke)
 1. [EFCS] Increase maximum sim rate limit to 8 due to improvements in roll law stability - @lukecologne (luke)
 1. [HOPPIE] Remove ATSU/AOC source checks - @auroraisluna (alepouna)
+1. [EFB] Added the ability to suppress the cabin sounds (Announcements/Passengers ambience/Music) when the flight is without PAX. - @LouisVenhoff (LouisDev)
 
 ## 0.11.0
 

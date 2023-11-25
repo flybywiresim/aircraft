@@ -10,6 +10,9 @@ import { t } from '../../translation';
 import { SimpleInput } from '../../UtilComponents/Form/SimpleInput/SimpleInput';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
 import { SettingItem, SettingsPage } from '../Settings';
+import { setCabinAnnouncementsSetting, setPassengerAmbienceSetting, setBoardingMusicSetting } from '../../Store/features/globalSettings';
+import { useAppDispatch } from '../../Store/store';
+
 
 export const AudioPage = () => {
     const [ptuAudible, setPtuAudible] = usePersistentNumberProperty('SOUND_PTU_AUDIBLE_COCKPIT', 0);
@@ -28,6 +31,7 @@ export const AudioPage = () => {
     const engineSliderRef = useRef<any>(null);
     const windSliderRef = useRef<any>(null);
 
+    const dispatch = useAppDispatch();
     return (
         <SettingsPage name={t('Settings.Audio.Title')}>
 
@@ -96,15 +100,24 @@ export const AudioPage = () => {
             </SettingItem>
 
             <SettingItem name={t('Settings.Audio.PassengerAmbience')}>
-                <Toggle value={!!passengerAmbienceEnabled} onToggle={(value) => setPassengerAmbienceEnabled(value ? 1 : 0)} />
+                <Toggle value={!!passengerAmbienceEnabled} onToggle={(value) => {
+                    dispatch(setPassengerAmbienceSetting(value))
+                    setPassengerAmbienceEnabled(value ? 1 : 0)
+                    }} />
             </SettingItem>
 
             <SettingItem name={t('Settings.Audio.Announcements')}>
-                <Toggle value={!!announcementsEnabled} onToggle={(value) => setAnnouncementsEnabled(value ? 1 : 0)} />
+                <Toggle value={!!announcementsEnabled} onToggle={(value) => {
+                    dispatch(setCabinAnnouncementsSetting(value));
+                    setAnnouncementsEnabled(value ? 1 : 0)
+                    }} />
             </SettingItem>
 
             <SettingItem name={t('Settings.Audio.BoardingMusic')}>
-                <Toggle value={!!boardingMusicEnabled} onToggle={(value) => setBoardingMusicEnabled(value ? 1 : 0)} />
+                <Toggle value={!!boardingMusicEnabled} onToggle={(value) => {
+                    dispatch(setBoardingMusicSetting(value));
+                    setBoardingMusicEnabled(value ? 1 : 0)
+                    }} />
             </SettingItem>
         </SettingsPage>
     );

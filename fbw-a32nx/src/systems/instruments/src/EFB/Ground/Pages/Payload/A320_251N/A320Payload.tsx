@@ -14,6 +14,7 @@ import Card from '../../../../UtilComponents/Card/Card';
 import { SelectGroup, SelectItem } from '../../../../UtilComponents/Form/Select';
 import { SeatMapWidget } from '../Seating/SeatMapWidget';
 import { PromptModal, useModals } from '../../../../UtilComponents/Modals/Modals';
+import { useAppSelector } from 'instruments/src/EFB/Store/store';
 
 interface A320Props {
     simbriefUnits: string,
@@ -57,6 +58,8 @@ export const A320Payload: React.FC<A320Props> = ({
     const [bFlagsDesired, setBFlagsDesired] = useSeatFlags(`L:${Loadsheet.seatMap[1].simVar}_DESIRED`, Loadsheet.seatMap[1].capacity, 421);
     const [cFlagsDesired, setCFlagsDesired] = useSeatFlags(`L:${Loadsheet.seatMap[2].simVar}_DESIRED`, Loadsheet.seatMap[2].capacity, 457);
     const [dFlagsDesired, setDFlagsDesired] = useSeatFlags(`L:${Loadsheet.seatMap[3].simVar}_DESIRED`, Loadsheet.seatMap[3].capacity, 499);
+
+    const globalSettingsRedux = useAppSelector((state) => state.globalSettings);
 
     const activeFlags = useMemo(() => [aFlags, bFlags, cFlags, dFlags], [aFlags, bFlags, cFlags, dFlags]);
     const desiredFlags = useMemo(() => [aFlagsDesired, bFlagsDesired, cFlagsDesired, dFlagsDesired], [aFlagsDesired, bFlagsDesired, cFlagsDesired, dFlagsDesired]);
@@ -114,6 +117,11 @@ export const A320Payload: React.FC<A320Props> = ({
     const [zfwDesired] = useSimVar('L:A32NX_AIRFRAME_ZFW_DESIRED', 'number', 1_621);
     const [gw] = useSimVar('L:A32NX_AIRFRAME_GW', 'number', 1_741);
     const [gwDesired] = useSimVar('L:A32NX_AIRFRAME_GW_DESIRED', 'number', 1_787);
+
+    // Cabin sounds.
+    const [passengerAmbienceEnabled, setPassengerAmbienceEnabled] = usePersistentNumberProperty('SOUND_PASSENGER_AMBIENCE_ENABLED', 1);
+    const [announcementsEnabled, setAnnouncementsEnabled] = usePersistentNumberProperty('SOUND_ANNOUNCEMENTS_ENABLED', 1);
+    const [boardingMusicEnabled, setBoardingMusicEnabled] = usePersistentNumberProperty('SOUND_BOARDING_MUSIC_ENABLED', 1);
 
     // CG MAC
     const [zfwCgMac] = useSimVar('L:A32NX_AIRFRAME_ZFW_CG_PERCENT_MAC', 'number', 1_223);
@@ -451,6 +459,23 @@ export const A320Payload: React.FC<A320Props> = ({
         boardingStarted,
         gsxPayloadSyncEnabled,
     ]);
+
+    // If totalPax is 0, deactivate all sounds from the cabin.
+    useEffect(() => {
+        const cabinSoundStatus:number = (totalPax > 0 ? 1 : 0);
+
+        if (globalSettingsRedux.passengerAmbienceSetting) {
+            setPassengerAmbienceEnabled(cabinSoundStatus);
+        }
+
+        if (globalSettingsRedux.cabinAnnouncementsSetting) {
+            setAnnouncementsEnabled(cabinSoundStatus);
+        }
+
+        if (globalSettingsRedux.boardingMusicSetting) {
+            setBoardingMusicEnabled(cabinSoundStatus);
+        }
+    }, [totalPax]);
 
     const remainingTimeString = () => {
         const minutes = Math.round(calculateBoardingTime / 60);

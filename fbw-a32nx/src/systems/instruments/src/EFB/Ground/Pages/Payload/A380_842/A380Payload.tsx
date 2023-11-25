@@ -14,6 +14,8 @@ import { SelectGroup, SelectItem } from '../../../../UtilComponents/Form/Select'
 import { SeatMapWidget } from '../Seating/SeatMapWidget';
 import { PromptModal, useModals } from '../../../../UtilComponents/Modals/Modals';
 import { A380SeatOutlineBg, A380SeatOutlineUpperBg } from '../../../../Assets/A380SeatOutlineBg';
+import { useAppSelector } from 'instruments/src/EFB/Store/store';
+
 
 interface A380Props {
     simbriefUnits: string,
@@ -79,6 +81,8 @@ export const A380Payload: React.FC<A380Props> = ({
     const [upperMidBDesired, setUpperMidBDesired] = useSeatFlags(`L:${Loadsheet.seatMap[12].simVar}_DESIRED`, Loadsheet.seatMap[12].capacity, 557);
     const [upperAftDesired, setUpperAftDesired] = useSeatFlags(`L:${Loadsheet.seatMap[13].simVar}_DESIRED`, Loadsheet.seatMap[13].capacity, 571);
 
+    const globalSettingsRedux = useAppSelector((state) => state.globalSettings);
+
     const activeFlags = useMemo(
         () => [mainFwdA, mainFwdB, mainMid1A, mainMid1B, mainMid1C, mainMid2A, mainMid2B, mainMid2C, mainAftA, mainAftB, upperFwd, upperMidA, upperMidB, upperAft],
         [mainFwdA, mainFwdB, mainMid1A, mainMid1B, mainMid1C, mainMid2A, mainMid2B, mainMid2C, mainAftA, mainAftB, upperFwd, upperMidA, upperMidB, upperAft],
@@ -142,6 +146,11 @@ export const A380Payload: React.FC<A380Props> = ({
     const [zfwDesired] = useSimVar('L:A32NX_AIRFRAME_ZFW_DESIRED', 'number', 1_621);
     const [gw] = useSimVar('L:A32NX_AIRFRAME_GW', 'number', 1_741);
     const [gwDesired] = useSimVar('L:A32NX_AIRFRAME_GW_DESIRED', 'number', 1_787);
+
+    // Cabin sounds.
+    const [passengerAmbienceEnabled, setPassengerAmbienceEnabled] = usePersistentNumberProperty('SOUND_PASSENGER_AMBIENCE_ENABLED', 1);
+    const [announcementsEnabled, setAnnouncementsEnabled] = usePersistentNumberProperty('SOUND_ANNOUNCEMENTS_ENABLED', 1);
+    const [boardingMusicEnabled, setBoardingMusicEnabled] = usePersistentNumberProperty('SOUND_BOARDING_MUSIC_ENABLED', 1);
 
     // CG MAC
     const [zfwCgMac] = useSimVar('L:A32NX_AIRFRAME_ZFW_CG_PERCENT_MAC', 'number', 1_223);
@@ -478,6 +487,22 @@ export const A380Payload: React.FC<A380Props> = ({
         boardingStarted,
         gsxPayloadSyncEnabled,
     ]);
+
+
+  // If totalPax is 0, deactivate all sounds from the cabin.
+    useEffect(() => {
+        const cabinSoundStatus:number = (totalPax > 0 ? 1 : 0);
+
+        if (globalSettingsRedux.passengerAmbienceSetting) {
+            setPassengerAmbienceEnabled(cabinSoundStatus);
+        }
+        if (globalSettingsRedux.cabinAnnouncementsSetting) {
+            setAnnouncementsEnabled(cabinSoundStatus);
+        }
+        if (globalSettingsRedux.boardingMusicSetting) {
+            setBoardingMusicEnabled(cabinSoundStatus);
+        }
+    }, [totalPax]);
 
     const remainingTimeString = () => {
         const minutes = Math.round(calculateBoardingTime / 60);
