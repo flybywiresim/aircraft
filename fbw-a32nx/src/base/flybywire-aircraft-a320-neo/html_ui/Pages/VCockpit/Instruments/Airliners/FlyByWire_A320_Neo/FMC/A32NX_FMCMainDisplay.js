@@ -778,8 +778,8 @@ class FMCMainDisplay extends BaseAirliners {
                 this.updatePreSelSpeedMach(this.preSelectedCrzSpeed);
 
                 if (!this.currFlightPlanService.getCruiseFlightLevel()) {
-                    SimVar.SetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number', newFl * 100);
                     this.currFlightPlanService.setCruiseFlightLevel(Simplane.getAutoPilotDisplayedAltitudeLockValue('feet') / 100);
+                    SimVar.SetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number', Simplane.getAutoPilotDisplayedAltitudeLockValue('feet') / 100);
                 }
 
                 break;
@@ -1882,10 +1882,8 @@ class FMCMainDisplay extends BaseAirliners {
             this.deleteOutdatedCruiseSteps(this.currFlightPlanService.getCruiseFlightLevel(), _targetFl);
             this.addMessageToQueue(NXSystemMessages.newCrzAlt.getModifiedMessage(_targetFl * 100));
             this.currFlightPlanService.setCruiseFlightLevel(_targetFl);
-
-            // used by FlightPhaseManager
-            SimVar.SetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number', ofp.cruiseAltitude);
-        }
+            SimVar.SetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number', _targetFl * 100);
+ }
     }
 
     deleteOutdatedCruiseSteps(oldCruiseLevel, newCruiseLevel) {
@@ -1943,9 +1941,9 @@ class FMCMainDisplay extends BaseAirliners {
                     ) {
                         this.addMessageToQueue(NXSystemMessages.newCrzAlt.getModifiedMessage(fcuFl * 100));
                         this.currFlightPlanService.setCruiseFlightLevel(fcuFl);
-
                         // used by FlightPhaseManager
-                        SimVar.SetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number', ofp.cruiseAltitude);
+                        SimVar.SetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number', fcuFl * 100);
+
                         if (this.page.Current === this.page.ProgressPage) {
                             CDUProgressPage.ShowPage(this);
                         }
@@ -3524,6 +3522,8 @@ class FMCMainDisplay extends BaseAirliners {
         }
 
         this.flightPlanService.setCruiseFlightLevel(fl);
+        SimVar.SetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number', fl * 100);
+
 
         this._cruiseEntered = true;
         this.cruiseTemperature = undefined;
