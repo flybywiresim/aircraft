@@ -30,7 +30,7 @@ export interface BaseOfpRouteChunk {
 }
 
 export interface ImportedPerformanceData {
-    departureTransitionAltitde: number,
+    departureTransitionAltitude: number,
     destinationTransitionLevel: number,
     costIndex: number,
     cruiseFlightLevel: number
@@ -120,7 +120,7 @@ export class SimBriefUplinkAdapter {
         const plan = flightPlanService.uplink;
 
         plan.setImportedPerformanceData({
-            departureTransitionAltitde: route.from.transAlt,
+            departureTransitionAltitude: route.from.transAlt,
             destinationTransitionLevel: route.to.transLevel,
             costIndex: route.costIndex,
             cruiseFlightLevel: ofp.cruiseAltitude / 100,

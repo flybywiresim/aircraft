@@ -332,7 +332,7 @@ export class FlightPlan extends BaseFlightPlan {
      * @param data performance data available in uplink
      */
     setImportedPerformanceData(data: ImportedPerformanceData) {
-        this.performanceData.databaseTransitionAltitude.set(data.departureTransitionAltitde);
+        this.performanceData.databaseTransitionAltitude.set(data.departureTransitionAltitude);
         this.performanceData.databaseTransitionLevel.set(data.destinationTransitionLevel);
         this.performanceData.costIndex.set(data.costIndex);
         this.performanceData.cruiseFlightLevel.set(data.cruiseFlightLevel);
