@@ -33,14 +33,6 @@ class CDUVerticalRevisionPage {
         let waypointIdent = "---";
         if (waypoint) {
             waypointIdent = waypoint.ident;
-            if (isDestination) {
-                const destinationRunway = targetPlan.destinationRunway;
-
-                if (destinationRunway) {
-                    // TODO this is broken currently, need to see if this is just the leg ident r actual airport + runway? (fms-v2)
-                    waypointIdent += Avionics.Utils.formatRunway(destinationRunway.ident);
-                }
-            }
         }
 
         let coordinates = "---";
