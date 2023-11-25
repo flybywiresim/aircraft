@@ -209,7 +209,7 @@ export class NavigraphClient {
         return Promise.reject();
     }
 
-    public async amdbCall(query: string): Promise<string> {
+    public async amdbCall(query: string, recurseCount = 0): Promise<string> {
         const callResp = await fetch(`https://amdb.api.navigraph.com/v1/${query}`,
             {
                 headers: {
@@ -223,10 +223,10 @@ export class NavigraphClient {
         }
 
         // Unauthorized
-        if (callResp.status === 401) {
+        if (callResp.status === 401 && recurseCount === 0) {
             await this.getToken();
 
-            return this.amdbCall(query);
+            return this.amdbCall(query, recurseCount + 1);
         }
 
         return Promise.reject();
