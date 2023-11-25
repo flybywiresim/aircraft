@@ -467,20 +467,27 @@ pub trait ConsumePower: PowerConsumptionReport {
 pub trait ControllerSignal<S> {
     fn signal(&self) -> Option<S>;
 }
+#[macro_export]
+macro_rules! valve_signal_implementation {
+    ($signal_type: ty) => {
+        impl PneumaticValveSignal for $signal_type {
+            fn new(target_open_amount: Ratio) -> Self {
+                Self { target_open_amount }
+            }
+
+            fn target_open_amount(&self) -> Ratio {
+                self.target_open_amount
+            }
+        }
+    };
+}
 
 #[derive(Clone, Copy)]
 pub struct ApuBleedAirValveSignal {
     target_open_amount: Ratio,
 }
-impl PneumaticValveSignal for ApuBleedAirValveSignal {
-    fn new(target_open_amount: Ratio) -> Self {
-        Self { target_open_amount }
-    }
 
-    fn target_open_amount(&self) -> Ratio {
-        self.target_open_amount
-    }
-}
+valve_signal_implementation!(ApuBleedAirValveSignal);
 
 pub trait PneumaticValve {
     fn is_open(&self) -> bool;
@@ -579,12 +586,7 @@ impl DelayedPulseTrueLogicGate {
 
         let gate_out = self.true_delayed_gate.output();
 
-        if gate_out && !self.last_gate_output {
-            self.output = true;
-        } else {
-            self.output = false;
-        }
-
+        self.output = gate_out && !self.last_gate_output;
         self.last_gate_output = gate_out;
     }
 

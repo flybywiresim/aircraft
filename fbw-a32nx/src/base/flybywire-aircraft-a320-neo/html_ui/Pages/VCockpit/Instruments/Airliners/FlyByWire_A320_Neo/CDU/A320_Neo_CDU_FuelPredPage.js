@@ -4,7 +4,7 @@ class CDUFuelPredPage {
         mcdu.page.Current = mcdu.page.FuelPredPage;
         mcdu.pageRedrawCallback = () => CDUFuelPredPage.ShowPage(mcdu);
         mcdu.activeSystem = 'FMGC';
-        const isFlying = parseInt(SimVar.GetSimVarValue("GROUND VELOCITY", "knots")) > 30;
+        const isFlying = mcdu.isFlying();
         let destIdentCell = "NONE";
         let destTimeCell = "----";
         let destTimeCellColor = "[color]white";
@@ -128,20 +128,20 @@ class CDUFuelPredPage {
                 };
 
                 if (mcdu.altDestination) {
-                    if (mcdu._routeAltFuelEntered) {
-                        if (isFinite(mcdu.getRouteAltFuelWeight())) {
-                            altFuelCell = "{sp}{sp}" + (NXUnits.kgToUser(mcdu.getRouteAltFuelWeight())).toFixed(1);
-                            altFuelTimeCell = "{small}" + FMCMainDisplay.minutesTohhmm(mcdu.getRouteAltFuelTime()) + "{end}";
-                            altTimeColor = "{green}";
-                            altFuelColor = "[color]cyan";
-                        }
-                    } else {
+                    const altnFuelEntered = mcdu._routeAltFuelEntered;
+                    if (!altnFuelEntered) {
                         mcdu.tryUpdateRouteAlternate();
-                        if (isFinite(mcdu.getRouteAltFuelWeight())) {
-                            altFuelCell = "{sp}{sp}{small}" + (NXUnits.kgToUser(mcdu.getRouteAltFuelWeight())).toFixed(1);
-                            altFuelTimeCell = FMCMainDisplay.minutesTohhmm(mcdu.getRouteAltFuelTime()) + "{end}";
+                    }
+                    if (isFinite(mcdu.getRouteAltFuelWeight())) {
+                        altFuelCell = "{sp}{sp}" + (altnFuelEntered ? "" : "{small}") + (NXUnits.kgToUser(mcdu.getRouteAltFuelWeight())).toFixed(1);
+                        altFuelColor = "[color]cyan";
+                        const time = mcdu.getRouteAltFuelTime();
+                        if (time) {
+                            altFuelTimeCell = "{small}" + FMCMainDisplay.minutesTohhmm(time) + "{end}";
                             altTimeColor = "{green}";
-                            altFuelColor = "[color]cyan";
+                        } else {
+                            altFuelTimeCell = "----";
+                            altTimeColor = "{white}";
                         }
                     }
                 } else {
@@ -161,7 +161,6 @@ class CDUFuelPredPage {
                     altIdentCell = mcdu.altDestination.ident;
                     altEFOBCell = (NXUnits.kgToUser(mcdu.getAltEFOB(true))).toFixed(1);
                     altEFOBCellColor = mcdu.getAltEFOB(true) < mcdu._minDestFob ? "[color]amber" : "[color]green";
-                    altTimeCellColor = "[color]green";
                 }
 
                 mcdu.tryUpdateRouteTrip(isFlying);
@@ -173,49 +172,48 @@ class CDUFuelPredPage {
                 // Should we use predicted values or liveETATo and liveUTCto?
                 destTimeCell = isFlying ? FMCMainDisplay.secondsToUTC(utcTime + FMCMainDisplay.minuteToSeconds(mcdu._routeTripTime))
                     : destTimeCell = FMCMainDisplay.minutesTohhmm(mcdu._routeTripTime);
+
                 if (mcdu.altDestination) {
-                    altTimeCell = isFlying ? FMCMainDisplay.secondsToUTC(utcTime + FMCMainDisplay.minuteToSeconds(mcdu._routeTripTime) + FMCMainDisplay.minuteToSeconds(mcdu.getRouteAltFuelTime()))
+                    if (mcdu.getRouteAltFuelTime()) {
+                        altTimeCell = isFlying ? FMCMainDisplay.secondsToUTC(utcTime + FMCMainDisplay.minuteToSeconds(mcdu._routeTripTime) + FMCMainDisplay.minuteToSeconds(mcdu.getRouteAltFuelTime()))
                         : FMCMainDisplay.minutesTohhmm(mcdu.getRouteAltFuelTime());
+                        altTimeCellColor = "[color]green";
+                    } else {
+                        altTimeCell = "----";
+                        altTimeCellColor = "[color]white";
+                    }
                 }
+
                 destEFOBCellColor = "[color]green";
                 destTimeCellColor = "[color]green";
 
-                if (isFlying) {
-                    rteRsvWeightCell = "{small}0.0{end}";
+
+                rteRsvWeightCell = "{sp}{sp}" + (NXUnits.kgToUser(mcdu.getRouteReservedWeight())).toFixed(1);
+                if (!mcdu._rteReservedWeightEntered) {
+                    rteRsvWeightCell = "{small}" + rteRsvWeightCell + "{end}";
+                }
+
+                if (mcdu._rteRsvPercentOOR) {
                     rteRsvPercentCell = "--.-";
-                    rteRSvCellColor = "[color]green";
+                    rteRSvCellColor = "[color]cyan";
                     rteRsvPctColor = "{white}";
                 } else {
-                    rteRsvWeightCell = "{sp}{sp}" + (NXUnits.kgToUser(mcdu.getRouteReservedWeight())).toFixed(1);
-                    if (!mcdu._rteReservedWeightEntered) {
-                        rteRsvWeightCell = "{small}" + rteRsvWeightCell + "{end}";
+                    rteRsvPercentCell = mcdu.getRouteReservedPercent().toFixed(1);
+                    if (isFlying || (!mcdu._rteReservedPctEntered && mcdu.routeReservedEntered()) ) {
+                        rteRsvPercentCell = "{small}" + rteRsvPercentCell + "{end}";
                     }
-
-                    if (mcdu._rteRsvPercentOOR) {
-                        rteRsvPercentCell = "--.-";
-                        rteRSvCellColor = "[color]cyan";
-                        rteRsvPctColor = "{white}";
-                    } else {
-                        rteRsvPercentCell = mcdu.getRouteReservedPercent().toFixed(1);
-                        const needsPadding = rteRsvPercentCell.length <= 3;
-                        if (!mcdu._rteReservedPctEntered && mcdu.routeReservedEntered()) {
-                            rteRsvPercentCell = "{small}" + rteRsvPercentCell + "{end}";
-                        }
-                        if (needsPadding) {
-                            rteRsvPercentCell = "{sp}" + rteRsvPercentCell;
-                        }
-                        rteRsvPctColor = "{cyan}";
-                    }
-                    rteRSvCellColor = "[color]cyan";
-
-                    mcdu.onLeftInput[2] = async (value, scratchpadCallback) => {
-                        if (await mcdu.trySetRouteReservedFuel(value)) {
-                            CDUFuelPredPage.ShowPage(mcdu);
-                        } else {
-                            scratchpadCallback();
-                        }
-                    };
+                    rteRsvPctColor = isFlying? "{green}" : "{cyan}";
+                    rteRSvCellColor = isFlying? "[color]green" : "[color]cyan";
                 }
+
+
+                mcdu.onLeftInput[2] = async (value, scratchpadCallback) => {
+                    if (await mcdu.trySetRouteReservedFuel(value)) {
+                        CDUFuelPredPage.ShowPage(mcdu);
+                    } else {
+                        scratchpadCallback();
+                    }
+                };
 
                 if (mcdu._minDestFobEntered) {
                     minDestFobCell = "{sp}{sp}" + (NXUnits.kgToUser(mcdu._minDestFob)).toFixed(1);
@@ -256,18 +254,18 @@ class CDUFuelPredPage {
         }
 
         mcdu.setTemplate([
-            ["FUEL PRED"],
-            ["\xa0AT", "EFOB", isFlying ? "UTC" : "TIME"],
+            ["FUEL PRED{sp}"],
+            ["\xa0AT", "EFOB", isFlying ? "{sp}UTC" : "TIME"],
             [destIdentCell + "[color]green", destEFOBCell + destEFOBCellColor, destTimeCell + destTimeCellColor],
             [""],
             [altIdentCell + "[color]green", altEFOBCell + altEFOBCellColor, altTimeCell + altTimeCellColor],
             ["RTE RSV/%", "ZFW/ZFWCG"],
-            [rteRsvWeightCell + rteRsvPctColor + "/" + rteRsvPercentCell + "{end}" + rteRSvCellColor, zfwCell + "/" + zfwCgCell + zfwColor],
-            ["ALTN\xa0\xa0/TIME", "FOB{sp}{sp}{sp}{sp}{sp}"],
-            [altFuelCell + altTimeColor + "/" + altFuelTimeCell + "{end}" + altFuelColor, fobCell + "/" + fobOtherCell + "{sp}{sp}" + fobCellColor],
-            ["FINAL\xa0/TIME", "GW/{sp}{sp} CG"],
-            [finalFuelCell + "/" + finalTimeCell + finalColor, gwCell + "/  " + cgCell + gwCgCellColor],
-            ["MIN DEST FOB", "EXTRA TIME"],
+            [rteRsvWeightCell + rteRsvPctColor + "/" + rteRsvPercentCell + "{end}" + rteRSvCellColor, zfwCell + "/" + zfwCgCell + "{sp}" + zfwColor],
+            ["ALTN\xa0/TIME", "FOB{sp}{sp}{sp}{sp}{sp}{sp}"],
+            [altFuelCell + altTimeColor + "/" + altFuelTimeCell + "{end}" + altFuelColor, fobCell + "/" + fobOtherCell + "{sp}{sp}{sp}" + fobCellColor],
+            ["FINAL/TIME", "GW/{sp}{sp} CG"],
+            [finalFuelCell + "/" + finalTimeCell + finalColor, gwCell + "/ " + cgCell + gwCgCellColor],
+            ["MIN DEST FOB", "EXTRA/TIME"],
             [minDestFobCell + minDestFobCellColor, extraFuelCell + extraTimeColor + "/" + extraTimeCell + "{end}" + extraCellColor]
         ]);
 

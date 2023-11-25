@@ -2815,7 +2815,7 @@ mod tests {
 
             test_bed = test_bed.command_ditching_pb_on().iterate(5);
 
-            assert!(!(test_bed.outflow_valve_open_amount() > Ratio::new::<percent>(99.)));
+            assert!(test_bed.outflow_valve_open_amount() <= Ratio::new::<percent>(99.));
             assert!(test_bed.outflow_valve_open_amount() < Ratio::new::<percent>(1.));
         }
 
@@ -4555,10 +4555,10 @@ mod tests {
                 test_bed = test_bed.iterate(50);
 
                 assert!(
-                    !((test_bed.mixer_unit_outlet_air().flow_rate()
+                    ((test_bed.mixer_unit_outlet_air().flow_rate()
                         - (MassRate::new::<kilogram_per_second>(5.1183) * 0.8))
                         .abs()
-                        < MassRate::new::<kilogram_per_second>(0.1))
+                        >= MassRate::new::<kilogram_per_second>(0.1))
                 );
 
                 assert!(
