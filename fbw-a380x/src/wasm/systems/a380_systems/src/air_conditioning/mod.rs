@@ -945,7 +945,7 @@ impl PressurizationConstants for A380PressurizationConstants {
     const BULK_CARGO_ZONE_VOLUME_CUBIC_METER: f64 = 17.3; // m3
     const PRESSURIZED_FUSELAGE_VOLUME_CUBIC_METER: f64 = 2100.; // m3
     const CABIN_LEAKAGE_AREA: f64 = 0.002; // m2
-    const OUTFLOW_VALVE_SIZE: f64 = 0.32; // m2 This is total opening area (4 OFV)
+    const OUTFLOW_VALVE_SIZE: f64 = 0.28; // m2 This is total opening area (4 OFV)
     const SAFETY_VALVE_SIZE: f64 = 0.1; // m2
     const DOOR_OPENING_AREA: f64 = 1.5; // m2
 
@@ -3031,7 +3031,7 @@ mod tests {
                 .iterate_with_delta(400, Duration::from_millis(50));
             assert!(
                 (test_bed.cabin_vs() - Velocity::new::<foot_per_minute>(-300.)).abs()
-                    < Velocity::new::<foot_per_minute>(50.)
+                    < Velocity::new::<foot_per_minute>(30.)
             );
         }
 

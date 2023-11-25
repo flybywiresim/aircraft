@@ -322,8 +322,8 @@ struct EmergencyPressurizationPartition {
 
 impl EmergencyPressurizationPartition {
     const AMBIENT_CONDITIONS_FILTER_TIME_CONSTANT: Duration = Duration::from_millis(2000);
-    const OFV_CONTROLLER_KP: f64 = 1.;
-    const OFV_CONTROLLER_KI: f64 = 1.;
+    const OFV_CONTROLLER_KP: f64 = 1.2;
+    const OFV_CONTROLLER_KI: f64 = 3.;
     const MIN_SAFETY_DELTA_P: f64 = -0.725; // PSI
     const MAX_SAFETY_DELTA_P: f64 = 9.; // PSI
 
