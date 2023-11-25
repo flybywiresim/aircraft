@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CdsDisplayUnit, DisplayUnitID } from '@instruments/common/CdsDisplayUnit';
+import { LegacyCdsDisplayUnit, DisplayUnitID } from '@instruments/common/LegacyCdsDisplayUnit';
 import { useSimVar } from '@instruments/common/simVars';
 import { EngineGauge } from './elements/EngineGauge';
 import ThrustRatingMode from './elements/ThrustRatingMode';
@@ -24,7 +24,7 @@ export const EngineWarningDisplay: React.FC = () => {
     const displayMemo = true;
 
     return (
-        <CdsDisplayUnit displayUnitId={DisplayUnitID.Ewd}>
+        <LegacyCdsDisplayUnit displayUnitId={DisplayUnitID.Ewd}>
             <ThrustRatingMode x={330} y={30} active={engineRunningOrIgnitionOn} />
 
             <EngineGauge x={93} y={126} engine={1} active={engineRunningOrIgnitionOn} n1Degraded={n1Degraded[0]} />
@@ -58,6 +58,6 @@ export const EngineWarningDisplay: React.FC = () => {
             {/* <Checklist x={47} y={467} /> */}
             <EWDMemo x={395} y={414} active={displayMemo} />
             <PseudoFWC />
-        </CdsDisplayUnit>
+        </LegacyCdsDisplayUnit>
     );
 };
