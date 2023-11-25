@@ -178,4 +178,10 @@ export class OancLabelManager {
             this.oanc.labelContainerRef.instance.style.visibility = 'hidden';
         }
     }
+
+    public clearLabels() {
+        this.labels.length = 0;
+        this.visibleLabels.clear();
+        this.visibleLabelElements.clear();
+    }
 }

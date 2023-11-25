@@ -188,6 +188,8 @@ export class Oanc extends DisplayComponent<OancProps> {
 
     private positionComputer = new OancPositionComputer(this);
 
+    public dataLoading = false;
+
     public doneDrawing = false;
 
     private isPanning = false;
@@ -314,6 +316,12 @@ export class Oanc extends DisplayComponent<OancProps> {
     }
 
     private async loadAirportMap(icao: string) {
+        this.dataLoading = true;
+
+        this.waitScreenRef.instance.style.visibility = 'visible';
+        this.clearData();
+        this.clearMap();
+
         const includeFeatureTypes: FeatureType[] = Object.values(STYLE_DATA).reduce((acc, it) => [...acc, ...it.reduce((acc, it) => [...acc, ...it.forFeatureTypes], [])], []);
         const includeLayers = includeFeatureTypes.map((it) => AmdbFeatureTypeStrings[it]);
 
@@ -366,6 +374,8 @@ export class Oanc extends DisplayComponent<OancProps> {
 
         this.sortDataIntoLayers(this.data);
         this.generateAllLabels(this.data);
+
+        this.dataLoading = false;
     }
 
     private calculateCanvasCenterCoordinates() {
@@ -580,7 +590,7 @@ export class Oanc extends DisplayComponent<OancProps> {
         this.ppos.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'Degrees');
         this.planeTrueHeading.set(SimVar.GetSimVarValue('PLANE HEADING DEGREES TRUE', 'Degrees'));
 
-        if (!this.data) {
+        if (!this.data || this.dataLoading) {
             return;
         }
 
@@ -680,6 +690,23 @@ export class Oanc extends DisplayComponent<OancProps> {
         } else {
             this.lastLayerDrawnIndex++;
             this.lastFeatureDrawnIndex = 0;
+        }
+    }
+
+    private clearData(): void {
+        for (const layer of this.layerFeatures) {
+            layer.features.length = 0;
+        }
+
+        this.labelManager.clearLabels();
+    }
+
+    private clearMap(): void {
+        this.lastLayerDrawnIndex = 0;
+        this.lastFeatureDrawnIndex = 0;
+
+        for (const layer of this.layerCanvasRefs) {
+            layer.instance.getContext('2d').clearRect(0, 0, OANC_RENDER_WIDTH, OANC_RENDER_HEIGHT);
         }
     }
 
