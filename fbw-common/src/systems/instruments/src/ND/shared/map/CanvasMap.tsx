@@ -16,7 +16,7 @@ import { TrafficLayer } from './TrafficLayer';
 import { FixInfoLayer } from './FixInfoLayer';
 import { NDControlEvents } from '../../NDControlEvents';
 import { PseudoWaypointLayer } from './PseudoWaypointLayer';
-import { GenericFcuEvents } from "../../types/GenericFcuEvents";
+import { GenericFcuEvents } from '../../types/GenericFcuEvents';
 
 // TODO move this somewhere better, need to move TCAS stuff into fbw-sdk
 declare enum TaRaIntrusion { TRAFFIC = 0, PROXIMITY = 1, TA = 2, RA = 3 }
