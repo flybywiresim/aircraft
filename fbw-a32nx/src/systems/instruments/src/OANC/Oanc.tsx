@@ -11,7 +11,7 @@ import {
     MapParameters,
 } from '@flybywiresim/fbw-sdk';
 
-import { BBox, bbox, centroid, Feature, featureCollection, FeatureCollection, Geometry, LineString, Point, Polygon, Position, } from '@turf/turf';
+import { BBox, bbox, centroid, Feature, featureCollection, FeatureCollection, Geometry, LineString, Point, Polygon, Position } from '@turf/turf';
 import { bearingTo, clampAngle, Coordinates, distanceTo, placeBearingDistance } from 'msfs-geo';
 import { reciprocal } from '@fmgc/guidance/lnav/CommonGeometry';
 import { STYLE_DATA } from './style-data';
@@ -85,6 +85,8 @@ export interface OancProps extends ComponentProps {
 }
 
 export class Oanc extends DisplayComponent<OancProps> {
+    private readonly controlPanelRef = FSComponent.createRef<ControlPanel>();
+
     private readonly waitScreenRef = FSComponent.createRef<HTMLDivElement>();
 
     private readonly animationContainerRef = [
@@ -269,6 +271,9 @@ export class Oanc extends DisplayComponent<OancProps> {
         this.efisNDModeSub.sub((mode) => this.handleNDModeChange(mode), true);
 
         this.loadAirportMap('LFPG');
+        this.amdbClient.searchForAirports('LFPG').then((airports) => {
+            this.controlPanelRef.instance.setSelectedAirport(airports[0]);
+        });
 
         this.labelManager.visibleLabels.sub((index, type, item) => {
             switch (type) {
@@ -885,7 +890,12 @@ export class Oanc extends DisplayComponent<OancProps> {
                     items={this.contextMenuItems}
                 />
 
-                <ControlPanel amdbClient={this.amdbClient} isVisible={this.controlPanelVisible} />
+                <ControlPanel
+                    ref={this.controlPanelRef}
+                    amdbClient={this.amdbClient}
+                    isVisible={this.controlPanelVisible}
+                    onSelectAirport={(icao) => this.loadAirportMap(icao)}
+                />
 
                 <div
                     style={`position: absolute; width: ${OANC_RENDER_WIDTH}px; height: ${OANC_RENDER_HEIGHT}px; pointer-events: none`}

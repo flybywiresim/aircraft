@@ -15,6 +15,7 @@ export * from './Constants';
 export * from './GenericDataListenerSync';
 export * from './FmMessages';
 export * from './logic';
+export * from './MapParameters';
 export * from './MathUtils';
 export * from './navdata';
 export * from './notification';

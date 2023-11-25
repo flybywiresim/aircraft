@@ -30,11 +30,33 @@
     width: 645px;
     height: 130px;
 
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    padding: 5px;
+
     background-color: rgb(128, 128, 128);
     border: solid 3px white;
     border-left: none;
     border-bottom-width: 2px;
     border-right-width: 2px;
+
+    button {
+        font-family: "Ecam", monospace;
+        font-size: 17px;
+
+        color: white;
+        background-color: rgb(128, 128, 128);
+
+        border: solid 3px white;
+        border-bottom-width: 2px;
+        border-right-width: 2px;
+
+        &:not(:last-child) {
+            margin-bottom: 8px;
+        }
+    }
 }
 
 .oanc-control-panel-tabs-dummy {
@@ -97,4 +119,90 @@
 
     background-color: rgb(128, 128, 128);
     color: $display-cyan;
+}
+
+.oanc-control-panel .mfd-radio-button {
+    font-size: 19px;
+
+    margin-left: 22px;
+}
+
+.oanc-control-panel .mfd-radio-button:not(:last-child) {
+    margin-bottom: 5px;
+}
+
+.oanc-control-panel .mfd-radio-button input[type="radio"] {
+    margin-right: 1em;
+}
+
+.oanc-control-panel .oanc-control-panel-arpt-sel-left-dropdowns {
+    width: 220px;
+    height: 30px;
+
+    margin-left: 22px;
+    margin-bottom: 3px;
+
+    background-color: magenta;
+}
+
+.oanc-control-panel .oanc-control-panel-arpt-sel-center {
+    flex-grow: 1;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    .oanc-control-panel-arpt-sel-center-info {
+        color: $display-green;
+
+        white-space: pre;
+        font-size: 17px;
+    }
+
+    .oanc-control-panel-arpt-sel-center-info:not(:last-child) {
+        margin-bottom: 6px;
+    }
+
+    button {
+        width: 150px;
+        height: 35px;
+    }
+}
+
+.oanc-control-panel.oanc-control-panel-tmpy {
+    .oanc-control-panel-arpt-sel-center-info {
+        color: $display-yellow;
+    }
+}
+
+.oanc-control-panel .oanc-control-panel-arpt-sel-right {
+    height: 100%;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    margin-left: auto;
+
+    padding: 4px 0 4px 9px;
+    border-left: 2px solid $display-white;
+
+    button {
+        width: 100px;
+        height: 27px;
+    }
+}
+
+.oanc-control-panel .oanc-control-panel-arpt-sel-close {
+    width: 32px;
+    height: 100%;
+
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+
+    button {
+        width: 27px;
+        height: 27px;
+    }
 }
