@@ -417,9 +417,9 @@ impl EmergencyPressurizationPartition {
         cabin_vertical_speed: Velocity,
     ) -> Velocity {
         if self.differential_pressure > Pressure::new::<psi>(Self::MAX_SAFETY_DELTA_P - 0.2) {
-            if self.differential_pressure > Pressure::new::<psi>(Self::MAX_SAFETY_DELTA_P) {
-                Velocity::new::<foot_per_minute>(6400.)
-            } else if cabin_vertical_speed > Velocity::new::<foot_per_minute>(200.) {
+            if self.differential_pressure > Pressure::new::<psi>(Self::MAX_SAFETY_DELTA_P)
+                || cabin_vertical_speed > Velocity::new::<foot_per_minute>(200.)
+            {
                 Velocity::new::<foot_per_minute>(6400.)
             } else {
                 cabin_target_vs

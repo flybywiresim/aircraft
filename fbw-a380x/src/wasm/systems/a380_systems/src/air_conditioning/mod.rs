@@ -1931,7 +1931,6 @@ mod tests {
         test_bed: SimulationTestBed<TestAircraft>,
         stored_pressure: Option<Pressure>,
         stored_ofv_open_amount: Option<Ratio>,
-        stored_vertical_speed: Option<Velocity>,
         vertical_speed: Velocity,
     }
     impl CabinAirTestBed {
@@ -1940,7 +1939,6 @@ mod tests {
                 test_bed: SimulationTestBed::new(TestAircraft::new),
                 stored_pressure: None,
                 stored_ofv_open_amount: None,
-                stored_vertical_speed: None,
                 vertical_speed: Velocity::default(),
             };
             test_bed.set_indicated_altitude(Length::default());
@@ -1989,11 +1987,12 @@ mod tests {
         fn iterate(mut self, iterations: usize) -> Self {
             for _ in 0..iterations {
                 println!(
-                    "{}, {}, {}, {}",
+                    "{}, {}, {}, {}, {}",
                     self.cabin_vs().get::<foot_per_minute>(),
                     self.cabin_altitude().get::<foot>(),
                     self.outflow_valve_open_amount().get::<percent>(),
                     self.cabin_delta_p().get::<psi>(),
+                    self.cabin_target_altitude().get::<foot>(),
                 );
                 self.run_with_vertical_speed(Duration::from_secs(1));
             }
@@ -2003,11 +2002,12 @@ mod tests {
         fn iterate_with_delta(mut self, iterations: usize, delta: Duration) -> Self {
             for _ in 0..iterations {
                 println!(
-                    "{}, {}, {}, {}",
+                    "{}, {}, {}, {}, {}",
                     self.cabin_vs().get::<foot_per_minute>(),
                     self.cabin_altitude().get::<foot>(),
                     self.outflow_valve_open_amount().get::<percent>(),
                     self.cabin_delta_p().get::<psi>(),
+                    self.cabin_target_altitude().get::<foot>(),
                 );
                 self.run_with_vertical_speed(delta);
             }
@@ -2027,11 +2027,6 @@ mod tests {
 
         fn memorize_outflow_valve_open_amount(mut self) -> Self {
             self.stored_ofv_open_amount = Some(self.outflow_valve_open_amount());
-            self
-        }
-
-        fn memorize_vertical_speed(mut self) -> Self {
-            self.stored_vertical_speed = Some(self.cabin_vs());
             self
         }
 
@@ -2344,6 +2339,12 @@ mod tests {
             self
         }
 
+        fn command_nav_cruise_altitude(mut self, target_altitude: Length) -> Self {
+            self.write_by_name("FMA_LATERAL_MODE", 20);
+            self.write_by_name("AIRLINER_CRUISE_ALTITUDE", target_altitude.get::<foot>());
+            self
+        }
+
         fn command_open_aft_cargo_door(mut self, open: bool) -> Self {
             self.command(|a| {
                 a.dsms.open_aft_cargo_door(open);
@@ -2424,10 +2425,6 @@ mod tests {
 
         fn initial_outflow_valve_open_amount(&self) -> Ratio {
             self.stored_ofv_open_amount.unwrap()
-        }
-
-        fn initial_cabin_vs(&self) -> Velocity {
-            self.stored_vertical_speed.unwrap()
         }
 
         fn cabin_altitude(&self) -> Length {
@@ -2692,7 +2689,7 @@ mod tests {
             test_bed().command_aircraft_climb(Length::default(), Length::new::<foot>(20000.));
         test_bed.set_indicated_altitude(Length::new::<foot>(20000.));
         test_bed.command_ambient_pressure(Pressure::new::<hectopascal>(472.));
-        test_bed.set_vertical_speed(Velocity::new::<foot_per_minute>(90.));
+        test_bed.set_vertical_speed(Velocity::default());
         test_bed = test_bed.iterate(55);
         test_bed
     }
@@ -2718,7 +2715,6 @@ mod tests {
                 ))
                 .iterate(100);
 
-            println!("Cabin alt: {}", test_bed.cabin_altitude().get::<foot>());
             assert!(
                 (test_bed.cabin_altitude() - Length::new::<foot>(10000.)).abs()
                     < Length::new::<foot>(20.)
@@ -2850,12 +2846,8 @@ mod tests {
 
         #[test]
         fn target_altitude_is_auto_when_in_auto_mode() {
-            let mut test_bed = test_bed().iterate(10);
+            let mut test_bed = test_bed_in_cruise().iterate(10);
 
-            println!(
-                "Target alt: {}",
-                test_bed.cabin_target_altitude().get::<foot>()
-            );
             assert!(test_bed.cabin_target_altitude() > Length::default());
         }
 
@@ -2866,18 +2858,9 @@ mod tests {
                 .command_alt_mode_sel_pb_man()
                 .iterate(10);
 
-            println!(
-                "Target alt: {}",
-                test_bed.cabin_target_altitude().get::<foot>()
-            );
             assert_eq!(test_bed.cabin_target_altitude(), Length::default());
 
             test_bed = test_bed.command_alt_sel_knob_value(5000.).iterate(10);
-
-            println!(
-                "Target alt: {}",
-                test_bed.cabin_target_altitude().get::<foot>()
-            );
 
             assert!(
                 (test_bed.cabin_target_altitude() - Length::new::<foot>(5000.)).abs()
@@ -2896,14 +2879,6 @@ mod tests {
                 .command_alt_sel_knob_value(7000.)
                 .iterate(100);
 
-            println!(
-                "Target vs: {}",
-                test_bed
-                    .cabin_target_vertical_speed()
-                    .get::<foot_per_minute>()
-            );
-            println!("Cabin VS: {}", test_bed.cabin_vs().get::<foot_per_minute>());
-
             assert!(
                 (test_bed.cabin_target_vertical_speed() - Velocity::new::<foot_per_minute>(500.))
                     .abs()
@@ -2916,12 +2891,6 @@ mod tests {
 
             test_bed = test_bed.iterate(500);
 
-            println!(
-                "Target alt: {}",
-                test_bed.cabin_target_altitude().get::<foot>()
-            );
-            println!("Cabin alt: {}", test_bed.cabin_altitude().get::<foot>());
-
             assert!(
                 (test_bed.cabin_altitude() - Length::new::<foot>(7000.)).abs()
                     < Length::new::<foot>(50.)
@@ -2930,32 +2899,56 @@ mod tests {
 
         #[test]
         fn target_altitude_resets_to_auto() {
-            let mut test_bed = test_bed()
+            let mut test_bed = test_bed_in_cruise()
                 .iterate(10)
                 .command_alt_mode_sel_pb_man()
                 .iterate(10);
 
-            println!(
-                "Target alt: {}",
-                test_bed.cabin_target_altitude().get::<foot>()
-            );
             assert_eq!(test_bed.cabin_target_altitude(), Length::default());
 
             test_bed = test_bed.command_alt_sel_knob_value(1000.).iterate(10);
 
-            println!(
-                "Target alt: {}",
-                test_bed.cabin_target_altitude().get::<foot>()
-            );
-
             test_bed = test_bed.command_alt_mode_sel_pb_auto().iterate(10);
 
-            println!(
-                "Target alt: {}",
-                test_bed.cabin_target_altitude().get::<foot>()
-            );
+            assert!(test_bed.cabin_target_altitude() > Length::default());
+        }
 
-            assert!(test_bed.cabin_target_altitude() > Length::new::<foot>(1000.));
+        #[test]
+        fn hdg_cabin_target_altitude_matches_references() {
+            let mut test_bed = test_bed()
+                .iterate(10)
+                .command_aircraft_climb(Length::default(), Length::new::<foot>(29000.))
+                .iterate(100);
+
+            assert_about_eq!(test_bed.cabin_target_altitude().get::<foot>(), 3600., 150.);
+
+            test_bed = test_bed
+                .command_aircraft_climb(Length::new::<foot>(29000.), Length::new::<foot>(33000.))
+                .iterate(100);
+
+            assert_about_eq!(test_bed.cabin_target_altitude().get::<foot>(), 4900., 150.);
+        }
+
+        #[test]
+        fn nav_cabin_target_altitude_matches_references() {
+            let mut test_bed = test_bed()
+                .iterate(10)
+                .command_nav_cruise_altitude(Length::new::<foot>(33000.))
+                .iterate(100);
+
+            assert_about_eq!(test_bed.cabin_target_altitude().get::<foot>(), 4900., 150.);
+
+            test_bed = test_bed
+                .command_nav_cruise_altitude(Length::new::<foot>(35000.))
+                .iterate(100);
+
+            assert_about_eq!(test_bed.cabin_target_altitude().get::<foot>(), 5500., 150.);
+
+            test_bed = test_bed
+                .command_nav_cruise_altitude(Length::new::<foot>(36000.))
+                .iterate(100);
+
+            assert_about_eq!(test_bed.cabin_target_altitude().get::<foot>(), 5800., 150.);
         }
 
         #[test]
@@ -2969,14 +2962,6 @@ mod tests {
                 .command_vs_sel_knob_value(200.)
                 .iterate(100);
 
-            println!(
-                "Target vs: {}",
-                test_bed
-                    .cabin_target_vertical_speed()
-                    .get::<foot_per_minute>()
-            );
-            println!("Cabin VS: {}", test_bed.cabin_vs().get::<foot_per_minute>());
-
             assert!(
                 (test_bed.cabin_target_vertical_speed() - Velocity::new::<foot_per_minute>(200.))
                     .abs()
@@ -2984,14 +2969,6 @@ mod tests {
             );
 
             test_bed = test_bed.command_vs_sel_knob_value(400.).iterate(100);
-
-            println!(
-                "Target vs: {}",
-                test_bed
-                    .cabin_target_vertical_speed()
-                    .get::<foot_per_minute>()
-            );
-            println!("Cabin VS: {}", test_bed.cabin_vs().get::<foot_per_minute>());
 
             assert!(
                 (test_bed.cabin_target_vertical_speed() - Velocity::new::<foot_per_minute>(400.))
@@ -3002,22 +2979,11 @@ mod tests {
 
         #[test]
         fn target_vs_resets_to_auto() {
-            let mut test_bed = test_bed()
-                .ambient_pressure_of(InternationalStandardAtmosphere::pressure_at_altitude(
-                    Length::new::<foot>(20000.),
-                ))
+            let mut test_bed = test_bed_in_cruise()
                 .iterate(10)
                 .command_vs_mode_sel_pb_man()
                 .command_vs_sel_knob_value(400.)
                 .iterate(100);
-
-            println!(
-                "Target vs: {}",
-                test_bed
-                    .cabin_target_vertical_speed()
-                    .get::<foot_per_minute>()
-            );
-            println!("Cabin VS: {}", test_bed.cabin_vs().get::<foot_per_minute>());
 
             assert!(
                 (test_bed.cabin_target_vertical_speed() - Velocity::new::<foot_per_minute>(400.))
@@ -3025,15 +2991,7 @@ mod tests {
                     < Velocity::new::<foot_per_minute>(5.)
             );
 
-            test_bed = test_bed.command_vs_mode_sel_pb_auto().iterate(100);
-
-            println!(
-                "Target vs: {}",
-                test_bed
-                    .cabin_target_vertical_speed()
-                    .get::<foot_per_minute>()
-            );
-            println!("Cabin VS: {}", test_bed.cabin_vs().get::<foot_per_minute>());
+            test_bed = test_bed.command_vs_mode_sel_pb_auto().iterate(300);
 
             assert!(
                 (test_bed.cabin_target_vertical_speed() - Velocity::default()).abs()
@@ -3045,10 +3003,6 @@ mod tests {
         fn aircraft_vs_starts_at_0() {
             let test_bed = test_bed().set_on_ground().iterate(300);
 
-            println!(
-                "vertical speed: {}",
-                test_bed.cabin_vs().get::<foot_per_minute>()
-            );
             assert!((test_bed.cabin_vs()).abs() < Velocity::new::<foot_per_minute>(1.));
         }
 
@@ -3138,22 +3092,10 @@ mod tests {
         }
 
         #[test]
-        fn cabin_vs_increases_with_altitude() {
-            let test_bed = test_bed()
-                .iterate(10)
-                .with()
-                .vertical_speed_of(Velocity::new::<foot_per_minute>(1000.))
-                .then()
-                .command_aircraft_climb(Length::new::<foot>(0.), Length::new::<foot>(10000.))
-                .and()
-                .iterate(10)
-                .memorize_vertical_speed()
-                .then()
-                .command_aircraft_climb(Length::new::<foot>(10000.), Length::new::<foot>(30000.))
-                .and()
-                .iterate(10);
+        fn cabin_vs_changes_to_cruise() {
+            let test_bed = test_bed_in_cruise().iterate_with_delta(400, Duration::from_millis(100));
 
-            assert!(test_bed.cabin_vs() > test_bed.initial_cabin_vs());
+            assert!(test_bed.cabin_vs().abs() < Velocity::new::<foot_per_minute>(10.));
         }
 
         #[test]
@@ -3224,13 +3166,6 @@ mod tests {
                 .command_packs_on_off(false)
                 .iterate(100);
 
-            println!(
-                "Initial OFV: {}, final {}",
-                test_bed
-                    .initial_outflow_valve_open_amount()
-                    .get::<percent>(),
-                test_bed.outflow_valve_open_amount().get::<percent>()
-            );
             assert!(
                 test_bed.initial_outflow_valve_open_amount() > test_bed.outflow_valve_open_amount()
             );
@@ -3272,27 +3207,25 @@ mod tests {
             );
         }
 
-        // #[test]
-        // #[ignore]
-        // fn pressure_never_goes_below_ambient_when_ofv_opens() {
-        //     let test_bed = test_bed()
-        //         .with()
-        //         .vertical_speed_of(Velocity::new::<foot_per_minute>(1000.))
-        //         .command_aircraft_climb(Length::new::<foot>(0.), Length::new::<foot>(20000.))
-        //         .then()
-        //         .vertical_speed_of(Velocity::default())
-        //         .iterate(10)
-        //         .command_mode_sel_pb_man()
-        //         .command_packs_on_off(false)
-        //         .and_run()
-        //         .command_man_vs_switch_position(0)
-        //         .iterate(500);
+        #[test]
+        fn pressure_never_goes_below_ambient() {
+            let test_bed = test_bed()
+                .with()
+                .vertical_speed_of(Velocity::new::<foot_per_minute>(1000.))
+                .command_aircraft_climb(Length::new::<foot>(0.), Length::new::<foot>(20000.))
+                .then()
+                .vertical_speed_of(Velocity::default())
+                .iterate(10)
+                .command_air_extract_pb_on_normal(true)
+                .command_packs_on_off(false)
+                .and_run()
+                .iterate(500);
 
-        //     assert!(
-        //         (test_bed.cabin_pressure() - Pressure::new::<hectopascal>(465.63)).abs()
-        //             < Pressure::new::<hectopascal>(10.)
-        //     );
-        // }
+            assert!(
+                (test_bed.cabin_pressure() - Pressure::new::<hectopascal>(465.63)).abs()
+                    < Pressure::new::<hectopascal>(10.)
+            );
+        }
 
         #[test]
         fn outflow_valve_opens_when_delta_p_above_9_psi() {
@@ -3528,155 +3461,157 @@ mod tests {
                 );
             }
 
-            // #[test]
-            // #[ignore]
-            // fn altitude_calculation_uses_standard_if_man_mode_is_on() {
-            //     let mut test_bed = test_bed()
-            //         .on_ground()
-            //         .run_and()
-            //         .command_packs_on_off(false)
-            //         .ambient_pressure_of(Pressure::new::<hectopascal>(1020.))
-            //         .iterate(100);
+            #[test]
+            fn altitude_calculation_uses_local_altimeter_when_not_at_sea_level() {
+                let mut test_bed = test_bed()
+                    .on_ground()
+                    .run_and()
+                    .command_packs_on_off(false)
+                    .ambient_pressure_of(
+                        InternationalStandardAtmosphere::pressure_at_altitude(Length::new::<foot>(
+                            10000.,
+                        )) + Pressure::new::<hectopascal>(6.6),
+                    ) // To simulate 1023 hpa in the altimeter
+                    .iterate(100);
 
-            //     let initial_altitude = test_bed.cabin_altitude();
+                assert!(
+                    (test_bed.cabin_altitude() - Length::new::<foot>(10000.)).abs()
+                        > Length::new::<foot>(20.)
+                );
+                assert_about_eq!(
+                    test_bed.reference_pressure().get::<hectopascal>(),
+                    1013.,
+                    1.,
+                );
 
-            //     assert!(
-            //         (test_bed.cabin_altitude() - Length::default()).abs()
-            //             > Length::new::<foot>(20.)
-            //     );
+                test_bed = test_bed
+                    .command_altimeter_setting(Pressure::new::<hectopascal>(1023.))
+                    .iterate(100);
 
-            //     test_bed = test_bed
-            //         .command_altimeter_setting(Pressure::new::<hectopascal>(1020.))
-            //         .command_mode_sel_pb_man()
-            //         .iterate(100);
-            //     assert!(
-            //         (test_bed.cabin_altitude() - Length::default()).abs()
-            //             > Length::new::<foot>(20.)
-            //     );
-            //     assert_about_eq!(
-            //         test_bed.cabin_altitude().get::<foot>(),
-            //         initial_altitude.get::<foot>(),
-            //         20.
-            //     );
-            // }
+                assert_about_eq!(
+                    test_bed.reference_pressure().get::<hectopascal>(),
+                    1023.,
+                    1.,
+                );
+                assert_about_eq!(test_bed.cabin_altitude().get::<foot>(), 10000., 20.,);
+            }
 
-            // #[test]
-            // #[ignore]
-            // fn altitude_calculation_uses_local_altimeter_when_not_at_sea_level() {
-            //     let mut test_bed = test_bed()
-            //         .on_ground()
-            //         .run_and()
-            //         .command_packs_on_off(false)
-            //         .ambient_pressure_of(
-            //             InternationalStandardAtmosphere::pressure_at_altitude(Length::new::<foot>(
-            //                 10000.,
-            //             )) + Pressure::new::<hectopascal>(6.8),
-            //         ) // To simulate 1023 hpa in the altimeter
-            //         .iterate(100);
+            #[test]
+            fn altitude_calculation_uses_local_altimeter_during_climb() {
+                let mut test_bed = test_bed()
+                    .on_ground()
+                    .run_and()
+                    .command_packs_on_off(false)
+                    .ambient_pressure_of(
+                        InternationalStandardAtmosphere::pressure_at_altitude(Length::new::<foot>(
+                            10000.,
+                        )) + Pressure::new::<hectopascal>(6.6),
+                    ) // To simulate 1023 hpa in the altimeter
+                    .command_altimeter_setting(Pressure::new::<hectopascal>(1023.))
+                    .iterate(100);
 
-            //     assert!(
-            //         (test_bed.cabin_altitude() - Length::new::<foot>(10000.)).abs()
-            //             > Length::new::<foot>(20.)
-            //     );
-            //     assert_about_eq!(
-            //         test_bed.reference_pressure().get::<hectopascal>(),
-            //         1013.,
-            //         1.,
-            //     );
+                assert_about_eq!(test_bed.cabin_altitude().get::<foot>(), 10000., 20.,);
+                assert_about_eq!(
+                    test_bed.reference_pressure().get::<hectopascal>(),
+                    1023.,
+                    1.,
+                );
 
-            //     test_bed = test_bed
-            //         .command_altimeter_setting(Pressure::new::<hectopascal>(1023.))
-            //         .iterate(100);
+                test_bed = test_bed
+                    .command_aircraft_climb(
+                        Length::new::<foot>(10000.),
+                        Length::new::<foot>(14000.),
+                    )
+                    .ambient_pressure_of(
+                        InternationalStandardAtmosphere::pressure_at_altitude(Length::new::<foot>(
+                            14000.,
+                        )) + Pressure::new::<hectopascal>(5.8),
+                    ) // To simulate 1023 hpa in the altimeter
+                    .iterate(100);
 
-            //     assert_about_eq!(test_bed.cabin_altitude().get::<foot>(), 10000., 20.,);
-            //     assert_about_eq!(
-            //         test_bed.reference_pressure().get::<hectopascal>(),
-            //         1023.,
-            //         1.,
-            //     );
-            // }
+                assert_about_eq!(
+                    test_bed.reference_pressure().get::<hectopascal>(),
+                    1023.,
+                    1.,
+                );
+            }
 
-            // #[test]
-            // #[ignore]
-            // fn altitude_calculation_uses_local_altimeter_during_climb() {
-            //     let mut test_bed = test_bed()
-            //         .on_ground()
-            //         .run_and()
-            //         .command_packs_on_off(false)
-            //         .ambient_pressure_of(
-            //             InternationalStandardAtmosphere::pressure_at_altitude(Length::new::<foot>(
-            //                 10000.,
-            //             )) + Pressure::new::<hectopascal>(6.8),
-            //         ) // To simulate 1023 hpa in the altimeter
-            //         .command_altimeter_setting(Pressure::new::<hectopascal>(1023.))
-            //         .iterate(100);
+            #[test]
+            fn altitude_calculation_uses_isa_altimeter_when_over_5000_ft_from_airport() {
+                let mut test_bed = test_bed()
+                    .on_ground()
+                    .run_and()
+                    .command_packs_on_off(false)
+                    .ambient_pressure_of(
+                        InternationalStandardAtmosphere::pressure_at_altitude(Length::new::<foot>(
+                            10000.,
+                        )) + Pressure::new::<hectopascal>(6.6),
+                    ) // To simulate 1023 hpa in the altimeter
+                    .command_altimeter_setting(Pressure::new::<hectopascal>(1023.))
+                    .iterate(100);
 
-            //     assert_about_eq!(test_bed.cabin_altitude().get::<foot>(), 10000., 20.,);
-            //     assert_about_eq!(
-            //         test_bed.reference_pressure().get::<hectopascal>(),
-            //         1023.,
-            //         1.,
-            //     );
+                assert_about_eq!(test_bed.cabin_altitude().get::<foot>(), 10000., 20.,);
+                assert_about_eq!(
+                    test_bed.reference_pressure().get::<hectopascal>(),
+                    1023.,
+                    1.,
+                );
 
-            //     test_bed = test_bed
-            //         .command_aircraft_climb(
-            //             Length::new::<foot>(10000.),
-            //             Length::new::<foot>(14000.),
-            //         )
-            //         .ambient_pressure_of(
-            //             InternationalStandardAtmosphere::pressure_at_altitude(Length::new::<foot>(
-            //                 14000.,
-            //             )) + Pressure::new::<hectopascal>(5.8),
-            //         ) // To simulate 1023 hpa in the altimeter
-            //         .iterate(100);
+                test_bed = test_bed
+                    .command_aircraft_climb(
+                        Length::new::<foot>(10000.),
+                        Length::new::<foot>(16000.),
+                    )
+                    .ambient_pressure_of(
+                        InternationalStandardAtmosphere::pressure_at_altitude(Length::new::<foot>(
+                            16000.,
+                        )) + Pressure::new::<hectopascal>(5.4),
+                    ) // To simulate 1023 hpa in the altimeter
+                    .iterate(100);
 
-            //     assert_about_eq!(
-            //         test_bed.reference_pressure().get::<hectopascal>(),
-            //         1023.,
-            //         1.,
-            //     );
-            // }
+                assert_about_eq!(
+                    test_bed.reference_pressure().get::<hectopascal>(),
+                    1013.,
+                    1.,
+                );
+            }
 
-            // #[test]
-            // #[ignore]
-            // fn altitude_calculation_uses_isa_altimeter_when_over_5000_ft_from_airport() {
-            //     let mut test_bed = test_bed()
-            //         .on_ground()
-            //         .run_and()
-            //         .command_packs_on_off(false)
-            //         .ambient_pressure_of(
-            //             InternationalStandardAtmosphere::pressure_at_altitude(Length::new::<foot>(
-            //                 10000.,
-            //             )) + Pressure::new::<hectopascal>(6.8),
-            //         ) // To simulate 1023 hpa in the altimeter
-            //         .command_altimeter_setting(Pressure::new::<hectopascal>(1023.))
-            //         .iterate(100);
+            #[test]
+            fn altitude_calculation_uses_standard_if_man_mode_is_on() {
+                let mut test_bed = test_bed()
+                    .on_ground()
+                    .command_packs_on_off(false)
+                    .ambient_pressure_of(Pressure::new::<hectopascal>(1020.))
+                    .iterate(100);
 
-            //     assert_about_eq!(test_bed.cabin_altitude().get::<foot>(), 10000., 20.,);
-            //     assert_about_eq!(
-            //         test_bed.reference_pressure().get::<hectopascal>(),
-            //         1023.,
-            //         1.,
-            //     );
+                let initial_altitude = test_bed.cabin_altitude();
 
-            //     test_bed = test_bed
-            //         .command_aircraft_climb(
-            //             Length::new::<foot>(10000.),
-            //             Length::new::<foot>(16000.),
-            //         )
-            //         .ambient_pressure_of(
-            //             InternationalStandardAtmosphere::pressure_at_altitude(Length::new::<foot>(
-            //                 16000.,
-            //             )) + Pressure::new::<hectopascal>(5.4),
-            //         ) // To simulate 1023 hpa in the altimeter
-            //         .iterate(100);
+                assert!(
+                    (test_bed.cabin_altitude() - Length::default()).abs()
+                        > Length::new::<foot>(25.)
+                );
 
-            //     assert_about_eq!(
-            //         test_bed.reference_pressure().get::<hectopascal>(),
-            //         1013.,
-            //         1.,
-            //     );
-            // }
+                test_bed = test_bed
+                    .command_altimeter_setting(Pressure::new::<hectopascal>(1020.))
+                    .iterate(10);
+
+                assert_about_eq!(test_bed.cabin_altitude().get::<foot>(), 0., 25.);
+
+                test_bed = test_bed
+                    .command_alt_mode_sel_pb_man()
+                    .command_vs_mode_sel_pb_man()
+                    .iterate(100);
+
+                assert!(
+                    (test_bed.cabin_altitude() - Length::default()).abs()
+                        > Length::new::<foot>(20.)
+                );
+                assert_about_eq!(
+                    test_bed.cabin_altitude().get::<foot>(),
+                    initial_altitude.get::<foot>(),
+                    20.
+                );
+            }
         }
     }
 
