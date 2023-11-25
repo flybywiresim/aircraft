@@ -121,7 +121,7 @@ export class SimBriefUplinkAdapter {
 
         plan.setImportedPerformanceData({
             departureTransitionAltitude: route.from.transAlt,
-            destinationTransitionLevel: route.to.transLevel,
+            destinationTransitionLevel: route.to.transLevel / 100,
             costIndex: route.costIndex,
             cruiseFlightLevel: ofp.cruiseAltitude / 100,
         });
@@ -358,7 +358,7 @@ export class SimBriefUplinkAdapter {
             altn: ofp.alternate.icao,
             chunks: this.generateRouteInstructionsFromNavlog(ofp),
             costIndex: Number(ofp.costIndex),
-            flightNumber: ofp.airline ?? `${ofp.flightNumber}`,
+            flightNumber: `${ofp.airline instanceof Object ? '' : ofp.airline}${ofp.flightNumber}`,
         };
     }
 
@@ -386,7 +386,7 @@ export class SimBriefUplinkAdapter {
             } else if (lastInstruction?.instruction === 'procedure' && lastInstruction.ident === fix.via_airway) {
                 // SID TRANS
                 instructions.push({ instruction: 'sidEnrouteTransition', ident: fix.ident, locationHint: { lat: parseFloat(fix.pos_lat), long: parseFloat(fix.pos_long) } });
-            } else if (fix.via_airway === 'DCT' || fix.via_airway.match(/^NAT[A-Z]$/)) {
+            } else if (fix.via_airway === 'DCT' || fix.via_airway === 'DCT*' || fix.via_airway.match(/^NAT[A-Z]$/)) {
                 if (fix.type === 'ltlg') {
                     // LAT/LONG Waypoint
                     instructions.push({ instruction: 'latlong', lat: parseFloat(fix.pos_lat), long: parseFloat(fix.pos_long) });
