@@ -215,40 +215,35 @@ class FMCMainDisplay extends BaseAirliners {
         if(!this.currFlightPlanService) {
             return 0;
         }
-        const plan = this.currFlightPlanService.active;
-        return plan.performanceData.costIndex.get();
+        return this.currFlightPlanService.getCostIndex();
     }
 
     set costIndex(ci) {
         if(!this.currFlightPlanService) {
             return;
         }
-        const plan = this.currFlightPlanService.active;
-        plan.performanceData.costIndex.set(ci);
+        this.currFlightPlanService.setCostIndex(ci);
     }
 
     get costIndexSet() {
         if(!this.currFlightPlanService) {
             return false;
         }
-        const plan = this.currFlightPlanService.active;
-        return plan.performanceData.costIndex.get() > 0;
+        return this.currFlightPlanService.getCostIndex() > 0;
     }
 
     get flightNumber() {
         if(!this.currFlightPlanService) {
             return undefined;
         }
-        const plan = this.currFlightPlanService.active;
-        return plan.flightNumber.get();
+        return this.currFlightPlanService.getFlightNumber();
     }
 
     set flightNumber(flightNumber) {
         if(!this.currFlightPlanService) {
             return undefined;
         }
-        const plan = this.currFlightPlanService.active;
-        plan.flightNumber.set(flightNumber);
+        this.currFlightPlanService.setFlightNumber(flightNumber);
     }
 
 
@@ -2933,7 +2928,7 @@ class FMCMainDisplay extends BaseAirliners {
 
     trySetTakeOffTransAltitude(s) {
         if (s === FMCMainDisplay.clrValue) {
-            this.flightPlanService.active.performanceData.pilotTransitionAltitude.set(undefined);
+            this.flightPlanService.setPilotTransitionAltitude(undefined);
             this.updateTransitionAltitudeLevel();
             return true;
         }
@@ -2950,7 +2945,7 @@ class FMCMainDisplay extends BaseAirliners {
             return false;
         }
 
-        this.flightPlanService.active.performanceData.pilotTransitionAltitude.set(value);
+        this.flightPlanService.setPilotTransitionAltitude.set(value);
         this.updateTransitionAltitudeLevel();
         return true;
     }
@@ -3867,7 +3862,7 @@ class FMCMainDisplay extends BaseAirliners {
 
     setPerfApprTransAlt(s) {
         if (s === FMCMainDisplay.clrValue) {
-            this.flightPlanService.active.performanceData.pilotTransitionLevel.set(null);
+            this.flightPlanService.setPilotTransitionLevel(null);
             this.updateTransitionAltitudeLevel();
             return true;
         }
@@ -3882,7 +3877,7 @@ class FMCMainDisplay extends BaseAirliners {
             return false;
         }
 
-        this.flightPlanService.active.performanceData.pilotTransitionLevel.set(Math.round(value / 100));
+        this.flightPlanService.setPilotTransitionLevel(Math.round(value / 100));
         this.updateTransitionAltitudeLevel();
         return true;
     }
@@ -4950,23 +4945,11 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     getOriginTransitionAltitude() {
-        const plan = this.currFlightPlanService.active;
-
-        if (plan) {
-            return plan.performanceData.transitionAltitude.get();
-        }
-
-        return undefined;
+        return this.currFlightPlanService.getTransitionAltitude();
     }
 
     getDestinationTransitionLevel() {
-        const plan = this.currFlightPlanService.active;
-
-        if (plan) {
-            return plan.performanceData.transitionLevel.get();
-        }
-
-        return undefined;
+        return this.currFlightPlanService.getTransitionLevel();
     }
 
 /*     getCruiseAltitude() {

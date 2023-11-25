@@ -338,6 +338,26 @@ export class FlightPlan extends BaseFlightPlan {
         this.performanceData.cruiseFlightLevel.set(data.cruiseFlightLevel);
     }
 
+    setCruiseFlightLevel(flightLevel: number) {
+        this.performanceData.cruiseFlightLevel.set(flightLevel);
+    }
+
+    setCostIndex(costIndex: number) {
+        this.performanceData.costIndex.set(costIndex);
+    }
+
+    setTransitionAltitude(transitionAltitude: number) {
+        this.performanceData.pilotTransitionAltitude.set(transitionAltitude);
+    }
+
+    setTransitionLevel(transitionLevel: number) {
+        this.performanceData.pilotTransitionLevel.set(transitionLevel);
+    }
+
+    setFlightNumber(flightNumber: string) {
+        this.flightNumber.set(flightNumber);
+    }
+
     /**
      * Sets defaults for performance data parameters related to an origin
      *
