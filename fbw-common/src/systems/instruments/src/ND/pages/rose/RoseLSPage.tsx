@@ -4,14 +4,15 @@
 
 import { ComponentProps, DisplayComponent, FSComponent, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { Arinc429WordData } from '@flybywiresim/fbw-sdk';
+
 import { RoseMode, RoseModeProps } from './RoseMode';
 import { RoseModeUnderlay } from './RoseModeUnderlay';
 import { NDControlEvents } from '../../NDControlEvents';
 import { IlsInfoIndicator } from './IlsInfoIndicator';
 import { GlideSlope } from './Glideslope';
-import { GenericAdirsEvents } from "../../types/GenericAdirsEvents";
-import { GenericDisplayManagementEvents } from "../../types/GenericDisplayManagementEvents";
-import { GenericVorEvents } from "../../types/GenericVorEvents";
+import { GenericAdirsEvents } from '../../types/GenericAdirsEvents';
+import { GenericDisplayManagementEvents } from '../../types/GenericDisplayManagementEvents';
+import { GenericVorEvents } from '../../types/GenericVorEvents';
 
 export interface RoseLsProps extends RoseModeProps {
     index: 1 | 2,
@@ -143,7 +144,7 @@ class IlsCaptureOverlay extends DisplayComponent<IlsCaptureOverlayProps> {
                         />
                         <path
                             d="M352,256 L416,256 M384,134 L384,294 M384,474 L384,634"
-                            class="rounded Magenta"
+                            class="Magenta rounded"
                             id="ils-course-pointer"
                             stroke-width={4}
                         />
@@ -159,7 +160,7 @@ class IlsCaptureOverlay extends DisplayComponent<IlsCaptureOverlayProps> {
                         />
                         <path
                             d="M384,304 L384,464"
-                            class="rounded Magenta"
+                            class="Magenta rounded"
                             transform={this.deviation.map((cdiPx) => `translate(${cdiPx}, 0)`)}
                             id="ils-deviation"
                             stroke-width={4}

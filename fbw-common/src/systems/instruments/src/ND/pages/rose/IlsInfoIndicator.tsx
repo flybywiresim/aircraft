@@ -4,8 +4,9 @@
 
 import { FSComponent, DisplayComponent, VNode, Subject, EventBus, ConsumerSubject, MappedSubject } from '@microsoft/msfs-sdk';
 import { Arinc429RegisterSubject } from '@flybywiresim/fbw-sdk';
-import { GenericVorEvents } from "../../types/GenericVorEvents";
-import { GenericFlightManagementBusEvents } from "../../types/GenericFlightManagementBusEvents";
+
+import { GenericVorEvents } from '../../types/GenericVorEvents';
+import { GenericFlightManagementBusEvents } from '../../types/GenericFlightManagementBusEvents';
 import { Layer } from '../../Layer';
 
 export interface IlsInfoIndicatorProps {
