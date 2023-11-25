@@ -14,6 +14,7 @@ import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { FlightArea } from '@fmgc/navigation/FlightArea';
 
 import { CopyOptions } from '@fmgc/flightplanning/new/plans/CloningOptions';
+import { ImportedPerformanceData } from '@fmgc/flightplanning/new/uplink/SimBriefUplinkAdapter';
 import { FlightPlanPerformanceData } from './performance/FlightPlanPerformanceData';
 import { BaseFlightPlan, FlightPlanQueuedOperation, SerializedFlightPlan } from './BaseFlightPlan';
 
@@ -322,6 +323,19 @@ export class FlightPlan extends BaseFlightPlan {
         await super.setDestinationAirport(icao);
 
         FlightPlan.setDestinationDefaultPerformanceData(this, this.destinationAirport);
+    }
+
+    /**
+     * Sets performance data imported from uplinkl
+     *
+     * @param plan the flight plan
+     * @param data performance data available in uplink
+     */
+    setImportedPerformanceData(data: ImportedPerformanceData) {
+        this.performanceData.databaseTransitionAltitude.set(data.departureTransitionAltitde);
+        this.performanceData.databaseTransitionLevel.set(data.destinationTransitionLevel);
+        this.performanceData.costIndex.set(data.costIndex);
+        this.performanceData.cruiseFlightLevel.set(data.cruiseFlightLevel);
     }
 
     /**

@@ -29,6 +29,13 @@ export interface BaseOfpRouteChunk {
     instruction: string,
 }
 
+export interface ImportedPerformanceData {
+    departureTransitionAltitde: number,
+    destinationTransitionLevel: number,
+    costIndex: number,
+    cruiseFlightLevel: number
+}
+
 interface AirwayOfpRouteChunk extends BaseOfpRouteChunk {
     instruction: 'airway',
     ident: string,
@@ -99,7 +106,7 @@ export class SimBriefUplinkAdapter {
     static async uplinkFlightPlanFromSimbrief(fms: DataInterface & DisplayInterface, flightPlanService: FlightPlanService, ofp: ISimbriefData, options: SimBriefUplinkOptions) {
         const doUplinkProcedures = options.doUplinkProcedures ?? false;
 
-        const route = await this.getRouteFromOfp(ofp);
+        const route = this.getRouteFromOfp(ofp);
 
         fms.onUplinkInProgress();
 
@@ -112,10 +119,16 @@ export class SimBriefUplinkAdapter {
 
         const plan = flightPlanService.uplink;
 
-        flightPlanService.setCruiseFlightLevel(ofp.cruiseAltitude, FlightPlanIndex.Uplink);
-        plan.performanceData.databaseTransitionAltitude.set(route.from.transAlt);
-        plan.performanceData.databaseTransitionLevel.set(route.to.transLevel / 100);
-        plan.performanceData.costIndex.set(route.costIndex);
+        plan.setImportedPerformanceData({
+            departureTransitionAltitde: route.from.transAlt,
+            destinationTransitionLevel: route.to.transLevel,
+            costIndex: route.costIndex,
+            cruiseFlightLevel: ofp.cruiseAltitude / 100,
+        });
+
+        // used by FlightPhaseManager
+        SimVar.SetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number', ofp.cruiseAltitude);
+
         plan.flightNumber.set(route.flightNumber);
 
         let insertHead = -1;
@@ -345,7 +358,7 @@ export class SimBriefUplinkAdapter {
             altn: ofp.alternate.icao,
             chunks: this.generateRouteInstructionsFromNavlog(ofp),
             costIndex: Number(ofp.costIndex),
-            flightNumber: ofp.airline + ofp.flightNumber,
+            flightNumber: ofp.airline ?? `${ofp.flightNumber}`,
         };
     }
 
