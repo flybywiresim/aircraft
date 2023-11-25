@@ -684,6 +684,9 @@ struct CabinPressureControlSystemApplication<C: PressurizationConstants> {
     cabin_vs_id: VariableIdentifier,
     cabin_vs_target_id: VariableIdentifier,
     cabin_delta_pressure_id: VariableIdentifier,
+    fwc_diff_pressure_excessive_id: VariableIdentifier,
+    fwc_diff_negative_pressure_excessive_id: VariableIdentifier,
+    fwc_diff_pressure_hi_id: VariableIdentifier,
     fwc_excess_cabin_altitude_id: VariableIdentifier,
     fwc_excess_residual_pressure_id: VariableIdentifier,
     fwc_low_diff_pressure_id: VariableIdentifier,
@@ -727,6 +730,10 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
     const AMBIENT_CONDITIONS_FILTER_TIME_CONSTANT: Duration = Duration::from_millis(2000);
     // Altitude in ft equivalent to 0.1 PSI delta P at sea level
     const TARGET_LANDING_ALT_DIFF: f64 = 187.818;
+    const FWC_DIFF_PRESS_HI_LOWER_LIMIT: f64 = 8.92;
+    const FWC_DIFF_PRESS_HI_UPPER_LIMIT: f64 = 9.2;
+    const FWC_EXCESSIVE_DIFF_PRESSURE: f64 = 9.65;
+    const FWC_EXCESSIVE_NEGATIVE_DIFF_PRESSURE: f64 = -0.72;
 
     fn new(context: &mut InitContext) -> Self {
         Self {
@@ -737,6 +744,11 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
             cabin_vs_target_id: context.get_identifier("PRESS_CABIN_VS_TARGET".to_owned()),
             cabin_delta_pressure_id: context
                 .get_identifier("PRESS_CABIN_DELTA_PRESSURE".to_owned()),
+            fwc_diff_pressure_excessive_id: context
+                .get_identifier("PRESS_DIFF_PRESS_EXCESSIVE".to_owned()),
+            fwc_diff_negative_pressure_excessive_id: context
+                .get_identifier("PRESS_NEGATIVE_DIFF_PRESS_EXCESSIVE".to_owned()),
+            fwc_diff_pressure_hi_id: context.get_identifier("PRESS_DIFF_PRESS_HI".to_owned()),
             fwc_excess_cabin_altitude_id: context.get_identifier("PRESS_EXCESS_CAB_ALT".to_owned()),
             fwc_excess_residual_pressure_id: context
                 .get_identifier("PRESS_EXCESS_RESIDUAL_PR".to_owned()),
@@ -1185,14 +1197,28 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
     }
 
     // FWC warning signals
+    fn is_diff_press_hi(&self) -> bool {
+        self.cabin_delta_pressure > Pressure::new::<psi>(Self::FWC_DIFF_PRESS_HI_LOWER_LIMIT)
+            && self.cabin_delta_pressure < Pressure::new::<psi>(Self::FWC_DIFF_PRESS_HI_UPPER_LIMIT)
+    }
+
     pub(super) fn is_excessive_alt(&self) -> bool {
         self.cabin_altitude > Length::new::<foot>(C::EXCESSIVE_ALT_WARNING)
             && self.cabin_altitude > (self.departure_elevation + Length::new::<foot>(1000.))
             && self.cabin_altitude > (self.landing_elevation + Length::new::<foot>(1000.))
     }
 
+    fn is_excessive_differential_pressure(&self) -> bool {
+        self.cabin_delta_pressure > Pressure::new::<psi>(Self::FWC_EXCESSIVE_DIFF_PRESSURE)
+    }
+
+    fn is_excessive_negative_differential_pressure(&self) -> bool {
+        self.cabin_delta_pressure < Pressure::new::<psi>(Self::FWC_EXCESSIVE_NEGATIVE_DIFF_PRESSURE)
+    }
+
     pub(super) fn is_excessive_residual_pressure(&self) -> bool {
         self.cabin_delta_pressure > Pressure::new::<psi>(C::EXCESSIVE_RESIDUAL_PRESSURE_WARNING)
+            && self.is_ground()
     }
 
     pub(super) fn is_low_diff_pressure(&self) -> bool {
@@ -1289,6 +1315,15 @@ impl<C: PressurizationConstants> SimulationElement for CabinPressureControlSyste
         writer.write(&self.cabin_delta_pressure_id, self.cabin_delta_pressure);
 
         // FWC warning signals
+        writer.write(
+            &self.fwc_diff_pressure_excessive_id,
+            self.is_excessive_differential_pressure(),
+        );
+        writer.write(&self.fwc_diff_pressure_hi_id, self.is_diff_press_hi());
+        writer.write(
+            &self.fwc_diff_negative_pressure_excessive_id,
+            self.is_excessive_negative_differential_pressure(),
+        );
         writer.write(&self.fwc_excess_cabin_altitude_id, self.is_excessive_alt());
         writer.write(
             &self.fwc_excess_residual_pressure_id,

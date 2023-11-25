@@ -2,7 +2,8 @@ use systems::{
     air_conditioning::{
         cabin_pressure_controller::OutflowValveController,
         pressure_valve::{OutflowValve, PressureValveSignal},
-        AdirsToAirCondInterface, Air, OperatingChannel, PressurizationOverheadShared,
+        AdirsToAirCondInterface, Air, OperatingChannel, PressurizationConstants,
+        PressurizationOverheadShared,
     },
     shared::{
         low_pass_filter::LowPassFilter, CabinSimulation, ControllerSignal, ElectricalBusType,
@@ -23,6 +24,8 @@ use uom::si::{
     ratio::percent,
     velocity::foot_per_minute,
 };
+
+use crate::air_conditioning::A380PressurizationConstants;
 
 pub trait CpcsShared {
     fn cabin_vertical_speed(&self) -> Velocity;
@@ -306,8 +309,8 @@ impl SafetyAndOverridePartition {
 /// The Emergency Pressurization Partition (EPP) is responsible for:
 /// - The computation of cabin pressure and differential pressure *
 /// - The OFV motor computation based on position demands from the ACP and/or SOP *
-/// - The protection of positive differential pressure and cabin altitude limits against inadvertent function from the ACP and/or SOP, **
-/// - The warnings to the FWS in case of strong system malfunction
+/// - The protection of positive differential pressure and cabin altitude limits against inadvertent function from the ACP and/or SOP, *
+/// - The warnings to the FWS in case of strong system malfunction (not implemented, warnings are in CPIOM B)
 /// - The limitation of the maximum negative differential pressure *
 struct EmergencyPressurizationPartition {
     cabin_pressure: Pressure,
@@ -324,8 +327,6 @@ impl EmergencyPressurizationPartition {
     const AMBIENT_CONDITIONS_FILTER_TIME_CONSTANT: Duration = Duration::from_millis(2000);
     const OFV_CONTROLLER_KP: f64 = 1.2;
     const OFV_CONTROLLER_KI: f64 = 3.;
-    const MIN_SAFETY_DELTA_P: f64 = -0.725; // PSI
-    const MAX_SAFETY_DELTA_P: f64 = 9.; // PSI
 
     fn new() -> Self {
         Self {
@@ -415,8 +416,11 @@ impl EmergencyPressurizationPartition {
         cabin_target_vs: Velocity,
         cabin_vertical_speed: Velocity,
     ) -> Velocity {
-        if self.differential_pressure > Pressure::new::<psi>(Self::MAX_SAFETY_DELTA_P - 0.2) {
-            if self.differential_pressure > Pressure::new::<psi>(Self::MAX_SAFETY_DELTA_P)
+        if self.differential_pressure
+            > Pressure::new::<psi>(A380PressurizationConstants::MAX_SAFETY_DELTA_P - 0.2)
+        {
+            if self.differential_pressure
+                > Pressure::new::<psi>(A380PressurizationConstants::MAX_SAFETY_DELTA_P)
                 || cabin_vertical_speed > Velocity::new::<foot_per_minute>(200.)
             {
                 Velocity::new::<foot_per_minute>(6400.)
@@ -465,8 +469,12 @@ impl ControllerSignal<PressureValveSignal> for EmergencyPressurizationPartition 
             Ratio::new::<percent>(0.),
             Duration::from_secs(1),
         ));
-        if self.differential_pressure < Pressure::new::<psi>(Self::MIN_SAFETY_DELTA_P + 0.2) {
-            if self.differential_pressure < Pressure::new::<psi>(Self::MIN_SAFETY_DELTA_P) {
+        if self.differential_pressure
+            < Pressure::new::<psi>(A380PressurizationConstants::MIN_SAFETY_DELTA_P + 0.2)
+        {
+            if self.differential_pressure
+                < Pressure::new::<psi>(A380PressurizationConstants::MIN_SAFETY_DELTA_P)
+            {
                 open
             } else {
                 Some(PressureValveSignal::Neutral)

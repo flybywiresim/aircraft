@@ -956,12 +956,12 @@ impl PressurizationConstants for A380PressurizationConstants {
     const MAX_TAKEOFF_DELTA_P: f64 = 0.1; // PSI
     const MAX_CLIMB_DELTA_P: f64 = 8.6; // PSI
     const MAX_CLIMB_CABIN_ALTITUDE: f64 = 7500.; // feet
-    const MAX_SAFETY_DELTA_P: f64 = 8.1; // PSI
-    const MIN_SAFETY_DELTA_P: f64 = -0.5; // PSI
+    const MAX_SAFETY_DELTA_P: f64 = 9.; // PSI
+    const MIN_SAFETY_DELTA_P: f64 = -0.725; // PSI
     const TAKEOFF_RATE: f64 = -300.;
     const DEPRESS_RATE: f64 = 500.;
     const EXCESSIVE_ALT_WARNING: f64 = 9550.; // feet
-    const EXCESSIVE_RESIDUAL_PRESSURE_WARNING: f64 = 0.03; // PSI
+    const EXCESSIVE_RESIDUAL_PRESSURE_WARNING: f64 = 0.072; // PSI
     const LOW_DIFFERENTIAL_PRESSURE_WARNING: f64 = 1.45; // PSI
 }
 
@@ -1985,14 +1985,6 @@ mod tests {
 
         fn iterate(mut self, iterations: usize) -> Self {
             for _ in 0..iterations {
-                println!(
-                    "{}, {}, {}, {}, {}",
-                    self.cabin_vs().get::<foot_per_minute>(),
-                    self.cabin_altitude().get::<foot>(),
-                    self.outflow_valve_open_amount().get::<percent>(),
-                    self.cabin_delta_p().get::<psi>(),
-                    self.cabin_target_altitude().get::<foot>(),
-                );
                 self.run_with_vertical_speed(Duration::from_secs(1));
             }
             self
@@ -2000,14 +1992,6 @@ mod tests {
 
         fn iterate_with_delta(mut self, iterations: usize, delta: Duration) -> Self {
             for _ in 0..iterations {
-                println!(
-                    "{}, {}, {}, {}, {}",
-                    self.cabin_vs().get::<foot_per_minute>(),
-                    self.cabin_altitude().get::<foot>(),
-                    self.outflow_valve_open_amount().get::<percent>(),
-                    self.cabin_delta_p().get::<psi>(),
-                    self.cabin_target_altitude().get::<foot>(),
-                );
                 self.run_with_vertical_speed(delta);
             }
             self

@@ -169,6 +169,18 @@
         - 3 if dual channel failure
     - {id} 1 to 4
 
+- A32NX_PRESS_DIFF_PRESS_HI
+    - Bool
+    - True when FWC condition for "DIFF PRESS HI" is met (differential pressure between 8.92 and 9.2 PSI)
+
+- A32NX_PRESS_DIFF_PRESS_EXCESSIVE
+    - Bool
+    - True when FWC condition for "EXCESS DIFF PRESS" is met (differential pressure over 9.65 PSI)
+
+- A32NX_PRESS_NEGATIVE_DIFF_PRESS_EXCESSIVE
+    - Bool
+    - True when FWC condition for "EXCESS DIFF PRESS" is met (differential pressure over 9.65 PSI)
+
 - A32NX_OVHD_COND_{id}_SELECTOR_KNOB
     - Number (0 to 300)
     - Rotation amount of the overhead temperature selectors for the cockpit and the cabin
