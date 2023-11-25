@@ -62,7 +62,7 @@ function BacklightBleed(props) {
     return <div className='BacklightBleed' />;
 }
 
-export const CdsDisplayUnit = forwardRef<SVGSVGElement, PropsWithChildren<DisplayUnitProps>>(({ displayUnitId, failed, children }, ref) => {
+export const LegacyCdsDisplayUnit = forwardRef<SVGSVGElement, PropsWithChildren<DisplayUnitProps>>(({ displayUnitId, failed, children }, ref) => {
     const [coldDark] = useSimVar('L:A32NX_COLD_AND_DARK_SPAWN' /* TODO 380 simvar */, 'Bool', 200);
     const [state, setState] = useState((coldDark) ? DisplayUnitState.Off : DisplayUnitState.Standby);
     const [timer, setTimer] = useState<number | null>(null);
