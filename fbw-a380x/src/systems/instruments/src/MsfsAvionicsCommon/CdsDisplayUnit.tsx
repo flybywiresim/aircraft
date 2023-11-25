@@ -163,7 +163,6 @@ export class CdsDisplayUnit extends DisplayComponent<DisplayUnitProps> {
     }
 
     updateState() {
-        console.log(`state before update: ${DisplayUnitState[this.state]}; failed=${this.failed}; pot=${this.brightness.get()}; powered=${this.powered.get()};`);
         if (this.state !== DisplayUnitState.Off && this.failed) {
             this.state = DisplayUnitState.Off;
             clearTimeout(this.timeOut);
@@ -183,7 +182,6 @@ export class CdsDisplayUnit extends DisplayComponent<DisplayUnitProps> {
             this.state = DisplayUnitState.Off;
             clearTimeout(this.timeOut);
         }
-        console.log(`state after update: ${DisplayUnitState[this.state]}; failed=${this.failed}; pot=${this.brightness.get()}; powered=${this.powered.get()};`);
 
         if (this.state === DisplayUnitState.Selftest) {
             this.selfTestRef.instance.style.display = 'block';
@@ -227,7 +225,7 @@ export class CdsDisplayUnit extends DisplayComponent<DisplayUnitProps> {
     render(): VNode {
         return (
             <>
-                <svg style="display:none" ref={this.selfTestRef} class="SelfTest" viewBox="0 0 600 600">
+                <svg style="display:none" ref={this.selfTestRef} class="SelfTest" viewBox="0 0 768 1024">
                     <rect class="SelfTestBackground" x="0" y="0" width="100%" height="100%" />
 
                     <text
@@ -240,7 +238,7 @@ export class CdsDisplayUnit extends DisplayComponent<DisplayUnitProps> {
                     <text
                         class="SelfTestText"
                         x="50%"
-                        y="56%"
+                        y="54%"
                     >
                         (MAX 30 SECONDS)
                     </text>
