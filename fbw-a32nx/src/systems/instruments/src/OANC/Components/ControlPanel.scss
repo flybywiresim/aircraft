@@ -136,13 +136,46 @@
 }
 
 .oanc-control-panel .oanc-control-panel-arpt-sel-left-dropdowns {
-    width: 220px;
+    display: flex;
+    flex-direction: row;
+
+    margin-top: 2px;
+}
+
+.oanc-control-panel .oanc-control-panel-arpt-sel-left-letter-dropdown {
+    width: 60px;
     height: 30px;
 
-    margin-left: 22px;
+    margin-left: 26px;
+    margin-right: 24px;
+    margin-bottom: 5px;
+
+    background-color: magenta;
+
+    .mfd-dropdown-inner {
+        height: 30px;
+
+        .mfd-input-field-container {
+            height: 27px;
+        }
+    }
+}
+
+.oanc-control-panel .oanc-control-panel-arpt-sel-left-airport-dropdown {
+    width: 150px;
+    height: 30px;
+
     margin-bottom: 3px;
 
     background-color: magenta;
+
+    .mfd-dropdown-inner {
+        height: 30px;
+
+        .mfd-input-field-container {
+            height: 27px;
+        }
+    }
 }
 
 .oanc-control-panel .oanc-control-panel-arpt-sel-center {
