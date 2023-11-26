@@ -1,4 +1,4 @@
-# Common UI elements for the MFD
+# MFD pages
 
 This directory contains the different pages for the A380's MFD. List for pages is still incomplete.
 
@@ -23,7 +23,7 @@ Status legend:
 | ✅ | fms/\*/f-pln-direct-to | 1 | - |
 | ✅ | fms/\*/f-pln-duplicate-names | 1 | not scrollable |
 | ✅ | fms/\*/f-pln-cpny-f-pln-req | 1 | Just SimBrief download right now |
-| 🟥 | fms/\*/f-pln-hold | 2 | tbd |
+| 2️⃣ | fms/\*/f-pln-hold | 2 | tbd |
 | ✅ | fms/\*/f-pln-vert-rev | 2 | RTA (except ETT), CMS, STEP ALTs, setting whether CLB/DES cstr |
 | 🟥 | fms/\*/f-pln-cpny-wind-data-req | 2 | tbd |
 | 🟥 | fms/\*/wind | 2 | tbd |

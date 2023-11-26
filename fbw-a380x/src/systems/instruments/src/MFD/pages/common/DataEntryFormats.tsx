@@ -847,3 +847,94 @@ export class HeadingFormat implements DataEntryFormat<number> {
         return undefined;
     }
 }
+
+// Still need to find a way to store whether course is true or magnetic
+export class InboundCourseFormat implements DataEntryFormat<number> {
+    public placeholder = '---';
+
+    public maxDigits = 4;
+
+    private minValue = 0;
+
+    private maxValue = 360.0;
+
+    constructor(minValue: Subscribable<number> = Subject.create(0), maxValue: Subscribable<number> = Subject.create(Number.POSITIVE_INFINITY)) {
+        minValue.sub((val) => this.minValue = val, true);
+        maxValue.sub((val) => this.maxValue = val, true);
+    }
+
+    public format(value: number) {
+        if (value === null || value === undefined) {
+            return [this.placeholder, null, '°'] as FieldFormatTuple;
+        }
+        return [value.toFixed(0), null, '°'] as FieldFormatTuple;
+    }
+
+    public async parse(input: string) {
+        const nbr = Number(input);
+        if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
+            return nbr;
+        }
+        return undefined;
+    }
+}
+
+export class HoldDistFormat implements DataEntryFormat<number> {
+    public placeholder = '--.-';
+
+    public maxDigits = 4;
+
+    private minValue = 0;
+
+    private maxValue = 99.9;
+
+    constructor(minValue: Subscribable<number> = Subject.create(0), maxValue: Subscribable<number> = Subject.create(Number.POSITIVE_INFINITY)) {
+        minValue.sub((val) => this.minValue = val, true);
+        maxValue.sub((val) => this.maxValue = val, true);
+    }
+
+    public format(value: number) {
+        if (value === null || value === undefined) {
+            return [this.placeholder, null, 'NM'] as FieldFormatTuple;
+        }
+        return [value.toFixed(1), null, 'NM'] as FieldFormatTuple;
+    }
+
+    public async parse(input: string) {
+        const nbr = Number(input);
+        if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
+            return nbr;
+        }
+        return undefined;
+    }
+}
+
+export class HoldTimeFormat implements DataEntryFormat<number> {
+    public placeholder = '-.-';
+
+    public maxDigits = 3;
+
+    private minValue = 0;
+
+    private maxValue = 9.9;
+
+    constructor(minValue: Subscribable<number> = Subject.create(0), maxValue: Subscribable<number> = Subject.create(Number.POSITIVE_INFINITY)) {
+        minValue.sub((val) => this.minValue = val, true);
+        maxValue.sub((val) => this.maxValue = val, true);
+    }
+
+    public format(value: number) {
+        if (value === null || value === undefined) {
+            return [this.placeholder, null, 'MN'] as FieldFormatTuple;
+        }
+        return [value.toFixed(1), null, 'MN'] as FieldFormatTuple;
+    }
+
+    public async parse(input: string) {
+        const nbr = Number(input);
+        if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
+            return nbr;
+        }
+        return undefined;
+    }
+}

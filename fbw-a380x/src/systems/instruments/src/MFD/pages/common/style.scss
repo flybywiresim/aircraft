@@ -34,6 +34,10 @@ $display-mfd-dark-grey: #3c3c3c;
   color: $display-amber;
 }
 
+.mfd-label.magenta {
+  color: $display-magenta;
+}
+
 .mfd-label.bigger {
   font-size: 24px;
 }
@@ -62,6 +66,11 @@ $display-mfd-dark-grey: #3c3c3c;
 
 .mfd-value-cyan {
   color: $display-cyan;
+  font-size: 25px;
+}
+
+.mfd-value-magenta {
+  color: $display-magenta;
   font-size: 25px;
 }
 

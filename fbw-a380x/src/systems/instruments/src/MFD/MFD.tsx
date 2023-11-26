@@ -56,6 +56,7 @@ import { getFlightPhaseManager } from '@fmgc/flightphase';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { NXDataStore } from '@flybywiresim/fbw-sdk';
 import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/VERT_REV';
+import { MfdFmsFplnHold } from 'instruments/src/MFD/pages/FMS/F-PLN/HOLD';
 import { MfdSimvars } from './shared/MFDSimvarPublisher';
 import { DisplayUnit } from '../MsfsAvionicsCommon/displayUnit';
 
@@ -852,6 +853,19 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
             this.activePage = (
                 <MfdFmsFplnVertRev
                     pageTitle="F-PLN/VERT REV"
+                    bus={this.props.bus}
+                    uiService={this.uiService}
+                    fmService={this.fmService}
+                />
+            );
+            break;
+        case 'fms/active/f-pln-hold':
+        case 'fms/sec1/f-pln-hold':
+        case 'fms/sec2/f-pln-hold':
+        case 'fms/sec3/f-pln-hold':
+            this.activePage = (
+                <MfdFmsFplnHold
+                    pageTitle="F-PLN/HOLD"
                     bus={this.props.bus}
                     uiService={this.uiService}
                     fmService={this.fmService}

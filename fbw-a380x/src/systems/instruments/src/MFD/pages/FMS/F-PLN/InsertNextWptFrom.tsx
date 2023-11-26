@@ -94,13 +94,7 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
                         <span class="mfd-label">
                             INSERT NEXT WPT FROM
                             {' '}
-                            <span ref={this.identRef} class="mfd-value-green bigger">
-                                {this.props.fmService.flightPlanService.get(
-                                    this.props.fmService.revisedWaypointPlanIndex?.get(),
-                                )?.elementAt(this.props.fmService.revisedWaypointIndex.get())?.isDiscontinuity === false && (this.props.fmService.flightPlanService.get(
-                                    this.props.fmService.revisedWaypointPlanIndex?.get(),
-                                )?.legElementAt(this.props.fmService.revisedWaypointIndex.get())?.definition.waypoint.ident ?? '')}
-                            </span>
+                            <span ref={this.identRef} class="mfd-value-green bigger" />
                         </span>
                         <span style="margin-left: 50px; margin-top: 10px;">
                             <span ref={this.coordinatesRef} class="mfd-value-green bigger" />

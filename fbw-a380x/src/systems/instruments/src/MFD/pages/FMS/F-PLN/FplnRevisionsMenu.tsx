@@ -61,12 +61,16 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
         {
             title: '(N/A) OFFSET',
             disabled: true,
-            onSelectCallback: () => fpln.props.uiService.navigateTo(`fms/${fpln.props.uiService.activeUri.get().category}/f-pln-offset`),
+            onSelectCallback: () => fpln.props.uiService.navigateTo(`fms/${fpln.props.uiService.activeUri.get().category}/f-pln-hold`),
         },
         {
-            title: '(N/A) HOLD',
-            disabled: true,
-            onSelectCallback: () => fpln.props.uiService.navigateTo(`fms/${fpln.props.uiService.activeUri.get().category}/f-pln-hold`),
+            title: 'HOLD',
+            disabled: [FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type),
+            onSelectCallback: () => {
+                const defaultHold = fpln.loadedFlightPlan?.legElementAt(realLegIndex).defaultHold;
+                fpln.props.fmService.flightPlanService.addOrEditManualHold(legIndex, defaultHold, undefined, defaultHold, planIndex, altnFlightPlan);
+                fpln.props.uiService.navigateTo(`fms/${fpln.props.uiService.activeUri.get().category}/f-pln-hold`);
+            },
         },
         {
             title: 'AIRWAYS',
