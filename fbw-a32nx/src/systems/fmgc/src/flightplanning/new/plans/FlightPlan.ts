@@ -74,7 +74,7 @@ export class FlightPlan extends BaseFlightPlan {
         newPlan.performanceData = this.performanceData.clone();
 
         if (options & CopyOptions.IncludeFixInfos) {
-            newPlan.fixInfos = this.fixInfos.map((it) => it.clone());
+            newPlan.fixInfos = this.fixInfos.map((it) => it?.clone());
         }
 
         return newPlan;
