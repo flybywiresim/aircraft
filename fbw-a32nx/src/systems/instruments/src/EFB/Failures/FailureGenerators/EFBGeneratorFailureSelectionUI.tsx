@@ -9,6 +9,7 @@ import { Failure } from 'failures/src/failures-orchestrator';
 import { AtaChapterNumber, AtaChaptersTitle } from '@flybywiresim/fbw-sdk';
 import { t } from 'instruments/src/EFB/translation';
 import { useEventBus } from 'instruments/src/EFB/event-bus-provider';
+import { CheckSquareFill, DashSquare, Square } from 'react-bootstrap-icons';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
 import { useFailuresOrchestrator } from '../../failures-orchestrator-provider';
@@ -96,6 +97,13 @@ export const GeneratorFailureSelection: React.FC<GeneratorFailureSelectionProps>
             bus);
     };
 
+    let selectIcon;
+    if (generatorFailureTable.length === allFailures.length) {
+        selectIcon = <CheckSquareFill />;
+    } else if (generatorFailureTable.length === 0) {
+        selectIcon = <Square />;
+    } else selectIcon = <DashSquare />;
+
     return (
         <div className="bg-theme-body border-theme-accent flex w-3/4 flex-col items-stretch justify-between border-2 px-8 py-2">
             <div className="bg-theme-body flex flex-row items-start justify-between ">
@@ -114,67 +122,56 @@ export const GeneratorFailureSelection: React.FC<GeneratorFailureSelectionProps>
                     X
                 </div>
             </div>
-            <div className="mb-2 ml-10 flex w-full flex-row justify-between">
+            <div className="mx-10 mb-2 flex w-full flex-row justify-between">
                 <div className="text-left">{t('Failures.Generators.FailureSelectionText')}</div>
-                <div
-                    className="mr-10 flex flex-row"
-                >
-                    <div className="ml-2"><h2>(</h2></div>
-                    <div
-                        className="mx-2"
-                        onClick={() => {
-                            selectAllFailures(failureGenContext, true);
-                            failureGenContext.setFailureGenModalType(ModalGenType.Failures);
-                        }}
-                    >
-                        <h2 className="hover:text-theme-highlight"><u>{t('Failures.Generators.All')}</u></h2>
-                    </div>
-                    <div><h2>/</h2></div>
-                    <div
-                        className="mx-2"
-                        onClick={() => {
-                            selectAllFailures(failureGenContext, false);
-                            failureGenContext.setFailureGenModalType(ModalGenType.Failures);
-                        }}
-                    >
-                        <h2 className="hover:text-theme-highlight"><u>{t('Failures.Generators.None')}</u></h2>
-                    </div>
-                    <div className="mr-2"><h2>)</h2></div>
-                </div>
             </div>
             <ScrollableContainer height={48}>
-                <div className="grid grid-flow-dense grid-cols-2">
-                    {failureGenContext.reducedAtaChapterNumbers.map<JSX.Element>((chapter) => (
-                        <div>
-                            <div
-                                className="ml-10 flex flex-row justify-start pt-4"
-                            >
-                                <div><h1>{AtaChaptersTitle[chapter]}</h1></div>
-                                <div className="ml-2"><h2>(</h2></div>
-                                <div
-                                    className="mx-2"
-                                    onClick={() => {
-                                        selectAllFailureChapter(chapter, failureGenContext, true);
-                                        failureGenContext.setFailureGenModalType(ModalGenType.Failures);
-                                    }}
-                                >
-                                    <h2 className="hover:text-theme-highlight"><u>{t('Failures.Generators.All')}</u></h2>
-                                </div>
-                                <div><h2>/</h2></div>
-                                <div
-                                    className="mx-2"
-                                    onClick={() => {
-                                        selectAllFailureChapter(chapter, failureGenContext, false);
-                                        failureGenContext.setFailureGenModalType(ModalGenType.Failures);
-                                    }}
-                                >
-                                    <h2 className="hover:text-theme-highlight"><u>{t('Failures.Generators.None')}</u></h2>
-                                </div>
-                                <div className="mr-2"><h2>)</h2></div>
-                            </div>
-                            <FailureAtaList failureGenContext={failureGenContext} generatorFailureTable={generatorFailureTable} chapter={chapter} />
+                <div>
+                    <div
+                        className="ml-10 flex flex-row justify-start pt-4 align-middle"
+                    >
+                        <div
+                            className="text-theme-text my-2 mr-4 p-2"
+                            onClick={() => {
+                                if (generatorFailureTable.length === allFailures.length) selectAllFailures(failureGenContext, false);
+                                else selectAllFailures(failureGenContext, true);
+                                failureGenContext.setFailureGenModalType(ModalGenType.Failures);
+                            }}
+                        >
+                            {selectIcon}
                         </div>
-                    ))}
+                        <div><h1>{t('Failures.Generators.AllSystems')}</h1></div>
+                    </div>
+                </div>
+                <div className="grid grid-flow-dense grid-cols-2">
+                    { failureGenContext.reducedAtaChapterNumbers.map<JSX.Element>((chapter) => {
+                        let chaptersSelectionIcon;
+                        const failuresActiveInChapter = generatorFailureTable.filter((failure) => failure.ata === chapter);
+                        if (failuresActiveInChapter.length === allFailures.filter((failure) => failure.ata === chapter).length) chaptersSelectionIcon = <CheckSquareFill />;
+                        else if (failuresActiveInChapter.length === 0) chaptersSelectionIcon = <Square />;
+                        else chaptersSelectionIcon = <DashSquare />;
+                        return (
+                            <div>
+                                <div
+                                    className="ml-10 flex flex-row justify-start pt-4 align-middle"
+                                >
+                                    <div
+                                        className="text-theme-text my-2 mr-4 p-2"
+                                        onClick={() => {
+                                            if (failuresActiveInChapter.length === allFailures.filter((failure) => failure.ata === chapter).length) {
+                                                selectAllFailureChapter(chapter, failureGenContext, false);
+                                            } else selectAllFailureChapter(chapter, failureGenContext, true);
+                                            failureGenContext.setFailureGenModalType(ModalGenType.Failures);
+                                        }}
+                                    >
+                                        {chaptersSelectionIcon}
+                                    </div>
+                                    <div><h1>{AtaChaptersTitle[chapter]}</h1></div>
+                                </div>
+                                <FailureAtaList failureGenContext={failureGenContext} generatorFailureTable={generatorFailureTable} chapter={chapter} />
+                            </div>
+                        );
+                    })}
                 </div>
             </ScrollableContainer>
         </div>
