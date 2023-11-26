@@ -121,6 +121,10 @@
     color: $display-cyan;
 }
 
+.oanc-control-panel form {
+    width: 200px;
+}
+
 .oanc-control-panel .mfd-radio-button {
     font-size: 19px;
 
@@ -133,6 +137,20 @@
 
 .oanc-control-panel .mfd-radio-button input[type="radio"] {
     margin-right: 1em;
+}
+
+.oanc-control-panel .mfd-dropdown-container {
+    .mfd-input-field-text-input {
+        font-size: 17px;
+    }
+
+    .mfd-dropdown-menu-element {
+        font-size: 17px !important;
+    }
+
+    .mfd-dropdown-menu {
+        max-height: 80px;
+    }
 }
 
 .oanc-control-panel .oanc-control-panel-arpt-sel-left-dropdowns {

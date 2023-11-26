@@ -57,6 +57,8 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
 
     private renderedDropdownOptionsIndices: number[] = [];
 
+    private onDropdownOpenedCallback: () => void | undefined;
+
     clickHandler(i: number, thisArg: DropdownMenu) {
         if (this.props.inactive.get() === false) {
             this.freeTextEntered = false;
@@ -77,7 +79,7 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
 
             this.dropdownMenuRef.instance.style.display = 'none';
             this.freeTextEntered = true;
-            this.inputFieldValue.set(text);
+            this.setInputFieldValue(text);
             this.dropdownIsOpened.set(false);
             this.freeTextEntered = false;
         }
@@ -140,17 +142,21 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
         }));
 
         this.subs.push(this.props.values.sub((index, type, item, array) => {
-            if (this.props.selectedIndex.get() !== undefined && this.props.selectedIndex.get() !== null) {
-                this.inputFieldValue.set(array[this.props.selectedIndex.get()]);
+            const selectedIndex = this.props.selectedIndex.get();
+            const value = array[selectedIndex];
+
+            if (selectedIndex !== undefined && selectedIndex !== null && value !== null && value !== undefined) {
+                this.setInputFieldValue(value);
             } else {
-                this.inputFieldValue.set('');
+                this.setInputFieldValue('');
             }
+
             this.renderedDropdownOptionsIndices = array.map((val, idx) => idx);
             this.renderedDropdownOptions.set(array);
         }, true));
 
         this.subs.push(this.props.selectedIndex.sub((value) => {
-            this.inputFieldValue.set(this.props.values.get(value));
+            this.setInputFieldValue(this.props.values.get(value));
         }));
 
         this.dropdownSelectorRef.instance.addEventListener('click', () => {
@@ -166,6 +172,9 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
 
         this.subs.push(this.dropdownIsOpened.sub((val) => {
             this.dropdownMenuRef.instance.style.display = val ? 'block' : 'none';
+
+            this.onDropdownOpenedCallback?.();
+            this.onDropdownOpenedCallback = undefined;
 
             if (!this.freeTextEntered) {
                 if (val === true) {
@@ -191,11 +200,33 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
         // TODO add KCCU events
     }
 
+    /**
+     * Scrolls the dropdown list to the given index
+     *
+     * @param index the index of the value to scroll to
+     */
+    public scrollToValue(index: number): void {
+        this.onDropdownOpenedCallback = () => {
+            const element = Array.from(this.dropdownMenuRef.instance.children)
+                .find((it) => it.id === `${this.props.idPrefix}_${index}`);
+
+            this.dropdownMenuRef.instance.scrollTop = (element as unknown as { offsetTop: number }).offsetTop;
+        };
+    }
+
     public destroy(): void {
         // Destroy all subscriptions to remove all references to this instance.
         this.subs.forEach((x) => x.destroy());
 
         super.destroy();
+    }
+
+    private setInputFieldValue(value: string) {
+        if (this.props.numberOfDigitsForInputField !== undefined) {
+            this.inputFieldValue.set(value.substring(0, this.props.numberOfDigitsForInputField).trim());
+        } else {
+            this.inputFieldValue.set(value);
+        }
     }
 
     render(): VNode {

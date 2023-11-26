@@ -320,7 +320,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
         }
 
         // Aspect ratio for font: 2:3 WxH
-        this.spanningDivRef.instance.style.minWidth = `${Math.round(this.props.dataEntryFormat.maxDigits * 27.0 / 1.5)}px`;
+        this.spanningDivRef.instance.style.minWidth = `${Math.round(this.props.dataEntryFormat.maxDigits * (27.0 * 0.629) / 1.5)}px`;
 
         // Hide caret
         this.caretRef.instance.style.display = 'none';

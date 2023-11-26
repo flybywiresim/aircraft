@@ -63,11 +63,13 @@ $display-light-grey: gray;
 .mfd-dropdown-menu {
     background-color: $display-mfd-dark-grey;
     min-width: 100%;
+    max-width: 200%;
     position: absolute;
     z-index: 60;
     overflow: auto;
-    max-height: 80px;
+    max-height: 100px;
     display: none;
+    overflow-x: hidden;
     border: 2px outset $display-light-grey;
 }
 

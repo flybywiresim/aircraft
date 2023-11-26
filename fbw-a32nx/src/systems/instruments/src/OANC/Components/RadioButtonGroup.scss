@@ -13,7 +13,7 @@
     font-size: 26px;
     display: flex;
     align-items: center;
-    border: 2px solid transparent;
+    border: 0.15em solid transparent;
 }
 
 .mfd-radio-button + .mfd-radio-button {
@@ -76,6 +76,5 @@
 }
 
 .mfd-radio-button:hover {
-    border: 0.07em outset $display-cyan;
-    //border: 2px outset $display-cyan;
+    border-color: $display-cyan;
 }
