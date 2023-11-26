@@ -309,7 +309,7 @@ export class EfisSymbols {
             // (currently sequences with guidance which is too early)
             // eslint-disable-next-line no-lone-blocks
 
-            // ALTN
+            // ACTIVE
             if (this.flightPlanService.hasActive) {
                 const symbols = this.getFlightPlanSymbols(
                     true,
@@ -661,7 +661,7 @@ export class EfisSymbols {
                     databaseId,
                     ident: airport.ident,
                     location: airport.location,
-                    type: NdSymbolTypeFlags.Airport,
+                    type: NdSymbolTypeFlags.Airport | NdSymbolTypeFlags.FlightPlan,
                 });
             }
         }

@@ -248,7 +248,7 @@ export class FlightPlanPerformanceData {
     /**
      * TRANS LVL from pilot if entered, otherwise from database
      */
-    readonly transitionLevel = MappedSubject.create(([db, pilot]) => FlightPlanPerformanceData.round(pilot ?? db, 10), this.databaseTransitionLevel, this.pilotTransitionLevel);
+    readonly transitionLevel = MappedSubject.create(([db, pilot]) => FlightPlanPerformanceData.round(pilot ?? db), this.databaseTransitionLevel, this.pilotTransitionLevel);
 
     /**
      * Whether TRANS LVL is from the database

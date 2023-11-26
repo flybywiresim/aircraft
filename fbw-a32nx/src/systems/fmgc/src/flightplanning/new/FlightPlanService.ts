@@ -90,6 +90,14 @@ export class FlightPlanService implements FlightPlanInterface {
         this.flightPlanManager.delete(FlightPlanIndex.FirstSecondary + index - 1);
     }
 
+    async secondaryReset(index: number) {
+        if (this.hasSecondary(index)) {
+            this.secondaryDelete(index);
+        }
+
+        this.flightPlanManager.create(FlightPlanIndex.FirstSecondary + index - 1);
+    }
+
     async temporaryInsert(): Promise<void> {
         const temporaryPlan = this.flightPlanManager.get(FlightPlanIndex.Temporary);
 

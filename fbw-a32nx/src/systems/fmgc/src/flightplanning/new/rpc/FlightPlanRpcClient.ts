@@ -99,6 +99,10 @@ export class FlightPlanRpcClient implements FlightPlanInterface {
         return this.callFunctionViaRpc('secondaryDelete', index);
     }
 
+    secondaryReset(index: number): Promise<void> {
+        return this.callFunctionViaRpc('secondaryReset', index);
+    }
+
     temporaryInsert(): Promise<void> {
         return this.callFunctionViaRpc('temporaryInsert');
     }
