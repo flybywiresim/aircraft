@@ -128,10 +128,10 @@ export const GeneratorFailureSelection: React.FC<GeneratorFailureSelectionProps>
             <ScrollableContainer height={48}>
                 <div>
                     <div
-                        className="ml-10 flex flex-row justify-start pt-4 align-middle"
+                        className="ml-10 flex flex-row place-items-center justify-start pt-4"
                     >
                         <div
-                            className="text-theme-text my-2 mr-4 p-2"
+                            className="text-theme-text hover:text-theme-secondary hover:bg-theme-highlight my-2 mr-6"
                             onClick={() => {
                                 if (generatorFailureTable.length === allFailures.length) selectAllFailures(failureGenContext, false);
                                 else selectAllFailures(failureGenContext, true);
@@ -143,7 +143,7 @@ export const GeneratorFailureSelection: React.FC<GeneratorFailureSelectionProps>
                         <div><h1>{t('Failures.Generators.AllSystems')}</h1></div>
                     </div>
                 </div>
-                <div className="grid grid-flow-dense grid-cols-2">
+                <div className="ml-10 grid grid-flow-dense grid-cols-2">
                     { failureGenContext.reducedAtaChapterNumbers.map<JSX.Element>((chapter) => {
                         let chaptersSelectionIcon;
                         const failuresActiveInChapter = generatorFailureTable.filter((failure) => failure.ata === chapter);
@@ -153,10 +153,10 @@ export const GeneratorFailureSelection: React.FC<GeneratorFailureSelectionProps>
                         return (
                             <div>
                                 <div
-                                    className="ml-10 flex flex-row justify-start pt-4 align-middle"
+                                    className="flex flex-row place-items-center justify-start pt-4"
                                 >
                                     <div
-                                        className="text-theme-text my-2 mr-4 p-2"
+                                        className="hover:bg-theme-highlight hover:text-theme-secondary text-theme-text hover:text-theme-secondary my-2 mr-6"
                                         onClick={() => {
                                             if (failuresActiveInChapter.length === allFailures.filter((failure) => failure.ata === chapter).length) {
                                                 selectAllFailureChapter(chapter, failureGenContext, false);
