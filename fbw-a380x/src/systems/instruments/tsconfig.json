@@ -1,11 +1,16 @@
 {
   "extends": "../tsconfig.json",
   "compilerOptions": {
-    "resolveJsonModule" : true,
-    "noEmit": true,
+    "downlevelIteration": true,
+    "module": "esnext",
+    "esModuleInterop": true,
+    "jsx": "react",
+    "moduleResolution": "node",
+    "skipLibCheck": true,
+    "strictNullChecks": true,
   },
   "include": [
     "src/**/*",
-    "../../../../../../fbw-common/src/typings/**/*.d.ts"
+    "../../typings/**/*.d.ts"
   ]
 }

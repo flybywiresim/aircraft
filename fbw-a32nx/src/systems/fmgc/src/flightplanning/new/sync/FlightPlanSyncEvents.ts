@@ -5,7 +5,7 @@
 
 import { Discontinuity, SerializedFlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/new/legs/FlightPlanLegDefinition';
-import { FixInfoEntry } from '@fmgc/flightplanning/new/plans/FixInfo';
+import { FixInfoData } from '@fmgc/flightplanning/new/plans/FixInfo';
 import { SerializedFlightPlan } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
 
@@ -19,6 +19,10 @@ export interface FlightPlanSyncEvent {
 
 export interface FlightPlanManagerEvent extends FlightPlanSyncEvent {
     targetPlanIndex?: number,
+}
+
+export interface FlightPlanCopyEvent extends FlightPlanManagerEvent {
+    options: number,
 }
 
 export interface FlightPlanEditSyncEvent extends FlightPlanSyncEvent {
@@ -46,7 +50,7 @@ export interface FlightPlanLegCruiseStepEditEvent extends FlightPlanEditSyncEven
 
 export interface FlightPlanSetFixInfoEntryEvent extends FlightPlanEditSyncEvent {
     index: 1 | 2 | 3 | 4,
-    fixInfo: FixInfoEntry | null,
+    fixInfo: FixInfoData | null,
 }
 
 export interface FlightPlanSyncEvents {
@@ -56,7 +60,7 @@ export interface FlightPlanSyncEvents {
     'flightPlanManager.create': FlightPlanManagerEvent,
     'flightPlanManager.delete': FlightPlanManagerEvent,
     'flightPlanManager.deleteAll': undefined,
-    'flightPlanManager.copy': FlightPlanManagerEvent,
+    'flightPlanManager.copy': FlightPlanCopyEvent,
     'flightPlanManager.swap': FlightPlanManagerEvent,
 
     'flightPlan.setActiveLegIndex': FlightPlanSetActiveLegIndexEvent,

@@ -161,9 +161,11 @@ class CDUAvailableFlightPlanPage {
                 }
                 mcdu.coRoute["navlog"] = selectedRoute.navlog;
                 setTimeout(async () => {
-                    await insertCoRoute(mcdu);
+                    await Fmgc.CoRouteUplinkAdapter.uplinkFlightPlanFromCoRoute(mcdu, mcdu.flightPlanService, mcdu.coRoute);
+                    await mcdu.flightPlanService.uplinkInsert();
+
                     CDUInitPage.ShowPage1(mcdu);
-                }, mcdu.getDelayRouteChange());
+                }, 0 /* No delay because it takes long enough without artificial delay */);
 
             };
         } else {

@@ -12,7 +12,7 @@ class CDUSecFplnMain {
         };
 
         mcdu.onLeftInput[2] = () => {
-            mcdu.flightPlanService.flightPlanManager.delete(Fmgc.FlightPlanIndex.FirstSecondary);
+            mcdu.flightPlanService.secondaryReset(1);
         };
 
         mcdu.onLeftInput[5] = () => {

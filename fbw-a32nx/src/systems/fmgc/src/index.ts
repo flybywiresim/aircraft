@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ApproachType, ApproachUtils } from '@flybywiresim/fbw-sdk';
+import { DataManager } from '@fmgc/flightplanning/new/DataManager';
+import { CoRouteUplinkAdapter } from '@fmgc/flightplanning/new/uplink/CoRouteUplinkAdapter';
 import { FlightPlanService } from './flightplanning/new/FlightPlanService';
 import { NavigationDatabase, NavigationDatabaseBackend } from './NavigationDatabase';
 import { FlightPhaseManager, getFlightPhaseManager } from './flightphase';
@@ -10,7 +12,6 @@ import { GuidanceController } from './guidance/GuidanceController';
 import { EfisSymbols } from './efis/EfisSymbols';
 import { DescentPathBuilder } from './guidance/vnav/descent/DescentPathBuilder';
 import { initComponents, updateComponents, recallMessageById } from './components';
-import { WaypointBuilder } from './flightplanning/WaypointBuilder';
 import { Navigation, SelectedNavaidMode, SelectedNavaidType } from './navigation/Navigation';
 import { WaypointFactory } from './flightplanning/new/waypoints/WaypointFactory';
 import { WaypointEntryUtils } from './flightplanning/new/WaypointEntryUtils';
@@ -42,11 +43,12 @@ export {
     recallMessageById,
     EfisSymbols,
     DescentPathBuilder,
-    WaypointBuilder,
     Navigation,
     SelectedNavaidMode,
     SelectedNavaidType,
     WaypointFactory,
     WaypointEntryUtils,
     SimBriefUplinkAdapter,
+    CoRouteUplinkAdapter,
+    DataManager,
 };

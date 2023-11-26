@@ -326,10 +326,14 @@ class CDUFlightPlanPage {
                 }
 
                 // Distance
-                let distance = undefined;
-                if (!inAlternate) {
-                    // Active waypoint is live distance, others are distances in the flight plan
-                    distance = Math.round(Math.max(0, Math.min(9999, isActive ? mcdu.guidanceController.activeLegAlongTrackCompletePathDtg : distanceFromLastLine))).toFixed(0);
+                let distance = "";
+                // Active waypoint is live distance, others are distances in the flight plan
+                if (isActive) {
+                    if (Number.isFinite(mcdu.guidanceController.activeLegAlongTrackCompletePathDtg)) {
+                        distance = Math.round(Math.max(0, Math.min(9999, mcdu.guidanceController.activeLegAlongTrackCompletePathDtg))).toFixed(0);
+                    }
+                } else {
+                    distance = Math.round(Math.max(0, Math.min(9999, distanceFromLastLine))).toFixed(0);
                 }
 
                 let fpa = '';

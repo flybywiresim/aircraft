@@ -704,6 +704,8 @@ export class MsfsMapping {
             area: facility.icao.substring(3, 7).trim().length > 0 ? WaypointArea.Terminal : WaypointArea.Enroute,
         };
 
+        // TODO: VORs are also stored as intersections in the database. In this case, their ICAO starts with "V" but they are of type
+        // `JS_FacilityIntersection`. What to do with those?
         switch (facility.icao.charAt(0)) {
         case 'N':
             const ndb = facility as any as JS_FacilityNDB;
@@ -869,7 +871,7 @@ export class MsfsMapping {
             return WaypointDescriptor.VhfNavaid;
         case ' ':
         case '':
-            return 0;
+            return WaypointDescriptor.None;
         case 'W':
         default:
             return WaypointDescriptor.Essential; // we don't have any info to decide anything more granular

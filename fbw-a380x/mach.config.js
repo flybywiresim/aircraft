@@ -1,11 +1,9 @@
 const imagePlugin = require('esbuild-plugin-inline-image');
 const postCssPlugin = require('esbuild-style-plugin');
-const tailwind = require('tailwindcss');
+// const tailwind = require('tailwindcss');
 const postCssColorFunctionalNotation = require('postcss-color-functional-notation');
 const postCssInset = require('postcss-inset');
 const { typecheckingPlugin } = require("#build-utils");
-
-// process.env.FBW_TYPECHECK = "1";
 
 /** @type { import('@synaptic-simulations/mach').MachConfig } */
 module.exports = {
@@ -17,6 +15,8 @@ module.exports = {
             extract: true,
             postcss: {
                 plugins: [
+                    // tailwind('src/systems/instruments/src/EFB/tailwind.config.js'),
+
                     // transform: hsl(x y z / alpha) -> hsl(x, y, z, alpha)
                     postCssColorFunctionalNotation(),
 
@@ -25,16 +25,23 @@ module.exports = {
                 ],
             }
         }),
+        typecheckingPlugin(),
     ],
     instruments: [
+        msfsAvionicsInstrument('PFD'),
         msfsAvionicsInstrument('MFD'),
+
+        reactInstrument('EWD'),
+        reactInstrument('OIT'),
+        reactInstrument('RMP'),
+        reactInstrument('SD'),
     ],
 };
 
-function msfsAvionicsInstrument(name) {
+function msfsAvionicsInstrument(name, folder = name) {
     return {
         name,
-        index: `src/systems/instruments/src/${name}/instrument.tsx`,
+        index: `src/systems/instruments/src/${folder}/instrument.tsx`,
         simulatorPackage: {
             type: 'baseInstrument',
             templateId: `A380X_${name}`,

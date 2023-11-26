@@ -46,4 +46,10 @@ export interface DisplayInterface {
      * @returns the created waypoint, or `undefined` if the operation is cancelled
      */
     createNewWaypoint(ident: string): Promise<Waypoint | undefined>;
+
+    /**
+     * Checks whether a waypoint is currently in use
+     * @param waypoint the waypoint to look for
+     */
+    isWaypointInUse(waypoint: Waypoint): Promise<boolean>;
 }

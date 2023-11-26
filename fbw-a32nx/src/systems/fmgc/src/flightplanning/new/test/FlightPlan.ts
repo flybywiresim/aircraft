@@ -5,7 +5,7 @@
 
 import { BaseFlightPlan } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 import * as chalk from 'chalk';
-import { EventBus } from 'msfssdk';
+import { EventBus } from '@microsoft/msfs-sdk';
 import { FlightPlan } from '@fmgc/flightplanning/new/plans/FlightPlan';
 
 const bus = new EventBus();

@@ -9,7 +9,7 @@ import { arcDistanceToGo, arcGuidance } from '@fmgc/guidance/lnav/CommonGeometry
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { GuidanceParameters } from '@fmgc/guidance/ControlLaws';
 import { DmeArcTransition } from '@fmgc/guidance/lnav/transitions/DmeArcTransition';
-import { MathUtils, TurnDirection, Waypoint } from '@flybywiresim/fbw-sdk';
+import { Fix, MathUtils, TurnDirection } from '@flybywiresim/fbw-sdk';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { bearingTo, distanceTo, placeBearingDistance } from 'msfs-geo';
 import { PathCaptureTransition } from '@fmgc/guidance/lnav/transitions/PathCaptureTransition';
@@ -21,7 +21,7 @@ export class AFLeg extends XFLeg {
     predictedPath: PathVector[] = [];
 
     constructor(
-        fix: Waypoint,
+        fix: Fix,
         private navaid: Coordinates,
         private rho: NauticalMiles,
         private theta: NauticalMiles,

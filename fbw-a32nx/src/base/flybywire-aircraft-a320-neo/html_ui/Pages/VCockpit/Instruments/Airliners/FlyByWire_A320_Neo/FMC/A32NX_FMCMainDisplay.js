@@ -128,7 +128,6 @@ class FMCMainDisplay extends BaseAirliners {
         /** @type {0 | 1 | 2 | 3 | null} Takeoff config entered on PERF TO */
         this.flaps = undefined;
         this.ths = undefined;
-        this.altDestination = undefined;
         this.flightNumber = undefined;
         this.cruiseTemperature = undefined;
         this.taxiFuelWeight = undefined;
@@ -222,7 +221,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.A32NXCore = new A32NX_Core();
         this.A32NXCore.init(this._lastTime);
 
-        this.dataManager = new FMCDataManager(this);
+        this.dataManager = new Fmgc.DataManager(this);
 
         this.guidanceController = new Fmgc.GuidanceController(this, this.currFlightPlanService);
         this.navigation = new Fmgc.Navigation(this.flightPlanService, this.facilityLoader);
@@ -330,11 +329,8 @@ class FMCMainDisplay extends BaseAirliners {
                     lat: NaN,
                     long: NaN
                 };
-                // TODO port over (fms-v2)
-                const stats = this.flightPlanManager.getCurrentFlightPlan().computeWaypointStatistics(ppos);
-                const dest = this.flightPlanManager.getDestination();
-                const destStats = stats.get(this.flightPlanManager.getCurrentFlightPlan().waypoints.length - 1);
-                if (dest && destStats.distanceFromPpos < 180) {
+                const distanceToDestination = this.getDistanceToDestination()
+                if (Number.isFinite(distanceToDestination) && distanceToDestination < 180) {
                     this._destDataChecked = true;
                     this.checkDestData();
                 }
@@ -503,7 +499,6 @@ class FMCMainDisplay extends BaseAirliners {
         this.managedSpeedDescendMachPilot = undefined;
         // this.managedSpeedDescendMachIsPilotEntered = false;
         this.cruiseFlightLevelTimeOut = undefined;
-        this.altDestination = undefined;
         this.flightNumber = undefined;
         this.cruiseTemperature = undefined;
         this.taxiFuelWeight = 0.2;
@@ -721,6 +716,10 @@ class FMCMainDisplay extends BaseAirliners {
 
                 /** Arm preselected speed/mach for next flight phase */
                 this.updatePreSelSpeedMach(this.preSelectedClbSpeed);
+
+                this._rteRsvPercentOOR = false;
+                this._rteReservedWeightEntered = false;
+                this._rteReservedPctEntered = false;
 
                 break;
             }
@@ -1696,10 +1695,10 @@ class FMCMainDisplay extends BaseAirliners {
 
     shouldTransmitMinimums() {
         const phase = this.flightPhaseManager.phase;
-        // const distanceToDestination = this.flightPlanManager.getDistanceToDestination(FlightPlans.Active);
-        const distanceToDestination = 0; // TODO port over (fms-v2)
+        const distanceToDestination = this.getDistanceToDestination();
+        const isCloseToDestination = Number.isFinite(distanceToDestination) ? distanceToDestination < 250 : true;
 
-        return (phase > FmgcFlightPhases.CRUISE || (phase === FmgcFlightPhases.CRUISE && distanceToDestination < 250));
+        return (phase > FmgcFlightPhases.CRUISE || (phase === FmgcFlightPhases.CRUISE && isCloseToDestination));
     }
 
     getClbManagedSpeedFromCostIndex() {
@@ -1764,22 +1763,19 @@ class FMCMainDisplay extends BaseAirliners {
             this._onModeManagedHeading();
         }
         if (_event === "MODE_SELECTED_ALTITUDE") {
-            const dist = 201; // TODO port over fms-v2
-            // const dist = this.flightPlanManager.getDistanceToDestination();
+            const dist = Number.isFinite(this.getDistanceToDestination()) ? this.getDistanceToDestination() : -1;
             this.flightPhaseManager.handleFcuAltKnobPushPull(dist);
             this._onModeSelectedAltitude();
             this._onStepClimbDescent();
         }
         if (_event === "MODE_MANAGED_ALTITUDE") {
-            const dist = 201; // TODO port over fms-v2
-            // const dist = this.flightPlanManager.getDistanceToDestination();
+            const dist = Number.isFinite(this.getDistanceToDestination()) ? this.getDistanceToDestination() : -1;
             this.flightPhaseManager.handleFcuAltKnobPushPull(dist);
             this._onModeManagedAltitude();
             this._onStepClimbDescent();
         }
         if (_event === "AP_DEC_ALT" || _event === "AP_INC_ALT") {
-            const dist = 201; // TODO port over fms-v2
-            // const dist = this.flightPlanManager.getDistanceToDestination();
+            const dist = Number.isFinite(this.getDistanceToDestination()) ? this.getDistanceToDestination() : -1;
             this.flightPhaseManager.handleFcuAltKnobTurn(dist);
             this._onTrySetCruiseFlightLevel();
         }
@@ -1791,8 +1787,7 @@ class FMCMainDisplay extends BaseAirliners {
             SimVar.SetSimVarValue("L:A320_FCU_SHOW_SELECTED_HEADING", "number", 1);
         }
         if (_event === "VS") {
-            // const dist = this.flightPlanManager.getDistanceToDestination();
-            const dist = 0; // TODO port over (fms-v2)
+            const dist = Number.isFinite(this.getDistanceToDestination()) ? this.getDistanceToDestination() : -1;
             this.flightPhaseManager.handleFcuVSKnob(dist, this._onStepClimbDescent.bind(this));
         }
     }
@@ -2135,8 +2130,8 @@ class FMCMainDisplay extends BaseAirliners {
 
         if (activePlan && activePlan.destinationAirport && activePlan.alternateDestinationAirport) {
             this._DistanceToAlt = Avionics.Utils.computeGreatCircleDistance(
-                activePlan.destinationAirport,
-                activePlan.alternateDestinationAirport,
+                activePlan.destinationAirport.location,
+                activePlan.alternateDestinationAirport.location,
             );
         } else {
             this._DistanceToAlt = 0;
@@ -2157,7 +2152,7 @@ class FMCMainDisplay extends BaseAirliners {
             this._routeAltFuelEntered = false;
             return true;
         }
-        if (!this.altDestination) {
+        if (!this.flightPlanService || !this.flightPlanService.active || !this.flightPlanService.active.alternateDestinationAirport) {
             this.setScratchpadMessage(NXSystemMessages.notAllowed);
             return false;
         }
@@ -2209,17 +2204,19 @@ class FMCMainDisplay extends BaseAirliners {
     async tryUpdateAltDestination(altDestIdent) {
         if (!altDestIdent || altDestIdent === "NONE" || altDestIdent === FMCMainDisplay.clrValue) {
             this.atsu.resetAtisAutoUpdate();
-            this.altDestination = undefined;
+            this.flightPlanService.setAlternate(undefined)
             this._DistanceToAlt = 0;
             return true;
         }
-        const airportAltDest = await this.dataManager.GetAirportByIdent(altDestIdent).catch(console.error);
+
+        const airportAltDest = await this.navigationDatabaseService.activeDatabase.searchAirport(altDestIdent);
         if (airportAltDest) {
             this.atsu.resetAtisAutoUpdate();
-            this.altDestination = airportAltDest;
+            await this.flightPlanService.setAlternate(altDestIdent);
             this.tryUpdateDistanceToAlt();
             return true;
         }
+
         this.setScratchpadMessage(NXSystemMessages.notInDatabase);
         return false;
     }
@@ -2266,9 +2263,8 @@ class FMCMainDisplay extends BaseAirliners {
      */
     tryUpdateRouteTrip(dynamic = false) {
         let airDistance = 0;
-        return;
-        // TODO port over (fms-v2)
-        const groundDistance = dynamic ? this.flightPlanManager.getDistanceToDestination(0) : this.flightPlanManager.getDestination().cumulativeDistanceInFP;
+        // TODO Use static distance for `dynamic = false` (fms-v2)
+        const groundDistance = Number.isFinite(this.getDistanceToDestination()) ? this.getDistanceToDestination() : -1;
         if (this._windDir === this._windDirections.TAILWIND) {
             airDistance = A32NX_FuelPred.computeAirDistance(groundDistance, this.averageWind);
         } else if (this._windDir === this._windDirections.HEADWIND) {
@@ -2307,16 +2303,14 @@ class FMCMainDisplay extends BaseAirliners {
      * @returns {number}
      */
     tryGetExtraFuel(useFOB = false) {
-        const isFlying = parseInt(SimVar.GetSimVarValue("GROUND VELOCITY", "knots")) > 30;
-
         if (useFOB) {
-            return this.getFOB() - this.getTotalTripFuelCons() - this._minDestFob - this.taxiFuelWeight - (isFlying ? 0 : this.getRouteReservedWeight());
+            return this.getFOB() - this.getTotalTripFuelCons() - this._minDestFob - this.taxiFuelWeight - (this.getRouteReservedWeight());
         } else {
-            return this.blockFuel - this.getTotalTripFuelCons() - this._minDestFob - this.taxiFuelWeight - (isFlying ? 0 : this.getRouteReservedWeight());
+            return this.blockFuel - this.getTotalTripFuelCons() - this._minDestFob - this.taxiFuelWeight - (this.getRouteReservedWeight());
         }
     }
 
-    /**
+    /**getRouteReservedWeight
      * EXPERIMENTAL
      * Attempts to calculate the extra time
      */
@@ -2334,7 +2328,6 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     getRouteAltFuelTime() {
-
         return this._routeAltFuelTime;
     }
 
@@ -2395,7 +2388,9 @@ class FMCMainDisplay extends BaseAirliners {
                             }
                             this.coRoute["navlog"] = data.navlog.fix;
 
-                            insertCoRoute(this);
+                            await Fmgc.CoRouteUplinkAdapter.uplinkFlightPlanFromCoRoute(this, this.flightPlanService, this.coRoute);
+                            await this.flightPlanService.uplinkInsert();
+
                             this.coRoute["routeNumber"] = coRouteNum;
                         } else {
                             this.setScratchpadMessage(NXSystemMessages.notInDatabase);
@@ -2424,7 +2419,7 @@ class FMCMainDisplay extends BaseAirliners {
                     this.coRoute.routes.push({
                         originIcao: route.origin.icao_code,
                         destinationIcao: route.destination.icao_code,
-                        alternateIcao: route.alternate ? route.alternate : undefined,
+                        alternateIcao: route.alternate ? route.alternate.icao_code : undefined,
                         route: route.general.route,
                         navlog: route.navlog.fix,
                         routeName: route.name
@@ -2472,21 +2467,56 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     /**
-     * @param coordinates {import('msfs-geo').Coordinates}
-     * @param stored {boolean}
+     * Shows a scratchpad message based on the FMS error thrown
+     * @param type
      */
-    createLatLonWaypoint(coordinates, stored) {
-        return this.dataManager.createLatLonWaypoint(coordinates, stored);
+    showFmsErrorMessage(type) {
+        switch (type) {
+            case 0: // NotInDatabase
+                this.setScratchpadMessage(NXSystemMessages.notInDatabase);
+                break;
+            case 1: // NotYetImplemented
+                this.setScratchpadMessage(NXSystemMessages.notYetImplemented);
+                break;
+            case 2: // FormatError
+                this.setScratchpadMessage(NXSystemMessages.formatError);
+                break;
+            case 3: // EntryOutOfRange
+                this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+                break;
+            case 4: // ListOf99InUse
+                this.setScratchpadMessage(NXSystemMessages.listOf99InUse);
+                break;
+        }
     }
 
-    /**
-     * @param place {import('msfs-navdata').Waypoint}
-     * @param bearing {DegreesTrue}
-     * @param distance {NauticalMiles}
-     * @param stored {boolean}
-     */
-    createPlaceBearingDistWaypoint(place, bearing, distance, stored) {
-        return this.dataManager.createPlaceBearingDistWaypoint(place, bearing, distance, stored);
+    createNewWaypoint(ident) {
+        return new Promise((resolve, reject) => {
+            CDUNewWaypoint.ShowPage(this, (waypoint) => {
+                if (waypoint) {
+                    resolve(waypoint);
+                } else {
+                    reject();
+                }
+            }, { ident });
+        });
+
+    }
+
+    createLatLonWaypoint(coordinates, stored, ident = undefined) {
+        return this.dataManager.createLatLonWaypoint(coordinates, stored, ident);
+    }
+
+    createPlaceBearingPlaceBearingWaypoint(place1, bearing1, place2, bearing2, stored, ident = undefined) {
+        return this.dataManager.createPlaceBearingPlaceBearingWaypoint(place1, bearing1, place2, bearing2, stored, ident);
+    }
+
+    createPlaceBearingDistWaypoint(place, bearing, distance, stored, ident = undefined) {
+        return this.dataManager.createPlaceBearingDistWaypoint(place, bearing, distance, stored, ident);
+    }
+
+    getStoredWaypointsByIdent(ident) {
+        return this.dataManager.getStoredWaypointsByIdent(ident);
     }
 
     //-----------------------------------------------------------------------------------
@@ -3344,6 +3374,9 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     getRouteReservedWeight() {
+        if (this.isFlying()) {
+            return 0;
+        }
         if (!this.routeReservedEntered() && (this._rteFinalCoeffecient !== 0)) {
             const fivePercentWeight = this._routeReservedPercent * this._routeTripFuelWeight / 100;
             const fiveMinuteHoldingWeight = (5 * this._rteFinalCoeffecient) / 1000;
@@ -3358,6 +3391,9 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     getRouteReservedPercent() {
+        if (this.isFlying()) {
+            return 0;
+        }
         if (isFinite(this._routeReservedWeight) && isFinite(this.blockFuel) && this._routeReservedWeight !== 0) {
             return this._routeReservedWeight / this._routeTripFuelWeight * 100;
         }
@@ -3365,39 +3401,41 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     trySetRouteReservedPercent(s) {
-        if (s) {
-            if (s === FMCMainDisplay.clrValue) {
-                this._rteReservedWeightEntered = false;
-                this._rteReservedPctEntered = false;
-                this._routeReservedWeight = 0;
-                this._routeReservedPercent = 5;
-                this._rteRsvPercentOOR = false;
-                return true;
-            }
-            // Percentage entry must start with '/'
-            if (s.startsWith("/")) {
-                const enteredValue = s.slice(1);
-
-                if (!this.representsDecimalNumber(enteredValue)) {
-                    this.setScratchpadMessage(NXSystemMessages.formatError);
-                    return false;
-                }
-
-                const rteRsvPercent = parseFloat(enteredValue);
-
-                if (!this.isRteRsvPercentInRange(rteRsvPercent)) {
-                    this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
-                    return false;
-                }
-
-                this._rteRsvPercentOOR = false;
-                this._rteReservedPctEntered = true;
-                this._rteReservedWeightEntered = false;
-
-                if (isFinite(rteRsvPercent)) {
-                    this._routeReservedWeight = NaN;
-                    this._routeReservedPercent = rteRsvPercent;
+        if (!this.isFlying()) {
+            if (s) {
+                if (s === FMCMainDisplay.clrValue) {
+                    this._rteReservedWeightEntered = false;
+                    this._rteReservedPctEntered = false;
+                    this._routeReservedWeight = 0;
+                    this._routeReservedPercent = 5;
+                    this._rteRsvPercentOOR = false;
                     return true;
+                }
+                // Percentage entry must start with '/'
+                if (s.startsWith("/")) {
+                    const enteredValue = s.slice(1);
+
+                    if (!this.representsDecimalNumber(enteredValue)) {
+                        this.setScratchpadMessage(NXSystemMessages.formatError);
+                        return false;
+                    }
+
+                    const rteRsvPercent = parseFloat(enteredValue);
+
+                    if (!this.isRteRsvPercentInRange(rteRsvPercent)) {
+                        this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+                        return false;
+                    }
+
+                    this._rteRsvPercentOOR = false;
+                    this._rteReservedPctEntered = true;
+                    this._rteReservedWeightEntered = false;
+
+                    if (isFinite(rteRsvPercent)) {
+                        this._routeReservedWeight = NaN;
+                        this._routeReservedPercent = rteRsvPercent;
+                        return true;
+                    }
                 }
             }
         }
@@ -3465,47 +3503,49 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     trySetRouteReservedFuel(s) {
-        if (s) {
-            if (s === FMCMainDisplay.clrValue) {
-                this._rteReservedWeightEntered = false;
-                this._rteReservedPctEntered = false;
-                this._routeReservedWeight = 0;
-                this._routeReservedPercent = 5;
-                this._rteRsvPercentOOR = false;
-                return true;
-            }
-            // Percentage entry must start with '/'
-            if (s.startsWith("/")) {
-                return this.trySetRouteReservedPercent(s);
-            } else {
-                // If not percentage, try to parse as weight
-                // Weight can be entered with optional trailing slash, if so remove it before parsing the value
-                const enteredValue = s.endsWith("/") ? s.slice(0, -1) : s;
-
-                if (!this.representsDecimalNumber(enteredValue)) {
-                    this.setScratchpadMessage(NXSystemMessages.formatError);
-                    return false;
+        if (!this.isFlying()) {
+            if (s) {
+                if (s === FMCMainDisplay.clrValue) {
+                    this._rteReservedWeightEntered = false;
+                    this._rteReservedPctEntered = false;
+                    this._routeReservedWeight = 0;
+                    this._routeReservedPercent = 5;
+                    this._rteRsvPercentOOR = false;
+                    return true;
                 }
+                // Percentage entry must start with '/'
+                if (s.startsWith("/")) {
+                    return this.trySetRouteReservedPercent(s);
+                } else {
+                    // If not percentage, try to parse as weight
+                    // Weight can be entered with optional trailing slash, if so remove it before parsing the value
+                    const enteredValue = s.endsWith("/") ? s.slice(0, -1) : s;
 
-                const rteRsvWeight = NXUnits.userToKg(parseFloat(enteredValue));
-
-                if (!this.isRteRsvFuelInRange(rteRsvWeight)) {
-                    this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
-                    return false;
-                }
-
-                this._rteReservedWeightEntered = true;
-                this._rteReservedPctEntered = false;
-
-                if (isFinite(rteRsvWeight)) {
-                    this._routeReservedWeight = rteRsvWeight;
-                    this._routeReservedPercent = 0;
-
-                    if (!this.isRteRsvPercentInRange(this.getRouteReservedPercent())) { // Bit of a hacky method due previous tight coupling of weight and percentage calculations
-                        this._rteRsvPercentOOR = true;
+                    if (!this.representsDecimalNumber(enteredValue)) {
+                        this.setScratchpadMessage(NXSystemMessages.formatError);
+                        return false;
                     }
 
-                    return true;
+                    const rteRsvWeight = NXUnits.userToKg(parseFloat(enteredValue));
+
+                    if (!this.isRteRsvFuelInRange(rteRsvWeight)) {
+                        this.setScratchpadMessage(NXSystemMessages.entryOutOfRange);
+                        return false;
+                    }
+
+                    this._rteReservedWeightEntered = true;
+                    this._rteReservedPctEntered = false;
+
+                    if (isFinite(rteRsvWeight)) {
+                        this._routeReservedWeight = rteRsvWeight;
+                        this._routeReservedPercent = 0;
+
+                        if (!this.isRteRsvPercentInRange(this.getRouteReservedPercent())) { // Bit of a hacky method due previous tight coupling of weight and percentage calculations
+                            this._rteRsvPercentOOR = true;
+                        }
+
+                        return true;
+                    }
                 }
             }
         }
@@ -3702,7 +3742,7 @@ class FMCMainDisplay extends BaseAirliners {
     setPerfApprQNH(s) {
         if (s === FMCMainDisplay.clrValue) {
             const dest = this.flightPlanService.active.destinationAirport;
-            const distanceToDestination = 0; // TODO port over (fms-v2)
+            const distanceToDestination = Number.isFinite(this.getDistanceToDestination()) ? this.getDistanceToDestination() : -1;
 
             if (dest && distanceToDestination < 180) {
                 this.setScratchpadMessage(NXSystemMessages.notAllowed);
@@ -3747,7 +3787,7 @@ class FMCMainDisplay extends BaseAirliners {
     setPerfApprTemp(s) {
         if (s === FMCMainDisplay.clrValue) {
             const dest = this.flightPlanService.active.destinationAirport;
-            const distanceToDestination = 0; // TODO port over (fms-v2)
+            const distanceToDestination = Number.isFinite(this.getDistanceToDestination()) ? this.getDistanceToDestination() : -1;
 
             if (dest && distanceToDestination < 180) {
                 this.setScratchpadMessage(NXSystemMessages.notAllowed);
@@ -4263,8 +4303,10 @@ class FMCMainDisplay extends BaseAirliners {
      * Check if a place is the correct format for a runway
      * @param {string} s
      * @returns true if valid runway format
+     * @deprecated use {@link Fmgc.WaypointEntryUtils.isRunwayFormat}
      */
     isRunwayFormat(s) {
+        return Fmgc.WaypointEntryUtils.isRunwayFormat(s);
         return s.match(/^([A-Z]{4})([0-9]{2}[RCL]?)$/) !== null;
     }
 
@@ -4272,8 +4314,10 @@ class FMCMainDisplay extends BaseAirliners {
      * Check if a place is the correct format for a latitude/longitude
      * @param {string} s
      * @returns true if valid lat/lon format
+     * @deprecated use {@link Fmgc.WaypointEntryUtils.isLatLonFormat}
      */
     isLatLonFormat(s) {
+        return Fmgc.WaypointEntryUtils.isLatLonFormat(s);
         return s.match(/^(N|S)?([0-9]{2,4}\.[0-9])(N|S)?\/(E|W)?([0-9]{2,5}\.[0-9])(E|W)?$/) !== null;
     }
 
@@ -4282,8 +4326,10 @@ class FMCMainDisplay extends BaseAirliners {
      * @param {string} place
      * @throws {McduMessage}
      * @returns {LatLongAlt}
+     * @deprecated use {@link Fmgc.WaypointEntryUtils.parseLatLon}
      */
     parseLatLon(place) {
+        return Fmgc.WaypointEntryUtils.parseLatLon(place);
         const latlon = place.match(/^(N|S)?([0-9]{2,4}\.[0-9])(N|S)?\/(E|W)?([0-9]{2,5}\.[0-9])(E|W)?$/);
         if (latlon !== null) {
             const latB = (latlon[1] || "") + (latlon[3] || "");
@@ -4311,8 +4357,10 @@ class FMCMainDisplay extends BaseAirliners {
      * Check if a place is the correct format
      * @param {string} s
      * @returns true if valid place format
+     * @deprecated use {@link Fmgc.WaypointEntryUtils.isPlaceFormat}
      */
     isPlaceFormat(s) {
+        return Fmgc.WaypointEntryUtils.isPlaceFormat(s);
         return s.match(/^[A-Z0-9]{2,7}$/) !== null || this.isRunwayFormat(s);
     }
 
@@ -4321,8 +4369,10 @@ class FMCMainDisplay extends BaseAirliners {
      * @param {string} place
      * @throws {McduMessage}
      * @returns {WayPoint}
+     * @deprecated use {@link Fmgc.WaypointEntryUtils.parsePlace}
      */
     async parsePlace(place) {
+        return Fmgc.WaypointEntryUtils.parsePlace(this, place);
         if (this.isRunwayFormat(place)) {
             return Fmgc.WaypointEntryUtils.parseRunway(place);
         }
@@ -4342,8 +4392,10 @@ class FMCMainDisplay extends BaseAirliners {
      * Check if a string is a valid place-bearing/place-bearing format
      * @param {string} s
      * @returns true if valid place format
+     * @deprecated use {@link Fmgc.WaypointEntryUtils.isPbxFormat}
      */
     isPbxFormat(s) {
+        return Fmgc.WaypointEntryUtils.isPbxFormat(s);
         const pbx = s.match(/^([^\-\/]+)\-([0-9]{1,3})\/([^\-\/]+)\-([0-9]{1,3})$/);
         return pbx !== null && this.isPlaceFormat(pbx[1]) && this.isPlaceFormat(pbx[3]);
     }
@@ -4353,8 +4405,10 @@ class FMCMainDisplay extends BaseAirliners {
      * @param {string} s place-bearing/place-bearing
      * @throws {McduMessage}
      * @returns {[WayPoint, number, WayPoint, number]} place and true bearing * 2
+     * @deprecated use {@link Fmgc.WaypointEntryUtils.parsePbx}
      */
     async parsePbx(s) {
+        return Fmgc.WaypointEntryUtils.parsePbx(this, s);
         const pbx = s.match(/^([^\-\/]+)\-([0-9]{1,3})\/([^\-\/]+)\-([0-9]{1,3})$/);
         if (pbx === null) {
             throw NXSystemMessages.formatError;
@@ -4376,8 +4430,10 @@ class FMCMainDisplay extends BaseAirliners {
      * Check if string is in place/bearing/distance format
      * @param {String} s
      * @returns true if pbd
+     * @deprecated use {@link Fmgc.WaypointEntryUtils.isPbdFormat}
      */
     isPbdFormat(s) {
+        return Fmgc.WaypointEntryUtils.isPbdFormat(s);
         const pbd = s.match(/^([^\/]+)\/([0-9]{1,3})\/([0-9]{1,3}(\.[0-9])?)$/);
         return pbd !== null && this.isPlaceFormat(pbd[1]);
     }
@@ -4386,8 +4442,10 @@ class FMCMainDisplay extends BaseAirliners {
      * Split PBD format into components
      * @param {String} s PBD format string
      * @returns [{string} place, {number} bearing, {number} distance]
+     * @deprecated use {@link Fmgc.WaypointEntryUtils.splitPbd}
      */
     splitPbd(s) {
+        return Fmgc.WaypointEntryUtils.splitPbd(s);
         let [place, brg, dist] = s.split("/");
         brg = parseInt(brg);
         dist = parseFloat(dist);
@@ -4395,11 +4453,12 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     /**
-     *
      * @param {string} s
      * @returns [wp: WayPoint, trueBearing: number, dist: number]
+     * @deprecated use {@link Fmgc.WaypointEntryUtils.parsePbd}
      */
     async parsePbd(s) {
+        return Fmgc.WaypointEntryUtils.parsePbd(this, s);
         const [place, brg, dist] = this.splitPbd(s);
         if (brg > 360 || dist > 999.9) {
             throw NXSystemMessages.entryOutOfRange;
@@ -4412,17 +4471,16 @@ class FMCMainDisplay extends BaseAirliners {
         throw NXSystemMessages.formatError;
     }
 
+    /**
+     *
+     * @param {string} s
+     * @returns {boolean} true if valid place/bearing format
+     * @deprecated use {@link Fmgc.WaypointEntryUtils.isPbFormat}
+     */
     isPdFormat(s) {
+        return Fmgc.WaypointEntryUtils.isPdFormat(s);
         const pd = s.match(/^([^\/]+)\/([0-9]{1,3}(\.[0-9])?)$/);
         return pd !== null && this.isPlaceFormat(pd[1]);
-    }
-
-    parsePlaceDist(s) {
-        let [place, dist] = s.split('/');
-        dist = parseInt(dist);
-        // TODO get waypoint in flightplan
-        //Fmgc.WaypointBuilder.fromPlaceAlongFlightPlan(ident: string, placeIndex: number, distance: number, instrument: BaseInstrument, fpm: FlightPlanManager);
-        throw NXFictionalMessages.notYetImplemented;
     }
 
     /**
@@ -4455,28 +4513,20 @@ class FMCMainDisplay extends BaseAirliners {
             return callback(true);
         }
 
-        try {
-            Fmgc.WaypointEntryUtils.getOrCreateWaypoint(this, s, false).then((wp) => {
-                // FIXME wp.additionalData.temporary
-                const temporary = false;
-                this._setProgLocation(temporary ? "ENTRY" : wp.ident, wp.location, wp.databaseId);
-                return callback(true);
-            }).catch((err) => {
-                if (err instanceof McduMessage) {
-                    this.setScratchpadMessage(err);
-                } else if (err) {
-                    console.error(err);
-                }
-                return callback(false);
-            });
-        } catch (err) {
-            if (err instanceof McduMessage) {
-                this.setScratchpadMessage(err);
-            } else {
-                console.error(err);
+        Fmgc.WaypointEntryUtils.getOrCreateWaypoint(this, s, false).then((wp) => {
+            // FIXME wp.additionalData.temporary
+            const temporary = false;
+            this._setProgLocation(temporary ? "ENTRY" : wp.ident, wp.location, wp.databaseId);
+            return callback(true);
+        }).catch((err) => {
+            // Rethrow if error is not an FMS message to display
+            if (!err.type) {
+                throw err;
             }
+
+            this.showFmsErrorMessage(err.type);
             return callback(false);
-        }
+        });
     }
 
     /**
@@ -4517,14 +4567,9 @@ class FMCMainDisplay extends BaseAirliners {
      * @param wpt {import('msfs-navdata').Waypoint}
      */
     isWaypointInUse(wpt) {
-        if (this.flightPlanService.isWaypointInUse(wpt)) {
-            return true;
-        }
-        // TODO check tuned navaids
-        if (this._progBrgDist && this._progBrgDist.icao === wpt.databaseId) {
-            return true;
-        }
-        return false;
+        return this.flightPlanService.isWaypointInUse(wpt).then((inUseByFlightPlan) =>
+            inUseByFlightPlan || (this._progBrgDist && this._progBrgDist.icao === wpt.databaseId)
+        );
     }
 
     setGroundTempFromOrigin() {
@@ -4687,6 +4732,10 @@ class FMCMainDisplay extends BaseAirliners {
 
     isOnGround() {
         return SimVar.GetSimVarValue("L:A32NX_LGCIU_1_NOSE_GEAR_COMPRESSED", "Number") === 1 || SimVar.GetSimVarValue("L:A32NX_LGCIU_2_NOSE_GEAR_COMPRESSED", "Number") === 1;
+    }
+
+    isFlying() {
+        return this.flightPhaseManager.phase >= FmgcFlightPhases.TAKEOFF && this.flightPhaseManager.phase < FmgcFlightPhases.DONE;
     }
     /**
      * Returns the maximum cruise FL for ISA temp and GW
@@ -5126,6 +5175,18 @@ class FMCMainDisplay extends BaseAirliners {
         }
 
         return maximumCrossoverAltitude + (mmoCrossoverAltitide - maximumCrossoverAltitude) * (mach - 0.8) / 0.02;
+    }
+
+    getActivePlanLegCount() {
+        if (!this.flightPlanService.hasActive) {
+            return 0;
+        }
+
+        return this.flightPlanService.active.legCount;
+    }
+
+    getDistanceToDestination() {
+        return this.guidanceController.alongTrackDistanceToDestination;
     }
 }
 

@@ -3,16 +3,17 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Airport, ApproachType, Fix, NXDataStore } from '@flybywiresim/fbw-sdk';
+import { Airport, ApproachType, Fix, LegType, NXDataStore } from '@flybywiresim/fbw-sdk';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/new/plans/AlternateFlightPlan';
 import { EventBus, MagVar } from '@microsoft/msfs-sdk';
-import { FixInfoEntry } from '@fmgc/flightplanning/new/plans/FixInfo';
+import { FixInfoData, FixInfoEntry } from '@fmgc/flightplanning/new/plans/FixInfo';
 import { loadAllDepartures, loadAllRunways } from '@fmgc/flightplanning/new/DataLoading';
 import { Coordinates, Degrees } from 'msfs-geo';
 import { FlightPlanLeg, FlightPlanLegFlags } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { FlightArea } from '@fmgc/navigation/FlightArea';
 
+import { CopyOptions } from '@fmgc/flightplanning/new/plans/CloningOptions';
 import { FlightPlanPerformanceData } from './performance/FlightPlanPerformanceData';
 import { BaseFlightPlan, FlightPlanQueuedOperation, SerializedFlightPlan } from './BaseFlightPlan';
 
@@ -42,7 +43,7 @@ export class FlightPlan extends BaseFlightPlan {
         this.alternateFlightPlan.destroy();
     }
 
-    clone(newIndex: number): FlightPlan {
+    clone(newIndex: number, options: number = CopyOptions.Default): FlightPlan {
         const newPlan = FlightPlan.empty(newIndex, this.bus);
 
         newPlan.version = this.version;
@@ -71,6 +72,10 @@ export class FlightPlan extends BaseFlightPlan {
         newPlan.activeLegIndex = this.activeLegIndex;
 
         newPlan.performanceData = this.performanceData.clone();
+
+        if (options & CopyOptions.IncludeFixInfos) {
+            newPlan.fixInfos = this.fixInfos.map((it) => it.clone());
+        }
 
         return newPlan;
     }
@@ -112,40 +117,83 @@ export class FlightPlan extends BaseFlightPlan {
         // TODO withAbeam
         // TODO handle direct-to into the alternate (make alternate active...?
 
-        const targetLeg = this.allLegs.find((it) => it.isDiscontinuity === false && it.terminatesWithWaypoint(waypoint));
-        const targetLegIndex = this.allLegs.findIndex((it) => it === targetLeg);
-
-        if (targetLeg.isDiscontinuity === true || !targetLeg.isXF()) {
-            throw new Error('[FPM] Target leg of a direct to cannot be a discontinuity or non-XF leg');
-        }
-
         const magVar = MagVar.get(ppos.lat, ppos.long);
         const magneticCourse = MagVar.trueToMagnetic(trueTrack, magVar);
 
         const turningPoint = FlightPlanLeg.turningPoint(this.enrouteSegment, ppos, magneticCourse);
-        const turnEnd = FlightPlanLeg.directToTurnEnd(this.enrouteSegment, targetLeg);
+        const turnEnd = FlightPlanLeg.directToTurnEnd(this.enrouteSegment, waypoint);
 
         turningPoint.flags |= FlightPlanLegFlags.DirectToTurningPoint;
 
-        this.redistributeLegsAt(targetLegIndex);
+        const targetLeg = this.allLegs.find((it) => it.isDiscontinuity === false && it.terminatesWithWaypoint(waypoint)) as FlightPlanLeg;
+        if (targetLeg) {
+            turnEnd.withDefinitionFrom(targetLeg).withPilotEnteredDataFrom(targetLeg);
 
-        const indexInEnrouteSegment = this.enrouteSegment.allLegs.findIndex((it) => it === targetLeg);
+            const targetLegIndex = this.allLegs.findIndex((it) => it === targetLeg);
+            this.redistributeLegsAt(targetLegIndex);
 
-        if (indexInEnrouteSegment === -1) {
-            throw new Error('[FPM] Target leg of a direct to not found in enroute segment after leg redistribution!');
+            const indexInEnrouteSegment = this.enrouteSegment.allLegs.findIndex((it) => it === targetLeg);
+
+            if (indexInEnrouteSegment === -1) {
+                throw new Error('[FPM] Target leg of a direct to not found in enroute segment after leg redistribution!');
+            }
+
+            this.enrouteSegment.allLegs.splice(indexInEnrouteSegment, 0, { isDiscontinuity: true });
+            this.enrouteSegment.allLegs.splice(indexInEnrouteSegment + 1, 0, turningPoint);
+            this.enrouteSegment.allLegs.splice(indexInEnrouteSegment + 2, 0, turnEnd);
+            this.enrouteSegment.allLegs.splice(indexInEnrouteSegment + 3, 1);
+            this.incrementVersion();
+
+            const turnEndLegIndexInPlan = this.allLegs.findIndex((it) => it === turnEnd);
+
+            this.activeLegIndex = turnEndLegIndexInPlan;
+        } else {
+            let indexInEnrouteSegment = 0;
+            // Make sure we have an active leg and that we don't put the origin leg into enroute
+            if (this.activeLegIndex >= 1) {
+                this.redistributeLegsAt(this.activeLegIndex);
+                indexInEnrouteSegment = this.enrouteSegment.allLegs.findIndex((it) => it === this.activeLeg);
+            }
+
+            this.enrouteSegment.allLegs.splice(indexInEnrouteSegment, 0, { isDiscontinuity: true });
+            this.enrouteSegment.allLegs.splice(indexInEnrouteSegment + 1, 0, turningPoint);
+            this.enrouteSegment.allLegs.splice(indexInEnrouteSegment + 2, 0, turnEnd);
+            this.enrouteSegment.allLegs.splice(indexInEnrouteSegment + 3, 0, { isDiscontinuity: true });
+            this.incrementVersion();
+
+            const turnEndLegIndexInPlan = this.allLegs.findIndex((it) => it === turnEnd);
+            // Since we added a discontinuity after the DIR TO leg, we want to make sure that the leg after it
+            // is a leg that can be after a disco (not something like a CI) and convert it to IF
+            this.cleanUpAfterDiscontinuity(turnEndLegIndexInPlan + 1);
+
+            this.activeLegIndex = turnEndLegIndexInPlan;
         }
 
-        this.enrouteSegment.allLegs.splice(indexInEnrouteSegment, 0, { isDiscontinuity: true });
-        this.enrouteSegment.allLegs.splice(indexInEnrouteSegment + 1, 0, turningPoint);
-        this.enrouteSegment.allLegs.splice(indexInEnrouteSegment + 2, 0, turnEnd);
-        this.enrouteSegment.allLegs.splice(indexInEnrouteSegment + 3, 1);
         this.incrementVersion();
+    }
 
-        const turnStartLegIndexInPlan = this.allLegs.findIndex((it) => it === turnEnd);
+    /**
+     * Find next XF leg after a discontinuity and convert it to IF
+     * Remove non-ground-referenced leg after the discontinuity before the XF leg
+     * @param discontinuityIndex
+     */
+    private cleanUpAfterDiscontinuity(discontinuityIndex: number) {
+        // Find next XF leg
+        const xFLegIndexInPlan = this.allLegs.findIndex((it, index) => index > discontinuityIndex && it.isDiscontinuity === false && it.isXF());
 
-        this.activeLegIndex = turnStartLegIndexInPlan;
+        if (xFLegIndexInPlan !== -1) {
+            const [segment, xfLegIndexInSegment] = this.segmentPositionForIndex(xFLegIndexInPlan);
+            const xfLegAfterDiscontinuity = segment.allLegs[xfLegIndexInSegment] as FlightPlanLeg;
 
-        this.incrementVersion();
+            // Remove non-ground-referenced leg after the discontinuity before the XF leg
+            // and insert new IF leg
+            const numberOfLegsToRemove = Math.max(0, xFLegIndexInPlan - discontinuityIndex);
+            const iFLegAfterDiscontinuity = FlightPlanLeg.fromEnrouteFix(segment, xfLegAfterDiscontinuity.definition.waypoint, '', LegType.IF)
+                .withDefinitionFrom(xfLegAfterDiscontinuity)
+                .withPilotEnteredDataFrom(xfLegAfterDiscontinuity);
+
+            segment.allLegs.splice(xfLegIndexInSegment - numberOfLegsToRemove + 1, numberOfLegsToRemove, iFLegAfterDiscontinuity);
+        }
     }
 
     // TODO this is wrong and we need to redo all this
@@ -193,10 +241,10 @@ export class FlightPlan extends BaseFlightPlan {
         await this.flushOperationQueue();
     }
 
-    setFixInfoEntry(index: 1 | 2 | 3 | 4, fixInfo: FixInfoEntry | null, notify = true): void {
+    setFixInfoEntry(index: 1 | 2 | 3 | 4, fixInfo: FixInfoData | null, notify = true): void {
         const planFixInfo = this.fixInfos as FixInfoEntry[];
 
-        planFixInfo[index] = fixInfo;
+        planFixInfo[index] = fixInfo ? new FixInfoEntry(fixInfo.fix, fixInfo.radii, fixInfo.radials) : undefined;
 
         if (notify) {
             this.sendEvent('flightPlan.setFixInfoEntry', { planIndex: this.index, forAlternate: false, index, fixInfo });

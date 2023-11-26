@@ -64,7 +64,6 @@
 /fbw-a380x/.env.local
 !/fbw-a380x/README.md
 !/fbw-a380x/mach.config.js
-!/fbw-a380x/.env
 !/fbw-a380x/docs/
 !/fbw-a380x/docs/**
 !/fbw-a380x/src/**

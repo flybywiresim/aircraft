@@ -1,6 +1,6 @@
 import { ExecTask, TaskOfTasks } from "@flybywiresim/igniter";
-import { getA32NXInstrumentsIgniterTasks } from "./fbw-a32nx/src/systems/instruments/buildSrc/igniter/tasks.mjs";
-import { getA380XInstrumentsIgniterTasks } from "./fbw-a380x/src/systems/instruments/buildSrc/igniter/tasks.mjs";
+import { getInstrumentsIgniterTasks as getA320InstrumentsIgniterTasks } from "./fbw-a32nx/src/systems/instruments/buildSrc/igniter/tasks.mjs";
+import { getInstrumentsIgniterTasks as getA380InstrumentsIgniterTasks } from './fbw-a380x/src/systems/instruments/buildSrc/igniter/tasks.mjs';
 
 export default new TaskOfTasks("all", [
     // A32NX Task
@@ -97,7 +97,7 @@ export default new TaskOfTasks("all", [
                     "fbw-a32nx/out/flybywire-aircraft-a320-neo/html_ui/JS/fbw-a32nx/tcas"
                 ]),
 
-            new TaskOfTasks("instruments", getA32NXInstrumentsIgniterTasks(), true),
+            new TaskOfTasks("instruments", getA320InstrumentsIgniterTasks(), true),
         ], true),
 
         // Group all WASM build tasks together but separate from the rest of the tasks as build run more stable like this.
@@ -159,7 +159,11 @@ export default new TaskOfTasks("all", [
             ])
         ], true),
 
-        // Group WASM tasks
+        // Group all typescript and react build tasks together.
+        new TaskOfTasks("build", [
+            new TaskOfTasks("instruments", getA380InstrumentsIgniterTasks(), true),
+        ], true),
+
         new TaskOfTasks("wasm", [
             new ExecTask("systems",
                 "npm run build-a380x:systems",
@@ -202,16 +206,11 @@ export default new TaskOfTasks("all", [
                 ])
         ], true),
 
-        // Group all typescript and react build tasks together.
-        new TaskOfTasks("build", [
-            new TaskOfTasks("instruments", getA380XInstrumentsIgniterTasks(), true),
-        ], true),
-
         // Create final package meta files.
         new TaskOfTasks("dist", [
             new ExecTask("metadata", "npm run build-a380x:metadata"),
             new ExecTask("manifests", "npm run build-a380x:manifest")
-        ])
+        ]),
     ]),
 
     // InGamePanels Checklist Fix Tasks

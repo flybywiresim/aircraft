@@ -1,4 +1,6 @@
-import { useEffect, useState, useRef } from 'react';
+/* global SimVar */
+
+import { useEffect, useRef } from 'react';
 
 export const renderTarget = document.getElementById('MSFS_REACT_MOUNT');
 export const customElement = renderTarget.parentElement;
@@ -48,9 +50,10 @@ export function useUpdate(handler) {
 const SIMVAR_TYPES = {
     '__proto__': null,
     'GPS POSITION LAT': 'degrees latitude',
+    'L:APU_GEN_ONLINE': 'Bool',
+    'EXTERNAL POWER AVAILABLE:1': 'Bool',
+    'EXTERNAL POWER ON': 'Bool',
     'L:A32NX_COLD_AND_DARK_SPAWN': 'Bool',
-    'TOTAL AIR TEMPERATURE': 'Celsius',
-    'AMBIENT TEMPERATURE': 'Celsius',
 };
 
 const SIMVAR_CACHE = new Map();
@@ -62,36 +65,12 @@ export function getSimVar(name, type) {
     if (!SIMVAR_CACHE.has(name)) {
         SIMVAR_CACHE.set(name, SimVar.GetSimVarValue(name, type || SIMVAR_TYPES[name]));
     }
-
-    return SIMVAR_CACHE.get(name);
-}
-
-export function getGlobalVar(name, type) {
-    if (!SIMVAR_CACHE.has(name)) {
-        SIMVAR_CACHE.set(name, SimVar.GetGlobalVarValue(name, type || SIMVAR_TYPES[name]));
-    }
     return SIMVAR_CACHE.get(name);
 }
 
 export function setSimVar(name, value, type = SIMVAR_TYPES[name]) {
     SIMVAR_CACHE.delete(name);
     return SimVar.SetSimVarValue(name, type, value);
-}
-
-export function useSimVar(name, type) {
-    const [value, updater] = useState(0);
-
-    useUpdate(() => updater(getSimVar(name, type)));
-
-    return value;
-}
-
-export function useGlobalVar(name, type) {
-    const [value, updater] = useState(0);
-
-    useUpdate(() => updater(getGlobalVar(name, type)));
-
-    return value;
 }
 
 export const createDeltaTimeCalculator = (startTime = Date.now()) => {

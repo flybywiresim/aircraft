@@ -120,13 +120,13 @@ class CDUIdentPage {
             // DELETE ALL
             mcdu.onRightInput[4] = () => {
                 if (confirmType == ConfirmType.DeleteStored) {
-                    const allDeleted = mcdu.dataManager.deleteAllStoredWaypoints();
-                    if (!allDeleted) {
-                        mcdu.setScratchpadMessage(
-                            NXSystemMessages.fplnElementRetained
-                        );
-                    }
-                    CDUIdentPage.ShowPage(mcdu);
+                    mcdu.dataManager.deleteAllStoredWaypoints().then((allDeleted) => {
+                        if (!allDeleted) {
+                            mcdu.setScratchpadMessage(NXSystemMessages.fplnElementRetained);
+                        }
+
+                        CDUIdentPage.ShowPage(mcdu);
+                    })
                 } else {
                     CDUIdentPage.ShowPage(mcdu, ConfirmType.DeleteStored);
                 }
