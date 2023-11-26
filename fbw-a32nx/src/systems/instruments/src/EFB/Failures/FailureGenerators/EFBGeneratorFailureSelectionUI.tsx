@@ -74,7 +74,7 @@ export const GeneratorFailureSelection: React.FC<GeneratorFailureSelectionProps>
     const generatorFailureTable: Failure[] = findGeneratorFailures(allFailures, failureGenContext.generatorFailuresGetters, failureGenContext.modalContext.genUniqueID);
 
     failureGenContext.setFailureGenModalType(ModalGenType.None);
-
+    failureGenContext.setFailureGenModalCurrentlyDisplayed(ModalGenType.Failures);
     const selectAllFailures = (failureGenContext: FailureGenContext, value: boolean): void => {
         for (const failure of allFailures) {
             setSelectedFailure(failure, failureGenContext.modalContext.genUniqueID, failureGenContext, value);
@@ -117,7 +117,10 @@ export const GeneratorFailureSelection: React.FC<GeneratorFailureSelectionProps>
                     className="text-theme-body hover:text-utility-red bg-utility-red hover:bg-theme-body border-utility-red flex-none items-center justify-center
                     rounded-md border-2 px-4 py-2 text-center transition duration-100
                     "
-                    onClick={() => popModal()}
+                    onClick={() => {
+                        failureGenContext.setFailureGenModalCurrentlyDisplayed(ModalGenType.None);
+                        popModal();
+                    }}
                 >
                     X
                 </div>

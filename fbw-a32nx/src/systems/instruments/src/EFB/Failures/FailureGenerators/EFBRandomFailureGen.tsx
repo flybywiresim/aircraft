@@ -99,6 +99,8 @@ export type FailureGenContext = {
     failureGenModalType: ModalGenType
     setFailureGenModalType: (type: ModalGenType) => void,
     reducedAtaChapterNumbers: AtaChapterNumber[],
+    failureGenModalCurrentlyDisplayed: ModalGenType
+    setFailureGenModalCurrentlyDisplayed: (type: ModalGenType) => void,
 }
 
 export type ModalContext = {
@@ -156,6 +158,7 @@ export const useFailureGeneratorsSettings: () => FailureGenContext = () => {
     const { generatorFailuresGetters, generatorFailuresSetters } = allGeneratorFailures(allFailures);
     const allGenSettings: Map<string, FailureGenData> = new Map();
     const [failureGenModalType, setFailureGenModalType] = useState<ModalGenType>(ModalGenType.None);
+    const [failureGenModalCurrentlyDisplayed, setFailureGenModalCurrentlyDisplayed] = useState<ModalGenType>(ModalGenType.None);
     const [modalContext, setModalContext] = useState<ModalContext | undefined >(undefined);
 
     allGenSettings.set(failureGenConfigAltitude().genName, failureGenConfigAltitude());
@@ -189,6 +192,8 @@ export const useFailureGeneratorsSettings: () => FailureGenContext = () => {
         modalContext,
         setModalContext,
         reducedAtaChapterNumbers,
+        failureGenModalCurrentlyDisplayed,
+        setFailureGenModalCurrentlyDisplayed,
     };
 };
 
@@ -204,7 +209,7 @@ export function sendRefresh(bus: EventBus) {
 }
 
 export function sendFailurePool(generatorType: string, generatorNumber:number, failureString: string, bus: EventBus) {
-    console.info(`failure pool sent ${generatorType}${generatorNumber} : ${failureString}`);
+    // console.info(`failure pool sent ${generatorType}${generatorNumber} : ${failureString}`);
     bus.getPublisher<FailureGenFailureList>().pub('failurePool', { generatorType, generatorNumber, failureString }, true);
 }
 

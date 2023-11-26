@@ -83,8 +83,13 @@ export const FailureGeneratorsUI = () => {
         sendFailurePool(generatorSettings.uniqueGenPrefix, genNumber, getGeneratorFailurePool(generatorSettings.uniqueGenPrefix + genNumber.toString(), Array.from(allFailures)), bus);
 
         failureGenContext.setFailureGenModalType(ModalGenType.Settings);
-        const genLetter = generatorSettings.uniqueGenPrefix;
-        const context: ModalContext = { failureGenData: generatorSettings, genNumber, genUniqueID, genLetter, chainToFailurePool: true };
+        const context: ModalContext = {
+            failureGenData: generatorSettings,
+            genNumber,
+            genUniqueID,
+            genLetter: generatorSettings.uniqueGenPrefix,
+            chainToFailurePool: true,
+        };
         failureGenContext.setModalContext(context);
     };
 
@@ -225,8 +230,13 @@ export const FailureGeneratorCardTemplateUI: React.FC<FailureGeneratorCardTempla
                             border-2 p-2 transition duration-100"
                             onClick={() => {
                                 failureGenContext.setFailureGenModalType(ModalGenType.Settings);
-                                const genLetter = failureGenData.uniqueGenPrefix;
-                                const context: ModalContext = { failureGenData, genNumber, genUniqueID, genLetter, chainToFailurePool: false };
+                                const context: ModalContext = {
+                                    failureGenData,
+                                    genNumber,
+                                    genUniqueID,
+                                    genLetter: failureGenData.uniqueGenPrefix,
+                                    chainToFailurePool: false,
+                                };
                                 failureGenContext.setModalContext(context);
                             }}
                         >
@@ -239,8 +249,13 @@ export const FailureGeneratorCardTemplateUI: React.FC<FailureGeneratorCardTempla
                             border-2 p-2 transition duration-100"
                             onClick={() => {
                                 failureGenContext.setFailureGenModalType(ModalGenType.Failures);
-                                const genLetter = failureGenData.uniqueGenPrefix;
-                                const context: ModalContext = { failureGenData, genNumber, genUniqueID, genLetter, chainToFailurePool: false };
+                                const context: ModalContext = {
+                                    failureGenData,
+                                    genNumber,
+                                    genUniqueID,
+                                    genLetter: failureGenData.uniqueGenPrefix,
+                                    chainToFailurePool: false,
+                                };
                                 failureGenContext.setModalContext(context);
                             }}
                         >
