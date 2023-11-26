@@ -194,8 +194,8 @@ export const FailureGeneratorDetailsModalUI: React.FC<{ failureGenContext: Failu
     const { popModal } = useModals();
 
     const genNumber = extractFirstNumber(failureGenContext.modalContext.genUniqueID);
-    failureGenContext.setFailureGenModalType(ModalGenType.None);
-    failureGenContext.setFailureGenModalCurrentlyDisplayed(ModalGenType.Settings);
+    if (failureGenContext.failureGenModalType !== ModalGenType.None) failureGenContext.setFailureGenModalType(ModalGenType.None);
+    if (failureGenContext.failureGenModalCurrentlyDisplayed !== ModalGenType.Settings) failureGenContext.setFailureGenModalCurrentlyDisplayed(ModalGenType.Settings);
     const numberOfSelectedFailures = findGeneratorFailures(allFailures, failureGenContext.generatorFailuresGetters,
         failureGenContext.modalContext.genUniqueID).length;
 

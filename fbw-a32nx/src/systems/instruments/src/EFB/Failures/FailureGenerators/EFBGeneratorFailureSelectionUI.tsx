@@ -73,8 +73,8 @@ export const GeneratorFailureSelection: React.FC<GeneratorFailureSelectionProps>
 
     const generatorFailureTable: Failure[] = findGeneratorFailures(allFailures, failureGenContext.generatorFailuresGetters, failureGenContext.modalContext.genUniqueID);
 
-    failureGenContext.setFailureGenModalType(ModalGenType.None);
-    failureGenContext.setFailureGenModalCurrentlyDisplayed(ModalGenType.Failures);
+    if (failureGenContext.failureGenModalType !== ModalGenType.None) failureGenContext.setFailureGenModalType(ModalGenType.None);
+    if (failureGenContext.failureGenModalCurrentlyDisplayed !== ModalGenType.Failures) failureGenContext.setFailureGenModalCurrentlyDisplayed(ModalGenType.Failures);
     const selectAllFailures = (failureGenContext: FailureGenContext, value: boolean): void => {
         for (const failure of allFailures) {
             setSelectedFailure(failure, failureGenContext.modalContext.genUniqueID, failureGenContext, value);
