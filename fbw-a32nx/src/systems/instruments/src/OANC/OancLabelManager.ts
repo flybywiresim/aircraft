@@ -179,6 +179,11 @@ export class OancLabelManager {
     public clearLabels() {
         this.labels.length = 0;
         this.visibleLabels.clear();
+
+        for (const label of this.visibleLabelElements.values()) {
+            label.remove();
+        }
+
         this.visibleLabelElements.clear();
     }
 }
