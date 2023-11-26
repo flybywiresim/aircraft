@@ -1,5 +1,5 @@
-import { getGeneratorFailurePool } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelectionUI';
-import { sendFailurePool, sendSettings, useFailureGeneratorsSettings } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
+import { getGeneratorFailurePool } from 'instruments/src/EFB/Failures/FailureGenerators/EFBFailureSelectionFunctions';
+import { sendFailurePool, sendSettings, useFailureGeneratorsSettings } from 'instruments/src/EFB/Failures/FailureGenerators/EFBRandomFailureGen';
 import { useEventBus } from 'instruments/src/EFB/event-bus-provider';
 import { useFailuresOrchestrator } from 'instruments/src/EFB/failures-orchestrator-provider';
 import { useEffect } from 'react';

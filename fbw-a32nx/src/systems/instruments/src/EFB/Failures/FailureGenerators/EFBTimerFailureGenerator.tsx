@@ -5,9 +5,9 @@
 import { usePersistentProperty } from '@flybywiresim/fbw-sdk';
 
 import React, { useMemo, useState } from 'react';
-import { FailureGenContext, FailureGenData, FailureGenMode, setNewSetting } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
+import { FailureGenContext, FailureGenData, FailureGenMode, setNewSetting } from 'instruments/src/EFB/Failures/FailureGenerators/EFBRandomFailureGen';
 import { t } from 'instruments/src/EFB/translation';
-import { FailureGeneratorSingleSetting } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorSettingsUI';
+import { FailureGeneratorSingleSetting } from 'instruments/src/EFB/Failures/FailureGenerators/EFBFailureGeneratorSettingsUI';
 
 const settingName = 'EFB_FAILURE_GENERATOR_SETTING_TIMER';
 const defaultNumberOfFailuresAtOnce = 1;

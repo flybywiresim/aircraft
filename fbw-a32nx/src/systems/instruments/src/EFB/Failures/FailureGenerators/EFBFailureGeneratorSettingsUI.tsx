@@ -7,13 +7,13 @@ import { t } from 'instruments/src/EFB/translation';
 import {
     FailureGenContext, FailureGenData, ModalGenType, findGeneratorFailures, setNewSetting,
     updateSettings,
-} from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
-import { extractFirstNumber } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelectionUI';
+} from 'instruments/src/EFB/Failures/FailureGenerators/EFBRandomFailureGen';
+import { extractFirstNumber } from 'instruments/src/EFB/Failures/FailureGenerators/EFBFailureSelectionFunctions';
 import { ArrowBarUp, Repeat, Icon1Circle, ToggleOff } from 'react-bootstrap-icons';
 import { SelectGroup, SelectItem } from 'instruments/src/EFB/UtilComponents/Form/Select';
 import { SimpleInput } from 'instruments/src/EFB/UtilComponents/Form/SimpleInput/SimpleInput';
 import { ButtonType, SettingItem } from 'instruments/src/EFB/Settings/Settings';
-import { FailuresAtOnceIndex, MaxFailuresIndex } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorsUI';
+import { FailuresAtOnceIndex, MaxFailuresIndex } from 'instruments/src/EFB/Failures/FailureGenerators/EFBFailureGeneratorsUI';
 import { ScrollableContainer } from 'instruments/src/EFB/UtilComponents/ScrollableContainer';
 import { TooltipWrapper } from 'instruments/src/EFB/UtilComponents/TooltipWrapper';
 import { ArmingModeIndex } from 'failures/src/RandomFailureGen';

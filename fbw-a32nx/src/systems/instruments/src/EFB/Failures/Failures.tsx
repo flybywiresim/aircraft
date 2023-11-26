@@ -17,7 +17,7 @@ import { PageLink, PageRedirect } from '../Utils/routing';
 import { useFailuresOrchestrator } from '../failures-orchestrator-provider';
 import { setSearchQuery } from '../Store/features/failuresPage';
 import { ScrollableContainer } from '../UtilComponents/ScrollableContainer';
-import { FailureGeneratorsUI } from './FailureGenerators/FailureGeneratorsUI';
+import { FailureGeneratorsUI } from './FailureGenerators/EFBFailureGeneratorsUI';
 
 export const FailuresHome = () => {
     const tabs: PageLink[] = [
@@ -29,7 +29,7 @@ export const FailuresHome = () => {
         <>
             <div className="flex flex-row justify-between space-x-4">
                 <h1 className="font-bold">{t('Failures.Title')}</h1>
-                <div className="flex flex-row items-center py-1 px-4 space-x-2 bg-yellow-400 rounded-md">
+                <div className="flex flex-row items-center space-x-2 rounded-md bg-yellow-400 px-4 py-1">
                     <InfoCircleFill className="text-black" />
                     <div className="text-black">{t('Failures.FullSimulationOfTheFailuresBelowIsntYetGuaranteed')}</div>
                 </div>
@@ -75,11 +75,11 @@ export const Failures = () => {
 
     return (
         <>
-            <div className="p-4 mt-4 space-y-4 rounded-lg border-2 h-content-section-reduced border-theme-accent">
+            <div className="h-content-section-reduced border-theme-accent mt-4 space-y-4 rounded-lg border-2 p-4">
                 <div className="flex flex-row space-x-4">
                     <SimpleInput
                         placeholder={t('Failures.Search')}
-                        className="flex-grow uppercase"
+                        className="grow uppercase"
                         value={searchQuery}
                         onChange={(value) => dispatch(setSearchQuery(value.toUpperCase()))}
                     />

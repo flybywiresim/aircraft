@@ -5,11 +5,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Failure } from '@failures';
 import { AtaChapterNumber, AtaChapterNumbers, usePersistentProperty, useSimVar } from '@flybywiresim/fbw-sdk';
-import { failureGenConfigAltitude } from 'instruments/src/EFB/Failures/FailureGenerators/AltitudeFailureGeneratorUI';
-import { failureGenConfigPerHour } from 'instruments/src/EFB/Failures/FailureGenerators/PerHourFailureGeneratorUI';
-import { failureGenConfigSpeed } from 'instruments/src/EFB/Failures/FailureGenerators/SpeedFailureGeneratorUI';
-import { failureGenConfigTakeOff } from 'instruments/src/EFB/Failures/FailureGenerators/TakeOffFailureGeneratorUI';
-import { failureGenConfigTimer } from 'instruments/src/EFB/Failures/FailureGenerators/TimerFailureGeneratorUI';
+import { failureGenConfigAltitude } from 'instruments/src/EFB/Failures/FailureGenerators/EFBAltitudeFailureGenerator';
+import { failureGenConfigPerHour } from 'instruments/src/EFB/Failures/FailureGenerators/EFBPerHourFailureGenerator';
+import { failureGenConfigSpeed } from 'instruments/src/EFB/Failures/FailureGenerators/EFBSpeedFailureGenerator';
+import { failureGenConfigTakeOff } from 'instruments/src/EFB/Failures/FailureGenerators/EFBTakeOffFailureGenerator';
+import { failureGenConfigTimer } from 'instruments/src/EFB/Failures/FailureGenerators/EFBTimerFailureGenerator';
 import { EventBus } from '@microsoft/msfs-sdk';
 import { useEventBus } from 'instruments/src/EFB/event-bus-provider';
 import { useFailuresOrchestrator } from '../../failures-orchestrator-provider';

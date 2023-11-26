@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import React from 'react';
-import { FailureGenContext, ModalGenType, findGeneratorFailures, sendFailurePool } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
-import { getGeneratorFailurePool, setSelectedFailure } from 'instruments/src/EFB/Failures/FailureGenerators/FailureSelectionUI';
+import { FailureGenContext, ModalGenType, findGeneratorFailures, sendFailurePool } from 'instruments/src/EFB/Failures/FailureGenerators/EFBRandomFailureGen';
+import { getGeneratorFailurePool, setSelectedFailure } from 'instruments/src/EFB/Failures/FailureGenerators/EFBFailureSelectionFunctions';
 import { Failure } from 'failures/src/failures-orchestrator';
 import { AtaChapterNumber, AtaChaptersTitle } from '@flybywiresim/fbw-sdk';
 import { t } from 'instruments/src/EFB/translation';
@@ -38,7 +38,7 @@ const FailureAtaList: React.FC<FailureAtaListProps> = ({ failureGenContext, chap
 
             return (
                 <div
-                    className="flex flex-row pt-2 justify"
+                    className="justify flex flex-row pt-2"
                 >
                     <Toggle
                         value={active}
@@ -97,8 +97,8 @@ export const GeneratorFailureSelection: React.FC<GeneratorFailureSelectionProps>
     };
 
     return (
-        <div className="flex flex-col justify-between items-stretch py-2 px-8 w-3/4 border-2 bg-theme-body border-theme-accent">
-            <div className="flex flex-row justify-between items-start bg-theme-body ">
+        <div className="bg-theme-body border-theme-accent flex w-3/4 flex-col items-stretch justify-between border-2 px-8 py-2">
+            <div className="bg-theme-body flex flex-row items-start justify-between ">
                 <div className="space-x-3 text-left">
                     <h1 className="font-bold text-current">
                         {t('Failures.Generators.FailureSelection')}
@@ -106,18 +106,18 @@ export const GeneratorFailureSelection: React.FC<GeneratorFailureSelectionProps>
                 </div>
                 <div />
                 <div
-                    className="flex-none justify-center items-center py-2 px-4 text-center rounded-md border-2
-                    text-theme-body hover:text-utility-red bg-utility-red hover:bg-theme-body border-utility-red transition duration-100
+                    className="text-theme-body hover:text-utility-red bg-utility-red hover:bg-theme-body border-utility-red flex-none items-center justify-center
+                    rounded-md border-2 px-4 py-2 text-center transition duration-100
                     "
                     onClick={() => popModal()}
                 >
                     X
                 </div>
             </div>
-            <div className="flex flex-row justify-between mb-2 ml-10 w-full">
+            <div className="mb-2 ml-10 flex w-full flex-row justify-between">
                 <div className="text-left">{t('Failures.Generators.FailureSelectionText')}</div>
                 <div
-                    className="flex flex-row mr-10"
+                    className="mr-10 flex flex-row"
                 >
                     <div className="ml-2"><h2>(</h2></div>
                     <div
@@ -143,11 +143,11 @@ export const GeneratorFailureSelection: React.FC<GeneratorFailureSelectionProps>
                 </div>
             </div>
             <ScrollableContainer height={48}>
-                <div className="grid grid-cols-2 grid-flow-dense">
+                <div className="grid grid-flow-dense grid-cols-2">
                     {failureGenContext.reducedAtaChapterNumbers.map<JSX.Element>((chapter) => (
                         <div>
                             <div
-                                className="flex flex-row justify-start pt-4 ml-10"
+                                className="ml-10 flex flex-row justify-start pt-4"
                             >
                                 <div><h1>{AtaChaptersTitle[chapter]}</h1></div>
                                 <div className="ml-2"><h2>(</h2></div>

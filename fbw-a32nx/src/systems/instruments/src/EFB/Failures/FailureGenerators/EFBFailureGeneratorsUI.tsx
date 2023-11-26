@@ -8,16 +8,16 @@ import { t } from 'instruments/src/EFB/translation';
 import {
     FailureGenContext, FailureGenData, useFailureGeneratorsSettings, findGeneratorFailures, ModalContext,
     ModalGenType, updateSettings, sendRefresh, FailureGenFeedbackEvent, sendFailurePool,
-} from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
+} from 'instruments/src/EFB/Failures/FailureGenerators/EFBRandomFailureGen';
 import { ExclamationDiamond, InfoCircle, PlusLg, Sliders2Vertical, Trash } from 'react-bootstrap-icons';
 import { AtaChapterNumber, AtaChaptersTitle } from '@flybywiresim/fbw-sdk';
-import { FailureGeneratorInfoModalUI } from 'instruments/src/EFB/Failures/FailureGenerators/FailureGeneratorInfo';
+import { FailureGeneratorInfoModalUI } from 'instruments/src/EFB/Failures/FailureGenerators/EFBFailureGeneratorInfo';
 import { TooltipWrapper } from 'instruments/src/EFB/UtilComponents/TooltipWrapper';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
-import { GeneratorFailureSelection } from './GeneratorFailureSelectionUI';
-import { FailureGeneratorDetailsModalUI, ArmedState } from './FailureGeneratorSettingsUI';
+import { GeneratorFailureSelection } from './EFBGeneratorFailureSelectionUI';
+import { FailureGeneratorDetailsModalUI, ArmedState } from './EFBFailureGeneratorSettingsUI';
 import { useFailuresOrchestrator } from '../../failures-orchestrator-provider';
-import { getGeneratorFailurePool, setSelectedFailure } from './FailureSelectionUI';
+import { getGeneratorFailurePool, setSelectedFailure } from './EFBFailureSelectionFunctions';
 import { useModals } from '../../UtilComponents/Modals/Modals';
 import { useEventBus } from '../../event-bus-provider';
 

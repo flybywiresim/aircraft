@@ -4,7 +4,7 @@
 
 import { NXDataStore } from '@flybywiresim/fbw-sdk';
 import { Failure } from 'failures/src/failures-orchestrator';
-import { FailureGenContext } from 'instruments/src/EFB/Failures/FailureGenerators/RandomFailureGenEFB';
+import { FailureGenContext } from 'instruments/src/EFB/Failures/FailureGenerators/EFBRandomFailureGen';
 
 export const getGeneratorFailurePool = (genUniqueID : string, allFailures:Readonly<Failure>[]): string => {
     let failureIDs: string = '';
