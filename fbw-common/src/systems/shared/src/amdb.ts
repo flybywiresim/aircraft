@@ -184,7 +184,7 @@ export interface AmdbAirportSearchResult {
     idarpt: string,
 
     /** The airport's IATA code */
-    iata: string,
+    iata: string | null,
 
     /** The airport's human-readable name */
     name: string,
