@@ -311,7 +311,7 @@ class CDUFlightPlanPage {
 
                     timeColor = color;
                 } else if (!inAlternate && fpIndex === targetPlan.originLegIndex) {
-                    timeCell = "0000";
+                    timeCell = "{big}0000{end}";
                     timeColor = color;
                 }
 
@@ -516,7 +516,8 @@ class CDUFlightPlanPage {
                     });
 
             } else if (pwp) {
-                const color = targetPlan.index !== Fmgc.FlightPlanIndex.Temporary ? (isActive ? "white" : "green") : "yellow";
+                const baseColor = forActiveOrTemporary ? mcdu.flightPlanService.hasTemporary ? "yellow" : "green" : "white";
+                const color = isActive ? "white" : baseColor;
 
                 // TODO: PWP should not be shown while predictions are recomputed or in a temporary flight plan,
                 // but if I don't show them, the flight plan jumps around because the offset is no longer correct if the number of items in the flight plan changes.
