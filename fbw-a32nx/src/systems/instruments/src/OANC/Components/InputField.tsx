@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { ComponentProps, DisplayComponent, FSComponent, Subject, Subscribable, Subscription, VNode } from '@microsoft/msfs-sdk';
+import { ComponentProps, DisplayComponent, FSComponent, Subject, Subscribable, SubscribableUtils, Subscription, VNode } from '@microsoft/msfs-sdk';
 
 import { DataEntryFormat } from './DataEntryFormats';
 
@@ -33,7 +33,7 @@ interface InputFieldProps<T> extends ComponentProps {
     dataHandlerDuringValidation?: (newValue: T) => Promise<boolean | void>;
     handleFocusBlurExternally?: boolean;
     containerStyle?: string;
-    alignText?: 'flex-start' | 'center' | 'flex-end';
+    alignText?: ('flex-start' | 'center' | 'flex-end') | Subscribable<'flex-start' | 'center' | 'flex-end'>;
     tmpyActive?: Subscribable<boolean>;
 }
 
@@ -67,6 +67,8 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
     private isFocused = Subject.create(false);
 
     private isValidating = Subject.create(false);
+
+    private alignTextSub: Subscribable<'flex-start' | 'center' | 'flex-end'> = SubscribableUtils.toSubscribable(this.props.alignText, true);
 
     private onNewValue() {
         // Don't update if field is being edited
@@ -204,7 +206,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
                 this.textInputRef.getOrDefault().classList.remove('mandatory');
             }
             this.modifiedFieldValue.set(null);
-            this.spanningDivRef.getOrDefault().style.justifyContent = this.props.alignText;
+            this.spanningDivRef.getOrDefault().style.justifyContent = this.alignTextSub.get();
             this.updateDisplayElement();
         }
     }
@@ -233,7 +235,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
                 this.textInputRef.getOrDefault().classList.add('mandatory');
             }
 
-            this.spanningDivRef.getOrDefault().style.justifyContent = this.props.alignText;
+            this.spanningDivRef.getOrDefault().style.justifyContent = this.alignTextSub.get();
             this.textInputRef.getOrDefault().classList.remove('editing');
         }
     }
@@ -430,7 +432,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
             <div ref={this.topRef} class="mfd-input-field-root">
                 <div ref={this.containerRef} class="mfd-input-field-container" style={`${this.props.containerStyle}`}>
                     <span ref={this.leadingUnitRef} class="mfd-label-unit mfd-unit-leading mfd-input-field-unit">{this.leadingUnit}</span>
-                    <div ref={this.spanningDivRef} class="mfd-input-field-text-input-container" style={`justify-content: ${this.props.alignText};`}>
+                    <div ref={this.spanningDivRef} class="mfd-input-field-text-input-container" style={this.alignTextSub.map((it) => `justify-content: ${it};`)}>
                         <span
                             ref={this.textInputRef}
                             // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex

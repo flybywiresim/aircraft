@@ -232,6 +232,7 @@ export class ControlPanel extends DisplayComponent<ControlPanelProps> {
                                     }}
                                     freeTextAllowed={false}
                                     numberOfDigitsForInputField={10}
+                                    alignLabels={this.store.airportSearchMode.map((it) => (it === ControlPanelAirportSearchMode.City ? 'flex-start' : 'center'))}
                                     idPrefix="oanc-search-airport"
                                 />
                             </div>

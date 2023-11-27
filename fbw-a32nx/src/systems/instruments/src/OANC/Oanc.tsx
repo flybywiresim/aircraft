@@ -241,7 +241,7 @@ export class Oanc extends DisplayComponent<OancProps> {
 
     public readonly interpolatedMapHeading = Subject.create(0);
 
-    public readonly zoomLevelIndex = Subject.create(2);
+    public readonly zoomLevelIndex = Subject.create(0);
 
     public readonly canvasCentreReferencedMapParams = new MapParameters();
 

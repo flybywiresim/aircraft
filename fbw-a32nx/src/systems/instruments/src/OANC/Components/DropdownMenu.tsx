@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { ArraySubject, ComponentProps, DisplayComponent, FSComponent, Subject, Subscribable, SubscribableArray, Subscription, VNode } from '@microsoft/msfs-sdk';
+import { ArraySubject, ComponentProps, DisplayComponent, FSComponent, Subject, Subscribable, SubscribableArray, SubscribableUtils, Subscription, VNode } from '@microsoft/msfs-sdk';
 
 import { InputField } from './InputField';
 import { DropdownFieldFormat } from './DataEntryFormats';
@@ -21,7 +21,7 @@ interface DropdownMenuProps extends ComponentProps {
     onModified?: (newSelectedIndex: number, freeTextEntry: string) => void;
     inactive?: Subscribable<boolean>;
     containerStyle?: string;
-    alignLabels?: 'flex-start' | 'center' | 'flex-end';
+    alignLabels?: 'flex-start' | 'center' | 'flex-end' | Subscribable<'flex-start' | 'center' | 'flex-end'>;
     numberOfDigitsForInputField?: number;
     tmpyActive?: Subscribable<boolean>;
 }
@@ -58,6 +58,8 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
     private renderedDropdownOptionsIndices: number[] = [];
 
     private onDropdownOpenedCallback: () => void | undefined;
+
+    private alignTextSub: Subscribable<'flex-start' | 'center' | 'flex-end'> = SubscribableUtils.toSubscribable(this.props.alignLabels, true);
 
     clickHandler(i: number, thisArg: DropdownMenu) {
         if (this.props.inactive.get() === false) {
@@ -126,7 +128,7 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
                     <span
                         id={`${this.props.idPrefix}_${idx}`}
                         class="mfd-dropdown-menu-element"
-                        style={`text-align: ${this.props.alignLabels};`}
+                        style={this.alignTextSub.map((it) => `text-align: ${it};`)}
                     >
                         {el}
                     </span>
@@ -233,7 +235,7 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
         return (
             <div class="mfd-dropdown-container" ref={this.topRef} style={this.props.containerStyle}>
                 <div ref={this.dropdownSelectorRef} class="mfd-dropdown-outer">
-                    <div ref={this.dropdownInnerRef} class="mfd-dropdown-inner" style={`justify-content: ${this.props.alignLabels};`}>
+                    <div ref={this.dropdownInnerRef} class="mfd-dropdown-inner" style={this.alignTextSub.map((it) => `justify-content: ${it};`)}>
                         <InputField<string>
                             ref={this.inputFieldRef}
                             dataEntryFormat={new DropdownFieldFormat(this.props.numberOfDigitsForInputField ?? 6)}
