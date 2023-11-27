@@ -1155,7 +1155,7 @@ class CDUPerformancePage {
         } else {
             const machAtManualCrossoverAlt = mcdu.casToMachManualCrossoverCurve.evaluate(selectedSpdMach)
             const manualCrossoverAltitude = mcdu.computeManualCrossoverAltitude(machAtManualCrossoverAlt);
-            const shouldShowMach = aircraftAltitude < manualCrossoverAltitude && (!mcdu.flightPlanService.getCruiseFlightLevel() || !mcdu.flightPlanService.getCruiseFlightLevel() || manualCrossoverAltitude < mcdu.flightPlanService.getCruiseFlightLevel() * 100);
+            const shouldShowMach = aircraftAltitude < manualCrossoverAltitude && (!mcdu.flightPlanService.getCruiseFlightLevel() || manualCrossoverAltitude < mcdu.flightPlanService.getCruiseFlightLevel() * 100);
 
             return ["SELECTED", `\xa0${Math.round(selectedSpdMach)}${shouldShowMach ? ("{small}/" + machAtManualCrossoverAlt.toFixed(2).replace('0.', '.') + "{end}") : ""}[color]green`];
         }

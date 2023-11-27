@@ -127,7 +127,7 @@ export class SimBriefUplinkAdapter {
         });
 
         // used by FlightPhaseManager
-        SimVar.SetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number', ofp.cruiseAltitude);
+        SimVar.SetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number', Number(ofp.cruiseAltitude));
 
         plan.flightNumber.set(route.flightNumber);
 
