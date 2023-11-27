@@ -62,8 +62,8 @@ export const failureGenConfigTakeOff: () => FailureGenData = () => {
 
 const generatorSettingComponents = (genNumber: number, modalContext: ModalContext, failureGenContext: FailureGenContext) => {
     const settings = modalContext.failureGenData.settings;
-    console.log('SETTINGS IN TAKEOFF', settings);
-    console.log(genNumber, numberOfSettingsPerGenerator);
+    // console.info('SETTINGS IN TAKEOFF', settings);
+    // console.info(genNumber, numberOfSettingsPerGenerator);
     const chanceClimbing = Math.round(10000 * (1 - settings[genNumber * numberOfSettingsPerGenerator + ChanceLowIndex]
         - settings[genNumber * numberOfSettingsPerGenerator + ChanceMediumIndex])) / 100;
 

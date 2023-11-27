@@ -39,18 +39,26 @@ export const FailureGeneratorsUI = () => {
 
     const [settingsUpdated, setSettingsUpdated] = useState<boolean>(false);
 
+    const [checkModalUpdate, setCheckModalUpdate] = useState<boolean>(false);
+
     // console.log(settings.allGenSettings);
     useEffect(() => {
         const genUniqueID = `${settings.allGenSettings.get(chosenGen)?.uniqueGenPrefix}${genNumberNewGen}`;
         const genLetter = settings.allGenSettings.get(chosenGen)?.uniqueGenPrefix;
         const context: ModalContext = { failureGenData: settings.allGenSettings.get(chosenGen), genNumber: genNumberNewGen, genUniqueID, genLetter, chainToFailurePool: true };
-        console.log('NEW CONTEXT', context);
+        // console.info('NEW CONTEXT', context);
         settings.setModalContext(context);
     }, [settingsUpdated]);
 
+    useEffect(() => {
+        if (settings.failureGenModalCurrentlyDisplayed !== ModalGenType.None) {
+            settings.setFailureGenModalType(settings.failureGenModalCurrentlyDisplayed);
+        }
+    }, [checkModalUpdate]);
+
     const sample = settings.modalContext?.failureGenData?.settings[settings.modalContext?.genNumber
             * settings.modalContext?.failureGenData?.numberOfSettingsPerGenerator + ArmingModeIndex];
-    if (sample && !Number.isNaN(sample)) {
+    if (sample !== undefined && !Number.isNaN(sample)) {
         if (settings.failureGenModalType === ModalGenType.Failures) showModal(<GeneratorFailureSelection failureGenContext={settings} />);
         if (settings.failureGenModalType === ModalGenType.Settings) showModal(<FailureGeneratorDetailsModalUI failureGenContext={settings} />);
     }
@@ -98,7 +106,7 @@ export const FailureGeneratorsUI = () => {
 
         settings.setFailureGenModalType(ModalGenType.Settings);
         setGenNumberNewGen(genNumber);
-        console.log('ADDING', generatorSettings);
+        // console.info('ADDING', generatorSettings);
 
         // hack to force update of modal context
         setSettingsUpdated(!settingsUpdated);
@@ -127,6 +135,7 @@ export const FailureGeneratorsUI = () => {
                             // console.info(`reminder of previous memory state: ${generator.settings[i * generator.numberOfSettingsPerGenerator + ArmingModeIndex]}`);
                             generator.settings[i * generator.numberOfSettingsPerGenerator + ArmingModeIndex] = 0;
                             changeNeeded = true;
+                            setCheckModalUpdate(!checkModalUpdate);
                         }
                     }
                 }
@@ -170,10 +179,10 @@ export const FailureGeneratorsUI = () => {
                         />
                         <div
                             onClick={() => {
-                                console.log(chosenGen);
+                                console.info(chosenGen);
                                 if (chosenGen !== 'default') {
                                     failureGeneratorAdd(settings.allGenSettings.get(chosenGen));
-                                    console.log(settings.modalContext);
+                                    // console.info(settings.modalContext);
                                 }
                             }}
                             className="hover:text-theme-body bg-theme-accent hover:bg-theme-highlight flex-none rounded-md p-2 text-center"
