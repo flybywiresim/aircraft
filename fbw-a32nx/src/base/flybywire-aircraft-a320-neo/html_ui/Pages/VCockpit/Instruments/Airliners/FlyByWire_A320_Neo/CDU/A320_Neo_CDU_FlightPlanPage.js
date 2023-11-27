@@ -125,6 +125,7 @@ class CDUFlightPlanPage {
         for (let i = first; i < targetPlan.legCount; i++) {
             const inMissedApproach = i >= targetPlan.firstMissedApproachLegIndex;
             const isActiveLeg = i === targetPlan.activeLegIndex && forActiveOrTemporary;
+            const isFromLeg = i === targetPlan.activeLegIndex - 1 && forActiveOrTemporary;
 
             const wp = targetPlan.allLegs[i];
 
@@ -133,15 +134,18 @@ class CDUFlightPlanPage {
                 continue;
             }
 
+            // No PWP on FROM leg
             const pseudoWaypointsOnLeg = fmsPseudoWaypoints.filter((it) => it.displayedOnMcdu && it.alongLegIndex === i);
             pseudoWaypointsOnLeg.sort((a, b) => a.distanceFromStart - b.distanceFromStart);
 
-            for (let i = 0; i < pseudoWaypointsOnLeg.length; i++) {
-                const pwp = pseudoWaypointsOnLeg[i];
+            for (let j = 0; j < pseudoWaypointsOnLeg.length; j++) {
+                const pwp = pseudoWaypointsOnLeg[j];
                 const distanceFromLastLine = pwp.distanceFromStart - cumulativeDistance;
                 cumulativeDistance = pwp.distanceFromStart;
 
-                waypointsAndMarkers.push({ pwp, fpIndex: i, inMissedApproach, distanceFromLastLine, isActive: isActiveLeg && i === 0 })
+                if (!isFromLeg) {
+                    waypointsAndMarkers.push({ pwp, fpIndex: i, inMissedApproach, distanceFromLastLine, isActive: isActiveLeg && j === 0 })
+                }
             }
 
             if (i >= targetPlan.activeLegIndex && wp.definition.type === 'HM') {
@@ -238,7 +242,6 @@ class CDUFlightPlanPage {
             const wpPrev = targetPlan.maybeElementAt(fpIndex - 1);
             const wpNext = targetPlan.maybeElementAt(fpIndex + 1);
             const wpActive = (fpIndex >= targetPlan.activeLegIndex);
-            const isFromLeg = !inAlternate && fpIndex === targetPlan.activeLegIndex - 1;
 
             // Bearing/Track
             let bearingTrack = "";
@@ -283,6 +286,7 @@ class CDUFlightPlanPage {
 
                 let ident = wp.ident;
                 let isOverfly = wp.definition.overfly;
+                const isFromLeg = !inAlternate && fpIndex === targetPlan.alternateFlightPlan.activeLegIndex - 1;
 
                 let verticalWaypoint = null;
                 // TODO: Alternate predictions
