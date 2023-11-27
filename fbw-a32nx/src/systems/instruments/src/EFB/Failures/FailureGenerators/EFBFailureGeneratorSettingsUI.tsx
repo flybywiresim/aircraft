@@ -197,7 +197,7 @@ export const FailureGeneratorDetailsModalUI: React.FC<{ failureGenContext: Failu
         failureGenContext.setFailureGenModalCurrentlyDisplayed(ModalGenType.None);
         popModal();
         failureGenContext.setModalContext(undefined);
-        console.info('Popped modal');
+        // console.info('Popped modal');
     };
 
     console.log('MODAL', failureGenContext.modalContext);

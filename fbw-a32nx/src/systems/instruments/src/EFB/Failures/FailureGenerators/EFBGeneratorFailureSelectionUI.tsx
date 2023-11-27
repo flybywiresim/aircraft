@@ -75,7 +75,7 @@ export const GeneratorFailureSelection: React.FC<GeneratorFailureSelectionProps>
         failureGenContext.setFailureGenModalCurrentlyDisplayed(ModalGenType.None);
         popModal();
         failureGenContext.setModalContext(undefined);
-        console.info('Popped modal');
+        // console.info('Popped modal');
     };
 
     const generatorFailureTable: Failure[] = findGeneratorFailures(allFailures, failureGenContext.generatorFailuresGetters, failureGenContext.modalContext.genUniqueID);
