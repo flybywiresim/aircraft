@@ -23,6 +23,7 @@ import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { AltitudeConstraintType } from '@fmgc/flightplanning/data/constraint';
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
+import { EfisInterface } from '@fmgc/efis/EfisInterface';
 
 export class EfisSymbols {
     private blockUpdate = false;
@@ -55,7 +56,14 @@ export class EfisSymbols {
 
     private lastVnavDriverVersion: number = -1;
 
-    constructor(guidanceController: GuidanceController, private readonly flightPlanService: FlightPlanService, private readonly navaidTuner: NavaidTuner) {
+    private lastEfisInterfaceVersion: number = -1;
+
+    constructor(
+        guidanceController: GuidanceController,
+        private readonly flightPlanService: FlightPlanService,
+        private readonly navaidTuner: NavaidTuner,
+        private readonly efisInterface: EfisInterface,
+    ) {
         this.guidanceController = guidanceController;
         this.nearby = NearbyFacilities.getInstance();
     }
@@ -113,15 +121,14 @@ export class EfisSymbols {
         }
 
         // FIXME map reference point should be per side
-        const planCentreFpIndex = SimVar.GetSimVarValue('L:A32NX_SELECTED_WAYPOINT_FP_INDEX', 'number');
-        const planCentreIndex = SimVar.GetSimVarValue('L:A32NX_SELECTED_WAYPOINT_INDEX', 'number');
-        const planCentreInAlternate = SimVar.GetSimVarValue('L:A32NX_SELECTED_WAYPOINT_IN_ALTERNATE', 'Bool');
+        const { fpIndex: planCentreFpIndex, index: planCentreIndex, inAlternate: planCentreInAlternate } = this.efisInterface.planCentre;
 
         let plan: BaseFlightPlan = undefined;
         if (this.flightPlanService.has(planCentreFpIndex)) {
             plan = planCentreInAlternate ? this.flightPlanService.get(planCentreFpIndex).alternateFlightPlan : this.flightPlanService.get(planCentreFpIndex);
         }
 
+        // FIXME map reference is also computed in GuidanceController, share?
         let planCentre = plan?.maybeElementAt(planCentreIndex);
 
         // Only if we have a planCentre, check if it is a disco. If we don't have a centre at all, don't bother checking anyhthing
@@ -134,12 +141,14 @@ export class EfisSymbols {
         }
 
         const termination = planCentre?.terminationWaypoint()?.location;
-
         if (termination) {
             this.lastPlanCentre = termination;
         }
 
-        const planCentreChanged = termination?.lat !== this.lastPlanCentre?.lat || termination?.long !== this.lastPlanCentre?.long;
+        const efisInterfaceChanged = this.lastEfisInterfaceVersion !== this.efisInterface.version;
+        if (efisInterfaceChanged) {
+            this.lastEfisInterfaceVersion = this.efisInterface.version;
+        }
 
         const navaidsChanged = this.lastNavaidVersion !== this.navaidTuner.navaidVersion;
         this.lastNavaidVersion = this.navaidTuner.navaidVersion;
@@ -169,10 +178,9 @@ export class EfisSymbols {
                 && !efisOptionChange
                 && !nearbyOverlayChanged
                 && !fpChanged
-                && !planCentreChanged
                 && !navaidsChanged
                 && !vnavPredictionsChanged
-            ) {
+                && !efisInterfaceChanged) {
                 continue;
             }
 
@@ -312,7 +320,7 @@ export class EfisSymbols {
             // ACTIVE
             if (this.flightPlanService.hasActive) {
                 const symbols = this.getFlightPlanSymbols(
-                    true,
+                    false,
                     this.flightPlanService.active,
                     this.guidanceController.activeGeometry,
                     range,
@@ -327,7 +335,7 @@ export class EfisSymbols {
                 }
 
                 // ACTIVE ALTN
-                if (this.flightPlanService.active.alternateFlightPlan.legCount > 0) {
+                if (this.flightPlanService.active.alternateFlightPlan.legCount > 0 && this.efisInterface.shouldTransmitAlternate(FlightPlanIndex.Active)) {
                     const symbols = this.getFlightPlanSymbols(
                         true,
                         this.flightPlanService.active.alternateFlightPlan,
@@ -348,7 +356,7 @@ export class EfisSymbols {
             // TMPY
             if (this.flightPlanService.hasTemporary) {
                 const symbols = this.getFlightPlanSymbols(
-                    true,
+                    false,
                     this.flightPlanService.temporary,
                     this.guidanceController.temporaryGeometry,
                     range,
@@ -364,7 +372,7 @@ export class EfisSymbols {
             }
 
             // SEC
-            if (this.flightPlanService.hasSecondary(1)) {
+            if (this.flightPlanService.hasSecondary(1) && this.efisInterface.shouldTransmitSecondary()) {
                 const symbols = this.getFlightPlanSymbols(
                     false,
                     this.flightPlanService.secondary(1),
@@ -381,7 +389,7 @@ export class EfisSymbols {
                 }
 
                 // SEC ALTN
-                if (this.flightPlanService.secondary((1)).alternateFlightPlan.legCount > 0) {
+                if (this.flightPlanService.secondary((1)).alternateFlightPlan.legCount > 0 && this.efisInterface.shouldTransmitAlternate(FlightPlanIndex.FirstSecondary)) {
                     const symbols = this.getFlightPlanSymbols(
                         true,
                         this.flightPlanService.secondary(1).alternateFlightPlan,
@@ -450,7 +458,7 @@ export class EfisSymbols {
     }
 
     private getFlightPlanSymbols(
-        activeOrTemporary: boolean,
+        isAlternate: boolean,
         flightPlan: BaseFlightPlan,
         geometry: Geometry,
         range: NauticalMiles,
@@ -465,11 +473,9 @@ export class EfisSymbols {
         const isSelectedVerticalModeActive = this.guidanceController.vnavDriver.isSelectedVerticalModeActive();
         const flightPhase = getFlightPhaseManager().phase;
 
-        const planCentreFpIndex = SimVar.GetSimVarValue('L:A32NX_SELECTED_WAYPOINT_FP_INDEX', 'number');
-        const planCentreIndex = SimVar.GetSimVarValue('L:A32NX_SELECTED_WAYPOINT_INDEX', 'number');
-
-        const correctPlanOnMcdu = activeOrTemporary ? planCentreFpIndex === FlightPlanIndex.Active : planCentreFpIndex === flightPlan.index;
-        const transmitMissed = correctPlanOnMcdu && flightPlan.firstMissedApproachLegIndex - planCentreIndex < 4;
+        const transmitMissed = isAlternate
+            ? this.efisInterface.shouldTransmitAlternateMissed(flightPlan.index)
+            : this.efisInterface.shouldTransmitMissed(flightPlan.index);
 
         const ret: NdSymbol[] = [];
 

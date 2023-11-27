@@ -14,7 +14,6 @@ class FMCMainDisplay extends BaseAirliners {
         this._messageQueue = new A32NX_MessageQueue(this);
 
         /** Declaration of every variable used (NOT initialization) */
-        this.currentFlightPlanWaypointIndex = undefined;
         this.costIndex = undefined;
         this.costIndexSet = undefined;
         this.maxCruiseFL = undefined;
@@ -223,9 +222,10 @@ class FMCMainDisplay extends BaseAirliners {
 
         this.dataManager = new Fmgc.DataManager(this);
 
-        this.guidanceController = new Fmgc.GuidanceController(this, this.currFlightPlanService);
+        this.efisInterface = new Fmgc.EfisInterface();
+        this.guidanceController = new Fmgc.GuidanceController(this, this.currFlightPlanService, this.efisInterface);
         this.navigation = new Fmgc.Navigation(this.flightPlanService, this.facilityLoader);
-        this.efisSymbols = new Fmgc.EfisSymbols(this.guidanceController, this.currFlightPlanService, this.navigation.getNavaidTuner());
+        this.efisSymbols = new Fmgc.EfisSymbols(this.guidanceController, this.currFlightPlanService, this.navigation.getNavaidTuner(), this.efisInterface);
 
         Fmgc.initFmgcLoop(this, this.currFlightPlanService);
 
@@ -341,7 +341,6 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     initVariables(resetTakeoffData = true) {
-        this.currentFlightPlanWaypointIndex = -1;
         this.costIndex = 0;
         this.costIndexSet = false;
         this.maxCruiseFL = 390;
@@ -523,6 +522,8 @@ class FMCMainDisplay extends BaseAirliners {
         this.checkSpeedModeMessageActive = false;
         this.perfClbPredToAltitudePilot = undefined;
         this.perfDesPredToAltitudePilot = undefined;
+
+        this.efisInterface = new Fmgc.EfisInterface();
 
         this.onAirport = () => {};
 
