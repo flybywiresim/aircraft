@@ -71,6 +71,13 @@ export const GeneratorFailureSelection: React.FC<GeneratorFailureSelectionProps>
     const { popModal } = useModals();
     const bus = useEventBus();
 
+    const closeModal = () => {
+        failureGenContext.setFailureGenModalCurrentlyDisplayed(ModalGenType.None);
+        popModal();
+        failureGenContext.setModalContext(undefined);
+        console.info('Popped modal');
+    };
+
     const generatorFailureTable: Failure[] = findGeneratorFailures(allFailures, failureGenContext.generatorFailuresGetters, failureGenContext.modalContext.genUniqueID);
 
     failureGenContext.setFailureGenModalType(ModalGenType.None);
@@ -119,8 +126,7 @@ export const GeneratorFailureSelection: React.FC<GeneratorFailureSelectionProps>
                     rounded-md border-2 px-4 py-2 text-center transition duration-100
                     "
                     onClick={() => {
-                        failureGenContext.setFailureGenModalCurrentlyDisplayed(ModalGenType.None);
-                        popModal();
+                        closeModal();
                     }}
                 >
                     X
