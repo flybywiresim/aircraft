@@ -318,10 +318,6 @@ class CDUFlightPlanPage {
                 // Fix Header
                 const fixAnnotation = wp.annotation;
 
-                if (wp.type === 14 /* HM */) {
-                    bearingTrack = "";
-                }
-
                 // Distance
                 let distance = "";
                 // Active waypoint is live distance, others are distances in the flight plan
@@ -342,10 +338,10 @@ class CDUFlightPlanPage {
                 let spdColor = "white";
 
                 // Should show empty speed prediction for waypoint after hold
-                let speedConstraint = wp.type === 14 ? Speed.Empty : Speed.NoPrediction;
+                let speedConstraint = wp.type === "HM" ? Speed.Empty : Speed.NoPrediction;
                 let speedPrefix = "";
 
-                if (targetPlan.index !== Fmgc.FlightPlanIndex.Temporary && wp.type !== 14) {
+                if (targetPlan.index !== Fmgc.FlightPlanIndex.Temporary && wp.type !== "HM") {
                     if (!inAlternate && fpIndex === targetPlan.originLegIndex) {
                         speedConstraint = Number.isFinite(mcdu.v1Speed) ? `{big}${Math.round(mcdu.v1Speed)}{end}` : Speed.NoPrediction;
                         spdColor = Number.isFinite(mcdu.v1Speed) ? color : "white";
