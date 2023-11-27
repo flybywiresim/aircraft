@@ -65,6 +65,7 @@ export const FailureGeneratorsUI = () => {
         }
         if (didFindADisabledGen === false) {
             if (generatorSettings.settings.length % generatorSettings.numberOfSettingsPerGenerator !== 0 || generatorSettings.settings.length === 0) {
+                // console.info(`Number of parameters inconsistent, reseting instances of gen ${generatorSettings.uniqueGenPrefix}`);
                 updateSettings(generatorSettings.additionalSetting, generatorSettings.setSetting, bus, generatorSettings.uniqueGenPrefix);
                 genNumber = 0;
             } else {
@@ -93,45 +94,53 @@ export const FailureGeneratorsUI = () => {
         failureGenContext.setModalContext(context);
     };
 
+    const treatArmingDisplayStatusEvent = (generatorType: string, status: boolean[]) => {
+        for (const generator of settings.allGenSettings.values()) {
+            if (generatorType === generator.uniqueGenPrefix) {
+                // console.info(`gen ${generator.uniqueGenPrefix} ArmedDisplay received: ${`${generatorType} - ${status.toString()}`}`);
+                generator.setArmedState(status);
+                // console.info('received arming states');
+            }
+        }
+    };
+
+    const treatExpectedModeEvent = (generatorType: string, mode: number[]) => {
+        for (const generator of settings.allGenSettings.values()) {
+            if (generatorType === generator.uniqueGenPrefix) {
+                // console.info(`gen ${generator.uniqueGenPrefix} expectedMode received: ${generatorType} - ${mode.toString()}`);
+                const nbGenerator = Math.floor(generator.settings.length / generator.numberOfSettingsPerGenerator);
+                let changeNeeded = false;
+                for (let i = 0; i < nbGenerator && i < mode?.length; i++) {
+                    if (generator.settings[i * generator.numberOfSettingsPerGenerator + ArmingModeIndex] !== -1) {
+                        if (i < mode?.length && mode[i] === 0 && generator.settings[i * generator.numberOfSettingsPerGenerator + ArmingModeIndex] !== 0) {
+                            // console.info(`gen ${generator.uniqueGenPrefix} ${i.toString()} switched off`);
+                            // console.info(`reminder of previous memory state: ${generator.settings[i * generator.numberOfSettingsPerGenerator + ArmingModeIndex]}`);
+                            generator.settings[i * generator.numberOfSettingsPerGenerator + ArmingModeIndex] = 0;
+                            changeNeeded = true;
+                        }
+                    }
+                }
+                if (changeNeeded) {
+                    updateSettings(generator.settings, generator.setSetting, bus, generator.uniqueGenPrefix);
+                }
+            }
+        }
+        // console.info('received expectedMode');
+    };
+
     useEffect(() => {
         // console.info('subscribing to events');
         const sub1 = bus.getSubscriber<FailureGenFeedbackEvent>().on('expectedMode').handle(({ generatorType, mode }) => {
-            for (const generator of settings.allGenSettings.values()) {
-                if (generatorType === generator.uniqueGenPrefix) {
-                    // console.info(`gen ${generator.uniqueGenPrefix} expectedMode received: ${generatorType} - ${mode.toString()}`);
-                    const nbGenerator = Math.floor(generator.settings.length / generator.numberOfSettingsPerGenerator);
-                    let changeNeeded = false;
-                    for (let i = 0; i < nbGenerator && i < mode?.length; i++) {
-                        if (generator.settings[i * generator.numberOfSettingsPerGenerator + ArmingModeIndex] !== -1) {
-                            if (i < mode?.length && mode[i] === 0 && generator.settings[i * generator.numberOfSettingsPerGenerator + ArmingModeIndex] !== 0) {
-                                // console.info(`gen ${generator.uniqueGenPrefix} ${i.toString()} switched off`);
-                                // console.info(`reminder of previous memory state: ${generator.settings[i * generator.numberOfSettingsPerGenerator + ArmingModeIndex]}`);
-                                generator.settings[i * generator.numberOfSettingsPerGenerator + ArmingModeIndex] = 0;
-                                changeNeeded = true;
-                            }
-                        }
-                    }
-                    if (changeNeeded) {
-                        updateSettings(generator.settings, generator.setSetting, bus, generator.uniqueGenPrefix);
-                    }
-                }
-            }
-        // console.info('received expectedMode');
+            treatExpectedModeEvent(generatorType, mode);
         });
         const sub2 = bus.getSubscriber<FailureGenFeedbackEvent>().on('armingDisplayStatus').handle(({ generatorType, status }) => {
-            for (const generator of settings.allGenSettings.values()) {
-                if (generatorType === generator.uniqueGenPrefix) {
-                    // console.info(`gen ${generator.uniqueGenPrefix} ArmedDisplay received: ${`${generatorType} - ${status.toString()}`}`);
-                    generator.setArmedState(status);
-                    // console.info('received arming states');
-                }
-            }
+            treatArmingDisplayStatusEvent(generatorType, status);
         });
         return () => {
             sub1.destroy();
             sub2.destroy();
         };
-    }, [settings]);
+    }, []);
 
     return (
         <>
