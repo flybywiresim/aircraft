@@ -36,12 +36,26 @@ export const FailureGeneratorsUI = () => {
     const [chosenGen, setChosenGen] = useState<string>();
     const settings = useFailureGeneratorsSettings();
 
-    if (settings.failureGenModalType === ModalGenType.Failures) {
+    const [genNumber, setGenNumber] = useState<number>(-1);
+
+    const [settingsUpdated, setSettingsUpdated] = useState<boolean>(false);
+
+    // console.log(settings.allGenSettings);
+    useEffect(() => {
+        const genUniqueID = `${settings.allGenSettings.get(chosenGen)?.uniqueGenPrefix}${genNumber}`;
+        const genLetter = settings.allGenSettings.get(chosenGen)?.uniqueGenPrefix;
+        const context: ModalContext = { failureGenData: settings.allGenSettings.get(chosenGen), genNumber, genUniqueID, genLetter, chainToFailurePool: true };
+        console.log('NEW CONTEXT', context);
+        settings.setModalContext(context);
+    }, [genNumber, chosenGen, settingsUpdated]);
+
+    if (settings.failureGenModalType === ModalGenType.Failures && settings.modalContext?.failureGenData?.setting && settings.modalContext?.failureGenData?.setting !== '') {
         showModal(<GeneratorFailureSelection failureGenContext={settings} />);
     }
-    if (settings.failureGenModalType === ModalGenType.Settings) {
-        showModal(<FailureGeneratorDetailsModalUI failureGenContext={settings} />);
+    if (settings.failureGenModalType === ModalGenType.Settings && settings.modalContext?.failureGenData?.setting && settings.modalContext?.failureGenData?.setting !== '') {
+        showModal(<FailureGeneratorDetailsModalUI failureGenContext={settings} modalContext={settings.modalContext} />);
     }
+
     const generatorList = Array.from(settings.allGenSettings.values()).map((genSetting: FailureGenData) => ({
         value: genSetting.genName,
         displayValue: `${genSetting.alias()}`,
@@ -51,7 +65,7 @@ export const FailureGeneratorsUI = () => {
         displayValue: `<${t('Failures.Generators.SelectInList')}>`,
     });
 
-    const failureGeneratorAdd = (generatorSettings: FailureGenData, failureGenContext: FailureGenContext) => {
+    const failureGeneratorAdd = (generatorSettings: FailureGenData) => {
         let genNumber: number;
         let didFindADisabledGen = false;
         for (let i = 0; i < generatorSettings.settings.length / generatorSettings.numberOfSettingsPerGenerator; i++) {
@@ -79,19 +93,16 @@ export const FailureGeneratorsUI = () => {
         const genUniqueID = `${generatorSettings.uniqueGenPrefix}${genNumber}`;
 
         for (const failure of allFailures) {
-            setSelectedFailure(failure, genUniqueID, failureGenContext, true);
+            setSelectedFailure(failure, genUniqueID, settings, true);
         }
         sendFailurePool(generatorSettings.uniqueGenPrefix, genNumber, getGeneratorFailurePool(generatorSettings.uniqueGenPrefix + genNumber.toString(), Array.from(allFailures)), bus);
 
-        failureGenContext.setFailureGenModalType(ModalGenType.Settings);
-        const context: ModalContext = {
-            failureGenData: generatorSettings,
-            genNumber,
-            genUniqueID,
-            genLetter: generatorSettings.uniqueGenPrefix,
-            chainToFailurePool: true,
-        };
-        failureGenContext.setModalContext(context);
+        settings.setFailureGenModalType(ModalGenType.Settings);
+        setGenNumber(genNumber);
+        console.log('ADDING', generatorSettings);
+
+        // hack to force update of modal context
+        setSettingsUpdated(!settingsUpdated);
     };
 
     const treatArmingDisplayStatusEvent = (generatorType: string, status: boolean[]) => {
@@ -160,8 +171,10 @@ export const FailureGeneratorsUI = () => {
                         />
                         <div
                             onClick={() => {
+                                console.log(chosenGen);
                                 if (chosenGen !== 'default') {
-                                    failureGeneratorAdd(settings.allGenSettings.get(chosenGen), settings);
+                                    failureGeneratorAdd(settings.allGenSettings.get(chosenGen));
+                                    console.log(settings.modalContext);
                                 }
                             }}
                             className="hover:text-theme-body bg-theme-accent hover:bg-theme-highlight flex-none rounded-md p-2 text-center"
@@ -239,13 +252,8 @@ export const FailureGeneratorCardTemplateUI: React.FC<FailureGeneratorCardTempla
                             border-2 p-2 transition duration-100"
                             onClick={() => {
                                 failureGenContext.setFailureGenModalType(ModalGenType.Settings);
-                                const context: ModalContext = {
-                                    failureGenData,
-                                    genNumber,
-                                    genUniqueID,
-                                    genLetter: failureGenData.uniqueGenPrefix,
-                                    chainToFailurePool: false,
-                                };
+                                const genLetter = failureGenData.uniqueGenPrefix;
+                                const context: ModalContext = { failureGenData, genNumber, genUniqueID, genLetter, chainToFailurePool: false };
                                 failureGenContext.setModalContext(context);
                             }}
                         >
@@ -258,13 +266,8 @@ export const FailureGeneratorCardTemplateUI: React.FC<FailureGeneratorCardTempla
                             border-2 p-2 transition duration-100"
                             onClick={() => {
                                 failureGenContext.setFailureGenModalType(ModalGenType.Failures);
-                                const context: ModalContext = {
-                                    failureGenData,
-                                    genNumber,
-                                    genUniqueID,
-                                    genLetter: failureGenData.uniqueGenPrefix,
-                                    chainToFailurePool: false,
-                                };
+                                const genLetter = failureGenData.uniqueGenPrefix;
+                                const context: ModalContext = { failureGenData, genNumber, genUniqueID, genLetter, chainToFailurePool: false };
                                 failureGenContext.setModalContext(context);
                             }}
                         >

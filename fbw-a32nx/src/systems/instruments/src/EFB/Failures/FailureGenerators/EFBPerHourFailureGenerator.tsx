@@ -5,7 +5,7 @@
 import { usePersistentProperty } from '@flybywiresim/fbw-sdk';
 
 import React, { useMemo, useState } from 'react';
-import { FailureGenContext, FailureGenData, FailureGenMode, setNewSetting } from 'instruments/src/EFB/Failures/FailureGenerators/EFBRandomFailureGen';
+import { FailureGenContext, FailureGenData, FailureGenMode, ModalContext, setNewSetting } from 'instruments/src/EFB/Failures/FailureGenerators/EFBRandomFailureGen';
 import { t } from 'instruments/src/EFB/translation';
 import { FailureGeneratorSingleSetting, FailureGeneratorText } from 'instruments/src/EFB/Failures/FailureGenerators/EFBFailureGeneratorSettingsUI';
 
@@ -49,8 +49,8 @@ export const failureGenConfigPerHour: () => FailureGenData = () => {
 const daysPerMonth = 30.4368 * 24;
 const daysPerYear = 365.24219 * 24;
 
-const generatorSettingComponents = (genNumber: number, generatorSettings: FailureGenData, failureGenContext: FailureGenContext) => {
-    const settings = generatorSettings.settings;
+const generatorSettingComponents = (genNumber: number, modalContext: ModalContext, failureGenContext: FailureGenContext) => {
+    const settings = modalContext.failureGenData.settings;
     const MttfDisplay = () => {
         if (settings[genNumber * numberOfSettingsPerGenerator + FailurePerHourIndex] <= 0) return t('Failures.Generators.Disabled');
         const meanTimeToFailure = 1 / settings[genNumber * numberOfSettingsPerGenerator + FailurePerHourIndex];
@@ -71,7 +71,7 @@ const generatorSettingComponents = (genNumber: number, generatorSettings: Failur
             value={settings[genNumber * numberOfSettingsPerGenerator + FailurePerHourIndex]}
             mult={1}
             setNewSetting={setNewSetting}
-            generatorSettings={generatorSettings}
+            generatorSettings={modalContext.failureGenData}
             genIndex={genNumber}
             settingIndex={FailurePerHourIndex}
             failureGenContext={failureGenContext}

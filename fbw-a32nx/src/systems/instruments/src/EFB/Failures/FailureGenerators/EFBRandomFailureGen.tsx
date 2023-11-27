@@ -74,7 +74,7 @@ export type FailureGenData = {
     /**
      * TODO move this to a react component
      */
-    generatorSettingComponents: (genNumber: number, generatorSettings: FailureGenData, failureGenContext: FailureGenContext) => JSX.Element[],
+    generatorSettingComponents: (genNumber: number, modalContext: ModalContext, failureGenContext: FailureGenContext) => JSX.Element[],
     /**
      * TODO confirm - what is this for?
      * this is the tailored list of react components specific to this kind of generator that will be displayed in the setting page.
@@ -99,8 +99,6 @@ export type FailureGenContext = {
     failureGenModalType: ModalGenType
     setFailureGenModalType: (type: ModalGenType) => void,
     reducedAtaChapterNumbers: AtaChapterNumber[],
-    failureGenModalCurrentlyDisplayed: ModalGenType
-    setFailureGenModalCurrentlyDisplayed: (type: ModalGenType) => void,
 }
 
 export type ModalContext = {
@@ -148,7 +146,7 @@ export const updateSettings: (settings: number[], setSetting: (value: string) =>
 => void = (settings: number[], setSetting: (value: string) => void, bus: EventBus, uniqueGenPrefix: string) => {
     const flattenedData = flatten(settings);
     sendSettings(uniqueGenPrefix, flattenedData, bus);
-    // console.info(`new permanent setting:${flattenedData}`);
+    console.info(`new permanent setting:${flattenedData}`);
     setSetting(flattenedData);
 };
 
@@ -158,7 +156,6 @@ export const useFailureGeneratorsSettings: () => FailureGenContext = () => {
     const { generatorFailuresGetters, generatorFailuresSetters } = allGeneratorFailures(allFailures);
     const allGenSettings: Map<string, FailureGenData> = new Map();
     const [failureGenModalType, setFailureGenModalType] = useState<ModalGenType>(ModalGenType.None);
-    const [failureGenModalCurrentlyDisplayed, setFailureGenModalCurrentlyDisplayed] = useState<ModalGenType>(ModalGenType.None);
     const [modalContext, setModalContext] = useState<ModalContext | undefined >(undefined);
 
     allGenSettings.set(failureGenConfigAltitude().genName, failureGenConfigAltitude());
@@ -192,8 +189,6 @@ export const useFailureGeneratorsSettings: () => FailureGenContext = () => {
         modalContext,
         setModalContext,
         reducedAtaChapterNumbers,
-        failureGenModalCurrentlyDisplayed,
-        setFailureGenModalCurrentlyDisplayed,
     };
 };
 
@@ -209,7 +204,7 @@ export function sendRefresh(bus: EventBus) {
 }
 
 export function sendFailurePool(generatorType: string, generatorNumber:number, failureString: string, bus: EventBus) {
-    // console.info(`failure pool sent ${generatorType}${generatorNumber} : ${failureString}`);
+    console.info(`failure pool sent ${generatorType}${generatorNumber} : ${failureString}`);
     bus.getPublisher<FailureGenFailureList>().pub('failurePool', { generatorType, generatorNumber, failureString }, true);
 }
 
@@ -228,7 +223,9 @@ export const allGeneratorFailures = (allFailures: readonly Readonly<Failure>[]) 
         for (const failure of allFailures) {
             const [generatorSetting, setGeneratorSetting] = usePersistentProperty(`EFB_FAILURE_${failure.identifier.toString()}_GENERATORS`, '');
             generatorFailuresGetters.set(failure.identifier, generatorSetting);
-            generatorFailuresSetters.set(failure.identifier, setGeneratorSetting);
+            generatorFailuresSetters.set(failure.identifier, (s) => {
+                setGeneratorSetting(s);
+            });
         }
     }
     return { generatorFailuresGetters, generatorFailuresSetters };
