@@ -5,7 +5,7 @@
 import { usePersistentProperty } from '@flybywiresim/fbw-sdk';
 
 import React, { useMemo, useState } from 'react';
-import { FailureGenContext, FailureGenData, FailureGenMode, setNewSetting } from 'instruments/src/EFB/Failures/FailureGenerators/EFBRandomFailureGen';
+import { FailureGenContext, FailureGenData, FailureGenMode, ModalContext, setNewSetting } from 'instruments/src/EFB/Failures/FailureGenerators/EFBRandomFailureGen';
 import { t } from 'instruments/src/EFB/translation';
 import { ArrowDownRight, ArrowUpRight } from 'react-bootstrap-icons';
 import { ButtonIcon, FailureGeneratorChoiceSetting, FailureGeneratorSingleSetting } from 'instruments/src/EFB/Failures/FailureGenerators/EFBFailureGeneratorSettingsUI';
@@ -54,13 +54,13 @@ export const failureGenConfigAltitude: () => FailureGenData = () => {
     };
 };
 
-const generatorSettingComponents = (genNumber: number, generatorSettings: FailureGenData, failureGenContext: FailureGenContext) => {
-    const settings = generatorSettings.settings;
+const generatorSettingComponents = (genNumber: number, modalContext: ModalContext, failureGenContext: FailureGenContext) => {
+    const settings = modalContext.failureGenData.settings;
     const settingTable = [
         <FailureGeneratorChoiceSetting
             title={t('Failures.Generators.AltitudeCondition')}
             failureGenContext={failureGenContext}
-            generatorSettings={generatorSettings}
+            generatorSettings={modalContext.failureGenData}
             multiChoice={climbDescentMode}
             setNewSetting={setNewSetting}
             genIndex={genNumber}
@@ -75,7 +75,7 @@ const generatorSettingComponents = (genNumber: number, generatorSettings: Failur
             value={settings[genNumber * numberOfSettingsPerGenerator + AltitudeMinIndex]}
             mult={100}
             setNewSetting={setNewSetting}
-            generatorSettings={generatorSettings}
+            generatorSettings={modalContext.failureGenData}
             genIndex={genNumber}
             settingIndex={AltitudeMinIndex}
             failureGenContext={failureGenContext}
@@ -88,7 +88,7 @@ const generatorSettingComponents = (genNumber: number, generatorSettings: Failur
             value={settings[genNumber * numberOfSettingsPerGenerator + AltitudeMaxIndex]}
             mult={100}
             setNewSetting={setNewSetting}
-            generatorSettings={generatorSettings}
+            generatorSettings={modalContext.failureGenData}
             genIndex={genNumber}
             settingIndex={AltitudeMaxIndex}
             failureGenContext={failureGenContext}

@@ -5,7 +5,7 @@
 import React from 'react';
 import { t } from 'instruments/src/EFB/translation';
 import {
-    FailureGenContext, FailureGenData, ModalGenType, findGeneratorFailures, setNewSetting,
+    FailureGenContext, FailureGenData, ModalContext, ModalGenType, findGeneratorFailures, setNewSetting,
     updateSettings,
 } from 'instruments/src/EFB/Failures/FailureGenerators/EFBRandomFailureGen';
 import { extractFirstNumber } from 'instruments/src/EFB/Failures/FailureGenerators/EFBFailureSelectionFunctions';
@@ -127,7 +127,11 @@ interface FailureGeneratorSingleSettingShortcutProps {
 }
 
 interface NextButtonProps {
+    // modalContext: ModalContext,
+    // chainToFailurePool: boolean,
     failureGenContext: FailureGenContext,
+    // failureGenData: FailureGenData,
+    // genNumber: number,
 }
 
 export const NextButton: React.FC<NextButtonProps> = ({ failureGenContext }) => {
@@ -138,6 +142,7 @@ export const NextButton: React.FC<NextButtonProps> = ({ failureGenContext }) => 
                             border-2 p-2 transition duration-100"
                 onClick={() => {
                     failureGenContext.setFailureGenModalType(ModalGenType.Failures);
+                    // failureGenContext.setModalContext(context);
                 }}
             >
                 {t('Failures.Generators.Next')}
@@ -188,16 +193,17 @@ export const FailureGeneratorSingleSettingShortcut: React.FC<FailureGeneratorSin
     );
 };
 
-export const FailureGeneratorDetailsModalUI: React.FC<{ failureGenContext: FailureGenContext }> = ({ failureGenContext }) => {
+export const FailureGeneratorDetailsModalUI: React.FC<{ failureGenContext: FailureGenContext, modalContext: ModalContext }> = ({ failureGenContext, modalContext }) => {
     const bus = useEventBus();
     const { allFailures } = useFailuresOrchestrator();
     const { popModal } = useModals();
 
-    const genNumber = extractFirstNumber(failureGenContext.modalContext.genUniqueID);
-    if (failureGenContext.failureGenModalType !== ModalGenType.None) failureGenContext.setFailureGenModalType(ModalGenType.None);
-    if (failureGenContext.failureGenModalCurrentlyDisplayed !== ModalGenType.Settings) failureGenContext.setFailureGenModalCurrentlyDisplayed(ModalGenType.Settings);
+    console.log('MODAL', modalContext);
+
+    const genNumber = extractFirstNumber(modalContext.genUniqueID);
+    failureGenContext.setFailureGenModalType(ModalGenType.None);
     const numberOfSelectedFailures = findGeneratorFailures(allFailures, failureGenContext.generatorFailuresGetters,
-        failureGenContext.modalContext.genUniqueID).length;
+        modalContext.genUniqueID).length;
 
     const setNewNumberOfFailureSetting = (newSetting: number, generatorSettings: FailureGenData, genID: number) => {
         const settings = generatorSettings.settings;
@@ -218,10 +224,7 @@ export const FailureGeneratorDetailsModalUI: React.FC<{ failureGenContext: Failu
                     className="text-theme-body hover:text-utility-red bg-utility-red hover:bg-theme-body border-utility-red flex-none items-center
                     justify-center rounded-md border-2 px-4 text-center transition duration-100
                     "
-                    onClick={() => {
-                        failureGenContext.setFailureGenModalCurrentlyDisplayed(ModalGenType.None);
-                        popModal();
-                    }}
+                    onClick={() => popModal()}
                 >
                     X
                 </div>
@@ -229,7 +232,7 @@ export const FailureGeneratorDetailsModalUI: React.FC<{ failureGenContext: Failu
             <ScrollableContainer height={48}>
                 <div className="divide-theme-accent w-full divide-y-2 pt-4">
                     <RearmSettingsUI
-                        generatorSettings={failureGenContext.modalContext.failureGenData}
+                        generatorSettings={modalContext.failureGenData}
                         genID={genNumber}
                         setNewSetting={setNewSetting}
                         failureGenContext={failureGenContext}
@@ -242,12 +245,12 @@ export const FailureGeneratorDetailsModalUI: React.FC<{ failureGenContext: Failu
                         shortCutValue={numberOfSelectedFailures}
                         min={0}
                         max={numberOfSelectedFailures}
-                        value={failureGenContext.modalContext.failureGenData.settings[
-                            genNumber * failureGenContext.modalContext.failureGenData.numberOfSettingsPerGenerator + FailuresAtOnceIndex
+                        value={modalContext.failureGenData.settings[
+                            genNumber * modalContext.failureGenData.numberOfSettingsPerGenerator + FailuresAtOnceIndex
                         ]}
                         mult={1}
                         setNewSetting={setNewNumberOfFailureSetting}
-                        generatorSettings={failureGenContext.modalContext.failureGenData}
+                        generatorSettings={modalContext.failureGenData}
                         genIndex={genNumber}
                         settingIndex={FailuresAtOnceIndex}
                         failureGenContext={failureGenContext}
@@ -256,23 +259,27 @@ export const FailureGeneratorDetailsModalUI: React.FC<{ failureGenContext: Failu
                     <FailureGeneratorSingleSetting
                         title={t('Failures.Generators.MaxSimultaneous')}
                         unit=""
-                        min={failureGenContext.modalContext.failureGenData.settings[
-                            genNumber * failureGenContext.modalContext.failureGenData.numberOfSettingsPerGenerator + FailuresAtOnceIndex
+                        min={modalContext.failureGenData.settings[
+                            genNumber * modalContext.failureGenData.numberOfSettingsPerGenerator + FailuresAtOnceIndex
                         ]}
                         max={Infinity}
-                        value={failureGenContext.modalContext.failureGenData.settings[
-                            genNumber * failureGenContext.modalContext.failureGenData.numberOfSettingsPerGenerator + MaxFailuresIndex
+                        value={modalContext.failureGenData.settings[
+                            genNumber * modalContext.failureGenData.numberOfSettingsPerGenerator + MaxFailuresIndex
                         ]}
                         mult={1}
                         setNewSetting={setNewSetting}
-                        generatorSettings={failureGenContext.modalContext.failureGenData}
+                        generatorSettings={modalContext.failureGenData}
                         genIndex={genNumber}
                         settingIndex={MaxFailuresIndex}
                         failureGenContext={failureGenContext}
                     />
-                    {failureGenContext.modalContext.failureGenData.generatorSettingComponents(genNumber, failureGenContext.modalContext.failureGenData, failureGenContext)}
+                    {modalContext.failureGenData.generatorSettingComponents(genNumber, modalContext, failureGenContext)}
                     <NextButton
+                        // modalContext={failureGenContext.modalContext}
+                        // chainToFailurePool={failureGenContext.modalContext.chainToFailurePool}
                         failureGenContext={failureGenContext}
+                        // failureGenData={failureGenContext.modalContext.failureGenData}
+                        // genNumber={genNumber}
                     />
                 </div>
             </ScrollableContainer>

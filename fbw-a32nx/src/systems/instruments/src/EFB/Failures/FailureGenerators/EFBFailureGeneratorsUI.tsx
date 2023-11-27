@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import React, { useEffect, useState } from 'react';
+import React, { JSXElementConstructor, useEffect, useRef, useState } from 'react';
 import { SelectInput } from 'instruments/src/EFB/UtilComponents/Form/SelectInput/SelectInput';
 import { t } from 'instruments/src/EFB/translation';
 import {
@@ -14,7 +14,7 @@ import { AtaChapterNumber, AtaChaptersTitle } from '@flybywiresim/fbw-sdk';
 import { FailureGeneratorInfoModalUI } from 'instruments/src/EFB/Failures/FailureGenerators/EFBFailureGeneratorInfo';
 import { TooltipWrapper } from 'instruments/src/EFB/UtilComponents/TooltipWrapper';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
-import { GeneratorFailureSelection } from './EFBGeneratorFailureSelectionUI';
+import { GeneratorFailureSelection, GeneratorFailureSelectionProps } from './EFBGeneratorFailureSelectionUI';
 import { FailureGeneratorDetailsModalUI, ArmedState } from './EFBFailureGeneratorSettingsUI';
 import { useFailuresOrchestrator } from '../../failures-orchestrator-provider';
 import { getGeneratorFailurePool, setSelectedFailure } from './EFBFailureSelectionFunctions';
@@ -36,12 +36,26 @@ export const FailureGeneratorsUI = () => {
     const [chosenGen, setChosenGen] = useState<string>();
     const settings = useFailureGeneratorsSettings();
 
-    if (settings.failureGenModalType === ModalGenType.Failures) {
+    const [genNumber, setGenNumber] = useState<number>(-1);
+
+    const [settingsUpdated, setSettingsUpdated] = useState<boolean>(false);
+
+    // console.log(settings.allGenSettings);
+    useEffect(() => {
+        const genUniqueID = `${settings.allGenSettings.get(chosenGen)?.uniqueGenPrefix}${genNumber}`;
+        const genLetter = settings.allGenSettings.get(chosenGen)?.uniqueGenPrefix;
+        const context: ModalContext = { failureGenData: settings.allGenSettings.get(chosenGen), genNumber, genUniqueID, genLetter, chainToFailurePool: true };
+        console.log('NEW CONTEXT', context);
+        settings.setModalContext(context);
+    }, [genNumber, chosenGen, settingsUpdated]);
+
+    if (settings.failureGenModalType === ModalGenType.Failures && settings.modalContext?.failureGenData?.setting && settings.modalContext?.failureGenData?.setting !== '') {
         showModal(<GeneratorFailureSelection failureGenContext={settings} />);
     }
-    if (settings.failureGenModalType === ModalGenType.Settings) {
-        showModal(<FailureGeneratorDetailsModalUI failureGenContext={settings} />);
+    if (settings.failureGenModalType === ModalGenType.Settings && settings.modalContext?.failureGenData?.setting && settings.modalContext?.failureGenData?.setting !== '') {
+        showModal(<FailureGeneratorDetailsModalUI failureGenContext={settings} modalContext={settings.modalContext} />);
     }
+
     const generatorList = Array.from(settings.allGenSettings.values()).map((genSetting: FailureGenData) => ({
         value: genSetting.genName,
         displayValue: `${genSetting.alias()}`,
@@ -51,7 +65,7 @@ export const FailureGeneratorsUI = () => {
         displayValue: `<${t('Failures.Generators.SelectInList')}>`,
     });
 
-    const failureGeneratorAdd = (generatorSettings: FailureGenData, failureGenContext: FailureGenContext) => {
+    const failureGeneratorAdd = (generatorSettings: FailureGenData) => {
         let genNumber: number;
         let didFindADisabledGen = false;
         for (let i = 0; i < generatorSettings.settings.length / generatorSettings.numberOfSettingsPerGenerator; i++) {
@@ -78,19 +92,16 @@ export const FailureGeneratorsUI = () => {
         const genUniqueID = `${generatorSettings.uniqueGenPrefix}${genNumber}`;
 
         for (const failure of allFailures) {
-            setSelectedFailure(failure, genUniqueID, failureGenContext, true);
+            setSelectedFailure(failure, genUniqueID, settings, true);
         }
         sendFailurePool(generatorSettings.uniqueGenPrefix, genNumber, getGeneratorFailurePool(generatorSettings.uniqueGenPrefix + genNumber.toString(), Array.from(allFailures)), bus);
 
-        failureGenContext.setFailureGenModalType(ModalGenType.Settings);
-        const context: ModalContext = {
-            failureGenData: generatorSettings,
-            genNumber,
-            genUniqueID,
-            genLetter: generatorSettings.uniqueGenPrefix,
-            chainToFailurePool: true,
-        };
-        failureGenContext.setModalContext(context);
+        settings.setFailureGenModalType(ModalGenType.Settings);
+        setGenNumber(genNumber);
+        console.log('ADDING', generatorSettings);
+
+        // hack to force update of modal context
+        setSettingsUpdated(!settingsUpdated);
     };
 
     useEffect(() => {
@@ -98,7 +109,7 @@ export const FailureGeneratorsUI = () => {
         const sub1 = bus.getSubscriber<FailureGenFeedbackEvent>().on('expectedMode').handle(({ generatorType, mode }) => {
             for (const generator of settings.allGenSettings.values()) {
                 if (generatorType === generator.uniqueGenPrefix) {
-                    // console.info(`gen ${generator.uniqueGenPrefix} expectedMode received: ${generatorType} - ${mode.toString()}`);
+                    console.info(`gen ${generator.uniqueGenPrefix} expectedMode received: ${generatorType} - ${mode.toString()}`);
                     const nbGenerator = Math.floor(generator.settings.length / generator.numberOfSettingsPerGenerator);
                     let changeNeeded = false;
                     for (let i = 0; i < nbGenerator && i < mode?.length; i++) {
@@ -136,13 +147,13 @@ export const FailureGeneratorsUI = () => {
     return (
         <>
             <div className="flex flex-col">
-                <div className="flex flex-1 flex-row justify-between">
-                    <div className="flex flex-1 flex-row justify-start space-x-4 py-2">
+                <div className="flex flex-row flex-1 justify-between">
+                    <div className="flex flex-row flex-1 justify-start py-2 space-x-4">
                         <h2 className="flex-none">
                             {`${t('Failures.Generators.GeneratorToAdd')}:`}
                         </h2>
                         <SelectInput
-                            className="h-10 w-96 flex-none"
+                            className="flex-none w-96 h-10"
                             value={chosenGen}
                             defaultValue="default"
                             onChange={(value) => setChosenGen(value as string)}
@@ -151,26 +162,28 @@ export const FailureGeneratorsUI = () => {
                         />
                         <div
                             onClick={() => {
+                                console.log(chosenGen);
                                 if (chosenGen !== 'default') {
-                                    failureGeneratorAdd(settings.allGenSettings.get(chosenGen), settings);
+                                    failureGeneratorAdd(settings.allGenSettings.get(chosenGen));
+                                    console.log(settings.modalContext);
                                 }
                             }}
-                            className="hover:text-theme-body bg-theme-accent hover:bg-theme-highlight flex-none rounded-md p-2 text-center"
+                            className="flex-none p-2 text-center rounded-md hover:text-theme-body bg-theme-accent hover:bg-theme-highlight"
                         >
                             <PlusLg />
                         </div>
                     </div>
-                    <div className="flex flex-1 flex-row justify-end py-2">
+                    <div className="flex flex-row flex-1 justify-end py-2">
                         <div
                             onClick={() => showModal(<FailureGeneratorInfoModalUI />)}
-                            className="hover:text-theme-body bg-theme-accent hover:bg-theme-highlight flex-none rounded-md p-2 text-center"
+                            className="flex-none p-2 text-center rounded-md hover:text-theme-body bg-theme-accent hover:bg-theme-highlight"
                         >
                             <InfoCircle />
                         </div>
                     </div>
                 </div>
                 <ScrollableContainer height={48}>
-                    <div className="grid grid-flow-row grid-cols-3">
+                    <div className="grid grid-cols-3 grid-flow-row">
                         {generatorsCardList(settings)}
                     </div>
                 </ScrollableContainer>
@@ -205,14 +218,14 @@ export const FailureGeneratorCardTemplateUI: React.FC<FailureGeneratorCardTempla
         };
 
     return (
-        <div className="border-theme-accent m-1 flex flex-row justify-between rounded-md border-2 border-solid px-2 pt-2 text-center">
-            <div className="align-left mr-4 flex max-w-[86%] grow flex-col text-left">
-                <h2 className="max-w-[100%] truncate break-words pb-2">
+        <div className="flex flex-row justify-between px-2 pt-2 m-1 text-center rounded-md border-2 border-solid border-theme-accent">
+            <div className="flex flex-col mr-4 text-left align-left max-w-[86%] grow">
+                <h2 className="pb-2 truncate break-words max-w-[100%]">
                     {`${failureGenData.alias()} ${genUniqueIDDisplayed}`}
                 </h2>
                 <FailureShortList failureGenContext={failureGenContext} uniqueID={genUniqueID} reducedAtaChapterNumbers={failureGenContext.reducedAtaChapterNumbers} />
             </div>
-            <div className="flex flex-col items-center justify-between">
+            <div className="flex flex-col justify-between items-center">
                 <div
                     onClick={() => eraseGenerator(genNumber, failureGenData, failureGenContext)}
                     className="text-theme-body hover:text-utility-red bg-utility-red hover:bg-theme-body border-utility-red flex-none
@@ -220,7 +233,7 @@ export const FailureGeneratorCardTemplateUI: React.FC<FailureGeneratorCardTempla
                 >
                     <Trash size={20} />
                 </div>
-                <div className="flex flex-col items-center justify-end">
+                <div className="flex flex-col justify-end items-center">
                     <div className={`mt-2 flex-none p-2 ${isArmed ? 'text-theme-highlight' : 'text-theme-text'} bg-theme-body`}>
                         {ArmedState(failureGenData, genNumber)}
                     </div>
@@ -230,13 +243,8 @@ export const FailureGeneratorCardTemplateUI: React.FC<FailureGeneratorCardTempla
                             border-2 p-2 transition duration-100"
                             onClick={() => {
                                 failureGenContext.setFailureGenModalType(ModalGenType.Settings);
-                                const context: ModalContext = {
-                                    failureGenData,
-                                    genNumber,
-                                    genUniqueID,
-                                    genLetter: failureGenData.uniqueGenPrefix,
-                                    chainToFailurePool: false,
-                                };
+                                const genLetter = failureGenData.uniqueGenPrefix;
+                                const context: ModalContext = { failureGenData, genNumber, genUniqueID, genLetter, chainToFailurePool: false };
                                 failureGenContext.setModalContext(context);
                             }}
                         >
@@ -249,13 +257,8 @@ export const FailureGeneratorCardTemplateUI: React.FC<FailureGeneratorCardTempla
                             border-2 p-2 transition duration-100"
                             onClick={() => {
                                 failureGenContext.setFailureGenModalType(ModalGenType.Failures);
-                                const context: ModalContext = {
-                                    failureGenData,
-                                    genNumber,
-                                    genUniqueID,
-                                    genLetter: failureGenData.uniqueGenPrefix,
-                                    chainToFailurePool: false,
-                                };
+                                const genLetter = failureGenData.uniqueGenPrefix;
+                                const context: ModalContext = { failureGenData, genNumber, genUniqueID, genLetter, chainToFailurePool: false };
                                 failureGenContext.setModalContext(context);
                             }}
                         >
@@ -298,9 +301,9 @@ const FailureShortList: React.FC<FailureShortListProps> = ({ failureGenContext, 
     let listOfSelectedFailures = findGeneratorFailures(allFailures, failureGenContext.generatorFailuresGetters, uniqueID);
 
     if (listOfSelectedFailures.length === allFailures.length) {
-        return <div className="bg-theme-accent mb-1 rounded-md p-1">{t('Failures.Generators.AllSystems')}</div>;
+        return <div className="p-1 mb-1 rounded-md bg-theme-accent">{t('Failures.Generators.AllSystems')}</div>;
     }
-    if (listOfSelectedFailures.length === 0) return <div className="bg-theme-accent mb-1 rounded-md p-1">{t('Failures.Generators.NoFailure')}</div>;
+    if (listOfSelectedFailures.length === 0) return <div className="p-1 mb-1 rounded-md bg-theme-accent">{t('Failures.Generators.NoFailure')}</div>;
 
     const chaptersFullySelected: AtaChapterNumber[] = [];
 
@@ -315,13 +318,13 @@ const FailureShortList: React.FC<FailureShortListProps> = ({ failureGenContext, 
     const subSetOfChapters = chaptersFullySelected.slice(0, Math.min(maxNumberOfFailureToDisplay, chaptersFullySelected.length));
     const subSetOfSelectedFailures = listOfSelectedFailures.slice(0, Math.min(maxNumberOfFailureToDisplay - subSetOfChapters.length, listOfSelectedFailures.length));
     const chaptersToDisplay = subSetOfChapters.map((chapter) => (
-        <div className="bg-theme-accent mb-1 grow rounded-md p-1">
+        <div className="p-1 mb-1 rounded-md bg-theme-accent grow">
             {AtaChaptersTitle[chapter]}
         </div>
     ));
 
     const singleFailuresToDisplay = subSetOfSelectedFailures.map((failure) => (
-        <div className="bg-theme-accent mb-1 grow rounded-md p-1">
+        <div className="p-1 mb-1 rounded-md bg-theme-accent grow">
             {failure.name}
         </div>
     ));
@@ -331,7 +334,7 @@ const FailureShortList: React.FC<FailureShortListProps> = ({ failureGenContext, 
             {chaptersToDisplay}
             {singleFailuresToDisplay}
             {listOfSelectedFailures.length + chaptersFullySelected.length > maxNumberOfFailureToDisplay ? (
-                <div className="mb-1 grow p-1">
+                <div className="p-1 mb-1 grow">
                     ...+
                     {Math.max(0, listOfSelectedFailures.length + chaptersFullySelected.length - maxNumberOfFailureToDisplay)}
                 </div>

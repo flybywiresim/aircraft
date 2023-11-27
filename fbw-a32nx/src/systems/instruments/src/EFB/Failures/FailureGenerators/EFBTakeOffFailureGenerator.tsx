@@ -5,7 +5,7 @@
 import { usePersistentProperty } from '@flybywiresim/fbw-sdk';
 
 import React, { useMemo, useState } from 'react';
-import { FailureGenContext, FailureGenData, FailureGenMode, setNewSetting } from 'instruments/src/EFB/Failures/FailureGenerators/EFBRandomFailureGen';
+import { FailureGenContext, FailureGenData, FailureGenMode, ModalContext, setNewSetting } from 'instruments/src/EFB/Failures/FailureGenerators/EFBRandomFailureGen';
 import { t } from 'instruments/src/EFB/translation';
 import { FailureGeneratorSingleSetting, FailureGeneratorText } from 'instruments/src/EFB/Failures/FailureGenerators/EFBFailureGeneratorSettingsUI';
 
@@ -60,8 +60,10 @@ export const failureGenConfigTakeOff: () => FailureGenData = () => {
     };
 };
 
-const generatorSettingComponents = (genNumber: number, generatorSettings: FailureGenData, failureGenContext: FailureGenContext) => {
-    const settings = generatorSettings.settings;
+const generatorSettingComponents = (genNumber: number, modalContext: ModalContext, failureGenContext: FailureGenContext) => {
+    const settings = modalContext.failureGenData.settings;
+    console.log('SETTINGS IN TAKEOFF', settings);
+    console.log(genNumber, numberOfSettingsPerGenerator);
     const chanceClimbing = Math.round(10000 * (1 - settings[genNumber * numberOfSettingsPerGenerator + ChanceLowIndex]
         - settings[genNumber * numberOfSettingsPerGenerator + ChanceMediumIndex])) / 100;
 
@@ -74,7 +76,7 @@ const generatorSettingComponents = (genNumber: number, generatorSettings: Failur
             value={settings[genNumber * numberOfSettingsPerGenerator + ChancePerTakeOffIndex]}
             mult={100}
             setNewSetting={setNewSetting}
-            generatorSettings={generatorSettings}
+            generatorSettings={modalContext.failureGenData}
             genIndex={genNumber}
             settingIndex={ChancePerTakeOffIndex}
             failureGenContext={failureGenContext}
@@ -90,7 +92,7 @@ const generatorSettingComponents = (genNumber: number, generatorSettings: Failur
                     value={settings[genNumber * numberOfSettingsPerGenerator + ChanceLowIndex]}
                     mult={100}
                     setNewSetting={setNewSetting}
-                    generatorSettings={generatorSettings}
+                    generatorSettings={modalContext.failureGenData}
                     genIndex={genNumber}
                     settingIndex={ChanceLowIndex}
                     failureGenContext={failureGenContext}
@@ -103,7 +105,7 @@ const generatorSettingComponents = (genNumber: number, generatorSettings: Failur
                     value={settings[genNumber * numberOfSettingsPerGenerator + ChanceMediumIndex]}
                     mult={100}
                     setNewSetting={setNewSetting}
-                    generatorSettings={generatorSettings}
+                    generatorSettings={modalContext.failureGenData}
                     genIndex={genNumber}
                     settingIndex={ChanceMediumIndex}
                     failureGenContext={failureGenContext}
@@ -119,7 +121,7 @@ const generatorSettingComponents = (genNumber: number, generatorSettings: Failur
             value={settings[genNumber * numberOfSettingsPerGenerator + MinSpeedIndex]}
             mult={1}
             setNewSetting={setNewSetting}
-            generatorSettings={generatorSettings}
+            generatorSettings={modalContext.failureGenData}
             genIndex={genNumber}
             settingIndex={MinSpeedIndex} // TODO confirm - is this index right?
             failureGenContext={failureGenContext}
@@ -132,7 +134,7 @@ const generatorSettingComponents = (genNumber: number, generatorSettings: Failur
             value={settings[genNumber * numberOfSettingsPerGenerator + MediumSpeedIndex]}
             mult={1}
             setNewSetting={setNewSetting}
-            generatorSettings={generatorSettings}
+            generatorSettings={modalContext.failureGenData}
             genIndex={genNumber}
             settingIndex={MediumSpeedIndex} // TODO confirm - is this index right?
             failureGenContext={failureGenContext}
@@ -145,7 +147,7 @@ const generatorSettingComponents = (genNumber: number, generatorSettings: Failur
             value={settings[genNumber * numberOfSettingsPerGenerator + AltitudeIndex]}
             mult={1}
             setNewSetting={setNewSetting}
-            generatorSettings={generatorSettings}
+            generatorSettings={modalContext.failureGenData}
             genIndex={genNumber}
             settingIndex={AltitudeIndex} // TODO confirm - is this index right?
             failureGenContext={failureGenContext}
