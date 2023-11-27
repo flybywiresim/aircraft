@@ -127,11 +127,7 @@ interface FailureGeneratorSingleSettingShortcutProps {
 }
 
 interface NextButtonProps {
-    // modalContext: ModalContext,
-    // chainToFailurePool: boolean,
     failureGenContext: FailureGenContext,
-    // failureGenData: FailureGenData,
-    // genNumber: number,
 }
 
 export const NextButton: React.FC<NextButtonProps> = ({ failureGenContext }) => {
@@ -142,7 +138,6 @@ export const NextButton: React.FC<NextButtonProps> = ({ failureGenContext }) => 
                             border-2 p-2 transition duration-100"
                 onClick={() => {
                     failureGenContext.setFailureGenModalType(ModalGenType.Failures);
-                    // failureGenContext.setModalContext(context);
                 }}
             >
                 {t('Failures.Generators.Next')}
@@ -202,6 +197,7 @@ export const FailureGeneratorDetailsModalUI: React.FC<{ failureGenContext: Failu
 
     const genNumber = extractFirstNumber(modalContext.genUniqueID);
     failureGenContext.setFailureGenModalType(ModalGenType.None);
+    failureGenContext.setFailureGenModalCurrentlyDisplayed(ModalGenType.Settings);
     const numberOfSelectedFailures = findGeneratorFailures(allFailures, failureGenContext.generatorFailuresGetters,
         modalContext.genUniqueID).length;
 
@@ -224,7 +220,10 @@ export const FailureGeneratorDetailsModalUI: React.FC<{ failureGenContext: Failu
                     className="text-theme-body hover:text-utility-red bg-utility-red hover:bg-theme-body border-utility-red flex-none items-center
                     justify-center rounded-md border-2 px-4 text-center transition duration-100
                     "
-                    onClick={() => popModal()}
+                    onClick={() => {
+                        failureGenContext.setFailureGenModalCurrentlyDisplayed(ModalGenType.None);
+                        popModal();
+                    }}
                 >
                     X
                 </div>
@@ -275,11 +274,7 @@ export const FailureGeneratorDetailsModalUI: React.FC<{ failureGenContext: Failu
                     />
                     {modalContext.failureGenData.generatorSettingComponents(genNumber, modalContext, failureGenContext)}
                     <NextButton
-                        // modalContext={failureGenContext.modalContext}
-                        // chainToFailurePool={failureGenContext.modalContext.chainToFailurePool}
                         failureGenContext={failureGenContext}
-                        // failureGenData={failureGenContext.modalContext.failureGenData}
-                        // genNumber={genNumber}
                     />
                 </div>
             </ScrollableContainer>
