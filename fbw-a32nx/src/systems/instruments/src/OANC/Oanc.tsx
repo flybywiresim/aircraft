@@ -4,15 +4,18 @@
 
 import {
     ComponentProps, ConsumerSubject, DebounceTimer, DisplayComponent, EventBus, FSComponent, MappedSubject, Subject, SubscribableArrayEventType,
-    UnitType, VNode, Wait,
+    SubscribableMapFunctions, UnitType, VNode, Wait,
 } from '@microsoft/msfs-sdk';
 import {
     AmdbFeatureCollection, AmdbFeatureTypeStrings, AmdbProjection, AmdbProperties, FeatureType, FeatureTypeString, MathUtils, PolygonStructureType, EfisNdMode,
     MapParameters,
 } from '@flybywiresim/fbw-sdk';
-
-import { BBox, bbox, centroid, Feature, featureCollection, FeatureCollection, Geometry, LineString, Point, Polygon, Position } from '@turf/turf';
+import {
+    BBox, bbox, bboxPolygon, booleanPointInPolygon, centroid, Feature, featureCollection, FeatureCollection, Geometry, LineString, Point, Polygon,
+    Position,
+} from '@turf/turf';
 import { bearingTo, clampAngle, Coordinates, distanceTo, placeBearingDistance } from 'msfs-geo';
+
 import { reciprocal } from '@fmgc/guidance/lnav/CommonGeometry';
 import { STYLE_DATA } from './style-data';
 import { OancMovingModeOverlay, OancStaticModeOverlay } from './OancMovingModeOverlay';
@@ -30,9 +33,9 @@ export const OANC_RENDER_HEIGHT = 768;
 
 const FEATURE_DRAW_PER_FRAME = 50;
 
-const LABEL_MAX_DRAW_COUNT = 80;
-
 const ZOOM_TRANSITION_TIME_MS = 300;
+
+const PAN_MIN_MOVEMENT = 10;
 
 const LABEL_FEATURE_TYPES = [
     FeatureType.Taxiway,
@@ -66,7 +69,7 @@ export const LABEL_VISIBILITY_RULES = [
 ];
 
 export enum LabelStyle {
-    Taxiway= 'taxiway',
+    Taxiway = 'taxiway',
     TerminalBuilding = 'terminal-building',
     RunwayAxis = 'runway-axis',
     RunwayEnd = 'runway-end',
@@ -123,10 +126,6 @@ export class Oanc extends DisplayComponent<OancProps> {
 
     private cursorSurfaceRef = FSComponent.createRef<HTMLDivElement>();
 
-    private readonly zoomInButtonRef = FSComponent.createRef<HTMLButtonElement>();
-
-    private readonly zoomOutButtonRef = FSComponent.createRef<HTMLButtonElement>();
-
     private readonly positionTextRef = FSComponent.createRef<HTMLSpanElement>();
 
     private readonly contextMenuVisible = Subject.create(false);
@@ -136,21 +135,6 @@ export class Oanc extends DisplayComponent<OancProps> {
     private readonly contextMenuY = Subject.create(0);
 
     private readonly controlPanelVisible = Subject.create(false);
-
-    private readonly contextMenuItems: ContextMenuItemData[] = [
-        { name: 'ADD CROSS', disabled: true },
-        { name: 'ADD FLAG', disabled: true },
-        {
-            name: 'MENU',
-            onPressed: () => {
-                this.controlPanelVisible.set(!this.controlPanelVisible.get());
-                this.contextMenuVisible.set(false);
-            },
-        },
-        { name: 'ERASE ALL CROSSES', disabled: true },
-        { name: 'ERASE ALL FLAGS', disabled: true },
-        { name: 'CENTER ON ACFT', disabled: true },
-    ]
 
     public data: AmdbFeatureCollection | undefined;
 
@@ -194,11 +178,17 @@ export class Oanc extends DisplayComponent<OancProps> {
 
     public doneDrawing = false;
 
+    private isPanningArmed = false;
+
     private isPanning = false;
 
     private lastPanX = 0;
 
     private lastPanY = 0;
+
+    public panArmedX = Subject.create(0);
+
+    public panArmedY = Subject.create(0);
 
     public panOffsetX = Subject.create(0);
 
@@ -217,12 +207,6 @@ export class Oanc extends DisplayComponent<OancProps> {
 
     private modeAnimationMapNorthUp = Subject.create(false);
 
-    private readonly aircraftX = Subject.create(0);
-
-    private readonly aircraftY = Subject.create(0);
-
-    private readonly aircraftRotation = Subject.create(0);
-
     private canvasWidth = Subject.create(0);
 
     private canvasHeight = Subject.create(0);
@@ -232,6 +216,10 @@ export class Oanc extends DisplayComponent<OancProps> {
     private canvasCentreY = Subject.create(0);
 
     public readonly ppos: Coordinates = { lat: 0, long: 0 };
+
+    public readonly referencePos: Coordinates = { lat: 0, long: 0 };
+
+    private readonly aircraftWithinAirport = Subject.create(false);
 
     public readonly projectedPpos: Position = [0, 0];
 
@@ -253,6 +241,47 @@ export class Oanc extends DisplayComponent<OancProps> {
 
     private readonly ndMOdeSwitchDelayDebouncer = new DebounceTimer();
 
+    // eslint-disable-next-line arrow-body-style
+    public usingPposAsReference = MappedSubject.create(([overlayNDMode, aircraftWithinAirport]) => {
+        return aircraftWithinAirport || overlayNDMode === EfisNdMode.ARC;
+    }, this.overlayNDModeSub, this.aircraftWithinAirport);
+
+    // eslint-disable-next-line arrow-body-style
+    private readonly showAircraft = MappedSubject.create(([overlayNDMode, aircraftWithinAirport]) => {
+        return aircraftWithinAirport || overlayNDMode === EfisNdMode.ARC;
+    }, this.overlayNDModeSub, this.aircraftWithinAirport);
+
+    private readonly aircraftX = Subject.create(0);
+
+    private readonly aircraftY = Subject.create(0);
+
+    private readonly aircraftRotation = Subject.create(0);
+
+    private readonly contextMenuItems: ContextMenuItemData[] = [
+        { name: 'ADD CROSS', disabled: true },
+        { name: 'ADD FLAG', disabled: true },
+        {
+            name: 'MENU',
+            onPressed: () => {
+                this.controlPanelVisible.set(!this.controlPanelVisible.get());
+                this.contextMenuVisible.set(false);
+            },
+        },
+        { name: 'ERASE ALL CROSSES', disabled: true },
+        { name: 'ERASE ALL FLAGS', disabled: true },
+        {
+            name: 'CENTER ON ACFT',
+            disabled: this.aircraftWithinAirport.map(SubscribableMapFunctions.not()),
+            onPressed: async () => {
+                await this.enablePanningTransitions();
+                this.panOffsetX.set(0);
+                this.panOffsetY.set(0);
+                await Wait.awaitDelay(ZOOM_TRANSITION_TIME_MS);
+                await this.disablePanningTransitions();
+            },
+        },
+    ];
+
     public getZoomLevelInverseScale() {
         const multiplier = this.overlayNDModeSub.get() === EfisNdMode.ROSE_NAV ? 0.5 : 1;
 
@@ -265,9 +294,6 @@ export class Oanc extends DisplayComponent<OancProps> {
         this.cursorSurfaceRef.instance.addEventListener('mousedown', this.handleCursorPanStart.bind(this));
         this.cursorSurfaceRef.instance.addEventListener('mousemove', this.handleCursorPanMove.bind(this));
         this.cursorSurfaceRef.instance.addEventListener('mouseup', this.handleCursorPanStop.bind(this));
-
-        // this.zoomOutButtonRef.instance.addEventListener('click', this.handleZoomOut.bind(this));
-        // this.zoomInButtonRef.instance.addEventListener('click', this.handleZoomIn.bind(this));
 
         const subs = this.props.bus.getSubscriber<FcuSimVars>();
 
@@ -302,8 +328,13 @@ export class Oanc extends DisplayComponent<OancProps> {
             }
         });
 
-        this.zoomLevelIndex.sub(() => {
+        this.zoomLevelIndex.sub((newZommLevel) => {
             this.labelManager.showLabels = false;
+
+            switch (newZommLevel) {
+            case 2: this.labelManager.currentFilter = { type: 'major' }; break;
+            default: this.labelManager.currentFilter = { type: 'null' }; break;
+            }
 
             this.handleLayerVisibilities();
 
@@ -361,6 +392,7 @@ export class Oanc extends DisplayComponent<OancProps> {
             console.error('[OANC](loadAirportMap) Invalid airport data - aerodrome reference point does not contain lat/long/scale custom properties');
             return;
         }
+        this.arpCoordinates = { lat: refPointLat, long: refPointLong };
 
         this.data = airportMap;
 
@@ -372,6 +404,11 @@ export class Oanc extends DisplayComponent<OancProps> {
 
         const dataBbox = bbox(airportMap);
 
+        this.updatePosition();
+        this.aircraftWithinAirport.set(
+            booleanPointInPolygon(this.projectedPpos, bboxPolygon(dataBbox)),
+        );
+
         const width = (dataBbox[2] - dataBbox[0]) * 1;
         const height = (dataBbox[3] - dataBbox[1]) * 1;
 
@@ -380,7 +417,6 @@ export class Oanc extends DisplayComponent<OancProps> {
         this.canvasCentreX.set(Math.abs(dataBbox[0]));
         this.canvasCentreY.set(Math.abs(dataBbox[3]));
 
-        this.arpCoordinates = { lat: refPointLat, long: refPointLong };
         this.canvasCenterCoordinates = this.calculateCanvasCenterCoordinates();
 
         this.sortDataIntoLayers(this.data);
@@ -597,9 +633,15 @@ export class Oanc extends DisplayComponent<OancProps> {
         const deltaTime = (now - this.lastTime) / 1_000;
         this.lastTime = now;
 
-        this.ppos.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'Degrees');
-        this.ppos.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'Degrees');
-        this.planeTrueHeading.set(SimVar.GetSimVarValue('PLANE HEADING DEGREES TRUE', 'Degrees'));
+        this.updatePosition();
+
+        if (this.usingPposAsReference.get() || !this.arpCoordinates) {
+            this.referencePos.lat = this.ppos.lat;
+            this.referencePos.long = this.ppos.long;
+        } else {
+            this.referencePos.lat = this.arpCoordinates.lat;
+            this.referencePos.long = this.arpCoordinates.long;
+        }
 
         if (!this.data || this.dataLoading) {
             return;
@@ -643,7 +685,7 @@ export class Oanc extends DisplayComponent<OancProps> {
         this.arpReferencedMapParams.compute(this.arpCoordinates, 0, 0.539957, 1_000, mapCurrentHeading);
 
         // eslint-disable-next-line prefer-const
-        let [offsetX, offsetY] = this.canvasCentreReferencedMapParams.coordinatesToXYy(this.ppos);
+        let [offsetX, offsetY] = this.canvasCentreReferencedMapParams.coordinatesToXYy(this.referencePos);
 
         [this.projectedPpos[0], this.projectedPpos[1]] = this.projectCoordinates(this.ppos);
 
@@ -704,6 +746,16 @@ export class Oanc extends DisplayComponent<OancProps> {
         }
     }
 
+    private updatePosition(): void {
+        this.ppos.lat = SimVar.GetSimVarValue('PLANE LATITUDE', 'Degrees');
+        this.ppos.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'Degrees');
+        this.planeTrueHeading.set(SimVar.GetSimVarValue('PLANE HEADING DEGREES TRUE', 'Degrees'));
+
+        if (this.arpCoordinates) {
+            [this.projectedPpos[0], this.projectedPpos[1]] = this.projectCoordinates(this.ppos);
+        }
+    }
+
     private clearData(): void {
         for (const layer of this.layerFeatures) {
             layer.features.length = 0;
@@ -717,8 +769,15 @@ export class Oanc extends DisplayComponent<OancProps> {
         this.lastFeatureDrawnIndex = 0;
 
         for (const layer of this.layerCanvasRefs) {
-            layer.instance.getContext('2d').clearRect(0, 0, OANC_RENDER_WIDTH, OANC_RENDER_HEIGHT);
+            const ctx = layer.instance.getContext('2d');
+            const cw = this.canvasWidth.get();
+            const ch = this.canvasHeight.get();
+
+            ctx.clearRect(0, 0, cw, ch);
         }
+
+        this.panOffsetX.set(0);
+        this.panOffsetY.set(0);
     }
 
     private async disablePanningTransitions(): Promise<void> {
@@ -814,10 +873,24 @@ export class Oanc extends DisplayComponent<OancProps> {
     }
 
     private handleCursorPanStart(event: MouseEvent): void {
-        this.isPanning = true;
+        this.isPanningArmed = true;
+        this.panArmedX.set(event.screenX);
+        this.panArmedY.set(event.screenY);
     }
 
     private handleCursorPanMove(event: MouseEvent): void {
+        if (this.isPanningArmed) {
+            const adx = Math.abs(event.screenX - this.panArmedX.get());
+            const ady = Math.abs(event.screenY - this.panArmedY.get());
+
+            // We only actually start panning if we move more than a certain amount - this is to ensure we can differentiate between panning
+            // and opening the context menu
+            if (adx > PAN_MIN_MOVEMENT || ady > PAN_MIN_MOVEMENT) {
+                this.isPanningArmed = false;
+                this.isPanning = true;
+            }
+        }
+
         if (this.isPanning) {
             this.panOffsetX.set(this.panOffsetX.get() + event.screenX - this.lastPanX);
             this.panOffsetY.set(this.panOffsetY.get() + event.screenY - this.lastPanY);
@@ -830,7 +903,10 @@ export class Oanc extends DisplayComponent<OancProps> {
     private handleCursorPanStop(event: MouseEvent): void {
         this.contextMenuX.set(event.screenX);
         this.contextMenuY.set(event.screenY);
-        this.contextMenuVisible.set(!this.contextMenuVisible.get());
+        if (!this.isPanning) {
+            this.isPanningArmed = false;
+            this.contextMenuVisible.set(!this.contextMenuVisible.get());
+        }
         this.isPanning = false;
     }
 
@@ -839,7 +915,7 @@ export class Oanc extends DisplayComponent<OancProps> {
         const labelY = coordinates[1];
 
         // eslint-disable-next-line prefer-const
-        let [offsetX, offsetY] = this.arpReferencedMapParams.coordinatesToXYy(this.ppos);
+        let [offsetX, offsetY] = this.arpReferencedMapParams.coordinatesToXYy(this.referencePos);
 
         // TODO figure out how to not need this
         offsetY *= -1;
@@ -931,7 +1007,12 @@ export class Oanc extends DisplayComponent<OancProps> {
                             <canvas ref={this.layerCanvasRefs[6]} width={this.canvasWidth} height={this.canvasHeight} />
                         </div>
 
-                        <OancAircraftIcon x={this.aircraftX} y={this.aircraftY} rotation={this.aircraftRotation} />
+                        <OancAircraftIcon
+                            isVisible={this.showAircraft}
+                            x={this.aircraftX}
+                            y={this.aircraftY}
+                            rotation={this.aircraftRotation}
+                        />
                     </div>
                 </div>
 
@@ -956,6 +1037,7 @@ export class Oanc extends DisplayComponent<OancProps> {
                     x={this.contextMenuX}
                     y={this.contextMenuY}
                     items={this.contextMenuItems}
+                    closeMenu={() => this.contextMenuVisible.set(false)}
                 />
 
                 <ControlPanel
@@ -963,6 +1045,9 @@ export class Oanc extends DisplayComponent<OancProps> {
                     amdbClient={this.amdbClient}
                     isVisible={this.controlPanelVisible}
                     onSelectAirport={(icao) => this.loadAirportMap(icao)}
+                    closePanel={() => this.controlPanelVisible.set(false)}
+                    onZoomIn={() => this.handleZoomIn()}
+                    onZoomOut={() => this.handleZoomOut()}
                 />
 
                 <div
@@ -990,9 +1075,6 @@ export class Oanc extends DisplayComponent<OancProps> {
 
                     <span class="oanc-airport-info" id="oanc-airport-info-line1">{this.airportInfoLine1}</span>
                     <span class="oanc-airport-info" id="oanc-airport-info-line2">{this.airportInfoLine2}</span>
-
-                    {/* <button ref={this.zoomInButtonRef} type="button" class="oanc-button">+</button> */}
-                    {/* <button ref={this.zoomOutButtonRef} type="button" class="oanc-button">-</button> */}
                 </div>
 
                 <OancStaticModeOverlay

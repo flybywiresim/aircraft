@@ -52,12 +52,15 @@ $display-dropdown-handle: rgb(160, 160, 160);
     color: white;
     background-color: rgb(128, 128, 128);
 
-    border: solid 3px white;
-    border-bottom-width: 2px;
-    border-right-width: 2px;
+    border: outset 2px white;
 
     &:not(:last-child) {
       margin-bottom: 8px;
+    }
+
+    &:hover {
+      border-style: solid;
+      border-color: $display-cyan;
     }
   }
 }

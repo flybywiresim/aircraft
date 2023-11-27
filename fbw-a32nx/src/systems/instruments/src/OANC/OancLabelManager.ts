@@ -28,7 +28,7 @@ export class OancLabelManager {
 
     public reflowLabels() {
         // eslint-disable-next-line prefer-const
-        let [offsetX, offsetY] = this.oanc.arpReferencedMapParams.coordinatesToXYy(this.oanc.ppos);
+        let [offsetX, offsetY] = this.oanc.arpReferencedMapParams.coordinatesToXYy(this.oanc.referencePos);
 
         // TODO figure out how to not need this
         offsetY *= -1;

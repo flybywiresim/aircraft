@@ -16,6 +16,8 @@
   width: 768px;
   height: 768px;
 
+  background-color: $display-background;
+
   font-family: "Ecam", monospace !important;
 }
 
@@ -31,7 +33,7 @@
 
   font-size: 24px;
 
-  background-color: black;
+  background-color: $display-background;
   color: white;
 
   z-index: 9999;

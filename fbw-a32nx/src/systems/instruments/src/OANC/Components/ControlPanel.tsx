@@ -20,6 +20,12 @@ export interface ControlPanelProps extends ComponentProps {
     isVisible: Subscribable<boolean>,
 
     onSelectAirport: (airportIcao: string) => void,
+
+    closePanel: () => void,
+
+    onZoomIn: () => void,
+
+    onZoomOut: () => void,
 }
 
 class ControlPanelStore {
@@ -63,6 +69,12 @@ export class ControlPanel extends DisplayComponent<ControlPanelProps> {
         FSComponent.createRef<HTMLButtonElement>(),
     ];
 
+    private readonly closePanelButtonRef = FSComponent.createRef<HTMLButtonElement>();
+
+    private readonly zoomInButtonRef = FSComponent.createRef<HTMLButtonElement>();
+
+    private readonly zoomOutButtonRef = FSComponent.createRef<HTMLButtonElement>();
+
     private readonly store = new ControlPanelStore();
 
     private readonly subscriptions: (Subscription | MappedSubscribable<any>)[] = [];
@@ -77,6 +89,11 @@ export class ControlPanel extends DisplayComponent<ControlPanelProps> {
         this.buttonRefs[0].instance.addEventListener('click', () => this.handleSelectAirport('NZQN'));
         this.buttonRefs[1].instance.addEventListener('click', () => this.handleSelectAirport('LFPG'));
         this.buttonRefs[2].instance.addEventListener('click', () => this.handleSelectAirport('CYUL'));
+
+        this.closePanelButtonRef.instance.addEventListener('click', () => this.props.closePanel());
+
+        this.zoomInButtonRef.instance.addEventListener('click', () => this.props.onZoomIn());
+        this.zoomOutButtonRef.instance.addEventListener('click', () => this.props.onZoomOut());
 
         this.subscriptions.push(
             this.props.isVisible.sub((it) => this.style.setValue('visibility', it ? 'visible' : 'hidden'), true),
@@ -283,7 +300,9 @@ export class ControlPanel extends DisplayComponent<ControlPanelProps> {
                     </div>
 
                     <div class="oanc-control-panel-arpt-sel-close">
-                        <button type="button"> </button>
+                        <button ref={this.closePanelButtonRef} type="button"> </button>
+                        <button ref={this.zoomInButtonRef} type="button">+</button>
+                        <button ref={this.zoomOutButtonRef} type="button">-</button>
                     </div>
                 </div>
             </div>

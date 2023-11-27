@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { FSComponent, DisplayComponent, VNode, MapSubject, Subscribable, Subscription } from '@microsoft/msfs-sdk';
+import { FSComponent, DisplayComponent, VNode, MapSubject, Subscribable, Subscription, SubscribableUtils } from '@microsoft/msfs-sdk';
 
 import './ContextMenu.scss';
 
@@ -14,6 +14,8 @@ export interface ContextMenuProps {
     y: Subscribable<number>,
 
     items: ContextMenuItemData[],
+
+    closeMenu: () => void,
 }
 
 export class ContextMenu extends DisplayComponent<ContextMenuProps> {
@@ -29,11 +31,21 @@ export class ContextMenu extends DisplayComponent<ContextMenuProps> {
         );
     }
 
+    private readonly handleItemPressed = (item: ContextMenuItemData) => {
+        item.onPressed?.();
+
+        this.props.closeMenu();
+    };
+
     render(): VNode | null {
         return (
             <div class="oanc-context-menu" style={this.style}>
                 {this.props.items.map((it) => (
-                    <ContextMenuItem name={it.name} disabled={it.disabled} onPressed={it.onPressed ?? (() => {})} />
+                    <ContextMenuItem
+                        name={it.name}
+                        disabled={SubscribableUtils.toSubscribable(it.disabled, true)}
+                        onPressed={() => this.handleItemPressed(it)}
+                    />
                 ))}
             </div>
         );
@@ -43,7 +55,7 @@ export class ContextMenu extends DisplayComponent<ContextMenuProps> {
 export interface ContextMenuItemData {
     name: string,
 
-    disabled?: boolean,
+    disabled?: boolean | Subscribable<boolean>,
 
     onPressed?: () => void,
 }
@@ -51,7 +63,7 @@ export interface ContextMenuItemData {
 export interface ContextMenuItemProps {
     name: string,
 
-    disabled: boolean,
+    disabled: Subscribable<boolean>,
 
     onPressed: () => void,
 }
