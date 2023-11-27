@@ -245,28 +245,19 @@ class CDUFlightPlanPage {
 
             // Bearing/Track
             let bearingTrack = "";
-            const trueBearing = SimVar.GetSimVarValue("L:A32NX_EFIS_L_TO_WPT_BEARING", "Degrees");
-            if (isActive && trueBearing >= 0) {
-                bearingTrack = `BRG${trueBearing.toFixed(0).padStart(3, "0")}\u00b0`;
+            const maybeBearingTrackTo = pwp ? targetPlan.maybeElementAt(fpIndex) : wp;
+            const bearingTrackTo = maybeBearingTrackTo ? maybeBearingTrackTo : wpNext;
+            switch (rowI) {
+                case 1:
+                    const trueBearing = SimVar.GetSimVarValue("L:A32NX_EFIS_L_TO_WPT_BEARING", "Degrees");
+                    if (isActive && trueBearing >= 0) {
+                        bearingTrack = `BRG${trueBearing.toFixed(0).padStart(3,"0")}\u00b0`;
+                    }
+                    break;
+                case 2:
+                    bearingTrack = formatTrack(wpPrev, bearingTrackTo);
+                    break;
             }
-            // const bearingTrackTo = wp ? wp : wpNext; TODO port over
-            // if (wpPrev && bearingTrackTo && bearingTrackTo.additionalData.legType !== 14 /* HM */) {
-            //     const magVar = Facilities.getMagVar(wpPrev.infos.coordinates.lat, wpPrev.infos.coordinates.long);
-            //     switch (rowI) {
-            //         case 1:
-            //             if (fpm.getActiveWaypointIndex() === fpIndex) {
-            //                 const br = fpm.getBearingToActiveWaypoint();
-            //                 const bearing = A32NX_Util.trueToMagnetic(br, magVar);
-            //                 bearingTrack = `BRG${bearing.toFixed(0).padStart(3,"0")}\u00b0`;
-            //             }
-            //             break;
-            //         case 2:
-            //             const tr = Avionics.Utils.computeGreatCircleHeading(wpPrev.infos.coordinates, bearingTrackTo.infos.coordinates);
-            //             const track = A32NX_Util.trueToMagnetic(tr, magVar);
-            //             bearingTrack = `{${fpm.isCurrentFlightPlanTemporary() ? "yellow" : "green"}}TRK${track.toFixed(0).padStart(3,"0")}\u00b0{end}`;
-            //             break;
-            //     }
-            // }
 
             const constraintType = wp ? CDUVerticalRevisionPage.constraintType(mcdu, fpIndex, targetPlan.index, inAlternate) : WaypointConstraintType.Unknown;
             if (constraintType === WaypointConstraintType.CLB) {
@@ -976,6 +967,18 @@ function formatAltitudeOrLevel(mcdu, alt, useTransAlt) {
     }
 
     return formatAlt(alt);
+}
+
+function formatTrack(from, to) {
+    // TODO: Does this show something for non-waypoint terminated legs?
+    if (!from || !from.definition || !from.definition.waypoint || !from.definition.waypoint.location || !to || !to.definition || !to.definition.waypoint || to.definition.type === "HM") {
+        return "";
+    }
+
+    const magVar = Facilities.getMagVar(from.definition.waypoint.location.lat, from.definition.waypoint.location.long);
+    const tr = Avionics.Utils.computeGreatCircleHeading(from.definition.waypoint.location, to.definition.waypoint.location);
+    const track = A32NX_Util.trueToMagnetic(tr, magVar);
+    return `TRK${track.toFixed(0).padStart(3,"0")}\u00b0`;
 }
 
 /**
