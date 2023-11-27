@@ -6,11 +6,10 @@ import React, { useEffect, useState } from 'react';
 import { SelectInput } from 'instruments/src/EFB/UtilComponents/Form/SelectInput/SelectInput';
 import { t } from 'instruments/src/EFB/translation';
 import {
-    FailureGenContext, FailureGenData, useFailureGeneratorsSettings, findGeneratorFailures, ModalContext,
+    FailureGenContext, FailureGenData, useFailureGeneratorsSettings, ModalContext,
     ModalGenType, updateSettings, sendRefresh, FailureGenFeedbackEvent, sendFailurePool,
 } from 'instruments/src/EFB/Failures/FailureGenerators/EFBRandomFailureGen';
 import { InfoCircle, PlusLg } from 'react-bootstrap-icons';
-import { AtaChapterNumber, AtaChaptersTitle } from '@flybywiresim/fbw-sdk';
 import { FailureGeneratorInfoModalUI } from 'instruments/src/EFB/Failures/FailureGenerators/EFBFailureGeneratorInfo';
 import { FailureGeneratorCardTemplateUI } from 'instruments/src/EFB/Failures/FailureGenerators/EFBFailureGeneratorCardTemplateUI';
 import { ScrollableContainer } from '../../UtilComponents/ScrollableContainer';
@@ -215,60 +214,4 @@ export const generatorsCardList = (settings: FailureGenContext) => {
     }
 
     return temp;
-};
-
-interface FailureShortListProps {
-    failureGenContext: FailureGenContext,
-    uniqueID: string,
-    reducedAtaChapterNumbers: AtaChapterNumber[]
-}
-
-export const FailureShortList: React.FC<FailureShortListProps> = ({ failureGenContext, uniqueID, reducedAtaChapterNumbers }) => {
-    const { allFailures } = useFailuresOrchestrator();
-
-    const maxNumberOfFailureToDisplay = 4;
-
-    let listOfSelectedFailures = findGeneratorFailures(allFailures, failureGenContext.generatorFailuresGetters, uniqueID);
-
-    if (listOfSelectedFailures.length === allFailures.length) {
-        return <div className="bg-theme-accent mb-1 rounded-md p-1">{t('Failures.Generators.AllSystems')}</div>;
-    }
-    if (listOfSelectedFailures.length === 0) return <div className="bg-theme-accent mb-1 rounded-md p-1">{t('Failures.Generators.NoFailure')}</div>;
-
-    const chaptersFullySelected: AtaChapterNumber[] = [];
-
-    for (const chapter of reducedAtaChapterNumbers) {
-        const failuresActiveInChapter = listOfSelectedFailures.filter((failure) => failure.ata === chapter);
-        if (failuresActiveInChapter.length === allFailures.filter((failure) => failure.ata === chapter).length) {
-            chaptersFullySelected.push(chapter);
-            listOfSelectedFailures = listOfSelectedFailures.filter((failure) => failure.ata !== chapter);
-        }
-    }
-
-    const subSetOfChapters = chaptersFullySelected.slice(0, Math.min(maxNumberOfFailureToDisplay, chaptersFullySelected.length));
-    const subSetOfSelectedFailures = listOfSelectedFailures.slice(0, Math.min(maxNumberOfFailureToDisplay - subSetOfChapters.length, listOfSelectedFailures.length));
-    const chaptersToDisplay = subSetOfChapters.map((chapter) => (
-        <div className="bg-theme-accent mb-1 grow rounded-md p-1">
-            {AtaChaptersTitle[chapter]}
-        </div>
-    ));
-
-    const singleFailuresToDisplay = subSetOfSelectedFailures.map((failure) => (
-        <div className="bg-theme-accent mb-1 grow rounded-md p-1">
-            {failure.name}
-        </div>
-    ));
-
-    return (
-        <div className="flex flex-col">
-            {chaptersToDisplay}
-            {singleFailuresToDisplay}
-            {listOfSelectedFailures.length + chaptersFullySelected.length > maxNumberOfFailureToDisplay ? (
-                <div className="mb-1 grow p-1">
-                    ...+
-                    {Math.max(0, listOfSelectedFailures.length + chaptersFullySelected.length - maxNumberOfFailureToDisplay)}
-                </div>
-            ) : <></>}
-        </div>
-    );
 };
