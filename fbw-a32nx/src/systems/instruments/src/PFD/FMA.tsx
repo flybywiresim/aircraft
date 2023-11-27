@@ -632,11 +632,14 @@ class AB3Cell extends DisplayComponent<CellProps> {
 
     private getText() {
         if (this.athrModeMessage === 0) {
+            /* use vertical bar instead of : for PRESEL text since : is not aligned to the bottom as the other fonts and the font file is used on ECAM, ND etc.
+                vertical bar is mapped to ":" aligned to bottom in font file
+                 */
             if (this.speedPreselVal !== -1 && this.machPreselVal === -1) {
                 const text = Math.round(this.speedPreselVal);
-                this.textSub.set(`SPEED SEL ${text}`);
+                this.textSub.set(`SPEED SEL|${text}`);
             } else if (this.machPreselVal !== -1 && this.speedPreselVal === -1) {
-                this.textSub.set(`MACH SEL ${this.machPreselVal.toFixed(2)}`);
+                this.textSub.set(`MACH SEL|${this.machPreselVal.toFixed(2)}`);
             } else if (this.machPreselVal === -1 && this.speedPreselVal === -1) {
                 this.textSub.set('');
             }
@@ -668,7 +671,7 @@ class AB3Cell extends DisplayComponent<CellProps> {
 
     render(): VNode {
         return (
-            <text class="FontMedium MiddleAlign Cyan" x="35.434673" y="21.656223">{this.textSub}</text>
+            <text class="FontMedium MiddleAlign Cyan" style="white-space: pre" x="35.434673" y="21.656223">{this.textSub}</text>
         );
     }
 }
