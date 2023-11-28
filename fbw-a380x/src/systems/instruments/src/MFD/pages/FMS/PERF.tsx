@@ -36,6 +36,7 @@ import { TakeoffDerated, TakeoffPowerSetting } from 'instruments/src/MFD/fmgc';
 import { ConditionalComponent } from 'instruments/src/MFD/pages/common/ConditionalComponent';
 import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { VerticalCheckpointReason } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
+import { Feet } from 'msfs-geo';
 
 interface MfdFmsPerfProps extends AbstractMfdPageProps {
 }

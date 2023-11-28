@@ -34,7 +34,7 @@ import { MfdFmsFplnArr } from 'instruments/src/MFD/pages/FMS/F-PLN/ARRIVAL';
 import { MfdFmsFplnDirectTo } from 'instruments/src/MFD/pages/FMS/F-PLN/DIRECT-TO';
 import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
-import { Coordinates, distanceTo } from 'msfs-geo';
+import { Coordinates, DegreesTrue, NauticalMiles, distanceTo } from 'msfs-geo';
 import { EfisSymbols } from '@fmgc/efis/EfisSymbols';
 import { NavaidTuner } from '@fmgc/navigation/NavaidTuner';
 import { NavaidSelectionManager } from '@fmgc/navigation/NavaidSelectionManager';
@@ -43,22 +43,22 @@ import { NavigationDatabaseService } from '@fmgc/flightplanning/new/NavigationDa
 import { MfdFlightManagementService } from 'instruments/src/MFD/pages/common/FlightManagementService';
 import { MfdFmsFplnDuplicateNames } from 'instruments/src/MFD/pages/FMS/F-PLN/DUPLICATE_NAMES';
 import { DatabaseItem, Waypoint } from 'msfs-navdata';
-import { DataInterface } from '@fmgc/flightplanning/new/interface/DataInterface';
 import { DisplayInterface } from '@fmgc/flightplanning/new/interface/DisplayInterface';
 import { FmsErrorType } from '@fmgc/FmsError';
 
-import { WaypointFactory } from '@fmgc/flightplanning/new/waypoints/WaypointFactory';
 import { FmgcDataInterface } from 'instruments/src/MFD/fmgc';
 import { MfdFmsFplnAirways } from 'instruments/src/MFD/pages/FMS/F-PLN/AIRWAYS';
 import { MfdFmsPositionIrs } from 'instruments/src/MFD/pages/FMS/POSITION/IRS';
 import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
 import { getFlightPhaseManager } from '@fmgc/flightphase';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { NXDataStore } from '@flybywiresim/fbw-sdk';
+import { Fix, NXDataStore } from '@flybywiresim/fbw-sdk';
 import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/VERT_REV';
 import { MfdFmsFplnHold } from 'instruments/src/MFD/pages/FMS/F-PLN/HOLD';
 import { MfdSimvars } from './shared/MFDSimvarPublisher';
 import { DisplayUnit } from '../MsfsAvionicsCommon/displayUnit';
+import { DataManager, PilotWaypoint } from '@fmgc/flightplanning/new/DataManager';
+import { DataInterface } from '@fmgc/flightplanning/new/interface/DataInterface';
 
 export const getDisplayIndex = () => {
     const url = document.getElementsByTagName('a380x-mfd')[0].getAttribute('url');
@@ -123,6 +123,8 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
     private efisSymbols = new EfisSymbols(this.guidanceController, this.flightPlanService, this.navaidTuner);
 
     private flightPhaseManager = getFlightPhaseManager();
+
+    private dataManager = new DataManager(this);
 
     private fmService = new MfdFlightManagementService(this, this.flightPlanService, this.guidanceController, this.fmgc, this.navigationProvider, this.flightPhaseManager);
 
@@ -381,37 +383,62 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
         return undefined;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    createLatLonWaypoint(coordinates: Coordinates, stored: boolean): Waypoint {
-        const newWpt = WaypointFactory.fromLocation(
-            `${coordinates.lat > 0 ? 'N' : 'S'}${coordinates.lat.toFixed(0).padStart(2, '0')}${coordinates.long > 0 ? 'E' : 'W'}${coordinates.long.toFixed(0).padStart(3, '0')}`,
-            coordinates,
-        );
-        this.fmService.latLongStoredWaypoints.push(newWpt);
-
-        return newWpt;
+    createLatLonWaypoint(coordinates: Coordinates, stored: boolean, ident?: string): PilotWaypoint {
+        return this.dataManager.createLatLonWaypoint(coordinates, stored, ident);
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    createPlaceBearingPlaceBearingWaypoint(place1: Waypoint, bearing1: DegreesTrue, place2: Waypoint, bearing2: DegreesTrue, stored: boolean): Waypoint {
-        const newWpt = WaypointFactory.fromPlaceBearingPlaceBearing(
-            `PBX${(this.fmService.latLongStoredWaypoints.length + 1).toString().padStart(2, '0')}`,
-            place1.location,
-            bearing1,
-            place2.location,
-            bearing2,
-        );
-        this.fmService.latLongStoredWaypoints.push(newWpt);
-
-        return newWpt;
+    createPlaceBearingPlaceBearingWaypoint(place1: Fix, bearing1: DegreesTrue, place2: Fix, bearing2: DegreesTrue, stored?: boolean, ident?: string): PilotWaypoint {
+        return this.dataManager.createPlaceBearingPlaceBearingWaypoint(place1 as Waypoint, bearing1, place2 as Waypoint, bearing2, stored, ident);
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    createPlaceBearingDistWaypoint(place: Waypoint, bearing: DegreesTrue, distance: NauticalMiles, stored: boolean): Waypoint {
-        const newWpt = WaypointFactory.fromPlaceBearingDistance(`PBD${(this.fmService.latLongStoredWaypoints.length + 1).toString().padStart(2, '0')}`, place.location, bearing, distance);
-        this.fmService.latLongStoredWaypoints.push(newWpt);
+    createPlaceBearingDistWaypoint(place: Fix, bearing: DegreesTrue, distance: NauticalMiles, stored?: boolean, ident?: string): PilotWaypoint {
+        return this.dataManager.createPlaceBearingDistWaypoint(place as Waypoint, bearing, distance, stored, ident);
+    }
 
-        return newWpt;
+    getStoredWaypointsByIdent(ident: string): PilotWaypoint[];
+
+    /**
+     * Checks whether a waypoint is currently in use
+     * @param waypoint the waypoint to look for
+     */
+    async isWaypointInUse(waypoint: Waypoint): Promise<boolean> {
+        // Check in all flight plans
+        if (this.flightPlanService.hasActive) {
+            this.flightPlanService.active.allLegs.forEach((it) => {
+                if (it.isDiscontinuity === false && it.definition.waypoint.databaseId === waypoint.databaseId) {
+                    return true;
+                }
+            });
+        }
+
+        if (this.flightPlanService.hasTemporary) {
+            this.flightPlanService.temporary.allLegs.forEach((it) => {
+                if (it.isDiscontinuity === false && it.definition.waypoint.databaseId === waypoint.databaseId) {
+                    return true;
+                }
+            });
+        }
+
+        for (let i = 1; i <= 3; i++) {
+            if (this.flightPlanService.hasSecondary(i)) {
+                this.flightPlanService.secondary(i).allLegs.forEach((it) => {
+                    if (it.isDiscontinuity === false && it.definition.waypoint.databaseId === waypoint.databaseId) {
+                        return true;
+                    }
+                });
+            }
+        }
+
+        if (this.flightPlanService.hasUplink) {
+            this.flightPlanService.uplink.allLegs.forEach((it) => {
+                if (it.isDiscontinuity === false && it.definition.waypoint.databaseId === waypoint.databaseId) {
+                    return true;
+                }
+            });
+        }
+
+
+        return false;
     }
 
     /**

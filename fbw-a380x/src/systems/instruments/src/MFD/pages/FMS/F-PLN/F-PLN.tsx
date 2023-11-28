@@ -17,6 +17,7 @@ import { WindVector } from '@fmgc/guidance/vnav/wind';
 import { PseudoWaypoint } from '@fmgc/guidance/PseudoWaypoint';
 import { Coordinates, bearingTo } from 'msfs-geo';
 import { FmgcFlightPhase } from '@shared/flightphase';
+import { LegType, TurnDirection } from '../../../../../../../../../fbw-common/src/systems/navdata';
 
 interface MfdFmsFplnProps extends AbstractMfdPageProps {
 }
@@ -181,6 +182,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             return seconds * 1000;
         };
 
+        console.log(jointFlightPlan);
         for (let i = 0; i < jointFlightPlan.length; i++) {
             const leg = jointFlightPlan[i];
             let reduceDistanceBy = 0;
@@ -225,6 +227,23 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                     + this.loadedFlightPlan.departureRunwayTransitionSegment.legCount
                     + this.loadedFlightPlan.departureEnrouteTransitionSegment.legCount));
 
+                if (leg.type === LegType.HM) {
+                    // Insert special HM line, TODO
+                    const holdData: FplnLineHoldDisplayData = {
+                        type: FplnLineType.Hold,
+                        originalLegIndex: i,
+                        isPseudoWaypoint: false,
+                        isAltnWaypoint: i > (this.loadedFlightPlan.allLegs.length - 1),
+                        isMissedAppchWaypoint: i >= this.loadedFlightPlan.firstMissedApproachLegIndex,
+                        ident: leg.definition.turnDirection === TurnDirection.Left ? 'HOLD L' : 'HOLD R',
+                        distFromLastWpt: leg.definition.length,
+                        holdSpeed: 123
+                    };
+                    this.lineData.push(holdData);
+                }
+
+                const annotation = (leg.type === LegType.HF || leg.type === LegType.HA) ? 'HOLD L' : leg.annotation;
+
                 const data: FplnLineWaypointDisplayData = {
                     type: FplnLineType.Waypoint,
                     originalLegIndex: i,
@@ -232,8 +251,8 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                     isAltnWaypoint: i > (this.loadedFlightPlan.allLegs.length - 1),
                     isMissedAppchWaypoint: i >= this.loadedFlightPlan.firstMissedApproachLegIndex,
                     ident: leg.ident,
-                    overfly: leg.overfly,
-                    annotation: leg.annotation,
+                    overfly: leg.definition.overfly,
+                    annotation: annotation,
                     etaOrSecondsFromPresent: predictionTimestamp(this.props.fmService.guidanceController.vnavDriver.mcduProfile?.waypointPredictions?.get(i)?.secondsFromPresent),
                     transitionAltitude: useTransLevel ? transLevel : transAlt,
                     altitudePrediction: this.props.fmService.guidanceController.vnavDriver.mcduProfile?.waypointPredictions?.get(i)?.altitude ?? 0,
@@ -678,6 +697,7 @@ enum FplnLineFlags {
   enum FplnLineType {
     Waypoint,
     Special,
+    Hold,
 }
 
 interface FplnLineTypeDiscriminator {
@@ -718,14 +738,28 @@ export interface FplnLineWaypointDisplayData extends FplnLineTypeDiscriminator {
     fpa: number;
 }
 
-type FplnLineDisplayData = FplnLineWaypointDisplayData | FplnLineSpecialDisplayData;
+interface FplnLineHoldDisplayData extends FplnLineTypeDiscriminator {
+    // type: FplnLineType.Hold;
+    isPseudoWaypoint: boolean;
+    isAltnWaypoint: boolean;
+    isMissedAppchWaypoint: boolean;
+    ident: string;
+    holdSpeed: number;
+    distFromLastWpt: number;
+}
+
+type FplnLineDisplayData = FplnLineWaypointDisplayData | FplnLineSpecialDisplayData | FplnLineHoldDisplayData;
 
 function isWaypoint(object: FplnLineDisplayData): object is FplnLineWaypointDisplayData {
     return object.type === FplnLineType.Waypoint;
 }
 
-function isSpecial(object: FplnLineDisplayData): object is FplnLineWaypointDisplayData {
+function isSpecial(object: FplnLineDisplayData): object is FplnLineSpecialDisplayData {
     return object.type === FplnLineType.Special;
+}
+
+function isHold(object: FplnLineDisplayData): object is FplnLineHoldDisplayData {
+    return object.type === FplnLineType.Hold;
 }
 
 type lineConstraintsCallbacks = {
@@ -752,7 +786,7 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
     private selectedForRevision = Subject.create(false);
 
     private lineColor = MappedSubject.create(([color, data]) => {
-        if (isWaypoint(data) && (data.isAltnWaypoint === true || data.isMissedAppchWaypoint === true)) {
+        if ((isWaypoint(data) || isHold(data)) && (data.isAltnWaypoint === true || data.isMissedAppchWaypoint === true)) {
             return FplnLineColor.Alternate;
         }
         return color;
@@ -843,14 +877,13 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
                 this.currentlyRenderedType = FplnLineType.Waypoint;
             }
 
-            // TODO: Hold/turn direction
             if (data.overfly === true) {
                 this.identRef.getOrDefault().innerHTML = `<span>${data.ident}<span style="font-size: 24px; vertical-align: baseline;">@</span></span>`;
             } else {
                 this.identRef.getOrDefault().innerText = data.ident;
             }
 
-            // TODO: Hold/turn direction, RNP info
+            // TODO: RNP info
             if (this.annotationRef.getOrDefault()) {
                 this.annotationRef.getOrDefault().innerText = data.annotation;
             }
@@ -896,6 +929,29 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
 
             const delimiter = data.label.length > 13 ? '- - - - -' : '- - - - - - ';
             this.identRef.getOrDefault().innerHTML = `${delimiter}<span style="margin: 0px 15px 0px 15px;">${data.label}</span>${delimiter}`;
+        } else if (isHold(data)) {
+            if (this.currentlyRenderedType !== FplnLineType.Waypoint) {
+                while (this.topRef.getOrDefault().firstChild) {
+                    this.topRef.getOrDefault().removeChild(this.topRef.getOrDefault().firstChild);
+                }
+                FSComponent.render(this.renderWaypointLine(), this.topRef.getOrDefault());
+                this.currentlyRenderedType = FplnLineType.Waypoint;
+            }
+
+            this.identRef.getOrDefault().innerText = data.ident;
+            this.timeRef.getOrDefault().innerText = 'SPD';
+
+            while (this.connectorRef.getOrDefault().firstChild) {
+                this.connectorRef.getOrDefault().removeChild(this.connectorRef.getOrDefault().firstChild);
+            }
+            FSComponent.render(FplnLineConnectorHold(this.lineColor.get()), this.connectorRef.getOrDefault());
+
+            // TODO: True / magnetic track
+            if (this.trackRef.getOrDefault() && this.distRef.getOrDefault() && this.fpaRef.getOrDefault()) {
+                this.trackRef.getOrDefault().innerText = '';
+                this.distRef.getOrDefault().innerText = '';
+                this.fpaRef.getOrDefault().innerText = '';
+            }
         }
     }
 
@@ -1145,6 +1201,10 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
             this.currentlyRenderedType = FplnLineType.Special;
             return <div ref={this.topRef}>{this.renderSpecialLine(data)}</div>;
         }
+        if (isHold(data)) {
+            this.currentlyRenderedType = FplnLineType.Hold;
+            return <div ref={this.topRef}>{this.renderWaypointLine()}</div>;
+        }
         return <></>;
     }
 }
@@ -1219,6 +1279,14 @@ function FplnLineConnectorPseudoWaypoint(lineColor: FplnLineColor, lastLine: boo
                 <line x1="15" y1="50" x2="0" y2="50" />
                 <line x1="15" y1="10" x2="30" y2="10" />
             </g>
+        </svg>
+    );
+}
+
+function FplnLineConnectorHold(lineColor: FplnLineColor): VNode {
+    return (
+        <svg height="72" width="30">
+            <line x1="15" y1="72" x2="15" y2="0" style={`stroke:${lineColor};stroke-width:2`} />
         </svg>
     );
 }

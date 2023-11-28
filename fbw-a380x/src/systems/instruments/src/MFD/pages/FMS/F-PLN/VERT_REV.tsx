@@ -21,6 +21,7 @@ import { FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
 import { RadioButtonGroup } from 'instruments/src/MFD/pages/common/RadioButtonGroup';
 import { Foot } from '../../../../../../../../../fbw-common/src/systems/shared/src';
+import { Knots } from '@flybywiresim/fbw-sdk';
 
 interface MfdFmsFplnVertRevProps extends AbstractMfdPageProps {
 }
@@ -214,7 +215,6 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
         const sub = this.props.bus.getSubscriber<ClockEvents & MfdSimvars>();
 
         // If extra parameter for activeUri is given, navigate to flight phase sub-page
-        console.warn(this.props.uiService.activeUri.get().extra);
         switch (this.props.uiService.activeUri.get().extra) {
         case 'rta':
             this.selectedPageIndex.set(0);

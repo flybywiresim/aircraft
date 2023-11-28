@@ -9,7 +9,7 @@ import { InputField } from 'instruments/src/MFD/pages/common/InputField';
 import { HoldDistFormat, HoldTimeFormat, InboundCourseFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { RadioButtonGroup } from 'instruments/src/MFD/pages/common/RadioButtonGroup';
 import { HoldData, HoldType } from '@fmgc/flightplanning/data/flightplan';
-import { TurnDirection } from '../../../../../../../../../fbw-common/src/systems/navdata';
+import { TurnDirection } from '@flybywiresim/fbw-sdk';
 
 interface MfdFmsFplnHoldProps extends AbstractMfdPageProps {
 }
@@ -17,7 +17,7 @@ interface MfdFmsFplnHoldProps extends AbstractMfdPageProps {
 export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
     private holdType = Subject.create<string>('MODIFIED HOLD AT');
 
-    private waypointIdent = Subject.create<string>('NYLON');
+    private waypointIdent = Subject.create<string>('WAYPOINT');
 
     private inboundCourse = Subject.create<number>(undefined);
 
@@ -45,9 +45,8 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
         console.time('HOLD:onNewData');
 
         if (this.props.fmService.revisedWaypoint()) {
-            const leg = this.props.fmService.flightPlanService.active.legElementAt(this.props.fmService.revisedWaypointIndex.get());
+            const leg = this.loadedFlightPlan.legElementAt(this.props.fmService.revisedWaypointIndex.get());
             const hold = (leg.modifiedHold !== undefined) ? leg.modifiedHold : leg.defaultHold;
-            console.warn(leg);
             if (hold !== undefined) {
                 switch (hold.type) {
                 case HoldType.Computed:
@@ -75,7 +74,8 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
         console.timeEnd('HOLD:onNewData');
     }
 
-    private modifyHold() {
+    private async modifyHold() {
+        console.log(this.inboundCourse.get());
         if (this.props.fmService.revisedWaypoint()) {
             const desiredHold: HoldData = {
                 type: HoldType.Pilot,
@@ -84,15 +84,17 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
                 inboundMagneticCourse: this.inboundCourse.get(),
                 turnDirection: this.turnSelectedIndex.get() === 0 ? TurnDirection.Left : TurnDirection.Right,
             };
+            console.warn(desiredHold);
 
-            this.props.fmService.flightPlanService.addOrEditManualHold(
+            await this.props.fmService.flightPlanService.addOrEditManualHold(
                 this.props.fmService.revisedWaypointIndex.get(),
+                Object.assign({}, desiredHold),
                 desiredHold,
-                desiredHold,
-                this.props.fmService.flightPlanService.active.legElementAt(this.props.fmService.revisedWaypointIndex.get()).defaultHold,
+                this.loadedFlightPlan.legElementAt(this.props.fmService.revisedWaypointIndex.get()).defaultHold,
                 this.props.fmService.revisedWaypointPlanIndex.get(),
                 this.props.fmService.revisedWaypointIsAltn.get(),
             );
+            this.onNewData();
         }
     }
 
@@ -121,6 +123,16 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
             this.tmpyInsertButtonDiv.getOrDefault().style.visibility = (v ? 'visible' : 'hidden');
         }, true));
 
+        this.subs.push(this.legDefiningParameterSelectedIndex.sub(() => {
+            this.showTimeOrDist();
+            this.modifyHold();
+        }));
+
+        this.subs.push(this.inboundCourse.sub(() => this.modifyHold()));
+        this.subs.push(this.turnSelectedIndex.sub(() => this.modifyHold()));
+        this.subs.push(this.legTime.sub(() => this.modifyHold()));
+        this.subs.push(this.legDistance.sub(() => this.modifyHold()));
+
         this.showTimeOrDist();
     }
 
@@ -141,7 +153,6 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
                             <InputField<number>
                                 value={this.inboundCourse}
                                 dataEntryFormat={new InboundCourseFormat()}
-                                onModified={() => this.modifyHold()}
                                 tmpyActive={this.tmpyActive}
                             />
                         </div>
@@ -150,7 +161,6 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
                             <RadioButtonGroup
                                 idPrefix="holdTurnRadio"
                                 selectedIndex={this.turnSelectedIndex}
-                                onModified={() => this.modifyHold()}
                                 values={['LEFT', 'RIGHT']}
                                 tmpyActive={this.tmpyActive}
                             />
@@ -161,10 +171,6 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
                                 idPrefix="holdDefiningParameterRadio"
                                 selectedIndex={this.legDefiningParameterSelectedIndex}
                                 values={['TIME', 'DIST']}
-                                onModified={() => {
-                                    this.showTimeOrDist();
-                                    this.modifyHold();
-                                }}
                                 tmpyActive={this.tmpyActive}
                             />
                             <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; margin-left: 30px;">
@@ -172,15 +178,13 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
                                     <InputField<number>
                                         dataEntryFormat={new HoldTimeFormat()}
                                         value={this.legTime}
-                                        onModified={() => this.modifyHold()}
                                         tmpyActive={this.tmpyActive}
                                     />
                                 </div>
                                 <div ref={this.legDistanceRef}>
                                     <InputField<number>
                                         dataEntryFormat={new HoldDistFormat()}
-                                        value={this.legTime}
-                                        onModified={() => this.modifyHold()}
+                                        value={this.legDistance}
                                         tmpyActive={this.tmpyActive}
                                     />
                                 </div>

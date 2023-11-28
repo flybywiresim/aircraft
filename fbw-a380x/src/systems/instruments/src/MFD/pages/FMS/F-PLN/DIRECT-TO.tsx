@@ -58,7 +58,7 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
                 wpt = fpln.legElementAt(this.props.fmService.flightPlanService.get(this.loadedFlightPlanIndex.get()).activeLegIndex + idx + 1).definition.waypoint;
             }
         } else {
-            wpt = await WaypointEntryUtils.getOrCreateWaypoint(this.props.fmService.mfd, text, true);
+            wpt = await WaypointEntryUtils.getOrCreateWaypoint(this.props.fmService.mfd, text, true, undefined);
         }
 
         await this.props.fmService.flightPlanService.directTo(

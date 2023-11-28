@@ -5,7 +5,7 @@ import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { IconButton } from 'instruments/src/MFD/pages/common/IconButton';
 import { Button } from 'instruments/src/MFD/pages/common/Button';
 import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
-import { Coordinates, distanceTo } from 'msfs-geo';
+import { Coordinates, NauticalMiles, distanceTo } from 'msfs-geo';
 import { DatabaseItem, MegaHertz, NdbNavaid, VhfNavaid, Waypoint } from 'msfs-navdata';
 
 interface MfdFmsFplnDuplicateNamesProps extends AbstractMfdPageProps {
