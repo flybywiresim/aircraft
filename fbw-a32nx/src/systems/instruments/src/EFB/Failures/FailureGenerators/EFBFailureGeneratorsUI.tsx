@@ -159,7 +159,7 @@ export const FailureGeneratorsUI = () => {
             sub1.destroy();
             sub2.destroy();
         };
-    }, []);
+    }, [settings]);
 
     return (
         <>
