@@ -8,7 +8,7 @@ import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 import { InputField } from 'instruments/src/MFD/pages/common/InputField';
 import { AirportFormat, CostIndexFormat, CrzTempFormat, FlightLevelFormat, LongAlphanumericFormat, TripWindFormat, TropoFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { Button, ButtonMenuItem } from 'instruments/src/MFD/pages/common/Button';
-import { defaultTropopauseAlt, maxCertifiedAlt } from 'shared/PerformanceConstants';
+import { defaultTropopauseAlt, maxCertifiedAlt } from '@shared/PerformanceConstants';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { NXDataStore } from '@flybywiresim/fbw-sdk';
 import { SimBriefUplinkAdapter } from '@fmgc/flightplanning/new/uplink/SimBriefUplinkAdapter';

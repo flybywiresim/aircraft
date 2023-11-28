@@ -28,7 +28,7 @@ import {
     WindDirectionFormat,
     WindSpeedFormat,
 } from 'instruments/src/MFD/pages/common/DataEntryFormats';
-import { Mmo, Vmo, maxCertifiedAlt } from 'shared/PerformanceConstants';
+import { Mmo, Vmo, maxCertifiedAlt } from '@shared/PerformanceConstants';
 import { ConfirmationDialog } from 'instruments/src/MFD/pages/common/ConfirmationDialog';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { FmgcFlightPhase } from '@shared/flightphase';

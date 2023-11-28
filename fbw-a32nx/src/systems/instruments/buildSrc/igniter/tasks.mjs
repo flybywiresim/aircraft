@@ -3,7 +3,7 @@ import { join } from 'path';
 import { ExecTask } from '@flybywiresim/igniter';
 import { Directories } from '../directories.mjs';
 
-export function getA32NXInstrumentsIgniterTasks() {
+export function getInstrumentsIgniterTasks() {
     const baseInstruments = fs.readdirSync(join(Directories.instruments, 'src'), { withFileTypes: true })
         .filter((d) => d.isDirectory() && fs.existsSync(join(Directories.instruments, 'src', d.name, 'config.json')));
 

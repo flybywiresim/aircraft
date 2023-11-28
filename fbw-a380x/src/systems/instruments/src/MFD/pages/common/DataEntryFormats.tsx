@@ -1,5 +1,5 @@
 import { Subject, Subscribable } from '@microsoft/msfs-sdk';
-import { Mmo, maxCertifiedAlt } from 'shared/PerformanceConstants';
+import { Mmo, maxCertifiedAlt } from '@shared/PerformanceConstants';
 
 type FieldFormatTuple = [value: string, unitLeading: string, unitTrailing: string];
 export interface DataEntryFormat<T> {
