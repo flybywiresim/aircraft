@@ -1,6 +1,11 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { Clock, FsBaseInstrument, FSComponent, FsInstrument, HEventPublisher, InstrumentBackplane, Subject } from '@microsoft/msfs-sdk';
-import { EfisSide } from '@shared/NavigationDisplay';
-import { NDComponent } from './ND';
+import { ArincEventBus, EfisSide } from '@flybywiresim/fbw-sdk';
+import { NDComponent } from '@flybywiresim/navigation-display';
+
 import { NDSimvarPublisher, NDSimvars } from './NDSimvarPublisher';
 import { AdirsValueProvider } from '../MsfsAvionicsCommon/AdirsValueProvider';
 import { FmsDataPublisher } from '../MsfsAvionicsCommon/providers/FmsDataPublisher';
@@ -9,11 +14,10 @@ import { VorBusPublisher } from '../MsfsAvionicsCommon/providers/VorBusPublisher
 import { TcasBusPublisher } from '../MsfsAvionicsCommon/providers/TcasBusPublisher';
 import { FGDataPublisher } from '../MsfsAvionicsCommon/providers/FGDataPublisher';
 import { NDControlEvents } from './NDControlEvents';
-import { getDisplayIndex } from '../MsfsAvionicsCommon/displayUnit';
+import { DisplayUnit, getDisplayIndex } from '../MsfsAvionicsCommon/displayUnit';
 import { EgpwcBusPublisher } from '../MsfsAvionicsCommon/providers/EgpwcBusPublisher';
 import { DmcPublisher } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import { FMBusPublisher } from '../MsfsAvionicsCommon/providers/FMBusPublisher';
-import { ArincEventBus } from '../MsfsAvionicsCommon/ArincEventBus';
 import { FcuBusPublisher } from '../MsfsAvionicsCommon/providers/FcuBusPublisher';
 
 import './style.scss';
@@ -52,6 +56,12 @@ class NDInstrument implements FsInstrument {
     private readonly adirsValueProvider: AdirsValueProvider<NDSimvars>;
 
     private readonly clock: Clock;
+
+    private displayBrightness = Subject.create(0);
+
+    private displayFailed = Subject.create(false);
+
+    private displayPowered = Subject.create(false);
 
     constructor() {
         const side: EfisSide = getDisplayIndex() === 1 ? 'L' : 'R';
@@ -99,7 +109,24 @@ class NDInstrument implements FsInstrument {
 
         this.adirsValueProvider.start();
 
-        FSComponent.render(<NDComponent bus={this.bus} side={this.efisSide} />, document.getElementById('ND_CONTENT'));
+        const sub = this.bus.getSubscriber<NDSimvars>();
+
+        const isCaptainSide = getDisplayIndex() === 1;
+
+        sub.on(isCaptainSide ? 'potentiometerCaptain' : 'potentiometerFo').whenChanged().handle((value) => {
+            this.displayBrightness.set(value);
+        });
+
+        sub.on(isCaptainSide ? 'elec' : 'elecFo').whenChanged().handle((value) => {
+            this.displayPowered.set(value);
+        });
+
+        FSComponent.render(
+            <DisplayUnit bus={this.bus} brightness={this.displayBrightness} powered={this.displayPowered} failed={this.displayFailed} normDmc={getDisplayIndex()}>
+                <NDComponent bus={this.bus} side={this.efisSide} />
+            </DisplayUnit>,
+            document.getElementById('ND_CONTENT'),
+        );
 
         // Remove "instrument didn't load" text
         document.getElementById('ND_CONTENT').querySelector(':scope > h1').remove();

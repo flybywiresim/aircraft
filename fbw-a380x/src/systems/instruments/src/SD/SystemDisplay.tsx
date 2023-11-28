@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 // import { useInteractionEvent } from '@instruments/common/hooks';
 import { useSimVar } from '@instruments/common/simVars';
-import { CdsDisplayUnit, DisplayUnitID } from '@instruments/common/CdsDisplayUnit';
+import { LegacyCdsDisplayUnit, DisplayUnitID } from '@instruments/common/LegacyCdsDisplayUnit';
 
 // import { getSimVar } from '../util';
 import { EngPage } from './Pages/Engine/EngPage';
@@ -55,11 +55,11 @@ export const SystemDisplay = () => {
     };
 
     return (
-        <CdsDisplayUnit displayUnitId={DisplayUnitID.Sd}>
+        <LegacyCdsDisplayUnit displayUnitId={DisplayUnitID.Sd}>
             <g>
                 {PAGES[theCurrentPage]}
                 <StatusArea />
             </g>
-        </CdsDisplayUnit>
+        </LegacyCdsDisplayUnit>
     );
 };

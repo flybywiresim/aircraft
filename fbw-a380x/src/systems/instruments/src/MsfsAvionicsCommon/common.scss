@@ -1,0 +1,52 @@
+@import "definitions";
+
+.SelfTest {
+  position: absolute;
+  left: 0%;
+  top: 0%;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.SelfTestBackground {
+  fill: $display-background;
+}
+
+.SelfTestText {
+  font-size: 24px;
+  fill: $display-green;
+  visibility: visible !important;
+
+  text-anchor: middle;
+  font-family: "Ecam", monospace;
+}
+
+.MaintenanceMode {
+  position: absolute;
+  left: 0%;
+  top: 0%;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.EngineeringTestMode {
+  position: absolute;
+  left: 0%;
+  top: 0%;
+  width: 100%;
+  height: 100%;
+  border: none;
+  z-index: 999;
+  visibility: visible !important;
+  background-image: url('/Images/fbw-a32nx/Common/thalesTest.svg');
+  background-size: cover;
+  font-family: "Ecam", monospace;
+}
+
+.EngineeringTestModeText {
+  font-size: 21px;
+  color: black;
+  font-family: "Ecam", monospace;
+}
