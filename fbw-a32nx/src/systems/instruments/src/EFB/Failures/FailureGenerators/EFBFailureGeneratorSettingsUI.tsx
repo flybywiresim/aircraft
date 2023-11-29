@@ -133,14 +133,18 @@ interface NextButtonProps {
 export const NextButton: React.FC<NextButtonProps> = ({ failureGenContext }) => {
     if (failureGenContext.modalContext.chainToFailurePool === true) {
         return (
-            <div
-                className="border-theme-accent hover:text-theme-body hover:bg-theme-highlight text-theme-text bg-theme-accent mt-2 rounded-md
-                            border-2 p-2 transition duration-100"
-                onClick={() => {
-                    failureGenContext.setFailureGenModalType(ModalGenType.Failures);
-                }}
-            >
-                {t('Failures.Generators.Next')}
+            <div className="divide-theme-accent w-full flex-none divide-y-2 pb-4 pt-2">
+                <div className="h-1" />
+                <div className="h-1" />
+                <div
+                    className="border-theme-accent hover:text-theme-body hover:bg-theme-highlight text-theme-text bg-theme-accent mt-2 w-full
+                            rounded-md border-2 p-2 transition duration-100"
+                    onClick={() => {
+                        failureGenContext.setFailureGenModalType(ModalGenType.Failures);
+                    }}
+                >
+                    {t('Failures.Generators.Next')}
+                </div>
             </div>
         );
     }
@@ -201,7 +205,7 @@ export const FailureGeneratorDetailsModalUI: React.FC<{ failureGenContext: Failu
     };
 
     // console.info('MODAL', failureGenContext.modalContext);
-    let displayContent = <></>;
+    let displayContent = [<></>];
     const genNumber = extractFirstNumber(failureGenContext.modalContext.genUniqueID);
     failureGenContext.setFailureGenModalType(ModalGenType.None);
     failureGenContext.setFailureGenModalCurrentlyDisplayed(ModalGenType.Settings);
@@ -218,16 +222,15 @@ export const FailureGeneratorDetailsModalUI: React.FC<{ failureGenContext: Failu
                     newSetting);
                 updateSettings(generatorSettings.settings, generatorSettings.setSetting, bus, generatorSettings.uniqueGenPrefix);
             };
-            displayContent = (
-                <ScrollableContainer height={48}>
-                    <div className="divide-theme-accent w-full divide-y-2 pt-4">
+            displayContent = [(
+                <ScrollableContainer height={48} innerClassName="flex-1">
+                    <div className="divide-theme-accent w-full divide-y-2">
                         <RearmSettingsUI
                             generatorSettings={failureGenContext.modalContext.failureGenData}
                             genID={genNumber}
                             setNewSetting={setNewSetting}
                             failureGenContext={failureGenContext}
                         />
-
                         <FailureGeneratorSingleSettingShortcut
                             title={t('Failures.Generators.NumberOfFailures')}
                             unit=""
@@ -245,7 +248,6 @@ export const FailureGeneratorDetailsModalUI: React.FC<{ failureGenContext: Failu
                             settingIndex={FailuresAtOnceIndex}
                             failureGenContext={failureGenContext}
                         />
-
                         <FailureGeneratorSingleSetting
                             title={t('Failures.Generators.MaxSimultaneous')}
                             unit=""
@@ -264,12 +266,11 @@ export const FailureGeneratorDetailsModalUI: React.FC<{ failureGenContext: Failu
                             failureGenContext={failureGenContext}
                         />
                         {failureGenContext.modalContext.failureGenData.generatorSettingComponents(genNumber, failureGenContext.modalContext, failureGenContext)}
-                        <NextButton
-                            failureGenContext={failureGenContext}
-                        />
                     </div>
-                </ScrollableContainer>
-            );
+                </ScrollableContainer>),
+            (<NextButton
+                failureGenContext={failureGenContext}
+            />)];
         } else {
             closeModal();
         }
@@ -277,16 +278,15 @@ export const FailureGeneratorDetailsModalUI: React.FC<{ failureGenContext: Failu
         closeModal();
     }
     return (
-        <div className="bg-theme-body border-theme-accent flex w-1/2 flex-col items-stretch rounded-md border-2 border-solid px-4 pt-4 text-center">
-            <div className="flex flex-1 flex-row items-stretch justify-between">
+        <div className="bg-theme-body border-theme-accent flex w-1/2 flex-col items-stretch justify-start rounded-md border-2 border-solid px-4 pt-4 text-center">
+            <div className="flex flex-none flex-row items-stretch justify-between">
                 <h2 className="align-left mr-4 grow text-left font-bold text-current">
                     {t('Failures.Generators.SettingsTitle')}
                 </h2>
                 <div />
                 <div
                     className="text-theme-body hover:text-utility-red bg-utility-red hover:bg-theme-body border-utility-red flex-none items-center
-                    justify-center rounded-md border-2 px-4 text-center transition duration-100
-                    "
+                    justify-center rounded-md border-2 px-4 text-center transition duration-100"
                     onClick={() => {
                         closeModal();
                     }}
@@ -294,7 +294,7 @@ export const FailureGeneratorDetailsModalUI: React.FC<{ failureGenContext: Failu
                     X
                 </div>
             </div>
-            { displayContent}
+            {displayContent}
         </div>
     );
 };
