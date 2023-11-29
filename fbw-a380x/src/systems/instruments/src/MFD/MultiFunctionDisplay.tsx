@@ -5,7 +5,7 @@ import React, { FC, useRef, useState } from 'react';
 import { Redirect, Route, Switch, useHistory } from 'react-router-dom';
 import { FlightPlanProvider } from '@instruments/common/flightplan';
 import { Position } from '@instruments/common/types';
-import { CdsDisplayUnit, DisplayUnitID } from '@instruments/common/CdsDisplayUnit';
+import { LegacyCdsDisplayUnit, DisplayUnitID } from '@instruments/common/LegacyCdsDisplayUnit';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { useUpdate } from '@instruments/common/hooks';
 import { EfisSymbols } from '@fmgc/efis/EfisSymbols';
@@ -55,7 +55,7 @@ export const MultiFunctionDisplay: FC<MultiFunctionDisplayProps> = ({ displayUni
 
     return (
         <InputManagerProvider onInputChange={setHideCursor}>
-            <CdsDisplayUnit ref={ref} displayUnitId={DisplayUnitID.CaptMfd}>
+            <LegacyCdsDisplayUnit ref={ref} displayUnitId={DisplayUnitID.CaptMfd}>
                 <MFDMessageManagerProvider>
                     <g style={{ pointerEvents: hideCursor ? 'none' : 'auto', cursor: 'none' }}>
                         <rect width={1000} height={2000} />
@@ -77,7 +77,7 @@ export const MultiFunctionDisplay: FC<MultiFunctionDisplayProps> = ({ displayUni
                         {!hideCursor && <Cursor x={mouse.x ?? 0} y={mouse.y ?? 0} />}
                     </g>
                 </MFDMessageManagerProvider>
-            </CdsDisplayUnit>
+            </LegacyCdsDisplayUnit>
         </InputManagerProvider>
     );
 };

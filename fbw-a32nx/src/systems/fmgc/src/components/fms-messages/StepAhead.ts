@@ -3,8 +3,9 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
-import { FMMessageTypes } from '@shared/FmMessages';
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
+import { FMMessageTypes } from '@flybywiresim/fbw-sdk';
+
 import { FMMessageSelector, FMMessageUpdate } from './FmsMessages';
 
 export class StepAhead implements FMMessageSelector {
