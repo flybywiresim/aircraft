@@ -212,35 +212,35 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     get costIndex() {
-        if(!this.currFlightPlanService) {
+        if (!this.currFlightPlanService) {
             return 0;
         }
         return this.currFlightPlanService.getCostIndex();
     }
 
     set costIndex(ci) {
-        if(!this.currFlightPlanService) {
+        if (!this.currFlightPlanService) {
             return;
         }
         this.currFlightPlanService.setCostIndex(ci);
     }
 
     get costIndexSet() {
-        if(!this.currFlightPlanService) {
+        if (!this.currFlightPlanService) {
             return false;
         }
         return this.currFlightPlanService.getCostIndex() > 0;
     }
 
     get flightNumber() {
-        if(!this.currFlightPlanService) {
+        if (!this.currFlightPlanService) {
             return undefined;
         }
         return this.currFlightPlanService.getFlightNumber();
     }
 
     set flightNumber(flightNumber) {
-        if(!this.currFlightPlanService) {
+        if (!this.currFlightPlanService) {
             return undefined;
         }
         this.currFlightPlanService.setFlightNumber(flightNumber);
@@ -314,10 +314,6 @@ class FMCMainDisplay extends BaseAirliners {
         this.machToCasManualCrossoverCurve.add(0.8, 300);
         this.machToCasManualCrossoverCurve.add(0.82, 350);
 
-       /*  this.cruiseFlightLevel = SimVar.GetGameVarValue("AIRCRAFT CRUISE ALTITUDE", "feet");
-        this.cruiseFlightLevel /= 100;
-        this._cruiseFlightLevel = this.cruiseFlightLevel; */
-
         // TODO port over somehow ?
         // this.flightPlanManager.onCurrentGameFlightLoaded(() => {
         //     this.flightPlanManager.updateFlightPlan(() => {
@@ -371,8 +367,6 @@ class FMCMainDisplay extends BaseAirliners {
         }, 15000);
 
         SimVar.SetSimVarValue('L:A32NX_FM_LS_COURSE', 'number', -1);
-
-
     }
 
     initVariables(resetTakeoffData = true) {
@@ -1876,7 +1870,7 @@ class FMCMainDisplay extends BaseAirliners {
         const _targetFl = Simplane.getAutoPilotDisplayedAltitudeLockValue() / 100;
 
         if (
-            (this.flightPhaseManager.phase === FmgcFlightPhases.CLIMB && _targetFl >  this.currFlightPlanService.getCruiseFlightLevel()) ||
+            (this.flightPhaseManager.phase === FmgcFlightPhases.CLIMB && _targetFl > this.currFlightPlanService.getCruiseFlightLevel()) ||
             (this.flightPhaseManager.phase === FmgcFlightPhases.CRUISE && _targetFl !== this.currFlightPlanService.getCruiseFlightLevel())
         ) {
             this.deleteOutdatedCruiseSteps(this.currFlightPlanService.getCruiseFlightLevel(), _targetFl);
@@ -3238,7 +3232,7 @@ class FMCMainDisplay extends BaseAirliners {
             this.perfTOTemp = NaN;
             // In future we probably want a better way of checking this, as 0 is
             // in the valid flex temperature range (-99 to 99).
-            SimVar.SetSimVarValue("L:A32NX_TO_FLEX_TEMP", "Number", 0);
+            SimVar.SetSimVarValue("L:AIRLINER_TO_FLEX_TEMP", "Number", 0);
             return true;
         }
         let value = parseInt(s);
@@ -3257,7 +3251,7 @@ class FMCMainDisplay extends BaseAirliners {
             value = 0.1;
         }
         this.perfTOTemp = value;
-        SimVar.SetSimVarValue("L:A32NX_TO_FLEX_TEMP", "Number", value);
+        SimVar.SetSimVarValue("L:AIRLINER_TO_FLEX_TEMP", "Number", value);
         return true;
     }
 

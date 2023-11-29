@@ -126,7 +126,7 @@ class CDUVerticalRevisionPage {
 
             [r4Title, r4Cell] = this.formatAltErrorTitleAndValue(waypoint, verticalWaypoint);
 
-            if (mcdu.flightPlanService.getCruiseFlightLevel() && mcdu.flightPlanService.getCruiseFlightLevel() && (mcdu.flightPhaseManager.phase < FmgcFlightPhases.DESCENT || mcdu.flightPhaseManager.phase > FmgcFlightPhases.GOAROUND)) {
+            if (mcdu.flightPlanService.getCruiseFlightLevel() && (mcdu.flightPhaseManager.phase < FmgcFlightPhases.DESCENT || mcdu.flightPhaseManager.phase > FmgcFlightPhases.GOAROUND)) {
                 r5Cell = "STEP ALTS>";
             }
         }

@@ -554,7 +554,7 @@ class CDUPerformancePage {
         const showManagedSpeed = hasFromToPair && mcdu.costIndexSet && Number.isFinite(mcdu.costIndex);
         const canClickManagedSpeed = showManagedSpeed && mcdu.preSelectedCrzSpeed !== undefined && !isPhaseActive;
         let managedSpeedCell = "{small}\xa0---/---{end}[color]white";
-        if (showManagedSpeed && mcdu.flightPlanService.getCruiseFlightLevel() && mcdu.flightPlanService.getCruiseFlightLevel() && Number.isFinite(mcdu.managedSpeedCruise) && Number.isFinite(mcdu.managedSpeedCruiseMach)) {
+        if (showManagedSpeed && mcdu.flightPlanService.getCruiseFlightLevel() && Number.isFinite(mcdu.managedSpeedCruise) && Number.isFinite(mcdu.managedSpeedCruiseMach)) {
             const shouldShowCruiseMach = mcdu.flightPlanService.getCruiseFlightLevel() > 250;
             managedSpeedCell = `{small}${canClickManagedSpeed ? "*" : "\xa0"}${shouldShowCruiseMach ? mcdu.managedSpeedCruiseMach.toFixed(2).replace("0.", ".") : mcdu.managedSpeedCruise.toFixed(0)}{end}[color]green`;
         }
