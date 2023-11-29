@@ -24,6 +24,7 @@ import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { WindProfileFactory } from '@fmgc/guidance/vnav/wind/WindProfileFactory';
 import { FmcWinds, FmcWindVector } from '@fmgc/guidance/vnav/wind/types';
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
+import { EfisInterface } from '@fmgc/efis/EfisInterface';
 import { LnavDriver } from './lnav/LnavDriver';
 import { VnavDriver } from './vnav/VnavDriver';
 
@@ -168,6 +169,8 @@ export class GuidanceController {
 
     private lastFocusedWpIndex = -1;
 
+    private lastEfisInterfaceVersion = -1;
+
     // FIXME only considers the case where F-PLN is shown on the MCDU
     private updateMrpState() {
         if (!this.flightPlanService.hasActive) {
@@ -175,10 +178,7 @@ export class GuidanceController {
         }
 
         // PLAN mode center
-
-        const focusedWpFpIndex = SimVar.GetSimVarValue('L:A32NX_SELECTED_WAYPOINT_FP_INDEX', 'number');
-        const focusedWpIndex = SimVar.GetSimVarValue('L:A32NX_SELECTED_WAYPOINT_INDEX', 'number');
-        const focusedWpInAlternate = SimVar.GetSimVarValue('L:A32NX_SELECTED_WAYPOINT_IN_ALTERNATE', 'Bool');
+        const { fpIndex: focusedWpFpIndex, index: focusedWpIndex, inAlternate: focusedWpInAlternate } = this.efisInterface.planCentre;
 
         if (!this.flightPlanService.has(focusedWpFpIndex)) {
             return;
@@ -210,8 +210,9 @@ export class GuidanceController {
             return;
         }
 
-        if (this.lastFocusedWpIndex !== focusedWpIndex) {
+        if (this.lastFocusedWpIndex !== focusedWpIndex || this.lastEfisInterfaceVersion !== this.efisInterface.version) {
             this.lastFocusedWpIndex = focusedWpIndex;
+            this.lastEfisInterfaceVersion = this.efisInterface.version;
 
             this.efisVectors.forceUpdate();
         }
@@ -281,7 +282,7 @@ export class GuidanceController {
         }
     }
 
-    constructor(fmgc: Fmgc, private flightPlanService: FlightPlanService) {
+    constructor(fmgc: Fmgc, private flightPlanService: FlightPlanService, private efisInterface: EfisInterface) {
         this.verticalProfileComputationParametersObserver = new VerticalProfileComputationParametersObserver(fmgc, flightPlanService);
         this.windProfileFactory = new WindProfileFactory(fmgc, 1);
 
@@ -290,7 +291,7 @@ export class GuidanceController {
         this.lnavDriver = new LnavDriver(flightPlanService, this);
         this.vnavDriver = new VnavDriver(flightPlanService, this, this.verticalProfileComputationParametersObserver, this.atmosphericConditions, this.windProfileFactory);
         this.pseudoWaypoints = new PseudoWaypoints(flightPlanService, this, this.atmosphericConditions);
-        this.efisVectors = new EfisVectors(this.flightPlanService, this);
+        this.efisVectors = new EfisVectors(this.flightPlanService, this, efisInterface);
     }
 
     init() {

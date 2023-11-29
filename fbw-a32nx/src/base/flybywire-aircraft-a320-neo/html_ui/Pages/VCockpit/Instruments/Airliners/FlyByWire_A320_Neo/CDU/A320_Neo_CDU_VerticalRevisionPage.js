@@ -24,6 +24,8 @@ class CDUVerticalRevisionPage {
 
         /** @type {BaseFlightPlan} */
         const targetPlan = mcdu.flightPlan(forPlan, inAlternate);
+        // Use performance data of primary for waypoints in alternaten
+        const performanceData = mcdu.flightPlan(forPlan, false).performanceData;
 
         const confirmConstraint = Number.isFinite(confirmSpeed) || Number.isFinite(confirmAlt);
         const constraintType = CDUVerticalRevisionPage.constraintType(mcdu, wpIndex, forPlan, inAlternate);
@@ -52,21 +54,21 @@ class CDUVerticalRevisionPage {
         if (showDesSpeedLim) {
             speedLimitTitle = "\xa0DES SPD LIM";
             if (mcdu.descentSpeedLimit !== undefined) {
-                speedLimitCell = `{magenta}{${mcdu.descentSpeedLimitPilot ? 'big' : 'small'}}${mcdu.descentSpeedLimit.toFixed(0).padStart(3, "0")}/${this.formatFl(mcdu.descentSpeedLimitAlt, targetPlan.performanceData.transitionLevel.get() * 100)}{end}{end}`;
+                speedLimitCell = `{magenta}{${mcdu.descentSpeedLimitPilot ? 'big' : 'small'}}${mcdu.descentSpeedLimit.toFixed(0).padStart(3, "0")}/${this.formatFl(mcdu.descentSpeedLimitAlt, performanceData.transitionLevel.get() * 100)}{end}{end}`;
             } else {
                 speedLimitCell = "{cyan}*[ ]/[   ]{end}";
             }
         } else if (showSpeedLim) {
             speedLimitTitle = "\xa0CLB SPD LIM";
             if (mcdu.climbSpeedLimit !== undefined) {
-                speedLimitCell = `{magenta}{${mcdu.climbSpeedLimitPilot ? 'big' : 'small'}}${mcdu.climbSpeedLimit.toFixed(0).padStart(3, "0")}/${this.formatFl(mcdu.climbSpeedLimitAlt, targetPlan.performanceData.transitionAltitude.get())}{end}{end}`;
+                speedLimitCell = `{magenta}{${mcdu.climbSpeedLimitPilot ? 'big' : 'small'}}${mcdu.climbSpeedLimit.toFixed(0).padStart(3, "0")}/${this.formatFl(mcdu.climbSpeedLimitAlt, performanceData.transitionAltitude.get())}{end}{end}`;
             } else {
                 speedLimitCell = "{cyan}*[ ]/[   ]{end}";
             }
         }
 
         const speedConstraint = waypoint.speedConstraint ? Math.round(waypoint.speedConstraint.speed).toFixed(0) : undefined;
-        const transAltLevel = constraintType === WaypointConstraintType.DES ? targetPlan.performanceData.transitionLevel.get() * 100 : targetPlan.performanceData.transitionAltitude.get();
+        const transAltLevel = constraintType === WaypointConstraintType.DES ? performanceData.transitionLevel.get() * 100 : performanceData.transitionAltitude.get();
         const altitudeConstraint = this.formatAltConstraint(waypoint.altitudeConstraint, transAltLevel);
 
         let r3Title = "ALT CSTR\xa0";
