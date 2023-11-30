@@ -9,6 +9,8 @@ import { FmgcFlightPhase } from '@shared/flightphase';
 import { FmcWindVector, FmcWinds } from '@fmgc/guidance/vnav/wind/types';
 import { MappedSubject, Subject, UnitType } from '@microsoft/msfs-sdk';
 import { FlightPlanIndex } from '@fmgc/flightplanning/new/FlightPlanManager';
+import { Arinc429Word, Knots, Runway } from '@flybywiresim/fbw-sdk';
+import { Feet } from 'msfs-geo';
 
 export enum TakeoffPowerSetting {
     TOGA = 0,
@@ -211,7 +213,7 @@ export class FmgcData {
 
     public readonly climbSpeedLimit = Subject.create<SpeedLimit>({ speed: 250, underAltitude: 10_000 });
 
-    public readonly cruisePreSelMach = Subject.create<Mach>(undefined);
+    public readonly cruisePreSelMach = Subject.create<number>(undefined);
 
     public readonly cruisePreSelSpeed = Subject.create<Knots>(undefined);
 
@@ -298,7 +300,7 @@ export class FmgcDataInterface implements Fmgc {
         return this.data.climbManagedSpeedFromCostIndex.get();
     }
 
-    getManagedClimbSpeedMach(): Mach {
+    getManagedClimbSpeedMach(): number {
         return this.data.climbManagedSpeedMach.get();
     }
 
@@ -314,6 +316,10 @@ export class FmgcDataInterface implements Fmgc {
         return this.flightPlanService.has(FlightPlanIndex.Active) ? this.flightPlanService?.active.performanceData.transitionAltitude.get() : 18_000;
     }
 
+    getDestinationTransitionLevel(): Feet | undefined {
+        return this.flightPlanService.has(FlightPlanIndex.Active) ? this.flightPlanService?.active.performanceData.transitionLevel.get() : 18_000;
+    }
+
     getCruiseAltitude(): Feet {
         return this.flightPlanService.has(FlightPlanIndex.Active) ? this.flightPlanService?.active.performanceData.cruiseFlightLevel.get() : 32_000;
     }
@@ -326,7 +332,7 @@ export class FmgcDataInterface implements Fmgc {
         return this.data.cruiseManagedSpeedFromCostIndex.get();
     }
 
-    getManagedCruiseSpeedMach(): Mach {
+    getManagedCruiseSpeedMach(): number {
         return this.data.cruiseManagedSpeedMach.get();
     }
 
@@ -358,7 +364,7 @@ export class FmgcDataInterface implements Fmgc {
         return this.data.descentManagedSpeedFromCostIndex.get();
     }
 
-    getManagedDescentSpeedMach(): Mach {
+    getManagedDescentSpeedMach(): number {
         return this.data.descentManagedSpeedMach.get();
     }
 
@@ -414,31 +420,64 @@ export class FmgcDataInterface implements Fmgc {
         return this.flightPlanService.has(FlightPlanIndex.Active) ? this.flightPlanService?.active?.destinationRunway?.thresholdLocation?.alt : undefined;
     }
 
-    activatePreSelSpeedMach(preSel: number) {
-        if (preSel) {
-            if (preSel < 1) {
-                SimVar.SetSimVarValue('H:A320_Neo_FCU_USE_PRE_SEL_MACH', 'number', 1);
-            } else {
-                SimVar.SetSimVarValue('H:A320_Neo_FCU_USE_PRE_SEL_SPEED', 'number', 1);
-            }
-        }
+    getDestinationRunway(): Runway {
+        return this.flightPlanService.has(FlightPlanIndex.Active) ? this.flightPlanService?.active?.destinationRunway : undefined;
     }
 
-    updatePreSelSpeedMach(preSel: number) {
-        // The timeout is required to create a delay for the current value to be read and the new one to be set
-        setTimeout(() => {
-            if (preSel) {
-                if (preSel > 1) {
-                    SimVar.SetSimVarValue('L:A32NX_SpeedPreselVal', 'knots', preSel);
-                    SimVar.SetSimVarValue('L:A32NX_MachPreselVal', 'mach', -1);
-                } else {
-                    SimVar.SetSimVarValue('L:A32NX_SpeedPreselVal', 'knots', -1);
-                    SimVar.SetSimVarValue('L:A32NX_MachPreselVal', 'mach', preSel);
-                }
-            } else {
-                SimVar.SetSimVarValue('L:A32NX_SpeedPreselVal', 'knots', -1);
-                SimVar.SetSimVarValue('L:A32NX_MachPreselVal', 'mach', -1);
+    getDistanceToDestination(): number {
+        return this.guidanceController.vnavDriver.getDestinationPrediction().distanceFromAircraft;
+    }
+
+    /**
+     * Generic function which returns true if engine(index) is ON (N2 > 20)
+     * @returns {boolean}
+     */
+    public isEngineOn(index: number): boolean {
+        return SimVar.GetSimVarValue(`L:A32NX_ENGINE_N2:${index}`, 'number') > 20;
+    }
+    /**
+     * Returns true if any one engine is running (N2 > 20)
+     * @returns {boolean}
+     */
+    //TODO: can this be an util?
+    public isAnEngineOn(): boolean {
+        return this.isEngineOn(1) || this.isEngineOn(2) || this.isEngineOn(3) || this.isEngineOn(4);
+    }
+
+    /**
+     * Returns true only if all engines are running (N2 > 20)
+     * @returns {boolean}
+     */
+    //TODO: can this be an util?
+    isAllEngineOn() {
+        return this.isEngineOn(1) && this.isEngineOn(2) && this.isEngineOn(3) && this.isEngineOn(4);
+    }
+
+    isOnGround() {
+        return SimVar.GetSimVarValue("L:A32NX_LGCIU_1_NOSE_GEAR_COMPRESSED", "Number") === 1 || SimVar.GetSimVarValue("L:A32NX_LGCIU_2_NOSE_GEAR_COMPRESSED", "Number") === 1;
+    }
+
+    isFlying() {
+        return this.getFlightPhase() >= FmgcFlightPhase.Takeoff && this.getFlightPhase() < FmgcFlightPhase.Done;
+    }
+
+    getPressureAltAtElevation(elev, qnh = 1013.2) {
+        const p0 = qnh < 500 ? 29.92 : 1013.2;
+        return elev + 145442.15 * (1 - Math.pow((qnh / p0), 0.190263));
+    }
+
+    getPressureAlt() {
+        for (let n = 1; n <= 3; n++) {
+            const zp = Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_ADR_${n}_ALTITUDE`);
+            if (zp.isNormalOperation()) {
+                return zp.value;
             }
-        }, 200);
+        }
+        return null;
+    }
+
+    getBaroCorrection1() {
+        // FIXME hook up to ADIRU or FCU
+        return Simplane.getPressureValue("millibar");
     }
 }

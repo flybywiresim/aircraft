@@ -517,7 +517,9 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
         this.subs.push(this.toSelectedFlapsIndex.sub((v) => {
             // Convert to FlapConf
-            this.props.fmService.fmgc.data.takeoffFlapsSetting.set(v + 1);
+            const flapConf = v + 1;
+            this.props.fmService.fmgc.data.takeoffFlapsSetting.set(flapConf);
+            this.props.fmService.acInterface.setTakeoffFlaps(flapConf);
         }));
 
         this.subs.push(sub.on('realTime').atFrequency(1).handle((_t) => {
@@ -954,7 +956,10 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                 <div style="margin-top: 15px; align-self: center;">
                                     <InputField<number>
                                         dataEntryFormat={new PercentageFormat(Subject.create(0), Subject.create(99.9))}
-                                        dataHandlerDuringValidation={async (v) => this.props.fmService.fmgc.data.takeoffThsFor.set(v)}
+                                        dataHandlerDuringValidation={async (v) => {
+                                            this.props.fmService.fmgc.data.takeoffThsFor.set(v);
+                                            this.props.fmService.acInterface.setTakeoffTrim(v);
+                                        }}
                                         mandatory={Subject.create(true)}
                                         inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
                                         value={this.props.fmService.fmgc.data.takeoffThsFor}

@@ -4,6 +4,7 @@ import { FlightPhaseManager, FlightPlanIndex } from '@fmgc/index';
 import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
 import { ClockEvents, FSComponent, Subject, Subscription } from '@microsoft/msfs-sdk';
 import { FmgcFlightPhase } from '@shared/flightphase';
+import { FmsAircraftInterface } from 'instruments/src/MFD/FmsAircraftInterface';
 import { MfdComponent } from 'instruments/src/MFD/MFD';
 import { FmgcDataInterface } from 'instruments/src/MFD/fmgc';
 import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
@@ -14,6 +15,8 @@ import { Fix, Waypoint } from 'msfs-navdata';
  */
 export class MfdFlightManagementService {
     protected subs = [] as Subscription[];
+
+    public acInterface: FmsAircraftInterface;
 
     public revisedWaypointIndex = Subject.create<number>(undefined);
 
@@ -64,6 +67,7 @@ export class MfdFlightManagementService {
         public navigationProvider: NavigationProvider,
         public flightPhaseManager: FlightPhaseManager,
     ) {
+        this.acInterface = new FmsAircraftInterface(this.mfd, this.fmgc, this, this.flightPlanService);
         const sub = mfd.props.bus.getSubscriber<ClockEvents & MfdSimvars>();
 
         this.subs.push(sub.on('realTime').atFrequency(1).handle((_t) => {
@@ -84,7 +88,7 @@ export class MfdFlightManagementService {
         }));
     }
 
-    getLandingWeight(): number {
+    public getLandingWeight(): number {
         if (this.enginesWereStarted.get() === false) {
             // On ground, engines off
             // LW = TOW - TRIP
@@ -100,12 +104,23 @@ export class MfdFlightManagementService {
         return this.getGrossWeight() - this.getTripFuel() - (this.fmgc.data.taxiFuel.get() ?? 0);
     }
 
-    getGrossWeight(): number {
+    public getGrossWeight(): number {
         // Value received from FQMS, or falls back to ZFW + FOB
-        return SimVar.GetSimVarValue('TOTAL WEIGHT', 'pounds') * 0.453592;
+        // return SimVar.GetSimVarValue('TOTAL WEIGHT', 'pounds') * 0.453592;
+
+        let fmGW = 0;
+        if (this.fmgc.isAnEngineOn() && isFinite(this.fmgc.data.zeroFuelWeight.get())) {
+            fmGW = (this.fmgc.getFOB() + this.fmgc.data.zeroFuelWeight.get());
+        } else if (isFinite(this.fmgc.data.blockFuel.get()) && isFinite(this.fmgc.data.zeroFuelWeight.get())) {
+            fmGW = (this.fmgc.data.blockFuel.get() + this.fmgc.data.zeroFuelWeight.get());
+        } else {
+            fmGW = 0;
+        }
+        SimVar.SetSimVarValue("L:A32NX_FM_GROSS_WEIGHT", "Number", fmGW);
+        return fmGW;
     }
 
-    getTakeoffWeight(): number {
+    public getTakeoffWeight(): number {
         if (this.enginesWereStarted.get() === false) {
             // On ground, engines off
             // TOW before engine start: TOW = ZFW + BLOCK - TAXI
@@ -127,7 +142,7 @@ export class MfdFlightManagementService {
         return (SimVar.GetSimVarValue('TOTAL WEIGHT', 'pounds') * 0.453592 - (this.fmgc.data.taxiFuel.get() ?? 0));
     }
 
-    getTripFuel(): number {
+    public getTripFuel(): number {
         return 25_000; // Dummy value
     }
 }
