@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ClockEvents, DisplayComponent, FSComponent, VNode } from '@microsoft/msfs-sdk';
-import { Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
-import { ArincEventBus } from '../MsfsAvionicsCommon/ArincEventBus';
+import { ArincEventBus, Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
+
 import { calculateHorizonOffsetFromPitch } from './PFDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
