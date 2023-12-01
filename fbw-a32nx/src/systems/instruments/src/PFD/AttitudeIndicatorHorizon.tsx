@@ -3,9 +3,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ClockEvents, ConsumerSubject, DisplayComponent, FSComponent, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import { Arinc429Register, Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
+import { ArincEventBus, Arinc429Register, Arinc429Word, Arinc429WordData, Arinc429RegisterSubject, Arinc429ConsumerSubject } from '@flybywiresim/fbw-sdk';
 
-import { Arinc429RegisterSubject } from 'instruments/src/MsfsAvionicsCommon/Arinc429RegisterSubject';
 import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import {
     calculateHorizonOffsetFromPitch,
@@ -17,8 +16,6 @@ import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { HorizontalTape } from './HorizontalTape';
 import { getDisplayIndex } from './PFD';
-import { ArincEventBus } from '../MsfsAvionicsCommon/ArincEventBus';
-import { Arinc429ConsumerSubject } from '../MsfsAvionicsCommon/Arinc429ConsumerSubject';
 
 const DisplayRange = 35;
 const DistanceSpacing = 15;

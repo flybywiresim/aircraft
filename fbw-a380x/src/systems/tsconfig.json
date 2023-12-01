@@ -1,9 +1,15 @@
 {
     "compilerOptions": {
-        "target": "ESNext",
-        "baseUrl": ".",
-        "typeRoots": ["../typings", "../node_modules/@types"],
-        "moduleResolution": "node",
+      "target": "ES2017",
+      "baseUrl": ".",
+      "resolveJsonModule" : true,
+      "skipLibCheck": true,
+      "typeRoots": [
+        "../../../fbw-common/src/typings"
+      ],
+      "moduleResolution": "node",
+      "allowSyntheticDefaultImports": true,
+      "jsx": "react",
         "paths": {
             "@shared/*": ["./shared/src/*"],
             "@instruments/common/*": ["./instruments/src/Common/*"],
@@ -11,7 +17,8 @@
             "@fmgc/*": ["./fmgc/src/*"],
             "@flybywiresim/failures": ["failures"],
             "@tcas/*": ["./tcas/src/*"],
-            "@typings/*": ["../typings"]
+            "@typings/*": ["../typings"],
+            "@flybywiresim/fbw-sdk": ["../../../fbw-common/src/systems/index.ts"]
         }
     }
 }

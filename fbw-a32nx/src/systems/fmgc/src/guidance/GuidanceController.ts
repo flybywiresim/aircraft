@@ -3,16 +3,16 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
+import { EfisSide, EfisNdMode, efisRangeSettings, SimVarString } from '@flybywiresim/fbw-sdk';
+
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { PseudoWaypoint } from '@fmgc/guidance/PseudoWaypoint';
 import { PseudoWaypoints } from '@fmgc/guidance/lnav/PseudoWaypoints';
 import { EfisVectors } from '@fmgc/efis/EfisVectors';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { EfisState } from '@fmgc/guidance/FmsState';
-import { EfisSide, EfisNdMode, rangeSettings } from '@shared/NavigationDisplay';
 import { TaskCategory, TaskQueue } from '@fmgc/guidance/TaskQueue';
 import { HMLeg } from '@fmgc/guidance/lnav/legs/HX';
-import { SimVarString } from '@flybywiresim/fbw-sdk';
 import { getFlightPhaseManager } from '@fmgc/flightphase';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { VerticalProfileComputationParametersObserver } from '@fmgc/guidance/vnav/VerticalProfileComputationParameters';
@@ -124,7 +124,7 @@ export class GuidanceController {
 
     private updateEfisState(side: EfisSide, state: EfisState): void {
         const ndMode = SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_MODE`, 'Enum') as EfisNdMode;
-        const ndRange = rangeSettings[SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_RANGE`, 'Enum')];
+        const ndRange = efisRangeSettings[SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_RANGE`, 'Enum')];
 
         if (state?.mode !== ndMode || state?.range !== ndRange) {
             this.taskQueue.cancelAllInCategory(TaskCategory.EfisVectors);

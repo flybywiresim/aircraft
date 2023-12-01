@@ -3,11 +3,11 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ConsumerSubject, DisplayComponent, FSComponent, MappedSubject, NodeReference, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import { Arinc429RegisterSubject } from 'instruments/src/MsfsAvionicsCommon/Arinc429RegisterSubject';
+import { ArincEventBus, Arinc429RegisterSubject } from '@flybywiresim/fbw-sdk';
+
 import { SimplaneBaroMode, SimplaneValues } from 'instruments/src/PFD/shared/SimplaneValueProvider';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
-import { ArincEventBus } from '../MsfsAvionicsCommon/ArincEventBus';
 
 const TensDigits = (value: number) => {
     let text: string;

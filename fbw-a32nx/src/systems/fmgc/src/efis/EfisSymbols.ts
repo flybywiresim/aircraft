@@ -3,10 +3,12 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { GenericDataListenerSync, LegType, RunwaySurface, TurnDirection, VorType } from '@flybywiresim/fbw-sdk';
+import {
+    GenericDataListenerSync, LegType, RunwaySurface, TurnDirection, VorType, EfisOption, EfisNdMode, NdSymbol, NdSymbolTypeFlags, EfisNdRangeValue,
+    efisRangeSettings,
+} from '@flybywiresim/fbw-sdk';
 
 import { FlightPlanManager, WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
-import { EfisOption, EfisNdMode, NdSymbol, NdSymbolTypeFlags, EfisNdRangeValue, rangeSettings } from '@shared/NavigationDisplay';
 import { GuidanceManager } from '@fmgc/guidance/GuidanceManager';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
@@ -124,7 +126,7 @@ export class EfisSymbols {
         };
 
         for (const side of EfisSymbols.sides) {
-            const range = rangeSettings[SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_RANGE`, 'number')];
+            const range = efisRangeSettings[SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_RANGE`, 'number')];
             const mode: EfisNdMode = SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_MODE`, 'number');
             const efisOption = SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_OPTION`, 'Enum');
 

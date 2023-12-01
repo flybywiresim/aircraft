@@ -2,9 +2,9 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
+import { FMMessage, FMMessageTypes, Trigger } from '@flybywiresim/fbw-sdk';
+
 import { NavaidTuner } from '@fmgc/navigation/NavaidTuner';
-import { FMMessage, FMMessageTypes } from '@shared/FmMessages';
-import { Trigger } from '@flybywiresim/fbw-sdk';
 import { FMMessageSelector, FMMessageUpdate } from './FmsMessages';
 
 abstract class RwyLsMismatch implements FMMessageSelector {
