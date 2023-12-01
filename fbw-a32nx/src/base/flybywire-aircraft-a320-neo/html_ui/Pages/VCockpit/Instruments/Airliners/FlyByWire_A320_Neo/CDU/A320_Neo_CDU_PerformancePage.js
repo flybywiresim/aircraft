@@ -403,7 +403,7 @@ class CDUPerformancePage {
         // Predictions to altitude
         const vnavDriver = mcdu.guidanceController.vnavDriver;
 
-        const cruiseAltitude = mcdu.flightPlanService.active.performanceData.cruiseFlightLevel.get()() * 100;
+        const cruiseAltitude = mcdu.flightPlanService.active.performanceData.cruiseFlightLevel.get() * 100;
         const fcuAltitude = SimVar.GetSimVarValue("AUTOPILOT ALTITUDE LOCK VAR:3", "feet");
         const altitudeToPredict = mcdu.perfClbPredToAltitudePilot !== undefined ? mcdu.perfClbPredToAltitudePilot : Math.min(cruiseAltitude, fcuAltitude);
 
@@ -554,8 +554,8 @@ class CDUPerformancePage {
         const showManagedSpeed = hasFromToPair && mcdu.costIndexSet && Number.isFinite(mcdu.costIndex);
         const canClickManagedSpeed = showManagedSpeed && mcdu.preSelectedCrzSpeed !== undefined && !isPhaseActive;
         let managedSpeedCell = "{small}\xa0---/---{end}[color]white";
-        if (showManagedSpeed && mcdu.flightPlanService.active.performanceData.cruiseFlightLevel.get()() && Number.isFinite(mcdu.managedSpeedCruise) && Number.isFinite(mcdu.managedSpeedCruiseMach)) {
-            const shouldShowCruiseMach = mcdu.flightPlanService.active.performanceData.cruiseFlightLevel.get()() > 250;
+        if (showManagedSpeed && mcdu.flightPlanService.active.performanceData.cruiseFlightLevel.get() && Number.isFinite(mcdu.managedSpeedCruise) && Number.isFinite(mcdu.managedSpeedCruiseMach)) {
+            const shouldShowCruiseMach = mcdu.flightPlanService.active.performanceData.cruiseFlightLevel.get() > 250;
             managedSpeedCell = `{small}${canClickManagedSpeed ? "*" : "\xa0"}${shouldShowCruiseMach ? mcdu.managedSpeedCruiseMach.toFixed(2).replace("0.", ".") : mcdu.managedSpeedCruise.toFixed(0)}{end}[color]green`;
         }
         const preselTitle = isPhaseActive ? "" : "PRESEL";
@@ -585,7 +585,7 @@ class CDUPerformancePage {
         const [toUtcLabel, toDistLabel] = isFlying ? ["\xa0UTC", "DIST"] : ["", ""];
         const [toReasonCell, toDistCell, toTimeCell] = isFlying ? CDUPerformancePage.formatToReasonDistanceAndTime(mcdu) : ["", "", ""];
         const desCabinRateCell = "{small}-350{end}";
-        const shouldShowStepAltsOption = mcdu.flightPlanService.active.performanceData.cruiseFlightLevel.get()()
+        const shouldShowStepAltsOption = mcdu.flightPlanService.active.performanceData.cruiseFlightLevel.get()
             && (mcdu.flightPhaseManager.phase < FmgcFlightPhases.DESCENT || mcdu.flightPhaseManager.phase > FmgcFlightPhases.GOAROUND);
 
         const bottomRowLabels = ["\xa0PREV", "NEXT\xa0"];
@@ -1155,7 +1155,7 @@ class CDUPerformancePage {
         } else {
             const machAtManualCrossoverAlt = mcdu.casToMachManualCrossoverCurve.evaluate(selectedSpdMach)
             const manualCrossoverAltitude = mcdu.computeManualCrossoverAltitude(machAtManualCrossoverAlt);
-            const shouldShowMach = aircraftAltitude < manualCrossoverAltitude && (!mcdu.flightPlanService.active.performanceData.cruiseFlightLevel.get()() || manualCrossoverAltitude < mcdu.flightPlanService.active.performanceData.cruiseFlightLevel.get()() * 100);
+            const shouldShowMach = aircraftAltitude < manualCrossoverAltitude && (!mcdu.flightPlanService.active.performanceData.cruiseFlightLevel.get() || manualCrossoverAltitude < mcdu.flightPlanService.active.performanceData.cruiseFlightLevel.get() * 100);
 
             return ["SELECTED", `\xa0${Math.round(selectedSpdMach)}${shouldShowMach ? ("{small}/" + machAtManualCrossoverAlt.toFixed(2).replace('0.', '.') + "{end}") : ""}[color]green`];
         }
