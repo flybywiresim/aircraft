@@ -4940,17 +4940,25 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     getOriginTransitionAltitude() {
-        return this.currFlightPlanService.performanceData.transitionAltitude.get();
+        const plan = this.currFlightPlanService.active;
+
+        if (plan) {
+            return plan.performanceData.transitionAltitude.get();
+        }
+
+        return undefined;
     }
 
     getDestinationTransitionLevel() {
-        return this.currFlightPlanService.performanceData.transitionLevel.get();
+        const plan = this.currFlightPlanService.active;
+
+        if (plan) {
+            return plan.performanceData.transitionLevel.get();
+        }
+
+        return undefined;
     }
 
-/*     getCruiseAltitude() {
-        return this.cruiseFlightLevel * 100;
-    }
- */
     getFlightPhase() {
         return this.flightPhaseManager.phase;
     }
