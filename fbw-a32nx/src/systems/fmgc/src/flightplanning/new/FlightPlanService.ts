@@ -472,39 +472,19 @@ export class FlightPlanService implements FlightPlanInterface {
         this.flightPlanManager.get(planIndex).setCruiseFlightLevel(fl);
     }
 
-    getCruiseFlightLevel(planIndex = FlightPlanIndex.Active) {
-        return this.flightPlanManager.get(planIndex).performanceData.cruiseFlightLevel.get();
-    }
-
     setCostIndex(ci: number, planIndex = FlightPlanIndex.Active) {
         this.flightPlanManager.get(planIndex).setCostIndex(ci);
-    }
-
-    getCostIndex(planIndex = FlightPlanIndex.Active) {
-        return this.flightPlanManager.get(planIndex).performanceData.costIndex.get();
     }
 
     setPilotTransitionAltitude(alt: number, planIndex = FlightPlanIndex.Active) {
         this.flightPlanManager.get(planIndex).setTransitionAltitude(alt);
     }
 
-    getTransitionAltitude(planIndex = FlightPlanIndex.Active): number {
-        return this.flightPlanManager.get(planIndex).performanceData.transitionAltitude.get();
-    }
-
     setPilotTransitionLevel(lvl: number, planIndex = FlightPlanIndex.Active) {
         this.flightPlanManager.get(planIndex).setTransitionLevel(lvl);
     }
 
-    getTransitionLevel(planIndex = FlightPlanIndex.Active): number {
-        return this.flightPlanManager.get(planIndex).performanceData.transitionLevel.get();
-    }
-
     setFlightNumber(flightNumber: string, planIndex = FlightPlanIndex.Active) {
         this.flightPlanManager.get(planIndex).setFlightNumber(flightNumber);
-    }
-
-    getFlightNumber(planIndex = FlightPlanIndex.Active): string {
-        return this.flightPlanManager.get(planIndex).flightNumber.get();
     }
 }

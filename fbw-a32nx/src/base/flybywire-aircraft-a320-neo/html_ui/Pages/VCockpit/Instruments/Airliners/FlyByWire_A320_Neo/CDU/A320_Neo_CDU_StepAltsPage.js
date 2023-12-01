@@ -28,7 +28,7 @@ class CDUStepAltsPage {
             : null;
 
         mcdu.setTemplate([
-            ["STEP ALTS {small}FROM{end} {green}FL" + mcdu.flightPlanService.getCruiseFlightLevel() + "{end}"],
+            ["STEP ALTS {small}FROM{end} {green}FL" + mcdu.flightPlanService.active.performanceData.cruiseFlightLevel.get()() + "{end}"],
             ["\xa0ALT\xa0/\xa0WPT", "DIST\xa0TIME"],
             CDUStepAltsPage.formatStepClimbLine(mcdu, legsWithSteps, 0, predictions, isFlying, transitionAltitude),
             [""],
@@ -311,7 +311,7 @@ class CDUStepAltsPage {
      * @param {*} toAltitude Altitude of step
      */
     static checkStepInsertionRules(mcdu, stepLegs, insertAtIndex, toAltitude) {
-        let altitude = mcdu.flightPlanService.getCruiseFlightLevel() * 100;
+        let altitude = mcdu.flightPlanService.active.performanceData.cruiseFlightLevel.get()() * 100;
         let doesHaveStepDescent = false;
 
         let i = 0;
