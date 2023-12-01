@@ -123,7 +123,6 @@ class FMCMainDisplay extends BaseAirliners {
         /** @type {0 | 1 | 2 | 3 | null} Takeoff config entered on PERF TO */
         this.flaps = undefined;
         this.ths = undefined;
-        this.flightNumber = undefined;
         this.cruiseTemperature = undefined;
         this.taxiFuelWeight = undefined;
         this.blockFuel = undefined;
@@ -210,40 +209,6 @@ class FMCMainDisplay extends BaseAirliners {
         ];
     }
 
-    get costIndex() {
-        if (!this.currFlightPlanService) {
-            return 0;
-        }
-        return this.currFlightPlanService.active.performanceData.get();
-    }
-
-    set costIndex(ci) {
-        if (!this.currFlightPlanService) {
-            return;
-        }
-        this.currFlightPlanService.setCostIndex(ci);
-    }
-
-    get costIndexSet() {
-        if (!this.currFlightPlanService) {
-            return false;
-        }
-        return this.currFlightPlanService.active.performanceData.get() > 0;
-    }
-
-    get flightNumber() {
-        if (!this.currFlightPlanService) {
-            return undefined;
-        }
-        return this.currFlightPlanService.active.flightNumber.get();
-    }
-
-    set flightNumber(flightNumber) {
-        if (!this.currFlightPlanService) {
-            return undefined;
-        }
-        this.currFlightPlanService.setFlightNumber(flightNumber);
-    }
 
 
     Init() {
@@ -4957,6 +4922,55 @@ class FMCMainDisplay extends BaseAirliners {
         }
 
         return undefined;
+    }
+
+
+    get costIndex() {
+        const plan = this.currFlightPlanService.active;
+
+        if (plan) {
+            return plan.performanceData.costIndex.get();
+        }
+
+        return undefined;
+    }
+
+    set costIndex(ci) {
+        const plan = this.currFlightPlanService.active;
+
+        if (plan) {
+            this.currFlightPlanService.setCostIndex(ci);
+        }
+    }
+
+    get costIndexSet() {
+        const plan = this.currFlightPlanService.active;
+
+        if (plan) {
+            return plan.performanceData.costIndex.get() > 0;
+        }
+
+        return false;
+    }
+
+    get flightNumber() {
+        const plan = this.currFlightPlanService.active;
+
+        if (plan) {
+            return this.currFlightPlanService.active.flightNumber.get();
+        }
+
+        return undefined;
+
+    }
+
+    set flightNumber(flightNumber) {
+
+        const plan = this.currFlightPlanService.active;
+
+        if (plan) {
+            this.currFlightPlanService.setFlightNumber(flightNumber);
+        }
     }
 
     getFlightPhase() {
