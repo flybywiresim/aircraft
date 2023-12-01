@@ -19,7 +19,7 @@ import { PseudoWaypointLayer } from './PseudoWaypointLayer';
 import { GenericFcuEvents } from '../../types/GenericFcuEvents';
 
 // TODO move this somewhere better, need to move TCAS stuff into fbw-sdk
-declare enum TaRaIntrusion { TRAFFIC = 0, PROXIMITY = 1, TA = 2, RA = 3 }
+enum TaRaIntrusion { TRAFFIC = 0, PROXIMITY = 1, TA = 2, RA = 3 }
 
 const ARC_CLIP = new Path2D('M0,312 a492,492 0 0 1 768,0 L768,562 L648,562 L591,625 L591,768 L174,768 L174,683 L122,625 L0,625 L0,312');
 
