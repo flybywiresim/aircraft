@@ -8,7 +8,7 @@ import { PaintUtils } from './PaintUtils';
 import { CanvasMap } from './CanvasMap';
 
 // TODO move this somewhere better, need to move TCAS stuff into fbw-sdk
-declare enum TaRaIntrusion { TRAFFIC = 0, PROXIMITY = 1, TA = 2, RA = 3 }
+enum TaRaIntrusion { TRAFFIC = 0, PROXIMITY = 1, TA = 2, RA = 3 }
 
 const DiamondHeight = 18;
 const DiamondWidth = 12;

@@ -19,7 +19,7 @@ import { PseudoWaypointLayer } from './PseudoWaypointLayer';
 import { GenericFcuEvents } from '../../types/GenericFcuEvents';
 
 // TODO move this somewhere better, need to move TCAS stuff into fbw-sdk
-declare enum TaRaIntrusion { TRAFFIC = 0, PROXIMITY = 1, TA = 2, RA = 3 }
+enum TaRaIntrusion { TRAFFIC = 0, PROXIMITY = 1, TA = 2, RA = 3 }
 
 const ARC_CLIP = new Path2D('M0,312 a492,492 0 0 1 768,0 L768,562 L648,562 L591,625 L591,768 L174,768 L174,683 L122,625 L0,625 L0,312');
 
@@ -168,6 +168,21 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
         sub.on('vectorsTemporary').handle((data: PathVector[]) => {
             this.vectors[EfisVectorsGroup.TEMPORARY].length = 0;
             this.vectors[EfisVectorsGroup.TEMPORARY].push(...data);
+        });
+
+        sub.on('vectorsMissed').handle((data: PathVector[]) => {
+            this.vectors[EfisVectorsGroup.MISSED].length = 0;
+            this.vectors[EfisVectorsGroup.MISSED].push(...data);
+        });
+
+        sub.on('vectorsAlternate').handle((data: PathVector[]) => {
+            this.vectors[EfisVectorsGroup.ALTERNATE].length = 0;
+            this.vectors[EfisVectorsGroup.ALTERNATE].push(...data);
+        });
+
+        sub.on('vectorsSecondary').handle((data: PathVector[]) => {
+            this.vectors[EfisVectorsGroup.SECONDARY].length = 0;
+            this.vectors[EfisVectorsGroup.SECONDARY].push(...data);
         });
 
         sub.on('traffic').handle((data: NdTraffic[]) => {
@@ -365,6 +380,18 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
             context.strokeStyle = '#ffff00';
             context.setLineDash(DASHES);
             break;
+        case EfisVectorsGroup.MISSED:
+            context.strokeStyle = '#00ffff';
+            context.setLineDash(NO_DASHES);
+            break;
+        case EfisVectorsGroup.ALTERNATE:
+            context.strokeStyle = '#00ffff';
+            context.setLineDash(DASHES);
+            break;
+        case EfisVectorsGroup.SECONDARY:
+            context.strokeStyle = '#ffffff';
+            context.setLineDash(NO_DASHES);
+            break;
         default:
             context.strokeStyle = '#f00';
             context.setLineDash(NO_DASHES);
@@ -400,10 +427,16 @@ export class CanvasMap extends DisplayComponent<CanvasMapProps> {
 
             const pathRadius = distanceTo(vector.centrePoint, vector.endPoint) * this.mapParams.nmToPx;
 
+            let sweepFlag;
+            if (vector.sweepAngle > 180) {
+                sweepFlag = 180 - vector.sweepAngle > 0 ? 1 : 0;
+            } else {
+                sweepFlag = vector.sweepAngle > 0 ? 1 : 0;
+            }
             // TODO find a way to batch that as well?
             // TODO beginPath needed here?
-            context.stroke(new Path2D(`M ${rsx} ${rsy} A ${pathRadius} ${pathRadius} 0 ${Math.abs(vector.sweepAngle) >= 180 ? 1 : 0} ${vector.sweepAngle > 0 ? 1 : 0} ${rex} ${rey}`));
-
+            context.stroke(new Path2D(`M ${rsx} ${rsy} A ${pathRadius} ${pathRadius} 0 ${Math.abs(vector.sweepAngle) > 180 ? 1 : 0} ${sweepFlag} ${rex} ${rey}`));
+            /* `M ${ix} ${iy} A ${radius} ${radius} 0 ${Math.abs(vector.sweepAngle) > 180 ? 1 : 0} ${vector.sweepAngle > 0 ? 1 : 0} ${fx} ${fy}` */
             break;
         }
         default:
