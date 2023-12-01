@@ -11,7 +11,6 @@ import { useUpdate } from '@instruments/common/hooks';
 import { EfisSymbols } from '@fmgc/efis/EfisSymbols';
 import { Dropdown, DropdownLink } from './Components/Dropdown';
 import { MFDMessageManagerProvider } from './Messages/MFDMessageManager';
-import { FMS } from './FMS';
 import { ATCCOM } from './ATCCOM';
 
 import './styles.scss';
