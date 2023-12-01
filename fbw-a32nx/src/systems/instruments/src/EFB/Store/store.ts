@@ -37,7 +37,7 @@ const combinedReducer = combineReducers({
     failuresPage: failuresPageReducer,
     tooltip: tooltipReducer,
     pushback: pushbackReducer,
-    globalSettings: globalSettingsReducer
+    globalSettings: globalSettingsReducer,
 });
 
 const rootReducer: Reducer = (state: RootState, action: AnyAction) => {
