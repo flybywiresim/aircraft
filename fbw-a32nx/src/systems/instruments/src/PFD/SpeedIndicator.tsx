@@ -3,13 +3,13 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ClockEvents, DisplayComponent, FSComponent, NodeReference, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import { Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
+import { ArincEventBus, Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
+
 import { FmsVars } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { VerticalTape } from './VerticalTape';
 import { SimplaneValues } from './shared/SimplaneValueProvider';
 import { Arinc429Values } from './shared/ArincValueProvider';
-import { ArincEventBus } from '../MsfsAvionicsCommon/ArincEventBus';
 
 const ValueSpacing = 10;
 const DistanceSpacing = 10;

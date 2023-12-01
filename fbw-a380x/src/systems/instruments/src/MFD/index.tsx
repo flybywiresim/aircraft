@@ -6,7 +6,7 @@ import '../index.scss';
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/new/NavigationDatabaseService';
-import { DisplayUnitID } from '@instruments/common/CdsDisplayUnit';
+import { DisplayUnitID } from '@instruments/common/LegacyCdsDisplayUnit';
 import { render } from '../Common';
 import { MultiFunctionDisplay } from './MultiFunctionDisplay';
 import { renderTarget } from '../util.js';

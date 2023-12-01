@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ConsumerSubject, MathUtils, Publisher, Subscription } from '@microsoft/msfs-sdk';
+import { ArincEventBus, Arinc429Register, Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
+
 import { getDisplayIndex } from 'instruments/src/PFD/PFD';
-import { Arinc429Register, Arinc429Word, Arinc429WordData } from '@flybywiresim/fbw-sdk';
 import { PFDSimvars } from './PFDSimvarPublisher';
-import { ArincEventBus } from '../../MsfsAvionicsCommon/ArincEventBus';
 
 export interface Arinc429Values {
     pitchAr: Arinc429WordData;

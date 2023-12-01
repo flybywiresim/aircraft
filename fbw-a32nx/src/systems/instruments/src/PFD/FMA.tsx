@@ -3,13 +3,11 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ComponentProps, DisplayComponent, FSComponent, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import { ArmedLateralMode, ArmedVerticalMode, isArmed, LateralMode, VerticalMode } from '@shared/autopilot';
+import { ArincEventBus, Arinc429Word, Arinc429RegisterSubject } from '@flybywiresim/fbw-sdk';
 
-import { Arinc429Word } from '@flybywiresim/fbw-sdk';
-import { Arinc429RegisterSubject } from 'instruments/src/MsfsAvionicsCommon/Arinc429RegisterSubject';
+import { ArmedLateralMode, ArmedVerticalMode, isArmed, LateralMode, VerticalMode } from '@shared/autopilot';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
-import { ArincEventBus } from '../MsfsAvionicsCommon/ArincEventBus';
 
 abstract class ShowForSecondsComponent<T extends ComponentProps> extends DisplayComponent<T> {
     private timeout: number = 0;
