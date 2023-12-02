@@ -175,6 +175,10 @@
     - Bool
     - True when the Overpressure Relief Valve Dumps are open. There are two valves but just one variable for now as they (mostly) always open and close at the same time.
 
+- A32NX_PRESS_CABIN_ALTITUDE_TARGET
+    - Feet
+    - Target cabin altitude as calculated by the pressurization system or manually selected on the overhead panel
+
 - A32NX_PRESS_{id}_OCSM_CHANNEL_FAILURE
     - Number
         - 0 if no failure
@@ -238,6 +242,27 @@
 - A32NX_OVHD_CARGO_AIR_HEATER_PB_HAS_FAULT
     - Bool
     - True if the bulk cargo heater is failed
+
+- A32NX_OVHD_PRESS_MAN_ALTITUDE_PB_IS_AUTO
+    - Bool
+    - True if the overhead manual altitude pushbutton is auto (no light)
+
+- A32NX_OVHD_PRESS_MAN_ALTITUDE_KNOB
+    - Feet
+    - Value in feet of the manually selected cabin target altitude on the overhead panel
+
+- A32NX_OVHD_PRESS_MAN_VS_CTL_PB_IS_AUTO
+    - Bool
+    - True if the overhead manual vertical speed pushbutton is auto (no light)
+
+- A32NX_OVHD_PRESS_MAN_VS_CTL_KNOB
+    - Feet per minute
+    - Value in feet per minute of the manually selected cabin vertical speed on the overhead panel
+
+- A32NX_OVHD_VENT_AIR_EXTRACT_PB_IS_ON
+    - Bool
+    - True if the overhead manual extract vent override pushbutton is on (illuminated)
+
 
 ## Electrical ATA 24
 
