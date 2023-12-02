@@ -2537,8 +2537,19 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     getOrSelectILSsByIdent(ident, callback) {
-        this._getOrSelectWaypoints(this.dataManager.GetILSsByIdent.bind(this.dataManager), ident, callback); // TODO port over (fms-v2)
+        this._getOrSelectWaypoints(
+            async () => this.navigationDatabase.searchVor(ident).then((vors) => vors.filter((vor) => vor.type & 1 << 7 /* ILS */)),
+            ident,
+            (selectedVor) => {
+                const airportIdent = selectedVor.databaseId.slice(3, 7).trim()
+                this.navigationDatabase.backendDatabase.getIlsAtAirport(airportIdent).then((ilss) => {
+                    const ils = ilss.find((ils) => ils.ident === ident);
+                    callback(ils);
+                });
+            }
+        );
     }
+
     getOrSelectVORsByIdent(ident, callback) {
         this._getOrSelectWaypoints(this.navigationDatabase.searchVor.bind(this.navigationDatabase), ident, callback);
     }

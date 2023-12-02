@@ -212,6 +212,7 @@ class CDUNavRadioPage {
                         scratchpadCallback();
                         return;
                     }
+
                     mcdu.setManualIls(navaid).then(onDone);
                 } else {
                     // FIXME new navaid page when it's built

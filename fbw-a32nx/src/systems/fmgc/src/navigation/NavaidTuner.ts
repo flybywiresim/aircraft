@@ -620,7 +620,7 @@ export class NavaidTuner {
                 mmrStatus.databaseBackcourse = false;
                 mmrStatus.manual = true;
                 mmrStatus.facility = ils;
-                mmrStatus.course = ils.locBearing;
+                mmrStatus.course = ils.locBearing !== -1 ? ils.locBearing : null;
                 mmrStatus.courseManual = false;
                 mmrStatus.ident = ils.ident;
                 mmrStatus.frequency = ils.frequency;

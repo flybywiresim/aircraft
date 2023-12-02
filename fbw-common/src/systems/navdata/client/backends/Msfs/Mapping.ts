@@ -286,16 +286,26 @@ export class MsfsMapping {
         const icaoSet: Set<string> = new Set();
         const bearings = new Map<string, number>();
         const runways = new Map<string, string>();
+        const slopes = new Map<string, number>();
         const icaoCode = this.getIcaoCodeFromAirport(msAirport);
 
-        msAirport.approaches.filter((appr) => appr.approachType === MSApproachType.Ils).forEach((appr) => {
+        msAirport.approaches.filter((appr) => appr.approachType === MSApproachType.Ils || appr.approachType === MSApproachType.Loc).forEach((appr) => {
             const lastLeg = appr.finalLegs[appr.finalLegs.length - 1];
             if (FacilityCache.validFacilityIcao(lastLeg.originIcao, 'V')) {
                 const icao = lastLeg.originIcao.trim();
+                // Only consider LOC approach if we've not got an ILS yet
+                if (appr.approachType === MSApproachType.Loc && icaoSet.has(icao)) {
+                    return;
+                }
+
                 icaoSet.add(lastLeg.originIcao);
                 // FIXME check if magnetic
                 bearings.set(icao, lastLeg.course);
+
                 runways.set(icao, `RW${appr.runwayNumber.toFixed(0).padStart(2, '0')}${this.mapRunwayDesignator(appr.runwayDesignator)}`);
+                if (Math.abs(lastLeg.verticalAngle) > Number.EPSILON) {
+                    slopes.set(icao, lastLeg.verticalAngle - 360);
+                }
             }
         });
 
@@ -319,6 +329,7 @@ export class MsfsMapping {
                 locLocation: { lat: ils.lat, long: ils.lon },
                 locBearing: bearings.get(icao) ?? -1,
                 stationDeclination: ils.magneticVariation,
+                gsSlope: slopes.get(icao),
             };
         });
     }
