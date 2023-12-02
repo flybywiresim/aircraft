@@ -166,6 +166,10 @@ export class RemoteClient {
         const msg: Messages = JSON.parse(message);
 
         switch (msg.type) {
+        case 'remoteRequestAircraftSignin':
+            this.sendMessage(this.createSigninMessage());
+            this.sendMessage(this.createAircraftStatusMessage());
+            break;
         case 'remoteRequestGaugeBundles':
             this.createSendBundleCodeMessage(msg.instrumentID).then((message) => {
                 this.sendMessage(message);
@@ -322,6 +326,10 @@ interface RemoteSigninMessage extends BaseMessage {
     clientName: string;
 }
 
+interface RemoteRequestAircraftSigninMessage extends BaseMessage {
+    type: 'remoteRequestAircraftSignin';
+}
+
 interface RemoteRequestGaugeBundlesMessage extends BaseMessage {
     type: 'remoteRequestGaugeBundles';
     instrumentID: string;
@@ -357,6 +365,7 @@ type Messages =
     | AircraftSendSimVarValuesMessage
     | AircraftClientDisconnectMessage
     | RemoteSigninMessage
+    | RemoteRequestAircraftSigninMessage
     | RemoteRequestGaugeBundlesMessage
     | RemoteEnumerateInstrumentsMessage
     | RemoteSubscribeToSimVarMessage
