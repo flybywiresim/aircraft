@@ -24,11 +24,11 @@ export const render = (Slot: React.ReactElement, enableSentryTracing = false, se
         ReactDOM.render(Slot, getRenderTarget());
     };
 
-    if (process.env.VITE_BUILD) {
-        window.addEventListener('AceInitialized', () => doRender());
-    } else {
-        doRender();
-    }
+    // if (process.env.VITE_BUILD) {
+    //    window.addEventListener('AceInitialized', () => doRender());
+    // } else {
+    doRender();
+    // }
 };
 
 /**

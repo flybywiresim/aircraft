@@ -39,7 +39,10 @@ export class NXDataStore {
      */
     static set(key: string, val: string): void {
         SetStoredData(`A32NX_${key}`, val);
-        this.listener.triggerToAllSubscribers('A32NX_NXDATASTORE_UPDATE', key, val);
+
+        if (!window.ACE_ENGINE_HANDLE) {
+            this.listener.triggerToAllSubscribers('A32NX_NXDATASTORE_UPDATE', key, val);
+        }
     }
 
     static subscribe(key: string, callback: SubscribeCallback): SubscribeCancellation {

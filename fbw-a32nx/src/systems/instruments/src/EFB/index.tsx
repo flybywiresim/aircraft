@@ -106,7 +106,6 @@ if (process.env.VITE_BUILD) {
 } else {
     setup();
 }
-
 render(
     <FailuresOrchestratorProvider><EFBLoad /></FailuresOrchestratorProvider>,
     true, true,
