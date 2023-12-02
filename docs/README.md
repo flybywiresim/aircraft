@@ -1,9 +1,9 @@
 # General Documentation
-              
+
 ## Repo Structure
 
 ```
-a32nx (repo)                                     <flybywire monorepo - will be renamed eventually>
+aircraft (repo)                                  <flybywire monorepo>
 ├── docs                                         <documentation for the repo - e.g. this structure>
 ├── fbw-a32nx                                    <A32NX project files>
 │   ├── docs                                     <documentation for the A32NX project>
