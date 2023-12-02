@@ -209,8 +209,6 @@ class FMCMainDisplay extends BaseAirliners {
         ];
     }
 
-
-
     Init() {
         super.Init();
         this.initVariables();
@@ -336,7 +334,7 @@ class FMCMainDisplay extends BaseAirliners {
 
     initVariables(resetTakeoffData = true) {
         this.costIndex = 0;
-        //this.costIndexSet = false;
+        // this.costIndexSet = false;
         this.maxCruiseFL = 390;
         this.routeIndex = 0;
         this.resetCoroute();
@@ -492,7 +490,7 @@ class FMCMainDisplay extends BaseAirliners {
         // this.managedSpeedDescendMachIsPilotEntered = false;
         this.cruiseFlightLevelTimeOut = undefined;
         this.flightNumber = undefined;
-       // this.flightNumber = undefined;
+        // this.flightNumber = undefined;
         this.cruiseTemperature = undefined;
         this.taxiFuelWeight = 0.2;
         this.blockFuel = undefined;
@@ -765,7 +763,7 @@ class FMCMainDisplay extends BaseAirliners {
                 this.updatePreSelSpeedMach(this.preSelectedDesSpeed);
 
                 // This checks against the pilot defined cruise altitude and the automatically populated cruise altitude
-             /*    if (this.cruiseFlightLevel !== this._cruiseFlightLevel) {
+                /* if (this.cruiseFlightLevel !== this._cruiseFlightLevel) {
                     this._cruiseFlightLevel = this.cruiseFlightLevel;
                     this.addMessageToQueue(NXSystemMessages.newCrzAlt.getModifiedMessage(this._cruiseFlightLevel * 100));
                 } */
@@ -1960,8 +1958,8 @@ class FMCMainDisplay extends BaseAirliners {
     setCruiseFlightLevelAndTemperature(input) {
         if (input === FMCMainDisplay.clrValue) {
             this.flightPlanService.setCruiseFlightLevel(undefined);
-          //  this.cruiseFlightLevel = undefined;
-          //  this._cruiseFlightLevel = undefined;
+            // this.cruiseFlightLevel = undefined;
+            // this._cruiseFlightLevel = undefined;
             this.cruiseTemperature = undefined;
             return true;
         }
@@ -2005,7 +2003,7 @@ class FMCMainDisplay extends BaseAirliners {
         if (isFinite(value)) {
             if (value >= 0) {
                 if (value < 1000) {
-                 //   this.costIndexSet = true;
+                    // this.costIndexSet = true;
                     this.costIndex = value;
                     this.updateManagedSpeeds();
                     return true;
@@ -3934,7 +3932,7 @@ class FMCMainDisplay extends BaseAirliners {
     setPerfApprDH(s) {
         if (s === FMCMainDisplay.clrValue) {
             this.perfApprDH = null;
-         //   SimVar.SetSimVarValue("L:A32NX_DECISION_HEIGHT", "feet", -1);
+            // SimVar.SetSimVarValue("L:A32NX_DECISION_HEIGHT", "feet", -1);
             return true;
         }
 
@@ -4924,7 +4922,6 @@ class FMCMainDisplay extends BaseAirliners {
         return undefined;
     }
 
-
     get costIndex() {
         const plan = this.currFlightPlanService.active;
 
@@ -4965,7 +4962,6 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     set flightNumber(flightNumber) {
-
         const plan = this.currFlightPlanService.active;
 
         if (plan) {

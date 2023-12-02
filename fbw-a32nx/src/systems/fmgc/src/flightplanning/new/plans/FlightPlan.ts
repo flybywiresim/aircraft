@@ -326,9 +326,7 @@ export class FlightPlan extends BaseFlightPlan {
     }
 
     /**
-     * Sets performance data imported from uplinkl
-     *
-     * @param plan the flight plan
+     * Sets performance data imported from uplink
      * @param data performance data available in uplink
      */
     setImportedPerformanceData(data: ImportedPerformanceData) {
