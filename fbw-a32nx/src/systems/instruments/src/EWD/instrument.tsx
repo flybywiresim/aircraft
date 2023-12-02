@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { Clock, EventBus, FSComponent, InstrumentBackplane } from '@microsoft/msfs-sdk';
 import { FuelSystemPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FuelSystemPublisher';
 import { ArincValueProvider } from './shared/ArincValueProvider';
@@ -41,10 +45,10 @@ class A32NX_EWD extends BaseInstrument {
         this.arincProvider.init();
         this.backplane.init();
 
-        FSComponent.render(<EwdComponent bus={this.bus} instrument={this} />, document.getElementById('EWD_CONTENT'));
+        FSComponent.render(<EwdComponent bus={this.bus} instrument={this} />, document.getElementById('INSTRUMENT_CONTENT'));
 
         // Remove "instrument didn't load" text
-        document.getElementById('EWD_CONTENT').querySelector(':scope > h1').remove();
+        document.getElementById('INSTRUMENT_CONTENT').querySelector(':scope > h1').remove();
     }
 
     public Update(): void {

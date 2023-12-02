@@ -53,7 +53,7 @@ function msfsAvionicsInstrument(name, folder = name) {
         simulatorPackage: {
             type: 'baseInstrument',
             templateId: `A32NX_${name}`,
-            mountElementId: `${name}_CONTENT`,
+            mountElementId: `INSTRUMENT_CONTENT`,
             fileName: name.toLowerCase(),
             imports: ['/JS/dataStorage.js'],
         },

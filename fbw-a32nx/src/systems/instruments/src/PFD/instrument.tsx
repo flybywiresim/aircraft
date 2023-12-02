@@ -77,10 +77,10 @@ class A32NX_PFD extends BaseInstrument {
         this.clock.init();
         this.dmcPublisher.init();
 
-        FSComponent.render(<PFDComponent bus={this.bus} instrument={this} />, document.getElementById('PFD_CONTENT'));
+        FSComponent.render(<PFDComponent bus={this.bus} instrument={this} />, document.getElementById('INSTRUMENT_CONTENT'));
 
         // Remove "instrument didn't load" text
-        document.getElementById('PFD_CONTENT').querySelector(':scope > h1').remove();
+        document.getElementById('INSTRUMENT_CONTENT').querySelector(':scope > h1').remove();
     }
 
     /**

@@ -23,7 +23,7 @@ import { VerticalSpeedIndicator } from './VerticalSpeedIndicator';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 
 export const getDisplayIndex = () => {
-    const url = document.getElementsByTagName('a32nx-pfd')[0].getAttribute('url');
+    const url = document.querySelector('vcockpit-panel > *').getAttribute('url');
     return url ? parseInt(url.substring(url.length - 1), 10) : 0;
 };
 

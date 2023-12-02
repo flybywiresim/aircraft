@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { EventBus, FSComponent, HEventPublisher } from '@microsoft/msfs-sdk';
 import { ClockSimvarPublisher } from './shared/ClockSimvarPublisher';
 import { ClockRoot } from './Clock';
@@ -54,10 +58,10 @@ class A32NX_Clock extends BaseInstrument {
 
         this.simVarPublisher.subscribe('dc2IsPowered');
 
-        FSComponent.render(<ClockRoot bus={this.bus} />, document.getElementById('Clock_CONTENT'));
+        FSComponent.render(<ClockRoot bus={this.bus} />, document.getElementById('INSTRUMENT_CONTENT'));
 
         // Remove "instrument didn't load" text
-        document.getElementById('Clock_CONTENT').querySelector(':scope > h1').remove();
+        document.getElementById('INSTRUMENT_CONTENT').querySelector(':scope > h1').remove();
     }
 
     public Update(): void {

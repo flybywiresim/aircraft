@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { EventBus, HEventPublisher } from '@microsoft/msfs-sdk';
-import { NotificationManager } from '@flybywiresim/fbw-sdk';
+import { NotificationManager, RemoteClient } from '@flybywiresim/fbw-sdk';
 import { ExtrasSimVarPublisher } from 'extras-host/modules/common/ExtrasSimVarPublisher';
 import { PushbuttonCheck } from 'extras-host/modules/pushbutton_check/PushbuttonCheck';
 import { KeyInterceptor } from './modules/key_interceptor/KeyInterceptor';
@@ -40,6 +40,8 @@ class ExtrasHost extends BaseInstrument {
 
     private readonly keyInterceptor: KeyInterceptor;
 
+    private readonly remoteClient: RemoteClient;
+
     /**
      * "mainmenu" = 0
      * "loading" = 1
@@ -60,6 +62,8 @@ class ExtrasHost extends BaseInstrument {
         this.pushbuttonCheck = new PushbuttonCheck(this.bus, this.notificationManager);
         this.versionCheck = new VersionCheck(this.bus);
         this.keyInterceptor = new KeyInterceptor(this.bus, this.notificationManager);
+
+        this.remoteClient = new RemoteClient();
 
         console.log('A32NX_EXTRASHOST: Created');
     }
@@ -102,6 +106,7 @@ class ExtrasHost extends BaseInstrument {
 
         this.versionCheck.update();
         this.keyInterceptor.update();
+        this.remoteClient.update();
     }
 }
 
