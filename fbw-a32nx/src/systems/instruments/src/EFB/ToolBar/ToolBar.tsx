@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import React, { FC } from 'react';
 import {
     Clipboard,
@@ -20,14 +24,15 @@ import FbwTail from '../Assets/FBW-Tail.svg';
 interface ToolBarButtonProps {
     to: string;
     tooltipText: string;
+    disabled?: boolean;
 }
 
-const ToolBarButton: FC<ToolBarButtonProps> = ({ to, tooltipText, children }) => (
+const ToolBarButton: FC<ToolBarButtonProps> = ({ to, tooltipText, children, disabled = false }) => (
     <TooltipWrapper text={tooltipText}>
         <NavLink
             to={to}
             activeClassName="bg-theme-accent !text-theme-text"
-            className="flex justify-center items-center py-3.5 px-3.5 rounded-md transition duration-100 text-theme-unselected hover:text-theme-text hover:bg-theme-accent"
+            className={`flex items-center justify-center rounded-md p-3.5 text-theme-unselected transition duration-100 hover:bg-theme-accent hover:text-theme-text${disabled ? ' pointer-events-none opacity-60' : ''}`}
         >
             {children}
         </NavLink>
@@ -55,7 +60,7 @@ export const ToolBar = () => (
             <ToolBarButton to="/atc" tooltipText={t('AirTrafficControl.Title')}>
                 <BroadcastPin size={35} />
             </ToolBarButton>
-            <ToolBarButton to="/failures" tooltipText={t('Failures.Title')}>
+            <ToolBarButton to="/failures" tooltipText={t('Failures.Title')} disabled={window.FBW_REMOTE}>
                 <ExclamationDiamond size={35} />
             </ToolBarButton>
             <ToolBarButton to="/checklists" tooltipText={t('Checklists.Title')}>
