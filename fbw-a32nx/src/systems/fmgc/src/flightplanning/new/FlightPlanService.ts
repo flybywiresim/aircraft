@@ -16,6 +16,7 @@ import { FlightPlanLegDefinition } from '@fmgc/flightplanning/new/legs/FlightPla
 import { FlightPlanInterface } from '@fmgc/flightplanning/new/FlightPlanInterface';
 import { AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
 import { CopyOptions } from '@fmgc/flightplanning/new/plans/CloningOptions';
+import { FlightPlanPerformanceData } from '@fmgc/flightplanning/new/plans/performance/FlightPlanPerformanceData';
 
 export class FlightPlanService implements FlightPlanInterface {
     private readonly bus = new EventBus();
@@ -468,23 +469,15 @@ export class FlightPlanService implements FlightPlanInterface {
         this.flightPlanManager.copy(FlightPlanIndex.Active, FlightPlanIndex.Temporary, CopyOptions.IncludeFixInfos);
     }
 
-    setCruiseFlightLevel(fl: number, planIndex = FlightPlanIndex.Active) {
-        this.flightPlanManager.get(planIndex).setCruiseFlightLevel(fl);
+    async setFlightNumber(flightNumber: string, planIndex = FlightPlanIndex.Active) {
+        const plan = this.flightPlanManager.get(planIndex);
+
+        plan.setFlightNumber(flightNumber);
     }
 
-    setCostIndex(ci: number, planIndex = FlightPlanIndex.Active) {
-        this.flightPlanManager.get(planIndex).setCostIndex(ci);
-    }
+    async setPerformanceData<k extends keyof FlightPlanPerformanceData & string>(key: k, value: FlightPlanPerformanceData[k], planIndex = FlightPlanIndex.Active) {
+        const plan = this.flightPlanManager.get(planIndex);
 
-    setPilotTransitionAltitude(alt: number, planIndex = FlightPlanIndex.Active) {
-        this.flightPlanManager.get(planIndex).setTransitionAltitude(alt);
-    }
-
-    setPilotTransitionLevel(lvl: number, planIndex = FlightPlanIndex.Active) {
-        this.flightPlanManager.get(planIndex).setTransitionLevel(lvl);
-    }
-
-    setFlightNumber(flightNumber: string, planIndex = FlightPlanIndex.Active) {
-        this.flightPlanManager.get(planIndex).setFlightNumber(flightNumber);
+        plan.setPerformanceData(key, value);
     }
 }

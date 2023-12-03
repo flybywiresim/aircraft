@@ -100,8 +100,8 @@ export class VerticalProfileComputationParametersObserver {
             accelerationAltitude: this.fmgc.getAccelerationAltitude(),
             thrustReductionAltitude: this.fmgc.getThrustReductionAltitude(),
             originTransitionAltitude: this.fmgc.getOriginTransitionAltitude(),
-            cruiseAltitude: Number.isFinite(this.flightPlanService.active.performanceData.cruiseFlightLevel.get())
-                ? this.flightPlanService.active.performanceData.cruiseFlightLevel.get() * 100 : this.parameters.cruiseAltitude,
+            cruiseAltitude: this.flightPlanService.active.performanceData.cruiseFlightLevel
+                ? this.flightPlanService.active.performanceData.cruiseFlightLevel * 100 : undefined,
             climbSpeedLimit: this.fmgc.getClimbSpeedLimit(),
             descentSpeedLimit: this.fmgc.getDescentSpeedLimit(),
             flightPhase: this.fmgc.getFlightPhase(),
@@ -144,7 +144,8 @@ export class VerticalProfileComputationParametersObserver {
         const areApproachSpeedsValid = this.parameters.cleanSpeed > 100
             && this.parameters.slatRetractionSpeed > 100
             && this.parameters.flapRetractionSpeed > 100
-            && this.parameters.approachSpeed > 100;
+            && this.parameters.approachSpeed > 100
+            && Number.isFinite(this.parameters.cruiseAltitude);
 
         const hasZeroFuelWeight = Number.isFinite(this.parameters.zeroFuelWeight);
         const hasTakeoffParameters = this.parameters.v2Speed > 0 && this.parameters.thrustReductionAltitude > 0 && this.parameters.accelerationAltitude > 0;

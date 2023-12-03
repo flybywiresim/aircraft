@@ -11,6 +11,7 @@ import { FixInfoEntry } from '@fmgc/flightplanning/new/plans/FixInfo';
 import { FlightPlan } from '@fmgc/flightplanning/new/plans/FlightPlan';
 import { FlightPlanIndex } from '@fmgc/flightplanning/new/FlightPlanManager';
 import { AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
+import { FlightPlanPerformanceData } from '@fmgc/flightplanning/new/plans/performance/FlightPlanPerformanceData';
 
 /**
  * Interface for querying, modifying and creating flight plans.
@@ -244,4 +245,8 @@ export interface FlightPlanInterface {
 
     // TODO do not pass in waypoint object (rpc)
     isWaypointInUse(waypoint: Waypoint): Promise<boolean>;
+
+    setFlightNumber(flightNumber: string, planIndex: number): Promise<void>;
+
+    setPerformanceData<T extends keyof FlightPlanPerformanceData>(key: T, value: FlightPlanPerformanceData[T], planIndex: number): Promise<void>;
 }

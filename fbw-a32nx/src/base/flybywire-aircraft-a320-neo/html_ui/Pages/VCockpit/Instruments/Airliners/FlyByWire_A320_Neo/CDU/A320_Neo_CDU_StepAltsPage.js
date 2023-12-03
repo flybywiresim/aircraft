@@ -21,14 +21,14 @@ class CDUStepAltsPage {
         const legsWithSteps = activePlan.allLegs.filter((it) => it.isDiscontinuity === false && it.cruiseStep);
 
         const isFlying = mcdu.flightPhaseManager.phase >= FmgcFlightPhases.TAKEOFF && mcdu.flightPhaseManager.phase < FmgcFlightPhases.DONE;
-        const transitionAltitude = activePlan.performanceData.transitionAltitude.get();
+        const transitionAltitude = activePlan.performanceData.transitionAltitude;
 
         const predictions = mcdu.guidanceController.vnavDriver.mcduProfile && mcdu.guidanceController.vnavDriver.mcduProfile.isReadyToDisplay
             ? mcdu.guidanceController.vnavDriver.mcduProfile.waypointPredictions
             : null;
 
         mcdu.setTemplate([
-            ["STEP ALTS {small}FROM{end} {green}FL" + mcdu.flightPlanService.active.performanceData.cruiseFlightLevel.get() + "{end}"],
+            ["STEP ALTS {small}FROM{end} {green}FL" + mcdu.flightPlanService.active.performanceData.cruiseFlightLevel + "{end}"],
             ["\xa0ALT\xa0/\xa0WPT", "DIST\xa0TIME"],
             CDUStepAltsPage.formatStepClimbLine(mcdu, legsWithSteps, 0, predictions, isFlying, transitionAltitude),
             [""],
@@ -311,7 +311,7 @@ class CDUStepAltsPage {
      * @param {*} toAltitude Altitude of step
      */
     static checkStepInsertionRules(mcdu, stepLegs, insertAtIndex, toAltitude) {
-        let altitude = mcdu.flightPlanService.active.performanceData.cruiseFlightLevel.get() * 100;
+        let altitude = mcdu.flightPlanService.active.performanceData.cruiseFlightLevel * 100;
         let doesHaveStepDescent = false;
 
         let i = 0;
