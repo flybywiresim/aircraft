@@ -3,6 +3,7 @@ export interface ISimbriefData {
     destination: IAirportInfo,
     airline: string | object,
     flightNumber: string,
+    callsign: string,
     aircraftReg: string,
     cruiseAltitude: number,
     costIndex: string,

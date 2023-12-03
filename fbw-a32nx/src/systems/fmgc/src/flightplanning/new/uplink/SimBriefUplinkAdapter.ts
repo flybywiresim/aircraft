@@ -22,7 +22,7 @@ export interface OfpRoute {
     altn: string,
     costIndex: number,
     chunks: OfpRouteChunk[],
-    flightNumber: string,
+    callsign: string,
 }
 
 export interface BaseOfpRouteChunk {
@@ -129,7 +129,7 @@ export class SimBriefUplinkAdapter {
         // used by FlightPhaseManager
         SimVar.SetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number', Number(ofp.cruiseAltitude));
 
-        plan.flightNumber.set(route.flightNumber);
+        plan.setFlightNumber(route.callsign);
 
         let insertHead = -1;
 
@@ -358,7 +358,7 @@ export class SimBriefUplinkAdapter {
             altn: ofp.alternate.icao,
             chunks: this.generateRouteInstructionsFromNavlog(ofp),
             costIndex: Number(ofp.costIndex),
-            flightNumber: `${ofp.airline instanceof Object ? '' : ofp.airline}${ofp.flightNumber}`,
+            callsign: ofp.callsign,
         };
     }
 
