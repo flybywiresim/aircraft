@@ -164,14 +164,6 @@ impl A380AirConditioning {
                 &self.a380_cabin,
             );
         }
-
-        // self.a380_pressurization_system.update(
-        //     context,
-        //     &self.cpiom_b,
-        //     adirs,
-        //     pressurization_overhead,
-        //     &self.a380_cabin,
-        // );
     }
 
     pub(super) fn mix_packs_air_update(
@@ -893,7 +885,7 @@ impl A380PressurizationSystem {
             );
         }
 
-        // Fixme - check for failed OCSM
+        // TODO Add check for failure
         self.negative_relief_valves
             .update(context, self.ocsm[0].negative_relief_valve_trigger());
     }
@@ -3076,7 +3068,7 @@ mod tests {
 
         #[test]
         fn cabin_vs_changes_to_cruise() {
-            let test_bed = test_bed_in_cruise().iterate_with_delta(400, Duration::from_millis(100));
+            let test_bed = test_bed_in_cruise().iterate_with_delta(600, Duration::from_millis(500));
 
             assert!(test_bed.cabin_vs().abs() < Velocity::new::<foot_per_minute>(10.));
         }

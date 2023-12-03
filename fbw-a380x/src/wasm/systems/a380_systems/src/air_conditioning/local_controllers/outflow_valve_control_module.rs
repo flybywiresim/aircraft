@@ -306,12 +306,6 @@ impl SafetyAndOverridePartition {
     }
 }
 
-/// The Emergency Pressurization Partition (EPP) is responsible for:
-/// - The computation of cabin pressure and differential pressure *
-/// - The OFV motor computation based on position demands from the ACP and/or SOP *
-/// - The protection of positive differential pressure and cabin altitude limits against inadvertent function from the ACP and/or SOP, *
-/// - The warnings to the FWS in case of strong system malfunction (not implemented, warnings are in CPIOM B)
-/// - The limitation of the maximum negative differential pressure *
 struct EmergencyPressurizationPartition {
     cabin_pressure: Pressure,
     cabin_target_vertical_speed: Velocity,
@@ -400,7 +394,7 @@ impl EmergencyPressurizationPartition {
         &self,
         adirs: &impl AdirsToAirCondInterface,
     ) -> (Option<Velocity>, Option<Pressure>) {
-        // TODO: Each CPC has a different order for checking the ADIRS
+        // TODO: Confirm order for checking the ADIRS
         let adiru_check_order = [1, 2, 3];
         let adirs_airspeed = adiru_check_order
             .iter()

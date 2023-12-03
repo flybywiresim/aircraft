@@ -817,7 +817,6 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
         press_overhead: &impl PressurizationOverheadShared,
         ocsm: [&impl OcsmShared; 4],
     ) {
-        // self.update_ambient_conditions(context, adirs);
         self.cabin_pressure = ocsm[0].cabin_pressure(); // TODO Add check for failure
         self.cabin_delta_pressure = ocsm[0].cabin_delta_pressure(); // TODO Add check for failure
         (0..=3).for_each(|id| {
@@ -835,11 +834,10 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
                 self.exterior_vertical_speed.output(),
             ));
         }
-        let target_vertical_speed = self.calculate_cabin_target_vs();
+        let target_vertical_speed = self.calculate_cabin_target_vs(context);
         self.cabin_target_vertical_speed
             .update(context.delta(), target_vertical_speed);
-        // Fixme: This should check if the ocsm is failed
-        self.cabin_target_vertical_speed_ocsm = ocsm[0].cabin_target_vertical_speed();
+        self.cabin_target_vertical_speed_ocsm = ocsm[0].cabin_target_vertical_speed(); // TODO Add check for failure
         self.cabin_target_altitude = self.calculate_cabin_target_altitude(ocsm);
 
         let new_reference_pressure = self.calculate_reference_pressure(adirs, press_overhead);
@@ -900,7 +898,7 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
         &self,
         adirs: &impl AdirsToAirCondInterface,
     ) -> (Option<Velocity>, Option<Pressure>) {
-        // TODO: Each CPC has a different order for checking the ADIRS
+        // TODO: Confirm order for checking the ADIRS
         let adiru_check_order = [1, 2, 3];
         let adirs_airspeed = adiru_check_order
             .iter()
@@ -954,7 +952,7 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
         }
     }
 
-    fn calculate_cabin_target_vs(&mut self) -> Velocity {
+    fn calculate_cabin_target_vs(&mut self, context: &UpdateContext) -> Velocity {
         let error_margin = Pressure::new::<hectopascal>(1.);
 
         match self.pressure_schedule_manager {
@@ -980,7 +978,7 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
                 } else if self.cabin_delta_pressure >= Pressure::new::<psi>(C::MAX_CLIMB_DELTA_P) {
                     Velocity::new::<foot_per_minute>(C::MAX_CLIMB_RATE)
                 } else {
-                    self.calculate_climb_vertical_speed()
+                    self.calculate_climb_vertical_speed(context)
                 }
             }
             Some(PressureScheduleManager::Cruise(_)) => self.calculate_cruise_vertical_speed(),
@@ -999,7 +997,7 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
                 } else if target_vs_fpm >= C::MAX_CLIMB_RATE_IN_DESCENT {
                     C::MAX_CLIMB_RATE_IN_DESCENT
                 } else {
-                    target_vs_fpm
+                    target_vs_fpm.clamp(C::MAX_DESCENT_RATE, C::MAX_CLIMB_RATE_IN_DESCENT)
                 })
             }
             Some(PressureScheduleManager::Abort(_)) => Velocity::new::<foot_per_minute>(
@@ -1037,11 +1035,10 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
 
     fn calculate_climb_cabin_target_altitude(&self) -> Length {
         // Constants to match real life references of pressure targets
-        const A: f64 = 7.34e-18;
-        const B: f64 = 7.058e-13;
-        const C: f64 = 1.5452e-8;
-        const D: f64 = 2.5341e-4;
-        const E: f64 = 0.0087;
+        const A: f64 = 1.7416e-18;
+        const B: f64 = -1.4089e-13;
+        const C: f64 = -3.3376e-9;
+        const D: f64 = 4.5905e-4;
 
         let target_aircraft_altitude_foot = (if self.fma_lateral_mode == 20 {
             self.cruise_altitude
@@ -1051,21 +1048,22 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
         .get::<foot>();
 
         let target_cabin_delta_p_psi = Pressure::new::<psi>(
-            A * target_aircraft_altitude_foot.powi(4) - B * target_aircraft_altitude_foot.powi(3)
+            A * target_aircraft_altitude_foot.powi(4)
+                + B * target_aircraft_altitude_foot.powi(3)
                 + C * target_aircraft_altitude_foot.powi(2)
-                + D * target_aircraft_altitude_foot
-                + E,
+                + D * target_aircraft_altitude_foot,
         );
 
         let target_cabin_pressure = InternationalStandardAtmosphere::pressure_at_altitude(
             Length::new::<foot>(target_aircraft_altitude_foot),
         ) + target_cabin_delta_p_psi;
 
-        // Fixme: should this use ISA? Probably not below 5000ft!
-        InternationalStandardAtmosphere::altitude_from_pressure(target_cabin_pressure)
+        self.calculate_altitude(target_cabin_pressure, self.reference_pressure)
     }
 
-    fn calculate_climb_vertical_speed(&self) -> Velocity {
+    fn calculate_climb_vertical_speed(&self, context: &UpdateContext) -> Velocity {
+        const ALT_MARGIN: f64 = 20.; // Foot
+
         let target_vs = if self.fma_lateral_mode == 20 {
             // Calculate how long until aircraft reaches target altitude
             if self.exterior_vertical_speed.output() > Velocity::new::<foot_per_minute>(10.) {
@@ -1083,12 +1081,29 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
                 Velocity::default()
             }
         } else if self.cabin_target_altitude > self.cabin_altitude {
-            Velocity::new::<foot_per_minute>(
+            let target_velocity = Velocity::new::<foot_per_minute>(
                 self.exterior_vertical_speed
                     .output()
                     .get::<foot_per_minute>()
-                    * 0.1611,
-            )
+                    * self.exterior_flight_altitude.get::<foot>()
+                    * 1.04651e-5,
+            );
+            // This avoids the target vs overshooting the target altitude
+            if (self.cabin_altitude.get::<foot>()
+                + (target_velocity.get::<foot_per_minute>() * context.delta().as_secs_f64() / 60.))
+                > self.cabin_target_altitude.get::<foot>()
+            {
+                Velocity::new::<meter_per_second>(
+                    (self.cabin_target_altitude - self.cabin_altitude).get::<meter>()
+                        / context.delta().as_secs_f64(),
+                )
+            } else {
+                target_velocity
+            }
+        } else if (self.cabin_target_altitude - self.cabin_altitude).abs()
+            < Length::new::<foot>(ALT_MARGIN)
+        {
+            self.cabin_target_vertical_speed.output() / 2.
         } else {
             Velocity::new::<foot_per_minute>(C::MAX_DESCENT_RATE)
         };
@@ -1105,7 +1120,7 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
             Velocity::new::<foot_per_minute>(
                 (self.cabin_target_altitude - self.cabin_altitude)
                     .get::<foot>()
-                    .clamp(C::MAX_DESCENT_RATE, C::MAX_CLIMB_RATE),
+                    .clamp(C::MAX_DESCENT_RATE, C::MAX_CLIMB_RATE_IN_DESCENT),
             )
         } else {
             Velocity::default()
@@ -1140,7 +1155,7 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
             return Pressure::new::<hectopascal>(Air::P_0);
         }
 
-        // TODO: Each CPC has a different order for checking the ADIRS - CPC1 1-2-3, CPC2 2-1-3
+        // TODO: Confirm order for checking the ADIRS
         let altimeter_setting = [1, 2, 3]
             .iter()
             .find_map(|&adiru_number| adirs.baro_correction(adiru_number).normal_value());
