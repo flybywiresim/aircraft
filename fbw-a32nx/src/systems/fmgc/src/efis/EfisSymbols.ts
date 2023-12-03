@@ -1,8 +1,14 @@
 // Copyright (c) 2021-2023 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { GenericDataListenerSync, MathUtils, Airport, LegType, Runway, RunwaySurfaceType, VhfNavaidType, WaypointDescriptor } from '@flybywiresim/fbw-sdk';
-import { EfisOption, EfisNdMode, NdSymbol, NdSymbolTypeFlags, rangeSettings, EfisNdRangeValue } from '@shared/NavigationDisplay';
+import {
+    GenericDataListenerSync,
+    MathUtils, Airport, LegType,
+    Runway, RunwaySurfaceType, VhfNavaidType,
+    WaypointDescriptor, EfisOption, EfisNdMode, NdSymbol,
+    NdSymbolTypeFlags, EfisNdRangeValue, efisRangeSettings,
+} from '@flybywiresim/fbw-sdk';
+
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
@@ -19,11 +25,12 @@ import { NavaidTuner } from '@fmgc/navigation/NavaidTuner';
 import { getFlightPhaseManager } from '@fmgc/flightphase';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
-import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
+
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { AltitudeConstraintType } from '@fmgc/flightplanning/data/constraint';
 import { VnavConfig } from '@fmgc/guidance/vnav/VnavConfig';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
+import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
 
 export class EfisSymbols {
     private blockUpdate = false;
@@ -159,7 +166,7 @@ export class EfisSymbols {
         const hasSuitableRunway = (airport: Airport): boolean => airport.longestRunwayLength >= 1500 && airport.longestRunwaySurfaceType === RunwaySurfaceType.Hard;
 
         for (const side of EfisSymbols.sides) {
-            const range = rangeSettings[SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_RANGE`, 'number')];
+            const range = efisRangeSettings[SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_RANGE`, 'number')];
             const mode: EfisNdMode = SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_MODE`, 'number');
             const efisOption = SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_OPTION`, 'Enum');
 

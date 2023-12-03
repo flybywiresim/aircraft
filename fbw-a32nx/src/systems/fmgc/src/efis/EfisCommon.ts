@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { EfisNdMode, EfisNdRangeValue } from '@shared/NavigationDisplay';
+import { EfisNdMode, EfisNdRangeValue } from '@flybywiresim/fbw-sdk';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 
 export function withinEditArea(lla: Coordinates, range: EfisNdRangeValue, mode: EfisNdMode, planCentre: Coordinates, trueHeading: DegreesTrue): boolean {

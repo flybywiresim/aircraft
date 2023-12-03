@@ -1,6 +1,9 @@
-import { Publisher } from '@microsoft/msfs-sdk';
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
 
-import { ArincEventBus } from 'instruments/src/MsfsAvionicsCommon/ArincEventBus';
+import { Publisher } from '@microsoft/msfs-sdk';
+import { ArincEventBus } from '@flybywiresim/fbw-sdk';
 
 export type SimplaneBaroMode = 'QNH' | 'QFE' | 'STD';
 
