@@ -1251,7 +1251,7 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
     }
 
     fn ofv_open_allowed(&self) -> bool {
-        self.is_ground() || !(self.cabin_altitude > Length::new::<foot>(15000.))
+        self.is_ground() || self.cabin_altitude < Length::new::<foot>(15000.)
     }
 
     fn should_open_ofv(&self) -> bool {
