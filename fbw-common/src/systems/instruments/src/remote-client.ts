@@ -202,6 +202,25 @@ export class RemoteClient {
                 NXDataStore.set(msg.key, msg.value);
             }
             break;
+        case 'remoteSetSimVarValue':
+            SimVar.SetSimVarValue(msg.name, msg.unit, msg.value).then(() => {
+                this.sendMessage({
+                    type: 'aircraftAsyncOperationResponse',
+                    requestID: msg.requestID,
+                    successful: true,
+                    result: undefined,
+                    fromClientID: this.clientID,
+                });
+            }).catch(() => {
+                this.sendMessage({
+                    type: 'aircraftAsyncOperationResponse',
+                    requestID: msg.requestID,
+                    successful: false,
+                    result: undefined,
+                    fromClientID: this.clientID,
+                });
+            });
+            break;
         case 'remoteSubscriptionGroupCancel': {
             console.log(`[RemoteClient](onMessage) Clearing subscription group with id '${msg.subscriptionGroupID}'`);
 
@@ -264,6 +283,12 @@ export class RemoteClient {
                 dest: 'NZWN',
                 altn: 'NZAA',
                 progress: 35,
+            },
+            aircraftState: {
+                heading: SimVar.GetSimVarValue('PLANE HEADING DEGREES MAGNETIC', 'Degrees'),
+                headingIsTrue: false,
+                tas: SimVar.GetSimVarValue('AIRSPEED TRUE', 'knots'),
+                altitude: SimVar.GetSimVarValue('PLANE ALTITUDE', 'feet'),
             },
             fromClientID: this.clientID,
         };
@@ -350,6 +375,12 @@ export interface AircraftStatusMessage extends BaseMessage {
         name: string;
         livery: string;
     };
+    aircraftState: {
+        heading: number;
+        headingIsTrue: boolean;
+        tas: number;
+        altitude: number;
+    }
 }
 
 export interface AircraftSendGaugeBundlesMessage extends BaseMessage {
@@ -383,6 +414,13 @@ export interface AircraftSendDataStorageMessage extends BaseMessage {
     values: Record<string, string>;
 }
 
+export interface AircraftAsyncOperationResponseMessage extends BaseMessage {
+    type: 'aircraftAsyncOperationResponse';
+    requestID: string;
+    successful: boolean;
+    result: unknown;
+}
+
 export interface AircraftClientDisconnectMessage extends BaseMessage {
     type: 'aircraftClientDisconnect';
     clientID: string;
@@ -414,14 +452,22 @@ export interface RemoteSubscribeToSimVarMessage extends BaseMessage {
     subscriptionGroupID: string;
 }
 
-export interface RemoteRequestDataStorage extends BaseMessage {
+export interface RemoteRequestDataStorageMessage extends BaseMessage {
     type: 'remoteRequestDataStorage';
 }
 
-export interface RemoteSetDataStorageKey extends BaseMessage {
+export interface RemoteSetDataStorageKeyMessage extends BaseMessage {
     type: 'remoteSetDataStorageKey';
     key: string;
     value: string;
+}
+
+export interface RemoteSetSimVarValueMessage extends BaseMessage {
+    type: 'remoteSetSimVarValue';
+    name: string;
+    unit: string;
+    value: unknown;
+    requestID: string;
 }
 
 export interface RemoteSubscriptionGroupCancelMessage extends BaseMessage {
@@ -451,14 +497,16 @@ export type Messages =
     | AircraftSendInstrumentsMessage
     | AircraftSendSimVarValuesMessage
     | AircraftSendDataStorageMessage
+    | AircraftAsyncOperationResponseMessage
     | AircraftClientDisconnectMessage
     | RemoteSigninMessage
     | RemoteRequestAircraftSigninMessage
     | RemoteRequestGaugeBundlesMessage
     | RemoteEnumerateInstrumentsMessage
     | RemoteSubscribeToSimVarMessage
-    | RemoteRequestDataStorage
-    | RemoteSetDataStorageKey
+    | RemoteRequestDataStorageMessage
+    | RemoteSetDataStorageKeyMessage
+    | RemoteSetSimVarValueMessage
     | RemoteSubscriptionGroupCancelMessage
     | RemoteClientDisconnectMessage
     | ProtocolErrorMessage
