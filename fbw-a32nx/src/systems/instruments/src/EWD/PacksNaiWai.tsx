@@ -24,6 +24,10 @@ export class PacksNaiWai extends DisplayComponent<PacksNaiWaiProps> {
 
     private packs2Supplying: boolean = false;
 
+    private engine1Fadec: boolean = false;
+
+    private engine2Fadec: boolean = false;
+
     private engine1AntiIce: boolean = false;
 
     private engine2AntiIce: boolean = false;
@@ -47,6 +51,14 @@ export class PacksNaiWai extends DisplayComponent<PacksNaiWaiProps> {
 
         sub.on('packs2Supplying').whenChanged().handle((pack) => {
             this.packs2Supplying = pack;
+        });
+
+        sub.on('engine1Fadec').whenChanged().handle((fadec) => {
+            this.engine1Fadec = fadec;
+        });
+
+        sub.on('engine2Fadec').whenChanged().handle((fadec) => {
+            this.engine2Fadec = fadec;
         });
 
         sub.on('engine1AntiIce').whenChanged().handle((ai) => {
@@ -76,7 +88,7 @@ export class PacksNaiWai extends DisplayComponent<PacksNaiWaiProps> {
     }
 
     get messageIndex(): number {
-        return ((this.packs1Supplying || this.packs2Supplying) && this.apuBleedPressure === 0 ? 4 : 0)
+        return ((this.packs1Supplying && this.engine1Fadec || this.packs2Supplying && this.engine2Fadec) && this.apuBleedPressure === 0 ? 4 : 0)
             + (this.engine1AntiIce || this.engine2AntiIce ? 2 : 0)
             + (this.wingAntiIce ? 1 : 0);
     }
