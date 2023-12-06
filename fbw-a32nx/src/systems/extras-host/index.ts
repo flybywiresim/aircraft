@@ -63,7 +63,8 @@ class ExtrasHost extends BaseInstrument {
         this.versionCheck = new VersionCheck(this.bus);
         this.keyInterceptor = new KeyInterceptor(this.bus, this.notificationManager);
 
-        this.remoteClient = new RemoteClient('wss://gateway.remote.flybywiresim.com/api/v1/connect/PHVCKDR65LD6');
+        const roomId = '<replace this>';
+        this.remoteClient = new RemoteClient(`wss://gateway.remote.flybywiresim.com/api/v1/connect/${roomId}`);
 
         console.log('A32NX_EXTRASHOST: Created');
     }

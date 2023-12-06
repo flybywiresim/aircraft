@@ -1,6 +1,12 @@
+import { NXDataStore } from '@flybywiresim/fbw-sdk';
+
 import { v4 } from 'uuid';
 
 const MAX_CONNECTION_ATTEMPTS = 10;
+
+const EXCLUDED_DATA_STORAGE_KEYS = [
+    'A32NX_NAVIGRAPH_REFRESH_TOKEN',
+];
 
 const pfd: InstrumentMetadata = {
     instrumentID: 'pfd',
@@ -177,6 +183,25 @@ export class RemoteClient {
         case 'remoteSubscribeToSimVar':
             this.simVarSubscriptions.push(msg);
             break;
+        case 'remoteRequestDataStorage':
+            const data = GetDataStorage().searchData('A32NX');
+
+            const values: Record<string, string> = {};
+            for (const dataItem of data) {
+                if (EXCLUDED_DATA_STORAGE_KEYS.includes(dataItem.key)) {
+                    continue;
+                }
+
+                values[dataItem.key] = dataItem.data;
+            }
+
+            this.sendMessage({ type: 'aircraftSendDataStorage', values, fromClientID: this.clientID });
+            break;
+        case 'remoteSetDataStorageKey':
+            if (!EXCLUDED_DATA_STORAGE_KEYS.includes(msg.key)) {
+                NXDataStore.set(msg.key, msg.value);
+            }
+            break;
         case 'remoteSubscriptionGroupCancel': {
             console.log(`[RemoteClient](onMessage) Clearing subscription group with id '${msg.subscriptionGroupID}'`);
 
@@ -189,7 +214,7 @@ export class RemoteClient {
             break;
         }
         case 'remoteClientDisconnect': {
-            console.log(`[RemoteClient](onMessage) Remote client with ID '${msg.fromClientID}' disconnected`);
+            console.log(`[RemoteClient](onMessage) Remote client with ID '${msg.clientID}' disconnected`);
 
             const oldSimVarCount = this.simVarSubscriptions.length;
 
@@ -258,7 +283,7 @@ export class RemoteClient {
         const jsChunkCount = Math.ceil(bundle.length / 100_000);
         const cssChunkCount = Math.ceil(cssBundle.length / 100_000);
 
-        let iter = 0;
+        const iter = 0;
 
         let jsBytesSent = 0;
         let jsChunkIndex = 0;
@@ -353,6 +378,11 @@ export interface AircraftSendSimVarValuesMessage extends BaseMessage {
     values: [id: number, value: number][];
 }
 
+export interface AircraftSendDataStorageMessage extends BaseMessage {
+    type: 'aircraftSendDataStorage';
+    values: Record<string, string>;
+}
+
 export interface AircraftClientDisconnectMessage extends BaseMessage {
     type: 'aircraftClientDisconnect';
     clientID: string;
@@ -384,6 +414,16 @@ export interface RemoteSubscribeToSimVarMessage extends BaseMessage {
     subscriptionGroupID: string;
 }
 
+export interface RemoteRequestDataStorage extends BaseMessage {
+    type: 'remoteRequestDataStorage';
+}
+
+export interface RemoteSetDataStorageKey extends BaseMessage {
+    type: 'remoteSetDataStorageKey';
+    key: string;
+    value: string;
+}
+
 export interface RemoteSubscriptionGroupCancelMessage extends BaseMessage {
     type: 'remoteSubscriptionGroupCancel';
     subscriptionGroupID: string;
@@ -410,12 +450,15 @@ export type Messages =
     | AircraftSendGaugeBundlesMessage
     | AircraftSendInstrumentsMessage
     | AircraftSendSimVarValuesMessage
+    | AircraftSendDataStorageMessage
     | AircraftClientDisconnectMessage
     | RemoteSigninMessage
     | RemoteRequestAircraftSigninMessage
     | RemoteRequestGaugeBundlesMessage
     | RemoteEnumerateInstrumentsMessage
     | RemoteSubscribeToSimVarMessage
+    | RemoteRequestDataStorage
+    | RemoteSetDataStorageKey
     | RemoteSubscriptionGroupCancelMessage
     | RemoteClientDisconnectMessage
     | ProtocolErrorMessage
