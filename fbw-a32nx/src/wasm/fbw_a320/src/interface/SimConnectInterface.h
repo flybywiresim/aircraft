@@ -414,7 +414,7 @@ class SimConnectInterface {
   /**
    * @brief Process a SimConnect event.
    *
-   * These event are triggered by the SimConnect client usually calling
+   * These events are triggered by the SimConnect clients usually calling
    * `SimConnect_TransmitClientEvent` and have exactly one data parameter stored
    * in the event->dwData field of the SIMCONNECT_RECV_EVENT struct.
    *
@@ -426,7 +426,7 @@ class SimConnectInterface {
   /**
    * @brief Process a SimConnect EX1 event with up to 5 parameter.
    *
-   * These event are triggered by the SimConnect client usually calling
+   * These events are triggered by the SimConnect clients usually calling
    * `SimConnect_TransmitClientEvent_EX1` and have up to 5 data parameter stored
    * in the event->dwData0-4 fields of the SIMCONNECT_RECV_EVENT_EX1 struct.
    *

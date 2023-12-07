@@ -1425,8 +1425,11 @@ void SimConnectInterface::simConnectProcessDispatchMessage(SIMCONNECT_RECV* pDat
       break;
 
     case SIMCONNECT_RECV_ID_EVENT:
-      // get event
       simConnectProcessEvent(static_cast<SIMCONNECT_RECV_EVENT*>(pData));
+      break;
+
+    case SIMCONNECT_RECV_ID_EVENT_EX1:
+      simConnectProcessEvent_EX1(static_cast<SIMCONNECT_RECV_EVENT_EX1*>(pData));
       break;
 
     case SIMCONNECT_RECV_ID_SIMOBJECT_DATA:
