@@ -290,12 +290,12 @@ export class MsfsMapping {
         const slopes = new Map<string, number>();
         const icaoCode = this.getIcaoCodeFromAirport(msAirport);
 
-        for (const appr of msAirport.approaches.filter((appr) => appr.approachType === MSApproachType.Ils || appr.approachType === MSApproachType.Loc)) {
+        for (const appr of msAirport.approaches.filter(this.hasIlsFacility)) {
             const lastLeg = appr.finalLegs[appr.finalLegs.length - 1];
             if (FacilityCache.validFacilityIcao(lastLeg.originIcao, 'V') && (!ident || ident === lastLeg.originIcao)) {
                 const icao = lastLeg.originIcao.trim();
-                // Only consider LOC approach if we've not got an ILS yet
-                if (appr.approachType === MSApproachType.Loc && icaoSet.has(icao)) {
+                // Only consider non-ILS approach if we've not got an ILS yet
+                if (appr.approachType !== MSApproachType.Ils && icaoSet.has(icao)) {
                     continue;
                 }
 
@@ -329,7 +329,7 @@ export class MsfsMapping {
             const isTrue = isTrueVsMagnetic.get(icao);
             let locBearing = -1;
             if (bearing) {
-                locBearing = isTrue ? bearing : this.trueToMagnetic(bearing, -ils.magneticVariation);
+                locBearing = isTrue ? this.trueToMagnetic(bearing, -ils.magneticVariation) : bearing;
             }
 
             return {
@@ -347,6 +347,10 @@ export class MsfsMapping {
                 gsSlope: slopes.get(icao),
             };
         });
+    }
+
+    private hasIlsFacility(approach: JS_Approach): boolean {
+        return [MSApproachType.Loc, MSApproachType.Ils, MSApproachType.Lda, MSApproachType.Sdf].includes(approach.approachType);
     }
 
     private async computeFinalApproachCourse(approach: JS_Approach): Promise<number | undefined> {
