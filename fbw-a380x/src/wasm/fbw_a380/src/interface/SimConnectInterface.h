@@ -456,13 +456,6 @@ class SimConnectInterface {
    */
   void simConnectProcessEvent_EX1(const SIMCONNECT_RECV_EVENT_EX1* event);
 
-  /**
-   * @brief Process a SimConnect event with one parameter.
-   * @param eventId Specifies the ID of the client event.
-   * @param data0 Double word containing any additional number required by the event.
-   */
-  void processEventWithOneParam(const DWORD eventId, const DWORD data0);
-
   void simConnectProcessSimObjectData(const SIMCONNECT_RECV_SIMOBJECT_DATA* data);
 
   void simConnectProcessClientData(const SIMCONNECT_RECV_CLIENT_DATA* data);
@@ -485,4 +478,13 @@ class SimConnectInterface {
   static bool isSimConnectDataTypeStruct(SIMCONNECT_DATATYPE dataType);
 
   static std::string getSimConnectExceptionString(SIMCONNECT_EXCEPTION exception);
+
+  private:
+
+   /**
+   * @brief Process a SimConnect event with one parameter.
+   * @param eventId Specifies the ID of the client event.
+   * @param data0 Double word containing any additional number required by the event.
+    */
+   void processEventWithOneParam(const DWORD eventId, const DWORD data0);
 };
