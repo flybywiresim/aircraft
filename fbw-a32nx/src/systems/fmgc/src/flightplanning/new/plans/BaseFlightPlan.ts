@@ -176,7 +176,8 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     }
 
     get isApproachActive(): boolean {
-        return this.activeLegIndex >= this.firstApproachLegIndex && this.activeLegIndex < this.firstMissedApproachLegIndex;
+        // `this.approach` can be undefined for runway-by-itself approaches
+        return this.approach !== undefined && this.activeLegIndex >= this.firstApproachLegIndex && this.activeLegIndex < this.firstMissedApproachLegIndex;
     }
 
     /**
