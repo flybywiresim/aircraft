@@ -367,10 +367,10 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
         }, ident, annotation, undefined);
     }
 
-    static destinationExtendedCenterline(segment: FlightPlanSegment, airport: Airport, runway?: Runway): FlightPlanLeg {
+    static destinationExtendedCenterline(segment: FlightPlanSegment, runway: Runway): FlightPlanLeg {
         const waypoint = WaypointFactory.fromPlaceBearingDistance(
             'CF',
-            airport.location,
+            runway.thresholdLocation,
             5,
             MathUtils.clampAngle(runway.bearing + 180),
         );
