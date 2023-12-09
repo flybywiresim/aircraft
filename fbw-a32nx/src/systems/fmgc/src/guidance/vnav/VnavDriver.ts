@@ -492,6 +492,13 @@ export class VnavDriver implements GuidanceComponent {
         const referenceLegIndex = activeLeg ? activeLegIndx : activeLegIndx + 1;
         const referenceLeg = geometry.legs.get(referenceLegIndex);
 
+        if (!referenceLeg) {
+            this.guidanceController.activeLegAlongTrackCompletePathDtg = undefined;
+            this.guidanceController.alongTrackDistanceToDestination = undefined;
+
+            return;
+        }
+
         const inboundTransition = geometry.transitions.get(referenceLegIndex - 1);
         const outboundTransition = geometry.transitions.get(referenceLegIndex);
 
