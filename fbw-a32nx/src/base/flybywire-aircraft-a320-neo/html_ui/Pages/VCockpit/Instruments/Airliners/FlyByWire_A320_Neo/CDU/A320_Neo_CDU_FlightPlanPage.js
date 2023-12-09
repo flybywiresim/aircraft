@@ -952,10 +952,10 @@ function formatAltitudeOrLevel(mcdu, alt, useTransAlt) {
 
     let isFl = false;
     if (useTransAlt) {
-        const transAlt = activePlan.performanceData.transitionAltitude.get();
+        const transAlt = activePlan.performanceData.transitionAltitude;
         isFl = transAlt !== undefined && alt > transAlt;
     } else {
-        const transLevel = activePlan.performanceData.transitionLevel.get();
+        const transLevel = activePlan.performanceData.transitionLevel;
         isFl = transLevel !== undefined && alt >= (transLevel * 100);
     }
 

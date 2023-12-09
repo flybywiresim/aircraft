@@ -16,6 +16,7 @@ import { FlightPlanLegDefinition } from '@fmgc/flightplanning/new/legs/FlightPla
 import { FlightPlanInterface } from '@fmgc/flightplanning/new/FlightPlanInterface';
 import { AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
 import { CopyOptions } from '@fmgc/flightplanning/new/plans/CloningOptions';
+import { FlightPlanPerformanceData } from '@fmgc/flightplanning/new/plans/performance/FlightPlanPerformanceData';
 
 export class FlightPlanService implements FlightPlanInterface {
     private readonly bus = new EventBus();
@@ -466,5 +467,17 @@ export class FlightPlanService implements FlightPlanInterface {
         }
 
         this.flightPlanManager.copy(FlightPlanIndex.Active, FlightPlanIndex.Temporary, CopyOptions.IncludeFixInfos);
+    }
+
+    async setFlightNumber(flightNumber: string, planIndex = FlightPlanIndex.Active) {
+        const plan = this.flightPlanManager.get(planIndex);
+
+        plan.setFlightNumber(flightNumber);
+    }
+
+    async setPerformanceData<k extends keyof FlightPlanPerformanceData & string>(key: k, value: FlightPlanPerformanceData[k], planIndex = FlightPlanIndex.Active) {
+        const plan = this.flightPlanManager.get(planIndex);
+
+        plan.setPerformanceData(key, value);
     }
 }

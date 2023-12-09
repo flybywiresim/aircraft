@@ -5,8 +5,8 @@
 
 import { Airport, ApproachType, Fix, LegType, NXDataStore } from '@flybywiresim/fbw-sdk';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/new/plans/AlternateFlightPlan';
-import { EventBus, MagVar } from '@microsoft/msfs-sdk';
-import { FixInfoData, FixInfoEntry } from '@fmgc/flightplanning/new/plans/FixInfo';
+import { EventBus, MagVar, Subject } from '@microsoft/msfs-sdk';
+import { FixInfoEntry, FixInfoData } from '@fmgc/flightplanning/new/plans/FixInfo';
 import { loadAllDepartures, loadAllRunways } from '@fmgc/flightplanning/new/DataLoading';
 import { Coordinates, Degrees } from 'msfs-geo';
 import { FlightPlanLeg, FlightPlanLegFlags } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
@@ -14,6 +14,7 @@ import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { FlightArea } from '@fmgc/navigation/FlightArea';
 
 import { CopyOptions } from '@fmgc/flightplanning/new/plans/CloningOptions';
+import { ImportedPerformanceData } from '@fmgc/flightplanning/new/uplink/SimBriefUplinkAdapter';
 import { FlightPlanPerformanceData } from './performance/FlightPlanPerformanceData';
 import { BaseFlightPlan, FlightPlanQueuedOperation, SerializedFlightPlan } from './BaseFlightPlan';
 
@@ -36,6 +37,11 @@ export class FlightPlan extends BaseFlightPlan {
      * FIX INFO entries
      */
     fixInfos: readonly FixInfoEntry[] = [];
+
+    /**
+     * Shown as the "flight number" in the MCDU, but it's really the callsign
+     */
+    flightNumber: string | undefined = undefined;
 
     destroy() {
         super.destroy();
@@ -72,6 +78,7 @@ export class FlightPlan extends BaseFlightPlan {
         newPlan.activeLegIndex = this.activeLegIndex;
 
         newPlan.performanceData = this.performanceData.clone();
+        newPlan.flightNumber = this.flightNumber;
 
         if (options & CopyOptions.IncludeFixInfos) {
             newPlan.fixInfos = this.fixInfos.map((it) => it?.clone());
@@ -322,6 +329,25 @@ export class FlightPlan extends BaseFlightPlan {
     }
 
     /**
+     * Sets performance data imported from uplink
+     * @param data performance data available in uplink
+     */
+    setImportedPerformanceData(data: ImportedPerformanceData) {
+        this.setPerformanceData('databaseTransitionAltitude', data.departureTransitionAltitude);
+        this.setPerformanceData('databaseTransitionLevel', data.destinationTransitionLevel);
+        this.setPerformanceData('costIndex', data.costIndex);
+        this.setPerformanceData('cruiseFlightLevel', data.cruiseFlightLevel);
+    }
+
+    setFlightNumber(flightNumber: string, notify = true) {
+        this.flightNumber = flightNumber;
+
+        if (notify) {
+            this.sendEvent('flightPlan.setFlightNumber', { planIndex: this.index, forAlternate: false, flightNumber });
+        }
+    }
+
+    /**
      * Sets defaults for performance data parameters related to an origin
      *
      * @param plan the flight plan
@@ -331,18 +357,18 @@ export class FlightPlan extends BaseFlightPlan {
         const referenceAltitude = airport?.location.alt;
 
         if (referenceAltitude !== undefined) {
-            plan.performanceData.defaultThrustReductionAltitude.set(referenceAltitude + parseInt(NXDataStore.get('CONFIG_THR_RED_ALT', '1500')));
-            plan.performanceData.defaultAccelerationAltitude.set(referenceAltitude + parseInt(NXDataStore.get('CONFIG_ACCEL_ALT', '1500')));
-            plan.performanceData.defaultEngineOutAccelerationAltitude.set(referenceAltitude + parseInt(NXDataStore.get('CONFIG_ENG_OUT_ACCEL_ALT', '1500')));
+            plan.setPerformanceData('defaultThrustReductionAltitude', referenceAltitude + parseInt(NXDataStore.get('CONFIG_THR_RED_ALT', '1500')));
+            plan.setPerformanceData('defaultAccelerationAltitude', referenceAltitude + parseInt(NXDataStore.get('CONFIG_ACCEL_ALT', '1500')));
+            plan.setPerformanceData('defaultEngineOutAccelerationAltitude', referenceAltitude + parseInt(NXDataStore.get('CONFIG_ENG_OUT_ACCEL_ALT', '1500')));
         } else {
-            plan.performanceData.defaultThrustReductionAltitude.set(undefined);
-            plan.performanceData.defaultAccelerationAltitude.set(undefined);
-            plan.performanceData.defaultEngineOutAccelerationAltitude.set(undefined);
+            plan.setPerformanceData('defaultThrustReductionAltitude', undefined);
+            plan.setPerformanceData('defaultAccelerationAltitude', undefined);
+            plan.setPerformanceData('defaultEngineOutAccelerationAltitude', undefined);
         }
 
-        plan.performanceData.pilotThrustReductionAltitude.set(undefined);
-        plan.performanceData.pilotAccelerationAltitude.set(undefined);
-        plan.performanceData.pilotEngineOutAccelerationAltitude.set(undefined);
+        plan.setPerformanceData('pilotThrustReductionAltitude', undefined);
+        plan.setPerformanceData('pilotAccelerationAltitude', undefined);
+        plan.setPerformanceData('pilotEngineOutAccelerationAltitude', undefined);
     }
 
     /**
@@ -355,18 +381,18 @@ export class FlightPlan extends BaseFlightPlan {
         const referenceAltitude = airport?.location.alt;
 
         if (referenceAltitude !== undefined) {
-            plan.performanceData.defaultMissedThrustReductionAltitude.set(referenceAltitude + parseInt(NXDataStore.get('CONFIG_THR_RED_ALT', '1500')));
-            plan.performanceData.defaultMissedAccelerationAltitude.set(referenceAltitude + parseInt(NXDataStore.get('CONFIG_ACCEL_ALT', '1500')));
-            plan.performanceData.defaultMissedEngineOutAccelerationAltitude.set(referenceAltitude + parseInt(NXDataStore.get('CONFIG_ENG_OUT_ACCEL_ALT', '1500')));
+            plan.setPerformanceData('defaultMissedThrustReductionAltitude', referenceAltitude + parseInt(NXDataStore.get('CONFIG_THR_RED_ALT', '1500')));
+            plan.setPerformanceData('defaultMissedAccelerationAltitude', referenceAltitude + parseInt(NXDataStore.get('CONFIG_ACCEL_ALT', '1500')));
+            plan.setPerformanceData('defaultMissedEngineOutAccelerationAltitude', referenceAltitude + parseInt(NXDataStore.get('CONFIG_ENG_OUT_ACCEL_ALT', '1500')));
         } else {
-            plan.performanceData.defaultMissedThrustReductionAltitude.set(undefined);
-            plan.performanceData.defaultMissedAccelerationAltitude.set(undefined);
-            plan.performanceData.defaultMissedEngineOutAccelerationAltitude.set(undefined);
+            plan.setPerformanceData('defaultMissedThrustReductionAltitude', undefined);
+            plan.setPerformanceData('defaultMissedAccelerationAltitude', undefined);
+            plan.setPerformanceData('defaultMissedEngineOutAccelerationAltitude', undefined);
         }
 
-        plan.performanceData.pilotMissedThrustReductionAltitude.set(undefined);
-        plan.performanceData.pilotMissedAccelerationAltitude.set(undefined);
-        plan.performanceData.pilotMissedEngineOutAccelerationAltitude.set(undefined);
+        plan.setPerformanceData('pilotMissedThrustReductionAltitude', undefined);
+        plan.setPerformanceData('pilotMissedAccelerationAltitude', undefined);
+        plan.setPerformanceData('pilotMissedEngineOutAccelerationAltitude', undefined);
     }
 
     static fromSerializedFlightPlan(index: number, serialized: SerializedFlightPlan, bus: EventBus): FlightPlan {
@@ -384,7 +410,21 @@ export class FlightPlan extends BaseFlightPlan {
         newPlan.arrivalEnrouteTransitionSegment.setFromSerializedSegment(serialized.segments.arrivalEnrouteTransitionSegment);
         newPlan.approachSegment.setFromSerializedSegment(serialized.segments.approachSegment);
         newPlan.approachViaSegment.setFromSerializedSegment(serialized.segments.approachViaSegment);
+        // newPlan.performanceData.cruiseFlightLevel.set(serialized.performanceData.cruiseFlightLevel);
 
         return newPlan;
+    }
+
+    /**
+     * Sets a performance data parameter
+     */
+    setPerformanceData<k extends keyof FlightPlanPerformanceData & string>(key: k, value: FlightPlanPerformanceData[k], notify = true) {
+        this.performanceData[key] = value;
+
+        if (notify) {
+            this.sendEvent(`flightPlan.setPerformanceData.${key}`, { planIndex: this.index, forAlternate: false, value });
+        }
+
+        this.incrementVersion();
     }
 }

@@ -594,7 +594,7 @@ export abstract class BaseFlightPlan implements ReadonlyFlightPlan {
         await this.originSegment.setOriginIcao(icao);
 
         if (this instanceof FlightPlan) {
-            this.performanceData.databaseTransitionAltitude.set(this.originAirport.transitionAltitude);
+            this.setPerformanceData('databaseTransitionAltitude', this.originAirport.transitionAltitude);
         }
 
         await this.flushOperationQueue();

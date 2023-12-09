@@ -10,6 +10,7 @@ import { v4 } from 'uuid';
 import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
+import { FlightPlanPerformanceData } from '@fmgc/flightplanning/new/plans/performance/FlightPlanPerformanceData';
 import { FlightPlanLegDefinition } from '../legs/FlightPlanLegDefinition';
 import { FixInfoEntry } from '../plans/FixInfo';
 import { FlightPlan } from '../plans/FlightPlan';
@@ -229,5 +230,13 @@ export class FlightPlanRpcClient implements FlightPlanInterface {
 
     isWaypointInUse(waypoint: Waypoint): Promise<boolean> {
         return this.callFunctionViaRpc('isWaypointInUse', waypoint);
+    }
+
+    setFlightNumber(flightNumber: string, planIndex: number): Promise<void> {
+        return this.callFunctionViaRpc('setFlightNumber', flightNumber, planIndex);
+    }
+
+    setPerformanceData<T extends keyof FlightPlanPerformanceData>(key: T, value: FlightPlanPerformanceData[T], planIndex: number): Promise<void> {
+        return this.callFunctionViaRpc('setPerformanceData', key, value, planIndex);
     }
 }

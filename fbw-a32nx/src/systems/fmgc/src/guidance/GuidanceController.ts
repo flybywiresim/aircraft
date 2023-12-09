@@ -284,7 +284,7 @@ export class GuidanceController {
     }
 
     constructor(fmgc: Fmgc, private flightPlanService: FlightPlanService, private efisInterface: EfisInterface) {
-        this.verticalProfileComputationParametersObserver = new VerticalProfileComputationParametersObserver(fmgc);
+        this.verticalProfileComputationParametersObserver = new VerticalProfileComputationParametersObserver(fmgc, flightPlanService);
         this.windProfileFactory = new WindProfileFactory(fmgc, 1);
 
         this.atmosphericConditions = new AtmosphericConditions(this.verticalProfileComputationParametersObserver);
