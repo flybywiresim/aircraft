@@ -14,6 +14,7 @@ import { NXDataStore } from '@flybywiresim/fbw-sdk';
 import { SimBriefUplinkAdapter } from '@fmgc/flightplanning/new/uplink/SimBriefUplinkAdapter';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { ISimbriefData } from '../../../../../../../../fbw-a32nx/src/systems/instruments/src/EFB/Apis/Simbrief';
+import { NXFictionalMessages, TypeIMessage } from 'instruments/src/MFD/pages/FMS/legacy/NXSystemMessages';
 
 interface MfdFmsInitProps extends AbstractMfdPageProps {
 }
@@ -130,13 +131,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
         const simBriefUserId = NXDataStore.get('CONFIG_SIMBRIEF_USERID', '');
 
         if (!simBriefUserId) {
-            this.props.fmService.mfd.showFmsErrorMessageFreeText({
-                message: 'NO SIMBRIEF PILOT ID PROVIDED',
-                backgroundColor: 'none',
-                cleared: false,
-                isResolvedOverride: () => {},
-                onClearOverride: () => {},
-            });
+            this.props.fmService.mfd.addMessageToQueue(NXFictionalMessages.simBriefNoUser);
         }
 
         this.simBriefOfp = await SimBriefUplinkAdapter.downloadOfpForUserID(simBriefUserId);
@@ -268,7 +263,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                     <div class="mfd-fms-init-line">
                         <div class="mfd-label init-input-field">CRZ FL</div>
                         <InputField<number>
-                            dataEntryFormat={new FlightLevelFormat(Subject.create(100), Subject.create(maxCertifiedAlt))}
+                            dataEntryFormat={new FlightLevelFormat(this.props.fmService.mfd, Subject.create(100), Subject.create(maxCertifiedAlt))}
                             dataHandlerDuringValidation={async (v) => this.loadedFlightPlan.performanceData.cruiseFlightLevel.set(v)}
                             mandatory={Subject.create(true)}
                             disabled={this.altnDisabled}
@@ -278,7 +273,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                         />
                         <div class="mfd-label init-input-field" style="width: auto;">CRZ TEMP</div>
                         <InputField<number>
-                            dataEntryFormat={new CrzTempFormat()}
+                            dataEntryFormat={new CrzTempFormat(this.props.fmService.mfd)}
                             mandatory={Subject.create(false)}
                             disabled={Subject.create(true)} // TODO
                             value={this.crzTemp}
@@ -289,7 +284,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                     <div class="mfd-fms-init-line" style="margin-top: 10px;">
                         <div class="mfd-label init-input-field">CI</div>
                         <InputField<number>
-                            dataEntryFormat={new CostIndexFormat()}
+                            dataEntryFormat={new CostIndexFormat(this.props.fmService.mfd)}
                             mandatory={Subject.create(true)}
                             disabled={this.costIndexDisabled}
                             value={this.props.fmService.fmgc.data.costIndex}
@@ -298,7 +293,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                         />
                         <div class="mfd-label init-input-field" style="width: auto;">TROPO</div>
                         <InputField<number>
-                            dataEntryFormat={new TropoFormat()}
+                            dataEntryFormat={new TropoFormat(this.props.fmService.mfd)}
                             dataHandlerDuringValidation={async (v) => this.props.fmService.fmgc.data.tropopausePilotEntry.set(v)}
                             mandatory={Subject.create(false)}
                             enteredByPilot={this.props.fmService.fmgc.data.tropopauseIsPilotEntered}
@@ -310,7 +305,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                     <div class="mfd-fms-init-line trip-wind">
                         <div class="mfd-label init-input-field" style="margin-top: 90px;">TRIP WIND</div>
                         <InputField<number>
-                            dataEntryFormat={new TripWindFormat()}
+                            dataEntryFormat={new TripWindFormat(this.props.fmService.mfd)}
                             mandatory={Subject.create(false)}
                             disabled={this.tripWindDisabled} // TODO
                             value={this.props.fmService.fmgc.data.tripWind}

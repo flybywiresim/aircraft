@@ -4,8 +4,8 @@ import useMouse from '@react-hook/mouse-position';
 import { useSimVar } from '@instruments/common/simVars';
 import { useArinc429Var } from '@instruments/common/arinc429';
 import { NXUnits } from '@shared/NXUnits';
-import { Button } from '../MFD/Components/Button';
-import { Cursor } from '../MFD/MultiFunctionDisplay';
+import { Button } from '../ATCCOM/Components/Button';
+import { Cursor } from '../ATCCOM/MultiFunctionDisplay';
 
 export const StatusArea = () => {
     const ref = useRef(null);

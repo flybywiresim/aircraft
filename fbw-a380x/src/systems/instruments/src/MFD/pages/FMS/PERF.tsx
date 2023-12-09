@@ -342,6 +342,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
     private apprLandingWeight = Subject.create<number>(undefined);
 
+    private ldgRwyThresholdLocation = Subject.create<Feet>(undefined);
+
     // GA page subjects, refs and methods
 
     protected onNewData(): void {
@@ -620,15 +622,15 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             if (crzPred?.secondsFromPresent !== undefined && crzPred?.distanceFromPresentPosition !== undefined) {
                 if (this.activeFlightPhase.get() < FmgcFlightPhase.Cruise) {
                     if (this.props.fmService.fmgc.data.cruisePreSelSpeed.get() || this.props.fmService.fmgc.data.cruisePreSelMach.get()) {
-                        this.crzTablePredLine1.set(`${(new TimeHHMMFormat()).format(crzPred.secondsFromPresent / 60)}${crzPred.distanceFromPresentPosition.toFixed(0).padStart(6, ' ')}`);
+                        this.crzTablePredLine1.set(`${(new TimeHHMMFormat(this.props.fmService.mfd)).format(crzPred.secondsFromPresent / 60)}${crzPred.distanceFromPresentPosition.toFixed(0).padStart(6, ' ')}`);
                         this.crzTablePredLine2.set('');
                     } else {
                         // Managed
                         this.crzTablePredLine1.set('');
-                        this.crzTablePredLine2.set(`${(new TimeHHMMFormat()).format(crzPred.secondsFromPresent / 60)}${crzPred.distanceFromPresentPosition.toFixed(0).padStart(6, ' ')}`);
+                        this.crzTablePredLine2.set(`${(new TimeHHMMFormat(this.props.fmService.mfd)).format(crzPred.secondsFromPresent / 60)}${crzPred.distanceFromPresentPosition.toFixed(0).padStart(6, ' ')}`);
                     }
                 } else {
-                    this.crzTablePredLine1.set(`${(new TimeHHMMFormat()).format(crzPred.secondsFromPresent / 60)}${crzPred.distanceFromPresentPosition.toFixed(0).padStart(6, ' ')}`);
+                    this.crzTablePredLine1.set(`${(new TimeHHMMFormat(this.props.fmService.mfd)).format(crzPred.secondsFromPresent / 60)}${crzPred.distanceFromPresentPosition.toFixed(0).padStart(6, ' ')}`);
                     this.crzTablePredLine2.set('');
                 }
             }
@@ -676,7 +678,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             // Update CRZ DEST predictions
             const destPred = this.props.fmService?.guidanceController?.vnavDriver?.getDestinationPrediction();
             if (destPred?.secondsFromPresent !== undefined) {
-                this.destEta.set((new TimeHHMMFormat()).format(destPred.secondsFromPresent / 60)[0]);
+                this.destEta.set((new TimeHHMMFormat(this.props.fmService.mfd)).format(destPred.secondsFromPresent / 60)[0]);
                 this.destEfob.set(this.props.fmService.fmgc.getDestEFOB(true).toFixed(1));
             }
 
@@ -725,7 +727,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         <div class="mfd-label-value-container">
                             <span class="mfd-label mfd-spacing-right">CRZ</span>
                             <InputField<number>
-                                dataEntryFormat={new FlightLevelFormat()}
+                                dataEntryFormat={new FlightLevelFormat(this.props.fmService.mfd)}
                                 dataHandlerDuringValidation={async (v) => {
                                     this.loadedFlightPlan.performanceData.cruiseFlightLevel.set(v);
                                     this.loadedFlightPlan.incrementVersion();
@@ -762,7 +764,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                 <div class="mfd-label-value-container">
                                     <span class="mfd-label mfd-spacing-right">T.O SHIFT</span>
                                     <InputField<number>
-                                        dataEntryFormat={new LengthFormat(Subject.create(1), this.originRunwayLength)}
+                                        dataEntryFormat={new LengthFormat(this.props.fmService.mfd, Subject.create(1), this.originRunwayLength)}
                                         dataHandlerDuringValidation={async (v) => this.props.fmService.fmgc.data.takeoffShift.set(v)}
                                         mandatory={Subject.create(false)}
                                         inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
@@ -775,9 +777,10 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     <div class="mfd-label-value-container">
                                         <span class="mfd-label mfd-spacing-right">V1</span>
                                         <InputField<number>
-                                            dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
+                                            dataEntryFormat={new SpeedKnotsFormat(this.props.fmService.mfd, Subject.create(90), Subject.create(Vmo))}
                                             dataHandlerDuringValidation={async (v) => {
                                                 this.loadedFlightPlan.performanceData.v1.set(v);
+                                                SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", v);
                                                 this.loadedFlightPlan.incrementVersion();
                                             }}
                                             mandatory={Subject.create(true)}
@@ -806,10 +809,13 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                             )}
                                             onClick={() => {
                                                 const fm = this.props.fmService.fmgc.data;
+                                                SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", fm.v1ToBeConfirmed.get());
                                                 this.loadedFlightPlan.performanceData.v1.set(fm.v1ToBeConfirmed.get());
                                                 fm.v1ToBeConfirmed.set(undefined);
+                                                SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", fm.vrToBeConfirmed.get());
                                                 this.loadedFlightPlan.performanceData.vr.set(fm.vrToBeConfirmed.get());
                                                 fm.vrToBeConfirmed.set(undefined);
+                                                SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", fm.v2ToBeConfirmed.get());
                                                 this.loadedFlightPlan.performanceData.v2.set(fm.v2ToBeConfirmed.get());
                                                 fm.v2ToBeConfirmed.set(undefined);
                                                 this.loadedFlightPlan.incrementVersion();
@@ -825,8 +831,9 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     <div class="mfd-label-value-container">
                                         <span class="mfd-label mfd-spacing-right">VR</span>
                                         <InputField<number>
-                                            dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
+                                            dataEntryFormat={new SpeedKnotsFormat(this.props.fmService.mfd, Subject.create(90), Subject.create(Vmo))}
                                             dataHandlerDuringValidation={async (v) => {
+                                                SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", v);
                                                 this.loadedFlightPlan.performanceData.vr.set(v);
                                                 this.loadedFlightPlan.incrementVersion();
                                             }}
@@ -850,8 +857,9 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     <div class="mfd-label-value-container">
                                         <span class="mfd-label mfd-spacing-right">V2</span>
                                         <InputField<number>
-                                            dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
+                                            dataEntryFormat={new SpeedKnotsFormat(this.props.fmService.mfd, Subject.create(90), Subject.create(Vmo))}
                                             dataHandlerDuringValidation={async (v) => {
+                                                SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", v);
                                                 this.loadedFlightPlan.performanceData.v2.set(v);
                                                 this.loadedFlightPlan.incrementVersion();
                                             }}
@@ -904,7 +912,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                 <div class="mfd-fms-perf-to-flex-toga" style="width: 125px;">
                                     <div class="mfd-label-value-container" style="margin-top: 60px;" ref={this.toFlexInputRef}>
                                         <InputField<number>
-                                            dataEntryFormat={new TemperatureFormat(Subject.create(0), Subject.create(99))}
+                                            dataEntryFormat={new TemperatureFormat(this.props.fmService.mfd, Subject.create(0), Subject.create(99))}
                                             dataHandlerDuringValidation={async (v) => {
                                                 // Special case: 0 means no FLEX, 0.1 means FLEX TEMP of 0
                                                 await SimVar.SetSimVarValue('L:AIRLINER_TO_FLEX_TEMP', 'Number', v === 0 ? 0.1 : v);
@@ -955,7 +963,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                 </div>
                                 <div style="margin-top: 15px; align-self: center;">
                                     <InputField<number>
-                                        dataEntryFormat={new PercentageFormat(Subject.create(0), Subject.create(99.9))}
+                                        dataEntryFormat={new PercentageFormat(this.props.fmService.mfd, Subject.create(0), Subject.create(99.9))}
                                         dataHandlerDuringValidation={async (v) => {
                                             this.props.fmService.fmgc.data.takeoffThsFor.set(v);
                                             this.props.fmService.acInterface.setTakeoffTrim(v);
@@ -997,7 +1005,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                 </div>
                                 <div style="margin-bottom: 15px;">
                                     <InputField<number>
-                                        dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
+                                        dataEntryFormat={new AltitudeOrFlightLevelFormat(this.props.fmService.mfd, this.transAlt)}
                                         dataHandlerDuringValidation={async (v) => {
                                             this.loadedFlightPlan.performanceData.pilotThrustReductionAltitude.set(v || undefined);
                                             this.loadedFlightPlan.incrementVersion();
@@ -1021,7 +1029,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                 <div>
                                     <div ref={this.toNoiseFieldsRefs[1]} style="margin-bottom: 15px;">
                                         <InputField<number>
-                                            dataEntryFormat={new PercentageFormat(Subject.create(40), Subject.create(110))}
+                                            dataEntryFormat={new PercentageFormat(this.props.fmService.mfd, Subject.create(40), Subject.create(110))}
                                             mandatory={Subject.create(false)}
                                             inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
                                             value={this.props.fmService.fmgc.data.noiseN1}
@@ -1056,7 +1064,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                 </div>
                                 <div style="margin-bottom: 15px;">
                                     <InputField<number>
-                                        dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
+                                        dataEntryFormat={new AltitudeOrFlightLevelFormat(this.props.fmService.mfd, this.transAlt)}
                                         dataHandlerDuringValidation={async (v) => {
                                             this.loadedFlightPlan.performanceData.pilotAccelerationAltitude.set(v || undefined);
                                             this.loadedFlightPlan.incrementVersion();
@@ -1080,7 +1088,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                 <div>
                                     <div ref={this.toNoiseFieldsRefs[4]} style="margin-bottom: 15px;">
                                         <InputField<number>
-                                            dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
+                                            dataEntryFormat={new SpeedKnotsFormat(this.props.fmService.mfd, Subject.create(90), Subject.create(Vmo))}
                                             mandatory={Subject.create(false)}
                                             inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
                                             value={this.props.fmService.fmgc.data.noiseSpeed}
@@ -1114,7 +1122,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     </div>
                                     <div ref={this.toNoiseEndInputRef}>
                                         <InputField<number>
-                                            dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
+                                            dataEntryFormat={new AltitudeOrFlightLevelFormat(this.props.fmService.mfd, this.transAlt)}
                                             dataHandlerDuringValidation={async (v) => this.props.fmService.fmgc.data.noiseEndAltitude.set(v)}
                                             mandatory={Subject.create(false)}
                                             inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
@@ -1133,7 +1141,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                 <div class="mfd-label-value-container">
                                     <span class="mfd-label mfd-spacing-right">TRANS</span>
                                     <InputField<number>
-                                        dataEntryFormat={new AltitudeFormat(Subject.create(1), Subject.create(maxCertifiedAlt))}
+                                        dataEntryFormat={new AltitudeFormat(this.props.fmService.mfd, Subject.create(1), Subject.create(maxCertifiedAlt))}
                                         dataHandlerDuringValidation={async (v) => {
                                             this.loadedFlightPlan.performanceData.pilotTransitionAltitude.set(v || undefined);
                                             this.loadedFlightPlan.incrementVersion();
@@ -1148,7 +1156,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                 <div class="mfd-label-value-container">
                                     <span class="mfd-label mfd-spacing-right">EO ACCEL</span>
                                     <InputField<number>
-                                        dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
+                                        dataEntryFormat={new AltitudeOrFlightLevelFormat(this.props.fmService.mfd, this.transAlt)}
                                         dataHandlerDuringValidation={async (v) => {
                                             this.loadedFlightPlan.performanceData.pilotEngineOutAccelerationAltitude.set(v || undefined);
                                             this.loadedFlightPlan.incrementVersion();
@@ -1185,7 +1193,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                 <div class="mfd-label-value-container" style="padding: 15px; margin-bottom: 15px;">
                                     <span class="mfd-label mfd-spacing-right">CI</span>
                                     <InputField<number>
-                                        dataEntryFormat={new CostIndexFormat()}
+                                        dataEntryFormat={new CostIndexFormat(this.props.fmService.mfd)}
                                         mandatory={Subject.create(false)}
                                         value={this.props.fmService.fmgc.data.costIndex}
                                         containerStyle="width: 75px;"
@@ -1219,7 +1227,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                 <div class="mfd-fms-perf-speed-table-cell">
                                     <div class="mfd-label">PRED TO </div>
                                     <InputField<number>
-                                        dataEntryFormat={new AltitudeOrFlightLevelFormat(Subject.create(0), Subject.create(maxCertifiedAlt), this.transAlt)}
+                                        dataEntryFormat={new AltitudeOrFlightLevelFormat(this.props.fmService.mfd, Subject.create(0), Subject.create(maxCertifiedAlt), this.transAlt)}
                                         dataHandlerDuringValidation={async (v) => this.props.fmService.fmgc.data.climbPredictionsReferencePilotEntry.set(v)}
                                         mandatory={Subject.create(false)}
                                         inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Climb)}
@@ -1247,7 +1255,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         condition={this.activeFlightPhase.map((it) => it < FmgcFlightPhase.Climb)}
                                         componentIfTrue={(
                                             <InputField<number>
-                                                dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
+                                                dataEntryFormat={new SpeedKnotsFormat(this.props.fmService.mfd, Subject.create(90), Subject.create(Vmo))}
                                                 mandatory={Subject.create(false)}
                                                 inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Climb)}
                                                 value={this.props.fmService.fmgc.data.climbPreSelSpeed}
@@ -1317,7 +1325,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                 </div>
                                 <div style="margin-bottom: 15px;">
                                     <InputField<number>
-                                        dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
+                                        dataEntryFormat={new AltitudeOrFlightLevelFormat(this.props.fmService.mfd, this.transAlt)}
                                         mandatory={Subject.create(false)}
                                         inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Climb)}
                                         enteredByPilot={this.thrRedAltIsPilotEntered}
@@ -1338,7 +1346,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                 <div>
                                     <div ref={this.clbNoiseFieldsRefs[1]} style="margin-bottom: 15px;">
                                         <InputField<number>
-                                            dataEntryFormat={new PercentageFormat(Subject.create(40), Subject.create(110))}
+                                            dataEntryFormat={new PercentageFormat(this.props.fmService.mfd, Subject.create(40), Subject.create(110))}
                                             mandatory={Subject.create(false)}
                                             inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Climb)}
                                             value={this.props.fmService.fmgc.data.noiseN1}
@@ -1371,7 +1379,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                 </div>
                                 <div style="margin-bottom: 15px;">
                                     <InputField<number>
-                                        dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
+                                        dataEntryFormat={new AltitudeOrFlightLevelFormat(this.props.fmService.mfd, this.transAlt)}
                                         mandatory={Subject.create(false)}
                                         inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Climb)}
                                         enteredByPilot={this.accelRedAltIsPilotEntered}
@@ -1392,7 +1400,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                 <div>
                                     <div ref={this.clbNoiseFieldsRefs[4]} style="margin-bottom: 15px;">
                                         <InputField<number>
-                                            dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
+                                            dataEntryFormat={new SpeedKnotsFormat(this.props.fmService.mfd, Subject.create(90), Subject.create(Vmo))}
                                             mandatory={Subject.create(false)}
                                             inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Climb)}
                                             value={this.props.fmService.fmgc.data.noiseSpeed}
@@ -1419,7 +1427,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     </div>
                                     <div ref={this.clbNoiseEndInputRef}>
                                         <InputField<number>
-                                            dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
+                                            dataEntryFormat={new AltitudeOrFlightLevelFormat(this.props.fmService.mfd, this.transAlt)}
                                             mandatory={Subject.create(false)}
                                             inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Climb)}
                                             value={this.noiseEndAlt}
@@ -1454,7 +1462,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                 <div class="mfd-label-value-container" style="margin-left: 50px;">
                                     <span class="mfd-label mfd-spacing-right">TRANS</span>
                                     <InputField<number>
-                                        dataEntryFormat={new AltitudeFormat(Subject.create(1), Subject.create(maxCertifiedAlt))}
+                                        dataEntryFormat={new AltitudeFormat(this.props.fmService.mfd, Subject.create(1), Subject.create(maxCertifiedAlt))}
                                         mandatory={Subject.create(false)}
                                         inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Climb)}
                                         value={this.transAlt}
@@ -1484,7 +1492,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                 <div class="mfd-label-value-container" style="padding: 15px;">
                                     <span class="mfd-label mfd-spacing-right">CI</span>
                                     <InputField<number>
-                                        dataEntryFormat={new CostIndexFormat()}
+                                        dataEntryFormat={new CostIndexFormat(this.props.fmService.mfd)}
                                         mandatory={Subject.create(false)}
                                         value={this.props.fmService.fmgc.data.costIndex}
                                         containerStyle="width: 75px;"
@@ -1562,7 +1570,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         condition={this.activeFlightPhase.map((it) => it < FmgcFlightPhase.Cruise)}
                                         componentIfTrue={(
                                             <InputField<number>
-                                                dataEntryFormat={new SpeedMachFormat(Subject.create(0.1), Subject.create(Mmo))}
+                                                dataEntryFormat={new SpeedMachFormat(this.props.fmService.mfd, Subject.create(0.1), Subject.create(Mmo))}
                                                 mandatory={Subject.create(false)}
                                                 inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Cruise)}
                                                 value={this.props.fmService.fmgc.data.cruisePreSelMach}
@@ -1581,7 +1589,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         condition={this.activeFlightPhase.map((it) => it < FmgcFlightPhase.Cruise)}
                                         componentIfTrue={(
                                             <InputField<number>
-                                                dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
+                                                dataEntryFormat={new SpeedKnotsFormat(this.props.fmService.mfd, Subject.create(90), Subject.create(Vmo))}
                                                 mandatory={Subject.create(false)}
                                                 inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Cruise)}
                                                 value={this.props.fmService.fmgc.data.cruisePreSelSpeed}
@@ -1696,7 +1704,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                 <div class="mfd-label-value-container" style="padding: 15px;">
                                     <span class="mfd-label mfd-spacing-right">CI</span>
                                     <InputField<number>
-                                        dataEntryFormat={new CostIndexFormat()}
+                                        dataEntryFormat={new CostIndexFormat(this.props.fmService.mfd)}
                                         mandatory={Subject.create(false)}
                                         inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Cruise)}
                                         value={this.props.fmService.fmgc.data.costIndex}
@@ -1707,7 +1715,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                 <div class="mfd-label-value-container" style="padding: 15px;">
                                     <span class="mfd-label mfd-spacing-right">DES CABIN RATE</span>
                                     <InputField<number>
-                                        dataEntryFormat={new DescentRateFormat(Subject.create(-999), Subject.create(-100))}
+                                        dataEntryFormat={new DescentRateFormat(this.props.fmService.mfd, Subject.create(-999), Subject.create(-100))}
                                         mandatory={Subject.create(false)}
                                         inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Cruise)}
                                         value={this.props.fmService.fmgc.data.descentCabinRate}
@@ -1729,7 +1737,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                 <div class="mfd-fms-perf-speed-table-cell">
                                     <div class="mfd-label">PRED TO </div>
                                     <InputField<number>
-                                        dataEntryFormat={new AltitudeOrFlightLevelFormat(Subject.create(0), Subject.create(maxCertifiedAlt), this.transFl)}
+                                        dataEntryFormat={new AltitudeOrFlightLevelFormat(this.props.fmService.mfd, Subject.create(0), Subject.create(maxCertifiedAlt), this.transFl)}
                                         mandatory={Subject.create(false)}
                                         disabled={this.activeFlightPhase.map((it) => it !== FmgcFlightPhase.Descent)}
                                         value={this.desPredictionsReference}
@@ -1756,7 +1764,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         componentIfFalse={(
                                             <InputField<number>
                                                 disabled={Subject.create(true)}
-                                                dataEntryFormat={new SpeedMachFormat(Subject.create(0.1), Subject.create(Mmo))}
+                                                dataEntryFormat={new SpeedMachFormat(this.props.fmService.mfd, Subject.create(0.1), Subject.create(Mmo))}
                                                 mandatory={Subject.create(false)}
                                                 inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Descent)}
                                                 value={this.desManagedMachTarget}
@@ -1776,7 +1784,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         componentIfTrue={(
                                             <InputField<number>
                                                 disabled={Subject.create(true)}
-                                                dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
+                                                dataEntryFormat={new SpeedKnotsFormat(this.props.fmService.mfd, Subject.create(90), Subject.create(Vmo))}
                                                 mandatory={Subject.create(false)}
                                                 inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Descent)}
                                                 value={this.desManagedSpdTarget}
@@ -1864,7 +1872,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                             <span class="mfd-label mfd-spacing-right perf-appr-weather">MAG WIND</span>
                                             <div style="border: 1px solid lightgrey; display: flex; flex-direction: row; padding: 2px;">
                                                 <InputField<number>
-                                                    dataEntryFormat={new WindDirectionFormat()}
+                                                    dataEntryFormat={new WindDirectionFormat(this.props.fmService.mfd)}
                                                     mandatory={Subject.create(false)}
                                                     value={this.props.fmService.fmgc.data.approachWind.map((it) => it.direction)}
                                                     onModified={(v) => this.props.fmService.fmgc.data.approachWind.set(
@@ -1873,7 +1881,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                                     alignText="center"
                                                 />
                                                 <InputField<number>
-                                                    dataEntryFormat={new WindSpeedFormat()}
+                                                    dataEntryFormat={new WindSpeedFormat(this.props.fmService.mfd)}
                                                     mandatory={Subject.create(false)}
                                                     value={this.props.fmService.fmgc.data.approachWind.map((it) => it.speed)}
                                                     onModified={(v) => this.props.fmService.fmgc.data.approachWind.set(
@@ -1897,7 +1905,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         <div style="display: flex; flex-direction: row; margin-top: 20px;">
                                             <span class="mfd-label mfd-spacing-right perf-appr-weather">OAT</span>
                                             <InputField<number>
-                                                dataEntryFormat={new TemperatureFormat(Subject.create(-99), Subject.create(99))}
+                                                dataEntryFormat={new TemperatureFormat(this.props.fmService.mfd, Subject.create(-99), Subject.create(99))}
                                                 mandatory={Subject.create(false)}
                                                 value={this.props.fmService.fmgc.data.approachTemperature}
                                                 containerStyle="width: 125px;"
@@ -1907,7 +1915,14 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         <div style="display: flex; flex-direction: row; margin-top: 15px;">
                                             <span class="mfd-label mfd-spacing-right perf-appr-weather">QNH</span>
                                             <InputField<number>
-                                                dataEntryFormat={new QnhFormat()}
+                                                dataEntryFormat={new QnhFormat(this.props.fmService.mfd)}
+                                                dataHandlerDuringValidation={async (v) => {
+                                                    if (v >= 745 && v <= 1050) {
+                                                        SimVar.SetSimVarValue("L:A32NX_DESTINATION_QNH", "Millibar", v);
+                                                    } else {
+                                                        SimVar.SetSimVarValue("L:A32NX_DESTINATION_QNH", "Millibar", v * 33.8639);
+                                                    }
+                                                }}
                                                 mandatory={Subject.create(false)}
                                                 value={this.props.fmService.fmgc.data.approachQnh}
                                                 containerStyle="width: 125px;"
@@ -1922,7 +1937,10 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         <div style="display: flex; flex-direction: row;">
                                             <span class="mfd-label mfd-spacing-right perf-appr-weather">BARO</span>
                                             <InputField<number>
-                                                dataEntryFormat={new AltitudeFormat(Subject.create(0), Subject.create(maxCertifiedAlt))}
+                                                dataEntryFormat={new AltitudeFormat(this.props.fmService.mfd, Subject.create(0), Subject.create(maxCertifiedAlt))}
+                                                dataHandlerDuringValidation={async (v) => {
+                                                    SimVar.SetSimVarValue("L:AIRLINER_MINIMUM_DESCENT_ALTITUDE", "feet", v);
+                                                }}
                                                 mandatory={Subject.create(false)}
                                                 value={this.props.fmService.fmgc.data.approachBaroMinimum}
                                                 containerStyle="width: 150px;"
@@ -1932,7 +1950,16 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         <div style="display: flex; flex-direction: row; margin-top: 15px;">
                                             <span class="mfd-label mfd-spacing-right perf-appr-weather">RADIO</span>
                                             <InputField<number>
-                                                dataEntryFormat={new AltitudeFormat(Subject.create(0), Subject.create(maxCertifiedAlt))}
+                                                dataEntryFormat={new AltitudeFormat(this.props.fmService.mfd, Subject.create(0), Subject.create(maxCertifiedAlt))}
+                                                dataHandlerDuringValidation={async (v) => {
+                                                    if (v === undefined) {
+                                                        SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "feet", -1);
+                                                    } else if (v === null) {
+                                                        SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "feet", -2);
+                                                    } else {
+                                                        SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "feet", v);
+                                                    }
+                                                }}
                                                 mandatory={Subject.create(false)}
                                                 value={this.props.fmService.fmgc.data.approachRadioMinimum}
                                                 containerStyle="width: 150px;"
@@ -1971,7 +1998,14 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         <RadioButtonGroup
                                             values={['CONF 3', 'FULL']}
                                             selectedIndex={this.apprSelectedFlapsIndex}
-                                            onModified={(v) => this.props.fmService.fmgc.data.approachFlapConfig.set(v + 3)}
+                                            onModified={(v) => {
+                                                this.props.fmService.fmgc.data.approachFlapConfig.set(v + 3);
+                                                if (v === 0) {
+                                                    SimVar.SetSimVarValue("L:A32NX_SPEEDS_LANDING_CONF3", "boolean", true);
+                                                } else {
+                                                    SimVar.SetSimVarValue("L:A32NX_SPEEDS_LANDING_CONF3", "boolean", false);
+                                                }
+                                            }}
                                             idPrefix="apprFlapsSettingsRadio"
                                             additionalVerticalSpacing={15}
                                         />
@@ -1985,7 +2019,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         <div style="display: flex; flex-direction: row; justify-content: center; justify-self; center;">
                                             <span class="mfd-label mfd-spacing-right" style="text-align: right; align-self: center;">VAPP</span>
                                             <InputField<number>
-                                                dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
+                                                dataEntryFormat={new SpeedKnotsFormat(this.props.fmService.mfd, Subject.create(90), Subject.create(Vmo))}
                                                 mandatory={Subject.create(false)}
                                                 value={this.props.fmService.fmgc.data.approachSpeed}
                                                 alignText="flex-end"
@@ -2000,7 +2034,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                 <div class="mfd-label-value-container">
                                     <span class="mfd-label mfd-spacing-right" style="width: 125px; text-align: right; align-self: center; padding-left: 20px;">TRANS</span>
                                     <InputField<number>
-                                        dataEntryFormat={new FlightLevelFormat()}
+                                        dataEntryFormat={new FlightLevelFormat(this.props.fmService.mfd)}
                                         dataHandlerDuringValidation={async (v) => {
                                             this.loadedFlightPlan.performanceData.pilotTransitionLevel.set(v);
                                             this.loadedFlightPlan.incrementVersion();
@@ -2046,7 +2080,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     </div>
                                     <div style="margin-bottom: 15px;">
                                         <InputField<number>
-                                            dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
+                                            dataEntryFormat={new AltitudeOrFlightLevelFormat(this.props.fmService.mfd, this.transAlt)}
                                             dataHandlerDuringValidation={async (v) => {
                                                 this.loadedFlightPlan.performanceData.pilotThrustReductionAltitude.set(v || undefined);
                                                 this.loadedFlightPlan.incrementVersion();
@@ -2065,7 +2099,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     </div>
                                     <div style="margin-bottom: 15px;">
                                         <InputField<number>
-                                            dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
+                                            dataEntryFormat={new AltitudeOrFlightLevelFormat(this.props.fmService.mfd, this.transAlt)}
                                             dataHandlerDuringValidation={async (v) => {
                                                 this.loadedFlightPlan.performanceData.pilotAccelerationAltitude.set(v || undefined);
                                                 this.loadedFlightPlan.incrementVersion();
@@ -2082,7 +2116,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     </div>
                                     <div style="margin-bottom: 15px;">
                                         <InputField<number>
-                                            dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
+                                            dataEntryFormat={new AltitudeOrFlightLevelFormat(this.props.fmService.mfd, this.transAlt)}
                                             dataHandlerDuringValidation={async (v) => {
                                                 this.loadedFlightPlan.performanceData.pilotEngineOutAccelerationAltitude.set(v || undefined);
                                                 this.loadedFlightPlan.incrementVersion();

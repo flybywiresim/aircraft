@@ -223,13 +223,13 @@ export class OANS extends DisplayComponent<OANSProps> {
                                             <div style="display: grid; grid-template-columns: 1fr auto; grid-template-rows: 50px 50px; align-items: center;">
                                                 <span class="mfd-label mfd-spacing-right bigger" style="justify-self: flex-end">THRESHOLD SHIFT</span>
                                                 <InputField<number>
-                                                    dataEntryFormat={new LengthFormat(Subject.create(0), Subject.create(4000))}
+                                                    dataEntryFormat={new LengthFormat(this.props.fmService.mfd, Subject.create(0), Subject.create(4000))}
                                                     value={this.thresholdShift}
                                                     mandatory={Subject.create(false)}
                                                 />
                                                 <span class="mfd-label mfd-spacing-right bigger" style="justify-self: flex-end">END SHIFT</span>
                                                 <InputField<number>
-                                                    dataEntryFormat={new LengthFormat(Subject.create(0), Subject.create(4000))}
+                                                    dataEntryFormat={new LengthFormat(this.props.fmService.mfd, Subject.create(0), Subject.create(4000))}
                                                     value={this.endShift}
                                                     mandatory={Subject.create(false)}
                                                 />

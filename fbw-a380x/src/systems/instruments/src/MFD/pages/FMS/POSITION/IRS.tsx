@@ -305,7 +305,7 @@ export class MfdFmsPositionIrs extends FmsPage<MfdFmsPositionIrsProps> {
                     <div ref={this.setHdgDivRef} class="fr" style="justify-content: flex-end; align-items: center; margin-top: 10px; margin-bottom: 20px;">
                         <span class="mfd-label">SET HDG</span>
                         <InputField<number>
-                            dataEntryFormat={new HeadingFormat()}
+                            dataEntryFormat={new HeadingFormat(this.props.fmService.mfd)}
                             value={this.setHdgValue}
                             mandatory={Subject.create(true)}
                             alignText="flex-end"

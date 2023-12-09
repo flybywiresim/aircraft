@@ -10,6 +10,7 @@ import {
     EventBus,
     FSComponent,
     FacilityLoader,
+    HEvent,
     SimVarValueType,
     Subject,
     VNode,
@@ -624,7 +625,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
                     SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') + parseInt(NXDataStore.get('CONFIG_ENG_OUT_ACCEL_ALT', '1500')),
                 );
                 if (this.flightPlanService.hasActive) {
-                    this.fmService.acInterface.updateThrustReductionAcceleration(this.flightPlanService.active.performanceData);
+                    this.fmService.acInterface.updateThrustReductionAcceleration();
                 }
             }
             if (activePlan.performanceData.missedEngineOutAccelerationAltitude.get() === undefined) {
@@ -633,7 +634,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
                     SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') + parseInt(NXDataStore.get('CONFIG_ENG_OUT_ACCEL_ALT', '1500')),
                 );
                 if (this.flightPlanService.hasActive) {
-                    this.fmService.acInterface.updateThrustReductionAcceleration(this.flightPlanService.active.performanceData);
+                    this.fmService.acInterface.updateThrustReductionAcceleration();
                 }
             }
 
@@ -717,18 +718,15 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
             this.guidanceController.update(dt);
             this.fmgc.updateFromSimVars();
 
-            // Hack flight phases
-            const sVar = SimVar.GetSimVarValue('L:A380X_EFIS_R_ND_RANGE', 'number');
-            if (sVar !== this.flightPhaseManager.phase) {
-                this.flightPhaseManager.changePhase(sVar);
-            }
-
             if (this.fmsUpdateThrottler.canUpdate(dt) !== -1) {
                 this.navigation.update(dt);
                 if (this.flightPlanService.hasActive) {
-                    this.fmService.acInterface.updateThrustReductionAcceleration(this.flightPlanService.active.performanceData);
+                    this.fmService.acInterface.updateThrustReductionAcceleration();
                     this.fmService.acInterface.updateTransitionAltitudeLevel(this.fmgc.getOriginTransitionAltitude(), this.fmgc.getDestinationTransitionLevel());
+                    this.fmService.acInterface.updatePerformanceData();
                     this.fmService.acInterface.toSpeedsChecks(this.flightPlanService.active.performanceData);
+                    this.fmService.acInterface.setTakeoffFlaps(this.fmService.fmgc.getTakeoffFlapsSetting());
+                    this.fmService.acInterface.setTakeoffTrim(this.fmService.fmgc.data.takeoffThsFor.get());
 
                     const destPred = this.fmService.guidanceController.vnavDriver.getDestinationPrediction();
                     this.fmService.acInterface.updateMinimums(destPred.distanceFromAircraft);
@@ -736,6 +734,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
                 }
                 this.fmService.getGrossWeight();
                 this.checkGWParams();
+                this.updateMessageQueue();
 
                 /* TODO port over from A32NX_FMCMainDisplay.js:
                 this.checkSpeedLimit();
@@ -764,9 +763,8 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
 
         this.flightPhaseManager.addOnPhaseChanged((prev, next) => this.onFlightPhaseChanged(prev, next));
 
-        // Hack flight phases
-        this.fmService.fmgc.data.costIndex.set(this.flightPhaseManager.phase);
-        SimVar.SetSimVarValue('L:A380X_EFIS_R_ND_RANGE', 'number', 0);
+        const hEventSub = this.props.bus.getSubscriber<HEvent>();
+        hEventSub.on('hEvent').handle(eventName => this.fmService.acInterface.onEvent(eventName));
 
         setInterval(() => {
             const now = Date.now();

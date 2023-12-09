@@ -67,7 +67,7 @@ export class MfdFlightManagementService {
         public navigationProvider: NavigationProvider,
         public flightPhaseManager: FlightPhaseManager,
     ) {
-        this.acInterface = new FmsAircraftInterface(this.mfd, this.fmgc, this, this.flightPlanService);
+        this.acInterface = new FmsAircraftInterface(this.mfd, this.fmgc, this, this.flightPlanService, this.flightPhaseManager);
         const sub = mfd.props.bus.getSubscriber<ClockEvents & MfdSimvars>();
 
         this.subs.push(sub.on('realTime').atFrequency(1).handle((_t) => {

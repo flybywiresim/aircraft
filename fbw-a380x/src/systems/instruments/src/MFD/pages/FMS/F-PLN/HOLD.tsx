@@ -152,7 +152,7 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
                         <div style="margin-left: 75px;">
                             <InputField<number>
                                 value={this.inboundCourse}
-                                dataEntryFormat={new InboundCourseFormat()}
+                                dataEntryFormat={new InboundCourseFormat(this.props.fmService.mfd)}
                                 tmpyActive={this.tmpyActive}
                             />
                         </div>
@@ -176,14 +176,14 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
                             <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; margin-left: 30px;">
                                 <div ref={this.legTimeRef}>
                                     <InputField<number>
-                                        dataEntryFormat={new HoldTimeFormat()}
+                                        dataEntryFormat={new HoldTimeFormat(this.props.fmService.mfd)}
                                         value={this.legTime}
                                         tmpyActive={this.tmpyActive}
                                     />
                                 </div>
                                 <div ref={this.legDistanceRef}>
                                     <InputField<number>
-                                        dataEntryFormat={new HoldDistFormat()}
+                                        dataEntryFormat={new HoldDistFormat(this.props.fmService.mfd)}
                                         value={this.legDistance}
                                         tmpyActive={this.tmpyActive}
                                     />

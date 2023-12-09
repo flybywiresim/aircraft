@@ -10,12 +10,12 @@ export interface DisplayInterface {
     /**
      * Called when a flight plan uplink is in progress
      */
-    onUplinkInProgress();
+    onUplinkInProgress(): void;
 
     /**
      * Called when a flight plan uplink is done
      */
-    onUplinkDone();
+    onUplinkDone(): void;
 
     /**
      * Calling this function with a message should display 1the message in the FMS' message area,
@@ -24,7 +24,7 @@ export interface DisplayInterface {
      *
      * @param errorType the message to show
      */
-    showFmsErrorMessage(errorType: FmsErrorType);
+    showFmsErrorMessage(errorType: FmsErrorType): void;
 
     /**
      * Calling this function with an array of items should display a UI allowing the user to

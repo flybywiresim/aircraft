@@ -1,3 +1,5 @@
+import { FmsErrorType } from '@fmgc/FmsError';
+import { DisplayInterface } from '@fmgc/flightplanning/new/interface/DisplayInterface';
 import { Subject, Subscribable } from '@microsoft/msfs-sdk';
 import { Mmo, maxCertifiedAlt } from '@shared/PerformanceConstants';
 
@@ -22,7 +24,7 @@ export class SpeedKnotsFormat implements DataEntryFormat<number> {
 
     private maxValue = Number.POSITIVE_INFINITY;
 
-    constructor(minValue: Subscribable<number> = Subject.create(0), maxValue: Subscribable<number> = Subject.create(Number.POSITIVE_INFINITY)) {
+    constructor(private fms: DisplayInterface, minValue: Subscribable<number> = Subject.create(0), maxValue: Subscribable<number> = Subject.create(Number.POSITIVE_INFINITY)) {
         minValue.sub((val) => this.minValue = val, true);
         maxValue.sub((val) => this.maxValue = val, true);
     }
@@ -39,6 +41,11 @@ export class SpeedKnotsFormat implements DataEntryFormat<number> {
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
         }
+        if (nbr > this.maxValue || nbr < this.minValue) {
+            this.fms.showFmsErrorMessage(FmsErrorType.EntryOutOfRange);
+        } else {
+            this.fms.showFmsErrorMessage(FmsErrorType.FormatError);
+        }
         return undefined;
     }
 }
@@ -52,7 +59,7 @@ export class SpeedMachFormat implements DataEntryFormat<number> {
 
     private maxValue = Number.POSITIVE_INFINITY;
 
-    constructor(minValue: Subscribable<number> = Subject.create(0), maxValue: Subscribable<number> = Subject.create(Number.POSITIVE_INFINITY)) {
+    constructor(private fms: DisplayInterface, minValue: Subscribable<number> = Subject.create(0), maxValue: Subscribable<number> = Subject.create(Number.POSITIVE_INFINITY)) {
         minValue.sub((val) => this.minValue = val, true);
         maxValue.sub((val) => this.maxValue = val, true);
     }
@@ -72,6 +79,11 @@ export class SpeedMachFormat implements DataEntryFormat<number> {
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
         }
+        if (nbr > this.maxValue || nbr < this.minValue) {
+            this.fms.showFmsErrorMessage(FmsErrorType.EntryOutOfRange);
+        } else {
+            this.fms.showFmsErrorMessage(FmsErrorType.FormatError);
+        }
         return undefined;
     }
 }
@@ -90,7 +102,7 @@ export class AltitudeOrFlightLevelFormat implements DataEntryFormat<number> {
 
     reFormatTrigger = Subject.create(false);
 
-    constructor(transAlt: Subscribable<number> = Subject.create(5000),
+    constructor(private fms: DisplayInterface, transAlt: Subscribable<number> = Subject.create(5000),
         minValue: Subscribable<number> = Subject.create(0),
         maxValue: Subscribable<number> = Subject.create(maxCertifiedAlt)) { // It's a french aircraft, after all
         minValue.sub((val) => this.minValue = val, true);
@@ -120,6 +132,11 @@ export class AltitudeOrFlightLevelFormat implements DataEntryFormat<number> {
         if (Number.isNaN(nbr) === false && (nbr >= this.minValue && nbr <= this.maxValue)) {
             return nbr;
         }
+        if (nbr > this.maxValue || nbr < this.minValue) {
+            this.fms.showFmsErrorMessage(FmsErrorType.EntryOutOfRange);
+        } else {
+            this.fms.showFmsErrorMessage(FmsErrorType.FormatError);
+        }
         return undefined;
     }
 }
@@ -133,7 +150,7 @@ export class AltitudeFormat implements DataEntryFormat<number> {
 
     private maxValue = maxCertifiedAlt;
 
-    constructor(minValue: Subscribable<number> = Subject.create(0), maxValue: Subscribable<number> = Subject.create(maxCertifiedAlt)) {
+    constructor(private fms: DisplayInterface, minValue: Subscribable<number> = Subject.create(0), maxValue: Subscribable<number> = Subject.create(maxCertifiedAlt)) {
         minValue.sub((val) => this.minValue = val, true);
         maxValue.sub((val) => this.maxValue = val, true);
     }
@@ -150,6 +167,11 @@ export class AltitudeFormat implements DataEntryFormat<number> {
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
         }
+        if (nbr > this.maxValue || nbr < this.minValue) {
+            this.fms.showFmsErrorMessage(FmsErrorType.EntryOutOfRange);
+        } else {
+            this.fms.showFmsErrorMessage(FmsErrorType.FormatError);
+        }
         return undefined;
     }
 }
@@ -164,7 +186,7 @@ export class FlightLevelFormat implements DataEntryFormat<number> {
 
     private maxValue = maxCertifiedAlt;
 
-    constructor(minValue: Subscribable<number> = Subject.create(0), maxValue: Subscribable<number> = Subject.create(maxCertifiedAlt)) {
+    constructor(private fms: DisplayInterface, minValue: Subscribable<number> = Subject.create(0), maxValue: Subscribable<number> = Subject.create(maxCertifiedAlt)) {
         minValue.sub((val) => this.minValue = val, true);
         maxValue.sub((val) => this.maxValue = val, true);
     }
@@ -182,6 +204,11 @@ export class FlightLevelFormat implements DataEntryFormat<number> {
         if (Number.isNaN(nbr) === false && nbr <= (this.maxValue) && nbr >= (this.minValue)) {
             return nbr;
         }
+        if (nbr > this.maxValue || nbr < this.minValue) {
+            this.fms.showFmsErrorMessage(FmsErrorType.EntryOutOfRange);
+        } else {
+            this.fms.showFmsErrorMessage(FmsErrorType.FormatError);
+        }
         return undefined;
     }
 }
@@ -195,6 +222,10 @@ export class TropoFormat implements DataEntryFormat<number> {
 
     private maxValue = 60000;
 
+    constructor(private fms: DisplayInterface) {
+
+    }
+
     public format(value: number) {
         if (value === null || value === undefined) {
             return [this.placeholder, null, 'FT'] as FieldFormatTuple;
@@ -206,6 +237,11 @@ export class TropoFormat implements DataEntryFormat<number> {
         const nbr = (input.length <= 3) ? (Number(input) * 100) : Number(input);
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
+        }
+        if (nbr > this.maxValue || nbr < this.minValue) {
+            this.fms.showFmsErrorMessage(FmsErrorType.EntryOutOfRange);
+        } else {
+            this.fms.showFmsErrorMessage(FmsErrorType.FormatError);
         }
         return undefined;
     }
@@ -220,7 +256,7 @@ export class LengthFormat implements DataEntryFormat<number> {
 
     private maxValue = Number.POSITIVE_INFINITY;
 
-    constructor(minValue: Subscribable<number> = Subject.create(0), maxValue: Subscribable<number> = Subject.create(Number.POSITIVE_INFINITY)) {
+    constructor(private fms: DisplayInterface, minValue: Subscribable<number> = Subject.create(0), maxValue: Subscribable<number> = Subject.create(Number.POSITIVE_INFINITY)) {
         minValue.sub((val) => this.minValue = val, true);
         maxValue.sub((val) => this.maxValue = val, true);
     }
@@ -237,6 +273,11 @@ export class LengthFormat implements DataEntryFormat<number> {
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
         }
+        if (nbr > this.maxValue || nbr < this.minValue) {
+            this.fms.showFmsErrorMessage(FmsErrorType.EntryOutOfRange);
+        } else {
+            this.fms.showFmsErrorMessage(FmsErrorType.FormatError);
+        }
         return undefined;
     }
 }
@@ -250,7 +291,7 @@ export class WeightFormat implements DataEntryFormat<number> {
 
     private maxValue = Number.POSITIVE_INFINITY;
 
-    constructor(minValue: Subscribable<number> = Subject.create(0), maxValue: Subscribable<number> = Subject.create(Number.POSITIVE_INFINITY)) {
+    constructor(private fms: DisplayInterface, minValue: Subscribable<number> = Subject.create(0), maxValue: Subscribable<number> = Subject.create(Number.POSITIVE_INFINITY)) {
         minValue.sub((val) => this.minValue = val, true);
         maxValue.sub((val) => this.maxValue = val, true);
     }
@@ -267,6 +308,11 @@ export class WeightFormat implements DataEntryFormat<number> {
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
         }
+        if (nbr > this.maxValue || nbr < this.minValue) {
+            this.fms.showFmsErrorMessage(FmsErrorType.EntryOutOfRange);
+        } else {
+            this.fms.showFmsErrorMessage(FmsErrorType.FormatError);
+        }
         return undefined;
     }
 }
@@ -282,7 +328,7 @@ export class PercentageFormat implements DataEntryFormat<number> {
 
     private maxValue = Number.POSITIVE_INFINITY;
 
-    constructor(minValue: Subscribable<number> = Subject.create(0), maxValue: Subscribable<number> = Subject.create(Number.POSITIVE_INFINITY)) {
+    constructor(private fms: DisplayInterface, minValue: Subscribable<number> = Subject.create(0), maxValue: Subscribable<number> = Subject.create(Number.POSITIVE_INFINITY)) {
         minValue.sub((val) => this.minValue = val, true);
         maxValue.sub((val) => this.maxValue = val, true);
     }
@@ -299,6 +345,11 @@ export class PercentageFormat implements DataEntryFormat<number> {
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
         }
+        if (nbr > this.maxValue || nbr < this.minValue) {
+            this.fms.showFmsErrorMessage(FmsErrorType.EntryOutOfRange);
+        } else {
+            this.fms.showFmsErrorMessage(FmsErrorType.FormatError);
+        }
         return undefined;
     }
 }
@@ -312,7 +363,7 @@ export class TemperatureFormat implements DataEntryFormat<number> {
 
     private maxValue = Number.POSITIVE_INFINITY;
 
-    constructor(minValue: Subscribable<number> = Subject.create(0), maxValue: Subscribable<number> = Subject.create(Number.POSITIVE_INFINITY)) {
+    constructor(private fms: DisplayInterface, minValue: Subscribable<number> = Subject.create(0), maxValue: Subscribable<number> = Subject.create(Number.POSITIVE_INFINITY)) {
         minValue.sub((val) => this.minValue = val, true);
         maxValue.sub((val) => this.maxValue = val, true);
     }
@@ -332,6 +383,11 @@ export class TemperatureFormat implements DataEntryFormat<number> {
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
         }
+        if (nbr > this.maxValue || nbr < this.minValue) {
+            this.fms.showFmsErrorMessage(FmsErrorType.EntryOutOfRange);
+        } else {
+            this.fms.showFmsErrorMessage(FmsErrorType.FormatError);
+        }
         return undefined;
     }
 }
@@ -344,6 +400,10 @@ export class CrzTempFormat implements DataEntryFormat<number> {
     private minValue = -99;
 
     private maxValue = 99;
+
+    constructor(private fms: DisplayInterface) {
+
+    }
 
     public format(value: number) {
         if (value === null || value === undefined) {
@@ -365,6 +425,11 @@ export class CrzTempFormat implements DataEntryFormat<number> {
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
         }
+        if (nbr > this.maxValue || nbr < this.minValue) {
+            this.fms.showFmsErrorMessage(FmsErrorType.EntryOutOfRange);
+        } else {
+            this.fms.showFmsErrorMessage(FmsErrorType.FormatError);
+        }
         return undefined;
     }
 }
@@ -378,6 +443,10 @@ export class WindDirectionFormat implements DataEntryFormat<number> {
 
     private maxValue = 359;
 
+    constructor(private fms: DisplayInterface) {
+
+    }
+
     public format(value: number) {
         if (value === null || value === undefined) {
             return [this.placeholder, null, '°'] as FieldFormatTuple;
@@ -389,6 +458,11 @@ export class WindDirectionFormat implements DataEntryFormat<number> {
         const nbr = Number(input);
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
+        }
+        if (nbr > this.maxValue || nbr < this.minValue) {
+            this.fms.showFmsErrorMessage(FmsErrorType.EntryOutOfRange);
+        } else {
+            this.fms.showFmsErrorMessage(FmsErrorType.FormatError);
         }
         return undefined;
     }
@@ -403,6 +477,10 @@ export class WindSpeedFormat implements DataEntryFormat<number> {
 
     private maxValue = 250;
 
+    constructor(private fms: DisplayInterface) {
+
+    }
+
     public format(value: number) {
         if (value === null || value === undefined) {
             return [this.placeholder, null, 'KT'] as FieldFormatTuple;
@@ -414,6 +492,11 @@ export class WindSpeedFormat implements DataEntryFormat<number> {
         const nbr = Number(input);
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
+        }
+        if (nbr > this.maxValue || nbr < this.minValue) {
+            this.fms.showFmsErrorMessage(FmsErrorType.EntryOutOfRange);
+        } else {
+            this.fms.showFmsErrorMessage(FmsErrorType.FormatError);
         }
         return undefined;
     }
@@ -427,6 +510,10 @@ export class TripWindFormat implements DataEntryFormat<number> {
     private minValue = -250;
 
     private maxValue = 250;
+
+    constructor(private fms: DisplayInterface) {
+
+    }
 
     public format(value: number) {
         if (value === null || value === undefined) {
@@ -470,6 +557,11 @@ export class TripWindFormat implements DataEntryFormat<number> {
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
         }
+        if (nbr > this.maxValue || nbr < this.minValue) {
+            this.fms.showFmsErrorMessage(FmsErrorType.EntryOutOfRange);
+        } else {
+            this.fms.showFmsErrorMessage(FmsErrorType.FormatError);
+        }
         return undefined;
     }
 }
@@ -487,6 +579,10 @@ export class QnhFormat implements DataEntryFormat<number> {
 
     private maxInHgValue = 32.48;
 
+    constructor(private fms: DisplayInterface) {
+
+    }
+
     public format(value: number) {
         if (value === null || value === undefined) {
             return [this.placeholder, null, null] as FieldFormatTuple;
@@ -499,6 +595,7 @@ export class QnhFormat implements DataEntryFormat<number> {
         if (Number.isNaN(nbr) === false && (nbr >= this.minHpaValue && nbr <= this.maxHpaValue) || (nbr >= this.minInHgValue && nbr <= this.maxInHgValue)) {
             return nbr;
         }
+        this.fms.showFmsErrorMessage(FmsErrorType.EntryOutOfRange);
         return undefined;
     }
 }
@@ -512,6 +609,10 @@ export class CostIndexFormat implements DataEntryFormat<number> {
 
     private maxValue = 999; // DSC-22-FMS-20-100
 
+    constructor(private fms: DisplayInterface) {
+
+    }
+
     public format(value: number) {
         if (value === null || value === undefined) {
             return [this.placeholder, null, null] as FieldFormatTuple;
@@ -523,6 +624,11 @@ export class CostIndexFormat implements DataEntryFormat<number> {
         const nbr = Number(input);
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
+        }
+        if (nbr > this.maxValue || nbr < this.minValue) {
+            this.fms.showFmsErrorMessage(FmsErrorType.EntryOutOfRange);
+        } else {
+            this.fms.showFmsErrorMessage(FmsErrorType.FormatError);
         }
         return undefined;
     }
@@ -537,7 +643,7 @@ export class VerticalSpeedFormat implements DataEntryFormat<number> {
 
     private maxValue = Number.POSITIVE_INFINITY;
 
-    constructor(minValue: Subscribable<number> = Subject.create(0), maxValue: Subscribable<number> = Subject.create(Number.POSITIVE_INFINITY)) {
+    constructor(private fms: DisplayInterface, minValue: Subscribable<number> = Subject.create(0), maxValue: Subscribable<number> = Subject.create(Number.POSITIVE_INFINITY)) {
         minValue.sub((val) => this.minValue = val, true);
         maxValue.sub((val) => this.maxValue = val, true);
     }
@@ -554,6 +660,11 @@ export class VerticalSpeedFormat implements DataEntryFormat<number> {
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
         }
+        if (nbr > this.maxValue || nbr < this.minValue) {
+            this.fms.showFmsErrorMessage(FmsErrorType.EntryOutOfRange);
+        } else {
+            this.fms.showFmsErrorMessage(FmsErrorType.FormatError);
+        }
         return undefined;
     }
 }
@@ -567,7 +678,7 @@ export class DescentRateFormat implements DataEntryFormat<number> {
 
     private maxValue = 0;
 
-    constructor(minValue: Subscribable<number> = Subject.create(0), maxValue: Subscribable<number> = Subject.create(Number.POSITIVE_INFINITY)) {
+    constructor(private fms: DisplayInterface, minValue: Subscribable<number> = Subject.create(0), maxValue: Subscribable<number> = Subject.create(Number.POSITIVE_INFINITY)) {
         minValue.sub((val) => this.minValue = val, true);
         maxValue.sub((val) => this.maxValue = val, true);
     }
@@ -588,6 +699,11 @@ export class DescentRateFormat implements DataEntryFormat<number> {
 
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
+        }
+        if (nbr > this.maxValue || nbr < this.minValue) {
+            this.fms.showFmsErrorMessage(FmsErrorType.EntryOutOfRange);
+        } else {
+            this.fms.showFmsErrorMessage(FmsErrorType.FormatError);
         }
         return undefined;
     }
@@ -692,6 +808,10 @@ export class PaxNbrFormat implements DataEntryFormat<number> {
 
     private maxValue = 999;
 
+    constructor(private fms: DisplayInterface) {
+
+    }
+
     public format(value: number) {
         if (value === null || value === undefined) {
             return [this.placeholder, null, null] as FieldFormatTuple;
@@ -703,6 +823,11 @@ export class PaxNbrFormat implements DataEntryFormat<number> {
         const nbr = Number(input);
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
+        }
+        if (nbr > this.maxValue || nbr < this.minValue) {
+            this.fms.showFmsErrorMessage(FmsErrorType.EntryOutOfRange);
+        } else {
+            this.fms.showFmsErrorMessage(FmsErrorType.FormatError);
         }
         return undefined;
     }
@@ -717,6 +842,10 @@ export class TimeHHMMFormat implements DataEntryFormat<number> {
     private minValue = 0;
 
     private maxValue = 90;
+
+    constructor(private fms: DisplayInterface) {
+
+    }
 
     public format(value: number) {
         if (!value) {
@@ -743,6 +872,11 @@ export class TimeHHMMFormat implements DataEntryFormat<number> {
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
         }
+        if (nbr > this.maxValue || nbr < this.minValue) {
+            this.fms.showFmsErrorMessage(FmsErrorType.EntryOutOfRange);
+        } else {
+            this.fms.showFmsErrorMessage(FmsErrorType.FormatError);
+        }
         return undefined;
     }
 }
@@ -756,6 +890,10 @@ export class TimeHHMMSSFormat implements DataEntryFormat<number> {
     private minValue = 0;
 
     private maxValue = 86400;
+
+    constructor(private fms: DisplayInterface) {
+
+    }
 
     public format(value: number) {
         if (!value) {
@@ -789,6 +927,11 @@ export class TimeHHMMSSFormat implements DataEntryFormat<number> {
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
         }
+        if (nbr > this.maxValue || nbr < this.minValue) {
+            this.fms.showFmsErrorMessage(FmsErrorType.EntryOutOfRange);
+        } else {
+            this.fms.showFmsErrorMessage(FmsErrorType.FormatError);
+        }
         return undefined;
     }
 }
@@ -802,6 +945,10 @@ export class LatitudeFormat implements DataEntryFormat<number> {
 
     private maxValue = 90;
 
+    constructor(private fms: DisplayInterface) {
+
+    }
+
     public format(value: number) {
         if (value === null || value === undefined) {
             return [this.placeholder, null, null] as FieldFormatTuple;
@@ -813,6 +960,11 @@ export class LatitudeFormat implements DataEntryFormat<number> {
         const nbr = Number(input);
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
+        }
+        if (nbr > this.maxValue || nbr < this.minValue) {
+            this.fms.showFmsErrorMessage(FmsErrorType.EntryOutOfRange);
+        } else {
+            this.fms.showFmsErrorMessage(FmsErrorType.FormatError);
         }
         return undefined;
     }
@@ -827,7 +979,7 @@ export class HeadingFormat implements DataEntryFormat<number> {
 
     private maxValue = 360.0;
 
-    constructor(minValue: Subscribable<number> = Subject.create(0), maxValue: Subscribable<number> = Subject.create(Number.POSITIVE_INFINITY)) {
+    constructor(private fms: DisplayInterface, minValue: Subscribable<number> = Subject.create(0), maxValue: Subscribable<number> = Subject.create(Number.POSITIVE_INFINITY)) {
         minValue.sub((val) => this.minValue = val, true);
         maxValue.sub((val) => this.maxValue = val, true);
     }
@@ -844,6 +996,11 @@ export class HeadingFormat implements DataEntryFormat<number> {
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
         }
+        if (nbr > this.maxValue || nbr < this.minValue) {
+            this.fms.showFmsErrorMessage(FmsErrorType.EntryOutOfRange);
+        } else {
+            this.fms.showFmsErrorMessage(FmsErrorType.FormatError);
+        }
         return undefined;
     }
 }
@@ -858,7 +1015,7 @@ export class InboundCourseFormat implements DataEntryFormat<number> {
 
     private maxValue = 360.0;
 
-    constructor(minValue: Subscribable<number> = Subject.create(0), maxValue: Subscribable<number> = Subject.create(Number.POSITIVE_INFINITY)) {
+    constructor(private fms: DisplayInterface, minValue: Subscribable<number> = Subject.create(0), maxValue: Subscribable<number> = Subject.create(Number.POSITIVE_INFINITY)) {
         minValue.sub((val) => this.minValue = val, true);
         maxValue.sub((val) => this.maxValue = val, true);
     }
@@ -875,6 +1032,11 @@ export class InboundCourseFormat implements DataEntryFormat<number> {
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
         }
+        if (nbr > this.maxValue || nbr < this.minValue) {
+            this.fms.showFmsErrorMessage(FmsErrorType.EntryOutOfRange);
+        } else {
+            this.fms.showFmsErrorMessage(FmsErrorType.FormatError);
+        }
         return undefined;
     }
 }
@@ -888,7 +1050,7 @@ export class HoldDistFormat implements DataEntryFormat<number> {
 
     private maxValue = 99.9;
 
-    constructor(minValue: Subscribable<number> = Subject.create(0), maxValue: Subscribable<number> = Subject.create(Number.POSITIVE_INFINITY)) {
+    constructor(private fms: DisplayInterface, minValue: Subscribable<number> = Subject.create(0), maxValue: Subscribable<number> = Subject.create(Number.POSITIVE_INFINITY)) {
         minValue.sub((val) => this.minValue = val, true);
         maxValue.sub((val) => this.maxValue = val, true);
     }
@@ -905,6 +1067,11 @@ export class HoldDistFormat implements DataEntryFormat<number> {
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
         }
+        if (nbr > this.maxValue || nbr < this.minValue) {
+            this.fms.showFmsErrorMessage(FmsErrorType.EntryOutOfRange);
+        } else {
+            this.fms.showFmsErrorMessage(FmsErrorType.FormatError);
+        }
         return undefined;
     }
 }
@@ -918,7 +1085,7 @@ export class HoldTimeFormat implements DataEntryFormat<number> {
 
     private maxValue = 9.9;
 
-    constructor(minValue: Subscribable<number> = Subject.create(0), maxValue: Subscribable<number> = Subject.create(Number.POSITIVE_INFINITY)) {
+    constructor(private fms: DisplayInterface, minValue: Subscribable<number> = Subject.create(0), maxValue: Subscribable<number> = Subject.create(Number.POSITIVE_INFINITY)) {
         minValue.sub((val) => this.minValue = val, true);
         maxValue.sub((val) => this.maxValue = val, true);
     }
@@ -934,6 +1101,11 @@ export class HoldTimeFormat implements DataEntryFormat<number> {
         const nbr = Number(input);
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
+        }
+        if (nbr > this.maxValue || nbr < this.minValue) {
+            this.fms.showFmsErrorMessage(FmsErrorType.EntryOutOfRange);
+        } else {
+            this.fms.showFmsErrorMessage(FmsErrorType.FormatError);
         }
         return undefined;
     }

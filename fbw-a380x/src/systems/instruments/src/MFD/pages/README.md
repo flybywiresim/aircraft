@@ -16,14 +16,14 @@ Status legend:
 | ✅ | fms/\*/fuel-load | 1 | RTE RSV, correct fuel calculation, FUEL PLANNING |
 | ✅ | fms/\*/perf | 1 | OPT FL, REC MAX, EO behavior, display of type of speed restriction (when MANAGED), PRED TO |
 |  |  |
-| ✅ | fms/\*/f-pln | 1 | F-PLN INFO button |
+| ✅ | fms/\*/f-pln | 1 | F-PLN INFO button, exit of hold not possible via button |
 | ✅ | fms/\*/f-pln-departure | 1 | - |
 | ✅ | fms/\*/f-pln-arrival | 1 | - |
 | ✅ | fms/\*/f-pln-airways | 1 | not scrollable |
 | ✅ | fms/\*/f-pln-direct-to | 1 | - |
 | ✅ | fms/\*/f-pln-duplicate-names | 1 | not scrollable |
 | ✅ | fms/\*/f-pln-cpny-f-pln-req | 1 | Just SimBrief download right now |
-| 2️⃣ | fms/\*/f-pln-hold | 2 | tbd |
+| ✅ | fms/\*/f-pln-hold | 2 | last exit predictions, database holds |
 | ✅ | fms/\*/f-pln-vert-rev | 2 | RTA (except ETT), CMS, STEP ALTs, setting whether CLB/DES cstr |
 | 🟥 | fms/\*/f-pln-cpny-wind-data-req | 2 | tbd |
 | 🟥 | fms/\*/wind | 2 | tbd |
@@ -38,16 +38,16 @@ Status legend:
 | 🟥 | fms/\*/f-pln-ll-xing-time-mkr | 9 | tbd |
 |  |  |  |
 | ✅ | fms/position/irs | 1 | data sources inconsistent |
-| 🟥 | fms/position/navaids | 2 | tbd |
+| 1️⃣ | fms/position/navaids | 2 | tbd |
 | 🟥 | fms/position/monitor | 3 | tbd |
 | 🟥 | fms/position/gps | 3 | tbd |
 | 🟥 | fms/position/report | 4 | tbd |
 |  |  |
 | 🟥 | fms/sec/index | 4 | tbd |
 |  |  |
+| 1️⃣ | fms/data/status | 2 | tbd |
 | 🟥 | fms/data/airport | 2 | tbd |
 | 🟥 | fms/data/navaid | 2 | tbd |
-| 🟥 | fms/data/status | 2 | tbd |
 | 🟥 | fms/data/waypoint | 2 | tbd |
 | 🟥 | fms/data/printer | 4 | tbd |
 | 🟥 | fms/data/route | 3 | tbd |
