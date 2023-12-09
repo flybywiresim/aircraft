@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { ApproachType, ApproachUtils } from '@flybywiresim/fbw-sdk';
+import { ApproachType, ApproachUtils, RunwayUtils } from '@flybywiresim/fbw-sdk';
 import { DataManager } from '@fmgc/flightplanning/new/DataManager';
 import { CoRouteUplinkAdapter } from '@fmgc/flightplanning/new/uplink/CoRouteUplinkAdapter';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
@@ -31,6 +31,7 @@ function updateFmgcLoop(deltaTime: number): void {
 
 export {
     ApproachUtils,
+    RunwayUtils,
     ApproachType,
     FlightPlanService,
     A320FlightPlanPerformanceData,
