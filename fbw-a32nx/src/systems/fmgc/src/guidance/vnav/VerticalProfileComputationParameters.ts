@@ -100,8 +100,9 @@ export class VerticalProfileComputationParametersObserver {
             accelerationAltitude: this.fmgc.getAccelerationAltitude(),
             thrustReductionAltitude: this.fmgc.getThrustReductionAltitude(),
             originTransitionAltitude: this.fmgc.getOriginTransitionAltitude(),
+            // We do it this way because the cruise altitude is cleared in the MCDU once you start the descent
             cruiseAltitude: this.flightPlanService.active.performanceData.cruiseFlightLevel
-                ? this.flightPlanService.active.performanceData.cruiseFlightLevel * 100 : undefined,
+                ? this.flightPlanService.active.performanceData.cruiseFlightLevel * 100 : this.parameters?.cruiseAltitude,
             climbSpeedLimit: this.fmgc.getClimbSpeedLimit(),
             descentSpeedLimit: this.fmgc.getDescentSpeedLimit(),
             flightPhase: this.fmgc.getFlightPhase(),
@@ -144,12 +145,12 @@ export class VerticalProfileComputationParametersObserver {
         const areApproachSpeedsValid = this.parameters.cleanSpeed > 100
             && this.parameters.slatRetractionSpeed > 100
             && this.parameters.flapRetractionSpeed > 100
-            && this.parameters.approachSpeed > 100
-            && Number.isFinite(this.parameters.cruiseAltitude);
+            && this.parameters.approachSpeed > 100;
 
         const hasZeroFuelWeight = Number.isFinite(this.parameters.zeroFuelWeight);
+        const hasCruiseAltitude = Number.isFinite(this.parameters.cruiseAltitude);
         const hasTakeoffParameters = this.parameters.v2Speed > 0 && this.parameters.thrustReductionAltitude > 0 && this.parameters.accelerationAltitude > 0;
 
-        return (this.parameters.flightPhase > FmgcFlightPhase.Takeoff || hasTakeoffParameters) && areApproachSpeedsValid && hasZeroFuelWeight;
+        return (this.parameters.flightPhase > FmgcFlightPhase.Takeoff || hasTakeoffParameters) && areApproachSpeedsValid && hasZeroFuelWeight && hasCruiseAltitude;
     }
 }

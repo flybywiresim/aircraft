@@ -80,6 +80,13 @@ export class VerticalProfileManager {
         this.fcuModes = new FcuModeObserver(observer);
     }
 
+    reset() {
+        this.descentProfile = undefined;
+        this.ndProfile = undefined;
+        this.mcduProfile = undefined;
+        this.expediteProfile = undefined;
+    }
+
     // PROFILE COMPUTATIONS
 
     computeTacticalMcduPath(): void {

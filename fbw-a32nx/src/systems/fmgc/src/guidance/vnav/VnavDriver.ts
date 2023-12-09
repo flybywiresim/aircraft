@@ -122,6 +122,7 @@ export class VnavDriver implements GuidanceComponent {
         this.constraintReader.updateFlightPlan();
 
         if (geometry.legs.size <= 0 || !this.computationParametersObserver.canComputeProfile()) {
+            this.reset();
             return;
         }
 
@@ -160,6 +161,21 @@ export class VnavDriver implements GuidanceComponent {
         this.guidanceController.pseudoWaypoints.acceptVerticalProfile();
 
         this.version++;
+    }
+
+    private reset() {
+        if (this.version !== 0) {
+            this.version = 0;
+            this.profileManager.reset();
+            this.constraintReader.reset();
+            this.aircraftToDescentProfileRelation.reset();
+            this.descentGuidance.reset();
+            this.currentMcduSpeedProfile = new McduSpeedProfile(this.computationParametersObserver, 0, [], []);
+            this.decelPoint = null;
+            this.lastParameters = null;
+            this.oldLegs.clear();
+            this.guidanceController.pseudoWaypoints.acceptVerticalProfile();
+        }
     }
 
     isLatAutoControlActive(): boolean {
