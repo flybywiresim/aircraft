@@ -261,11 +261,11 @@ void LateralNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_T
   *rtu_In_high_aoa_prot_active, const boolean_T *rtu_In_high_speed_prot_active, const real_T *rtu_In_ap_phi_c_deg, const
   real_T *rtu_In_ap_beta_c_deg, const boolean_T *rtu_In_any_ap_engaged, real_T *rty_Out_xi_deg, real_T *rty_Out_zeta_deg)
 {
-  static const real_T c_0[4]{ 1.0, 1.2, 2.0, 2.0 };
+  static const real_T c_0[5]{ 1.0, 1.0, 1.2, 2.0, 2.0 };
+
+  static const int16_T b_0[5]{ -1, 0, 120, 320, 400 };
 
   static const int16_T b[4]{ 0, 120, 150, 380 };
-
-  static const int16_T b_0[4]{ 0, 120, 320, 400 };
 
   static const int8_T c[4]{ -15, -15, -15, -2 };
 
@@ -366,9 +366,12 @@ void LateralNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_T
   v_cas_ms = std::fmax(*rtu_In_V_ias_kn, 80.0) * 0.5144;
   Vias = v_cas_ms * v_cas_ms * 0.6125;
   L_xi = Vias * 122.0 * 17.9 * -0.090320788790706555 / 1.0E+6;
-  r = 0.0;
-  if ((*rtu_In_V_ias_kn <= 400.0) && (*rtu_In_V_ias_kn >= 0.0)) {
-    rtb_in_flight = 4;
+  if (*rtu_In_V_ias_kn > 400.0) {
+    r = 2.0;
+  } else if (*rtu_In_V_ias_kn < -1.0) {
+    r = 1.0;
+  } else {
+    rtb_in_flight = 5;
     low_i = 0;
     low_ip1 = 2;
     while (rtb_in_flight > low_ip1) {

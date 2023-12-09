@@ -269,7 +269,7 @@ class Row2 extends DisplayComponent<{ bus: ArincEventBus, isAttExcessive: Subscr
 class A2Cell extends DisplayComponent<{ bus: ArincEventBus }> {
     private text = Subject.create('');
 
-    private className = Subject.create('FontMedium MiddleAlign Cyan');
+    private className = Subject.create('FontMediumSmaller MiddleAlign Cyan');
 
     private autoBrkRef = FSComponent.createRef<SVGTextElement>();
 
@@ -381,7 +381,7 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
             this.displayModeChangedPath(true);
             text = `
                                 <path class="NormalStroke White" d="m25.114 1.8143v13.506h-16.952v-13.506z" />
-                                <text class="FontMedium MiddleAlign White" x="16.782249" y="7.1280665">MAN</text>
+                                <text class="FontMedium MiddleAlign White" x="17.052249" y="7.1280665">MAN</text>
                                 <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">TOGA</text>
                             `;
             break;
@@ -389,7 +389,7 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
             this.displayModeChangedPath(true);
             text = `<g>
                                 <path class="NormalStroke White" d="m31.521 1.8143v13.506h-30.217v-13.506z" />
-                                <text class="FontMedium MiddleAlign White" x="16.782249" y="7.1280665">MAN</text>
+                                <text class="FontMedium MiddleAlign White" x="17.052249" y="7.1280665">MAN</text>
                                 <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">GA SOFT</text>
                             </g>`;
             break;
@@ -398,11 +398,11 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
             const FlexTemp = Math.round(this.flexTemp);
             const FlexText = FlexTemp >= 0 ? (`+${FlexTemp}`) : FlexTemp.toString();
             text = `<g>
-                                <path class="NormalStroke White" d="m31.521 1.8143v13.506h-30.217v-13.506z" />
-                                <text class="FontMedium MiddleAlign White" x="16.782249" y="7.1280665">MAN</text>
-                                <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">
-                                    <tspan xml:space="preserve">FLX  </tspan>
-                                    <tspan class="Cyan">${FlexText}</tspan>
+                                <path class="NormalStroke White" d="m30.521 1.8143v13.506h-27.217v-13.506z" />
+                                <text class="FontMedium MiddleAlign White" x="17.052249" y="7.1280665">MAN</text>
+                                <text class="FontMedium MiddleAlign White" x="9.669141" y="14.351689">FLX</text>
+                                <text class="FontMedium MiddleAlign Cyan" x="24.099141" y="14.351689">
+                               ${FlexText}
                                 </text>
                             </g>`;
 
@@ -411,7 +411,7 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
             this.displayModeChangedPath(true);
             text = `<g>
                                 <path class="NormalStroke White" d="m25.114 1.8143v13.506h-16.952v-13.506z" />
-                                <text class="FontMedium MiddleAlign White" x="16.782249" y="7.1280665">MAN</text>
+                                <text class="FontMedium MiddleAlign White" x="17.052249" y="7.1280665">MAN</text>
                                 <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">DTO</text>
                             </g>`;
             break;
@@ -419,7 +419,7 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
             this.displayModeChangedPath(true);
             text = `<g>
                                 <path class="NormalStroke White" d="m25.114 1.8143v13.506h-16.952v-13.506z" />
-                                <text class="FontMedium MiddleAlign White" x="16.782249" y="7.1280665">MAN</text>
+                                <text class="FontMedium MiddleAlign White" x="17.052249" y="7.1280665">MAN</text>
                                 <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">MCT</text>
                             </g>`;
             break;
@@ -427,7 +427,7 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
             this.displayModeChangedPath(true);
             text = `<g>
                                 <path class="NormalStroke Amber" d="m25.114 1.8143v13.506h-16.952v-13.506z" />
-                                <text class="FontMedium MiddleAlign White" x="16.782249" y="7.1280665">MAN</text>
+                                <text class="FontMedium MiddleAlign White" x="17.052249" y="7.1280665">MAN</text>
                                 <text class="FontMedium MiddleAlign White" x="16.869141" y="14.351689">THR</text>
                             </g>`;
             break;
@@ -452,7 +452,7 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
             this.displayModeChangedPath();
             break;
         case 12:
-            text = '<text  class="FontMedium MiddleAlign Green" x="16.782249" y="7.1280665">THR IDLE</text>';
+            text = '<text  class="FontMediumSmaller MiddleAlign Green" x="16.782249" y="7.1280665">THR IDLE</text>';
             this.displayModeChangedPath();
             break;
         case 13:
@@ -527,7 +527,7 @@ class A1A2Cell extends ShowForSecondsComponent<CellProps> {
     render(): VNode {
         return (
             <>
-                <path ref={this.modeChangedPathRef} visibility="hidden" class="NormalStroke White" d="m0.70556 1.8143h30.927v6.0476h-30.927z" />
+                <path ref={this.modeChangedPathRef} visibility="hidden" class="NormalStroke White" d="m3.3 1.8143h27.127v6.0476h-27.127z" />
                 <g ref={this.cellRef} />
             </>
         );
@@ -582,7 +582,7 @@ class A3Cell extends DisplayComponent<A3CellProps> {
     private handleAutobrakeMode() {
         if (this.autobrakeMode === 3 && !this.AB3Message) {
             this.textSub.set('BRK MAX');
-            this.classSub.set('FontMedium MiddleAlign Cyan');
+            this.classSub.set('FontMediumSmaller MiddleAlign Cyan');
         } else {
             this.textSub.set('');
         }
@@ -680,6 +680,8 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
 
     private activeVerticalModeSub = Subject.create(0);
 
+    private activeVerticalModeClassSub = Subject.create('');
+
     private speedProtectionPathRef = FSComponent.createRef<SVGPathElement>();
 
     private inModeReversionPathRef = FSComponent.createRef<SVGPathElement>();
@@ -772,14 +774,18 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
             text = 'ALT CRZ';
             break; */
         case VerticalMode.FPA: {
-            const FPAText = `${(this.FPA >= 0 ? '+' : '')}${(Math.round(this.FPA * 10) / 10).toFixed(1)}°`;
+            const FPAText = `${(this.FPA > 0 ? '+' : '')}${(Math.round(this.FPA * 10) / 10).toFixed(1)}°`;
 
             text = 'FPA';
+            // if FPA is 0 give it an empty space for where the '+' and '-' will be.
+            if (this.FPA === 0) {
+                text += ' ';
+            }
             additionalText = FPAText;
             break;
         }
         case VerticalMode.VS: {
-            const VSText = `${(this.selectedVS >= 0 ? '+' : '')}${Math.round(this.selectedVS).toString()}`.padStart(5, ' ');
+            const VSText = `${(this.selectedVS > 0 ? '+' : '')}${Math.round(this.selectedVS).toString()}`.padStart(5, ' ');
 
             text = 'V/S';
 
@@ -806,9 +812,14 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
             this.speedProtectionPathRef.instance.setAttribute('visibility', 'hidden');
         }
 
-        const boxPathString = this.activeVerticalModeSub.get() === 50 && this.tcasModeDisarmed ? 'm34.656 1.8143h29.918v13.506h-29.918z' : 'm34.656 1.8143h29.918v6.0476h-29.918z';
+        const boxPathString = this.activeVerticalModeSub.get() === 50 && this.tcasModeDisarmed ? 'm35.756 1.8143h27.918v13.506h-27.918z' : 'm35.756 1.8143h27.918v6.0476h-27.918z';
 
         this.boxPathStringSub.set(boxPathString);
+
+        // VS FPA has a smaller font than the other active modes
+        const VsFPA = this.activeVerticalModeSub.get() === 14 || this.activeVerticalModeSub.get() === 15;
+
+        this.activeVerticalModeClassSub.set(VsFPA ? 'FontMediumSmaller MiddleAlign Green' : 'FontMedium MiddleAlign Green');
 
         this.fmaTextRef.instance.innerHTML = `<tspan>${text}</tspan><tspan xml:space="preserve" class=${inSpeedProtection ? 'PulseCyanFill' : 'Cyan'}>${additionalText}</tspan>`;
 
@@ -873,10 +884,10 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
 
                 <path ref={this.modeChangedPathRef} class={this.boxClassSub} visibility="hidden" d={this.boxPathStringSub} />
 
-                <path ref={this.speedProtectionPathRef} class="NormalStroke Amber BlinkInfinite" d="m34.656 1.8143h29.918v6.0476h-29.918z" />
-                <path ref={this.inModeReversionPathRef} class="NormalStroke White BlinkInfinite" d="m34.656 1.8143h29.918v6.0476h-29.918z" />
+                <path ref={this.speedProtectionPathRef} class="NormalStroke Amber BlinkInfinite" d="m35.756 1.8143h27.918v6.0476h-27.918z" />
+                <path ref={this.inModeReversionPathRef} class="NormalStroke White BlinkInfinite" d="m35.756 1.8143h27.918v6.0476h-27.918z" />
 
-                <text ref={this.fmaTextRef} style="white-space: pre" class="FontMedium MiddleAlign Green" x="49.921795" y="7.1040988">
+                <text ref={this.fmaTextRef} style="white-space: pre" class={this.activeVerticalModeClassSub} x="49.921795" y="7.1040988">
 
                     {/* set directly via innerhtml as tspan was invisble for some reason when set here */}
 
@@ -909,7 +920,7 @@ class B2Cell extends DisplayComponent<CellProps> {
             let text1: string;
             let color1 = 'Cyan';
             if (clbArmed) {
-                text1 = 'CLB';
+                text1 = '      CLB'; // spaces added to center armed FMA as per newer DMC stnadards
             } else if (desArmed) {
                 text1 = 'DES';
             } else if (altCstArmed) {
@@ -932,15 +943,15 @@ class B2Cell extends DisplayComponent<CellProps> {
 
             this.text1Sub.set(text1);
             this.text2Sub.set(text2);
-            this.classSub.set(`FontMedium MiddleAlign ${color1}`);
+            this.classSub.set(`FontMediumSmaller MiddleAlign ${color1}`);
         });
     }
 
     render(): VNode {
         return (
             <g>
-                <text class={this.classSub} x="41.477474" y="14.329653">{this.text1Sub}</text>
-                <text class="FontMedium MiddleAlign Cyan" x="54.59803" y="14.382949">{this.text2Sub}</text>
+                <text class={this.classSub} style="white-space: pre" x="40.777474" y="13.629653">{this.text1Sub}</text>
+                <text class="FontMediumSmaller MiddleAlign Cyan" x="56.19803" y="13.629653">{this.text2Sub}</text>
             </g>
         );
     }
@@ -1061,7 +1072,7 @@ class C1Cell extends ShowForSecondsComponent<CellProps> {
 
         return (
             <g>
-                <path ref={this.modeChangedPathRef} class="NormalStroke White" visibility="hidden" d="m100.87 1.8143v6.0476h-33.075l1e-6 -6.0476z" />
+                <path ref={this.modeChangedPathRef} class="NormalStroke White" visibility="hidden" d="m99.87 1.8143v6.0476h-31.025l1e-6 -6.0476z" />
                 <text class="FontMedium MiddleAlign Green" x="84.856567" y="6.9873109">{this.textSub}</text>
             </g>
         );
@@ -1123,7 +1134,7 @@ class C2Cell extends DisplayComponent<CellProps> {
 
     render(): VNode {
         return (
-            <text class="FontMedium MiddleAlign Cyan" x="84.734184" y="14.440415">{this.textSub}</text>
+            <text class="FontMediumSmaller MiddleAlign Cyan" x="84.234184" y="13.629653">{this.textSub}</text>
         );
     }
 }
@@ -1223,8 +1234,8 @@ const getBC3Message = (
         text = 'FOR GA: SET TOGA';
         className = 'FontMedium PulseAmber9Seconds Amber';
     } else if (TCASArmed && !isAttExcessive) {
-        text = '  TCAS               ';
-        className = 'FontMedium Cyan';
+        text = 'TCAS           ';
+        className = 'FontMediumSmaller Cyan';
     } else if (false) {
         text = 'DISCONNECT AP FOR LDG';
         className = 'FontMedium PulseAmber9Seconds Amber';
