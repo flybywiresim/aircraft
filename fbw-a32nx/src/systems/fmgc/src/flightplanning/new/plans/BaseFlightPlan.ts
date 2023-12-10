@@ -43,7 +43,7 @@ import { FlightPlanLegDefinition } from '@fmgc/flightplanning/new/legs/FlightPla
 import { PendingAirways } from '@fmgc/flightplanning/new/plans/PendingAirways';
 import { FlightPlanPerformanceData, SerializedFlightPlanPerformanceData } from '@fmgc/flightplanning/new/plans/performance/FlightPlanPerformanceData';
 import { ReadonlyFlightPlan } from '@fmgc/flightplanning/new/plans/ReadonlyFlightPlan';
-import { AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
+import { AltitudeConstraint, ConstraintUtils, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
 
 export enum FlightPlanQueuedOperation {
     Restring,
@@ -1710,6 +1710,27 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
             alternateFlightPlan: this instanceof FlightPlan ? this.alternateFlightPlan.serialize() : undefined,
         };
+    }
+
+    /**
+     * Finds the lowest climb constraint in the flight plan
+     * @returns the lowest climb constraint in feet or Infinity if none
+     */
+    protected lowestClimbConstraint(): number {
+        let lowestClimbConstraint = Infinity;
+        for (let i = 0; i < this.firstMissedApproachLegIndex; i++) {
+            const leg = this.allLegs[i];
+            if (leg.isDiscontinuity === true) {
+                continue;
+            }
+
+            const climbConstraint = leg.constraintType === WaypointConstraintType.CLB ? ConstraintUtils.maximumAltitude(leg.altitudeConstraint) : Infinity;
+            if (climbConstraint < lowestClimbConstraint) {
+                lowestClimbConstraint = climbConstraint;
+            }
+        }
+
+        return lowestClimbConstraint;
     }
 }
 

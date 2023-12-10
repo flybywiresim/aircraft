@@ -438,7 +438,7 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
      * @param r the multiple
      * @returns n rounded to the nereast multiple of r, or null/undefined if n is null/undefined
      */
-    private static round(n: number | undefined | null, r: number = 1): number | undefined | null {
+    static round(n: number | undefined | null, r: number = 1): number | undefined | null {
         if (n === undefined || n === null) {
             return n;
         }

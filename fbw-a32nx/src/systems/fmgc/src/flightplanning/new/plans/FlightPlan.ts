@@ -443,4 +443,40 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
 
         this.incrementVersion();
     }
+
+    /**
+     * Check if the thrust reduction altitude is limited by a constraint and reduce it if so
+     * @returns true if a reduction occured
+     */
+    reconcileThrustReductionWithConstraints(): boolean {
+        const lowestClimbConstraint = FlightPlanPerformanceData.round(this.lowestClimbConstraint(), 10);
+        if (Number.isFinite(lowestClimbConstraint) && this.performanceData.thrustReductionAltitude > lowestClimbConstraint) {
+            this.setPerformanceData('defaultThrustReductionAltitude',
+                this.performanceData.defaultThrustReductionAltitude !== undefined ? Math.min(this.performanceData.defaultThrustReductionAltitude, lowestClimbConstraint) : undefined);
+            this.setPerformanceData('pilotThrustReductionAltitude',
+                this.performanceData.pilotThrustReductionAltitude !== undefined ? Math.min(this.performanceData.pilotThrustReductionAltitude, lowestClimbConstraint) : undefined);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if the acceleration altitude is limited by a constraint and reduce it if so
+     * @returns true if a reduction occured
+     */
+    reconcileAccelerationWithConstraints(): boolean {
+        const lowestClimbConstraint = FlightPlanPerformanceData.round(this.lowestClimbConstraint(), 10);
+        if (Number.isFinite(lowestClimbConstraint) && this.performanceData.accelerationAltitude > lowestClimbConstraint) {
+            this.setPerformanceData('defaultAccelerationAltitude',
+                this.performanceData.defaultAccelerationAltitude !== undefined ? Math.min(this.performanceData.defaultAccelerationAltitude, lowestClimbConstraint) : undefined);
+            this.setPerformanceData('pilotAccelerationAltitude',
+                this.performanceData.pilotAccelerationAltitude !== undefined ? Math.min(this.performanceData.pilotAccelerationAltitude, lowestClimbConstraint) : undefined);
+
+            return true;
+        }
+
+        return false;
+    }
 }

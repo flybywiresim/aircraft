@@ -3128,16 +3128,15 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     thrustReductionAccelerationChecks() {
-        // TODO port over (fms-v2)
-        // const activePlan = this.flightPlanService.active;
+        const activePlan = this.flightPlanService.active;
 
-        // if (activePlan.reconcileAccelerationWithConstraints()) {
-        //     this.addMessageToQueue(NXSystemMessages.newAccAlt.getModifiedMessage(activePlan.accelerationAltitude.toFixed(0)));
-        // }
+        if (activePlan.reconcileAccelerationWithConstraints()) {
+            this.addMessageToQueue(NXSystemMessages.newAccAlt.getModifiedMessage(activePlan.performanceData.accelerationAltitude.toFixed(0)));
+        }
 
-        // if (activePlan.reconcileThrustReductionWithConstraints()) {
-        //     this.addMessageToQueue(NXSystemMessages.newThrRedAlt.getModifiedMessage(activePlan.thrustReductionAltitude.toFixed(0)));
-        // }
+        if (activePlan.reconcileThrustReductionWithConstraints()) {
+            this.addMessageToQueue(NXSystemMessages.newThrRedAlt.getModifiedMessage(activePlan.performanceData.thrustReductionAltitude.toFixed(0)));
+        }
     }
 
     updateThrustReductionAcceleration() {
