@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { DisplayComponent, FSComponent, VNode } from '@microsoft/msfs-sdk';
-
 import { NXDataStore } from '@flybywiresim/fbw-sdk';
+
 import { t } from '../../Components/LocalizedText';
 
 export class FlightWidget extends DisplayComponent<any> {
