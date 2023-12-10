@@ -13,8 +13,9 @@ const fallbacks = [
 module.exports = {
     mode: 'jit',
     content: [
-        '../../../../../../fbw-a32nx/src/systems/instruments/src/EFBv4/**/*.{jsx,tsx}',
+        // THOSE PATHS ARE RELATIVE TO fbw-a32nx/ AT THE MOMENT. This should be fixed at some point in the future
         './**/*.{jsx,tsx}',
+        '../fbw-common/**/*.{jsx,tsx}',
     ],
     theme: {
         extend: {
