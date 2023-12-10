@@ -331,8 +331,8 @@ export class MsfsMapping {
             const bearing = bearings.get(icao);
             const isTrue = isTrueVsMagnetic.get(icao);
             let locBearing = -1;
-            if (bearing) {
-                locBearing = isTrue ? this.trueToMagnetic(bearing, -ils.magneticVariation) : bearing;
+            if (Number.isFinite(bearing) && bearing !== -1) {
+                locBearing = isTrue ? this.trueToMagnetic(bearing!, -ils.magneticVariation) : bearing!;
             }
 
             return {
@@ -366,8 +366,8 @@ export class MsfsMapping {
 
         const facilities = await this.loadFacilitiesFromProcedures([approach]);
 
-        const finalWaypoint = facilities.get(finalLeg.fixIcao.trim());
-        const previousWaypoint = facilities.get(previousLeg.fixIcao.trim());
+        const finalWaypoint = facilities.get(finalLeg.fixIcao);
+        const previousWaypoint = facilities.get(previousLeg.fixIcao);
 
         if (!finalWaypoint || !previousWaypoint) {
             return undefined;
