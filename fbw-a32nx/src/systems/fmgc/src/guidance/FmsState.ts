@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { EfisNdMode, EfisNdRangeValue } from '@shared/NavigationDisplay';
+import { EfisNdMode, EfisNdRangeValue } from '@flybywiresim/fbw-sdk';
 
 export interface FmsState {
     leftEfisState: EfisState,
