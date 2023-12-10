@@ -1,7 +1,7 @@
 // We currently assume that these two elements will be found.
 // Might be worth implementing checking in the future.
 
-const reactMount = document.getElementById('INSTRUMENT_CONTENT') as HTMLElement;
+const reactMount = document.getElementById('MSFS_REACT_MOUNT') as HTMLElement;
 
 // const getEcamPageRenderTarget = (pageName: string): HTMLElement => (document.getElementById(`A32NX_${pageName}_PAGE_REACT_MOUNT`) as HTMLElement);
 
