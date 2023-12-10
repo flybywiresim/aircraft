@@ -17,7 +17,7 @@ module.exports = {
             extract: true,
             postcss: {
                 plugins: [
-                    tailwind('src/systems/instruments/src/EFB/tailwind.config.js'),
+                    tailwind('src/systems/instruments/src/EFBv4/tailwind.config.js'),
 
                     // transform: hsl(x y z / alpha) -> hsl(x, y, z, alpha)
                     postCssColorFunctionalNotation(),
@@ -34,6 +34,7 @@ module.exports = {
         msfsAvionicsInstrument('ND'),
         msfsAvionicsInstrument('EWD'),
         msfsAvionicsInstrument('Clock'),
+        msfsAvionicsInstrument('EFBv4'),
 
         reactInstrument('SD'),
         reactInstrument('DCDU'),
