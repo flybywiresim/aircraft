@@ -20,6 +20,8 @@
 1. [EFCS] Add precontrol to roll angle controller to improve dynamic response - @lukecologne (luke)
 1. [EFCS] Increase maximum sim rate limit to 8 due to improvements in roll law stability - @lukecologne (luke)
 1. [HOPPIE] Remove ATSU/AOC source checks - @auroraisluna (alepouna)
+1. [PFD] Graphical improvements and updates to the FMA - @BravoMike99 (bruno_pt99)
+1. [PFD] Hide '+' sign on V/S & FPA FMA if selected value is 0 - @BravoMike99 (bruno_pt99)
 
 ## 0.11.0
 
