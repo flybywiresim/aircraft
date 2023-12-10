@@ -1,4 +1,6 @@
+import { Wait } from '@microsoft/msfs-sdk';
 import { NXDataStore } from '@flybywiresim/fbw-sdk';
+import { protocolV0 } from '@flybywiresim/remote-bridge-types';
 
 import { v4 } from 'uuid';
 
@@ -8,85 +10,31 @@ const EXCLUDED_DATA_STORAGE_KEYS = [
     'A32NX_NAVIGRAPH_REFRESH_TOKEN',
 ];
 
-const pfd: InstrumentMetadata = {
-    instrumentID: 'pfd',
-    dimensions: {
-        width: 768,
-        height: 768,
-    },
-    gauges: [
-        {
-            name: 'PFD',
-            bundles: {
-                js: '/Pages/VCockpit/Instruments/A32NX/PFD/pfd.js',
-                css: '/Pages/VCockpit/Instruments/A32NX/PFD/pfd.css',
-            },
-        },
-    ],
-};
-
-const nd: InstrumentMetadata = {
-    instrumentID: 'ND',
-    dimensions: {
-        width: 768,
-        height: 768,
-    },
-    gauges: [
-        {
-            name: 'ND',
-            bundles: {
-                js: '/Pages/VCockpit/Instruments/A32NX/ND/nd.js',
-                css: '/Pages/VCockpit/Instruments/A32NX/ND/nd.css',
-            },
-        },
-    ],
-};
-
-const ewd: InstrumentMetadata = {
-    instrumentID: 'EWD',
-    dimensions: {
-        width: 768,
-        height: 768,
-    },
-    gauges: [
-        {
-            name: 'EWD',
-            bundles: {
-                js: '/Pages/VCockpit/Instruments/A32NX/EWD/ewd.js',
-                css: '/Pages/VCockpit/Instruments/A32NX/EWD/ewd.css',
-            },
-        },
-    ],
-};
-
-const efb: InstrumentMetadata = {
-    instrumentID: 'EFB',
-    dimensions: {
-        width: 1430,
-        height: 1000,
-    },
-    gauges: [
-        {
-            name: 'EFB',
-            bundles: {
-                js: '/Pages/VCockpit/Instruments/A32NX/EFB/efb.js',
-                css: '/Pages/VCockpit/Instruments/A32NX/EFB/efb.css',
-            },
-        },
-    ],
-};
-
-const planeInstruments = [pfd, nd, ewd, efb];
+export interface RemoteClientOptions {
+    websocketUrl: string,
+    clientName: string,
+    airframeName: string,
+    instrumentsMetadataFile: string,
+}
 
 export class RemoteClient {
     private ws: WebSocket | null = null;
 
-    private clientID = v4();
+    private readonly url: string;
+
+    private readonly airframeName: string;
+
+    private readonly clientName: string;
+
+    private readonly clientID = v4();
+
+    private instruments: protocolV0.InstrumentMetadata[] = [];
 
     private connectionAttemptCount = 0;
 
     private simVarSubscriptions: {
         simVar: string,
+        simVarType: 'simVar' | 'globalVar',
         unit: string,
         id: number,
         fromClientID: string,
@@ -95,10 +43,17 @@ export class RemoteClient {
 
     private simVarValueCache: Record<number, any> = {};
 
+    private viewListeners = new Map<string, ViewListener.ViewListener>();
+
     private aircraftDataUpdateInterval: number | null = null;
 
-    constructor(private readonly url: string) {
+    constructor(options: RemoteClientOptions) {
+        this.url = options.websocketUrl;
+        this.airframeName = options.airframeName;
+        this.clientName = options.clientName;
+
         this.attemptConnect();
+        this.fetchInstrumentsMetadata(options.instrumentsMetadataFile).then((metadata) => this.instruments = metadata);
     }
 
     public update(): void {
@@ -109,7 +64,9 @@ export class RemoteClient {
         const data: [number, number][] = [];
 
         for (const simvar of this.simVarSubscriptions) {
-            const value = SimVar.GetSimVarValue(simvar.simVar, simvar.unit);
+            const value = simvar.simVarType === 'simVar'
+                ? SimVar.GetSimVarValue(simvar.simVar, simvar.unit)
+                : SimVar.GetGlobalVarValue(simvar.simVar, simvar.unit);
 
             if (value !== this.simVarValueCache[simvar.id]) {
                 data.push([simvar.id, value]);
@@ -167,7 +124,7 @@ export class RemoteClient {
     }
 
     private onMessage(message: any): void {
-        const msg: Messages = JSON.parse(message);
+        const msg: protocolV0.Messages = JSON.parse(message);
 
         switch (msg.type) {
         case 'remoteRequestAircraftSignin':
@@ -175,10 +132,18 @@ export class RemoteClient {
             this.sendMessage(this.createAircraftStatusMessage());
             break;
         case 'remoteRequestGaugeBundles':
-            this.createSendBundleCodeMessages(msg.instrumentID);
+            Wait.awaitCondition(() => this.instruments.length !== 0, 100, 10_000).then(() => {
+                this.createSendBundleCodeMessages(msg.instrumentID);
+            }).catch(() => {
+                throw new Error('[RemoteClient](onMessage) Waited too long (>10s) for instruments to be fetched');
+            });
             break;
         case 'remoteEnumerateInstruments':
-            this.sendMessage({ type: 'aircraftSendInstruments', instruments: planeInstruments, fromClientID: this.clientID });
+            Wait.awaitCondition(() => this.instruments.length !== 0, 100, 10_000).then(() => {
+                this.sendMessage({ type: 'aircraftSendInstruments', instruments: this.instruments, fromClientID: this.clientID });
+            }).catch(() => {
+                throw new Error('[RemoteClient](onMessage) Waited too long (>10s) for instruments to be fetched');
+            });
             break;
         case 'remoteSubscribeToSimVar':
             this.simVarSubscriptions.push(msg);
@@ -221,6 +186,51 @@ export class RemoteClient {
                 });
             });
             break;
+        case 'remoteRegisterViewListener': {
+            const listener = RegisterViewListener(msg.listenerName);
+
+            this.viewListeners.set(msg.listenerID, listener);
+
+            // TODO clean up this subscription
+            for (const call of msg.firstFrameCalls) {
+                listener.on(call.event, (...data) => {
+                    this.sendMessage({
+                        type: 'aircraftEventNotification',
+                        subscriptionID: call.subscriptionID,
+                        data,
+                        fromClientID: this.clientID,
+                    });
+                });
+            }
+
+            this.sendMessage({
+                type: 'aircraftAsyncOperationResponse',
+                requestID: msg.requestID,
+                successful: true,
+                result: undefined,
+                fromClientID: this.clientID,
+            });
+            break;
+        }
+        case 'remoteViewListenerOn': {
+            const listener = this.viewListeners.get(msg.listenerID);
+
+            if (!listener) {
+                console.error('[RemoteClient](onMessage) remoteViewListenerOn recieved with unknown listenerID');
+                break;
+            }
+
+            // TODO clean up this subscription
+            listener.on(msg.event, (...data) => {
+                this.sendMessage({
+                    type: 'aircraftEventNotification',
+                    subscriptionID: msg.subscriptionID,
+                    data,
+                    fromClientID: this.clientID,
+                });
+            });
+            break;
+        }
         case 'remoteSubscriptionGroupCancel': {
             console.log(`[RemoteClient](onMessage) Clearing subscription group with id '${msg.subscriptionGroupID}'`);
 
@@ -229,6 +239,8 @@ export class RemoteClient {
             this.simVarSubscriptions = this.simVarSubscriptions.filter((it) => it.subscriptionGroupID !== msg.subscriptionGroupID);
 
             console.log(`[RemoteClient](onMessage) -> Cleared ${oldSimVarCount - this.simVarSubscriptions.length} simvars`);
+
+            // TODO clean view listeners as well
 
             break;
         }
@@ -251,7 +263,7 @@ export class RemoteClient {
         this.cleanup();
     }
 
-    private sendMessage(message: Messages) {
+    private sendMessage(message: protocolV0.Messages) {
         if (!this.ws) {
             throw new Error('Cannot send message if no websocket exists');
         }
@@ -264,17 +276,17 @@ export class RemoteClient {
         setTimeout(() => this.attemptConnect(), 3_000);
     }
 
-    private createSigninMessage(): AircraftSigninMessage {
-        return { type: 'aircraftSignin', clientName: 'a32nx', fromClientID: this.clientID };
+    private createSigninMessage(): protocolV0.AircraftSigninMessage {
+        return { type: 'aircraftSignin', clientName: this.clientName, fromClientID: this.clientID };
     }
 
-    private createAircraftStatusMessage(): AircraftStatusMessage {
+    private createAircraftStatusMessage(): protocolV0.AircraftStatusMessage {
         return {
             type: 'aircraftStatus',
             simUtcTime: 0,
             simLocaltime: 0,
             airframe: {
-                name: 'A320-251N',
+                name: this.airframeName,
                 livery: 'FBW',
             },
             flightPlanInfo: {
@@ -295,7 +307,7 @@ export class RemoteClient {
     }
 
     private async createSendBundleCodeMessages(instrumentID: string): Promise<void> {
-        const instruments = planeInstruments.find((it) => it.instrumentID === instrumentID);
+        const instruments = this.instruments.find((it) => it.instrumentID === instrumentID);
 
         const codeBundleUrl = instruments.gauges[0].bundles.js;
 
@@ -318,7 +330,7 @@ export class RemoteClient {
             const jsData = bundle.substring(jsChunkIndex * 100_000, Math.min(bundle.length, (jsChunkIndex + 1) * 100_000));
             const cssData = cssBundle.substring(cssChunkIndex * 100_000, Math.min(cssBundle.length, (cssChunkIndex + 1) * 100_000));
 
-            const msg: Messages = {
+            const msg: protocolV0.Messages = {
                 type: 'aircraftSendGaugeBundles',
                 bundles: {
                     js: { chunkIndex: jsChunkIndex, chunkCount: jsChunkCount, data: jsData },
@@ -341,190 +353,27 @@ export class RemoteClient {
         }
     }
 
-    private createSendSimVarValuesMessage(values: [number, number][]): AircraftSendSimVarValuesMessage {
+    private createSendSimVarValuesMessage(values: [number, number][]): protocolV0.AircraftSendSimVarValuesMessage {
         return {
             type: 'aircraftSendSimVarValues',
             values,
             fromClientID: this.clientID,
         };
     }
-}
 
-interface BaseMessage {
-    type: string;
-    fromClientID: string;
-}
+    private async fetchInstrumentsMetadata(file: string): Promise<protocolV0.InstrumentMetadata[]> {
+        const response = await fetch(file);
 
-export interface AircraftSigninMessage extends BaseMessage {
-    type: 'aircraftSignin';
-    clientName: string;
-}
+        if (!response.ok) {
+            return [];
+        }
 
-export interface AircraftStatusMessage extends BaseMessage {
-    type: 'aircraftStatus';
-    simUtcTime: number;
-    simLocaltime: number;
-    flightPlanInfo: {
-        callsign: string;
-        origin: string | null;
-        dest: string | null;
-        altn: string | null;
-        progress: number;
-    };
-    airframe: {
-        name: string;
-        livery: string;
-    };
-    aircraftState: {
-        heading: number;
-        headingIsTrue: boolean;
-        tas: number;
-        altitude: number;
+        const json: { protocolVersion: number, data: protocolV0.InstrumentMetadata[]; } = JSON.parse(await response.text());
+
+        if (json.protocolVersion !== 0) {
+            throw new Error('[RemoteClient](fetchInstrumentsMetadata) protocolVersion of instruments metadata file is not 0');
+        }
+
+        return json.data;
     }
-}
-
-export interface AircraftSendGaugeBundlesMessage extends BaseMessage {
-    type: 'aircraftSendGaugeBundles';
-    bundles: {
-        js: {
-            data: string,
-            chunkIndex: number,
-            chunkCount: number,
-        };
-        css: {
-            data: string,
-            chunkIndex: number,
-            chunkCount: number,
-        };
-    };
-}
-
-export interface AircraftSendInstrumentsMessage extends BaseMessage {
-    type: 'aircraftSendInstruments';
-    instruments: InstrumentMetadata[];
-}
-
-export interface AircraftSendSimVarValuesMessage extends BaseMessage {
-    type: 'aircraftSendSimVarValues';
-    values: [id: number, value: number][];
-}
-
-export interface AircraftSendDataStorageMessage extends BaseMessage {
-    type: 'aircraftSendDataStorage';
-    values: Record<string, string>;
-}
-
-export interface AircraftAsyncOperationResponseMessage extends BaseMessage {
-    type: 'aircraftAsyncOperationResponse';
-    requestID: string;
-    successful: boolean;
-    result: unknown;
-}
-
-export interface AircraftClientDisconnectMessage extends BaseMessage {
-    type: 'aircraftClientDisconnect';
-    clientID: string;
-}
-
-export interface RemoteSigninMessage extends BaseMessage {
-    type: 'remoteSignin';
-    clientName: string;
-}
-
-export interface RemoteRequestAircraftSigninMessage extends BaseMessage {
-    type: 'remoteRequestAircraftSignin';
-}
-
-export interface RemoteRequestGaugeBundlesMessage extends BaseMessage {
-    type: 'remoteRequestGaugeBundles';
-    instrumentID: string;
-}
-
-export interface RemoteEnumerateInstrumentsMessage extends BaseMessage {
-    type: 'remoteEnumerateInstruments';
-}
-
-export interface RemoteSubscribeToSimVarMessage extends BaseMessage {
-    type: 'remoteSubscribeToSimVar';
-    simVar: string;
-    unit: string;
-    id: number;
-    subscriptionGroupID: string;
-}
-
-export interface RemoteRequestDataStorageMessage extends BaseMessage {
-    type: 'remoteRequestDataStorage';
-}
-
-export interface RemoteSetDataStorageKeyMessage extends BaseMessage {
-    type: 'remoteSetDataStorageKey';
-    key: string;
-    value: string;
-}
-
-export interface RemoteSetSimVarValueMessage extends BaseMessage {
-    type: 'remoteSetSimVarValue';
-    name: string;
-    unit: string;
-    value: unknown;
-    requestID: string;
-}
-
-export interface RemoteSubscriptionGroupCancelMessage extends BaseMessage {
-    type: 'remoteSubscriptionGroupCancel';
-    subscriptionGroupID: string;
-}
-
-export interface RemoteClientDisconnectMessage extends BaseMessage {
-    type: 'remoteClientDisconnect';
-    clientID: string;
-}
-
-export interface ProtocolErrorMessage extends BaseMessage {
-    type: 'protocolError',
-    id: number,
-    message: string,
-}
-
-export interface ProtocolHeartbeat extends BaseMessage {
-    type: 'protocolHeartbeat',
-}
-
-export type Messages =
-    | AircraftSigninMessage
-    | AircraftStatusMessage
-    | AircraftSendGaugeBundlesMessage
-    | AircraftSendInstrumentsMessage
-    | AircraftSendSimVarValuesMessage
-    | AircraftSendDataStorageMessage
-    | AircraftAsyncOperationResponseMessage
-    | AircraftClientDisconnectMessage
-    | RemoteSigninMessage
-    | RemoteRequestAircraftSigninMessage
-    | RemoteRequestGaugeBundlesMessage
-    | RemoteEnumerateInstrumentsMessage
-    | RemoteSubscribeToSimVarMessage
-    | RemoteRequestDataStorageMessage
-    | RemoteSetDataStorageKeyMessage
-    | RemoteSetSimVarValueMessage
-    | RemoteSubscriptionGroupCancelMessage
-    | RemoteClientDisconnectMessage
-    | ProtocolErrorMessage
-    | ProtocolHeartbeat;
-
-export interface GaugeMetadata {
-    name: string;
-    bundles: {
-        js: string;
-        css: string;
-    };
-}
-
-export interface InstrumentMetadata {
-    instrumentID: string;
-    dimensions: {
-        width: number;
-        height: number;
-    };
-    gauges: GaugeMetadata[];
 }

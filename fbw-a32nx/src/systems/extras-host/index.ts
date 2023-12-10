@@ -63,8 +63,12 @@ class ExtrasHost extends BaseInstrument {
         this.versionCheck = new VersionCheck(this.bus);
         this.keyInterceptor = new KeyInterceptor(this.bus, this.notificationManager);
 
-        const roomId = '<replace this>';
-        this.remoteClient = new RemoteClient(`wss://gateway.remote.flybywiresim.com/api/v1/connect/${roomId}`);
+        this.remoteClient = new RemoteClient({
+            websocketUrl: 'ws://10.0.0.200:8380/interfaces/v1/remote-app',
+            airframeName: 'A320-251N',
+            clientName: 'A32NX',
+            instrumentsMetadataFile: '/VFS/a32nx_instruments_metadata.json',
+        });
 
         console.log('A32NX_EXTRASHOST: Created');
     }

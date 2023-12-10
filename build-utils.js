@@ -2,6 +2,7 @@ const dotenv = require("dotenv");
 const path = require("path");
 const childProcess = require("child_process");
 const fs = require("fs");
+const fsp = require("fs/promises");
 
 function defineEnvVars() {
     dotenv.config({ path: '.env.local' });
@@ -143,3 +144,37 @@ function typecheckingPlugin() {
 }
 
 module.exports.typecheckingPlugin = typecheckingPlugin;
+
+/**
+ * @param instruments {import('@synaptic-simulations/mach').Instrument[]}
+ * @param packageName {string}
+ * @param outDIr {string}
+ */
+async function generateInstrumentsMetadata(instruments, packageName, outDIr) {
+    const file = await fsp.open(path.join(outDIr, `${packageName.toLowerCase()}_instruments_metadata.json`), 'w+');
+
+    const data = instruments.map((it) => {
+        /** @type {import('@flybywiresim/remote-bridge-types').InstrumentMetadata} */
+        const metadata = {
+            instrumentID: it.name,
+            dimensions: it.dimensions,
+            gauges: [
+                {
+                    name: it.name,
+                    bundles: {
+                        js: `/Pages/VCockpit/Instruments/${packageName}/${it.name}/${it.simulatorPackage.fileName}.js`,
+                        css: `/Pages/VCockpit/Instruments/${packageName}/${it.name}/${it.simulatorPackage.fileName}.css`,
+                    },
+                },
+            ],
+        };
+
+        return metadata;
+    });
+
+    await file.writeFile(JSON.stringify({ protocolVersion: 0, data }, null, 4));
+
+    await file.close();
+}
+
+module.exports.generateInstrumentsMetadata = generateInstrumentsMetadata;

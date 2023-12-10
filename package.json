@@ -141,7 +141,8 @@
     "typescript": "^5.2.2",
     "vite": "^4.4.9",
     "vite-plugin-filter-replace": "^0.1.12",
-    "vite-tsconfig-paths": "^4.2.1"
+    "vite-tsconfig-paths": "^4.2.1",
+    "@flybywiresim/remote-bridge-types" : "*"
   },
   "dependencies": {
     "@flybywiresim/api-client": "^0.16.2",
