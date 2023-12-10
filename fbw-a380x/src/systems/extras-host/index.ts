@@ -2,11 +2,12 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { EventBus, HEventPublisher } from '@microsoft/msfs-sdk';
-import { NotificationManager, RemoteClient } from '@flybywiresim/fbw-sdk';
+import { NotificationManager, NXDataStore, RemoteClient } from '@flybywiresim/fbw-sdk';
 import { ExtrasSimVarPublisher } from 'extras-host/modules/common/ExtrasSimVarPublisher';
 import { PushbuttonCheck } from 'extras-host/modules/pushbutton_check/PushbuttonCheck';
 import { KeyInterceptor } from './modules/key_interceptor/KeyInterceptor';
 import { VersionCheck } from './modules/version_check/VersionCheck';
+import { getSimBridgeUrl } from "../../../../fbw-a32nx/src/systems/simbridge-client/src/common";
 
 /**
  * This is the main class for the extras-host instrument.
@@ -64,7 +65,7 @@ class ExtrasHost extends BaseInstrument {
         this.keyInterceptor = new KeyInterceptor(this.bus, this.notificationManager);
 
         this.remoteClient = new RemoteClient({
-            websocketUrl: 'ws://10.0.0.200:8380/interfaces/v1/remote-app',
+            websocketUrl: () => `${getSimBridgeUrl('ws')}/interfaces/v1/remote-app`,
             airframeName: 'A380-842',
             clientName: 'A380X',
             instrumentsMetadataFile: '/VFS/a380x_instruments_metadata.json',

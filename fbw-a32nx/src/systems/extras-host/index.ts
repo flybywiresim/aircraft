@@ -7,6 +7,7 @@ import { ExtrasSimVarPublisher } from 'extras-host/modules/common/ExtrasSimVarPu
 import { PushbuttonCheck } from 'extras-host/modules/pushbutton_check/PushbuttonCheck';
 import { KeyInterceptor } from './modules/key_interceptor/KeyInterceptor';
 import { VersionCheck } from './modules/version_check/VersionCheck';
+import { getSimBridgeUrl } from "@simbridge/common";
 
 /**
  * This is the main class for the extras-host instrument.
@@ -64,7 +65,7 @@ class ExtrasHost extends BaseInstrument {
         this.keyInterceptor = new KeyInterceptor(this.bus, this.notificationManager);
 
         this.remoteClient = new RemoteClient({
-            websocketUrl: 'ws://10.0.0.200:8380/interfaces/v1/remote-app',
+            websocketUrl: () => `${getSimBridgeUrl('ws')}/interfaces/v1/remote-app`,
             airframeName: 'A320-251N',
             clientName: 'A32NX',
             instrumentsMetadataFile: '/VFS/a32nx_instruments_metadata.json',
