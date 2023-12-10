@@ -196,7 +196,7 @@
 
 - A32NX_PRESS_NEGATIVE_DIFF_PRESS_EXCESSIVE
     - Bool
-    - True when FWC condition for "EXCESS DIFF PRESS" is met (differential pressure over 9.65 PSI)
+    - True when FWC condition for "EXCESS NEGATIVE DIFF PRESS" is met (differential pressure lower than -0.72 PSI)
 
 - A32NX_OVHD_COND_{id}_SELECTOR_KNOB
     - Number (0 to 300)

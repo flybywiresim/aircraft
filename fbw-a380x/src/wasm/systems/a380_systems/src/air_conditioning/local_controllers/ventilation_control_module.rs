@@ -168,15 +168,17 @@ impl ControllerSignal<CabinFansSignal> for VentilationControlModule {
 
 impl SimulationElement for VentilationControlModule {
     fn write(&self, writer: &mut SimulatorWriter) {
-        let failure_count = match self.fault {
+        let failure_id = match self.fault {
             None => 0,
             Some(VcmFault::OneChannelFault) => self.stand_by_channel.id().into(),
             Some(VcmFault::BothChannelsFault) => 3,
         };
-        writer.write(&self.vcm_channel_failure_id, failure_count);
+        writer.write(&self.vcm_channel_failure_id, failure_id);
         writer.write(
             &self.orvp_open_id,
-            self.overpressure_relief_valve_open_amount() > Ratio::new::<percent>(1.),
+            self.overpressure_relief_valve_open_amount()
+                .get::<percent>()
+                > 1.,
         );
     }
 
@@ -283,23 +285,15 @@ impl OverpressureReliefValveDump {
         ocsm: [&impl OcsmShared; 4],
         press_overhead: &impl PressurizationOverheadShared,
     ) {
+        // Only OCSM 2 and 3 send information to the VCM
         let orvp_open_allowed =
             !press_overhead.ditching_is_on() && !ocsm[1].overpressure_relief_valve_inhibit();
         self.should_open_orvp = orvp_open_allowed
             && (press_overhead.extract_is_forced_open()
-                || if ocsm[1].cabin_delta_pressure()
-                    > Pressure::new::<psi>(Self::MAX_SAFETY_DELTA_P)
-                {
-                    if ocsm[1].cabin_delta_pressure()
-                        > Pressure::new::<psi>(Self::MAX_SAFETY_DELTA_P + 0.2)
-                    {
-                        true
-                    } else {
-                        self.should_open_orvp
-                    }
-                } else {
-                    false
-                });
+                || ocsm[1].cabin_delta_pressure().get::<psi>() > Self::MAX_SAFETY_DELTA_P
+                    && (ocsm[1].cabin_delta_pressure().get::<psi>()
+                        > Self::MAX_SAFETY_DELTA_P + 0.2
+                        || self.should_open_orvp));
     }
 
     /// Because this is a mechanical valve that is either open or closed, this function is a valid simplification

@@ -65,19 +65,19 @@ impl OutflowValveControlModule {
     pub fn new(
         context: &mut InitContext,
         outflow_valve_id: usize,
-        powered_by: Vec<ElectricalBusType>,
+        powered_by: [ElectricalBusType; 2],
     ) -> Self {
         Self {
             ocsm_channel_failure_id: context
                 .get_identifier(format!("PRESS_{}_OCSM_CHANNEL_FAILURE", outflow_valve_id)),
 
-            active_channel: OperatingChannel::new(1, None, &[powered_by[0]]),
-            stand_by_channel: OperatingChannel::new(2, None, &[powered_by[1]]),
+            active_channel: OperatingChannel::new(1, None, &powered_by[0..1]),
+            stand_by_channel: OperatingChannel::new(2, None, &powered_by[1..2]),
             acp: AutomaticControlPartition::new(outflow_valve_id),
             sop: SafetyAndOverridePartition::new(),
             epp: EmergencyPressurizationPartition::new(),
             outflow_valve: OutflowValve::new(
-                powered_by,
+                powered_by.to_vec(),
                 vec![ElectricalBusType::DirectCurrentBattery],
             ),
             fault: None,
@@ -118,21 +118,20 @@ impl OutflowValveControlModule {
     }
 
     fn fault_determination(&mut self) {
-        self.fault = match self.active_channel.has_fault() {
-            true => {
-                if self.stand_by_channel.has_fault() {
-                    Some(OcsmFault::BothChannelsFault)
-                } else {
+        self.active_channel.update_fault();
+        self.stand_by_channel.update_fault();
+
+        self.fault = match (
+            self.active_channel.has_fault(),
+            self.stand_by_channel.has_fault(),
+        ) {
+            (true, true) => Some(OcsmFault::BothChannelsFault),
+            (false, false) => None,
+            (ac, _) => {
+                if ac {
                     self.switch_active_channel();
-                    Some(OcsmFault::OneChannelFault)
                 }
-            }
-            false => {
-                if self.stand_by_channel.has_fault() {
-                    Some(OcsmFault::OneChannelFault)
-                } else {
-                    None
-                }
+                Some(OcsmFault::OneChannelFault)
             }
         };
     }
@@ -169,12 +168,12 @@ impl OcsmShared for OutflowValveControlModule {
 
 impl SimulationElement for OutflowValveControlModule {
     fn write(&self, writer: &mut SimulatorWriter) {
-        let failure_count = match self.fault {
+        let failure_id = match self.fault {
             None => 0,
             Some(OcsmFault::OneChannelFault) => self.stand_by_channel.id().into(),
             Some(OcsmFault::BothChannelsFault) => 3,
         };
-        writer.write(&self.ocsm_channel_failure_id, failure_count);
+        writer.write(&self.ocsm_channel_failure_id, failure_id);
     }
 
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
@@ -378,14 +377,13 @@ impl EmergencyPressurizationPartition {
         let (_, adirs_ambient_pressure) = self.adirs_values_calculation(adirs);
 
         if !self.is_initialised {
-            self.exterior_pressure.reset(
-                adirs_ambient_pressure.unwrap_or_else(|| Pressure::new::<hectopascal>(Air::P_0)),
-            );
+            self.exterior_pressure
+                .reset(adirs_ambient_pressure.unwrap_or(Pressure::new::<hectopascal>(Air::P_0)));
             self.is_initialised = true;
         } else {
             self.exterior_pressure.update(
                 context.delta(),
-                adirs_ambient_pressure.unwrap_or_else(|| Pressure::new::<hectopascal>(Air::P_0)),
+                adirs_ambient_pressure.unwrap_or(Pressure::new::<hectopascal>(Air::P_0)),
             );
         }
     }
@@ -410,11 +408,11 @@ impl EmergencyPressurizationPartition {
         cabin_target_vs: Velocity,
         cabin_vertical_speed: Velocity,
     ) -> Velocity {
-        if self.differential_pressure
-            > Pressure::new::<psi>(A380PressurizationConstants::MAX_SAFETY_DELTA_P - 0.2)
+        if self.differential_pressure.get::<psi>()
+            > A380PressurizationConstants::MAX_SAFETY_DELTA_P - 0.2
         {
-            if self.differential_pressure
-                > Pressure::new::<psi>(A380PressurizationConstants::MAX_SAFETY_DELTA_P)
+            if self.differential_pressure.get::<psi>()
+                > A380PressurizationConstants::MAX_SAFETY_DELTA_P
                 || cabin_vertical_speed > Velocity::new::<foot_per_minute>(200.)
             {
                 Velocity::new::<foot_per_minute>(6400.)
@@ -463,17 +461,17 @@ impl ControllerSignal<PressureValveSignal> for EmergencyPressurizationPartition 
             Ratio::new::<percent>(0.),
             Duration::from_secs(1),
         ));
-        if self.differential_pressure
-            < Pressure::new::<psi>(A380PressurizationConstants::MIN_SAFETY_DELTA_P + 0.2)
+        if self.differential_pressure.get::<psi>()
+            < A380PressurizationConstants::MIN_SAFETY_DELTA_P + 0.2
         {
-            if self.differential_pressure
-                < Pressure::new::<psi>(A380PressurizationConstants::MIN_SAFETY_DELTA_P)
+            if self.differential_pressure.get::<psi>()
+                < A380PressurizationConstants::MIN_SAFETY_DELTA_P
             {
                 open
             } else {
                 Some(PressureValveSignal::Neutral)
             }
-        } else if self.safety_valve_open_amount > Ratio::new::<percent>(0.) {
+        } else if self.safety_valve_open_amount.get::<percent>() > 0. {
             closed
         } else {
             Some(PressureValveSignal::Neutral)

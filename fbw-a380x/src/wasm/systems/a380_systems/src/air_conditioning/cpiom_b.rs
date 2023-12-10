@@ -32,7 +32,7 @@ use uom::si::{
     pressure::{hectopascal, psi},
     ratio::{percent, ratio},
     thermodynamic_temperature::degree_celsius,
-    velocity::{foot_per_minute, meter_per_second},
+    velocity::foot_per_minute,
 };
 
 use super::A380PressurizationConstants;
@@ -819,9 +819,7 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
     ) {
         self.cabin_pressure = ocsm[0].cabin_pressure(); // TODO Add check for failure
         self.cabin_delta_pressure = ocsm[0].cabin_delta_pressure(); // TODO Add check for failure
-        (0..=3).for_each(|id| {
-            self.outflow_valve_open_amount[id] = ocsm[id].outflow_valve_open_amount()
-        });
+        self.outflow_valve_open_amount = ocsm.map(|ocsm| ocsm.outflow_valve_open_amount());
 
         if let Some(manager) = self.pressure_schedule_manager.take() {
             self.pressure_schedule_manager = Some(manager.update(
@@ -858,29 +856,26 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
         adirs: &impl AdirsToAirCondInterface,
     ) {
         let (adirs_airspeed, adirs_ambient_pressure) = self.adirs_values_calculation(adirs);
-        let new_exterior_altitude: Length;
         self.exterior_airspeed = adirs_airspeed.unwrap_or_default();
 
-        if !self.is_initialised {
-            self.exterior_pressure.reset(
-                adirs_ambient_pressure.unwrap_or_else(|| Pressure::new::<hectopascal>(Air::P_0)),
-            );
-            new_exterior_altitude =
-                self.calculate_altitude(self.exterior_pressure.output(), self.reference_pressure);
+        self.exterior_flight_altitude = if !self.is_initialised {
+            self.exterior_pressure
+                .reset(adirs_ambient_pressure.unwrap_or(Pressure::new::<hectopascal>(Air::P_0)));
             self.is_initialised = true;
+            self.calculate_altitude(self.exterior_pressure.output(), self.reference_pressure)
         } else {
             self.exterior_pressure.update(
                 context.delta(),
-                adirs_ambient_pressure.unwrap_or_else(|| Pressure::new::<hectopascal>(Air::P_0)),
+                adirs_ambient_pressure.unwrap_or(Pressure::new::<hectopascal>(Air::P_0)),
             );
 
-            new_exterior_altitude =
+            let new_exterior_altitude =
                 self.calculate_altitude(self.exterior_pressure.output(), self.reference_pressure);
             // When the reference pressure changes, we skip the update to the external
             // V/S to avoid a jump
-            if (self.previous_reference_pressure.get::<hectopascal>()
-                - self.reference_pressure.get::<hectopascal>())
-            .abs()
+            if (self.previous_reference_pressure - self.reference_pressure)
+                .abs()
+                .get::<hectopascal>()
                 < f64::EPSILON
             {
                 self.exterior_vertical_speed.update(
@@ -888,9 +883,9 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
                     self.calculate_exterior_vertical_speed(context, new_exterior_altitude),
                 );
             }
-        }
+            new_exterior_altitude
+        };
 
-        self.exterior_flight_altitude = new_exterior_altitude;
         self.previous_reference_pressure = self.reference_pressure;
     }
 
@@ -914,10 +909,7 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
         context: &UpdateContext,
         new_altitude: Length,
     ) -> Velocity {
-        Velocity::new::<meter_per_second>(
-            (new_altitude.get::<meter>() - self.exterior_flight_altitude.get::<meter>())
-                / context.delta_as_secs_f64(),
-        )
+        (new_altitude - self.exterior_flight_altitude) / context.delta_as_time()
     }
 
     /// Calculation of altidude based on a pressure and reference pressure
@@ -925,7 +917,7 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
     fn calculate_altitude(&self, pressure: Pressure, reference_pressure: Pressure) -> Length {
         let pressure_ratio = (pressure / reference_pressure).get::<ratio>();
         // Hydrostatic equation with linear temp changes and constant R, g
-        let altitude: f64 =
+        let altitude =
             ((Air::T_0 / pressure_ratio.powf((Air::L * Air::R) / Air::G)) - Air::T_0) / Air::L;
         Length::new::<meter>(altitude)
     }
@@ -937,18 +929,15 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
         new_reference_pressure: Pressure,
     ) -> Velocity {
         // When the reference pressure changes, V/S is the same as previous to avoid a jump
-        if (new_reference_pressure.get::<hectopascal>()
-            - self.reference_pressure.get::<hectopascal>())
-        .abs()
+        if (new_reference_pressure - self.reference_pressure)
+            .get::<hectopascal>()
+            .abs()
             > f64::EPSILON
         {
             self.cabin_vertical_speed
         } else {
             // Distance over time :)
-            Velocity::new::<meter_per_second>(
-                (new_cabin_alt.get::<meter>() - self.cabin_altitude.get::<meter>())
-                    / context.delta_as_secs_f64(),
-            )
+            (new_cabin_alt - self.cabin_altitude) / context.delta_as_time()
         }
     }
 
@@ -966,16 +955,16 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
                 })
             }
             Some(PressureScheduleManager::TakeOff(_)) => Velocity::new::<foot_per_minute>(
-                if self.cabin_delta_pressure < Pressure::new::<psi>(C::MAX_TAKEOFF_DELTA_P) {
+                if self.cabin_delta_pressure.get::<psi>() < C::MAX_TAKEOFF_DELTA_P {
                     C::TAKEOFF_RATE
                 } else {
                     0.
                 },
             ),
             Some(PressureScheduleManager::ClimbInternal(_)) => {
-                if self.cabin_altitude >= Length::new::<foot>(C::MAX_CLIMB_CABIN_ALTITUDE) {
+                if self.cabin_altitude.get::<foot>() >= C::MAX_CLIMB_CABIN_ALTITUDE {
                     Velocity::new::<foot_per_minute>(C::MAX_DESCENT_RATE)
-                } else if self.cabin_delta_pressure >= Pressure::new::<psi>(C::MAX_CLIMB_DELTA_P) {
+                } else if self.cabin_delta_pressure.get::<psi>() >= C::MAX_CLIMB_DELTA_P {
                     Velocity::new::<foot_per_minute>(C::MAX_CLIMB_RATE)
                 } else {
                     self.calculate_climb_vertical_speed(context)
@@ -983,21 +972,16 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
             }
             Some(PressureScheduleManager::Cruise(_)) => self.calculate_cruise_vertical_speed(),
             Some(PressureScheduleManager::DescentInternal(_)) => {
-                let ext_diff_with_ldg_elev = self.get_ext_diff_with_ldg_elev().get::<foot>();
-                let target_vs_fpm = self.get_int_diff_with_ldg_elev().get::<foot>()
-                    * self
-                        .exterior_vertical_speed
-                        .output()
-                        .get::<foot_per_minute>()
+                let ext_diff_with_ldg_elev = self.get_ext_diff_with_ldg_elev();
+                let target_vs = self.get_int_diff_with_ldg_elev()
+                    * self.exterior_vertical_speed.output()
                     / ext_diff_with_ldg_elev;
-                Velocity::new::<foot_per_minute>(if ext_diff_with_ldg_elev <= 0. {
+                Velocity::new::<foot_per_minute>(if ext_diff_with_ldg_elev <= Length::default() {
                     0.
-                } else if target_vs_fpm <= C::MAX_DESCENT_RATE {
-                    C::MAX_DESCENT_RATE
-                } else if target_vs_fpm >= C::MAX_CLIMB_RATE_IN_DESCENT {
-                    C::MAX_CLIMB_RATE_IN_DESCENT
                 } else {
-                    target_vs_fpm.clamp(C::MAX_DESCENT_RATE, C::MAX_CLIMB_RATE_IN_DESCENT)
+                    target_vs
+                        .get::<foot_per_minute>()
+                        .clamp(C::MAX_DESCENT_RATE, C::MAX_CLIMB_RATE_IN_DESCENT)
                 })
             }
             Some(PressureScheduleManager::Abort(_)) => Velocity::new::<foot_per_minute>(
@@ -1009,7 +993,7 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
                     0.
                 },
             ),
-            None => Velocity::new::<foot_per_minute>(0.),
+            None => Velocity::default(),
         }
     }
 
@@ -1040,12 +1024,12 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
         const C: f64 = -3.3376e-9;
         const D: f64 = 4.5905e-4;
 
-        let target_aircraft_altitude_foot = (if self.fma_lateral_mode == 20 {
+        let target_aircraft_altitude = if self.fma_lateral_mode == 20 {
             self.cruise_altitude
         } else {
             self.exterior_flight_altitude
-        })
-        .get::<foot>();
+        };
+        let target_aircraft_altitude_foot = target_aircraft_altitude.get::<foot>();
 
         let target_cabin_delta_p_psi = Pressure::new::<psi>(
             A * target_aircraft_altitude_foot.powi(4)
@@ -1054,9 +1038,9 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
                 + D * target_aircraft_altitude_foot,
         );
 
-        let target_cabin_pressure = InternationalStandardAtmosphere::pressure_at_altitude(
-            Length::new::<foot>(target_aircraft_altitude_foot),
-        ) + target_cabin_delta_p_psi;
+        let target_cabin_pressure =
+            InternationalStandardAtmosphere::pressure_at_altitude(target_aircraft_altitude)
+                + target_cabin_delta_p_psi;
 
         self.calculate_altitude(target_cabin_pressure, self.reference_pressure)
     }
@@ -1067,16 +1051,9 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
         let target_vs = if self.fma_lateral_mode == 20 {
             // Calculate how long until aircraft reaches target altitude
             if self.exterior_vertical_speed.output() > Velocity::new::<foot_per_minute>(10.) {
-                let time_to_cruise_second = (self.cruise_altitude - self.exterior_flight_altitude)
-                    .get::<meter>()
-                    / self
-                        .exterior_vertical_speed
-                        .output()
-                        .get::<meter_per_second>();
-                let average_speed_meter_second = (self.cabin_target_altitude - self.cabin_altitude)
-                    .get::<meter>()
-                    / time_to_cruise_second;
-                Velocity::new::<meter_per_second>(average_speed_meter_second)
+                let time_to_cruise = (self.cruise_altitude - self.exterior_flight_altitude)
+                    / self.exterior_vertical_speed.output();
+                (self.cabin_target_altitude - self.cabin_altitude) / time_to_cruise
             } else {
                 Velocity::default()
             }
@@ -1089,14 +1066,10 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
                     * 1.04651e-5,
             );
             // This avoids the target vs overshooting the target altitude
-            if (self.cabin_altitude.get::<foot>()
-                + (target_velocity.get::<foot_per_minute>() * context.delta().as_secs_f64() / 60.))
-                > self.cabin_target_altitude.get::<foot>()
+            if (self.cabin_altitude + (target_velocity * context.delta_as_time()))
+                > self.cabin_target_altitude
             {
-                Velocity::new::<meter_per_second>(
-                    (self.cabin_target_altitude - self.cabin_altitude).get::<meter>()
-                        / context.delta().as_secs_f64(),
-                )
+                (self.cabin_target_altitude - self.cabin_altitude) / context.delta_as_time()
             } else {
                 target_velocity
             }
@@ -1168,7 +1141,7 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
             .abs()
             < 5000.
         {
-            if self.destination_qnh > Pressure::new::<hectopascal>(0.) {
+            if self.destination_qnh > Pressure::default() {
                 self.destination_qnh
             } else if let Some(alt) = altimeter_setting {
                 alt
@@ -1213,33 +1186,38 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
 
     // FWC warning signals
     fn is_diff_press_hi(&self) -> bool {
-        self.cabin_delta_pressure > Pressure::new::<psi>(Self::FWC_DIFF_PRESS_HI_LOWER_LIMIT)
-            && self.cabin_delta_pressure < Pressure::new::<psi>(Self::FWC_DIFF_PRESS_HI_UPPER_LIMIT)
+        self.cabin_delta_pressure.get::<psi>() > Self::FWC_DIFF_PRESS_HI_LOWER_LIMIT
+            && self.cabin_delta_pressure.get::<psi>() < Self::FWC_DIFF_PRESS_HI_UPPER_LIMIT
     }
 
     pub(super) fn is_excessive_alt(&self) -> bool {
-        self.cabin_altitude > Length::new::<foot>(C::EXCESSIVE_ALT_WARNING)
-            && self.cabin_altitude > (self.departure_elevation + Length::new::<foot>(1000.))
-            && self.cabin_altitude > (self.landing_elevation + Length::new::<foot>(1000.))
+        let elevation_diff = Length::new::<foot>(1000.);
+        self.cabin_altitude.get::<foot>() > C::EXCESSIVE_ALT_WARNING
+            && self.cabin_altitude > (self.departure_elevation + elevation_diff)
+            && self.cabin_altitude > (self.landing_elevation + elevation_diff)
     }
 
     fn is_excessive_differential_pressure(&self) -> bool {
-        self.cabin_delta_pressure > Pressure::new::<psi>(Self::FWC_EXCESSIVE_DIFF_PRESSURE)
+        self.cabin_delta_pressure.get::<psi>() > Self::FWC_EXCESSIVE_DIFF_PRESSURE
     }
 
     fn is_excessive_negative_differential_pressure(&self) -> bool {
-        self.cabin_delta_pressure < Pressure::new::<psi>(Self::FWC_EXCESSIVE_NEGATIVE_DIFF_PRESSURE)
+        self.cabin_delta_pressure.get::<psi>() < Self::FWC_EXCESSIVE_NEGATIVE_DIFF_PRESSURE
     }
 
     pub(super) fn is_excessive_residual_pressure(&self) -> bool {
-        self.cabin_delta_pressure > Pressure::new::<psi>(C::EXCESSIVE_RESIDUAL_PRESSURE_WARNING)
+        self.cabin_delta_pressure.get::<psi>() > C::EXCESSIVE_RESIDUAL_PRESSURE_WARNING
             && self.is_ground()
     }
 
     pub(super) fn is_low_diff_pressure(&self) -> bool {
-        self.cabin_delta_pressure < Pressure::new::<psi>(C::LOW_DIFFERENTIAL_PRESSURE_WARNING)
+        self.cabin_delta_pressure.get::<psi>() < C::LOW_DIFFERENTIAL_PRESSURE_WARNING
             && self.cabin_altitude > (self.landing_elevation + Length::new::<foot>(1500.))
-            && self.exterior_vertical_speed.output() < Velocity::new::<foot_per_minute>(-500.)
+            && self
+                .exterior_vertical_speed
+                .output()
+                .get::<foot_per_minute>()
+                < -500.
     }
 
     fn activate(&mut self) {
@@ -1251,7 +1229,7 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
     }
 
     fn ofv_open_allowed(&self) -> bool {
-        self.is_ground() || self.cabin_altitude < Length::new::<foot>(15000.)
+        self.is_ground() || self.cabin_altitude.get::<foot>() < 15000.
     }
 
     fn should_open_ofv(&self) -> bool {
@@ -1278,7 +1256,7 @@ impl<C: PressurizationConstants> CabinPressureControlSystemApplication<C> {
             && self
                 .outflow_valve_open_amount
                 .iter()
-                .all(|amount| *amount == Ratio::new::<percent>(100.))
+                .all(|amount| amount.get::<percent>() == 100.)
         {
             Velocity::default()
         } else {
@@ -1350,7 +1328,7 @@ impl<C: PressurizationConstants> SimulationElement for CabinPressureControlSyste
     fn read(&mut self, reader: &mut SimulatorReader) {
         let landing_elevation_word: Arinc429Word<Length> =
             reader.read_arinc429(&self.landing_elevation_id);
-        self.cruise_altitude = Length::new::<foot>(reader.read(&self.cruise_altitude_id));
+        self.cruise_altitude = reader.read(&self.cruise_altitude_id);
         self.landing_elevation = landing_elevation_word.normal_value().unwrap_or_default();
         self.destination_qnh = Pressure::new::<hectopascal>(reader.read(&self.destination_qnh_id));
         self.fma_lateral_mode = reader.read(&self.fma_lateral_mode_id);

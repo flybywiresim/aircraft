@@ -829,7 +829,7 @@ impl A380PressurizationSystem {
                 OutflowValveControlModule::new(
                     context,
                     1,
-                    vec![
+                    [
                         ElectricalBusType::DirectCurrent(1),       // 107PP
                         ElectricalBusType::DirectCurrentEssential, // 417PP
                     ],
@@ -837,7 +837,7 @@ impl A380PressurizationSystem {
                 OutflowValveControlModule::new(
                     context,
                     2,
-                    vec![
+                    [
                         ElectricalBusType::DirectCurrent(1),       // 107PP
                         ElectricalBusType::DirectCurrentEssential, // 417PP
                     ],
@@ -845,7 +845,7 @@ impl A380PressurizationSystem {
                 OutflowValveControlModule::new(
                     context,
                     3,
-                    vec![
+                    [
                         ElectricalBusType::DirectCurrent(2),       // 210PP
                         ElectricalBusType::DirectCurrentEssential, // 411PP
                     ],
@@ -853,7 +853,7 @@ impl A380PressurizationSystem {
                 OutflowValveControlModule::new(
                     context,
                     4,
-                    vec![
+                    [
                         ElectricalBusType::DirectCurrent(2),       // 210PP
                         ElectricalBusType::DirectCurrentEssential, // 411PP
                     ],
@@ -900,13 +900,10 @@ impl A380PressurizationSystem {
 
     fn ofv_total_open_area(&self) -> Ratio {
         // This can be area or ratio and then multiplied by the ofv area
-        let mut sum = Ratio::default();
-
-        for controller in self.ocsm.iter() {
-            sum += controller.outflow_valve_open_amount();
-        }
-
-        sum
+        self.ocsm
+            .iter()
+            .map(|controller| controller.outflow_valve_open_amount())
+            .sum()
     }
 }
 
@@ -3018,10 +3015,7 @@ mod tests {
                 .iterate(50)
                 .set_takeoff_power()
                 .iterate_with_delta(400, Duration::from_millis(50));
-            assert_eq!(
-                test_bed.aft_outflow_valve_open_amount(),
-                Ratio::new::<percent>(0.)
-            );
+            assert_eq!(test_bed.aft_outflow_valve_open_amount(), Ratio::default());
         }
 
         #[test]
@@ -3037,7 +3031,7 @@ mod tests {
                 .and()
                 .iterate(10);
 
-            assert!(test_bed.aft_outflow_valve_open_amount() > Ratio::new::<percent>(0.));
+            assert!(test_bed.aft_outflow_valve_open_amount() > Ratio::default());
         }
 
         #[test]
