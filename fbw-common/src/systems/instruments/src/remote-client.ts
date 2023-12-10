@@ -11,13 +11,18 @@ const EXCLUDED_DATA_STORAGE_KEYS = [
 ];
 
 export interface RemoteClientOptions {
-    websocketUrl: string,
+    websocketUrl: () => string,
     clientName: string,
     airframeName: string,
     instrumentsMetadataFile: string,
 }
 
+/**
+ * Client for connecting a gateway supporting the FBW remote bridge protocol
+ */
 export class RemoteClient {
+    private static readonly PROTOCOL_VERSION = 0;
+
     private ws: WebSocket | null = null;
 
     private readonly url: string;
@@ -48,7 +53,7 @@ export class RemoteClient {
     private aircraftDataUpdateInterval: number | null = null;
 
     constructor(options: RemoteClientOptions) {
-        this.url = options.websocketUrl;
+        this.url = options.websocketUrl();
         this.airframeName = options.airframeName;
         this.clientName = options.clientName;
 
@@ -113,20 +118,42 @@ export class RemoteClient {
 
     private onOpened(): void {
         if (!this.ws) {
-            return;
+
         }
-
-        this.sendMessage(this.createSigninMessage());
-
-        this.aircraftDataUpdateInterval = setInterval(() => {
-            this.sendMessage(this.createAircraftStatusMessage());
-        }, 5_000);
     }
 
     private onMessage(message: any): void {
         const msg: protocolV0.Messages = JSON.parse(message);
 
         switch (msg.type) {
+        case 'protocolGatewayIntroductionMessage':
+            if (msg.minProtocolVersion > RemoteClient.PROTOCOL_VERSION) {
+                console.error(
+                    `[RemoteClient](onMessage) Gateway server minProtocolVersion is too high (${msg.minProtocolVersion}). Disconnecting`,
+                );
+                this.cleanup();
+                break;
+            }
+
+            if (msg.maxProtocolVersion < RemoteClient.PROTOCOL_VERSION) {
+                console.error(
+                    `[RemoteClient](onMessage) Gateway server maxProtocolVersion is too low (${msg.minProtocolVersion}). Disconnecting`,
+                );
+                this.cleanup();
+                break;
+            }
+
+            console.log(`[RemoteClient] Connected to server '${msg.server}'. Logging in...`);
+
+            // If we are happy with the protocol versions the server supports, we send our login message and data store contents
+            this.sendMessage(this.createSigninMessage());
+
+            // TODO we should probably really only do this when asked to
+            this.aircraftDataUpdateInterval = setInterval(() => {
+                this.sendMessage(this.createAircraftStatusMessage());
+            }, 5_000);
+
+            break;
         case 'remoteRequestAircraftSignin':
             this.sendMessage(this.createSigninMessage());
             this.sendMessage(this.createAircraftStatusMessage());
@@ -370,8 +397,8 @@ export class RemoteClient {
 
         const json: { protocolVersion: number, data: protocolV0.InstrumentMetadata[]; } = JSON.parse(await response.text());
 
-        if (json.protocolVersion !== 0) {
-            throw new Error('[RemoteClient](fetchInstrumentsMetadata) protocolVersion of instruments metadata file is not 0');
+        if (json.protocolVersion !== RemoteClient.PROTOCOL_VERSION) {
+            throw new Error(`[RemoteClient](fetchInstrumentsMetadata) protocolVersion of instruments metadata file is not ${RemoteClient.PROTOCOL_VERSION}`);
         }
 
         return json.data;
