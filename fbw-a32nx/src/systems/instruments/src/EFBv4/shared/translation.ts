@@ -3,6 +3,7 @@
 
 /* eslint-disable no-console */
 
+import { MappedSubscribable, MutableSubscribable, Subject, Subscribable, Subscription } from '@microsoft/msfs-sdk';
 import { NXDataStore } from '@flybywiresim/fbw-sdk';
 
 // source language
@@ -65,7 +66,7 @@ const initMap = (map, ln, path: Array<string>) => {
 };
 
 // adds a key-value map to allLanguagesMap and initializes the map
-const init = (lang:string, data) => {
+const init = (lang: string, data): Map<string, string> => {
     const map = new Map<string, string>();
     allLanguagesMap.set(lang, map);
     initMap(allLanguagesMap.get(lang), data, []);
@@ -201,4 +202,72 @@ export function tt(key: string, lang: string): string {
     currentEfbLanguage = lang;
     currentLanguageMap = allLanguagesMap.get(currentEfbLanguage) || currentLanguageMap;
     return currentLanguageMap.get(key) || defaultLanguage.get(key) || key;
+}
+
+export class LocalizedString implements Subscribable<string>, Subscription {
+    isSubscribable = true as const;
+
+    isAlive = true;
+
+    isPaused = false;
+
+    canInitialNotify = true;
+
+    private readonly value = Subject.create(defaultLanguage.get(this.locKey));
+
+    private readonly nxDataStoreSubscriptionCancelFn: () => void;
+
+    private constructor(private readonly locKey: string) {
+        this.nxDataStoreSubscriptionCancelFn = NXDataStore.subscribe('EFB_LANGUAGE', (_, value) => {
+            this.value.set(
+                allLanguagesMap.get(value).get(this.locKey),
+            );
+        });
+    }
+
+    public static create(locKey: string): LocalizedString {
+        return new LocalizedString(locKey);
+    }
+
+    get(): string {
+        return this.value.get();
+    }
+
+    sub(handler: (value: string) => void, initialNotify?: boolean, paused?: boolean): Subscription {
+        return this.value.sub(handler, initialNotify, paused);
+    }
+
+    unsub(handler: (value: string) => void) {
+        return this.value.unsub(handler);
+    }
+
+    map<M>(fn: (input: string, previousVal?: M) => M, equalityFunc?: (a: M, b: M) => boolean): MappedSubscribable<M> {
+        return this.value.map(fn, equalityFunc);
+    }
+
+    public pipe(to: MutableSubscribable<any, string>, paused?: boolean): Subscription;
+
+    public pipe<M>(to: MutableSubscribable<any, M>, map: (fromVal: string, toVal: M) => M, paused?: boolean): Subscription;
+    public pipe<M>(to: MutableSubscribable<any, M | string> | MutableSubscribable<any, M>, arg2?: ((fromVal: string, toVal: M) => M) | boolean, arg3?: boolean): Subscription {
+        if (typeof arg2 === 'function') {
+            return this.value.pipe(to as MutableSubscribable<any, M>, arg2, arg3);
+        }
+
+        return this.value.pipe(to as MutableSubscribable<any, string>, arg2);
+    }
+
+    resume(_initialNotify?: boolean): this {
+        // noop
+        return this;
+    }
+
+    pause(): this {
+        // noop
+        return this;
+    }
+
+    destroy() {
+        this.isAlive = false;
+        this.nxDataStoreSubscriptionCancelFn();
+    }
 }
