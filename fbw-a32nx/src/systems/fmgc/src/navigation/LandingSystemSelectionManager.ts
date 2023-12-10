@@ -3,7 +3,7 @@
 
 /* eslint-disable no-underscore-dangle */
 
-import { UpdateThrottler, Airport, Approach, ApproachType, IlsNavaid, Runway, VhfNavaid } from '@flybywiresim/fbw-sdk';
+import { UpdateThrottler, Airport, Approach, ApproachType, IlsNavaid, Runway } from '@flybywiresim/fbw-sdk';
 import { FlightPhaseManager, getFlightPhaseManager } from '@fmgc/flightphase';
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/new/NavigationDatabaseService';
@@ -134,7 +134,7 @@ export class LandingSystemSelectionManager {
             return false;
         }
 
-        const frequencies = await NavigationDatabaseService.activeDatabase.backendDatabase.getIlsAtAirport(airport.ident, icao);
+        const frequencies = await NavigationDatabaseService.activeDatabase.backendDatabase.getIlsAtAirport(airport.ident, undefined, icao);
         const runwayFrequencies = frequencies.filter((it) => it.runwayIdent === runway.ident);
 
         for (const frequency of runwayFrequencies) {

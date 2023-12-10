@@ -216,14 +216,14 @@ export class MsfsBackend implements DataInterface {
     }
 
     /** @inheritdoc */
-    public async getIlsAtAirport(airportIdentifier: string, ident?: string): Promise<IlsNavaid[]> {
+    public async getIlsAtAirport(airportIdentifier: string, ident?: string, lsIcaoCode?: string): Promise<IlsNavaid[]> {
         const airport = await this.fetchMsfsAirport(airportIdentifier);
 
         if (!airport) {
             return [];
         }
 
-        return this.mapping.mapAirportIls(airport, ident);
+        return this.mapping.mapAirportIls(airport, ident, lsIcaoCode);
     }
 
     /** @inheritdoc */
@@ -292,7 +292,7 @@ export class MsfsBackend implements DataInterface {
                     const airportIcao = v.icao.slice(3, 7).trim();
                     const airport = await this.fetchMsfsAirport(airportIcao);
                     if (airport) {
-                        const ils = (await this.mapping.mapAirportIls(airport, v.icao)).find((ils) => ils.databaseId === v.icao);
+                        const ils = (await this.mapping.mapAirportIls(airport, ident, v.icao)).find((ils) => ils.databaseId === v.icao);
 
                         if (ils) {
                             results.set(v.icao, ils);

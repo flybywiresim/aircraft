@@ -282,7 +282,7 @@ export class MsfsMapping {
         return Array.from(wps.values()).filter((wp) => !!wp).map((wp) => this.mapFacilityToWaypoint(wp));
     }
 
-    public async mapAirportIls(msAirport: JS_FacilityAirport, ident?: string): Promise<IlsNavaid[]> {
+    public async mapAirportIls(msAirport: JS_FacilityAirport, ident?: string, lsIcaoCode?: string): Promise<IlsNavaid[]> {
         const icaoSet: Set<string> = new Set();
         const bearings = new Map<string, number>();
         const isTrueVsMagnetic = new Map<string, boolean>();
@@ -292,7 +292,10 @@ export class MsfsMapping {
 
         for (const appr of msAirport.approaches.filter(this.hasIlsFacility)) {
             const lastLeg = appr.finalLegs[appr.finalLegs.length - 1];
-            if (FacilityCache.validFacilityIcao(lastLeg.originIcao, 'V') && (!ident || ident === lastLeg.originIcao)) {
+            const matchesIdent = !ident || ident === FacilityCache.ident(lastLeg.originIcao);
+            const matchesIcao = !lsIcaoCode || lsIcaoCode === lastLeg.originIcao;
+
+            if (FacilityCache.validFacilityIcao(lastLeg.originIcao, 'V') && matchesIdent && matchesIcao) {
                 const icao = lastLeg.originIcao.trim();
                 // Only consider non-ILS approach if we've not got an ILS yet
                 if (appr.approachType !== MSApproachType.Ils && icaoSet.has(icao)) {
