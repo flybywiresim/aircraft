@@ -13,6 +13,7 @@ const fallbacks = [
 module.exports = {
     mode: 'jit',
     content: [
+        '../../../../../../fbw-a32nx/src/systems/instruments/src/EFBv4/**/*.{jsx,tsx}',
         './**/*.{jsx,tsx}',
     ],
     theme: {

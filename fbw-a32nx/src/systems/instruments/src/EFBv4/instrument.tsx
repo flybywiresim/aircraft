@@ -1,6 +1,6 @@
 import { EventBus, FSComponent, HEventPublisher } from '@microsoft/msfs-sdk';
-import { EFBSimvarPublisher } from './shared/EFBSimvarPublisher';
-import { EFBv4Root } from './EFBv4';
+import { EFBv4 } from '@flybywiresim/EFBv4';
+import { EFBSimvarPublisher } from './EFBSimvarPublisher';
 
 // eslint-disable-next-line camelcase
 class A32NX_EFBv4 extends BaseInstrument {
@@ -42,7 +42,7 @@ class A32NX_EFBv4 extends BaseInstrument {
 
         this.hEventPublisher.startPublish();
 
-        FSComponent.render(<EFBv4Root bus={this.bus} />, document.getElementById('EFBv4_CONTENT'));
+        FSComponent.render(<EFBv4 bus={this.bus} />, document.getElementById('EFBv4_CONTENT'));
 
         // Remove "instrument didn't load" text
         document.getElementById('EFBv4_CONTENT').querySelector(':scope > h1').remove();

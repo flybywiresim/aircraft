@@ -20,7 +20,7 @@ interface EfbProps extends ComponentProps {
     bus: EventBus;
 }
 
-export class EFBv4Root extends DisplayComponent<EfbProps> {
+export class EFBv4 extends DisplayComponent<EfbProps> {
     private readonly currentPage = Subject.create(PageNumber.Dashboard);
 
     onAfterRender(node: VNode): void {

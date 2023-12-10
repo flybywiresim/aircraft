@@ -1,6 +1,6 @@
 import { DisplayComponent, FSComponent, Subject, VNode, ComponentProps } from '@microsoft/msfs-sdk';
 import { Units } from '@flybywiresim/fbw-sdk';
-import { t } from '../../../EFB/translation';
+import { t } from '../../Components/LocalizedText';
 import { PageNumber } from '../../shared/common';
 import { Selector } from '../../Components/Selector';
 import { Pager, Pages } from '../Pages';
