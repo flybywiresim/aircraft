@@ -5,7 +5,7 @@ import { DisplayComponent, FSComponent, VNode, } from '@microsoft/msfs-sdk';
 export class NoseOutline extends DisplayComponent<{class: string}> {
     render(): VNode {
         return (
-            <svg width="675" height="297" viewBox="0 0 725 297" fill="none" class={this.props.class} xmlns="http://www.w3.org/2000/svg">
+            <svg width="675" height="297" viewBox="0 0 675 297" fill="none" class={this.props.class} xmlns="http://www.w3.org/2000/svg">
                 <g clipPath="url(#clip0_3568_1802)">
                     <path d="M172.299 281.1C184.899 282.9 210.199 285.3 222.799 286.4C292.199 292.2 304.199 292.1 333.899 293.3C499.999 300.2 675.899 295.1 675.899 295.1L673.299 25.6H392.699L368.199 27.2L374.999 0H370.799L351.499 27.9C351.499 27.9 285.999 30 222.399 46C179.199 56.9 136.799 74.1 116.399 101.5L90.5992 128.1C90.5992 128.1 1.8992 158.3 0.0991977 199.8C-0.200802 205.8 -7.1008 255.9 172.299 281.1Z" stroke="currentColor" strokeWidth="1.75" strokeMiterlimit="10" />
                     <path d="M97.9996 129.6L119.5 126.5L142 101.7V98.7L116.4 101.5L92.0996 126.5L97.9996 129.6Z" stroke="currentColor" strokeWidth="1.75" strokeMiterlimit="10" />
