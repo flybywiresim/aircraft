@@ -187,13 +187,11 @@ export class NXApiConnector {
         const retval: AtsuMessage[] = [];
 
         if (NXApiConnector.connected) {
-            if (NXApiConnector.updateCounter++ % 4 === 0) {
-                const status = NXApiConnector.createAircraftStatus();
-                if (status !== undefined) {
-                    const code = await Telex.update(status).then(() => AtsuStatusCodes.Ok).catch(() => AtsuStatusCodes.ProxyError);
-                    if (code !== AtsuStatusCodes.Ok) {
-                        return [AtsuStatusCodes.ComFailed, retval];
-                    }
+            const status = NXApiConnector.createAircraftStatus();
+            if (status !== undefined) {
+                const code = await Telex.update(status).then(() => AtsuStatusCodes.Ok).catch(() => AtsuStatusCodes.ProxyError);
+                if (code !== AtsuStatusCodes.Ok) {
+                    return [AtsuStatusCodes.ComFailed, retval];
                 }
             }
 
