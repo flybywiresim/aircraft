@@ -11,7 +11,7 @@ export class Icon extends DisplayComponent<IconProps> {
 
     render(): VNode {
         return (
-            <i class={`${this.props.class}bi-${this.props.icon} text-[${this.props.size}px] text-inherit}`} />
+            <i class={`${this.class}bi-${this.props.icon} text-[${this.props.size}px] text-inherit}`} />
         );
     }
 }
