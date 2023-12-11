@@ -15,6 +15,7 @@ import './Assets/bi-icons.css';
 import { Navbar } from './Components/Navbar';
 import { PageNumber } from './shared/common';
 import { MainPage } from './Pages/Pages';
+import { Statusbar } from './Components/Statusbar';
 
 interface EfbProps extends ComponentProps {
     bus: EventBus;
@@ -31,7 +32,7 @@ export class EFBv4 extends DisplayComponent<EfbProps> {
         return (
             <div class="h-screen w-screen bg-theme-body">
                 <div class="flex h-full w-full flex-row">
-                    <div class="fixed z-30 flex h-10 w-full items-center justify-between bg-theme-statusbar px-6 text-lg font-medium leading-none text-theme-text" />
+                    <Statusbar bus={this.props.bus} />
                     <Navbar activePage={this.currentPage} />
                     <MainPage activePage={this.currentPage} />
                 </div>
