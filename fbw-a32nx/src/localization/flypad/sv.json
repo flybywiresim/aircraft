@@ -229,7 +229,7 @@
       "AuthenticateWithNavigraph": "Autentisera med Navigraph",
       "GoToThirdPartyOptions": {
         "Button": "Inställningar för tredje part",
-        "Title": "Go to 3rd Party Options to link Navigraph account"
+        "Title": "Gå till 3rd Party Options för att länka Navigraph-kontot"
       },
       "InsufficientEnv": "Otillräcklig .env-fil",
       "IntoYourBrowserAndEnterTheCodeBelow": "i din webbläsare och ange koden nedan\n",
@@ -585,24 +585,24 @@
       "GsxPayloadEnabled": "GSX-nyttolastsynkronisering",
       "NavigraphAccountLink": {
         "Connected": "Ansluten",
-        "Link": "Link Account",
+        "Link": "Länka konto",
         "LoginPage": {
-          "Title": "Navigraph Account Login"
+          "Title": "Navigraph konto inloggning"
         },
-        "SettingTitle": "Navigraph Account Link",
+        "SettingTitle": "Länk till Navigraph-konto",
         "SubscriptionStatus": {
           "None": "Ingen",
           "Unlimited": "Navigraph Unlimited"
         },
-        "Unlink": "Unlink Account"
+        "Unlink": "Ta bort länken till kontot"
       },
-      "OverrideSimBriefUserID": "Override SimBrief User ID",
-      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Please check that you have correctly entered your SimBrief username or pilot ID.",
+      "OverrideSimBriefUserID": "Åsidosätta SimBrief användar-ID",
+      "PleaseCheckThatYouHaveCorrectlyEnteredYourSimBriefUsernameOrPilotId": "Kontrollera att du har angett ditt SimBrief-användarnamn eller pilot-ID korrekt.",
       "TT": {
-        "OverrideSimBriefUserID": "Alternative SimBrief user ID to use instead of the linked Navigraph Account"
+        "OverrideSimBriefUserID": "Alternativt SimBrief-användar-ID att använda istället för det länkade Navigraph-kontot"
       },
       "Title": "Inställningar för tredje part",
-      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "The override SimBrief PilotID has been validated and updated to"
+      "YourSimBriefPilotIdHasBeenValidatedAndUpdatedTo": "Det åsidosatta SimBrief PilotID har validerats och uppdaterats till"
     },
     "ThrottleConfig": {
       "Apply": "Spara",
