@@ -1,11 +1,11 @@
 import { DisplayComponent, FSComponent, Subject, VNode, ComponentProps } from '@microsoft/msfs-sdk';
 import { Units } from '@flybywiresim/fbw-sdk';
 import { t } from '../../Components/LocalizedText';
-import { PageNumber } from '../../shared/common';
+import { PageEnum } from '../../shared/common';
 import { Selector } from '../../Components/Selector';
 import { Pager, Pages } from '../Pages';
 import { NoseOutline } from '../../Assets/NoseOutline';
-import { Icon } from '../../Components/Icons';
+// import { Icon } from '../../Components/Icons';
 // import React from "react";
 // import {IconPlane} from "@tabler/icons";
 // import {Box, LightningFill, PeopleFill, Rulers, Speedometer2} from "react-bootstrap-icons";
@@ -13,50 +13,6 @@ import { Icon } from '../../Components/Icons';
 interface AircraftItemProps extends ComponentProps {
     getConvertedInfo: any,
     actualGrossWeight: Subject<number>,
-}
-
-// TODO: Implement Emoji (this is boilerplate to get it to compile)
-class IconPlane extends DisplayComponent<any> {
-    render(): VNode {
-        return (
-            <div />
-        );
-    }
-}
-class Box extends DisplayComponent<any> {
-    render(): VNode {
-        return (
-            <div />
-        );
-    }
-}
-class LightningFill extends DisplayComponent<any> {
-    render(): VNode {
-        return (
-            <div />
-        );
-    }
-}
-class PeopleFill extends DisplayComponent<any> {
-    render(): VNode {
-        return (
-            <div />
-        );
-    }
-}
-class Rulers extends DisplayComponent<any> {
-    render(): VNode {
-        return (
-            <div />
-        );
-    }
-}
-class Speedometer2 extends DisplayComponent<any> {
-    render(): VNode {
-        return (
-            <div />
-        );
-    }
 }
 
 export class Loadsheet extends DisplayComponent<any> {
@@ -239,18 +195,18 @@ export class Overview extends DisplayComponent<any> {
 }
 
 export class Dispatch extends DisplayComponent<any> {
-    private readonly activePage = Subject.create(PageNumber.OFP);
+    private readonly activePage = Subject.create(PageEnum.DispatchPage.OFP);
 
-    private readonly tabs: [page: PageNumber, name: String][] = [
+    private readonly tabs: [page: number, name: VNode][] = [
         // These will not update when language changes so keep that in mind.
         // TODO: Consider above message
-        [PageNumber.OFP, t('Dispatch.Ofp.Title')],
-        [PageNumber.Overview, t('Dispatch.Overview.Title')],
+        [PageEnum.DispatchPage.OFP, t('Dispatch.Ofp.Title')],
+        [PageEnum.DispatchPage.Overview, t('Dispatch.Overview.Title')],
     ]
 
     private readonly pages: Pages = [
-        [PageNumber.OFP, <Loadsheet />],
-        [PageNumber.Overview, <Overview />],
+        [PageEnum.DispatchPage.OFP, <Loadsheet />],
+        [PageEnum.DispatchPage.Overview, <Overview />],
     ]
 
     render(): VNode {

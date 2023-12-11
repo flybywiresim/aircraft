@@ -1,42 +1,43 @@
 import { ComponentProps, DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 // @ts-ignore
 import FbwTail from '../Assets/FBW-Tail.svg';
-import { PageNumber } from '../shared/common';
+import { PageEnum } from '../shared/common';
+import { Button } from './Button';
 
 interface NavbarProps extends ComponentProps {
-    activePage: Subject<PageNumber>
+    activePage: Subject<number>
 }
 
 interface NavButtonProps extends ComponentProps {
-    activePage: Subject<PageNumber>;
-    page: PageNumber;
+    activePage: Subject<number>;
+    page: number;
     class?: string;
     activeClass?: string;
     inactiveClass?: string;
 }
 
 interface NavIconProps extends ComponentProps {
-    activePage: Subject<PageNumber>;
-    page: PageNumber;
+    activePage: Subject<number>;
+    page: number;
 }
 
 export class Navbar extends DisplayComponent<NavbarProps> {
-    private readonly tabs: [page: PageNumber, icon: string][] = [
-        [PageNumber.Dispatch, 'clipboard'],
-        [PageNumber.Ground, 'truck'],
-        [PageNumber.Performance, 'calculator'],
-        [PageNumber.Navigation, 'compass'],
-        [PageNumber.ATC, 'broadcast-pin'],
-        [PageNumber.Failures, 'exclamation-diamond'],
-        [PageNumber.Checklists, 'journal'],
-        [PageNumber.Presets, 'sliders'],
+    private readonly tabs: [page: number, icon: string][] = [
+        [PageEnum.MainPage.Dispatch, 'clipboard'],
+        [PageEnum.MainPage.Ground, 'truck'],
+        [PageEnum.MainPage.Performance, 'calculator'],
+        [PageEnum.MainPage.Navigation, 'compass'],
+        [PageEnum.MainPage.ATC, 'broadcast-pin'],
+        [PageEnum.MainPage.Failures, 'exclamation-diamond'],
+        [PageEnum.MainPage.Checklists, 'journal'],
+        [PageEnum.MainPage.Presets, 'sliders'],
     ]
 
     render(): VNode {
         return (
             <div class="flex h-full w-32 shrink-0 flex-col justify-between py-6">
                 <div class="mt-9 flex flex-col items-center gap-4">
-                    <NavIcon page={PageNumber.Dashboard} activePage={this.props.activePage}>
+                    <NavIcon page={PageEnum.MainPage.Dashboard} activePage={this.props.activePage}>
                         <img class="w-[35px]" src={FbwTail} alt="FbwTail" />
                     </NavIcon>
                     {
@@ -50,7 +51,7 @@ export class Navbar extends DisplayComponent<NavbarProps> {
 
                 <div class="flex flex-col items-center">
                     <div class="my-4 h-1.5 w-14 rounded-full bg-theme-accent" />
-                    <NavIcon page={PageNumber.Settings} activePage={this.props.activePage}>
+                    <NavIcon page={PageEnum.MainPage.Settings} activePage={this.props.activePage}>
                         <i class="bi-gear text-[35px] text-inherit" />
                     </NavIcon>
                 </div>
@@ -60,12 +61,6 @@ export class Navbar extends DisplayComponent<NavbarProps> {
 }
 
 export class NavButton extends DisplayComponent<NavButtonProps> {
-    private readonly root = FSComponent.createRef<HTMLSpanElement>();
-
-    onAfterRender() {
-        this.root.instance.addEventListener('click', this.handlePressed);
-    }
-
     private handlePressed = () => this.props.activePage.set(this.props.page);
 
     private readonly activeClass = this.props.activePage.map((value) => {
@@ -76,9 +71,11 @@ export class NavButton extends DisplayComponent<NavButtonProps> {
 
     render(): VNode {
         return (
-            <div ref={this.root} class={this.activeClass}>
-                {this.props.children}
-            </div>
+            <Button onClick={this.handlePressed}>
+                <div class={this.activeClass}>
+                    {this.props.children}
+                </div>
+            </Button>
         );
     }
 }

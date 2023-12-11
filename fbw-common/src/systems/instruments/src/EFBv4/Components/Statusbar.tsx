@@ -7,16 +7,25 @@ import {
     Subscribable,
     ConsumerSubject,
     Subject,
-    Subscription,
     MappedSubject,
 } from '@microsoft/msfs-sdk';
-import React from 'react';
 import { EFBSimvars } from '../../../../../../../fbw-a32nx/src/systems/instruments/src/EFBv4/EFBSimvarPublisher';
 import { t } from './LocalizedText';
 import { LocalizedString } from '../shared/translation';
+import { Button } from './Button';
 
 interface StatusbarProps extends ComponentProps {
     bus: EventBus;
+}
+
+export class QuickControls extends DisplayComponent<any> {
+    render(): VNode {
+        return (
+            <div>
+                <i class="bi-gear text-inherit text-[26px]" />
+            </div>
+        );
+    }
 }
 
 export class Statusbar extends DisplayComponent<StatusbarProps> {
@@ -39,6 +48,8 @@ export class Statusbar extends DisplayComponent<StatusbarProps> {
     private readonly timeFormat: Subject<string> = Subject.create('24');
 
     private readonly timeDisplayed: Subscribable<string>;
+
+    private readonly simBridgeConnected: Subject<boolean> = Subject.create(false);
 
     constructor(props: StatusbarProps) {
         super(props);
@@ -125,6 +136,10 @@ export class Statusbar extends DisplayComponent<StatusbarProps> {
                 </div>
 
                 <div className="flex items-center gap-4">
+                    <QuickControls />
+                    <div>
+
+                    </div>
                 </div>
             </div>
         );

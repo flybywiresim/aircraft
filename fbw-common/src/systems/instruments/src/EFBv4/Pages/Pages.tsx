@@ -1,5 +1,5 @@
 import { ComponentProps, DisplayComponent, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import { PageNumber } from '../shared/common';
+import { PageEnum } from '../shared/common';
 import { Dashboard } from './Dashboard/Dashboard';
 import { Dispatch } from './Dispatch/Dispatch';
 import { Ground } from './Ground/Ground';
@@ -11,14 +11,14 @@ import { Checklists } from './Checklists/Checklists';
 import { Presets } from './Presets/Presets';
 import { Settings } from './Settings/Settings';
 
-export type Pages = [page: PageNumber, component: DisplayComponent<any>][]
+export type Pages = [page: number, component: DisplayComponent<any>][]
 
 interface MainPageProps extends ComponentProps {
-    activePage: Subject<PageNumber>;
+    activePage: Subject<number>;
 }
 
 interface PagerProps extends ComponentProps {
-    activePage: Subject<PageNumber>;
+    activePage: Subject<number>;
     pages: Pages;
     class?: string;
 }
@@ -28,17 +28,17 @@ interface PageWrapperProps extends ComponentProps {
 }
 
 export class MainPage extends DisplayComponent<MainPageProps> {
-    private readonly pages: [page: PageNumber, component: DisplayComponent<any>][] = [
-        [PageNumber.Dashboard, <Dashboard />],
-        [PageNumber.Dispatch, <Dispatch />],
-        [PageNumber.Ground, <Ground />],
-        [PageNumber.Performance, <Performance />],
-        [PageNumber.Navigation, <Navigation />],
-        [PageNumber.ATC, <ATC />],
-        [PageNumber.Failures, <Failures />],
-        [PageNumber.Checklists, <Checklists />],
-        [PageNumber.Presets, <Presets />],
-        [PageNumber.Settings, <Settings />],
+    private readonly pages: [page: number, component: DisplayComponent<any>][] = [
+        [PageEnum.MainPage.Dashboard, <Dashboard />],
+        [PageEnum.MainPage.Dispatch, <Dispatch />],
+        [PageEnum.MainPage.Ground, <Ground />],
+        [PageEnum.MainPage.Performance, <Performance />],
+        [PageEnum.MainPage.Navigation, <Navigation />],
+        [PageEnum.MainPage.ATC, <ATC />],
+        [PageEnum.MainPage.Failures, <Failures />],
+        [PageEnum.MainPage.Checklists, <Checklists />],
+        [PageEnum.MainPage.Presets, <Presets />],
+        [PageEnum.MainPage.Settings, <Settings />],
     ]
 
     render(): VNode {
@@ -49,7 +49,7 @@ export class MainPage extends DisplayComponent<MainPageProps> {
 }
 
 export class Pager extends DisplayComponent<PagerProps> {
-    private readonly pageVisibility = (page: PageNumber) => this.props.activePage.map((value) => value === page);
+    private readonly pageVisibility = (page: number) => this.props.activePage.map((value) => value === page);
 
     render(): VNode {
         return (

@@ -1,11 +1,10 @@
 import { ComponentProps, DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
-import { PageNumber } from '../shared/common';
 import { NavButton } from './Navbar';
 
 interface SelectorProps extends ComponentProps {
     class: string;
-    tabs: [page: PageNumber, name: String][];
-    activePage: Subject<PageNumber>;
+    tabs: [page: number, name: String][];
+    activePage: Subject<number>;
 }
 
 export class Selector extends DisplayComponent<SelectorProps> {

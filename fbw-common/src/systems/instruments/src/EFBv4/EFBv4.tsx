@@ -13,7 +13,7 @@ import './Assets/Slider.scss';
 import './Assets/bi-icons.css';
 
 import { Navbar } from './Components/Navbar';
-import { PageNumber } from './shared/common';
+import { PageEnum } from './shared/common';
 import { MainPage } from './Pages/Pages';
 import { Statusbar } from './Components/Statusbar';
 
@@ -22,7 +22,7 @@ interface EfbProps extends ComponentProps {
 }
 
 export class EFBv4 extends DisplayComponent<EfbProps> {
-    private readonly currentPage = Subject.create(PageNumber.Dashboard);
+    private readonly currentPage = Subject.create(PageEnum.MainPage.Dashboard);
 
     onAfterRender(node: VNode): void {
         SimVar.SetSimVarValue('L:A32NX_EFB_BRIGHTNESS', 'number', 0.99);
