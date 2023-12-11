@@ -3,7 +3,15 @@
 
 /* eslint-disable no-console */
 
-import { MappedSubscribable, MutableSubscribable, Subject, Subscribable, Subscription } from '@microsoft/msfs-sdk';
+import {
+    MappedSubject,
+    MappedSubscribable,
+    MutableSubscribable,
+    Subject,
+    Subscribable,
+    SubscribableUtils,
+    Subscription
+} from '@microsoft/msfs-sdk';
 import { NXDataStore } from '@flybywiresim/fbw-sdk';
 
 // source language
@@ -204,7 +212,7 @@ export function tt(key: string, lang: string): string {
     return currentLanguageMap.get(key) || defaultLanguage.get(key) || key;
 }
 
-export class LocalizedString implements Subscribable<string>, Subscription {
+export class LocalizedString implements MutableSubscribable<string>, Subscription {
     isSubscribable = true as const;
 
     isAlive = true;
@@ -213,16 +221,26 @@ export class LocalizedString implements Subscribable<string>, Subscription {
 
     canInitialNotify = true;
 
-    private readonly value = Subject.create(defaultLanguage.get(this.locKey));
+    efbLanguage = Subject.create('en');
+
+    private readonly locKey = Subject.create(this.locKeyProp);
+
+    private readonly value = Subject.create(defaultLanguage.get(this.locKey.get()));
 
     private readonly nxDataStoreSubscriptionCancelFn: () => void;
 
-    private constructor(private readonly locKey: string) {
+    private readonly updateCallback: MappedSubject<any, any>;
+
+    private constructor(private readonly locKeyProp: string) {
         this.nxDataStoreSubscriptionCancelFn = NXDataStore.subscribe('EFB_LANGUAGE', (_, value) => {
-            this.value.set(
-                allLanguagesMap.get(value).get(this.locKey),
-            );
+            this.efbLanguage.set(value);
         });
+
+        this.updateCallback = MappedSubject.create(([efbLanguage, locKey]) => {
+            this.value.set(
+                allLanguagesMap.get(efbLanguage).get(locKey),
+            );
+        }, this.efbLanguage, this.locKey);
     }
 
     public static create(locKey: string): LocalizedString {
@@ -269,5 +287,12 @@ export class LocalizedString implements Subscribable<string>, Subscription {
     destroy() {
         this.isAlive = false;
         this.nxDataStoreSubscriptionCancelFn();
+        this.updateCallback.destroy();
+    }
+
+    readonly isMutableSubscribable: true;
+
+    set(value: string): void {
+        this.locKey.set(value);
     }
 }

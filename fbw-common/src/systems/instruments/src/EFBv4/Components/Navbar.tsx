@@ -2,7 +2,6 @@ import { ComponentProps, DisplayComponent, FSComponent, Subject, VNode } from '@
 // @ts-ignore
 import FbwTail from '../Assets/FBW-Tail.svg';
 import { PageNumber } from '../shared/common';
-import { Icon } from './Icons';
 
 interface NavbarProps extends ComponentProps {
     activePage: Subject<PageNumber>
@@ -36,14 +35,14 @@ export class Navbar extends DisplayComponent<NavbarProps> {
     render(): VNode {
         return (
             <div class="flex h-full w-32 shrink-0 flex-col justify-between py-6">
-                <div class="mt-9 flex flex-col items-center space-y-4">
+                <div class="mt-9 flex flex-col items-center gap-4">
                     <NavIcon page={PageNumber.Dashboard} activePage={this.props.activePage}>
                         <img class="w-[35px]" src={FbwTail} alt="FbwTail" />
                     </NavIcon>
                     {
                         this.tabs.map(([page, icon]) => (
                             <NavIcon page={page} activePage={this.props.activePage}>
-                                <Icon icon={icon} size={35} class="" />
+                                <i class={`bi-${icon} text-inherit text-[35px]`} />
                             </NavIcon>
                         ))
                     }
@@ -52,7 +51,7 @@ export class Navbar extends DisplayComponent<NavbarProps> {
                 <div class="flex flex-col items-center">
                     <div class="my-4 h-1.5 w-14 rounded-full bg-theme-accent" />
                     <NavIcon page={PageNumber.Settings} activePage={this.props.activePage}>
-                        <Icon icon="gear" size={35} class="" />
+                        <i class="bi-gear text-[35px] text-inherit" />
                     </NavIcon>
                 </div>
             </div>

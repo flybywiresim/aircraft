@@ -92,44 +92,44 @@ class A320 extends DisplayComponent<AircraftItemProps> {
             <div class="mt-8 flex flex-row space-x-16">
                 <div class="flex flex-col space-y-8">
                     <InformationEntry title={t('Dispatch.Overview.Model')} info="A320-251N [A20N]">
-                        <Icon icon="airplane-fill" class="rotate-90" size={23} />
+                        <i class="bi-airplane-fill text-[23px] text-inherit" />
                     </InformationEntry>
 
                     <InformationEntry title={t('Dispatch.Overview.Range')} info={this.props.getConvertedInfo(3400, 'distance')}>
-                        <Icon icon="rulers" size={23} />
+                        <i class="bi-rulers text-[23px] text-inherit" />
                     </InformationEntry>
 
                     <InformationEntry title={t('Dispatch.Overview.ActualGW')} info={this.props.getConvertedInfo(this.props.actualGrossWeight.get(), 'weight')}>
-                        <Icon icon="box" size={23} />
+                        <i class="bi-box text-[23px] text-inherit" />
                     </InformationEntry>
 
                     <InformationEntry title={t('Dispatch.Overview.MZFW')} info={this.props.getConvertedInfo(64300, 'weight')}>
-                        <Icon icon="box" size={23} />
+                        <i class="bi-box text-[23px] text-inherit" />
                     </InformationEntry>
 
                     <InformationEntry title={t('Dispatch.Overview.MaximumPassengers')} info="174 passengers">
-                        <Icon icon="people-fill" size={23} />
+                        <i class="bi-people-fill text-[23px] text-inherit" />
                     </InformationEntry>
                 </div>
                 <div class="flex flex-col space-y-8">
                     <InformationEntry title={t('Dispatch.Overview.Engines')} info="CFM LEAP 1A-26">
-                        <Icon icon="lightning-fill" size={23} />
+                        <i class="bi-lightning-fill text-[23px] text-inherit" />
                     </InformationEntry>
 
                     <InformationEntry title={t('Dispatch.Overview.MMO')} info="0.82">
-                        <Icon icon="speedometer2" size={23} />
+                        <i class="bi-speedometer2 text-[23px] text-inherit" />
                     </InformationEntry>
 
                     <InformationEntry title={t('Dispatch.Overview.MTOW')} info={this.props.getConvertedInfo(79000, 'weight')}>
-                        <Icon icon="box" size={23} />
+                        <i class="bi-box text-[23px] text-inherit" />
                     </InformationEntry>
 
                     <InformationEntry title={t('Dispatch.Overview.MaximumFuelCapacity')} info={this.props.getConvertedInfo(23721, 'volume')}>
-                        <Icon icon="box" size={23} />
+                        <i class="bi-box text-[23px] text-inherit" />
                     </InformationEntry>
 
                     <InformationEntry title={t('Dispatch.Overview.MaximumCargo')} info={this.props.getConvertedInfo(9435, 'weight')}>
-                        <Icon icon="box" size={23} />
+                        <i class="bi-box text-[23px] text-inherit" />
                     </InformationEntry>
                 </div>
             </div>
@@ -143,44 +143,44 @@ class A380 extends DisplayComponent<AircraftItemProps> {
             <div class="mt-8 flex flex-row space-x-16">
                 <div class="flex flex-col space-y-8">
                     <InformationEntry title={t('Dispatch.Overview.Model')} info="A380-842 [A388]">
-                        <Icon icon="airplane-fill" size={23} />
+                        <i class="bi-airplane-fill text-[23px] text-inherit" />
                     </InformationEntry>
 
                     <InformationEntry title={t('Dispatch.Overview.Range')} info={this.props.getConvertedInfo(8000, 'distance')}>
-                        <Icon icon="rulers" size={23} />
+                        <i class="bi-rulers text-[23px] text-inherit" />
                     </InformationEntry>
 
                     <InformationEntry title={t('Dispatch.Overview.ActualGW')} info={this.props.getConvertedInfo(this.props.actualGrossWeight.get(), 'weight')}>
-                        <Icon icon="box" size={23} />
+                        <i class="bi-box text-[23px] text-inherit" />
                     </InformationEntry>
 
                     <InformationEntry title={t('Dispatch.Overview.MZFW')} info={this.props.getConvertedInfo(373000, 'weight')}>
-                        <Icon icon="box" size={23} />
+                        <i class="bi-box text-[23px] text-inherit" />
                     </InformationEntry>
 
                     <InformationEntry title={t('Dispatch.Overview.MaximumPassengers')} info="519 passengers">
-                        <Icon icon="people-fill" size={23} />
+                        <i class="bi-people-fill text-[23px] text-inherit" />
                     </InformationEntry>
                 </div>
                 <div class="flex flex-col space-y-8">
                     <InformationEntry title={t('Dispatch.Overview.Engines')} info="RR Trent 972B-84">
-                        <Icon icon="lightning-fill" size={23} />
+                        <i class="bi-lightning-fill text-[23px] text-inherit" />
                     </InformationEntry>
 
                     <InformationEntry title={t('Dispatch.Overview.MMO')} info="0.89">
-                        <Icon icon="speedometer2" size={23} />
+                        <i class="bi-speedometer2 text-[23px] text-inherit" />
                     </InformationEntry>
 
                     <InformationEntry title={t('Dispatch.Overview.MTOW')} info={this.props.getConvertedInfo(510000, 'weight')}>
-                        <Icon icon="box" size={23} />
+                        <i class="bi-box text-[23px] text-inherit" />
                     </InformationEntry>
 
                     <InformationEntry title={t('Dispatch.Overview.MaximumFuelCapacity')} info={this.props.getConvertedInfo(323546, 'volume')}>
-                        <Icon icon="box" size={23} />
+                        <i class="bi-box text-[23px] text-inherit" />
                     </InformationEntry>
 
                     <InformationEntry title={t('Dispatch.Overview.MaximumCargo')} info={this.props.getConvertedInfo(51400, 'weight')}>
-                        <Icon icon="box" size={23} />
+                        <i class="bi-box text-[23px] text-inherit" />
                     </InformationEntry>
                 </div>
             </div>
@@ -217,7 +217,7 @@ export class Overview extends DisplayComponent<any> {
                 <p>{this.airline}</p>
 
                 <div class="mt-6 flex items-center justify-center">
-                    <NoseOutline class="flip-horizontal -ml-96 mr-32 h-64 text-theme-text stroke-[1.75]" />
+                    <NoseOutline class="flip-horizontal -ml-96 mr-32 h-64 stroke-[1.75] text-theme-text" />
                 </div>
 
                 {this.airframe === 'A380_842'
