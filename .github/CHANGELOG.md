@@ -21,6 +21,7 @@
 1. [HOPPIE] Remove ATSU/AOC source checks - @auroraisluna (alepouna)
 1. [PFD] Graphical improvements and updates to the FMA - @BravoMike99 (bruno_pt99)
 1. [PFD] Hide '+' sign on V/S & FPA FMA if selected value is 0 - @BravoMike99 (bruno_pt99)
+1. [API] Added EX1 event handling for fbw.wasm c++ code - @frankkopp (Frank Kopp)
 
 ## 0.11.0
 
