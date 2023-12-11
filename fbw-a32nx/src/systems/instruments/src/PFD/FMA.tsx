@@ -1072,7 +1072,7 @@ class C1Cell extends ShowForSecondsComponent<CellProps> {
 
         return (
             <g>
-                <path ref={this.modeChangedPathRef} class="NormalStroke White" visibility="hidden" d="m99.87 1.8143v6.0476h-31.075l1e-6 -6.0476z" />
+                <path ref={this.modeChangedPathRef} class="NormalStroke White" visibility="hidden" d="m99.87 1.8143v6.0476h-31.025l1e-6 -6.0476z" />
                 <text class="FontMedium MiddleAlign Green" x="84.856567" y="6.9873109">{this.textSub}</text>
             </g>
         );
