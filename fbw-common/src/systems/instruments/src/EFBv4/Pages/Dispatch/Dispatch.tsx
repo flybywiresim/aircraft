@@ -92,7 +92,7 @@ class A320 extends DisplayComponent<AircraftItemProps> {
             <div class="mt-8 flex flex-row space-x-16">
                 <div class="flex flex-col space-y-8">
                     <InformationEntry title={t('Dispatch.Overview.Model')} info="A320-251N [A20N]">
-                        <IconPlane class="fill-current" size={23} stroke={1.5} strokeLinejoin="miter" />
+                        <Icon icon="airplane-fill" class="rotate-90" size={23} />
                     </InformationEntry>
 
                     <InformationEntry title={t('Dispatch.Overview.Range')} info={this.props.getConvertedInfo(3400, 'distance')}>
