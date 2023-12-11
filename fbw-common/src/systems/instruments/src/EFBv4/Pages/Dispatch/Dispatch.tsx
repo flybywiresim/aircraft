@@ -5,6 +5,7 @@ import { PageNumber } from '../../shared/common';
 import { Selector } from '../../Components/Selector';
 import { Pager, Pages } from '../Pages';
 import { NoseOutline } from '../../Assets/NoseOutline';
+import { Icon } from '../../Components/Icons';
 // import React from "react";
 // import {IconPlane} from "@tabler/icons";
 // import {Box, LightningFill, PeopleFill, Rulers, Speedometer2} from "react-bootstrap-icons";
@@ -95,40 +96,40 @@ class A320 extends DisplayComponent<AircraftItemProps> {
                     </InformationEntry>
 
                     <InformationEntry title={t('Dispatch.Overview.Range')} info={this.props.getConvertedInfo(3400, 'distance')}>
-                        <Rulers size={23} />
+                        <Icon icon="rulers" size={23} />
                     </InformationEntry>
 
                     <InformationEntry title={t('Dispatch.Overview.ActualGW')} info={this.props.getConvertedInfo(this.props.actualGrossWeight.get(), 'weight')}>
-                        <Box size={23} />
+                        <Icon icon="box" size={23} />
                     </InformationEntry>
 
                     <InformationEntry title={t('Dispatch.Overview.MZFW')} info={this.props.getConvertedInfo(64300, 'weight')}>
-                        <Box size={23} />
+                        <Icon icon="box" size={23} />
                     </InformationEntry>
 
                     <InformationEntry title={t('Dispatch.Overview.MaximumPassengers')} info="174 passengers">
-                        <PeopleFill size={23} />
+                        <Icon icon="people-fill" size={23} />
                     </InformationEntry>
                 </div>
                 <div class="flex flex-col space-y-8">
                     <InformationEntry title={t('Dispatch.Overview.Engines')} info="CFM LEAP 1A-26">
-                        <LightningFill size={23} />
+                        <Icon icon="lightning-fill" size={23} />
                     </InformationEntry>
 
                     <InformationEntry title={t('Dispatch.Overview.MMO')} info="0.82">
-                        <Speedometer2 size={23} />
+                        <Icon icon="speedometer2" size={23} />
                     </InformationEntry>
 
                     <InformationEntry title={t('Dispatch.Overview.MTOW')} info={this.props.getConvertedInfo(79000, 'weight')}>
-                        <Box size={23} />
+                        <Icon icon="box" size={23} />
                     </InformationEntry>
 
                     <InformationEntry title={t('Dispatch.Overview.MaximumFuelCapacity')} info={this.props.getConvertedInfo(23721, 'volume')}>
-                        <Box size={23} />
+                        <Icon icon="box" size={23} />
                     </InformationEntry>
 
                     <InformationEntry title={t('Dispatch.Overview.MaximumCargo')} info={this.props.getConvertedInfo(9435, 'weight')}>
-                        <Box size={23} />
+                        <Icon icon="box" size={23} />
                     </InformationEntry>
                 </div>
             </div>
@@ -142,44 +143,44 @@ class A380 extends DisplayComponent<AircraftItemProps> {
             <div class="mt-8 flex flex-row space-x-16">
                 <div class="flex flex-col space-y-8">
                     <InformationEntry title={t('Dispatch.Overview.Model')} info="A380-842 [A388]">
-                        <IconPlane class="fill-current" size={23} stroke={1.5} strokeLinejoin="miter" />
+                        <Icon icon="airplane-fill" size={23} />
                     </InformationEntry>
 
                     <InformationEntry title={t('Dispatch.Overview.Range')} info={this.props.getConvertedInfo(8000, 'distance')}>
-                        <Rulers size={23} />
+                        <Icon icon="rulers" size={23} />
                     </InformationEntry>
 
                     <InformationEntry title={t('Dispatch.Overview.ActualGW')} info={this.props.getConvertedInfo(this.props.actualGrossWeight.get(), 'weight')}>
-                        <Box size={23} />
+                        <Icon icon="box" size={23} />
                     </InformationEntry>
 
                     <InformationEntry title={t('Dispatch.Overview.MZFW')} info={this.props.getConvertedInfo(373000, 'weight')}>
-                        <Box size={23} />
+                        <Icon icon="box" size={23} />
                     </InformationEntry>
 
                     <InformationEntry title={t('Dispatch.Overview.MaximumPassengers')} info="519 passengers">
-                        <PeopleFill size={23} />
+                        <Icon icon="people-fill" size={23} />
                     </InformationEntry>
                 </div>
                 <div class="flex flex-col space-y-8">
                     <InformationEntry title={t('Dispatch.Overview.Engines')} info="RR Trent 972B-84">
-                        <LightningFill size={23} />
+                        <Icon icon="lightning-fill" size={23} />
                     </InformationEntry>
 
                     <InformationEntry title={t('Dispatch.Overview.MMO')} info="0.89">
-                        <Speedometer2 size={23} />
+                        <Icon icon="speedometer2" size={23} />
                     </InformationEntry>
 
                     <InformationEntry title={t('Dispatch.Overview.MTOW')} info={this.props.getConvertedInfo(510000, 'weight')}>
-                        <Box size={23} />
+                        <Icon icon="box" size={23} />
                     </InformationEntry>
 
                     <InformationEntry title={t('Dispatch.Overview.MaximumFuelCapacity')} info={this.props.getConvertedInfo(323546, 'volume')}>
-                        <Box size={23} />
+                        <Icon icon="box" size={23} />
                     </InformationEntry>
 
                     <InformationEntry title={t('Dispatch.Overview.MaximumCargo')} info={this.props.getConvertedInfo(51400, 'weight')}>
-                        <Box size={23} />
+                        <Icon icon="box" size={23} />
                     </InformationEntry>
                 </div>
             </div>
