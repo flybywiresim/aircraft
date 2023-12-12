@@ -13,9 +13,25 @@ import { EFBSimvars } from '../../../../../../../fbw-a32nx/src/systems/instrumen
 import { t } from './LocalizedText';
 import { LocalizedString } from '../shared/translation';
 import { Button } from './Button';
+import {PageEnum} from "../shared/common";
+import { Pager, Pages } from '../Pages/Pages';
+
+const BATTERY_LEVEL_WARNING = 8;
+const BATTERY_LEVEL_0 = 13;
+const BATTERY_LEVEL_1 = 37;
+const BATTERY_LEVEL_2 = 62;
+const BATTERY_LEVEL_3 = 87;
+const BATTERY_ICON_SIZE = 28;
 
 interface StatusbarProps extends ComponentProps {
     bus: EventBus;
+    batteryLevel: Subscribable<number>,
+    isCharging: Subscribable<boolean>,
+}
+
+interface BatteryProps extends ComponentProps {
+    batteryLevel: Subscribable<number>,
+    isCharging: Subscribable<boolean>,
 }
 
 export class QuickControls extends DisplayComponent<any> {
@@ -23,6 +39,23 @@ export class QuickControls extends DisplayComponent<any> {
         return (
             <div>
                 <i class="bi-gear text-inherit text-[26px]" />
+            </div>
+        );
+    }
+}
+
+export class Battery extends DisplayComponent<BatteryProps> {
+    private readonly activeClass = this.props.batteryLevel.map((value) => {
+        return `w-12 text-right ${value < BATTERY_LEVEL_WARNING ? 'text-utility-red' : 'text-theme-text'}`;
+    })
+
+    render(): VNode {
+        return (
+            <div class="flex items-center space-x-4">
+                <p class={this.activeClass}>
+                    {this.props.batteryLevel.map((value) => Math.round(value))}
+                    %
+                </p>
             </div>
         );
     }
@@ -50,6 +83,8 @@ export class Statusbar extends DisplayComponent<StatusbarProps> {
     private readonly timeDisplayed: Subscribable<string>;
 
     private readonly simBridgeConnected: Subject<boolean> = Subject.create(false);
+
+    private readonly wifiClass: Subscribable<string>;
 
     constructor(props: StatusbarProps) {
         super(props);
@@ -79,12 +114,14 @@ export class Statusbar extends DisplayComponent<StatusbarProps> {
 
             if (timezones === 'utc') {
                 return currentUTCString;
-            } else if (timezones === 'both') {
+            } else if (timezones === 'local') {
                 return currentLocalTimeString;
             } else {
                 return `${currentUTCString} / ${currentLocalTimeString}`;
             }
         }, this.currentUTC, this.currentLocalTime, this.timezones, this.timeFormat);
+
+        this.wifiClass = this.simBridgeConnected.map((value) => `bi-${value ? 'wifi' : 'wifi-off'} text-inherit text-[26px]`);
     }
 
     onAfterRender(node: VNode) {
@@ -131,15 +168,13 @@ export class Statusbar extends DisplayComponent<StatusbarProps> {
                     {this.dayOfMonth.map((value) => value.toFixed())}
                 </p>
 
-                <div className="absolute inset-x-0 mx-auto flex w-min flex-row items-center justify-center space-x-4">
+                <div class="absolute inset-x-0 mx-auto flex w-min flex-row items-center justify-center space-x-4">
                     <p>{this.timeDisplayed}</p>
                 </div>
 
-                <div className="flex items-center gap-4">
+                <div class="flex items-center gap-4">
                     <QuickControls />
-                    <div>
-
-                    </div>
+                    <i class={this.wifiClass} />
                 </div>
             </div>
         );
