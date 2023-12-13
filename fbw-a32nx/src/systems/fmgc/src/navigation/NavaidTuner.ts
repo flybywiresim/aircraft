@@ -625,7 +625,7 @@ export class NavaidTuner {
                 mmrStatus.ident = ils.ident;
                 mmrStatus.frequency = ils.frequency;
                 mmrStatus.backcourse = false;
-                mmrStatus.slope = ils.gsSlope;
+                mmrStatus.slope = ils.gsSlope ?? null;
             }
         }
     }

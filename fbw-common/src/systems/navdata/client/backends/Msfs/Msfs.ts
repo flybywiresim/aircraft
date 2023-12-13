@@ -290,13 +290,11 @@ export class MsfsBackend implements DataInterface {
                 .filter((v) => v.type === VorType.ILS)
                 .map(async (v) => {
                     const airportIcao = v.icao.slice(3, 7).trim();
+                    // I'm aware that we might be fetching the same airport multiple times for different VORs,
+                    // but there is a cache in place, so it should be fine
                     const airport = await this.fetchMsfsAirport(airportIcao);
                     if (airport) {
-                        const ils = (await this.mapping.mapAirportIls(airport, ident, v.icao)).find((ils) => ils.databaseId === v.icao);
-
-                        if (ils) {
-                            results.set(v.icao, ils);
-                        }
+                        results.set(v.icao, await this.mapping.mapVorIls(airport, v));
                     }
                 }));
         }

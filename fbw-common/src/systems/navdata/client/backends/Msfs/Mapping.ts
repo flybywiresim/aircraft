@@ -283,77 +283,114 @@ export class MsfsMapping {
     }
 
     public async mapAirportIls(msAirport: JS_FacilityAirport, ident?: string, lsIcaoCode?: string): Promise<IlsNavaid[]> {
-        const icaoSet: Set<string> = new Set();
-        const bearings = new Map<string, number>();
-        const isTrueVsMagnetic = new Map<string, boolean>();
-        const runways = new Map<string, string>();
-        const slopes = new Map<string, number>();
         const icaoCode = this.getIcaoCodeFromAirport(msAirport);
+        const vorApproachParings = new Map<string, JS_Approach>();
 
-        for (const appr of msAirport.approaches.filter(this.hasIlsFacility)) {
+        for (const appr of msAirport.approaches.filter(this.approachHasLandingSystem)) {
             const lastLeg = appr.finalLegs[appr.finalLegs.length - 1];
-            const matchesIdent = !ident || ident === FacilityCache.ident(lastLeg.originIcao);
-            const matchesIcao = !lsIcaoCode || lsIcaoCode === lastLeg.originIcao;
+
+            const matchesIdent = !ident || FacilityCache.ident(lastLeg.originIcao) === ident;
+            const matchesIcao = !lsIcaoCode || lastLeg.originIcao === lsIcaoCode;
 
             if (FacilityCache.validFacilityIcao(lastLeg.originIcao, 'V') && matchesIdent && matchesIcao) {
-                const icao = lastLeg.originIcao.trim();
                 // Only consider non-ILS approach if we've not got an ILS yet
-                if (appr.approachType !== MSApproachType.Ils && icaoSet.has(icao)) {
+                if (appr.approachType !== MSApproachType.Ils && vorApproachParings.has(lastLeg.originIcao)) {
                     continue;
                 }
 
-                icaoSet.add(lastLeg.originIcao);
-
-                if (lastLeg.type === MsLegType.TF) {
-                    // eslint-disable-next-line no-await-in-loop
-                    bearings.set(icao, await this.computeFinalApproachCourse(appr) ?? -1);
-                    isTrueVsMagnetic.set(icao, true);
-                } else {
-                    bearings.set(icao, lastLeg.course);
-                    isTrueVsMagnetic.set(icao, lastLeg.trueDegrees);
-                }
-
-                runways.set(icao, `RW${appr.runwayNumber.toFixed(0).padStart(2, '0')}${this.mapRunwayDesignator(appr.runwayDesignator)}`);
-                if (Math.abs(lastLeg.verticalAngle) > Number.EPSILON) {
-                    slopes.set(icao, lastLeg.verticalAngle - 360);
-                }
+                vorApproachParings.set(lastLeg.originIcao, appr);
             }
         }
 
-        // TODO try guess cat from runway frequencies
-
-        const icaos = Array.from(icaoSet);
-
+        const icaos = Array.from(vorApproachParings.keys());
         const ils = await this.cache.getFacilities(icaos, LoadType.Vor);
 
-        return Array.from(ils.values()).filter((ils) => !!ils).map((ils) => {
-            const icao = ils.icao.trim();
-            const bearing = bearings.get(icao);
-            const isTrue = isTrueVsMagnetic.get(icao);
-            let locBearing = -1;
-            if (Number.isFinite(bearing) && bearing !== -1) {
-                locBearing = isTrue ? this.trueToMagnetic(bearing!, -ils.magneticVariation) : bearing!;
-            }
-
-            return {
-                sectionCode: SectionCode.Airport,
-                subSectionCode: AirportSubsectionCode.LocalizerGlideSlope,
-                databaseId: ils.icao,
-                icaoCode,
-                ident: FacilityCache.ident(ils.icao),
-                frequency: ils.freqMHz,
-                category: LsCategory.None,
-                runwayIdent: runways.get(icao)!,
-                locLocation: { lat: ils.lat, long: ils.lon },
-                locBearing,
-                stationDeclination: ils.magneticVariation,
-                gsSlope: slopes.get(icao),
-            };
-        });
+        return Promise.all(Array.from(ils.values())
+            .filter((ils) => !!ils)
+            .map((ils) => this.mapLandingSystem(ils, icaoCode, vorApproachParings.get(ils.icao))));
     }
 
-    private hasIlsFacility(approach: JS_Approach): boolean {
+    public async mapVorIls(msAirport: JS_FacilityAirport, msVor: JS_FacilityVOR): Promise<IlsNavaid> {
+        const icaoCode = this.getIcaoCodeFromAirport(msAirport);
+        const approaches = this.findApproachesWithLandingSystem(msAirport, msVor.icao);
+        const approach = this.selectApproach(approaches);
+
+        return this.mapLandingSystem(msVor, icaoCode, approach);
+    }
+
+    private selectApproach(approaches: JS_Approach[]): JS_Approach | undefined {
+        if (approaches.length > 1) {
+            const ilsApproach = approaches.find((appr) => appr.approachType === MSApproachType.Ils);
+            if (ilsApproach) {
+                return ilsApproach;
+            }
+        }
+
+        return approaches[0];
+    }
+
+    private findApproachesWithLandingSystem(msAirport: JS_FacilityAirport, lsIcaoCode: string): JS_Approach[] {
+        return msAirport.approaches
+            .filter(this.approachHasLandingSystem)
+            .map((appr) => ([appr, appr.finalLegs[appr.finalLegs.length - 1]] as const))
+            .filter(([_, lastLeg]) => FacilityCache.validFacilityIcao(lastLeg.originIcao, 'V') && lastLeg.originIcao === lsIcaoCode)
+            .map(([appr, _]) => appr);
+    }
+
+    private async mapLandingSystem(ls: JS_FacilityVOR, icaoCode: string, approach: JS_Approach | undefined): Promise<IlsNavaid> {
+        let locBearing = -1;
+        let runwayIdent = '';
+        let gsSlope = undefined;
+        if (approach) {
+            runwayIdent = `RW${approach.runwayNumber.toFixed(0).padStart(2, '0')}${this.mapRunwayDesignator(approach.runwayDesignator)}`;
+            gsSlope = this.approachHasGlideslope(approach) ? approach.finalLegs[approach.finalLegs.length - 1].verticalAngle - 360 : undefined;
+
+            const [bearing, bearingIsTrue] = await this.getFinalApproachCourse(approach);
+            if (bearing !== undefined) {
+                locBearing = bearingIsTrue ? this.trueToMagnetic(bearing, -ls.magneticVariation) : bearing;
+            }
+        }
+
+        return {
+            sectionCode: SectionCode.Airport,
+            subSectionCode: AirportSubsectionCode.LocalizerGlideSlope,
+            databaseId: ls.icao,
+            icaoCode,
+            ident: FacilityCache.ident(ls.icao),
+            frequency: ls.freqMHz,
+            // TODO try guess cat from runway frequencies
+            category: LsCategory.None,
+            runwayIdent,
+            locLocation: { lat: ls.lat, long: ls.lon },
+            locBearing,
+            stationDeclination: ls.magneticVariation,
+            gsSlope,
+        };
+    }
+
+    private approachHasGlideslope(approach: JS_Approach): boolean {
+        // TODO Check for LDA/SDF approaches whether they actually have a glideslope, how?
+        return [MSApproachType.Ils, MSApproachType.Lda, MSApproachType.Sdf].includes(approach.approachType);
+    }
+
+    private approachHasLandingSystem(approach: JS_Approach): boolean {
         return [MSApproachType.Loc, MSApproachType.Ils, MSApproachType.Lda, MSApproachType.Sdf].includes(approach.approachType);
+    }
+
+    private async getFinalApproachCourse(approach: JS_Approach): Promise<[bearing: number | undefined, isTrue: boolean]> {
+        const lastLeg = approach.finalLegs[approach.finalLegs.length - 1];
+
+        // Check this first. Localizer based procedures should have the approach course coded on all approach legs, even TF legs
+        if (Math.abs(lastLeg.course) > Number.EPSILON) {
+            return [lastLeg.course, lastLeg.trueDegrees];
+        } if (lastLeg.type === MsLegType.TF) {
+            const course = await this.computeFinalApproachCourse(approach);
+            if (course !== undefined) {
+                return [course, true];
+            }
+        }
+
+        return [undefined, false];
     }
 
     private async computeFinalApproachCourse(approach: JS_Approach): Promise<number | undefined> {
