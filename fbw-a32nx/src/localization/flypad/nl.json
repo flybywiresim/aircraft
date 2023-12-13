@@ -185,6 +185,7 @@
       "Title": "Pushback"
     },
     "Services": {
+      "AirStarterUnit": "Air Starter Unit",
       "BaggageTruck": "Bagage Truck",
       "CateringTruck": "Catering Truck",
       "Cones": "Veiligheidskegels",
@@ -622,7 +623,8 @@
       "ReverserOnAxis": "Reverse op as",
       "SaveAndApply": "Opslaan en toepassen",
       "SetFromThrottle": "Zet van throttle",
-      "ThrottleConfigurationReset": "Throttle configuratie herstellen"
+      "ThrottleConfigurationReset": "Throttle configuratie herstellen",
+      "TogaOnAxis": "TogaOnAxis"
     },
     "Title": "Instellingen",
     "Unrealistic": "Onrealistisch",
