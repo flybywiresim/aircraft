@@ -3,12 +3,12 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
+import { EfisSide, EfisVectorsGroup, GenericDataListenerSync } from '@flybywiresim/fbw-sdk';
+
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
-import { EfisSide, EfisVectorsGroup } from '@shared/NavigationDisplay';
 import { PathVector, pathVectorLength, pathVectorValid } from '@fmgc/guidance/lnav/PathVector';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { ArmedLateralMode, isArmed, LateralMode } from '@shared/autopilot';
-import { GenericDataListenerSync } from '@flybywiresim/fbw-sdk';
 
 const UPDATE_TIMER = 2_500;
 
