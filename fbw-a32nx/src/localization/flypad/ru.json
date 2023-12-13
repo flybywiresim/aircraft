@@ -185,6 +185,7 @@
       "Title": "Откат"
     },
     "Services": {
+      "AirStarterUnit": "Air Starter Unit",
       "BaggageTruck": "Багажный грузовик",
       "CateringTruck": "Кейтеринг грузовик",
       "Cones": "Предохранительные конусы",
@@ -622,7 +623,8 @@
       "ReverserOnAxis": "Обратная тяга на оси",
       "SaveAndApply": "Сохранить и применить",
       "SetFromThrottle": "Установить из рычагов",
-      "ThrottleConfigurationReset": "Сбросить конфигурацию рычагов"
+      "ThrottleConfigurationReset": "Сбросить конфигурацию рычагов",
+      "TogaOnAxis": "TogaOnAxis"
     },
     "Title": "Настройки",
     "Unrealistic": "Не реалистично",

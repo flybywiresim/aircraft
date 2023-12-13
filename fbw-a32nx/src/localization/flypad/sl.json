@@ -185,6 +185,7 @@
       "Title": "Vlačilec"
     },
     "Services": {
+      "AirStarterUnit": "Air Starter Unit",
       "BaggageTruck": "Tovornjak za prtljago",
       "CateringTruck": "Gostinski tovornjak",
       "Cones": "Varnostni stožci",
@@ -622,7 +623,8 @@
       "ReverserOnAxis": "Vzvratni pogon na osi",
       "SaveAndApply": "Shrani in potrdi",
       "SetFromThrottle": "Nastavi iz plinske ročke",
-      "ThrottleConfigurationReset": "Ponastavitev konfiguracije plinske ročke"
+      "ThrottleConfigurationReset": "Ponastavitev konfiguracije plinske ročke",
+      "TogaOnAxis": "TogaOnAxis"
     },
     "Title": "Nastavitve",
     "Unrealistic": "Nerealistično",
