@@ -3,14 +3,15 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { GenericDataListenerSync } from '@flybywiresim/fbw-sdk';
+import { EfisSide, EfisVectorsGroup, GenericDataListenerSync } from '@flybywiresim/fbw-sdk';
+
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
-import { EfisSide, EfisVectorsGroup } from '@shared/NavigationDisplay';
 import { PathVector, pathVectorLength, pathVectorValid } from '@fmgc/guidance/lnav/PathVector';
 import { ArmedLateralMode, isArmed, LateralMode } from '@shared/autopilot';
 import { FlightPlanIndex } from '@fmgc/flightplanning/new/FlightPlanManager';
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { FlightPlan } from '@fmgc/flightplanning/new/plans/FlightPlan';
+import { EfisInterface } from '@fmgc/efis/EfisInterface';
 
 const UPDATE_TIMER = 2_500;
 
@@ -22,6 +23,7 @@ export class EfisVectors {
     constructor(
         private readonly flightPlanService: FlightPlanService,
         private guidanceController: GuidanceController,
+        private efisInterface: EfisInterface,
     ) {
     }
 
@@ -124,16 +126,16 @@ export class EfisVectors {
             this.transmitFlightPlan(plan, EfisVectorsGroup.TEMPORARY);
             break;
         default:
-            this.transmitFlightPlan(plan, EfisVectorsGroup.SECONDARY);
+            if (this.efisInterface.shouldTransmitSecondary()) {
+                this.transmitFlightPlan(plan, EfisVectorsGroup.SECONDARY);
+            } else {
+                this.transmitGroup([], EfisVectorsGroup.SECONDARY);
+            }
             break;
         }
     }
 
     private transmitFlightPlan(plan: FlightPlan, mainGroup: EfisVectorsGroup, missedApproachGroup = mainGroup, alternateGroup = mainGroup) {
-        const planCentreIndex = SimVar.GetSimVarValue('L:A32NX_SELECTED_WAYPOINT_INDEX', 'number');
-        const planCentreFpIndex = SimVar.GetSimVarValue('L:A32NX_SELECTED_WAYPOINT_FP_INDEX', 'number');
-        const planCentreInAlternate = SimVar.GetSimVarValue('L:A32NX_SELECTED_WAYPOINT_IN_ALTERNATE', 'Bool');
-
         if (!this.guidanceController.hasGeometryForFlightPlan(plan.index)) {
             this.transmitGroup([], mainGroup);
 
@@ -154,12 +156,9 @@ export class EfisVectors {
 
         const vectors = geometry.getAllPathVectors(plan.activeLegIndex).filter((it) => EfisVectors.isVectorReasonable(it));
 
-        const planIsBeingScrolledInto = planCentreFpIndex === plan.index;
-
         // ACTIVE missed
 
-        const missedApproachInView = plan.firstMissedApproachLegIndex - planCentreIndex < 4;
-        const transmitMissed = planIsBeingScrolledInto && !planCentreInAlternate && missedApproachInView;
+        const transmitMissed = this.efisInterface.shouldTransmitMissed(plan.index);
 
         if (transmitMissed) {
             const missedVectors = geometry.getAllPathVectors(0, true).filter((it) => EfisVectors.isVectorReasonable(it));
@@ -177,7 +176,7 @@ export class EfisVectors {
 
         // ALTN
 
-        const transmitAlternate = plan.alternateDestinationAirport && plan.alternateFlightPlan.legCount > 0;
+        const transmitAlternate = this.efisInterface.shouldTransmitAlternate(plan.index);
 
         if (transmitAlternate) {
             const alternateGeometry = this.guidanceController.getGeometryForFlightPlan(plan.index, true);
@@ -187,8 +186,7 @@ export class EfisVectors {
 
                 // ALTN missed
 
-                const altnMissedApproachInView = plan.alternateFlightPlan.firstMissedApproachLegIndex - planCentreIndex < 4;
-                const transmitAlternateMissed = planIsBeingScrolledInto && planCentreInAlternate && altnMissedApproachInView;
+                const transmitAlternateMissed = this.efisInterface.shouldTransmitAlternateMissed(plan.index);
 
                 if (transmitAlternateMissed) {
                     const missedVectors = alternateGeometry.getAllPathVectors(0, true).filter((it) => EfisVectors.isVectorReasonable(it));

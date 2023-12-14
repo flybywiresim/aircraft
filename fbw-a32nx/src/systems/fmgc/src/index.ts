@@ -5,6 +5,7 @@
 import { ApproachType, ApproachUtils } from '@flybywiresim/fbw-sdk';
 import { DataManager } from '@fmgc/flightplanning/new/DataManager';
 import { CoRouteUplinkAdapter } from '@fmgc/flightplanning/new/uplink/CoRouteUplinkAdapter';
+import { EfisInterface } from '@fmgc/efis/EfisInterface';
 import { FlightPlanService } from './flightplanning/new/FlightPlanService';
 import { NavigationDatabase, NavigationDatabaseBackend } from './NavigationDatabase';
 import { FlightPhaseManager, getFlightPhaseManager } from './flightphase';
@@ -41,6 +42,7 @@ export {
     initFmgcLoop,
     updateFmgcLoop,
     recallMessageById,
+    EfisInterface,
     EfisSymbols,
     DescentPathBuilder,
     Navigation,

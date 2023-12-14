@@ -103,10 +103,10 @@ class CDUInitPage {
                     (value) => {
                         if (value != null) {
                             mcdu.costIndex = value;
-                            mcdu.costIndexSet = true;
+                            // mcdu.costIndexSet = true;
                         } else {
-                            mcdu.costIndexSet = false;
-                            mcdu.costIndex = 0;
+                            // mcdu.costIndexSet = false;
+                            mcdu.costIndex = undefined;
                         }
                         CDUInitPage.ShowPage1(mcdu);
                     }
@@ -119,13 +119,13 @@ class CDUInitPage {
                 cruiseFlTempSeparator.updateAttributes(Column.amber);
 
                 //This is done so pilot enters a FL first, rather than using the computed one
-                if (mcdu._cruiseEntered && mcdu._cruiseFlightLevel) {
-                    cruiseFl.update("FL" + mcdu._cruiseFlightLevel.toFixed(0).padStart(3, "0"), Column.cyan);
+                if (mcdu.flightPlanService.active.performanceData.cruiseFlightLevel) {
+                    cruiseFl.update("FL" + mcdu.flightPlanService.active.performanceData.cruiseFlightLevel.toFixed(0).padStart(3, "0"), Column.cyan);
                     if (mcdu.cruiseTemperature) {
                         cruiseTemp.update(mcdu.cruiseTemperature.toFixed(0) + "°", Column.cyan);
                         cruiseFlTempSeparator.updateAttributes(Column.cyan);
                     } else {
-                        cruiseTemp.update(mcdu.tempCurve.evaluate(mcdu._cruiseFlightLevel).toFixed(0) + "°", Column.cyan, Column.small);
+                        cruiseTemp.update(mcdu.tempCurve.evaluate(mcdu.flightPlanService.active.performanceData.cruiseFlightLevel).toFixed(0) + "°", Column.cyan, Column.small);
                         cruiseFlTempSeparator.updateAttributes(Column.cyan, Column.small);
                     }
                 }
@@ -210,6 +210,9 @@ class CDUInitPage {
                             console.log('SimBrief data uplinked.');
 
                             mcdu.flightPlanService.uplinkInsert();
+
+                            const plan = mcdu.flightPlanService.active;
+                            mcdu.updateFlightNo(plan.flightNumber);
 
                             if (mcdu.page.Current === mcdu.page.InitPageA) {
                                 CDUInitPage.ShowPage1(mcdu);

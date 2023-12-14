@@ -2,8 +2,8 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { FMMessage, FMMessageTypes } from '@shared/FmMessages';
-import { ConfirmationNode, Trigger } from '@flybywiresim/fbw-sdk';
+import { FMMessage, FMMessageTypes, ConfirmationNode, Trigger } from '@flybywiresim/fbw-sdk';
+
 import { FMMessageSelector, FMMessageUpdate } from './FmsMessages';
 
 /**

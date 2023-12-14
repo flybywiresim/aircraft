@@ -8,7 +8,7 @@ import {
     PseudoWaypointSequencingAction,
 } from '@fmgc/guidance/PseudoWaypoint';
 import { VnavConfig, VnavDescentMode } from '@fmgc/guidance/vnav/VnavConfig';
-import { NdSymbolTypeFlags } from '@shared/NavigationDisplay';
+import { NdSymbolTypeFlags } from '@flybywiresim/fbw-sdk';
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';

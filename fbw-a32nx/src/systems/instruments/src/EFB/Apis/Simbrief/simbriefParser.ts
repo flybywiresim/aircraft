@@ -35,23 +35,13 @@ export const getSimbriefData = (navigraphUsername: string, overrideSimbriefID: s
 };
 
 export const simbriefDataParser = (simbriefJson: any): ISimbriefData => {
-    const { general } = simbriefJson;
-    const { navlog } = simbriefJson;
-    const { origin } = simbriefJson;
-    const { aircraft } = simbriefJson;
-    const { destination } = simbriefJson;
-    const { times } = simbriefJson;
-    const { weights } = simbriefJson;
-    const { fuel } = simbriefJson;
-    const { params } = simbriefJson;
+    const { general, navlog, origin, aircraft, destination, times, weights, fuel, params, files, text, weather, atc } = simbriefJson;
     const alternate = Array.isArray(simbriefJson.alternate) ? simbriefJson.alternate[0] : simbriefJson.alternate;
-    const { files } = simbriefJson;
-    const { text } = simbriefJson;
-    const { weather } = simbriefJson;
 
     return {
         airline: general.icao_airline,
         flightNumber: general.flight_number,
+        callsign: atc.callsign,
         aircraftReg: aircraft.reg,
         cruiseAltitude: general.initial_altitude,
         costIndex: general.costindex,

@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable camelcase */
-import { distanceTo, placeBearingDistance } from 'msfs-geo';
+import { bearingTo, distanceTo, placeBearingDistance } from 'msfs-geo';
 import {
     AirportCommunication,
     Airway,
@@ -282,22 +282,40 @@ export class MsfsMapping {
         return Array.from(wps.values()).filter((wp) => !!wp).map((wp) => this.mapFacilityToWaypoint(wp));
     }
 
-    public async mapAirportIls(msAirport: JS_FacilityAirport): Promise<IlsNavaid[]> {
+    public async mapAirportIls(msAirport: JS_FacilityAirport, ident?: string): Promise<IlsNavaid[]> {
         const icaoSet: Set<string> = new Set();
         const bearings = new Map<string, number>();
+        const isTrueVsMagnetic = new Map<string, boolean>();
         const runways = new Map<string, string>();
+        const slopes = new Map<string, number>();
         const icaoCode = this.getIcaoCodeFromAirport(msAirport);
 
-        msAirport.approaches.filter((appr) => appr.approachType === MSApproachType.Ils).forEach((appr) => {
+        for (const appr of msAirport.approaches.filter(this.hasIlsFacility)) {
             const lastLeg = appr.finalLegs[appr.finalLegs.length - 1];
-            if (FacilityCache.validFacilityIcao(lastLeg.originIcao, 'V')) {
+            if (FacilityCache.validFacilityIcao(lastLeg.originIcao, 'V') && (!ident || ident === lastLeg.originIcao)) {
                 const icao = lastLeg.originIcao.trim();
+                // Only consider non-ILS approach if we've not got an ILS yet
+                if (appr.approachType !== MSApproachType.Ils && icaoSet.has(icao)) {
+                    continue;
+                }
+
                 icaoSet.add(lastLeg.originIcao);
-                // FIXME check if magnetic
-                bearings.set(icao, lastLeg.course);
+
+                if (lastLeg.type === MsLegType.TF) {
+                    // eslint-disable-next-line no-await-in-loop
+                    bearings.set(icao, await this.computeFinalApproachCourse(appr) ?? -1);
+                    isTrueVsMagnetic.set(icao, true);
+                } else {
+                    bearings.set(icao, lastLeg.course);
+                    isTrueVsMagnetic.set(icao, lastLeg.trueDegrees);
+                }
+
                 runways.set(icao, `RW${appr.runwayNumber.toFixed(0).padStart(2, '0')}${this.mapRunwayDesignator(appr.runwayDesignator)}`);
+                if (Math.abs(lastLeg.verticalAngle) > Number.EPSILON) {
+                    slopes.set(icao, lastLeg.verticalAngle - 360);
+                }
             }
-        });
+        }
 
         // TODO try guess cat from runway frequencies
 
@@ -307,6 +325,13 @@ export class MsfsMapping {
 
         return Array.from(ils.values()).filter((ils) => !!ils).map((ils) => {
             const icao = ils.icao.trim();
+            const bearing = bearings.get(icao);
+            const isTrue = isTrueVsMagnetic.get(icao);
+            let locBearing = -1;
+            if (bearing) {
+                locBearing = isTrue ? this.trueToMagnetic(bearing, -ils.magneticVariation) : bearing;
+            }
+
             return {
                 sectionCode: SectionCode.Airport,
                 subSectionCode: AirportSubsectionCode.LocalizerGlideSlope,
@@ -317,10 +342,40 @@ export class MsfsMapping {
                 category: LsCategory.None,
                 runwayIdent: runways.get(icao)!,
                 locLocation: { lat: ils.lat, long: ils.lon },
-                locBearing: bearings.get(icao) ?? -1,
+                locBearing,
                 stationDeclination: ils.magneticVariation,
+                gsSlope: slopes.get(icao),
             };
         });
+    }
+
+    private hasIlsFacility(approach: JS_Approach): boolean {
+        return [MSApproachType.Loc, MSApproachType.Ils, MSApproachType.Lda, MSApproachType.Sdf].includes(approach.approachType);
+    }
+
+    private async computeFinalApproachCourse(approach: JS_Approach): Promise<number | undefined> {
+        const finalLeg = approach.finalLegs[approach.finalLegs.length - 1];
+        const previousLeg = approach.finalLegs[approach.finalLegs.length - 2];
+
+        if (!finalLeg || !previousLeg || !previousLeg.fixIcao.trim() || !finalLeg.fixIcao.trim()) {
+            return undefined;
+        }
+
+        const facilities = await this.loadFacilitiesFromProcedures([approach]);
+
+        const finalWaypoint = facilities.get(finalLeg.fixIcao.trim());
+        const previousWaypoint = facilities.get(previousLeg.fixIcao.trim());
+
+        if (!finalWaypoint || !previousWaypoint) {
+            return undefined;
+        }
+
+        const finalLegCourse = bearingTo(
+            { lat: previousWaypoint.lat, long: previousWaypoint.lon },
+            { lat: finalWaypoint.lat, long: finalWaypoint.lon },
+        );
+
+        return finalLegCourse;
     }
 
     public async mapAirportCommunications(msAirport: JS_FacilityAirport): Promise<AirportCommunication[]> {

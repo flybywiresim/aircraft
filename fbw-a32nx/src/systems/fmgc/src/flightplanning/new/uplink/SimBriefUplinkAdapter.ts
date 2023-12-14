@@ -17,14 +17,23 @@ import { DataInterface } from '../interface/DataInterface';
 const SIMBRIEF_API_URL = 'https://www.simbrief.com/api/xml.fetcher.php?json=1';
 
 export interface OfpRoute {
-    from: { ident: string, rwy: string },
-    to: { ident: string, rwy: string },
+    from: { ident: string, rwy: string, transAlt: number, },
+    to: { ident: string, rwy: string, transLevel: number },
     altn: string,
+    costIndex: number,
     chunks: OfpRouteChunk[],
+    callsign: string,
 }
 
 export interface BaseOfpRouteChunk {
     instruction: string,
+}
+
+export interface ImportedPerformanceData {
+    departureTransitionAltitude: number,
+    destinationTransitionLevel: number,
+    costIndex: number,
+    cruiseFlightLevel: number
 }
 
 interface AirwayOfpRouteChunk extends BaseOfpRouteChunk {
@@ -97,7 +106,7 @@ export class SimBriefUplinkAdapter {
     static async uplinkFlightPlanFromSimbrief(fms: DataInterface & DisplayInterface, flightPlanService: FlightPlanService, ofp: ISimbriefData, options: SimBriefUplinkOptions) {
         const doUplinkProcedures = options.doUplinkProcedures ?? false;
 
-        const route = await this.getRouteFromOfp(ofp);
+        const route = this.getRouteFromOfp(ofp);
 
         fms.onUplinkInProgress();
 
@@ -107,6 +116,20 @@ export class SimBriefUplinkAdapter {
             await flightPlanService.setOriginRunway(`RW${route.from.rwy}`, FlightPlanIndex.Uplink);
             await flightPlanService.setDestinationRunway(`RW${route.to.rwy}`, FlightPlanIndex.Uplink);
         }
+
+        const plan = flightPlanService.uplink;
+
+        plan.setImportedPerformanceData({
+            departureTransitionAltitude: route.from.transAlt,
+            destinationTransitionLevel: route.to.transLevel / 100,
+            costIndex: route.costIndex,
+            cruiseFlightLevel: ofp.cruiseAltitude / 100,
+        });
+
+        // used by FlightPhaseManager
+        SimVar.SetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number', Number(ofp.cruiseAltitude));
+
+        plan.setFlightNumber(route.callsign);
 
         let insertHead = -1;
 
@@ -330,10 +353,12 @@ export class SimBriefUplinkAdapter {
 
     static getRouteFromOfp(ofp: ISimbriefData): OfpRoute {
         return {
-            from: { ident: ofp.origin.icao, rwy: ofp.origin.runway },
-            to: { ident: ofp.destination.icao, rwy: ofp.destination.runway },
+            from: { ident: ofp.origin.icao, rwy: ofp.origin.runway, transAlt: ofp.origin.transAlt },
+            to: { ident: ofp.destination.icao, rwy: ofp.destination.runway, transLevel: ofp.destination.transLevel },
             altn: ofp.alternate.icao,
             chunks: this.generateRouteInstructionsFromNavlog(ofp),
+            costIndex: Number(ofp.costIndex),
+            callsign: ofp.callsign,
         };
     }
 

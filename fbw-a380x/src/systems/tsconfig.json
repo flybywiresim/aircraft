@@ -1,9 +1,15 @@
 {
     "compilerOptions": {
-        "target": "ESNext",
-        "baseUrl": ".",
-        "typeRoots": ["../../../fbw-common/src/typings", "../node_modules/@types"],
-        "moduleResolution": "node",
+      "target": "ES2017",
+      "baseUrl": ".",
+      "resolveJsonModule" : true,
+      "skipLibCheck": true,
+      "typeRoots": [
+        "../../../fbw-common/src/typings"
+      ],
+      "moduleResolution": "node",
+      "allowSyntheticDefaultImports": true,
+      "jsx": "react",
         "paths": {
             "@shared/*": ["./shared/src/*"],
             "@instruments/common/*": ["./instruments/src/Common/*"],

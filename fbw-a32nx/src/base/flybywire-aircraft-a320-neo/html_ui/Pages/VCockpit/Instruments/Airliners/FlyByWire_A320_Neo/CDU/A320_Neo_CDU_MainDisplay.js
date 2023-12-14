@@ -800,7 +800,8 @@ class A320_Neo_CDU_MainDisplay extends FMCMainDisplay {
         if (template[13]) {
             this.setScratchpadText(template[13][0]);
         }
-        SimVar.SetSimVarValue("L:AIRLINER_MCDU_CURRENT_FPLN_WAYPOINT", "number", this.currentFlightPlanWaypointIndex).then();
+        // TOOD: Is this used for anything?
+        SimVar.SetSimVarValue("L:AIRLINER_MCDU_CURRENT_FPLN_WAYPOINT", "number", this.efisInterface.planCentre.index).then();
         // Apply formatting helper to title page, lines and labels
         if (this._titleElement !== null) {
             this._titleElement.innerHTML = this._formatCell(this._titleElement.innerHTML);

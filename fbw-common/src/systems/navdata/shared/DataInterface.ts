@@ -88,8 +88,9 @@ export interface DataInterface {
      * Retreive the ILS navaids at an airport
      * @todo generalise to all LS types?
      * @param airportIdentifier 4-letter ICAO code for the airport
+     * @param ident ILS identifier
      */
-    getIlsAtAirport(airportIdentifier: string): Promise<IlsNavaid[]>;
+    getIlsAtAirport(airportIdentifier: string, ident?: string): Promise<IlsNavaid[]>;
 
     /**
      * Retreive the communication frequencies at an airport
@@ -133,6 +134,16 @@ export interface DataInterface {
      * @param airportIdent provide the 4-letter ICAO airport code if you want to limit the query to a terminal area
      */
     getVhfNavaids(idents: string[], ppos?: Coordinates, icaoCode?: string, airportIdent?: string): Promise<VhfNavaid[]>;
+
+    /**
+     * Retrieve ILS/LOC navaid(s) from the database
+     * @param idents navaid identifier
+     * @param ppos provide ppos if you want the distance from this position to each navaid
+     * @param icaoCode provide the 2-letter ICAO region if you want to limit the query to a region
+     * @param airportIdent provide the 4-letter ICAO airport code if you want to limit the query to a terminal area
+     */
+    getIlsNavaids(idents: string[], ppos?: Coordinates, icaoCode?: string, airportIdent?: string): Promise<IlsNavaid[]>;
+
     /**
      * Retrieve fixes (waypoints, NDB navaids, VHF navaids including ILS/LOC) from the database
      * @param idents navaid identifier

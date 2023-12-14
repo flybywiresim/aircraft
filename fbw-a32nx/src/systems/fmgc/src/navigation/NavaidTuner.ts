@@ -616,16 +616,16 @@ export class NavaidTuner {
                 mmrStatus.backcourse = false;
                 mmrStatus.slope = null;
             } else {
-                mmrStatus.databaseCourse = ils.locBearing;
+                mmrStatus.databaseCourse = ils.locBearing !== -1 ? ils.locBearing : null;
                 mmrStatus.databaseBackcourse = false;
                 mmrStatus.manual = true;
                 mmrStatus.facility = ils;
-                mmrStatus.course = ils.locBearing;
+                mmrStatus.course = ils.locBearing !== -1 ? ils.locBearing : null;
                 mmrStatus.courseManual = false;
                 mmrStatus.ident = ils.ident;
                 mmrStatus.frequency = ils.frequency;
                 mmrStatus.backcourse = false;
-                mmrStatus.slope = ils.gsSlope ?? null;
+                mmrStatus.slope = ils.gsSlope;
             }
         }
     }
