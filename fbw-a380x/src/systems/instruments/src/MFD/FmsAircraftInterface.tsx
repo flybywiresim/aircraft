@@ -5,6 +5,7 @@ import { FlightPlanPerformanceData } from '@fmgc/flightplanning/new/plans/perfor
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { FlightPhaseManager, FlightPlanService } from '@fmgc/index';
 import { MmrRadioTuningStatus } from '@fmgc/navigation/NavaidTuner';
+import { maxZfw, minZfwCg } from '@shared/PerformanceConstants';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { MfdComponent } from 'instruments/src/MFD/MFD';
 import { FmgcDataInterface } from 'instruments/src/MFD/fmgc';
@@ -13,6 +14,7 @@ import { NXSpeedsUtils } from 'instruments/src/MFD/pages/FMS/legacy/NXSpeeds';
 import { NXSystemMessages } from 'instruments/src/MFD/pages/FMS/legacy/NXSystemMessages';
 import { MfdFlightManagementService } from 'instruments/src/MFD/pages/common/FlightManagementService';
 import { Feet } from 'msfs-geo';
+import { A380OperatingSpeeds, A380OperatingSpeedsApproach } from '../../../shared/src/OperatingSpeeds';
 
 /**
  * Interface between FMS and aircraft through SimVars and ARINC values (mostly data being sent here)
@@ -406,7 +408,7 @@ export class FmsAircraftInterface {
                         this.managedSpeedTarget = speed;
                     } else {
                         const speedConstraint = this.getSpeedConstraint();
-                        const speed = Math.min(this.fmgc.data.cleanSpeed.get(), speedConstraint);
+                        const speed = Math.min(this.fmgc.data.greenDotSpeed.get(), speedConstraint);
 
                         vPfd = speed;
                         this.managedSpeedTarget = speed;
@@ -439,7 +441,7 @@ export class FmsAircraftInterface {
 
     getAppManagedSpeed() {
         switch (SimVar.GetSimVarValue("L:A32NX_FLAPS_HANDLE_INDEX", "Number")) {
-            case 0: return this.fmgc.data.cleanSpeed.get();
+            case 0: return this.fmgc.data.greenDotSpeed.get();
             case 1: return this.fmgc.data.slatRetractionSpeed.get();
             case 3: return this.fmgc.data.approachFlapConfig.get() === FlapConf.CONF_3 ? this.fmgc.data.approachSpeed.get() : this.fmgc.data.flapRetractionSpeed.get();
             case 4: return this.fmgc.data.approachSpeed.get();
@@ -461,8 +463,8 @@ export class FmsAircraftInterface {
 
     private _apMasterStatus: number;
     private _lastUpdateAPTime: number;
-    private updateAutopilotCooldown: number;
-    private _apCooldown: number;
+    private updateAutopilotCooldown: number = 0;
+    private _apCooldown: number = 500;
     private _forceNextAltitudeUpdate: boolean;
     private activeWpIdx: number;
     private constraintAlt: Feet;
@@ -487,7 +489,7 @@ export class FmsAircraftInterface {
         if (this.updateAutopilotCooldown < 0) {
             this.updatePerfSpeeds();
             this.updateConstraints();
-            this.updateManagedSpeed(); // TODO port over
+            this.updateManagedSpeed();
             const currentApMasterStatus = SimVar.GetSimVarValue("AUTOPILOT MASTER", "boolean");
             if (currentApMasterStatus !== this._apMasterStatus) {
                 this._apMasterStatus = currentApMasterStatus;
@@ -568,32 +570,80 @@ export class FmsAircraftInterface {
     }
 
     /**
-     * Updates performance speeds such as GD, F, S, Vls and approach speeds
+     * Tries to estimate the landing weight at destination
+     * NaN on failure
+     */
+    tryEstimateLandingWeight() {
+        const altActive = false;
+        const landingWeight = this.fmgc.data.zeroFuelWeight.get() + (altActive ? this.fmgc.getAltEFOB(true) : this.fmgc.getDestEFOB(true));
+        // Workaround for fake a320 weights
+        if (landingWeight < 100) {
+            return this.fmService.getGrossWeight();
+        }
+        return isFinite(landingWeight) ? landingWeight : NaN;
+    }
+
+    calculateAndUpdateSpeeds() {
+        // Calculate all speeds and write to SimVars
+    }
+
+    /**
+     * Updates performance speeds such as GD, F, S, Vls and approach speeds. Write to SimVars
      */
     updatePerfSpeeds() {
-        /* this.computedVgd = SimVar.GetSimVarValue("L:A32NX_SPEEDS_GD", "number");
-        this.computedVfs = SimVar.GetSimVarValue("L:A32NX_SPEEDS_F", "number");
-        this.computedVss = SimVar.GetSimVarValue("L:A32NX_SPEEDS_S", "number");
-        this.computedVls = SimVar.GetSimVarValue("L:A32NX_SPEEDS_VLS", "number");
-
         let weight = this.tryEstimateLandingWeight();
-        const vnavPrediction = this.guidanceController.vnavDriver.getDestinationPrediction();
+        const vnavPrediction = this.fmService.guidanceController?.vnavDriver?.getDestinationPrediction();
         // Actual weight is used during approach phase (FCOM bulletin 46/2), and we also assume during go-around
         // Fallback gross weight set to 64.3T (MZFW), which is replaced by FMGW once input in FMS to avoid function returning undefined results.
-        if (this.flightPhaseManager.phase >= FmgcFlightPhases.APPROACH || !isFinite(weight)) {
-            weight = (this.getGW() == 0) ? 64.3 : this.getGW();
+        if (this.flightPhaseManager.phase >= FmgcFlightPhase.Approach || !isFinite(weight)) {
+            weight = (this.fmService.getGrossWeight() == 0) ? maxZfw : this.fmService.getGrossWeight();
         } else if (vnavPrediction && Number.isFinite(vnavPrediction.estimatedFuelOnBoard)) {
-            weight = this.zeroFuelWeight + Math.max(0, vnavPrediction.estimatedFuelOnBoard * 0.4535934 / 1000);
+            weight = this.fmgc.data.zeroFuelWeight.get() + Math.max(0, vnavPrediction.estimatedFuelOnBoard * 0.4535934 / 1000);
+        }
+        // Workaround for fake a320 weights
+        if (weight < 100_000) {
+            weight = this.fmService.getGrossWeight();
         }
         // if pilot has set approach wind in MCDU we use it, otherwise fall back to current measured wind
-        if (isFinite(this.perfApprWindSpeed) && isFinite(this.perfApprWindHeading)) {
-            this.approachSpeeds = new NXSpeedsApp(weight, this.perfApprFlaps3, this._towerHeadwind);
+        if (this.fmgc.data.approachWind.get() && isFinite(this.fmgc.data.approachWind.get().speed) && isFinite(this.fmgc.data.approachWind.get().direction)) {
+            let towerHeadwind = 0;
+            if (this.flightPlanService.active.destinationRunway) {
+                towerHeadwind = NXSpeedsUtils.getHeadwind(this.fmgc.data.approachWind.get().speed, this.fmgc.data.approachWind.get().direction, this.flightPlanService.active.destinationRunway.magneticBearing);
+            }
+            const approachSpeeds = new A380OperatingSpeedsApproach(weight / 1000, this.fmgc.data.approachFlapConfig.get() === FlapConf.CONF_3, towerHeadwind);
+            this.fmgc.data.approachSpeed.set(Math.ceil(approachSpeeds.vapp));
+            this.fmgc.data.approachVls.set(Math.ceil(approachSpeeds.vls));
+            this.fmgc.data.approachVref.set(Math.ceil(approachSpeeds.vref));
         } else {
-            this.approachSpeeds = new NXSpeedsApp(weight, this.perfApprFlaps3);
+            const approachSpeeds = new A380OperatingSpeedsApproach(weight / 1000, this.fmgc.data.approachFlapConfig.get() === FlapConf.CONF_3);
+            this.fmgc.data.approachSpeed.set(Math.ceil(approachSpeeds.vapp));
+            this.fmgc.data.approachVls.set(Math.ceil(approachSpeeds.vls));
+            this.fmgc.data.approachVref.set(Math.ceil(approachSpeeds.vref));
         }
-        this.approachSpeeds.valid = this.flightPhaseManager.phase >= FmgcFlightPhases.APPROACH || isFinite(weight); */
-        // No speeds calculated atm
-        // TODO port over
+
+        const flaps = SimVar.GetSimVarValue("L:A32NX_FLAPS_HANDLE_INDEX", "Enum");
+        const gearPos = Math.round(SimVar.GetSimVarValue("GEAR POSITION:0", "Enum"));
+        const speeds = new A380OperatingSpeeds(this.fmService.getGrossWeight() / 1000, flaps, gearPos);
+        speeds.compensateForMachEffect(Math.round(Simplane.getAltitude()));
+
+        SimVar.SetSimVarValue("L:A32NX_SPEEDS_VS", "number", speeds.vs);
+        SimVar.SetSimVarValue("L:A32NX_SPEEDS_VLS", "number", speeds.vls);
+        if (this.fmgc.data.takeoffFlapsSetting.get() && this.fmgc.data.takeoffFlapsSetting.get() == FlapConf.CONF_3) {
+            SimVar.SetSimVarValue("L:A32NX_SPEEDS_F", "number", speeds.f3);
+            this.fmgc.data.flapRetractionSpeed.set(Math.ceil(speeds.f3));
+        } else {
+            SimVar.SetSimVarValue("L:A32NX_SPEEDS_F", "number", speeds.f2);
+            this.fmgc.data.greenDotSpeed.set(Math.ceil(speeds.f2));
+        }
+        SimVar.SetSimVarValue("L:A32NX_SPEEDS_S", "number", speeds.s);
+        this.fmgc.data.slatRetractionSpeed.set(Math.ceil(speeds.s));
+        SimVar.SetSimVarValue("L:A32NX_SPEEDS_GD", "number", speeds.gd);
+        this.fmgc.data.greenDotSpeed.set(Math.ceil(speeds.gd));
+        SimVar.SetSimVarValue("L:A32NX_SPEEDS_LANDING_CONF3", "boolean", this.fmgc.data.approachFlapConfig.get() === FlapConf.CONF_3);
+        SimVar.SetSimVarValue("L:A32NX_SPEEDS_VMAX", "number", speeds.vmax);
+        SimVar.SetSimVarValue("L:A32NX_SPEEDS_VFEN", "number", speeds.vfeN);
+        // SimVar.SetSimVarValue("L:A32NX_SPEEDS_ALPHA_PROTECTION_CALC", "number", 0);
+        // SimVar.SetSimVarValue("L:A32NX_SPEEDS_ALPHA_MAX_CALC", "number", 0);
     }
 
     updateConstraints() {

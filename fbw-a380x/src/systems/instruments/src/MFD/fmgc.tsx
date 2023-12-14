@@ -9,7 +9,7 @@ import { FmgcFlightPhase } from '@shared/flightphase';
 import { FmcWindVector, FmcWinds } from '@fmgc/guidance/vnav/wind/types';
 import { MappedSubject, Subject, UnitType } from '@microsoft/msfs-sdk';
 import { FlightPlanIndex } from '@fmgc/flightplanning/new/FlightPlanManager';
-import { Arinc429Word, Knots, Runway } from '@flybywiresim/fbw-sdk';
+import { Arinc429Word, Knots, Runway, Units } from '@flybywiresim/fbw-sdk';
 import { Feet } from 'msfs-geo';
 
 export enum TakeoffPowerSetting {
@@ -165,7 +165,7 @@ export class FmgcData {
 
     public readonly slatRetractionSpeed = Subject.create<Knots>(159);
 
-    public readonly cleanSpeed = Subject.create<Knots>(190);
+    public readonly greenDotSpeed = Subject.create<Knots>(190);
 
     public readonly takeoffShift = Subject.create<number>(undefined); // in meters
 
@@ -381,7 +381,7 @@ export class FmgcDataInterface implements Fmgc {
     }
 
     getCleanSpeed(): Knots {
-        return this.data.cleanSpeed.get();
+        return this.data.greenDotSpeed.get();
     }
 
     getTripWind(): number {
@@ -407,9 +407,14 @@ export class FmgcDataInterface implements Fmgc {
     getDestEFOB(useFob: boolean): number { // Metric tons
         const efob = this.guidanceController?.vnavDriver?.getDestinationPrediction()?.estimatedFuelOnBoard; // in Pounds
         if (useFob === true && efob !== undefined) {
-            return UnitType.POUND.convertTo(efob, UnitType.TONNE);
+            return Units.poundToKilogram(efob) / 1000.0;
         }
         return 0;
+    }
+
+    getAltEFOB(useFOB = false) {
+        // TODO estimate alternate fuel
+        return this.getDestEFOB(useFOB) - 1.0;
     }
 
     getDepartureElevation(): Feet {

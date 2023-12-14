@@ -9,7 +9,6 @@ import {
     DisplayComponent,
     EventBus,
     FSComponent,
-    FacilityLoader,
     HEvent,
     SimVarValueType,
     Subject,
@@ -62,8 +61,8 @@ import { DisplayUnit } from '../MsfsAvionicsCommon/displayUnit';
 import { DataManager, PilotWaypoint } from '@fmgc/flightplanning/new/DataManager';
 import { DataInterface } from '@fmgc/flightplanning/new/interface/DataInterface';
 import { Navigation } from '@fmgc/index';
-import { McduMessage, NXFictionalMessages, NXSystemMessages, TypeIIMessage, TypeIMessage } from 'instruments/src/MFD/pages/FMS/legacy/NXSystemMessages';
-import { FmsAircraftInterface } from 'instruments/src/MFD/FmsAircraftInterface';
+import { NXFictionalMessages, NXSystemMessages, TypeIIMessage, TypeIMessage } from 'instruments/src/MFD/pages/FMS/legacy/NXSystemMessages';
+import { MfdFmsPositionNavaids } from 'instruments/src/MFD/pages/FMS/POSITION/NAVAIDS';
 
 export const getDisplayIndex = () => {
     const url = document.getElementsByTagName('a380x-mfd')[0].getAttribute('url');
@@ -102,32 +101,11 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
 
     private navigation = new Navigation(this.flightPlanService, undefined);
 
-    private navigationProvider: NavigationProvider = {
-        getEpe(): number {
-            return 0.1;
-        },
-        getPpos(): Coordinates | null {
-            const lat = SimVar.GetSimVarValue('PLANE LATITUDE', SimVarValueType.Degree);
-            const long = SimVar.GetSimVarValue('PLANE LONGITUDE', SimVarValueType.Degree);
+    private navaidSelectionManager = new NavaidSelectionManager(this.flightPlanService, this.navigation);
 
-            return { lat, long };
-        },
-        getBaroCorrectedAltitude(): number | null {
-            return 0;
-        },
-        getPressureAltitude(): number | null {
-            return 0;
-        },
-        getRadioHeight(): number | null {
-            return 0;
-        },
-    }
+    private landingSystemSelectionManager = new LandingSystemSelectionManager(this.flightPlanService, this.navigation)
 
-    private navaidSelectionManager = new NavaidSelectionManager(this.flightPlanService, this.navigationProvider);
-
-    private landingSystemSelectionManager = new LandingSystemSelectionManager(this.flightPlanService, this.navigationProvider)
-
-    private navaidTuner = new NavaidTuner(this.navigationProvider, this.navaidSelectionManager, this.landingSystemSelectionManager);
+    private navaidTuner = new NavaidTuner(this.navigation, this.navaidSelectionManager, this.landingSystemSelectionManager);
 
     private efisSymbols = new EfisSymbols(this.guidanceController, this.flightPlanService, this.navaidTuner);
 
@@ -135,7 +113,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
 
     private dataManager = new DataManager(this);
 
-    private fmService = new MfdFlightManagementService(this, this.flightPlanService, this.guidanceController, this.fmgc, this.navigationProvider, this.flightPhaseManager);
+    private fmService = new MfdFlightManagementService(this, this.flightPlanService, this.guidanceController, this.fmgc, this.navigation, this.flightPhaseManager);
 
     public fmsErrors = ArraySubject.create<FmsErrorMessage>();
 
@@ -269,7 +247,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
         setInterval(() => {
             if (this.flightPhaseManager.phase === FmgcFlightPhase.Cruise && !this.destDataChecked) {
                 const dest = this.flightPlanService.active.destinationAirport;
-                const distanceFromPpos = distanceTo(this.navigationProvider.getPpos(), dest.location);
+                const distanceFromPpos = distanceTo(this.navigation.getPpos(), dest.location);
                 if (dest && distanceFromPpos < 180) {
                     this.destDataChecked = true;
                     this.checkDestData();
@@ -491,8 +469,8 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
      * @param nextPhase {FmgcFlightPhases} New FmgcFlightPhase
      */
     onFlightPhaseChanged(prevPhase: FmgcFlightPhase, nextPhase: FmgcFlightPhase) {
-        // this.updateConstraints();
-        // this.updateManagedSpeed();
+        this.fmService.acInterface.updateConstraints();
+        this.fmService.acInterface.updateManagedSpeed();
 
         SimVar.SetSimVarValue('L:A32NX_CABIN_READY', 'Bool', 0);
 
@@ -724,6 +702,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
                     this.fmService.acInterface.updateThrustReductionAcceleration();
                     this.fmService.acInterface.updateTransitionAltitudeLevel(this.fmgc.getOriginTransitionAltitude(), this.fmgc.getDestinationTransitionLevel());
                     this.fmService.acInterface.updatePerformanceData();
+                    this.fmService.acInterface.updatePerfSpeeds();
                     this.fmService.acInterface.toSpeedsChecks(this.flightPlanService.active.performanceData);
                     this.fmService.acInterface.setTakeoffFlaps(this.fmService.fmgc.getTakeoffFlapsSetting());
                     this.fmService.acInterface.setTakeoffTrim(this.fmService.fmgc.data.takeoffThsFor.get());
@@ -738,7 +717,6 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
 
                 /* TODO port over from A32NX_FMCMainDisplay.js:
                 this.checkSpeedLimit();
-                this.getGW();
                 this.thrustReductionAccelerationChecks();
                 this.updatePerfPageAltPredictions(); */
             }
@@ -1012,6 +990,16 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
             this.activePage = (
                 <MfdFmsPositionIrs
                     pageTitle="IRS"
+                    bus={this.props.bus}
+                    uiService={this.uiService}
+                    fmService={this.fmService}
+                />
+            );
+            break;
+        case 'fms/position/navaids':
+            this.activePage = (
+                <MfdFmsPositionNavaids
+                    pageTitle="NAVAIDS"
                     bus={this.props.bus}
                     uiService={this.uiService}
                     fmService={this.fmService}

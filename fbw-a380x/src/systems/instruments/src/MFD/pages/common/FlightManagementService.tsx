@@ -1,8 +1,7 @@
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
-import { FlightPhaseManager, FlightPlanIndex } from '@fmgc/index';
-import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
-import { ClockEvents, FSComponent, Subject, Subscription } from '@microsoft/msfs-sdk';
+import { FlightPhaseManager, FlightPlanIndex, Navigation } from '@fmgc/index';
+import { ClockEvents, Subject, Subscription } from '@microsoft/msfs-sdk';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { FmsAircraftInterface } from 'instruments/src/MFD/FmsAircraftInterface';
 import { MfdComponent } from 'instruments/src/MFD/MFD';
@@ -64,7 +63,7 @@ export class MfdFlightManagementService {
         public flightPlanService: FlightPlanService,
         public guidanceController: GuidanceController,
         public fmgc: FmgcDataInterface,
-        public navigationProvider: NavigationProvider,
+        public navigation: Navigation,
         public flightPhaseManager: FlightPhaseManager,
     ) {
         this.acInterface = new FmsAircraftInterface(this.mfd, this.fmgc, this, this.flightPlanService, this.flightPhaseManager);
@@ -106,7 +105,11 @@ export class MfdFlightManagementService {
 
     public getGrossWeight(): number {
         // Value received from FQMS, or falls back to ZFW + FOB
-        // return SimVar.GetSimVarValue('TOTAL WEIGHT', 'pounds') * 0.453592;
+
+        // If we use A320 values for the predictions, return real weight here
+        if (this.fmgc.data.zeroFuelWeight.get() < 150_000) {
+            return SimVar.GetSimVarValue('TOTAL WEIGHT', 'pounds') * 0.453592;
+        }
 
         let fmGW = 0;
         if (this.fmgc.isAnEngineOn() && isFinite(this.fmgc.data.zeroFuelWeight.get())) {

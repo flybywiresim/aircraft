@@ -84,6 +84,12 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
 
         if (this.loadedFlightPlan.alternateDestinationAirport) {
             this.altnIcao.set(this.loadedFlightPlan.alternateDestinationAirport.ident);
+            this.altnEta.set('--:--');
+            this.altnEfob.set('--.-');
+        } else {
+            this.altnIcao.set('NONE');
+            this.altnEta.set('--:--');
+            this.altnEfob.set('--.-');
         }
 
         console.timeEnd('FUEL_LOAD:onNewData');
@@ -102,6 +108,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                 this.grossWeight.set(null);
                 this.centerOfGravity.set(null);
                 this.fuelOnBoard.set(null);
+                this.blockLineRef.instance.style.visibility = 'visible';
             } else {
                 // GW only displayed after engine start. Value received from FQMS, or falls back to ZFW + FOB
                 const gw: number = SimVar.GetSimVarValue('TOTAL WEIGHT', 'pounds') * 0.453592;
@@ -114,6 +121,8 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                 // FOB only displayed after engine start. Value received from FQMS, or falls back to FOB stored at engine start + fuel used by FADEC
                 const fob = SimVar.GetSimVarValue('FUEL TOTAL QUANTITY', 'gallons') * SimVar.GetSimVarValue('FUEL WEIGHT PER GALLON', 'kilograms');
                 this.fuelOnBoard.set(fob);
+
+                this.blockLineRef.instance.style.visibility = 'hidden';
             }
 
             if (this.activeFlightPhase.get() === FmgcFlightPhase.Preflight) {

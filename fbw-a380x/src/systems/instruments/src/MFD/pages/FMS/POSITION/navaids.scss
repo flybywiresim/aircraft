@@ -1,0 +1,12 @@
+﻿@import "../../../../MsfsAvionicsCommon/definitions";
+
+.mfd-position-navaids-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 50px;
+}
+
+.mfd-position-navaids-row.ar {
+  justify-content: flex-end;
+}

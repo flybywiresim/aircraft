@@ -337,7 +337,6 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                         />
                     </div>
                     <Button
-                        disabled={Subject.create(true)}
                         label="NAVAIDS"
                         onClick={() => this.props.uiService.navigateTo('fms/position/navaids')}
                         buttonStyle="width: 160px; margin-left: 150px; margin-bottom: 10px;"

@@ -726,6 +726,23 @@ export class AirportFormat implements DataEntryFormat<string> {
     }
 }
 
+export class NavaidIdentFormat implements DataEntryFormat<string> {
+    public placeholder = '----';
+
+    public maxDigits = 4;
+
+    public format(value: string) {
+        if (value === null || value === undefined) {
+            return [this.placeholder, null, null] as FieldFormatTuple;
+        }
+        return [value, null, null] as FieldFormatTuple;
+    }
+
+    public async parse(input: string) {
+        return input;
+    }
+}
+
 export class AirwayFormat implements DataEntryFormat<string> {
     public placeholder = '---';
 
@@ -1099,6 +1116,147 @@ export class HoldTimeFormat implements DataEntryFormat<number> {
 
     public async parse(input: string) {
         const nbr = Number(input);
+        if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
+            return nbr;
+        }
+        if (nbr > this.maxValue || nbr < this.minValue) {
+            this.fms.showFmsErrorMessage(FmsErrorType.EntryOutOfRange);
+        } else {
+            this.fms.showFmsErrorMessage(FmsErrorType.FormatError);
+        }
+        return undefined;
+    }
+}
+
+export class FrequencyILSFormat implements DataEntryFormat<number> {
+    public placeholder = '---.--';
+
+    public maxDigits = 6;
+
+    private minValue = 108.0;
+
+    private maxValue = 111.95;
+
+    constructor(private fms: DisplayInterface) {
+    }
+
+    public format(value: number) {
+        if (value === null || value === undefined) {
+            return [this.placeholder, null, null] as FieldFormatTuple;
+        }
+        return [value.toFixed(2), null, null] as FieldFormatTuple;
+    }
+
+    public async parse(input: string) {
+        const nbr = Number(input);
+        if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
+            return nbr;
+        }
+        if (nbr > this.maxValue || nbr < this.minValue) {
+            this.fms.showFmsErrorMessage(FmsErrorType.EntryOutOfRange);
+        } else {
+            this.fms.showFmsErrorMessage(FmsErrorType.FormatError);
+        }
+        return undefined;
+    }
+}
+
+export class FrequencyVORDMEFormat implements DataEntryFormat<number> {
+    public placeholder = '---.--';
+
+    public maxDigits = 6;
+
+    private minValue = 108.0;
+
+    private maxValue = 117.95;
+
+    constructor(private fms: DisplayInterface) {
+    }
+
+    public format(value: number) {
+        if (value === null || value === undefined) {
+            return [this.placeholder, null, null] as FieldFormatTuple;
+        }
+        return [value.toFixed(2), null, null] as FieldFormatTuple;
+    }
+
+    public async parse(input: string) {
+        const nbr = Number(input);
+        if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
+            return nbr;
+        }
+        if (nbr > this.maxValue || nbr < this.minValue) {
+            this.fms.showFmsErrorMessage(FmsErrorType.EntryOutOfRange);
+        } else {
+            this.fms.showFmsErrorMessage(FmsErrorType.FormatError);
+        }
+        return undefined;
+    }
+}
+
+export class FrequencyADFFormat implements DataEntryFormat<number> {
+    public placeholder = '----.-';
+
+    public maxDigits = 6;
+
+    private minValue = 190.0;
+
+    private maxValue = 1750.0;
+
+    constructor(private fms: DisplayInterface) {
+    }
+
+    public format(value: number) {
+        if (value === null || value === undefined) {
+            return [this.placeholder, null, null] as FieldFormatTuple;
+        }
+        return [value.toFixed(1), null, null] as FieldFormatTuple;
+    }
+
+    public async parse(input: string) {
+        const nbr = Number(input);
+        if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
+            return nbr;
+        }
+        if (nbr > this.maxValue || nbr < this.minValue) {
+            this.fms.showFmsErrorMessage(FmsErrorType.EntryOutOfRange);
+        } else {
+            this.fms.showFmsErrorMessage(FmsErrorType.FormatError);
+        }
+        return undefined;
+    }
+}
+
+// Still need to find a way to store whether course is true or magnetic
+export class LsCourseFormat implements DataEntryFormat<number> {
+    public placeholder = '----';
+
+    public maxDigits = 4;
+
+    private minValue = 0;
+
+    private maxValue = 360.0;
+
+    constructor(private fms: DisplayInterface) {
+    }
+
+    public format(value: number) {
+        if (value === null || value === undefined) {
+            return [this.placeholder, null, '°'] as FieldFormatTuple;
+        }
+        return [`F${value.toFixed(0).padStart(3, '0')}`, null, '°'] as FieldFormatTuple;
+    }
+
+    public async parse(input: string) {
+        let numberPart = input;
+        if (input.length === 4) {
+            if (input[0] === 'F' || input[0] === 'B') {
+                numberPart = input.substring(1, 3);
+            } else {
+                numberPart = input.substring(0, 2);
+            }
+        }
+        const nbr = Number(numberPart);
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
         }

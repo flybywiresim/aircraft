@@ -1,4 +1,4 @@
-﻿import { ArraySubject, ComponentProps, DisplayComponent, FSComponent, MappedSubject, NodeReference, Subject, Subscribable, Subscription, VNode } from '@microsoft/msfs-sdk';
+﻿import { ArraySubject, ClockEvents, ComponentProps, DisplayComponent, FSComponent, MappedSubject, NodeReference, Subject, Subscribable, Subscription, VNode } from '@microsoft/msfs-sdk';
 
 import './f-pln.scss';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
@@ -17,7 +17,7 @@ import { WindVector } from '@fmgc/guidance/vnav/wind';
 import { PseudoWaypoint } from '@fmgc/guidance/PseudoWaypoint';
 import { Coordinates, bearingTo } from 'msfs-geo';
 import { FmgcFlightPhase } from '@shared/flightphase';
-import { LegType, TurnDirection } from '../../../../../../../../../fbw-common/src/systems/navdata';
+import { Units, LegType, TurnDirection } from '@flybywiresim/fbw-sdk';
 
 interface MfdFmsFplnProps extends AbstractMfdPageProps {
 }
@@ -182,7 +182,6 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             return seconds * 1000;
         };
 
-        console.log(jointFlightPlan);
         for (let i = 0; i < jointFlightPlan.length; i++) {
             const leg = jointFlightPlan[i];
             let reduceDistanceBy = 0;
@@ -208,7 +207,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                     speedPrediction: pwp.flightPlanInfo.speed,
                     hasSpeedConstraint: (pwp.mcduIdent ?? pwp.ident) === '(SPDLIM)',
                     speedConstraintIsRespected: true,
-                    efobPrediction: this.props.fmService.guidanceController.vnavDriver.mcduProfile?.waypointPredictions?.get(i)?.estimatedFuelOnBoard ?? 0,
+                    efobPrediction: Units.poundToKilogram(this.props.fmService.guidanceController.vnavDriver.mcduProfile?.waypointPredictions?.get(i)?.estimatedFuelOnBoard) / 1000.0 ?? 0,
                     windPrediction: this.derivedFplnLegData[i].windPrediction,
                     trackFromLastWpt: this.derivedFplnLegData[i].trackFromLastWpt,
                     distFromLastWpt: pwp.flightPlanInfo.distanceFromStart - lastDistanceFromStart,
@@ -261,7 +260,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                     speedPrediction: this.props.fmService.guidanceController.vnavDriver.mcduProfile?.waypointPredictions?.get(i)?.speed ?? 0,
                     hasSpeedConstraint: !!this.props.fmService.guidanceController.vnavDriver.mcduProfile?.waypointPredictions?.get(i)?.speedConstraint ?? false,
                     speedConstraintIsRespected: this.props.fmService.guidanceController.vnavDriver.mcduProfile?.waypointPredictions?.get(i)?.isSpeedConstraintMet ?? true,
-                    efobPrediction: this.props.fmService.guidanceController.vnavDriver.mcduProfile?.waypointPredictions.get(i)?.estimatedFuelOnBoard ?? 0,
+                    efobPrediction: Units.poundToKilogram(this.props.fmService.guidanceController.vnavDriver.mcduProfile?.waypointPredictions.get(i)?.estimatedFuelOnBoard) / 1000.0 ?? 0,
                     windPrediction: this.derivedFplnLegData[i].windPrediction,
                     trackFromLastWpt: this.derivedFplnLegData[i].trackFromLastWpt,
                     distFromLastWpt: this.derivedFplnLegData[i].distanceFromLastWpt - reduceDistanceBy,
@@ -435,6 +434,11 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             }
             this.update(this.displayFplnFromLegIndex.get());
         }, true));
+
+        const sub = this.props.bus.getSubscriber<ClockEvents>();
+        this.subs.push(sub.on('realTime').atFrequency(1).handle((_t) => {
+            this.onNewData();
+        }));
     }
 
     private spdAltButton(): VNode {
@@ -452,7 +456,6 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
     private goToSpeedConstraint(lineDataIndex: number) {
         const data = this.lineData[lineDataIndex];
-        console.warn(data);
         if (isWaypoint(data)) {
             this.props.fmService.setRevisedWaypoint(data.originalLegIndex, this.loadedFlightPlanIndex.get(), data.isAltnWaypoint);
             this.props.uiService.navigateTo(`fms/${this.props.uiService.activeUri.get().category}/f-pln-vert-rev/spd`);
@@ -461,7 +464,6 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
     private goToAltitudeConstraint(lineDataIndex: number) {
         const data = this.lineData[lineDataIndex];
-        console.warn(data);
         if (isWaypoint(data)) {
             this.props.fmService.setRevisedWaypoint(data.originalLegIndex, this.loadedFlightPlanIndex.get(), data.isAltnWaypoint);
             this.props.uiService.navigateTo(`fms/${this.props.uiService.activeUri.get().category}/f-pln-vert-rev/alt`);

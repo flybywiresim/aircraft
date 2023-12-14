@@ -37,6 +37,7 @@ import { ConditionalComponent } from 'instruments/src/MFD/pages/common/Condition
 import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { VerticalCheckpointReason } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { Feet } from 'msfs-geo';
+import { NXSpeedsUtils } from '@shared/OperatingSpeeds';
 
 interface MfdFmsPerfProps extends AbstractMfdPageProps {
 }
@@ -338,6 +339,10 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
     // APPR page subjects, refs and methods
     private apprIdent = Subject.create<string>('');
 
+    private apprHeadwind = Subject.create<string>('');
+
+    private apprCrosswind = Subject.create<string>('');
+
     private apprSelectedFlapsIndex = Subject.create<number>(1);
 
     private apprLandingWeight = Subject.create<number>(undefined);
@@ -534,7 +539,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                 this.props.fmService.fmgc.data.climbPredictionsReferenceAutomatic.set(null);
             }
 
-            this.managedSpeedActive.set(obs.fcuSpeedManaged);
+            this.managedSpeedActive.set((obs.fcuSpeedManaged as unknown) === 1); // Should be boolean, but is number
 
             // Update CLB speed table
             const clbSpeedLimit = this.props.fmService.fmgc.getClimbSpeedLimit();
@@ -714,6 +719,19 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
             // Update APPR page
             this.apprLandingWeight.set(this.props.fmService.getLandingWeight());
+            if (this.props.fmService.fmgc.data.approachWind.get()?.direction && this.props.fmService.fmgc.data.approachWind.get()?.speed && this.loadedFlightPlan.destinationRunway) {
+                const towerHeadwind = NXSpeedsUtils.getHeadwind(this.props.fmService.fmgc.data.approachWind.get().speed, this.props.fmService.fmgc.data.approachWind.get().direction, this.loadedFlightPlan.destinationRunway.magneticBearing);
+                if (towerHeadwind < 0) {
+                    this.apprHeadwind.set(`-${Math.abs(towerHeadwind).toFixed(0).padStart(2, '0')}`);
+                } else {
+                    this.apprHeadwind.set(towerHeadwind.toFixed(0).padStart(3, '0'));
+                }
+                const towerCrosswind = NXSpeedsUtils.getHeadwind(this.props.fmService.fmgc.data.approachWind.get().speed, this.props.fmService.fmgc.data.approachWind.get().direction, this.loadedFlightPlan.destinationRunway.magneticBearing + 90);
+                this.apprCrosswind.set(Math.abs(towerCrosswind).toFixed(0).padStart(3, '0'));
+            } else {
+                this.apprHeadwind.set('---');
+                this.apprCrosswind.set('---');
+            }
         }));
     }
 
@@ -879,7 +897,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         <span style="margin-right: 15px; justify-content: center;">
                                             <svg width="13" height="13" viewBox="0 0 13 13"><circle cx="6" cy="6" r="5" stroke="#00ff00" stroke-width="2" /></svg>
                                         </span>
-                                        <span class="mfd-value-green">{this.props.fmService.fmgc.data.cleanSpeed}</span>
+                                        <span class="mfd-value-green">{this.props.fmService.fmgc.data.greenDotSpeed}</span>
                                         <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                                     </div>
                                 </div>
@@ -1895,11 +1913,13 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         <div style="display: flex; flex-direction: row; margin-top: 15px;">
                                             <div class="mfd-label-value-container" style="padding: 15px;">
                                                 <span class="mfd-label mfd-spacing-right">HD</span>
-                                                <span class="mfd-value-green">---</span>
+                                                <span class="mfd-value-green">{this.apprHeadwind}</span>
+                                                <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                                             </div>
                                             <div class="mfd-label-value-container" style="padding: 15px;">
                                                 <span class="mfd-label mfd-spacing-right">CROSS</span>
-                                                <span class="mfd-value-green">---</span>
+                                                <span class="mfd-value-green">{this.apprCrosswind}</span>
+                                                <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                                             </div>
                                         </div>
                                         <div style="display: flex; flex-direction: row; margin-top: 20px;">
@@ -1975,7 +1995,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                             <span class="mfd-fms-perf-appr-flap-speeds">
                                                 <svg width="13" height="13" viewBox="0 0 13 13"><circle cx="6" cy="6" r="5" stroke="#00ff00" stroke-width="2" /></svg>
                                             </span>
-                                            <span class="mfd-value-green">{this.props.fmService.fmgc.data.cleanSpeed}</span>
+                                            <span class="mfd-value-green">{this.props.fmService.fmgc.data.greenDotSpeed}</span>
                                             <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                                         </div>
                                         <div class="mfd-label-value-container">
@@ -2069,7 +2089,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     <span style="margin-right: 15px; text-align: right;">
                                         <svg width="13" height="13" viewBox="0 0 13 13"><circle cx="6" cy="6" r="5" stroke="#00ff00" stroke-width="2" /></svg>
                                     </span>
-                                    <span class="mfd-value-green">{this.props.fmService.fmgc.data.cleanSpeed}</span>
+                                    <span class="mfd-value-green">{this.props.fmService.fmgc.data.greenDotSpeed}</span>
                                     <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                                 </div>
                             </div>

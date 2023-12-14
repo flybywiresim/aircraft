@@ -30,7 +30,7 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
             disabled: altnFlightPlan || [FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type),
             onSelectCallback: () => {
                 fpln.props.fmService.flightPlanService.directTo(
-                    fpln.props.fmService.navigationProvider.getPpos(),
+                    fpln.props.fmService.navigation.getPpos(),
                     SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree'),
                     fpln.loadedFlightPlan?.legElementAt(realLegIndex).definition.waypoint,
                     true,

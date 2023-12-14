@@ -68,7 +68,7 @@ export class MfdFmsFplnDuplicateNames extends DisplayComponent<MfdFmsFplnDuplica
             if (isNavaid(fx)) {
                 const dwd: DuplicateWaypointData = {
                     ident: fx.ident,
-                    distance: distanceTo(fx.location, this.props.fmService.navigationProvider.getPpos()),
+                    distance: distanceTo(fx.location, this.props.fmService.navigation.getPpos()),
                     location: fx.location,
                     freqChan: fx.frequency,
                     fixData: fx,
@@ -77,7 +77,7 @@ export class MfdFmsFplnDuplicateNames extends DisplayComponent<MfdFmsFplnDuplica
             } else if (isNavaidOrWaypoint(fx)) {
                 const dwd: DuplicateWaypointData = {
                     ident: fx.ident,
-                    distance: distanceTo(fx.location, this.props.fmService.navigationProvider.getPpos()),
+                    distance: distanceTo(fx.location, this.props.fmService.navigation.getPpos()),
                     location: fx.location,
                     freqChan: undefined,
                     fixData: fx,

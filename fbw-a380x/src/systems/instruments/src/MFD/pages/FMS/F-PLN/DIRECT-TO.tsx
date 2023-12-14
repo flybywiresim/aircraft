@@ -62,7 +62,7 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
         }
 
         await this.props.fmService.flightPlanService.directTo(
-            this.props.fmService.navigationProvider.getPpos(),
+            this.props.fmService.navigation.getPpos(),
             SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree'),
             wpt,
             this.directToOption.get() === DirectToOption.DIRECT_WITH_ABEAM,
