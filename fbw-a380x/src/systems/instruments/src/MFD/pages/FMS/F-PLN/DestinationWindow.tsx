@@ -78,6 +78,7 @@ export class DestinationWindow extends DisplayComponent<DestinationWindowProps> 
                                 onModified={(val) => this.onModified(val)}
                                 value={this.newDest}
                                 alignText="center"
+                                errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
                             />
                         </div>
                     </div>

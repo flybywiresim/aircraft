@@ -13,6 +13,7 @@ import { MfdFlightManagementService } from 'instruments/src/MFD/pages/common/Fli
 import { Fix } from 'msfs-navdata';
 import { FmsErrorType } from '@fmgc/FmsError';
 import { IconButton } from 'instruments/src/MFD/pages/common/IconButton';
+import { NXSystemMessages } from 'instruments/src/MFD/pages/FMS/legacy/NXSystemMessages';
 
 interface MfdFmsFplnAirwaysProps extends AbstractMfdPageProps {
 }
@@ -197,13 +198,7 @@ class AirwayLine extends DisplayComponent<AirwayLineProps> {
                             if (success === true) {
                                 this.viaFieldDisabled.set(true);
                             } else {
-                                this.props.fmService.mfd.showFmsErrorMessageFreeText({
-                                    message: 'NOT ALLOWED',
-                                    backgroundColor: 'none',
-                                    cleared: false,
-                                    isResolvedOverride: () => {},
-                                    onClearOverride: () => {},
-                                });
+                                this.props.fmService.mfd.addMessageToQueue(NXSystemMessages.notAllowed);
                             }
                             return success;
                         }}
@@ -211,6 +206,7 @@ class AirwayLine extends DisplayComponent<AirwayLineProps> {
                         value={this.viaField}
                         disabled={this.viaFieldDisabled}
                         alignText="center"
+                        errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
                     />
                 </div>
                 <div class="fr" style="align-items: center;">
@@ -241,13 +237,7 @@ class AirwayLine extends DisplayComponent<AirwayLineProps> {
                                 this.toFieldDisabled.set(true);
                                 this.props.nextLineCallback(chosenFix);
                             } else {
-                                this.props.fmService.mfd.showFmsErrorMessageFreeText({
-                                    message: 'NO INTERSECTION FOUND',
-                                    backgroundColor: 'none',
-                                    cleared: false,
-                                    isResolvedOverride: () => {},
-                                    onClearOverride: () => {},
-                                });
+                                this.props.fmService.mfd.addMessageToQueue(NXSystemMessages.noIntersectionFound);
                             }
                             return success;
                         }}
@@ -255,6 +245,7 @@ class AirwayLine extends DisplayComponent<AirwayLineProps> {
                         value={this.toField}
                         disabled={this.toFieldDisabled}
                         alignText="center"
+                        errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
                     />
                 </div>
             </div>

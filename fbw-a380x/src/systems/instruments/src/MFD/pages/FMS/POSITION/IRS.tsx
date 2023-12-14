@@ -305,11 +305,12 @@ export class MfdFmsPositionIrs extends FmsPage<MfdFmsPositionIrsProps> {
                     <div ref={this.setHdgDivRef} class="fr" style="justify-content: flex-end; align-items: center; margin-top: 10px; margin-bottom: 20px;">
                         <span class="mfd-label">SET HDG</span>
                         <InputField<number>
-                            dataEntryFormat={new HeadingFormat(this.props.fmService.mfd)}
+                            dataEntryFormat={new HeadingFormat()}
                             value={this.setHdgValue}
                             mandatory={Subject.create(true)}
                             alignText="flex-end"
                             containerStyle="width: 150px; margin-left: 10px;"
+                            errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
                         />
                     </div>
                     <div class="mfd-position-irs-irs-button-row">

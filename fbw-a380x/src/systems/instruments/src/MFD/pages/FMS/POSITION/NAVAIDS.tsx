@@ -139,11 +139,12 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidProps> {
                                             value={this.vor1Ident}
                                             containerStyle='width: 125px;'
                                             alignText='center'
+                                            errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
                                         />
                                     </div>
                                     <div class="mfd-position-navaids-row">
                                         <InputField<number>
-                                            dataEntryFormat={new FrequencyVORDMEFormat(this.props.fmService.mfd)}
+                                            dataEntryFormat={new FrequencyVORDMEFormat()}
                                             dataHandlerDuringValidation={async (v) => {
                                                 this.props.fmService.navigation.getNavaidTuner().setManualVor(1, v ? v : null);
                                             }}
@@ -152,11 +153,12 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidProps> {
                                             value={this.vor1Freq}
                                             containerStyle='width: 125px;'
                                             alignText='center'
+                                            errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
                                         />
                                     </div>
                                     <div class="mfd-position-navaids-row">
                                         <InputField<number>
-                                            dataEntryFormat={new InboundCourseFormat(this.props.fmService.mfd)}
+                                            dataEntryFormat={new InboundCourseFormat()}
                                             dataHandlerDuringValidation={async (v) => {
                                                 this.props.fmService.navigation.getNavaidTuner().setVorCourse(1, v ? v : null);
                                             }}
@@ -164,6 +166,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidProps> {
                                             value={this.vor1Course}
                                             containerStyle='width: 125px;'
                                             alignText='center'
+                                            errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
                                         />
                                     </div>
                                     <div class="mfd-position-navaids-row"><span class="mfd-value-green">{this.vor1Class}</span></div>
@@ -195,11 +198,12 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidProps> {
                                             value={this.vor2Ident}
                                             containerStyle='width: 125px;'
                                             alignText='center'
+                                            errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
                                         />
                                     </div>
                                     <div class="mfd-position-navaids-row">
                                         <InputField<number>
-                                            dataEntryFormat={new FrequencyVORDMEFormat(this.props.fmService.mfd)}
+                                            dataEntryFormat={new FrequencyVORDMEFormat()}
                                             dataHandlerDuringValidation={async (v) => {
                                                 this.props.fmService.navigation.getNavaidTuner().setManualVor(2, v ? v : null);
                                             }}
@@ -208,11 +212,12 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidProps> {
                                             value={this.vor2Freq}
                                             containerStyle='width: 125px;'
                                             alignText='center'
+                                            errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
                                         />
                                     </div>
                                     <div class="mfd-position-navaids-row">
                                         <InputField<number>
-                                            dataEntryFormat={new InboundCourseFormat(this.props.fmService.mfd)}
+                                            dataEntryFormat={new InboundCourseFormat()}
                                             dataHandlerDuringValidation={async (v) => {
                                                 this.props.fmService.navigation.getNavaidTuner().setVorCourse(2, v ? v : null);
                                             }}
@@ -220,6 +225,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidProps> {
                                             value={this.vor2Course}
                                             containerStyle='width: 125px;'
                                             alignText='center'
+                                            errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
                                         />
                                     </div>
                                     <div class="mfd-position-navaids-row"><span class="mfd-value-green">{this.vor2Class}</span></div>
@@ -273,11 +279,12 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidProps> {
                                     value={this.lsIdent}
                                     containerStyle='width: 125px;'
                                     alignText='center'
+                                    errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
                                 />
                             </div>
                             <div class="mfd-position-navaids-row">
                                 <InputField<number>
-                                    dataEntryFormat={new FrequencyILSFormat(this.props.fmService.mfd)}
+                                    dataEntryFormat={new FrequencyILSFormat()}
                                     dataHandlerDuringValidation={async (v) => {
                                         this.props.fmService.navigation.getNavaidTuner().setManualIls(v ? v : null);
                                     }}
@@ -286,11 +293,12 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidProps> {
                                     value={this.lsFreq}
                                     containerStyle='width: 125px;'
                                     alignText='center'
+                                    errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
                                 />
                             </div>
                             <div class="mfd-position-navaids-row">
                                 <InputField<number>
-                                    dataEntryFormat={new LsCourseFormat(this.props.fmService.mfd)}
+                                    dataEntryFormat={new LsCourseFormat()}
                                     dataHandlerDuringValidation={async (v) => {
                                         this.props.fmService.navigation.getNavaidTuner().setIlsCourse(v ? v : null);
                                     }}
@@ -299,6 +307,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidProps> {
                                     value={this.lsCourse}
                                     containerStyle='width: 125px;'
                                     alignText='center'
+                                    errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
                                 />
                             </div>
                             <div class="mfd-position-navaids-row">

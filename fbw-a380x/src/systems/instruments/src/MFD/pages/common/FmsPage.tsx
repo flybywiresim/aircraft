@@ -1,9 +1,11 @@
+import { FmsErrorType } from '@fmgc/FmsError';
 import { FlightPlanIndex } from '@fmgc/flightplanning/new/FlightPlanManager';
 import { FlightPlan } from '@fmgc/flightplanning/new/plans/FlightPlan';
 import { FlightPlanSyncEvents } from '@fmgc/flightplanning/new/sync/FlightPlanSyncEvents';
 import { DisplayComponent, FSComponent, Subject, Subscription, VNode } from '@microsoft/msfs-sdk';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
+import { NXSystemMessages } from 'instruments/src/MFD/pages/FMS/legacy/NXSystemMessages';
 import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
 import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 
@@ -139,13 +141,7 @@ export abstract class FmsPage<T extends AbstractMfdPageProps> extends DisplayCom
                 fm.v2ToBeConfirmed.set(pd.v2.get());
                 pd.v2.set(undefined);
 
-                this.props.fmService.mfd.showFmsErrorMessageFreeText({
-                    message: 'CHECK T.O DATA',
-                    backgroundColor: 'amber',
-                    cleared: false,
-                    isResolvedOverride: () => {},
-                    onClearOverride: () => {},
-                });
+                this.props.fmService.mfd.addMessageToQueue(NXSystemMessages.checkToData);
             }
         }
     }

@@ -174,25 +174,27 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                             ZFW
                         </div>
                         <InputField<number>
-                            dataEntryFormat={new WeightFormat(this.props.fmService.mfd, Subject.create(0), Subject.create(maxZfw))}
+                            dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxZfw))}
                             value={this.props.fmService.fmgc.data.zeroFuelWeight}
                             mandatory={Subject.create(true)}
                             inactive={this.enginesWereStarted}
                             canBeCleared={Subject.create(false)}
                             alignText="flex-end"
                             containerStyle="width: 150px;"
+                            errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
                         />
                         <div class="mfd-label mfd-spacing-right fuelLoad">
                             ZFWCG
                         </div>
                         <InputField<number>
-                            dataEntryFormat={new PercentageFormat(this.props.fmService.mfd, Subject.create(minZfwCg), Subject.create(maxZfwCg))}
+                            dataEntryFormat={new PercentageFormat(Subject.create(minZfwCg), Subject.create(maxZfwCg))}
                             value={this.props.fmService.fmgc.data.zeroFuelWeightCenterOfGravity}
                             mandatory={Subject.create(true)}
                             inactive={this.enginesWereStarted}
                             canBeCleared={Subject.create(false)}
                             alignText="center"
                             containerStyle="width: 125px;"
+                            errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
                         />
                     </div>
                     <div ref={this.blockLineRef} class="mfd-fms-fuel-load-block-line">
@@ -200,11 +202,12 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                             BLOCK
                         </div>
                         <InputField<number>
-                            dataEntryFormat={new WeightFormat(this.props.fmService.mfd, Subject.create(0), Subject.create(maxBlockFuel))}
+                            dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxBlockFuel))}
                             value={this.props.fmService.fmgc.data.blockFuel}
                             mandatory={Subject.create(true)}
                             alignText="flex-end"
                             containerStyle="width: 150px;"
+                            errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
                         />
                         <div style="display: flex; flex: 1; justify-content: center;">
                             <Button
@@ -230,11 +233,12 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                         </div>
                         <div style="margin-bottom: 20px;">
                             <InputField<number>
-                                dataEntryFormat={new WeightFormat(this.props.fmService.mfd, Subject.create(0), Subject.create(maxTaxiFuel))}
+                                dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxTaxiFuel))}
                                 value={this.props.fmService.fmgc.data.taxiFuel}
                                 inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
                                 alignText="flex-end"
                                 containerStyle="width: 150px;"
+                                errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
                             />
                         </div>
                         <div />
@@ -243,11 +247,12 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                         </div>
                         <div style="margin-bottom: 20px;">
                             <InputField<number>
-                                dataEntryFormat={new PaxNbrFormat(this.props.fmService.mfd)}
+                                dataEntryFormat={new PaxNbrFormat()}
                                 value={this.props.fmService.fmgc.data.paxNumber}
                                 mandatory={Subject.create(true)}
                                 alignText="center"
                                 containerStyle="width: 75px;"
+                                errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
                             />
                         </div>
                         <div class="mfd-label mfd-spacing-right middleGrid">
@@ -258,19 +263,20 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                             <span class="mfd-label-unit mfd-unit-trailing">T</span>
                         </div>
                         <div style="display: flex; justify-content: center; margin-bottom: 20px;">
-                            <span class="mfd-value-green">{this.tripFuelTime.map((it) => (new TimeHHMMFormat(this.props.fmService.mfd)).format(it))}</span>
+                            <span class="mfd-value-green">{this.tripFuelTime.map((it) => (new TimeHHMMFormat()).format(it))}</span>
                         </div>
                         <div class="mfd-label mfd-spacing-right middleGrid">
                             CI
                         </div>
                         <div style="margin-bottom: 20px;">
                             <InputField<number>
-                                dataEntryFormat={new CostIndexFormat(this.props.fmService.mfd)}
+                                dataEntryFormat={new CostIndexFormat()}
                                 value={this.props.fmService.fmgc.data.costIndex}
                                 mandatory={Subject.create(true)}
                                 disabled={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Descent)}
                                 alignText="center"
                                 containerStyle="width: 75px;"
+                                errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
                             />
                         </div>
                         <div class="mfd-label mfd-spacing-right middleGrid">
@@ -279,25 +285,27 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                         <div style="margin-bottom: 20px;">
                             <InputField<number>
                                 disabled={Subject.create(true)}
-                                dataEntryFormat={new WeightFormat(this.props.fmService.mfd, Subject.create(0), Subject.create(maxRteRsvFuel))}
+                                dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxRteRsvFuel))}
                                 dataHandlerDuringValidation={async (v) => this.props.fmService.fmgc.data.routeReserveFuelWeightPilotEntry.set(v || undefined)}
                                 enteredByPilot={this.props.fmService.fmgc.data.routeReserveFuelIsPilotEntered}
                                 value={this.props.fmService.fmgc.data.routeReserveFuelWeight}
                                 inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
                                 alignText="flex-end"
                                 containerStyle="width: 150px;"
+                                errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
                             />
                         </div>
                         <div style="margin-bottom: 20px; margin-left: 5px">
                             <InputField<number>
                                 disabled={Subject.create(true)}
-                                dataEntryFormat={new PercentageFormat(this.props.fmService.mfd, Subject.create(0), Subject.create(maxRteRsvFuelPerc))}
+                                dataEntryFormat={new PercentageFormat(Subject.create(0), Subject.create(maxRteRsvFuelPerc))}
                                 dataHandlerDuringValidation={async (v) => this.props.fmService.fmgc.data.routeReserveFuelPercentagePilotEntry.set(v)}
                                 enteredByPilot={this.props.fmService.fmgc.data.routeReserveFuelIsPilotEntered}
                                 value={this.props.fmService.fmgc.data.routeReserveFuelPercentage}
                                 inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
                                 alignText="center"
                                 containerStyle="width: 120px;"
+                                errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
                             />
                         </div>
                         <div class="mfd-label mfd-spacing-right middleGrid">
@@ -305,10 +313,11 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                         </div>
                         <div style="margin-bottom: 20px;">
                             <InputField<number>
-                                dataEntryFormat={new WeightFormat(this.props.fmService.mfd, Subject.create(0), Subject.create(maxJtsnGw))}
+                                dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxJtsnGw))}
                                 value={this.props.fmService.fmgc.data.jettisonGrossWeight}
                                 alignText="flex-end"
                                 containerStyle="width: 150px;"
+                                errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
                             />
                         </div>
                         <div class="mfd-label mfd-spacing-right middleGrid">
@@ -316,12 +325,13 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                         </div>
                         <div style="margin-bottom: 20px;">
                             <InputField<number>
-                                dataEntryFormat={new WeightFormat(this.props.fmService.mfd, Subject.create(0), Subject.create(maxAltnFuel))}
+                                dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxAltnFuel))}
                                 dataHandlerDuringValidation={async (v) => this.props.fmService.fmgc.data.alternateFuelPilotEntry.set(v)}
                                 enteredByPilot={this.props.fmService.fmgc.data.alternateFuelIsPilotEntered}
                                 value={this.props.fmService.fmgc.data.alternateFuel}
                                 alignText="flex-end"
                                 containerStyle="width: 150px;"
+                                errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
                             />
                         </div>
                         <div style="display: flex; justify-content: center; margin-bottom: 20px;">
@@ -339,7 +349,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                         </div>
                         <div style="margin-bottom: 20px;">
                             <InputField<number>
-                                dataEntryFormat={new WeightFormat(this.props.fmService.mfd, Subject.create(0), Subject.create(maxFinalFuel))}
+                                dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxFinalFuel))}
                                 dataHandlerDuringValidation={async (v) => {
                                     this.props.fmService.fmgc.data.finalFuelWeightPilotEntry.set(v);
                                     this.props.fmService.fmgc.data.finalFuelTimePilotEntry.set(v / 200); // assuming 200kg fuel burn per minute FIXME
@@ -348,11 +358,12 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                                 value={this.props.fmService.fmgc.data.finalFuelWeight}
                                 alignText="flex-end"
                                 containerStyle="width: 150px;"
+                                errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
                             />
                         </div>
                         <div style="margin-bottom: 20px; margin-left: 5px;">
                             <InputField<number>
-                                dataEntryFormat={new TimeHHMMFormat(this.props.fmService.mfd)}
+                                dataEntryFormat={new TimeHHMMFormat()}
                                 dataHandlerDuringValidation={async (v) => {
                                     this.props.fmService.fmgc.data.finalFuelTimePilotEntry.set(v);
                                     this.props.fmService.fmgc.data.finalFuelWeightPilotEntry.set(v * 200); // assuming 200kg fuel burn per minute FIXME
@@ -361,6 +372,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                                 value={this.props.fmService.fmgc.data.finalFuelTime}
                                 alignText="center"
                                 containerStyle="width: 120px;"
+                                errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
                             />
                         </div>
                         <div class="mfd-label mfd-spacing-right middleGrid">
@@ -414,12 +426,13 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                             <div class="mfd-label" style="margin-bottom: 20px; text-align: center;">MIN FUEL AT DEST</div>
                             <div style="margin-bottom: 30px; display: flex; justify-content: center;">
                                 <InputField<number>
-                                    dataEntryFormat={new WeightFormat(this.props.fmService.mfd)}
+                                    dataEntryFormat={new WeightFormat()}
                                     dataHandlerDuringValidation={async (v) => this.props.fmService.fmgc.data.minimumFuelAtDestinationPilotEntry.set(v)}
                                     enteredByPilot={this.props.fmService.fmgc.data.minimumFuelAtDestinationIsPilotEntered}
                                     value={this.props.fmService.fmgc.data.minimumFuelAtDestination}
                                     alignText="flex-end"
                                     containerStyle="width: 150px;"
+                                    errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
                                 />
                             </div>
                             <div class="mfd-label" style="margin-bottom: 5px; text-align: center;">EXTRA</div>
@@ -428,7 +441,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                                     <span class="mfd-value-green">{this.extraFuelWeight.map((it) => (it ? (it / 1000).toFixed(1) : '--.-'))}</span>
                                     <span class="mfd-label-unit mfd-unit-trailing">T</span>
                                 </div>
-                                <span class="mfd-value-green">{this.extraFuelTime.map((it) => (new TimeHHMMFormat(this.props.fmService.mfd)).format(it))}</span>
+                                <span class="mfd-value-green">{this.extraFuelTime.map((it) => (new TimeHHMMFormat()).format(it))}</span>
                             </div>
                         </div>
                     </div>

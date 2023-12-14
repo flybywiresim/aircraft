@@ -152,8 +152,9 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
                         <div style="margin-left: 75px;">
                             <InputField<number>
                                 value={this.inboundCourse}
-                                dataEntryFormat={new InboundCourseFormat(this.props.fmService.mfd)}
+                                dataEntryFormat={new InboundCourseFormat()}
                                 tmpyActive={this.tmpyActive}
+                                errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
                             />
                         </div>
                         <span class="mfd-label" style="margin-top: 50px; margin-bottom: 20px;">TURN</span>
@@ -176,16 +177,18 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
                             <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; margin-left: 30px;">
                                 <div ref={this.legTimeRef}>
                                     <InputField<number>
-                                        dataEntryFormat={new HoldTimeFormat(this.props.fmService.mfd)}
+                                        dataEntryFormat={new HoldTimeFormat()}
                                         value={this.legTime}
                                         tmpyActive={this.tmpyActive}
+                                        errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
                                     />
                                 </div>
                                 <div ref={this.legDistanceRef}>
                                     <InputField<number>
-                                        dataEntryFormat={new HoldDistFormat(this.props.fmService.mfd)}
+                                        dataEntryFormat={new HoldDistFormat()}
                                         value={this.legDistance}
                                         tmpyActive={this.tmpyActive}
+                                        errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
                                     />
                                 </div>
                             </div>

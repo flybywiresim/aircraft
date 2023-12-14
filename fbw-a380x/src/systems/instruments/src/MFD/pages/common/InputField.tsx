@@ -1,6 +1,7 @@
 import { ComponentProps, DisplayComponent, FSComponent, Subject, Subscribable, Subscription, VNode } from '@microsoft/msfs-sdk';
 import './style.scss';
 import { DataEntryFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
+import { FmsError, FmsErrorType } from '@fmgc/FmsError';
 
 // eslint-disable-next-line max-len
 export const emptyMandatoryCharacter = (selected: boolean) => `<svg width="16" height="23" viewBox="1 1 13 23"><polyline points="2,2 2,22 13,22 13,2 2,2" fill="none" stroke=${selected ? 'black' : '#e68000'} stroke-width="2" /></svg>`;
@@ -25,6 +26,7 @@ interface InputFieldProps<T> extends ComponentProps {
      * @returns whether validation was successful. If nothing is returned, success is assumed
      */
     dataHandlerDuringValidation?: (newValue: T) => Promise<boolean | void>;
+    errorHandler?: (errorType: FmsErrorType) => void;
     handleFocusBlurExternally?: boolean;
     containerStyle?: string;
     alignText?: 'flex-start' | 'center' | 'flex-end';
@@ -247,7 +249,14 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
     private async validateAndUpdate(input: string) {
         this.isValidating.set(true);
 
-        const newValue = await this.props.dataEntryFormat.parse(input);
+        let newValue = null;
+        try {
+            newValue = await this.props.dataEntryFormat.parse(input);
+        } catch(msg: unknown) {
+            if (msg instanceof FmsError && this.props.errorHandler) {
+                this.props.errorHandler(msg.type);
+            }
+        }
 
         let updateWasSuccessful = true;
         const artificialWaitingTime = new Promise((resolve) => setTimeout(resolve, 500));

@@ -168,6 +168,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                             value={this.props.fmService.fmgc.data.atcCallsign}
                             containerStyle="width: 200px; margin-right: 5px;"
                             alignText="center"
+                            errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
                         />
                         <Button
                             disabled={Subject.create(true)}
@@ -201,6 +202,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                             value={this.fromIcao}
                             alignText="center"
                             disabled={this.fromIcaoDisabled}
+                            errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
                         />
                         <div class="mfd-label init-space-lr">TO</div>
                         <InputField<string>
@@ -215,6 +217,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                             canBeCleared={Subject.create(false)}
                             value={this.toIcao}
                             alignText="center"
+                            errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
                         />
                         <div class="mfd-label init-space-lr">ALTN</div>
                         <InputField<string>
@@ -227,6 +230,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                             disabled={this.altnDisabled}
                             value={this.altnIcao}
                             alignText="center"
+                            errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
                         />
                     </div>
                     <div class="mfd-fms-init-line">
@@ -239,6 +243,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                             containerStyle="width: 200px; margin-right: 5px;"
                             alignText="center"
                             disabled={Subject.create(true)} // TODO
+                            errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
                         />
                         <Button disabled={Subject.create(true)} label="RTE SEL" onClick={() => console.log('RTE SEL')} buttonStyle="margin-right: 10px; width: 200px;" />
                     </div>
@@ -252,6 +257,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                             value={this.altnRte}
                             containerStyle="width: 200px; margin-right: 5px;"
                             alignText="center"
+                            errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
                         />
                         <Button
                             label="ALTN RTE SEL"
@@ -263,54 +269,59 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                     <div class="mfd-fms-init-line">
                         <div class="mfd-label init-input-field">CRZ FL</div>
                         <InputField<number>
-                            dataEntryFormat={new FlightLevelFormat(this.props.fmService.mfd, Subject.create(100), Subject.create(maxCertifiedAlt))}
+                            dataEntryFormat={new FlightLevelFormat(Subject.create(100), Subject.create(maxCertifiedAlt))}
                             dataHandlerDuringValidation={async (v) => this.loadedFlightPlan.performanceData.cruiseFlightLevel.set(v)}
                             mandatory={Subject.create(true)}
                             disabled={this.altnDisabled}
                             canBeCleared={Subject.create(false)}
                             value={this.crzFl}
                             containerStyle="margin-right: 25px;"
+                            errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
                         />
                         <div class="mfd-label init-input-field" style="width: auto;">CRZ TEMP</div>
                         <InputField<number>
-                            dataEntryFormat={new CrzTempFormat(this.props.fmService.mfd)}
+                            dataEntryFormat={new CrzTempFormat()}
                             mandatory={Subject.create(false)}
                             disabled={Subject.create(true)} // TODO
                             value={this.crzTemp}
                             containerStyle="width: 110px; justify-content: flex-end;"
                             alignText="center"
+                            errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
                         />
                     </div>
                     <div class="mfd-fms-init-line" style="margin-top: 10px;">
                         <div class="mfd-label init-input-field">CI</div>
                         <InputField<number>
-                            dataEntryFormat={new CostIndexFormat(this.props.fmService.mfd)}
+                            dataEntryFormat={new CostIndexFormat()}
                             mandatory={Subject.create(true)}
                             disabled={this.costIndexDisabled}
                             value={this.props.fmService.fmgc.data.costIndex}
                             containerStyle="width: 70px; margin-right: 90px; justify-content: center;"
                             alignText="center"
+                            errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
                         />
                         <div class="mfd-label init-input-field" style="width: auto;">TROPO</div>
                         <InputField<number>
-                            dataEntryFormat={new TropoFormat(this.props.fmService.mfd)}
+                            dataEntryFormat={new TropoFormat()}
                             dataHandlerDuringValidation={async (v) => this.props.fmService.fmgc.data.tropopausePilotEntry.set(v)}
                             mandatory={Subject.create(false)}
                             enteredByPilot={this.props.fmService.fmgc.data.tropopauseIsPilotEntered}
                             value={this.props.fmService.fmgc.data.tropopause}
                             onModified={() => {}}
                             alignText="flex-end"
+                            errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
                         />
                     </div>
                     <div class="mfd-fms-init-line trip-wind">
                         <div class="mfd-label init-input-field" style="margin-top: 90px;">TRIP WIND</div>
                         <InputField<number>
-                            dataEntryFormat={new TripWindFormat(this.props.fmService.mfd)}
+                            dataEntryFormat={new TripWindFormat()}
                             mandatory={Subject.create(false)}
                             disabled={this.tripWindDisabled} // TODO
                             value={this.props.fmService.fmgc.data.tripWind}
                             containerStyle="width: 125px; margin-right: 80px; margin-top: 90px;"
                             alignText="center"
+                            errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
                         />
                         <Button disabled={Subject.create(true)} label="WIND" onClick={() => console.log('WIND')} buttonStyle="margin-right: 10px; margin-top: 90px;" />
                         <div style="flex-grow: 1" />

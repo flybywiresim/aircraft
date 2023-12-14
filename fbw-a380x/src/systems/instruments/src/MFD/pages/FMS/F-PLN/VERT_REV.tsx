@@ -267,10 +267,11 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                                     <div class="mfd-label mfd-spacing-right">ETT</div>
                                     <div>
                                         <InputField<number>
-                                            dataEntryFormat={new TimeHHMMSSFormat(this.props.fmService.mfd)}
+                                            dataEntryFormat={new TimeHHMMSSFormat()}
                                             value={this.props.fmService.fmgc.data.estimatedTakeoffTime}
                                             alignText="center"
                                             containerStyle="width: 175px;"
+                                            errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
                                         />
                                     </div>
                                 </div>
@@ -297,7 +298,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                                 </div>
                                 <div class="mfd-vert-rev-spd-cstr-line">
                                     <InputField<number>
-                                        dataEntryFormat={new SpeedKnotsFormat(this.props.fmService.mfd, Subject.create(90), Subject.create(Vmo))}
+                                        dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
                                         dataHandlerDuringValidation={async (val) => {
                                             const index = this.props.fmService.flightPlanService.get(this.loadedFlightPlanIndex.get()).activeLegIndex + this.selectedWaypointIndex.get() + 1;
                                             const fpln = this.props.fmService.flightPlanService.get(this.loadedFlightPlanIndex.get());
@@ -313,6 +314,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                                         disabled={this.spdConstraintDisabled}
                                         value={this.speedConstraintInput}
                                         alignText="flex-end"
+                                        errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
                                     />
                                     <Button
                                         label={Subject.create(
@@ -386,12 +388,13 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                                     </div>
                                     <div style="display: flex; flex-direction: column; align-self: flex-end; justify-content: center; align-items: center; padding-bottom: 20px;">
                                         <InputField<number>
-                                            dataEntryFormat={new AltitudeOrFlightLevelFormat(this.props.fmService.mfd, this.transitionAltitude)}
+                                            dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transitionAltitude)}
                                             dataHandlerDuringValidation={(val) => this.tryUpdateAltitudeConstraint(val)}
                                             mandatory={Subject.create(false)}
                                             disabled={this.altConstraintDisabled}
                                             value={this.altitudeConstraintInput}
                                             alignText="flex-end"
+                                            errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
                                         />
                                         <div ref={this.altWindowValueRef} class="mfd-vert-rev-alt-window-value">
                                             <span class="mfd-label-unit bigger mfd-unit-leading">{this.altWindowUnitLeading}</span>
