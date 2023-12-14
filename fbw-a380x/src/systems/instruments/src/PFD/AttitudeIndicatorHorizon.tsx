@@ -107,7 +107,7 @@ export class Horizon extends DisplayComponent<HorizonProps> {
 
         const apfd = this.props.bus.getSubscriber<Arinc429Values>();
 
-        apfd.on('pitchAr').withArinc429Precision(3).handle((pitch) => {
+        apfd.on('pitchAr').withPrecision(3).handle((pitch) => {
             const multiplier = 1000;
             const currentValueAtPrecision = Math.round(pitch.value * multiplier) / multiplier;
             if (pitch.isNormalOperation()) {
@@ -121,7 +121,7 @@ export class Horizon extends DisplayComponent<HorizonProps> {
             this.yOffset.set(yOffset);
         });
 
-        apfd.on('rollAr').withArinc429Precision(2).handle((roll) => {
+        apfd.on('rollAr').withPrecision(2).handle((roll) => {
             const multiplier = 100;
             const currentValueAtPrecision = Math.round(roll.value * multiplier) / multiplier;
             if (roll.isNormalOperation()) {
@@ -482,7 +482,7 @@ class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
             this.determineSlideSlip();
         });
 
-        sub.on('rollAr').withArinc429Precision(2).handle((roll) => {
+        sub.on('rollAr').withPrecision(2).handle((roll) => {
             this.roll = roll;
             this.determineSlideSlip();
         });

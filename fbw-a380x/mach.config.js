@@ -28,7 +28,7 @@ module.exports = {
         typecheckingPlugin(),
     ],
     instruments: [
-        msfsAvionicsInstrument('PFD'),
+        // msfsAvionicsInstrument('PFD'),
         msfsAvionicsInstrument('MFD'),
 
         reactInstrument('EWD'),

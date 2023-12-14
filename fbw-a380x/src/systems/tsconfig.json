@@ -2,7 +2,7 @@
     "compilerOptions": {
         "target": "ESNext",
         "baseUrl": ".",
-        "typeRoots": ["../typings", "../node_modules/@types"],
+        "typeRoots": ["../../../fbw-common/src/typings", "../node_modules/@types"],
         "moduleResolution": "node",
         "paths": {
             "@shared/*": ["./shared/src/*"],
@@ -12,7 +12,7 @@
             "@flybywiresim/failures": ["failures"],
             "@flybywiresim/fbw-sdk": ["../../../fbw-common/src/systems/index.ts"],
             "@tcas/*": ["./tcas/src/*"],
-            "@typings/*": ["../typings"],
+            "@typings/*": ["../../../fbw-common/src/typings/*"],
         }
     }
 }

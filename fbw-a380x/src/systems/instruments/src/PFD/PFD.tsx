@@ -16,7 +16,7 @@ import { AirspeedIndicator, AirspeedIndicatorOfftape, MachNumber } from './Speed
 import { VerticalSpeedIndicator } from './VerticalSpeedIndicator';
 
 export const getDisplayIndex = () => {
-    const url = document.getElementsByTagName('a32nx-pfd')[0].getAttribute('url');
+    const url = document.getElementsByTagName('a380x-pfd')[0].getAttribute('url');
     const duId = url ? parseInt(url.substring(url.length - 1), 10) : -1;
     switch(duId) {
         case 0:

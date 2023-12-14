@@ -7,7 +7,7 @@ import { SimplaneValueProvider } from './shared/SimplaneValueProvider';
 
 import './style.scss';
 
-class A32NX_PFD extends BaseInstrument {
+class A380X_PFD extends BaseInstrument {
     private bus: EventBus;
 
     private simVarPublisher: PFDSimvarPublisher;
@@ -42,7 +42,7 @@ class A32NX_PFD extends BaseInstrument {
     }
 
     get templateID(): string {
-        return 'A32NX_PFD';
+        return 'A380X_PFD';
     }
 
     public getDeltaTime() {
@@ -221,4 +221,4 @@ class A32NX_PFD extends BaseInstrument {
     }
 }
 
-registerInstrument('a32nx-pfd', A32NX_PFD);
+registerInstrument('a380x-pfd', A380X_PFD);

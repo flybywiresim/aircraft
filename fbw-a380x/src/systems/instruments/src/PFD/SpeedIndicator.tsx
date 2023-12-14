@@ -197,7 +197,7 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
             }
         });
 
-        pf.on('altitudeAr').withArinc429Precision(2).handle((a) => {
+        pf.on('altitudeAr').withPrecision(2).handle((a) => {
             this.altitude = a;
             if (this.altitude.isNormalOperation() && this.altitude.value < 15000 && this.flapHandleIndex < 4) {
                 this.vfeNext.instance.classList.remove('HiddenElement');
@@ -625,7 +625,7 @@ class VLsBar extends DisplayComponent<{ bus: EventBus }> {
             this.setVlsPath(this.vlsState.vls);
         });
 
-        sub.on('speedAr').withArinc429Precision(2).handle((s) => {
+        sub.on('speedAr').withPrecision(2).handle((s) => {
             this.vlsState.airSpeed = s.value;
             this.setVlsPath(this.vlsState.vls);
         });
@@ -667,7 +667,7 @@ class VAlphaLimBar extends DisplayComponent<{ bus: EventBus }> {
 
         const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values>();
 
-        sub.on('speedAr').withArinc429Precision(2).handle((s) => {
+        sub.on('speedAr').withPrecision(2).handle((s) => {
             this.airSpeed = s;
             this.setAlphaLimBarPath();
         });
@@ -778,7 +778,7 @@ class SpeedTarget extends DisplayComponent <{ bus: EventBus }> {
             this.needsUpdate = true;
         });
 
-        sub.on('speedAr').withArinc429Precision(2).handle((s) => {
+        sub.on('speedAr').withPrecision(2).handle((s) => {
             this.speedState.speed = s;
 
             this.needsUpdate = true;
