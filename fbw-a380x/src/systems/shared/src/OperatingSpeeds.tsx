@@ -315,7 +315,7 @@ export class A380OperatingSpeeds {
         const klb = Units.kilogramToPound(m * 1000.0) / 1000.0;
 
         const cm = _correctMass(klb);
-        this.vs = vls[fPos][cm](klb) / 1.1; // rough hack
+        this.vs = vls[fPos][cm](klb) / 1.2; // rough hack
         this.vls = vls[fPos][cm](klb);
         this.vapp = this.vls + _addWindComponent(wind);
         this.f2 = f2[cm](klb);
@@ -356,7 +356,7 @@ export class A380OperatingSpeedsApproach {
 
         const cm = _correctMass(klb);
         this.vls = vls[isConf3 ? 3 : 4][cm](klb);
-        this.vapp = this.vls + NXSpeedsUtils.addWindComponent(wind / 3);
+        this.vapp = this.vls + A380SpeedsUtils.addWindComponent(wind / 3);
         this.vref = vls[4][cm](klb);
         this.f2 = f2[cm](klb);
         this.f3 = f3[cm](klb);
@@ -366,7 +366,7 @@ export class A380OperatingSpeedsApproach {
     }
 }
 
-export class NXSpeedsUtils {
+export class A380SpeedsUtils {
     /**
      * Calculates wind component for ground speed mini
      * @param vw velocity wind (1/3 steady headwind)
@@ -440,5 +440,17 @@ export class NXSpeedsUtils {
      */
     static getVmcg(altitude: Feet): Knots {
         return this.interpolateTable(vmcg, altitude);
+    }
+
+    /**
+     * Get Vs1g for the given config
+     *
+     * @param {number} mass mass of the aircraft in tons
+     * @param {number} conf 0 - Clean config, 1 - Config 1 + F, 2 - Config 2, 3 - Config 3, 4 - Config Full, 5 - Config 1.
+     * @param {boolean} gearDown true if the gear is down
+     */
+    static getVs1g(mass: number, conf: number): Knots {
+        // rough, dirty hack
+        return vls[conf][_correctMass(mass)](mass) / 1.23;
     }
 }

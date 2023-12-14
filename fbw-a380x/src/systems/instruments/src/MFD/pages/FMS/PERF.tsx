@@ -37,7 +37,7 @@ import { ConditionalComponent } from 'instruments/src/MFD/pages/common/Condition
 import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { VerticalCheckpointReason } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { Feet } from 'msfs-geo';
-import { NXSpeedsUtils } from '@shared/OperatingSpeeds';
+import { A380SpeedsUtils } from '@shared/OperatingSpeeds';
 
 interface MfdFmsPerfProps extends AbstractMfdPageProps {
 }
@@ -720,13 +720,13 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             // Update APPR page
             this.apprLandingWeight.set(this.props.fmService.getLandingWeight());
             if (this.props.fmService.fmgc.data.approachWind.get()?.direction && this.props.fmService.fmgc.data.approachWind.get()?.speed && this.loadedFlightPlan.destinationRunway) {
-                const towerHeadwind = NXSpeedsUtils.getHeadwind(this.props.fmService.fmgc.data.approachWind.get().speed, this.props.fmService.fmgc.data.approachWind.get().direction, this.loadedFlightPlan.destinationRunway.magneticBearing);
+                const towerHeadwind = A380SpeedsUtils.getHeadwind(this.props.fmService.fmgc.data.approachWind.get().speed, this.props.fmService.fmgc.data.approachWind.get().direction, this.loadedFlightPlan.destinationRunway.magneticBearing);
                 if (towerHeadwind < 0) {
                     this.apprHeadwind.set(`-${Math.abs(towerHeadwind).toFixed(0).padStart(2, '0')}`);
                 } else {
                     this.apprHeadwind.set(towerHeadwind.toFixed(0).padStart(3, '0'));
                 }
-                const towerCrosswind = NXSpeedsUtils.getHeadwind(this.props.fmService.fmgc.data.approachWind.get().speed, this.props.fmService.fmgc.data.approachWind.get().direction, this.loadedFlightPlan.destinationRunway.magneticBearing + 90);
+                const towerCrosswind = A380SpeedsUtils.getHeadwind(this.props.fmService.fmgc.data.approachWind.get().speed, this.props.fmService.fmgc.data.approachWind.get().direction, this.loadedFlightPlan.destinationRunway.magneticBearing + 90);
                 this.apprCrosswind.set(Math.abs(towerCrosswind).toFixed(0).padStart(3, '0'));
             } else {
                 this.apprHeadwind.set('---');

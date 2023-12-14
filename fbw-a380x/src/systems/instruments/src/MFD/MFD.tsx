@@ -299,14 +299,6 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
         }
     }
 
-    /* public showFmsErrorMessageFreeText(msg: FmsErrorMessage) {
-        const exists = this.fmsErrors.getArray().findIndex((el) => el.message === msg.message && el.cleared === true);
-        if (exists !== -1) {
-            this.fmsErrors.removeAt(exists);
-        }
-        this.fmsErrors.insert(msg, 0);
-    } */
-
     public clearLatestFmsErrorMessage() {
         const arr = this.fmsErrors.getArray().concat([]);
         const index = arr.findIndex((val) => val.cleared === false);
@@ -484,12 +476,12 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
             if (plan.performanceData.accelerationAltitude.get() === undefined) {
                 // it's important to set this immediately as we don't want to immediately sequence to the climb phase
                 plan.performanceData.pilotAccelerationAltitude.set(SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') + parseInt(NXDataStore.get('CONFIG_ACCEL_ALT', '1500')));
-                // this.updateThrustReductionAcceleration();
+                this.fmService.acInterface.updateThrustReductionAcceleration();
             }
             if (plan.performanceData.engineOutAccelerationAltitude.get() === undefined) {
                 // it's important to set this immediately as we don't want to immediately sequence to the climb phase
                 plan.performanceData.pilotEngineOutAccelerationAltitude.set(SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') + parseInt(NXDataStore.get('CONFIG_ACCEL_ALT', '1500')));
-                // this.updateThrustReductionAcceleration();
+                this.fmService.acInterface.updateThrustReductionAcceleration();
             }
 
             pd.taxiFuel.set(null);
@@ -537,7 +529,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
             // This checks against the pilot defined cruise altitude and the automatically populated cruise altitude
             if (this.flightPlanService.active.performanceData.cruiseFlightLevel.get() !== SimVar.GetGameVarValue('AIRCRAFT CRUISE ALTITUDE', 'feet')) {
                 SimVar.SetGameVarValue('AIRCRAFT CRUISE ALTITUDE', 'feet', this.flightPlanService.active.performanceData.cruiseFlightLevel.get());
-                // this.addMessageToQueue(NXSystemMessages.newCrzAlt.getModifiedMessage(this._cruiseFlightLevel * 100));
+                this.addMessageToQueue(NXSystemMessages.newCrzAlt.getModifiedMessage(this.flightPlanService.active.performanceData.cruiseFlightLevel.get().toFixed(0)));
             }
 
             break;
@@ -715,10 +707,10 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
                 this.checkGWParams();
                 this.updateMessageQueue();
 
-                /* TODO port over from A32NX_FMCMainDisplay.js:
-                this.checkSpeedLimit();
-                this.thrustReductionAccelerationChecks();
-                this.updatePerfPageAltPredictions(); */
+                this.fmService.acInterface.checkSpeedLimit();
+                this.fmService.acInterface.thrustReductionAccelerationChecks();
+                // TODO port over from legacy code
+                // this.updatePerfPageAltPredictions();
             }
 
             this.fmService.acInterface.arincBusOutputs.forEach((word) => word.writeToSimVarIfDirty());

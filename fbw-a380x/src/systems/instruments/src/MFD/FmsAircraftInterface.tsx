@@ -10,11 +10,10 @@ import { FmgcFlightPhase } from '@shared/flightphase';
 import { MfdComponent } from 'instruments/src/MFD/MFD';
 import { FmgcDataInterface } from 'instruments/src/MFD/fmgc';
 import { ADIRS } from 'instruments/src/MFD/pages/FMS/legacy/Adirs';
-import { NXSpeedsUtils } from 'instruments/src/MFD/pages/FMS/legacy/NXSpeeds';
 import { NXSystemMessages } from 'instruments/src/MFD/pages/FMS/legacy/NXSystemMessages';
 import { MfdFlightManagementService } from 'instruments/src/MFD/pages/common/FlightManagementService';
 import { Feet } from 'msfs-geo';
-import { A380OperatingSpeeds, A380OperatingSpeedsApproach } from '../../../shared/src/OperatingSpeeds';
+import { A380OperatingSpeeds, A380OperatingSpeedsApproach, A380SpeedsUtils } from '../../../shared/src/OperatingSpeeds';
 
 /**
  * Interface between FMS and aircraft through SimVars and ARINC values (mostly data being sent here)
@@ -71,6 +70,19 @@ export class FmsAircraftInterface {
         this.arincTransitionLevel,
         this.arincEisWord2,
     ];
+
+    thrustReductionAccelerationChecks() {
+        // TODO port over (fms-v2)
+        // const activePlan = this.flightPlanService.active;
+
+        // if (activePlan.reconcileAccelerationWithConstraints()) {
+        //     this.addMessageToQueue(NXSystemMessages.newAccAlt.getModifiedMessage(activePlan.accelerationAltitude.toFixed(0)));
+        // }
+
+        // if (activePlan.reconcileThrustReductionWithConstraints()) {
+        //     this.addMessageToQueue(NXSystemMessages.newThrRedAlt.getModifiedMessage(activePlan.thrustReductionAltitude.toFixed(0)));
+        // }
+    }
 
     public updateThrustReductionAcceleration() {
         if (!this.flightPlanService.hasActive) {
@@ -149,10 +161,12 @@ export class FmsAircraftInterface {
 
         const tow = this.fmService.getGrossWeight() - (this.fmgc.isAnEngineOn() || this.fmgc.data.taxiFuel.get() === undefined ? 0 : this.fmgc.data.taxiFuel.get());
 
-        return activePerformanceData.v1.get() < Math.trunc(NXSpeedsUtils.getVmcg(zp))
-            || activePerformanceData.vr.get() < Math.trunc(1.05 * NXSpeedsUtils.getVmca(zp))
-            || activePerformanceData.v2.get() < Math.trunc(1.1 * NXSpeedsUtils.getVmca(zp))
-            || (isFinite(tow) && activePerformanceData.v2.get() < Math.trunc(1.13 * NXSpeedsUtils.getVs1g(tow, this.fmgc.data.takeoffFlapsSetting.get(), true)));
+        console.warn([Math.trunc(A380SpeedsUtils.getVmcg(zp)), 1.05 * A380SpeedsUtils.getVmca(zp), 1.1 * A380SpeedsUtils.getVmca(zp), Math.trunc(1.13 * A380SpeedsUtils.getVs1g(tow, this.fmgc.data.takeoffFlapsSetting.get()))]);
+
+        return activePerformanceData.v1.get() < Math.trunc(A380SpeedsUtils.getVmcg(zp))
+            || activePerformanceData.vr.get() < Math.trunc(1.05 * A380SpeedsUtils.getVmca(zp))
+            || activePerformanceData.v2.get() < Math.trunc(1.1 * A380SpeedsUtils.getVmca(zp))
+            || (isFinite(tow) && activePerformanceData.v2.get() < Math.trunc(1.13 * A380SpeedsUtils.getVs1g(tow, this.fmgc.data.takeoffFlapsSetting.get())));
     }
 
     private toSpeedsNotInserted = true;
@@ -454,11 +468,55 @@ export class FmsAircraftInterface {
         let towerHeadwind = 0;
         if (isFinite(this.fmgc.data.approachWind.get().speed) && isFinite(this.fmgc.data.approachWind.get().direction)) {
             if (this.fmgc.getDestinationRunway()) {
-                towerHeadwind = NXSpeedsUtils.getHeadwind(this.fmgc.data.approachWind.get().speed, this.fmgc.data.approachWind.get().direction, this.fmgc.getDestinationRunway().magneticBearing);
+                towerHeadwind = A380SpeedsUtils.getHeadwind(this.fmgc.data.approachWind.get().speed, this.fmgc.data.approachWind.get().direction, this.fmgc.getDestinationRunway().magneticBearing);
             }
-            vAppTarget = NXSpeedsUtils.getVtargetGSMini(vAppTarget, NXSpeedsUtils.getHeadWindDiff(towerHeadwind));
+            vAppTarget = A380SpeedsUtils.getVtargetGSMini(vAppTarget, A380SpeedsUtils.getHeadWindDiff(towerHeadwind));
         }
         return vAppTarget;
+    }
+
+    private speedLimitExceeded = false;
+
+    checkSpeedLimit() {
+        let speedLimit: number;
+        let speedLimitAlt: number;
+        switch (this.flightPhaseManager.phase) {
+            case FmgcFlightPhase.Climb:
+            case FmgcFlightPhase.Cruise:
+                speedLimit = this.fmgc.getClimbSpeedLimit().speed;
+                speedLimitAlt = this.fmgc.getClimbSpeedLimit().underAltitude;
+                break;
+            case FmgcFlightPhase.Descent:
+                speedLimit = this.fmgc.getDescentSpeedLimit().speed;
+                speedLimitAlt = this.fmgc.getDescentSpeedLimit().underAltitude;
+                break;
+            default:
+                // no speed limit in other phases
+                this.speedLimitExceeded = false;
+                return;
+        }
+
+        if (speedLimit === undefined) {
+            this.speedLimitExceeded = false;
+            return;
+        }
+
+        const cas = ADIRS.getCalibratedAirspeed();
+        const alt = ADIRS.getBaroCorrectedAltitude();
+
+        if (this.speedLimitExceeded) {
+            const resetLimitExceeded = !cas.isNormalOperation() || !alt.isNormalOperation() || alt.value > speedLimitAlt || cas.value <= (speedLimit + 5);
+            if (resetLimitExceeded) {
+                this.speedLimitExceeded = false;
+                this.mfd.removeMessageFromQueue(NXSystemMessages.spdLimExceeded.text);
+            }
+        } else if (cas.isNormalOperation() && alt.isNormalOperation()) {
+            const setLimitExceeded = alt.value < (speedLimitAlt - 150) && cas.value > (speedLimit + 10);
+            if (setLimitExceeded) {
+                this.speedLimitExceeded = true;
+                this.mfd.addMessageToQueue(NXSystemMessages.spdLimExceeded, () => !this.speedLimitExceeded);
+            }
+        }
     }
 
     private _apMasterStatus: number;
@@ -608,7 +666,7 @@ export class FmsAircraftInterface {
         if (this.fmgc.data.approachWind.get() && isFinite(this.fmgc.data.approachWind.get().speed) && isFinite(this.fmgc.data.approachWind.get().direction)) {
             let towerHeadwind = 0;
             if (this.flightPlanService.active.destinationRunway) {
-                towerHeadwind = NXSpeedsUtils.getHeadwind(this.fmgc.data.approachWind.get().speed, this.fmgc.data.approachWind.get().direction, this.flightPlanService.active.destinationRunway.magneticBearing);
+                towerHeadwind = A380SpeedsUtils.getHeadwind(this.fmgc.data.approachWind.get().speed, this.fmgc.data.approachWind.get().direction, this.flightPlanService.active.destinationRunway.magneticBearing);
             }
             const approachSpeeds = new A380OperatingSpeedsApproach(weight / 1000, this.fmgc.data.approachFlapConfig.get() === FlapConf.CONF_3, towerHeadwind);
             this.fmgc.data.approachSpeed.set(Math.ceil(approachSpeeds.vapp));
@@ -642,8 +700,8 @@ export class FmsAircraftInterface {
         SimVar.SetSimVarValue("L:A32NX_SPEEDS_LANDING_CONF3", "boolean", this.fmgc.data.approachFlapConfig.get() === FlapConf.CONF_3);
         SimVar.SetSimVarValue("L:A32NX_SPEEDS_VMAX", "number", speeds.vmax);
         SimVar.SetSimVarValue("L:A32NX_SPEEDS_VFEN", "number", speeds.vfeN);
-        // SimVar.SetSimVarValue("L:A32NX_SPEEDS_ALPHA_PROTECTION_CALC", "number", 0);
-        // SimVar.SetSimVarValue("L:A32NX_SPEEDS_ALPHA_MAX_CALC", "number", 0);
+        SimVar.SetSimVarValue("L:A32NX_SPEEDS_ALPHA_PROTECTION_CALC", "number", speeds.vs * 1.1);
+        SimVar.SetSimVarValue("L:A32NX_SPEEDS_ALPHA_MAX_CALC", "number", speeds.vs * 1.03);
     }
 
     updateConstraints() {
