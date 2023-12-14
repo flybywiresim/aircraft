@@ -11,7 +11,7 @@
 FLOAT64 CacheableVariable::get() const {
   if (cachedValue.has_value()) {
     if (dirty) {
-      LOG_ERROR("CacheableVariable::requestUpdateFromSim() called on " + name + " but the value is dirty");
+      LOG_WARN("CacheableVariable::get() called on " + name + " but the value is dirty");
     }
     return cachedValue.value();
   }
@@ -43,14 +43,12 @@ FLOAT64 CacheableVariable::readFromSim() {
 }
 
 void CacheableVariable::set(FLOAT64 value) {
-  if (cachedValue.has_value() && cachedValue.value() == value) {
+  if (cachedValue.has_value() && helper::Math::almostEqual(value, cachedValue.value(), epsilon)) {
     return;
   }
-  // TODO:
-  //  Should hasChanged be set to true here? Would call all subscribers' callbacks
-  //  Normally this is only done when a changed value is read from the sim0
   cachedValue = value;
   dirty = true;
+  setChanged(true);
 }
 
 void CacheableVariable::updateToSim() {

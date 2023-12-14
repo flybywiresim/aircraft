@@ -180,7 +180,7 @@ class DataManager {
    * E.g. "A32NX_" for the A32NX. Do not add this prefix yourself.
    *
    * @param varName Name of the variable in the sim
-   * @param optional unit SimUnit of the variable (default=Number)
+   * @param unit optional SimUnit of the variable (default=Number)
    * @param updateMode optional DataManager update mode of the variable (default=UpdateMode::NO_AUTO_UPDATE)
    * @param maxAgeTime optional maximum age of the variable in seconds (default=0)
    * @param maxAgeTicks optional maximum age of the variable in ticks (default=0)
