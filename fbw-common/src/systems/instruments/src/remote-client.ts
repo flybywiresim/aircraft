@@ -1,6 +1,7 @@
 import { Wait } from '@microsoft/msfs-sdk';
 import { NXDataStore } from '@flybywiresim/fbw-sdk';
 import { protocolV0 } from '@flybywiresim/remote-bridge-types';
+import { Base64 } from 'js-base64';
 
 import { v4 } from 'uuid';
 
@@ -11,10 +12,20 @@ const EXCLUDED_DATA_STORAGE_KEYS = [
 ];
 
 export interface RemoteClientOptions {
+    /** The WebSocket URL the remote client should connect to */
     websocketUrl: () => string,
+
+    /** The name of the client */
     clientName: string,
+
+    /** The name of the airframe the client is loaded into */
     airframeName: string,
+
+    /** The VFS path of the instruments metadata file */
     instrumentsMetadataFile: string,
+
+    /** The path which all file download requests must have at the start of their VFS path */
+    fileDownloadBasePath: string,
 }
 
 /**
@@ -30,6 +41,8 @@ export class RemoteClient {
     private readonly airframeName: string;
 
     private readonly clientName: string;
+
+    private readonly fileDownloadBasePath: string;
 
     private readonly clientID = v4();
 
@@ -56,6 +69,7 @@ export class RemoteClient {
         this.url = options.websocketUrl();
         this.airframeName = options.airframeName;
         this.clientName = options.clientName;
+        this.fileDownloadBasePath = options.fileDownloadBasePath;
 
         this.attemptConnect();
         this.fetchInstrumentsMetadata(options.instrumentsMetadataFile).then((metadata) => this.instruments = metadata);
@@ -116,10 +130,8 @@ export class RemoteClient {
         }
     }
 
+    // eslint-disable-next-line no-empty-function
     private onOpened(): void {
-        if (!this.ws) {
-
-        }
     }
 
     private onMessage(message: any): void {
@@ -158,12 +170,12 @@ export class RemoteClient {
             this.sendMessage(this.createSigninMessage());
             this.sendMessage(this.createAircraftStatusMessage());
             break;
-        case 'remoteRequestGaugeBundles':
-            Wait.awaitCondition(() => this.instruments.length !== 0, 100, 10_000).then(() => {
-                this.createSendBundleCodeMessages(msg.instrumentID);
-            }).catch(() => {
-                throw new Error('[RemoteClient](onMessage) Waited too long (>10s) for instruments to be fetched');
-            });
+        case 'remoteDownloadFile':
+            if (!msg.fileVfsPath.startsWith(this.fileDownloadBasePath) || msg.fileVfsPath.includes('..')) {
+                throw new Error(`[RemoteClient](onMessage) remoteDownloadFile received with unauthorized path (${msg.fileVfsPath})`);
+            }
+
+            this.sendFile(msg.requestID, msg.fileVfsPath);
             break;
         case 'remoteEnumerateInstruments':
             Wait.awaitCondition(() => this.instruments.length !== 0, 100, 10_000).then(() => {
@@ -280,6 +292,8 @@ export class RemoteClient {
 
             console.log(`[RemoteClient](onMessage) -> Cleared ${oldSimVarCount - this.simVarSubscriptions.length} simvars`);
 
+            // TODO clean view listeners as well
+
             break;
         }
         default: console.warn(`unknown message type: ${msg.type}`);
@@ -333,50 +347,30 @@ export class RemoteClient {
         };
     }
 
-    private async createSendBundleCodeMessages(instrumentID: string): Promise<void> {
-        const instruments = this.instruments.find((it) => it.instrumentID === instrumentID);
+    private async sendFile(requestID: string, filePath: string): Promise<void> {
+        const fileContents = await fetch(filePath);
+        const data = await fileContents.arrayBuffer();
 
-        const codeBundleUrl = instruments.gauges[0].bundles.js;
+        const chunkSize = 1024 * 100; // 100 KiB
+        const chunkCount = Math.ceil(data.byteLength / chunkSize);
 
-        const bundle = await (await fetch(codeBundleUrl)).text();
+        for (let i = 0; i < chunkCount; i++) {
+            const chunkStart = i * chunkSize;
+            const chunkEnd = Math.min(data.byteLength, chunkStart + chunkSize);
 
-        const cssBundleUrl = instruments.gauges[0].bundles.css;
+            const chunkData = data.slice(chunkStart, chunkEnd);
 
-        const cssBundle = await (await fetch(cssBundleUrl)).text();
+            const u8 = new Uint8Array(chunkData);
 
-        const jsChunkCount = Math.ceil(bundle.length / 100_000);
-        const cssChunkCount = Math.ceil(cssBundle.length / 100_000);
-
-        const iter = 0;
-
-        let jsBytesSent = 0;
-        let jsChunkIndex = 0;
-        let cssBytesSent = 0;
-        let cssChunkIndex = 0;
-        while ((jsBytesSent < bundle.length || cssBytesSent < cssBundle.length) && iter < 100) {
-            const jsData = bundle.substring(jsChunkIndex * 100_000, Math.min(bundle.length, (jsChunkIndex + 1) * 100_000));
-            const cssData = cssBundle.substring(cssChunkIndex * 100_000, Math.min(cssBundle.length, (cssChunkIndex + 1) * 100_000));
-
-            const msg: protocolV0.Messages = {
-                type: 'aircraftSendGaugeBundles',
-                bundles: {
-                    js: { chunkIndex: jsChunkIndex, chunkCount: jsChunkCount, data: jsData },
-                    css: { chunkIndex: cssChunkIndex, chunkCount: cssChunkCount, data: cssData },
-                },
+            this.sendMessage({
+                type: 'aircraftSendFileChunk',
+                requestID,
+                data: Base64.fromUint8Array(u8),
+                chunkCount,
+                chunkIndex: i,
+                totalSizeBytes: data.byteLength,
                 fromClientID: this.clientID,
-            };
-
-            this.sendMessage(msg);
-
-            if (jsBytesSent < bundle.length) {
-                jsChunkIndex++;
-                jsBytesSent += jsData.length;
-            }
-
-            if (jsBytesSent < bundle.length) {
-                cssChunkIndex++;
-                cssBytesSent += cssData.length;
-            }
+            });
         }
     }
 

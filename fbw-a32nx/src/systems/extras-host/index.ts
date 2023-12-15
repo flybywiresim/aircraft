@@ -69,6 +69,7 @@ class ExtrasHost extends BaseInstrument {
             airframeName: 'A320-251N',
             clientName: 'A32NX',
             instrumentsMetadataFile: '/VFS/a32nx_instruments_metadata.json',
+            fileDownloadBasePath: '/Pages/VCockpit/Instruments/A32NX/',
         });
 
         console.log('A32NX_EXTRASHOST: Created');

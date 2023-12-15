@@ -69,6 +69,7 @@ class ExtrasHost extends BaseInstrument {
             airframeName: 'A380-842',
             clientName: 'A380X',
             instrumentsMetadataFile: '/VFS/a380x_instruments_metadata.json',
+            fileDownloadBasePath: '/Pages/VCockpit/Instruments/A380X/',
         });
 
         console.log('A380X_EXTRASHOST: Created');
