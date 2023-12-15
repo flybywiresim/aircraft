@@ -108,7 +108,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
         }
 
         if (this.loadedFlightPlan.performanceData.cruiseFlightLevel) {
-            this.crzFl.set(this.loadedFlightPlan.performanceData.cruiseFlightLevel.get());
+            this.crzFl.set(this.loadedFlightPlan.performanceData.cruiseFlightLevel);
         }
 
         // Disable or enable fields
@@ -149,7 +149,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
         this.props.fmService.fmgc.data.atcCallsign.set(`${this.simBriefOfp.airline}${this.simBriefOfp.flightNumber}`);
         this.props.fmService.fmgc.data.costIndex.set(parseInt(this.simBriefOfp.costIndex));
 
-        this.props.fmService.flightPlanService.active.performanceData.cruiseFlightLevel.set(this.simBriefOfp.cruiseAltitude);
+        this.props.fmService.flightPlanService.setPerformanceData('cruiseFlightLevel', this.simBriefOfp.cruiseAltitude);
 
         this.props.fmService.fmgc.data.cpnyFplnAvailable.set(false);
     }
@@ -270,7 +270,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                         <div class="mfd-label init-input-field">CRZ FL</div>
                         <InputField<number>
                             dataEntryFormat={new FlightLevelFormat(Subject.create(100), Subject.create(maxCertifiedAlt))}
-                            dataHandlerDuringValidation={async (v) => this.loadedFlightPlan.performanceData.cruiseFlightLevel.set(v)}
+                            dataHandlerDuringValidation={async (v) => this.loadedFlightPlan.setPerformanceData('cruiseFlightLevel', v)}
                             mandatory={Subject.create(true)}
                             disabled={this.altnDisabled}
                             canBeCleared={Subject.create(false)}

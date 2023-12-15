@@ -134,12 +134,12 @@ export abstract class FmsPage<T extends AbstractMfdPageProps> extends DisplayCom
                 fm.vSpeedsForRunway.set(this.loadedFlightPlan.originRunway.ident);
             } else if (fm.vSpeedsForRunway.get() !== this.loadedFlightPlan.originRunway.ident) {
                 fm.vSpeedsForRunway.set(this.loadedFlightPlan.originRunway.ident);
-                fm.v1ToBeConfirmed.set(pd.v1.get());
-                pd.v1.set(undefined);
-                fm.vrToBeConfirmed.set(pd.vr.get());
-                pd.vr.set(undefined);
-                fm.v2ToBeConfirmed.set(pd.v2.get());
-                pd.v2.set(undefined);
+                fm.v1ToBeConfirmed.set(pd.v1);
+                this.loadedFlightPlan.setPerformanceData('v1', undefined);
+                fm.vrToBeConfirmed.set(pd.vr);
+                this.loadedFlightPlan.setPerformanceData('vr', undefined);
+                fm.v2ToBeConfirmed.set(pd.v2);
+                this.loadedFlightPlan.setPerformanceData('v2', undefined);
 
                 this.props.fmService.mfd.addMessageToQueue(NXSystemMessages.checkToData);
             }

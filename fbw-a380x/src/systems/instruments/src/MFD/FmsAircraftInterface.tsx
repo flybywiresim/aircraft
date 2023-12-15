@@ -91,34 +91,34 @@ export class FmsAircraftInterface {
         const activePerformanceData = this.flightPlanService.active.performanceData;
 
         this.arincThrustReductionAltitude.setBnrValue(
-            activePerformanceData.thrustReductionAltitude.get() !== undefined ? activePerformanceData.thrustReductionAltitude.get() : 0,
-            activePerformanceData.thrustReductionAltitude.get() !== undefined ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
+            activePerformanceData.thrustReductionAltitude !== undefined ? activePerformanceData.thrustReductionAltitude : 0,
+            activePerformanceData.thrustReductionAltitude !== undefined ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
             17, 131072, 0,
         );
         this.arincAccelerationAltitude.setBnrValue(
-            activePerformanceData.accelerationAltitude.get() !== undefined ? activePerformanceData.accelerationAltitude.get() : 0,
-            activePerformanceData.accelerationAltitude.get() !== undefined ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
+            activePerformanceData.accelerationAltitude !== undefined ? activePerformanceData.accelerationAltitude : 0,
+            activePerformanceData.accelerationAltitude !== undefined ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
             17, 131072, 0,
         );
         this.arincEoAccelerationAltitude.setBnrValue(
-            activePerformanceData.engineOutAccelerationAltitude.get() !== undefined ? activePerformanceData.engineOutAccelerationAltitude.get() : 0,
-            activePerformanceData.engineOutAccelerationAltitude.get() !== undefined ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
+            activePerformanceData.engineOutAccelerationAltitude !== undefined ? activePerformanceData.engineOutAccelerationAltitude : 0,
+            activePerformanceData.engineOutAccelerationAltitude !== undefined ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
             17, 131072, 0,
         );
 
         this.arincMissedThrustReductionAltitude.setBnrValue(
-            activePerformanceData.missedThrustReductionAltitude.get() !== undefined ? activePerformanceData.missedThrustReductionAltitude.get() : 0,
-            activePerformanceData.missedThrustReductionAltitude.get() !== undefined ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
+            activePerformanceData.missedThrustReductionAltitude !== undefined ? activePerformanceData.missedThrustReductionAltitude : 0,
+            activePerformanceData.missedThrustReductionAltitude !== undefined ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
             17, 131072, 0,
         );
         this.arincMissedAccelerationAltitude.setBnrValue(
-            activePerformanceData.missedAccelerationAltitude.get() !== undefined ? activePerformanceData.missedAccelerationAltitude.get() : 0,
-            activePerformanceData.missedAccelerationAltitude.get() !== undefined ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
+            activePerformanceData.missedAccelerationAltitude !== undefined ? activePerformanceData.missedAccelerationAltitude : 0,
+            activePerformanceData.missedAccelerationAltitude !== undefined ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
             17, 131072, 0,
         );
         this.arincMissedEoAccelerationAltitude.setBnrValue(
-            activePerformanceData.missedEngineOutAccelerationAltitude.get() !== undefined ? activePerformanceData.missedEngineOutAccelerationAltitude.get() : 0,
-            activePerformanceData.missedEngineOutAccelerationAltitude.get() !== undefined ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
+            activePerformanceData.missedEngineOutAccelerationAltitude !== undefined ? activePerformanceData.missedEngineOutAccelerationAltitude : 0,
+            activePerformanceData.missedEngineOutAccelerationAltitude !== undefined ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
             17, 131072, 0,
         );
     }
@@ -142,13 +142,13 @@ export class FmsAircraftInterface {
             return;
         }
 
-        SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", this.flightPlanService.active.performanceData.v1.get() ?? NaN);
-        SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", this.flightPlanService.active.performanceData.v2.get() ?? NaN);
-        SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", this.flightPlanService.active.performanceData.vr.get() ?? NaN);
+        SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", this.flightPlanService.active.performanceData.v1 ?? NaN);
+        SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", this.flightPlanService.active.performanceData.v2 ?? NaN);
+        SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", this.flightPlanService.active.performanceData.vr ?? NaN);
     }
 
     getToSpeedsTooLow(activePerformanceData: FlightPlanPerformanceData) {
-        if (this.fmgc.data.takeoffFlapsSetting.get() === null || this.fmService.getGrossWeight() === null) {
+        if (this.fmgc.data.takeoffFlapsSetting === null || this.fmService.getGrossWeight() === null) {
             return false;
         }
 
@@ -163,10 +163,10 @@ export class FmsAircraftInterface {
 
         console.warn([Math.trunc(A380SpeedsUtils.getVmcg(zp)), 1.05 * A380SpeedsUtils.getVmca(zp), 1.1 * A380SpeedsUtils.getVmca(zp), Math.trunc(1.13 * A380SpeedsUtils.getVs1g(tow, this.fmgc.data.takeoffFlapsSetting.get()))]);
 
-        return activePerformanceData.v1.get() < Math.trunc(A380SpeedsUtils.getVmcg(zp))
-            || activePerformanceData.vr.get() < Math.trunc(1.05 * A380SpeedsUtils.getVmca(zp))
-            || activePerformanceData.v2.get() < Math.trunc(1.1 * A380SpeedsUtils.getVmca(zp))
-            || (isFinite(tow) && activePerformanceData.v2.get() < Math.trunc(1.13 * A380SpeedsUtils.getVs1g(tow, this.fmgc.data.takeoffFlapsSetting.get())));
+        return activePerformanceData.v1 < Math.trunc(A380SpeedsUtils.getVmcg(zp))
+            || activePerformanceData.vr < Math.trunc(1.05 * A380SpeedsUtils.getVmca(zp))
+            || activePerformanceData.v2 < Math.trunc(1.1 * A380SpeedsUtils.getVmca(zp))
+            || (isFinite(tow) && activePerformanceData.v2 < Math.trunc(1.13 * A380SpeedsUtils.getVs1g(tow, this.fmgc.data.takeoffFlapsSetting.get())));
     }
 
     private toSpeedsNotInserted = true;
@@ -174,9 +174,9 @@ export class FmsAircraftInterface {
     private vSpeedDisagree = false;
 
     private vSpeedsValid(activePerformanceData: FlightPlanPerformanceData) {
-        const v1Speed = activePerformanceData.v1.get();
-        const vRSpeed = activePerformanceData.vr.get();
-        const v2Speed = activePerformanceData.v2.get();
+        const v1Speed = activePerformanceData.v1;
+        const vRSpeed = activePerformanceData.vr;
+        const v2Speed = activePerformanceData.v2;
 
         return (!!v1Speed && !!vRSpeed ? v1Speed <= vRSpeed : true)
             && (!!vRSpeed && !!v2Speed ? vRSpeed <= v2Speed : true)
@@ -184,7 +184,7 @@ export class FmsAircraftInterface {
     }
 
     public toSpeedsChecks(activePerformanceData: FlightPlanPerformanceData) {
-        const toSpeedsNotInserted = !activePerformanceData.v1.get() || !activePerformanceData.vr.get() || !activePerformanceData.v2.get();
+        const toSpeedsNotInserted = !activePerformanceData.v1 || !activePerformanceData.vr || !activePerformanceData.v2;
         if (toSpeedsNotInserted !== this.toSpeedsNotInserted) {
             this.toSpeedsNotInserted = toSpeedsNotInserted;
         }
@@ -348,18 +348,18 @@ export class FmsAircraftInterface {
 
             switch (this.fmgc.getFlightPhase()) {
                 case FmgcFlightPhase.Preflight: {
-                    if (activePerformanceData.v2.get()) {
-                        vPfd = activePerformanceData.v2.get();
-                        this.managedSpeedTarget = activePerformanceData.v2.get() + 10;
+                    if (activePerformanceData.v2) {
+                        vPfd = activePerformanceData.v2;
+                        this.managedSpeedTarget = activePerformanceData.v2 + 10;
                     }
                     break;
                 }
                 case FmgcFlightPhase.Takeoff: {
-                    if (activePerformanceData.v2.get()) {
-                        vPfd = activePerformanceData.v2.get();
+                    if (activePerformanceData.v2) {
+                        vPfd = activePerformanceData.v2;
                         this.managedSpeedTarget = engineOut
-                            ? Math.min(activePerformanceData.v2.get() + 15, Math.max(activePerformanceData.v2.get(), this.takeoffEngineOutSpeed ? this.takeoffEngineOutSpeed : 0))
-                            : activePerformanceData.v2.get() + 10;
+                            ? Math.min(activePerformanceData.v2 + 15, Math.max(activePerformanceData.v2, this.takeoffEngineOutSpeed ? this.takeoffEngineOutSpeed : 0))
+                            : activePerformanceData.v2 + 10;
                     }
                     break;
                 }
@@ -821,12 +821,12 @@ export class FmsAircraftInterface {
         const _targetFl = Simplane.getAutoPilotDisplayedAltitudeLockValue() / 100;
 
         if (
-            (this.fmgc.getFlightPhase() === FmgcFlightPhase.Climb && _targetFl > this.flightPlanService.active.performanceData.cruiseFlightLevel.get()) ||
-            (this.fmgc.getFlightPhase() === FmgcFlightPhase.Cruise && _targetFl !== this.flightPlanService.active.performanceData.cruiseFlightLevel.get())
+            (this.fmgc.getFlightPhase() === FmgcFlightPhase.Climb && _targetFl > this.flightPlanService.active.performanceData.cruiseFlightLevel) ||
+            (this.fmgc.getFlightPhase() === FmgcFlightPhase.Cruise && _targetFl !== this.flightPlanService.active.performanceData.cruiseFlightLevel)
         ) {
-            this.deleteOutdatedCruiseSteps(this.flightPlanService.active.performanceData.cruiseFlightLevel.get(), _targetFl);
+            this.deleteOutdatedCruiseSteps(this.flightPlanService.active.performanceData.cruiseFlightLevel, _targetFl);
             this.mfd.addMessageToQueue(NXSystemMessages.newCrzAlt.getModifiedMessage((_targetFl * 100).toFixed(0)));
-            this.flightPlanService.active.performanceData.cruiseFlightLevel.set(_targetFl);
+            this.flightPlanService.active.setPerformanceData('cruiseFlightLevel', _targetFl);
             this._cruiseFlightLevel = _targetFl;
         }
     }
@@ -872,8 +872,8 @@ export class FmsAircraftInterface {
         if ((activeVerticalMode >= 11 && activeVerticalMode <= 15) || (activeVerticalMode >= 21 && activeVerticalMode <= 23)) {
             const fcuFl = Simplane.getAutoPilotDisplayedAltitudeLockValue() / 100;
 
-            if (this.fmgc.getFlightPhase() === FmgcFlightPhase.Climb && fcuFl > this.flightPlanService.active.performanceData.cruiseFlightLevel.get() ||
-            this.fmgc.getFlightPhase() === FmgcFlightPhase.Cruise && fcuFl !== this.flightPlanService.active.performanceData.cruiseFlightLevel.get()
+            if (this.fmgc.getFlightPhase() === FmgcFlightPhase.Climb && fcuFl > this.flightPlanService.active.performanceData.cruiseFlightLevel ||
+            this.fmgc.getFlightPhase() === FmgcFlightPhase.Cruise && fcuFl !== this.flightPlanService.active.performanceData.cruiseFlightLevel
             ) {
                 if (this.cruiseFlightLevelTimeOut) {
                     clearTimeout(this.cruiseFlightLevelTimeOut);
@@ -883,12 +883,12 @@ export class FmsAircraftInterface {
                 this.cruiseFlightLevelTimeOut = setTimeout(() => {
                     if (fcuFl === Simplane.getAutoPilotDisplayedAltitudeLockValue() / 100 &&
                         (
-                            this.fmgc.getFlightPhase() === FmgcFlightPhase.Climb && fcuFl > this.flightPlanService.active.performanceData.cruiseFlightLevel.get() ||
-                            this.fmgc.getFlightPhase() === FmgcFlightPhase.Cruise && fcuFl !== this.flightPlanService.active.performanceData.cruiseFlightLevel.get()
+                            this.fmgc.getFlightPhase() === FmgcFlightPhase.Climb && fcuFl > this.flightPlanService.active.performanceData.cruiseFlightLevel ||
+                            this.fmgc.getFlightPhase() === FmgcFlightPhase.Cruise && fcuFl !== this.flightPlanService.active.performanceData.cruiseFlightLevel
                         )
                     ) {
                         this.mfd.addMessageToQueue(NXSystemMessages.newCrzAlt.getModifiedMessage((fcuFl * 100).toFixed(0)));
-                        this.flightPlanService.active.performanceData.cruiseFlightLevel.set(fcuFl);
+                        this.flightPlanService.active.setPerformanceData('cruiseFlightLevel', fcuFl);
                         this._cruiseFlightLevel = fcuFl;
                     }
                 }, 3000);

@@ -60,7 +60,7 @@ import { MfdSimvars } from './shared/MFDSimvarPublisher';
 import { DisplayUnit } from '../MsfsAvionicsCommon/displayUnit';
 import { DataManager, PilotWaypoint } from '@fmgc/flightplanning/new/DataManager';
 import { DataInterface } from '@fmgc/flightplanning/new/interface/DataInterface';
-import { Navigation } from '@fmgc/index';
+import { EfisInterface, Navigation } from '@fmgc/index';
 import { NXFictionalMessages, NXSystemMessages, TypeIIMessage, TypeIMessage } from 'instruments/src/MFD/pages/FMS/legacy/NXSystemMessages';
 import { MfdFmsPositionNavaids } from 'instruments/src/MFD/pages/FMS/POSITION/NAVAIDS';
 
@@ -97,7 +97,9 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
 
     private fmsUpdateThrottler = new UpdateThrottler(250);
 
-    private guidanceController = new GuidanceController(this.fmgc, this.flightPlanService);
+    private efisInterface = new EfisInterface('L');
+
+    private guidanceController = new GuidanceController(this.fmgc, this.flightPlanService, this.efisInterface);
 
     private navigation = new Navigation(this.flightPlanService, undefined);
 
@@ -107,7 +109,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
 
     private navaidTuner = new NavaidTuner(this.navigation, this.navaidSelectionManager, this.landingSystemSelectionManager);
 
-    private efisSymbols = new EfisSymbols(this.guidanceController, this.flightPlanService, this.navaidTuner);
+    private efisSymbols = new EfisSymbols(this.guidanceController, this.flightPlanService, this.navaidTuner, this.efisInterface);
 
     private flightPhaseManager = getFlightPhaseManager();
 
@@ -189,19 +191,19 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
         await this.flightPlanService.deleteElementAt(12); */
 
         // Default performance values
-        this.flightPlanService.active.performanceData.pilotAccelerationAltitude.set(2_900);
-        this.flightPlanService.active.performanceData.pilotThrustReductionAltitude.set(1_900);
-        this.flightPlanService.active.performanceData.pilotTransitionAltitude.set(5_000);
-        this.flightPlanService.active.performanceData.pilotEngineOutAccelerationAltitude.set(1_500);
-        this.flightPlanService.active.performanceData.v1.set(120);
-        this.flightPlanService.active.performanceData.vr.set(140);
-        this.flightPlanService.active.performanceData.v2.set(145);
+        this.flightPlanService.active.setPerformanceData('pilotAccelerationAltitude', 2_900);
+        this.flightPlanService.active.setPerformanceData('pilotThrustReductionAltitude', 1_900);
+        this.flightPlanService.active.setPerformanceData('pilotTransitionAltitude', 5_000);
+        this.flightPlanService.active.setPerformanceData('pilotEngineOutAccelerationAltitude', 1_500);
+        this.flightPlanService.active.setPerformanceData('v1', 120);
+        this.flightPlanService.active.setPerformanceData('vr', 140);
+        this.flightPlanService.active.setPerformanceData('v2', 145);
         this.fmService.fmgc.data.approachSpeed.set(145);
         this.fmService.fmgc.data.zeroFuelWeight.set(50_000);
         this.fmService.fmgc.data.zeroFuelWeightCenterOfGravity.set(26);
         this.fmService.fmgc.data.blockFuel.set(10_000);
         this.fmService.fmgc.data.costIndex.set(69);
-        this.flightPlanService.active.performanceData.cruiseFlightLevel.set(23_000);
+        this.flightPlanService.active.setPerformanceData('cruiseFlightLevel', 230);
     }
 
     private init() {
@@ -473,14 +475,14 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
             const plan = this.flightPlanService.active;
             const pd = this.fmService.fmgc.data;
 
-            if (plan.performanceData.accelerationAltitude.get() === undefined) {
+            if (plan.performanceData.accelerationAltitude === undefined) {
                 // it's important to set this immediately as we don't want to immediately sequence to the climb phase
-                plan.performanceData.pilotAccelerationAltitude.set(SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') + parseInt(NXDataStore.get('CONFIG_ACCEL_ALT', '1500')));
+                plan.setPerformanceData('pilotAccelerationAltitude', SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') + parseInt(NXDataStore.get('CONFIG_ACCEL_ALT', '1500')));
                 this.fmService.acInterface.updateThrustReductionAcceleration();
             }
-            if (plan.performanceData.engineOutAccelerationAltitude.get() === undefined) {
+            if (plan.performanceData.engineOutAccelerationAltitude === undefined) {
                 // it's important to set this immediately as we don't want to immediately sequence to the climb phase
-                plan.performanceData.pilotEngineOutAccelerationAltitude.set(SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') + parseInt(NXDataStore.get('CONFIG_ACCEL_ALT', '1500')));
+                plan.setPerformanceData('pilotEngineOutAccelerationAltitude', SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') + parseInt(NXDataStore.get('CONFIG_ACCEL_ALT', '1500')));
                 this.fmService.acInterface.updateThrustReductionAcceleration();
             }
 
@@ -507,8 +509,8 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
             /** Arm preselected speed/mach for next flight phase */
             this.fmService.acInterface.updatePreSelSpeedMach(this.fmgc.data.cruisePreSelMach.get() ?? this.fmgc.data.cruisePreSelSpeed.get());
 
-            if (!this.flightPlanService.active.performanceData.cruiseFlightLevel.get()) {
-                this.flightPlanService.active.performanceData.cruiseFlightLevel.set(Simplane.getAutoPilotDisplayedAltitudeLockValue('feet') / 100);
+            if (!this.flightPlanService.active.performanceData.cruiseFlightLevel) {
+                this.flightPlanService.active.setPerformanceData('cruiseFlightLevel', Simplane.getAutoPilotDisplayedAltitudeLockValue('feet') / 100);
             }
 
             break;
@@ -527,9 +529,9 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
             this.fmService.acInterface.updatePreSelSpeedMach(this.fmgc.data.descentPreSelSpeed.get());
 
             // This checks against the pilot defined cruise altitude and the automatically populated cruise altitude
-            if (this.flightPlanService.active.performanceData.cruiseFlightLevel.get() !== SimVar.GetGameVarValue('AIRCRAFT CRUISE ALTITUDE', 'feet')) {
-                SimVar.SetGameVarValue('AIRCRAFT CRUISE ALTITUDE', 'feet', this.flightPlanService.active.performanceData.cruiseFlightLevel.get());
-                this.addMessageToQueue(NXSystemMessages.newCrzAlt.getModifiedMessage(this.flightPlanService.active.performanceData.cruiseFlightLevel.get().toFixed(0)));
+            if (this.flightPlanService.active.performanceData.cruiseFlightLevel !== SimVar.GetGameVarValue('AIRCRAFT CRUISE ALTITUDE', 'feet')) {
+                SimVar.SetGameVarValue('AIRCRAFT CRUISE ALTITUDE', 'feet', this.flightPlanService.active.performanceData.cruiseFlightLevel);
+                this.addMessageToQueue(NXSystemMessages.newCrzAlt.getModifiedMessage(this.flightPlanService.active.performanceData.cruiseFlightLevel.toFixed(0)));
             }
 
             break;
@@ -548,7 +550,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
             /** Clear pre selected speed/mach */
             this.fmService.acInterface.updatePreSelSpeedMach(undefined);
 
-            this.flightPlanService.active.performanceData.cruiseFlightLevel.set(undefined);
+            this.flightPlanService.active.setPerformanceData('cruiseFlightLevel', undefined);
 
             break;
         }
@@ -589,18 +591,18 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
 
             const activePlan = this.flightPlanService.active;
 
-            if (activePlan.performanceData.missedAccelerationAltitude.get() === undefined) {
+            if (activePlan.performanceData.missedAccelerationAltitude === undefined) {
                 // it's important to set this immediately as we don't want to immediately sequence to the climb phase
-                activePlan.performanceData.pilotMissedAccelerationAltitude.set(
+                activePlan.setPerformanceData('pilotMissedAccelerationAltitude',
                     SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') + parseInt(NXDataStore.get('CONFIG_ENG_OUT_ACCEL_ALT', '1500')),
                 );
                 if (this.flightPlanService.hasActive) {
                     this.fmService.acInterface.updateThrustReductionAcceleration();
                 }
             }
-            if (activePlan.performanceData.missedEngineOutAccelerationAltitude.get() === undefined) {
+            if (activePlan.performanceData.missedEngineOutAccelerationAltitude === undefined) {
                 // it's important to set this immediately as we don't want to immediately sequence to the climb phase
-                activePlan.performanceData.pilotMissedEngineOutAccelerationAltitude.set(
+                activePlan.setPerformanceData('pilotMissedEngineOutAccelerationAltitude',
                     SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') + parseInt(NXDataStore.get('CONFIG_ENG_OUT_ACCEL_ALT', '1500')),
                 );
                 if (this.flightPlanService.hasActive) {

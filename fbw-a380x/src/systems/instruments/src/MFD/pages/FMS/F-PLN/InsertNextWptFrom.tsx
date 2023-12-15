@@ -40,7 +40,7 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
                 );
             }
         } else {
-            const wpt = await WaypointEntryUtils.getOrCreateWaypoint(this.props.fmService.mfd, text, true);
+            const wpt = await WaypointEntryUtils.getOrCreateWaypoint(this.props.fmService.mfd, text, true, undefined);
             await this.props.fmService.flightPlanService.nextWaypoint(
                 this.props.fmService.revisedWaypointIndex.get(),
                 wpt,

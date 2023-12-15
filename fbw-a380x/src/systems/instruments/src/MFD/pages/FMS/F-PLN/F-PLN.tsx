@@ -217,8 +217,8 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             }
 
             if (leg instanceof FlightPlanLeg) {
-                const transAlt = this.loadedFlightPlan.performanceData.transitionAltitude.get() ?? 18_000;
-                const transLevel = this.loadedFlightPlan.performanceData.transitionLevel.get() ?? 18_000;
+                const transAlt = this.loadedFlightPlan.performanceData.transitionAltitude ?? 18_000;
+                const transLevel = this.loadedFlightPlan.performanceData.transitionLevel ?? 18_000;
                 const useTransLevel = (i >= (
                     this.loadedFlightPlan.originSegment.legCount
                     + this.loadedFlightPlan.enrouteSegment.legCount

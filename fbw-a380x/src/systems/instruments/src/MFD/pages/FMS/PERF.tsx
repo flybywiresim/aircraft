@@ -131,7 +131,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
     private shouldShowConfirmVSpeeds() {
         const pd = this.loadedFlightPlan.performanceData;
         const fm = this.props.fmService.fmgc.data;
-        const vSpeedSet = pd.v1.get() !== undefined || pd.vr.get() !== undefined || pd.v2.get() !== undefined;
+        const vSpeedSet = pd.v1 !== undefined || pd.vr !== undefined || pd.v2 !== undefined;
         const tbc = fm.v1ToBeConfirmed.get() !== undefined || fm.vrToBeConfirmed.get() !== undefined || fm.v2ToBeConfirmed.get() !== undefined;
         this.showConfirmVSpeeds(!vSpeedSet && tbc);
     }
@@ -358,7 +358,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
         const fm = this.props.fmService.fmgc.data;
 
         if (pd.cruiseFlightLevel) {
-            this.crzFl.set(pd.cruiseFlightLevel.get());
+            this.crzFl.set(pd.cruiseFlightLevel);
         }
 
         if (fm.takeoffShift) {
@@ -366,15 +366,15 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
         }
 
         if (pd.v1) {
-            this.toV1.set(pd.v1.get());
+            this.toV1.set(pd.v1);
         }
 
         if (pd.vr) {
-            this.toVR.set(pd.vr.get());
+            this.toVR.set(pd.vr);
         }
 
         if (pd.v2) {
-            this.toV2.set(pd.v2.get());
+            this.toV2.set(pd.v2);
         }
 
         if (fm.takeoffPowerSetting) {
@@ -403,19 +403,19 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
         }
 
         if (pd.thrustReductionAltitudeIsPilotEntered) {
-            this.thrRedAltIsPilotEntered.set(pd.thrustReductionAltitudeIsPilotEntered.get());
+            this.thrRedAltIsPilotEntered.set(pd.thrustReductionAltitudeIsPilotEntered);
         }
 
         if (pd.thrustReductionAltitude) {
-            this.thrRedAlt.set(pd.thrustReductionAltitude.get());
+            this.thrRedAlt.set(pd.thrustReductionAltitude);
         }
 
         if (pd.accelerationAltitudeIsPilotEntered) {
-            this.accelRedAltIsPilotEntered.set(pd.accelerationAltitudeIsPilotEntered.get());
+            this.accelRedAltIsPilotEntered.set(pd.accelerationAltitudeIsPilotEntered);
         }
 
         if (pd.accelerationAltitude) {
-            this.accelAlt.set(pd.accelerationAltitude.get());
+            this.accelAlt.set(pd.accelerationAltitude);
         }
 
         if (fm.noiseEnabled) {
@@ -427,27 +427,27 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
         }
 
         if (pd.transitionAltitudeIsFromDatabase) {
-            this.transAltIsPilotEntered.set(!pd.transitionAltitudeIsFromDatabase.get());
+            this.transAltIsPilotEntered.set(!pd.transitionAltitudeIsFromDatabase);
         }
 
         if (pd.transitionAltitude) {
-            this.transAlt.set(pd.transitionAltitude.get());
+            this.transAlt.set(pd.transitionAltitude);
         }
 
         if (pd.engineOutAccelerationAltitudeIsPilotEntered) {
-            this.eoAccelAltIsPilotEntered.set(pd.engineOutAccelerationAltitudeIsPilotEntered.get());
+            this.eoAccelAltIsPilotEntered.set(pd.engineOutAccelerationAltitudeIsPilotEntered);
         }
 
         if (pd.engineOutAccelerationAltitude) {
-            this.eoAccelAlt.set(pd.engineOutAccelerationAltitude.get());
+            this.eoAccelAlt.set(pd.engineOutAccelerationAltitude);
         }
 
         if (pd.thrustReductionAltitudeIsPilotEntered) {
-            this.thrRedAltIsPilotEntered.set(pd.thrustReductionAltitudeIsPilotEntered.get());
+            this.thrRedAltIsPilotEntered.set(pd.thrustReductionAltitudeIsPilotEntered);
         }
 
         if (pd.pilotThrustReductionAltitude) {
-            this.thrRedAlt.set(pd.pilotThrustReductionAltitude.get());
+            this.thrRedAlt.set(pd.pilotThrustReductionAltitude);
         }
 
         this.activeFlightPhase.set(SimVar.GetSimVarValue('L:A32NX_FMGC_FLIGHT_PHASE', 'Enum'));
@@ -473,11 +473,11 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
         }
 
         if (pd.transitionLevelIsFromDatabase) {
-            this.transFlIsPilotEntered.set(!pd.transitionLevelIsFromDatabase.get());
+            this.transFlIsPilotEntered.set(!pd.transitionLevelIsFromDatabase);
         }
 
         if (pd.transitionLevel) {
-            this.transFl.set(pd.transitionLevel.get());
+            this.transFl.set(pd.transitionLevel);
         }
 
         console.timeEnd('PERF:onNewData');
@@ -747,8 +747,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                             <InputField<number>
                                 dataEntryFormat={new FlightLevelFormat()}
                                 dataHandlerDuringValidation={async (v) => {
-                                    this.loadedFlightPlan.performanceData.cruiseFlightLevel.set(v);
-                                    this.loadedFlightPlan.incrementVersion();
+                                    this.loadedFlightPlan.setPerformanceData('cruiseFlightLevel', v);
                                 }}
                                 mandatory={Subject.create(false)}
                                 value={this.crzFl}
@@ -799,9 +798,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         <InputField<number>
                                             dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
                                             dataHandlerDuringValidation={async (v) => {
-                                                this.loadedFlightPlan.performanceData.v1.set(v);
+                                                this.loadedFlightPlan.setPerformanceData('v1', v);
                                                 SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", v);
-                                                this.loadedFlightPlan.incrementVersion();
                                             }}
                                             mandatory={Subject.create(true)}
                                             inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
@@ -831,15 +829,14 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                             onClick={() => {
                                                 const fm = this.props.fmService.fmgc.data;
                                                 SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", fm.v1ToBeConfirmed.get());
-                                                this.loadedFlightPlan.performanceData.v1.set(fm.v1ToBeConfirmed.get());
+                                                this.loadedFlightPlan.setPerformanceData('v1', fm.v1ToBeConfirmed.get());
                                                 fm.v1ToBeConfirmed.set(undefined);
                                                 SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", fm.vrToBeConfirmed.get());
-                                                this.loadedFlightPlan.performanceData.vr.set(fm.vrToBeConfirmed.get());
+                                                this.loadedFlightPlan.setPerformanceData('vr', fm.vrToBeConfirmed.get());
                                                 fm.vrToBeConfirmed.set(undefined);
                                                 SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", fm.v2ToBeConfirmed.get());
-                                                this.loadedFlightPlan.performanceData.v2.set(fm.v2ToBeConfirmed.get());
+                                                this.loadedFlightPlan.setPerformanceData('v2', fm.v2ToBeConfirmed.get());
                                                 fm.v2ToBeConfirmed.set(undefined);
-                                                this.loadedFlightPlan.incrementVersion();
                                             }}
                                             buttonStyle="color: yellow; padding-right: 2px;"
                                         />
@@ -855,8 +852,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                             dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
                                             dataHandlerDuringValidation={async (v) => {
                                                 SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", v);
-                                                this.loadedFlightPlan.performanceData.vr.set(v);
-                                                this.loadedFlightPlan.incrementVersion();
+                                                this.loadedFlightPlan.setPerformanceData('vr', v);
                                             }}
                                             mandatory={Subject.create(true)}
                                             inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
@@ -882,8 +878,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                             dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
                                             dataHandlerDuringValidation={async (v) => {
                                                 SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", v);
-                                                this.loadedFlightPlan.performanceData.v2.set(v);
-                                                this.loadedFlightPlan.incrementVersion();
+                                                this.loadedFlightPlan.setPerformanceData('v2', v);
                                             }}
                                             mandatory={Subject.create(true)}
                                             inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
@@ -1032,8 +1027,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     <InputField<number>
                                         dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
                                         dataHandlerDuringValidation={async (v) => {
-                                            this.loadedFlightPlan.performanceData.pilotThrustReductionAltitude.set(v || undefined);
-                                            this.loadedFlightPlan.incrementVersion();
+                                            this.loadedFlightPlan.setPerformanceData('pilotThrustReductionAltitude', v || undefined);
                                         }}
                                         mandatory={Subject.create(false)}
                                         inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
@@ -1093,8 +1087,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     <InputField<number>
                                         dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
                                         dataHandlerDuringValidation={async (v) => {
-                                            this.loadedFlightPlan.performanceData.pilotAccelerationAltitude.set(v || undefined);
-                                            this.loadedFlightPlan.incrementVersion();
+                                            this.loadedFlightPlan.setPerformanceData('pilotAccelerationAltitude', v || undefined);
                                         }}
                                         mandatory={Subject.create(false)}
                                         inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
@@ -1173,8 +1166,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     <InputField<number>
                                         dataEntryFormat={new AltitudeFormat(Subject.create(1), Subject.create(maxCertifiedAlt))}
                                         dataHandlerDuringValidation={async (v) => {
-                                            this.loadedFlightPlan.performanceData.pilotTransitionAltitude.set(v || undefined);
-                                            this.loadedFlightPlan.incrementVersion();
+                                            this.loadedFlightPlan.setPerformanceData('pilotTransitionAltitude', v || undefined);
                                         }}
                                         mandatory={Subject.create(false)}
                                         enteredByPilot={this.transAltIsPilotEntered}
@@ -1189,8 +1181,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     <InputField<number>
                                         dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
                                         dataHandlerDuringValidation={async (v) => {
-                                            this.loadedFlightPlan.performanceData.pilotEngineOutAccelerationAltitude.set(v || undefined);
-                                            this.loadedFlightPlan.incrementVersion();
+                                            this.loadedFlightPlan.setPerformanceData('pilotEngineOutAccelerationAltitude', v || undefined);
                                         }}
                                         mandatory={Subject.create(false)}
                                         inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
@@ -1365,7 +1356,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Climb)}
                                         enteredByPilot={this.thrRedAltIsPilotEntered}
                                         value={this.thrRedAlt}
-                                        dataHandlerDuringValidation={async (v) => this.loadedFlightPlan?.performanceData.pilotThrustReductionAltitude.set(v || undefined)}
+                                        dataHandlerDuringValidation={async (v) => this.loadedFlightPlan?.setPerformanceData('pilotThrustReductionAltitude', v || undefined)}
                                         containerStyle="width: 150px;"
                                         alignText="flex-end"
                                         errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
@@ -1421,7 +1412,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Climb)}
                                         enteredByPilot={this.accelRedAltIsPilotEntered}
                                         value={this.accelAlt}
-                                        dataHandlerDuringValidation={async (v) => this.loadedFlightPlan?.performanceData.pilotAccelerationAltitude.set(v || undefined)}
+                                        dataHandlerDuringValidation={async (v) => this.loadedFlightPlan?.setPerformanceData('pilotAccelerationAltitude', v || undefined)}
                                         containerStyle="width: 150px;"
                                         alignText="flex-end"
                                         errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
@@ -2094,8 +2085,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     <InputField<number>
                                         dataEntryFormat={new FlightLevelFormat()}
                                         dataHandlerDuringValidation={async (v) => {
-                                            this.loadedFlightPlan.performanceData.pilotTransitionLevel.set(v);
-                                            this.loadedFlightPlan.incrementVersion();
+                                            this.loadedFlightPlan.setPerformanceData('pilotTransitionLevel', v);
                                         }}
                                         mandatory={Subject.create(false)}
                                         enteredByPilot={this.transFlIsPilotEntered}
@@ -2141,8 +2131,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         <InputField<number>
                                             dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
                                             dataHandlerDuringValidation={async (v) => {
-                                                this.loadedFlightPlan.performanceData.pilotThrustReductionAltitude.set(v || undefined);
-                                                this.loadedFlightPlan.incrementVersion();
+                                                this.loadedFlightPlan.setPerformanceData('pilotThrustReductionAltitude', v || undefined);
                                             }}
                                             mandatory={Subject.create(false)}
                                             enteredByPilot={this.thrRedAltIsPilotEntered}
@@ -2161,8 +2150,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         <InputField<number>
                                             dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
                                             dataHandlerDuringValidation={async (v) => {
-                                                this.loadedFlightPlan.performanceData.pilotAccelerationAltitude.set(v || undefined);
-                                                this.loadedFlightPlan.incrementVersion();
+                                                this.loadedFlightPlan.setPerformanceData('pilotAccelerationAltitude', v || undefined);
                                             }}
                                             mandatory={Subject.create(false)}
                                             enteredByPilot={this.accelRedAltIsPilotEntered}
@@ -2179,8 +2167,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         <InputField<number>
                                             dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
                                             dataHandlerDuringValidation={async (v) => {
-                                                this.loadedFlightPlan.performanceData.pilotEngineOutAccelerationAltitude.set(v || undefined);
-                                                this.loadedFlightPlan.incrementVersion();
+                                                this.loadedFlightPlan.setPerformanceData('pilotEngineOutAccelerationAltitude', v || undefined);
                                             }}
                                             mandatory={Subject.create(false)}
                                             enteredByPilot={this.eoAccelAltIsPilotEntered}
