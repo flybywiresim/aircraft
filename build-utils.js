@@ -153,7 +153,7 @@ module.exports.typecheckingPlugin = typecheckingPlugin;
 async function generateInstrumentsMetadata(instruments, packageName, outDIr) {
     const file = await fsp.open(path.join(outDIr, `${packageName.toLowerCase()}_instruments_metadata.json`), 'w+');
 
-    const data = instruments.map((it) => {
+    const data = instruments.filter((it) => it.makeAvailableAsRemote !== false).map((it) => {
         /** @type {import('@flybywiresim/remote-bridge-types').InstrumentMetadata} */
         const metadata = {
             instrumentID: it.name,
@@ -178,3 +178,57 @@ async function generateInstrumentsMetadata(instruments, packageName, outDIr) {
 }
 
 module.exports.generateInstrumentsMetadata = generateInstrumentsMetadata;
+
+function getMachInstrumentBuilders({ templateIDPrefix, reactImports }) {
+    return {
+        /**
+         * @param name {string}
+         * @param dimensions {{ width: number, height: number }}
+         * @param makeAvailableAsRemote {boolean}
+         */
+        msfsAvionicsInstrument(name, dimensions, makeAvailableAsRemote) {
+            return {
+                name,
+                index: `src/systems/instruments/src/${name}/instrument.tsx`,
+                simulatorPackage: {
+                    type: 'baseInstrument',
+                    templateId: `${templateIDPrefix.toUpperCase()}_${name}`,
+                    mountElementId: `INSTRUMENT_CONTENT`,
+                    fileName: name.toLowerCase(),
+                    imports: ['/JS/dataStorage.js'],
+                },
+                makeAvailableAsRemote,
+                dimensions: {
+                    width: dimensions[0],
+                    height: dimensions[1],
+                },
+            };
+        },
+
+        /**
+         * @param name {string}
+         * @param additionalImports {string[]}
+         * @param dimensions {{ width: number, height: number }}
+         * @param makeAvailableAsRemote {boolean}
+         */
+        reactInstrument(name, additionalImports, dimensions, makeAvailableAsRemote) {
+            return {
+                name,
+                index: `src/systems/instruments/src/${name}/index.tsx`,
+                simulatorPackage: {
+                    type: 'react',
+                    isInteractive: false,
+                    fileName: name.toLowerCase(),
+                    imports: [...reactImports, ...(additionalImports ?? [])],
+                },
+                makeAvailableAsRemote,
+                dimensions: {
+                    width: dimensions[0],
+                    height: dimensions[1],
+                },
+            };
+        },
+    }
+}
+
+module.exports.getMachInstrumentBuilders = getMachInstrumentBuilders;
