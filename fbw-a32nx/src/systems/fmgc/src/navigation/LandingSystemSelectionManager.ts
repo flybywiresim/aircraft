@@ -3,7 +3,7 @@
 
 /* eslint-disable no-underscore-dangle */
 
-import { UpdateThrottler, Airport, Approach, ApproachType, IlsNavaid, Runway, VhfNavaid } from '@flybywiresim/fbw-sdk';
+import { UpdateThrottler, Airport, Approach, ApproachType, IlsNavaid, Runway } from '@flybywiresim/fbw-sdk';
 import { FlightPhaseManager, getFlightPhaseManager } from '@fmgc/flightphase';
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/new/NavigationDatabaseService';
@@ -95,7 +95,8 @@ export class LandingSystemSelectionManager {
         const runway = this.flightPlanService.active.originRunway;
 
         if (runway?.lsIdent) {
-            const ils = await this.getIls(runway.airportIdent, runway.lsIdent);
+            // const ils = await this.getIls(runway.airportIdent, runway.lsIdent);
+            const ils = (await NavigationDatabaseService.activeDatabase.backendDatabase.getILSs([runway.lsIdent]))[0];
             this._selectedIls = ils;
             this._selectedLocCourse = ils.locBearing;
             this._selectedGsSlope = ils.gsSlope ?? null;
