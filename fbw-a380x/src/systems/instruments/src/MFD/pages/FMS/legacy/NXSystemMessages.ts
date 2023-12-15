@@ -18,8 +18,8 @@ export class TypeIMessage extends McduMessage {
      * Only returning a "copy" of the object to ensure thread safety when trying to edit the original message
      * t {string} replaces defined elements, see this.replace
      */
-    getModifiedMessage(t: string): McduMessage {
-        return new McduMessage(
+    getModifiedMessage(t: string): TypeIMessage {
+        return new TypeIMessage(
             !!t ? this.text.replace(this.replace, "" + t) : this.text,
             this.isAmber,
             this.replace,

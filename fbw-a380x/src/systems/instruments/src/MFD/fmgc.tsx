@@ -268,13 +268,6 @@ export class FmgcDataInterface implements Fmgc {
     ) {
     }
 
-    updateFromSimVars() {
-        /* this.data.cleanSpeed.set(SimVar.GetSimVarValue('L:A32NX_SPEEDS_GD', 'number'));
-        this.data.flapRetractionSpeed.set(SimVar.GetSimVarValue('L:A32NX_SPEEDS_F', 'number'));
-        this.data.slatRetractionSpeed.set(SimVar.GetSimVarValue('L:A32NX_SPEEDS_S', 'number'));
-        this.data.approachVls.set(SimVar.GetSimVarValue('L:A32NX_SPEEDS_VLS', 'number')); */
-    }
-
     getZeroFuelWeight(): number {
         return this.data.zeroFuelWeight.get();
     }
@@ -289,7 +282,7 @@ export class FmgcDataInterface implements Fmgc {
     }
 
     getV2Speed(): Knots {
-        return this.flightPlanService.has(FlightPlanIndex.Active) ? this.flightPlanService.active.performanceData.v2.get() : 150;
+        return this.flightPlanService.has(FlightPlanIndex.Active) ? this.flightPlanService.active.performanceData.v2 : 150;
     }
 
     getTropoPause(): Feet {
@@ -305,23 +298,23 @@ export class FmgcDataInterface implements Fmgc {
     }
 
     getAccelerationAltitude(): Feet {
-        return this.flightPlanService.has(FlightPlanIndex.Active) ? this.flightPlanService?.active.performanceData.accelerationAltitude.get() : 1_500;
+        return this.flightPlanService.has(FlightPlanIndex.Active) ? this.flightPlanService?.active.performanceData.accelerationAltitude : 1_500;
     }
 
     getThrustReductionAltitude(): Feet {
-        return this.flightPlanService.has(FlightPlanIndex.Active) ? this.flightPlanService?.active.performanceData.thrustReductionAltitude.get() : 1_500;
+        return this.flightPlanService.has(FlightPlanIndex.Active) ? this.flightPlanService?.active.performanceData.thrustReductionAltitude : 1_500;
     }
 
     getOriginTransitionAltitude(): Feet | undefined {
-        return this.flightPlanService.has(FlightPlanIndex.Active) ? this.flightPlanService?.active.performanceData.transitionAltitude.get() : 18_000;
+        return this.flightPlanService.has(FlightPlanIndex.Active) ? this.flightPlanService?.active.performanceData.transitionAltitude : 18_000;
     }
 
     getDestinationTransitionLevel(): Feet | undefined {
-        return this.flightPlanService.has(FlightPlanIndex.Active) ? this.flightPlanService?.active.performanceData.transitionLevel.get() : 18_000;
+        return this.flightPlanService.has(FlightPlanIndex.Active) ? this.flightPlanService?.active.performanceData.transitionLevel : 18_000;
     }
 
     getCruiseAltitude(): Feet {
-        return this.flightPlanService.has(FlightPlanIndex.Active) ? this.flightPlanService?.active.performanceData.cruiseFlightLevel.get() : 32_000;
+        return this.flightPlanService.has(FlightPlanIndex.Active) ? this.flightPlanService?.active.performanceData.cruiseFlightLevel : 32_000;
     }
 
     getFlightPhase(): FmgcFlightPhase {

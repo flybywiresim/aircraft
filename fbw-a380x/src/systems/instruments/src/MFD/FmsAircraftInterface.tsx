@@ -147,7 +147,11 @@ export class FmsAircraftInterface {
         SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", this.flightPlanService.active.performanceData.vr ?? NaN);
     }
 
-    getToSpeedsTooLow(activePerformanceData: FlightPlanPerformanceData) {
+    getToSpeedsTooLow() {
+        if (!this.flightPlanService.hasActive) {
+            return;
+        }
+
         if (this.fmgc.data.takeoffFlapsSetting === null || this.fmService.getGrossWeight() === null) {
             return false;
         }
@@ -161,47 +165,53 @@ export class FmsAircraftInterface {
 
         const tow = this.fmService.getGrossWeight() - (this.fmgc.isAnEngineOn() || this.fmgc.data.taxiFuel.get() === undefined ? 0 : this.fmgc.data.taxiFuel.get());
 
-        console.warn([Math.trunc(A380SpeedsUtils.getVmcg(zp)), 1.05 * A380SpeedsUtils.getVmca(zp), 1.1 * A380SpeedsUtils.getVmca(zp), Math.trunc(1.13 * A380SpeedsUtils.getVs1g(tow, this.fmgc.data.takeoffFlapsSetting.get()))]);
-
-        return activePerformanceData.v1 < Math.trunc(A380SpeedsUtils.getVmcg(zp))
-            || activePerformanceData.vr < Math.trunc(1.05 * A380SpeedsUtils.getVmca(zp))
-            || activePerformanceData.v2 < Math.trunc(1.1 * A380SpeedsUtils.getVmca(zp))
-            || (isFinite(tow) && activePerformanceData.v2 < Math.trunc(1.13 * A380SpeedsUtils.getVs1g(tow, this.fmgc.data.takeoffFlapsSetting.get())));
+        return this.flightPlanService.active.performanceData.v1 < Math.trunc(A380SpeedsUtils.getVmcg(zp))
+            || this.flightPlanService.active.performanceData.vr < Math.trunc(1.05 * A380SpeedsUtils.getVmca(zp))
+            || this.flightPlanService.active.performanceData.v2 < Math.trunc(1.1 * A380SpeedsUtils.getVmca(zp))
+            || (isFinite(tow) && this.flightPlanService.active.performanceData.v2 < Math.trunc(1.13 * A380SpeedsUtils.getVs1g(tow, this.fmgc.data.takeoffFlapsSetting.get())));
     }
 
     private toSpeedsNotInserted = true;
     private toSpeedsTooLow = false;
     private vSpeedDisagree = false;
 
-    private vSpeedsValid(activePerformanceData: FlightPlanPerformanceData) {
-        const v1Speed = activePerformanceData.v1;
-        const vRSpeed = activePerformanceData.vr;
-        const v2Speed = activePerformanceData.v2;
+    private vSpeedsValid() {
+        if (!this.flightPlanService.hasActive) {
+            return;
+        }
+
+        const v1Speed = this.flightPlanService.active.performanceData.v1;
+        const vRSpeed = this.flightPlanService.active.performanceData.vr;
+        const v2Speed = this.flightPlanService.active.performanceData.v2;
 
         return (!!v1Speed && !!vRSpeed ? v1Speed <= vRSpeed : true)
             && (!!vRSpeed && !!v2Speed ? vRSpeed <= v2Speed : true)
             && (!!v1Speed && !!v2Speed ? v1Speed <= v2Speed : true);
     }
 
-    public toSpeedsChecks(activePerformanceData: FlightPlanPerformanceData) {
-        const toSpeedsNotInserted = !activePerformanceData.v1 || !activePerformanceData.vr || !activePerformanceData.v2;
+    public toSpeedsChecks() {
+        if (!this.flightPlanService.hasActive) {
+            return;
+        }
+
+        const toSpeedsNotInserted = !this.flightPlanService.active.performanceData.v1 || !this.flightPlanService.active.performanceData.vr || !this.flightPlanService.active.performanceData.v2;
         if (toSpeedsNotInserted !== this.toSpeedsNotInserted) {
             this.toSpeedsNotInserted = toSpeedsNotInserted;
         }
 
-        const toSpeedsTooLow = this.getToSpeedsTooLow(activePerformanceData);
+        const toSpeedsTooLow = this.getToSpeedsTooLow();
         if (toSpeedsTooLow !== this.toSpeedsTooLow) {
             this.toSpeedsTooLow = toSpeedsTooLow;
             if (toSpeedsTooLow) {
-                this.mfd.addMessageToQueue(NXSystemMessages.toSpeedTooLow, () => !this.getToSpeedsTooLow(activePerformanceData));
+                this.mfd.addMessageToQueue(NXSystemMessages.toSpeedTooLow, () => !this.getToSpeedsTooLow());
             }
         }
 
-        const vSpeedDisagree = !this.vSpeedsValid(activePerformanceData);
+        const vSpeedDisagree = !this.vSpeedsValid();
         if (vSpeedDisagree !== this.vSpeedDisagree) {
             this.vSpeedDisagree = vSpeedDisagree;
             if (vSpeedDisagree) {
-                this.mfd.addMessageToQueue(NXSystemMessages.vToDisagree, this.vSpeedsValid.bind(this, [activePerformanceData]));
+                this.mfd.addMessageToQueue(NXSystemMessages.vToDisagree, this.vSpeedsValid.bind(this, []));
             }
         }
 

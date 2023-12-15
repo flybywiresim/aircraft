@@ -651,7 +651,10 @@ $display-mfd-dark-grey: #3c3c3c;
 .mfd-header-callsign {
   width: 25%;
   text-align: left;
-  padding: 8px 10px 0px 10px;
+  padding: 4px 10px 0px 10px;
+  color: $display-white;
+  font-family: "Ecam", monospace;
+  font-size: 24px;
 }
 
 .mfd-header-page-select-row {

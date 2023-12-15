@@ -450,7 +450,8 @@ export class A380SpeedsUtils {
      * @param {boolean} gearDown true if the gear is down
      */
     static getVs1g(mass: number, conf: number): Knots {
-        // rough, dirty hack
-        return vls[conf][_correctMass(mass)](mass) / 1.23;
+        const klb = Units.kilogramToPound(mass) / 1000.0;
+        // FIXME rough, dirty hack
+        return vls[conf][_correctMass(klb)](klb) / 1.5;
     }
 }

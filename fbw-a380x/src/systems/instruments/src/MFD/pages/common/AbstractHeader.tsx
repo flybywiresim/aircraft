@@ -90,7 +90,7 @@ export abstract class AbstractHeader extends DisplayComponent<AbstractMfdHeaderP
                     containerStyle="width: 25%;"
                     alignLabels="flex-start"
                 />
-                <span class="mfd-label mfd-header-callsign">{this.props.callsign}</span>
+                <span class="mfd-header-callsign">{this.props.callsign}</span>
             </div>
         );
     }

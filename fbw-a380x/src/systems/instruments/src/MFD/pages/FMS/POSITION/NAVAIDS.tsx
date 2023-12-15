@@ -13,8 +13,8 @@ import { InputField } from 'instruments/src/MFD/pages/common/InputField';
 import { FrequencyILSFormat, FrequencyVORDMEFormat, InboundCourseFormat, LsCourseFormat, NavaidIdentFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MFD/pages/common/TopTabNavigator';
 import { NavigationDatabaseService } from '@fmgc/index';
-import { VhfNavaidType } from '../../../../../../../../../fbw-common/src/systems/navdata';
-import { AirportSubsectionCode, IlsNavaid, LsCategory, SectionCode } from 'msfs-navdata';
+import { Database, MsfsBackend } from '@flybywiresim/fbw-sdk';
+import { NXSystemMessages } from 'instruments/src/MFD/pages/FMS/legacy/NXSystemMessages';
 
 interface MfdFmsPositionNavaidProps extends AbstractMfdPageProps {
 }
@@ -95,6 +95,76 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidProps> {
         // TODO
     }
 
+    private async handleVorIdent(index: 1 | 2, ident: string) {
+        if (ident === null || ident === '') {
+            const vor = this.props.fmService.navigation.getNavaidTuner().getVorRadioTuningStatus(index);
+            if (vor.manual) {
+                this.props.fmService.navigation.getNavaidTuner().setManualVor(index, null);
+            } else {
+                this.props.fmService.mfd.addMessageToQueue(NXSystemMessages.notAllowed);
+            }
+        } else {
+            const navaids = await NavigationDatabaseService.activeDatabase.searchVor(ident);
+            if (navaids.length > 0) {
+                if(this.props.fmService.navigation.getNavaidTuner().deselectedNavaids.find((databaseId) => databaseId === navaids[0].databaseId)) {
+                    this.props.fmService.mfd.addMessageToQueue(NXSystemMessages.xxxIsDeselected.getModifiedMessage(navaids[0].ident));
+                }
+                this.props.fmService.navigation.getNavaidTuner().setManualVor(index, navaids[0]);
+            }
+        }
+        this.onNewData();
+    }
+
+    private async handleVorFreq(index: 1 | 2, freq: number) {
+        if (freq === null) {
+            const vor = this.props.fmService.navigation.getNavaidTuner().getVorRadioTuningStatus(index);
+            if (vor.manual) {
+                this.props.fmService.navigation.getNavaidTuner().setManualVor(index, null);
+            } else {
+                this.props.fmService.mfd.addMessageToQueue(NXSystemMessages.notAllowed);
+            }
+        } else {
+            this.props.fmService.navigation.getNavaidTuner().setManualVor(index, freq);
+        }
+        this.onNewData();
+    }
+
+    private async handleIlsIdent(ident: string) {
+        if (this.props.fmService.navigation.getNavaidTuner().isMmrTuningLocked()) {
+            this.props.fmService.mfd.addMessageToQueue(NXSystemMessages.notAllowed);
+        }
+
+        if (ident === null || ident === '') {
+            const mmr = this.props.fmService.navigation.getNavaidTuner().getMmrRadioTuningStatus(1);
+            if (mmr.manual) {
+                this.props.fmService.navigation.getNavaidTuner().setManualIls(null);
+            } else {
+                this.props.fmService.mfd.addMessageToQueue(NXSystemMessages.notAllowed);
+            }
+        } else {
+            const ils = await NavigationDatabaseService.activeDatabase.backendDatabase.getILSs([ident]);
+            if (ils.length > 0) {
+                await this.props.fmService.navigation.getNavaidTuner().setManualIls(ils[0]);
+            }
+
+        }
+        this.onNewData();
+    }
+
+    private async handleIlsFreq(freq: number) {
+        if (freq === null) {
+            const ils = this.props.fmService.navigation.getNavaidTuner().getMmrRadioTuningStatus(1);
+            if (ils.manual) {
+                this.props.fmService.navigation.getNavaidTuner().setManualIls(null);
+            } else {
+                this.props.fmService.mfd.addMessageToQueue(NXSystemMessages.notAllowed);
+            }
+        } else {
+            this.props.fmService.navigation.getNavaidTuner().setManualIls(freq);
+        }
+        this.onNewData();
+    }
+
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
@@ -124,16 +194,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidProps> {
                                     <div class="mfd-position-navaids-row">
                                         <InputField<string>
                                             dataEntryFormat={new NavaidIdentFormat()}
-                                            dataHandlerDuringValidation={async (v) => {
-                                                if (v === null || v === '') {
-                                                    this.props.fmService.navigation.getNavaidTuner().setManualVor(1, null);
-                                                } else {
-                                                    const navaids = await NavigationDatabaseService.activeDatabase.searchVor(v);
-                                                    if (navaids.length > 0) {
-                                                        this.props.fmService.navigation.getNavaidTuner().setManualVor(1, navaids[0]);
-                                                    }
-                                                }
-                                            }}
+                                            dataHandlerDuringValidation={async (v) => this.handleVorIdent(1, v)}
                                             mandatory={Subject.create(false)}
                                             enteredByPilot={this.vor1IdentEnteredByPilot}
                                             value={this.vor1Ident}
@@ -145,9 +206,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidProps> {
                                     <div class="mfd-position-navaids-row">
                                         <InputField<number>
                                             dataEntryFormat={new FrequencyVORDMEFormat()}
-                                            dataHandlerDuringValidation={async (v) => {
-                                                this.props.fmService.navigation.getNavaidTuner().setManualVor(1, v ? v : null);
-                                            }}
+                                            dataHandlerDuringValidation={async (v) => this.handleVorFreq(1, v)}
                                             mandatory={Subject.create(false)}
                                             enteredByPilot={this.vor1FreqEnteredByPilot}
                                             value={this.vor1Freq}
@@ -183,16 +242,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidProps> {
                                     <div class="mfd-position-navaids-row">
                                         <InputField<string>
                                             dataEntryFormat={new NavaidIdentFormat()}
-                                            dataHandlerDuringValidation={async (v) => {
-                                                if (v === null || v === '') {
-                                                    this.props.fmService.navigation.getNavaidTuner().setManualVor(2, null);
-                                                } else {
-                                                    const navaids = await NavigationDatabaseService.activeDatabase.searchVor(v);
-                                                    if (navaids.length > 0) {
-                                                        this.props.fmService.navigation.getNavaidTuner().setManualVor(2, navaids[0]);
-                                                    }
-                                                }
-                                            }}
+                                            dataHandlerDuringValidation={async (v) => this.handleVorIdent(2, v)}
                                             mandatory={Subject.create(false)}
                                             enteredByPilot={this.vor2IdentEnteredByPilot}
                                             value={this.vor2Ident}
@@ -204,9 +254,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidProps> {
                                     <div class="mfd-position-navaids-row">
                                         <InputField<number>
                                             dataEntryFormat={new FrequencyVORDMEFormat()}
-                                            dataHandlerDuringValidation={async (v) => {
-                                                this.props.fmService.navigation.getNavaidTuner().setManualVor(2, v ? v : null);
-                                            }}
+                                            dataHandlerDuringValidation={async (v) => this.handleVorFreq(2, v)}
                                             mandatory={Subject.create(false)}
                                             enteredByPilot={this.vor2FreqEnteredByPilot}
                                             value={this.vor2Freq}
@@ -251,29 +299,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidProps> {
                             <div class="mfd-position-navaids-row">
                                 <InputField<string>
                                     dataEntryFormat={new NavaidIdentFormat()}
-                                    dataHandlerDuringValidation={async (v) => {
-                                        if (v === null || v === '') {
-                                            this.props.fmService.navigation.getNavaidTuner().setManualIls(null);
-                                        } else {
-                                            const navaids = await NavigationDatabaseService.activeDatabase.searchVor(v);
-                                            const ils = navaids.filter((it) => (it.type === VhfNavaidType.IlsDme || it.type === VhfNavaidType.IlsTacan));
-                                            if (ils.length > 0) {
-                                                const ilsNavaid: IlsNavaid = {
-                                                    ...ils[0],
-                                                    sectionCode: SectionCode.Airport,
-                                                    subSectionCode: AirportSubsectionCode.LocalizerGlideSlope,
-                                                    category: LsCategory.None,
-                                                    runwayIdent: ils[0].name.split(' ')[1],
-                                                    locLocation: { lat: ils[0].location.lat, long: ils[0].location.long },
-                                                    locBearing: 0, // TODO
-
-                                                }
-                                                console.warn(ils[0]);
-                                                await this.props.fmService.navigation.getNavaidTuner().setManualIls(ilsNavaid);
-                                            }
-
-                                        }
-                                    }}
+                                    dataHandlerDuringValidation={async (v) => this.handleIlsIdent(v)}
                                     mandatory={Subject.create(false)}
                                     enteredByPilot={this.lsIdentEnteredByPilot}
                                     value={this.lsIdent}
@@ -285,9 +311,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidProps> {
                             <div class="mfd-position-navaids-row">
                                 <InputField<number>
                                     dataEntryFormat={new FrequencyILSFormat()}
-                                    dataHandlerDuringValidation={async (v) => {
-                                        this.props.fmService.navigation.getNavaidTuner().setManualIls(v ? v : null);
-                                    }}
+                                    dataHandlerDuringValidation={async (v) => this.handleIlsFreq(v)}
                                     mandatory={Subject.create(false)}
                                     enteredByPilot={this.lsIdentEnteredByPilot}
                                     value={this.lsFreq}

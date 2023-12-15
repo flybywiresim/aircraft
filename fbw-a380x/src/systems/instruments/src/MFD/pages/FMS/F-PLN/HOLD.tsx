@@ -84,7 +84,6 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
                 inboundMagneticCourse: this.inboundCourse.get(),
                 turnDirection: this.turnSelectedIndex.get() === 0 ? TurnDirection.Left : TurnDirection.Right,
             };
-            console.warn(desiredHold);
 
             await this.props.fmService.flightPlanService.addOrEditManualHold(
                 this.props.fmService.revisedWaypointIndex.get(),

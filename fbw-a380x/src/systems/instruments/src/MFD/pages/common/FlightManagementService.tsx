@@ -1,6 +1,6 @@
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
-import { FlightPhaseManager, FlightPlanIndex, Navigation } from '@fmgc/index';
+import { EfisInterface, FlightPhaseManager, FlightPlanIndex, Navigation } from '@fmgc/index';
 import { ClockEvents, Subject, Subscription } from '@microsoft/msfs-sdk';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { FmsAircraftInterface } from 'instruments/src/MFD/FmsAircraftInterface';
@@ -65,6 +65,7 @@ export class MfdFlightManagementService {
         public fmgc: FmgcDataInterface,
         public navigation: Navigation,
         public flightPhaseManager: FlightPhaseManager,
+        public efisInterface: EfisInterface,
     ) {
         this.acInterface = new FmsAircraftInterface(this.mfd, this.fmgc, this, this.flightPlanService, this.flightPhaseManager);
         const sub = mfd.props.bus.getSubscriber<ClockEvents & MfdSimvars>();

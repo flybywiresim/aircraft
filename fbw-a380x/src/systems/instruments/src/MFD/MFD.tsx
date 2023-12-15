@@ -10,7 +10,6 @@ import {
     EventBus,
     FSComponent,
     HEvent,
-    SimVarValueType,
     Subject,
     VNode,
 } from '@microsoft/msfs-sdk';
@@ -50,14 +49,13 @@ import { FmsErrorType } from '@fmgc/FmsError';
 import { FmgcDataInterface } from 'instruments/src/MFD/fmgc';
 import { MfdFmsFplnAirways } from 'instruments/src/MFD/pages/FMS/F-PLN/AIRWAYS';
 import { MfdFmsPositionIrs } from 'instruments/src/MFD/pages/FMS/POSITION/IRS';
-import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
 import { getFlightPhaseManager } from '@fmgc/flightphase';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { Fix, NXDataStore, UpdateThrottler } from '@flybywiresim/fbw-sdk';
 import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/VERT_REV';
 import { MfdFmsFplnHold } from 'instruments/src/MFD/pages/FMS/F-PLN/HOLD';
 import { MfdSimvars } from './shared/MFDSimvarPublisher';
-import { DisplayUnit } from '../MsfsAvionicsCommon/displayUnit';
+import { CdsDisplayUnit, DisplayUnitID } from '../MsfsAvionicsCommon/CdsDisplayUnit';
 import { DataManager, PilotWaypoint } from '@fmgc/flightplanning/new/DataManager';
 import { DataInterface } from '@fmgc/flightplanning/new/interface/DataInterface';
 import { EfisInterface, Navigation } from '@fmgc/index';
@@ -115,7 +113,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
 
     private dataManager = new DataManager(this);
 
-    private fmService = new MfdFlightManagementService(this, this.flightPlanService, this.guidanceController, this.fmgc, this.navigation, this.flightPhaseManager);
+    private fmService = new MfdFlightManagementService(this, this.flightPlanService, this.guidanceController, this.fmgc, this.navigation, this.flightPhaseManager, this.efisInterface);
 
     public fmsErrors = ArraySubject.create<FmsErrorMessage>();
 
@@ -688,7 +686,6 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
             this.efisSymbols.update(dt);
             this.flightPhaseManager.shouldActivateNextPhase(dt);
             this.guidanceController.update(dt);
-            this.fmgc.updateFromSimVars();
 
             if (this.fmsUpdateThrottler.canUpdate(dt) !== -1) {
                 this.navigation.update(dt);
@@ -697,7 +694,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
                     this.fmService.acInterface.updateTransitionAltitudeLevel(this.fmgc.getOriginTransitionAltitude(), this.fmgc.getDestinationTransitionLevel());
                     this.fmService.acInterface.updatePerformanceData();
                     this.fmService.acInterface.updatePerfSpeeds();
-                    this.fmService.acInterface.toSpeedsChecks(this.flightPlanService.active.performanceData);
+                    this.fmService.acInterface.toSpeedsChecks();
                     this.fmService.acInterface.setTakeoffFlaps(this.fmService.fmgc.getTakeoffFlapsSetting());
                     this.fmService.acInterface.setTakeoffTrim(this.fmService.fmgc.data.takeoffThsFor.get());
 
@@ -1019,7 +1016,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
 
     render(): VNode {
         return (
-            <DisplayUnit bus={this.props.bus} normDmc={1} brightness={this.displayBrightness} powered={this.displayPowered}>
+            <CdsDisplayUnit bus={this.props.bus} displayUnitId={DisplayUnitID.CaptMfd}>
                 <div class="mfd-main" ref={this.topRef}>
                     <div ref={this.activeHeaderRef} />
                     <MfdMsgList
@@ -1039,7 +1036,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
                     <div ref={this.activePageRef} class="mfd-navigator-container" />
                     <MouseCursor side={Subject.create('CPT')} ref={this.mouseCursorRef} />
                 </div>
-            </DisplayUnit>
+            </CdsDisplayUnit>
         );
     }
 }

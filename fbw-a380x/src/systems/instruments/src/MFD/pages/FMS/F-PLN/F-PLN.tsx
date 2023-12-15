@@ -107,9 +107,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
         this.displayFplnFromLegIndex.set(startAtIndex);
 
         // Update SimVars for ND map center
-        SimVar.SetSimVarValue('L:A32NX_SELECTED_WAYPOINT_FP_INDEX', 'number', this.loadedFlightPlanIndex);
-        SimVar.SetSimVarValue('L:A32NX_SELECTED_WAYPOINT_INDEX', 'number', startAtIndex);
-        SimVar.SetSimVarValue('L:A32NX_SELECTED_WAYPOINT_IN_ALTERNATE', 'Bool', startAtIndex > this.loadedFlightPlan.legCount - 1);
+        this.props.fmService.efisInterface.setPlanCentre(this.loadedFlightPlanIndex.get(), startAtIndex, startAtIndex > this.loadedFlightPlan.legCount - 1);
 
         /* if (startAtIndex > (this.loadedFlightPlan.allLegs.length + this.loadedFlightPlan.alternateFlightPlan.allLegs.length)) {
             this.displayFplnFromLegIndex.set(0);
