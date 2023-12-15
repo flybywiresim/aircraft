@@ -141,8 +141,7 @@
     "typescript": "^5.2.2",
     "vite": "^4.4.9",
     "vite-plugin-filter-replace": "^0.1.12",
-    "vite-tsconfig-paths": "^4.2.1",
-    "@flybywiresim/remote-bridge-types" : "*"
+    "vite-tsconfig-paths": "^4.2.1"
   },
   "dependencies": {
     "@flybywiresim/api-client": "^0.16.2",
@@ -160,6 +159,7 @@
     "classnames": "^2.2.6",
     "esbuild-plugin-inline-image": "^0.0.8",
     "esbuild-style-plugin": "^1.6.0",
+    "js-base64": "^3.7.5",
     "geolib": "^3.3.3",
     "i18next": "^21.6.14",
     "lodash": "^4.17.20",
