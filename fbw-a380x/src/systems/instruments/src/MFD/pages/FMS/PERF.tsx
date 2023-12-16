@@ -669,14 +669,14 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                 this.crzTablePredLine2.set(undefined);
             } else {
                 this.crzTableModeLine1.set('SELECTED');
-                this.crzTableSpdLine1.set((obs.fcuSpeed < 1) ? undefined : obs.fcuSpeed.toFixed(0));
+                this.crzTableSpdLine1.set((obs.fcuSpeed < 1) ? '---' : obs.fcuSpeed.toFixed(0));
                 this.crzTableMachLine1.set((obs.fcuSpeed < 1) ? `.${obs.fcuSpeed.toFixed(2).split('.')[1]}` : undefined);
                 this.crzTablePredLine1.set(undefined);
 
                 this.crzTableModeLine2.set('MANAGED');
                 // TODO add speed restriction (ECON, SPD LIM, ...) in smaller font
-                this.crzTableSpdLine2.set((obs.fcuSpeed < 1) ? '---' : this.props.fmService.fmgc.getManagedCruiseSpeed().toFixed(0));
-                this.crzTableMachLine2.set((obs.fcuSpeed < 1) ? this.props.fmService.fmgc.getManagedCruiseSpeed().toFixed(0) : '.--');
+                this.crzTableSpdLine2.set(obs.fcuSpeed < 1 ? '---' : this.props.fmService.fmgc.getManagedCruiseSpeed().toFixed(0));
+                this.crzTableMachLine2.set(obs.fcuSpeed < 1 ? `.${this.props.fmService.fmgc.getManagedCruiseSpeedMach().toFixed(2).split('.')[1]}` : '.--');
                 this.crzTablePredLine2.set(undefined);
             }
 
@@ -1305,14 +1305,13 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                 <div class="mfd-fms-perf-speed-presel-managed-table-cell">
                                     <div class={{
                                         'mfd-label': true,
-                                        'green': MappedSubject.create(([fp, managed, pSpeed]) => (fp < FmgcFlightPhase.Climb && (managed || !Number.isFinite(pSpeed))),
+                                        'green': MappedSubject.create(([fp, managed, pSpeed]) => (fp < FmgcFlightPhase.Climb && managed && !Number.isFinite(pSpeed)),
                                             this.activeFlightPhase,
                                             this.managedSpeedActive,
                                             this.props.fmService.fmgc.data.climbPreSelSpeed),
                                     }}
                                     >
                                         {this.clbTableModeLine2}
-
                                     </div>
                                 </div>
                                 <div class="mfd-fms-perf-speed-table-cell">
@@ -1644,7 +1643,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     <div class={{
                                         'mfd-label': true,
                                         // eslint-disable-next-line max-len
-                                        'green': MappedSubject.create(([fp, managed, pSpeed, pMach]) => (fp < FmgcFlightPhase.Climb && (managed || (!Number.isFinite(pSpeed) && !Number.isFinite(pMach)))),
+                                        'green': MappedSubject.create(([fp, managed, pSpeed, pMach]) => (fp < FmgcFlightPhase.Climb && managed && !Number.isFinite(pSpeed) && !Number.isFinite(pMach)),
                                             this.activeFlightPhase,
                                             this.managedSpeedActive,
                                             this.props.fmService.fmgc.data.cruisePreSelSpeed,

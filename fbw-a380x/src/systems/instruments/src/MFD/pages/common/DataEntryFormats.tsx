@@ -37,8 +37,12 @@ export class SpeedKnotsFormat implements DataEntryFormat<number> {
     }
 
     public async parse(input: string) {
+        if (input === '') {
+            return null;
+        }
+
         const nbr = Number(input);
-        if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
+        if (Number.isFinite(nbr) && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
         }
         if (nbr > this.maxValue || nbr < this.minValue) {
@@ -71,6 +75,10 @@ export class SpeedMachFormat implements DataEntryFormat<number> {
     }
 
     public async parse(input: string) {
+        if (input === '') {
+            return null;
+        }
+
         let nbr = Number(input);
         if (nbr > Mmo && !input.search('.')) {
             nbr = Number(`0.${input}`);
@@ -123,6 +131,10 @@ export class AltitudeOrFlightLevelFormat implements DataEntryFormat<number> {
     }
 
     public async parse(input: string) {
+        if (input === '') {
+            return null;
+        }
+
         let nbr = Number(input);
         if (nbr < 430) {
             nbr = Number(input) * 100;
@@ -160,6 +172,10 @@ export class AltitudeFormat implements DataEntryFormat<number> {
     }
 
     public async parse(input: string) {
+        if (input === '') {
+            return null;
+        }
+
         const nbr = Number(input);
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
@@ -191,12 +207,16 @@ export class FlightLevelFormat implements DataEntryFormat<number> {
         if (value === null || value === undefined) {
             return [this.placeholder, 'FL', null] as FieldFormatTuple;
         }
-        const fl = Math.round(value / 100);
+        const fl = Math.round(value);
         return [fl.toFixed(0).toString().padStart(3, '0'), 'FL', null] as FieldFormatTuple;
     }
 
     public async parse(input: string) {
-        const nbr = Number(input) * 100;
+        if (input === '') {
+            return null;
+        }
+
+        const nbr = Number(input);
         if (Number.isNaN(nbr) === false && nbr <= (this.maxValue) && nbr >= (this.minValue)) {
             return nbr;
         }
@@ -229,6 +249,10 @@ export class TropoFormat implements DataEntryFormat<number> {
     }
 
     public async parse(input: string) {
+        if (input === '') {
+            return null;
+        }
+
         const nbr = (input.length <= 3) ? (Number(input) * 100) : Number(input);
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
@@ -263,6 +287,10 @@ export class LengthFormat implements DataEntryFormat<number> {
     }
 
     public async parse(input: string) {
+        if (input === '') {
+            return null;
+        }
+
         const nbr = Number(input);
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
@@ -297,6 +325,10 @@ export class WeightFormat implements DataEntryFormat<number> {
     }
 
     public async parse(input: string) {
+        if (input === '') {
+            return null;
+        }
+
         const nbr = Number(input) * 1000;
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
@@ -333,6 +365,10 @@ export class PercentageFormat implements DataEntryFormat<number> {
     }
 
     public async parse(input: string) {
+        if (input === '') {
+            return null;
+        }
+
         const nbr = Number(input);
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
@@ -370,6 +406,10 @@ export class TemperatureFormat implements DataEntryFormat<number> {
     }
 
     public async parse(input: string) {
+        if (input === '') {
+            return null;
+        }
+
         const nbr = Number(input);
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
@@ -406,6 +446,10 @@ export class CrzTempFormat implements DataEntryFormat<number> {
     }
 
     public async parse(input: string) {
+        if (input === '') {
+            return null;
+        }
+
         let nbr = Number(input);
 
         if (nbr > 0 && input.substring(0, 1) !== '+') {
@@ -444,6 +488,10 @@ export class WindDirectionFormat implements DataEntryFormat<number> {
     }
 
     public async parse(input: string) {
+        if (input === '') {
+            return null;
+        }
+
         const nbr = Number(input);
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
@@ -477,6 +525,10 @@ export class WindSpeedFormat implements DataEntryFormat<number> {
     }
 
     public async parse(input: string) {
+        if (input === '') {
+            return null;
+        }
+
         const nbr = Number(input);
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
@@ -514,6 +566,10 @@ export class TripWindFormat implements DataEntryFormat<number> {
     }
 
     public async parse(input: string) {
+        if (input === '') {
+            return null;
+        }
+
         let sign = +1;
         let number = 0;
 
@@ -577,6 +633,10 @@ export class QnhFormat implements DataEntryFormat<number> {
     }
 
     public async parse(input: string) {
+        if (input === '') {
+            return null;
+        }
+
         const nbr = Number(input);
         if (Number.isNaN(nbr) === false && (nbr >= this.minHpaValue && nbr <= this.maxHpaValue) || (nbr >= this.minInHgValue && nbr <= this.maxInHgValue)) {
             return nbr;
@@ -607,6 +667,10 @@ export class CostIndexFormat implements DataEntryFormat<number> {
     }
 
     public async parse(input: string) {
+        if (input === '') {
+            return null;
+        }
+
         const nbr = Number(input);
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
@@ -641,6 +705,10 @@ export class VerticalSpeedFormat implements DataEntryFormat<number> {
     }
 
     public async parse(input: string) {
+        if (input === '') {
+            return null;
+        }
+
         const nbr = Number(input);
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
@@ -675,6 +743,10 @@ export class DescentRateFormat implements DataEntryFormat<number> {
     }
 
     public async parse(input: string) {
+        if (input === '') {
+            return null;
+        }
+
         let nbr = Number(input);
 
         if (nbr > 0) {
@@ -705,6 +777,10 @@ export class AirportFormat implements DataEntryFormat<string> {
     }
 
     public async parse(input: string) {
+        if (input === '') {
+            return null;
+        }
+
         return input;
     }
 }
@@ -722,6 +798,10 @@ export class NavaidIdentFormat implements DataEntryFormat<string> {
     }
 
     public async parse(input: string) {
+        if (input === '') {
+            return null;
+        }
+
         return input;
     }
 }
@@ -739,6 +819,10 @@ export class AirwayFormat implements DataEntryFormat<string> {
     }
 
     public async parse(input: string) {
+        if (input === '') {
+            return null;
+        }
+
         return input;
     }
 }
@@ -761,6 +845,10 @@ export class DropdownFieldFormat implements DataEntryFormat<string> {
     }
 
     public async parse(input: string) {
+        if (input === '') {
+            return null;
+        }
+
         return input;
     }
 }
@@ -778,6 +866,10 @@ export class WaypointFormat implements DataEntryFormat<string> {
     }
 
     public async parse(input: string) {
+        if (input === '') {
+            return null;
+        }
+
         return input;
     }
 }
@@ -795,6 +887,10 @@ export class LongAlphanumericFormat implements DataEntryFormat<string> {
     }
 
     public async parse(input: string) {
+        if (input === '') {
+            return null;
+        }
+
         return input;
     }
 }
@@ -820,6 +916,10 @@ export class PaxNbrFormat implements DataEntryFormat<number> {
     }
 
     public async parse(input: string) {
+        if (input === '') {
+            return null;
+        }
+
         const nbr = Number(input);
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
@@ -856,6 +956,10 @@ export class TimeHHMMFormat implements DataEntryFormat<number> {
     }
 
     public async parse(input: string) {
+        if (input === '') {
+            return null;
+        }
+
         const replacedInput = input.replace(':', '');
         let hours = 0;
         let minutes = 0;
@@ -904,6 +1008,10 @@ export class TimeHHMMSSFormat implements DataEntryFormat<number> {
     }
 
     public async parse(input: string) {
+        if (input === '') {
+            return null;
+        }
+
         const replacedInput = input.replace(':', '');
         if (replacedInput.length < 4) {
             return undefined;
@@ -954,6 +1062,10 @@ export class LatitudeFormat implements DataEntryFormat<number> {
     }
 
     public async parse(input: string) {
+        if (input === '') {
+            return null;
+        }
+
         const nbr = Number(input);
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
@@ -988,6 +1100,10 @@ export class HeadingFormat implements DataEntryFormat<number> {
     }
 
     public async parse(input: string) {
+        if (input === '') {
+            return null;
+        }
+
         const nbr = Number(input);
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
@@ -1023,6 +1139,10 @@ export class InboundCourseFormat implements DataEntryFormat<number> {
     }
 
     public async parse(input: string) {
+        if (input === '') {
+            return null;
+        }
+
         const nbr = Number(input);
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
@@ -1057,6 +1177,10 @@ export class HoldDistFormat implements DataEntryFormat<number> {
     }
 
     public async parse(input: string) {
+        if (input === '') {
+            return null;
+        }
+
         const nbr = Number(input);
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
@@ -1091,6 +1215,10 @@ export class HoldTimeFormat implements DataEntryFormat<number> {
     }
 
     public async parse(input: string) {
+        if (input === '') {
+            return null;
+        }
+
         const nbr = Number(input);
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
@@ -1123,6 +1251,10 @@ export class FrequencyILSFormat implements DataEntryFormat<number> {
     }
 
     public async parse(input: string) {
+        if (input === '') {
+            return null;
+        }
+
         const nbr = Number(input);
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
@@ -1155,6 +1287,10 @@ export class FrequencyVORDMEFormat implements DataEntryFormat<number> {
     }
 
     public async parse(input: string) {
+        if (input === '') {
+            return null;
+        }
+
         const nbr = Number(input);
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
@@ -1187,6 +1323,10 @@ export class FrequencyADFFormat implements DataEntryFormat<number> {
     }
 
     public async parse(input: string) {
+        if (input === '') {
+            return null;
+        }
+
         const nbr = Number(input);
         if (Number.isNaN(nbr) === false && nbr <= this.maxValue && nbr >= this.minValue) {
             return nbr;
@@ -1220,6 +1360,10 @@ export class LsCourseFormat implements DataEntryFormat<number> {
     }
 
     public async parse(input: string) {
+        if (input === '') {
+            return null;
+        }
+
         let numberPart = input;
         if (input.length === 4) {
             if (input[0] === 'F' || input[0] === 'B') {
