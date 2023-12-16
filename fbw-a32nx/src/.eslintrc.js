@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 'use strict';
 
 module.exports = {
@@ -108,11 +112,12 @@ module.exports = {
         'no-undef': 'off',
         'max-len': ['error', { code: 192 }],
 
-        // Irrelevant for our use
+        // Irrelevant for our use TODO we should probably fix those anyway, in the EFB at least, since that will be accessible remotely
         'jsx-a11y/alt-text': 'off',
         'jsx-a11y/no-static-element-interactions': 'off',
         'jsx-a11y/click-events-have-key-events': 'off',
         'jsx-a11y/anchor-is-valid': 'off',
+        'jsx-a11y/control-has-associated-label': 'off',
         'object-curly-newline': ['error', { multiline: true }],
         'linebreak-style': 'off',
 
