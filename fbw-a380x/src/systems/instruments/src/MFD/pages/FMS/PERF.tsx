@@ -38,6 +38,7 @@ import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { VerticalCheckpointReason } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { Feet } from 'msfs-geo';
 import { A380SpeedsUtils } from '@shared/OperatingSpeeds';
+import { A380AltitudeUtils } from '@shared/OperatingAltitudes';
 
 interface MfdFmsPerfProps extends AbstractMfdPageProps {
 }
@@ -49,6 +50,10 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
     // Subjects
     private crzFl = Subject.create<number>(32_000);
+
+    private recMaxFl = Subject.create<string>('---');
+
+    private optFl = Subject.create<string>('---');
 
     private flightPhasesSelectedPageIndex = Subject.create(0);
 
@@ -530,6 +535,12 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
         }));
 
         this.subs.push(sub.on('realTime').atFrequency(1).handle((_t) => {
+            // Update REC MAX FL, OPT FL
+            const isaTempDeviation = A380AltitudeUtils.getIsaTempDeviation();
+            const recMaxFl = Math.min(A380AltitudeUtils.calculateRecommendedMaxAltitude(this.props.fmService.getGrossWeight(), isaTempDeviation), maxCertifiedAlt);
+            this.recMaxFl.set((recMaxFl / 100).toFixed(0));
+            this.optFl.set(((Math.floor(recMaxFl / 5) * 5)/100).toFixed(0));
+
             const obs = this.props.fmService.guidanceController.verticalProfileComputationParametersObserver.get();
 
             // CLB PRED TO automatic update
@@ -757,12 +768,12 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                         <div class="mfd-label-value-container">
                             <span class="mfd-label mfd-spacing-right">OPT</span>
                             <span class="mfd-label-unit mfd-unit-leading">FL</span>
-                            <span class="mfd-value-green">---</span>
+                            <span class="mfd-value-green">{this.optFl}</span>
                         </div>
                         <div class="mfd-label-value-container">
                             <span class="mfd-label mfd-spacing-right">REC MAX</span>
                             <span class="mfd-label-unit mfd-unit-leading">FL</span>
-                            <span class="mfd-value-green">---</span>
+                            <span class="mfd-value-green">{this.recMaxFl}</span>
                         </div>
                     </div>
                     <TopTabNavigator
