@@ -632,7 +632,7 @@ class AB3Cell extends DisplayComponent<CellProps> {
 
     private text2Sub = Subject.create('');
 
-    private textXPosSub= Subject.create(0);
+    private textXPosSub = Subject.create(0);
 
     private getText() {
         if (this.athrModeMessage === 0) {
