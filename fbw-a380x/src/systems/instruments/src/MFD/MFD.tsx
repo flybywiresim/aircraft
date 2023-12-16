@@ -58,7 +58,7 @@ import { MfdSimvars } from './shared/MFDSimvarPublisher';
 import { CdsDisplayUnit, DisplayUnitID } from '../MsfsAvionicsCommon/CdsDisplayUnit';
 import { DataManager, PilotWaypoint } from '@fmgc/flightplanning/new/DataManager';
 import { DataInterface } from '@fmgc/flightplanning/new/interface/DataInterface';
-import { EfisInterface, Navigation } from '@fmgc/index';
+import { A320FlightPlanPerformanceData, EfisInterface, Navigation } from '@fmgc/index';
 import { NXFictionalMessages, NXSystemMessages, TypeIIMessage, TypeIMessage } from 'instruments/src/MFD/pages/FMS/legacy/NXSystemMessages';
 import { MfdFmsPositionNavaids } from 'instruments/src/MFD/pages/FMS/POSITION/NAVAIDS';
 
@@ -89,7 +89,7 @@ export interface FmsErrorMessage {
 export class MfdComponent extends DisplayComponent<MfdComponentProps> implements DisplayInterface, DataInterface {
     private uiService = new MfdUIService();
 
-    private flightPlanService = new FlightPlanService(this.props.bus);
+    private flightPlanService = new FlightPlanService(this.props.bus, new A320FlightPlanPerformanceData());
 
     private fmgc = new FmgcDataInterface(this.flightPlanService);
 

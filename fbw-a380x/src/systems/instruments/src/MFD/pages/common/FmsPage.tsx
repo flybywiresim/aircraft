@@ -13,7 +13,7 @@ export abstract class FmsPage<T extends AbstractMfdPageProps> extends DisplayCom
     // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
     protected subs = [] as Subscription[];
 
-    private newDataIntervalId: NodeJS.Timer;
+    private newDataIntervalId: number;
 
     protected activePageTitle = Subject.create<string>('');
 
