@@ -11,14 +11,15 @@
       "allowSyntheticDefaultImports": true,
       "jsx": "react",
         "paths": {
-            "@shared/*": ["./shared/src/*"],
-            "@instruments/common/*": ["./instruments/src/Common/*"],
-            "@atsu/*": ["./atsu/src/*"],
-            "@fmgc/*": ["../../../fbw-a32nx/src/systems/fmgc/src/*"],
-            "@flybywiresim/failures": ["failures"],
-            "@flybywiresim/fbw-sdk": ["../../../fbw-common/src/systems/index.ts"],
-            "@tcas/*": ["./tcas/src/*"],
-            "@typings/*": ["../../../fbw-common/src/typings/*"],
+          "@shared/*": ["./shared/src/*"],
+          "@instruments/common/*": ["./instruments/src/Common/*"],
+          "@atsu/*": ["./atsu/src/*"],
+          "@fmgc/*": ["../../../fbw-a32nx/src/systems/fmgc/src/*"],
+          "@simbridge/*": ["../../../fbw-a32nx/src/systems/simbridge-client/src/*"],
+          "@flybywiresim/failures": ["failures"],
+          "@flybywiresim/fbw-sdk": ["../../../fbw-common/src/systems/index.ts"],
+          "@tcas/*": ["./tcas/src/*"],
+          "@typings/*": ["../../../fbw-common/src/typings/*"],
         }
     }
 }
