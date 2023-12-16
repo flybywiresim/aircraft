@@ -4,13 +4,27 @@
 // SPDX-License-Identifier: GPL-3.0
 
 export interface FlightPlanPerformanceData {
+    v1: number;
+
+    vr: number;
+
+    v2: number;
+
     databaseTransitionAltitude: number,
 
     databaseTransitionLevel: number,
 
+    pilotTransitionAltitude: number,
+
+    pilotTransitionLevel: number,
+
     get transitionAltitude(): AltitudeValue;
 
+    get transitionAltitudeIsFromDatabase(): boolean;
+
     get transitionLevel(): AltitudeValue;
+
+    get transitionLevelIsFromDatabase(): boolean;
 
     costIndex: number,
 
@@ -28,6 +42,10 @@ export interface FlightPlanPerformanceData {
      */
     defaultThrustReductionAltitude: AltitudeValue;
 
+    get thrustReductionAltitude(): AltitudeValue;
+
+    get thrustReductionAltitudeIsPilotEntered(): boolean;
+
     // ACC
 
     /**
@@ -39,6 +57,10 @@ export interface FlightPlanPerformanceData {
      * ACC from NAV database
      */
     defaultAccelerationAltitude: AltitudeValue;
+
+    get accelerationAltitude(): AltitudeValue;
+
+    get accelerationAltitudeIsPilotEntered(): boolean;
 
     // EO ACC
 
@@ -52,6 +74,10 @@ export interface FlightPlanPerformanceData {
      */
     defaultEngineOutAccelerationAltitude: AltitudeValue;
 
+    get engineOutAccelerationAltitude(): AltitudeValue;
+
+    get engineOutAccelerationAltitudeIsPilotEntered(): boolean;
+
     // MISSED THR RED
 
     /**
@@ -63,6 +89,10 @@ export interface FlightPlanPerformanceData {
      * Missed THR RED from NAV database
      */
     defaultMissedThrustReductionAltitude: AltitudeValue;
+
+    get missedThrustReductionAltitude(): AltitudeValue;
+
+    get missedThrustReductionAltitudeIsPilotEntered(): boolean;
 
     // MISSED ACC
 
@@ -76,6 +106,10 @@ export interface FlightPlanPerformanceData {
      */
     defaultMissedAccelerationAltitude: AltitudeValue;
 
+    get missedAccelerationAltitude(): AltitudeValue;
+
+    get missedAccelerationAltitudeIsPilotEntered(): boolean;
+
     // MISSED EO ACC
 
     /**
@@ -87,6 +121,10 @@ export interface FlightPlanPerformanceData {
      * Missed EO ACC from NAV database
      */
     defaultMissedEngineOutAccelerationAltitude: AltitudeValue;
+
+    get missedEngineOutAccelerationAltitude(): AltitudeValue;
+
+    get missedEngineOutAccelerationAltitudeIsPilotEntered(): boolean;
 
     clone(): this;
 }
