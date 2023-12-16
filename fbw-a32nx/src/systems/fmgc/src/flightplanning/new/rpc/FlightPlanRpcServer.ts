@@ -6,14 +6,15 @@ import { EventBus } from '@microsoft/msfs-sdk';
 
 import { FlightPlanRemoteClientRpcEvents } from '@fmgc/flightplanning/new/rpc/FlightPlanRpcClient';
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
+import { FlightPlanPerformanceData } from '@fmgc/flightplanning/new/plans/performance/FlightPlanPerformanceData';
 
 export interface FlightPlanServerRpcEvents {
     'flightPlanServer_rpcCommandResponse': [string, any],
 }
 
-export class FlightPlanRpcServer {
+export class FlightPlanRpcServer<P extends FlightPlanPerformanceData = FlightPlanPerformanceData> {
     constructor(private readonly bus: EventBus, private readonly localFlightPlanService: FlightPlanService) {
-        const sub = bus.getSubscriber<FlightPlanRemoteClientRpcEvents>();
+        const sub = bus.getSubscriber<FlightPlanRemoteClientRpcEvents<P>>();
 
         sub.on('flightPlanRemoteClient_rpcCommand').handle(([command, id, ...args]) => {
             this.handleRpcCommand(command, id, ...args);

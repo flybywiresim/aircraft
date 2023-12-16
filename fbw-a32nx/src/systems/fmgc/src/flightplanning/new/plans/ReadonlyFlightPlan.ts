@@ -5,9 +5,11 @@
 import { Airport, Approach, Arrival, Departure, ProcedureTransition, Runway } from '@flybywiresim/fbw-sdk';
 import { FlightPlanSegment } from '@fmgc/flightplanning/new/segments/FlightPlanSegment';
 import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
-import { FlightPlanElement, FlightPlanLeg } from '../legs/FlightPlanLeg';
+import { ReadonlyFlightPlanElement, ReadonlyFlightPlanLeg } from '@fmgc/flightplanning/new/legs/ReadonlyFlightPlanLeg';
 
 export interface ReadonlyFlightPlan {
+    get index(): number;
+
     get legCount(): number;
 
     get lastIndex(): number;
@@ -18,7 +20,7 @@ export interface ReadonlyFlightPlan {
 
     get activeLegIndex(): number;
 
-    get activeLeg(): FlightPlanElement;
+    get activeLeg(): ReadonlyFlightPlanElement;
 
     get isApproachActive(): boolean;
 
@@ -26,11 +28,11 @@ export interface ReadonlyFlightPlan {
 
     get version(): number;
 
-    get originLeg(): FlightPlanElement;
+    get originLeg(): ReadonlyFlightPlanElement;
 
     get originLegIndex(): number;
 
-    get destinationLeg(): FlightPlanElement;
+    get destinationLeg(): ReadonlyFlightPlanElement;
 
     get destinationLegIndex(): number;
 
@@ -38,11 +40,11 @@ export interface ReadonlyFlightPlan {
 
     hasElement(index: number): boolean;
 
-    elementAt(index: number): FlightPlanElement;
+    elementAt(index: number): ReadonlyFlightPlanElement;
 
-    legElementAt(index: number): FlightPlanLeg;
+    legElementAt(index: number): ReadonlyFlightPlanLeg;
 
-    maybeElementAt(index: number): FlightPlanElement | undefined;
+    maybeElementAt(index: number): ReadonlyFlightPlanElement | undefined;
 
     get originAirport(): Airport | undefined;
 
@@ -74,5 +76,5 @@ export interface ReadonlyFlightPlan {
 
     glideslopeIntercept(): number | undefined;
 
-    allLegs: readonly FlightPlanElement[];
+    allLegs: readonly ReadonlyFlightPlanElement[];
 }

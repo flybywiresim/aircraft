@@ -13,6 +13,7 @@ import { Coordinates, distanceTo } from 'msfs-geo';
 import { DisplayInterface } from '@fmgc/flightplanning/new/interface/DisplayInterface';
 import { ISimbriefData, simbriefDataParser } from '../../../../../instruments/src/EFB/Apis/Simbrief';
 import { DataInterface } from '../interface/DataInterface';
+import { FlightPlanPerformanceData } from "@fmgc/flightplanning/new/plans/performance/FlightPlanPerformanceData";
 
 const SIMBRIEF_API_URL = 'https://www.simbrief.com/api/xml.fetcher.php?json=1';
 
@@ -103,7 +104,12 @@ export interface SimBriefUplinkOptions {
 }
 
 export class SimBriefUplinkAdapter {
-    static async uplinkFlightPlanFromSimbrief(fms: DataInterface & DisplayInterface, flightPlanService: FlightPlanService, ofp: ISimbriefData, options: SimBriefUplinkOptions) {
+    static async uplinkFlightPlanFromSimbrief<P extends FlightPlanPerformanceData>(
+        fms: DataInterface & DisplayInterface,
+        flightPlanService: FlightPlanService<P>,
+        ofp: ISimbriefData,
+        options: SimBriefUplinkOptions,
+    ) {
         const doUplinkProcedures = options.doUplinkProcedures ?? false;
 
         const route = this.getRouteFromOfp(ofp);

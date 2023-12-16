@@ -33,7 +33,7 @@ import { ApproachViaSegment } from '@fmgc/flightplanning/new/segments/ApproachVi
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { HoldData, WaypointStats } from '@fmgc/flightplanning/data/flightplan';
 import { procedureLegIdentAndAnnotation } from '@fmgc/flightplanning/new/legs/FlightPlanLegNaming';
-import { FlightPlanSyncEvents } from '@fmgc/flightplanning/new/sync/FlightPlanSyncEvents';
+import { FlightPlanSyncEvents, PerformanceDataFlightPlanSyncEvents } from '@fmgc/flightplanning/new/sync/FlightPlanSyncEvents';
 import { EventBus, Publisher, Subscription } from '@microsoft/msfs-sdk';
 import { FlightPlan } from '@fmgc/flightplanning/new/plans/FlightPlan';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/new/plans/AlternateFlightPlan';
@@ -41,7 +41,7 @@ import { FixInfoEntry } from '@fmgc/flightplanning/new/plans/FixInfo';
 import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/new/legs/FlightPlanLegDefinition';
 import { PendingAirways } from '@fmgc/flightplanning/new/plans/PendingAirways';
-import { SerializedFlightPlanPerformanceData } from '@fmgc/flightplanning/new/plans/performance/FlightPlanPerformanceData';
+import { FlightPlanPerformanceData, SerializedFlightPlanPerformanceData } from '@fmgc/flightplanning/new/plans/performance/FlightPlanPerformanceData';
 import { ReadonlyFlightPlan } from '@fmgc/flightplanning/new/plans/ReadonlyFlightPlan';
 import { AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
 
@@ -51,15 +51,18 @@ export enum FlightPlanQueuedOperation {
     SyncSegmentLegs,
 }
 
-export abstract class BaseFlightPlan implements ReadonlyFlightPlan {
+export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerformanceData> implements ReadonlyFlightPlan {
     private readonly syncPub: Publisher<FlightPlanSyncEvents>;
+
+    private readonly perfSyncPub: Publisher<PerformanceDataFlightPlanSyncEvents<P>>;
 
     public pendingAirways: PendingAirways | undefined;
 
     private subscriptions: Subscription[] = [];
 
-    constructor(public readonly index: number, public readonly bus: EventBus) {
+    protected constructor(public readonly index: number, public readonly bus: EventBus) {
         this.syncPub = this.bus.getPublisher<FlightPlanSyncEvents>();
+        this.perfSyncPub = this.bus.getPublisher<PerformanceDataFlightPlanSyncEvents<P>>();
 
         const subs = this.bus.getSubscriber<FlightPlanSyncEvents>();
 
@@ -287,6 +290,12 @@ export abstract class BaseFlightPlan implements ReadonlyFlightPlan {
     sendEvent<K extends keyof FlightPlanSyncEvents>(topic: K, data: FlightPlanSyncEvents[K]) {
         this.ignoreSync = true;
         this.syncPub.pub(topic, data, true, false);
+        this.ignoreSync = false;
+    }
+
+    sendPerfEvent<K extends keyof PerformanceDataFlightPlanSyncEvents<P>>(topic: K, data: PerformanceDataFlightPlanSyncEvents<P>[K]) {
+        this.ignoreSync = true;
+        this.perfSyncPub.pub(topic, data, true, false);
         this.ignoreSync = false;
     }
 

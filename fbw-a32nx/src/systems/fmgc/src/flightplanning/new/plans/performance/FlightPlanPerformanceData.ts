@@ -3,15 +3,107 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
+export interface FlightPlanPerformanceData {
+    databaseTransitionAltitude: number,
+
+    databaseTransitionLevel: number,
+
+    get transitionAltitude(): AltitudeValue;
+
+    get transitionLevel(): AltitudeValue;
+
+    costIndex: number,
+
+    cruiseFlightLevel: number
+
+    // THR RED
+
+    /**
+     * THR RED pilot entry
+     */
+    pilotThrustReductionAltitude: AltitudeValue;
+
+    /**
+     * THR RED from NAV database
+     */
+    defaultThrustReductionAltitude: AltitudeValue;
+
+    // ACC
+
+    /**
+     * ACC pilot entry
+     */
+    pilotAccelerationAltitude: AltitudeValue;
+
+    /**
+     * ACC from NAV database
+     */
+    defaultAccelerationAltitude: AltitudeValue;
+
+    // EO ACC
+
+    /**
+     * EO ACC pilot entry
+     */
+    pilotEngineOutAccelerationAltitude: AltitudeValue;
+
+    /**
+     * EO ACC from NAV database
+     */
+    defaultEngineOutAccelerationAltitude: AltitudeValue;
+
+    // MISSED THR RED
+
+    /**
+     * Missed THR RED pilot entry
+     */
+    pilotMissedThrustReductionAltitude: AltitudeValue;
+
+    /**
+     * Missed THR RED from NAV database
+     */
+    defaultMissedThrustReductionAltitude: AltitudeValue;
+
+    // MISSED ACC
+
+    /**
+     * Missed ACC pilot entry
+     */
+    pilotMissedAccelerationAltitude: AltitudeValue;
+
+    /**
+     * Missed ACC from NAV database
+     */
+    defaultMissedAccelerationAltitude: AltitudeValue;
+
+    // MISSED EO ACC
+
+    /**
+     * Missed EO ACC pilot entry
+     */
+    pilotMissedEngineOutAccelerationAltitude: AltitudeValue;
+
+    /**
+     * Missed EO ACC from NAV database
+     */
+    defaultMissedEngineOutAccelerationAltitude: AltitudeValue;
+
+    clone(): this;
+}
+
+export type FlightPlanPerformanceDataProperties = Omit<FlightPlanPerformanceData, 'clone'>
+
 type VSpeedValue = number | undefined;
 
 type AltitudeValue = Feet | undefined;
 
 type CostIndexValue = number | undefined;
 
-export class FlightPlanPerformanceData {
-    public clone(): FlightPlanPerformanceData {
-        const cloned = new FlightPlanPerformanceData();
+// TODO this should remain in fbw-a32nx/ once FMS is moved to fbw-common
+
+export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData {
+    public clone(): this {
+        const cloned = new A320FlightPlanPerformanceData();
 
         cloned.v1 = this.v1;
         cloned.vr = this.vr;
@@ -44,7 +136,7 @@ export class FlightPlanPerformanceData {
         cloned.cruiseFlightLevel = this.cruiseFlightLevel;
         cloned.costIndex = this.costIndex;
 
-        return cloned;
+        return cloned as this;
     }
 
     /**
@@ -88,7 +180,7 @@ export class FlightPlanPerformanceData {
      * THR RED from pilot if entered, otherwise from database
      */
     get thrustReductionAltitude() {
-        return FlightPlanPerformanceData.round(this.pilotThrustReductionAltitude ?? this.defaultThrustReductionAltitude, 10);
+        return A320FlightPlanPerformanceData.round(this.pilotThrustReductionAltitude ?? this.defaultThrustReductionAltitude, 10);
     }
 
     /**
@@ -114,7 +206,7 @@ export class FlightPlanPerformanceData {
      * ACC from pilot if entered, otherwise from database
      */
     get accelerationAltitude() {
-        return FlightPlanPerformanceData.round(this.pilotAccelerationAltitude ?? this.defaultAccelerationAltitude, 10);
+        return A320FlightPlanPerformanceData.round(this.pilotAccelerationAltitude ?? this.defaultAccelerationAltitude, 10);
     }
 
     /**
@@ -140,7 +232,7 @@ export class FlightPlanPerformanceData {
      * EO ACC from pilot if entered, otherwise from database
      */
     get engineOutAccelerationAltitude() {
-        return FlightPlanPerformanceData.round(this.pilotEngineOutAccelerationAltitude ?? this.defaultEngineOutAccelerationAltitude, 10);
+        return A320FlightPlanPerformanceData.round(this.pilotEngineOutAccelerationAltitude ?? this.defaultEngineOutAccelerationAltitude, 10);
     }
 
     /**
@@ -166,7 +258,7 @@ export class FlightPlanPerformanceData {
      * Missed THR RED from pilot if entered, otherwise from database
      */
     get missedThrustReductionAltitude() {
-        return FlightPlanPerformanceData.round(this.pilotMissedThrustReductionAltitude ?? this.defaultMissedThrustReductionAltitude, 10);
+        return A320FlightPlanPerformanceData.round(this.pilotMissedThrustReductionAltitude ?? this.defaultMissedThrustReductionAltitude, 10);
     }
 
     /**
@@ -192,7 +284,7 @@ export class FlightPlanPerformanceData {
      * Missed ACC from pilot if entered, otherwise from database
      */
     get missedAccelerationAltitude() {
-        return FlightPlanPerformanceData.round(this.pilotMissedAccelerationAltitude ?? this.defaultMissedAccelerationAltitude, 10);
+        return A320FlightPlanPerformanceData.round(this.pilotMissedAccelerationAltitude ?? this.defaultMissedAccelerationAltitude, 10);
     }
 
     /**
@@ -218,7 +310,7 @@ export class FlightPlanPerformanceData {
      * Missed EO ACC from pilot if entered, otherwise from database
      */
     get missedEngineOutAccelerationAltitude() {
-        return FlightPlanPerformanceData.round(this.pilotMissedEngineOutAccelerationAltitude ?? this.defaultMissedEngineOutAccelerationAltitude, 10);
+        return A320FlightPlanPerformanceData.round(this.pilotMissedEngineOutAccelerationAltitude ?? this.defaultMissedEngineOutAccelerationAltitude, 10);
     }
 
     /**
@@ -242,7 +334,7 @@ export class FlightPlanPerformanceData {
      * TRANS ALT from pilot if entered, otherwise from database
      */
     get transitionAltitude() {
-        return FlightPlanPerformanceData.round(this.pilotTransitionAltitude ?? this.databaseTransitionAltitude, 10);
+        return A320FlightPlanPerformanceData.round(this.pilotTransitionAltitude ?? this.databaseTransitionAltitude, 10);
     }
 
     /**
@@ -266,7 +358,7 @@ export class FlightPlanPerformanceData {
      * TRANS LVL from pilot if entered, otherwise from database
      */
     get transitionLevel() {
-        return FlightPlanPerformanceData.round(this.pilotTransitionLevel ?? this.databaseTransitionLevel);
+        return A320FlightPlanPerformanceData.round(this.pilotTransitionLevel ?? this.databaseTransitionLevel);
     }
 
     /**

@@ -11,7 +11,7 @@ import { NavigationDatabaseService } from '@fmgc/flightplanning/new/NavigationDa
 import { Fix, Airway } from '@flybywiresim/fbw-sdk';
 import { Coordinates, distanceTo } from 'msfs-geo';
 import { DisplayInterface } from '@fmgc/flightplanning/new/interface/DisplayInterface';
-import { Fix as CoRouteFix } from '@simbridge/Coroute/Fix';
+import type { Fix as CoRouteFix } from '@simbridge/Coroute/Fix';
 import { DataInterface } from '../interface/DataInterface';
 
 export interface OfpRoute {
