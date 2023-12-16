@@ -11,6 +11,7 @@ import { FixInfoEntry } from '@fmgc/flightplanning/new/plans/FixInfo';
 import { FlightPlan } from '@fmgc/flightplanning/new/plans/FlightPlan';
 import { FlightPlanIndex } from '@fmgc/flightplanning/new/FlightPlanManager';
 import { AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
+import { ReadonlyFlightPlan } from '@fmgc/flightplanning/new/plans/ReadonlyFlightPlan';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/new/plans/performance/FlightPlanPerformanceData';
 
 /**
@@ -24,20 +25,20 @@ import { FlightPlanPerformanceData } from '@fmgc/flightplanning/new/plans/perfor
  * - {@link FlightPlanService} - a local implementation for use where the FMS software is located
  * - {@link FlightPlanRpcClient} - a remote implementation using RPC calls to a distant `FlightPlanService` - for use in remote FMS UIs
  */
-export interface FlightPlanInterface {
-    get(index: number): FlightPlan;
+export interface FlightPlanInterface<P extends FlightPlanPerformanceData = FlightPlanPerformanceData> {
+    get(index: number): FlightPlan<P>;
 
     has(index: number): boolean;
 
-    get active(): FlightPlan;
+    get active(): ReadonlyFlightPlan;
 
-    get temporary(): FlightPlan;
+    get temporary(): ReadonlyFlightPlan;
 
-    get activeOrTemporary(): FlightPlan;
+    get activeOrTemporary(): ReadonlyFlightPlan;
 
-    get uplink(): FlightPlan;
+    get uplink(): ReadonlyFlightPlan;
 
-    secondary(index: number): FlightPlan;
+    secondary(index: number): ReadonlyFlightPlan;
 
     get hasActive(): boolean;
 
@@ -248,5 +249,5 @@ export interface FlightPlanInterface {
 
     setFlightNumber(flightNumber: string, planIndex: number): Promise<void>;
 
-    setPerformanceData<T extends keyof FlightPlanPerformanceData>(key: T, value: FlightPlanPerformanceData[T], planIndex: number): Promise<void>;
+    setPerformanceData<T extends keyof P & string>(key: T, value: P[T], planIndex: number): Promise<void>;
 }

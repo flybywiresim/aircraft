@@ -18,8 +18,8 @@ import { AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/c
 import { CopyOptions } from '@fmgc/flightplanning/new/plans/CloningOptions';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/new/plans/performance/FlightPlanPerformanceData';
 
-export class FlightPlanService implements FlightPlanInterface {
-    private readonly flightPlanManager: FlightPlanManager;
+export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanPerformanceData> implements FlightPlanInterface<P> {
+    private readonly flightPlanManager: FlightPlanManager<P>;
 
     private config: FpmConfig = FpmConfigs.A320_HONEYWELL_H3;
 
@@ -27,8 +27,9 @@ export class FlightPlanService implements FlightPlanInterface {
 
     constructor(
         private readonly bus: EventBus,
+        private readonly performanceDataInit: P,
     ) {
-        this.flightPlanManager = new FlightPlanManager(this.bus, Math.round(Math.random() * 10_000), true);
+        this.flightPlanManager = new FlightPlanManager<P>(this.bus, this.performanceDataInit, Math.round(Math.random() * 10_000), true);
     }
 
     createFlightPlans() {
@@ -479,7 +480,7 @@ export class FlightPlanService implements FlightPlanInterface {
         plan.setFlightNumber(flightNumber);
     }
 
-    async setPerformanceData<k extends keyof FlightPlanPerformanceData & string>(key: k, value: FlightPlanPerformanceData[k], planIndex = FlightPlanIndex.Active) {
+    async setPerformanceData<k extends keyof P & string>(key: k, value: P[k], planIndex = FlightPlanIndex.Active) {
         const plan = this.flightPlanManager.get(planIndex);
 
         plan.setPerformanceData(key, value);

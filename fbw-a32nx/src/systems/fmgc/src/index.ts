@@ -19,8 +19,9 @@ import { WaypointEntryUtils } from './flightplanning/new/WaypointEntryUtils';
 import { FlightPlanIndex } from './flightplanning/new/FlightPlanManager';
 import { NavigationDatabaseService } from './flightplanning/new/NavigationDatabaseService';
 import { SimBriefUplinkAdapter } from './flightplanning/new/uplink/SimBriefUplinkAdapter';
+import { A320FlightPlanPerformanceData } from './flightplanning/new/plans/performance/FlightPlanPerformanceData';
 
-function initFmgcLoop(baseInstrument: BaseInstrument, flightPlanService: FlightPlanService): void {
+function initFmgcLoop(baseInstrument: BaseInstrument, flightPlanService: FlightPlanService<A320FlightPlanPerformanceData>): void {
     initComponents(baseInstrument, flightPlanService);
 }
 
@@ -32,6 +33,7 @@ export {
     ApproachUtils,
     ApproachType,
     FlightPlanService,
+    A320FlightPlanPerformanceData,
     NavigationDatabase,
     NavigationDatabaseBackend,
     NavigationDatabaseService,

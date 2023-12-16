@@ -8,14 +8,15 @@ import { BaseFlightPlan } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 import { DestinationSegment } from '@fmgc/flightplanning/new/segments/DestinationSegment';
 import { OriginSegment } from '@fmgc/flightplanning/new/segments/OriginSegment';
 import { FlightPlanSegment } from '@fmgc/flightplanning/new/segments/FlightPlanSegment';
+import { FlightPlanPerformanceData } from '@fmgc/flightplanning/new/plans/performance/FlightPlanPerformanceData';
 
 /**
  * An alternate flight plan shares its origin with the destination of a regular flight plan
  */
-export class AlternateFlightPlan extends BaseFlightPlan {
+export class AlternateFlightPlan<P extends FlightPlanPerformanceData> extends BaseFlightPlan<P> {
     constructor(
         index: number,
-        private mainFlightPlan: BaseFlightPlan,
+        private mainFlightPlan: BaseFlightPlan<P>,
     ) {
         super(index, mainFlightPlan.bus);
 
@@ -26,7 +27,7 @@ export class AlternateFlightPlan extends BaseFlightPlan {
         return this.mainFlightPlan.destinationAirport;
     }
 
-    clone(fromMainFlightPlan: BaseFlightPlan): AlternateFlightPlan {
+    clone(fromMainFlightPlan: BaseFlightPlan<P>): AlternateFlightPlan<P> {
         const newPlan = new AlternateFlightPlan(fromMainFlightPlan.index, fromMainFlightPlan);
 
         newPlan.version = this.version;
@@ -69,7 +70,7 @@ export class AlternateFlightPlan extends BaseFlightPlan {
 
 export class AlternateOriginSegment extends OriginSegment {
     constructor(
-        flightPlan: BaseFlightPlan,
+        flightPlan: BaseFlightPlan<FlightPlanPerformanceData>,
         private readonly mainDestinationSegment: DestinationSegment,
     ) {
         super(flightPlan);
@@ -79,7 +80,7 @@ export class AlternateOriginSegment extends OriginSegment {
         return this.mainDestinationSegment.destinationAirport;
     }
 
-    clone(forPlan: BaseFlightPlan): AlternateOriginSegment {
+    clone(forPlan: BaseFlightPlan<FlightPlanPerformanceData>): AlternateOriginSegment {
         const newSegment = new AlternateOriginSegment(forPlan, this.mainDestinationSegment);
 
         newSegment.strung = this.strung;

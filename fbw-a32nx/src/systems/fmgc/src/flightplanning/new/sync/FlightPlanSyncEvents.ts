@@ -8,7 +8,10 @@ import { FlightPlanLegDefinition } from '@fmgc/flightplanning/new/legs/FlightPla
 import { FixInfoData } from '@fmgc/flightplanning/new/plans/FixInfo';
 import { SerializedFlightPlan } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 import { CruiseStepEntry } from '@fmgc/flightplanning/CruiseStep';
-import { FlightPlanPerformanceData } from '@fmgc/flightplanning/new/plans/performance/FlightPlanPerformanceData';
+import {
+    A320FlightPlanPerformanceData,
+    FlightPlanPerformanceData, FlightPlanPerformanceDataProperties
+} from '@fmgc/flightplanning/new/plans/performance/FlightPlanPerformanceData';
 
 export interface FlightPlanSyncResponsePacket {
     plans: Record<number, SerializedFlightPlan>,
@@ -54,15 +57,19 @@ export interface FlightPlanSetFixInfoEntryEvent extends FlightPlanEditSyncEvent 
     fixInfo: FixInfoData | null,
 }
 
-export interface PerformanceDataSetEvent<T extends keyof FlightPlanPerformanceData> extends FlightPlanEditSyncEvent {
-    value: FlightPlanPerformanceData[T],
+export interface PerformanceDataSetEvent<T> extends FlightPlanEditSyncEvent {
+    value: T,
 }
 
 export interface FlightPlanFlightNumberEditEvent extends FlightPlanEditSyncEvent {
     flightNumber: string,
 }
 
-export interface FlightPlanSyncEvents extends PerformanceDataSyncEventKey<keyof FlightPlanPerformanceData> {
+export type PerformanceDataFlightPlanSyncEvents<P extends FlightPlanPerformanceData> = {
+    [k in keyof Omit<P, 'clone'> as `flightPlan.setPerformanceData.${k & string}`]: PerformanceDataSetEvent<P[k]>;
+}
+
+export interface FlightPlanSyncEvents {
     'flightPlanManager.syncRequest': undefined,
     'flightPlanManager.syncResponse': FlightPlanSyncResponsePacket,
 
@@ -76,8 +83,6 @@ export interface FlightPlanSyncEvents extends PerformanceDataSyncEventKey<keyof 
     'flightPlan.setSegmentLegs': FlightPlanSetSegmentLegsEvent,
     'flightPlan.legDefinitionEdit': FlightPlanLegDefinitionEditEvent,
     'flightPlan.setLegCruiseStep': FlightPlanLegCruiseStepEditEvent,
-    'flightPlan.setFixInfoEntry': FlightPlanSetFixInfoEntryEvent,
+    'flightPlan.setFixInfoEntry': FlightPlanSetFixInfoEntryEvent
     'flightPlan.setFlightNumber': FlightPlanFlightNumberEditEvent,
 }
-
-type PerformanceDataSyncEventKey<T extends keyof FlightPlanPerformanceData & string> = Record<`flightPlan.setPerformanceData.${T}`, PerformanceDataSetEvent<T>>;

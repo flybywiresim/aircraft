@@ -20,28 +20,33 @@ export type FunctionsOnlyAndUnwrapPromises<T> =
 
 type PromiseFn = (result: any) => void
 
-export interface FlightPlanRemoteClientRpcEvents {
-    'flightPlanRemoteClient_rpcCommand': [keyof FlightPlanInterface, string, ...any],
+export interface FlightPlanRemoteClientRpcEvents<P extends FlightPlanPerformanceData> {
+    'flightPlanRemoteClient_rpcCommand': [keyof FlightPlanInterface<P>, string, ...any],
 }
 
-export class FlightPlanRpcClient implements FlightPlanInterface {
+export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements FlightPlanInterface<P> {
     constructor(private readonly bus: EventBus) {
     }
 
-    private readonly flightPlanManager = new FlightPlanManager(this.bus, Math.round(Math.random() * 10_000), false);
+    private readonly flightPlanManager = new FlightPlanManager<P>(
+        this.bus,
+        {} as P /*  This flight plan manager will never create plans, so this is fine */,
+        Math.round(Math.random() * 10_000),
+        false,
+    );
 
-    private readonly pub = this.bus.getPublisher<FlightPlanRemoteClientRpcEvents>();
+    private readonly pub = this.bus.getPublisher<FlightPlanRemoteClientRpcEvents<P>>();
 
     private rpcCommandsSent = new Map<string, [PromiseFn, PromiseFn]>();
 
-    private async callFunctionViaRpc<T extends keyof FunctionsOnlyAndUnwrapPromises<FlightPlanInterface> & string>(
-        funcName: T, ...args: Parameters<FunctionsOnlyAndUnwrapPromises<FlightPlanInterface>[T]>
-    ): Promise<ReturnType<FunctionsOnlyAndUnwrapPromises<FlightPlanInterface>[T]>> {
+    private async callFunctionViaRpc<T extends keyof FunctionsOnlyAndUnwrapPromises<FlightPlanInterface<P>> & string>(
+        funcName: T, ...args: Parameters<FunctionsOnlyAndUnwrapPromises<FlightPlanInterface<P>>[T]>
+    ): Promise<ReturnType<FunctionsOnlyAndUnwrapPromises<FlightPlanInterface<P>>[T]>> {
         const id = v4();
 
         this.pub.pub('flightPlanRemoteClient_rpcCommand', [funcName, id, ...args]);
 
-        const result = await this.waitForRpcCommandResponse<ReturnType<FunctionsOnlyAndUnwrapPromises<FlightPlanInterface>[T]>>(id);
+        const result = await this.waitForRpcCommandResponse<ReturnType<FunctionsOnlyAndUnwrapPromises<FlightPlanInterface<P>>[T]>>(id);
 
         return result;
     }
@@ -52,7 +57,7 @@ export class FlightPlanRpcClient implements FlightPlanInterface {
         });
     }
 
-    get(index: number): FlightPlan {
+    get(index: number): FlightPlan<P> {
         return this.flightPlanManager.get(index);
     }
 
@@ -60,23 +65,23 @@ export class FlightPlanRpcClient implements FlightPlanInterface {
         return this.flightPlanManager.has(index);
     }
 
-    get active(): FlightPlan {
+    get active(): FlightPlan<P> {
         return this.flightPlanManager.get(FlightPlanIndex.Active);
     }
 
-    get temporary(): FlightPlan {
+    get temporary(): FlightPlan<P> {
         return this.flightPlanManager.get(FlightPlanIndex.Temporary);
     }
 
-    get activeOrTemporary(): FlightPlan {
+    get activeOrTemporary(): FlightPlan<P> {
         return this.hasTemporary ? this.temporary : this.active;
     }
 
-    get uplink(): FlightPlan {
+    get uplink(): FlightPlan<P> {
         return this.flightPlanManager.get(FlightPlanIndex.Uplink);
     }
 
-    secondary(index: number): FlightPlan {
+    secondary(index: number): FlightPlan<P> {
         return this.flightPlanManager.get(FlightPlanIndex.FirstSecondary + index);
     }
 
@@ -236,7 +241,7 @@ export class FlightPlanRpcClient implements FlightPlanInterface {
         return this.callFunctionViaRpc('setFlightNumber', flightNumber, planIndex);
     }
 
-    setPerformanceData<T extends keyof FlightPlanPerformanceData>(key: T, value: FlightPlanPerformanceData[T], planIndex: number): Promise<void> {
+    setPerformanceData<k extends keyof P & string>(key: k, value: P[k], planIndex: number): Promise<void> {
         return this.callFunctionViaRpc('setPerformanceData', key, value, planIndex);
     }
 }

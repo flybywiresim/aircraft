@@ -5,33 +5,35 @@
 
 import { Airport, ApproachType, Fix, LegType, NXDataStore } from '@flybywiresim/fbw-sdk';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/new/plans/AlternateFlightPlan';
-import { EventBus, MagVar, Subject } from '@microsoft/msfs-sdk';
+import { EventBus, MagVar } from '@microsoft/msfs-sdk';
 import { FixInfoEntry, FixInfoData } from '@fmgc/flightplanning/new/plans/FixInfo';
 import { loadAllDepartures, loadAllRunways } from '@fmgc/flightplanning/new/DataLoading';
 import { Coordinates, Degrees } from 'msfs-geo';
 import { FlightPlanLeg, FlightPlanLegFlags } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { FlightArea } from '@fmgc/navigation/FlightArea';
-
 import { CopyOptions } from '@fmgc/flightplanning/new/plans/CloningOptions';
 import { ImportedPerformanceData } from '@fmgc/flightplanning/new/uplink/SimBriefUplinkAdapter';
-import { FlightPlanPerformanceData } from './performance/FlightPlanPerformanceData';
+import {
+    FlightPlanPerformanceData,
+    FlightPlanPerformanceDataProperties
+} from '@fmgc/flightplanning/new/plans/performance/FlightPlanPerformanceData';
 import { BaseFlightPlan, FlightPlanQueuedOperation, SerializedFlightPlan } from './BaseFlightPlan';
 
-export class FlightPlan extends BaseFlightPlan {
-    static empty(index: number, bus: EventBus): FlightPlan {
-        return new FlightPlan(index, bus);
+export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerformanceData> extends BaseFlightPlan<P> {
+    static empty<P extends FlightPlanPerformanceData>(index: number, bus: EventBus, performanceDataInit: P): FlightPlan<P> {
+        return new FlightPlan(index, bus, performanceDataInit);
     }
 
     /**
      * Alternate flight plan associated with this flight plan
      */
-    alternateFlightPlan = new AlternateFlightPlan(this.index, this);
+    alternateFlightPlan = new AlternateFlightPlan<P>(this.index, this);
 
     /**
      * Performance data for this flight plan
      */
-    performanceData = new FlightPlanPerformanceData();
+    performanceData: P;
 
     /**
      * FIX INFO entries
@@ -43,14 +45,19 @@ export class FlightPlan extends BaseFlightPlan {
      */
     flightNumber: string | undefined = undefined;
 
+    constructor(index: number, bus: EventBus, performanceDataInit: P) {
+        super(index, bus);
+        this.performanceData = performanceDataInit;
+    }
+
     destroy() {
         super.destroy();
 
         this.alternateFlightPlan.destroy();
     }
 
-    clone(newIndex: number, options: number = CopyOptions.Default): FlightPlan {
-        const newPlan = FlightPlan.empty(newIndex, this.bus);
+    clone(newIndex: number, options: number = CopyOptions.Default): FlightPlan<P> {
+        const newPlan = FlightPlan.empty(newIndex, this.bus, this.performanceData.clone());
 
         newPlan.version = this.version;
         newPlan.originSegment = this.originSegment.clone(newPlan);
@@ -77,7 +84,6 @@ export class FlightPlan extends BaseFlightPlan {
 
         newPlan.activeLegIndex = this.activeLegIndex;
 
-        newPlan.performanceData = this.performanceData.clone();
         newPlan.flightNumber = this.flightNumber;
 
         if (options & CopyOptions.IncludeFixInfos) {
@@ -353,7 +359,7 @@ export class FlightPlan extends BaseFlightPlan {
      * @param plan the flight plan
      * @param airport the origin airport
      */
-    private static setOriginDefaultPerformanceData(plan: FlightPlan, airport: Airport | undefined): void {
+    private static setOriginDefaultPerformanceData<P extends FlightPlanPerformanceData>(plan: FlightPlan<P>, airport: Airport | undefined): void {
         const referenceAltitude = airport?.location.alt;
 
         if (referenceAltitude !== undefined) {
@@ -377,7 +383,7 @@ export class FlightPlan extends BaseFlightPlan {
      * @param plan the flight plan
      * @param airport the destination airport
      */
-    private static setDestinationDefaultPerformanceData(plan: FlightPlan, airport: Airport): void {
+    private static setDestinationDefaultPerformanceData<P extends FlightPlanPerformanceData>(plan: FlightPlan<P>, airport: Airport): void {
         const referenceAltitude = airport?.location.alt;
 
         if (referenceAltitude !== undefined) {
@@ -395,8 +401,13 @@ export class FlightPlan extends BaseFlightPlan {
         plan.setPerformanceData('pilotMissedEngineOutAccelerationAltitude', undefined);
     }
 
-    static fromSerializedFlightPlan(index: number, serialized: SerializedFlightPlan, bus: EventBus): FlightPlan {
-        const newPlan = FlightPlan.empty(index, bus);
+    static fromSerializedFlightPlan<P extends FlightPlanPerformanceData>(
+        index: number,
+        serialized: SerializedFlightPlan,
+        bus: EventBus,
+        performanceDataInit: P,
+    ): FlightPlan<P> {
+        const newPlan = FlightPlan.empty<P>(index, bus, performanceDataInit);
 
         newPlan.activeLegIndex = serialized.activeLegIndex;
         newPlan.fixInfos = serialized.fixInfo;
@@ -417,12 +428,17 @@ export class FlightPlan extends BaseFlightPlan {
 
     /**
      * Sets a performance data parameter
+     *
+     * The union type in the signature is to work around https://github.com/microsoft/TypeScript/issues/28662.
      */
-    setPerformanceData<k extends keyof FlightPlanPerformanceData & string>(key: k, value: FlightPlanPerformanceData[k], notify = true) {
+    setPerformanceData<k extends(keyof (P & FlightPlanPerformanceDataProperties)) & string>(key: k, value: P[k], notify = true) {
         this.performanceData[key] = value;
 
         if (notify) {
-            this.sendEvent(`flightPlan.setPerformanceData.${key}`, { planIndex: this.index, forAlternate: false, value });
+            this.sendPerfEvent(
+                `flightPlan.setPerformanceData.${key}` as any,
+                { planIndex: this.index, forAlternate: false, value } as any,
+            );
         }
 
         this.incrementVersion();

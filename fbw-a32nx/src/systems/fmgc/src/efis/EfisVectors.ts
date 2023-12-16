@@ -10,8 +10,8 @@ import { PathVector, pathVectorLength, pathVectorValid } from '@fmgc/guidance/ln
 import { ArmedLateralMode, isArmed, LateralMode } from '@shared/autopilot';
 import { FlightPlanIndex } from '@fmgc/flightplanning/new/FlightPlanManager';
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
-import { FlightPlan } from '@fmgc/flightplanning/new/plans/FlightPlan';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
+import { ReadonlyFlightPlan } from '@fmgc/flightplanning/new/plans/ReadonlyFlightPlan';
 
 const UPDATE_TIMER = 2_500;
 
@@ -135,7 +135,7 @@ export class EfisVectors {
         }
     }
 
-    private transmitFlightPlan(plan: FlightPlan, mainGroup: EfisVectorsGroup, missedApproachGroup = mainGroup, alternateGroup = mainGroup) {
+    private transmitFlightPlan(plan: ReadonlyFlightPlan, mainGroup: EfisVectorsGroup, missedApproachGroup = mainGroup, alternateGroup = mainGroup) {
         if (!this.guidanceController.hasGeometryForFlightPlan(plan.index)) {
             this.transmitGroup([], mainGroup);
 

@@ -5,9 +5,13 @@
 
 import { FlightPlan } from '@fmgc/flightplanning/new/plans/FlightPlan';
 import { EventBus, Publisher } from '@microsoft/msfs-sdk';
-import { FlightPlanSyncEvents, FlightPlanSyncResponsePacket } from '@fmgc/flightplanning/new/sync/FlightPlanSyncEvents';
+import {
+    FlightPlanSyncEvents,
+    FlightPlanSyncResponsePacket, PerformanceDataFlightPlanSyncEvents,
+} from '@fmgc/flightplanning/new/sync/FlightPlanSyncEvents';
 import { SerializedFlightPlan } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 import { CopyOptions } from '@fmgc/flightplanning/new/plans/CloningOptions';
+import { FlightPlanPerformanceData } from '@fmgc/flightplanning/new/plans/performance/FlightPlanPerformanceData';
 
 export enum FlightPlanIndex {
     Active,
@@ -16,13 +20,14 @@ export enum FlightPlanIndex {
     FirstSecondary,
 }
 
-export class FlightPlanManager {
-    private plans: FlightPlan[] = []
+export class FlightPlanManager<P extends FlightPlanPerformanceData> {
+    private plans: FlightPlan<P>[] = []
 
     private ignoreSync = false;
 
     constructor(
         private readonly bus: EventBus,
+        private readonly performanceDataInit: P,
         private readonly syncClientID: number,
         private readonly master: boolean,
     ) {
@@ -53,7 +58,7 @@ export class FlightPlanManager {
                 for (const [index, serialisedPlan] of Object.entries(event.plans)) {
                     const intIndex = parseInt(index);
 
-                    const newPlan = FlightPlan.fromSerializedFlightPlan(intIndex, serialisedPlan, this.bus);
+                    const newPlan = FlightPlan.fromSerializedFlightPlan(intIndex, serialisedPlan, this.bus, this.performanceDataInit);
 
                     this.set(intIndex, newPlan);
                 }
@@ -102,9 +107,12 @@ export class FlightPlanManager {
         }
 
         this.syncPub = this.bus.getPublisher<FlightPlanSyncEvents>();
+        this.perfSyncPub = this.bus.getPublisher<PerformanceDataFlightPlanSyncEvents<P>>();
     }
 
     private readonly syncPub: Publisher<FlightPlanSyncEvents>;
+
+    private readonly perfSyncPub: Publisher<PerformanceDataFlightPlanSyncEvents<P>>;
 
     has(index: number) {
         return this.plans[index] !== undefined;
@@ -116,14 +124,14 @@ export class FlightPlanManager {
         return this.plans[index];
     }
 
-    private set(index: number, flightPlan: FlightPlan) {
+    private set(index: number, flightPlan: FlightPlan<P>) {
         this.plans[index] = flightPlan;
     }
 
     create(index: number, notify = true) {
         this.assertFlightPlanDoesntExist(index);
 
-        this.plans[index] = FlightPlan.empty(index, this.bus);
+        this.plans[index] = FlightPlan.empty(index, this.bus, this.performanceDataInit);
 
         if (notify) {
             this.sendEvent('flightPlanManager.create', { planIndex: index });
@@ -188,9 +196,15 @@ export class FlightPlanManager {
         }
     }
 
-    private sendEvent<K extends keyof FlightPlanSyncEvents>(topic: K, data: FlightPlanSyncEvents[K]): void {
+    private sendEvent<k extends keyof FlightPlanSyncEvents>(topic: k, data: FlightPlanSyncEvents[k]): void {
         this.ignoreSync = true;
         this.syncPub.pub(topic, data, true, false);
+        this.ignoreSync = false;
+    }
+
+    private sendPerfEvent<k extends keyof PerformanceDataFlightPlanSyncEvents<P>>(topic: k, data: PerformanceDataFlightPlanSyncEvents<P>[k]): void {
+        this.ignoreSync = true;
+        this.perfSyncPub.pub(topic, data, true, false);
         this.ignoreSync = false;
     }
 
