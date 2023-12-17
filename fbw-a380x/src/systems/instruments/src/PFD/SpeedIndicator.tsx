@@ -5,6 +5,7 @@ import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { VerticalTape } from './VerticalTape';
 import { SimplaneValues } from './shared/SimplaneValueProvider';
 import { Arinc429Values } from './shared/ArincValueProvider';
+import { ArincEventBus } from "@flybywiresim/fbw-sdk";
 
 const ValueSpacing = 10;
 const DistanceSpacing = 10;
@@ -510,7 +511,7 @@ export class AirspeedIndicator extends DisplayComponent<AirspeedIndicatorProps> 
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const pf = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values>();
+        const pf = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values>();
 
         pf.on('vFeNext').withArinc429Precision(2).handle((vfe) => {
             if (vfe.isNormalOperation()) {
@@ -704,7 +705,7 @@ class VLsBar extends DisplayComponent<{ bus: ArincEventBus }> {
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<Arinc429Values & PFDSimvars & ClockEvents>();
+        const sub = this.props.bus.getArincSubscriber<Arinc429Values & PFDSimvars & ClockEvents>();
 
         sub.on('vAlphaProt').withArinc429Precision(2).handle((a) => {
             this.vAlphaProt = a;
@@ -742,7 +743,7 @@ class VLsBar extends DisplayComponent<{ bus: ArincEventBus }> {
     }
 }
 
-class VAlphaLimBar extends DisplayComponent<{ bus: EventBus }> {
+class VAlphaLimBar extends DisplayComponent<{ bus: ArincEventBus }> {
     private VAlimIndicator = FSComponent.createRef<SVGPathElement>();
 
     private airSpeed = new Arinc429Word(0);
@@ -770,7 +771,7 @@ class VAlphaLimBar extends DisplayComponent<{ bus: EventBus }> {
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values>();
+        const sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values>();
 
         sub.on('speedAr').withArinc429Precision(2).handle((s) => {
             this.airSpeed = s;
@@ -886,7 +887,7 @@ class SpeedTarget extends DisplayComponent<{ bus: ArincEventBus }> {
         super.onAfterRender(node);
         this.needsUpdate = true;
 
-        const sub = this.props.bus.getSubscriber<PFDSimvars & SimplaneValues & ClockEvents & Arinc429Values>();
+        const sub = this.props.bus.getArincSubscriber<PFDSimvars & SimplaneValues & ClockEvents & Arinc429Values>();
 
         sub.on('isSelectedSpeed').whenChanged().handle((s) => {
             this.speedState.isSpeedManaged = !s;

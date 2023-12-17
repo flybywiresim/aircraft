@@ -1,4 +1,5 @@
-import { EventBus, SimVarDefinition, SimVarValueType, SimVarPublisher } from '@microsoft/msfs-sdk';
+import { EventBus, SimVarDefinition, SimVarValueType } from '@microsoft/msfs-sdk';
+import { UpdatableSimVarPublisher } from "../../MsfsAvionicsCommon/UpdatableSimVarPublisher";
 
 export interface PFDSimvars {
     slatsFlapsStatusRaw: number;
@@ -281,7 +282,7 @@ export enum PFDVars {
 }
 
 /** A publisher to poll and publish nav/com simvars. */
-export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
+export class PFDSimvarPublisher extends UpdatableSimVarPublisher<PFDSimvars> {
     private static simvars = new Map<keyof PFDSimvars, SimVarDefinition>([
         ['slatsFlapsStatusRaw', { name: PFDVars.slatsFlapsStatusRaw, type: SimVarValueType.Number }],
         ['slatsPositionRaw', { name: PFDVars.slatsPositionRaw, type: SimVarValueType.Number }],
@@ -380,7 +381,7 @@ export class PFDSimvarPublisher extends SimVarPublisher<PFDSimvars> {
         ['beta', { name: PFDVars.beta, type: SimVarValueType.Degree }],
         ['betaTargetActive', { name: PFDVars.betaTargetActive, type: SimVarValueType.Number }],
         ['betaTarget', { name: PFDVars.betaTarget, type: SimVarValueType.Number }],
-        ['latAcc', { name: PFDVars.latAcc, type: SimVarValueType.GForce }],
+        ['latAcc', { name: PFDVars.latAcc, type: 'G Force' as SimVarValueType }],
         ['crzAltMode', { name: PFDVars.crzAltMode, type: SimVarValueType.Bool }],
         ['tcasModeDisarmed', { name: PFDVars.tcasModeDisarmed, type: SimVarValueType.Bool }],
         ['flexTemp', { name: PFDVars.flexTemp, type: SimVarValueType.Number }],

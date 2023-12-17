@@ -31,7 +31,7 @@ export const getDisplayIndex = () => {
 };
 
 interface PFDProps extends ComponentProps {
-    bus: EventBus;
+    bus: ArincEventBus;
     instrument: BaseInstrument;
 }
 

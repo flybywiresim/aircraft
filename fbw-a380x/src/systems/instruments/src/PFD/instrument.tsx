@@ -1,4 +1,6 @@
 import { Clock, FSComponent, EventBus, HEventPublisher } from '@microsoft/msfs-sdk';
+import { ArincEventBus } from "@flybywiresim/fbw-sdk";
+
 import { PFDComponent } from './PFD';
 import { AdirsValueProvider } from './shared/AdirsValueProvider';
 import { ArincValueProvider } from './shared/ArincValueProvider';
@@ -8,7 +10,7 @@ import { SimplaneValueProvider } from './shared/SimplaneValueProvider';
 import './style.scss';
 
 class A32NX_PFD extends BaseInstrument {
-    private bus: EventBus;
+    private bus: ArincEventBus;
 
     private simVarPublisher: PFDSimvarPublisher;
 
@@ -32,7 +34,7 @@ class A32NX_PFD extends BaseInstrument {
 
     constructor() {
         super();
-        this.bus = new EventBus();
+        this.bus = new ArincEventBus();
         this.simVarPublisher = new PFDSimvarPublisher(this.bus);
         this.hEventPublisher = new HEventPublisher(this.bus);
         this.arincProvider = new ArincValueProvider(this.bus);
