@@ -12,6 +12,7 @@ export * from './bitFlags';
 export * from './config';
 export * from './Constants';
 export * from './GenericDataListenerSync';
+export * from './flypad-server';
 export * from './FmMessages';
 export * from './logic';
 export * from './MathUtils';

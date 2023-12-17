@@ -15,21 +15,13 @@ export type Pages = [page: number, component: DisplayComponent<any>][]
 
 interface MainPageProps extends ComponentProps {
     activePage: Subject<number>;
-}
 
-interface PagerProps extends ComponentProps {
-    activePage: Subject<number>;
-    pages: Pages;
-    class?: string;
-}
-
-interface PageWrapperProps extends ComponentProps {
-    isVisible: Subscribable<Boolean>;
+    pongText: Subscribable<string>;
 }
 
 export class MainPage extends DisplayComponent<MainPageProps> {
     private readonly pages: [page: number, component: DisplayComponent<any>][] = [
-        [PageEnum.MainPage.Dashboard, <Dashboard />],
+        [PageEnum.MainPage.Dashboard, <Dashboard pongText={this.props.pongText} />],
         [PageEnum.MainPage.Dispatch, <Dispatch />],
         [PageEnum.MainPage.Ground, <Ground />],
         [PageEnum.MainPage.Performance, <Performance />],
@@ -48,6 +40,12 @@ export class MainPage extends DisplayComponent<MainPageProps> {
     }
 }
 
+interface PagerProps extends ComponentProps {
+    activePage: Subject<number>;
+    pages: Pages;
+    class?: string;
+}
+
 export class Pager extends DisplayComponent<PagerProps> {
     private readonly pageVisibility = (page: number) => this.props.activePage.map((value) => value === page);
 
@@ -64,6 +62,10 @@ export class Pager extends DisplayComponent<PagerProps> {
             </div>
         );
     }
+}
+
+interface PageWrapperProps extends ComponentProps {
+    isVisible: Subscribable<Boolean>;
 }
 
 export class PageWrapper extends DisplayComponent<PageWrapperProps> {

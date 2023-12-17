@@ -2,12 +2,16 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { DisplayComponent, FSComponent, VNode } from '@microsoft/msfs-sdk';
+import { DisplayComponent, FSComponent, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { NXDataStore } from '@flybywiresim/fbw-sdk';
 
 import { t } from '../../Components/LocalizedText';
 
-export class FlightWidget extends DisplayComponent<any> {
+export interface FlightWidgetProps {
+    pongText: Subscribable<string>;
+}
+
+export class FlightWidget extends DisplayComponent<FlightWidgetProps> {
     private readonly languageButtonRefs = [
         FSComponent.createRef<HTMLButtonElement>(),
         FSComponent.createRef<HTMLButtonElement>(),
@@ -33,6 +37,7 @@ export class FlightWidget extends DisplayComponent<any> {
                 <div class="relative h-content-section-reduced w-full overflow-hidden rounded-lg border-2 border-theme-accent p-6">
                     <button type="button" ref={this.languageButtonRefs[0]} class="bg-cyan px-5 py-2.5">Set language to English</button>
                     <button type="button" ref={this.languageButtonRefs[1]} class="bg-cyan px-5 py-2.5">Set language to Korean</button>
+                    <span class="text-2xl text-red">{this.props.pongText}</span>
                 </div>
             </div>
         );
@@ -54,11 +59,15 @@ export class RemindersWidget extends DisplayComponent<any> {
     }
 }
 
-export class Dashboard extends DisplayComponent<any> {
+export interface DashboardProps {
+    pongText: Subscribable<string>;
+}
+
+export class Dashboard extends DisplayComponent<DashboardProps> {
     render(): VNode {
         return (
             <div class="flex w-full space-x-8">
-                <FlightWidget />
+                <FlightWidget pongText={this.props.pongText} />
                 <RemindersWidget />
             </div>
         );
