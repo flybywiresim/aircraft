@@ -757,6 +757,10 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
                 } else {
                     segment.allLegs.splice(indexInSegment, 1);
                 }
+
+                if (previousElement.isXI()) {
+                    segment.allLegs.splice(indexInSegment - 1, 1);
+                }
             } else {
                 segment.allLegs.splice(indexInSegment, 1);
             }
