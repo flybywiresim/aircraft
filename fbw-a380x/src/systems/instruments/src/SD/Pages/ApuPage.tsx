@@ -11,12 +11,12 @@ export const ApuPage = () => {
 
     return (
         <>
-            <PageTitle showMore={false} x={5} y={28}>APU</PageTitle>
+            <PageTitle x={6} y={29}>APU</PageTitle>
             {/* APU Avail */}
             {apuAvail
-            && (
-                <text x={384} y={55} className="Green Huge MiddleAlign">AVAIL</text>
-            )}
+                && (
+                    <text x={384} y={55} className="Green Huge MiddleAlign">AVAIL</text>
+                )}
 
             <ApuGen x={105} y={107} />
 
@@ -38,7 +38,7 @@ export const ApuPage = () => {
     );
 };
 
-const ApuGen = ({ x, y } : ComponentPositionProps) => {
+const ApuGen = ({ x, y }: ComponentPositionProps) => {
     const [apuContactorClosed] = useSimVar('L:A32NX_ELEC_CONTACTOR_3XS_IS_CLOSED', 'Bool', 1000);
     const [busTieContactor1Closed] = useSimVar('L:A32NX_ELEC_CONTACTOR_11XU1_IS_CLOSED', 'Bool');
     const [busTieContactor2Closed] = useSimVar('L:A32NX_ELEC_CONTACTOR_11XU2_IS_CLOSED', 'Bool');
@@ -65,13 +65,13 @@ const ApuGen = ({ x, y } : ComponentPositionProps) => {
         <>
             <Layer x={x} y={y}>
                 {(apuContactorClosed && (busTieContactor1Closed || busTieContactor2Closed))
-                && (
-                    <Layer x={42} y={-28}>
-                        <polygon points="0,20 8,5 16,20" className="Line" />
-                    </Layer>
-                )}
+                    && (
+                        <Layer x={42} y={-28}>
+                            <polygon points="0,20 8,5 16,20" className="Line" />
+                        </Layer>
+                    )}
                 {!inModeStandby
-                && <rect className="Box" width={100} height={111} />}
+                    && <rect className="Box" width={100} height={111} />}
 
                 <text
                     x={50}
@@ -79,54 +79,54 @@ const ApuGen = ({ x, y } : ComponentPositionProps) => {
                     className={`MiddleAlign XSmall
                     // eslint-disable-next-line no-mixed-operators
                     ${(!inModeStandby && (!(apuGenPotentialNormalRange && apuGenLoadNormalRange && apuGenFreqNormalRange))
-                        || inModeOff) && ' Amber'}`}
+                            || inModeOff) && ' Amber'}`}
                 >
                     APU GEN
                 </text>
 
                 {inModeOff
-                && <text x={50} y={70} className="MiddleAlign XSmall White">OFF</text>}
+                    && <text x={50} y={70} className="MiddleAlign XSmall White">OFF</text>}
 
                 {inModeOn
-                && (
-                    <>
-                        <Layer x={60} y={55}>
-                            {/* FBW-31-08 */}
-                            <text
-                                x={0}
-                                y={0}
-                                className={`EndAlign Large ${apuGenLoadNormalRange ? 'Green' : 'Amber'}`}
-                            >
-                                {apuGenLoad.toFixed()}
-                            </text>
-                            <text
-                                x={0}
-                                y={25}
-                                className={`EndAlign Large ${apuGenPotentialNormalRange ? 'Green' : 'Amber'}`}
-                            >
-                                {apuGenVoltage.toFixed()}
-                            </text>
-                            <text
-                                x={0}
-                                y={50}
-                                className={`EndAlign Large ${apuGenFreqNormalRange ? 'Green' : 'Amber'}`}
-                            >
-                                {apuGenFreq.toFixed()}
-                            </text>
-                        </Layer>
-                        <Layer x={70} y={55}>
-                            <text x={0} y={0} className="Cyan XSmall">%</text>
-                            <text x={0} y={25} className="Cyan XSmall">V</text>
-                            <text x={0} y={50} className="Cyan XSmall">HZ</text>
-                        </Layer>
-                    </>
-                )}
+                    && (
+                        <>
+                            <Layer x={60} y={55}>
+                                {/* FBW-31-08 */}
+                                <text
+                                    x={0}
+                                    y={0}
+                                    className={`EndAlign Large ${apuGenLoadNormalRange ? 'Green' : 'Amber'}`}
+                                >
+                                    {apuGenLoad.toFixed()}
+                                </text>
+                                <text
+                                    x={0}
+                                    y={25}
+                                    className={`EndAlign Large ${apuGenPotentialNormalRange ? 'Green' : 'Amber'}`}
+                                >
+                                    {apuGenVoltage.toFixed()}
+                                </text>
+                                <text
+                                    x={0}
+                                    y={50}
+                                    className={`EndAlign Large ${apuGenFreqNormalRange ? 'Green' : 'Amber'}`}
+                                >
+                                    {apuGenFreq.toFixed()}
+                                </text>
+                            </Layer>
+                            <Layer x={70} y={55}>
+                                <text x={0} y={0} className="Cyan XSmall">%</text>
+                                <text x={0} y={25} className="Cyan XSmall">V</text>
+                                <text x={0} y={50} className="Cyan XSmall">HZ</text>
+                            </Layer>
+                        </>
+                    )}
             </Layer>
         </>
     );
 };
 
-const ApuBleed = ({ x, y } : ComponentPositionProps) => {
+const ApuBleed = ({ x, y }: ComponentPositionProps) => {
     const [apuBleedPbOn] = useSimVar('L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON', 'Bool', 1000);
     const [apuBleedPbOnConfirmed, setApuBleedPbOnConfirmed] = useState(false);
     const [apuBleedOpen] = useSimVar('L:A32NX_APU_BLEED_AIR_VALVE_OPEN', 'Bool', 1000);
@@ -145,7 +145,7 @@ const ApuBleed = ({ x, y } : ComponentPositionProps) => {
         }
         setApuBleedPbOnConfirmed(false);
 
-        return () => {};
+        return () => { };
     }, [apuBleedPbOn]);
 
     return (
@@ -199,17 +199,17 @@ const Valve = ({ x, y, open, amber, showFlowArrow, entryPipeLength = 21 }: Valve
             />
             {/* 15 in length */}
             {showFlowArrow
-            && (
-                <>
-                    <line className="Line Green" x1={0} y1={baseYOffset - 39} x2={0} y2={baseYOffset - 54} />
-                    <polygon className="Line Green" points={`-10, ${baseYOffset - 51} 0,${baseYOffset - 65} 10, ${baseYOffset - 51}`} />
-                </>
-            )}
+                && (
+                    <>
+                        <line className="Line Green" x1={0} y1={baseYOffset - 39} x2={0} y2={baseYOffset - 54} />
+                        <polygon className="Line Green" points={`-10, ${baseYOffset - 51} 0,${baseYOffset - 65} 10, ${baseYOffset - 51}`} />
+                    </>
+                )}
         </Layer>
     );
 };
 
-const NGauge = ({ x, y } : ComponentPositionProps) => {
+const NGauge = ({ x, y }: ComponentPositionProps) => {
     const apuN = useArinc429Var('L:A32NX_APU_N', 100);
     let apuNIndicationColor;
     if (apuN.value < 102) {
@@ -294,20 +294,20 @@ const NGauge = ({ x, y } : ComponentPositionProps) => {
                                 outer
                             />
                             {apuN.isNormalOperation()
-                            && (
-                                <GaugeMarkerComponent
-                                    x={0}
-                                    y={50}
-                                    min={GAUGE_MIN}
-                                    radius={GAUGE_RADIUS}
-                                    max={GAUGE_MAX}
-                                    startAngle={GAUGE_START}
-                                    endAngle={GAUGE_END}
-                                    value={Number.parseFloat(apuN.value.toFixed())}
-                                    className={`ThickLine ${apuNIndicationColor}`}
-                                    indicator
-                                />
-                            )}
+                                && (
+                                    <GaugeMarkerComponent
+                                        x={0}
+                                        y={50}
+                                        min={GAUGE_MIN}
+                                        radius={GAUGE_RADIUS}
+                                        max={GAUGE_MAX}
+                                        startAngle={GAUGE_START}
+                                        endAngle={GAUGE_END}
+                                        value={Number.parseFloat(apuN.value.toFixed())}
+                                        className={`ThickLine ${apuNIndicationColor}`}
+                                        indicator
+                                    />
+                                )}
                         </GaugeComponent>
                     </GaugeComponent>
                 </Layer>
@@ -337,7 +337,7 @@ const NGauge = ({ x, y } : ComponentPositionProps) => {
     );
 };
 
-const EgtGauge = ({ x, y } : ComponentPositionProps) => {
+const EgtGauge = ({ x, y }: ComponentPositionProps) => {
     const apuEgt = useArinc429Var('L:A32NX_APU_EGT', 100);
     const displayedEgtValue = Math.round(apuEgt.value / 5) * 5; // APU Exhaust Gas Temperature is shown in steps of five.
 
@@ -492,21 +492,21 @@ const EgtGauge = ({ x, y } : ComponentPositionProps) => {
                     />
                     {/* AMBER BAR */}
                     {apuEgt.isNormalOperation() && apuEgtWarning.isNormalOperation()
-                    && (
-                        <GaugeMarkerComponent
-                            x={-1}
-                            y={50}
-                            min={GAUGE_MIN}
-                            max={GAUGE_MAX}
-                            value={apuEgtWarning.value - 33}
-                            radius={GAUGE_RADIUS}
-                            startAngle={GAUGE_MARKING_START}
-                            multiplierOuter={1.2}
-                            endAngle={GAUGE_END}
-                            className="NoFill AmberHeavy"
-                            outer
-                        />
-                    )}
+                        && (
+                            <GaugeMarkerComponent
+                                x={-1}
+                                y={50}
+                                min={GAUGE_MIN}
+                                max={GAUGE_MAX}
+                                value={apuEgtWarning.value - 33}
+                                radius={GAUGE_RADIUS}
+                                startAngle={GAUGE_MARKING_START}
+                                multiplierOuter={1.2}
+                                endAngle={GAUGE_END}
+                                className="NoFill AmberHeavy"
+                                outer
+                            />
+                        )}
 
                     <GaugeComponent
                         x={0}
@@ -528,20 +528,20 @@ const EgtGauge = ({ x, y } : ComponentPositionProps) => {
                     />
 
                     {apuEgt.isNormalOperation()
-                    && (
-                        <GaugeMarkerComponent
-                            x={0}
-                            y={50}
-                            min={GAUGE_MIN}
-                            max={GAUGE_MAX}
-                            radius={GAUGE_RADIUS}
-                            startAngle={GAUGE_MARKING_START}
-                            endAngle={GAUGE_END}
-                            value={apuEgt.value < 300 ? 300 : displayedEgtValue}
-                            className={`ThickLine ${egtNeedleStyle === 'Pulse' ? 'LinePulse' : egtNeedleStyle}`}
-                            indicator
-                        />
-                    )}
+                        && (
+                            <GaugeMarkerComponent
+                                x={0}
+                                y={50}
+                                min={GAUGE_MIN}
+                                max={GAUGE_MAX}
+                                radius={GAUGE_RADIUS}
+                                startAngle={GAUGE_MARKING_START}
+                                endAngle={GAUGE_END}
+                                value={apuEgt.value < 300 ? 300 : displayedEgtValue}
+                                className={`ThickLine ${egtNeedleStyle === 'Pulse' ? 'LinePulse' : egtNeedleStyle}`}
+                                indicator
+                            />
+                        )}
                 </GaugeComponent>
 
                 <Layer x={100} y={63}>
@@ -554,14 +554,14 @@ const EgtGauge = ({ x, y } : ComponentPositionProps) => {
                     y={115}
                     className={`Huge EndAlign ${egtNumericalStyle}`}
                 >
-                    {apuEgt.isNormalOperation() ? displayedEgtValue : 'XX' }
+                    {apuEgt.isNormalOperation() ? displayedEgtValue : 'XX'}
                 </text>
             </Layer>
         </>
     );
 };
 
-const ApuMemos = ({ x, y } : ComponentPositionProps) => {
+const ApuMemos = ({ x, y }: ComponentPositionProps) => {
     const lowFuelPressure = useArinc429Var('L:A32NX_APU_LOW_FUEL_PRESSURE_FAULT', 1000);
 
     const [apuFlapOpenPercentage] = useSimVar('L:A32NX_APU_FLAP_OPEN_PERCENTAGE', 'Percent', 1000);
@@ -581,7 +581,7 @@ const ApuMemos = ({ x, y } : ComponentPositionProps) => {
         if (isIntakeIndicationFlashing) {
             setIsIntakeIndicationFlashing(false);
         }
-        return () => {};
+        return () => { };
     }, [intakeApuMismatch, isIntakeIndicationFlashing]);
 
     return (
@@ -589,10 +589,10 @@ const ApuMemos = ({ x, y } : ComponentPositionProps) => {
             {/* Memos */}
             <Layer x={x} y={y}>
                 {lowFuelPressure.value
-                && <text className="AmberFill XLarge" x={0} y={0}>FUEL PRESS LO</text>}
+                    && <text className="AmberFill XLarge" x={0} y={0}>FUEL PRESS LO</text>}
 
                 {apuFlapOpenPercentage === 100
-                && <text className={`Green XLarge ${isIntakeIndicationFlashing && 'FillPulse'}`} x={0} y={70}>FLAP OPEN</text>}
+                    && <text className={`Green XLarge ${isIntakeIndicationFlashing && 'FillPulse'}`} x={0} y={70}>FLAP OPEN</text>}
                 {/* FBW-31-07 */}
             </Layer>
         </>
