@@ -1414,6 +1414,8 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
             segment.insertNecessaryDiscontinuities();
         }
 
+        this.ensureNoDiscontinuityAsFinalElement();
+
         this.incrementVersion();
 
         this.ensureNoDuplicates();
@@ -1610,6 +1612,29 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
             }
 
             a += segment.allLegs.length;
+        }
+    }
+
+    /**
+     * Removes discontinuities at the very end of the flightplan
+     * During stringing, discontinuities are inserted after VM/FM legs, this is correct, except at the very end
+     * Sometimes missed approach procedures end in VM/FM legs and we don't want to show a discontinuity after them
+     */
+    private ensureNoDiscontinuityAsFinalElement() {
+        const orderedSegments = this.orderedSegments;
+        for (let i = orderedSegments.length - 1; i >= 0; i--) {
+            const segment = orderedSegments[i];
+
+            if (segment.legCount === 0) {
+                continue;
+            }
+
+            let numIterations = 0;
+            while (segment.legCount > 0 && segment.allLegs[segment.legCount - 1].isDiscontinuity === true && numIterations++ < 10) {
+                segment.allLegs.pop();
+            }
+
+            break;
         }
     }
 
