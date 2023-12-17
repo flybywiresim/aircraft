@@ -11,6 +11,7 @@ import { getDisplayIndex, PFDComponent } from './PFD';
 import { AdirsValueProvider } from '../MsfsAvionicsCommon/AdirsValueProvider';
 import { ArincValueProvider } from './shared/ArincValueProvider';
 import { PFDSimvarPublisher, PFDSimvars } from './shared/PFDSimvarPublisher';
+import { SimplaneValueProvider } from './shared/SimplaneValueProvider';
 
 import './style.scss';
 
