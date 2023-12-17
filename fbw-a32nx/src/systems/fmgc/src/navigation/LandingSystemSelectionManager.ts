@@ -97,7 +97,7 @@ export class LandingSystemSelectionManager {
         if (runway?.lsIdent) {
             const ils = await this.getIls(runway.airportIdent, runway.lsIdent);
             this._selectedIls = ils;
-            this._selectedLocCourse = ils.locBearing;
+            this._selectedLocCourse = ils.locBearing !== -1 ? ils.locBearing : null;
             this._selectedGsSlope = ils.gsSlope ?? null;
             this._selectedApproachBackcourse = false;
             return true;
@@ -145,7 +145,7 @@ export class LandingSystemSelectionManager {
 
                 this._selectedIls = frequency;
                 this._selectedLocCourse = frequency.locBearing !== -1 ? frequency.locBearing : null;
-                this._selectedGsSlope = frequency.gsLocation ? -frequency.gsSlope : null;
+                this._selectedGsSlope = Number.isFinite(frequency.gsSlope) ? frequency.gsSlope : null;
 
                 return true;
             }

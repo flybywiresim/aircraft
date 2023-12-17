@@ -3,6 +3,7 @@
 
 /* eslint-disable camelcase */
 import { bearingTo, distanceTo, placeBearingDistance } from 'msfs-geo';
+import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import {
     AirportCommunication,
     Airway,
@@ -283,7 +284,6 @@ export class MsfsMapping {
     }
 
     public async mapAirportIls(msAirport: JS_FacilityAirport, ident?: string, lsIcaoCode?: string): Promise<IlsNavaid[]> {
-        const icaoCode = this.getIcaoCodeFromAirport(msAirport);
         const vorApproachParings = new Map<string, JS_Approach>();
 
         for (const appr of msAirport.approaches.filter(this.approachHasLandingSystem)) {
@@ -307,15 +307,14 @@ export class MsfsMapping {
 
         return Promise.all(Array.from(ils.values())
             .filter((ils) => !!ils)
-            .map((ils) => this.mapLandingSystem(ils, icaoCode, vorApproachParings.get(ils.icao))));
+            .map((ils) => this.mapLandingSystem(ils, msAirport, vorApproachParings.get(ils.icao))));
     }
 
     public async mapVorIls(msAirport: JS_FacilityAirport, msVor: JS_FacilityVOR): Promise<IlsNavaid> {
-        const icaoCode = this.getIcaoCodeFromAirport(msAirport);
         const approaches = this.findApproachesWithLandingSystem(msAirport, msVor.icao);
         const approach = this.selectApproach(approaches);
 
-        return this.mapLandingSystem(msVor, icaoCode, approach);
+        return this.mapLandingSystem(msVor, msAirport, approach);
     }
 
     private selectApproach(approaches: JS_Approach[]): JS_Approach | undefined {
@@ -337,7 +336,9 @@ export class MsfsMapping {
             .map(([appr, _]) => appr);
     }
 
-    private async mapLandingSystem(ls: JS_FacilityVOR, icaoCode: string, approach: JS_Approach | undefined): Promise<IlsNavaid> {
+    private async mapLandingSystem(ls: JS_FacilityVOR, airport: JS_FacilityAirport, approach: JS_Approach | undefined): Promise<IlsNavaid> {
+        const icaoCode = this.getIcaoCodeFromAirport(airport);
+
         let locBearing = -1;
         let runwayIdent = '';
         let gsSlope = undefined;
@@ -345,7 +346,7 @@ export class MsfsMapping {
             runwayIdent = `RW${approach.runwayNumber.toFixed(0).padStart(2, '0')}${this.mapRunwayDesignator(approach.runwayDesignator)}`;
             gsSlope = this.approachHasGlideslope(approach) ? approach.finalLegs[approach.finalLegs.length - 1].verticalAngle - 360 : undefined;
 
-            const [bearing, bearingIsTrue] = await this.getFinalApproachCourse(approach);
+            const [bearing, bearingIsTrue] = await this.getFinalApproachCourse(airport, approach);
             if (bearing !== undefined) {
                 locBearing = bearingIsTrue ? this.trueToMagnetic(bearing, -ls.magneticVariation) : bearing;
             }
@@ -377,14 +378,14 @@ export class MsfsMapping {
         return [MSApproachType.Loc, MSApproachType.Ils, MSApproachType.Lda, MSApproachType.Sdf].includes(approach.approachType);
     }
 
-    private async getFinalApproachCourse(approach: JS_Approach): Promise<[bearing: number | undefined, isTrue: boolean]> {
+    private async getFinalApproachCourse(airport: JS_FacilityAirport, approach: JS_Approach): Promise<[bearing: number | undefined, isTrue: boolean]> {
         const lastLeg = approach.finalLegs[approach.finalLegs.length - 1];
 
         // Check this first. Localizer based procedures should have the approach course coded on all approach legs, even TF legs
         if (Math.abs(lastLeg.course) > Number.EPSILON) {
             return [lastLeg.course, lastLeg.trueDegrees];
         } if (lastLeg.type === MsLegType.TF) {
-            const course = await this.computeFinalApproachCourse(approach);
+            const course = await this.computeFinalApproachCourse(airport, approach);
             if (course !== undefined) {
                 return [course, true];
             }
@@ -393,7 +394,7 @@ export class MsfsMapping {
         return [undefined, false];
     }
 
-    private async computeFinalApproachCourse(approach: JS_Approach): Promise<number | undefined> {
+    private async computeFinalApproachCourse(airport: JS_FacilityAirport, approach: JS_Approach): Promise<number | undefined> {
         const finalLeg = approach.finalLegs[approach.finalLegs.length - 1];
         const previousLeg = approach.finalLegs[approach.finalLegs.length - 2];
 
@@ -403,16 +404,23 @@ export class MsfsMapping {
 
         const facilities = await this.loadFacilitiesFromProcedures([approach]);
 
-        const finalWaypoint = facilities.get(finalLeg.fixIcao);
+        let finalCoordinates: Coordinates | undefined = undefined;
+        if (finalLeg.fixIcao.charAt(0) === 'R') {
+            finalCoordinates = this.mapRunwayWaypoint(airport, finalLeg.fixIcao)?.location;
+        } else {
+            const finalWaypoint = facilities.get(finalLeg.fixIcao);
+            finalCoordinates = finalWaypoint ? { lat: finalWaypoint.lat, long: finalWaypoint.lon } : undefined;
+        }
+
         const previousWaypoint = facilities.get(previousLeg.fixIcao);
 
-        if (!finalWaypoint || !previousWaypoint) {
+        if (!finalCoordinates || !previousWaypoint) {
             return undefined;
         }
 
         const finalLegCourse = bearingTo(
             { lat: previousWaypoint.lat, long: previousWaypoint.lon },
-            { lat: finalWaypoint.lat, long: finalWaypoint.lon },
+            finalCoordinates,
         );
 
         return finalLegCourse;
