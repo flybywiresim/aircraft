@@ -17,6 +17,8 @@ interface EfbProps extends ComponentProps {
 
 export class EFBv4 extends DisplayComponent<EfbProps> {
     private readonly currentPage = Subject.create(PageEnum.MainPage.Dashboard);
+    private readonly isCharging = Subject.create(false);
+    private readonly batteryLevel = Subject.create(100);
 
     private readonly serverPongString = Subject.create('no response');
 
@@ -24,9 +26,11 @@ export class EFBv4 extends DisplayComponent<EfbProps> {
         SimVar.SetSimVarValue('L:A32NX_EFB_BRIGHTNESS', 'number', 0.99);
 
         new FlypadClient(this.props.bus).initialized.on(async (client) => {
-            const ofp = await client.getSimbriefOfp();
+            const metar = await client.getMetar('KLAX');
 
-            this.serverPongString.set(JSON.stringify(ofp.origin));
+            // const ofp = await client.getSimbriefOfp();
+
+            this.serverPongString.set(JSON.stringify(metar));
         });
     }
 
@@ -34,7 +38,11 @@ export class EFBv4 extends DisplayComponent<EfbProps> {
         return (
             <div class="h-screen w-screen bg-theme-body">
                 <div class="flex h-full w-full flex-row">
-                    <Statusbar bus={this.props.bus} />
+                    <Statusbar
+                        bus={this.props.bus}
+                        batteryLevel={this.batteryLevel}
+                        isCharging={this.isCharging}
+                    />
                     <Navbar activePage={this.currentPage} />
                     <MainPage activePage={this.currentPage} pongText={this.serverPongString} />
                 </div>

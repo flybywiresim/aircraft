@@ -11,6 +11,7 @@ import { Checklists } from './Checklists/Checklists';
 import { Presets } from './Presets/Presets';
 import { Settings } from './Settings/Settings';
 
+// Page should be an enum
 export type Pages = [page: number, component: DisplayComponent<any>][]
 
 interface MainPageProps extends ComponentProps {
@@ -41,7 +42,7 @@ export class MainPage extends DisplayComponent<MainPageProps> {
 }
 
 interface PagerProps extends ComponentProps {
-    activePage: Subject<number>;
+    activePage: Subscribable<number>;
     pages: Pages;
     class?: string;
 }

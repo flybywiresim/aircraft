@@ -44,6 +44,65 @@ export class QuickControls extends DisplayComponent<any> {
     }
 }
 
+interface BatteryStatusIconProps extends ComponentProps {
+    batteryLevel: Subscribable<number>,
+    isCharging: Subscribable<boolean>,
+}
+
+export class BatteryIcon extends DisplayComponent<BatteryStatusIconProps> {
+    private readonly batteryStatus: Subscribable<PageEnum.BatteryLevel>;
+
+    constructor(props: BatteryStatusIconProps) {
+        super(props);
+
+        this.batteryStatus = MappedSubject.create(([batteryLevel, isCharging]) => {
+            if (isCharging) {
+                return PageEnum.BatteryLevel.Charging;
+            }
+
+            if (batteryLevel < PageEnum.BatteryLevel.Warning) {
+                return PageEnum.BatteryLevel.Warning;
+            }
+
+            if (batteryLevel < PageEnum.BatteryLevel.Low) {
+                return PageEnum.BatteryLevel.Low;
+            }
+
+            if (batteryLevel < PageEnum.BatteryLevel.LowMedium) {
+                return PageEnum.BatteryLevel.LowMedium;
+            }
+
+            if (batteryLevel < PageEnum.BatteryLevel.Medium) {
+                return PageEnum.BatteryLevel.Medium;
+            }
+
+            if (batteryLevel < PageEnum.BatteryLevel.HighMedium) {
+                return PageEnum.BatteryLevel.HighMedium;
+            }
+
+            return PageEnum.BatteryLevel.Full;
+
+        }, this.props.batteryLevel, this.props.isCharging)
+    }
+
+    render(): VNode {
+        return (
+            <Pager pages={[
+                [PageEnum.BatteryLevel.Charging, <i class="bi-battery-charging text-inherit text-[35px] !text-green-700" />],
+                [PageEnum.BatteryLevel.Warning, <i class="bi-battery text-[35px] !text-utility-red" />],
+                [PageEnum.BatteryLevel.Low, <i class="bi-battery text-inherit text-[35px] !text-white" />],
+                [PageEnum.BatteryLevel.LowMedium, <i class="bi-battery text-inherit text-[35px] !text-white" />],
+                [PageEnum.BatteryLevel.Medium, <i class="bi-battery-half text-inherit text-[35px] !text-white" />],
+                [PageEnum.BatteryLevel.HighMedium, <i class="bi-battery-half text-inherit text-[35px] !text-white" />],
+                [PageEnum.BatteryLevel.Full, <i class="bi-battery-full text-inherit text-[35px] !text-white" />],
+
+            ]}
+                   activePage={this.batteryStatus}
+            />
+        );
+    }
+}
+
 export class Battery extends DisplayComponent<BatteryProps> {
     private readonly activeClass = this.props.batteryLevel.map((value) => {
         return `w-12 text-right ${value < BATTERY_LEVEL_WARNING ? 'text-utility-red' : 'text-theme-text'}`;
@@ -56,6 +115,7 @@ export class Battery extends DisplayComponent<BatteryProps> {
                     {this.props.batteryLevel.map((value) => Math.round(value))}
                     %
                 </p>
+                <BatteryIcon batteryLevel={this.props.batteryLevel} isCharging={this.props.isCharging} />
             </div>
         );
     }
@@ -175,6 +235,7 @@ export class Statusbar extends DisplayComponent<StatusbarProps> {
                 <div class="flex items-center gap-4">
                     <QuickControls />
                     <i class={this.wifiClass} />
+                    <Battery batteryLevel={this.props.batteryLevel} isCharging={this.props.isCharging} />
                 </div>
             </div>
         );
