@@ -16,7 +16,6 @@ export interface SimplaneValues {
     isSelectedSpeed: boolean;
     selectedAltitude: number;
     baroMode: SimplaneBaroMode;
-
 }
 export class SimplaneValueProvider {
     private publisher: Publisher<SimplaneValues>;
