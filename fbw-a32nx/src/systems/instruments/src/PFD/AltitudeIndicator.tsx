@@ -2,15 +2,16 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { ClockEvents, DisplayComponent, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import { ClockEvents, DisplayComponent, FSComponent, SimVarValueType, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { ArincEventBus, Arinc429Register, Arinc429Word, Arinc429WordData, Arinc429RegisterSubject } from '@flybywiresim/fbw-sdk';
 
 import { VerticalMode } from '@shared/autopilot';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { DigitalAltitudeReadout } from './DigitalAltitudeReadout';
-import { SimplaneValues } from './shared/SimplaneValueProvider';
 import { VerticalTape } from './VerticalTape';
 import { Arinc429Values } from './shared/ArincValueProvider';
+import { BaroPressureMode } from 'instruments/src/PFD/shared/BaroPressureMode';
+import { PressureUnit } from 'instruments/src/PFD/shared/PressureUnit';
 
 const DisplayRange = 570;
 const ValueSpacing = 100;
@@ -21,7 +22,7 @@ class LandingElevationIndicator extends DisplayComponent<{bus: ArincEventBus}> {
 
     private altitude = 0;
 
-    private landingElevation = new Arinc429Word(0);
+    private landingElevation =  Arinc429Register.empty();
 
     private flightPhase = 0;
 
@@ -78,7 +79,7 @@ class RadioAltIndicator extends DisplayComponent<{ bus: ArincEventBus, filteredR
 
     private offsetSub = Subject.create('');
 
-    private radioAltitude = new Arinc429Word(0);
+    private radioAltitude =  Arinc429Register.empty();
 
     private setOffset() {
         if (this.props.filteredRadioAltitude.get() > DisplayRange || this.radioAltitude.isFailureWarning() || this.radioAltitude.isNoComputedData()) {
@@ -127,20 +128,20 @@ class MinimumDescentAltitudeIndicator extends DisplayComponent<{ bus: ArincEvent
 
     private inLandingPhases = false;
 
-    private altMode: 'STD' | 'QNH' | 'QFE' = 'STD';
+    private altMode: BaroPressureMode = BaroPressureMode.QNH;
 
     private readonly mda = Arinc429RegisterSubject.createEmpty();
 
-    private landingElevation = new Arinc429Word(0);
+    private landingElevation = Arinc429Register.empty();
 
     private updateIndication(): void {
         this.qnhLandingAltValid = !this.landingElevation.isFailureWarning()
             && !this.landingElevation.isNoComputedData()
             && this.inLandingPhases
-            && this.altMode === 'QNH';
+            && this.altMode === BaroPressureMode.QNH;
 
         this.qfeLandingAltValid = this.inLandingPhases
-            && this.altMode === 'QFE';
+            && this.altMode === BaroPressureMode.QNH;
 
         const altDelta = this.mda.get().value - this.altitude;
 
@@ -162,7 +163,7 @@ class MinimumDescentAltitudeIndicator extends DisplayComponent<{ bus: ArincEvent
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values & SimplaneValues>();
+        const sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values>();
 
         sub.on('chosenRa').whenArinc429SsmChanged().handle((ra) => {
             this.radioAltitudeValid = !ra.isFailureWarning() && !ra.isNoComputedData();
@@ -287,7 +288,7 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & SimplaneValues>();
+        const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values>();
 
         sub.on('altitudeAr').handle((altitude) => {
             if (!altitude.isNormalOperation()) {
@@ -380,7 +381,7 @@ interface SelectedAltIndicatorProps {
 }
 
 class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
-    private mode: 'QNH' | 'QFE' | 'STD' = 'QNH';
+    private mode: BaroPressureMode;
 
     private selectedAltLowerGroupRef = FSComponent.createRef<SVGGElement>();
 
@@ -402,7 +403,7 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
 
     private altTapeTargetText = FSComponent.createRef<SVGTextElement>();
 
-    private altitude = new Arinc429Word(0);
+    private altitude = Arinc429Register.empty();
 
     private shownTargetAltitude = 0;
 
@@ -437,7 +438,7 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values & SimplaneValues>();
+        const sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values>();
 
         sub.on('altitudeAr').withArinc429Precision(2).handle((a) => {
             this.altitude = a;
@@ -448,7 +449,7 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
         sub.on('baroMode').whenChanged().handle((m) => {
             this.mode = m;
 
-            if (this.mode === 'STD') {
+            if (this.mode === BaroPressureMode.STD) {
                 this.selectedAltLowerFLText.instance.style.visibility = 'visible';
                 this.selectedAltUpperFLText.instance.style.visibility = 'visible';
             } else {
@@ -490,7 +491,7 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
     private setText() {
         let boxLength = 19.14;
         let text = '0';
-        if (this.mode === 'STD') {
+        if (this.mode === BaroPressureMode.STD) {
             text = Math.round(this.shownTargetAltitude / 100).toString().padStart(3, '0');
             boxLength = 12.5;
         } else {
@@ -532,13 +533,13 @@ interface AltimeterIndicatorProps {
 }
 
 class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
-    private mode = Subject.create('');
+    private mode = Subject.create<BaroPressureMode>(BaroPressureMode.QNH);
 
     private text = Subject.create('');
 
     private pressure = 0;
 
-    private unit = '';
+    private unit: PressureUnit;
 
     private transAltAr = Arinc429Register.empty();
 
@@ -555,20 +556,20 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getArincSubscriber<PFDSimvars & SimplaneValues & Arinc429Values>();
+        const sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values>();
 
         sub.on('baroMode').whenChanged().handle((m) => {
-            if (m === 'QFE') {
+            if (m === BaroPressureMode.QFE) {
                 this.mode.set(m);
                 this.stdGroup.instance.classList.add('HiddenElement');
                 this.qfeGroup.instance.classList.remove('HiddenElement');
                 this.qfeBorder.instance.classList.remove('HiddenElement');
-            } else if (m === 'QNH') {
+            } else if ( m === BaroPressureMode.QNH) {
                 this.mode.set(m);
                 this.stdGroup.instance.classList.add('HiddenElement');
                 this.qfeGroup.instance.classList.remove('HiddenElement');
                 this.qfeBorder.instance.classList.add('HiddenElement');
-            } else if (m === 'STD') {
+            } else if (m === BaroPressureMode.STD) {
                 this.mode.set(m);
                 this.stdGroup.instance.classList.remove('HiddenElement');
                 this.qfeGroup.instance.classList.add('HiddenElement');
@@ -602,12 +603,12 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
             this.getText();
         });
 
-        sub.on('units').whenChanged().handle((u) => {
+        sub.on('baroUnit').whenChanged().handle((u) => {
             this.unit = u;
             this.getText();
         });
 
-        sub.on('pressure').whenChanged().handle((p) => {
+        sub.on('baroPressure').whenChanged().handle((p) => {
             this.pressure = p;
             this.getText();
         });
@@ -618,7 +619,7 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
     }
 
     private handleBlink() {
-        if (this.mode.get() === 'STD') {
+        if (this.mode.get() === BaroPressureMode.STD) {
             if (this.flightPhase > 3 && this.transLvlAr.isNormalOperation() && 100 * this.transLvlAr.value > this.props.altitude.get()) {
                 this.stdGroup.instance.classList.add('BlinkInfinite');
             } else {
@@ -633,7 +634,7 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
 
     private getText() {
         if (this.pressure !== null) {
-            if (this.unit === 'millibar') {
+            if (this.unit === PressureUnit.MB) {
                 this.text.set(Math.round(this.pressure).toString());
             } else {
                 this.text.set(this.pressure.toFixed(2));
@@ -654,7 +655,7 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
 
                     <g ref={this.qfeGroup} id="QFEGroup">
                         <path ref={this.qfeBorder} class="NormalStroke White" d="m 116.83686,133.0668 h 13.93811 v 5.8933 h -13.93811 z" />
-                        <text id="AltimeterModeText" class="FontMedium White" x="118.23066" y="138.11342">{this.mode}</text>
+                        <text id="AltimeterModeText" class="FontMedium White" x="118.23066" y="138.11342">{this.mode.map(m => BaroPressureMode[m])}</text>
                         <text id="AltimeterSettingText" class="FontMedium MiddleAlign Cyan" x="141.25583" y="138.09006">{this.text}</text>
                     </g>
                 </g>
@@ -698,7 +699,7 @@ class MetricAltIndicator extends DisplayComponent<MetricAltIndicatorProps> {
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values & ClockEvents & SimplaneValues>();
+        const sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values & ClockEvents>();
 
         this.mda.sub(() => this.needsUpdate = true);
 

@@ -5,9 +5,9 @@
 import { ConsumerSubject, DisplayComponent, FSComponent, MappedSubject, NodeReference, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { ArincEventBus, Arinc429RegisterSubject } from '@flybywiresim/fbw-sdk';
 
-import { SimplaneBaroMode, SimplaneValues } from 'instruments/src/PFD/shared/SimplaneValueProvider';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
+import { BaroPressureMode } from 'instruments/src/PFD/shared/BaroPressureMode';
 
 const TensDigits = (value: number) => {
     let text: string;
@@ -63,7 +63,7 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
 
     private readonly altitude = Arinc429RegisterSubject.createEmpty();
 
-    private readonly baroMode = ConsumerSubject.create<SimplaneBaroMode>(null, 'QNH');
+    private readonly baroMode = ConsumerSubject.create<BaroPressureMode>(null, BaroPressureMode.QNH);
 
     private isNegativeSub = Subject.create('hidden')
 
@@ -92,7 +92,7 @@ export class DigitalAltitudeReadout extends DisplayComponent<DigitalAltitudeRead
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getArincSubscriber<Arinc429Values & PFDSimvars & SimplaneValues>();
+        const sub = this.props.bus.getArincSubscriber<Arinc429Values & PFDSimvars>();
 
         this.altitude.sub((altitude) => {
             const isNegative = altitude.value < 0;
