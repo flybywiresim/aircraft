@@ -118,7 +118,7 @@ export class MfdFlightManagementService {
         } else if (isFinite(this.fmgc.data.blockFuel.get()) && isFinite(this.fmgc.data.zeroFuelWeight.get())) {
             fmGW = (this.fmgc.data.blockFuel.get() + this.fmgc.data.zeroFuelWeight.get());
         } else {
-            fmGW = 0;
+            fmGW = SimVar.GetSimVarValue('TOTAL WEIGHT', 'pounds') * 0.453592;
         }
         SimVar.SetSimVarValue("L:A32NX_FM_GROSS_WEIGHT", "Number", fmGW);
         return fmGW;

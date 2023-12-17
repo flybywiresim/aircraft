@@ -89,7 +89,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             }
         } else {
             this.destButtonDisabled.set(true);
-            this.destButtonLabel.set('-------');
+            this.destButtonLabel.set('------');
         }
 
         const destPred = this.props.fmService.guidanceController.vnavDriver.getDestinationPrediction();

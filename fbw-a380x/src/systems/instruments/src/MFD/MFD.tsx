@@ -158,13 +158,13 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
         // this.flightPlanService.active.performanceData.cruiseFlightLevel.set(SimVar.GetGameVarValue('AIRCRAFT CRUISE ALTITUDE', 'feet'));
 
         // Build EDDM08R GIVMI6E GIVMI DCT DKB DCT ILS25L EDDF25L
-        await this.flightPlanService.newCityPair('EDDM', 'EDDF', 'EBBR');
+        /* await this.flightPlanService.newCityPair('EDDM', 'EDDF', 'EBBR');
         await this.flightPlanService.setOriginRunway('RW08R');
         await this.flightPlanService.setDepartureProcedure('GIVM6E');
         await this.flightPlanService.nextWaypoint(4, (await db.searchAllFix('DKB'))[0]);
         await this.flightPlanService.setDestinationRunway('RW25L');
         await this.flightPlanService.setApproach('I25L');
-        await this.flightPlanService.temporaryInsert();
+        await this.flightPlanService.temporaryInsert(); */
 
         // Build EGLL/27R N0411F250 MAXI1F MAXIT DCT HARDY UM605 BIBAX BIBA9X LFPG/09L
         /* await this.flightPlanService.newCityPair('EGLL', 'LFPG', 'EBBR');
@@ -189,7 +189,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
         await this.flightPlanService.deleteElementAt(12); */
 
         // Default performance values
-        this.flightPlanService.active.setPerformanceData('pilotAccelerationAltitude', 2_900);
+        /* this.flightPlanService.active.setPerformanceData('pilotAccelerationAltitude', 2_900);
         this.flightPlanService.active.setPerformanceData('pilotThrustReductionAltitude', 1_900);
         this.flightPlanService.active.setPerformanceData('pilotTransitionAltitude', 5_000);
         this.flightPlanService.active.setPerformanceData('pilotEngineOutAccelerationAltitude', 1_500);
@@ -201,7 +201,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
         this.fmService.fmgc.data.zeroFuelWeightCenterOfGravity.set(26);
         this.fmService.fmgc.data.blockFuel.set(10_000);
         this.fmService.fmgc.data.costIndex.set(69);
-        this.flightPlanService.active.setPerformanceData('cruiseFlightLevel', 230);
+        this.flightPlanService.active.setPerformanceData('cruiseFlightLevel', 230); */
     }
 
     private init() {
@@ -699,7 +699,9 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
                     this.fmService.acInterface.setTakeoffTrim(this.fmService.fmgc.data.takeoffThsFor.get());
 
                     const destPred = this.fmService.guidanceController.vnavDriver.getDestinationPrediction();
-                    this.fmService.acInterface.updateMinimums(destPred.distanceFromAircraft);
+                    if (destPred) {
+                        this.fmService.acInterface.updateMinimums(destPred.distanceFromAircraft);
+                    }
                     this.fmService.acInterface.updateIlsCourse(this.navigation.getNavaidTuner().getMmrRadioTuningStatus(1));
                 }
                 this.fmService.getGrossWeight();
