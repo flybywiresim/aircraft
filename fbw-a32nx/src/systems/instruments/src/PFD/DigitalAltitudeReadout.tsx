@@ -5,9 +5,9 @@
 import { ConsumerSubject, DisplayComponent, FSComponent, MappedSubject, NodeReference, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { ArincEventBus, Arinc429RegisterSubject } from '@flybywiresim/fbw-sdk';
 
+import { BaroPressureMode } from 'instruments/src/PFD/shared/BaroPressureMode';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
-import { BaroPressureMode } from 'instruments/src/PFD/shared/BaroPressureMode';
 
 const TensDigits = (value: number) => {
     let text: string;
