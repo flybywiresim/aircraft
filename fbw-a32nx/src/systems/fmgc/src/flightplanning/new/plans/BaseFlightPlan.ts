@@ -743,11 +743,20 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         // TODO if clear leg before a hold, delete hold too? some other legs like this too..
         // TODO normally, need to insert a disco
 
-        if (insertDiscontinuity && index > 0) {
+        if (index > 0) {
             const previousElement = this.elementAt(index - 1);
 
             if (previousElement.isDiscontinuity === false) {
-                segment.allLegs.splice(indexInSegment, 1, { isDiscontinuity: true });
+                // Not allowed to clear disco after MANUAL
+                if (previousElement.isVectors()) {
+                    return false;
+                }
+
+                if (insertDiscontinuity) {
+                    segment.allLegs.splice(indexInSegment, 1, { isDiscontinuity: true });
+                } else {
+                    segment.allLegs.splice(indexInSegment, 1);
+                }
             } else {
                 segment.allLegs.splice(indexInSegment, 1);
             }
