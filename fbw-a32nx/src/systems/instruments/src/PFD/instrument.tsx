@@ -7,11 +7,11 @@ import { ArincEventBus } from '@flybywiresim/fbw-sdk';
 
 import { DmcPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 import { FmsDataPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
+import { SimplaneValueProvider } from 'instruments/src/PFD/shared/SimplaneValueProvider';
 import { getDisplayIndex, PFDComponent } from './PFD';
 import { AdirsValueProvider } from '../MsfsAvionicsCommon/AdirsValueProvider';
 import { ArincValueProvider } from './shared/ArincValueProvider';
 import { PFDSimvarPublisher, PFDSimvars } from './shared/PFDSimvarPublisher';
-import { SimplaneValueProvider } from './shared/SimplaneValueProvider';
 
 import './style.scss';
 
@@ -32,6 +32,8 @@ class A32NX_PFD extends BaseInstrument {
 
     private fmsDataPublisher: FmsDataPublisher;
 
+    private simplaneValueProvider: SimplaneValueProvider;
+
     /**
      * "mainmenu" = 0
      * "loading" = 1
@@ -46,9 +48,9 @@ class A32NX_PFD extends BaseInstrument {
         this.simVarPublisher = new PFDSimvarPublisher(this.bus);
         this.hEventPublisher = new HEventPublisher(this.bus);
         this.arincProvider = new ArincValueProvider(this.bus);
-        //   this.simplaneValueProvider = new SimplaneValueProvider(this.bus);
         this.clock = new Clock(this.bus);
         this.dmcPublisher = new DmcPublisher(this.bus);
+        this.simplaneValueProvider = new SimplaneValueProvider(this.bus, this.simVarPublisher);
     }
 
     get templateID(): string {
@@ -95,6 +97,7 @@ class A32NX_PFD extends BaseInstrument {
                 this.adirsValueProvider.start();
                 this.dmcPublisher.startPublish();
                 this.fmsDataPublisher.startPublish();
+                this.simplaneValueProvider.start();
             }
             this.gameState = gamestate;
         } else {
