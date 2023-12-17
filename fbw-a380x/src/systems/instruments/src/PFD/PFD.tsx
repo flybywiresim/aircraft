@@ -1,11 +1,10 @@
 import { A320Failure, FailuresConsumer } from '@flybywiresim/failures';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { ClockEvents, ComponentProps, DisplayComponent, EventBus, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+import { ClockEvents, ComponentProps, DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
 import { Arinc429Word } from '@shared/arinc429';
+import { CdsDisplayUnit, DisplayUnitID } from '../MsfsAvionicsCommon/CdsDisplayUnit';
 import { LagFilter } from './PFDUtils';
 import { Arinc429Values } from './shared/ArincValueProvider';
-import { DisplayUnit } from './shared/displayUnit';
-import './style.scss';
 import { AltitudeIndicator, AltitudeIndicatorOfftape } from './AltitudeIndicator';
 import { AttitudeIndicatorFixedCenter, AttitudeIndicatorFixedUpper } from './AttitudeIndicatorFixed';
 import { FMA } from './FMA';
@@ -17,9 +16,15 @@ import { VerticalSpeedIndicator } from './VerticalSpeedIndicator';
 import { LowerArea } from 'instruments/src/PFD/LowerArea';
 import { ArincEventBus } from "@flybywiresim/fbw-sdk";
 
+import './style.scss';
+
 export const getDisplayIndex = () => {
-    const url = document.getElementsByTagName('a32nx-pfd')[0].getAttribute('url');
+    const url = Array.from(document.querySelectorAll('vcockpit-panel > *'))
+        .find((it) => it.tagName.toLowerCase() !== 'wasm-instrument')
+        .getAttribute('url');
+
     const duId = url ? parseInt(url.substring(url.length - 1), 10) : -1;
+
     switch (duId) {
         case 0:
             return 1;
@@ -101,10 +106,7 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
 
     render(): VNode {
         return (
-            <DisplayUnit
-                failed={this.displayFailed}
-                bus={this.props.bus}
-            >
+            <CdsDisplayUnit bus={this.props.bus} displayUnitId={DisplayUnitID.CaptPfd} test={Subject.create(-1)} failed={Subject.create(false)}>
                 <svg class="pfd-svg" version="1.1" viewBox="0 0 158.75 211.6" xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink">
                     <Horizon
                         bus={this.props.bus}
@@ -144,7 +146,7 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
 
                     <LowerArea bus={this.props.bus} />
                 </svg>
-            </DisplayUnit>
+            </CdsDisplayUnit>
         );
     }
 }
