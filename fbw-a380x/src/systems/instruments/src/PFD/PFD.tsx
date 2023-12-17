@@ -14,11 +14,13 @@ import { Horizon } from './AttitudeIndicatorHorizon';
 import { LandingSystem } from './LandingSystemIndicator';
 import { AirspeedIndicator, AirspeedIndicatorOfftape, MachNumber } from './SpeedIndicator';
 import { VerticalSpeedIndicator } from './VerticalSpeedIndicator';
+import { LowerArea } from 'instruments/src/PFD/LowerArea';
+import { ArincEventBus } from "@flybywiresim/fbw-sdk";
 
 export const getDisplayIndex = () => {
     const url = document.getElementsByTagName('a32nx-pfd')[0].getAttribute('url');
     const duId = url ? parseInt(url.substring(url.length - 1), 10) : -1;
-    switch(duId) {
+    switch (duId) {
         case 0:
             return 1;
         case 3:
@@ -140,14 +142,7 @@ export class PFDComponent extends DisplayComponent<PFDProps> {
                     <MachNumber bus={this.props.bus} />
                     <FMA bus={this.props.bus} isAttExcessive={this.isAttExcessive} />
 
-                    <path class="NormalStroke Grey" d="M 3 158.5 h 152.75" />
-                    <path class="NormalStroke Grey" d="M 69 158.5 v 51" />
-
-                    <text x={12} y={170} class="FontIntermediate Amber">MEMO NOT AVAIL</text>
-                    <text x={76} y={184} class="FontIntermediate Amber">LIMITATIONS NOT AVAIL</text>
-                    <image xlinkHref="/Images/TRIM_INDICATOR.png" x={103} y={159} width={50} height={53} />
-
-                    <path class="NormalStroke Grey" d="M106.87,814.17c23.22,1.05,37,4.83,37,4.83v11.09H71.65l1-12S85,813.19,106.87,814.17Z" />
+                    <LowerArea bus={this.props.bus} />
                 </svg>
             </DisplayUnit>
         );
