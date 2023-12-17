@@ -10,11 +10,10 @@ import {
     MappedSubject,
 } from '@microsoft/msfs-sdk';
 import { EFBSimvars } from '../../../../../../../fbw-a32nx/src/systems/instruments/src/EFBv4/EFBSimvarPublisher';
-import { t } from './LocalizedText';
 import { LocalizedString } from '../shared/translation';
-import { Button } from './Button';
-import {PageEnum} from "../shared/common";
-import { Pager, Pages } from '../Pages/Pages';
+import { PageEnum } from '../shared/common';
+import { Pager } from '../Pages/Pages';
+import { busContext } from '../Contexts';
 
 const BATTERY_LEVEL_WARNING = 8;
 const BATTERY_LEVEL_0 = 13;
@@ -23,22 +22,11 @@ const BATTERY_LEVEL_2 = 62;
 const BATTERY_LEVEL_3 = 87;
 const BATTERY_ICON_SIZE = 28;
 
-interface StatusbarProps extends ComponentProps {
-    bus: EventBus;
-    batteryLevel: Subscribable<number>,
-    isCharging: Subscribable<boolean>,
-}
-
-interface BatteryProps extends ComponentProps {
-    batteryLevel: Subscribable<number>,
-    isCharging: Subscribable<boolean>,
-}
-
 export class QuickControls extends DisplayComponent<any> {
     render(): VNode {
         return (
             <div>
-                <i class="bi-gear text-inherit text-[26px]" />
+                <i class="bi-gear text-[26px] text-inherit" />
             </div>
         );
     }
@@ -81,32 +69,34 @@ export class BatteryIcon extends DisplayComponent<BatteryStatusIconProps> {
             }
 
             return PageEnum.BatteryLevel.Full;
-
-        }, this.props.batteryLevel, this.props.isCharging)
+        }, this.props.batteryLevel, this.props.isCharging);
     }
 
     render(): VNode {
         return (
-            <Pager pages={[
-                [PageEnum.BatteryLevel.Charging, <i class="bi-battery-charging text-inherit text-[35px] !text-green-700" />],
-                [PageEnum.BatteryLevel.Warning, <i class="bi-battery text-[35px] !text-utility-red" />],
-                [PageEnum.BatteryLevel.Low, <i class="bi-battery text-inherit text-[35px] !text-white" />],
-                [PageEnum.BatteryLevel.LowMedium, <i class="bi-battery text-inherit text-[35px] !text-white" />],
-                [PageEnum.BatteryLevel.Medium, <i class="bi-battery-half text-inherit text-[35px] !text-white" />],
-                [PageEnum.BatteryLevel.HighMedium, <i class="bi-battery-half text-inherit text-[35px] !text-white" />],
-                [PageEnum.BatteryLevel.Full, <i class="bi-battery-full text-inherit text-[35px] !text-white" />],
-
-            ]}
-                   activePage={this.batteryStatus}
+            <Pager
+                pages={[
+                    [PageEnum.BatteryLevel.Charging, <i class="bi-battery-charging text-[35px] !text-green-700 text-inherit" />],
+                    [PageEnum.BatteryLevel.Warning, <i class="bi-battery text-[35px] !text-utility-red" />],
+                    [PageEnum.BatteryLevel.Low, <i class="bi-battery text-[35px] !text-white text-inherit" />],
+                    [PageEnum.BatteryLevel.LowMedium, <i class="bi-battery text-[35px] !text-white text-inherit" />],
+                    [PageEnum.BatteryLevel.Medium, <i class="bi-battery-half text-[35px] !text-white text-inherit" />],
+                    [PageEnum.BatteryLevel.HighMedium, <i class="bi-battery-half text-[35px] !text-white text-inherit" />],
+                    [PageEnum.BatteryLevel.Full, <i class="bi-battery-full text-[35px] !text-white text-inherit" />],
+                ]}
+                activePage={this.batteryStatus}
             />
         );
     }
 }
 
+interface BatteryProps extends ComponentProps {
+    batteryLevel: Subscribable<number>,
+    isCharging: Subscribable<boolean>,
+}
+
 export class Battery extends DisplayComponent<BatteryProps> {
-    private readonly activeClass = this.props.batteryLevel.map((value) => {
-        return `w-12 text-right ${value < BATTERY_LEVEL_WARNING ? 'text-utility-red' : 'text-theme-text'}`;
-    })
+    private readonly activeClass = this.props.batteryLevel.map((value) => `w-12 text-right ${value < BATTERY_LEVEL_WARNING ? 'text-utility-red' : 'text-theme-text'}`)
 
     render(): VNode {
         return (
@@ -121,16 +111,23 @@ export class Battery extends DisplayComponent<BatteryProps> {
     }
 }
 
-export class Statusbar extends DisplayComponent<StatusbarProps> {
-    private readonly currentUTC: Subscribable<number>;
+interface StatusbarProps extends ComponentProps {
+    batteryLevel: Subscribable<number>,
+    isCharging: Subscribable<boolean>,
+}
 
-    private readonly currentLocalTime: Subscribable<number>;
+export class Statusbar extends DisplayComponent<StatusbarProps, [EventBus]> {
+    public override contextType = [busContext] as const;
 
-    private readonly dayOfWeek: Subscribable<number>;
+    private readonly currentUTC = ConsumerSubject.create(null, 0);
 
-    private readonly monthOfYear: Subscribable<number>;
+    private readonly currentLocalTime = ConsumerSubject.create(null, 0);
 
-    private readonly dayOfMonth: Subscribable<number>;
+    private readonly dayOfWeek = ConsumerSubject.create(null, 0);
+
+    private readonly monthOfYear = ConsumerSubject.create(null, 0);
+
+    private readonly dayOfMonth = ConsumerSubject.create(null, 0);
 
     private readonly dayName: LocalizedString = LocalizedString.create('StatusBar.Sun');
 
@@ -140,52 +137,47 @@ export class Statusbar extends DisplayComponent<StatusbarProps> {
 
     private readonly timeFormat: Subject<string> = Subject.create('24');
 
-    private readonly timeDisplayed: Subscribable<string>;
+    private readonly timeDisplayed = MappedSubject.create(([currentUTC, currentLocalTime, timezones, timeFormat]) => {
+        const getZuluFormattedTime = (seconds: number) => `${Math.floor(seconds / 3600).toString().padStart(2, '0')}${Math.floor((seconds % 3600) / 60).toString().padStart(2, '0')}Z`;
+        const getLocalFormattedTime = (seconds: number) => {
+            if (timeFormat === '24') {
+                return `${Math.floor(seconds / 3600).toString().padStart(2, '0')}:${Math.floor((seconds % 3600) / 60).toString().padStart(2, '0')}`;
+            }
+            const hours = Math.floor(seconds / 3600) % 12;
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const ampm = Math.floor(seconds / 3600) >= 12 ? 'pm' : 'am';
+            return `${hours === 0 ? 12 : hours}:${minutes.toString().padStart(2, '0')}${ampm}`;
+        };
+
+        const currentUTCString = getZuluFormattedTime(currentUTC);
+        const currentLocalTimeString = getLocalFormattedTime(currentLocalTime);
+
+        if (timezones === 'utc') {
+            return currentUTCString;
+        } if (timezones === 'local') {
+            return currentLocalTimeString;
+        }
+        return `${currentUTCString} / ${currentLocalTimeString}`;
+    }, this.currentUTC, this.currentLocalTime, this.timezones, this.timeFormat);
 
     private readonly simBridgeConnected: Subject<boolean> = Subject.create(false);
 
-    private readonly wifiClass: Subscribable<string>;
+    private readonly wifiClass = this.simBridgeConnected.map((value) => `bi-${value ? 'wifi' : 'wifi-off'} text-inherit text-[26px]`);
 
-    constructor(props: StatusbarProps) {
-        super(props);
-
-        const sub = this.props.bus.getSubscriber<EFBSimvars>();
-        this.currentUTC = ConsumerSubject.create(sub.on('currentUTC'), 0);
-        this.currentLocalTime = ConsumerSubject.create(sub.on('currentLocalTime'), 0);
-        this.dayOfWeek = ConsumerSubject.create(sub.on('dayOfWeek'), 0);
-        this.monthOfYear = ConsumerSubject.create(sub.on('monthOfYear'), 1);
-        this.dayOfMonth = ConsumerSubject.create(sub.on('dayOfMonth'), 1);
-        this.dayOfWeek = ConsumerSubject.create(sub.on('dayOfWeek'), 0);
-
-        this.timeDisplayed = MappedSubject.create(([currentUTC, currentLocalTime, timezones, timeFormat]) => {
-            const getZuluFormattedTime = (seconds: number) => `${Math.floor(seconds / 3600).toString().padStart(2, '0')}${Math.floor((seconds % 3600) / 60).toString().padStart(2, '0')}Z`;
-            const getLocalFormattedTime = (seconds: number) => {
-                if (timeFormat === '24') {
-                    return `${Math.floor(seconds / 3600).toString().padStart(2, '0')}:${Math.floor((seconds % 3600) / 60).toString().padStart(2, '0')}`;
-                }
-                const hours = Math.floor(seconds / 3600) % 12;
-                const minutes = Math.floor((seconds % 3600) / 60);
-                const ampm = Math.floor(seconds / 3600) >= 12 ? 'pm' : 'am';
-                return `${hours === 0 ? 12 : hours}:${minutes.toString().padStart(2, '0')}${ampm}`;
-            };
-
-            const currentUTCString = getZuluFormattedTime(currentUTC);
-            const currentLocalTimeString = getLocalFormattedTime(currentLocalTime);
-
-            if (timezones === 'utc') {
-                return currentUTCString;
-            } else if (timezones === 'local') {
-                return currentLocalTimeString;
-            } else {
-                return `${currentUTCString} / ${currentLocalTimeString}`;
-            }
-        }, this.currentUTC, this.currentLocalTime, this.timezones, this.timeFormat);
-
-        this.wifiClass = this.simBridgeConnected.map((value) => `bi-${value ? 'wifi' : 'wifi-off'} text-inherit text-[26px]`);
+    private get bus() {
+        return this.getContext(busContext).get();
     }
 
     onAfterRender(node: VNode) {
         super.onAfterRender(node);
+
+        const sub = this.bus.getSubscriber<EFBSimvars>();
+        this.currentUTC.setConsumer(sub.on('currentUTC'));
+        this.currentLocalTime.setConsumer(sub.on('currentLocalTime'));
+        this.dayOfWeek.setConsumer(sub.on('dayOfWeek'));
+        this.monthOfYear.setConsumer(sub.on('monthOfYear'));
+        this.dayOfMonth.setConsumer(sub.on('dayOfMonth'));
+        this.dayOfWeek.setConsumer(sub.on('dayOfWeek'));
 
         this.dayOfWeek.sub((value) => {
             this.dayName.set([

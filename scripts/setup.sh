@@ -11,4 +11,4 @@ for arg in "$@"; do
   fi
 done
 
-npm ci
+NODE_OPTIONS=--no-network-family-autoselection npm ci

@@ -16,13 +16,11 @@ export type Pages = [page: number, component: DisplayComponent<any>][]
 
 interface MainPageProps extends ComponentProps {
     activePage: Subject<number>;
-
-    pongText: Subscribable<string>;
 }
 
 export class MainPage extends DisplayComponent<MainPageProps> {
     private readonly pages: [page: number, component: DisplayComponent<any>][] = [
-        [PageEnum.MainPage.Dashboard, <Dashboard pongText={this.props.pongText} />],
+        [PageEnum.MainPage.Dashboard, <Dashboard />],
         [PageEnum.MainPage.Dispatch, <Dispatch />],
         [PageEnum.MainPage.Ground, <Ground />],
         [PageEnum.MainPage.Performance, <Performance />],

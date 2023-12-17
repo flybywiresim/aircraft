@@ -1,5 +1,9 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { EventBus, FSComponent, HEventPublisher } from '@microsoft/msfs-sdk';
-import { EFBv4 } from '@flybywiresim/EFBv4';
+import { EFBv4, busContext, initializeEventBusContext } from '@flybywiresim/EFBv4';
 import { EFBSimvarPublisher } from './EFBSimvarPublisher';
 
 // eslint-disable-next-line camelcase
@@ -42,7 +46,14 @@ class A32NX_EFBv4 extends BaseInstrument {
 
         this.hEventPublisher.startPublish();
 
-        FSComponent.render(<EFBv4 bus={this.bus} />, document.getElementById('EFBv4_CONTENT'));
+        initializeEventBusContext(this.bus);
+
+        FSComponent.render(
+            <busContext.Provider value={this.bus}>
+                <EFBv4 />
+            </busContext.Provider>,
+            document.getElementById('EFBv4_CONTENT'),
+        );
 
         // Remove "instrument didn't load" text
         document.getElementById('EFBv4_CONTENT').querySelector(':scope > h1').remove();

@@ -1,4 +1,15 @@
-import { ComponentProps, DisplayComponent, EventBus, FSComponent, Subject, VNode, Wait } from '@microsoft/msfs-sdk';
+import {
+    ComponentProps,
+    DisplayComponent,
+    EventBus,
+    FSComponent,
+    RenderPosition,
+    Subject,
+    VNode
+} from '@microsoft/msfs-sdk';
+
+import { busContext } from './Contexts/EventBusContext';
+import { flypadClientContext, initializeFlypadClientContext } from './Contexts/FlypadClientContext';
 
 import { Navbar } from './Components/Navbar';
 import { PageEnum } from './shared/common';
@@ -12,40 +23,57 @@ import './Assets/Slider.scss';
 import './Assets/bi-icons.css';
 
 interface EfbProps extends ComponentProps {
-    bus: EventBus;
 }
 
-export class EFBv4 extends DisplayComponent<EfbProps> {
+export class EFBv4 extends DisplayComponent<EfbProps, [EventBus]> {
+    public override contextType = [busContext] as const;
+
+    private readonly renderRoot = FSComponent.createRef<HTMLDivElement>();
+
+    private readonly renderRoot2 = FSComponent.createRef<HTMLDivElement>();
+
     private readonly currentPage = Subject.create(PageEnum.MainPage.Dashboard);
+
     private readonly isCharging = Subject.create(false);
+
     private readonly batteryLevel = Subject.create(100);
 
-    private readonly serverPongString = Subject.create('no response');
+    private get bus() {
+        return this.getContext(busContext).get();
+    }
 
     onAfterRender(node: VNode): void {
         SimVar.SetSimVarValue('L:A32NX_EFB_BRIGHTNESS', 'number', 0.99);
 
-        new FlypadClient(this.props.bus).initialized.on(async (client) => {
-            const metar = await client.getMetar('KLAX');
+        const flypadClient = new FlypadClient(this.bus);
 
-            // const ofp = await client.getSimbriefOfp();
+        initializeFlypadClientContext(flypadClient);
 
-            this.serverPongString.set(JSON.stringify(metar));
-        });
+        FSComponent.render(
+            <flypadClientContext.Provider value={new FlypadClient(this.bus)}>
+                <div ref={this.renderRoot2} style={{ display: 'none' }} />
+            </flypadClientContext.Provider>,
+            this.renderRoot.instance,
+        );
+
+        FSComponent.render(
+            <>
+                <Statusbar
+                    batteryLevel={this.batteryLevel}
+                    isCharging={this.isCharging}
+                />
+                <Navbar activePage={this.currentPage} />
+                <MainPage activePage={this.currentPage} />
+            </>,
+            this.renderRoot2.instance,
+            RenderPosition.After,
+        );
     }
 
     render(): VNode {
         return (
             <div class="h-screen w-screen bg-theme-body">
-                <div class="flex h-full w-full flex-row">
-                    <Statusbar
-                        bus={this.props.bus}
-                        batteryLevel={this.batteryLevel}
-                        isCharging={this.isCharging}
-                    />
-                    <Navbar activePage={this.currentPage} />
-                    <MainPage activePage={this.currentPage} pongText={this.serverPongString} />
-                </div>
+                <div ref={this.renderRoot} class="flex h-full w-full flex-row" />
             </div>
         );
     }
