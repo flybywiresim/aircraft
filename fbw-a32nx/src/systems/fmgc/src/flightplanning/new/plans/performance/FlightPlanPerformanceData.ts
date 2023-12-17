@@ -3,6 +3,8 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
+import { MathUtils } from '@flybywiresim/fbw-sdk';
+
 export interface FlightPlanPerformanceData {
     v1: number;
 
@@ -218,7 +220,7 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
      * THR RED from pilot if entered, otherwise from database
      */
     get thrustReductionAltitude() {
-        return A320FlightPlanPerformanceData.round(this.pilotThrustReductionAltitude ?? this.defaultThrustReductionAltitude, 10);
+        return MathUtils.round(this.pilotThrustReductionAltitude ?? this.defaultThrustReductionAltitude, 10);
     }
 
     /**
@@ -244,7 +246,7 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
      * ACC from pilot if entered, otherwise from database
      */
     get accelerationAltitude() {
-        return A320FlightPlanPerformanceData.round(this.pilotAccelerationAltitude ?? this.defaultAccelerationAltitude, 10);
+        return MathUtils.round(this.pilotAccelerationAltitude ?? this.defaultAccelerationAltitude, 10);
     }
 
     /**
@@ -270,7 +272,7 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
      * EO ACC from pilot if entered, otherwise from database
      */
     get engineOutAccelerationAltitude() {
-        return A320FlightPlanPerformanceData.round(this.pilotEngineOutAccelerationAltitude ?? this.defaultEngineOutAccelerationAltitude, 10);
+        return MathUtils.round(this.pilotEngineOutAccelerationAltitude ?? this.defaultEngineOutAccelerationAltitude, 10);
     }
 
     /**
@@ -296,7 +298,7 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
      * Missed THR RED from pilot if entered, otherwise from database
      */
     get missedThrustReductionAltitude() {
-        return A320FlightPlanPerformanceData.round(this.pilotMissedThrustReductionAltitude ?? this.defaultMissedThrustReductionAltitude, 10);
+        return MathUtils.round(this.pilotMissedThrustReductionAltitude ?? this.defaultMissedThrustReductionAltitude, 10);
     }
 
     /**
@@ -322,7 +324,7 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
      * Missed ACC from pilot if entered, otherwise from database
      */
     get missedAccelerationAltitude() {
-        return A320FlightPlanPerformanceData.round(this.pilotMissedAccelerationAltitude ?? this.defaultMissedAccelerationAltitude, 10);
+        return MathUtils.round(this.pilotMissedAccelerationAltitude ?? this.defaultMissedAccelerationAltitude, 10);
     }
 
     /**
@@ -348,7 +350,7 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
      * Missed EO ACC from pilot if entered, otherwise from database
      */
     get missedEngineOutAccelerationAltitude() {
-        return A320FlightPlanPerformanceData.round(this.pilotMissedEngineOutAccelerationAltitude ?? this.defaultMissedEngineOutAccelerationAltitude, 10);
+        return MathUtils.round(this.pilotMissedEngineOutAccelerationAltitude ?? this.defaultMissedEngineOutAccelerationAltitude, 10);
     }
 
     /**
@@ -372,7 +374,7 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
      * TRANS ALT from pilot if entered, otherwise from database
      */
     get transitionAltitude() {
-        return A320FlightPlanPerformanceData.round(this.pilotTransitionAltitude ?? this.databaseTransitionAltitude, 10);
+        return MathUtils.round(this.pilotTransitionAltitude ?? this.databaseTransitionAltitude, 10);
     }
 
     /**
@@ -396,7 +398,7 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
      * TRANS LVL from pilot if entered, otherwise from database
      */
     get transitionLevel() {
-        return A320FlightPlanPerformanceData.round(this.pilotTransitionLevel ?? this.databaseTransitionLevel);
+        return MathUtils.round(this.pilotTransitionLevel ?? this.databaseTransitionLevel, 1);
     }
 
     /**
@@ -430,19 +432,6 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
             databaseTransitionLevel: this.databaseTransitionLevel,
             pilotTransitionLevel: this.pilotTransitionLevel,
         };
-    }
-
-    /**
-     * Rounds a number to the nearest multiple
-     * @param n the number to round
-     * @param r the multiple
-     * @returns n rounded to the nereast multiple of r, or null/undefined if n is null/undefined
-     */
-    static round(n: number | undefined | null, r: number = 1): number | undefined | null {
-        if (n === undefined || n === null) {
-            return n;
-        }
-        return Math.round(n / r) * r;
     }
 }
 

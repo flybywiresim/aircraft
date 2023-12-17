@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Airport, ApproachType, Fix, LegType, NXDataStore } from '@flybywiresim/fbw-sdk';
+import { Airport, ApproachType, Fix, LegType, MathUtils, NXDataStore } from '@flybywiresim/fbw-sdk';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/new/plans/AlternateFlightPlan';
 import { EventBus, MagVar } from '@microsoft/msfs-sdk';
 import { FixInfoEntry, FixInfoData } from '@fmgc/flightplanning/new/plans/FixInfo';
@@ -16,7 +16,7 @@ import { CopyOptions } from '@fmgc/flightplanning/new/plans/CloningOptions';
 import { ImportedPerformanceData } from '@fmgc/flightplanning/new/uplink/SimBriefUplinkAdapter';
 import {
     FlightPlanPerformanceData,
-    FlightPlanPerformanceDataProperties
+    FlightPlanPerformanceDataProperties,
 } from '@fmgc/flightplanning/new/plans/performance/FlightPlanPerformanceData';
 import { BaseFlightPlan, FlightPlanQueuedOperation, SerializedFlightPlan } from './BaseFlightPlan';
 
@@ -449,7 +449,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
      * @returns true if a reduction occured
      */
     reconcileThrustReductionWithConstraints(): boolean {
-        const lowestClimbConstraint = FlightPlanPerformanceData.round(this.lowestClimbConstraint(), 10);
+        const lowestClimbConstraint = MathUtils.round(this.lowestClimbConstraint(), 10);
         if (Number.isFinite(lowestClimbConstraint) && this.performanceData.thrustReductionAltitude > lowestClimbConstraint) {
             this.setPerformanceData('defaultThrustReductionAltitude',
                 this.performanceData.defaultThrustReductionAltitude !== undefined ? Math.min(this.performanceData.defaultThrustReductionAltitude, lowestClimbConstraint) : undefined);
@@ -467,7 +467,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
      * @returns true if a reduction occured
      */
     reconcileAccelerationWithConstraints(): boolean {
-        const lowestClimbConstraint = FlightPlanPerformanceData.round(this.lowestClimbConstraint(), 10);
+        const lowestClimbConstraint = MathUtils.round(this.lowestClimbConstraint(), 10);
         if (Number.isFinite(lowestClimbConstraint) && this.performanceData.accelerationAltitude > lowestClimbConstraint) {
             this.setPerformanceData('defaultAccelerationAltitude',
                 this.performanceData.defaultAccelerationAltitude !== undefined ? Math.min(this.performanceData.defaultAccelerationAltitude, lowestClimbConstraint) : undefined);
