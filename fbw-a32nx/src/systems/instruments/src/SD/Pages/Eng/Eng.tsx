@@ -235,9 +235,8 @@ const QuantityGauge = ({ x, y, engineNumber, fadecOn }: ComponentPositionProps) 
 };
 
 const ValveGroup = ({ x, y, engineNumber, fadecOn }: ComponentPositionProps) => {
-    const [isValveOpen, setIsValveOpen] = useState(false);
+    const [isValveOpen] = useSimVar(`L:A32NX_PNEU_ENG_${engineNumber}_STARTER_VALVE_OPEN`, 'bool', 250);
     const [n2Percent] = useSimVar(`ENG N2 RPM:${engineNumber}`, 'percent', 50);
-    const [isEngineStarting] = useSimVar(`GENERAL ENG STARTER:${engineNumber}`, 'bool', 300);
     const [engSelectorPosition] = useSimVar('L:XMLVAR_ENG_MODE_SEL', 'Enum');
     const [igniterAactive] = useSimVar(`L:A32NX_FADEC_IGNITER_A_ACTIVE_ENG${engineNumber}`, 'bool', 300);
     const [igniterBactive] = useSimVar(`L:A32NX_FADEC_IGNITER_B_ACTIVE_ENG${engineNumber}`, 'bool', 300);
@@ -253,28 +252,11 @@ const ValveGroup = ({ x, y, engineNumber, fadecOn }: ComponentPositionProps) => 
 
     const activeVisibility = fadecOn ? 'visible' : 'hidden';
     const inactiveVisibility = fadecOn ? 'hidden' : 'visible';
-    // This useEffect ensures that the valve is only opened if the engine mode selector is set to IGN/START, the engine is starting, and n2% is below 50
-    useEffect(() => {
-        let timeout: number;
-        if (isEngineStarting && n2Percent < 50 && engSelectorPosition === 2) {
-            timeout = setTimeout(() => setIsValveOpen(true), 1200);
-        } else {
-            timeout = setTimeout(() => setIsValveOpen(false), 1200);
-        }
-
-        return () => clearTimeout(timeout);
-    }, [isEngineStarting, engSelectorPosition]);
-
-    useEffect(() => {
-        if (n2Percent >= 50) {
-            setIsValveOpen(false);
-        }
-    }, [n2Percent]);
 
     return (
         <SvgGroup x={0} y={0} className={`${engSelectorPosition !== 2 && 'Hidden'}`}>
-            <text x={x - 7} y={y} className={`FillGreen FontMedium TextCenter ${!(isValveOpen && igniterAactive) && 'Hidden'}`}>A</text>
-            <text x={x + 7} y={y} className={`FillGreen FontMedium TextCenter ${!(isValveOpen && igniterBactive) && 'Hidden'}`}>B</text>
+            <text x={x - 7} y={y} className={`FillGreen FontMedium TextCenter ${!igniterAactive && 'Hidden'}`}>A</text>
+            <text x={x + 7} y={y} className={`FillGreen FontMedium TextCenter ${!igniterBactive && 'Hidden'}`}>B</text>
             <g className="StartValveDiagram">
                 {/* 375 to 30 */}
                 <circle r={14} cx={x} cy={y + 30} />

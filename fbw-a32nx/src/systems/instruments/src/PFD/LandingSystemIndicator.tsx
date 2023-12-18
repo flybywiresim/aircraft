@@ -3,12 +3,12 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ConsumerSubject, DisplayComponent, FSComponent, HEvent, MappedSubject, MathUtils, Subject, Subscribable, SubscribableMapFunctions, Subscription, VNode } from '@microsoft/msfs-sdk';
+import { ArincEventBus, Arinc429RegisterSubject } from '@flybywiresim/fbw-sdk';
+
 import { getDisplayIndex } from 'instruments/src/PFD/PFD';
-import { Arinc429RegisterSubject } from 'instruments/src/MsfsAvionicsCommon/Arinc429RegisterSubject';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { LagFilter } from './PFDUtils';
-import { ArincEventBus } from '../MsfsAvionicsCommon/ArincEventBus';
 
 // FIXME true ref
 export class LandingSystem extends DisplayComponent<{ bus: ArincEventBus, instrument: BaseInstrument }> {

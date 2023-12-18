@@ -13,6 +13,15 @@
 1. [FMS] Implement CHECK SPEED MODE message - @BlueberryKing (BlueberryKing)
 1. [PFD] The ILS frequency is now visible even when a LOC is not received - @tracernz (Mike)
 1. [ATSU] Fixed GROUND REQ page not updating after successful station insert - @BravoMike99 (bruno_pt99)
+1. [MCDU] Dash alternate time predictions if alternate fuel is manually inserted @BravoMike99 (bruno_pt99)
+1. [BLEED] Add Air starter unit to enable ground starts - @Maximilian-Reuter (\_Chaoz_)
+1. [MCDU] FUEL PRED layout improvemnts @BravoMike99 (bruno_pt99)
+1. [EFCS] Add precontrol to roll angle controller to improve dynamic response - @lukecologne (luke)
+1. [EFCS] Increase maximum sim rate limit to 8 due to improvements in roll law stability - @lukecologne (luke)
+1. [HOPPIE] Remove ATSU/AOC source checks - @auroraisluna (alepouna)
+1. [PFD] Graphical improvements and updates to the FMA - @BravoMike99 (bruno_pt99)
+1. [PFD] Hide '+' sign on V/S & FPA FMA if selected value is 0 - @BravoMike99 (bruno_pt99)
+1. [API] Added EX1 event handling for fbw.wasm c++ code - @frankkopp (Frank Kopp)
 1. [ND] Fix ND ETA of TO waypoint display prior to takeoff and after landing. - Alex Milshtein (@alexm1987 on Discord)
 
 ## 0.11.0
