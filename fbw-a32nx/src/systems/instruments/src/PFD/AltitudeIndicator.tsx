@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { ClockEvents, DisplayComponent, FSComponent, SimVarValueType, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import { ClockEvents, DisplayComponent, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { ArincEventBus, Arinc429Register, Arinc429Word, Arinc429WordData, Arinc429RegisterSubject } from '@flybywiresim/fbw-sdk';
 
 import { VerticalMode } from '@shared/autopilot';
@@ -132,7 +132,7 @@ class MinimumDescentAltitudeIndicator extends DisplayComponent<{ bus: ArincEvent
 
     private readonly mda = Arinc429RegisterSubject.createEmpty();
 
-    private landingElevation = Arinc429Register.empty();
+    private landingElevation = new Arinc429Word(0)
 
     private updateIndication(): void {
         this.qnhLandingAltValid = !this.landingElevation.isFailureWarning()
