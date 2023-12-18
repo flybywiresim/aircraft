@@ -5,7 +5,7 @@ import {
     FSComponent,
     RenderPosition,
     Subject,
-    VNode
+    VNode,
 } from '@microsoft/msfs-sdk';
 
 import { busContext } from './Contexts/EventBusContext';
@@ -21,6 +21,7 @@ import './style.scss';
 import './Assets/Theme.css';
 import './Assets/Slider.scss';
 import './Assets/bi-icons.css';
+import { FbwUserSettingsSaveManager } from './FbwUserSettings';
 
 interface EfbProps extends ComponentProps {
 }
@@ -44,6 +45,15 @@ export class EFBv4 extends DisplayComponent<EfbProps, [EventBus]> {
 
     onAfterRender(node: VNode): void {
         SimVar.SetSimVarValue('L:A32NX_EFB_BRIGHTNESS', 'number', 0.99);
+
+        // Load user settings
+        const settingsSaveManager = new FbwUserSettingsSaveManager(this.bus);
+
+        const saveKey = `${SimVar.GetSimVarValue('ATC MODEL', 'string')}.profile.default`;
+
+        settingsSaveManager.load(saveKey);
+        settingsSaveManager.tryPortLegacyA32NXSettings();
+        settingsSaveManager.startAutoSave(saveKey);
 
         const flypadClient = new FlypadClient(this.bus);
 

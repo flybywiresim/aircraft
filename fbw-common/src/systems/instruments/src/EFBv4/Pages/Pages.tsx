@@ -10,9 +10,10 @@ import { Failures } from './Failures/Failures';
 import { Checklists } from './Checklists/Checklists';
 import { Presets } from './Presets/Presets';
 import { Settings } from './Settings/Settings';
+import { UIVIew, UIVIewUtils } from '../shared/UIVIew';
 
 // Page should be an enum
-export type Pages = [page: number, component: DisplayComponent<any>][]
+export type Pages = [page: number, component: VNode][]
 
 interface MainPageProps extends ComponentProps {
     activePage: Subject<number>;
@@ -53,9 +54,13 @@ export class Pager extends DisplayComponent<PagerProps> {
             <div class={`h-full w-full ${this.props.class}`}>
                 {
                     this.props.pages.map(([page, component]) => (
-                        <PageWrapper isVisible={this.pageVisibility(page)}>
-                            {component}
-                        </PageWrapper>
+                        UIVIewUtils.isUIVIew(component.instance) ? (
+                            <UIVIewWrapper view={component} isVisible={this.pageVisibility(page)} />
+                        ) : (
+                            <PageWrapper isVisible={this.pageVisibility(page)}>
+                                {component}
+                            </PageWrapper>
+                        )
                     ))
                 }
             </div>
@@ -79,5 +84,39 @@ export class PageWrapper extends DisplayComponent<PageWrapperProps> {
                 {this.props.children}
             </div>
         );
+    }
+}
+
+interface UIVIewWrapperProps {
+    view: VNode;
+
+    isVisible: Subscribable<boolean>;
+}
+
+class UIVIewWrapper extends DisplayComponent<UIVIewWrapperProps> {
+    private get view(): UIVIew {
+        return this.props.view.instance as unknown as UIVIew;
+    }
+
+    onAfterRender(node: VNode) {
+        super.onAfterRender(node);
+
+        this.props.isVisible.sub((visible) => {
+            this.view.rootRef.instance.classList.toggle('view-hidden', !visible);
+
+            if (!visible) {
+                this.view.pause();
+            } else {
+                this.view.resume();
+            }
+        }, true);
+    }
+
+    destroy() {
+        this.view.destroy();
+    }
+
+    render(): VNode | null {
+        return this.props.view;
     }
 }

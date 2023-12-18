@@ -2,19 +2,12 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import {
-    ComponentProps,
-    DisplayComponent,
-    FSComponent,
-    Subject,
-    Subscribable,
-    Subscription,
-    VNode,
-} from '@microsoft/msfs-sdk';
-import { ColorCode, MetarParserType, NXDataStore } from '@flybywiresim/fbw-sdk';
+import { ClockEvents, ComponentProps, ConsumerSubject, DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+import { NXDataStore } from '@flybywiresim/fbw-sdk';
 
 import { t } from '../../Components/LocalizedText';
 import { WeatherWidget } from './Widgets/WeatherWidget';
+import { AbstractUIView } from '../../shared/UIVIew';
 
 interface ScrollableContainerProps extends ComponentProps {
     height: number;
@@ -155,10 +148,38 @@ export class BaroValue extends DisplayComponent<any> {
 export interface DashboardProps {
 }
 
-export class Dashboard extends DisplayComponent<DashboardProps> {
+export class Dashboard extends AbstractUIView<DashboardProps> {
+    private readonly funnySub = ConsumerSubject.create(
+        null,
+        -1,
+    );
+
+    pause() {
+        console.log('I was paused');
+        this.funnySub.pause();
+    }
+
+    resume() {
+        console.log('I was resumed');
+        this.funnySub.resume();
+    }
+
+    destroy() {
+        this.funnySub.destroy();
+    }
+
+    onAfterRender(node: VNode) {
+        super.onAfterRender(node);
+
+        this.funnySub.setConsumer(
+            this.bus.getSubscriber<ClockEvents>().on('realTime').atFrequency(1),
+        );
+        this.funnySub.sub((value) => console.log('time:', value));
+    }
+
     render(): VNode {
         return (
-            <div class="flex w-full space-x-8">
+            <div ref={this.rootRef} class="flex w-full space-x-8">
                 <FlightWidget />
                 <RemindersWidget />
             </div>
