@@ -73,6 +73,7 @@ export type GaugeMarkerComponentType = {
     startAngle: number,
     endAngle: number,
     className: string,
+    textClassName?: string
     showValue?: boolean,
     indicator?: boolean,
     outer?: boolean,
@@ -86,7 +87,7 @@ export type GaugeMarkerComponentType = {
 };
 
 export const GaugeMarkerComponent: React.FC<GaugeMarkerComponentType> = ({
-    value, x, y, min, max, radius, startAngle, endAngle, className, showValue,
+    value, x, y, min, max, radius, startAngle, endAngle, className, textClassName = 'GaugeText', showValue,
     indicator, outer, multiplierOuter = 1.15, multiplierInner = 0.85, textNudgeX = 0, textNudgeY = 0, bold, halfIndicator = false, reverse = false,
 }) => {
     const dir = valueRadianAngleConverter({ value, min, max, endAngle, startAngle, perpendicular: reverse });
@@ -135,7 +136,7 @@ export const GaugeMarkerComponent: React.FC<GaugeMarkerComponentType> = ({
     return (
         <>
             <line x1={start.x} y1={start.y} x2={end.x} y2={end.y} strokeWidth={bold ? 2 : undefined} className={className} />
-            <text x={pos.x} y={pos.y} className='GaugeText' alignmentBaseline='central' textAnchor='middle'>{textValue}</text>
+            <text x={pos.x} y={pos.y} className={textClassName} alignmentBaseline='central' textAnchor='middle'>{textValue}</text>
         </>
     );
 };
