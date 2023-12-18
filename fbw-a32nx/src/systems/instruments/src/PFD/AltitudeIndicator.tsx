@@ -6,12 +6,12 @@ import { ClockEvents, DisplayComponent, FSComponent, SimVarValueType, Subject, S
 import { ArincEventBus, Arinc429Register, Arinc429Word, Arinc429WordData, Arinc429RegisterSubject } from '@flybywiresim/fbw-sdk';
 
 import { VerticalMode } from '@shared/autopilot';
+import { BaroPressureMode } from 'instruments/src/PFD/shared/BaroPressureMode';
+import { PressureUnit } from 'instruments/src/PFD/shared/PressureUnit';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { DigitalAltitudeReadout } from './DigitalAltitudeReadout';
 import { VerticalTape } from './VerticalTape';
 import { Arinc429Values } from './shared/ArincValueProvider';
-import { BaroPressureMode } from 'instruments/src/PFD/shared/BaroPressureMode';
-import { PressureUnit } from 'instruments/src/PFD/shared/PressureUnit';
 
 const DisplayRange = 570;
 const ValueSpacing = 100;
@@ -22,7 +22,7 @@ class LandingElevationIndicator extends DisplayComponent<{bus: ArincEventBus}> {
 
     private altitude = 0;
 
-    private landingElevation =  Arinc429Register.empty();
+    private landingElevation = new Arinc429Word(0);
 
     private flightPhase = 0;
 
@@ -79,7 +79,7 @@ class RadioAltIndicator extends DisplayComponent<{ bus: ArincEventBus, filteredR
 
     private offsetSub = Subject.create('');
 
-    private radioAltitude =  Arinc429Register.empty();
+    private radioAltitude = new Arinc429Word(0);
 
     private setOffset() {
         if (this.props.filteredRadioAltitude.get() > DisplayRange || this.radioAltitude.isFailureWarning() || this.radioAltitude.isNoComputedData()) {
@@ -403,7 +403,7 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
 
     private altTapeTargetText = FSComponent.createRef<SVGTextElement>();
 
-    private altitude = Arinc429Register.empty();
+    private altitude = new Arinc429Word(0);
 
     private shownTargetAltitude = 0;
 
@@ -564,12 +564,12 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
                 this.stdGroup.instance.classList.add('HiddenElement');
                 this.qfeGroup.instance.classList.remove('HiddenElement');
                 this.qfeBorder.instance.classList.remove('HiddenElement');
-            } else if ( m === BaroPressureMode.QNH) {
+            } else if (m === BaroPressureMode.QNH) {
                 this.mode.set(m);
                 this.stdGroup.instance.classList.add('HiddenElement');
                 this.qfeGroup.instance.classList.remove('HiddenElement');
                 this.qfeBorder.instance.classList.add('HiddenElement');
-            } else if (m === BaroPressureMode.STD) {
+            } else if (m !== BaroPressureMode.QFE && m !== BaroPressureMode.QNH) {
                 this.mode.set(m);
                 this.stdGroup.instance.classList.remove('HiddenElement');
                 this.qfeGroup.instance.classList.add('HiddenElement');
@@ -655,7 +655,7 @@ class AltimeterIndicator extends DisplayComponent<AltimeterIndicatorProps> {
 
                     <g ref={this.qfeGroup} id="QFEGroup">
                         <path ref={this.qfeBorder} class="NormalStroke White" d="m 116.83686,133.0668 h 13.93811 v 5.8933 h -13.93811 z" />
-                        <text id="AltimeterModeText" class="FontMedium White" x="118.23066" y="138.11342">{this.mode.map(m => BaroPressureMode[m])}</text>
+                        <text id="AltimeterModeText" class="FontMedium White" x="118.23066" y="138.11342">{this.mode.map((m) => BaroPressureMode[m])}</text>
                         <text id="AltimeterSettingText" class="FontMedium MiddleAlign Cyan" x="141.25583" y="138.09006">{this.text}</text>
                     </g>
                 </g>
