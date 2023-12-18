@@ -35,18 +35,18 @@ export class MainPage extends DisplayComponent<MainPageProps> {
 
     render(): VNode {
         return (
-            <Pager pages={this.pages} activePage={this.props.activePage} class="mt-10  pr-6 pt-4" />
+            <Switch pages={this.pages} activePage={this.props.activePage} class="mt-10  pr-6 pt-4" />
         );
     }
 }
 
-interface PagerProps extends ComponentProps {
+interface SwitchProps extends ComponentProps {
     activePage: Subscribable<number>;
     pages: Pages;
     class?: string;
 }
 
-export class Pager extends DisplayComponent<PagerProps> {
+export class Switch extends DisplayComponent<SwitchProps> {
     private readonly pageVisibility = (page: number) => this.props.activePage.map((value) => value === page);
 
     render(): VNode {

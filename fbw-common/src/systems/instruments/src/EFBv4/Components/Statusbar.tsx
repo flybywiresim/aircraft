@@ -12,7 +12,7 @@ import {
 import { EFBSimvars } from '../../../../../../../fbw-a32nx/src/systems/instruments/src/EFBv4/EFBSimvarPublisher';
 import { LocalizedString } from '../shared/translation';
 import { PageEnum } from '../shared/common';
-import { Pager } from '../Pages/Pages';
+import { Switch } from '../Pages/Pages';
 import { busContext } from '../Contexts';
 
 const BATTERY_LEVEL_WARNING = 8;
@@ -74,7 +74,7 @@ export class BatteryIcon extends DisplayComponent<BatteryStatusIconProps> {
 
     render(): VNode {
         return (
-            <Pager
+            <Switch
                 pages={[
                     [PageEnum.BatteryLevel.Charging, <i class="bi-battery-charging text-[35px] !text-green-700 text-inherit" />],
                     [PageEnum.BatteryLevel.Warning, <i class="bi-battery text-[35px] !text-utility-red" />],

@@ -2,12 +2,25 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { ClockEvents, ComponentProps, ConsumerSubject, DisplayComponent, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
-import { NXDataStore } from '@flybywiresim/fbw-sdk';
+import {
+    ArraySubject,
+    ClockEvents,
+    ComponentProps,
+    ConsumerSubject,
+    DisplayComponent,
+    FSComponent,
+    Subject,
+    Subscribable,
+    Subscription,
+    VNode,
+} from '@microsoft/msfs-sdk';
+import { ColorCode, MetarParserType, NXDataStore } from '@flybywiresim/fbw-sdk';
 
 import { t } from '../../Components/LocalizedText';
-import { WeatherWidget } from './Widgets/WeatherWidget';
+import { WeatherReminder, WeatherWidget } from './Widgets/WeatherWidget';
 import { AbstractUIView } from '../../shared/UIVIew';
+import {Pages} from "../Pages";
+import {PageEnum} from '../../shared/common';
 
 interface ScrollableContainerProps extends ComponentProps {
     height: number;
@@ -56,7 +69,77 @@ export class FlightWidget extends DisplayComponent<FlightWidgetProps> {
     }
 }
 
+export class PinnedChartsReminder extends DisplayComponent<any> {
+    render(): VNode {
+        return (
+            <></>
+        );
+    }
+}
+
+export class MaintenanceReminder extends DisplayComponent<any> {
+    render(): VNode {
+        return (
+            <></>
+        );
+    }
+}
+
+export class ChecklistsReminder extends DisplayComponent<any> {
+    render(): VNode {
+        return (
+            <></>
+        );
+    }
+}
+
+type ReminderKey = 'Weather' | 'Pinned Charts' | 'Maintenance' | 'Checklists';
+
+const TRANSLATIONS: [PageEnum.ReminderWidgets, string][] = [
+    [PageEnum.ReminderWidgets.Weather, 'Dashboard.ImportantInformation.Weather.Title'],
+    [PageEnum.ReminderWidgets.PinnedCharts, 'Dashboard.ImportantInformation.PinnedCharts.Title'],
+    [PageEnum.ReminderWidgets.Maintenance, 'Dashboard.ImportantInformation.Maintenance.Title'],
+    [PageEnum.ReminderWidgets.Checklists, 'Dashboard.ImportantInformation.Checklists.Title'],
+];
+
 export class RemindersWidget extends DisplayComponent<any> {
+    // Has to be in here idk why
+    private readonly REMINDERS = new Map<PageEnum.ReminderWidgets, VNode>([
+        [PageEnum.ReminderWidgets.Weather, <WeatherReminder />],
+        [PageEnum.ReminderWidgets.PinnedCharts, <PinnedChartsReminder />],
+        [PageEnum.ReminderWidgets.Maintenance, <MaintenanceReminder />],
+        [PageEnum.ReminderWidgets.Checklists, <ChecklistsReminder />],
+    ]);
+
+    private readonly TRANSLATIONS = new Map<PageEnum.ReminderWidgets, string>([
+        [PageEnum.ReminderWidgets.Weather, 'Dashboard.ImportantInformation.Weather.Title'],
+        [PageEnum.ReminderWidgets.PinnedCharts, 'Dashboard.ImportantInformation.PinnedCharts.Title'],
+        [PageEnum.ReminderWidgets.Maintenance, 'Dashboard.ImportantInformation.Maintenance.Title'],
+        [PageEnum.ReminderWidgets.Checklists, 'Dashboard.ImportantInformation.Checklists.Title'],
+    ]);
+
+    // This gets saved to settings
+    private readonly orderedReminderKeys = Subject.create<string>([...this.REMINDERS.keys()].toString())
+
+    private readonly reminderKeyArr = ArraySubject.create(this.orderedReminderKeys.get().split(',').map((key) => Number(key) as PageEnum.ReminderWidgets))
+
+    onAfterRender(node: VNode) {
+        super.onAfterRender(node);
+
+        /**
+         * Let's check for any missing keys in the saved list in case more widgets get added in the future.
+         * TODO: test it
+         */
+        [...this.REMINDERS.keys()].forEach((key ) => {
+            const keyEnum = key as PageEnum.ReminderWidgets
+            if (!this.reminderKeyArr.getArray().includes(keyEnum)) {
+                this.reminderKeyArr.insert(keyEnum);
+                this.orderedReminderKeys.set(`${this.orderedReminderKeys.get()},${keyEnum}`)
+            }
+        });
+    }
+
+
     render(): VNode {
         return (
             <div class="w-1/2">
@@ -65,7 +148,9 @@ export class RemindersWidget extends DisplayComponent<any> {
                 </div>
                 <div class="relative mt-4 h-content-section-reduced w-full rounded-lg border-2 border-theme-accent p-6">
                     <ScrollableContainer height={51}>
-                        <WeatherReminder />
+                        <div class="flex flex-col space-y-4">
+                            {this.reminderKeyArr.getArray().map((key) => this.REMINDERS.get(key))}
+                        </div>
                     </ScrollableContainer>
                 </div>
             </div>
@@ -108,39 +193,6 @@ export class ScrollableContainer extends DisplayComponent<ScrollableContainerPro
                     {this.props.children}
                 </div>
             </div>
-        );
-    }
-}
-
-export class RemindersSection extends DisplayComponent<any> {
-    render(): VNode {
-        return (
-            <div class="flex flex-col border-b-2 border-gray-700 pb-6">
-                {/** There was a <Link /> here, im not sure why * */}
-                {this.props.children}
-            </div>
-        );
-    }
-}
-
-export class WeatherReminder extends DisplayComponent<any> {
-    render(): VNode {
-        return (
-            <RemindersSection>
-                <div class="space-y-6">
-                    <WeatherWidget name="origin" />
-                    <div className="h-1 w-full rounded-full bg-theme-accent" />
-                    <WeatherWidget name="destination" />
-                </div>
-            </RemindersSection>
-        );
-    }
-}
-
-export class BaroValue extends DisplayComponent<any> {
-    render(): VNode {
-        return (
-            <div><p>HELO</p></div>
         );
     }
 }

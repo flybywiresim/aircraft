@@ -3,7 +3,7 @@ import { Units } from '@flybywiresim/fbw-sdk';
 import { t } from '../../Components/LocalizedText';
 import { PageEnum } from '../../shared/common';
 import { Selector } from '../../Components/Selector';
-import { Pager, Pages } from '../Pages';
+import { Switch, Pages } from '../Pages';
 import { NoseOutline } from '../../Assets/NoseOutline';
 // import { Icon } from '../../Components/Icons';
 // import React from "react";
@@ -221,7 +221,7 @@ export class Dispatch extends DisplayComponent<any> {
                     />
                 </div>
 
-                <Pager
+                <Switch
                     activePage={this.activePage}
                     pages={this.pages}
                 />

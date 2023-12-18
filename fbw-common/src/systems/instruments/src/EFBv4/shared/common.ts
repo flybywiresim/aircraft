@@ -12,6 +12,13 @@ export namespace PageEnum {
         Settings,
     }
 
+    export enum ReminderWidgets {
+        Weather,
+        PinnedCharts,
+        Maintenance,
+        Checklists,
+    }
+
     export enum DispatchPage {
         OFP,
         Overview
