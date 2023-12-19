@@ -22,6 +22,14 @@
 1. [PFD] Graphical improvements and updates to the FMA - @BravoMike99 (bruno_pt99)
 1. [PFD] Hide '+' sign on V/S & FPA FMA if selected value is 0 - @BravoMike99 (bruno_pt99)
 1. [API] Added EX1 event handling for fbw.wasm c++ code - @frankkopp (Frank Kopp)
+1. [OVHD] LDG ELEV now has auto position - @tracernz (Mike)
+1. [EFB] Added new F/O camera view, and adjusted captain view to suit new flyPad orientation - @tracernz (Mike)
+1. [OVHD] Fire button LEDs now split by power supply - @tracernz (Mike), @Repsol2k
+1. [OVHD] No PED Label instead of NO SMOKING when selected - @tracernz (Mike)
+1. [FWC/PANEL] GEAR NOT DOWN warnings added including red arrow on panel - @tracernz (Mike)
+1. [MODEL] Fixed some glaring issues with the flight deck model - @MoreRightRudder, @Repsol2k, @tracernz
+1. [MODEL] Replaced overhead decals - @Repsol2k
+1. [MODEL] General improvements to 3d model and textures - @MoreRightRudder, @Repsol2k, @tracernz
 
 ## 0.11.0
 
