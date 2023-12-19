@@ -5506,6 +5506,28 @@
             </UseTemplate>
         </Component>
 
+        <Component ID="CIRCUIT_BREAKERS">
+            <DefaultTemplateParameters>
+                <!-- disable lock mode blue highlight -->
+                <NO_HIGHLIGHT_NODE_ID>@StopLockHighlight</NO_HIGHLIGHT_NODE_ID>
+            </DefaultTemplateParameters>
+
+            <Component ID="125VU">
+                <Component ID="125VU_DOOR">
+                    <UseTemplate Name="FBW_Push_Toggle">
+                        <NODE_ID>CB_125VU_DOOR</NODE_ID>
+                        <ANIM_NAME>CB_125VU_DOOR</ANIM_NAME>
+                        <ANIM_LENGTH>1</ANIM_LENGTH>
+                        <ANIM_LAG>2</ANIM_LAG>
+                        <DISABLE_SEQ1>1</DISABLE_SEQ1>
+                        <DISABLE_SEQ2>1</DISABLE_SEQ2>
+                        <TOOLTIPID>Open the 125VU door.</TOOLTIPID>
+                        <TOGGLE_SIMVAR>L:A32NX_CB_125VU_DOOR_OPEN</TOGGLE_SIMVAR>
+                    </UseTemplate>
+                </Component>
+            </Component>
+        </Component>
+
         <Component ID="SEATS">
             <DefaultTemplateParameters>
                 <!-- disable lock mode blue highlight -->
