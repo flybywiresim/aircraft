@@ -955,7 +955,7 @@
                         "TEXCOORD_1": 68
                     },
                     "indices": 69,
-                    "material": 1,
+                    "material": 0,
                     "mode": 4,
                     "extras": {
                         "ASOBO_primitive": {
@@ -982,7 +982,7 @@
                         "TEXCOORD_1": 75
                     },
                     "indices": 76,
-                    "material": 1,
+                    "material": 0,
                     "mode": 4,
                     "extras": {
                         "ASOBO_primitive": {
