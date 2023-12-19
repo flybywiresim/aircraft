@@ -1038,6 +1038,10 @@
                 <ANIM_LENGTH>3</ANIM_LENGTH>
             </UseTemplate>
 
+            <UseTemplate Name="FBW_HANDLING_Gear_Red_Arrow_Template">
+                <NODE_ID>LIGHTS_MAINPANEL_LDG_DOWN_RED</NODE_ID>
+            </UseTemplate>
+
             <UseTemplate Name="FBW_Airbus_LANDING_GEAR_Light_Template">
                 <NODE_ID>PUSH_AUTOBKR_LDGGEAR_1</NODE_ID>
                 <ID>1</ID>

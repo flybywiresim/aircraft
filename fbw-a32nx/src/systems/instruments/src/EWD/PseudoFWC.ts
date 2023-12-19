@@ -2,10 +2,11 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Subject, Subscribable, MappedSubject, DebounceTimer, ConsumerValue, EventBus, ConsumerSubject } from '@microsoft/msfs-sdk';
+import { Subject, Subscribable, MappedSubject, DebounceTimer, ConsumerValue, EventBus, ConsumerSubject, SimVarValueType } from '@microsoft/msfs-sdk';
 
 import { Arinc429Register, Arinc429Word, NXDataStore, NXLogicClockNode, NXLogicConfirmNode, NXLogicMemoryNode, NXLogicPulseNode, NXLogicTriggeredMonostableNode } from '@flybywiresim/fbw-sdk';
 import { VerticalMode } from '@shared/autopilot';
+import { EwdSimvars } from 'instruments/src/EWD/shared/EwdSimvarPublisher';
 import { FuelSystemEvents } from '../MsfsAvionicsCommon/providers/FuelSystemPublisher';
 
 export function xor(a: boolean, b: boolean): boolean {
@@ -39,6 +40,8 @@ enum FwcAuralWarning {
 }
 
 export class PseudoFWC {
+    private readonly sub = this.bus.getSubscriber<EwdSimvars>();
+
     /** Time to inhibit SCs after one is trigger in ms */
     private static readonly AURAL_SC_INHIBIT_TIME = 2000;
 
@@ -289,11 +292,15 @@ export class PseudoFWC {
 
     private readonly flapsInferiorToPositionA = Subject.create(false);
 
+    private readonly flapsSuperiorToPositionD = Subject.create(false);
+
     private readonly flapsSuperiorToPositionF = Subject.create(false);
 
     private readonly slatsInferiorToPositionD = Subject.create(false);
 
     private readonly slatsSuperiorToPositionG = Subject.create(false);
+
+    private readonly flapsSuperiorToPositionDOrSlatsSuperiorToPositionC = Subject.create(false);
 
     private readonly flapsNotTo = Subject.create(false);
 
@@ -451,6 +458,8 @@ export class PseudoFWC {
 
     private readonly fwcFlightPhase = Subject.create(-1);
 
+    private readonly flightPhase126 = Subject.create(false);
+
     private readonly flightPhase23 = Subject.create(false);
 
     private readonly flightPhase34 = Subject.create(false);
@@ -530,6 +539,16 @@ export class PseudoFWC {
 
     private readonly parkBrake = Subject.create(false);
 
+    private readonly lgNotDown = Subject.create(false);
+
+    private readonly lgNotDownNoCancel = Subject.create(false);
+
+    private readonly lgLeverRedArrow = Subject.create(false);
+
+    private readonly lgNotDownPulse1 = new NXLogicPulseNode();
+
+    private readonly lgNotDownPulse2 = new NXLogicPulseNode();
+
     /* NAVIGATION */
 
     private readonly adirsRemainingAlignTime = Subject.create(0);
@@ -551,6 +570,10 @@ export class PseudoFWC {
     private readonly flapsIndex = Subject.create(0);
 
     /** ENGINE AND THROTTLE */
+
+    private readonly engine1Master = ConsumerSubject.create(this.sub.on('engine1Master'), 0);
+
+    private readonly engine2Master = ConsumerSubject.create(this.sub.on('engine2Master'), 0);
 
     private readonly engine1State = Subject.create(0);
 
@@ -774,6 +797,12 @@ export class PseudoFWC {
             SimVar.SetSimVarValue('L:A32NX_MASTER_WARNING', 'Bool', warning);
         }, true);
 
+        // L/G lever red arrow sinking outputs
+        this.lgLeverRedArrow.sub((on) => {
+            // TODO FWCs need to be powered...
+            SimVar.SetSimVarValue('L:A32NX_FWC_1_LG_RED_ARROW', SimVarValueType.Bool, on);
+            SimVar.SetSimVarValue('L:A32NX_FWC_2_LG_RED_ARROW', SimVarValueType.Bool, on);
+        }, true);
 
         const sub = this.bus.getSubscriber<FuelSystemEvents>();
 
@@ -877,6 +906,7 @@ export class PseudoFWC {
         this.fwcFlightPhase.set(SimVar.GetSimVarValue('L:A32NX_FWC_FLIGHT_PHASE', 'Enum'));
         this.flightPhase3PulseNode.write(this.fwcFlightPhase.get() === 3, deltaTime);
         // flight phase convenience vars
+        this.flightPhase126.set([1, 2, 6].includes(this.fwcFlightPhase.get()));
         this.flightPhase23.set([2, 3].includes(this.fwcFlightPhase.get()));
         this.flightPhase34.set([3, 4].includes(this.fwcFlightPhase.get()));
         this.flightPhase345.set(this.flightPhase34.get() || this.fwcFlightPhase.get() === 5);
@@ -1010,7 +1040,8 @@ export class PseudoFWC {
         const adr1PressureAltitude = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_1_ALTITUDE');
         const adr2PressureAltitude = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_2_ALTITUDE');
         const adr3PressureAltitude = Arinc429Word.fromSimVarValue('L:A32NX_ADIRS_ADR_3_ALTITUDE');
-        const pressureAltitude = adr1PressureAltitude.valueOr(null) ?? adr2PressureAltitude.valueOr(null) ?? adr3PressureAltitude.value;
+        // TODO use GPS alt if ADRs not available
+        const pressureAltitude = adr1PressureAltitude.valueOr(null) ?? adr2PressureAltitude.valueOr(null) ?? adr3PressureAltitude.valueOr(null);
         this.adiru1State.set(SimVar.GetSimVarValue('L:A32NX_ADIRS_ADIRU_1_STATE', 'enum'));
         this.adiru2State.set(SimVar.GetSimVarValue('L:A32NX_ADIRS_ADIRU_2_STATE', 'enum'));
         this.adiru3State.set(SimVar.GetSimVarValue('L:A32NX_ADIRS_ADIRU_3_STATE', 'enum'));
@@ -1154,10 +1185,10 @@ export class PseudoFWC {
 
         this.excessPressure.set(SimVar.GetSimVarValue('L:A32NX_PRESS_EXCESS_CAB_ALT', 'bool'));
         this.cabAltSetResetState1.set(
-            this.cabAltSetReset1.write(pressureAltitude > 10000 && this.excessPressure.get(), this.excessPressure.get() && [3, 10].includes(this.fwcFlightPhase.get())),
+            this.cabAltSetReset1.write((pressureAltitude ?? 0) > 10000 && this.excessPressure.get(), this.excessPressure.get() && [3, 10].includes(this.fwcFlightPhase.get())),
         );
         this.cabAltSetResetState2.set(
-            this.cabAltSetReset2.write(pressureAltitude > 16000 && this.excessPressure.get(), this.excessPressure.get() && [3, 10].includes(this.fwcFlightPhase.get())),
+            this.cabAltSetReset2.write((pressureAltitude ?? 0) > 16000 && this.excessPressure.get(), this.excessPressure.get() && [3, 10].includes(this.fwcFlightPhase.get())),
         );
         this.packOffBleedAvailable1.write((eng1Bleed === 1 && !eng1BleedPbFault) || !crossbleedFullyClosed, deltaTime);
         this.packOffBleedAvailable2.write((eng2Bleed === 1 && !eng2BleedPbFault) || !crossbleedFullyClosed, deltaTime);
@@ -1309,9 +1340,11 @@ export class PseudoFWC {
         // WARNING these vary for other variants... A320 CFM LEAP values here
         // flap/slat internal signals
         this.flapsInferiorToPositionA.set(flapsPos.isNormalOperation() && flapsPos.value < 65);
+        this.flapsSuperiorToPositionD.set(flapsPos.isNormalOperation() && flapsPos.value > 152);
         this.flapsSuperiorToPositionF.set(flapsPos.isNormalOperation() && flapsPos.value > 179);
         this.slatsInferiorToPositionD.set(slatsPos.isNormalOperation() && slatsPos.value < 210.46);
         this.slatsSuperiorToPositionG.set(slatsPos.isNormalOperation() && slatsPos.value > 309.53);
+        this.flapsSuperiorToPositionDOrSlatsSuperiorToPositionC.set(this.flapsSuperiorToPositionD.get() || (slatsPos.isNormalOperation() && slatsPos.value > 198.1));
 
         // flap, slat and speedbrake config warning logic
         const flapsNotInToPos = this.flapsSuperiorToPositionF.get() || this.flapsInferiorToPositionA.get();
@@ -1438,6 +1471,32 @@ export class PseudoFWC {
             && !(this.groundSpoiler5sDelayed.read() || this.speedBrake5sDelayed.read())
             && (fcdc1DiscreteWord4.isNormalOperation() || fcdc2DiscreteWord4.isNormalOperation()),
         );
+
+        // l/g gear not down
+        const fwcFlightPhase = this.fwcFlightPhase.get();
+        const flightPhase45 = fwcFlightPhase === 4 || fwcFlightPhase === 5;
+        const flightPhase6 = fwcFlightPhase === 6;
+        const below750Ra = Math.min(this.radioHeight1.valueOr(Infinity), this.radioHeight2.valueOr(Infinity)) < 750;
+        const altInhibit = (pressureAltitude ?? 0) > 18500 && (
+            !this.radioHeight1.isNoComputedData() && !this.radioHeight1.isNormalOperation()
+            && !this.radioHeight2.isNoComputedData() && !this.radioHeight2.isNormalOperation()
+        );
+        const gearNotDownlocked = !mainGearDownlocked && (!this.lgciu1Fault.get() || !this.lgciu2Fault.get());
+        const below750Condition = this.flapsSuperiorToPositionDOrSlatsSuperiorToPositionC.get() && !this.eng1Or2TakeoffPower.get() && below750Ra && gearNotDownlocked;
+        const bothRaInvalid = this.radioHeight1.isFailureWarning() && this.radioHeight2.isFailureWarning();
+        const bothRaInvalidOrNcd = (this.radioHeight1.isNoComputedData || this.radioHeight1.isFailureWarning())
+            && (this.radioHeight2.isNoComputedData() || this.radioHeight2.isFailureWarning());
+        const flapsApprCondition = ((this.flapsSuperiorToPositionD.get() && !this.flapsSuperiorToPositionF.get() && bothRaInvalid)
+            || (this.flapsSuperiorToPositionF.get() && bothRaInvalidOrNcd)) && flightPhase6 && gearNotDownlocked;
+        const lgNotDownResetPulse = this.lgNotDownPulse1.write(below750Condition, deltaTime) || this.lgNotDownPulse2.write(flapsApprCondition, deltaTime);
+        this.lgNotDownNoCancel.set((below750Condition || flapsApprCondition) && !lgNotDownResetPulse);
+        const n1Eng1 = this.N1Eng1.get();
+        const n1Eng2 = this.N1Eng2.get();
+        const apprN1 = (n1Eng1 < 75 && n1Eng2 < 75) || (n1Eng1 < 97 && n1Eng2 < 97 && !this.engine1Master.get() && !this.engine2Master.get());
+        this.lgNotDown.set(gearNotDownlocked && !altInhibit && (!this.eng1Or2TakeoffPower.get() && apprN1) && below750Ra);
+        // goes to discrete out (RMP02B) and out word 126-11/25
+        const redArrow = !((flightPhase6 && !bothRaInvalid) || flightPhase45) && (this.lgNotDownNoCancel.get() || this.lgNotDown.get());
+        this.lgLeverRedArrow.set(redArrow);
 
         /* FIRE */
 
@@ -2510,6 +2569,30 @@ export class PseudoFWC {
             failure: 2,
             sysPage: 9,
             side: 'LEFT',
+        },
+        3200150: { // GEAR NOT DOWN
+            flightPhaseInhib: [3, 4, 5],
+            simVarIsActive: this.lgNotDownNoCancel,
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['320015001'],
+            memoInhibit: () => false,
+            failure: 3,
+            sysPage: -1,
+            side: 'LEFT',
+            cancel: false,
+        },
+        3200155: { // GEAR NOT DOWN
+            flightPhaseInhib: [3, 4, 5, 6],
+            simVarIsActive: MappedSubject.create(([noCancel, lgNotDown]) => !noCancel && lgNotDown,
+                this.lgNotDownNoCancel,
+                this.lgNotDown),
+            whichCodeToReturn: () => [0],
+            codesToReturn: ['320015501'],
+            memoInhibit: () => false,
+            failure: 3,
+            sysPage: -1,
+            side: 'LEFT',
+            cancel: true,
         },
         3200180: { // LGCIU 1 FAULT
             flightPhaseInhib: [3, 4, 5, 7, 8],
