@@ -501,6 +501,7 @@
             <PART_ID>HANDLING_Wheel_ElevatorTrim</PART_ID>
             <DRAG_MIN_VALUE>0</DRAG_MIN_VALUE>
             <DRAG_MAX_VALUE>100</DRAG_MAX_VALUE>
+            <ANIM_NAME2>HANDLING_Wheel_ElevatorTrim_2</ANIM_NAME2>
             <NODE_ID2>HANDLING_Wheel_ElevatorTrim_Pitch_2</NODE_ID2>
             <DRAG_DELTA>0.001</DRAG_DELTA>
             <DRAG_SPEED>0.03</DRAG_SPEED>
@@ -532,6 +533,7 @@
         </Component>
         <Component ID="#NODE_ID2#" Node="#NODE_ID2#">
             <UseTemplate Name="ASOBO_GT_Lever_DraggingYAxis_Code">
+                <ANIM_NAME>#ANIM_NAME2#</ANIM_NAME>
                 <ANIM_LENGTH>100</ANIM_LENGTH>
                 <ANIM_CODE>(L:A32NX_HYD_TRIM_WHEEL_PERCENT)</ANIM_CODE>
                 <UP_CODE>#DRAG_CODE#</UP_CODE>
