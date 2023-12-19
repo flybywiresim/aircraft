@@ -106,6 +106,7 @@
             <ANIMTIP_0_ON_PERCENT>0</ANIMTIP_0_ON_PERCENT>
             <ANIMTIP_1_ON_PERCENT>.5</ANIMTIP_1_ON_PERCENT>
             <ANIMTIP_2_ON_PERCENT>1</ANIMTIP_2_ON_PERCENT>
+            <ANIM_DURATION>0.5</ANIM_DURATION>
         </DefaultTemplateParameters>
 
         <UseTemplate Name="FBW_AIRBUS_NAV_AID_SWITCH_SubTemplate">
