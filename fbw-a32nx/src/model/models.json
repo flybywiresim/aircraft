@@ -1,14 +1,12 @@
 [
   {
     "gltf": [
-      "./a320-interior/A320_NEO_INTERIOR_LOD00.gltf",
       "./a320-interior/A320_NEO_INTERIOR_LOD01.gltf",
       "./a320-interior/A320_NEO_INTERIOR_LOD02.gltf",
       "./a320-interior/A320_NEO_INTERIOR_LOD03.gltf",
       "./a320-interior/A320_NEO_INTERIOR_LOD04.gltf"
     ],
     "bin": [
-      "./a320-interior/A320_NEO_INTERIOR_LOD00.bin",
       "./a320-interior/A320_NEO_INTERIOR_LOD01.bin",
       "./a320-interior/A320_NEO_INTERIOR_LOD02.bin",
       "./a320-interior/A320_NEO_INTERIOR_LOD03.bin",
@@ -16,14 +14,12 @@
     ],
     "output": {
       "gltf": [
-        "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model/A320_NEO_INTERIOR_LOD00.gltf",
         "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model/A320_NEO_INTERIOR_LOD01.gltf",
         "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model/A320_NEO_INTERIOR_LOD02.gltf",
         "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model/A320_NEO_INTERIOR_LOD03.gltf",
         "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model/A320_NEO_INTERIOR_LOD04.gltf"
       ],
       "bin": [
-        "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model/A320_NEO_INTERIOR_LOD00.bin",
         "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model/A320_NEO_INTERIOR_LOD01.bin",
         "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model/A320_NEO_INTERIOR_LOD02.bin",
         "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model/A320_NEO_INTERIOR_LOD03.bin",
@@ -34,16 +30,6 @@
       {
         "gltf": "./fire-button/fire-button.gltf",
         "bin": "./fire-button/fire-button.bin"
-      },
-      {
-        "gltf": "./trim-decals/trim-decals.gltf",
-        "bin": "./trim-decals/trim-decals.bin",
-        "maxLod": 0
-      },
-      {
-        "gltf": "./wipers/flight-deck-wipers.gltf",
-        "bin": "./wipers/flight-deck-wipers.bin",
-        "maxLod": 0
       },
       {
         "gltf": "./onbat/onbat.gltf",
@@ -104,16 +90,6 @@
       {
         "gltf": "./glass/glass.gltf",
         "bin": "./glass/glass.bin"
-      },
-      {
-        "gltf": "./cockpit/cockpit.gltf",
-        "bin": "./cockpit/cockpit.bin",
-        "maxLod": 0
-      },
-      {
-        "gltf": "./cockpit/gearemer.gltf",
-        "bin": "./cockpit/gearemer.bin",
-        "maxLod": 0
       },
       {
         "combineFiles": [
@@ -956,7 +932,7 @@
   },
   {
     "gltf": [
-      "./a320-exterior/A320_NEO_LOD00.gltf",
+      "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model/A320_NEO_LOD00.gltf",
       "./a320-exterior/A320_NEO_LOD01.gltf",
       "./a320-exterior/A320_NEO_LOD02.gltf",
       "./a320-exterior/A320_NEO_LOD03.gltf",
@@ -965,7 +941,7 @@
       "./a320-exterior/A320_NEO_LOD06.gltf"
     ],
     "bin": [
-      "./a320-exterior/A320_NEO_LOD00.bin",
+      "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model/A320_NEO_LOD00.bin",
       "./a320-exterior/A320_NEO_LOD01.bin",
       "./a320-exterior/A320_NEO_LOD02.bin",
       "./a320-exterior/A320_NEO_LOD03.bin",
@@ -996,11 +972,13 @@
     "additions": [
       {
         "gltf": "./sound_nodes/sound_nodes.gltf",
-        "bin": "./sound_nodes/sound_nodes.bin"
+        "bin": "./sound_nodes/sound_nodes.bin",
+        "lods": [1, 2, 3, 4, 5, 6]
       },
       {
         "gltf": "./fx_exhaust_apu/fx_exhaust_apu.gltf",
-        "bin": "./fx_exhaust_apu/fx_exhaust_apu.bin"
+        "bin": "./fx_exhaust_apu/fx_exhaust_apu.bin",
+        "lods": [1, 2, 3, 4, 5, 6]
       },
       {
         "gltf": "./cargo-hinge/cargo-hinge.gltf",
@@ -1012,11 +990,8 @@
       },
       {
         "gltf": "./bandit-extras/bandit_window_extras.gltf",
-        "bin": "./bandit-extras/bandit_window_extras.bin"
-      },
-      {
-        "gltf": "./rivet-mesh/rivet-mesh.gltf",
-        "bin": "./rivet-mesh/rivet-mesh.bin"
+        "bin": "./bandit-extras/bandit_window_extras.bin",
+        "lods": [1]
       },
       {
         "gltf": "./chocks/chocks.gltf",
@@ -1028,12 +1003,8 @@
       },
       {
         "gltf": "./satcom/HoneywellJetwave.gltf",
-        "bin": "./satcom/HoneywellJetwave.bin"
-      },
-      {
-        "gltf": "./wipers/exterior-wipers.gltf",
-        "bin": "./wipers/exterior-wipers.bin",
-        "maxLod": 0
+        "bin": "./satcom/HoneywellJetwave.bin",
+        "lods": [1]
       },
       {
         "combineFiles": ["./a320-exterior/A320_NEO_LOD00.gltf"],
