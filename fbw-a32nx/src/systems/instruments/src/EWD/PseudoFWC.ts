@@ -768,13 +768,12 @@ export class PseudoFWC {
 
         this.masterCaution.sub((caution) => {
             SimVar.SetSimVarValue('L:A32NX_MASTER_CAUTION', 'bool', caution);
-            SimVar.SetSimVarValue('L:Generic_Master_Caution_Active', 'bool', caution);
-        });
+        }, true);
 
         this.masterWarningOutput.sub((warning) => {
             SimVar.SetSimVarValue('L:A32NX_MASTER_WARNING', 'Bool', warning);
-            SimVar.SetSimVarValue('L:Generic_Master_Warning_Active', 'Bool', warning);
-        });
+        }, true);
+
 
         const sub = this.bus.getSubscriber<FuelSystemEvents>();
 
