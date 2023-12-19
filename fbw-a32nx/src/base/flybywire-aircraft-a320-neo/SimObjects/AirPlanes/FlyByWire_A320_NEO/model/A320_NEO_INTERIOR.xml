@@ -5502,6 +5502,24 @@
             </UseTemplate>
         </Component>
 
+        <Component ID="SEATS">
+            <DefaultTemplateParameters>
+                <!-- disable lock mode blue highlight -->
+                <NO_HIGHLIGHT_NODE_ID>@StopLockHighlight</NO_HIGHLIGHT_NODE_ID>
+            </DefaultTemplateParameters>
+
+            <Component ID="THIRD_OCCUPANT" Node="COCKPIT_SEAT_BACK">
+                <UseTemplate Name="FBW_REAR_SEAT">
+                    <NODE_ID>COCKPIT_SEAT_BACK</NODE_ID>
+                    <TOOLTIPID>Move the third occupant seat.</TOOLTIPID>
+                </UseTemplate>
+                <UseTemplate Name="FBW_REAR_SEAT">
+                    <NODE_ID>COCKPIT_SEAT_BACK_TOP</NODE_ID>
+                    <TOOLTIPID>Fold down the third occupant seat.</TOOLTIPID>
+                </UseTemplate>
+            </Component>
+        </Component>
+
         <Component ID="Pilot_Avatars">
             <!-- Pilot -->
             <Component ID="CAPTAIN_AVATAR" Node="CAPTAIN_AVATAR">
