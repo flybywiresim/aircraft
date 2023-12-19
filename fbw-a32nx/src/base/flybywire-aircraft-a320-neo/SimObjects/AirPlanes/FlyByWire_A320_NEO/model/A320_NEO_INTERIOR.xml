@@ -625,8 +625,56 @@
                     <ANIMTIP_0>Set GCS to AUTO (Inop.)</ANIMTIP_0>
                     <ANIMTIP_1>Set GCS to OFF (Inop.)</ANIMTIP_1>
                 </UseTemplate>
-
             </Component>
+
+            <Component ID="Printer">
+                <UseTemplate Name="FBW_Airbus_PRINTER">
+                    <NODE_ID>Print</NODE_ID>
+                </UseTemplate>
+
+                <UseTemplate Name="FBW_Airbus_PRINTER_PAPER">
+                    <NODE_ID>PAPER</NODE_ID>
+                    <PAGE>1</PAGE>
+                </UseTemplate>
+
+                <UseTemplate Name="FBW_Airbus_PRINTER_PAPER">
+                    <NODE_ID>PAPER</NODE_ID>
+                    <PAGE>2</PAGE>
+                </UseTemplate>
+
+                <UseTemplate Name="FBW_Airbus_PRINTER_PAPER">
+                    <NODE_ID>PAPER</NODE_ID>
+                    <PAGE>3</PAGE>
+                </UseTemplate>
+
+                <UseTemplate Name="FBW_Airbus_PRINTER_PAPER">
+                    <NODE_ID>PAPER</NODE_ID>
+                    <PAGE>4</PAGE>
+                </UseTemplate>
+
+                <UseTemplate Name="FBW_Airbus_PAPER_PAGE_BUTTON">
+                    <NODE_ID>PAPER_NEXT</NODE_ID>
+                    <DIRECTION>1</DIRECTION>
+                    <TOOLTIPID>Next page</TOOLTIPID>
+                    <CURSOR>RightArrow</CURSOR>
+                </UseTemplate>
+
+                <UseTemplate Name="FBW_Airbus_PAPER_PAGE_BUTTON">
+                    <NODE_ID>PAPER_PREV</NODE_ID>
+                    <DIRECTION>-1</DIRECTION>
+                    <TOOLTIPID>Previous page</TOOLTIPID>
+                    <CURSOR>LeftArrow</CURSOR>
+                </UseTemplate>
+
+                <UseTemplate Name="FBW_Airbus_PAPER_DISCARD_BUTTON">
+                    <NODE_ID>PAPER_DISCARD</NODE_ID>
+                </UseTemplate>
+
+                <UseTemplate Name="FBW_Airbus_PAPER_TORN">
+                    <NODE_ID>PRINT_TORN</NODE_ID>
+                </UseTemplate>
+            </Component>
+
             <CameraTitle>PedestalAft</CameraTitle>
         </Component>
 
@@ -785,66 +833,6 @@
                     <ID>L</ID>
                 </UseTemplate>
 
-                <!-- F/O TERR ON ND -->
-                <UseTemplate Name="FBW_Anim_Interactions">
-                    <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
-                    <ANIM_TEMPLATE>FBW_AIRBUS_Push_TERRONND_Template</ANIM_TEMPLATE>
-                    <NODE_ID>PUSH_AUTOBKR_TERRONND</NODE_ID>
-                    <ANIM_NAME>PUSH_AUTOBKR_TERRONND</ANIM_NAME>
-                    <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
-                    <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
-                    <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
-                    <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
-                    <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
-                    <ID>R</ID>
-                </UseTemplate>
-
-                <UseTemplate Name="FBW_Airbus_PRINTER">
-                    <NODE_ID>Print</NODE_ID>
-                </UseTemplate>
-
-                <UseTemplate Name="FBW_Airbus_PRINTER_PAPER">
-                    <NODE_ID>PAPER</NODE_ID>
-                    <PAGE>1</PAGE>
-                </UseTemplate>
-
-                <UseTemplate Name="FBW_Airbus_PRINTER_PAPER">
-                    <NODE_ID>PAPER</NODE_ID>
-                    <PAGE>2</PAGE>
-                </UseTemplate>
-
-                <UseTemplate Name="FBW_Airbus_PRINTER_PAPER">
-                    <NODE_ID>PAPER</NODE_ID>
-                    <PAGE>3</PAGE>
-                </UseTemplate>
-
-                <UseTemplate Name="FBW_Airbus_PRINTER_PAPER">
-                    <NODE_ID>PAPER</NODE_ID>
-                    <PAGE>4</PAGE>
-                </UseTemplate>
-
-                <UseTemplate Name="FBW_Airbus_PAPER_PAGE_BUTTON">
-                    <NODE_ID>PAPER_NEXT</NODE_ID>
-                    <DIRECTION>1</DIRECTION>
-                    <TOOLTIPID>Next page</TOOLTIPID>
-                    <CURSOR>RightArrow</CURSOR>
-                </UseTemplate>
-
-                <UseTemplate Name="FBW_Airbus_PAPER_PAGE_BUTTON">
-                    <NODE_ID>PAPER_PREV</NODE_ID>
-                    <DIRECTION>-1</DIRECTION>
-                    <TOOLTIPID>Previous page</TOOLTIPID>
-                    <CURSOR>LeftArrow</CURSOR>
-                </UseTemplate>
-
-                <UseTemplate Name="FBW_Airbus_PAPER_DISCARD_BUTTON">
-                    <NODE_ID>PAPER_DISCARD</NODE_ID>
-                </UseTemplate>
-
-                <UseTemplate Name="FBW_Airbus_PAPER_TORN">
-                    <NODE_ID>PRINT_TORN</NODE_ID>
-                </UseTemplate>
-
                 <!-- CPT ND BRIGHTNESS -->
                 <UseTemplate Name="FBW_Stepless_Potentiometer">
                     <NODE_ID>KNOB_EFIS_CS_ND_SMALL</NODE_ID>
@@ -931,6 +919,20 @@
                         <NODE_ID>KNOB_EFIS_FO_LOUDSPKR</NODE_ID>
                     </UseTemplate>
                 </Component>
+
+                <!-- F/O TERR ON ND -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_AIRBUS_Push_TERRONND_Template</ANIM_TEMPLATE>
+                    <NODE_ID>PUSH_AUTOBKR_TERRONND</NODE_ID>
+                    <ANIM_NAME>PUSH_AUTOBKR_TERRONND</ANIM_NAME>
+                    <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
+                    <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+                    <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                    <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                    <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
+                    <ID>R</ID>
+                </UseTemplate>
 
                 <!-- F/O PFD SCREEN -->
                 <UseTemplate Name="ASOBO_GT_Component_Emissive_Gauge">
@@ -4902,7 +4904,7 @@
             </UseTemplate>
         </Component>
 
-        <Component ID="Airbus_Pedestal_Radios">
+        <Component ID="EFIS_SWITCHING">
             <DefaultTemplateParameters>
                 <!-- disable lock mode blue highlight -->
                 <NO_HIGHLIGHT_NODE_ID>@StopLockHighlight</NO_HIGHLIGHT_NODE_ID>
@@ -5417,18 +5419,6 @@
             </UseTemplate>
             <!--            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">-->
             <!--                <NODE_ID>KNOB_OVHD_READINGLTR</NODE_ID>-->
-            <!--            </UseTemplate>-->
-            <!--            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">-->
-            <!--                <NODE_ID>LOCK_OVHD_ENG_FADEC2</NODE_ID>-->
-            <!--            </UseTemplate>-->
-            <!--            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">-->
-            <!--                <NODE_ID>PUSH_OVHD_ENG_FADEC2</NODE_ID>-->
-            <!--            </UseTemplate>-->
-            <!--            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">-->
-            <!--                <NODE_ID>LOCK_OVHD_ENG_FADEC1</NODE_ID>-->
-            <!--            </UseTemplate>-->
-            <!--            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">-->
-            <!--                <NODE_ID>PUSH_OVHD_ENG_FADEC1</NODE_ID>-->
             <!--            </UseTemplate>-->
             <!--            <UseTemplate Name="ASOBO_GT_Interaction_Tooltip">-->
             <!--                <NODE_ID>LOCK_OVHD_HYD_Y</NODE_ID>-->
