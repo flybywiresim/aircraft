@@ -23,7 +23,9 @@ interface EWDItem {
     memoInhibit: () => boolean,
     failure: number,
     sysPage: number,
-    side: string
+    side: string,
+    /** Cancel flag (only emergency cancel can cancel if false), defaults to true. */
+    cancel?: boolean,
 }
 
 interface EWDMessageDict {
@@ -1524,7 +1526,15 @@ export class PseudoFWC {
 
         /* CLEAR AND RECALL */
         if (this.clrTriggerRisingEdge) {
-            this.failuresLeft.shift();
+            // delete the first cancellable failure
+            for (const [index, failure] of this.failuresLeft.entries()) {
+                const cancellable = this.ewdMessageFailures[failure]?.cancel;
+                if (cancellable === false) {
+                    continue;
+                }
+                this.failuresLeft.splice(index, 1);
+                break;
+            }
             this.recallFailures = this.allCurrentFailures.filter((item) => !this.failuresLeft.includes(item));
         }
 
