@@ -1819,6 +1819,52 @@
                     <EMISSIVE_CODE>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
                 </UseTemplate>
 
+                <Component ID="OPTIONAL_OVERHEAD_LABELS">
+                    <DefaultTemplateParameters>
+                        <SIMVAR_INDEX>4</SIMVAR_INDEX>
+                        <POTENTIOMETER>86</POTENTIOMETER>
+                        <EMISSIVE_CODE>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</EMISSIVE_CODE>
+                    </DefaultTemplateParameters>
+
+                    <Component ID="LIGHTS_OVHD_NO_SMOKING" Node="LIGHTS_OVHD_NO_SMOKING">
+                        <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
+                            <NODE_ID>LIGHTS_OVHD_NO_SMOKING</NODE_ID>
+                        </UseTemplate>
+                        <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                            <VISIBILITY_CODE>(L:A32NX_CONFIG_USING_PORTABLE_DEVICES, Bool) !</VISIBILITY_CODE>
+                        </UseTemplate>
+                    </Component>
+
+                    <Component ID="LIGHTS_OVHD_NO_PED" Node="LIGHTS_OVHD_NO_PED">
+                        <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
+                            <NODE_ID>LIGHTS_OVHD_NO_PED</NODE_ID>
+                        </UseTemplate>
+                        <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                            <VISIBILITY_CODE>(L:A32NX_CONFIG_USING_PORTABLE_DEVICES, Bool)</VISIBILITY_CODE>
+                        </UseTemplate>
+                    </Component>
+
+                    <Component ID="LIGHTS_OVHD_EXIT" Node="LIGHTS_OVHD_EXIT">
+                        <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
+                            <NODE_ID>LIGHTS_OVHD_EXIT</NODE_ID>
+                        </UseTemplate>
+                        <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                            <!-- FIXME implement -->
+                            <VISIBILITY_CODE>0</VISIBILITY_CODE>
+                        </UseTemplate>
+                    </Component>
+
+                    <Component ID="LIGHTS_OVHD_SEATBELT_AUTO" Node="LIGHTS_OVHD_SEATBELT_AUTO">
+                        <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
+                            <NODE_ID>LIGHTS_OVHD_SEATBELT_AUTO</NODE_ID>
+                        </UseTemplate>
+                        <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                            <!-- FIXME implement -->
+                            <VISIBILITY_CODE>0</VISIBILITY_CODE>
+                        </UseTemplate>
+                    </Component>
+                </Component>
+
                 <!-- INT LT DOME -->
                 <Component ID="SWITCH_OVHD_INTLT_DOME" Node="SWITCH_OVHD_INTLT_DOME">
                     <UseTemplate Name="FBW_Anim_Interactions">
