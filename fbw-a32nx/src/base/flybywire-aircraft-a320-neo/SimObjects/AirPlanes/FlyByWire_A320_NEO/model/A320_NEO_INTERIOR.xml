@@ -875,6 +875,18 @@
                     <PART_ID>SCREEN_COM1</PART_ID>
                     <CAMERA_TITLE>ECAM</CAMERA_TITLE>
                 </UseTemplate>
+
+                <!-- CAPT BKUP SPD/ALT -->
+                <!-- TODO all placeholders at the moment -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
+                    <NODE_ID>PUSH_EFIS_CS_BUSS</NODE_ID>
+                    <DUMMY_BUTTON>True</DUMMY_BUTTON>
+                    <DISABLE_SEQ1>True</DISABLE_SEQ1>
+                    <DISABLE_SEQ2>True</DISABLE_SEQ2>
+                    <TOOLTIPID>Backup Speed/Altitude Scale</TOOLTIPID>
+                </UseTemplate>
             </Component>
 
             <Component ID="Screens_Right">
@@ -983,6 +995,18 @@
                     </EMISSIVE_CODE>
                     <PART_ID>SCREEN_COM2</PART_ID>
                     <CAMERA_TITLE>ECAM</CAMERA_TITLE>
+                </UseTemplate>
+
+                <!-- F/O BKUP SPD/ALT -->
+                <!-- TODO all placeholders at the moment -->
+                <UseTemplate Name="FBW_Anim_Interactions">
+                    <ANIM_TYPE>KORRY_BUTTON</ANIM_TYPE>
+                    <ANIM_TEMPLATE>FBW_Push_Toggle</ANIM_TEMPLATE>
+                    <NODE_ID>PUSH_EFIS_FO_BUSS</NODE_ID>
+                    <DUMMY_BUTTON>True</DUMMY_BUTTON>
+                    <DISABLE_SEQ1>True</DISABLE_SEQ1>
+                    <DISABLE_SEQ2>True</DISABLE_SEQ2>
+                    <TOOLTIPID>Backup Speed/Altitude Scale</TOOLTIPID>
                 </UseTemplate>
             </Component>
             <CameraTitle>Pilot</CameraTitle>
