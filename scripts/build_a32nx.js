@@ -52,19 +52,6 @@ const MS_FILETIME_EPOCH = 116444736000000000n;
 const A32NX_SRC = path.resolve(__dirname, '..', 'fbw-a32nx/src');
 const A32NX_OUT = path.resolve(__dirname, '..', 'fbw-a32nx/out/flybywire-aircraft-a320-neo');
 
-function copyDDSFiles(src_dds) {
-    const TARGET_PATH = '/SimObjects/AirPlanes/FlyByWire_A320_NEO/TEXTURE/A320NEO_COCKPIT_DECALSTEXT_ALBD.TIF.dds';
-    fs.copyFileSync(path.join(A32NX_SRC, src_dds), path.join(A32NX_OUT, TARGET_PATH));
-}
-
-if (packageInfo.edition === 'stable') {
-    copyDDSFiles('/textures/decals 4k/A320NEO_COCKPIT_DECALSTEXT_ALBD.TIF-stable.dds');
-} else if (buildInfo?.branch === 'master') {
-    copyDDSFiles('/textures/decals 4k/A320NEO_COCKPIT_DECALSTEXT_ALBD.TIF-master.dds');
-} else {
-    copyDDSFiles('/textures/decals 4k/A320NEO_COCKPIT_DECALSTEXT_ALBD.TIF-exp.dds');
-}
-
 function createPackageFiles(baseDir, manifestBaseFilename) {
     const contentEntries = [];
     let totalPackageSize = 0;
