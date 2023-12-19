@@ -3647,14 +3647,17 @@
                 <Component ID="Overhead_CabinPress">
                     <!-- CABIN PRESS LDG EVEL AUTO -->
                     <Component ID="KNOB_OVHD_CABINPRESS_LDGELEV" Node="KNOB_OVHD_CABINPRESS_LDGELEV">
-                        <UseTemplate Name="FBW_Continuous_Knob_Limited_From_Simvar">
+                        <UseTemplate Name="FBW_Continuous_Knob_Finite_From_Simvar">
                             <NODE_ID>KNOB_OVHD_CABINPRESS_LDGELEV</NODE_ID>
-                            <ANIM_SIMVAR_MAX>88</ANIM_SIMVAR_MAX>
-                            <LOCAL_SIMVAR>L:A32NX_OVHD_PRESS_LDG_ELEV_KNOB</LOCAL_SIMVAR>
-                            <LOCAL_SIMVAR_UNITS>feet</LOCAL_SIMVAR_UNITS>
-                            <INCREMENT>0.5</INCREMENT>
-                            <CONVERSION_FORMULA>193.182 * 2000 -</CONVERSION_FORMULA>
-                            <SET_CODE>(&gt;L:XMLVAR_KNOB_OVHD_CABINPRESS_LDGELEV)</SET_CODE>
+                            <ANIM_SIMVAR>L:XMLVAR_KNOB_OVHD_CABINPRESS_LDGELEV</ANIM_SIMVAR>
+                            <ANIM_SIMVAR_UNITS>number</ANIM_SIMVAR_UNITS>
+                            <ANIM_SIMVAR_MIN>0</ANIM_SIMVAR_MIN>
+                            <ANIM_SIMVAR_MAX>18</ANIM_SIMVAR_MAX>
+                            <INCREMENT>s0 2 0.1 l0 0 == ?</INCREMENT>
+                            <DECREMENT>s0 2 0.1 l0 2 == ?</DECREMENT>
+                            <WHEEL_INCREMENT>s0 2 0.5 l0 0 == ?</WHEEL_INCREMENT>
+                            <WHEEL_DECREMENT>s0 2 0.5 l0 2 == ?</WHEEL_DECREMENT>
+                            <SET_CODE>d (&gt;L:XMLVAR_KNOB_OVHD_CABINPRESS_LDGELEV) 4 - 1000 * (&gt;L:A32NX_OVHD_PRESS_LDG_ELEV_KNOB)</SET_CODE>
                         </UseTemplate>
                     </Component>
 
