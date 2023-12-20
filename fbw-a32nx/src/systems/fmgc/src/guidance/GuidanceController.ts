@@ -1,19 +1,20 @@
 // Copyright (c) 2021-2023 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
+import { EfisSide, EfisNdMode, efisRangeSettings, ApproachUtils, RunwayUtils, SimVarString, ApproachType, LegType } from '@flybywiresim/fbw-sdk';
+
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { PseudoWaypoint } from '@fmgc/guidance/PseudoWaypoint';
 import { PseudoWaypoints } from '@fmgc/guidance/lnav/PseudoWaypoints';
 import { EfisVectors } from '@fmgc/efis/EfisVectors';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
 import { EfisState } from '@fmgc/guidance/FmsState';
-import { EfisNdMode, EfisSide, rangeSettings } from '@shared/NavigationDisplay';
 import { TaskCategory, TaskQueue } from '@fmgc/guidance/TaskQueue';
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { GeometryFactory } from '@fmgc/guidance/geometry/GeometryFactory';
 import { FlightPlanIndex } from '@fmgc/flightplanning/new/FlightPlanManager';
 import { HMLeg } from '@fmgc/guidance/lnav/legs/HX';
-import { ApproachUtils, SimVarString, ApproachType, LegType } from '@flybywiresim/fbw-sdk';
+
 import { getFlightPhaseManager } from '@fmgc/flightphase';
 import { FmgcFlightPhase } from '@shared/flightphase';
 
@@ -24,6 +25,7 @@ import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { WindProfileFactory } from '@fmgc/guidance/vnav/wind/WindProfileFactory';
 import { FmcWinds, FmcWindVector } from '@fmgc/guidance/vnav/wind/types';
 import { AtmosphericConditions } from '@fmgc/guidance/vnav/AtmosphericConditions';
+import { EfisInterface } from '@fmgc/efis/EfisInterface';
 import { LnavDriver } from './lnav/LnavDriver';
 import { VnavDriver } from './vnav/VnavDriver';
 
@@ -124,7 +126,7 @@ export class GuidanceController {
      */
     activeLegAlongTrackCompletePathDtg: NauticalMiles;
 
-    /** * Used for vertical guidance */
+    /** * Used for vertical guidance and other FMS tasks, such as triggering ENTER DEST DATA */
     alongTrackDistanceToDestination: NauticalMiles;
 
     focusedWaypointCoordinates: Coordinates = { lat: 0, long: 0 };
@@ -153,7 +155,7 @@ export class GuidanceController {
 
     private updateEfisState(side: EfisSide, state: EfisState): void {
         const ndMode = SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_MODE`, 'Enum') as EfisNdMode;
-        const ndRange = rangeSettings[SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_RANGE`, 'Enum')];
+        const ndRange = efisRangeSettings[SimVar.GetSimVarValue(`L:A32NX_EFIS_${side}_ND_RANGE`, 'Enum')];
 
         if (state?.mode !== ndMode || state?.range !== ndRange) {
             this.taskQueue.cancelAllInCategory(TaskCategory.EfisVectors);
@@ -168,6 +170,8 @@ export class GuidanceController {
 
     private lastFocusedWpIndex = -1;
 
+    private lastEfisInterfaceVersion = -1;
+
     // FIXME only considers the case where F-PLN is shown on the MCDU
     private updateMrpState() {
         if (!this.flightPlanService.hasActive) {
@@ -175,10 +179,7 @@ export class GuidanceController {
         }
 
         // PLAN mode center
-
-        const focusedWpFpIndex = SimVar.GetSimVarValue('L:A32NX_SELECTED_WAYPOINT_FP_INDEX', 'number');
-        const focusedWpIndex = SimVar.GetSimVarValue('L:A32NX_SELECTED_WAYPOINT_INDEX', 'number');
-        const focusedWpInAlternate = SimVar.GetSimVarValue('L:A32NX_SELECTED_WAYPOINT_IN_ALTERNATE', 'Bool');
+        const { fpIndex: focusedWpFpIndex, index: focusedWpIndex, inAlternate: focusedWpInAlternate } = this.efisInterface.planCentre;
 
         if (!this.flightPlanService.has(focusedWpFpIndex)) {
             return;
@@ -196,7 +197,7 @@ export class GuidanceController {
             return;
         }
 
-        if (!this.hasGeometryForFlightPlan(focusedWpFpIndex)) {
+        if (!this.hasGeometryForFlightPlan(focusedWpFpIndex, focusedWpInAlternate)) {
             return;
         }
 
@@ -210,8 +211,9 @@ export class GuidanceController {
             return;
         }
 
-        if (this.lastFocusedWpIndex !== focusedWpIndex) {
+        if (this.lastFocusedWpIndex !== focusedWpIndex || this.lastEfisInterfaceVersion !== this.efisInterface.version) {
             this.lastFocusedWpIndex = focusedWpIndex;
+            this.lastEfisInterfaceVersion = this.efisInterface.version;
 
             this.efisVectors.forceUpdate();
         }
@@ -259,14 +261,17 @@ export class GuidanceController {
 
     private updateEfisApproachMessage() {
         let apprMsg = '';
-        const appr = this.flightPlanService.active.approach;
+        const runway = this.flightPlanService.active.destinationRunway;
 
-        if (appr && appr.type !== ApproachType.Unknown) {
+        if (runway) {
             const phase = getFlightPhaseManager().phase;
+            const distanceToDestination = this.alongTrackDistanceToDestination ?? -1;
 
-            // TODO fms-v2: port getDistanceToDestination and appr.longName
-            if (phase > FmgcFlightPhase.Cruise || (phase === FmgcFlightPhase.Cruise /* && this.flightPlanManager.getDistanceToDestination(FlightPlans.Active) < 250) */)) {
-                apprMsg = ApproachUtils.longApproachName(appr);
+            if (phase > FmgcFlightPhase.Cruise || (phase === FmgcFlightPhase.Cruise && distanceToDestination < 250)) {
+                const appr = this.flightPlanService.active.approach;
+                apprMsg = (appr && appr.type !== ApproachType.Unknown)
+                    ? ApproachUtils.longApproachName(appr)
+                    : RunwayUtils.runwayString(runway.ident); // Runway-by-itself
             }
         }
 
@@ -281,8 +286,8 @@ export class GuidanceController {
         }
     }
 
-    constructor(fmgc: Fmgc, private flightPlanService: FlightPlanService) {
-        this.verticalProfileComputationParametersObserver = new VerticalProfileComputationParametersObserver(fmgc);
+    constructor(fmgc: Fmgc, private flightPlanService: FlightPlanService, private efisInterface: EfisInterface) {
+        this.verticalProfileComputationParametersObserver = new VerticalProfileComputationParametersObserver(fmgc, flightPlanService);
         this.windProfileFactory = new WindProfileFactory(fmgc, 1);
 
         this.atmosphericConditions = new AtmosphericConditions(this.verticalProfileComputationParametersObserver);
@@ -290,7 +295,7 @@ export class GuidanceController {
         this.lnavDriver = new LnavDriver(flightPlanService, this);
         this.vnavDriver = new VnavDriver(flightPlanService, this, this.verticalProfileComputationParametersObserver, this.atmosphericConditions, this.windProfileFactory);
         this.pseudoWaypoints = new PseudoWaypoints(flightPlanService, this, this.atmosphericConditions);
-        this.efisVectors = new EfisVectors(this.flightPlanService, this);
+        this.efisVectors = new EfisVectors(this.flightPlanService, this, efisInterface);
     }
 
     init() {

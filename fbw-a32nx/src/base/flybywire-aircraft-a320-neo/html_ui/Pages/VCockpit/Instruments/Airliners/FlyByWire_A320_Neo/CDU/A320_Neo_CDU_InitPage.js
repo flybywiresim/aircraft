@@ -103,10 +103,10 @@ class CDUInitPage {
                     (value) => {
                         if (value != null) {
                             mcdu.costIndex = value;
-                            mcdu.costIndexSet = true;
+                            // mcdu.costIndexSet = true;
                         } else {
-                            mcdu.costIndexSet = false;
-                            mcdu.costIndex = 0;
+                            // mcdu.costIndexSet = false;
+                            mcdu.costIndex = undefined;
                         }
                         CDUInitPage.ShowPage1(mcdu);
                     }
@@ -119,13 +119,13 @@ class CDUInitPage {
                 cruiseFlTempSeparator.updateAttributes(Column.amber);
 
                 //This is done so pilot enters a FL first, rather than using the computed one
-                if (mcdu._cruiseEntered && mcdu._cruiseFlightLevel) {
-                    cruiseFl.update("FL" + mcdu._cruiseFlightLevel.toFixed(0).padStart(3, "0"), Column.cyan);
+                if (mcdu.flightPlanService.active.performanceData.cruiseFlightLevel) {
+                    cruiseFl.update("FL" + mcdu.flightPlanService.active.performanceData.cruiseFlightLevel.toFixed(0).padStart(3, "0"), Column.cyan);
                     if (mcdu.cruiseTemperature) {
                         cruiseTemp.update(mcdu.cruiseTemperature.toFixed(0) + "°", Column.cyan);
                         cruiseFlTempSeparator.updateAttributes(Column.cyan);
                     } else {
-                        cruiseTemp.update(mcdu.tempCurve.evaluate(mcdu._cruiseFlightLevel).toFixed(0) + "°", Column.cyan, Column.small);
+                        cruiseTemp.update(mcdu.tempCurve.evaluate(mcdu.flightPlanService.active.performanceData.cruiseFlightLevel).toFixed(0) + "°", Column.cyan, Column.small);
                         cruiseFlTempSeparator.updateAttributes(Column.cyan, Column.small);
                     }
                 }
@@ -145,38 +145,22 @@ class CDUInitPage {
 
                 altDest.update(altnAirport ? altnAirport.ident : "NONE", Column.cyan);
 
-                // TODO: Port over (fms-v2)
-                // mcdu.onLeftInput[1] = async (value, scratchpadCallback) => {
-                //     switch (altDest.raw) {
-                //         case "NONE":
-                //             if (value === "") {
-                //                 CDUAvailableFlightPlanPage.ShowPage(mcdu);
-                //             } else {
-                //                 if (await mcdu.tryUpdateAltDestination(value)) {
-                //                     CDUInitPage.ShowPage1(mcdu);
-                //                 } else {
-                //                     scratchpadCallback();
-                //                 }
-                //             }
-                //             break;
-                //         default:
-                //             if (value === "") {
-                //                 CDUAvailableFlightPlanPage.ShowPage(mcdu);
-                //             } else {
-                //                 if (await mcdu.tryUpdateAltDestination(value)) {
-                //                     CDUInitPage.ShowPage1(mcdu);
-                //                 } else {
-                //                     scratchpadCallback();
-                //                 }
-                //             }
-                //             break;
-                //     }
-                // };
-
-                mcdu.onLeftInput[1] = (value, scratchpadCallback) => {
-                    mcdu.flightPlanService.setAlternate(value).then(() => {
-                        CDUInitPage.ShowPage1(mcdu);
-                    }).catch(() => scratchpadCallback());
+                mcdu.onLeftInput[1] = async (value, scratchpadCallback) => {
+                    try {
+                        if (value === "") {
+                            await mcdu.getCoRouteList(mcdu);
+                            CDUAvailableFlightPlanPage.ShowPage(mcdu);
+                        } else {
+                            if (await mcdu.tryUpdateAltDestination(value)) {
+                                CDUInitPage.ShowPage1(mcdu);
+                            } else {
+                                scratchpadCallback();
+                            }
+                        }
+                    } catch (error) {
+                        console.error(error);
+                        mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
+                    }
                 };
             }
         }
@@ -226,6 +210,9 @@ class CDUInitPage {
                             console.log('SimBrief data uplinked.');
 
                             mcdu.flightPlanService.uplinkInsert();
+
+                            const plan = mcdu.flightPlanService.active;
+                            mcdu.updateFlightNo(plan.flightNumber);
 
                             if (mcdu.page.Current === mcdu.page.InitPageA) {
                                 CDUInitPage.ShowPage1(mcdu);
@@ -371,6 +358,8 @@ class CDUInitPage {
         mcdu.page.Current = mcdu.page.InitPageB;
         mcdu.activeSystem = 'FMGC';
         mcdu.pageRedrawCallback = () => CDUInitPage.ShowPage2(mcdu);
+
+        const alternate = mcdu.flightPlanService.active ? mcdu.flightPlanService.active.alternateDestinationAirport : undefined;
 
         const zfwCell = new Column(17, "___._", Column.amber, Column.right);
         const zfwCgCell = new Column(22, "__._", Column.amber, Column.right);
@@ -596,7 +585,7 @@ class CDUInitPage {
                     }, mcdu.getDelayHigh());
                 };
 
-                if (mcdu.altDestination) {
+                if (alternate) {
                     const altFuelEntered = mcdu._routeAltFuelEntered;
                     if (!altFuelEntered) {
                         mcdu.tryUpdateRouteAlternate();

@@ -12,7 +12,7 @@ import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { Transition } from '@fmgc/guidance/lnav/Transition';
 import { DmeArcTransition } from '@fmgc/guidance/lnav/transitions/DmeArcTransition';
 import { placeBearingDistance, placeBearingIntersection } from 'msfs-geo';
-import { Waypoint, MathUtils } from '@flybywiresim/fbw-sdk';
+import { MathUtils, Fix } from '@flybywiresim/fbw-sdk';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
 import { IFLeg } from '@fmgc/guidance/lnav/legs/IF';
 import { PathVector, PathVectorType } from '../PathVector';
@@ -22,7 +22,7 @@ export class CFLeg extends XFLeg {
     private computedPath: PathVector[] = [];
 
     constructor(
-        fix: Waypoint,
+        fix: Fix,
         public readonly course: DegreesTrue,
         public readonly metadata: Readonly<LegMetadata>,
         segment: SegmentType,

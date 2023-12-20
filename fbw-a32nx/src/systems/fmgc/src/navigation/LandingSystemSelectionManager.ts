@@ -88,7 +88,7 @@ export class LandingSystemSelectionManager {
     }
 
     private async getIls(airportIdent: string, ilsIdent: string): Promise<IlsNavaid | undefined> {
-        return (await NavigationDatabaseService.activeDatabase.backendDatabase.getIlsAtAirport(airportIdent)).find((ils) => ils.ident === ilsIdent);
+        return (await NavigationDatabaseService.activeDatabase.backendDatabase.getIlsAtAirport(airportIdent, ilsIdent))[0];
     }
 
     private async selectDepartureIls(): Promise<boolean> {
@@ -97,7 +97,7 @@ export class LandingSystemSelectionManager {
         if (runway?.lsIdent) {
             const ils = await this.getIls(runway.airportIdent, runway.lsIdent);
             this._selectedIls = ils;
-            this._selectedLocCourse = ils.locBearing;
+            this._selectedLocCourse = ils.locBearing !== -1 ? ils.locBearing : null;
             this._selectedGsSlope = ils.gsSlope ?? null;
             this._selectedApproachBackcourse = false;
             return true;
@@ -134,7 +134,7 @@ export class LandingSystemSelectionManager {
             return false;
         }
 
-        const frequencies = await NavigationDatabaseService.activeDatabase.backendDatabase.getIlsAtAirport(airport.ident);
+        const frequencies = await NavigationDatabaseService.activeDatabase.backendDatabase.getIlsAtAirport(airport.ident, undefined, icao);
         const runwayFrequencies = frequencies.filter((it) => it.runwayIdent === runway.ident);
 
         for (const frequency of runwayFrequencies) {
@@ -144,8 +144,8 @@ export class LandingSystemSelectionManager {
                 }
 
                 this._selectedIls = frequency;
-                this._selectedLocCourse = frequency.locBearing;
-                this._selectedGsSlope = frequency.gsLocation ? -frequency.gsSlope : null;
+                this._selectedLocCourse = frequency.locBearing !== -1 ? frequency.locBearing : null;
+                this._selectedGsSlope = Number.isFinite(frequency.gsSlope) ? frequency.gsSlope : null;
 
                 return true;
             }
@@ -184,29 +184,6 @@ export class LandingSystemSelectionManager {
         }
 
         return false;
-
-        // TODO fms-v2: port over - need way to get ls facility from msfs-navdata
-
-        // const loc = await this.facLoader.getFacilityRaw(finalLeg.originIcao, 1500, true) as RawVor | undefined;
-        //
-        // if (!loc) {
-        //     return false;
-        // }
-        //
-        // this._selectedIls = loc;
-        //
-        // const courseSlope = await this.getIlsCourseSlopeFromApproach(airport, approach, loc);
-        // if (courseSlope !== null) {
-        //     this._selectedApproachBackcourse = courseSlope.backcourse;
-        //     this._selectedLocCourse = courseSlope.course;
-        //     this._selectedGsSlope = courseSlope.slope;
-        // } else {
-        //     this._selectedApproachBackcourse = false;
-        //     this._selectedLocCourse = null;
-        //     this._selectedGsSlope = null;
-        // }
-        //
-        // return true;
     }
 
     private resetSelectedIls(): void {

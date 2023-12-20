@@ -23,13 +23,34 @@ export interface FixInfoRadius {
 /**
  * A FIX INFO entry in a flight plan
  */
-export interface FixInfoEntry {
+export class FixInfoEntry implements FixInfoData {
     /** The fix concerned by the fix info */
-    fix: Waypoint | VhfNavaid | NdbNavaid,
+    public readonly fix: Waypoint | VhfNavaid | NdbNavaid;
 
     /** The radii contained in the fix info */
-    radii?: FixInfoRadius[],
+    public readonly radii?: FixInfoRadius[];
 
     /** The radials contained in the fix ino */
-    radials?: FixInfoRadial[],
+    public readonly radials?: FixInfoRadial[];
+
+    constructor(fix: Waypoint | VhfNavaid | NdbNavaid, radii?: FixInfoRadius[], radials?: FixInfoRadial[]) {
+        this.fix = fix;
+        this.radii = radii;
+        this.radials = radials;
+    }
+
+    public clone(): FixInfoEntry {
+        return new FixInfoEntry(this.fix, this.radii.map((radius) => ({ ...radius })), this.radials.map((radial) => ({ ...radial })));
+    }
+}
+
+export interface FixInfoData {
+    /** The fix concerned by the fix info */
+    fix: Waypoint | VhfNavaid | NdbNavaid;
+
+    /** The radii contained in the fix info */
+    radii?: FixInfoRadius[];
+
+    /** The radials contained in the fix ino */
+    radials?: FixInfoRadial[];
 }

@@ -11,6 +11,8 @@ import { FixInfoEntry } from '@fmgc/flightplanning/new/plans/FixInfo';
 import { FlightPlan } from '@fmgc/flightplanning/new/plans/FlightPlan';
 import { FlightPlanIndex } from '@fmgc/flightplanning/new/FlightPlanManager';
 import { AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
+import { ReadonlyFlightPlan } from '@fmgc/flightplanning/new/plans/ReadonlyFlightPlan';
+import { FlightPlanPerformanceData } from '@fmgc/flightplanning/new/plans/performance/FlightPlanPerformanceData';
 
 /**
  * Interface for querying, modifying and creating flight plans.
@@ -23,20 +25,20 @@ import { AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/c
  * - {@link FlightPlanService} - a local implementation for use where the FMS software is located
  * - {@link FlightPlanRpcClient} - a remote implementation using RPC calls to a distant `FlightPlanService` - for use in remote FMS UIs
  */
-export interface FlightPlanInterface {
-    get(index: number): FlightPlan;
+export interface FlightPlanInterface<P extends FlightPlanPerformanceData = FlightPlanPerformanceData> {
+    get(index: number): FlightPlan<P>;
 
     has(index: number): boolean;
 
-    get active(): FlightPlan;
+    get active(): ReadonlyFlightPlan;
 
-    get temporary(): FlightPlan;
+    get temporary(): ReadonlyFlightPlan;
 
-    get activeOrTemporary(): FlightPlan;
+    get activeOrTemporary(): ReadonlyFlightPlan;
 
-    get uplink(): FlightPlan;
+    get uplink(): ReadonlyFlightPlan;
 
-    secondary(index: number): FlightPlan;
+    secondary(index: number): ReadonlyFlightPlan;
 
     get hasActive(): boolean;
 
@@ -46,11 +48,17 @@ export interface FlightPlanInterface {
 
     get hasUplink(): boolean;
 
+    secondaryDelete(index: number): Promise<void>;
+
+    secondaryReset(index: number): Promise<void>;
+
     temporaryInsert(): Promise<void>;
 
     temporaryDelete(): Promise<void>;
 
     uplinkInsert(): Promise<void>;
+
+    uplinkDelete(): Promise<void>;
 
     reset(): Promise<void>;
 
@@ -219,7 +227,7 @@ export interface FlightPlanInterface {
      */
     revertHoldToComputed(atIndex: number, planIndex: number, alternate?: boolean): Promise<void>;
 
-    enableAltn(atIndexInAlternate: number, planIndex: number): Promise<void>;
+    enableAltn(atIndexInAlternate: number, cruiseLevel: number, planIndex: number): Promise<void>;
 
     setPilotEnteredSpeedConstraintAt(atIndex: number, isDescentConstraint: boolean, constraint?: SpeedConstraint, planIndex?: FlightPlanIndex, alternate?: boolean): Promise<void>;
 
@@ -238,4 +246,8 @@ export interface FlightPlanInterface {
 
     // TODO do not pass in waypoint object (rpc)
     isWaypointInUse(waypoint: Waypoint): Promise<boolean>;
+
+    setFlightNumber(flightNumber: string, planIndex: number): Promise<void>;
+
+    setPerformanceData<T extends keyof P & string>(key: T, value: P[T], planIndex: number): Promise<void>;
 }

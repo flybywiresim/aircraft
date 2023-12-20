@@ -7,10 +7,23 @@
   - [Air Conditioning / Pressurisation / Ventilation ATA21](#air-conditioning-pressurisation-ventilation-ata-21)
   - [Electrical ATA 24](#electrical-ata-24)
   - [Indicating/Recording ATA 31](#indicating-recording-ata-31)
+  - [ECAM Control Panel ATA 34](#ecam-control-panel-ata-34)
+  - [EFIS Control Panel ATA 34](#efis-control-panel-ata-34)
   - [Bleed Air ATA 36](#bleed-air-ata-36)
   - [Integrated Modular Avionics ATA 42](#integrated-modular-avionics-ata-42)
+  - [Hydraulics](#hydraulics)
+  - [Sound Variables](#sound-variables)
 
 ## Uncategorized
+
+- A380X_OVHD_ANN_LT_POSITION
+    - Enum
+    - Represents the state of the ANN LT switch
+    - State    | Value
+      -------- | ----
+      TEST     | 0
+      BRT      | 1
+      DIM      | 2
 
 - A32NX_OVHD_{name}_PB_IS_AVAILABLE
     - Bool
@@ -464,6 +477,74 @@
   - ArincWord852<>
   - Second CAN bus of the CDS on the first officer's side
 
+## ECAM Control Panel ATA 34
+
+- A380X_ECAM_CP_SELECTED_PAGE
+    - Enum
+    - Currently requested page on the ECAM CP
+    - State    | Value
+      -------- | ----
+      ENG      | 0
+      BLEED    | 1
+      PRESS    | 2
+      EL/AC    | 3
+      FUEL     | 4
+      HYD      | 5
+      C/B      | 6
+      APU      | 7
+      COND     | 8
+      DOOR     | 9
+      EL/DC    | 10
+      WHEEL    | 11
+      F/CTL    | 12
+      VIDEO    | 13
+
+## EFIS Control Panel ATA 34
+
+- A380X_EFIS_{side}_LS_BUTTON_IS_ON
+    - Boolean
+    - Whether the LS button is activated
+    - {side} = L or R
+
+- A380X_EFIS_{side}_VV_BUTTON_IS_ON
+    - Boolean
+    - Whether the VV button is activated
+    - {side} = L or R
+
+- A380X_EFIS_{side}_CSTR_BUTTON_IS_ON
+    - Boolean
+    - Whether the CSTR button is activated
+    - {side} = L or R
+
+- A380X_EFIS_{side}_ACTIVE_FILTER
+    - Boolean
+    - Indicates which waypoint filter is selected
+    - {side} = L or R
+    - State    | Value
+      -------- | ----
+      WPT      | 0
+      VORD     | 1
+      NDB      | 2
+
+- A380X_EFIS_{side}_ACTIVE_OVERLAY
+    - Boolean
+    - Indicates which waypoint filter is selected
+    - {side} = L or R
+    - State    | Value
+      -------- | ----
+      WX       | 0
+      TERR     | 1
+
+- A380X_EFIS_{side}_ARPT_BUTTON_IS_ON
+    - Boolean
+    - Whether the ARPT button is activated
+    - {side} = L or R
+
+- A380X_EFIS_{side}_TRAF_BUTTON_IS_ON
+    - Boolean
+    - Whether the TRAF button is activated
+    - {side} = L or R
+
 ## Bleed Air ATA 36
 
 - A32NX_PNEU_ENG_{number}_INTERMEDIATE_TRANSDUCER_PRESSURE
@@ -499,3 +580,26 @@
 - A32NX_IOM_<NAME>_AVAIL
   - Bool
   - Indicates if a specific IOM system is available
+
+## Hydraulics
+
+- A32NX_OVHD_HYD_ENG_{ENG}AB_PUMP_DISC_PB_IS_AUTO
+    - Boolean
+    - Whether the pump disconnect pushbutton on engine {ENG} is in auto mode, i.e not disconnected
+    - {ENG} = 1, 2, 3, 4
+
+- A32NX_OVHD_HYD_ENG_{ENG}AB_PUMP_DISC_PB_HAS_FAULT
+    - Boolean
+    - Whether the pump disconnect pushbutton on engine {ENG} has a fault
+    - {ENG} = 1, 2, 3, 4
+
+- A32NX_HYD_ENG_{ENG}AB_PUMP_DISC
+    - Boolean
+    - Disconnected pump feedback signal
+    - {ENG} = 1, 2, 3, 4
+
+## Sound Variables
+
+- A380X_SOUND_COCKPIT_WINDOW_RATIO
+    - Number
+    - Ratio between 0-1 of the cockpit windows being physically open

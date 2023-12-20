@@ -71,7 +71,7 @@ export class ConstraintUtils {
             return constraint.altitude1;
         default:
         case AltitudeConstraintType.atOrAbove:
-            return -Infinity;
+            return Infinity;
         }
     }
 

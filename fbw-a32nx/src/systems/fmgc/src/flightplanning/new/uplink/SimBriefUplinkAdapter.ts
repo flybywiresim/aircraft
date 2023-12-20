@@ -13,18 +13,28 @@ import { Coordinates, distanceTo } from 'msfs-geo';
 import { DisplayInterface } from '@fmgc/flightplanning/new/interface/DisplayInterface';
 import { ISimbriefData, simbriefDataParser } from '../../../../../instruments/src/EFB/Apis/Simbrief';
 import { DataInterface } from '../interface/DataInterface';
+import { FlightPlanPerformanceData } from "@fmgc/flightplanning/new/plans/performance/FlightPlanPerformanceData";
 
 const SIMBRIEF_API_URL = 'https://www.simbrief.com/api/xml.fetcher.php?json=1';
 
 export interface OfpRoute {
-    from: { ident: string, rwy: string },
-    to: { ident: string, rwy: string },
+    from: { ident: string, rwy: string, transAlt: number, },
+    to: { ident: string, rwy: string, transLevel: number },
     altn: string,
+    costIndex: number,
     chunks: OfpRouteChunk[],
+    callsign: string,
 }
 
 export interface BaseOfpRouteChunk {
     instruction: string,
+}
+
+export interface ImportedPerformanceData {
+    departureTransitionAltitude: number,
+    destinationTransitionLevel: number,
+    costIndex: number,
+    cruiseFlightLevel: number
 }
 
 interface AirwayOfpRouteChunk extends BaseOfpRouteChunk {
@@ -94,10 +104,15 @@ export interface SimBriefUplinkOptions {
 }
 
 export class SimBriefUplinkAdapter {
-    static async uplinkFlightPlanFromSimbrief(fms: DataInterface & DisplayInterface, flightPlanService: FlightPlanService, ofp: ISimbriefData, options: SimBriefUplinkOptions) {
+    static async uplinkFlightPlanFromSimbrief<P extends FlightPlanPerformanceData>(
+        fms: DataInterface & DisplayInterface,
+        flightPlanService: FlightPlanService<P>,
+        ofp: ISimbriefData,
+        options: SimBriefUplinkOptions,
+    ) {
         const doUplinkProcedures = options.doUplinkProcedures ?? false;
 
-        const route = await this.getRouteFromOfp(ofp);
+        const route = this.getRouteFromOfp(ofp);
 
         fms.onUplinkInProgress();
 
@@ -107,6 +122,20 @@ export class SimBriefUplinkAdapter {
             await flightPlanService.setOriginRunway(`RW${route.from.rwy}`, FlightPlanIndex.Uplink);
             await flightPlanService.setDestinationRunway(`RW${route.to.rwy}`, FlightPlanIndex.Uplink);
         }
+
+        const plan = flightPlanService.uplink;
+
+        plan.setImportedPerformanceData({
+            departureTransitionAltitude: route.from.transAlt,
+            destinationTransitionLevel: route.to.transLevel / 100,
+            costIndex: route.costIndex,
+            cruiseFlightLevel: ofp.cruiseAltitude / 100,
+        });
+
+        // used by FlightPhaseManager
+        SimVar.SetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number', Number(ofp.cruiseAltitude));
+
+        plan.setFlightNumber(route.callsign);
 
         let insertHead = -1;
 
@@ -242,9 +271,9 @@ export class SimBriefUplinkAdapter {
                     setInsertHeadToEndOfEnroute();
                 }
 
-                const fix = fms.createLatLonWaypoint({ lat: chunk.lat, long: chunk.long }, true);
+                const storedWaypoint = fms.createLatLonWaypoint({ lat: chunk.lat, long: chunk.long }, true);
 
-                await flightPlanService.nextWaypoint(insertHead, fix, FlightPlanIndex.Uplink);
+                await flightPlanService.nextWaypoint(insertHead, storedWaypoint.waypoint, FlightPlanIndex.Uplink);
                 insertHead++;
                 break;
             }
@@ -330,10 +359,12 @@ export class SimBriefUplinkAdapter {
 
     static getRouteFromOfp(ofp: ISimbriefData): OfpRoute {
         return {
-            from: { ident: ofp.origin.icao, rwy: ofp.origin.runway },
-            to: { ident: ofp.destination.icao, rwy: ofp.destination.runway },
+            from: { ident: ofp.origin.icao, rwy: ofp.origin.runway, transAlt: ofp.origin.transAlt },
+            to: { ident: ofp.destination.icao, rwy: ofp.destination.runway, transLevel: ofp.destination.transLevel },
             altn: ofp.alternate.icao,
             chunks: this.generateRouteInstructionsFromNavlog(ofp),
+            costIndex: Number(ofp.costIndex),
+            callsign: ofp.callsign,
         };
     }
 
@@ -361,7 +392,7 @@ export class SimBriefUplinkAdapter {
             } else if (lastInstruction?.instruction === 'procedure' && lastInstruction.ident === fix.via_airway) {
                 // SID TRANS
                 instructions.push({ instruction: 'sidEnrouteTransition', ident: fix.ident, locationHint: { lat: parseFloat(fix.pos_lat), long: parseFloat(fix.pos_long) } });
-            } else if (fix.via_airway === 'DCT' || fix.via_airway.match(/^NAT[A-Z]$/)) {
+            } else if (fix.via_airway === 'DCT' || fix.via_airway === 'DCT*' || fix.via_airway.match(/^NAT[A-Z]$/)) {
                 if (fix.type === 'ltlg') {
                     // LAT/LONG Waypoint
                     instructions.push({ instruction: 'latlong', lat: parseFloat(fix.pos_lat), long: parseFloat(fix.pos_long) });

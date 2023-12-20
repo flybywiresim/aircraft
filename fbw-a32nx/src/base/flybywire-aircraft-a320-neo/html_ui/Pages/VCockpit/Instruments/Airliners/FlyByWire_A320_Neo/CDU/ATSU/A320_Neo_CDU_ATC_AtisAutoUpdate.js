@@ -29,6 +29,7 @@ class CDUAtcAtisAutoUpdate {
         mcdu.clearDisplay();
 
         const activeDestinationAirport = mcdu.flightPlanService.active.destinationAirport;
+        const activeAlternateAirport = mcdu.flightPlanService.active.alternateDestinationAirport;
 
         let arrAtis = "{inop}\xa0[  ]/[ ]{end}";
         let arrAtisState = "";
@@ -46,9 +47,9 @@ class CDUAtcAtisAutoUpdate {
                 arrAtisButton = `{cyan}ON${updateInProgress ? '\xa0' : '*'}{end}`;
             }
         }
-        if (mcdu.altDestination && mcdu.altDestination.ident) {
-            altAtis = `{cyan}\xa0${mcdu.altDestination.ident}/ARR{end}`;
-            if (mcdu.atsu.atisAutoUpdateActive(mcdu.altDestination.ident)) {
+        if (activeAlternateAirport && activeAlternateAirport.ident) {
+            altAtis = `{cyan}\xa0${activeAlternateAirport.ident}/ARR{end}`;
+            if (mcdu.atsu.atisAutoUpdateActive(activeAlternateAirport.ident)) {
                 altAtisState = "\x3a ON";
                 altAtisButton = "{cyan}OFF*{end}";
             } else {

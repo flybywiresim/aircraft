@@ -21,6 +21,7 @@ class LateralNormalLaw final
 
   struct D_Work_LateralNormalLaw_T {
     real_T Delay_DSTATE;
+    real_T Delay_DSTATE_e;
     real_T Delay_DSTATE_d;
     real_T pY;
     real_T pY_p;
@@ -32,7 +33,6 @@ class LateralNormalLaw final
     rtDW_RateLimiter_LateralNormalLaw_T sf_RateLimiter_j;
     rtDW_LagFilter_LateralNormalLaw_T sf_LagFilter_m;
     rtDW_RateLimiter_LateralNormalLaw_T sf_RateLimiter_d;
-    rtDW_RateLimiter_LateralNormalLaw_T sf_RateLimiter_n;
     rtDW_LagFilter_LateralNormalLaw_T sf_LagFilter;
     rtDW_RateLimiter_LateralNormalLaw_T sf_RateLimiter;
   };
@@ -46,10 +46,11 @@ class LateralNormalLaw final
     real_T ScheduledGain_BreakpointsForDimension1_j[5];
     real_T LagFilter_C1;
     real_T LagFilter_C1_d;
+    real_T DiscreteDerivativeVariableTs_Gain;
     real_T DiscreteTimeIntegratorVariableTs_Gain;
     real_T RateLimiterVariableTs_InitialCondition;
     real_T RateLimiterVariableTs1_InitialCondition;
-    real_T RateLimiterVariableTs_InitialCondition_m;
+    real_T DiscreteDerivativeVariableTs_InitialCondition;
     real_T RateLimiterVariableTs_InitialCondition_d;
     real_T RateLimiterVariableTs1_InitialCondition_m;
     real_T RateLimiterVariableTs_InitialCondition_k;
@@ -63,13 +64,11 @@ class LateralNormalLaw final
     real_T DiscreteTimeIntegratorVariableTs_UpperLimit;
     real_T RateLimiterVariableTs_lo;
     real_T RateLimiterVariableTs1_lo;
-    real_T RateLimiterVariableTs_lo_k;
     real_T RateLimiterVariableTs_lo_l;
     real_T RateLimiterVariableTs1_lo_n;
     real_T RateLimiterVariableTs_lo_b;
     real_T RateLimiterVariableTs_up;
     real_T RateLimiterVariableTs1_up;
-    real_T RateLimiterVariableTs_up_m;
     real_T RateLimiterVariableTs_up_o;
     real_T RateLimiterVariableTs1_up_j;
     real_T RateLimiterVariableTs_up_d;
@@ -94,8 +93,6 @@ class LateralNormalLaw final
     real_T Saturation_UpperSat_a;
     real_T Saturation_LowerSat_o;
     real_T Delay_InitialCondition;
-    real_T Saturation_UpperSat_g;
-    real_T Saturation_LowerSat_e;
     real_T Constant2_Value;
     real_T Gain1_Gain_f;
     real_T Gain1_Gain_l;

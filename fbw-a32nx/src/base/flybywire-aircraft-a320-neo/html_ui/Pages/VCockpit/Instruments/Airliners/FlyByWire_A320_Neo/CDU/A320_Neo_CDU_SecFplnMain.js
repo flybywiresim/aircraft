@@ -3,6 +3,11 @@ class CDUSecFplnMain {
         mcdu.clearDisplay();
         mcdu.activeSystem = 'FMGC';
 
+        mcdu.efisInterface.setSecRelatedPageOpen(true);
+        mcdu.onUnload = () => {
+            mcdu.efisInterface.setSecRelatedPageOpen(false);
+        }
+
         mcdu.onLeftInput[0] = () => {
             mcdu.flightPlanService.flightPlanManager.copy(Fmgc.FlightPlanIndex.Active, Fmgc.FlightPlanIndex.FirstSecondary);
         };
@@ -12,7 +17,7 @@ class CDUSecFplnMain {
         };
 
         mcdu.onLeftInput[2] = () => {
-            mcdu.flightPlanService.flightPlanManager.delete(Fmgc.FlightPlanIndex.FirstSecondary);
+            mcdu.flightPlanService.secondaryReset(1);
         };
 
         mcdu.onLeftInput[5] = () => {

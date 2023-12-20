@@ -3,38 +3,52 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Airport, ApproachType, Fix, NXDataStore } from '@flybywiresim/fbw-sdk';
+import { Airport, ApproachType, Fix, LegType, MathUtils, NXDataStore } from '@flybywiresim/fbw-sdk';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/new/plans/AlternateFlightPlan';
 import { EventBus, MagVar } from '@microsoft/msfs-sdk';
-import { FixInfoEntry } from '@fmgc/flightplanning/new/plans/FixInfo';
+import { FixInfoEntry, FixInfoData } from '@fmgc/flightplanning/new/plans/FixInfo';
 import { loadAllDepartures, loadAllRunways } from '@fmgc/flightplanning/new/DataLoading';
 import { Coordinates, Degrees } from 'msfs-geo';
 import { FlightPlanLeg, FlightPlanLegFlags } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { FlightArea } from '@fmgc/navigation/FlightArea';
-
-import { FlightPlanPerformanceData } from './performance/FlightPlanPerformanceData';
+import { CopyOptions } from '@fmgc/flightplanning/new/plans/CloningOptions';
+import { ImportedPerformanceData } from '@fmgc/flightplanning/new/uplink/SimBriefUplinkAdapter';
+import {
+    FlightPlanPerformanceData,
+    FlightPlanPerformanceDataProperties,
+} from '@fmgc/flightplanning/new/plans/performance/FlightPlanPerformanceData';
 import { BaseFlightPlan, FlightPlanQueuedOperation, SerializedFlightPlan } from './BaseFlightPlan';
 
-export class FlightPlan extends BaseFlightPlan {
-    static empty(index: number, bus: EventBus): FlightPlan {
-        return new FlightPlan(index, bus);
+export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerformanceData> extends BaseFlightPlan<P> {
+    static empty<P extends FlightPlanPerformanceData>(index: number, bus: EventBus, performanceDataInit: P): FlightPlan<P> {
+        return new FlightPlan(index, bus, performanceDataInit);
     }
 
     /**
      * Alternate flight plan associated with this flight plan
      */
-    alternateFlightPlan = new AlternateFlightPlan(this.index, this);
+    alternateFlightPlan = new AlternateFlightPlan<P>(this.index, this);
 
     /**
      * Performance data for this flight plan
      */
-    performanceData = new FlightPlanPerformanceData();
+    performanceData: P;
 
     /**
      * FIX INFO entries
      */
     fixInfos: readonly FixInfoEntry[] = [];
+
+    /**
+     * Shown as the "flight number" in the MCDU, but it's really the callsign
+     */
+    flightNumber: string | undefined = undefined;
+
+    constructor(index: number, bus: EventBus, performanceDataInit: P) {
+        super(index, bus);
+        this.performanceData = performanceDataInit;
+    }
 
     destroy() {
         super.destroy();
@@ -42,8 +56,8 @@ export class FlightPlan extends BaseFlightPlan {
         this.alternateFlightPlan.destroy();
     }
 
-    clone(newIndex: number): FlightPlan {
-        const newPlan = FlightPlan.empty(newIndex, this.bus);
+    clone(newIndex: number, options: number = CopyOptions.Default): FlightPlan<P> {
+        const newPlan = FlightPlan.empty(newIndex, this.bus, this.performanceData.clone());
 
         newPlan.version = this.version;
         newPlan.originSegment = this.originSegment.clone(newPlan);
@@ -70,7 +84,11 @@ export class FlightPlan extends BaseFlightPlan {
 
         newPlan.activeLegIndex = this.activeLegIndex;
 
-        newPlan.performanceData = this.performanceData.clone();
+        newPlan.flightNumber = this.flightNumber;
+
+        if (options & CopyOptions.IncludeFixInfos) {
+            newPlan.fixInfos = this.fixInfos.map((it) => it?.clone());
+        }
 
         return newPlan;
     }
@@ -80,7 +98,15 @@ export class FlightPlan extends BaseFlightPlan {
     }
 
     async setAlternateDestinationAirport(icao: string | undefined) {
+        // TODO setting both airport and runway here means we fetch the airport's approaches twice from the DB
+        // TODO optimize
         await this.alternateFlightPlan.setDestinationAirport(icao);
+        // Reset procedures because they don't make sense anymore for the new alternate
+        await this.alternateFlightPlan.setDestinationRunway(undefined);
+        await this.alternateFlightPlan.setArrivalEnrouteTransition(undefined);
+        await this.alternateFlightPlan.setArrival(undefined);
+        await this.alternateFlightPlan.setApproach(undefined);
+        await this.alternateFlightPlan.setApproachVia(undefined);
 
         if (this.alternateFlightPlan.originAirport) {
             this.alternateFlightPlan.availableOriginRunways = await loadAllRunways(this.alternateFlightPlan.originAirport);
@@ -98,10 +124,6 @@ export class FlightPlan extends BaseFlightPlan {
         this.alternateFlightPlan.setOriginRunway(undefined);
         this.alternateFlightPlan.setDeparture(undefined);
         this.alternateFlightPlan.setDepartureEnrouteTransition(undefined);
-        this.alternateFlightPlan.setArrivalEnrouteTransition(undefined);
-        this.alternateFlightPlan.setArrival(undefined);
-        this.alternateFlightPlan.setApproach(undefined);
-        this.alternateFlightPlan.setApproachVia(undefined);
 
         this.alternateFlightPlan.allLegs.length = 0;
 
@@ -112,40 +134,83 @@ export class FlightPlan extends BaseFlightPlan {
         // TODO withAbeam
         // TODO handle direct-to into the alternate (make alternate active...?
 
-        const targetLeg = this.allLegs.find((it) => it.isDiscontinuity === false && it.terminatesWithWaypoint(waypoint));
-        const targetLegIndex = this.allLegs.findIndex((it) => it === targetLeg);
-
-        if (targetLeg.isDiscontinuity === true || !targetLeg.isXF()) {
-            throw new Error('[FPM] Target leg of a direct to cannot be a discontinuity or non-XF leg');
-        }
-
         const magVar = MagVar.get(ppos.lat, ppos.long);
         const magneticCourse = MagVar.trueToMagnetic(trueTrack, magVar);
 
         const turningPoint = FlightPlanLeg.turningPoint(this.enrouteSegment, ppos, magneticCourse);
-        const turnEnd = FlightPlanLeg.directToTurnEnd(this.enrouteSegment, targetLeg);
+        const turnEnd = FlightPlanLeg.directToTurnEnd(this.enrouteSegment, waypoint);
 
         turningPoint.flags |= FlightPlanLegFlags.DirectToTurningPoint;
 
-        this.redistributeLegsAt(targetLegIndex);
+        const targetLeg = this.allLegs.find((it) => it.isDiscontinuity === false && it.terminatesWithWaypoint(waypoint)) as FlightPlanLeg;
+        if (targetLeg) {
+            turnEnd.withDefinitionFrom(targetLeg).withPilotEnteredDataFrom(targetLeg);
 
-        const indexInEnrouteSegment = this.enrouteSegment.allLegs.findIndex((it) => it === targetLeg);
+            const targetLegIndex = this.allLegs.findIndex((it) => it === targetLeg);
+            this.redistributeLegsAt(targetLegIndex);
 
-        if (indexInEnrouteSegment === -1) {
-            throw new Error('[FPM] Target leg of a direct to not found in enroute segment after leg redistribution!');
+            const indexInEnrouteSegment = this.enrouteSegment.allLegs.findIndex((it) => it === targetLeg);
+
+            if (indexInEnrouteSegment === -1) {
+                throw new Error('[FPM] Target leg of a direct to not found in enroute segment after leg redistribution!');
+            }
+
+            this.enrouteSegment.allLegs.splice(indexInEnrouteSegment, 0, { isDiscontinuity: true });
+            this.enrouteSegment.allLegs.splice(indexInEnrouteSegment + 1, 0, turningPoint);
+            this.enrouteSegment.allLegs.splice(indexInEnrouteSegment + 2, 0, turnEnd);
+            this.enrouteSegment.allLegs.splice(indexInEnrouteSegment + 3, 1);
+            this.incrementVersion();
+
+            const turnEndLegIndexInPlan = this.allLegs.findIndex((it) => it === turnEnd);
+
+            this.activeLegIndex = turnEndLegIndexInPlan;
+        } else {
+            let indexInEnrouteSegment = 0;
+            // Make sure we have an active leg and that we don't put the origin leg into enroute
+            if (this.activeLegIndex >= 1) {
+                this.redistributeLegsAt(this.activeLegIndex);
+                indexInEnrouteSegment = this.enrouteSegment.allLegs.findIndex((it) => it === this.activeLeg);
+            }
+
+            this.enrouteSegment.allLegs.splice(indexInEnrouteSegment, 0, { isDiscontinuity: true });
+            this.enrouteSegment.allLegs.splice(indexInEnrouteSegment + 1, 0, turningPoint);
+            this.enrouteSegment.allLegs.splice(indexInEnrouteSegment + 2, 0, turnEnd);
+            this.enrouteSegment.allLegs.splice(indexInEnrouteSegment + 3, 0, { isDiscontinuity: true });
+            this.incrementVersion();
+
+            const turnEndLegIndexInPlan = this.allLegs.findIndex((it) => it === turnEnd);
+            // Since we added a discontinuity after the DIR TO leg, we want to make sure that the leg after it
+            // is a leg that can be after a disco (not something like a CI) and convert it to IF
+            this.cleanUpAfterDiscontinuity(turnEndLegIndexInPlan + 1);
+
+            this.activeLegIndex = turnEndLegIndexInPlan;
         }
 
-        this.enrouteSegment.allLegs.splice(indexInEnrouteSegment, 0, { isDiscontinuity: true });
-        this.enrouteSegment.allLegs.splice(indexInEnrouteSegment + 1, 0, turningPoint);
-        this.enrouteSegment.allLegs.splice(indexInEnrouteSegment + 2, 0, turnEnd);
-        this.enrouteSegment.allLegs.splice(indexInEnrouteSegment + 3, 1);
         this.incrementVersion();
+    }
 
-        const turnStartLegIndexInPlan = this.allLegs.findIndex((it) => it === turnEnd);
+    /**
+     * Find next XF leg after a discontinuity and convert it to IF
+     * Remove non-ground-referenced leg after the discontinuity before the XF leg
+     * @param discontinuityIndex
+     */
+    private cleanUpAfterDiscontinuity(discontinuityIndex: number) {
+        // Find next XF leg
+        const xFLegIndexInPlan = this.allLegs.findIndex((it, index) => index > discontinuityIndex && it.isDiscontinuity === false && it.isXF());
 
-        this.activeLegIndex = turnStartLegIndexInPlan;
+        if (xFLegIndexInPlan !== -1) {
+            const [segment, xfLegIndexInSegment] = this.segmentPositionForIndex(xFLegIndexInPlan);
+            const xfLegAfterDiscontinuity = segment.allLegs[xfLegIndexInSegment] as FlightPlanLeg;
 
-        this.incrementVersion();
+            // Remove non-ground-referenced leg after the discontinuity before the XF leg
+            // and insert new IF leg
+            const numberOfLegsToRemove = Math.max(0, xFLegIndexInPlan - discontinuityIndex);
+            const iFLegAfterDiscontinuity = FlightPlanLeg.fromEnrouteFix(segment, xfLegAfterDiscontinuity.definition.waypoint, '', LegType.IF)
+                .withDefinitionFrom(xfLegAfterDiscontinuity)
+                .withPilotEnteredDataFrom(xfLegAfterDiscontinuity);
+
+            segment.allLegs.splice(xfLegIndexInSegment - numberOfLegsToRemove + 1, numberOfLegsToRemove, iFLegAfterDiscontinuity);
+        }
     }
 
     // TODO this is wrong and we need to redo all this
@@ -154,21 +219,24 @@ export class FlightPlan extends BaseFlightPlan {
     // - disco
     // - destination airport
     // - complete alternate routing
-    async enableAltn(atIndex: number) {
+    async enableAltn(atIndex: number, cruiseLevel: number) {
         if (!this.alternateDestinationAirport) {
             throw new Error('[FMS/FPM] Cannot enable alternate with no alternate destination defined');
         }
 
         this.redistributeLegsAt(atIndex);
 
-        this.removeRange(atIndex + 1, this.legCount);
+        if (this.legCount > atIndex + 1) {
+            this.removeRange(atIndex + 1, this.legCount);
+        }
 
         await this.setDestinationAirport(this.alternateDestinationAirport.ident);
         await this.setDestinationRunway(this.alternateFlightPlan.destinationRunway?.ident ?? undefined);
-        await this.setApproach(this.alternateFlightPlan.approach?.ident ?? undefined);
-        await this.setApproachVia(this.alternateFlightPlan.approachVia?.ident ?? undefined);
-        await this.setArrival(this.alternateFlightPlan.arrival?.ident ?? undefined);
-        await this.setArrivalEnrouteTransition(this.alternateFlightPlan.arrivalEnrouteTransition?.ident ?? undefined);
+        // We call the segment methods because we only want to rebuild the arrival/approach when we've changed all the procedures
+        await this.approachSegment.setProcedure(this.alternateFlightPlan.approach?.ident ?? undefined);
+        await this.approachViaSegment.setProcedure(this.alternateFlightPlan.approachVia?.ident ?? undefined);
+        await this.arrivalSegment.setProcedure(this.alternateFlightPlan.arrival?.ident ?? undefined);
+        await this.arrivalEnrouteTransitionSegment.setProcedure(this.alternateFlightPlan.arrivalEnrouteTransition?.ident ?? undefined);
 
         const alternateLastEnrouteIndex = this.alternateFlightPlan.originSegment.legCount
             + this.alternateFlightPlan.departureRunwayTransitionSegment.legCount
@@ -183,20 +251,24 @@ export class FlightPlan extends BaseFlightPlan {
             this.enrouteSegment.allLegs.push({ isDiscontinuity: true });
         }
 
+        this.setPerformanceData('cruiseFlightLevel', cruiseLevel);
+        this.setPerformanceData('costIndex', 0);
+
         this.enrouteSegment.allLegs.push(...alternateLegsToInsert);
         this.syncSegmentLegsChange(this.enrouteSegment);
         this.enrouteSegment.strung = false;
 
         this.deleteAlternateFlightPlan();
 
+        this.enqueueOperation(FlightPlanQueuedOperation.RebuildArrivalAndApproach);
         this.enqueueOperation(FlightPlanQueuedOperation.Restring);
         await this.flushOperationQueue();
     }
 
-    setFixInfoEntry(index: 1 | 2 | 3 | 4, fixInfo: FixInfoEntry | null, notify = true): void {
+    setFixInfoEntry(index: 1 | 2 | 3 | 4, fixInfo: FixInfoData | null, notify = true): void {
         const planFixInfo = this.fixInfos as FixInfoEntry[];
 
-        planFixInfo[index] = fixInfo;
+        planFixInfo[index] = fixInfo ? new FixInfoEntry(fixInfo.fix, fixInfo.radii, fixInfo.radials) : undefined;
 
         if (notify) {
             this.sendEvent('flightPlan.setFixInfoEntry', { planIndex: this.index, forAlternate: false, index, fixInfo });
@@ -274,27 +346,46 @@ export class FlightPlan extends BaseFlightPlan {
     }
 
     /**
+     * Sets performance data imported from uplink
+     * @param data performance data available in uplink
+     */
+    setImportedPerformanceData(data: ImportedPerformanceData) {
+        this.setPerformanceData('databaseTransitionAltitude', data.departureTransitionAltitude);
+        this.setPerformanceData('databaseTransitionLevel', data.destinationTransitionLevel);
+        this.setPerformanceData('costIndex', data.costIndex);
+        this.setPerformanceData('cruiseFlightLevel', data.cruiseFlightLevel);
+    }
+
+    setFlightNumber(flightNumber: string, notify = true) {
+        this.flightNumber = flightNumber;
+
+        if (notify) {
+            this.sendEvent('flightPlan.setFlightNumber', { planIndex: this.index, forAlternate: false, flightNumber });
+        }
+    }
+
+    /**
      * Sets defaults for performance data parameters related to an origin
      *
      * @param plan the flight plan
      * @param airport the origin airport
      */
-    private static setOriginDefaultPerformanceData(plan: FlightPlan, airport: Airport | undefined): void {
+    private static setOriginDefaultPerformanceData<P extends FlightPlanPerformanceData>(plan: FlightPlan<P>, airport: Airport | undefined): void {
         const referenceAltitude = airport?.location.alt;
 
         if (referenceAltitude !== undefined) {
-            plan.performanceData.defaultThrustReductionAltitude.set(referenceAltitude + parseInt(NXDataStore.get('CONFIG_THR_RED_ALT', '1500')));
-            plan.performanceData.defaultAccelerationAltitude.set(referenceAltitude + parseInt(NXDataStore.get('CONFIG_ACCEL_ALT', '1500')));
-            plan.performanceData.defaultEngineOutAccelerationAltitude.set(referenceAltitude + parseInt(NXDataStore.get('CONFIG_ENG_OUT_ACCEL_ALT', '1500')));
+            plan.setPerformanceData('defaultThrustReductionAltitude', referenceAltitude + parseInt(NXDataStore.get('CONFIG_THR_RED_ALT', '1500')));
+            plan.setPerformanceData('defaultAccelerationAltitude', referenceAltitude + parseInt(NXDataStore.get('CONFIG_ACCEL_ALT', '1500')));
+            plan.setPerformanceData('defaultEngineOutAccelerationAltitude', referenceAltitude + parseInt(NXDataStore.get('CONFIG_ENG_OUT_ACCEL_ALT', '1500')));
         } else {
-            plan.performanceData.defaultThrustReductionAltitude.set(undefined);
-            plan.performanceData.defaultAccelerationAltitude.set(undefined);
-            plan.performanceData.defaultEngineOutAccelerationAltitude.set(undefined);
+            plan.setPerformanceData('defaultThrustReductionAltitude', undefined);
+            plan.setPerformanceData('defaultAccelerationAltitude', undefined);
+            plan.setPerformanceData('defaultEngineOutAccelerationAltitude', undefined);
         }
 
-        plan.performanceData.pilotThrustReductionAltitude.set(undefined);
-        plan.performanceData.pilotAccelerationAltitude.set(undefined);
-        plan.performanceData.pilotEngineOutAccelerationAltitude.set(undefined);
+        plan.setPerformanceData('pilotThrustReductionAltitude', undefined);
+        plan.setPerformanceData('pilotAccelerationAltitude', undefined);
+        plan.setPerformanceData('pilotEngineOutAccelerationAltitude', undefined);
     }
 
     /**
@@ -303,26 +394,31 @@ export class FlightPlan extends BaseFlightPlan {
      * @param plan the flight plan
      * @param airport the destination airport
      */
-    private static setDestinationDefaultPerformanceData(plan: FlightPlan, airport: Airport): void {
+    private static setDestinationDefaultPerformanceData<P extends FlightPlanPerformanceData>(plan: FlightPlan<P>, airport: Airport): void {
         const referenceAltitude = airport?.location.alt;
 
         if (referenceAltitude !== undefined) {
-            plan.performanceData.defaultMissedThrustReductionAltitude.set(referenceAltitude + parseInt(NXDataStore.get('CONFIG_THR_RED_ALT', '1500')));
-            plan.performanceData.defaultMissedAccelerationAltitude.set(referenceAltitude + parseInt(NXDataStore.get('CONFIG_ACCEL_ALT', '1500')));
-            plan.performanceData.defaultMissedEngineOutAccelerationAltitude.set(referenceAltitude + parseInt(NXDataStore.get('CONFIG_ENG_OUT_ACCEL_ALT', '1500')));
+            plan.setPerformanceData('defaultMissedThrustReductionAltitude', referenceAltitude + parseInt(NXDataStore.get('CONFIG_THR_RED_ALT', '1500')));
+            plan.setPerformanceData('defaultMissedAccelerationAltitude', referenceAltitude + parseInt(NXDataStore.get('CONFIG_ACCEL_ALT', '1500')));
+            plan.setPerformanceData('defaultMissedEngineOutAccelerationAltitude', referenceAltitude + parseInt(NXDataStore.get('CONFIG_ENG_OUT_ACCEL_ALT', '1500')));
         } else {
-            plan.performanceData.defaultMissedThrustReductionAltitude.set(undefined);
-            plan.performanceData.defaultMissedAccelerationAltitude.set(undefined);
-            plan.performanceData.defaultMissedEngineOutAccelerationAltitude.set(undefined);
+            plan.setPerformanceData('defaultMissedThrustReductionAltitude', undefined);
+            plan.setPerformanceData('defaultMissedAccelerationAltitude', undefined);
+            plan.setPerformanceData('defaultMissedEngineOutAccelerationAltitude', undefined);
         }
 
-        plan.performanceData.pilotMissedThrustReductionAltitude.set(undefined);
-        plan.performanceData.pilotMissedAccelerationAltitude.set(undefined);
-        plan.performanceData.pilotMissedEngineOutAccelerationAltitude.set(undefined);
+        plan.setPerformanceData('pilotMissedThrustReductionAltitude', undefined);
+        plan.setPerformanceData('pilotMissedAccelerationAltitude', undefined);
+        plan.setPerformanceData('pilotMissedEngineOutAccelerationAltitude', undefined);
     }
 
-    static fromSerializedFlightPlan(index: number, serialized: SerializedFlightPlan, bus: EventBus): FlightPlan {
-        const newPlan = FlightPlan.empty(index, bus);
+    static fromSerializedFlightPlan<P extends FlightPlanPerformanceData>(
+        index: number,
+        serialized: SerializedFlightPlan,
+        bus: EventBus,
+        performanceDataInit: P,
+    ): FlightPlan<P> {
+        const newPlan = FlightPlan.empty<P>(index, bus, performanceDataInit);
 
         newPlan.activeLegIndex = serialized.activeLegIndex;
         newPlan.fixInfos = serialized.fixInfo;
@@ -336,7 +432,62 @@ export class FlightPlan extends BaseFlightPlan {
         newPlan.arrivalEnrouteTransitionSegment.setFromSerializedSegment(serialized.segments.arrivalEnrouteTransitionSegment);
         newPlan.approachSegment.setFromSerializedSegment(serialized.segments.approachSegment);
         newPlan.approachViaSegment.setFromSerializedSegment(serialized.segments.approachViaSegment);
+        // newPlan.performanceData.cruiseFlightLevel.set(serialized.performanceData.cruiseFlightLevel);
 
         return newPlan;
+    }
+
+    /**
+     * Sets a performance data parameter
+     *
+     * The union type in the signature is to work around https://github.com/microsoft/TypeScript/issues/28662.
+     */
+    setPerformanceData<k extends(keyof (P & FlightPlanPerformanceDataProperties)) & string>(key: k, value: P[k], notify = true) {
+        this.performanceData[key] = value;
+
+        if (notify) {
+            this.sendPerfEvent(
+                `flightPlan.setPerformanceData.${key}` as any,
+                { planIndex: this.index, forAlternate: false, value } as any,
+            );
+        }
+
+        this.incrementVersion();
+    }
+
+    /**
+     * Check if the thrust reduction altitude is limited by a constraint and reduce it if so
+     * @returns true if a reduction occured
+     */
+    reconcileThrustReductionWithConstraints(): boolean {
+        const lowestClimbConstraint = MathUtils.round(this.lowestClimbConstraint(), 10);
+        if (Number.isFinite(lowestClimbConstraint) && this.performanceData.thrustReductionAltitude > lowestClimbConstraint) {
+            this.setPerformanceData('defaultThrustReductionAltitude',
+                this.performanceData.defaultThrustReductionAltitude !== undefined ? Math.min(this.performanceData.defaultThrustReductionAltitude, lowestClimbConstraint) : undefined);
+            this.setPerformanceData('pilotThrustReductionAltitude',
+                this.performanceData.pilotThrustReductionAltitude !== undefined ? Math.min(this.performanceData.pilotThrustReductionAltitude, lowestClimbConstraint) : undefined);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if the acceleration altitude is limited by a constraint and reduce it if so
+     * @returns true if a reduction occured
+     */
+    reconcileAccelerationWithConstraints(): boolean {
+        const lowestClimbConstraint = MathUtils.round(this.lowestClimbConstraint(), 10);
+        if (Number.isFinite(lowestClimbConstraint) && this.performanceData.accelerationAltitude > lowestClimbConstraint) {
+            this.setPerformanceData('defaultAccelerationAltitude',
+                this.performanceData.defaultAccelerationAltitude !== undefined ? Math.min(this.performanceData.defaultAccelerationAltitude, lowestClimbConstraint) : undefined);
+            this.setPerformanceData('pilotAccelerationAltitude',
+                this.performanceData.pilotAccelerationAltitude !== undefined ? Math.min(this.performanceData.pilotAccelerationAltitude, lowestClimbConstraint) : undefined);
+
+            return true;
+        }
+
+        return false;
     }
 }

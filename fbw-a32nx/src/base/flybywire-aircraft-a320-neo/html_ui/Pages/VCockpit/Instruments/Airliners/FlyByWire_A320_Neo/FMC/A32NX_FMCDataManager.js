@@ -16,7 +16,7 @@ const IcaoSearchFilter = Object.freeze({
     Ndbs: 4,
 });
 
-// TODO: Clean this up (fms-v2). A lot of this code is no longer used.
+// TODO: Remove this (fms-v2). It has been replaced by a TS implementation
 class FMCDataManager {
     constructor(_fmc) {
         this.fmc = _fmc;

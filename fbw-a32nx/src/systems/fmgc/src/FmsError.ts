@@ -11,6 +11,7 @@ export enum FmsErrorType {
     NotYetImplemented,
     FormatError,
     EntryOutOfRange,
+    ListOf99InUse,
 }
 
 export class FmsError extends Error {

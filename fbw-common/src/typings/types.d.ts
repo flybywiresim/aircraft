@@ -1,4 +1,10 @@
-import { FlightPlanService as Service, NavigationDatabaseService as NavigationDatabaseService_ } from "../../../fbw-a32nx/src/systems/fmgc/src";
+import {
+    FlightPlanService as FlightPlanService_,
+    NavigationDatabaseService as NavigationDatabaseService_,
+    SelectedNavaidType as SelectedNavaidType_,
+    SelectedNavaidMode as SelectedNavaidMode_,
+    A320FlightPlanPerformanceData as A320FlightPlanPerformanceData_,
+} from "../../../fbw-a32nx/src/systems/fmgc/src";
 import { NavigationDatabase as Database, NavigationDatabaseBackend as DatabaseBackend } from '../../../fbw-a32nx/src/systems/fmgc/src/NavigationDatabase'
 import { FlightPlanIndex as Index } from '../../../fbw-a32nx/src/systems/fmgc/src';
 import { FlightPhaseManager as FlightPhaseManager_ } from "../../../fbw-a32nx/src/systems/fmgc/src";
@@ -65,7 +71,12 @@ declare global {
     }
 
     namespace Fmgc {
-        const FlightPlanService: typeof Service
+        const SelectedNavaidType: typeof SelectedNavaidType_
+        const SelectedNavaidMode: typeof SelectedNavaidMode_
+
+        const FlightPlanService: typeof FlightPlanService_
+
+        const A320FlightPlanPerformanceData: typeof A320FlightPlanPerformanceData_
 
         const NavigationDatabase: typeof Database
 
@@ -86,5 +97,3 @@ declare global {
         function getFlightPhaseManager(): FlightPhaseManager_
     }
 }
-
-export {};

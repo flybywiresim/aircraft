@@ -98,6 +98,7 @@ const NXSystemMessages = {
     systemBusy:             new TypeIMessage("SYSTEM BUSY-TRY LATER"),
     toSpeedTooLow:          new TypeIIMessage("TO SPEEDS TOO LOW", true),
     uplinkInsertInProg:     new TypeIIMessage("UPLINK INSERT IN PROG"),
+    usingCostIndex:         new TypeIMessage("USING COST INDEX: NNN", false, "NNN"),
     vToDisagree:            new TypeIIMessage("V1/VR/V2 DISAGREE", true),
     waitForSystemResponse:  new TypeIMessage("WAIT FOR SYSTEM RESPONSE"),
     xxxIsDeselected:        new TypeIMessage("XXXX IS DESELECTED", false, "XXXX"),

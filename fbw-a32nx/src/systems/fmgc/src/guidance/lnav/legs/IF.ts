@@ -11,12 +11,12 @@ import { PathVector } from '@fmgc/guidance/lnav/PathVector';
 import { LegMetadata } from '@fmgc/guidance/lnav/legs/index';
 import { Guidable } from '@fmgc/guidance/Guidable';
 import { Leg } from '@fmgc/guidance/lnav/legs/Leg';
-import { Waypoint, WaypointDescriptor } from '@flybywiresim/fbw-sdk';
+import { Fix, WaypointDescriptor } from '@flybywiresim/fbw-sdk';
 import { distanceTo } from 'msfs-geo';
 
 export class IFLeg extends XFLeg {
     constructor(
-        fix: Waypoint,
+        fix: Fix,
         public readonly metadata: Readonly<LegMetadata>,
         segment: SegmentType,
     ) {

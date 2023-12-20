@@ -10,6 +10,7 @@ import { FmgcFlightPhase } from '@shared/flightphase';
 import { EventBus, Publisher } from '@microsoft/msfs-sdk';
 import { FlightPlanInterface } from '@fmgc/flightplanning/new/FlightPlanInterface';
 import { FlightPlan } from '@fmgc/flightplanning/new/plans/FlightPlan';
+import { ReadonlyFlightPlan } from "@fmgc/flightplanning/new/plans/ReadonlyFlightPlan";
 
 export class FlightPlanSynchronization {
     private readonly publisher: Publisher<FmsAtcMessages>;
@@ -24,7 +25,8 @@ export class FlightPlanSynchronization {
 
     private destination: Waypoint = { ident: '', altitude: 0, utc: 0 };
 
-    private static findLastWaypoint(flightPlan: FlightPlan): Waypoint {
+    private static findLastWaypoint(flightPlan: ReadonlyFlightPlan): Waypoint {
+        // TODO port over (fms-v2)
         // const idx = flightPlan.activeLegIndex;
 
         // while (idx >= 0) {
@@ -43,7 +45,8 @@ export class FlightPlanSynchronization {
         return { ident: '', altitude: 0, utc: 0 };
     }
 
-    private static findActiveWaypoint(flightPlan: FlightPlan, flightPlanStats: Map<number, WaypointStats>): Waypoint {
+    private static findActiveWaypoint(flightPlan: ReadonlyFlightPlan, flightPlanStats: Map<number, WaypointStats>): Waypoint {
+        // TODO port over (fms-v2)
         // if (flightPlan.activeWaypoint) {
         //     return {
         //         ident: flightPlan.activeWaypoint.ident,
@@ -55,7 +58,8 @@ export class FlightPlanSynchronization {
         return { ident: '', altitude: 0, utc: 0 };
     }
 
-    private static findNextWaypoint(flightPlan: FlightPlan, flightPlanStats: Map<number, WaypointStats>): Waypoint {
+    private static findNextWaypoint(flightPlan: ReadonlyFlightPlan, flightPlanStats: Map<number, WaypointStats>): Waypoint {
+        // TODO port over (fms-v2)
         // let idx = flightPlan.activeWaypointIndex + 1;
         // while (idx < flightPlan.waypoints.length) {
         //     const wp = flightPlan.getWaypoint(idx);
@@ -73,7 +77,8 @@ export class FlightPlanSynchronization {
         return { ident: '', altitude: 0, utc: 0 };
     }
 
-    private static findDestinationWaypoint(flightPlan: FlightPlan, flightPlanStats: Map<number, WaypointStats>): Waypoint {
+    private static findDestinationWaypoint(flightPlan: ReadonlyFlightPlan, flightPlanStats: Map<number, WaypointStats>): Waypoint {
+        // TODO port over (fms-v2)
         // let idx = flightPlan.activeWaypointIndex;
         // while (idx < flightPlan.waypoints.length) {
         //     const wp = flightPlan.getWaypoint(idx);
@@ -104,18 +109,19 @@ export class FlightPlanSynchronization {
             const isFlying = phase >= FmgcFlightPhase.Takeoff && phase !== FmgcFlightPhase.Done;
 
             if (activeFlightPlan && activeFlightPlan.legCount !== 0) {
-                let flightPlanStats: Map<number, WaypointStats> = null;
+                const flightPlanStats: Map<number, WaypointStats> = null;
                 if (isFlying) {
                     const latitude = new Arinc429Word(SimVar.GetSimVarValue('L:A32NX_ADIRS_IR_1_LATITUDE', 'number'));
                     const longitude = new Arinc429Word(SimVar.GetSimVarValue('L:A32NX_ADIRS_IR_1_LONGITUDE', 'number'));
 
                     if (latitude.isNormalOperation() && longitude.isNormalOperation()) {
+                        // TODO port over (fms-v2)
                         // const ppos = {
                         //     lat: latitude.value,
                         //     long: longitude.value,
                         // };
 
-                        flightPlanStats = activeFlightPlan.computeWaypointStatistics();
+                        // flightPlanStats = activeFlightPlan.computeWaypointStatistics();
                     }
                 }
 

@@ -2,7 +2,10 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { ApproachType, ApproachUtils } from '@flybywiresim/fbw-sdk';
+import { ApproachType, ApproachUtils, RunwayUtils } from '@flybywiresim/fbw-sdk';
+import { DataManager } from '@fmgc/flightplanning/new/DataManager';
+import { CoRouteUplinkAdapter } from '@fmgc/flightplanning/new/uplink/CoRouteUplinkAdapter';
+import { EfisInterface } from '@fmgc/efis/EfisInterface';
 import { FlightPlanService } from './flightplanning/new/FlightPlanService';
 import { NavigationDatabase, NavigationDatabaseBackend } from './NavigationDatabase';
 import { FlightPhaseManager, getFlightPhaseManager } from './flightphase';
@@ -10,15 +13,15 @@ import { GuidanceController } from './guidance/GuidanceController';
 import { EfisSymbols } from './efis/EfisSymbols';
 import { DescentPathBuilder } from './guidance/vnav/descent/DescentPathBuilder';
 import { initComponents, updateComponents, recallMessageById } from './components';
-import { WaypointBuilder } from './flightplanning/WaypointBuilder';
 import { Navigation, SelectedNavaidMode, SelectedNavaidType } from './navigation/Navigation';
 import { WaypointFactory } from './flightplanning/new/waypoints/WaypointFactory';
 import { WaypointEntryUtils } from './flightplanning/new/WaypointEntryUtils';
 import { FlightPlanIndex } from './flightplanning/new/FlightPlanManager';
 import { NavigationDatabaseService } from './flightplanning/new/NavigationDatabaseService';
 import { SimBriefUplinkAdapter } from './flightplanning/new/uplink/SimBriefUplinkAdapter';
+import { A320FlightPlanPerformanceData } from './flightplanning/new/plans/performance/FlightPlanPerformanceData';
 
-function initFmgcLoop(baseInstrument: BaseInstrument, flightPlanService: FlightPlanService): void {
+function initFmgcLoop(baseInstrument: BaseInstrument, flightPlanService: FlightPlanService<A320FlightPlanPerformanceData>): void {
     initComponents(baseInstrument, flightPlanService);
 }
 
@@ -28,8 +31,10 @@ function updateFmgcLoop(deltaTime: number): void {
 
 export {
     ApproachUtils,
+    RunwayUtils,
     ApproachType,
     FlightPlanService,
+    A320FlightPlanPerformanceData,
     NavigationDatabase,
     NavigationDatabaseBackend,
     NavigationDatabaseService,
@@ -40,13 +45,15 @@ export {
     initFmgcLoop,
     updateFmgcLoop,
     recallMessageById,
+    EfisInterface,
     EfisSymbols,
     DescentPathBuilder,
-    WaypointBuilder,
     Navigation,
     SelectedNavaidMode,
     SelectedNavaidType,
     WaypointFactory,
     WaypointEntryUtils,
     SimBriefUplinkAdapter,
+    CoRouteUplinkAdapter,
+    DataManager,
 };

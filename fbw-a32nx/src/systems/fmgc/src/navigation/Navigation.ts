@@ -1,6 +1,8 @@
 // Copyright (c) 2022-2023 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
+import { Arinc429Register, IlsNavaid, NdbNavaid, VhfNavaid, VhfNavaidType, Icao } from '@flybywiresim/fbw-sdk';
+
 import { FlightPlanService } from '@fmgc/index';
 import { LandingSystemSelectionManager } from '@fmgc/navigation/LandingSystemSelectionManager';
 import { NavaidSelectionManager, VorSelectionReason } from '@fmgc/navigation/NavaidSelectionManager';
@@ -8,10 +10,7 @@ import { NavaidTuner } from '@fmgc/navigation/NavaidTuner';
 import { NavigationProvider } from '@fmgc/navigation/NavigationProvider';
 import { NearbyFacilities } from '@fmgc/navigation/NearbyFacilities';
 import { RequiredPerformance } from '@fmgc/navigation/RequiredPerformance';
-import { Arinc429Register, IlsNavaid, NdbNavaid, VhfNavaid, VhfNavaidType } from '@flybywiresim/fbw-sdk';
 import { Coordinates } from 'msfs-geo';
-import { VorType } from '@microsoft/msfs-sdk';
-import { Icao } from '@shared/Icao';
 
 export enum SelectedNavaidType {
     None,

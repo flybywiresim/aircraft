@@ -1,3 +1,4 @@
+import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { Fmgc } from '@fmgc/guidance/GuidanceController';
 import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { SpeedLimit } from '@fmgc/guidance/vnav/SpeedLimit';
@@ -58,7 +59,7 @@ export interface VerticalProfileComputationParameters {
 export class VerticalProfileComputationParametersObserver {
     private parameters: VerticalProfileComputationParameters;
 
-    constructor(private fmgc: Fmgc) {
+    constructor(private fmgc: Fmgc, private flightPlanService: FlightPlanService) {
         this.update();
     }
 
@@ -99,7 +100,9 @@ export class VerticalProfileComputationParametersObserver {
             accelerationAltitude: this.fmgc.getAccelerationAltitude(),
             thrustReductionAltitude: this.fmgc.getThrustReductionAltitude(),
             originTransitionAltitude: this.fmgc.getOriginTransitionAltitude(),
-            cruiseAltitude: Number.isFinite(this.fmgc.getCruiseAltitude()) ? this.fmgc.getCruiseAltitude() : this.parameters.cruiseAltitude,
+            // We do it this way because the cruise altitude is cleared in the MCDU once you start the descent
+            cruiseAltitude: this.flightPlanService.active.performanceData.cruiseFlightLevel
+                ? this.flightPlanService.active.performanceData.cruiseFlightLevel * 100 : this.parameters?.cruiseAltitude,
             climbSpeedLimit: this.fmgc.getClimbSpeedLimit(),
             descentSpeedLimit: this.fmgc.getDescentSpeedLimit(),
             flightPhase: this.fmgc.getFlightPhase(),
@@ -145,8 +148,9 @@ export class VerticalProfileComputationParametersObserver {
             && this.parameters.approachSpeed > 100;
 
         const hasZeroFuelWeight = Number.isFinite(this.parameters.zeroFuelWeight);
+        const hasCruiseAltitude = Number.isFinite(this.parameters.cruiseAltitude);
         const hasTakeoffParameters = this.parameters.v2Speed > 0 && this.parameters.thrustReductionAltitude > 0 && this.parameters.accelerationAltitude > 0;
 
-        return (this.parameters.flightPhase > FmgcFlightPhase.Takeoff || hasTakeoffParameters) && areApproachSpeedsValid && hasZeroFuelWeight;
+        return (this.parameters.flightPhase > FmgcFlightPhase.Takeoff || hasTakeoffParameters) && areApproachSpeedsValid && hasZeroFuelWeight && hasCruiseAltitude;
     }
 }

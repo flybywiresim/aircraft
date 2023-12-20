@@ -39,12 +39,12 @@ import { Departure } from '../../../shared/types/Departure';
 import { Runway, RunwaySurfaceType } from '../../../shared/types/Runway';
 import { DataInterface } from '../../../shared/DataInterface';
 import { Marker } from '../../../shared/types/Marker';
-import { IcaoSearchFilter, JS_FacilityAirport, } from './FsTypes';
+import { IcaoSearchFilter, JS_FacilityAirport, VorType } from './FsTypes';
 import {
     FacilityCache,
     FacilitySearchTypeToDatabaseItem,
     LoadType,
-    SupportedFacilitySearchType
+    SupportedFacilitySearchType,
 } from './FacilityCache';
 import { MsfsMapping } from './Mapping';
 import { Gate } from '../../../shared/types/Gate';
@@ -216,14 +216,14 @@ export class MsfsBackend implements DataInterface {
     }
 
     /** @inheritdoc */
-    public async getIlsAtAirport(airportIdentifier: string): Promise<IlsNavaid[]> {
+    public async getIlsAtAirport(airportIdentifier: string, ident?: string, lsIcaoCode?: string): Promise<IlsNavaid[]> {
         const airport = await this.fetchMsfsAirport(airportIdentifier);
 
         if (!airport) {
             return [];
         }
 
-        return this.mapping.mapAirportIls(airport);
+        return this.mapping.mapAirportIls(airport, ident, lsIcaoCode);
     }
 
     /** @inheritdoc */
@@ -276,6 +276,27 @@ export class MsfsBackend implements DataInterface {
             (await this.cache.searchByIdent(ident, IcaoSearchFilter.Vors, 100)).forEach((v) => {
                 results.set(v.icao, this.mapping.mapFacilityToWaypoint(v));
             });
+        }
+
+        return [...results.values()];
+    }
+
+    /** @inheritdoc */
+    public async getIlsNavaids(idents: string[], ppos?: Coordinates, icaoCode?: string, airportIdent?: string): Promise<IlsNavaid[]> {
+        const results = new Map<string, IlsNavaid>();
+
+        for (const ident of idents) {
+            await Promise.all((await this.cache.searchByIdent(ident, IcaoSearchFilter.Vors, 100))
+                .filter((v) => v.type === VorType.ILS)
+                .map(async (v) => {
+                    const airportIcao = v.icao.slice(3, 7).trim();
+                    // I'm aware that we might be fetching the same airport multiple times for different VORs,
+                    // but there is a cache in place, so it should be fine
+                    const airport = await this.fetchMsfsAirport(airportIcao);
+                    if (airport) {
+                        results.set(v.icao, await this.mapping.mapVorIls(airport, v));
+                    }
+                }));
         }
 
         return [...results.values()];

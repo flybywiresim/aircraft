@@ -1,12 +1,4 @@
-/**
- * This comes from fstypes/FSEnums, TODO change this when we have @microsoft/msfs-types
- */
-enum TurnDirection {
-    Unknown = 0,
-    Left = 1,
-    Right = 2,
-    Either = 3,
-}
+import { TurnDirection } from '../../navdata/shared/types/ProcedureLeg';
 
 export class MathUtils {
    static DEGREES_TO_RADIANS = Math.PI / 180;
@@ -88,6 +80,22 @@ export class MathUtils {
        }
 
        return angle;
+   }
+
+   /**
+     * Gets the smallest angle between two angles
+     * @param angle1 First angle in degrees
+     * @param angle2 Second angle in degrees
+     * @returns {number} Smallest angle between angle1 and angle2 in degrees
+     */
+   public static getSmallestAngle(angle1: number, angle2: number): number {
+       let smallestAngle = angle1 - angle2;
+       if (smallestAngle > 180) {
+           smallestAngle -= 360;
+       } else if (smallestAngle < -180) {
+           smallestAngle += 360;
+       }
+       return smallestAngle;
    }
 
    public static adjustAngleForTurnDirection(angle: Degrees, turnDirection: TurnDirection) {

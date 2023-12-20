@@ -2,11 +2,11 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
+import { FMMessage, FMMessageTypes, Trigger } from '@flybywiresim/fbw-sdk';
+
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { PILeg } from '@fmgc/guidance/lnav/legs/PI';
 import { Navigation } from '@fmgc/navigation/Navigation';
-import { FMMessage, FMMessageTypes } from '@shared/FmMessages';
-import { Trigger } from '@flybywiresim/fbw-sdk';
 import { FlightPlanIndex } from '@fmgc/flightplanning/new/FlightPlanManager';
 import { FMMessageSelector, FMMessageUpdate } from './FmsMessages';
 

@@ -10,6 +10,7 @@ import {
     ApproachType,
     Database,
     Fix,
+    IlsNavaid,
     MsfsBackend,
     NdbNavaid,
     VhfNavaid,
@@ -60,6 +61,10 @@ export class NavigationDatabase {
 
     async searchVor(ident: string): Promise<VhfNavaid[]> {
         return this.backendDatabase.getNavaids([ident]);
+    }
+
+    async searchIls(ident: string): Promise<IlsNavaid[]> {
+        return this.backendDatabase.getILSs([ident]);
     }
 
     async searchNdb(ident: string): Promise<NdbNavaid[]> {

@@ -15,18 +15,18 @@ import { HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { FlightPlanLegDefinition } from '@fmgc/flightplanning/new/legs/FlightPlanLegDefinition';
 import { FlightPlanInterface } from '@fmgc/flightplanning/new/FlightPlanInterface';
 import { AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
+import { CopyOptions } from '@fmgc/flightplanning/new/plans/CloningOptions';
+import { FlightPlanPerformanceData } from '@fmgc/flightplanning/new/plans/performance/FlightPlanPerformanceData';
 
-export class FlightPlanService implements FlightPlanInterface {
-    private readonly flightPlanManager: FlightPlanManager;
+export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanPerformanceData> implements FlightPlanInterface<P> {
+    private readonly flightPlanManager: FlightPlanManager<P>;
 
     private config: FpmConfig = FpmConfigs.A320_HONEYWELL_H3;
 
     navigationDatabase: NavigationDatabase;
 
-    constructor(
-        private readonly bus: EventBus,
-    ) {
-        this.flightPlanManager = new FlightPlanManager(this.bus, Math.round(Math.random() * 10_000), true);
+    constructor(private readonly bus: EventBus, private readonly performanceDataInit: P) {
+        this.flightPlanManager = new FlightPlanManager(this.bus, this.performanceDataInit, Math.round(Math.random() * 10_000), true);
     }
 
     createFlightPlans() {
@@ -85,6 +85,22 @@ export class FlightPlanService implements FlightPlanInterface {
         return this.flightPlanManager.has(FlightPlanIndex.Uplink);
     }
 
+    async secondaryDelete(index: number) {
+        if (!this.hasSecondary(index)) {
+            throw new Error('[FMS/FPS] Cannot delete secondary flight plan if none exists');
+        }
+
+        this.flightPlanManager.delete(FlightPlanIndex.FirstSecondary + index - 1);
+    }
+
+    async secondaryReset(index: number) {
+        if (this.hasSecondary(index)) {
+            this.secondaryDelete(index);
+        }
+
+        this.flightPlanManager.create(FlightPlanIndex.FirstSecondary + index - 1);
+    }
+
     async temporaryInsert(): Promise<void> {
         const temporaryPlan = this.flightPlanManager.get(FlightPlanIndex.Temporary);
 
@@ -105,7 +121,7 @@ export class FlightPlanService implements FlightPlanInterface {
             fromLeg.definition.waypoint.location.long = SimVar.GetSimVarValue('PLANE LONGITUDE', 'Degrees');
         }
 
-        this.flightPlanManager.copy(FlightPlanIndex.Temporary, FlightPlanIndex.Active);
+        this.flightPlanManager.copy(FlightPlanIndex.Temporary, FlightPlanIndex.Active, CopyOptions.IncludeFixInfos);
         this.flightPlanManager.delete(FlightPlanIndex.Temporary);
     }
 
@@ -128,6 +144,14 @@ export class FlightPlanService implements FlightPlanInterface {
         if (this.hasTemporary) {
             this.flightPlanManager.delete(FlightPlanIndex.Temporary);
         }
+    }
+
+    async uplinkDelete(): Promise<void> {
+        if (!this.hasUplink) {
+            throw new Error('[FMS/FPS] Cannot delete uplink flight plan if none exists');
+        }
+
+        this.flightPlanManager.delete(FlightPlanIndex.Uplink);
     }
 
     async reset(): Promise<void> {
@@ -313,12 +337,12 @@ export class FlightPlanService implements FlightPlanInterface {
         plan.revertHoldToComputed(at);
     }
 
-    async enableAltn(atIndexInAlternate: number, planIndex = FlightPlanIndex.Active) {
+    async enableAltn(atIndexInAlternate: number, cruiseLevel: number = 100, planIndex = FlightPlanIndex.Active) {
         const finalIndex = this.prepareDestructiveModification(planIndex);
 
         const plan = this.flightPlanManager.get(finalIndex);
 
-        await plan.enableAltn(atIndexInAlternate);
+        await plan.enableAltn(atIndexInAlternate, cruiseLevel);
     }
 
     async setPilotEnteredAltitudeConstraintAt(atIndex: number, isDescentConstraint: boolean, constraint?: AltitudeConstraint, planIndex?: FlightPlanIndex, alternate?: boolean): Promise<void> {
@@ -444,6 +468,18 @@ export class FlightPlanService implements FlightPlanInterface {
             return;
         }
 
-        this.flightPlanManager.copy(FlightPlanIndex.Active, FlightPlanIndex.Temporary);
+        this.flightPlanManager.copy(FlightPlanIndex.Active, FlightPlanIndex.Temporary, CopyOptions.IncludeFixInfos);
+    }
+
+    async setFlightNumber(flightNumber: string, planIndex = FlightPlanIndex.Active) {
+        const plan = this.flightPlanManager.get(planIndex);
+
+        plan.setFlightNumber(flightNumber);
+    }
+
+    async setPerformanceData<k extends keyof P & string>(key: k, value: P[k], planIndex = FlightPlanIndex.Active) {
+        const plan = this.flightPlanManager.get(planIndex);
+
+        plan.setPerformanceData(key, value);
     }
 }
