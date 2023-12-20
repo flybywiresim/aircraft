@@ -19,15 +19,13 @@ import { CopyOptions } from '@fmgc/flightplanning/new/plans/CloningOptions';
 import { FlightPlanPerformanceData } from '@fmgc/flightplanning/new/plans/performance/FlightPlanPerformanceData';
 
 export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanPerformanceData> implements FlightPlanInterface<P> {
-    private readonly bus = new EventBus();
-
     private readonly flightPlanManager: FlightPlanManager<P>;
 
     private config: FpmConfig = FpmConfigs.A320_HONEYWELL_H3;
 
     navigationDatabase: NavigationDatabase;
 
-    constructor(private readonly performanceDataInit: P) {
+    constructor(private readonly bus: EventBus, private readonly performanceDataInit: P) {
         this.flightPlanManager = new FlightPlanManager<P>(this.bus, this.performanceDataInit, Math.round(Math.random() * 10_000), true);
     }
 

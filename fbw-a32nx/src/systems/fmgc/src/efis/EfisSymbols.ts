@@ -324,8 +324,8 @@ export class EfisSymbols {
             // (currently sequences with guidance which is too early)
             // eslint-disable-next-line no-lone-blocks
 
-            // ACTIVE
-            if (this.flightPlanService.hasActive) {
+            // ALTN
+            if (this.flightPlanService.hasActive && this.guidanceController.hasGeometryForFlightPlan(FlightPlanIndex.Active)) {
                 const symbols = this.getFlightPlanSymbols(
                     false,
                     this.flightPlanService.active,
@@ -342,7 +342,7 @@ export class EfisSymbols {
                 }
 
                 // ACTIVE ALTN
-                if (this.flightPlanService.active.alternateFlightPlan.legCount > 0 && this.efisInterface.shouldTransmitAlternate(FlightPlanIndex.Active)) {
+                if (this.flightPlanService.active.alternateFlightPlan.legCount > 0 && this.guidanceController.hasGeometryForFlightPlan(FlightPlanIndex.Active)) {
                     const symbols = this.getFlightPlanSymbols(
                         true,
                         this.flightPlanService.active.alternateFlightPlan,
@@ -361,7 +361,7 @@ export class EfisSymbols {
             }
 
             // TMPY
-            if (this.flightPlanService.hasTemporary) {
+            if (this.flightPlanService.hasTemporary && this.guidanceController.hasGeometryForFlightPlan(FlightPlanIndex.Temporary)) {
                 const symbols = this.getFlightPlanSymbols(
                     false,
                     this.flightPlanService.temporary,
@@ -379,7 +379,7 @@ export class EfisSymbols {
             }
 
             // SEC
-            if (this.flightPlanService.hasSecondary(1) && this.efisInterface.shouldTransmitSecondary()) {
+            if (this.flightPlanService.hasSecondary(1) && this.guidanceController.hasGeometryForFlightPlan(FlightPlanIndex.FirstSecondary)) {
                 const symbols = this.getFlightPlanSymbols(
                     false,
                     this.flightPlanService.secondary(1),
@@ -396,7 +396,7 @@ export class EfisSymbols {
                 }
 
                 // SEC ALTN
-                if (this.flightPlanService.secondary((1)).alternateFlightPlan.legCount > 0 && this.efisInterface.shouldTransmitAlternate(FlightPlanIndex.FirstSecondary)) {
+                if (this.flightPlanService.secondary((1)).alternateFlightPlan.legCount > 0 && this.guidanceController.hasGeometryForFlightPlan(FlightPlanIndex.FirstSecondary)) {
                     const symbols = this.getFlightPlanSymbols(
                         true,
                         this.flightPlanService.secondary(1).alternateFlightPlan,
