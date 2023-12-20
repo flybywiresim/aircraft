@@ -674,7 +674,7 @@ function copyMaterial(sourceGltf, destinationGltf, materialName) {
     }
 
     if (newMaterial.extensions && newMaterial.extensions.ASOBO_material_detail_map) {
-        for (const key of ['detailMetalRoughAOTexture', 'detailNormalTexture']) {
+        for (const key of ['detailMetalRoughAOTexture', 'detailNormalTexture', 'detailColorTexture']) {
             if (newMaterial.extensions.ASOBO_material_detail_map[key] !== undefined) {
                 const sourceTexture = sourceGltf.textures[sourceMaterial.extensions.ASOBO_material_detail_map[key].index];
                 const imageUri = sourceGltf.images[sourceTexture.extensions.MSFT_texture_dds.source].uri;
