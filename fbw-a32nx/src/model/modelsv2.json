@@ -8,11 +8,20 @@
         "nodes": [
           "FUSELAGE",
           "FUSELAGE_FROSTED",
-          "INTERIOR",
-          "WINDSHIELD"
+          "INTERIOR"
         ],
         "options": {
           "materials": "keep"
+        }
+      },
+      {
+        "type": "replace_nodes",
+        "file": "./fuse/A320_NEO_LOD00.gltf",
+        "nodes": [
+          "WINDSHIELD"
+        ],
+        "options": {
+          "materials": "add"
         }
       },
       {
@@ -21,7 +30,11 @@
         "nodes": [
           "RIBBONS",
           "DECAL2",
-          "A32NX_WINDSHIELD_UNWIPED"
+          "WINDSHIELD_CAPT_UNWIPED",
+          "WINDSHIELD_CAPT_WIPED",
+          "WINDSHIELD_FO_UNWIPED",
+          "WINDSHIELD_FO_WIPED",
+          "A32NX_WINDSHIELD_FRAME"
         ],
         "options": {
           "materials": "keep"
