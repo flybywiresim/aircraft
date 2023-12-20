@@ -103,7 +103,7 @@ export class MsfsMapping {
         });
 
         // MSFS doesn't give the airport elevation... so we take the mean of the runway elevations
-        const elevation = elevations.reduce((a, b) => a + b) / elevations.length;
+        const elevation = elevations.reduce((a, b) => a + b, 0) / elevations.length;
 
         return {
             databaseId: msAirport.icao,
