@@ -26,7 +26,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
     navigationDatabase: NavigationDatabase;
 
     constructor(private readonly bus: EventBus, private readonly performanceDataInit: P) {
-        this.flightPlanManager = new FlightPlanManager(this.bus, this.performanceDataInit, Math.round(Math.random() * 10_000), true);
+        this.flightPlanManager = new FlightPlanManager<P>(this.bus, this.performanceDataInit, Math.round(Math.random() * 10_000), true);
     }
 
     createFlightPlans() {
