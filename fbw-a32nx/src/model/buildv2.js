@@ -768,6 +768,15 @@ function appendNodes(baseGltf, sourceGltf, nodes, options) {
     }
 }
 
+function addExtensionsUsed(baseGltf, sourceGltf) {
+    const extensionsUsed = sourceGltf.extensionsUsed || [];
+    for (const extension of extensionsUsed) {
+        if (baseGltf.extensionsUsed.indexOf(extension) < 0) {
+            baseGltf.extensionsUsed.push(extension);
+        }
+    }
+}
+
 function createInstance(baseGltf, baseMeshName, newNode) {
     console.log('createInstance', baseMeshName, newNode.name);
 
@@ -819,6 +828,7 @@ function main(args) {
                         return 1;
                     }
                     replaceNodes(base_gltf, source_gltf, operation.nodes, operation.options);
+                    addExtensionsUsed(base_gltf, source_gltf);
                 }
                 break;
                 case 'append_nodes': {
@@ -828,6 +838,7 @@ function main(args) {
                         return 1;
                     }
                     appendNodes(base_gltf, source_gltf, operation.nodes, operation.options);
+                    addExtensionsUsed(base_gltf, source_gltf);
                 }
                 break;
                 case "create_instance": {
