@@ -560,6 +560,8 @@ function getAligned(offset, alignment) {
 function replaceNodes(baseGltf, sourceGltf, nodes, options) {
     console.log('replaceNodes', nodes);
 
+    const materialsAdded = new Map();
+
     for (const nodeName of nodes) {
         const sourceNode = sourceGltf.nodes.find((n) => n.name === nodeName);
         if (!sourceNode) {
@@ -587,6 +589,18 @@ function replaceNodes(baseGltf, sourceGltf, nodes, options) {
                     material = baseGltf.materials.findIndex((v) => v.name === sourceMaterialName);
                     if (material < 0) {
                         throw new Error(`Could not find material ${sourceMaterialName} to keep!`);
+                    }
+                } else if (options && options.materials === 'add') {
+                    const sourceMaterialName = sourceGltf.materials[sourcePrimitive.material].name;
+                    const baseMaterialIndex = baseGltf.materials.findIndex((v) => v.name === sourceMaterialName);
+                    if (materialsAdded.has(sourceMaterialName)) {
+                        material = materialsAdded.get(sourceMaterialName);
+                    } else if (baseMaterialIndex >= 0) {
+                        throw new Error(`Material ${sourceMaterialName} already exists!`);
+                    } else {
+                        // add the material
+                        material = copyMaterial(sourceGltf, baseGltf, sourceMaterialName);
+                        materialsAdded.set(sourceMaterialName, material);
                     }
                 } else {
                     throw new Error('Not yet implemented!');
