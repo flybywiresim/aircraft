@@ -118,9 +118,27 @@ class CDULateralRevisionPage {
                 return mcdu.getDelaySwitchPage();
             };
             mcdu.onLeftInput[3] = async () => {
-                await mcdu.flightPlanService.enableAltn(legIndexFP);
+                // TODO fm position
+                const ppos = {
+                    lat: SimVar.GetSimVarValue('PLANE LATITUDE', 'Degrees'),
+                    long: SimVar.GetSimVarValue('PLANE LONGITUDE', 'Degrees'),
+                };
 
-                CDUFlightPlanPage.ShowPage(mcdu, 0, forPlan);
+                const flightPlan = mcdu.flightPlan(forPlan, false);
+                const alternateAirport = flightPlan.alternateDestinationAirport;
+                if (alternateAirport) {
+                    const distance = Avionics.Utils.computeGreatCircleDistance(ppos, alternateAirport.location);
+                    const cruiseLevel = CDULateralRevisionPage.determineAlternateFlightLevel(distance);
+
+                    try {
+                        await mcdu.flightPlanService.enableAltn(legIndexFP, cruiseLevel, forPlan);
+                    } catch (e) {
+                        console.error(e);
+                        mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
+                    }
+
+                    CDUFlightPlanPage.ShowPage(mcdu, 0, forPlan);
+                }
             };
         }
 
@@ -174,5 +192,15 @@ class CDULateralRevisionPage {
         mcdu.onLeftInput[5] = () => {
             CDUFlightPlanPage.ShowPage(mcdu, 0, forPlan);
         };
+    }
+
+    static determineAlternateFlightLevel(distance) {
+        if (distance > 200) {
+            return 310;
+        } else if (distance > 100) {
+            return 220;
+        } else {
+            return 100;
+        }
     }
 }

@@ -227,7 +227,7 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
      */
     revertHoldToComputed(atIndex: number, planIndex: number, alternate?: boolean): Promise<void>;
 
-    enableAltn(atIndexInAlternate: number, planIndex: number): Promise<void>;
+    enableAltn(atIndexInAlternate: number, cruiseLevel: number, planIndex: number): Promise<void>;
 
     setPilotEnteredSpeedConstraintAt(atIndex: number, isDescentConstraint: boolean, constraint?: SpeedConstraint, planIndex?: FlightPlanIndex, alternate?: boolean): Promise<void>;
 

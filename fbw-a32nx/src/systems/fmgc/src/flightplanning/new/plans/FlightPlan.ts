@@ -219,7 +219,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     // - disco
     // - destination airport
     // - complete alternate routing
-    async enableAltn(atIndex: number) {
+    async enableAltn(atIndex: number, cruiseLevel: number) {
         if (!this.alternateDestinationAirport) {
             throw new Error('[FMS/FPM] Cannot enable alternate with no alternate destination defined');
         }
@@ -250,6 +250,9 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
         if (this.enrouteSegment.allLegs[this.enrouteSegment.legCount - 1]?.isDiscontinuity === false && alternateLegsToInsert[0]?.isDiscontinuity === false) {
             this.enrouteSegment.allLegs.push({ isDiscontinuity: true });
         }
+
+        this.setPerformanceData('cruiseFlightLevel', cruiseLevel);
+        this.setPerformanceData('costIndex', 0);
 
         this.enrouteSegment.allLegs.push(...alternateLegsToInsert);
         this.syncSegmentLegsChange(this.enrouteSegment);
