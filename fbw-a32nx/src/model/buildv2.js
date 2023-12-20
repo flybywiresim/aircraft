@@ -65,6 +65,12 @@ function loadGltf(gltfPath) {
 
     const allAnimations = gltf.animations || [];
     for (const anim of allAnimations) {
+        const channels = anim.channels || [];
+        for (const channel of channels) {
+            assert.ok(channel.target !== undefined);
+            channel.target.node = gltf.nodes[channel.target.node];
+        }
+
         const samplers = anim.samplers || [];
         for (const s of samplers) {
             for (const key of ['input', 'output']) {
@@ -155,6 +161,14 @@ function saveGltf(gltfPath, gltf, debugOuput = false) {
 
     const allAnimations = gltf.animations || [];
     for (const anim of allAnimations) {
+        const channels = anim.channels || [];
+        for (const channel of channels) {
+            assert.ok(channel.target !== undefined);
+            const targetNodeIndex = gltf.nodes.findIndex((n) => n.name === channel.target.node.name);
+            assert.ok(targetNodeIndex >= 0);
+            channel.target.node = targetNodeIndex;
+        }
+
         const samplers = anim.samplers || [];
         for (const s of samplers) {
             for (const key of ['input', 'output']) {
@@ -731,6 +745,12 @@ function appendNodes(baseGltf, sourceGltf, nodes, options) {
         assert.ok(baseGltf.scenes.length === 1);
         baseGltf.scenes[0].nodes.push(baseGltf.nodes.length);
         baseGltf.nodes.push(newNode);
+    }
+
+    if (options.copyAnimations !== 'false') {
+        const animsToCopy = sourceGltf.animations.filter((a) => a.channels.some((c) => nodes.indexOf(c.target.node.name) >= 0));
+        assert.ok(animsToCopy.every((a) => a.channels.every((c) => nodes.indexOf(c.target.node.name) >= 0)));
+        baseGltf.animations.push(...animsToCopy.map((a) => ({ ...a, channels: a.channels.map((c) => ({ ...c })),  })));
     }
 }
 
