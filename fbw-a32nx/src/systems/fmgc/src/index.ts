@@ -6,6 +6,7 @@ import { ApproachType, ApproachUtils, RunwayUtils } from '@flybywiresim/fbw-sdk'
 import { DataManager } from '@fmgc/flightplanning/new/DataManager';
 import { CoRouteUplinkAdapter } from '@fmgc/flightplanning/new/uplink/CoRouteUplinkAdapter';
 import { EfisInterface } from '@fmgc/efis/EfisInterface';
+import { EventBus } from '@microsoft/msfs-sdk';
 import { FlightPlanService } from './flightplanning/new/FlightPlanService';
 import { NavigationDatabase, NavigationDatabaseBackend } from './NavigationDatabase';
 import { FlightPhaseManager, getFlightPhaseManager } from './flightphase';
@@ -56,4 +57,5 @@ export {
     SimBriefUplinkAdapter,
     CoRouteUplinkAdapter,
     DataManager,
+    EventBus,
 };
