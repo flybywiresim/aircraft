@@ -98,7 +98,15 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     }
 
     async setAlternateDestinationAirport(icao: string | undefined) {
+        // TODO setting both airport and runway here means we fetch the airport's approaches twice from the DB
+        // TODO optimize
         await this.alternateFlightPlan.setDestinationAirport(icao);
+        // Reset procedures because they don't make sense anymore for the new alternate
+        await this.alternateFlightPlan.setDestinationRunway(undefined);
+        await this.alternateFlightPlan.setArrivalEnrouteTransition(undefined);
+        await this.alternateFlightPlan.setArrival(undefined);
+        await this.alternateFlightPlan.setApproach(undefined);
+        await this.alternateFlightPlan.setApproachVia(undefined);
 
         if (this.alternateFlightPlan.originAirport) {
             this.alternateFlightPlan.availableOriginRunways = await loadAllRunways(this.alternateFlightPlan.originAirport);
@@ -116,10 +124,6 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
         this.alternateFlightPlan.setOriginRunway(undefined);
         this.alternateFlightPlan.setDeparture(undefined);
         this.alternateFlightPlan.setDepartureEnrouteTransition(undefined);
-        this.alternateFlightPlan.setArrivalEnrouteTransition(undefined);
-        this.alternateFlightPlan.setArrival(undefined);
-        this.alternateFlightPlan.setApproach(undefined);
-        this.alternateFlightPlan.setApproachVia(undefined);
 
         this.alternateFlightPlan.allLegs.length = 0;
 
@@ -222,14 +226,17 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
 
         this.redistributeLegsAt(atIndex);
 
-        this.removeRange(atIndex + 1, this.legCount);
+        if (this.legCount > atIndex + 1) {
+            this.removeRange(atIndex + 1, this.legCount);
+        }
 
         await this.setDestinationAirport(this.alternateDestinationAirport.ident);
         await this.setDestinationRunway(this.alternateFlightPlan.destinationRunway?.ident ?? undefined);
-        await this.setApproach(this.alternateFlightPlan.approach?.ident ?? undefined);
-        await this.setApproachVia(this.alternateFlightPlan.approachVia?.ident ?? undefined);
-        await this.setArrival(this.alternateFlightPlan.arrival?.ident ?? undefined);
-        await this.setArrivalEnrouteTransition(this.alternateFlightPlan.arrivalEnrouteTransition?.ident ?? undefined);
+        // We call the segment methods because we only want to rebuild the arrival/approach when we've changed all the procedures
+        await this.approachSegment.setProcedure(this.alternateFlightPlan.approach?.ident ?? undefined);
+        await this.approachViaSegment.setProcedure(this.alternateFlightPlan.approachVia?.ident ?? undefined);
+        await this.arrivalSegment.setProcedure(this.alternateFlightPlan.arrival?.ident ?? undefined);
+        await this.arrivalEnrouteTransitionSegment.setProcedure(this.alternateFlightPlan.arrivalEnrouteTransition?.ident ?? undefined);
 
         const alternateLastEnrouteIndex = this.alternateFlightPlan.originSegment.legCount
             + this.alternateFlightPlan.departureRunwayTransitionSegment.legCount
@@ -250,6 +257,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
 
         this.deleteAlternateFlightPlan();
 
+        this.enqueueOperation(FlightPlanQueuedOperation.RebuildArrivalAndApproach);
         this.enqueueOperation(FlightPlanQueuedOperation.Restring);
         await this.flushOperationQueue();
     }

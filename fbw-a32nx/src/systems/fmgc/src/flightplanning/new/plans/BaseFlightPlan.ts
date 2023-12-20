@@ -1676,7 +1676,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         }
 
         const previousSegmentToArrival = this.previousSegment(this.arrivalEnrouteTransitionSegment);
-        if (previousSegmentToArrival.allLegs[previousSegmentToArrival.legCount - 1].isDiscontinuity === true) {
+        if (previousSegmentToArrival && previousSegmentToArrival.allLegs[previousSegmentToArrival.legCount - 1].isDiscontinuity === true) {
             previousSegmentToArrival.strung = false;
         }
 
