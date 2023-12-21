@@ -675,6 +675,11 @@
                 </UseTemplate>
             </Component>
 
+            <!-- EMERGENCY GEAR EXTENSION -->
+            <UseTemplate Name="FBW_HANDLING_GRAVITYGEAR_Template">
+                <NODE_ID>LEVER_GRAVITYGEAR</NODE_ID>
+            </UseTemplate>
+
             <CameraTitle>PedestalAft</CameraTitle>
         </Component>
 
@@ -2490,11 +2495,6 @@
                             <NO_SEQ1 />
                             <NO_SEQ2 />
                             <ROUND />
-                        </UseTemplate>
-
-                        <!-- EMERGENCY EXTENSION -->
-                        <UseTemplate Name="FBW_HANDLING_GRAVITYGEAR_Template">
-                            <NODE_ID>LEVER_GRAVITYGEAR</NODE_ID>
                         </UseTemplate>
 
                         <!-- EVAC CAPT & PURS -->
