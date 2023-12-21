@@ -5544,6 +5544,36 @@
                     <TOOLTIPID>Fold down the third occupant seat.</TOOLTIPID>
                 </UseTemplate>
             </Component>
+
+            <!-- SMALLARMREST FO STOW -->
+            <Component ID="A32NX_ARMREST_FO" Node="A32NX_ARMREST_FO_CLICK">
+                <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                    <ANIM_NAME>A32NX_ARMREST_FO</ANIM_NAME>
+                    <ANIM_LAG>150</ANIM_LAG>
+                    <ANIM_CODE>(L:A32NX_ARMREST_FO) 100 *</ANIM_CODE>
+                </UseTemplate>
+                <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
+                    <LEFT_SINGLE_CODE>
+                        (L:A32NX_ARMREST_FO) ! (&gt;L:A32NX_ARMREST_FO)
+                    </LEFT_SINGLE_CODE>
+                    <TOOLTIPID>Stow Armrest</TOOLTIPID>
+                </UseTemplate>
+            </Component>
+
+            <!-- SMALLARMREST CPT STOW -->
+            <Component ID="A32NX_ARMREST_CPT" Node="A32NX_ARMREST_CPT_CLICK">
+                <UseTemplate Name = "ASOBO_GT_Anim_Code">
+                    <ANIM_NAME>A32NX_ARMREST_CPT</ANIM_NAME>
+                    <ANIM_LAG>150</ANIM_LAG>
+                    <ANIM_CODE>(L:A32NX_ARMREST_CPT) 100 *</ANIM_CODE>
+                </UseTemplate>
+                <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
+                    <LEFT_SINGLE_CODE>
+                        (L:A32NX_ARMREST_CPT) ! (&gt;L:A32NX_ARMREST_CPT)
+                    </LEFT_SINGLE_CODE>
+                    <TOOLTIPID>Stow Armrest</TOOLTIPID>
+                </UseTemplate>
+            </Component>
         </Component>
 
         <Component ID="Pilot_Avatars">
