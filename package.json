@@ -14,7 +14,7 @@
     "build-a32nx:efb-translation": "cd fbw-a32nx/src/localization && node build-flypad-translation.js",
     "build-a32nx:locPak-translation": "cd fbw-a32nx/src/localization && node build-locPak-translation.js",
 
-    "build-a32nx:model": "node fbw-a32nx/src/model/build.js",
+    "build-a32nx:model": "node fbw-a32nx/src/model/buildv2.js && node fbw-a32nx/src/model/build.js",
     "build-a32nx:behavior": "node fbw-a32nx/src/behavior/build.js",
 
     "build-a32nx:atsu-common": "node fbw-a32nx/src/systems/atsu/common/build.js",

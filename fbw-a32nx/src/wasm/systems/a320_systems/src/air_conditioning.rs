@@ -888,7 +888,7 @@ impl A320PressurizationOverheadPanel {
         Self {
             mode_sel: AutoManFaultPushButton::new_auto(context, "PRESS_MODE_SEL"),
             man_vs_ctl_switch: SpringLoadedSwitch::new(context, "PRESS_MAN_VS_CTL"),
-            ldg_elev_knob: ValueKnob::new_with_value(context, "PRESS_LDG_ELEV", -2000.),
+            ldg_elev_knob: ValueKnob::new_with_value(context, "PRESS_LDG_ELEV", -4000.),
             ditching: NormalOnPushButton::new_normal(context, "PRESS_DITCHING"),
         }
     }
@@ -935,7 +935,7 @@ impl PressurizationOverheadShared for A320PressurizationOverheadPanel {
 
     fn ldg_elev_is_auto(&self) -> bool {
         let margin = 100.;
-        (self.ldg_elev_knob.value() + 2000.).abs() < margin
+        self.ldg_elev_knob.value() < -(2000. + margin)
     }
 
     fn ldg_elev_knob_value(&self) -> f64 {
@@ -2245,7 +2245,7 @@ mod tests {
 
             assert_eq!(test_bed.landing_elevation(), Length::new::<foot>(1000.));
 
-            test_bed = test_bed.command_ldg_elev_knob_value(-2000.).and_run();
+            test_bed = test_bed.command_ldg_elev_knob_value(-4000.).and_run();
 
             assert_eq!(test_bed.landing_elevation(), Length::default());
         }
