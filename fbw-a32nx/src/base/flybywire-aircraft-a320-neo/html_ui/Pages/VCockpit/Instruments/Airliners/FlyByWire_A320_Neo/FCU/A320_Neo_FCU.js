@@ -98,8 +98,8 @@ class A320_Neo_FCU_MainPage extends NavSystemPage {
         const ambientBrightness = this.ambientBrightness.get();
         const screenBrightess = this.screenBrightess.get();
 
-        const saturation = lerp(ambientBrightness * (1.05 - screenBrightess), 1, 0.8, 5, 100);
-        const luminosity = lerp(ambientBrightness * (1.05 - screenBrightess), 1, 0.8, 100, 55);
+        const saturation = lerp(ambientBrightness * (1.05 - screenBrightess), 1, 0.6, 10, 100);
+        const luminosity = lerp(ambientBrightness * (1.05 - screenBrightess), 1, 0.6, 80, 55);
         const colour = `hsl(31, ${saturation.toFixed(1)}%, ${luminosity.toFixed(1)}%)`;
         this.gps.style.setProperty('--main-display-colour', colour);
 
