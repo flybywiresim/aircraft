@@ -8,7 +8,8 @@
         "nodes": [
           "FUSELAGE",
           "FUSELAGE_FROSTED",
-          "INTERIOR"
+          "INTERIOR",
+          "PORTHOLE"
         ],
         "options": {
           "materials": "keep"
@@ -34,7 +35,8 @@
           "WINDSHIELD_CAPT_WIPED",
           "WINDSHIELD_FO_UNWIPED",
           "WINDSHIELD_FO_WIPED",
-          "A32NX_WINDSHIELD_FRAME"
+          "A32NX_WINDSHIELD_FRAME",
+          "LIVERY2"
         ],
         "options": {
           "materials": "keep"
