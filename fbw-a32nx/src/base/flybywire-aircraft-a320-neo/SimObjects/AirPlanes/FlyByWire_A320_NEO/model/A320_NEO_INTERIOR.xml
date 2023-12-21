@@ -2048,6 +2048,16 @@
                             <VISIBILITY_CODE>0</VISIBILITY_CODE>
                         </UseTemplate>
                     </Component>
+
+                    <Component ID="LIGHTS_OVHD_NOSMOKE_AUTO" Node="LIGHTS_OVHD_NOSMOKE_AUTO">
+                        <UseTemplate Name="ASOBO_LIGHTING_Panel_Emissive_Template">
+                            <NODE_ID>LIGHTS_OVHD_NOSMOKE_AUTO</NODE_ID>
+                        </UseTemplate>
+                        <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                            <!-- FIXME implement -->
+                            <VISIBILITY_CODE>1</VISIBILITY_CODE>
+                        </UseTemplate>
+                    </Component>
                 </Component>
 
                 <Component ID="OVERHEAD_KNOB_INTEG">
