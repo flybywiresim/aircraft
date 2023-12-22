@@ -828,7 +828,7 @@ class CDUFlightPlanPage {
     }
 
     static async clearElement(mcdu, fpIndex, offset, forPlan, forAlternate, scratchpadCallback) {
-        if (!this.ensureCanClearElement(mcdu, fpIndex, offset, forPlan, forAlternate, scratchpadCallback)) {
+        if (!this.ensureCanClearElement(mcdu, fpIndex, forPlan, forAlternate, scratchpadCallback)) {
             return;
         }
 
@@ -857,7 +857,9 @@ class CDUFlightPlanPage {
         CDUFlightPlanPage.ShowPage(mcdu, offset, forPlan);
     }
 
-    static ensureCanClearElement(mcdu, fpIndex, offset, forPlan, forAlternate, scratchpadCallback) {
+    static ensureCanClearElement(mcdu, fpIndex, forPlan, forAlternate, scratchpadCallback) {
+        const targetPlan = mcdu.flightPlan(forPlan, forAlternate);
+
         if (forPlan === Fmgc.FlightPlanIndex.Active && mcdu.flightPlanService.hasTemporary) {
             mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
             scratchpadCallback();
@@ -879,7 +881,6 @@ class CDUFlightPlanPage {
             }
         }
 
-        const targetPlan = mcdu.flightPlan(forPlan, forAlternate);
         const element = targetPlan.maybeElementAt(fpIndex);
 
         if (!element) {
