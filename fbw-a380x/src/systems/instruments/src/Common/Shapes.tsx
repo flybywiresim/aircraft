@@ -9,11 +9,11 @@ type TriangleProps = {
     scale?: number
 }
 
-export const Triangle = ({ x, y, colour, fill, orientation, scale = 1 } : TriangleProps) => {
+export const Triangle = ({ x, y, colour, fill, orientation, scale = 1 }: TriangleProps) => {
     // x,y marks the top of the triangle
     // You can rotate this 0, 90, -90 degrees
-    const polyPoints = `${x + (scale * 9)},${y + (2 * scale * 7)} ${x},${y} ${x - (scale * 9)},${y + (2 * scale * 7)}`;
-    const transformation = `rotate(${orientation} ${x} ${y})`;
+    const polyPoints = `${(scale * 8)},${(2 * scale * 7)} 0,0 ${-(scale * 8)},${(2 * scale * 7)}`;
+    const transformation = `translate(${x} ${y}) rotate(${orientation} 0 0)`;
     let classSelector = `${colour} Line`;
     if (fill === 1) {
         classSelector += ` Fill ${colour}`;

@@ -1,0 +1,86 @@
+[
+  {
+    "base_model": "./a320-exterior/A320_NEO_LOD00.gltf",
+    "operations": [
+      {
+        "type": "replace_nodes",
+        "file": "./fuse/A320_NEO_LOD00.gltf",
+        "nodes": [
+          "FUSELAGE",
+          "FUSELAGE_FROSTED",
+          "INTERIOR",
+          "PORTHOLE"
+        ],
+        "options": {
+          "materials": "keep"
+        }
+      },
+      {
+        "type": "replace_nodes",
+        "file": "./fuse/A320_NEO_LOD00.gltf",
+        "nodes": [
+          "WINDSHIELD"
+        ],
+        "options": {
+          "materials": "add"
+        }
+      },
+      {
+        "type": "append_nodes",
+        "file": "./fuse/A320_NEO_LOD00.gltf",
+        "nodes": [
+          "RIBBONS",
+          "DECAL2",
+          "WINDSHIELD_CAPT_UNWIPED",
+          "WINDSHIELD_CAPT_WIPED",
+          "WINDSHIELD_FO_UNWIPED",
+          "WINDSHIELD_FO_WIPED",
+          "A32NX_WINDSHIELD_FRAME",
+          "LIVERY2"
+        ],
+        "options": {
+          "materials": "keep"
+        }
+      },
+      {
+        "type": "append_nodes",
+        "file": "./fuse/A320_NEO_LOD00.gltf",
+        "nodes": [
+          "DECAL_BANDIT_2",
+          "Decals_C_WHEEL",
+          "Decals_CargoDoor_Fwd",
+          "Decals_CargoDoor_FwdRidge",
+          "Decals_Door_Fwd",
+          "Decals_Door_Rear",
+          "Decals_Static",
+          "Decals_Static_Ridge",
+          "Decals_ZigZag",
+          "FX_EXHAUST_APU",
+          "HoneywellJetwave",
+          "Ribbons_Overlay_Cargo",
+          "Ribbons_Overlay_Door-Fwd",
+          "Ribbons_Overlay_Door-Rear",
+          "Ribbons_Overlay_Fuse",
+          "SOUND_AFT_GALLEY",
+          "SOUND_BLOWER_EXTRACT",
+          "SOUND_DOOR_AFT_LEFT",
+          "SOUND_DOOR_AFT_RIGHT",
+          "SOUND_DOOR_FWD_LEFT",
+          "SOUND_DOOR_FWD_RIGHT",
+          "SOUND_ENGINE_LEFT",
+          "SOUND_ENGINE_RIGHT",
+          "SOUND_FWD_GALLEY",
+          "SOUND_PACK_OUTFLOW_LEFT",
+          "SOUND_PACK_OUTFLOW_RIGHT",
+          "Trim_Grade",
+          "Trim_Marker_L",
+          "Trim_Marker_R"
+        ],
+        "options": {
+          "materials": "add"
+        }
+      }
+    ],
+    "output": "../../out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/model/A320_NEO_LOD00.gltf"
+  }
+]
