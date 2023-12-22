@@ -201,8 +201,8 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
         return this.callFunctionViaRpc('revertHoldToComputed', at, planIndex, alternate);
     }
 
-    enableAltn(atIndexInAlternate: number, planIndex: number): Promise<void> {
-        return this.callFunctionViaRpc('enableAltn', atIndexInAlternate, planIndex);
+    enableAltn(atIndexInAlternate: number, cruiseLevel: number, planIndex: number): Promise<void> {
+        return this.callFunctionViaRpc('enableAltn', atIndexInAlternate, cruiseLevel, planIndex);
     }
 
     setPilotEnteredAltitudeConstraintAt(atIndex: number, isDescentConstraint: boolean, constraint?: AltitudeConstraint, planIndex?: FlightPlanIndex, alternate?: boolean): Promise<void> {
