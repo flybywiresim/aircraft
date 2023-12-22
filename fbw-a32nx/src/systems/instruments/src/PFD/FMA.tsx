@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { ComponentProps, DisplayComponent, FSComponent, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import { ComponentProps, ConsumerSubject, DisplayComponent, FSComponent, MappedSubject, Subject, Subscribable, SubscribableMapFunctions, VNode } from '@microsoft/msfs-sdk';
 import { ArincEventBus, Arinc429Word, Arinc429RegisterSubject } from '@flybywiresim/fbw-sdk';
 
 import { ArmedLateralMode, ArmedVerticalMode, isArmed, LateralMode, VerticalMode } from '@shared/autopilot';
@@ -688,9 +688,19 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
 
     private fmaTextRef = FSComponent.createRef<SVGTextElement>();
 
+    private readonly verticalText = Subject.create('');
+
+    private readonly additionalText = Subject.create('');
+
     private selectedVS = 0;
 
-    private inSpeedProtection = false;
+    private readonly apSpeedProtection = ConsumerSubject.create(null, false);
+
+    private readonly inSpeedProtection = MappedSubject.create(
+        ([apSpeedProtection, activeVerticalMode]) => apSpeedProtection && (activeVerticalMode === 14 || activeVerticalMode === 15),
+        this.apSpeedProtection,
+        this.activeVerticalModeSub,
+    );
 
     private fmaModeReversion = false;
 
@@ -798,7 +808,7 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
             this.displayModeChangedPath(true);
         }
 
-        const inSpeedProtection = this.inSpeedProtection && (this.activeVerticalModeSub.get() === 14 || this.activeVerticalModeSub.get() === 15);
+        const inSpeedProtection = this.inSpeedProtection.get();
 
         if (inSpeedProtection || this.fmaModeReversion) {
             this.boxClassSub.set('NormalStroke None');
@@ -821,7 +831,8 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
 
         this.activeVerticalModeClassSub.set(VsFPA ? 'FontMediumSmaller MiddleAlign Green' : 'FontMedium MiddleAlign Green');
 
-        this.fmaTextRef.instance.innerHTML = `<tspan>${text}</tspan><tspan xml:space="preserve" class=${inSpeedProtection ? 'PulseCyanFill' : 'Cyan'}>${additionalText}</tspan>`;
+        this.verticalText.set(text);
+        this.additionalText.set(additionalText);
 
         return text.length > 0;
     }
@@ -857,10 +868,8 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
             this.getText();
         });
 
-        sub.on('fmaSpeedProtection').whenChanged().handle((protection) => {
-            this.inSpeedProtection = protection;
-            this.getText();
-        });
+        this.apSpeedProtection.setConsumer(sub.on('fmaSpeedProtection'));
+        this.apSpeedProtection.sub(this.getText.bind(this));
 
         sub.on('expediteMode').whenChanged().handle((e) => {
             this.expediteMode = e;
@@ -888,9 +897,17 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
                 <path ref={this.inModeReversionPathRef} class="NormalStroke White BlinkInfinite" d="m35.756 1.8143h27.918v6.0476h-27.918z" />
 
                 <text ref={this.fmaTextRef} style="white-space: pre" class={this.activeVerticalModeClassSub} x="49.921795" y="7.1040988">
-
-                    {/* set directly via innerhtml as tspan was invisble for some reason when set here */}
-
+                    <tspan>{this.verticalText}</tspan>
+                    <tspan
+                        xml:space="preserve"
+                        class={{
+                            PulseCyanFill: this.inSpeedProtection,
+                            Cyan: this.inSpeedProtection.map(SubscribableMapFunctions.not()),
+                        }}
+                    >
+                        {this.additionalText}
+                    </tspan>
+                    `
                 </text>
             </g>
         );
@@ -1471,37 +1488,35 @@ class D3Cell extends DisplayComponent<{bus: ArincEventBus}> {
 
     private readonly noDhSelected = this.fmEisDiscrete2.map((r) => r.bitValueOr(29, false));
 
-    private mdaMdhHtml = MappedSubject.create(
-        ([mda, dh, noDhSelected]) => {
-            if (noDhSelected) {
-                return '<tspan>NO DH</tspan>';
+    private readonly mdaDhValueText = Subject.create('');
+
+    private readonly mdaDhText = MappedSubject.create(
+        ([noDh, dh, mda]) => {
+            if (noDh) {
+                this.mdaDhValueText.set('');
+                return 'NO DH';
             }
 
             if (!dh.isNoComputedData() && !dh.isFailureWarning()) {
-                const DHText = Math.round(dh.value).toString().padStart(4, ' ');
-                return `<tspan>RADIO</tspan><tspan class="Cyan" xml:space="preserve">${DHText}</tspan>`;
+                this.mdaDhValueText.set(Math.round(dh.value).toString().padStart(4, ' '));
+                return 'RADIO';
             }
 
             if (!mda.isNoComputedData() && !mda.isFailureWarning()) {
-                const MDAText = Math.round(mda.value).toString().padStart(6, ' ');
-                return `<tspan>BARO</tspan><tspan class="Cyan" xml:space="preserve">${MDAText}</tspan>`;
+                this.mdaDhValueText.set(Math.round(mda.value).toString().padStart(6, ' '));
+                return 'BARO';
             }
 
+            this.mdaDhValueText.set('');
             return '';
         },
-        this.mda,
-        this.dh,
         this.noDhSelected,
+        this.dh,
+        this.mda,
     );
 
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
-
-        this.mdaMdhHtml.sub((html) => this.textRef.instance.innerHTML = html);
-        this.noDhSelected.sub((noDh) => {
-            this.textRef.instance.classList.toggle('FontSmallest', !noDh);
-            this.textRef.instance.classList.toggle('FontMedium', noDh);
-        });
 
         const sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values>();
 
@@ -1512,7 +1527,20 @@ class D3Cell extends DisplayComponent<{bus: ArincEventBus}> {
 
     render(): VNode {
         return (
-            <text ref={this.textRef} class="FontSmallest MiddleAlign White" x="118.38384" y="21.104172" />
+            <text
+                ref={this.textRef}
+                class={{
+                    FontSmallest: this.noDhSelected.map(SubscribableMapFunctions.not()),
+                    FontMedium: this.noDhSelected,
+                    MiddleAlign: true,
+                    White: true,
+                }}
+                x="118.38384"
+                y="21.104172"
+            >
+                <tspan>{this.mdaDhText}</tspan>
+                <tspan class="Cyan" xml:space="preserve">{this.mdaDhValueText}</tspan>
+            </text>
         );
     }
 }

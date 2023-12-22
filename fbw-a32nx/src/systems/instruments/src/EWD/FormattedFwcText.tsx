@@ -36,11 +36,7 @@ export class FormattedFwcText extends DisplayComponent<FormattedFwcTextProps> {
                 if (char === '\x1b' || char === '\r') {
                     if (buffer !== '') {
                         // close current part
-                        const s = document.createElementNS('http://www.w3.org/2000/svg', 'tspan');
-                        s.setAttribute('key', buffer);
-                        s.setAttribute('class', `${color} EWDWarn`);
-                        s.textContent = buffer;
-                        spans.push(s);
+                        spans.push(<tspan key={buffer} class={{ [color]: true, EWDWarn: true }}>{buffer}</tspan>);
                         buffer = '';
 
                         if (underlined) {
@@ -152,11 +148,7 @@ export class FormattedFwcText extends DisplayComponent<FormattedFwcTextProps> {
             }
 
             if (buffer !== '') {
-                const s = document.createElementNS('http://www.w3.org/2000/svg', 'tspan');
-                s.setAttribute('key', buffer);
-                s.setAttribute('class', `${color} EWDWarn`);
-                s.textContent = buffer;
-                spans.push(s);
+                spans.push(<tspan key={buffer} class={{ [color]: true, EWDWarn: true }}>{buffer}</tspan>);
             }
 
             if (spans.length) {
