@@ -9,7 +9,7 @@ import { loadAirport, loadAllDepartures, loadAllRunways, loadRunway } from '@fmg
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { BaseFlightPlan, FlightPlanQueuedOperation } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 import { bearingTo } from 'msfs-geo';
-import { FlightPlanElement, FlightPlanLeg } from '../legs/FlightPlanLeg';
+import { FlightPlanElement, FlightPlanLeg, FlightPlanLegFlags } from '../legs/FlightPlanLeg';
 import { NavigationDatabaseService } from '../NavigationDatabaseService';
 
 export class OriginSegment extends FlightPlanSegment {
@@ -56,8 +56,39 @@ export class OriginSegment extends FlightPlanSegment {
         this.insertNecessaryDiscontinuities();
     }
 
+    private resetOriginLegFlag() {
+        this.allLegs.forEach((leg) => {
+            if (leg.isDiscontinuity === false) {
+                leg.flags &= ~FlightPlanLegFlags.Origin;
+            }
+        });
+
+        // Do the same for the departure runway transition segment
+        this.flightPlan.departureRunwayTransitionSegment?.allLegs?.forEach((leg) => {
+            if (leg.isDiscontinuity === false) {
+                leg.flags &= ~FlightPlanLegFlags.Origin;
+            }
+        });
+
+        // Do the same for the departure transition segment
+        this.flightPlan.departureSegment?.allLegs?.forEach((leg) => {
+            if (leg.isDiscontinuity === false) {
+                leg.flags &= ~FlightPlanLegFlags.Origin;
+            }
+        });
+
+        // Do the same for the departure enroute transition segment
+        this.flightPlan.departureEnrouteTransitionSegment?.allLegs?.forEach((leg) => {
+            if (leg.isDiscontinuity === false) {
+                leg.flags &= ~FlightPlanLegFlags.Origin;
+            }
+        });
+    }
+
     async refreshOriginLegs() {
         const db = NavigationDatabaseService.activeDatabase.backendDatabase;
+
+        this.resetOriginLegFlag();
 
         let addOriginLeg = true;
         let addRunwayLeg = true;
@@ -73,6 +104,7 @@ export class OriginSegment extends FlightPlanSegment {
 
             if (firstDepartureLeg?.isDiscontinuity === false && firstDepartureLeg.isXF()) {
                 if (firstDepartureLeg.terminationWaypoint().ident === this.runway.ident) {
+                    firstDepartureLeg.flags |= FlightPlanLegFlags.Origin;
                     addOriginLeg = false;
                     addRunwayLeg = false;
                 } else {
@@ -86,7 +118,9 @@ export class OriginSegment extends FlightPlanSegment {
 
         this.allLegs.length = 0;
         if (addOriginLeg) {
-            this.allLegs.push(FlightPlanLeg.fromAirportAndRunway(this, this.flightPlan.departureSegment.procedure?.ident ?? '', this.originAirport, addRunwayLeg ? this.runway : undefined));
+            const originLeg = FlightPlanLeg.fromAirportAndRunway(this, this.flightPlan.departureSegment.procedure?.ident ?? '', this.originAirport, addRunwayLeg ? this.runway : undefined);
+            originLeg.flags |= FlightPlanLegFlags.Origin;
+            this.allLegs.push(originLeg);
         }
 
         if (this.runway) {

@@ -17,7 +17,7 @@ import {
     WaypointDescriptor,
 } from '@flybywiresim/fbw-sdk';
 import { OriginSegment } from '@fmgc/flightplanning/new/segments/OriginSegment';
-import { FlightPlanElement, FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
+import { FlightPlanElement, FlightPlanLeg, FlightPlanLegFlags } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { DepartureSegment } from '@fmgc/flightplanning/new/segments/DepartureSegment';
 import { ArrivalSegment } from '@fmgc/flightplanning/new/segments/ArrivalSegment';
 import { ApproachSegment } from '@fmgc/flightplanning/new/segments/ApproachSegment';
@@ -355,11 +355,12 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     availableApproachVias: ProcedureTransition[] = [];
 
     get originLeg() {
-        return this.allLegs[0];
+        const originLegIndex = this.originLegIndex;
+        return originLegIndex >= 0 ? this.allLegs[originLegIndex] : undefined;
     }
 
     get originLegIndex() {
-        return this.originSegment.allLegs.length > 0 ? 0 : -1;
+        return this.allLegs.findIndex((it) => it.isDiscontinuity === false && (it.flags & FlightPlanLegFlags.Origin));
     }
 
     get destinationLeg() {
@@ -747,11 +748,6 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
             const previousElement = this.elementAt(index - 1);
 
             if (previousElement.isDiscontinuity === false) {
-                // Not allowed to clear disco after MANUAL
-                if (previousElement.isVectors()) {
-                    return false;
-                }
-
                 if (insertDiscontinuity) {
                     segment.allLegs.splice(indexInSegment, 1, { isDiscontinuity: true });
                 } else {
@@ -774,6 +770,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
         this.adjustIFLegs();
         this.redistributeLegsAt(index);
+        this.ensureNoDuplicateDiscontinuities();
 
         this.incrementVersion();
 
@@ -1625,6 +1622,40 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
             }
 
             a += segment.allLegs.length;
+        }
+    }
+
+    private ensureNoDuplicateDiscontinuities() {
+        let numConsecutiveDiscos = 1;
+
+        for (let i = 0; i < this.orderedSegments.length; i++) {
+            const segment = this.orderedSegments[i];
+            const toDelete = [];
+
+            for (let j = 0; j < segment.allLegs.length; j++) {
+                const element = segment.allLegs[j];
+                if (element.isDiscontinuity) {
+                    // DISCO
+                    numConsecutiveDiscos++;
+                } else {
+                    // LEG
+                    if (numConsecutiveDiscos > 1) {
+                        toDelete.push({ start: j - numConsecutiveDiscos + 1, length: numConsecutiveDiscos - 1 });
+                    }
+
+                    numConsecutiveDiscos = 0;
+                }
+            }
+
+            if (numConsecutiveDiscos > 1) {
+                toDelete.push({ start: segment.allLegs.length - numConsecutiveDiscos + 1, length: numConsecutiveDiscos - 1 });
+                numConsecutiveDiscos = 1;
+            }
+
+            for (let i = toDelete.length - 1; i >= 0; i--) {
+                const { start, length } = toDelete[i];
+                segment.allLegs.splice(start, length);
+            }
         }
     }
 

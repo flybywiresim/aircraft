@@ -36,6 +36,7 @@ import { ReadonlyFlightPlanLeg } from '@fmgc/flightplanning/new/legs/ReadonlyFli
  */
 export interface SerializedFlightPlanLeg {
     ident: string,
+    flags: number,
     annotation: string,
     isDiscontinuity: false,
     definition: FlightPlanLegDefinition,
@@ -50,6 +51,7 @@ export interface SerializedFlightPlanLeg {
 
 export enum FlightPlanLegFlags {
     DirectToTurningPoint = 1 << 0,
+    Origin = 1 << 1,
 }
 
 export interface LegCalculations {
@@ -110,6 +112,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
     serialize(): SerializedFlightPlanLeg {
         return {
             ident: this.ident,
+            flags: this.flags,
             annotation: this.annotation,
             isDiscontinuity: false,
             definition: JSON.parse(JSON.stringify(this.definition)),
@@ -131,6 +134,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
         const leg = FlightPlanLeg.fromProcedureLeg(segment, serialized.definition, serialized.definition.procedureIdent);
 
         leg.ident = serialized.ident;
+        leg.flags = serialized.flags;
         leg.annotation = serialized.annotation;
         leg.type = serialized.effectiveType;
         leg.modifiedHold = serialized.modifiedHold;
