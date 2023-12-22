@@ -194,7 +194,9 @@ impl ElectronicControlBox {
             TurbineState::Starting => {
                 const STARTING_WARNING_EGT_BELOW_25000_FEET: f64 = 900.;
                 const STARTING_WARNING_EGT_AT_OR_ABOVE_25000_FEET: f64 = 982.;
-                if self.inlet_pressure > Pressure::new::<psi>(5.45) {
+                let fl250_isa_pressure = Pressure::new::<psi>(5.45);
+
+                if self.inlet_pressure > fl250_isa_pressure {
                     ThermodynamicTemperature::new::<degree_celsius>(
                         STARTING_WARNING_EGT_BELOW_25000_FEET,
                     )
