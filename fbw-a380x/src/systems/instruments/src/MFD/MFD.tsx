@@ -97,7 +97,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
 
     private efisInterface = new EfisInterface('L');
 
-    private guidanceController = new GuidanceController(this.fmgc, this.flightPlanService, this.efisInterface);
+    private guidanceController: GuidanceController;
 
     private navigation = new Navigation(this.flightPlanService, undefined);
 
@@ -107,13 +107,13 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
 
     private navaidTuner = new NavaidTuner(this.navigation, this.navaidSelectionManager, this.landingSystemSelectionManager);
 
-    private efisSymbols = new EfisSymbols(this.guidanceController, this.flightPlanService, this.navaidTuner, this.efisInterface);
+    private efisSymbols: EfisSymbols;
 
     private flightPhaseManager = getFlightPhaseManager();
 
     private dataManager = new DataManager(this);
 
-    private fmService = new MfdFlightManagementService(this, this.flightPlanService, this.guidanceController, this.fmgc, this.navigation, this.flightPhaseManager, this.efisInterface);
+    private fmService: MfdFlightManagementService;
 
     public fmsErrors = ArraySubject.create<FmsErrorMessage>();
 
@@ -204,7 +204,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
         this.flightPlanService.active.setPerformanceData('cruiseFlightLevel', 230); */
     }
 
-    private init() {
+    private initSimVars() {
         // Reset SimVars
         SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_PFD', 'knots', 0);
         SimVar.SetSimVarValue('L:A32NX_SPEEDS_MANAGED_ATHR', 'knots', 0);
@@ -615,7 +615,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
             this.uiService.navigateTo('fms/data/status');
 
             this.flightPlanService.reset().then(() => {
-                this.init();
+                this.initSimVars();
                 this.fmService.deleteAllStoredWaypoints();
                 this.clearLatestFmsErrorMessage();
                 SimVar.SetSimVarValue('L:A32NX_COLD_AND_DARK_SPAWN', 'Bool', true).then(() => {
@@ -722,6 +722,11 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
         super.onAfterRender(node);
 
         await this.initializeFlightPlans();
+
+        this.guidanceController = new GuidanceController(this.fmgc, this.flightPlanService, this.efisInterface);
+        this.efisSymbols = new EfisSymbols(this.guidanceController, this.flightPlanService, this.navaidTuner, this.efisInterface);
+        this.fmService = new MfdFlightManagementService(this, this.flightPlanService, this.guidanceController, this.fmgc, this.navigation, this.flightPhaseManager, this.efisInterface);
+
         this.navaidTuner.init();
         this.efisSymbols.init();
         this.flightPhaseManager.init();
@@ -730,12 +735,15 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
 
         let lastUpdateTime = Date.now();
 
-        this.init();
+        this.initSimVars();
 
         this.flightPhaseManager.addOnPhaseChanged((prev, next) => this.onFlightPhaseChanged(prev, next));
 
         const hEventSub = this.props.bus.getSubscriber<HEvent>();
-        hEventSub.on('hEvent').handle(eventName => this.fmService.acInterface.onEvent(eventName));
+        hEventSub.on('hEvent').handle(eventName => {
+            console.log(`H event: ${eventName}`);
+            this.fmService.acInterface.onEvent(eventName);
+        });
 
         setInterval(() => {
             const now = Date.now();
@@ -760,6 +768,43 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
             this.displayPowered.set(value);
         });
 
+        // Note: This should be done with H events instead, and in a more intelligent way (sides L/R as well). Can't get H events running rn though.
+        sub.on('kccuDir').whenChanged().handle((value) => {
+            if (value === 1) {
+                this.uiService.navigateTo('fms/active/f-pln-direct-to');
+            }
+        });
+
+        sub.on('kccuPerf').whenChanged().handle((value) => {
+            if (value === 1) {
+                this.uiService.navigateTo('fms/active/perf');
+            }
+        });
+
+        sub.on('kccuInit').whenChanged().handle((value) => {
+            if (value === 1) {
+                this.uiService.navigateTo('fms/active/init');
+            }
+        });
+
+        sub.on('kccuNavaid').whenChanged().handle((value) => {
+            if (value === 1) {
+                this.uiService.navigateTo('fms/position/navaids');
+            }
+        });
+
+        sub.on('kccuFpln').whenChanged().handle((value) => {
+            if (value === 1) {
+                this.uiService.navigateTo('fms/active/f-pln');
+            }
+        });
+
+        sub.on('kccuDest').whenChanged().handle((value) => {
+            if (value === 1) {
+                this.uiService.navigateTo('fms/active/f-pln/dest');
+            }
+        });
+
         this.uiService.activeUri.sub((uri) => this.activeUriChanged(uri));
 
         this.topRef.instance.addEventListener('mousemove', (ev) => {
@@ -767,7 +812,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
         });
 
         // Navigate to initial page
-        this.uiService.navigateTo('fms/active/f-pln');
+        this.uiService.navigateTo('fms/active/init');
     }
 
     private activeUriChanged(uri: ActiveUriInformation) {

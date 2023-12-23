@@ -11,6 +11,12 @@ export type MfdSimvars = {
     adirs1MaintWord: number;
     adirs2MaintWord: number;
     adirs3MaintWord: number;
+    kccuDir: number;
+    kccuPerf: number;
+    kccuInit: number;
+    kccuNavaid: number;
+    kccuFpln: number;
+    kccuDest: number;
   }
 
 export enum MFDVars {
@@ -24,6 +30,12 @@ export enum MFDVars {
     adirs1MaintWord = 'L:A32NX_ADIRS_IR_1_MAINT_WORD',
     adirs2MaintWord = 'L:A32NX_ADIRS_IR_2_MAINT_WORD',
     adirs3MaintWord = 'L:A32NX_ADIRS_IR_3_MAINT_WORD',
+    kccuDir = 'L:A32NX_KCCU_L_DIR',
+    kccuPerf = 'L:A32NX_KCCU_L_PERF',
+    kccuInit = 'L:A32NX_KCCU_L_INIT',
+    kccuNavaid = 'L:A32NX_KCCU_L_NAVAID',
+    kccuFpln = 'L:A32NX_KCCU_L_FPLN',
+    kccuDest = 'L:A32NX_KCCU_L_DEST',
   }
 
 /** A publisher to poll and publish nav/com simvars. */
@@ -39,6 +51,12 @@ export class MfdSimvarPublisher extends SimVarPublisher<MfdSimvars> {
         ['adirs1MaintWord', { name: MFDVars.adirs1MaintWord, type: SimVarValueType.Number }],
         ['adirs2MaintWord', { name: MFDVars.adirs2MaintWord, type: SimVarValueType.Number }],
         ['adirs3MaintWord', { name: MFDVars.adirs3MaintWord, type: SimVarValueType.Number }],
+        ['kccuDir', { name: MFDVars.kccuDir, type: SimVarValueType.Number }],
+        ['kccuPerf', { name: MFDVars.kccuPerf, type: SimVarValueType.Number }],
+        ['kccuInit', { name: MFDVars.kccuInit, type: SimVarValueType.Number }],
+        ['kccuNavaid', { name: MFDVars.kccuNavaid, type: SimVarValueType.Number }],
+        ['kccuFpln', { name: MFDVars.kccuFpln, type: SimVarValueType.Number }],
+        ['kccuDest', { name: MFDVars.kccuDest, type: SimVarValueType.Number }],
     ])
 
     public constructor(bus: EventBus) {

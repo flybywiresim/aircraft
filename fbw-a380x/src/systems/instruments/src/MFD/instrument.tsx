@@ -3,11 +3,11 @@ import { MfdComponent } from './MFD';
 import { MfdSimvarPublisher } from './shared/MFDSimvarPublisher';
 
 class A380X_MFD extends BaseInstrument {
-    private bus: EventBus;
+    private readonly bus: EventBus;
 
-    private simVarPublisher: MfdSimvarPublisher;
+    private readonly simVarPublisher: MfdSimvarPublisher;
 
-    private readonly hEventPublisher;
+    private readonly hEventPublisher: HEventPublisher;
 
     private readonly clock: Clock;
 
@@ -44,18 +44,15 @@ class A380X_MFD extends BaseInstrument {
 
         this.clock.init();
 
-        this.simVarPublisher.subscribe('elec');
-        this.simVarPublisher.subscribe('elecFo');
-
-        this.simVarPublisher.subscribe('coldDark');
-        this.simVarPublisher.subscribe('potentiometerCaptain');
-        this.simVarPublisher.subscribe('potentiometerFo');
-        this.simVarPublisher.subscribe('flightPhase');
-
         FSComponent.render(<MfdComponent bus={this.bus} instrument={this} />, document.getElementById('MFD_CONTENT'));
 
         // Remove "instrument didn't load" text
         document.getElementById('MFD_CONTENT').querySelector(':scope > h1').remove();
+    }
+
+    public onInteractionEvent(args: string[]): void {
+        console.warn(args[0]);
+        this.hEventPublisher.dispatchHEvent(args[0]);
     }
 
     /**

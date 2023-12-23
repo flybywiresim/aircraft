@@ -407,6 +407,11 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
+        if (this.props.uiService.activeUri.get().extra === 'dest') {
+            // Scroll to end of FPLN (destination on last line)
+            this.scrollToDest();
+        }
+
         this.subs.push(this.displayEfobAndWind.sub((val) => {
             this.efobAndWindButtonDynamicContent.set(val === true ? this.efobWindButton() : this.spdAltButton());
             this.efobAndWindButtonMenuItems.set([{
@@ -434,7 +439,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
         }, true));
 
         const sub = this.props.bus.getSubscriber<ClockEvents>();
-        this.subs.push(sub.on('realTime').atFrequency(1).handle((_t) => {
+        this.subs.push(sub.on('realTime').atFrequency(0.5).handle((_t) => {
             this.onNewData();
         }));
     }
@@ -478,6 +483,15 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                     T.WIND
                 </span>
             </div>
+        );
+    }
+
+    private scrollToDest() {
+        this.displayFplnFromLegIndex.set(
+            this.loadedFlightPlan.destinationLegIndex
+            // eslint-disable-next-line max-len
+            + this.props.fmService.guidanceController.pseudoWaypoints.pseudoWaypoints.filter((it) => it.alongLegIndex < this.loadedFlightPlan.destinationLegIndex).length
+            - (this.tmpyActive.get() ? 7 : 8),
         );
     }
 
@@ -614,12 +628,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                             <Button
                                 label="DEST"
                                 disabled={this.destButtonDisabled}
-                                onClick={() => this.displayFplnFromLegIndex.set(
-                                    this.loadedFlightPlan.destinationLegIndex
-                                    // eslint-disable-next-line max-len
-                                    + this.props.fmService.guidanceController.pseudoWaypoints.pseudoWaypoints.filter((it) => it.alongLegIndex < this.loadedFlightPlan.destinationLegIndex).length
-                                    - (this.tmpyActive.get() ? 7 : 8),
-                                )}
+                                onClick={() => this.scrollToDest()}
                                 buttonStyle="height: 60px; margin-right: 5px; padding: auto 15px auto 15px;"
                             />
                         </div>
