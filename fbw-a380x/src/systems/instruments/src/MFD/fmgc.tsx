@@ -435,7 +435,6 @@ export class FmgcDataInterface implements Fmgc {
     }
     /**
      * Returns true if any one engine is running (N2 > 20)
-     * @returns {boolean}
      */
     //TODO: can this be an util?
     public isAnEngineOn(): boolean {
@@ -444,10 +443,9 @@ export class FmgcDataInterface implements Fmgc {
 
     /**
      * Returns true only if all engines are running (N2 > 20)
-     * @returns {boolean}
      */
     //TODO: can this be an util?
-    isAllEngineOn() {
+    isAllEngineOn(): boolean {
         return this.isEngineOn(1) && this.isEngineOn(2) && this.isEngineOn(3) && this.isEngineOn(4);
     }
 

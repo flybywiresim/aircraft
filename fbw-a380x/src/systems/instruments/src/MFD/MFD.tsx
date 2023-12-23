@@ -527,8 +527,8 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
             this.fmService.acInterface.updatePreSelSpeedMach(this.fmgc.data.descentPreSelSpeed.get());
 
             // This checks against the pilot defined cruise altitude and the automatically populated cruise altitude
-            if (this.flightPlanService.active.performanceData.cruiseFlightLevel !== SimVar.GetGameVarValue('AIRCRAFT CRUISE ALTITUDE', 'feet')) {
-                SimVar.SetGameVarValue('AIRCRAFT CRUISE ALTITUDE', 'feet', this.flightPlanService.active.performanceData.cruiseFlightLevel);
+            if (this.flightPlanService.active.performanceData.cruiseFlightLevel !== Math.floor(SimVar.GetGameVarValue('AIRCRAFT CRUISE ALTITUDE', 'feet') / 100)) {
+                SimVar.SetGameVarValue('AIRCRAFT CRUISE ALTITUDE', 'feet', this.flightPlanService.active.performanceData.cruiseFlightLevel * 100);
                 this.addMessageToQueue(NXSystemMessages.newCrzAlt.getModifiedMessage(this.flightPlanService.active.performanceData.cruiseFlightLevel.toFixed(0)));
             }
 
