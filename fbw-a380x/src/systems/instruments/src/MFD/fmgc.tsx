@@ -129,8 +129,6 @@ export class FmgcData {
 
     public readonly tropopauseIsPilotEntered = this.tropopausePilotEntry.map((it) => it !== undefined);
 
-    public readonly costIndex = Subject.create<number>(undefined);
-
     /**
      * For which departure runway the v speeds have been inserted
      */
@@ -203,37 +201,13 @@ export class FmgcData {
 
     public readonly climbPreSelSpeed = Subject.create<Knots>(undefined);
 
-    // TODO adapt computation for A380
-    public readonly climbManagedSpeedFromCostIndex = this.costIndex.map((ci) => {
-        const dCI = (ci / 999) ** 2;
-        return 290 * (1 - dCI) + 330 * dCI;
-    });
-
-    public readonly climbManagedSpeedMach = this.climbManagedSpeedFromCostIndex.map((spd) => SimVar.GetGameVarValue('FROM KIAS TO MACH', 'number', spd) as number);
-
     public readonly climbSpeedLimit = Subject.create<SpeedLimit>({ speed: 250, underAltitude: 10_000 });
 
     public readonly cruisePreSelMach = Subject.create<number>(undefined);
 
     public readonly cruisePreSelSpeed = Subject.create<Knots>(undefined);
 
-    // TODO adapt computation for A380
-    public readonly cruiseManagedSpeedFromCostIndex = this.costIndex.map((ci) => {
-        const dCI = (ci / 999) ** 2;
-        return 290 * (1 - dCI) + 310 * dCI;
-    });
-
-    public readonly cruiseManagedSpeedMach = this.cruiseManagedSpeedFromCostIndex.map((spd) => SimVar.GetGameVarValue('FROM KIAS TO MACH', 'number', spd) as number);
-
     public readonly descentPreSelSpeed = Subject.create<Knots>(undefined);
-
-    // TODO adapt computation for A380
-    public readonly descentManagedSpeedFromCostIndex = this.costIndex.map((ci) => {
-        const dCI = ci / 999;
-        return 288 * (1 - dCI) + 300 * dCI;
-    });
-
-    public readonly descentManagedSpeedMach = this.descentManagedSpeedFromCostIndex.map((spd) => SimVar.GetGameVarValue('FROM KIAS TO MACH', 'number', spd) as number);
 
     public readonly descentSpeedLimit = Subject.create<SpeedLimit>({ speed: 250, underAltitude: 10_000 });
 
@@ -290,11 +264,16 @@ export class FmgcDataInterface implements Fmgc {
     }
 
     getManagedClimbSpeed(): Knots {
-        return this.data.climbManagedSpeedFromCostIndex.get();
+        // TODO adapt for A380
+        if (this.flightPlanService.has(FlightPlanIndex.Active)) {
+            const dCI = (this.flightPlanService.active.performanceData.costIndex / 999) ** 2;
+            return 290 * (1 - dCI) + 330 * dCI;
+        }
+        return 250;
     }
 
     getManagedClimbSpeedMach(): number {
-        return this.data.climbManagedSpeedMach.get();
+        return SimVar.GetGameVarValue('FROM KIAS TO MACH', 'number', this.getManagedClimbSpeed()) as number;
     }
 
     getAccelerationAltitude(): Feet {
@@ -322,11 +301,16 @@ export class FmgcDataInterface implements Fmgc {
     }
 
     getManagedCruiseSpeed(): Knots {
-        return this.data.cruiseManagedSpeedFromCostIndex.get();
+        // TODO adapt for A380
+        if (this.flightPlanService.has(FlightPlanIndex.Active)) {
+            const dCI = (this.flightPlanService.active.performanceData.costIndex / 999) ** 2;
+            return 290 * (1 - dCI) + 310 * dCI;
+        }
+        return 310;
     }
 
     getManagedCruiseSpeedMach(): number {
-        return this.data.cruiseManagedSpeedMach.get();
+        return SimVar.GetGameVarValue('FROM KIAS TO MACH', 'number', this.getManagedCruiseSpeed()) as number;
     }
 
     getClimbSpeedLimit(): SpeedLimit {
@@ -354,11 +338,16 @@ export class FmgcDataInterface implements Fmgc {
     }
 
     getManagedDescentSpeed(): Knots {
-        return this.data.descentManagedSpeedFromCostIndex.get();
+        // TODO adapt for A380
+        if (this.flightPlanService.has(FlightPlanIndex.Active)) {
+            const dCI = this.flightPlanService.active.performanceData.costIndex / 999;
+        return 288 * (1 - dCI) + 300 * dCI;
+        }
+        return 300;
     }
 
     getManagedDescentSpeedMach(): number {
-        return this.data.descentManagedSpeedMach.get();
+        return SimVar.GetGameVarValue('FROM KIAS TO MACH', 'number', this.getManagedDescentSpeed()) as number;
     }
 
     getApproachSpeed(): Knots {

@@ -57,6 +57,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
     private flightPhasesSelectedPageIndex = Subject.create(0);
 
+    private costIndex = Subject.create<number>(null);
+
     private transAlt = Subject.create(5000);
 
     private transAltIsPilotEntered = Subject.create<boolean>(false);
@@ -364,6 +366,10 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
         if (pd.cruiseFlightLevel) {
             this.crzFl.set(pd.cruiseFlightLevel);
+        }
+
+        if (pd.costIndex) {
+            this.costIndex.set(pd.costIndex);
         }
 
         if (fm.takeoffShift) {
@@ -1228,8 +1234,11 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     <span class="mfd-label mfd-spacing-right">CI</span>
                                     <InputField<number>
                                         dataEntryFormat={new CostIndexFormat()}
+                                        dataHandlerDuringValidation={async (v) => {
+                                            this.loadedFlightPlan.setPerformanceData('costIndex', v || undefined);
+                                        }}
                                         mandatory={Subject.create(false)}
-                                        value={this.props.fmService.fmgc.data.costIndex}
+                                        value={this.costIndex}
                                         containerStyle="width: 75px;"
                                         alignText="center"
                                         errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
@@ -1535,8 +1544,11 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     <span class="mfd-label mfd-spacing-right">CI</span>
                                     <InputField<number>
                                         dataEntryFormat={new CostIndexFormat()}
+                                        dataHandlerDuringValidation={async (v) => {
+                                            this.loadedFlightPlan.setPerformanceData('costIndex', v || undefined);
+                                        }}
                                         mandatory={Subject.create(false)}
-                                        value={this.props.fmService.fmgc.data.costIndex}
+                                        value={this.costIndex}
                                         containerStyle="width: 75px;"
                                         alignText="center"
                                         errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
@@ -1750,9 +1762,12 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     <span class="mfd-label mfd-spacing-right">CI</span>
                                     <InputField<number>
                                         dataEntryFormat={new CostIndexFormat()}
+                                        dataHandlerDuringValidation={async (v) => {
+                                            this.loadedFlightPlan.setPerformanceData('costIndex', v || undefined);
+                                        }}
                                         mandatory={Subject.create(false)}
                                         inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Cruise)}
-                                        value={this.props.fmService.fmgc.data.costIndex}
+                                        value={this.costIndex}
                                         containerStyle="width: 75px;"
                                         alignText="center"
                                         errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}

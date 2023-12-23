@@ -111,6 +111,10 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
             this.crzFl.set(this.loadedFlightPlan.performanceData.cruiseFlightLevel);
         }
 
+        if (this.loadedFlightPlan.performanceData.costIndex) {
+            this.costIndex.set(this.loadedFlightPlan.performanceData.costIndex);
+        }
+
         // Disable or enable fields
 
         // Set some empty fields with pre-defined values
@@ -147,7 +151,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
     private async insertCpnyFpln() {
         this.props.fmService.flightPlanService.uplinkInsert();
         this.props.fmService.fmgc.data.atcCallsign.set(`${this.simBriefOfp.airline}${this.simBriefOfp.flightNumber}`);
-        this.props.fmService.fmgc.data.costIndex.set(parseInt(this.simBriefOfp.costIndex));
+        this.props.fmService.flightPlanService.active.setPerformanceData('costIndex', parseInt(this.simBriefOfp.costIndex));
 
         this.props.fmService.flightPlanService.setPerformanceData('cruiseFlightLevel', this.simBriefOfp.cruiseAltitude);
 
@@ -293,9 +297,12 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                         <div class="mfd-label init-input-field">CI</div>
                         <InputField<number>
                             dataEntryFormat={new CostIndexFormat()}
+                            dataHandlerDuringValidation={async (v) => {
+                                this.loadedFlightPlan.setPerformanceData('costIndex', v || undefined);
+                            }}
                             mandatory={Subject.create(true)}
                             disabled={this.costIndexDisabled}
-                            value={this.props.fmService.fmgc.data.costIndex}
+                            value={this.costIndex}
                             containerStyle="width: 70px; margin-right: 90px; justify-content: center;"
                             alignText="center"
                             errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
