@@ -199,6 +199,10 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
 
         const plan = this.flightPlanManager.get(planIndex);
 
+        if (altnIcao === undefined) {
+            return plan.deleteAlternateFlightPlan();
+        }
+
         return plan.setAlternateDestinationAirport(altnIcao);
     }
 
