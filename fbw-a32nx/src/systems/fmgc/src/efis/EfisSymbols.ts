@@ -342,7 +342,10 @@ export class EfisSymbols {
                 }
 
                 // ACTIVE ALTN
-                if (this.flightPlanService.active.alternateFlightPlan.legCount > 0 && this.guidanceController.hasGeometryForFlightPlan(FlightPlanIndex.Active)) {
+                if (this.flightPlanService.active.alternateFlightPlan.legCount > 0
+                    && this.guidanceController.hasGeometryForFlightPlan(FlightPlanIndex.Active)
+                    && this.efisInterface.shouldTransmitAlternate(FlightPlanIndex.Active)
+                ) {
                     const symbols = this.getFlightPlanSymbols(
                         true,
                         this.flightPlanService.active.alternateFlightPlan,
@@ -379,7 +382,10 @@ export class EfisSymbols {
             }
 
             // SEC
-            if (this.flightPlanService.hasSecondary(1) && this.guidanceController.hasGeometryForFlightPlan(FlightPlanIndex.FirstSecondary)) {
+            if (this.flightPlanService.hasSecondary(1)
+                && this.guidanceController.hasGeometryForFlightPlan(FlightPlanIndex.FirstSecondary)
+                && this.efisInterface.shouldTransmitSecondary()
+            ) {
                 const symbols = this.getFlightPlanSymbols(
                     false,
                     this.flightPlanService.secondary(1),
@@ -396,7 +402,10 @@ export class EfisSymbols {
                 }
 
                 // SEC ALTN
-                if (this.flightPlanService.secondary((1)).alternateFlightPlan.legCount > 0 && this.guidanceController.hasGeometryForFlightPlan(FlightPlanIndex.FirstSecondary)) {
+                if (this.flightPlanService.secondary((1)).alternateFlightPlan.legCount > 0
+                    && this.guidanceController.hasGeometryForFlightPlan(FlightPlanIndex.FirstSecondary)
+                    && this.efisInterface.shouldTransmitAlternate(FlightPlanIndex.FirstSecondary)
+                ) {
                     const symbols = this.getFlightPlanSymbols(
                         true,
                         this.flightPlanService.secondary(1).alternateFlightPlan,
