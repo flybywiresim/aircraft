@@ -267,6 +267,7 @@ export class FlightPlanLeg implements ReadonlyFlightPlanLeg {
         this.definition.speedDescriptor = from.definition.speedDescriptor;
         this.definition.speed = from.definition.speed;
         this.definition.approachWaypointDescriptor = from.definition.approachWaypointDescriptor;
+        this.definition.waypointDescriptor = from.definition.waypointDescriptor;
 
         return this;
     }

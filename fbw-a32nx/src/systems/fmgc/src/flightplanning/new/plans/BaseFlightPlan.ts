@@ -368,12 +368,14 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     }
 
     get destinationLegIndex() {
-        let targetSegment;
+        let targetSegment: FlightPlanSegment = undefined;
 
         if (this.destinationSegment.allLegs.length > 0) {
             targetSegment = this.destinationSegment;
         } else if (this.approachSegment.allLegs.length > 0) {
             targetSegment = this.approachSegment;
+        } else if (this.enrouteSegment.allLegs.length > 0) {
+            targetSegment = this.enrouteSegment;
         } else {
             return -1;
         }
