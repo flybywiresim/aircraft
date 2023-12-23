@@ -786,9 +786,11 @@ export class AirportFormat implements DataEntryFormat<string> {
 }
 
 export class NavaidIdentFormat implements DataEntryFormat<string> {
-    public placeholder = '----';
-
     public maxDigits = 4;
+
+    constructor(public placeholder = '----') {
+
+    }
 
     public format(value: string) {
         if (value === null || value === undefined) {

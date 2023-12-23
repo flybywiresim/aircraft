@@ -75,7 +75,7 @@ export class FmsHeader extends AbstractHeader {
                         isActive={this.dataIsSelected}
                         label="DATA"
                         menuItems={[
-                            { label: 'STATUS', action: () => this.props.uiService.navigateTo('fms/data/status'), disabled: true },
+                            { label: 'STATUS', action: () => this.props.uiService.navigateTo('fms/data/status') },
                             { label: 'WAYPOINT', action: () => this.props.uiService.navigateTo('fms/data/waypoint'), disabled: true },
                             { label: 'NAVAID', action: () => this.props.uiService.navigateTo('fms/data/navaid'), disabled: true },
                             { label: 'ROUTE', action: () => this.props.uiService.navigateTo('fms/data/route'), disabled: true },

@@ -61,6 +61,7 @@ import { DataInterface } from '@fmgc/flightplanning/new/interface/DataInterface'
 import { A320FlightPlanPerformanceData, EfisInterface, Navigation } from '@fmgc/index';
 import { NXFictionalMessages, NXSystemMessages, TypeIIMessage, TypeIMessage } from 'instruments/src/MFD/pages/FMS/legacy/NXSystemMessages';
 import { MfdFmsPositionNavaids } from 'instruments/src/MFD/pages/FMS/POSITION/NAVAIDS';
+import { MfdFmsDataStatus } from 'instruments/src/MFD/pages/FMS/DATA/STATUS';
 
 export const getDisplayIndex = () => {
     const url = document.getElementsByTagName('a380x-mfd')[0].getAttribute('url');
@@ -112,6 +113,10 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
     private flightPhaseManager = getFlightPhaseManager();
 
     private dataManager = new DataManager(this);
+
+    public getDataManager() {
+        return this.dataManager;
+    }
 
     private fmService: MfdFlightManagementService;
 
@@ -812,7 +817,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
         });
 
         // Navigate to initial page
-        this.uiService.navigateTo('fms/active/init');
+        this.uiService.navigateTo('fms/data/status');
     }
 
     private activeUriChanged(uri: ActiveUriInformation) {
@@ -1038,6 +1043,16 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
             this.activePage = (
                 <MfdFmsPositionNavaids
                     pageTitle="NAVAIDS"
+                    bus={this.props.bus}
+                    uiService={this.uiService}
+                    fmService={this.fmService}
+                />
+            );
+            break;
+        case 'fms/data/status':
+            this.activePage = (
+                <MfdFmsDataStatus
+                    pageTitle="STATUS"
                     bus={this.props.bus}
                     uiService={this.uiService}
                     fmService={this.fmService}

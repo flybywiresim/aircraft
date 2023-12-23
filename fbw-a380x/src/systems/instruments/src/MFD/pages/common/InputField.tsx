@@ -25,7 +25,7 @@ interface InputFieldProps<T> extends ComponentProps {
      * @param newValue to be validated
      * @returns whether validation was successful. If nothing is returned, success is assumed
      */
-    dataHandlerDuringValidation?: (newValue: T) => Promise<boolean | void>;
+    dataHandlerDuringValidation?: (newValue: T, oldValue?: T) => Promise<boolean | void>;
     errorHandler?: (errorType: FmsErrorType) => void;
     handleFocusBlurExternally?: boolean;
     containerStyle?: string;
@@ -262,7 +262,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
         const artificialWaitingTime = new Promise((resolve) => setTimeout(resolve, 500));
         if (this.props.dataHandlerDuringValidation) {
             try {
-                const realWaitingTime = this.props.dataHandlerDuringValidation(newValue);
+                const realWaitingTime = this.props.dataHandlerDuringValidation(newValue, this.props.value.get());
                 const [validation] = await Promise.all([realWaitingTime, artificialWaitingTime]);
 
                 if (validation === false) {

@@ -175,7 +175,6 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                             errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
                         />
                         <Button
-                            disabled={Subject.create(true)}
                             label="ACFT STATUS"
                             onClick={() => this.props.uiService.navigateTo('fms/data/status')}
                             buttonStyle="margin-right: 10px; width: 200px;"

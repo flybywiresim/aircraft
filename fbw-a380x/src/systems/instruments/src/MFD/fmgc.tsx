@@ -415,6 +415,10 @@ export class FmgcDataInterface implements Fmgc {
         return this.guidanceController.vnavDriver.getDestinationPrediction().distanceFromAircraft;
     }
 
+    getNavDataDateRange(): string {
+        return SimVar.GetGameVarValue("FLIGHT NAVDATA DATE RANGE", "string");
+    }
+
     /**
      * Generic function which returns true if engine(index) is ON (N2 > 20)
      * @returns {boolean}

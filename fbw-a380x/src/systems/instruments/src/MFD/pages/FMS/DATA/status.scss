@@ -1,0 +1,16 @@
+﻿@import "../../../../MsfsAvionicsCommon/definitions";
+
+.mfd-data-status-pse-label {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-right: 10px;
+  margin-bottom: 20px;
+}
+
+.mfd-data-status-pse-value {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin-bottom: 20px;
+}

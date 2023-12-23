@@ -13,13 +13,12 @@ import { InputField } from 'instruments/src/MFD/pages/common/InputField';
 import { FrequencyILSFormat, FrequencyVORDMEFormat, InboundCourseFormat, LsCourseFormat, NavaidIdentFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MFD/pages/common/TopTabNavigator';
 import { NavigationDatabaseService } from '@fmgc/index';
-import { Database, MsfsBackend } from '@flybywiresim/fbw-sdk';
 import { NXSystemMessages } from 'instruments/src/MFD/pages/FMS/legacy/NXSystemMessages';
 
-interface MfdFmsPositionNavaidProps extends AbstractMfdPageProps {
+interface MfdFmsPositionNavaidsProps extends AbstractMfdPageProps {
 }
 
-export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidProps> {
+export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidsProps> {
     private navaidsSelectedPageIndex = Subject.create<number>(0);
 
     private vor1Ident = Subject.create<string>(null);
@@ -60,6 +59,28 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidProps> {
 
     private lsCourseEnteredByPilot = Subject.create<boolean>(false);
 
+    private firstRowIdent = Subject.create<string>(null);
+
+    private firstRowFrequency = Subject.create<string>(null);
+
+    private firstRowClass = Subject.create<string>(null);
+
+    private secondRowIdent = Subject.create<string>(null);
+
+    private secondRowFrequency = Subject.create<string>(null);
+
+    private secondRowClass = Subject.create<string>(null);
+
+    private thirdRowIdentRef = FSComponent.createRef<HTMLDivElement>();
+
+    private thirdRowIdent = Subject.create<string>(null);
+
+    private thirdRowFrequency = Subject.create<string>(null);
+
+    private thirdRowClass = Subject.create<string>(null);
+
+    private deselectedNavaids = [Subject.create<string>(null), Subject.create<string>(null), Subject.create<string>(null), Subject.create<string>(null), Subject.create<string>(null), Subject.create<string>(null)];
+
     protected onNewData() {
         console.time('POSITION/NAVAIDS:onNewData');
 
@@ -87,6 +108,20 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidProps> {
         this.lsClass.set(mmr.ident ? 'ILS/DME' : '');
         this.lsIdentEnteredByPilot.set(mmr.manual);
         this.lsCourseEnteredByPilot.set(mmr.courseManual);
+
+        this.deselectedNavaids.forEach((v, i) => {
+            if (this.props.fmService.navigation.getNavaidTuner().deselectedNavaids[i]) {
+                v.set(this.props.fmService.navigation.getNavaidTuner().deselectedNavaids[i]);
+            } else {
+                v.set(null);
+            }
+        });
+
+        // Third line for selected navaids table: Display LS if set
+        this.thirdRowFrequency.set(mmr.frequency ? mmr.frequency.toFixed(2) : '');
+        this.thirdRowClass.set(mmr.ident ? 'ILS/DME' : '');
+        this.thirdRowIdent.set(mmr.ident ?? null);
+        this.thirdRowIdentRef.instance.style.visibility = mmr.ident ? 'visible' : 'hidden';
 
         console.timeEnd('POSITION/NAVAIDS:onNewData');
     }
@@ -168,6 +203,14 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidProps> {
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
+        this.subs.push(this.props.uiService.activeUri.sub((val) => {
+            if (val.extra === 'display') {
+                this.navaidsSelectedPageIndex.set(0);
+            } else if (val.extra === 'nav') {
+                this.navaidsSelectedPageIndex.set(1);
+            }
+        }, true));
+
         const sub = this.props.bus.getSubscriber<ClockEvents & MfdSimvars>();
         this.subs.push(sub.on('realTime').atFrequency(1).handle((_t) => {
             this.onNewData();
@@ -185,6 +228,7 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidProps> {
                             selectedPageIndex={this.navaidsSelectedPageIndex}
                             pageChangeCallback={(val) => this.navaidsSelectedPageIndex.set(val)}
                             selectedTabTextColor="white"
+                            tabBarSlantedEdgeAngle={25}
                         >
                         <TopTabNavigatorPage>
                             {/* TUNED FOR DISPLAY */}
@@ -283,6 +327,139 @@ export class MfdFmsPositionNavaids extends FmsPage<MfdFmsPositionNavaidProps> {
                         </TopTabNavigatorPage>
                         <TopTabNavigatorPage>
                             {/* SELECTED FOR FMS NAV */}
+                            <div class="mfd-pos-nav-nav-table">
+                                <div class="mfd-label br bb">IDENT</div>
+                                <div class="mfd-label br bb">FREQ/CHAN</div>
+                                <div class="mfd-label bb">CLASS</div>
+                                <div class="mfd-label br">{this.firstRowIdent}</div>
+                                <div class="mfd-value-green br">{this.firstRowFrequency}</div>
+                                <div class="mfd-value-green">{this.firstRowClass}</div>
+                                <div class="mfd-label br">{this.secondRowIdent}</div>
+                                <div class="mfd-value-green br">{this.secondRowFrequency}</div>
+                                <div class="mfd-value-green">{this.secondRowClass}</div>
+                                <div class="mfd-label br">
+                                    <div ref={this.thirdRowIdentRef}>
+                                        <Button
+                                            label={this.thirdRowIdent.map((it) => <>{it}</>)}
+                                            onClick={() => {}}
+                                            showArrow={true}
+                                            menuItems={Subject.create([{ label: 'DATA NAVAID', action: () => {}}])}
+                                            disabled={Subject.create(true)}
+                                        />
+                                    </div>
+                                </div>
+                                <div class="mfd-value-green br">{this.thirdRowFrequency}</div>
+                                <div class="mfd-value-green">{this.thirdRowClass}</div>
+                            </div>
+                            <div class="mfd-label" style="padding-left: 30px; margin-bottom: 20px;">RADIO NAV MODE</div>
+                            <div class="mfd-label" style="padding-left: 30px; margin-bottom: 10px;">RADIO POSITION</div>
+                            <div style="border-bottom: 1px solid lightgrey; width: 100%; height: 3px; margin-bottom: 15px;"></div>
+                            <div class="mfd-label" style="padding-left: 15px; margin-bottom: 10px;">LIST OF DESELECTED NAVAIDS</div>
+                            <div style="width: 45%; display: flex; justify-content: space-between; margin-bottom: 10px;">
+                                <div>
+                                    <InputField<string>
+                                        dataEntryFormat={new NavaidIdentFormat('-')}
+                                        dataHandlerDuringValidation={async (nV, oV) => {
+                                            if(nV) {
+                                                this.props.fmService.navigation.getNavaidTuner().deselectNavaid(nV);
+                                            } else {
+                                                this.props.fmService.navigation.getNavaidTuner().reselectNavaid(oV);
+                                            }
+                                            this.onNewData();
+                                        }}
+                                        value={this.deselectedNavaids[0]}
+                                        alignText='center'
+                                        errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                                    />
+                                </div>
+                                <div>
+                                    <InputField<string>
+                                        dataEntryFormat={new NavaidIdentFormat('-')}
+                                        dataHandlerDuringValidation={async (nV, oV) => {
+                                            if(nV) {
+                                                this.props.fmService.navigation.getNavaidTuner().deselectNavaid(nV);
+                                            } else {
+                                                this.props.fmService.navigation.getNavaidTuner().reselectNavaid(oV);
+                                            }
+                                            this.onNewData();
+                                        }}
+                                        value={this.deselectedNavaids[1]}
+                                        alignText='center'
+                                        disabled={this.deselectedNavaids[0].map((it) => it === null)}
+                                        errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                                    />
+                                </div>
+                                <div>
+                                    <InputField<string>
+                                        dataEntryFormat={new NavaidIdentFormat('-')}
+                                        dataHandlerDuringValidation={async (nV, oV) => {
+                                            if(nV) {
+                                                this.props.fmService.navigation.getNavaidTuner().deselectNavaid(nV);
+                                            } else {
+                                                this.props.fmService.navigation.getNavaidTuner().reselectNavaid(oV);
+                                            }
+                                            this.onNewData();
+                                        }}
+                                        value={this.deselectedNavaids[2]}
+                                        alignText='center'
+                                        disabled={this.deselectedNavaids[1].map((it) => it === null)}
+                                        errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                                    />
+                                </div>
+                            </div>
+                            <div style="width: 45%; display: flex; justify-content: space-between;">
+                                <div>
+                                    <InputField<string>
+                                        dataEntryFormat={new NavaidIdentFormat('-')}
+                                        dataHandlerDuringValidation={async (nV, oV) => {
+                                            if(nV) {
+                                                this.props.fmService.navigation.getNavaidTuner().deselectNavaid(nV);
+                                            } else {
+                                                this.props.fmService.navigation.getNavaidTuner().reselectNavaid(oV);
+                                            }
+                                            this.onNewData();
+                                        }}
+                                        value={this.deselectedNavaids[3]}
+                                        alignText='center'
+                                        disabled={this.deselectedNavaids[2].map((it) => it === null)}
+                                        errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                                    />
+                                </div>
+                                <div>
+                                    <InputField<string>
+                                        dataEntryFormat={new NavaidIdentFormat('-')}
+                                        dataHandlerDuringValidation={async (nV, oV) => {
+                                            if(nV) {
+                                                this.props.fmService.navigation.getNavaidTuner().deselectNavaid(nV);
+                                            } else {
+                                                this.props.fmService.navigation.getNavaidTuner().reselectNavaid(oV);
+                                            }
+                                            this.onNewData();
+                                        }}
+                                        value={this.deselectedNavaids[4]}
+                                        alignText='center'
+                                        disabled={this.deselectedNavaids[3].map((it) => it === null)}
+                                        errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                                    />
+                                </div>
+                                <div>
+                                    <InputField<string>
+                                        dataEntryFormat={new NavaidIdentFormat('-')}
+                                        dataHandlerDuringValidation={async (nV, oV) => {
+                                            if(nV) {
+                                                this.props.fmService.navigation.getNavaidTuner().deselectNavaid(nV);
+                                            } else {
+                                                this.props.fmService.navigation.getNavaidTuner().reselectNavaid(oV);
+                                            }
+                                            this.onNewData();
+                                        }}
+                                        value={this.deselectedNavaids[5]}
+                                        alignText='center'
+                                        disabled={this.deselectedNavaids[4].map((it) => it === null)}
+                                        errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                                    />
+                                </div>
+                            </div>
                         </TopTabNavigatorPage>
                     </TopTabNavigator>
                     <div style="display: flex; flex-direction: row; align-self: center;">

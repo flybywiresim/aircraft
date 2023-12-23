@@ -30,6 +30,8 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
 
     private tripFuelTime = Subject.create<number>(null);
 
+    private costIndex = Subject.create<number>(null);
+
     private takeoffWeight = Subject.create<number>(undefined);
 
     private landingWeight = Subject.create<number>(undefined);
@@ -56,6 +58,10 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
 
     protected onNewData() {
         console.time('FUEL_LOAD:onNewData');
+
+        if (this.loadedFlightPlan.performanceData.costIndex) {
+            this.costIndex.set(this.loadedFlightPlan.performanceData.costIndex);
+        }
 
         if (this.props.fmService.fmgc.data.routeReserveFuelIsPilotEntered.get() === false) {
             // Calculate Rte Rsv fuel for 5.0% reserve
@@ -271,7 +277,10 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                         <div style="margin-bottom: 20px;">
                             <InputField<number>
                                 dataEntryFormat={new CostIndexFormat()}
-                                value={this.props.fmService.fmgc.data.costIndex}
+                                dataHandlerDuringValidation={async (v) => {
+                                    this.loadedFlightPlan.setPerformanceData('costIndex', v || undefined);
+                                }}
+                                value={this.costIndex}
                                 mandatory={Subject.create(true)}
                                 disabled={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Descent)}
                                 alignText="center"

@@ -1,0 +1,254 @@
+/* eslint-disable jsx-a11y/label-has-associated-control */
+
+import { ClockEvents, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+
+import './status.scss';
+import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
+import { Footer } from 'instruments/src/MFD/pages/common/Footer';
+
+import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
+import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
+import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MFD/pages/common/TopTabNavigator';
+import { Button } from 'instruments/src/MFD/pages/common/Button';
+
+interface MfdFmsDataStatusProps extends AbstractMfdPageProps {
+}
+
+const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+const monthLength = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
+    private selectedPageIndex = Subject.create<number>(0);
+
+    private navDatabase = Subject.create('LH72301001');
+
+    private activeDatabase = Subject.create('30DEC-27JAN');
+
+    private secondDatabase = Subject.create('27JAN-24FEB');
+
+    private storedWaypoints = Subject.create('00');
+
+    private storedRoutes = Subject.create('00');
+
+    private storedNavaids = Subject.create('00');
+
+    private storedRunways = Subject.create('00');
+
+    private deleteStoredElementsDisabled = Subject.create(true);
+
+    protected onNewData() {
+        console.time('DATA/STATUS:onNewData');
+
+        const date = this.props.fmService.fmgc.getNavDataDateRange();
+        this.activeDatabase.set(this.calculateActiveDate(date));
+        this.secondDatabase.set(this.calculateSecDate(date));
+
+        const storedElements = this.props.fmService.mfd.getDataManager().numberOfStoredElements();
+        this.storedWaypoints.set(storedElements.waypoints.toFixed(0).padStart(2, '0'));
+        this.storedRoutes.set(storedElements.routes.toFixed(0).padStart(2, '0'));
+        this.storedNavaids.set(storedElements.navaids.toFixed(0).padStart(2, '0'));
+        this.storedRunways.set(storedElements.runways.toFixed(0).padStart(2, '0'));
+        this.deleteStoredElementsDisabled.set(storedElements.total === 0);
+
+        console.timeEnd('DATA/STATUS:onNewData');
+    }
+
+    public onAfterRender(node: VNode): void {
+        super.onAfterRender(node);
+
+        this.subs.push(this.props.uiService.activeUri.sub((val) => {
+            if (val.extra === 'acft-status') {
+                this.selectedPageIndex.set(0);
+            } else if (val.extra === 'fms-pn') {
+                this.selectedPageIndex.set(1);
+            }
+        }, true));
+
+        const sub = this.props.bus.getSubscriber<ClockEvents & MfdSimvars>();
+        this.subs.push(sub.on('realTime').atFrequency(2).handle((_t) => {
+            this.onNewData();
+        }));
+    }
+
+    private findNewMonthIndex(index: number) {
+        if (index === 0) {
+            return 11;
+        } else {
+            return index - 1;
+        }
+    }
+
+    private lessThan10(num: number) {
+        if (num < 10) {
+            return `0${num}`;
+        } else {
+            return num;
+        }
+    }
+
+    private calculateActiveDate(date: string): string {
+        if (date.length === 13) {
+            const startMonth = date.slice(0, 3);
+            const startDay = date.slice(3, 5);
+
+            const endMonth = date.slice(5, 8);
+            const endDay = date.slice(8, 10);
+
+            return `${startDay}${startMonth}-${endDay}${endMonth}`;
+        } else {
+            return date;
+        }
+    }
+
+    private calculateSecDate(date: string): string {
+        if (date.length === 13) {
+            const primStartMonth = date.slice(0, 3);
+            const primStartDay = Number(date.slice(3, 5));
+
+            const primStartMonthIndex = months.findIndex((item) => item === primStartMonth);
+
+            if (primStartMonthIndex === -1) {
+                return "ERR";
+            }
+
+            let newEndMonth = primStartMonth;
+            let newEndDay = primStartDay - 1;
+
+            let newStartDay = newEndDay - 27;
+            let newStartMonth = primStartMonth;
+
+            if (newEndDay === 0) {
+                newEndMonth = months[this.findNewMonthIndex(primStartMonthIndex)];
+                newEndDay = monthLength[this.findNewMonthIndex(primStartMonthIndex)];
+            }
+
+            if (newStartDay <= 0) {
+                newStartMonth = months[this.findNewMonthIndex(primStartMonthIndex)];
+                newStartDay = monthLength[this.findNewMonthIndex(primStartMonthIndex)] + newStartDay;
+            }
+
+            return `${this.lessThan10(newStartDay)}${newStartMonth}-${this.lessThan10(newEndDay)}${newEndMonth}`;
+        } else {
+            return "ERR";
+        }
+    }
+
+    render(): VNode {
+        return (
+            <>
+                {super.render()}
+                {/* begin page content */}
+                <div class="mfd-page-container">
+                    <TopTabNavigator
+                            pageTitles={Subject.create(['ACFT STATUS', 'FMS P/N'])}
+                            selectedPageIndex={this.selectedPageIndex}
+                            pageChangeCallback={(val) => this.selectedPageIndex.set(val)}
+                            selectedTabTextColor="white"
+                            tabBarSlantedEdgeAngle={25}
+                        >
+                        <TopTabNavigatorPage>
+                            {/* ACFT STATUS */}
+                            <div style="width: 100%; display: flex; justify-content: center; align-items: center; margin-top: 20px; margin-bottom: 40px;" class="mfd-value-green bigger">A380-800</div>
+                            <div style="width: 100%; display: flex; flex-direction: row; justify-content: space-between; align-items: flex-start; padding-bottom: 15px; border-bottom: 2px solid lightgrey;">
+                                <div>
+                                    <span class="mfd-label" style="margin-right: 50px;">ENGINE</span>
+                                    <span class="mfd-value-green bigger">TRENT 972</span>
+                                </div>
+                                <div>
+                                    <div style="border: 1px solid lightgrey; padding: 10px; display: flex; flex-direction: column;">
+                                        <div style="margin-bottom: 10px;">
+                                            <span class="mfd-label" style="margin-right: 10px;">IDLE</span>
+                                            <span class="mfd-value-green bigger">+0.0</span>
+                                        </div>
+                                        <div>
+                                            <span class="mfd-label" style="margin-right: 10px;">PERF</span>
+                                            <span class="mfd-value-green bigger">+0.0</span>
+                                        </div>
+                                    </div>
+                                    <div style="margin-top: 10px; display: flex; justify-content: center;">
+                                        <Button label='MODIFY' onClick={() => {}} disabled={Subject.create(true)} buttonStyle='width: 125px;' />
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="width: 100%; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; padding-bottom: 15px; padding-top: 15px; border-bottom: 2px solid lightgrey;">
+                                <div style="margin-bottom: 15px;">
+                                    <span class="mfd-label" style="margin-right: 25px;">NAV DATABASE</span>
+                                    <span class="mfd-value-green bigger">{this.navDatabase}</span>
+                                </div>
+                                <div style="width: 100%; display: flex; flex-direction: row; justify-content: space-between; align-items: center;">
+                                    <div style="border: 1px solid lightgrey; padding: 15px; display: flex; flex-direction: column;">
+                                        <div class="mfd-label" style="display: flex; justify-content: center; margin-bottom: 15px;">
+                                            ACTIVE
+                                        </div>
+                                        <div>
+                                            <span class="mfd-value-green bigger">{this.activeDatabase}</span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <Button
+                                            label={Subject.create(
+                                                <div style="display: flex; flex-direction: row; justify-content: space-between; width: 100px; height: 40px;">
+                                                    <span style="display: flex; align-items: center; justify-content: center; margin-left: 10px;">
+                                                        SWAP
+                                                    </span>
+                                                    <span style="display: flex; align-items: center; justify-content: center;">*</span>
+                                                </div>,
+                                            )}
+                                            onClick={() => {}}
+                                            disabled={Subject.create(true)}
+                                        />
+                                    </div>
+                                    <div style="padding: 15px; display: flex; flex-direction: column;">
+                                        <div class="mfd-label" style="display: flex; justify-content: center; margin-bottom: 15px;">
+                                            SECOND
+                                        </div>
+                                        <div>
+                                            <span class="mfd-value-green">{this.secondDatabase}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="width: 100%; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; padding-top: 25px;">
+                                <div style="margin-bottom: 35px;">
+                                    <span class="mfd-label" style="margin-right: 25px;">PILOT STORED ELEMENTS</span>
+                                </div>
+                                <div style="width: 100%; display: flex; flex-direction: row; justify-content: space-between; align-items: center;">
+                                    <div style="flex: 3; display: grid; grid-template-columns: 40% 10% 40% 10%; margin-right: 200px;">
+                                        <div class="mfd-label mfd-data-status-pse-label">WAYPOINTS</div>
+                                        <div class="mfd-value-green mfd-data-status-pse-value">00</div>
+                                        <div class="mfd-label mfd-data-status-pse-label">ROUTES</div>
+                                        <div class="mfd-value-green mfd-data-status-pse-value">00</div>
+                                        <div class="mfd-label mfd-data-status-pse-label">NAVAIDS</div>
+                                        <div class="mfd-value-green mfd-data-status-pse-value">00</div>
+                                        <div class="mfd-label mfd-data-status-pse-label">RUNWAYS</div>
+                                        <div class="mfd-value-green mfd-data-status-pse-value">00</div>
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <Button
+                                            label={Subject.create(
+                                                <div style="display: flex; flex-direction: row; justify-content: space-between; width: 175px; height: 40px;">
+                                                    <span style="display: flex; align-items: center; justify-content: center;">
+                                                        DELETE ALL
+                                                    </span>
+                                                    <span style="display: flex; align-items: center; justify-content: center;">*</span>
+                                                </div>,
+                                            )}
+                                            onClick={() => this.props.fmService.mfd.getDataManager().deleteAllStoredWaypoints()}
+                                            disabled={this.deleteStoredElementsDisabled}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </TopTabNavigatorPage>
+                        <TopTabNavigatorPage>
+                            {/* FMS P/N */}
+                        </TopTabNavigatorPage>
+                    </TopTabNavigator>
+                    <div style="flex-grow: 1;" />
+                    {/* fill space vertically */}
+                </div>
+                <Footer bus={this.props.bus} uiService={this.props.uiService} fmService={this.props.fmService} />
+            </>
+        );
+    }
+}

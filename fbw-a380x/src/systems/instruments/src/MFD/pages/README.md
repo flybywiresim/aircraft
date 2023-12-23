@@ -25,27 +25,27 @@ Status legend:
 | ✅ | fms/\*/f-pln-cpny-f-pln-req | 1 | Just SimBrief download right now |
 | ✅ | fms/\*/f-pln-hold | 2 | last exit predictions, database holds |
 | ✅ | fms/\*/f-pln-vert-rev | 2 | RTA (except ETT), CMS, STEP ALTs, setting whether CLB/DES cstr |
-| 🟥 | fms/\*/f-pln-cpny-wind-data-req | 2 | tbd |
-| 🟥 | fms/\*/wind | 2 | tbd |
 | 🟥 | fms/\*/f-pln-rte-sel | 3 | tbd |
 | 🟥 | fms/\*/f-pln-offset | 3 | tbd |
 | 🟥 | fms/\*/f-pln-fix-info | 3 | tbd |
 | 🟥 | fms/\*/f-pln-alternate | 3 | tbd |
 | 🟥 | fms/\*/f-pln-closest-airports | 3 | tbd |
+| 🟥 | fms/\*/f-pln-cpny-wind-data-req | 4 | tbd |
+| 🟥 | fms/\*/wind | 4 | tbd |
 | 🟥 | fms/\*/f-pln-cpny-to-data-req | 9 | tbd |
 | 🟥 | fms/\*/f-pln-cpny-to-data-recv | 9 | tbd |
 | 🟥 | fms/\*/f-pln-equi-time-point | 9 | tbd |
 | 🟥 | fms/\*/f-pln-ll-xing-time-mkr | 9 | tbd |
 |  |  |  |
 | ✅ | fms/position/irs | 1 | data sources inconsistent |
-| 1️⃣ | fms/position/navaids | 2 | tbd |
+| ✅ | fms/position/navaids | 2 | deselect glide, ADF input fields, radio nav mode/position, selected navaids table |
 | 🟥 | fms/position/monitor | 3 | tbd |
 | 🟥 | fms/position/gps | 3 | tbd |
 | 🟥 | fms/position/report | 4 | tbd |
 |  |  |
 | 🟥 | fms/sec/index | 4 | tbd |
 |  |  |
-| 1️⃣ | fms/data/status | 2 | tbd |
+| ✅ | fms/data/status | 2 | FMS P/N page, swap DB, idle/perf factors  |
 | 🟥 | fms/data/airport | 2 | tbd |
 | 🟥 | fms/data/navaid | 2 | tbd |
 | 🟥 | fms/data/waypoint | 2 | tbd |
