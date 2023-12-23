@@ -83,11 +83,7 @@ export class ApproachSegment extends FlightPlanSegment {
         const runway = this.flightPlan.destinationRunway;
 
         if (approachLegs.length === 0 && this.flightPlan.destinationAirport && this.flightPlan.destinationSegment.destinationRunway) {
-            const cf = FlightPlanLeg.destinationExtendedCenterline(
-                this,
-                airport,
-                runway,
-            );
+            const cf = FlightPlanLeg.destinationExtendedCenterline(this, runway);
 
             legs.push(cf);
             legs.push(FlightPlanLeg.fromAirportAndRunway(this, '', airport, runway));

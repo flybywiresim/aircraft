@@ -164,8 +164,7 @@ export abstract class FlightPlanSegment {
     }
 
     insertNecessaryDiscontinuities() {
-        // We do not consider the last leg as we do not want to insert a discontinuity at the end of the flight plan
-        for (let i = 0; i < this.allLegs.length - 1; i++) {
+        for (let i = 0; i < this.allLegs.length; i++) {
             const element = this.allLegs[i];
             const nextElement = this.allLegs[i + 1];
 
@@ -173,7 +172,7 @@ export abstract class FlightPlanSegment {
                 continue;
             }
 
-            if ((nextElement?.isDiscontinuity ?? false) === false && (element.type === LegType.VM || element.type === LegType.FM)) {
+            if ((nextElement?.isDiscontinuity ?? false) === false && element.isVectors()) {
                 this.allLegs.splice(i + 1, 0, { isDiscontinuity: true });
                 this.flightPlan.syncSegmentLegsChange(this);
                 i++;

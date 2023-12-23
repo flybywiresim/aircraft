@@ -6,6 +6,7 @@ import { DigitalAltitudeReadout } from './DigitalAltitudeReadout';
 import { SimplaneValues } from './shared/SimplaneValueProvider';
 import { VerticalTape } from './VerticalTape';
 import { Arinc429Values } from './shared/ArincValueProvider';
+import { ArincEventBus } from "@flybywiresim/fbw-sdk";
 
 const DisplayRange = 600;
 const ValueSpacing = 100;
@@ -161,7 +162,7 @@ class AltTapeBackground extends DisplayComponent<any> {
 }
 
  interface AltitudeIndicatorOfftapeProps {
-    bus: EventBus;
+    bus: ArincEventBus;
     filteredRadioAltitude: Subscribable<number>;
 }
 
@@ -231,7 +232,7 @@ export class AltitudeIndicatorOfftape extends DisplayComponent<AltitudeIndicator
 }
 
 interface SelectedAltIndicatorProps {
-    bus: EventBus
+    bus: ArincEventBus
 }
 
 class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
@@ -360,7 +361,7 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values & SimplaneValues>();
+        const sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values & SimplaneValues>();
 
         sub.on('activeVerticalMode').whenChanged().handle((v) => {
             this.activeVerticalMode = v;
@@ -467,7 +468,7 @@ class SelectedAltIndicator extends DisplayComponent<SelectedAltIndicatorProps> {
 }
 
 interface AltimeterIndicatorProps {
-    altitude: Subscribable<Number>,
+    altitude: Subscribable<number>,
     bus: EventBus,
 }
 

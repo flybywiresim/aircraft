@@ -124,6 +124,7 @@ export class VnavDriver implements GuidanceComponent {
         this.constraintReader.updateFlightPlan();
 
         if (geometry.legs.size <= 0 || !this.computationParametersObserver.canComputeProfile()) {
+            this.reset();
             return;
         }
 
@@ -162,6 +163,21 @@ export class VnavDriver implements GuidanceComponent {
         this.guidanceController.pseudoWaypoints.acceptVerticalProfile();
 
         this.version++;
+    }
+
+    private reset() {
+        if (this.version !== 0) {
+            this.version = 0;
+            this.profileManager.reset();
+            this.constraintReader.reset();
+            this.aircraftToDescentProfileRelation.reset();
+            this.descentGuidance.reset();
+            this.currentMcduSpeedProfile = new McduSpeedProfile(this.computationParametersObserver, 0, [], []);
+            this.decelPoint = null;
+            this.lastParameters = null;
+            this.oldLegs.clear();
+            this.guidanceController.pseudoWaypoints.acceptVerticalProfile();
+        }
     }
 
     isLatAutoControlActive(): boolean {
@@ -493,6 +509,13 @@ export class VnavDriver implements GuidanceComponent {
         const activeLeg = geometry.legs.get(activeLegIndx);
         const referenceLegIndex = activeLeg ? activeLegIndx : activeLegIndx + 1;
         const referenceLeg = geometry.legs.get(referenceLegIndex);
+
+        if (!referenceLeg) {
+            this.guidanceController.activeLegAlongTrackCompletePathDtg = undefined;
+            this.guidanceController.alongTrackDistanceToDestination = undefined;
+
+            return;
+        }
 
         const inboundTransition = geometry.transitions.get(referenceLegIndex - 1);
         const outboundTransition = geometry.transitions.get(referenceLegIndex);

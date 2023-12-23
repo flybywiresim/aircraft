@@ -846,7 +846,11 @@ class CDUFlightPlanPage {
         }
 
         try {
-            await mcdu.flightPlanService.deleteElementAt(fpIndex, forPlan, forAlternate);
+            if (!(await mcdu.flightPlanService.deleteElementAt(fpIndex, forPlan, forAlternate))) {
+                mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
+                scratchpadCallback();
+                return;
+            }
         } catch (e) {
             console.error(e);
             mcdu.setScratchpadMessage(NXFictionalMessages.internalError);

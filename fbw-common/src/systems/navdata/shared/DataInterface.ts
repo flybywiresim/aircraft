@@ -89,8 +89,9 @@ export interface DataInterface {
      * @todo generalise to all LS types?
      * @param airportIdentifier 4-letter ICAO code for the airport
      * @param ident ILS identifier
+     * @param lsIcaoCode ICAO code for the LS type
      */
-    getIlsAtAirport(airportIdentifier: string, ident?: string): Promise<IlsNavaid[]>;
+    getIlsAtAirport(airportIdentifier: string, ident?: string, lsIcaoCode?: string): Promise<IlsNavaid[]>;
 
     /**
      * Retreive the communication frequencies at an airport

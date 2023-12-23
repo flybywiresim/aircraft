@@ -25,10 +25,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
 
     navigationDatabase: NavigationDatabase;
 
-    constructor(
-        private readonly bus: EventBus,
-        private readonly performanceDataInit: P,
-    ) {
+    constructor(private readonly bus: EventBus, private readonly performanceDataInit: P) {
         this.flightPlanManager = new FlightPlanManager<P>(this.bus, this.performanceDataInit, Math.round(Math.random() * 10_000), true);
     }
 
@@ -340,12 +337,12 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
         plan.revertHoldToComputed(at);
     }
 
-    async enableAltn(atIndexInAlternate: number, planIndex = FlightPlanIndex.Active) {
+    async enableAltn(atIndexInAlternate: number, cruiseLevel: number = 100, planIndex = FlightPlanIndex.Active) {
         const finalIndex = this.prepareDestructiveModification(planIndex);
 
         const plan = this.flightPlanManager.get(finalIndex);
 
-        await plan.enableAltn(atIndexInAlternate);
+        await plan.enableAltn(atIndexInAlternate, cruiseLevel);
     }
 
     async setPilotEnteredAltitudeConstraintAt(atIndex: number, isDescentConstraint: boolean, constraint?: AltitudeConstraint, planIndex?: FlightPlanIndex, alternate?: boolean): Promise<void> {

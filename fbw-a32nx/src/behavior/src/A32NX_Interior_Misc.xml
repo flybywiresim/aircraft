@@ -723,4 +723,42 @@ if groundCtl and !groundControlPermissives {
             </UseTemplate>
         </Component>
     </Template>
+
+    <Template Name="FBW_REAR_SEAT">
+        <DefaultTemplateParameters>
+            <NODE_ID>#NODE_ID#</NODE_ID>
+            <ANIM_NAME>#NODE_ID#</ANIM_NAME>
+            <CURSOR>Grab</CURSOR>
+
+            <ANIM_LENGTH>100</ANIM_LENGTH>
+            <ANIM_DURATION>100</ANIM_DURATION>
+            <LEFT_SINGLE_CODE/>
+            <LEFT_LEAVE_CODE/>
+            <ANIM_LAG>50</ANIM_LAG>
+
+            <TOGGLE_VAR>L:A32NX_#NODE_ID#</TOGGLE_VAR>
+        </DefaultTemplateParameters>
+        <Component ID="#NODE_ID#_MOUSE" Node="#NODE_ID#_MOUSE">
+            <UseTemplate Name = "ASOBO_GT_Anim">
+                <NODE_ID>#NODE_ID#</NODE_ID>
+                <ANIM_NAME>#NODE_ID#</ANIM_NAME>
+                <ANIM_CODE>(#TOGGLE_VAR#) 100 *</ANIM_CODE>
+            </UseTemplate>
+
+            <UseTemplate Name = "ASOBO_GT_Interaction_LeftSingle_Leave_Code">
+                <NODE_ID>#NODE_ID#_MOUSE</NODE_ID>
+                <ANIM_NAME>#NODE_ID#_MOUSE</ANIM_NAME>
+                <LEFT_SINGLE_CODE>
+                    (#TOGGLE_VAR#) ! (&gt;#TOGGLE_VAR#) #LEFT_SINGLE_CODE#
+                </LEFT_SINGLE_CODE>
+                <LEFT_LEAVE_CODE />
+                <HIGHLIGHT_NODE_ID>#NODE_ID#</HIGHLIGHT_NODE_ID>
+            </UseTemplate>
+
+            <UseTemplate Name="ASOBO_GT_AnimTriggers_SoundEvent">
+                <ANIM_NAME>#NODE_ID#</ANIM_NAME>
+                <WWISE_EVENT>rear_seat_slide</WWISE_EVENT>
+            </UseTemplate>
+        </Component>
+    </Template>
 </ModelBehaviors>

@@ -80,6 +80,11 @@ class CDUAvailableArrivalsPage {
             }
 
             selectedViasCellColor = flightPlanAccentColor;
+        } else if (!selectedApproach && targetPlan.destinationRunway) {
+            selectedApproachCell = Fmgc.RunwayUtils.runwayString(targetPlan.destinationRunway.ident);
+            selectedApproachCellColor = flightPlanAccentColor;
+            selectedViasCell = "NONE";
+            selectedViasCellColor = flightPlanAccentColor;
         }
 
         let selectedStarCell = "------";
@@ -100,16 +105,23 @@ class CDUAvailableArrivalsPage {
         }
 
         const approaches = targetPlan.availableApproaches;
+        const runways = targetPlan.availableDestinationRunways
 
         // Add an index member variable, so we can track the original order of approaches
         for (let j = 0; j < approaches.length; j++) {
+            // TODO: Is this still used? (fms-v2)
             approaches[j].index = j;
         }
 
         // Sort the approaches in Honeywell's documented order
         const sortedApproaches = approaches.slice()
             .filter(({ type }) => type !== Fmgc.ApproachType.TACAN)
-            .sort((a, b) => ApproachTypeOrder[a.type] - ApproachTypeOrder[b.type]);
+            .sort((a, b) => ApproachTypeOrder[a.type] - ApproachTypeOrder[b.type])
+            .map((approach) => ({ approach }))
+            .concat(
+                // Runway-by-itself approaches
+                runways.slice().map((runway) => ({ runway }))
+            );
         const rows = [[""], [""], [""], [""], [""], [""], [""], [""]];
 
         /**
@@ -120,7 +132,13 @@ class CDUAvailableArrivalsPage {
         if (!starSelection) {
             for (let i = 0; i < ArrivalPagination.ARR_PAGE; i++) {
                 const index = i + pageCurrent * ArrivalPagination.ARR_PAGE;
-                const approach = sortedApproaches[index];
+
+                const approachOrRunway = sortedApproaches[index];
+                if (!approachOrRunway) {
+                    break;
+                }
+
+                const { approach, runway } = approachOrRunway;
                 if (approach) {
                     let runwayLength = '----';
                     let runwayCourse = '---';
@@ -138,6 +156,19 @@ class CDUAvailableArrivalsPage {
                         // TODO we need to set the runway, but cannot correlate runway from approach yet
 
                         await mcdu.flightPlanService.setApproach(approach.ident, forPlan, inAlternate);
+
+                        CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
+                    };
+                } else if (runway) {
+                    const runwayLength = runway.length.toFixed(0); // TODO imperial length pin program
+                    const runwayCourse = Utils.leadingZeros(Math.round(runway.magneticBearing), 3);
+
+                    rows[2 * i] = [`{cyan}{${Fmgc.RunwayUtils.runwayString(runway.ident)}{end}`, "", "{sp}{sp}{sp}{sp}" + runwayLength + "{small}M{end}[color]cyan"];
+                    rows[2 * i + 1] = ["{sp}{sp}{sp}{sp}" + runwayCourse + "[color]cyan"];
+
+                    mcdu.onLeftInput[i + 2] = async () => {
+                        await mcdu.flightPlanService.setApproach(undefined, forPlan, inAlternate);
+                        await mcdu.flightPlanService.setDestinationRunway(runway.ident, forPlan, inAlternate);
 
                         CDUAvailableArrivalsPage.ShowPage(mcdu, airport, 0, true, forPlan, inAlternate);
                     };
@@ -168,8 +199,8 @@ class CDUAvailableArrivalsPage {
                     }
                 }
             } else {
-                for (let i = 0; i < airportInfo.arrivals.length; i++) {
-                    const arrival = airportInfo.arrivals[i];
+                for (let i = 0; i < targetPlan.availableArrivals.length; i++) {
+                    const arrival = targetPlan.availableArrivals[i];
                     matchingArrivals.push({ arrival: arrival, arrivalIndex: i });
                 }
             }
@@ -282,7 +313,7 @@ class CDUAvailableArrivalsPage {
         }
         let up = false;
         let down = false;
-        const maxPage = starSelection ? (selectedArrival ? Math.max(Math.ceil(selectedArrival.enrouteTransitions.length / ArrivalPagination.TRNS_PAGE) - 1, Math.ceil((matchingArrivals.length + 1) / ArrivalPagination.ARR_PAGE) - 1) : Math.ceil((matchingArrivals.length + 1) / ArrivalPagination.ARR_PAGE) - 1) : (pageCurrent, Math.ceil(approaches.length / ArrivalPagination.ARR_PAGE) - 1);
+        const maxPage = starSelection ? (selectedArrival ? Math.max(Math.ceil(selectedArrival.enrouteTransitions.length / ArrivalPagination.TRNS_PAGE) - 1, Math.ceil((matchingArrivals.length + 1) / ArrivalPagination.ARR_PAGE) - 1) : Math.ceil((matchingArrivals.length + 1) / ArrivalPagination.ARR_PAGE) - 1) : (pageCurrent, Math.ceil(sortedApproaches.length / ArrivalPagination.ARR_PAGE) - 1);
         if (pageCurrent < maxPage) {
             mcdu.onUp = () => {
                 pageCurrent++;

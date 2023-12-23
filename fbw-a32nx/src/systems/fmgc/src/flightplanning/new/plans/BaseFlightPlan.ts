@@ -43,7 +43,7 @@ import { FlightPlanLegDefinition } from '@fmgc/flightplanning/new/legs/FlightPla
 import { PendingAirways } from '@fmgc/flightplanning/new/plans/PendingAirways';
 import { FlightPlanPerformanceData, SerializedFlightPlanPerformanceData } from '@fmgc/flightplanning/new/plans/performance/FlightPlanPerformanceData';
 import { ReadonlyFlightPlan } from '@fmgc/flightplanning/new/plans/ReadonlyFlightPlan';
-import { AltitudeConstraint, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
+import { AltitudeConstraint, ConstraintUtils, SpeedConstraint } from '@fmgc/flightplanning/data/constraint';
 
 export enum FlightPlanQueuedOperation {
     Restring,
@@ -176,7 +176,8 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     }
 
     get isApproachActive(): boolean {
-        return this.activeLegIndex >= this.firstApproachLegIndex && this.activeLegIndex < this.firstMissedApproachLegIndex;
+        // `this.approach` can be undefined for runway-by-itself approaches
+        return this.approach !== undefined && this.activeLegIndex >= this.firstApproachLegIndex && this.activeLegIndex < this.firstMissedApproachLegIndex;
     }
 
     /**
@@ -742,11 +743,24 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         // TODO if clear leg before a hold, delete hold too? some other legs like this too..
         // TODO normally, need to insert a disco
 
-        if (insertDiscontinuity && index > 0) {
+        if (index > 0) {
             const previousElement = this.elementAt(index - 1);
 
             if (previousElement.isDiscontinuity === false) {
-                segment.allLegs.splice(indexInSegment, 1, { isDiscontinuity: true });
+                // Not allowed to clear disco after MANUAL
+                if (previousElement.isVectors()) {
+                    return false;
+                }
+
+                if (insertDiscontinuity) {
+                    segment.allLegs.splice(indexInSegment, 1, { isDiscontinuity: true });
+                } else {
+                    segment.allLegs.splice(indexInSegment, 1);
+                }
+
+                if (previousElement.isXI()) {
+                    segment.allLegs.splice(indexInSegment - 1, 1);
+                }
             } else {
                 segment.allLegs.splice(indexInSegment, 1);
             }
@@ -1413,6 +1427,8 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
             segment.insertNecessaryDiscontinuities();
         }
 
+        this.ensureNoDiscontinuityAsFinalElement();
+
         this.incrementVersion();
 
         this.ensureNoDuplicates();
@@ -1612,6 +1628,29 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         }
     }
 
+    /**
+     * Removes discontinuities at the very end of the flightplan
+     * During stringing, discontinuities are inserted after VM/FM legs, this is correct, except at the very end
+     * Sometimes missed approach procedures end in VM/FM legs and we don't want to show a discontinuity after them
+     */
+    private ensureNoDiscontinuityAsFinalElement() {
+        const orderedSegments = this.orderedSegments;
+        for (let i = orderedSegments.length - 1; i >= 0; i--) {
+            const segment = orderedSegments[i];
+
+            if (segment.legCount === 0) {
+                continue;
+            }
+
+            let numIterations = 0;
+            while (segment.legCount > 0 && segment.allLegs[segment.legCount - 1].isDiscontinuity === true && numIterations++ < 10) {
+                segment.allLegs.pop();
+            }
+
+            break;
+        }
+    }
+
     private arrivalAndApproachSegmentsBeingRebuilt = false;
 
     private async rebuildArrivalAndApproachSegments() {
@@ -1637,7 +1676,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         }
 
         const previousSegmentToArrival = this.previousSegment(this.arrivalEnrouteTransitionSegment);
-        if (previousSegmentToArrival.allLegs[previousSegmentToArrival.legCount - 1].isDiscontinuity === true) {
+        if (previousSegmentToArrival && previousSegmentToArrival.allLegs[previousSegmentToArrival.legCount - 1].isDiscontinuity === true) {
             previousSegmentToArrival.strung = false;
         }
 
@@ -1709,6 +1748,27 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
             alternateFlightPlan: this instanceof FlightPlan ? this.alternateFlightPlan.serialize() : undefined,
         };
+    }
+
+    /**
+     * Finds the lowest climb constraint in the flight plan
+     * @returns the lowest climb constraint in feet or Infinity if none
+     */
+    protected lowestClimbConstraint(): number {
+        let lowestClimbConstraint = Infinity;
+        for (let i = 0; i < this.firstMissedApproachLegIndex; i++) {
+            const leg = this.allLegs[i];
+            if (leg.isDiscontinuity === true) {
+                continue;
+            }
+
+            const climbConstraint = leg.constraintType === WaypointConstraintType.CLB ? ConstraintUtils.maximumAltitude(leg.altitudeConstraint) : Infinity;
+            if (climbConstraint < lowestClimbConstraint) {
+                lowestClimbConstraint = climbConstraint;
+            }
+        }
+
+        return lowestClimbConstraint;
     }
 }
 

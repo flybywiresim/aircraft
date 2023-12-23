@@ -1,7 +1,7 @@
 // Copyright (c) 2021-2023 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { EfisSide, EfisNdMode, efisRangeSettings, ApproachUtils, SimVarString, ApproachType, LegType } from '@flybywiresim/fbw-sdk';
+import { EfisSide, EfisNdMode, efisRangeSettings, ApproachUtils, RunwayUtils, SimVarString, ApproachType, LegType } from '@flybywiresim/fbw-sdk';
 
 import { Geometry } from '@fmgc/guidance/Geometry';
 import { PseudoWaypoint } from '@fmgc/guidance/PseudoWaypoint';
@@ -261,14 +261,17 @@ export class GuidanceController {
 
     private updateEfisApproachMessage() {
         let apprMsg = '';
-        const appr = this.flightPlanService.active.approach;
+        const runway = this.flightPlanService.active.destinationRunway;
 
-        if (appr && appr.type !== ApproachType.Unknown) {
+        if (runway) {
             const phase = getFlightPhaseManager().phase;
-
             const distanceToDestination = this.alongTrackDistanceToDestination ?? -1;
+
             if (phase > FmgcFlightPhase.Cruise || (phase === FmgcFlightPhase.Cruise && distanceToDestination < 250)) {
-                apprMsg = ApproachUtils.longApproachName(appr);
+                const appr = this.flightPlanService.active.approach;
+                apprMsg = (appr && appr.type !== ApproachType.Unknown)
+                    ? ApproachUtils.longApproachName(appr)
+                    : RunwayUtils.runwayString(runway.ident); // Runway-by-itself
             }
         }
 

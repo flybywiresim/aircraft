@@ -58,19 +58,18 @@ export class DestinationSegment extends FlightPlanSegment {
     }
 
     public async setDestinationRunway(runwayIdent: string | undefined, setByApproach = false) {
-        const db = NavigationDatabaseService.activeDatabase.backendDatabase;
-
-        if (!this.airport) {
-            throw new Error('[FMS/FPM] Cannot set destination runway without destination airport');
-        }
-
-        const runways = await db.getRunways(this.airport.ident);
-
         const oldRunwayIdent = this.runway?.ident;
 
         if (runwayIdent === undefined) {
             this.runway = undefined;
         } else {
+            if (!this.airport) {
+                throw new Error('[FMS/FPM] Cannot set destination runway without destination airport');
+            }
+
+            const db = NavigationDatabaseService.activeDatabase.backendDatabase;
+            const runways = await db.getRunways(this.airport.ident);
+
             const matchingRunway = runways.find((runway) => runway.ident === runwayIdent);
 
             if (!matchingRunway) {

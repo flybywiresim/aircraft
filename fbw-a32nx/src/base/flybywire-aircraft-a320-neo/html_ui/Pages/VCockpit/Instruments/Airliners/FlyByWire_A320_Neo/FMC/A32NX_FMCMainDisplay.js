@@ -2685,12 +2685,21 @@ class FMCMainDisplay extends BaseAirliners {
 
     insertTemporaryFlightPlan(callback = EmptyCallback.Void) {
         if (this.flightPlanService.hasTemporary) {
+            const oldCostIndex = this.costIndex;
             this.flightPlanService.temporaryInsert();
+            this.checkCostIndex(oldCostIndex)
 
             SimVar.SetSimVarValue("L:FMC_FLIGHT_PLAN_IS_TEMPORARY", "number", 0);
             SimVar.SetSimVarValue("L:MAP_SHOW_TEMPORARY_FLIGHT_PLAN", "number", 0);
 
-            this.guidanceController.vnavDriver.invalidateFlightPlanProfile(); callback();
+            this.guidanceController.vnavDriver.invalidateFlightPlanProfile();
+            callback();
+        }
+    }
+
+    checkCostIndex(oldCostIndex) {
+        if (this.costIndex !== oldCostIndex) {
+            this.setScratchpadMessage(NXSystemMessages.usingCostIndex.getModifiedMessage(this.costIndex.toFixed(0)));
         }
     }
 
@@ -3128,16 +3137,15 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     thrustReductionAccelerationChecks() {
-        // TODO port over (fms-v2)
-        // const activePlan = this.flightPlanService.active;
+        const activePlan = this.flightPlanService.active;
 
-        // if (activePlan.reconcileAccelerationWithConstraints()) {
-        //     this.addMessageToQueue(NXSystemMessages.newAccAlt.getModifiedMessage(activePlan.accelerationAltitude.toFixed(0)));
-        // }
+        if (activePlan.reconcileAccelerationWithConstraints()) {
+            this.addMessageToQueue(NXSystemMessages.newAccAlt.getModifiedMessage(activePlan.performanceData.accelerationAltitude.toFixed(0)));
+        }
 
-        // if (activePlan.reconcileThrustReductionWithConstraints()) {
-        //     this.addMessageToQueue(NXSystemMessages.newThrRedAlt.getModifiedMessage(activePlan.thrustReductionAltitude.toFixed(0)));
-        // }
+        if (activePlan.reconcileThrustReductionWithConstraints()) {
+            this.addMessageToQueue(NXSystemMessages.newThrRedAlt.getModifiedMessage(activePlan.performanceData.thrustReductionAltitude.toFixed(0)));
+        }
     }
 
     updateThrustReductionAcceleration() {

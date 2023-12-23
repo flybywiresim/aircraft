@@ -81,8 +81,8 @@ export class Database {
         return (await this.backend.getHolds(airportIdentifier)).filter((hold) => hold.waypoint?.ident === fixIdentifier);
     }
 
-    public getIlsAtAirport(airportIdentifier: string, ident?: string): Promise<IlsNavaid[]> {
-        return this.backend.getIlsAtAirport(airportIdentifier, ident);
+    public getIlsAtAirport(airportIdentifier: string, ident?: string, lsIcaoCode?: string): Promise<IlsNavaid[]> {
+        return this.backend.getIlsAtAirport(airportIdentifier, ident, lsIcaoCode);
     }
 
     public getLsMarkers(airportIdentifier: string, runwayIdentifier: string, llzIdentifier: string): Promise<Marker[]> {

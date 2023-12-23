@@ -81,7 +81,7 @@ export class LatchedDescentGuidance {
         this.verticalState = newState;
     }
 
-    private reset() {
+    reset() {
         this.requestedVerticalMode = RequestedVerticalMode.None;
         this.targetAltitude = 0;
         this.targetVerticalSpeed = 0;

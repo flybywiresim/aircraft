@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { Airport, ApproachType, Fix, LegType, NXDataStore } from '@flybywiresim/fbw-sdk';
+import { Airport, ApproachType, Fix, LegType, MathUtils, NXDataStore } from '@flybywiresim/fbw-sdk';
 import { AlternateFlightPlan } from '@fmgc/flightplanning/new/plans/AlternateFlightPlan';
 import { EventBus, MagVar } from '@microsoft/msfs-sdk';
 import { FixInfoEntry, FixInfoData } from '@fmgc/flightplanning/new/plans/FixInfo';
@@ -16,7 +16,7 @@ import { CopyOptions } from '@fmgc/flightplanning/new/plans/CloningOptions';
 import { ImportedPerformanceData } from '@fmgc/flightplanning/new/uplink/SimBriefUplinkAdapter';
 import {
     FlightPlanPerformanceData,
-    FlightPlanPerformanceDataProperties
+    FlightPlanPerformanceDataProperties,
 } from '@fmgc/flightplanning/new/plans/performance/FlightPlanPerformanceData';
 import { BaseFlightPlan, FlightPlanQueuedOperation, SerializedFlightPlan } from './BaseFlightPlan';
 
@@ -98,7 +98,15 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     }
 
     async setAlternateDestinationAirport(icao: string | undefined) {
+        // TODO setting both airport and runway here means we fetch the airport's approaches twice from the DB
+        // TODO optimize
         await this.alternateFlightPlan.setDestinationAirport(icao);
+        // Reset procedures because they don't make sense anymore for the new alternate
+        await this.alternateFlightPlan.setDestinationRunway(undefined);
+        await this.alternateFlightPlan.setArrivalEnrouteTransition(undefined);
+        await this.alternateFlightPlan.setArrival(undefined);
+        await this.alternateFlightPlan.setApproach(undefined);
+        await this.alternateFlightPlan.setApproachVia(undefined);
 
         if (this.alternateFlightPlan.originAirport) {
             this.alternateFlightPlan.availableOriginRunways = await loadAllRunways(this.alternateFlightPlan.originAirport);
@@ -116,10 +124,6 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
         this.alternateFlightPlan.setOriginRunway(undefined);
         this.alternateFlightPlan.setDeparture(undefined);
         this.alternateFlightPlan.setDepartureEnrouteTransition(undefined);
-        this.alternateFlightPlan.setArrivalEnrouteTransition(undefined);
-        this.alternateFlightPlan.setArrival(undefined);
-        this.alternateFlightPlan.setApproach(undefined);
-        this.alternateFlightPlan.setApproachVia(undefined);
 
         this.alternateFlightPlan.allLegs.length = 0;
 
@@ -215,21 +219,24 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
     // - disco
     // - destination airport
     // - complete alternate routing
-    async enableAltn(atIndex: number) {
+    async enableAltn(atIndex: number, cruiseLevel: number) {
         if (!this.alternateDestinationAirport) {
             throw new Error('[FMS/FPM] Cannot enable alternate with no alternate destination defined');
         }
 
         this.redistributeLegsAt(atIndex);
 
-        this.removeRange(atIndex + 1, this.legCount);
+        if (this.legCount > atIndex + 1) {
+            this.removeRange(atIndex + 1, this.legCount);
+        }
 
         await this.setDestinationAirport(this.alternateDestinationAirport.ident);
         await this.setDestinationRunway(this.alternateFlightPlan.destinationRunway?.ident ?? undefined);
-        await this.setApproach(this.alternateFlightPlan.approach?.ident ?? undefined);
-        await this.setApproachVia(this.alternateFlightPlan.approachVia?.ident ?? undefined);
-        await this.setArrival(this.alternateFlightPlan.arrival?.ident ?? undefined);
-        await this.setArrivalEnrouteTransition(this.alternateFlightPlan.arrivalEnrouteTransition?.ident ?? undefined);
+        // We call the segment methods because we only want to rebuild the arrival/approach when we've changed all the procedures
+        await this.approachSegment.setProcedure(this.alternateFlightPlan.approach?.ident ?? undefined);
+        await this.approachViaSegment.setProcedure(this.alternateFlightPlan.approachVia?.ident ?? undefined);
+        await this.arrivalSegment.setProcedure(this.alternateFlightPlan.arrival?.ident ?? undefined);
+        await this.arrivalEnrouteTransitionSegment.setProcedure(this.alternateFlightPlan.arrivalEnrouteTransition?.ident ?? undefined);
 
         const alternateLastEnrouteIndex = this.alternateFlightPlan.originSegment.legCount
             + this.alternateFlightPlan.departureRunwayTransitionSegment.legCount
@@ -244,12 +251,16 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
             this.enrouteSegment.allLegs.push({ isDiscontinuity: true });
         }
 
+        this.setPerformanceData('cruiseFlightLevel', cruiseLevel);
+        this.setPerformanceData('costIndex', 0);
+
         this.enrouteSegment.allLegs.push(...alternateLegsToInsert);
         this.syncSegmentLegsChange(this.enrouteSegment);
         this.enrouteSegment.strung = false;
 
         this.deleteAlternateFlightPlan();
 
+        this.enqueueOperation(FlightPlanQueuedOperation.RebuildArrivalAndApproach);
         this.enqueueOperation(FlightPlanQueuedOperation.Restring);
         await this.flushOperationQueue();
     }
@@ -442,5 +453,41 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
         }
 
         this.incrementVersion();
+    }
+
+    /**
+     * Check if the thrust reduction altitude is limited by a constraint and reduce it if so
+     * @returns true if a reduction occured
+     */
+    reconcileThrustReductionWithConstraints(): boolean {
+        const lowestClimbConstraint = MathUtils.round(this.lowestClimbConstraint(), 10);
+        if (Number.isFinite(lowestClimbConstraint) && this.performanceData.thrustReductionAltitude > lowestClimbConstraint) {
+            this.setPerformanceData('defaultThrustReductionAltitude',
+                this.performanceData.defaultThrustReductionAltitude !== undefined ? Math.min(this.performanceData.defaultThrustReductionAltitude, lowestClimbConstraint) : undefined);
+            this.setPerformanceData('pilotThrustReductionAltitude',
+                this.performanceData.pilotThrustReductionAltitude !== undefined ? Math.min(this.performanceData.pilotThrustReductionAltitude, lowestClimbConstraint) : undefined);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if the acceleration altitude is limited by a constraint and reduce it if so
+     * @returns true if a reduction occured
+     */
+    reconcileAccelerationWithConstraints(): boolean {
+        const lowestClimbConstraint = MathUtils.round(this.lowestClimbConstraint(), 10);
+        if (Number.isFinite(lowestClimbConstraint) && this.performanceData.accelerationAltitude > lowestClimbConstraint) {
+            this.setPerformanceData('defaultAccelerationAltitude',
+                this.performanceData.defaultAccelerationAltitude !== undefined ? Math.min(this.performanceData.defaultAccelerationAltitude, lowestClimbConstraint) : undefined);
+            this.setPerformanceData('pilotAccelerationAltitude',
+                this.performanceData.pilotAccelerationAltitude !== undefined ? Math.min(this.performanceData.pilotAccelerationAltitude, lowestClimbConstraint) : undefined);
+
+            return true;
+        }
+
+        return false;
     }
 }

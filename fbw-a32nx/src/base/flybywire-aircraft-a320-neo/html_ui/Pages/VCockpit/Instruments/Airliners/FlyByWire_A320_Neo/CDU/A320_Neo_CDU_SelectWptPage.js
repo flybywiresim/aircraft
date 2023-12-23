@@ -1,7 +1,7 @@
 class A320_Neo_CDU_SelectWptPage {
     /**
      * @param mcdu
-     * @param fixes {Array.<import('msfs-navdata').Fix>}
+     * @param fixes {Array.<import('msfs-navdata').Fix | import('msfs-navdata').IlsNavaid>}
      * @param callback
      * @param page
      * @constructor
@@ -25,12 +25,12 @@ class A320_Neo_CDU_SelectWptPage {
         ];
 
         /**
-         * @param w {import('msfs-navdata').Waypoint}
+         * @param w {import('msfs-navdata').Fix | import('msfs-navdata').IlsNavaid}
          * @returns {NauticalMiles}
          */
         function calculateDistance(w) {
             const planeLla = new LatLongAlt(SimVar.GetSimVarValue("PLANE LATITUDE", "degree latitude"), SimVar.GetSimVarValue("PLANE LONGITUDE", "degree longitude"));
-            return Avionics.Utils.computeGreatCircleDistance(planeLla, w.location);
+            return Avionics.Utils.computeGreatCircleDistance(planeLla, w.locLocation ? w.locLocation : w.location);
         }
 
         const orderedWaypoints = [...fixes].sort((a, b) => calculateDistance(a) - calculateDistance(b));
@@ -44,8 +44,11 @@ class A320_Neo_CDU_SelectWptPage {
                     freq = w.frequency ? fastToFixed(w.frequency, 2) : " ";
                 }
 
-                const latString = `${Math.abs(w.location.lat).toFixed(0).padStart(2, "0")}${w.location.lat >= 0 ? 'N' : 'S'}`;
-                const longString = `${Math.abs(w.location.long).toFixed(0).padStart(3, "0")}${w.location.long >= 0 ? 'E' : 'W'}`;
+                const lat = w.locLocation ? w.locLocation.lat : w.location.lat;
+                const long = w.locLocation ? w.locLocation.long : w.location.long;
+
+                const latString = `${Math.abs(lat).toFixed(0).padStart(2, "0")}${lat >= 0 ? 'N' : 'S'}`;
+                const longString = `${Math.abs(long).toFixed(0).padStart(3, "0")}${long >= 0 ? 'E' : 'W'}`;
 
                 const dist = Math.min(calculateDistance(w), 9999);
 

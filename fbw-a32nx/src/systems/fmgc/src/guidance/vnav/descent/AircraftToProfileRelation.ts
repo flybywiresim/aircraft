@@ -26,6 +26,15 @@ export class AircraftToDescentProfileRelation {
 
     constructor(private observer: VerticalProfileComputationParametersObserver) { }
 
+    reset() {
+        this.isValid = false;
+        this.currentProfile = undefined;
+        this.topOfDescent = undefined;
+        this.geometricPathStart = undefined;
+        this.distanceToEnd = 0;
+        this.totalFlightPlanDistance = 0;
+    }
+
     updateProfile(profile: NavGeometryProfile) {
         const topOfDescent = profile?.findVerticalCheckpoint(VerticalCheckpointReason.TopOfDescent);
         const geometricPathStart = profile?.findVerticalCheckpoint(VerticalCheckpointReason.GeometricPathStart);
