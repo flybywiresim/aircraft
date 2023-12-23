@@ -85,7 +85,7 @@ bool LightingPresets::saveToStore(INT64 presetNr) {
   return iniFile.write(ini, true);
 }
 
-std::shared_ptr<AircraftVariable> LightingPresets::getLightPotentiometerVar(int index) const {
+AircraftVariablePtr LightingPresets::getLightPotentiometerVar(int index) const {
   return dataManager->make_aircraft_var("LIGHT POTENTIOMETER", index, "", lightPotentiometerSetEvent, UNITS.Percent);
 }
 
