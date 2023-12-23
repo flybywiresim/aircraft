@@ -652,7 +652,8 @@ export class EfisSymbols {
         // FP airports/runways
 
         const airports: [Airport | undefined, Runway | undefined][] = [
-            [flightPlan.originAirport, flightPlan.originRunway],
+            // The alternate origin airport symbol is not shown as it is the same as the primary destination
+            [!isAlternate ? flightPlan.originAirport : undefined, flightPlan.originRunway],
             [flightPlan.destinationAirport, flightPlan.destinationRunway],
         ];
 
