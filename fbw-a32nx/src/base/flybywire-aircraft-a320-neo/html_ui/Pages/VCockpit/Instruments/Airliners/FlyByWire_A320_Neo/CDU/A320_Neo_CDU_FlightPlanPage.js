@@ -658,7 +658,7 @@ class CDUFlightPlanPage {
 
         mcdu.efisInterface.setAlternateLegVisible(scrollWindow.some(row => row.inAlternate), forPlan);
         mcdu.efisInterface.setMissedLegVisible(targetPlan && scrollWindow.some(row => row.fpIndex >= targetPlan.firstMissedApproachLegIndex), forPlan);
-        mcdu.efisInterface.setAlternateMissedLegVisible(targetPlan && targetPlan.alternateFlightPlan && scrollWindow.some(row => row.fpIndex >= targetPlan.alternateFlightPlan.firstMissedApproachLegIndex), forPlan);
+        mcdu.efisInterface.setAlternateMissedLegVisible(targetPlan && targetPlan.alternateFlightPlan && scrollWindow.some(row => row.inAlternate && row.fpIndex >= targetPlan.alternateFlightPlan.firstMissedApproachLegIndex), forPlan);
         mcdu.efisInterface.setSecRelatedPageOpen(!forActiveOrTemporary);
 
         // Render scrolling data to text >> add ditto marks
