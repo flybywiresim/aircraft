@@ -844,6 +844,8 @@ class CDUFlightPlanPage {
             } else if (previousElement.isDiscontinuity === false && previousElement.type === 'PI' && element.type === 'CF') {
                 insertDiscontinuity = element.waypoint.databaseId === previousElement.recommendedNavaid.databaseId;
             }
+        } else {
+            insertDiscontinuity = false;
         }
 
         try {
