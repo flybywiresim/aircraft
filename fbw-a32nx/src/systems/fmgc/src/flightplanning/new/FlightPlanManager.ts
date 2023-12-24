@@ -58,7 +58,7 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
                 for (const [index, serialisedPlan] of Object.entries(event.plans)) {
                     const intIndex = parseInt(index);
 
-                    const newPlan = FlightPlan.fromSerializedFlightPlan(intIndex, serialisedPlan, this.bus, this.performanceDataInit);
+                    const newPlan = FlightPlan.fromSerializedFlightPlan(intIndex, serialisedPlan, this.bus, this.performanceDataInit.clone());
 
                     this.set(intIndex, newPlan);
                 }
@@ -131,7 +131,7 @@ export class FlightPlanManager<P extends FlightPlanPerformanceData> {
     create(index: number, notify = true) {
         this.assertFlightPlanDoesntExist(index);
 
-        this.plans[index] = FlightPlan.empty(index, this.bus, this.performanceDataInit);
+        this.plans[index] = FlightPlan.empty(index, this.bus, this.performanceDataInit.clone());
 
         if (notify) {
             this.sendEvent('flightPlanManager.create', { planIndex: index });

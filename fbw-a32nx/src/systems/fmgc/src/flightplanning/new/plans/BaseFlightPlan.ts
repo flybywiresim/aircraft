@@ -732,6 +732,10 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     async setDestinationRunway(runwayIdent: string | undefined) {
         await this.destinationSegment.setDestinationRunway(runwayIdent).then(() => this.incrementVersion());
 
+        if (this instanceof FlightPlan) {
+            this.setPerformanceData('databaseTransitionLevel', this.destinationAirport.transitionLevel);
+        }
+
         await this.flushOperationQueue();
         this.incrementVersion();
     }
