@@ -244,4 +244,8 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
     setPerformanceData<k extends keyof P & string>(key: k, value: P[k], planIndex: number): Promise<void> {
         return this.callFunctionViaRpc('setPerformanceData', key, value, planIndex);
     }
+
+    stringMissedApproach(planIndex?: number): Promise<void> {
+        return this.callFunctionViaRpc('stringMissedApproach', planIndex);
+    }
 }

@@ -810,8 +810,9 @@ class FMCMainDisplay extends BaseAirliners {
             case FmgcFlightPhases.GOAROUND: {
                 SimVar.SetSimVarValue("L:A32NX_GOAROUND_INIT_SPEED", "number", Simplane.getIndicatedSpeed());
 
-                const activePlan = this.flightPlanService.active;
+                this.flightPlanService.stringMissedApproach();
 
+                const activePlan = this.flightPlanService.active;
                 if (activePlan.performanceData.missedAccelerationAltitude === undefined) {
                     // it's important to set this immediately as we don't want to immediately sequence to the climb phase
                     activePlan.setPerformanceData('pilotMissedAccelerationAltitude', SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') + parseInt(NXDataStore.get("CONFIG_ENG_OUT_ACCEL_ALT", "1500")));

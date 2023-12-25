@@ -251,4 +251,6 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
     setFlightNumber(flightNumber: string, planIndex: number): Promise<void>;
 
     setPerformanceData<T extends keyof P & string>(key: T, value: P[T], planIndex: number): Promise<void>;
+
+    stringMissedApproach(planIndex?: number): Promise<void>;
 }

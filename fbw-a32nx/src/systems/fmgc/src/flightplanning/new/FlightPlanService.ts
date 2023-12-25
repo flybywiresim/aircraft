@@ -486,4 +486,10 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
 
         plan.setPerformanceData(key, value);
     }
+
+    async stringMissedApproach(planIndex = FlightPlanIndex.Active) {
+        const plan = this.flightPlanManager.get(planIndex);
+
+        return plan.stringMissedApproach();
+    }
 }

@@ -210,41 +210,54 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     sequence() {
         this.incrementVersion();
 
-        if (this.activeLeg.isDiscontinuity === false && this.activeLeg.definition.approachWaypointDescriptor === ApproachWaypointDescriptor.MissedApproachPoint) {
-            this.enrouteSegment.allLegs.length = 0;
-
-            const cloneMissedApproachPointLeg = this.activeLeg.clone(this.enrouteSegment);
-            const clonedMissedApproachLegs = this.missedApproachSegment.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(this.enrouteSegment) : it));
-
-            cloneMissedApproachPointLeg.type = LegType.IF;
-            this.enrouteSegment.allLegs.push(cloneMissedApproachPointLeg);
-            this.enrouteSegment.allLegs.push(...clonedMissedApproachLegs);
-            this.enrouteSegment.allLegs.push({ isDiscontinuity: true });
-            this.enrouteSegment.strung = true;
-            this.enrouteSegment.isSequencedMissedApproach = true;
-
-            this.syncSegmentLegsChange(this.enrouteSegment);
-
-            // We don't have to await any of this because of how we use it, but this might be something to clean up in the future
-
-            this.arrivalSegment.setProcedure(undefined);
-
-            this.approachSegment.setProcedure(this.approachSegment.procedure?.ident);
-            this.approachViaSegment.setProcedure(this.approachViaSegment.procedure?.ident);
-
-            this.enqueueOperation(FlightPlanQueuedOperation.Restring);
-            this.flushOperationQueue().then(() => {
-                const activeIndex = this.allLegs.findIndex((it) => it === clonedMissedApproachLegs[0]);
-
-                this.activeLegIndex = activeIndex;
-
-                this.sendEvent('flightPlan.setActiveLegIndex', { planIndex: this.index, forAlternate: this instanceof AlternateFlightPlan, activeLegIndex: activeIndex });
-            });
-        } else {
-            this.activeLegIndex++;
-
-            this.sendEvent('flightPlan.setActiveLegIndex', { planIndex: this.index, forAlternate: false, activeLegIndex: this.activeLegIndex });
+        if (this.activeLeg.isDiscontinuity === false
+            // Make sure we've not already string it
+            && this.activeLeg.segment.class === SegmentClass.Arrival
+            && this.activeLeg.definition.approachWaypointDescriptor === ApproachWaypointDescriptor.MissedApproachPoint) {
+            this.stringMissedApproach();
         }
+
+        this.activeLegIndex++;
+
+        this.sendEvent('flightPlan.setActiveLegIndex', { planIndex: this.index, forAlternate: false, activeLegIndex: this.activeLegIndex });
+    }
+
+    stringMissedApproach() {
+        const missedApproachPointIndex = this.allLegs.findIndex(
+            (it) => it.isDiscontinuity === false && it.definition.approachWaypointDescriptor === ApproachWaypointDescriptor.MissedApproachPoint,
+        );
+
+        if (missedApproachPointIndex === -1) {
+            return;
+        }
+
+        // Move arrival/approach into enroute
+        this.redistributeLegsAt(missedApproachPointIndex);
+
+        // Copy missed approach into enroute segment
+        const clonedMissedApproachLegs = this.missedApproachSegment.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(this.enrouteSegment) : it));
+        this.enrouteSegment.allLegs.push(...clonedMissedApproachLegs);
+        this.enrouteSegment.allLegs.push({ isDiscontinuity: true });
+        this.enrouteSegment.strung = true;
+        this.enrouteSegment.isSequencedMissedApproach = true;
+
+        this.syncSegmentLegsChange(this.enrouteSegment);
+
+        // We don't have to await any of this because of how we use it, but this might be something to clean up in the future
+
+        this.arrivalSegment.setProcedure(undefined);
+
+        this.approachSegment.setProcedure(this.approachSegment.procedure?.ident);
+        this.approachViaSegment.setProcedure(this.approachViaSegment.procedure?.ident);
+
+        this.enqueueOperation(FlightPlanQueuedOperation.Restring);
+        this.flushOperationQueue().then(() => {
+            const activeIndex = this.allLegs.findIndex((it) => it === this.activeLeg);
+
+            this.activeLegIndex = activeIndex;
+
+            this.sendEvent('flightPlan.setActiveLegIndex', { planIndex: this.index, forAlternate: this instanceof AlternateFlightPlan, activeLegIndex: activeIndex });
+        });
     }
 
     version = 0;
