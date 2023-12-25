@@ -169,8 +169,8 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
         return this.callFunctionViaRpc('setDestinationRunway', runwayIdent, planIndex, alternate);
     }
 
-    deleteElementAt(index: number, planIndex?: number, alternate?: boolean): Promise<boolean> {
-        return this.callFunctionViaRpc('deleteElementAt', index, planIndex, alternate);
+    deleteElementAt(index: number, insertDiscontinuity?: boolean, planIndex?: number, alternate?: boolean): Promise<boolean> {
+        return this.callFunctionViaRpc('deleteElementAt', index, insertDiscontinuity, planIndex, alternate);
     }
 
     insertWaypointBefore(atIndex: number, waypoint: Fix, planIndex?: number, alternate?: boolean): Promise<void> {
