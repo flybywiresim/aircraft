@@ -807,6 +807,25 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         throw new Error('[FMS/FPM] Tried to get segment for out-of-bounds index');
     }
 
+    /**
+     * Converts a segment index to an allLegs index
+     * @param segment Segment containing the leg
+     * @param indexInSegment Index of the leg in the segment
+     * @returns
+     */
+    private indexForSegmentPosition(segment: FlightPlanSegment, indexInSegment: number): number {
+        let accumulator = 0;
+        for (const s of this.orderedSegments) {
+            if (s === segment) {
+                return accumulator + indexInSegment;
+            }
+
+            accumulator += s.legCount;
+        }
+
+        throw new Error('[FMS/FPM] Tried to get index for out-of-bounds segment position');
+    }
+
     autoConstraintTypeForLegIndex(index: number): WaypointConstraintType {
         const [segment] = this.segmentPositionForIndex(index);
 
@@ -1445,15 +1464,16 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
             return;
         }
 
+        let lastElementInFirstIndex = first.allLegs.length - 1;
         const lastElementInFirst = first.allLegs[first.allLegs.length - 1];
-        let lastLegInFirst = lastElementInFirst;
 
-        if (lastLegInFirst?.isDiscontinuity === true) {
-            lastLegInFirst = first.allLegs[first.allLegs.length - 2];
+        if (lastElementInFirst?.isDiscontinuity === true) {
+            lastElementInFirstIndex = first.allLegs.length - 2;
+        }
 
-            if (!lastLegInFirst || lastLegInFirst?.isDiscontinuity === true) {
-                return;
-            }
+        const lastLegInFirst = first.allLegs[lastElementInFirstIndex];
+        if (!lastLegInFirst || lastLegInFirst?.isDiscontinuity === true) {
+            return;
         }
 
         if (first instanceof OriginSegment && first.lastLeg?.waypointDescriptor === WaypointDescriptor.Runway) {
@@ -1475,9 +1495,11 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         }
 
         const originAndDestination = first instanceof OriginSegment && second instanceof DestinationSegment;
+        const totalIndex = this.indexForSegmentPosition(first, lastElementInFirstIndex);
+        const firstIsBeforeActiveLeg = this.activeLegIndex > -1 && totalIndex < this.activeLegIndex;
 
         let cutBefore = -1;
-        if (!originAndDestination) {
+        if (!originAndDestination && !firstIsBeforeActiveLeg) {
             for (let i = 0; i < second.allLegs.length; i++) {
                 const element = second.allLegs[i];
 
