@@ -139,6 +139,9 @@ export namespace GeometryFactory {
 
                 if (oldLeg instanceof XFLeg && newLeg instanceof XFLeg) {
                     oldLeg.fix = newLeg.fix;
+                }
+
+                if (oldLeg && newLeg) {
                     oldLeg.metadata = newLeg.metadata;
                 }
 
