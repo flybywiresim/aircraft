@@ -21,6 +21,7 @@ use uom::si::{
 pub(super) struct ElectronicControlBox {
     apu_n_raw_id: VariableIdentifier,
     apu_n_id: VariableIdentifier,
+    apu_n2_id: VariableIdentifier,
     apu_egt_id: VariableIdentifier,
     apu_egt_caution_id: VariableIdentifier,
     apu_egt_warning_id: VariableIdentifier,
@@ -38,6 +39,7 @@ pub(super) struct ElectronicControlBox {
     start_is_on: bool,
     start_motor_is_powered: bool,
     n: Ratio,
+    n2: Ratio,
     bleed_is_on: bool,
     bleed_air_valve_last_open_time_ago: Duration,
     bleed_air_pressure: Pressure,
@@ -57,6 +59,7 @@ impl ElectronicControlBox {
         ElectronicControlBox {
             apu_n_raw_id: context.get_identifier("APU_N_RAW".to_owned()),
             apu_n_id: context.get_identifier("APU_N".to_owned()),
+            apu_n2_id: context.get_identifier("APU_N2".to_owned()),
             apu_egt_id: context.get_identifier("APU_EGT".to_owned()),
             apu_egt_caution_id: context.get_identifier("APU_EGT_CAUTION".to_owned()),
             apu_egt_warning_id: context.get_identifier("APU_EGT_WARNING".to_owned()),
@@ -76,6 +79,7 @@ impl ElectronicControlBox {
             start_is_on: false,
             start_motor_is_powered: false,
             n: Ratio::new::<percent>(0.),
+            n2: Ratio::default(),
             bleed_is_on: false,
             bleed_air_valve_last_open_time_ago: Duration::from_secs(1000),
             bleed_air_pressure: Pressure::new::<psi>(0.),
@@ -133,6 +137,7 @@ impl ElectronicControlBox {
     }
 
     pub fn update(&mut self, context: &UpdateContext, turbine: &dyn Turbine) {
+        self.n2 = turbine.n2();
         self.n = turbine.n();
         self.egt = turbine.egt();
         self.turbine_state = turbine.state();
@@ -248,6 +253,10 @@ impl ElectronicControlBox {
         self.n
     }
 
+    fn n2(&self) -> Ratio {
+        self.n2
+    }
+
     pub fn is_starting(&self) -> bool {
         self.turbine_state == TurbineState::Starting
     }
@@ -357,6 +366,7 @@ impl SimulationElement for ElectronicControlBox {
         writer.write(&self.apu_n_raw_id, self.n());
 
         writer.write_arinc429(&self.apu_n_id, self.n(), ssm);
+        writer.write_arinc429(&self.apu_n2_id, self.n2(), ssm);
         writer.write_arinc429(&self.apu_egt_id, self.egt, ssm);
         writer.write_arinc429(
             &self.apu_egt_caution_id,

@@ -1,6 +1,6 @@
 use self::{
     air_intake_flap::AirIntakeFlap, aps3200::ShutdownAps3200Turbine,
-    electronic_control_box::ElectronicControlBox,
+    electronic_control_box::ElectronicControlBox, pw980::ShutdownPw980Turbine,
 };
 use crate::{
     electrical::{ElectricalElement, ElectricitySource, ProvideFrequency, ProvidePotential},
@@ -21,8 +21,10 @@ use uom::si::thermodynamic_temperature::degree_celsius;
 
 mod air_intake_flap;
 mod aps3200;
+mod pw980;
 use crate::simulation::{InitContext, VariableIdentifier};
 pub use aps3200::{Aps3200ApuGenerator, Aps3200StartMotor};
+pub use pw980::{Pw980ApuGenerator, Pw980StartMotor};
 
 mod electronic_control_box;
 
@@ -51,14 +53,13 @@ impl AuxiliaryPowerUnitFactory {
         start_motor_powered_by: ElectricalBusType,
         electronic_control_box_powered_by: ElectricalBusType,
         air_intake_flap_powered_by: ElectricalBusType,
-    ) -> AuxiliaryPowerUnit<Aps3200ApuGenerator, Aps3200StartMotor, 2> {
-        // TODO: replace with correct generator and turbine model
-        let generators = [1, 2].map(|i| Aps3200ApuGenerator::new(context, i));
+    ) -> AuxiliaryPowerUnit<Pw980ApuGenerator, Pw980StartMotor, 2> {
+        let generators = [1, 2].map(|i| Pw980ApuGenerator::new(context, i));
         AuxiliaryPowerUnit::new(
             context,
-            Box::new(ShutdownAps3200Turbine::new()),
+            Box::new(ShutdownPw980Turbine::new()),
             generators,
-            Aps3200StartMotor::new(start_motor_powered_by),
+            Pw980StartMotor::new(start_motor_powered_by),
             electronic_control_box_powered_by,
             air_intake_flap_powered_by,
         )
@@ -277,6 +278,9 @@ pub trait Turbine {
         controller: &dyn ControllerSignal<TurbineSignal>,
     ) -> Box<dyn Turbine>;
     fn n(&self) -> Ratio;
+    fn n2(&self) -> Ratio {
+        Ratio::default()
+    }
     fn egt(&self) -> ThermodynamicTemperature;
     fn state(&self) -> TurbineState;
     fn bleed_air_pressure(&self) -> Pressure;
@@ -386,18 +390,29 @@ mod tests {
     use super::*;
     use crate::simulation::test::{ReadByName, WriteByName};
     use crate::simulation::InitContext;
+    use rstest::{fixture, rstest};
     use std::time::Duration;
     use uom::si::{
         length::foot, power::watt, pressure::psi, ratio::percent,
         thermodynamic_temperature::degree_celsius,
     };
 
-    pub fn test_bed_with() -> AuxiliaryPowerUnitTestBed {
-        AuxiliaryPowerUnitTestBed::new()
+    pub fn test_bed_with() -> AuxiliaryPowerUnitTestBed<Aps3200ApuGenerator, Aps3200StartMotor, 1> {
+        AuxiliaryPowerUnitTestBed::<Aps3200ApuGenerator, Aps3200StartMotor, 1>::new()
     }
 
-    pub fn test_bed() -> AuxiliaryPowerUnitTestBed {
-        AuxiliaryPowerUnitTestBed::new()
+    pub fn test_bed() -> AuxiliaryPowerUnitTestBed<Aps3200ApuGenerator, Aps3200StartMotor, 1> {
+        AuxiliaryPowerUnitTestBed::<Aps3200ApuGenerator, Aps3200StartMotor, 1>::new()
+    }
+
+    #[fixture]
+    fn test_bed_aps3200() -> AuxiliaryPowerUnitTestBed<Aps3200ApuGenerator, Aps3200StartMotor, 1> {
+        AuxiliaryPowerUnitTestBed::<Aps3200ApuGenerator, Aps3200StartMotor, 1>::new()
+    }
+
+    #[fixture]
+    pub fn test_bed_pw980() -> AuxiliaryPowerUnitTestBed<Pw980ApuGenerator, Pw980StartMotor, 2> {
+        AuxiliaryPowerUnitTestBed::<Pw980ApuGenerator, Pw980StartMotor, 2>::new_with_pw980()
     }
 
     struct InfinitelyAtNTestTurbine {
@@ -451,12 +466,12 @@ mod tests {
         }
     }
 
-    pub struct AuxiliaryPowerUnitTestAircraft {
+    pub struct AuxiliaryPowerUnitTestAircraft<T: ApuGenerator, U: ApuStartMotor, const N: usize> {
         dc_bat_bus_electricity_source: TestElectricitySource,
         dc_bat_bus: ElectricalBus,
         ac_1_bus: ElectricalBus,
         apu_start_motor_bus: ElectricalBus,
-        apu: AuxiliaryPowerUnit<Aps3200ApuGenerator, Aps3200StartMotor, 1>,
+        apu: AuxiliaryPowerUnit<T, U, N>,
         apu_fire_overhead: AuxiliaryPowerUnitFireOverheadPanel,
         apu_overhead: AuxiliaryPowerUnitOverheadPanel,
         apu_bleed: OnOffFaultPushButton,
@@ -469,19 +484,43 @@ mod tests {
             bool,
         pneumatic: TestPneumatic,
     }
-    impl AuxiliaryPowerUnitTestAircraft {
+    impl<T: ApuGenerator, U: ApuStartMotor, const N: usize> AuxiliaryPowerUnitTestAircraft<T, U, N> {
         const START_MOTOR_POWERED_BY: ElectricalBusType = ElectricalBusType::Sub("49-42-00");
         const ECB_AND_AIR_INTAKE_FLAP_POWERED_BY: ElectricalBusType =
             ElectricalBusType::DirectCurrentBattery;
 
-        fn new(context: &mut InitContext) -> Self {
-            Self {
+        fn new(
+            context: &mut InitContext,
+        ) -> AuxiliaryPowerUnitTestAircraft<Aps3200ApuGenerator, Aps3200StartMotor, 1> {
+            AuxiliaryPowerUnitTestAircraft {
                 dc_bat_bus_electricity_source: TestElectricitySource::powered(context, PotentialOrigin::TransformerRectifier(1)),
                 dc_bat_bus: ElectricalBus::new(context, Self::ECB_AND_AIR_INTAKE_FLAP_POWERED_BY),
                 ac_1_bus: ElectricalBus::new(context, ElectricalBusType::AlternatingCurrent(1)),
                 power_consumer: PowerConsumer::from(ElectricalBusType::AlternatingCurrent(1)),
                 apu_start_motor_bus: ElectricalBus::new(context, Self::START_MOTOR_POWERED_BY),
                 apu: AuxiliaryPowerUnitFactory::new_aps3200(context, 1, Self::START_MOTOR_POWERED_BY, Self::ECB_AND_AIR_INTAKE_FLAP_POWERED_BY, Self::ECB_AND_AIR_INTAKE_FLAP_POWERED_BY),
+                apu_fire_overhead: AuxiliaryPowerUnitFireOverheadPanel::new(context),
+                apu_overhead: AuxiliaryPowerUnitOverheadPanel::new(context),
+                apu_bleed: OnOffFaultPushButton::new_on(context, "APU_BLEED"),
+                apu_gen_is_used: true,
+                has_fuel_remaining: true,
+                cut_start_motor_power: false,
+                power_consumption: Power::new::<watt>(0.),
+                apu_generator_output_within_normal_parameters_before_processing_power_consumption_report: false,
+                pneumatic: TestPneumatic::new(),
+            }
+        }
+
+        fn new_with_pw980(
+            context: &mut InitContext,
+        ) -> AuxiliaryPowerUnitTestAircraft<Pw980ApuGenerator, Pw980StartMotor, 2> {
+            AuxiliaryPowerUnitTestAircraft {
+                dc_bat_bus_electricity_source: TestElectricitySource::powered(context, PotentialOrigin::TransformerRectifier(1)),
+                dc_bat_bus: ElectricalBus::new(context, Self::ECB_AND_AIR_INTAKE_FLAP_POWERED_BY),
+                ac_1_bus: ElectricalBus::new(context, ElectricalBusType::AlternatingCurrent(1)),
+                power_consumer: PowerConsumer::from(ElectricalBusType::AlternatingCurrent(1)),
+                apu_start_motor_bus: ElectricalBus::new(context, Self::START_MOTOR_POWERED_BY),
+                apu: AuxiliaryPowerUnitFactory::new_pw980(context, Self::START_MOTOR_POWERED_BY, Self::ECB_AND_AIR_INTAKE_FLAP_POWERED_BY, Self::ECB_AND_AIR_INTAKE_FLAP_POWERED_BY),
                 apu_fire_overhead: AuxiliaryPowerUnitFireOverheadPanel::new(context),
                 apu_overhead: AuxiliaryPowerUnitOverheadPanel::new(context),
                 apu_bleed: OnOffFaultPushButton::new_on(context, "APU_BLEED"),
@@ -551,7 +590,9 @@ mod tests {
             self.power_consumption
         }
     }
-    impl Aircraft for AuxiliaryPowerUnitTestAircraft {
+    impl<T: ApuGenerator, U: ApuStartMotor, const N: usize> Aircraft
+        for AuxiliaryPowerUnitTestAircraft<T, U, N>
+    {
         fn update_before_power_distribution(
             &mut self,
             context: &UpdateContext,
@@ -586,8 +627,10 @@ mod tests {
             self.apu_overhead.update_after_apu(&self.apu);
         }
     }
-    impl SimulationElement for AuxiliaryPowerUnitTestAircraft {
-        fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+    impl<T: ApuGenerator, U: ApuStartMotor, const N: usize> SimulationElement
+        for AuxiliaryPowerUnitTestAircraft<T, U, N>
+    {
+        fn accept<S: SimulationElementVisitor>(&mut self, visitor: &mut S) {
             self.apu.accept(visitor);
             self.apu_overhead.accept(visitor);
             self.apu_fire_overhead.accept(visitor);
@@ -597,10 +640,10 @@ mod tests {
             visitor.visit(self);
         }
 
-        fn process_power_consumption_report<T: PowerConsumptionReport>(
+        fn process_power_consumption_report<S: PowerConsumptionReport>(
             &mut self,
             _: &UpdateContext,
-            report: &T,
+            report: &S,
         ) where
             Self: Sized,
         {
@@ -609,17 +652,39 @@ mod tests {
         }
     }
 
-    pub struct AuxiliaryPowerUnitTestBed {
+    pub struct AuxiliaryPowerUnitTestBed<T: ApuGenerator, U: ApuStartMotor, const N: usize> {
         ambient_temperature: ThermodynamicTemperature,
         indicated_altitude: Length,
-        test_bed: SimulationTestBed<AuxiliaryPowerUnitTestAircraft>,
+        test_bed: SimulationTestBed<AuxiliaryPowerUnitTestAircraft<T, U, N>>,
     }
-    impl AuxiliaryPowerUnitTestBed {
-        fn new() -> Self {
-            let mut apu_test_bed = Self {
+    impl<T: ApuGenerator, U: ApuStartMotor, const N: usize> AuxiliaryPowerUnitTestBed<T, U, N> {
+        fn new() -> AuxiliaryPowerUnitTestBed<Aps3200ApuGenerator, Aps3200StartMotor, 1> {
+            let mut apu_test_bed =
+                AuxiliaryPowerUnitTestBed {
+                    ambient_temperature: ThermodynamicTemperature::new::<degree_celsius>(0.),
+                    indicated_altitude: Length::new::<foot>(5000.),
+                    test_bed:
+                        SimulationTestBed::new(
+                            AuxiliaryPowerUnitTestAircraft::<
+                                Aps3200ApuGenerator,
+                                Aps3200StartMotor,
+                                1,
+                            >::new,
+                        ),
+                };
+
+            apu_test_bed.write_by_name("OVHD_APU_BLEED_PB_IS_ON", true);
+
+            apu_test_bed
+        }
+
+        fn new_with_pw980() -> AuxiliaryPowerUnitTestBed<Pw980ApuGenerator, Pw980StartMotor, 2> {
+            let mut apu_test_bed = AuxiliaryPowerUnitTestBed {
                 ambient_temperature: ThermodynamicTemperature::new::<degree_celsius>(0.),
                 indicated_altitude: Length::new::<foot>(5000.),
-                test_bed: SimulationTestBed::new(AuxiliaryPowerUnitTestAircraft::new),
+                test_bed: SimulationTestBed::new(
+                    AuxiliaryPowerUnitTestAircraft::<Pw980ApuGenerator, Pw980StartMotor, 2>::new_with_pw980,
+                ),
             };
 
             apu_test_bed.write_by_name("OVHD_APU_BLEED_PB_IS_ON", true);
@@ -971,14 +1036,18 @@ mod tests {
             self.read_arinc429_by_name("APU_BLEED_AIR_PRESSURE")
         }
     }
-    impl TestBed for AuxiliaryPowerUnitTestBed {
-        type Aircraft = AuxiliaryPowerUnitTestAircraft;
+    impl<T: ApuGenerator, U: ApuStartMotor, const N: usize> TestBed
+        for AuxiliaryPowerUnitTestBed<T, U, N>
+    {
+        type Aircraft = AuxiliaryPowerUnitTestAircraft<T, U, N>;
 
-        fn test_bed(&self) -> &SimulationTestBed<AuxiliaryPowerUnitTestAircraft> {
+        fn test_bed(&self) -> &SimulationTestBed<AuxiliaryPowerUnitTestAircraft<T, U, N>> {
             &self.test_bed
         }
 
-        fn test_bed_mut(&mut self) -> &mut SimulationTestBed<AuxiliaryPowerUnitTestAircraft> {
+        fn test_bed_mut(
+            &mut self,
+        ) -> &mut SimulationTestBed<AuxiliaryPowerUnitTestAircraft<T, U, N>> {
             &mut self.test_bed
         }
     }
@@ -991,9 +1060,17 @@ mod tests {
 
         const APPROXIMATE_STARTUP_TIME: u64 = 49;
 
-        #[test]
-        fn when_apu_master_sw_turned_on_air_intake_flap_opens() {
-            let mut test_bed = test_bed_with().master_on().run(Duration::from_secs(20));
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn when_apu_master_sw_turned_on_air_intake_flap_opens<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
+            let mut test_bed = bed.master_on().run(Duration::from_secs(20));
 
             assert!(test_bed
                 .is_air_intake_flap_fully_open()
@@ -1001,9 +1078,17 @@ mod tests {
                 .unwrap())
         }
 
-        #[test]
-        fn when_apu_master_sw_turned_on_and_air_intake_flap_not_yet_open_apu_does_not_start() {
-            let mut test_bed = test_bed_with()
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn when_apu_master_sw_turned_on_and_air_intake_flap_not_yet_open_apu_does_not_start<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
+            let mut test_bed = bed_with
                 .air_intake_flap_that_opens_in(Duration::from_secs(20))
                 .master_on()
                 .run(Duration::from_millis(1))
@@ -1014,9 +1099,17 @@ mod tests {
             assert_about_eq!(test_bed.n().normal_value().unwrap().get::<percent>(), 0.);
         }
 
-        #[test]
-        fn while_starting_below_n_7_when_apu_master_sw_turned_off_air_intake_flap_does_not_close() {
-            let mut test_bed = test_bed_with().starting_apu();
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn while_starting_below_n_7_when_apu_master_sw_turned_off_air_intake_flap_does_not_close<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
+            let mut test_bed = bed_with.starting_apu();
             let mut n;
 
             loop {
@@ -1038,20 +1131,34 @@ mod tests {
                 .unwrap());
         }
 
-        #[test]
-        fn when_start_sw_on_apu_starts_within_expected_time() {
-            let mut test_bed = test_bed_with()
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn when_start_sw_on_apu_starts_within_expected_time<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
+            let mut test_bed = bed_with
                 .starting_apu()
                 .run(Duration::from_secs(APPROXIMATE_STARTUP_TIME));
 
             assert_about_eq!(test_bed.n().normal_value().unwrap().get::<percent>(), 100.);
         }
 
-        #[test]
-        fn one_and_a_half_seconds_after_starting_sequence_commences_ignition_starts() {
-            let mut test_bed = test_bed_with()
-                .starting_apu()
-                .run(Duration::from_millis(1500));
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn one_and_a_half_seconds_after_starting_sequence_commences_ignition_starts<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
+            let mut test_bed = bed_with.starting_apu().run(Duration::from_millis(1500));
 
             assert!(
                 (test_bed.n().normal_value().unwrap().get::<percent>() - 0.).abs() < f64::EPSILON
@@ -1066,11 +1173,19 @@ mod tests {
             );
         }
 
-        #[test]
-        fn when_ambient_temperature_high_startup_egt_never_below_ambient() {
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn when_ambient_temperature_high_startup_egt_never_below_ambient<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
             const AMBIENT_TEMPERATURE: f64 = 50.;
 
-            let mut test_bed = test_bed_with()
+            let mut test_bed = bed_with
                 .ambient_temperature(ThermodynamicTemperature::new::<degree_celsius>(
                     AMBIENT_TEMPERATURE,
                 ))
@@ -1089,9 +1204,17 @@ mod tests {
             );
         }
 
-        #[test]
-        fn when_apu_starting_egt_reaches_above_700_degree_celsius() {
-            let mut test_bed = test_bed_with().starting_apu();
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn when_apu_starting_egt_reaches_above_700_degree_celsius<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
+            let mut test_bed = bed_with.starting_apu();
             let mut max_egt: f64 = 0.;
 
             loop {
@@ -1112,9 +1235,13 @@ mod tests {
             assert!(max_egt > 700.);
         }
 
-        #[test]
-        fn egt_max_always_33_above_egt_warn() {
-            let mut test_bed = test_bed_with().starting_apu();
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn egt_max_always_33_above_egt_warn<T: ApuGenerator, U: ApuStartMotor, const N: usize>(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
+            let mut test_bed = bed_with.starting_apu();
 
             for _ in 1..=100 {
                 test_bed = test_bed.run(Duration::from_secs(1));
@@ -1135,9 +1262,17 @@ mod tests {
             }
         }
 
-        #[test]
-        fn start_sw_on_light_turns_off_and_avail_light_turns_on_when_apu_available() {
-            let mut test_bed = test_bed_with().starting_apu();
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn start_sw_on_light_turns_off_and_avail_light_turns_on_when_apu_available<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
+            let mut test_bed = bed_with.starting_apu();
 
             loop {
                 test_bed = test_bed.run(Duration::from_secs(1));
@@ -1151,9 +1286,17 @@ mod tests {
             assert!(test_bed.start_shows_available());
         }
 
-        #[test]
-        fn start_sw_on_light_turns_off_when_apu_not_yet_starting_and_master_sw_turned_off() {
-            let mut test_bed = test_bed_with()
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn start_sw_on_light_turns_off_when_apu_not_yet_starting_and_master_sw_turned_off<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
+            let mut test_bed = bed_with
                 .master_on()
                 .and()
                 .start_on()
@@ -1179,13 +1322,20 @@ mod tests {
             assert!(!test_bed.start_is_on());
         }
 
-        #[test]
-        fn when_apu_bleed_valve_open_on_shutdown_cooldown_period_commences_and_apu_remains_available(
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn when_apu_bleed_valve_open_on_shutdown_cooldown_period_commences_and_apu_remains_available<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
         ) {
             // The cool down period is between 60 to 120. It is configurable by aircraft mechanics and
             // we'll make it a configurable option in the sim. For now, 120s.
             let mut test_bed =
-                test_bed_with()
+                bed_with
                     .running_apu()
                     .and()
                     .master_off()
@@ -1207,12 +1357,17 @@ mod tests {
             assert!(!test_bed.apu_is_available());
         }
 
-        #[test]
-        fn when_shutting_down_apu_remains_available_until_n_less_than_95() {
-            let mut test_bed = test_bed_with()
-                .running_apu_without_bleed_air()
-                .and()
-                .master_off();
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn when_shutting_down_apu_remains_available_until_n_less_than_95<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
+            let mut test_bed = bed_with.running_apu_without_bleed_air().and().master_off();
 
             let mut n = 100.;
 
@@ -1224,13 +1379,20 @@ mod tests {
             }
         }
 
-        #[test]
-        fn when_apu_bleed_valve_was_open_recently_on_shutdown_cooldown_period_commences_and_apu_remains_available(
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn when_apu_bleed_valve_was_open_recently_on_shutdown_cooldown_period_commences_and_apu_remains_available<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
         ) {
             // The cool down period requires that the bleed valve is shut for a duration (default 120s).
             // If the bleed valve was shut earlier than the MASTER SW going to OFF, that time period counts towards the cool down period.
 
-            let mut test_bed = test_bed_with()
+            let mut test_bed = bed_with
                 .running_apu_with_bleed_air()
                 .and()
                 .bleed_air_off()
@@ -1261,9 +1423,17 @@ mod tests {
             assert!(!test_bed.apu_is_available());
         }
 
-        #[test]
-        fn when_apu_bleed_valve_closed_on_shutdown_cooldown_period_is_skipped_and_apu_stops() {
-            let mut test_bed = test_bed_with().running_apu_without_bleed_air();
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn when_apu_bleed_valve_closed_on_shutdown_cooldown_period_is_skipped_and_apu_stops<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
+            let mut test_bed = bed_with.running_apu_without_bleed_air();
 
             assert!(test_bed.apu_is_available());
 
@@ -1282,9 +1452,17 @@ mod tests {
             assert!(!test_bed.apu_is_available());
         }
 
-        #[test]
-        fn when_master_sw_off_then_back_on_during_cooldown_period_apu_continues_running() {
-            let mut test_bed = test_bed_with()
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn when_master_sw_off_then_back_on_during_cooldown_period_apu_continues_running<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
+            let mut test_bed = bed_with
                 .running_apu_with_bleed_air()
                 .and()
                 .master_off()
@@ -1298,11 +1476,18 @@ mod tests {
             assert!(test_bed.apu_is_available());
         }
 
-        #[test]
+        #[rstest]
         #[timeout(500)]
-        fn when_apu_starting_and_master_plus_start_sw_off_then_apu_continues_starting_and_shuts_down_after_start(
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn when_apu_starting_and_master_plus_start_sw_off_then_apu_continues_starting_and_shuts_down_after_start<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
         ) {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = bed_with
                 .starting_apu()
                 .run(Duration::from_secs(APPROXIMATE_STARTUP_TIME / 2));
 
@@ -1326,9 +1511,17 @@ mod tests {
             }
         }
 
-        #[test]
-        fn when_apu_shutting_down_at_7_percent_n_air_intake_flap_closes() {
-            let mut test_bed = test_bed_with().running_apu().and().master_off();
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn when_apu_shutting_down_at_7_percent_n_air_intake_flap_closes<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
+            let mut test_bed = bed_with.running_apu().and().master_off();
 
             loop {
                 test_bed = test_bed.run(Duration::from_millis(50));
@@ -1348,11 +1541,19 @@ mod tests {
                 .unwrap());
         }
 
-        #[test]
+        #[rstest]
         #[timeout(500)]
-        fn apu_cools_down_to_ambient_temperature_after_running() {
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn apu_cools_down_to_ambient_temperature_after_running<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
             let ambient = ThermodynamicTemperature::new::<degree_celsius>(10.);
-            let mut test_bed = test_bed_with()
+            let mut test_bed = bed_with
                 .running_apu()
                 .ambient_temperature(ambient)
                 .cooling_down_apu()
@@ -1364,10 +1565,18 @@ mod tests {
             }
         }
 
-        #[test]
-        fn shutdown_apu_warms_up_as_ambient_temperature_increases() {
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn shutdown_apu_warms_up_as_ambient_temperature_increases<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
             let starting_temperature = ThermodynamicTemperature::new::<degree_celsius>(0.);
-            let mut test_bed = test_bed_with()
+            let mut test_bed = bed_with
                 .master_on()
                 .and()
                 .ambient_temperature(starting_temperature)
@@ -1383,11 +1592,19 @@ mod tests {
             assert_eq!(test_bed.egt().value(), target_temperature);
         }
 
-        #[test]
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
         /// Q: What would you say is a normal running EGT?
         /// Komp: It cools down by a few degrees. Not much though. 340-350 I'd say.
-        fn running_apu_egt_without_bleed_air_usage_stabilizes_between_340_to_350_degrees() {
-            let mut test_bed = test_bed_with()
+        fn running_apu_egt_without_bleed_air_usage_stabilizes_between_340_to_350_degrees<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
+            let mut test_bed = bed_with
                 .running_apu_without_bleed_air()
                 .and()
                 .apu_gen_not_used()
@@ -1401,11 +1618,18 @@ mod tests {
             assert!((340.0..=350.0).contains(&egt));
         }
 
-        #[test]
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
         /// Komp: APU generator supplying will add maybe like 10-15 degrees.
-        fn running_apu_with_generator_supplying_electricity_increases_egt_by_10_to_15_degrees_to_between_350_to_365_degrees(
+        fn running_apu_with_generator_supplying_electricity_increases_egt_by_10_to_15_degrees_to_between_350_to_365_degrees<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
         ) {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = bed_with
                 .running_apu_without_bleed_air()
                 .run(Duration::from_secs(1_000));
 
@@ -1417,10 +1641,17 @@ mod tests {
             assert!((350.0..=365.0).contains(&egt));
         }
 
-        #[test]
-        fn running_apu_supplying_bleed_air_increases_egt_by_85_to_95_degrees_to_between_425_to_445_degrees(
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn running_apu_supplying_bleed_air_increases_egt_by_85_to_95_degrees_to_between_425_to_445_degrees<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
         ) {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = bed_with
                 .running_apu_with_bleed_air()
                 .and()
                 .apu_gen_not_used()
@@ -1434,10 +1665,17 @@ mod tests {
             assert!((425.0..=445.0).contains(&egt));
         }
 
-        #[test]
-        fn running_apu_supplying_bleed_air_and_electrical_increases_egt_to_between_435_to_460_degrees(
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn running_apu_supplying_bleed_air_and_electrical_increases_egt_to_between_435_to_460_degrees<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
         ) {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = bed_with
                 .running_apu_with_bleed_air()
                 .run(Duration::from_secs(1_000));
 
@@ -1449,9 +1687,17 @@ mod tests {
             assert!((435.0..=460.0).contains(&egt));
         }
 
-        #[test]
-        fn max_starting_egt_below_25000_feet_is_900_degrees() {
-            let mut test_bed = test_bed_with()
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn max_starting_egt_below_25000_feet_is_900_degrees<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
+            let mut test_bed = bed_with
                 .starting_apu()
                 .and()
                 .indicated_altitude(Length::new::<foot>(24999.))
@@ -1467,11 +1713,19 @@ mod tests {
             );
         }
 
-        #[test]
-        fn max_starting_egt_at_or_above_25000_feet_is_982_degrees() {
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn max_starting_egt_at_or_above_25000_feet_is_982_degrees<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
             // We test using some decimals above 25000 because foot conversion of 25000 feet
             // ends up being lower than 25000 feet in uom 0.32.0
-            let mut test_bed = test_bed_with()
+            let mut test_bed = bed_with
                 .starting_apu()
                 .and()
                 .indicated_altitude(Length::new::<foot>(25000.00001))
@@ -1487,9 +1741,13 @@ mod tests {
             );
         }
 
-        #[test]
-        fn starting_apu_n_is_never_below_0() {
-            let mut test_bed = test_bed_with().starting_apu();
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn starting_apu_n_is_never_below_0<T: ApuGenerator, U: ApuStartMotor, const N: usize>(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
+            let mut test_bed = bed_with.starting_apu();
 
             loop {
                 test_bed = test_bed.run(Duration::from_millis(10));
@@ -1502,10 +1760,17 @@ mod tests {
             }
         }
 
-        #[test]
-        fn restarting_apu_which_is_cooling_down_does_not_suddenly_reduce_egt_to_ambient_temperature(
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn restarting_apu_which_is_cooling_down_does_not_suddenly_reduce_egt_to_ambient_temperature<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
         ) {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = bed_with
                 .cooling_down_apu()
                 .and()
                 .master_on()
@@ -1521,10 +1786,17 @@ mod tests {
             assert!(test_bed.egt().value().get::<degree_celsius>() > 100.);
         }
 
-        #[test]
-        fn restarting_apu_which_is_cooling_down_does_reduce_towards_ambient_until_startup_egt_above_current_egt(
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn restarting_apu_which_is_cooling_down_does_reduce_towards_ambient_until_startup_egt_above_current_egt<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
         ) {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = bed_with
                 .cooling_down_apu()
                 .master_on()
                 .run(Duration::from_secs(0));
@@ -1539,11 +1811,17 @@ mod tests {
             assert!(test_bed.egt().value() < initial_egt);
         }
 
-        #[test]
-        fn should_close_start_contactors_commanded_when_starting_until_n_55() {
-            let mut test_bed = test_bed_with()
-                .starting_apu()
-                .run(Duration::from_millis(50));
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn should_close_start_contactors_commanded_when_starting_until_n_55<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
+            let mut test_bed = bed_with.starting_apu().run(Duration::from_millis(50));
 
             assert!(test_bed.should_close_start_contactors_commanded());
             loop {
@@ -1566,10 +1844,17 @@ mod tests {
             }
         }
 
-        #[test]
-        fn should_close_start_contactors_commanded_when_starting_until_n_55_even_if_master_sw_turned_off(
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn should_close_start_contactors_commanded_when_starting_until_n_55_even_if_master_sw_turned_off<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
         ) {
-            let mut test_bed = test_bed_with().starting_apu();
+            let mut test_bed = bed_with.starting_apu();
 
             loop {
                 test_bed = test_bed.run(Duration::from_millis(50));
@@ -1595,15 +1880,31 @@ mod tests {
             }
         }
 
-        #[test]
-        fn should_close_start_contactors_not_commanded_when_shutdown() {
-            let test_bed = test_bed().run(Duration::from_secs(1_000));
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn should_close_start_contactors_not_commanded_when_shutdown<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
+            let test_bed = bed.run(Duration::from_secs(1_000));
             assert!(!test_bed.should_close_start_contactors_commanded());
         }
 
-        #[test]
-        fn should_close_start_contactors_not_commanded_when_shutting_down() {
-            let mut test_bed = test_bed_with().running_apu().and().master_off();
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn should_close_start_contactors_not_commanded_when_shutting_down<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
+            let mut test_bed = bed_with.running_apu().and().master_off();
 
             loop {
                 test_bed = test_bed.run(Duration::from_millis(50));
@@ -1615,17 +1916,31 @@ mod tests {
             }
         }
 
-        #[test]
-        fn should_close_start_contactors_not_commanded_when_running() {
-            let test_bed = test_bed_with()
-                .running_apu()
-                .run(Duration::from_secs(1_000));
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn should_close_start_contactors_not_commanded_when_running<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
+            let test_bed = bed_with.running_apu().run(Duration::from_secs(1_000));
             assert!(!test_bed.should_close_start_contactors_commanded());
         }
 
-        #[test]
-        fn start_contactors_signal_is_none_when_ecb_unpowered() {
-            let test_bed = test_bed_with()
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn start_contactors_signal_is_none_when_ecb_unpowered<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
+            let test_bed = bed_with
                 .starting_apu()
                 .and()
                 .unpowered_dc_bat_bus()
@@ -1633,10 +1948,17 @@ mod tests {
             assert!(test_bed.close_start_contactors_signal().is_none());
         }
 
-        #[test]
-        fn should_close_start_contactors_not_commanded_when_shutting_down_with_master_on_and_start_on(
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn should_close_start_contactors_not_commanded_when_shutting_down_with_master_on_and_start_on<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
         ) {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = bed_with
                 .running_apu_without_bleed_air()
                 .and()
                 .master_off()
@@ -1660,9 +1982,17 @@ mod tests {
             }
         }
 
-        #[test]
-        fn available_when_n_above_99_5_percent() {
-            let mut test_bed = test_bed_with().starting_apu();
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn available_when_n_above_99_5_percent<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
+            let mut test_bed = bed_with.starting_apu();
 
             loop {
                 test_bed = test_bed.run(Duration::from_millis(50));
@@ -1675,9 +2005,17 @@ mod tests {
             }
         }
 
-        #[test]
-        fn available_when_n_above_95_percent_for_2_seconds() {
-            let mut test_bed = test_bed_with()
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn available_when_n_above_95_percent_for_2_seconds<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
+            let mut test_bed = bed_with
                 .starting_apu()
                 .and()
                 .turbine_infinitely_running_at(Ratio::new::<percent>(96.))
@@ -1689,9 +2027,17 @@ mod tests {
             assert!(test_bed.apu_is_available());
         }
 
-        #[test]
-        fn does_not_have_fault_during_normal_start_stop_cycle() {
-            let mut test_bed = test_bed_with().starting_apu();
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn does_not_have_fault_during_normal_start_stop_cycle<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
+            let mut test_bed = bed_with.starting_apu();
 
             loop {
                 test_bed = test_bed.run(Duration::from_millis(50));
@@ -1714,11 +2060,18 @@ mod tests {
             }
         }
 
-        #[test]
+        #[rstest]
         #[timeout(500)]
-        fn without_fuel_apu_starts_until_approximately_n_3_percent_and_then_shuts_down_with_fault()
-        {
-            let mut test_bed = test_bed_with()
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn without_fuel_apu_starts_until_approximately_n_3_percent_and_then_shuts_down_with_fault<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
+            let mut test_bed = bed_with
                 .no_fuel_available()
                 .and()
                 .starting_apu()
@@ -1733,10 +2086,18 @@ mod tests {
             assert!(!test_bed.start_is_on());
         }
 
-        #[test]
+        #[rstest]
         #[timeout(500)]
-        fn starting_apu_shuts_down_when_no_more_fuel_available() {
-            let mut test_bed = test_bed_with()
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn starting_apu_shuts_down_when_no_more_fuel_available<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
+            let mut test_bed = bed_with
                 .starting_apu()
                 .and()
                 .no_fuel_available()
@@ -1751,10 +2112,18 @@ mod tests {
             assert!(!test_bed.start_is_on());
         }
 
-        #[test]
+        #[rstest]
         #[timeout(500)]
-        fn starting_apu_shuts_down_with_fault_when_starter_motor_unpowered_below_n_55() {
-            let mut test_bed = test_bed_with().starting_apu().unpower_start_motor_between(
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn starting_apu_shuts_down_with_fault_when_starter_motor_unpowered_below_n_55<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
+            let mut test_bed = bed_with.starting_apu().unpower_start_motor_between(
                 Ratio::new::<percent>(20.),
                 Ratio::new::<percent>(55.),
             );
@@ -1768,9 +2137,17 @@ mod tests {
             assert!(!test_bed.start_is_on());
         }
 
-        #[test]
-        fn starting_apu_shuts_down_without_fault_when_dc_bat_bus_unpowered_at_or_below_n_70() {
-            let mut test_bed = test_bed_with()
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn starting_apu_shuts_down_without_fault_when_dc_bat_bus_unpowered_at_or_below_n_70<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
+            let mut test_bed = bed_with
                 .starting_apu()
                 .unpower_dc_bat_bus_between(Ratio::new::<percent>(55.), Ratio::new::<percent>(70.));
 
@@ -1785,10 +2162,17 @@ mod tests {
             assert!(!test_bed.start_is_on());
         }
 
-        #[test]
-        fn an_apu_start_aborted_due_to_unpowered_dc_bat_bus_does_not_indicate_fault_when_powered_again(
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn an_apu_start_aborted_due_to_unpowered_dc_bat_bus_does_not_indicate_fault_when_powered_again<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
         ) {
-            let mut test_bed = test_bed_with()
+            let mut test_bed = bed_with
                 .starting_apu()
                 .unpower_dc_bat_bus_between(Ratio::new::<percent>(55.), Ratio::new::<percent>(70.));
 
@@ -1804,9 +2188,17 @@ mod tests {
             assert!(!test_bed.master_has_fault());
         }
 
-        #[test]
-        fn apu_continues_starting_when_dc_bat_bus_unpowered_while_above_n_70() {
-            let mut test_bed = test_bed_with()
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn apu_continues_starting_when_dc_bat_bus_unpowered_while_above_n_70<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
+            let mut test_bed = bed_with
                 .starting_apu()
                 .unpower_dc_bat_bus_between(Ratio::new::<percent>(70.), Ratio::new::<percent>(90.));
 
@@ -1817,11 +2209,19 @@ mod tests {
             assert!(test_bed.apu_is_available());
         }
 
-        #[test]
+        #[rstest]
         #[timeout(500)]
-        fn starting_apu_shutting_down_early_doesnt_decrease_egt_below_ambient() {
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn starting_apu_shutting_down_early_doesnt_decrease_egt_below_ambient<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
             let ambient_temperature = ThermodynamicTemperature::new::<degree_celsius>(20.);
-            let mut test_bed = test_bed_with()
+            let mut test_bed = bed_with
                 .ambient_temperature(ambient_temperature)
                 .starting_apu()
                 .unpower_start_motor_between(
@@ -1835,9 +2235,17 @@ mod tests {
             }
         }
 
-        #[test]
-        fn apu_start_motor_contactor_commanded_vs_reality_disagreement_results_in_fault() {
-            let mut test_bed = test_bed_with()
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn apu_start_motor_contactor_commanded_vs_reality_disagreement_results_in_fault<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
+            let mut test_bed = bed_with
                 .apu_ready_to_start()
                 .unpowered_start_motor()
                 .and()
@@ -1848,10 +2256,18 @@ mod tests {
             assert!(!test_bed.start_is_on());
         }
 
-        #[test]
+        #[rstest]
         #[timeout(500)]
-        fn running_apu_shuts_down_when_no_more_fuel_available() {
-            let mut test_bed = test_bed_with()
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn running_apu_shuts_down_when_no_more_fuel_available<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
+            let mut test_bed = bed_with
                 .running_apu()
                 .and()
                 .no_fuel_available()
@@ -1866,9 +2282,17 @@ mod tests {
             assert!(!test_bed.start_is_on());
         }
 
-        #[test]
-        fn when_no_fuel_is_available_and_apu_is_running_auto_shutdown_is_true() {
-            let mut test_bed = test_bed_with()
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn when_no_fuel_is_available_and_apu_is_running_auto_shutdown_is_true<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
+            let mut test_bed = bed_with
                 .running_apu()
                 .and()
                 .no_fuel_available()
@@ -1877,18 +2301,32 @@ mod tests {
             assert!(test_bed.is_auto_shutdown());
         }
 
-        #[test]
-        fn when_no_fuel_available_and_apu_not_running_auto_shutdown_is_false() {
-            let mut test_bed = test_bed_with()
-                .no_fuel_available()
-                .run(Duration::from_secs(10));
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn when_no_fuel_available_and_apu_not_running_auto_shutdown_is_false<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
+            let mut test_bed = bed_with.no_fuel_available().run(Duration::from_secs(10));
 
             assert!(!test_bed.is_auto_shutdown());
         }
 
-        #[test]
-        fn when_no_fuel_is_available_and_apu_is_running_apu_inoperable_is_true() {
-            let mut test_bed = test_bed_with()
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn when_no_fuel_is_available_and_apu_is_running_apu_inoperable_is_true<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
+            let mut test_bed = bed_with
                 .running_apu()
                 .and()
                 .no_fuel_available()
@@ -1897,52 +2335,92 @@ mod tests {
             assert!(test_bed.is_inoperable());
         }
 
-        #[test]
-        fn when_no_fuel_available_and_apu_not_running_is_inoperable_is_false() {
-            let mut test_bed = test_bed_with()
-                .no_fuel_available()
-                .run(Duration::from_secs(10));
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn when_no_fuel_available_and_apu_not_running_is_inoperable_is_false<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
+            let mut test_bed = bed_with.no_fuel_available().run(Duration::from_secs(10));
 
             assert!(!test_bed.is_inoperable());
         }
 
-        #[test]
-        fn running_apu_is_inoperable_is_false() {
-            let mut test_bed = test_bed_with().running_apu().run(Duration::from_secs(10));
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn running_apu_is_inoperable_is_false<T: ApuGenerator, U: ApuStartMotor, const N: usize>(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
+            let mut test_bed = bed_with.running_apu().run(Duration::from_secs(10));
 
             assert!(!test_bed.is_inoperable())
         }
 
-        #[test]
-        fn when_fire_pb_released_apu_is_inoperable() {
-            let mut test_bed = test_bed_with()
-                .released_apu_fire_pb()
-                .run(Duration::from_secs(1));
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn when_fire_pb_released_apu_is_inoperable<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
+            let mut test_bed = bed_with.released_apu_fire_pb().run(Duration::from_secs(1));
 
             assert!(test_bed.is_inoperable());
         }
 
-        #[test]
-        fn when_fire_pb_released_bleed_valve_closes() {
-            let mut test_bed = test_bed_with()
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn when_fire_pb_released_bleed_valve_closes<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
+            let mut test_bed = bed_with
                 .running_apu_going_in_emergency_shutdown()
                 .run(Duration::from_secs(1));
 
             assert!(!test_bed.bleed_air_valve_is_open());
         }
 
-        #[test]
-        fn when_fire_pb_released_apu_is_emergency_shutdown() {
-            let mut test_bed = test_bed_with()
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn when_fire_pb_released_apu_is_emergency_shutdown<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
+            let mut test_bed = bed_with
                 .running_apu_going_in_emergency_shutdown()
                 .run(Duration::from_secs(1));
 
             assert!(test_bed.is_emergency_shutdown());
         }
 
-        #[test]
-        fn when_in_emergency_shutdown_apu_shuts_down() {
-            let mut test_bed = test_bed_with()
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn when_in_emergency_shutdown_apu_shuts_down<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
+            let mut test_bed = bed_with
                 .running_apu_going_in_emergency_shutdown()
                 // Transition to Stopping state.
                 .run(Duration::from_millis(1))
@@ -1954,23 +2432,47 @@ mod tests {
             );
         }
 
-        #[test]
-        fn output_within_normal_parameters_when_running() {
-            let test_bed = test_bed_with().running_apu();
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn output_within_normal_parameters_when_running<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
+            let test_bed = bed_with.running_apu();
 
             assert!(test_bed.apu_generator_output_within_normal_parameters());
         }
 
-        #[test]
-        fn output_not_within_normal_parameters_when_shutdown() {
-            let test_bed = test_bed();
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn output_not_within_normal_parameters_when_shutdown<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
+            let test_bed = bed;
 
             assert!(!test_bed.apu_generator_output_within_normal_parameters());
         }
 
-        #[test]
-        fn output_not_within_normal_parameters_when_not_yet_available() {
-            let test_bed = test_bed_with()
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn output_not_within_normal_parameters_when_not_yet_available<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
+            let test_bed = bed_with
                 .starting_apu()
                 .and()
                 .turbine_infinitely_running_at(Ratio::new::<percent>(94.))
@@ -1979,8 +2481,16 @@ mod tests {
             assert!(!test_bed.apu_generator_output_within_normal_parameters());
         }
 
-        #[test]
-        fn output_within_normal_parameters_adapts_to_shutting_down_apu_instantaneously() {
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn output_within_normal_parameters_adapts_to_shutting_down_apu_instantaneously<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
             // The frequency and potential of the generator are only known at the end of a tick,
             // due to them being directly related to the power consumption (large changes can cause
             // spikes and dips). However, the decision if a generator can supply power is made much
@@ -1988,7 +2498,7 @@ mod tests {
             // supplies potential but the previous tick's frequency and potential are still normal.
             // With this test we ensure that a generator which is no longer supplying power is
             // immediately noticed.
-            let test_bed = test_bed_with()
+            let test_bed = bed_with
                 .running_apu()
                 .run(Duration::from_secs(0))
                 .then_continue_with()
@@ -1999,9 +2509,13 @@ mod tests {
             assert!(!test_bed.generator_output_within_normal_parameters_before_processing_power_consumption_report());
         }
 
-        #[test]
-        fn start_motor_uses_power() {
-            let mut test_bed = test_bed_with().apu_ready_to_start().and().start_on();
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn start_motor_uses_power<T: ApuGenerator, U: ApuStartMotor, const N: usize>(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
+            let mut test_bed = bed_with.apu_ready_to_start().and().start_on();
             let mut maximum_power = Power::new::<watt>(0.);
             loop {
                 test_bed = test_bed.run(Duration::from_secs(1));
@@ -2017,16 +2531,32 @@ mod tests {
             assert!(maximum_power < Power::new::<watt>(10000.));
         }
 
-        #[test]
-        fn ecb_has_no_power_consumption_when_off() {
-            let test_bed = test_bed_with().master_off().run(Duration::from_secs(1));
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn ecb_has_no_power_consumption_when_off<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
+            let test_bed = bed_with.master_off().run(Duration::from_secs(1));
 
             assert_about_eq!(test_bed.power_consumption().get::<watt>(), 0.);
         }
 
-        #[test]
-        fn ecb_doesnt_write_some_variables_when_off() {
-            let mut test_bed = test_bed_with().master_off().run(Duration::from_secs(1));
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn ecb_doesnt_write_some_variables_when_off<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
+            let mut test_bed = bed_with.master_off().run(Duration::from_secs(1));
 
             assert!(!test_bed.n().is_normal_operation());
             assert!(!test_bed.egt().is_normal_operation());
@@ -2038,13 +2568,21 @@ mod tests {
                 .is_normal_operation());
         }
 
-        #[test]
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
         /// The start motor is disconnected at 55% N. However, the APU itself only starts powering the ECB
         /// on passing 70% N. In between those moments there should still be power usage by the ECB.
         /// Of course the ECB also uses power below 55% N. It is however hard to measure that individually, as
         /// the start motor is using a lot of power at that time.
-        fn ecb_uses_power_during_start_when_on_and_apu_turbine_above_55_and_at_or_below_70_n() {
-            let mut test_bed = test_bed_with().starting_apu();
+        fn ecb_uses_power_during_start_when_on_and_apu_turbine_above_55_and_at_or_below_70_n<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
+            let mut test_bed = bed_with.starting_apu();
 
             loop {
                 test_bed = test_bed.run(Duration::from_millis(50));
@@ -2060,10 +2598,18 @@ mod tests {
             }
         }
 
-        #[test]
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
         /// The APU's ECB is powered by the APU itself after passing 70% N.
-        fn ecb_does_not_use_power_when_on_and_apu_turbine_above_n_70() {
-            let mut test_bed = test_bed_with().starting_apu();
+        fn ecb_does_not_use_power_when_on_and_apu_turbine_above_n_70<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
+            let mut test_bed = bed_with.starting_apu();
 
             loop {
                 test_bed = test_bed.run(Duration::from_millis(50));
@@ -2079,10 +2625,17 @@ mod tests {
             }
         }
 
-        #[test]
-        fn ecb_uses_power_during_apu_shutdown_from_n_70_until_air_intake_flap_is_closed_and_turbine_is_shut_down(
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn ecb_uses_power_during_apu_shutdown_from_n_70_until_air_intake_flap_is_closed_and_turbine_is_shut_down<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
         ) {
-            let mut test_bed = test_bed_with().running_apu().and().master_off();
+            let mut test_bed = bed_with.running_apu().and().master_off();
 
             loop {
                 test_bed = test_bed.run(Duration::from_millis(50));
@@ -2099,13 +2652,21 @@ mod tests {
             assert_about_eq!(test_bed.power_consumption().get::<watt>(), 0.);
         }
 
-        #[test]
-        fn during_start_once_apu_output_normal_remains_normal() {
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn during_start_once_apu_output_normal_remains_normal<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
             // Test for a bug where the frequency dipped above and then below the minimum normal range
             // very briefly during the startup sequence, thus sometimes (depending on the frame rate and sheer luck)
             // triggering the powering and unpowering of buses. This then triggered sounds to play again.
 
-            let mut test_bed = test_bed_with().starting_apu();
+            let mut test_bed = bed_with.starting_apu();
 
             while test_bed.n().normal_value().unwrap().get::<percent>()
                 < Aps3200ApuGenerator::APU_GEN_POWERED_N
@@ -2122,9 +2683,17 @@ mod tests {
             }
         }
 
-        #[test]
-        fn starting_apu_has_no_bleed_air_pressure() {
-            let mut test_bed = test_bed_with().starting_apu();
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn starting_apu_has_no_bleed_air_pressure<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
+            let mut test_bed = bed_with.starting_apu();
 
             assert_about_eq!(
                 test_bed
@@ -2136,9 +2705,17 @@ mod tests {
             );
         }
 
-        #[test]
-        fn running_apu_has_enough_bleed_air_pressure() {
-            let mut test_bed = test_bed_with().running_apu();
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn running_apu_has_enough_bleed_air_pressure<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
+            let mut test_bed = bed_with.running_apu();
 
             assert!(
                 test_bed
@@ -2150,9 +2727,17 @@ mod tests {
             );
         }
 
-        #[test]
-        fn stopping_apu_has_no_bleed_air_pressure() {
-            let mut test_bed = test_bed_with()
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn stopping_apu_has_no_bleed_air_pressure<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
+            let mut test_bed = bed_with
                 .running_apu_going_in_emergency_shutdown()
                 // Transition to Stopping state.
                 .run(Duration::from_millis(1));
@@ -2167,9 +2752,17 @@ mod tests {
             );
         }
 
-        #[test]
-        fn always_writes_a_raw_n_value_for_sound_and_effects() {
-            let mut test_bed = test_bed();
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn always_writes_a_raw_n_value_for_sound_and_effects<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed: AuxiliaryPowerUnitTestBed<T, U, N>,
+        ) {
+            let mut test_bed = bed;
             test_bed.run_without_delta();
 
             assert_about_eq!(test_bed.n_raw().get::<percent>(), 0.);
