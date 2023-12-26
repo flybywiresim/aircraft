@@ -114,6 +114,11 @@ tspan.Grey,
     fill: $display-grey;
 }
 
+.Grey.Fill {
+    stroke: none;
+    fill: $display-grey;
+}
+
 .DarkGrey {
     stroke: $display-dark-grey;
 }
