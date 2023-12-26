@@ -515,8 +515,6 @@ class FMCMainDisplay extends BaseAirliners {
         this.perfClbPredToAltitudePilot = undefined;
         this.perfDesPredToAltitudePilot = undefined;
 
-        this.efisInterface = new Fmgc.EfisInterface();
-
         this.onAirport = () => {};
 
         if (this.navigation) {
