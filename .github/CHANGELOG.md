@@ -31,7 +31,7 @@
 1. [MODEL] Replaced overhead decals - @Repsol2k
 1. [MODEL] General improvements to 3d model and textures - @MoreRightRudder, @Repsol2k, @tracernz
 1. [MODEL] Folding armrests - @Repsol2k
-1. [FLIGHTMODEL] Fix pitch trim on approach = @donstim (donbikes)
+1. [FLIGHTMODEL] Fix pitch trim on approach - @donstim (donbikes)
 
 ## 0.11.0
 
