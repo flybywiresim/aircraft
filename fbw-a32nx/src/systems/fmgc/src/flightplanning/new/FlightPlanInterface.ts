@@ -204,8 +204,10 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
      */
     startAirwayEntry(atIndex: number, planIndex: number, alternate?: boolean): Promise<void>;
 
+    directToLeg(ppos: Coordinates, trueTrack: Degrees, targetLegIndex: number, withAbeam: boolean, planIndex: number): Promise<void>
+
     // TODO do not pass in fix object (rpc)
-    directTo(ppos: Coordinates, trueTrack: Degrees, waypoint: Fix, withAbeam: boolean, planIndex: number): Promise<void>
+    directToWaypoint(ppos: Coordinates, trueTrack: Degrees, waypoint: Fix, withAbeam: boolean, planIndex: number): Promise<void>
 
     /**
      * HOLD AT revision. Inserts or edits a manual hold parented to the leg.

@@ -189,8 +189,12 @@ export class FlightPlanRpcClient<P extends FlightPlanPerformanceData> implements
         return this.callFunctionViaRpc('startAirwayEntry', at, planIndex, alternate);
     }
 
-    directTo(ppos: Coordinates, trueTrack: Degrees, waypoint: Fix, withAbeam: boolean, planIndex: number): Promise<void> {
-        return this.callFunctionViaRpc('directTo', ppos, trueTrack, waypoint, withAbeam, planIndex);
+    directToLeg(ppos: Coordinates, trueTrack: Degrees, targetLegIndex: number, withAbeam: boolean, planIndex: number): Promise<void> {
+        return this.callFunctionViaRpc('directToLeg', ppos, trueTrack, targetLegIndex, withAbeam, planIndex);
+    }
+
+    directToWaypoint(ppos: Coordinates, trueTrack: Degrees, waypoint: Fix, withAbeam: boolean, planIndex: number): Promise<void> {
+        return this.callFunctionViaRpc('directToWaypoint', ppos, trueTrack, waypoint, withAbeam, planIndex);
     }
 
     addOrEditManualHold(at: number, desiredHold: HoldData, modifiedHold: HoldData, defaultHold: HoldData, planIndex: number, alternate: boolean): Promise<number> {

@@ -317,12 +317,20 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
         plan.startAirwayEntry(at);
     }
 
-    async directTo(ppos: Coordinates, trueTrack: Degrees, waypoint: Fix, withAbeam = false, planIndex = FlightPlanIndex.Active) {
+    async directToWaypoint(ppos: Coordinates, trueTrack: Degrees, waypoint: Fix, withAbeam = false, planIndex = FlightPlanIndex.Active) {
         const finalIndex = this.prepareDestructiveModification(planIndex);
 
         const plan = this.flightPlanManager.get(finalIndex);
 
-        plan.directTo(ppos, trueTrack, waypoint, withAbeam);
+        plan.directToWaypoint(ppos, trueTrack, waypoint, withAbeam);
+    }
+
+    async directToLeg(ppos: Coordinates, trueTrack: Degrees, targetLegIndex: number, withAbeam = false, planIndex = FlightPlanIndex.Active) {
+        const finalIndex = this.prepareDestructiveModification(planIndex);
+
+        const plan = this.flightPlanManager.get(finalIndex);
+
+        plan.directToLeg(ppos, trueTrack, targetLegIndex, withAbeam);
     }
 
     async addOrEditManualHold(at: number, desiredHold: HoldData, modifiedHold: HoldData, defaultHold: HoldData, planIndex = FlightPlanIndex.Active, alternate = false): Promise<number> {
