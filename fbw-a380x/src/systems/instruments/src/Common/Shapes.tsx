@@ -17,6 +17,8 @@ export const Triangle = ({ x, y, colour, fill, orientation, scale = 1 }: Triangl
     let classSelector = `${colour} Line`;
     if (fill === 1) {
         classSelector += ` Fill ${colour}`;
+    } else {
+        classSelector += ' NoFill';
     }
 
     return (
