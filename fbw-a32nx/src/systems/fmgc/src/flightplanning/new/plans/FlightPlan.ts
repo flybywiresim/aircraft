@@ -251,12 +251,12 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
             this.enrouteSegment.allLegs.push({ isDiscontinuity: true });
         }
 
-        this.setPerformanceData('cruiseFlightLevel', cruiseLevel);
-        this.setPerformanceData('costIndex', 0);
-
         this.enrouteSegment.allLegs.push(...alternateLegsToInsert);
         this.syncSegmentLegsChange(this.enrouteSegment);
         this.enrouteSegment.strung = false;
+
+        this.setPerformanceData('cruiseFlightLevel', cruiseLevel);
+        this.setPerformanceData('costIndex', 0);
 
         this.deleteAlternateFlightPlan();
 

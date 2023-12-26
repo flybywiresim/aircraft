@@ -2687,8 +2687,10 @@ class FMCMainDisplay extends BaseAirliners {
     insertTemporaryFlightPlan(callback = EmptyCallback.Void) {
         if (this.flightPlanService.hasTemporary) {
             const oldCostIndex = this.costIndex;
+            const oldCruiseLevel = this.currFlightPlanService.active.performanceData.cruiseFlightLevel;
             this.flightPlanService.temporaryInsert();
             this.checkCostIndex(oldCostIndex)
+            this.checkCruiseLevel(oldCruiseLevel);
 
             SimVar.SetSimVarValue("L:FMC_FLIGHT_PLAN_IS_TEMPORARY", "number", 0);
             SimVar.SetSimVarValue("L:MAP_SHOW_TEMPORARY_FLIGHT_PLAN", "number", 0);
@@ -2701,6 +2703,14 @@ class FMCMainDisplay extends BaseAirliners {
     checkCostIndex(oldCostIndex) {
         if (this.costIndex !== oldCostIndex) {
             this.setScratchpadMessage(NXSystemMessages.usingCostIndex.getModifiedMessage(this.costIndex.toFixed(0)));
+        }
+    }
+
+    checkCruiseLevel(oldCruiseLevel) {
+        const newLevel = this.currFlightPlanService.active.performanceData.cruiseFlightLevel;
+
+        if (newLevel !== oldCruiseLevel) {
+            this.onUpdateCruiseLevel(newLevel)
         }
     }
 
@@ -3492,16 +3502,19 @@ class FMCMainDisplay extends BaseAirliners {
         }
 
         this.flightPlanService.setPerformanceData('cruiseFlightLevel', fl);
-        SimVar.SetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number', fl * 100);
+        this.onUpdateCruiseLevel(fl);
 
+        return true;
+    }
+
+    onUpdateCruiseLevel(newCruiseLevel) {
+        SimVar.SetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number', newCruiseLevel * 100);
 
         this._cruiseEntered = true;
         this.cruiseTemperature = undefined;
         this.updateConstraints();
 
-        this.flightPhaseManager.handleNewCruiseAltitudeEntered(fl);
-
-        return true;
+        this.flightPhaseManager.handleNewCruiseAltitudeEntered(newCruiseLevel);
     }
 
     trySetRouteReservedFuel(s) {
