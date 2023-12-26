@@ -893,14 +893,14 @@ class CDUFlightPlanPage {
 
         const previousElement = targetPlan.maybeElementAt(fpIndex - 1);
 
-        if (element.isDiscontinuity !== false) {
+        if (element.isDiscontinuity === true) {
             if (previousElement && previousElement.isDiscontinuity === false && previousElement.isVectors()) {
                 // Cannot clear disco after MANUAL
                 mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
                 scratchpadCallback();
                 return false;
             } else if (fpIndex - 1 === targetPlan.originLegIndex && fpIndex + 1 === targetPlan.destinationLegIndex) {
-                if (targetPlan.originAirport.ident === targetPlan.destinationAirport) {
+                if (targetPlan.originAirport.ident === targetPlan.destinationAirport.ident) {
                     mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
                     scratchpadCallback();
                     return false;
