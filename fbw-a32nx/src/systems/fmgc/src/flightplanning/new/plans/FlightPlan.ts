@@ -130,9 +130,46 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
         this.alternateFlightPlan.incrementVersion();
     }
 
-    directTo(ppos: Coordinates, trueTrack: Degrees, waypoint: Fix, withAbeam = false) {
+    directToLeg(ppos: Coordinates, trueTrack: Degrees, targetLegIndex: number, withAbeam = false) {
+        const targetLeg = this.legElementAt(targetLegIndex);
+        if (!targetLeg.isXF()) {
+            throw new Error('[FPM] Cannot direct to a non-XF leg');
+        }
+
+        const magVar = MagVar.get(ppos.lat, ppos.long);
+        const magneticCourse = MagVar.trueToMagnetic(trueTrack, magVar);
+
+        const turningPoint = FlightPlanLeg.turningPoint(this.enrouteSegment, ppos, magneticCourse);
+        const turnEnd = FlightPlanLeg.directToTurnEnd(this.enrouteSegment, targetLeg.terminationWaypoint());
+
+        turningPoint.flags |= FlightPlanLegFlags.DirectToTurningPoint;
+        turnEnd.withDefinitionFrom(targetLeg).withPilotEnteredDataFrom(targetLeg);
+
+        this.redistributeLegsAt(0);
+        this.redistributeLegsAt(targetLegIndex);
+
+        const indexInEnrouteSegment = this.enrouteSegment.allLegs.findIndex((it) => it === targetLeg);
+        if (indexInEnrouteSegment === -1) {
+            throw new Error('[FPM] Target leg of a direct to not found in enroute segment after leg redistribution!');
+        }
+
+        this.enrouteSegment.allLegs.splice(0, indexInEnrouteSegment + 1, turningPoint, turnEnd);
+        this.incrementVersion();
+
+        const turnEndLegIndexInPlan = this.allLegs.findIndex((it) => it === turnEnd);
+
+        this.activeLegIndex = turnEndLegIndexInPlan;
+        this.sendEvent('flightPlan.setActiveLegIndex', { planIndex: this.index, forAlternate: false, activeLegIndex: this.activeLegIndex });
+    }
+
+    directToWaypoint(ppos: Coordinates, trueTrack: Degrees, waypoint: Fix, withAbeam = false) {
         // TODO withAbeam
         // TODO handle direct-to into the alternate (make alternate active...?
+        const existingLegIndex = this.allLegs.findIndex((it) => it.isDiscontinuity === false && it.terminatesWithWaypoint(waypoint));
+        if (existingLegIndex !== -1) {
+            this.directToLeg(ppos, trueTrack, existingLegIndex, withAbeam);
+            return;
+        }
 
         const magVar = MagVar.get(ppos.lat, ppos.long);
         const magneticCourse = MagVar.trueToMagnetic(trueTrack, magVar);
@@ -142,51 +179,30 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
 
         turningPoint.flags |= FlightPlanLegFlags.DirectToTurningPoint;
 
-        const targetLeg = this.allLegs.find((it) => it.isDiscontinuity === false && it.terminatesWithWaypoint(waypoint)) as FlightPlanLeg;
-        if (targetLeg) {
-            turnEnd.withDefinitionFrom(targetLeg).withPilotEnteredDataFrom(targetLeg);
+        // Move all legs before active one to the enroute segment
+        let indexInEnrouteSegment = 0;
+        this.redistributeLegsAt(0);
+        if (this.activeLegIndex >= 1) {
+            this.redistributeLegsAt(this.activeLegIndex);
+            indexInEnrouteSegment = this.enrouteSegment.allLegs.findIndex((it) => it === this.activeLeg);
+        }
 
-            const targetLegIndex = this.allLegs.findIndex((it) => it === targetLeg);
-            this.redistributeLegsAt(targetLegIndex);
+        // Remove legs before active on from enroute
+        this.enrouteSegment.allLegs.splice(0, indexInEnrouteSegment, turningPoint, turnEnd);
+        this.incrementVersion();
 
-            const indexInEnrouteSegment = this.enrouteSegment.allLegs.findIndex((it) => it === targetLeg);
-
-            if (indexInEnrouteSegment === -1) {
-                throw new Error('[FPM] Target leg of a direct to not found in enroute segment after leg redistribution!');
-            }
-
-            this.enrouteSegment.allLegs.splice(indexInEnrouteSegment, 0, { isDiscontinuity: true });
-            this.enrouteSegment.allLegs.splice(indexInEnrouteSegment + 1, 0, turningPoint);
-            this.enrouteSegment.allLegs.splice(indexInEnrouteSegment + 2, 0, turnEnd);
-            this.enrouteSegment.allLegs.splice(indexInEnrouteSegment + 3, 1);
+        const turnEndLegIndexInPlan = this.allLegs.findIndex((it) => it === turnEnd);
+        if (this.maybeElementAt(turnEndLegIndexInPlan + 1)?.isDiscontinuity === false) {
+            this.enrouteSegment.allLegs.splice(2, 0, { isDiscontinuity: true });
             this.incrementVersion();
 
-            const turnEndLegIndexInPlan = this.allLegs.findIndex((it) => it === turnEnd);
-
-            this.activeLegIndex = turnEndLegIndexInPlan;
-        } else {
-            let indexInEnrouteSegment = 0;
-            // Make sure we have an active leg and that we don't put the origin leg into enroute
-            if (this.activeLegIndex >= 1) {
-                this.redistributeLegsAt(this.activeLegIndex);
-                indexInEnrouteSegment = this.enrouteSegment.allLegs.findIndex((it) => it === this.activeLeg);
-            }
-
-            this.enrouteSegment.allLegs.splice(indexInEnrouteSegment, 0, { isDiscontinuity: true });
-            this.enrouteSegment.allLegs.splice(indexInEnrouteSegment + 1, 0, turningPoint);
-            this.enrouteSegment.allLegs.splice(indexInEnrouteSegment + 2, 0, turnEnd);
-            this.enrouteSegment.allLegs.splice(indexInEnrouteSegment + 3, 0, { isDiscontinuity: true });
-            this.incrementVersion();
-
-            const turnEndLegIndexInPlan = this.allLegs.findIndex((it) => it === turnEnd);
             // Since we added a discontinuity after the DIR TO leg, we want to make sure that the leg after it
             // is a leg that can be after a disco (not something like a CI) and convert it to IF
             this.cleanUpAfterDiscontinuity(turnEndLegIndexInPlan + 1);
-
-            this.activeLegIndex = turnEndLegIndexInPlan;
         }
 
-        this.incrementVersion();
+        this.activeLegIndex = turnEndLegIndexInPlan;
+        this.sendEvent('flightPlan.setActiveLegIndex', { planIndex: this.index, forAlternate: false, activeLegIndex: this.activeLegIndex });
     }
 
     /**
@@ -210,6 +226,7 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
                 .withPilotEnteredDataFrom(xfLegAfterDiscontinuity);
 
             segment.allLegs.splice(xfLegIndexInSegment - numberOfLegsToRemove + 1, numberOfLegsToRemove, iFLegAfterDiscontinuity);
+            this.incrementVersion();
         }
     }
 
@@ -251,12 +268,12 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
             this.enrouteSegment.allLegs.push({ isDiscontinuity: true });
         }
 
-        this.setPerformanceData('cruiseFlightLevel', cruiseLevel);
-        this.setPerformanceData('costIndex', 0);
-
         this.enrouteSegment.allLegs.push(...alternateLegsToInsert);
         this.syncSegmentLegsChange(this.enrouteSegment);
         this.enrouteSegment.strung = false;
+
+        this.setPerformanceData('cruiseFlightLevel', cruiseLevel);
+        this.setPerformanceData('costIndex', 0);
 
         this.deleteAlternateFlightPlan();
 

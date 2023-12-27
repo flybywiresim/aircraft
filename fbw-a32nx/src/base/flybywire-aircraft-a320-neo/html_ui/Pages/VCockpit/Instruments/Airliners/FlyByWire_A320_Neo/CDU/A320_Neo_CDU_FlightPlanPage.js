@@ -658,7 +658,7 @@ class CDUFlightPlanPage {
 
         mcdu.efisInterface.setAlternateLegVisible(scrollWindow.some(row => row.inAlternate), forPlan);
         mcdu.efisInterface.setMissedLegVisible(targetPlan && scrollWindow.some(row => row.fpIndex >= targetPlan.firstMissedApproachLegIndex), forPlan);
-        mcdu.efisInterface.setAlternateMissedLegVisible(targetPlan && targetPlan.alternateFlightPlan && scrollWindow.some(row => row.fpIndex >= targetPlan.alternateFlightPlan.firstMissedApproachLegIndex), forPlan);
+        mcdu.efisInterface.setAlternateMissedLegVisible(targetPlan && targetPlan.alternateFlightPlan && scrollWindow.some(row => row.inAlternate && row.fpIndex >= targetPlan.alternateFlightPlan.firstMissedApproachLegIndex), forPlan);
         mcdu.efisInterface.setSecRelatedPageOpen(!forActiveOrTemporary);
 
         // Render scrolling data to text >> add ditto marks
@@ -828,29 +828,28 @@ class CDUFlightPlanPage {
     }
 
     static async clearElement(mcdu, fpIndex, offset, forPlan, forAlternate, scratchpadCallback) {
-        if (fpIndex === Fmgc.FlightPlanIndex.Active && mcdu.flightPlanService.hasTemporary) {
-            mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
-            scratchpadCallback();
+        if (!this.ensureCanClearElement(mcdu, fpIndex, forPlan, forAlternate, scratchpadCallback)) {
             return;
         }
 
-        // TODO maybe move this to FMS logic ?
-        if (fpIndex === Fmgc.FlightPlanIndex.Active && fpIndex <= mcdu.flightPlanService.activeLegIndex) {
-            // 22-72-00:67
-            // Stop clearing TO or FROM waypoints when NAV is engaged
-            if (mcdu.navModeEngaged()) {
-                mcdu.setScratchpadMessage(NXSystemMessages.notAllowedInNav);
-                scratchpadCallback();
-                return;
+        const targetPlan = mcdu.flightPlan(forPlan, forAlternate);
+        const element = targetPlan.elementAt(fpIndex);
+
+        const previousElement = targetPlan.maybeElementAt(fpIndex - 1);
+
+        let insertDiscontinuity = true;
+        if (element.isDiscontinuity === false) {
+            if (element.isHX()) {
+                insertDiscontinuity = false;
+            } else if (previousElement.isDiscontinuity === false && previousElement.type === 'PI' && element.type === 'CF') {
+                insertDiscontinuity = element.waypoint.databaseId === previousElement.recommendedNavaid.databaseId;
             }
+        } else {
+            insertDiscontinuity = false;
         }
 
         try {
-            if (!(await mcdu.flightPlanService.deleteElementAt(fpIndex, forPlan, forAlternate))) {
-                mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
-                scratchpadCallback();
-                return;
-            }
+            await mcdu.flightPlanService.deleteElementAt(fpIndex, insertDiscontinuity, forPlan, forAlternate);
         } catch (e) {
             console.error(e);
             mcdu.setScratchpadMessage(NXFictionalMessages.internalError);
@@ -858,6 +857,58 @@ class CDUFlightPlanPage {
         }
 
         CDUFlightPlanPage.ShowPage(mcdu, offset, forPlan);
+    }
+
+    static ensureCanClearElement(mcdu, fpIndex, forPlan, forAlternate, scratchpadCallback) {
+        const targetPlan = mcdu.flightPlan(forPlan, forAlternate);
+
+        if (forPlan === Fmgc.FlightPlanIndex.Active && mcdu.flightPlanService.hasTemporary) {
+            mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
+            scratchpadCallback();
+            return false;
+        } else if (fpIndex === targetPlan.originLegIndex || fpIndex === targetPlan.destinationLegIndex) {
+            mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
+            scratchpadCallback();
+            return false;
+        }
+
+        // TODO maybe move this to FMS logic ?
+        if (forPlan === Fmgc.FlightPlanIndex.Active && fpIndex <= mcdu.flightPlanService.activeLegIndex) {
+            // 22-72-00:67
+            // Stop clearing TO or FROM waypoints when NAV is engaged
+            if (mcdu.navModeEngaged()) {
+                mcdu.setScratchpadMessage(NXSystemMessages.notAllowedInNav);
+                scratchpadCallback();
+                return false;
+            }
+        }
+
+        const element = targetPlan.maybeElementAt(fpIndex);
+
+        if (!element) {
+            mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
+            scratchpadCallback();
+            return false;
+        }
+
+        const previousElement = targetPlan.maybeElementAt(fpIndex - 1);
+
+        if (element.isDiscontinuity === true) {
+            if (previousElement && previousElement.isDiscontinuity === false && previousElement.isVectors()) {
+                // Cannot clear disco after MANUAL
+                mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
+                scratchpadCallback();
+                return false;
+            } else if (fpIndex - 1 === targetPlan.originLegIndex && fpIndex + 1 === targetPlan.destinationLegIndex) {
+                if (targetPlan.originAirport.ident === targetPlan.destinationAirport.ident) {
+                    mcdu.setScratchpadMessage(NXSystemMessages.notAllowed);
+                    scratchpadCallback();
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 }
 

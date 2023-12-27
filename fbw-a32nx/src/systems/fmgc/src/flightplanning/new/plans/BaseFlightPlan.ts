@@ -17,7 +17,7 @@ import {
     WaypointDescriptor,
 } from '@flybywiresim/fbw-sdk';
 import { OriginSegment } from '@fmgc/flightplanning/new/segments/OriginSegment';
-import { FlightPlanElement, FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
+import { FlightPlanElement, FlightPlanLeg, FlightPlanLegFlags } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { DepartureSegment } from '@fmgc/flightplanning/new/segments/DepartureSegment';
 import { ArrivalSegment } from '@fmgc/flightplanning/new/segments/ArrivalSegment';
 import { ApproachSegment } from '@fmgc/flightplanning/new/segments/ApproachSegment';
@@ -210,41 +210,54 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     sequence() {
         this.incrementVersion();
 
-        if (this.activeLeg.isDiscontinuity === false && this.activeLeg.definition.approachWaypointDescriptor === ApproachWaypointDescriptor.MissedApproachPoint) {
-            this.enrouteSegment.allLegs.length = 0;
-
-            const cloneMissedApproachPointLeg = this.activeLeg.clone(this.enrouteSegment);
-            const clonedMissedApproachLegs = this.missedApproachSegment.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(this.enrouteSegment) : it));
-
-            cloneMissedApproachPointLeg.type = LegType.IF;
-            this.enrouteSegment.allLegs.push(cloneMissedApproachPointLeg);
-            this.enrouteSegment.allLegs.push(...clonedMissedApproachLegs);
-            this.enrouteSegment.allLegs.push({ isDiscontinuity: true });
-            this.enrouteSegment.strung = true;
-            this.enrouteSegment.isSequencedMissedApproach = true;
-
-            this.syncSegmentLegsChange(this.enrouteSegment);
-
-            // We don't have to await any of this because of how we use it, but this might be something to clean up in the future
-
-            this.arrivalSegment.setProcedure(undefined);
-
-            this.approachSegment.setProcedure(this.approachSegment.procedure?.ident);
-            this.approachViaSegment.setProcedure(this.approachViaSegment.procedure?.ident);
-
-            this.enqueueOperation(FlightPlanQueuedOperation.Restring);
-            this.flushOperationQueue().then(() => {
-                const activeIndex = this.allLegs.findIndex((it) => it === clonedMissedApproachLegs[0]);
-
-                this.activeLegIndex = activeIndex;
-
-                this.sendEvent('flightPlan.setActiveLegIndex', { planIndex: this.index, forAlternate: this instanceof AlternateFlightPlan, activeLegIndex: activeIndex });
-            });
-        } else {
-            this.activeLegIndex++;
-
-            this.sendEvent('flightPlan.setActiveLegIndex', { planIndex: this.index, forAlternate: false, activeLegIndex: this.activeLegIndex });
+        if (this.activeLeg.isDiscontinuity === false
+            // Make sure we've not already string it
+            && this.activeLeg.segment.class === SegmentClass.Arrival
+            && this.activeLeg.definition.approachWaypointDescriptor === ApproachWaypointDescriptor.MissedApproachPoint) {
+            this.stringMissedApproach();
         }
+
+        this.activeLegIndex++;
+
+        this.sendEvent('flightPlan.setActiveLegIndex', { planIndex: this.index, forAlternate: false, activeLegIndex: this.activeLegIndex });
+    }
+
+    stringMissedApproach() {
+        const missedApproachPointIndex = this.allLegs.findIndex(
+            (it) => it.isDiscontinuity === false && it.definition.approachWaypointDescriptor === ApproachWaypointDescriptor.MissedApproachPoint,
+        );
+
+        if (missedApproachPointIndex === -1) {
+            return;
+        }
+
+        // Move arrival/approach into enroute
+        this.redistributeLegsAt(missedApproachPointIndex);
+
+        // Copy missed approach into enroute segment
+        const clonedMissedApproachLegs = this.missedApproachSegment.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(this.enrouteSegment) : it));
+        this.enrouteSegment.allLegs.push(...clonedMissedApproachLegs);
+        this.enrouteSegment.allLegs.push({ isDiscontinuity: true });
+        this.enrouteSegment.strung = true;
+        this.enrouteSegment.isSequencedMissedApproach = true;
+
+        this.syncSegmentLegsChange(this.enrouteSegment);
+
+        // We don't have to await any of this because of how we use it, but this might be something to clean up in the future
+
+        this.arrivalSegment.setProcedure(undefined);
+
+        this.approachSegment.setProcedure(this.approachSegment.procedure?.ident);
+        this.approachViaSegment.setProcedure(this.approachViaSegment.procedure?.ident);
+
+        this.enqueueOperation(FlightPlanQueuedOperation.Restring);
+        this.flushOperationQueue().then(() => {
+            const activeIndex = this.allLegs.findIndex((it) => it === this.activeLeg);
+
+            this.activeLegIndex = activeIndex;
+
+            this.sendEvent('flightPlan.setActiveLegIndex', { planIndex: this.index, forAlternate: this instanceof AlternateFlightPlan, activeLegIndex: activeIndex });
+        });
     }
 
     version = 0;
@@ -355,11 +368,12 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     availableApproachVias: ProcedureTransition[] = [];
 
     get originLeg() {
-        return this.allLegs[0];
+        const originLegIndex = this.originLegIndex;
+        return originLegIndex >= 0 ? this.allLegs[originLegIndex] : undefined;
     }
 
     get originLegIndex() {
-        return this.originSegment.allLegs.length > 0 ? 0 : -1;
+        return this.allLegs.findIndex((it) => it.isDiscontinuity === false && (it.flags & FlightPlanLegFlags.Origin));
     }
 
     get destinationLeg() {
@@ -367,12 +381,14 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     }
 
     get destinationLegIndex() {
-        let targetSegment;
+        let targetSegment: FlightPlanSegment = undefined;
 
         if (this.destinationSegment.allLegs.length > 0) {
             targetSegment = this.destinationSegment;
         } else if (this.approachSegment.allLegs.length > 0) {
             targetSegment = this.approachSegment;
+        } else if (this.enrouteSegment.allLegs.length > 0) {
+            targetSegment = this.enrouteSegment;
         } else {
             return -1;
         }
@@ -729,6 +745,10 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
     async setDestinationRunway(runwayIdent: string | undefined) {
         await this.destinationSegment.setDestinationRunway(runwayIdent).then(() => this.incrementVersion());
 
+        if (this instanceof FlightPlan) {
+            this.setPerformanceData('databaseTransitionLevel', this.destinationAirport.transitionLevel);
+        }
+
         await this.flushOperationQueue();
         this.incrementVersion();
     }
@@ -747,11 +767,6 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
             const previousElement = this.elementAt(index - 1);
 
             if (previousElement.isDiscontinuity === false) {
-                // Not allowed to clear disco after MANUAL
-                if (previousElement.isVectors()) {
-                    return false;
-                }
-
                 if (insertDiscontinuity) {
                     segment.allLegs.splice(indexInSegment, 1, { isDiscontinuity: true });
                 } else {
@@ -774,6 +789,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
         this.adjustIFLegs();
         this.redistributeLegsAt(index);
+        this.ensureNoDuplicateDiscontinuities();
 
         this.incrementVersion();
 
@@ -802,6 +818,25 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         }
 
         throw new Error('[FMS/FPM] Tried to get segment for out-of-bounds index');
+    }
+
+    /**
+     * Converts a segment index to an allLegs index
+     * @param segment Segment containing the leg
+     * @param indexInSegment Index of the leg in the segment
+     * @returns
+     */
+    private indexForSegmentPosition(segment: FlightPlanSegment, indexInSegment: number): number {
+        let accumulator = 0;
+        for (const s of this.orderedSegments) {
+            if (s === segment) {
+                return accumulator + indexInSegment;
+            }
+
+            accumulator += s.legCount;
+        }
+
+        throw new Error('[FMS/FPM] Tried to get index for out-of-bounds segment position');
     }
 
     autoConstraintTypeForLegIndex(index: number): WaypointConstraintType {
@@ -1442,15 +1477,16 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
             return;
         }
 
+        let lastElementInFirstIndex = first.allLegs.length - 1;
         const lastElementInFirst = first.allLegs[first.allLegs.length - 1];
-        let lastLegInFirst = lastElementInFirst;
 
-        if (lastLegInFirst?.isDiscontinuity === true) {
-            lastLegInFirst = first.allLegs[first.allLegs.length - 2];
+        if (lastElementInFirst?.isDiscontinuity === true) {
+            lastElementInFirstIndex = first.allLegs.length - 2;
+        }
 
-            if (!lastLegInFirst || lastLegInFirst?.isDiscontinuity === true) {
-                return;
-            }
+        const lastLegInFirst = first.allLegs[lastElementInFirstIndex];
+        if (!lastLegInFirst || lastLegInFirst?.isDiscontinuity === true) {
+            return;
         }
 
         if (first instanceof OriginSegment && first.lastLeg?.waypointDescriptor === WaypointDescriptor.Runway) {
@@ -1472,9 +1508,11 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         }
 
         const originAndDestination = first instanceof OriginSegment && second instanceof DestinationSegment;
+        const totalIndex = this.indexForSegmentPosition(first, lastElementInFirstIndex);
+        const firstIsBeforeActiveLeg = this.activeLegIndex > -1 && totalIndex < this.activeLegIndex;
 
         let cutBefore = -1;
-        if (!originAndDestination) {
+        if (!originAndDestination && !firstIsBeforeActiveLeg) {
             for (let i = 0; i < second.allLegs.length; i++) {
                 const element = second.allLegs[i];
 
@@ -1625,6 +1663,40 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
             }
 
             a += segment.allLegs.length;
+        }
+    }
+
+    private ensureNoDuplicateDiscontinuities() {
+        let numConsecutiveDiscos = 1;
+
+        for (let i = 0; i < this.orderedSegments.length; i++) {
+            const segment = this.orderedSegments[i];
+            const toDelete = [];
+
+            for (let j = 0; j < segment.allLegs.length; j++) {
+                const element = segment.allLegs[j];
+                if (element.isDiscontinuity) {
+                    // DISCO
+                    numConsecutiveDiscos++;
+                } else {
+                    // LEG
+                    if (numConsecutiveDiscos > 1) {
+                        toDelete.push({ start: j - numConsecutiveDiscos + 1, length: numConsecutiveDiscos - 1 });
+                    }
+
+                    numConsecutiveDiscos = 0;
+                }
+            }
+
+            if (numConsecutiveDiscos > 1) {
+                toDelete.push({ start: segment.allLegs.length - numConsecutiveDiscos + 1, length: numConsecutiveDiscos - 1 });
+                numConsecutiveDiscos = 1;
+            }
+
+            for (let i = toDelete.length - 1; i >= 0; i--) {
+                const { start, length } = toDelete[i];
+                segment.allLegs.splice(start, length);
+            }
         }
     }
 

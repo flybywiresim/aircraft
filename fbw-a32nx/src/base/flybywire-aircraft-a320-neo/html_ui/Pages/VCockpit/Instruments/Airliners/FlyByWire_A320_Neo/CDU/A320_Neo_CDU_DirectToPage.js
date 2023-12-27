@@ -105,15 +105,16 @@ class CDUDirectToPage {
         let cellIter = 0;
         wptsListIndex = Math.max(wptsListIndex, mcdu.flightPlanService.active.activeLegIndex);
 
-        const totalWaypointsCount = plan.legCount;
+        const totalWaypointsCount = plan.firstMissedApproachLegIndex;
 
         while (i < totalWaypointsCount && i + wptsListIndex < totalWaypointsCount && cellIter < iMax) {
-            if (plan.elementAt(i + wptsListIndex).isDiscontinuity) {
+            const legIndex = i + wptsListIndex;
+            if (plan.elementAt(legIndex).isDiscontinuity) {
                 i++;
                 continue;
             }
 
-            const leg = plan.legElementAt(i + wptsListIndex);
+            const leg = plan.legElementAt(legIndex);
 
             if (leg) {
                 if (!leg.isXF()) {
@@ -136,7 +137,7 @@ class CDUDirectToPage {
                             const trueTrackWord = new Arinc429Word(trueTrack);
 
                             if (trueTrackWord.isNormalOperation()) {
-                                mcdu.flightPlanService.directTo(ppos, trueTrackWord.value, leg.terminationWaypoint());
+                                mcdu.flightPlanService.directToLeg(ppos, trueTrackWord.value, legIndex);
                             }
 
                             CDUDirectToPage.ShowPage(mcdu, leg.terminationWaypoint(), wptsListIndex);

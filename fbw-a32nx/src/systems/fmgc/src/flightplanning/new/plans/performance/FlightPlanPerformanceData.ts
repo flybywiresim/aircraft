@@ -220,7 +220,8 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
      * THR RED from pilot if entered, otherwise from database
      */
     get thrustReductionAltitude() {
-        return MathUtils.round(this.pilotThrustReductionAltitude ?? this.defaultThrustReductionAltitude, 10);
+        const rawAlt = this.pilotThrustReductionAltitude ?? this.defaultThrustReductionAltitude;
+        return rawAlt !== undefined ? MathUtils.round(rawAlt, 10) : undefined;
     }
 
     /**
@@ -246,7 +247,8 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
      * ACC from pilot if entered, otherwise from database
      */
     get accelerationAltitude() {
-        return MathUtils.round(this.pilotAccelerationAltitude ?? this.defaultAccelerationAltitude, 10);
+        const rawAlt = this.pilotAccelerationAltitude ?? this.defaultAccelerationAltitude;
+        return rawAlt !== undefined ? MathUtils.round(rawAlt, 10) : undefined;
     }
 
     /**
@@ -272,7 +274,8 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
      * EO ACC from pilot if entered, otherwise from database
      */
     get engineOutAccelerationAltitude() {
-        return MathUtils.round(this.pilotEngineOutAccelerationAltitude ?? this.defaultEngineOutAccelerationAltitude, 10);
+        const rawAlt = this.pilotEngineOutAccelerationAltitude ?? this.defaultEngineOutAccelerationAltitude;
+        return rawAlt !== undefined ? MathUtils.round(rawAlt, 10) : undefined;
     }
 
     /**
@@ -298,7 +301,8 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
      * Missed THR RED from pilot if entered, otherwise from database
      */
     get missedThrustReductionAltitude() {
-        return MathUtils.round(this.pilotMissedThrustReductionAltitude ?? this.defaultMissedThrustReductionAltitude, 10);
+        const rawAlt = this.pilotMissedThrustReductionAltitude ?? this.defaultMissedThrustReductionAltitude;
+        return rawAlt !== undefined ? MathUtils.round(rawAlt, 10) : undefined;
     }
 
     /**
@@ -324,7 +328,8 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
      * Missed ACC from pilot if entered, otherwise from database
      */
     get missedAccelerationAltitude() {
-        return MathUtils.round(this.pilotMissedAccelerationAltitude ?? this.defaultMissedAccelerationAltitude, 10);
+        const rawAlt = this.pilotMissedAccelerationAltitude ?? this.defaultMissedAccelerationAltitude;
+        return rawAlt !== undefined ? MathUtils.round(rawAlt, 10) : undefined;
     }
 
     /**
@@ -350,7 +355,8 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
      * Missed EO ACC from pilot if entered, otherwise from database
      */
     get missedEngineOutAccelerationAltitude() {
-        return MathUtils.round(this.pilotMissedEngineOutAccelerationAltitude ?? this.defaultMissedEngineOutAccelerationAltitude, 10);
+        const rawAlt = this.pilotMissedEngineOutAccelerationAltitude ?? this.defaultMissedEngineOutAccelerationAltitude;
+        return rawAlt !== undefined ? MathUtils.round(rawAlt, 10) : undefined;
     }
 
     /**
@@ -374,7 +380,8 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
      * TRANS ALT from pilot if entered, otherwise from database
      */
     get transitionAltitude() {
-        return MathUtils.round(this.pilotTransitionAltitude ?? this.databaseTransitionAltitude, 10);
+        const rawAlt = this.pilotTransitionAltitude ?? this.databaseTransitionAltitude;
+        return rawAlt !== undefined ? MathUtils.round(rawAlt, 10) : undefined;
     }
 
     /**
@@ -398,7 +405,8 @@ export class A320FlightPlanPerformanceData implements FlightPlanPerformanceData 
      * TRANS LVL from pilot if entered, otherwise from database
      */
     get transitionLevel() {
-        return MathUtils.round(this.pilotTransitionLevel ?? this.databaseTransitionLevel, 1);
+        const rawLevel = this.pilotTransitionLevel ?? this.databaseTransitionLevel;
+        return rawLevel !== undefined ? MathUtils.round(rawLevel, 1) : undefined;
     }
 
     /**

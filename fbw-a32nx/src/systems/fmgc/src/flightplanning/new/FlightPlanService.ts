@@ -199,6 +199,10 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
 
         const plan = this.flightPlanManager.get(planIndex);
 
+        if (altnIcao === undefined) {
+            return plan.deleteAlternateFlightPlan();
+        }
+
         return plan.setAlternateDestinationAirport(altnIcao);
     }
 
@@ -266,7 +270,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
         return plan.setDestinationRunway(runwayIdent);
     }
 
-    async deleteElementAt(index: number, planIndex = FlightPlanIndex.Active, alternate = false): Promise<boolean> {
+    async deleteElementAt(index: number, insertDiscontinuity: boolean = false, planIndex = FlightPlanIndex.Active, alternate = false): Promise<boolean> {
         if (!this.config.ALLOW_REVISIONS_ON_TMPY && planIndex === FlightPlanIndex.Temporary) {
             throw new Error('[FMS/FPS] Cannot delete element in temporary flight plan');
         }
@@ -278,7 +282,7 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
 
         const plan = alternate ? this.flightPlanManager.get(finalIndex).alternateFlightPlan : this.flightPlanManager.get(finalIndex);
 
-        return plan.removeElementAt(index);
+        return plan.removeElementAt(index, insertDiscontinuity);
     }
 
     async insertWaypointBefore(atIndex: number, waypoint: Fix, planIndex = FlightPlanIndex.Active, alternate = false) {
@@ -313,12 +317,20 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
         plan.startAirwayEntry(at);
     }
 
-    async directTo(ppos: Coordinates, trueTrack: Degrees, waypoint: Fix, withAbeam = false, planIndex = FlightPlanIndex.Active) {
+    async directToWaypoint(ppos: Coordinates, trueTrack: Degrees, waypoint: Fix, withAbeam = false, planIndex = FlightPlanIndex.Active) {
         const finalIndex = this.prepareDestructiveModification(planIndex);
 
         const plan = this.flightPlanManager.get(finalIndex);
 
-        plan.directTo(ppos, trueTrack, waypoint, withAbeam);
+        plan.directToWaypoint(ppos, trueTrack, waypoint, withAbeam);
+    }
+
+    async directToLeg(ppos: Coordinates, trueTrack: Degrees, targetLegIndex: number, withAbeam = false, planIndex = FlightPlanIndex.Active) {
+        const finalIndex = this.prepareDestructiveModification(planIndex);
+
+        const plan = this.flightPlanManager.get(finalIndex);
+
+        plan.directToLeg(ppos, trueTrack, targetLegIndex, withAbeam);
     }
 
     async addOrEditManualHold(at: number, desiredHold: HoldData, modifiedHold: HoldData, defaultHold: HoldData, planIndex = FlightPlanIndex.Active, alternate = false): Promise<number> {
@@ -481,5 +493,11 @@ export class FlightPlanService<P extends FlightPlanPerformanceData = FlightPlanP
         const plan = this.flightPlanManager.get(planIndex);
 
         plan.setPerformanceData(key, value);
+    }
+
+    async stringMissedApproach(planIndex = FlightPlanIndex.Active) {
+        const plan = this.flightPlanManager.get(planIndex);
+
+        return plan.stringMissedApproach();
     }
 }

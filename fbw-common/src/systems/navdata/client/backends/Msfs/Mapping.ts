@@ -109,7 +109,7 @@ export class MsfsMapping {
             databaseId: msAirport.icao,
             sectionCode: SectionCode.Airport,
             subSectionCode: AirportSubsectionCode.ReferencePoints,
-            ident: msAirport.icao.substring(7, 11),
+            ident: this.mapAirportIdent(msAirport),
             icaoCode: msAirport.icao.substring(1, 3), // TODO
             name: Utils.Translate(msAirport.name),
             location: { lat: msAirport.lat, long: msAirport.lon, alt: elevation },
@@ -726,6 +726,7 @@ export class MsfsMapping {
     private mapRunwayWaypoint(airport: JS_FacilityAirport, icao: string): Waypoint | undefined {
         const runwayIdent = `${icao.substring(7).trim()}`;
         const runways = this.mapAirportRunwaysPartial(airport);
+        const airportIdent = this.mapAirportIdent(airport);
 
         for (const runway of runways) {
             if (runway.ident === runwayIdent) {
@@ -734,7 +735,9 @@ export class MsfsMapping {
                     subSectionCode: EnrouteSubsectionCode.Waypoints,
                     databaseId: icao,
                     icaoCode: icao.substring(1, 3),
-                    ident: `${runway.ident}`,
+                    // TODO: Should we just use the runway ident here?
+                    // i.e 'RW24L' vs 'KLAX24L'
+                    ident: `${airportIdent}${runway.ident.substring(2)}`,
                     location: runway.thresholdLocation,
                     area: WaypointArea.Terminal,
                 };
@@ -1100,6 +1103,10 @@ export class MsfsMapping {
         default:
             return ApproachType.Unknown;
         }
+    }
+
+    private mapAirportIdent(msAirport: JS_FacilityAirport): string {
+        return msAirport.icao.substring(7, 11);
     }
 
     public async getAirways(fixIdent: string, icaoCode: string): Promise<Airway[]> {

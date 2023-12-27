@@ -157,12 +157,13 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
      * this can create a temporary flight plan if target is active.
      *
      * @param index the index of the element to delete
+     * @param insertDiscontinuity whether to insert a discontinuity at the deleted element's position
      * @param planIndex which flight plan to make the change on
      * @param alternate whether to edit the plan's alternate flight plan
      *
      * @returns `true` if the element could be removed, `false` if removal is not allowed
      */
-    deleteElementAt(index: number, planIndex?: number, alternate?: boolean): Promise<boolean>;
+    deleteElementAt(index: number, insertDiscontinuity?: boolean, planIndex?: number, alternate?: boolean): Promise<boolean>;
 
     /**
      * Inserts a waypoint before a leg at an index.
@@ -203,8 +204,10 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
      */
     startAirwayEntry(atIndex: number, planIndex: number, alternate?: boolean): Promise<void>;
 
+    directToLeg(ppos: Coordinates, trueTrack: Degrees, targetLegIndex: number, withAbeam: boolean, planIndex: number): Promise<void>
+
     // TODO do not pass in fix object (rpc)
-    directTo(ppos: Coordinates, trueTrack: Degrees, waypoint: Fix, withAbeam: boolean, planIndex: number): Promise<void>
+    directToWaypoint(ppos: Coordinates, trueTrack: Degrees, waypoint: Fix, withAbeam: boolean, planIndex: number): Promise<void>
 
     /**
      * HOLD AT revision. Inserts or edits a manual hold parented to the leg.
@@ -250,4 +253,6 @@ export interface FlightPlanInterface<P extends FlightPlanPerformanceData = Fligh
     setFlightNumber(flightNumber: string, planIndex: number): Promise<void>;
 
     setPerformanceData<T extends keyof P & string>(key: T, value: P[T], planIndex: number): Promise<void>;
+
+    stringMissedApproach(planIndex?: number): Promise<void>;
 }
