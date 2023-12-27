@@ -33,7 +33,7 @@ export const BusBar: FC<BusBarProps> = ({ x, y, bus }) => {
     return (
         <g id={`electrical-busbar-${bus}`} transform={`translate(${x} ${y})`}>
             <path className='LightGrey GreyFill SW1 LS1' d='M 0,0 l 0,34 l 128,0 l 0,-34 z' />
-            <text className={`F29 ${dcBusPowered ? 'Green' : 'Amber'} Grey`} x={isBus1Or2 ? 32 : 9} y={29}>DC</text>
+            <text className={`F29 ${dcBusPowered ? 'Green' : 'Amber'}`} x={isBus1Or2 ? 32 : 9} y={29}>DC</text>
             <text
                 className={`${isBus1Or2 ? 'F35' : 'F29'} ${dcBusPowered ? 'Green' : 'Amber'} LS1`}
                 x={isBus1Or2 ? 78 : 65}
