@@ -1387,10 +1387,20 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
             let emptyAllNext = false;
 
+            if (segment === this.destinationSegment) {
+                emptyAllNext = true;
+
+                toInsertInEnroute.unshift(...this.destinationSegment.truncate(indexInSegment));
+            }
+
             if (segment === this.approachSegment) {
                 emptyAllNext = true;
 
                 toInsertInEnroute.unshift(...this.approachSegment.truncate(indexInSegment));
+            } else if (emptyAllNext) {
+                const removed = this.approachSegment.clear();
+
+                toInsertInEnroute.unshift(...removed);
             }
 
             if (segment === this.approachViaSegment) {
