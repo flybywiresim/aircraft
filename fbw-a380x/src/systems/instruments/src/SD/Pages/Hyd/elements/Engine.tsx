@@ -9,23 +9,25 @@ type EngineProps = {
 
 export const Engine = ({ x, y, engineNumber }: EngineProps) => {
     const isInnerEngine = (engineNumber === 2 || engineNumber === 3);
+    const hydSystem = engineNumber <= 2 ? 'GREEN' : 'YELLOW';
+    const pumpIndex = (engineNumber - 1) * 2 + 1 - (engineNumber <= 2 ? 0 : 4)
 
-    const [engineState] = useSimVar(`L:A32NX_ENGINE_STATE:${engineNumber}`, 'Enum', 1000);
+    const [engineState] = useSimVar(`L:A32NX_ENGINE_STATE:${engineNumber}`, 'Enum', 500);
     const isRunning = engineState === 1;
 
-    const [reservoirLowLevel] = useSimVar(`L:A32NX_HYD_${engineNumber <= 2 ? 'GREEN' : 'YELLOW'}_RESERVOIR_LEVEL_IS_LOW`, 'boolean', 1000);
+    const [reservoirLowLevel] = useSimVar(`L:A32NX_HYD_${engineNumber <= 2 ? 'GREEN' : 'YELLOW'}_RESERVOIR_LEVEL_IS_LOW`, 'boolean', 500);
 
-    const [pumpDisconnect] = useSimVar(`L:A32NX_HYD_ENG_${engineNumber}AB_PUMP_DISC`, 'boolean', 1000);
+    const [pumpDisconnect] = useSimVar(`L:A32NX_HYD_ENG_${engineNumber}AB_PUMP_DISC`, 'boolean', 500);
 
-    const [pumpALowPressure] = useSimVar(`L:A32NX_HYD_EDPUMP_${engineNumber}A_LOW_PRESS`, 'boolean', 1000);
-    const [pumpAPbIsAuto] = useSimVar(`L:A32NX_OVHD_HYD_ENG_${engineNumber}A_PUMP_PB_IS_AUTO`, 'boolean', 1000);
+    const [pumpAPressureSwitch] = useSimVar(`L:A32NX_HYD_${hydSystem}_PUMP_${pumpIndex}_SECTION_PRESSURE_SWITCH`, 'boolean', 500);
+    const [pumpAPbIsAuto] = useSimVar(`L:A32NX_OVHD_HYD_ENG_${engineNumber}A_PUMP_PB_IS_AUTO`, 'boolean', 500);
 
-    const [pumpBLowPressure] = useSimVar(`L:A32NX_HYD_EDPUMP_${engineNumber}B_LOW_PRESS`, 'boolean', 1000);
-    const [pumpBPbIsAuto] = useSimVar(`L:A32NX_OVHD_HYD_ENG_${engineNumber}B_PUMP_PB_IS_AUTO`, 'boolean', 1000);
+    const [pumpBPressureSwitch] = useSimVar(`L:A32NX_HYD_${hydSystem}_PUMP_${pumpIndex + 1}_SECTION_PRESSURE_SWITCH`, 'boolean', 500);
+    const [pumpBPbIsAuto] = useSimVar(`L:A32NX_OVHD_HYD_ENG_${engineNumber}B_PUMP_PB_IS_AUTO`, 'boolean', 500);
 
     const [fireValveOpen] = useFireValveOpenState(engineNumber);
 
-    const pumpToLabelColor = pumpDisconnect || ((pumpALowPressure || !pumpAPbIsAuto) && (pumpBLowPressure || !pumpBPbIsAuto)) ? 'Amber' : 'Green';
+    const pumpToLabelColor = pumpDisconnect || ((!pumpAPressureSwitch || !pumpAPbIsAuto) && (!pumpBPressureSwitch || !pumpBPbIsAuto)) ? 'Amber' : 'Green';
 
     return (
         <g transform={`translate(${x} ${y})`}>
@@ -35,8 +37,8 @@ export const Engine = ({ x, y, engineNumber }: EngineProps) => {
                 {engineNumber}
             </text>
 
-            <EnginePump x={28} y={67} label='A' lowPressure={pumpALowPressure} pbAuto={pumpAPbIsAuto} disconnected={pumpDisconnect} />
-            <EnginePump x={80} y={67} label='B' lowPressure={pumpBLowPressure} pbAuto={pumpBPbIsAuto} disconnected={pumpDisconnect} />
+            <EnginePump x={28} y={67} label='A' lowPressure={!pumpAPressureSwitch} pbAuto={pumpAPbIsAuto} disconnected={pumpDisconnect} />
+            <EnginePump x={80} y={67} label='B' lowPressure={!pumpBPressureSwitch} pbAuto={pumpBPbIsAuto} disconnected={pumpDisconnect} />
 
             <FireShutoffValve x={56} y={164} isOpen={fireValveOpen} reservoirLowLevel={reservoirLowLevel} />
 
@@ -74,8 +76,8 @@ const EnginePump = ({ x, y, label, lowPressure, pbAuto, disconnected }: EnginePu
         <g transform={`translate(${x} ${y})`}>
             <rect x={0} y={0} width={size} height={size} className={`${color} NoFill SW3`} />
             {!lowPressure && <line className={`${color} SW3`} x1={size / 2} y1={0} x2={size / 2} y2={size} />}
-            {(!pbAuto && lowPressure) && <line className='Amber SW3' x1={8} y1={size / 2} x2={size - 8} y2={size / 2} />}
-            {(pbAuto && lowPressure) && <text x={5} y={30} className='Amber F25'>LO</text>}
+            {(!pbAuto && lowPressure || disconnected) && <line className='Amber SW3' x1={8} y1={size / 2} x2={size - 8} y2={size / 2} />}
+            {(pbAuto && !disconnected && lowPressure) && <text x={5} y={30} className='Amber F25'>LO</text>}
             <text x={isMirrored ? size + 5 : -20} y={31} className='White F28'>{label}</text>
             {disconnected && <text x={isMirrored ? 5 : -10} y={size + 18} className='Amber F19'>DISC</text>}
         </g>

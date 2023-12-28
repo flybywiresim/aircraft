@@ -69,22 +69,22 @@ const ElecPump = ({ x, y, label, side }: ElecPumpProps) => {
     const isGreen = side === 'GREEN';
 
     const [isElecPumpActive] = useSimVar(`L:A32NX_HYD_${side[0]}${label}_EPUMP_ACTIVE`, 'boolean', 1000);
+    const [pumpPressureSwitch] = useSimVar(`L:A32NX_HYD_${side}_PUMP_${label === 'A' ? 5 : 6}_SECTION_PRESSURE_SWITCH`, 'boolean', 500);
     const [offPbIsAuto] = useSimVar(`L:A32NX_OVHD_HYD_EPUMP${side[0]}${label}_OFF_PB_IS_AUTO`, 'boolean', 1000);
-    const [offPbHasFault] = useSimVar(`L:A32NX_OVHD_HYD_EPUMP${side[0]}${label}_OFF_PB_HAS_FAULT`, 'boolean', 1000);
     const isOverheat = false;
 
     let triangleColor = '';
-    if (offPbIsAuto && !isElecPumpActive && !offPbHasFault) {
+    if (offPbIsAuto && !isElecPumpActive) {
         triangleColor = 'White';
-    } else if (!offPbIsAuto || offPbHasFault) {
+    } else if (!offPbIsAuto || !pumpPressureSwitch) {
         triangleColor = 'Amber';
-    } else if (offPbIsAuto && isElecPumpActive && !offPbHasFault) {
+    } else if (offPbIsAuto && isElecPumpActive && pumpPressureSwitch) {
         triangleColor = 'Green';
     }
 
     return (
         <g transform={`translate(${x} ${y})`}>
-            <text x={isGreen ? 21 : -35} y={10} className={`F25 ${offPbHasFault || !offPbIsAuto ? 'Amber' : 'White'}`}>
+            <text x={isGreen ? 21 : -35} y={10} className={`F25 ${triangleColor === 'Amber' ? 'Amber' : 'White'}`}>
                 {label}
             </text>
             <Triangle x={0} y={0} orientation={isGreen ? -90 : 90} colour={triangleColor} fill={isElecPumpActive ? 1 : 0}/>
