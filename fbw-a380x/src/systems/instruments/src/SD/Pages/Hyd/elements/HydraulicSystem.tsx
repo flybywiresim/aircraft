@@ -13,13 +13,13 @@ export const HydraulicSystem = ({ label }: HydraulicSystemProps) => {
 
     return (
         <g>
-            <SystemLabel x={isLeftSide ? 38 : 500} y={isLeftSide ? 92 : 94} label={label} />
-
             <Engine x={isLeftSide ? 8 : 612} y={231} engineNumber={isLeftSide ? 1 : 4}/>
 
             <Engine x={isLeftSide ? 165 : 457} y={189} engineNumber={isLeftSide ? 2 : 3}/>
 
             <Reservoir x={isLeftSide ? 72 : 676} y={467} side={label} />
+
+            <SystemLabel x={isLeftSide ? 38 : 500} y={isLeftSide ? 92 : 94} label={label} />
         </g>
     );
 };
@@ -41,7 +41,7 @@ const SystemLabel = ({ x, y, label }: SystemLabelProps) => {
     return (
         <g transform={`translate(${x} ${y})`}>
             <Triangle x={114} y={-30} orientation={0} colour={pressureSwitchColor} fill={0} scale={1.35} />
-            <rect x={0} y={0} width={228} height={isGreen ? 38 : 36} className={`${color} NoFill SW2`} />
+            <rect x={0} y={0} width={228} height={isGreen ? 38 : 36} className={`${color} NoFill SW3`} />
             <text x={7} y={29} className={`${pressure > 2900 ? 'White' : 'Amber'} F23`}>{label}</text>
             <text
                 x={isGreen ? 172 : 179}

@@ -31,8 +31,8 @@ export const Reservoir = ({ x, y, side }: ReservoirProps) => {
     return (
         <g transform={`translate(${x} ${y})`}>
             <path d={`M 0, 0 v ${height} h 17 m 2 -36 v -56 m 0 -37 v -37`} className='White NoFill SW2 LineRound' />
-            <path d='m 9 -37 v 202' className={`${lowLevel ? 'Amber' : 'Green'} SW3`} />
-            <path d={`m 9 ${isLeftSide ? -13 : -12} h ${isLeftSide ? 157 : -155} v -66`} className={`${lowLevel ? 'Amber' : 'Green'} NoFill SW3`} />
+            <path d='m 9 -37 v 202' className={`${lowLevel ? 'Amber' : 'Green'} SW4`} />
+            <path d={`m 9 ${isLeftSide ? -12 : -13} h ${isLeftSide ? 157 : -155} v -66`} className={`${lowLevel ? 'Amber' : 'Green'} NoFill SW4`} />
 
             <rect
                 x={0.5}

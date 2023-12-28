@@ -42,7 +42,7 @@ export const Engine = ({ x, y, engineNumber }: EngineProps) => {
 
             <FireShutoffValve x={56} y={164} isOpen={fireValveOpen} reservoirLowLevel={reservoirLowLevel} />
 
-            <path d={`m 73 65 v ${isInnerEngine ? -123 : -165}`} className={`${pumpToLabelColor} SW3 LineRound`}/>
+            <path d={`m 73 65 v ${isInnerEngine ? -123 : -165}`} className={`${pumpToLabelColor} SW4 LineRound`}/>
         </g>
     );
 };
@@ -74,9 +74,9 @@ const EnginePump = ({ x, y, label, lowPressure, pbAuto, disconnected }: EnginePu
 
     return (
         <g transform={`translate(${x} ${y})`}>
-            <rect x={0} y={0} width={size} height={size} className={`${color} NoFill SW3`} />
-            {!lowPressure && <line className={`${color} SW3`} x1={size / 2} y1={0} x2={size / 2} y2={size} />}
-            {(!pbAuto && lowPressure || disconnected) && <line className='Amber SW3' x1={8} y1={size / 2} x2={size - 8} y2={size / 2} />}
+            <rect x={0} y={0} width={size} height={size} className={`${color} NoFill SW4`} />
+            {!lowPressure && <line className={`${color} SW4`} x1={size / 2} y1={0} x2={size / 2} y2={size} />}
+            {(!pbAuto && lowPressure || disconnected) && <line className='Amber SW4 LineRound' x1={8} y1={size / 2} x2={size - 8} y2={size / 2} />}
             {(pbAuto && !disconnected && lowPressure) && <text x={5} y={30} className='Amber F25'>LO</text>}
             <text x={isMirrored ? size + 5 : -20} y={31} className='White F28'>{label}</text>
             {disconnected && <text x={isMirrored ? 5 : -10} y={size + 18} className='Amber F19'>DISC</text>}
@@ -102,14 +102,14 @@ const FireShutoffValve = ({ x, y, isOpen, reservoirLowLevel }: FireShutoffValveP
                 cx={radius}
                 cy={radius}
                 r={radius}
-                className={`${color} NoFill SW3`}
+                className={`${color} NoFill SW4`}
             />
             {isOpen ? (
-                <line x1={radius} y1={0} x2={radius} y2={2 * radius} className={`${color} SW3`} />
+                <line x1={radius} y1={0} x2={radius} y2={2 * radius} className={`${color} SW4`} />
             ) : (
-                <line x1={0} y1={radius} x2={2 * radius} y2={radius} className={`${color} SW3`} />
+                <line x1={0} y1={radius} x2={2 * radius} y2={radius} className={`${color} SW4`} />
             )}
-            <path d='m 17 -55 v 54' className={`${color} SW3 LineRound`}/>
+            <path d='m 17 -55 v 54' className={`${color} SW4 LineRound`}/>
         </g>
     );
 };
