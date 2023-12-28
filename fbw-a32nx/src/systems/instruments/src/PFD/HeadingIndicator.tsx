@@ -215,8 +215,9 @@ class GroundTrackBug extends DisplayComponent<GroundTrackBugProps> {
     });
 
     private isVisibleSub = MappedSubject.create(([groundTrack, heading]) => {
-        const offset = getSmallestAngle(groundTrack.value, heading) * DistanceSpacing / ValueSpacing;
-        return groundTrack.isNormalOperation() && Math.abs(offset) < DisplayRange;
+        const delta = getSmallestAngle(groundTrack.value, heading);
+        // TODO should also be hidden if heading is invalid
+        return groundTrack.isNormalOperation() && Math.abs(delta) < DisplayRange;
     }, this.groundTrack, this.props.heading);
 
     private transformSub = MappedSubject.create(([groundTrack, heading]) => {
@@ -229,15 +230,15 @@ class GroundTrackBug extends DisplayComponent<GroundTrackBugProps> {
 
         const sub = this.props.bus.getArincSubscriber<DmcLogicEvents>();
 
-        this.groundTrack.setConsumer(sub.on('track').withArinc429Precision(2));
+        this.groundTrack.setConsumer(sub.on('track').withArinc429Precision(3));
 
         this.isVisibleSub.sub((isVisible) => {
             if (isVisible) {
                 this.style.set({ display: '' });
-                this.transformSub.pause();
+                this.transformSub.resume();
             } else {
                 this.style.set({ display: 'none' });
-                this.transformSub.resume();
+                this.transformSub.pause();
             }
         });
 
