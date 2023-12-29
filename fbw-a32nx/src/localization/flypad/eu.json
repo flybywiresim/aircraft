@@ -185,6 +185,7 @@
       "Title": "Pushback"
     },
     "Services": {
+      "AirStarterUnit": "Air Starter Unit",
       "BaggageTruck": "Ekipaje kamioia",
       "CateringTruck": "Catering kamioia",
       "Cones": "Safety Cones",
@@ -622,7 +623,8 @@
       "ReverserOnAxis": "Reverser On Axis",
       "SaveAndApply": "Save and Apply",
       "SetFromThrottle": "Set from Throttle",
-      "ThrottleConfigurationReset": "Throttle Configuration Reset"
+      "ThrottleConfigurationReset": "Throttle Configuration Reset",
+      "TogaOnAxis": "TogaOnAxis"
     },
     "Title": "Settings",
     "Unrealistic": "Unrealistic",

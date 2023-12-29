@@ -185,6 +185,7 @@
       "Title": "Pushback"
     },
     "Services": {
+      "AirStarterUnit": "Air Starter Unit",
       "BaggageTruck": "Camion de bagaje",
       "CateringTruck": "Camion de Catering",
       "Cones": "Safety Cones",
@@ -622,7 +623,8 @@
       "ReverserOnAxis": "Inversor pe axă",
       "SaveAndApply": "Salvare și aplicare",
       "SetFromThrottle": "Setați de la accelerație",
-      "ThrottleConfigurationReset": "Reset configurație accelerație"
+      "ThrottleConfigurationReset": "Reset configurație accelerație",
+      "TogaOnAxis": "TogaOnAxis"
     },
     "Title": "Setări",
     "Unrealistic": "Nerealist",

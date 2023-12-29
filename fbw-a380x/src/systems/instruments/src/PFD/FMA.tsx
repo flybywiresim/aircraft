@@ -1,6 +1,6 @@
 import { ComponentProps, DisplayComponent, EventBus, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { ArmedLateralMode, ArmedVerticalMode, isArmed, LateralMode, VerticalMode } from '@shared/autopilot';
-
+import { Arinc429Word } from '@shared/arinc429';
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 
@@ -41,9 +41,9 @@ export class FMA extends DisplayComponent<{ bus: EventBus, isAttExcessive: Subsc
 
     private athrModeMessage = 0;
 
-    private machPreselVal = 0;
+    private machPresel = Arinc429Word.empty();
 
-    private speedPreselVal = 0;
+    private speedPresel = Arinc429Word.empty();
 
     private setHoldSpeed = false;
 
@@ -64,8 +64,8 @@ export class FMA extends DisplayComponent<{ bus: EventBus, isAttExcessive: Subsc
             this.setHoldSpeed, this.trkFpaDeselected.get(), this.tcasRaInhibited.get())[0] !== null;
 
         const engineMessage = this.athrModeMessage;
-        const AB3Message = (this.machPreselVal !== -1
-            || this.speedPreselVal !== -1) && !BC3Message && engineMessage === 0;
+        const AB3Message = (this.machPresel.isNormalOperation()
+            || this.speedPresel.isNormalOperation()) && !BC3Message && engineMessage === 0;
 
         let secondBorder: string;
         if (sharedModeActive && !this.props.isAttExcessive.get()) {
@@ -108,16 +108,6 @@ export class FMA extends DisplayComponent<{ bus: EventBus, isAttExcessive: Subsc
         });
         sub.on('activeVerticalMode').whenChanged().handle((activeVerticalMode) => {
             this.activeVerticalMode = activeVerticalMode;
-            this.handleFMABorders();
-        });
-
-        sub.on('speedPreselVal').whenChanged().handle((s) => {
-            this.speedPreselVal = s;
-            this.handleFMABorders();
-        });
-
-        sub.on('machPreselVal').whenChanged().handle((m) => {
-            this.machPreselVal = m;
             this.handleFMABorders();
         });
 
@@ -590,9 +580,11 @@ class A3Cell extends DisplayComponent<A3CellProps> {
 }
 
 class AB3Cell extends DisplayComponent<CellProps> {
-    private speedPreselVal = -1;
+    // TODO: Connect this to the correct FMGC bus
+    private speedPresel = Arinc429Word.empty();
 
-    private machPreselVal = -1;
+    // TODO: Connect these to the correct FMGC bus
+    private machPresel = Arinc429Word.empty();
 
     private athrModeMessage = 0;
 
@@ -600,12 +592,12 @@ class AB3Cell extends DisplayComponent<CellProps> {
 
     private getText() {
         if (this.athrModeMessage === 0) {
-            if (this.speedPreselVal !== -1 && this.machPreselVal === -1) {
-                const text = Math.round(this.speedPreselVal);
+            if (this.speedPresel.isNormalOperation() && !this.machPresel.isNormalOperation()) {
+                const text = Math.round(this.speedPresel.value);
                 this.textSub.set(`SPEED SEL ${text}`);
-            } else if (this.machPreselVal !== -1 && this.speedPreselVal === -1) {
-                this.textSub.set(`MACH SEL ${this.machPreselVal.toFixed(2)}`);
-            } else if (this.machPreselVal === -1 && this.speedPreselVal === -1) {
+            } else if (this.machPresel.isNormalOperation() && !this.speedPresel.isNormalOperation()) {
+                this.textSub.set(`MACH SEL ${this.machPresel.value.toFixed(2)}`);
+            } else if (!this.machPresel.isNormalOperation() && !this.speedPresel.isNormalOperation()) {
                 this.textSub.set('');
             }
         } else {
@@ -617,16 +609,6 @@ class AB3Cell extends DisplayComponent<CellProps> {
         super.onAfterRender(node);
 
         const sub = this.props.bus.getSubscriber<PFDSimvars>();
-
-        sub.on('speedPreselVal').whenChanged().handle((m) => {
-            this.speedPreselVal = m;
-            this.getText();
-        });
-
-        sub.on('machPreselVal').whenChanged().handle((m) => {
-            this.machPreselVal = m;
-            this.getText();
-        });
 
         sub.on('athrModeMessage').whenChanged().handle((m) => {
             this.athrModeMessage = m;

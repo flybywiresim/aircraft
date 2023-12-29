@@ -185,6 +185,7 @@
       "Title": "Pushback"
     },
     "Services": {
+      "AirStarterUnit": "Air Starter Unit",
       "BaggageTruck": "Bagasjebil",
       "CateringTruck": "Cateringbil",
       "Cones": "Sikkerhet kjegler",
@@ -622,7 +623,8 @@
       "ReverserOnAxis": "Revers på akse",
       "SaveAndApply": "Lagre og bruk",
       "SetFromThrottle": "Sett fra Throttle",
-      "ThrottleConfigurationReset": "Tilbakestill Gasskonfigurasjon"
+      "ThrottleConfigurationReset": "Tilbakestill Gasskonfigurasjon",
+      "TogaOnAxis": "TogaOnAxis"
     },
     "Title": "Innstillinger",
     "Unrealistic": "Urealistisk",
