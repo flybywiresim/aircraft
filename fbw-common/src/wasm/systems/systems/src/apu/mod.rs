@@ -1148,17 +1148,12 @@ mod tests {
             assert_about_eq!(test_bed.n().normal_value().unwrap().get::<percent>(), 100.);
         }
 
-        #[rstest]
-        #[case::aps3200(test_bed_aps3200())]
-        #[case::pw980(test_bed_pw980())]
-        fn one_and_a_half_seconds_after_starting_sequence_commences_ignition_starts<
-            T: ApuGenerator,
-            U: ApuStartMotor,
-            const N: usize,
-        >(
-            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
-        ) {
-            let mut test_bed = bed_with.starting_apu().run(Duration::from_millis(1500));
+        #[test]
+        fn one_and_a_half_seconds_after_starting_sequence_commences_ignition_starts() {
+            // This test does not apply to the PW980
+            let mut test_bed = test_bed_with()
+                .starting_apu()
+                .run(Duration::from_millis(1500));
 
             assert!(
                 (test_bed.n().normal_value().unwrap().get::<percent>() - 0.).abs() < f64::EPSILON
@@ -1205,14 +1200,15 @@ mod tests {
         }
 
         #[rstest]
-        #[case::aps3200(test_bed_aps3200())]
-        #[case::pw980(test_bed_pw980())]
-        fn when_apu_starting_egt_reaches_above_700_degree_celsius<
+        #[case::aps3200(test_bed_aps3200(), 700.)]
+        #[case::pw980(test_bed_pw980(), 550.)]
+        fn when_apu_starting_egt_reaches_above_ref_degree_celsius<
             T: ApuGenerator,
             U: ApuStartMotor,
             const N: usize,
         >(
             #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+            #[case] temp: f64,
         ) {
             let mut test_bed = bed_with.starting_apu();
             let mut max_egt: f64 = 0.;
@@ -1232,7 +1228,7 @@ mod tests {
                 max_egt = egt;
             }
 
-            assert!(max_egt > 700.);
+            assert!(max_egt > temp);
         }
 
         #[rstest]
@@ -1985,7 +1981,7 @@ mod tests {
         #[rstest]
         #[case::aps3200(test_bed_aps3200())]
         #[case::pw980(test_bed_pw980())]
-        fn available_when_n_above_99_5_percent<
+        fn available_when_n_above_99_5_percent_or_2_secs_above_95_percent<
             T: ApuGenerator,
             U: ApuStartMotor,
             const N: usize,
@@ -1994,10 +1990,22 @@ mod tests {
         ) {
             let mut test_bed = bed_with.starting_apu();
 
+            let mut n_above_95_duration = Duration::from_secs_f64(0.);
+
             loop {
                 test_bed = test_bed.run(Duration::from_millis(50));
                 let n = test_bed.n().normal_value().unwrap().get::<percent>();
-                assert!((n > 99.5 && test_bed.apu_is_available()) || !test_bed.apu_is_available());
+                if n > 95. {
+                    n_above_95_duration += Duration::from_millis(50)
+                }
+
+                assert!(
+                    (n > 99.5 && test_bed.apu_is_available())
+                        || !test_bed.apu_is_available()
+                        || (n > 95.
+                            && n_above_95_duration >= Duration::from_secs(2)
+                            && test_bed.apu_is_available())
+                );
 
                 if (n - 100.).abs() < f64::EPSILON {
                     break;
@@ -2071,6 +2079,7 @@ mod tests {
         >(
             #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
         ) {
+            // Note the PW980 turbine doesn't reach N=3%
             let mut test_bed = bed_with
                 .no_fuel_available()
                 .and()

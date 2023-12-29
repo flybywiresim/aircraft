@@ -170,7 +170,7 @@ impl ElectronicControlBox {
 
     pub fn update_fuel_pressure_switch_state(&mut self, fuel_pressure_switch: &FuelPressureSwitch) {
         if self.fault.is_none()
-            && 3. <= self.n.get::<percent>()
+            && 0. < self.n.get::<percent>()
             && !fuel_pressure_switch.has_pressure()
         {
             self.fault = Some(ApuFault::FuelLowPressure);

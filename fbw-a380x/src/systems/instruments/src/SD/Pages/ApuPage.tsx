@@ -211,6 +211,7 @@ const Valve = ({ x, y, open, amber, showFlowArrow, entryPipeLength = 21 }: Valve
 
 const NGauge = ({ x, y }: ComponentPositionProps) => {
     const apuN = useArinc429Var('L:A32NX_APU_N', 100);
+    const apuN2 = useArinc429Var('L:A32NX_APU_N2', 100);
     let apuNIndicationColor;
     if (apuN.value < 102) {
         apuNIndicationColor = 'Green';
@@ -328,9 +329,9 @@ const NGauge = ({ x, y }: ComponentPositionProps) => {
                 <text
                     x={75}
                     y={140}
-                    className={`Huge EndAlign ${apuN.isNormalOperation() ? apuNIndicationColor : 'AmberFill'}`}
+                    className={`Huge EndAlign ${apuN2.isNormalOperation() ? apuNIndicationColor : 'AmberFill'}`}
                 >
-                    {apuN.isNormalOperation() ? apuN.value.toFixed() : 'XX'}
+                    {apuN2.isNormalOperation() ? apuN2.value.toFixed() : 'XX'}
                 </text>
             </Layer>
         </>

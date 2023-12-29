@@ -90,25 +90,25 @@ impl Starting {
         }
     }
 
-    // TODO
     fn calculate_egt(&mut self, context: &UpdateContext) -> ThermodynamicTemperature {
-        // Refer to APS3200.md for details on the values below and source data.
-        const APU_N_TEMP_CONST: f64 = -92.3417137705543;
-        const APU_N_TEMP_X: f64 = -14.36417426895237;
-        const APU_N_TEMP_X2: f64 = 12.210567963472547;
-        const APU_N_TEMP_X3: f64 = -3.005504263233662;
-        const APU_N_TEMP_X4: f64 = 0.3808066398934025;
-        const APU_N_TEMP_X5: f64 = -0.02679731462093699;
-        const APU_N_TEMP_X6: f64 = 0.001163901295794232;
-        const APU_N_TEMP_X7: f64 = -0.0000332668380497951;
-        const APU_N_TEMP_X8: f64 = 0.00000064601180727581;
-        const APU_N_TEMP_X9: f64 = -0.00000000859285727074;
-        const APU_N_TEMP_X10: f64 = 0.00000000007717119413;
-        const APU_N_TEMP_X11: f64 = -0.00000000000044761099;
-        const APU_N_TEMP_X12: f64 = 0.00000000000000151429;
-        const APU_N_TEMP_X13: f64 = -0.00000000000000000227;
+        // Refer to PW980.md for details on the values below and source data.
+        const APU_N_TEMP_CONST: f64 = -67.85561068313169;
+        const APU_N_TEMP_X: f64 = -19.73523738237853;
+        const APU_N_TEMP_X2: f64 = 6.783591758864128;
+        const APU_N_TEMP_X3: f64 = -1.354053749875857;
+        const APU_N_TEMP_X4: f64 = 0.199775433274065;
+        const APU_N_TEMP_X5: f64 = -0.016572248620575;
+        const APU_N_TEMP_X6: f64 = 0.000825776909269339;
+        const APU_N_TEMP_X7: f64 = -0.0000265086884405999;
+        const APU_N_TEMP_X8: f64 = 0.00000057022185938753;
+        const APU_N_TEMP_X9: f64 = -0.00000000833200627317;
+        const APU_N_TEMP_X10: f64 = 0.00000000008183640106;
+        const APU_N_TEMP_X11: f64 = -0.00000000000051825045;
+        const APU_N_TEMP_X12: f64 = 0.00000000000000191477;
+        const APU_N_TEMP_X13: f64 = -0.00000000000000000314;
 
-        let n = self.n.get::<percent>();
+        // We use N2 for this calculation
+        let n = self.n2.get::<percent>();
 
         let temperature = ThermodynamicTemperature::new::<degree_celsius>(
             APU_N_TEMP_CONST
@@ -143,55 +143,126 @@ impl Starting {
         }
     }
 
-    // TODO
     fn calculate_n(&self) -> Ratio {
-        const APU_N_CONST: f64 = -0.08013606018640967;
-        const APU_N_X: f64 = 2.129832736394534;
-        const APU_N_X2: f64 = 3.928273438786404;
-        const APU_N_X3: f64 = -1.88613299921213;
-        const APU_N_X4: f64 = 0.42749452749180916;
-        const APU_N_X5: f64 = -0.05757707967690426;
-        const APU_N_X6: f64 = 0.005022142795451004;
-        const APU_N_X7: f64 = -0.00029612873626050866;
-        const APU_N_X8: f64 = 0.00001204152497871946;
-        const APU_N_X9: f64 = -0.00000033829604438116;
-        const APU_N_X10: f64 = 0.00000000645140818528;
-        const APU_N_X11: f64 = -0.00000000007974743535;
-        const APU_N_X12: f64 = 0.00000000000057654695;
-        const APU_N_X13: f64 = -0.00000000000000185126;
+        /// N1 is driven by N2. We use N2 as base until N2 = 75%, at which point we use time as base
+        /// to capture the changes in N1 at the "top of the range" for little N2 change.
+
+        // N2 to N1 constants
+        const APU_N_N2_CONST: f64 = -1.980342480028972;
+        const APU_N_N2_X: f64 = 3.042566978305871;
+        const APU_N_N2_X2: f64 = -1.540881433592518;
+        const APU_N_N2_X3: f64 = 0.3718632222716785;
+        const APU_N_N2_X4: f64 = -0.05012708901533932;
+        const APU_N_N2_X5: f64 = 0.004113538145844002;
+        const APU_N_N2_X6: f64 = -0.000217068158239272;
+        const APU_N_N2_X7: f64 = 0.0000076482322527515;
+        const APU_N_N2_X8: f64 = -0.00000018368358856566;
+        const APU_N_N2_X9: f64 = 0.00000000301784702552;
+        const APU_N_N2_X10: f64 = -0.00000000003338059452;
+        const APU_N_N2_X11: f64 = 0.00000000000023768495;
+        const APU_N_N2_X12: f64 = -0.00000000000000098402;
+        const APU_N_N2_X13: f64 = 0.00000000000000000180;
+
+        // Time to N1 constants
+        const APU_N_CONST: f64 = 20346.47871003967;
+        const APU_N_X: f64 = -10589.258178152319;
+        const APU_N_X2: f64 = 2431.729387231063;
+        const APU_N_X3: f64 = -325.5237277312483;
+        const APU_N_X4: f64 = 28.2488372642810;
+        const APU_N_X5: f64 = -1.669888674851867;
+        const APU_N_X6: f64 = 0.06866582085373031;
+        const APU_N_X7: f64 = -0.00196551590823214;
+        const APU_N_X8: f64 = 0.000038410143909137;
+        const APU_N_X9: f64 = -0.00000048843308292031;
+        const APU_N_X10: f64 = 0.00000000364059072727;
+        const APU_N_X11: f64 = -0.00000000001206089876;
 
         // Protect against the formula returning decreasing results after this value.
-        const TIME_LIMIT: f64 = 45.12;
-        const START_IGNITION_AFTER_SECONDS: f64 = 1.5;
-        let ignition_turned_on_secs =
-            (self.since.as_secs_f64() - START_IGNITION_AFTER_SECONDS).min(TIME_LIMIT);
+        const TIME_LIMIT: f64 = 45.;
+        let since_secs = self.since.as_secs_f64().min(TIME_LIMIT);
 
-        if ignition_turned_on_secs > 0. {
-            let n = (APU_N_CONST
-                + (APU_N_X * ignition_turned_on_secs)
-                + (APU_N_X2 * ignition_turned_on_secs.powi(2))
-                + (APU_N_X3 * ignition_turned_on_secs.powi(3))
-                + (APU_N_X4 * ignition_turned_on_secs.powi(4))
-                + (APU_N_X5 * ignition_turned_on_secs.powi(5))
-                + (APU_N_X6 * ignition_turned_on_secs.powi(6))
-                + (APU_N_X7 * ignition_turned_on_secs.powi(7))
-                + (APU_N_X8 * ignition_turned_on_secs.powi(8))
-                + (APU_N_X9 * ignition_turned_on_secs.powi(9))
-                + (APU_N_X10 * ignition_turned_on_secs.powi(10))
-                + (APU_N_X11 * ignition_turned_on_secs.powi(11))
-                + (APU_N_X12 * ignition_turned_on_secs.powi(12))
-                + (APU_N_X13 * ignition_turned_on_secs.powi(13)))
-            .min(100.)
-            .max(0.);
+        let n2 = self.n2.get::<percent>();
 
+        let n = if self.n2.get::<percent>() < 75. {
+            APU_N_N2_CONST
+                + (APU_N_N2_X * n2)
+                + (APU_N_N2_X2 * n2.powi(2))
+                + (APU_N_N2_X3 * n2.powi(3))
+                + (APU_N_N2_X4 * n2.powi(4))
+                + (APU_N_N2_X5 * n2.powi(5))
+                + (APU_N_N2_X6 * n2.powi(6))
+                + (APU_N_N2_X7 * n2.powi(7))
+                + (APU_N_N2_X8 * n2.powi(8))
+                + (APU_N_N2_X9 * n2.powi(9))
+                + (APU_N_N2_X10 * n2.powi(10))
+                + (APU_N_N2_X11 * n2.powi(11))
+                + (APU_N_N2_X12 * n2.powi(12))
+                + (APU_N_N2_X13 * n2.powi(13))
+        } else {
+            APU_N_CONST
+                + (APU_N_X * since_secs)
+                + (APU_N_X2 * since_secs.powi(2))
+                + (APU_N_X3 * since_secs.powi(3))
+                + (APU_N_X4 * since_secs.powi(4))
+                + (APU_N_X5 * since_secs.powi(5))
+                + (APU_N_X6 * since_secs.powi(6))
+                + (APU_N_X7 * since_secs.powi(7))
+                + (APU_N_X8 * since_secs.powi(8))
+                + (APU_N_X9 * since_secs.powi(9))
+                + (APU_N_X10 * since_secs.powi(10))
+                + (APU_N_X11 * since_secs.powi(11))
+        }
+        .clamp(0., 100.);
+
+        if since_secs > 0. {
             Ratio::new::<percent>(n)
         } else {
             Ratio::default()
         }
     }
+
     fn calculate_n2(&self) -> Ratio {
-        // TODO
-        self.n
+        /// N2 starts spinning after flap is open, or start button is pressed
+        const APU_N2_CONST: f64 = 0.102461912951123;
+        const APU_N2_X: f64 = -4.213276063673831;
+        const APU_N2_X2: f64 = 4.904714363158679;
+        const APU_N2_X3: f64 = -1.580490532662764;
+        const APU_N2_X4: f64 = 0.2609079965518872;
+        const APU_N2_X5: f64 = -0.0245239023843422;
+        const APU_N2_X6: f64 = 0.001333286573520723;
+        const APU_N2_X7: f64 = -0.0000368228114602448;
+        const APU_N2_X8: f64 = 0.00000000978478072071;
+        const APU_N2_X9: f64 = 0.00000003595869237689;
+        const APU_N2_X10: f64 = -0.00000000127836115070;
+        const APU_N2_X11: f64 = 0.00000000002201303409;
+        const APU_N2_X12: f64 = -0.00000000000019674992;
+        const APU_N2_X13: f64 = 0.00000000000000073146;
+
+        // Protect against the formula returning decreasing results after this value.
+        const TIME_LIMIT: f64 = 45.;
+        let since_secs = self.since.as_secs_f64().min(TIME_LIMIT);
+
+        if since_secs > 0. {
+            let n2 = (APU_N2_CONST
+                + (APU_N2_X * since_secs)
+                + (APU_N2_X2 * since_secs.powi(2))
+                + (APU_N2_X3 * since_secs.powi(3))
+                + (APU_N2_X4 * since_secs.powi(4))
+                + (APU_N2_X5 * since_secs.powi(5))
+                + (APU_N2_X6 * since_secs.powi(6))
+                + (APU_N2_X7 * since_secs.powi(7))
+                + (APU_N2_X8 * since_secs.powi(8))
+                + (APU_N2_X9 * since_secs.powi(9))
+                + (APU_N2_X10 * since_secs.powi(10))
+                + (APU_N2_X11 * since_secs.powi(11))
+                + (APU_N2_X12 * since_secs.powi(12))
+                + (APU_N2_X13 * since_secs.powi(13)))
+            .clamp(0., 100.);
+
+            Ratio::new::<percent>(n2)
+        } else {
+            Ratio::default()
+        }
     }
 }
 impl Turbine for Starting {
@@ -413,6 +484,10 @@ impl Turbine for Running {
         Ratio::new::<percent>(100.)
     }
 
+    fn n2(&self) -> Ratio {
+        Ratio::new::<percent>(85.)
+    }
+
     fn egt(&self) -> ThermodynamicTemperature {
         self.egt
     }
@@ -589,7 +664,7 @@ pub struct Pw980ApuGenerator {
     failure: Failure,
 }
 impl Pw980ApuGenerator {
-    pub(super) const APU_GEN_POWERED_N: f64 = 84.;
+    pub(super) const APU_GEN_POWERED_N: f64 = 77.;
 
     pub fn new(context: &mut InitContext, number: usize) -> Pw980ApuGenerator {
         Pw980ApuGenerator {
@@ -608,10 +683,9 @@ impl Pw980ApuGenerator {
     fn calculate_potential(&self, n: Ratio) -> ElectricPotential {
         let n = n.get::<percent>();
 
+        // The voltage "switches on" after 78% N1 at 115V and stays there throughout
         if n < Pw980ApuGenerator::APU_GEN_POWERED_N {
             panic!("Should not be invoked for APU N below {}", n);
-        } else if n < 85. {
-            ElectricPotential::new::<volt>(105.)
         } else {
             ElectricPotential::new::<volt>(115.)
         }
@@ -620,17 +694,17 @@ impl Pw980ApuGenerator {
     fn calculate_frequency(&self, n: Ratio) -> Frequency {
         let n = n.get::<percent>();
 
-        // Refer to APS3200.md for details on the values below and source data.
+        // Refer to PW980.md for details on the values below and source data.
         if n < Pw980ApuGenerator::APU_GEN_POWERED_N {
             panic!("Should not be invoked for APU N below {}", n);
         } else if n < 100. {
-            const APU_FREQ_CONST: f64 = -6798871.803967841;
-            const APU_FREQ_X: f64 = 461789.45241984475;
-            const APU_FREQ_X2: f64 = -13021.412660356296;
-            const APU_FREQ_X3: f64 = 195.15835365339123;
-            const APU_FREQ_X4: f64 = -1.639931967033938;
-            const APU_FREQ_X5: f64 = 0.007326808864133604;
-            const APU_FREQ_X6: f64 = -0.00001359879185066017;
+            const APU_FREQ_CONST: f64 = -7946988.668472081;
+            const APU_FREQ_X: f64 = 536340.196388485;
+            const APU_FREQ_X2: f64 = -15054.60305885912;
+            const APU_FREQ_X3: f64 = 224.9581339994097;
+            const APU_FREQ_X4: f64 = -1.887344238031437;
+            const APU_FREQ_X5: f64 = 0.008429263577308244;
+            const APU_FREQ_X6: f64 = -0.00001565694620869725;
 
             Frequency::new::<hertz>(
                 APU_FREQ_CONST
