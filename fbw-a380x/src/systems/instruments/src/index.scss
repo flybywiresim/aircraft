@@ -57,6 +57,10 @@
 
 text.Green,
 tspan.Green,
+.GreenFill {
+    fill: $display-green;
+}
+
 .Green.Fill {
     stroke: none;
     fill: $display-green;
@@ -135,6 +139,10 @@ tspan.DarkGrey,
 
 text.Amber,
 tspan.Amber,
+.AmberFill {
+    fill: $display-amber;
+}
+
 .Amber.Fill {
     stroke: none;
     fill: $display-amber;

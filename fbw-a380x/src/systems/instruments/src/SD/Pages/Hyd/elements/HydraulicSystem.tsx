@@ -42,7 +42,7 @@ const SystemLabel = ({ x, y, label }: SystemLabelProps) => {
 
     return (
         <g transform={`translate(${x} ${y})`}>
-            <Triangle x={114} y={-30} orientation={0} colour={pressureSwitchColor} fill={0} scale={1.35} />
+            <path d='m 114 -31 l 12 20 l -24 0 z' className={`${pressureSwitchColor} SW3 NoFill LineJoinRound`} />
             <rect x={0} y={0} width={228} height={isGreen ? 38 : 36} className={`${pressureSwitchColor} NoFill SW3`} />
             <text x={7} y={29} className={`${systemPressureSwitch ? 'White' : 'Amber'} F23`}>{label}</text>
             <text
@@ -96,7 +96,7 @@ const ElecPump = ({ x, y, label, side, systemPressureSwitch }: ElecPumpProps) =>
             <text x={isGreen ? 21 : -35} y={10} className={`F25 ${triangleColor === 'Amber' ? 'Amber' : 'White'}`}>
                 {label}
             </text>
-            <path d={`m 0 0 l ${isGreen ? '' : '-'}13 -9 l 0 18 z`} className={`${triangleColor} SW3 ${isElecPumpActive ? 'Fill' : 'NoFill'}`} />
+            <path d={`m 0 0 l ${isGreen ? '' : '-'}13 -9 l 0 18 z`} className={`${triangleColor} ${isElecPumpActive ? `${triangleColor}Fill` : ''} SW3`} />
             <path d={`m 0 0 h ${isGreen ? '-30' : '27'}`} className={`${triangleColor} SW2 ${isElecPumpActive && systemPressureSwitch ? '' : 'Hide'}`} />
             <text x={-14} y={label === 'A' ? -14 : 34} className={isOverheat ? 'Amber F19' : 'Hide'}>OVHT</text>
         </g>
