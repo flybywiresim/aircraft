@@ -75,7 +75,7 @@ const EnginePump = ({ x, y, label, lowPressure, pbAuto, disconnected }: EnginePu
     return (
         <g transform={`translate(${x} ${y})`}>
             <rect x={0} y={0} width={size} height={size} className={`${color} NoFill SW4`} />
-            {(pbAuto && !lowPressure) && <line className={`${color} SW4`} x1={size / 2} y1={0} x2={size / 2} y2={size} />}
+            {(pbAuto && !disconnected && !lowPressure) && <line className={`${color} SW4`} x1={size / 2} y1={0} x2={size / 2} y2={size} />}
             {(!pbAuto || disconnected) && <line className='Amber SW4 LineRound' x1={8} y1={size / 2} x2={size - 8} y2={size / 2} />}
             {(pbAuto && !disconnected && lowPressure) && <text x={5} y={30} className='Amber F25'>LO</text>}
             <text x={isMirrored ? size + 5 : -20} y={31} className='White F28'>{label}</text>
