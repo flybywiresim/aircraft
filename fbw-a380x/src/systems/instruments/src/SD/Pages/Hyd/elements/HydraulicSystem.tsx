@@ -55,8 +55,8 @@ const SystemLabel = ({ x, y, label }: SystemLabelProps) => {
             </text>
             <text x={isGreen ? 175 : 181} y={29} className='Cyan F23'>PSI</text>
 
-            <ElecPump x={isGreen ? 258 : -26} y={isGreen ? 4 : 3} label='A' side={label} />
-            <ElecPump x={isGreen ? 258 : -26} y={isGreen ? 36 : 34} label='B' side={label} />
+            <ElecPump x={isGreen ? 258 : -26} y={isGreen ? 4 : 3} label='A' side={label} systemPressureSwitch={systemPressureSwitch} />
+            <ElecPump x={isGreen ? 258 : -26} y={isGreen ? 36 : 34} label='B' side={label} systemPressureSwitch={systemPressureSwitch} />
         </g>
     );
 };
@@ -65,9 +65,10 @@ type ElecPumpProps = {
     x: number;
     y: number;
     label: 'A' | 'B';
-    side: 'GREEN' | 'YELLOW'
+    side: 'GREEN' | 'YELLOW';
+    systemPressureSwitch: boolean;
 };
-const ElecPump = ({ x, y, label, side }: ElecPumpProps) => {
+const ElecPump = ({ x, y, label, side, systemPressureSwitch }: ElecPumpProps) => {
     const isGreen = side === 'GREEN';
 
     const [engine1N3] = useSimVar('L:A32NX_ENGINE_N3:1', 'percent', 500);
@@ -95,8 +96,9 @@ const ElecPump = ({ x, y, label, side }: ElecPumpProps) => {
             <text x={isGreen ? 21 : -35} y={10} className={`F25 ${triangleColor === 'Amber' ? 'Amber' : 'White'}`}>
                 {label}
             </text>
-            <Triangle x={0} y={0} orientation={isGreen ? -90 : 90} colour={triangleColor} fill={isElecPumpActive ? 1 : 0}/>
-            {isOverheat && <text x={-14} y={label === 'A' ? -12 : 44} className='Amber F19'>OVHT</text>}
+            <path d={`m 0 0 l ${isGreen ? '' : '-'}13 -9 l 0 18 z`} className={`${triangleColor} SW3 ${isElecPumpActive ? 'Fill' : 'NoFill'}`} />
+            <path d={`m 0 0 h ${isGreen ? '-30' : '27'}`} className={`${triangleColor} SW2 ${isElecPumpActive && systemPressureSwitch ? '' : 'Hide'}`} />
+            <text x={-14} y={label === 'A' ? -14 : 34} className={isOverheat ? 'Amber F19' : 'Hide'}>OVHT</text>
         </g>
     );
 };
