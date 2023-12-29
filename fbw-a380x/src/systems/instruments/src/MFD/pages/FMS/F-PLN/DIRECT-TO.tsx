@@ -49,25 +49,29 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
             await this.props.fmService.flightPlanService.temporaryDelete();
         }
 
-        let wpt: Fix;
         const fpln = this.props.fmService.flightPlanService.get(this.loadedFlightPlanIndex.get());
         if (idx >= 0) {
             if (this.availableWaypoints.get(idx)
             && fpln.elementAt(this.props.fmService.flightPlanService.get(this.loadedFlightPlanIndex.get()).activeLegIndex + idx + 1).isDiscontinuity === false) {
                 this.selectedWaypointIndex.set(idx);
-                wpt = fpln.legElementAt(this.props.fmService.flightPlanService.get(this.loadedFlightPlanIndex.get()).activeLegIndex + idx + 1).definition.waypoint;
+                await this.props.fmService.flightPlanService.directToLeg(
+                    this.props.fmService.navigation.getPpos(),
+                    SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree'),
+                    this.props.fmService.flightPlanService.get(this.loadedFlightPlanIndex.get()).activeLegIndex + idx + 1,
+                    this.directToOption.get() === DirectToOption.DIRECT_WITH_ABEAM,
+                    this.loadedFlightPlanIndex.get(),
+                );
             }
         } else {
-            wpt = await WaypointEntryUtils.getOrCreateWaypoint(this.props.fmService.mfd, text, true, undefined);
+            const wpt = await WaypointEntryUtils.getOrCreateWaypoint(this.props.fmService.mfd, text, true, undefined);
+            await this.props.fmService.flightPlanService.directToWaypoint(
+                this.props.fmService.navigation.getPpos(),
+                SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree'),
+                wpt,
+                this.directToOption.get() === DirectToOption.DIRECT_WITH_ABEAM,
+                this.loadedFlightPlanIndex.get(),
+            );
         }
-
-        await this.props.fmService.flightPlanService.directTo(
-            this.props.fmService.navigation.getPpos(),
-            SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree'),
-            wpt,
-            this.directToOption.get() === DirectToOption.DIRECT_WITH_ABEAM,
-            this.loadedFlightPlanIndex.get(),
-        );
 
         // TODO Display ETA and dist to wpt; target waypoint is now activeLeg termination in temporary fpln
     }

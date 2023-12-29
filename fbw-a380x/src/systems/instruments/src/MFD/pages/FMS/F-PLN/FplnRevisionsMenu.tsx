@@ -29,10 +29,10 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
             title: 'FROM P.POS DIR TO',
             disabled: altnFlightPlan || [FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type),
             onSelectCallback: () => {
-                fpln.props.fmService.flightPlanService.directTo(
+                fpln.props.fmService.flightPlanService.directToLeg(
                     fpln.props.fmService.navigation.getPpos(),
                     SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree'),
-                    fpln.loadedFlightPlan?.legElementAt(realLegIndex).definition.waypoint,
+                    realLegIndex,
                     true,
                     planIndex,
                 );
@@ -47,7 +47,7 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
             title: 'DELETE *',
             disabled: [FplnRevisionsMenuType.Runway || FplnRevisionsMenuType.TooSteepPath].includes(type),
             onSelectCallback: () => {
-                fpln.props.fmService.flightPlanService.deleteElementAt(realLegIndex, planIndex, altnFlightPlan);
+                fpln.props.fmService.flightPlanService.deleteElementAt(realLegIndex, false, planIndex, altnFlightPlan);
             },
         },
         {
