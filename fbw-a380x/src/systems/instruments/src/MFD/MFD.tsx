@@ -14,24 +14,12 @@ import {
     VNode,
 } from '@microsoft/msfs-sdk';
 
-import { FmsHeader } from 'instruments/src/MFD/pages/common/FmsHeader';
 import { MouseCursor } from 'instruments/src/MFD/pages/common/MouseCursor';
-import { MfdFmsPerf } from 'instruments/src/MFD/pages/FMS/PERF';
-import { MfdFmsInit } from 'instruments/src/MFD/pages/FMS/INIT';
 
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 
-import { MfdNotFound } from 'instruments/src/MFD/pages/FMS/NOT_FOUND';
-import { FcuBkupHeader } from 'instruments/src/MFD/pages/common/FcuBkupHeader';
-import { SurvHeader } from 'instruments/src/MFD/pages/common/SurvHeader';
-import { AtccomHeader } from 'instruments/src/MFD/pages/common/AtccomHeader';
-import { MfdFmsFuelLoad } from 'instruments/src/MFD/pages/FMS/FUEL_LOAD';
-import { MfdFmsFpln } from 'instruments/src/MFD/pages/FMS/F-PLN/F-PLN';
 import { MfdMsgList } from 'instruments/src/MFD/pages/FMS/MSG_LIST';
 import { ActiveUriInformation, MfdUIService } from 'instruments/src/MFD/pages/common/UIService';
-import { MfdFmsFplnDep } from 'instruments/src/MFD/pages/FMS/F-PLN/DEPARTURE';
-import { MfdFmsFplnArr } from 'instruments/src/MFD/pages/FMS/F-PLN/ARRIVAL';
-import { MfdFmsFplnDirectTo } from 'instruments/src/MFD/pages/FMS/F-PLN/DIRECT-TO';
 import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { Coordinates, DegreesTrue, NauticalMiles, distanceTo } from 'msfs-geo';
@@ -45,23 +33,19 @@ import { MfdFmsFplnDuplicateNames } from 'instruments/src/MFD/pages/FMS/F-PLN/DU
 import { DatabaseItem, Waypoint } from 'msfs-navdata';
 import { DisplayInterface } from '@fmgc/flightplanning/new/interface/DisplayInterface';
 import { FmsErrorType } from '@fmgc/FmsError';
-
 import { FmgcDataInterface } from 'instruments/src/MFD/fmgc';
-import { MfdFmsFplnAirways } from 'instruments/src/MFD/pages/FMS/F-PLN/AIRWAYS';
-import { MfdFmsPositionIrs } from 'instruments/src/MFD/pages/FMS/POSITION/IRS';
 import { getFlightPhaseManager } from '@fmgc/flightphase';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { Fix, NXDataStore, UpdateThrottler } from '@flybywiresim/fbw-sdk';
-import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/VERT_REV';
-import { MfdFmsFplnHold } from 'instruments/src/MFD/pages/FMS/F-PLN/HOLD';
 import { MfdSimvars } from './shared/MFDSimvarPublisher';
 import { CdsDisplayUnit, DisplayUnitID } from '../MsfsAvionicsCommon/CdsDisplayUnit';
 import { DataManager, PilotWaypoint } from '@fmgc/flightplanning/new/DataManager';
 import { DataInterface } from '@fmgc/flightplanning/new/interface/DataInterface';
 import { A320FlightPlanPerformanceData, EfisInterface, Navigation } from '@fmgc/index';
 import { NXFictionalMessages, NXSystemMessages, TypeIIMessage, TypeIMessage } from 'instruments/src/MFD/pages/FMS/legacy/NXSystemMessages';
-import { MfdFmsPositionNavaids } from 'instruments/src/MFD/pages/FMS/POSITION/NAVAIDS';
-import { MfdFmsDataStatus } from 'instruments/src/MFD/pages/FMS/DATA/STATUS';
+import { headerForSystem, pageForUrl } from 'instruments/src/MFD/MfdPageDirectory';
+
+// Import for pages
 
 export const getDisplayIndex = () => {
     const url = document.getElementsByTagName('a380x-mfd')[0].getAttribute('url');
@@ -838,239 +822,10 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
         }
 
         // Different systems use different navigation bars
-        switch (uri.sys) {
-        case 'fms':
-            this.activeHeader = (
-                <FmsHeader
-                    bus={this.props.bus}
-                    callsign={this.fmgc.data.atcCallsign}
-                    activeFmsSource={this.activeFmsSource}
-                    uiService={this.uiService}
-                    fmService={this.fmService}
-                />
-            );
-            break;
-        case 'atccom':
-            this.activeHeader = (
-                <AtccomHeader
-                    bus={this.props.bus}
-                    callsign={this.fmgc.data.atcCallsign}
-                    activeFmsSource={this.activeFmsSource}
-                    uiService={this.uiService}
-                    fmService={this.fmService}
-                />
-            );
-            break;
-        case 'surv':
-            this.activeHeader = (
-                <SurvHeader
-                    bus={this.props.bus}
-                    callsign={this.fmgc.data.atcCallsign}
-                    activeFmsSource={this.activeFmsSource}
-                    uiService={this.uiService}
-                    fmService={this.fmService}
-                />
-            );
-            break;
-        case 'fcubkup':
-            this.activeHeader = (
-                <FcuBkupHeader
-                    bus={this.props.bus}
-                    callsign={this.fmgc.data.atcCallsign}
-                    activeFmsSource={this.activeFmsSource}
-                    uiService={this.uiService}
-                    fmService={this.fmService}
-                />
-            );
-            break;
-
-        default:
-            this.activeHeader = (
-                <FmsHeader
-                    bus={this.props.bus}
-                    callsign={this.fmgc.data.atcCallsign}
-                    activeFmsSource={this.activeFmsSource}
-                    uiService={this.uiService}
-                    fmService={this.fmService}
-                />
-            );
-            break;
-        }
+        this.activeHeader = headerForSystem(uri.sys, this.props.bus, this.fmgc.data.atcCallsign, this.activeFmsSource, this.uiService, this.fmService);
 
         // Mapping from URL to page component
-        switch (`${uri.sys}/${uri.category}/${uri.page}`) {
-        case 'fms/active/perf':
-        case 'fms/sec1/perf':
-        case 'fms/sec2/perf':
-        case 'fms/sec3/perf':
-            this.activePage = (
-                <MfdFmsPerf
-                    pageTitle="PERF"
-                    bus={this.props.bus}
-                    uiService={this.uiService}
-                    fmService={this.fmService}
-                />
-            );
-            break;
-        case 'fms/active/init':
-        case 'fms/sec1/init':
-        case 'fms/sec2/init':
-        case 'fms/sec3/init':
-            this.activePage = (
-                <MfdFmsInit
-                    pageTitle="INIT"
-                    bus={this.props.bus}
-                    uiService={this.uiService}
-                    fmService={this.fmService}
-                />
-            );
-            break;
-        case 'fms/active/fuel-load':
-        case 'fms/sec1/fuel-load':
-        case 'fms/sec2/fuel-load':
-        case 'fms/sec3/fuel-load':
-            this.activePage = (
-                <MfdFmsFuelLoad
-                    pageTitle="FUEL&LOAD"
-                    bus={this.props.bus}
-                    uiService={this.uiService}
-                    fmService={this.fmService}
-                />
-            );
-            break;
-        case 'fms/active/f-pln':
-        case 'fms/sec1/f-pln':
-        case 'fms/sec2/f-pln':
-        case 'fms/sec3/f-pln':
-            this.activePage = (
-                <MfdFmsFpln
-                    pageTitle="F-PLN"
-                    bus={this.props.bus}
-                    uiService={this.uiService}
-                    fmService={this.fmService}
-                />
-            );
-            break;
-        case 'fms/active/f-pln-airways':
-        case 'fms/sec1/f-pln-airways':
-        case 'fms/sec2/f-pln-airways':
-        case 'fms/sec3/f-pln-airways':
-            this.activePage = (
-                <MfdFmsFplnAirways
-                    pageTitle="F-PLN/AIRWAYS"
-                    bus={this.props.bus}
-                    uiService={this.uiService}
-                    fmService={this.fmService}
-                />
-            );
-            break;
-        case 'fms/active/f-pln-departure':
-        case 'fms/sec1/f-pln-departure':
-        case 'fms/sec2/f-pln-departure':
-        case 'fms/sec3/f-pln-departure':
-            this.activePage = (
-                <MfdFmsFplnDep
-                    pageTitle="F-PLN/DEPARTURE"
-                    bus={this.props.bus}
-                    uiService={this.uiService}
-                    fmService={this.fmService}
-                />
-            );
-            break;
-        case 'fms/active/f-pln-arrival':
-        case 'fms/sec1/f-pln-arrival':
-        case 'fms/sec2/f-pln-arrival':
-        case 'fms/sec3/f-pln-arrival':
-            this.activePage = (
-                <MfdFmsFplnArr
-                    pageTitle="F-PLN/ARRIVAL"
-                    bus={this.props.bus}
-                    uiService={this.uiService}
-                    fmService={this.fmService}
-                />
-            );
-            break;
-        case 'fms/active/f-pln-direct-to':
-        case 'fms/sec1/f-pln-direct-to':
-        case 'fms/sec2/f-pln-direct-to':
-        case 'fms/sec3/f-pln-direct-to':
-            this.activePage = (
-                <MfdFmsFplnDirectTo
-                    pageTitle="F-PLN/DIRECT-TO"
-                    bus={this.props.bus}
-                    uiService={this.uiService}
-                    fmService={this.fmService}
-                />
-            );
-            break;
-        case 'fms/active/f-pln-vert-rev':
-        case 'fms/sec1/f-pln-vert-rev':
-        case 'fms/sec2/f-pln-vert-rev':
-        case 'fms/sec3/f-pln-vert-rev':
-            this.activePage = (
-                <MfdFmsFplnVertRev
-                    pageTitle="F-PLN/VERT REV"
-                    bus={this.props.bus}
-                    uiService={this.uiService}
-                    fmService={this.fmService}
-                />
-            );
-            break;
-        case 'fms/active/f-pln-hold':
-        case 'fms/sec1/f-pln-hold':
-        case 'fms/sec2/f-pln-hold':
-        case 'fms/sec3/f-pln-hold':
-            this.activePage = (
-                <MfdFmsFplnHold
-                    pageTitle="F-PLN/HOLD"
-                    bus={this.props.bus}
-                    uiService={this.uiService}
-                    fmService={this.fmService}
-                />
-            );
-            break;
-        case 'fms/position/irs':
-            this.activePage = (
-                <MfdFmsPositionIrs
-                    pageTitle="IRS"
-                    bus={this.props.bus}
-                    uiService={this.uiService}
-                    fmService={this.fmService}
-                />
-            );
-            break;
-        case 'fms/position/navaids':
-            this.activePage = (
-                <MfdFmsPositionNavaids
-                    pageTitle="NAVAIDS"
-                    bus={this.props.bus}
-                    uiService={this.uiService}
-                    fmService={this.fmService}
-                />
-            );
-            break;
-        case 'fms/data/status':
-            this.activePage = (
-                <MfdFmsDataStatus
-                    pageTitle="STATUS"
-                    bus={this.props.bus}
-                    uiService={this.uiService}
-                    fmService={this.fmService}
-                />
-            );
-            break;
-
-        default:
-            this.activePage = (
-                <MfdNotFound
-                    pageTitle="NOT FOUND"
-                    bus={this.props.bus}
-                    uiService={this.uiService}
-                    fmService={this.fmService}
-                />
-            );
-            break;
-        }
+        this.activePage = pageForUrl(`${uri.sys}/${uri.category}/${uri.page}`, this.props.bus, this.uiService, this.fmService);
 
         FSComponent.render(this.activeHeader, this.activeHeaderRef.getOrDefault());
         FSComponent.render(this.activePage, this.activePageRef?.getOrDefault());

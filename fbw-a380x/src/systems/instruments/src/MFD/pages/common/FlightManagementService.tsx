@@ -82,8 +82,8 @@ export class MfdFlightManagementService {
         }));
 
         this.subs.push(this.enginesWereStarted.sub((val) => {
-            if (val === true) {
-                fmgc.data.costIndex.set(0);
+            if (val === true && flightPlanService.hasActive) {
+                flightPlanService.active.setPerformanceData('costIndex', 0);
             }
         }));
     }
