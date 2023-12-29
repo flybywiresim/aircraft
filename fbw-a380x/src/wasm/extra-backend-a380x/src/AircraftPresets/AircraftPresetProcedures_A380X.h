@@ -8,7 +8,7 @@
 #include "AircraftPresets/ProcedureStep.h"
 
 /**
- * A32NX specific aircraft procedures definition.
+ * A380X specific aircraft procedures definition.
  *
  * @see AircraftProceduresDefinition
  *
