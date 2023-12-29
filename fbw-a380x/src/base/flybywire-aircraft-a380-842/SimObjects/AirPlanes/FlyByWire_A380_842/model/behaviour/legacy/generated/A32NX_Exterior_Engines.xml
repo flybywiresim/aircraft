@@ -1,0 +1,33 @@
+<ModelBehaviors>
+    <!--
+    Animate a turbine thrust reverser (ID is used to identify which engine to look for)
+
+    Main parameters:
+            - ID        1    Engine number (1-based)
+    -->
+    <Template Name="FBW_ENGINE_Turbine_ReverseThrust_Template">
+        <DefaultTemplateParameters>
+            <ID>1</ID>
+        </DefaultTemplateParameters>
+        <UseTemplate Name="FBW_ENGINE_Turbine_ReverseThrust_SubTemplate"/>
+    </Template>
+    <Template Name="FBW_ENGINE_Turbine_ReverseThrust_SubTemplate">
+        <DefaultTemplateParameters>
+            <ANIM_NAME>ENGINE_Turbine_ReverseThrust_#ID#</ANIM_NAME>
+            <ANIM_SPEED>50</ANIM_SPEED> <!-- percent per second -->
+        </DefaultTemplateParameters>
+        <Update Once="True">
+            0 (&gt;O:AnimCode#ID#, number)
+        </Update>
+        <UseTemplate Name="ASOBO_GT_Anim_Code">
+            <ANIM_CODE>
+                (A:ANIMATION DELTA TIME, seconds) #ANIM_SPEED# * sp0
+                (A:TURB ENG REVERSE NOZZLE PERCENT:#ID#, percent) 1 &lt; if{
+                  l0 - sp0
+                }
+                (O:AnimCode#ID#, number) l0 + 100 min 0 max (&gt;O:AnimCode#ID#, number)
+                (O:AnimCode#ID#, number)
+            </ANIM_CODE>
+        </UseTemplate>
+    </Template>
+</ModelBehaviors>
