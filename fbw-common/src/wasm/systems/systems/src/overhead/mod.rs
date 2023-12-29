@@ -485,13 +485,15 @@ impl SimulationElement for AutoOnFaultPushButton {
     }
 }
 
-pub struct FaultReleasePushButton {
+pub struct FaultDisconnectReleasePushButton {
     is_released_id: VariableIdentifier,
     has_fault_id: VariableIdentifier,
+    is_disconnected_id: VariableIdentifier,
     is_released: bool,
     has_fault: bool,
+    is_disconnected: bool,
 }
-impl FaultReleasePushButton {
+impl FaultDisconnectReleasePushButton {
     #[cfg(test)]
     pub fn new_released(context: &mut InitContext, name: &str) -> Self {
         Self::new(context, name, true)
@@ -505,8 +507,10 @@ impl FaultReleasePushButton {
         Self {
             is_released_id: context.get_identifier(format!("OVHD_{}_PB_IS_RELEASED", name)),
             has_fault_id: context.get_identifier(format!("OVHD_{}_PB_HAS_FAULT", name)),
+            is_disconnected_id: context.get_identifier(format!("OVHD_{}_PB_IS_DISC", name)),
             is_released,
             has_fault: false,
+            is_disconnected: false,
         }
     }
 
@@ -525,16 +529,26 @@ impl FaultReleasePushButton {
     pub fn has_fault(&self) -> bool {
         self.has_fault
     }
+
+    pub fn set_disconnected(&mut self, disconnected: bool) {
+        self.is_disconnected = disconnected;
+    }
+
+    pub fn is_disconnected(&self) -> bool {
+        self.is_disconnected
+    }
 }
-impl SimulationElement for FaultReleasePushButton {
+impl SimulationElement for FaultDisconnectReleasePushButton {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.is_released_id, self.is_released());
         writer.write(&self.has_fault_id, self.has_fault());
+        writer.write(&self.is_disconnected_id, self.is_disconnected());
     }
 
     fn read(&mut self, reader: &mut SimulatorReader) {
         self.set_released(reader.read(&self.is_released_id));
         self.set_fault(reader.read(&self.has_fault_id));
+        self.set_disconnected(reader.read(&self.is_disconnected_id));
     }
 }
 
@@ -1118,7 +1132,7 @@ mod fault_release_push_button_tests {
     #[test]
     fn new_in_is_not_released() {
         let test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
-            FaultReleasePushButton::new_in(context, "TEST")
+            FaultDisconnectReleasePushButton::new_in(context, "TEST")
         }));
 
         assert!(test_bed.query_element(|e| !e.is_released()));
@@ -1127,7 +1141,7 @@ mod fault_release_push_button_tests {
     #[test]
     fn new_released_is_released() {
         let test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
-            FaultReleasePushButton::new_released(context, "TEST")
+            FaultDisconnectReleasePushButton::new_released(context, "TEST")
         }));
 
         assert!(test_bed.query_element(|e| e.is_released()));
@@ -1136,7 +1150,7 @@ mod fault_release_push_button_tests {
     #[test]
     fn when_set_as_released_is_released() {
         let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
-            FaultReleasePushButton::new_released(context, "TEST")
+            FaultDisconnectReleasePushButton::new_released(context, "TEST")
         }));
 
         test_bed.command_element(|e| e.set_released(true));
@@ -1147,7 +1161,7 @@ mod fault_release_push_button_tests {
     #[test]
     fn once_released_stays_released() {
         let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
-            FaultReleasePushButton::new_released(context, "TEST")
+            FaultDisconnectReleasePushButton::new_released(context, "TEST")
         }));
 
         test_bed.command_element(|e| e.set_released(true));
@@ -1159,13 +1173,14 @@ mod fault_release_push_button_tests {
     #[test]
     fn writes_its_state() {
         let mut test_bed = SimulationTestBed::from(ElementCtorFn(|context| {
-            FaultReleasePushButton::new_in(context, "IDG_1")
+            FaultDisconnectReleasePushButton::new_in(context, "IDG_1")
         }));
 
         test_bed.run();
 
         assert!(test_bed.contains_variable_with_name("OVHD_IDG_1_PB_IS_RELEASED"));
         assert!(test_bed.contains_variable_with_name("OVHD_IDG_1_PB_HAS_FAULT"));
+        assert!(test_bed.contains_variable_with_name("OVHD_IDG_1_PB_IS_DISC"));
     }
 }
 

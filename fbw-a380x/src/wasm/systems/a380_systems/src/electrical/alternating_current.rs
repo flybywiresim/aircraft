@@ -3,19 +3,18 @@ use super::{
     A380ElectricalOverheadPanel,
 };
 use systems::accept_iterable;
-use systems::apu::ApuGenerator;
-use systems::electrical::ElectricalElement;
-use systems::simulation::InitContext;
 use systems::{
+    apu::ApuGenerator,
     electrical::{
-        AlternatingCurrentElectricalSystem, Contactor, ElectricalBus, Electricity,
-        EmergencyGenerator, EngineGenerator, ExternalPowerSource, TransformerRectifier,
+        AlternatingCurrentElectricalSystem, Contactor, ElectricalBus, ElectricalElement,
+        Electricity, EmergencyGenerator, ExternalPowerSource, TransformerRectifier,
+        VariableFrequencyGenerator,
     },
-    shared::{
-        AuxiliaryPowerUnitElectrical, ElectricalBusType, EngineCorrectedN2, EngineFirePushButtons,
-    },
-    simulation::{SimulationElement, SimulationElementVisitor, UpdateContext},
+    engine::Engine,
+    shared::{AuxiliaryPowerUnitElectrical, ElectricalBusType, EngineFirePushButtons},
+    simulation::{InitContext, SimulationElement, SimulationElementVisitor, UpdateContext},
 };
+use uom::si::{f64::Power, power::kilowatt};
 
 pub(super) struct A380AlternatingCurrentElectrical {
     main_power_sources: A380MainPowerSources,
@@ -75,7 +74,7 @@ impl A380AlternatingCurrentElectrical {
         overhead: &A380ElectricalOverheadPanel,
         apu: &impl AuxiliaryPowerUnitElectrical,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
-        engines: [&impl EngineCorrectedN2; 4],
+        engines: [&impl Engine; 4],
     ) {
         self.main_power_sources.update(
             context,
@@ -206,6 +205,10 @@ impl A380AlternatingCurrentElectrical {
         self.main_power_sources.gen_contactor_open(number)
     }
 
+    pub fn gen_drive_connected(&self, number: usize) -> bool {
+        self.main_power_sources.gen_drive_connected(number)
+    }
+
     pub fn emergency_generator_contactor_is_closed(&self) -> bool {
         self.emergency_gen_contactor.is_closed()
     }
@@ -275,7 +278,7 @@ impl SimulationElement for A380AlternatingCurrentElectrical {
 }
 
 struct A380MainPowerSources {
-    engine_gens: [EngineGenerator; 4],
+    engine_gens: [VariableFrequencyGenerator; 4],
     engine_generator_contactors: [Contactor; 4],
     bus_tie_contactors: [Contactor; 6],
     // FCOM: BTC7
@@ -376,7 +379,14 @@ impl A380MainPowerSources {
 
     fn new(context: &mut InitContext) -> Self {
         A380MainPowerSources {
-            engine_gens: [1, 2, 3, 4].map(|i| EngineGenerator::new(context, i)),
+            engine_gens: [1, 2, 3, 4].map(|i| {
+                VariableFrequencyGenerator::new(
+                    context,
+                    i,
+                    Power::new::<kilowatt>(150.),
+                    360.0..=800.0,
+                )
+            }),
             engine_generator_contactors: [1, 2, 3, 4]
                 .map(|id| Contactor::new(context, &format!("990XU{id}"))),
             bus_tie_contactors: [1, 2, 3, 4, 5, 6]
@@ -396,7 +406,7 @@ impl A380MainPowerSources {
         overhead: &A380ElectricalOverheadPanel,
         apu: &impl AuxiliaryPowerUnitElectrical,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
-        engines: [&impl EngineCorrectedN2; 4],
+        engines: [&impl Engine; 4],
     ) {
         for (gen, engine) in self.engine_gens.iter_mut().zip(engines) {
             gen.update(context, engine, overhead, engine_fire_push_buttons);
@@ -610,6 +620,10 @@ impl A380MainPowerSources {
 
     pub fn gen_contactor_open(&self, number: usize) -> bool {
         self.engine_generator_contactors[number - 1].is_open()
+    }
+
+    fn gen_drive_connected(&self, number: usize) -> bool {
+        self.engine_gens[number - 1].is_drive_connected()
     }
 }
 impl SimulationElement for A380MainPowerSources {
