@@ -35,21 +35,23 @@ const SystemLabel = ({ x, y, label }: SystemLabelProps) => {
     const [pressure] = useSimVar(`L:A32NX_HYD_${label}_SYSTEM_1_SECTION_PRESSURE`, 'psi', 1000);
     const [systemPressureSwitch] = useSimVar(`L:A32NX_HYD_${label}_SYSTEM_1_SECTION_PRESSURE_SWITCH`, 'boolean', 500);
 
-    const color = pressure > 2900 ? 'Green' : 'Amber';
+    const pressureNearest100 = pressure >= 200 ? Math.round(pressure / 100) * 100 : 0;
+
+    const transducerColor = pressureNearest100 > 2900 ? 'Green' : 'Amber';
     const pressureSwitchColor = systemPressureSwitch ? 'Green' : 'Amber';
 
     return (
         <g transform={`translate(${x} ${y})`}>
             <Triangle x={114} y={-30} orientation={0} colour={pressureSwitchColor} fill={0} scale={1.35} />
-            <rect x={0} y={0} width={228} height={isGreen ? 38 : 36} className={`${color} NoFill SW3`} />
-            <text x={7} y={29} className={`${pressure > 2900 ? 'White' : 'Amber'} F23`}>{label}</text>
+            <rect x={0} y={0} width={228} height={isGreen ? 38 : 36} className={`${pressureSwitchColor} NoFill SW3`} />
+            <text x={7} y={29} className={`${systemPressureSwitch ? 'White' : 'Amber'} F23`}>{label}</text>
             <text
                 x={isGreen ? 172 : 179}
                 y={31}
                 textAnchor='end'
-                className={`${color} F30`}
+                className={`${transducerColor} F30`}
             >
-                {(Math.round(pressure / 100) * 100).toFixed(0)}
+                {pressureNearest100}
             </text>
             <text x={isGreen ? 175 : 181} y={29} className='Cyan F23'>PSI</text>
 
