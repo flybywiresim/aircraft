@@ -70,6 +70,12 @@ type ElecPumpProps = {
 const ElecPump = ({ x, y, label, side }: ElecPumpProps) => {
     const isGreen = side === 'GREEN';
 
+    const [engine1N3] = useSimVar('L:A32NX_ENGINE_N3:1', 'percent', 500);
+    const [engine2N3] = useSimVar('L:A32NX_ENGINE_N3:2', 'percent', 500);
+    const [engine3N3] = useSimVar('L:A32NX_ENGINE_N3:3', 'percent', 500);
+    const [engine4N3] = useSimVar('L:A32NX_ENGINE_N3:4', 'percent', 500);
+    const anyEngineIsRunning = engine1N3 > 50 || engine2N3 > 50 || engine3N3 > 50 || engine4N3 > 50;
+
     const [isElecPumpActive] = useSimVar(`L:A32NX_HYD_${side[0]}${label}_EPUMP_ACTIVE`, 'boolean', 1000);
     const [pumpPressureSwitch] = useSimVar(`L:A32NX_HYD_${side}_PUMP_${label === 'A' ? 5 : 6}_SECTION_PRESSURE_SWITCH`, 'boolean', 500);
     const [offPbIsAuto] = useSimVar(`L:A32NX_OVHD_HYD_EPUMP${side[0]}${label}_OFF_PB_IS_AUTO`, 'boolean', 1000);
@@ -85,7 +91,7 @@ const ElecPump = ({ x, y, label, side }: ElecPumpProps) => {
     }
 
     return (
-        <g transform={`translate(${x} ${y})`}>
+        <g transform={`translate(${x} ${y})`} className={anyEngineIsRunning ? 'Hide' : ''}>
             <text x={isGreen ? 21 : -35} y={10} className={`F25 ${triangleColor === 'Amber' ? 'Amber' : 'White'}`}>
                 {label}
             </text>

@@ -7,7 +7,11 @@ import '../../../index.scss';
 
 
 export const HydPage = () => {
-    const [greenReservoirLevelIsLow] = useSimVar('L:A32NX_HYD_GREEN_RESERVOIR_LEVEL_IS_LOW', 'boolean', 1000);
+    const [engine1N3] = useSimVar('L:A32NX_ENGINE_N3:1', 'percent', 500);
+    const [engine2N3] = useSimVar('L:A32NX_ENGINE_N3:2', 'percent', 500);
+    const [engine3N3] = useSimVar('L:A32NX_ENGINE_N3:3', 'percent', 500);
+    const [engine4N3] = useSimVar('L:A32NX_ENGINE_N3:4', 'percent', 500);
+    const anyEngineIsRunning = engine1N3 > 50 || engine2N3 > 50 || engine3N3 > 50 || engine4N3 > 50;
 
     return (
         <g>
@@ -15,9 +19,9 @@ export const HydPage = () => {
 
             <HydraulicSystem label='GREEN' />
 
-            <text x={352} y={110} className='F26 White LS1'>ELEC</text>
-            <text x={352} y={135} className='F26 White LS1'>PMP</text>
-            <text x={401} y={135} className='F23 White'>S</text>
+            <text x={352} y={110} className={anyEngineIsRunning ? 'Hide' : 'F26 White LS1'}>ELEC</text>
+            <text x={352} y={135} className={anyEngineIsRunning ? 'Hide' : 'F26 White LS1'}>PMP</text>
+            <text x={401} y={135} className={anyEngineIsRunning ? 'Hide' : 'F23 White'}>S</text>
 
             <HydraulicSystem label='YELLOW' />
         </g>

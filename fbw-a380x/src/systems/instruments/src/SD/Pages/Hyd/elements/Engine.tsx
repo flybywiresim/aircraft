@@ -12,8 +12,8 @@ export const Engine = ({ x, y, engineNumber }: EngineProps) => {
     const hydSystem = engineNumber <= 2 ? 'GREEN' : 'YELLOW';
     const pumpIndex = (engineNumber - 1) * 2 + 1 - (engineNumber <= 2 ? 0 : 4)
 
-    const [engineState] = useSimVar(`L:A32NX_ENGINE_STATE:${engineNumber}`, 'Enum', 500);
-    const isRunning = engineState === 1;
+    const [engineState] = useSimVar(`L:A32NX_ENGINE_N3:${engineNumber}`, 'percent', 500);
+    const isRunning = engineState > 50;
 
     const [reservoirLowLevel] = useSimVar(`L:A32NX_HYD_${engineNumber <= 2 ? 'GREEN' : 'YELLOW'}_RESERVOIR_LEVEL_IS_LOW`, 'boolean', 500);
 
