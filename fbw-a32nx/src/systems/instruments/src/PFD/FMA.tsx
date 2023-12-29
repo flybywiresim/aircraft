@@ -816,10 +816,10 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
 
         this.boxPathStringSub.set(boxPathString);
 
-        // VS FPA has a smaller font than the other active modes
-        const VsFPA = this.activeVerticalModeSub.get() === 14 || this.activeVerticalModeSub.get() === 15;
+        // VS FPA & ALT CST* have a smaller font than the other active modes
+        const smallFont = this.activeVerticalModeSub.get() === 14 || this.activeVerticalModeSub.get() === 15 || this.activeVerticalModeSub.get() === 21;
 
-        this.activeVerticalModeClassSub.set(VsFPA ? 'FontMediumSmaller MiddleAlign Green' : 'FontMedium MiddleAlign Green');
+        this.activeVerticalModeClassSub.set(smallFont ? 'FontMediumSmaller MiddleAlign Green' : 'FontMedium MiddleAlign Green');
 
         this.fmaTextRef.instance.innerHTML = `<tspan>${text}</tspan><tspan xml:space="preserve" class=${inSpeedProtection ? 'PulseCyanFill' : 'Cyan'}>${additionalText}</tspan>`;
 
