@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { EventBus, HEventPublisher, KeyEventManager } from '@microsoft/msfs-sdk';
+import { EventBus, HEventPublisher, KeyEventManager, Wait, GameStateProvider} from '@microsoft/msfs-sdk';
 import { AtsuSystem } from './systems/atsu';
 import { PowerSupplyBusses } from './systems/powersupply';
 
