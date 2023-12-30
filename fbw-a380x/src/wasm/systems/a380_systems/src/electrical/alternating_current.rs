@@ -3,6 +3,7 @@ use super::{
     A380ElectricalOverheadPanel,
 };
 use systems::accept_iterable;
+use systems::shared::LgciuWeightOnWheels;
 use systems::{
     apu::ApuGenerator,
     electrical::{
@@ -75,6 +76,7 @@ impl A380AlternatingCurrentElectrical {
         apu: &impl AuxiliaryPowerUnitElectrical,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         engines: [&impl Engine; 4],
+        lgcius: [&impl LgciuWeightOnWheels; 2],
     ) {
         self.main_power_sources.update(
             context,
@@ -84,6 +86,7 @@ impl A380AlternatingCurrentElectrical {
             apu,
             engine_fire_push_buttons,
             engines,
+            lgcius,
         );
 
         self.main_power_sources
@@ -407,6 +410,7 @@ impl A380MainPowerSources {
         apu: &impl AuxiliaryPowerUnitElectrical,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         engines: [&impl Engine; 4],
+        lgcius: [&impl LgciuWeightOnWheels; 2],
     ) {
         for (gen, engine) in self.engine_gens.iter_mut().zip(engines) {
             gen.update(context, engine, overhead, engine_fire_push_buttons);
@@ -421,7 +425,7 @@ impl A380MainPowerSources {
             electricity.supplied_by(ext_pwr);
         }
 
-        let powered_by = self.calc_ac_sources(context, ext_pwrs, overhead, apu);
+        let powered_by = self.calc_ac_sources(ext_pwrs, overhead, apu, lgcius);
 
         // Configure contactors
         for (i, (&power_source, (gen_contactor, ext_pwr_contactor))) in powered_by
@@ -540,10 +544,10 @@ impl A380MainPowerSources {
 
     fn calc_ac_sources(
         &self,
-        context: &UpdateContext,
         ext_pwrs: &[ExternalPowerSource; 4],
         overhead: &A380ElectricalOverheadPanel,
         apu: &impl AuxiliaryPowerUnitElectrical,
+        lgcius: [&impl LgciuWeightOnWheels; 2],
     ) -> [Option<ACBusPowerSource>; 4] {
         let gen_available: Vec<_> = self
             .engine_gens
@@ -558,11 +562,14 @@ impl A380MainPowerSources {
             })
             .collect();
 
-        // TODO: check who decides if only one APU generator is available and where it gets the info of in flight
         let apu_gen_available = [1, 2].map(|id| {
             overhead.apu_generator_is_on(id) && apu.generator(id).output_within_normal_parameters()
         });
-        let apu_gen_available = if context.is_on_ground() {
+        // FIXME: signals should come from IRDC 4A/5A and IRDC 4B/5B
+        let apu_gen_available = if lgcius
+            .iter()
+            .any(|lgciu| lgciu.left_and_right_gear_compressed(true))
+        {
             apu_gen_available
         } else {
             let left_gens = gen_available[0] as u32 + gen_available[1] as u32;

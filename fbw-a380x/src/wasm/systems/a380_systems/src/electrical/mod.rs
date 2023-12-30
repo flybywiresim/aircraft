@@ -103,7 +103,7 @@ impl A380Electrical {
         apu: &mut impl AuxiliaryPowerUnitElectrical,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         engines: [&impl Engine; 4],
-        lgciu1: &impl LgciuWeightOnWheels,
+        lgcius: [&impl LgciuWeightOnWheels; 2],
         adirs: &impl AdirsDiscreteOutputs,
     ) {
         self.alternating_current.update_main_power_sources(
@@ -114,6 +114,7 @@ impl A380Electrical {
             apu,
             engine_fire_push_buttons,
             engines,
+            lgcius,
         );
 
         self.emergency_elec
@@ -126,7 +127,7 @@ impl A380Electrical {
             &self.ram_air_turbine,
             &self.emergency_elec,
             emergency_overhead,
-            lgciu1,
+            lgcius[0],
         );
 
         self.rat_physics_updater.update(context);
@@ -3219,7 +3220,7 @@ mod a380_electrical_circuit_tests {
                     &self.engines[2],
                     &self.engines[3],
                 ],
-                &TestLandingGear::new(context),
+                [&TestLandingGear::new(context); 2],
                 &TestAdirs::new(context.indicated_airspeed()),
             );
             self.overhead

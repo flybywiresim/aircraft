@@ -189,7 +189,7 @@ impl Aircraft for A380 {
                 &self.engine_3,
                 &self.engine_4,
             ],
-            self.lgcius.lgciu1(),
+            [self.lgcius.lgciu1(), self.lgcius.lgciu2()],
             &self.adirs,
         );
 
