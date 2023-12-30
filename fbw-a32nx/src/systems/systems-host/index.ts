@@ -39,7 +39,7 @@ class SystemsHost extends BaseInstrument {
         ]).then(([keyEventManager]) => {
                 this.keyInterceptManager = manager;
                 this.initLighting();
-           );
+           });
     }
 
     get templateID(): string {
