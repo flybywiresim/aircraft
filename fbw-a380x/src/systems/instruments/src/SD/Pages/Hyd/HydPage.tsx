@@ -57,7 +57,7 @@ export const HydPage = () => {
 
     return (
         <g className='hyd'>
-            <PageTitle showMore={false} x={5} y={28}>HYD</PageTitle>
+            <PageTitle x={6} y={29}>HYD</PageTitle>
             <g>
                 <EngineGraphic x={6} y={230} label={1} isRunning={engine1State === 1} />
                 <EngineGraphic x={158} y={188} label={2} isRunning={engine2State === 1} />

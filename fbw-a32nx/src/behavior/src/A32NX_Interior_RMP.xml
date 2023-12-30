@@ -1,4 +1,4 @@
-<!-- Copyright (c) 2022 FlyByWire Simulations -->
+<!-- Copyright (c) 2022, 2023 FlyByWire Simulations -->
 <!-- SPDX-License-Identifier: GPL-3.0 -->
 
 <ModelBehaviors>
@@ -113,6 +113,14 @@
             <BASE_NAME>VHF3</BASE_NAME>
         </UseTemplate>
 
+        <!-- LOAD button (CPDLC frequency loading) -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_RMP_LOAD_BUTTON_AND_LED</ANIM_TEMPLATE>
+            <MODE_ID>32</MODE_ID>
+            <BASE_NAME>LOAD</BASE_NAME>
+        </UseTemplate>
+
         <!-- Inop HF1 mode button and led -->
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
@@ -218,7 +226,7 @@
             </UseTemplate>
         </Component>
 
-        <!-- Inop NAV mode button and led -->
+        <!-- NAV mode button and led -->
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
             <ANIM_TEMPLATE>FBW_RMP_MODE_BUTTON_AND_LED</ANIM_TEMPLATE>
@@ -226,7 +234,7 @@
             <MODE_ID>12</MODE_ID>
         </UseTemplate>
 
-        <!-- Inop VOR mode button and led -->
+        <!-- VOR mode button and led -->
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
             <ANIM_TEMPLATE>FBW_RMP_MODE_BUTTON_AND_LED</ANIM_TEMPLATE>
@@ -234,7 +242,7 @@
             <BASE_NAME>VOR</BASE_NAME>
         </UseTemplate>
 
-        <!-- Inop ILS mode button and led -->
+        <!-- ILS mode button and led -->
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
             <ANIM_TEMPLATE>FBW_RMP_MODE_BUTTON_AND_LED</ANIM_TEMPLATE>
@@ -242,28 +250,27 @@
             <MODE_ID>7</MODE_ID>
         </UseTemplate>
 
-        <!-- Inop MLS mode button and led. Underlying JS code acts on ILS -->
+        <!-- GLS mode button and led -->
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <ANIM_TYPE>BUTTON</ANIM_TYPE>
+            <ANIM_TEMPLATE>FBW_RMP_MODE_BUTTON_AND_LED</ANIM_TEMPLATE>
+            <BASE_NAME>GLS</BASE_NAME>
+            <MODE_ID>8</MODE_ID>
+        </UseTemplate>
+
+        <!-- MLS mode button and led -->
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
             <ANIM_TEMPLATE>FBW_RMP_MODE_BUTTON_AND_LED</ANIM_TEMPLATE>
             <BASE_NAME>MLS</BASE_NAME>
-            <MODE_ID>8</MODE_ID>
+            <MODE_ID>9</MODE_ID>
         </UseTemplate>
 
-        <!-- Inop ADF mode button and led -->
+        <!-- ADF mode button and led -->
         <UseTemplate Name="FBW_Anim_Interactions">
             <ANIM_TYPE>BUTTON</ANIM_TYPE>
             <ANIM_TEMPLATE>FBW_RMP_MODE_BUTTON_AND_LED</ANIM_TEMPLATE>
             <BASE_NAME>ADF</BASE_NAME>
-            <MODE_ID>9</MODE_ID>
-        </UseTemplate>
-
-        <!-- Inop BFO mode button and led -->
-        <UseTemplate Name="FBW_Anim_Interactions">
-            <ANIM_TYPE>BUTTON</ANIM_TYPE>
-            <ANIM_TEMPLATE>FBW_RMP_MODE_BUTTON_AND_LED</ANIM_TEMPLATE>
-            <INOP>1</INOP>
-            <BASE_NAME>BFO</BASE_NAME>
             <MODE_ID>10</MODE_ID>
         </UseTemplate>
     </Template>
@@ -320,6 +327,48 @@
                         0
                     })
                 </EMISSIVE_CODE>
+            </UseTemplate>
+        </Component>
+    </Template>
+
+    <Template Name="FBW_RMP_LOAD_BUTTON_AND_LED">
+        <DefaultTemplateParameters>
+            <INOP>0</INOP>
+            <MODE_ID>0</MODE_ID>
+            <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+            <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+            <NODE_ID>PUSH_RADIO#SIDE#_#BASE_NAME#</NODE_ID>
+            <WWISE_EVENT_1>fcubutton</WWISE_EVENT_1>
+            <WWISE_EVENT_2>fcubutton</WWISE_EVENT_2>
+            <ANIM_NAME_BUTTON>PUSH_RADIO#SIDE#_#BASE_NAME#</ANIM_NAME_BUTTON>
+            <TOOLTIPID>TT:COCKPIT.TOOLTIPS.RADIO_SELECT_#BASE_NAME#</TOOLTIPID>
+        </DefaultTemplateParameters>
+
+        <!-- Button to be pressed -->
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Push_Button">
+                <ANIM_NAME>#ANIM_NAME_BUTTON#</ANIM_NAME>
+                <LEFT_SINGLE_CODE>(&gt;H:A32NX_RMP_#SIDE#_#BASE_NAME#_BUTTON_PRESSED)</LEFT_SINGLE_CODE>
+            </UseTemplate>
+        </Component>
+
+        <!-- LED light next to button indicating if mode is available -->
+        <UseTemplate Name="FBW_RMP_MODE_AVAILABLE_LED" />
+
+        <!-- Button label backlight -->
+        <UseTemplate Name="FBW_RMP_BACKLIGHT_Template" />
+    </Template>
+
+    <Template Name="FBW_RMP_MODE_AVAILABLE_LED">
+        <DefaultTemplateParameters>
+            <INOP>0</INOP>
+            <LED_NODE_ID>PUSH_RADIO#SIDE#_#BASE_NAME#_SEQ2</LED_NODE_ID>
+        </DefaultTemplateParameters>
+
+        <Component ID="#LED_NODE_ID#" Node="#LED_NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+                <!-- TODO -->
+                <EMISSIVE_CODE>0</EMISSIVE_CODE>
             </UseTemplate>
         </Component>
     </Template>

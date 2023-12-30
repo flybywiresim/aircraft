@@ -185,6 +185,7 @@
       "Title": "푸시백"
     },
     "Services": {
+      "AirStarterUnit": "Air Starter Unit",
       "BaggageTruck": "수하물 트럭",
       "CateringTruck": "기내식 트럭",
       "Cones": "안전콘",
@@ -622,7 +623,8 @@
       "ReverserOnAxis": "역추진 축",
       "SaveAndApply": "저장 및 적용",
       "SetFromThrottle": "쓰로틀 값으로 설정",
-      "ThrottleConfigurationReset": "쓰로틀 설정 초기화"
+      "ThrottleConfigurationReset": "쓰로틀 설정 초기화",
+      "TogaOnAxis": "TogaOnAxis"
     },
     "Title": "설정",
     "Unrealistic": "비현실적",
