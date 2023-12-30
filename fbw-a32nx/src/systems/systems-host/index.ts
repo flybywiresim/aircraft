@@ -36,9 +36,9 @@ class SystemsHost extends BaseInstrument {
             KeyEventManager.getManager(this.bus),
             Wait.awaitSubscribable(GameStateProvider.get(), (state) => state === GameState.ingame, true),
         ]).then(([keyEventManager]) => {
-                 this.keyInterceptManager = keyEventManager;
-                 this.initLighting();
-            });
+            this.keyInterceptManager = keyEventManager;
+            this.initLighting();
+        });
     }
 
     get templateID(): string {
