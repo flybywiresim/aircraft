@@ -8,6 +8,7 @@ insert_final_newline = false
 tab_width = 4
 
 [*.{h,hpp,c,cpp}]
+end_of_line = lf
 indent_size = 2
 tab_width = 2
 

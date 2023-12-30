@@ -36,6 +36,7 @@
 1. [EFCS] Decrease yaw damper at low speeds on ground, down to 0 below 40kts - @lukecologne (luke)
 1. [FLIGHTMODEL] Fix pitch trim on approach - @donstim (donbikes)
 1. [GENERAL] Added C++ WASM framework and migrated all flypad-backend code to it - @frankkopp (Frank Kopp)
+1. [EFB] C++ WASM framework, extra-backend to replace flypad-backend, smooth dial turning for Lighting Presets  - @frankkopp (Frank Kopp)
 
 ## 0.11.0
 

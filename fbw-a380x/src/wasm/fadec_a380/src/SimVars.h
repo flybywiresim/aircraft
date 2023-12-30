@@ -119,7 +119,7 @@ class SimVars {
   /// Collection of LVars for the A32NX
   /// </summary>
   ID DevVar;
-  ID IsReady;			 
+  ID IsReady;
   ID FlexTemp;
   ID Engine1N3;
   ID Engine2N3;

@@ -9,11 +9,11 @@
             "type": "cppvsdbg",
             "request": "attach",
             "processId": "${command:pickProcess}",
-            // "args": [],
-            // "stopAtEntry": false,
-            // "cwd": "${fileDirname}",
-            // "environment": [],
-            // "console": "externalTerminal",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${fileDirname}",
+            "environment": [],
+            "console": "externalTerminal",
             "sourceFileMap": {
                 // Yes it's ugly, but it's the only way we could think of to
                 // ensure source mapping works with MSFS installed in different drives
