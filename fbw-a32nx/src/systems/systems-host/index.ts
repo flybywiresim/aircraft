@@ -32,12 +32,14 @@ class SystemsHost extends BaseInstrument {
         this.hEventPublisher = new HEventPublisher(this.bus);
         this.powerSupply = new PowerSupplyBusses(this.bus);
         this.atsu = new AtsuSystem(this.bus);
-        KeyEventManager.getManager(this.bus).then((manager) => {
-            this.keyInterceptManager = manager;
-            if (this.gameState === 3) {
+        
+        Promise.all([
+           KeyEventManager.getManager(this.bus),
+           Wait.awaitSubscribable(GameStateProvider.get(), state => state === GameState.ingame, true),
+        ]).then(([keyEventManager]) => {
+                this.keyInterceptManager = manager;
                 this.initLighting();
-            }
-        });
+           );
     }
 
     get templateID(): string {
@@ -73,9 +75,6 @@ class SystemsHost extends BaseInstrument {
                 this.hEventPublisher.startPublish();
                 this.powerSupply.startPublish();
                 this.atsu.startPublish();
-                if (this.keyInterceptManager) {
-                    this.initLighting();
-                }
             }
             this.gameState = gamestate;
         }
@@ -85,11 +84,9 @@ class SystemsHost extends BaseInstrument {
     }
 
     private initLighting() {
-        console.log('InitLighting called with keymanager');
 
         /** automatic brightness based on ambient light, [0, 1] scale */
         const autoBrightness = Math.max(15, Math.min(85, SimVar.GetSimVarValue('GLASSCOCKPIT AUTOMATIC BRIGHTNESS', 'percent')));
-        console.log(`InitLighting autobrightness = ${autoBrightness}`);
 
         // DOME
         if (autoBrightness < 50) {
