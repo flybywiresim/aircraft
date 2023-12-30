@@ -545,15 +545,6 @@ impl A380MainPowerSources {
         overhead: &A380ElectricalOverheadPanel,
         apu: &impl AuxiliaryPowerUnitElectrical,
     ) -> [Option<ACBusPowerSource>; 4] {
-        // TODO: check who decides if only one APU generator is available and where it gets the info of in flight
-        let apu_gen_available = [1, 2].map(|id| {
-            overhead.apu_generator_is_on(id) && apu.generator(id).output_within_normal_parameters()
-        });
-        let apu_gen_available = [
-            apu_gen_available[0],
-            apu_gen_available[1] && (context.is_on_ground() || !apu_gen_available[0]),
-        ];
-
         let gen_available: Vec<_> = self
             .engine_gens
             .iter()
@@ -567,11 +558,24 @@ impl A380MainPowerSources {
             })
             .collect();
 
+        // TODO: check who decides if only one APU generator is available and where it gets the info of in flight
+        let apu_gen_available = [1, 2].map(|id| {
+            overhead.apu_generator_is_on(id) && apu.generator(id).output_within_normal_parameters()
+        });
+        let apu_gen_available = if context.is_on_ground() {
+            apu_gen_available
+        } else {
+            let left_gens = gen_available[0] as u32 + gen_available[1] as u32;
+            let right_gens = gen_available[2] as u32 + gen_available[3] as u32;
+            [
+                apu_gen_available[0] && (left_gens <= right_gens || !apu_gen_available[1]),
+                apu_gen_available[1] && (left_gens > right_gens || !apu_gen_available[0]),
+            ]
+        };
+
         let priority_table = if ext_pwr_available.iter().all(|v| !v)
             && gen_available.iter().filter(|&a| *a).count() == 1
             && apu_gen_available.iter().filter(|&a| *a).count() == 1
-            && !(gen_available[0] && apu_gen_available[0]
-                || gen_available[3] && apu_gen_available[1])
         {
             &Self::SPECIAL_POWER_SOURCE_PRIORITIES
         } else {
