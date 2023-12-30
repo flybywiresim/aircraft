@@ -7,7 +7,7 @@ import { FlapConf } from '@fmgc/guidance/vnav/common';
 import { SpeedLimit } from '@fmgc/guidance/vnav/SpeedLimit';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { FmcWindVector, FmcWinds } from '@fmgc/guidance/vnav/wind/types';
-import { MappedSubject, Subject, UnitType } from '@microsoft/msfs-sdk';
+import { MappedSubject, Subject } from '@microsoft/msfs-sdk';
 import { FlightPlanIndex } from '@fmgc/flightplanning/new/FlightPlanManager';
 import { Arinc429Word, Knots, Runway, Units } from '@flybywiresim/fbw-sdk';
 import { Feet } from 'msfs-geo';
@@ -293,7 +293,7 @@ export class FmgcDataInterface implements Fmgc {
     }
 
     getCruiseAltitude(): Feet {
-        return this.flightPlanService.has(FlightPlanIndex.Active) ? this.flightPlanService?.active.performanceData.cruiseFlightLevel : 32_000;
+        return this.flightPlanService.has(FlightPlanIndex.Active) ? this.flightPlanService?.active.performanceData.cruiseFlightLevel : 320;
     }
 
     getFlightPhase(): FmgcFlightPhase {
@@ -341,7 +341,7 @@ export class FmgcDataInterface implements Fmgc {
         // TODO adapt for A380
         if (this.flightPlanService.has(FlightPlanIndex.Active)) {
             const dCI = this.flightPlanService.active.performanceData.costIndex / 999;
-        return 288 * (1 - dCI) + 300 * dCI;
+            return 288 * (1 - dCI) + 300 * dCI;
         }
         return 300;
     }
@@ -416,7 +416,7 @@ export class FmgcDataInterface implements Fmgc {
     }
 
     getNavDataDateRange(): string {
-        return SimVar.GetGameVarValue("FLIGHT NAVDATA DATE RANGE", "string");
+        return SimVar.GetGameVarValue('FLIGHT NAVDATA DATE RANGE', 'string');
     }
 
     /**
@@ -426,24 +426,23 @@ export class FmgcDataInterface implements Fmgc {
     public isEngineOn(index: number): boolean {
         return SimVar.GetSimVarValue(`L:A32NX_ENGINE_N2:${index}`, 'number') > 20;
     }
+
     /**
      * Returns true if any one engine is running (N2 > 20)
      */
-    //TODO: can this be an util?
     public isAnEngineOn(): boolean {
         return this.isEngineOn(1) || this.isEngineOn(2) || this.isEngineOn(3) || this.isEngineOn(4);
     }
 
     /**
-     * Returns true only if all engines are running (N2 > 20)
+     * Returns true only if all engines are running (N2 > 20 for inner engines)
      */
-    //TODO: can this be an util?
     isAllEngineOn(): boolean {
-        return this.isEngineOn(1) && this.isEngineOn(2) && this.isEngineOn(3) && this.isEngineOn(4);
+        return this.isEngineOn(2) && this.isEngineOn(3);
     }
 
     isOnGround() {
-        return SimVar.GetSimVarValue("L:A32NX_LGCIU_1_NOSE_GEAR_COMPRESSED", "Number") === 1 || SimVar.GetSimVarValue("L:A32NX_LGCIU_2_NOSE_GEAR_COMPRESSED", "Number") === 1;
+        return SimVar.GetSimVarValue('L:A32NX_LGCIU_1_NOSE_GEAR_COMPRESSED', 'Number') === 1 || SimVar.GetSimVarValue('L:A32NX_LGCIU_2_NOSE_GEAR_COMPRESSED', 'Number') === 1;
     }
 
     isFlying() {
@@ -452,7 +451,7 @@ export class FmgcDataInterface implements Fmgc {
 
     getPressureAltAtElevation(elev, qnh = 1013.2) {
         const p0 = qnh < 500 ? 29.92 : 1013.2;
-        return elev + 145442.15 * (1 - Math.pow((qnh / p0), 0.190263));
+        return elev + 145442.15 * (1 - ((qnh / p0) ** 0.190263));
     }
 
     getPressureAlt() {
@@ -467,6 +466,6 @@ export class FmgcDataInterface implements Fmgc {
 
     getBaroCorrection1() {
         // FIXME hook up to ADIRU or FCU
-        return Simplane.getPressureValue("millibar");
+        return Simplane.getPressureValue('millibar');
     }
 }

@@ -25,8 +25,8 @@ export class ADIRS {
 
     static mapNotAvailable(displayIndex) {
         const inertialReferenceSource = ADIRS.getNdInertialReferenceSource(displayIndex);
-        return !Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_LATITUDE`).isNormalOperation() ||
-            !Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_LONGITUDE`).isNormalOperation();
+        return !Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_LATITUDE`).isNormalOperation()
+            || !Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_IR_${inertialReferenceSource}_LONGITUDE`).isNormalOperation();
     }
 
     static getLatitude() {
@@ -56,11 +56,10 @@ export class ADIRS {
 
     /**
      *
-     * @param {'IR' | 'ADR'} type IR or ADR
-     * @param {string} param the name of the param
-     * @returns {Arinc429Word}
+     * @param type IR or ADR
+     * @param param the name of the param
      */
-    static getFromAnyAdiru(type, param) {
+    static getFromAnyAdiru(type: 'IR' | 'ADR', param: string): Arinc429Word {
         // In the real aircraft, FMGC 1 is supplied by ADIRU 1, and FMGC 2 by ADIRU 2. When any is unavailable
         // the FMGC switches to ADIRU 3. If only one ADIRU is available, both FMGCs use the same ADIRU.
         // As we don't have a split FMGC, we'll just use the following code for now.
@@ -72,5 +71,6 @@ export class ADIRS {
                 return arincWord;
             }
         }
+        return undefined;
     }
 }

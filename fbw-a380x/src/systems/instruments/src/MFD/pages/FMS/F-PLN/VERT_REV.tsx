@@ -3,6 +3,7 @@
 import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MFD/pages/common/TopTabNavigator';
 
 import { ArraySubject, ClockEvents, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
+import { Knots } from '@flybywiresim/fbw-sdk';
 
 import { Button } from 'instruments/src/MFD/pages/common/Button';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
@@ -21,7 +22,6 @@ import { FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
 import { RadioButtonGroup } from 'instruments/src/MFD/pages/common/RadioButtonGroup';
 import { Foot } from '../../../../../../../../../fbw-common/src/systems/shared/src';
-import { Knots } from '@flybywiresim/fbw-sdk';
 
 interface MfdFmsFplnVertRevProps extends AbstractMfdPageProps {
 }

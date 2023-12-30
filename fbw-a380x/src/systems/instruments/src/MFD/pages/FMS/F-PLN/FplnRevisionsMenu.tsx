@@ -1,5 +1,5 @@
 import { TurnDirection } from '@flybywiresim/fbw-sdk';
-import { HoldData, HoldType } from '@fmgc/flightplanning/data/flightplan';
+import { HoldType } from '@fmgc/flightplanning/data/flightplan';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { FSComponent } from '@microsoft/msfs-sdk';
 import { MfdFmsFpln } from 'instruments/src/MFD/pages/FMS/F-PLN/F-PLN';
@@ -20,10 +20,6 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
     const planIndex = fpln.props.fmService.revisedWaypointPlanIndex.get();
     const altnFlightPlan = fpln.props.fmService.revisedWaypointIsAltn.get();
 
-    let realLegIndex = legIndex;
-    if (altnFlightPlan === true) {
-        realLegIndex = legIndex - fpln.loadedFlightPlan.allLegs.length;
-    }
     return [
         {
             title: 'FROM P.POS DIR TO',
@@ -32,7 +28,7 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
                 fpln.props.fmService.flightPlanService.directToLeg(
                     fpln.props.fmService.navigation.getPpos(),
                     SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree'),
-                    realLegIndex,
+                    legIndex,
                     true,
                     planIndex,
                 );
@@ -47,7 +43,7 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
             title: 'DELETE *',
             disabled: [FplnRevisionsMenuType.Runway || FplnRevisionsMenuType.TooSteepPath].includes(type),
             onSelectCallback: () => {
-                fpln.props.fmService.flightPlanService.deleteElementAt(realLegIndex, false, planIndex, altnFlightPlan);
+                fpln.props.fmService.flightPlanService.deleteElementAt(legIndex, false, planIndex, altnFlightPlan);
             },
         },
         {
@@ -69,12 +65,12 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
             title: 'HOLD',
             disabled: [FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type),
             onSelectCallback: async () => {
-                const waypoint = fpln.props.fmService.flightPlanService.active.legElementAt(realLegIndex);
+                const waypoint = fpln.props.fmService.flightPlanService.active.legElementAt(legIndex);
                 console.log(waypoint);
                 if (!waypoint.isHX()) {
                     const alt = waypoint.definition.altitude1 ? waypoint.definition.altitude1 : SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet');
 
-                    const previousLeg = fpln.props.fmService.flightPlanService.active.maybeElementAt(realLegIndex - 1);
+                    const previousLeg = fpln.props.fmService.flightPlanService.active.maybeElementAt(legIndex - 1);
 
                     let inboundMagneticCourse = 100;
                     if (previousLeg && previousLeg.isDiscontinuity === false && previousLeg.isXF()) {
@@ -92,11 +88,12 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
                     };
                     await fpln.props.fmService.flightPlanService.addOrEditManualHold(
                         legIndex,
-                        Object.assign({}, defaultHold),
+                        { ...defaultHold },
                         undefined,
                         defaultHold,
                         planIndex,
-                        altnFlightPlan);
+                        altnFlightPlan,
+                    );
 
                     fpln.props.fmService.revisedWaypointIndex.set(legIndex + 1); // We just inserted a new HOLD leg
                 } else {
@@ -116,7 +113,7 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
         {
             title: (!altnFlightPlan
                 && ![FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type)
-                && fpln.loadedFlightPlan.legElementAt(realLegIndex).definition.overfly === true) ? 'DELETE OVERFLY *' : 'OVERFLY *',
+                && fpln.loadedFlightPlan.legElementAt(legIndex).definition.overfly === true) ? 'DELETE OVERFLY *' : 'OVERFLY *',
             disabled: altnFlightPlan || [FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type),
             onSelectCallback: () => fpln.props.fmService.flightPlanService.toggleOverfly(legIndex, planIndex),
         },
@@ -150,9 +147,9 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
             disabled: true,
             onSelectCallback: () => {
                 // Find out whether waypoint is CLB, CRZ or DES waypoint and direct to appropriate WIND sub-page
-                if (fpln.loadedFlightPlan?.legElementAt(realLegIndex)?.segment?.class === SegmentClass.Arrival) {
+                if (fpln.loadedFlightPlan?.legElementAt(legIndex)?.segment?.class === SegmentClass.Arrival) {
                     fpln.props.uiService.navigateTo(`fms/${fpln.props.uiService.activeUri.get().category}/wind/des`);
-                } else if (fpln.loadedFlightPlan?.legElementAt(realLegIndex)?.segment?.class === SegmentClass.Enroute) {
+                } else if (fpln.loadedFlightPlan?.legElementAt(legIndex)?.segment?.class === SegmentClass.Enroute) {
                     fpln.props.uiService.navigateTo(`fms/${fpln.props.uiService.activeUri.get().category}/wind/crz`);
                 } else {
                     fpln.props.uiService.navigateTo(`fms/${fpln.props.uiService.activeUri.get().category}/wind/clb`);

@@ -1,5 +1,4 @@
 import { FmsError, FmsErrorType } from '@fmgc/FmsError';
-import { DisplayInterface } from '@fmgc/flightplanning/new/interface/DisplayInterface';
 import { Subject, Subscribable } from '@microsoft/msfs-sdk';
 import { Mmo, maxCertifiedAlt } from '@shared/PerformanceConstants';
 
@@ -237,10 +236,6 @@ export class TropoFormat implements DataEntryFormat<number> {
 
     private maxValue = 60000;
 
-    constructor() {
-
-    }
-
     public format(value: number) {
         if (value === null || value === undefined) {
             return [this.placeholder, null, 'FT'] as FieldFormatTuple;
@@ -431,10 +426,6 @@ export class CrzTempFormat implements DataEntryFormat<number> {
 
     private maxValue = 99;
 
-    constructor() {
-
-    }
-
     public format(value: number) {
         if (value === null || value === undefined) {
             return [this.placeholder, null, '°C'] as FieldFormatTuple;
@@ -476,10 +467,6 @@ export class WindDirectionFormat implements DataEntryFormat<number> {
 
     private maxValue = 359;
 
-    constructor() {
-
-    }
-
     public format(value: number) {
         if (value === null || value === undefined) {
             return [this.placeholder, null, '°'] as FieldFormatTuple;
@@ -513,10 +500,6 @@ export class WindSpeedFormat implements DataEntryFormat<number> {
 
     private maxValue = 250;
 
-    constructor() {
-
-    }
-
     public format(value: number) {
         if (value === null || value === undefined) {
             return [this.placeholder, null, 'KT'] as FieldFormatTuple;
@@ -549,10 +532,6 @@ export class TripWindFormat implements DataEntryFormat<number> {
     private minValue = -250;
 
     private maxValue = 250;
-
-    constructor() {
-
-    }
 
     public format(value: number) {
         if (value === null || value === undefined) {
@@ -621,10 +600,6 @@ export class QnhFormat implements DataEntryFormat<number> {
 
     private maxInHgValue = 32.48;
 
-    constructor() {
-
-    }
-
     public format(value: number) {
         if (value === null || value === undefined) {
             return [this.placeholder, null, null] as FieldFormatTuple;
@@ -640,9 +615,8 @@ export class QnhFormat implements DataEntryFormat<number> {
         const nbr = Number(input);
         if (Number.isNaN(nbr) === false && (nbr >= this.minHpaValue && nbr <= this.maxHpaValue) || (nbr >= this.minInHgValue && nbr <= this.maxInHgValue)) {
             return nbr;
-        } else {
-            throw new FmsError(FmsErrorType.EntryOutOfRange);
         }
+        throw new FmsError(FmsErrorType.EntryOutOfRange);
     }
 }
 
@@ -654,10 +628,6 @@ export class CostIndexFormat implements DataEntryFormat<number> {
     private minValue = 0;
 
     private maxValue = 999; // DSC-22-FMS-20-100
-
-    constructor() {
-
-    }
 
     public format(value: number) {
         if (value === null || value === undefined) {
@@ -906,10 +876,6 @@ export class PaxNbrFormat implements DataEntryFormat<number> {
 
     private maxValue = 999;
 
-    constructor() {
-
-    }
-
     public format(value: number) {
         if (value === null || value === undefined) {
             return [this.placeholder, null, null] as FieldFormatTuple;
@@ -943,10 +909,6 @@ export class TimeHHMMFormat implements DataEntryFormat<number> {
     private minValue = 0;
 
     private maxValue = 90;
-
-    constructor() {
-
-    }
 
     public format(value: number) {
         if (!value) {
@@ -994,10 +956,6 @@ export class TimeHHMMSSFormat implements DataEntryFormat<number> {
     private minValue = 0;
 
     private maxValue = 86400;
-
-    constructor() {
-
-    }
 
     public format(value: number) {
         if (!value) {
@@ -1051,10 +1009,6 @@ export class LatitudeFormat implements DataEntryFormat<number> {
     private minValue = -90;
 
     private maxValue = 90;
-
-    constructor() {
-
-    }
 
     public format(value: number) {
         if (value === null || value === undefined) {
@@ -1242,9 +1196,6 @@ export class FrequencyILSFormat implements DataEntryFormat<number> {
 
     private maxValue = 111.95;
 
-    constructor() {
-    }
-
     public format(value: number) {
         if (value === null || value === undefined) {
             return [this.placeholder, null, null] as FieldFormatTuple;
@@ -1277,9 +1228,6 @@ export class FrequencyVORDMEFormat implements DataEntryFormat<number> {
     private minValue = 108.0;
 
     private maxValue = 117.95;
-
-    constructor() {
-    }
 
     public format(value: number) {
         if (value === null || value === undefined) {
@@ -1314,9 +1262,6 @@ export class FrequencyADFFormat implements DataEntryFormat<number> {
 
     private maxValue = 1750.0;
 
-    constructor() {
-    }
-
     public format(value: number) {
         if (value === null || value === undefined) {
             return [this.placeholder, null, null] as FieldFormatTuple;
@@ -1350,9 +1295,6 @@ export class LsCourseFormat implements DataEntryFormat<number> {
     private minValue = 0;
 
     private maxValue = 360.0;
-
-    constructor() {
-    }
 
     public format(value: number) {
         if (value === null || value === undefined) {

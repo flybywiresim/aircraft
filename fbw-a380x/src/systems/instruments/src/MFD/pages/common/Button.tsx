@@ -16,6 +16,7 @@ export interface ButtonProps extends ComponentProps {
     selected?: Subscribable<boolean>; // Renders with lighter grey if selected (e.g. for segmented controls)
     buttonStyle?: string;
     onClick: () => void;
+    scrollToMenuItem?: Subscribable<number>;
 }
 
 /*
@@ -37,13 +38,18 @@ export class Button extends DisplayComponent<ButtonProps> {
 
     private renderedMenuItems: ButtonMenuItem[];
 
-    clickHandler(): void {
+    private clickHandler(): void {
         if (this.props.disabled.get() === false) {
             this.props.onClick();
         }
     }
 
-    onAfterRender(node: VNode): void {
+    private scrollMenuTo(elementIndex: number) {
+        // Assume 36px height for each menu item div
+        this.dropdownMenuRef.instance.scrollTo({ behavior: 'instant', left: 0, top: elementIndex * 36 });
+    }
+
+    public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
         if (this.props.disabled === undefined) {
@@ -186,7 +192,19 @@ export class Button extends DisplayComponent<ButtonProps> {
             } else {
                 this.buttonRef.instance.classList.remove('opened');
             }
+
+            if (this.props.scrollToMenuItem !== undefined) {
+                this.scrollMenuTo(this.props.scrollToMenuItem.get());
+            }
         }));
+
+        if (this.props.scrollToMenuItem !== undefined) {
+            this.subs.push(this.props.scrollToMenuItem.sub((val) => {
+                if (this.dropdownIsOpened.get() === true) {
+                    this.scrollMenuTo(val);
+                }
+            }));
+        }
     }
 
     public destroy(): void {
@@ -196,7 +214,7 @@ export class Button extends DisplayComponent<ButtonProps> {
         super.destroy();
     }
 
-    render(): VNode {
+    public render(): VNode {
         return (
             <div class="mfd-dropdown-container" ref={this.topRef}>
                 <span

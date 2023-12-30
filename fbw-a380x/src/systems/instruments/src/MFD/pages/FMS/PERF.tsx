@@ -543,9 +543,10 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
         this.subs.push(sub.on('realTime').atFrequency(1).handle((_t) => {
             // Update REC MAX FL, OPT FL
             const isaTempDeviation = A380AltitudeUtils.getIsaTempDeviation();
-            const recMaxFl = Math.min(A380AltitudeUtils.calculateRecommendedMaxAltitude(this.props.fmService.getGrossWeight(), isaTempDeviation), maxCertifiedAlt);
-            this.recMaxFl.set((recMaxFl / 100).toFixed(0));
-            this.optFl.set(((Math.floor(recMaxFl / 5) * 5)/100).toFixed(0));
+            const recMaxFl = Math.min(A380AltitudeUtils.calculateRecommendedMaxAltitude(this.props.fmService.getGrossWeight(), isaTempDeviation), maxCertifiedAlt) / 100;
+            this.recMaxFl.set(Number.isFinite(recMaxFl) ? recMaxFl.toFixed(0) : '---');
+            const optFl = Math.floor(0.96 * recMaxFl / 5) * 5; // TODO remove magic
+            this.optFl.set(Number.isFinite(optFl) ? optFl.toFixed(0) : '---');
 
             const obs = this.props.fmService.guidanceController.verticalProfileComputationParametersObserver.get();
 
@@ -737,13 +738,21 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
             // Update APPR page
             this.apprLandingWeight.set(this.props.fmService.getLandingWeight());
             if (this.props.fmService.fmgc.data.approachWind.get()?.direction && this.props.fmService.fmgc.data.approachWind.get()?.speed && this.loadedFlightPlan.destinationRunway) {
-                const towerHeadwind = A380SpeedsUtils.getHeadwind(this.props.fmService.fmgc.data.approachWind.get().speed, this.props.fmService.fmgc.data.approachWind.get().direction, this.loadedFlightPlan.destinationRunway.magneticBearing);
+                const towerHeadwind = A380SpeedsUtils.getHeadwind(
+                    this.props.fmService.fmgc.data.approachWind.get().speed,
+                    this.props.fmService.fmgc.data.approachWind.get().direction,
+                    this.loadedFlightPlan.destinationRunway.magneticBearing,
+                );
                 if (towerHeadwind < 0) {
                     this.apprHeadwind.set(`-${Math.abs(towerHeadwind).toFixed(0).padStart(2, '0')}`);
                 } else {
                     this.apprHeadwind.set(towerHeadwind.toFixed(0).padStart(3, '0'));
                 }
-                const towerCrosswind = A380SpeedsUtils.getHeadwind(this.props.fmService.fmgc.data.approachWind.get().speed, this.props.fmService.fmgc.data.approachWind.get().direction, this.loadedFlightPlan.destinationRunway.magneticBearing + 90);
+                const towerCrosswind = A380SpeedsUtils.getHeadwind(
+                    this.props.fmService.fmgc.data.approachWind.get().speed,
+                    this.props.fmService.fmgc.data.approachWind.get().direction,
+                    this.loadedFlightPlan.destinationRunway.magneticBearing + 90,
+                );
                 this.apprCrosswind.set(Math.abs(towerCrosswind).toFixed(0).padStart(3, '0'));
             } else {
                 this.apprHeadwind.set('---');
@@ -816,7 +825,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                             dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
                                             dataHandlerDuringValidation={async (v) => {
                                                 this.loadedFlightPlan.setPerformanceData('v1', v);
-                                                SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", v);
+                                                SimVar.SetSimVarValue('L:AIRLINER_V1_SPEED', 'Knots', v);
                                             }}
                                             mandatory={Subject.create(true)}
                                             inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
@@ -845,13 +854,13 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                             )}
                                             onClick={() => {
                                                 const fm = this.props.fmService.fmgc.data;
-                                                SimVar.SetSimVarValue("L:AIRLINER_V1_SPEED", "Knots", fm.v1ToBeConfirmed.get());
+                                                SimVar.SetSimVarValue('L:AIRLINER_V1_SPEED', 'Knots', fm.v1ToBeConfirmed.get());
                                                 this.loadedFlightPlan.setPerformanceData('v1', fm.v1ToBeConfirmed.get());
                                                 fm.v1ToBeConfirmed.set(undefined);
-                                                SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", fm.vrToBeConfirmed.get());
+                                                SimVar.SetSimVarValue('L:AIRLINER_VR_SPEED', 'Knots', fm.vrToBeConfirmed.get());
                                                 this.loadedFlightPlan.setPerformanceData('vr', fm.vrToBeConfirmed.get());
                                                 fm.vrToBeConfirmed.set(undefined);
-                                                SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", fm.v2ToBeConfirmed.get());
+                                                SimVar.SetSimVarValue('L:AIRLINER_V2_SPEED', 'Knots', fm.v2ToBeConfirmed.get());
                                                 this.loadedFlightPlan.setPerformanceData('v2', fm.v2ToBeConfirmed.get());
                                                 fm.v2ToBeConfirmed.set(undefined);
                                             }}
@@ -868,7 +877,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         <InputField<number>
                                             dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
                                             dataHandlerDuringValidation={async (v) => {
-                                                SimVar.SetSimVarValue("L:AIRLINER_VR_SPEED", "Knots", v);
+                                                SimVar.SetSimVarValue('L:AIRLINER_VR_SPEED', 'Knots', v);
                                                 this.loadedFlightPlan.setPerformanceData('vr', v);
                                             }}
                                             mandatory={Subject.create(true)}
@@ -894,7 +903,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         <InputField<number>
                                             dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
                                             dataHandlerDuringValidation={async (v) => {
-                                                SimVar.SetSimVarValue("L:AIRLINER_V2_SPEED", "Knots", v);
+                                                SimVar.SetSimVarValue('L:AIRLINER_V2_SPEED', 'Knots', v);
                                                 this.loadedFlightPlan.setPerformanceData('v2', v);
                                             }}
                                             mandatory={Subject.create(true)}
@@ -1988,9 +1997,9 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                                 dataEntryFormat={new QnhFormat()}
                                                 dataHandlerDuringValidation={async (v) => {
                                                     if (v >= 745 && v <= 1050) {
-                                                        SimVar.SetSimVarValue("L:A32NX_DESTINATION_QNH", "Millibar", v);
+                                                        SimVar.SetSimVarValue('L:A32NX_DESTINATION_QNH', 'Millibar', v);
                                                     } else {
-                                                        SimVar.SetSimVarValue("L:A32NX_DESTINATION_QNH", "Millibar", v * 33.8639);
+                                                        SimVar.SetSimVarValue('L:A32NX_DESTINATION_QNH', 'Millibar', v * 33.8639);
                                                     }
                                                 }}
                                                 mandatory={Subject.create(false)}
@@ -2010,7 +2019,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                             <InputField<number>
                                                 dataEntryFormat={new AltitudeFormat(Subject.create(0), Subject.create(maxCertifiedAlt))}
                                                 dataHandlerDuringValidation={async (v) => {
-                                                    SimVar.SetSimVarValue("L:AIRLINER_MINIMUM_DESCENT_ALTITUDE", "feet", v);
+                                                    SimVar.SetSimVarValue('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet', v);
                                                 }}
                                                 mandatory={Subject.create(false)}
                                                 value={this.props.fmService.fmgc.data.approachBaroMinimum}
@@ -2025,11 +2034,11 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                                 dataEntryFormat={new AltitudeFormat(Subject.create(0), Subject.create(maxCertifiedAlt))}
                                                 dataHandlerDuringValidation={async (v) => {
                                                     if (v === undefined) {
-                                                        SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "feet", -1);
+                                                        SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', -1);
                                                     } else if (v === null) {
-                                                        SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "feet", -2);
+                                                        SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', -2);
                                                     } else {
-                                                        SimVar.SetSimVarValue("L:AIRLINER_DECISION_HEIGHT", "feet", v);
+                                                        SimVar.SetSimVarValue('L:AIRLINER_DECISION_HEIGHT', 'feet', v);
                                                     }
                                                 }}
                                                 mandatory={Subject.create(false)}
@@ -2074,9 +2083,9 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                             onModified={(v) => {
                                                 this.props.fmService.fmgc.data.approachFlapConfig.set(v + 3);
                                                 if (v === 0) {
-                                                    SimVar.SetSimVarValue("L:A32NX_SPEEDS_LANDING_CONF3", "boolean", true);
+                                                    SimVar.SetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', 'boolean', true);
                                                 } else {
-                                                    SimVar.SetSimVarValue("L:A32NX_SPEEDS_LANDING_CONF3", "boolean", false);
+                                                    SimVar.SetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', 'boolean', false);
                                                 }
                                             }}
                                             idPrefix="apprFlapsSettingsRadio"

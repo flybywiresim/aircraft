@@ -8,7 +8,6 @@ import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { DropdownMenu } from 'instruments/src/MFD/pages/common/DropdownMenu';
 import { FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { WaypointEntryUtils } from '@fmgc/index';
-import { Fix } from 'msfs-navdata';
 import { RadioButtonGroup } from 'instruments/src/MFD/pages/common/RadioButtonGroup';
 
 interface MfdFmsFplnDirectToProps extends AbstractMfdPageProps {
@@ -52,7 +51,7 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
         const fpln = this.props.fmService.flightPlanService.get(this.loadedFlightPlanIndex.get());
         if (idx >= 0) {
             if (this.availableWaypoints.get(idx)
-            && fpln.elementAt(this.props.fmService.flightPlanService.get(this.loadedFlightPlanIndex.get()).activeLegIndex + idx + 1).isDiscontinuity === false) {
+                && fpln.elementAt(this.props.fmService.flightPlanService.get(this.loadedFlightPlanIndex.get()).activeLegIndex + idx + 1).isDiscontinuity === false) {
                 this.selectedWaypointIndex.set(idx);
                 await this.props.fmService.flightPlanService.directToLeg(
                     this.props.fmService.navigation.getPpos(),
@@ -80,7 +79,7 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
         super.onAfterRender(node);
 
         const wpt = this.loadedFlightPlan.allLegs.slice(this.props.fmService.flightPlanService.get(this.loadedFlightPlanIndex.get()).activeLegIndex + 1).map((el) => {
-            if (el instanceof FlightPlanLeg) {
+            if (el instanceof FlightPlanLeg && el.ident !== 'MANUAL') {
                 return el.ident;
             }
             return null;

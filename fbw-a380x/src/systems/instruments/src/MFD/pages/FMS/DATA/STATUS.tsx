@@ -14,7 +14,7 @@ import { Button } from 'instruments/src/MFD/pages/common/Button';
 interface MfdFmsDataStatusProps extends AbstractMfdPageProps {
 }
 
-const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
 const monthLength = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
 
 export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
@@ -65,7 +65,7 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
         }, true));
 
         const sub = this.props.bus.getSubscriber<ClockEvents & MfdSimvars>();
-        this.subs.push(sub.on('realTime').atFrequency(2).handle((_t) => {
+        this.subs.push(sub.on('realTime').atFrequency(0.5).handle((_t) => {
             this.onNewData();
         }));
     }
@@ -73,17 +73,15 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
     private findNewMonthIndex(index: number) {
         if (index === 0) {
             return 11;
-        } else {
-            return index - 1;
         }
+        return index - 1;
     }
 
     private lessThan10(num: number) {
         if (num < 10) {
             return `0${num}`;
-        } else {
-            return num;
         }
+        return num;
     }
 
     private calculateActiveDate(date: string): string {
@@ -95,9 +93,8 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
             const endDay = date.slice(8, 10);
 
             return `${startDay}${startMonth}-${endDay}${endMonth}`;
-        } else {
-            return date;
         }
+        return date;
     }
 
     private calculateSecDate(date: string): string {
@@ -108,7 +105,7 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
             const primStartMonthIndex = months.findIndex((item) => item === primStartMonth);
 
             if (primStartMonthIndex === -1) {
-                return "ERR";
+                return 'ERR';
             }
 
             let newEndMonth = primStartMonth;
@@ -128,9 +125,8 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
             }
 
             return `${this.lessThan10(newStartDay)}${newStartMonth}-${this.lessThan10(newEndDay)}${newEndMonth}`;
-        } else {
-            return "ERR";
         }
+        return 'ERR';
     }
 
     render(): VNode {
@@ -140,16 +136,16 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
                 {/* begin page content */}
                 <div class="mfd-page-container">
                     <TopTabNavigator
-                            pageTitles={Subject.create(['ACFT STATUS', 'FMS P/N'])}
-                            selectedPageIndex={this.selectedPageIndex}
-                            pageChangeCallback={(val) => this.selectedPageIndex.set(val)}
-                            selectedTabTextColor="white"
-                            tabBarSlantedEdgeAngle={25}
-                        >
+                        pageTitles={Subject.create(['ACFT STATUS', 'FMS P/N'])}
+                        selectedPageIndex={this.selectedPageIndex}
+                        pageChangeCallback={(val) => this.selectedPageIndex.set(val)}
+                        selectedTabTextColor="white"
+                        tabBarSlantedEdgeAngle={25}
+                    >
                         <TopTabNavigatorPage>
                             {/* ACFT STATUS */}
-                            <div style="width: 100%; display: flex; justify-content: center; align-items: center; margin-top: 20px; margin-bottom: 40px;" class="mfd-value-green bigger">A380-800</div>
-                            <div style="width: 100%; display: flex; flex-direction: row; justify-content: space-between; align-items: flex-start; padding-bottom: 15px; border-bottom: 2px solid lightgrey;">
+                            <div class="mfd-data-status-airframe-label mfd-value-green bigger">A380-800</div>
+                            <div class="mfd-data-status-first-section">
                                 <div>
                                     <span class="mfd-label" style="margin-right: 50px;">ENGINE</span>
                                     <span class="mfd-value-green bigger">TRENT 972</span>
@@ -166,11 +162,11 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
                                         </div>
                                     </div>
                                     <div style="margin-top: 10px; display: flex; justify-content: center;">
-                                        <Button label='MODIFY' onClick={() => {}} disabled={Subject.create(true)} buttonStyle='width: 125px;' />
+                                        <Button label="MODIFY" onClick={() => {}} disabled={Subject.create(true)} buttonStyle="width: 125px;" />
                                     </div>
                                 </div>
                             </div>
-                            <div style="width: 100%; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; padding-bottom: 15px; padding-top: 15px; border-bottom: 2px solid lightgrey;">
+                            <div class="mfd-data-status-second-section">
                                 <div style="margin-bottom: 15px;">
                                     <span class="mfd-label" style="margin-right: 25px;">NAV DATABASE</span>
                                     <span class="mfd-value-green bigger">{this.navDatabase}</span>
@@ -208,7 +204,7 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
                                     </div>
                                 </div>
                             </div>
-                            <div style="width: 100%; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; padding-top: 25px;">
+                            <div class="mfd-data-status-third-section">
                                 <div style="margin-bottom: 35px;">
                                     <span class="mfd-label" style="margin-right: 25px;">PILOT STORED ELEMENTS</span>
                                 </div>

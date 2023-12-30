@@ -14,6 +14,7 @@ import {
     VNode,
 } from '@microsoft/msfs-sdk';
 
+import { A32NX_FWC } from 'instruments/src/MFD/pages/FMS/legacy/A32NX_FWC.js';
 import { MouseCursor } from 'instruments/src/MFD/pages/common/MouseCursor';
 
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
@@ -37,13 +38,13 @@ import { FmgcDataInterface } from 'instruments/src/MFD/fmgc';
 import { getFlightPhaseManager } from '@fmgc/flightphase';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { Fix, NXDataStore, UpdateThrottler } from '@flybywiresim/fbw-sdk';
-import { MfdSimvars } from './shared/MFDSimvarPublisher';
-import { CdsDisplayUnit, DisplayUnitID } from '../MsfsAvionicsCommon/CdsDisplayUnit';
 import { DataManager, PilotWaypoint } from '@fmgc/flightplanning/new/DataManager';
 import { DataInterface } from '@fmgc/flightplanning/new/interface/DataInterface';
 import { A320FlightPlanPerformanceData, EfisInterface, Navigation } from '@fmgc/index';
 import { NXFictionalMessages, NXSystemMessages, TypeIIMessage, TypeIMessage } from 'instruments/src/MFD/pages/FMS/legacy/NXSystemMessages';
 import { headerForSystem, pageForUrl } from 'instruments/src/MFD/MfdPageDirectory';
+import { CdsDisplayUnit, DisplayUnitID } from '../MsfsAvionicsCommon/CdsDisplayUnit';
+import { MfdSimvars } from './shared/MFDSimvarPublisher';
 
 // Import for pages
 
@@ -95,6 +96,9 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
     private efisSymbols: EfisSymbols;
 
     private flightPhaseManager = getFlightPhaseManager();
+
+    // Preparation for a fake legacy FWC, if we need one for testing purposes. To be implemented in Rust
+    private legacyFwc = new A32NX_FWC();
 
     private dataManager = new DataManager(this);
 
@@ -272,17 +276,16 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
         switch (errorType) {
         case FmsErrorType.EntryOutOfRange:
             this.addMessageToQueue(NXSystemMessages.entryOutOfRange);
-            return;
+            break;
         case FmsErrorType.FormatError:
             this.addMessageToQueue(NXSystemMessages.formatError);
-            return;
+            break;
         case FmsErrorType.NotInDatabase:
             this.addMessageToQueue(NXSystemMessages.notInDatabase);
-            return;
+            break;
         case FmsErrorType.NotYetImplemented:
             this.addMessageToQueue(NXFictionalMessages.notYetImplemented);
-            return;
-
+            break;
         default:
             break;
         }
@@ -314,15 +317,15 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
         if (!_message.isTypeTwo) {
             return;
         }
-        const message = _isResolvedOverride === undefined && _onClearOverride === undefined ? _message : _message.getModifiedMessage("", _isResolvedOverride, _onClearOverride);
+        const message = _isResolvedOverride === undefined && _onClearOverride === undefined ? _message : _message.getModifiedMessage('', _isResolvedOverride, _onClearOverride);
 
         const msg: FmsErrorMessage = {
             message: message.text,
             backgroundColor: message.isAmber ? 'amber' : 'none',
             cleared: false,
-            onClearOverride: _message instanceof TypeIIMessage ? _message.onClear : () => {},
+            onClearOverride: _message instanceof TypeIIMessage ? _message.onClear : () => { },
             isResolvedOverride: _message instanceof TypeIIMessage ? _message.isResolved : () => false,
-        }
+        };
 
         const exists = this.fmsErrors.getArray().findIndex((el) => el.message === msg.message && el.cleared === true);
         if (exists !== -1) {
@@ -346,7 +349,8 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
         this.fmsErrors.getArray().forEach((it, idx) => {
             if (it.isResolvedOverride() === true) {
                 this.fmsErrors.removeAt(idx);
-            }});
+            }
+        });
     }
 
     /**
@@ -410,6 +414,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
                 if (it.isDiscontinuity === false && it.definition.waypoint.databaseId === waypoint.databaseId) {
                     return true;
                 }
+                return false;
             });
         }
 
@@ -418,6 +423,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
                 if (it.isDiscontinuity === false && it.definition.waypoint.databaseId === waypoint.databaseId) {
                     return true;
                 }
+                return false;
             });
         }
 
@@ -427,6 +433,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
                     if (it.isDiscontinuity === false && it.definition.waypoint.databaseId === waypoint.databaseId) {
                         return true;
                     }
+                    return false;
                 });
             }
         }
@@ -436,9 +443,9 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
                 if (it.isDiscontinuity === false && it.definition.waypoint.databaseId === waypoint.databaseId) {
                     return true;
                 }
+                return false;
             });
         }
-
 
         return false;
     }
@@ -581,8 +588,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
             if (activePlan.performanceData.missedAccelerationAltitude === undefined) {
                 // it's important to set this immediately as we don't want to immediately sequence to the climb phase
                 activePlan.setPerformanceData('pilotMissedAccelerationAltitude',
-                    SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') + parseInt(NXDataStore.get('CONFIG_ENG_OUT_ACCEL_ALT', '1500')),
-                );
+                    SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') + parseInt(NXDataStore.get('CONFIG_ENG_OUT_ACCEL_ALT', '1500')));
                 if (this.flightPlanService.hasActive) {
                     this.fmService.acInterface.updateThrustReductionAcceleration();
                 }
@@ -590,8 +596,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
             if (activePlan.performanceData.missedEngineOutAccelerationAltitude === undefined) {
                 // it's important to set this immediately as we don't want to immediately sequence to the climb phase
                 activePlan.setPerformanceData('pilotMissedEngineOutAccelerationAltitude',
-                    SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') + parseInt(NXDataStore.get('CONFIG_ENG_OUT_ACCEL_ALT', '1500')),
-                );
+                    SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet') + parseInt(NXDataStore.get('CONFIG_ENG_OUT_ACCEL_ALT', '1500')));
                 if (this.flightPlanService.hasActive) {
                     this.fmService.acInterface.updateThrustReductionAcceleration();
                 }
@@ -624,87 +629,89 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
             this.addMessageToQueue(
                 NXSystemMessages.enterDestData,
                 () => (Number.isFinite(this.fmgc.getApproachQnh())
-            && Number.isFinite(this.fmgc.getApproachTemperature())
-            && Number.isFinite(this.fmgc.getApproachWind().direction)
-            && Number.isFinite(this.fmgc.getApproachWind().speed)),
-            () => {});
+                    && Number.isFinite(this.fmgc.getApproachTemperature())
+                    && Number.isFinite(this.fmgc.getApproachWind().direction)
+                    && Number.isFinite(this.fmgc.getApproachWind().speed)),
+                () => { },
+            );
         }
     }
 
-    private _gwInitDisplayed = 0;
+    private gwInitDisplayed = 0;
 
-    private _initMessageSettable = false;
+    private initMessageSettable = false;
 
-    private _checkWeightSettable = true;
+    private checkWeightSettable = true;
 
     private checkGWParams(): void {
-        const fmGW = SimVar.GetSimVarValue("L:A32NX_FM_GROSS_WEIGHT", "Number");
-        const eng1state = SimVar.GetSimVarValue("L:A32NX_ENGINE_STATE:1", "Number");
-        const eng2state = SimVar.GetSimVarValue("L:A32NX_ENGINE_STATE:2", "Number");
-        const gs = SimVar.GetSimVarValue("GPS GROUND SPEED", "knots");
-        const actualGrossWeight = SimVar.GetSimVarValue("TOTAL WEIGHT", "Kilograms") / 1000; //TO-DO Source to be replaced with FAC-GW
-        const gwMismatch = (Math.abs(fmGW - actualGrossWeight) > 7) ? true : false;
+        const fmGW = SimVar.GetSimVarValue('L:A32NX_FM_GROSS_WEIGHT', 'Number');
+        const eng2state = SimVar.GetSimVarValue('L:A32NX_ENGINE_STATE:2', 'Number');
+        const eng3state = SimVar.GetSimVarValue('L:A32NX_ENGINE_STATE:3', 'Number');
+        const gs = SimVar.GetSimVarValue('GPS GROUND SPEED', 'knots');
+        const actualGrossWeight = SimVar.GetSimVarValue('TOTAL WEIGHT', 'Kilograms') / 1000; // TO-DO Source to be replaced with FAC-GW
+        const gwMismatch = (Math.abs(fmGW - actualGrossWeight) > 7);
 
-        if (eng1state == 2 || eng2state == 2) {
-            if (this._gwInitDisplayed < 1 && this.flightPhaseManager.phase < FmgcFlightPhase.Takeoff) {
-                this._initMessageSettable = true;
+        if (eng2state === 2 || eng3state === 2) {
+            if (this.gwInitDisplayed < 1 && this.flightPhaseManager.phase < FmgcFlightPhase.Takeoff) {
+                this.initMessageSettable = true;
             }
         }
-        //INITIALIZE WEIGHT/CG
-        if (this.fmgc.isAnEngineOn() && fmGW === 0 && this._initMessageSettable) {
+        // INITIALIZE WEIGHT/CG
+        if (this.fmgc.isAnEngineOn() && fmGW === 0 && this.initMessageSettable) {
             this.addMessageToQueue(NXSystemMessages.initializeWeightOrCg);
-            this._gwInitDisplayed++;
-            this._initMessageSettable = false;
+            this.gwInitDisplayed++;
+            this.initMessageSettable = false;
         }
 
-        //CHECK WEIGHT
-        //TO-DO Ground Speed used for redundancy and to simulate delay (~10s) for FAC parameters to be calculated, remove once FAC is available.
-        if (!this.fmgc.isOnGround() && gwMismatch && this._checkWeightSettable && gs > 180) {
+        // CHECK WEIGHT
+        // TO-DO Ground Speed used for redundancy and to simulate delay (~10s) for FAC parameters to be calculated, remove once FAC is available.
+        if (!this.fmgc.isOnGround() && gwMismatch && this.checkWeightSettable && gs > 180) {
             this.addMessageToQueue(NXSystemMessages.checkWeight);
-            this._checkWeightSettable = false;
+            this.checkWeightSettable = false;
         } else if (!gwMismatch) {
             this.removeMessageFromQueue(NXSystemMessages.checkWeight.text);
-            this._checkWeightSettable = true;
+            this.checkWeightSettable = true;
         }
     }
 
-    private onUpdate (dt: number) {
+    private onUpdate(dt: number) {
         this.navaidSelectionManager.update(dt);
-            this.landingSystemSelectionManager.update(dt);
-            this.navaidTuner.update(dt);
-            this.efisSymbols.update(dt);
-            this.flightPhaseManager.shouldActivateNextPhase(dt);
-            this.guidanceController.update(dt);
+        this.landingSystemSelectionManager.update(dt);
+        this.navaidTuner.update(dt);
+        this.efisSymbols.update(dt);
+        this.flightPhaseManager.shouldActivateNextPhase(dt);
+        this.legacyFwc.update(dt);
+        this.guidanceController.update(dt);
 
-            if (this.fmsUpdateThrottler.canUpdate(dt) !== -1) {
-                this.navigation.update(dt);
-                if (this.flightPlanService.hasActive) {
-                    this.fmService.acInterface.updateThrustReductionAcceleration();
-                    this.fmService.acInterface.updateTransitionAltitudeLevel(this.fmgc.getOriginTransitionAltitude(), this.fmgc.getDestinationTransitionLevel());
-                    this.fmService.acInterface.updatePerformanceData();
-                    this.fmService.acInterface.updatePerfSpeeds();
-                    this.fmService.acInterface.toSpeedsChecks();
-                    this.fmService.acInterface.setTakeoffFlaps(this.fmService.fmgc.getTakeoffFlapsSetting());
-                    this.fmService.acInterface.setTakeoffTrim(this.fmService.fmgc.data.takeoffThsFor.get());
+        if (this.fmsUpdateThrottler.canUpdate(dt) !== -1) {
+            this.navigation.update(dt);
+            if (this.flightPlanService.hasActive) {
+                this.fmService.acInterface.updateThrustReductionAcceleration();
+                this.fmService.acInterface.updateTransitionAltitudeLevel(this.fmgc.getOriginTransitionAltitude(), this.fmgc.getDestinationTransitionLevel());
+                this.fmService.acInterface.updatePerformanceData();
+                this.fmService.acInterface.updatePerfSpeeds();
+                this.fmService.acInterface.toSpeedsChecks();
+                this.fmService.acInterface.setTakeoffFlaps(this.fmService.fmgc.getTakeoffFlapsSetting());
+                this.fmService.acInterface.setTakeoffTrim(this.fmService.fmgc.data.takeoffThsFor.get());
 
-                    const destPred = this.fmService.guidanceController.vnavDriver.getDestinationPrediction();
-                    if (destPred) {
-                        this.fmService.acInterface.updateMinimums(destPred.distanceFromAircraft);
-                    }
-                    this.fmService.acInterface.updateIlsCourse(this.navigation.getNavaidTuner().getMmrRadioTuningStatus(1));
+                const destPred = this.fmService.guidanceController.vnavDriver.getDestinationPrediction();
+                if (destPred) {
+                    this.fmService.acInterface.updateMinimums(destPred.distanceFromAircraft);
                 }
-                this.fmService.getGrossWeight();
-                this.checkGWParams();
-                this.updateMessageQueue();
-
-                this.fmService.acInterface.checkSpeedLimit();
-                this.fmService.acInterface.thrustReductionAccelerationChecks();
-                // TODO port over from legacy code
-                // this.updatePerfPageAltPredictions();
+                this.fmService.acInterface.updateIlsCourse(this.navigation.getNavaidTuner().getMmrRadioTuningStatus(1));
             }
+            this.fmService.getGrossWeight();
+            this.checkGWParams();
+            this.updateMessageQueue();
 
-            this.fmService.acInterface.arincBusOutputs.forEach((word) => word.writeToSimVarIfDirty());
-            this.fmService.acInterface.updateAutopilot(dt);
+            this.fmService.acInterface.checkSpeedLimit();
+            this.fmService.acInterface.thrustReductionAccelerationChecks();
+            // TODO port over from legacy code
+            // this.updatePerfPageAltPredictions();
+        }
+
+        this.fmService.acInterface.arincBusOutputs.forEach((word) => word.writeToSimVarIfDirty());
+        this.fmService.acInterface.updateAutopilot(dt);
     }
 
     public async onAfterRender(node: VNode): Promise<void> {
@@ -729,7 +736,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
         this.flightPhaseManager.addOnPhaseChanged((prev, next) => this.onFlightPhaseChanged(prev, next));
 
         const hEventSub = this.props.bus.getSubscriber<HEvent>();
-        hEventSub.on('hEvent').handle(eventName => {
+        hEventSub.on('hEvent').handle((eventName) => {
             console.log(`H event: ${eventName}`);
             this.fmService.acInterface.onEvent(eventName);
         });

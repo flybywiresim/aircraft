@@ -252,7 +252,7 @@ export class InputField<T> extends DisplayComponent<InputFieldProps<T>> {
         let newValue = null;
         try {
             newValue = await this.props.dataEntryFormat.parse(input);
-        } catch(msg: unknown) {
+        } catch (msg: unknown) {
             if (msg instanceof FmsError && this.props.errorHandler) {
                 this.props.errorHandler(msg.type);
             }

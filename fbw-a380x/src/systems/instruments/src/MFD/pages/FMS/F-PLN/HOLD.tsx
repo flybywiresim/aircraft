@@ -87,7 +87,7 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
 
             await this.props.fmService.flightPlanService.addOrEditManualHold(
                 this.props.fmService.revisedWaypointIndex.get(),
-                Object.assign({}, desiredHold),
+                { ...desiredHold },
                 desiredHold,
                 this.loadedFlightPlan.legElementAt(this.props.fmService.revisedWaypointIndex.get()).defaultHold,
                 this.props.fmService.revisedWaypointPlanIndex.get(),

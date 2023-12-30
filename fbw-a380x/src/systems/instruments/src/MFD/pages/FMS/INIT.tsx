@@ -10,11 +10,11 @@ import { AirportFormat, CostIndexFormat, CrzTempFormat, FlightLevelFormat, LongA
 import { Button, ButtonMenuItem } from 'instruments/src/MFD/pages/common/Button';
 import { defaultTropopauseAlt, maxCertifiedAlt } from '@shared/PerformanceConstants';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
-import { NXDataStore } from '@flybywiresim/fbw-sdk';
+import { NXDataStore, Units } from '@flybywiresim/fbw-sdk';
 import { SimBriefUplinkAdapter } from '@fmgc/flightplanning/new/uplink/SimBriefUplinkAdapter';
 import { FmgcFlightPhase } from '@shared/flightphase';
+import { NXFictionalMessages } from 'instruments/src/MFD/pages/FMS/legacy/NXSystemMessages';
 import { ISimbriefData } from '../../../../../../../../fbw-a32nx/src/systems/instruments/src/EFB/Apis/Simbrief';
-import { NXFictionalMessages, TypeIMessage } from 'instruments/src/MFD/pages/FMS/legacy/NXSystemMessages';
 
 interface MfdFmsInitProps extends AbstractMfdPageProps {
 }
@@ -132,13 +132,15 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
     }
 
     private async cpnyFplnRequest() {
-        const simBriefUserId = NXDataStore.get('CONFIG_SIMBRIEF_USERID', '');
+        const navigraphUsername = NXDataStore.get('NAVIGRAPH_USERNAME', '');
+        const overrideSimBriefUserID = NXDataStore.get('CONFIG_OVERRIDE_SIMBRIEF_USERID', '');
 
-        if (!simBriefUserId) {
-            this.props.fmService.mfd.addMessageToQueue(NXFictionalMessages.simBriefNoUser);
+        if (!navigraphUsername && !overrideSimBriefUserID) {
+            this.props.fmService.mfd.addMessageToQueue(NXFictionalMessages.noNavigraphUser);
+            throw new Error('No Navigraph username provided');
         }
 
-        this.simBriefOfp = await SimBriefUplinkAdapter.downloadOfpForUserID(simBriefUserId);
+        this.simBriefOfp = await SimBriefUplinkAdapter.downloadOfpForUserID(navigraphUsername, overrideSimBriefUserID);
 
         SimBriefUplinkAdapter.uplinkFlightPlanFromSimbrief(
             this.props.fmService.mfd,
@@ -150,10 +152,16 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
 
     private async insertCpnyFpln() {
         this.props.fmService.flightPlanService.uplinkInsert();
-        this.props.fmService.fmgc.data.atcCallsign.set(`${this.simBriefOfp.airline}${this.simBriefOfp.flightNumber}`);
-        this.props.fmService.flightPlanService.active.setPerformanceData('costIndex', parseInt(this.simBriefOfp.costIndex));
-
-        this.props.fmService.flightPlanService.setPerformanceData('cruiseFlightLevel', this.simBriefOfp.cruiseAltitude);
+        this.props.fmService.fmgc.data.atcCallsign.set(this.simBriefOfp.callsign);
+        this.props.fmService.fmgc.data.blockFuel.set(this.simBriefOfp.units === 'kgs' ? this.simBriefOfp.fuel.planRamp : Units.poundToKilogram(this.simBriefOfp.fuel.planRamp));
+        this.props.fmService.fmgc.data.zeroFuelWeight.set(this.simBriefOfp.units === 'kgs'
+            ? Number(this.simBriefOfp.weights.estZeroFuelWeight)
+            : Units.poundToKilogram(Number(this.simBriefOfp.weights.estZeroFuelWeight)));
+        this.props.fmService.fmgc.data.taxiFuel.set(this.simBriefOfp.units === 'kgs' ? this.simBriefOfp.fuel.taxi : Units.poundToKilogram(this.simBriefOfp.fuel.taxi));
+        this.props.fmService.fmgc.data.alternateFuelPilotEntry.set(this.simBriefOfp.units === 'kgs' ? this.simBriefOfp.alternate.burn : Units.poundToKilogram(this.simBriefOfp.alternate.burn));
+        this.props.fmService.fmgc.data.finalFuelWeightPilotEntry.set(this.simBriefOfp.units === 'kgs' ? this.simBriefOfp.fuel.reserve : Units.poundToKilogram(this.simBriefOfp.fuel.reserve));
+        this.props.fmService.fmgc.data.paxNumber.set(Number(this.simBriefOfp.weights.passengerCount));
+        this.props.fmService.fmgc.data.tropopausePilotEntry.set(Number(this.simBriefOfp.averageTropopause));
 
         this.props.fmService.fmgc.data.cpnyFplnAvailable.set(false);
     }
@@ -313,7 +321,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                             mandatory={Subject.create(false)}
                             enteredByPilot={this.props.fmService.fmgc.data.tropopauseIsPilotEntered}
                             value={this.props.fmService.fmgc.data.tropopause}
-                            onModified={() => {}}
+                            onModified={() => { }}
                             alignText="flex-end"
                             errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
                         />

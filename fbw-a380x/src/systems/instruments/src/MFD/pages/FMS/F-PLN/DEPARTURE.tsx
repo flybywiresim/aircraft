@@ -5,6 +5,7 @@ import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 import { Button, ButtonMenuItem } from 'instruments/src/MFD/pages/common/Button';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
+import { BaseFlightPlan } from '@fmgc/flightplanning/new/plans/BaseFlightPlan';
 
 interface MfdFmsFplnDepProps extends AbstractMfdPageProps {
 }
@@ -43,43 +44,48 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
     protected onNewData(): void {
         console.time('DEPARTURE:onNewData');
 
-        if (this.loadedFlightPlan.originAirport) {
-            this.fromIcao.set(this.loadedFlightPlan.originAirport.ident);
+        const isAltn = this.props.fmService.revisedWaypointIsAltn.get();
+        const flightPlan: BaseFlightPlan = isAltn ? this.loadedFlightPlan.alternateFlightPlan : this.loadedFlightPlan;
+
+        if (flightPlan.originAirport) {
+            this.fromIcao.set(flightPlan.originAirport.ident);
 
             const runways: ButtonMenuItem[] = [];
-            this.loadedFlightPlan.availableOriginRunways.forEach((rw) => {
+            const sortedRunways = flightPlan.availableOriginRunways.sort((a, b) => a.ident.localeCompare(b.ident));
+            sortedRunways.forEach((rw) => {
                 runways.push({
                     label: `${rw.ident.substring(2).padEnd(3, ' ')} ${rw.length.toFixed(0).padStart(5, ' ')}FT ${rw.lsIdent ? 'ILS' : ''}`,
                     action: async () => {
-                        await this.props.fmService.flightPlanService.setOriginRunway(rw.ident, this.loadedFlightPlanIndex.get());
-                        await this.props.fmService.flightPlanService.setDepartureProcedure(undefined, this.loadedFlightPlanIndex.get());
-                        await this.props.fmService.flightPlanService.setDepartureEnrouteTransition(undefined, this.loadedFlightPlanIndex.get());
+                        await this.props.fmService.flightPlanService.setOriginRunway(rw.ident, this.loadedFlightPlanIndex.get(), isAltn);
+                        await this.props.fmService.flightPlanService.setDepartureProcedure(undefined, this.loadedFlightPlanIndex.get(), isAltn);
+                        await this.props.fmService.flightPlanService.setDepartureEnrouteTransition(undefined, this.loadedFlightPlanIndex.get(), isAltn);
                     },
                 });
             });
             this.rwyOptions.set(runways);
 
-            if (this.loadedFlightPlan.originRunway) {
-                this.rwyIdent.set(this.loadedFlightPlan.originRunway.ident.substring(2));
-                this.rwyLength.set(this.loadedFlightPlan.originRunway.length.toFixed(0) ?? '----');
-                this.rwyCrs.set(this.loadedFlightPlan.originRunway.bearing.toFixed(0).padStart(3, '0') ?? '---');
+            if (flightPlan.originRunway) {
+                this.rwyIdent.set(flightPlan.originRunway.ident.substring(2));
+                this.rwyLength.set(flightPlan.originRunway.length.toFixed(0) ?? '----');
+                this.rwyCrs.set(flightPlan.originRunway.bearing.toFixed(0).padStart(3, '0') ?? '---');
                 this.rwyEoSid.set('NONE');
-                this.rwyFreq.set(this.loadedFlightPlan.originRunway.lsFrequencyChannel.toFixed(2) ?? '---.--');
+                this.rwyFreq.set(flightPlan.originRunway.lsFrequencyChannel.toFixed(2) ?? '---.--');
 
-                if (this.loadedFlightPlan.availableDepartures?.length > 0) {
+                if (flightPlan.availableDepartures?.length > 0) {
                     const sids: ButtonMenuItem[] = [{
                         label: 'NONE',
                         action: async () => {
-                            await this.props.fmService.flightPlanService.setDepartureProcedure(undefined, this.loadedFlightPlanIndex.get());
-                            await this.props.fmService.flightPlanService.setDepartureEnrouteTransition(undefined, this.loadedFlightPlanIndex.get());
+                            await this.props.fmService.flightPlanService.setDepartureProcedure(undefined, this.loadedFlightPlanIndex.get(), isAltn);
+                            await this.props.fmService.flightPlanService.setDepartureEnrouteTransition(undefined, this.loadedFlightPlanIndex.get(), isAltn);
                         },
                     }];
-                    this.loadedFlightPlan.availableDepartures.forEach((dep) => {
+                    const sortedDepartures = flightPlan.availableDepartures.sort((a, b) => a.ident.localeCompare(b.ident));
+                    sortedDepartures.forEach((dep) => {
                         sids.push({
                             label: dep.ident,
                             action: async () => {
-                                await this.props.fmService.flightPlanService.setDepartureProcedure(dep.ident, this.loadedFlightPlanIndex.get());
-                                await this.props.fmService.flightPlanService.setDepartureEnrouteTransition(undefined, this.loadedFlightPlanIndex.get());
+                                await this.props.fmService.flightPlanService.setDepartureProcedure(dep.ident, this.loadedFlightPlanIndex.get(), isAltn);
+                                await this.props.fmService.flightPlanService.setDepartureEnrouteTransition(undefined, this.loadedFlightPlanIndex.get(), isAltn);
                             },
                         });
                     });
@@ -95,23 +101,23 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
                 this.sidDisabled.set(true);
             }
 
-            if (this.loadedFlightPlan.originDeparture) {
-                this.rwySid.set(this.loadedFlightPlan.originDeparture.ident);
+            if (flightPlan.originDeparture) {
+                this.rwySid.set(flightPlan.originDeparture.ident);
 
-                if (this.loadedFlightPlan.originDeparture.enrouteTransitions?.length > 0) {
+                if (flightPlan.originDeparture.enrouteTransitions?.length > 0) {
                     const trans: ButtonMenuItem[] = [
                         {
                             label: 'NONE',
-                            action: () => this.props.fmService.flightPlanService.setDepartureEnrouteTransition(undefined, this.loadedFlightPlanIndex.get()),
+                            action: () => this.props.fmService.flightPlanService.setDepartureEnrouteTransition(undefined, this.loadedFlightPlanIndex.get(), isAltn),
                         }];
-                    this.loadedFlightPlan.originDeparture.enrouteTransitions.forEach((el) => {
-                        trans.push({ label: el.ident, action: () => this.props.fmService.flightPlanService.setDepartureEnrouteTransition(el.ident, this.loadedFlightPlanIndex.get()) });
+                    flightPlan.originDeparture.enrouteTransitions.forEach((el) => {
+                        trans.push({ label: el.ident, action: () => this.props.fmService.flightPlanService.setDepartureEnrouteTransition(el.ident, this.loadedFlightPlanIndex.get(), isAltn) });
                     });
                     this.transOptions.set(trans);
                     this.transDisabled.set(false);
                 }
             } else {
-                if (this.loadedFlightPlan.availableDepartures?.length > 0) {
+                if (flightPlan.availableDepartures?.length > 0) {
                     this.rwySid.set('------');
                 } else {
                     this.rwySid.set('NONE');
@@ -119,9 +125,9 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
                 this.transDisabled.set(true);
             }
 
-            if (this.loadedFlightPlan.departureEnrouteTransition) {
-                this.rwyTrans.set(this.loadedFlightPlan.departureEnrouteTransition.ident);
-            } else if (this.loadedFlightPlan?.originDeparture?.enrouteTransitions?.length === 0) {
+            if (flightPlan.departureEnrouteTransition) {
+                this.rwyTrans.set(flightPlan.departureEnrouteTransition.ident);
+            } else if (flightPlan?.originDeparture?.enrouteTransitions?.length === 0) {
                 this.rwyTrans.set('NONE');
             } else {
                 this.rwyTrans.set('------');
@@ -257,7 +263,7 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
                 <div style="display: flex; flex-direction: row; margin-left: 50px;">
                     <Button
                         label="RWY"
-                        onClick={() => {}}
+                        onClick={() => { }}
                         buttonStyle="width: 250px;"
                         idPrefix="f-pln-dep-rwy-btn"
                         menuItems={this.rwyOptions}
@@ -265,7 +271,7 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
                     <div style="width: 100px;" />
                     <Button
                         label="SID"
-                        onClick={() => {}}
+                        onClick={() => { }}
                         disabled={this.sidDisabled}
                         buttonStyle="width: 140px;"
                         idPrefix="f-pln-dep-sid-btn"
@@ -274,7 +280,7 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
                     <div style="width: 50px;" />
                     <Button
                         label="TRANS"
-                        onClick={() => {}}
+                        onClick={() => { }}
                         disabled={this.transDisabled}
                         buttonStyle="width: 130px;"
                         idPrefix="f-pln-dep-trans-btn"

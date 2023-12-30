@@ -1,4 +1,3 @@
-import { FmsErrorType } from '@fmgc/FmsError';
 import { FlightPlanIndex } from '@fmgc/flightplanning/new/FlightPlanManager';
 import { FlightPlan } from '@fmgc/flightplanning/new/plans/FlightPlan';
 import { FlightPlanSyncEvents } from '@fmgc/flightplanning/new/sync/FlightPlanSyncEvents';

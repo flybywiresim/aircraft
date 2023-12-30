@@ -26,10 +26,15 @@ export class MfdFlightManagementService {
     public enginesWereStarted = Subject.create<boolean>(false);
 
     public revisedWaypoint(): Fix | undefined {
-        if (this.revisedWaypointIndex.get()
-        && this.flightPlanService.has(this.revisedWaypointPlanIndex.get())
-    && this.flightPlanService.get(this.revisedWaypointPlanIndex.get()).elementAt(this.revisedWaypointIndex.get()).isDiscontinuity === false) {
-            return this.flightPlanService.get(this.revisedWaypointPlanIndex.get()).legElementAt(this.revisedWaypointIndex.get())?.definition?.waypoint;
+        if (this.revisedWaypointIndex.get() !== undefined
+            && this.flightPlanService.has(this.revisedWaypointPlanIndex.get())
+        ) {
+            const flightPlan = this.revisedWaypointIsAltn.get()
+                ? this.flightPlanService.get(this.revisedWaypointPlanIndex.get()).alternateFlightPlan
+                : this.flightPlanService.get(this.revisedWaypointPlanIndex.get());
+            if (flightPlan.elementAt(this.revisedWaypointIndex.get())?.isDiscontinuity === false) {
+                return flightPlan.legElementAt(this.revisedWaypointIndex.get())?.definition?.waypoint;
+            }
         }
         return undefined;
     }
@@ -74,9 +79,9 @@ export class MfdFlightManagementService {
             if (this.enginesWereStarted.get() === false) {
                 const flightPhase = fmgc.getFlightPhase();
                 const oneEngineWasStarted = (SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:1', 'number') > 20)
-                || (SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:2', 'number') > 20)
-                || (SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:3', 'number') > 20)
-                || (SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:4', 'number') > 20);
+                    || (SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:2', 'number') > 20)
+                    || (SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:3', 'number') > 20)
+                    || (SimVar.GetSimVarValue('L:A32NX_ENGINE_N2:4', 'number') > 20);
                 this.enginesWereStarted.set(flightPhase >= FmgcFlightPhase.Takeoff || (flightPhase === FmgcFlightPhase.Preflight && oneEngineWasStarted));
             }
         }));
@@ -113,14 +118,14 @@ export class MfdFlightManagementService {
         }
 
         let fmGW = 0;
-        if (this.fmgc.isAnEngineOn() && isFinite(this.fmgc.data.zeroFuelWeight.get())) {
+        if (this.fmgc.isAnEngineOn() && Number.isFinite(this.fmgc.data.zeroFuelWeight.get())) {
             fmGW = (this.fmgc.getFOB() + this.fmgc.data.zeroFuelWeight.get());
-        } else if (isFinite(this.fmgc.data.blockFuel.get()) && isFinite(this.fmgc.data.zeroFuelWeight.get())) {
+        } else if (Number.isFinite(this.fmgc.data.blockFuel.get()) && Number.isFinite(this.fmgc.data.zeroFuelWeight.get())) {
             fmGW = (this.fmgc.data.blockFuel.get() + this.fmgc.data.zeroFuelWeight.get());
         } else {
             fmGW = SimVar.GetSimVarValue('TOTAL WEIGHT', 'pounds') * 0.453592;
         }
-        SimVar.SetSimVarValue("L:A32NX_FM_GROSS_WEIGHT", "Number", fmGW);
+        SimVar.SetSimVarValue('L:A32NX_FM_GROSS_WEIGHT', 'Number', fmGW);
         return fmGW;
     }
 
@@ -130,8 +135,8 @@ export class MfdFlightManagementService {
             // TOW before engine start: TOW = ZFW + BLOCK - TAXI
             if (this.fmgc.getZeroFuelWeight() && this.fmgc.data.blockFuel.get() && this.fmgc.data.taxiFuel.get()) {
                 return (this.fmgc.getZeroFuelWeight()
-                + this.fmgc.data.blockFuel.get()
-                - this.fmgc.data.taxiFuel.get());
+                    + this.fmgc.data.blockFuel.get()
+                    - this.fmgc.data.taxiFuel.get());
             }
             return null;
         }
