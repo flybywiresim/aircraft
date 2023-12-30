@@ -1007,6 +1007,10 @@
         "lods": [1]
       },
       {
+        "gltf": "./window-plugs/A32N-WINDOW-PLUGS.gltf",
+        "bin": "./window-plugs/A32N-WINDOW-PLUGS.bin"
+      },
+      {
         "combineFiles": ["./a320-exterior/A320_NEO_LOD00.gltf"],
         "nodes": [
           {
