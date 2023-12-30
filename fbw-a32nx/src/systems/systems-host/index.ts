@@ -32,7 +32,6 @@ class SystemsHost extends BaseInstrument {
         this.hEventPublisher = new HEventPublisher(this.bus);
         this.powerSupply = new PowerSupplyBusses(this.bus);
         this.atsu = new AtsuSystem(this.bus);
-        
         Promise.all([
             KeyEventManager.getManager(this.bus),
             Wait.awaitSubscribable(GameStateProvider.get(), (state) => state === GameState.ingame, true),
