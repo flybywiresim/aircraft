@@ -34,12 +34,12 @@ class SystemsHost extends BaseInstrument {
         this.atsu = new AtsuSystem(this.bus);
         
         Promise.all([
-           KeyEventManager.getManager(this.bus),
-           Wait.awaitSubscribable(GameStateProvider.get(), state => state === GameState.ingame, true),
+            KeyEventManager.getManager(this.bus),
+            Wait.awaitSubscribable(GameStateProvider.get(), (state) => state === GameState.ingame, true),
         ]).then(([keyEventManager]) => {
-                this.keyInterceptManager = manager;
-                this.initLighting();
-           });
+                 this.keyInterceptManager = keyEventManager;
+                 this.initLighting();
+            });
     }
 
     get templateID(): string {
@@ -84,7 +84,6 @@ class SystemsHost extends BaseInstrument {
     }
 
     private initLighting() {
-
         /** automatic brightness based on ambient light, [0, 1] scale */
         const autoBrightness = Math.max(15, Math.min(85, SimVar.GetSimVarValue('GLASSCOCKPIT AUTOMATIC BRIGHTNESS', 'percent')));
 
