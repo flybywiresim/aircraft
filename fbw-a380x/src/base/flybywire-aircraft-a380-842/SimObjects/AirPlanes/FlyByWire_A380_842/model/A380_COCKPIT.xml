@@ -151,8 +151,6 @@
                 </Component>
             </Component>
 
-         
-                                
             <!-- ND_L -->
             <Component ID="NDL">
                 <Component ID="SCREEN_NDL">
@@ -3221,7 +3219,7 @@
 
                 <UseTemplate Name="FBW_Airbus_Fuel_Crossfeed">
                     <NODE_ID>PUSH_OVHD_FUEL_XFEED</NODE_ID>
-                    <ID>3</ID>
+                    <ID>46</ID>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                     <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                     <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
@@ -3231,7 +3229,7 @@
                 </UseTemplate>
                 <UseTemplate Name="FBW_Airbus_Fuel_Crossfeed">
                     <NODE_ID>PUSH_OVHD_FUEL_XFEED2</NODE_ID>
-                    <ID>3</ID>
+                    <ID>47</ID>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                     <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                     <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
@@ -3241,7 +3239,7 @@
                 </UseTemplate>
                 <UseTemplate Name="FBW_Airbus_Fuel_Crossfeed">
                     <NODE_ID>PUSH_OVHD_FUEL_XFEED3</NODE_ID>
-                    <ID>3</ID>
+                    <ID>48</ID>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                     <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                     <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
@@ -3251,7 +3249,7 @@
                 </UseTemplate>
                 <UseTemplate Name="FBW_Airbus_Fuel_Crossfeed">
                     <NODE_ID>PUSH_OVHD_FUEL_XFEED4</NODE_ID>
-                    <ID>3</ID>
+                    <ID>49</ID>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                     <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                     <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
@@ -3259,46 +3257,53 @@
                     <OFF_TOOLTIP>COCKPIT.TOOLTIPS.FUEL_XFEED_TURN_ON</OFF_TOOLTIP>
                     <ON_TOOLTIP>COCKPIT.TOOLTIPS.FUEL_XFEED_TURN_OFF</ON_TOOLTIP>
                 </UseTemplate>
-                <UseTemplate Name="FBW_Airbus_Fuel_Crossfeed">
+
+                <!-- OUTR TK XFR -->
+                <UseTemplate Name="FBW_Covered_Push_Toggle">
                     <NODE_ID>PUSH_OVHD_FUEL_OUTRTK_XFR</NODE_ID>
                     <LOCK_NODE_ID>LOCK_OVHD_FUEL_OUTRTK_XFR</LOCK_NODE_ID>
-                    <ID>3</ID>
+                    <TOGGLE_SIMVAR>L:A380X_OVHD_FUEL_OUTRTK_XFR_PB_IS_AUTO</TOGGLE_SIMVAR>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                     <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                     <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                     <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
-                    <OFF_TOOLTIP>COCKPIT.TOOLTIPS.FUEL_XFEED_TURN_ON</OFF_TOOLTIP>
-                    <ON_TOOLTIP>COCKPIT.TOOLTIPS.FUEL_XFEED_TURN_OFF</ON_TOOLTIP>
+                    <TOOLTIPID>%((L:A380X_OVHD_FUEL_OUTRTK_XFR_PB_IS_AUTO, Bool) !)%{if}TT:#COCKPIT.TOOLTIPS.FUEL_XFEED_TURN_ON#%{else}TT:#COCKPIT.TOOLTIPS.FUEL_XFEED_TURN_OFF#%{end}</TOOLTIPID>
                 </UseTemplate>
-                <UseTemplate Name="FBW_Airbus_Fuel_Crossfeed">
+
+                <!-- MID TK XFR -->
+                <UseTemplate Name="FBW_Covered_Push_Toggle">
                     <NODE_ID>PUSH_OVHD_FUEL_MIDTK_XFR</NODE_ID>
-                    <ID>3</ID>
+                    <LOCK_NODE_ID>LOCK_OVHD_FUEL_MIDTK_XFR</LOCK_NODE_ID>
+                    <TOGGLE_SIMVAR>L:A380X_OVHD_FUEL_MIDTK_XFR_PB_IS_AUTO</TOGGLE_SIMVAR>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                     <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                     <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                     <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
-                    <OFF_TOOLTIP>COCKPIT.TOOLTIPS.FUEL_XFEED_TURN_ON</OFF_TOOLTIP>
-                    <ON_TOOLTIP>COCKPIT.TOOLTIPS.FUEL_XFEED_TURN_OFF</ON_TOOLTIP>
+                    <TOOLTIPID>%((L:A380X_OVHD_FUEL_MIDTK_XFR_PB_IS_AUTO, Bool) !)%{if}TT:#COCKPIT.TOOLTIPS.FUEL_XFEED_TURN_ON#%{else}TT:#COCKPIT.TOOLTIPS.FUEL_XFEED_TURN_OFF#%{end}</TOOLTIPID>
                 </UseTemplate>
-                <UseTemplate Name="FBW_Airbus_Fuel_Crossfeed">
+
+                <!-- INR TK XFR -->
+                <UseTemplate Name="FBW_Covered_Push_Toggle">
                     <NODE_ID>PUSH_OVHD_FUEL_INRTK_XFR</NODE_ID>
-                    <ID>3</ID>
+                    <LOCK_NODE_ID>LOCK_OVHD_FUEL_INRTK_XFR</LOCK_NODE_ID>
+                    <TOGGLE_SIMVAR>L:A380X_OVHD_FUEL_INRTK_XFR_PB_IS_AUTO</TOGGLE_SIMVAR>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                     <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                     <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                     <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
-                    <OFF_TOOLTIP>COCKPIT.TOOLTIPS.FUEL_XFEED_TURN_ON</OFF_TOOLTIP>
-                    <ON_TOOLTIP>COCKPIT.TOOLTIPS.FUEL_XFEED_TURN_OFF</ON_TOOLTIP>
+                    <TOOLTIPID>%((L:A380X_OVHD_FUEL_INRTK_XFR_PB_IS_AUTO, Bool) !)%{if}TT:#COCKPIT.TOOLTIPS.FUEL_XFEED_TURN_ON#%{else}TT:#COCKPIT.TOOLTIPS.FUEL_XFEED_TURN_OFF#%{end}</TOOLTIPID>
                 </UseTemplate>
-                <UseTemplate Name="FBW_Airbus_Fuel_Crossfeed">
+
+                <!-- TRIM TK XFR -->
+                <UseTemplate Name="FBW_Covered_Push_Toggle">
                     <NODE_ID>PUSH_OVHD_FUEL_TRIMTK_XFR</NODE_ID>
-                    <ID>3</ID>
+                    <LOCK_NODE_ID>LOCK_OVHD_FUEL_TRIMTK_XFR</LOCK_NODE_ID>
+                    <TOGGLE_SIMVAR>L:A380X_OVHD_FUEL_TRIMTK_XFR_PB_IS_AUTO</TOGGLE_SIMVAR>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
                     <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                     <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                     <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
-                    <OFF_TOOLTIP>COCKPIT.TOOLTIPS.FUEL_XFEED_TURN_ON</OFF_TOOLTIP>
-                    <ON_TOOLTIP>COCKPIT.TOOLTIPS.FUEL_XFEED_TURN_OFF</ON_TOOLTIP>
+                    <TOOLTIPID>%((L:A380X_OVHD_FUEL_TRIMTK_XFR_PB_IS_AUTO, Bool) !)%{if}TT:#COCKPIT.TOOLTIPS.FUEL_XFEED_TURN_ON#%{else}TT:#COCKPIT.TOOLTIPS.FUEL_XFEED_TURN_OFF#%{end}</TOOLTIPID>
                 </UseTemplate>
 
                 <!-- FEED TK1 -->
@@ -3816,6 +3821,46 @@
                                 <NO_SEQ2 />
                             </UseTemplate>
                         </Component>
+                    </Component>
+
+                    <Component ID="FUEL">
+                        <!-- EMER OUTR TK XFR -->
+                        <UseTemplate Name="FBW_Covered_Push_Toggle">
+                            <NODE_ID>PUSH_OVHD_EMER_OUTR_XFR</NODE_ID>
+                            <LOCK_NODE_ID>LOCK_OVHD_EMER_OUTR_XFR</LOCK_NODE_ID>
+                            <TOGGLE_SIMVAR>L:A380X_OVHD_FUEL_EMER_OUTR_XFR_PB_IS_ON</TOGGLE_SIMVAR>
+                            <NO_SEQ1 />
+                            <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
+                            <SEQ2_CODE>(L:A380X_OVHD_FUEL_EMER_OUTR_XFR_PB_IS_ON, Bool)</SEQ2_CODE>
+                            <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                            <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
+                        </UseTemplate>
+
+                        <!-- JETTISON ARM -->
+                        <UseTemplate Name="FBW_Covered_Push_Toggle">
+                            <NODE_ID>PUSH_OVHD_JETTISON_ARM</NODE_ID>
+                            <LOCK_NODE_ID>LOCK_OVHD_JETTISON_ARM</LOCK_NODE_ID>
+                            <TOGGLE_SIMVAR>L:A380X_OVHD_FUEL_JETTISON_ARM_PB_IS_ON</TOGGLE_SIMVAR>
+                            <NO_SEQ1 />
+                            <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
+                            <SEQ2_CODE>(L:A380X_OVHD_FUEL_JETTISON_ARM_PB_IS_ON, Bool)</SEQ2_CODE>
+                            <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                            <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
+                        </UseTemplate>
+
+                        <!-- JETTISON ACTIVE -->
+                        <UseTemplate Name="FBW_Covered_Push_Toggle">
+                            <NODE_ID>PUSH_OVHD_JETTISON_ACTIVE</NODE_ID>
+                            <LOCK_NODE_ID>LOCK_OVHD_JETTISON_ACTIVE</LOCK_NODE_ID>
+                            <TOGGLE_SIMVAR>L:A380X_OVHD_FUEL_JETTISON_ACTIVE_PB_IS_ON</TOGGLE_SIMVAR>
+                            <SEQ_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ_POWERED>
+                            <SEQ1_CODE>(L:A380X_OVHD_FUEL_JETTISON_IS_OPEN, Bool)</SEQ2_CODE>
+                            <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+                            <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
+                            <SEQ2_CODE>(L:A380X_OVHD_FUEL_JETTISON_ACTIVE_PB_IS_ON, Bool)</SEQ2_CODE>
+                            <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
+                            <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
+                        </UseTemplate>
                     </Component>
 
                     <Component ID="Center_Column">
@@ -6640,6 +6685,19 @@
             </UseTemplate>
             <UseTemplate Name="FBW_Coffee_Cup">
                 <NODE_ID>COCKPIT_COFFEE_R</NODE_ID>
+            </UseTemplate>
+        </Component>
+
+        <Component ID="HOSE0815" Node="HOSE0815">
+            <UseTemplate Name="ASOBO_GT_Visibility_Code">
+                <VISIBILITY_CODE>(L:XMLVar_HOSE0815:VISIBILITY , bool) 0 ==</VISIBILITY_CODE>
+            </UseTemplate>
+        </Component>
+        <Component ID="HAT04" Node="HAT04">
+            <UseTemplate Name="ASOBO_GT_MouseRect">
+                <CALLBACKCODE_DEFAULT_IM>(M:Event) 'LeftSingle' scmp 0 == if{ (L:XMLVar_HOSE0815:VISIBILITY , bool) ! (&gt;L:XMLVar_HOSE0815:VISIBILITY , bool) }</CALLBACKCODE_DEFAULT_IM>
+                <MOUSEFLAGS>LeftSingle</MOUSEFLAGS>
+                <CURSOR>Hand</CURSOR>
             </UseTemplate>
         </Component>
 
