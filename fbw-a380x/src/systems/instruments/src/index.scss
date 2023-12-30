@@ -90,6 +90,7 @@ tspan.White,
 .White.Fill {
     stroke: none;
     fill: $display-white;
+    color: $display-white;
 }
 
 .LightGrey {
@@ -141,6 +142,7 @@ text.Amber,
 tspan.Amber,
 .AmberFill {
     fill: $display-amber;
+    color: $display-amber;
 }
 
 .Amber.Fill {
@@ -279,6 +281,13 @@ tspan.Transparent,
 
 .WS-10 {
     word-spacing: -10px !important;
+}
+
+.TextOutline2 {
+    stroke-width: 2px;
+    // currentColor uses the color attribute, so we need to add that to the classes specifying the colors
+    // Important is necessary as some color classes specify stroke:none
+    stroke: currentColor !important;
 }
 
 .MiddleAlign {
