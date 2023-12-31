@@ -185,6 +185,7 @@
       "Title": "Pushback"
     },
     "Services": {
+      "AirStarterUnit": "Air Starter Unit",
       "BaggageTruck": "Batožinové vozidlo",
       "CateringTruck": "Cateringové vozidlo",
       "Cones": "Safety Cones",
@@ -622,7 +623,8 @@
       "ReverserOnAxis": "Reverser na os",
       "SaveAndApply": "Uložiť a použiť",
       "SetFromThrottle": "Nastav od škrtiacej klapky",
-      "ThrottleConfigurationReset": "Reset konfigurácie škrtiacej klapky"
+      "ThrottleConfigurationReset": "Reset konfigurácie škrtiacej klapky",
+      "TogaOnAxis": "TogaOnAxis"
     },
     "Title": "Nastavenia",
     "Unrealistic": "Nereálne",

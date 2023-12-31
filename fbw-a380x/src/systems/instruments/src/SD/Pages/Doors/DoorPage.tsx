@@ -17,7 +17,7 @@ export const DoorPage = () => {
 
     return (
         <>
-            <PageTitle showMore={false} x={5} y={28}>DOOR</PageTitle>
+            <PageTitle x={6} y={29}>DOOR</PageTitle>
             <text x="599" y="28" className="ecam-page-title">OXYGEN</text>
             <Oxygen x={629} y={104} active={sdacActive} onGround={onGround} />
 
@@ -53,7 +53,6 @@ export const DoorPage = () => {
             <CargoDoor x={356} y={242} label="FWD CARGO" width={26} height={48} engineRunning={engineRunning} />
             <CargoDoor x={356} y={506} label="AFT CARGO" width={26} height={40} engineRunning={engineRunning} />
             <CargoDoor x={356} y={580} label="BULK" width={26} height={26} engineRunning={engineRunning} />
-
         </>
     );
 };

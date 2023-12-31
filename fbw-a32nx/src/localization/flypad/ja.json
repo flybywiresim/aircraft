@@ -185,6 +185,7 @@
       "Title": "プッシュバック"
     },
     "Services": {
+      "AirStarterUnit": "エアースターターユニット",
       "BaggageTruck": "手荷物トラック",
       "CateringTruck": "機内食トラック",
       "Cones": "セーフティコーン",
@@ -622,7 +623,8 @@
       "ReverserOnAxis": "逆噴射を軸に設定",
       "SaveAndApply": "保存して適用",
       "SetFromThrottle": "現在のスロットル値をセット",
-      "ThrottleConfigurationReset": "スロットル構成のリセット"
+      "ThrottleConfigurationReset": "スロットル構成のリセット",
+      "TogaOnAxis": "TOGAを軸に設定"
     },
     "Title": "設定",
     "Unrealistic": "非現実的",

@@ -185,6 +185,7 @@
       "Title": "Vytlačení"
     },
     "Services": {
+      "AirStarterUnit": "Air Starter Unit",
       "BaggageTruck": "Zavazadlový vůz",
       "CateringTruck": "Cateringový vůz",
       "Cones": "Výstražné kužely",
@@ -622,7 +623,8 @@
       "ReverserOnAxis": "Zpětný tah na ose",
       "SaveAndApply": "Uložit a použít",
       "SetFromThrottle": "Nastavit z plynové páky",
-      "ThrottleConfigurationReset": "Reset konfigurace plynových pák"
+      "ThrottleConfigurationReset": "Reset konfigurace plynových pák",
+      "TogaOnAxis": "TogaOnAxis"
     },
     "Title": "Nastavení",
     "Unrealistic": "Nerealistické",
