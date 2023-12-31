@@ -79,7 +79,7 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
         super.onAfterRender(node);
 
         const wpt = this.loadedFlightPlan.allLegs.slice(this.props.fmService.flightPlanService.get(this.loadedFlightPlanIndex.get()).activeLegIndex + 1).map((el) => {
-            if (el instanceof FlightPlanLeg && el.ident !== 'MANUAL') {
+            if (el instanceof FlightPlanLeg && el.isXF() === true && el.ident !== 'MANUAL') {
                 return el.ident;
             }
             return null;

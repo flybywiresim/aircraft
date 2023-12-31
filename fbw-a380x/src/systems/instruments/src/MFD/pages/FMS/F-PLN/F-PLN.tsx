@@ -409,7 +409,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     public openInsertNextWptFromWindow() {
         const flightPlan = this.props.fmService.revisedWaypointIsAltn.get() ? this.loadedFlightPlan.alternateFlightPlan : this.loadedFlightPlan;
         const wpt = flightPlan.allLegs.map((el, idx) => {
-            if (el instanceof FlightPlanLeg && el.ident !== 'MANUAL' && idx >= this.props.fmService.revisedWaypointIndex.get() + 1) {
+            if (el instanceof FlightPlanLeg && el.isXF() === true && el.ident !== 'MANUAL' && idx >= this.props.fmService.revisedWaypointIndex.get() + 1) {
                 return { ident: el.ident, originalLegIndex: idx };
             }
             return null;
