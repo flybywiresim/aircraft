@@ -54,6 +54,7 @@ export class MfdFmsFplnAirways extends FmsPage<MfdFmsFplnAirwaysProps> {
                     fmService={this.props.fmService}
                     pendingAirways={this.loadedFlightPlan.pendingAirways}
                     fromFix={fromFix}
+                    isFirstLine={false}
                     nextLineCallback={(fix) => this.renderNextLine(fix)}
                 />
             );
@@ -75,6 +76,7 @@ export class MfdFmsFplnAirways extends FmsPage<MfdFmsFplnAirwaysProps> {
                 fmService={this.props.fmService}
                 pendingAirways={this.loadedFlightPlan.pendingAirways}
                 fromFix={this.props.fmService.revisedWaypoint()}
+                isFirstLine
                 nextLineCallback={(fix) => this.renderNextLine(fix)}
             />
         );
@@ -122,7 +124,10 @@ export class MfdFmsFplnAirways extends FmsPage<MfdFmsFplnAirwaysProps> {
                     <div ref={this.returnButtonDiv} class="mfd-fms-direct-to-erase-return-btn">
                         <Button
                             label="RETURN"
-                            onClick={() => this.props.uiService.navigateTo(`fms/${this.props.uiService.activeUri.get().category}/f-pln`)}
+                            onClick={() => {
+                                this.props.fmService.resetRevisedWaypoint();
+                                this.props.uiService.navigateTo(`fms/${this.props.uiService.activeUri.get().category}/f-pln`);
+                            }}
                         />
                     </div>
                     <div ref={this.tmpyFplnButtonDiv} class="mfd-fms-direct-to-erase-return-btn">
@@ -130,6 +135,7 @@ export class MfdFmsFplnAirways extends FmsPage<MfdFmsFplnAirwaysProps> {
                             label="TMPY F-PLN"
                             onClick={async () => {
                                 this.loadedFlightPlan.pendingAirways.finalize();
+                                this.props.fmService.resetRevisedWaypoint();
                                 this.props.uiService.navigateTo(`fms/${this.props.uiService.activeUri.get().category}/f-pln`);
                             }}
                             buttonStyle="color: #ffff00;"
@@ -147,6 +153,7 @@ interface AirwayLineProps extends ComponentProps {
     fmService: MfdFlightManagementService;
     pendingAirways: PendingAirways;
     fromFix: Fix;
+    isFirstLine: boolean;
     nextLineCallback: (f: Fix) => void;
 }
 
@@ -159,7 +166,7 @@ class AirwayLine extends DisplayComponent<AirwayLineProps> {
 
     public toField = Subject.create<string | undefined>(undefined);
 
-    private toFieldDisabled = Subject.create(false);
+    private toFieldDisabled = Subject.create(this.props.isFirstLine);
 
     render(): VNode {
         return (

@@ -83,7 +83,13 @@ export class DestinationWindow extends DisplayComponent<DestinationWindowProps> 
                         </div>
                     </div>
                     <div style="display: flex; flex-direction: row; justify-content: space-between">
-                        <Button label="CANCEL" onClick={() => this.props.visible.set(false)} />
+                        <Button
+                            label="CANCEL"
+                            onClick={() => {
+                                this.props.fmService.resetRevisedWaypoint();
+                                this.props.visible.set(false);
+                            }}
+                        />
                     </div>
                 </div>
             </div>

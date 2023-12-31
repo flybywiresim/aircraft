@@ -592,7 +592,10 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                     <div class="mfd-fms-fpln-line-destination">
                         <Button
                             label={this.destButtonLabel.map((it) => <span>{it}</span>)}
-                            onClick={() => this.props.uiService.navigateTo(`fms/${this.props.uiService.activeUri.get().category}/f-pln-arrival`)}
+                            onClick={() => {
+                                this.props.fmService.resetRevisedWaypoint();
+                                this.props.uiService.navigateTo(`fms/${this.props.uiService.activeUri.get().category}/f-pln-arrival`);
+                            }}
                             buttonStyle="font-size: 30px; width: 150px; margin-right: 5px;"
                         />
                         <span class={{

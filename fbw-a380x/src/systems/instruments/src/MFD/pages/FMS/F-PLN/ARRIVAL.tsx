@@ -466,13 +466,19 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                     <div ref={this.returnButtonDiv} style="display: flex; justify-content: flex-end; padding: 2px;">
                         <Button
                             label="RETURN"
-                            onClick={() => this.props.uiService.navigateTo('back')}
+                            onClick={() => {
+                                this.props.fmService.resetRevisedWaypoint();
+                                this.props.uiService.navigateTo('back');
+                            }}
                         />
                     </div>
                     <div ref={this.tmpyInsertButtonDiv} style="display: flex; justify-content: flex-end; padding: 2px;">
                         <Button
                             label="TMPY F-PLN"
-                            onClick={() => this.props.uiService.navigateTo(`fms/${this.props.uiService.activeUri.get().category}/f-pln`)}
+                            onClick={() => {
+                                this.props.fmService.resetRevisedWaypoint();
+                                this.props.uiService.navigateTo(`fms/${this.props.uiService.activeUri.get().category}/f-pln`);
+                            }}
                             buttonStyle="color: yellow"
                         />
                     </div>
