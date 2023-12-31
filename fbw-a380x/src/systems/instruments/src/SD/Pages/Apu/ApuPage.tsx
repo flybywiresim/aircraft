@@ -141,7 +141,7 @@ const NGauge = ({ x, y }: ComponentPositionProps) => {
                                 className={gaugeMarkerClassName}
                                 textClassName={gaugeMarkerTextClassName}
                                 textNudgeX={12}
-                                textNudgeY={-5}
+                                textNudgeY={-10}
                                 showValue
                                 bold
                             />
@@ -172,7 +172,7 @@ const NGauge = ({ x, y }: ComponentPositionProps) => {
                                 textClassName={gaugeMarkerTextClassName}
                                 showValue
                                 textNudgeX={-2}
-                                textNudgeY={24}
+                                textNudgeY={17}
                                 bold
                             />
                             {apuN.isNormalOperation()
@@ -275,8 +275,8 @@ const EgtGauge = ({ x, y }: ComponentPositionProps) => {
                             endAngle={GAUGE_END}
                             className={gaugeMarkerClassName}
                             textClassName={gaugeMarkerTextClassName}
-                            textNudgeX={8}
-                            textNudgeY={-8}
+                            textNudgeX={9}
+                            textNudgeY={-9}
                             showValue
                             bold
                         />
@@ -291,8 +291,6 @@ const EgtGauge = ({ x, y }: ComponentPositionProps) => {
                             startAngle={GAUGE_MARKING_START}
                             endAngle={GAUGE_END}
                             className={gaugeMarkerClassName}
-                            textNudgeX={3}
-                            textNudgeY={-8}
                             bold
                         />
                         {/* 500 */}
@@ -307,8 +305,8 @@ const EgtGauge = ({ x, y }: ComponentPositionProps) => {
                             endAngle={GAUGE_END}
                             className={gaugeMarkerClassName}
                             textClassName={gaugeMarkerTextClassName}
-                            textNudgeX={6}
-                            textNudgeY={15}
+                            textNudgeX={9}
+                            textNudgeY={12}
                             showValue
                             bold
                         />
@@ -323,8 +321,6 @@ const EgtGauge = ({ x, y }: ComponentPositionProps) => {
                             startAngle={GAUGE_MARKING_START}
                             endAngle={GAUGE_END}
                             className={gaugeMarkerClassName}
-                            textNudgeX={3}
-                            textNudgeY={-8}
                             bold
                         />
                         {/* 700 */}
@@ -339,8 +335,8 @@ const EgtGauge = ({ x, y }: ComponentPositionProps) => {
                             endAngle={GAUGE_END}
                             className={gaugeMarkerClassName}
                             textClassName={gaugeMarkerTextClassName}
-                            textNudgeX={-6}
-                            textNudgeY={14}
+                            textNudgeX={-8}
+                            textNudgeY={10}
                             showValue
                             bold
                         />
@@ -355,8 +351,6 @@ const EgtGauge = ({ x, y }: ComponentPositionProps) => {
                             startAngle={GAUGE_MARKING_START}
                             endAngle={GAUGE_END}
                             className={gaugeMarkerClassName}
-                            textNudgeX={-12}
-                            textNudgeY={3}
                             bold
                         />
                         {/* 900 */}
@@ -371,8 +365,8 @@ const EgtGauge = ({ x, y }: ComponentPositionProps) => {
                             endAngle={GAUGE_END}
                             className={gaugeMarkerClassName}
                             textClassName={gaugeMarkerTextClassName}
-                            textNudgeX={-12}
-                            textNudgeY={3}
+                            textNudgeX={-9}
+                            textNudgeY={-7}
                             showValue
                             bold
                         />
