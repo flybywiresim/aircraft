@@ -20,7 +20,6 @@
     "build-a32nx:atsu-common": "node fbw-a32nx/src/systems/atsu/common/build.js",
     "build-a32nx:atsu-fms-client": "node fbw-a32nx/src/systems/atsu/fmsclient/build.js",
     "build-a32nx:extras-host": "node fbw-a32nx/src/systems/extras-host/build.js",
-    "build-a32nx:failures": "rollup -c fbw-a32nx/src/systems/failures/rollup.config.js",
     "build-a32nx:fmgc": "node fbw-a32nx/src/systems/fmgc/build.js",
     "build-a32nx:instruments": "mach build --config fbw-a32nx/mach.config.js --work-in-config-dir",
     "build-a32nx:sentry-client": "node fbw-a32nx/src/systems/sentry-client/build.js",
@@ -40,17 +39,16 @@
     "watch-a32nx:ace": "node --max-old-space-size=8192 node_modules/rollup/dist/bin/rollup -wc .\\fbw-a32nx\\src\\systems\\instruments\\buildSrc\\aceBuild.mjs",
 
     "build-a32nx:all": "npm run build-a32nx:copy-base-files && npm run build-a32nx:efb-translation && npm run build-a32nx:model && npm run build-a32nx:behavior && npm run build-a32nx:atsu-common && npm run build-a32nx:atsu-fms-client && npm run build-a32nx:systems-host && npm run build-a32nx:failures && npm run build-a32nx:fmgc && npm run build-a32nx:sentry-client && npm run build-a32nx:simbridge-client && npm run build-a32nx:tcas && npm run build-a32nx:pfd && npm run build-a32nx:systems && npm run build-a32nx:fadec && npm run build-a32nx:fbw && npm run build-a32nx:flypad-backend && npm run build-a32nx:metadata && npm run build-a32nx:manifest",
-
+    
     "=======deprecated=========": "===========================",
     "build-a32nx:pfd": "cd fbw-a32nx/src/systems/instruments/src/PFD && rollup -c",
     "build-a32nx:clock": "cd fbw-a32nx/src/systems/instruments/src/Clock && rollup -c",
     "build-a32nx:ewd": "cd fbw-a32nx/src/systems/instruments/src/EWD && rollup -c",
-
     "prettier": "prettier --write **/*.json **/*.yml fbw-a32nx/src/systems/instruments/**/*.css",
     "serve:efb": "cd fbw-a32nx/src/systems/instruments/src/EFB/ && vite --port 9696",
     "build:instruments": "rollup --max-old-space-size=8192 -c src/systems/instruments/buildSrc/simulatorBuild.mjs",
     "watch:instruments": "rollup --max-old-space-size=8192 -wc src/systems/instruments/buildSrc/simulatorBuild.mjs",
-
+    
     "====== A380 =================": "==========================================",
     "build-a380x:copy-base-files": "mkdir -p fbw-a380x/out/flybywire-aircraft-a380-842 && (rsync -a fbw-a380x/src/base/flybywire-aircraft-a380-842 fbw-a380x/out/ || cp -a -u fbw-a380x/src/base/flybywire-aircraft-a380-842 fbw-a380x/out/)",
 
@@ -70,7 +68,7 @@
     "build-ingamepanels-checklist-fix:copy-base-package": "mkdir -p fbw-ingamepanels-checklist-fix/out/flybywire-ingamepanels-checklist-fix && (rsync -a fbw-ingamepanels-checklist-fix/src/base/flybywire-ingamepanels-checklist-fix fbw-ingamepanels-checklist-fix/out/ || cp -a -u fbw-ingamepanels-checklist-fix/src/base/flybywire-ingamepanels-checklist-fix fbw-ingamepanels-checklist-fix/out/)",
     "build-ingamepanels-checklist-fix:copy-base-files": "npm run build-ingamepanels-checklist-fix:copy-base-package",
     "build-ingamepanels-checklist-fix:manifest": "node scripts/build_ingamepanels_checklist_fix.js",
-
+    
     "====== COMMON ================": "==========================================",
     "lint": "eslint --cache **/*.{js,mjs,jsx,ts,tsx}",
     "lint-fix": "npm run lint -- --fix",

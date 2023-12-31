@@ -2,9 +2,13 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
+import { EventBus } from '@microsoft/msfs-sdk';
+
+import { useUpdate } from '@flybywiresim/fbw-sdk';
+
 import React, { useState } from 'react';
 import { A320Failure, Failure, FailuresOrchestrator } from '@failures';
-import { useUpdate } from '@flybywiresim/fbw-sdk';
+import { useEventBus } from './event-bus-provider';
 
 interface FailuresOrchestratorContext {
     allFailures: Readonly<Readonly<Failure>[]>,
@@ -14,7 +18,7 @@ interface FailuresOrchestratorContext {
     deactivate(identifier: number): Promise<void>;
 }
 
-const createOrchestrator = () => new FailuresOrchestrator('A32NX', [
+const createOrchestrator = (bus: EventBus) => new FailuresOrchestrator(bus, 'A32NX', [
     [21, A320Failure.Acsc1Lane1, 'ACSC 1 Lane 1'],
     [21, A320Failure.Acsc1Lane2, 'ACSC 1 Lane 2'],
     [21, A320Failure.Acsc2Lane1, 'ACSC 2 Lane 1'],
@@ -123,7 +127,9 @@ const Context = React.createContext<FailuresOrchestratorContext>({
 });
 
 export const FailuresOrchestratorProvider = ({ children }) => {
-    const [orchestrator] = useState(createOrchestrator);
+    const bus = useEventBus();
+
+    const [orchestrator] = useState(() => createOrchestrator(bus));
 
     const [allFailures] = useState(() => orchestrator.getAllFailures());
     const [activeFailures, setActiveFailures] = useState<Set<number>>(() => new Set<number>());

@@ -22,6 +22,7 @@ import { readSettingsFromPersistentStorage } from './Settings/sync';
 import { migrateSettings } from './Settings/Migration';
 import { store } from './Store/store';
 import { Error } from './Assets/Error';
+import { EventBusContextProvider } from './event-bus-provider';
 
 const EFBLoad = () => {
     const [, setSessionId] = usePersistentProperty('A32NX_SENTRY_SESSION_ID');
@@ -108,6 +109,10 @@ if (process.env.VITE_BUILD) {
 }
 
 render(
-    <FailuresOrchestratorProvider><EFBLoad /></FailuresOrchestratorProvider>,
+    <EventBusContextProvider>
+        <FailuresOrchestratorProvider>
+            <EFBLoad />
+        </FailuresOrchestratorProvider>
+    </EventBusContextProvider>,
     true, true,
 );

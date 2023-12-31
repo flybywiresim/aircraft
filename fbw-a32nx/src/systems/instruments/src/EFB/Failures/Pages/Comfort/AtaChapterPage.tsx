@@ -41,8 +41,8 @@ export const AtaChapterPage = ({ chapter, failures }: AtaChapterPageProps) => {
 
     return (
         <div>
-            <Link to="/failures/comfort" className="inline-block">
-                <div className="flex flex-row items-center space-x-3 hover:text-theme-highlight transition duration-100">
+            <Link to="/failures/failure-list/comfort" className="inline-block">
+                <div className="flex flex-row items-center space-x-3 transition duration-100 hover:text-theme-highlight">
                     <ArrowLeft size={30} />
                     <h1 className="font-bold text-current">
                         {t('Failures.Title')}
@@ -57,7 +57,7 @@ export const AtaChapterPage = ({ chapter, failures }: AtaChapterPageProps) => {
                     <p>{t('Failures.NoItemsFound')}</p>
                 </div>
             ) : (
-                <div className="p-4 mt-4 h-content-section-reduced rounded-lg border-2 border-theme-accent" style={{ height: '44.5rem' }}>
+                <div className="p-4 mt-4 rounded-lg border-2 h-content-section-reduced border-theme-accent" style={{ height: '44.5rem' }}>
                     <ScrollableContainer innerClassName="grid grid-cols-4 auto-rows-auto" height={44}>
                         {filteredFailures.map((failure, index) => (
                             <FailureButton

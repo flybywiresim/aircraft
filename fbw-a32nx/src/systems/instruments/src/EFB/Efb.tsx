@@ -7,6 +7,7 @@ import { Redirect, Route, Switch, useHistory } from 'react-router-dom';
 import { Battery } from 'react-bootstrap-icons';
 import { toast, ToastContainer } from 'react-toastify';
 import { distanceTo } from 'msfs-geo';
+import { FailureGeneratorsInit } from 'instruments/src/EFB/Failures/FailureGenerators/EFBFailureGeneratorsInit';
 import { Tooltip } from './UtilComponents/TooltipWrapper';
 import { FbwLogo } from './UtilComponents/FbwLogo';
 import { AlertModal, ModalContainer, useModals } from './UtilComponents/Modals/Modals';
@@ -20,7 +21,7 @@ import { Performance } from './Performance/Performance';
 import { Navigation } from './Navigation/Navigation';
 import { ATC } from './ATC/ATC';
 import { Settings } from './Settings/Settings';
-import { Failures } from './Failures/Failures';
+import { FailuresHome } from './Failures/Failures';
 import { Presets } from './Presets/Presets';
 import { clearEfbState, useAppDispatch, useAppSelector } from './Store/store';
 import { fetchSimbriefDataAction, isSimbriefDataLoaded } from './Store/features/simBrief';
@@ -37,13 +38,13 @@ const BATTERY_DURATION_CHARGE_MIN = 180;
 const BATTERY_DURATION_DISCHARGE_MIN = 540;
 
 const LoadingScreen = () => (
-    <div className="flex justify-center items-center w-screen h-screen bg-theme-statusbar">
+    <div className="bg-theme-statusbar flex h-screen w-screen items-center justify-center">
         <FbwLogo width={128} height={120} className="text-theme-text" />
     </div>
 );
 
 const EmptyBatteryScreen = () => (
-    <div className="flex justify-center items-center w-screen h-screen bg-theme-statusbar">
+    <div className="bg-theme-statusbar flex h-screen w-screen items-center justify-center">
         <Battery size={128} className="text-utility-red" />
     </div>
 );
@@ -296,7 +297,11 @@ const Efb = () => {
     switch (powerState) {
     case PowerStates.SHUTOFF:
     case PowerStates.STANDBY:
-        return <div className="w-screen h-screen" onClick={offToLoaded} />;
+        return (
+            <div className="h-screen w-screen" onClick={offToLoaded}>
+                <FailureGeneratorsInit />
+            </div>
+        );
     case PowerStates.LOADING:
     case PowerStates.SHUTDOWN:
         return <LoadingScreen />;
@@ -324,7 +329,7 @@ const Efb = () => {
                         />
                         <div className="flex flex-row">
                             <ToolBar />
-                            <div className="pt-14 pr-6 w-screen h-screen">
+                            <div className="h-screen w-screen pr-6 pt-14">
                                 <Switch>
                                     <Route exact path="/">
                                         <Redirect to="/dashboard" />
@@ -335,7 +340,7 @@ const Efb = () => {
                                     <Route path="/performance" component={Performance} />
                                     <Route path="/navigation" component={Navigation} />
                                     <Route path="/atc" component={ATC} />
-                                    <Route path="/failures" component={Failures} />
+                                    <Route path="/failures" component={FailuresHome} />
                                     <Route path="/checklists" component={Checklists} />
                                     <Route path="/presets" component={Presets} />
                                     <Route path="/settings" component={Settings} />

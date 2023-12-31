@@ -24,20 +24,20 @@ const ActiveFailureCard: FC<ActiveFailureCardProps> = ({ ata, name }) => {
 
     return (
         <div
-            className="flex flex-col flex-wrap p-2 mt-4 mr-4 bg-theme-accent rounded-md border-2 border-theme-accent hover:border-theme-highlight"
+            className="flex flex-col flex-wrap p-2 mt-4 mr-4 rounded-md border-2 bg-theme-accent border-theme-accent hover:border-theme-highlight"
             onClick={() => {
                 dispatch(setSearchQuery(name.toUpperCase()));
 
-                const lastFailurePath = findLatestSeenPathname(history, '/failures');
+                const lastFailurePath = findLatestSeenPathname(history, '/failures/failure-list');
 
                 if (!ata) {
-                    history.push('/failures/compact');
+                    history.push('/failures/failure-list/compact');
                 }
 
                 if (!lastFailurePath || lastFailurePath.includes('comfort')) {
-                    history.push(`/failures/comfort/${ata}`);
+                    history.push(`/failures/failure-list/comfort/${ata}`);
                 } else {
-                    history.push('/failures/compact');
+                    history.push('/failures/failure-list/compact');
                 }
             }}
         >
@@ -52,7 +52,7 @@ export const MaintenanceReminder = () => {
     const { allFailures, activeFailures } = useFailuresOrchestrator();
 
     return (
-        <RemindersSection title={t('Dashboard.ImportantInformation.Maintenance.Title')} pageLinkPath="/failures">
+        <RemindersSection title={t('Dashboard.ImportantInformation.Maintenance.Title')} pageLinkPath="/failures/failure-list">
             <div className="flex flex-row flex-wrap">
                 {Array
                     .from(activeFailures)

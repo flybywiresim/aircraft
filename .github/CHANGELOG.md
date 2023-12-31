@@ -31,6 +31,7 @@
 1. [MODEL] Replaced overhead decals - @Repsol2k
 1. [MODEL] General improvements to 3d model and textures - @MoreRightRudder, @Repsol2k, @tracernz
 1. [MODEL] Folding armrests - @Repsol2k
+1. [EFB] Random Failures - @Maverickwoe (Garoomf)
 
 ## 0.11.0
 
