@@ -141,23 +141,22 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
         return true;
     }
 
-    private async initializeFlightPlans() {
+    private async initializeTestingFlightPlans() {
         const db = new NavigationDatabase(NavigationDatabaseBackend.Msfs);
         NavigationDatabaseService.activeDatabase = db;
         await new Promise((r) => setTimeout(r, 2000));
-        this.flightPlanService.createFlightPlans();
 
         // Intialize from MSFS flight data
         // this.flightPlanService.active.performanceData.cruiseFlightLevel.set(SimVar.GetGameVarValue('AIRCRAFT CRUISE ALTITUDE', 'feet'));
 
         // Build EDDM08R GIVMI6E GIVMI DCT DKB DCT ILS25L EDDF25L
-        /* await this.flightPlanService.newCityPair('EDDM', 'EDDF', 'EBBR');
+        await this.flightPlanService.newCityPair('EDDM', 'EDDF', 'EBBR');
         await this.flightPlanService.setOriginRunway('RW08R');
         await this.flightPlanService.setDepartureProcedure('GIVM6E');
         await this.flightPlanService.nextWaypoint(4, (await db.searchAllFix('DKB'))[0]);
         await this.flightPlanService.setDestinationRunway('RW25L');
         await this.flightPlanService.setApproach('I25L');
-        await this.flightPlanService.temporaryInsert(); */
+        await this.flightPlanService.temporaryInsert();
 
         // Build EGLL/27R N0411F250 MAXI1F MAXIT DCT HARDY UM605 BIBAX BIBA9X LFPG/09L
         /* await this.flightPlanService.newCityPair('EGLL', 'LFPG', 'EBBR');
@@ -182,19 +181,20 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
         await this.flightPlanService.deleteElementAt(12); */
 
         // Default performance values
-        /* this.flightPlanService.active.setPerformanceData('pilotAccelerationAltitude', 2_900);
+        this.flightPlanService.active.setPerformanceData('pilotAccelerationAltitude', 2_900);
         this.flightPlanService.active.setPerformanceData('pilotThrustReductionAltitude', 1_900);
         this.flightPlanService.active.setPerformanceData('pilotTransitionAltitude', 5_000);
+        this.fmService.acInterface.updateTransitionAltitudeLevel();
         this.flightPlanService.active.setPerformanceData('pilotEngineOutAccelerationAltitude', 1_500);
         this.flightPlanService.active.setPerformanceData('v1', 120);
         this.flightPlanService.active.setPerformanceData('vr', 140);
         this.flightPlanService.active.setPerformanceData('v2', 145);
+        this.flightPlanService.active.setPerformanceData('costIndex', 69);
         this.fmService.fmgc.data.approachSpeed.set(145);
         this.fmService.fmgc.data.zeroFuelWeight.set(50_000);
         this.fmService.fmgc.data.zeroFuelWeightCenterOfGravity.set(26);
         this.fmService.fmgc.data.blockFuel.set(10_000);
-        this.fmService.fmgc.data.costIndex.set(69);
-        this.flightPlanService.active.setPerformanceData('cruiseFlightLevel', 230); */
+        this.fmService.acInterface.setCruiseFl(230);
     }
 
     private initSimVars() {
@@ -505,6 +505,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
 
             if (!this.flightPlanService.active.performanceData.cruiseFlightLevel) {
                 this.flightPlanService.active.setPerformanceData('cruiseFlightLevel', Simplane.getAutoPilotDisplayedAltitudeLockValue('feet') / 100);
+                SimVar.SetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number', Simplane.getAutoPilotDisplayedAltitudeLockValue('feet') / 100);
             }
 
             break;
@@ -543,7 +544,6 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
 
             /** Clear pre selected speed/mach */
             this.fmService.acInterface.updatePreSelSpeedMach(undefined);
-
             this.flightPlanService.active.setPerformanceData('cruiseFlightLevel', undefined);
 
             break;
@@ -675,19 +675,20 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
     }
 
     private onUpdate(dt: number) {
+        this.flightPhaseManager.shouldActivateNextPhase(dt);
+        this.legacyFwc.update(dt);
         this.navaidSelectionManager.update(dt);
         this.landingSystemSelectionManager.update(dt);
         this.navaidTuner.update(dt);
         this.efisSymbols.update(dt);
-        this.flightPhaseManager.shouldActivateNextPhase(dt);
-        this.legacyFwc.update(dt);
+
         this.guidanceController.update(dt);
 
         if (this.fmsUpdateThrottler.canUpdate(dt) !== -1) {
             this.navigation.update(dt);
             if (this.flightPlanService.hasActive) {
                 this.fmService.acInterface.updateThrustReductionAcceleration();
-                this.fmService.acInterface.updateTransitionAltitudeLevel(this.fmgc.getOriginTransitionAltitude(), this.fmgc.getDestinationTransitionLevel());
+                this.fmService.acInterface.updateTransitionAltitudeLevel();
                 this.fmService.acInterface.updatePerformanceData();
                 this.fmService.acInterface.updatePerfSpeeds();
                 this.fmService.acInterface.toSpeedsChecks();
@@ -717,8 +718,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
     public async onAfterRender(node: VNode): Promise<void> {
         super.onAfterRender(node);
 
-        await this.initializeFlightPlans();
-
+        this.flightPlanService.createFlightPlans();
         this.guidanceController = new GuidanceController(this.fmgc, this.flightPlanService, this.efisInterface);
         this.efisSymbols = new EfisSymbols(this.guidanceController, this.flightPlanService, this.navaidTuner, this.efisInterface);
         this.fmService = new MfdFlightManagementService(this, this.flightPlanService, this.guidanceController, this.fmgc, this.navigation, this.flightPhaseManager, this.efisInterface);
@@ -728,6 +728,8 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
         this.flightPhaseManager.init();
         this.guidanceController.init();
         this.fmgc.guidanceController = this.guidanceController;
+
+        await this.initializeTestingFlightPlans();
 
         let lastUpdateTime = Date.now();
 

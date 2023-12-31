@@ -138,18 +138,30 @@ export class FmsAircraftInterface {
         );
     }
 
-    public updateTransitionAltitudeLevel(originTransitionAltitude: Feet, destinationTansitionLevel: Feet) {
-        this.arincTransitionAltitude.setBnrValue(
-            originTransitionAltitude !== undefined ? originTransitionAltitude : 0,
-            originTransitionAltitude !== undefined ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
-            17, 131072, 0,
-        );
+    public updateTransitionAltitudeLevel(): void {
+        if (!this.flightPlanService.hasActive) {
+            return;
+        }
+        const originTransitionAltitude = this.flightPlanService.active.performanceData.transitionAltitude;
+        const destinationTransitionLevel = this.flightPlanService.active.performanceData.transitionLevel;
 
-        this.arincTransitionLevel.setBnrValue(
-            destinationTansitionLevel !== undefined ? destinationTansitionLevel : 0,
-            destinationTansitionLevel !== undefined ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
-            9, 512, 0,
-        );
+        if (Number.isFinite(originTransitionAltitude)) {
+            this.arincTransitionAltitude.setBnrValue(
+                originTransitionAltitude !== undefined ? originTransitionAltitude : 0,
+                originTransitionAltitude !== undefined ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
+                17, 131072, 0,
+            );
+            SimVar.SetSimVarValue('L:AIRLINER_TRANS_ALT', 'Number', originTransitionAltitude ?? 0);
+        }
+
+        if (Number.isFinite(destinationTransitionLevel)) {
+            this.arincTransitionLevel.setBnrValue(
+                destinationTransitionLevel !== undefined ? destinationTransitionLevel : 0,
+                destinationTransitionLevel !== undefined ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
+                9, 512, 0,
+            );
+            SimVar.SetSimVarValue('L:AIRLINER_APPR_TRANS_ALT', 'Number', destinationTransitionLevel ?? 0);
+        }
     }
 
     public updatePerformanceData() {
@@ -877,6 +889,7 @@ export class FmsAircraftInterface {
             this.deleteOutdatedCruiseSteps(this.flightPlanService.active.performanceData.cruiseFlightLevel, targetFl);
             this.mfd.addMessageToQueue(NXSystemMessages.newCrzAlt.getModifiedMessage((targetFl * 100).toFixed(0)));
             this.flightPlanService.active.setPerformanceData('cruiseFlightLevel', targetFl);
+            SimVar.SetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number', targetFl * 100);
             this.cruiseFlightLevel = targetFl;
         }
     }
@@ -913,7 +926,7 @@ export class FmsAircraftInterface {
 
     private cruiseFlightLevelTimeOut: number;
 
-    onTrySetCruiseFlightLevel() {
+    private onTrySetCruiseFlightLevel() {
         if (!(this.flightPhaseManager.phase === FmgcFlightPhase.Climb || this.flightPhaseManager.phase === FmgcFlightPhase.Cruise)) {
             return;
         }
@@ -940,11 +953,69 @@ export class FmsAircraftInterface {
                     ) {
                         this.mfd.addMessageToQueue(NXSystemMessages.newCrzAlt.getModifiedMessage((fcuFl * 100).toFixed(0)));
                         this.flightPlanService.active.setPerformanceData('cruiseFlightLevel', fcuFl);
+                        // used by FlightPhaseManager
+                        SimVar.SetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number', fcuFl * 100);
                         this.cruiseFlightLevel = fcuFl;
                     }
                 }, 3000);
             }
         }
+    }
+
+    /**
+     * Sets new Cruise FL if all conditions good
+     * @param fl Altitude or FL
+     * @returns input passed checks
+     */
+    private trySetCruiseFl(fl: number): boolean {
+        if (!this.flightPlanService.hasActive) {
+            return false;
+        }
+
+        if (!Number.isFinite(fl)) {
+            this.mfd.addMessageToQueue(NXSystemMessages.notAllowed);
+            return false;
+        }
+        if (fl >= 1000) {
+            fl = Math.floor(fl / 100);
+        }
+        if (fl > this.fmService.getRecMaxFlightLevel()) {
+            this.mfd.addMessageToQueue(NXSystemMessages.entryOutOfRange);
+            return false;
+        }
+        const phase = this.flightPhaseManager.phase;
+        const selFl = Math.floor(Math.max(0, Simplane.getAutoPilotDisplayedAltitudeLockValue('feet')) / 100);
+        if (fl < selFl && (phase === FmgcFlightPhase.Climb || phase === FmgcFlightPhase.Approach || phase === FmgcFlightPhase.GoAround)) {
+            this.mfd.addMessageToQueue(NXSystemMessages.entryOutOfRange);
+            return false;
+        }
+
+        if (fl <= 0 || fl > this.fmService.getRecMaxFlightLevel()) {
+            this.mfd.addMessageToQueue(NXSystemMessages.entryOutOfRange);
+            return false;
+        }
+
+        this.flightPlanService.active.setPerformanceData('cruiseFlightLevel', fl);
+        this.onUpdateCruiseLevel(fl);
+
+        return true;
+    }
+
+    public setCruiseFl(newFl: number) { // FL in 100 increments (e.g. 240 for 24000ft)
+        if (this.trySetCruiseFl(newFl)) {
+            if (SimVar.GetSimVarValue('L:A32NX_CRZ_ALT_SET_INITIAL', 'bool') === 1 && SimVar.GetSimVarValue('L:A32NX_GOAROUND_PASSED', 'bool') === 1) {
+                SimVar.SetSimVarValue('L:A32NX_NEW_CRZ_ALT', 'number', this.flightPlanService.active.performanceData.cruiseFlightLevel);
+            } else {
+                SimVar.SetSimVarValue('L:A32NX_CRZ_ALT_SET_INITIAL', 'bool', 1);
+            }
+        }
+    }
+
+    onUpdateCruiseLevel(newCruiseLevel) {
+        SimVar.SetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number', newCruiseLevel * 100);
+        this.updateConstraints();
+
+        this.flightPhaseManager.handleNewCruiseAltitudeEntered(newCruiseLevel);
     }
 
     navModeEngaged() {

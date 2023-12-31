@@ -281,7 +281,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                         <div class="mfd-label init-input-field">CRZ FL</div>
                         <InputField<number>
                             dataEntryFormat={new FlightLevelFormat(Subject.create(100), Subject.create(maxCertifiedAlt))}
-                            dataHandlerDuringValidation={async (v) => this.loadedFlightPlan.setPerformanceData('cruiseFlightLevel', v)}
+                            dataHandlerDuringValidation={async (v) => this.props.fmService.acInterface.setCruiseFl(v)}
                             mandatory={Subject.create(true)}
                             disabled={this.altnDisabled}
                             canBeCleared={Subject.create(false)}

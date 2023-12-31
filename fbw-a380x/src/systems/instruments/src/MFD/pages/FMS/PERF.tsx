@@ -38,7 +38,6 @@ import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { VerticalCheckpointReason } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { Feet } from 'msfs-geo';
 import { A380SpeedsUtils } from '@shared/OperatingSpeeds';
-import { A380AltitudeUtils } from '@shared/OperatingAltitudes';
 
 interface MfdFmsPerfProps extends AbstractMfdPageProps {
 }
@@ -542,10 +541,9 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
         this.subs.push(sub.on('realTime').atFrequency(1).handle((_t) => {
             // Update REC MAX FL, OPT FL
-            const isaTempDeviation = A380AltitudeUtils.getIsaTempDeviation();
-            const recMaxFl = Math.min(A380AltitudeUtils.calculateRecommendedMaxAltitude(this.props.fmService.getGrossWeight(), isaTempDeviation), maxCertifiedAlt) / 100;
+            const recMaxFl = this.props.fmService.getRecMaxFlightLevel();
             this.recMaxFl.set(Number.isFinite(recMaxFl) ? recMaxFl.toFixed(0) : '---');
-            const optFl = Math.floor(0.96 * recMaxFl / 5) * 5; // TODO remove magic
+            const optFl = this.props.fmService.getOptFlightLevel();
             this.optFl.set(Number.isFinite(optFl) ? optFl.toFixed(0) : '---');
 
             const obs = this.props.fmService.guidanceController.verticalProfileComputationParametersObserver.get();
@@ -772,9 +770,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                             <span class="mfd-label mfd-spacing-right">CRZ</span>
                             <InputField<number>
                                 dataEntryFormat={new FlightLevelFormat()}
-                                dataHandlerDuringValidation={async (v) => {
-                                    this.loadedFlightPlan.setPerformanceData('cruiseFlightLevel', v);
-                                }}
+                                dataHandlerDuringValidation={async (v) => this.props.fmService.acInterface.setCruiseFl(v)}
                                 mandatory={Subject.create(false)}
                                 value={this.crzFl}
                                 errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
@@ -1193,6 +1189,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         dataEntryFormat={new AltitudeFormat(Subject.create(1), Subject.create(maxCertifiedAlt))}
                                         dataHandlerDuringValidation={async (v) => {
                                             this.loadedFlightPlan.setPerformanceData('pilotTransitionAltitude', v || undefined);
+                                            this.props.fmService.acInterface.updateTransitionAltitudeLevel();
                                         }}
                                         mandatory={Subject.create(false)}
                                         enteredByPilot={this.transAltIsPilotEntered}
@@ -2120,6 +2117,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         dataEntryFormat={new FlightLevelFormat()}
                                         dataHandlerDuringValidation={async (v) => {
                                             this.loadedFlightPlan.setPerformanceData('pilotTransitionLevel', v);
+                                            this.props.fmService.acInterface.updateTransitionAltitudeLevel();
                                         }}
                                         mandatory={Subject.create(false)}
                                         enteredByPilot={this.transFlIsPilotEntered}

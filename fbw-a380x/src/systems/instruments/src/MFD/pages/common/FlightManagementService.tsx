@@ -2,6 +2,8 @@ import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { EfisInterface, FlightPhaseManager, FlightPlanIndex, Navigation } from '@fmgc/index';
 import { ClockEvents, Subject, Subscription } from '@microsoft/msfs-sdk';
+import { A380AltitudeUtils } from '@shared/OperatingAltitudes';
+import { maxCertifiedAlt } from '@shared/PerformanceConstants';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { FmsAircraftInterface } from 'instruments/src/MFD/FmsAircraftInterface';
 import { MfdComponent } from 'instruments/src/MFD/MFD';
@@ -153,5 +155,14 @@ export class MfdFlightManagementService {
 
     public getTripFuel(): number {
         return 25_000; // Dummy value
+    }
+
+    public getRecMaxFlightLevel() {
+        const isaTempDeviation = A380AltitudeUtils.getIsaTempDeviation();
+        return Math.min(A380AltitudeUtils.calculateRecommendedMaxAltitude(this.getGrossWeight(), isaTempDeviation), maxCertifiedAlt) / 100;
+    }
+
+    public getOptFlightLevel() {
+        return Math.floor(0.96 * this.getRecMaxFlightLevel() / 5) * 5; // TODO remove magic
     }
 }
