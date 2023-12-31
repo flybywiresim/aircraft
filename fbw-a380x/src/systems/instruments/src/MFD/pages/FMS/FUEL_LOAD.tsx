@@ -82,7 +82,8 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
 
             const destPred = this.props.fmService.guidanceController.vnavDriver.getDestinationPrediction();
             if (destPred) {
-                const eta = new Date(Date.now() + destPred.secondsFromPresent * 1000);
+                const utcTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
+                const eta = new Date((utcTime + destPred.secondsFromPresent) * 1000);
                 this.destEta.set(`${eta.getHours().toString().padStart(2, '0')}:${eta.getMinutes().toString().padStart(2, '0')}`);
             }
             this.destEfob.set(this.props.fmService.fmgc.getDestEFOB(true).toFixed(1));

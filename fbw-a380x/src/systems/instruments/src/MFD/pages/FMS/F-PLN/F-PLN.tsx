@@ -95,7 +95,8 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
         const destPred = this.props.fmService.guidanceController.vnavDriver.getDestinationPrediction();
         if (destPred) {
-            const eta = new Date(Date.now() + destPred.secondsFromPresent * 1000);
+            const utcTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
+            const eta = new Date((utcTime + destPred.secondsFromPresent) * 1000);
             this.destTimeLabel.set(`${eta.getHours().toString().padStart(2, '0')}:${eta.getMinutes().toString().padStart(2, '0')}`);
             this.destDistanceLabel.set(destPred.distanceFromAircraft.toFixed(0));
         }
@@ -182,7 +183,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             }
 
             if (fmgcFlightPhase >= FmgcFlightPhase.Takeoff) {
-                const eta = Date.now() + seconds * 1000;
+                const eta = (SimVar.GetGlobalVarValue('ZULU TIME', 'seconds') + seconds) * 1000;
                 return eta;
             } if (this.props.fmService.fmgc.data.estimatedTakeoffTime.get() !== undefined) {
                 const eta = (this.props.fmService.fmgc.data.estimatedTakeoffTime.get() + seconds) * 1000;
