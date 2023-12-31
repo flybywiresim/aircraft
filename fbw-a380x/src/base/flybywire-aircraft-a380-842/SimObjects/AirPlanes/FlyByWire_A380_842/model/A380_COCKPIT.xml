@@ -1650,6 +1650,10 @@
                     (&gt;K:MIXTURE1_RICH) }
                     (A:GENERAL ENG MIXTURE LEVER POSITION:2, Percent over 100) 0.9 &lt; if{
                     (&gt;K:MIXTURE2_RICH) }
+                    (A:GENERAL ENG MIXTURE LEVER POSITION:3, Percent over 100) 0.9 &lt; if{
+                    (&gt;K:MIXTURE3_RICH) }
+                    (A:GENERAL ENG MIXTURE LEVER POSITION:4, Percent over 100) 0.9 &lt; if{
+                    (&gt;K:MIXTURE4_RICH) }
                 </Update>
 
                 <UseTemplate Name="FBW_Anim_Interactions">
@@ -2640,10 +2644,10 @@
                 <UseTemplate Name="FBW_Covered_Push_Toggle">
                     <NODE_ID>PUSH_OVHD_ELEC_IDG3</NODE_ID>
                     <LOCK_NODE_ID>LOCK_OVHD_ELEC_IDG3</LOCK_NODE_ID>
-                    <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_OVHD_ELEC_IDG_1_PB_IS_RELEASED)</LEFT_SINGLE_CODE>
+                    <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_OVHD_ELEC_IDG_3_PB_IS_RELEASED)</LEFT_SINGLE_CODE>
                     <SEQ_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ_POWERED>
-                    <SEQ1_CODE>(L:A32NX_OVHD_ELEC_IDG_1_PB_HAS_FAULT)</SEQ1_CODE>
-                    <SEQ2_CODE>(L:A32NX_OVHD_ELEC_IDG_1_PB_IS_DISC)</SEQ2_CODE>
+                    <SEQ1_CODE>(L:A32NX_OVHD_ELEC_IDG_3_PB_HAS_FAULT)</SEQ1_CODE>
+                    <SEQ2_CODE>(L:A32NX_OVHD_ELEC_IDG_3_PB_IS_DISC)</SEQ2_CODE>
                     <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                     <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                     <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
@@ -2654,10 +2658,10 @@
                 <UseTemplate Name="FBW_Covered_Push_Toggle">
                     <NODE_ID>PUSH_OVHD_ELEC_IDG4</NODE_ID>
                     <LOCK_NODE_ID>LOCK_OVHD_ELEC_IDG4</LOCK_NODE_ID>
-                    <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_OVHD_ELEC_IDG_2_PB_IS_RELEASED)</LEFT_SINGLE_CODE>
+                    <LEFT_SINGLE_CODE>1 (&gt;L:A32NX_OVHD_ELEC_IDG_4_PB_IS_RELEASED)</LEFT_SINGLE_CODE>
                     <SEQ_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool)</SEQ_POWERED>
-                    <SEQ1_CODE>(L:A32NX_OVHD_ELEC_IDG_2_PB_HAS_FAULT)</SEQ1_CODE>
-                    <SEQ2_CODE>(L:A32NX_OVHD_ELEC_IDG_2_PB_IS_DISC)</SEQ2_CODE>
+                    <SEQ1_CODE>(L:A32NX_OVHD_ELEC_IDG_4_PB_HAS_FAULT)</SEQ1_CODE>
+                    <SEQ2_CODE>(L:A32NX_OVHD_ELEC_IDG_4_PB_IS_DISC)</SEQ2_CODE>
                     <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                     <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                     <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
@@ -3237,7 +3241,7 @@
                     <OFF_TOOLTIP>COCKPIT.TOOLTIPS.FUEL_XFEED_TURN_ON</OFF_TOOLTIP>
                     <ON_TOOLTIP>COCKPIT.TOOLTIPS.FUEL_XFEED_TURN_OFF</ON_TOOLTIP>
                 </UseTemplate>
-                <UseTemplate Name="FBW_Airbus_Fuel_Crossfeed">
+                <UseTemplate Name="FBW_Airbus_Fuel_Crossfeed"> <!--- FIX FUEL VALVE -->
                     <NODE_ID>PUSH_OVHD_FUEL_XFEED3</NODE_ID>
                     <ID>48</ID>
                     <SEQ_POWERED>(L:A32NX_ELEC_AC_ESS_SHED_BUS_IS_POWERED, Bool)</SEQ_POWERED>
@@ -4787,13 +4791,12 @@
                     <Component ID="ENG2">
                         <DefaultTemplateParameters>
                             <TYPE>ENG</TYPE>
-                            <ID>1</ID>
+                            <ID>2</ID>
                         </DefaultTemplateParameters>
 
                         <UseTemplate Name="FBW_Airbus_FIRE_TEST_BUTTON">
                             <NODE_ID>PUSH_FIRE_ENG2_TEST</NODE_ID>
                             <PART_ID>Fire_test_eng1</PART_ID>
-                            <HOLD_SIMVAR>L:A32NX_FIRE_TEST_ENG2</HOLD_SIMVAR>
                         </UseTemplate>
                         <UseTemplate Name="FBW_Airbus_FIRE_AGENT">
                             <NODE_ID>PUSH_OVHD_FIRE_ENG2_AGENT1</NODE_ID>
@@ -4842,7 +4845,7 @@
                     <Component ID="ENG3">
                         <DefaultTemplateParameters>
                             <TYPE>ENG</TYPE>
-                            <ID>1</ID>
+                            <ID>3</ID>
                         </DefaultTemplateParameters>
 
                         <UseTemplate Name="FBW_Airbus_FIRE_TEST_BUTTON">
@@ -4896,7 +4899,7 @@
                     <Component ID="ENG4">
                         <DefaultTemplateParameters>
                             <TYPE>ENG</TYPE>
-                            <ID>1</ID>
+                            <ID>4</ID>
                         </DefaultTemplateParameters>
 
                         <UseTemplate Name="FBW_Airbus_FIRE_TEST_BUTTON">
