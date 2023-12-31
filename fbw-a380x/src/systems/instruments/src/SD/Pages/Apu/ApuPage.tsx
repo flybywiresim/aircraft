@@ -246,12 +246,16 @@ const EgtGauge = ({ x, y }: ComponentPositionProps) => {
     }
 
     const GAUGE_MIN = 0;
+    const GAUGE_MIDDLE = 400;
     const GAUGE_MAX = 950;
+    const GAUGE_MARKING_MIDDLE = GAUGE_MIDDLE / 100;
     const GAUGE_MARKING_MAX = GAUGE_MAX / 100;
 
     const GAUGE_RADIUS = 64;
+
     const GAUGE_START = 221;
-    const GAUGE_END = 121;
+    const GAUGE_MIDDLE_ANGLE = 310;
+    const GAUGE_END = 122;
 
     const GAUGE_MARKING_START = GAUGE_START;
 
@@ -284,11 +288,11 @@ const EgtGauge = ({ x, y }: ComponentPositionProps) => {
                         <GaugeMarkerComponent
                             x={0}
                             y={0}
-                            min={GAUGE_MIN}
+                            min={GAUGE_MARKING_MIDDLE}
                             max={GAUGE_MARKING_MAX}
                             value={4}
                             radius={GAUGE_RADIUS}
-                            startAngle={GAUGE_MARKING_START}
+                            startAngle={GAUGE_MIDDLE_ANGLE}
                             endAngle={GAUGE_END}
                             className={gaugeMarkerClassName}
                             bold
@@ -297,11 +301,11 @@ const EgtGauge = ({ x, y }: ComponentPositionProps) => {
                         <GaugeMarkerComponent
                             x={0}
                             y={0}
-                            min={GAUGE_MIN}
+                            min={GAUGE_MARKING_MIDDLE}
                             max={GAUGE_MARKING_MAX}
                             value={5}
                             radius={GAUGE_RADIUS}
-                            startAngle={GAUGE_MARKING_START}
+                            startAngle={GAUGE_MIDDLE_ANGLE}
                             endAngle={GAUGE_END}
                             className={gaugeMarkerClassName}
                             textClassName={gaugeMarkerTextClassName}
@@ -314,11 +318,11 @@ const EgtGauge = ({ x, y }: ComponentPositionProps) => {
                         <GaugeMarkerComponent
                             x={0}
                             y={0}
-                            min={GAUGE_MIN}
+                            min={GAUGE_MARKING_MIDDLE}
                             max={GAUGE_MARKING_MAX}
                             value={6}
                             radius={GAUGE_RADIUS}
-                            startAngle={GAUGE_MARKING_START}
+                            startAngle={GAUGE_MIDDLE_ANGLE}
                             endAngle={GAUGE_END}
                             className={gaugeMarkerClassName}
                             bold
@@ -327,11 +331,11 @@ const EgtGauge = ({ x, y }: ComponentPositionProps) => {
                         <GaugeMarkerComponent
                             x={0}
                             y={0}
-                            min={GAUGE_MIN}
+                            min={GAUGE_MARKING_MIDDLE}
                             max={GAUGE_MARKING_MAX}
                             value={7}
                             radius={GAUGE_RADIUS}
-                            startAngle={GAUGE_MARKING_START}
+                            startAngle={GAUGE_MIDDLE_ANGLE}
                             endAngle={GAUGE_END}
                             className={gaugeMarkerClassName}
                             textClassName={gaugeMarkerTextClassName}
@@ -344,11 +348,11 @@ const EgtGauge = ({ x, y }: ComponentPositionProps) => {
                         <GaugeMarkerComponent
                             x={0}
                             y={0}
-                            min={GAUGE_MIN}
+                            min={GAUGE_MARKING_MIDDLE}
                             max={GAUGE_MARKING_MAX}
                             value={8}
                             radius={GAUGE_RADIUS}
-                            startAngle={GAUGE_MARKING_START}
+                            startAngle={GAUGE_MIDDLE_ANGLE}
                             endAngle={GAUGE_END}
                             className={gaugeMarkerClassName}
                             bold
@@ -357,11 +361,11 @@ const EgtGauge = ({ x, y }: ComponentPositionProps) => {
                         <GaugeMarkerComponent
                             x={0}
                             y={0}
-                            min={GAUGE_MIN}
+                            min={GAUGE_MARKING_MIDDLE}
                             max={GAUGE_MARKING_MAX}
                             value={9}
                             radius={GAUGE_RADIUS}
-                            startAngle={GAUGE_MARKING_START}
+                            startAngle={GAUGE_MIDDLE_ANGLE}
                             endAngle={GAUGE_END}
                             className={gaugeMarkerClassName}
                             textClassName={gaugeMarkerTextClassName}
@@ -386,12 +390,12 @@ const EgtGauge = ({ x, y }: ComponentPositionProps) => {
                                 <GaugeMarkerComponent
                                     x={0}
                                     y={0}
-                                    min={GAUGE_MIN}
-                                    max={GAUGE_MAX}
+                                    min={displayedEgtValue < GAUGE_MIDDLE ? GAUGE_MIN : GAUGE_MIDDLE}
+                                    max={displayedEgtValue < GAUGE_MIDDLE ? GAUGE_MIDDLE : GAUGE_MAX}
                                     radius={GAUGE_RADIUS}
-                                    startAngle={GAUGE_MARKING_START}
-                                    endAngle={GAUGE_END}
-                                    value={apuEgt.value < 300 ? 300 : displayedEgtValue}
+                                    startAngle={displayedEgtValue < GAUGE_MIDDLE ? GAUGE_MARKING_START : GAUGE_MIDDLE_ANGLE}
+                                    endAngle={displayedEgtValue < GAUGE_MIDDLE ? GAUGE_MIDDLE_ANGLE : GAUGE_END}
+                                    value={displayedEgtValue}
                                     className={`SW4 LineRound ${egtNeedleStyle === 'Pulse' ? 'LinePulse' : egtNeedleStyle}`}
                                     indicator
                                 />
