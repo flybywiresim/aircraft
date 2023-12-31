@@ -142,8 +142,6 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
     }
 
     private async initializeTestingFlightPlans() {
-        const db = new NavigationDatabase(NavigationDatabaseBackend.Msfs);
-        NavigationDatabaseService.activeDatabase = db;
         await new Promise((r) => setTimeout(r, 2000));
 
         // Intialize from MSFS flight data
@@ -153,7 +151,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
         await this.flightPlanService.newCityPair('EDDM', 'EDDF', 'EBBR');
         await this.flightPlanService.setOriginRunway('RW08R');
         await this.flightPlanService.setDepartureProcedure('GIVM6E');
-        await this.flightPlanService.nextWaypoint(4, (await db.searchAllFix('DKB'))[0]);
+        await this.flightPlanService.nextWaypoint(4, (await NavigationDatabaseService.activeDatabase.searchAllFix('DKB'))[0]);
         await this.flightPlanService.setDestinationRunway('RW25L');
         await this.flightPlanService.setApproach('I25L');
         await this.flightPlanService.temporaryInsert();
@@ -718,6 +716,9 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
     public async onAfterRender(node: VNode): Promise<void> {
         super.onAfterRender(node);
 
+        const db = new NavigationDatabase(NavigationDatabaseBackend.Msfs);
+        NavigationDatabaseService.activeDatabase = db;
+
         this.flightPlanService.createFlightPlans();
         this.guidanceController = new GuidanceController(this.fmgc, this.flightPlanService, this.efisInterface);
         this.efisSymbols = new EfisSymbols(this.guidanceController, this.flightPlanService, this.navaidTuner, this.efisInterface);
@@ -729,7 +730,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
         this.guidanceController.init();
         this.fmgc.guidanceController = this.guidanceController;
 
-        await this.initializeTestingFlightPlans();
+        // await this.initializeTestingFlightPlans();
 
         let lastUpdateTime = Date.now();
 
