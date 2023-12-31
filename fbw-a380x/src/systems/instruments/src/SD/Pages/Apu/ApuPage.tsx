@@ -45,7 +45,7 @@ const ApuGeneratorSet = ({ x, y }: ComponentPositionProps) => {
             <g className={masterSwPbOn ? '' : 'Hide'}>
                 <text x={92} y={43} className="F22 Cyan">%</text>
                 <text x={92} y={67} className="F22 Cyan">V</text>
-                <text x={86} y={86} className="F22 Cyan">HZ</text>
+                <text x={86} y={92} className="F22 Cyan">HZ</text>
             </g>
             <ApuGenerator x={114} y={0} position={2} />
         </Layer>
@@ -201,14 +201,14 @@ const NGauge = ({ x, y }: ComponentPositionProps) => {
                 <text
                     x={72}
                     y={24}
-                    className={`F35 LS1 EndAlign ${apuN.isNormalOperation() ? apuNIndicationColor : 'AmberFill'}`}
+                    className={`F35 LS1 EndAlign ${apuN.isNormalOperation() ? apuNIndicationColor : 'Amber'}`}
                 >
                     {apuN.isNormalOperation() ? apuN.value.toFixed() : 'XX'}
                 </text>
                 <text
                     x={72}
                     y={103}
-                    className={`F35 LS1 EndAlign ${apuN.isNormalOperation() ? apuNIndicationColor : 'AmberFill'}`}
+                    className={`F35 LS1 EndAlign ${apuN.isNormalOperation() ? apuNIndicationColor : 'Amber'}`}
                 >
                     {apuN.isNormalOperation() ? apuN.value.toFixed() : 'XX'}
                 </text>
@@ -240,7 +240,7 @@ const EgtGauge = ({ x, y }: ComponentPositionProps) => {
     let egtNumericalStyle: string;
 
     if (!apuEgt.isNormalOperation()) {
-        egtNumericalStyle = 'AmberFill';
+        egtNumericalStyle = 'Amber';
     } else {
         egtNumericalStyle = egtNeedleStyle;
     }
