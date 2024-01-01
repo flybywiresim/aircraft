@@ -2259,7 +2259,7 @@ class FMCMainDisplay extends BaseAirliners {
             airDistance = A32NX_FuelPred.computeAirDistance(groundDistance, -this.averageWind);
         }
 
-        let altToUse = this.cruiseFlightLevel;
+        let altToUse = this.currFlightPlanService.active.performanceData.cruiseFlightLevel;
         // Use the cruise level for calculations otherwise after cruise use descent altitude down to 10,000 feet.
         if (this.flightPhaseManager.phase >= FmgcFlightPhases.DESCENT) {
             altToUse = SimVar.GetSimVarValue("PLANE ALTITUDE", 'Feet') / 100;
