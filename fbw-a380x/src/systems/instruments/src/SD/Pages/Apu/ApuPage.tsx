@@ -91,6 +91,13 @@ const ApuBleed = ({ x, y }: ComponentPositionProps) => {
         <>
             {/* FBW-31-08 */}
             <Layer x={x} y={y}>
+                {apuBleedOpen
+                    && (
+                        <>
+                            <line className="SW2 Green" x1={60} y1={-56} x2={60} y2={-71} />
+                            <polygon className="SW2 Green NoFill" points="50,-71 60,-86 70,-71" />
+                        </>
+                    )}
                 <Valve x={61} y={-37} radius={19.5} position={apuBleedOpen ? 'V' : 'H'} css={`SW2 ${color} NoFill`} sdacDatum={true}  />
 
                 <path className={`SW2 ${color}`} d="m 60 0 v -17" />
