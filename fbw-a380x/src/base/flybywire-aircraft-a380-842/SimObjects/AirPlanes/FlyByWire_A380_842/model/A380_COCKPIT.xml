@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 
+<!-- Copyright (c) 2023 FlyByWire Simulations -->
+<!-- SPDX-License-Identifier: GPL-3.0 -->
+
 <ModelInfo>
     <LODS>
         <!-- Highest LOD -->
@@ -4369,8 +4372,8 @@
                                 <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                                 <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                                 <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
-                                <TOOLTIPID>%((L:A32NX_OVHD_VENT_AIR_EXTRACT_PB_IS_ON, Bool))%{if}CLOSE 
-                                    cabin air extract valves%{else}Manually OPEN the cabin air extract 
+                                <TOOLTIPID>%((L:A32NX_OVHD_VENT_AIR_EXTRACT_PB_IS_ON, Bool))%{if}CLOSE
+                                    cabin air extract valves%{else}Manually OPEN the cabin air extract
                                     valves%{end}</TOOLTIPID>
                             </UseTemplate>
 
@@ -4384,7 +4387,7 @@
                                 <SEQ2_EMISSIVE_DRIVES_VISIBILITY>False</SEQ2_EMISSIVE_DRIVES_VISIBILITY>
                                 <SEQ1_CODE_DRIVES_VISIBILITY>False</SEQ1_CODE_DRIVES_VISIBILITY>
                                 <SEQ2_CODE_DRIVES_VISIBILITY>False</SEQ2_CODE_DRIVES_VISIBILITY>
-                            <TOOLTIPID>%((L:A32NX_OVHD_VENT_CAB_FANS_PB_IS_ON, Bool))%{if}Turn 
+                            <TOOLTIPID>%((L:A32NX_OVHD_VENT_CAB_FANS_PB_IS_ON, Bool))%{if}Turn
                                     OFF cabin fans%{else}Turn ON cabin fans%{end}</TOOLTIPID>
                             </UseTemplate>
 
