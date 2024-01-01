@@ -49,8 +49,6 @@ export class EfisSymbols {
 
     private lastEfisOption = { L: 0, R: 0 };
 
-    private lastPlanCentre = undefined;
-
     private lastPpos: Coordinates = { lat: 0, long: 0 };
 
     private lastTrueHeading: number = -1;
@@ -148,9 +146,6 @@ export class EfisSymbols {
         }
 
         const termination = planCentre?.terminationWaypoint()?.location;
-        if (termination) {
-            this.lastPlanCentre = termination;
-        }
 
         const efisInterfaceChanged = this.lastEfisInterfaceVersion !== this.efisInterface.version;
         if (efisInterfaceChanged) {

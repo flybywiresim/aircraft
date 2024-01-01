@@ -7,7 +7,7 @@ import { DatabaseIdent } from './types/DatabaseIdent';
 import { Waypoint } from './types/Waypoint';
 import { NdbNavaid, NdbClass } from './types/NdbNavaid';
 import { IlsNavaid } from './types/IlsNavaid';
-import { Runway, RunwaySurfaceType } from './types/Runway';
+import { Runway } from './types/Runway';
 import { Airway, AirwayLevel } from './types/Airway';
 import { VhfNavaid, VhfNavaidType, VorClass } from './types/VhfNavaid';
 import { AirportCommunication } from './types/Communication';
@@ -169,7 +169,7 @@ export interface DataInterface {
      */
     getAirwaysByFix(ident: string, icaoCode: string): Promise<Airway[]>;
 
-    getNearbyAirports(center: Coordinates, range: NauticalMiles, limit?: number, longestRunwaySurfaces?: RunwaySurfaceType): Promise<readonly Airport[]>;
+    getNearbyAirports(center: Coordinates, range: NauticalMiles, limit?: number, longestRunwaySurfaces?: number, longestRunwayLength?: number): Promise<readonly Airport[]>;
     getNearbyAirways(center: Coordinates, range: NauticalMiles, limit?: number, levels?: AirwayLevel): Promise<readonly Airway[]>;
     getNearbyVhfNavaids(center: Coordinates, range: number, limit?: number, classes?: VorClass, types?: VhfNavaidType): Promise<readonly VhfNavaid[]>;
     getNearbyNdbNavaids(center: Coordinates, range: NauticalMiles, limit?: number, classes?: NdbClass): Promise<readonly NdbNavaid[]>;
