@@ -27,6 +27,8 @@ export const ApuPage = () => {
             {/* Separation Bar */}
             <path d="m 29 263 v -29 h 712 v 29" className="SW4 White LineRound NoFill" />
 
+            <ApuFuelUsed />
+
             <NGauge x={165} y={346} />
 
             <EgtGauge x={165} y={553} />
@@ -107,6 +109,17 @@ const ApuBleed = ({ x, y }: ComponentPositionProps) => {
                 <text x={62} y={62} className="F22 Cyan">PSI</text>
             </Layer>
         </>
+    );
+};
+
+const ApuFuelUsed = () => {
+
+    return (
+        <g>
+            <text x={258} y={271} className="F26 White LS1">APU FU</text>
+            <text x={416} y={263} className="F28 Green MiddleAlign">0</text>
+            <text x={474} y={271} className="F23 Cyan LS2">KG</text>
+        </g>
     );
 };
 
