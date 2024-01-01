@@ -112,13 +112,19 @@ const ApuBleed = ({ x, y }: ComponentPositionProps) => {
 
 const NGauge = ({ x, y }: ComponentPositionProps) => {
     const apuN = useArinc429Var('L:A32NX_APU_N', 100);
-    let apuNIndicationColor;
-    if (apuN.value < 102) {
-        apuNIndicationColor = 'Green';
-    } else if (apuN.value < 107) {
-        apuNIndicationColor = 'Amber';
+    let apuN1IndicationColor: string;
+    if (apuN.value < 105) {
+        apuN1IndicationColor = 'Green';
     } else {
-        apuNIndicationColor = 'Red';
+        apuN1IndicationColor = 'Red';
+    }
+
+    // TODO insert N2 actual here.
+    let apuN2IndicationColor: string;
+    if (apuN.value < 102) {
+        apuN2IndicationColor = 'Green';
+    } else {
+        apuN2IndicationColor = 'Red';
     }
 
     const GAUGE_MIN = 0;
@@ -195,7 +201,7 @@ const NGauge = ({ x, y }: ComponentPositionProps) => {
                                         startAngle={GAUGE_START}
                                         endAngle={GAUGE_END}
                                         value={Number.parseFloat(apuN.value.toFixed())}
-                                        className={`SW4 LineRound ${apuNIndicationColor}`}
+                                        className={`SW4 LineRound ${apuN1IndicationColor}`}
                                         indicator
                                     />
                                 )}
@@ -210,14 +216,14 @@ const NGauge = ({ x, y }: ComponentPositionProps) => {
                 <text
                     x={72}
                     y={24}
-                    className={`F35 LS1 EndAlign ${apuN.isNormalOperation() ? apuNIndicationColor : 'Amber'}`}
+                    className={`F35 LS1 EndAlign ${apuN.isNormalOperation() ? apuN1IndicationColor : 'Amber'}`}
                 >
                     {apuN.isNormalOperation() ? apuN.value.toFixed() : 'XX'}
                 </text>
                 <text
                     x={72}
                     y={103}
-                    className={`F35 LS1 EndAlign ${apuN.isNormalOperation() ? apuNIndicationColor : 'Amber'}`}
+                    className={`F35 LS1 EndAlign ${apuN.isNormalOperation() ? apuN2IndicationColor : 'Amber'}`}
                 >
                     {apuN.isNormalOperation() ? apuN.value.toFixed() : 'XX'}
                 </text>
@@ -230,18 +236,15 @@ const EgtGauge = ({ x, y }: ComponentPositionProps) => {
     const apuEgt = useArinc429Var('L:A32NX_APU_EGT', 100);
     const displayedEgtValue = Math.round(apuEgt.value / 5) * 5; // APU Exhaust Gas Temperature is shown in steps of five.
 
-    const apuEgtCaution = useArinc429Var('L:A32NX_APU_EGT_CAUTION', 500);
     const apuEgtWarning = useArinc429Var('L:A32NX_APU_EGT_WARNING', 500);
 
-    const redLineShown = apuEgtCaution.isNormalOperation() && apuEgtWarning.isNormalOperation();
+    const redLineShown = apuEgtWarning.isNormalOperation();
 
     // FBW-31-05
     let egtNeedleStyle: string;
 
     if (apuEgt.value > apuEgtWarning.value) {
         egtNeedleStyle = 'Red';
-    } else if (apuEgt.value > apuEgtCaution.value) {
-        egtNeedleStyle = 'Amber';
     } else {
         egtNeedleStyle = 'Green';
     }
@@ -388,7 +391,7 @@ const EgtGauge = ({ x, y }: ComponentPositionProps) => {
                             x={0}
                             y={0}
                             radius={GAUGE_RADIUS - 1}
-                            startAngle={GAUGE_END - 30}
+                            startAngle={GAUGE_END + (GAUGE_MAX - apuEgtWarning.value) / (GAUGE_MAX - GAUGE_MIDDLE) * (GAUGE_END - GAUGE_MIDDLE_ANGLE)}
                             endAngle={GAUGE_END}
                             visible={redLineShown}
                             className="SW6 Red NoFill"
