@@ -1589,16 +1589,19 @@ mod tests {
         }
 
         #[rstest]
-        #[case::aps3200(test_bed_aps3200())]
-        #[case::pw980(test_bed_pw980())]
+        #[case::aps3200(test_bed_aps3200(), 340.)]
+        #[case::pw980(test_bed_pw980(), 480.)]
+        /// For APS3200:
         /// Q: What would you say is a normal running EGT?
         /// Komp: It cools down by a few degrees. Not much though. 340-350 I'd say.
-        fn running_apu_egt_without_bleed_air_usage_stabilizes_between_340_to_350_degrees<
+        /// For PW980: Between 480 and 490
+        fn running_apu_egt_without_bleed_air_usage_stabilizes_to_ref_degrees<
             T: ApuGenerator,
             U: ApuStartMotor,
             const N: usize,
         >(
             #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+            #[case] temp: f64,
         ) {
             let mut test_bed = bed_with
                 .running_apu_without_bleed_air()
@@ -1611,19 +1614,22 @@ mod tests {
                 .normal_value()
                 .unwrap()
                 .get::<degree_celsius>();
-            assert!((340.0..=350.0).contains(&egt));
+            assert!((temp..=temp + 10.).contains(&egt));
         }
 
         #[rstest]
-        #[case::aps3200(test_bed_aps3200())]
-        #[case::pw980(test_bed_pw980())]
+        #[case::aps3200(test_bed_aps3200(), 350.)]
+        #[case::pw980(test_bed_pw980(), 490.)]
+        /// For APS3200: Between 350 and 365
+        /// For PW980: Between 490 and 505
         /// Komp: APU generator supplying will add maybe like 10-15 degrees.
-        fn running_apu_with_generator_supplying_electricity_increases_egt_by_10_to_15_degrees_to_between_350_to_365_degrees<
+        fn running_apu_with_generator_supplying_electricity_increases_egt_by_ref_degrees<
             T: ApuGenerator,
             U: ApuStartMotor,
             const N: usize,
         >(
             #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+            #[case] temp: f64,
         ) {
             let mut test_bed = bed_with
                 .running_apu_without_bleed_air()
@@ -1634,18 +1640,21 @@ mod tests {
                 .normal_value()
                 .unwrap()
                 .get::<degree_celsius>();
-            assert!((350.0..=365.0).contains(&egt));
+            assert!((temp..=temp + 15.).contains(&egt));
         }
 
         #[rstest]
-        #[case::aps3200(test_bed_aps3200())]
-        #[case::pw980(test_bed_pw980())]
-        fn running_apu_supplying_bleed_air_increases_egt_by_85_to_95_degrees_to_between_425_to_445_degrees<
+        #[case::aps3200(test_bed_aps3200(), 425.)]
+        #[case::pw980(test_bed_pw980(), 520.)]
+        /// For APS3200: Between 425 and 445
+        /// For PW980: Between 520 and 540
+        fn running_apu_supplying_bleed_air_increases_egt_by_ref_degrees<
             T: ApuGenerator,
             U: ApuStartMotor,
             const N: usize,
         >(
             #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+            #[case] temp: f64,
         ) {
             let mut test_bed = bed_with
                 .running_apu_with_bleed_air()
@@ -1658,18 +1667,52 @@ mod tests {
                 .normal_value()
                 .unwrap()
                 .get::<degree_celsius>();
-            assert!((425.0..=445.0).contains(&egt));
+            assert!((temp..=temp + 20.).contains(&egt));
         }
 
         #[rstest]
-        #[case::aps3200(test_bed_aps3200())]
-        #[case::pw980(test_bed_pw980())]
-        fn running_apu_supplying_bleed_air_and_electrical_increases_egt_to_between_435_to_460_degrees<
+        #[case::aps3200(test_bed_aps3200(), 425.)]
+        #[case::pw980(test_bed_pw980(), 520.)]
+        /// For APS3200: Between 425 and 445
+        /// For PW980: Between 520 and 540
+        fn shutting_down_apu_after_bleed_does_not_increase_egt<
             T: ApuGenerator,
             U: ApuStartMotor,
             const N: usize,
         >(
             #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+            #[case] temp: f64,
+        ) {
+            let mut test_bed = bed_with.running_apu_going_in_emergency_shutdown();
+
+            loop {
+                test_bed = test_bed.run(Duration::from_millis(50));
+                let egt = test_bed
+                    .egt()
+                    .normal_value()
+                    .unwrap()
+                    .get::<degree_celsius>();
+
+                assert!((0.0..=temp + 20.).contains(&egt));
+
+                if test_bed.n().normal_value().unwrap().get::<percent>() < 1. {
+                    break;
+                }
+            }
+        }
+
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200(), 435.)]
+        #[case::pw980(test_bed_pw980(), 530.)]
+        /// For APS3200: Between 435 and 460
+        /// For PW980: Between 530 and 555
+        fn running_apu_supplying_bleed_air_and_electrical_increases_egt_to_ref_degrees<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, N>,
+            #[case] temp: f64,
         ) {
             let mut test_bed = bed_with
                 .running_apu_with_bleed_air()
@@ -1680,7 +1723,7 @@ mod tests {
                 .normal_value()
                 .unwrap()
                 .get::<degree_celsius>();
-            assert!((435.0..=460.0).contains(&egt));
+            assert!((temp..=temp + 25.).contains(&egt));
         }
 
         #[rstest]
@@ -2434,7 +2477,7 @@ mod tests {
                 // Transition to Stopping state.
                 .run(Duration::from_millis(1))
                 .then_continue_with()
-                .run(Duration::from_secs(60));
+                .run(Duration::from_secs(120));
 
             assert!(
                 (test_bed.n().normal_value().unwrap().get::<percent>() - 0.).abs() < f64::EPSILON
