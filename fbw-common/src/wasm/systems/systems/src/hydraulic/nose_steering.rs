@@ -450,6 +450,7 @@ mod tests {
         test_bed.run();
 
         assert!(test_bed.contains_variable_with_name("NOSE_WHEEL_POSITION_RATIO"));
+        assert!(test_bed.contains_variable_with_name("NOSE_WHEEL_STEERING_SPEED"));
     }
 
     #[test]
@@ -468,6 +469,19 @@ mod tests {
 
         let normalized_position: f64 = test_bed.read_by_name("NOSE_WHEEL_POSITION_RATIO");
         assert!(normalized_position == 0.);
+    }
+
+    #[test]
+    fn init_with_zero_speed() {
+        let mut test_bed =
+            SimulationTestBed::new(|context| TestAircraft::new(steering_actuator(context)));
+
+        test_bed.run_multiple_frames(Duration::from_secs(1));
+
+        assert!(
+            test_bed.query(|a| a.steering_actuator.current_speed.output())
+                == AngularVelocity::default()
+        );
     }
 
     #[test]
@@ -672,6 +686,31 @@ mod tests {
             test_bed.query(|a| a.steering_actuator.position_feedback()),
             Angle::new::<degree>(4.)
         ));
+    }
+
+    #[test]
+    fn steering_speed_updates() {
+        let mut test_bed =
+            SimulationTestBed::new(|context| TestAircraft::new(steering_actuator(context)));
+
+        test_bed.command(|a| a.set_pressure(Pressure::new::<psi>(3000.)));
+        test_bed.command(|a| a.command_steer_angle(Angle::new::<degree>(90.)));
+
+        test_bed.run_multiple_frames(Duration::from_secs(1));
+
+        let steering_speed = AngularVelocity::new::<degree_per_second>(
+            test_bed.read_by_name("NOSE_WHEEL_STEERING_SPEED"),
+        );
+
+        assert!(steering_speed > AngularVelocity::new::<degree_per_second>(15.));
+
+        test_bed.command(|a| a.command_steer_angle(Angle::new::<degree>(-90.)));
+        test_bed.run_multiple_frames(Duration::from_secs(1));
+        let steering_speed = AngularVelocity::new::<degree_per_second>(
+            test_bed.read_by_name("NOSE_WHEEL_STEERING_SPEED"),
+        );
+        assert!(steering_speed < AngularVelocity::new::<degree_per_second>(-15.));
+
     }
 
     fn steering_actuator(context: &mut InitContext) -> SteeringActuator {
