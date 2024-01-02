@@ -73,6 +73,11 @@ jobs:
           node ./scripts/fragment_a32nx.js
           cp ./fbw-a32nx/out/build-modules/modules.json ./fbw-a32nx/out/flybywire-aircraft-a320-neo/install.json
           node ./scripts/install-source_a32nx.js
+          mkdir test
+          cd ./fbw-a32nx/out/
+          7z a -t7z -mO=LZMA -mx=7 -r ../../test/test.7z ./flybywire-aircraft-a320-neo/
+          cd ../../
+          ls -la ./test
       - name: Upload PR artifact
         uses: actions/upload-artifact@v2
         if: github.event.pull_request.auto_merge == false
