@@ -43,6 +43,9 @@ Weight Variant  WV03
 
 Please note that this configuration may change in the future as the projects evolve and change.
 
+> [!NOTE]  
+> While code and some assets for the A380X are present in this repository, no usable sim model is present yet as the aircraft is still in pre-alpha. You cannot compile this repository to produce a usable aircraft.
+
 ## How to download and use the aircraft
 
 To download the aircraft please go to the [FlyByWire Simulations website](https://flybywiresim.com). Please be sure to thoroughly read the [documentation](https://docs.flybywiresim.com) on how to install and use the aircraft.
