@@ -9,11 +9,11 @@ import {
     Subject,
     MappedSubject,
 } from '@microsoft/msfs-sdk';
-import { EFBSimvars } from '../../../../../../../fbw-a32nx/src/systems/instruments/src/EFBv4/EFBSimvarPublisher';
 import { LocalizedString } from '../shared/translation';
 import { PageEnum } from '../shared/common';
 import { Switch } from '../Pages/Pages';
 import { busContext } from '../Contexts';
+import { EFBSimvars } from '../EFBSimvarPublisher';
 
 const BATTERY_LEVEL_WARNING = 8;
 const BATTERY_LEVEL_0 = 13;

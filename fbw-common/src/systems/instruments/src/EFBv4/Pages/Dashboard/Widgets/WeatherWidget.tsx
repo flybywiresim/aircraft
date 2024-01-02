@@ -13,7 +13,7 @@ import { Switch, Pages } from '../../Pages';
 import { flypadClientContext } from '../../../Contexts';
 import { ColoredMetar } from './ColoredMetar';
 import { t } from '../../../Components/LocalizedText';
-import {RemindersSection} from "./ReminderSection";
+import { RemindersSection } from './ReminderSection';
 
 const emptyMetar = {
     raw_text: '',
@@ -58,7 +58,7 @@ const emptyMetar = {
         mb: 0,
     },
     flight_category: '',
-}
+};
 
 export class WeatherReminder extends DisplayComponent<any> {
     render(): VNode {
@@ -102,10 +102,12 @@ export class WeatherWidget extends DisplayComponent<WeatherWidgetProps, [FlypadC
     private readonly pages: Pages;
 
     private readonly baroOutput: Subscribable<string>;
-    private readonly windOutput: Subscribable<string>;
-    private readonly temperatureOutput: Subscribable<string>;
-    private readonly dewpointOutput: Subscribable<string>;
 
+    private readonly windOutput: Subscribable<string>;
+
+    private readonly temperatureOutput: Subscribable<string>;
+
+    private readonly dewpointOutput: Subscribable<string>;
 
     private get client(): FlypadClient {
         return this.getContext(flypadClientContext).get();
@@ -129,29 +131,23 @@ export class WeatherWidget extends DisplayComponent<WeatherWidgetProps, [FlypadC
         }, this.metar, this.showMetar);
 
         this.baroOutput = MappedSubject.create(([metar, baroType]) => {
-            const displayedBaroType = baroType === "AUTO" ? getBaroTypeForAirport(metar.icao) : baroType;
+            const displayedBaroType = baroType === 'AUTO' ? getBaroTypeForAirport(metar.icao) : baroType;
 
-            switch(displayedBaroType) {
-                case 'IN HG':
-                    return `${metar.barometer.hg.toFixed(2)} ${displayedBaroType}`;
-                case 'HPA':
-                    return `${metar.barometer.mb.toFixed(0)} ${displayedBaroType}`;
-                default:
-                    return 'N/A';
+            switch (displayedBaroType) {
+            case 'IN HG':
+                return `${metar.barometer.hg.toFixed(2)} ${displayedBaroType}`;
+            case 'HPA':
+                return `${metar.barometer.mb.toFixed(0)} ${displayedBaroType}`;
+            default:
+                return 'N/A';
             }
         }, this.metar, this.baroType);
 
-        this.windOutput = this.metar.map((metar) => {
-            return `${metar.wind.degrees.toFixed(0)}° / ${metar.wind.speed_kts.toFixed(0)} kts`;
-        })
+        this.windOutput = this.metar.map((metar) => `${metar.wind.degrees.toFixed(0)}° / ${metar.wind.speed_kts.toFixed(0)} kts`);
 
-        this.temperatureOutput = this.metar.map((metar) => {
-            return `${metar.temperature.celsius.toFixed(0)} °C`
-        })
+        this.temperatureOutput = this.metar.map((metar) => `${metar.temperature.celsius.toFixed(0)} °C`);
 
-        this.dewpointOutput = this.metar.map((metar) => {
-            return `${metar.dewpoint.celsius.toFixed(0)} °C`
-        })
+        this.dewpointOutput = this.metar.map((metar) => `${metar.dewpoint.celsius.toFixed(0)} °C`);
 
         this.metarPages = [
             [PageEnum.WeatherWidgetPage.None, (
@@ -249,20 +245,20 @@ export class WeatherWidget extends DisplayComponent<WeatherWidgetProps, [FlypadC
         ];
 
         this.metar.set({
-            barometer: {hg: 29.75, kpa: 100.74504601898246, mb: 1007.4504601898246},
-            ceiling: {code: "OVC", feet_agl: 500, meters_agl: 152.4},
-            clouds: [{code: "OVC", base_feet_agl: 500, base_meters_agl: 152.4}],
+            barometer: { hg: 29.75, kpa: 100.74504601898246, mb: 1007.4504601898246 },
+            ceiling: { code: 'OVC', feet_agl: 500, meters_agl: 152.4 },
+            clouds: [{ code: 'OVC', base_feet_agl: 500, base_meters_agl: 152.4 }],
             color_codes: [1, 0, 0, 0, 2, 0, 2, 2, 0, 5, 5],
-            conditions: [{code: "BR"}],
-            dewpoint: {celsius: 6, fahrenheit: 42.8},
-            flight_category: "IFR",
+            conditions: [{ code: 'BR' }],
+            dewpoint: { celsius: 6, fahrenheit: 42.8 },
+            flight_category: 'IFR',
             humidity_percent: 100,
-            icao: "CYKF",
+            icao: 'CYKF',
             observed: new Date(),
-            raw_parts: ["CYKF", "172321Z", "AUTO", "20012KT", "3SM", "BR", "OVC005", "06/06", "A2975", "RMK", "SLP082"],
-            raw_text: "CYKF 172321Z AUTO 20012KT 3SM BR OVC005 06/06 A2975 RMK SLP082",
-            temperature: {celsius: 6, fahrenheit: 42.8},
-            visibility: {miles: "3", miles_float: 3, meters: "5000", meters_float: 4828.032},
+            raw_parts: ['CYKF', '172321Z', 'AUTO', '20012KT', '3SM', 'BR', 'OVC005', '06/06', 'A2975', 'RMK', 'SLP082'],
+            raw_text: 'CYKF 172321Z AUTO 20012KT 3SM BR OVC005 06/06 A2975 RMK SLP082',
+            temperature: { celsius: 6, fahrenheit: 42.8 },
+            visibility: { miles: '3', miles_float: 3, meters: '5000', meters_float: 4828.032 },
             wind: {
                 degrees: 200,
                 degrees_from: 200,
@@ -270,8 +266,8 @@ export class WeatherWidget extends DisplayComponent<WeatherWidgetProps, [FlypadC
                 speed_kts: 12,
                 speed_mps: 6.173333309325926,
                 gust_kts: 12,
-                gust_mps: 6.173333309325926
-            }
+                gust_mps: 6.173333309325926,
+            },
         });
     }
 
@@ -279,20 +275,20 @@ export class WeatherWidget extends DisplayComponent<WeatherWidgetProps, [FlypadC
         super.onAfterRender(node);
 
         this.metar.set({
-            barometer: {hg: 29.75, kpa: 100.74504601898246, mb: 1007.4504601898246},
-            ceiling: {code: "OVC", feet_agl: 500, meters_agl: 152.4},
-            clouds: [{code: "OVC", base_feet_agl: 500, base_meters_agl: 152.4}],
+            barometer: { hg: 29.75, kpa: 100.74504601898246, mb: 1007.4504601898246 },
+            ceiling: { code: 'OVC', feet_agl: 500, meters_agl: 152.4 },
+            clouds: [{ code: 'OVC', base_feet_agl: 500, base_meters_agl: 152.4 }],
             color_codes: [1, 0, 0, 0, 2, 0, 2, 2, 0, 5, 5],
-            conditions: [{code: "BR"}],
-            dewpoint: {celsius: 6, fahrenheit: 42.8},
-            flight_category: "IFR",
+            conditions: [{ code: 'BR' }],
+            dewpoint: { celsius: 6, fahrenheit: 42.8 },
+            flight_category: 'IFR',
             humidity_percent: 100,
-            icao: "CYKF",
+            icao: 'CYKF',
             observed: new Date(),
-            raw_parts: ["CYKF", "172321Z", "AUTO", "20012KT", "3SM", "BR", "OVC005", "06/06", "A2975", "RMK", "SLP082"],
-            raw_text: "CYKF 172321Z AUTO 20012KT 3SM BR OVC005 06/06 A2975 RMK SLP082",
-            temperature: {celsius: 6, fahrenheit: 42.8},
-            visibility: {miles: "3", miles_float: 3, meters: "5000", meters_float: 4828.032},
+            raw_parts: ['CYKF', '172321Z', 'AUTO', '20012KT', '3SM', 'BR', 'OVC005', '06/06', 'A2975', 'RMK', 'SLP082'],
+            raw_text: 'CYKF 172321Z AUTO 20012KT 3SM BR OVC005 06/06 A2975 RMK SLP082',
+            temperature: { celsius: 6, fahrenheit: 42.8 },
+            visibility: { miles: '3', miles_float: 3, meters: '5000', meters_float: 4828.032 },
             wind: {
                 degrees: 200,
                 degrees_from: 200,
@@ -300,9 +296,9 @@ export class WeatherWidget extends DisplayComponent<WeatherWidgetProps, [FlypadC
                 speed_kts: 12,
                 speed_mps: 6.173333309325926,
                 gust_kts: 12,
-                gust_mps: 6.173333309325926
-            }
-        })
+                gust_mps: 6.173333309325926,
+            },
+        });
 
         this.client.initialized.on(async (client) => {
             const metar = await client.getMetar('CYKF');
@@ -311,20 +307,20 @@ export class WeatherWidget extends DisplayComponent<WeatherWidgetProps, [FlypadC
         });
 
         this.metar.set({
-            barometer: {hg: 29.75, kpa: 100.74504601898246, mb: 1007.4504601898246},
-            ceiling: {code: "OVC", feet_agl: 500, meters_agl: 152.4},
-            clouds: [{code: "OVC", base_feet_agl: 500, base_meters_agl: 152.4}],
+            barometer: { hg: 29.75, kpa: 100.74504601898246, mb: 1007.4504601898246 },
+            ceiling: { code: 'OVC', feet_agl: 500, meters_agl: 152.4 },
+            clouds: [{ code: 'OVC', base_feet_agl: 500, base_meters_agl: 152.4 }],
             color_codes: [1, 0, 0, 0, 2, 0, 2, 2, 0, 5, 5],
-            conditions: [{code: "BR"}],
-            dewpoint: {celsius: 6, fahrenheit: 42.8},
-            flight_category: "IFR",
+            conditions: [{ code: 'BR' }],
+            dewpoint: { celsius: 6, fahrenheit: 42.8 },
+            flight_category: 'IFR',
             humidity_percent: 100,
-            icao: "CYKF",
+            icao: 'CYKF',
             observed: new Date(),
-            raw_parts: ["CYKF", "172321Z", "AUTO", "20012KT", "3SM", "BR", "OVC005", "06/06", "A2975", "RMK", "SLP082"],
-            raw_text: "CYKF 172321Z AUTO 20012KT 3SM BR OVC005 06/06 A2975 RMK SLP082",
-            temperature: {celsius: 6, fahrenheit: 42.8},
-            visibility: {miles: "3", miles_float: 3, meters: "5000", meters_float: 4828.032},
+            raw_parts: ['CYKF', '172321Z', 'AUTO', '20012KT', '3SM', 'BR', 'OVC005', '06/06', 'A2975', 'RMK', 'SLP082'],
+            raw_text: 'CYKF 172321Z AUTO 20012KT 3SM BR OVC005 06/06 A2975 RMK SLP082',
+            temperature: { celsius: 6, fahrenheit: 42.8 },
+            visibility: { miles: '3', miles_float: 3, meters: '5000', meters_float: 4828.032 },
             wind: {
                 degrees: 200,
                 degrees_from: 200,
@@ -332,9 +328,9 @@ export class WeatherWidget extends DisplayComponent<WeatherWidgetProps, [FlypadC
                 speed_kts: 12,
                 speed_mps: 6.173333309325926,
                 gust_kts: 12,
-                gust_mps: 6.173333309325926
-            }
-        })
+                gust_mps: 6.173333309325926,
+            },
+        });
     }
 
     render(): VNode {

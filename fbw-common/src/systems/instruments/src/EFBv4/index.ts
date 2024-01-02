@@ -1,2 +1,2 @@
 export * from './Contexts';
-export * from './EFBv4';
+export * from './EfbV4FsInstrument';
