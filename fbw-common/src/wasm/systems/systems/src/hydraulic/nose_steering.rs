@@ -282,10 +282,6 @@ impl SimulationElement for SteeringActuator {
             &self.speed_id,
             self.current_speed.output().get::<degree_per_second>(),
         );
-        println!(
-            "STEER SPD {}",
-            self.current_speed.output().get::<degree_per_second>()
-        );
     }
 }
 
@@ -710,7 +706,6 @@ mod tests {
             test_bed.read_by_name("NOSE_WHEEL_STEERING_SPEED"),
         );
         assert!(steering_speed < AngularVelocity::new::<degree_per_second>(-15.));
-
     }
 
     fn steering_actuator(context: &mut InitContext) -> SteeringActuator {
