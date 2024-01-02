@@ -35,6 +35,8 @@
 1. [EFCS] Implement calculated yaw damper gain  - @lukecologne (luke)
 1. [EFCS] Decrease yaw damper at low speeds on ground, down to 0 below 40kts - @lukecologne (luke)
 1. [FLIGHTMODEL] Fix pitch trim on approach - @donstim (donbikes)
+1. [HYD] Output nose steering speed as simvar - @Crocket63 (crocket)
+
 
 ## 0.11.0
 

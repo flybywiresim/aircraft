@@ -646,6 +646,10 @@
     - Disconnected pump feedback signal
     - {ENG} = 1, 2, 3, 4
 
+- A32NX_NOSE_WHEEL_STEERING_SPEED
+    - Degrees per second
+    - Angular speed of nose steering
+
 ## Sound Variables
 
 - A380X_SOUND_COCKPIT_WINDOW_RATIO
