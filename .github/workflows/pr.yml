@@ -75,7 +75,7 @@ jobs:
           # node ./scripts/install-source_a32nx.js
           mkdir test
           cd ./fbw-a32nx/out/
-          7z a -t7z -m0=LZMA -mx=7 -r ../../test/test.7z ./flybywire-aircraft-a320-neo/
+          7z a -t7z -m0=LZMA -mx=7 ../../test/test.7z ./flybywire-aircraft-a320-neo/
           cd ../../
           ls -la ./test
       - name: Upload PR artifact
