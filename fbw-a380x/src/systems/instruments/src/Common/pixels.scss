@@ -1,0 +1,11 @@
+.BacklightBleed {
+  pointer-events: none;
+  content: '';
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  z-index: 998;
+ // opacity: 1;
+ // background-color: rgba(0, 0, 255, 0.035);
+ // box-shadow: inset 0px 0px 30px 10px rgba(0, 76, 255, 0.08);
+}

@@ -40,18 +40,6 @@ export class HoppieConnector {
             return;
         }
 
-        const metarSrc = NXDataStore.get('CONFIG_METAR_SRC', 'MSFS');
-        if (metarSrc !== 'VATSIM' && metarSrc !== 'IVAO') {
-            console.log('Invalid METAR source');
-            return;
-        }
-
-        const atisSrc = NXDataStore.get('CONFIG_ATIS_SRC', 'FAA');
-        if (atisSrc !== 'VATSIM' && atisSrc !== 'IVAO') {
-            console.log('Invalid ATIS source');
-            return;
-        }
-
         const body = {
             logon: NXDataStore.get('CONFIG_HOPPIE_USERID', ''),
             from: 'FBWA32NX',
@@ -387,7 +375,13 @@ export class HoppieConnector {
         }
     }
 
+    /**
+     * Gets the interval to poll the Hoppie API in milliseconds.
+     * Warning: This will return a different random time on each invocation!
+     * @returns The polling interval in milliseconds.
+     */
     public static pollInterval(): number {
-        return 5000;
+        // To comply with Hoppie rate limits, we choose a random number between 45 and 75, as recommend by Hoppie. Ref to: https://www.hoppie.nl/acars/system/tech.html
+        return Math.random() * 30_000 + 45_000;
     }
 }

@@ -185,6 +185,7 @@
       "Title": "Pushback"
     },
     "Services": {
+      "AirStarterUnit": "Air Starter Unit",
       "BaggageTruck": "Bagage Truck",
       "CateringTruck": "Catering Truck",
       "Cones": "Sikkerhed kegler",
@@ -622,7 +623,8 @@
       "ReverserOnAxis": "Baglæns på akse",
       "SaveAndApply": "Gem og anvend",
       "SetFromThrottle": "Sæt fra throttle",
-      "ThrottleConfigurationReset": "Nulstilling af throttle indstillinger"
+      "ThrottleConfigurationReset": "Nulstilling af throttle indstillinger",
+      "TogaOnAxis": "TogaOnAxis"
     },
     "Title": "Indstillinger",
     "Unrealistic": "Urealistisk",

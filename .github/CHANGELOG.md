@@ -12,6 +12,29 @@
 1. [FMS] Improve layout of PERF CLB, PERF CRZ and PERF DES pages according to H3 - @BlueberryKing (BlueberryKing)
 1. [FMS] Implement CHECK SPEED MODE message - @BlueberryKing (BlueberryKing)
 1. [PFD] The ILS frequency is now visible even when a LOC is not received - @tracernz (Mike)
+1. [ATSU] Fixed GROUND REQ page not updating after successful station insert - @BravoMike99 (bruno_pt99)
+1. [MCDU] Dash alternate time predictions if alternate fuel is manually inserted @BravoMike99 (bruno_pt99)
+1. [BLEED] Add Air starter unit to enable ground starts - @Maximilian-Reuter (\_Chaoz_)
+1. [MCDU] FUEL PRED layout improvemnts @BravoMike99 (bruno_pt99)
+1. [EFCS] Add precontrol to roll angle controller to improve dynamic response - @lukecologne (luke)
+1. [EFCS] Increase maximum sim rate limit to 8 due to improvements in roll law stability - @lukecologne (luke)
+1. [HOPPIE] Remove ATSU/AOC source checks - @auroraisluna (alepouna)
+1. [PFD] Graphical improvements and updates to the FMA - @BravoMike99 (bruno_pt99)
+1. [PFD] Hide '+' sign on V/S & FPA FMA if selected value is 0 - @BravoMike99 (bruno_pt99)
+1. [API] Added EX1 event handling for fbw.wasm c++ code - @frankkopp (Frank Kopp)
+1. [OVHD] LDG ELEV now has auto position - @tracernz (Mike)
+1. [EFB] Added new F/O camera view, and adjusted captain view to suit new flyPad orientation - @tracernz (Mike)
+1. [OVHD] Fire button LEDs now split by power supply - @tracernz (Mike), @Repsol2k
+1. [OVHD] No PED Label instead of NO SMOKING when selected - @tracernz (Mike)
+1. [FWC/PANEL] GEAR NOT DOWN warnings added including red arrow on panel - @tracernz (Mike)
+1. [MODEL] Fixed some glaring issues with the flight deck model - @MoreRightRudder, @Repsol2k, @tracernz
+1. [MODEL] Replaced overhead decals - @Repsol2k
+1. [MODEL] General improvements to 3d model and textures - @MoreRightRudder, @Repsol2k, @tracernz
+1. [MODEL] Folding armrests - @Repsol2k
+1. [LIGHTING] Fixed Automatic Lighting on Spawn depending on outside lightcondition - @Maximilian-Reuter (\_Chaoz_)
+1. [EFCS] Implement calculated yaw damper gain  - @lukecologne (luke)
+1. [EFCS] Decrease yaw damper at low speeds on ground, down to 0 below 40kts - @lukecologne (luke)
+1. [FLIGHTMODEL] Fix pitch trim on approach - @donstim (donbikes)
 
 ## 0.11.0
 

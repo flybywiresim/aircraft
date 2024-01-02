@@ -46,6 +46,7 @@ const settingsToSync: Map<string, SimVar> = new Map([
     ['GSX_PAYLOAD_SYNC', ['L:A32NX_GSX_PAYLOAD_SYNC_ENABLED', 'bool', '0']],
     ['CONFIG_USING_METRIC_UNIT', ['L:A32NX_EFB_USING_METRIC_UNIT', 'bool', '1']],
     ['CONFIG_A32NX_FWC_RADIO_AUTO_CALL_OUT_PINS', ['L:A32NX_FWC_RADIO_AUTO_CALL_OUT_PINS', 'number', DEFAULT_RADIO_AUTO_CALL_OUTS.toString()]],
+    ['CONFIG_USING_PORTABLE_DEVICES', ['L:A32NX_CONFIG_USING_PORTABLE_DEVICES', 'bool', '1']],
 ]);
 
 const settingEnumToSync: Map<string, SimVarEnum> = new Map([
