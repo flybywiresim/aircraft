@@ -53,6 +53,7 @@ pub(super) trait Aspect {
         &mut self,
         _variables: &mut MsfsVariableRegistry,
         _sim_connect: &mut SimConnect,
+        _delta: Duration,
     ) -> Result<(), Box<dyn Error>> {
         Ok(())
     }
@@ -141,6 +142,23 @@ impl<'a, 'b> MsfsAspectBuilder<'a, 'b> {
 
         self.actions
             .push((MapMany::new(inputs, func, output).into(), execute_on));
+    }
+
+    /// Map a set of variable values to another variable adding frame delta time as input parameter.
+    pub fn map_many_with_delta(
+        &mut self,
+        execute_on: ExecuteOn,
+        inputs: Vec<Variable>,
+        func: fn(&[f64], Duration) -> f64,
+        output: Variable,
+    ) {
+        Self::precondition_not_aircraft_variable(&output);
+
+        let inputs = self.variables.register_many(&inputs);
+        let output = self.variables.register(&output);
+
+        self.actions
+            .push((MapManyDelta::new(inputs, func, output).into(), execute_on));
     }
 
     /// Reduce a set of variable values into one output value and write it to a variable.
@@ -276,12 +294,13 @@ impl MsfsAspect {
         sim_connect: &mut SimConnect,
         execute_moment: ExecuteOn,
         variables: &mut MsfsVariableRegistry,
+        delta: Duration,
     ) -> Result<(), Box<dyn Error>> {
         self.actions
             .iter_mut()
             .try_for_each(|(action, execute_on)| {
                 if *execute_on == execute_moment {
-                    action.execute(sim_connect, variables)?;
+                    action.execute(sim_connect, variables, delta)?;
                 }
 
                 Ok(())
@@ -310,7 +329,7 @@ impl Aspect for MsfsAspect {
             .iter_mut()
             .for_each(|ev| ev.pre_tick(variables, delta));
 
-        self.execute_actions(sim_connect, ExecuteOn::PreTick, variables)?;
+        self.execute_actions(sim_connect, ExecuteOn::PreTick, variables, delta)?;
 
         Ok(())
     }
@@ -319,8 +338,9 @@ impl Aspect for MsfsAspect {
         &mut self,
         variables: &mut MsfsVariableRegistry,
         sim_connect: &mut SimConnect,
+        delta: Duration,
     ) -> Result<(), Box<dyn Error>> {
-        self.execute_actions(sim_connect, ExecuteOn::PostTick, variables)?;
+        self.execute_actions(sim_connect, ExecuteOn::PostTick, variables, delta)?;
 
         self.message_handlers
             .iter_mut()
@@ -341,6 +361,7 @@ pub enum ExecuteOn {
 enum VariableAction {
     Map,
     MapMany,
+    MapManyDelta,
     Reduce,
     ToObject,
     ToEvent,
@@ -353,6 +374,7 @@ trait ExecutableVariableAction {
         &mut self,
         sim_connect: &mut SimConnect,
         variables: &mut MsfsVariableRegistry,
+        delta: Duration,
     ) -> Result<(), Box<dyn Error>>;
 }
 
@@ -381,6 +403,7 @@ impl ExecutableVariableAction for Map {
         &mut self,
         _: &mut SimConnect,
         variables: &mut MsfsVariableRegistry,
+        _delta: Duration,
     ) -> Result<(), Box<dyn Error>> {
         let value = variables.read(&self.input_variable_identifier);
         variables.write(&self.output_variable_identifier, (self.func)(value));
@@ -431,10 +454,49 @@ impl ExecutableVariableAction for MapMany {
         &mut self,
         _: &mut SimConnect,
         variables: &mut MsfsVariableRegistry,
+        _delta: Duration,
     ) -> Result<(), Box<dyn Error>> {
         let values: Vec<f64> = variables.read_many(&self.input_variable_identifiers);
 
         let result = (self.func)(&values);
+        variables.write(&self.output_variable_identifier, result);
+
+        Ok(())
+    }
+}
+
+struct MapManyDelta {
+    input_variable_identifiers: Vec<VariableIdentifier>,
+    func: fn(&[f64], Duration) -> f64,
+    output_variable_identifier: VariableIdentifier,
+}
+
+impl MapManyDelta {
+    fn new(
+        input_variable_identifiers: Vec<VariableIdentifier>,
+        func: fn(&[f64], Duration) -> f64,
+        output_variable_identifier: VariableIdentifier,
+    ) -> Self {
+        precondition_multiple_identifiers("MapManyDelta", &input_variable_identifiers);
+
+        Self {
+            input_variable_identifiers,
+            func,
+            output_variable_identifier,
+        }
+    }
+}
+
+impl ExecutableVariableAction for MapManyDelta {
+    fn execute(
+        &mut self,
+        _: &mut SimConnect,
+        variables: &mut MsfsVariableRegistry,
+        delta: Duration,
+    ) -> Result<(), Box<dyn Error>> {
+        let values: Vec<f64> = variables.read_many(&self.input_variable_identifiers);
+
+        let result = (self.func)(&values, delta);
         variables.write(&self.output_variable_identifier, result);
 
         Ok(())
@@ -471,6 +533,7 @@ impl ExecutableVariableAction for Reduce {
         &mut self,
         _: &mut SimConnect,
         variables: &mut MsfsVariableRegistry,
+        _delta: Duration,
     ) -> Result<(), Box<dyn Error>> {
         let result = variables
             .read_many(&self.input_variable_identifiers)
@@ -537,6 +600,7 @@ impl ExecutableVariableAction for ToObject {
         &mut self,
         sim_connect: &mut SimConnect,
         variables: &mut MsfsVariableRegistry,
+        _delta: Duration,
     ) -> Result<(), Box<dyn Error>> {
         let values: Vec<f64> = self
             .variables
@@ -895,6 +959,7 @@ impl ExecutableVariableAction for ToEvent {
         &mut self,
         sim_connect: &mut SimConnect,
         variables: &mut MsfsVariableRegistry,
+        _delta: Duration,
     ) -> Result<(), Box<dyn Error>> {
         let value = variables.read(&self.input);
         let should_write = match self.write_on {
@@ -954,6 +1019,7 @@ impl ExecutableVariableAction for OnChange {
         &mut self,
         _: &mut SimConnect,
         variables: &mut MsfsVariableRegistry,
+        _delta: Duration,
     ) -> Result<(), Box<dyn Error>> {
         let current_values: Vec<f64> = variables.read_many(&self.observed_variables);
 

@@ -193,7 +193,7 @@ impl MsfsHandler {
                     }
 
                     simulation.tick(delta_time, self.time.simulation_time(), self);
-                    self.post_tick(sim_connect)?;
+                    self.post_tick(sim_connect, delta_time)?;
                 }
             }
             MSFSEvent::SimConnect(message) => match message {
@@ -242,10 +242,14 @@ impl MsfsHandler {
         }
     }
 
-    fn post_tick(&mut self, sim_connect: &mut SimConnect) -> Result<(), Box<dyn Error>> {
+    fn post_tick(
+        &mut self,
+        sim_connect: &mut SimConnect,
+        delta: Duration,
+    ) -> Result<(), Box<dyn Error>> {
         if let Some(mut variables) = self.variables.take() {
             for aspect in self.aspects.iter_mut() {
-                aspect.post_tick(&mut variables, sim_connect)?;
+                aspect.post_tick(&mut variables, sim_connect, delta)?;
             }
 
             self.variables = Some(variables);

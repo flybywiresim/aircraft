@@ -5,6 +5,9 @@ use systems_wasm::aspects::{
     VariableToEventWriteOn,
 };
 use systems_wasm::Variable;
+use uom::si::angle::degree;
+use uom::si::angular_velocity::{revolution_per_minute, AngularVelocity};
+use uom::si::time::second;
 
 pub(super) fn nose_wheel_steering(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
     // The rudder pedals should start in a centered position.
@@ -141,6 +144,56 @@ pub(super) fn nose_wheel_steering(builder: &mut MsfsAspectBuilder) -> Result<(),
         VariableToEventWriteOn::EveryTick,
         "STEERING_SET",
     )?;
+
+    // Adds rotational speed to nose wheel based on steering speed
+    const STEERING_SPEED_TO_WHEEL_SPEED_GAIN: f64 = 0.8;
+    builder.map_many_with_delta(
+        ExecuteOn::PostTick,
+        vec![
+            Variable::aspect("NOSE_WHEEL_STEERING_SPEED"),
+            Variable::aircraft("CENTER WHEEL RPM", "rpm", 0),
+            Variable::named("NOSE_WHEEL_LEFT_ANIM_ANGLE"),
+        ],
+        |values, delta| {
+            let wheel_vel_deg_per_s = 6. * values[1];
+            let wheel_angle_raw = values[2] + wheel_vel_deg_per_s * delta.as_secs_f64();
+            let final_angle_with_steering = wheel_angle_raw
+                + delta.as_secs_f64() * values[0] * STEERING_SPEED_TO_WHEEL_SPEED_GAIN;
+
+            // if final_speed_with_steering>360. {
+            //     final_speed_with_steering / 360.
+            // } else if final_speed_with_steering<0.{
+
+            // }
+
+            // println!(
+            //     "DELTA RECIEVED {} CENTER RPM = {} raw ang {}=> ANGLE= {}",
+            //     delta.as_secs_f64(),
+            //     values[1],
+            //     wheel_angle_raw,
+            //     final_angle_with_steering
+            // );
+            final_angle_with_steering
+        },
+        Variable::named("NOSE_WHEEL_LEFT_ANIM_ANGLE"),
+    );
+    builder.map_many_with_delta(
+        ExecuteOn::PostTick,
+        vec![
+            Variable::aspect("NOSE_WHEEL_STEERING_SPEED"),
+            Variable::aircraft("CENTER WHEEL RPM", "rpm", 0),
+            Variable::named("NOSE_WHEEL_RIGHT_ANIM_ANGLE"),
+        ],
+        |values, delta| {
+            let wheel_vel_deg_per_s = 6. * values[1];
+            let wheel_angle_raw = values[2] + wheel_vel_deg_per_s * delta.as_secs_f64();
+            let final_angle_with_steering = wheel_angle_raw
+                - delta.as_secs_f64() * values[0] * STEERING_SPEED_TO_WHEEL_SPEED_GAIN;
+
+            final_angle_with_steering
+        },
+        Variable::named("NOSE_WHEEL_RIGHT_ANIM_ANGLE"),
+    );
 
     Ok(())
 }
