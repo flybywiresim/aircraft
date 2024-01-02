@@ -7,7 +7,7 @@ use crate::simulation::{
 use std::time::Duration;
 use uom::si::{
     angle::{degree, radian},
-    angular_velocity::radian_per_second,
+    angular_velocity::{degree_per_second, radian_per_second},
     f64::*,
     length::meter,
     pressure::psi,
@@ -93,6 +93,7 @@ impl<const N: usize> SteeringRatioToAngle<N> {
 
 pub struct SteeringActuator {
     position_id: VariableIdentifier,
+    speed_id: VariableIdentifier,
 
     current_speed: LowPassFilter<AngularVelocity>,
     current_position: Angle,
@@ -126,6 +127,7 @@ impl SteeringActuator {
     ) -> Self {
         Self {
             position_id: context.get_identifier("NOSE_WHEEL_POSITION_RATIO".to_owned()),
+            speed_id: context.get_identifier("NOSE_WHEEL_STEERING_SPEED".to_owned()),
 
             current_speed: LowPassFilter::<AngularVelocity>::new(
                 Self::CURRENT_SPEED_FILTER_TIMECONST,
@@ -276,6 +278,14 @@ impl Actuator for SteeringActuator {
 impl SimulationElement for SteeringActuator {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.position_id, self.position_normalized().get::<ratio>());
+        writer.write(
+            &self.speed_id,
+            self.current_speed.output().get::<degree_per_second>(),
+        );
+        println!(
+            "STEER SPD {}",
+            self.current_speed.output().get::<degree_per_second>()
+        );
     }
 }
 
