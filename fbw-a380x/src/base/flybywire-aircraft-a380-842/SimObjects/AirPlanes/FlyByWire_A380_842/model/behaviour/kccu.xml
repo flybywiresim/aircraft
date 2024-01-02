@@ -1,0 +1,454 @@
+<ModelBehaviors>
+    <Template Name="FBW_A380_KCCU_Generic_Button">
+        <DefaultTemplateParameters>
+            <SEQ1_EMISSIVE_DRIVES_VISIBILITY>False</SEQ1_EMISSIVE_DRIVES_VISIBILITY>
+            <WWISE_EVENT_1>mcdubuttons</WWISE_EVENT_1>
+            <WWISE_EVENT_2>mcdubuttons</WWISE_EVENT_2>
+            <NORMALIZED_TIME_1>0.1</NORMALIZED_TIME_1>
+            <NORMALIZED_TIME_2>0.5</NORMALIZED_TIME_2>
+            <SEQ1_POWERED>1</SEQ1_POWERED>
+            <!-- TODO change to A380X as soon as systems use new prefix -->
+            <PLANE_NAME>A32NX</PLANE_NAME>
+        </DefaultTemplateParameters>
+
+        <UseTemplate Name="ASOBO_GT_Push_Button_Airliner">
+            <NODE_ID>PUSH_KCCU#SIDE#_#KEY#</NODE_ID>
+            <BACKLIGHT_NODE_ID>PUSH_KCCU#SIDE#_#KEY#_SEQ1</BACKLIGHT_NODE_ID>
+            <ANIM_NAME>PUSH_KCCU#SIDE#_#KEY#_ANIM</ANIM_NAME>
+
+            <!-- verify this -->
+            <SEQ1_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</SEQ1_POWERED>
+
+            <SEQ1_CODE>(L:#PLANE_NAME#_KCCU_#SIDE#_#KEY#, Bool)</SEQ1_CODE>
+            <LEFT_SINGLE_CODE>1 (&gt;L:#PLANE_NAME#_KCCU_#SIDE#_#KEY#, Bool)</LEFT_SINGLE_CODE>
+            <NO_SEQ2/>
+            <BUTTON_CODE>(&gt;H:#PLANE_NAME#_KCCU_#SIDE#_#KEY#)</BUTTON_CODE>
+        </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_A380_KCCU_Generic_Switch">
+        <UseTemplate Name="FBW_Anim_Interactions">
+            <NODE_ID>PUSH_KCCU#SIDE#_#COMPONENT#_ON_OFF</NODE_ID>
+            <ANIM_NAME>PUSH_KCCU#SIDE#_#COMPONENT#_ON_OFF_ANIM</ANIM_NAME>
+            <ANIM_TYPE>SWITCH</ANIM_TYPE>
+            <ANIM_TEMPLATE>A32NX_GT_Switch_Dummy</ANIM_TEMPLATE>
+            <NUM_STATES>2</NUM_STATES>
+            <SWITCH_DIRECTION>Vertical</SWITCH_DIRECTION>
+            <SWITCH_POSITION_TYPE>L</SWITCH_POSITION_TYPE>
+            <!-- TODO change to A380X as soon as systems use new prefix -->
+            <SWITCH_POSITION_VAR>A32NX_KCCU_#SIDE#_#COMPONENT#_ON_OFF</SWITCH_POSITION_VAR>
+        </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_A380X_KCCU_Template">
+        <Component ID="KCCU_#SIDE#">
+            <!-- KBD_ON_OFF -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Switch">
+                <COMPONENT>KBD</COMPONENT>
+                <ANIMTIP_0>ENABLES THE KEYBOARD</ANIMTIP_0>
+                <ANIMTIP_1>DISABLES THE KEYBOARD</ANIMTIP_1>
+            </UseTemplate>
+
+            <!-- KBD_ON_OFF -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Switch">
+                <COMPONENT>CCD</COMPONENT>
+                <ANIMTIP_0>ENABLES THE CURSOR CONTROL DEVICE</ANIMTIP_0>
+                <ANIMTIP_1>DISABLES THE CURSOR CONTROL DEVICE</ANIMTIP_1>
+            </UseTemplate>
+
+            <!-- PUSH_0 -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>0</KEY>
+                <TOOLTIPID>KEY 0 ON KCCU NUMPAD</TOOLTIPID>>
+            </UseTemplate>
+
+            <!-- PUSH_1 -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>1</KEY>
+                <TOOLTIPID>KEY 1 ON KCCU NUMPAD</TOOLTIPID>
+            </UseTemplate>
+
+            <!-- PUSH_2 -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>2</KEY>
+                <TOOLTIPID>KEY 2 ON KCCU NUMPAD</TOOLTIPID>
+            </UseTemplate>
+
+            <!-- PUSH_3 -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>3</KEY>
+                <TOOLTIPID>KEY 3 ON KCCU NUMPAD</TOOLTIPID>
+            </UseTemplate>
+
+            <!-- PUSH_4 -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>4</KEY>
+                <TOOLTIPID>KEY 4 ON KCCU NUMPAD</TOOLTIPID>
+            </UseTemplate>
+
+            <!-- PUSH_5 -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>5</KEY>
+                <TOOLTIPID>KEY 5 ON KCCU NUMPAD</TOOLTIPID>
+            </UseTemplate>
+
+            <!-- PUSH_6 -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>6</KEY>
+                <TOOLTIPID>KEY 6 ON KCCU NUMPAD</TOOLTIPID>
+            </UseTemplate>
+
+            <!-- PUSH_7 -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>7</KEY>
+                <TOOLTIPID>KEY 7 ON KCCU NUMPAD</TOOLTIPID>
+            </UseTemplate>
+
+            <!-- PUSH_8 -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>8</KEY>
+                <TOOLTIPID>KEY 8 ON KCCU NUMPAD</TOOLTIPID>
+            </UseTemplate>
+
+            <!-- PUSH_9 -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>9</KEY>
+                <TOOLTIPID>KEY 9 ON KCCU NUMPAD</TOOLTIPID>
+            </UseTemplate>
+
+            <!-- PUSH_DOT -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>DOT</KEY>
+                <TOOLTIPID>DECIMAL POINT KEY ON KCCU NUMPAD</TOOLTIPID>
+            </UseTemplate>
+
+            <!-- PUSH_PLUSMINUS -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>PLUSMINUS</KEY>
+                <TOOLTIPID>PLUS/MINUS KEY ON KCCU NUMPAD</TOOLTIPID>
+            </UseTemplate>
+
+            <!-- PUSH_A -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>A</KEY>
+                <TOOLTIPID>KEY A ON KCCU KEYBOARD</TOOLTIPID>
+            </UseTemplate>
+            
+            <!-- PUSH_B -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>B</KEY>
+                <TOOLTIPID>KEY B ON KCCU KEYBOARD</TOOLTIPID>
+            </UseTemplate>
+            
+            <!-- PUSH_C -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>C</KEY>
+                <TOOLTIPID>KEY C ON KCCU KEYBOARD</TOOLTIPID>
+            </UseTemplate>
+
+            <!-- PUSH_D -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>D</KEY>
+                <TOOLTIPID>KEY D ON KCCU KEYBOARD</TOOLTIPID>
+            </UseTemplate>
+            
+            <!-- PUSH_E -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>E</KEY>
+                <TOOLTIPID>KEY E ON KCCU KEYBOARD</TOOLTIPID>
+            </UseTemplate>
+            
+            <!-- PUSH_F -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>F</KEY>
+                <TOOLTIPID>KEY F ON KCCU KEYBOARD</TOOLTIPID>
+            </UseTemplate>
+            
+            <!-- PUSH_G -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>G</KEY>
+                <TOOLTIPID>KEY G ON KCCU KEYBOARD</TOOLTIPID>
+            </UseTemplate>
+            
+            <!-- PUSH_H -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>H</KEY>
+                <TOOLTIPID>KEY H ON KCCU KEYBOARD</TOOLTIPID>
+            </UseTemplate>
+            
+            <!-- PUSH_I -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>I</KEY>
+                <TOOLTIPID>KEY I ON KCCU KEYBOARD</TOOLTIPID>
+            </UseTemplate>
+            
+            <!-- PUSH_J -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>J</KEY>
+                <TOOLTIPID>KEY J ON KCCU KEYBOARD</TOOLTIPID>
+            </UseTemplate>
+            
+            <!-- PUSH_K -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>K</KEY>
+                <TOOLTIPID>KEY K ON KCCU KEYBOARD</TOOLTIPID>
+            </UseTemplate>
+            
+            <!-- PUSH_L -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>L</KEY>
+                <TOOLTIPID>KEY L ON KCCU KEYBOARD</TOOLTIPID>
+            </UseTemplate>
+            
+            <!-- PUSH_M -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>M</KEY>
+                <TOOLTIPID>KEY M ON KCCU KEYBOARD</TOOLTIPID>
+            </UseTemplate>
+            
+            <!-- PUSH_N -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>N</KEY>
+                <TOOLTIPID>KEY N ON KCCU KEYBOARD</TOOLTIPID>
+            </UseTemplate>
+            
+            <!-- PUSH_O -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>O</KEY>
+                <TOOLTIPID>KEY O ON KCCU KEYBOARD</TOOLTIPID>
+            </UseTemplate>
+                        
+            <!-- PUSH_P -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>P</KEY>
+                <TOOLTIPID>KEY P ON KCCU KEYBOARD</TOOLTIPID>
+            </UseTemplate>
+                        
+            <!-- PUSH_Q -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>Q</KEY>
+                <TOOLTIPID>KEY Q ON KCCU KEYBOARD</TOOLTIPID>
+            </UseTemplate>
+                        
+            <!-- PUSH_R -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>R</KEY>
+                <TOOLTIPID>KEY R ON KCCU KEYBOARD</TOOLTIPID>
+            </UseTemplate>
+                        
+            <!-- PUSH_S -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>S</KEY>
+                <TOOLTIPID>KEY S ON KCCU KEYBOARD</TOOLTIPID>
+            </UseTemplate>
+                        
+            <!-- PUSH_T -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>T</KEY>
+                <TOOLTIPID>KEY T ON KCCU KEYBOARD</TOOLTIPID>
+            </UseTemplate>
+                        
+            <!-- PUSH_U -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>U</KEY>
+                <TOOLTIPID>KEY U ON KCCU KEYBOARD</TOOLTIPID>
+            </UseTemplate>
+                        
+            <!-- PUSH_V -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>V</KEY>
+                <TOOLTIPID>KEY V ON KCCU KEYBOARD</TOOLTIPID>
+            </UseTemplate>
+                        
+            <!-- PUSH_W -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>W</KEY>
+                <TOOLTIPID>KEY W ON KCCU KEYBOARD</TOOLTIPID>
+            </UseTemplate>
+                        
+            <!-- PUSH_X -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>X</KEY>
+                <TOOLTIPID>KEY X ON KCCU KEYBOARD</TOOLTIPID>
+            </UseTemplate>
+                                    
+            <!-- PUSH_Y -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>Y</KEY>
+                <TOOLTIPID>KEY Y ON KCCU KEYBOARD</TOOLTIPID>
+            </UseTemplate>
+                                    
+            <!-- PUSH_Z -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>Z</KEY>
+                <TOOLTIPID>KEY Z ON KCCU KEYBOARD</TOOLTIPID>
+            </UseTemplate>
+                                    
+            <!-- PUSH_ESC -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>ESC</KEY>
+                <TOOLTIPID>ESCAPE KEY ON KCCU KEYBOARD</TOOLTIPID>
+            </UseTemplate>
+
+            <!-- PUSH_UP -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>UP</KEY>
+                <TOOLTIPID>UP KEY ON KCCU KEYBOARD</TOOLTIPID>
+            </UseTemplate>
+
+            <!-- PUSH_RIGHT -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>RIGHT</KEY>
+                <TOOLTIPID>RIGHT KEY ON KCCU KEYBOARD</TOOLTIPID>
+            </UseTemplate>
+
+            <!-- PUSH_DOWN -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>DOWN</KEY>
+                <TOOLTIPID>DOWN KEY ON KCCU KEYBOARD</TOOLTIPID>
+            </UseTemplate>
+
+            <!-- PUSH_LEFT -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>SIDE</KEY>
+                <TOOLTIPID>LEFT KEY ON KCCU KEYBOARD</TOOLTIPID>
+            </UseTemplate>
+
+            <!-- PUSH_DIR -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>DIR</KEY>
+                <TOOLTIPID>SHOW DIR PAGE ON MFD</TOOLTIPID>
+            </UseTemplate>
+            
+            <!-- PUSH_PERF -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>PERF</KEY>
+                <TOOLTIPID>SHOW PERF PAGE ON MFD</TOOLTIPID>
+            </UseTemplate>
+            
+            <!-- PUSH_INIT -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>INIT</KEY>
+                <TOOLTIPID>SHOW INIT PAGE ON MFD</TOOLTIPID>
+            </UseTemplate>
+            
+            <!-- PUSH_NAVAID -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>NAVAID</KEY>
+                <TOOLTIPID>SHOW NAVAID PAGE ON MFD</TOOLTIPID>
+            </UseTemplate>
+            
+            <!-- PUSH_MAILBOX -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>MAILBOX</KEY>
+                <TOOLTIPID>SHOW MAILBOX PAGE ON MFD</TOOLTIPID>
+            </UseTemplate>
+            
+            <!-- PUSH_FPLN -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>FPLN</KEY>
+                <TOOLTIPID>SHOW F-PLN PAGE ON MFD</TOOLTIPID>
+            </UseTemplate>
+            
+            <!-- PUSH_DEST -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>DEST</KEY>
+                <TOOLTIPID>SHOW DEST PAGE ON MFD</TOOLTIPID>
+            </UseTemplate>
+            
+            <!-- PUSH_SECINDEX -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>SECINDEX</KEY>
+                <TOOLTIPID>SHOW SEC INDEX PAGE ON MFD</TOOLTIPID>
+            </UseTemplate>
+            
+            <!-- PUSH_SURV -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>SURV</KEY>
+                <TOOLTIPID>SHOW SURV PAGE ON MFD</TOOLTIPID>
+            </UseTemplate>
+                        
+            <!-- PUSH_ATCCOM -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>ATCCOM</KEY>
+                <TOOLTIPID>SHOW ATCCOM PAGE ON MFD</TOOLTIPID>
+            </UseTemplate>
+
+            <!-- PUSH_ND -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>ND</KEY>
+                <TOOLTIPID>MOVE CURSOR TO ND (inop)</TOOLTIPID>
+            </UseTemplate>
+            
+            <!-- PUSH_SLASH -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>SLASH</KEY>
+                <TOOLTIPID>SLASH KEY ON KCCU KEYBOARD</TOOLTIPID>
+            </UseTemplate>
+            
+            <!-- PUSH_ESC2 -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>ESC2</KEY>
+                <TOOLTIPID>ESCAPE KEY ON KCCU CCU</TOOLTIPID>
+            </UseTemplate>
+            
+            <!-- PUSH_KBD -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>KBD</KEY>
+                <TOOLTIPID>KBD KEY ON KCCU CCU</TOOLTIPID>
+            </UseTemplate>
+            
+            <!-- PUSH_REWIND -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>REWIND</KEY>
+                <TOOLTIPID>MOVE THE MOUSE CURSOR TO THE LEFT. (INOP)</TOOLTIPID>
+            </UseTemplate>
+            
+            <!-- PUSH_FORWARD -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>FORWARD</KEY>
+                <TOOLTIPID>MOVE THE MOUSE CURSOR TO THE RIGHT. (INOP)</TOOLTIPID>
+            </UseTemplate>
+            
+            <!-- PUSH_ENT -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>ENT</KEY>
+                <TOOLTIPID>ENTER KEY ON KCCU KEYBOARD</TOOLTIPID>
+            </UseTemplate>
+            
+            <!-- PUSH_BACKSPACE -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>BACKSPACE</KEY>
+                <TOOLTIPID>BACKSPACE KEY ON KCCU KEYBOARD</TOOLTIPID>
+            </UseTemplate>
+            
+            <!-- PUSH_SP -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>SP</KEY>
+                <TOOLTIPID>SPACEBAR KEY ON KCCU KEYBOARD</TOOLTIPID>
+            </UseTemplate>
+            
+            <!-- PUSH_CLRINFO -->
+            <UseTemplate Name="FBW_A380_KCCU_Generic_Button">
+                <KEY>CLRINFO</KEY>
+                <TOOLTIPID>CLEAR INFO KEY ON KCCU KEYBOARD</TOOLTIPID>
+            </UseTemplate>
+        </Component>
+    </Template>
+
+    <Template Name="FBW_A380X_Components_KCCU">
+        <DefaultTemplateParameters>
+            <!-- verify this -->
+            <BACKLIGHT_POWERED>(L:A32NX_ELEC_DC_1_BUS_IS_POWERED, Bool)</BACKLIGHT_POWERED>
+            <BACKLIGHT_POTENTIOMETER>85</BACKLIGHT_POTENTIOMETER>
+            <INDICATOR_POWERED>(L:A32NX_ELEC_DC_ESS_BUS_IS_POWERED, Bool) (L:A32NX_ELEC_DC_2_BUS_IS_POWERED, Bool) or</INDICATOR_POWERED>
+        </DefaultTemplateParameters>
+
+        <UseTemplate Name="FBW_A380X_KCCU_Template">
+            <SIDE>L</SIDE>
+        </UseTemplate>
+        <UseTemplate Name="FBW_A380X_KCCU_Template">
+            <SIDE>R</SIDE>
+        </UseTemplate>
+    </Template>
+</ModelBehaviors>
