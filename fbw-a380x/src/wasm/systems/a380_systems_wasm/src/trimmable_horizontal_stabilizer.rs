@@ -15,6 +15,7 @@ pub(super) fn trimmable_horizontal_stabilizer(
     builder.event_to_variable(
         "ELEV_TRIM_UP",
         EventToVariableMapping::CurrentValueToValue(|current_value| {
+            println!("TRIM UP EVENT cur {}", current_value);
             (current_value + THS_EVENT_INCREMENTS).min(45.)
         }),
         Variable::named("DEV_FINAL_THS_ANGLE"),
@@ -23,6 +24,7 @@ pub(super) fn trimmable_horizontal_stabilizer(
     builder.event_to_variable(
         "ELEV_TRIM_DN",
         EventToVariableMapping::CurrentValueToValue(|current_value| {
+            println!("TRIM DOWN EVENT cur {}", current_value);
             (current_value - THS_EVENT_INCREMENTS).max(-45.)
         }),
         Variable::named("DEV_FINAL_THS_ANGLE"),
