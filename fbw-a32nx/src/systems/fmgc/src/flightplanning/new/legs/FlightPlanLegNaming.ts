@@ -43,11 +43,12 @@ export function procedureLegIdentAndAnnotation(procedureLeg: FlightPlanLegDefini
     case LegType.CD:
     case LegType.FC:
     case LegType.FD:
-        const targetFix = legType === LegType.FC ? procedureLeg.waypoint : procedureLeg.recommendedNavaid;
+    case LegType.VD:
+        const targetFix = procedureLeg.waypoint ?? procedureLeg.recommendedNavaid;
 
         return [
             `${targetFix.ident.substring(0, 3)}/${Math.round(procedureLeg.length).toString().padStart(2, '0')}`,
-            `C${Math.round(procedureLeg.magneticCourse).toString().padStart(3, '0')}°`,
+            `${legType === LegType.VD ? 'H' : 'C'}${Math.round(procedureLeg.magneticCourse).toString().padStart(3, '0')}°`,
         ];
     case LegType.CI:
     case LegType.VI:
@@ -81,8 +82,6 @@ export function procedureLegIdentAndAnnotation(procedureLeg: FlightPlanLegDefini
             'INTCPT',
             `PROC ${procedureLeg.turnDirection === TurnDirection.Left ? 'L' : 'R'}`,
         ];
-    case LegType.VD:
-        break;
     case LegType.FM:
     case LegType.VM:
         return [
