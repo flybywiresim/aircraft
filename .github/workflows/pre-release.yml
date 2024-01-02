@@ -10,7 +10,7 @@ jobs:
     env:
       A32NX_PRODUCTION_BUILD: 1
       A32NX_INSTRUMENTS_BUILD_WORKERS: 2
-      RELEASE_ZIP_NAME: A32NX-stable.zip
+      RELEASE_ZIP_NAME: A32NX-stable.7z
       BUILD_DIR_NAME: stable
     steps:
       - name: Checkout source
@@ -34,7 +34,7 @@ jobs:
       - name: Build ZIP file
         run: |
           cd ./fbw-a32nx/out/
-          zip -r ../../${{ env.BUILD_DIR_NAME }}/${{ env.RELEASE_ZIP_NAME }} ./flybywire-aircraft-a320-neo/
+          7z a -t7z -m0=lzma2 -mx=7 ../../${{ env.BUILD_DIR_NAME }}/${{ env.RELEASE_ZIP_NAME }} ./flybywire-aircraft-a320-neo/
           cd ../..
       - name: Create Release
         id: create_release
