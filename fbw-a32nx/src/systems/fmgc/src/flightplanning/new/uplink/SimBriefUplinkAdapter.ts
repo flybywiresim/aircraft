@@ -11,9 +11,9 @@ import { NavigationDatabaseService } from '@fmgc/flightplanning/new/NavigationDa
 import { Airway, Fix } from '@flybywiresim/fbw-sdk';
 import { Coordinates, distanceTo } from 'msfs-geo';
 import { DisplayInterface } from '@fmgc/flightplanning/new/interface/DisplayInterface';
+import { FlightPlanPerformanceData } from '@fmgc/flightplanning/new/plans/performance/FlightPlanPerformanceData';
 import { ISimbriefData, simbriefDataParser } from '../../../../../instruments/src/EFB/Apis/Simbrief';
 import { DataInterface } from '../interface/DataInterface';
-import { FlightPlanPerformanceData } from "@fmgc/flightplanning/new/plans/performance/FlightPlanPerformanceData";
 
 const SIMBRIEF_API_URL = 'https://www.simbrief.com/api/xml.fetcher.php?json=1';
 
@@ -392,7 +392,9 @@ export class SimBriefUplinkAdapter {
             } else if (lastInstruction?.instruction === 'procedure' && lastInstruction.ident === fix.via_airway) {
                 // SID TRANS
                 instructions.push({ instruction: 'sidEnrouteTransition', ident: fix.ident, locationHint: { lat: parseFloat(fix.pos_lat), long: parseFloat(fix.pos_long) } });
-            } else if (fix.via_airway === 'DCT' || fix.via_airway === 'DCT*' || fix.via_airway.match(/^NAT[A-Z]$/)) {
+            } else if (fix.via_airway === 'DCT' || fix.via_airway === 'DCT*' || fix.via_airway.match(/^NAT[A-Z]$/) || i === 0) {
+                // Last SID fix - if this is the very first fix in the route (to deal with procedures
+                // that only have an exit fix, which won't be caught when filtering)
                 if (fix.type === 'ltlg') {
                     // LAT/LONG Waypoint
                     instructions.push({ instruction: 'latlong', lat: parseFloat(fix.pos_lat), long: parseFloat(fix.pos_long) });
