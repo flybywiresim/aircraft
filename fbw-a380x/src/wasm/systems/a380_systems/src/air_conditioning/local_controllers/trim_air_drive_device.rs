@@ -158,12 +158,12 @@ impl<const ZONES: usize, const ENGINES: usize> SimulationElement
     for TrimAirDriveDevice<ZONES, ENGINES>
 {
     fn write(&self, writer: &mut SimulatorWriter) {
-        let failure_count = match self.fault {
+        let failure_id = match self.fault {
             None => 0,
             Some(TaddFault::OneChannelFault) => self.stand_by_channel.id().into(),
             Some(TaddFault::BothChannelsFault) => 3,
         };
-        writer.write(&self.tadd_channel_failure_id, failure_count);
+        writer.write(&self.tadd_channel_failure_id, failure_id);
     }
 
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
