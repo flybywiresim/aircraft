@@ -3,7 +3,7 @@
 import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MFD/pages/common/TopTabNavigator';
 
 import { ArraySubject, ClockEvents, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
-import { Knots } from '@flybywiresim/fbw-sdk';
+import { Knots, Foot } from '@flybywiresim/fbw-sdk';
 
 import { Button } from 'instruments/src/MFD/pages/common/Button';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
@@ -21,7 +21,7 @@ import { AltitudeConstraintType, SpeedConstraintType } from '@fmgc/flightplannin
 import { FlightPlanLeg } from '@fmgc/flightplanning/new/legs/FlightPlanLeg';
 import { WaypointConstraintType } from '@fmgc/flightplanning/FlightPlanManager';
 import { RadioButtonGroup } from 'instruments/src/MFD/pages/common/RadioButtonGroup';
-import { Foot } from '../../../../../../../../../fbw-common/src/systems/shared/src';
+import { FlightPlan } from '@fmgc/flightplanning/new/plans/FlightPlan';
 
 interface MfdFmsFplnVertRevProps extends AbstractMfdPageProps {
 }
@@ -102,14 +102,42 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
         console.timeEnd('F-PLN/VERT REV:onNewData');
     }
 
+    public static isEligibleForVerticalRevision(legIndex: number, leg: FlightPlanLeg, flightPlan: FlightPlan): boolean {
+        // Check conditions: No constraints for airports, FROM waypoint, CRZ legs, GA legs, pseudo waypoints
+        const enrouteLegsNoDisco = flightPlan.enrouteSegment.allLegs.filter((it) => it instanceof FlightPlanLeg);
+        const firstEnrouteFix = enrouteLegsNoDisco[0] as FlightPlanLeg;
+        const lastEnrouteFix = enrouteLegsNoDisco[enrouteLegsNoDisco.length - 1] as FlightPlanLeg;
+        const firstEnrouteLegIndex = flightPlan.findLegIndexByFixIdent(firstEnrouteFix.definition.waypoint.ident);
+        const lastEnrouteLegIndex = flightPlan.findLegIndexByFixIdent(lastEnrouteFix.definition.waypoint.ident);
+        if (leg.isRunway()
+        || legIndex <= flightPlan.activeLegIndex
+        || (legIndex >= firstEnrouteLegIndex && legIndex <= lastEnrouteLegIndex)
+        || legIndex >= flightPlan.firstMissedApproachLegIndex) {
+            return false;
+        }
+        return true;
+    }
+
     private updateConstraints() {
-        if (this.selectedWaypointIndex.get() !== undefined) {
-            const leg = this.loadedFlightPlan.legElementAt(this.props.fmService.flightPlanService.get(this.loadedFlightPlanIndex.get()).activeLegIndex + this.selectedWaypointIndex.get() + 1);
+        const wptIdx = this.props.fmService.flightPlanService.get(this.loadedFlightPlanIndex.get()).activeLegIndex + this.selectedWaypointIndex.get() + 1;
+        if (wptIdx !== undefined) {
+            const leg = this.loadedFlightPlan.legElementAt(wptIdx);
+
+            if (MfdFmsFplnVertRev.isEligibleForVerticalRevision(wptIdx, leg, this.loadedFlightPlan) === false) {
+                this.speedMessageArea.set(`SPD CSTR NOT ALLOWED AT ${leg.ident}`);
+                this.spdConstraintDisabled.set(true);
+                this.altitudeMessageArea.set(`ALT CSTR NOT ALLOWED AT ${leg.ident}`);
+                this.altConstraintDisabled.set(true);
+                return;
+            }
+            this.speedMessageArea.set('');
+            this.spdConstraintDisabled.set(false);
+            this.altitudeMessageArea.set('');
+            this.altConstraintDisabled.set(false);
 
             // Load speed constraints
             this.speedConstraintInput.set(leg.speedConstraint?.speed);
             this.speedConstraintType.set(leg.constraintType === WaypointConstraintType.CLB ? 'CLB' : 'DES');
-            this.speedMessageArea.set('');
 
             // Load altitude constraints
             switch (leg.altitudeConstraint?.type) {
@@ -128,9 +156,8 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
             }
             this.altitudeConstraintInput.set(leg.altitudeConstraint?.altitude1);
             this.altitudeConstraintType.set(leg.constraintType === WaypointConstraintType.CLB ? 'CLB' : 'DES');
-            this.altitudeMessageArea.set('');
 
-            if (leg.altitudeConstraint.altitude2 !== undefined) {
+            if (leg.altitudeConstraint?.altitude2 !== undefined) {
                 const ac = leg.altitudeConstraint;
                 this.altConstraintDisabled.set(true);
                 // ALT window
@@ -151,19 +178,6 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                 this.altConstraintDisabled.set(false);
                 this.altWindowLabelRef.instance.style.visibility = 'hidden';
                 this.altWindowValueRef.instance.style.visibility = 'hidden';
-            }
-
-            // No constraints for airports
-            if (leg.isRunway()) {
-                this.speedMessageArea.set(`SPD CSTR NOT ALLOWED AT ${leg.ident}`);
-                this.spdConstraintDisabled.set(true);
-                this.altitudeMessageArea.set(`ALT CSTR NOT ALLOWED AT ${leg.ident}`);
-                this.altConstraintDisabled.set(true);
-            } else {
-                this.speedMessageArea.set('');
-                this.spdConstraintDisabled.set(false);
-                this.altitudeMessageArea.set('');
-                this.altConstraintDisabled.set(false);
             }
         }
     }

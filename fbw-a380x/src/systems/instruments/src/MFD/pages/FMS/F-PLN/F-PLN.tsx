@@ -19,6 +19,7 @@ import { Coordinates, bearingTo } from 'msfs-geo';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { Units, LegType, TurnDirection } from '@flybywiresim/fbw-sdk';
 import { FlightPlanIndex } from '@fmgc/index';
+import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/VERT_REV';
 
 interface MfdFmsFplnProps extends AbstractMfdPageProps {
 }
@@ -369,7 +370,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                         callbacks={{
                             speed: () => this.goToSpeedConstraint(drawIndex),
                             altitude: () => this.goToAltitudeConstraint(drawIndex),
-                            rta: () => { },
+                            rta: () => this.goToTimeConstraint(drawIndex),
                             wind: () => { },
                         }}
                     />
@@ -382,7 +383,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     private openRevisionsMenu(legIndex: number, altnFlightPlan: boolean) {
         if (this.revisionsMenuOpened.get() === false) {
             const flightPlan = altnFlightPlan ? this.loadedFlightPlan.alternateFlightPlan : this.loadedFlightPlan;
-            const leg = flightPlan.legElementAt(legIndex);
+            const leg = flightPlan.elementAt(legIndex);
             this.props.fmService.setRevisedWaypoint(legIndex, this.loadedFlightPlanIndex.get(), altnFlightPlan);
 
             if (leg instanceof FlightPlanLeg) {
@@ -471,9 +472,17 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
         );
     }
 
+    private goToTimeConstraint(lineDataIndex: number) {
+        const data = this.lineData[lineDataIndex];
+        if (isWaypoint(data) && MfdFmsFplnVertRev.isEligibleForVerticalRevision(data.originalLegIndex, this.loadedFlightPlan.legElementAt(data.originalLegIndex), this.loadedFlightPlan)) {
+            this.props.fmService.setRevisedWaypoint(data.originalLegIndex, this.loadedFlightPlanIndex.get(), data.isAltnWaypoint);
+            this.props.uiService.navigateTo(`fms/${this.props.uiService.activeUri.get().category}/f-pln-vert-rev/rta`);
+        }
+    }
+
     private goToSpeedConstraint(lineDataIndex: number) {
         const data = this.lineData[lineDataIndex];
-        if (isWaypoint(data)) {
+        if (isWaypoint(data) && MfdFmsFplnVertRev.isEligibleForVerticalRevision(data.originalLegIndex, this.loadedFlightPlan.legElementAt(data.originalLegIndex), this.loadedFlightPlan)) {
             this.props.fmService.setRevisedWaypoint(data.originalLegIndex, this.loadedFlightPlanIndex.get(), data.isAltnWaypoint);
             this.props.uiService.navigateTo(`fms/${this.props.uiService.activeUri.get().category}/f-pln-vert-rev/spd`);
         }
@@ -481,7 +490,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
     private goToAltitudeConstraint(lineDataIndex: number) {
         const data = this.lineData[lineDataIndex];
-        if (isWaypoint(data)) {
+        if (isWaypoint(data) && MfdFmsFplnVertRev.isEligibleForVerticalRevision(data.originalLegIndex, this.loadedFlightPlan.legElementAt(data.originalLegIndex), this.loadedFlightPlan)) {
             this.props.fmService.setRevisedWaypoint(data.originalLegIndex, this.loadedFlightPlanIndex.get(), data.isAltnWaypoint);
             this.props.uiService.navigateTo(`fms/${this.props.uiService.activeUri.get().category}/f-pln-vert-rev/alt`);
         }
