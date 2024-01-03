@@ -145,52 +145,27 @@ pub(super) fn nose_wheel_steering(builder: &mut MsfsAspectBuilder) -> Result<(),
         "STEERING_SET",
     )?;
 
-    // Adds rotational speed to nose wheel based on steering speed
-    const STEERING_SPEED_TO_WHEEL_SPEED_GAIN: f64 = 0.8;
-    builder.map_many_with_delta(
+    // Adds rotational speed to nose wheel based on steering angle
+    const STEERING_RATIO_TO_WHEEL_ANGLE_GAIN: f64 = 80.;
+    builder.map_many(
         ExecuteOn::PostTick,
         vec![
-            Variable::aspect("NOSE_WHEEL_STEERING_SPEED"),
-            Variable::aircraft("CENTER WHEEL RPM", "rpm", 0),
-            Variable::named("NOSE_WHEEL_LEFT_ANIM_ANGLE"),
+            Variable::named("NOSE_WHEEL_POSITION"),
+            Variable::aircraft("CENTER WHEEL ROTATION ANGLE", "degree", 0),
         ],
-        |values, delta| {
-            let wheel_vel_deg_per_s = 6. * values[1];
-            let wheel_angle_raw = values[2] + wheel_vel_deg_per_s * delta.as_secs_f64();
-            let final_angle_with_steering = wheel_angle_raw
-                + delta.as_secs_f64() * values[0] * STEERING_SPEED_TO_WHEEL_SPEED_GAIN;
-
-            // if final_speed_with_steering>360. {
-            //     final_speed_with_steering / 360.
-            // } else if final_speed_with_steering<0.{
-
-            // }
-
-            // println!(
-            //     "DELTA RECIEVED {} CENTER RPM = {} raw ang {}=> ANGLE= {}",
-            //     delta.as_secs_f64(),
-            //     values[1],
-            //     wheel_angle_raw,
-            //     final_angle_with_steering
-            // );
-            normalise_angle(final_angle_with_steering)
+        |values| {
+            normalise_angle(values[1] + (values[0] - 0.5) * STEERING_RATIO_TO_WHEEL_ANGLE_GAIN)
         },
         Variable::named("NOSE_WHEEL_LEFT_ANIM_ANGLE"),
     );
-    builder.map_many_with_delta(
+    builder.map_many(
         ExecuteOn::PostTick,
         vec![
-            Variable::aspect("NOSE_WHEEL_STEERING_SPEED"),
-            Variable::aircraft("CENTER WHEEL RPM", "rpm", 0),
-            Variable::named("NOSE_WHEEL_RIGHT_ANIM_ANGLE"),
+            Variable::named("NOSE_WHEEL_POSITION"),
+            Variable::aircraft("CENTER WHEEL ROTATION ANGLE", "degree", 0),
         ],
-        |values, delta| {
-            let wheel_vel_deg_per_s = 6. * values[1];
-            let wheel_angle_raw = values[2] + wheel_vel_deg_per_s * delta.as_secs_f64();
-            let final_angle_with_steering = wheel_angle_raw
-                - delta.as_secs_f64() * values[0] * STEERING_SPEED_TO_WHEEL_SPEED_GAIN;
-
-            normalise_angle(final_angle_with_steering)
+        |values| {
+            normalise_angle(values[1] - (values[0] - 0.5) * STEERING_RATIO_TO_WHEEL_ANGLE_GAIN)
         },
         Variable::named("NOSE_WHEEL_RIGHT_ANIM_ANGLE"),
     );
@@ -206,10 +181,10 @@ fn recenter_when_close_to_center(value: f64, increment: f64) -> f64 {
     }
 }
 
-const MAX_CONTROLLABLE_STEERING_ANGLE_DEGREES: f64 = 70.;
+const MAX_CONTROLLABLE_STEERING_ANGLE_DEGREES: f64 = 75.;
 
 fn steering_animation_to_msfs_from_steering_angle(nose_wheel_position: f64) -> f64 {
-    const STEERING_ANIMATION_TOTAL_RANGE_DEGREES: f64 = 140.;
+    const STEERING_ANIMATION_TOTAL_RANGE_DEGREES: f64 = 150.;
 
     ((nose_wheel_position * MAX_CONTROLLABLE_STEERING_ANGLE_DEGREES
         / (STEERING_ANIMATION_TOTAL_RANGE_DEGREES / 2.))

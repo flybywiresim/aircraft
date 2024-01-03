@@ -83,6 +83,15 @@
     - Bool
     - True when the AC ESS FEED push button is NORMAL
 
+- A32NX_NOSE_WHEEL_LEFT_ANIM_ANGLE
+    - Degrees
+    - Angular position of left nose wheel (in wheel axis not steering)
+
+- A32NX_NOSE_WHEEL_RIGHT_ANIM_ANGLE
+    - Degrees
+    - Angular position of right nose wheel (in wheel axis not steering)
+
+
 ## Air Conditioning Pressurisation Ventilation ATA 21
 
 - A32NX_COND_{id}_TEMP
@@ -645,10 +654,6 @@
     - Boolean
     - Disconnected pump feedback signal
     - {ENG} = 1, 2, 3, 4
-
-- A32NX_NOSE_WHEEL_STEERING_SPEED
-    - Degrees per second
-    - Angular speed of nose steering
 
 ## Sound Variables
 

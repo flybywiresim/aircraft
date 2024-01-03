@@ -96,17 +96,19 @@
             </UseTemplate>
 
             <!-- Wheel Rotation LH-->
-            <UseTemplate Name="ASOBO_GEAR_Center_Tire_Template">
+            <UseTemplate Name="ASOBO_GT_Anim_Code">
+                <NODE_ID>WHEELS_C</NODE_ID>
                 <ANIM_NAME>c_tire_anim_LH</ANIM_NAME>
-                <NODE_ID_STILL>WHEELS_C</NODE_ID_STILL>
-                <NO_STILL_BLURRED_TRANSITION />
+                <ANIM_CODE>(L:A32NX_NOSE_WHEEL_LEFT_ANIM_ANGLE)</ANIM_CODE>
+                <ANIM_LENGTH>360</ANIM_LENGTH>
             </UseTemplate>
 
             <!-- Wheel Rotation RH-->
-            <UseTemplate Name="ASOBO_GEAR_Center_Tire_Template">
+            <UseTemplate Name="ASOBO_GT_Anim_Code">
+                <NODE_ID>WHEELS_C</NODE_ID>
                 <ANIM_NAME>c_tire_anim_RH</ANIM_NAME>
-                <NODE_ID_STILL>WHEELS_C</NODE_ID_STILL>
-                <NO_STILL_BLURRED_TRANSITION />
+                <ANIM_CODE>(L:A32NX_NOSE_WHEEL_RIGHT_ANIM_ANGLE)</ANIM_CODE>
+                <ANIM_LENGTH>360</ANIM_LENGTH>
             </UseTemplate>
 
             <!-- Body Gear Roation-->
