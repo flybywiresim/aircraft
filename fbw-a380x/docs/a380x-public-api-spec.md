@@ -59,7 +59,8 @@ Example:
 |                            |                            | Transfer Pumps L+R       | B:A380X_OVHD_FUEL_{OUTR\|MID\|INR}\_AUTO_{L\|R}      | 0\|1   |                                |
 |                            |                            |                          | B:A380X_OVHD_FUEL_{OUTR\|MID\|INR}\_AUTO_{L\|R}      | 0\|1   |                                |
 |                            |                            | Auto Transfer L+R        | B:A380X_OVHD_FUEL_XFR_{OUTR\|MID\|INR}\_AUTO_{L\|R}  | 0\|1   | Shows MAN if not AUTO (==0)    |
-|                            | ELEC                       |                          | B:A380X_OVHD_FUEL_XFR_{OUTR\|MID\|INR}\_FAULT_{L\|R} | 0\|1   |                                |
+|                            |                            |                          | B:A380X_OVHD_FUEL_XFR_{OUTR\|MID\|INR}\_FAULT_{L\|R} | 0\|1   |                                |
+|                            | ELEC                       |                          |                                                      |        |                                |
 |                            | AIR                        |                          |                                                      |        |                                |
 |                            | ANTI ICE                   |                          |                                                      |        |                                |
 |                            | ENG START                  |                          |                                                      |        |                                |
