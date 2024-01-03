@@ -173,7 +173,7 @@ pub(super) fn nose_wheel_steering(builder: &mut MsfsAspectBuilder) -> Result<(),
             //     wheel_angle_raw,
             //     final_angle_with_steering
             // );
-            final_angle_with_steering
+            normalise_angle(final_angle_with_steering)
         },
         Variable::named("NOSE_WHEEL_LEFT_ANIM_ANGLE"),
     );
@@ -190,7 +190,7 @@ pub(super) fn nose_wheel_steering(builder: &mut MsfsAspectBuilder) -> Result<(),
             let final_angle_with_steering = wheel_angle_raw
                 - delta.as_secs_f64() * values[0] * STEERING_SPEED_TO_WHEEL_SPEED_GAIN;
 
-            final_angle_with_steering
+            normalise_angle(final_angle_with_steering)
         },
         Variable::named("NOSE_WHEEL_RIGHT_ANIM_ANGLE"),
     );
@@ -233,4 +233,14 @@ fn steering_demand_to_msfs_from_steering_angle(
     // Then we hack msfs by adding the rudder value that it will always substract internally
     // This way we end up with actual angle we required
     (1. - steering_ratio_converted) + (rudder_position - 0.5)
+}
+
+fn normalise_angle(angle: f64) -> f64 {
+    let raw = angle % 360.;
+
+    if raw > 0. {
+        raw
+    } else {
+        raw + 360.
+    }
 }
