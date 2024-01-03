@@ -4,7 +4,7 @@ import { Button } from 'instruments/src/MFD/pages/common/Button';
 import { coordinateToString } from '@flybywiresim/fbw-sdk';
 import { DropdownMenu } from 'instruments/src/MFD/pages/common/DropdownMenu';
 import { WaypointEntryUtils } from '@fmgc/flightplanning/new/WaypointEntryUtils';
-import { MfdFlightManagementService } from 'instruments/src/MFD/pages/common/FlightManagementService';
+import { MfdFlightManagementService } from 'instruments/src/MFD/pages/common/MfdFlightManagementService';
 
 export type NextWptInfo = {
     ident: string;

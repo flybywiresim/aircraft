@@ -1,12 +1,11 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 
 import 'instruments/src/MFD/pages/common/style.scss';
-import './oans.scss';
+import './OansNdUi.scss';
 
 import { Button } from 'instruments/src/MFD/pages/common/Button';
 import { IconButton } from 'instruments/src/MFD/pages/common/IconButton';
 import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MFD/pages/common/TopTabNavigator';
-import { OANSRunwayInfoBox } from 'instruments/src/MFD/pages/OANS/OANSRunwayInfoBox';
 import { ContextMenu } from 'instruments/src/MFD/pages/common/ContextMenu';
 
 import { ArraySubject, ComponentProps, DisplayComponent, EventBus, FSComponent, Subject, VNode } from '@microsoft/msfs-sdk';
@@ -16,7 +15,8 @@ import { DropdownMenu } from 'instruments/src/MFD/pages/common/DropdownMenu';
 import { RadioButtonGroup } from 'instruments/src/MFD/pages/common/RadioButtonGroup';
 import { InputField } from 'instruments/src/MFD/pages/common/InputField';
 import { LengthFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
-import { MfdFlightManagementService } from 'instruments/src/MFD/pages/common/FlightManagementService';
+import { MfdFlightManagementService } from 'instruments/src/MFD/pages/common/MfdFlightManagementService';
+import { OansRunwayInfoBox } from 'instruments/src/MFD/pages/OANS/OANSRunwayInfoBox';
 
 export interface OANSProps extends ComponentProps {
     bus: EventBus;
@@ -36,7 +36,7 @@ declare type MousePosition = {
     y: number;
 }
 
-export class OANS extends DisplayComponent<OANSProps> {
+export class OansNdUi extends DisplayComponent<OANSProps> {
     private topRef = FSComponent.createRef<HTMLDivElement>();
 
     private mouseCursorRef = FSComponent.createRef<MouseCursor>();
@@ -261,7 +261,7 @@ export class OANS extends DisplayComponent<OANSProps> {
                                             buttonStyle="width: 65%"
                                         />
                                     </div>
-                                    <OANSRunwayInfoBox
+                                    <OansRunwayInfoBox
                                         rwyOrStand={this.selectedEntityType}
                                         selectedEntity={this.selectedEntityString}
                                         tora={Subject.create(4000)}

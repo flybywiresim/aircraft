@@ -2,7 +2,7 @@ import { TurnDirection } from '@flybywiresim/fbw-sdk';
 import { HoldType } from '@fmgc/flightplanning/data/flightplan';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
 import { FlightPlanIndex } from '@fmgc/index';
-import { MfdFmsFpln } from 'instruments/src/MFD/pages/FMS/F-PLN/F-PLN';
+import { MfdFmsFpln } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFpln';
 import { ContextMenuElement } from 'instruments/src/MFD/pages/common/ContextMenu';
 
 export enum FplnRevisionsMenuType {

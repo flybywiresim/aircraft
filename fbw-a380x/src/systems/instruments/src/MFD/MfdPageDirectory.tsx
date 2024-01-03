@@ -1,30 +1,30 @@
 import { EventBus, FSComponent, Subscribable, VNode } from '@microsoft/msfs-sdk';
 
 // Page imports
-import { MfdFmsDataStatus } from 'instruments/src/MFD/pages/FMS/DATA/STATUS';
-import { MfdFmsFplnAirways } from 'instruments/src/MFD/pages/FMS/F-PLN/AIRWAYS';
-import { MfdFmsFplnArr } from 'instruments/src/MFD/pages/FMS/F-PLN/ARRIVAL';
-import { MfdFmsFplnDep } from 'instruments/src/MFD/pages/FMS/F-PLN/DEPARTURE';
-import { MfdFmsFplnDirectTo } from 'instruments/src/MFD/pages/FMS/F-PLN/DIRECT-TO';
-import { MfdFmsFpln } from 'instruments/src/MFD/pages/FMS/F-PLN/F-PLN';
-import { MfdFmsFplnHold } from 'instruments/src/MFD/pages/FMS/F-PLN/HOLD';
-import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/VERT_REV';
-import { MfdFmsFuelLoad } from 'instruments/src/MFD/pages/FMS/FUEL_LOAD';
-import { MfdFmsInit } from 'instruments/src/MFD/pages/FMS/INIT';
-import { MfdNotFound } from 'instruments/src/MFD/pages/FMS/NOT_FOUND';
-import { MfdFmsPerf } from 'instruments/src/MFD/pages/FMS/PERF';
-import { MfdFmsPositionIrs } from 'instruments/src/MFD/pages/FMS/POSITION/IRS';
-import { MfdFmsPositionNavaids } from 'instruments/src/MFD/pages/FMS/POSITION/NAVAIDS';
+import { MfdFmsDataStatus } from 'instruments/src/MFD/pages/FMS/DATA/MfdFmsDataStatus';
+import { MfdFmsFplnAirways } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnAirways';
+import { MfdFmsFplnArr } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnArr';
+import { MfdFmsFplnDep } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnDep';
+import { MfdFmsFplnDirectTo } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnDirectTo';
+import { MfdFmsFpln } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFpln';
+import { MfdFmsFplnHold } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnHold';
+import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnVertRev';
+import { MfdFmsFuelLoad } from 'instruments/src/MFD/pages/FMS/MfdFmsFuelLoad';
+import { MfdFmsInit } from 'instruments/src/MFD/pages/FMS/MfdFmsInit';
+import { MfdNotFound } from 'instruments/src/MFD/pages/FMS/MfdNotFound';
+import { MfdFmsPerf } from 'instruments/src/MFD/pages/FMS/MfdFmsPerf';
+import { MfdFmsPositionIrs } from 'instruments/src/MFD/pages/FMS/POSITION/MfdFmsPositionIrs';
+import { MfdFmsPositionNavaids } from 'instruments/src/MFD/pages/FMS/POSITION/MfdFmsPositionNavaids';
 
 // Header imports
 import { AtccomHeader } from 'instruments/src/MFD/pages/common/AtccomHeader';
 import { FcuBkupHeader } from 'instruments/src/MFD/pages/common/FcuBkupHeader';
-import { MfdFlightManagementService } from 'instruments/src/MFD/pages/common/FlightManagementService';
+import { MfdFlightManagementService } from 'instruments/src/MFD/pages/common/MfdFlightManagementService';
 import { FmsHeader } from 'instruments/src/MFD/pages/common/FmsHeader';
 import { SurvHeader } from 'instruments/src/MFD/pages/common/SurvHeader';
-import { MfdUIService } from 'instruments/src/MFD/pages/common/UIService';
+import { MfdUiService } from 'instruments/src/MFD/pages/common/MfdUiService';
 
-export function pageForUrl(url: string, bus: EventBus, uiService: MfdUIService, fmService: MfdFlightManagementService): VNode {
+export function pageForUrl(url: string, bus: EventBus, uiService: MfdUiService, fmService: MfdFlightManagementService): VNode {
     switch (url) {
     case 'fms/active/perf':
     case 'fms/sec1/perf':
@@ -188,7 +188,7 @@ export function headerForSystem(
     bus: EventBus,
     atcCallsign: Subscribable<string>,
     activeFmsSource: Subscribable<'FMS 1' | 'FMS 2' | 'FMS 1-C' | 'FMS 2-C'>,
-    uiService: MfdUIService,
+    uiService: MfdUiService,
     fmService: MfdFlightManagementService,
 ): VNode {
     switch (sys) {

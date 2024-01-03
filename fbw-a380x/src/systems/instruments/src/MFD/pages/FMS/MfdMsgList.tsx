@@ -2,7 +2,7 @@
 
 import { DisplayComponent, FSComponent, Subject, SubscribableArray, SubscribableArrayEventType, Subscription, VNode } from '@microsoft/msfs-sdk';
 
-import './msg_list.scss';
+import './MfdMsgList.scss';
 import { AbstractMfdPageProps, FmsErrorMessage } from 'instruments/src/MFD/MFD';
 import { Button } from 'instruments/src/MFD/pages/common/Button';
 import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';

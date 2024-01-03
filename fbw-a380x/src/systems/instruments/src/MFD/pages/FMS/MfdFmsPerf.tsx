@@ -11,7 +11,7 @@ import { RadioButtonGroup } from 'instruments/src/MFD/pages/common/RadioButtonGr
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 
-import './perf.scss';
+import './MfdFmsPerf.scss';
 import {
     AltitudeFormat,
     AltitudeOrFlightLevelFormat,

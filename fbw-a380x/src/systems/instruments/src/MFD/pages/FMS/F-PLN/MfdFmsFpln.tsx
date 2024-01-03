@@ -1,6 +1,6 @@
 ﻿import { ArraySubject, ClockEvents, ComponentProps, DisplayComponent, FSComponent, MappedSubject, NodeReference, Subject, Subscribable, Subscription, VNode } from '@microsoft/msfs-sdk';
 
-import './f-pln.scss';
+import './MfdFmsFpln.scss';
 import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 
@@ -19,7 +19,7 @@ import { Coordinates, bearingTo } from 'msfs-geo';
 import { FmgcFlightPhase } from '@shared/flightphase';
 import { Units, LegType, TurnDirection } from '@flybywiresim/fbw-sdk';
 import { FlightPlanIndex } from '@fmgc/index';
-import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/VERT_REV';
+import { MfdFmsFplnVertRev } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnVertRev';
 
 interface MfdFmsFplnProps extends AbstractMfdPageProps {
 }
@@ -43,7 +43,21 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
     private lineData: FplnLineDisplayData[];
 
+    private renderedLineData = [
+        Subject.create<FplnLineDisplayData>(null),
+        Subject.create<FplnLineDisplayData>(null),
+        Subject.create<FplnLineDisplayData>(null),
+        Subject.create<FplnLineDisplayData>(null),
+        Subject.create<FplnLineDisplayData>(null),
+        Subject.create<FplnLineDisplayData>(null),
+        Subject.create<FplnLineDisplayData>(null),
+        Subject.create<FplnLineDisplayData>(null),
+        Subject.create<FplnLineDisplayData>(null),
+    ];
+
     private activeLegIndex: number = 1;
+
+    private lastRenderedFpVersion: number = -1;
 
     private derivedFplnLegData: DerivedFplnLegData[] = [];
 
@@ -60,6 +74,8 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     private destDistanceLabel = Subject.create<string>('---');
 
     private displayFplnFromLineIndex = Subject.create<number>(0);
+
+    private lastRenderedDisplayLineIndex: number = -1;
 
     private disabledScrollDown = Subject.create(true);
 
@@ -79,8 +95,21 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
     protected onNewData(): void {
         console.time('F-PLN:onNewData');
+
+        // this.update is most costly function. First performance improvement: Don't render everything completely new every time, just update with refs
+        // Delete and re-render FPLN lines only if:
+        // a) activeLegIndex changes
+        // b) flight plan version was increased
+        // c) list was scrolled up or down
+        const activeLegIndexChanged = this.activeLegIndex !== this.loadedFlightPlan.activeLegIndex;
+        const fpVersionIncreased = this.lastRenderedFpVersion !== this.loadedFlightPlan.version;
+        const listWasScrolled = this.lastRenderedDisplayLineIndex !== this.displayFplnFromLineIndex.get();
+        const onlyUpdatePredictions = !(activeLegIndexChanged || fpVersionIncreased || listWasScrolled);
+
         this.activeLegIndex = this.loadedFlightPlan.activeLegIndex;
-        this.update(this.displayFplnFromLineIndex.get());
+        this.update(this.displayFplnFromLineIndex.get(), onlyUpdatePredictions);
+        this.lastRenderedFpVersion = this.loadedFlightPlan.version;
+        this.lastRenderedDisplayLineIndex = this.displayFplnFromLineIndex.get();
 
         if (this.loadedFlightPlan.destinationAirport) {
             this.destButtonDisabled.set(false);
@@ -105,18 +134,18 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     }
 
     private updateEfisPlanCentre(planDisplayForPlan: number, planDisplayLegIndex: number, planDisplayInAltn: boolean) {
-        // Update SimVars for ND map center
+        // Update ND map center
         this.props.fmService.efisInterface.setPlanCentre(planDisplayForPlan, planDisplayLegIndex, planDisplayInAltn);
         this.props.fmService.efisInterface.setAlternateLegVisible(this.loadedFlightPlan.alternateFlightPlan.legCount > 0, planDisplayForPlan);
-        this.props.fmService.efisInterface.setMissedLegVisible(planDisplayLegIndex >= this.loadedFlightPlan.firstMissedApproachLegIndex, planDisplayForPlan);
+        this.props.fmService.efisInterface.setMissedLegVisible((planDisplayLegIndex + 8) >= this.loadedFlightPlan.firstMissedApproachLegIndex, planDisplayForPlan);
         this.props.fmService.efisInterface.setAlternateMissedLegVisible(
-            this.loadedFlightPlan.alternateFlightPlan && planDisplayLegIndex >= this.loadedFlightPlan.alternateFlightPlan.firstMissedApproachLegIndex,
+            this.loadedFlightPlan.alternateFlightPlan && (planDisplayLegIndex + 8) >= this.loadedFlightPlan.alternateFlightPlan.firstMissedApproachLegIndex,
             planDisplayForPlan,
         );
         this.props.fmService.efisInterface.setSecRelatedPageOpen(planDisplayForPlan >= FlightPlanIndex.FirstSecondary);
     }
 
-    private update(startAtIndex: number): void {
+    private update(startAtIndex: number, onlyUpdatePredictions = true): void {
         // Make sure that you can't scroll higher than the FROM wpt
         if (startAtIndex < this.loadedFlightPlan.activeLegIndex - 1) {
             this.displayFplnFromLineIndex.set(startAtIndex);
@@ -157,10 +186,6 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
             this.derivedFplnLegData.push(newEl);
         });
-
-        while (this.linesDivRef.instance.firstChild) {
-            this.linesDivRef.instance.removeChild(this.linesDivRef.instance.firstChild);
-        }
 
         this.lineData = [];
 
@@ -311,11 +336,20 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             }
         }
 
+        // Delete all lines only if re-render is neccessary.
+        if (onlyUpdatePredictions === false) {
+            while (this.linesDivRef.instance.firstChild) {
+                this.linesDivRef.instance.removeChild(this.linesDivRef.instance.firstChild);
+            }
+        }
+
         const untilLegIndex = Math.min(this.lineData.length, startAtIndex + (this.tmpyActive.get() ? 8 : 9));
         for (let drawIndex = startAtIndex; drawIndex < untilLegIndex; drawIndex++) {
             if (drawIndex > this.lineData.length - 1) {
                 // Insert empty line
-                FSComponent.render(<div />, this.linesDivRef.instance);
+                if (onlyUpdatePredictions === false) {
+                    FSComponent.render(<div />, this.linesDivRef.instance);
+                }
             } else {
                 const lineIndex = drawIndex - startAtIndex;
 
@@ -343,35 +377,40 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                 if (drawIndex === this.activeLegIndex - 1) {
                     flags |= FplnLineFlags.BeforeActiveLeg;
                 }
-                const node = (
-                    <FplnLegLine
-                        data={Subject.create(this.lineData[drawIndex])} // TODO make subscribable for leaner updates
-                        previousRow={Subject.create(previousRow)}
-                        openRevisionsMenuCallback={() => {
-                            const line = this.lineData[drawIndex];
-                            this.openRevisionsMenu(line.originalLegIndex, isWaypoint(line) ? line.isAltnWaypoint : false);
-                        }}
-                        flags={Subject.create(flags)}
-                        displayEfobAndWind={this.displayEfobAndWind}
-                        globalLineColor={MappedSubject.create(([tmpy, sec]) => {
-                            if (sec === true) {
-                                return FplnLineColor.Secondary;
-                            }
-                            if (tmpy === true) {
-                                return FplnLineColor.Temporary;
-                            }
-                            return FplnLineColor.Active;
-                        }, this.tmpyActive, this.secActive)}
-                        revisionsMenuIsOpened={this.revisionsMenuOpened}
-                        callbacks={{
-                            speed: () => this.goToSpeedConstraint(drawIndex),
-                            altitude: () => this.goToAltitudeConstraint(drawIndex),
-                            rta: () => this.goToTimeConstraint(drawIndex),
-                            wind: () => { },
-                        }}
-                    />
-                );
-                FSComponent.render(node, this.linesDivRef.instance);
+
+                this.renderedLineData[lineIndex].set(this.lineData[drawIndex]);
+
+                if (onlyUpdatePredictions === false) {
+                    const node = (
+                        <FplnLegLine
+                            data={this.renderedLineData[lineIndex]}
+                            previousRow={Subject.create(previousRow)}
+                            openRevisionsMenuCallback={() => {
+                                const line = this.lineData[drawIndex];
+                                this.openRevisionsMenu(line.originalLegIndex, isWaypoint(line) ? line.isAltnWaypoint : false);
+                            }}
+                            flags={Subject.create(flags)}
+                            displayEfobAndWind={this.displayEfobAndWind}
+                            globalLineColor={MappedSubject.create(([tmpy, sec]) => {
+                                if (sec === true) {
+                                    return FplnLineColor.Secondary;
+                                }
+                                if (tmpy === true) {
+                                    return FplnLineColor.Temporary;
+                                }
+                                return FplnLineColor.Active;
+                            }, this.tmpyActive, this.secActive)}
+                            revisionsMenuIsOpened={this.revisionsMenuOpened}
+                            callbacks={{
+                                speed: () => this.goToSpeedConstraint(drawIndex),
+                                altitude: () => this.goToAltitudeConstraint(drawIndex),
+                                rta: () => this.goToTimeConstraint(drawIndex),
+                                wind: () => { },
+                            }}
+                        />
+                    );
+                    FSComponent.render(node, this.linesDivRef.instance);
+                }
             }
         }
 
@@ -449,7 +488,8 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
         }, true));
 
         this.subs.push(this.displayFplnFromLineIndex.sub((val) => {
-            this.update(val);
+            this.update(val, false);
+            this.lastRenderedDisplayLineIndex = this.displayFplnFromLineIndex.get();
 
             this.disabledScrollUp.set(!this.lineData || val <= 0);
             this.disabledScrollDown.set(!this.lineData || val >= this.lineData.length - 1);
@@ -463,7 +503,8 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                 this.lineColor.set(FplnLineColor.Active);
                 this.tmpyLineRef.instance.style.display = 'none';
             }
-            this.update(this.displayFplnFromLineIndex.get());
+            this.update(this.displayFplnFromLineIndex.get(), false);
+            this.lastRenderedDisplayLineIndex = this.displayFplnFromLineIndex.get();
         }, true));
 
         const sub = this.props.bus.getSubscriber<ClockEvents>();
@@ -941,7 +982,7 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
             if (this.props.globalLineColor.get() === FplnLineColor.Active) {
                 if (data.etaOrSecondsFromPresent) {
                     const date = new Date(data.etaOrSecondsFromPresent);
-                    this.timeRef.getOrDefault().innerText = `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+                    this.timeRef.getOrDefault().innerText = `${date.getUTCHours().toString().padStart(2, '0')}:${date.getUTCMinutes().toString().padStart(2, '0')}`;
                 }
             } else {
                 this.timeRef.getOrDefault().innerText = '--:--';

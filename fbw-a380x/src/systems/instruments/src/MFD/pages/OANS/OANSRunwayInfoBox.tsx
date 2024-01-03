@@ -1,8 +1,8 @@
 import { DisplayComponent, FSComponent, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import '../common/style.scss';
-import { EntityTypes } from 'instruments/src/MFD/pages/OANS/OANS';
+import { EntityTypes } from 'instruments/src/MFD/pages/OANS/OansNdUi';
 
-interface OANSRunwayInfoBoxProps {
+interface OansRunwayInfoBoxProps {
     rwyOrStand: Subscribable<EntityTypes>;
     selectedEntity: Subscribable<string>;
     tora: Subscribable<number>;
@@ -10,7 +10,7 @@ interface OANSRunwayInfoBoxProps {
     ldaIsReduced: Subscribable<boolean>;
     coordinate: Subscribable<string>;
 }
-export class OANSRunwayInfoBox extends DisplayComponent<OANSRunwayInfoBoxProps> {
+export class OansRunwayInfoBox extends DisplayComponent<OansRunwayInfoBoxProps> {
     private rwyDivRef = FSComponent.createRef<HTMLDivElement>();
 
     private standDivRef = FSComponent.createRef<HTMLDivElement>();

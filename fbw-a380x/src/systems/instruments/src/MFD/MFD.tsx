@@ -19,8 +19,8 @@ import { MouseCursor } from 'instruments/src/MFD/pages/common/MouseCursor';
 
 import { FlightPlanService } from '@fmgc/flightplanning/new/FlightPlanService';
 
-import { MfdMsgList } from 'instruments/src/MFD/pages/FMS/MSG_LIST';
-import { ActiveUriInformation, MfdUIService } from 'instruments/src/MFD/pages/common/UIService';
+import { MfdMsgList } from 'instruments/src/MFD/pages/FMS/MfdMsgList';
+import { ActiveUriInformation, MfdUiService } from 'instruments/src/MFD/pages/common/MfdUiService';
 import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
 import { Coordinates, DegreesTrue, NauticalMiles, distanceTo } from 'msfs-geo';
@@ -29,8 +29,8 @@ import { NavaidTuner } from '@fmgc/navigation/NavaidTuner';
 import { NavaidSelectionManager } from '@fmgc/navigation/NavaidSelectionManager';
 import { LandingSystemSelectionManager } from '@fmgc/navigation/LandingSystemSelectionManager';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/new/NavigationDatabaseService';
-import { MfdFlightManagementService } from 'instruments/src/MFD/pages/common/FlightManagementService';
-import { MfdFmsFplnDuplicateNames } from 'instruments/src/MFD/pages/FMS/F-PLN/DUPLICATE_NAMES';
+import { MfdFlightManagementService } from 'instruments/src/MFD/pages/common/MfdFlightManagementService';
+import { MfdFmsFplnDuplicateNames } from 'instruments/src/MFD/pages/FMS/F-PLN/MfdFmsFplnDuplicateNames';
 import { DatabaseItem, Waypoint } from 'msfs-navdata';
 import { DisplayInterface } from '@fmgc/flightplanning/new/interface/DisplayInterface';
 import { FmsErrorType } from '@fmgc/FmsError';
@@ -56,7 +56,7 @@ export const getDisplayIndex = () => {
 export interface AbstractMfdPageProps extends ComponentProps {
     pageTitle?: string;
     bus: EventBus;
-    uiService: MfdUIService;
+    uiService: MfdUiService;
     fmService: MfdFlightManagementService;
 }
 
@@ -73,7 +73,7 @@ export interface FmsErrorMessage {
     onClearOverride: () => void;
 }
 export class MfdComponent extends DisplayComponent<MfdComponentProps> implements DisplayInterface, DataInterface {
-    private uiService = new MfdUIService();
+    private uiService = new MfdUiService();
 
     private flightPlanService = new FlightPlanService(this.props.bus, new A320FlightPlanPerformanceData());
 

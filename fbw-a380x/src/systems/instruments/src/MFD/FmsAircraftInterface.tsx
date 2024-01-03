@@ -10,7 +10,7 @@ import { MfdComponent } from 'instruments/src/MFD/MFD';
 import { FmgcDataInterface } from 'instruments/src/MFD/fmgc';
 import { ADIRS } from 'instruments/src/MFD/pages/FMS/legacy/Adirs';
 import { NXSystemMessages } from 'instruments/src/MFD/pages/FMS/legacy/NXSystemMessages';
-import { MfdFlightManagementService } from 'instruments/src/MFD/pages/common/FlightManagementService';
+import { MfdFlightManagementService } from 'instruments/src/MFD/pages/common/MfdFlightManagementService';
 import { Feet } from 'msfs-geo';
 import { A380OperatingSpeeds, A380OperatingSpeedsApproach, A380SpeedsUtils } from '../../../shared/src/OperatingSpeeds';
 

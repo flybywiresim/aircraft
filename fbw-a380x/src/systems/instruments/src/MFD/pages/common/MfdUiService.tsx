@@ -22,7 +22,7 @@ export interface ActiveUriInformation {
 /*
  * Handles navigation (and potentially other aspects) for MFD pages
  */
-export class MfdUIService {
+export class MfdUiService {
     public readonly activeUri = Subject.create<ActiveUriInformation>({
         uri: '',
         sys: MfdSystem.None,
