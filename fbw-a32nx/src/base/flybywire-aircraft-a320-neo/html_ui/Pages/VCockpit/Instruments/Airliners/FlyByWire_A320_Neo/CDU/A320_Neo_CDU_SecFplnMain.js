@@ -10,6 +10,7 @@ class CDUSecFplnMain {
 
         mcdu.onLeftInput[0] = () => {
             mcdu.flightPlanService.flightPlanManager.copy(Fmgc.FlightPlanIndex.Active, Fmgc.FlightPlanIndex.FirstSecondary);
+            CDUFlightPlanPage.ShowPage(mcdu, 0, Fmgc.FlightPlanIndex.FirstSecondary);
         };
 
         mcdu.onLeftInput[1] = () => {
