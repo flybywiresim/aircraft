@@ -51,21 +51,21 @@ Example:
 |                            | HYD                        |                          |                                                    |        |                                |
 |                            | FUEL                       | CROSSFEED OPEN INDICATOR | A380X_OVHD_FUEL_CROSSFEED_OPEN_IND_{1\|2\|3\|4}    | 0\|1   |                                |
 |                            |                            | CROSSFEED PUSHBUTTON     | A380X_OVHD_FUEL_CROSSFEED_PB_ON_{1\|2\|3\|4}       | 0\|1   |                                |
-|                            |                            | FEED TK MAIN             | A380X_OVHD_FUEL_MAIN_PB_ON_{1\|2\|3\|4}            | 0\|1   |                                |
-|                            |                            |                          | A380X_OVHD_FUEL_MAIN_FAULT_{1\|2\|3\|4}            | 0\|1   |                                |
-|                            |                            | FEED TK STBY             | A380X_OVHD_FUEL_STBY_PB_ON_{1\|2\|3\|4}            | 0\|1   |                                |
-|                            |                            |                          | A380X_OVHD_FUEL_STBY_FAULT_{1\|2\|3\|4}            | 0\|1   |                                |
+|                            |                            | FEED TK MAIN             | A380X_OVHD_FUEL_FEED_MAIN_PB_ON_{1\|2\|3\|4}       | 0\|1   |                                |
+|                            |                            |                          | A380X_OVHD_FUEL_FEED_MAIN_FAULT_{1\|2\|3\|4}       | 0\|1   |                                |
+|                            |                            | FEED TK STBY             | A380X_OVHD_FUEL_FEED_STBY_PB_ON_{1\|2\|3\|4}       | 0\|1   |                                |
+|                            |                            |                          | A380X_OVHD_FUEL_FEED_STBY_FAULT_{1\|2\|3\|4}       | 0\|1   |                                |
 |                            |                            | Transfer Pumps L+R       | A380X_OVHD_FUEL_{OUTR\|MID\|INR}\_AUTO_{L\|R}      | 0\|1   |                                |
 |                            |                            |                          | A380X_OVHD_FUEL_{OUTR\|MID\|INR}\_AUTO_{L\|R}      | 0\|1   |                                |
 |                            |                            | Auto Transfer L+R        | A380X_OVHD_FUEL_XFR_{OUTR\|MID\|INR}\_AUTO_{L\|R}  | 0\|1   | Shows MAN if not AUTO (==0)    |
 |                            | ELEC                       |                          | A380X_OVHD_FUEL_XFR_{OUTR\|MID\|INR}\_FAULT_{L\|R} | 0\|1   |                                |
-|                            | AIR                        |                          |                                                    | 0\|1   |                                |
-|                            | ANTI ICE                   |                          |                                                    | 0\|1   |                                |
-|                            | ENG START                  |                          |                                                    | 0\|1   |                                |
-|                            | CABIN PRESS                |                          |                                                    | 0\|1   |                                |
-|                            | EXT LT                     |                          |                                                    | 0\|1   |                                |
-|                            | APU                        |                          |                                                    | 0\|1   |                                |
-|                            | INT LT                     |                          |                                                    | 0\|1   |                                |
+|                            | AIR                        |                          |                                                    |        |                                |
+|                            | ANTI ICE                   |                          |                                                    |        |                                |
+|                            | ENG START                  |                          |                                                    |        |                                |
+|                            | CABIN PRESS                |                          |                                                    |        |                                |
+|                            | EXT LT                     |                          |                                                    |        |                                |
+|                            | APU                        |                          |                                                    |        |                                |
+|                            | INT LT                     |                          |                                                    |        |                                |
 |                            | SIGNS                      |                          |                                                    |        |                                |
 |                            |                            |                          |                                                    |        |                                |
 | Overhead Panel Right       | RESET                      |                          |                                                    |        |                                |
