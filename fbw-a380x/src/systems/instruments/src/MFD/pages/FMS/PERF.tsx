@@ -1254,7 +1254,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     <span class="mfd-label mfd-spacing-right">DERATED CLB</span>
                                     <DropdownMenu
                                         values={ArraySubject.create(['NONE', '01', '02', '03', '04', '05'])}
-                                        inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Climb)}
+                                        inactive={Subject.create(true)} // was: this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Climb)
                                         selectedIndex={this.props.fmService.fmgc.data.climbDerated}
                                         idPrefix="deratedClbDropdown"
                                         freeTextAllowed={false}
