@@ -7,7 +7,7 @@ use crate::simulation::{
 use std::time::Duration;
 use uom::si::{
     angle::{degree, radian},
-    angular_velocity::{degree_per_second, radian_per_second},
+    angular_velocity::radian_per_second,
     f64::*,
     length::meter,
     pressure::psi,
@@ -93,7 +93,6 @@ impl<const N: usize> SteeringRatioToAngle<N> {
 
 pub struct SteeringActuator {
     position_id: VariableIdentifier,
-    speed_id: VariableIdentifier,
 
     current_speed: LowPassFilter<AngularVelocity>,
     current_position: Angle,
@@ -127,7 +126,6 @@ impl SteeringActuator {
     ) -> Self {
         Self {
             position_id: context.get_identifier("NOSE_WHEEL_POSITION_RATIO".to_owned()),
-            speed_id: context.get_identifier("NOSE_WHEEL_STEERING_SPEED".to_owned()),
 
             current_speed: LowPassFilter::<AngularVelocity>::new(
                 Self::CURRENT_SPEED_FILTER_TIMECONST,
@@ -278,10 +276,6 @@ impl Actuator for SteeringActuator {
 impl SimulationElement for SteeringActuator {
     fn write(&self, writer: &mut SimulatorWriter) {
         writer.write(&self.position_id, self.position_normalized().get::<ratio>());
-        writer.write(
-            &self.speed_id,
-            self.current_speed.output().get::<degree_per_second>(),
-        );
     }
 }
 
@@ -446,7 +440,6 @@ mod tests {
         test_bed.run();
 
         assert!(test_bed.contains_variable_with_name("NOSE_WHEEL_POSITION_RATIO"));
-        assert!(test_bed.contains_variable_with_name("NOSE_WHEEL_STEERING_SPEED"));
     }
 
     #[test]
@@ -465,19 +458,6 @@ mod tests {
 
         let normalized_position: f64 = test_bed.read_by_name("NOSE_WHEEL_POSITION_RATIO");
         assert!(normalized_position == 0.);
-    }
-
-    #[test]
-    fn init_with_zero_speed() {
-        let mut test_bed =
-            SimulationTestBed::new(|context| TestAircraft::new(steering_actuator(context)));
-
-        test_bed.run_multiple_frames(Duration::from_secs(1));
-
-        assert!(
-            test_bed.query(|a| a.steering_actuator.current_speed.output())
-                == AngularVelocity::default()
-        );
     }
 
     #[test]
@@ -682,30 +662,6 @@ mod tests {
             test_bed.query(|a| a.steering_actuator.position_feedback()),
             Angle::new::<degree>(4.)
         ));
-    }
-
-    #[test]
-    fn steering_speed_updates() {
-        let mut test_bed =
-            SimulationTestBed::new(|context| TestAircraft::new(steering_actuator(context)));
-
-        test_bed.command(|a| a.set_pressure(Pressure::new::<psi>(3000.)));
-        test_bed.command(|a| a.command_steer_angle(Angle::new::<degree>(90.)));
-
-        test_bed.run_multiple_frames(Duration::from_secs(1));
-
-        let steering_speed = AngularVelocity::new::<degree_per_second>(
-            test_bed.read_by_name("NOSE_WHEEL_STEERING_SPEED"),
-        );
-
-        assert!(steering_speed > AngularVelocity::new::<degree_per_second>(15.));
-
-        test_bed.command(|a| a.command_steer_angle(Angle::new::<degree>(-90.)));
-        test_bed.run_multiple_frames(Duration::from_secs(1));
-        let steering_speed = AngularVelocity::new::<degree_per_second>(
-            test_bed.read_by_name("NOSE_WHEEL_STEERING_SPEED"),
-        );
-        assert!(steering_speed < AngularVelocity::new::<degree_per_second>(-15.));
     }
 
     fn steering_actuator(context: &mut InitContext) -> SteeringActuator {
