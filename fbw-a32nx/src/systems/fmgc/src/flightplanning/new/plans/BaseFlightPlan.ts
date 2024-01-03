@@ -250,7 +250,9 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         this.approachSegment.setProcedure(this.approachSegment.procedure?.ident);
         this.approachViaSegment.setProcedure(this.approachViaSegment.procedure?.ident);
 
+        this.enqueueOperation(FlightPlanQueuedOperation.RebuildArrivalAndApproach);
         this.enqueueOperation(FlightPlanQueuedOperation.Restring);
+
         this.flushOperationQueue().then(() => {
             const activeIndex = this.allLegs.findIndex((it) => it === this.activeLeg);
 
