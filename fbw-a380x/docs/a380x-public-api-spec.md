@@ -9,7 +9,7 @@
 - 3rd prefix for panel (ELEC/...) or not?
 - 4th prefix for side (CAPT/FO) or not?
 - EVENT/VAR NAME
-- postfix for number (e.g. ENG 1/ENG 2/ENG 3/ENG 4) or not?
+- postfix for number (e.g. ENG 1/ENG 2/ENG 3/ENG 4) or left/right (e.g. L/R)
 
 {A32NX|A380X}_OVHD_ELEC_BAT_PB_IS_AUTO_{1|2} = (0|1)
 
@@ -17,6 +17,7 @@ Example:
 * A380X_PEDESTAL_ENG_MASTER_1 = (0|1)
 * A380X_OVHD_ELEC_BAT_PB_IS_AUTO_2 = (0|1)
 * A380X_CONSOLE_CAPT_TILLER = (-1.0..1.0)
+* A380X_OVHD_FUEL_XFR_{OUTR|MID|INR}_AUTO_{L|R} = (0|1)
 
 ## Cockpit Controls API
 
