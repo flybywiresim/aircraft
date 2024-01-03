@@ -8,13 +8,14 @@
 - 2nd prefix for section (OVHD/FCU/...) or not?
 - 3rd prefix for panel (ELEC/...) or not?
 - 4th prefix for side (CAPT/FO) or not?
-- 5th prefix for number (e.g. ENG 1/ENG 2/ENG 3/ENG 4) or not?
+- EVENT/VAR NAME
+- postfix for number (e.g. ENG 1/ENG 2/ENG 3/ENG 4) or not?
 
 {A32NX|A380X}_
 
 Example:
 * A380X_PEDESTAL_ENG_MASTER_1 = (0|1)
-* A380X_OVHD_FUEL_ENG_3_PUMP_PB_IS_AUTO = (0|1)
+* A380X_OVHD_FUEL_ENG_PUMP_PB_IS_AUTO_3 = (0|1)
 * A380X_CONSOLE_CAPT_TILLER = (-1.0..1.0)
 
 ## Cockpit Controls API
