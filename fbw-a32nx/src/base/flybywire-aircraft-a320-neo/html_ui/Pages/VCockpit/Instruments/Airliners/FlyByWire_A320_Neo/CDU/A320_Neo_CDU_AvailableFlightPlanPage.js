@@ -163,6 +163,7 @@ class CDUAvailableFlightPlanPage {
                 setTimeout(async () => {
                     await Fmgc.CoRouteUplinkAdapter.uplinkFlightPlanFromCoRoute(mcdu, mcdu.flightPlanService, mcdu.coRoute);
                     await mcdu.flightPlanService.uplinkInsert();
+                    this.setGroundTempFromOrigin();
 
                     CDUInitPage.ShowPage1(mcdu);
                 }, 0 /* No delay because it takes long enough without artificial delay */);

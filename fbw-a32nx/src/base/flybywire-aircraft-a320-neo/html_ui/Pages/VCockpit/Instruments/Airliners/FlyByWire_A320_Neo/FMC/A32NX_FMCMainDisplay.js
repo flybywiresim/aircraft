@@ -2378,6 +2378,7 @@ class FMCMainDisplay extends BaseAirliners {
 
                             await Fmgc.CoRouteUplinkAdapter.uplinkFlightPlanFromCoRoute(this, this.flightPlanService, this.coRoute);
                             await this.flightPlanService.uplinkInsert();
+                            this.setGroundTempFromOrigin();
 
                             this.coRoute["routeNumber"] = coRouteNum;
                         } else {

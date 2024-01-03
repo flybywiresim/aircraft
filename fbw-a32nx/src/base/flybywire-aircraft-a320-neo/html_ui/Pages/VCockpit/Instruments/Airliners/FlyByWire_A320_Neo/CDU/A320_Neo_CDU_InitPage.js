@@ -213,6 +213,7 @@ class CDUInitPage {
 
                             const plan = mcdu.flightPlanService.active;
                             mcdu.updateFlightNo(plan.flightNumber);
+                            mcdu.setGroundTempFromOrigin();
 
                             if (mcdu.page.Current === mcdu.page.InitPageA) {
                                 CDUInitPage.ShowPage1(mcdu);
