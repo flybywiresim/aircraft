@@ -1,0 +1,95 @@
+# Build script for the A380X on master branch
+# Build independent of the A32NX to avoid side effects if one or the other fails
+
+# TODO: Add a check if something changed outside of the fbw-a32nx folder (which isn't of interest for this build)
+#       Consider that master pre release should always have a A32NX and A380x though
+
+name: master
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    # Prevent running this on forks
+    if: github.repository_owner == 'flybywiresim'
+    runs-on: ubuntu-latest
+    env:
+      A32NX_PRODUCTION_BUILD: 1
+      A32NX_INSTRUMENTS_BUILD_WORKERS: 2
+      MASTER_PRE_RELEASE_ID: 66067756
+      MASTER_PRE_RELEASE_TAG: assets/master
+      MASTER_ZIP_NAME: A380X-master.7z
+      VMASTER_PRE_RELEASE_ID: 32243965
+      VMASTER_PRE_RELEASE_TAG: vmaster
+      BUILD_DIR_NAME: master
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v2
+      - name: Set BUILT_DATE_TIME
+        run: echo "BUILT_DATE_TIME=$(date -u -Iseconds)" >> $GITHUB_ENV
+      - name: Create .env file
+        run: |
+          echo A32NX_PRODUCTION_BUILD=1 >> fbw-a380x/.env
+          echo CLIENT_ID=\"${{ secrets.NAVIGRAPH_CLIENT_ID }}\" >> fbw-a380x/.env
+          echo CLIENT_SECRET=\"${{ secrets.NAVIGRAPH_CLIENT_SECRET }}\" >> fbw-a380x/.env
+          echo CHARTFOX_SECRET=\"${{ secrets.CHARTFOX_SECRET }}\" >> fbw-a380x/.env
+          echo SENTRY_DSN=\"${{ secrets.SENTRY_DSN }}\" >> fbw-a380x/.env
+          echo BUILD_DIR_NAME=${{ env.BUILD_DIR_NAME }} >> .env
+          echo LOCALAZY_READ_KEY=${{ secrets.LOCALAZY_READ_KEY }} >> .env
+          echo VITE_BUILD=false >> .env
+      - name: Build A380X
+        run: |
+          ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
+          ./scripts/dev-env/run.sh ./scripts/build_a380x.sh --no-tty -j 4
+          rm -rf fbw-a380x/src
+          docker system prune -af
+      - name: Build ZIP files
+        run: |
+          df -h
+          node ./scripts/fragment_a380x.js
+          cp ./fbw-a380x/out/build-modules/modules.json ./fbw-a380x/out/flybywire-aircraft-a320-neo/install.json
+          node ./scripts/install-source_a380x.js
+          mkdir ./${{ env.BUILD_DIR_NAME }}
+          cd ./fbw-a380x/out/
+          7z a -t7z -m0=lzma2 -mx=7 ../../${{ env.BUILD_DIR_NAME }}/${{ env.MASTER_ZIP_NAME }} ./flybywire-aircraft-a380-842/
+          cd ../../
+      - name: Upload to CloudFlare CDN
+        env:
+          CLOUDFLARE_BUCKET_PASSWORD: ${{ secrets.CLOUDFLARE_BUCKET_PASSWORD }}
+          CDN_BUCKET_DESTINATION: addons/a380x/master
+        run: |
+          ./scripts/cf-cdn.sh $CDN_BUCKET_DESTINATION ./fbw-a380x/out/build-modules
+      - name: Delete old GitHub Pre-Release assets
+        uses: mknejp/delete-release-assets@v1
+        with:
+          token: ${{ github.token }}
+          tag: ${{ env.MASTER_PRE_RELEASE_TAG }}
+          assets: "*"
+          fail-if-no-assets: false
+      - name: Upload aircraft package to GitHub Pre-Release Assets
+        uses: actions/upload-release-asset@v1.0.2
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: https://uploads.github.com/repos/${{ github.repository }}/releases/${{ env.MASTER_PRE_RELEASE_ID }}/assets{?name,label}
+          asset_path: ./${{ env.BUILD_DIR_NAME }}/${{ env.MASTER_ZIP_NAME }}
+          asset_name: ${{ env.MASTER_ZIP_NAME }}
+          asset_content_type: application/zip
+      - name: Upload fragments to GitHub Pre-Release Assets
+        uses: dwenegar/upload-release-assets@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          release_id: ${{ env.MASTER_PRE_RELEASE_ID }}
+          assets_path: ./fbw-a380x/out/build-modules
+      - name: Update GitHub Pre-Release Body
+        run: |
+          curl --request PATCH \
+            --url 'https://api.github.com/repos/${{ github.repository }}/releases/${{ env.MASTER_PRE_RELEASE_ID }}' \
+            --header 'authorization: Bearer ${{ secrets.GITHUB_TOKEN }}' \
+            --header 'Content-Type: application/json' \
+            --data-raw '{
+              "body": "This pre-release has its asset updated on every commit to the master branch\nLast updated on ${{ env.BUILT_DATE_TIME }} from commit ${{ github.sha }}\nThis link will always point to the latest master build: https://github.com/${{ github.repository }}/releases/download/${{ env.MASTER_PRE_RELEASE_TAG }}/${{ env.MASTER_ZIP_NAME }}"
+            }'

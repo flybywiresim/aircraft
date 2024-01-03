@@ -1,3 +1,9 @@
+# Build script for the A32NX on master branch
+# Build independent of the A380X to avoid side effects if one or the other fails
+
+# TODO: Add a check if something changed outside of the fbw-a380x folder (which isn't of interest for this build)
+#       Consider that master pre release should always have a A32NX and A380x though
+
 name: master
 on:
   push:
