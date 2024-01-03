@@ -1,0 +1,143 @@
+<ModelBehaviors>
+    <!--
+    Template for a generic emissive
+
+    PROVIDE GLOBALLY:
+            - INDICATOR_POWERED         <no default>    Code to determine if the indicator and button are powered
+            - BACKLIGHT_POWERED         <no default>    Code to determine if the backlight is powered
+            - BACKLIGHT_POTENTIOMETER   <no default>    Code to determine if the backlight is powered
+    -->
+    <Template Name="FBW_A380X_GenericEmissive">
+        <Component ID="#NODE_ID#_GenericEmissive" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Emissive_Gauge">
+                <EMISSIVE_CODE>
+                    (A:LIGHT POTENTIOMETER:#BACKLIGHT_POTENTIOMETER#, Percent over 100) #BACKLIGHT_POWERED# *
+                </EMISSIVE_CODE>
+            </UseTemplate>
+        </Component>
+    </Template>
+
+    <Template Name="FBW_A380X_Components_MIP">
+        <DefaultTemplateParameters>
+            <BACKLIGHT_POWERED>(L:A32NX_ELEC_AC_1_BUS_IS_POWERED, Bool)</BACKLIGHT_POWERED>
+            <BACKLIGHT_POTENTIOMETER>85</BACKLIGHT_POTENTIOMETER>
+        </DefaultTemplateParameters>
+
+        <Component ID="CAPT_PANEL">
+            <!-- PFD DU knob -->
+            <UseTemplate Name="FBW_A380X_GenericEmissive">
+                <NODE_ID>KNOB_EFIS_CS_PFD</NODE_ID>
+            </UseTemplate>
+
+            <!-- ND WX/T knob -->
+            <UseTemplate Name="FBW_A380X_GenericEmissive">
+                <NODE_ID>KNOB_EFIS_CS_ND</NODE_ID>
+            </UseTemplate>
+
+            <!-- ND DU knob -->
+            <UseTemplate Name="FBW_A380X_GenericEmissive">
+                <NODE_ID>KNOB_EFIS_CS_ND_SMALL</NODE_ID>
+            </UseTemplate>
+
+            <!-- OIT knob -->
+            <UseTemplate Name="FBW_A380X_GenericEmissive">
+                <NODE_ID>KNOB_EFIS_CS_OIT</NODE_ID>
+            </UseTemplate>
+
+            <!-- MFD DU knob -->
+            <UseTemplate Name="FBW_A380X_GenericEmissive">
+                <NODE_ID>KNOB_EFIS_CS_MFD</NODE_ID>
+            </UseTemplate>
+        </Component>
+
+        <Component ID="CENTER_PANEL">
+            <!-- ATT HDG knob -->
+            <UseTemplate Name="FBW_A380X_GenericEmissive">
+                <NODE_ID>KNOB_SWITCHING_1</NODE_ID>
+            </UseTemplate>
+
+            <!-- AIR DATA knob -->
+            <UseTemplate Name="FBW_A380X_GenericEmissive">
+                <NODE_ID>KNOB_SWITCHING_2</NODE_ID>
+            </UseTemplate>
+
+            <!-- FMS knob -->
+            <UseTemplate Name="FBW_A380X_GenericEmissive">
+                <NODE_ID>KNOB_SWITCHING_3</NODE_ID>
+            </UseTemplate>
+
+            <!-- RTO ARM pb -->
+            <UseTemplate Name="FBW_Push_Toggle">
+                <NODE_ID>PUSH_RTO_ARM</NODE_ID>
+                <TOOLTIPID>ARM RTO (INOP.)</TOOLTIPID>
+            </UseTemplate>
+
+            <!-- LG GRVTY sw and guards -->
+            <UseTemplate Name="ASOBO_GT_Switch_Dummy">
+                <NODE_ID>GRVTY_LDG_LOCK1</NODE_ID>
+                <ANIM_NAME>GRVTY_LDG_LOCK1</ANIM_NAME>
+            </UseTemplate>
+
+            <UseTemplate Name="ASOBO_GT_Switch_Dummy">
+                <NODE_ID>GRVTY_LDG_LOCK2</NODE_ID>
+                <ANIM_NAME>GRVTY_LDG_LOCK2</ANIM_NAME>
+                <LEFT_SINGLE_CODE>
+                    (L:A32NX_LG_GRVTY_SWITCH_GUARD_1) ! (&gt;L:A32NX_LG_GRVTY_SWITCH_GUARD_1)
+                </LEFT_SINGLE_CODE>
+            </UseTemplate>
+
+            <UseTemplate Name="ASOBO_GT_Switch_Dummy">
+                <NODE_ID>GRVTY_LDG_LOCK3</NODE_ID>
+                <ANIM_NAME>GRVTY_LDG_LOCK3</ANIM_NAME>
+                <LEFT_SINGLE_CODE>
+                    (L:A32NX_LG_GRVTY_SWITCH_GUARD_2) ! (&gt;L:A32NX_LG_GRVTY_SWITCH_GUARD_2)
+                </LEFT_SINGLE_CODE>
+            </UseTemplate>
+
+            <Component ID="GRVTY_LDG" Node="GRVTY_LDG">
+                <UseTemplate Name="ASOBO_GT_Switch_3States">
+                    <NODE_ID>GRVTY_LDG</NODE_ID>
+                    <ANIM_NAME>GRVTY_LDG</ANIM_NAME>
+                    <START_STATE>1</START_STATE>
+                    <CODE_POS_0>0 (&gt;L:A32NX_LG_GRVTY_SWITCH_POS)</CODE_POS_0>
+                    <CODE_POS_1>1 (&gt;L:A32NX_LG_GRVTY_SWITCH_POS)</CODE_POS_1>
+                    <CODE_POS_2>2 (&gt;L:A32NX_LG_GRVTY_SWITCH_POS)</CODE_POS_2>
+                    <CODE_POS_2_VERIF>
+                        (L:A32NX_LG_GRVTY_SWITCH_GUARD_1) (L:A32NX_LG_GRVTY_SWITCH_GUARD_2) and
+                    </CODE_POS_2_VERIF>
+                    <STATE0_TEST>(L:A32NX_LG_GRVTY_SWITCH_POS) 0 ==</STATE0_TEST>
+                    <STATE1_TEST>(L:A32NX_LG_GRVTY_SWITCH_POS) 1 ==</STATE1_TEST>
+                    <STATE2_TEST>(L:A32NX_LG_GRVTY_SWITCH_POS) 2 ==</STATE2_TEST>
+                </UseTemplate>
+            </Component>
+
+        </Component>
+
+        <Component ID="FO_PANEL">
+            <!-- PFD DU knob -->
+            <UseTemplate Name="FBW_A380X_GenericEmissive">
+                <NODE_ID>KNOB_EFIS_FO_PFD</NODE_ID>
+            </UseTemplate>
+
+            <!-- ND WX/T knob -->
+            <UseTemplate Name="FBW_A380X_GenericEmissive">
+                <NODE_ID>KNOB_EFIS_FO_ND</NODE_ID>
+            </UseTemplate>
+
+            <!-- ND DU knob -->
+            <UseTemplate Name="FBW_A380X_GenericEmissive">
+                <NODE_ID>KNOB_EFIS_FO_ND_SMALL</NODE_ID>
+            </UseTemplate>
+
+            <!-- OIT knob -->
+            <UseTemplate Name="FBW_A380X_GenericEmissive">
+                <NODE_ID>KNOB_EFIS_FO_OIT</NODE_ID>
+            </UseTemplate>
+
+            <!-- MFD DU knob -->
+            <UseTemplate Name="FBW_A380X_GenericEmissive">
+                <NODE_ID>KNOB_EFIS_FO_MFD</NODE_ID>
+            </UseTemplate>
+        </Component>
+    </Template>
+</ModelBehaviors>
