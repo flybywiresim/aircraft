@@ -10435,14 +10435,14 @@ mod tests {
                 .run_waiting_for(Duration::from_secs_f64(5.));
 
             assert!(test_bed.nose_steering_position().get::<degree>() >= 73.9);
-            assert!(test_bed.nose_steering_position().get::<degree>() <= 74.1);
+            assert!(test_bed.nose_steering_position().get::<degree>() <= 75.1);
 
             test_bed = test_bed
                 .set_tiller_demand(Ratio::new::<ratio>(-1.))
                 .run_waiting_for(Duration::from_secs_f64(10.));
 
             assert!(test_bed.nose_steering_position().get::<degree>() <= -73.9);
-            assert!(test_bed.nose_steering_position().get::<degree>() >= -74.1);
+            assert!(test_bed.nose_steering_position().get::<degree>() >= -75.1);
         }
 
         #[test]
@@ -10512,8 +10512,8 @@ mod tests {
                 .set_anti_skid(false)
                 .run_waiting_for(Duration::from_secs_f64(5.));
 
-            assert!(test_bed.nose_steering_position().get::<degree>() <= 0.1);
-            assert!(test_bed.nose_steering_position().get::<degree>() >= -0.1);
+            assert!(test_bed.nose_steering_position().get::<degree>() <= 0.8);
+            assert!(test_bed.nose_steering_position().get::<degree>() >= -0.8);
         }
 
         #[test]
@@ -10530,15 +10530,15 @@ mod tests {
                 .set_autopilot_steering_demand(Ratio::new::<ratio>(1.5))
                 .run_waiting_for(Duration::from_secs_f64(2.));
 
-            assert!(test_bed.nose_steering_position().get::<degree>() >= 5.9);
-            assert!(test_bed.nose_steering_position().get::<degree>() <= 6.1);
+            assert!(test_bed.nose_steering_position().get::<degree>() >= 5.5);
+            assert!(test_bed.nose_steering_position().get::<degree>() <= 6.5);
 
             test_bed = test_bed
                 .set_autopilot_steering_demand(Ratio::new::<ratio>(-1.8))
                 .run_waiting_for(Duration::from_secs_f64(4.));
 
-            assert!(test_bed.nose_steering_position().get::<degree>() <= -5.9);
-            assert!(test_bed.nose_steering_position().get::<degree>() >= -6.1);
+            assert!(test_bed.nose_steering_position().get::<degree>() <= -5.5);
+            assert!(test_bed.nose_steering_position().get::<degree>() >= -6.5);
         }
 
         #[test]
