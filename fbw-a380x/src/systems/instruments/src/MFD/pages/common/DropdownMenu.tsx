@@ -91,6 +91,10 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
         this.filterList(text);
     }
 
+    public forceLabel(label: string) {
+        this.inputFieldValue.set(label);
+    }
+
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 

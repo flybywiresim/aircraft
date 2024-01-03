@@ -11,9 +11,8 @@ import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { InputField } from 'instruments/src/MFD/pages/common/InputField';
 import { HeadingFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
+import { Arinc429Register, Arinc429Word, coordinateToString } from '@flybywiresim/fbw-sdk';
 import { Arinc429RegisterSubject } from '../../../../MsfsAvionicsCommon/Arinc429RegisterSubject';
-import { Arinc429Register, Arinc429Word } from '../../../../../../../../../fbw-common/src/systems/shared/src';
-import { coordinateToString } from '../../../../../../../../../fbw-common/src/systems/instruments/src';
 
 interface MfdFmsPositionIrsProps extends AbstractMfdPageProps {
 }

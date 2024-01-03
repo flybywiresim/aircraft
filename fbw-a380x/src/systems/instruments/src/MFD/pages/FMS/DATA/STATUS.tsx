@@ -211,13 +211,13 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
                                 <div style="width: 100%; display: flex; flex-direction: row; justify-content: space-between; align-items: center;">
                                     <div style="flex: 3; display: grid; grid-template-columns: 40% 10% 40% 10%; margin-right: 200px;">
                                         <div class="mfd-label mfd-data-status-pse-label">WAYPOINTS</div>
-                                        <div class="mfd-value-green mfd-data-status-pse-value">00</div>
+                                        <div class="mfd-value-green mfd-data-status-pse-value">{this.storedWaypoints}</div>
                                         <div class="mfd-label mfd-data-status-pse-label">ROUTES</div>
-                                        <div class="mfd-value-green mfd-data-status-pse-value">00</div>
+                                        <div class="mfd-value-green mfd-data-status-pse-value">{this.storedRoutes}</div>
                                         <div class="mfd-label mfd-data-status-pse-label">NAVAIDS</div>
-                                        <div class="mfd-value-green mfd-data-status-pse-value">00</div>
+                                        <div class="mfd-value-green mfd-data-status-pse-value">{this.storedNavaids}</div>
                                         <div class="mfd-label mfd-data-status-pse-label">RUNWAYS</div>
-                                        <div class="mfd-value-green mfd-data-status-pse-value">00</div>
+                                        <div class="mfd-value-green mfd-data-status-pse-value">{this.storedRunways}</div>
                                     </div>
                                     <div style="flex: 1;">
                                         <Button

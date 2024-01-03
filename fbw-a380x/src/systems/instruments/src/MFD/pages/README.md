@@ -20,7 +20,7 @@ Status legend:
 | ✅ | fms/\*/f-pln-departure | 1 | - |
 | ✅ | fms/\*/f-pln-arrival | 1 | - |
 | ✅ | fms/\*/f-pln-airways | 1 | not scrollable |
-| ✅ | fms/\*/f-pln-direct-to | 1 | - |
+| ✅ | fms/active/f-pln-direct-to | 1 | direct with abeam, crs in/out |
 | ✅ | fms/\*/f-pln-duplicate-names | 1 | not scrollable |
 | ✅ | fms/\*/f-pln-cpny-f-pln-req | 1 | Just SimBrief download right now |
 | ✅ | fms/\*/f-pln-hold | 2 | last exit predictions, database holds |
@@ -107,3 +107,5 @@ Use React-based implementation for now, hence no dev. effort needed here.
 | Dropdown menu | When opening a dropdown menu, what are means of selecting and navigating, apart from scroll wheel, keyboard arrows and KCCU cursor? Can you also enter a character or number on the keyboard, and the list jumps to the respective element? | when there is a long list, like waypoints, when you start typing in the drop down, it clears the rest of the drop-down, and searches on the text that you have typed. These results populate a new drop-down (same place as previous one) and the text entry field stays with what you typed. To select one of the ‘found’ entries you need to move the cursor to it and hit enter. |
 | System message area | When you're not in the FMS, and there's no message from any of the systems, how does the system message area look like? | with no messages, the message list is greyed out and not selectable.  |
 | Messages list | When you're on the "MESSAGES LIST" page of the FMS, which of the items in the menu bar is marked as selected (with the rectangle outline, ACTIVE, POSITION, ...)? | when on messages list, whatever page tab you had selected remains boxed.  |
+| F-PLN | How does an empty F-PLN page look like? Before INIT, no entries at all. | - |
+| F-PLN | When clicking on the altitude field of an enroute field, does it navigate to the VERT REV page or stay on the F-PLN page? | - |

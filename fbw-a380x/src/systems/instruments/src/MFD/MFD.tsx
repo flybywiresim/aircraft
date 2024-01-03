@@ -409,7 +409,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
         // Check in all flight plans
         if (this.flightPlanService.hasActive) {
             this.flightPlanService.active.allLegs.forEach((it) => {
-                if (it.isDiscontinuity === false && it.definition.waypoint.databaseId === waypoint.databaseId) {
+                if (it.isDiscontinuity === false && it.definition.waypoint?.databaseId === waypoint.databaseId) {
                     return true;
                 }
                 return false;
@@ -418,7 +418,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
 
         if (this.flightPlanService.hasTemporary) {
             this.flightPlanService.temporary.allLegs.forEach((it) => {
-                if (it.isDiscontinuity === false && it.definition.waypoint.databaseId === waypoint.databaseId) {
+                if (it.isDiscontinuity === false && it.definition.waypoint?.databaseId === waypoint.databaseId) {
                     return true;
                 }
                 return false;
@@ -428,7 +428,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
         for (let i = 1; i <= 3; i++) {
             if (this.flightPlanService.hasSecondary(i)) {
                 this.flightPlanService.secondary(i).allLegs.forEach((it) => {
-                    if (it.isDiscontinuity === false && it.definition.waypoint.databaseId === waypoint.databaseId) {
+                    if (it.isDiscontinuity === false && it.definition.waypoint?.databaseId === waypoint.databaseId) {
                         return true;
                     }
                     return false;
@@ -438,7 +438,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
 
         if (this.flightPlanService.hasUplink) {
             this.flightPlanService.uplink.allLegs.forEach((it) => {
-                if (it.isDiscontinuity === false && it.definition.waypoint.databaseId === waypoint.databaseId) {
+                if (it.isDiscontinuity === false && it.definition.waypoint?.databaseId === waypoint.databaseId) {
                     return true;
                 }
                 return false;

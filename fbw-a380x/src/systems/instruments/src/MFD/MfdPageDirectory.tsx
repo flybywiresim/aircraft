@@ -111,9 +111,6 @@ export function pageForUrl(url: string, bus: EventBus, uiService: MfdUIService, 
             />
         );
     case 'fms/active/f-pln-direct-to':
-    case 'fms/sec1/f-pln-direct-to':
-    case 'fms/sec2/f-pln-direct-to':
-    case 'fms/sec3/f-pln-direct-to':
         return (
             <MfdFmsFplnDirectTo
                 pageTitle="F-PLN/DIRECT-TO"

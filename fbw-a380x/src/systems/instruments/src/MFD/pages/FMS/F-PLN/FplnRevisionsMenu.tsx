@@ -1,7 +1,7 @@
 import { TurnDirection } from '@flybywiresim/fbw-sdk';
 import { HoldType } from '@fmgc/flightplanning/data/flightplan';
 import { SegmentClass } from '@fmgc/flightplanning/new/segments/SegmentClass';
-import { FSComponent } from '@microsoft/msfs-sdk';
+import { FlightPlanIndex } from '@fmgc/index';
 import { MfdFmsFpln } from 'instruments/src/MFD/pages/FMS/F-PLN/F-PLN';
 import { ContextMenuElement } from 'instruments/src/MFD/pages/common/ContextMenu';
 
@@ -23,7 +23,12 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
     return [
         {
             title: 'FROM P.POS DIR TO',
-            disabled: altnFlightPlan || [FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type),
+            disabled: altnFlightPlan
+                || legIndex >= fpln.loadedFlightPlan.firstMissedApproachLegIndex
+                || planIndex === FlightPlanIndex.Temporary
+                || [FplnRevisionsMenuType.Discontinuity
+                || FplnRevisionsMenuType.TooSteepPath].includes(type)
+                || !fpln.loadedFlightPlan.legElementAt(legIndex).isXF(),
             onSelectCallback: () => {
                 fpln.props.fmService.flightPlanService.directToLeg(
                     fpln.props.fmService.navigation.getPpos(),
@@ -32,6 +37,7 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
                     true,
                     planIndex,
                 );
+                fpln.props.uiService.navigateTo(`fms/${fpln.props.uiService.activeUri.get().category}/f-pln-direct-to`);
             },
         },
         {
@@ -66,7 +72,6 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
             disabled: [FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type),
             onSelectCallback: async () => {
                 const waypoint = fpln.props.fmService.flightPlanService.active.legElementAt(legIndex);
-                console.log(waypoint);
                 if (!waypoint.isHX()) {
                     const alt = waypoint.definition.altitude1 ? waypoint.definition.altitude1 : SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet');
 
@@ -97,7 +102,7 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
 
                     fpln.props.fmService.revisedWaypointIndex.set(legIndex + 1); // We just inserted a new HOLD leg
                 } else {
-                    console.warn('Hx leg');
+                    console.warn('Tried to hold on already existing Hx leg');
                 }
                 fpln.props.uiService.navigateTo(`fms/${fpln.props.uiService.activeUri.get().category}/f-pln-hold`);
             },
