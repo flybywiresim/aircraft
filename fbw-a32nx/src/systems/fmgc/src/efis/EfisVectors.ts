@@ -20,6 +20,8 @@ export class EfisVectors {
 
     private lastFpVersions = new Map<number, number>();
 
+    private lastEfisInterfaceVersion = undefined;
+
     constructor(
         private readonly flightPlanService: FlightPlanService,
         private guidanceController: GuidanceController,
@@ -36,7 +38,8 @@ export class EfisVectors {
     public update(deltaTime: number): void {
         this.updateTimer += deltaTime;
 
-        if (this.updateTimer >= UPDATE_TIMER) {
+        if (this.updateTimer >= UPDATE_TIMER || this.efisInterface.version !== this.lastEfisInterfaceVersion) {
+            this.lastEfisInterfaceVersion = this.efisInterface.version;
             this.updateTimer = 0;
 
             this.tryProcessFlightPlan(FlightPlanIndex.Active, true);

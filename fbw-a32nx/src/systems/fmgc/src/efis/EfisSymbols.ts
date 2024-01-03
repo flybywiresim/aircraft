@@ -492,7 +492,7 @@ export class EfisSymbols {
 
         // FP legs
         for (let i = flightPlan.legCount - 1; i >= (flightPlan.activeLegIndex - 1) && i >= 0; i--) {
-            const isFromLeg = i === flightPlan.activeLegIndex - 1;
+            const isFromLeg = !isAlternate && i === flightPlan.activeLegIndex - 1;
 
             const leg = flightPlan.elementAt(i);
 
@@ -571,7 +571,7 @@ export class EfisSymbols {
 
             const altConstraint = leg.altitudeConstraint;
 
-            if ((isInLatAutoControl || isLatAutoControlArmed) && !isFromLeg && altConstraint && shouldShowConstraintCircleInPhase(flightPhase, leg)) {
+            if ((isInLatAutoControl || isLatAutoControlArmed) && !isFromLeg && altConstraint && shouldShowConstraintCircleInPhase(flightPhase, leg) && !isAlternate) {
                 if (!isSelectedVerticalModeActive) {
                     type |= NdSymbolTypeFlags.Constraint;
 
