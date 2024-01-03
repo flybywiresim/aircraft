@@ -1,0 +1,150 @@
+<ModelBehaviors>
+    <Template Name="FBW_ENGINE_Lever_Throttle_Template">
+        <DefaultTemplateParameters>
+            <ID>1</ID>
+            <TOOLTIPID>TT:COCKPIT.TOOLTIPS.THROTTLE_CONTROL</TOOLTIPID>
+            <POSITION_TYPE>O</POSITION_TYPE>
+            <POSITION_VAR>Position</POSITION_VAR>
+            <PART_ID>ENGINE_Lever_Throttle</PART_ID>
+            <USE_TRAJECTORY_DRAG_MODE>true</USE_TRAJECTORY_DRAG_MODE>
+        </DefaultTemplateParameters>
+
+        <UseTemplate Name="FBW_ENGINE_Lever_Throttle_SubTemplate">
+        </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_ENGINE_Lever_Throttle_SubTemplate">
+        <DefaultTemplateParameters>
+            <DRAG_AXIS_SCALE>-450</DRAG_AXIS_SCALE>
+            <DRAG_ANIMATION_VARIABLE_TYPE>O</DRAG_ANIMATION_VARIABLE_TYPE>
+            <DRAG_ANIMATION_VARIABLE_NAME>XMLVAR_#NODE_ID#_Animation_Position</DRAG_ANIMATION_VARIABLE_NAME>
+            <AXIS>Y</AXIS>
+            <NO_ARROWS/>
+            <CURSOR>Grab</CURSOR>
+            <CLIMB_LEVEL>25</CLIMB_LEVEL>
+            <FLEX_LEVEL>35</FLEX_LEVEL>
+            <TOGA_LEVEL>45</TOGA_LEVEL>
+            <REV_LEVEL>-20</REV_LEVEL>
+        </DefaultTemplateParameters>
+        <OverrideTemplateParameters>
+            <DRAG_MAX_VALUE>16384</DRAG_MAX_VALUE>
+            <DRAG_MIN_VALUE Process="Int">(A:THROTTLE LOWER LIMIT, position 16k)</DRAG_MIN_VALUE>
+            <DRAG_ANIM_VAR>(#DRAG_ANIMATION_VARIABLE_TYPE#:#DRAG_ANIMATION_VARIABLE_NAME#)</DRAG_ANIM_VAR>
+        </OverrideTemplateParameters>
+
+        <UseTemplate Name="FBW_ENGINE_Lever_Throttle_SubTemplate2">
+        </UseTemplate>
+    </Template>
+
+    <Template Name="FBW_ENGINE_Lever_Throttle_SubTemplate2">
+        <DefaultTemplateParameters>
+            <Condition Valid="USE_TRAJECTORY_DRAG_MODE">
+                <DRAG_ANIM_NAME>#ANIM_NAME#</DRAG_ANIM_NAME>
+            </Condition>
+            <SNAP_DISTANCE>1</SNAP_DISTANCE>
+        </DefaultTemplateParameters>
+        <OverrideTemplateParameters>
+            <ANIMATION_CODE_SETTER>
+                (L:A32NX_3D_THROTTLE_LEVER_POSITION_#ID#, number)
+            </ANIMATION_CODE_SETTER>
+            <THROTTLE_ANIM_CODE>
+                (L:A32NX_3D_THROTTLE_LEVER_POSITION_#ID#, number)
+            </THROTTLE_ANIM_CODE>
+        </OverrideTemplateParameters>
+
+        <Component ID="#NODE_ID#" Node="#NODE_ID#">
+            <UseTemplate Name="ASOBO_GT_Anim_Code">
+                <ANIM_CODE>
+                    (#POSITION_TYPE#:#POSITION_VAR#) 1 &lt; 100 *
+                </ANIM_CODE>
+                <ANIM_NAME>#ANIM_NAME_REVERSE_LOCK#</ANIM_NAME>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_GT_AnimTriggers_2SoundEvents">
+                <ANIM_NAME>#ANIM_NAME_REVERSE_LOCK#</ANIM_NAME>
+                <WWISE_EVENT_1>detent</WWISE_EVENT_1>
+                <WWISE_EVENT_2>detent</WWISE_EVENT_2>
+            </UseTemplate>
+            <UseTemplate Name="ASOBO_GT_Anim_Code">
+                <ANIM_CODE>#THROTTLE_ANIM_CODE#</ANIM_CODE>
+            </UseTemplate>
+            <Update Once="True">
+                1 (&gt;L:#POSITION_VAR#, number)
+            </Update>
+            <Update Frequency="30">
+                (O:IsDragging, number) 1 != if{
+                  (L:#POSITION_VAR#, number) sp0
+                  (L:A32NX_AUTOTHRUST_TLA:#ID#, number) sp1
+                  0 sp2
+                  l0 0.5 &lt; if{
+                    -20 sp2
+                  } els{
+                    l0 0.5 &gt; l0 1.5 &lt; and if{
+                      0 sp2
+                    } els{
+                      l0 1.5 &gt; l0 2.5 &lt; and if{
+                        25 sp2
+                      } els{
+                        l0 2.5 &gt; l0 3.5 &lt; and if{
+                          35 sp2
+                        } els{
+                          45 sp2
+                        }
+                      }
+                    }
+                  }
+                  l1 l2 - abs 1 &lt; if{
+                    l2 sp1
+                  }
+                  0 sp3
+                  l1 0 &lt; if{
+                    l1 20 + 20 / sp3
+                  } els{
+                    l1 25 &lt; if{
+                      l1 25 / 1 + sp3
+                    } els{
+                      l1 10 / 0.5 - sp3
+                    }
+                  }
+                  l3 (&gt;L:#POSITION_VAR#, number)
+                }
+            </Update>
+            <UseTemplate Name="ASOBO_GT_Interaction_DraggingYAxis_Gates">
+                <HELPID>HELPID_GAUGE_THROTTLE_THROTTLE</HELPID>
+                <STEPS_NUMBER>4</STEPS_NUMBER>
+                <DRAG_CODE>
+                    (L:#POSITION_VAR#, number) sp0
+                    0 sp1
+                    l0 1 &lt; if{
+                      l0 20 * 20 - sp1
+                    } els{
+                      l0 2 &lt; if{
+                        l0 1 - 25 * sp1
+                      } els{
+                        l0 3 &lt; if{
+                          l0 2 - 35 25 - * 25 + sp1
+                        } els{
+                          l0 3 - 45 35 - * 35 + sp1
+                        }
+                      }
+                    }
+                    l1 (&gt;L:A32NX_AUTOTHRUST_TLA:#ID#)
+                </DRAG_CODE>
+                <GATE_DIRECTION>0</GATE_DIRECTION>
+            </UseTemplate>
+        </Component>
+
+        <Condition Check="HIGHLIGHT_NODE_ID">
+            <UseTemplate Name="ASOBO_GT_ComponentWith_PART_ID">
+                <NODE_ID>#HIGHLIGHT_NODE_ID#</NODE_ID>
+            </UseTemplate>
+        </Condition>
+    </Template>
+
+    <Template Name="FBW_Airbus_Engine_Lights">
+        <UseTemplate Name="FBW_Push_Toggle">
+            <DUMMY_BUTTON>True</DUMMY_BUTTON>
+            <SEQ1_CODE>(L:A32NX_FIRE_TEST_ENG#ID#, bool)</SEQ1_CODE>
+            <SEQ2_CODE>(A:ENG FAILED:#ID#, bool)</SEQ2_CODE>
+        </UseTemplate>
+    </Template>
+</ModelBehaviors>

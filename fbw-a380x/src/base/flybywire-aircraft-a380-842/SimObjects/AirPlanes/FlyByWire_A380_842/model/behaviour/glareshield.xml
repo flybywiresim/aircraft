@@ -1,0 +1,65 @@
+<ModelBehaviors>
+    <Template Name="FBW_A380X_Components_Glareshield">
+        <!-- CAPT side -->
+
+        <!-- ATC MSG -->
+        <UseTemplate Name="FBW_Push_Toggle">
+            <NODE_ID>PUSH_GLARESHIELD_CS_ATCMSG</NODE_ID>
+            <TOOLTIPID>ACKNOWLEDGE ATC MSG (INOP.)</TOOLTIPID>
+        </UseTemplate>
+
+        <!-- AUTO LAND -->
+        <UseTemplate Name="FBW_Push_Toggle">
+            <NODE_ID>PUSH_GLARESHIELD_CS_AUTOLAND</NODE_ID>
+        </UseTemplate>
+
+        <!-- MASTER WARN -->
+        <UseTemplate Name="FBW_Push_Toggle">
+            <NODE_ID>PUSH_GLARESHIELD_CS_MASTERWARN</NODE_ID>
+            <TOOLTIPID>ACKNOWLEDGE MASTER WARNING (INOP.)</TOOLTIPID>
+        </UseTemplate>
+
+        <!-- MASTER CAUT -->
+        <UseTemplate Name="FBW_Push_Toggle">
+            <NODE_ID>PUSH_GLARESHIELD_CS_MASTERCAUT</NODE_ID>
+            <TOOLTIPID>ACKNOWLEDGE MASTER CAUTION (INOP.)</TOOLTIPID>
+        </UseTemplate>
+
+        <!-- SIDESTICK PROPRITY -->
+        <UseTemplate Name="FBW_Push_Toggle">
+            <NODE_ID>PUSH_GLARESHIELD_CS_SIDESTICK</NODE_ID>
+            <TOOLTIPID>SIDESTICK PRIORITY (INOP.)</TOOLTIPID>
+        </UseTemplate>
+
+        <!-- FO side -->
+
+        <!-- ATC MSG -->
+        <UseTemplate Name="FBW_Push_Toggle">
+            <NODE_ID>PUSH_GLARESHIELD_FO_ATCMSG</NODE_ID>
+            <TOOLTIPID>ACKNOWLEDGE ATC MSG (INOP.)</TOOLTIPID>
+        </UseTemplate>
+
+        <!-- AUTO LAND -->
+        <UseTemplate Name="FBW_Push_Toggle">
+            <NODE_ID>PUSH_GLARESHIELD_FO_AUTOLAND</NODE_ID>
+        </UseTemplate>
+
+        <!-- MASTER WARN -->
+        <UseTemplate Name="FBW_Push_Toggle">
+            <NODE_ID>PUSH_GLARESHIELD_FO_MASTERWARN</NODE_ID> <!-- this typo is intentional, it's like that in the gltf -->
+            <TOOLTIPID>ACKNOWLEDGE MASTER WARNING (INOP.)</TOOLTIPID>
+        </UseTemplate>
+
+        <!-- MASTER CAUT -->
+        <UseTemplate Name="FBW_Push_Toggle">
+            <NODE_ID>PUSH_GLARESHIELD_FO_MASTERCAUT</NODE_ID>
+            <TOOLTIPID>ACKNOWLEDGE MASTER CAUTION (INOP.)</TOOLTIPID>
+        </UseTemplate>
+
+        <!-- SIDESTICK PROPRITY -->
+        <UseTemplate Name="FBW_Push_Toggle">
+            <NODE_ID>PUSH_GLARESHIELD_FO_SIDESTICK</NODE_ID>
+            <TOOLTIPID>SIDESTICK PRIORITY (INOP.)</TOOLTIPID>
+        </UseTemplate>
+    </Template>
+</ModelBehaviors>

@@ -31,6 +31,10 @@
 1. [MODEL] Replaced overhead decals - @Repsol2k
 1. [MODEL] General improvements to 3d model and textures - @MoreRightRudder, @Repsol2k, @tracernz
 1. [MODEL] Folding armrests - @Repsol2k
+1. [LIGHTING] Fixed Automatic Lighting on Spawn depending on outside lightcondition - @Maximilian-Reuter (\_Chaoz_)
+1. [EFCS] Implement calculated yaw damper gain  - @lukecologne (luke)
+1. [EFCS] Decrease yaw damper at low speeds on ground, down to 0 below 40kts - @lukecologne (luke)
+1. [FLIGHTMODEL] Fix pitch trim on approach - @donstim (donbikes)
 
 ## 0.11.0
 

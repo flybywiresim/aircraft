@@ -11,7 +11,7 @@ import { PressPage } from './Pages/Press/PressPage';
 import { ElecAcPage } from './Pages/ElecAc/ElecAcPage';
 import { FuelPage } from './Pages/FuelPage';
 import { CbPage } from './Pages/CbPage';
-import { ApuPage } from './Pages/ApuPage';
+import { ApuPage } from './Pages/Apu/ApuPage';
 import { CondPage } from './Pages/CondPage';
 import { DoorPage } from './Pages/Doors/DoorPage';
 import { ElecDcPage } from './Pages/ElecDc/ElecDcPage';
