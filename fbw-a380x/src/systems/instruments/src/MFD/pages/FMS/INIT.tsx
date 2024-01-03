@@ -8,7 +8,7 @@ import { Footer } from 'instruments/src/MFD/pages/common/Footer';
 import { InputField } from 'instruments/src/MFD/pages/common/InputField';
 import { AirportFormat, CostIndexFormat, CrzTempFormat, FlightLevelFormat, LongAlphanumericFormat, TripWindFormat, TropoFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { Button, ButtonMenuItem } from 'instruments/src/MFD/pages/common/Button';
-import { defaultTropopauseAlt, maxCertifiedAlt } from '@shared/PerformanceConstants';
+import { maxCertifiedAlt } from '@shared/PerformanceConstants';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { NXDataStore, Units } from '@flybywiresim/fbw-sdk';
 import { SimBriefUplinkAdapter } from '@fmgc/flightplanning/new/uplink/SimBriefUplinkAdapter';
@@ -20,8 +20,6 @@ interface MfdFmsInitProps extends AbstractMfdPageProps {
 }
 
 export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
-    private fltNbr = Subject.create<string>(null);
-
     private simBriefOfp: ISimbriefData;
 
     private cpnyFplnButtonLabel: Subscribable<VNode> = this.props.fmService.fmgc.data.cpnyFplnAvailable.map((it) => {
@@ -45,7 +43,13 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
 
     private cpnyFplnButtonMenuItems: Subscribable<ButtonMenuItem[]> = this.props.fmService.fmgc.data.cpnyFplnAvailable.map((it) => (it ? [
         { label: 'INSERT*', action: () => this.insertCpnyFpln() },
-        { label: 'CLEAR*', action: () => this.props.fmService.fmgc.data.cpnyFplnAvailable.set(false) }] : []));
+        {
+            label: 'CLEAR*',
+            action: () => {
+                this.props.fmService.flightPlanService.uplinkDelete();
+                this.props.fmService.fmgc.data.cpnyFplnAvailable.set(false);
+            },
+        }] : []));
 
     private fromIcao = Subject.create<string>(null);
 
@@ -74,8 +78,6 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
         this.fromIcao,
         this.toIcao,
         this.activeFlightPhase);
-
-    private tropoAlt = Subject.create<number>(defaultTropopauseAlt);
 
     private tripWindDisabled = MappedSubject.create(([toIcao, fromIcao]) => !toIcao || !fromIcao, this.fromIcao, this.toIcao);
 
@@ -162,6 +164,8 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
         this.props.fmService.fmgc.data.finalFuelWeightPilotEntry.set(this.simBriefOfp.units === 'kgs' ? this.simBriefOfp.fuel.reserve : Units.poundToKilogram(this.simBriefOfp.fuel.reserve));
         this.props.fmService.fmgc.data.paxNumber.set(Number(this.simBriefOfp.weights.passengerCount));
         this.props.fmService.fmgc.data.tropopausePilotEntry.set(Number(this.simBriefOfp.averageTropopause));
+
+        this.props.fmService.acInterface.setCruiseFl(this.simBriefOfp.cruiseAltitude / 100);
 
         this.props.fmService.fmgc.data.cpnyFplnAvailable.set(false);
     }
@@ -280,7 +284,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                     <div class="mfd-fms-init-line">
                         <div class="mfd-label init-input-field">CRZ FL</div>
                         <InputField<number>
-                            dataEntryFormat={new FlightLevelFormat(Subject.create(100), Subject.create(maxCertifiedAlt))}
+                            dataEntryFormat={new FlightLevelFormat(Subject.create(0), Subject.create(maxCertifiedAlt / 100))}
                             dataHandlerDuringValidation={async (v) => this.props.fmService.acInterface.setCruiseFl(v)}
                             mandatory={Subject.create(true)}
                             disabled={this.altnDisabled}

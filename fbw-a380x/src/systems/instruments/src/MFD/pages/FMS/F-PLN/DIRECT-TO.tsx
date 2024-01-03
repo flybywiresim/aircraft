@@ -79,7 +79,7 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
         super.onAfterRender(node);
 
         const wpt = this.loadedFlightPlan.allLegs.slice(this.props.fmService.flightPlanService.get(this.loadedFlightPlanIndex.get()).activeLegIndex + 1).map((el) => {
-            if (el instanceof FlightPlanLeg && el.isXF() === true && el.ident !== 'MANUAL') {
+            if (el instanceof FlightPlanLeg && el.isXF() === true) {
                 return el.ident;
             }
             return null;
@@ -87,7 +87,6 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
         this.availableWaypoints.set(wpt);
 
         this.subs.push(this.tmpyActive.sub((v) => {
-            // this.eraseButtonDiv.getOrDefault().style.visibility = (v ? 'hidden' : 'visible');
             this.eraseButtonDiv.getOrDefault().style.display = (v ? 'block' : 'none');
             this.returnButtonDiv.getOrDefault().style.display = (v ? 'none' : 'block');
             this.tmpyInsertButtonDiv.getOrDefault().style.visibility = (v ? 'visible' : 'hidden');

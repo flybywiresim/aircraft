@@ -140,7 +140,6 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                         && flightPlan.approach === undefined
                         && el.runwayIdent === flightPlan?.destinationRunway?.ident
                     ) {
-                        console.warn(el.runwayIdent);
                         this.apprButtonScrollTo.set(idx + 1); // Account for NONE, add 1
                         isFirstMatch = false;
                     }
@@ -154,9 +153,6 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
             if (flightPlan.approach) {
                 this.appr.set(flightPlan.approach.ident);
                 this.rwyFreq.set(flightPlan.destinationRunway.lsFrequencyChannel.toFixed(2));
-
-                console.log(flightPlan.approach.transitions);
-                console.warn(flightPlan.availableApproachVias);
 
                 if (flightPlan.approach.transitions.length > 0) {
                     const vias: ButtonMenuItem[] = [{

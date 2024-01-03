@@ -142,8 +142,8 @@ export class FmsAircraftInterface {
         if (!this.flightPlanService.hasActive) {
             return;
         }
-        const originTransitionAltitude = this.flightPlanService.active.performanceData.transitionAltitude;
-        const destinationTransitionLevel = this.flightPlanService.active.performanceData.transitionLevel;
+        const originTransitionAltitude = this.flightPlanService.active.performanceData.transitionAltitude; // as altitude
+        const destinationTransitionLevel = this.flightPlanService.active.performanceData.transitionLevel; // as FL
 
         if (Number.isFinite(originTransitionAltitude)) {
             this.arincTransitionAltitude.setBnrValue(
@@ -151,6 +151,8 @@ export class FmsAircraftInterface {
                 originTransitionAltitude !== undefined ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
                 17, 131072, 0,
             );
+
+            // Delete once new PFD is integrated
             SimVar.SetSimVarValue('L:AIRLINER_TRANS_ALT', 'Number', originTransitionAltitude ?? 0);
         }
 
@@ -160,7 +162,9 @@ export class FmsAircraftInterface {
                 destinationTransitionLevel !== undefined ? Arinc429SignStatusMatrix.NormalOperation : Arinc429SignStatusMatrix.NoComputedData,
                 9, 512, 0,
             );
-            SimVar.SetSimVarValue('L:AIRLINER_APPR_TRANS_ALT', 'Number', destinationTransitionLevel ?? 0);
+
+            // Delete once new PFD is integrated
+            SimVar.SetSimVarValue('L:AIRLINER_APPR_TRANS_ALT', 'Number', destinationTransitionLevel * 100 ?? 0);
         }
     }
 
@@ -789,8 +793,8 @@ export class FmsAircraftInterface {
         }
     }
 
-    public onEvent(_event: string): void {
-        if (_event === 'MODE_SELECTED_HEADING') {
+    public onEvent(event: string): void {
+        if (event === 'MODE_SELECTED_HEADING' || event === 'A320_Neo_CDU_MODE_SELECTED_HEADING') {
             if (Simplane.getAutoPilotHeadingManaged()) {
                 if (SimVar.GetSimVarValue('L:A320_FCU_SHOW_SELECTED_HEADING', 'number') === 0) {
                     const currentHeading = Simplane.getHeadingMagnetic();
@@ -800,38 +804,38 @@ export class FmsAircraftInterface {
             }
             this.onModeSelectedHeading();
         }
-        if (_event === 'MODE_MANAGED_HEADING') {
+        if (event === 'MODE_MANAGED_HEADING' || event === 'A320_Neo_CDU_MODE_MANAGED_HEADING') {
             if (this.flightPlanService.active.legCount === 0) {
                 return;
             }
 
             this.onModeManagedHeading();
         }
-        if (_event === 'MODE_SELECTED_ALTITUDE') {
+        if (event === 'MODE_SELECTED_ALTITUDE' || event === 'A320_Neo_CDU_MODE_SELECTED_ALTITUDE') {
             const dist = Number.isFinite(this.fmgc.getDistanceToDestination()) ? this.fmgc.getDistanceToDestination() : -1;
             this.flightPhaseManager.handleFcuAltKnobPushPull(dist);
             this.onModeSelectedAltitude();
             this.onStepClimbDescent();
         }
-        if (_event === 'MODE_MANAGED_ALTITUDE') {
+        if (event === 'MODE_MANAGED_ALTITUDE' || event === 'A320_Neo_CDU_MODE_MANAGED_ALTITUDE') {
             const dist = Number.isFinite(this.fmgc.getDistanceToDestination()) ? this.fmgc.getDistanceToDestination() : -1;
             this.flightPhaseManager.handleFcuAltKnobPushPull(dist);
             this.onModeManagedAltitude();
             this.onStepClimbDescent();
         }
-        if (_event === 'AP_DEC_ALT' || _event === 'AP_INC_ALT') {
+        if (event === 'AP_DEC_ALT' || event === 'AP_INC_ALT' || event === 'A320_Neo_CDU_AP_DEC_ALT' || event === 'A320_Neo_CDU_AP_INC_ALT') {
             const dist = Number.isFinite(this.fmgc.getDistanceToDestination()) ? this.fmgc.getDistanceToDestination() : -1;
             this.flightPhaseManager.handleFcuAltKnobTurn(dist);
             this.onTrySetCruiseFlightLevel();
         }
-        if (_event === 'AP_DEC_HEADING' || _event === 'AP_INC_HEADING') {
+        if (event === 'AP_DEC_HEADING' || event === 'AP_INC_HEADING' || event === 'A320_Neo_CDU_AP_DEC_HEADING' || event === 'A320_Neo_CDU_AP_INC_HEADING') {
             if (SimVar.GetSimVarValue('L:A320_FCU_SHOW_SELECTED_HEADING', 'number') === 0) {
                 const currentHeading = Simplane.getHeadingMagnetic();
                 Coherent.call('HEADING_BUG_SET', 1, currentHeading).catch(console.error);
             }
             SimVar.SetSimVarValue('L:A320_FCU_SHOW_SELECTED_HEADING', 'number', 1);
         }
-        if (_event === 'VS') {
+        if (event === 'VS' || event === 'A320_Neo_CDU_VS') {
             const dist = Number.isFinite(this.fmgc.getDistanceToDestination()) ? this.fmgc.getDistanceToDestination() : -1;
             this.flightPhaseManager.handleFcuVSKnob(dist, this.onStepClimbDescent.bind(this));
         }
@@ -890,11 +894,10 @@ export class FmsAircraftInterface {
             this.mfd.addMessageToQueue(NXSystemMessages.newCrzAlt.getModifiedMessage((targetFl * 100).toFixed(0)));
             this.flightPlanService.active.setPerformanceData('cruiseFlightLevel', targetFl);
             SimVar.SetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number', targetFl * 100);
-            this.cruiseFlightLevel = targetFl;
         }
     }
 
-    deleteOutdatedCruiseSteps(oldCruiseLevel, newCruiseLevel) {
+    deleteOutdatedCruiseSteps(oldCruiseLevel: number, newCruiseLevel: number) {
         const isClimbVsDescent = newCruiseLevel > oldCruiseLevel;
 
         const activePlan = this.flightPlanService.active;
@@ -922,7 +925,6 @@ export class FmsAircraftInterface {
      * It creates a timeout to simulate real life delay which resets every time the fcu knob alt increases or decreases.
      * @private
      */
-    private cruiseFlightLevel: number;
 
     private cruiseFlightLevelTimeOut: number;
 
@@ -955,7 +957,6 @@ export class FmsAircraftInterface {
                         this.flightPlanService.active.setPerformanceData('cruiseFlightLevel', fcuFl);
                         // used by FlightPhaseManager
                         SimVar.SetSimVarValue('L:AIRLINER_CRUISE_ALTITUDE', 'number', fcuFl * 100);
-                        this.cruiseFlightLevel = fcuFl;
                     }
                 }, 3000);
             }

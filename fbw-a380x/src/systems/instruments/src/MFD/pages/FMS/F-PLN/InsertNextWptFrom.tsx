@@ -38,7 +38,6 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
             const fpln = this.props.fmService.revisedWaypointIsAltn.get()
                 ? this.props.fmService.flightPlanService.get(this.props.fmService.revisedWaypointPlanIndex.get()).alternateFlightPlan
                 : this.props.fmService.flightPlanService.get(this.props.fmService.revisedWaypointPlanIndex.get());
-            console.warn(this.props.availableWaypoints.getArray());
             if (this.props.availableWaypoints.get(idx) && fpln.elementAt(wptInfo.originalLegIndex).isDiscontinuity === false) {
                 this.selectedWaypointIndex.set(idx);
                 this.props.visible.set(false);
