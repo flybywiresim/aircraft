@@ -11,128 +11,136 @@
 - EVENT/VAR NAME
 - postfix for number (e.g. ENG 1/ENG 2/ENG 3/ENG 4) or not?
 
-{A32NX|A380X}_
+{A32NX|A380X}_OVHD_ELEC_BAT_PB_IS_AUTO_{1|2} = (0|1)
 
 Example:
 * A380X_PEDESTAL_ENG_MASTER_1 = (0|1)
-* A380X_OVHD_FUEL_ENG_PUMP_PB_IS_AUTO_3 = (0|1)
+* A380X_OVHD_ELEC_BAT_PB_IS_AUTO_2 = (0|1)
 * A380X_CONSOLE_CAPT_TILLER = (-1.0..1.0)
 
 ## Cockpit Controls API
 
-| Section                    | Panel                      | Name                   | Side    | Var or Event                                 | Values | Remark                         |
-|----------------------------|----------------------------|------------------------|---------|----------------------------------------------|--------|--------------------------------|
-| Overhead Panel Maintenance | OXYGEN                     |                        |         |                                              |        |                                |
-|                            | GND HYD                    |                        |         |                                              |        |                                |
-|                            | FUEL                       |                        |         |                                              |        |                                |
-|                            | GND HF DATALINK            |                        |         |                                              |        |                                |
-|                            | CKPT DOOR LOCK SYS         |                        |         |                                              |        |                                |
-|                            | BAT Check                  |                        |         |                                              |        |                                |
-|                            | ENG                        |                        |         |                                              |        |                                |
-|                            | MAINT                      |                        |         |                                              |        |                                |
-|                            | ELEC                       |                        |         |                                              |        |                                |
-|                            | NSS                        |                        |         |                                              |        |                                |
-|                            | AIR                        |                        |         |                                              |        |                                |
-|                            | VENT                       |                        |         |                                              |        |                                |
-|                            |                            |                        |         |                                              |        |                                |
-| Overhead Panel Left        | RESET                      |                        |         |                                              |        |                                |
-|                            | ELT                        |                        |         |                                              |        |                                |
-|                            | APU Fire                   |                        |         |                                              |        |                                |
-|                            | ADIRS                      |                        |         |                                              |        |                                |
-|                            | F/CTL                      |                        |         |                                              |        |                                |
-|                            | FUEL                       |                        |         |                                              |        |                                |
-|                            | EVAC                       |                        |         |                                              |        |                                |
-|                            | EMER ELEC PWR              |                        |         |                                              |        |                                |
-|                            | OXYGEN                     |                        |         |                                              |        |                                |
-|                            | CALLS                      |                        |         |                                              |        |                                |
-|                            | WIPER                      |                        |         |                                              |        |                                |
-|                            |                            |                        |         |                                              |        |                                |
-| Overhead Panel Center      | ENG FIRE                   |                        |         |                                              |        |                                |
-|                            | HYD                        |                        |         |                                              |        |                                |
-|                            | FUEL                       |                        |         |                                              |        |                                |
-|                            | ELEC                       |                        |         |                                              |        |                                |
-|                            | AIR                        |                        |         |                                              |        |                                |
-|                            | ANTI ICE                   |                        |         |                                              |        |                                |
-|                            | ENG START                  |                        |         |                                              |        |                                |
-|                            | CABIN PRESS                |                        |         |                                              |        |                                |
-|                            | EXT LT                     |                        |         |                                              |        |                                |
-|                            | APU                        |                        |         |                                              |        |                                |
-|                            | INT LT                     |                        |         |                                              |        |                                |
-|                            | SIGNS                      |                        |         |                                              |        |                                |
-|                            |                            |                        |         |                                              |        |                                |
-| Overhead Panel Right       | RESET                      |                        |         |                                              |        |                                |
-|                            | CVR                        |                        |         |                                              |        |                                |
-|                            | RAMP                       |                        |         |                                              |        |                                |
-|                            | F/CTL                      |                        |         |                                              |        |                                |
-|                            | CARGO AIR COND             |                        |         |                                              |        |                                |
-|                            | CARGO SMOKE                |                        |         |                                              |
-|                            | VENT                       |                        |         |                                              |        |                                |
-|                            | ENG                        |                        |         |                                              |        |                                |
-|                            | WIPER                      |                        |         |                                              |        |                                |
-|                            |                            |                        |         |                                              |        |                                |
-| Glareshield                | FCU EFIS                   |                        |         |                                              |        |                                |
-|                            | FCU AFS                    |                        |         |                                              |        |                                |
-|                            | ECAM                       | Master Warning Ind     |         | B:A380X_GLARE_ECAM_{CAPT\|FO}_MASTER_WARN    | 0\|1   |                                |
-|                            |                            | Master Warning Pb      |         | B:A380X_GLARE_ECAM_{CAPT\|FO}_MASTER_WARN_PB | 0\|1   | resets to 0 zero automatically |
-|                            |                            | Master Caution Ind     |         | B:A380X_GLARE_ECAM_{CAPT\|FO}_MASTER_CAUT    | 0\|1   |                                |
-|                            |                            | Master Caution Pb      |         | B:A380X_GLARE_ECAM_{CAPT\|FO}_MASTER_CAUT_PB | 0\|1   | resets to 0 zero automatically |
-|                            | CHRONO                     | Chrono Pb              | CAPT/FO | B:A380X_GLARE_CAPT_CHRONO_PB                 | 0\|1   | resets to 0 zero automatically |
-|                            | INDICATION                 | Sidestick Priority Ind |         |                                              |        |                                |
-|                            |                            | Autoland Ind           |         |                                              |        |                                |
-|                            |                            | ATC Message Ind        |         |                                              |        |                                |
-|                            | Loudspeaker Vol Control    |                        |         |                                              |        |                                |
-|                            | Lighting                   |                        |         |                                              |        |                                |
-|                            |                            |                        |         |                                              |        |                                |
-| Instrument Panel Capt/F.O  | E/WD                       |                        |         |                                              |        |                                |
-|                            | ISIS                       | SFD                    |         |                                              |        |                                |
-|                            |                            | SND                    |         |                                              |        |                                |
-|                            | Triple Pressure Indicator  |                        |         |                                              |        |                                |
-|                            | L/G Gravitiy               |                        |         |                                              |        |                                |
-|                            | ATT HDG/Air Data Switching |                        |         |                                              |        |                                |
-|                            | ND                         |                        |         |                                              |        |                                |
-|                            | PFD                        |                        |         |                                              |        |                                |
-|                            | OIT                        |                        |         |                                              |        |                                |
-|                            | SD                         |                        |         |                                              |        |                                |
-|                            | MFD                        |                        |         |                                              |        |                                |
-|                            | EFIS RECONF                |                        |         |                                              |        |                                |
-|                            |                            |                        |         |                                              |        |                                |
-| Center Instrument Panel    | L/G Indication             |                        |         |                                              |        |                                |
-|                            | Auto Brake                 |                        |         |                                              |        |                                |
-|                            | Anti Skid                  |                        |         |                                              |        |                                |
-|                            | L/G Lever                  |                        |         |                                              |        |                                |
-|                            | Clock                      |                        |         |                                              |        |                                |
-|                            |                            |                        |         |                                              |        |                                |
-| Pedestal                   | KCCU                       |                        |         |                                              |        |                                |
-|                            | RAMP                       |                        |         |                                              |        |                                |
-|                            | SURV                       | WXR ELEVN              |         |                                              |        |                                |
-|                            |                            | WXR GAIN               |         |                                              |        |                                |
-|                            |                            | WXR VD AZIM            |         |                                              |        |                                |
-|                            |                            | WXR TAWS SYS           |         |                                              |        |                                |
-|                            |                            | XDPR TCAS SYS          |         |                                              |        |                                |
-|                            |                            | TCAS ABV               |         |                                              |        |                                |
-|                            |                            | TCAS BLW               |         |                                              |        |                                |
-|                            |                            | G/S MODE               |         |                                              |        |                                |
-|                            |                            |                        |         |                                              |        |                                |
-|                            | ECAM Control               |                        |         |                                              |        |                                |
-|                            | Thrust Control             |                        |         |                                              |        |                                |
-|                            | Engines Master             |                        |         |                                              |        |                                |
-|                            | Speed Brake                |                        |         |                                              |        |                                |
-|                            | Park Brake                 |                        |         |                                              |        |                                |
-|                            | Pitch Trim                 |                        |         |                                              |        |                                |
-|                            | Rudder Trim                |                        |         |                                              |        |                                |
-|                            | Flaps                      |                        |         |                                              |        |                                |
-|                            | Cockpit Lighting           |                        |         |                                              |        |                                |
-|                            | Printer                    |                        |         |                                              |        |                                |
-|                            |                            |                        |         |                                              |        |                                |
-| Lateral Consoles           | Sidestick                  |                        |         |                                              |        |                                |
-|                            | Tiller                     |                        |         |                                              |        |                                |
-|                            |                            |                        |         |                                              |        |                                |
-| Pedals                     | Brake                      |                        |         |                                              |        |                                |
-|                            | Rudder                     |                        |         |                                              |        |                                |
-|                            |                            |                        |         |                                              |        |                                |
-| Seats                      |                            |                        |         |                                              |        |                                |
-| Tables                     |                            |                        |         |                                              |        |                                |
-| Cockpit Windows            |                            |                        |         |                                              |        |                                |
+| Section                    | Panel                      | Name                     | Var or Event                                       | Values | Remark                         |
+|----------------------------|----------------------------|--------------------------|----------------------------------------------------|--------|--------------------------------|
+| Overhead Panel Maintenance | OXYGEN                     |                          |                                                    |        |                                |
+|                            | GND HYD                    |                          |                                                    |        |                                |
+|                            | FUEL                       |                          |                                                    |        |                                |
+|                            | GND HF DATALINK            |                          |                                                    |        |                                |
+|                            | CKPT DOOR LOCK SYS         |                          |                                                    |        |                                |
+|                            | BAT Check                  |                          |                                                    |        |                                |
+|                            | ENG                        |                          |                                                    |        |                                |
+|                            | MAINT                      |                          |                                                    |        |                                |
+|                            | ELEC                       |                          |                                                    |        |                                |
+|                            | NSS                        |                          |                                                    |        |                                |
+|                            | AIR                        |                          |                                                    |        |                                |
+|                            | VENT                       |                          |                                                    |        |                                |
+|                            |                            |                          |                                                    |        |                                |
+| Overhead Panel Left        | RESET                      |                          |                                                    |        |                                |
+|                            | ELT                        |                          |                                                    |        |                                |
+|                            | APU Fire                   |                          |                                                    |        |                                |
+|                            | ADIRS                      |                          |                                                    |        |                                |
+|                            | F/CTL                      |                          |                                                    |        |                                |
+|                            | FUEL                       |                          |                                                    |        |                                |
+|                            | EVAC                       |                          |                                                    |        |                                |
+|                            | EMER ELEC PWR              |                          |                                                    |        |                                |
+|                            | OXYGEN                     |                          |                                                    |        |                                |
+|                            | CALLS                      |                          |                                                    |        |                                |
+|                            | WIPER                      |                          |                                                    |        |                                |
+|                            |                            |                          |                                                    |        |                                |
+| Overhead Panel Center      | ENG FIRE                   |                          |                                                    |        |                                |
+|                            | HYD                        |                          |                                                    |        |                                |
+|                            | FUEL                       | CROSSFEED OPEN INDICATOR | A380X_OVHD_FUEL_CROSSFEED_OPEN_IND_{1\|2\|3\|4}    | 0\|1   |                                |
+|                            |                            | CROSSFEED PUSHBUTTON     | A380X_OVHD_FUEL_CROSSFEED_PB_ON_{1\|2\|3\|4}       | 0\|1   |                                |
+|                            |                            | FEED TK MAIN             | A380X_OVHD_FUEL_MAIN_PB_ON_{1\|2\|3\|4}            | 0\|1   |                                |
+|                            |                            |                          | A380X_OVHD_FUEL_MAIN_FAULT_{1\|2\|3\|4}            | 0\|1   |                                |
+|                            |                            | FEED TK STBY             | A380X_OVHD_FUEL_STBY_PB_ON_{1\|2\|3\|4}            | 0\|1   |                                |
+|                            |                            |                          | A380X_OVHD_FUEL_STBY_FAULT_{1\|2\|3\|4}            | 0\|1   |                                |
+|                            |                            | Transfer Pumps L+R       | A380X_OVHD_FUEL_{OUTR\|MID\|INR}\_AUTO_{L\|R}      | 0\|1   |                                |
+|                            |                            |                          | A380X_OVHD_FUEL_{OUTR\|MID\|INR}\_AUTO_{L\|R}      | 0\|1   |                                |
+|                            |                            | Auto Transfer L+R        | A380X_OVHD_FUEL_XFR_{OUTR\|MID\|INR}\_AUTO_{L\|R}  | 0\|1   | Shows MAN if not AUTO (==0)    |
+|                            | ELEC                       |                          | A380X_OVHD_FUEL_XFR_{OUTR\|MID\|INR}\_FAULT_{L\|R} | 0\|1   |                                |
+|                            | AIR                        |                          |                                                    | 0\|1   |                                |
+|                            | ANTI ICE                   |                          |                                                    | 0\|1   |                                |
+|                            | ENG START                  |                          |                                                    | 0\|1   |                                |
+|                            | CABIN PRESS                |                          |                                                    | 0\|1   |                                |
+|                            | EXT LT                     |                          |                                                    | 0\|1   |                                |
+|                            | APU                        |                          |                                                    | 0\|1   |                                |
+|                            | INT LT                     |                          |                                                    | 0\|1   |                                |
+|                            | SIGNS                      |                          |                                                    |        |                                |
+|                            |                            |                          |                                                    |        |                                |
+| Overhead Panel Right       | RESET                      |                          |                                                    |        |                                |
+|                            | CVR                        |                          |                                                    |        |                                |
+|                            | RAMP                       |                          |                                                    |        |                                |
+|                            | F/CTL                      |                          |                                                    |        |                                |
+|                            | CARGO AIR COND             |                          |                                                    |        |                                |
+|                            | CARGO SMOKE                |                          |                                                    |
+|                            | VENT                       |                          |                                                    |        |                                |
+|                            | ENG                        |                          |                                                    |        |                                |
+|                            | WIPER                      |                          |                                                    |        |                                |
+|                            |                            |                          |                                                    |        |                                |
+| Glareshield                | FCU EFIS                   |                          |                                                    |        |                                |
+|                            | FCU AFS                    |                          |                                                    |        |                                |
+|                            | ECAM                       | Master Warning Ind       | B:A380X_GLARE_ECAM_{CAPT\|FO}_MASTER_WARN          | 0\|1   |                                |
+|                            |                            | Master Warning Pb        | B:A380X_GLARE_ECAM_{CAPT\|FO}_MASTER_WARN_PB       | 0\|1   | resets to 0 zero automatically |
+|                            |                            | Master Caution Ind       | B:A380X_GLARE_ECAM_{CAPT\|FO}_MASTER_CAUT          | 0\|1   |                                |
+|                            |                            | Master Caution Pb        | B:A380X_GLARE_ECAM_{CAPT\|FO}_MASTER_CAUT_PB       | 0\|1   | resets to 0 zero automatically |
+|                            | CHRONO                     | Chrono Pb                | B:A380X_GLARE_CAPT_CHRONO_PB                       | 0\|1   | resets to 0 zero automatically |
+|                            | INDICATION                 | Sidestick Priority Ind   |                                                    |        |                                |
+|                            |                            | Autoland Ind             |                                                    |        |                                |
+|                            |                            | ATC Message Ind          |                                                    |        |                                |
+|                            | Loudspeaker Vol Control    |                          |                                                    |        |                                |
+|                            | Lighting                   |                          |                                                    |        |                                |
+|                            |                            |                          |                                                    |        |                                |
+| Instrument Panel Capt/F.O  | E/WD                       |                          |                                                    |        |                                |
+|                            | ISIS                       | SFD                      |                                                    |        |                                |
+|                            |                            | SND                      |                                                    |        |                                |
+|                            | Triple Pressure Indicator  |                          |                                                    |        |                                |
+|                            | L/G Gravitiy               |                          |                                                    |        |                                |
+|                            | ATT HDG/Air Data Switching |                          |                                                    |        |                                |
+|                            | ND                         |                          |                                                    |        |                                |
+|                            | PFD                        |                          |                                                    |        |                                |
+|                            | OIT                        |                          |                                                    |        |                                |
+|                            | SD                         |                          |                                                    |        |                                |
+|                            | MFD                        |                          |                                                    |        |                                |
+|                            | EFIS RECONF                |                          |                                                    |        |                                |
+|                            |                            |                          |                                                    |        |                                |
+| Center Instrument Panel    | L/G Indication             |                          |                                                    |        |                                |
+|                            | Auto Brake                 |                          |                                                    |        |                                |
+|                            | Anti Skid                  |                          |                                                    |        |                                |
+|                            | L/G Lever                  |                          |                                                    |        |                                |
+|                            | Clock                      |                          |                                                    |        |                                |
+|                            |                            |                          |                                                    |        |                                |
+| Pedestal                   | KCCU                       |                          |                                                    |        |                                |
+|                            | RAMP                       |                          |                                                    |        |                                |
+|                            | SURV                       | WXR ELEVN                |                                                    |        |                                |
+|                            |                            | WXR GAIN                 |                                                    |        |                                |
+|                            |                            | WXR VD AZIM              |                                                    |        |                                |
+|                            |                            | WXR TAWS SYS             |                                                    |        |                                |
+|                            |                            | XDPR TCAS SYS            |                                                    |        |                                |
+|                            |                            | TCAS ABV                 |                                                    |        |                                |
+|                            |                            | TCAS BLW                 |                                                    |        |                                |
+|                            |                            | G/S MODE                 |                                                    |        |                                |
+|                            |                            |                          |                                                    |        |                                |
+|                            | ECAM Control               |                          |                                                    |        |                                |
+|                            | Thrust Control             |                          |                                                    |        |                                |
+|                            | Engines Master             |                          |                                                    |        |                                |
+|                            | Speed Brake                |                          |                                                    |        |                                |
+|                            | Park Brake                 |                          |                                                    |        |                                |
+|                            | Pitch Trim                 |                          |                                                    |        |                                |
+|                            | Rudder Trim                |                          |                                                    |        |                                |
+|                            | Flaps                      |                          |                                                    |        |                                |
+|                            | Cockpit Lighting           |                          |                                                    |        |                                |
+|                            | Printer                    |                          |                                                    |        |                                |
+|                            |                            |                          |                                                    |        |                                |
+| Lateral Consoles           | Sidestick                  |                          |                                                    |        |                                |
+|                            | Tiller                     |                          |                                                    |        |                                |
+|                            |                            |                          |                                                    |        |                                |
+| Pedals                     | Brake                      |                          |                                                    |        |                                |
+|                            | Rudder                     |                          |                                                    |        |                                |
+|                            |                            |                          |                                                    |        |                                |
+| Seats                      |                            |                          |                                                    |        |                                |
+| Tables                     |                            |                          |                                                    |        |                                |
+| Cockpit Windows            |                            |                          |                                                    |        |                                |
 
 ## flyPad API
 
