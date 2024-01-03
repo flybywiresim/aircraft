@@ -4,6 +4,7 @@
 /* eslint-disable camelcase */
 import { bearingTo, distanceTo, placeBearingDistance } from 'msfs-geo';
 import { Coordinates } from '@fmgc/flightplanning/data/geo';
+import { AirportClassMask } from '@microsoft/msfs-sdk';
 import {
     AirportCommunication,
     Airway,
@@ -90,6 +91,22 @@ export class MsfsMapping {
         default:
             return RunwaySurfaceType.Hard;
         }
+    }
+
+    mapRunwaySurfaceMsfsAirportClassBitmask(surface: number): AirportClassMask {
+        let result: AirportClassMask = AirportClassMask.None;
+
+        if (surface & RunwaySurfaceType.Hard) {
+            result |= AirportClassMask.HardSurface;
+        }
+        if (surface & RunwaySurfaceType.Soft) {
+            result |= AirportClassMask.SoftSurface;
+        }
+        if (surface & RunwaySurfaceType.Water) {
+            result |= AirportClassMask.AllWater;
+        }
+
+        return result;
     }
 
     public mapAirport(msAirport: JS_FacilityAirport): Airport {

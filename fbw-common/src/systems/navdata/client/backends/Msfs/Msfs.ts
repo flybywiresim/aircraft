@@ -36,7 +36,7 @@ import { Airport } from '../../../shared/types/Airport';
 import { Approach } from '../../../shared/types/Approach';
 import { Arrival } from '../../../shared/types/Arrival';
 import { Departure } from '../../../shared/types/Departure';
-import { Runway, RunwaySurfaceType } from '../../../shared/types/Runway';
+import { Runway } from '../../../shared/types/Runway';
 import { DataInterface } from '../../../shared/DataInterface';
 import { Marker } from '../../../shared/types/Marker';
 import { IcaoSearchFilter, JS_FacilityAirport, VorType } from './FsTypes';
@@ -362,10 +362,23 @@ export class MsfsBackend implements DataInterface {
     }
 
     /** @inheritdoc */
-    public async getNearbyAirports(center: Coordinates, range: NauticalMiles, limit?: number, longestRunwaySurfaces?: RunwaySurfaceType): Promise<readonly Airport[]> {
+    public async getNearbyAirports(center: Coordinates, range: NauticalMiles, limit?: number, longestRunwaySurfaces?: number, longestRunwayLength?: number): Promise<readonly Airport[]> {
         await Wait.awaitCondition(() => this.airportSearchSession !== undefined);
 
-        // TODO take care of longestRunwaySurfaces
+        const surface = longestRunwaySurfaces !== undefined
+            ? this.mapping.mapRunwaySurfaceMsfsAirportClassBitmask(longestRunwaySurfaces)
+            : NearestAirportSearchSession.Defaults.SurfaceTypeMask;
+
+        this.airportSearchSession!.setAirportFilter(
+            NearestAirportSearchSession.Defaults.ShowClosed,
+            surface, // This filters by `AirportClass`
+        );
+        this.airportSearchSession!.setExtendedAirportFilters(
+            NearestAirportSearchSession.Defaults.SurfaceTypeMask, // I believe this filters by MSFS' `RunwaySurfaceType`
+            NearestAirportSearchSession.Defaults.ApproachTypeMask,
+            NearestAirportSearchSession.Defaults.ToweredMask,
+            longestRunwayLength ?? NearestAirportSearchSession.Defaults.MinimumRunwayLength,
+        );
 
         return this.searchForFacilities(FacilitySearchType.Airport, center, range, limit);
     }

@@ -125,8 +125,8 @@ export class Database {
         return this.backend.getAirwaysByFix(fix.ident, fix.icaoCode);
     }
 
-    public getNearbyAirports(center: Coordinates, range: number, limit?: number): Promise<readonly Airport[]> {
-        return this.backend.getNearbyAirports(center, range, limit);
+    public getNearbyAirports(center: Coordinates, range: number, limit?: number, longestRunwaySurfaces?: number, longestRunwayLength?: number): Promise<readonly Airport[]> {
+        return this.backend.getNearbyAirports(center, range, limit, longestRunwaySurfaces, longestRunwayLength);
     }
 
     public getNearbyAirways(center: Coordinates, range: number, limit?: number, levels?: AirwayLevel): Promise<readonly Airway[]> {

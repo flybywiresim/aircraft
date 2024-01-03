@@ -1,7 +1,7 @@
 // Copyright (c) 2021, 2023 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
-import { UpdateThrottler, Airport, NdbNavaid, VhfNavaid, Waypoint } from '@flybywiresim/fbw-sdk';
+import { UpdateThrottler, Airport, NdbNavaid, VhfNavaid, Waypoint, RunwaySurfaceType } from '@flybywiresim/fbw-sdk';
 import { NavigationDatabaseService } from '@fmgc/flightplanning/new/NavigationDatabaseService';
 import { Coordinates } from 'msfs-geo';
 
@@ -27,6 +27,8 @@ export class NearbyFacilities {
     private radius = 381; // nautical miles
 
     private limit = 160;
+
+    private constructor(private filter: NearbyFacilitiesFilter = DefaultNearbyFacilitiesFilter) {}
 
     static getInstance(): NearbyFacilities {
         if (!NearbyFacilities.instance) {
@@ -64,7 +66,7 @@ export class NearbyFacilities {
 
         if (this.pposValid && database) {
             // FIXME implement a more efficient diff-type interface in msfs-navdata
-            this.nearbyAirports = await database.getNearbyAirports(this.ppos, this.radius, this.limit);
+            this.nearbyAirports = await database.getNearbyAirports(this.ppos, this.radius, this.limit, this.filter.airports.longestRunwaySurfaces, this.filter.airports.longestRunwayLength);
             this.nearbyNdbNavaids = await database.getNearbyNdbNavaids(this.ppos, this.radius, this.limit);
             this.nearbyVhfNavaids = await database.getNearbyVhfNavaids(this.ppos, this.radius, this.limit);
             // FIXME rename this method in msfs-navdata
@@ -82,3 +84,19 @@ export class NearbyFacilities {
         }
     }
 }
+
+interface NearbyFacilitiesFilter {
+    airports: NearbyAirportFilter;
+}
+
+interface NearbyAirportFilter {
+    longestRunwaySurfaces?: number;
+    longestRunwayLength?: number;
+}
+
+const DefaultNearbyFacilitiesFilter: NearbyFacilitiesFilter = {
+    airports: {
+        longestRunwaySurfaces: RunwaySurfaceType.Hard,
+        longestRunwayLength: 1500,
+    },
+};

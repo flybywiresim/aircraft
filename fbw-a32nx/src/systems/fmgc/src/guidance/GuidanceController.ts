@@ -214,8 +214,6 @@ export class GuidanceController {
         if (this.lastFocusedWpIndex !== focusedWpIndex || this.lastEfisInterfaceVersion !== this.efisInterface.version) {
             this.lastFocusedWpIndex = focusedWpIndex;
             this.lastEfisInterfaceVersion = this.efisInterface.version;
-
-            this.efisVectors.forceUpdate();
         }
 
         let termination: Coordinates;

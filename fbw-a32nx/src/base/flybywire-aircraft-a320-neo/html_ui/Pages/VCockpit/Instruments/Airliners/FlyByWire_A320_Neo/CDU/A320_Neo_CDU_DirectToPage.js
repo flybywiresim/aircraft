@@ -70,7 +70,7 @@ class CDUDirectToPage {
                         const trueTrackWord = new Arinc429Word(trueTrack);
 
                         if (trueTrackWord.isNormalOperation()) {
-                            mcdu.flightPlanService.directTo(ppos, trueTrackWord.value, w);
+                            mcdu.flightPlanService.directToWaypoint(ppos, trueTrackWord.value, w);
                         }
 
                         CDUDirectToPage.ShowPage(mcdu, w, wptsListIndex);

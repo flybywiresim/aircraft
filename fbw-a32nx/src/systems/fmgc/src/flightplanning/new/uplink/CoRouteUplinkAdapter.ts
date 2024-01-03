@@ -316,7 +316,7 @@ export class CoRouteUplinkAdapter {
                 instructions.push(
                     { instruction: 'sidEnrouteTransition', ident: fix.ident.toString(), locationHint: { lat: parseFloat(fix.pos_lat.toString()), long: parseFloat(fix.pos_long.toString()) } },
                 );
-            } else if (fix.via_airway === 'DCT' || fix.via_airway === 'DCT*' || fix.via_airway.match(/^NAT[A-Z]$/)) {
+            } else if (fix.via_airway === 'DCT' || fix.via_airway === 'DCT*' || fix.via_airway.match(/^NAT[A-Z]$/) || i === 0) {
                 if (fix.type === 'ltlg') {
                     // LAT/LONG Waypoint
                     instructions.push({ instruction: 'latlong', lat: parseFloat(fix.pos_lat.toString()), long: parseFloat(fix.pos_long.toString()) });

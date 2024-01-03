@@ -250,7 +250,9 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         this.approachSegment.setProcedure(this.approachSegment.procedure?.ident);
         this.approachViaSegment.setProcedure(this.approachViaSegment.procedure?.ident);
 
+        this.enqueueOperation(FlightPlanQueuedOperation.RebuildArrivalAndApproach);
         this.enqueueOperation(FlightPlanQueuedOperation.Restring);
+
         this.flushOperationQueue().then(() => {
             const activeIndex = this.allLegs.findIndex((it) => it === this.activeLeg);
 
@@ -1387,10 +1389,20 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
             let emptyAllNext = false;
 
+            if (segment === this.destinationSegment) {
+                emptyAllNext = true;
+
+                toInsertInEnroute.unshift(...this.destinationSegment.truncate(indexInSegment));
+            }
+
             if (segment === this.approachSegment) {
                 emptyAllNext = true;
 
                 toInsertInEnroute.unshift(...this.approachSegment.truncate(indexInSegment));
+            } else if (emptyAllNext) {
+                const removed = this.approachSegment.clear();
+
+                toInsertInEnroute.unshift(...removed);
             }
 
             if (segment === this.approachViaSegment) {
