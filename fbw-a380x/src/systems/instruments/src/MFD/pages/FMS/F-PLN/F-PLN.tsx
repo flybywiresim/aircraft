@@ -59,7 +59,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
     private destDistanceLabel = Subject.create<string>('---');
 
-    private displayFplnFromLegIndex = Subject.create<number>(0);
+    private displayFplnFromLineIndex = Subject.create<number>(0);
 
     private disabledScrollDown = Subject.create(true);
 
@@ -80,7 +80,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     protected onNewData(): void {
         console.time('F-PLN:onNewData');
         this.activeLegIndex = this.loadedFlightPlan.activeLegIndex;
-        this.update(this.displayFplnFromLegIndex.get());
+        this.update(this.displayFplnFromLineIndex.get());
 
         if (this.loadedFlightPlan.destinationAirport) {
             this.destButtonDisabled.set(false);
@@ -99,20 +99,13 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             const utcTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
             const eta = new Date((utcTime + destPred.secondsFromPresent) * 1000);
             this.destTimeLabel.set(`${eta.getHours().toString().padStart(2, '0')}:${eta.getMinutes().toString().padStart(2, '0')}`);
-            this.destDistanceLabel.set(destPred.distanceFromAircraft.toFixed(0));
+            this.destDistanceLabel.set(Number.isFinite(destPred.distanceFromAircraft) ? destPred.distanceFromAircraft.toFixed(0) : '---');
         }
         console.timeEnd('F-PLN:onNewData');
     }
 
-    private update(startAtIndex: number): void {
-        // Make sure that you can't scroll higher than the active leg
-        startAtIndex = Math.max(startAtIndex, (this.loadedFlightPlan.activeLegIndex - 1), 0);
-        this.displayFplnFromLegIndex.set(startAtIndex);
-
-        // Update SimVars for ND map center#
-        const planDisplayForPlan = this.loadedFlightPlanIndex.get();
-        const planDisplayInAltn = startAtIndex >= this.loadedFlightPlan.legCount;
-        const planDisplayLegIndex = planDisplayInAltn ? startAtIndex - this.loadedFlightPlan.legCount - 1 : startAtIndex;
+    private updateEfisPlanCentre(planDisplayForPlan: number, planDisplayLegIndex: number, planDisplayInAltn: boolean) {
+        // Update SimVars for ND map center
         this.props.fmService.efisInterface.setPlanCentre(planDisplayForPlan, planDisplayLegIndex, planDisplayInAltn);
         this.props.fmService.efisInterface.setAlternateLegVisible(this.loadedFlightPlan.alternateFlightPlan.legCount > 0, planDisplayForPlan);
         this.props.fmService.efisInterface.setMissedLegVisible(planDisplayLegIndex >= this.loadedFlightPlan.firstMissedApproachLegIndex, planDisplayForPlan);
@@ -121,11 +114,14 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             planDisplayForPlan,
         );
         this.props.fmService.efisInterface.setSecRelatedPageOpen(planDisplayForPlan >= FlightPlanIndex.FirstSecondary);
+    }
 
-        /* if (startAtIndex > (this.loadedFlightPlan.allLegs.length + this.loadedFlightPlan.alternateFlightPlan.allLegs.length)) {
-            this.displayFplnFromLegIndex.set(0);
+    private update(startAtIndex: number): void {
+        // Make sure that you can't scroll higher than the FROM wpt
+        if (startAtIndex < this.loadedFlightPlan.activeLegIndex - 1) {
+            this.displayFplnFromLineIndex.set(startAtIndex);
             return;
-        } */
+        }
 
         // Compute rest of required attributes
         this.derivedFplnLegData = [];
@@ -378,6 +374,23 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                 FSComponent.render(node, this.linesDivRef.instance);
             }
         }
+
+        // If pseudo-waypoint, find last actual waypoint
+        let planCentreLineDataIndex = startAtIndex;
+        const isNoPseudoWpt = (data: FplnLineDisplayData) => {
+            if (isWaypoint(data) && data.isPseudoWaypoint === false) {
+                return true;
+            }
+            return false;
+        };
+        while (isNoPseudoWpt(this.lineData[planCentreLineDataIndex]) === false) {
+            planCentreLineDataIndex--;
+        }
+
+        const planCentreWpt = this.lineData[planCentreLineDataIndex];
+        if (isWaypoint(planCentreWpt)) {
+            this.updateEfisPlanCentre(this.loadedFlightPlanIndex.get(), planCentreWpt.originalLegIndex, planCentreWpt.isAltnWaypoint);
+        }
     }
 
     private openRevisionsMenu(legIndex: number, altnFlightPlan: boolean) {
@@ -435,7 +448,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             }]);
         }, true));
 
-        this.subs.push(this.displayFplnFromLegIndex.sub((val) => {
+        this.subs.push(this.displayFplnFromLineIndex.sub((val) => {
             this.update(val);
 
             this.disabledScrollUp.set(!this.lineData || val <= 0);
@@ -450,7 +463,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                 this.lineColor.set(FplnLineColor.Active);
                 this.tmpyLineRef.instance.style.display = 'none';
             }
-            this.update(this.displayFplnFromLegIndex.get());
+            this.update(this.displayFplnFromLineIndex.get());
         }, true));
 
         const sub = this.props.bus.getSubscriber<ClockEvents>();
@@ -510,7 +523,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     }
 
     private scrollToDest() {
-        this.displayFplnFromLegIndex.set(
+        this.displayFplnFromLineIndex.set(
             this.loadedFlightPlan.destinationLegIndex
             // eslint-disable-next-line max-len
             + this.props.fmService.guidanceController.pseudoWaypoints.pseudoWaypoints.filter((it) => it.alongLegIndex < this.loadedFlightPlan.destinationLegIndex).length
@@ -641,13 +654,13 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                         <div style="display: flex; flex-direction: row; margin-top: 5px; margin-bottom: 5px;">
                             <IconButton
                                 icon="double-down"
-                                onClick={() => this.displayFplnFromLegIndex.set(this.displayFplnFromLegIndex.get() + 1)}
+                                onClick={() => this.displayFplnFromLineIndex.set(this.displayFplnFromLineIndex.get() + 1)}
                                 disabled={this.disabledScrollDown}
                                 containerStyle="width: 60px; height: 60px;"
                             />
                             <IconButton
                                 icon="double-up"
-                                onClick={() => this.displayFplnFromLegIndex.set(this.displayFplnFromLegIndex.get() - 1)}
+                                onClick={() => this.displayFplnFromLineIndex.set(this.displayFplnFromLineIndex.get() - 1)}
                                 disabled={this.disabledScrollUp}
                                 containerStyle="width: 60px; height: 60px;"
                             />
