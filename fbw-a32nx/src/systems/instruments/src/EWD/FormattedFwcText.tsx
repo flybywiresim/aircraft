@@ -20,7 +20,7 @@ export class FormattedFwcText extends DisplayComponent<FormattedFwcTextProps> {
             this.linesRef.instance.innerHTML = '';
             this.decorationRef.instance.innerHTML = '';
 
-            let spans: Node[] = [];
+            let spans: VNode[] = [];
             let yOffset = 0;
 
             let color = 'White';
@@ -131,7 +131,7 @@ export class FormattedFwcText extends DisplayComponent<FormattedFwcTextProps> {
                         e.setAttribute('x', this.props.x.toString());
                         e.setAttribute('y', (this.props.y + yOffset).toString());
                         spans.forEach((s) => {
-                            e.appendChild(s);
+                            FSComponent.render(s, e);
                         });
                         this.linesRef.instance.appendChild(e);
                         yOffset += LINE_SPACING;
@@ -156,7 +156,7 @@ export class FormattedFwcText extends DisplayComponent<FormattedFwcTextProps> {
                 e.setAttribute('x', this.props.x.toString());
                 e.setAttribute('y', (this.props.y + yOffset).toString());
                 spans.forEach((s) => {
-                    e.appendChild(s);
+                    FSComponent.render(s, e);
                 });
                 this.linesRef.instance.appendChild(e);
                 yOffset += LINE_SPACING;
