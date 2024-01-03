@@ -28,7 +28,7 @@ export class Footer extends DisplayComponent<AbstractMfdPageProps> {
 
             if (ind > -1) {
                 this.messageToBeCleared.set(true);
-                this.messageRef.instance.textContent = arr[ind].message;
+                this.messageRef.instance.textContent = arr[ind].messageText;
 
                 if (arr[ind].backgroundColor === 'none') {
                     this.messageRef.instance.style.backgroundColor = 'transparent';

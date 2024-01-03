@@ -378,6 +378,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                     flags |= FplnLineFlags.BeforeActiveLeg;
                 }
 
+                // Does this produce a memory leak, since we keep references to lineData even after it's been cleared every update()?
                 this.renderedLineData[lineIndex].set(this.lineData[drawIndex]);
 
                 if (onlyUpdatePredictions === false) {
@@ -474,6 +475,10 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
+        if (this.props.uiService.activeUri.get().extra === 'top') {
+            this.scrollToTop();
+        }
+
         if (this.props.uiService.activeUri.get().extra === 'dest') {
             // Scroll to end of FPLN (destination on last line)
             this.scrollToDest();
@@ -563,12 +568,16 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
         );
     }
 
+    private scrollToTop() {
+        this.displayFplnFromLineIndex.set(this.loadedFlightPlan.activeLegIndex - 1);
+    }
+
     private scrollToDest() {
         this.displayFplnFromLineIndex.set(
             this.loadedFlightPlan.destinationLegIndex
             // eslint-disable-next-line max-len
             + this.props.fmService.guidanceController.pseudoWaypoints.pseudoWaypoints.filter((it) => it.alongLegIndex < this.loadedFlightPlan.destinationLegIndex).length
-            - (this.tmpyActive.get() ? 7 : 8),
+            - (this.tmpyActive.get() ? 8 : 9),
         );
     }
 

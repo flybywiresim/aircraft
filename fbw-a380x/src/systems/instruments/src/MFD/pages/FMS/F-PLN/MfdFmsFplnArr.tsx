@@ -154,7 +154,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                 this.appr.set(flightPlan.approach.ident);
                 this.rwyFreq.set(flightPlan.destinationRunway.lsFrequencyChannel.toFixed(2));
 
-                if (flightPlan.approach.transitions.length > 0) {
+                if (flightPlan.availableApproachVias.length > 0) {
                     const vias: ButtonMenuItem[] = [{
                         label: 'NONE',
                         action: async () => {
@@ -162,10 +162,20 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                         },
                     }];
 
-                    // Only show VIAs for STAR, if STAR is set. Consider handling this in FlightPlanService when FpmConfig.CHECK_VIA_COMPATIBILITY===true
-                    // const enrouteTransitions = flightPlan.arrival.enrouteTransitions[0];
-
-                    flightPlan.approach.transitions.forEach((el) => {
+                    // Only show VIAs matching to approach (and STAR, if available)
+                    flightPlan.availableApproachVias.filter((it) => {
+                        if (flightPlan?.arrival?.runwayTransitions?.length > 0) {
+                            let oneStarIsMatching = false;
+                            flightPlan.arrival.runwayTransitions.forEach((ii) => {
+                                if (ii.legs[ii.legs.length - 1]?.waypoint.databaseId === it.legs[0]?.waypoint.databaseId) {
+                                    oneStarIsMatching = true;
+                                }
+                                oneStarIsMatching = false;
+                            });
+                            return oneStarIsMatching;
+                        }
+                        return true;
+                    }).forEach((el) => {
                         vias.push({
                             label: el.ident,
                             action: async () => {
@@ -181,9 +191,11 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
             } else if (flightPlan.availableApproaches?.length > 0) {
                 this.appr.set('------');
                 this.rwyFreq.set('---.--');
+                this.viaDisabled.set(true);
             } else {
                 this.appr.set('NONE');
                 this.rwyFreq.set('---.--');
+                this.viaDisabled.set(true);
             }
 
             if (flightPlan.approachVia) {
@@ -194,7 +206,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                 this.via.set('NONE');
             }
 
-            if (flightPlan.availableArrivals?.length > 0) {
+            if (flightPlan.availableArrivals?.length > 0 && flightPlan.approach) {
                 const arrivals: ButtonMenuItem[] = [{
                     label: 'NONE',
                     action: async () => {
@@ -202,14 +214,31 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                         await this.props.fmService.flightPlanService.setArrivalEnrouteTransition(undefined, this.loadedFlightPlanIndex.get(), isAltn);
                     },
                 }];
+
                 flightPlan.availableArrivals.forEach((el) => {
-                    arrivals.push({
+                    const arr: ButtonMenuItem = {
                         label: el.ident,
                         action: async () => {
                             await this.props.fmService.flightPlanService.setArrival(el.ident, this.loadedFlightPlanIndex.get(), isAltn);
                             await this.props.fmService.flightPlanService.setArrivalEnrouteTransition(undefined, this.loadedFlightPlanIndex.get(), isAltn);
                         },
-                    });
+                    };
+
+                    if (el.runwayTransitions.length > 0) {
+                        let apprIsMatching = false;
+                        el.runwayTransitions.forEach((it) => {
+                            if (it.ident === flightPlan.approach.runwayIdent || (it.ident.charAt(4) === 'B' && it.ident.substring(0, 4) === flightPlan.approach.runwayIdent.substring(0, 4))) {
+                                apprIsMatching = true;
+                            }
+                        });
+
+                        if (apprIsMatching) {
+                            arrivals.push(arr);
+                        }
+                    } else {
+                        // No runway transitions, push all
+                        arrivals.push(arr);
+                    }
                 });
                 this.starOptions.set(arrivals);
                 this.starDisabled.set(false);

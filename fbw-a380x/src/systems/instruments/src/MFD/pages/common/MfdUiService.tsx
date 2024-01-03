@@ -52,8 +52,8 @@ export class MfdUiService {
     public navigateTo(uri: string): void {
         let nextUri: string;
 
-        if (uri === this.activeUri.get().uri) {
-            // Same URL, don't navigate
+        if (uri === this.activeUri.get().uri && uri !== 'fms/active/f-pln/top') {
+            // Same URL, don't navigate. Except for f-pln/top, which brings the list back to the top
             console.info('Navigate to same URL, ignored.');
             return;
         }

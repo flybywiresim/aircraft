@@ -41,7 +41,7 @@ import { Fix, NXDataStore, UpdateThrottler } from '@flybywiresim/fbw-sdk';
 import { DataManager, PilotWaypoint } from '@fmgc/flightplanning/new/DataManager';
 import { DataInterface } from '@fmgc/flightplanning/new/interface/DataInterface';
 import { A320FlightPlanPerformanceData, EfisInterface, Navigation } from '@fmgc/index';
-import { NXFictionalMessages, NXSystemMessages, TypeIIMessage, TypeIMessage } from 'instruments/src/MFD/pages/FMS/legacy/NXSystemMessages';
+import { McduMessage, NXFictionalMessages, NXSystemMessages, TypeIIMessage, TypeIMessage } from 'instruments/src/MFD/pages/FMS/legacy/NXSystemMessages';
 import { headerForSystem, pageForUrl } from 'instruments/src/MFD/MfdPageDirectory';
 import { CdsDisplayUnit, DisplayUnitID } from '../MsfsAvionicsCommon/CdsDisplayUnit';
 import { MfdSimvars } from './shared/MFDSimvarPublisher';
@@ -66,7 +66,8 @@ interface MfdComponentProps extends ComponentProps {
 }
 
 export interface FmsErrorMessage {
-    message: string;
+    message: McduMessage;
+    messageText: string;
     backgroundColor: 'none' | 'amber' | 'cyan'; // Whether the message should be colored. White text on black background if 'none'
     cleared: boolean; // If message has been cleared from footer
     isResolvedOverride: () => boolean;
@@ -294,10 +295,14 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
         const index = arr.findIndex((val) => val.cleared === false);
 
         if (index > -1) {
-            const old = arr[index];
-            old.cleared = true;
+            if (arr[index].message.isTypeTwo === true) {
+                const old = arr[index];
+                old.cleared = true;
 
-            this.fmsErrors.set(arr);
+                this.fmsErrors.set(arr);
+            } else {
+                this.fmsErrors.removeAt(index);
+            }
         }
     }
 
@@ -318,14 +323,15 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
         const message = _isResolvedOverride === undefined && _onClearOverride === undefined ? _message : _message.getModifiedMessage('', _isResolvedOverride, _onClearOverride);
 
         const msg: FmsErrorMessage = {
-            message: message.text,
+            message: _message,
+            messageText: message.text,
             backgroundColor: message.isAmber ? 'amber' : 'none',
             cleared: false,
             onClearOverride: _message instanceof TypeIIMessage ? _message.onClear : () => { },
             isResolvedOverride: _message instanceof TypeIIMessage ? _message.isResolved : () => false,
         };
 
-        const exists = this.fmsErrors.getArray().findIndex((el) => el.message === msg.message && el.cleared === true);
+        const exists = this.fmsErrors.getArray().findIndex((el) => el.messageText === msg.messageText && el.cleared === true);
         if (exists !== -1) {
             this.fmsErrors.removeAt(exists);
         }
@@ -337,7 +343,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
      * @param value {String}
      */
     removeMessageFromQueue(value: string) {
-        const exists = this.fmsErrors.getArray().findIndex((el) => el.message === value);
+        const exists = this.fmsErrors.getArray().findIndex((el) => el.messageText === value);
         if (exists !== -1) {
             this.fmsErrors.removeAt(exists);
         }
@@ -346,6 +352,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
     private updateMessageQueue() {
         this.fmsErrors.getArray().forEach((it, idx) => {
             if (it.isResolvedOverride() === true) {
+                console.warn(`message "${it.messageText}" is resolved.`);
                 this.fmsErrors.removeAt(idx);
             }
         });
@@ -755,8 +762,6 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
 
         const isCaptainSide = getDisplayIndex() === 2;
 
-        this.activeFmsSource.set(isCaptainSide ? 'FMS 1' : 'FMS 2');
-
         const sub = this.props.bus.getSubscriber<ClockEvents & MfdSimvars>();
 
         sub.on(isCaptainSide ? 'potentiometerCaptain' : 'potentiometerFo').whenChanged().handle((value) => {
@@ -765,6 +770,21 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
 
         sub.on(isCaptainSide ? 'elec' : 'elecFo').whenChanged().handle((value) => {
             this.displayPowered.set(value);
+        });
+
+        sub.on('fmsDataKnob').whenChanged().handle((val) => {
+            switch (val) {
+            case 0:
+                this.activeFmsSource.set('FMS 2');
+                break;
+            case 1:
+                this.activeFmsSource.set(isCaptainSide ? 'FMS 1' : 'FMS 2');
+                break;
+            case 2:
+                this.activeFmsSource.set('FMS 1');
+                break;
+            default: this.activeFmsSource.set('FMS 1-C');
+            }
         });
 
         // Note: This should be done with H events instead, and in a more intelligent way (sides L/R as well). Can't get H events running rn though.
@@ -794,7 +814,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
 
         sub.on('kccuFpln').whenChanged().handle((value) => {
             if (value === 1) {
-                this.uiService.navigateTo('fms/active/f-pln');
+                this.uiService.navigateTo('fms/active/f-pln/top');
             }
         });
 

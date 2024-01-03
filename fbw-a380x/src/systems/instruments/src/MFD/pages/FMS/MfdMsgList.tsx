@@ -50,11 +50,11 @@ export class MfdMsgList extends DisplayComponent<MfdMsgListProps> {
                     const itemArr = item as readonly FmsErrorMessage[];
                     itemArr.forEach((el) => {
                         console.log(el);
-                        FSComponent.render(<div class="mfd-label msg-list-element">{el.message}</div>, this.msgListContainer.instance);
+                        FSComponent.render(<div class="mfd-label msg-list-element">{el.messageText}</div>, this.msgListContainer.instance);
                     });
                 } else {
                     const it = item as FmsErrorMessage;
-                    FSComponent.render(<div class="mfd-label msg-list-element">{it.message}</div>, this.msgListContainer.instance);
+                    FSComponent.render(<div class="mfd-label msg-list-element">{it.messageText}</div>, this.msgListContainer.instance);
                 }
             }
         }, true));
