@@ -5,9 +5,6 @@ use systems_wasm::aspects::{
     VariableToEventWriteOn,
 };
 use systems_wasm::Variable;
-use uom::si::angle::degree;
-use uom::si::angular_velocity::{revolution_per_minute, AngularVelocity};
-use uom::si::time::second;
 
 pub(super) fn nose_wheel_steering(builder: &mut MsfsAspectBuilder) -> Result<(), Box<dyn Error>> {
     // The rudder pedals should start in a centered position.
