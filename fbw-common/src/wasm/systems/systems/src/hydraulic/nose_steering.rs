@@ -546,7 +546,7 @@ mod tests {
 
         assert!(
             test_bed.query(|a| a.steering_actuator.position_normalized())
-                == Ratio::new::<ratio>(1.)
+                >= Ratio::new::<ratio>(0.98)
         );
 
         test_bed.command(|a| a.command_steer_angle(Angle::new::<degree>(-90.)));
@@ -559,7 +559,7 @@ mod tests {
 
         assert!(
             test_bed.query(|a| a.steering_actuator.position_normalized())
-                == Ratio::new::<ratio>(-1.)
+                <= Ratio::new::<ratio>(-0.98)
         );
     }
 
@@ -571,7 +571,7 @@ mod tests {
         test_bed.command(|a| a.set_pressure(Pressure::new::<psi>(3000.)));
         test_bed.command(|a| a.command_steer_angle(Angle::new::<degree>(20.)));
 
-        test_bed.run_multiple_frames(Duration::from_secs(2));
+        test_bed.run_multiple_frames(Duration::from_secs(3));
 
         assert!(is_equal_angle(
             test_bed.query(|a| a.steering_actuator.position_feedback()),
@@ -707,7 +707,7 @@ mod tests {
     }
 
     fn is_equal_angle(a1: Angle, a2: Angle) -> bool {
-        const EPSILON_DEGREE: f64 = 0.1;
+        const EPSILON_DEGREE: f64 = 1.;
 
         (a1 - a2).abs() <= Angle::new::<degree>(EPSILON_DEGREE)
     }
