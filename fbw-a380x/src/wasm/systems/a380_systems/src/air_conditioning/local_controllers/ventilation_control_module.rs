@@ -1,5 +1,5 @@
+use super::outflow_valve_control_module::OcsmShared;
 use std::fmt::Display;
-
 use systems::{
     air_conditioning::{
         AirConditioningOverheadShared, CabinFansSignal, OperatingChannel,
@@ -11,6 +11,7 @@ use systems::{
         VariableIdentifier, Write,
     },
 };
+use uom::si::{f64::*, pressure::psi, ratio::percent};
 
 #[derive(Debug)]
 enum VcmFault {
@@ -35,6 +36,7 @@ impl Display for VcmId {
 
 pub struct VentilationControlModule {
     vcm_channel_failure_id: VariableIdentifier,
+    orvp_open_id: VariableIdentifier,
 
     id: VcmId,
     active_channel: OperatingChannel,
@@ -45,6 +47,8 @@ pub struct VentilationControlModule {
     fcvcs: ForwardCargoVentilationControlSystem,
     bvcs: BulkVentilationControlSystem,
 
+    orvp: OverpressureReliefValveDump,
+
     fault: Option<VcmFault>,
 }
 
@@ -53,6 +57,8 @@ impl VentilationControlModule {
         Self {
             vcm_channel_failure_id: context
                 .get_identifier(format!("VENT_{}_VCM_CHANNEL_FAILURE", id)),
+            orvp_open_id: context
+                .get_identifier("VENT_OVERPRESSURE_RELIEF_VALVE_IS_OPEN".to_owned()),
 
             id,
             active_channel: OperatingChannel::new(1, None, &[powered_by[0]]),
@@ -62,6 +68,8 @@ impl VentilationControlModule {
             fcvcs: ForwardCargoVentilationControlSystem::new(),
             bvcs: BulkVentilationControlSystem::new(),
 
+            orvp: OverpressureReliefValveDump::new(),
+
             fault: None,
         }
     }
@@ -69,6 +77,7 @@ impl VentilationControlModule {
     pub fn update(
         &mut self,
         acs_overhead: &impl AirConditioningOverheadShared,
+        ocsm: [&impl OcsmShared; 4],
         pressurization_overhead: &impl PressurizationOverheadShared,
     ) {
         self.fault_determination();
@@ -84,6 +93,7 @@ impl VentilationControlModule {
                     acs_overhead,
                     pressurization_overhead,
                 );
+                self.orvp.update(ocsm, pressurization_overhead);
             } else {
                 self.fcvcs.update(
                     self.active_channel.has_fault(),
@@ -141,6 +151,9 @@ impl VcmShared for VentilationControlModule {
     fn bulk_isolation_valves_open_allowed(&self) -> bool {
         self.bvcs.bulk_isolation_valves_open_allowed()
     }
+    fn overpressure_relief_valve_open_amount(&self) -> Ratio {
+        self.orvp.overpressure_relief_valve_open_amount()
+    }
 }
 
 impl ControllerSignal<CabinFansSignal> for VentilationControlModule {
@@ -155,12 +168,18 @@ impl ControllerSignal<CabinFansSignal> for VentilationControlModule {
 
 impl SimulationElement for VentilationControlModule {
     fn write(&self, writer: &mut SimulatorWriter) {
-        let failure_count = match self.fault {
+        let failure_id = match self.fault {
             None => 0,
             Some(VcmFault::OneChannelFault) => self.stand_by_channel.id().into(),
             Some(VcmFault::BothChannelsFault) => 3,
         };
-        writer.write(&self.vcm_channel_failure_id, failure_count);
+        writer.write(&self.vcm_channel_failure_id, failure_id);
+        writer.write(
+            &self.orvp_open_id,
+            self.overpressure_relief_valve_open_amount()
+                .get::<percent>()
+                > 1.,
+        );
     }
 
     fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
@@ -245,5 +264,44 @@ impl BulkVentilationControlSystem {
     }
     fn bulk_isolation_valves_open_allowed(&self) -> bool {
         self.isolation_valves_open_allowed
+    }
+}
+
+struct OverpressureReliefValveDump {
+    should_open_orvp: bool,
+}
+
+impl OverpressureReliefValveDump {
+    const MAX_SAFETY_DELTA_P: f64 = 9.; // PSI
+
+    fn new() -> Self {
+        Self {
+            should_open_orvp: false,
+        }
+    }
+
+    fn update(
+        &mut self,
+        ocsm: [&impl OcsmShared; 4],
+        press_overhead: &impl PressurizationOverheadShared,
+    ) {
+        // Only OCSM 2 and 3 send information to the VCM
+        let orvp_open_allowed =
+            !press_overhead.ditching_is_on() && !ocsm[1].overpressure_relief_valve_inhibit();
+        self.should_open_orvp = orvp_open_allowed
+            && (press_overhead.extract_is_forced_open()
+                || ocsm[1].cabin_delta_pressure().get::<psi>() > Self::MAX_SAFETY_DELTA_P
+                    && (ocsm[1].cabin_delta_pressure().get::<psi>()
+                        > Self::MAX_SAFETY_DELTA_P + 0.2
+                        || self.should_open_orvp));
+    }
+
+    /// Because this is a mechanical valve that is either open or closed, this function is a valid simplification
+    fn overpressure_relief_valve_open_amount(&self) -> Ratio {
+        if self.should_open_orvp {
+            Ratio::new::<percent>(100.)
+        } else {
+            Ratio::default()
+        }
     }
 }

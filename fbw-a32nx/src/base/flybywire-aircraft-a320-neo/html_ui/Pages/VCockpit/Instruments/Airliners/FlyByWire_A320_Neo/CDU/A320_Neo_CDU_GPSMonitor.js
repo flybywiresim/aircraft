@@ -12,9 +12,10 @@ class CDUGPSMonitor {
         const latStr = currPosSplit[0];
         const lonStr = currPosSplit[1];
         currPos = latStr + sep + lonStr;
-        const TTRK = SimVar.GetSimVarValue("GPS GROUND MAGNETIC TRACK", "radians") || "000";
-        const GROUNDSPEED = SimVar.GetSimVarValue("GPS GROUND SPEED", "Knots") || "0";
-        const ALTITUDE = SimVar.GetSimVarValue("INDICATED ALTITUDE", "Feet") || "0";
+        const TTRK = SimVar.GetSimVarValue("GPS GROUND MAGNETIC TRACK", "radians");
+        const GROUNDSPEED = SimVar.GetSimVarValue("GPS GROUND SPEED", "Knots");
+        // Should be corrected from WGS84 to EGM96... when MMR GPS receiver is implemented
+        const ALTITUDE = Math.min(131072, Math.max(-131072, SimVar.GetSimVarValue("GPS POSITION ALT", "Feet")));
 
         const UTC_SECONDS = Math.floor(SimVar.GetGlobalVarValue("ZULU TIME", "seconds"));
         const hours = Math.floor(UTC_SECONDS / 3600) || 0;
