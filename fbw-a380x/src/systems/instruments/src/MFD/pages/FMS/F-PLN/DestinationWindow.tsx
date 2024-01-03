@@ -86,6 +86,7 @@ export class DestinationWindow extends DisplayComponent<DestinationWindowProps> 
                         <Button
                             label="CANCEL"
                             onClick={() => {
+                                Coherent.trigger('UNFOCUS_INPUT_FIELD');
                                 this.props.fmService.resetRevisedWaypoint();
                                 this.props.visible.set(false);
                             }}

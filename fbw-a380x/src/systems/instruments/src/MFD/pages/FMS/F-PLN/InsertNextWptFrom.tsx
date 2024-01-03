@@ -127,7 +127,13 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
                         </div>
                     </div>
                     <div style="display: flex; flex-direction: row; justify-content: space-between">
-                        <Button label="CANCEL" onClick={() => this.props.visible.set(false)} />
+                        <Button
+                            label="CANCEL"
+                            onClick={() => {
+                                Coherent.trigger('UNFOCUS_INPUT_FIELD');
+                                this.props.visible.set(false);
+                            }}
+                        />
                     </div>
                 </div>
             </div>

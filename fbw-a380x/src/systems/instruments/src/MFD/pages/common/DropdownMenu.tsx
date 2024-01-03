@@ -148,7 +148,9 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
         }));
 
         this.dropdownSelectorRef.instance.addEventListener('click', () => {
-            this.dropdownIsOpened.set(!this.dropdownIsOpened.get());
+            if (this.props.inactive.get() === false) {
+                this.dropdownIsOpened.set(!this.dropdownIsOpened.get());
+            }
         });
 
         // Close dropdown menu if clicked outside

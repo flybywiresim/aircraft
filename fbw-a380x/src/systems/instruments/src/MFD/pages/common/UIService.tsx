@@ -58,6 +58,9 @@ export class MfdUIService {
             return;
         }
 
+        // Before navigating, make sure that all input fields are un-focused
+        Coherent.trigger('UNFOCUS_INPUT_FIELD');
+
         if (uri === 'back') {
             if (this.navigationStack.length < 2) {
                 return;
