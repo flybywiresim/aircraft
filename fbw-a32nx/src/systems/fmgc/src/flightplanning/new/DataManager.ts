@@ -252,7 +252,7 @@ export class DataManager {
         const waypoint: LatLonWaypoint = {
             type: PilotWaypointType.LatLon,
             storedIndex: index,
-            waypoint: Fmgc.WaypointFactory.fromLocation(ident, coordinates),
+            waypoint: WaypointFactory.fromLocation(ident, coordinates),
         };
 
         if (stored) {
@@ -285,7 +285,7 @@ export class DataManager {
         const waypoint: PbxWaypoint = {
             type: PilotWaypointType.Pbx,
             storedIndex: index,
-            waypoint: Fmgc.WaypointFactory.fromLocation(ident, coordinates),
+            waypoint: WaypointFactory.fromLocation(ident, coordinates),
             pbxPlace1: place1.ident.substring(0, 5),
             pbxBearing1: bearing1,
             pbxPlace2: place2.ident.substring(0, 5),
@@ -319,7 +319,7 @@ export class DataManager {
         const waypoint: PbdWaypoint = {
             type: PilotWaypointType.Pbd,
             storedIndex: index,
-            waypoint: Fmgc.WaypointFactory.fromLocation(ident, coordinates),
+            waypoint: WaypointFactory.fromLocation(ident, coordinates),
             pbdPlace: origin.ident,
             pbdBearing: bearing,
             pbdDistance: distance,
