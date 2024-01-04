@@ -94,7 +94,7 @@ void LightingPresets_A32NX::readFromAircraft() {
   currentLightValues.wxTerrainBrtFoLevel = wxTerrainBrtFoLevel->readFromSim();
   currentLightValues.consoleLightFoLevel = consoleLightFoLevel->readFromSim();
   currentLightValues.dcduLeftLightLevel = dcduLeftLightLevel->readFromSim();
-  currentLightValues.dcduRightLightLevel = dcduLeftLightLevel->readFromSim();
+  currentLightValues.dcduRightLightLevel = dcduRightLightLevel->readFromSim();
   currentLightValues.mcduLeftLightLevel = mcduLeftLightLevel->readFromSim();
   currentLightValues.mcduRightLightLevel = mcduRightLightLevel->readFromSim();
   currentLightValues.ecamUpperLightLevel = ecamUpperLightLevel->readFromSim();
