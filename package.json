@@ -14,7 +14,7 @@
     "build-a32nx:efb-translation": "cd fbw-a32nx/src/localization && node build-flypad-translation.js",
     "build-a32nx:locPak-translation": "cd fbw-a32nx/src/localization && node build-locPak-translation.js",
 
-    "build-a32nx:model": "node fbw-a32nx/src/model/build.js",
+    "build-a32nx:model": "node fbw-a32nx/src/model/buildv2.js && node fbw-a32nx/src/model/build.js",
     "build-a32nx:behavior": "node fbw-a32nx/src/behavior/build.js",
 
     "build-a32nx:atsu-common": "node fbw-a32nx/src/systems/atsu/common/build.js",
@@ -63,7 +63,7 @@
     "build-a380x:flypad-backend": "cd fbw-a380x/src/wasm/flypad-backend && ./build.sh && wasm-opt -O1 --signext-lowering  -o /external/fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/flypad-backend.wasm /external/fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/flypad-backend.wasm",
 
     "build-a380x:metadata": "node scripts/metadata.js fbw-a380x/out/flybywire-aircraft-a380-842 a380x",
-    "build-a380x:manifest": "node scripts/build_a380x.js",
+    "build-a380x:manifest": "node scripts/build_a380x.js flybywire-aircraft-a380-842",
 
     "build-a380x:all": "npm run build-a380x:copy-base-files && npm run build-a380x:instruments && npm run build-a380x:systems && npm run build-a380x:fadec && npm run build-a380x:fbw && npm run build-a380x:flypad-backend && npm run build-a380x:metadata && build-a380x:manifest",
 

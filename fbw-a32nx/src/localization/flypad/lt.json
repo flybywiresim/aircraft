@@ -185,6 +185,7 @@
       "Title": "Išstumimas"
     },
     "Services": {
+      "AirStarterUnit": "Air Starter Unit",
       "BaggageTruck": "Bagažo sunkvežimis",
       "CateringTruck": "Maitinimo sunkvežimis",
       "Cones": "Saugumo kūgiai",
@@ -622,7 +623,8 @@
       "ReverserOnAxis": "Atbulinė trauka ant ašies",
       "SaveAndApply": "Išsaugoti ir taikyti",
       "SetFromThrottle": "Nustatyti iš droselio",
-      "ThrottleConfigurationReset": "Droselio konfiguracijos atstatymas"
+      "ThrottleConfigurationReset": "Droselio konfiguracijos atstatymas",
+      "TogaOnAxis": "TogaOnAxis"
     },
     "Title": "Nustatymai",
     "Unrealistic": "Nerealistiška",

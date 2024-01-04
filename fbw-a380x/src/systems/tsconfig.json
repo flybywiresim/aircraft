@@ -10,15 +10,15 @@
       "moduleResolution": "node",
       "allowSyntheticDefaultImports": true,
       "jsx": "react",
-        "paths": {
-            "@shared/*": ["./shared/src/*"],
-            "@instruments/common/*": ["./instruments/src/Common/*"],
-            "@atsu/*": ["./atsu/src/*"],
-            "@fmgc/*": ["./fmgc/src/*"],
-            "@flybywiresim/failures": ["failures"],
-            "@tcas/*": ["./tcas/src/*"],
-            "@typings/*": ["../typings"],
-            "@flybywiresim/fbw-sdk": ["../../../fbw-common/src/systems/index.ts"]
-        }
+      "paths": {
+        "@shared/*": ["./shared/src/*"],
+        "@instruments/common/*": ["./instruments/src/Common/*"],
+        "@atsu/*": ["./atsu/src/*"],
+        "@fmgc/*": ["./fmgc/src/*"],
+        "@flybywiresim/failures": ["failures"],
+        "@tcas/*": ["./tcas/src/*"],
+        "@typings/*": ["../typings"],
+        "@flybywiresim/fbw-sdk": ["../../../fbw-common/src/systems/index.ts"]
+      }
     }
 }

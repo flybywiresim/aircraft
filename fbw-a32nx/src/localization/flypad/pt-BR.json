@@ -185,6 +185,7 @@
       "Title": "Pushback"
     },
     "Services": {
+      "AirStarterUnit": "Air Starter Unit",
       "BaggageTruck": "Caminhão de bagagem",
       "CateringTruck": "Caminhão de refeições",
       "Cones": "Safety Cones",
@@ -622,7 +623,8 @@
       "ReverserOnAxis": "Eixo de reverso",
       "SaveAndApply": "Salvar e aplicar",
       "SetFromThrottle": "Definir através do acelerador",
-      "ThrottleConfigurationReset": "Redefinir configuração do acelerador"
+      "ThrottleConfigurationReset": "Redefinir configuração do acelerador",
+      "TogaOnAxis": "TogaOnAxis"
     },
     "Title": "Configurações",
     "Unrealistic": "Irrealista",

@@ -1,3 +1,6 @@
+// Copyright (c) 2023-2024 FlyByWire Simulations
+// SPDX-License-Identifier: GPL-3.0
+
 class A320_Neo_FCU extends BaseAirliners {
     constructor() {
         super();

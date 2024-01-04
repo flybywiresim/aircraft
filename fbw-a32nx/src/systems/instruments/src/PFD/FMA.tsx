@@ -816,10 +816,10 @@ class B1Cell extends ShowForSecondsComponent<CellProps> {
 
         this.boxPathStringSub.set(boxPathString);
 
-        // VS FPA has a smaller font than the other active modes
-        const VsFPA = this.activeVerticalModeSub.get() === 14 || this.activeVerticalModeSub.get() === 15;
+        // VS FPA & ALT CST* have a smaller font than the other active modes
+        const smallFont = this.activeVerticalModeSub.get() === 14 || this.activeVerticalModeSub.get() === 15 || this.activeVerticalModeSub.get() === 21;
 
-        this.activeVerticalModeClassSub.set(VsFPA ? 'FontMediumSmaller MiddleAlign Green' : 'FontMedium MiddleAlign Green');
+        this.activeVerticalModeClassSub.set(smallFont ? 'FontMediumSmaller MiddleAlign Green' : 'FontMedium MiddleAlign Green');
 
         this.fmaTextRef.instance.innerHTML = `<tspan>${text}</tspan><tspan xml:space="preserve" class=${inSpeedProtection ? 'PulseCyanFill' : 'Cyan'}>${additionalText}</tspan>`;
 
@@ -1072,7 +1072,7 @@ class C1Cell extends ShowForSecondsComponent<CellProps> {
 
         return (
             <g>
-                <path ref={this.modeChangedPathRef} class="NormalStroke White" visibility="hidden" d="m99.87 1.8143v6.0476h-31.075l1e-6 -6.0476z" />
+                <path ref={this.modeChangedPathRef} class="NormalStroke White" visibility="hidden" d="m99.87 1.8143v6.0476h-31.025l1e-6 -6.0476z" />
                 <text class="FontMedium MiddleAlign Green" x="84.856567" y="6.9873109">{this.textSub}</text>
             </g>
         );

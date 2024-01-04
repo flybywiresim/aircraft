@@ -7,7 +7,10 @@ export const CabAlt: React.FC<Position> = ({ x, y }) => {
     const [cabinAlt] = useSimVar('L:A32NX_PRESS_CABIN_ALTITUDE', 'feet', 500);
     const cabAlt50 = Math.round(cabinAlt / 50) * 50;
 
-    const [cabManMode] = useSimVar('L:A32NX_CAB_PRESS_MODE_MAN', 'bool', 500);
+    const [cabinAltTarget] = useSimVar('L:A32NX_PRESS_CABIN_ALTITUDE_TARGET', 'feet', 500);
+    const cabAltTarget50 = Math.round(cabinAltTarget / 50) * 50;
+
+    const [cabAltAutoMode] = useSimVar('L:A32NX_OVHD_PRESS_MAN_ALTITUDE_PB_IS_AUTO', 'bool', 500);
 
     const radius = 87;
     const startAngle = 212;
@@ -16,7 +19,7 @@ export const CabAlt: React.FC<Position> = ({ x, y }) => {
 
     return (
         <g id="DeltaPressure">
-            <text className="F29 LS1 Center Green" x={x - 117} y={y - 142}>{!cabManMode ? 'AUTO' : 'MAN'}</text>
+            <text className="F29 LS1 Center Green" x={x - 117} y={y - 142}>{cabAltAutoMode ? 'AUTO' : 'MAN'}</text>
             <text className="F29 LS1 Center White" x={x - 26} y={y - 142}>CAB ALT</text>
             <text className="F24 Center Cyan" x={x - 10} y={y - 105}>FT</text>
             <text className={`F35 EndAlign ${cabAlt50 >= 9550 ? 'Red' : 'Green'}`} x={x + 108} y={y + 66}>
@@ -116,7 +119,7 @@ export const CabAlt: React.FC<Position> = ({ x, y }) => {
                     multiplierOuter={1.01}
                 />
                 <ThrottlePositionDonutComponent
-                    value={cabAlt50 / 1000} // TODO: Change this once we have cabin altitude target modelled
+                    value={cabAltTarget50 / 1000}
                     x={x}
                     y={y}
                     min={-0.6}
@@ -124,7 +127,7 @@ export const CabAlt: React.FC<Position> = ({ x, y }) => {
                     radius={radius}
                     startAngle={startAngle}
                     endAngle={endAngle}
-                    className={`SW3 NoFill ${!cabManMode ? 'Magenta' : 'Cyan'}`}
+                    className={`SW3 NoFill ${cabAltAutoMode ? 'Magenta' : 'Cyan'}`}
                     outerMultiplier={1.1}
                     donutRadius={6}
                 />

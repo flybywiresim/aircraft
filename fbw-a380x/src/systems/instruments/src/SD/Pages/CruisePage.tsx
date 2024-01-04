@@ -2,5 +2,5 @@ import React from 'react';
 import { PageTitle } from './Generic/PageTitle';
 
 export const CruisePage = () => (
-    <PageTitle showMore={false} x={5} y={28}>CRUISE</PageTitle>
+    <PageTitle x={6} y={29}>CRUISE</PageTitle>
 );

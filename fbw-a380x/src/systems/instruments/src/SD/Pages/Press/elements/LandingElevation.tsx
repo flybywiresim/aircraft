@@ -4,7 +4,7 @@ import { Position } from '@instruments/common/types';
 
 
 const LandingElevation: React.FC<Position> = ({ x, y }) => {
-    const [landingElev] = useSimVar('L:A32NX_OVHD_PRESS_LDG_ELEV_KNOB', 'feet', 100);
+    const [landingElev] = useSimVar('L:A32NX_FM1_LANDING_ELEVATION', 'feet', 100);
 
     const ldgElevValue = Math.round(landingElev / 50) * 50;
 

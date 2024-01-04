@@ -12,6 +12,7 @@ import { Arinc429Values } from './shared/ArincValueProvider';
 import { HorizontalTape } from './HorizontalTape';
 import { SimplaneValues } from './shared/SimplaneValueProvider';
 import { getDisplayIndex } from './PFD';
+import { ArincEventBus } from "@flybywiresim/fbw-sdk";
 
 const DisplayRange = 35;
 const DistanceSpacing = 15;
@@ -88,7 +89,7 @@ class HeadingBug extends DisplayComponent<{bus: EventBus, isCaptainSide: boolean
 }
 
 interface HorizonProps {
-    bus: EventBus;
+    bus: ArincEventBus;
     instrument: BaseInstrument;
     isAttExcessive: Subscribable<boolean>;
     filteredRadioAlt: Subscribable<number>;
@@ -105,7 +106,7 @@ export class Horizon extends DisplayComponent<HorizonProps> {
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const apfd = this.props.bus.getSubscriber<Arinc429Values>();
+        const apfd = this.props.bus.getArincSubscriber<Arinc429Values>();
 
         apfd.on('pitchAr').withArinc429Precision(3).handle((pitch) => {
             const multiplier = 1000;
@@ -436,7 +437,7 @@ class RadioAltAndDH extends DisplayComponent<{ bus: EventBus, filteredRadioAltit
 }
 
 interface SideslipIndicatorProps {
-    bus: EventBus;
+    bus: ArincEventBus;
     instrument: BaseInstrument;
 }
 
@@ -468,7 +469,7 @@ class SideslipIndicator extends DisplayComponent<SideslipIndicatorProps> {
     onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        const sub = this.props.bus.getSubscriber<PFDSimvars & Arinc429Values>();
+        const sub = this.props.bus.getArincSubscriber<PFDSimvars & Arinc429Values>();
 
         sub.on('leftMainGearCompressed').whenChanged().handle((og) => {
             this.leftMainGearCompressed = og;
