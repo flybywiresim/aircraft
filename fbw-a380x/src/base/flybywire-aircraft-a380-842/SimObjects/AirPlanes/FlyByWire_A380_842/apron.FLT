@@ -1,3 +1,6 @@
+; Copyright (c) 2023-2024 FlyByWire Simulations
+; SPDX-License-Identifier: GPL-3.0
+
 [SimVars.0]
 PVelBodyAxis=0
 BVelBodyAxis=0
@@ -51,7 +54,7 @@ CowlFlapPct=0
 FuelPumpSwitch=False
 FuelPumpSwitch_EX1=0
 CarbHeat/DeiceSwitch=False
-EngineMasterSwitch=False
+EngineMasterSwitch=True
 GlowPlugTemperaturePct=1
 IgnitionSwitch=1
 Afterburner=0
@@ -70,7 +73,7 @@ CowlFlapPct=0
 FuelPumpSwitch=False
 FuelPumpSwitch_EX1=0
 CarbHeat/DeiceSwitch=False
-EngineMasterSwitch=False
+EngineMasterSwitch=True
 GlowPlugTemperaturePct=1
 IgnitionSwitch=1
 Afterburner=0
@@ -89,7 +92,7 @@ CowlFlapPct=0
 FuelPumpSwitch=False
 FuelPumpSwitch_EX1=0
 CarbHeat/DeiceSwitch=False
-EngineMasterSwitch=False
+EngineMasterSwitch=True
 GlowPlugTemperaturePct=1
 IgnitionSwitch=1
 Afterburner=0
@@ -108,7 +111,7 @@ CowlFlapPct=0
 FuelPumpSwitch=False
 FuelPumpSwitch_EX1=0
 CarbHeat/DeiceSwitch=False
-EngineMasterSwitch=False
+EngineMasterSwitch=True
 GlowPlugTemperaturePct=1
 IgnitionSwitch=1
 Afterburner=0

@@ -1,3 +1,6 @@
+<!-- Copyright (c) 2023-2024 FlyByWire Simulations -->
+<!-- SPDX-License-Identifier: GPL-3.0 -->
+
 <ModelBehaviors>
     <Template Name="FBW_RADIO_MANAGEMENT_PANEL_Template">
         <UseTemplate Name="FBW_RMP_CONTROLS_Template"/>
