@@ -12,10 +12,10 @@ class MsfsHandler;
 // Struct to hold all relevant light levels for the A32NX
 struct LightingValues_A32NX {
   // EFB
-  FLOAT64 efbBrightness;  // A32NX_EFB_BRIGHTNESS
+  FLOAT64 efbBrightness;  // A32NX_EFB_BRIGHTNESS 0..100
   // OVHD
   FLOAT64 cabinLightLevel;         // 7 (0, 50, 100)
-  FLOAT64 ovhdIntegralLightLevel;  // 86
+  FLOAT64 ovhdIntegralLightLevel;  // 86 (0..100)
   // Glareshield
   FLOAT64 glareshieldIntegralLightLevel;  // 84
   FLOAT64 glareshieldLcdLightLevel;       // 87
