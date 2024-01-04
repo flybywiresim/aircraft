@@ -79,6 +79,15 @@
         - ELEC_IDG_3
         - ELEC_IDG_4
 
+- A32NX_OVHD_{name}_PB_IS_DISC
+    - Bool
+    - True when the idg is disconnected
+    - {name}
+        - ELEC_IDG_1
+        - ELEC_IDG_2
+        - ELEC_IDG_3
+        - ELEC_IDG_4
+
 - A32NX_OVHD_ELEC_AC_ESS_FEED_PB_IS_NORMAL
     - Bool
     - True when the AC ESS FEED push button is NORMAL
