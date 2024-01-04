@@ -1,0 +1,145 @@
+<!-- Copyright (c) 2023 FlyByWire Simulations -->
+<!-- SPDX-License-Identifier: GPL-3.0 -->
+
+<PlaneHTMLConfig>
+    <Instrument>
+        <Name>AS3X_Touch_1</Name>
+        <SyntheticVision>False</SyntheticVision>
+        <AltimeterIndex>0</AltimeterIndex>
+        <TactileOnly>False</TactileOnly>
+        <ReversionaryMode>False</ReversionaryMode>
+        <RadarAltitude>True</RadarAltitude>
+    </Instrument>
+    <Logic>
+        <Handler>Systems_AS1000</Handler>
+        <PFD>AS3X_Touch_1</PFD>
+    </Logic>
+    <EngineDisplay>
+        <Text>
+            <Center>Prop</Center>
+        </Text>
+        <ColumnsGroup>
+            <Column>
+                <Gauge>
+                    <Type>Circular</Type>
+                    <Style>
+                        <BeginAngle>-10</BeginAngle>
+                        <EndAngle>170</EndAngle>
+                        <CursorType>Triangle</CursorType>
+                        <ValuePos>End</ValuePos>
+                    </Style>
+                    <BeginText></BeginText>
+                    <EndText></EndText>
+                    <ID>RPM1_Gauge</ID>
+                    <Title></Title>
+                    <Unit></Unit>
+                    <Minimum>0</Minimum>
+                    <Maximum>2200</Maximum>
+                    <Value>
+                        <Simvar name="PROP RPM:1" unit="rpm"/>
+                    </Value>
+                    <ColorZone>
+                        <Color>green</Color>
+                        <Begin>1950</Begin>
+                        <End>2050</End>
+                    </ColorZone>
+                    <ColorZone>
+                        <Color>yellow</Color>
+                        <Begin>450</Begin>
+                        <End>1000</End>
+                    </ColorZone>
+                    <ColorLine>
+                        <Color>red</Color>
+                        <Position>2050</Position>
+                    </ColorLine>
+                    <RedBlink>
+                        <Greater>
+                            <Simvar name="PROP RPM:1" unit="rpm"/>
+                            <Constant>2050</Constant>
+                        </Greater>
+                    </RedBlink>
+                </Gauge>
+            </Column>
+            <Column>
+                <Gauge>
+                    <Type>Circular</Type>
+                    <Style>
+                        <BeginAngle>-10</BeginAngle>
+                        <EndAngle>170</EndAngle>
+                        <CursorType>Triangle</CursorType>
+                        <ValuePos>End</ValuePos>
+                    </Style>
+                    <BeginText></BeginText>
+                    <EndText></EndText>
+                    <ID>RPM2_Gauge</ID>
+                    <Title></Title>
+                    <Unit></Unit>
+                    <Minimum>0</Minimum>
+                    <Maximum>2200</Maximum>
+                    <Value>
+                        <Simvar name="PROP RPM:2" unit="rpm"/>
+                    </Value>
+                    <ColorZone>
+                        <Color>green</Color>
+                        <Begin>1950</Begin>
+                        <End>2050</End>
+                    </ColorZone>
+                    <ColorZone>
+                        <Color>yellow</Color>
+                        <Begin>450</Begin>
+                        <End>1000</End>
+                    </ColorZone>
+                    <ColorLine>
+                        <Color>red</Color>
+                        <Position>2050</Position>
+                    </ColorLine>
+                    <RedBlink>
+                        <Greater>
+                            <Simvar name="PROP RPM:1" unit="rpm"/>
+                            <Constant>2050</Constant>
+                        </Greater>
+                    </RedBlink>
+                </Gauge>
+            </Column>
+        </ColumnsGroup>
+        <Text>
+            <Left fontsize="8" id="OilPressGauge_1">
+                <ToFixed precision="0">
+                    <Simvar name="GENERAL ENG OIL PRESSURE:1" unit="psi"/>
+                </ToFixed>
+            </Left>
+            <Center  id="OilPressText" fontsize="8">Oil Press</Center>
+            <Right fontsize="8" id="OilPressGauge_2">
+                <ToFixed precision="0">
+                    <Simvar name="GENERAL ENG OIL PRESSURE:2" unit="psi"/>
+                </ToFixed>
+            </Right>
+        </Text>
+        <Text>
+            <Left fontsize="8">
+                <ToFixed precision="0">
+                    <Simvar name="GENERAL ENG OIL TEMPERATURE:1" unit="celsius"/>
+                </ToFixed>
+            </Left>
+            <Center fontsize="8">Oil Temp</Center>
+            <Right fontsize="8">
+                <ToFixed precision="0">
+                    <Simvar name="GENERAL ENG OIL TEMPERATURE:2" unit="celsius"/>
+                </ToFixed>
+            </Right>
+        </Text>
+        <Text>
+            <Left fontsize="8">
+                <ToFixed precision="0">
+                    <Simvar name="ENG FUEL FLOW GPH:1" unit="Gallons per hour"/>
+                </ToFixed>
+            </Left>
+            <Center fontsize="8">Fuel Flow</Center>
+            <Right fontsize="8">
+                <ToFixed precision="0">
+                    <Simvar name="ENG FUEL FLOW GPH:2" unit="Gallons per hour"/>
+                </ToFixed>
+            </Right>
+        </Text>
+    </EngineDisplay>
+</PlaneHTMLConfig>

@@ -15,9 +15,9 @@ use crate::{
 };
 use std::marker::PhantomData;
 use std::time::Duration;
+use uom::si::pressure::bar;
 use uom::si::{
-    f64::*, length::foot, power::watt, pressure::psi, ratio::percent,
-    thermodynamic_temperature::degree_celsius,
+    f64::*, power::watt, pressure::psi, ratio::percent, thermodynamic_temperature::degree_celsius,
 };
 
 pub(super) struct ElectronicControlBox<C: ApuConstants> {
@@ -52,6 +52,8 @@ pub(super) struct ElectronicControlBox<C: ApuConstants> {
     egt_warning_temperature: ThermodynamicTemperature,
     n_above_95_duration: Duration,
     fire_button_is_released: bool,
+    /** Absolute air pressure sensor in the air intake assembly. */
+    inlet_pressure: Pressure,
 
     constants: PhantomData<C>,
 }
@@ -95,6 +97,7 @@ impl<C: ApuConstants> ElectronicControlBox<C> {
             ),
             n_above_95_duration: Duration::from_secs(0),
             fire_button_is_released: false,
+            inlet_pressure: Pressure::new::<bar>(0.94),
 
             constants: PhantomData,
         }
@@ -130,6 +133,11 @@ impl<C: ApuConstants> ElectronicControlBox<C> {
         self.air_intake_flap_open_amount = air_intake_flap.open_amount();
     }
 
+    pub fn update_air_intake_state(&mut self, context: &UpdateContext) {
+        // FIXME simulate sensor failure (with fallback value logic)
+        self.inlet_pressure = context.ambient_pressure();
+    }
+
     pub fn update_start_motor_state(&mut self, start_motor: &impl ApuStartMotor) {
         self.start_motor_is_powered = start_motor.is_powered();
 
@@ -143,16 +151,15 @@ impl<C: ApuConstants> ElectronicControlBox<C> {
     }
 
     pub fn update(&mut self, context: &UpdateContext, turbine: &dyn Turbine) {
+        self.update_air_intake_state(context);
+
         self.n2 = turbine.n2();
         self.n = turbine.n();
         self.egt = turbine.egt();
         self.turbine_state = turbine.state();
         self.bleed_air_pressure = turbine.bleed_air_pressure();
-        self.egt_warning_temperature = ElectronicControlBox::<C>::calculate_egt_warning_temperature(
-            context,
-            &self.turbine_state,
-        );
 
+        self.egt_warning_temperature = self.calculate_egt_warning_temperature(&self.turbine_state);
         if self.n.get::<percent>() > 95. {
             self.n_above_95_duration += context.delta();
         } else {
@@ -192,7 +199,7 @@ impl<C: ApuConstants> ElectronicControlBox<C> {
     }
 
     fn calculate_egt_warning_temperature(
-        context: &UpdateContext,
+        &self,
         turbine_state: &TurbineState,
     ) -> ThermodynamicTemperature {
         let running_warning_temperature =
@@ -202,7 +209,9 @@ impl<C: ApuConstants> ElectronicControlBox<C> {
             TurbineState::Starting => {
                 const STARTING_WARNING_EGT_BELOW_25000_FEET: f64 = 900.;
                 const STARTING_WARNING_EGT_AT_OR_ABOVE_25000_FEET: f64 = 982.;
-                if context.indicated_altitude().get::<foot>() < 25_000. {
+                let fl250_isa_pressure = Pressure::new::<psi>(5.45);
+
+                if self.inlet_pressure > fl250_isa_pressure {
                     ThermodynamicTemperature::new::<degree_celsius>(
                         STARTING_WARNING_EGT_BELOW_25000_FEET,
                     )

@@ -403,7 +403,9 @@ mod tests {
     use rstest::{fixture, rstest};
     use std::time::Duration;
     use uom::si::{
-        length::foot, power::watt, pressure::psi, ratio::percent,
+        power::watt,
+        pressure::{bar, psi},
+        ratio::percent,
         thermodynamic_temperature::degree_celsius,
     };
 
@@ -688,8 +690,8 @@ mod tests {
         C: ApuConstants,
         const N: usize,
     > {
+        ambient_pressure: Pressure,
         ambient_temperature: ThermodynamicTemperature,
-        indicated_altitude: Length,
         test_bed: SimulationTestBed<AuxiliaryPowerUnitTestAircraft<T, U, C, N>>,
     }
     impl<T: ApuGenerator, U: ApuStartMotor, C: ApuConstants, const N: usize>
@@ -699,8 +701,8 @@ mod tests {
         ) -> AuxiliaryPowerUnitTestBed<Aps3200ApuGenerator, Aps3200StartMotor, Aps3200Constants, 1>
         {
             let mut apu_test_bed = AuxiliaryPowerUnitTestBed {
+                ambient_pressure: Pressure::new::<bar>(1.),
                 ambient_temperature: ThermodynamicTemperature::new::<degree_celsius>(0.),
-                indicated_altitude: Length::new::<foot>(5000.),
                 test_bed: SimulationTestBed::new(
                     AuxiliaryPowerUnitTestAircraft::<
                         Aps3200ApuGenerator,
@@ -720,8 +722,8 @@ mod tests {
         ) -> AuxiliaryPowerUnitTestBed<Pw980ApuGenerator, Pw980StartMotor, Pw980Constants, 2>
         {
             let mut apu_test_bed = AuxiliaryPowerUnitTestBed {
+                ambient_pressure: Pressure::new::<bar>(1.),
                 ambient_temperature: ThermodynamicTemperature::new::<degree_celsius>(0.),
-                indicated_altitude: Length::new::<foot>(5000.),
                 test_bed: SimulationTestBed::new(
                     AuxiliaryPowerUnitTestAircraft::<
                         Pw980ApuGenerator,
@@ -859,13 +861,13 @@ mod tests {
             self.running_apu()
         }
 
-        fn ambient_temperature(mut self, ambient: ThermodynamicTemperature) -> Self {
-            self.ambient_temperature = ambient;
+        fn ambient_pressure(mut self, ambient: Pressure) -> Self {
+            self.ambient_pressure = ambient;
             self
         }
 
-        fn indicated_altitude(mut self, indicated_altitute: Length) -> Self {
-            self.indicated_altitude = indicated_altitute;
+        fn ambient_temperature(mut self, ambient: ThermodynamicTemperature) -> Self {
+            self.ambient_temperature = ambient;
             self
         }
 
@@ -894,7 +896,7 @@ mod tests {
 
         pub fn run(mut self, delta: Duration) -> Self {
             self.set_ambient_temperature(self.ambient_temperature);
-            self.set_indicated_altitude(self.indicated_altitude);
+            self.set_ambient_pressure(self.ambient_pressure);
 
             // As the APU update executes before power is distributed throughout
             // the aircraft, not all elements have received power yet if only one run
@@ -1847,7 +1849,7 @@ mod tests {
             let mut test_bed = bed_with
                 .starting_apu()
                 .and()
-                .indicated_altitude(Length::new::<foot>(24999.))
+                .ambient_pressure(Pressure::new::<psi>(5.46))
                 .run(Duration::from_secs(1));
 
             assert_about_eq!(
@@ -1876,7 +1878,7 @@ mod tests {
             let mut test_bed = bed_with
                 .starting_apu()
                 .and()
-                .indicated_altitude(Length::new::<foot>(25000.00001))
+                .ambient_pressure(Pressure::new::<psi>(5.44))
                 .run(Duration::from_secs(1));
 
             assert_about_eq!(
