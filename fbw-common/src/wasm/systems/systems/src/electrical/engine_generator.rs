@@ -103,14 +103,10 @@ impl<Drive: EngineGeneratorDrive> EngineGenerator<Drive> {
             return;
         }
 
-        let new_time = if self.frequency_normal()
-            && self.time_above_threshold < INTEGRATED_DRIVE_GENERATOR_STABILIZATION_TIME
-        {
+        let new_time = if self.frequency_normal() {
             self.time_above_threshold + context.delta()
-        } else if !self.frequency_normal() && self.time_above_threshold > Duration::ZERO {
-            self.time_above_threshold - context.delta().min(self.time_above_threshold)
         } else {
-            self.time_above_threshold
+            Duration::ZERO
         };
 
         self.time_above_threshold = new_time.clamp(
@@ -566,6 +562,10 @@ mod tests {
             fn generator_is_powered(&mut self) -> bool {
                 self.query_elec(|a, elec| a.generator_is_powered(elec))
             }
+
+            fn generator_provides_stable_power_output(&self) -> bool {
+                self.query(|a| a.generator_output_within_normal_parameters())
+            }
         }
         impl TestBed for EngineGeneratorTestBed {
             type Aircraft = TestAircraft;
@@ -635,17 +635,25 @@ mod tests {
             fn generator_output_within_normal_parameters_after_processing_power_consumption_report(
                 &self,
             ) -> bool {
-                self.engine_gen.output_within_normal_parameters()
+                self.generator_output_within_normal_parameters()
             }
 
             fn shutdown_engine(&mut self) {
                 self.running = false;
             }
 
+            fn start_engine(&mut self) {
+                self.running = true;
+            }
+
             fn generator_output_within_normal_parameters_before_processing_power_consumption_report(
                 &self,
             ) -> bool {
                 self.generator_output_within_normal_parameters_before_processing_power_consumption_report
+            }
+
+            fn generator_output_within_normal_parameters(&self) -> bool {
+                self.engine_gen.output_within_normal_parameters()
             }
         }
         impl Aircraft for TestAircraft {
@@ -673,6 +681,46 @@ mod tests {
 
                 visitor.visit(self);
             }
+        }
+
+        #[test]
+        fn starts_unstable_with_engines_off() {
+            let mut test_bed = EngineGeneratorTestBed::with_shutdown_engine();
+            test_bed.run_without_delta();
+
+            assert!(!test_bed.generator_provides_stable_power_output());
+        }
+
+        #[test]
+        fn starts_stable_with_engines_on() {
+            let mut test_bed = EngineGeneratorTestBed::with_running_engine();
+            test_bed.run_without_delta();
+
+            assert!(test_bed.generator_provides_stable_power_output());
+        }
+
+        #[test]
+        fn becomes_stable_once_engine_above_threshold_for_500_milliseconds() {
+            // First enforcing engine in off state
+            let mut test_bed = EngineGeneratorTestBed::with_shutdown_engine();
+            test_bed.run_without_delta();
+
+            test_bed.command(|a| a.start_engine());
+            test_bed.run_with_delta(Duration::from_millis(500));
+
+            assert!(test_bed.generator_provides_stable_power_output());
+        }
+
+        #[test]
+        fn does_not_become_stable_before_engine_above_threshold_for_500_milliseconds() {
+            // First enforcing engine in off state
+            let mut test_bed = EngineGeneratorTestBed::with_shutdown_engine();
+            test_bed.run_without_delta();
+
+            test_bed.command(|a| a.start_engine());
+            test_bed.run_with_delta(Duration::from_millis(499));
+
+            assert!(!test_bed.generator_provides_stable_power_output());
         }
 
         #[test]
@@ -950,19 +998,39 @@ mod tests {
     }
 
     #[cfg(test)]
-    mod integrated_drive_generator_tests {
-        use crate::simulation::test::{ElementCtorFn, SimulationTestBed, TestBed};
-
+    mod engine_generator_drive_tests {
         use super::*;
+        use crate::simulation::test::{ElementCtorFn, SimulationTestBed, TestBed};
+        use rstest::rstest;
         use std::time::Duration;
+
+        trait OilOutletTemperature {
+            fn get_oil_outlet_temperature(&self) -> ThermodynamicTemperature;
+        }
+        impl OilOutletTemperature for ConstantSpeedDrive {
+            fn get_oil_outlet_temperature(&self) -> ThermodynamicTemperature {
+                self.oil_outlet_temperature
+            }
+        }
+        impl OilOutletTemperature for DirectDrive {
+            fn get_oil_outlet_temperature(&self) -> ThermodynamicTemperature {
+                self.oil_outlet_temperature
+            }
+        }
 
         fn idg(context: &mut InitContext) -> ConstantSpeedDrive {
             ConstantSpeedDrive::new(context, 1)
         }
 
-        #[test]
-        fn writes_its_state() {
-            let mut test_bed = SimulationTestBed::from(ElementCtorFn(idg));
+        fn vfg(context: &mut InitContext) -> DirectDrive {
+            DirectDrive::new(context, 1)
+        }
+
+        #[rstest]
+        #[case(idg)]
+        #[case(vfg)]
+        fn writes_its_state<T: SimulationElement>(#[case] drive: fn(&mut InitContext) -> T) {
+            let mut test_bed = SimulationTestBed::from(ElementCtorFn(drive));
             test_bed.run();
 
             assert!(
@@ -971,117 +1039,99 @@ mod tests {
             assert!(test_bed.contains_variable_with_name("ELEC_ENG_GEN_1_IDG_IS_CONNECTED"));
         }
 
-        /*#[test]
-        fn starts_unstable_with_engines_off() {
-            let mut test_bed = SimulationTestBed::from(ElementCtorFn(idg))
-                .with_update_after_power_distribution(engine_not_running);
-            test_bed.run_without_delta();
-
-            assert!(!test_bed.query_element(|e| e.provides_stable_power_output()));
-        }
-
-        #[test]
-        fn starts_stable_with_engines_on() {
-            let mut test_bed = SimulationTestBed::from(ElementCtorFn(idg))
-                .with_update_after_power_distribution(engine_running_above_threshold(false));
-            test_bed.run_without_delta();
-
-            assert!(test_bed.query_element(|e| e.provides_stable_power_output()));
-        }
-
-        #[test]
-        fn becomes_stable_once_engine_above_threshold_for_500_milliseconds() {
-            // First enforcing engine in off state
-            let mut test_bed = SimulationTestBed::from(ElementCtorFn(idg))
-                .with_update_after_power_distribution(engine_not_running);
-            test_bed.run_without_delta();
-
-            let mut test_bed = SimulationTestBed::from(ElementCtorFn(idg))
+        #[rstest]
+        #[case(idg)]
+        #[case(vfg)]
+        fn running_engine_warms_up_drive<
+            T: SimulationElement + EngineGeneratorDrive + OilOutletTemperature + 'static,
+        >(
+            #[case] drive: fn(&mut InitContext) -> T,
+        ) {
+            let mut test_bed = SimulationTestBed::from(ElementCtorFn(drive))
                 .with_update_after_power_distribution(engine_running_above_threshold(false));
 
-            test_bed.run_with_delta(Duration::from_millis(500));
-
-            assert!(test_bed.query_element(|e| e.provides_stable_power_output()));
-        }
-
-        #[test]
-        fn does_not_become_stable_before_engine_above_threshold_for_500_milliseconds() {
-            // First enforcing engine in off state
-            let mut test_bed = SimulationTestBed::from(ElementCtorFn(idg))
-                .with_update_after_power_distribution(engine_not_running);
-            test_bed.run_without_delta();
-
-            test_bed.set_update_after_power_distribution(engine_running_above_threshold(false));
-            test_bed.run_with_delta(Duration::from_millis(499));
-
-            assert!(!test_bed.query_element(|e| e.provides_stable_power_output()));
-        }
-
-        #[test]
-        fn cannot_reconnect_once_disconnected() {
-            let mut test_bed = SimulationTestBed::from(ElementCtorFn(idg))
-                .with_update_after_power_distribution(engine_running_above_threshold(true));
-            test_bed.run_with_delta(Duration::from_millis(500));
-
-            test_bed.set_update_after_power_distribution(engine_running_above_threshold(false));
-            test_bed.run_with_delta(Duration::from_millis(500));
-
-            assert!(!test_bed.query_element(|e| e.provides_stable_power_output()));
-        }*/
-
-        #[test]
-        fn running_engine_warms_up_idg() {
-            let mut test_bed = SimulationTestBed::from(ElementCtorFn(idg))
-                .with_update_after_power_distribution(engine_running_above_threshold(false));
-
-            let starting_temperature = test_bed.query_element(|e| e.oil_outlet_temperature);
+            let starting_temperature = test_bed.query_element(|e| e.get_oil_outlet_temperature());
 
             test_bed.run_with_delta(Duration::from_secs(10));
 
-            assert!(test_bed.query_element(|e| e.oil_outlet_temperature) > starting_temperature);
+            assert!(
+                test_bed.query_element(|e| e.get_oil_outlet_temperature()) > starting_temperature
+            );
         }
 
-        #[test]
-        fn running_engine_does_not_warm_up_idg_when_disconnected() {
-            let mut test_bed = SimulationTestBed::from(ElementCtorFn(idg))
+        #[rstest]
+        #[case(idg)]
+        #[case(vfg)]
+        fn running_engine_does_not_warm_up_drive_when_disconnected<
+            T: SimulationElement + EngineGeneratorDrive + OilOutletTemperature + 'static,
+        >(
+            #[case] drive: fn(&mut InitContext) -> T,
+        ) {
+            let mut test_bed = SimulationTestBed::from(ElementCtorFn(drive))
                 .with_update_after_power_distribution(engine_running_above_threshold(true));
 
-            let starting_temperature = test_bed.query_element(|e| e.oil_outlet_temperature);
+            let starting_temperature = test_bed.query_element(|e| e.get_oil_outlet_temperature());
 
             test_bed.run_with_delta(Duration::from_secs(10));
 
             assert_eq!(
-                test_bed.query_element(|e| e.oil_outlet_temperature),
+                test_bed.query_element(|e| e.get_oil_outlet_temperature()),
                 starting_temperature
             );
         }
 
-        #[test]
-        fn shutdown_engine_cools_down_idg() {
-            let mut test_bed = SimulationTestBed::from(ElementCtorFn(idg))
+        #[rstest]
+        #[case(idg)]
+        #[case(vfg)]
+        fn shutdown_engine_cools_down_drive<
+            T: SimulationElement + EngineGeneratorDrive + OilOutletTemperature + 'static,
+        >(
+            #[case] drive: fn(&mut InitContext) -> T,
+        ) {
+            let mut test_bed = SimulationTestBed::from(ElementCtorFn(drive))
                 .with_update_after_power_distribution(engine_running_above_threshold(false));
             test_bed.run_with_delta(Duration::from_secs(10));
 
-            let starting_temperature = test_bed.query_element(|e| e.oil_outlet_temperature);
+            let starting_temperature = test_bed.query_element(|e| e.get_oil_outlet_temperature());
 
             test_bed.set_update_after_power_distribution(engine_not_running);
             test_bed.run_with_delta(Duration::from_secs(10));
 
-            assert!(test_bed.query_element(|e| e.oil_outlet_temperature) < starting_temperature);
+            assert!(
+                test_bed.query_element(|e| e.get_oil_outlet_temperature()) < starting_temperature
+            );
         }
 
-        fn engine_not_running(idg: &mut ConstantSpeedDrive, context: &UpdateContext) {
-            idg.update(context, &TestEngine::new(Ratio::new::<percent>(0.)))
+        #[rstest]
+        #[case(idg)]
+        #[case(vfg)]
+        fn cannot_reconnect_once_disconnected<
+            T: SimulationElement + EngineGeneratorDrive + 'static,
+        >(
+            #[case] drive: fn(&mut InitContext) -> T,
+        ) {
+            let mut test_bed = SimulationTestBed::from(ElementCtorFn(drive))
+                .with_update_after_power_distribution(engine_running_above_threshold(true));
+            test_bed.run_with_delta(Duration::from_millis(500));
+
+            test_bed.set_update_after_power_distribution(engine_running_above_threshold(false));
+            test_bed.run_with_delta(Duration::from_millis(500));
+
+            assert!(!test_bed.query_element(|e| e.is_connected()));
         }
 
-        fn engine_running_above_threshold(
+        fn engine_not_running(drive: &mut impl EngineGeneratorDrive, context: &UpdateContext) {
+            drive.update_drive(context, &TestEngine::new(Ratio::new::<percent>(0.)))
+        }
+
+        fn engine_running_above_threshold<T: EngineGeneratorDrive>(
             idg_push_button_is_released: bool,
-        ) -> impl Fn(&mut ConstantSpeedDrive, &UpdateContext) {
-            move |idg: &mut ConstantSpeedDrive, context: &UpdateContext| {
+        ) -> impl Fn(&mut T, &UpdateContext) {
+            move |drive: &mut T, context: &UpdateContext| {
                 if idg_push_button_is_released {
-                    idg.disconnect()
+                    drive.disconnect()
                 }
-                idg.update(context, &TestEngine::new(Ratio::new::<percent>(80.)))
+                drive.update_drive(context, &TestEngine::new(Ratio::new::<percent>(80.)))
             }
         }
     }
