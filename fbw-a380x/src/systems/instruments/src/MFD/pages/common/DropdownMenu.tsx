@@ -109,7 +109,7 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
             // Remove click handlers
             array.forEach((val, i) => {
                 if (document.getElementById(`${this.props.idPrefix}_${i}`)) {
-                    document.getElementById(`${this.props.idPrefix}_${i}`).removeEventListener('click', () => this.clickHandler(i, this));
+                    document.getElementById(`${this.props.idPrefix}_${i}`)?.removeEventListener('click', () => this.clickHandler(i, this));
                 }
             });
 
@@ -133,7 +133,7 @@ export class DropdownMenu extends DisplayComponent<DropdownMenuProps> {
 
             // Add click handlers
             array.forEach((val, i) => {
-                document.getElementById(`${this.props.idPrefix}_${i}`).addEventListener('click', () => this.clickHandler(i, this));
+                document.getElementById(`${this.props.idPrefix}_${i}`)?.addEventListener('click', () => this.clickHandler(i, this));
             });
         }));
 

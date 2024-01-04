@@ -20,17 +20,17 @@ const vls = [
         (m: number) => vlsConf0(m),
         (m: number) => vlsConf0(m),
         (m: number) => vlsConf0(m),
-        (m: number) => vlsConf0(m)
+        (m: number) => vlsConf0(m),
     ], // Clean Config
     [
-        (m: number) => interpolateForCgAndWeight(undefined, (cgS) => cgS, 127, 123),
+        () => interpolateForCgAndWeight(undefined, (cgS) => cgS, 127, 123),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.10 * (m - 600), 127, 123),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.09 * (m - 700), 137, 133),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.09 * (m - 800), 146, 143),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.09 * (m - 900), 155, 151),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.08 * (m - 1000), 164, 159),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.07 * (m - 1100), 172, 167),
-        (m: number) => interpolateForCgAndWeight(undefined, (cgS) => cgS, 179, 175),
+        () => interpolateForCgAndWeight(undefined, (cgS) => cgS, 179, 175),
     ], // Config 1 + F
     [
         () => interpolateForCgAndWeight(undefined, (cgS) => cgS, 122, 120),
@@ -40,40 +40,39 @@ const vls = [
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.09 * (m - 900), 149, 146),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.07 * (m - 1000), 158, 153),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.08 * (m - 1100), 165, 161),
-        (m: number) => interpolateForCgAndWeight(undefined, (cgS) => cgS, 173, 168),
+        () => interpolateForCgAndWeight(undefined, (cgS) => cgS, 173, 168),
     ], // Config 2
     [
-        (m: number) => interpolateForCgAndWeight(undefined, (cgS) => cgS, 120, 120),
+        () => interpolateForCgAndWeight(undefined, (cgS) => cgS, 120, 120),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.08 * (m - 600), 120, 120),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.09 * (m - 700), 128, 124),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.08 * (m - 800), 137, 133),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.08 * (m - 900), 145, 141),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.07 * (m - 1000), 153, 149),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.08 * (m - 1100), 160, 156),
-        (m: number) => interpolateForCgAndWeight(undefined, (cgS) => cgS, 168, 163),
+        () => interpolateForCgAndWeight(undefined, (cgS) => cgS, 168, 163),
     ], // Config 3
     [
-        (m: number) => interpolateForCgAndWeight(undefined, (cgS) => cgS, 120, 120),
+        () => interpolateForCgAndWeight(undefined, (cgS) => cgS, 120, 120),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.05 * (m - 600), 120, 120),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.08 * (m - 700), 125, 121),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.08 * (m - 800), 133, 130),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.08 * (m - 900), 141, 138),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.08 * (m - 1000), 149, 145),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.07 * (m - 1100), 157, 152),
-        (m: number) => interpolateForCgAndWeight(undefined, (cgS) => cgS, 164, 159),
+        () => interpolateForCgAndWeight(undefined, (cgS) => cgS, 164, 159),
     ], // Config Full
     [
-        (m: number) => interpolateForCgAndWeight(undefined, (cgS) => cgS, 133, 130),
+        () => interpolateForCgAndWeight(undefined, (cgS) => cgS, 133, 130),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.11 * (m - 600), 133, 130),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.10 * (m - 700), 144, 141),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.09 * (m - 800), 154, 150),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.10 * (m - 900), 163, 159),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.08 * (m - 1000), 173, 168),
         (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.09 * (m - 1100), 181, 177),
-        (m: number) => interpolateForCgAndWeight(undefined, (cgS) => cgS, 190, 185),
-    ] // Config 1
+        () => interpolateForCgAndWeight(undefined, (cgS) => cgS, 190, 185),
+    ], // Config 1
 ];
-
 
 /**
  * F2-Speed Table
@@ -87,7 +86,7 @@ const f2 = [
     (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.10 * (m - 800), 165, 161),
     (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.09 * (m - 900), 175, 171),
     (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS + 0.09 * (m - 1000), 184, 181),
-    (m: number) => interpolateForCgAndWeight(m, (cgS, m) => cgS, 191, 189),
+    (m: number) => interpolateForCgAndWeight(m, (cgS) => cgS, 191, 189),
     () => interpolateForCgAndWeight(undefined, (cgS) => cgS, 191, 191),
 ];
 
@@ -133,12 +132,12 @@ function greenDotSpeed(m: number, alt: Feet = SimVar.GetSimVarValue('PLANE ALTIT
     const greenDotTable = [
         [0, 0, 10_000, 20_000, 30_000, 40_000],
         [600, 167, 167, 168, 196, 210],
-        [700, 180, 180, 185,1213, 226],
+        [700, 180, 180, 185, 1213, 226],
         [800, 194, 194, 202, 228, 240],
         [900, 207, 207, 222, 244, 252],
         [1000, 217, 217, 238, 257, 252],
         [1100, 228, 228, 255, 272, 272],
-        [1200, 238, 238, 266, 262, 262]
+        [1200, 238, 238, 266, 262, 262],
     ];
     return MathUtils.tableInterpolation(greenDotTable, m, alt);
 }
@@ -158,7 +157,7 @@ function vlsConf0(m: number, alt: Feet = SimVar.GetSimVarValue('PLANE ALTITUDE',
         [900, 190, 191, 195, 201, 205, 210, 213, 216, 220, 224, 224, 227],
         [1000, 200, 203, 210, 213, 218, 225, 228, 233, 236, 236, 236, 236],
         [1100, 210, 216, 222, 226, 231, 239, 244, 247, 247, 247, 250, 250],
-        [1200, 219, 229, 233, 238, 244, 254, 258, 258, 257, 262, 262, 262]
+        [1200, 219, 229, 233, 238, 244, 254, 258, 258, 257, 262, 262, 262],
     ];
     return MathUtils.tableInterpolation(vlsTable, m, alt);
 }
@@ -199,7 +198,7 @@ const vfeFS = [
     VfeF2, // Config 2
     VfeF3, // Config 3
     VfeFF, // Config Full
-    VfeF1 // Config 1
+    VfeF1, // Config 1
 ];
 
 /**
@@ -211,7 +210,13 @@ const vfeFS = [
  * @param cg center of gravity
  * @returns cg and weight corrected velocity (CAS)
  */
-function interpolateForCgAndWeight(m: number, weightFn: (cgSpeed: number, m: number) => number, cg29Value: number, cg43Value: number, cg: number = SimVar.GetSimVarValue("CG PERCENT", "percent")) {
+function interpolateForCgAndWeight(
+    m: number,
+    weightFn: (cgSpeed: number, m: number) => number,
+    cg29Value: number,
+    cg43Value: number,
+    cg: number = SimVar.GetSimVarValue('CG PERCENT', 'percent'),
+) {
     if (cg < 29) {
         return weightFn(cg29Value, m);
     }
@@ -227,7 +232,7 @@ function interpolateForCgAndWeight(m: number, weightFn: (cgSpeed: number, m: num
  * @param m mass: gross weight in 1000 lb
  * @returns index for speed tables
  */
-function _correctMass(m: number): number {
+function correctMass(m: number): number {
     return Math.ceil(((m > 1200 ? 1200 : m) - 600) / 100);
 }
 
@@ -237,7 +242,7 @@ function _correctMass(m: number): number {
  * @param alt altitude in feet (baro)
  * @returns Mach corrected velocity in kt (CAS)
  */
-function _compensateForMachEffect(v: Knots, alt: Feet): Knots {
+function compensateForMachEffect(v: Knots, alt: Feet): Knots {
     return Math.ceil(alt > 20000 ? v + (alt - 20000) / 1000 : v);
 }
 
@@ -246,7 +251,7 @@ function _compensateForMachEffect(v: Knots, alt: Feet): Knots {
  * @param vw velocity wind (headwind)
  * @returns velocity wind [5, 15]
  */
-function _addWindComponent(vw: Knots): Knots {
+function addWindComponent(vw: Knots): Knots {
     return Math.max(Math.min(15, vw), 5);
 }
 
@@ -257,7 +262,7 @@ function _addWindComponent(vw: Knots): Knots {
  * @returns angle diff
  * @private
  */
-function _getdiffAngle(a: number, b: number): number {
+function getdiffAngle(a: number, b: number): number {
     return 180 - Math.abs(Math.abs(a - b) - 180);
 }
 
@@ -266,11 +271,11 @@ function _getdiffAngle(a: number, b: number): number {
  * @returns vfeFS table index
  * @private
  */
-function _getVfeNIdx(fi: number): number {
+function getVfeNIdx(fi: number): number {
     switch (fi) {
-        case 0: return 4;
-        case 5: return 1;
-        default: return fi;
+    case 0: return 4;
+    case 5: return 1;
+    default: return fi;
     }
 }
 
@@ -279,7 +284,7 @@ function _getVfeNIdx(fi: number): number {
  * @param T degrees Celsius
  * @returns degrees Kelvin
  */
-function _convertCtoK(T: number): number {
+function convertCtoK(T: number): number {
     return T + 273.15;
 }
 
@@ -288,19 +293,27 @@ function _convertCtoK(T: number): number {
  * @returns Min(Vmo, Mmo)
  * @private
  */
-function _getVmo() {
-    return Math.min(Vmo, MathUtils.convertMachToKCas(Mmo, _convertCtoK(Simplane.getAmbientTemperature()), SimVar.GetSimVarValue("AMBIENT PRESSURE", "millibar")));
+function getVmo() {
+    return Math.min(Vmo, MathUtils.convertMachToKCas(Mmo, convertCtoK(Simplane.getAmbientTemperature()), SimVar.GetSimVarValue('AMBIENT PRESSURE', 'millibar')));
 }
 
 export class A380OperatingSpeeds {
     public vs: number;
+
     public vls: number;
+
     public vapp: number;
+
     public f2: number;
+
     public f3: number;
+
     public s: number;
+
     public gd: number;
+
     public vmax: number;
+
     public vfeN: number;
 
     /**
@@ -314,34 +327,40 @@ export class A380OperatingSpeeds {
         // Convert mass from tons to 1000 lb
         const klb = Units.kilogramToPound(m * 1000.0) / 1000.0;
 
-        const cm = _correctMass(klb);
+        const cm = correctMass(klb);
         this.vs = vls[fPos][cm](klb) / 1.2; // rough hack
         this.vls = vls[fPos][cm](klb);
-        this.vapp = this.vls + _addWindComponent(wind);
+        this.vapp = this.vls + addWindComponent(wind);
         this.f2 = f2[cm](klb);
         this.f3 = f2[cm](klb);
         this.s = s[cm](klb);
         this.gd = greenDotSpeed(klb);
-        this.vmax = fPos === 0 ? _getVmo() : vfeFS[fPos - 1];
-        this.vfeN = fPos === 4 ? 0 : vfeFS[_getVfeNIdx(fPos)];
+        this.vmax = fPos === 0 ? getVmo() : vfeFS[fPos - 1];
+        this.vfeN = fPos === 4 ? 0 : vfeFS[getVfeNIdx(fPos)];
     }
 
     compensateForMachEffect(alt: Feet) {
-        this.vs = _compensateForMachEffect(this.vs, alt);
-        this.vls = _compensateForMachEffect(this.vls, alt);
-        this.gd = _compensateForMachEffect(this.gd, alt);
+        this.vs = compensateForMachEffect(this.vs, alt);
+        this.vls = compensateForMachEffect(this.vls, alt);
+        this.gd = compensateForMachEffect(this.gd, alt);
     }
 }
 
-
 export class A380OperatingSpeedsApproach {
     public vls: number;
+
     public vapp: number;
+
     public vref: number;
+
     public f2: number;
+
     public f3: number;
+
     public s: number;
+
     public gd: number;
+
     public valid: boolean;
 
     /**
@@ -354,7 +373,7 @@ export class A380OperatingSpeedsApproach {
         // Convert mass from tons to 1000 lb
         const klb = Units.kilogramToPound(m * 1000.0) / 1000.0;
 
-        const cm = _correctMass(klb);
+        const cm = correctMass(klb);
         this.vls = vls[isConf3 ? 3 : 4][cm](klb);
         this.vapp = this.vls + A380SpeedsUtils.addWindComponent(wind / 3);
         this.vref = vls[4][cm](klb);
@@ -372,8 +391,8 @@ export class A380SpeedsUtils {
      * @param vw velocity wind (1/3 steady headwind)
      * @returns velocity wind [5, 15]
      */
-    static addWindComponent(vw: Knots = (SimVar.GetSimVarValue("AIRCRAFT WIND Z", "knots") * -1) / 3): number {
-        return _addWindComponent(vw);
+    static addWindComponent(vw: Knots = (SimVar.GetSimVarValue('AIRCRAFT WIND Z', 'knots') * -1) / 3): number {
+        return addWindComponent(vw);
     }
 
     /**
@@ -384,7 +403,7 @@ export class A380SpeedsUtils {
      * @returns velocity headwind
      */
     static getHeadwind(v: Knots, a: number, b: number): Knots {
-        return v * Math.cos(_getdiffAngle(a, b) * (Math.PI / 180));
+        return v * Math.cos(getdiffAngle(a, b) * (Math.PI / 180));
     }
 
     /**
@@ -393,7 +412,7 @@ export class A380SpeedsUtils {
      * @param vCur velocity current headwind
      * @returns head wind diff
      */
-    static getHeadWindDiff(vTwr: Knots, vCur: Knots = SimVar.GetSimVarValue("AIRCRAFT WIND Z", "knots") * -1): Knots {
+    static getHeadWindDiff(vTwr: Knots, vCur: Knots = SimVar.GetSimVarValue('AIRCRAFT WIND Z', 'knots') * -1): Knots {
         return Math.round(1 / 3 * (vCur - vTwr));
     }
 
@@ -405,7 +424,9 @@ export class A380SpeedsUtils {
      */
     static getVtargetGSMini(vapp: Knots, windDiff: Knots): Knots {
         return Math.max(vapp, Math.min(Math.round(vapp + windDiff), Math.round(
-            SimVar.GetSimVarValue("L:A32NX_FLAPS_HANDLE_INDEX", "Number") === 4 ? SimVar.GetSimVarValue("L:A32NX_SPEEDS_VMAX", "Number") - 5 : SimVar.GetSimVarValue("L:A32NX_SPEEDS_VFEN", "Number")
+            SimVar.GetSimVarValue('L:A32NX_FLAPS_HANDLE_INDEX', 'Number') === 4
+                ? SimVar.GetSimVarValue('L:A32NX_SPEEDS_VMAX', 'Number') - 5
+                : SimVar.GetSimVarValue('L:A32NX_SPEEDS_VFEN', 'Number'),
         )));
     }
 
@@ -414,7 +435,7 @@ export class A380SpeedsUtils {
             return vmca[0][1];
         }
         if (alt >= table[table.length - 1][0]) {
-            table[table.length - 1][1];
+            return table[table.length - 1][1];
         }
         for (let i = 0; i < table.length - 1; i++) {
             if (alt >= table[i][0] && alt <= table[i + 1][0]) {
@@ -422,6 +443,7 @@ export class A380SpeedsUtils {
                 return Avionics.Utils.lerpAngle(table[i][1], table[i + 1][1], d);
             }
         }
+        return vmca[0][1];
     }
 
     /**
@@ -452,6 +474,6 @@ export class A380SpeedsUtils {
     static getVs1g(mass: number, conf: number): Knots {
         const klb = Units.kilogramToPound(mass) / 1000.0;
         // FIXME rough, dirty hack
-        return vls[conf][_correctMass(klb)](klb) / 1.5;
+        return vls[conf][correctMass(klb)](klb) / 1.5;
     }
 }

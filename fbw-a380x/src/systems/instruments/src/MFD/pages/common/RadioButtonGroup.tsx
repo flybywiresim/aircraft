@@ -25,7 +25,7 @@ export class RadioButtonGroup extends DisplayComponent<RadioButtonGroupProps> {
         }
 
         for (let i = 0; i < this.props.values.length; i++) {
-            document.getElementById(`${this.props.idPrefix}_${i}`).addEventListener('change', () => {
+            document.getElementById(`${this.props.idPrefix}_${i}`)?.addEventListener('change', () => {
                 if (this.props.onModified) {
                     this.props.onModified(i);
                 } else {
@@ -37,9 +37,9 @@ export class RadioButtonGroup extends DisplayComponent<RadioButtonGroupProps> {
         this.subs.push(this.props.selectedIndex.sub((val) => {
             for (let i = 0; i < this.props.values.length; i++) {
                 if (i === val) {
-                    document.getElementById(`${this.props.idPrefix}_${i}`).setAttribute('checked', 'checked');
+                    document.getElementById(`${this.props.idPrefix}_${i}`)?.setAttribute('checked', 'checked');
                 } else {
-                    document.getElementById(`${this.props.idPrefix}_${i}`).removeAttribute('checked');
+                    document.getElementById(`${this.props.idPrefix}_${i}`)?.removeAttribute('checked');
                 }
             }
         }, true));
@@ -47,9 +47,9 @@ export class RadioButtonGroup extends DisplayComponent<RadioButtonGroupProps> {
         this.subs.push(this.props.valuesDisabled.sub((val) => {
             for (let i = 0; i < this.props.values.length; i++) {
                 if (val[i] === true) {
-                    document.getElementById(`${this.props.idPrefix}_${i}`).setAttribute('disabled', 'disabled');
+                    document.getElementById(`${this.props.idPrefix}_${i}`)?.setAttribute('disabled', 'disabled');
                 } else {
-                    document.getElementById(`${this.props.idPrefix}_${i}`).removeAttribute('disabled');
+                    document.getElementById(`${this.props.idPrefix}_${i}`)?.removeAttribute('disabled');
                 }
             }
         }, true));

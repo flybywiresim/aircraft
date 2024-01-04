@@ -33,7 +33,7 @@ export class PageSelectorDropdownMenu extends DisplayComponent<PageSelectorDropd
         super.onAfterRender(node);
 
         this.props.menuItems.forEach((val, i) => {
-            document.getElementById(`${this.props.idPrefix}_${i}`).addEventListener('click', () => {
+            document.getElementById(`${this.props.idPrefix}_${i}`)?.addEventListener('click', () => {
                 if (!val.disabled) {
                     val.action();
                     this.dropdownIsOpened.set(false);

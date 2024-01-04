@@ -93,7 +93,7 @@ export class Button extends DisplayComponent<ButtonProps> {
             this.subs.push(this.props.menuItems.sub((items) => {
                 // Delete click handler, delete dropdownMenuRef children, render dropdownMenuRef children,
                 this.renderedMenuItems?.forEach((val, i) => {
-                    document.getElementById(`${this.props.idPrefix}_${i}`).removeEventListener('click', () => {
+                    document.getElementById(`${this.props.idPrefix}_${i}`)?.removeEventListener('click', () => {
                         val.action();
                         this.dropdownIsOpened.set(false);
                     });
@@ -120,7 +120,7 @@ export class Button extends DisplayComponent<ButtonProps> {
 
                 // Add click event listener
                 items?.forEach((val, i) => {
-                    document.getElementById(`${this.props.idPrefix}_${i}`).addEventListener('click', () => {
+                    document.getElementById(`${this.props.idPrefix}_${i}`)?.addEventListener('click', () => {
                         val.action();
                         this.dropdownIsOpened.set(false);
                     });

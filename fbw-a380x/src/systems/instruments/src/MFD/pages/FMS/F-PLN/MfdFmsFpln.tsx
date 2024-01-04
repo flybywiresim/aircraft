@@ -415,21 +415,24 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             }
         }
 
-        // If pseudo-waypoint, find last actual waypoint
-        let planCentreLineDataIndex = startAtIndex;
-        const isNoPseudoWpt = (data: FplnLineDisplayData) => {
-            if (isWaypoint(data) && data.isPseudoWaypoint === false) {
-                return true;
+        // Update EFIS/ND
+        if (this.lineData.length > 0) {
+            // If pseudo-waypoint, find last actual waypoint
+            let planCentreLineDataIndex = startAtIndex;
+            const isNoPseudoWpt = (data: FplnLineDisplayData) => {
+                if (data && isWaypoint(data) && data.isPseudoWaypoint === false) {
+                    return true;
+                }
+                return false;
+            };
+            while (isNoPseudoWpt(this.lineData[planCentreLineDataIndex]) === false) {
+                planCentreLineDataIndex--;
             }
-            return false;
-        };
-        while (isNoPseudoWpt(this.lineData[planCentreLineDataIndex]) === false) {
-            planCentreLineDataIndex--;
-        }
 
-        const planCentreWpt = this.lineData[planCentreLineDataIndex];
-        if (isWaypoint(planCentreWpt)) {
-            this.updateEfisPlanCentre(this.loadedFlightPlanIndex.get(), planCentreWpt.originalLegIndex, planCentreWpt.isAltnWaypoint);
+            const planCentreWpt = this.lineData[planCentreLineDataIndex];
+            if (isWaypoint(planCentreWpt)) {
+                this.updateEfisPlanCentre(this.loadedFlightPlanIndex.get(), planCentreWpt.originalLegIndex, planCentreWpt.isAltnWaypoint);
+            }
         }
     }
 

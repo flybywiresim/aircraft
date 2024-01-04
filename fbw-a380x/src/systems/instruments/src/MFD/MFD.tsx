@@ -143,7 +143,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
     }
 
     private async initializeTestingFlightPlans() {
-        await new Promise((r) => setTimeout(r, 2000));
+        await new Promise((r) => setTimeout(r, 3000));
 
         // Intialize from MSFS flight data
         // this.flightPlanService.active.performanceData.cruiseFlightLevel.set(SimVar.GetGameVarValue('AIRCRAFT CRUISE ALTITUDE', 'feet'));
@@ -737,7 +737,11 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
         this.guidanceController.init();
         this.fmgc.guidanceController = this.guidanceController;
 
-        // await this.initializeTestingFlightPlans();
+        /* try {
+            await this.initializeTestingFlightPlans();
+        } catch {
+            console.warn('Testing init didn\'t work.');
+        } */
 
         let lastUpdateTime = Date.now();
 

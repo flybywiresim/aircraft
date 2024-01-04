@@ -76,7 +76,7 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
             // TODO Display ETA; target waypoint is now activeLeg termination in temporary fpln
             if (this.loadedFlightPlan.activeLeg instanceof FlightPlanLeg) {
                 // No predictions for temporary fpln atm, so only distance is displayed
-                this.distToWpt.set(this.loadedFlightPlan.activeLeg.calculated.cumulativeDistance.toFixed(0) ?? '---');
+                this.distToWpt.set(this.loadedFlightPlan?.activeLeg?.calculated?.cumulativeDistance?.toFixed(0) ?? '---');
             }
         }
 
