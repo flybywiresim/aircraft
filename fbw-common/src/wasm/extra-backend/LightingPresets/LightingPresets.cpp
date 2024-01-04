@@ -6,6 +6,24 @@
 #include "LightingPresets.h"
 #include "ScopedTimer.hpp"
 
+bool LightingPresets::initialize() {
+  dataManager = &msfsHandler.getDataManager();
+
+  // Control LVARs - auto updated with every tick - LOAD/SAVE also auto written to sim
+  loadLightingPresetRequest = dataManager->make_named_var("LIGHTING_PRESET_LOAD", UNITS.Number, UpdateMode::AUTO_READ_WRITE);
+  saveLightingPresetRequest = dataManager->make_named_var("LIGHTING_PRESET_SAVE", UNITS.Number, UpdateMode::AUTO_READ_WRITE);
+
+  // reset to default values
+  loadLightingPresetRequest->setAsInt64(0);
+  saveLightingPresetRequest->setAsInt64(0);
+
+  initialize_aircraft();
+
+  _isInitialized = true;
+  LOG_INFO("LightingPresets initialized");
+  return true;
+}
+
 bool LightingPresets::update([[maybe_unused]] sGaugeDrawData* pData) {
   if (!_isInitialized) {
     LOG_ERROR("LightingPresets_A32NX::update() - not initialized");

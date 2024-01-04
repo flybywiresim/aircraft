@@ -42,11 +42,17 @@ class LightingPresets : public Module {
 
   LightingPresets(MsfsHandler& handler) : Module(handler), iniFile(CONFIGURATION_FILEPATH) {}
 
-  virtual bool initialize() override = 0; // this needs to be implemented by the derived class
+  bool initialize() override;
   bool preUpdate([[maybe_unused]] sGaugeDrawData* pData) override { return true; }; // not required for this module
   bool update(sGaugeDrawData* pData) override;
   bool postUpdate([[maybe_unused]] sGaugeDrawData* pData) override { return true; }; // not required for this module
   bool shutdown() override;
+
+  /**
+   * Initializes the aircraft specific variables.
+   * @return true if successful, false otherwise.
+   */
+  virtual bool initialize_aircraft() = 0; // this needs to be implemented by the derived class (aircraft)
 
   /**
    * Loads a specified preset

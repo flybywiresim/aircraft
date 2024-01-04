@@ -29,17 +29,12 @@
 // unnecessary reads/writes.
 ///
 
-bool LightingPresets_A380X::initialize() {
-  dataManager = &msfsHandler.getDataManager();
+bool LightingPresets_A380X::initialize_aircraft() {
+  elecAC1Powered = dataManager->make_named_var("ELEC_AC_1_BUS_IS_POWERED", UNITS.Number, UpdateMode::AUTO_READ);
 
   // Events for setting the aircraft variables
   lightPotentiometerSetEvent = dataManager->make_sim_event("LIGHT_POTENTIOMETER_SET", NOTIFICATION_GROUP_1);
   cabinLightSetEvent = dataManager->make_sim_event("CABIN_LIGHTS_SET", NOTIFICATION_GROUP_1);
-
-  // Control LVARs - auto updated with every tick - LOAD/SAVE also auto written to sim
-  elecAC1Powered = dataManager->make_named_var("ELEC_AC_1_BUS_IS_POWERED", UNITS.Number, UpdateMode::AUTO_READ);
-  loadLightingPresetRequest = dataManager->make_named_var("LIGHTING_PRESET_LOAD", UNITS.Number, UpdateMode::AUTO_READ_WRITE);
-  saveLightingPresetRequest = dataManager->make_named_var("LIGHTING_PRESET_SAVE", UNITS.Number, UpdateMode::AUTO_READ_WRITE);
 
   // Lighting LVARs - manual update and write when load/saving is requested
   efbBrightness = dataManager->make_named_var("EFB_BRIGHTNESS", UNITS.Number);

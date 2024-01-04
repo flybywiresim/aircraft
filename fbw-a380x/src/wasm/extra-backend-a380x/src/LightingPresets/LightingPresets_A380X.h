@@ -107,7 +107,7 @@ class LightingPresets_A380X : public LightingPresets {
    */
   explicit LightingPresets_A380X(MsfsHandler& msfsHandler) : LightingPresets(msfsHandler) {}
 
-  bool initialize() override;
+  bool initialize_aircraft() override;
 
   /**
    * Produces a string with the current settings and their values.
