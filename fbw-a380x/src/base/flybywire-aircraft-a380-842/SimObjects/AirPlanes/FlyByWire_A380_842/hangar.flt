@@ -115,10 +115,10 @@ Afterburner=0
 FuelValveOpen=False
 
 [FuelSystem.0]
-Valve.1=True
-Valve.2=True
-Valve.3=True
-Valve.4=True
+Valve.1=False
+Valve.2=False
+Valve.3=False
+Valve.4=False
 Valve.5=False
 Valve.6=False
 Valve.7=False
