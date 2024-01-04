@@ -321,6 +321,8 @@ PitchNormalLaw::Parameters_PitchNormalLaw_T PitchNormalLaw::PitchNormalLaw_rtP{
 
   0.0,
 
+  1.3,
+
   -0.4,
 
   -0.4,
@@ -1651,7 +1653,7 @@ void PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_nz_
     PitchNormalLaw_rtP.RateLimiterVariableTs6_InitialCondition_f, &rtb_Y_o4, &PitchNormalLaw_DWork.sf_RateLimiter_l);
   if (*rtu_In_any_ap_engaged) {
     rtb_Sum_j4 = rtb_Y_p - *rtu_In_Theta_deg;
-    rtb_Sum_j4 *= rtb_uDLookupTable;
+    rtb_Sum_j4 = rtb_Sum_j4 * rtb_uDLookupTable * PitchNormalLaw_rtP.Gain4_Gain;
   } else {
     rtb_Sum_j4 = look1_binlxpw(rtb_Y_l, PitchNormalLaw_rtP.Loaddemand_bp01Data, PitchNormalLaw_rtP.Loaddemand_tableData,
       2U);
@@ -1961,7 +1963,7 @@ void PitchNormalLaw::step(const real_T *rtu_In_time_dt, const real_T *rtu_In_nz_
     &PitchNormalLaw_DWork.sf_LagFilter_f);
   rtb_Gain5_gq = PitchNormalLaw_rtP.Gain6_Gain_g * *rtu_In_qk_dot_deg_s2;
   rtb_Saturation3 = (((rtb_Divide_pk + rtb_Divide_o) * PitchNormalLaw_rtP.Gain1_Gain_a + PitchNormalLaw_rtP.Gain3_Gain_e
-                      * rtb_Saturation3) + (rtb_Y_o - rtb_Sum_j4) * PitchNormalLaw_rtP.Gain4_Gain) + rtb_Gain5_gq;
+                      * rtb_Saturation3) + (rtb_Y_o - rtb_Sum_j4) * PitchNormalLaw_rtP.Gain4_Gain_f) + rtb_Gain5_gq;
   rtb_Sum_j4 = look1_binlxpw(*rtu_In_V_ias_kn, PitchNormalLaw_rtP.ScheduledGain1_BreakpointsForDimension1_h,
     PitchNormalLaw_rtP.ScheduledGain1_Table_c, 4U);
   rtb_Sum_j4 = (PitchNormalLaw_rtP.Constant2_Value_k - rtb_Y_o2) * (rtb_Saturation3 * rtb_Sum_j4) *

@@ -257,6 +257,7 @@ class PitchNormalLaw final
     real_T Constant2_Value;
     real_T Constant3_Value;
     real_T Constant_Value;
+    real_T Gain4_Gain;
     real_T qk_dot_gain1_Gain;
     real_T qk_gain_HSP_Gain;
     real_T v_dot_gain_HSP_Gain;
@@ -459,7 +460,7 @@ class PitchNormalLaw final
     real_T Gain1_Gain_d;
     real_T Gain1_Gain_a;
     real_T Gain5_Gain_h;
-    real_T Gain4_Gain;
+    real_T Gain4_Gain_f;
     real_T Gain6_Gain_g;
     real_T Constant_Value_jk;
     real_T Saturation_UpperSat_m;
