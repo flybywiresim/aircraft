@@ -128,10 +128,31 @@ pub trait AirConditioningOverheadShared {
 }
 
 pub trait PressurizationOverheadShared {
-    fn is_in_man_mode(&self) -> bool;
+    fn is_in_man_mode(&self) -> bool {
+        false
+    }
     fn ditching_is_on(&self) -> bool;
-    fn ldg_elev_is_auto(&self) -> bool;
-    fn ldg_elev_knob_value(&self) -> f64;
+    fn ldg_elev_is_auto(&self) -> bool {
+        true
+    }
+    fn ldg_elev_knob_value(&self) -> f64 {
+        -2000.
+    }
+    fn is_alt_man_sel(&self) -> bool {
+        false
+    }
+    fn is_vs_man_sel(&self) -> bool {
+        false
+    }
+    fn alt_knob_value(&self) -> Length {
+        Length::default()
+    }
+    fn vs_knob_value(&self) -> Velocity {
+        Velocity::default()
+    }
+    fn extract_is_forced_open(&self) -> bool {
+        false
+    }
 }
 
 pub trait VcmShared {
@@ -152,6 +173,9 @@ pub trait VcmShared {
     }
     fn bulk_isolation_valves_open_allowed(&self) -> bool {
         false
+    }
+    fn overpressure_relief_valve_open_amount(&self) -> Ratio {
+        Ratio::default()
     }
 }
 
@@ -1192,11 +1216,15 @@ pub struct Air {
 impl Air {
     const SPECIFIC_HEAT_CAPACITY_VOLUME: f64 = 0.718; // kJ/kg*K
     const SPECIFIC_HEAT_CAPACITY_PRESSURE: f64 = 1.005; // kJ/kg*K
-    const R: f64 = 287.058; // Specific gas constant for air - m2/s2/K
+    pub const R: f64 = 287.058; // Specific gas constant for air - m2/s2/K
     const MU: f64 = 1.6328e-5; // Viscosity kg/(m*s)
     const K: f64 = 0.022991; // Thermal conductivity - W/(m*C)
     const PRANDT_NUMBER: f64 = 0.677725;
     const GAMMA: f64 = 1.4; // Rate of specific heats for air
+    pub const G: f64 = 9.80665; // Gravity - m/s2
+    pub const T_0: f64 = 288.2; // ISA standard temperature - K
+    pub const P_0: f64 = 1013.25; // ISA standard pressure at sea level - hPa
+    pub const L: f64 = -0.00651; // Adiabatic lapse rate - K/m
 
     pub fn new() -> Self {
         Self {
