@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: GPL-3.0
 
-import { DisplayComponent, FSComponent, HEvent, MappedSubject, ObjectSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
+import { DisplayComponent, FSComponent, HEvent, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
 import { Arinc429ConsumerSubject, ArincEventBus } from '@flybywiresim/fbw-sdk';
 
 import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
@@ -209,11 +209,6 @@ interface GroundTrackBugProps {
 class GroundTrackBug extends DisplayComponent<GroundTrackBugProps> {
     private groundTrack = Arinc429ConsumerSubject.create(null);
 
-    private readonly style = ObjectSubject.create({
-        display: '',
-        transform: 'translate3d(0px, 0px, 0px)',
-    });
-
     private isVisibleSub = MappedSubject.create(([groundTrack, heading]) => {
         const delta = getSmallestAngle(groundTrack.value, heading);
         // TODO should also be hidden if heading is invalid
@@ -229,27 +224,12 @@ class GroundTrackBug extends DisplayComponent<GroundTrackBugProps> {
         super.onAfterRender(node);
 
         const sub = this.props.bus.getArincSubscriber<DmcLogicEvents>();
-
         this.groundTrack.setConsumer(sub.on('track').withArinc429Precision(3));
-
-        this.isVisibleSub.sub((isVisible) => {
-            if (isVisible) {
-                this.style.set({ display: '' });
-                this.transformSub.resume();
-            } else {
-                this.style.set({ display: 'none' });
-                this.transformSub.pause();
-            }
-        });
-
-        this.transformSub.sub((transform) => {
-            this.style.set({ transform });
-        });
     }
 
     render(): VNode {
         return (
-            <g style={this.style} id="ActualTrackIndicator">
+            <g style={{ transform: this.transformSub, display: this.isVisibleSub.map((v) => (v ? '' : 'none')) }} id="ActualTrackIndicator">
                 <path class="ThickOutline CornerRound" d="m68.906 145.75-1.2592 1.7639 1.2592 1.7639 1.2592-1.7639z" />
                 <path class="ThickStroke Green CornerRound" d="m68.906 145.75-1.2592 1.7639 1.2592 1.7639 1.2592-1.7639z" />
             </g>
