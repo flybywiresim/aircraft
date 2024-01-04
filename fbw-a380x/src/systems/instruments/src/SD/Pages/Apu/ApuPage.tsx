@@ -132,6 +132,7 @@ const ApuFuelUsed = () => {
 
 const NGauge = ({ x, y }: ComponentPositionProps) => {
     const apuN = useArinc429Var('L:A32NX_APU_N', 100);
+    const apuN2 = useArinc429Var('L:A32NX_APU_N2', 100);
     let apuN1IndicationColor: string;
     if (apuN.value < 105) {
         apuN1IndicationColor = 'Green';
@@ -139,9 +140,8 @@ const NGauge = ({ x, y }: ComponentPositionProps) => {
         apuN1IndicationColor = 'Red';
     }
 
-    // TODO insert N2 actual here.
     let apuN2IndicationColor: string;
-    if (apuN.value < 102) {
+    if (apuN2.value < 102) {
         apuN2IndicationColor = 'Green';
     } else {
         apuN2IndicationColor = 'Red';
@@ -243,9 +243,9 @@ const NGauge = ({ x, y }: ComponentPositionProps) => {
                 <text
                     x={72}
                     y={103}
-                    className={`F35 LS1 EndAlign ${apuN.isNormalOperation() ? apuN2IndicationColor : 'Amber'}`}
+                    className={`F35 LS1 EndAlign ${apuN2.isNormalOperation() ? apuN2IndicationColor : 'Amber'}`}
                 >
-                    {apuN.isNormalOperation() ? apuN.value.toFixed() : 'XX'}
+                    {apuN2.isNormalOperation() ? apuN2.value.toFixed() : 'XX'}
                 </text>
             </Layer>
         </>
