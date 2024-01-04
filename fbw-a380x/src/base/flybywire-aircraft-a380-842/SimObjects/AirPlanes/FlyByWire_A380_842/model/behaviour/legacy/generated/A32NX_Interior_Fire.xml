@@ -1,3 +1,6 @@
+<!-- Copyright (c) 2023-2024 FlyByWire Simulations -->
+<!-- SPDX-License-Identifier: GPL-3.0 -->
+
 <ModelBehaviors>
     <Template Name="FBW_Airbus_FIRE_TEST_LIGHTS">
         <UseTemplate Name="FBW_Push_Toggle">
