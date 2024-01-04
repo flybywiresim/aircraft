@@ -1,3 +1,4 @@
+use super::ApuConstants;
 use super::{
     air_intake_flap::AirIntakeFlapSignal, AirIntakeFlap, ApuStartMotor,
     AuxiliaryPowerUnitFireOverheadPanel, AuxiliaryPowerUnitOverheadPanel, FuelPressureSwitch,
@@ -12,13 +13,14 @@ use crate::{
     },
     simulation::{SimulationElement, SimulatorWriter, UpdateContext, Write},
 };
+use std::marker::PhantomData;
 use std::time::Duration;
 use uom::si::{
     f64::*, length::foot, power::watt, pressure::psi, ratio::percent,
     thermodynamic_temperature::degree_celsius,
 };
 
-pub(super) struct ElectronicControlBox {
+pub(super) struct ElectronicControlBox<C: ApuConstants> {
     apu_n_raw_id: VariableIdentifier,
     apu_n_id: VariableIdentifier,
     apu_n2_id: VariableIdentifier,
@@ -36,6 +38,7 @@ pub(super) struct ElectronicControlBox {
     is_powered: bool,
     turbine_state: TurbineState,
     master_is_on: bool,
+    master_off_for: Duration,
     start_is_on: bool,
     start_motor_is_powered: bool,
     n: Ratio,
@@ -49,11 +52,11 @@ pub(super) struct ElectronicControlBox {
     egt_warning_temperature: ThermodynamicTemperature,
     n_above_95_duration: Duration,
     fire_button_is_released: bool,
+
+    constants: PhantomData<C>,
 }
-impl ElectronicControlBox {
-    const RUNNING_WARNING_EGT: f64 = 682.;
+impl<C: ApuConstants> ElectronicControlBox<C> {
     const START_MOTOR_POWERED_UNTIL_N: f64 = 55.;
-    pub const BLEED_AIR_COOLDOWN_DURATION_MILLIS: u64 = 120000;
 
     pub fn new(context: &mut InitContext, powered_by: ElectricalBusType) -> Self {
         ElectronicControlBox {
@@ -76,6 +79,7 @@ impl ElectronicControlBox {
             is_powered: false,
             turbine_state: TurbineState::Shutdown,
             master_is_on: false,
+            master_off_for: Duration::ZERO,
             start_is_on: false,
             start_motor_is_powered: false,
             n: Ratio::new::<percent>(0.),
@@ -87,10 +91,12 @@ impl ElectronicControlBox {
             air_intake_flap_open_amount: Ratio::new::<percent>(0.),
             egt: ThermodynamicTemperature::new::<degree_celsius>(0.),
             egt_warning_temperature: ThermodynamicTemperature::new::<degree_celsius>(
-                ElectronicControlBox::RUNNING_WARNING_EGT,
+                C::RUNNING_WARNING_EGT,
             ),
             n_above_95_duration: Duration::from_secs(0),
             fire_button_is_released: false,
+
+            constants: PhantomData,
         }
     }
 
@@ -128,7 +134,7 @@ impl ElectronicControlBox {
         self.start_motor_is_powered = start_motor.is_powered();
 
         if matches!(
-            <ElectronicControlBox as ControllerSignal<ContactorSignal>>::signal(self),
+            <ElectronicControlBox<C> as ControllerSignal<ContactorSignal>>::signal(self),
             Some(ContactorSignal::Close)
         ) && !self.start_motor_is_powered
         {
@@ -142,8 +148,10 @@ impl ElectronicControlBox {
         self.egt = turbine.egt();
         self.turbine_state = turbine.state();
         self.bleed_air_pressure = turbine.bleed_air_pressure();
-        self.egt_warning_temperature =
-            ElectronicControlBox::calculate_egt_warning_temperature(context, &self.turbine_state);
+        self.egt_warning_temperature = ElectronicControlBox::<C>::calculate_egt_warning_temperature(
+            context,
+            &self.turbine_state,
+        );
 
         if self.n.get::<percent>() > 95. {
             self.n_above_95_duration += context.delta();
@@ -153,6 +161,12 @@ impl ElectronicControlBox {
 
         if !self.is_on() {
             self.fault = None;
+        }
+
+        if !self.master_is_on {
+            self.master_off_for += context.delta()
+        } else {
+            self.master_off_for = Duration::ZERO
         }
     }
 
@@ -181,9 +195,8 @@ impl ElectronicControlBox {
         context: &UpdateContext,
         turbine_state: &TurbineState,
     ) -> ThermodynamicTemperature {
-        let running_warning_temperature = ThermodynamicTemperature::new::<degree_celsius>(
-            ElectronicControlBox::RUNNING_WARNING_EGT,
-        );
+        let running_warning_temperature =
+            ThermodynamicTemperature::new::<degree_celsius>(C::RUNNING_WARNING_EGT);
         match turbine_state {
             TurbineState::Shutdown => running_warning_temperature,
             TurbineState::Starting => {
@@ -230,6 +243,11 @@ impl ElectronicControlBox {
         }
     }
 
+    fn is_cooldown_period(&self) -> bool {
+        !self.master_is_on
+            && (self.master_off_for.as_millis() as u64 <= C::COOLDOWN_DURATION_MILLIS)
+    }
+
     pub fn bleed_air_valve_was_open_in_last(&self, duration: Duration) -> bool {
         self.bleed_air_valve_last_open_time_ago <= duration
     }
@@ -240,6 +258,9 @@ impl ElectronicControlBox {
                 && (Duration::from_secs(2) <= self.n_above_95_duration
                     || self.n.get::<percent>() > 99.5))
                 || (self.turbine_state != TurbineState::Starting && self.n.get::<percent>() > 95.))
+            && !self.is_cooldown_period()
+            && (!(self.turbine_state == TurbineState::Stopping)
+                || C::SHOULD_BE_AVAILABLE_DURING_SHUTDOWN)
     }
 
     pub fn egt_caution_temperature(&self) -> ThermodynamicTemperature {
@@ -266,7 +287,7 @@ impl ElectronicControlBox {
     }
 }
 /// APU start Motor contactors controller
-impl ControllerSignal<ContactorSignal> for ElectronicControlBox {
+impl<C: ApuConstants> ControllerSignal<ContactorSignal> for ElectronicControlBox<C> {
     fn signal(&self) -> Option<ContactorSignal> {
         if !self.is_on() {
             return None;
@@ -296,7 +317,7 @@ impl ControllerSignal<ContactorSignal> for ElectronicControlBox {
         }
     }
 }
-impl ControllerSignal<AirIntakeFlapSignal> for ElectronicControlBox {
+impl<C: ApuConstants> ControllerSignal<AirIntakeFlapSignal> for ElectronicControlBox<C> {
     fn signal(&self) -> Option<AirIntakeFlapSignal> {
         if !self.is_on() {
             None
@@ -305,8 +326,10 @@ impl ControllerSignal<AirIntakeFlapSignal> for ElectronicControlBox {
             TurbineState::Starting => true,
             // While running, the air intake flap remains open.
             TurbineState::Running => true,
-            // Manual shutdown sequence: the air intake flap closes at N = 7%.
-            TurbineState::Stopping => self.master_is_on || 7. <= self.n.get::<percent>(),
+            // Manual shutdown sequence: the air intake flap closes at N = 7% (APS3200) / 8% (PW980).
+            TurbineState::Stopping => {
+                self.master_is_on || C::AIR_INTAKE_FLAP_CLOSURE_PERCENT <= self.n.get::<percent>()
+            }
         } {
             Some(AirIntakeFlapSignal::Open)
         } else {
@@ -314,7 +337,7 @@ impl ControllerSignal<AirIntakeFlapSignal> for ElectronicControlBox {
         }
     }
 }
-impl ControllerSignal<TurbineSignal> for ElectronicControlBox {
+impl<C: ApuConstants> ControllerSignal<TurbineSignal> for ElectronicControlBox<C> {
     fn signal(&self) -> Option<TurbineSignal> {
         if !self.is_on() {
             return None;
@@ -325,8 +348,9 @@ impl ControllerSignal<TurbineSignal> for ElectronicControlBox {
             || (!self.master_is_on
                 && self.turbine_state != TurbineState::Starting
                 && !self.bleed_air_valve_was_open_in_last(Duration::from_millis(
-                    ElectronicControlBox::BLEED_AIR_COOLDOWN_DURATION_MILLIS,
-                )))
+                    C::BLEED_AIR_COOLDOWN_DURATION_MILLIS,
+                ))
+                && !self.is_cooldown_period())
         {
             Some(TurbineSignal::Stop)
         } else if self.start_motor_is_powered
@@ -339,7 +363,7 @@ impl ControllerSignal<TurbineSignal> for ElectronicControlBox {
     }
 }
 /// Bleed air valve controller
-impl ControllerSignal<ApuBleedAirValveSignal> for ElectronicControlBox {
+impl<C: ApuConstants> ControllerSignal<ApuBleedAirValveSignal> for ElectronicControlBox<C> {
     fn signal(&self) -> Option<ApuBleedAirValveSignal> {
         if !self.is_on() {
             None
@@ -354,7 +378,7 @@ impl ControllerSignal<ApuBleedAirValveSignal> for ElectronicControlBox {
         }
     }
 }
-impl SimulationElement for ElectronicControlBox {
+impl<C: ApuConstants> SimulationElement for ElectronicControlBox<C> {
     fn write(&self, writer: &mut SimulatorWriter) {
         let ssm = if self.is_on() {
             SignStatus::NormalOperation

@@ -19,7 +19,17 @@ use crate::{
     simulation::{InitContext, SimulationElement, SimulatorWriter, UpdateContext},
 };
 
-use super::{ApuGenerator, ApuStartMotor, Turbine, TurbineSignal, TurbineState};
+use super::{ApuConstants, ApuGenerator, ApuStartMotor, Turbine, TurbineSignal, TurbineState};
+
+pub struct Pw980Constants;
+
+impl ApuConstants for Pw980Constants {
+    const RUNNING_WARNING_EGT: f64 = 900.; // Deg C
+    const BLEED_AIR_COOLDOWN_DURATION_MILLIS: u64 = 0;
+    const COOLDOWN_DURATION_MILLIS: u64 = 60000;
+    const AIR_INTAKE_FLAP_CLOSURE_PERCENT: f64 = 8.;
+    const SHOULD_BE_AVAILABLE_DURING_SHUTDOWN: bool = false;
+}
 
 pub struct ShutdownPw980Turbine {
     egt: ThermodynamicTemperature,
@@ -623,6 +633,7 @@ impl Stopping {
         let apu_n2_x9: f64;
         let apu_n2_x10: f64;
         let apu_n2_x11: f64;
+        let apu_n2_x12: f64;
 
         // To avoid N2 oscilating
         if since < 8. {
@@ -638,19 +649,21 @@ impl Stopping {
             apu_n2_x9 = 0.;
             apu_n2_x10 = 0.;
             apu_n2_x11 = 0.;
+            apu_n2_x12 = 0.;
         } else {
-            apu_n2_const = 85.66513413979341;
-            apu_n2_x = -5.370425275782716;
-            apu_n2_x2 = 2.723948559543877;
-            apu_n2_x3 = -0.5549980477244083;
-            apu_n2_x4 = 0.05025421311332455;
-            apu_n2_x5 = -0.00254998762840505;
-            apu_n2_x6 = 0.00008005986474946544;
-            apu_n2_x7 = -0.00000161911138624123;
-            apu_n2_x8 = 0.00000002116604160005;
-            apu_n2_x9 = -0.00000000017299051911;
-            apu_n2_x10 = 0.00000000000080420831;
-            apu_n2_x11 = -0.00000000000000162397;
+            apu_n2_const = 86.64042983954318;
+            apu_n2_x = -8.396890071756419;
+            apu_n2_x2 = 4.265566873959583;
+            apu_n2_x3 = -0.8713377975625458;
+            apu_n2_x4 = 0.08440922199990456;
+            apu_n2_x5 = -0.004751685242570211;
+            apu_n2_x6 = 0.0001707504726515346;
+            apu_n2_x7 = -0.00000409191213933807;
+            apu_n2_x8 = 0.00000006632366421256;
+            apu_n2_x9 = -0.00000000071927363877;
+            apu_n2_x10 = 0.00000000000500426125;
+            apu_n2_x11 = -0.00000000000002020512;
+            apu_n2_x12 = 0.00000000000000003601;
         }
 
         let n = (apu_n2_const
@@ -664,7 +677,8 @@ impl Stopping {
             + (apu_n2_x8 * since.powi(8))
             + (apu_n2_x9 * since.powi(9))
             + (apu_n2_x10 * since.powi(10))
-            + (apu_n2_x11 * since.powi(11)))
+            + (apu_n2_x11 * since.powi(11))
+            + (apu_n2_x12 * since.powi(12)))
         .clamp(0., 85.);
 
         Ratio::new::<percent>(n)
