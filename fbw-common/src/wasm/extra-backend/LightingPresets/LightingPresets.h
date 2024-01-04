@@ -114,7 +114,7 @@ class LightingPresets : public Module {
    * @param index
    * @return a shared pointer to the variable
    */
-  [[nodiscard]] AircraftVariablePtr getLightPotentiometerVar(int index) const;
+  [[nodiscard]] AircraftVariablePtr createLightPotentiometerVar(int index) const;
 
   /**
    * Convenience method to check for the existence of a key in a section and the option to

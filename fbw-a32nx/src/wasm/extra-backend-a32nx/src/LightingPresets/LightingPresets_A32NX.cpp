@@ -45,25 +45,25 @@ bool LightingPresets_A32NX::initialize_aircraft() {
 
   // Light Potentiometers - manual update and write when load/saving is requested
   lightCabin = dataManager->make_aircraft_var("LIGHT CABIN", 0, "", cabinLightSetEvent, UNITS.Percent);
-  lightCabinLevel = getLightPotentiometerVar(7);
-  ovhdIntegralLightLevel = getLightPotentiometerVar(86);
-  glareshieldIntegralLightLevel = getLightPotentiometerVar(84);
-  glareshieldLcdLightLevel = getLightPotentiometerVar(87);
-  tableLightCptLevel = getLightPotentiometerVar(10);
-  tableLightFoLevel = getLightPotentiometerVar(11);
-  pfdBrtCptLevel = getLightPotentiometerVar(88);
-  ndBrtCptLevel = getLightPotentiometerVar(89);
-  wxTerrainBrtCptLevel = getLightPotentiometerVar(94);
-  consoleLightCptLevel = getLightPotentiometerVar(8);
-  pfdBrtFoLevel = getLightPotentiometerVar(90);
-  ndBrtFoLevel = getLightPotentiometerVar(91);
-  wxTerrainBrtFoLevel = getLightPotentiometerVar(95);
-  consoleLightFoLevel = getLightPotentiometerVar(9);
-  ecamUpperLightLevel = getLightPotentiometerVar(92);
-  ecamLowerLightLevel = getLightPotentiometerVar(93);
-  floodPnlLightLevel = getLightPotentiometerVar(83);
-  pedestalIntegralLightLevel = getLightPotentiometerVar(85);
-  floodPedLightLevel = getLightPotentiometerVar(76);
+  lightCabinLevel = createLightPotentiometerVar(7);
+  ovhdIntegralLightLevel = createLightPotentiometerVar(86);
+  glareshieldIntegralLightLevel = createLightPotentiometerVar(84);
+  glareshieldLcdLightLevel = createLightPotentiometerVar(87);
+  tableLightCptLevel = createLightPotentiometerVar(10);
+  tableLightFoLevel = createLightPotentiometerVar(11);
+  pfdBrtCptLevel = createLightPotentiometerVar(88);
+  ndBrtCptLevel = createLightPotentiometerVar(89);
+  wxTerrainBrtCptLevel = createLightPotentiometerVar(94);
+  consoleLightCptLevel = createLightPotentiometerVar(8);
+  pfdBrtFoLevel = createLightPotentiometerVar(90);
+  ndBrtFoLevel = createLightPotentiometerVar(91);
+  wxTerrainBrtFoLevel = createLightPotentiometerVar(95);
+  consoleLightFoLevel = createLightPotentiometerVar(9);
+  ecamUpperLightLevel = createLightPotentiometerVar(92);
+  ecamLowerLightLevel = createLightPotentiometerVar(93);
+  floodPnlLightLevel = createLightPotentiometerVar(83);
+  pedestalIntegralLightLevel = createLightPotentiometerVar(85);
+  floodPedLightLevel = createLightPotentiometerVar(76);
 
   loadLightingPresetRequest->setAsInt64(0);
   saveLightingPresetRequest->setAsInt64(0);

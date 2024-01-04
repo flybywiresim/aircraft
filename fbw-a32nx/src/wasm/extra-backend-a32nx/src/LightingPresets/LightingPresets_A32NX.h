@@ -31,10 +31,10 @@ struct LightingValues_A32NX {
   FLOAT64 wxTerrainBrtFoLevel;   // 95
   FLOAT64 consoleLightFoLevel;   // 9 (0, 50, 100)
   // ISIS display has automatic brightness adjustment.
-  FLOAT64 dcduLeftLightLevel;   // A32NX_PANEL_DCDU_L_BRIGHTNESS  0.0..1.0
-  FLOAT64 dcduRightLightLevel;  // A32NX_PANEL_DCDU_R_BRIGHTNESS  0.0..1.0
-  FLOAT64 mcduLeftLightLevel;   // A32NX_MCDU_L_BRIGHTNESS        0.0..1.0
-  FLOAT64 mcduRightLightLevel;  // A32NX_MCDU_R_BRIGHTNESS        0.0..1.0
+  FLOAT64 dcduLeftLightLevel;   // A32NX_PANEL_DCDU_L_BRIGHTNESS  0..100
+  FLOAT64 dcduRightLightLevel;  // A32NX_PANEL_DCDU_R_BRIGHTNESS  0..100
+  FLOAT64 mcduLeftLightLevel;   // A32NX_MCDU_L_BRIGHTNESS        0.5..8.0
+  FLOAT64 mcduRightLightLevel;  // A32NX_MCDU_R_BRIGHTNESS        0.5..8.0
   // Pedestal
   FLOAT64 ecamUpperLightLevel;         // 92
   FLOAT64 ecamLowerLightLevel;         // 93
