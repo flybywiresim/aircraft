@@ -1,3 +1,6 @@
+; Copyright (c) 2023-2024 FlyByWire Simulations
+; SPDX-License-Identifier: GPL-3.0
+
 [SimVarForSpawningInTheAir.0]
 IAS=464
 FlapsDegree=0000.00
@@ -194,17 +197,17 @@ Pump.18=False
 Pump.19=False
 Pump.20=False
 Pump.21=False
-Tank.1=0.5
+Tank.1=0
 Tank.2=1
-Tank.3=1
-Tank.4=1
+Tank.3=0.25
+Tank.4=0.25
 Tank.5=1
 Tank.6=1
-Tank.7=1
-Tank.8=1
+Tank.7=0.25
+Tank.8=0.25
 Tank.9=1
-Tank.10=0.5
-Tank.11=1
+Tank.10=0
+Tank.11=0
 Junction.7=1
 Junction.8=1
 Junction.9=1
