@@ -1476,6 +1476,13 @@ class D1D2Cell extends ShowForSecondsComponent<CellProps> {
     }
 }
 
+enum MdaMode {
+    None = '',
+    NoDh = 'NO DH',
+    Radio = 'RADIO',
+    Baro = 'BARO',
+}
+
 class D3Cell extends DisplayComponent<{bus: ArincEventBus}> {
     private readonly textRef = FSComponent.createRef<SVGTextElement>();
 
@@ -1488,29 +1495,39 @@ class D3Cell extends DisplayComponent<{bus: ArincEventBus}> {
 
     private readonly noDhSelected = this.fmEisDiscrete2.map((r) => r.bitValueOr(29, false));
 
-    private readonly mdaDhValueText = Subject.create('');
-
-    private readonly mdaDhText = MappedSubject.create(
+    private readonly mdaDhMode = MappedSubject.create(
         ([noDh, dh, mda]) => {
             if (noDh) {
-                this.mdaDhValueText.set('');
-                return 'NO DH';
+                return MdaMode.NoDh;
             }
 
             if (!dh.isNoComputedData() && !dh.isFailureWarning()) {
-                this.mdaDhValueText.set(Math.round(dh.value).toString().padStart(4, ' '));
-                return 'RADIO';
+                return MdaMode.Radio;
             }
 
             if (!mda.isNoComputedData() && !mda.isFailureWarning()) {
-                this.mdaDhValueText.set(Math.round(mda.value).toString().padStart(6, ' '));
-                return 'BARO';
+                return MdaMode.Baro;
             }
 
-            this.mdaDhValueText.set('');
-            return '';
+            return MdaMode.None;
         },
         this.noDhSelected,
+        this.dh,
+        this.mda,
+    );
+
+    private readonly mdaDhValueText = MappedSubject.create(
+        ([mdaMode, dh, mda]) => {
+            switch (mdaMode) {
+            case MdaMode.Baro:
+                return Math.round(mda.value).toString().padStart(6, ' ');
+            case MdaMode.Radio:
+                return Math.round(dh.value).toString().padStart(4, ' ');
+            default:
+                return '';
+            }
+        },
+        this.mdaDhMode,
         this.dh,
         this.mda,
     );
@@ -1538,8 +1555,8 @@ class D3Cell extends DisplayComponent<{bus: ArincEventBus}> {
                 x="118.38384"
                 y="21.104172"
             >
-                <tspan>{this.mdaDhText}</tspan>
-                <tspan class="Cyan" xml:space="preserve">{this.mdaDhValueText}</tspan>
+                <tspan>{this.mdaDhMode}</tspan>
+                <tspan class={{ Cyan: true, HiddenElement: this.mdaDhValueText.map((v) => v.length <= 0) }} style="white-space: pre">{this.mdaDhValueText}</tspan>
             </text>
         );
     }
