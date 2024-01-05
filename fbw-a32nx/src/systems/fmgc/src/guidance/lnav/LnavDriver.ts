@@ -381,7 +381,7 @@ export class LnavDriver implements GuidanceComponent {
                     this.sequenceLeg(activeLeg, outboundTransition);
                     geometry.onLegSequenced(activeLeg, nextLeg, followingLeg);
                 } else {
-                    this.sequenceDiscontinuity(activeLeg);
+                    this.sequenceDiscontinuity(activeLeg, followingLeg);
                     geometry.onLegSequenced(activeLeg, nextLeg, followingLeg);
                 }
             }
@@ -506,7 +506,7 @@ export class LnavDriver implements GuidanceComponent {
         }
     }
 
-    sequenceDiscontinuity(_leg?: Leg): void {
+    sequenceDiscontinuity(_leg?: Leg, followingLeg?: Leg): void {
         console.log('[FMGC/Guidance] LNAV - sequencing discontinuity');
 
         // Lateral mode is NAV
@@ -538,6 +538,11 @@ export class LnavDriver implements GuidanceComponent {
         }
 
         this.sequenceLeg(_leg, null);
+
+        // The leg after the disco should become the active leg, so we sequence again
+        if (followingLeg) {
+            this.sequenceLeg(null, null);
+        }
     }
 
     sequenceManual(_leg?: Leg): void {
