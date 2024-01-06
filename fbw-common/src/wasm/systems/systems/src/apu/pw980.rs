@@ -759,11 +759,11 @@ impl Pw980ApuGenerator {
         Pw980ApuGenerator {
             number,
             identifier: context.next_electrical_identifier(),
-            n: Ratio::new::<percent>(0.),
+            n: Ratio::default(),
             writer: ElectricalStateWriter::new(context, &format!("APU_GEN_{}", number)),
-            output_potential: ElectricPotential::new::<volt>(0.),
-            output_frequency: Frequency::new::<hertz>(0.),
-            load: Ratio::new::<percent>(0.),
+            output_potential: ElectricPotential::default(),
+            output_frequency: Frequency::default(),
+            load: Ratio::default(),
             is_emergency_shutdown: false,
             failure: Failure::new(FailureType::ApuGenerator(number)),
         }
@@ -877,13 +877,13 @@ impl SimulationElement for Pw980ApuGenerator {
         self.output_potential = if self.should_provide_output() {
             self.calculate_potential(self.n)
         } else {
-            ElectricPotential::new::<volt>(0.)
+            ElectricPotential::default()
         };
 
         self.output_frequency = if self.should_provide_output() {
             self.calculate_frequency(self.n)
         } else {
-            Frequency::new::<hertz>(0.)
+            Frequency::default()
         };
 
         let power_consumption = report
@@ -1098,17 +1098,17 @@ mod apu_generator_tests {
     fn when_shutdown_has_no_load() {
         let mut test_bed = test_bed_with().run(Duration::from_secs(1_000));
 
-        assert_eq!(test_bed.load(), Ratio::new::<percent>(0.));
+        assert_eq!(test_bed.load(), Ratio::default());
     }
 
     #[test]
     fn when_running_but_potential_unused_has_no_load() {
         let mut test_bed = test_bed_with()
             .running_apu()
-            .power_demand(Power::new::<watt>(0.))
+            .power_demand(Power::default())
             .run(Duration::from_secs(1_000));
 
-        assert_eq!(test_bed.load(), Ratio::new::<percent>(0.));
+        assert_eq!(test_bed.load(), Ratio::default());
     }
 
     #[test]
@@ -1118,7 +1118,7 @@ mod apu_generator_tests {
             .power_demand(Power::new::<watt>(50000.))
             .run(Duration::from_secs(1_000));
 
-        assert!(test_bed.load() > Ratio::new::<percent>(0.));
+        assert!(test_bed.load() > Ratio::default());
     }
 
     #[test]
@@ -1180,7 +1180,7 @@ mod apu_generator_tests {
 
     fn update_below_threshold(test_bed: &mut SimulationTestBed<TestAircraft<Pw980ApuGenerator>>) {
         test_bed.set_update_before_power_distribution(|generator, _, electricity| {
-            generator.update(Ratio::new::<percent>(0.), false);
+            generator.update(Ratio::default(), false);
             electricity.supplied_by(generator);
         });
         test_bed.run();
