@@ -222,7 +222,7 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
         this.sendEvent('flightPlan.setActiveLegIndex', { planIndex: this.index, forAlternate: false, activeLegIndex: this.activeLegIndex });
     }
 
-    stringMissedApproach() {
+    async stringMissedApproach() {
         const missedApproachPointIndex = this.allLegs.findIndex(
             (it) => it.isDiscontinuity === false && it.definition.approachWaypointDescriptor === ApproachWaypointDescriptor.MissedApproachPoint,
         );
@@ -243,23 +243,21 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
 
         this.syncSegmentLegsChange(this.enrouteSegment);
 
-        // We don't have to await any of this because of how we use it, but this might be something to clean up in the future
-
-        this.arrivalSegment.setProcedure(undefined);
-
-        this.approachSegment.setProcedure(this.approachSegment.procedure?.ident);
-        this.approachViaSegment.setProcedure(this.approachViaSegment.procedure?.ident);
+        await this.arrivalSegment.setProcedure(undefined);
 
         this.enqueueOperation(FlightPlanQueuedOperation.RebuildArrivalAndApproach);
+        await this.flushOperationQueue();
+
+        this.incrementVersion();
+
+        // It's important that we restring after rebuilding the arrival/approach
         this.enqueueOperation(FlightPlanQueuedOperation.Restring);
+        await this.flushOperationQueue();
 
-        this.flushOperationQueue().then(() => {
-            const activeIndex = this.allLegs.findIndex((it) => it === this.activeLeg);
-
-            this.activeLegIndex = activeIndex;
-
-            this.sendEvent('flightPlan.setActiveLegIndex', { planIndex: this.index, forAlternate: this instanceof AlternateFlightPlan, activeLegIndex: activeIndex });
-        });
+        // Set active leg again because the index might've changed when we moved it into enroute
+        const activeIndex = this.allLegs.findIndex((it) => it === this.activeLeg);
+        this.activeLegIndex = activeIndex;
+        this.sendEvent('flightPlan.setActiveLegIndex', { planIndex: this.index, forAlternate: this instanceof AlternateFlightPlan, activeLegIndex: activeIndex });
     }
 
     version = 0;
