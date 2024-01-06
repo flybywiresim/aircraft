@@ -9,7 +9,7 @@ import { FmgcFlightPhase } from '@shared/flightphase';
 import { FmcWindVector, FmcWinds } from '@fmgc/guidance/vnav/wind/types';
 import { MappedSubject, Subject } from '@microsoft/msfs-sdk';
 import { FlightPlanIndex } from '@fmgc/flightplanning/new/FlightPlanManager';
-import { Arinc429Word, Knots, Runway, Units } from '@flybywiresim/fbw-sdk';
+import { Arinc429Word, Knots, Pound, Runway, Units } from '@flybywiresim/fbw-sdk';
 import { Feet } from 'msfs-geo';
 
 export enum TakeoffPowerSetting {
@@ -251,8 +251,9 @@ export class FmgcDataInterface implements Fmgc {
     ) {
     }
 
-    getZeroFuelWeight(): number {
-        return this.data.zeroFuelWeight.get();
+    getZeroFuelWeight(): Pound {
+        // Should be returned in lbs
+        return this.data.zeroFuelWeight.get() / 1000 * 2204.625;
     }
 
     getFOB(): number {

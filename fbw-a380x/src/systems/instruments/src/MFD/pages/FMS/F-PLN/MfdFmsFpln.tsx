@@ -1126,7 +1126,7 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
             if (previousRow
                 && isWaypoint(previousRow)
                 // eslint-disable-next-line max-len
-                && ((isBelowTransAlt && previousRow.altitudePrediction === data.altitudePrediction) || (previousRow.altitudePrediction - data.altitudePrediction < 100))
+                && Math.abs(previousRow.altitudePrediction - data.altitudePrediction) < 100
                 && !data.hasAltitudeConstraint
                 && !(FplnLineFlags.AfterSpecial === (this.props.flags.get() & FplnLineFlags.AfterSpecial) || FplnLineFlags.FirstLine === (this.props.flags.get() & FplnLineFlags.FirstLine))) {
                 altStr = <span style="font-family: HoneywellMCDU, monospace;">"</span>;

@@ -155,13 +155,16 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
     private async insertCpnyFpln() {
         this.props.fmService.flightPlanService.uplinkInsert();
         this.props.fmService.fmgc.data.atcCallsign.set(this.simBriefOfp.callsign);
-        this.props.fmService.fmgc.data.blockFuel.set(this.simBriefOfp.units === 'kgs' ? this.simBriefOfp.fuel.planRamp : Units.poundToKilogram(this.simBriefOfp.fuel.planRamp));
+
+        // Don't insert weights for now, something seems broken here
+        /* this.props.fmService.fmgc.data.blockFuel.set(this.simBriefOfp.units === 'kgs' ? this.simBriefOfp.fuel.planRamp : Units.poundToKilogram(this.simBriefOfp.fuel.planRamp));
         this.props.fmService.fmgc.data.zeroFuelWeight.set(this.simBriefOfp.units === 'kgs'
             ? Number(this.simBriefOfp.weights.estZeroFuelWeight)
             : Units.poundToKilogram(Number(this.simBriefOfp.weights.estZeroFuelWeight)));
         this.props.fmService.fmgc.data.taxiFuelPilotEntry.set(this.simBriefOfp.units === 'kgs' ? this.simBriefOfp.fuel.taxi : Units.poundToKilogram(this.simBriefOfp.fuel.taxi));
         this.props.fmService.fmgc.data.alternateFuelPilotEntry.set(this.simBriefOfp.units === 'kgs' ? this.simBriefOfp.alternate.burn : Units.poundToKilogram(this.simBriefOfp.alternate.burn));
-        this.props.fmService.fmgc.data.finalFuelWeightPilotEntry.set(this.simBriefOfp.units === 'kgs' ? this.simBriefOfp.fuel.reserve : Units.poundToKilogram(this.simBriefOfp.fuel.reserve));
+        this.props.fmService.fmgc.data.finalFuelWeightPilotEntry.set(this.simBriefOfp.units === 'kgs' ? this.simBriefOfp.fuel.reserve : Units.poundToKilogram(this.simBriefOfp.fuel.reserve)); */
+
         this.props.fmService.fmgc.data.paxNumber.set(Number(this.simBriefOfp.weights.passengerCount));
         this.props.fmService.fmgc.data.tropopausePilotEntry.set(Number(this.simBriefOfp.averageTropopause));
 

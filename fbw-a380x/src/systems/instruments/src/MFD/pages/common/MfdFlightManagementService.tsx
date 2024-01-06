@@ -135,8 +135,8 @@ export class MfdFlightManagementService {
         if (this.enginesWereStarted.get() === false) {
             // On ground, engines off
             // TOW before engine start: TOW = ZFW + BLOCK - TAXI
-            if (this.fmgc.getZeroFuelWeight() && this.fmgc.data.blockFuel.get() && this.fmgc.data.taxiFuel.get()) {
-                return (this.fmgc.getZeroFuelWeight()
+            if (this.fmgc.data.zeroFuelWeight.get() && this.fmgc.data.blockFuel.get() && this.fmgc.data.taxiFuel.get()) {
+                return (this.fmgc.data.zeroFuelWeight.get()
                     + this.fmgc.data.blockFuel.get()
                     - this.fmgc.data.taxiFuel.get());
             }
