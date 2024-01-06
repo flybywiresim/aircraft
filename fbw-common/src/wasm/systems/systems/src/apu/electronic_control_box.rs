@@ -4,20 +4,21 @@ use super::{
     AuxiliaryPowerUnitFireOverheadPanel, AuxiliaryPowerUnitOverheadPanel, FuelPressureSwitch,
     Turbine, TurbineSignal, TurbineState,
 };
-use crate::simulation::{InitContext, VariableIdentifier};
+use crate::shared::{EngineCorrectedN1, LgciuWeightOnWheels};
+use crate::simulation::{InitContext, SimulatorReader, VariableIdentifier};
 use crate::{
     pneumatic::PneumaticValveSignal,
     shared::{
         arinc429::SignStatus, ApuBleedAirValveSignal, ApuMaster, ApuStart, ConsumePower,
         ContactorSignal, ControllerSignal, ElectricalBusType, ElectricalBuses, PneumaticValve,
     },
-    simulation::{SimulationElement, SimulatorWriter, UpdateContext, Write},
+    simulation::{Read, SimulationElement, SimulatorWriter, UpdateContext, Write},
 };
 use std::marker::PhantomData;
 use std::time::Duration;
-use uom::si::pressure::bar;
 use uom::si::{
-    f64::*, power::watt, pressure::psi, ratio::percent, thermodynamic_temperature::degree_celsius,
+    f64::*, mass_concentration::kilogram_per_liter, power::watt, pressure::bar, pressure::psi,
+    ratio::percent, thermodynamic_temperature::degree_celsius, volume_rate::gallon_per_minute,
 };
 
 pub(super) struct ElectronicControlBox<C: ApuConstants> {
@@ -29,10 +30,13 @@ pub(super) struct ElectronicControlBox<C: ApuConstants> {
     apu_egt_warning_id: VariableIdentifier,
     apu_low_fuel_pressure_fault_id: VariableIdentifier,
     apu_flap_fully_open_id: VariableIdentifier,
+    apu_fuel_used_id: VariableIdentifier,
     ecam_inop_sys_apu_id: VariableIdentifier,
     apu_is_auto_shutdown_id: VariableIdentifier,
     apu_is_emergency_shutdown_id: VariableIdentifier,
     apu_bleed_air_pressure_id: VariableIdentifier,
+
+    apu_fuel_line_flow_id: VariableIdentifier,
 
     powered_by: ElectricalBusType,
     is_powered: bool,
@@ -47,11 +51,15 @@ pub(super) struct ElectronicControlBox<C: ApuConstants> {
     bleed_air_valve_last_open_time_ago: Duration,
     bleed_air_pressure: Pressure,
     fault: Option<ApuFault>,
+    fuel_flow: VolumeRate,
+    fuel_used: Mass,
     air_intake_flap_open_amount: Ratio,
     egt: ThermodynamicTemperature,
     egt_warning_temperature: ThermodynamicTemperature,
     n_above_95_duration: Duration,
     fire_button_is_released: bool,
+    engines_on: bool,
+    on_ground: bool,
     /** Absolute air pressure sensor in the air intake assembly. */
     inlet_pressure: Pressure,
 
@@ -59,6 +67,7 @@ pub(super) struct ElectronicControlBox<C: ApuConstants> {
 }
 impl<C: ApuConstants> ElectronicControlBox<C> {
     const START_MOTOR_POWERED_UNTIL_N: f64 = 55.;
+    const JET_A_1_DENSITY: f64 = 0.804; // Kilograms per Liter
 
     pub fn new(context: &mut InitContext, powered_by: ElectricalBusType) -> Self {
         ElectronicControlBox {
@@ -71,11 +80,15 @@ impl<C: ApuConstants> ElectronicControlBox<C> {
             apu_low_fuel_pressure_fault_id: context
                 .get_identifier("APU_LOW_FUEL_PRESSURE_FAULT".to_owned()),
             apu_flap_fully_open_id: context.get_identifier("APU_FLAP_FULLY_OPEN".to_owned()),
+            apu_fuel_used_id: context.get_identifier("APU_FUEL_USED".to_owned()),
             ecam_inop_sys_apu_id: context.get_identifier("ECAM_INOP_SYS_APU".to_owned()),
             apu_is_auto_shutdown_id: context.get_identifier("APU_IS_AUTO_SHUTDOWN".to_owned()),
             apu_is_emergency_shutdown_id: context
                 .get_identifier("APU_IS_EMERGENCY_SHUTDOWN".to_owned()),
             apu_bleed_air_pressure_id: context.get_identifier("APU_BLEED_AIR_PRESSURE".to_owned()),
+
+            apu_fuel_line_flow_id: context
+                .get_identifier(format!("FUELSYSTEM LINE FUEL FLOW:{}", C::FUEL_LINE_ID)),
 
             powered_by,
             is_powered: false,
@@ -90,6 +103,8 @@ impl<C: ApuConstants> ElectronicControlBox<C> {
             bleed_air_valve_last_open_time_ago: Duration::from_secs(1000),
             bleed_air_pressure: Pressure::new::<psi>(0.),
             fault: None,
+            fuel_flow: VolumeRate::default(),
+            fuel_used: Mass::default(),
             air_intake_flap_open_amount: Ratio::new::<percent>(0.),
             egt: ThermodynamicTemperature::new::<degree_celsius>(0.),
             egt_warning_temperature: ThermodynamicTemperature::new::<degree_celsius>(
@@ -97,6 +112,8 @@ impl<C: ApuConstants> ElectronicControlBox<C> {
             ),
             n_above_95_duration: Duration::from_secs(0),
             fire_button_is_released: false,
+            engines_on: false,
+            on_ground: false,
             inlet_pressure: Pressure::new::<bar>(0.94),
 
             constants: PhantomData,
@@ -152,6 +169,7 @@ impl<C: ApuConstants> ElectronicControlBox<C> {
 
     pub fn update(&mut self, context: &UpdateContext, turbine: &dyn Turbine) {
         self.update_air_intake_state(context);
+        self.update_fuel_used(context);
 
         self.n2 = turbine.n2();
         self.n = turbine.n();
@@ -195,6 +213,38 @@ impl<C: ApuConstants> ElectronicControlBox<C> {
             && !fuel_pressure_switch.has_pressure()
         {
             self.fault = Some(ApuFault::FuelLowPressure);
+        }
+    }
+
+    fn update_fuel_used(&mut self, context: &UpdateContext) {
+        self.fuel_used += self.fuel_flow
+            * MassConcentration::new::<kilogram_per_liter>(Self::JET_A_1_DENSITY)
+            * context.delta_as_time();
+    }
+
+    pub(super) fn update_fuel_used_reset(
+        &mut self,
+        engines: &[&impl EngineCorrectedN1],
+        lgciu: [&impl LgciuWeightOnWheels; 2],
+    ) {
+        let should_reset_fuel_used = (self.on_ground
+            && self.is_available()
+            && (self.engines_on
+                != engines
+                    .iter()
+                    .any(|&x| x.corrected_n1() > Ratio::new::<percent>(10.))))
+            || (!self.on_ground && lgciu.iter().all(|a| a.left_and_right_gear_compressed(true)))
+            || (!self.on_ground
+                && (self.turbine_state == TurbineState::Starting
+                    && (Duration::from_secs(2) == self.n_above_95_duration)));
+
+        self.on_ground = lgciu.iter().any(|a| a.left_and_right_gear_compressed(true));
+        self.engines_on = engines
+            .iter()
+            .any(|&x| x.corrected_n1() > Ratio::new::<percent>(10.));
+
+        if should_reset_fuel_used {
+            self.fuel_used = Mass::default();
         }
     }
 
@@ -293,6 +343,10 @@ impl<C: ApuConstants> ElectronicControlBox<C> {
 
     fn air_intake_flap_is_fully_open(&self) -> bool {
         (self.air_intake_flap_open_amount.get::<percent>() - 100.).abs() < f64::EPSILON
+    }
+
+    fn fuel_used(&self) -> Mass {
+        self.fuel_used
     }
 }
 /// APU start Motor contactors controller
@@ -417,6 +471,7 @@ impl<C: ApuConstants> SimulationElement for ElectronicControlBox<C> {
             self.air_intake_flap_is_fully_open(),
             ssm,
         );
+        writer.write_arinc429(&self.apu_fuel_used_id, self.fuel_used(), ssm);
         writer.write_arinc429(
             &self.apu_bleed_air_pressure_id,
             self.bleed_air_pressure,
@@ -430,6 +485,11 @@ impl<C: ApuConstants> SimulationElement for ElectronicControlBox<C> {
             &self.apu_is_emergency_shutdown_id,
             self.is_emergency_shutdown(),
         );
+    }
+
+    fn read(&mut self, reader: &mut SimulatorReader) {
+        let fuel_flow_gallon_per_hour: f64 = reader.read(&self.apu_fuel_line_flow_id);
+        self.fuel_flow = VolumeRate::new::<gallon_per_minute>(fuel_flow_gallon_per_hour / 60.);
     }
 
     fn receive_power(&mut self, buses: &impl ElectricalBuses) {

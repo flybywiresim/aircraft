@@ -179,7 +179,10 @@ impl Aircraft for A320 {
     }
 
     fn update_after_power_distribution(&mut self, context: &UpdateContext) {
-        self.apu.update_after_power_distribution();
+        self.apu.update_after_power_distribution(
+            &[&self.engine_1, &self.engine_2],
+            [self.lgcius.lgciu1(), self.lgcius.lgciu2()],
+        );
         self.apu_overhead.update_after_apu(&self.apu);
 
         self.asu.update();

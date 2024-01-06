@@ -120,11 +120,15 @@ const ApuBleed = ({ x, y }: ComponentPositionProps) => {
 };
 
 const ApuFuelUsed = () => {
+    const apuFuelUsed = useArinc429Var('L:A32NX_APU_FUEL_USED', 100);
+    // APU fuel used is shown in steps of 10. The value is visible even if the ECB is unpowered.
+    // Todo: If the value is not being calculated by the ECB it should show a crossed out value.
+    const displayedApuFuelUsed = Math.round(apuFuelUsed.value / 10) * 10;
 
     return (
         <g>
             <text x={258} y={271} className="F26 White LS1">APU FU</text>
-            <text x={416} y={263} className="F28 Green MiddleAlign">0</text>
+            <text x={416} y={263} className="F28 Green MiddleAlign">{displayedApuFuelUsed}</text>
             <text x={474} y={271} className="F23 Cyan LS2">KG</text>
         </g>
     );

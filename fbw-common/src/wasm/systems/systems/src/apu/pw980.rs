@@ -29,6 +29,7 @@ impl ApuConstants for Pw980Constants {
     const COOLDOWN_DURATION_MILLIS: u64 = 60000;
     const AIR_INTAKE_FLAP_CLOSURE_PERCENT: f64 = 8.;
     const SHOULD_BE_AVAILABLE_DURING_SHUTDOWN: bool = false;
+    const FUEL_LINE_ID: u8 = 141;
 }
 
 pub struct ShutdownPw980Turbine {

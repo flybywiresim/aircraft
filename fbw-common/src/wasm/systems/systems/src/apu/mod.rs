@@ -8,7 +8,8 @@ use crate::{
     pneumatic::{ControllablePneumaticValve, TargetPressureTemperatureSignal},
     shared::{
         ApuAvailable, ApuBleedAirValveSignal, ApuMaster, ApuStart, AuxiliaryPowerUnitElectrical,
-        ContactorSignal, ControllerSignal, ElectricalBusType,
+        ContactorSignal, ControllerSignal, ElectricalBusType, EngineCorrectedN1,
+        LgciuWeightOnWheels,
     },
     simulation::{
         SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext, Write,
@@ -173,8 +174,13 @@ impl<T: ApuGenerator, U: ApuStartMotor, C: ApuConstants, const N: usize>
         }
     }
 
-    pub fn update_after_power_distribution(&mut self) {
+    pub fn update_after_power_distribution(
+        &mut self,
+        engines: &[&impl EngineCorrectedN1],
+        lgciu: [&impl LgciuWeightOnWheels; 2],
+    ) {
         self.ecb.update_start_motor_state(&self.start_motor);
+        self.ecb.update_fuel_used_reset(engines, lgciu);
     }
 
     fn is_available(&self) -> bool {
@@ -309,6 +315,7 @@ pub trait ApuConstants {
     const COOLDOWN_DURATION_MILLIS: u64;
     const AIR_INTAKE_FLAP_CLOSURE_PERCENT: f64;
     const SHOULD_BE_AVAILABLE_DURING_SHUTDOWN: bool;
+    const FUEL_LINE_ID: u8;
 }
 
 pub struct AuxiliaryPowerUnitFireOverheadPanel {
@@ -485,6 +492,64 @@ mod tests {
         }
     }
 
+    struct TestEngine {
+        corrected_n1: Ratio,
+    }
+    impl TestEngine {
+        fn new(engine_corrected_n1: Ratio) -> Self {
+            Self {
+                corrected_n1: engine_corrected_n1,
+            }
+        }
+        fn set_engine_n1(&mut self, n: Ratio) {
+            self.corrected_n1 = n;
+        }
+    }
+    impl EngineCorrectedN1 for TestEngine {
+        fn corrected_n1(&self) -> Ratio {
+            self.corrected_n1
+        }
+    }
+
+    struct TestLgciu {
+        compressed: bool,
+    }
+    impl TestLgciu {
+        fn new(compressed: bool) -> Self {
+            Self { compressed }
+        }
+
+        fn set_on_ground(&mut self, on_ground: bool) {
+            self.compressed = on_ground;
+        }
+    }
+    impl LgciuWeightOnWheels for TestLgciu {
+        fn left_and_right_gear_compressed(&self, _treat_ext_pwr_as_ground: bool) -> bool {
+            self.compressed
+        }
+        fn right_gear_compressed(&self, _treat_ext_pwr_as_ground: bool) -> bool {
+            true
+        }
+        fn right_gear_extended(&self, _treat_ext_pwr_as_ground: bool) -> bool {
+            false
+        }
+        fn left_gear_compressed(&self, _treat_ext_pwr_as_ground: bool) -> bool {
+            true
+        }
+        fn left_gear_extended(&self, _treat_ext_pwr_as_ground: bool) -> bool {
+            false
+        }
+        fn left_and_right_gear_extended(&self, _treat_ext_pwr_as_ground: bool) -> bool {
+            false
+        }
+        fn nose_gear_compressed(&self, _treat_ext_pwr_as_ground: bool) -> bool {
+            true
+        }
+        fn nose_gear_extended(&self, _treat_ext_pwr_as_ground: bool) -> bool {
+            false
+        }
+    }
+
     pub struct AuxiliaryPowerUnitTestAircraft<
         T: ApuGenerator,
         U: ApuStartMotor,
@@ -500,6 +565,10 @@ mod tests {
         apu_overhead: AuxiliaryPowerUnitOverheadPanel,
         apu_bleed: OnOffFaultPushButton,
         apu_gen_is_used: bool,
+        engine_1: TestEngine,
+        engine_2: TestEngine,
+        lgciu1: TestLgciu,
+        lgciu2: TestLgciu,
         has_fuel_remaining: bool,
         power_consumer: PowerConsumer,
         cut_start_motor_power: bool,
@@ -534,6 +603,10 @@ mod tests {
                 apu_overhead: AuxiliaryPowerUnitOverheadPanel::new(context),
                 apu_bleed: OnOffFaultPushButton::new_on(context, "APU_BLEED"),
                 apu_gen_is_used: true,
+                engine_1: TestEngine::new(Ratio::default()),
+                engine_2: TestEngine::new(Ratio::default()),
+                lgciu1: TestLgciu::new(false),
+                lgciu2: TestLgciu::new(false),
                 has_fuel_remaining: true,
                 cut_start_motor_power: false,
                 power_consumption: Power::new::<watt>(0.),
@@ -557,6 +630,10 @@ mod tests {
                 apu_overhead: AuxiliaryPowerUnitOverheadPanel::new(context),
                 apu_bleed: OnOffFaultPushButton::new_on(context, "APU_BLEED"),
                 apu_gen_is_used: true,
+                engine_1: TestEngine::new(Ratio::default()),
+                engine_2: TestEngine::new(Ratio::default()),
+                lgciu1: TestLgciu::new(false),
+                lgciu2: TestLgciu::new(false),
                 has_fuel_remaining: true,
                 cut_start_motor_power: false,
                 power_consumption: Power::new::<watt>(0.),
@@ -621,6 +698,16 @@ mod tests {
         fn power_consumption(&self) -> Power {
             self.power_consumption
         }
+
+        fn set_on_ground(&mut self, on_ground: bool) {
+            self.lgciu1.set_on_ground(on_ground);
+            self.lgciu2.set_on_ground(on_ground);
+        }
+
+        fn set_engine_n1(&mut self, n: Ratio) {
+            self.engine_1.set_engine_n1(n);
+            self.engine_2.set_engine_n1(n);
+        }
     }
     impl<T: ApuGenerator, U: ApuStartMotor, C: ApuConstants, const N: usize> Aircraft
         for AuxiliaryPowerUnitTestAircraft<T, U, C, N>
@@ -655,7 +742,10 @@ mod tests {
         }
 
         fn update_after_power_distribution(&mut self, _: &UpdateContext) {
-            self.apu.update_after_power_distribution();
+            self.apu.update_after_power_distribution(
+                &[&self.engine_1, &self.engine_2],
+                [&self.lgciu1, &self.lgciu2],
+            );
             self.apu_overhead.update_after_apu(&self.apu);
         }
     }
@@ -746,6 +836,16 @@ mod tests {
 
         pub fn power_demand(mut self, power: Power) -> Self {
             self.command(|a| a.set_power_demand(power));
+            self
+        }
+
+        fn on_ground(mut self, on_ground: bool) -> Self {
+            self.command(|a| a.set_on_ground(on_ground));
+            self
+        }
+
+        fn engine_n1_of(mut self, n1: Ratio) -> Self {
+            self.command(|a| a.set_engine_n1(n1));
             self
         }
 
@@ -859,6 +959,15 @@ mod tests {
         fn running_apu_without_bleed_air(mut self) -> Self {
             self.write_by_name("OVHD_APU_BLEED_PB_IS_ON", false);
             self.running_apu()
+        }
+
+        fn apu_fuel_line_flowing(mut self, flowing: bool, fuel_line_id: u8) -> Self {
+            if flowing {
+                self.write_by_name(&format!("FUELSYSTEM LINE FUEL FLOW:{}", fuel_line_id), 33.);
+            } else {
+                self.write_by_name(&format!("FUELSYSTEM LINE FUEL FLOW:{}", fuel_line_id), 0.);
+            }
+            self
         }
 
         fn ambient_pressure(mut self, ambient: Pressure) -> Self {
@@ -1082,6 +1191,10 @@ mod tests {
         fn bleed_air_pressure(&mut self) -> Arinc429Word<Pressure> {
             self.read_arinc429_by_name("APU_BLEED_AIR_PRESSURE")
         }
+
+        fn apu_fuel_used(&mut self) -> Arinc429Word<Mass> {
+            self.read_arinc429_by_name("APU_FUEL_USED")
+        }
     }
     impl<T: ApuGenerator, U: ApuStartMotor, C: ApuConstants, const N: usize> TestBed
         for AuxiliaryPowerUnitTestBed<T, U, C, N>
@@ -1103,7 +1216,7 @@ mod tests {
     mod apu_tests {
         use super::*;
         use ntest::{assert_about_eq, timeout};
-        use uom::si::power::watt;
+        use uom::si::{mass::kilogram, power::watt};
 
         const APPROXIMATE_STARTUP_TIME: u64 = 49;
 
@@ -2992,6 +3105,228 @@ mod tests {
             test_bed = test_bed.then_continue_with().running_apu();
 
             assert!(test_bed.n_raw().get::<percent>() >= 99.);
+        }
+
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn when_fuel_is_flowing_it_writes_fuel_used<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            C: ApuConstants,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, C, N>,
+        ) {
+            let mut test_bed = bed_with
+                .running_apu()
+                .and()
+                .apu_fuel_line_flowing(true, C::FUEL_LINE_ID)
+                .run(Duration::from_millis(1));
+
+            assert!(
+                test_bed
+                    .apu_fuel_used()
+                    .normal_value()
+                    .unwrap()
+                    .get::<kilogram>()
+                    > 0.
+            );
+        }
+
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn fuel_used_grows_over_time<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            C: ApuConstants,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, C, N>,
+        ) {
+            let mut test_bed = bed_with
+                .running_apu()
+                .and()
+                .apu_fuel_line_flowing(true, C::FUEL_LINE_ID)
+                .run(Duration::from_millis(1));
+
+            let initial_fuel_used = test_bed
+                .apu_fuel_used()
+                .normal_value()
+                .unwrap()
+                .get::<kilogram>();
+
+            test_bed = test_bed.run(Duration::from_millis(1000));
+
+            assert!(
+                test_bed
+                    .apu_fuel_used()
+                    .normal_value()
+                    .unwrap()
+                    .get::<kilogram>()
+                    > initial_fuel_used
+            );
+        }
+
+        #[rstest]
+        #[case::aps3200(test_bed_aps3200())]
+        #[case::pw980(test_bed_pw980())]
+        fn fuel_used_stops_when_no_fuel_flow<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            C: ApuConstants,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, C, N>,
+        ) {
+            let mut test_bed = bed_with
+                .running_apu()
+                .and()
+                .apu_fuel_line_flowing(true, C::FUEL_LINE_ID)
+                .run(Duration::from_millis(1));
+
+            assert!(
+                test_bed
+                    .apu_fuel_used()
+                    .normal_value()
+                    .unwrap()
+                    .get::<kilogram>()
+                    > 0.
+            );
+
+            let initial_fuel_used = test_bed
+                .apu_fuel_used()
+                .normal_value()
+                .unwrap()
+                .get::<kilogram>();
+
+            test_bed = test_bed
+                .apu_fuel_line_flowing(false, C::FUEL_LINE_ID)
+                .run(Duration::from_millis(1000));
+
+            assert_eq!(
+                test_bed
+                    .apu_fuel_used()
+                    .normal_value()
+                    .unwrap()
+                    .get::<kilogram>(),
+                initial_fuel_used
+            );
+        }
+
+        #[rstest]
+        #[case::pw980(test_bed_pw980())]
+        fn fuel_used_resets_on_engine_start<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            C: ApuConstants,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, C, N>,
+        ) {
+            let mut test_bed = bed_with
+                .running_apu()
+                .on_ground(true)
+                .and()
+                .apu_fuel_line_flowing(true, C::FUEL_LINE_ID)
+                .run(Duration::from_secs(1000));
+
+            let initial_fuel_used = test_bed
+                .apu_fuel_used()
+                .normal_value()
+                .unwrap()
+                .get::<kilogram>();
+
+            test_bed = test_bed
+                .then_continue_with()
+                .engine_n1_of(Ratio::new::<percent>(15.))
+                .run(Duration::from_secs(1000));
+
+            assert_eq!(
+                test_bed
+                    .apu_fuel_used()
+                    .normal_value()
+                    .unwrap()
+                    .get::<kilogram>(),
+                initial_fuel_used
+            );
+        }
+
+        #[rstest]
+        #[case::pw980(test_bed_pw980())]
+        fn fuel_used_resets_on_touchdown<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            C: ApuConstants,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, C, N>,
+        ) {
+            let mut test_bed = bed_with
+                .running_apu()
+                .on_ground(false)
+                .and()
+                .apu_fuel_line_flowing(true, C::FUEL_LINE_ID)
+                .run(Duration::from_secs(1000));
+
+            let initial_fuel_used = test_bed
+                .apu_fuel_used()
+                .normal_value()
+                .unwrap()
+                .get::<kilogram>();
+
+            test_bed = test_bed
+                .then_continue_with()
+                .on_ground(true)
+                .run(Duration::from_secs(1000));
+
+            assert_eq!(
+                test_bed
+                    .apu_fuel_used()
+                    .normal_value()
+                    .unwrap()
+                    .get::<kilogram>(),
+                initial_fuel_used
+            );
+        }
+
+        #[rstest]
+        #[case::pw980(test_bed_pw980())]
+        fn fuel_used_does_not_reset_on_takeoff<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            C: ApuConstants,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, C, N>,
+        ) {
+            let mut test_bed = bed_with
+                .running_apu()
+                .on_ground(true)
+                .and()
+                .apu_fuel_line_flowing(true, C::FUEL_LINE_ID)
+                .run(Duration::from_secs(1000));
+
+            let initial_fuel_used = test_bed
+                .apu_fuel_used()
+                .normal_value()
+                .unwrap()
+                .get::<kilogram>();
+
+            test_bed = test_bed
+                .then_continue_with()
+                .on_ground(false)
+                .run(Duration::from_secs(1000));
+
+            assert_eq!(
+                test_bed
+                    .apu_fuel_used()
+                    .normal_value()
+                    .unwrap()
+                    .get::<kilogram>(),
+                initial_fuel_used * 2.
+            );
         }
     }
 }
