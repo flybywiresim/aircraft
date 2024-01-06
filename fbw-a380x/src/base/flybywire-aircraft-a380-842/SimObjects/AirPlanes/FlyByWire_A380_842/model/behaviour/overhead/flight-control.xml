@@ -1,3 +1,6 @@
+<!-- Copyright (c) 2023-2024 FlyByWire Simulations -->
+<!-- SPDX-License-Identifier: GPL-3.0 -->
+
 <ModelBehaviors>
     <!-- PRIM switches -->
     <Template Name="FBW_A380X_OVHD_PRIM_Button_Template">
