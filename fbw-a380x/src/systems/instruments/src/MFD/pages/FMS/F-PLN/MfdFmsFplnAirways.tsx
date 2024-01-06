@@ -36,9 +36,6 @@ export class MfdFmsFplnAirways extends FmsPage<MfdFmsFplnAirwaysProps> {
     protected onNewData(): void {
         console.time('AIRWAYS:onNewData');
 
-        console.log(this.loadedFlightPlan.pendingAirways);
-        console.log(this.tmpyActive.get());
-
         if (this.props.fmService.revisedWaypoint()) {
             this.revisedFixIdent.set(this.props.fmService.revisedWaypoint().ident);
         }
@@ -66,7 +63,6 @@ export class MfdFmsFplnAirways extends FmsPage<MfdFmsFplnAirwaysProps> {
         super.onAfterRender(node);
 
         this.subs.push(this.tmpyActive.sub((v) => {
-            console.info('yaaa');
             this.returnButtonDiv.getOrDefault().style.visibility = (v ? 'hidden' : 'visible');
             this.tmpyFplnButtonDiv.getOrDefault().style.visibility = (v ? 'visible' : 'hidden');
         }, true));
@@ -180,7 +176,7 @@ class AirwayLine extends DisplayComponent<AirwayLineProps> {
                                 return false;
                             }
 
-                            if (v === 'DCT') {
+                            if (v === 'DCT' && this.props.isFirstLine === false) {
                                 this.viaFieldDisabled.set(true);
                                 return true;
                             }
@@ -204,6 +200,7 @@ class AirwayLine extends DisplayComponent<AirwayLineProps> {
                             const success = this.props.pendingAirways.thenAirway(airways[0]);
                             if (success === true) {
                                 this.viaFieldDisabled.set(true);
+                                this.toFieldDisabled.set(false);
                             } else {
                                 this.props.fmService.mfd.addMessageToQueue(NXSystemMessages.notAllowed);
                             }
