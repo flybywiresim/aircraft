@@ -244,7 +244,7 @@ export class FmsAircraftInterface {
         if (vSpeedDisagree !== this.vSpeedDisagree) {
             this.vSpeedDisagree = vSpeedDisagree;
             if (vSpeedDisagree) {
-                this.mfd.addMessageToQueue(NXSystemMessages.vToDisagree, this.vSpeedsValid.bind(this, []));
+                this.mfd.addMessageToQueue(NXSystemMessages.vToDisagree, () => this.vSpeedsValid());
             }
         }
 

@@ -66,7 +66,11 @@ export class FmgcData {
 
     public readonly blockFuel = Subject.create<number>(undefined); // in kg
 
-    public readonly taxiFuel = Subject.create<number>(undefined); // in kg
+    public readonly taxiFuelPilotEntry = Subject.create<number>(undefined); // in kg
+
+    public readonly taxiFuel = this.taxiFuelPilotEntry.map((it) => ((it === undefined) ? AmiValues.taxiFuelDefault : it)); // in kg
+
+    public readonly taxiFuelIsPilotEntered = this.taxiFuelPilotEntry.map((it) => it !== undefined);
 
     public readonly routeReserveFuelWeightPilotEntry = Subject.create<number>(undefined); // in kg
 
@@ -227,6 +231,11 @@ export class FmgcData {
      * Estimated take-off time, in seconds. Displays as HH:mm:ss
      */
     public readonly estimatedTakeoffTime = Subject.create<number>(undefined);
+}
+
+// Collection of airline specific configuration options
+class AmiValues {
+    static taxiFuelDefault: 800; // kilograms
 }
 
 /**

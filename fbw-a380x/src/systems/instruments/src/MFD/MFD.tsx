@@ -68,7 +68,7 @@ interface MfdComponentProps extends ComponentProps {
 export interface FmsErrorMessage {
     message: McduMessage;
     messageText: string;
-    backgroundColor: 'none' | 'amber' | 'cyan'; // Whether the message should be colored. White text on black background if 'none'
+    backgroundColor: 'white' | 'amber' | 'cyan'; // Whether the message should be colored.
     cleared: boolean; // If message has been cleared from footer
     isResolvedOverride: () => boolean;
     onClearOverride: () => void;
@@ -253,6 +253,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
      */
     onUplinkInProgress() {
         this.fmService.fmgc.data.cpnyFplnUplinkInProgress.set(true);
+        this.addMessageToQueue(NXSystemMessages.uplinkInsertInProg, () => this.fmService.fmgc.data.cpnyFplnUplinkInProgress.get() === false);
     }
 
     /**
@@ -261,7 +262,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
     onUplinkDone() {
         this.fmService.fmgc.data.cpnyFplnUplinkInProgress.set(false);
         this.fmService.fmgc.data.cpnyFplnAvailable.set(true);
-        this.addMessageToQueue(NXSystemMessages.uplinkInsertInProg);
+        this.removeMessageFromQueue(NXSystemMessages.uplinkInsertInProg.text);
     }
 
     /**
@@ -311,21 +312,18 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
     }
 
     /**
-     * Add type 2 message to fmgc message queue
+     * Add message to fmgc message queue
      * @param _message MessageObject
      * @param _isResolvedOverride Function that determines if the error is resolved at this moment (type II only).
      * @param _onClearOverride Function that executes when the error is actively cleared by the pilot (type II only).
      */
     public addMessageToQueue(_message: TypeIMessage | TypeIIMessage, _isResolvedOverride: () => boolean = undefined, _onClearOverride: () => void = undefined) {
-        if (!_message.isTypeTwo) {
-            return;
-        }
         const message = _isResolvedOverride === undefined && _onClearOverride === undefined ? _message : _message.getModifiedMessage('', _isResolvedOverride, _onClearOverride);
 
         const msg: FmsErrorMessage = {
             message: _message,
             messageText: message.text,
-            backgroundColor: message.isAmber ? 'amber' : 'none',
+            backgroundColor: message.isAmber ? 'amber' : 'white',
             cleared: false,
             onClearOverride: _message instanceof TypeIIMessage ? _message.onClear : () => { },
             isResolvedOverride: _message instanceof TypeIIMessage ? _message.isResolved : () => false,
@@ -351,7 +349,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
 
     private updateMessageQueue() {
         this.fmsErrors.getArray().forEach((it, idx) => {
-            if (it.isResolvedOverride() === true) {
+            if (it.message.isTypeTwo === true && it.isResolvedOverride() === true) {
                 console.warn(`message "${it.messageText}" is resolved.`);
                 this.fmsErrors.removeAt(idx);
             }
@@ -485,7 +483,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
                 this.fmService.acInterface.updateThrustReductionAcceleration();
             }
 
-            pd.taxiFuel.set(null);
+            pd.taxiFuelPilotEntry.set(null);
             pd.routeReserveFuelPercentagePilotEntry.set(0.00001);
             pd.routeReserveFuelWeightPilotEntry.set(0.00001);
 
@@ -663,7 +661,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
         }
         // INITIALIZE WEIGHT/CG
         if (this.fmgc.isAnEngineOn() && fmGW === 0 && this.initMessageSettable) {
-            this.addMessageToQueue(NXSystemMessages.initializeWeightOrCg);
+            this.addMessageToQueue(NXSystemMessages.initializeWeightOrCg, () => SimVar.GetSimVarValue('L:A32NX_FM_GROSS_WEIGHT', 'Number') !== 0);
             this.gwInitDisplayed++;
             this.initMessageSettable = false;
         }
@@ -688,9 +686,10 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
         this.efisSymbols.update(dt);
 
         this.guidanceController.update(dt);
+        const throttledDt = this.fmsUpdateThrottler.canUpdate(dt);
 
-        if (this.fmsUpdateThrottler.canUpdate(dt) !== -1) {
-            this.navigation.update(dt);
+        if (throttledDt !== -1) {
+            this.navigation.update(throttledDt);
             if (this.flightPlanService.hasActive) {
                 this.fmService.acInterface.updateThrustReductionAcceleration();
                 this.fmService.acInterface.updateTransitionAltitudeLevel();

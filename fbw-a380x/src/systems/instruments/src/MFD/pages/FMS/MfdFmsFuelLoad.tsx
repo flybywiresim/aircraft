@@ -242,6 +242,8 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                         <div style="margin-bottom: 20px;">
                             <InputField<number>
                                 dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxTaxiFuel))}
+                                dataHandlerDuringValidation={async (v) => this.props.fmService.fmgc.data.taxiFuelPilotEntry.set(v)}
+                                enteredByPilot={this.props.fmService.fmgc.data.taxiFuelIsPilotEntered}
                                 value={this.props.fmService.fmgc.data.taxiFuel}
                                 inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
                                 alignText="flex-end"

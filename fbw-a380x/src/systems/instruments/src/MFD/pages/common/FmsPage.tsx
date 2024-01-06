@@ -139,7 +139,7 @@ export abstract class FmsPage<T extends AbstractMfdPageProps> extends DisplayCom
                 fm.v2ToBeConfirmed.set(pd.v2);
                 this.loadedFlightPlan.setPerformanceData('v2', undefined);
 
-                this.props.fmService.mfd.addMessageToQueue(NXSystemMessages.checkToData);
+                this.props.fmService.mfd.addMessageToQueue(NXSystemMessages.checkToData, () => this.loadedFlightPlan.performanceData.vr !== undefined);
             }
         }
     }

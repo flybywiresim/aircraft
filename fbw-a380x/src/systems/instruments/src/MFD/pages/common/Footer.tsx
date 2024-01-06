@@ -30,8 +30,8 @@ export class Footer extends DisplayComponent<AbstractMfdPageProps> {
                 this.messageToBeCleared.set(true);
                 this.messageRef.instance.textContent = arr[ind].messageText;
 
-                if (arr[ind].backgroundColor === 'none') {
-                    this.messageRef.instance.style.backgroundColor = 'transparent';
+                if (arr[ind].backgroundColor === 'white') {
+                    this.messageRef.instance.style.backgroundColor = '#ffffff';
                 } else if (arr[ind].backgroundColor === 'cyan') {
                     this.messageRef.instance.style.backgroundColor = '#00ffff';
                 } else if (arr[ind].backgroundColor === 'amber') {
@@ -82,9 +82,7 @@ export class Footer extends DisplayComponent<AbstractMfdPageProps> {
                     }}
                 />
                 <div class="mfd-footer-message-area">
-                    <span ref={this.messageRef}>
-                        CHECK T.O. DATA
-                    </span>
+                    <span ref={this.messageRef} />
                 </div>
             </div>
         );

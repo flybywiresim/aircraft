@@ -99,7 +99,7 @@ export class MfdFlightManagementService {
         if (this.enginesWereStarted.get() === false) {
             // On ground, engines off
             // LW = TOW - TRIP
-            return this.getTakeoffWeight() - this.getTripFuel();
+            return this.getTakeoffWeight() ? (this.getTakeoffWeight() - this.getTripFuel()) : null;
         }
         if (this.fmgc.getFlightPhase() >= FmgcFlightPhase.Takeoff) {
             // In flight

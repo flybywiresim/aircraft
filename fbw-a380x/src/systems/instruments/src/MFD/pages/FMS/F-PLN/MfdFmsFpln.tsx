@@ -1122,13 +1122,15 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
         let altStr: VNode = <span>-----</span>;
         const previousRow = this.props.previousRow.get();
         if (data.altitudePrediction) {
+            const isBelowTransAlt = data.altitudePrediction < (data.transitionAltitude ?? 18_000);
             if (previousRow
                 && isWaypoint(previousRow)
-                && previousRow.altitudePrediction === data.altitudePrediction
+                // eslint-disable-next-line max-len
+                && ((isBelowTransAlt && previousRow.altitudePrediction === data.altitudePrediction) || (previousRow.altitudePrediction - data.altitudePrediction < 100))
                 && !data.hasAltitudeConstraint
                 && !(FplnLineFlags.AfterSpecial === (this.props.flags.get() & FplnLineFlags.AfterSpecial) || FplnLineFlags.FirstLine === (this.props.flags.get() & FplnLineFlags.FirstLine))) {
                 altStr = <span style="font-family: HoneywellMCDU, monospace;">"</span>;
-            } else if (data.altitudePrediction > (data.transitionAltitude ?? 18000)) {
+            } else if (!isBelowTransAlt) {
                 altStr = <span>{`FL${Math.round(data.altitudePrediction / 100).toString()}`}</span>;
             } else {
                 altStr = <span>{data.altitudePrediction.toFixed(0)}</span>;
@@ -1161,8 +1163,8 @@ class FplnLegLine extends DisplayComponent<FplnLegLineProps> {
             && previousRow.speedPrediction === data.speedPrediction
             && !data.hasSpeedConstraint
             && !(FplnLineFlags.AfterSpecial === (this.props.flags.get() & FplnLineFlags.AfterSpecial) || FplnLineFlags.FirstLine === (this.props.flags.get() & FplnLineFlags.FirstLine))) {
-            speedStr = <span style="font-family: HoneywellMCDU, monospace;">"</span>;
-        } else if (data.speedPrediction !== undefined && data.speedPrediction !== null) {
+            speedStr = <span style="font-family: HoneywellMCDU, monospace; padding-left: 3px; padding-right: 3px;">"</span>;
+        } else if (Number.isFinite(data.speedPrediction) && data.speedPrediction > 0) {
             speedStr = <span>{data.speedPrediction > 2 ? data.speedPrediction.toFixed(0) : `.${data.speedPrediction.toFixed(2).split('.')[1]}`}</span>;
         }
 
