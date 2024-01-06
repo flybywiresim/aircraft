@@ -71,6 +71,8 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
     private destTimeLabel = Subject.create<string>('--:--');
 
+    private destEfob = Subject.create<string>('--.-');
+
     private destDistanceLabel = Subject.create<string>('---');
 
     private displayFplnFromLineIndex = Subject.create<number>(0);
@@ -128,6 +130,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             const utcTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
             const eta = new Date((utcTime + destPred.secondsFromPresent) * 1000);
             this.destTimeLabel.set(`${eta.getHours().toString().padStart(2, '0')}:${eta.getMinutes().toString().padStart(2, '0')}`);
+            this.destEfob.set(this.props.fmService.fmgc.getDestEFOB(true) ? this.props.fmService.fmgc.getDestEFOB(true).toFixed(0) : '--.-');
             this.destDistanceLabel.set(Number.isFinite(destPred.distanceFromAircraft) ? destPred.distanceFromAircraft.toFixed(0) : '---');
         }
         console.timeEnd('F-PLN:onNewData');
@@ -688,7 +691,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                                 'mfd-fms-yellow-text': this.lineColor.map((it) => it === FplnLineColor.Temporary),
                             }}
                             >
-                                {(this.props.fmService.fmgc.getDestEFOB(true)).toFixed(1)}
+                                {this.destEfob}
 
                             </span>
                             <span class="mfd-label-unit mfd-unit-trailing">T</span>

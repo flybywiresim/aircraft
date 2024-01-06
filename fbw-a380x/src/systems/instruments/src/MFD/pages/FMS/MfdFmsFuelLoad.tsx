@@ -86,7 +86,8 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                 const eta = new Date((utcTime + destPred.secondsFromPresent) * 1000);
                 this.destEta.set(`${eta.getHours().toString().padStart(2, '0')}:${eta.getMinutes().toString().padStart(2, '0')}`);
             }
-            this.destEfob.set(this.props.fmService.fmgc.getDestEFOB(true).toFixed(1));
+            const destEfob = this.props.fmService.fmgc.getDestEFOB(true);
+            this.destEfob.set(destEfob ? destEfob.toFixed(1) : '--.-');
         }
 
         if (this.loadedFlightPlan.alternateDestinationAirport) {
