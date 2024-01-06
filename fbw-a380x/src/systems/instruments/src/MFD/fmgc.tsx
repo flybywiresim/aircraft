@@ -400,15 +400,15 @@ export class FmgcDataInterface implements Fmgc {
         if (useFob === true && efob !== undefined) {
             return Units.poundToKilogram(efob) / 1000.0;
         }
-        return null;
+        return 0;
     }
 
     getAltEFOB(useFOB = false) {
         // TODO estimate alternate fuel
-        if (this.getDestEFOB(useFOB) === null) {
-            return null;
+        if (this.getDestEFOB(useFOB) === 0) {
+            return 0;
         }
-        return this.getDestEFOB(useFOB) - 1.0;
+        return (this.getDestEFOB(useFOB) - 1.0) > 0 ? this.getDestEFOB(useFOB) - 1.0 : 0;
     }
 
     getDepartureElevation(): Feet {

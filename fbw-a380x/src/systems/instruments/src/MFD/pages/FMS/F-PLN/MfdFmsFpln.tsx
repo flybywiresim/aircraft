@@ -130,7 +130,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             const utcTime = SimVar.GetGlobalVarValue('ZULU TIME', 'seconds');
             const eta = new Date((utcTime + destPred.secondsFromPresent) * 1000);
             this.destTimeLabel.set(`${eta.getHours().toString().padStart(2, '0')}:${eta.getMinutes().toString().padStart(2, '0')}`);
-            this.destEfob.set(this.props.fmService.fmgc.getDestEFOB(true) ? this.props.fmService.fmgc.getDestEFOB(true).toFixed(0) : '--.-');
+            this.destEfob.set(this.props.fmService.fmgc.getDestEFOB(true) > 0 ? this.props.fmService.fmgc.getDestEFOB(true).toFixed(1) : '--.-');
             this.destDistanceLabel.set(Number.isFinite(destPred.distanceFromAircraft) ? destPred.distanceFromAircraft.toFixed(0) : '---');
         }
         console.timeEnd('F-PLN:onNewData');
