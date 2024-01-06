@@ -193,7 +193,7 @@ export class GuidanceController {
 
         const matchingLeg = plan.elementAt(focusedWpIndex);
 
-        if (!matchingLeg || matchingLeg.isDiscontinuity === true || !matchingLeg.isXF()) {
+        if (!matchingLeg || matchingLeg.isDiscontinuity === true) {
             return;
         }
 
@@ -204,7 +204,7 @@ export class GuidanceController {
         // FIXME HAX
         const matchingGeometryLeg = this.getGeometryForFlightPlan(focusedWpFpIndex, focusedWpInAlternate).legs.get(focusedWpIndex);
 
-        if (!matchingGeometryLeg) {
+        if (!matchingGeometryLeg?.terminationWaypoint) {
             // throw new Error('[FMS/MRP] Could not find matching geometry leg');
             SimVar.SetSimVarValue('L:A32NX_SELECTED_WAYPOINT_LAT', 'Degrees', SimVar.GetSimVarValue('PLANE LATITUDE', 'degree latitude'));
             SimVar.SetSimVarValue('L:A32NX_SELECTED_WAYPOINT_LONG', 'Degrees', SimVar.GetSimVarValue('PLANE LONGITUDE', 'degree longitude'));

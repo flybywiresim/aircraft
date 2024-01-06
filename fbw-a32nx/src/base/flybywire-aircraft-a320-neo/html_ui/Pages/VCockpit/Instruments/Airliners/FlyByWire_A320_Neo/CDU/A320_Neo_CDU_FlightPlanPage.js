@@ -647,17 +647,16 @@ class CDUFlightPlanPage {
             }
         }
 
-        // Pass current waypoint data to FMGC
-        if (scrollWindow[1]) {
-            mcdu.efisInterface.setPlanCentre(targetPlan.index, scrollWindow[1].fpIndex, scrollWindow[1].inAlternate);
-        } else if (scrollWindow[0]) {
-            mcdu.efisInterface.setPlanCentre(targetPlan.index, scrollWindow[0].fpIndex, scrollWindow[0].inAlternate);
+        const mrpTarget = scrollWindow[1] ? scrollWindow[1] : scrollWindow[0];
+        if (mrpTarget) {
+            const mrpIndex = CDUFlightPlanPage.findAppropriateMrpCentre(mcdu.flightPlan(targetPlan.index, mrpTarget.inAlternate), mrpTarget.fpIndex)
+            mcdu.efisInterface.setPlanCentre(targetPlan.index, mrpIndex, mrpTarget.inAlternate);
         } else {
             mcdu.efisInterface.setPlanCentre(targetPlan.index, first + offset, false);
         }
 
         mcdu.efisInterface.setAlternateLegVisible(scrollWindow.some(row => row.inAlternate), forPlan);
-        mcdu.efisInterface.setMissedLegVisible(targetPlan && scrollWindow.some(row => row.fpIndex >= targetPlan.firstMissedApproachLegIndex), forPlan);
+        mcdu.efisInterface.setMissedLegVisible(targetPlan && scrollWindow.some((row, index) => index <= 1 && row.fpIndex >= targetPlan.firstMissedApproachLegIndex), forPlan);
         mcdu.efisInterface.setAlternateMissedLegVisible(targetPlan && targetPlan.alternateFlightPlan && scrollWindow.some(row => row.inAlternate && row.fpIndex >= targetPlan.alternateFlightPlan.firstMissedApproachLegIndex), forPlan);
         mcdu.efisInterface.setSecRelatedPageOpen(!forActiveOrTemporary);
 
@@ -909,6 +908,14 @@ class CDUFlightPlanPage {
         }
 
         return true;
+    }
+
+    static findAppropriateMrpCentre(plan, fromIndex) {
+        if (!plan) {
+            return -1;
+        }
+
+        return plan.allLegs.findIndex((leg, index) => index >= fromIndex && leg.isDiscontinuity === false && !leg.isVectors());
     }
 }
 
