@@ -8,6 +8,7 @@
             "name": "Attach",
             "type": "cppvsdbg",
             "request": "attach",
+            "processId": "${command:pickProcess}",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
@@ -45,4 +46,4 @@
             }
         }
     ]
-}
+    }
