@@ -44,7 +44,7 @@ jobs:
       - name: npm test
         run: npm test
   build-a32nx:
-    name: Build A32NX
+    name: Build and upload A32NX
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
     env:
@@ -86,7 +86,7 @@ jobs:
           name: flybywire-aircraft-a320-neo
           path: ./fbw-a32nx/out/flybywire-aircraft-a320-neo/
   build-a380x:
-    name: Build A380X
+    name: Build and upload A380X
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
     env:
