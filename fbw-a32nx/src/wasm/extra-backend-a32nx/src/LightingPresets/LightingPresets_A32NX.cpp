@@ -93,15 +93,17 @@ void LightingPresets_A32NX::readFromAircraft() {
   currentLightValues.ndBrtFoLevel = ndBrtFoLevel->readFromSim();
   currentLightValues.wxTerrainBrtFoLevel = wxTerrainBrtFoLevel->readFromSim();
   currentLightValues.consoleLightFoLevel = consoleLightFoLevel->readFromSim();
-  currentLightValues.dcduLeftLightLevel = dcduLeftLightLevel->readFromSim();
-  currentLightValues.dcduRightLightLevel = dcduRightLightLevel->readFromSim();
-  currentLightValues.mcduLeftLightLevel = mcduLeftLightLevel->readFromSim();
-  currentLightValues.mcduRightLightLevel = mcduRightLightLevel->readFromSim();
   currentLightValues.ecamUpperLightLevel = ecamUpperLightLevel->readFromSim();
   currentLightValues.ecamLowerLightLevel = ecamLowerLightLevel->readFromSim();
   currentLightValues.floodPnlLightLevel = floodPnlLightLevel->readFromSim();
   currentLightValues.pedestalIntegralLightLevel = pedestalIntegralLightLevel->readFromSim();
   currentLightValues.floodPedLightLevel = floodPedLightLevel->readFromSim();
+  // these are not using standard 0..100 range
+  // so we need to convert them to 0..100
+  currentLightValues.dcduLeftLightLevel = dcduLeftLightLevel->readFromSim() * 100;   // 0.0..1.0
+  currentLightValues.dcduRightLightLevel = dcduRightLightLevel->readFromSim() * 100; // 0.0..1.0
+  currentLightValues.mcduLeftLightLevel = mcduLeftLightLevel->readFromSim() * 12.5;   // 0.5..8.0
+  currentLightValues.mcduRightLightLevel = mcduRightLightLevel->readFromSim() * 12.5; // 0.5..8.0
 }
 
 void LightingPresets_A32NX::applyToAircraft() {
@@ -120,15 +122,17 @@ void LightingPresets_A32NX::applyToAircraft() {
   ndBrtFoLevel->setAndWriteToSim(intermediateLightValues.ndBrtFoLevel);
   wxTerrainBrtFoLevel->setAndWriteToSim(intermediateLightValues.wxTerrainBrtFoLevel);
   consoleLightFoLevel->setAndWriteToSim(intermediateLightValues.consoleLightFoLevel);
-  dcduLeftLightLevel->setAndWriteToSim(intermediateLightValues.dcduLeftLightLevel);
-  dcduRightLightLevel->setAndWriteToSim(intermediateLightValues.dcduRightLightLevel);
-  mcduLeftLightLevel->setAndWriteToSim(intermediateLightValues.mcduLeftLightLevel);
-  mcduRightLightLevel->setAndWriteToSim(intermediateLightValues.mcduRightLightLevel);
   ecamUpperLightLevel->setAndWriteToSim(intermediateLightValues.ecamUpperLightLevel);
   ecamLowerLightLevel->setAndWriteToSim(intermediateLightValues.ecamLowerLightLevel);
   floodPnlLightLevel->setAndWriteToSim(intermediateLightValues.floodPnlLightLevel);
   pedestalIntegralLightLevel->setAndWriteToSim(intermediateLightValues.pedestalIntegralLightLevel);
   floodPedLightLevel->setAndWriteToSim(intermediateLightValues.floodPedLightLevel);
+  // These are not using standard 0..100 range
+  // So we need to convert them back
+  dcduLeftLightLevel->setAndWriteToSim(intermediateLightValues.dcduLeftLightLevel / 100);     // 0.0..1.0
+  dcduRightLightLevel->setAndWriteToSim(intermediateLightValues.dcduRightLightLevel / 100);   // 0.0..1.0
+  mcduLeftLightLevel->setAndWriteToSim(intermediateLightValues.mcduLeftLightLevel / 12.5);     // 0.5..8.0
+  mcduRightLightLevel->setAndWriteToSim(intermediateLightValues.mcduRightLightLevel / 12.5) ;   // 0.5..8.0
 }
 
 void LightingPresets_A32NX::loadFromIni(const mINI::INIStructure& ini,
@@ -156,10 +160,10 @@ void LightingPresets_A32NX::loadFromIni(const mINI::INIStructure& ini,
   loadedLightValues.ndBrtFoLevel = iniGetOrDefault(ini, iniSectionName, "nd_fo_lvl", 50.0);
   loadedLightValues.wxTerrainBrtFoLevel = iniGetOrDefault(ini, iniSectionName, "wx_fo_lvl", 50.0);
   loadedLightValues.consoleLightFoLevel = iniGetOrDefault(ini, iniSectionName, "console_fo_lt", 50.0);
-  loadedLightValues.dcduLeftLightLevel = iniGetOrDefault(ini, iniSectionName, "dcdu_left_lvl", 50.0) / 100;
-  loadedLightValues.dcduRightLightLevel = iniGetOrDefault(ini, iniSectionName, "dcdu_right_lvl", 50.0) / 100;
-  loadedLightValues.mcduLeftLightLevel = iniGetOrDefault(ini, iniSectionName, "mcdu_left_lvl", 50.0) / 100;
-  loadedLightValues.mcduRightLightLevel = iniGetOrDefault(ini, iniSectionName, "mcdu_right_lvl", 50.0) / 100;
+  loadedLightValues.dcduLeftLightLevel = iniGetOrDefault(ini, iniSectionName, "dcdu_left_lvl", 50.0);
+  loadedLightValues.dcduRightLightLevel = iniGetOrDefault(ini, iniSectionName, "dcdu_right_lvl", 50.0);
+  loadedLightValues.mcduLeftLightLevel = iniGetOrDefault(ini, iniSectionName, "mcdu_left_lvl", 50.0);
+  loadedLightValues.mcduRightLightLevel = iniGetOrDefault(ini, iniSectionName, "mcdu_right_lvl", 50.0);
   loadedLightValues.ecamUpperLightLevel = iniGetOrDefault(ini, iniSectionName, "ecam_upper_lvl", 50.0);
   loadedLightValues.ecamLowerLightLevel = iniGetOrDefault(ini, iniSectionName, "ecam_lower_lvl", 50.0);
   loadedLightValues.floodPnlLightLevel = iniGetOrDefault(ini, iniSectionName, "flood_pnl_lt", 50.0);
@@ -183,10 +187,10 @@ void LightingPresets_A32NX::saveToIni(mINI::INIStructure& ini, const std::string
   ini[iniSectionName]["nd_fo_lvl"] = std::to_string(currentLightValues.ndBrtFoLevel);
   ini[iniSectionName]["wx_fo_lvl"] = std::to_string(currentLightValues.wxTerrainBrtFoLevel);
   ini[iniSectionName]["console_fo_lt"] = std::to_string(currentLightValues.consoleLightFoLevel);
-  ini[iniSectionName]["dcdu_left_lvl"] = std::to_string(currentLightValues.dcduLeftLightLevel * 100);
-  ini[iniSectionName]["dcdu_right_lvl"] = std::to_string(currentLightValues.dcduRightLightLevel * 100);
-  ini[iniSectionName]["mcdu_left_lvl"] = std::to_string(currentLightValues.mcduLeftLightLevel * 100);
-  ini[iniSectionName]["mcdu_right_lvl"] = std::to_string(currentLightValues.mcduRightLightLevel * 100);
+  ini[iniSectionName]["dcdu_left_lvl"] = std::to_string(currentLightValues.dcduLeftLightLevel);
+  ini[iniSectionName]["dcdu_right_lvl"] = std::to_string(currentLightValues.dcduRightLightLevel);
+  ini[iniSectionName]["mcdu_left_lvl"] = std::to_string(currentLightValues.mcduLeftLightLevel);
+  ini[iniSectionName]["mcdu_right_lvl"] = std::to_string(currentLightValues.mcduRightLightLevel);
   ini[iniSectionName]["ecam_upper_lvl"] = std::to_string(currentLightValues.ecamUpperLightLevel);
   ini[iniSectionName]["ecam_lower_lvl"] = std::to_string(currentLightValues.ecamLowerLightLevel);
   ini[iniSectionName]["flood_pnl_lt"] = std::to_string(currentLightValues.floodPnlLightLevel);
@@ -266,5 +270,7 @@ bool LightingPresets_A32NX::calculateIntermediateValues() {
   intermediateLightValues.pedestalIntegralLightLevel = convergeValue( currentLightValues.pedestalIntegralLightLevel,loadedLightValues.pedestalIntegralLightLevel);
   intermediateLightValues.floodPedLightLevel = convergeValue( currentLightValues.floodPedLightLevel,loadedLightValues.floodPedLightLevel);
   // clang-format on
+  std::cout << "LightingPresets_A32NX: Read from aircraft: " << std::endl;
+  std::cout << str() << std::endl;
   return intermediateLightValues == loadedLightValues;
 }

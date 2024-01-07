@@ -70,11 +70,14 @@ class LightingPresets : public Module {
 
   /**
    * Read the current lighting level from the aircraft.
+   * The values need to be normalized to the range 0 too 100.
    */
   virtual void readFromAircraft() = 0;
 
   /**
-   * Applies the currently loaded preset to the aircraft
+   * Applies the currently loaded preset to the aircraft.
+   * The normalized values (0..100) need to be converted back to the range the
+   * light variable in the aircraft expects.
    */
   virtual void applyToAircraft() = 0;
 
