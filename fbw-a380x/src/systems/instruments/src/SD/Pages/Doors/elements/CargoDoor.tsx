@@ -14,10 +14,10 @@ const CargoDoor: React.FC<Position & CargoDoorProps> = ({ x, y, label, width, he
     }
 
     return (
-        <g id={`${label}-door`}>
-            <rect x={x} y={y} width={width} height={height} rx="4" className={!validSDAC || doorOpen ? 'Amber SW2' : 'Green SW2'} />
-            <rect x={x + 3} y={y + 3} width={width - 6} height={height - 6} rx="4" className={!validSDAC || doorOpen ? 'Amber SW2 AmberFill' : 'Green SW2 BackgroundFill'} />
-            <text x={label === 'AVNCS' ? x - 160 : x + 35} y={label === 'AVNCS' ? y + 18 : y + 20} className={`${!validSDAC ? 'White' : 'AmberFill'} F24`}>{cargoDoorMessage}</text>
+        <g id={`${label}-door`} transform={`translate(${x} ${y})`}>
+            <rect x={0} y={0} width={width} height={height} rx='4' className={!validSDAC || doorOpen ? 'Amber SW2' : 'Green SW2'} />
+            <rect x={3} y={4} width={width - 6} height={height - 8} rx='4' className={!validSDAC || doorOpen ? 'Amber SW2 AmberFill' : 'Green SW2 NoFill'} />
+            <text x={label === 'AVNCS' ? -160 : 35} y={label === 'AVNCS' ? 18 : 20} className={`${!validSDAC ? 'White' : 'AmberFill'} F24`}>{cargoDoorMessage}</text>
         </g>
     );
 };

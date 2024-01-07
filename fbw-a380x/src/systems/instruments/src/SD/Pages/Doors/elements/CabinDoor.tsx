@@ -14,54 +14,54 @@ const CabinDoor: React.FC<Position & CabinDoorProps> = ({ x, y, doorNumber, side
     }
 
     let cabinDoorMessage = '';
-    let xpos = x;
+    let xpos = 0;
     if (!validSDAC || (engineRunning && doorOpen)) {
         cabinDoorMessage = side === 'L' ? `${mainOrUpper} ${doorNumber}${side} ----` : `---- ${mainOrUpper} ${doorNumber}${side}`;
     }
     if (side === 'L') {
-        xpos = x - 180;
+        xpos = -180;
         if (mainOrUpper === 'UPPER') {
-            xpos = x - 193;
+            xpos = -193;
         }
     } else {
-        xpos = x + 30;
+        xpos = 30;
         if (mainOrUpper === 'UPPER') {
-            xpos = x + 33;
+            xpos = 33;
         }
     }
     let doorNumberCss = 'Green';
-    let doorRectCss = 'Green SW2 BackgroundFill';
+    let doorRectCss = 'Green SW3 BackgroundFill';
     let slideCss = 'White';
     if (side === 'L') {
         slideCss = 'White EndAlign';
     }
     if (!validSDAC) {
-        doorNumberCss = 'AmberFill';
+        doorNumberCss = 'Amber';
         doorRectCss = 'Hide';
         slideCss = 'AmberFill';
         if (side === 'L') {
             slideCss = 'AmberFill EndAlign';
         }
-    } else if (engineRunning && doorOpen) {
+    } else if (doorOpen) {
         doorNumberCss = 'BackgroundFill';
-        doorRectCss = 'Amber SW2 AmberFill';
+        doorRectCss = 'Amber SW3 AmberFill';
     }
 
     return (
-        <g id={`${side}${doorNumber}`}>
+        <g id={`${side}${doorNumber}`} transform={`translate(${x} ${y})`}>
             <rect
-                x={side === 'L' ? x - 3 : x + 3}
-                y={y - 22}
-                width="18"
-                height="26"
-                rx="5"
+                x={0}
+                y={0}
+                width='18'
+                height='26'
+                rx='5'
                 className={
                     doorRectCss
                 }
             />
-            <text x={side === 'L' ? x : x + 6} y={y} className={`${doorNumberCss} F24`}>{!validSDAC ? 'X' : doorNumber}</text>
-            <text x={xpos} y={y - 5} className={`${!validSDAC ? 'White' : 'AmberFill'} F22`}>{cabinDoorMessage}</text>
-            <text x={side === 'L' ? x - 9 : x + 26} y={y + 14} className={`${slideCss} F26`}>{slide}</text>
+            <text x={4} y={21} className={`${doorNumberCss} F22`}>{!validSDAC ? 'X' : doorNumber}</text>
+            <text x={xpos} y={-5} className={`${!validSDAC ? 'White' : 'AmberFill'} F22`}>{cabinDoorMessage}</text>
+            <text x={side === 'L' ? -6 : 23} y={38} className={`${slideCss} F30`}>{slide}</text>
         </g>
     );
 };
