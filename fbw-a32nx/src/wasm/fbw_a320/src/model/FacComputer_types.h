@@ -1,7 +1,6 @@
 #ifndef RTW_HEADER_FacComputer_types_h_
 #define RTW_HEADER_FacComputer_types_h_
 #include "rtwtypes.h"
-
 #ifndef DEFINED_TYPEDEF_FOR_SignStatusMatrix_
 #define DEFINED_TYPEDEF_FOR_SignStatusMatrix_
 

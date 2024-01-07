@@ -1,7 +1,6 @@
 #ifndef RTW_HEADER_LateralNormalLaw_types_h_
 #define RTW_HEADER_LateralNormalLaw_types_h_
 #include "rtwtypes.h"
-
 #ifndef DEFINED_TYPEDEF_FOR_base_time_
 #define DEFINED_TYPEDEF_FOR_base_time_
 
