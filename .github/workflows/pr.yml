@@ -81,7 +81,7 @@ jobs:
         uses: actions/upload-artifact@v2
         if: github.event.pull_request.auto_merge == false
         with:
-          name: A32NX
+          name: flybywire-aircraft-a320-neo
           path: ./fbw-a32nx/out/flybywire-aircraft-a320-neo/
   build-a380x:
     name: Build A380X
@@ -121,5 +121,5 @@ jobs:
         uses: actions/upload-artifact@v2
         if: github.event.pull_request.auto_merge == false
         with:
-          name: A380X
+          name: flybywire-aircraft-a380-842
           path: ./fbw-a380x/out/flybywire-aircraft-a380-842/
