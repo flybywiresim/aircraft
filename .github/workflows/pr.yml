@@ -67,7 +67,7 @@ jobs:
       - name: Build A32NX
         run: |
           ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
-          ./scripts/dev-env/run.sh ./scripts/build.sh --no-tty -j 4
+          ./scripts/dev-env/run.sh ./scripts/build_a32nx.sh --no-tty -j 4
           rm -rf fbw-a32nx/src
           docker system prune -af
       - name: Generate install.json
@@ -107,7 +107,7 @@ jobs:
       - name: Build A380X
         run: |
           ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
-          ./scripts/dev-env/run.sh ./scripts/build.sh --no-tty -j 4
+          ./scripts/dev-env/run.sh ./scripts/build_a380x.sh --no-tty -j 4
           rm -rf fbw-a380x/src
           docker system prune -af
       - name: Generate install.json
