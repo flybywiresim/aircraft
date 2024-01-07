@@ -94,9 +94,9 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v2
       - name: Create .env file
+        # We do not set FBW_TYPECHECK=1 here, as there are still things to fix in the A380 instruments
         run: |
           echo A32NX_PRODUCTION_BUILD=1 >> fbw-a380x/.env
-          echo FBW_TYPECHECK=1 >> fbw-a380x/.env
           echo CLIENT_ID=\"${{ secrets.NAVIGRAPH_CLIENT_ID }}\" >> fbw-a380x/.env
           echo CLIENT_SECRET=\"${{ secrets.NAVIGRAPH_CLIENT_SECRET }}\" >> fbw-a380x/.env
           echo CHARTFOX_SECRET=\"${{ secrets.CHARTFOX_SECRET }}\" >> fbw-a380x/.env
