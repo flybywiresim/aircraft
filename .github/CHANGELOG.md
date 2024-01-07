@@ -37,6 +37,7 @@
 1. [FLIGHTMODEL] Fix pitch trim on approach - @donstim (donbikes)
 1. [GENERAL] Added C++ WASM framework and migrated all flypad-backend code to it - @frankkopp (Frank Kopp)
 1. [EFB] C++ WASM framework, extra-backend to replace flypad-backend, smooth dial turning for Lighting Presets  - @frankkopp (Frank Kopp)
+1. [FMS] Fix ORIGIN/DEST not being reported to API - @nathaninnes (Sabes)
 
 ## 0.11.0
 
