@@ -40,7 +40,8 @@ jobs:
         run: ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
       - name: npm test
         run: npm test
-  build:
+  build-a32nx:
+    name: Build A32NX
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
     env:
@@ -79,3 +80,43 @@ jobs:
         with:
           name: A32NX
           path: ./fbw-a32nx/out/flybywire-aircraft-a320-neo/
+  build-a380x:
+    name: Build A380X
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    env:
+      A32NX_PRODUCTION_BUILD: 1
+      A32NX_INSTRUMENTS_BUILD_WORKERS: 2
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v2
+      - name: Create .env file
+        run: |
+          echo A32NX_PRODUCTION_BUILD=1 >> fbw-a380x/.env
+          echo FBW_TYPECHECK=1 >> fbw-a380x/.env
+          echo CLIENT_ID=\"${{ secrets.NAVIGRAPH_CLIENT_ID }}\" >> fbw-a380x/.env
+          echo CLIENT_SECRET=\"${{ secrets.NAVIGRAPH_CLIENT_SECRET }}\" >> fbw-a380x/.env
+          echo CHARTFOX_SECRET=\"${{ secrets.CHARTFOX_SECRET }}\" >> fbw-a380x/.env
+          echo SENTRY_DSN=\"${{ secrets.SENTRY_DSN }}\" >> fbw-a380x/.env
+          echo LOCALAZY_READ_KEY=${{ secrets.LOCALAZY_READ_KEY }} >> .env
+          echo VITE_BUILD=false >> .env
+          cat fbw-a380x/.env
+      - name: Build A380X
+        run: |
+          ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
+          ./scripts/dev-env/run.sh ./scripts/build.sh --no-tty -j 4
+          rm -rf fbw-a380x/src
+          docker system prune -af
+      - name: Generate install.json
+        if: github.event.pull_request.auto_merge == false
+        run: |
+          df -h
+          node ./scripts/fragment_a380x.js
+          cp ./fbw-a380x/out/build-modules/modules.json ./fbw-a380x/out/flybywire-aircraft-a380-842/install.json
+          node ./scripts/install-source_a380x.js
+      - name: Upload PR artifact
+        uses: actions/upload-artifact@v2
+        if: github.event.pull_request.auto_merge == false
+        with:
+          name: A380X
+          path: ./fbw-a380x/out/flybywire-aircraft-a380-842/
