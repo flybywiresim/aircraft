@@ -358,26 +358,34 @@ impl A380AvionicsDataCommunicationNetwork {
 
     fn update_switch_messages(&mut self, network: usize) {
         let mut initialised = [false; 16];
-        for (&switch_id, neighboors) in &self.afdx_networks[network] {
+        for (&switch_id, neighbours) in &self.afdx_networks[network] {
             let switch_id = switch_id as usize;
-            let current_switch = &mut self.afdx_switches[switch_id];
             if !initialised[switch_id] {
-                current_switch.set_acdn_messages(Rc::new(FxHashMap::default().into()));
+                let messages = if let Some(neighboor) =
+                    neighbours.iter().find(|&&id| initialised[id as usize])
+                {
+                    self.afdx_switches[*neighboor as usize].get_acdn_messages()
+                } else {
+                    Rc::new(FxHashMap::default().into())
+                };
+                self.afdx_switches[switch_id].set_acdn_messages(messages);
             }
 
+            let current_switch = &mut self.afdx_switches[switch_id];
             if current_switch.is_available() {
                 let current_messages = current_switch.get_acdn_messages();
 
-                for &neighboor in neighboors {
-                    let neighboor = neighboor as usize;
-                    if neighboor > switch_id {
-                        let messages = if self.afdx_switches[neighboor].is_available() {
+                for &neighbour in neighbours {
+                    let neighbour = neighbour as usize;
+                    if !initialised[neighbour] {
+                        let neighbouring_switch = &mut self.afdx_switches[neighbour];
+                        let messages = if neighbouring_switch.is_available() {
                             current_messages.clone()
                         } else {
                             Rc::new(FxHashMap::default().into())
                         };
-                        self.afdx_switches[neighboor].set_acdn_messages(messages);
-                        initialised[neighboor] = true;
+                        neighbouring_switch.set_acdn_messages(messages);
+                        initialised[neighbour] = true;
                     }
                 }
             }
