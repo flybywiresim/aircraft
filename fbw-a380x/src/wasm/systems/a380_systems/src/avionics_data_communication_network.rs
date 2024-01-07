@@ -12,8 +12,11 @@ use crate::systems::{
     },
 };
 use fxhash::FxHashMap;
-use std::collections::VecDeque;
 use std::vec::Vec;
+use std::{collections::VecDeque, rc::Rc};
+use systems::integrated_modular_avionics::{
+    AvionicsDataCommunicationNetwork, AvionicsDataCommunicationNetworkMessageIdentifier,
+};
 
 pub(crate) trait CoreProcessingInputOutputModuleShared {
     fn core_processing_input_output_module(&self, cpiom: &str) -> &CoreProcessingInputOutputModule;
@@ -70,117 +73,90 @@ pub struct A380AvionicsDataCommunicationNetwork {
     io_modules: [InputOutputModule; 8],
     routing_tables: [[Vec<RoutingTableEntry>; 8]; 2],
     publish_routing_table: bool,
+    next_message_identifier: AvionicsDataCommunicationNetworkMessageIdentifier,
+    message_identifiers: FxHashMap<String, AvionicsDataCommunicationNetworkMessageIdentifier>,
 }
 
 impl A380AvionicsDataCommunicationNetwork {
     pub fn new(context: &mut InitContext) -> Self {
-        let mut first_network = FxHashMap::default();
-        first_network.insert(0, vec![1, 2, 7]);
-        first_network.insert(1, vec![0, 3, 7]);
-        first_network.insert(2, vec![0, 3, 4, 6, 7]);
-        first_network.insert(3, vec![1, 2, 5, 6, 7]);
-        first_network.insert(4, vec![2, 5, 6]);
-        first_network.insert(5, vec![3, 4, 6]);
-        first_network.insert(6, vec![2, 3, 4, 5]);
-        first_network.insert(7, vec![0, 1, 2, 3]);
+        let first_network = FxHashMap::from_iter([
+            (0, vec![1, 2, 7]),
+            (1, vec![0, 3, 7]),
+            (2, vec![0, 3, 4, 6, 7]),
+            (3, vec![1, 2, 5, 6, 7]),
+            (4, vec![2, 5, 6]),
+            (5, vec![3, 4, 6]),
+            (6, vec![2, 3, 4, 5]),
+            (7, vec![0, 1, 2, 3]),
+        ]);
+        let second_network = FxHashMap::from_iter([
+            (8, vec![9, 10, 15]),
+            (9, vec![8, 11, 15]),
+            (10, vec![8, 11, 12, 14, 15]),
+            (11, vec![9, 10, 13, 14, 15]),
+            (12, vec![10, 13, 14]),
+            (13, vec![11, 12, 14]),
+            (14, vec![10, 11, 12, 13]),
+            (15, vec![8, 9, 10, 11]),
+        ]);
 
-        let mut second_network = FxHashMap::default();
-        second_network.insert(8, vec![9, 10, 15]);
-        second_network.insert(9, vec![8, 11, 15]);
-        second_network.insert(10, vec![8, 11, 12, 14, 15]);
-        second_network.insert(11, vec![9, 10, 13, 14, 15]);
-        second_network.insert(12, vec![10, 13, 14]);
-        second_network.insert(13, vec![11, 12, 14]);
-        second_network.insert(14, vec![10, 11, 12, 13]);
-        second_network.insert(15, vec![8, 9, 10, 11]);
+        let afdx_switches = [
+            (1, (ElectricalBusType::DirectCurrentEssential, None)),
+            (2, (ElectricalBusType::DirectCurrent(2), None)),
+            (3, (ElectricalBusType::DirectCurrentEssential, None)),
+            (4, (ElectricalBusType::DirectCurrent(2), None)),
+            (5, (ElectricalBusType::DirectCurrentEssential, None)),
+            (6, (ElectricalBusType::DirectCurrent(2), None)),
+            (7, (ElectricalBusType::DirectCurrent(2), None)),
+            (9, (ElectricalBusType::DirectCurrentEssential, None)),
+            (
+                11,
+                (
+                    ElectricalBusType::DirectCurrent(1),
+                    Some(ElectricalBusType::DirectCurrentEssential),
+                ),
+            ),
+            (12, (ElectricalBusType::DirectCurrent(1), None)),
+            (
+                13,
+                (
+                    ElectricalBusType::DirectCurrent(1),
+                    Some(ElectricalBusType::DirectCurrentEssential),
+                ),
+            ),
+            (14, (ElectricalBusType::DirectCurrent(1), None)),
+            (
+                15,
+                (
+                    ElectricalBusType::DirectCurrent(1),
+                    Some(ElectricalBusType::DirectCurrentEssential),
+                ),
+            ),
+            (16, (ElectricalBusType::DirectCurrent(1), None)),
+            (17, (ElectricalBusType::DirectCurrent(1), None)),
+            (
+                19,
+                (
+                    ElectricalBusType::DirectCurrent(1),
+                    Some(ElectricalBusType::DirectCurrentEssential),
+                ),
+            ),
+        ]
+        .map(|(id, (primary_power_supply, secondary_power_supply))| {
+            if let Some(secondary_power_supply) = secondary_power_supply {
+                AvionicsFullDuplexSwitch::new_dual_power_supply(
+                    context,
+                    id,
+                    primary_power_supply,
+                    secondary_power_supply,
+                )
+            } else {
+                AvionicsFullDuplexSwitch::new_single_power_supply(context, id, primary_power_supply)
+            }
+        });
 
         Self {
-            afdx_switches: [
-                AvionicsFullDuplexSwitch::new_single_power_supply(
-                    context,
-                    1,
-                    ElectricalBusType::DirectCurrentEssential,
-                ),
-                AvionicsFullDuplexSwitch::new_single_power_supply(
-                    context,
-                    2,
-                    ElectricalBusType::DirectCurrent(2),
-                ),
-                AvionicsFullDuplexSwitch::new_single_power_supply(
-                    context,
-                    3,
-                    ElectricalBusType::DirectCurrentEssential,
-                ),
-                AvionicsFullDuplexSwitch::new_single_power_supply(
-                    context,
-                    4,
-                    ElectricalBusType::DirectCurrent(2),
-                ),
-                AvionicsFullDuplexSwitch::new_single_power_supply(
-                    context,
-                    5,
-                    ElectricalBusType::DirectCurrentEssential,
-                ),
-                AvionicsFullDuplexSwitch::new_single_power_supply(
-                    context,
-                    6,
-                    ElectricalBusType::DirectCurrent(2),
-                ),
-                AvionicsFullDuplexSwitch::new_single_power_supply(
-                    context,
-                    7,
-                    ElectricalBusType::DirectCurrent(2),
-                ),
-                AvionicsFullDuplexSwitch::new_single_power_supply(
-                    context,
-                    9,
-                    ElectricalBusType::DirectCurrentEssential,
-                ),
-                AvionicsFullDuplexSwitch::new_dual_power_supply(
-                    context,
-                    11,
-                    ElectricalBusType::DirectCurrent(1),
-                    ElectricalBusType::DirectCurrentEssential,
-                ),
-                AvionicsFullDuplexSwitch::new_single_power_supply(
-                    context,
-                    12,
-                    ElectricalBusType::DirectCurrent(1),
-                ),
-                AvionicsFullDuplexSwitch::new_dual_power_supply(
-                    context,
-                    13,
-                    ElectricalBusType::DirectCurrent(1),
-                    ElectricalBusType::DirectCurrentEssential,
-                ),
-                AvionicsFullDuplexSwitch::new_single_power_supply(
-                    context,
-                    14,
-                    ElectricalBusType::DirectCurrent(1),
-                ),
-                AvionicsFullDuplexSwitch::new_dual_power_supply(
-                    context,
-                    15,
-                    ElectricalBusType::DirectCurrent(1),
-                    ElectricalBusType::DirectCurrentEssential,
-                ),
-                AvionicsFullDuplexSwitch::new_single_power_supply(
-                    context,
-                    16,
-                    ElectricalBusType::DirectCurrent(1),
-                ),
-                AvionicsFullDuplexSwitch::new_single_power_supply(
-                    context,
-                    17,
-                    ElectricalBusType::DirectCurrent(1),
-                ),
-                AvionicsFullDuplexSwitch::new_dual_power_supply(
-                    context,
-                    19,
-                    ElectricalBusType::DirectCurrent(1),
-                    ElectricalBusType::DirectCurrentEssential,
-                ),
-            ],
+            afdx_switches,
             afdx_networks: [first_network, second_network],
             io_modules: [
                 InputOutputModule::new(context, "A1", ElectricalBusType::DirectCurrentEssential),
@@ -324,6 +300,8 @@ impl A380AvionicsDataCommunicationNetwork {
                 ],
             ],
             publish_routing_table: true,
+            next_message_identifier: AvionicsDataCommunicationNetworkMessageIdentifier::default(),
+            message_identifiers: FxHashMap::default(),
         }
     }
 
@@ -378,6 +356,36 @@ impl A380AvionicsDataCommunicationNetwork {
         }
     }
 
+    fn update_switch_messages(&mut self, network: usize) {
+        let mut initialised = [false; 16];
+        for (&switch_id, neighboors) in &self.afdx_networks[network] {
+            let switch_id = switch_id as usize;
+            let current_switch = &mut self.afdx_switches[switch_id];
+            if !initialised[switch_id] {
+                current_switch.set_acdn_messages(Rc::new(FxHashMap::default().into()));
+            }
+
+            if current_switch.is_available() {
+                let current_messages = current_switch.get_acdn_messages();
+
+                for &neighboor in neighboors {
+                    let neighboor = neighboor as usize;
+                    if neighboor > switch_id {
+                        let messages = if self.afdx_switches[neighboor].is_available() {
+                            current_messages.clone()
+                        } else {
+                            Rc::new(FxHashMap::default().into())
+                        };
+                        self.afdx_switches[neighboor].set_acdn_messages(messages);
+                        initialised[neighboor] = true;
+                    }
+                }
+            }
+
+            initialised[switch_id] = true;
+        }
+    }
+
     pub fn update(&mut self) {
         let mut update_network_a = false;
         let mut update_network_b = false;
@@ -395,10 +403,12 @@ impl A380AvionicsDataCommunicationNetwork {
 
         if update_network_a {
             self.update_routing_table(0, 0);
+            self.update_switch_messages(0);
         }
 
         if update_network_b {
             self.update_routing_table(1, 8);
+            self.update_switch_messages(1);
         }
 
         self.publish_routing_table = update_network_a | update_network_b;
@@ -412,6 +422,26 @@ impl CoreProcessingInputOutputModuleShared for A380AvionicsDataCommunicationNetw
             .iter()
             .find(|&module| module.name() == cpiom)
             .unwrap()
+    }
+}
+
+impl AvionicsDataCommunicationNetwork for A380AvionicsDataCommunicationNetwork {
+    type NetworkEndpoint = AvionicsFullDuplexSwitch;
+
+    fn get_message_identifier(
+        &mut self,
+        name: String,
+    ) -> AvionicsDataCommunicationNetworkMessageIdentifier {
+        *self.message_identifiers.entry(name).or_insert_with(|| {
+            let identifier = self.next_message_identifier;
+            self.next_message_identifier = identifier.next();
+            identifier
+        })
+    }
+
+    fn get_endpoint(&self, id: u8) -> &Self::NetworkEndpoint {
+        let id = if id == 9 || id == 19 { id - 2 } else { id - 1 };
+        &self.afdx_switches[id as usize]
     }
 }
 
