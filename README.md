@@ -74,7 +74,8 @@ We don't know, since it depends on many factors. We will announce each new stabl
 
 Read [Contributing.md](.github/Contributing.md) and join our Discord to get started.
 
-### Are the aircraft payware?
+### Are FlyByWire aircraft payware?
+
 
 No, they are completely free aircraft, open-source.
 
