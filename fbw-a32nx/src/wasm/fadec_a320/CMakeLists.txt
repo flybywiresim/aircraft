@@ -2,6 +2,7 @@
 # through the code in an IDE. It is not used for building the project.
 
 cmake_minimum_required(VERSION 3.19)
+
 project(flybywire-a32nx-fadec)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -14,12 +15,12 @@ include_directories("${MSFS_SDK}/WASM/wasi-sysroot/include")
 include_directories("${MSFS_SDK}/SimConnect SDK/include")
 
 include_directories(
-        ./src
-        ${FBW_ROOT}/fbw-common/src/wasm/fadec_common/src
-        ${FBW_ROOT}/fbw-common/src/wasm/fbw_common/src
-        ${FBW_ROOT}/fbw-common/src/wasm/fbw_common/src/inih
+    ./src
+    ${FBW_ROOT}/fbw-common/src/wasm/fadec_common/src
+    ${FBW_ROOT}/fbw-common/src/wasm/fbw_common/src
+    ${FBW_ROOT}/fbw-common/src/wasm/fbw_common/src/inih
 )
 
 add_executable(flybywire-a32nx-fadec
-        ./src/FadecGauge.cpp
-)
+    ./src/FadecGauge.cpp
+    )

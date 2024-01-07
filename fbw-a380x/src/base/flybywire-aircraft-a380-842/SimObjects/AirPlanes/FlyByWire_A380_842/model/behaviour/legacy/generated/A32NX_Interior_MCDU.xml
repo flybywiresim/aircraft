@@ -1,3 +1,6 @@
+<!-- Copyright (c) 2023-2024 FlyByWire Simulations -->
+<!-- SPDX-License-Identifier: GPL-3.0 -->
+
 <ModelBehaviors>
     <Template Name="FBW_MULTI_FUNCTION_CONTROL_DISPLAY_UNIT_Template">
         <DefaultTemplateParameters>
