@@ -77,7 +77,7 @@ Read [Contributing.md](.github/Contributing.md) and join our Discord to get star
 ### Are FlyByWire aircraft payware?
 
 
-No, they are completely free aircraft, open-source.
+No, they are completely free aircraft, open-source, including SimBridge and other FlyByWire projects which are publicly accessible via GitHub.
 
 ### How do we report bugs?
 
