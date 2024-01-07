@@ -15,9 +15,17 @@ class LightingPresets : public Module {
   LightingPresets() = delete;
 
  protected:
-  const std::string CONFIGURATION_FILEPATH = "\\work\\InteriorLightingPresets.ini";
+  const std::string CONFIGURATION_FILEPATH = "\\work\\InteriorLightingPresets.ini"
+      "";
   static constexpr SIMCONNECT_NOTIFICATION_GROUP_ID NOTIFICATION_GROUP_1 = 1;
-  static constexpr FLOAT64 STEP_SIZE = 2.0;
+  // dynamic step size for convergence
+  static constexpr FLOAT64 MIN_STEP_SIZE = 1.05; // needs to be >=1 as otherwise the value will never converge due to the sim cutting off the decimals
+  static constexpr FLOAT64 MAX_STEP_SIZE = 10.0; // first step is always large therefore we need to limit the max step size
+  static constexpr FLOAT64 TOTAL_LOADING_TIME = 2.0;
+  static constexpr FLOAT64 UPDATE_DELAY_TIME = 0.15; // delay between updates in seconds - too long would make the animation choppy
+
+  // to throttle loading so animation can keep up we use time stamps
+  FLOAT64 lastUpdate = 0.0;
 
   // Convenience pointer to the data manager
   DataManager* dataManager = nullptr;
@@ -29,6 +37,7 @@ class LightingPresets : public Module {
   NamedVariablePtr elecAC1Powered;
   NamedVariablePtr loadLightingPresetRequest;
   NamedVariablePtr saveLightingPresetRequest;
+  NamedVariablePtr presetLoadTime; // how long shall the preset loading take
 
   // create ini file and data structure
   mINI::INIStructure ini;
@@ -110,7 +119,7 @@ class LightingPresets : public Module {
    * Calculates the intermediate values between the current values and the preset values.
    * @return true if the intermediate values are equal to the current values.
    */
-  virtual bool calculateIntermediateValues() = 0;
+  virtual bool calculateIntermediateValues(FLOAT64 stepSize) = 0;
 
   /**
    * Get the variable for the potentiometer of a specific light
@@ -137,7 +146,7 @@ class LightingPresets : public Module {
    * @param target the target value
    * @return the converged value
    */
-  FLOAT64 convergeValue(FLOAT64 momentary, FLOAT64 target);
+  FLOAT64 convergeValue(FLOAT64 momentary, FLOAT64 target, FLOAT64 stepSize);
 };
 
 #endif  // FLYBYWIRE_AIRCRAFT_LIGHTINGPRESETS_H

@@ -118,7 +118,7 @@ class LightingPresets_A380X : public LightingPresets {
  private:
   void readFromAircraft() override;
   void applyToAircraft() override;
-  bool calculateIntermediateValues() override;
+  bool calculateIntermediateValues(FLOAT64 stepSize) override;
   void loadFromIni(const mINI::INIStructure& ini, const std::string& iniSectionName) override;
   void saveToIni(mINI::INIStructure& ini, const std::string& iniSectionName) const override;
 

@@ -5,6 +5,7 @@
 
 #include "LightingPresets.h"
 #include "ScopedTimer.hpp"
+#include "math_utils.hpp"
 
 bool LightingPresets::initialize() {
   dataManager = &msfsHandler.getDataManager();
@@ -12,10 +13,12 @@ bool LightingPresets::initialize() {
   // Control LVARs - auto updated with every tick - LOAD/SAVE also auto written to sim
   loadLightingPresetRequest = dataManager->make_named_var("LIGHTING_PRESET_LOAD", UNITS.Number, UpdateMode::AUTO_READ_WRITE);
   saveLightingPresetRequest = dataManager->make_named_var("LIGHTING_PRESET_SAVE", UNITS.Number, UpdateMode::AUTO_READ_WRITE);
+  presetLoadTime = dataManager->make_named_var("LIGHTING_PRESET_LOAD_TIME", UNITS.Number, UpdateMode::AUTO_READ);
 
   // reset to default values
-  loadLightingPresetRequest->setAsInt64(0);
-  saveLightingPresetRequest->setAsInt64(0);
+  loadLightingPresetRequest->setAndWriteToSim(0.0);
+  saveLightingPresetRequest->setAndWriteToSim(0.0);
+  presetLoadTime->setAndWriteToSim(TOTAL_LOADING_TIME);
 
   initialize_aircraft();
 
@@ -37,6 +40,9 @@ bool LightingPresets::update([[maybe_unused]] sGaugeDrawData* pData) {
 
   // load becomes priority in case both vars are set.
   if (const INT64 presetRequest = loadLightingPresetRequest->getAsInt64()) {
+    if (readIniFile) {
+      LOG_INFO("LightingPresets_A32NX: Lighting Preset: " + std::to_string(presetRequest) + " is being loaded.");
+    }
     if (loadLightingPreset(presetRequest)) {
       readIniFile = true;
       loadLightingPresetRequest->setAsInt64(0);
@@ -58,14 +64,20 @@ bool LightingPresets::shutdown() {
 
 bool LightingPresets::loadLightingPreset(INT64 loadPresetRequest) {
   // throttle the load process so animation can keep up
-  if (msfsHandler.getTickCounter() % 2 != 0)
-    return false;
+  // compensates for the fact that the sim runs at different frame rates on different machines
+  const FLOAT64 deltaTime = msfsHandler.getTimeStamp() - lastUpdate;
+  //  std::cout << "TimeStamp=" << msfsHandler.getTimeStamp() << " lastUpdate=" << lastUpdate << " deltaTime=" << deltaTime << std::endl;
+  if (deltaTime < UPDATE_DELAY_TIME) return false;
+  const FLOAT64 partialLoad = presetLoadTime->get() / deltaTime;
+  FLOAT64 stepSize = std::clamp((100 / partialLoad), MIN_STEP_SIZE, MAX_STEP_SIZE);
+  //  std::cout << "partialLoad=" << partialLoad << " stepSize=" << stepSize << std::endl;
+  lastUpdate = msfsHandler.getTimeStamp();
 
   // Read current values to be able to calculate intermediate values which are then applied to the aircraft
   // Once the intermediate values are identical to the target values then the load is finished
   readFromAircraft();
   if (readFromStore(loadPresetRequest)) {
-    bool finished = calculateIntermediateValues();
+    bool finished = calculateIntermediateValues(stepSize);
     applyToAircraft();
     return finished;
   }
@@ -123,6 +135,17 @@ FLOAT64 LightingPresets::iniGetOrDefault(const mINI::INIStructure& ini,
   return defaultValue;
 }
 
-FLOAT64 LightingPresets::convergeValue(FLOAT64 momentary, const FLOAT64 target) {
-  return momentary < target ? (std::min)(momentary + STEP_SIZE, target) : (std::max)(momentary - STEP_SIZE, target);
+FLOAT64 LightingPresets::convergeValue(FLOAT64 momentary, const FLOAT64 target, FLOAT64 stepSize) {
+  FLOAT64 convergedValue;
+  if (helper::Math::almostEqual(momentary, target, stepSize)) {
+    convergedValue = target;
+  } else if (momentary < target) {
+    convergedValue = (std::min)(momentary + stepSize, target);
+  } else {
+    convergedValue = (std::max)(momentary - stepSize, target);
+  }
+  //  std::cout << "convergeValue(): momentary=" << momentary << " target=" << target << " stepSize=" << stepSize
+  //            << " convergedValue=" << convergedValue << " " << ((convergedValue == target) ? "DONE" : "NOT DONE")
+  //            << std::endl;
+  return convergedValue;
 }

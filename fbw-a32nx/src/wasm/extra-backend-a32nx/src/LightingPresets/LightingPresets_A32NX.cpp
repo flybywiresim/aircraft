@@ -243,34 +243,32 @@ void LightingPresets_A32NX::setValidCabinLightValue(FLOAT64 level) {
   lightCabin->setAndWriteToSim(level > 0 ? 1 : 0);
 }
 
-bool LightingPresets_A32NX::calculateIntermediateValues() {
+bool LightingPresets_A32NX::calculateIntermediateValues(FLOAT64 stepSize) {
   // clang-format off
-  intermediateLightValues.efbBrightness = convergeValue( currentLightValues.efbBrightness,loadedLightValues.efbBrightness);
+  intermediateLightValues.efbBrightness = convergeValue( currentLightValues.efbBrightness,loadedLightValues.efbBrightness, stepSize);
   intermediateLightValues.cabinLightLevel = loadedLightValues.cabinLightLevel;
-  intermediateLightValues.ovhdIntegralLightLevel = convergeValue( currentLightValues.ovhdIntegralLightLevel,loadedLightValues.ovhdIntegralLightLevel);
-  intermediateLightValues.glareshieldIntegralLightLevel = convergeValue( currentLightValues.glareshieldIntegralLightLevel,loadedLightValues.glareshieldIntegralLightLevel);
-  intermediateLightValues.glareshieldLcdLightLevel = convergeValue( currentLightValues.glareshieldLcdLightLevel,loadedLightValues.glareshieldLcdLightLevel);
-  intermediateLightValues.tableLightCptLevel = convergeValue( currentLightValues.tableLightCptLevel,loadedLightValues.tableLightCptLevel);
-  intermediateLightValues.tableLightFoLevel = convergeValue( currentLightValues.tableLightFoLevel,loadedLightValues.tableLightFoLevel);
-  intermediateLightValues.pfdBrtCptLevel = convergeValue( currentLightValues.pfdBrtCptLevel,loadedLightValues.pfdBrtCptLevel);
-  intermediateLightValues.ndBrtCptLevel = convergeValue( currentLightValues.ndBrtCptLevel,loadedLightValues.ndBrtCptLevel);
-  intermediateLightValues.wxTerrainBrtCptLevel = convergeValue( currentLightValues.wxTerrainBrtCptLevel,loadedLightValues.wxTerrainBrtCptLevel);
-  intermediateLightValues.consoleLightCptLevel = convergeValue( currentLightValues.consoleLightCptLevel,loadedLightValues.consoleLightCptLevel);
-  intermediateLightValues.pfdBrtFoLevel = convergeValue( currentLightValues.pfdBrtFoLevel,loadedLightValues.pfdBrtFoLevel);
-  intermediateLightValues.ndBrtFoLevel = convergeValue( currentLightValues.ndBrtFoLevel,loadedLightValues.ndBrtFoLevel);
-  intermediateLightValues.wxTerrainBrtFoLevel = convergeValue( currentLightValues.wxTerrainBrtFoLevel,loadedLightValues.wxTerrainBrtFoLevel);
-  intermediateLightValues.consoleLightFoLevel = convergeValue( currentLightValues.consoleLightFoLevel,loadedLightValues.consoleLightFoLevel);
-  intermediateLightValues.dcduLeftLightLevel = convergeValue( currentLightValues.dcduLeftLightLevel,loadedLightValues.dcduLeftLightLevel);
-  intermediateLightValues.dcduRightLightLevel = convergeValue( currentLightValues.dcduRightLightLevel,loadedLightValues.dcduRightLightLevel);
-  intermediateLightValues.mcduLeftLightLevel = convergeValue( currentLightValues.mcduLeftLightLevel,loadedLightValues.mcduLeftLightLevel);
-  intermediateLightValues.mcduRightLightLevel = convergeValue( currentLightValues.mcduRightLightLevel,loadedLightValues.mcduRightLightLevel);
-  intermediateLightValues.ecamUpperLightLevel = convergeValue( currentLightValues.ecamUpperLightLevel,loadedLightValues.ecamUpperLightLevel);
-  intermediateLightValues.ecamLowerLightLevel = convergeValue( currentLightValues.ecamLowerLightLevel,loadedLightValues.ecamLowerLightLevel);
-  intermediateLightValues.floodPnlLightLevel = convergeValue( currentLightValues.floodPnlLightLevel,loadedLightValues.floodPnlLightLevel);
-  intermediateLightValues.pedestalIntegralLightLevel = convergeValue( currentLightValues.pedestalIntegralLightLevel,loadedLightValues.pedestalIntegralLightLevel);
-  intermediateLightValues.floodPedLightLevel = convergeValue( currentLightValues.floodPedLightLevel,loadedLightValues.floodPedLightLevel);
+  intermediateLightValues.ovhdIntegralLightLevel = convergeValue( currentLightValues.ovhdIntegralLightLevel,loadedLightValues.ovhdIntegralLightLevel, stepSize);
+  intermediateLightValues.glareshieldIntegralLightLevel = convergeValue( currentLightValues.glareshieldIntegralLightLevel,loadedLightValues.glareshieldIntegralLightLevel, stepSize);
+  intermediateLightValues.glareshieldLcdLightLevel = convergeValue( currentLightValues.glareshieldLcdLightLevel,loadedLightValues.glareshieldLcdLightLevel, stepSize);
+  intermediateLightValues.tableLightCptLevel = convergeValue( currentLightValues.tableLightCptLevel,loadedLightValues.tableLightCptLevel, stepSize);
+  intermediateLightValues.tableLightFoLevel = convergeValue( currentLightValues.tableLightFoLevel,loadedLightValues.tableLightFoLevel, stepSize);
+  intermediateLightValues.pfdBrtCptLevel = convergeValue( currentLightValues.pfdBrtCptLevel,loadedLightValues.pfdBrtCptLevel, stepSize);
+  intermediateLightValues.ndBrtCptLevel = convergeValue( currentLightValues.ndBrtCptLevel,loadedLightValues.ndBrtCptLevel, stepSize);
+  intermediateLightValues.wxTerrainBrtCptLevel = convergeValue( currentLightValues.wxTerrainBrtCptLevel,loadedLightValues.wxTerrainBrtCptLevel, stepSize);
+  intermediateLightValues.consoleLightCptLevel = convergeValue( currentLightValues.consoleLightCptLevel,loadedLightValues.consoleLightCptLevel, stepSize);
+  intermediateLightValues.pfdBrtFoLevel = convergeValue( currentLightValues.pfdBrtFoLevel,loadedLightValues.pfdBrtFoLevel, stepSize);
+  intermediateLightValues.ndBrtFoLevel = convergeValue( currentLightValues.ndBrtFoLevel,loadedLightValues.ndBrtFoLevel, stepSize);
+  intermediateLightValues.wxTerrainBrtFoLevel = convergeValue( currentLightValues.wxTerrainBrtFoLevel,loadedLightValues.wxTerrainBrtFoLevel, stepSize);
+  intermediateLightValues.consoleLightFoLevel = convergeValue( currentLightValues.consoleLightFoLevel,loadedLightValues.consoleLightFoLevel, stepSize);
+  intermediateLightValues.dcduLeftLightLevel = convergeValue( currentLightValues.dcduLeftLightLevel,loadedLightValues.dcduLeftLightLevel, stepSize);
+  intermediateLightValues.dcduRightLightLevel = convergeValue( currentLightValues.dcduRightLightLevel,loadedLightValues.dcduRightLightLevel, stepSize);
+  intermediateLightValues.mcduLeftLightLevel = convergeValue( currentLightValues.mcduLeftLightLevel,loadedLightValues.mcduLeftLightLevel, stepSize);
+  intermediateLightValues.mcduRightLightLevel = convergeValue( currentLightValues.mcduRightLightLevel,loadedLightValues.mcduRightLightLevel, stepSize);
+  intermediateLightValues.ecamUpperLightLevel = convergeValue( currentLightValues.ecamUpperLightLevel,loadedLightValues.ecamUpperLightLevel, stepSize);
+  intermediateLightValues.ecamLowerLightLevel = convergeValue( currentLightValues.ecamLowerLightLevel,loadedLightValues.ecamLowerLightLevel, stepSize);
+  intermediateLightValues.floodPnlLightLevel = convergeValue( currentLightValues.floodPnlLightLevel,loadedLightValues.floodPnlLightLevel, stepSize);
+  intermediateLightValues.pedestalIntegralLightLevel = convergeValue( currentLightValues.pedestalIntegralLightLevel,loadedLightValues.pedestalIntegralLightLevel, stepSize);
+  intermediateLightValues.floodPedLightLevel = convergeValue( currentLightValues.floodPedLightLevel,loadedLightValues.floodPedLightLevel, stepSize);
   // clang-format on
-  std::cout << "LightingPresets_A32NX: Read from aircraft: " << std::endl;
-  std::cout << str() << std::endl;
   return intermediateLightValues == loadedLightValues;
 }
