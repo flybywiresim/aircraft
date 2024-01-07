@@ -9,6 +9,7 @@ on:
 
 jobs:
   lint:
+    name: Lint
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
     steps:
@@ -22,6 +23,7 @@ jobs:
         run: |
           ./scripts/dev-env/run.sh scripts/lint-rust.sh
   test-rust:
+    name: Tests (Rust)
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
     steps:
@@ -31,6 +33,7 @@ jobs:
         run: |
           ./scripts/dev-env/run.sh scripts/test-rust.sh
   test-js:
+    name: Tests (JS)
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
     steps:
