@@ -14,7 +14,7 @@ jobs:
     if: github.event.pull_request.draft == false
     steps:
       - name: Checkout source
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: install
         run: ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
       - name: npm run lint
@@ -28,7 +28,7 @@ jobs:
     if: github.event.pull_request.draft == false
     steps:
       - name: Checkout source
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: test-rust.sh
         run: |
           ./scripts/dev-env/run.sh scripts/test-rust.sh
@@ -38,7 +38,7 @@ jobs:
     if: github.event.pull_request.draft == false
     steps:
       - name: Checkout source
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: npm install
         run: ./scripts/dev-env/run.sh ./scripts/setup.sh --clean
       - name: npm test
@@ -52,7 +52,7 @@ jobs:
       A32NX_INSTRUMENTS_BUILD_WORKERS: 2
     steps:
       - name: Checkout source
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Create .env file
         run: |
           echo A32NX_PRODUCTION_BUILD=1 >> fbw-a32nx/.env
@@ -78,7 +78,7 @@ jobs:
           cp ./fbw-a32nx/out/build-modules/modules.json ./fbw-a32nx/out/flybywire-aircraft-a320-neo/install.json
           node ./scripts/install-source_a32nx.js
       - name: Upload PR artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         if: github.event.pull_request.auto_merge == false
         with:
           name: flybywire-aircraft-a320-neo
@@ -92,7 +92,7 @@ jobs:
       A32NX_INSTRUMENTS_BUILD_WORKERS: 2
     steps:
       - name: Checkout source
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Create .env file
         # We do not set FBW_TYPECHECK=1 here, as there are still things to fix in the A380 instruments
         run: |
@@ -118,7 +118,7 @@ jobs:
           cp ./fbw-a380x/out/build-modules/modules.json ./fbw-a380x/out/flybywire-aircraft-a380-842/install.json
           node ./scripts/install-source_a380x.js
       - name: Upload PR artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         if: github.event.pull_request.auto_merge == false
         with:
           name: flybywire-aircraft-a380-842
