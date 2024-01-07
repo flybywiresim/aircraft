@@ -1,7 +1,12 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { DisplayComponent, FSComponent, NodeReference, VNode, Subscribable } from '@microsoft/msfs-sdk';
+import { ArincEventBus } from '@flybywiresim/fbw-sdk';
+
 import { DmcLogicEvents } from '../MsfsAvionicsCommon/providers/DmcPublisher';
 import { Arinc429Values } from './shared/ArincValueProvider';
-import { ArincEventBus } from '../MsfsAvionicsCommon/ArincEventBus';
 
 interface HorizontalTapeProps {
     displayRange: number;
@@ -75,7 +80,7 @@ export class HorizontalTape extends DisplayComponent<HorizontalTapeProps> {
                 result.ticks.push(<path class="NormalStroke White" d={`m68.913 145.34v${tickLength}`} style={`transform: translate3d(${dX}px, 0px, 0px)`} />);
                 result.ticks.unshift(<path class="NormalStroke White" d={`m68.913 145.34v${tickLength}`} style={`transform: translate3d(${-dX}px, 0px, 0px)`} />);
             } else {
-                result.ticks.push(<path class="NormalStroke White" d={`m68.913 145.34v${tickLength * 0.42}`} style={`transform: translate3d(${dX}px, 0p,x 0px)`} />);
+                result.ticks.push(<path class="NormalStroke White" d={`m68.913 145.34v${tickLength * 0.42}`} style={`transform: translate3d(${dX}px, 0px, 0px)`} />);
                 result.ticks.unshift(<path class="NormalStroke White" d={`m68.913 145.34v${tickLength * 0.42}`} style={`transform: translate3d(${-dX}px, 0px, 0px)`} />);
             }
 

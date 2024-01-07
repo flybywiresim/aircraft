@@ -1,6 +1,11 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
+import { FMMessageTypes } from '@flybywiresim/fbw-sdk';
+
 import { FlightPlans } from '@fmgc/flightplanning/FlightPlanManager';
 import { GuidanceController } from '@fmgc/guidance/GuidanceController';
-import { FMMessageTypes } from '@shared/FmMessages';
 import { FMMessageSelector, FMMessageUpdate } from './FmsMessages';
 
 export class StepAhead implements FMMessageSelector {

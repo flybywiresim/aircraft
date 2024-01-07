@@ -138,11 +138,8 @@ clang++ \
   "${DIR}/src/CalculatedRadioReceiver.cpp" \
   "${DIR}/src/main.cpp" \
 
-
 # restore directory
 popd
-
-
 
 # link modules
 wasm-ld \

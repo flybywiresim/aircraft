@@ -142,8 +142,12 @@ const ApuBleed = ({ x, y } : ComponentPositionProps) => {
     const [apuBleedPbOn] = useSimVar('L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON', 'Bool', 1000);
     const [apuBleedPbOnConfirmed, setApuBleedPbOnConfirmed] = useState(false);
     const [apuBleedOpen] = useSimVar('L:A32NX_APU_BLEED_AIR_VALVE_OPEN', 'Bool', 1000);
-    const [apuBleedPressure] = useSimVar('L:APU_BLEED_PRESSURE', 'PSI', 1000);
-    const displayedBleedPressure = Math.round(apuBleedPressure / 2) * 2; // APU bleed pressure is shown in steps of two.
+    const [apuBleedPressureAbsolute] = useSimVar('L:A32NX_PNEU_APU_BLEED_CONTAINER_PRESSURE', 'PSI', 1000);
+    // FIXME Since APU pressure is constant right now we also subtract a 1 bar / 14.7 psi static pressure to arrive at the correct pressure
+    // Should be ADIRU static pressure
+    const apuBleedPressureGauge = apuBleedPressureAbsolute - 14.7;
+    // APU bleed pressure is shown in steps of two.
+    const displayedBleedPressure = apuBleedOpen ? Math.round(apuBleedPressureGauge / 2) * 2 : 0;
     // This assumes that the SD is displayed by DMC 1, which is the case during normal operation.
     const [attHdgPosition] = useSimVar('L:A32NX_ATT_HDG_SWITCHING_KNOB', 'Position', 100);
     const adrSource = attHdgPosition === 0 ? 3 : 1;

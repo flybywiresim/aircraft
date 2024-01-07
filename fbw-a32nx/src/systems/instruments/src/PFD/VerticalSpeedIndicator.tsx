@@ -3,11 +3,11 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { ClockEvents, ComponentProps, DisplayComponent, FSComponent, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import { Arinc429Word } from '@flybywiresim/fbw-sdk';
+import { ArincEventBus, Arinc429Word } from '@flybywiresim/fbw-sdk';
+
 import { Arinc429Values } from './shared/ArincValueProvider';
 import { PFDSimvars } from './shared/PFDSimvarPublisher';
 import { LagFilter } from './PFDUtils';
-import { ArincEventBus } from '../MsfsAvionicsCommon/ArincEventBus';
 
 interface VerticalSpeedIndicatorProps {
     bus: ArincEventBus,

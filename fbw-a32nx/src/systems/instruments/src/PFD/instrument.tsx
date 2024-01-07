@@ -1,4 +1,10 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import { Clock, FSComponent, HEventPublisher, Subject } from '@microsoft/msfs-sdk';
+import { ArincEventBus } from '@flybywiresim/fbw-sdk';
+
 import { DmcPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/DmcPublisher';
 import { FmsDataPublisher } from 'instruments/src/MsfsAvionicsCommon/providers/FmsDataPublisher';
 import { getDisplayIndex, PFDComponent } from './PFD';
@@ -6,7 +12,6 @@ import { AdirsValueProvider } from '../MsfsAvionicsCommon/AdirsValueProvider';
 import { ArincValueProvider } from './shared/ArincValueProvider';
 import { PFDSimvarPublisher, PFDSimvars } from './shared/PFDSimvarPublisher';
 import { SimplaneValueProvider } from './shared/SimplaneValueProvider';
-import { ArincEventBus } from '../MsfsAvionicsCommon/ArincEventBus';
 
 import './style.scss';
 
@@ -103,5 +108,18 @@ class A32NX_PFD extends BaseInstrument {
         }
     }
 }
+
+// Hack to support tspan SVG elements, which FSComponent does not recognise as SVG
+
+const original = document.createElement.bind(document);
+
+const extraSvgTags = ['tspan'];
+
+document.createElement = ((tagName, options) => {
+    if (extraSvgTags.includes(tagName)) {
+        return document.createElementNS('http://www.w3.org/2000/svg', tagName, options);
+    }
+    return original(tagName, options);
+}) as any;
 
 registerInstrument('a32nx-pfd', A32NX_PFD);
