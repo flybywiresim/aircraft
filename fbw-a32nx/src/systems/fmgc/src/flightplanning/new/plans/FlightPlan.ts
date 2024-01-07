@@ -282,6 +282,14 @@ export class FlightPlan<P extends FlightPlanPerformanceData = FlightPlanPerforma
         await this.flushOperationQueue();
     }
 
+    override async newDest(index: number, airportIdent: string): Promise<void> {
+        await super.newDest(index, airportIdent);
+        // TODO: Maybe delete alternate flightplan entirely?
+        await this.alternateFlightPlan.setDeparture(undefined);
+        await this.alternateFlightPlan.setOriginRunway(undefined);
+        await this.alternateFlightPlan.setOriginAirport(airportIdent);
+    }
+
     setFixInfoEntry(index: 1 | 2 | 3 | 4, fixInfo: FixInfoData | null, notify = true): void {
         const planFixInfo = this.fixInfos as FixInfoEntry[];
 
