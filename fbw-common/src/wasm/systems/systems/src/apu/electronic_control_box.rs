@@ -234,9 +234,10 @@ impl<C: ApuConstants> ElectronicControlBox<C> {
                     .iter()
                     .any(|&x| x.corrected_n1() > Ratio::new::<percent>(10.))))
             || (!self.on_ground && lgciu.iter().all(|a| a.left_and_right_gear_compressed(true)))
+            // The fuel used resets in flight during APU start up. Here we reset it when n is between 94% and 96%
             || (!self.on_ground
                 && (self.turbine_state == TurbineState::Starting
-                    && (Duration::from_secs(2) == self.n_above_95_duration)));
+                    && (94.0..=96.0).contains(&self.n.get::<percent>())));
 
         self.on_ground = lgciu.iter().any(|a| a.left_and_right_gear_compressed(true));
         self.engines_on = engines
@@ -303,8 +304,7 @@ impl<C: ApuConstants> ElectronicControlBox<C> {
     }
 
     fn is_cooldown_period(&self) -> bool {
-        !self.master_is_on
-            && (self.master_off_for.as_millis() as u64 <= C::COOLDOWN_DURATION_MILLIS)
+        !self.master_is_on && (self.master_off_for <= C::COOLDOWN_DURATION)
     }
 
     pub fn bleed_air_valve_was_open_in_last(&self, duration: Duration) -> bool {
@@ -410,9 +410,7 @@ impl<C: ApuConstants> ControllerSignal<TurbineSignal> for ElectronicControlBox<C
             || self.is_emergency_shutdown()
             || (!self.master_is_on
                 && self.turbine_state != TurbineState::Starting
-                && !self.bleed_air_valve_was_open_in_last(Duration::from_millis(
-                    C::BLEED_AIR_COOLDOWN_DURATION_MILLIS,
-                ))
+                && !self.bleed_air_valve_was_open_in_last(C::BLEED_AIR_COOLDOWN_DURATION)
                 && !self.is_cooldown_period())
         {
             Some(TurbineSignal::Stop)

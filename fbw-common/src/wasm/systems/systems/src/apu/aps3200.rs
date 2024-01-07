@@ -25,8 +25,8 @@ pub struct Aps3200Constants;
 
 impl ApuConstants for Aps3200Constants {
     const RUNNING_WARNING_EGT: f64 = 682.; // Deg C
-    const BLEED_AIR_COOLDOWN_DURATION_MILLIS: u64 = 120000;
-    const COOLDOWN_DURATION_MILLIS: u64 = 0;
+    const BLEED_AIR_COOLDOWN_DURATION: Duration = Duration::from_secs(120);
+    const COOLDOWN_DURATION: Duration = Duration::ZERO;
     const AIR_INTAKE_FLAP_CLOSURE_PERCENT: f64 = 7.;
     const SHOULD_BE_AVAILABLE_DURING_SHUTDOWN: bool = true;
     const FUEL_LINE_ID: u8 = 18;

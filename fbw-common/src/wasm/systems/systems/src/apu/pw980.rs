@@ -25,8 +25,8 @@ pub struct Pw980Constants;
 
 impl ApuConstants for Pw980Constants {
     const RUNNING_WARNING_EGT: f64 = 900.; // Deg C
-    const BLEED_AIR_COOLDOWN_DURATION_MILLIS: u64 = 0;
-    const COOLDOWN_DURATION_MILLIS: u64 = 60000;
+    const BLEED_AIR_COOLDOWN_DURATION: Duration = Duration::ZERO;
+    const COOLDOWN_DURATION: Duration = Duration::from_secs(60);
     const AIR_INTAKE_FLAP_CLOSURE_PERCENT: f64 = 8.;
     const SHOULD_BE_AVAILABLE_DURING_SHUTDOWN: bool = false;
     const FUEL_LINE_ID: u8 = 141;
@@ -890,7 +890,7 @@ impl SimulationElement for Pw980ApuGenerator {
             .total_consumption_of(PotentialOrigin::ApuGenerator(self.number))
             .get::<watt>();
         let power_factor_correction = 0.8;
-        let maximum_load = 90000.;
+        let maximum_load = 120000.;
         self.load = Ratio::new::<percent>(
             (power_consumption * power_factor_correction / maximum_load) * 100.,
         );
@@ -898,10 +898,10 @@ impl SimulationElement for Pw980ApuGenerator {
 }
 
 pub struct Pw980StartMotor {
-    /// On the A320, the start motor is powered through the DC BAT BUS.
+    /// On the A380, the start motor is powered through the DC APU STARTING BUS.
     /// There are however additional contactors which open and close based on
     /// overhead panel push button positions. Therefore we cannot simply look
-    /// at whether or not DC BAT BUS is powered, but must instead handle
+    /// at whether or not DC APU STARTING BUS is powered, but must instead handle
     /// potential coming in via those contactors.
     powered_by: ElectricalBusType,
     is_powered: bool,
@@ -912,7 +912,7 @@ impl Pw980StartMotor {
         Pw980StartMotor {
             powered_by,
             is_powered: false,
-            powered_since: Duration::from_secs(0),
+            powered_since: Duration::ZERO,
         }
     }
 }
@@ -928,7 +928,7 @@ impl SimulationElement for Pw980StartMotor {
 
     fn consume_power<T: ConsumePower>(&mut self, context: &UpdateContext, consumption: &mut T) {
         if !self.is_powered {
-            self.powered_since = Duration::from_secs(0);
+            self.powered_since = Duration::ZERO;
         } else {
             self.powered_since += context.delta();
 
@@ -1125,7 +1125,7 @@ mod apu_generator_tests {
     fn when_load_below_maximum_it_is_normal() {
         let mut test_bed = test_bed_with()
             .running_apu()
-            .power_demand(Power::new::<watt>(90000. / 0.8))
+            .power_demand(Power::new::<watt>(120000. / 0.8))
             .run(Duration::from_secs(1_000));
 
         assert!(test_bed.load_within_normal_range());
@@ -1135,7 +1135,7 @@ mod apu_generator_tests {
     fn when_load_exceeds_maximum_not_normal() {
         let mut test_bed = test_bed_with()
             .running_apu()
-            .power_demand(Power::new::<watt>((90000. / 0.8) + 1.))
+            .power_demand(Power::new::<watt>((120000. / 0.8) + 1.))
             .run(Duration::from_secs(1_000));
 
         assert!(!test_bed.load_within_normal_range());

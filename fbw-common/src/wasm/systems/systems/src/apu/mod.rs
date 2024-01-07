@@ -15,7 +15,6 @@ use crate::{
         SimulationElement, SimulationElementVisitor, SimulatorWriter, UpdateContext, Write,
     },
 };
-#[cfg(test)]
 use std::time::Duration;
 use uom::si::f64::*;
 use uom::si::thermodynamic_temperature::degree_celsius;
@@ -311,8 +310,8 @@ pub trait ApuGenerator:
 
 pub trait ApuConstants {
     const RUNNING_WARNING_EGT: f64;
-    const BLEED_AIR_COOLDOWN_DURATION_MILLIS: u64;
-    const COOLDOWN_DURATION_MILLIS: u64;
+    const BLEED_AIR_COOLDOWN_DURATION: Duration;
+    const COOLDOWN_DURATION: Duration;
     const AIR_INTAKE_FLAP_CLOSURE_PERCENT: f64;
     const SHOULD_BE_AVAILABLE_DURING_SHUTDOWN: bool;
     const FUEL_LINE_ID: u8;
@@ -407,7 +406,7 @@ mod tests {
     use super::*;
     use crate::simulation::test::{ReadByName, WriteByName};
     use crate::simulation::InitContext;
-    use rstest::{fixture, rstest};
+    use rstest::rstest;
     use std::time::Duration;
     use uom::si::{
         power::watt,
@@ -419,23 +418,21 @@ mod tests {
     pub fn test_bed_with(
     ) -> AuxiliaryPowerUnitTestBed<Aps3200ApuGenerator, Aps3200StartMotor, Aps3200Constants, 1>
     {
-        AuxiliaryPowerUnitTestBed::<Aps3200ApuGenerator, Aps3200StartMotor, Aps3200Constants, 1>::new()
+        AuxiliaryPowerUnitTestBed::<Aps3200ApuGenerator, Aps3200StartMotor, Aps3200Constants, 1>::new_with_aps3200()
     }
 
     pub fn test_bed(
     ) -> AuxiliaryPowerUnitTestBed<Aps3200ApuGenerator, Aps3200StartMotor, Aps3200Constants, 1>
     {
-        AuxiliaryPowerUnitTestBed::<Aps3200ApuGenerator, Aps3200StartMotor, Aps3200Constants, 1>::new()
+        AuxiliaryPowerUnitTestBed::<Aps3200ApuGenerator, Aps3200StartMotor, Aps3200Constants, 1>::new_with_aps3200()
     }
 
-    #[fixture]
     fn test_bed_aps3200(
     ) -> AuxiliaryPowerUnitTestBed<Aps3200ApuGenerator, Aps3200StartMotor, Aps3200Constants, 1>
     {
-        AuxiliaryPowerUnitTestBed::<Aps3200ApuGenerator, Aps3200StartMotor, Aps3200Constants, 1>::new()
+        AuxiliaryPowerUnitTestBed::<Aps3200ApuGenerator, Aps3200StartMotor, Aps3200Constants, 1>::new_with_aps3200()
     }
 
-    #[fixture]
     pub fn test_bed_pw980(
     ) -> AuxiliaryPowerUnitTestBed<Pw980ApuGenerator, Pw980StartMotor, Pw980Constants, 2> {
         AuxiliaryPowerUnitTestBed::<Pw980ApuGenerator, Pw980StartMotor, Pw980Constants, 2>::new_with_pw980()
@@ -584,7 +581,7 @@ mod tests {
         const ECB_AND_AIR_INTAKE_FLAP_POWERED_BY: ElectricalBusType =
             ElectricalBusType::DirectCurrentBattery;
 
-        fn new(
+        fn new_with_aps3200(
             context: &mut InitContext,
         ) -> AuxiliaryPowerUnitTestAircraft<
             Aps3200ApuGenerator,
@@ -787,7 +784,7 @@ mod tests {
     impl<T: ApuGenerator, U: ApuStartMotor, C: ApuConstants, const N: usize>
         AuxiliaryPowerUnitTestBed<T, U, C, N>
     {
-        fn new(
+        fn new_with_aps3200(
         ) -> AuxiliaryPowerUnitTestBed<Aps3200ApuGenerator, Aps3200StartMotor, Aps3200Constants, 1>
         {
             let mut apu_test_bed = AuxiliaryPowerUnitTestBed {
@@ -799,7 +796,7 @@ mod tests {
                         Aps3200StartMotor,
                         Aps3200Constants,
                         1,
-                    >::new,
+                    >::new_with_aps3200,
                 ),
             };
 
@@ -1508,7 +1505,7 @@ mod tests {
                 .running_apu()
                 .and()
                 .master_off()
-                .run(Duration::from_millis(C::BLEED_AIR_COOLDOWN_DURATION_MILLIS));
+                .run(C::BLEED_AIR_COOLDOWN_DURATION);
 
             assert!(test_bed.apu_is_available());
 
@@ -1541,7 +1538,7 @@ mod tests {
                 .running_apu()
                 .and()
                 .master_off()
-                .run(Duration::from_millis(C::COOLDOWN_DURATION_MILLIS));
+                .run(C::COOLDOWN_DURATION);
 
             assert!(!test_bed.apu_is_available());
 
@@ -1599,18 +1596,14 @@ mod tests {
                 .running_apu_with_bleed_air()
                 .and()
                 .bleed_air_off()
-                .run(Duration::from_millis(
-                    (C::BLEED_AIR_COOLDOWN_DURATION_MILLIS / 3) * 2,
-                ));
+                .run((C::BLEED_AIR_COOLDOWN_DURATION / 3) * 2);
 
             assert!(test_bed.apu_is_available());
 
             test_bed = test_bed
                 .then_continue_with()
                 .master_off()
-                .run(Duration::from_millis(
-                    C::BLEED_AIR_COOLDOWN_DURATION_MILLIS / 3,
-                ));
+                .run(C::BLEED_AIR_COOLDOWN_DURATION / 3);
 
             assert!(test_bed.apu_is_available());
 
@@ -1646,7 +1639,7 @@ mod tests {
                 .then_continue_with()
                 .master_off()
                 .run(Duration::from_millis(1))
-                .run(Duration::from_millis(C::COOLDOWN_DURATION_MILLIS));
+                .run(C::COOLDOWN_DURATION);
             // APU N reduces below 95%.
             test_bed = test_bed.run(Duration::from_secs(5));
             assert!(
@@ -1672,8 +1665,8 @@ mod tests {
                 .running_apu_with_bleed_air()
                 .and()
                 .master_off()
-                .run(Duration::from_millis(C::BLEED_AIR_COOLDOWN_DURATION_MILLIS))
-                .run(Duration::from_millis(C::COOLDOWN_DURATION_MILLIS))
+                .run(C::BLEED_AIR_COOLDOWN_DURATION)
+                .run(C::COOLDOWN_DURATION)
                 .then_continue_with()
                 .master_on()
                 .run(Duration::from_millis(1));
@@ -2240,7 +2233,7 @@ mod tests {
                 .and()
                 .master_off()
                 .run(Duration::from_secs(1))
-                .run(Duration::from_millis(C::COOLDOWN_DURATION_MILLIS));
+                .run(C::COOLDOWN_DURATION);
 
             while test_bed.apu_is_available() {
                 test_bed = test_bed.run(Duration::from_secs(1));
@@ -3326,6 +3319,58 @@ mod tests {
                     .unwrap()
                     .get::<kilogram>(),
                 initial_fuel_used * 2.
+            );
+        }
+
+        #[rstest]
+        #[case::pw980(test_bed_pw980())]
+        fn fuel_used_resets_on_apu_start_up_in_flight<
+            T: ApuGenerator,
+            U: ApuStartMotor,
+            C: ApuConstants,
+            const N: usize,
+        >(
+            #[case] bed_with: AuxiliaryPowerUnitTestBed<T, U, C, N>,
+        ) {
+            let mut test_bed = bed_with
+                .running_apu()
+                .on_ground(true)
+                .and()
+                .apu_fuel_line_flowing(true, C::FUEL_LINE_ID)
+                .run(Duration::from_secs(1000));
+
+            assert!(
+                test_bed
+                    .apu_fuel_used()
+                    .normal_value()
+                    .unwrap()
+                    .get::<kilogram>()
+                    > 1.
+            );
+
+            test_bed = test_bed.master_off().run(C::COOLDOWN_DURATION);
+
+            while test_bed.n().normal_value().unwrap().get::<percent>() > 1. {
+                test_bed = test_bed.run(Duration::from_secs(1));
+            }
+
+            test_bed = test_bed
+                .then_continue_with()
+                .on_ground(false)
+                .run(Duration::from_secs(1))
+                .starting_apu();
+
+            while test_bed.n().normal_value().unwrap().get::<percent>() < 99. {
+                test_bed = test_bed.run(Duration::from_millis(10));
+            }
+
+            assert!(
+                test_bed
+                    .apu_fuel_used()
+                    .normal_value()
+                    .unwrap()
+                    .get::<kilogram>()
+                    < 1.
             );
         }
     }
