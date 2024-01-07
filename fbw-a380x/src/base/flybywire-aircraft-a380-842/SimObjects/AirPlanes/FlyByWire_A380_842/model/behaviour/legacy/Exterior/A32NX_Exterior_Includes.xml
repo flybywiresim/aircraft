@@ -1,0 +1,6 @@
+<!-- Copyright (c) 2023-2024 FlyByWire Simulations -->
+<!-- SPDX-License-Identifier: GPL-3.0 -->
+
+<ModelBehaviors>
+    <Include RelativeFile="../generated/A32NX_Exterior_Engines.xml"/>
+</ModelBehaviors>

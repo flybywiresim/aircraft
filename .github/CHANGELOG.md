@@ -31,7 +31,14 @@
 1. [MODEL] Replaced overhead decals - @Repsol2k
 1. [MODEL] General improvements to 3d model and textures - @MoreRightRudder, @Repsol2k, @tracernz
 1. [MODEL] Folding armrests - @Repsol2k
-1. [PFD] Improve FMA preselect speed & mach text @aaronschweig(aaronschweig) @BravoMike99 (bruno_pt99)
+1. [LIGHTING] Fixed Automatic Lighting on Spawn depending on outside lightcondition - @Maximilian-Reuter (\_Chaoz_)
+1. [EFCS] Implement calculated yaw damper gain  - @lukecologne (luke)
+1. [EFCS] Decrease yaw damper at low speeds on ground, down to 0 below 40kts - @lukecologne (luke)
+1. [FLIGHTMODEL] Fix pitch trim on approach - @donstim (donbikes)
+1. [GENERAL] Added C++ WASM framework and migrated all flypad-backend code to it - @frankkopp (Frank Kopp)
+1. [EFB] C++ WASM framework, extra-backend to replace flypad-backend, smooth dial turning for Lighting Presets - @frankkopp (Frank Kopp)
+1. [FMS] Fix ORIGIN/DEST not being reported to API - @nathaninnes (Sabes)
+1. [PFD] Improve FMA preselect speed & mach text - @aaronschweig (aaronschweig), @BravoMike99 (bruno_pt99)
 
 ## 0.11.0
 
