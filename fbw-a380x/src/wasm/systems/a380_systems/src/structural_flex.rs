@@ -1288,9 +1288,9 @@ mod tests {
         );
 
         // Check against expected animation values : reference => @Repsol
-        assert!(animation_position_inboard >= 62.2 && animation_position_inboard <= 62.3);
-        assert!(animation_position_inboard_mid >= 76.4 && animation_position_inboard_mid <= 76.8);
-        assert!(animation_position_outboard_mid >= 53.1 && animation_position_outboard_mid <= 53.3);
-        assert!(animation_position_outboard >= 55. && animation_position_outboard <= 57.);
+        assert!((62.2..=62.3).contains(&animation_position_inboard));
+        assert!((76.4..=76.8).contains(&animation_position_inboard_mid));
+        assert!((53.1..=53.3).contains(&animation_position_outboard_mid));
+        assert!((55. ..=57.).contains(&animation_position_outboard));
     }
 }
