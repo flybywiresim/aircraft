@@ -630,18 +630,31 @@ class AB3Cell extends DisplayComponent<CellProps> {
 
     private textSub = Subject.create('');
 
+    private text2Sub = Subject.create('');
+
+    private textXPosSub = Subject.create(0);
+
     private getText() {
         if (this.athrModeMessage === 0) {
+            /* use vertical bar instead of : for PRESEL text since : is not aligned to the bottom as the other fonts and the font file is used on ECAM, ND etc.
+                vertical bar is mapped to ":" aligned to bottom in font file
+                 */
             if (this.speedPreselVal !== -1 && this.machPreselVal === -1) {
                 const text = Math.round(this.speedPreselVal);
-                this.textSub.set(`SPEED SEL ${text}`);
+                this.textSub.set('SPEED SEL|   ');
+                this.text2Sub.set(`${text}`);
+                this.textXPosSub.set(35.434673);
             } else if (this.machPreselVal !== -1 && this.speedPreselVal === -1) {
-                this.textSub.set(`MACH SEL ${this.machPreselVal.toFixed(2)}`);
+                this.textSub.set('MACH SEL|   ');
+                this.text2Sub.set(`${this.machPreselVal.toFixed(2)}`);
+                this.textXPosSub.set(33.834673);
             } else if (this.machPreselVal === -1 && this.speedPreselVal === -1) {
                 this.textSub.set('');
+                this.text2Sub.set('');
             }
         } else {
             this.textSub.set('');
+            this.text2Sub.set('');
         }
     }
 
@@ -668,7 +681,11 @@ class AB3Cell extends DisplayComponent<CellProps> {
 
     render(): VNode {
         return (
-            <text class="FontMedium MiddleAlign Cyan" x="35.434673" y="21.656223">{this.textSub}</text>
+            <g>
+                <text class="FontMedium MiddleAlign Cyan" style="white-space: pre" x={this.textXPosSub} y="21.656223">{this.textSub}</text>
+                <text class="FontMedium MiddleAlign Cyan" x="52.934673" y="21.656223">{this.text2Sub}</text>
+            </g>
+
         );
     }
 }
