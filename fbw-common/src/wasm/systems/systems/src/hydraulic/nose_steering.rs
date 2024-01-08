@@ -115,6 +115,12 @@ impl SteeringActuator {
 
     const CURRENT_SPEED_FILTER_TIMECONST: Duration = Duration::from_millis(150);
 
+    // Adjusts how the steering slows down with position error
+    //   Formula is speed_coefficient = POSITION_ERROR_TO_MAX_SPEED_GAIN * position_error^2
+    //   Then max speed will be max_speed = nominal_speed * speed_coefficient
+    //   Note this is open loop: it will overshoot or undershoot depending on this factor
+    const POSITION_ERROR_TO_MAX_SPEED_GAIN: f64 = 0.06;
+
     pub fn new(
         context: &mut InitContext,
         max_half_angle: Angle,
@@ -225,7 +231,9 @@ impl SteeringActuator {
 
         // When closing to requested position, speed decreases using coefficient formula
         //   This yields a 0..1 coefficient that reduces the nominal max speed
-        let slowing_coefficient = (0.06 * position_error_abs.get::<degree>().powi(2)).min(1.);
+        let slowing_coefficient = (Self::POSITION_ERROR_TO_MAX_SPEED_GAIN
+            * position_error_abs.get::<degree>().powi(2))
+        .min(1.);
 
         self.nominal_speed * slowing_coefficient
     }
