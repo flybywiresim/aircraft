@@ -8,20 +8,21 @@ import { EngPage } from './Pages/Engine/EngPage';
 import { BleedPage } from './Pages/Bleed/BleedPage';
 import { HydPage } from './Pages/Hyd/HydPage';
 import { PressPage } from './Pages/Press/PressPage';
-import { ElecAcPage } from './Pages/ElecAcPage';
+import { ElecAcPage } from './Pages/ElecAc/ElecAcPage';
 import { FuelPage } from './Pages/FuelPage';
 import { CbPage } from './Pages/CbPage';
-import { ApuPage } from './Pages/ApuPage';
+import { ApuPage } from './Pages/Apu/ApuPage';
 import { CondPage } from './Pages/CondPage';
 import { DoorPage } from './Pages/Doors/DoorPage';
 import { ElecDcPage } from './Pages/ElecDc/ElecDcPage';
-import { WheelPage } from './Pages/WheelPage';
-import { FctlPage } from './Pages/FctlPage';
+import { WheelPage } from './Pages/Wheel/WheelPage';
+import { FctlPage } from './Pages/Fctl/FctlPage';
 // import { VideoPage } from './Pages/VideoPage';
 import { CruisePage } from './Pages/Cruise/CruisePage';
 import { StatusPage } from './Pages/StatusPage';
 
 import { StatusArea } from './StatusArea';
+import { Mailbox } from './Mailbox';
 
 import '../index.scss';
 
@@ -59,6 +60,7 @@ export const SystemDisplay = () => {
             <g>
                 {PAGES[theCurrentPage]}
                 <StatusArea />
+                <Mailbox />
             </g>
         </LegacyCdsDisplayUnit>
     );

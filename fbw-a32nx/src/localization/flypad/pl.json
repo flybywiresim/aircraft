@@ -185,6 +185,7 @@
       "Title": "Wypychanie"
     },
     "Services": {
+      "AirStarterUnit": "Air Starter Unit",
       "BaggageTruck": "Ciężarówka Bagażowa",
       "CateringTruck": "Ciężarówka Gastronomiczna",
       "Cones": "Pachołki Bezpieczeństwa",
@@ -622,7 +623,8 @@
       "ReverserOnAxis": "Oś z Ciągiem Wstecznym",
       "SaveAndApply": "Zapisz i Zastosuj",
       "SetFromThrottle": "Ustaw z Ułożenia Przepustnicy",
-      "ThrottleConfigurationReset": "Zresetuj Konfigurację Przepustnicy"
+      "ThrottleConfigurationReset": "Zresetuj Konfigurację Przepustnicy",
+      "TogaOnAxis": "TogaOnAxis"
     },
     "Title": "Ustawienia",
     "Unrealistic": "Nierealistyczne",

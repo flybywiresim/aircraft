@@ -14,7 +14,7 @@ jobs:
       A32NX_INSTRUMENTS_BUILD_WORKERS: 2
       MASTER_PRE_RELEASE_ID: 66067756
       MASTER_PRE_RELEASE_TAG: assets/master
-      MASTER_ZIP_NAME: A32NX-master.zip
+      MASTER_ZIP_NAME: A32NX-master.7z
       VMASTER_PRE_RELEASE_ID: 32243965
       VMASTER_PRE_RELEASE_TAG: vmaster
       BUILD_DIR_NAME: master
@@ -47,7 +47,7 @@ jobs:
           node ./scripts/install-source_a32nx.js
           mkdir ./${{ env.BUILD_DIR_NAME }}
           cd ./fbw-a32nx/out/
-          zip -r ../../${{ env.BUILD_DIR_NAME }}/${{ env.MASTER_ZIP_NAME }} ./flybywire-aircraft-a320-neo/
+          7z a -t7z -m0=lzma2 -mx=7 ../../${{ env.BUILD_DIR_NAME }}/${{ env.MASTER_ZIP_NAME }} ./flybywire-aircraft-a320-neo/
           cd ../../
       - name: Upload to CloudFlare CDN
         env:
