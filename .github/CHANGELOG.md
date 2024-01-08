@@ -37,7 +37,11 @@
 1. [FLIGHTMODEL] Fix pitch trim on approach - @donstim (donbikes)
 1. [GENERAL] Added C++ WASM framework and migrated all flypad-backend code to it - @frankkopp (Frank Kopp)
 1. [EFB] C++ WASM framework, extra-backend to replace flypad-backend, smooth dial turning for Lighting Presets  - @frankkopp (Frank Kopp)
-1. [MISC] Nose steering spins the A380 nose wheels - @Crocket63 (crocket)
+1. [EFB] C++ WASM framework, extra-backend to replace flypad-backend, smooth dial turning for Lighting Presets - @frankkopp (Frank Kopp)
+1. [FMS] Fix ORIGIN/DEST not being reported to API - @nathaninnes (Sabes)
+1. [PFD] Improve FMA preselect speed & mach text - @aaronschweig (aaronschweig), @BravoMike99 (bruno_pt99)
+1. [EWD] Fixed PACKS indication when no FADECS - @ArtemisPlayer (ArtemisPlayer)
+
 
 ## 0.11.0
 
