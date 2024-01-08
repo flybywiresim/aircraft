@@ -180,6 +180,33 @@
         - FWD
         - AFT
 
+- A32NX_VENT_OVERPRESSURE_RELIEF_VALVE_IS_OPEN
+    - Bool
+    - True when the Overpressure Relief Valve Dumps are open. There are two valves but just one variable for now as they (mostly) always open and close at the same time.
+
+- A32NX_PRESS_CABIN_ALTITUDE_TARGET
+    - Feet
+    - Target cabin altitude as calculated by the pressurization system or manually selected on the overhead panel
+
+- A32NX_PRESS_{id}_OCSM_CHANNEL_FAILURE
+    - Number
+        - 0 if no failure
+        - 1 or 2 if single channel failure (for failed channel id)
+        - 3 if dual channel failure
+    - {id} 1 to 4
+
+- A32NX_PRESS_DIFF_PRESS_HI
+    - Bool
+    - True when FWC condition for "DIFF PRESS HI" is met (differential pressure between 8.92 and 9.2 PSI)
+
+- A32NX_PRESS_DIFF_PRESS_EXCESSIVE
+    - Bool
+    - True when FWC condition for "EXCESS DIFF PRESS" is met (differential pressure over 9.65 PSI)
+
+- A32NX_PRESS_NEGATIVE_DIFF_PRESS_EXCESSIVE
+    - Bool
+    - True when FWC condition for "EXCESS NEGATIVE DIFF PRESS" is met (differential pressure lower than -0.72 PSI)
+
 - A32NX_OVHD_COND_{id}_SELECTOR_KNOB
     - Number (0 to 300)
     - Rotation amount of the overhead temperature selectors for the cockpit and the cabin
@@ -224,6 +251,27 @@
 - A32NX_OVHD_CARGO_AIR_HEATER_PB_HAS_FAULT
     - Bool
     - True if the bulk cargo heater is failed
+
+- A32NX_OVHD_PRESS_MAN_ALTITUDE_PB_IS_AUTO
+    - Bool
+    - True if the overhead manual altitude pushbutton is auto (no light)
+
+- A32NX_OVHD_PRESS_MAN_ALTITUDE_KNOB
+    - Feet
+    - Value in feet of the manually selected cabin target altitude on the overhead panel
+
+- A32NX_OVHD_PRESS_MAN_VS_CTL_PB_IS_AUTO
+    - Bool
+    - True if the overhead manual vertical speed pushbutton is auto (no light)
+
+- A32NX_OVHD_PRESS_MAN_VS_CTL_KNOB
+    - Feet per minute
+    - Value in feet per minute of the manually selected cabin vertical speed on the overhead panel
+
+- A32NX_OVHD_VENT_AIR_EXTRACT_PB_IS_ON
+    - Bool
+    - True if the overhead manual extract vent override pushbutton is on (illuminated)
+
 
 ## Electrical ATA 24
 

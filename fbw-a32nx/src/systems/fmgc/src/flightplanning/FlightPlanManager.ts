@@ -28,6 +28,7 @@ import { LegType } from '@flybywiresim/fbw-sdk';
 import { LnavConfig } from '@fmgc/guidance/LnavConfig';
 import { ApproachStats, HoldData } from '@fmgc/flightplanning/data/flightplan';
 import { SegmentType } from '@fmgc/wtsdk';
+import { ICAO } from '@microsoft/msfs-sdk';
 import { ManagedFlightPlan } from './ManagedFlightPlan';
 import { GPS } from './GPS';
 import { FlightPlanSegment } from './FlightPlanSegment';
@@ -353,6 +354,7 @@ export class FlightPlanManager {
             }
             this.updateFlightPlanVersion().catch(console.error);
         }
+        NXDataStore.set('PLAN_ORIGIN', ICAO.getIdent(icao));
         callback();
     }
 
@@ -783,6 +785,7 @@ export class FlightPlanManager {
         }
 
         this.updateFlightPlanVersion().catch(console.error);
+        NXDataStore.set('PLAN_DESTINATION', ICAO.getIdent(icao));
         callback();
     }
 
