@@ -1252,6 +1252,8 @@ mod tests {
         );
     }
 
+    // Check that provided following XML formula, final animation value matches expected values
+    // Need to set XML code according to those formulas
     #[test]
     fn util_to_compute_xml_offsets_from_desired_angles_in_flight() {
         let mut test_bed = WingFlexTestBed::new().with_nominal_weight().in_1g_flight();
@@ -1271,9 +1273,9 @@ mod tests {
             outboard_angle.get::<degree>()
         );
 
-        //Input formula from XML
+        //Input formula from XML code
         let animation_position_inboard = inboard_angle.get::<degree>() * 23.25 + 53.78;
-        let animation_position_inboard_mid = inboard_mid_angle.get::<degree>() * 16.125 + 66.5;
+        let animation_position_inboard_mid = inboard_mid_angle.get::<degree>() * 16.125 + 67.1;
         let animation_position_outboard_mid = outboard_mid_angle.get::<degree>() * 29.41 + 31.9;
         let animation_position_outboard = outboard_angle.get::<degree>() * 29.41 + 50.;
 
@@ -1285,20 +1287,10 @@ mod tests {
             animation_position_outboard
         );
 
+        // Check against expeted values @Repsol
         assert!(animation_position_inboard >= 62.2 && animation_position_inboard <= 62.3);
-        assert!(animation_position_inboard_mid >= 75.8 && animation_position_inboard_mid <= 76.2);
+        assert!(animation_position_inboard_mid >= 76.4 && animation_position_inboard_mid <= 76.8);
         assert!(animation_position_outboard_mid >= 53.1 && animation_position_outboard_mid <= 53.3);
         assert!(animation_position_outboard >= 55. && animation_position_outboard <= 57.);
-
-        // // One percent precision check on total lift value
-        // assert!(
-        //     test_bed.left_wing_lift_per_node().sum() + test_bed.right_wing_lift_per_node().sum()
-        //         <= test_bed.current_total_lift().get::<newton>() * 1.01
-        // );
-
-        // assert!(
-        //     test_bed.left_wing_lift_per_node().sum() + test_bed.right_wing_lift_per_node().sum()
-        //         >= test_bed.current_total_lift().get::<newton>() * 0.99
-        // );
     }
 }
