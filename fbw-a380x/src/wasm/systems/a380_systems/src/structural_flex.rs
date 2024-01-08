@@ -1287,7 +1287,7 @@ mod tests {
             animation_position_outboard
         );
 
-        // Check against expeted values @Repsol
+        // Check against expected animation values : reference => @Repsol
         assert!(animation_position_inboard >= 62.2 && animation_position_inboard <= 62.3);
         assert!(animation_position_inboard_mid >= 76.4 && animation_position_inboard_mid <= 76.8);
         assert!(animation_position_outboard_mid >= 53.1 && animation_position_outboard_mid <= 53.3);
