@@ -476,6 +476,10 @@ export class PseudoFWC {
 
     private readonly toInhibitTimer = new NXLogicConfirmNode(3);
 
+    /** 49 - Airborne Auxiliary Power */
+
+    private readonly apuAutoshutdown = Subject.create(false);
+
     /** TO CONFIG TEST raw button input */
     private toConfigTestRaw = false;
 
@@ -1229,6 +1233,9 @@ export class PseudoFWC {
         this.lrTankLow.set(this.lrTankLowConfirm.write(leftFuelLow && rightFuelLow, deltaTime));
         this.leftFuelLow.set(this.leftFuelLowConfirm.write(leftFuelLow && !this.lrTankLow.get(), deltaTime));
         this.rightFuelLow.set(this.rightFuelLowConfirm.write(rightFuelLow && !this.lrTankLow.get(), deltaTime));
+
+        /** 49 - Airborne Auxiliary Power */
+        this.apuAutoshutdown.set(SimVar.GetSimVarValue('L:A32NX_APU_IS_AUTO_SHUTDOWN', 'bool'));
 
         /* F/CTL */
         const fcdc1DiscreteWord1 = Arinc429Word.fromSimVarValue('L:A32NX_FCDC_1_DISCRETE_WORD_1');
@@ -2855,6 +2862,19 @@ export class PseudoFWC {
             memoInhibit: () => false,
             failure: 2,
             sysPage: 5,
+            side: 'LEFT',
+        },
+        4900010: { // APU AUTO SHUTDOWN
+            flightPhaseInhib: [3, 4, 5, 7, 8],
+            simVarIsActive: this.apuAutoshutdown,
+            whichCodeToReturn: () => [
+                0,
+                this.apuMasterSwitch.get() ? 1 : null,
+            ],
+            codesToReturn: ['490001001', '490001002'],
+            memoInhibit: () => false,
+            failure: 2,
+            sysPage: 6,
             side: 'LEFT',
         },
     }
