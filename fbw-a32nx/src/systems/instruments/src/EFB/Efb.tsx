@@ -211,20 +211,24 @@ const Efb = () => {
 
     // Automatically load a lighting preset
     useEffect(() => {
-        if (ac1BusIsPowered && autoLoadLightingPresetEnabled) {
+        if (ac1BusIsPowered && powerState === PowerStates.LOADED && autoLoadLightingPresetEnabled) {
+            // TIME OF DAY enum : 1 = Day ; 2 = Dusk/Dawn ; 3 = Night
             switch (timeOfDay) {
             case 1:
                 if (autoLoadDayLightingPresetID !== 0) {
+                    console.log('Auto-loading lighting preset: ', autoLoadDayLightingPresetID);
                     setLoadLightingPresetVar(autoLoadDayLightingPresetID);
                 }
                 break;
             case 2:
                 if (autoLoadDawnDuskLightingPresetID !== 0) {
+                    console.log('Auto-loading lighting preset: ', autoLoadDawnDuskLightingPresetID);
                     setLoadLightingPresetVar(autoLoadDawnDuskLightingPresetID);
                 }
                 break;
             case 3:
                 if (autoLoadNightLightingPresetID !== 0) {
+                    console.log('Auto-loading lighting preset: ', autoLoadNightLightingPresetID);
                     setLoadLightingPresetVar(autoLoadNightLightingPresetID);
                 }
                 break;
@@ -232,7 +236,7 @@ const Efb = () => {
                 break;
             }
         }
-    }, [ac1BusIsPowered, autoLoadLightingPresetEnabled]);
+    }, [ac1BusIsPowered, powerState, autoLoadLightingPresetEnabled]);
 
     useInterval(() => {
         if (!autoFillChecklists) return;
