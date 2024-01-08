@@ -185,6 +185,7 @@
       "Title": "Geri itme"
     },
     "Services": {
+      "AirStarterUnit": "Air Starter Unit",
       "BaggageTruck": "Bagaj Kamyonu",
       "CateringTruck": "Yemek Servis Aracı",
       "Cones": "Emniyet Konileri",
@@ -622,7 +623,8 @@
       "ReverserOnAxis": "Reverser eksende",
       "SaveAndApply": "Kaydet ve Uygula",
       "SetFromThrottle": "Throttle'dan ayarla",
-      "ThrottleConfigurationReset": "Throttle Yapılandırmasını Sıfırla"
+      "ThrottleConfigurationReset": "Throttle Yapılandırmasını Sıfırla",
+      "TogaOnAxis": "TogaOnAxis"
     },
     "Title": "Ayarlar",
     "Unrealistic": "Gerçekçi olmayan",

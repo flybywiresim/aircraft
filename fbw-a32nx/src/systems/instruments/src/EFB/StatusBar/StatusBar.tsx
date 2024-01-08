@@ -85,7 +85,7 @@ export const StatusBar = ({ batteryLevel, isCharging }: StatusBarProps) => {
         const std = new Date(parseInt(schedOut) * 1000);
         schedOutParsed = `${std.getUTCHours().toString().padStart(2, '0')}${std.getUTCMinutes().toString().padStart(2, '0')}Z`;
     }
-    const shutoffTimerRef = useRef<NodeJS.Timer | null>(null);
+    const shutoffTimerRef = useRef<number | null>(null);
 
     const [simBridgeConnected, setSimBridgeConnected] = useState(false);
 

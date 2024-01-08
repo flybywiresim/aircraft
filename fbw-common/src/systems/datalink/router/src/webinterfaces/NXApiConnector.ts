@@ -225,6 +225,3 @@ export class NXApiConnector {
         return Math.random() * 30_000 + 45_000;
     }
 }
-
-NXDataStore.set('PLAN_ORIGIN', '');
-NXDataStore.set('PLAN_DESTINATION', '');

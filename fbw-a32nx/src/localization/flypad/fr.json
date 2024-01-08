@@ -185,6 +185,7 @@
       "Title": "Repoussage"
     },
     "Services": {
+      "AirStarterUnit": "Air Starter Unit",
       "BaggageTruck": "Camion à bagages",
       "CateringTruck": "Camion d'approvisionnement",
       "Cones": "Cônes de sécurité",
@@ -622,7 +623,8 @@
       "ReverserOnAxis": "Inverseur sur l'axe",
       "SaveAndApply": "Enregistrer et appliquer",
       "SetFromThrottle": "Configurer depuis l'accélérateur",
-      "ThrottleConfigurationReset": "Réinitialisation de la configuration"
+      "ThrottleConfigurationReset": "Réinitialisation de la configuration",
+      "TogaOnAxis": "TogaOnAxis"
     },
     "Title": "Paramètres",
     "Unrealistic": "Non réaliste",

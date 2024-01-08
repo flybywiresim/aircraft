@@ -33,27 +33,6 @@
 }
 
 @font-face {
-  font-family: "Roboto";
-  src: url("/Fonts/fbw-a32nx/RobotoMono-Medium.ttf") format("truetype");
-  font-weight: normal;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: "Roboto-Light";
-  src: url("/Fonts/fbw-a32nx/RobotoMono-Light.ttf") format("truetype");
-  font-weight: normal;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: "Roboto-Bold";
-  src: url("/Fonts/fbw-a32nx/RobotoMono-Bold.ttf") format("truetype");
-  font-weight: normal;
-  font-style: normal;
-}
-
-@font-face {
   font-family: "Poppins-SemiBold";
   src: url("/Fonts/fbw-a32nx/Poppins-SemiBold.ttf") format("truetype");
   font-weight: normal;
@@ -68,9 +47,12 @@
 }
 
 :root {
-  --main-display-colour-background: #030200;
   --main-display-colour: hsl(36, 100%, 45%);
   --main-display-colour-inactive: hsl(53, 82%, 0%);
+  --main-background-opacity: 0;
+  --main-text-shadow-colour: rgba(207, 110, 0, 0);
+
+  text-shadow: var(--main-text-shadow-colour) 0 0 12px;
 }
 
 :root text.Common {
@@ -80,20 +62,20 @@
 
 :root text.Active {
   font-family: "Poppins-SemiBold";
-  font-size: 28px;
+  font-size: 56px;
   fill: var(--main-display-colour);
 }
 
 :root text.Inactive {
   font-family: "Poppins-SemiBold";
-  font-size: 28px;
+  font-size: 56px;
   fill: var(--main-display-colour-inactive);
   opacity: 0.1;
 }
 
 :root text.Value {
   font-family: Digital;
-  font-size: 55px;
+  font-size: 110px;
   text-anchor: start;
   fill: var(--main-display-colour);
   letter-spacing: 0px;
@@ -101,7 +83,7 @@
 
 :root line {
   stroke: var(--main-display-colour);
-  stroke-width: 5;
+  stroke-width: 7;
 }
 
 :root circle {
@@ -111,7 +93,6 @@
 a320-neo-fcu-element {
   width: 100%;
   height: 100%;
-  background: var(--main-display-colour-background);
   font-family: "Poppins-SemiBold";
   position: relative;
   overflow: hidden;
@@ -124,68 +105,95 @@ a320-neo-fcu-element #Mainframe {
   position: relative;
 }
 
-a320-neo-fcu-element #Mainframe #LargeScreen {
-  width: 100%;
-  height: 8%;
-  display: block;
+.fcu-screen {
   position: absolute;
-  background-color: var(--main-display-colour-background);
+  width: 100%;
+  height: 30%;
+  left: 0;
 }
 
-a320-neo-fcu-element #Mainframe #LargeScreen #Speed {
-  width: 20%;
+#LeftFcu {
+  top: 0;
+}
+
+#RightFcu {
+  top: 35%;
+}
+
+.fcu-screen #Speed {
+  width: 40%;
   height: 100%;
   left: 0%;
   position: absolute;
 }
 
-a320-neo-fcu-element #Mainframe #LargeScreen #Heading {
-  width: 20%;
-  height: 100%;
-  left: 20%;
-  position: absolute;
-}
-
-a320-neo-fcu-element #Mainframe #LargeScreen #Mode {
-  width: 20%;
+.fcu-screen #Heading {
+  width: 40%;
   height: 100%;
   left: 40%;
   position: absolute;
 }
 
-a320-neo-fcu-element #Mainframe #LargeScreen #AltVS {
-  width: 40%;
+.fcu-screen #LateralMode {
+  width: 20%;
   height: 100%;
-  left: 60%;
+  left: 80%;
   position: absolute;
 }
 
-a320-neo-fcu-element #Mainframe #LargeScreen #AltVS #Altitude {
+.fcu-screen #VerticalMode {
+  width: 20%;
+  height: 100%;
+  left: 0;
+  position: absolute;
+}
+
+.fcu-screen #AltVS {
+  width: 80%;
+  height: 100%;
+  left: 20%;
+  position: absolute;
+}
+
+.fcu-screen #AltVS #Altitude {
   width: 50%;
   height: 100%;
   left: 0%;
   position: absolute;
 }
 
-a320-neo-fcu-element #Mainframe #LargeScreen #AltVS #VerticalSpeed {
+.fcu-screen #AltVS #VerticalSpeed {
   width: 50%;
   height: 100%;
   left: 50%;
   position: absolute;
 }
 
-a320-neo-fcu-element #Mainframe #SmallScreen {
-  width: 14%;
-  height: 8%;
-  display: block;
+.baro-screen {
   position: absolute;
-  top: 8%;
-  background-color: var(--main-display-colour-background);
+  width: 28.1%;
+  height: 30%;
+  bottom: 1.6%;
 }
 
-a320-neo-fcu-element #Mainframe #SmallScreen #Selected,
-a320-neo-fcu-element #Mainframe #SmallScreen #Standar {
+#LeftBaro {
+  left: 0;
+}
+
+#RightBaro {
+  right: 0;
+}
+
+.baro-screen .selected,
+.baro-screen .standard {
   width: 100%;
   height: 100%;
   top: 0%;
+}
+
+#fcu-background {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  opacity: var(--main-background-opacity);
 }

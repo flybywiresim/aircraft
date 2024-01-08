@@ -406,24 +406,34 @@ const models = JSON.parse(fs.readFileSync(path.join(__dirname, 'models.json'), '
 const p = (n) => path.resolve(__dirname, n);
 for (const model of models) {
     for (let i = 0; i < model.gltf.length; i += 1) {
+        const lodMatch = model.gltf[i].match(/LOD(\d\d?).gltf$/);
+        if (lodMatch === null) {
+            throw new Error('Could not determine LOD of', model.gltf[i]);
+        }
+        const lod = parseInt(lodMatch[1]);
+
         fs.copyFileSync(p(model.gltf[i]), p(model.output.gltf[i]));
-        if (model.modifications) {
-            applyNodeModifications(p(model.output.gltf[i]), p(model.output.gltf[i]), model.modifications);
+
+        const modifications = (model.modifications || []).filter((m) => m.lods === undefined || m.lods.includes(lod));
+        if (modifications.length > 0) {
+            applyNodeModifications(p(model.output.gltf[i]), p(model.output.gltf[i]), modifications);
             let modifiedBin = applyModifications(
                 fs.readFileSync(p(model.bin[i])),
                 p(model.gltf[i]),
-                model.modifications,
+                modifications,
             );
             modifiedBin = applyOutputSamplerModifications(
                 modifiedBin,
                 p(model.gltf[i]),
-                model.modifications,
+                modifications,
             );
             fs.writeFileSync(p(model.output.bin[i]), modifiedBin);
         } else {
             fs.copyFileSync(p(model.bin[i]), p(model.output.bin[i]));
         }
-        for (const addition of model.additions) {
+
+        const additions = (model.additions || []).filter((m) => m.lods === undefined || m.lods.includes(lod));
+        for (const addition of additions) {
             if (addition.nodes) {
                 for (let j = 0; j < addition.combineFiles.length; j += 1) {
                     if (p(model.gltf[i]) === p(addition.combineFiles[j])) {
@@ -432,27 +442,24 @@ for (const model of models) {
                     }
                 }
             } else {
-                const maxLod = addition.maxLod != null ? addition.maxLod : Infinity;
-                if (i <= maxLod) {
-                    combineGltf(p(model.output.gltf[i]), p(addition.gltf), p(model.output.gltf[i]));
+                combineGltf(p(model.output.gltf[i]), p(addition.gltf), p(model.output.gltf[i]));
 
-                    // add some zeroes to the end of the bin file to make sure its length is divisible by 4
-                    fs.appendFileSync(p(model.output.bin[i]), Buffer.alloc((4 - (fs.statSync(p(model.output.bin[i])).size % 4)) % 4));
+                // add some zeroes to the end of the bin file to make sure its length is divisible by 4
+                fs.appendFileSync(p(model.output.bin[i]), Buffer.alloc((4 - (fs.statSync(p(model.output.bin[i])).size % 4)) % 4));
 
-                    // add the second bin file to the end of the first one
-                    fs.appendFileSync(p(model.output.bin[i]), fs.readFileSync(p(addition.bin)));
-                }
+                // add the second bin file to the end of the first one
+                fs.appendFileSync(p(model.output.bin[i]), fs.readFileSync(p(addition.bin)));
             }
         }
-        if (model.splitAnimations) {
-            for (const split of model.splitAnimations) {
-                splitAnimations(p(model.output.gltf[i]), p(model.output.gltf[i]), split);
-            }
+
+        const animationsToSplit = (model.splitAnimations || []).filter((m) => m.lods === undefined || m.lods.includes(lod));
+        for (const split of animationsToSplit) {
+            splitAnimations(p(model.output.gltf[i]), p(model.output.gltf[i]), split);
         }
-        if (model.addParentNodes) {
-            for (const node of model.addParentNodes) {
-                addParentNode(p(model.output.gltf[i]), p(model.output.gltf[i]), node);
-            }
+
+        const addParentNodes = (model.addParentNodes || []).filter((m) => m.lods === undefined || m.lods.includes(lod));
+        for (const node of addParentNodes) {
+            addParentNode(p(model.output.gltf[i]), p(model.output.gltf[i]), node);
         }
     }
 }
