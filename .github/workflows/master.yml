@@ -24,7 +24,7 @@ jobs:
       MASTER_ZIP_NAME: A32NX-master.7z
       VMASTER_PRE_RELEASE_ID: 32243965
       VMASTER_PRE_RELEASE_TAG: vmaster
-      BUILD_DIR_NAME: master
+      BUILD_DIR_NAME: master-a32nx
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
@@ -107,7 +107,7 @@ jobs:
       MASTER_ZIP_NAME: A380X-master.7z
       VMASTER_PRE_RELEASE_ID: 32243965
       VMASTER_PRE_RELEASE_TAG: vmaster
-      BUILD_DIR_NAME: master
+      BUILD_DIR_NAME: master-a380x
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
@@ -144,7 +144,7 @@ jobs:
       - name: Upload to CloudFlare CDN
         env:
           CLOUDFLARE_BUCKET_PASSWORD: ${{ secrets.CLOUDFLARE_BUCKET_PASSWORD }}
-          CDN_BUCKET_DESTINATION: addons/a32nx/master
+          CDN_BUCKET_DESTINATION: addons/a380x/master
         run: |
           ./scripts/cf-cdn.sh $CDN_BUCKET_DESTINATION ./fbw-a380x/out/build-modules
       - name: Delete old GitHub Pre-Release assets
