@@ -16,6 +16,9 @@ else
   WASMLD_ARGS="-O2 --lto-O2 --strip-debug"
   CLANG_ARGS="-flto -O2 -DNDEBUG"
 fi
+
+set -e
+
 # create temporary folder for o files
 mkdir -p "${DIR}/obj"
 pushd "${DIR}/obj"
