@@ -86,8 +86,13 @@ class CDUAvailableArrivalsPage {
             for (let j = 0; j < approaches.length; j++) {
                 approaches[j].index = j;
             }
-            // Sort the approaches in Honeywell's documented order
-            const sortedApproaches = approaches.slice().sort((a, b) => ApproachTypeOrder.indexOf(a.approachType) - ApproachTypeOrder.indexOf(b.approachType));
+
+            const sortedApproaches = approaches.slice()
+                // filter out approaches with no matching runway
+                .filter((a) => !!airportInfo.oneWayRunways.find((rw) => rw.number === a.runwayNumber && rw.designator === a.runwayDesignator))
+                // Sort the approaches in Honeywell's documented order
+                .sort((a, b) => ApproachTypeOrder.indexOf(a.approachType) - ApproachTypeOrder.indexOf(b.approachType));
+
             const rows = [[""], [""], [""], [""], [""], [""], [""], [""]];
             const matchingArrivals = [];
             if (!starSelection) {
@@ -107,7 +112,7 @@ class CDUAvailableArrivalsPage {
                             const ilsText = hasIls ? `${WayPoint.formatIdentFromIcao(runway.primaryILSFrequency.icao).padStart(6)}/${runway.primaryILSFrequency.freqMHz.toFixed(2)}` : '';
                             rows[2 * i + 1] = [`{cyan}{sp}{sp}{sp}${runwayCourse}${ilsText}{end}`];
                         }
-                      
+
                         mcdu.onLeftInput[i + 2] = () => {
                             mcdu.setApproachIndex(approach.index, () => {
                                 mcdu.flightPlanManager.setDestinationRunwayIndexFromApproach();
