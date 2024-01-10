@@ -1274,8 +1274,8 @@ mod tests {
         );
 
         //Input formula from XML code
-        let animation_position_inboard = inboard_angle.get::<degree>() * 23.25 + 53.78;
-        let animation_position_inboard_mid = inboard_mid_angle.get::<degree>() * 16.125 + 67.1;
+        let animation_position_inboard = inboard_angle.get::<degree>() * 23.25 + 55.35;
+        let animation_position_inboard_mid = inboard_mid_angle.get::<degree>() * 16.125 + 67.;
         let animation_position_outboard_mid = outboard_mid_angle.get::<degree>() * 29.41 + 31.9;
         let animation_position_outboard = outboard_angle.get::<degree>() * 29.41 + 50.;
 
@@ -1288,8 +1288,8 @@ mod tests {
         );
 
         // Check against expected animation values : reference => @Repsol
-        assert!((62.2..=62.3).contains(&animation_position_inboard));
-        assert!((76.4..=76.8).contains(&animation_position_inboard_mid));
+        assert!((63.8..=64.2).contains(&animation_position_inboard));
+        assert!((76.3..=76.7).contains(&animation_position_inboard_mid));
         assert!((53.1..=53.3).contains(&animation_position_outboard_mid));
         assert!((55. ..=57.).contains(&animation_position_outboard));
     }
