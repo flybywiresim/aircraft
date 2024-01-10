@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -ex
+set -e
 
 if [ "${GITHUB_ACTIONS}" != "true" ]; then
   npm test

@@ -39,7 +39,7 @@ module.exports.defineEnvVars = defineEnvVars;
  * @returns {import('esbuild').BuildOptions}
  */
 function esbuildModuleBuild(projectRoot, globalName, entryPoint, outFile, tsConfigDir) {
-    const isProductionBuild = process.env.A32NX_PRODUCTION_BUILD === '1';
+    const isProductionBuild = process.env.FBW_PRODUCTION_BUILD === '1';
 
     process.chdir(projectRoot);
 
