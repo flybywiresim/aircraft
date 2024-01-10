@@ -11,5 +11,3 @@ export const Directories = {
     src: path.join(directoryName, '../..'),
     root: path.join(directoryName, '../../../../..'),
 };
-
-console.log('Using Directories:', Directories);

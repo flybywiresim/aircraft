@@ -11,7 +11,7 @@ else
   WASMLD_ARGS="--strip-debug"
 fi
 
-set -ex
+set -e
 
 # create temporary folder for o files
 mkdir -p "${DIR}/obj"
