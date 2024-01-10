@@ -1409,8 +1409,8 @@ void ElacComputer::step()
     rtb_DataTypeConversion6_g = ElacComputer_U.in.bus_inputs.fmgc_1_bus.delta_q_cmd_deg.Data;
     LawMDLOBJ5.step(&ElacComputer_U.in.time.dt, &rtb_BusAssignment_f_logic_ir_computation_data_n_z_g, &rtb_Y_d_tmp_tmp,
                     &rtb_DataTypeConversion5, &rtb_BusAssignment_f_logic_ir_computation_data_theta_dot_deg_s, &rtb_Y_d,
-                    (const_cast<real_T*>(&ElacComputer_RGND)), &ElacComputer_U.in.analog_inputs.ths_pos_deg, &rtb_Y,
-                    &rtb_eta_trim_limit_lo_d,
+                    &ElacComputer_U.in.analog_inputs.left_elevator_pos_deg, &ElacComputer_U.in.analog_inputs.ths_pos_deg,
+                    &rtb_Y, &rtb_eta_trim_limit_lo_d,
                     &rtb_BusConversion_InsertedFor_BusAssignment_at_inport_8_BusCreator1_V_tas_kn, &rtb_handleIndex_f,
                     &rtb_handleIndex_c, (const_cast<real_T*>(&ElacComputer_RGND)), (const_cast<real_T*>
       (&ElacComputer_RGND)), &rtb_DataTypeConversion3_m, &rtb_DataTypeConversion8,
