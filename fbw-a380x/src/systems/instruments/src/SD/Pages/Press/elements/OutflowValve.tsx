@@ -7,7 +7,7 @@ const OutflowValve: React.FC<Position & EngineNumber> = memo(({ x, y, engine }) 
     const ofradius = 52;
 
     const [flightPhase] = useSimVar('L:A32NX_FWC_FLIGHT_PHASE', 'enum', 1000);
-    const [outflowValueOpenPercentage] = useSimVar('L:A32NX_PRESS_OUTFLOW_VALVE_OPEN_PERCENTAGE', 'percent', 500);
+    const [outflowValueOpenPercentage] = useSimVar(`L:A32NX_PRESS_OUTFLOW_VALVE_${engine}_OPEN_PERCENTAGE`, 'percent', 500);
 
     return (
         <>

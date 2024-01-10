@@ -7,6 +7,15 @@ export const DeltaP: React.FC<Position> = ({ x, y }) => {
     const [deltaPsi] = useSimVar('L:A32NX_PRESS_CABIN_DELTA_PRESSURE', 'psi', 500);
     const deltaPress = splitDecimals(deltaPsi);
 
+    let colour;
+    if (deltaPsi < -0.72 || deltaPsi > 9.2) {
+        colour = `Red`
+    } else if ((-0.72 <= deltaPsi && deltaPsi <= -0.2) || (8.92 <= deltaPsi && deltaPsi <= 9.2)) {
+        colour = `Amber`
+    } else {
+        colour = `Green`
+    };
+
     const radius = 86;
     const startAngle = 205;
     const endAngle = 55;
@@ -15,11 +24,11 @@ export const DeltaP: React.FC<Position> = ({ x, y }) => {
         <g id="DeltaPressure">
             <text className="F29 LS1 Center White" x={x - 51} y={y - 142}>DELTA P</text>
             <text className="F24 Center Cyan" x={x - 18} y={y - 105}>PSI</text>
-            <text className={`F35 End ${deltaPsi < -0.4 || deltaPsi >= 8.5 ? 'Amber' : 'Green'}`} x={x + 9} y={y + 48}>
+            <text className={`F35 End ${colour}`} x={x + 9} y={y + 48}>
                 {deltaPress[0]}
             </text>
-            <text className={`F35 End ${deltaPsi < -0.4 || deltaPsi >= 8.5 ? 'Amber' : 'Green'}`} x={x + 29} y={y + 48}>.</text>
-            <text className={`F35 End ${deltaPsi < -0.4 || deltaPsi >= 8.5 ? 'Amber' : 'Green'}`} x={x + 56} y={y + 48}>{deltaPress[1]}</text>
+            <text className={`F35 End ${colour}`} x={x + 29} y={y + 48}>.</text>
+            <text className={`F35 End ${colour}`} x={x + 56} y={y + 48}>{deltaPress[1]}</text>
             <GaugeComponent x={x} y={y} radius={radius} startAngle={startAngle} endAngle={endAngle} visible className="Gauge">
                 <GaugeComponent x={x} y={y} radius={radius - 2} startAngle={endAngle - 15} endAngle={endAngle} visible className="GaugeComponent Gauge ThickRedLine" />
                 <GaugeComponent x={x} y={y} radius={radius - 2} startAngle={endAngle - 30} endAngle={endAngle - 15} visible className="GaugeComponent Gauge ThickAmberLine" />
@@ -95,7 +104,7 @@ export const DeltaP: React.FC<Position> = ({ x, y }) => {
                     radius={radius}
                     startAngle={startAngle}
                     endAngle={endAngle}
-                    className={`GaugeIndicator SW4 ${deltaPsi < -0.4 || deltaPsi >= 8.5 ? 'Amber' : ''}`}
+                    className={`GaugeIndicator SW4 ${colour}`}
                     indicator
                     multiplierOuter={1.01}
                 />

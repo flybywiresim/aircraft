@@ -1,0 +1,13 @@
+{
+  "LocalisationPackage": {
+    "Language": "pt-BR",
+    "Strings": {
+      "AIRCRAFT.DESCRIPTION": "A Airbus lançou seu primeiro A320 em março de 1984. Quase 26 anos depois, em 2010, eles anunciaram o A320neo (\"new engine option\", nova opção de motor) como o membro mais recente da família, para revitalizar e sustentar sua linha de aviões de passageiros líder mundial com turbofan duplo e corpo estreito.<\/br><\/br>Depois de um extenso processo de desenvolvimento, o A320neo entrou oficialmente em serviço no início de 2016 com a Lufthansa, e logo se tornou a aeronave comercial mais rapidamente vendida do mundo, com mais de 7.000 aviões encomendados por mais de 115 linhas aéreas até hoje.<\/br><\/br>Dando continuidade à tradição estabelecida pelo A320 original, que foi o primeiro avião de passageiros além do Concorde a usar o controle fly-by-wire para operações normais, o A320neo compartilha mais de 95% de uniformidade de componentes estruturais com os modelos predecessores. Entretanto, é a introdução de dois tipos de motor de nova geração, além das pontas de asa \"Sharklet\" proprietárias da empresa, que realmente destaca o neo.<\/br><\/br>Economia de combustível, alcance estendido, carga máxima ampliada e distância de aterrissagem encurtada; esses avanços fundamentais, junto com uma redução drástica de ruídos e emissões de dióxido de carbono, comprovam porque o A320neo não só é um sucesso comercial, como também um passo à frente significativo no caminho para maior responsabilidade ambiental.",
+      "AIRCRAFT.UI_MANUFACTURER": "Airbus",
+      "AIRCRAFT.UI_MODEL": "A320neo",
+      "AIRCRAFT.UI_VARIATION": "Airbus",
+      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_LEFT": "Ajustar a proa selecionada para a esquerda (%((A:AUTOPILOT HEADING LOCK DIR,degrees))%!d!°)",
+      "COCKPIT.TOOLTIPS.AUTOPILOT_PANEL_HDG_TUNING_RIGHT": "Ajustar a proa selecionada para a direita (%((A:AUTOPILOT HEADING LOCK DIR,degrees))%!d!°)"
+    }
+  }
+}
