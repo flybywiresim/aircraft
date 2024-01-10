@@ -3,7 +3,7 @@ use super::{
     A380ElectricalOverheadPanel,
 };
 use systems::accept_iterable;
-use systems::shared::LgciuWeightOnWheels;
+use systems::shared::AdirsDiscreteOutputs;
 use systems::{
     apu::ApuGenerator,
     electrical::{
@@ -76,7 +76,7 @@ impl A380AlternatingCurrentElectrical {
         apu: &impl AuxiliaryPowerUnitElectrical,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         engines: [&impl Engine; 4],
-        lgcius: [&impl LgciuWeightOnWheels; 2],
+        adirs: &impl AdirsDiscreteOutputs,
     ) {
         self.main_power_sources.update(
             context,
@@ -86,7 +86,7 @@ impl A380AlternatingCurrentElectrical {
             apu,
             engine_fire_push_buttons,
             engines,
-            lgcius,
+            adirs,
         );
 
         self.main_power_sources
@@ -410,7 +410,7 @@ impl A380MainPowerSources {
         apu: &impl AuxiliaryPowerUnitElectrical,
         engine_fire_push_buttons: &impl EngineFirePushButtons,
         engines: [&impl Engine; 4],
-        lgcius: [&impl LgciuWeightOnWheels; 2],
+        adirs: &impl AdirsDiscreteOutputs,
     ) {
         for (gen, engine) in self.engine_gens.iter_mut().zip(engines) {
             gen.update(context, engine, overhead, engine_fire_push_buttons);
@@ -425,7 +425,7 @@ impl A380MainPowerSources {
             electricity.supplied_by(ext_pwr);
         }
 
-        let powered_by = self.calc_ac_sources(ext_pwrs, overhead, apu, lgcius);
+        let powered_by = self.calc_ac_sources(ext_pwrs, overhead, apu, adirs);
 
         // Configure contactors
         for (i, (&power_source, (gen_contactor, ext_pwr_contactor))) in powered_by
@@ -547,7 +547,7 @@ impl A380MainPowerSources {
         ext_pwrs: &[ExternalPowerSource; 4],
         overhead: &A380ElectricalOverheadPanel,
         apu: &impl AuxiliaryPowerUnitElectrical,
-        lgcius: [&impl LgciuWeightOnWheels; 2],
+        adirs: &impl AdirsDiscreteOutputs,
     ) -> [Option<ACBusPowerSource>; 4] {
         let gen_available: Vec<_> = self
             .engine_gens
@@ -565,11 +565,10 @@ impl A380MainPowerSources {
         let apu_gen_available = [1, 2].map(|id| {
             overhead.apu_generator_is_on(id) && apu.generator(id).output_within_normal_parameters()
         });
-        // FIXME: signals should come from IRDC 4A/5A and IRDC 4B/5B
-        let apu_gen_available = if lgcius
-            .iter()
-            .any(|lgciu| lgciu.left_and_right_gear_compressed(true))
-        {
+
+        // TODO: should really be "low speed warning 1" in the A380
+        let in_flight = adirs.low_speed_warning_2_54kts(1) || adirs.low_speed_warning_2_54kts(3);
+        let apu_gen_available = if !in_flight {
             apu_gen_available
         } else {
             let left_gens = gen_available[0] as u32 + gen_available[1] as u32;
