@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -ex
+set -e
 
 # store current file ownership
 ORIGINAL_USER_ID=$(stat -c '%u' /external)

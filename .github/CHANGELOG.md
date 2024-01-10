@@ -41,6 +41,9 @@
 1. [FMS] Fix ORIGIN/DEST not being reported to API - @nathaninnes (Sabes)
 1. [PFD] Improve FMA preselect speed & mach text - @aaronschweig (aaronschweig), @BravoMike99 (bruno_pt99)
 1. [EWD] Fixed PACKS indication when no FADECS - @ArtemisPlayer (ArtemisPlayer)
+1. [FLIGHTMODEL/ICE PROT] - Interim fix for A/I system bug and quicker windscreen clearing of ice - @donstim (donbikes)
+1. [ND] Worked around a font rendering bug with the ND chrono - @tracernz (Mike)
+1. [TELEX] Decrease API poll rate to random number between 45-70 seconds - @auroraisluna (alepouna)
 
 ## 0.11.0
 
