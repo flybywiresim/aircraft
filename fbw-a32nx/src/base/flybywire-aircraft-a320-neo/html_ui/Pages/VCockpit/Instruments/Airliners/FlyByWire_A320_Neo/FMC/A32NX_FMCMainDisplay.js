@@ -2922,7 +2922,7 @@ class FMCMainDisplay extends BaseAirliners {
 
     set v1Speed(speed) {
         this._v1Speed = speed;
-        SimVar.SetSimVarValue('L:AIRLINER_V1_SPEED', 'number', speed ? speed : NaN);
+        SimVar.SetSimVarValue('L:AIRLINER_V1_SPEED', 'knots', speed ? speed : NaN);
     }
 
     get vRSpeed() {
@@ -2931,7 +2931,7 @@ class FMCMainDisplay extends BaseAirliners {
 
     set vRSpeed(speed) {
         this._vRSpeed = speed;
-        SimVar.SetSimVarValue('L:AIRLINER_VR_SPEED', 'number', speed ? speed : NaN);
+        SimVar.SetSimVarValue('L:AIRLINER_VR_SPEED', 'knots', speed ? speed : NaN);
     }
 
     get v2Speed() {
@@ -2940,7 +2940,7 @@ class FMCMainDisplay extends BaseAirliners {
 
     set v2Speed(speed) {
         this._v2Speed = speed;
-        SimVar.SetSimVarValue('L:AIRLINER_V2_SPEED', 'number', speed ? speed : NaN);
+        SimVar.SetSimVarValue('L:AIRLINER_V2_SPEED', 'knots', speed ? speed : NaN);
     }
 
     //Needs PR Merge #3082
