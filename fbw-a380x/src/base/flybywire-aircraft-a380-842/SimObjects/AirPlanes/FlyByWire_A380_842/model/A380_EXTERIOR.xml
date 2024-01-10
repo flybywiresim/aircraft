@@ -425,7 +425,7 @@
             <!-- Wingflex InboardLeft -->
             <UseTemplate Name="ASOBO_GT_Anim">
                 <ANIM_NAME>left_inboard_flex</ANIM_NAME>
-                <ANIM_CODE>(L:A32NX_WING_FLEX_LEFT_INBOARD, number) 23.25 * 53 + </ANIM_CODE>
+                <ANIM_CODE>(L:A32NX_WING_FLEX_LEFT_INBOARD, number) 23.25 * 55.35 + </ANIM_CODE>
             </UseTemplate>
         </Component>
 
@@ -433,7 +433,7 @@
             <!-- Wingflex Inner Midboard Left -->
             <UseTemplate Name="ASOBO_GT_Anim">
                 <ANIM_NAME>left_inner_midboard_flex</ANIM_NAME>
-                <ANIM_CODE>(L:A32NX_WING_FLEX_LEFT_INBOARD_MID, number) 16.125 * 53 + </ANIM_CODE>
+                <ANIM_CODE>(L:A32NX_WING_FLEX_LEFT_INBOARD_MID, number) 16.125 * 67 + </ANIM_CODE>
             </UseTemplate>
         </Component>
 
@@ -441,7 +441,7 @@
             <!-- Wingflex Outer Midboard Left -->
             <UseTemplate Name="ASOBO_GT_Anim">
                 <ANIM_NAME>left_outer_midboard_flex</ANIM_NAME>
-                <ANIM_CODE>(L:A32NX_WING_FLEX_LEFT_OUTBOARD_MID, number) 29.41 * 57 + </ANIM_CODE>
+                <ANIM_CODE>(L:A32NX_WING_FLEX_LEFT_OUTBOARD_MID, number) 29.41 * 31.9 + </ANIM_CODE>
             </UseTemplate>
         </Component>
 
@@ -457,7 +457,7 @@
             <!-- Wingflex Inboard Right  -->
             <UseTemplate Name="ASOBO_GT_Anim">
                 <ANIM_NAME>right_inboard_flex</ANIM_NAME>
-                <ANIM_CODE>(L:A32NX_WING_FLEX_RIGHT_INBOARD, number) 23.25 * 53 + </ANIM_CODE>
+                <ANIM_CODE>(L:A32NX_WING_FLEX_RIGHT_INBOARD, number) 23.25 * 55.35 + </ANIM_CODE>
             </UseTemplate>
         </Component>
 
@@ -465,7 +465,7 @@
             <!-- Wingflex Inner Midboard Right -->
             <UseTemplate Name="ASOBO_GT_Anim">
                 <ANIM_NAME>right_inner_midboard_flex</ANIM_NAME>
-                <ANIM_CODE>(L:A32NX_WING_FLEX_RIGHT_INBOARD_MID, number) 16.125 * 53 + </ANIM_CODE>
+                <ANIM_CODE>(L:A32NX_WING_FLEX_RIGHT_INBOARD_MID, number) 16.125 * 67 + </ANIM_CODE>
             </UseTemplate>
         </Component>
 
@@ -473,7 +473,7 @@
             <!-- Wingflex Outer Midboard Right -->
             <UseTemplate Name="ASOBO_GT_Anim">
                 <ANIM_NAME>right_outer_midboard_flex</ANIM_NAME>
-                <ANIM_CODE>(L:A32NX_WING_FLEX_RIGHT_OUTBOARD_MID, number) 29.41 * 57 + </ANIM_CODE>
+                <ANIM_CODE>(L:A32NX_WING_FLEX_RIGHT_OUTBOARD_MID, number) 29.41 * 31.9 + </ANIM_CODE>
             </UseTemplate>
         </Component>
 
