@@ -987,12 +987,17 @@ export abstract class BaseFlightPlan<P extends FlightPlanPerformanceData = Fligh
             return atIndex;
         }
 
-        const manualHoldLeg = FlightPlanLeg.manualHold(this.enrouteSegment, waypoint, desiredHold);
+        const [insertSegment, indexInSegment] = this.segmentPositionForIndex(atIndex);
+        const manualHoldLeg = FlightPlanLeg.manualHold(insertSegment, waypoint, desiredHold);
 
         manualHoldLeg.modifiedHold = modifiedHold;
         manualHoldLeg.defaultHold = defaultHold;
 
-        await this.insertElementAfter(atIndex, manualHoldLeg);
+        // Call segment method directly because we don't want to restring
+        insertSegment.insertAfter(indexInSegment, manualHoldLeg);
+
+        this.syncSegmentLegsChange(insertSegment);
+        this.incrementVersion();
 
         return atIndex + 1;
     }

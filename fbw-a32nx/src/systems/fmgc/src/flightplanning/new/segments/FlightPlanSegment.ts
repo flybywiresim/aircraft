@@ -64,9 +64,6 @@ export abstract class FlightPlanSegment {
         this.allLegs.splice(index, 0, element);
 
         this.flightPlan.syncSegmentLegsChange(this);
-
-        // TODO whatever this is calling should take care of restringing, as this is a private API
-        this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.Restring);
     }
 
     /**
@@ -79,9 +76,6 @@ export abstract class FlightPlanSegment {
         this.allLegs.splice(index + 1, 0, element);
 
         this.flightPlan.syncSegmentLegsChange(this);
-
-        // TODO whatever this is calling should take care of restringing, as this is a private API
-        this.flightPlan.enqueueOperation(FlightPlanQueuedOperation.Restring);
     }
 
     /**
