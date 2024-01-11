@@ -13,6 +13,10 @@ use super::nose_steering::Pushback;
 
 pub struct PushbackTug {
     nw_strg_disc_memo_id: VariableIdentifier,
+
+    gsx_pin_state_id: VariableIdentifier,
+    gsx_pin_inserted: bool,
+
     state_id: VariableIdentifier,
     steer_angle_id: VariableIdentifier,
 
@@ -39,6 +43,8 @@ impl PushbackTug {
     pub fn new(context: &mut InitContext) -> Self {
         Self {
             nw_strg_disc_memo_id: context.get_identifier("HYD_NW_STRG_DISC_ECAM_MEMO".to_owned()),
+            gsx_pin_state_id: context.get_identifier("FSDT_GSX_BYPASS_PIN".to_owned()),
+            gsx_pin_inserted: false,
             state_id: context.get_identifier("PUSHBACK STATE".to_owned()),
             steer_angle_id: context.get_identifier("PUSHBACK ANGLE".to_owned()),
 
@@ -70,7 +76,7 @@ impl PushbackTug {
 }
 impl Pushback for PushbackTug {
     fn is_nose_wheel_steering_pin_inserted(&self) -> bool {
-        self.nose_wheel_steering_pin_inserted.output()
+        self.nose_wheel_steering_pin_inserted.output() || self.gsx_pin_inserted
     }
 
     fn steering_angle(&self) -> Angle {
@@ -82,6 +88,8 @@ impl SimulationElement for PushbackTug {
         self.state = reader.read(&self.state_id);
 
         self.steering_angle_raw = Angle::new::<radian>(reader.read(&self.steer_angle_id));
+
+        self.gsx_pin_inserted = reader.read(&self.gsx_pin_state_id);
     }
 
     fn write(&self, writer: &mut SimulatorWriter) {

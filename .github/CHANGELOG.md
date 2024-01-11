@@ -44,6 +44,7 @@
 1. [ND] Worked around a font rendering bug with the ND chrono - @tracernz (Mike)
 1. [TELEX] Decrease API poll rate to random number between 45-70 seconds - @auroraisluna (alepouna)
 1. [AUTOFLIGHT] Fixed managed speed not engaging when V2 is confirmed after a departure runway change - @tracernz (Mike)
+1. [GSX] Fixed GSX pin not actually disabling NWS - @Maximilian-Reuter (\_Chaoz_)
 
 ## 0.11.0
 

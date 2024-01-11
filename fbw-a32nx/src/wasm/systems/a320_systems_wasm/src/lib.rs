@@ -368,6 +368,7 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_named_variable("FSDT_GSX_NUMPASSENGERS_DEBOARDING_TOTAL")?
     .provides_named_variable("FSDT_GSX_BOARDING_CARGO_PERCENT")?
     .provides_named_variable("FSDT_GSX_DEBOARDING_CARGO_PERCENT")?
+    .provides_named_variable("FSDT_GSX_BYPASS_PIN")?
     .provides_aircraft_variable(
         "ROTATION ACCELERATION BODY X",
         "radian per second squared",
