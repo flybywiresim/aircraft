@@ -110,3 +110,4 @@ cmake-build*/
 cmake-build*
 
 localazy.keys.json
+.vscode/settings.json
