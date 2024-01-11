@@ -207,6 +207,8 @@ impl<Drive: EngineGeneratorDrive> SimulationElement for EngineGenerator<Drive> {
         _: &UpdateContext,
         report: &T,
     ) {
+        const POWERFACTOR: f64 = 0.8;
+
         self.output_potential = if self.should_provide_output() {
             ElectricPotential::new::<volt>(115.)
         } else {
@@ -215,7 +217,7 @@ impl<Drive: EngineGeneratorDrive> SimulationElement for EngineGenerator<Drive> {
 
         let power_consumption =
             report.total_consumption_of(PotentialOrigin::EngineGenerator(self.number));
-        let power_factor_correction = Ratio::new::<ratio>(0.8);
+        let power_factor_correction = Ratio::new::<ratio>(POWERFACTOR);
         self.load = power_consumption * power_factor_correction / self.max_true_power;
     }
 
@@ -287,13 +289,15 @@ impl ConstantSpeedDrive {
         context: &UpdateContext,
         corrected_n2: Ratio,
     ) -> ThermodynamicTemperature {
+        const TEMPERATURE_TO_RPM_FACTOR: f64 = 1.8;
+
         if !self.connected {
             return context.ambient_temperature();
         }
 
-        let mut target_idg = corrected_n2.get::<percent>() * 1.8;
         let ambient_temperature = context.ambient_temperature().get::<degree_celsius>();
-        target_idg += ambient_temperature;
+        let target_idg =
+            corrected_n2.get::<percent>() * TEMPERATURE_TO_RPM_FACTOR + ambient_temperature;
 
         // TODO improve this function with feedback @komp provides.
 
@@ -373,13 +377,15 @@ impl DirectDrive {
         context: &UpdateContext,
         corrected_n2: Ratio,
     ) -> ThermodynamicTemperature {
+        const TEMPERATURE_TO_RPM_FACTOR: f64 = 1.8;
+
         if !self.connected {
             return context.ambient_temperature();
         }
 
-        let mut target_idg = corrected_n2.get::<percent>() * 1.8;
         let ambient_temperature = context.ambient_temperature().get::<degree_celsius>();
-        target_idg += ambient_temperature;
+        let target_idg =
+            corrected_n2.get::<percent>() * TEMPERATURE_TO_RPM_FACTOR + ambient_temperature;
 
         // TODO improve this function with feedback @komp provides.
 
