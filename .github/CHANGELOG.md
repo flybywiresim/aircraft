@@ -44,6 +44,10 @@
 1. [ND] Worked around a font rendering bug with the ND chrono - @tracernz (Mike)
 1. [TELEX] Decrease API poll rate to random number between 45-70 seconds - @auroraisluna (alepouna)
 1. [AUTOFLIGHT] Fixed managed speed not engaging when V2 is confirmed after a departure runway change - @tracernz (Mike)
+1. [GSX/EFB] Enabling Fuel/Payload Sync does not disable native Chocks & Cones anymore - @Fragtality (Fragtality)
+1. [GSX] Disabled GSX Cones for Aircraft Profile - @Fragtality (Fragtality)
+1. [GSX] Changed parkingbrakestest in Aircraft Profile to include Chocks (Ground-Equipment) - @Fragtality (Fragtality)
+1. [GSX/MODEL] Changed Logic for A32NX_GND_EQP_IS_VISIBLE to also include GSX Push-Back State (removing Chocks&Cones when Push-Back is active) - @Fragtality (Fragtality)
 
 ## 0.11.0
 
