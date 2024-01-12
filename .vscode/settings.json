@@ -33,7 +33,7 @@
     "editor.formatOnSave": true
   },
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit"
+    "source.fixAll.eslint": true
   },
   "files.trimTrailingWhitespace": true,
   "files.insertFinalNewline": true,
