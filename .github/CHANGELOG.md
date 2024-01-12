@@ -43,6 +43,7 @@
 1. [FLIGHTMODEL/ICE PROT] - Interim fix for A/I system bug and quicker windscreen clearing of ice - @donstim (donbikes)
 1. [ND] Worked around a font rendering bug with the ND chrono - @tracernz (Mike)
 1. [TELEX] Decrease API poll rate to random number between 45-70 seconds - @auroraisluna (alepouna)
+1. [AUTOFLIGHT] Fixed managed speed not engaging when V2 is confirmed after a departure runway change - @tracernz (Mike)
 
 ## 0.11.0
 
