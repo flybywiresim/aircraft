@@ -377,6 +377,13 @@ async fn systems(mut gauge: msfs::Gauge) -> Result<(), Box<dyn Error>> {
     .provides_named_variable("FSDT_GSX_DEBOARDING_CARGO_PERCENT")?
     .provides_named_variable("FSDT_GSX_BYPASS_PIN")?
     .with_aspect(|builder| {
+        builder.copy(
+            Variable::named("FSDT_GSX_BYPASS_PIN"),
+            Variable::aspect("EXTERNAL_BYPASS_PIN_INSERTED"),
+        );
+        Ok(())
+    })?
+    .with_aspect(|builder| {
         for i in 1..=2 {
             builder.copy(
                 Variable::aircraft("APU GENERATOR SWITCH", "Bool", i),

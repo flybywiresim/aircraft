@@ -15,7 +15,7 @@ pub struct BypassPin {
 impl BypassPin {
     pub fn new(context: &mut InitContext) -> Self {
         Self {
-            gsx_pin_state_id: context.get_identifier("FSDT_GSX_BYPASS_PIN".to_owned()),
+            gsx_pin_state_id: context.get_identifier("EXTERNAL_BYPASS_PIN_INSERTED".to_owned()),
             gsx_pin_inserted: false,
             bypass_pin_inserted: false,
             nw_strg_disc_memo_id: context.get_identifier("HYD_NW_STRG_DISC_ECAM_MEMO".to_owned()),
