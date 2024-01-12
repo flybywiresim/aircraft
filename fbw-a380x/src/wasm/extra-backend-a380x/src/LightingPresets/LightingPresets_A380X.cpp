@@ -56,8 +56,9 @@ bool LightingPresets_A380X::initialize_aircraft() {
   mfdBrtFoLevel = createLightPotentiometerVar(99);
   consoleLightFoLevel = createLightPotentiometerVar(9);
 
-  rmpCptLightLevel = createLightPotentiometerVar(110); // TODO
-  rmpFoLightLevel = createLightPotentiometerVar(111); // TODO
+  rmpCptLightLevel = createLightPotentiometerVar(80); // TODO doublecheck
+  rmpFoLightLevel = createLightPotentiometerVar(81); // TODO
+  rmpOvhdLightLevel = createLightPotentiometerVar(82); // TODO
   ecamUpperLightLevel = createLightPotentiometerVar(92);
   ecamLowerLightLevel = createLightPotentiometerVar(93);
 
@@ -100,6 +101,7 @@ void LightingPresets_A380X::readFromAircraft() {
 
   currentLightValues.rmpCptLightLevel = rmpCptLightLevel->readFromSim();
   currentLightValues.rmpFoLightLevel = rmpFoLightLevel->readFromSim();
+  currentLightValues.rmpOvhdLightLevel = rmpOvhdLightLevel->readFromSim();
   currentLightValues.ecamUpperLightLevel = ecamUpperLightLevel->readFromSim();
   currentLightValues.ecamLowerLightLevel = ecamLowerLightLevel->readFromSim();
 
@@ -131,6 +133,7 @@ void LightingPresets_A380X::applyToAircraft() {
 
   rmpCptLightLevel->setAndWriteToSim(intermediateLightValues.rmpCptLightLevel);
   rmpFoLightLevel->setAndWriteToSim(intermediateLightValues.rmpFoLightLevel);
+  rmpOvhdLightLevel->setAndWriteToSim(intermediateLightValues.rmpOvhdLightLevel);
   ecamUpperLightLevel->setAndWriteToSim(intermediateLightValues.ecamUpperLightLevel);
   ecamLowerLightLevel->setAndWriteToSim(intermediateLightValues.ecamLowerLightLevel);
 
@@ -171,6 +174,7 @@ void LightingPresets_A380X::loadFromIni(const mINI::INIStructure& ini,
 
   loadedLightValues.rmpCptLightLevel = iniGetOrDefault(ini, iniSectionName, "rmp_cpt_lt", 50.0);
   loadedLightValues.rmpFoLightLevel = iniGetOrDefault(ini, iniSectionName, "rmp_fo_lt", 50.0);
+  loadedLightValues.rmpOvhdLightLevel = iniGetOrDefault(ini, iniSectionName, "rmp_ovhd_lt", 50.0);
   loadedLightValues.ecamUpperLightLevel = iniGetOrDefault(ini, iniSectionName, "ecam_upper_lvl", 50.0);
   loadedLightValues.ecamLowerLightLevel = iniGetOrDefault(ini, iniSectionName, "ecam_lower_lvl", 50.0);
 
@@ -202,6 +206,7 @@ void LightingPresets_A380X::saveToIni(mINI::INIStructure& ini, const std::string
 
   ini[iniSectionName]["rmp_cpt_lt"] = std::to_string(currentLightValues.rmpCptLightLevel);
   ini[iniSectionName]["rmp_fo_lt"] = std::to_string(currentLightValues.rmpFoLightLevel);
+  ini[iniSectionName]["rmp_ovhd_lt"] = std::to_string(currentLightValues.rmpOvhdLightLevel);
   ini[iniSectionName]["ecam_upper_lvl"] = std::to_string(currentLightValues.ecamUpperLightLevel);
   ini[iniSectionName]["ecam_lower_lvl"] = std::to_string(currentLightValues.ecamLowerLightLevel);
 
@@ -234,6 +239,7 @@ void LightingPresets_A380X::saveToIni(mINI::INIStructure& ini, const std::string
 
   os << "RMP Cpt Lt: " << intermediateLightValues.rmpCptLightLevel << std::endl;
   os << "RMP Fo Lt: " << intermediateLightValues.rmpFoLightLevel << std::endl;
+  os << "RMP Ovhd Lt: " << intermediateLightValues.rmpOvhdLightLevel << std::endl;
   os << "ECAM Upper Lvl: " << intermediateLightValues.ecamUpperLightLevel << std::endl;
   os << "ECAM Lower Lvl: " << intermediateLightValues.ecamLowerLightLevel << std::endl;
 
@@ -267,6 +273,7 @@ bool LightingPresets_A380X::calculateIntermediateValues(FLOAT64 stepSize) {
 
   intermediateLightValues.rmpCptLightLevel = convergeValue( currentLightValues.rmpCptLightLevel,loadedLightValues.rmpCptLightLevel, stepSize);
   intermediateLightValues.rmpFoLightLevel = convergeValue( currentLightValues.rmpFoLightLevel,loadedLightValues.rmpFoLightLevel, stepSize);
+  intermediateLightValues.rmpOvhdLightLevel = convergeValue( currentLightValues.rmpOvhdLightLevel,loadedLightValues.rmpOvhdLightLevel, stepSize);
   intermediateLightValues.ecamUpperLightLevel = convergeValue( currentLightValues.ecamUpperLightLevel,loadedLightValues.ecamUpperLightLevel, stepSize);
   intermediateLightValues.ecamLowerLightLevel = convergeValue( currentLightValues.ecamLowerLightLevel,loadedLightValues.ecamLowerLightLevel, stepSize);
 

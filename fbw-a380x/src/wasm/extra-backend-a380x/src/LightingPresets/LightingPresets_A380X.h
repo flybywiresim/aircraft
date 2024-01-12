@@ -37,8 +37,9 @@ struct LightingValues_A380X {
   FLOAT64 consoleLightFoLevel;   // 9 (0, 50, 100)
 
   // Pedestal
-  FLOAT64 rmpCptLightLevel;            // ???? TODO
-  FLOAT64 rmpFoLightLevel;             // ???? TODO
+  FLOAT64 rmpCptLightLevel;            // 80 TODO doublecheck
+  FLOAT64 rmpFoLightLevel;             // 81 TODO
+  FLOAT64 rmpOvhdLightLevel;           // 82 TODO
   FLOAT64 ecamUpperLightLevel;         // 92
   FLOAT64 ecamLowerLightLevel;         // 93
 
@@ -85,6 +86,7 @@ class LightingPresets_A380X : public LightingPresets {
 
   AircraftVariablePtr rmpCptLightLevel;
   AircraftVariablePtr rmpFoLightLevel;
+  AircraftVariablePtr rmpOvhdLightLevel;
   AircraftVariablePtr ecamUpperLightLevel;
   AircraftVariablePtr ecamLowerLightLevel;
 
@@ -129,7 +131,7 @@ class LightingPresets_A380X : public LightingPresets {
   void saveToIni(mINI::INIStructure& ini, const std::string& iniSectionName) const override;
 
   const LightingValues_A380X DEFAULT_50 = {50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0,
-                                     50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0};
+                                     50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0};
 };
 
 inline bool operator==(const LightingValues_A380X& p1, const LightingValues_A380X& p2) {
@@ -155,6 +157,7 @@ inline bool operator==(const LightingValues_A380X& p1, const LightingValues_A380
 
          helper::Math::almostEqual(p1.rmpCptLightLevel, p2.rmpCptLightLevel, epsilon) &&
          helper::Math::almostEqual(p1.rmpFoLightLevel, p2.rmpFoLightLevel, epsilon) &&
+         helper::Math::almostEqual(p1.rmpOvhdLightLevel, p2.rmpOvhdLightLevel, epsilon) &&
          helper::Math::almostEqual(p1.ecamUpperLightLevel, p2.ecamUpperLightLevel, epsilon) &&
          helper::Math::almostEqual(p1.ecamLowerLightLevel, p2.ecamLowerLightLevel, epsilon) &&
          helper::Math::almostEqual(p1.pedFloodLightLevel, p2.pedFloodLightLevel, epsilon) &&
