@@ -33,19 +33,15 @@ bool LightingPresets::update([[maybe_unused]] sGaugeDrawData* pData) {
     return false;
   }
 
-//  LOG_DEBUG("LightingPresets_A32NX::update()");
-
+  // only run when aircraft is ready
+  //  if (!msfsHandler.getAircraftIsReadyVar()) { // IS_READY not available
+  //    LOG_DEBUG("LightingPresets_A32NX::update() - aircraft not ready");
+  //    return true;
+  //  }
   // only run when aircraft is powered
-//  if (!msfsHandler.getAircraftIsReadyVar()) { // IS_READY not available
-//    LOG_DEBUG("LightingPresets_A32NX::update() - aircraft not ready");
-//    return true;
-//  }
   if (!elecAC1Powered->getAsBool()) {
-    LOG_DEBUG("LightingPresets_A32NX::update() - aircraft not powered");
     return true;
   }
-
-//  LOG_DEBUG("LightingPresets_A32NX::update() - aircraft powered");
 
   // load becomes priority in case both vars are set.
   if (const INT64 presetRequest = loadLightingPresetRequest->getAsInt64()) {
@@ -154,8 +150,5 @@ FLOAT64 LightingPresets::convergeValue(FLOAT64 momentary, const FLOAT64 target, 
   } else {
     convergedValue = (std::max)(momentary - stepSize, target);
   }
-  //  std::cout << "convergeValue(): momentary=" << momentary << " target=" << target << " stepSize=" << stepSize
-  //            << " convergedValue=" << convergedValue << " " << ((convergedValue == target) ? "DONE" : "NOT DONE")
-  //            << std::endl;
   return convergedValue;
 }
