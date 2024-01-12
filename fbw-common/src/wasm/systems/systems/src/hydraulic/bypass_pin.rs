@@ -5,10 +5,10 @@ use crate::simulation::{
 };
 
 pub struct BypassPin {
-    gsx_pin_state_id: VariableIdentifier,
-    gsx_pin_inserted: bool,
     nw_strg_disc_memo_id: VariableIdentifier,
+    gsx_pin_state_id: VariableIdentifier,
 
+    gsx_pin_inserted: bool,
     bypass_pin_inserted: bool,
 }
 
