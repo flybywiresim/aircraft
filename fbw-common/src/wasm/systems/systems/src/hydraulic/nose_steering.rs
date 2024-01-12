@@ -445,7 +445,7 @@ mod tests {
 
     #[test]
     fn writes_its_states() {
-        let mut test_bed = SimulationTestBed::new(|context| TestAircraft::new(context));
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.run();
 
@@ -454,7 +454,7 @@ mod tests {
 
     #[test]
     fn init_with_zero_angle() {
-        let mut test_bed = SimulationTestBed::new(|context| TestAircraft::new(context));
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         let actuator_position_init = test_bed.query(|a| a.steering_actuator.position_feedback());
 
@@ -471,7 +471,7 @@ mod tests {
 
     #[test]
     fn steering_not_moving_without_pressure() {
-        let mut test_bed = SimulationTestBed::new(|context| TestAircraft::new(context));
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         let actuator_position_init = test_bed.query(|a| a.steering_actuator.position_feedback());
         test_bed.command(|a| a.set_pressure(Pressure::new::<psi>(0.)));
@@ -496,8 +496,7 @@ mod tests {
 
     #[test]
     fn steering_not_moving_with_pushback_pin_inserted() {
-        let mut test_bed =
-            SimulationTestBed::new(|context: &mut InitContext<'_>| TestAircraft::new(context));
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         let actuator_position_init = test_bed.query(|a| a.steering_actuator.position_feedback());
         test_bed.command(|a| a.set_pressure(Pressure::new::<psi>(3000.)));
@@ -523,7 +522,7 @@ mod tests {
 
     #[test]
     fn steering_driven_by_pushback_angle_when_pushing_back() {
-        let mut test_bed = SimulationTestBed::new(|context| TestAircraft::new(context));
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.command(|a| a.set_pressure(Pressure::new::<psi>(3000.)));
         test_bed.command(|a| a.command_steer_angle(Angle::new::<degree>(90.)));
@@ -540,7 +539,7 @@ mod tests {
 
     #[test]
     fn steering_moving_with_pressure_to_max_pos_less_than_5s() {
-        let mut test_bed = SimulationTestBed::new(|context| TestAircraft::new(context));
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.command(|a| a.set_pressure(Pressure::new::<psi>(3000.)));
         test_bed.command(|a| a.command_steer_angle(Angle::new::<degree>(90.)));
@@ -573,7 +572,7 @@ mod tests {
 
     #[test]
     fn steering_stops_at_target_position() {
-        let mut test_bed = SimulationTestBed::new(|context| TestAircraft::new(context));
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.command(|a| a.set_pressure(Pressure::new::<psi>(3000.)));
         test_bed.command(|a| a.command_steer_angle(Angle::new::<degree>(20.)));
@@ -588,7 +587,7 @@ mod tests {
 
     #[test]
     fn steering_direction_change_is_smooth() {
-        let mut test_bed = SimulationTestBed::new(|context| TestAircraft::new(context));
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.command(|a| a.set_pressure(Pressure::new::<psi>(3000.)));
         test_bed.command(|a| a.command_steer_angle(Angle::new::<degree>(90.)));
@@ -608,7 +607,7 @@ mod tests {
 
     #[test]
     fn steering_from_rudder_moving_only_by_6_deg_at_20_knot() {
-        let mut test_bed = SimulationTestBed::new(|context| TestAircraft::new(context));
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         let angle_limiter = pedal_speed_angle_limiter();
         let input_map = pedal_input_angle();
@@ -645,7 +644,7 @@ mod tests {
 
     #[test]
     fn steering_tiller_handle_20_degrees_requests_only_4_degrees() {
-        let mut test_bed = SimulationTestBed::new(|context| TestAircraft::new(context));
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         let angle_limiter = tiller_speed_angle_limiter();
         let input_map = tiller_input_angle();
