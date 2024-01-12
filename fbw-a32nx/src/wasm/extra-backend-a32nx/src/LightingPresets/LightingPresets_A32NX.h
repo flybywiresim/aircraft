@@ -104,6 +104,10 @@ class LightingPresets_A32NX : public LightingPresets {
    */
   explicit LightingPresets_A32NX(MsfsHandler& msfsHandler) : LightingPresets(msfsHandler) {}
 
+  /**
+   * Initializes the aircraft specific variables.
+   * @return true if successful, false otherwise.
+   */
   bool initialize_aircraft() override;
 
   /**

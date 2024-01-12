@@ -33,10 +33,19 @@ bool LightingPresets::update([[maybe_unused]] sGaugeDrawData* pData) {
     return false;
   }
 
+//  LOG_DEBUG("LightingPresets_A32NX::update()");
+
   // only run when aircraft is powered
-  if (!msfsHandler.getAircraftIsReadyVar() || !elecAC1Powered->getAsBool()) {
+//  if (!msfsHandler.getAircraftIsReadyVar()) { // IS_READY not available
+//    LOG_DEBUG("LightingPresets_A32NX::update() - aircraft not ready");
+//    return true;
+//  }
+  if (!elecAC1Powered->getAsBool()) {
+    LOG_DEBUG("LightingPresets_A32NX::update() - aircraft not powered");
     return true;
   }
+
+//  LOG_DEBUG("LightingPresets_A32NX::update() - aircraft powered");
 
   // load becomes priority in case both vars are set.
   if (const INT64 presetRequest = loadLightingPresetRequest->getAsInt64()) {
@@ -67,7 +76,8 @@ bool LightingPresets::loadLightingPreset(INT64 loadPresetRequest) {
   // compensates for the fact that the sim runs at different frame rates on different machines
   const FLOAT64 deltaTime = msfsHandler.getTimeStamp() - lastUpdate;
   //  std::cout << "TimeStamp=" << msfsHandler.getTimeStamp() << " lastUpdate=" << lastUpdate << " deltaTime=" << deltaTime << std::endl;
-  if (deltaTime < UPDATE_DELAY_TIME) return false;
+  if (deltaTime < UPDATE_DELAY_TIME)
+    return false;
   const FLOAT64 partialLoad = presetLoadTime->get() / deltaTime;
   FLOAT64 stepSize = std::clamp((100 / partialLoad), MIN_STEP_SIZE, MAX_STEP_SIZE);
   //  std::cout << "partialLoad=" << partialLoad << " stepSize=" << stepSize << std::endl;

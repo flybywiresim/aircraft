@@ -15,8 +15,7 @@ class LightingPresets : public Module {
   LightingPresets() = delete;
 
  protected:
-  const std::string CONFIGURATION_FILEPATH = "\\work\\InteriorLightingPresets.ini"
-      "";
+  const std::string CONFIGURATION_FILEPATH = "\\work\\InteriorLightingPresets.ini";
   static constexpr SIMCONNECT_NOTIFICATION_GROUP_ID NOTIFICATION_GROUP_1 = 1;
   // dynamic step size for convergence
   static constexpr FLOAT64 MIN_STEP_SIZE = 1.05; // needs to be >=1 as otherwise the value will never converge due to the sim cutting off the decimals
