@@ -50,7 +50,7 @@ export interface SimbriefData {
     costInd: string;
 }
 
-export const initialState: {data: SimbriefData} = {
+export const initialState: {data: SimbriefData, payloadImported: boolean, fuelImported: boolean} = {
     data: {
         airline: '',
         flightNum: '',
@@ -119,6 +119,8 @@ export const initialState: {data: SimbriefData} = {
         loadsheet: '',
         costInd: '',
     },
+    payloadImported: false,
+    fuelImported: false,
 };
 
 export const simbriefSlice = createSlice({
@@ -127,6 +129,12 @@ export const simbriefSlice = createSlice({
     reducers: {
         setSimbriefData: (state, action: PayloadAction<SimbriefData>) => {
             state.data = action.payload;
+        },
+        setPayloadImported: (state, action: PayloadAction<boolean>) => {
+            state.payloadImported = action.payload;
+        },
+        setFuelImported: (state, action: PayloadAction<boolean>) => {
+            state.fuelImported = action.payload;
         },
     },
 });
@@ -216,6 +224,6 @@ export async function fetchSimbriefDataAction(naivgraphUsername: string, overrid
  */
 export const isSimbriefDataLoaded = (): boolean => JSON.stringify((store.getState() as RootState).simbrief) !== JSON.stringify(initialState);
 
-export const { setSimbriefData } = simbriefSlice.actions;
+export const { setSimbriefData, setPayloadImported, setFuelImported } = simbriefSlice.actions;
 
 export default simbriefSlice.reducer;

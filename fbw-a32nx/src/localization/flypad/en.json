@@ -55,6 +55,7 @@
         "RearrangeWidgets": "Rearrange Widgets"
       },
       "Title": "Important Information",
+      "ToastPayloadImported": "Fuel & Payload imported!",
       "Weather": {
         "AirPressure": "Air Pressure",
         "DewPoint": "Dew Point",
@@ -508,6 +509,7 @@
     "AtsuAoc": {
       "AtisAtcSource": "ATIS/ATC Source",
       "AutomaticallyImportSimBriefData": "Automatically Import SimBrief Data",
+      "ImportSimBriefPayload": "Set Fuel & Payload when SimBrief Data was imported",
       "Enable": "Enable",
       "EnableTelex": "Enable TELEX",
       "ErrorReporting": "Error Reporting",

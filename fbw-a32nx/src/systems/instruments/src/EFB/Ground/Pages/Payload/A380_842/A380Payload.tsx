@@ -14,6 +14,8 @@ import { SelectGroup, SelectItem } from '../../../../UtilComponents/Form/Select'
 import { SeatMapWidget } from '../Seating/SeatMapWidget';
 import { PromptModal, useModals } from '../../../../UtilComponents/Modals/Modals';
 import { A380SeatOutlineBg, A380SeatOutlineUpperBg } from '../../../../Assets/A380SeatOutlineBg';
+import { setPayloadImported } from '../../../../Store/features/simBrief';
+import { useAppDispatch } from '../../../../Store/store';
 
 interface A380Props {
     simbriefUnits: string,
@@ -23,6 +25,8 @@ interface A380Props {
     simbriefBag: number,
     simbriefFreight: number,
     simbriefDataLoaded: boolean,
+    simbriefWeightsImport: string,
+    payloadImported: boolean,
     massUnitForDisplay: string,
     isOnGround: boolean,
 
@@ -40,6 +44,8 @@ export const A380Payload: React.FC<A380Props> = ({
     simbriefBag,
     simbriefFreight,
     simbriefDataLoaded,
+    simbriefWeightsImport,
+    payloadImported,
     massUnitForDisplay,
     isOnGround,
     boardingStarted,
@@ -166,6 +172,15 @@ export const A380Payload: React.FC<A380Props> = ({
         PERFORMING: 5,
         COMPLETED: 6,
     };
+
+    const dispatch = useAppDispatch();
+
+    useEffect(() => {
+        if (simbriefDataLoaded === true && simbriefWeightsImport === 'ENABLED' && payloadImported === false) {
+            setSimBriefValues();
+            dispatch(setPayloadImported(true));
+        }
+    }, []);
 
     const setSimBriefValues = () => {
         if (simbriefUnits === 'kgs') {
@@ -510,9 +525,9 @@ export const A380Payload: React.FC<A380Props> = ({
 
     return (
         <div>
-            <div className="relative h-content-section-reduced">
+            <div className="h-content-section-reduced relative">
                 <div className="mb-10">
-                    <div className="flex relative flex-col">
+                    <div className="relative flex flex-col">
                         {displayPaxMainDeck && (
                             <A380SeatOutlineBg stroke={getTheme(theme)[0]} highlight="#69BD45" />
                         )}
@@ -520,8 +535,8 @@ export const A380Payload: React.FC<A380Props> = ({
                             <A380SeatOutlineUpperBg stroke={getTheme(theme)[0]} highlight="#69BD45" />
                         )}
                         <SeatMapWidget seatMap={seatMap} desiredFlags={desiredFlags} activeFlags={activeFlags} canvasX={146} canvasY={71} theme={getTheme(theme)} isMainDeck={displayPaxMainDeck} onClickSeat={onClickSeat} />
-                        <div className="flex absolute top-full flex-row px-4 w-full">
-                            <div><AirplaneFill size={25} className="my-1 mx-3" /></div>
+                        <div className="absolute top-full flex w-full flex-row px-4">
+                            <div><AirplaneFill size={25} className="mx-3 my-1" /></div>
                             <SelectGroup>
                                 <SelectItem
                                     selected={displayPaxMainDeck}
@@ -541,10 +556,10 @@ export const A380Payload: React.FC<A380Props> = ({
                 </div>
                 <CargoWidget cargo={cargo} cargoDesired={cargoDesired} cargoMap={cargoMap} onClickCargo={onClickCargo} />
 
-                <div className="flex relative right-0 flex-row justify-between px-4 mt-16">
-                    <div className="flex flex-col flex-grow pr-24">
-                        <div className="flex flex-row w-full">
-                            <Card className="w-full col-1" childrenContainerClassName={`w-full ${simbriefDataLoaded ? 'rounded-r-none' : ''}`}>
+                <div className="relative right-0 mt-16 flex flex-row justify-between px-4">
+                    <div className="flex grow flex-col pr-24">
+                        <div className="flex w-full flex-row">
+                            <Card className="col-1 w-full" childrenContainerClassName={`w-full ${simbriefDataLoaded ? 'rounded-r-none' : ''}`}>
                                 <PayloadInputTable
                                     loadsheet={Loadsheet}
                                     emptyWeight={emptyWeight}
@@ -573,7 +588,7 @@ export const A380Payload: React.FC<A380Props> = ({
                                     setDisplayZfw={setDisplayZfw}
                                 />
                                 <hr className="mb-4 border-gray-700" />
-                                <div className="flex flex-row justify-start items-center">
+                                <div className="flex flex-row items-center justify-start">
                                     <MiscParamsInput
                                         disable={gsxPayloadSyncEnabled === 1 && boardingStarted}
                                         minPaxWeight={Math.round(Loadsheet.specs.pax.minPaxWeight)}
@@ -598,9 +613,9 @@ export const A380Payload: React.FC<A380Props> = ({
                                 && (
                                     <TooltipWrapper text={t('Ground.Payload.TT.FillPayloadFromSimbrief')}>
                                         <div
-                                            className={`flex justify-center items-center px-2 h-auto text-theme-body
-                                                       hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body
-                                                       rounded-md rounded-l-none border-2 border-theme-highlight transition duration-100`}
+                                            className={`text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight flex
+                                                       h-auto items-center justify-center
+                                                       rounded-md rounded-l-none border-2 px-2 transition duration-100`}
                                             onClick={setSimBriefValues}
                                         >
                                             <CloudArrowDown size={26} />
@@ -609,12 +624,12 @@ export const A380Payload: React.FC<A380Props> = ({
                                 )}
                         </div>
                         {(gsxPayloadSyncEnabled !== 1) && (
-                            <div className="flex flex-row mt-4">
-                                <Card className="w-full h-full" childrenContainerClassName="flex flex-col w-full h-full">
-                                    <div className="flex flex-row justify-between items-center">
+                            <div className="mt-4 flex flex-row">
+                                <Card className="h-full w-full" childrenContainerClassName="flex flex-col w-full h-full">
+                                    <div className="flex flex-row items-center justify-between">
                                         <div className="flex font-medium">
                                             {t('Ground.Payload.BoardingTime')}
-                                            <span className="flex relative flex-row items-center ml-2 text-sm font-light">
+                                            <span className="relative ml-2 flex flex-row items-center text-sm font-light">
                                                 (
                                                 {remainingTimeString()}
                                                 )
@@ -662,12 +677,12 @@ export const A380Payload: React.FC<A380Props> = ({
                             </div>
                         )}
                         {gsxPayloadSyncEnabled === 1 && (
-                            <div className="pt-6 pl-2">
+                            <div className="pl-2 pt-6">
                                 {t('Ground.Payload.GSXPayloadSyncEnabled')}
                             </div>
                         )}
                     </div>
-                    <div className="border border-theme-accent col-1">
+                    <div className="border-theme-accent col-1 border">
                         <ChartWidget
                             width={525}
                             height={511}
