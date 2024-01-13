@@ -1,4 +1,4 @@
-// Copyright (c) 2022 FlyByWire Simulations
+// Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable max-len */
@@ -39,7 +39,7 @@ export const DetentConfig: React.FC<Props> = (props: Props) => {
     }, [props.expertMode]);
 
     return (
-        <div className="flex overflow-hidden flex-col flex-shrink-0 justify-between items-center text-white">
+        <div className="flex shrink-0 flex-col items-center justify-between overflow-hidden text-white">
             <div className="h-64">
                 <ProgressBar
                     height="225px"
@@ -89,7 +89,7 @@ export const DetentConfig: React.FC<Props> = (props: Props) => {
                             </div>
                             <div>
                                 <button
-                                    className="py-1 px-2 w-60 rounded-md border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
+                                    className="w-60 rounded-md border-2 border-theme-highlight bg-theme-highlight px-2 py-1 text-theme-body transition duration-100 hover:bg-theme-body hover:text-theme-highlight"
                                     onClick={() => {
                                         setFromTo(props.throttlePosition, props.lowerBoundDetentSetter, props.upperBoundDetentSetter, deadZone);
                                     }}
@@ -130,7 +130,7 @@ export const DetentConfig: React.FC<Props> = (props: Props) => {
                             />
                         </div>
                     )}
-                <h2 style={{ visibility: showWarning ? 'visible' : 'hidden' }} className="my-2 w-48 h-12 text-xl text-utility-red">
+                <h2 style={{ visibility: showWarning ? 'visible' : 'hidden' }} className="my-2 h-12 w-48 text-xl text-utility-red">
                     {t('Settings.ThrottleConfig.PleaseEnterAValidDeadzone')}
                     {' '}
                     (&gt; 0.01)
@@ -141,7 +141,7 @@ export const DetentConfig: React.FC<Props> = (props: Props) => {
     );
 };
 export const DummyDetentConfig: React.FC<Props> = (props: Props) => (
-    <div className="flex overflow-hidden flex-col flex-shrink-0 justify-between items-center text-white">
+    <div className="flex shrink-0 flex-col items-center justify-between overflow-hidden text-white">
         <div className="h-64">
             <ProgressBar
                 height="225px"

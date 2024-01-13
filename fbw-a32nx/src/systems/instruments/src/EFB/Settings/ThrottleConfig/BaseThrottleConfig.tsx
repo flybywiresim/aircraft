@@ -1,5 +1,4 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
-//
+// Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 import React, { FC, useState } from 'react';
@@ -76,8 +75,8 @@ export const BaseThrottleConfig: FC<BaseThrottleConfigProps> = ({
                 {' '}
                 {displayNumber ? throttleNumber : ''}
             </h1>
-            <div className="flex flex-col justify-center items-center px-2 pt-5 mt-4">
-                <div className="flex flex-row justify-center items-center space-x-2 w-60">
+            <div className="mt-4 flex flex-col items-center justify-center px-2 pt-5">
+                <div className="flex w-60 flex-row items-center justify-center space-x-2">
                     <p>
                         {t('Settings.ThrottleConfig.CurrentValue')}
                         :
@@ -89,7 +88,7 @@ export const BaseThrottleConfig: FC<BaseThrottleConfigProps> = ({
                     ) : null}
                 </div>
                 <div className="flex flex-row">
-                    <div className="flex flex-col justify-between items-center">
+                    <div className="flex flex-col items-center justify-between">
                         {(!reverseDisabled) || (activeIndex >= 2) ? currentDetent : dummyDetent}
                     </div>
                 </div>
