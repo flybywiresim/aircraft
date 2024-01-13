@@ -1,5 +1,4 @@
-// Copyright (c) 2021-2023 FlyByWire Simulations
-//
+// Copyright (c) 2023-2024 FlyByWire Simulations
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable max-len */
@@ -198,7 +197,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
     );
 
     const fourAxis = (
-        <div className="flex flex-row mx-16">
+        <div className="mx-16 flex flex-row">
             <BaseThrottleConfig
                 mappingsAxisOne={mappingsAxisOne}
                 throttleNumber={1}
@@ -232,7 +231,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
     );
 
     const twoAxis = (
-        <div className="flex flex-row mx-32">
+        <div className="mx-32 flex flex-row">
             <BaseThrottleConfig
                 mappingsAxisOne={mappingsAxisOne}
                 throttleNumber={1}
@@ -260,7 +259,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                 displayNumber={false}
                 activeIndex={selectedIndex}
             />
-            <div className="mt-auto mb-auto ml-8 text-center">
+            <div className="my-auto ml-8 text-center">
                 {navigationBar}
             </div>
         </div>
@@ -284,11 +283,11 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
     if (!isShown) return null;
 
     return (
-        <div className="flex flex-col justify-between h-content-section-full">
+        <div className="flex h-content-section-full flex-col justify-between">
             <div className="space-y-2">
                 <div>
-                    <div className="flex flex-row justify-center items-center p-4 mt-auto mb-8 space-x-16 w-full rounded-lg border-2 border-theme-accent">
-                        <div className="flex flex-row justify-center items-center space-x-4">
+                    <div className="mb-8 mt-auto flex w-full flex-row items-center justify-center space-x-16 rounded-lg border-2 border-theme-accent p-4">
+                        <div className="flex flex-row items-center justify-center space-x-4">
                             <div>{t('Settings.ThrottleConfig.TogaOnAxis')}</div>
                             <Toggle value={!!togaOnAxis1} onToggle={(value) => setTogaOnAxis(value ? 1 : 0)} />
                         </div>
@@ -296,7 +295,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                             <div>{t('Settings.ThrottleConfig.ReverserOnAxis')}</div>
                             <Toggle value={!!reverserOnAxis1} onToggle={(value) => setReversersOnAxis(value ? 1 : 0)} />
                         </div>
-                        <div className="flex flex-row justify-center items-center space-x-4">
+                        <div className="flex flex-row items-center justify-center space-x-4">
                             <div>{t('Settings.ThrottleConfig.IndependentAxis')}</div>
                             {airframe === 'A380_842' ? (
                                 axisSelectGroup
@@ -314,8 +313,8 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                 </div>
 
                 {!validConfig && (
-                    <div className="overflow-hidden w-full rounded-md border-2 border-theme-accent">
-                        <div className="flex justify-center items-center py-3 w-full bg-utility-red">
+                    <div className="w-full overflow-hidden rounded-md border-2 border-theme-accent">
+                        <div className="flex w-full items-center justify-center bg-utility-red py-3">
                             <ExclamationCircleFill size={25} />
                         </div>
                         <h2 className="py-4 text-center">
@@ -325,12 +324,12 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                 )}
             </div>
 
-            <div className="flex flex-row justify-between p-4 w-full rounded-lg border-2 border-theme-accent">
+            <div className="flex w-full flex-row justify-between rounded-lg border-2 border-theme-accent p-4">
                 <div>
                     <button
                         type="button"
                         onClick={onClose}
-                        className="py-2.5 px-5 rounded-md border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
+                        className="rounded-md border-2 border-theme-highlight bg-theme-highlight px-5 py-2.5 text-theme-body transition duration-100 hover:bg-theme-body hover:text-theme-highlight"
                     >
                         {t('Settings.ThrottleConfig.Back')}
                     </button>
@@ -349,7 +348,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                                 />,
                             );
                         }}
-                        className="py-2.5 px-5 rounded-md border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
+                        className="rounded-md border-2 border-theme-highlight bg-theme-highlight px-5 py-2.5 text-theme-body transition duration-100 hover:bg-theme-body hover:text-theme-highlight"
                     >
                         {t('Settings.ThrottleConfig.ResetToDefaults')}
                     </button>
@@ -358,16 +357,16 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                         onClick={() => {
                             syncToThrottle(1);
                         }}
-                        className="py-2.5 px-5 rounded-md border-2 transition duration-100 text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight"
+                        className="rounded-md border-2 border-theme-highlight bg-theme-highlight px-5 py-2.5 text-theme-body transition duration-100 hover:bg-theme-body hover:text-theme-highlight"
                     >
                         {t('Settings.ThrottleConfig.LoadFromFile')}
                     </button>
                     <button
                         type="button"
                         onClick={() => applyLocalVar(1)}
-                        className={`py-2.5 px-5 rounded-md transition duration-100 border-2 ${validConfig
-                            ? 'text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight'
-                            : 'bg-theme-accent border-theme-accent opacity-30'}`}
+                        className={`rounded-md border-2 px-5 py-2.5 transition duration-100 ${validConfig
+                            ? 'border-theme-highlight bg-theme-highlight text-theme-body hover:bg-theme-body hover:text-theme-highlight'
+                            : 'border-theme-accent bg-theme-accent opacity-30'}`}
                     >
                         {t('Settings.ThrottleConfig.Apply')}
                     </button>
@@ -380,9 +379,9 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                             }
                         }}
                         disabled={!validConfig}
-                        className={`py-2.5 px-5 rounded-md transition duration-100 border-2 ${validConfig
-                            ? 'bg-green-400 text-theme-body hover:text-green-400 hover:bg-theme-body border-green-400'
-                            : 'bg-theme-accent border-theme-accent opacity-30'}`}
+                        className={`rounded-md border-2 px-5 py-2.5 transition duration-100 ${validConfig
+                            ? 'border-green-400 bg-green-400 text-theme-body hover:bg-theme-body hover:text-green-400'
+                            : 'border-theme-accent bg-theme-accent opacity-30'}`}
                     >
                         {t('Settings.ThrottleConfig.SaveAndApply')}
                     </button>
