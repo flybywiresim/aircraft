@@ -32,22 +32,26 @@ bool LightingPresets::update([[maybe_unused]] sGaugeDrawData* pData) {
     LOG_ERROR("LightingPresets_A32NX::update() - not initialized");
     return false;
   }
-
   // only run when aircraft is ready
-  //  if (!msfsHandler.getAircraftIsReadyVar()) { // IS_READY not available
-  //    LOG_DEBUG("LightingPresets_A32NX::update() - aircraft not ready");
-  //    return true;
-  //  }
+  // FIXME: It appears the the IS_READY signal is not reliable on the A380X yet esp. when using Quick Reload).
+  if (!msfsHandler.getAircraftIsReadyVar()) {
+    LOG_DEBUG("LightingPresets_A32NX::update() - aircraft not ready");
+    return true;
+  }
   // only run when aircraft is powered
   if (!elecAC1Powered->getAsBool()) {
+    LOG_DEBUG("LightingPresets_A32NX::update() - aircraft not powered");
     return true;
   }
 
-  // load becomes priority in case both vars are set.
+  // load has priority in case both vars are set.
   if (const INT64 presetRequest = loadLightingPresetRequest->getAsInt64()) {
     if (readIniFile) {
       LOG_INFO("LightingPresets_A32NX: Lighting Preset: " + std::to_string(presetRequest) + " is being loaded.");
     }
+    // loading a preset happens over a number of frames to allow the animation to keep up
+    // loadLightingPreset() returns true when the preset is fully loaded
+    // otherwise it returns false and the next frame will continue loading
     if (loadLightingPreset(presetRequest)) {
       readIniFile = true;
       loadLightingPresetRequest->setAsInt64(0);
@@ -68,22 +72,26 @@ bool LightingPresets::shutdown() {
 }
 
 bool LightingPresets::loadLightingPreset(INT64 loadPresetRequest) {
-  // throttle the load process so animation can keep up
-  // compensates for the fact that the sim runs at different frame rates on different machines
+  // Throttle the load process so animation can keep up
+  // Compensates for the fact that the sim runs at different frame rates on different machines
+  // Compensation is imperfect as we need a minimum step size to make the values converge and also
+  // a maximum step size to avoid the animation being choppy.
+  // The reason is that the sim cuts of precision from the LIGHT POTENTIOMETER values we read from
+  // the sim so that the values we write back to the sim are not identical to the values we read
+  // from the sim.
   const FLOAT64 deltaTime = msfsHandler.getTimeStamp() - lastUpdate;
-  //  std::cout << "TimeStamp=" << msfsHandler.getTimeStamp() << " lastUpdate=" << lastUpdate << " deltaTime=" << deltaTime << std::endl;
-  if (deltaTime < UPDATE_DELAY_TIME)
+  if (deltaTime < UPDATE_DELAY_TIME) {
     return false;
+  }
   const FLOAT64 partialLoad = presetLoadTime->get() / deltaTime;
   FLOAT64 stepSize = std::clamp((100 / partialLoad), MIN_STEP_SIZE, MAX_STEP_SIZE);
-  //  std::cout << "partialLoad=" << partialLoad << " stepSize=" << stepSize << std::endl;
   lastUpdate = msfsHandler.getTimeStamp();
 
   // Read current values to be able to calculate intermediate values which are then applied to the aircraft
   // Once the intermediate values are identical to the target values then the load is finished
   readFromAircraft();
   if (readFromStore(loadPresetRequest)) {
-    bool finished = calculateIntermediateValues(stepSize);
+    const bool finished = calculateIntermediateValues(stepSize);
     applyToAircraft();
     return finished;
   }
