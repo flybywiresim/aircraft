@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -ex
+set -e
 
 # store current file ownership
 ORIGINAL_USER_ID=$(stat -c '%u' /external)
@@ -18,6 +18,7 @@ for arg in "$@"; do
   if [ "$arg" = "-clean" ]; then
     echo "Removing out directories..."
     rm -rf /external/fbw-a380x/out
+    rm -rf /external/fbw-a380x/bundles
   else
     # Otherwise, add the arg it to the new array
     args+=("$arg")

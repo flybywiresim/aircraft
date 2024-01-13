@@ -423,6 +423,7 @@ mod tests {
     use crate::systems::simulation::{Aircraft, SimulationElement, SimulationElementVisitor};
     use std::time::Duration;
 
+    use systems::simulation::test::ReadByName;
     use uom::si::{angle::degree, velocity::knot};
 
     use ntest::assert_about_eq;
@@ -1249,5 +1250,47 @@ mod tests {
             test_bed.left_wing_lift_per_node().sum() + test_bed.right_wing_lift_per_node().sum()
                 >= test_bed.current_total_lift().get::<newton>() * 0.99
         );
+    }
+
+    // Check that provided following XML formula, final animation value matches expected values
+    // Need to set XML code according to those formulas
+    #[test]
+    fn util_to_compute_xml_offsets_from_desired_angles_in_flight() {
+        let mut test_bed = WingFlexTestBed::new().with_nominal_weight().in_1g_flight();
+
+        test_bed = test_bed.run_waiting_for(Duration::from_secs(2));
+
+        let inboard_angle: Angle = test_bed.read_by_name("WING_FLEX_LEFT_INBOARD");
+        let inboard_mid_angle: Angle = test_bed.read_by_name("WING_FLEX_LEFT_INBOARD_MID");
+        let outboard_mid_angle: Angle = test_bed.read_by_name("WING_FLEX_LEFT_OUTBOARD_MID");
+        let outboard_angle: Angle = test_bed.read_by_name("WING_FLEX_LEFT_OUTBOARD");
+
+        println!(
+            "ANGLES => /O/--{:.1}--{:.1}--{:.1}--{:.1}",
+            inboard_angle.get::<degree>(),
+            inboard_mid_angle.get::<degree>(),
+            outboard_mid_angle.get::<degree>(),
+            outboard_angle.get::<degree>()
+        );
+
+        //Input formula from XML code
+        let animation_position_inboard = inboard_angle.get::<degree>() * 23.25 + 55.35;
+        let animation_position_inboard_mid = inboard_mid_angle.get::<degree>() * 16.125 + 67.;
+        let animation_position_outboard_mid = outboard_mid_angle.get::<degree>() * 29.41 + 31.9;
+        let animation_position_outboard = outboard_angle.get::<degree>() * 29.41 + 50.;
+
+        println!(
+            "ANIMATIONS => /O/--{:.1}--{:.1}--{:.1}--{:.1}",
+            animation_position_inboard,
+            animation_position_inboard_mid,
+            animation_position_outboard_mid,
+            animation_position_outboard
+        );
+
+        // Check against expected animation values : reference => @Repsol
+        assert!((63.8..=64.2).contains(&animation_position_inboard));
+        assert!((76.3..=76.7).contains(&animation_position_inboard_mid));
+        assert!((53.1..=53.3).contains(&animation_position_outboard_mid));
+        assert!((55. ..=57.).contains(&animation_position_outboard));
     }
 }

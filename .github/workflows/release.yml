@@ -6,11 +6,11 @@ on:
       - "!v*-rc*"
 
 jobs:
-  build:
+  build_a32nx:
+    name: Build and publish A32NX
     runs-on: ubuntu-latest
     env:
-      A32NX_PRODUCTION_BUILD: 1
-      A32NX_INSTRUMENTS_BUILD_WORKERS: 2
+      FBW_PRODUCTION_BUILD: 1
       STABLE_PRE_RELEASE_ID: 66067814
       STABLE_PRE_RELEASE_TAG: assets/stable
       STABLE_ZIP_NAME: A32NX-stable.7z
@@ -20,7 +20,7 @@ jobs:
         uses: actions/checkout@v2
       - name: Create .env file
         run: |
-          echo A32NX_PRODUCTION_BUILD=1 >> fbw-a32nx/.env
+          echo FBW_PRODUCTION_BUILD=1 >> fbw-a32nx/.env
           echo CLIENT_ID=\"${{ secrets.NAVIGRAPH_CLIENT_ID }}\" >> fbw-a32nx/.env
           echo CLIENT_SECRET=\"${{ secrets.NAVIGRAPH_CLIENT_SECRET }}\" >> fbw-a32nx/.env
           echo CHARTFOX_SECRET=\"${{ secrets.CHARTFOX_SECRET }}\" >> fbw-a32nx/.env

@@ -1,4 +1,4 @@
-import { ExecTask, TaskOfTasks } from "@flybywiresim/igniter";
+import {ExecTask, TaskOfTasks} from "@flybywiresim/igniter";
 import { getInstrumentsIgniterTasks as getA320InstrumentsIgniterTasks } from "./fbw-a32nx/src/systems/instruments/buildSrc/igniter/tasks.mjs";
 import { getInstrumentsIgniterTasks as getA380InstrumentsIgniterTasks } from './fbw-a380x/src/systems/instruments/buildSrc/igniter/tasks.mjs';
 
@@ -127,20 +127,20 @@ export default new TaskOfTasks("all", [
                     "fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/fbw.wasm"
                 ]),
             new ExecTask("systems-terronnd", [
-                "fbw-common/src/wasm/terronnd/build.sh",
-                "wasm-opt -O1 --signext-lowering -o fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/terronnd.wasm fbw-common/src/wasm/terronnd/out/terronnd.wasm"
+                "npm run build-a32nx:terronnd",
             ], [
                 "fbw-common/src/wasm/terronnd",
                 "fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/terronnd.wasm",
                 "fbw-common/src/wasm/terronnd/out/terronnd.wasm",
             ]),
-            new ExecTask("flypad-backend",
-                "npm run build-a32nx:flypad-backend",
+            new ExecTask('extra-backend-a32nx',
+                "npm run build:cpp-wasm-cmake",
                 [
-                    "fbw-a32nx/src/wasm/flypad-backend",
-                    "fbw-common/src/wasm/fbw_common",
-                    "fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/flypad-backend.wasm"
-                ])
+                    'fbw-common/src/wasm/cpp-msfs-framework',
+                    'fbw-common/src/wasm/extra-backend',
+                    'fbw-a32nx/src/wasm/extra-backend-a32nx',
+                    'fbw-a32nx/out/flybywire-aircraft-a320-neo/SimObjects/AirPlanes/FlyByWire_A320_NEO/panel/extra-backend-a32nx.wasm'
+                ]),
         ], true),
 
         // Create final package meta files.
@@ -155,7 +155,9 @@ export default new TaskOfTasks("all", [
 
         new TaskOfTasks("preparation", [
             new ExecTask("copy-base-files", [
-                "npm run build-a380x:copy-base-files"
+                "npm run build-a380x:copy-base-files",
+                // temporary until folder exists
+                "mkdir -p fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/"
             ])
         ], true),
 
@@ -176,42 +178,42 @@ export default new TaskOfTasks("all", [
             new ExecTask("systems",
                 "npm run build-a380x:systems",
                 [
-                    "fbw-a380x/src/wasm/systems",
                     "fbw-common/src/wasm/systems",
                     "Cargo.lock",
                     "Cargo.toml",
+                    "fbw-a380x/src/wasm/systems",
                     "fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/systems.wasm"
                 ]),
             new ExecTask("systems-fadec",
                 "npm run build-a380x:fadec",
                 [
-                    "fbw-a380x/src/wasm/fadec_a380",
                     "fbw-common/src/wasm/fbw_common",
                     "fbw-common/src/wasm/fadec_common",
+                    "fbw-a380x/src/wasm/fadec_a380",
                     "fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/fadec.wasm"
                 ]),
             new ExecTask("systems-fbw",
                 "npm run build-a380x:fbw",
                 [
-                    "fbw-a380x/src/wasm/fbw_a380",
                     "fbw-common/src/wasm/fbw_common",
+                    "fbw-a380x/src/wasm/fbw_a380",
                     "fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/fbw.wasm"
                 ]),
             new ExecTask("systems-terronnd", [
-                "fbw-common/src/wasm/terronnd/build.sh",
-                "wasm-opt -O1 --signext-lowering -o fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/terronnd.wasm fbw-common/src/wasm/terronnd/out/terronnd.wasm"
+                "npm run build-a380x:terronnd",
             ], [
                 "fbw-common/src/wasm/terronnd",
-                "fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/terronnd.wasm",
                 "fbw-common/src/wasm/terronnd/out/terronnd.wasm",
+                "fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/terronnd.wasm",
             ]),
-            new ExecTask("flypad-backend",
-                "npm run build-a380x:flypad-backend",
+            new ExecTask('extra-backend',
+                "npm run build:cpp-wasm-cmake",
                 [
-                    "fbw-a380x/src/wasm/flypad-backend",
-                    "fbw-common/src/wasm/fbw_common",
-                    "fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/flypad-backend.wasm"
-                ])
+                    'fbw-common/src/wasm/cpp-msfs-framework',
+                    'fbw-common/src/wasm/extra-backend',
+                    'fbw-a380x/src/wasm/extra-backend-a380x',
+                    'fbw-a380x/out/flybywire-aircraft-a380-842/SimObjects/AirPlanes/FlyByWire_A380_842/panel/extra-backend-a380x.wasm'
+                ]),
         ], true),
 
         // Create final package meta files.
