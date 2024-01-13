@@ -22,7 +22,7 @@ interface ThrottleConfigProps {
 export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
     const [axisNum, setAxisNum] = usePersistentNumberProperty('THROTTLE_AXIS', 2);
 
-    const [selectedIndex, setSelectedIndex] = useState(0);
+    const [selectedIndex, setSelectedIndex] = useState(2);
     const [validConfig, setValidConfig] = useState(true);
     const [validationError, setValidationError] = useState<string>();
 
