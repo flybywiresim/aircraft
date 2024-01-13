@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 /* eslint-disable max-len */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
 import { IconPlane } from '@tabler/icons';
 import { CloudArrowDown } from 'react-bootstrap-icons';
@@ -71,6 +71,7 @@ export const FlightWidget = () => {
     const [simbriefDataPending, setSimbriefDataPending] = useState(false);
     const [navigraphUsername] = usePersistentProperty('NAVIGRAPH_USERNAME');
     const [overrideSimBriefUserID] = usePersistentProperty('CONFIG_OVERRIDE_SIMBRIEF_USERID');
+    const [autoSimbriefImport] = usePersistentProperty('CONFIG_AUTO_SIMBRIEF_IMPORT');
     const [simbriefWeightsImport] = usePersistentProperty('CONFIG_SIMBRIEF_WEIGHTS_IMPORT');
     const [airframe] = useState(getAirframeType());
 
@@ -146,6 +147,12 @@ export const FlightWidget = () => {
 
         setSimbriefDataPending(false);
     };
+
+    useEffect(() => {
+        if ((!data || !isSimbriefDataLoaded()) && autoSimbriefImport === 'ENABLED') {
+            fetchData();
+        }
+    }, []);
 
     const simbriefDataLoaded = isSimbriefDataLoaded();
 
