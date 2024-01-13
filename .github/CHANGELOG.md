@@ -46,8 +46,8 @@
 1. [AUTOFLIGHT] Fixed managed speed not engaging when V2 is confirmed after a departure runway change - @tracernz (Mike)
 1. [GSX/EFB] FBW Chocks & Cones are usable with GSX Fuel/Payload Sync and react to GSX Pushback - @Fragtality (Fragtality)
 1. [GSX] Fixed GSX pin not actually disabling NWS - @Maximilian-Reuter (\_Chaoz_)
-1. [GSX/FUEL] Refuel process starts automatically when GSX Fuel-Hose is connected - @Fragtality (Fragtality)
-1. [EFB] EFB still allows instant Refuel with GSX Fuel Sync active and reflects GSX Refuel being active - @Fragtality (Fragtality)
+1. [GSX/FUEL] Refuel process now starts automatically when GSX fuel hose is connected - @Fragtality (Fragtality)
+1. [EFB] Instant refuel now allowed with GSX Fuel Sync active and reflects GSX refuel being active - @Fragtality (Fragtality)
 
 ## 0.11.0
 
