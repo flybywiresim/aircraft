@@ -1344,10 +1344,10 @@ bool FlyByWireInterface::updateElac(double sampleTime, int elacIndex) {
       bool elac2EmerPowersupplyNoseWheelCondition =
           elac2EmerPowersupplyNoseGearConditionLatch.update(noseGearNotUplocked, !elac2EmerPowersupplyRelayOutput);
 
-      bool blueLowPressure = !idHydBluePressurised->get();
+      bool blueHighPressure = idHydBluePressurised->get();
 
       bool elac2EmerPowersupplyActive = elac2EmerPowersupplyRelayOutput &&
-                                        (elac2EmerPowersupplyTimerRelayOutput || elac2EmerPowersupplyNoseWheelCondition || blueLowPressure);
+                                        (elac2EmerPowersupplyTimerRelayOutput || elac2EmerPowersupplyNoseWheelCondition || blueHighPressure);
 
       powerSupplyAvailable = elac2EmerPowersupplyActive ? idElecBat2HotBusPowered->get() : idElecDcBus2Powered->get();
     }
