@@ -30,6 +30,8 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
 
     const [reverserOnAxis1, setReverserOnAxis1] = useSimVar('L:A32NX_THROTTLE_MAPPING_USE_REVERSE_ON_AXIS:1', 'number', 1000);
     const [, setReverserOnAxis2] = useSimVar('L:A32NX_THROTTLE_MAPPING_USE_REVERSE_ON_AXIS:2', 'number', 1000);
+    const [, setReverserOnAxis3] = useSimVar('L:A32NX_THROTTLE_MAPPING_USE_REVERSE_ON_AXIS:3', 'number', 1000);
+    const [, setReverserOnAxis4] = useSimVar('L:A32NX_THROTTLE_MAPPING_USE_REVERSE_ON_AXIS:4', 'number', 1000);
 
     const [togaOnAxis1, setTogaOnAxis1] = useSimVar('L:A32NX_THROTTLE_MAPPING_USE_TOGA_ON_AXIS:1', 'number', 1000);
     const [, setTogaOnAxis2] = useSimVar('L:A32NX_THROTTLE_MAPPING_USE_TOGA_ON_AXIS:2', 'number', 1000);
@@ -101,15 +103,22 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
     };
 
     useEffect(() => {
-        const errors: string[] = [...getOverlapErrors(mappingsAxisOne), ...getOverlapErrors(mappingsAxisTwo)];
+        const errors: string[] = [
+            ...getOverlapErrors(mappingsAxisOne),
+            ...getOverlapErrors(mappingsAxisTwo),
+            ...getOverlapErrors(mappingsAxisThree),
+            ...getOverlapErrors(mappingsAxisFour),
+        ];
 
         setValidationError(errors[0]);
         setValidConfig(errors.length === 0);
-    }, [mappingsAxisOne, mappingsAxisTwo]);
+    }, [mappingsAxisOne, mappingsAxisTwo, mappingsAxisThree, mappingsAxisFour]);
 
     const setReversersOnAxis = (reverserOnAxis: number) => {
         setReverserOnAxis1(reverserOnAxis);
         setReverserOnAxis2(reverserOnAxis);
+        setReverserOnAxis3(reverserOnAxis);
+        setReverserOnAxis4(reverserOnAxis);
         if (reverserOnAxis === 0 && selectedIndex < 2) {
             setSelectedIndex(2);
         }
@@ -199,6 +208,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
     const fourAxis = (
         <div className="mx-16 flex flex-row">
             <BaseThrottleConfig
+                numberOfAxis={4}
                 mappingsAxisOne={mappingsAxisOne}
                 throttleNumber={1}
                 displayNumber
@@ -206,6 +216,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                 reverseDisabled
             />
             <BaseThrottleConfig
+                numberOfAxis={4}
                 mappingsAxisOne={mappingsAxisTwo}
                 throttleNumber={2}
                 displayNumber
@@ -215,12 +226,14 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                 {navigationBar}
             </div>
             <BaseThrottleConfig
+                numberOfAxis={4}
                 mappingsAxisOne={mappingsAxisThree}
                 throttleNumber={3}
                 displayNumber
                 activeIndex={selectedIndex}
             />
             <BaseThrottleConfig
+                numberOfAxis={4}
                 mappingsAxisOne={mappingsAxisFour}
                 throttleNumber={4}
                 displayNumber
@@ -233,7 +246,9 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
     const twoAxis = (
         <div className="mx-32 flex flex-row">
             <BaseThrottleConfig
+                numberOfAxis={2}
                 mappingsAxisOne={mappingsAxisOne}
+                mappingsAxisTwo={mappingsAxisTwo}
                 throttleNumber={1}
                 displayNumber
                 activeIndex={selectedIndex}
@@ -242,7 +257,10 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                 {navigationBar}
             </div>
             <BaseThrottleConfig
-                mappingsAxisOne={mappingsAxisTwo}
+                numberOfAxis={2}
+                mappingsAxisOne={mappingsAxisOne}
+                mappingsAxisThree={mappingsAxisThree}
+                mappingsAxisFour={mappingsAxisFour}
                 throttleNumber={2}
                 displayNumber
                 activeIndex={selectedIndex}
@@ -253,8 +271,11 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
     const oneAxis = (
         <div className="flex flex-row justify-center rounded-xl">
             <BaseThrottleConfig
+                numberOfAxis={1}
                 mappingsAxisOne={mappingsAxisOne}
                 mappingsAxisTwo={mappingsAxisTwo}
+                mappingsAxisThree={mappingsAxisThree}
+                mappingsAxisFour={mappingsAxisFour}
                 throttleNumber={1}
                 displayNumber={false}
                 activeIndex={selectedIndex}
