@@ -1,8 +1,11 @@
 use std::time::Duration;
 
-use uom::si::{
-    electric_potential::volt, f64::*, frequency::hertz, power::watt, pressure::psi, ratio::percent,
-    temperature_interval, thermodynamic_temperature::degree_celsius,
+use uom::{
+    si::{
+        electric_potential::volt, f64::*, frequency::hertz, power::watt, pressure::psi,
+        ratio::percent, temperature_interval, thermodynamic_temperature::degree_celsius,
+    },
+    ConstZero,
 };
 
 use crate::{
@@ -14,7 +17,8 @@ use crate::{
     failures::{Failure, FailureType},
     shared::{
         calculate_towards_target_temperature, random_number, ConsumePower, ControllerSignal,
-        ElectricalBusType, ElectricalBuses, PotentialOrigin, PowerConsumptionReport,
+        ElectricalBusType, ElectricalBuses, InternationalStandardAtmosphere, PotentialOrigin,
+        PowerConsumptionReport,
     },
     simulation::{InitContext, SimulationElement, SimulatorWriter, UpdateContext},
 };
@@ -423,12 +427,47 @@ impl ApuGenUsageEgtDelta {
     }
 }
 
+struct ApuBleedUsageN2Delta {
+    time: Duration,
+    base_n2_delta_per_second: f64,
+}
+impl ApuBleedUsageN2Delta {
+    // We assume it takes 8 seconds to get to our target.
+    const SECONDS_TO_REACH_TARGET: u64 = 8;
+    // N2 goes from 85 to 87 when bleed is on
+    const N2_CHANGE_WHEN_BLEED_ON: f64 = 2.;
+
+    fn new() -> Self {
+        Self {
+            time: Duration::from_secs(0),
+            base_n2_delta_per_second: ApuBleedUsageN2Delta::N2_CHANGE_WHEN_BLEED_ON
+                / ApuBleedUsageN2Delta::SECONDS_TO_REACH_TARGET as f64,
+        }
+    }
+
+    fn update(&mut self, context: &UpdateContext, apu_bleed_is_used: bool) {
+        self.time = if apu_bleed_is_used {
+            (self.time + context.delta()).min(Duration::from_secs(
+                ApuBleedUsageN2Delta::SECONDS_TO_REACH_TARGET,
+            ))
+        } else {
+            Duration::from_secs_f64((self.time.as_secs_f64() - context.delta_as_secs_f64()).max(0.))
+        };
+    }
+
+    fn n2_delta(&self) -> Ratio {
+        Ratio::new::<percent>(self.time.as_secs_f64() * self.base_n2_delta_per_second)
+    }
+}
+
 struct Running {
     egt: ThermodynamicTemperature,
     base_egt: ThermodynamicTemperature,
     base_egt_deviation: TemperatureInterval,
     bleed_air_usage: BleedAirUsageEgtDelta,
     apu_gen_usage: ApuGenUsageEgtDelta,
+    n2: Ratio,
+    bleed_air_n2_delta: ApuBleedUsageN2Delta,
 }
 impl Running {
     fn new(egt: ThermodynamicTemperature) -> Running {
@@ -442,6 +481,8 @@ impl Running {
             ),
             bleed_air_usage: BleedAirUsageEgtDelta::new(),
             apu_gen_usage: ApuGenUsageEgtDelta::new(),
+            n2: Ratio::default(),
+            bleed_air_n2_delta: ApuBleedUsageN2Delta::new(),
         }
     }
 
@@ -468,6 +509,16 @@ impl Running {
 
         target
     }
+
+    fn calculate_n2(&mut self, context: &UpdateContext, apu_bleed_is_used: bool) -> Ratio {
+        // Base N2 is 85%
+        let mut target = Ratio::new::<percent>(85.);
+
+        self.bleed_air_n2_delta.update(context, apu_bleed_is_used);
+        target += self.bleed_air_n2_delta.n2_delta();
+
+        target
+    }
 }
 impl Turbine for Running {
     fn update(
@@ -478,6 +529,7 @@ impl Turbine for Running {
         controller: &dyn ControllerSignal<TurbineSignal>,
     ) -> Box<dyn Turbine> {
         self.egt = self.calculate_egt(context, apu_gen_is_used, apu_bleed_is_used);
+        self.n2 = self.calculate_n2(context, apu_bleed_is_used);
 
         match controller.signal() {
             Some(TurbineSignal::StartOrContinue) => self,
@@ -494,7 +546,7 @@ impl Turbine for Running {
     }
 
     fn n2(&self) -> Ratio {
-        Ratio::new::<percent>(85.)
+        self.n2
     }
 
     fn egt(&self) -> ThermodynamicTemperature {
@@ -506,8 +558,9 @@ impl Turbine for Running {
     }
 
     fn bleed_air_pressure(&self) -> Pressure {
-        // TODO: Figure out what value this is supposed to be.
-        Pressure::new::<psi>(50.)
+        // Value from refs, we add standard pressure at sea level as state of unpressurized system
+        Pressure::new::<psi>(22.)
+            + InternationalStandardAtmosphere::pressure_at_altitude(Length::ZERO)
     }
 }
 
