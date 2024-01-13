@@ -428,6 +428,20 @@ bool SimConnectInterface::prepareSimInputSimConnectDataDefinitions() {
   result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE2_INCR_SMALL, "THROTTLE2_INCR_SMALL", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE2_DECR_SMALL, "THROTTLE2_DECR_SMALL", true);
 
+  result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE3_FULL, "THROTTLE3_FULL", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE3_CUT, "THROTTLE3_CUT", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE3_INCR, "THROTTLE3_INCR", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE3_DECR, "THROTTLE3_DECR", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE3_INCR_SMALL, "THROTTLE3_INCR_SMALL", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE3_DECR_SMALL, "THROTTLE3_DECR_SMALL", true);
+
+  result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE4_FULL, "THROTTLE4_FULL", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE4_CUT, "THROTTLE4_CUT", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE4_INCR, "THROTTLE4_INCR", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE4_DECR, "THROTTLE4_DECR", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE4_INCR_SMALL, "THROTTLE4_INCR_SMALL", true);
+  result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE4_DECR_SMALL, "THROTTLE4_DECR_SMALL", true);
+
   result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_REVERSE_THRUST_TOGGLE, "THROTTLE_REVERSE_THRUST_TOGGLE", true);
   result &= addInputDataDefinition(hSimConnect, 0, Events::THROTTLE_REVERSE_THRUST_HOLD, "THROTTLE_REVERSE_THRUST_HOLD", true);
 
@@ -2317,28 +2331,36 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
     case Events::AUTO_THROTTLE_TO_GA: {
       throttleAxis[0]->onEventThrottleFull();
       throttleAxis[1]->onEventThrottleFull();
+      throttleAxis[2]->onEventThrottleFull();
+      throttleAxis[3]->onEventThrottleFull();
       std::cout << "WASM: event triggered: AUTO_THROTTLE_TO_GA (treated like THROTTLE_FULL)" << std::endl;
       break;
     }
 
     case Events::A32NX_THROTTLE_MAPPING_SET_DEFAULTS: {
-      std::cout << "WASM: event triggered: THROTTLE_MAPPING_SET_DEFAULTS" << std::endl;
       throttleAxis[0]->applyDefaults();
       throttleAxis[1]->applyDefaults();
+      throttleAxis[2]->applyDefaults();
+      throttleAxis[3]->applyDefaults();
+      std::cout << "WASM: event triggered: THROTTLE_MAPPING_SET_DEFAULTS" << std::endl;
       break;
     }
 
     case Events::A32NX_THROTTLE_MAPPING_LOAD_FROM_FILE: {
-      std::cout << "WASM: event triggered: THROTTLE_MAPPING_LOAD_FROM_FILE" << std::endl;
       throttleAxis[0]->loadFromFile();
       throttleAxis[1]->loadFromFile();
+      throttleAxis[2]->loadFromFile();
+      throttleAxis[3]->loadFromFile();
+      std::cout << "WASM: event triggered: THROTTLE_MAPPING_LOAD_FROM_FILE" << std::endl;
       break;
     }
 
     case Events::A32NX_THROTTLE_MAPPING_LOAD_FROM_LOCAL_VARIABLES: {
-      std::cout << "WASM: event triggered: THROTTLE_MAPPING_LOAD_FROM_LOCAL_VARIABLES" << std::endl;
       throttleAxis[0]->loadFromLocalVariables();
       throttleAxis[1]->loadFromLocalVariables();
+      throttleAxis[2]->loadFromLocalVariables();
+      throttleAxis[3]->loadFromLocalVariables();
+      std::cout << "WASM: event triggered: THROTTLE_MAPPING_LOAD_FROM_LOCAL_VARIABLES" << std::endl;
       break;
     }
 
@@ -2346,6 +2368,8 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
       std::cout << "WASM: event triggered: THROTTLE_MAPPING_SAVE_TO_FILE" << std::endl;
       throttleAxis[0]->saveToFile();
       throttleAxis[1]->saveToFile();
+      throttleAxis[2]->saveToFile();
+      throttleAxis[3]->saveToFile();
       break;
     }
 
@@ -2482,6 +2506,8 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
     case Events::THROTTLE_INCR_SMALL: {
       throttleAxis[0]->onEventThrottleIncreaseSmall();
       throttleAxis[1]->onEventThrottleIncreaseSmall();
+      throttleAxis[2]->onEventThrottleIncreaseSmall();
+      throttleAxis[3]->onEventThrottleIncreaseSmall();
       if (loggingThrottlesEnabled) {
         std::cout << "WASM: THROTTLE_INCR_SMALL" << std::endl;
       }
@@ -2491,6 +2517,8 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
     case Events::THROTTLE_DECR_SMALL: {
       throttleAxis[0]->onEventThrottleDecreaseSmall();
       throttleAxis[1]->onEventThrottleDecreaseSmall();
+      throttleAxis[2]->onEventThrottleDecreaseSmall();
+      throttleAxis[3]->onEventThrottleDecreaseSmall();
       if (loggingThrottlesEnabled) {
         std::cout << "WASM: THROTTLE_DECR_SMALL" << std::endl;
       }
@@ -2500,6 +2528,8 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
     case Events::THROTTLE_10: {
       throttleAxis[0]->onEventThrottleSet_10();
       throttleAxis[1]->onEventThrottleSet_10();
+      throttleAxis[2]->onEventThrottleSet_10();
+      throttleAxis[3]->onEventThrottleSet_10();
       if (loggingThrottlesEnabled) {
         std::cout << "WASM: THROTTLE_10" << std::endl;
       }
@@ -2509,6 +2539,8 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
     case Events::THROTTLE_20: {
       throttleAxis[0]->onEventThrottleSet_20();
       throttleAxis[1]->onEventThrottleSet_20();
+      throttleAxis[2]->onEventThrottleSet_20();
+      throttleAxis[3]->onEventThrottleSet_20();
       if (loggingThrottlesEnabled) {
         std::cout << "WASM: THROTTLE_20" << std::endl;
       }
@@ -2518,6 +2550,8 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
     case Events::THROTTLE_30: {
       throttleAxis[0]->onEventThrottleSet_30();
       throttleAxis[1]->onEventThrottleSet_30();
+      throttleAxis[2]->onEventThrottleSet_30();
+      throttleAxis[3]->onEventThrottleSet_30();
       if (loggingThrottlesEnabled) {
         std::cout << "WASM: THROTTLE_30" << std::endl;
       }
@@ -2527,6 +2561,8 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
     case Events::THROTTLE_40: {
       throttleAxis[0]->onEventThrottleSet_40();
       throttleAxis[1]->onEventThrottleSet_40();
+      throttleAxis[2]->onEventThrottleSet_40();
+      throttleAxis[3]->onEventThrottleSet_40();
       if (loggingThrottlesEnabled) {
         std::cout << "WASM: THROTTLE_40" << std::endl;
       }
@@ -2536,6 +2572,8 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
     case Events::THROTTLE_50: {
       throttleAxis[0]->onEventThrottleSet_50();
       throttleAxis[1]->onEventThrottleSet_50();
+      throttleAxis[2]->onEventThrottleSet_50();
+      throttleAxis[3]->onEventThrottleSet_50();
       if (loggingThrottlesEnabled) {
         std::cout << "WASM: THROTTLE_50" << std::endl;
       }
@@ -2545,6 +2583,8 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
     case Events::THROTTLE_60: {
       throttleAxis[0]->onEventThrottleSet_50();
       throttleAxis[1]->onEventThrottleSet_60();
+      throttleAxis[2]->onEventThrottleSet_50();
+      throttleAxis[3]->onEventThrottleSet_60();
       if (loggingThrottlesEnabled) {
         std::cout << "WASM: THROTTLE_60" << std::endl;
       }
@@ -2554,6 +2594,8 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
     case Events::THROTTLE_70: {
       throttleAxis[0]->onEventThrottleSet_70();
       throttleAxis[1]->onEventThrottleSet_70();
+      throttleAxis[2]->onEventThrottleSet_70();
+      throttleAxis[3]->onEventThrottleSet_70();
       if (loggingThrottlesEnabled) {
         std::cout << "WASM: THROTTLE_70" << std::endl;
       }
@@ -2563,6 +2605,8 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
     case Events::THROTTLE_80: {
       throttleAxis[0]->onEventThrottleSet_80();
       throttleAxis[1]->onEventThrottleSet_80();
+      throttleAxis[2]->onEventThrottleSet_80();
+      throttleAxis[3]->onEventThrottleSet_80();
       if (loggingThrottlesEnabled) {
         std::cout << "WASM: THROTTLE_80" << std::endl;
       }
@@ -2572,6 +2616,8 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
     case Events::THROTTLE_90: {
       throttleAxis[0]->onEventThrottleSet_90();
       throttleAxis[1]->onEventThrottleSet_90();
+      throttleAxis[2]->onEventThrottleSet_90();
+      throttleAxis[3]->onEventThrottleSet_90();
       if (loggingThrottlesEnabled) {
         std::cout << "WASM: THROTTLE_90" << std::endl;
       }
@@ -2670,6 +2716,102 @@ void SimConnectInterface::processEventWithOneParam(const DWORD eventId, const DW
       throttleAxis[1]->onEventThrottleDecreaseSmall();
       if (loggingThrottlesEnabled) {
         std::cout << "WASM: THROTTLE2_DECR_SMALL" << std::endl;
+      }
+      break;
+    }
+
+    case Events::THROTTLE3_FULL: {
+      throttleAxis[2]->onEventThrottleFull();
+      if (loggingThrottlesEnabled) {
+        std::cout << "WASM: THROTTLE3_FULL" << std::endl;
+      }
+      break;
+    }
+
+    case Events::THROTTLE3_CUT: {
+      throttleAxis[2]->onEventThrottleCut();
+      if (loggingThrottlesEnabled) {
+        std::cout << "WASM: THROTTLE3_CUT" << std::endl;
+      }
+      break;
+    }
+
+    case Events::THROTTLE3_INCR: {
+      throttleAxis[2]->onEventThrottleIncrease();
+      if (loggingThrottlesEnabled) {
+        std::cout << "WASM: THROTTLE3_INCR" << std::endl;
+      }
+      break;
+    }
+
+    case Events::THROTTLE3_DECR: {
+      throttleAxis[2]->onEventThrottleDecrease();
+      if (loggingThrottlesEnabled) {
+        std::cout << "WASM: THROTTLE3_DECR" << std::endl;
+      }
+      break;
+    }
+
+    case Events::THROTTLE3_INCR_SMALL: {
+      throttleAxis[2]->onEventThrottleIncreaseSmall();
+      if (loggingThrottlesEnabled) {
+        std::cout << "WASM: THROTTLE3_INCR_SMALL" << std::endl;
+      }
+      break;
+    }
+
+    case Events::THROTTLE3_DECR_SMALL: {
+      throttleAxis[2]->onEventThrottleDecreaseSmall();
+      if (loggingThrottlesEnabled) {
+        std::cout << "WASM: THROTTLE3_DECR_SMALL" << std::endl;
+      }
+      break;
+    }
+
+    case Events::THROTTLE4_FULL: {
+      throttleAxis[3]->onEventThrottleFull();
+      if (loggingThrottlesEnabled) {
+        std::cout << "WASM: THROTTLE4_FULL" << std::endl;
+      }
+      break;
+    }
+
+    case Events::THROTTLE4_CUT: {
+      throttleAxis[3]->onEventThrottleCut();
+      if (loggingThrottlesEnabled) {
+        std::cout << "WASM: THROTTLE4_CUT" << std::endl;
+      }
+      break;
+    }
+
+    case Events::THROTTLE4_INCR: {
+      throttleAxis[3]->onEventThrottleIncrease();
+      if (loggingThrottlesEnabled) {
+        std::cout << "WASM: THROTTLE4_INCR" << std::endl;
+      }
+      break;
+    }
+
+    case Events::THROTTLE4_DECR: {
+      throttleAxis[3]->onEventThrottleDecrease();
+      if (loggingThrottlesEnabled) {
+        std::cout << "WASM: THROTTLE4_DECR" << std::endl;
+      }
+      break;
+    }
+
+    case Events::THROTTLE4_INCR_SMALL: {
+      throttleAxis[3]->onEventThrottleIncreaseSmall();
+      if (loggingThrottlesEnabled) {
+        std::cout << "WASM: THROTTLE4_INCR_SMALL" << std::endl;
+      }
+      break;
+    }
+
+    case Events::THROTTLE4_DECR_SMALL: {
+      throttleAxis[3]->onEventThrottleDecreaseSmall();
+      if (loggingThrottlesEnabled) {
+        std::cout << "WASM: THROTTLE4_DECR_SMALL" << std::endl;
       }
       break;
     }
