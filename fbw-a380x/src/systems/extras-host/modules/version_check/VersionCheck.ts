@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { EventBus } from '@microsoft/msfs-sdk';
-import { AircraftVersionChecker } from '@shared/AircraftVersionChecker';
 
 /**
  * This class is used to check the version of the aircraft and display a warning if it is too old.
@@ -12,16 +11,11 @@ export class VersionCheck {
         console.log('VersionCheck: Created');
     }
 
-    public connectedCallback(): void {
-        // empty
-    }
-
     public startPublish(): void {
         console.log('VersionCheck: startPublish()');
-        AircraftVersionChecker.checkVersion();
-    }
 
-    public update(): void {
-        // empty
+        // TODO: Implement version check which is dependent on the API to change and handling
+        //  of github version for the monorepo needs to be changed.
+        console.warn('VersionCheck for the A380X is not yet implemented.');
     }
 }

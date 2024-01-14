@@ -26,16 +26,8 @@ export class KeyInterceptor {
         console.log('KeyInterceptor: Created');
     }
 
-    public connectedCallback(): void {
-        // empty
-    }
-
     public startPublish(): void {
         console.log('KeyInterceptor: startPublish()');
-    }
-
-    public update(): void {
-        // empty
     }
 
     private registerIntercepts() {
