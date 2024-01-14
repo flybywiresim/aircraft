@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 import { FSComponent, DisplayComponent, ComponentProps, MappedSubject, Subject, Subscribable, VNode } from '@microsoft/msfs-sdk';
-import { Arinc429WordData, Arinc429ConsumerSubject } from '@flybywiresim/fbw-sdk';
+import { Arinc429WordData, Arinc429ConsumerSubject, MathUtils } from '@flybywiresim/fbw-sdk';
 
 import { RoseMode, RoseModeProps } from './RoseMode';
 import { RoseModeUnderlay } from './RoseModeUnderlay';
@@ -147,7 +147,7 @@ class VorCaptureOverlay extends DisplayComponent<VorCaptureOverlayProps> {
                 cdiDegrees = courseDeviation;
                 this.toward.set(true);
             } else {
-                cdiDegrees = Math.sign(courseDeviation) * -Avionics.Utils.diffAngle(180, Math.abs(courseDeviation));
+                cdiDegrees = Math.sign(courseDeviation) * -MathUtils.diffAngle(180, Math.abs(courseDeviation));
                 this.toward.set(false);
             }
             this.cdiPx.set(Math.min(12, Math.max(-12, cdiDegrees)) * 74 / 5);

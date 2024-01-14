@@ -1,4 +1,4 @@
-import { Coordinates } from 'msfs-geo';
+import { bearingTo, Coordinates, distanceTo } from 'msfs-geo';
 
 export class MapParameters {
     public centerCoordinates: Coordinates;
@@ -30,8 +30,8 @@ export class MapParameters {
     }
 
     coordinatesToXYy(coordinates: Coordinates): [number, number] {
-        const bearing = Avionics.Utils.computeGreatCircleHeading(this.centerCoordinates, coordinates) - this.mapUpTrueDeg - 90;
-        const distance = Avionics.Utils.computeGreatCircleDistance(this.centerCoordinates, coordinates);
+        const bearing = bearingTo(this.centerCoordinates, coordinates) - this.mapUpTrueDeg - 90;
+        const distance = distanceTo(this.centerCoordinates, coordinates);
 
         const xNm = distance * Math.cos(bearing * Math.PI / 180);
         const yNm = distance * Math.sin(bearing * Math.PI / 180);
