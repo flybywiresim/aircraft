@@ -23,30 +23,34 @@ class AircraftPresetProcedures_A380X {
       .POWERED_CONFIG_ON {
         // SOP: PRELIMINARY COCKPIT PREPARATION
         ProcedureStep{"BAT1 On",                  1010, false, 1000, "(L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO)",                 "1 (>L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO)"},
-        ProcedureStep{"BAT2 On",                  1020, false, 3000, "(L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO)",                 "1 (>L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO)"},
+        ProcedureStep{"BAT2 On",                  1020, false, 1000, "(L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO)",                 "1 (>L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO)"},
+        ProcedureStep{"BAT ESS On",               1020, false, 1000, "(L:A32NX_OVHD_ELEC_BAT_ESS_PB_IS_AUTO)",               "1 (>L:A32NX_OVHD_ELEC_BAT_ESS_PB_IS_AUTO)"},
+        ProcedureStep{"BAT APU On",               1020, false, 3000, "(L:A32NX_OVHD_ELEC_BAT_APU_PB_IS_AUTO)",               "1 (>L:A32NX_OVHD_ELEC_BAT_APU_PB_IS_AUTO)"},
 
         ProcedureStep{"EXT PWR On",               1030, false, 3000, "(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) "
-                                                                  "(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) && "
-                                                                  "(L:A32NX_ENGINE_STATE:1) 1 == || "
-                                                                  "(L:A32NX_ENGINE_STATE:2) 1 == || "
-                                                                  "(A:EXTERNAL POWER ON:1, BOOL) ||",                     "(A:EXTERNAL POWER ON:1, BOOL) ! if{ 1 (>K:TOGGLE_EXTERNAL_POWER) }"},
+                                                                     "(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) && "
+                                                                     "(L:A32NX_ENGINE_STATE:1) 1 == || "
+                                                                     "(L:A32NX_ENGINE_STATE:2) 1 == || "
+                                                                     "(A:EXTERNAL POWER ON:1, BOOL) ||",                     "(A:EXTERNAL POWER ON:1, BOOL) ! if{ 0 (>K:TOGGLE_EXTERNAL_POWER) }"},
 
-        // if no Ext Pwr is available we start the APU here with a bat only fire test
-        ProcedureStep{"APU Fire Test On",         1035, false, 2000, "(L:A32NX_ELEC_AC_1_BUS_IS_POWERED)",                   "1 (>L:A32NX_FIRE_TEST_APU)"},
-        ProcedureStep{"APU Fire Test Off",        1036, false, 2000, "(L:A32NX_ELEC_AC_1_BUS_IS_POWERED)",                   "0 (>L:A32NX_FIRE_TEST_APU)"},
-        ProcedureStep{"APU Master On",            1040, false, 3000, "(L:A32NX_ELEC_AC_1_BUS_IS_POWERED)",                   "1 (>L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON)"},
-        ProcedureStep{"APU Start On",             1050, false, 1000, "(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) ! "
-                                                                  "(L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE) ||",          "1 (>L:A32NX_OVHD_APU_START_PB_IS_ON)"},
+        // ENG fire test (the A380X only has on test button and this is currently mapped to the ENG 1 test)
+        ProcedureStep{"ENG 1 Fire Test On",       2002, false, 2000, "(L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_ENG1_DONE)",      "1 (>L:A32NX_FIRE_TEST_ENG1)"},
+        ProcedureStep{"ENG 1 Fire Test Off",      2003, false, 2000, "(L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_ENG1_DONE)",      "0 (>L:A32NX_FIRE_TEST_ENG1) 1 (>L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_ENG1_DONE)"},
+
+        // After fire test we start the APU
+        ProcedureStep{"APU Master On",            1041, false, 3000, "(L:A32NX_ENGINE_STATE:1) 1 == "
+                                                                     "(L:A32NX_ENGINE_STATE:2) 1 == && "
+                                                                     "(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) 1 == ||",      "1 (>L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON)"},
+        ProcedureStep{"APU Start On",             1051, false, 1000, "(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) ! "
+                                                                     "(L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE) ||",        "1 (>L:A32NX_OVHD_APU_START_PB_IS_ON)"},
 
         ProcedureStep{"Waiting on AC BUS Availability", 1060, true,  2000, "",                                               "(L:A32NX_ELEC_AC_1_BUS_IS_POWERED)"},
 
         // SOP: COCKPIT PREPARATION
         ProcedureStep{"Crew Oxy On",              1120, false, 1000, "(L:PUSH_OVHD_OXYGEN_CREW) 0 ==",                       "0 (>L:PUSH_OVHD_OXYGEN_CREW)"},
         ProcedureStep{"GND CTL On",               1110, false, 1000, "(L:A32NX_ENGINE_STATE:1) 1 == "
-                                                                  "(L:A32NX_ENGINE_STATE:2) 1 == || "
-                                                                  "(L:A32NX_RCDR_GROUND_CONTROL_ON) 1 == ||",             "1 (>L:A32NX_RCDR_GROUND_CONTROL_ON)"},
-        ProcedureStep{"CVR Test On",              1115, false, 5000, "(L:A32NX_AIRCRAFT_PRESET_CVR_TEST_DONE)",              "1 (>L:A32NX_RCDR_TEST)"},
-        ProcedureStep{"CVR Test Off",             1116, false, 2000, "(L:A32NX_AIRCRAFT_PRESET_CVR_TEST_DONE)",              "0 (>L:A32NX_RCDR_TEST) 1 (>L:A32NX_AIRCRAFT_PRESET_CVR_TEST_DONE)"},
+                                                                     "(L:A32NX_ENGINE_STATE:2) 1 == || "
+                                                                     "(L:A32NX_RCDR_GROUND_CONTROL_ON) 1 == ||",             "1 (>L:A32NX_RCDR_GROUND_CONTROL_ON)"},
 
         ProcedureStep{"ADIRS 1 Nav",              1080, false, 500,  "(L:A32NX_OVHD_ADIRS_IR_1_MODE_SELECTOR_KNOB) 1 ==",    "1 (>L:A32NX_OVHD_ADIRS_IR_1_MODE_SELECTOR_KNOB)"},
         ProcedureStep{"ADIRS 2 Nav",              1090, false, 500,  "(L:A32NX_OVHD_ADIRS_IR_2_MODE_SELECTOR_KNOB) 1 ==",    "1 (>L:A32NX_OVHD_ADIRS_IR_2_MODE_SELECTOR_KNOB)"},
@@ -63,29 +67,12 @@ class AircraftPresetProcedures_A380X {
         // The correct variables to wait for are: A32NX_FWS_FWC_1_NORMAL and A32NX_FWS_FWC_2_NORMAL. But
         // as these are only on Exp this first iteration uses A32NX_FWC_FLIGHT_PHASE which also work on>
         // master and is equivalent for this specific purpose. Will be changed when the FWC is on master.
-        ProcedureStep{"Waiting on FWC Initialization", 1065, true,  5000, "",                                                "(L:A32NX_FWC_FLIGHT_PHASE)"},
-        ProcedureStep{"Waiting...",                    9999, false, 5000, "(L:A32NX_AIRCRAFT_PRESET_FWC_INIT_DONE)",         "1 (>L:A32NX_AIRCRAFT_PRESET_FWC_INIT_DONE)"},
-
-        // APU fire test
-        ProcedureStep{"APU Fire Test On",         1035, false, 2000, "(L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_APU_DONE)",         "1 (>L:A32NX_FIRE_TEST_APU)"},
-        ProcedureStep{"APU Fire Test Off",        1036, false, 2000, "(L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_APU_DONE)",         "0 (>L:A32NX_FIRE_TEST_APU) 1 (>L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_APU_DONE)"},
-
-        // After fire test we start the APU
-        ProcedureStep{"APU Master On",            1041, false, 3000, "(L:A32NX_ENGINE_STATE:1) 1 == "
-                                                                  "(L:A32NX_ENGINE_STATE:2) 1 == && "
-                                                                  "(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) 1 == ||",      "1 (>L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON)"},
-        ProcedureStep{"APU Start On",             1051, false, 1000, "(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) ! "
-                                                                  "(L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE) ||",        "1 (>L:A32NX_OVHD_APU_START_PB_IS_ON)"},
-
-        // ENG fire test
-        ProcedureStep{"ENG 1 Fire Test On",       2002, false, 2000, "(L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_ENG1_DONE)",      "1 (>L:A32NX_FIRE_TEST_ENG1)"},
-        ProcedureStep{"ENG 1 Fire Test Off",      2003, false, 2000, "(L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_ENG1_DONE)",      "0 (>L:A32NX_FIRE_TEST_ENG1) 1 (>L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_ENG1_DONE)"},
-        ProcedureStep{"ENG 2 Fire Test On",       2004, false, 2000, "(L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_ENG2_DONE)",      "1 (>L:A32NX_FIRE_TEST_ENG2)"},
-        ProcedureStep{"ENG 2 Fire Test Off",      2005, false, 2000, "(L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_ENG2_DONE)",      "0 (>L:A32NX_FIRE_TEST_ENG2) 1 (>L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_ENG2_DONE)"},
+        // ProcedureStep{"Waiting on FWC Initialization", 1065, true,  5000, "",                                                "(L:A32NX_FWC_FLIGHT_PHASE)"},
+        // ProcedureStep{"Waiting...",                    9999, false, 5000, "(L:A32NX_AIRCRAFT_PRESET_FWC_INIT_DONE)",         "1 (>L:A32NX_AIRCRAFT_PRESET_FWC_INIT_DONE)"},
 
         ProcedureStep{"Waiting on APU Availability", 1150, true,  2000, "",                                                "(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) ! (L:A32NX_OVHD_APU_START_PB_IS_AVAILABLE) ||"},
         ProcedureStep{"APU Bleed On",                1160, false, 1000, "(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) ! "
-                                                                     "(L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON) ||",       "1 (>L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON)"}
+                                                                        "(L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON) ||",       "1 (>L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON)"}
       },
 
       .POWERED_CONFIG_OFF = {
@@ -101,20 +88,19 @@ class AircraftPresetProcedures_A380X {
         ProcedureStep{"ADIRS 1 Off",           1230, false, 1000, "(L:A32NX_OVHD_ADIRS_IR_1_MODE_SELECTOR_KNOB) 0 ==",    "0 (>L:A32NX_OVHD_ADIRS_IR_1_MODE_SELECTOR_KNOB)"},
         ProcedureStep{"APU Bleed Off",         1250, false, 1500, "(L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON) 0 ==",          "0 (>L:A32NX_OVHD_PNEU_APU_BLEED_PB_IS_ON)"},
         ProcedureStep{"APU Master Off",        1260, false, 2000, "(L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON) 0 ==",           "0 (>L:A32NX_OVHD_APU_MASTER_SW_PB_IS_ON)"},
-        ProcedureStep{"EXT PWR Off",           1270, false, 3000, "(A:EXTERNAL POWER ON:1, BOOL) !",                      "(A:EXTERNAL POWER ON:1, BOOL) if{ 1 (>K:TOGGLE_EXTERNAL_POWER) }"},
-        ProcedureStep{"BAT2 Off",              1280, false, 100,  "(L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO) 0 ==",            "0 (>L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO)"},
+        ProcedureStep{"EXT PWR Off",           1270, false, 3000, "(A:EXTERNAL POWER ON:1, BOOL) !",                      "(A:EXTERNAL POWER ON:1, BOOL) if{ 0 (>K:TOGGLE_EXTERNAL_POWER) }"},
+        ProcedureStep{"BAT APU Off",           1280, false, 1000,  "(L:A32NX_OVHD_ELEC_BAT_APU_PB_IS_AUTO) 0 ==",          "0 (>L:A32NX_OVHD_ELEC_BAT_APU_PB_IS_AUTO)"},
+        ProcedureStep{"BAT ESS Off",           1290, false, 1000, "(L:A32NX_OVHD_ELEC_BAT_ESS_PB_IS_AUTO) 0 ==",          "0 (>L:A32NX_OVHD_ELEC_BAT_ESS_PB_IS_AUTO)"},
+        ProcedureStep{"BAT2 Off",              1280, false, 1000,  "(L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO) 0 ==",            "0 (>L:A32NX_OVHD_ELEC_BAT_2_PB_IS_AUTO)"},
         ProcedureStep{"BAT1 Off",              1290, false, 1000, "(L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO) 0 ==",            "0 (>L:A32NX_OVHD_ELEC_BAT_1_PB_IS_AUTO)"},
-        ProcedureStep{"AC BUS Off Check",      1300, true,  2000, "",                                                     "(L:A32NX_ELEC_AC_1_BUS_IS_POWERED) !"},
-        ProcedureStep{"CVR Test Reset",        1117, false, 0,    "",                                                     "0 (>L:A32NX_AIRCRAFT_PRESET_CVR_TEST_DONE)"},
-        ProcedureStep{"APU Fire Test Reset",   1037, false, 0,    "",                                                     "0 (>L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_APU_DONE)"},
+        ProcedureStep{"AC BUS Off Check",      1300, true,  5000, "",                                                     "(L:A32NX_ELEC_AC_1_BUS_IS_POWERED) !"},
         ProcedureStep{"ENG 1 Fire Test Reset", 2006, false, 0,    "",                                                     "0 (>L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_ENG1_DONE)"},
-        ProcedureStep{"ENG 2 Fire Test Reset", 2007, false, 0,    "",                                                     "0 (>L:A32NX_AIRCRAFT_PRESET_FIRE_TEST_ENG2_DONE)"},
-        ProcedureStep{"FWC Init Reset",        1066, false, 0,    "",                                                     "0 (>L:A32NX_AIRCRAFT_PRESET_FWC_INIT_DONE)"}
+        // ProcedureStep{"FWC Init Reset",        1066, false, 0,    "",                                                     "0 (>L:A32NX_AIRCRAFT_PRESET_FWC_INIT_DONE)"}
       },
 
       .PUSHBACK_CONFIG_ON = {
         // SOP: BEFORE PUSHBACK OR START
-        ProcedureStep{"EXT PWR Off",             2000, false, 3000, "(A:EXTERNAL POWER ON:1, BOOL) !",               "(A:EXTERNAL POWER ON:1, BOOL) if{ 1 (>K:TOGGLE_EXTERNAL_POWER) }"},
+        ProcedureStep{"EXT PWR Off",             2000, false, 3000, "(A:EXTERNAL POWER ON:1, BOOL) !",               "(A:EXTERNAL POWER ON:1, BOOL) if{ 0 (>K:TOGGLE_EXTERNAL_POWER) }"},
         ProcedureStep{"Beacon On",               2130, false, 1000, "(A:LIGHT BEACON, Bool)",                        "0 (>K:BEACON_LIGHTS_ON)"},
         ProcedureStep{"FUEL PUMP 2 On",          2010, false, 100,  "(A:FUELSYSTEM PUMP SWITCH:2, Bool)",            "2 (>K:FUELSYSTEM_PUMP_ON)"},
         ProcedureStep{"FUEL PUMP 5 On",          2020, false, 500,  "(A:FUELSYSTEM PUMP SWITCH:5, Bool)",            "5 (>K:FUELSYSTEM_PUMP_ON)"},
