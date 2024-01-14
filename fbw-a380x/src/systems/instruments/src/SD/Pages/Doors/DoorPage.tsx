@@ -17,8 +17,8 @@ export const DoorPage = () => {
 
     return (
         <>
-            <PageTitle x={5} y={28}>DOOR</PageTitle>
-            <text x="599" y="28" className="F36 White TextUnderline">OXYGEN</text>
+            <PageTitle x={6} y={29}>DOOR</PageTitle>
+            <text x="599" y="29" className="F36 White TextUnderline">OXYGEN</text>
             <Oxygen x={634} y={108} active={sdacActive} onGround={onGround} />
 
             <path className="White SW3 StrokeRound" d="M567,2 l 0,659" />
