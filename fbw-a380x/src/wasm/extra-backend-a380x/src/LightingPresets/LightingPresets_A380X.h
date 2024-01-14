@@ -17,6 +17,10 @@ struct LightingValues_A380X {
   // EFB
   FLOAT64 efbBrightness;  // A32NX_EFB_BRIGHTNESS
 
+  // OVHD
+  FLOAT64 readingLightCptLevel;          // 96
+  FLOAT64 readingLightFoLevel;           // 97
+
   // Glareshield
   FLOAT64 glareshieldIntegralLightLevel;  // 84
   FLOAT64 glareshieldLcdLightLevel;       // 87
@@ -37,9 +41,9 @@ struct LightingValues_A380X {
   FLOAT64 consoleLightFoLevel;   // 9 (0, 50, 100)
 
   // Pedestal
-  FLOAT64 rmpCptLightLevel;            // 80 TODO doublecheck
-  FLOAT64 rmpFoLightLevel;             // 81 TODO
-  FLOAT64 rmpOvhdLightLevel;           // 82 TODO
+  FLOAT64 rmpCptLightLevel;            // 80
+  FLOAT64 rmpFoLightLevel;             // 81
+  FLOAT64 rmpOvhdLightLevel;           // 82
   FLOAT64 ecamUpperLightLevel;         // 92
   FLOAT64 ecamLowerLightLevel;         // 93
 
@@ -67,6 +71,9 @@ class LightingPresets_A380X : public LightingPresets {
   NamedVariablePtr efbBrightness;
 
   // Lighting Aircraft Vars
+  AircraftVariablePtr readingLightCptLevel;
+  AircraftVariablePtr readingLightFoLevel;
+
   AircraftVariablePtr glareshieldIntegralLightLevel;
   AircraftVariablePtr glareshieldLcdLightLevel;
   AircraftVariablePtr tableLightCptLevel;
@@ -131,12 +138,15 @@ class LightingPresets_A380X : public LightingPresets {
   void saveToIni(mINI::INIStructure& ini, const std::string& iniSectionName) const override;
 
   const LightingValues_A380X DEFAULT_50 = {50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0,
-                                     50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0};
+                                     50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0, 50.0};
 };
 
 inline bool operator==(const LightingValues_A380X& p1, const LightingValues_A380X& p2) {
   const double epsilon = 0.1;
   return helper::Math::almostEqual(p1.efbBrightness, p2.efbBrightness, epsilon) &&
+
+         helper::Math::almostEqual(p1.readingLightCptLevel, p2.readingLightCptLevel, epsilon) &&
+         helper::Math::almostEqual(p1.readingLightFoLevel, p2.readingLightFoLevel, epsilon) &&
 
          helper::Math::almostEqual(p1.glareshieldIntegralLightLevel, p2.glareshieldIntegralLightLevel, epsilon) &&
          helper::Math::almostEqual(p1.glareshieldLcdLightLevel, p2.glareshieldLcdLightLevel, epsilon) &&

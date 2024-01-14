@@ -39,6 +39,9 @@ bool LightingPresets_A380X::initialize_aircraft() {
   efbBrightness = dataManager->make_named_var("EFB_BRIGHTNESS", UNITS.Number);
 
   // Light Potentiometers - manual update and write when load/saving is requested
+  readingLightCptLevel = createLightPotentiometerVar(96);
+  readingLightFoLevel = createLightPotentiometerVar(97);
+
   glareshieldIntegralLightLevel = createLightPotentiometerVar(84);
   glareshieldLcdLightLevel = createLightPotentiometerVar(87);
   tableLightCptLevel = createLightPotentiometerVar(10);
@@ -56,9 +59,9 @@ bool LightingPresets_A380X::initialize_aircraft() {
   mfdBrtFoLevel = createLightPotentiometerVar(99);
   consoleLightFoLevel = createLightPotentiometerVar(9);
 
-  rmpCptLightLevel = createLightPotentiometerVar(80); // TODO doublecheck
-  rmpFoLightLevel = createLightPotentiometerVar(81); // TODO
-  rmpOvhdLightLevel = createLightPotentiometerVar(82); // TODO
+  rmpCptLightLevel = createLightPotentiometerVar(80);
+  rmpFoLightLevel = createLightPotentiometerVar(81);
+  rmpOvhdLightLevel = createLightPotentiometerVar(82);
   ecamUpperLightLevel = createLightPotentiometerVar(92);
   ecamLowerLightLevel = createLightPotentiometerVar(93);
 
@@ -81,6 +84,9 @@ bool LightingPresets_A380X::initialize_aircraft() {
 
 void LightingPresets_A380X::readFromAircraft() {
   currentLightValues.efbBrightness = efbBrightness->readFromSim();
+
+  currentLightValues.readingLightCptLevel = readingLightCptLevel->readFromSim();
+  currentLightValues.readingLightFoLevel = readingLightFoLevel->readFromSim();
 
   currentLightValues.glareshieldIntegralLightLevel = glareshieldIntegralLightLevel->readFromSim();
   currentLightValues.glareshieldLcdLightLevel = glareshieldLcdLightLevel->readFromSim();
@@ -114,6 +120,9 @@ void LightingPresets_A380X::readFromAircraft() {
 void LightingPresets_A380X::applyToAircraft() {
   efbBrightness->setAndWriteToSim(intermediateLightValues.efbBrightness);
 
+  readingLightCptLevel->setAndWriteToSim(intermediateLightValues.readingLightCptLevel);
+  readingLightFoLevel->setAndWriteToSim(intermediateLightValues.readingLightFoLevel);
+
   glareshieldIntegralLightLevel->setAndWriteToSim(intermediateLightValues.glareshieldIntegralLightLevel);
   glareshieldLcdLightLevel->setAndWriteToSim(intermediateLightValues.glareshieldLcdLightLevel);
   tableLightCptLevel->setAndWriteToSim(intermediateLightValues.tableLightCptLevel);
@@ -143,8 +152,7 @@ void LightingPresets_A380X::applyToAircraft() {
   ambientLightLevel->setAndWriteToSim(intermediateLightValues.ambientLightLevel);
 }
 
-void LightingPresets_A380X::loadFromIni(const mINI::INIStructure& ini,
-                                          const std::string& iniSectionName) {
+void LightingPresets_A380X::loadFromIni(const mINI::INIStructure& ini, const std::string& iniSectionName) {
   // check if iniSectionName is available
   // if not use a 50% default iniSectionName
   if (!ini.has(iniSectionName)) {
@@ -154,6 +162,9 @@ void LightingPresets_A380X::loadFromIni(const mINI::INIStructure& ini,
 
   // reading data structure from ini
   loadedLightValues.efbBrightness = iniGetOrDefault(ini, iniSectionName, "efb_brightness", 80.0);
+
+  loadedLightValues.readingLightCptLevel = iniGetOrDefault(ini, iniSectionName, "reading_cpt_lt", 50.0);
+  loadedLightValues.readingLightFoLevel = iniGetOrDefault(ini, iniSectionName, "reading_fo_lt", 50.0);
 
   loadedLightValues.glareshieldIntegralLightLevel = iniGetOrDefault(ini, iniSectionName, "glareshield_int_lt", 50.0);
   loadedLightValues.glareshieldLcdLightLevel = iniGetOrDefault(ini, iniSectionName, "glareshield_lcd_lt", 50.0);
@@ -186,6 +197,9 @@ void LightingPresets_A380X::loadFromIni(const mINI::INIStructure& ini,
 
 void LightingPresets_A380X::saveToIni(mINI::INIStructure& ini, const std::string& iniSectionName) const {
   ini[iniSectionName]["efb_brightness"] = std::to_string(currentLightValues.efbBrightness);
+
+  ini[iniSectionName]["reading_cpt_lt"] = std::to_string(currentLightValues.readingLightCptLevel);
+  ini[iniSectionName]["reading_fo_lt"] = std::to_string(currentLightValues.readingLightFoLevel);
 
   ini[iniSectionName]["glareshield_int_lt"] = std::to_string(currentLightValues.glareshieldIntegralLightLevel);
   ini[iniSectionName]["glareshield_lcd_lt"] = std::to_string(currentLightValues.glareshieldLcdLightLevel);
@@ -220,6 +234,9 @@ void LightingPresets_A380X::saveToIni(mINI::INIStructure& ini, const std::string
   std::ostringstream os;
   os << "EFB Brightness: " << intermediateLightValues.efbBrightness << std::endl;
 
+  os << "Reading Cpt Lt: " << intermediateLightValues.readingLightCptLevel << std::endl;
+  os << "Reading Fo Lt: " << intermediateLightValues.readingLightFoLevel << std::endl;
+
   os << "Glareshield Int Lt: " << intermediateLightValues.glareshieldIntegralLightLevel << std::endl;
   os << "Glareshield Lcd Lt: " << intermediateLightValues.glareshieldLcdLightLevel << std::endl;
   os << "Table Cpt Lt: " << intermediateLightValues.tableLightCptLevel << std::endl;
@@ -253,6 +270,9 @@ void LightingPresets_A380X::saveToIni(mINI::INIStructure& ini, const std::string
 bool LightingPresets_A380X::calculateIntermediateValues(FLOAT64 stepSize) {
   // clang-format off
   intermediateLightValues.efbBrightness = convergeValue( currentLightValues.efbBrightness,loadedLightValues.efbBrightness, stepSize);
+
+  intermediateLightValues.readingLightCptLevel = convergeValue( currentLightValues.readingLightCptLevel,loadedLightValues.readingLightCptLevel, stepSize);
+  intermediateLightValues.readingLightFoLevel = convergeValue( currentLightValues.readingLightFoLevel,loadedLightValues.readingLightFoLevel, stepSize);
 
   intermediateLightValues.glareshieldIntegralLightLevel = convergeValue( currentLightValues.glareshieldIntegralLightLevel,loadedLightValues.glareshieldIntegralLightLevel, stepSize);
   intermediateLightValues.glareshieldLcdLightLevel = convergeValue( currentLightValues.glareshieldLcdLightLevel,loadedLightValues.glareshieldLcdLightLevel, stepSize);
