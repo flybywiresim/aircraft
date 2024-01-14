@@ -80,8 +80,6 @@ class ExtrasHost extends BaseInstrument {
         super.connectedCallback();
 
         this.pushbuttonCheck.connectedCallback();
-        this.versionCheck.connectedCallback();
-        this.keyInterceptor.connectedCallback();
     }
 
     public Update(): void {
@@ -90,18 +88,22 @@ class ExtrasHost extends BaseInstrument {
         if (this.gameState !== GameState.ingame) {
             const gs = this.getGameState();
             if (gs === GameState.ingame) {
+                // Start the modules
                 this.hEventPublisher.startPublish();
                 this.versionCheck.startPublish();
                 this.keyInterceptor.startPublish();
                 this.simVarPublisher.startPublish();
+
+                // Signal that the aircraft is ready via L:A32NX_IS_READY
+                SimVar.SetSimVarValue('L:A32NX_IS_READY', 'number', 1);
+                console.log('A380X_EXTRASHOST: Aircraft is ready');
             }
             this.gameState = gs;
         } else {
             this.simVarPublisher.onUpdate();
         }
 
-        this.versionCheck.update();
-        this.keyInterceptor.update();
+        // Call module update() methods here if they have one
     }
 }
 
