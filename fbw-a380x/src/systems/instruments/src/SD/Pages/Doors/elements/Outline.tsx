@@ -5,13 +5,12 @@ type CabinWindowProps = {
     windowRight: boolean,
 }
 
-export const A380XDoors: React.FC<CabinWindowProps> = ({ windowLeft, windowRight }) => (
-    <g id="A380X-door">
+export const Outline: React.FC<CabinWindowProps> = ({ windowLeft, windowRight }) => (
+    <>
         <g id="Outline" className="White SW3 StrokeRound NoFill">
             <path
                 d="m224,110 c-19,22,-31,46,-39,73 c-3,13,-5,27,-5,41 l0,408 c0,9,3,16,5,24"
             />
-            <line x1="65" y1="400" x2="181" y2="376" />
             <path d="m65,400 l116, -24" />
             <path
                 d="m344,110 c19,22,31,46,39,73 c3,13,5,27,5,41 l0,408 c0,9,-3,16,-5,24"
@@ -46,7 +45,7 @@ export const A380XDoors: React.FC<CabinWindowProps> = ({ windowLeft, windowRight
             {/* FO's window */}
             <path className={windowRight ? 'Green NoFill SW3 LineJoinRound' : 'Amber Fill'} d="M323,102 l14,30 h-14 l-2,-5 z" />
         </g>
-    </g>
+    </>
 );
 
-export default A380XDoors;
+export default Outline;

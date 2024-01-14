@@ -59,7 +59,7 @@ const CabinDoor: React.FC<Position & CabinDoorProps> = ({ x, y, doorNumber, side
                     doorRectCss
                 }
             />
-            <text x={4} y={21} className={`${doorNumberCss} F22`}>{!validSDAC ? 'X' : doorNumber}</text>
+            <text x={3} y={21} className={`${doorNumberCss} F22`}>{!validSDAC ? 'X' : doorNumber}</text>
             <text x={xpos} y={-5} className={`${!validSDAC ? 'White' : 'AmberFill'} F22`}>{cabinDoorMessage}</text>
             <text x={side === 'L' ? -6 : 23} y={38} className={`${slideCss} F30`}>{slide}</text>
         </g>

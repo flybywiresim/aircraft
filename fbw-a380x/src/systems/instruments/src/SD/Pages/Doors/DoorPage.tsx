@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSimVar } from '@instruments/common/simVars';
 import { PageTitle } from '../Generic/PageTitle';
-import A380XDoors from './elements/A380XDoors';
+import Outline from './elements/Outline';
 import CabinDoor from './elements/CabinDoor';
 import Oxygen from './elements/Oxygen';
 
@@ -24,7 +24,7 @@ export const DoorPage = () => {
             <path className="White SW3 StrokeRound" d="M567,2 l 0,659" />
 
             <text x={285} y={159} className="White F22 MiddleAlign LS1">MAIN</text>
-            <A380XDoors windowLeft={windowLeft === 0} windowRight={windowRight === 0} />
+            <Outline windowLeft={windowLeft === 0} windowRight={windowRight === 0} />
             <text x={285} y={216} className="White F22 MiddleAlign LS1">UPPER</text>
 
             {/* Cabin Doors */}
@@ -51,7 +51,7 @@ export const DoorPage = () => {
             {/* Cargo Doors */}
             <CargoDoor x={222} y={165} label="AVNCS" width={27} height={20} engineRunning={engineRunning} />
             <CargoDoor x={359} y={250} label="FWD CARGO" width={26} height={46} engineRunning={engineRunning} />
-            <CargoDoor x={359} y={515} label="AFT CARGO" width={26} height={40} engineRunning={engineRunning} />
+            <CargoDoor x={359} y={515} label="AFT CARGO" width={26} height={42} engineRunning={engineRunning} />
             <CargoDoor x={359} y={590} label="BULK" width={26} height={26} engineRunning={engineRunning} />
         </>
     );
