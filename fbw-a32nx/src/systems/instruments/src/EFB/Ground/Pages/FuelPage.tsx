@@ -5,10 +5,9 @@
 /* eslint-disable max-len */
 import React, { useState } from 'react';
 import { round } from 'lodash';
-import { CloudArrowDown, LockFill, PlayFill, StopCircleFill } from 'react-bootstrap-icons';
+import { CloudArrowDown, PlayFill, StopCircleFill } from 'react-bootstrap-icons';
 import { useSimVar, Units, usePersistentNumberProperty, usePersistentProperty } from '@flybywiresim/fbw-sdk';
 import Slider from 'rc-slider';
-import { IconUpload } from '@tabler/icons';
 import { t } from '../../translation';
 import { TooltipWrapper } from '../../UtilComponents/TooltipWrapper';
 import { isSimbriefDataLoaded } from '../../Store/features/simBrief';
@@ -154,7 +153,14 @@ export const FuelPage = () => {
         if (refuelStartedByUser) {
             setRefuelStartedByUser(false);
         }
-        return gsxFuelSyncEnabled === 1 ? `(${t('Ground.Fuel.GSXFuelSyncEnabled')})` : `(${t('Ground.Fuel.Unavailable')})`;
+        if (gsxFuelSyncEnabled === 1) {
+            if (!gsxRefuelActive()) {
+                return `(${t('Ground.Fuel.GSXFuelSyncEnabled')})`;
+            }
+
+            return '';
+        }
+        return `(${t('Ground.Fuel.Unavailable')})`;
     };
 
     const formatRefuelStatusClass = () => {
@@ -166,6 +172,9 @@ export const FuelPage = () => {
                 return 'text-theme-highlight';
             }
             return ((totalTarget) > (totalCurrentGallon())) ? 'text-green-500' : 'text-yellow-500';
+        }
+        if (gsxFuelSyncEnabled && !gsxRefuelActive()) {
+            return 'text-theme-highlight';
         }
         return 'text-theme-accent';
     };
@@ -445,25 +454,17 @@ export const FuelPage = () => {
                         </div>
                     </div>
 
-                    <div
-                        className={`flex w-20 items-center justify-center ${formatRefuelStatusClass()} bg-current`}
-                        onClick={() => switchRefuelState()}
-                    >
-                        {!gsxFuelSyncEnabled && (
+                    {(!gsxFuelSyncEnabled || refuelRate === '2') && (
+                        <div
+                            className={`flex w-20 items-center justify-center ${formatRefuelStatusClass()} bg-current`}
+                            onClick={() => switchRefuelState()}
+                        >
                             <div className={`${airplaneCanRefuel() ? 'text-white' : 'text-theme-unselected'}`}>
                                 <PlayFill size={50} className={refuelStartedByUser ? 'hidden' : ''} />
                                 <StopCircleFill size={50} className={refuelStartedByUser ? '' : 'hidden'} />
                             </div>
-                        )}
-                        {gsxFuelSyncEnabled && (
-                            <div className={`${airplaneCanRefuel() ? 'text-white' : 'text-theme-unselected'}`}>
-                                <PlayFill size={50} className={refuelStartedByUser || refuelRate !== '2' ? 'hidden' : ''} />
-                                <StopCircleFill size={50} className={refuelStartedByUser && refuelRate === '2' ? '' : 'hidden'} />
-                                <LockFill size={48} className={!gsxRefuelActive() && refuelRate !== '2' ? '' : 'hidden'} />
-                                <IconUpload size={50} className={gsxRefuelActive() ? '' : 'hidden'} />
-                            </div>
-                        )}
-                    </div>
+                        </div>
+                    )}
                 </div>
 
                 <div className="border-theme-accent absolute bottom-0 right-6 flex flex-col items-center justify-center space-y-2 overflow-x-hidden rounded-2xl border px-6 py-3">
