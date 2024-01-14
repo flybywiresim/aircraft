@@ -55,7 +55,6 @@
         "RearrangeWidgets": "Rearrange Widgets"
       },
       "Title": "Important Information",
-      "ToastPayloadImported": "Fuel & Payload imported!",
       "Weather": {
         "AirPressure": "Air Pressure",
         "DewPoint": "Dew Point",
@@ -82,6 +81,7 @@
       "CostIndex": "Cost Index",
       "CruiseAlt": "Cruise Alt.",
       "ImportSimBriefData": "Import SimBrief Data",
+      "ToastFuelPayloadImported": "Fuel & Payload imported!",
       "Route": "Route",
       "SimBriefDataNotYetLoaded": "SimBrief data not yet loaded.",
       "Title": "Your Flight",
@@ -509,7 +509,7 @@
     "AtsuAoc": {
       "AtisAtcSource": "ATIS/ATC Source",
       "AutomaticallyImportSimBriefData": "Automatically Import SimBrief Data",
-      "ImportSimBriefPayload": "Set Fuel & Payload when SimBrief Data was imported",
+      "ImportSimBriefWeights": "Automatically Import SimBrief Fuel & Payload when SimBrief Data was imported",
       "Enable": "Enable",
       "EnableTelex": "Enable TELEX",
       "ErrorReporting": "Error Reporting",

@@ -194,7 +194,7 @@ export const AtsuAocPage = () => {
                 <Toggle value={autoSimbriefImport === 'ENABLED'} onToggle={(toggleValue) => setAutoSimbriefImport(toggleValue ? 'ENABLED' : 'DISABLED')} />
             </SettingItem>
 
-            <SettingItem name={t('Settings.AtsuAoc.ImportSimBriefPayload')}>
+            <SettingItem name={t('Settings.AtsuAoc.ImportSimBriefWeights')}>
                 <Toggle value={simbriefWeightsImport === 'ENABLED'} onToggle={(toggleValue) => setSimbriefWeightsImport(toggleValue ? 'ENABLED' : 'DISABLED')} />
             </SettingItem>
 

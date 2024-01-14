@@ -141,7 +141,7 @@ export const FlightWidget = () => {
                 })
                 .then(() => {
                     history.push('/dashboard');
-                    toast.success(t('Dashboard.ImportantInformation.ToastPayloadImported'));
+                    toast.success(t('Dashboard.YourFlight.ToastFuelPayloadImported'));
                 });
         }
 
