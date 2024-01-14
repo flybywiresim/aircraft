@@ -11,6 +11,13 @@ const EXCLUDED_DATA_STORAGE_KEYS = [
     'A32NX_NAVIGRAPH_REFRESH_TOKEN',
 ];
 
+interface SubscriptionDescriptor {
+    subscriptionID: string,
+    subscriptionGroupID: string,
+    fromClientID: string,
+    cancel(): void;
+}
+
 export interface RemoteClientOptions {
     /** The WebSocket URL the remote client should connect to */
     websocketUrl: () => string,
@@ -64,6 +71,8 @@ export class RemoteClient {
     private viewListeners = new Map<string, ViewListener.ViewListener>();
 
     private aircraftDataUpdateInterval: number | null = null;
+
+    private subscriptions: SubscriptionDescriptor[] = [];
 
     constructor(options: RemoteClientOptions) {
         this.url = options.websocketUrl();
@@ -186,6 +195,14 @@ export class RemoteClient {
             break;
         case 'remoteSubscribeToSimVar':
             this.simVarSubscriptions.push(msg);
+            this.subscriptions.push({
+                subscriptionID: '',
+                subscriptionGroupID: msg.subscriptionGroupID,
+                fromClientID: msg.fromClientID,
+                cancel: () => {
+                    this.simVarSubscriptions.splice(this.simVarSubscriptions.indexOf(msg), 1);
+                },
+            });
             break;
         case 'remoteRequestDataStorage':
             const data = GetDataStorage().searchData('A32NX');
@@ -229,8 +246,8 @@ export class RemoteClient {
             const listener = RegisterViewListener(msg.listenerName);
 
             this.viewListeners.set(msg.listenerID, listener);
+            this.subscriptions.push({ subscriptionGroupID: '', subscriptionID: '', fromClientID: msg.fromClientID, cancel: () => listener.unregister() });
 
-            // TODO clean up this subscription
             for (const call of msg.firstFrameCalls) {
                 listener.on(call.event, (...data) => {
                     this.sendMessage({
@@ -259,45 +276,72 @@ export class RemoteClient {
                 break;
             }
 
-            // TODO clean up this subscription
-            listener.on(msg.event, (...data) => {
+            const handler = (...data: unknown[]) => {
                 this.sendMessage({
                     type: 'aircraftEventNotification',
                     subscriptionID: msg.subscriptionID,
                     data,
                     fromClientID: this.clientID,
                 });
+            };
+
+            listener.on(msg.event, handler);
+
+            this.subscriptions.push({
+                subscriptionID: msg.subscriptionID,
+                subscriptionGroupID: msg.subscriptionGroupID,
+                fromClientID: msg.fromClientID,
+                cancel() {
+                    listener.off(msg.event, handler);
+                },
             });
+
             break;
         }
         case 'remoteSubscriptionGroupCancel': {
             console.log(`[RemoteClient](onMessage) Clearing subscription group with id '${msg.subscriptionGroupID}'`);
 
-            const oldSimVarCount = this.simVarSubscriptions.length;
+            const clearedCount = this.clearSubscriptionsForSubscriptionGroup(msg.subscriptionGroupID, '');
 
-            this.simVarSubscriptions = this.simVarSubscriptions.filter((it) => it.subscriptionGroupID !== msg.subscriptionGroupID);
+            console.log(`[RemoteClient](onMessage) -> Cleared ${clearedCount} subscriptions`);
 
-            console.log(`[RemoteClient](onMessage) -> Cleared ${oldSimVarCount - this.simVarSubscriptions.length} simvars`);
+            break;
+        }
+        case 'remoteSubscriptionCancel': {
+            const subscription = this.subscriptions.find((it) => it.subscriptionID === msg.subscriptionID);
 
-            // TODO clean view listeners as well
+            if (subscription) {
+                subscription.cancel();
+                this.subscriptions.splice(this.subscriptions.indexOf(subscription), 1);
+            }
 
             break;
         }
         case 'remoteClientDisconnect': {
             console.log(`[RemoteClient](onMessage) Remote client with ID '${msg.clientID}' disconnected`);
 
-            const oldSimVarCount = this.simVarSubscriptions.length;
+            const clearedCount = this.clearSubscriptionsForSubscriptionGroup('', msg.clientID);
 
-            this.simVarSubscriptions = this.simVarSubscriptions.filter((it) => it.fromClientID !== msg.clientID);
-
-            console.log(`[RemoteClient](onMessage) -> Cleared ${oldSimVarCount - this.simVarSubscriptions.length} simvars`);
-
-            // TODO clean view listeners as well
+            console.log(`[RemoteClient](onMessage) -> Cleared ${clearedCount} subscriptions`);
 
             break;
         }
         default: console.warn(`unknown message type: ${msg.type}`);
         }
+    }
+
+    private clearSubscriptionsForSubscriptionGroup(subscriptionGroupID: string, fromClientID: string): number {
+        let cleared = 0;
+
+        const groupSubscriptions = this.subscriptions.filter((it) => it.subscriptionGroupID === subscriptionGroupID || it.fromClientID === fromClientID);
+
+        for (const sub of groupSubscriptions) {
+            sub.cancel();
+            cleared++;
+            this.subscriptions.splice(this.subscriptions.indexOf(sub), 1);
+        }
+
+        return cleared;
     }
 
     private onClosed(): void {
