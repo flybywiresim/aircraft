@@ -23,8 +23,8 @@ interface BaseThrottleConfigProps {
 
 /**
  * BaseThrottleConfig is the base component for the throttle configuration of one axis.
- * Axis is used for available hardware axis on the throttle controller.
- * Throttles are used for the number of throttles that are used in the aircraft.
+ * The term axis is used for available hardware axis on the throttle controller.
+ * The term throttles are used for the number of throttles that are used in the aircraft.
  * @param className
  * @param axisNumber            number of the current axis
  * @param numberOfAxis          number of axis that are mapped
@@ -71,7 +71,7 @@ export const BaseThrottleConfig: FC<BaseThrottleConfigProps> = ({
         // case when only one hardware axis is mapped
         if (numberOfAxis === 1) {
             throttleNumberString = t('Settings.ThrottleConfig.AxisDescription', [{ axis: '1' }, { throttles: '1 + 2' }]);
-            // all four throttles are mapped from one axis
+            // all two throttles are mapped from one axis
             upperBoundDetentSetter = [
                 throttleSimvarsSet1[activeDetent].getHiSetter(),
                 throttleSimvarsSet2[activeDetent].getHiSetter(),
