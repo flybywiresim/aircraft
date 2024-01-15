@@ -616,6 +616,7 @@
       "Apply": "Apply",
       "AreYouSureThatYouWantToResetYourCurrentThrottleConfigurationToTheirDefaultStates": "Are you sure that you want to reset your current throttle configuration settings to their default states? This action is irreversible.",
       "Axis": "Axis",
+      "AxisDescription": "Axis $axis for Throttle $throttles",
       "Back": "Back",
       "ConfigureEnd": "Configure End",
       "ConfigureStart": "Configure Start",

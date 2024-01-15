@@ -22,7 +22,7 @@ interface ThrottleConfigProps {
 export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
     const [axisNum, setAxisNum] = usePersistentNumberProperty('THROTTLE_AXIS', 2);
 
-    const [selectedIndex, setSelectedIndex] = useState(2);
+    const [selectedDetent, setSelectedDetent] = useState(2);
     const [validConfig, setValidConfig] = useState(true);
     const [validationError, setValidationError] = useState<string>();
 
@@ -40,6 +40,8 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
     const [, defaultsToThrottle] = useSimVar('K:A32NX.THROTTLE_MAPPING_SET_DEFAULTS', 'number', 100);
     const [, syncToThrottle] = useSimVar('K:A32NX.THROTTLE_MAPPING_LOAD_FROM_FILE', 'number', 100);
     const [, applyLocalVar] = useSimVar('K:A32NX.THROTTLE_MAPPING_LOAD_FROM_LOCAL_VARIABLES', 'number', 1000);
+
+    const numberOfThrottles = getAirframeType() === 'A380_842' ? 4 : 2;
 
     const mappingsAxisOne: Array<ThrottleSimvar> = [
         new ThrottleSimvar('Reverse Full', 'L:A32NX_THROTTLE_MAPPING_REVERSE_', 1),
@@ -77,13 +79,13 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
     const { showModal } = useModals();
 
     useEffect(() => {
-        if (reverserOnAxis1 === 0 && selectedIndex < 2) {
-            setSelectedIndex(2);
+        if (reverserOnAxis1 === 0 && selectedDetent < 2) {
+            setSelectedDetent(2);
         }
         if (togaOnAxis1 === 0 && selectedIndex > 4) {
             setSelectedIndex(4);
         }
-    }, [reverserOnAxis1, selectedIndex]);
+    }, [reverserOnAxis1, selectedDetent]);
 
     const getOverlapErrors = (mappingsAxis: ThrottleSimvar[]) => {
         const overlapErrors: string[] = [];
@@ -119,8 +121,8 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
         setReverserOnAxis2(reverserOnAxis);
         setReverserOnAxis3(reverserOnAxis);
         setReverserOnAxis4(reverserOnAxis);
-        if (reverserOnAxis === 0 && selectedIndex < 2) {
-            setSelectedIndex(2);
+        if (reverserOnAxis === 0 && selectedDetent < 2) {
+            setSelectedDetent(2);
         }
     };
 
@@ -134,7 +136,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
 
     const switchDetent = (index: number) => {
         if (index >= 0 && index <= 5) {
-            setSelectedIndex(index);
+            setSelectedDetent(index);
         }
     };
 
@@ -148,13 +150,13 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                         switchDetent(5);
                     }
                 }}
-                selected={selectedIndex === 5}
+                selected={selectedDetent === 5}
             >
                 TO/GA
             </SelectItem>
-            <SelectItem onSelect={() => switchDetent(4)} selected={selectedIndex === 4}>FLX</SelectItem>
-            <SelectItem onSelect={() => switchDetent(3)} selected={selectedIndex === 3}>CLB</SelectItem>
-            <SelectItem onSelect={() => switchDetent(2)} selected={selectedIndex === 2}>Idle</SelectItem>
+            <SelectItem onSelect={() => switchDetent(4)} selected={selectedDetent === 4}>FLX</SelectItem>
+            <SelectItem onSelect={() => switchDetent(3)} selected={selectedDetent === 3}>CLB</SelectItem>
+            <SelectItem onSelect={() => switchDetent(2)} selected={selectedDetent === 2}>Idle</SelectItem>
             <SelectItem
                 disabled={!reverserOnAxis1}
                 className={`${reverserOnAxis1 ? '' : 'opacity-30'}`}
@@ -163,7 +165,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                         switchDetent(1);
                     }
                 }}
-                selected={selectedIndex === 1}
+                selected={selectedDetent === 1}
             >
                 {t('Settings.ThrottleConfig.ReverseIdle')}
             </SelectItem>
@@ -175,7 +177,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                         switchDetent(0);
                     }
                 }}
-                selected={selectedIndex === 0}
+                selected={selectedDetent === 0}
             >
                 {t('Settings.ThrottleConfig.ReverseFull')}
             </SelectItem>
@@ -209,35 +211,39 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
         <div className="mx-16 flex flex-row">
             <BaseThrottleConfig
                 numberOfAxis={4}
-                mappingsAxisOne={mappingsAxisOne}
                 throttleNumber={1}
+                numberOfThrottles={numberOfThrottles}
+                mappingsAxisOne={mappingsAxisOne}
+                activeDetent={selectedDetent}
                 displayNumber
-                activeIndex={selectedIndex}
                 reverseDisabled
             />
             <BaseThrottleConfig
                 numberOfAxis={4}
-                mappingsAxisOne={mappingsAxisTwo}
                 throttleNumber={2}
+                numberOfThrottles={numberOfThrottles}
+                mappingsAxisOne={mappingsAxisTwo}
+                activeDetent={selectedDetent}
                 displayNumber
-                activeIndex={selectedIndex}
             />
             <div className="m-auto text-center">
                 {navigationBar}
             </div>
             <BaseThrottleConfig
                 numberOfAxis={4}
-                mappingsAxisOne={mappingsAxisThree}
                 throttleNumber={3}
+                numberOfThrottles={numberOfThrottles}
+                mappingsAxisOne={mappingsAxisThree}
+                activeDetent={selectedDetent}
                 displayNumber
-                activeIndex={selectedIndex}
             />
             <BaseThrottleConfig
                 numberOfAxis={4}
-                mappingsAxisOne={mappingsAxisFour}
                 throttleNumber={4}
+                numberOfThrottles={numberOfThrottles}
+                mappingsAxisOne={mappingsAxisFour}
+                activeDetent={selectedDetent}
                 displayNumber
-                activeIndex={selectedIndex}
                 reverseDisabled
             />
         </div>
@@ -247,23 +253,24 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
         <div className="mx-32 flex flex-row">
             <BaseThrottleConfig
                 numberOfAxis={2}
+                throttleNumber={1}
+                numberOfThrottles={numberOfThrottles}
                 mappingsAxisOne={mappingsAxisOne}
                 mappingsAxisTwo={mappingsAxisTwo}
-                throttleNumber={1}
+                activeDetent={selectedDetent}
                 displayNumber
-                activeIndex={selectedIndex}
             />
             <div className="m-auto text-center">
                 {navigationBar}
             </div>
             <BaseThrottleConfig
                 numberOfAxis={2}
-                mappingsAxisOne={mappingsAxisOne}
+                throttleNumber={getAirframeType() === 'A380_842' ? 3 : 2}
+                numberOfThrottles={numberOfThrottles}
                 mappingsAxisThree={mappingsAxisThree}
                 mappingsAxisFour={mappingsAxisFour}
-                throttleNumber={2}
+                activeDetent={selectedDetent}
                 displayNumber
-                activeIndex={selectedIndex}
             />
         </div>
     );
@@ -272,13 +279,14 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
         <div className="flex flex-row justify-center rounded-xl">
             <BaseThrottleConfig
                 numberOfAxis={1}
+                throttleNumber={1}
+                numberOfThrottles={numberOfThrottles}
                 mappingsAxisOne={mappingsAxisOne}
                 mappingsAxisTwo={mappingsAxisTwo}
                 mappingsAxisThree={mappingsAxisThree}
                 mappingsAxisFour={mappingsAxisFour}
-                throttleNumber={1}
+                activeDetent={selectedDetent}
                 displayNumber={false}
-                activeIndex={selectedIndex}
             />
             <div className="my-auto ml-8 text-center">
                 {navigationBar}
@@ -318,7 +326,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                         </div>
                         <div className="flex flex-row items-center justify-center space-x-4">
                             <div>{t('Settings.ThrottleConfig.IndependentAxis')}</div>
-                            {airframe === 'A380_842' ? (
+                            {numberOfThrottles === 4 ? (
                                 axisSelectGroup
                             ) : (
                                 <Toggle
