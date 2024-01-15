@@ -296,10 +296,6 @@
     - Number
     - Flaps config for TakeOff, 1, 2 or 3
 
-- A32NX_SPEEDS_V2
-    - Number
-    - TakeOff V2 Speed calculated based on A32NX_VSPEEDS_TO_CONF config
-
 - A32NX_SPEEDS_VLS_APP
     - Number
     - vls calculated for config full whether A32NX_VSPEEDS_LANDING_CONF3 or not
