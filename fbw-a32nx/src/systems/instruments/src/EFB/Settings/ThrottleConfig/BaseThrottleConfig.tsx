@@ -66,8 +66,6 @@ export const BaseThrottleConfig: FC<BaseThrottleConfigProps> = ({
     // 4. A380 with 2 axis and 4 throttles
     // 5. A380 with 4 axis and 4 throttles
 
-    debugger;
-
     // A320 Case
     if (numberOfThrottles === 2) {
         // case when only one hardware axis is mapped
