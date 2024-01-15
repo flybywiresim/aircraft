@@ -14,7 +14,6 @@ interface Props {
     lowerBoundDetentGetter,
     upperBoundDetentGetter,
     detentValue,
-    throttleNumber,
     throttlePosition,
     index,
     expertMode: boolean,
@@ -22,14 +21,11 @@ interface Props {
 
 export const DetentConfig: React.FC<Props> = (props: Props) => {
     const [showWarning, setShowWarning] = useState(false);
-
     const [deadZone, setDeadZone] = useState(Math.abs(props.upperBoundDetentGetter - props.lowerBoundDetentGetter) / 2);
-
     const [previousMode, setPreviousMode] = useState(props.expertMode);
 
     const setFromTo = (throttle1Position, settingLower, settingUpper, deadZone: number, overrideValue?: string) => {
         const newSetting = overrideValue || throttle1Position;
-
         settingLower.forEach((f) => f(newSetting - deadZone < -1 ? -1 : newSetting - deadZone));
         settingUpper.forEach((f) => f(newSetting + deadZone > 1 ? 1 : newSetting + deadZone));
     };

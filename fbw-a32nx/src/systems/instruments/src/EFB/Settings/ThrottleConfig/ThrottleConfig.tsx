@@ -41,9 +41,11 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
     const [, syncToThrottle] = useSimVar('K:A32NX.THROTTLE_MAPPING_LOAD_FROM_FILE', 'number', 100);
     const [, applyLocalVar] = useSimVar('K:A32NX.THROTTLE_MAPPING_LOAD_FROM_LOCAL_VARIABLES', 'number', 1000);
 
+    // the number of throttles that are used in the aircraft (2 or 4)
     const numberOfThrottles = getAirframeType() === 'A380_842' ? 4 : 2;
 
-    const mappingsAxisOne: Array<ThrottleSimvar> = [
+    // simvars for each virtual throttle
+    const throttleOneSimvars: Array<ThrottleSimvar> = [
         new ThrottleSimvar('Reverse Full', 'L:A32NX_THROTTLE_MAPPING_REVERSE_', 1),
         new ThrottleSimvar('Reverse Idle', 'L:A32NX_THROTTLE_MAPPING_REVERSE_IDLE_', 1),
         new ThrottleSimvar('Idle', 'L:A32NX_THROTTLE_MAPPING_IDLE_', 1),
@@ -51,7 +53,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
         new ThrottleSimvar('Flex', 'L:A32NX_THROTTLE_MAPPING_FLEXMCT_', 1),
         new ThrottleSimvar('TOGA', 'L:A32NX_THROTTLE_MAPPING_TOGA_', 1),
     ];
-    const mappingsAxisTwo: Array<ThrottleSimvar> = [
+    const throttleTwoSimvars: Array<ThrottleSimvar> = [
         new ThrottleSimvar('Reverse Full', 'L:A32NX_THROTTLE_MAPPING_REVERSE_', 2),
         new ThrottleSimvar('Reverse Idle', 'L:A32NX_THROTTLE_MAPPING_REVERSE_IDLE_', 2),
         new ThrottleSimvar('Idle', 'L:A32NX_THROTTLE_MAPPING_IDLE_', 2),
@@ -59,7 +61,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
         new ThrottleSimvar('Flex', 'L:A32NX_THROTTLE_MAPPING_FLEXMCT_', 2),
         new ThrottleSimvar('TOGA', 'L:A32NX_THROTTLE_MAPPING_TOGA_', 2),
     ];
-    const mappingsAxisThree: Array<ThrottleSimvar> = [
+    const throttleThreeSimvars: Array<ThrottleSimvar> = [
         new ThrottleSimvar('Reverse Full', 'L:A32NX_THROTTLE_MAPPING_REVERSE_', 3),
         new ThrottleSimvar('Reverse Idle', 'L:A32NX_THROTTLE_MAPPING_REVERSE_IDLE_', 3),
         new ThrottleSimvar('Idle', 'L:A32NX_THROTTLE_MAPPING_IDLE_', 3),
@@ -67,7 +69,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
         new ThrottleSimvar('Flex', 'L:A32NX_THROTTLE_MAPPING_FLEXMCT_', 3),
         new ThrottleSimvar('TOGA', 'L:A32NX_THROTTLE_MAPPING_TOGA_', 3),
     ];
-    const mappingsAxisFour: Array<ThrottleSimvar> = [
+    const throttleFourSimvars: Array<ThrottleSimvar> = [
         new ThrottleSimvar('Reverse Full', 'L:A32NX_THROTTLE_MAPPING_REVERSE_', 4),
         new ThrottleSimvar('Reverse Idle', 'L:A32NX_THROTTLE_MAPPING_REVERSE_IDLE_', 4),
         new ThrottleSimvar('Idle', 'L:A32NX_THROTTLE_MAPPING_IDLE_', 4),
@@ -89,10 +91,8 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
 
     const getOverlapErrors = (mappingsAxis: ThrottleSimvar[]) => {
         const overlapErrors: string[] = [];
-
         for (let index = reverserOnAxis1 ? 0 : 2; index < (togaOnAxis1 ? mappingsAxis.length : mappingsAxis.length - 1); index++) {
             const element = mappingsAxis[index];
-
             for (let nextIndex = index + 1; nextIndex < (togaOnAxis1 ? mappingsAxis.length : mappingsAxis.length - 1); nextIndex++) {
                 const nextElement = mappingsAxis[nextIndex];
                 if (element.getHiGetter() >= nextElement.getLowGetter() || element.getLowGetter() >= nextElement.getHiGetter()) {
@@ -100,21 +100,22 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                 }
             }
         }
-
         return overlapErrors;
     };
 
     useEffect(() => {
         const errors: string[] = [
-            ...getOverlapErrors(mappingsAxisOne),
-            ...getOverlapErrors(mappingsAxisTwo),
-            ...getOverlapErrors(mappingsAxisThree),
-            ...getOverlapErrors(mappingsAxisFour),
+            ...getOverlapErrors(throttleOneSimvars),
+            ...getOverlapErrors(throttleTwoSimvars),
         ];
-
+        // to avoid false errors on the A320 when only 2 axis are used
+        if (airframe === 'A380_842') {
+            errors.push(...getOverlapErrors(throttleThreeSimvars));
+            errors.push(...getOverlapErrors(throttleFourSimvars));
+        }
         setValidationError(errors[0]);
         setValidConfig(errors.length === 0);
-    }, [mappingsAxisOne, mappingsAxisTwo, mappingsAxisThree, mappingsAxisFour]);
+    }, [throttleOneSimvars, throttleTwoSimvars, throttleThreeSimvars, throttleFourSimvars]);
 
     const setReversersOnAxis = (reverserOnAxis: number) => {
         setReverserOnAxis1(reverserOnAxis);
@@ -198,99 +199,116 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
             >
                 2
             </SelectItem>
-            <SelectItem
-                selected={axisNum === 4}
-                onSelect={() => setAxisNum(4)}
-            >
-                4
-            </SelectItem>
+            {airframe === 'A380_842' && (
+                <SelectItem
+                    selected={axisNum === 4}
+                    onSelect={() => setAxisNum(4)}
+                >
+                    4
+                </SelectItem>
+            )}
         </SelectGroup>
-    );
-
-    const fourAxis = (
-        <div className="mx-16 flex flex-row">
-            <BaseThrottleConfig
-                numberOfAxis={4}
-                throttleNumber={1}
-                numberOfThrottles={numberOfThrottles}
-                mappingsAxisOne={mappingsAxisOne}
-                activeDetent={selectedDetent}
-                displayNumber
-                reverseDisabled
-            />
-            <BaseThrottleConfig
-                numberOfAxis={4}
-                throttleNumber={2}
-                numberOfThrottles={numberOfThrottles}
-                mappingsAxisOne={mappingsAxisTwo}
-                activeDetent={selectedDetent}
-                displayNumber
-            />
-            <div className="m-auto text-center">
-                {navigationBar}
-            </div>
-            <BaseThrottleConfig
-                numberOfAxis={4}
-                throttleNumber={3}
-                numberOfThrottles={numberOfThrottles}
-                mappingsAxisOne={mappingsAxisThree}
-                activeDetent={selectedDetent}
-                displayNumber
-            />
-            <BaseThrottleConfig
-                numberOfAxis={4}
-                throttleNumber={4}
-                numberOfThrottles={numberOfThrottles}
-                mappingsAxisOne={mappingsAxisFour}
-                activeDetent={selectedDetent}
-                displayNumber
-                reverseDisabled
-            />
-        </div>
-    );
-
-    const twoAxis = (
-        <div className="mx-32 flex flex-row">
-            <BaseThrottleConfig
-                numberOfAxis={2}
-                throttleNumber={1}
-                numberOfThrottles={numberOfThrottles}
-                mappingsAxisOne={mappingsAxisOne}
-                mappingsAxisTwo={mappingsAxisTwo}
-                activeDetent={selectedDetent}
-                displayNumber
-            />
-            <div className="m-auto text-center">
-                {navigationBar}
-            </div>
-            <BaseThrottleConfig
-                numberOfAxis={2}
-                throttleNumber={getAirframeType() === 'A380_842' ? 3 : 2}
-                numberOfThrottles={numberOfThrottles}
-                mappingsAxisThree={mappingsAxisThree}
-                mappingsAxisFour={mappingsAxisFour}
-                activeDetent={selectedDetent}
-                displayNumber
-            />
-        </div>
     );
 
     const oneAxis = (
         <div className="flex flex-row justify-center rounded-xl">
             <BaseThrottleConfig
+                axisNumber={1}
                 numberOfAxis={1}
-                throttleNumber={1}
                 numberOfThrottles={numberOfThrottles}
-                mappingsAxisOne={mappingsAxisOne}
-                mappingsAxisTwo={mappingsAxisTwo}
-                mappingsAxisThree={mappingsAxisThree}
-                mappingsAxisFour={mappingsAxisFour}
+                throttleSimvarsSet1={throttleOneSimvars}
+                throttleSimvarsSet2={throttleTwoSimvars}
+                throttleSimvarsSet3={throttleThreeSimvars}
+                throttleSimvarsSet4={throttleFourSimvars}
                 activeDetent={selectedDetent}
-                displayNumber={false}
             />
             <div className="my-auto ml-8 text-center">
                 {navigationBar}
             </div>
+        </div>
+    );
+
+    const twoAxisA320 = (
+        <div className="mx-32 flex flex-row">
+            <BaseThrottleConfig
+                axisNumber={1}
+                numberOfAxis={2}
+                numberOfThrottles={numberOfThrottles}
+                throttleSimvarsSet1={throttleOneSimvars}
+                activeDetent={selectedDetent}
+            />
+            <div className="m-auto text-center">
+                {navigationBar}
+            </div>
+            <BaseThrottleConfig
+                axisNumber={2}
+                numberOfAxis={2}
+                numberOfThrottles={numberOfThrottles}
+                throttleSimvarsSet1={throttleTwoSimvars}
+                activeDetent={selectedDetent}
+            />
+        </div>
+    );
+
+    const twoAxisA380 = (
+        <div className="mx-32 flex flex-row">
+            <BaseThrottleConfig
+                axisNumber={1}
+                numberOfAxis={2}
+                numberOfThrottles={numberOfThrottles}
+                throttleSimvarsSet1={throttleOneSimvars}
+                throttleSimvarsSet2={throttleTwoSimvars}
+                activeDetent={selectedDetent}
+            />
+            <div className="m-auto text-center">
+                {navigationBar}
+            </div>
+            <BaseThrottleConfig
+                axisNumber={2}
+                numberOfAxis={2}
+                numberOfThrottles={numberOfThrottles}
+                throttleSimvarsSet3={throttleThreeSimvars}
+                throttleSimvarsSet4={throttleFourSimvars}
+                activeDetent={selectedDetent}
+            />
+        </div>
+    );
+
+    const fourAxis = (
+        <div className="mx-16 flex flex-row">
+            <BaseThrottleConfig
+                axisNumber={1}
+                numberOfAxis={4}
+                numberOfThrottles={numberOfThrottles}
+                throttleSimvarsSet1={throttleOneSimvars}
+                activeDetent={selectedDetent}
+                reverseDisabled
+            />
+            <BaseThrottleConfig
+                axisNumber={2}
+                numberOfAxis={4}
+                numberOfThrottles={numberOfThrottles}
+                throttleSimvarsSet1={throttleTwoSimvars}
+                activeDetent={selectedDetent}
+            />
+            <div className="m-auto text-center">
+                {navigationBar}
+            </div>
+            <BaseThrottleConfig
+                axisNumber={3}
+                numberOfAxis={4}
+                numberOfThrottles={numberOfThrottles}
+                throttleSimvarsSet1={throttleThreeSimvars}
+                activeDetent={selectedDetent}
+            />
+            <BaseThrottleConfig
+                axisNumber={4}
+                numberOfAxis={4}
+                numberOfThrottles={numberOfThrottles}
+                throttleSimvarsSet1={throttleFourSimvars}
+                activeDetent={selectedDetent}
+                reverseDisabled
+            />
         </div>
     );
 
@@ -302,7 +320,10 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
             }
         // eslint-disable-next-line no-fallthrough
         case 2:
-            return twoAxis;
+            if (airframe === 'A380_842') {
+                return twoAxisA380;
+            }
+            return twoAxisA320;
         case 1:
         default:
             return oneAxis;
@@ -326,16 +347,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                         </div>
                         <div className="flex flex-row items-center justify-center space-x-4">
                             <div>{t('Settings.ThrottleConfig.IndependentAxis')}</div>
-                            {numberOfThrottles === 4 ? (
-                                axisSelectGroup
-                            ) : (
-                                <Toggle
-                                    value={axisNum >= 2}
-                                    onToggle={(state) => {
-                                        setAxisNum(state ? 2 : 1);
-                                    }}
-                                />
-                            )}
+                            {axisSelectGroup}
                         </div>
                     </div>
                     {getAxis()}
