@@ -25,6 +25,7 @@ use systems::{
             AutobrakeDecelerationGovernor, AutobrakeMode, AutobrakePanel,
             BrakeAccumulatorCharacteristics, BrakeCircuit, BrakeCircuitController,
         },
+        bypass_pin::BypassPin,
         cargo_doors::{CargoDoor, HydraulicDoorController},
         flap_slat::FlapSlatAssembly,
         landing_gear::{GearGravityExtension, GearSystemController, HydraulicGearSystem},
@@ -35,8 +36,7 @@ use systems::{
             LinearActuator, LinearActuatorCharacteristics, LinearActuatorMode,
         },
         nose_steering::{
-            Pushback, SteeringActuator, SteeringAngleLimiter, SteeringController,
-            SteeringRatioToAngle,
+            SteeringActuator, SteeringAngleLimiter, SteeringController, SteeringRatioToAngle,
         },
         pumps::PumpCharacteristics,
         pushback::PushbackTug,
@@ -1551,6 +1551,7 @@ pub(super) struct A380Hydraulic {
     green_electric_aux_pump_controller: A380AuxiliaryPumpController,
 
     pushback_tug: PushbackTug,
+    bypass_pin: BypassPin,
 
     braking_circuit_norm: BrakeCircuit,
     braking_circuit_altn: BrakeCircuit,
@@ -1800,6 +1801,7 @@ impl A380Hydraulic {
             ),
 
             pushback_tug: PushbackTug::new(context),
+            bypass_pin: BypassPin::new(context),
 
             braking_circuit_norm: BrakeCircuit::new(
                 context,
@@ -2020,7 +2022,7 @@ impl A380Hydraulic {
 
     #[cfg(test)]
     fn nose_wheel_steering_pin_is_inserted(&self) -> bool {
-        self.pushback_tug.is_nose_wheel_steering_pin_inserted()
+        self.bypass_pin.is_nose_wheel_steering_pin_inserted()
     }
 
     #[cfg(test)]
@@ -2214,6 +2216,7 @@ impl A380Hydraulic {
             self.yellow_circuit.system_section(),
             &self.brake_steer_computer,
             &self.pushback_tug,
+            &self.bypass_pin,
         );
 
         // Process brake logic (which circuit brakes) and send brake demands (how much)
@@ -2229,6 +2232,7 @@ impl A380Hydraulic {
         );
 
         self.pushback_tug.update(context);
+        self.bypass_pin.update(&self.pushback_tug);
 
         self.braking_force.update_forces(
             context,
@@ -2236,7 +2240,7 @@ impl A380Hydraulic {
             &self.braking_circuit_altn,
             engine1,
             engine2,
-            &self.pushback_tug,
+            &self.bypass_pin,
         );
 
         self.slats_flaps_complex
@@ -2277,7 +2281,7 @@ impl A380Hydraulic {
             context,
             &self.forward_cargo_door_controller,
             &self.aft_cargo_door_controller,
-            &self.pushback_tug,
+            &self.bypass_pin,
             overhead_panel,
         );
     }
@@ -2885,6 +2889,7 @@ impl SimulationElement for A380Hydraulic {
         self.aft_cargo_door.accept(visitor);
 
         self.pushback_tug.accept(visitor);
+        self.bypass_pin.accept(visitor);
 
         self.green_circuit.accept(visitor);
         self.yellow_circuit.accept(visitor);
@@ -3443,14 +3448,14 @@ impl A380ElectricPumpAutoLogic {
         context: &UpdateContext,
         forward_cargo_door_controller: &HydraulicDoorController,
         aft_cargo_door_controller: &HydraulicDoorController,
-        pushback_tug: &PushbackTug,
+        bypass_pin: &BypassPin,
         overhead: &A380HydraulicOverheadPanel,
     ) {
         self.update_auto_run_logic(
             context,
             forward_cargo_door_controller,
             aft_cargo_door_controller,
-            pushback_tug,
+            bypass_pin,
         );
 
         self.select_pump_in_use(overhead);
@@ -3461,7 +3466,7 @@ impl A380ElectricPumpAutoLogic {
         context: &UpdateContext,
         forward_cargo_door_controller: &HydraulicDoorController,
         aft_cargo_door_controller: &HydraulicDoorController,
-        pushback_tug: &PushbackTug,
+        bypass_pin: &BypassPin,
     ) {
         self.cargo_door_in_operation_previous = self.is_required_for_cargo_door_operation.output();
 
@@ -3475,7 +3480,7 @@ impl A380ElectricPumpAutoLogic {
             self.is_required_for_body_steering_operation.output();
 
         self.is_required_for_body_steering_operation
-            .update(context, pushback_tug.is_nose_wheel_steering_pin_inserted());
+            .update(context, bypass_pin.is_nose_wheel_steering_pin_inserted());
     }
 
     fn select_pump_in_use(&mut self, overhead: &A380HydraulicOverheadPanel) {
@@ -4179,7 +4184,7 @@ impl A380BrakingForce {
         altn_brakes: &BrakeCircuit,
         engine1: &impl Engine,
         engine2: &impl Engine,
-        pushback_tug: &PushbackTug,
+        bypass_pin: &BypassPin,
     ) {
         // Base formula for output force is output_force[0:1] = 50 * sqrt(current_pressure) / Max_brake_pressure
         // This formula gives a bit more punch for lower brake pressures (like 1000 psi alternate braking), as linear formula
@@ -4201,7 +4206,7 @@ impl A380BrakingForce {
 
         self.correct_with_flaps_state(context);
 
-        self.update_chocks_braking(context, engine1, engine2, pushback_tug);
+        self.update_chocks_braking(context, engine1, engine2, bypass_pin);
     }
 
     fn correct_with_flaps_state(&mut self, context: &UpdateContext) {
@@ -4231,12 +4236,12 @@ impl A380BrakingForce {
         context: &UpdateContext,
         engine1: &impl Engine,
         engine2: &impl Engine,
-        pushback_tug: &PushbackTug,
+        bypass_pin: &BypassPin,
     ) {
         let chocks_on_wheels = context.is_on_ground()
             && engine1.corrected_n1().get::<percent>() < 3.5
             && engine2.corrected_n1().get::<percent>() < 3.5
-            && !pushback_tug.is_nose_wheel_steering_pin_inserted()
+            && !bypass_pin.is_nose_wheel_steering_pin_inserted()
             && !self.is_light_beacon_on;
 
         if self.is_chocks_enabled && chocks_on_wheels {

@@ -16,6 +16,8 @@ use uom::si::{
     volume::gallon,
 };
 
+use super::bypass_pin::BypassPin;
+
 pub trait Pushback {
     fn is_nose_wheel_steering_pin_inserted(&self) -> bool;
     fn steering_angle(&self) -> Angle;
@@ -156,8 +158,9 @@ impl SteeringActuator {
         section_pressure: &impl SectionPressure,
         steering_controller: &impl SteeringController,
         pushback_tug: &impl Pushback,
+        bypass_pin: &BypassPin,
     ) {
-        if !pushback_tug.is_nose_wheel_steering_pin_inserted() {
+        if !bypass_pin.is_nose_wheel_steering_pin_inserted() {
             let limited_requested_angle = steering_controller
                 .requested_position()
                 .min(self.max_half_angle)
@@ -170,7 +173,7 @@ impl SteeringActuator {
             self.update_speed_position_during_pushback(pushback_tug);
         }
 
-        self.update_flow(context, pushback_tug);
+        self.update_flow(context, bypass_pin);
     }
 
     fn update_final_speed_position(&mut self, context: &UpdateContext) {
@@ -238,8 +241,8 @@ impl SteeringActuator {
         self.nominal_speed * slowing_coefficient
     }
 
-    fn update_flow(&mut self, context: &UpdateContext, pushback_tug: &impl Pushback) {
-        if !pushback_tug.is_nose_wheel_steering_pin_inserted() {
+    fn update_flow(&mut self, context: &UpdateContext, bypass_pin: &BypassPin) {
+        if !bypass_pin.is_nose_wheel_steering_pin_inserted() {
             let angular_position_delta_abs = Angle::new::<radian>(
                 self.current_speed.output().get::<radian_per_second>().abs()
                     * context.delta_as_secs_f64(),
@@ -380,17 +383,21 @@ mod tests {
         pressure: TestHydraulicSection,
 
         pushback: TestPushBack,
+
+        bypass_pin: BypassPin,
     }
     impl TestAircraft {
-        fn new(steering_actuator: SteeringActuator) -> Self {
+        fn new(context: &mut InitContext) -> Self {
             Self {
-                steering_actuator,
+                steering_actuator: steering_actuator(context),
 
                 controller: TestSteeringController::new(),
 
                 pressure: TestHydraulicSection::default(),
 
                 pushback: TestPushBack::new(),
+
+                bypass_pin: BypassPin::new(context),
             }
         }
 
@@ -412,11 +419,14 @@ mod tests {
     }
     impl Aircraft for TestAircraft {
         fn update_after_power_distribution(&mut self, context: &UpdateContext) {
+            self.bypass_pin.update(&self.pushback);
+
             self.steering_actuator.update(
                 context,
                 &self.pressure,
                 &self.controller,
                 &self.pushback,
+                &self.bypass_pin,
             );
 
             println!(
@@ -433,6 +443,7 @@ mod tests {
     }
     impl SimulationElement for TestAircraft {
         fn accept<T: SimulationElementVisitor>(&mut self, visitor: &mut T) {
+            self.bypass_pin.accept(visitor);
             self.steering_actuator.accept(visitor);
             visitor.visit(self);
         }
@@ -440,8 +451,7 @@ mod tests {
 
     #[test]
     fn writes_its_states() {
-        let mut test_bed =
-            SimulationTestBed::new(|context| TestAircraft::new(steering_actuator(context)));
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.run();
 
@@ -450,8 +460,7 @@ mod tests {
 
     #[test]
     fn init_with_zero_angle() {
-        let mut test_bed =
-            SimulationTestBed::new(|context| TestAircraft::new(steering_actuator(context)));
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         let actuator_position_init = test_bed.query(|a| a.steering_actuator.position_feedback());
 
@@ -468,8 +477,7 @@ mod tests {
 
     #[test]
     fn steering_not_moving_without_pressure() {
-        let mut test_bed =
-            SimulationTestBed::new(|context| TestAircraft::new(steering_actuator(context)));
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         let actuator_position_init = test_bed.query(|a| a.steering_actuator.position_feedback());
         test_bed.command(|a| a.set_pressure(Pressure::new::<psi>(0.)));
@@ -494,8 +502,7 @@ mod tests {
 
     #[test]
     fn steering_not_moving_with_pushback_pin_inserted() {
-        let mut test_bed =
-            SimulationTestBed::new(|context| TestAircraft::new(steering_actuator(context)));
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         let actuator_position_init = test_bed.query(|a| a.steering_actuator.position_feedback());
         test_bed.command(|a| a.set_pressure(Pressure::new::<psi>(3000.)));
@@ -521,8 +528,7 @@ mod tests {
 
     #[test]
     fn steering_driven_by_pushback_angle_when_pushing_back() {
-        let mut test_bed =
-            SimulationTestBed::new(|context| TestAircraft::new(steering_actuator(context)));
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.command(|a| a.set_pressure(Pressure::new::<psi>(3000.)));
         test_bed.command(|a| a.command_steer_angle(Angle::new::<degree>(90.)));
@@ -539,8 +545,7 @@ mod tests {
 
     #[test]
     fn steering_moving_with_pressure_to_max_pos_less_than_5s() {
-        let mut test_bed =
-            SimulationTestBed::new(|context| TestAircraft::new(steering_actuator(context)));
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.command(|a| a.set_pressure(Pressure::new::<psi>(3000.)));
         test_bed.command(|a| a.command_steer_angle(Angle::new::<degree>(90.)));
@@ -573,8 +578,7 @@ mod tests {
 
     #[test]
     fn steering_stops_at_target_position() {
-        let mut test_bed =
-            SimulationTestBed::new(|context| TestAircraft::new(steering_actuator(context)));
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.command(|a| a.set_pressure(Pressure::new::<psi>(3000.)));
         test_bed.command(|a| a.command_steer_angle(Angle::new::<degree>(20.)));
@@ -589,8 +593,7 @@ mod tests {
 
     #[test]
     fn steering_direction_change_is_smooth() {
-        let mut test_bed =
-            SimulationTestBed::new(|context| TestAircraft::new(steering_actuator(context)));
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         test_bed.command(|a| a.set_pressure(Pressure::new::<psi>(3000.)));
         test_bed.command(|a| a.command_steer_angle(Angle::new::<degree>(90.)));
@@ -610,8 +613,7 @@ mod tests {
 
     #[test]
     fn steering_from_rudder_moving_only_by_6_deg_at_20_knot() {
-        let mut test_bed =
-            SimulationTestBed::new(|context| TestAircraft::new(steering_actuator(context)));
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         let angle_limiter = pedal_speed_angle_limiter();
         let input_map = pedal_input_angle();
@@ -648,8 +650,7 @@ mod tests {
 
     #[test]
     fn steering_tiller_handle_20_degrees_requests_only_4_degrees() {
-        let mut test_bed =
-            SimulationTestBed::new(|context| TestAircraft::new(steering_actuator(context)));
+        let mut test_bed = SimulationTestBed::new(TestAircraft::new);
 
         let angle_limiter = tiller_speed_angle_limiter();
         let input_map = tiller_input_angle();
