@@ -14,19 +14,35 @@ import { PromptModal, useModals } from '../../UtilComponents/Modals/Modals';
 import { BaseThrottleConfig } from './BaseThrottleConfig';
 import { ThrottleSimvar } from './ThrottleSimVar';
 
+/**
+ * The throttle config component props
+ * @param isShown - if the component is shown
+ * @param onClose - the function to call when the component is closed
+ */
 interface ThrottleConfigProps {
     isShown: boolean,
     onClose: () => void,
 }
 
+/**
+ * The throttle config component is used to configure the throttle mappings in the EFB.
+ * It is flexible and can be used for 1, 2 or 4 axis for the A320 (2 throttles) and A380 (4 throttles).
+ *
+ * The current implementation is a refactor from the initial A320-only implementation which was not
+ * intended to be used for the A380. It might be worth to refactor this component to be more generic
+ * and clean up the code.
+ *
+ * @see ThrottleConfigProps
+ * @constructor
+ */
 export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
-    const [axisNum, setAxisNum] = usePersistentNumberProperty('THROTTLE_AXIS', 2);
+    const [airframe] = useState(getAirframeType());
+
+    const [axisNum, setAxisNum] = usePersistentNumberProperty('THROTTLE_AXIS', airframe === 'A380_842' ? 4 : 2);
 
     const [selectedDetent, setSelectedDetent] = useState(2);
     const [validConfig, setValidConfig] = useState(true);
     const [validationError, setValidationError] = useState<string>();
-
-    const [airframe] = useState(getAirframeType());
 
     const [reverserOnAxis1, setReverserOnAxis1] = useSimVar('L:A32NX_THROTTLE_MAPPING_USE_REVERSE_ON_AXIS:1', 'number', 1000);
     const [, setReverserOnAxis2] = useSimVar('L:A32NX_THROTTLE_MAPPING_USE_REVERSE_ON_AXIS:2', 'number', 1000);
@@ -46,7 +62,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
     // the number of throttles that are used in the aircraft (2 or 4)
     const numberOfThrottles = getAirframeType() === 'A380_842' ? 4 : 2;
 
-    // simvars for each virtual throttle
+    // simvars for each virtual throttle (we define 4 even for the A320 and ignore 3 + 4)
     const throttleOneSimvars: Array<ThrottleSimvar> = [
         new ThrottleSimvar('Reverse Full', 'L:A32NX_THROTTLE_MAPPING_REVERSE_', 1),
         new ThrottleSimvar('Reverse Idle', 'L:A32NX_THROTTLE_MAPPING_REVERSE_IDLE_', 1),
@@ -232,6 +248,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
         </div>
     );
 
+    // A320 uses axis 1 for throttle 1 and axis 2 for throttle 2
     const twoAxisA320 = (
         <div className="mx-32 flex flex-row">
             <BaseThrottleConfig
@@ -254,6 +271,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
         </div>
     );
 
+    // A380 uses axis 1 for throttle 1 + 2 and axis 2 for throttle 3 + 4
     const twoAxisA380 = (
         <div className="mx-32 flex flex-row">
             <BaseThrottleConfig
