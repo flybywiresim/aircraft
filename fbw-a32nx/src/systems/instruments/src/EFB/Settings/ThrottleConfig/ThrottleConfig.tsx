@@ -4,9 +4,8 @@
 /* eslint-disable max-len */
 import React, { useEffect, useState } from 'react';
 import { usePersistentNumberProperty, useSimVar } from '@flybywiresim/fbw-sdk';
-import { ExclamationCircleFill, Arrow90degLeft } from 'react-bootstrap-icons';
+import { ExclamationCircleFill } from 'react-bootstrap-icons';
 import { getAirframeType } from 'instruments/src/EFB/Efb';
-import { Warning } from 'postcss';
 import { t } from '../../translation';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
 import { SelectGroup, SelectItem, VerticalSelectGroup } from '../../UtilComponents/Form/Select';
