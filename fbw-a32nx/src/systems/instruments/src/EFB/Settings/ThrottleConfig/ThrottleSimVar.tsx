@@ -8,9 +8,9 @@ export class ThrottleSimvar {
 
     technicalName: string;
 
-    hiValue;
+    hiValue: any[];
 
-    lowValue;
+    lowValue: any[];
 
     getHiGetter = () => this.hiValue[0]
 

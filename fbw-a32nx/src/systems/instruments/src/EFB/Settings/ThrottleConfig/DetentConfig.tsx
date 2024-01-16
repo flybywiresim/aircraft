@@ -24,7 +24,9 @@ export const DetentConfig: React.FC<Props> = (props: Props) => {
     const [deadZone, setDeadZone] = useState(Math.abs(props.upperBoundDetentGetter - props.lowerBoundDetentGetter) / 2);
     const [previousMode, setPreviousMode] = useState(props.expertMode);
 
-    const setFromTo = (throttle1Position, settingLower, settingUpper, deadZone: number, overrideValue?: string) => {
+    // sets the throttle vars to the current throttle position + deadzone for each given throttle
+    // multiple throttles can be set at once to have mappings with less axis than throttles (e.g. 2 axis for 4 throttles)
+    const setFromTo = (throttle1Position: any, settingLower: any[], settingUpper: any[], deadZone: number, overrideValue?: string) => {
         const newSetting = overrideValue || throttle1Position;
         settingLower.forEach((f) => f(newSetting - deadZone < -1 ? -1 : newSetting - deadZone));
         settingUpper.forEach((f) => f(newSetting + deadZone > 1 ? 1 : newSetting + deadZone));
@@ -136,6 +138,8 @@ export const DetentConfig: React.FC<Props> = (props: Props) => {
         </div>
     );
 };
+
+// this is a dummy component that is used to display the detent config without the ability to change it
 export const DummyDetentConfig: React.FC<Props> = (props: Props) => (
     <div className="flex shrink-0 flex-col items-center justify-between overflow-hidden text-white">
         <div className="h-64">

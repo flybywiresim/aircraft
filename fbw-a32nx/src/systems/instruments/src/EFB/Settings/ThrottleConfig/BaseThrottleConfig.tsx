@@ -8,11 +8,24 @@ import { t } from '../../translation';
 import { DetentConfig, DummyDetentConfig } from './DetentConfig';
 import { ThrottleSimvar } from './ThrottleSimVar';
 
+/**
+ * BaseThrottleConfigProps are the props for the BaseThrottleConfig component.
+ * @param className             css class pass through
+ * @param axisNumber            number of the current axis
+ * @param numberOfAxis          number of axis that are mapped
+ * @param numberOfThrottles     number of throttles that are mapped
+ * @param throttleSimvarsSet1   array of throttle simvars to map the axis values to
+ * @param throttleSimvarsSet2   array of throttle simvars to map the axis values to
+ * @param throttleSimvarsSet3   array of throttle simvars to map the axis values to
+ * @param throttleSimvarsSet4   array of throttle simvars to map the axis values to
+ * @param activeDetent          currently active detent
+ * @param reverseDisabled       boolean to disable reverse detent for the axis
+ */
 interface BaseThrottleConfigProps {
     className?: string;
     axisNumber: number;
-    numberOfThrottles: number;
     numberOfAxis: number;
+    numberOfThrottles: number;
     throttleSimvarsSet1?: ThrottleSimvar[];
     throttleSimvarsSet2?: ThrottleSimvar[];
     throttleSimvarsSet3?: ThrottleSimvar[];
@@ -25,16 +38,7 @@ interface BaseThrottleConfigProps {
  * BaseThrottleConfig is the base component for the throttle configuration of one axis.
  * The term axis is used for available hardware axis on the throttle controller.
  * The term throttles are used for the number of throttles that are used in the aircraft.
- * @param className
- * @param axisNumber            number of the current axis
- * @param numberOfAxis          number of axis that are mapped
- * @param numberOfThrottles     number of throttles that are mapped
- * @param throttleSimvarsSet1   array of throttle simvars to map the axis values to
- * @param throttleSimvarsSet2   array of throttle simvars to map the axis values to
- * @param throttleSimvarsSet3   array of throttle simvars to map the axis values to
- * @param throttleSimvarsSet4   array of throttle simvars to map the axis values to
- * @param activeDetent          currently active detent
- * @param reverseDisabled       boolean to disable reverse detent for the axis
+ * @see BaseThrottleConfigProps
  * @constructor
  */
 export const BaseThrottleConfig: FC<BaseThrottleConfigProps> = ({
@@ -70,7 +74,7 @@ export const BaseThrottleConfig: FC<BaseThrottleConfigProps> = ({
     if (numberOfThrottles === 2) {
         // case when only one hardware axis is mapped
         if (numberOfAxis === 1) {
-            throttleNumberString = t('Settings.ThrottleConfig.AxisDescription', [{ axis: '1' }, { throttles: '1 + 2' }]);
+            throttleNumberString = t('Settings.ThrottleConfig.AxisDescription', [{ axis: axisNumber.toString() }, { throttles: '1 + 2' }]);
             // all two throttles are mapped from one axis
             upperBoundDetentSetter = [
                 throttleSimvarsSet1[activeDetent].getHiSetter(),
@@ -105,7 +109,7 @@ export const BaseThrottleConfig: FC<BaseThrottleConfigProps> = ({
     else if (numberOfThrottles === 4) {
         // case when only one hardware axis is mapped
         if (numberOfAxis === 1) {
-            throttleNumberString = t('Settings.ThrottleConfig.AxisDescription', [{ axis: '1' }, { throttles: '1 + 2 + 3 + 4' }]);
+            throttleNumberString = t('Settings.ThrottleConfig.AxisDescription', [{ axis: axisNumber.toString() }, { throttles: '1 + 2 + 3 + 4' }]);
             // all four throttles are mapped from one axis
             upperBoundDetentSetter = [
                 throttleSimvarsSet1[activeDetent].getHiSetter(),
@@ -123,9 +127,9 @@ export const BaseThrottleConfig: FC<BaseThrottleConfigProps> = ({
             upperBoundDetentGetter = throttleSimvarsSet1[activeDetent].getHiGetter();
             // eslint-disable-next-line brace-style
         }
-        // case when two axis are mapped to throttle 1 and 2
-        else if (numberOfAxis === 2 && !throttleSimvarsSet3 && !throttleSimvarsSet4) {
-            throttleNumberString = t('Settings.ThrottleConfig.AxisDescription', [{ axis: '1' }, { throttles: '1 + 2' }]);
+        // case when two axis are mapped and this setting is for axis 1 for throttle 1 and 2
+        else if (numberOfAxis === 2 && axisNumber === 1) {
+            throttleNumberString = t('Settings.ThrottleConfig.AxisDescription', [{ axis: axisNumber.toString() }, { throttles: '1 + 2' }]);
             // throttle 1 and 2 are mapped from axis 1
             upperBoundDetentSetter = [
                 throttleSimvarsSet1[activeDetent].getHiSetter(),
@@ -139,9 +143,9 @@ export const BaseThrottleConfig: FC<BaseThrottleConfigProps> = ({
             upperBoundDetentGetter = throttleSimvarsSet1[activeDetent].getHiGetter();
             // eslint-disable-next-line brace-style
         }
-        // case when two axis are mapped to throttle 3 and 4
-        else if (numberOfAxis === 2 && throttleSimvarsSet3 && throttleSimvarsSet4) {
-            throttleNumberString = t('Settings.ThrottleConfig.AxisDescription', [{ axis: '2' }, { throttles: '3 + 4' }]);
+        // case when two axis are mapped and this setting is axis 2 for throttle 3 and 4
+        else if (numberOfAxis === 2 && axisNumber === 2) {
+            throttleNumberString = t('Settings.ThrottleConfig.AxisDescription', [{ axis: axisNumber.toString() }, { throttles: '3 + 4' }]);
             // throttle 3 and 4 are mapped from axis 2
             upperBoundDetentSetter = [
                 throttleSimvarsSet3[activeDetent].getHiSetter(),
@@ -189,6 +193,7 @@ export const BaseThrottleConfig: FC<BaseThrottleConfigProps> = ({
         />
     );
 
+    // dummy detent is used to only display the current throttle position with no setting options
     const dummyDetent = (
         <DummyDetentConfig
             key={activeDetent}
