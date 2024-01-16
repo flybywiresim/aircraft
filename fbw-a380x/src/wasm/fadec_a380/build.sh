@@ -17,7 +17,7 @@ else
   CLANG_ARGS="-flto -O2 -DNDEBUG"
 fi
 
-set -ex
+set -e
 
 # create temporary folder for o files
 mkdir -p "${DIR}/obj"
