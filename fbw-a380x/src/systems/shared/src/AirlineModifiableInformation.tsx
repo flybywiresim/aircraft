@@ -21,10 +21,10 @@ export const AirlineModifiableInformation: AmiCollection = {
 };
 
 type AmiCollection = {
-   [key: string]: AMI;
+   [key: string]: Ami;
 };
 
-type AMI = {
+type Ami = {
     thrRedAlt: Feet, // ft AGL, thrust reduction altitude
     accAlt: Feet, // ft AGL, acceleration altitude
     eoAccAlt: Feet, // ft AGL, engine out acceleration altitude

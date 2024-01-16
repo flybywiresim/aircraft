@@ -10,6 +10,7 @@ import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { TopTabNavigator, TopTabNavigatorPage } from 'instruments/src/MFD/pages/common/TopTabNavigator';
 import { Button } from 'instruments/src/MFD/pages/common/Button';
+import { AirlineModifiableInformation } from '@shared/AirlineModifiableInformation';
 
 interface MfdFmsDataStatusProps extends AbstractMfdPageProps {
 }
@@ -154,11 +155,15 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
                                     <div style="border: 1px solid lightgrey; padding: 10px; display: flex; flex-direction: column;">
                                         <div style="margin-bottom: 10px;">
                                             <span class="mfd-label" style="margin-right: 10px;">IDLE</span>
-                                            <span class="mfd-value-green bigger">+0.0</span>
+                                            <span class="mfd-value-green bigger">
+                                                {AirlineModifiableInformation['EK'].idleFactor >= 0 ? `+${AirlineModifiableInformation['EK'].idleFactor}` : `-${AirlineModifiableInformation['EK'].idleFactor}`}
+                                            </span>
                                         </div>
                                         <div>
                                             <span class="mfd-label" style="margin-right: 10px;">PERF</span>
-                                            <span class="mfd-value-green bigger">+0.0</span>
+                                            <span class="mfd-value-green bigger">
+                                                {AirlineModifiableInformation['EK'].idleFactor >= 0 ? `+${AirlineModifiableInformation['EK'].perfFactor}` : `-${AirlineModifiableInformation['EK'].perfFactor}`}
+                                            </span>
                                         </div>
                                     </div>
                                     <div style="margin-top: 10px; display: flex; justify-content: center;">
