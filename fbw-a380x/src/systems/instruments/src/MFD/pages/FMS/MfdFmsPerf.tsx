@@ -29,6 +29,7 @@ import {
     WindSpeedFormat,
 } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { Mmo, Vmo, maxCertifiedAlt } from '@shared/PerformanceConstants';
+import { AirlineModifiableInformation } from '@shared/AirlineModifiableInformation';
 import { ConfirmationDialog } from 'instruments/src/MFD/pages/common/ConfirmationDialog';
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { FmgcFlightPhase } from '@shared/flightphase';
@@ -62,11 +63,11 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
     private transAltIsPilotEntered = Subject.create<boolean>(false);
 
-    private thrRedAlt = Subject.create<number>(1080);
+    private thrRedAlt = Subject.create<number>(AirlineModifiableInformation['EK'].thrRedAlt);
 
     private thrRedAltIsPilotEntered = Subject.create<boolean>(false);
 
-    private accelAlt = Subject.create<number>(1080);
+    private accelAlt = Subject.create<number>(AirlineModifiableInformation['EK'].accAlt);
 
     private accelRedAltIsPilotEntered = Subject.create<boolean>(false);
 
@@ -166,7 +167,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
     private toSelectedAntiIceIndex = Subject.create(0);
 
-    private eoAccelAlt = Subject.create(1_500);
+    private eoAccelAlt = Subject.create(AirlineModifiableInformation['EK'].eoAccAlt);
 
     private eoAccelAltIsPilotEntered = Subject.create<boolean>(false);
 

@@ -13,6 +13,7 @@ import { maxAltnFuel, maxBlockFuel, maxFinalFuel, maxJtsnGw, maxRteRsvFuel, maxR
 import { FmsPage } from 'instruments/src/MFD/pages/common/FmsPage';
 import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { FmgcFlightPhase } from '@shared/flightphase';
+import { AirlineModifiableInformation } from '@shared/AirlineModifiableInformation';
 
 interface MfdFmsFuelLoadProps extends AbstractMfdPageProps {
 }
@@ -298,7 +299,7 @@ export class MfdFmsFuelLoad extends FmsPage<MfdFmsFuelLoadProps> {
                         <div style="margin-bottom: 20px;">
                             <InputField<number>
                                 disabled={Subject.create(true)}
-                                dataEntryFormat={new WeightFormat(Subject.create(0), Subject.create(maxRteRsvFuel))}
+                                dataEntryFormat={new WeightFormat(Subject.create(AirlineModifiableInformation['EK'].rsvMin), Subject.create(AirlineModifiableInformation['EK'].rsvMax))}
                                 dataHandlerDuringValidation={async (v) => this.props.fmService.fmgc.data.routeReserveFuelWeightPilotEntry.set(v || undefined)}
                                 enteredByPilot={this.props.fmService.fmgc.data.routeReserveFuelIsPilotEntered}
                                 value={this.props.fmService.fmgc.data.routeReserveFuelWeight}

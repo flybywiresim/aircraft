@@ -11,6 +11,7 @@ import { MappedSubject, Subject } from '@microsoft/msfs-sdk';
 import { FlightPlanIndex } from '@fmgc/flightplanning/new/FlightPlanManager';
 import { Arinc429Word, Knots, Pound, Runway, Units } from '@flybywiresim/fbw-sdk';
 import { Feet } from 'msfs-geo';
+import { AirlineModifiableInformation } from '@shared/AirlineModifiableInformation';
 
 export enum TakeoffPowerSetting {
     TOGA = 0,
@@ -68,7 +69,7 @@ export class FmgcData {
 
     public readonly taxiFuelPilotEntry = Subject.create<number>(undefined); // in kg
 
-    public readonly taxiFuel = this.taxiFuelPilotEntry.map((it) => ((it === undefined) ? AmiValues.taxiFuelDefault : it)); // in kg
+    public readonly taxiFuel = this.taxiFuelPilotEntry.map((it) => ((it === undefined) ? AirlineModifiableInformation['EK'].taxiFuel : it)); // in kg
 
     public readonly taxiFuelIsPilotEntered = this.taxiFuelPilotEntry.map((it) => it !== undefined);
 
@@ -80,7 +81,7 @@ export class FmgcData {
 
     public readonly routeReserveFuelPercentagePilotEntry = Subject.create<number>(undefined); // in percent
 
-    public readonly routeReserveFuelPercentage = this.routeReserveFuelPercentagePilotEntry.map((it) => ((it === undefined) ? undefined : it)); // in percent
+    public readonly routeReserveFuelPercentage = this.routeReserveFuelPercentagePilotEntry.map((it) => ((it === undefined) ? AirlineModifiableInformation['EK'].rteRsv : it)); // in percent
 
     public readonly routeReserveFuelIsPilotEntered = MappedSubject.create((
         [fuel, time],
@@ -231,11 +232,6 @@ export class FmgcData {
      * Estimated take-off time, in seconds. Displays as HH:mm:ss
      */
     public readonly estimatedTakeoffTime = Subject.create<number>(undefined);
-}
-
-// Collection of airline specific configuration options
-class AmiValues {
-    static taxiFuelDefault: 800; // kilograms
 }
 
 /**
