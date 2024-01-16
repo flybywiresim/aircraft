@@ -1,6 +1,45 @@
+// TODO remove this once Rust implementation is up and running
 import { Arinc429Word } from '@flybywiresim/fbw-sdk';
 
 export class A32NX_FWC {
+    toConfigTest: any;
+    flightPhase: any;
+    ldgMemo: any;
+    toMemo: any;
+    gndMemo: NXLogic_ConfirmNode;
+    eng1OrTwoRunningConf: NXLogic_ConfirmNode;
+    speedAbove80KtsMemo: NXLogic_MemoryNode;
+    mctMemo: NXLogic_ConfirmNode;
+    firePBOutConf: NXLogic_ConfirmNode;
+    firePBOutMemo: NXLogic_TriggeredMonostableNode;
+    firePBClear10: NXLogic_MemoryNode;
+    phase110Memo: NXLogic_TriggeredMonostableNode;
+    phase8GroundMemo: NXLogic_TriggeredMonostableNode;
+    ac80KtsMemo: NXLogic_TriggeredMonostableNode;
+    prevPhase9InvertMemo: NXLogic_TriggeredMonostableNode;
+    eng1Or2TOPowerInvertMemo: NXLogic_TriggeredMonostableNode;
+    phase9Nvm: NXLogic_MemoryNode;
+    prevPhase9: boolean;
+    groundImmediateMemo: NXLogic_TriggeredMonostableNode;
+    phase5Memo: NXLogic_TriggeredMonostableNode;
+    phase67Memo: NXLogic_TriggeredMonostableNode;
+    memoTo_conf01: NXLogic_ConfirmNode;
+    memoTo_memo: NXLogic_MemoryNode;
+    memoLdgMemo_conf01: NXLogic_ConfirmNode;
+    memoLdgMemo_inhibit: NXLogic_MemoryNode;
+    memoLdgMemo_conf02: NXLogic_ConfirmNode;
+    memoLdgMemo_below2000ft: NXLogic_MemoryNode;
+    memoToInhibit_conf01: NXLogic_ConfirmNode;
+    memoLdgInhibit_conf01: NXLogic_ConfirmNode;
+    warningPressed: boolean;
+    cautionPressed: boolean;
+    previousTargetAltitude: number;
+    _wasBellowThreshold: boolean;
+    _wasAboveThreshold: boolean;
+    _wasInRange: boolean;
+    _wasReach200ft: boolean;
+    aircraft: Aircraft;
+
     constructor() {
         // momentary
         this.toConfigTest = null; // WTOCT
@@ -291,7 +330,7 @@ export class A32NX_FWC {
 
         const showInApproach = memo1 && memo2 && this.flightPhase === 6;
 
-        const invalidRadioMemo = this.memoLdgMemo_conf02.write(radioHeight1Invalid && radioHeight2Invalid && gearDownlocked && this.flightPhase === 6);
+        const invalidRadioMemo = this.memoLdgMemo_conf02.write(radioHeight1Invalid && radioHeight2Invalid && gearDownlocked && this.flightPhase === 6, _deltaTime);
 
         this.ldgMemo = showInApproach || invalidRadioMemo || this.flightPhase === 8 || this.flightPhase === 7;
         SimVar.SetSimVarValue('L:A32NX_FWC_LDGMEMO', 'Bool', this.ldgMemo);
@@ -410,6 +449,10 @@ export class A32NX_FWC {
  * after the detection. It is not retriggerable, so a rising/falling edge within t will not reset the timer.
  */
 class NXLogic_TriggeredMonostableNode {
+    t: any;
+    risingEdge: boolean;
+    _timer: number;
+    _previousValue: any;
     constructor(t, risingEdge = true) {
         this.t = t;
         this.risingEdge = risingEdge;
@@ -455,6 +498,11 @@ class NXLogic_TriggeredMonostableNode {
  * and the original signal will be emitted again.
  */
 class NXLogic_ConfirmNode {
+    t: any;
+    risingEdge: boolean;
+    _timer: number;
+    _previousInput: boolean;
+    _previousOutput: boolean;
     constructor(t, risingEdge = true) {
         this.t = t;
         this.risingEdge = risingEdge;
@@ -516,6 +564,9 @@ class NXLogic_ConfirmNode {
  * value will persist even when power is lost and subsequently restored.
  */
 class NXLogic_MemoryNode {
+    setStar: boolean;
+    nvm: boolean;
+    _value: boolean;
     /**
      * @param setStar Whether set has precedence over reset if both are applied simultaneously.
      * @param nvm Whether the is non-volatile and will be kept even when power is lost.
