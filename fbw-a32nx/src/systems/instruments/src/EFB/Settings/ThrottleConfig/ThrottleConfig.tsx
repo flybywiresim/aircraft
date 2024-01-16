@@ -4,15 +4,16 @@
 /* eslint-disable max-len */
 import React, { useEffect, useState } from 'react';
 import { usePersistentNumberProperty, useSimVar } from '@flybywiresim/fbw-sdk';
-import { ExclamationCircleFill } from 'react-bootstrap-icons';
+import { ExclamationCircleFill, Arrow90degLeft } from 'react-bootstrap-icons';
 import { getAirframeType } from 'instruments/src/EFB/Efb';
+import { Warning } from 'postcss';
 import { t } from '../../translation';
 import { Toggle } from '../../UtilComponents/Form/Toggle';
 import { SelectGroup, SelectItem, VerticalSelectGroup } from '../../UtilComponents/Form/Select';
+import { PromptModal, useModals } from '../../UtilComponents/Modals/Modals';
 
 import { BaseThrottleConfig } from './BaseThrottleConfig';
 import { ThrottleSimvar } from './ThrottleSimVar';
-import { PromptModal, useModals } from '../../UtilComponents/Modals/Modals';
 
 interface ThrottleConfigProps {
     isShown: boolean,
@@ -40,6 +41,8 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
     const [, defaultsToThrottle] = useSimVar('K:A32NX.THROTTLE_MAPPING_SET_DEFAULTS', 'number', 100);
     const [, syncToThrottle] = useSimVar('K:A32NX.THROTTLE_MAPPING_LOAD_FROM_FILE', 'number', 100);
     const [, applyLocalVar] = useSimVar('K:A32NX.THROTTLE_MAPPING_LOAD_FROM_LOCAL_VARIABLES', 'number', 1000);
+
+    const { showModal } = useModals();
 
     // the number of throttles that are used in the aircraft (2 or 4)
     const numberOfThrottles = getAirframeType() === 'A380_842' ? 4 : 2;
@@ -78,8 +81,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
         new ThrottleSimvar('TOGA', 'L:A32NX_THROTTLE_MAPPING_TOGA_', 4),
     ];
 
-    const { showModal } = useModals();
-
+    // if there is no reverser on axis 1, set the selected detent to idle
     useEffect(() => {
         if (reverserOnAxis1 === 0 && selectedDetent < 2) {
             setSelectedDetent(2);
@@ -89,6 +91,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
         }
     }, [reverserOnAxis1, selectedDetent]);
 
+    // checks if there are any overlaps in the throttle mappings and returns an array of errors
     const getOverlapErrors = (mappingsAxis: ThrottleSimvar[]) => {
         const overlapErrors: string[] = [];
         for (let index = reverserOnAxis1 ? 0 : 2; index < (togaOnAxis1 ? mappingsAxis.length : mappingsAxis.length - 1); index++) {
@@ -103,6 +106,8 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
         return overlapErrors;
     };
 
+    // when a throttle config changes this checks if there are any overlaps in the throttle mappings
+    // and sets the validation error and valid config
     useEffect(() => {
         const errors: string[] = [
             ...getOverlapErrors(throttleOneSimvars),
@@ -318,7 +323,8 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
             if (airframe === 'A380_842') {
                 return fourAxis;
             }
-        // eslint-disable-next-line no-fallthrough
+            console.warn('A320 does not have 4 axis - defaulting to 2 axis');
+            return twoAxisA320;
         case 2:
             if (airframe === 'A380_842') {
                 return twoAxisA380;
@@ -352,6 +358,15 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                     </div>
                     {getAxis()}
                 </div>
+
+                {/* To make sure users map throttles 1+2 to axis 1 and 3+4 to axis 2 and not any other grouping */}
+                {validConfig && numberOfThrottles === 4 && axisNum === 2 && (
+                    <div className="w-full overflow-hidden rounded-md border-2 border-theme-accent">
+                        <h2 className="py-4 text-center">
+                            {t('Settings.ThrottleConfig.FourThrottleWarning')}
+                        </h2>
+                    </div>
+                )}
 
                 {!validConfig && (
                     <div className="w-full overflow-hidden rounded-md border-2 border-theme-accent">
