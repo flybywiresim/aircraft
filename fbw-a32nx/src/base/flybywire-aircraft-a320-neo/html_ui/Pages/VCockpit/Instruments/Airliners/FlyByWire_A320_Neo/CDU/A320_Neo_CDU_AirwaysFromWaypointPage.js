@@ -125,17 +125,11 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
                             const targetPlan = mcdu.flightPlan(forPlan, inAlternate);
 
                             if (value.length > 0) {
-                                const elements = targetPlan.pendingAirways.elements;
-                                const tailElement = elements[elements.length - 1];
-
-                                const lastFix = tailElement ? tailElement.to : targetPlan.legElementAt(prevFpIndex).terminationWaypoint();
-
-                                const airway = await this._getAirway(mcdu, prevFpIndex, tailElement ? tailElement.airway : undefined, lastFix, value).catch(console.error);
-
+                                const airway = await this._getFirstIntersection(mcdu, pendingAirway, prevIcao, value).catch(console.error);
                                 if (airway) {
                                     const result = targetPlan.pendingAirways.thenAirway(airway);
 
-                                    A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(mcdu, reviseIndex, airway, lastIndex, result ? 1 : -1, forPlan, inAlternate);
+                                    A320_Neo_CDU_AirwaysFromWaypointPage.ShowPage(mcdu, reviseIndex, airway, result ? 1 : -1, forPlan, inAlternate);
                                 } else {
                                     mcdu.setScratchpadMessage(NXSystemMessages.awyWptMismatch);
                                     scratchpadCallback();
@@ -206,35 +200,35 @@ class A320_Neo_CDU_AirwaysFromWaypointPage {
      * @param prevAirway {import('msfs-navdata').Airway}
      */
     static async _getFirstIntersection(mcdu, prevAirway, prevAirwayFromIcao, nextAirwayIdent) {
-        const prevIcaos = prevAirway.fixes.map((it) => it.databaseId);
+        const prevAirwayFixes = prevAirway.fixes;
 
-        const prevAirwayStartIndex = prevIcaos.findIndex(icao => icao === prevAirwayFromIcao);
+        const prevAirwayStartIndex = prevAirwayFixes.findIndex(fix => fix.databaseId === prevAirwayFromIcao);
 
         if (prevAirwayStartIndex < 0) {
             throw new Error(`Cannot find waypoint ${icao} in airway ${prevAirway.ident}`);
         }
 
-        for (let i = 0; i < prevIcaos.length; i++) {
-            if ((prevAirwayStartIndex + i) < prevIcaos.length) {
-                const res = await this._getRoute(mcdu, nextAirwayIdent, prevIcaos[prevAirwayStartIndex + i]).catch(console.error);
+        for (let i = 0; i < prevAirwayFixes.length; i++) {
+            if ((prevAirwayStartIndex + i) < prevAirwayFixes.length) {
+                const airway = await this._getRoute(mcdu, nextAirwayIdent, prevAirwayFixes[prevAirwayStartIndex + i]).catch(console.error);
 
-                if (res) {
-                    return prevIcaos[prevAirwayStartIndex + i].substring(4).trim();
+                if (airway) {
+                    return airway;
                 }
             }
             if ((prevAirwayStartIndex - i) >= 0) {
-                const res = await this._getRoute(mcdu, nextAirwayIdent, prevIcaos[prevAirwayStartIndex - i]).catch(console.error);
+                const airway = await this._getRoute(mcdu, nextAirwayIdent, prevAirwayFixes[prevAirwayStartIndex - i]).catch(console.error);
 
-                if (res) {
-                    return prevIcaos[prevAirwayStartIndex - i].substring(4).trim();
+                if (airway) {
+                    return airway;
                 }
             }
         }
     }
 
-    static async _getRoute(mcdu, value, icao) {
-        const airways = await mcdu.navigationDatabase.searchAirway(value);
-        const matchingAirway = airways.find((it) => it.fixes.some((fix) => fix.databaseId === icao));
+    static async _getRoute(mcdu, airwayName, fixOnAirway) {
+        const airways = await mcdu.navigationDatabase.searchAirway(airwayName, fixOnAirway);
+        const matchingAirway = airways.find((it) => it.fixes.some((fix) => fix.databaseId === fixOnAirway.databaseId));
 
         return matchingAirway;
     }

@@ -14,6 +14,8 @@ import { FlightPlanPerformanceData } from '@fmgc/flightplanning/new/plans/perfor
  * An alternate flight plan shares its origin with the destination of a regular flight plan
  */
 export class AlternateFlightPlan<P extends FlightPlanPerformanceData> extends BaseFlightPlan<P> {
+    override originSegment: AlternateOriginSegment;
+
     constructor(
         index: number,
         private mainFlightPlan: BaseFlightPlan<P>,
@@ -76,12 +78,14 @@ export class AlternateOriginSegment extends OriginSegment {
         super(flightPlan);
     }
 
-    get originAirport(): Airport {
+    override get originAirport(): Airport {
         return this.mainDestinationSegment.destinationAirport;
     }
 
-    clone(forPlan: BaseFlightPlan<FlightPlanPerformanceData>): AlternateOriginSegment {
-        const newSegment = new AlternateOriginSegment(forPlan, this.mainDestinationSegment);
+    clone(forPlan: AlternateFlightPlan<FlightPlanPerformanceData>): AlternateOriginSegment {
+        // Important that we don't pass in `this.mainDestinationSegment` here, since this will be of the old plan.
+        // Instead, pass in `mainDestinationSegment` on the origin of the new plan
+        const newSegment = new AlternateOriginSegment(forPlan, forPlan.originSegment.mainDestinationSegment);
 
         newSegment.strung = this.strung;
         newSegment.allLegs = [...this.allLegs.map((it) => (it.isDiscontinuity === false ? it.clone(newSegment) : it))];

@@ -121,6 +121,8 @@ export class OriginSegment extends FlightPlanSegment {
             const originLeg = FlightPlanLeg.fromAirportAndRunway(this, this.flightPlan.departureSegment.procedure?.ident ?? '', this.originAirport, addRunwayLeg ? this.runway : undefined);
             originLeg.flags |= FlightPlanLegFlags.Origin;
             this.allLegs.push(originLeg);
+
+            this.strung = false;
         }
 
         if (this.runway) {
