@@ -30,8 +30,6 @@ export const SimOptionsPage = () => {
     const [, setRadioReceiverUsageSimVar] = useSimVar('L:A32NX_RADIO_RECEIVER_USAGE_ENABLED', 'number', 0);
     const [wheelChocksEnabled, setWheelChocksEnabled] = usePersistentNumberProperty('MODEL_WHEELCHOCKS_ENABLED', 1);
     const [conesEnabled, setConesEnabled] = usePersistentNumberProperty('MODEL_CONES_ENABLED', 1);
-    const [gsxFuelSyncEnabled] = usePersistentNumberProperty('GSX_FUEL_SYNC', 0);
-    const [gsxPayloadSyncEnabled] = usePersistentNumberProperty('GSX_PAYLOAD_SYNC', 0);
 
     const defaultBaroButtons: ButtonType[] = [
         { name: t('Settings.SimOptions.Auto'), setting: 'AUTO' },
@@ -44,8 +42,6 @@ export const SimOptionsPage = () => {
         { name: t('Settings.SimOptions.LoadOnly'), setting: 'LOAD' },
         { name: t('Settings.SimOptions.Save'), setting: 'SAVE' },
     ];
-
-    const isGSXSyncEnabled = () => !!gsxFuelSyncEnabled || !!gsxPayloadSyncEnabled;
 
     return (
         <>
@@ -83,7 +79,7 @@ export const SimOptionsPage = () => {
                     <SettingItem name={t('Settings.SimOptions.EnableSimBridge')}>
                         <SelectGroup>
                             <SelectItem
-                                className="text-center color-red"
+                                className="color-red text-center"
                                 onSelect={() => setSimbridgeEnabled('AUTO ON')}
                                 selected={simbridgeEnabled === 'AUTO ON' || simbridgeEnabled === 'AUTO OFF'}
 
@@ -105,7 +101,7 @@ export const SimOptionsPage = () => {
                     <SettingItem name="SimBridge Host Machine">
                         <SelectGroup>
                             <SelectItem
-                                className="text-center color-red"
+                                className="color-red text-center"
                                 onSelect={
                                     () => {
                                         setSimbridgeRemoteStatus('local');
@@ -130,7 +126,7 @@ export const SimOptionsPage = () => {
                         && (
                             <div className="pt-2 text-center">
                                 <SimpleInput
-                                    className="text-center w-30"
+                                    className="w-30 text-center"
                                     value={simbridgeIp}
                                     onChange={(event) => {
                                         // Error on empty string
@@ -150,7 +146,7 @@ export const SimOptionsPage = () => {
 
                     <SettingItem name={t('Settings.SimOptions.SimBridgePort')}>
                         <SimpleInput
-                            className="text-center w-30"
+                            className="w-30 text-center"
                             value={simbridgePort}
                             onChange={(event) => {
                                 setSimbridgePort(event.replace(/[^0-9]+/g, ''));
@@ -172,7 +168,7 @@ export const SimOptionsPage = () => {
                         />
                     </SettingItem>
 
-                    <SettingItem name={t('Settings.SimOptions.WheelChocksEnabled')} disabled={isGSXSyncEnabled()}>
+                    <SettingItem name={t('Settings.SimOptions.WheelChocksEnabled')}>
                         <Toggle
                             value={wheelChocksEnabled === 1}
                             onToggle={(value) => {
@@ -181,7 +177,7 @@ export const SimOptionsPage = () => {
                         />
                     </SettingItem>
 
-                    <SettingItem name={t('Settings.SimOptions.ConesEnabled')} disabled={isGSXSyncEnabled()}>
+                    <SettingItem name={t('Settings.SimOptions.ConesEnabled')}>
                         <Toggle
                             value={conesEnabled === 1}
                             onToggle={(value) => {
@@ -193,8 +189,8 @@ export const SimOptionsPage = () => {
                     <SettingItem name={t('Settings.SimOptions.ThrottleDetents')}>
                         <button
                             type="button"
-                            className="py-2.5 px-5 text-theme-body hover:text-theme-highlight bg-theme-highlight
-                                       hover:bg-theme-body rounded-md border-2 border-theme-highlight transition duration-100"
+                            className="text-theme-body hover:text-theme-highlight bg-theme-highlight hover:bg-theme-body border-theme-highlight
+                                       rounded-md border-2 px-5 py-2.5 transition duration-100"
                             onClick={() => setShowThrottleSettings(true)}
                         >
                             {t('Settings.SimOptions.Calibrate')}
