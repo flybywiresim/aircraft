@@ -178,7 +178,8 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
             console.log(`H event: ${eventName}`);
             this.props.fmcService.master?.acInterface.onEvent(eventName);
         });
-        const isCaptainSide = getDisplayIndex() === 2;
+        // const isCaptainSide = getDisplayIndex() === 2;
+        const isCaptainSide = this.props.captOrFo === 'CAPT';
 
         const sub = this.props.bus.getSubscriber<ClockEvents & MfdSimvars>();
 

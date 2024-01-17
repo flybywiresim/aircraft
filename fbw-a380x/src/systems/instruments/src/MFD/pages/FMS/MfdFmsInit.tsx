@@ -156,7 +156,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
 
     private async insertCpnyFpln() {
         this.props.fmcService.master.flightPlanService.uplinkInsert();
-        this.props.fmcService.master.fmgc.data.atcCallsign.set(this.simBriefOfp.callsign);
+        this.props.fmcService.master.fmgc.data.atcCallsign.set(this.simBriefOfp?.callsign ?? null);
 
         // Don't insert weights for now, something seems broken here
         /* this.props.fmService.fmgc.data.blockFuel.set(this.simBriefOfp.units === 'kgs' ? this.simBriefOfp.fuel.planRamp : Units.poundToKilogram(this.simBriefOfp.fuel.planRamp));
@@ -168,10 +168,10 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
         this.props.fmService.fmgc.data.finalFuelWeightPilotEntry.set(this.simBriefOfp.units === 'kgs' ? this.simBriefOfp.fuel.reserve : Units.poundToKilogram(this.simBriefOfp.fuel.reserve));
         */
 
-        this.props.fmcService.master.fmgc.data.paxNumber.set(Number(this.simBriefOfp.weights.passengerCount));
-        this.props.fmcService.master.fmgc.data.tropopausePilotEntry.set(Number(this.simBriefOfp.averageTropopause));
+        this.props.fmcService.master.fmgc.data.paxNumber.set(Number(this.simBriefOfp?.weights?.passengerCount ?? null));
+        this.props.fmcService.master.fmgc.data.tropopausePilotEntry.set(this.simBriefOfp?.averageTropopause ? Number(this.simBriefOfp.averageTropopause) : null);
 
-        this.props.fmcService.master.acInterface.setCruiseFl(this.simBriefOfp.cruiseAltitude / 100);
+        this.props.fmcService.master.acInterface.setCruiseFl(this.simBriefOfp?.cruiseAltitude ? this.simBriefOfp.cruiseAltitude / 100 : null);
 
         this.props.fmcService.master.fmgc.data.cpnyFplnAvailable.set(false);
     }
