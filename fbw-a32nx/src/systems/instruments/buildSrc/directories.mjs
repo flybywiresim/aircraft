@@ -1,3 +1,7 @@
+// Copyright (c) 2021-2023 FlyByWire Simulations
+//
+// SPDX-License-Identifier: GPL-3.0
+
 import os from 'os';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -11,5 +15,3 @@ export const Directories = {
     src: path.join(directoryName, '../..'),
     root: path.join(directoryName, '../../../../..'),
 };
-
-console.log('Using Directories:', Directories);

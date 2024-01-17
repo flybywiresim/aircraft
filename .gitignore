@@ -102,8 +102,9 @@
 # explicit exclusions
 /.env
 node_modules/
-obj/
 target/
+obj/
+cmake-build*/
 *.tgz
 *.wasm
 cmake-build*

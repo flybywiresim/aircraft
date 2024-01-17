@@ -7,6 +7,6 @@ This directory contains the source Rust and C++ files for the WASM modules.
 ```
 - fadec_a320            <c++ src for fadec>
 - fbw_a320	            <c++ src for fbw/ap>
-- flypad-backend        <c++ src for flypad backend>
+- extra-backend-a32nx   <c++ src for backend for flyPad and other extra non-aviation systems>
 - systems       	    <rust src for other systems>
 ```
