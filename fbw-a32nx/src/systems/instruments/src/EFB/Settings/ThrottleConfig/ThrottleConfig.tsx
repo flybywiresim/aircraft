@@ -101,8 +101,8 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
         if (reverserOnAxis1 === 0 && selectedDetent < 2) {
             setSelectedDetent(2);
         }
-        if (togaOnAxis1 === 0 && selectedIndex > 4) {
-            setSelectedIndex(4);
+        if (togaOnAxis1 === 0 && selectedDetent > 4) {
+            setSelectedDetent(4);
         }
     }, [reverserOnAxis1, selectedDetent]);
 
@@ -150,8 +150,8 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
     const setTogaOnAxis = (togaOnAxis: number) => {
         setTogaOnAxis1(togaOnAxis);
         setTogaOnAxis2(togaOnAxis);
-        if (togaOnAxis === 0 && selectedIndex > 4) {
-            setSelectedIndex(4);
+        if (togaOnAxis === 0 && selectedDetent > 4) {
+            setSelectedDetent(4);
         }
     };
 
@@ -364,7 +364,7 @@ export const ThrottleConfig = ({ isShown, onClose }: ThrottleConfigProps) => {
                             <div>{t('Settings.ThrottleConfig.TogaOnAxis')}</div>
                             <Toggle value={!!togaOnAxis1} onToggle={(value) => setTogaOnAxis(value ? 1 : 0)} />
                         </div>
-                        <div className="flex flex-row justify-center items-center space-x-4">
+                        <div className="flex flex-row items-center justify-center space-x-4">
                             <div>{t('Settings.ThrottleConfig.ReverserOnAxis')}</div>
                             <Toggle value={!!reverserOnAxis1} onToggle={(value) => setReversersOnAxis(value ? 1 : 0)} />
                         </div>
