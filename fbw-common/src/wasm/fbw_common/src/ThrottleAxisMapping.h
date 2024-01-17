@@ -50,6 +50,7 @@ class ThrottleAxisMapping {
  private:
   struct Configuration {
     bool useReverseOnAxis;
+    bool useTogaOnAxis;
     double incrementNormal;
     double incrementSmall;
     double reverseLow;
@@ -85,12 +86,14 @@ class ThrottleAxisMapping {
   void decreaseThrottleBy(double value);
 
   bool useReverseOnAxis = false;
+  bool useTogaOnAxis = false;
   double incrementNormal = 0.0;
   double incrementSmall = 0.0;
 
   bool inFlight = false;
   bool isReverseToggleActive = false;
   bool isReverseToggleKeyActive = false;
+  bool isTogaActive = false;
 
   double idleValue = 0.0;
   double currentValue = 0.0;
@@ -103,6 +106,7 @@ class ThrottleAxisMapping {
 
   std::unique_ptr<LocalVariable> idUsingConfig;
   std::unique_ptr<LocalVariable> idUseReverseOnAxis;
+  std::unique_ptr<LocalVariable> idUseTogaOnAxis;
   std::unique_ptr<LocalVariable> idIncrementNormal;
   std::unique_ptr<LocalVariable> idIncrementSmall;
   std::unique_ptr<LocalVariable> idDetentReverseLow;
@@ -122,6 +126,7 @@ class ThrottleAxisMapping {
   std::string LVAR_THRUST_LEVER_ANGLE = "A32NX_AUTOTHRUST_TLA:";
   std::string LVAR_LOAD_CONFIG = "A32NX_THROTTLE_MAPPING_LOADED_CONFIG:";
   std::string LVAR_USE_REVERSE_ON_AXIS = "A32NX_THROTTLE_MAPPING_USE_REVERSE_ON_AXIS:";
+  std::string LVAR_USE_TOGA_ON_AXIS = "A32NX_THROTTLE_MAPPING_USE_TOGA_ON_AXIS:";
   std::string LVAR_INCREMENT_NORMAL = "A32NX_THROTTLE_MAPPING_INCREMENT_NORMAL";
   std::string LVAR_INCREMENT_SMALL = "A32NX_THROTTLE_MAPPING_INCREMENT_SMALL";
   std::string LVAR_DETENT_REVERSE_LOW = "A32NX_THROTTLE_MAPPING_REVERSE_LOW:";
