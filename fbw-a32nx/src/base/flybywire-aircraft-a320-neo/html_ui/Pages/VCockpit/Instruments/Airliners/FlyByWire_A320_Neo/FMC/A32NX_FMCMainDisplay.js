@@ -14,6 +14,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.costIndex = undefined;
         this.costIndexSet = undefined;
         this.maxCruiseFL = undefined;
+        this.RECmaxCruiseFL = undefined;
         this.routeIndex = undefined;
         this.coRoute = { routeNumber: undefined, routes: undefined };
         this.perfTOTemp = undefined;
@@ -346,6 +347,7 @@ class FMCMainDisplay extends BaseAirliners {
         this.costIndex = 0;
         this.costIndexSet = false;
         this.maxCruiseFL = 390;
+        this.RECmaxCruiseFL = 398;
         this.routeIndex = 0;
         this.resetCoroute();
         this._overridenFlapApproachSpeed = NaN;
@@ -4882,7 +4884,7 @@ class FMCMainDisplay extends BaseAirliners {
      */
     //TODO: can this be an util?
     getMaxFlCorrected(fl = this.getMaxFL()) {
-        return fl >= this.maxCruiseFL ? this.maxCruiseFL : fl;
+        return fl >= this.RECmaxCruiseFL ? this.RECmaxCruiseFL : fl;
     }
 
     // only used by trySetMinDestFob
