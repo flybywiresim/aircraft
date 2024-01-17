@@ -3,8 +3,7 @@ use uom::si::{angle::radian, f64::*};
 use crate::{
     shared::{low_pass_filter::LowPassFilter, DelayedFalseLogicGate},
     simulation::{
-        InitContext, Read, SimulationElement, SimulatorReader, SimulatorWriter, UpdateContext,
-        VariableIdentifier, Write,
+        InitContext, Read, SimulationElement, SimulatorReader, UpdateContext, VariableIdentifier,
     },
 };
 use std::time::Duration;
@@ -12,7 +11,6 @@ use std::time::Duration;
 use super::nose_steering::Pushback;
 
 pub struct PushbackTug {
-    nw_strg_disc_memo_id: VariableIdentifier,
     state_id: VariableIdentifier,
     steer_angle_id: VariableIdentifier,
 
@@ -38,7 +36,6 @@ impl PushbackTug {
 
     pub fn new(context: &mut InitContext) -> Self {
         Self {
-            nw_strg_disc_memo_id: context.get_identifier("HYD_NW_STRG_DISC_ECAM_MEMO".to_owned()),
             state_id: context.get_identifier("PUSHBACK STATE".to_owned()),
             steer_angle_id: context.get_identifier("PUSHBACK ANGLE".to_owned()),
 
@@ -82,12 +79,5 @@ impl SimulationElement for PushbackTug {
         self.state = reader.read(&self.state_id);
 
         self.steering_angle_raw = Angle::new::<radian>(reader.read(&self.steer_angle_id));
-    }
-
-    fn write(&self, writer: &mut SimulatorWriter) {
-        writer.write(
-            &self.nw_strg_disc_memo_id,
-            self.is_nose_wheel_steering_pin_inserted(),
-        );
     }
 }
