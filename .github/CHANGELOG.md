@@ -43,6 +43,9 @@
 1. [FLIGHTMODEL/ICE PROT] - Interim fix for A/I system bug and quicker windscreen clearing of ice - @donstim (donbikes)
 1. [ND] Worked around a font rendering bug with the ND chrono - @tracernz (Mike)
 1. [TELEX] Decrease API poll rate to random number between 45-70 seconds - @auroraisluna (alepouna)
+1. [AUTOFLIGHT] Fixed managed speed not engaging when V2 is confirmed after a departure runway change - @tracernz (Mi
+1. [GSX/EFB] FBW Chocks & Cones are usable with GSX Fuel/Payload Sync and react to GSX Pushback - @Fragtality (Fragtality)
+1. [GSX] Fixed GSX pin not actually disabling NWS - @Maximilian-Reuter (\_Chaoz_)
 
 ## 0.11.0
 

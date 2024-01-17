@@ -80,13 +80,6 @@ jobs:
           asset_path: ./${{ env.BUILD_DIR_NAME }}/${{ env.MASTER_ZIP_NAME }}
           asset_name: ${{ env.MASTER_ZIP_NAME }}
           asset_content_type: application/zip
-      - name: Upload fragments to GitHub Pre-Release Assets
-        uses: dwenegar/upload-release-assets@v1
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          release_id: ${{ env.MASTER_PRE_RELEASE_ID }}
-          assets_path: ./fbw-a32nx/out/build-modules
       - name: Update GitHub Pre-Release Body
         run: |
           curl --request PATCH \
@@ -165,13 +158,6 @@ jobs:
           asset_path: ./${{ env.BUILD_DIR_NAME }}/${{ env.MASTER_ZIP_NAME }}
           asset_name: ${{ env.MASTER_ZIP_NAME }}
           asset_content_type: application/zip
-      - name: Upload fragments to GitHub Pre-Release Assets
-        uses: dwenegar/upload-release-assets@v1
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          release_id: ${{ env.MASTER_PRE_RELEASE_ID }}
-          assets_path: ./fbw-a32nx/out/build-modules
       - name: Update GitHub Pre-Release Body
         run: |
           curl --request PATCH \
