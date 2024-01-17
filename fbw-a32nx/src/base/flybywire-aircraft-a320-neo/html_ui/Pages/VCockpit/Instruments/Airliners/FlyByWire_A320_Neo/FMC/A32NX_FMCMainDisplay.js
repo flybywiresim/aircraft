@@ -2839,7 +2839,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     set v1Speed(speed) {
-        this.flightPlanService.setPerformanceData('v1', value);
+        this.flightPlanService.setPerformanceData('v1', speed);
         SimVar.SetSimVarValue('L:AIRLINER_V1_SPEED', 'knots', speed ? speed : NaN);
     }
 
@@ -2848,7 +2848,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     set vRSpeed(speed) {
-        this.flightPlanService.setPerformanceData('vr', value);
+        this.flightPlanService.setPerformanceData('vr', speed);
         SimVar.SetSimVarValue('L:AIRLINER_VR_SPEED', 'knots', speed ? speed : NaN);
     }
 
@@ -2857,7 +2857,7 @@ class FMCMainDisplay extends BaseAirliners {
     }
 
     set v2Speed(speed) {
-        this.flightPlanService.setPerformanceData('v2', value);
+        this.flightPlanService.setPerformanceData('v2', speed);
         SimVar.SetSimVarValue('L:AIRLINER_V2_SPEED', 'knots', speed ? speed : NaN);
     }
 
