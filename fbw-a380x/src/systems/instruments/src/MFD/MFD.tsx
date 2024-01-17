@@ -244,7 +244,6 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
         });
 
         this.uiService.activeUri.sub((uri) => {
-            console.warn(`${this.props.captOrFo} ${uri.uri}`);
             this.activeUriChanged(uri);
         });
 

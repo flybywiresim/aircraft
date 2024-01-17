@@ -8,8 +8,6 @@
   font-style: normal;
 }
 
-$display-mfd-dark-grey: #3c3c3c;
-
 .mfd-main {
   position: absolute;
   width: 768px;
@@ -87,7 +85,7 @@ $display-mfd-dark-grey: #3c3c3c;
 .mfd-button {
   display: flex;
   font-size: 22px;
-  background-color: $display-mfd-dark-grey;
+  background-color: $display-mfd-darker-grey;
   color: $display-white;
   font-family: "Ecam", monospace;
   text-align: center;
@@ -122,7 +120,7 @@ $display-mfd-dark-grey: #3c3c3c;
 .mfd-icon-button {
   display: flex;
   flex-direction: row;
-  background-color: $display-mfd-dark-grey;
+  background-color: $display-mfd-darker-grey;
   color: $display-white;
   border: 2px outset $display-light-grey;
   justify-content: center;
@@ -141,7 +139,7 @@ $display-mfd-dark-grey: #3c3c3c;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  background-color: $display-mfd-dark-grey;
+  background-color: $display-mfd-darker-grey;
   border: 2px outset $display-light-grey;
 }
 
@@ -179,7 +177,7 @@ $display-mfd-dark-grey: #3c3c3c;
 }
 
 .mfd-dropdown-menu::-webkit-scrollbar-track {
-  background: $display-mfd-dark-grey;
+  background: $display-mfd-darker-grey;
 }
 
 .mfd-dropdown-menu::-webkit-scrollbar-thumb {
@@ -187,7 +185,7 @@ $display-mfd-dark-grey: #3c3c3c;
 }
 
 .mfd-dropdown-menu {
-  background-color: $display-mfd-dark-grey;
+  background-color: $display-mfd-darker-grey;
   min-width: 100%;
   position: absolute;
   z-index: 60;
@@ -237,7 +235,7 @@ $display-mfd-dark-grey: #3c3c3c;
   display: flex;
   flex-direction: row;
   align-items: center;
-  background-color: $display-mfd-dark-grey;
+  background-color: $display-mfd-darker-grey;
   border-top: 2px solid $display-light-grey;
   border-left: 2px solid $display-light-grey;
   border-bottom: 2px solid rgba(211, 211, 211, 0.432);
@@ -314,7 +312,7 @@ $display-mfd-dark-grey: #3c3c3c;
   flex: 1;
   justify-content: center;
   align-items: center;
-  background-color: $display-mfd-dark-grey;
+  background-color: $display-mfd-darker-grey;
   border-top: 2px solid $display-light-grey;
   padding: 6px 0px 2px 0px;
 }
@@ -418,7 +416,7 @@ $display-mfd-dark-grey: #3c3c3c;
 }
 
 .mfd-context-menu {
-  background-color: $display-mfd-dark-grey;
+  background-color: $display-mfd-darker-grey;
   border: 2px outset $display-light-grey;
   position: absolute;
   z-index: 10;
@@ -472,7 +470,7 @@ $display-mfd-dark-grey: #3c3c3c;
 }
 
 .mfd-input-field-container.disabled {
-  background-color: $display-mfd-dark-grey;
+  background-color: $display-mfd-darker-grey;
 }
 
 .mfd-input-field-container:hover {
@@ -503,7 +501,7 @@ $display-mfd-dark-grey: #3c3c3c;
 }
 
 .mfd-input-field-text-input.disabled {
-  background-color: $display-mfd-dark-grey;
+  background-color: $display-mfd-darker-grey;
   color: $display-light-grey;
 }
 
@@ -575,7 +573,7 @@ $display-mfd-dark-grey: #3c3c3c;
   z-index: 10;
   overflow: auto;
   position: absolute;
-  background-color: #040404;
+  background-color: #000000;
   border: 2px outset lightgray;
   padding: 5px;
   margin: 5px;
@@ -664,7 +662,7 @@ $display-mfd-dark-grey: #3c3c3c;
 
 .mfd-footer {
   display: flex;
-  border-top: 2px solid $display-mfd-dark-grey;
+  border-top: 2px solid $display-mfd-darker-grey;
   padding: 5px;
 }
 

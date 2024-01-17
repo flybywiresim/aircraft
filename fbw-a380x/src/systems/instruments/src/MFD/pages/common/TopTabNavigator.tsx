@@ -40,7 +40,7 @@ class TopTabElement extends DisplayComponent<TopTabElementProps> {
                 <svg height={this.props.height} width={this.triangleWidth}>
                     <polygon
                         points={`0,${this.props.height} ${this.triangleWidth},0 ${this.triangleWidth},${this.props.height}`}
-                        style={`fill:${this.props.isSelected === true ? '#040405' : '#3c3c3c'};`}
+                        style={`fill:${this.props.isSelected === true ? '#000000' : '#3c3c3c'};`}
                     />
                     <line x1="0" y1={this.props.height} x2={this.triangleWidth} y2="0" style="stroke: lightgrey; stroke-width:2" />
                     {this.props.isSelected === false && <line x1="0" y1={this.props.height - 1} x2={this.triangleWidth} y2={this.props.height - 1} style="stroke: lightgrey; stroke-width:2" />}
@@ -54,7 +54,7 @@ class TopTabElement extends DisplayComponent<TopTabElementProps> {
                     {this.props.title}
                 </span>
                 <svg height={this.props.height} width={this.triangleWidth}>
-                    <polygon points={`0,0 ${this.triangleWidth},${this.props.height} 0,${this.props.height}`} style={`fill:${this.props.isSelected === true ? '#040405' : '#3c3c3c'};`} />
+                    <polygon points={`0,0 ${this.triangleWidth},${this.props.height} 0,${this.props.height}`} style={`fill:${this.props.isSelected === true ? '#000000' : '#3c3c3c'};`} />
                     <line x1="0" y1="0" x2={this.triangleWidth} y2={this.props.height} style="stroke: lightgrey; stroke-width:2" />
                     {this.props.isSelected === false && <line x1="0" y1={this.props.height - 1} x2={this.triangleWidth} y2={this.props.height - 1} style="stroke: lightgrey; stroke-width:2" />}
                 </svg>
