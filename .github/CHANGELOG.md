@@ -35,6 +35,7 @@
 1. [EFCS] Implement calculated yaw damper gain  - @lukecologne (luke)
 1. [EFCS] Decrease yaw damper at low speeds on ground, down to 0 below 40kts - @lukecologne (luke)
 1. [FLIGHTMODEL] Fix pitch trim on approach - @donstim (donbikes)
+1. [FMS] Fixed PROG Page REC MAX Upper Limit - @tshomas (shomas)
 
 ## 0.11.0
 
