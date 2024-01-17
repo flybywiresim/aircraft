@@ -209,7 +209,6 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             if (pseudoWptMap.has(i) === true && pseudoWptMap.get(i).displayedOnMcdu) {
                 const pwp = pseudoWptMap.get(i);
                 reduceDistanceBy = pwp.flightPlanInfo.distanceFromStart - lastDistanceFromStart;
-                lastDistanceFromStart = pwp.flightPlanInfo.distanceFromStart;
                 const data: FplnLineWaypointDisplayData = {
                     type: FplnLineType.Waypoint,
                     originalLegIndex: undefined,
@@ -232,9 +231,10 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                     ) / 1000.0 ?? 0,
                     windPrediction: this.derivedFplnLegData[i].windPrediction,
                     trackFromLastWpt: this.derivedFplnLegData[i].trackFromLastWpt,
-                    distFromLastWpt: pwp.flightPlanInfo.distanceFromStart - lastDistanceFromStart,
+                    distFromLastWpt: reduceDistanceBy,
                     fpa: undefined,
                 };
+                lastDistanceFromStart = pwp.flightPlanInfo.distanceFromStart;
                 this.lineData.push(data);
             }
 
@@ -290,6 +290,8 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                     distFromLastWpt: this.derivedFplnLegData[i].distanceFromLastWpt - reduceDistanceBy,
                     fpa: leg.definition.verticalAngle,
                 };
+                lastDistanceFromStart = lastDistanceFromStart + this.derivedFplnLegData[i].distanceFromLastWpt - reduceDistanceBy;
+                lastDistanceFromStart = leg?.calculated?.cumulativeDistanceWithTransitions ?? (lastDistanceFromStart + this.derivedFplnLegData[i].distanceFromLastWpt - reduceDistanceBy);
                 this.lineData.push(data);
             } else {
                 const data: FplnLineSpecialDisplayData = {
