@@ -19,12 +19,13 @@ import { MfdFmsPositionNavaids } from 'instruments/src/MFD/pages/FMS/POSITION/Mf
 // Header imports
 import { AtccomHeader } from 'instruments/src/MFD/pages/common/AtccomHeader';
 import { FcuBkupHeader } from 'instruments/src/MFD/pages/common/FcuBkupHeader';
-import { MfdFlightManagementService } from 'instruments/src/MFD/pages/common/MfdFlightManagementService';
 import { FmsHeader } from 'instruments/src/MFD/pages/common/FmsHeader';
 import { SurvHeader } from 'instruments/src/MFD/pages/common/SurvHeader';
-import { MfdUiService } from 'instruments/src/MFD/pages/common/MfdUiService';
+import { FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServiceInterface';
+import { DisplayInterface } from '@fmgc/flightplanning/new/interface/DisplayInterface';
+import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
 
-export function pageForUrl(url: string, bus: EventBus, uiService: MfdUiService, fmService: MfdFlightManagementService): VNode {
+export function pageForUrl(url: string, bus: EventBus, mfd: DisplayInterface & MfdDisplayInterface, fmcService: FmcServiceInterface): VNode {
     switch (url) {
     case 'fms/active/perf':
     case 'fms/sec1/perf':
@@ -34,8 +35,8 @@ export function pageForUrl(url: string, bus: EventBus, uiService: MfdUiService, 
             <MfdFmsPerf
                 pageTitle="PERF"
                 bus={bus}
-                uiService={uiService}
-                fmService={fmService}
+                mfd={mfd}
+                fmcService={fmcService}
             />
         );
     case 'fms/active/init':
@@ -46,8 +47,8 @@ export function pageForUrl(url: string, bus: EventBus, uiService: MfdUiService, 
             <MfdFmsInit
                 pageTitle="INIT"
                 bus={bus}
-                uiService={uiService}
-                fmService={fmService}
+                mfd={mfd}
+                fmcService={fmcService}
             />
         );
     case 'fms/active/fuel-load':
@@ -58,8 +59,8 @@ export function pageForUrl(url: string, bus: EventBus, uiService: MfdUiService, 
             <MfdFmsFuelLoad
                 pageTitle="FUEL&LOAD"
                 bus={bus}
-                uiService={uiService}
-                fmService={fmService}
+                mfd={mfd}
+                fmcService={fmcService}
             />
         );
     case 'fms/active/f-pln':
@@ -70,8 +71,8 @@ export function pageForUrl(url: string, bus: EventBus, uiService: MfdUiService, 
             <MfdFmsFpln
                 pageTitle="F-PLN"
                 bus={bus}
-                uiService={uiService}
-                fmService={fmService}
+                mfd={mfd}
+                fmcService={fmcService}
             />
         );
     case 'fms/active/f-pln-airways':
@@ -82,8 +83,8 @@ export function pageForUrl(url: string, bus: EventBus, uiService: MfdUiService, 
             <MfdFmsFplnAirways
                 pageTitle="F-PLN/AIRWAYS"
                 bus={bus}
-                uiService={uiService}
-                fmService={fmService}
+                mfd={mfd}
+                fmcService={fmcService}
             />
         );
     case 'fms/active/f-pln-departure':
@@ -94,8 +95,8 @@ export function pageForUrl(url: string, bus: EventBus, uiService: MfdUiService, 
             <MfdFmsFplnDep
                 pageTitle="F-PLN/DEPARTURE"
                 bus={bus}
-                uiService={uiService}
-                fmService={fmService}
+                mfd={mfd}
+                fmcService={fmcService}
             />
         );
     case 'fms/active/f-pln-arrival':
@@ -106,8 +107,8 @@ export function pageForUrl(url: string, bus: EventBus, uiService: MfdUiService, 
             <MfdFmsFplnArr
                 pageTitle="F-PLN/ARRIVAL"
                 bus={bus}
-                uiService={uiService}
-                fmService={fmService}
+                mfd={mfd}
+                fmcService={fmcService}
             />
         );
     case 'fms/active/f-pln-direct-to':
@@ -115,8 +116,8 @@ export function pageForUrl(url: string, bus: EventBus, uiService: MfdUiService, 
             <MfdFmsFplnDirectTo
                 pageTitle="F-PLN/DIRECT-TO"
                 bus={bus}
-                uiService={uiService}
-                fmService={fmService}
+                mfd={mfd}
+                fmcService={fmcService}
             />
         );
     case 'fms/active/f-pln-vert-rev':
@@ -127,8 +128,8 @@ export function pageForUrl(url: string, bus: EventBus, uiService: MfdUiService, 
             <MfdFmsFplnVertRev
                 pageTitle="F-PLN/VERT REV"
                 bus={bus}
-                uiService={uiService}
-                fmService={fmService}
+                mfd={mfd}
+                fmcService={fmcService}
             />
         );
     case 'fms/active/f-pln-hold':
@@ -139,8 +140,8 @@ export function pageForUrl(url: string, bus: EventBus, uiService: MfdUiService, 
             <MfdFmsFplnHold
                 pageTitle="F-PLN/HOLD"
                 bus={bus}
-                uiService={uiService}
-                fmService={fmService}
+                mfd={mfd}
+                fmcService={fmcService}
             />
         );
     case 'fms/position/irs':
@@ -148,8 +149,8 @@ export function pageForUrl(url: string, bus: EventBus, uiService: MfdUiService, 
             <MfdFmsPositionIrs
                 pageTitle="IRS"
                 bus={bus}
-                uiService={uiService}
-                fmService={fmService}
+                mfd={mfd}
+                fmcService={fmcService}
             />
         );
     case 'fms/position/navaids':
@@ -157,8 +158,8 @@ export function pageForUrl(url: string, bus: EventBus, uiService: MfdUiService, 
             <MfdFmsPositionNavaids
                 pageTitle="NAVAIDS"
                 bus={bus}
-                uiService={uiService}
-                fmService={fmService}
+                mfd={mfd}
+                fmcService={fmcService}
             />
         );
     case 'fms/data/status':
@@ -166,8 +167,8 @@ export function pageForUrl(url: string, bus: EventBus, uiService: MfdUiService, 
             <MfdFmsDataStatus
                 pageTitle="STATUS"
                 bus={bus}
-                uiService={uiService}
-                fmService={fmService}
+                mfd={mfd}
+                fmcService={fmcService}
             />
         );
 
@@ -176,8 +177,8 @@ export function pageForUrl(url: string, bus: EventBus, uiService: MfdUiService, 
             <MfdNotFound
                 pageTitle="NOT FOUND"
                 bus={bus}
-                uiService={uiService}
-                fmService={fmService}
+                mfd={mfd}
+                fmcService={fmcService}
             />
         );
     }
@@ -188,8 +189,8 @@ export function headerForSystem(
     bus: EventBus,
     atcCallsign: Subscribable<string>,
     activeFmsSource: Subscribable<'FMS 1' | 'FMS 2' | 'FMS 1-C' | 'FMS 2-C'>,
-    uiService: MfdUiService,
-    fmService: MfdFlightManagementService,
+    mfd: DisplayInterface & MfdDisplayInterface,
+    fmcService: FmcServiceInterface,
 ): VNode {
     switch (sys) {
     case 'fms':
@@ -198,8 +199,8 @@ export function headerForSystem(
                 bus={bus}
                 callsign={atcCallsign}
                 activeFmsSource={activeFmsSource}
-                uiService={uiService}
-                fmService={fmService}
+                mfd={mfd}
+                fmcService={fmcService}
             />
         );
     case 'atccom':
@@ -208,8 +209,8 @@ export function headerForSystem(
                 bus={bus}
                 callsign={atcCallsign}
                 activeFmsSource={activeFmsSource}
-                uiService={uiService}
-                fmService={fmService}
+                mfd={mfd}
+                fmcService={fmcService}
             />
         );
     case 'surv':
@@ -218,8 +219,8 @@ export function headerForSystem(
                 bus={bus}
                 callsign={atcCallsign}
                 activeFmsSource={activeFmsSource}
-                uiService={uiService}
-                fmService={fmService}
+                mfd={mfd}
+                fmcService={fmcService}
             />
         );
     case 'fcubkup':
@@ -228,8 +229,8 @@ export function headerForSystem(
                 bus={bus}
                 callsign={atcCallsign}
                 activeFmsSource={activeFmsSource}
-                uiService={uiService}
-                fmService={fmService}
+                mfd={mfd}
+                fmcService={fmcService}
             />
         );
     default:
@@ -238,8 +239,8 @@ export function headerForSystem(
                 bus={bus}
                 callsign={atcCallsign}
                 activeFmsSource={activeFmsSource}
-                uiService={uiService}
-                fmService={fmService}
+                mfd={mfd}
+                fmcService={fmcService}
             />
         );
     }

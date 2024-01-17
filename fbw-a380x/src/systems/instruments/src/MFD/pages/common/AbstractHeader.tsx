@@ -23,20 +23,20 @@ export abstract class AbstractHeader extends DisplayComponent<AbstractMfdHeaderP
 
         switch (selectedSysIndex) {
         case 0: // FMS
-            this.props.uiService.navigateTo('fms/active/init');
+            this.props.mfd.uiService.navigateTo('fms/active/init');
             break;
         case 1: // ATCCOM
-            this.props.uiService.navigateTo('atccom/connect');
+            this.props.mfd.uiService.navigateTo('atccom/connect');
             break;
         case 2: // SURV
-            this.props.uiService.navigateTo('surv/controls');
+            this.props.mfd.uiService.navigateTo('surv/controls');
             break;
         case 3: // FCU BKUP
-            this.props.uiService.navigateTo('fcubkup/afs');
+            this.props.mfd.uiService.navigateTo('fcubkup/afs');
             break;
 
         default:
-            this.props.uiService.navigateTo('fms/active/init');
+            this.props.mfd.uiService.navigateTo('fms/active/init');
             break;
         }
     }
@@ -49,7 +49,7 @@ export abstract class AbstractHeader extends DisplayComponent<AbstractMfdHeaderP
             this.availableSystems.insert(val, 0);
         }, true));
 
-        this.subs.push(this.props.uiService.activeUri.sub((val) => {
+        this.subs.push(this.props.mfd.uiService.activeUri.sub((val) => {
             switch (val.sys) {
             case 'fms':
                 this.sysSelectorSelectedIndex.set(0);

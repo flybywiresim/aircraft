@@ -13,7 +13,7 @@ export class SurvHeader extends AbstractHeader {
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        this.subs.push(this.props.uiService.activeUri.sub((val) => {
+        this.subs.push(this.props.mfd.uiService.activeUri.sub((val) => {
             this.controlsIsSelected.set(val.category === 'controls');
             this.statSwitchIsSelected.set(val.category === 'status-switching');
         }, true));
@@ -34,14 +34,14 @@ export class SurvHeader extends AbstractHeader {
                     <PageSelectorDropdownMenu
                         isActive={this.controlsIsSelected}
                         label="CONTROLS"
-                        menuItems={[{ label: '', action: () => this.props.uiService.navigateTo('surv/controls') }]}
+                        menuItems={[{ label: '', action: () => this.props.mfd.uiService.navigateTo('surv/controls') }]}
                         idPrefix="pageSelectorControls"
                         containerStyle="width: 25%"
                     />
                     <PageSelectorDropdownMenu
                         isActive={this.statSwitchIsSelected}
                         label="STATUS & SWITCHING"
-                        menuItems={[{ label: '', action: () => this.props.uiService.navigateTo('surv/status-switching') }]}
+                        menuItems={[{ label: '', action: () => this.props.mfd.uiService.navigateTo('surv/status-switching') }]}
                         idPrefix="pageSelectorStatSwitch"
                         containerStyle="width: 50%"
                     />

@@ -44,7 +44,7 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
     protected onNewData(): void {
         console.time('DEPARTURE:onNewData');
 
-        const isAltn = this.props.fmService.revisedWaypointIsAltn.get();
+        const isAltn = this.props.fmcService.master.revisedWaypointIsAltn.get();
         const flightPlan: BaseFlightPlan = isAltn ? this.loadedFlightPlan.alternateFlightPlan : this.loadedFlightPlan;
 
         if (flightPlan.originAirport) {
@@ -56,9 +56,9 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
                 runways.push({
                     label: `${rw.ident.substring(2).padEnd(3, ' ')} ${rw.length.toFixed(0).padStart(5, ' ')}FT ${rw.lsIdent ? 'ILS' : ''}`,
                     action: async () => {
-                        await this.props.fmService.flightPlanService.setOriginRunway(rw.ident, this.loadedFlightPlanIndex.get(), isAltn);
-                        await this.props.fmService.flightPlanService.setDepartureProcedure(undefined, this.loadedFlightPlanIndex.get(), isAltn);
-                        await this.props.fmService.flightPlanService.setDepartureEnrouteTransition(undefined, this.loadedFlightPlanIndex.get(), isAltn);
+                        await this.props.fmcService.master.flightPlanService.setOriginRunway(rw.ident, this.loadedFlightPlanIndex.get(), isAltn);
+                        await this.props.fmcService.master.flightPlanService.setDepartureProcedure(undefined, this.loadedFlightPlanIndex.get(), isAltn);
+                        await this.props.fmcService.master.flightPlanService.setDepartureEnrouteTransition(undefined, this.loadedFlightPlanIndex.get(), isAltn);
                     },
                 });
             });
@@ -75,8 +75,8 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
                     const sids: ButtonMenuItem[] = [{
                         label: 'NONE',
                         action: async () => {
-                            await this.props.fmService.flightPlanService.setDepartureProcedure(undefined, this.loadedFlightPlanIndex.get(), isAltn);
-                            await this.props.fmService.flightPlanService.setDepartureEnrouteTransition(undefined, this.loadedFlightPlanIndex.get(), isAltn);
+                            await this.props.fmcService.master.flightPlanService.setDepartureProcedure(undefined, this.loadedFlightPlanIndex.get(), isAltn);
+                            await this.props.fmcService.master.flightPlanService.setDepartureEnrouteTransition(undefined, this.loadedFlightPlanIndex.get(), isAltn);
                         },
                     }];
                     const sortedDepartures = flightPlan.availableDepartures.sort((a, b) => a.ident.localeCompare(b.ident));
@@ -84,8 +84,8 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
                         sids.push({
                             label: dep.ident,
                             action: async () => {
-                                await this.props.fmService.flightPlanService.setDepartureProcedure(dep.ident, this.loadedFlightPlanIndex.get(), isAltn);
-                                await this.props.fmService.flightPlanService.setDepartureEnrouteTransition(undefined, this.loadedFlightPlanIndex.get(), isAltn);
+                                await this.props.fmcService.master.flightPlanService.setDepartureProcedure(dep.ident, this.loadedFlightPlanIndex.get(), isAltn);
+                                await this.props.fmcService.master.flightPlanService.setDepartureEnrouteTransition(undefined, this.loadedFlightPlanIndex.get(), isAltn);
                             },
                         });
                     });
@@ -108,10 +108,13 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
                     const trans: ButtonMenuItem[] = [
                         {
                             label: 'NONE',
-                            action: () => this.props.fmService.flightPlanService.setDepartureEnrouteTransition(undefined, this.loadedFlightPlanIndex.get(), isAltn),
+                            action: () => this.props.fmcService.master.flightPlanService.setDepartureEnrouteTransition(undefined, this.loadedFlightPlanIndex.get(), isAltn),
                         }];
                     flightPlan.originDeparture.enrouteTransitions.forEach((el) => {
-                        trans.push({ label: el.ident, action: () => this.props.fmService.flightPlanService.setDepartureEnrouteTransition(el.ident, this.loadedFlightPlanIndex.get(), isAltn) });
+                        trans.push({
+                            label: el.ident,
+                            action: () => this.props.fmcService.master.flightPlanService.setDepartureEnrouteTransition(el.ident, this.loadedFlightPlanIndex.get(), isAltn),
+                        });
                     });
                     this.transOptions.set(trans);
                     this.transDisabled.set(false);
@@ -293,8 +296,8 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
                         <Button
                             label="RETURN"
                             onClick={() => {
-                                this.props.fmService.resetRevisedWaypoint();
-                                this.props.uiService.navigateTo('back');
+                                this.props.fmcService.master.resetRevisedWaypoint();
+                                this.props.mfd.uiService.navigateTo('back');
                             }}
                         />
                     </div>
@@ -302,15 +305,15 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
                         <Button
                             label="TMPY F-PLN"
                             onClick={() => {
-                                this.props.fmService.resetRevisedWaypoint();
-                                this.props.uiService.navigateTo(`fms/${this.props.uiService.activeUri.get().category}/f-pln`);
+                                this.props.fmcService.master.resetRevisedWaypoint();
+                                this.props.mfd.uiService.navigateTo(`fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln`);
                             }}
                             buttonStyle="color: yellow"
                         />
                     </div>
                 </div>
                 {/* end page content */}
-                <Footer bus={this.props.bus} uiService={this.props.uiService} fmService={this.props.fmService} />
+                <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
             </>
         );
     }

@@ -4,14 +4,14 @@ import { Button } from 'instruments/src/MFD/pages/common/Button';
 import { coordinateToString } from '@flybywiresim/fbw-sdk';
 import { DropdownMenu } from 'instruments/src/MFD/pages/common/DropdownMenu';
 import { WaypointEntryUtils } from '@fmgc/flightplanning/new/WaypointEntryUtils';
-import { MfdFlightManagementService } from 'instruments/src/MFD/pages/common/MfdFlightManagementService';
+import { FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServiceInterface';
 
 export type NextWptInfo = {
     ident: string;
     originalLegIndex: number;
 };
 interface InsertNextWptFromWindowProps extends ComponentProps {
-    fmService: MfdFlightManagementService;
+    fmcService: FmcServiceInterface;
     availableWaypoints: SubscribableArray<NextWptInfo>;
     visible: Subject<boolean>;
     contentContainerStyle?: string;
@@ -35,31 +35,31 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
     private async onModified(idx: number, text: string): Promise<void> {
         if (idx >= 0) {
             const wptInfo = this.props.availableWaypoints.get(idx);
-            const fpln = this.props.fmService.revisedWaypointIsAltn.get()
-                ? this.props.fmService.flightPlanService.get(this.props.fmService.revisedWaypointPlanIndex.get()).alternateFlightPlan
-                : this.props.fmService.flightPlanService.get(this.props.fmService.revisedWaypointPlanIndex.get());
+            const fpln = this.props.fmcService.master.revisedWaypointIsAltn.get()
+                ? this.props.fmcService.master.flightPlanService.get(this.props.fmcService.master.revisedWaypointPlanIndex.get()).alternateFlightPlan
+                : this.props.fmcService.master.flightPlanService.get(this.props.fmcService.master.revisedWaypointPlanIndex.get());
             if (this.props.availableWaypoints.get(idx) && fpln.elementAt(wptInfo.originalLegIndex).isDiscontinuity === false) {
                 this.selectedWaypointIndex.set(idx);
                 this.props.visible.set(false);
                 console.log(fpln.legElementAt(wptInfo.originalLegIndex).definition.waypoint);
-                await this.props.fmService.flightPlanService.nextWaypoint(
-                    this.props.fmService.revisedWaypointIndex.get(),
+                await this.props.fmcService.master.flightPlanService.nextWaypoint(
+                    this.props.fmcService.master.revisedWaypointIndex.get(),
                     fpln.legElementAt(wptInfo.originalLegIndex).definition.waypoint,
-                    this.props.fmService.revisedWaypointPlanIndex.get(),
-                    this.props.fmService.revisedWaypointIsAltn.get(),
+                    this.props.fmcService.master.revisedWaypointPlanIndex.get(),
+                    this.props.fmcService.master.revisedWaypointIsAltn.get(),
                 );
             }
         } else {
-            const wpt = await WaypointEntryUtils.getOrCreateWaypoint(this.props.fmService.mfd, text, true, undefined);
-            await this.props.fmService.flightPlanService.nextWaypoint(
-                this.props.fmService.revisedWaypointIndex.get(),
+            const wpt = await WaypointEntryUtils.getOrCreateWaypoint(this.props.fmcService.master, text, true, undefined);
+            await this.props.fmcService.master.flightPlanService.nextWaypoint(
+                this.props.fmcService.master.revisedWaypointIndex.get(),
                 wpt,
-                this.props.fmService.revisedWaypointPlanIndex.get(),
-                this.props.fmService.revisedWaypointIsAltn.get(),
+                this.props.fmcService.master.revisedWaypointPlanIndex.get(),
+                this.props.fmcService.master.revisedWaypointIsAltn.get(),
             );
             this.props.visible.set(false);
         }
-        this.props.fmService.resetRevisedWaypoint();
+        this.props.fmcService.master.resetRevisedWaypoint();
     }
 
     onAfterRender(node: VNode): void {
@@ -71,9 +71,9 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
             this.nextWpt.set('');
         }, true));
 
-        this.subs.push(this.props.fmService.revisedWaypointIndex.sub((wptIdx) => {
-            if (this.props.fmService.revisedWaypoint) {
-                const fpln = this.props.fmService.flightPlanService.get(this.props.fmService.revisedWaypointPlanIndex.get());
+        this.subs.push(this.props.fmcService.master.revisedWaypointIndex.sub((wptIdx) => {
+            if (this.props.fmcService.master.revisedWaypoint) {
+                const fpln = this.props.fmcService.master.flightPlanService.get(this.props.fmcService.master.revisedWaypointPlanIndex.get());
 
                 if (fpln.elementAt(wptIdx)?.isDiscontinuity === false) {
                     const wpt = fpln.legElementAt(wptIdx);

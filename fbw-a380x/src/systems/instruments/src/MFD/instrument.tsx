@@ -1,4 +1,6 @@
 import { Clock, FSComponent, EventBus, HEventPublisher } from '@microsoft/msfs-sdk';
+import { FmcService } from 'instruments/src/MFD/FMC/FmcService';
+import { FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServiceInterface';
 import { MfdComponent } from './MFD';
 import { MfdSimvarPublisher } from './shared/MFDSimvarPublisher';
 
@@ -10,6 +12,12 @@ class A380X_MFD extends BaseInstrument {
     private readonly hEventPublisher: HEventPublisher;
 
     private readonly clock: Clock;
+
+    private mfdCaptRef = FSComponent.createRef<MfdComponent>();
+
+    private mfdFoRef = FSComponent.createRef<MfdComponent>();
+
+    private readonly fmcService: FmcServiceInterface;
 
     /**
      * "mainmenu" = 0
@@ -25,6 +33,7 @@ class A380X_MFD extends BaseInstrument {
         this.simVarPublisher = new MfdSimvarPublisher(this.bus);
         this.hEventPublisher = new HEventPublisher(this.bus);
         this.clock = new Clock(this.bus);
+        this.fmcService = new FmcService(this.bus);
     }
 
     get templateID(): string {
@@ -44,7 +53,12 @@ class A380X_MFD extends BaseInstrument {
 
         this.clock.init();
 
-        FSComponent.render(<MfdComponent bus={this.bus} instrument={this} />, document.getElementById('MFD_CONTENT'));
+        console.log(this.fmcService);
+        FSComponent.render(<MfdComponent ref={this.mfdCaptRef} bus={this.bus} instrument={this} fmcService={this.fmcService} />, document.getElementById('MFD_CONTENT'));
+        this.fmcService.createFmc(this.mfdCaptRef.instance);
+
+        // Navigate to initial page
+        this.mfdCaptRef.instance.uiService.navigateTo('fms/data/status');
 
         // Remove "instrument didn't load" text
         document.getElementById('MFD_CONTENT').querySelector(':scope > h1').remove();

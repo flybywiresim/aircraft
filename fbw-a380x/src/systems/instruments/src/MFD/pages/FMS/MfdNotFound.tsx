@@ -16,7 +16,7 @@ export class MfdNotFound extends DisplayComponent<MfdNotFoundProps> {
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        new Promise((resolve) => setTimeout(resolve, 500)).then(() => this.props.uiService.navigateTo('back'));
+        new Promise((resolve) => setTimeout(resolve, 500)).then(() => this.props.mfd.uiService.navigateTo('back'));
     }
 
     public destroy(): void {
@@ -33,7 +33,7 @@ export class MfdNotFound extends DisplayComponent<MfdNotFoundProps> {
                 {/* begin page content */}
                 <div class="mfd-page-container" />
                 {/* end page content */}
-                <Footer bus={this.props.bus} uiService={this.props.uiService} fmService={this.props.fmService} />
+                <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
             </>
         );
     }

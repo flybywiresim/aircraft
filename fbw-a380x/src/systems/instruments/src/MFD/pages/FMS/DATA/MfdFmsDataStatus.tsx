@@ -40,11 +40,11 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
     protected onNewData() {
         console.time('DATA/STATUS:onNewData');
 
-        const date = this.props.fmService.fmgc.getNavDataDateRange();
+        const date = this.props.fmcService.master.fmgc.getNavDataDateRange();
         this.activeDatabase.set(this.calculateActiveDate(date));
         this.secondDatabase.set(this.calculateSecDate(date));
 
-        const storedElements = this.props.fmService.mfd.getDataManager().numberOfStoredElements();
+        const storedElements = this.props.fmcService.master.getDataManager().numberOfStoredElements();
         this.storedWaypoints.set(storedElements.waypoints.toFixed(0).padStart(2, '0'));
         this.storedRoutes.set(storedElements.routes.toFixed(0).padStart(2, '0'));
         this.storedNavaids.set(storedElements.navaids.toFixed(0).padStart(2, '0'));
@@ -57,7 +57,7 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        this.subs.push(this.props.uiService.activeUri.sub((val) => {
+        this.subs.push(this.props.mfd.uiService.activeUri.sub((val) => {
             if (val.extra === 'acft-status') {
                 this.selectedPageIndex.set(0);
             } else if (val.extra === 'fms-pn') {
@@ -156,13 +156,13 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
                                         <div style="margin-bottom: 10px;">
                                             <span class="mfd-label" style="margin-right: 10px;">IDLE</span>
                                             <span class="mfd-value-green bigger">
-                                                {AirlineModifiableInformation['EK'].idleFactor >= 0 ? `+${AirlineModifiableInformation['EK'].idleFactor}` : `-${AirlineModifiableInformation['EK'].idleFactor}`}
+                                                {`${AirlineModifiableInformation.EK.idleFactor >= 0 ? '+' : '-'}${AirlineModifiableInformation.EK.idleFactor.toFixed(1)}`}
                                             </span>
                                         </div>
                                         <div>
                                             <span class="mfd-label" style="margin-right: 10px;">PERF</span>
                                             <span class="mfd-value-green bigger">
-                                                {AirlineModifiableInformation['EK'].idleFactor >= 0 ? `+${AirlineModifiableInformation['EK'].perfFactor}` : `-${AirlineModifiableInformation['EK'].perfFactor}`}
+                                                {`${AirlineModifiableInformation.EK.perfFactor >= 0 ? '+' : '-'}${AirlineModifiableInformation.EK.perfFactor.toFixed(1)}`}
                                             </span>
                                         </div>
                                     </div>
@@ -234,7 +234,7 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
                                                     <span style="display: flex; align-items: center; justify-content: center;">*</span>
                                                 </div>,
                                             )}
-                                            onClick={() => this.props.fmService.mfd.getDataManager().deleteAllStoredWaypoints()}
+                                            onClick={() => this.props.fmcService.master.getDataManager().deleteAllStoredWaypoints()}
                                             disabled={this.deleteStoredElementsDisabled}
                                         />
                                     </div>
@@ -248,7 +248,7 @@ export class MfdFmsDataStatus extends FmsPage<MfdFmsDataStatusProps> {
                     <div style="flex-grow: 1;" />
                     {/* fill space vertically */}
                 </div>
-                <Footer bus={this.props.bus} uiService={this.props.uiService} fmService={this.props.fmService} />
+                <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
             </>
         );
     }

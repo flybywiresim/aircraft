@@ -3,10 +3,13 @@ import '../../common/style.scss';
 import { Button } from 'instruments/src/MFD/pages/common/Button';
 import { InputField } from 'instruments/src/MFD/pages/common/InputField';
 import { AirportFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
-import { MfdFlightManagementService } from 'instruments/src/MFD/pages/common/MfdFlightManagementService';
+import { DisplayInterface } from '@fmgc/flightplanning/new/interface/DisplayInterface';
+import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
+import { FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServiceInterface';
 
 interface DestinationWindowProps extends ComponentProps {
-    fmService: MfdFlightManagementService;
+    fmcService: FmcServiceInterface;
+    mfd: DisplayInterface & MfdDisplayInterface;
     visible: Subject<boolean>;
     contentContainerStyle?: string;
 }
@@ -22,15 +25,15 @@ export class DestinationWindow extends DisplayComponent<DestinationWindowProps> 
 
     private onModified(newDest: string): void {
         if (newDest.length === 4) {
-            this.props.fmService.flightPlanService.newDest(
-                this.props.fmService.revisedWaypointIndex.get(),
+            this.props.fmcService.master.flightPlanService.newDest(
+                this.props.fmcService.master.revisedWaypointIndex.get(),
                 newDest,
-                this.props.fmService.revisedWaypointPlanIndex.get(),
-                this.props.fmService.revisedWaypointIsAltn.get(),
+                this.props.fmcService.master.revisedWaypointPlanIndex.get(),
+                this.props.fmcService.master.revisedWaypointIsAltn.get(),
             );
             this.props.visible.set(false);
             this.newDest.set('');
-            this.props.fmService.resetRevisedWaypoint();
+            this.props.fmcService.master.resetRevisedWaypoint();
         }
     }
 
@@ -42,9 +45,9 @@ export class DestinationWindow extends DisplayComponent<DestinationWindowProps> 
             this.newDest.set('');
         }, true));
 
-        this.subs.push(this.props.fmService.revisedWaypointIndex.sub(() => {
-            if (this.props.fmService.revisedWaypoint()) {
-                this.identRef.instance.innerText = this.props.fmService.revisedWaypoint().ident;
+        this.subs.push(this.props.fmcService.master.revisedWaypointIndex.sub(() => {
+            if (this.props.fmcService.master.revisedWaypoint()) {
+                this.identRef.instance.innerText = this.props.fmcService.master.revisedWaypoint().ident;
             }
         }));
     }
@@ -68,7 +71,7 @@ export class DestinationWindow extends DisplayComponent<DestinationWindowProps> 
                         <span class="mfd-label">
                             NEW DEST FROM
                             {' '}
-                            <span ref={this.identRef} class="mfd-value-green bigger">{this.props.fmService.revisedWaypoint()?.ident ?? ''}</span>
+                            <span ref={this.identRef} class="mfd-value-green bigger">{this.props.fmcService.master.revisedWaypoint()?.ident ?? ''}</span>
                         </span>
                         <div style="align-self: center; margin-top: 50px;">
                             <InputField<string>
@@ -78,7 +81,7 @@ export class DestinationWindow extends DisplayComponent<DestinationWindowProps> 
                                 onModified={(val) => this.onModified(val)}
                                 value={this.newDest}
                                 alignText="center"
-                                errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                                errorHandler={(e) => this.props.mfd.showFmsErrorMessage(e)}
                             />
                         </div>
                     </div>
@@ -87,7 +90,7 @@ export class DestinationWindow extends DisplayComponent<DestinationWindowProps> 
                             label="CANCEL"
                             onClick={() => {
                                 Coherent.trigger('UNFOCUS_INPUT_FIELD');
-                                this.props.fmService.resetRevisedWaypoint();
+                                this.props.fmcService.master.resetRevisedWaypoint();
                                 this.props.visible.set(false);
                             }}
                         />

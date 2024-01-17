@@ -16,9 +16,9 @@ export enum FplnRevisionsMenuType {
 }
 
 export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType): ContextMenuElement[] {
-    const legIndex = fpln.props.fmService.revisedWaypointIndex.get();
-    const planIndex = fpln.props.fmService.revisedWaypointPlanIndex.get();
-    const altnFlightPlan = fpln.props.fmService.revisedWaypointIsAltn.get();
+    const legIndex = fpln.props.fmcService.master.revisedWaypointIndex.get();
+    const planIndex = fpln.props.fmcService.master.revisedWaypointPlanIndex.get();
+    const altnFlightPlan = fpln.props.fmcService.master.revisedWaypointIsAltn.get();
 
     return [
         {
@@ -30,14 +30,14 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
                 || FplnRevisionsMenuType.TooSteepPath].includes(type)
                 || !fpln.loadedFlightPlan.legElementAt(legIndex).isXF(),
             onSelectCallback: () => {
-                fpln.props.fmService.flightPlanService.directToLeg(
-                    fpln.props.fmService.navigation.getPpos(),
+                fpln.props.fmcService.master.flightPlanService.directToLeg(
+                    fpln.props.fmcService.master.navigation.getPpos(),
                     SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree'),
                     legIndex,
                     true,
                     planIndex,
                 );
-                fpln.props.uiService.navigateTo(`fms/${fpln.props.uiService.activeUri.get().category}/f-pln-direct-to`);
+                fpln.props.mfd.uiService.navigateTo(`fms/${fpln.props.mfd.uiService.activeUri.get().category}/f-pln-direct-to`);
             },
         },
         {
@@ -49,33 +49,33 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
             title: 'DELETE *',
             disabled: [FplnRevisionsMenuType.Runway || FplnRevisionsMenuType.TooSteepPath].includes(type),
             onSelectCallback: () => {
-                fpln.props.fmService.flightPlanService.deleteElementAt(legIndex, false, planIndex, altnFlightPlan);
+                fpln.props.fmcService.master.flightPlanService.deleteElementAt(legIndex, false, planIndex, altnFlightPlan);
             },
         },
         {
             title: 'DEPARTURE',
             disabled: (type !== FplnRevisionsMenuType.Departure && type !== FplnRevisionsMenuType.Runway),
-            onSelectCallback: () => fpln.props.uiService.navigateTo(`fms/${fpln.props.uiService.activeUri.get().category}/f-pln-departure`),
+            onSelectCallback: () => fpln.props.mfd.uiService.navigateTo(`fms/${fpln.props.mfd.uiService.activeUri.get().category}/f-pln-departure`),
         },
         {
             title: 'ARRIVAL',
             disabled: (type !== FplnRevisionsMenuType.Arrival && type !== FplnRevisionsMenuType.Runway),
-            onSelectCallback: () => fpln.props.uiService.navigateTo(`fms/${fpln.props.uiService.activeUri.get().category}/f-pln-arrival`),
+            onSelectCallback: () => fpln.props.mfd.uiService.navigateTo(`fms/${fpln.props.mfd.uiService.activeUri.get().category}/f-pln-arrival`),
         },
         {
             title: '(N/A) OFFSET',
             disabled: true,
-            onSelectCallback: () => fpln.props.uiService.navigateTo(`fms/${fpln.props.uiService.activeUri.get().category}/f-pln-hold`),
+            onSelectCallback: () => fpln.props.mfd.uiService.navigateTo(`fms/${fpln.props.mfd.uiService.activeUri.get().category}/f-pln-hold`),
         },
         {
             title: 'HOLD',
             disabled: [FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type),
             onSelectCallback: async () => {
-                const waypoint = fpln.props.fmService.flightPlanService.active.legElementAt(legIndex);
+                const waypoint = fpln.props.fmcService.master.flightPlanService.active.legElementAt(legIndex);
                 if (!waypoint.isHX()) {
                     const alt = waypoint.definition.altitude1 ? waypoint.definition.altitude1 : SimVar.GetSimVarValue('INDICATED ALTITUDE', 'feet');
 
-                    const previousLeg = fpln.props.fmService.flightPlanService.active.maybeElementAt(legIndex - 1);
+                    const previousLeg = fpln.props.fmcService.master.flightPlanService.active.maybeElementAt(legIndex - 1);
 
                     let inboundMagneticCourse = 100;
                     if (previousLeg && previousLeg.isDiscontinuity === false && previousLeg.isXF()) {
@@ -91,7 +91,7 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
                         time: alt <= 14000 ? 1 : 1.5,
                         type: HoldType.Computed,
                     };
-                    await fpln.props.fmService.flightPlanService.addOrEditManualHold(
+                    await fpln.props.fmcService.master.flightPlanService.addOrEditManualHold(
                         legIndex,
                         { ...defaultHold },
                         undefined,
@@ -100,19 +100,19 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
                         altnFlightPlan,
                     );
 
-                    fpln.props.fmService.revisedWaypointIndex.set(legIndex + 1); // We just inserted a new HOLD leg
+                    fpln.props.fmcService.master.revisedWaypointIndex.set(legIndex + 1); // We just inserted a new HOLD leg
                 } else {
                     console.warn('Tried to hold on already existing Hx leg');
                 }
-                fpln.props.uiService.navigateTo(`fms/${fpln.props.uiService.activeUri.get().category}/f-pln-hold`);
+                fpln.props.mfd.uiService.navigateTo(`fms/${fpln.props.mfd.uiService.activeUri.get().category}/f-pln-hold`);
             },
         },
         {
             title: 'AIRWAYS',
             disabled: [FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type),
             onSelectCallback: () => {
-                fpln.props.fmService.flightPlanService.startAirwayEntry(legIndex);
-                fpln.props.uiService.navigateTo(`fms/${fpln.props.uiService.activeUri.get().category}/f-pln-airways`);
+                fpln.props.fmcService.master.flightPlanService.startAirwayEntry(legIndex);
+                fpln.props.mfd.uiService.navigateTo(`fms/${fpln.props.mfd.uiService.activeUri.get().category}/f-pln-airways`);
             },
         },
         {
@@ -120,12 +120,12 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
                 && ![FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type)
                 && fpln.loadedFlightPlan.legElementAt(legIndex).definition.overfly === true) ? 'DELETE OVERFLY *' : 'OVERFLY *',
             disabled: altnFlightPlan || [FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type),
-            onSelectCallback: () => fpln.props.fmService.flightPlanService.toggleOverfly(legIndex, planIndex),
+            onSelectCallback: () => fpln.props.fmcService.master.flightPlanService.toggleOverfly(legIndex, planIndex),
         },
         {
             title: 'ENABLE ALTN *',
             disabled: false,
-            onSelectCallback: () => fpln.props.fmService.flightPlanService.enableAltn(legIndex, planIndex),
+            onSelectCallback: () => fpln.props.fmcService.master.flightPlanService.enableAltn(legIndex, planIndex),
         },
         {
             title: 'NEW DEST',
@@ -135,17 +135,17 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
         {
             title: 'CONSTRAINTS',
             disabled: altnFlightPlan || [FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type),
-            onSelectCallback: () => fpln.props.uiService.navigateTo(`fms/${fpln.props.uiService.activeUri.get().category}/f-pln-vert-rev/alt`),
+            onSelectCallback: () => fpln.props.mfd.uiService.navigateTo(`fms/${fpln.props.mfd.uiService.activeUri.get().category}/f-pln-vert-rev/alt`),
         },
         {
             title: 'CMS',
             disabled: altnFlightPlan || [FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type),
-            onSelectCallback: () => fpln.props.uiService.navigateTo(`fms/${fpln.props.uiService.activeUri.get().category}/f-pln-vert-rev/cms`),
+            onSelectCallback: () => fpln.props.mfd.uiService.navigateTo(`fms/${fpln.props.mfd.uiService.activeUri.get().category}/f-pln-vert-rev/cms`),
         },
         {
             title: 'STEP ALTs',
             disabled: altnFlightPlan || [FplnRevisionsMenuType.Discontinuity || FplnRevisionsMenuType.TooSteepPath].includes(type),
-            onSelectCallback: () => fpln.props.uiService.navigateTo(`fms/${fpln.props.uiService.activeUri.get().category}/f-pln-vert-rev/step-alts`),
+            onSelectCallback: () => fpln.props.mfd.uiService.navigateTo(`fms/${fpln.props.mfd.uiService.activeUri.get().category}/f-pln-vert-rev/step-alts`),
         },
         {
             title: '(N/A) WIND',
@@ -153,11 +153,11 @@ export function getRevisionsMenu(fpln: MfdFmsFpln, type: FplnRevisionsMenuType):
             onSelectCallback: () => {
                 // Find out whether waypoint is CLB, CRZ or DES waypoint and direct to appropriate WIND sub-page
                 if (fpln.loadedFlightPlan?.legElementAt(legIndex)?.segment?.class === SegmentClass.Arrival) {
-                    fpln.props.uiService.navigateTo(`fms/${fpln.props.uiService.activeUri.get().category}/wind/des`);
+                    fpln.props.mfd.uiService.navigateTo(`fms/${fpln.props.mfd.uiService.activeUri.get().category}/wind/des`);
                 } else if (fpln.loadedFlightPlan?.legElementAt(legIndex)?.segment?.class === SegmentClass.Enroute) {
-                    fpln.props.uiService.navigateTo(`fms/${fpln.props.uiService.activeUri.get().category}/wind/crz`);
+                    fpln.props.mfd.uiService.navigateTo(`fms/${fpln.props.mfd.uiService.activeUri.get().category}/wind/crz`);
                 } else {
-                    fpln.props.uiService.navigateTo(`fms/${fpln.props.uiService.activeUri.get().category}/wind/clb`);
+                    fpln.props.mfd.uiService.navigateTo(`fms/${fpln.props.mfd.uiService.activeUri.get().category}/wind/clb`);
                 }
             },
         },

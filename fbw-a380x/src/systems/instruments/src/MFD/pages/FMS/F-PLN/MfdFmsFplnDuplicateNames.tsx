@@ -1,15 +1,16 @@
-import { DisplayComponent, FSComponent, MappedSubject, Subject, Subscription, VNode } from '@microsoft/msfs-sdk';
+import { ComponentProps, DisplayComponent, FSComponent, MappedSubject, Subject, Subscription, VNode } from '@microsoft/msfs-sdk';
 
 import './MfdFmsFpln.scss';
-import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { IconButton } from 'instruments/src/MFD/pages/common/IconButton';
 import { Button } from 'instruments/src/MFD/pages/common/Button';
 import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
 import { Coordinates, NauticalMiles, distanceTo } from 'msfs-geo';
 import { DatabaseItem, MegaHertz, NdbNavaid, VhfNavaid, Waypoint } from 'msfs-navdata';
+import { FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServiceInterface';
 
-interface MfdFmsFplnDuplicateNamesProps extends AbstractMfdPageProps {
+interface MfdFmsFplnDuplicateNamesProps extends ComponentProps {
     visible: Subject<boolean>;
+    fmcService: FmcServiceInterface;
 }
 
 type DuplicateWaypointData = {
@@ -68,7 +69,7 @@ export class MfdFmsFplnDuplicateNames extends DisplayComponent<MfdFmsFplnDuplica
             if (isNavaid(fx)) {
                 const dwd: DuplicateWaypointData = {
                     ident: fx.ident,
-                    distance: distanceTo(fx.location, this.props.fmService.navigation.getPpos()),
+                    distance: distanceTo(fx.location, this.props.fmcService?.master.navigation.getPpos() ?? { lat: 0, long: 0 }),
                     location: fx.location,
                     freqChan: fx.frequency,
                     fixData: fx,
@@ -77,7 +78,7 @@ export class MfdFmsFplnDuplicateNames extends DisplayComponent<MfdFmsFplnDuplica
             } else if (isNavaidOrWaypoint(fx)) {
                 const dwd: DuplicateWaypointData = {
                     ident: fx.ident,
-                    distance: distanceTo(fx.location, this.props.fmService.navigation.getPpos()),
+                    distance: distanceTo(fx.location, this.props.fmcService?.master.navigation.getPpos() ?? { lat: 0, long: 0 }),
                     location: fx.location,
                     freqChan: undefined,
                     fixData: fx,

@@ -44,8 +44,8 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
     protected onNewData(): void {
         console.time('HOLD:onNewData');
 
-        if (this.props.fmService.revisedWaypoint()) {
-            const leg = this.loadedFlightPlan.legElementAt(this.props.fmService.revisedWaypointIndex.get());
+        if (this.props.fmcService.master.revisedWaypoint()) {
+            const leg = this.loadedFlightPlan.legElementAt(this.props.fmcService.master.revisedWaypointIndex.get());
             const hold = (leg.modifiedHold !== undefined) ? leg.modifiedHold : leg.defaultHold;
             if (hold !== undefined) {
                 switch (hold.type) {
@@ -76,7 +76,7 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
 
     private async modifyHold() {
         console.log(this.inboundCourse.get());
-        if (this.props.fmService.revisedWaypoint()) {
+        if (this.props.fmcService.master.revisedWaypoint()) {
             const desiredHold: HoldData = {
                 type: HoldType.Pilot,
                 distance: this.legDefiningParameterSelectedIndex.get() === 0 ? undefined : this.legDistance.get(),
@@ -85,13 +85,13 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
                 turnDirection: this.turnSelectedIndex.get() === 0 ? TurnDirection.Left : TurnDirection.Right,
             };
 
-            await this.props.fmService.flightPlanService.addOrEditManualHold(
-                this.props.fmService.revisedWaypointIndex.get(),
+            await this.props.fmcService.master.flightPlanService.addOrEditManualHold(
+                this.props.fmcService.master.revisedWaypointIndex.get(),
                 { ...desiredHold },
                 desiredHold,
-                this.loadedFlightPlan.legElementAt(this.props.fmService.revisedWaypointIndex.get()).defaultHold,
-                this.props.fmService.revisedWaypointPlanIndex.get(),
-                this.props.fmService.revisedWaypointIsAltn.get(),
+                this.loadedFlightPlan.legElementAt(this.props.fmcService.master.revisedWaypointIndex.get()).defaultHold,
+                this.props.fmcService.master.revisedWaypointPlanIndex.get(),
+                this.props.fmcService.master.revisedWaypointIsAltn.get(),
             );
             this.onNewData();
         }
@@ -153,7 +153,7 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
                                 value={this.inboundCourse}
                                 dataEntryFormat={new InboundCourseFormat()}
                                 tmpyActive={this.tmpyActive}
-                                errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                                errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                             />
                         </div>
                         <span class="mfd-label" style="margin-top: 50px; margin-bottom: 20px;">TURN</span>
@@ -179,7 +179,7 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
                                         dataEntryFormat={new HoldTimeFormat()}
                                         value={this.legTime}
                                         tmpyActive={this.tmpyActive}
-                                        errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                                        errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                                     />
                                 </div>
                                 <div ref={this.legDistanceRef}>
@@ -187,7 +187,7 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
                                         dataEntryFormat={new HoldDistFormat()}
                                         value={this.legDistance}
                                         tmpyActive={this.tmpyActive}
-                                        errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                                        errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                                     />
                                 </div>
                             </div>
@@ -213,11 +213,11 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
                         <Button
                             label="COMPUTED"
                             onClick={() => {
-                                if (this.props.fmService.revisedWaypoint()) {
-                                    this.props.fmService.flightPlanService.revertHoldToComputed(
-                                        this.props.fmService.revisedWaypointIndex.get(),
-                                        this.props.fmService.revisedWaypointPlanIndex.get(),
-                                        this.props.fmService.revisedWaypointIsAltn.get(),
+                                if (this.props.fmcService.master.revisedWaypoint()) {
+                                    this.props.fmcService.master.flightPlanService.revertHoldToComputed(
+                                        this.props.fmcService.master.revisedWaypointIndex.get(),
+                                        this.props.fmcService.master.revisedWaypointPlanIndex.get(),
+                                        this.props.fmcService.master.revisedWaypointIsAltn.get(),
                                     );
                                 }
                             }}
@@ -231,8 +231,8 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
                         <Button
                             label="RETURN"
                             onClick={() => {
-                                this.props.fmService.resetRevisedWaypoint();
-                                this.props.uiService.navigateTo('back');
+                                this.props.fmcService.master.resetRevisedWaypoint();
+                                this.props.mfd.uiService.navigateTo('back');
                             }}
                         />
                     </div>
@@ -240,15 +240,15 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
                         <Button
                             label="TMPY F-PLN"
                             onClick={() => {
-                                this.props.fmService.resetRevisedWaypoint();
-                                this.props.uiService.navigateTo(`fms/${this.props.uiService.activeUri.get().category}/f-pln`);
+                                this.props.fmcService.master.resetRevisedWaypoint();
+                                this.props.mfd.uiService.navigateTo(`fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln`);
                             }}
                             buttonStyle="color: yellow"
                         />
                     </div>
                 </div>
                 {/* end page content */}
-                <Footer bus={this.props.bus} uiService={this.props.uiService} fmService={this.props.fmService} />
+                <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
             </>
         );
     }

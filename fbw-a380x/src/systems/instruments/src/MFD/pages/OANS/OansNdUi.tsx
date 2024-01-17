@@ -15,13 +15,13 @@ import { DropdownMenu } from 'instruments/src/MFD/pages/common/DropdownMenu';
 import { RadioButtonGroup } from 'instruments/src/MFD/pages/common/RadioButtonGroup';
 import { InputField } from 'instruments/src/MFD/pages/common/InputField';
 import { LengthFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
-import { MfdFlightManagementService } from 'instruments/src/MFD/pages/common/MfdFlightManagementService';
-import { OansRunwayInfoBox } from 'instruments/src/MFD/pages/OANS/OANSRunwayInfoBox';
+import { OansRunwayInfoBox } from 'instruments/src/MFD/pages/OANS/OansRunwayInfoBox';
+import { FmcInterface } from 'instruments/src/MFD/FMC/FmcInterface';
 
 export interface OANSProps extends ComponentProps {
     bus: EventBus;
     instrument: BaseInstrument;
-    fmService: MfdFlightManagementService;
+    fmc: FmcInterface;
 }
 
 export enum EntityTypes {
@@ -228,14 +228,14 @@ export class OansNdUi extends DisplayComponent<OANSProps> {
                                                     dataEntryFormat={new LengthFormat(Subject.create(0), Subject.create(4000))}
                                                     value={this.thresholdShift}
                                                     mandatory={Subject.create(false)}
-                                                    errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                                                    errorHandler={(e) => this.props.fmc.showFmsErrorMessage(e)}
                                                 />
                                                 <span class="mfd-label mfd-spacing-right bigger" style="justify-self: flex-end">END SHIFT</span>
                                                 <InputField<number>
                                                     dataEntryFormat={new LengthFormat(Subject.create(0), Subject.create(4000))}
                                                     value={this.endShift}
                                                     mandatory={Subject.create(false)}
-                                                    errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                                                    errorHandler={(e) => this.props.fmc.showFmsErrorMessage(e)}
                                                 />
                                             </div>
                                             <div style="display: flex; flex-direction: row; justify-content: center; margin-top: 10px;">

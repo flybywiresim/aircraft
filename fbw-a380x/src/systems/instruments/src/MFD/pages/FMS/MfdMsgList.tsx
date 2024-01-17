@@ -1,15 +1,16 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
 
-import { DisplayComponent, FSComponent, Subject, SubscribableArray, SubscribableArrayEventType, Subscription, VNode } from '@microsoft/msfs-sdk';
+import { ClockEvents, DisplayComponent, EventBus, FSComponent, Subject, Subscription, VNode } from '@microsoft/msfs-sdk';
 
 import './MfdMsgList.scss';
-import { AbstractMfdPageProps, FmsErrorMessage } from 'instruments/src/MFD/MFD';
 import { Button } from 'instruments/src/MFD/pages/common/Button';
 import { ActivePageTitleBar } from 'instruments/src/MFD/pages/common/ActivePageTitleBar';
+import { FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServiceInterface';
 
-interface MfdMsgListProps extends AbstractMfdPageProps {
+interface MfdMsgListProps {
     visible: Subject<boolean>;
-    messages: SubscribableArray<FmsErrorMessage>;
+    bus: EventBus;
+    fmcService: FmcServiceInterface;
 }
 
 export class MfdMsgList extends DisplayComponent<MfdMsgListProps> {
@@ -22,43 +23,34 @@ export class MfdMsgList extends DisplayComponent<MfdMsgListProps> {
 
     protected onNewData: () => {};
 
+    // Yeah, it's expensive, but rn I won't find a better way
+    private renderMessageList() {
+        const arr = this.props.fmcService.master.fmsErrors.getArray();
+
+        if (arr.length > 5) {
+            console.warn('More than 5 FMS messages, truncating.');
+        }
+
+        // Clear all items
+        while (this.msgListContainer.getOrDefault().firstChild) {
+            this.msgListContainer.getOrDefault().removeChild(this.msgListContainer.getOrDefault().firstChild);
+        }
+
+        // Render them
+        arr.forEach((it, idx) => {
+            if (idx < 4) {
+                FSComponent.render(<div class="mfd-label msg-list-element">{it.messageText}</div>, this.msgListContainer.instance);
+            }
+        });
+    }
+
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        this.subs.push(this.props.messages.sub((idx, type, item, arr) => {
-            if (arr.length > 5) {
-                console.warn('More than 5 FMS messages, truncating.');
-            }
-
-            // Updating container children
-            // TODO check if more sanity checks required on index and length
-            if (type === SubscribableArrayEventType.Cleared) {
-                while (this.msgListContainer.instance.firstChild) {
-                    this.msgListContainer.instance.removeChild(this.msgListContainer.instance.firstChild);
-                }
-            } else if (type === SubscribableArrayEventType.Removed) {
-                this.msgListContainer.instance.removeChild(this.msgListContainer.instance.children[idx]);
-
-                // Display previously truncated message
-                if (arr.length >= 5) {
-                    FSComponent.render(<div class="mfd-label msg-list-element">{arr[4]}</div>, this.msgListContainer.instance);
-                }
-            } else if (type === SubscribableArrayEventType.Added) {
-                // Add element
-                // Limitation: Can only add elements at the end of the list, have to figure out how to insert after specific child
-                if (Array.isArray(item) === true) {
-                    const itemArr = item as readonly FmsErrorMessage[];
-                    itemArr.forEach((el) => {
-                        console.log(el);
-                        FSComponent.render(<div class="mfd-label msg-list-element">{el.messageText}</div>, this.msgListContainer.instance);
-                    });
-                } else {
-                    const it = item as FmsErrorMessage;
-                    FSComponent.render(<div class="mfd-label msg-list-element">{it.messageText}</div>, this.msgListContainer.instance);
-                }
-            }
-        }, true));
         this.subs.push(this.props.visible.sub((vis) => this.topRef.getOrDefault().style.display = vis ? 'block' : 'none', true));
+
+        const sub = this.props.bus.getSubscriber<ClockEvents>();
+        this.subs.push(sub.on('realTime').atFrequency(1).handle((_t) => this.renderMessageList()));
     }
 
     public destroy(): void {

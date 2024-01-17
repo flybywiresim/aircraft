@@ -136,14 +136,14 @@ export class MfdFmsPositionIrs extends FmsPage<MfdFmsPositionIrsProps> {
                 } else {
                     this.alignmentLabel.set('IRS ALIGNED ON GPS POS:');
                 }
-                this.alignmentPosition.set(coordinateToString(this.props.fmService.navigation.getPpos(), false));
+                this.alignmentPosition.set(coordinateToString(this.props.fmcService.master.navigation.getPpos(), false));
             } else {
                 if (this.irsAreAlignedOnRefPos.get() === true) {
                     this.alignmentLabel.set('IRS ALIGNING ON REF POS:');
                 } else {
                     this.alignmentLabel.set('IRS ALIGNING ON GPS POS:');
                 }
-                this.alignmentPosition.set(coordinateToString(this.props.fmService.navigation.getPpos(), false));
+                this.alignmentPosition.set(coordinateToString(this.props.fmcService.master.navigation.getPpos(), false));
             }
         }, true));
 
@@ -176,8 +176,8 @@ export class MfdFmsPositionIrs extends FmsPage<MfdFmsPositionIrsProps> {
             const magVar = Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_IR_${ir}_HEADING`).value - Arinc429Word.fromSimVarValue(`L:A32NX_ADIRS_IR_${ir}_TRUE_HEADING`).value;
             this.irsDataMagneticVariation.set(Math.abs(magVar).toFixed(1));
             this.irsDataMagneticVariationUnit.set(magVar < 0 ? '°W' : '°E');
-            this.irsDataGpirsPosition.set(coordinateToString(this.props.fmService.navigation.getPpos(), false));
-            this.irsDataAccuracy.set(this.props.fmService.navigation.getEpe().toFixed(0));
+            this.irsDataGpirsPosition.set(coordinateToString(this.props.fmcService.master.navigation.getPpos(), false));
+            this.irsDataAccuracy.set(this.props.fmcService.master.navigation.getEpe().toFixed(0));
         }
     }
 
@@ -309,7 +309,7 @@ export class MfdFmsPositionIrs extends FmsPage<MfdFmsPositionIrsProps> {
                             mandatory={Subject.create(true)}
                             alignText="flex-end"
                             containerStyle="width: 150px; margin-left: 10px;"
-                            errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                            errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                         />
                     </div>
                     <div class="mfd-position-irs-irs-button-row">
@@ -410,10 +410,10 @@ export class MfdFmsPositionIrs extends FmsPage<MfdFmsPositionIrsProps> {
                     <div style="flex-grow: 1;" />
                     {/* fill space vertically */}
                     <div style="width: 150px;">
-                        <Button label="RETURN" onClick={() => this.props.uiService.navigateTo('back')} buttonStyle="margin-right: 5px;" />
+                        <Button label="RETURN" onClick={() => this.props.mfd.uiService.navigateTo('back')} buttonStyle="margin-right: 5px;" />
                     </div>
                 </div>
-                <Footer bus={this.props.bus} uiService={this.props.uiService} fmService={this.props.fmService} />
+                <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
             </>
         );
     }

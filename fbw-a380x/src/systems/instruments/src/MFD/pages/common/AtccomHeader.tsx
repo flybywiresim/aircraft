@@ -21,7 +21,7 @@ export class AtccomHeader extends AbstractHeader {
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        this.subs.push(this.props.uiService.activeUri.sub((val) => {
+        this.subs.push(this.props.mfd.uiService.activeUri.sub((val) => {
             this.connectIsSelected.set(val.category === 'connect');
             this.requestIsSelected.set(val.category === 'request');
             this.reportModifyIsSelected.set(val.category === 'report-modify');
@@ -47,16 +47,16 @@ export class AtccomHeader extends AbstractHeader {
                         isActive={this.connectIsSelected}
                         label="CONNECT"
                         menuItems={[
-                            { label: 'NOTIFICATION', action: () => this.props.uiService.navigateTo('atccom/connect/notification') },
-                            { label: 'CONNECTION STATUS', action: () => this.props.uiService.navigateTo('atccom/connect/conn-status') },
-                            { label: 'MAX UPLINK DELAY', action: () => this.props.uiService.navigateTo('atccom/connect/max-uplink-delay') }]}
+                            { label: 'NOTIFICATION', action: () => this.props.mfd.uiService.navigateTo('atccom/connect/notification') },
+                            { label: 'CONNECTION STATUS', action: () => this.props.mfd.uiService.navigateTo('atccom/connect/conn-status') },
+                            { label: 'MAX UPLINK DELAY', action: () => this.props.mfd.uiService.navigateTo('atccom/connect/max-uplink-delay') }]}
                         idPrefix="pageSelectorConnect"
                         containerStyle="flex: 1"
                     />
                     <PageSelectorDropdownMenu
                         isActive={this.requestIsSelected}
                         label="REQUEST"
-                        menuItems={[{ label: '', action: () => this.props.uiService.navigateTo('atccom/request') }]}
+                        menuItems={[{ label: '', action: () => this.props.mfd.uiService.navigateTo('atccom/request') }]}
                         idPrefix="pageSelectorRequest"
                         containerStyle="flex: 1"
                     />
@@ -64,9 +64,9 @@ export class AtccomHeader extends AbstractHeader {
                         isActive={this.reportModifyIsSelected}
                         label="REPORTY & MODIFY"
                         menuItems={[
-                            { label: 'POSITION', action: () => this.props.uiService.navigateTo('atccom/report-modify/position') },
-                            { label: 'MODIFY', action: () => this.props.uiService.navigateTo('atccom/report-modify/modify') },
-                            { label: 'OTHER REPORTS', action: () => this.props.uiService.navigateTo('atccom/report-modify/other-reports') },
+                            { label: 'POSITION', action: () => this.props.mfd.uiService.navigateTo('atccom/report-modify/position') },
+                            { label: 'MODIFY', action: () => this.props.mfd.uiService.navigateTo('atccom/report-modify/modify') },
+                            { label: 'OTHER REPORTS', action: () => this.props.mfd.uiService.navigateTo('atccom/report-modify/other-reports') },
                         ]}
                         idPrefix="pageSelectorReportModify"
                         containerStyle="flex: 1"
@@ -74,21 +74,21 @@ export class AtccomHeader extends AbstractHeader {
                     <PageSelectorDropdownMenu
                         isActive={this.msgRecordIsSelected}
                         label="MSG RECORD"
-                        menuItems={[{ label: '', action: () => this.props.uiService.navigateTo('atccom/msg-record') }]}
+                        menuItems={[{ label: '', action: () => this.props.mfd.uiService.navigateTo('atccom/msg-record') }]}
                         idPrefix="pageSelectorMsgRecord"
                         containerStyle="flex: 1"
                     />
                     <PageSelectorDropdownMenu
                         isActive={this.atisIsSelected}
                         label="ATIS"
-                        menuItems={[{ label: '', action: () => this.props.uiService.navigateTo('atccom/atis') }]}
+                        menuItems={[{ label: '', action: () => this.props.mfd.uiService.navigateTo('atccom/atis') }]}
                         idPrefix="pageSelectorAtis"
                         containerStyle="flex: 1"
                     />
                     <PageSelectorDropdownMenu
                         isActive={this.emerIsSelected}
                         label="EMER"
-                        menuItems={[{ label: '', action: () => this.props.uiService.navigateTo('atccom/emer') }]}
+                        menuItems={[{ label: '', action: () => this.props.mfd.uiService.navigateTo('atccom/emer') }]}
                         idPrefix="pageSelectorEmer"
                         containerStyle="flex: 1"
                     />

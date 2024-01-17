@@ -9,11 +9,11 @@ import { PendingAirways } from '@fmgc/flightplanning/new/plans/PendingAirways';
 import { InputField } from 'instruments/src/MFD/pages/common/InputField';
 import { AirwayFormat, WaypointFormat } from 'instruments/src/MFD/pages/common/DataEntryFormats';
 import { NavigationDatabase, NavigationDatabaseBackend } from '@fmgc/NavigationDatabase';
-import { MfdFlightManagementService } from 'instruments/src/MFD/pages/common/MfdFlightManagementService';
 import { Fix } from 'msfs-navdata';
 import { FmsErrorType } from '@fmgc/FmsError';
 import { IconButton } from 'instruments/src/MFD/pages/common/IconButton';
 import { NXSystemMessages } from 'instruments/src/MFD/pages/FMS/legacy/NXSystemMessages';
+import { FmcInterface } from 'instruments/src/MFD/FMC/FmcInterface';
 
 interface MfdFmsFplnAirwaysProps extends AbstractMfdPageProps {
 }
@@ -36,8 +36,8 @@ export class MfdFmsFplnAirways extends FmsPage<MfdFmsFplnAirwaysProps> {
     protected onNewData(): void {
         console.time('AIRWAYS:onNewData');
 
-        if (this.props.fmService.revisedWaypoint()) {
-            this.revisedFixIdent.set(this.props.fmService.revisedWaypoint().ident);
+        if (this.props.fmcService.master.revisedWaypoint()) {
+            this.revisedFixIdent.set(this.props.fmcService.master.revisedWaypoint().ident);
         }
 
         console.timeEnd('AIRWAYS:onNewData');
@@ -48,7 +48,7 @@ export class MfdFmsFplnAirways extends FmsPage<MfdFmsFplnAirwaysProps> {
         if (this.airwayLinesRef.instance.children.length <= 10) {
             const line = (
                 <AirwayLine
-                    fmService={this.props.fmService}
+                    fmc={this.props.fmcService.master}
                     pendingAirways={this.loadedFlightPlan.pendingAirways}
                     fromFix={fromFix}
                     isFirstLine={false}
@@ -69,9 +69,9 @@ export class MfdFmsFplnAirways extends FmsPage<MfdFmsFplnAirwaysProps> {
 
         const firstLine = (
             <AirwayLine
-                fmService={this.props.fmService}
+                fmc={this.props.fmcService.master}
                 pendingAirways={this.loadedFlightPlan.pendingAirways}
-                fromFix={this.props.fmService.revisedWaypoint()}
+                fromFix={this.props.fmcService.master.revisedWaypoint()}
                 isFirstLine
                 nextLineCallback={(fix) => this.renderNextLine(fix)}
             />
@@ -121,8 +121,8 @@ export class MfdFmsFplnAirways extends FmsPage<MfdFmsFplnAirwaysProps> {
                         <Button
                             label="RETURN"
                             onClick={() => {
-                                this.props.fmService.resetRevisedWaypoint();
-                                this.props.uiService.navigateTo(`fms/${this.props.uiService.activeUri.get().category}/f-pln`);
+                                this.props.fmcService.master.resetRevisedWaypoint();
+                                this.props.mfd.uiService.navigateTo(`fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln`);
                             }}
                         />
                     </div>
@@ -131,22 +131,22 @@ export class MfdFmsFplnAirways extends FmsPage<MfdFmsFplnAirwaysProps> {
                             label="TMPY F-PLN"
                             onClick={async () => {
                                 this.loadedFlightPlan.pendingAirways.finalize();
-                                this.props.fmService.resetRevisedWaypoint();
-                                this.props.uiService.navigateTo(`fms/${this.props.uiService.activeUri.get().category}/f-pln`);
+                                this.props.fmcService.master.resetRevisedWaypoint();
+                                this.props.mfd.uiService.navigateTo(`fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln`);
                             }}
                             buttonStyle="color: #ffff00;"
                         />
                     </div>
                 </div>
                 {/* end page content */}
-                <Footer bus={this.props.bus} uiService={this.props.uiService} fmService={this.props.fmService} />
+                <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
             </>
         );
     }
 }
 
 interface AirwayLineProps extends ComponentProps {
-    fmService: MfdFlightManagementService;
+    fmc: FmcInterface;
     pendingAirways: PendingAirways;
     fromFix: Fix;
     isFirstLine: boolean;
@@ -183,17 +183,17 @@ class AirwayLine extends DisplayComponent<AirwayLineProps> {
 
                             const fixes = await this.db.searchAllFix(this.props.fromFix.ident);
                             if (fixes.length === 0) {
-                                this.props.fmService.mfd.showFmsErrorMessage(FmsErrorType.NotInDatabase);
+                                this.props.fmc.showFmsErrorMessage(FmsErrorType.NotInDatabase);
                                 return false;
                             }
                             let chosenFix = fixes[0];
                             if (fixes.length > 1) {
-                                chosenFix = await this.props.fmService.mfd.deduplicateFacilities(fixes);
+                                chosenFix = await this.props.fmc.deduplicateFacilities(fixes);
                             }
 
                             const airways = await this.db.searchAirway(v, chosenFix);
                             if (airways.length === 0) {
-                                this.props.fmService.mfd.showFmsErrorMessage(FmsErrorType.NotInDatabase);
+                                this.props.fmc.showFmsErrorMessage(FmsErrorType.NotInDatabase);
                                 return false;
                             }
 
@@ -202,7 +202,7 @@ class AirwayLine extends DisplayComponent<AirwayLineProps> {
                                 this.viaFieldDisabled.set(true);
                                 this.toFieldDisabled.set(false);
                             } else {
-                                this.props.fmService.mfd.addMessageToQueue(NXSystemMessages.notAllowed);
+                                this.props.fmc.addMessageToQueue(NXSystemMessages.notAllowed, undefined, undefined);
                             }
                             return success;
                         }}
@@ -210,7 +210,7 @@ class AirwayLine extends DisplayComponent<AirwayLineProps> {
                         value={this.viaField}
                         disabled={this.viaFieldDisabled}
                         alignText="center"
-                        errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                        errorHandler={(e) => this.props.fmc.showFmsErrorMessage(e)}
                     />
                 </div>
                 <div class="fr" style="align-items: center;">
@@ -228,12 +228,12 @@ class AirwayLine extends DisplayComponent<AirwayLineProps> {
 
                             const fixes = await this.db.searchAllFix(v);
                             if (fixes.length === 0) {
-                                this.props.fmService.mfd.showFmsErrorMessage(FmsErrorType.NotInDatabase);
+                                this.props.fmc.showFmsErrorMessage(FmsErrorType.NotInDatabase);
                                 return false;
                             }
                             let chosenFix = fixes[0];
                             if (fixes.length > 1) {
-                                chosenFix = await this.props.fmService.mfd.deduplicateFacilities(fixes);
+                                chosenFix = await this.props.fmc.deduplicateFacilities(fixes);
                             }
 
                             const success = this.props.pendingAirways.thenTo(chosenFix);
@@ -241,7 +241,7 @@ class AirwayLine extends DisplayComponent<AirwayLineProps> {
                                 this.toFieldDisabled.set(true);
                                 this.props.nextLineCallback(chosenFix);
                             } else {
-                                this.props.fmService.mfd.addMessageToQueue(NXSystemMessages.noIntersectionFound);
+                                this.props.fmc.addMessageToQueue(NXSystemMessages.noIntersectionFound, undefined, undefined);
                             }
                             return success;
                         }}
@@ -249,7 +249,7 @@ class AirwayLine extends DisplayComponent<AirwayLineProps> {
                         value={this.toField}
                         disabled={this.toFieldDisabled}
                         alignText="center"
-                        errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                        errorHandler={(e) => this.props.fmc.showFmsErrorMessage(e)}
                     />
                 </div>
             </div>

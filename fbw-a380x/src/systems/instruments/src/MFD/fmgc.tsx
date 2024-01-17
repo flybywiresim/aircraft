@@ -69,7 +69,7 @@ export class FmgcData {
 
     public readonly taxiFuelPilotEntry = Subject.create<number>(undefined); // in kg
 
-    public readonly taxiFuel = this.taxiFuelPilotEntry.map((it) => ((it === undefined) ? AirlineModifiableInformation['EK'].taxiFuel : it)); // in kg
+    public readonly taxiFuel = this.taxiFuelPilotEntry.map((it) => ((it === undefined) ? AirlineModifiableInformation.EK.taxiFuel : it)); // in kg
 
     public readonly taxiFuelIsPilotEntered = this.taxiFuelPilotEntry.map((it) => it !== undefined);
 
@@ -81,7 +81,7 @@ export class FmgcData {
 
     public readonly routeReserveFuelPercentagePilotEntry = Subject.create<number>(undefined); // in percent
 
-    public readonly routeReserveFuelPercentage = this.routeReserveFuelPercentagePilotEntry.map((it) => ((it === undefined) ? AirlineModifiableInformation['EK'].rteRsv : it)); // in percent
+    public readonly routeReserveFuelPercentage = this.routeReserveFuelPercentagePilotEntry.map((it) => ((it === undefined) ? AirlineModifiableInformation.EK.rteRsv : it)); // in percent
 
     public readonly routeReserveFuelIsPilotEntered = MappedSubject.create((
         [fuel, time],
@@ -237,7 +237,7 @@ export class FmgcData {
 /**
  * Implementation of Fmgc interface. Not associated to flight plans right now, which should be the case for some of these values
  */
-export class FmgcDataInterface implements Fmgc {
+export class FmgcDataService implements Fmgc {
     public data = new FmgcData();
 
     public guidanceController: GuidanceController;

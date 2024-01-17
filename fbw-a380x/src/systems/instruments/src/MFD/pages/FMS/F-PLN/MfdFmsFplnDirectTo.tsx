@@ -45,7 +45,7 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
         console.time('DIRECT-TO:onNewData');
 
         // Use active FPLN for building the list (page only works for active anyways)
-        const activeFpln = this.props.fmService.flightPlanService.active;
+        const activeFpln = this.props.fmcService.master.flightPlanService.active;
         const wpt = activeFpln.allLegs.slice(
             activeFpln.activeLegIndex,
             activeFpln.firstMissedApproachLegIndex,
@@ -60,8 +60,8 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
         // Existance of TMPY fpln is indicator for pending direct to revision
         if (this.loadedFlightPlanIndex.get() === FlightPlanIndex.Temporary) {
             // If waypoint was revised, select revised wpt
-            if (this.props.fmService.revisedWaypoint() !== undefined) {
-                const selectedLegIndex = this.availableWaypoints.getArray().findIndex((it) => it === this.props.fmService.revisedWaypoint().ident);
+            if (this.props.fmcService.master.revisedWaypoint() !== undefined) {
+                const selectedLegIndex = this.availableWaypoints.getArray().findIndex((it) => it === this.props.fmcService.master.revisedWaypoint().ident);
                 if (selectedLegIndex !== -1) {
                     this.selectedWaypointIndex.set(selectedLegIndex);
                 }
@@ -84,19 +84,19 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
     }
 
     private async onDropdownModified(idx: number, text: string): Promise<void> {
-        if (this.props.fmService.flightPlanService.hasTemporary) {
-            await this.props.fmService.flightPlanService.temporaryDelete();
-            this.props.fmService.resetRevisedWaypoint();
+        if (this.props.fmcService.master.flightPlanService.hasTemporary) {
+            await this.props.fmcService.master.flightPlanService.temporaryDelete();
+            this.props.fmcService.master.resetRevisedWaypoint();
         }
 
-        const fpln = this.props.fmService.flightPlanService.active;
+        const fpln = this.props.fmcService.master.flightPlanService.active;
         if (idx >= 0) {
             if (this.availableWaypoints.get(idx)
                 && fpln.findLegIndexByFixIdent(this.availableWaypoints.get(idx))) {
                 this.selectedWaypointIndex.set(idx);
                 this.manualWptIdent = null;
-                await this.props.fmService.flightPlanService.directToLeg(
-                    this.props.fmService.navigation.getPpos(),
+                await this.props.fmcService.master.flightPlanService.directToLeg(
+                    this.props.fmcService.master.navigation.getPpos(),
                     SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree'),
                     fpln.findLegIndexByFixIdent(this.availableWaypoints.get(idx)),
                     this.directToOption.get() === DirectToOption.DIRECT_WITH_ABEAM,
@@ -104,10 +104,10 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
                 );
             }
         } else {
-            const wpt = await WaypointEntryUtils.getOrCreateWaypoint(this.props.fmService.mfd, text, true, undefined);
+            const wpt = await WaypointEntryUtils.getOrCreateWaypoint(this.props.fmcService.master, text, true, undefined);
             this.manualWptIdent = wpt.ident;
-            await this.props.fmService.flightPlanService.directToWaypoint(
-                this.props.fmService.navigation.getPpos(),
+            await this.props.fmcService.master.flightPlanService.directToWaypoint(
+                this.props.fmcService.master.navigation.getPpos(),
                 SimVar.GetSimVarValue('GPS GROUND TRUE TRACK', 'degree'),
                 wpt,
                 this.directToOption.get() === DirectToOption.DIRECT_WITH_ABEAM,
@@ -204,8 +204,8 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
                         <Button
                             label="ERASE<br />DIR TO*"
                             onClick={async () => {
-                                await this.props.fmService.flightPlanService.temporaryDelete();
-                                this.props.uiService.navigateTo(`fms/${this.props.uiService.activeUri.get().category}/f-pln`);
+                                await this.props.fmcService.master.flightPlanService.temporaryDelete();
+                                this.props.mfd.uiService.navigateTo(`fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln`);
                             }}
                             buttonStyle="color: #e68000;"
                         />
@@ -213,22 +213,22 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
                     <div ref={this.returnButtonDiv} class="mfd-fms-direct-to-erase-return-btn">
                         <Button
                             label="RETURN"
-                            onClick={() => this.props.uiService.navigateTo(`fms/${this.props.uiService.activeUri.get().category}/f-pln`)}
+                            onClick={() => this.props.mfd.uiService.navigateTo(`fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln`)}
                         />
                     </div>
                     <div ref={this.tmpyInsertButtonDiv} class="mfd-fms-direct-to-erase-return-btn">
                         <Button
                             label="INSERT<br />DIR TO*"
                             onClick={async () => {
-                                this.props.fmService.flightPlanService.temporaryInsert();
-                                this.props.uiService.navigateTo(`fms/${this.props.uiService.activeUri.get().category}/f-pln`);
+                                this.props.fmcService.master.flightPlanService.temporaryInsert();
+                                this.props.mfd.uiService.navigateTo(`fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln`);
                             }}
                             buttonStyle="color: #e68000;"
                         />
                     </div>
                 </div>
                 {/* end page content */}
-                <Footer bus={this.props.bus} uiService={this.props.uiService} fmService={this.props.fmService} />
+                <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
             </>
         );
     }

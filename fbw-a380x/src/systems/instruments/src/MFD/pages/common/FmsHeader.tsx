@@ -17,7 +17,7 @@ export class FmsHeader extends AbstractHeader {
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        this.subs.push(this.props.uiService.activeUri.sub((val) => {
+        this.subs.push(this.props.mfd.uiService.activeUri.sub((val) => {
             this.activeIsSelected.set(val.category === 'active');
             this.positionIsSelected.set(val.category === 'position');
             this.secIndexIsSelected.set(val.category === 'sec' || val.category === 'sec1' || val.category === 'sec2' || val.category === 'sec3');
@@ -41,11 +41,11 @@ export class FmsHeader extends AbstractHeader {
                         isActive={this.activeIsSelected}
                         label="ACTIVE"
                         menuItems={[
-                            { label: 'F-PLN', action: () => this.props.uiService.navigateTo('fms/active/f-pln') },
-                            { label: 'PERF', action: () => this.props.uiService.navigateTo('fms/active/perf') },
-                            { label: 'FUEL&LOAD', action: () => this.props.uiService.navigateTo('fms/active/fuel-load') },
-                            { label: 'WIND', action: () => this.props.uiService.navigateTo('fms/active/wind'), disabled: true },
-                            { label: 'INIT', action: () => this.props.uiService.navigateTo('fms/active/init') }]}
+                            { label: 'F-PLN', action: () => this.props.mfd.uiService.navigateTo('fms/active/f-pln') },
+                            { label: 'PERF', action: () => this.props.mfd.uiService.navigateTo('fms/active/perf') },
+                            { label: 'FUEL&LOAD', action: () => this.props.mfd.uiService.navigateTo('fms/active/fuel-load') },
+                            { label: 'WIND', action: () => this.props.mfd.uiService.navigateTo('fms/active/wind'), disabled: true },
+                            { label: 'INIT', action: () => this.props.mfd.uiService.navigateTo('fms/active/init') }]}
                         idPrefix="pageSelectorActive"
                         containerStyle="flex: 1"
                     />
@@ -53,11 +53,11 @@ export class FmsHeader extends AbstractHeader {
                         isActive={this.positionIsSelected}
                         label="POSITION"
                         menuItems={[
-                            { label: 'MONITOR', action: () => this.props.uiService.navigateTo('fms/position/monitor'), disabled: true },
-                            { label: 'REPORT', action: () => this.props.uiService.navigateTo('fms/position/report'), disabled: true },
-                            { label: 'NAVAIDS', action: () => this.props.uiService.navigateTo('fms/position/navaids') },
-                            { label: 'IRS', action: () => this.props.uiService.navigateTo('fms/position/irs') },
-                            { label: 'GPS', action: () => this.props.uiService.navigateTo('fms/position/gps'), disabled: true }]}
+                            { label: 'MONITOR', action: () => this.props.mfd.uiService.navigateTo('fms/position/monitor'), disabled: true },
+                            { label: 'REPORT', action: () => this.props.mfd.uiService.navigateTo('fms/position/report'), disabled: true },
+                            { label: 'NAVAIDS', action: () => this.props.mfd.uiService.navigateTo('fms/position/navaids') },
+                            { label: 'IRS', action: () => this.props.mfd.uiService.navigateTo('fms/position/irs') },
+                            { label: 'GPS', action: () => this.props.mfd.uiService.navigateTo('fms/position/gps'), disabled: true }]}
                         idPrefix="pageSelectorPosition"
                         containerStyle="flex: 1"
                     />
@@ -65,9 +65,9 @@ export class FmsHeader extends AbstractHeader {
                         isActive={this.secIndexIsSelected}
                         label="SEC INDEX"
                         menuItems={[
-                            { label: 'SEC 1', action: () => this.props.uiService.navigateTo('fms/sec1/init'), disabled: true },
-                            { label: 'SEC 2', action: () => this.props.uiService.navigateTo('fms/sec2/init'), disabled: true },
-                            { label: 'SEC 3', action: () => this.props.uiService.navigateTo('fms/sec3/init'), disabled: true }]}
+                            { label: 'SEC 1', action: () => this.props.mfd.uiService.navigateTo('fms/sec1/init'), disabled: true },
+                            { label: 'SEC 2', action: () => this.props.mfd.uiService.navigateTo('fms/sec2/init'), disabled: true },
+                            { label: 'SEC 3', action: () => this.props.mfd.uiService.navigateTo('fms/sec3/init'), disabled: true }]}
                         idPrefix="pageSelectorSecIndex"
                         containerStyle="flex: 1"
                     />
@@ -75,12 +75,12 @@ export class FmsHeader extends AbstractHeader {
                         isActive={this.dataIsSelected}
                         label="DATA"
                         menuItems={[
-                            { label: 'STATUS', action: () => this.props.uiService.navigateTo('fms/data/status') },
-                            { label: 'WAYPOINT', action: () => this.props.uiService.navigateTo('fms/data/waypoint'), disabled: true },
-                            { label: 'NAVAID', action: () => this.props.uiService.navigateTo('fms/data/navaid'), disabled: true },
-                            { label: 'ROUTE', action: () => this.props.uiService.navigateTo('fms/data/route'), disabled: true },
-                            { label: 'AIRPORT', action: () => this.props.uiService.navigateTo('fms/data/airport'), disabled: true },
-                            { label: 'PRINTER', action: () => this.props.uiService.navigateTo('fms/data/printer'), disabled: true }]}
+                            { label: 'STATUS', action: () => this.props.mfd.uiService.navigateTo('fms/data/status') },
+                            { label: 'WAYPOINT', action: () => this.props.mfd.uiService.navigateTo('fms/data/waypoint'), disabled: true },
+                            { label: 'NAVAID', action: () => this.props.mfd.uiService.navigateTo('fms/data/navaid'), disabled: true },
+                            { label: 'ROUTE', action: () => this.props.mfd.uiService.navigateTo('fms/data/route'), disabled: true },
+                            { label: 'AIRPORT', action: () => this.props.mfd.uiService.navigateTo('fms/data/airport'), disabled: true },
+                            { label: 'PRINTER', action: () => this.props.mfd.uiService.navigateTo('fms/data/printer'), disabled: true }]}
                         idPrefix="pageSelectorData"
                         containerStyle="flex: 1"
                     />

@@ -37,7 +37,7 @@ export abstract class FmsPage<T extends AbstractMfdPageProps> extends DisplayCom
             this.activeFlightPhase.set(val);
         }));
 
-        this.subs.push(this.props.uiService.activeUri.sub((val) => {
+        this.subs.push(this.props.mfd.uiService.activeUri.sub((val) => {
             this.activePageTitle.set(`${val.category.toUpperCase()}/${this.props.pageTitle}`);
         }, true));
 
@@ -86,34 +86,34 @@ export abstract class FmsPage<T extends AbstractMfdPageProps> extends DisplayCom
     }
 
     protected onFlightPlanChanged() {
-        switch (this.props.uiService.activeUri.get().category) {
+        switch (this.props.mfd.uiService.activeUri.get().category) {
         case 'active':
-            this.loadedFlightPlan = this.props.fmService.flightPlanService.activeOrTemporary;
-            this.loadedFlightPlanIndex.set(this.props.fmService.flightPlanService.hasTemporary ? FlightPlanIndex.Temporary : FlightPlanIndex.Active);
+            this.loadedFlightPlan = this.props.fmcService.master.flightPlanService.activeOrTemporary;
+            this.loadedFlightPlanIndex.set(this.props.fmcService.master.flightPlanService.hasTemporary ? FlightPlanIndex.Temporary : FlightPlanIndex.Active);
             this.secActive.set(false);
-            this.tmpyActive.set(this.props.fmService.flightPlanService.hasTemporary);
+            this.tmpyActive.set(this.props.fmcService.master.flightPlanService.hasTemporary);
             break;
         case 'sec1':
-            this.loadedFlightPlan = this.props.fmService.flightPlanService.secondary(1);
+            this.loadedFlightPlan = this.props.fmcService.master.flightPlanService.secondary(1);
             this.loadedFlightPlanIndex.set(FlightPlanIndex.FirstSecondary);
             this.secActive.set(true);
             this.tmpyActive.set(false);
             break;
         case 'sec2':
-            this.loadedFlightPlan = this.props.fmService.flightPlanService.secondary(2);
+            this.loadedFlightPlan = this.props.fmcService.master.flightPlanService.secondary(2);
             this.loadedFlightPlanIndex.set(FlightPlanIndex.FirstSecondary + 1);
             this.secActive.set(true);
             this.tmpyActive.set(false);
             break;
         case 'sec3':
-            this.loadedFlightPlan = this.props.fmService.flightPlanService.secondary(3);
+            this.loadedFlightPlan = this.props.fmcService.master.flightPlanService.secondary(3);
             this.loadedFlightPlanIndex.set(FlightPlanIndex.FirstSecondary + 2);
             this.secActive.set(true);
             this.tmpyActive.set(false);
             break;
 
         default:
-            this.loadedFlightPlan = this.props.fmService.flightPlanService.activeOrTemporary;
+            this.loadedFlightPlan = this.props.fmcService.master.flightPlanService.activeOrTemporary;
             break;
         }
         this.onNewDataChecks();
@@ -124,7 +124,7 @@ export abstract class FmsPage<T extends AbstractMfdPageProps> extends DisplayCom
     protected abstract onNewData();
 
     private onNewDataChecks() {
-        const fm = this.props.fmService.fmgc.data;
+        const fm = this.props.fmcService.master.fmgc.data;
         const pd = this.loadedFlightPlan.performanceData;
 
         if (this.loadedFlightPlan.originRunway) {
@@ -139,7 +139,7 @@ export abstract class FmsPage<T extends AbstractMfdPageProps> extends DisplayCom
                 fm.v2ToBeConfirmed.set(pd.v2);
                 this.loadedFlightPlan.setPerformanceData('v2', undefined);
 
-                this.props.fmService.mfd.addMessageToQueue(NXSystemMessages.checkToData, () => this.loadedFlightPlan.performanceData.vr !== undefined);
+                this.props.fmcService.master.addMessageToQueue(NXSystemMessages.checkToData, () => this.loadedFlightPlan.performanceData.vr !== undefined, undefined);
             }
         }
     }

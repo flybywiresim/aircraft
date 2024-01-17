@@ -63,11 +63,11 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
     private transAltIsPilotEntered = Subject.create<boolean>(false);
 
-    private thrRedAlt = Subject.create<number>(AirlineModifiableInformation['EK'].thrRedAlt);
+    private thrRedAlt = Subject.create<number>(AirlineModifiableInformation.EK.thrRedAlt);
 
     private thrRedAltIsPilotEntered = Subject.create<boolean>(false);
 
-    private accelAlt = Subject.create<number>(AirlineModifiableInformation['EK'].accAlt);
+    private accelAlt = Subject.create<number>(AirlineModifiableInformation.EK.accAlt);
 
     private accelRedAltIsPilotEntered = Subject.create<boolean>(false);
 
@@ -137,7 +137,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
     private shouldShowConfirmVSpeeds() {
         const pd = this.loadedFlightPlan.performanceData;
-        const fm = this.props.fmService.fmgc.data;
+        const fm = this.props.fmcService.master.fmgc.data;
         const vSpeedSet = pd.v1 !== undefined || pd.vr !== undefined || pd.v2 !== undefined;
         const tbc = fm.v1ToBeConfirmed.get() !== undefined || fm.vrToBeConfirmed.get() !== undefined || fm.v2ToBeConfirmed.get() !== undefined;
         this.showConfirmVSpeeds(!vSpeedSet && tbc);
@@ -167,7 +167,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
     private toSelectedAntiIceIndex = Subject.create(0);
 
-    private eoAccelAlt = Subject.create(AirlineModifiableInformation['EK'].eoAccAlt);
+    private eoAccelAlt = Subject.create(AirlineModifiableInformation.EK.eoAccAlt);
 
     private eoAccelAltIsPilotEntered = Subject.create<boolean>(false);
 
@@ -178,12 +178,12 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
     private toDeratedThrustOptions = ArraySubject.create(['D01', 'D02', 'D03', 'D04', 'D05']);
 
     private toThrustSettingChanged(newIndex: TakeoffPowerSetting) {
-        this.props.fmService.fmgc.data.takeoffPowerSetting.set(newIndex);
+        this.props.fmcService.master.fmgc.data.takeoffPowerSetting.set(newIndex);
         this.showToThrustSettings(newIndex);
 
         if (newIndex === TakeoffPowerSetting.FLEX) {
             // FLEX
-            SimVar.SetSimVarValue('L:AIRLINER_TO_FLEX_TEMP', 'Number', this.props.fmService.fmgc.data.takeoffFlexTemp.get() ?? 0.1);
+            SimVar.SetSimVarValue('L:AIRLINER_TO_FLEX_TEMP', 'Number', this.props.fmcService.master.fmgc.data.takeoffFlexTemp.get() ?? 0.1);
         } else if (newIndex === TakeoffPowerSetting.DERATED) {
             // DERATED
             SimVar.SetSimVarValue('L:AIRLINER_TO_FLEX_TEMP', 'Number', 0); // 0 meaning no FLEX
@@ -362,7 +362,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
         console.time('PERF:onNewData');
 
         const pd = this.loadedFlightPlan.performanceData;
-        const fm = this.props.fmService.fmgc.data;
+        const fm = this.props.fmcService.master.fmgc.data;
 
         if (pd.cruiseFlightLevel) {
             this.crzFl.set(pd.cruiseFlightLevel);
@@ -500,7 +500,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
         const sub = this.props.bus.getSubscriber<ClockEvents & MfdSimvars>();
 
         // If extra parameter for activeUri is given, navigate to flight phase sub-page
-        switch (this.props.uiService.activeUri.get().extra) {
+        switch (this.props.mfd.uiService.activeUri.get().extra) {
         case 'to':
             this.flightPhasesSelectedPageIndex.set(0);
             break;
@@ -536,30 +536,31 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
         this.subs.push(this.toSelectedFlapsIndex.sub((v) => {
             // Convert to FlapConf
             const flapConf = v + 1;
-            this.props.fmService.fmgc.data.takeoffFlapsSetting.set(flapConf);
-            this.props.fmService.acInterface.setTakeoffFlaps(flapConf);
+            this.props.fmcService.master.fmgc.data.takeoffFlapsSetting.set(flapConf);
+            this.props.fmcService.master.acInterface.setTakeoffFlaps(flapConf);
         }));
 
         this.subs.push(sub.on('realTime').atFrequency(1).handle((_t) => {
             // Update REC MAX FL, OPT FL
-            const recMaxFl = this.props.fmService.getRecMaxFlightLevel();
+            const recMaxFl = this.props.fmcService.master.getRecMaxFlightLevel();
             this.recMaxFl.set(Number.isFinite(recMaxFl) ? recMaxFl.toFixed(0) : '---');
-            const optFl = this.props.fmService.getOptFlightLevel();
+            const optFl = this.props.fmcService.master.getOptFlightLevel();
             this.optFl.set(Number.isFinite(optFl) ? optFl.toFixed(0) : '---');
 
-            const obs = this.props.fmService.guidanceController.verticalProfileComputationParametersObserver.get();
+            const obs = this.props.fmcService.master.guidanceController.verticalProfileComputationParametersObserver.get();
 
             // CLB PRED TO automatic update
             if (this.activeFlightPhase.get() === FmgcFlightPhase.Climb) {
-                this.props.fmService.fmgc.data.climbPredictionsReferenceAutomatic.set(this.props.fmService.guidanceController.verticalProfileComputationParametersObserver.get().fcuAltitude);
+                this.props.fmcService.master.fmgc.data.climbPredictionsReferenceAutomatic
+                    .set(this.props.fmcService.master.guidanceController.verticalProfileComputationParametersObserver.get().fcuAltitude);
             } else {
-                this.props.fmService.fmgc.data.climbPredictionsReferenceAutomatic.set(null);
+                this.props.fmcService.master.fmgc.data.climbPredictionsReferenceAutomatic.set(null);
             }
 
             this.managedSpeedActive.set((obs.fcuSpeedManaged as unknown) === 1); // Should be boolean, but is number
 
             // Update CLB speed table
-            const clbSpeedLimit = this.props.fmService.fmgc.getClimbSpeedLimit();
+            const clbSpeedLimit = this.props.fmcService.master.fmgc.getClimbSpeedLimit();
             if (this.activeFlightPhase.get() < FmgcFlightPhase.Climb) {
                 this.clbTableModeLine1.set('PRESEL');
                 this.clbTableSpdLine1.set(undefined);
@@ -570,8 +571,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                 this.clbTableMachLine2.set(undefined);
                 this.clbTablePredLine2.set('--:--   ----');
                 this.clbTableModeLine3.set('ECON');
-                this.clbTableSpdLine3.set(this.props.fmService.fmgc.getManagedClimbSpeed().toFixed(0));
-                this.clbTableMachLine3.set(`.${this.props.fmService.fmgc.getManagedClimbSpeedMach().toFixed(2).split('.')[1]}`);
+                this.clbTableSpdLine3.set(this.props.fmcService.master.fmgc.getManagedClimbSpeed().toFixed(0));
+                this.clbTableMachLine3.set(`.${this.props.fmcService.master.fmgc.getManagedClimbSpeedMach().toFixed(2).split('.')[1]}`);
                 this.clbTablePredLine3.set(undefined);
             } else if (this.managedSpeedActive.get() === true) {
                 this.clbTableModeLine1.set('MANAGED');
@@ -580,12 +581,12 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     this.clbTableSpdLine1.set(clbSpeedLimit.speed.toFixed(0));
                     this.clbTableMachLine1.set(`.${(SimVar.GetGameVarValue('FROM KIAS TO MACH', 'number', clbSpeedLimit.speed) as number).toFixed(2).split('.')[1]}`);
                     this.clbTableModeLine3.set('ECON');
-                    this.clbTableSpdLine3.set(this.props.fmService.fmgc.getManagedClimbSpeed().toFixed(0));
-                    this.clbTableMachLine3.set(`.${this.props.fmService.fmgc.getManagedClimbSpeedMach().toFixed(2).split('.')[1]}`);
+                    this.clbTableSpdLine3.set(this.props.fmcService.master.fmgc.getManagedClimbSpeed().toFixed(0));
+                    this.clbTableMachLine3.set(`.${this.props.fmcService.master.fmgc.getManagedClimbSpeedMach().toFixed(2).split('.')[1]}`);
                     this.clbTablePredLine3.set(undefined);
                 } else {
-                    this.clbTableSpdLine1.set(this.props.fmService.fmgc.getManagedClimbSpeed().toFixed(0));
-                    this.clbTableMachLine1.set(`.${this.props.fmService.fmgc.getManagedClimbSpeedMach().toFixed(2).split('.')[1]}`);
+                    this.clbTableSpdLine1.set(this.props.fmcService.master.fmgc.getManagedClimbSpeed().toFixed(0));
+                    this.clbTableMachLine1.set(`.${this.props.fmcService.master.fmgc.getManagedClimbSpeedMach().toFixed(2).split('.')[1]}`);
                     this.clbTableModeLine3.set(undefined);
                     this.clbTableSpdLine3.set(undefined);
                     this.clbTableMachLine3.set(undefined);
@@ -609,19 +610,19 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     this.clbTableSpdLine2.set(clbSpeedLimit.speed.toFixed(0));
                     this.clbTableMachLine2.set(`.${(SimVar.GetGameVarValue('FROM KIAS TO MACH', 'number', clbSpeedLimit.speed) as number).toFixed(2).split('.')[1]}`);
                 } else {
-                    this.clbTableSpdLine2.set(this.props.fmService.fmgc.getManagedClimbSpeed().toFixed(0));
-                    this.clbTableMachLine2.set(`.${this.props.fmService.fmgc.getManagedClimbSpeedMach().toFixed(2).split('.')[1]}`);
+                    this.clbTableSpdLine2.set(this.props.fmcService.master.fmgc.getManagedClimbSpeed().toFixed(0));
+                    this.clbTableMachLine2.set(`.${this.props.fmcService.master.fmgc.getManagedClimbSpeedMach().toFixed(2).split('.')[1]}`);
                 }
                 this.clbTablePredLine2.set(undefined);
                 this.clbTableModeLine3.set('ECON');
-                this.clbTableSpdLine3.set(this.props.fmService.fmgc.getManagedClimbSpeed().toFixed(0));
-                this.clbTableMachLine3.set(`.${this.props.fmService.fmgc.getManagedClimbSpeedMach().toFixed(2).split('.')[1]}`);
+                this.clbTableSpdLine3.set(this.props.fmcService.master.fmgc.getManagedClimbSpeed().toFixed(0));
+                this.clbTableMachLine3.set(`.${this.props.fmcService.master.fmgc.getManagedClimbSpeedMach().toFixed(2).split('.')[1]}`);
                 this.clbTablePredLine3.set(undefined);
             }
             this.clbNoiseTableRef.instance.style.visibility = this.activeFlightPhase.get() >= FmgcFlightPhase.Climb ? 'hidden' : 'visible';
 
             // Update CRZ prediction
-            const crzPred = this.props.fmService?.guidanceController?.vnavDriver?.getPerfCrzToPrediction();
+            const crzPred = this.props.fmcService.master?.guidanceController?.vnavDriver?.getPerfCrzToPrediction();
             if (crzPred?.reason !== undefined && crzPred.reason === VerticalCheckpointReason.TopOfDescent) {
                 this.crzPredStepRef.getOrDefault().style.display = 'none';
                 this.crzPredDriftDownRef.getOrDefault().style.display = 'none';
@@ -643,7 +644,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
             if (crzPred?.secondsFromPresent !== undefined && crzPred?.distanceFromPresentPosition !== undefined) {
                 if (this.activeFlightPhase.get() < FmgcFlightPhase.Cruise) {
-                    if (this.props.fmService.fmgc.data.cruisePreSelSpeed.get() || this.props.fmService.fmgc.data.cruisePreSelMach.get()) {
+                    if (this.props.fmcService.master.fmgc.data.cruisePreSelSpeed.get() || this.props.fmcService.master.fmgc.data.cruisePreSelMach.get()) {
                         this.crzTablePredLine1.set(`${(new TimeHHMMFormat()).format(crzPred.secondsFromPresent / 60)}${crzPred.distanceFromPresentPosition.toFixed(0).padStart(6, ' ')}`);
                         this.crzTablePredLine2.set('');
                     } else {
@@ -670,13 +671,13 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                 this.crzTablePredLine1.set(undefined);
                 this.crzTableModeLine2.set('MANAGED');
                 this.crzTableSpdLine2.set('---');
-                this.crzTableMachLine2.set(`.${this.props.fmService.fmgc.getManagedCruiseSpeedMach().toFixed(2).split('.')[1]}`);
+                this.crzTableMachLine2.set(`.${this.props.fmcService.master.fmgc.getManagedCruiseSpeedMach().toFixed(2).split('.')[1]}`);
                 this.crzTablePredLine2.set('--:--   ----');
             } else if (this.managedSpeedActive.get() === true) {
                 this.crzTableModeLine1.set('MANAGED');
                 // TODO add speed restriction (ECON, SPD LIM, ...) in smaller font
-                this.crzTableSpdLine1.set(obs.fcuSpeed < 1 ? '---' : this.props.fmService.fmgc.getManagedClimbSpeed().toFixed(0));
-                this.crzTableMachLine1.set(obs.fcuSpeed < 1 ? `.${this.props.fmService.fmgc.getManagedCruiseSpeedMach().toFixed(2).split('.')[1]}` : '.--');
+                this.crzTableSpdLine1.set(obs.fcuSpeed < 1 ? '---' : this.props.fmcService.master.fmgc.getManagedClimbSpeed().toFixed(0));
+                this.crzTableMachLine1.set(obs.fcuSpeed < 1 ? `.${this.props.fmcService.master.fmgc.getManagedCruiseSpeedMach().toFixed(2).split('.')[1]}` : '.--');
 
                 // TODO add predictions
                 this.crzTablePredLine1.set('--:--   ----');
@@ -692,16 +693,16 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
 
                 this.crzTableModeLine2.set('MANAGED');
                 // TODO add speed restriction (ECON, SPD LIM, ...) in smaller font
-                this.crzTableSpdLine2.set(obs.fcuSpeed < 1 ? '---' : this.props.fmService.fmgc.getManagedCruiseSpeed().toFixed(0));
-                this.crzTableMachLine2.set(obs.fcuSpeed < 1 ? `.${this.props.fmService.fmgc.getManagedCruiseSpeedMach().toFixed(2).split('.')[1]}` : '.--');
+                this.crzTableSpdLine2.set(obs.fcuSpeed < 1 ? '---' : this.props.fmcService.master.fmgc.getManagedCruiseSpeed().toFixed(0));
+                this.crzTableMachLine2.set(obs.fcuSpeed < 1 ? `.${this.props.fmcService.master.fmgc.getManagedCruiseSpeedMach().toFixed(2).split('.')[1]}` : '.--');
                 this.crzTablePredLine2.set(undefined);
             }
 
             // Update CRZ DEST predictions
-            const destPred = this.props.fmService?.guidanceController?.vnavDriver?.getDestinationPrediction();
+            const destPred = this.props.fmcService.master?.guidanceController?.vnavDriver?.getDestinationPrediction();
             if (destPred?.secondsFromPresent !== undefined) {
                 this.destEta.set((new TimeHHMMFormat()).format(destPred.secondsFromPresent / 60)[0]);
-                this.destEfob.set(this.props.fmService.fmgc.getDestEFOB(true).toFixed(1));
+                this.destEfob.set(this.props.fmcService.master.fmgc.getDestEFOB(true).toFixed(1));
             }
 
             // Update DES speed table
@@ -716,8 +717,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                 this.desTablePredLine2.set(undefined);
             } else if (this.managedSpeedActive.get() === true) {
                 this.desTableModeLine1.set('MANAGED');
-                this.desTableSpdLine1.set(this.props.fmService.fmgc.getManagedDescentSpeed().toFixed(0));
-                this.desTableMachLine1.set(`.${this.props.fmService.fmgc.getManagedDescentSpeedMach().toFixed(2).split('.')[1]}`);
+                this.desTableSpdLine1.set(this.props.fmcService.master.fmgc.getManagedDescentSpeed().toFixed(0));
+                this.desTableMachLine1.set(`.${this.props.fmcService.master.fmgc.getManagedDescentSpeedMach().toFixed(2).split('.')[1]}`);
                 this.desTablePredLine1.set('--:--  ----');
                 this.desTableModeLine2.set(undefined);
                 this.desTableSpdLine2.set(undefined);
@@ -729,17 +730,19 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                 this.desTableMachLine1.set((obs.fcuSpeed < 1) ? `.${obs.fcuSpeed.toFixed(2).split('.')[1]}` : undefined);
                 this.desTablePredLine1.set('--:--  ----');
                 this.desTableModeLine2.set('MANAGED');
-                this.desTableSpdLine2.set(this.props.fmService.fmgc.getManagedDescentSpeed().toFixed(0));
-                this.desTableMachLine2.set(`.${this.props.fmService.fmgc.getManagedDescentSpeedMach().toFixed(2).split('.')[1]}`);
+                this.desTableSpdLine2.set(this.props.fmcService.master.fmgc.getManagedDescentSpeed().toFixed(0));
+                this.desTableMachLine2.set(`.${this.props.fmcService.master.fmgc.getManagedDescentSpeedMach().toFixed(2).split('.')[1]}`);
                 this.desTablePredLine2.set(undefined);
             }
 
             // Update APPR page
-            this.apprLandingWeight.set(this.props.fmService.getLandingWeight());
-            if (this.props.fmService.fmgc.data.approachWind.get()?.direction && this.props.fmService.fmgc.data.approachWind.get()?.speed && this.loadedFlightPlan.destinationRunway) {
+            this.apprLandingWeight.set(this.props.fmcService.master.getLandingWeight());
+            if (this.props.fmcService.master.fmgc.data.approachWind.get()?.direction
+            && this.props.fmcService.master.fmgc.data.approachWind.get()?.speed
+            && this.loadedFlightPlan.destinationRunway) {
                 const towerHeadwind = A380SpeedsUtils.getHeadwind(
-                    this.props.fmService.fmgc.data.approachWind.get().speed,
-                    this.props.fmService.fmgc.data.approachWind.get().direction,
+                    this.props.fmcService.master.fmgc.data.approachWind.get().speed,
+                    this.props.fmcService.master.fmgc.data.approachWind.get().direction,
                     this.loadedFlightPlan.destinationRunway.magneticBearing,
                 );
                 if (towerHeadwind < 0) {
@@ -748,8 +751,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     this.apprHeadwind.set(towerHeadwind.toFixed(0).padStart(3, '0'));
                 }
                 const towerCrosswind = A380SpeedsUtils.getHeadwind(
-                    this.props.fmService.fmgc.data.approachWind.get().speed,
-                    this.props.fmService.fmgc.data.approachWind.get().direction,
+                    this.props.fmcService.master.fmgc.data.approachWind.get().speed,
+                    this.props.fmcService.master.fmgc.data.approachWind.get().direction,
                     this.loadedFlightPlan.destinationRunway.magneticBearing + 90,
                 );
                 this.apprCrosswind.set(Math.abs(towerCrosswind).toFixed(0).padStart(3, '0'));
@@ -771,10 +774,10 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                             <span class="mfd-label mfd-spacing-right">CRZ</span>
                             <InputField<number>
                                 dataEntryFormat={new FlightLevelFormat()}
-                                dataHandlerDuringValidation={async (v) => this.props.fmService.acInterface.setCruiseFl(v)}
+                                dataHandlerDuringValidation={async (v) => this.props.fmcService.master.acInterface.setCruiseFl(v)}
                                 mandatory={Subject.create(false)}
                                 value={this.crzFl}
-                                errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                                errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                             />
                         </div>
                         <div class="mfd-label-value-container">
@@ -806,11 +809,11 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     <span class="mfd-label mfd-spacing-right">T.O SHIFT</span>
                                     <InputField<number>
                                         dataEntryFormat={new LengthFormat(Subject.create(1), this.originRunwayLength)}
-                                        dataHandlerDuringValidation={async (v) => this.props.fmService.fmgc.data.takeoffShift.set(v)}
+                                        dataHandlerDuringValidation={async (v) => this.props.fmcService.master.fmgc.data.takeoffShift.set(v)}
                                         mandatory={Subject.create(false)}
                                         inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
                                         value={this.toShift}
-                                        errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                                        errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                                     />
                                 </div>
                             </div>
@@ -828,12 +831,12 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                             inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
                                             value={this.toV1}
                                             alignText="flex-end"
-                                            errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                                            errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                                         />
                                     </div>
                                     <div class="mfd-label-value-container">
                                         <div ref={this.vSpeedsConfirmationRef[0]}>
-                                            <span class="mfd-value-tmpy">{this.props.fmService.fmgc.data.v1ToBeConfirmed}</span>
+                                            <span class="mfd-value-tmpy">{this.props.fmcService.master.fmgc.data.v1ToBeConfirmed}</span>
                                             <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                                         </div>
                                     </div>
@@ -850,7 +853,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                                 </div>,
                                             )}
                                             onClick={() => {
-                                                const fm = this.props.fmService.fmgc.data;
+                                                const fm = this.props.fmcService.master.fmgc.data;
                                                 SimVar.SetSimVarValue('L:AIRLINER_V1_SPEED', 'Knots', fm.v1ToBeConfirmed.get());
                                                 this.loadedFlightPlan.setPerformanceData('v1', fm.v1ToBeConfirmed.get());
                                                 fm.v1ToBeConfirmed.set(undefined);
@@ -866,7 +869,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     </div>
                                     <div ref={this.flapSpeedsRef[0]} class="mfd-label-value-container">
                                         <span class="mfd-label mfd-spacing-right">F</span>
-                                        <span class="mfd-value-green">{this.props.fmService.fmgc.data.flapRetractionSpeed}</span>
+                                        <span class="mfd-value-green">{this.props.fmcService.master.fmgc.data.flapRetractionSpeed}</span>
                                         <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                                     </div>
                                     <div class="mfd-label-value-container">
@@ -881,18 +884,18 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                             inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
                                             value={this.toVR}
                                             alignText="flex-end"
-                                            errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                                            errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                                         />
                                     </div>
                                     <div class="mfd-label-value-container">
                                         <div ref={this.vSpeedsConfirmationRef[1]}>
-                                            <span class="mfd-value-tmpy">{this.props.fmService.fmgc.data.vrToBeConfirmed}</span>
+                                            <span class="mfd-value-tmpy">{this.props.fmcService.master.fmgc.data.vrToBeConfirmed}</span>
                                             <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                                         </div>
                                     </div>
                                     <div ref={this.flapSpeedsRef[1]} class="mfd-label-value-container">
                                         <span class="mfd-label mfd-spacing-right">S</span>
-                                        <span class="mfd-value-green">{this.props.fmService.fmgc.data.slatRetractionSpeed}</span>
+                                        <span class="mfd-value-green">{this.props.fmcService.master.fmgc.data.slatRetractionSpeed}</span>
                                         <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                                     </div>
                                     <div class="mfd-label-value-container">
@@ -907,12 +910,12 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                             inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
                                             value={this.toV2}
                                             alignText="flex-end"
-                                            errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                                            errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                                         />
                                     </div>
                                     <div class="mfd-label-value-container">
                                         <div ref={this.vSpeedsConfirmationRef[2]}>
-                                            <span class="mfd-value-tmpy">{this.props.fmService.fmgc.data.v2ToBeConfirmed}</span>
+                                            <span class="mfd-value-tmpy">{this.props.fmcService.master.fmgc.data.v2ToBeConfirmed}</span>
                                             <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                                         </div>
                                     </div>
@@ -920,7 +923,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         <span style="margin-right: 15px; justify-content: center;">
                                             <svg width="13" height="13" viewBox="0 0 13 13"><circle cx="6" cy="6" r="5" stroke="#00ff00" stroke-width="2" /></svg>
                                         </span>
-                                        <span class="mfd-value-green">{this.props.fmService.fmgc.data.greenDotSpeed}</span>
+                                        <span class="mfd-value-green">{this.props.fmcService.master.fmgc.data.greenDotSpeed}</span>
                                         <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                                     </div>
                                 </div>
@@ -928,11 +931,11 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     visible={this.toDeratedDialogVisible}
                                     cancelAction={() => {
                                         this.toDeratedDialogVisible.set(false);
-                                        this.props.fmService.fmgc.data.takeoffDeratedSetting.set(this.toDeratedThrustPrevious);
+                                        this.props.fmcService.master.fmgc.data.takeoffDeratedSetting.set(this.toDeratedThrustPrevious);
                                     }}
                                     confirmAction={() => {
                                         this.toDeratedDialogVisible.set(false);
-                                        this.props.fmService.fmgc.data.takeoffDeratedSetting.set(this.toDeratedThrustNext);
+                                        this.props.fmcService.master.fmgc.data.takeoffDeratedSetting.set(this.toDeratedThrustNext);
                                     }}
                                     contentContainerStyle="width: 325px; height: 165px;"
                                 >
@@ -957,12 +960,12 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                             dataHandlerDuringValidation={async (v) => {
                                                 // Special case: 0 means no FLEX, 0.1 means FLEX TEMP of 0
                                                 await SimVar.SetSimVarValue('L:AIRLINER_TO_FLEX_TEMP', 'Number', v === 0 ? 0.1 : v);
-                                                this.props.fmService.fmgc.data.takeoffFlexTemp.set(v);
+                                                this.props.fmcService.master.fmgc.data.takeoffFlexTemp.set(v);
                                             }}
                                             mandatory={Subject.create(false)}
                                             inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
                                             value={this.toFlexTemp}
-                                            errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                                            errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                                         />
                                     </div>
                                     <div style="margin-top: 0px" ref={this.toDeratedInputRef}>
@@ -1007,21 +1010,21 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     <InputField<number>
                                         dataEntryFormat={new PercentageFormat(Subject.create(0), Subject.create(99.9))}
                                         dataHandlerDuringValidation={async (v) => {
-                                            this.props.fmService.fmgc.data.takeoffThsFor.set(v);
-                                            this.props.fmService.acInterface.setTakeoffTrim(v);
+                                            this.props.fmcService.master.fmgc.data.takeoffThsFor.set(v);
+                                            this.props.fmcService.master.acInterface.setTakeoffTrim(v);
                                         }}
                                         mandatory={Subject.create(true)}
                                         inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
-                                        value={this.props.fmService.fmgc.data.takeoffThsFor}
+                                        value={this.props.fmcService.master.fmgc.data.takeoffThsFor}
                                         alignText="flex-end"
-                                        errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                                        errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                                     />
                                 </div>
                                 <div style="margin-top: 15px;">
                                     <DropdownMenu
                                         values={ArraySubject.create(['OFF/APU', 'ON'])}
                                         inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
-                                        selectedIndex={this.props.fmService.fmgc.data.takeoffPacks}
+                                        selectedIndex={this.props.fmcService.master.fmgc.data.takeoffPacks}
                                         idPrefix="packsDropdown"
                                         freeTextAllowed={false}
                                         numberOfDigitsForInputField={8}
@@ -1033,7 +1036,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     <DropdownMenu
                                         values={ArraySubject.create(['OFF', 'ENG ONLY', 'ENG + WING'])}
                                         inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
-                                        selectedIndex={this.props.fmService.fmgc.data.takeoffAntiIce}
+                                        selectedIndex={this.props.fmcService.master.fmgc.data.takeoffAntiIce}
                                         idPrefix="antiIceDropdown"
                                         freeTextAllowed={false}
                                         numberOfDigitsForInputField={10}
@@ -1058,7 +1061,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         value={this.thrRedAlt}
                                         containerStyle="width: 150px;"
                                         alignText="flex-end"
-                                        errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                                        errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                                     />
                                 </div>
                                 <div>
@@ -1075,10 +1078,10 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                             dataEntryFormat={new PercentageFormat(Subject.create(40), Subject.create(110))}
                                             mandatory={Subject.create(false)}
                                             inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
-                                            value={this.props.fmService.fmgc.data.noiseN1}
+                                            value={this.props.fmcService.master.fmgc.data.noiseN1}
                                             containerStyle="width: 110px;"
                                             alignText="flex-end"
-                                            errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                                            errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                                         />
                                     </div>
                                 </div>
@@ -1092,7 +1095,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                                 <Button
                                                     label="CANCEL<br />NOISE"
                                                     onClick={() => {
-                                                        this.props.fmService.fmgc.data.noiseEnabled.set(false);
+                                                        this.props.fmcService.master.fmgc.data.noiseEnabled.set(false);
                                                         this.showNoiseFields(false);
                                                     }}
                                                 >
@@ -1118,7 +1121,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         value={this.accelAlt}
                                         containerStyle="width: 150px;"
                                         alignText="flex-end"
-                                        errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                                        errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                                     />
                                 </div>
                                 <div>
@@ -1135,10 +1138,10 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                             dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
                                             mandatory={Subject.create(false)}
                                             inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
-                                            value={this.props.fmService.fmgc.data.noiseSpeed}
+                                            value={this.props.fmcService.master.fmgc.data.noiseSpeed}
                                             containerStyle="width: 110px;"
                                             alignText="flex-end"
-                                            errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                                            errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                                         />
                                     </div>
                                 </div>
@@ -1155,7 +1158,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                                 <Button
                                                     label="NOISE"
                                                     onClick={() => {
-                                                        this.props.fmService.fmgc.data.noiseEnabled.set(true);
+                                                        this.props.fmcService.master.fmgc.data.noiseEnabled.set(true);
                                                         this.showNoiseFields(true);
                                                     }}
                                                 >
@@ -1168,13 +1171,13 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     <div ref={this.toNoiseEndInputRef}>
                                         <InputField<number>
                                             dataEntryFormat={new AltitudeOrFlightLevelFormat(this.transAlt)}
-                                            dataHandlerDuringValidation={async (v) => this.props.fmService.fmgc.data.noiseEndAltitude.set(v)}
+                                            dataHandlerDuringValidation={async (v) => this.props.fmcService.master.fmgc.data.noiseEndAltitude.set(v)}
                                             mandatory={Subject.create(false)}
                                             inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
                                             value={this.noiseEndAlt}
                                             containerStyle="width: 150px;"
                                             alignText="flex-end"
-                                            errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                                            errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                                         />
                                     </div>
                                 </div>
@@ -1190,14 +1193,14 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         dataEntryFormat={new AltitudeFormat(Subject.create(1), Subject.create(maxCertifiedAlt))}
                                         dataHandlerDuringValidation={async (v) => {
                                             this.loadedFlightPlan.setPerformanceData('pilotTransitionAltitude', v || undefined);
-                                            this.props.fmService.acInterface.updateTransitionAltitudeLevel();
+                                            this.props.fmcService.master.acInterface.updateTransitionAltitudeLevel();
                                         }}
                                         mandatory={Subject.create(false)}
                                         enteredByPilot={this.transAltIsPilotEntered}
                                         value={this.transAlt}
                                         containerStyle="width: 150px;"
                                         alignText="flex-end"
-                                        errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                                        errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                                     />
                                 </div>
                                 <div class="mfd-label-value-container">
@@ -1213,7 +1216,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         value={this.eoAccelAlt}
                                         containerStyle="width: 150px;"
                                         alignText="flex-end"
-                                        errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                                        errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                                     />
                                 </div>
                                 <div>
@@ -1248,7 +1251,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         value={this.costIndex}
                                         containerStyle="width: 75px;"
                                         alignText="center"
-                                        errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                                        errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                                     />
                                 </div>
                                 <div class="mfd-label-value-container">
@@ -1256,7 +1259,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     <DropdownMenu
                                         values={ArraySubject.create(['NONE', '01', '02', '03', '04', '05'])}
                                         inactive={Subject.create(true)} // was: this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Climb)
-                                        selectedIndex={this.props.fmService.fmgc.data.climbDerated}
+                                        selectedIndex={this.props.fmcService.master.fmgc.data.climbDerated}
                                         idPrefix="deratedClbDropdown"
                                         freeTextAllowed={false}
                                         containerStyle="width: 125px;"
@@ -1279,14 +1282,14 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     <div class="mfd-label">PRED TO </div>
                                     <InputField<number>
                                         dataEntryFormat={new AltitudeOrFlightLevelFormat(Subject.create(0), Subject.create(maxCertifiedAlt), this.transAlt)}
-                                        dataHandlerDuringValidation={async (v) => this.props.fmService.fmgc.data.climbPredictionsReferencePilotEntry.set(v)}
+                                        dataHandlerDuringValidation={async (v) => this.props.fmcService.master.fmgc.data.climbPredictionsReferencePilotEntry.set(v)}
                                         mandatory={Subject.create(false)}
                                         inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Climb)}
-                                        enteredByPilot={this.props.fmService.fmgc.data.climbPredictionsReferenceIsPilotEntered}
-                                        value={this.props.fmService.fmgc.data.climbPredictionsReference}
+                                        enteredByPilot={this.props.fmcService.master.fmgc.data.climbPredictionsReferenceIsPilotEntered}
+                                        value={this.props.fmcService.master.fmgc.data.climbPredictionsReference}
                                         containerStyle="width: 150px; margin-left: 15px;"
                                         alignText="flex-end"
-                                        errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                                        errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                                     />
                                 </div>
                                 <div class="mfd-fms-perf-speed-presel-managed-table-cell">
@@ -1295,7 +1298,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         // eslint-disable-next-line max-len
                                         'green': MappedSubject.create(([fp, pSpeed]) => (fp >= FmgcFlightPhase.Climb && fp <= FmgcFlightPhase.Descent) || (fp < FmgcFlightPhase.Climb && (Number.isFinite(pSpeed))),
                                             this.activeFlightPhase,
-                                            this.props.fmService.fmgc.data.climbPreSelSpeed),
+                                            this.props.fmcService.master.fmgc.data.climbPreSelSpeed),
                                         'biggest': this.activeFlightPhase.map((it) => (it >= FmgcFlightPhase.Climb && it <= FmgcFlightPhase.Descent)),
                                     }}
                                     >
@@ -1310,9 +1313,9 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                                 dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
                                                 mandatory={Subject.create(false)}
                                                 inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Climb)}
-                                                value={this.props.fmService.fmgc.data.climbPreSelSpeed}
+                                                value={this.props.fmcService.master.fmgc.data.climbPreSelSpeed}
                                                 alignText="flex-end"
-                                                errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                                                errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                                             />
                                         )}
                                         componentIfFalse={(
@@ -1335,7 +1338,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         'green': MappedSubject.create(([fp, managed, pSpeed]) => (fp < FmgcFlightPhase.Climb && managed && !Number.isFinite(pSpeed)),
                                             this.activeFlightPhase,
                                             this.managedSpeedActive,
-                                            this.props.fmService.fmgc.data.climbPreSelSpeed),
+                                            this.props.fmcService.master.fmgc.data.climbPreSelSpeed),
                                     }}
                                     >
                                         {this.clbTableModeLine2}
@@ -1385,7 +1388,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         dataHandlerDuringValidation={async (v) => this.loadedFlightPlan?.setPerformanceData('pilotThrustReductionAltitude', v || undefined)}
                                         containerStyle="width: 150px;"
                                         alignText="flex-end"
-                                        errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                                        errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                                     />
                                 </div>
                                 <div>
@@ -1402,10 +1405,10 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                             dataEntryFormat={new PercentageFormat(Subject.create(40), Subject.create(110))}
                                             mandatory={Subject.create(false)}
                                             inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Climb)}
-                                            value={this.props.fmService.fmgc.data.noiseN1}
+                                            value={this.props.fmcService.master.fmgc.data.noiseN1}
                                             containerStyle="width: 110px;"
                                             alignText="flex-end"
-                                            errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                                            errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                                         />
                                     </div>
                                 </div>
@@ -1419,7 +1422,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                                 <Button
                                                     label="CANCEL<br />NOISE"
                                                     onClick={() => {
-                                                        this.props.fmService.fmgc.data.noiseEnabled.set(false);
+                                                        this.props.fmcService.master.fmgc.data.noiseEnabled.set(false);
                                                         this.showNoiseFields(false);
                                                     }}
                                                 />
@@ -1441,7 +1444,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         dataHandlerDuringValidation={async (v) => this.loadedFlightPlan?.setPerformanceData('pilotAccelerationAltitude', v || undefined)}
                                         containerStyle="width: 150px;"
                                         alignText="flex-end"
-                                        errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                                        errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                                     />
                                 </div>
                                 <div>
@@ -1458,10 +1461,10 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                             dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
                                             mandatory={Subject.create(false)}
                                             inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Climb)}
-                                            value={this.props.fmService.fmgc.data.noiseSpeed}
+                                            value={this.props.fmcService.master.fmgc.data.noiseSpeed}
                                             containerStyle="width: 110px;"
                                             alignText="flex-end"
-                                            errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                                            errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                                         />
                                     </div>
                                 </div>
@@ -1472,13 +1475,13 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                 <div style="grid-column-start: span 4; width: 300px;">
                                     <div ref={this.clbSpdLimValueRef} style="grid-row-start: span 3; display: flex; justify-content: flex-start; align-items: center;">
                                         <div class="mfd-label-value-container">
-                                            <span class="mfd-value-green">{this.props.fmService.fmgc.data.climbSpeedLimit.get().speed.toFixed(0)}</span>
+                                            <span class="mfd-value-green">{this.props.fmcService.master.fmgc.data.climbSpeedLimit.get().speed.toFixed(0)}</span>
                                             <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                                         </div>
                                         <span class="mfd-value-green">/</span>
                                         <div class="mfd-label-value-container">
                                             <span class="mfd-label-unit mfd-unit-leading">FL</span>
-                                            <span class="mfd-value-green">{(this.props.fmService.fmgc.data.climbSpeedLimit.get().underAltitude / 100).toFixed(0)}</span>
+                                            <span class="mfd-value-green">{(this.props.fmcService.master.fmgc.data.climbSpeedLimit.get().underAltitude / 100).toFixed(0)}</span>
                                         </div>
                                     </div>
                                     <div ref={this.clbNoiseEndInputRef}>
@@ -1489,7 +1492,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                             value={this.noiseEndAlt}
                                             containerStyle="width: 150px;"
                                             alignText="flex-end"
-                                            errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                                            errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                                         />
                                     </div>
                                 </div>
@@ -1506,7 +1509,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                             <Button
                                                 label="NOISE"
                                                 onClick={() => {
-                                                    this.props.fmService.fmgc.data.noiseEnabled.set(true);
+                                                    this.props.fmcService.master.fmgc.data.noiseEnabled.set(true);
                                                     this.showNoiseFields(true);
                                                 }}
                                             >
@@ -1525,7 +1528,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         value={this.transAlt}
                                         containerStyle="width: 150px;"
                                         alignText="flex-end"
-                                        errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                                        errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                                     />
                                 </div>
                                 <div>
@@ -1534,7 +1537,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         height={40}
                                         condition={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
                                         componentIfFalse={(
-                                            <Button label="SPD CSTR" onClick={() => this.props.uiService.navigateTo('fms/active/f-pln-vert-rev')}>
+                                            <Button label="SPD CSTR" onClick={() => this.props.mfd.uiService.navigateTo('fms/active/f-pln-vert-rev')}>
                                                 SPD CSTR
                                             </Button>
                                         )}
@@ -1558,7 +1561,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         value={this.costIndex}
                                         containerStyle="width: 75px;"
                                         alignText="center"
-                                        errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                                        errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                                     />
                                 </div>
                             </div>
@@ -1618,8 +1621,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         // eslint-disable-next-line max-len
                                         'green': MappedSubject.create(([fp, pSpeed, pMach]) => (fp >= FmgcFlightPhase.Climb && fp <= FmgcFlightPhase.Descent) || (fp < FmgcFlightPhase.Climb && (Number.isFinite(pSpeed) || Number.isFinite(pMach))),
                                             this.activeFlightPhase,
-                                            this.props.fmService.fmgc.data.cruisePreSelSpeed,
-                                            this.props.fmService.fmgc.data.cruisePreSelMach),
+                                            this.props.fmcService.master.fmgc.data.cruisePreSelSpeed,
+                                            this.props.fmcService.master.fmgc.data.cruisePreSelMach),
                                         'biggest': this.activeFlightPhase.map((it) => (it >= FmgcFlightPhase.Climb && it <= FmgcFlightPhase.Descent)),
                                     }}
                                     >
@@ -1635,9 +1638,9 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                                 dataEntryFormat={new SpeedMachFormat(Subject.create(0.1), Subject.create(Mmo))}
                                                 mandatory={Subject.create(false)}
                                                 inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Cruise)}
-                                                value={this.props.fmService.fmgc.data.cruisePreSelMach}
+                                                value={this.props.fmcService.master.fmgc.data.cruisePreSelMach}
                                                 alignText="flex-end"
-                                                errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                                                errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                                             />
                                         )}
                                         componentIfFalse={(
@@ -1655,9 +1658,9 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                                 dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
                                                 mandatory={Subject.create(false)}
                                                 inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Cruise)}
-                                                value={this.props.fmService.fmgc.data.cruisePreSelSpeed}
+                                                value={this.props.fmcService.master.fmgc.data.cruisePreSelSpeed}
                                                 alignText="flex-end"
-                                                errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                                                errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                                             />
                                         )}
                                         componentIfFalse={(
@@ -1676,8 +1679,8 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         'green': MappedSubject.create(([fp, managed, pSpeed, pMach]) => (fp < FmgcFlightPhase.Climb && managed && !Number.isFinite(pSpeed) && !Number.isFinite(pMach)),
                                             this.activeFlightPhase,
                                             this.managedSpeedActive,
-                                            this.props.fmService.fmgc.data.cruisePreSelSpeed,
-                                            this.props.fmService.fmgc.data.cruisePreSelMach),
+                                            this.props.fmcService.master.fmgc.data.cruisePreSelSpeed,
+                                            this.props.fmcService.master.fmgc.data.cruisePreSelMach),
                                     }}
                                     >
                                         {this.crzTableModeLine2}
@@ -1751,13 +1754,13 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     <Button
                                         disabled={Subject.create(true)}
                                         label="CMS"
-                                        onClick={() => this.props.uiService.navigateTo('fms/active/f-pln-vert-rev/cms')}
+                                        onClick={() => this.props.mfd.uiService.navigateTo('fms/active/f-pln-vert-rev/cms')}
                                         buttonStyle="margin-right: 10px;"
                                     />
                                     <Button
                                         disabled={Subject.create(true)}
                                         label="STEP ALTs"
-                                        onClick={() => this.props.uiService.navigateTo('fms/active/f-pln-vert-rev/step-alts')}
+                                        onClick={() => this.props.mfd.uiService.navigateTo('fms/active/f-pln-vert-rev/step-alts')}
                                     />
                                 </div>
                             </div>
@@ -1777,7 +1780,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         value={this.costIndex}
                                         containerStyle="width: 75px;"
                                         alignText="center"
-                                        errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                                        errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                                     />
                                 </div>
                                 <div class="mfd-label-value-container" style="padding: 15px;">
@@ -1786,10 +1789,10 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         dataEntryFormat={new DescentRateFormat(Subject.create(-999), Subject.create(-100))}
                                         mandatory={Subject.create(false)}
                                         inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Cruise)}
-                                        value={this.props.fmService.fmgc.data.descentCabinRate}
+                                        value={this.props.fmcService.master.fmgc.data.descentCabinRate}
                                         containerStyle="width: 175px;"
                                         alignText="flex-end"
-                                        errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                                        errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                                     />
                                 </div>
                             </div>
@@ -1812,7 +1815,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         value={this.desPredictionsReference}
                                         containerStyle="width: 150px; margin-left: 15px;"
                                         alignText="flex-end"
-                                        errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                                        errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                                     />
                                 </div>
                                 <div class="mfd-fms-perf-speed-presel-managed-table-cell">
@@ -1839,7 +1842,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                                 inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Descent)}
                                                 value={this.desManagedMachTarget}
                                                 alignText="flex-end"
-                                                errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                                                errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                                             />
                                         )}
                                         componentIfTrue={(
@@ -1860,7 +1863,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                                 inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Descent)}
                                                 value={this.desManagedSpdTarget}
                                                 alignText="flex-end"
-                                                errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                                                errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                                             />
                                         )}
                                         componentIfFalse={(
@@ -1880,7 +1883,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         'green': MappedSubject.create(([fp, managed, pSpeed]) => (fp < FmgcFlightPhase.Climb && (managed || !Number.isFinite(pSpeed))),
                                             this.activeFlightPhase,
                                             this.managedSpeedActive,
-                                            this.props.fmService.fmgc.data.descentPreSelSpeed),
+                                            this.props.fmcService.master.fmgc.data.descentPreSelSpeed),
                                     }}
                                     >
                                         {this.desTableModeLine2}
@@ -1916,7 +1919,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                     <span class="mfd-label-unit mfd-unit-trailing">T</span>
                                 </div>
                                 <div style="display: flex; flex-direction: row;">
-                                    <Button disabled={Subject.create(true)} label="SPD CSTR" onClick={() => this.props.uiService.navigateTo('fms/active/f-pln-vert-rev')} />
+                                    <Button disabled={Subject.create(true)} label="SPD CSTR" onClick={() => this.props.mfd.uiService.navigateTo('fms/active/f-pln-vert-rev')} />
                                 </div>
                             </div>
                         </TopTabNavigatorPage>
@@ -1946,23 +1949,23 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                                 <InputField<number>
                                                     dataEntryFormat={new WindDirectionFormat()}
                                                     mandatory={Subject.create(false)}
-                                                    value={this.props.fmService.fmgc.data.approachWind.map((it) => it.direction)}
-                                                    onModified={(v) => this.props.fmService.fmgc.data.approachWind.set(
-                                                        { direction: v, speed: this.props.fmService.fmgc.data.approachWind.get().speed },
+                                                    value={this.props.fmcService.master.fmgc.data.approachWind.map((it) => it.direction)}
+                                                    onModified={(v) => this.props.fmcService.master.fmgc.data.approachWind.set(
+                                                        { direction: v, speed: this.props.fmcService.master.fmgc.data.approachWind.get().speed },
                                                     )}
                                                     alignText="center"
-                                                    errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                                                    errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                                                 />
                                                 <InputField<number>
                                                     dataEntryFormat={new WindSpeedFormat()}
                                                     mandatory={Subject.create(false)}
-                                                    value={this.props.fmService.fmgc.data.approachWind.map((it) => it.speed)}
-                                                    onModified={(v) => this.props.fmService.fmgc.data.approachWind.set(
-                                                        { direction: this.props.fmService.fmgc.data.approachWind.get().direction, speed: v },
+                                                    value={this.props.fmcService.master.fmgc.data.approachWind.map((it) => it.speed)}
+                                                    onModified={(v) => this.props.fmcService.master.fmgc.data.approachWind.set(
+                                                        { direction: this.props.fmcService.master.fmgc.data.approachWind.get().direction, speed: v },
                                                     )}
                                                     containerStyle="margin-left: 10px;"
                                                     alignText="center"
-                                                    errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                                                    errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                                                 />
                                             </div>
                                         </div>
@@ -1983,10 +1986,10 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                             <InputField<number>
                                                 dataEntryFormat={new TemperatureFormat(Subject.create(-99), Subject.create(99))}
                                                 mandatory={Subject.create(false)}
-                                                value={this.props.fmService.fmgc.data.approachTemperature}
+                                                value={this.props.fmcService.master.fmgc.data.approachTemperature}
                                                 containerStyle="width: 125px;"
                                                 alignText="flex-end"
-                                                errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                                                errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                                             />
                                         </div>
                                         <div style="display: flex; flex-direction: row; margin-top: 15px;">
@@ -2001,10 +2004,10 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                                     }
                                                 }}
                                                 mandatory={Subject.create(false)}
-                                                value={this.props.fmService.fmgc.data.approachQnh}
+                                                value={this.props.fmcService.master.fmgc.data.approachQnh}
                                                 containerStyle="width: 125px;"
                                                 alignText="flex-end"
-                                                errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                                                errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                                             />
                                         </div>
                                     </div>
@@ -2020,10 +2023,10 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                                     SimVar.SetSimVarValue('L:AIRLINER_MINIMUM_DESCENT_ALTITUDE', 'feet', v);
                                                 }}
                                                 mandatory={Subject.create(false)}
-                                                value={this.props.fmService.fmgc.data.approachBaroMinimum}
+                                                value={this.props.fmcService.master.fmgc.data.approachBaroMinimum}
                                                 containerStyle="width: 150px;"
                                                 alignText="flex-end"
-                                                errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                                                errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                                             />
                                         </div>
                                         <div style="display: flex; flex-direction: row; margin-top: 15px;">
@@ -2040,10 +2043,10 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                                     }
                                                 }}
                                                 mandatory={Subject.create(false)}
-                                                value={this.props.fmService.fmgc.data.approachRadioMinimum}
+                                                value={this.props.fmcService.master.fmgc.data.approachRadioMinimum}
                                                 containerStyle="width: 150px;"
                                                 alignText="flex-end"
-                                                errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                                                errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                                             />
                                         </div>
                                     </div>
@@ -2055,22 +2058,22 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                             <span class="mfd-fms-perf-appr-flap-speeds">
                                                 <svg width="13" height="13" viewBox="0 0 13 13"><circle cx="6" cy="6" r="5" stroke="#00ff00" stroke-width="2" /></svg>
                                             </span>
-                                            <span class="mfd-value-green">{this.props.fmService.fmgc.data.greenDotSpeed}</span>
+                                            <span class="mfd-value-green">{this.props.fmcService.master.fmgc.data.greenDotSpeed}</span>
                                             <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                                         </div>
                                         <div class="mfd-label-value-container">
                                             <span class="mfd-label mfd-spacing-right mfd-fms-perf-appr-flap-speeds">S</span>
-                                            <span class="mfd-value-green">{this.props.fmService.fmgc.data.slatRetractionSpeed}</span>
+                                            <span class="mfd-value-green">{this.props.fmcService.master.fmgc.data.slatRetractionSpeed}</span>
                                             <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                                         </div>
                                         <div class="mfd-label-value-container">
                                             <span class="mfd-label mfd-spacing-right mfd-fms-perf-appr-flap-speeds">F</span>
-                                            <span class="mfd-value-green">{this.props.fmService.fmgc.data.flapRetractionSpeed}</span>
+                                            <span class="mfd-value-green">{this.props.fmcService.master.fmgc.data.flapRetractionSpeed}</span>
                                             <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                                         </div>
                                         <div class="mfd-label-value-container" style="padding-top: 15px;">
                                             <span class="mfd-label mfd-spacing-right mfd-fms-perf-appr-flap-speeds">VREF</span>
-                                            <span class="mfd-value-green">{this.props.fmService.fmgc.data.approachVref}</span>
+                                            <span class="mfd-value-green">{this.props.fmcService.master.fmgc.data.approachVref}</span>
                                             <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                                         </div>
                                     </div>
@@ -2079,7 +2082,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                             values={['CONF 3', 'FULL']}
                                             selectedIndex={this.apprSelectedFlapsIndex}
                                             onModified={(v) => {
-                                                this.props.fmService.fmgc.data.approachFlapConfig.set(v + 3);
+                                                this.props.fmcService.master.fmgc.data.approachFlapConfig.set(v + 3);
                                                 if (v === 0) {
                                                     SimVar.SetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', 'boolean', true);
                                                 } else {
@@ -2091,7 +2094,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         />
                                         <div class="mfd-label-value-container" style="margin-top: 10px;">
                                             <span class="mfd-label mfd-spacing-right">VLS</span>
-                                            <span class="mfd-value-green">{this.props.fmService.fmgc.data.approachVls}</span>
+                                            <span class="mfd-value-green">{this.props.fmcService.master.fmgc.data.approachVls}</span>
                                             <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                                         </div>
                                     </div>
@@ -2101,9 +2104,9 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                             <InputField<number>
                                                 dataEntryFormat={new SpeedKnotsFormat(Subject.create(90), Subject.create(Vmo))}
                                                 mandatory={Subject.create(false)}
-                                                value={this.props.fmService.fmgc.data.approachSpeed}
+                                                value={this.props.fmcService.master.fmgc.data.approachSpeed}
                                                 alignText="flex-end"
-                                                errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                                                errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                                             />
                                         </div>
                                     </div>
@@ -2118,14 +2121,14 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         dataEntryFormat={new FlightLevelFormat()}
                                         dataHandlerDuringValidation={async (v) => {
                                             this.loadedFlightPlan.setPerformanceData('pilotTransitionLevel', v);
-                                            this.props.fmService.acInterface.updateTransitionAltitudeLevel();
+                                            this.props.fmcService.master.acInterface.updateTransitionAltitudeLevel();
                                         }}
                                         mandatory={Subject.create(false)}
                                         enteredByPilot={this.transFlIsPilotEntered}
                                         value={this.transFl}
                                         containerStyle="width: 110px;"
                                         alignText="flex-start"
-                                        errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                                        errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                                     />
                                 </div>
                                 <div class="mfd-label-value-container" style="padding: 15px;">
@@ -2139,19 +2142,19 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                             <div style="margin: 60px 0px 100px 200px; display: flex; flex-direction: column;">
                                 <div class="mfd-label-value-container">
                                     <span class="mfd-label mfd-spacing-right">F</span>
-                                    <span class="mfd-value-green">{this.props.fmService.fmgc.data.flapRetractionSpeed}</span>
+                                    <span class="mfd-value-green">{this.props.fmcService.master.fmgc.data.flapRetractionSpeed}</span>
                                     <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                                 </div>
                                 <div class="mfd-label-value-container">
                                     <span class="mfd-label mfd-spacing-right">S</span>
-                                    <span class="mfd-value-green">{this.props.fmService.fmgc.data.slatRetractionSpeed}</span>
+                                    <span class="mfd-value-green">{this.props.fmcService.master.fmgc.data.slatRetractionSpeed}</span>
                                     <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                                 </div>
                                 <div class="mfd-label-value-container">
                                     <span style="margin-right: 15px; text-align: right;">
                                         <svg width="13" height="13" viewBox="0 0 13 13"><circle cx="6" cy="6" r="5" stroke="#00ff00" stroke-width="2" /></svg>
                                     </span>
-                                    <span class="mfd-value-green">{this.props.fmService.fmgc.data.greenDotSpeed}</span>
+                                    <span class="mfd-value-green">{this.props.fmcService.master.fmgc.data.greenDotSpeed}</span>
                                     <span class="mfd-label-unit mfd-unit-trailing">KT</span>
                                 </div>
                             </div>
@@ -2171,7 +2174,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                             value={this.thrRedAlt}
                                             containerStyle="width: 150px;"
                                             alignText="flex-end"
-                                            errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                                            errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                                         />
                                     </div>
                                 </div>
@@ -2190,7 +2193,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                             value={this.accelAlt}
                                             containerStyle="width: 150px;"
                                             alignText="flex-end"
-                                            errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                                            errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                                         />
                                     </div>
                                     <div class="mfd-fms-perf-appr-eo-accel">
@@ -2207,7 +2210,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                             value={this.eoAccelAlt}
                                             containerStyle="width: 150px;"
                                             alignText="flex-end"
-                                            errorHandler={(e) => this.props.fmService.mfd.showFmsErrorMessage(e)}
+                                            errorHandler={(e) => this.props.fmcService.master.showFmsErrorMessage(e)}
                                         />
                                     </div>
                                 </div>
@@ -2223,7 +2226,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     </TopTabNavigator>
                     <div class="mfd-fms-perf-appr-footer">
                         <div>
-                            <Button label="RETURN" onClick={() => this.props.uiService.navigateTo('back')} buttonStyle="margin-right: 5px;" />
+                            <Button label="RETURN" onClick={() => this.props.mfd.uiService.navigateTo('back')} buttonStyle="margin-right: 5px;" />
                         </div>
                         <div ref={this.activateApprButton} style="margin-right: 5px;">
                             <Button
@@ -2237,7 +2240,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         <span style="display: flex; align-items: center; justify-content: center;">*</span>
                                     </div>,
                                 )}
-                                onClick={() => this.props.fmService.flightPhaseManager.tryGoInApproachPhase()}
+                                onClick={() => this.props.fmcService.master.tryGoInApproachPhase()}
                                 buttonStyle="color: #e68000; padding-right: 2px;"
                             />
                         </div>
@@ -2248,7 +2251,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                     </div>
                 </div>
                 {/* end page content */}
-                <Footer bus={this.props.bus} uiService={this.props.uiService} fmService={this.props.fmService} />
+                <Footer bus={this.props.bus} mfd={this.props.mfd} fmcService={this.props.fmcService} />
             </>
         );
     }

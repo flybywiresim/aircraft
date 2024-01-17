@@ -23,7 +23,7 @@ export class Footer extends DisplayComponent<AbstractMfdPageProps> {
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        this.subs.push(this.props.fmService.mfd.fmsErrors.sub((index, type, item, arr) => {
+        this.subs.push(this.props.fmcService.master.fmsErrors.sub((index, type, item, arr) => {
             const ind = arr.findIndex((el) => el.cleared === false);
 
             if (ind > -1) {
@@ -75,9 +75,9 @@ export class Footer extends DisplayComponent<AbstractMfdPageProps> {
                     label={this.buttonText}
                     onClick={() => {
                         if (this.messageToBeCleared.get() === true) {
-                            this.props.fmService.mfd.clearLatestFmsErrorMessage();
+                            this.props.fmcService.master.clearLatestFmsErrorMessage();
                         } else {
-                            this.props.fmService.mfd.openMessageList();
+                            this.props.mfd.openMessageList();
                         }
                     }}
                 />
