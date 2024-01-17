@@ -1,10 +1,11 @@
 import { ArraySubject, DisplayComponent, FSComponent, Subject, Subscribable, Subscription, VNode } from '@microsoft/msfs-sdk';
-import { AbstractMfdPageProps } from 'instruments/src/MFD/MFD';
 import { DropdownMenu } from 'instruments/src/MFD/pages/common/DropdownMenu';
+import { MfdUiService } from 'instruments/src/MFD/pages/common/MfdUiService';
 
-interface AbstractMfdHeaderProps extends AbstractMfdPageProps {
+interface AbstractMfdHeaderProps {
     activeFmsSource: Subscribable<'FMS 1' | 'FMS 2' | 'FMS 1-C' | 'FMS 2-C'>;
     callsign: Subscribable<string>;
+    uiService: MfdUiService;
 }
 
 /*
@@ -23,20 +24,20 @@ export abstract class AbstractHeader extends DisplayComponent<AbstractMfdHeaderP
 
         switch (selectedSysIndex) {
         case 0: // FMS
-            this.props.mfd.uiService.navigateTo('fms/active/init');
+            this.props.uiService.navigateTo('fms/active/init');
             break;
         case 1: // ATCCOM
-            this.props.mfd.uiService.navigateTo('atccom/connect');
+            this.props.uiService.navigateTo('atccom/connect');
             break;
         case 2: // SURV
-            this.props.mfd.uiService.navigateTo('surv/controls');
+            this.props.uiService.navigateTo('surv/controls');
             break;
         case 3: // FCU BKUP
-            this.props.mfd.uiService.navigateTo('fcubkup/afs');
+            this.props.uiService.navigateTo('fcubkup/afs');
             break;
 
         default:
-            this.props.mfd.uiService.navigateTo('fms/active/init');
+            this.props.uiService.navigateTo('fms/active/init');
             break;
         }
     }
@@ -49,7 +50,7 @@ export abstract class AbstractHeader extends DisplayComponent<AbstractMfdHeaderP
             this.availableSystems.insert(val, 0);
         }, true));
 
-        this.subs.push(this.props.mfd.uiService.activeUri.sub((val) => {
+        this.subs.push(this.props.uiService.activeUri.sub((val) => {
             switch (val.sys) {
             case 'fms':
                 this.sysSelectorSelectedIndex.set(0);
@@ -84,7 +85,7 @@ export abstract class AbstractHeader extends DisplayComponent<AbstractMfdHeaderP
                 <DropdownMenu
                     values={this.availableSystems}
                     selectedIndex={this.sysSelectorSelectedIndex}
-                    idPrefix="sysSelectorDropdown"
+                    idPrefix={`${this.props.uiService.captOrFo}_MFD_sysSelectorDropdown`}
                     freeTextAllowed={false}
                     onModified={(val) => this.changeSystem(val)}
                     containerStyle="width: 25%;"

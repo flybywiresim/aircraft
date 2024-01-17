@@ -23,6 +23,10 @@ export interface ActiveUriInformation {
  * Handles navigation (and potentially other aspects) for MFD pages
  */
 export class MfdUiService {
+    constructor(public captOrFo: 'CAPT' | 'FO') {
+
+    }
+
     public readonly activeUri = Subject.create<ActiveUriInformation>({
         uri: '',
         sys: MfdSystem.None,

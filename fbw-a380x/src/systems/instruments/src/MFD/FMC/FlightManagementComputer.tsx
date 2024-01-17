@@ -302,7 +302,6 @@ export class FlightManagementComputer implements FmcInterface {
         } else {
             fmGW = SimVar.GetSimVarValue('TOTAL WEIGHT', 'pounds') * 0.453592;
         }
-        SimVar.SetSimVarValue('L:A32NX_FM_GROSS_WEIGHT', 'Number', fmGW);
         return fmGW;
     }
 
@@ -831,6 +830,7 @@ export class FlightManagementComputer implements FmcInterface {
                 this.acInterface.updateTransitionAltitudeLevel();
                 this.acInterface.updatePerformanceData();
                 this.acInterface.updatePerfSpeeds();
+                this.acInterface.updateGrossWeight();
                 this.acInterface.toSpeedsChecks();
                 this.acInterface.setTakeoffFlaps(this.fmgc.getTakeoffFlapsSetting());
                 this.acInterface.setTakeoffTrim(this.fmgc.data.takeoffThsFor.get());

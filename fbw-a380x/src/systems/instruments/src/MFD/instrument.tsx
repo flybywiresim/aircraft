@@ -53,12 +53,30 @@ class A380X_MFD extends BaseInstrument {
 
         this.clock.init();
 
-        console.log(this.fmcService);
-        FSComponent.render(<MfdComponent ref={this.mfdCaptRef} bus={this.bus} instrument={this} fmcService={this.fmcService} />, document.getElementById('MFD_CONTENT'));
+        document.getElementById('MFD_CONTENT').style.display = 'flex';
+        document.getElementById('MFD_CONTENT').style.flexDirection = 'row';
+
+        FSComponent.render(<div id="MFD_LEFT_PARENT_DIV" style="flex: 1;" />, document.getElementById('MFD_CONTENT'));
+        FSComponent.render(<div id="MFD_RIGHT_PARENT_DIV" style="flex: 1;" />, document.getElementById('MFD_CONTENT'));
+        FSComponent.render(<MfdComponent
+            captOrFo="CAPT"
+            ref={this.mfdCaptRef}
+            bus={this.bus}
+            instrument={this}
+            fmcService={this.fmcService}
+        />, document.getElementById('MFD_LEFT_PARENT_DIV'));
+        FSComponent.render(<MfdComponent
+            captOrFo="FO"
+            ref={this.mfdFoRef}
+            bus={this.bus}
+            instrument={this}
+            fmcService={this.fmcService}
+        />, document.getElementById('MFD_RIGHT_PARENT_DIV'));
         this.fmcService.createFmc(this.mfdCaptRef.instance);
 
         // Navigate to initial page
         this.mfdCaptRef.instance.uiService.navigateTo('fms/data/status');
+        this.mfdFoRef.instance.uiService.navigateTo('fms/data/status');
 
         // Remove "instrument didn't load" text
         document.getElementById('MFD_CONTENT').querySelector(':scope > h1').remove();

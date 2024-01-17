@@ -49,7 +49,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
     private managedSpeedActive = Subject.create<boolean>(false);
 
     // Subjects
-    private crzFl = Subject.create<number>(32_000);
+    private crzFl = Subject.create<number>(null);
 
     private recMaxFl = Subject.create<string>('---');
 
@@ -948,7 +948,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                             valuesDisabled={this.activeFlightPhase.map((it) => Array(3).fill(it >= FmgcFlightPhase.Takeoff))}
                                             onModified={(val) => this.toThrustSettingChanged(val)}
                                             selectedIndex={this.toSelectedThrustSettingIndex}
-                                            idPrefix="toThrustSettingRadio"
+                                            idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_toThrustSettingRadio`}
                                             additionalVerticalSpacing={15}
                                         />
                                     </span>
@@ -979,7 +979,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                                 this.toDeratedThrustSelected();
                                             }}
                                             inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
-                                            idPrefix="deratedDropdown"
+                                            idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_deratedDropdown`}
                                             freeTextAllowed={false}
                                             containerStyle="width: 100px;"
                                             numberOfDigitsForInputField={3}
@@ -999,7 +999,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         values={ArraySubject.create(['1', '2', '3'])}
                                         inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
                                         selectedIndex={this.toSelectedFlapsIndex}
-                                        idPrefix="flapDropdown"
+                                        idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_flapDropdown`}
                                         freeTextAllowed={false}
                                         containerStyle="width: 75px;"
                                         numberOfDigitsForInputField={1}
@@ -1025,7 +1025,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         values={ArraySubject.create(['OFF/APU', 'ON'])}
                                         inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
                                         selectedIndex={this.props.fmcService.master.fmgc.data.takeoffPacks}
-                                        idPrefix="packsDropdown"
+                                        idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_packsDropdown`}
                                         freeTextAllowed={false}
                                         numberOfDigitsForInputField={8}
                                         alignLabels="center"
@@ -1037,7 +1037,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         values={ArraySubject.create(['OFF', 'ENG ONLY', 'ENG + WING'])}
                                         inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
                                         selectedIndex={this.props.fmcService.master.fmgc.data.takeoffAntiIce}
-                                        idPrefix="antiIceDropdown"
+                                        idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_antiIceDropdown`}
                                         freeTextAllowed={false}
                                         numberOfDigitsForInputField={10}
                                         alignLabels="center"
@@ -1260,7 +1260,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         values={ArraySubject.create(['NONE', '01', '02', '03', '04', '05'])}
                                         inactive={Subject.create(true)} // was: this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Climb)
                                         selectedIndex={this.props.fmcService.master.fmgc.data.climbDerated}
-                                        idPrefix="deratedClbDropdown"
+                                        idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_deratedClbDropdown`}
                                         freeTextAllowed={false}
                                         containerStyle="width: 125px;"
                                         numberOfDigitsForInputField={4}
@@ -2089,7 +2089,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                                     SimVar.SetSimVarValue('L:A32NX_SPEEDS_LANDING_CONF3', 'boolean', false);
                                                 }
                                             }}
-                                            idPrefix="apprFlapsSettingsRadio"
+                                            idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_apprFlapsSettingsRadio`}
                                             additionalVerticalSpacing={15}
                                         />
                                         <div class="mfd-label-value-container" style="margin-top: 10px;">

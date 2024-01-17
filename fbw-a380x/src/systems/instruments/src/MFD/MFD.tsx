@@ -48,6 +48,7 @@ interface MfdComponentProps extends ComponentProps {
     bus: EventBus;
     instrument: BaseInstrument;
     fmcService: FmcServiceInterface;
+    captOrFo: 'CAPT' | 'FO';
 }
 
 // TODO integrate in fmgc's DisplayInterface
@@ -58,7 +59,7 @@ export interface MfdDisplayInterface {
 }
 
 export class MfdComponent extends DisplayComponent<MfdComponentProps> implements DisplayInterface, MfdDisplayInterface {
-    #uiService = new MfdUiService();
+    #uiService = new MfdUiService(this.props.captOrFo);
 
     get uiService() {
         return this.#uiService;
@@ -241,7 +242,10 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
             }
         });
 
-        this.uiService.activeUri.sub((uri) => this.activeUriChanged(uri));
+        this.uiService.activeUri.sub((uri) => {
+            console.warn(`${this.props.captOrFo} ${uri.uri}`);
+            this.activeUriChanged(uri);
+        });
 
         this.topRef.instance.addEventListener('mousemove', (ev) => {
             this.mouseCursorRef.instance.updatePosition(ev.clientX, ev.clientY);
@@ -273,7 +277,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
         }
 
         // Different systems use different navigation bars
-        this.activeHeader = headerForSystem(uri.sys, this.props.bus, this.props.fmcService.master.fmgc.data.atcCallsign, this.activeFmsSource, this, this.props.fmcService);
+        this.activeHeader = headerForSystem(uri.sys, this.props.bus, this.props.fmcService.master.fmgc.data.atcCallsign, this.activeFmsSource, this.uiService);
 
         // Mapping from URL to page component
         this.activePage = pageForUrl(`${uri.sys}/${uri.category}/${uri.page}`, this.props.bus, this, this.props.fmcService);
@@ -288,7 +292,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
 
     render(): VNode {
         return (
-            <CdsDisplayUnit bus={this.props.bus} displayUnitId={DisplayUnitID.CaptMfd}>
+            <CdsDisplayUnit bus={this.props.bus} displayUnitId={this.props.captOrFo === 'CAPT' ? DisplayUnitID.CaptMfd : DisplayUnitID.FoMfd}>
                 <div class="mfd-main" ref={this.topRef}>
                     <div ref={this.activeHeaderRef} />
                     <MfdMsgList
@@ -302,7 +306,7 @@ export class MfdComponent extends DisplayComponent<MfdComponentProps> implements
                         fmcService={this.props.fmcService}
                     />
                     <div ref={this.activePageRef} class="mfd-navigator-container" />
-                    <MouseCursor side={Subject.create('CPT')} ref={this.mouseCursorRef} />
+                    <MouseCursor side={Subject.create(this.props.captOrFo)} ref={this.mouseCursorRef} />
                 </div>
             </CdsDisplayUnit>
         );

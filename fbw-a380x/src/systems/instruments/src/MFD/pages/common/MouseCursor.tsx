@@ -2,7 +2,7 @@ import { ComponentProps, DisplayComponent, FSComponent, Subscribable, VNode } fr
 import './style.scss';
 
 interface MouseCursorProps extends ComponentProps {
-    side: Subscribable<'CPT' | 'FO'>;
+    side: Subscribable<'CAPT' | 'FO'>;
 }
 
 export class MouseCursor extends DisplayComponent<MouseCursorProps> {
@@ -11,8 +11,13 @@ export class MouseCursor extends DisplayComponent<MouseCursorProps> {
     private fillColor = '#ffff00'; // or ff94ff = purple
 
     updatePosition(x: number, y: number) {
-        this.divRef.instance.style.left = `${x - 40}px`;
-        this.divRef.instance.style.top = `${y - 40}px`;
+        if (this.props.side.get() === 'CAPT') {
+            this.divRef.instance.style.left = `${x - 40}px`;
+            this.divRef.instance.style.top = `${y - 40}px`;
+        } else {
+            this.divRef.instance.style.left = `${x - 40 - 768}px`; // Workaround for double screen, remove when rpc sync implemented
+            this.divRef.instance.style.top = `${y - 40}px`;
+        }
     }
 
     show() {

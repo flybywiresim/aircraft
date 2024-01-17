@@ -15,6 +15,7 @@ interface InsertNextWptFromWindowProps extends ComponentProps {
     availableWaypoints: SubscribableArray<NextWptInfo>;
     visible: Subject<boolean>;
     contentContainerStyle?: string;
+    captOrFo: 'CAPT' | 'FO';
 }
 export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromWindowProps> {
     // Make sure to collect all subscriptions here, otherwise page navigation doesn't work.
@@ -115,7 +116,7 @@ export class InsertNextWptFromWindow extends DisplayComponent<InsertNextWptFromW
                         </span>
                         <div style="margin-left: 50px; margin-top: 10px;">
                             <DropdownMenu
-                                idPrefix="insertNextWptDropdown"
+                                idPrefix={`${this.props.captOrFo}_MFD_insertNextWptDropdown`}
                                 selectedIndex={this.selectedWaypointIndex}
                                 values={this.availableWaypointsString}
                                 freeTextAllowed

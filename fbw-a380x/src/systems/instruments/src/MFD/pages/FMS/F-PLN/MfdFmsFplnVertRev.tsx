@@ -301,7 +301,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                                     <span class="mfd-label biggest green mfd-spacing-right">{this.speedConstraintType}</span>
                                     <span class="mfd-label bigger mfd-spacing-right">SPD CSTR AT </span>
                                     <DropdownMenu
-                                        idPrefix="clbConstraintWptDropdown"
+                                        idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_clbConstraintWptDropdown`}
                                         selectedIndex={this.selectedWaypointIndex}
                                         values={this.availableWaypoints}
                                         freeTextAllowed={false}
@@ -378,7 +378,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                                     <span class="mfd-label biggest green mfd-spacing-right">{this.altitudeConstraintType}</span>
                                     <span class="mfd-label bigger mfd-spacing-right">ALT CSTR AT </span>
                                     <DropdownMenu
-                                        idPrefix="altConstraintWptDropdown"
+                                        idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_altConstraintWptDropdown`}
                                         selectedIndex={this.selectedWaypointIndex}
                                         values={this.availableWaypoints}
                                         freeTextAllowed={false}
@@ -392,7 +392,7 @@ export class MfdFmsFplnVertRev extends FmsPage<MfdFmsFplnVertRevProps> {
                                 <div class="mfd-vert-rev-alt-cstr-line">
                                     <div class="mfd-vert-rev-alt-cstr-rb">
                                         <RadioButtonGroup
-                                            idPrefix="altCstrRadioButtons"
+                                            idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_altCstrRadioButtons`}
                                             selectedIndex={this.selectedAltitudeConstraintOption}
                                             values={['AT', 'AT OR ABOVE', 'AT OR BELOW']}
                                             tmpyActive={this.tmpyActive}

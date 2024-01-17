@@ -109,6 +109,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
 
         this.activeLegIndex = this.loadedFlightPlan.activeLegIndex;
         this.update(this.displayFplnFromLineIndex.get(), onlyUpdatePredictions);
+        this.checkScrollButtons();
         this.lastRenderedFpVersion = this.loadedFlightPlan.version;
         this.lastRenderedDisplayLineIndex = this.displayFplnFromLineIndex.get();
 
@@ -150,20 +151,18 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             const newEl: DerivedFplnLegData = { distanceFromLastWpt: undefined, trackFromLastWpt: undefined, windPrediction: undefined };
 
             if (el instanceof FlightPlanLeg && index < this.loadedFlightPlan.legCount) {
-                if (index === 0) {
+                if (index === 0 || el.calculated === undefined) {
                     newEl.distanceFromLastWpt = null;
                     newEl.trackFromLastWpt = null;
                     newEl.windPrediction = WindVector.default();
                 } else {
-                    newEl.distanceFromLastWpt = (el.calculated.cumulativeDistanceWithTransitions !== undefined)
-                        ? el.calculated.cumulativeDistanceWithTransitions - lastDistanceFromStart
-                        : null;
+                    newEl.distanceFromLastWpt = el.calculated.cumulativeDistanceWithTransitions - lastDistanceFromStart;
                     newEl.trackFromLastWpt = (el.definition.waypoint) ? bearingTo(lastLegLatLong, el.definition.waypoint.location) : null;
                     newEl.windPrediction = WindVector.default();
                 }
 
-                if (this.props.fmcService.master.guidanceController.vnavDriver?.mcduProfile?.waypointPredictions?.get(index)) {
-                    lastDistanceFromStart = el.calculated.cumulativeDistanceWithTransitions ?? lastDistanceFromStart;
+                if (el.calculated !== undefined) {
+                    lastDistanceFromStart = el?.calculated?.cumulativeDistanceWithTransitions ?? lastDistanceFromStart;
                     lastLegLatLong = el.definition.waypoint?.location ?? lastLegLatLong;
                 }
             } else {
@@ -491,8 +490,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
             this.update(val, false);
             this.lastRenderedDisplayLineIndex = this.displayFplnFromLineIndex.get();
 
-            this.disabledScrollUp.set(!this.lineData || val <= 0);
-            this.disabledScrollDown.set(!this.lineData || val >= this.lineData.length - 1);
+            this.checkScrollButtons();
         }, true));
 
         this.subs.push(this.tmpyActive.sub((val) => {
@@ -511,6 +509,11 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
         this.subs.push(sub.on('realTime').atFrequency(0.5).handle((_t) => {
             this.onNewData();
         }));
+    }
+
+    checkScrollButtons() {
+        this.disabledScrollUp.set(!this.lineData || this.displayFplnFromLineIndex.get() <= 0);
+        this.disabledScrollDown.set(!this.lineData || this.displayFplnFromLineIndex.get() >= this.lineData.length - 1);
     }
 
     private spdAltButton(): VNode {
@@ -584,7 +587,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                 <div class="mfd-page-container">
                     <ContextMenu
                         ref={this.revisionsMenuRef}
-                        idPrefix="revisionsMenu"
+                        idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_revisionsMenu`}
                         values={this.revisionsMenuValues}
                         opened={this.revisionsMenuOpened}
                     />
@@ -597,6 +600,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                         fmcService={this.props.fmcService}
                         availableWaypoints={this.nextWptAvailableWaypoints}
                         visible={this.insertNextWptWindowOpened}
+                        captOrFo={this.props.mfd.uiService.captOrFo}
                     />
                     <div class="mfd-fms-fpln-header">
                         <div class="mfd-fms-fpln-header-from">
@@ -610,7 +614,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                                 label={this.efobAndWindButtonDynamicContent}
                                 onClick={() => { }}
                                 buttonStyle="margin-right: 5px; width: 260px; height: 43px;"
-                                idPrefix="efobtwindbtn"
+                                idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_efobwindbtn`}
                                 menuItems={this.efobAndWindButtonMenuItems}
                             />
                         </div>
@@ -724,7 +728,7 @@ export class MfdFmsFpln extends FmsPage<MfdFmsFplnProps> {
                             disabled={Subject.create(true)}
                             label="F-PLN INFO"
                             onClick={() => { }}
-                            idPrefix="f-pln-infoBtn"
+                            idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_f-pln-infoBtn`}
                             menuItems={Subject.create([{
                                 label: 'ALTERNATE',
                                 action: () => this.props.mfd.uiService.navigateTo(`fms/${this.props.mfd.uiService.activeUri.get().category}/f-pln-alternate`),

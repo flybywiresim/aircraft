@@ -449,7 +449,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                         label="RWY"
                         onClick={() => { }}
                         buttonStyle="width: 190px;"
-                        idPrefix="f-pln-arr-rwy-btn"
+                        idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_f-pln-arr-rwy-btn`}
                         menuItems={this.rwyOptions}
                     />
                     <Button
@@ -457,7 +457,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                         onClick={() => { }}
                         disabled={this.apprDisabled}
                         buttonStyle="width: 160px;"
-                        idPrefix="f-pln-arr-appr-btn"
+                        idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_f-pln-arr-appr-btn`}
                         menuItems={this.apprOptions}
                         scrollToMenuItem={this.apprButtonScrollTo}
                     />
@@ -466,7 +466,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                         onClick={() => { }}
                         disabled={this.viaDisabled}
                         buttonStyle="width: 125px;"
-                        idPrefix="f-pln-arr-via-btn"
+                        idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_f-pln-arr-via-btn`}
                         menuItems={this.viaOptions}
                     />
                     <Button
@@ -474,7 +474,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                         onClick={() => { }}
                         disabled={this.starDisabled}
                         buttonStyle="width: 125px;"
-                        idPrefix="f-pln-arr-star-btn"
+                        idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_f-pln-arr-star-btn`}
                         menuItems={this.starOptions}
                     />
                     <Button
@@ -482,7 +482,7 @@ export class MfdFmsFplnArr extends FmsPage<MfdFmsFplnArrProps> {
                         onClick={() => { }}
                         disabled={this.transDisabled}
                         buttonStyle="width: 125px;"
-                        idPrefix="f-pln-arr-trans-btn"
+                        idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_f-pln-arr-trans-btn`}
                         menuItems={this.transOptions}
                     />
                 </div>

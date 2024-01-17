@@ -24,6 +24,7 @@ import { SurvHeader } from 'instruments/src/MFD/pages/common/SurvHeader';
 import { FmcServiceInterface } from 'instruments/src/MFD/FMC/FmcServiceInterface';
 import { DisplayInterface } from '@fmgc/flightplanning/new/interface/DisplayInterface';
 import { MfdDisplayInterface } from 'instruments/src/MFD/MFD';
+import { MfdUiService } from 'instruments/src/MFD/pages/common/MfdUiService';
 
 export function pageForUrl(url: string, bus: EventBus, mfd: DisplayInterface & MfdDisplayInterface, fmcService: FmcServiceInterface): VNode {
     switch (url) {
@@ -189,58 +190,47 @@ export function headerForSystem(
     bus: EventBus,
     atcCallsign: Subscribable<string>,
     activeFmsSource: Subscribable<'FMS 1' | 'FMS 2' | 'FMS 1-C' | 'FMS 2-C'>,
-    mfd: DisplayInterface & MfdDisplayInterface,
-    fmcService: FmcServiceInterface,
+    uiService: MfdUiService,
 ): VNode {
     switch (sys) {
     case 'fms':
         return (
             <FmsHeader
-                bus={bus}
                 callsign={atcCallsign}
                 activeFmsSource={activeFmsSource}
-                mfd={mfd}
-                fmcService={fmcService}
+                uiService={uiService}
             />
         );
     case 'atccom':
         return (
             <AtccomHeader
-                bus={bus}
                 callsign={atcCallsign}
                 activeFmsSource={activeFmsSource}
-                mfd={mfd}
-                fmcService={fmcService}
+                uiService={uiService}
             />
         );
     case 'surv':
         return (
             <SurvHeader
-                bus={bus}
                 callsign={atcCallsign}
                 activeFmsSource={activeFmsSource}
-                mfd={mfd}
-                fmcService={fmcService}
+                uiService={uiService}
             />
         );
     case 'fcubkup':
         return (
             <FcuBkupHeader
-                bus={bus}
                 callsign={atcCallsign}
                 activeFmsSource={activeFmsSource}
-                mfd={mfd}
-                fmcService={fmcService}
+                uiService={uiService}
             />
         );
     default:
         return (
             <FmsHeader
-                bus={bus}
                 callsign={atcCallsign}
                 activeFmsSource={activeFmsSource}
-                mfd={mfd}
-                fmcService={fmcService}
+                uiService={uiService}
             />
         );
     }

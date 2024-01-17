@@ -13,7 +13,7 @@ export class FcuBkupHeader extends AbstractHeader {
     public onAfterRender(node: VNode): void {
         super.onAfterRender(node);
 
-        this.subs.push(this.props.mfd.uiService.activeUri.sub((val) => {
+        this.subs.push(this.props.uiService.activeUri.sub((val) => {
             this.afsIsSelected.set(val.category === 'afs');
             this.efisIsSelected.set(val.category === 'efis');
         }, true));
@@ -34,15 +34,15 @@ export class FcuBkupHeader extends AbstractHeader {
                     <PageSelectorDropdownMenu
                         isActive={this.afsIsSelected}
                         label="AFS CP"
-                        menuItems={[{ label: '', action: () => this.props.mfd.uiService.navigateTo('fcubkup/afs') }]}
-                        idPrefix="pageSelectorAfs"
+                        menuItems={[{ label: '', action: () => this.props.uiService.navigateTo('fcubkup/afs') }]}
+                        idPrefix={`${this.props.uiService.captOrFo}_MFD_pageSelectorAfs`}
                         containerStyle="flex: 1"
                     />
                     <PageSelectorDropdownMenu
                         isActive={this.efisIsSelected}
                         label="EFIS CP"
-                        menuItems={[{ label: '', action: () => this.props.mfd.uiService.navigateTo('fcubkup/efis') }]}
-                        idPrefix="pageSelectorEfis"
+                        menuItems={[{ label: '', action: () => this.props.uiService.navigateTo('fcubkup/efis') }]}
+                        idPrefix={`${this.props.uiService.captOrFo}_MFD_pageSelectorMsgEFis`}
                         containerStyle="flex: 1"
                     />
                 </div>

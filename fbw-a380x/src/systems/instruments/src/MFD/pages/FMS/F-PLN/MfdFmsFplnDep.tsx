@@ -268,7 +268,7 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
                         label="RWY"
                         onClick={() => { }}
                         buttonStyle="width: 250px;"
-                        idPrefix="f-pln-dep-rwy-btn"
+                        idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_f-pln-dep-rwy-btn`}
                         menuItems={this.rwyOptions}
                     />
                     <div style="width: 100px;" />
@@ -277,7 +277,7 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
                         onClick={() => { }}
                         disabled={this.sidDisabled}
                         buttonStyle="width: 140px;"
-                        idPrefix="f-pln-dep-sid-btn"
+                        idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_f-pln-dep-sid-btn`}
                         menuItems={this.sidOptions}
                     />
                     <div style="width: 50px;" />
@@ -286,7 +286,7 @@ export class MfdFmsFplnDep extends FmsPage<MfdFmsFplnDepProps> {
                         onClick={() => { }}
                         disabled={this.transDisabled}
                         buttonStyle="width: 130px;"
-                        idPrefix="f-pln-dep-trans-btn"
+                        idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_f-pln-dep-trans-btn`}
                         menuItems={this.transOptions}
                     />
                 </div>

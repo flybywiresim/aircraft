@@ -767,6 +767,12 @@ export class FmcAircraftInterface {
         SimVar.SetSimVarValue('L:A32NX_SPEEDS_ALPHA_MAX_CALC', 'number', speeds.vs * 1.03);
     }
 
+    /** Write gross weight to SimVar */
+    updateGrossWeight() {
+        const gw = this.fmc.getGrossWeight();
+        SimVar.SetSimVarValue('L:A32NX_FM_GROSS_WEIGHT', 'Number', gw);
+    }
+
     updateConstraints() {
         const activeFpIndex = this.flightPlanService.activeLegIndex;
         const constraints = this.managedProfile.get(activeFpIndex);

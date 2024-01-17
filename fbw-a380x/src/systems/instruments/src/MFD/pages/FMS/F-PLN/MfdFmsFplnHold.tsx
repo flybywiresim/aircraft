@@ -159,7 +159,7 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
                         <span class="mfd-label" style="margin-top: 50px; margin-bottom: 20px;">TURN</span>
                         <div style="margin-left: 75px;">
                             <RadioButtonGroup
-                                idPrefix="holdTurnRadio"
+                                idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_holdTurnRadio`}
                                 selectedIndex={this.turnSelectedIndex}
                                 values={['LEFT', 'RIGHT']}
                                 tmpyActive={this.tmpyActive}
@@ -168,7 +168,7 @@ export class MfdFmsFplnHold extends FmsPage<MfdFmsFplnHoldProps> {
                         <span class="mfd-label" style="margin-top: 50px; margin-bottom: 20px;">LEG DEFINING PARAMETER</span>
                         <div style="display: flex; flex-direction: row; margin-left: 75px;">
                             <RadioButtonGroup
-                                idPrefix="holdDefiningParameterRadio"
+                                idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_holdDefiningParameterRadio`}
                                 selectedIndex={this.legDefiningParameterSelectedIndex}
                                 values={['TIME', 'DIST']}
                                 tmpyActive={this.tmpyActive}

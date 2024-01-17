@@ -203,7 +203,7 @@ export class MfdFmsInit extends FmsPage<MfdFmsInitProps> {
                             disabled={this.props.fmcService.master.fmgc.data.cpnyFplnUplinkInProgress}
                             onClick={() => (this.props.fmcService.master.fmgc.data.cpnyFplnAvailable.get() ? {} : this.cpnyFplnRequest())}
                             buttonStyle="width: 175px;"
-                            idPrefix="fplnreq"
+                            idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_fplnreq`}
                             menuItems={this.cpnyFplnButtonMenuItems}
                             showArrow={false}
                         />

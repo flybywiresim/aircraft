@@ -141,7 +141,7 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
                                 <div class="mfd-fms-direct-to-dropdown-div">
                                     <DropdownMenu
                                         ref={this.dropdownMenuRef}
-                                        idPrefix="directToDropdown"
+                                        idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_directToDropdown`}
                                         selectedIndex={this.selectedWaypointIndex}
                                         values={this.availableWaypoints}
                                         freeTextAllowed
@@ -188,7 +188,7 @@ export class MfdFmsFplnDirectTo extends FmsPage<MfdFmsFplnDirectToProps> {
                             <span class="mfd-label">OPTIONS</span>
                             <div class="mfd-fms-direct-to-options">
                                 <RadioButtonGroup
-                                    idPrefix="directToOptionsRadio"
+                                    idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_directToOptionsRadio`}
                                     values={['DIRECT', 'DIRECT WITH ABEAM', 'CRS IN', 'CRS OUT']}
                                     valuesDisabled={Subject.create([false, true, true, true])}
                                     selectedIndex={this.directToOption}
