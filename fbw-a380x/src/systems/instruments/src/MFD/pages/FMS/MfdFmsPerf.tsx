@@ -39,6 +39,7 @@ import { MfdSimvars } from 'instruments/src/MFD/shared/MFDSimvarPublisher';
 import { VerticalCheckpointReason } from '@fmgc/guidance/vnav/profile/NavGeometryProfile';
 import { Feet } from 'msfs-geo';
 import { A380SpeedsUtils } from '@shared/OperatingSpeeds';
+import { NXSystemMessages } from 'instruments/src/MFD/pages/FMS/legacy/NXSystemMessages';
 
 interface MfdFmsPerfProps extends AbstractMfdPageProps {
 }
@@ -1025,6 +1026,12 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         values={ArraySubject.create(['OFF/APU', 'ON'])}
                                         inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
                                         selectedIndex={this.props.fmcService.master.fmgc.data.takeoffPacks}
+                                        onModified={(val) => {
+                                            if(this.props.fmcService.master.enginesWereStarted.get()) {
+                                                this.props.fmcService.master.addMessageToQueue(NXSystemMessages.checkToData, undefined, undefined);
+                                            }
+                                            this.props.fmcService.master.fmgc.data.takeoffPacks.set(val);
+                                        }}
                                         idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_packsDropdown`}
                                         freeTextAllowed={false}
                                         numberOfDigitsForInputField={8}
@@ -1037,6 +1044,12 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                         values={ArraySubject.create(['OFF', 'ENG ONLY', 'ENG + WING'])}
                                         inactive={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
                                         selectedIndex={this.props.fmcService.master.fmgc.data.takeoffAntiIce}
+                                        onModified={(val) => {
+                                            if(this.props.fmcService.master.enginesWereStarted.get()) {
+                                                this.props.fmcService.master.addMessageToQueue(NXSystemMessages.checkToData, undefined, undefined);
+                                            }
+                                            this.props.fmcService.master.fmgc.data.takeoffAntiIce.set(val);
+                                        }}
                                         idPrefix={`${this.props.mfd.uiService.captOrFo}_MFD_antiIceDropdown`}
                                         freeTextAllowed={false}
                                         numberOfDigitsForInputField={10}
@@ -1098,9 +1111,7 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                                         this.props.fmcService.master.fmgc.data.noiseEnabled.set(false);
                                                         this.showNoiseFields(false);
                                                     }}
-                                                >
-                                                    NOISE
-                                                </Button>
+                                                />
                                             )}
                                             componentIfTrue={<></>}
                                         />
@@ -1156,14 +1167,13 @@ export class MfdFmsPerf extends FmsPage<MfdFmsPerfProps> {
                                             condition={this.activeFlightPhase.map((it) => it >= FmgcFlightPhase.Takeoff)}
                                             componentIfFalse={(
                                                 <Button
+                                                    disabled={Subject.create(true)}
                                                     label="NOISE"
                                                     onClick={() => {
                                                         this.props.fmcService.master.fmgc.data.noiseEnabled.set(true);
                                                         this.showNoiseFields(true);
                                                     }}
-                                                >
-                                                    NOISE
-                                                </Button>
+                                                />
                                             )}
                                             componentIfTrue={<></>}
                                         />

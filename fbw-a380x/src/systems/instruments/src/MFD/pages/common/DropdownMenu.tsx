@@ -10,7 +10,7 @@ interface DropdownMenuProps extends ComponentProps {
     idPrefix: string;
     /**
      *
-     * If defined, this component does not update the selectedIndex prop, but rather calls this method.
+     * If defined, this component does not update the selectedIndex prop by itself, but rather calls this method.
      */
     onModified?: (newSelectedIndex: number, freeTextEntry: string) => void;
     inactive?: Subscribable<boolean>;
