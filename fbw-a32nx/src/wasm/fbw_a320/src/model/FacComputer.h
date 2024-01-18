@@ -61,6 +61,7 @@ class FacComputer final
     rtDW_MATLABFunction_FacComputer_f_T sf_MATLABFunction_ax;
     rtDW_MATLABFunction_FacComputer_f_T sf_MATLABFunction_p4;
     rtDW_RateLimiter_FacComputer_d_T sf_RateLimiter_fu;
+    rtDW_RateLimiter_FacComputer_d_T sf_RateLimiter_l;
     rtDW_RateLimiter_FacComputer_d_T sf_RateLimiter_p;
     rtDW_RateLimiter_FacComputer_b_T sf_RateLimiter_g0;
     rtDW_RateLimiter_FacComputer_b_T sf_RateLimiter_g;
@@ -175,6 +176,7 @@ class FacComputer final
     real_T RateLimiterGenericVariableTs1_lo_f;
     real_T RateLimiterGenericVariableTs_lo;
     real_T RateLimiterGenericVariableTs_lo_e;
+    real_T RateLimiterGenericVariableTs_lo_d;
     real_T RateLimiterGenericVariableTs_lo_f;
     real_T RateLimiterGenericVariableTs_lo_p;
     real_T ConfirmNode_timeDelay;
@@ -187,6 +189,7 @@ class FacComputer final
     real_T RateLimiterGenericVariableTs1_up_d;
     real_T RateLimiterGenericVariableTs_up;
     real_T RateLimiterGenericVariableTs_up_g;
+    real_T RateLimiterGenericVariableTs_up_l;
     real_T RateLimiterGenericVariableTs_up_a;
     real_T RateLimiterGenericVariableTs_up_c;
     SignStatusMatrix EnumeratedConstant1_Value;
@@ -208,17 +211,18 @@ class FacComputer final
     real_T Constant3_Value;
     real_T Constant1_Value;
     real_T Constant_Value_l;
-    real_T Constant_Value_g;
-    real_T Constant3_Value_b;
     real_T Constant1_Value_m;
     real_T Gain2_Gain;
     real_T Constant2_Value_m;
+    real_T Saturation_UpperSat;
+    real_T Saturation_LowerSat;
+    real_T Constant_Value_g;
     real_T Gain_Gain;
     real_T Saturation1_UpperSat;
     real_T Saturation1_LowerSat;
     real_T Gain_Gain_h;
-    real_T Saturation_UpperSat;
-    real_T Saturation_LowerSat;
+    real_T Saturation_UpperSat_a;
+    real_T Saturation_LowerSat_l;
     real_T Gain5_Gain;
     real_T Saturation1_UpperSat_o;
     real_T Saturation1_LowerSat_n;
@@ -277,9 +281,6 @@ class FacComputer final
     real_T Saturation_UpperSat_j;
     real_T Saturation_LowerSat_c;
     real_T Gain_Gain_j;
-    real_T Switch6_Threshold;
-    real_T Saturation_UpperSat_h;
-    real_T Saturation_LowerSat_cq;
     real_T Saturation_UpperSat_e;
     real_T Saturation_LowerSat_o;
     real_T uDLookupTable_tableData_j[7];
@@ -288,7 +289,8 @@ class FacComputer final
     real_T Saturation_LowerSat_f;
     real_T Constant_Value_b;
     real_T Switch7_Threshold;
-    real_T Switch6_Threshold_e;
+    real_T Switch6_Threshold;
+    real32_T Switch6_Threshold_n;
     real32_T Gain4_Gain;
     real32_T Constant28_Value;
     real32_T Constant22_Value;
