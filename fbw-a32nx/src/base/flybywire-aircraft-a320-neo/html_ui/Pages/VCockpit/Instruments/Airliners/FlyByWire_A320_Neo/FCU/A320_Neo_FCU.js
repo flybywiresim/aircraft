@@ -404,7 +404,11 @@ class A320_Neo_FCU_Speed extends A320_Neo_FCU_Component {
                     }
                     this.textValueContent = value;
                 } else {
-                    this.textValueContent = "---";
+                    if (_machActive) {
+                        this.textValueContent = "-.--";
+                    } else {
+                        this.textValueContent = "---";
+                    }
                 }
             }
             this.setElementVisibility(this.illuminator, this.isManaged);
